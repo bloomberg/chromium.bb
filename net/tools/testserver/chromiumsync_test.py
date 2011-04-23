@@ -1,13 +1,15 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Tests exercising chromiumsync and SyncDataModel."""
 
+import pickle
 import unittest
 
 import autofill_specifics_pb2
+import bookmark_specifics_pb2
 import chromiumsync
 import sync_pb2
 import theme_specifics_pb2
@@ -25,7 +27,15 @@ class SyncDataModelTest(unittest.TestCase):
     for data_type in requested_types:
       message.requested_types.Extensions[
         chromiumsync.SYNC_TYPE_TO_EXTENSION[data_type]].SetInParent()
-    return self.model.GetChanges(chromiumsync.UpdateSieve(message))
+    return self.model.GetChanges(
+        chromiumsync.UpdateSieve(message, self.model.migration_history))
+
+  def FindMarkerByNumber(self, markers, datatype):
+    """Search a list of progress markers and find the one for a datatype."""
+    for marker in markers:
+      if marker.data_type_id == datatype.number:
+        return marker
+    self.fail('Required marker not found: %s' % datatype.name)
 
   def testPermanentItemSpecs(self):
     specs = chromiumsync.SyncDataModel._PERMANENT_ITEM_SPECS
@@ -371,10 +381,10 @@ class SyncDataModelTest(unittest.TestCase):
     msg = sync_pb2.GetUpdatesMessage()
     marker = msg.from_progress_marker.add()
     marker.data_type_id = autofill.number
-    marker.token = '15412'
+    marker.token = pickle.dumps((15412, 1))
     marker = msg.from_progress_marker.add()
     marker.data_type_id = theme.number
-    marker.token = '15413'
+    marker.token = pickle.dumps((15413, 1))
     sieve = chromiumsync.UpdateSieve(msg)
     self.assertEqual(sieve._state,
         {chromiumsync.TOP_LEVEL: 15412,
@@ -387,14 +397,14 @@ class SyncDataModelTest(unittest.TestCase):
     self.assertFalse(response.HasField('new_timestamp'))
     marker = response.new_progress_marker[0]
     self.assertEqual(marker.data_type_id, autofill.number)
-    self.assertEqual(marker.token, '15413')
+    self.assertEqual(pickle.loads(marker.token), (15413, 1))
     self.assertFalse(marker.HasField('timestamp_token_for_migration'))
 
     # Empty tokens indicating from timestamp = 0
     msg = sync_pb2.GetUpdatesMessage()
     marker = msg.from_progress_marker.add()
     marker.data_type_id = autofill.number
-    marker.token = '412'
+    marker.token = pickle.dumps((412, 1))
     marker = msg.from_progress_marker.add()
     marker.data_type_id = theme.number
     marker.token = ''
@@ -409,7 +419,7 @@ class SyncDataModelTest(unittest.TestCase):
     self.assertFalse(response.HasField('new_timestamp'))
     marker = response.new_progress_marker[0]
     self.assertEqual(marker.data_type_id, theme.number)
-    self.assertEqual(marker.token, '1')
+    self.assertEqual(pickle.loads(marker.token), (1, 1))
     self.assertFalse(marker.HasField('timestamp_token_for_migration'))
 
     response = sync_pb2.GetUpdatesResponse()
@@ -418,23 +428,24 @@ class SyncDataModelTest(unittest.TestCase):
     self.assertFalse(response.HasField('new_timestamp'))
     marker = response.new_progress_marker[0]
     self.assertEqual(marker.data_type_id, theme.number)
-    self.assertEqual(marker.token, '412')
+    self.assertEqual(pickle.loads(marker.token), (412, 1))
     self.assertFalse(marker.HasField('timestamp_token_for_migration'))
 
     response = sync_pb2.GetUpdatesResponse()
     sieve.SaveProgress(413, response)
     self.assertEqual(2, len(response.new_progress_marker))
     self.assertFalse(response.HasField('new_timestamp'))
-    marker = response.new_progress_marker[0]
-    self.assertEqual(marker.data_type_id, theme.number)
-    self.assertEqual(marker.token, '413')
+    marker = self.FindMarkerByNumber(response.new_progress_marker, theme)
+    self.assertEqual(pickle.loads(marker.token), (413, 1))
     self.assertFalse(marker.HasField('timestamp_token_for_migration'))
-    marker = response.new_progress_marker[1]
-    self.assertEqual(marker.data_type_id, autofill.number)
-    self.assertEqual(marker.token, '413')
+    marker = self.FindMarkerByNumber(response.new_progress_marker, autofill)
+    self.assertEqual(pickle.loads(marker.token), (413, 1))
     self.assertFalse(marker.HasField('timestamp_token_for_migration'))
 
     # Migration token timestamps (client gives timestamp, server returns token)
+    # These are for migrating from the old 'timestamp' protocol to the
+    # progressmarker protocol, and have nothing to do with the MIGRATION_DONE
+    # error code.
     msg = sync_pb2.GetUpdatesMessage()
     marker = msg.from_progress_marker.add()
     marker.data_type_id = autofill.number
@@ -451,13 +462,11 @@ class SyncDataModelTest(unittest.TestCase):
     sieve.SaveProgress(16000, response)  # There were updates
     self.assertEqual(2, len(response.new_progress_marker))
     self.assertFalse(response.HasField('new_timestamp'))
-    marker = response.new_progress_marker[0]
-    self.assertEqual(marker.data_type_id, theme.number)
-    self.assertEqual(marker.token, '16000')
+    marker = self.FindMarkerByNumber(response.new_progress_marker, theme)
+    self.assertEqual(pickle.loads(marker.token), (16000, 1))
     self.assertFalse(marker.HasField('timestamp_token_for_migration'))
-    marker = response.new_progress_marker[1]
-    self.assertEqual(marker.data_type_id, autofill.number)
-    self.assertEqual(marker.token, '16000')
+    marker = self.FindMarkerByNumber(response.new_progress_marker, autofill)
+    self.assertEqual(pickle.loads(marker.token), (16000, 1))
     self.assertFalse(marker.HasField('timestamp_token_for_migration'))
 
     msg = sync_pb2.GetUpdatesMessage()
@@ -476,14 +485,125 @@ class SyncDataModelTest(unittest.TestCase):
     sieve.SaveProgress(3000, response)  # Already up to date
     self.assertEqual(2, len(response.new_progress_marker))
     self.assertFalse(response.HasField('new_timestamp'))
-    marker = response.new_progress_marker[0]
-    self.assertEqual(marker.data_type_id, theme.number)
-    self.assertEqual(marker.token, '3000')
+    marker = self.FindMarkerByNumber(response.new_progress_marker, theme)
+    self.assertEqual(pickle.loads(marker.token), (3000, 1))
     self.assertFalse(marker.HasField('timestamp_token_for_migration'))
-    marker = response.new_progress_marker[1]
-    self.assertEqual(marker.data_type_id, autofill.number)
-    self.assertEqual(marker.token, '3000')
+    marker = self.FindMarkerByNumber(response.new_progress_marker, autofill)
+    self.assertEqual(pickle.loads(marker.token), (3000, 1))
     self.assertFalse(marker.HasField('timestamp_token_for_migration'))
+
+  def testUpdateSieveStoreMigration(self):
+    autofill = autofill_specifics_pb2.autofill
+    theme = theme_specifics_pb2.theme
+    migrator = chromiumsync.MigrationHistory()
+    msg = sync_pb2.GetUpdatesMessage()
+    marker = msg.from_progress_marker.add()
+    marker.data_type_id = autofill.number
+    marker.token = pickle.dumps((15412, 1))
+    marker = msg.from_progress_marker.add()
+    marker.data_type_id = theme.number
+    marker.token = pickle.dumps((15413, 1))
+    sieve = chromiumsync.UpdateSieve(msg, migrator)
+    sieve.CheckMigrationState()
+
+    migrator.Bump([chromiumsync.BOOKMARK, chromiumsync.PASSWORD])  # v=2
+    sieve = chromiumsync.UpdateSieve(msg, migrator)
+    sieve.CheckMigrationState()
+    self.assertEqual(sieve._state,
+        {chromiumsync.TOP_LEVEL: 15412,
+         chromiumsync.AUTOFILL: 15412,
+         chromiumsync.THEME: 15413})
+
+    migrator.Bump([chromiumsync.AUTOFILL, chromiumsync.PASSWORD])  # v=3
+    sieve = chromiumsync.UpdateSieve(msg, migrator)
+    try:
+      sieve.CheckMigrationState()
+      self.fail('Should have raised.')
+    except chromiumsync.MigrationDoneError, error:
+      # We want this to happen.
+      self.assertEqual([chromiumsync.AUTOFILL], error.datatypes)
+
+    msg = sync_pb2.GetUpdatesMessage()
+    marker = msg.from_progress_marker.add()
+    marker.data_type_id = autofill.number
+    marker.token = ''
+    marker = msg.from_progress_marker.add()
+    marker.data_type_id = theme.number
+    marker.token = pickle.dumps((15413, 1))
+    sieve = chromiumsync.UpdateSieve(msg, migrator)
+    sieve.CheckMigrationState()
+    response = sync_pb2.GetUpdatesResponse()
+    sieve.SaveProgress(15412, response)  # There were updates
+    self.assertEqual(1, len(response.new_progress_marker))
+    self.assertFalse(response.HasField('new_timestamp'))
+    self.assertFalse(marker.HasField('timestamp_token_for_migration'))
+    marker = self.FindMarkerByNumber(response.new_progress_marker, autofill)
+    self.assertEqual(pickle.loads(marker.token), (15412, 3))
+    self.assertFalse(marker.HasField('timestamp_token_for_migration'))
+    msg = sync_pb2.GetUpdatesMessage()
+    marker = msg.from_progress_marker.add()
+    marker.data_type_id = autofill.number
+    marker.token = pickle.dumps((15412, 3))
+    marker = msg.from_progress_marker.add()
+    marker.data_type_id = theme.number
+    marker.token = pickle.dumps((15413, 1))
+    sieve = chromiumsync.UpdateSieve(msg, migrator)
+    sieve.CheckMigrationState()
+
+    migrator.Bump([chromiumsync.THEME, chromiumsync.AUTOFILL])  # v=4
+    migrator.Bump([chromiumsync.AUTOFILL])                      # v=5
+    sieve = chromiumsync.UpdateSieve(msg, migrator)
+    try:
+      sieve.CheckMigrationState()
+      self.fail("Should have raised.")
+    except chromiumsync.MigrationDoneError, error:
+      # We want this to happen.
+      self.assertEqual(set([chromiumsync.THEME, chromiumsync.AUTOFILL]),
+                       set(error.datatypes))
+    msg = sync_pb2.GetUpdatesMessage()
+    marker = msg.from_progress_marker.add()
+    marker.data_type_id = autofill.number
+    marker.token = ''
+    marker = msg.from_progress_marker.add()
+    marker.data_type_id = theme.number
+    marker.token = pickle.dumps((15413, 1))
+    sieve = chromiumsync.UpdateSieve(msg, migrator)
+    try:
+      sieve.CheckMigrationState()
+      self.fail("Should have raised.")
+    except chromiumsync.MigrationDoneError, error:
+      # We want this to happen.
+      self.assertEqual([chromiumsync.THEME], error.datatypes)
+
+    msg = sync_pb2.GetUpdatesMessage()
+    marker = msg.from_progress_marker.add()
+    marker.data_type_id = autofill.number
+    marker.token = ''
+    marker = msg.from_progress_marker.add()
+    marker.data_type_id = theme.number
+    marker.token = ''
+    sieve = chromiumsync.UpdateSieve(msg, migrator)
+    sieve.CheckMigrationState()
+    response = sync_pb2.GetUpdatesResponse()
+    sieve.SaveProgress(15412, response)  # There were updates
+    self.assertEqual(2, len(response.new_progress_marker))
+    self.assertFalse(response.HasField('new_timestamp'))
+    self.assertFalse(marker.HasField('timestamp_token_for_migration'))
+    marker = self.FindMarkerByNumber(response.new_progress_marker, autofill)
+    self.assertEqual(pickle.loads(marker.token), (15412, 5))
+    self.assertFalse(marker.HasField('timestamp_token_for_migration'))
+    marker = self.FindMarkerByNumber(response.new_progress_marker, theme)
+    self.assertEqual(pickle.loads(marker.token), (15412, 4))
+    self.assertFalse(marker.HasField('timestamp_token_for_migration'))
+    msg = sync_pb2.GetUpdatesMessage()
+    marker = msg.from_progress_marker.add()
+    marker.data_type_id = autofill.number
+    marker.token = pickle.dumps((15412, 5))
+    marker = msg.from_progress_marker.add()
+    marker.data_type_id = theme.number
+    marker.token = pickle.dumps((15413, 4))
+    sieve = chromiumsync.UpdateSieve(msg, migrator)
+    sieve.CheckMigrationState()
 
 
 if __name__ == '__main__':

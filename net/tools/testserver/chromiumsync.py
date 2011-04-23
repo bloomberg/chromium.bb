@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,9 +12,11 @@ buffer definition at chrome/browser/sync/protocol/sync.proto.
 import cgi
 import copy
 import operator
+import pickle
 import random
 import sys
 import threading
+import urlparse
 
 import app_specifics_pb2
 import autofill_specifics_pb2
@@ -46,7 +48,7 @@ ALL_TYPES = (
     THEME,
     TYPED_URL) = range(12)
 
-# Well-known server tag of the top level "Google Chrome" folder.
+# Well-known server tag of the top level 'Google Chrome' folder.
 TOP_LEVEL_FOLDER_TAG = 'google_chrome'
 
 # Given a sync type from ALL_TYPES, find the extension token corresponding
@@ -81,13 +83,28 @@ class DataTypeIdNotRecognized(Error):
   """The requested data type is not recognized."""
 
 
+class MigrationDoneError(Error):
+  """A server-side migration occurred; clients must re-sync some datatypes.
+
+  Attributes:
+    datatypes: a list of the datatypes (python enum) needing migration.
+  """
+
+  def __init__(self, datatypes):
+    self.datatypes = datatypes
+
+
+class StoreBirthdayError(Error):
+  """The client sent a birthday that doesn't correspond to this server."""
+
+
 def GetEntryType(entry):
   """Extract the sync type from a SyncEntry.
 
   Args:
     entry: A SyncEntity protobuf object whose type to determine.
   Returns:
-    A value from ALL_TYPES if the entry's type can be determined, or None
+    An enum value from ALL_TYPES if the entry's type can be determined, or None
     if the type cannot be determined.
   Raises:
     ProtobufExtensionNotUnique: More than one type was indicated by the entry.
@@ -117,7 +134,7 @@ def GetEntryTypesFromSpecifics(specifics):
     specifics: A EntitySpecifics protobuf message whose extensions to
       enumerate.
   Returns:
-    A list of the sync types (values from ALL_TYPES) assocated with each
+    A list of the sync types (values from ALL_TYPES) associated with each
     recognized extension of the specifics message.
   """
   return [data_type for data_type, extension
@@ -138,6 +155,55 @@ def ProtocolDataTypeIdToSyncType(protocol_data_type_id):
   raise DataTypeIdNotRecognized
 
 
+def DataTypeStringToSyncTypeLoose(data_type_string):
+  """Converts a human-readable string to a sync type (python enum).
+
+  Capitalization and pluralization don't matter; this function is appropriate
+  for values that might have been typed by a human being; e.g., command-line
+  flags or query parameters.
+  """
+  if data_type_string.isdigit():
+    return ProtocolDataTypeIdToSyncType(int(data_type_string))
+  name = data_type_string.lower().rstrip('s')
+  for data_type, protocol_extension in SYNC_TYPE_TO_EXTENSION.iteritems():
+    if protocol_extension.name.lower().rstrip('s') == name:
+      return data_type
+  raise DataTypeIdNotRecognized
+
+
+def SyncTypeToString(data_type):
+  """Formats a sync type enum (from ALL_TYPES) to a human-readable string."""
+  return SYNC_TYPE_TO_EXTENSION[data_type].name
+
+
+def CallerInfoToString(caller_info_source):
+  """Formats a GetUpdatesSource enum value to a readable string."""
+  return sync_pb2.GetUpdatesCallerInfo.DESCRIPTOR.enum_types_by_name[
+      'GetUpdatesSource'].values_by_number[caller_info_source].name
+
+
+def ShortDatatypeListSummary(data_types):
+  """Formats compactly a list of sync types (python enums) for human eyes.
+
+  This function is intended for use by logging.  If the list of datatypes
+  contains almost all of the values, the return value will be expressed
+  in terms of the datatypes that aren't set.
+  """
+  included = set(data_types) - set([TOP_LEVEL])
+  if not included:
+    return 'nothing'
+  excluded = set(ALL_TYPES) - included - set([TOP_LEVEL])
+  if not excluded:
+    return 'everything'
+  simple_text = '+'.join(sorted([SyncTypeToString(x) for x in included]))
+  all_but_text = 'all except %s' % (
+      '+'.join(sorted([SyncTypeToString(x) for x in excluded])))
+  if len(included) < len(excluded) or len(simple_text) <= len(all_but_text):
+    return simple_text
+  else:
+    return all_but_text
+
+
 def GetDefaultEntitySpecifics(data_type):
   """Get an EntitySpecifics having a sync type's default extension value."""
   specifics = sync_pb2.EntitySpecifics()
@@ -145,13 +211,6 @@ def GetDefaultEntitySpecifics(data_type):
     extension_handle = SYNC_TYPE_TO_EXTENSION[data_type]
     specifics.Extensions[extension_handle].SetInParent()
   return specifics
-
-
-def DeepCopyOfProto(proto):
-  """Return a deep copy of a protocol buffer."""
-  new_proto = type(proto)()
-  new_proto.MergeFrom(proto)
-  return new_proto
 
 
 class PermanentItem(object):
@@ -176,28 +235,92 @@ class PermanentItem(object):
     self.sync_type = sync_type
 
 
+class MigrationHistory(object):
+  """A record of the migration events associated with an account.
+
+  Each migration event invalidates one or more datatypes on all clients
+  that had synced the datatype before the event.  Such clients will continue
+  to receive MigrationDone errors until they throw away their progress and
+  re-sync that datatype from the beginning.
+  """
+  def __init__(self):
+    self._migrations = {}
+    for datatype in ALL_TYPES:
+      self._migrations[datatype] = [1]
+    self._next_migration_version = 2
+
+  def GetLatestVersion(self, datatype):
+    return self._migrations[datatype][-1]
+
+  def CheckAllCurrent(self, versions_map):
+    """Raises an error if any the provided versions are out of date.
+
+    This function intentionally returns migrations in the order that they were
+    triggered.  Doing it this way allows the client to queue up two migrations
+    in a row, so the second one is received while responding to the first.
+
+    Arguments:
+      version_map: a map whose keys are datatypes and whose values are versions.
+
+    Raises:
+      MigrationDoneError: if a mismatch is found.
+    """
+    problems = {}
+    for datatype, client_migration in versions_map.iteritems():
+      for server_migration in self._migrations[datatype]:
+        if client_migration < server_migration:
+          problems.setdefault(server_migration, []).append(datatype)
+    if problems:
+      raise MigrationDoneError(problems[min(problems.keys())])
+
+  def Bump(self, datatypes):
+    """Add a record of a migration, to cause errors on future requests."""
+    for idx, datatype in enumerate(datatypes):
+      self._migrations[datatype].append(self._next_migration_version)
+    self._next_migration_version += 1
+
+
 class UpdateSieve(object):
   """A filter to remove items the client has already seen."""
-  def __init__(self, request):
+  def __init__(self, request, migration_history=None):
     self._original_request = request
     self._state = {}
+    self._migration_history = migration_history or MigrationHistory()
+    self._migration_versions_to_check = {}
     if request.from_progress_marker:
       for marker in request.from_progress_marker:
-        if marker.HasField("timestamp_token_for_migration"):
+        data_type = ProtocolDataTypeIdToSyncType(marker.data_type_id)
+        if marker.HasField('timestamp_token_for_migration'):
           timestamp = marker.timestamp_token_for_migration
+          if timestamp:
+            self._migration_versions_to_check[data_type] = 1
         elif marker.token:
-          timestamp = int(marker.token)
-        elif marker.HasField("token"):
+          (timestamp, version) = pickle.loads(marker.token)
+          self._migration_versions_to_check[data_type] = version
+        elif marker.HasField('token'):
           timestamp = 0
         else:
-          raise ValueError("No timestamp information in progress marker.")
+          raise ValueError('No timestamp information in progress marker.')
         data_type = ProtocolDataTypeIdToSyncType(marker.data_type_id)
         self._state[data_type] = timestamp
-    elif request.HasField("from_timestamp"):
+    elif request.HasField('from_timestamp'):
       for data_type in GetEntryTypesFromSpecifics(request.requested_types):
         self._state[data_type] = request.from_timestamp
+        self._migration_versions_to_check[data_type] = 1
     if self._state:
       self._state[TOP_LEVEL] = min(self._state.itervalues())
+
+  def SummarizeRequest(self):
+    timestamps = {}
+    for data_type, timestamp in self._state.iteritems():
+      if data_type == TOP_LEVEL:
+        continue
+      timestamps.setdefault(timestamp, []).append(data_type)
+    return ', '.join('<%s>@%d' % (ShortDatatypeListSummary(types), stamp)
+                     for stamp, types in sorted(timestamps.iteritems()))
+
+  def CheckMigrationState(self):
+    self._migration_history.CheckAllCurrent(self._migration_versions_to_check)
 
   def ClientWantsItem(self, item):
     """Return true if the client hasn't already seen an item."""
@@ -224,10 +347,12 @@ class UpdateSieve(object):
           continue
         new_marker = sync_pb2.DataTypeProgressMarker()
         new_marker.data_type_id = SyncTypeToProtocolDataTypeId(data_type)
-        new_marker.token = str(max(old_timestamp, new_timestamp))
+        final_stamp = max(old_timestamp, new_timestamp)
+        final_migration = self._migration_history.GetLatestVersion(data_type)
+        new_marker.token = pickle.dumps((final_stamp, final_migration))
         if new_marker not in self._original_request.from_progress_marker:
           get_updates_response.new_progress_marker.add().MergeFrom(new_marker)
-    elif self._original_request.HasField("from_timestamp"):
+    elif self._original_request.HasField('from_timestamp'):
       if self._original_request.from_timestamp < new_timestamp:
         get_updates_response.new_timestamp = new_timestamp
 
@@ -280,6 +405,8 @@ class SyncDataModel(object):
     # TODO(nick): uuid.uuid1() is better, but python 2.5 only.
     self.store_birthday = '%0.30f' % random.random()
 
+    self.migration_history = MigrationHistory()
+
   def _SaveEntry(self, entry):
     """Insert or update an entry in the change log, and give it a new version.
 
@@ -303,7 +430,7 @@ class SyncDataModel(object):
       entry.originator_cache_guid = base_entry.originator_cache_guid
       entry.originator_client_item_id = base_entry.originator_client_item_id
 
-    self._entries[entry.id_string] = DeepCopyOfProto(entry)
+    self._entries[entry.id_string] = copy.deepcopy(entry)
 
   def _ServerTagToId(self, tag):
     """Determine the server ID from a server-unique tag.
@@ -312,35 +439,38 @@ class SyncDataModel(object):
     generation methods.
 
     Args:
+      datatype: The sync type (python enum) of the identified object.
       tag: The unique, known-to-the-client tag of a server-generated item.
     Returns:
       The string value of the computed server ID.
     """
-    if tag and tag != ROOT_ID:
-      return '<server tag>%s' % tag
-    else:
+    if not tag or tag == ROOT_ID:
       return tag
+    spec = [x for x in self._PERMANENT_ITEM_SPECS if x.tag == tag][0]
+    return self._MakeCurrentId(spec.sync_type, '<server tag>%s' % tag)
 
-  def _ClientTagToId(self, tag):
+  def _ClientTagToId(self, datatype, tag):
     """Determine the server ID from a client-unique tag.
 
     The resulting value is guaranteed not to collide with the other ID
     generation methods.
 
     Args:
+      datatype: The sync type (python enum) of the identified object.
       tag: The unique, opaque-to-the-server tag of a client-tagged item.
     Returns:
       The string value of the computed server ID.
     """
-    return '<client tag>%s' % tag
+    return self._MakeCurrentId(datatype, '<client tag>%s' % tag)
 
-  def _ClientIdToId(self, client_guid, client_item_id):
+  def _ClientIdToId(self, datatype, client_guid, client_item_id):
     """Compute a unique server ID from a client-local ID tag.
 
     The resulting value is guaranteed not to collide with the other ID
     generation methods.
 
     Args:
+      datatype: The sync type (python enum) of the identified object.
       client_guid: A globally unique ID that identifies the client which
         created this item.
       client_item_id: An ID that uniquely identifies this item on the client
@@ -350,7 +480,20 @@ class SyncDataModel(object):
     """
     # Using the client ID info is not required here (we could instead generate
     # a random ID), but it's useful for debugging.
-    return '<server ID originally>%s/%s' % (client_guid, client_item_id)
+    return self._MakeCurrentId(datatype,
+        '<server ID originally>%s/%s' % (client_guid, client_item_id))
+
+  def _MakeCurrentId(self, datatype, inner_id):
+    return '%d^%d^%s' % (datatype,
+                         self.migration_history.GetLatestVersion(datatype),
+                         inner_id)
+
+  def _ExtractIdInfo(self, id_string):
+    if not id_string or id_string == ROOT_ID:
+      return None
+    datatype_string, separator, remainder = id_string.partition('^')
+    migration_version_string, separator, inner_id = remainder.partition('^')
+    return (int(datatype_string), int(migration_version_string), inner_id)
 
   def _WritePosition(self, entry, parent_id, prev_id=None):
     """Convert from a relative position into an absolute, numeric position.
@@ -484,7 +627,7 @@ class SyncDataModel(object):
 
     # Restrict batch to requested types.  Tombstones are untyped
     # and will always get included.
-    filtered = [DeepCopyOfProto(item) for item in batch
+    filtered = [copy.deepcopy(item) for item in batch
                 if item.deleted or sieve.ClientWantsItem(item)]
 
     # The new client timestamp is the timestamp of the last item in the
@@ -568,11 +711,12 @@ class SyncDataModel(object):
         IDs, for any items committed earlier in the batch.
     """
     if entry.version == 0:
+      data_type = GetEntryType(entry)
       if entry.HasField('client_defined_unique_tag'):
         # When present, this should determine the item's ID.
-        new_id = self._ClientTagToId(entry.client_defined_unique_tag)
+        new_id = self._ClientTagToId(data_type, entry.client_defined_unique_tag)
       else:
-        new_id = self._ClientIdToId(cache_guid, entry.id_string)
+        new_id = self._ClientIdToId(data_type, cache_guid, entry.id_string)
         entry.originator_cache_guid = cache_guid
         entry.originator_client_item_id = entry.id_string
       commit_session[entry.id_string] = new_id  # Remember the remapping.
@@ -581,6 +725,37 @@ class SyncDataModel(object):
       entry.parent_id_string = commit_session[entry.parent_id_string]
     if entry.insert_after_item_id in commit_session:
       entry.insert_after_item_id = commit_session[entry.insert_after_item_id]
+
+  def ValidateCommitEntries(self, entries):
+    """Raise an exception if a commit batch contains any global errors.
+
+    Arguments:
+      entries: an iterable containing commit-form SyncEntity protocol buffers.
+
+    Raises:
+      MigrationDoneError: if any of the entries reference a recently-migrated
+        datatype.
+    """
+    server_ids_in_commit = set()
+    local_ids_in_commit = set()
+    for entry in entries:
+      if entry.version:
+        server_ids_in_commit.add(entry.id_string)
+      else:
+        local_ids_in_commit.add(entry.id_string)
+      if entry.HasField('parent_id_string'):
+        if entry.parent_id_string not in local_ids_in_commit:
+          server_ids_in_commit.add(entry.parent_id_string)
+
+    versions_present = {}
+    for server_id in server_ids_in_commit:
+      parsed = self._ExtractIdInfo(server_id)
+      if parsed:
+        datatype, version, _ = parsed
+        versions_present.setdefault(datatype, []).append(version)
+
+    self.migration_history.CheckAllCurrent(
+         dict((k, min(v)) for k, v in versions_present.iteritems()))
 
   def CommitEntry(self, entry, cache_guid, commit_session):
     """Attempt to commit one entry to the user's account.
@@ -597,7 +772,7 @@ class SyncDataModel(object):
       A SyncEntity reflecting the post-commit value of the entry, or None
       if the entry was not committed due to an error.
     """
-    entry = DeepCopyOfProto(entry)
+    entry = copy.deepcopy(entry)
 
     # Generate server IDs for this entry, and write generated server IDs
     # from earlier entries into the message's fields, as appropriate.  The
@@ -692,6 +867,31 @@ class SyncDataModel(object):
     self._SaveEntry(entry)
     return entry
 
+  def _RewriteVersionInId(self, id_string):
+    """Rewrites an ID so that its migration version becomes current."""
+    parsed_id = self._ExtractIdInfo(id_string)
+    if not parsed_id:
+      return id_string
+    datatype, old_migration_version, inner_id = parsed_id
+    return self._MakeCurrentId(datatype, inner_id)
+
+  def TriggerMigration(self, datatypes):
+    """Cause a migration to occur for a set of datatypes on this account.
+
+    Clients will see the MIGRATION_DONE error for these datatypes until they
+    resync them.
+    """
+    versions_to_remap = self.migration_history.Bump(datatypes)
+    all_entries = self._entries.values()
+    self._entries.clear()
+    for entry in all_entries:
+      new_id = self._RewriteVersionInId(entry.id_string)
+      entry.id_string = new_id
+      if entry.HasField('parent_id_string'):
+        entry.parent_id_string = self._RewriteVersionInId(
+            entry.parent_id_string)
+      self._entries[entry.id_string] = entry
+
 
 class TestServer(object):
   """An object to handle requests for one (and only one) Chrome Sync account.
@@ -709,7 +909,7 @@ class TestServer(object):
     # to its nickname.
     self.clients = {}
     self.client_name_generator = ('+' * times + chr(c)
-        for times in xrange(0, sys.maxint) for c in xrange(ord('A'),ord('Z')))
+        for times in xrange(0, sys.maxint) for c in xrange(ord('A'), ord('Z')))
 
   def GetShortClientName(self, query):
     parsed = cgi.parse_qs(query[query.find('?')+1:])
@@ -720,6 +920,35 @@ class TestServer(object):
     if client_id not in self.clients:
       self.clients[client_id] = self.client_name_generator.next()
     return self.clients[client_id]
+
+  def CheckStoreBirthday(self, request):
+    """Raises StoreBirthdayError if the request's birthday is a mismatch."""
+    if not request.HasField('store_birthday'):
+      return
+    if self.account.store_birthday != request.store_birthday:
+      raise StoreBirthdayError
+
+  def HandleMigrate(self, path):
+    query = urlparse.urlparse(path)[4]
+    code = 200
+    self.account_lock.acquire()
+    try:
+      datatypes = [DataTypeStringToSyncTypeLoose(x)
+                   for x in urlparse.parse_qs(query).get('type',[])]
+      if datatypes:
+        self.account.TriggerMigration(datatypes)
+        response = 'Migrated datatypes %s' % (
+            ' and '.join(SyncTypeToString(x).upper() for x in datatypes))
+      else:
+        response = 'Please specify one or more <i>type=name</i> parameters'
+        code = 400
+    except DataTypeIdNotRecognized, error:
+      response = 'Could not interpret datatype name'
+      code = 400
+    finally:
+      self.account_lock.release()
+    return (code, '<html><title>Migration: %d</title><H1>%d %s</H1></html>' %
+                (code, code, response))
 
   def HandleCommand(self, query, raw_request):
     """Decode and handle a sync command from a raw input of bytes.
@@ -736,6 +965,10 @@ class TestServer(object):
       serialized reply to the command.
     """
     self.account_lock.acquire()
+    def print_context(direction):
+      print '[Client %s %s %s.py]' % (self.GetShortClientName(query), direction,
+                                      __name__),
+
     try:
       request = sync_pb2.ClientToServerMessage()
       request.MergeFromString(raw_request)
@@ -743,23 +976,44 @@ class TestServer(object):
 
       response = sync_pb2.ClientToServerResponse()
       response.error_code = sync_pb2.ClientToServerResponse.SUCCESS
+      self.CheckStoreBirthday(request)
       response.store_birthday = self.account.store_birthday
-      log_context = "[Client %s -> %s.py]" % (self.GetShortClientName(query),
-                                              __name__)
+
+      print_context('->')
 
       if contents == sync_pb2.ClientToServerMessage.AUTHENTICATE:
-        print '%s Authenticate' % log_context
+        print 'Authenticate'
         # We accept any authentication token, and support only one account.
         # TODO(nick): Mock out the GAIA authentication as well; hook up here.
         response.authenticate.user.email = 'syncjuser@chromium'
         response.authenticate.user.display_name = 'Sync J User'
       elif contents == sync_pb2.ClientToServerMessage.COMMIT:
-        print '%s Commit' % log_context
+        print 'Commit %d item(s)' % len(request.commit.entries)
         self.HandleCommit(request.commit, response.commit)
       elif contents == sync_pb2.ClientToServerMessage.GET_UPDATES:
-        print ('%s GetUpdates from timestamp %d' %
-               (log_context, request.get_updates.from_timestamp))
+        print 'GetUpdates',
         self.HandleGetUpdates(request.get_updates, response.get_updates)
+        print_context('<-')
+        print '%d update(s)' % len(response.get_updates.entries)
+      else:
+        print 'Unrecognizable sync request!'
+        return (400, None)  # Bad request.
+      return (200, response.SerializeToString())
+    except MigrationDoneError as error:
+      print_context('<-')
+      print 'MIGRATION_DONE: <%s>' % (ShortDatatypeListSummary(error.datatypes))
+      response = sync_pb2.ClientToServerResponse()
+      response.store_birthday = self.account.store_birthday
+      response.error_code = sync_pb2.ClientToServerResponse.MIGRATION_DONE
+      response.migrated_data_type_id[:] = [
+          SyncTypeToProtocolDataTypeId(x) for x in error.datatypes]
+      return (200, response.SerializeToString())
+    except StoreBirthdayError as error:
+      print_context('<-')
+      print 'NOT_MY_BIRTHDAY'
+      response = sync_pb2.ClientToServerResponse()
+      response.store_birthday = self.account.store_birthday
+      response.error_code = sync_pb2.ClientToServerResponse.NOT_MY_BIRTHDAY
       return (200, response.SerializeToString())
     finally:
       self.account_lock.release()
@@ -780,6 +1034,9 @@ class TestServer(object):
     batch_failure = False
     session = {}  # Tracks ID renaming during the commit operation.
     guid = commit_message.cache_guid
+
+    self.account.ValidateCommitEntries(commit_message.entries)
+
     for entry in commit_message.entries:
       server_entry = None
       if not batch_failure:
@@ -818,7 +1075,13 @@ class TestServer(object):
         to the client request will be written.
     """
     update_response.SetInParent()
-    update_sieve = UpdateSieve(update_request)
+    update_sieve = UpdateSieve(update_request, self.account.migration_history)
+
+    print CallerInfoToString(update_request.caller_info.source),
+    print update_sieve.SummarizeRequest()
+
+    update_sieve.CheckMigrationState()
+
     new_timestamp, entries, remaining = self.account.GetChanges(update_sieve)
 
     update_response.changes_remaining = remaining
