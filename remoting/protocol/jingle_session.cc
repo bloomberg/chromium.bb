@@ -8,7 +8,6 @@
 #include "crypto/rsa_private_key.h"
 #include "jingle/glue/channel_socket_adapter.h"
 #include "jingle/glue/pseudotcp_adapter.h"
-#include "jingle/glue/stream_socket_adapter.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/host_port_pair.h"
