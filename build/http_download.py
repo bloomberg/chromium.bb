@@ -50,7 +50,7 @@ def _CreateDirectory(path):
     return False
 
 
-def HttpDownload(url, target, username=None, password=None):
+def HttpDownload(url, target, username=None, password=None, verbose=True):
   """Download a file from a remote server.
 
   Args:
@@ -78,7 +78,7 @@ def HttpDownload(url, target, username=None, password=None):
       src = urllib2.urlopen(url)
       try:
         download_utils.WriteDataFromStream(target, src, chunk_size=2**20,
-                                           verbose=True)
+                                           verbose=verbose)
       finally:
         src.close()
       break

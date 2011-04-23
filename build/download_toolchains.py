@@ -68,7 +68,7 @@ def main():
         url = '%s/x86_toolchain/r%s/toolchain_%s.tar.xz' % (
           options.base_url, version, flavor)
       else:
-        url = '%s/x86_toolchain/r%s/toolchain_%s.tar.gz' % (
+        url = '%s/x86_toolchain/r%s/toolchain_%s.tar.bz2' % (
           options.base_url, version, flavor)
     else:
       url = '%s/toolchain/%s/naclsdk_%s.tgz' % (
@@ -83,19 +83,20 @@ def main():
       # TODO(cbiffle): we really shouldn't do this until the unpack succeeds!
       # See: http://code.google.com/p/nativeclient/issues/detail?id=834
       download_utils.RemoveDir(dst)
-      sync_tgz.SyncTgz(url, dst)
+      sync_tgz.SyncTgz(url, dst, verbose=False)
     elif 'newlib' in flavor:
       dst_tmp = os.path.join(parent_dir, 'toolchain', '.tmp')
-      sync_tgz.SyncTgz(url, dst_tmp)
+      sync_tgz.SyncTgz(url, dst_tmp, verbose=False)
       subdir = os.path.join(dst_tmp, 'sdk', 'nacl-sdk')
       download_utils.MoveDirCleanly(subdir, dst)
       download_utils.RemoveDir(dst_tmp)
     else:
       dst_tmp = os.path.join(parent_dir, 'toolchain', '.tmp')
       if sys.platform == 'win32':
-        sync_tgz.SyncTgz(url, dst_tmp, compress='xz', maindir='toolchain')
+        sync_tgz.SyncTgz(url, dst_tmp,
+                         compress='xz', maindir='toolchain', verbose=False)
       else:
-        sync_tgz.SyncTgz(url, dst_tmp, maindir='toolchain')
+        sync_tgz.SyncTgz(url, dst_tmp, maindir='toolchain', verbose=False)
       subdir = os.path.join(dst_tmp, 'toolchain', flavor)
       download_utils.MoveDirCleanly(subdir, dst)
       download_utils.RemoveDir(dst_tmp)

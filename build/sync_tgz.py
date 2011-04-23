@@ -58,10 +58,14 @@ def SyncTgz(url, target, compress='gzip', maindir='sdk',
   if verbose:
     print 'Downloading %s to %s...' % (url, tgz_filename)
   http_download.HttpDownload(url, tgz_filename,
-                             username=username, password=password)
+    username=username, password=password, verbose=verbose)
 
   if verbose:
     print 'Extracting from %s...' % tgz_filename
+  if verbose:
+    verbosechar = 'v'
+  else:
+    verbosechar = ''
   if sys.platform == 'win32':
     os.makedirs(os.path.join(target, 'tmptar'))
     tarfiles = ['cyggcc_s-1.dll', 'cygiconv-2.dll', 'cygintl-8.dll',
@@ -75,10 +79,6 @@ def SyncTgz(url, target, compress='gzip', maindir='sdk',
         os.path.join(target, 'tmptar', filename))
     saveddir = os.getcwd()
     os.chdir(target)
-    if verbose:
-      verbosechar = 'v'
-    else:
-      verbosechar = ''
     os.spawnv(os.P_WAIT, os.path.join('tmptar', 'tar.exe'),
       ['/tmptar/tar', '--use-compress-program', '/tmptar/' + compress,
        '-xS' + verbosechar + 'pf', '../.tgz'])
@@ -108,6 +108,14 @@ def SyncTgz(url, target, compress='gzip', maindir='sdk',
       if verbose:
         print "Can not rmdir %s: %s" % (os.path.join(target, 'tmptar'),
                                         e.strerror)
+  elif sys.platform == 'linux2':
+    os.spawnv(os.P_WAIT, '/bin/tar',
+      ['tar', '-xS' + verbosechar + 'pf', tgz_filename, '-C', target])
+  elif sys.platform == 'darwin':
+    # TODO(khim): Replace with --warning=no-unknown-keyword when gnutar 1.23+
+    # will be available.
+    os.spawnv(os.P_WAIT, '/bin/bash',
+      ['bash', '-c', '/usr/bin/gnutar -xS' + verbosechar + 'pf ' + tgz_filename + ' -C ' + target + ' 2> /dev/null'])
   else:
     tgz = tarfile.open(tgz_filename, 'r')
     for m in tgz:
