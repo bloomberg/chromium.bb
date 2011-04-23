@@ -76,27 +76,6 @@ var PluginProperties = function() {
                server.__width = 100;
              });
 
-  // __videoUpdateMode
-  // Attempt to set __videoUpdateMode with invalid type.
-  expectFail('plugin_video_null',
-             function() {
-               server.__videoUpdateMode = undefined;
-             });
-  expectFail('plugin_video_string',
-             function() {
-               server.__videoUpdateMode = 'string';
-             });
-  expectFail('plugin_video_object',
-             function() {
-               server.__videoUpdateMode = new Array(10);
-             });
-  // Attempt to set __videoUpdateMode to a valid type.
-  expectPass('plugin_video_conforming',
-             false,
-             function() {
-               server.__videoUpdateMode = 1;
-             });
-
   // __src
   // Attempt to set __src with invalid type.
   expectFail('plugin_src_null',
@@ -195,9 +174,6 @@ var EnqueueAndRunTests = function() {
           <b> __width </b>
         </td>
         <td>
-          <b> __videoUpdateMode  </b>
-        </td>
-        <td>
           <b> __src  </b>
         </td>
       </tr>
@@ -244,25 +220,6 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table summary="Video tests">
-            <tr>
-              <td id="plugin_video_null" class="notrun">
-                undefined
-              </td>
-            </tr>
-            <tr>
-              <td id="plugin_video_string" class="notrun">
-                string
-              </td>
-            </tr>
-            <tr>
-              <td id="plugin_video_object" class="notrun">
-                object
-              </td>
-            </tr>
-          </table>
-        </td>
-        <td valign=top>
           <table summary="src tests">
             <tr>
               <td id="plugin_src_null" class="notrun">
@@ -300,15 +257,6 @@ var EnqueueAndRunTests = function() {
           <table summary="Width conforming test">
             <tr>
               <td id="plugin_width_conforming" class="notrun">
-                integer
-              </td>
-            </tr>
-          </table>
-        </td>
-        <td valign=top>
-          <table summary="Video conforming test">
-            <tr>
-              <td id="plugin_video_conforming" class="notrun">
                 integer
               </td>
             </tr>
