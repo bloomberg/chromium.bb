@@ -493,6 +493,42 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
   DispatchEvent(profile_id, event_router, request, NULL, listeners, args);
 }
 
+void ExtensionWebRequestEventRouter::OnCompleted(
+    ProfileId profile_id,
+    ExtensionEventRouterForwarder* event_router,
+    net::URLRequest* request) {
+  if (profile_id == Profile::kInvalidProfileId)
+    return;
+
+  DCHECK(request->status().status() == net::URLRequestStatus::SUCCESS);
+
+  DCHECK(!GetAndSetSignaled(request->identifier(), kOnCompleted));
+
+  base::Time time(base::Time::Now());
+
+  std::vector<const EventListener*> listeners =
+      GetMatchingListeners(profile_id, keys::kOnCompleted, request);
+  if (listeners.empty())
+    return;
+
+  // UrlRequestFileJobs do not send headers, so we simulate their behavior.
+  int response_code = 200;
+  if (request->response_headers())
+    response_code = request->response_headers()->response_code();
+
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString(keys::kRequestIdKey,
+                  base::Uint64ToString(request->identifier()));
+  dict->SetString(keys::kUrlKey, request->url().spec());
+  dict->SetInteger(keys::kStatusCodeKey, response_code);
+  dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
+  // TODO(battre): support "statusLine", "responseHeaders".
+  args.Append(dict);
+
+  DispatchEvent(profile_id, event_router, request, NULL, listeners, args);
+}
+
 void ExtensionWebRequestEventRouter::OnURLRequestDestroyed(
     ProfileId profile_id, net::URLRequest* request) {
   http_requests_.erase(request->identifier());

@@ -219,9 +219,16 @@ runTests([
             statusCode: 200
           }
         },
+        { label: "a-onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            statusCode: 200
+          }
+        },
       ],
       [  // event order
-      ["a-onBeforeRequest", "a-onResponseStarted"] ]);
+      ["a-onBeforeRequest", "a-onResponseStarted", "a-onCompleted"] ]);
     navigateAndWait(getURL("simpleLoad/a.html"));
   },
 
@@ -280,11 +287,18 @@ runTests([
             statusCode: 200
           }
         },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: URL_HTTP_SIMPLE_LOAD,
+            statusCode: 200
+          }
+        }
       ],
       [  // event order
         ["onBeforeRequest", "onBeforeSendHeaders-1", "onRequestSent-1",
          "onBeforeRedirect", "onBeforeSendHeaders-2", "onRequestSent-2",
-         "onResponseStarted"] ]);
+         "onResponseStarted", "onCompleted"] ]);
     navigateAndWait(URL_HTTP_SIMPLE_LOAD_REDIRECT);
   },
 
@@ -342,11 +356,35 @@ runTests([
             statusCode: 200
           }
         },
+        { label: "a.html-onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("complexLoad/a.html"),
+            statusCode: 200
+          }
+        },
+        { label: "b.html-onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("complexLoad/b.html"),
+            statusCode: 200
+          }
+        },
+        { label: "b.jpg-onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("complexLoad/b.jpg"),
+            statusCode: 200
+          }
+        },
       ],
       [  // event order
         ["a.html-onBeforeRequest", "a.html-onResponseStarted",
          "b.html-onBeforeRequest", "b.html-onResponseStarted",
-         "b.jpg-onBeforeRequest", "b.jpg-onResponseStarted" ] ]
+         "b.jpg-onBeforeRequest", "b.jpg-onResponseStarted" ],
+        ["a.html-onResponseStarted", "a.html-onCompleted"],
+        ["b.html-onResponseStarted", "b.html-onCompleted"],
+        ["b.jpg-onResponseStarted", "b.jpg-onCompleted"] ]
       );
     navigateAndWait(getURL("complexLoad/a.html"));
   },
@@ -410,9 +448,17 @@ runTests([
             statusCode: 200
           }
         },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            statusCode: 200
+          }
+        },
       ],
       [  // event order
-        ["onBeforeRequest-1", "onBeforeRequest-2", "onResponseStarted"]
+        ["onBeforeRequest-1", "onBeforeRequest-2", "onResponseStarted",
+         "onCompleted"]
       ],
       {}, // filter
       true  // blocking
@@ -457,10 +503,26 @@ runTests([
             statusCode: 200
           }
         },
+        { label: "a-onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("complexLoad/a.html"),
+            statusCode: 200
+          }
+        },
+        { label: "b-onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("complexLoad/b.jpg"),
+            statusCode: 200
+          }
+        },
       ],
       [  // event order
         ["a-onBeforeRequest", "a-onResponseStarted",
-         "b-onBeforeRequest", "b-onResponseStarted"] ],
+         "b-onBeforeRequest", "b-onResponseStarted"],
+        ["a-onResponseStarted", "a-onCompleted"],
+        ["b-onResponseStarted", "b-onCompleted"] ],
       {  // filters
         urls: [getURL("complexLoad/*")],
         types: ["main_frame", "image"],

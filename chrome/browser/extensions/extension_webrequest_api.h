@@ -80,11 +80,16 @@ class ExtensionWebRequestEventRouter {
                         net::URLRequest* request,
                         const GURL& new_location);
 
-  // Dispatches on onResponseStarted event indicating that the first bytes of
+  // Dispatches the onResponseStarted event indicating that the first bytes of
   // the response have arrived.
   void OnResponseStarted(ProfileId profile_id,
                          ExtensionEventRouterForwarder* event_router,
                          net::URLRequest* request);
+
+  // Dispatches the onComplete event.
+  void OnCompleted(ProfileId profile_id,
+                   ExtensionEventRouterForwarder* event_router,
+                   net::URLRequest* request);
 
   void OnURLRequestDestroyed(ProfileId profile_id, net::URLRequest* request);
 

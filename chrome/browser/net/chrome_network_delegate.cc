@@ -15,6 +15,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
 namespace {
@@ -99,8 +100,16 @@ void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
   ForwardProxyErrors(request, event_router_.get(), profile_id_);
 }
 
-void ChromeNetworkDelegate::OnReadCompleted(net::URLRequest* request,
-                                            int bytes_read) {
+void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request) {
+  if (request->status().status() == net::URLRequestStatus::SUCCESS) {
+    bool is_redirect = request->response_headers() &&
+        net::HttpResponseHeaders::IsRedirectResponseCode(
+            request->response_headers()->response_code());
+    if (!is_redirect) {
+      ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
+          profile_id_, event_router_.get(), request);
+    }
+  }
   ForwardProxyErrors(request, event_router_.get(), profile_id_);
 }
 
