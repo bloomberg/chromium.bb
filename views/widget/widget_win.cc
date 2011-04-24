@@ -1110,7 +1110,10 @@ void WidgetWin::RedrawLayeredWindowContents() {
 
 void WidgetWin::ClientAreaSizeChanged() {
   RECT r;
-  GetClientRect(&r);
+  if (GetThemeProvider()->ShouldUseNativeFrame())
+    GetClientRect(&r);
+  else
+    GetWindowRect(&r);
   gfx::Size s(std::max(0, static_cast<int>(r.right - r.left)),
               std::max(0, static_cast<int>(r.bottom - r.top)));
   delegate_->OnSizeChanged(s);
