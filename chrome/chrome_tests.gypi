@@ -2189,6 +2189,7 @@
         '../third_party/cld/cld.gyp:cld',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
+        '../v8/tools/gyp/v8.gyp:v8',
         # Runtime dependencies
         'chrome_mesa',
       ],
@@ -2460,11 +2461,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
             # TODO(alekseys): port sidebar to linux/mac.
             'browser/sidebar/sidebar_browsertest.cc',
-          ],
-          'sources!': [
-            # TODO(aa): This test fails on the windows shared library build.
-            # crbug.com/80320
-            '../content/renderer/v8_value_converter_browsertest.cc',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
