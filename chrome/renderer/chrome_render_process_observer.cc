@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
+#include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/threading/platform_thread.h"
@@ -369,6 +370,11 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver() {
     NOTREACHED() << "Remoting is not supported for openssl";
 #endif
   }
+#elif defined(OS_WIN)
+  // crypt32.dll is used to decode X509 certificates for Chromoting.
+  // Only load this library when the feature is enabled.
+  std::string error;
+  base::LoadNativeLibrary(FilePath(L"crypt32.dll"), &error);
 #endif
 }
 
