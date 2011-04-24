@@ -46,12 +46,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void ReceivedBadMessage();
   virtual void WidgetRestored();
   virtual void WidgetHidden();
-  virtual void ViewCreated();
+  virtual int VisibleWidgetCount() const;
   virtual void AddWord(const string16& word);
-  virtual void SendVisitedLinkTable(base::SharedMemory* table_memory);
-  virtual void AddVisitedLinks(
-      const VisitedLinkCommon::Fingerprints& visited_links);
-  virtual void ResetVisitedLinks();
   virtual bool FastShutdownIfPossible();
   virtual bool SendWithTimeout(IPC::Message* msg, int timeout_ms);
   virtual base::ProcessHandle GetHandle();

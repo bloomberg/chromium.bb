@@ -26,7 +26,6 @@
 class CommandLine;
 class RendererMainThread;
 class RenderWidgetHelper;
-class VisitedLinkUpdater;
 
 namespace base {
 class SharedMemory;
@@ -64,10 +63,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   virtual void ReceivedBadMessage();
   virtual void WidgetRestored();
   virtual void WidgetHidden();
-  virtual void ViewCreated();
-  virtual void SendVisitedLinkTable(base::SharedMemory* table_memory);
-  virtual void AddVisitedLinks(const VisitedLinkCommon::Fingerprints& links);
-  virtual void ResetVisitedLinks();
+  virtual int VisibleWidgetCount() const;
   virtual bool FastShutdownIfPossible();
   virtual bool SendWithTimeout(IPC::Message* msg, int timeout_ms);
   virtual base::ProcessHandle GetHandle();
@@ -99,10 +95,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   void OnUpdatedCacheStats(const WebKit::WebCache::UsageStats& stats);
   void SuddenTerminationChanged(bool enabled);
   void OnUserMetricsRecordAction(const std::string& action);
-
-  // Initialize support for visited links. Send the renderer process its initial
-  // set of visited links.
-  void InitVisitedLinks();
 
   // Generates a command line to be used to spawn a renderer and appends the
   // results to |*command_line|.
@@ -173,9 +165,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
 
   // Used in single-process mode.
   scoped_ptr<RendererMainThread> in_process_renderer_;
-
-  // Buffer visited links and send them to to renderer.
-  scoped_ptr<VisitedLinkUpdater> visited_link_updater_;
 
   // True if this prcoess should have accessibility enabled;
   bool accessibility_enabled_;

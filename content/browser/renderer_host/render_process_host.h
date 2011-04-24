@@ -13,7 +13,6 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/time.h"
-#include "chrome/common/visitedlink_common.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ui/gfx/surface/transport_dib.h"
 
@@ -189,20 +188,7 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // unregister visibility.
   virtual void WidgetRestored() = 0;
   virtual void WidgetHidden() = 0;
-
-  // Called when RenderView is created by a listener.
-  virtual void ViewCreated() = 0;
-
-  // Informs the renderer about a new visited link table.
-  virtual void SendVisitedLinkTable(base::SharedMemory* table_memory) = 0;
-
-  // Notify the renderer that a link was visited.
-  virtual void AddVisitedLinks(
-      const VisitedLinkCommon::Fingerprints& links) = 0;
-
-  // Clear internal visited links buffer and ask the renderer to update link
-  // coloring state for all of its links.
-  virtual void ResetVisitedLinks() = 0;
+  virtual int VisibleWidgetCount() const = 0;
 
   // Try to shutdown the associated renderer process as fast as possible.
   // If this renderer has any RenderViews with unload handlers, then this

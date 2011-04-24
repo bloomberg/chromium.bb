@@ -65,7 +65,6 @@ TestRenderViewHost::~TestRenderViewHost() {
 bool TestRenderViewHost::CreateRenderView(const string16& frame_name) {
   DCHECK(!render_view_created_);
   render_view_created_ = true;
-  process()->ViewCreated();
   return true;
 }
 

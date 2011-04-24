@@ -56,22 +56,13 @@ void MockRenderProcessHost::WidgetRestored() {
 void MockRenderProcessHost::WidgetHidden() {
 }
 
-void MockRenderProcessHost::ViewCreated() {
+int MockRenderProcessHost::VisibleWidgetCount() const {
+  return 1;
 }
 
 void MockRenderProcessHost::AddWord(const string16& word) {
 }
 
-void MockRenderProcessHost::SendVisitedLinkTable(
-    base::SharedMemory* table_memory) {
-}
-
-void MockRenderProcessHost::AddVisitedLinks(
-    const VisitedLinkCommon::Fingerprints& links) {
-}
-
-void MockRenderProcessHost::ResetVisitedLinks() {
-}
 
 bool MockRenderProcessHost::FastShutdownIfPossible() {
   // We aren't actually going to do anything, but set |fast_shutdown_started_|

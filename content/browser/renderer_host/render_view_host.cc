@@ -189,7 +189,6 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
                                         delegate_->GetRenderViewType()));
   // Let our delegate know that we created a RenderView.
   delegate_->RenderViewCreated(this);
-  process()->ViewCreated();
 
   return true;
 }

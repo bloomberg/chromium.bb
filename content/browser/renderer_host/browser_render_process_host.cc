@@ -38,7 +38,6 @@
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/spellcheck_host.h"
-#include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -158,80 +157,6 @@ class RendererMainThread : public base::Thread {
   RenderProcess* render_process_;
 };
 
-
-// Size of the buffer after which individual link updates deemed not warranted
-// and the overall update should be used instead.
-static const unsigned kVisitedLinkBufferThreshold = 50;
-
-// This class manages buffering and sending visited link hashes (fingerprints)
-// to renderer based on widget visibility.
-// As opposed to the VisitedLinkEventListener in profile.cc, which coalesces to
-// reduce the rate of messages being sent to render processes, this class
-// ensures that the updates occur only when explicitly requested. This is
-// used by BrowserRenderProcessHost to only send Add/Reset link events to the
-// renderers when their tabs are visible and the corresponding RenderViews are
-// created.
-class VisitedLinkUpdater {
- public:
-  VisitedLinkUpdater() : reset_needed_(false), has_receiver_(false) {}
-
-  // Buffers |links| to update, but doesn't actually relay them.
-  void AddLinks(const VisitedLinkCommon::Fingerprints& links) {
-    if (reset_needed_)
-      return;
-
-    if (pending_.size() + links.size() > kVisitedLinkBufferThreshold) {
-      // Once the threshold is reached, there's no need to store pending visited
-      // link updates -- we opt for resetting the state for all links.
-      AddReset();
-      return;
-    }
-
-    pending_.insert(pending_.end(), links.begin(), links.end());
-  }
-
-  // Tells the updater that sending individual link updates is no longer
-  // necessary and the visited state for all links should be reset.
-  void AddReset() {
-    reset_needed_ = true;
-    pending_.clear();
-  }
-
-  // Sends visited link update messages: a list of links whose visited state
-  // changed or reset of visited state for all links.
-  void Update(IPC::Channel::Sender* sender) {
-    DCHECK(sender);
-
-    if (!has_receiver_)
-      return;
-
-    if (reset_needed_) {
-      sender->Send(new ViewMsg_VisitedLink_Reset());
-      reset_needed_ = false;
-      return;
-    }
-
-    if (pending_.empty())
-      return;
-
-    sender->Send(new ViewMsg_VisitedLink_Add(pending_));
-
-    pending_.clear();
-  }
-
-  // Notifies the updater that it is now safe to send visited state updates.
-  void ReceiverReady(IPC::Channel::Sender* sender) {
-    has_receiver_ = true;
-    // Go ahead and send whatever we already have buffered up.
-    Update(sender);
-  }
-
- private:
-  bool reset_needed_;
-  bool has_receiver_;
-  VisitedLinkCommon::Fingerprints pending_;
-};
-
 namespace {
 
 // Helper class that we pass to ResourceMessageFilter so that it can find the
@@ -284,8 +209,6 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::SPELLCHECK_AUTOSPELL_TOGGLED,
                  NotificationService::AllSources());
-
-  visited_link_updater_.reset(new VisitedLinkUpdater());
 
   WebCacheManager::GetInstance()->Add(id());
   ChildProcessSecurityPolicy::GetInstance()->Add(id());
@@ -534,15 +457,10 @@ void BrowserRenderProcessHost::ReceivedBadMessage() {
   base::KillProcess(GetHandle(), ResultCodes::KILLED_BAD_MESSAGE, false);
 }
 
-void BrowserRenderProcessHost::ViewCreated() {
-  visited_link_updater_->ReceiverReady(this);
-}
-
 void BrowserRenderProcessHost::WidgetRestored() {
   // Verify we were properly backgrounded.
   DCHECK_EQ(backgrounded_, (visible_widgets_ == 0));
   visible_widgets_++;
-  visited_link_updater_->Update(this);
   SetBackgrounded(false);
 }
 
@@ -560,36 +478,8 @@ void BrowserRenderProcessHost::WidgetHidden() {
   }
 }
 
-void BrowserRenderProcessHost::SendVisitedLinkTable(
-    base::SharedMemory* table_memory) {
-  // Check if the process is still starting and we don't have a handle for it
-  // yet, in which case this will happen later when InitVisitedLinks is called.
-  if (!run_renderer_in_process() &&
-      (!child_process_.get() || child_process_->IsStarting())) {
-    return;
-  }
-
-  base::SharedMemoryHandle handle_for_process;
-  table_memory->ShareToProcess(GetHandle(), &handle_for_process);
-  if (base::SharedMemory::IsHandleValid(handle_for_process))
-    Send(new ViewMsg_VisitedLink_NewTable(handle_for_process));
-}
-
-void BrowserRenderProcessHost::AddVisitedLinks(
-    const VisitedLinkCommon::Fingerprints& links) {
-  visited_link_updater_->AddLinks(links);
-  if (visible_widgets_ == 0)
-    return;
-
-  visited_link_updater_->Update(this);
-}
-
-void BrowserRenderProcessHost::ResetVisitedLinks() {
-  visited_link_updater_->AddReset();
-  if (visible_widgets_ == 0)
-    return;
-
-  visited_link_updater_->Update(this);
+int BrowserRenderProcessHost::VisibleWidgetCount() const {
+  return visible_widgets_;
 }
 
 void BrowserRenderProcessHost::AppendRendererCommandLine(
@@ -791,14 +681,6 @@ base::ProcessHandle BrowserRenderProcessHost::GetHandle() {
     return base::kNullProcessHandle;
 
   return child_process_->GetHandle();
-}
-
-void BrowserRenderProcessHost::InitVisitedLinks() {
-  VisitedLinkMaster* visitedlink_master = profile()->GetVisitedLinkMaster();
-  if (!visitedlink_master)
-    return;
-
-  SendVisitedLinkTable(visitedlink_master->shared_memory());
 }
 
 bool BrowserRenderProcessHost::FastShutdownIfPossible() {
@@ -1094,7 +976,6 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
 
   Send(new ViewMsg_SetIsIncognitoProcess(profile()->IsOffTheRecord()));
 
-  InitVisitedLinks();
 
   // We don't want to initialize the spellchecker unless SpellCheckHost has been
   // created. In InitSpellChecker(), we know if GetSpellCheckHost() is NULL

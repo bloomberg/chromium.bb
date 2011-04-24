@@ -20,6 +20,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
+#include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -489,34 +490,19 @@ class VisitCountingProfile : public TestingProfile {
   scoped_ptr<VisitedLinkMaster> visited_link_master_;
 };
 
-class VisitCountingRenderProcessHost : public MockRenderProcessHost {
- public:
-  explicit VisitCountingRenderProcessHost(Profile* profile)
-      : MockRenderProcessHost(profile) {}
-
-  virtual void AddVisitedLinks(
-      const VisitedLinkCommon::Fingerprints& visited_links) {
-    VisitCountingProfile* counting_profile =
-        static_cast<VisitCountingProfile*>(profile());
-    counting_profile->CountAddEvent(visited_links.size());
-  }
-  virtual void ResetVisitedLinks() {
-    VisitCountingProfile* counting_profile =
-        static_cast<VisitCountingProfile*>(profile());
-    counting_profile->CountResetEvent();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VisitCountingRenderProcessHost);
-};
-
-// Stub out as little as possible, borrowing from MockRenderProcessHost.
+// Stub out as little as possible, borrowing from BrowserRenderProcessHost.
 class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
  public:
   explicit VisitRelayingRenderProcessHost(Profile* profile)
       : BrowserRenderProcessHost(profile) {
+    NotificationService::current()->Notify(
+        NotificationType::RENDERER_PROCESS_CREATED,
+        Source<RenderProcessHost>(this), NotificationService::NoDetails());
   }
   virtual ~VisitRelayingRenderProcessHost() {
+    NotificationService::current()->Notify(
+        NotificationType::RENDERER_PROCESS_TERMINATED,
+        Source<RenderProcessHost>(this), NotificationService::NoDetails());
   }
 
   virtual bool Init(bool is_accessibility_enabled, bool is_extension_process) {
@@ -539,10 +525,14 @@ class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
     VisitCountingProfile* counting_profile =
         static_cast<VisitCountingProfile*>(profile());
 
-    if (msg->type() == ViewMsg_VisitedLink_Add::ID)
-      counting_profile->CountAddEvent(1);
-    else if (msg->type() == ViewMsg_VisitedLink_Reset::ID)
+    if (msg->type() == ViewMsg_VisitedLink_Add::ID) {
+      void* iter = NULL;
+      std::vector<uint64> fingerprints;
+      CHECK(IPC::ReadParam(msg, &iter, &fingerprints));
+      counting_profile->CountAddEvent(fingerprints.size());
+    } else if (msg->type() == ViewMsg_VisitedLink_Reset::ID) {
       counting_profile->CountResetEvent();
+    }
 
     delete msg;
     return true;
@@ -557,22 +547,15 @@ class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
 };
 
 class VisitedLinkRenderProcessHostFactory
-    : public MockRenderProcessHostFactory {
+    : public RenderProcessHostFactory {
  public:
   VisitedLinkRenderProcessHostFactory()
-      : MockRenderProcessHostFactory(),
-        relay_mode_(false) {}
+      : RenderProcessHostFactory() {}
   virtual RenderProcessHost* CreateRenderProcessHost(Profile* profile) const {
-    if (relay_mode_)
-      return new VisitRelayingRenderProcessHost(profile);
-    else
-      return new VisitCountingRenderProcessHost(profile);
+    return new VisitRelayingRenderProcessHost(profile);
   }
 
-  void set_relay_mode(bool mode) { relay_mode_ = mode; }
-
  private:
-  bool relay_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkRenderProcessHostFactory);
 };
@@ -617,11 +600,6 @@ class VisitedLinkEventsTest : public RenderViewHostTestHarness {
   BrowserThread file_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkEventsTest);
-};
-
-class VisitedLinkRelayTest : public VisitedLinkEventsTest {
- public:
-  virtual void SetFactoryMode() { vc_rph_factory_.set_relay_mode(true); }
 };
 
 TEST_F(VisitedLinkEventsTest, Coalescense) {
@@ -677,7 +655,7 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
   EXPECT_EQ(1, profile()->reset_event_count());
 }
 
-TEST_F(VisitedLinkRelayTest, Basics) {
+TEST_F(VisitedLinkEventsTest, Basics) {
   VisitedLinkMaster* master = profile_->GetVisitedLinkMaster();
   rvh()->CreateRenderView(string16());
 
@@ -701,7 +679,7 @@ TEST_F(VisitedLinkRelayTest, Basics) {
   EXPECT_EQ(1, profile()->reset_event_count());
 }
 
-TEST_F(VisitedLinkRelayTest, TabVisibility) {
+TEST_F(VisitedLinkEventsTest, TabVisibility) {
   VisitedLinkMaster* master = profile_->GetVisitedLinkMaster();
   rvh()->CreateRenderView(string16());
 
@@ -744,32 +722,5 @@ TEST_F(VisitedLinkRelayTest, TabVisibility) {
 
   // We should have only one more reset event.
   EXPECT_EQ(1, profile()->add_event_count());
-  EXPECT_EQ(1, profile()->reset_event_count());
-}
-
-TEST_F(VisitedLinkRelayTest, WebViewReadiness) {
-  VisitedLinkMaster* master = profile_->GetVisitedLinkMaster();
-
-  // Add a few URLs.
-  master->AddURL(GURL("http://acidtests.org/"));
-  master->AddURL(GURL("http://google.com/"));
-  master->AddURL(GURL("http://chromium.org/"));
-
-  WaitForCoalescense();
-
-  std::set<GURL> deleted_urls;
-  deleted_urls.insert(GURL("http://acidtests.org/"));
-  master->DeleteURLs(deleted_urls);
-
-  // We shouldn't have any events, because RenderView hasn't been created,
-  // and we ensure that updates are sent until it is.
-  EXPECT_EQ(0, profile()->add_event_count());
-  EXPECT_EQ(0, profile()->reset_event_count());
-
-  rvh()->CreateRenderView(string16());
-
-  // We should now have just a reset event: adds are eaten up by a reset
-  // that followed.
-  EXPECT_EQ(0, profile()->add_event_count());
   EXPECT_EQ(1, profile()->reset_event_count());
 }
