@@ -1643,7 +1643,7 @@
    ...
    fun:zipCloseFileInZipRaw
    fun:zipCloseFileInZip
-   fun:_Z13AddEntryToZipPvRK8FilePathS2_
+   fun:_Z*13AddEntryToZipPvRK8FilePathS2_
 }
 {
    bug_30703b
@@ -1651,7 +1651,7 @@
    fun:deflate
    fun:zipCloseFileInZipRaw
    fun:zipCloseFileInZip
-   fun:_Z13AddEntryToZipPvRK8FilePathS2_
+   fun:_Z*13AddEntryToZipPvRK8FilePathS2_
 }
 {
    bug_30704a
@@ -4305,29 +4305,12 @@
    fun:_ZN42MalwareDetailsTest_HTTPCacheNoEntries_Test8TestBodyEv
 }
 {
-   bug_79865c
+   bug_79933
    Memcheck:Leak
    fun:_Znw*
    ...
    fun:_ZN21TestURLRequestContext4InitEv
-   fun:_ZN21TestURLRequestContextC2Ev
-   fun:_ZN21TestURLRequestContextC1Ev
-   fun:_ZN27TestURLRequestContextGetter20GetURLRequestContextEv
-   fun:_ZN33MalwareDetailsTest_HTTPCache_Test8TestBodyEv
-}
-{
-   bug_79933
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIPN3net16SSLConfigService8ObserverEE8allocateEjPKv
-   fun:_ZNSt12_Vector_baseIPN3net16SSLConfigService8ObserverESaIS3_EE11_M_allocateEj
-   fun:_ZNSt6vectorIPN3net16SSLConfigService8ObserverESaIS3_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS3_S5_EERKS3_
-   fun:_ZNSt6vectorIPN3net16SSLConfigService8ObserverESaIS3_EE9push_backERKS3_
-   fun:_ZN16ObserverListBaseIN3net16SSLConfigService8ObserverEE11AddObserverEPS2_
-   fun:_ZN3net16SSLConfigService11AddObserverEPNS0_8ObserverE
-   fun:_ZN3net15SpdySessionPoolC1EPNS_12HostResolverEPNS_16SSLConfigServiceE
-   fun:_ZN3net18HttpNetworkSessionC1ERKNS0_6ParamsE
-   fun:_ZN21TestURLRequestContext4InitEv
+   ...
    fun:_ZN21TestURLRequestContextC1Ev
    fun:_ZN27TestURLRequestContextGetter20GetURLRequestContextEv
 }
@@ -4387,7 +4370,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task
-   fun:_ZN4base64_GLOBAL__N_base_threading_worker_pool_posix.cc_*WorkerPoolImpl8PostTaskERKN15tracked_objects8LocationEP4Taskb
+   fun:*WorkerPoolImpl8PostTaskERKN15tracked_objects8LocationEP4Taskb
    fun:_ZN4base10WorkerPool8PostTaskERKN15tracked_objects8LocationEP4Taskb
    fun:_ZN3net10FileStream12AsyncContext18InitiateAsyncWriteEiPKciP14CallbackRunnerI6Tuple1IiEE
    fun:_ZN3net10FileStream5WriteEPKciP14CallbackRunnerI6Tuple1IiEE
