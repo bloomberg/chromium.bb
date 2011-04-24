@@ -101,8 +101,6 @@
       # crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
       'sync',
-      # Temporarily disabled until the bots catch up with the fix in r82730.
-      '-sync.SyncTest.testRestartBrowser',
       'test_basic',
       'themes',
     ],
