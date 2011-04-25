@@ -24,6 +24,7 @@ endif
 TC_ROOT=../../../toolchain
 
 NNACL_ROOT=$(TC_ROOT)/$(SCONS_BUILD_PLATFORM)_x86
+NNACL_NEWLIB_ROOT=$(TC_ROOT)/$(SCONS_BUILD_PLATFORM)_x86_newlib
 PNACL_ROOT=$(TC_ROOT)/pnacl_$(BUILD_PLATFORM)_$(BUILD_ARCH)
 ARM_ROOT=$(TC_ROOT)/linux_arm-trusted
 
@@ -147,15 +148,18 @@ $(IT).gcc.opt.arm: $(SRC) $(CPPSRC)
 ## NACL-GCC TOOLCHAINS
 ######################################################################
 NACL_GCC=$(TIME_CMD) $(NNACL_ROOT)/bin/nacl-gcc
+NACL_GCC_NEWLIB=$(TIME_CMD) $(NNACL_NEWLIB_ROOT)/bin/nacl-gcc
 
 # nacl x86 gcc
 $(IT).nacl.x8632: $(SRC) $(CPPSRC)
-	$(NACL_GCC) -O0 -m32 $(CFLAGS) $^ -static -lstdc++ -lm  -lnosys -o $@
+	$(NACL_GCC_NEWLIB) -O0 -m32 $(CFLAGS) $^ -static -lstdc++ -lm \
+		-lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl optimized x86 gcc
 $(IT).nacl.opt.x8632: $(SRC) $(CPPSRC)
-	$(NACL_GCC) -O3 -m32 $(CFLAGS) $^ -static -lstdc++ -lm  -lnosys -o $@
+	$(NACL_GCC_NEWLIB) -O3 -m32 $(CFLAGS) $^ -static -lstdc++ -lm \
+		-lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl x86 gcc, dynamic
@@ -170,15 +174,18 @@ $(IT).nacl.dyn.opt.x8632: $(SRC) $(CPPSRC)
 
 ######################################################################
 NACL64_GCC=$(TIME_CMD) $(NNACL_ROOT)/bin/nacl64-gcc
+NACL64_GCC_NEWLIB=$(TIME_CMD) $(NNACL_NEWLIB_ROOT)/bin/nacl64-gcc
 
 # nacl x86-64 gcc
 $(IT).nacl.x8664: $(SRC) $(CPPSRC)
-	$(NACL64_GCC) -O0 $(CFLAGS) $^  -static -lstdc++ -lm  -lnosys -o $@
+	$(NACL64_GCC_NEWLIB) -O0 $(CFLAGS) $^  -static -lstdc++ -lm \
+		-lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl optimized x86-64 gcc
 $(IT).nacl.opt.x8664: $(SRC) $(CPPSRC)
-	$(NACL64_GCC) -O3 $(CFLAGS) $^  -static -lstdc++ -lm  -lnosys -o $@
+	$(NACL64_GCC_NEWLIB) -O3 $(CFLAGS) $^  -static -lstdc++ -lm \
+		-lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl x86-64 gcc, dynamic
