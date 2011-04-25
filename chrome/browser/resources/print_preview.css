@@ -650,7 +650,7 @@ body > .scrollbar {
   left: 25%;
   position: relative;
   text-align: center;
-  text-shadow: 2px 4px 0 rgba(255, 255, 255, .7);
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, .7);
   top: 50%;
   width: 50%;
 }
