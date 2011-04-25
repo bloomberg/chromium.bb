@@ -42,123 +42,6 @@ class _DeathException(Exception):
   pass
 
 
-class TestFindCommand(unittest.TestCase):
-  """Test main._FindCommand."""
-  # TODO(dianders): Add a test where I override main._COMMAND_HANDLERS
-  # and main._COMMAND_STRS so that I can test more of _FindCommand().
-
-  def setUp(self):
-    """Test initialization."""
-    # Create our mox and stub out function calls used by _FindCommand()...
-    self.mox = mox.Mox()
-    self.mox.StubOutWithMock(cros_lib, 'Die')
-    self.mox.StubOutWithMock(text_menu, 'TextMenu')
-
-  def tearDown(self):
-    """Test cleanup."""
-    # Unset stubs...
-    self.mox.UnsetStubs()
-
-  def testInvalidCommand(self):
-    """Test that _FindCommand('implode') causes cros_lib.Die()."""
-    # Should be a call to cros_lib.Die.  We'll have it fake a _DeathException...
-    cros_lib.Die(mox.IsA(basestring)).AndRaise(_DeathException)
-
-    # Run the command and verify proper mocks were called...
-    self.mox.ReplayAll()
-    self.assertRaises(_DeathException, main._FindCommand, 'implode')
-    self.mox.VerifyAll()
-
-  def testBlankCommandWithQuit(self):
-    """Test that _FindCommand('') shows menu, mocking quit.
-
-    This tests the case that the user quit out of the menu without choosing
-    anything.
-    """
-    # Should be one call to TextMenu, which will return None for quit.
-    text_menu.TextMenu(mox.IsA(list),
-                       mox.IsA(basestring),
-                       menu_width=0).AndReturn(None)
-
-    # Should die in response to the quit.
-    cros_lib.Die(mox.IsA(basestring)).AndRaise(_DeathException)
-
-    # Run the command and verify proper mocks were called...
-    self.mox.ReplayAll()
-    self.assertRaises(_DeathException, main._FindCommand, '')
-    self.mox.VerifyAll()
-
-  def testBlankCommandWithChoice0(self):
-    """Test that _FindCommand('') shows menu, mocking choice 0.
-
-    This tests the case that the user chose choice 0 for the menu.
-    """
-    # Should be one call to TextMenu, which will return item 0.
-    text_menu.TextMenu(mox.IsA(list),
-                       mox.IsA(basestring),
-                       menu_width=0).AndReturn(0)
-
-    # Run the command and verify proper mocks were called...
-    self.mox.ReplayAll()
-    cmd_str = main._FindCommand('')
-    self.mox.VerifyAll()
-
-    self.assertTrue(isinstance(cmd_str, basestring),
-                    '_FindCommand should return a string')
-    self.assertTrue(bool(cmd_str),
-                    '_FindCommand should not return a blank string')
-
-  def _TestExactCommand(self, cmd_to_find):
-    """Helper for tests that try to find an exact match.
-
-    Args:
-      cmd_to_find: The name of the command to find, like 'Build', ...
-    """
-    # Expect no mocks to be called...
-
-    # Run the command and verify proper mocks were called...
-    self.mox.ReplayAll()
-    cmd_str = main._FindCommand(cmd_to_find)
-    self.mox.VerifyAll()
-
-    self.assertEqual(cmd_str, cmd_to_find.lower(),
-                     '_FindCommand("%s") should return "%s" back.' %
-                     (cmd_to_find, cmd_to_find.lower()))
-
-  def testCaseSensitiveBuild(self):
-    """Test that _FindCommand('build') returns 'build'.
-
-    The command matching should be case sensitive.
-    """
-    self._TestExactCommand('build')
-
-  def testCaseInsensitiveBuild(self):
-    """Test that _FindCommand('BUiLD') returns 'build'.
-
-    The command matching should be case insensitive.
-    """
-    self._TestExactCommand('BUiLD')
-
-  def testShCommand(self):
-    """Test that _FindCommand('sh') returns 'shell'.
-
-    This serves two purposes:
-    1. Test the 'prefix' feature of _FindCommand
-    2. Validate that nobody has introduced another command that starts with
-       'sh', since it's expected that many people will use this to invoke the
-       shell.
-    """
-    # _FindCommand should give us a message that it has interpreted sh as shell.
-
-    # Run the command and verify proper mocks were called...
-    self.mox.ReplayAll()
-    cmd_str = main._FindCommand('sh')
-    self.mox.VerifyAll()
-
-    self.assertEqual(cmd_str, 'shell',
-                     '_FindCommand("sh") should return "shell" back.')
-
-
 class TestFindSpec(unittest.TestCase):
   """Test utils.FindSpec."""
 
@@ -401,7 +284,7 @@ class TestFindSpec(unittest.TestCase):
                     (spec_name, spec_path))
 
 class TestParseArguments(unittest.TestCase):
-  """Test utils.FindSpec."""
+  """Test main._ParseArguments."""
 
   def setUp(self):
     """Test initialization."""

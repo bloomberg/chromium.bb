@@ -57,6 +57,9 @@ class ChromiteEnv:
     self.subcmds = {}
     self._ScanSubcmds()
 
+    # Allow user to specify just the start of a command: e.g. bui = build.
+    self.guess_commands = True
+
   def __del__(self):
     del self._oper
 

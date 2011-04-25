@@ -135,7 +135,7 @@ def _DoImagePostProcessing(cros_env, build_config):
 
 
 class BuildCmd(subcmd.ChromiteCmd):
-  """Build the chroot (if needed), the packages for a target, and the image."""
+  """Build the chroot (if needed), packages for a target, and image."""
 
   def Run(self, raw_argv, chroot_config=None,
           loaded_config=False, build_config=None):

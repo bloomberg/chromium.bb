@@ -23,59 +23,73 @@ from chromite.lib import operation
 _cros_env = chromite_env.ChromiteEnv()
 
 
-def _FindCommand(cmd_name):
-  """Find the command that matches the given command name.
+def _CommandHelp():
+  """Returns a help string listing all available sub-commands"""
+  help_list = []
+  for cmd_name in _cros_env.subcmds:
+    doc = _cros_env.subcmds[cmd_name].__doc__.splitlines()[0]
+    if doc.endswith('.'):
+      doc = doc[:-1]
+    help_list.append('   %-11s%s' % (cmd_name, doc))
+  return '\n'.join(help_list)
 
-  This tries to be smart.  See the cmd_name parameter for details.
+def _ValidateCommand(cmd_str):
+  """Ensures we have a valid command, guesses or reports an error if not.
+
+  >>> _ValidateCommand('build')
+  ('build', None)
+
+  >>> _ValidateCommand('bui')
+  ('build', None)
+
+  >>> _ValidateCommand('uild')
+  ('uild', "Unknown command 'uild'")
+
+  >>> _ValidateCommand('uil')
+  ('uil', "Unknown command 'uil'")
+
+  >>> _cros_env.guess_commands = False
+  >>> _ValidateCommand('bui')
+  ('bui', "Unknown command 'bui'\\n(did you mean: 'chromite build'?)")
+
+  >>> _cros_env.guess_commands = True
+  >>> _ValidateCommand('yes_your_highness_your_highness')
+  ('yes_your_highness_your_highness', \
+"Unknown command 'yes_your_highness_your_highness'")
+
+  >>> _ValidateCommand('')
+  ('', "Unknown command ''")
+
+  >>> _ValidateCommand(' ')
+  (' ', "Unknown command ' '")
+
+  >>> _ValidateCommand('BUILD')
+  ('BUILD', "Unknown command 'BUILD'")
 
   Args:
-    cmd_name: Can be any of the following:
-        1. The full name of a command.  This is checked first so that if one
-           command name is a substring of another, you can still specify
-           the shorter spec name and know you won't get a menu (the exact
-           match prevents the menu).
-        2. A _prefix_ that will be used to pare-down a menu of commands
-           Can be the empty string to show a menu of all commands
-
-  Returns:
-    The command name.
+    cmd_str: Command to validate.
+  returns
+    A tuple: cmd_str, error_msg:
+      cmd_str: the command we decided to execute, or None.
+      error_msg: None if all ok, otherwise a helpful message.
   """
-  # Always make cmd_name lower.  Commands are case-insensitive.
-  cmd_name = cmd_name.lower()
+  msg = "Unknown command '%s'" % cmd_str
+  if cmd_str not in _cros_env.subcmds:
+    possible_cmds = []
+    for this_cmd in sorted(_cros_env.subcmds):
+      if this_cmd.startswith(cmd_str):
+        possible_cmds.append(this_cmd)
+    if len(possible_cmds) == 1:
+      msg += "\n(did you mean: 'chromite %s'?)" % possible_cmds[0]
 
-  # If we're an exact match, we're done!
-  if cmd_name in _cros_env.subcmds:
-    return cmd_name
+      # Guess at the command if we are allowed to.
+      if _cros_env.guess_commands:
+        cmd_str = possible_cmds[0]
+  if cmd_str in _cros_env.subcmds:
+    return cmd_str, None
 
-  # Find ones that match and put them in a menu...
-  possible_cmds = []
-  possible_choices = []
-  for this_cmd in sorted(_cros_env.subcmds):
-    if this_cmd.startswith(cmd_name):
-      handler = _cros_env.subcmds[this_cmd]
-      desc = handler.__doc__.splitlines()[0]
-
-      possible_cmds.append(this_cmd)
-      possible_choices.append('%s - %s' % (this_cmd, desc))
-
-  if not possible_choices:
-    cros_lib.Die('No commands matched: "%s".  '
-        'Try running with no arguments for a menu.' %
-        cmd_name)
-
-  if cmd_name and len(possible_choices) == 1:
-    # Avoid showing the user a menu if the user's search string matched exactly
-    # one item.
-    choice = 0
-  else:
-    choice = text_menu.TextMenu(possible_choices, 'Which chromite command',
-                                menu_width=0)
-
-  if choice is None:
-    cros_lib.Die('OK, cancelling...')
-  else:
-    return possible_cmds[choice]
-
+  # Abort with an error.
+  return cmd_str, msg
 
 def _ParseArguments(parser, argv):
   '''Helper function to separate arguments for a main program and sub-command.
@@ -154,11 +168,13 @@ def main():
   #    the menu, but without being interactive).
   # 3. Make "help command" and "--help command" equivalent to "command --help".
   help_str = (
-      """%(prog)s [chromite_options] [cmd [args]]\n"""
+      """%s [chromite_options] [cmd [args]]\n"""
       """\n"""
       """The chromite script is a wrapper to make it easy to do various\n"""
-      """build tasks.  For a list of commands, run without any arguments."""
-  ) % {'prog': os.path.basename(sys.argv[0])}
+      """build tasks.  For a list of commands, run without any arguments.\n"""
+      """\nAvailable commands:\n"""
+  ) % os.path.basename(sys.argv[0])
+  help_str += _CommandHelp()
 
   parser = optparse.OptionParser()
 
@@ -166,7 +182,7 @@ def main():
   # vast amounts of comforting output.
   parser.add_option('-v', dest='verbose', default=3, type='int',
       help='Control verbosity: 0=silent, 1=progress, 3=full')
-  parser.add_option('-q', action='store_const', dest='verbose', const=0,
+  parser.add_option('-q', action='store_const', dest='verbose', const=1,
       help='Be quieter (sets verbosity to 1)')
   if not cros_lib.IsInsideChroot():
     parser.add_option('--chroot', action='store', type='string',
@@ -195,8 +211,11 @@ def main():
     # Already in the chroot; no need to get config...
     chroot_config = None
 
-  # Validate the subcmd, popping a menu if needed.
-  cmd_str = _FindCommand(cmd_str)
+  # Validate the subcmd, providing help if needed. On failure, report error.
+  cmd_str, msg = _ValidateCommand(cmd_str)
+  if msg:
+    parser.error(msg)
+
   oper.Info("Running command '%s'." % cmd_str)
 
   # Finally, call the function w/ standard argv.
@@ -210,5 +229,14 @@ def main():
   except chromite_env.ChromiteError, msg:
     sys.exit(1)
 
+def _Test():
+  """Run any built-in tests."""
+  import doctest
+  doctest.testmod()
+
 if __name__ == '__main__':
-  main()
+  # If first argument is --test, run testing code.
+  if sys.argv[1:2] == ["--test"]:
+    _Test(*sys.argv[2:])
+  else:
+    main()

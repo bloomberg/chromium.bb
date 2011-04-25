@@ -99,7 +99,7 @@ def _DoDistClean(cros_env, chroot_config, want_force_yes):
 
 
 class CleanCmd(subcmd.ChromiteCmd):
-  """Clean out built packages for a target; if target=host, deletes chroot."""
+  """Clean out built packages for target; if target=host, delete chroot."""
 
   def Run(self, raw_argv, chroot_config=None):
     """Run the command.
