@@ -21,6 +21,15 @@ LT_INIT
 
 PKG_PROG_PKG_CONFIG()
 
+PKG_CHECK_MODULES([XCB], xcb)
+xcb_save_LIBS=$LIBS
+xcb_save_CFLAGS=$CFLAGS
+CFLAGS=$XCB_CFLAGS
+LIBS=$XCB_LIBS
+AC_CHECK_FUNCS([xcb_poll_for_queued_event])
+LIBS=$xcb_save_LIBS
+CFLAGS=$xcb_save_CFLAGS
+
 AC_CHECK_FUNC([dlopen], [],
               AC_CHECK_LIB([dl], [dlopen], DLOPEN_LIBS="-ldl"))
 AC_SUBST(DLOPEN_LIBS)

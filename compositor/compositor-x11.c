@@ -383,7 +383,11 @@ x11_compositor_next_event(struct x11_compositor *c,
 	if (mask & WL_EVENT_READABLE) {
 		*event = xcb_poll_for_event(c->conn);
 	} else {
+#ifdef HAVE_XCB_POLL_FOR_QUEUED_EVENT
 		*event = xcb_poll_for_queued_event(c->conn);
+#else
+		*event = xcb_poll_for_event(c->conn);
+#endif
 	}
 
 	return *event != NULL;
