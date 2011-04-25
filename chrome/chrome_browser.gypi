@@ -1050,6 +1050,8 @@
         'browser/external_protocol_handler.h',
         'browser/external_tab_container_win.cc',
         'browser/external_tab_container_win.h',
+        'browser/favicon_handler.cc',
+        'browser/favicon_handler.h',
         'browser/favicon_helper.cc',
         'browser/favicon_helper.h',
         'browser/favicon_service.cc',

@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/favicon_helper.h"
-
+#include "chrome/browser/favicon_handler.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 
-class TestFaviconHelper;
+class TestFaviconHandler;
 
 namespace {
 
@@ -43,7 +42,7 @@ class DownloadHandler {
   DownloadHandler(int download_id,
                   const GURL& image_url,
                   int image_size,
-                  TestFaviconHelper* favicon_helper)
+                  TestFaviconHandler* favicon_helper)
     : image_url_(image_url),
       image_size_(image_size),
       failed_(false),
@@ -55,7 +54,7 @@ class DownloadHandler {
   virtual ~DownloadHandler() {
   }
 
-  static void UpdateFaviconURL(FaviconHelper* helper,
+  static void UpdateFaviconURL(FaviconHandler* helper,
                                const std::vector<FaviconURL> urls);
 
   void InvokeCallback();
@@ -72,7 +71,7 @@ class DownloadHandler {
   // Identified the specific download, will also be passed in
   // OnDidDownloadFavicon callback.
   int download_id_;
-  TestFaviconHelper* favicon_helper_;
+  TestFaviconHandler* favicon_helper_;
   SkBitmap bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadHandler);
@@ -122,21 +121,21 @@ class HistoryRequestHandler {
 
 }  // namespace
 
-// This class is used to catch the FaviconHelper's download and history request,
-// and also provide the methods to access the FaviconHelper internal.
-class TestFaviconHelper : public FaviconHelper {
+// This class is used to catch the FaviconHandler's download and history
+// request, and also provide the methods to access the FaviconHandler internal.
+class TestFaviconHandler : public FaviconHandler {
  public:
-  TestFaviconHelper(const GURL& page_url,
+  TestFaviconHandler(const GURL& page_url,
                     TabContents* tab_contents,
                     Type type)
-    : FaviconHelper(tab_contents, type),
+    : FaviconHandler(tab_contents, type),
       download_image_size_(0),
       download_id_(0),
       tab_contents_(tab_contents){
     entry_.set_url(page_url);
   }
 
-  virtual ~TestFaviconHelper() {
+  virtual ~TestFaviconHandler() {
   }
 
   HistoryRequestHandler* history_handler() {
@@ -166,19 +165,19 @@ class TestFaviconHelper : public FaviconHelper {
   }
 
   void FetchFavicon(const GURL& url) {
-    FaviconHelper::FetchFavicon(url);
+    FaviconHandler::FetchFavicon(url);
   }
 
   // The methods to access favicon internal.
   FaviconURL* current_candidate() {
-    return FaviconHelper::current_candidate();
+    return FaviconHandler::current_candidate();
   }
 
   void OnDidDownloadFavicon(int id,
                             const GURL& image_url,
                             bool errored,
                             const SkBitmap& image) {
-    FaviconHelper::OnDidDownloadFavicon(id, image_url, errored, image);
+    FaviconHandler::OnDidDownloadFavicon(id, image_url, errored, image);
   }
 
  protected:
@@ -243,19 +242,19 @@ class TestFaviconHelper : public FaviconHelper {
   NavigationEntry entry_;
 
   // The unique id of a download request. It will be returned to a
-  // FaviconHelper.
+  // FaviconHandler.
   int download_id_;
 
   TabContents* tab_contents_;
   scoped_ptr<DownloadHandler> download_handler_;
   scoped_ptr<HistoryRequestHandler> history_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestFaviconHelper);
+  DISALLOW_COPY_AND_ASSIGN(TestFaviconHandler);
 };
 
 namespace {
 
-void DownloadHandler::UpdateFaviconURL(FaviconHelper* helper,
+void DownloadHandler::UpdateFaviconURL(FaviconHandler* helper,
                                        const std::vector<FaviconURL> urls) {
   helper->OnUpdateFaviconURL(0, urls);
 }
@@ -273,14 +272,14 @@ void HistoryRequestHandler::InvokeCallback() {
   callback_->Run(0, favicon_data_);
 }
 
-class FaviconHelperTest : public RenderViewHostTestHarness {
+class FaviconHandlerTest : public RenderViewHostTestHarness {
 };
 
-TEST_F(FaviconHelperTest, GetFaviconFromHistory) {
+TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
   const GURL page_url("http://www.google.com");
   const GURL icon_url("http://www.google.com/favicon");
 
-  TestFaviconHelper helper(page_url, contents(), FaviconHelper::FAVICON);
+  TestFaviconHandler helper(page_url, contents(), FaviconHandler::FAVICON);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -301,7 +300,7 @@ TEST_F(FaviconHelperTest, GetFaviconFromHistory) {
 
   // Send history response.
   history_handler->InvokeCallback();
-  // Verify FaviconHelper status
+  // Verify FaviconHandler status
   EXPECT_TRUE(helper.GetEntry()->favicon().is_valid());
   EXPECT_EQ(icon_url, helper.GetEntry()->favicon().url());
 
@@ -310,7 +309,7 @@ TEST_F(FaviconHelperTest, GetFaviconFromHistory) {
   urls.push_back(FaviconURL(icon_url, FaviconURL::FAVICON));
   DownloadHandler::UpdateFaviconURL(&helper, urls);
 
-  // Verify FaviconHelper status
+  // Verify FaviconHandler status
   EXPECT_EQ(1U, helper.urls().size());
   ASSERT_TRUE(helper.current_candidate());
   ASSERT_EQ(icon_url, helper.current_candidate()->icon_url);
@@ -321,11 +320,11 @@ TEST_F(FaviconHelperTest, GetFaviconFromHistory) {
   ASSERT_FALSE(download_handler);
 }
 
-TEST_F(FaviconHelperTest, DownloadFavicon) {
+TEST_F(FaviconHandlerTest, DownloadFavicon) {
   const GURL page_url("http://www.google.com");
   const GURL icon_url("http://www.google.com/favicon");
 
-  TestFaviconHelper helper(page_url, contents(), FaviconHelper::FAVICON);
+  TestFaviconHandler helper(page_url, contents(), FaviconHandler::FAVICON);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -342,7 +341,7 @@ TEST_F(FaviconHelperTest, DownloadFavicon) {
   history_handler->favicon_data_.icon_url = icon_url;
   // Send history response.
   history_handler->InvokeCallback();
-  // Verify FaviconHelper status
+  // Verify FaviconHandler status
   EXPECT_TRUE(helper.GetEntry()->favicon().is_valid());
   EXPECT_EQ(icon_url, helper.GetEntry()->favicon().url());
 
@@ -351,7 +350,7 @@ TEST_F(FaviconHelperTest, DownloadFavicon) {
   urls.push_back(FaviconURL(icon_url, FaviconURL::FAVICON));
   DownloadHandler::UpdateFaviconURL(&helper, urls);
 
-  // Verify FaviconHelper status
+  // Verify FaviconHandler status
   EXPECT_EQ(1U, helper.urls().size());
   ASSERT_TRUE(helper.current_candidate());
   ASSERT_EQ(icon_url, helper.current_candidate()->icon_url);
@@ -384,12 +383,12 @@ TEST_F(FaviconHelperTest, DownloadFavicon) {
   EXPECT_FALSE(helper.GetEntry()->favicon().bitmap().empty());
 }
 
-TEST_F(FaviconHelperTest, UpdateAndDownloadFavicon) {
+TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
   const GURL page_url("http://www.google.com");
   const GURL icon_url("http://www.google.com/favicon");
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
-  TestFaviconHelper helper(page_url, contents(), FaviconHelper::FAVICON);
+  TestFaviconHandler helper(page_url, contents(), FaviconHandler::FAVICON);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -410,7 +409,7 @@ TEST_F(FaviconHelperTest, UpdateAndDownloadFavicon) {
 
   // Send history response.
   history_handler->InvokeCallback();
-  // Verify FaviconHelper status.
+  // Verify FaviconHandler status.
   EXPECT_TRUE(helper.GetEntry()->favicon().is_valid());
   EXPECT_EQ(icon_url, helper.GetEntry()->favicon().url());
 
@@ -423,7 +422,7 @@ TEST_F(FaviconHelperTest, UpdateAndDownloadFavicon) {
   urls.push_back(FaviconURL(new_icon_url, FaviconURL::FAVICON));
   DownloadHandler::UpdateFaviconURL(&helper, urls);
 
-  // Verify FaviconHelper status.
+  // Verify FaviconHandler status.
   EXPECT_EQ(1U, helper.urls().size());
   ASSERT_TRUE(helper.current_candidate());
   ASSERT_EQ(new_icon_url, helper.current_candidate()->icon_url);
@@ -469,12 +468,12 @@ TEST_F(FaviconHelperTest, UpdateAndDownloadFavicon) {
   EXPECT_FALSE(helper.GetEntry()->favicon().bitmap().empty());
 }
 
-TEST_F(FaviconHelperTest, UpdateFavicon) {
+TEST_F(FaviconHandlerTest, UpdateFavicon) {
   const GURL page_url("http://www.google.com");
   const GURL icon_url("http://www.google.com/favicon");
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
-  TestFaviconHelper helper(page_url, contents(), FaviconHelper::FAVICON);
+  TestFaviconHandler helper(page_url, contents(), FaviconHandler::FAVICON);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -495,7 +494,7 @@ TEST_F(FaviconHelperTest, UpdateFavicon) {
 
   // Send history response.
   history_handler->InvokeCallback();
-  // Verify FaviconHelper status.
+  // Verify FaviconHandler status.
   EXPECT_TRUE(helper.GetEntry()->favicon().is_valid());
   EXPECT_EQ(icon_url, helper.GetEntry()->favicon().url());
 
@@ -508,7 +507,7 @@ TEST_F(FaviconHelperTest, UpdateFavicon) {
   urls.push_back(FaviconURL(new_icon_url, FaviconURL::FAVICON));
   DownloadHandler::UpdateFaviconURL(&helper, urls);
 
-  // Verify FaviconHelper status.
+  // Verify FaviconHandler status.
   EXPECT_EQ(1U, helper.urls().size());
   ASSERT_TRUE(helper.current_candidate());
   ASSERT_EQ(new_icon_url, helper.current_candidate()->icon_url);
@@ -540,12 +539,12 @@ TEST_F(FaviconHelperTest, UpdateFavicon) {
   EXPECT_FALSE(helper.GetEntry()->favicon().bitmap().empty());
 }
 
-TEST_F(FaviconHelperTest, Download2ndFaviconURLCandidate) {
+TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
   const GURL page_url("http://www.google.com");
   const GURL icon_url("http://www.google.com/favicon");
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
-  TestFaviconHelper helper(page_url, contents(), FaviconHelper::TOUCH);
+  TestFaviconHandler helper(page_url, contents(), FaviconHandler::TOUCH);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -560,7 +559,7 @@ TEST_F(FaviconHelperTest, Download2ndFaviconURLCandidate) {
   history_handler->favicon_data_.known_icon = false;
   // Send history response.
   history_handler->InvokeCallback();
-  // Verify FaviconHelper status.
+  // Verify FaviconHandler status.
   EXPECT_FALSE(helper.GetEntry()->favicon().is_valid());
   EXPECT_EQ(GURL(), helper.GetEntry()->favicon().url());
 
@@ -576,7 +575,7 @@ TEST_F(FaviconHelperTest, Download2ndFaviconURLCandidate) {
 
   DownloadHandler::UpdateFaviconURL(&helper, urls);
 
-  // Verify FaviconHelper status.
+  // Verify FaviconHandler status.
   EXPECT_EQ(2U, helper.urls().size());
   ASSERT_TRUE(helper.current_candidate());
   ASSERT_EQ(icon_url, helper.current_candidate()->icon_url);
@@ -654,12 +653,12 @@ TEST_F(FaviconHelperTest, Download2ndFaviconURLCandidate) {
   EXPECT_EQ(page_url, history_handler->page_url_);
 }
 
-TEST_F(FaviconHelperTest, UpdateDuringDownloading) {
+TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
   const GURL page_url("http://www.google.com");
   const GURL icon_url("http://www.google.com/favicon");
   const GURL new_icon_url("http://www.google.com/new_favicon");
 
-  TestFaviconHelper helper(page_url, contents(), FaviconHelper::TOUCH);
+  TestFaviconHandler helper(page_url, contents(), FaviconHandler::TOUCH);
 
   helper.FetchFavicon(page_url);
   HistoryRequestHandler* history_handler = helper.history_handler();
@@ -674,7 +673,7 @@ TEST_F(FaviconHelperTest, UpdateDuringDownloading) {
   history_handler->favicon_data_.known_icon = false;
   // Send history response.
   history_handler->InvokeCallback();
-  // Verify FaviconHelper status.
+  // Verify FaviconHandler status.
   EXPECT_FALSE(helper.GetEntry()->favicon().is_valid());
   EXPECT_EQ(GURL(), helper.GetEntry()->favicon().url());
 
@@ -690,7 +689,7 @@ TEST_F(FaviconHelperTest, UpdateDuringDownloading) {
 
   DownloadHandler::UpdateFaviconURL(&helper, urls);
 
-  // Verify FaviconHelper status.
+  // Verify FaviconHandler status.
   EXPECT_EQ(2U, helper.urls().size());
   ASSERT_TRUE(helper.current_candidate());
   ASSERT_EQ(icon_url, helper.current_candidate()->icon_url);
