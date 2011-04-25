@@ -105,12 +105,14 @@ BOT_ASSIGNMENT = {
     'win7-toolchain_x86': 'buildbot\\buildbot_toolchain_win.bat',
     'mac-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh mac',
     'hardy32-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh linux',
-    # Pnacl toolchain trybots.
-    'hardy32-toolchain_arm-trusted':
+    # Pnacl toolchain builders.
+    'linux-armtools-x86_32':
         'bash buildbot/buildbot_toolchain_arm_trusted.sh',
-    'hardy64-toolchain_arm-untrusted':
+    'linux-pnacl-x86_32':
         'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
-    'lucid32-toolchain_arm-untrusted':
+    'linux-pnacl-x86_64':
+        'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
+    'mac-pnacl-x86_32':
         'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
 
     # Toolchain trybots.
