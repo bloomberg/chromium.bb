@@ -39,6 +39,8 @@ class PrintPreviewHandler : public WebUIMessageHandler,
  private:
   friend class PrintSystemTaskProxy;
 
+  TabContents* preview_tab();
+
   // Get the list of printers. |args| is unused.
   void HandleGetPrinters(const ListValue* args);
 
@@ -66,11 +68,11 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   void SendPrinterList(const ListValue& printers,
                        const FundamentalValue& default_printer_index);
 
-  // Helper function to process the color setting in the dictionary.
-  void ProcessColorSetting(const DictionaryValue& settings);
+  // Helper function to get the initiator tab for the print preview tab.
+  TabContents* GetInitiatorTab();
 
-  // Helper function to process the landscape setting in the dictionary.
-  void ProcessLandscapeSetting(const DictionaryValue& settings);
+  // Helper function to close the print preview tab.
+  void ClosePrintPreviewTab();
 
   // Pointer to current print system.
   scoped_refptr<printing::PrintBackend> print_backend_;

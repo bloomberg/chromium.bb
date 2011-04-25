@@ -49,14 +49,6 @@ const char kColorDevice[] = "ColorDevice";
 const char kPskColor[] = "psk:Color";
 #endif
 
-TabContents* GetInitiatorTab(TabContents* preview_tab) {
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
-  if (!tab_controller)
-    return NULL;
-  return tab_controller->GetInitiatorTab(preview_tab);
-}
-
 // Get the print job settings dictionary from |args|. The caller takes
 // ownership of the returned DictionaryValue. Returns NULL on failure.
 DictionaryValue* GetSettingsDictionary(const ListValue* args) {
@@ -244,6 +236,10 @@ void PrintPreviewHandler::RegisterMessages() {
       NewCallback(this, &PrintPreviewHandler::HandleShowSystemDialog));
 }
 
+TabContents* PrintPreviewHandler::preview_tab() {
+  return web_ui_->tab_contents();
+}
+
 void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
   scoped_refptr<PrintSystemTaskProxy> task =
       new PrintSystemTaskProxy(AsWeakPtr(), print_backend_.get());
@@ -254,7 +250,7 @@ void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
 }
 
 void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
-  TabContents* initiator_tab = GetInitiatorTab(web_ui_->tab_contents());
+  TabContents* initiator_tab = GetInitiatorTab();
   if (!initiator_tab)
     return;
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
@@ -266,7 +262,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
 }
 
 void PrintPreviewHandler::HandlePrint(const ListValue* args) {
-  TabContents* initiator_tab = GetInitiatorTab(web_ui_->tab_contents());
+  TabContents* initiator_tab = GetInitiatorTab();
   if (initiator_tab) {
     RenderViewHost* rvh = initiator_tab->render_view_host();
     rvh->Send(new PrintMsg_ResetScriptedPrintCount(rvh->routing_id()));
@@ -282,8 +278,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   if (print_to_pdf) {
     // Pre-populating select file dialog with print job title.
     TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(
-            web_ui_->tab_contents());
+        TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
 
     string16 print_job_title_utf16 =
         wrapper->print_view_manager()->RenderSourceName();
@@ -327,8 +322,7 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
 }
 
 void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* args) {
-  TabContents* preview_tab = web_ui_->tab_contents();
-  TabContents* initiator_tab = GetInitiatorTab(preview_tab);
+  TabContents* initiator_tab = GetInitiatorTab();
   if (!initiator_tab)
     return;
   initiator_tab->Activate();
@@ -337,9 +331,7 @@ void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* args) {
       TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
   wrapper->print_view_manager()->PrintNow();
 
-  Browser* preview_tab_browser = BrowserList::FindBrowserWithID(
-      preview_tab->controller().window_id().id());
-  preview_tab_browser->CloseTabContents(preview_tab);
+  ClosePrintPreviewTab();
 }
 
 void PrintPreviewHandler::SendPrinterCapabilities(
@@ -353,6 +345,20 @@ void PrintPreviewHandler::SendPrinterList(
     const FundamentalValue& default_printer_index) {
   web_ui_->CallJavascriptFunction("setPrinters", printers,
                                   default_printer_index);
+}
+
+TabContents* PrintPreviewHandler::GetInitiatorTab() {
+  printing::PrintPreviewTabController* tab_controller =
+      printing::PrintPreviewTabController::GetInstance();
+  if (!tab_controller)
+    return NULL;
+  return tab_controller->GetInitiatorTab(preview_tab());
+}
+
+void PrintPreviewHandler::ClosePrintPreviewTab() {
+  Browser* preview_tab_browser = BrowserList::FindBrowserWithID(
+      preview_tab()->controller().window_id().id());
+  preview_tab_browser->CloseTabContents(preview_tab());
 }
 
 void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
@@ -380,9 +386,8 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
       &file_type_info,
       0,
       FILE_PATH_LITERAL(""),
-      web_ui_->tab_contents(),
-      platform_util::GetTopLevel(
-          web_ui_->tab_contents()->GetNativeView()),
+      preview_tab(),
+      platform_util::GetTopLevel(preview_tab()->GetNativeView()),
       NULL);
 }
 
@@ -402,4 +407,6 @@ void PrintPreviewHandler::FileSelected(const FilePath& path,
 
   PrintToPdfTask* task = new PrintToPdfTask(metafile, path);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, task);
+
+  ClosePrintPreviewTab();
 }
