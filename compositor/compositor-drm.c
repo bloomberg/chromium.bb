@@ -27,13 +27,6 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
-#define GL_GLEXT_PROTOTYPES
-#define EGL_EGLEXT_PROTOTYPES
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-
 #include "compositor.h"
 
 struct drm_compositor {
@@ -51,6 +44,9 @@ struct drm_compositor {
 	uint32_t crtc_allocator;
 	uint32_t connector_allocator;
 	struct tty *tty;
+
+	PFNEGLCREATEDRMIMAGEMESA create_drm_image;
+	PFNEGLEXPORTDRMIMAGEMESA export_drm_image;
 };
 
 struct drm_output {
@@ -153,8 +149,8 @@ drm_output_prepare_scanout_surface(struct wlsc_output *output_base,
 	    es->image == EGL_NO_IMAGE_KHR)
 		return -1;
 
-	eglExportDRMImageMESA(c->base.display, es->image,
-			      NULL, &handle, &stride);
+	c->export_drm_image(c->base.display,
+			    es->image, NULL, &handle, &stride);
 
 	if (handle == 0)
 		return -1;
@@ -203,8 +199,8 @@ drm_output_set_cursor(struct wlsc_output *output_base,
 	if (eid->sprite->width > 64 || eid->sprite->height > 64)
 		goto out;
 	
-	eglExportDRMImageMESA(c->base.display, eid->sprite->image,
-			      NULL, &handle, &stride);
+	c->export_drm_image(c->base.display, eid->sprite->image,
+			    NULL, &handle, &stride);
 
 	if (stride != 64 * 4) {
 		fprintf(stderr, "info: cursor stride is != 64\n");
@@ -268,7 +264,7 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 	}
 
 	ec->drm.fd = fd;
-	ec->base.display = eglGetDRMDisplayMESA(ec->drm.fd);
+	ec->base.display = eglGetDisplay((EGLNativeDisplayType) ec->drm.fd);
 	if (ec->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
@@ -379,11 +375,11 @@ create_output_for_connector(struct drm_compositor *ec,
 		attribs[1] = output->base.width;
 		attribs[3] = output->base.height;
 		output->image[i] =
-			eglCreateDRMImageMESA(ec->base.display, attribs);
-		glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER,
-						       output->image[i]);
-		eglExportDRMImageMESA(ec->base.display, output->image[i],
-				      NULL, &handle, &stride);
+			ec->create_drm_image(ec->base.display, attribs);
+		ec->base.image_target_renderbuffer_storage(GL_RENDERBUFFER,
+							   output->image[i]);
+		ec->export_drm_image(ec->base.display, output->image[i],
+				     NULL, &handle, &stride);
 
 		ret = drmModeAddFB(ec->drm.fd,
 				   output->base.width, output->base.height,
@@ -477,7 +473,7 @@ destroy_output(struct drm_output *output)
 	glDeleteRenderbuffers(2, output->rbo);
 
 	for (i = 0; i < 2; i++) {
-		eglDestroyImageKHR(ec->base.display, output->image[i]);
+		ec->base.destroy_image(ec->base.display, output->image[i]);
 		drmModeRmFB(ec->drm.fd, output->fb_id[i]);
 	}
 	
@@ -609,6 +605,7 @@ drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
 	};
 	EGLint stride, name;
 	EGLImageKHR tmp_image, image;
+	struct drm_compositor *c = (struct drm_compositor *) ec;
 
 	if (width > 64 || height > 64)
 		return EGL_NO_IMAGE_KHR;
@@ -618,9 +615,9 @@ drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
 	image_attribs[6] = EGL_DRM_BUFFER_USE_MESA;
 	image_attribs[7] = EGL_DRM_BUFFER_USE_SCANOUT_MESA;
 
-	tmp_image = eglCreateDRMImageMESA(ec->display, image_attribs);
+	tmp_image = c->create_drm_image(ec->display, image_attribs);
 
-	eglExportDRMImageMESA(ec->display, tmp_image, &name, NULL, &stride);
+	c->export_drm_image(ec->display, tmp_image, &name, NULL, &stride);
 
 	if (stride == 64)
 		return tmp_image;
@@ -631,11 +628,14 @@ drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
 	image_attribs[6] = EGL_DRM_BUFFER_STRIDE_MESA;
 	image_attribs[7] = 64;
 
-	image = eglCreateImageKHR(ec->display, EGL_NO_CONTEXT, EGL_DRM_BUFFER_MESA,
-				  (EGLClientBuffer)(intptr_t) name, image_attribs);
-	eglExportDRMImageMESA(ec->display, image, &name, NULL, &stride);
+	image = ec->create_image(ec->display, 
+				 EGL_NO_CONTEXT,
+				 EGL_DRM_BUFFER_MESA,
+				 (EGLClientBuffer)(intptr_t) name,
+				 image_attribs);
+	c->export_drm_image(ec->display, image, &name, NULL, &stride);
 
-	eglDestroyImageKHR(ec->display, tmp_image);
+	ec->destroy_image(ec->display, tmp_image);
 
 	return image;
 }
@@ -705,6 +705,11 @@ drm_compositor_create(struct wl_display *display, int connector)
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&ec->base, display) < 0)
 		return NULL;
+
+	ec->create_drm_image =
+		(void *) eglGetProcAddress("eglCreateDRMImageMESA");
+	ec->export_drm_image =
+		(void *) eglGetProcAddress("eglExportDRMImageMESA");
 
 	if (create_outputs(ec, connector) < 0) {
 		fprintf(stderr, "failed to create output for %s\n", path);

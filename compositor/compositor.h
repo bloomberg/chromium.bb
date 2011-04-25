@@ -24,8 +24,6 @@
 #include "wayland-server.h"
 #include "wayland-util.h"
 
-#define GL_GLEXT_PROTOTYPES
-#define EGL_EGLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <EGL/egl.h>
@@ -166,6 +164,15 @@ struct wlsc_compositor {
 	struct wlsc_surface *overlay;
 	struct wlsc_switcher *switcher;
 	uint32_t focus;
+
+	PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC
+		image_target_renderbuffer_storage;
+	PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
+	PFNEGLCREATEIMAGEKHRPROC create_image;
+	PFNEGLDESTROYIMAGEKHRPROC destroy_image;
+	PFNEGLBINDWAYLANDDISPLAYWL bind_display;
+	PFNEGLUNBINDWAYLANDDISPLAYWL unbind_display;
+	int has_bind_display;
 
 	void (*destroy)(struct wlsc_compositor *ec);
 	int (*authenticate)(struct wlsc_compositor *c, uint32_t id);

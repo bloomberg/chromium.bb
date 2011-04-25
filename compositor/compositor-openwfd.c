@@ -22,13 +22,6 @@
 
 #include <sys/time.h>
 
-#define GL_GLEXT_PROTOTYPES
-#define EGL_EGLEXT_PROTOTYPES
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-
 #include <WF/wfd.h>
 #include <WF/wfdext.h>
 
@@ -48,6 +41,9 @@ struct wfd_compositor {
 
 	uint32_t start_time;
 	uint32_t used_pipelines;
+
+	PFNEGLCREATEDRMIMAGEMESA create_drm_image;
+	PFNEGLEXPORTDRMIMAGEMESA export_drm_image;
 };
 
 struct wfd_output {
@@ -261,14 +257,14 @@ create_output_for_port(struct wfd_compositor *ec,
 		attribs[1] = output->base.width;
 		attribs[3] = output->base.height;
 		output->image[i] =
-			eglCreateDRMImageMESA(ec->base.display, attribs);
+			ec->create_drm_image(ec->base.display, attribs);
 
 		printf("output->image[i]: %p\n", output->image[i]);
-		glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER,
-						       output->image[i]);
+		ec->base.image_target_renderbuffer_storage(GL_RENDERBUFFER,
+							   output->image[i]);
 		int handle;
-		eglExportDRMImageMESA(ec->base.display, output->image[i],
-				      NULL, &handle, NULL);
+		ec->export_drm_image(ec->base.display, output->image[i],
+				     NULL, &handle, NULL);
 		printf("handle: %d\n", handle);
 		output->source[i] =
 			wfdCreateSourceFromImage(ec->dev, output->pipeline,
@@ -560,6 +556,11 @@ wfd_compositor_create(struct wl_display *display, int connector)
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&ec->base, display) < 0)
 		return NULL;
+
+	ec->create_drm_image =
+		(void *) eglGetProcAddress("eglCreateDRMImageMESA");
+	ec->export_drm_image =
+		(void *) eglGetProcAddress("eglExportDRMImageMESA");
 
 	if (create_outputs(ec, connector) < 0) {
 		fprintf(stderr, "failed to create outputs\n");

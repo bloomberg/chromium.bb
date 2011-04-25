@@ -250,6 +250,7 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 	struct wlsc_surface *surface =
 		container_of(resource, struct wlsc_surface, surface.resource);
 	struct wl_listener *l, *next;
+	struct wlsc_compositor *compositor = surface->compositor;
 	uint32_t time;
 
 	wlsc_surface_damage(surface);
@@ -262,8 +263,8 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 
 
 	if (surface->image != EGL_NO_IMAGE_KHR)
-		eglDestroyImageKHR(surface->compositor->display,
-				   surface->image);
+		compositor->destroy_image(compositor->display,
+					  surface->image);
 
 	wl_list_remove(&surface->buffer_link);
 
@@ -372,11 +373,11 @@ wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 			wl_list_remove(&es->buffer_link);
 		wl_list_insert(surfaces_attached_to, &es->buffer_link);
 	} else {
-		es->image = eglCreateImageKHR(ec->display, NULL,
-					      EGL_WAYLAND_BUFFER_WL,
-					      buffer, NULL);
-
-		glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, es->image);
+		es->image = ec->create_image(ec->display, NULL,
+					     EGL_WAYLAND_BUFFER_WL,
+					     buffer, NULL);
+		
+		ec->image_target_texture_2d(GL_TEXTURE_2D, es->image);
 		es->visual = buffer->visual;
 		es->pitch = es->width;
 	}
@@ -386,12 +387,13 @@ static void
 wlsc_sprite_attach(struct wlsc_sprite *sprite, struct wl_surface *surface)
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_compositor *ec = es->compositor;
 
 	es->pitch = es->width;
 	es->image = sprite->image;
 	if (sprite->image != EGL_NO_IMAGE_KHR) {
 		glBindTexture(GL_TEXTURE_2D, es->texture);
-		glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, es->image);
+		ec->image_target_texture_2d(GL_TEXTURE_2D, es->image);
 	} else {
 		if (es->saved_texture == 0)
 			es->saved_texture = es->texture;
@@ -439,7 +441,7 @@ create_sprite_from_png(struct wlsc_compositor *ec,
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	if (sprite->image != EGL_NO_IMAGE_KHR) {
-		glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, sprite->image);
+		ec->image_target_texture_2d(GL_TEXTURE_2D, sprite->image);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
 				GL_BGRA_EXT, GL_UNSIGNED_BYTE, pixels);
 	} else {
@@ -1864,9 +1866,31 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wl_compositor_init(&ec->compositor, &compositor_interface, display);
 
 	ec->shm = wl_shm_init(display, &shm_callbacks);
-	if (strstr(eglQueryString(ec->display, EGL_EXTENSIONS),
-		   "EGL_WL_bind_wayland_display"))
-		eglBindWaylandDisplayWL(ec->display, ec->wl_display);
+
+	ec->image_target_texture_2d =
+		(void *) eglGetProcAddress("glEGLImageTargetTexture2DOES");
+	ec->image_target_renderbuffer_storage = (void *)
+		eglGetProcAddress("glEGLImageTargetRenderbufferStorageOES");
+	ec->create_image = (void *) eglGetProcAddress("eglCreateImageKHR");
+	ec->destroy_image = (void *) eglGetProcAddress("eglDestroyImageKHR");
+	ec->bind_display =
+		(void *) eglGetProcAddress("eglBindWaylandDisplayWL");
+	ec->unbind_display =
+		(void *) eglGetProcAddress("eglUnbindWaylandDisplayWL");
+
+	extensions = (const char *) glGetString(GL_EXTENSIONS);
+	if (!strstr(extensions, "GL_EXT_texture_format_BGRA8888")) {
+		fprintf(stderr,
+			"GL_EXT_texture_format_BGRA8888 not available\n");
+		return -1;
+	}
+
+	extensions =
+		(const char *) eglQueryString(ec->display, EGL_EXTENSIONS);
+	if (strstr(extensions, "EGL_WL_bind_wayland_display"))
+		ec->has_bind_display = 1;
+	if (ec->has_bind_display)
+		ec->bind_display(ec->display, ec->wl_display);
 
 	wl_list_init(&ec->surface_list);
 	wl_list_init(&ec->input_device_list);
@@ -1884,13 +1908,6 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	create_pointer_images(ec);
 
 	screenshooter_create(ec);
-
-	extensions = (const char *) glGetString(GL_EXTENSIONS);
-	if (!strstr(extensions, "GL_EXT_texture_format_BGRA8888")) {
-		fprintf(stderr,
-			"GL_EXT_texture_format_BGRA8888 not available\n");
-		return -1;
-	}
 
 	glActiveTexture(GL_TEXTURE0);
 
@@ -2005,9 +2022,8 @@ int main(int argc, char *argv[])
 
 	wl_display_run(display);
 
-	if (strstr(eglQueryString(ec->display, EGL_EXTENSIONS),
-		   "EGL_WL_bind_wayland_display"))
-		eglUnbindWaylandDisplayWL(ec->display, display);
+	if (ec->has_bind_display)
+		ec->unbind_display(ec->display, display);
 	wl_display_destroy(display);
 
 	ec->destroy(ec);
