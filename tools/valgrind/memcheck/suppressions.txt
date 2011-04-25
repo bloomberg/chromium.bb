@@ -4401,7 +4401,18 @@
    fun:gtk_window_group_list_windows
    fun:_ZN8gtk_util*AppModal*
 }
-
+{
+   bug_80458_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN22ThumbnailGeneratorTestC2Ev
+}
+{
+   bug_80458_b
+   Memcheck:Cond
+   fun:_ZN22ThumbnailGeneratorTest18ClassifyFirstPixelERK8SkBitmap
+   fun:_ZN47ThumbnailGeneratorTest_DiscardBackingStore_Test8TestBodyEv
+}
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
