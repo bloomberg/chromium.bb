@@ -88,6 +88,9 @@ bool NetworkConfigView::Cancel() {
 }
 
 bool NetworkConfigView::Accept() {
+  // Do not attempt login if it is guaranteed to fail, keep the dialog open.
+  if (!child_config_view_->CanLogin())
+    return false;
   bool result = child_config_view_->Login();
   if (result && delegate_)
     delegate_->OnDialogAccepted();
