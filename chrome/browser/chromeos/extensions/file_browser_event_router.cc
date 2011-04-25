@@ -56,7 +56,7 @@ ExtensionFileBrowserEventRouter::~ExtensionFileBrowserEventRouter() {
 
 void ExtensionFileBrowserEventRouter::ObserveFileSystemEvents(
     Profile* profile) {
-  if (profile_ || !profile)
+  if (!profile)
     return;
   profile_ = profile;
   if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
@@ -64,6 +64,7 @@ void ExtensionFileBrowserEventRouter::ObserveFileSystemEvents(
   if (chromeos::UserManager::Get()->user_is_logged_in()) {
     chromeos::MountLibrary* lib =
         chromeos::CrosLibrary::Get()->GetMountLibrary();
+    lib->RemoveObserver(this);
     lib->AddObserver(this);
     lib->RequestMountInfoRefresh();
   }
