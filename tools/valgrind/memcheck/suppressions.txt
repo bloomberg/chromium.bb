@@ -3807,6 +3807,11 @@
    fun:_ZN2v88internal18StackFrameIterator5ResetEv
 }
 {
+   bug_73722d
+   Memcheck:Value4
+   fun:_ZN2v88internal18StackFrameIterator12SingletonForENS0_10StackFrame4TypeE
+}
+{
    bug_73828
    Memcheck:Leak
    ...
@@ -4252,6 +4257,7 @@
    bug_79651
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN8notifier14XmppConnectionC1ERKN4buzz18XmppClientSettingsERK13scoped_refptrIN3net23URLRequestContextGetterEEPNS0_8DelegateEPNS1_11PreXmppAuthE
    fun:_ZN8notifier18SingleLoginAttempt13OnNewSettingsERKNS_18ConnectionSettingsE
    fun:_ZN8notifier23XmppConnectionGenerator17UseNextConnectionEv
