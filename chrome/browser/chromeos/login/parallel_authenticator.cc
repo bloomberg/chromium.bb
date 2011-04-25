@@ -493,13 +493,22 @@ ParallelAuthenticator::ResolveCryptohomeSuccessState() {
   return OFFLINE_LOGIN;
 }
 
+namespace {
+bool WasConnectionIssue(const LoginFailure& online_outcome) {
+  return ((online_outcome.reason() == LoginFailure::LOGIN_TIMED_OUT) ||
+          (online_outcome.error().state() ==
+           GoogleServiceAuthError::CONNECTION_FAILED) ||
+          (online_outcome.error().state() ==
+           GoogleServiceAuthError::REQUEST_CANCELED));
+}
+}  // anonymous namespace
+
 ParallelAuthenticator::AuthState
 ParallelAuthenticator::ResolveOnlineFailureState(
     ParallelAuthenticator::AuthState offline_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (offline_state == OFFLINE_LOGIN) {
-    if (current_state_->online_outcome().error().state() ==
-        GoogleServiceAuthError::CONNECTION_FAILED) {
+    if (WasConnectionIssue(current_state_->online_outcome())) {
       // Couldn't do an online check, so just go with the offline result.
       return OFFLINE_LOGIN;
     }
