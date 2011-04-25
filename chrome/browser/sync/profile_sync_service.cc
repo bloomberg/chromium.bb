@@ -664,14 +664,6 @@ void ProfileSyncService::OnMigrationNeededForTypes(
 }
 
 void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
-  if (!cros_user_.empty()) {
-    // For ChromeOS, any login UI needs to be handled by the settings page.
-    Browser* browser = BrowserList::GetLastActiveWithProfile(profile());
-    if (browser)
-      browser->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
-    return;
-  }
-
   if (WizardIsVisible()) {
     wizard_.Focus();
     // Force the wizard to step to the login screen (which will only actually

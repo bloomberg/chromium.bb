@@ -394,19 +394,10 @@ void PersonalOptionsHandler::ShowSyncActionDialog(const ListValue* args) {
 }
 
 void PersonalOptionsHandler::ShowSyncLoginDialog(const ListValue* args) {
-#if defined(OS_CHROMEOS)
-  std::string email = chromeos::UserManager::Get()->logged_in_user().email();
-  string16 message = l10n_util::GetStringFUTF16(
-      IDS_SYNC_LOGIN_INTRODUCTION,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  web_ui_->GetProfile()->GetBrowserSignin()->RequestSignin(
-      web_ui_->tab_contents(), UTF8ToUTF16(email), message, this);
-#else
   ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
   DCHECK(service);
   service->ShowLoginDialog(NULL);
   ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
-#endif
 }
 
 void PersonalOptionsHandler::ShowCustomizeSyncDialog(const ListValue* args) {
