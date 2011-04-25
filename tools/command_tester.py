@@ -175,7 +175,12 @@ status_map = {
         'linux2': -11, # SIGSEGV
         'darwin': -11, # SIGSEGV
         'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
-        'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
+        'win32':  [ -1073741819, # -0x3ffffffb or 0xc0000005
+# TODO(khim): remove this when cause of STATUS_PRIVILEGED_INSTRUCTION will be
+# known.  This only happens on win32 with glibc which is also suspicious.
+# See: http://code.google.com/p/nativeclient/issues/detail?id=1689
+                    -1073741674, # -0x3fffff6a or 0xc0000096
+                   ],
         'win64':  -11,
         },
     'hybrid_log_fatal': {

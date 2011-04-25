@@ -6,13 +6,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-
-
-/*
- * TODO(mseaborn): We should be able to use the following, but it
- * gives an internal compiler error on x86-64 nacl-gcc:
- *   unsigned char code[] __attribute__((aligned(32))) = { 0xc3 /\* ret *\/ };
- */
+#include <inttypes.h>
 
 /*
  * We put the buffer in the data segment (low address) rather than on
@@ -22,22 +16,19 @@
  * http://code.google.com/p/nativeclient/issues/detail?id=462.
  * -- and then this comment can be removed (TODO(mseaborn)).
  */
-uint8_t buf[64];
-
-int main() {
-  void (*func)();
-  /* Round up to be bundle-aligned. */
-  uintptr_t code_ptr = ((uintptr_t) buf + 31) & ~31;
 #if defined(__i386__) || defined(__x86_64__)
-  *(uint8_t *) code_ptr = 0xc3; /* RET */
+uint8_t code[] __attribute__((aligned(32)))= { 0xc3 /* ret */ };
 #elif defined(__arm__)
-  *(uint32_t *) code_ptr = 0xe12fff1e; /* BX LR */
+uint32_t code[] __attribute__((aligned(32)))= { 0xe12fff1e /* BX LR */ };
 #else
 # error Unknown architecture
 #endif
 
+int main() {
+  void (*func)();
+
   /* Double cast required to stop gcc complaining. */
-  func = (void (*)()) (uintptr_t) code_ptr;
+  func = (void (*)()) (uintptr_t) code;
 
   fprintf(stdout, "This should fault...\n");
   fflush(stdout);

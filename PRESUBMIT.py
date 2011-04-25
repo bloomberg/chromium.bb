@@ -102,7 +102,7 @@ def GetPreferredTrySlaves():
       'nacl-mac10.6_newlib_opt',
       'nacl-mac10.6_glibc_opt',
       'nacl-win32_newlib_opt',
-#     'nacl-win32_glibc_opt',  # TODO(khim): re-enable when stable
+      'nacl-win32_glibc_opt',
       'nacl-win64_newlib_dbg',
       'nacl-win64_newlib_opt',
       'nacl-win64_glibc_opt',

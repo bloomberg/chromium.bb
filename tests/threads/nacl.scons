@@ -31,7 +31,14 @@ node = env.CommandSelLdrTestNacl(
 # NOTE: this should be a pretty slow test, but its been sped up
 # to not tickle bug 853
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_test',
-                       is_broken=is_broken)
+                       is_broken=is_broken or
+# TODO(khim): reenable it when cause of failure on 32bit Windows glibc
+# will be found.
+# See: http://code.google.com/p/nativeclient/issues/detail?id=1690
+                                 ('TRUSTED_ENV' in env and
+                                  env['TRUSTED_ENV'].Bit('windows') and
+                                  env.Bit('build_x86_32') and
+                                  env.Bit('nacl_glibc')))
 
 
 env.ComponentProgram('simple_thread_test.nexe',
