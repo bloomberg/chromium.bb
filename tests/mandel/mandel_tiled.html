@@ -219,7 +219,8 @@ var RunTestsAfterLoad = function() {
   }
 }
 
-// The page begins by loading the Native Client module, mandel_tiled.nexe.
+// The page begins by loading the Native Client module by means of its manifest
+// file, mandel_tiled.nmf.
 var Init = function() {
   // Record the Native Client module that was returned so that we can
   // invoke methods on it quickly.
@@ -289,6 +290,6 @@ var Init = function() {
     </b>
     <br/>
     <embed type="application/x-nacl" id="nacl"
-           src="mandel_tiled.nexe" hidden="true" />
+           nacl="mandel_tiled.nmf" hidden="true" />
   </body>
 </html>

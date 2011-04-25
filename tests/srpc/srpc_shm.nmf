@@ -1,0 +1,7 @@
+{
+  "nexes": {
+    "x86-32": "srpc_shm_x86-32.nexe",
+    "x86-64": "srpc_shm_x86-64.nexe",
+    "arm": "srpc_shm_arm.nexe",
+  }
+}

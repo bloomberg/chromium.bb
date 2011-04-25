@@ -230,9 +230,6 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'running_on_valgrind', default=False,
     desc='Compile and test using valgrind')
 
-  BitFromArgument(env, 'build_vim', default=False,
-    desc='Build vim')
-
   # This argument allows -lcrypt to be disabled, which
   # makes it easier to build x86-32 NaCl on x86-64 Ubuntu Linux,
   # where there is no -dev package for the 32-bit libcrypto

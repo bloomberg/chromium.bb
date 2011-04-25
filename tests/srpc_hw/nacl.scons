@@ -5,13 +5,27 @@
 
 Import('env')
 
-srpc_hw_nexe = env.ComponentProgram('srpc_hw.nexe',
-                                    'srpc_hw.c',
+srpc_hw_obj = env.ComponentObject('srpc_hw.o', 'srpc_hw.c')
+srpc_hw_nexe_name = 'srpc_hw_%s.nexe' % env.get('TARGET_FULLARCH')
+srpc_hw_nexe = env.ComponentProgram(srpc_hw_nexe_name,
+                                    srpc_hw_obj,
                                     EXTRA_LIBS=['srpc', 'imc','pthread'])
+# srpc_hw_undecorated is necessary because srpc_hw_fd.html makes use of
+# __urlAsNaClDesc with a nexe name.
+# TODO(sehr): We can get rid of this hack if we make that API take a manifest
+# file, but it is currently planned for obsoletion also.
+srpc_hw_undecorated = env.ComponentProgram('srpc_hw.nexe',
+                                           srpc_hw_obj,
+                                           EXTRA_LIBS=['srpc', 'imc','pthread'])
 
 nacl_js_lib = env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')
-env.Publish('srpc_hw.nexe', 'run', ['srpc_hw.html', nacl_js_lib])
-env.Publish('srpc_hw.nexe', 'run', ['srpc_hw_fd.html', nacl_js_lib])
+env.Publish(srpc_hw_nexe, 'run',
+            ['srpc_hw.html', 'srpc_hw.nmf', nacl_js_lib])
+env.Publish(srpc_hw_nexe, 'run',
+            ['srpc_hw_fd.html',
+             'srpc_hw.nmf',
+             srpc_hw_undecorated,
+             nacl_js_lib])
 
 env.AddPrebuiltBinaryToRepository(srpc_hw_nexe)
 
@@ -30,7 +44,9 @@ env.AddNodeToTestSuite(node,
 node = env.PPAPIBrowserTester(
     'srpc_hw_browser_test.out',
     url='srpc_hw.html',
-    files=[srpc_hw_nexe, env.File('srpc_hw.html')],
+    files=[srpc_hw_nexe,
+           env.File('srpc_hw.nmf'),
+           env.File('srpc_hw.html')],
     args=['--debug'])
 
 env.AddNodeToTestSuite(node,
@@ -41,7 +57,10 @@ env.AddNodeToTestSuite(node,
 node = env.PPAPIBrowserTester(
     'srpc_hw_fd_browser_test.out',
     url='srpc_hw_fd.html',
-    files=[srpc_hw_nexe, env.File('srpc_hw_fd.html')],
+    files=[srpc_hw_nexe,
+           env.File('srpc_hw.nmf'),
+           srpc_hw_undecorated,
+           env.File('srpc_hw_fd.html')],
     args=['--debug'])
 
 env.AddNodeToTestSuite(node,

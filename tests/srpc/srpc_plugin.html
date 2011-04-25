@@ -75,27 +75,6 @@ var PluginProperties = function() {
              function() {
                server.__width = 100;
              });
-
-  // __src
-  // Attempt to set __src with invalid type.
-  expectFail('plugin_src_null',
-             function() {
-               server.__src = undefined;
-             });
-  expectFail('plugin_src_integer',
-             function() {
-               server.__src = 100;
-             });
-  expectFail('plugin_src_object',
-             function() {
-               server.__src = new Array(10);
-             });
-  // Attempt to set __src to a valid type.
-  expectPass('plugin_src_conforming',
-             false,
-             function() {
-               server.__src = 'srpc_nrd_client.nexe';
-             });
 }
 
 // The test run functions.
@@ -173,9 +152,6 @@ var EnqueueAndRunTests = function() {
         <td>
           <b> __width </b>
         </td>
-        <td>
-          <b> __src  </b>
-        </td>
       </tr>
       <tr>
         <td>
@@ -219,25 +195,6 @@ var EnqueueAndRunTests = function() {
             </tr>
           </table>
         </td>
-        <td valign=top>
-          <table summary="src tests">
-            <tr>
-              <td id="plugin_src_null" class="notrun">
-                undefined
-              </td>
-            </tr>
-            <tr>
-              <td id="plugin_src_integer" class="notrun">
-                integer
-              </td>
-            </tr>
-            <tr>
-              <td id="plugin_src_object" class="notrun">
-                object
-              </td>
-            </tr>
-          </table>
-        </td>
       </tr>
 
       <tr>
@@ -262,15 +219,6 @@ var EnqueueAndRunTests = function() {
             </tr>
           </table>
         </td>
-        <td valign=top>
-          <table summary="src conforming test">
-            <tr>
-              <td id="plugin_src_conforming" class="notrun">
-                string
-              </td>
-            </tr>
-          </table>
-        </td>
       </tr>
     </table>
 
@@ -291,7 +239,7 @@ var EnqueueAndRunTests = function() {
     <div id=status>NO-STATUS</div>
 
     <embed type="application/x-nacl" id="nacl_server"
-           name="nacl_module" width="0" height="0" src="srpc_test.nexe" />
+           name="nacl_module" width="0" height="0" nacl="srpc_test.nmf" />
 
     <script type="text/javascript" src="nacl_js_lib.js"></script>
     <script type="text/javascript">

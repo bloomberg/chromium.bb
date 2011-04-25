@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 # This is a pepper audio example from examples/audio.
 
@@ -9,7 +9,8 @@ Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
-nexe = env.ComponentProgram('ppapi_example_audio.nexe',
+nexe_name = 'ppapi_example_audio_%s.nexe' % env.get('TARGET_FULLARCH')
+nexe = env.ComponentProgram(nexe_name,
                             [ 'audio.cc' ],
                             EXTRA_LIBS=['${PPAPI_LIBS}',
                                         'ppapi_cpp',
@@ -19,12 +20,14 @@ nexe = env.ComponentProgram('ppapi_example_audio.nexe',
                                         'm'])
 
 # Note that the html is required to run this program.
-env.Publish('ppapi_example_audio.nexe', 'run',
+env.Publish(nexe, 'run',
             ['ppapi_example_audio.html' ])
 
 test = env.PPAPIBrowserTester('ppapi_example_audio_test.out',
                               url='ppapi_audio_test.html',
-                              files=[nexe, env.File('ppapi_audio_test.html')])
+                              files=[nexe,
+                                     env.File('ppapi_example_audio.nmf'),
+                                     env.File('ppapi_audio_test.html')])
 
 # Though this tests passes locally, it does not pass on the Windows
 # and Linux buildbots, which do not have audio devices.  Although

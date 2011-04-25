@@ -6,23 +6,22 @@
 Import('env')
 
 
-env.ComponentProgram('mandel_tiled.nexe', 'mandel_tiled.c',
-                     EXTRA_LIBS=['srpc', 'imc', 'pthread'])
+mandel_tiled_nexe_name = 'mandel_tiled_%s.nexe' % env.get('TARGET_FULLARCH')
+mandel_tiled_nexe = env.ComponentProgram(mandel_tiled_nexe_name,
+                                         'mandel_tiled.c',
+                                         EXTRA_LIBS=['srpc', 'imc', 'pthread'])
 
-env.Publish('mandel_tiled.nexe', 'run', 'mandel_tiled.html')
+env.Publish(mandel_tiled_nexe, 'run', 'mandel_tiled.html')
 
 
-env.ComponentProgram('mandel.nexe', 'mandel.c',
-                     EXTRA_LIBS=['srpc', 'imc', 'pthread'])
+mandel_nexe_name = 'mandel_%s.nexe' % env.get('TARGET_FULLARCH')
+mandel_nexe = env.ComponentProgram(mandel_nexe_name, 'mandel.c',
+                                   EXTRA_LIBS=['srpc', 'imc', 'pthread'])
 
-env.Publish('mandel.nexe', 'run', [])
+env.Publish(mandel_nexe, 'run', [])
 
-node = env.SelUniversalTest(
-    'mandel_test.out',
-    command=[env.File('mandel.nexe')],
-    stdin=env.File('test.stdin'),
-    stdout_golden=env.File('test.stdout')
-    )
-env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'],
-                       'run_mandel')
+node = env.SelUniversalTest('mandel_test.out',
+                            command=[mandel_nexe],
+                            stdin=env.File('test.stdin'),
+                            stdout_golden=env.File('test.stdout'))
+env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'], 'run_mandel')

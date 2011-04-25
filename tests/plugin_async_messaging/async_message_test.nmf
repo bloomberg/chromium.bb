@@ -1,0 +1,7 @@
+{
+  "nexes": {
+    "x86-32": "async_message_test_x86-32.nexe",
+    "x86-64": "async_message_test_x86-64.nexe",
+    "arm": "async_message_test_arm.nexe",
+  }
+}

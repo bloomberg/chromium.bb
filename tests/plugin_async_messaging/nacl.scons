@@ -8,9 +8,10 @@ Import('env')
 dest_copy = env.Replicate('${STAGING_DIR}', 'async_messaging.html')
 env.Replicate('${STAGING_DIR}',
               '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js')
+async_nexe_name = 'async_message_test_%s.nexe' % env.get('TARGET_FULLARCH')
 test_files = [
     env.File('${STAGING_DIR}/nacltest.js'),
-    env.File('${STAGING_DIR}/async_message_test.nexe'),
+    env.File('${STAGING_DIR}/' + async_nexe_name),
     ]
 # These are not true dependencies: They are not needed for the .html
 # file to be replicated to "staging", but they are needed for the
@@ -23,7 +24,8 @@ env.Alias('async_messaging.html', dest_copy)
 node = env.PPAPIBrowserTester(
     'async_messaging_chrome_browser_test.out',
     url='async_messaging.html',
-    files=[env.File('async_messaging.html')] + test_files)
+    files=[env.File('async_messaging.html'),
+           env.File('async_message_test.nmf')] + test_files)
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

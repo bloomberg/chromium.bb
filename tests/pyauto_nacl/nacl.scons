@@ -11,10 +11,12 @@ env.AddNodeToTestSuite(node,
                        'run_pyauto_sanity_test',
                        is_broken=env.PyAutoTesterIsBroken())
 
+srpc_hw_nexe_name = 'srpc_hw_%s.nexe' % env.get('TARGET_FULLARCH')
 node = env.PyAutoTester('pyauto_surfaway.out',
                         env.File('surfaway.py'),
                         files=[env.File('${STAGING_DIR}/nacltest.js'),
-                               env.File('${STAGING_DIR}/srpc_hw.nexe'),
+                               env.File('${STAGING_DIR}/' + srpc_hw_nexe_name),
+                               env.File('${STAGING_DIR}/srpc_hw.nmf'),
                                env.File('${STAGING_DIR}/srpc_hw.html')])
 env.AddNodeToTestSuite(node,
                        ['pyauto_tests'],

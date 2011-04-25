@@ -14,67 +14,87 @@ Import('env')
 
 # TODO(polina): make nacl_js_lib.js available by default
 
+srpc_test_nexe_name = 'srpc_test_%s.nexe' % env.get('TARGET_FULLARCH')
 srpc_test_nexe = env.ComponentProgram(
-    'srpc_test.nexe', 'srpc_test.c',
+    srpc_test_nexe_name, 'srpc_test.c',
     EXTRA_LIBS=['srpc', 'm', 'pthread'])
 env.Publish(
-    'srpc_test.nexe', 'run',
-    ['srpc_basic.html', 'srpc_perf.html', 'srpc_shm.html', 'srpc_plugin.html',
+    srpc_test_nexe, 'run',
+    ['srpc_basic.html',
+     'srpc_perf.html',
+     'srpc_shm.html',
+     'srpc_plugin.html',
+     'srpc_test.nmf',
      env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 env.AddPrebuiltBinaryToRepository(srpc_test_nexe)
 
 
+srpc_shm_nexe_name = 'srpc_shm_%s.nexe' % env.get('TARGET_FULLARCH')
 srpc_shm_nexe = env.ComponentProgram(
-    'srpc_shm.nexe', 'srpc_shm.c',
+    srpc_shm_nexe_name, 'srpc_shm.c',
     EXTRA_LIBS=['srpc', 'platform', 'gio', 'm', 'pthread'])
 env.Publish(
-    'srpc_shm.nexe', 'run',
-    [ 'srpc_shm.html',
-      env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+    srpc_shm_nexe, 'run',
+    ['srpc_shm.html',
+     'srpc_shm.nmf',
+     env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 env.AddPrebuiltBinaryToRepository(srpc_shm_nexe)
 
 
+srpc_nrd_server_nexe_name = ('srpc_nrd_server_%s.nexe' %
+                             env.get('TARGET_FULLARCH'))
 srpc_nrd_server_nexe = env.ComponentProgram(
-    'srpc_nrd_server.nexe', 'srpc_nrd_server.c',
+    srpc_nrd_server_nexe_name, 'srpc_nrd_server.c',
     EXTRA_LIBS=['srpc', 'm', 'pthread'])
 env.Publish(
-    'srpc_nrd_server.nexe', 'run',
+    srpc_nrd_server_nexe, 'run',
     ['srpc_sockaddr.html',
+     'srpc_nrd_server.nmf',
      env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 env.AddPrebuiltBinaryToRepository(srpc_nrd_server_nexe)
 
 
+srpc_nrd_client_nexe_name = ('srpc_nrd_client_%s.nexe' %
+                             env.get('TARGET_FULLARCH'))
 srpc_nrd_client_nexe = env.ComponentProgram(
-    'srpc_nrd_client.nexe', 'srpc_nrd_client.c',
+    srpc_nrd_client_nexe_name, 'srpc_nrd_client.c',
     EXTRA_LIBS=['srpc', 'm', 'pthread'])
 env.Publish(
-    'srpc_nrd_client.nexe', 'run',
+    srpc_nrd_client_nexe, 'run',
     ['srpc_nrd_xfer.html',
+     'srpc_nrd_client.nmf',
+     'srpc_nrd_server.nmf',
      env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 env.AddPrebuiltBinaryToRepository(srpc_nrd_client_nexe)
 
 
+cat_nexe_name = ('cat_%s.nexe' % env.get('TARGET_FULLARCH'))
 cat_nexe = env.ComponentProgram(
-    'cat.nexe', 'cat.c',
+    cat_nexe_name, 'cat.c',
     EXTRA_LIBS=['srpc', 'platform', 'gio', 'm', 'pthread'])
 env.Publish(
-    'cat.nexe', 'run',
-    ['srpc_url_as_nacl_desc.html', 'srpc_url_as_nacl_desc_success.html',
+    cat_nexe, 'run',
+    ['srpc_url_as_nacl_desc.html',
+     'srpc_url_as_nacl_desc_success.html',
+     'cat.nmf',
      env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
 
+srpc_bidir_nexe_name = ('srpc_bidir_%s.nexe' % env.get('TARGET_FULLARCH'))
 srpc_bidir_nexe = env.ComponentProgram(
-    'srpc_bidir.nexe', 'srpc_bidir.c',
+    srpc_bidir_nexe_name, 'srpc_bidir.c',
     EXTRA_LIBS=['srpc', 'm', 'pthread'])
-env.Publish('srpc_bidir.nexe', 'run', [])
+env.Publish(srpc_bidir_nexe, 'run', [])
 
 
 # NOTE: at least for ARM the EXTRA_LIBS list should include 'srpc'
 #       but this somehow make the x86 version fragile
+srpc_bad_service_nexe_name = ('srpc_bad_service_%s.nexe' %
+                              env.get('TARGET_FULLARCH'))
 srpc_bad_service_nexe = env.ComponentProgram(
-    'srpc_bad_service.nexe', 'srpc_bad_service.c',
+    srpc_bad_service_nexe_name, 'srpc_bad_service.c',
     EXTRA_LIBS=['m', 'pthread'])
-env.Publish('srpc_bad_service.nexe', 'run', [])
+env.Publish(srpc_bad_service_nexe, 'run', [])
 
 ######################################################################
 ## Automated testing using sel_universal
@@ -83,7 +103,7 @@ env.Publish('srpc_bad_service.nexe', 'run', [])
 node = env.SelUniversalTest(
     'srpc_basic_test.out',
     sel_universal_flags=['--command_file', env.File('srpc_basic_test.stdin')],
-    command=[env.File('srpc_test.nexe')],
+    command=[srpc_test_nexe],
     stdout_golden=env.File('srpc_basic_test.stdout'),
     )
 env.AddNodeToTestSuite(node,
@@ -94,7 +114,7 @@ node = env.SelUniversalTest(
     'srpc_shm_test.out',
     sel_universal_flags=['--command_file',
                          env.File('srpc_shm_test.stdin')],
-    command=[env.File('srpc_shm.nexe')],
+    command=[srpc_shm_nexe],
     stdout_golden=env.File('srpc_shm_test.stdout'),
     )
 env.AddNodeToTestSuite(node,
@@ -103,7 +123,7 @@ env.AddNodeToTestSuite(node,
 
 node = env.SelUniversalTest(
     'srpc_bad_service.out',
-    command=[env.File('srpc_bad_service.nexe')],
+    command=[srpc_bad_service_nexe],
     exit_status='1'
     )
 env.AddNodeToTestSuite(node,
@@ -117,7 +137,9 @@ env.AddNodeToTestSuite(node,
 node = env.PPAPIBrowserTester(
     'srpc_basic_chrome_browser_test.out',
     url='srpc_basic_port.html',
-    files=[srpc_test_nexe, env.File('srpc_basic_port.html')])
+    files=[srpc_test_nexe,
+           env.File('srpc_test.nmf'),
+           env.File('srpc_basic_port.html')])
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_srpc_basic_chrome_browser_test',
