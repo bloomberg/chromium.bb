@@ -2,31 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FULLSCREEN_EXIT_BUBBLE_H__
-#define CHROME_BROWSER_UI_VIEWS_FULLSCREEN_EXIT_BUBBLE_H__
+#ifndef CHROME_BROWSER_UI_VIEWS_FULLSCREEN_EXIT_BUBBLE_H_
+#define CHROME_BROWSER_UI_VIEWS_FULLSCREEN_EXIT_BUBBLE_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/command_updater.h"
 #include "ui/base/animation/animation_delegate.h"
-#include "views/controls/link.h"
+#include "ui/gfx/point.h"
+#include "views/controls/link_listener.h"
+
+namespace gfx {
+class Rect;
+}
 
 namespace ui {
 class SlideAnimation;
 }
 
-#if defined(OS_LINUX)
 namespace views {
-class WidgetGtk;
+class View;
+class Widget;
 }
-#endif
 
 // FullscreenExitBubble is responsible for showing a bubble atop the screen in
 // fullscreen mode, telling users how to exit and providing a click target.
 // The bubble auto-hides, and re-shows when the user moves to the screen top.
-
-class FullscreenExitBubble : public views::LinkController,
+class FullscreenExitBubble : public views::LinkListener,
                              public ui::AnimationDelegate {
  public:
   explicit FullscreenExitBubble(
@@ -46,10 +51,10 @@ class FullscreenExitBubble : public views::LinkController,
   static const int kSlideInDurationMs;   // Duration of slide-in animation
   static const int kSlideOutDurationMs;  // Duration of slide-out animation
 
-  // views::LinkController
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  // views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-  // ui::AnimationDelegate
+  // ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation);
   virtual void AnimationEnded(const ui::Animation* animation);
 
@@ -101,4 +106,4 @@ class FullscreenExitBubble : public views::LinkController,
   DISALLOW_COPY_AND_ASSIGN(FullscreenExitBubble);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FULLSCREEN_EXIT_BUBBLE_H__
+#endif  // CHROME_BROWSER_UI_VIEWS_FULLSCREEN_EXIT_BUBBLE_H_

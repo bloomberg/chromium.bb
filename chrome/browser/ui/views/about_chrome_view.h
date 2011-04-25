@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_ABOUT_CHROME_VIEW_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 
@@ -36,7 +38,7 @@ class Profile;
 ////////////////////////////////////////////////////////////////////////////////
 class AboutChromeView : public views::View,
                         public views::DialogDelegate,
-                        public views::LinkController
+                        public views::LinkListener
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
                         , public GoogleUpdateStatusListener
 #endif
@@ -73,8 +75,9 @@ class AboutChromeView : public views::View,
   virtual bool Accept();
   virtual views::View* GetContentsView();
 
-  // Overridden from views::LinkController:
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  // Overridden from views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
   // Overridden from GoogleUpdateStatusListener:
   virtual void OnReportResults(GoogleUpdateUpgradeResult result,

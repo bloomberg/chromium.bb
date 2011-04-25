@@ -6,6 +6,7 @@
 
 #include <signal.h>
 #include <sys/types.h>
+
 #include <string>
 
 #include "base/basictypes.h"
@@ -40,6 +41,7 @@
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/native_button_gtk.h"
 #include "views/controls/label.h"
+#include "views/controls/link.h"
 #include "views/controls/throbber.h"
 #include "views/events/event.h"
 #include "views/layout/grid_layout.h"
@@ -48,8 +50,6 @@
 #include "views/widget/widget_gtk.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
-
-using views::WidgetGtk;
 
 namespace {
 
@@ -385,7 +385,7 @@ void EulaView::Init() {
 
   layout->StartRow(0, SINGLE_LINK_WITH_SHIFT_ROW);
   learn_more_link_ = new views::Link();
-  learn_more_link_->SetController(this);
+  learn_more_link_->set_listener(this);
   layout->AddView(learn_more_link_);
 
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
@@ -410,7 +410,7 @@ void EulaView::Init() {
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, LAST_ROW);
   system_security_settings_link_ = new views::Link();
-  system_security_settings_link_->SetController(this);
+  system_security_settings_link_->set_listener(this);
 
   if (!chromeos::CrosLibrary::Get()->EnsureLoaded() ||
       !chromeos::CrosLibrary::Get()->GetCryptohomeLibrary()->
@@ -487,9 +487,9 @@ void EulaView::ButtonPressed(views::Button* sender, const views::Event& event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::LinkController implementation:
+// views::LinkListener implementation:
 
-void EulaView::LinkActivated(views::Link* source, int event_flags) {
+void EulaView::LinkClicked(views::Link* source, int event_flags) {
   gfx::NativeWindow parent_window =
       LoginUtils::Get()->GetBackgroundView()->GetNativeWindow();
   if (source == learn_more_link_) {

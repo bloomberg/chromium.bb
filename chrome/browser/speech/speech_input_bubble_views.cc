@@ -23,6 +23,7 @@
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/layout/layout_constants.h"
 #include "views/view.h"
 
@@ -36,7 +37,7 @@ const int kBubbleHeadingVertMargin = 6;
 class ContentView
     : public views::View,
       public views::ButtonListener,
-      public views::LinkController {
+      public views::LinkListener {
  public:
   explicit ContentView(SpeechInputBubbleDelegate* delegate);
 
@@ -48,8 +49,8 @@ class ContentView
   // views::ButtonListener methods.
   virtual void ButtonPressed(views::Button* source, const views::Event& event);
 
-  // views::LinkController methods.
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  // views::LinkListener methods.
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // views::View overrides.
   virtual gfx::Size GetPreferredSize();
@@ -109,7 +110,7 @@ ContentView::ContentView(SpeechInputBubbleDelegate* delegate)
 
   mic_settings_ = new views::Link(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_MIC_SETTINGS)));
-  mic_settings_->SetController(this);
+  mic_settings_->set_listener(this);
   AddChildView(mic_settings_);
 }
 
@@ -156,7 +157,7 @@ void ContentView::ButtonPressed(views::Button* source,
   }
 }
 
-void ContentView::LinkActivated(views::Link* source, int event_flags) {
+void ContentView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(source, mic_settings_);
   AudioManager::GetAudioManager()->ShowAudioInputSettings();
 }

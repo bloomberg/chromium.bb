@@ -8,9 +8,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "views/controls/button/button.h"
-#include "views/controls/link.h"
 #include "ui/gfx/native_widget_types.h"
+#include "views/controls/button/button.h"
+#include "views/controls/link_listener.h"
 
 class ProcessSingleton;
 
@@ -38,7 +38,7 @@ class Widget;
 //   +-----------------------------------------------+
 //
 class TryChromeDialogView : public views::ButtonListener,
-                            public views::LinkController {
+                            public views::LinkListener {
  public:
   enum Result {
     TRY_CHROME,          // Launch chrome right now.
@@ -88,10 +88,10 @@ class TryChromeDialogView : public views::ButtonListener,
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
-  // views::LinkController:
+  // views::LinkListener:
   // If the user selects the link we need to fire off the default browser that
   // by some convoluted logic should not be chrome.
-  virtual void LinkActivated(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // Controls which version of the text to use.
   size_t version_;

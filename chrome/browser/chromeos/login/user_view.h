@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include <string>
 
 #include "views/controls/button/button.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/view.h"
 
 class SkBitmap;
@@ -26,7 +26,7 @@ class SignoutView;
 class PodImageView;
 
 class UserView : public views::View,
-                 public views::LinkController,
+                 public views::LinkListener,
                  public views::ButtonListener {
  public:
   class Delegate {
@@ -71,9 +71,9 @@ class UserView : public views::View,
   // Enable/Disable sign-out button.
   void SetSignoutEnabled(bool enabled);
 
-  // Implements LinkController.
+  // Implements views::LinkListener.
   // Called when a signout link is clicked.
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

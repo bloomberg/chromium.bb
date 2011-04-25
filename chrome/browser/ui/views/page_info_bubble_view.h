@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/views/bubble/bubble.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/view.h"
 
 namespace views {
@@ -20,7 +20,7 @@ class Label;
 class PageInfoBubbleView : public views::View,
                            public PageInfoModel::PageInfoModelObserver,
                            public BubbleDelegate,
-                           public views::LinkController,
+                           public views::LinkListener,
                            public ui::AnimationDelegate {
  public:
   PageInfoBubbleView(gfx::NativeWindow parent_window,
@@ -47,8 +47,8 @@ class PageInfoBubbleView : public views::View,
   virtual bool FadeInOnShow();
   virtual std::wstring accessible_name();
 
-  // LinkController methods:
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  // views::LinkListener methods:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // Overridden from ui::AnimationDelegate.
   virtual void AnimationEnded(const ui::Animation* animation);

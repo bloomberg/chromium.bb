@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MESSAGE_BUBBLE_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
 #include "views/controls/button/button.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
 
@@ -31,7 +33,7 @@ class MessageBubbleDelegate : public BubbleDelegate {
 // MessageBubble is used to show error and info messages on OOBE screens.
 class MessageBubble : public Bubble,
                       public views::ButtonListener,
-                      public views::LinkController {
+                      public views::LinkListener {
  public:
   // Create and show bubble. position_relative_to must be in screen coordinates.
   static MessageBubble* Show(views::Widget* parent,
@@ -67,8 +69,8 @@ class MessageBubble : public Bubble,
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event);
 
-  // Overridden from views::LinkController:
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  // Overridden from views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // Overridden from WidgetGtk.
   virtual void IsActiveChanged();

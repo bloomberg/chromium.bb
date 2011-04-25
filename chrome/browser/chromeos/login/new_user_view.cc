@@ -34,6 +34,7 @@
 #include "ui/gfx/font.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
+#include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/throbber.h"
 #include "views/widget/widget_gtk.h"
@@ -462,19 +463,19 @@ void NewUserView::Login() {
   delegate_->OnLogin(username, password);
 }
 
-// Sign in button causes a login attempt.
-void NewUserView::ButtonPressed(views::Button* sender,
-                                const views::Event& event) {
-  DCHECK(sender == sign_in_button_);
-  Login();
-}
-
-void NewUserView::LinkActivated(views::Link* source, int event_flags) {
+void NewUserView::LinkClicked(views::Link* source, int event_flags) {
   if (source == create_account_link_) {
     delegate_->OnCreateAccount();
   } else if (source == guest_link_) {
     delegate_->OnLoginAsGuest();
   }
+}
+
+// Sign in button causes a login attempt.
+void NewUserView::ButtonPressed(views::Button* sender,
+                                const views::Event& event) {
+  DCHECK(sender == sign_in_button_);
+  Login();
 }
 
 void NewUserView::ClearAndFocusControls() {
@@ -565,7 +566,7 @@ bool NewUserView::NavigateAway() {
 
 void NewUserView::InitLink(views::Link** link) {
   *link = new views::Link(std::wstring());
-  (*link)->SetController(this);
+  (*link)->set_listener(this);
   (*link)->SetNormalColor(login::kLinkColor);
   (*link)->SetHighlightedColor(login::kLinkColor);
   AddChildView(*link);

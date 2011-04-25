@@ -31,11 +31,10 @@
 #include "ui/gfx/image.h"
 #include "unicode/uchar.h"
 #include "views/controls/button/native_button.h"
+#include "views/controls/label.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-
-using base::TimeDelta;
 
 // TODO(paulg): These may need to be adjusted when download progress
 //              animation is added, and also possibly to take into account
@@ -354,7 +353,7 @@ void DownloadItemView::StartDownloadProgress() {
   if (progress_timer_.IsRunning())
     return;
   progress_timer_.Start(
-      TimeDelta::FromMilliseconds(download_util::kProgressRateMs), this,
+      base::TimeDelta::FromMilliseconds(download_util::kProgressRateMs), this,
       &DownloadItemView::UpdateDownloadProgress);
 }
 

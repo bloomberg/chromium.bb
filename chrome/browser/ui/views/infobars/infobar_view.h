@@ -21,7 +21,7 @@ class ImageButton;
 class ImageView;
 class Label;
 class Link;
-class LinkController;
+class LinkListener;
 class MenuButton;
 class TextButton;
 class ViewMenuDelegate;
@@ -48,7 +48,7 @@ class InfoBarView : public InfoBar,
 
   // Creates a link with the appropriate font and color for an infobar.
   static views::Link* CreateLink(const string16& text,
-                                 views::LinkController* controller,
+                                 views::LinkListener* listener,
                                  const SkColor& background_color);
 
   // Creates a menu button with an infobar-specific appearance.

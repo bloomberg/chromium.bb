@@ -6,6 +6,8 @@
 
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "chrome/browser/ui/views/event_utils.h"
+#include "views/controls/label.h"
+#include "views/controls/link.h"
 
 // LinkInfoBarDelegate --------------------------------------------------------
 
@@ -68,7 +70,7 @@ void LinkInfoBar::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   InfoBarView::ViewHierarchyChanged(is_add, parent, child);
 }
 
-void LinkInfoBar::LinkActivated(views::Link* source, int event_flags) {
+void LinkInfoBar::LinkClicked(views::Link* source, int event_flags) {
   DCHECK(link_ != NULL);
   DCHECK_EQ(link_, source);
   if (GetDelegate()->LinkClicked(

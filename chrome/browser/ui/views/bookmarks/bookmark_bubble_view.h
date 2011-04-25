@@ -13,7 +13,7 @@
 #include "ui/gfx/rect.h"
 #include "views/controls/button/button.h"
 #include "views/controls/combobox/combobox.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/view.h"
 
 class Profile;
@@ -31,7 +31,7 @@ class Textfield;
 // bookmark it is created with. Don't create a BookmarkBubbleView directly,
 // instead use the static Show method.
 class BookmarkBubbleView : public views::View,
-                           public views::LinkController,
+                           public views::LinkListener,
                            public views::ButtonListener,
                            public views::Combobox::Listener,
                            public BubbleDelegate {
@@ -73,9 +73,9 @@ class BookmarkBubbleView : public views::View,
   // Returns the title to display.
   string16 GetTitle();
 
-  // LinkController method, either unstars the item or shows the bookmark
+  // views::LinkListener method, either unstars the item or shows the bookmark
   // editor (depending upon which link was clicked).
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // ButtonListener method, closes the bubble or opens the edit dialog.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

@@ -27,6 +27,7 @@
 #include "views/background.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/controls/menu/menu.h"
 #include "views/controls/table/group_table_view.h"
 #include "views/controls/table/table_view_observer.h"
@@ -257,7 +258,7 @@ class TaskManagerView : public views::View,
                         public views::ButtonListener,
                         public views::DialogDelegate,
                         public views::TableViewObserver,
-                        public views::LinkController,
+                        public views::LinkListener,
                         public views::ContextMenuController,
                         public views::Menu::Delegate {
  public:
@@ -293,8 +294,8 @@ class TaskManagerView : public views::View,
   virtual void OnDoubleClick();
   virtual void OnKeyDown(ui::KeyboardCode keycode);
 
-  // views::LinkController implementation.
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  // views::LinkListener implementation.
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // Called by the column picker to pick up any new stat counters that
   // may have appeared since last time.
@@ -452,7 +453,7 @@ void TaskManagerView::Init() {
   kill_button_->SetAccessibleKeyboardShortcut(L"E");
   about_memory_link_ = new views::Link(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK)));
-  about_memory_link_->SetController(this);
+  about_memory_link_->set_listener(this);
 
   // Makes sure our state is consistent.
   OnSelectionChanged();
@@ -681,8 +682,7 @@ void TaskManagerView::OnKeyDown(ui::KeyboardCode keycode) {
     ActivateFocusedTab();
 }
 
-// views::LinkController implementation
-void TaskManagerView::LinkActivated(views::Link* source, int event_flags) {
+void TaskManagerView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK(source == about_memory_link_);
   task_manager_->OpenAboutMemory();
 }

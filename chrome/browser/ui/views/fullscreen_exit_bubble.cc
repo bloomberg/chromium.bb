@@ -12,6 +12,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
+#include "views/controls/link.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
@@ -59,7 +60,7 @@ FullscreenExitBubble::FullscreenExitView::FullscreenExitView(
   link_.SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE)));
 #endif
-  link_.SetController(bubble);
+  link_.set_listener(bubble);
   link_.SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::LargeFont));
   link_.SetNormalColor(SK_ColorWHITE);
@@ -166,7 +167,7 @@ FullscreenExitBubble::~FullscreenExitBubble() {
   MessageLoop::current()->DeleteSoon(FROM_HERE, popup_);
 }
 
-void FullscreenExitBubble::LinkActivated(views::Link* source, int event_flags) {
+void FullscreenExitBubble::LinkClicked(views::Link* source, int event_flags) {
   delegate_->ExecuteCommand(IDC_FULLSCREEN);
 }
 

@@ -10,11 +10,14 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/label.h"
+#include "views/controls/link.h"
 
-using views::View;
+namespace {
 
 // Horizontal padding, in pixels, between the link and label.
-static const int kViewPadding = 6;
+const int kViewPadding = 6;
+
+}  // namespace
 
 BookmarkBarInstructionsView::BookmarkBarInstructionsView(Delegate* delegate)
     : delegate_(delegate),
@@ -31,7 +34,7 @@ BookmarkBarInstructionsView::BookmarkBarInstructionsView(Delegate* delegate)
         UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_IMPORT_LINK)));
     // We don't want the link to alter tab navigation.
     import_link_->SetFocusable(false);
-    import_link_->SetController(this);
+    import_link_->set_listener(this);
     AddChildView(import_link_);
   }
 }
@@ -39,7 +42,7 @@ BookmarkBarInstructionsView::BookmarkBarInstructionsView(Delegate* delegate)
 gfx::Size BookmarkBarInstructionsView::GetPreferredSize() {
   int ascent = 0, descent = 0, height = 0, width = 0;
   for (int i = 0; i < child_count(); ++i) {
-    View* view = GetChildViewAt(i);
+    views::View* view = GetChildViewAt(i);
     gfx::Size pref = view->GetPreferredSize();
     int baseline = view->GetBaseline();
     if (baseline != -1) {
@@ -60,7 +63,7 @@ void BookmarkBarInstructionsView::Layout() {
   int remaining_width = width();
   int x = 0;
   for (int i = 0; i < child_count(); ++i) {
-    View* view = GetChildViewAt(i);
+    views::View* view = GetChildViewAt(i);
     gfx::Size pref = view->GetPreferredSize();
     int baseline = view->GetBaseline();
     int y;
@@ -80,8 +83,8 @@ void BookmarkBarInstructionsView::OnThemeChanged() {
 }
 
 void BookmarkBarInstructionsView::ViewHierarchyChanged(bool is_add,
-                                                       View* parent,
-                                                       View* child) {
+                                                       views::View* parent,
+                                                       views::View* child) {
   if (!updated_colors_ && is_add && GetWidget())
     UpdateColors();
 }
@@ -91,8 +94,8 @@ void BookmarkBarInstructionsView::GetAccessibleState(
   state->role = ui::AccessibilityTypes::ROLE_GROUPING;
 }
 
-void BookmarkBarInstructionsView::LinkActivated(views::Link* source,
-                                                int event_flags) {
+void BookmarkBarInstructionsView::LinkClicked(views::Link* source,
+                                              int event_flags) {
   delegate_->ShowImportDialog();
 }
 

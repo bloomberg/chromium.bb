@@ -22,6 +22,7 @@
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/painter.h"
 
 namespace {
@@ -66,7 +67,7 @@ using login::kUserImageSize;
 // The view that shows the Sign out button below the user's image.
 class SignoutView : public views::View {
  public:
-  explicit SignoutView(views::LinkController* link_controller) {
+  explicit SignoutView(views::LinkListener* link_listener) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const gfx::Font& font = rb.GetFont(ResourceBundle::SmallFont);
 
@@ -77,7 +78,7 @@ class SignoutView : public views::View {
 
     signout_link_ = new views::Link(
         UTF16ToWide(l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT)));
-    signout_link_->SetController(link_controller);
+    signout_link_->set_listener(link_listener);
     signout_link_->SetFont(font);
     signout_link_->SetColor(kTextColor);
     signout_link_->SetFocusable(true);
@@ -321,7 +322,7 @@ void UserView::SetSignoutEnabled(bool enabled) {
   Layout();
 }
 
-void UserView::LinkActivated(views::Link* source, int event_flags) {
+void UserView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK(delegate_);
   DCHECK(signout_view_);
   if (signout_view_->signout_link() == source)

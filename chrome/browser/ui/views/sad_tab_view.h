@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "ui/gfx/font.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/view.h"
 
 class SkBitmap;
@@ -23,7 +23,7 @@ class TabContents;
 //
 ///////////////////////////////////////////////////////////////////////////////
 class SadTabView : public views::View,
-                   public views::LinkController {
+                   public views::LinkListener {
  public:
   enum Kind {
     CRASHED,  // The tab crashed.  Display the "Aw, Snap!" page.
@@ -37,8 +37,8 @@ class SadTabView : public views::View,
   virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
 
-  // Overridden from views::LinkController:
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  // Overridden from views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
  private:
   static void InitClass(Kind kind);

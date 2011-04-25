@@ -25,6 +25,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "views/controls/button/native_button.h"
+#include "views/controls/label.h"
+#include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/events/event.h"
 #include "views/focus/focus_manager.h"
@@ -33,13 +35,8 @@
 #include "views/window/client_view.h"
 #include "views/window/window.h"
 
-using views::Combobox;
 using views::ColumnSet;
 using views::GridLayout;
-using views::Label;
-using views::Link;
-using views::NativeButton;
-using views::View;
 
 // Padding between "Title:" and the actual title.
 static const int kTitlePadding = 4;
@@ -156,8 +153,9 @@ bool BookmarkBubbleView::AcceleratorPressed(
   return true;
 }
 
-void BookmarkBubbleView::ViewHierarchyChanged(bool is_add, View* parent,
-                                              View* child) {
+void BookmarkBubbleView::ViewHierarchyChanged(bool is_add,
+                                              views::View* parent,
+                                              views::View* child) {
   if (is_add && child == this)
     Init();
 }
@@ -189,21 +187,21 @@ void BookmarkBubbleView::Init() {
     initialized = true;
   }
 
-  remove_link_ = new Link(UTF16ToWide(l10n_util::GetStringUTF16(
+  remove_link_ = new views::Link(UTF16ToWide(l10n_util::GetStringUTF16(
       IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK)));
-  remove_link_->SetController(this);
+  remove_link_->set_listener(this);
 
-  edit_button_ = new NativeButton(
+  edit_button_ = new views::NativeButton(
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_OPTIONS)));
 
-  close_button_ =
-      new NativeButton(this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_DONE)));
+  close_button_ = new views::NativeButton(
+      this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_DONE)));
   close_button_->SetIsDefault(true);
 
-  Label* combobox_label = new Label(
+  views::Label* combobox_label = new views::Label(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_FOLDER_TEXT)));
 
-  parent_combobox_ = new Combobox(&parent_model_);
+  parent_combobox_ = new views::Combobox(&parent_model_);
   parent_combobox_->SetSelectedItem(parent_model_.node_parent_index());
   parent_combobox_->set_listener(this);
   parent_combobox_->SetAccessibleName(
@@ -213,9 +211,10 @@ void BookmarkBubbleView::Init() {
   parent_combobox_->SetEnabled(false);
 #endif
 
-  Label* title_label = new Label(UTF16ToWide(l10n_util::GetStringUTF16(
-      newly_bookmarked_ ? IDS_BOOMARK_BUBBLE_PAGE_BOOKMARKED :
-                          IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK)));
+  views::Label* title_label = new views::Label(
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          newly_bookmarked_ ? IDS_BOOMARK_BUBBLE_PAGE_BOOKMARKED :
+                              IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK)));
   title_label->SetFont(
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
   title_label->SetColor(kTitleColor);
@@ -258,7 +257,7 @@ void BookmarkBubbleView::Init() {
 
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, 2);
-  layout->AddView(new Label(UTF16ToWide(
+  layout->AddView(new views::Label(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_TITLE_TEXT))));
   title_tf_ = new views::Textfield();
   title_tf_->SetText(GetTitle());
@@ -292,7 +291,7 @@ void BookmarkBubbleView::ButtonPressed(
   HandleButtonPressed(sender);
 }
 
-void BookmarkBubbleView::LinkActivated(Link* source, int event_flags) {
+void BookmarkBubbleView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK(source == remove_link_);
   UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"),
                             profile_);
@@ -305,7 +304,7 @@ void BookmarkBubbleView::LinkActivated(Link* source, int event_flags) {
   Close();
 }
 
-void BookmarkBubbleView::ItemChanged(Combobox* combobox,
+void BookmarkBubbleView::ItemChanged(views::Combobox* combobox,
                                      int prev_index,
                                      int new_index) {
   if (new_index + 1 == parent_model_.GetItemCount()) {

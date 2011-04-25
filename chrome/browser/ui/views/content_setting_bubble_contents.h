@@ -8,11 +8,13 @@
 
 #include <map>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/common/content_settings_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "views/controls/button/button.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 
 // ContentSettingBubbleContents is used when the user turns on different kinds
 // of content blocking (e.g. "block images").  When viewing a page with blocked
@@ -36,7 +38,7 @@ class RadioButton;
 
 class ContentSettingBubbleContents : public views::View,
                                      public views::ButtonListener,
-                                     public views::LinkController,
+                                     public views::LinkListener,
                                      public NotificationObserver {
  public:
   ContentSettingBubbleContents(
@@ -61,8 +63,8 @@ class ContentSettingBubbleContents : public views::View,
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // views::LinkController:
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  // views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,

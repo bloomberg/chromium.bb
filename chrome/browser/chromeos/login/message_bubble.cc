@@ -12,6 +12,7 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/controls/link.h"
 #include "views/layout/grid_layout.h"
 #include "views/widget/widget.h"
 
@@ -78,7 +79,7 @@ MessageBubble::MessageBubble(views::WidgetGtk::Type type,
   if (!help.empty()) {
     layout->StartRowWithPadding(0, 1, 0, kBorderSize);
     help_link_ = new views::Link(help);
-    help_link_->SetController(this);
+    help_link_->set_listener(this);
     help_link_->SetNormalColor(login::kLinkColor);
     help_link_->SetHighlightedColor(login::kLinkColor);
     layout->AddView(help_link_);
@@ -94,7 +95,7 @@ void MessageBubble::ButtonPressed(views::Button* sender,
   }
 }
 
-void MessageBubble::LinkActivated(views::Link* source, int event_flags) {
+void MessageBubble::LinkClicked(views::Link* source, int event_flags) {
   if (source == help_link_) {
     if (message_delegate_)
       message_delegate_->OnHelpLinkActivated();

@@ -75,14 +75,14 @@ views::Label* InfoBarView::CreateLabel(const string16& text) {
 
 // static
 views::Link* InfoBarView::CreateLink(const string16& text,
-                                     views::LinkController* controller,
+                                     views::LinkListener* listener,
                                      const SkColor& background_color) {
   views::Link* link = new views::Link;
   link->SetText(UTF16ToWideHack(text));
   link->SetFont(
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
   link->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  link->SetController(controller);
+  link->set_listener(listener);
   link->MakeReadableOverBackgroundColor(background_color);
   return link;
 }

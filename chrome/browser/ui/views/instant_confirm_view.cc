@@ -15,6 +15,7 @@
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/label.h"
+#include "views/controls/link.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/window/window.h"
@@ -28,7 +29,7 @@ InstantConfirmView::InstantConfirmView(Profile* profile) : profile_(profile) {
   views::Link* learn_more_link = new views::Link(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
   learn_more_link->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  learn_more_link->SetController(this);
+  learn_more_link->set_listener(this);
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
@@ -77,7 +78,7 @@ bool InstantConfirmView::IsModal() const {
   return true;
 }
 
-void InstantConfirmView::LinkActivated(views::Link* source, int event_flags) {
+void InstantConfirmView::LinkClicked(views::Link* source, int event_flags) {
   Browser* browser = BrowserList::GetLastActive();
   browser->OpenURL(browser::InstantLearnMoreURL(), GURL(),
                    NEW_FOREGROUND_TAB, PageTransition::TYPED);

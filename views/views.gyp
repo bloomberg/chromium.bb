@@ -119,6 +119,7 @@
         'controls/label.h',
         'controls/link.cc',
         'controls/link.h',
+        'controls/link_listener.h',
         'controls/menu/menu.cc',
         'controls/menu/menu.h',
         'controls/menu/menu_2.cc',

@@ -6,13 +6,15 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_EULA_VIEW_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/controls/button/button.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/view.h"
 
 namespace views {
@@ -74,7 +76,7 @@ class EULATabContentsDelegate : public TabContentsDelegate {
 class EulaView
     : public views::View,
       public views::ButtonListener,
-      public views::LinkController,
+      public views::LinkListener,
       public MessageBubbleDelegate,
       public EULATabContentsDelegate {
  public:
@@ -94,8 +96,8 @@ class EulaView
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // views::LinkController implementation.
-  void LinkActivated(views::Link* source, int event_flags);
+  // views::LinkListener implementation.
+  void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
  private:
   // views::View implementation.

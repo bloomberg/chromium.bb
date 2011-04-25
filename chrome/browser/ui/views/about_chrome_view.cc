@@ -35,6 +35,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/throbber.h"
 #include "views/layout/layout_constants.h"
@@ -267,14 +268,14 @@ void AboutChromeView::Init() {
       StringSubRange(text, text.find(kBeginLinkChr) + wcslen(kBeginLinkChr),
                      text.find(kEndLinkChr)));
   AddChildView(chromium_url_);
-  chromium_url_->SetController(this);
+  chromium_url_->set_listener(this);
 
   // The Open Source link within the main text of the dialog.
   open_source_url_ = new views::Link(
       StringSubRange(text, text.find(kBeginLinkOss) + wcslen(kBeginLinkOss),
                      text.find(kEndLinkOss)));
   AddChildView(open_source_url_);
-  open_source_url_->SetController(this);
+  open_source_url_->set_listener(this);
 
   // Add together all the strings in the dialog for the purpose of calculating
   // the height of the dialog. The space for the Terms of Service string is not
@@ -317,7 +318,7 @@ void AboutChromeView::Init() {
   terms_of_service_url_ = new views::Link(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TERMS_OF_SERVICE)));
   AddChildView(terms_of_service_url_);
-  terms_of_service_url_->SetController(this);
+  terms_of_service_url_->set_listener(this);
 
   // Add the Terms of Service line and some whitespace.
   height += font.GetHeight() + views::kRelatedControlVerticalSpacing;
@@ -638,10 +639,8 @@ views::View* AboutChromeView::GetContentsView() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AboutChromeView, views::LinkController implementation:
-
-void AboutChromeView::LinkActivated(views::Link* source,
-                                    int event_flags) {
+// AboutChromeView, views::LinkListener implementation:
+void AboutChromeView::LinkClicked(views::Link* source, int event_flags) {
   GURL url;
   if (source == terms_of_service_url_) {
     url = GURL(chrome::kAboutTermsURL);

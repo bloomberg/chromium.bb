@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/user_input.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
 
@@ -31,7 +31,7 @@ namespace chromeos {
 class NewUserView : public ThrobberHostView,
                     public UserInput,
                     public views::TextfieldController,
-                    public views::LinkController,
+                    public views::LinkListener,
                     public views::ButtonListener {
  public:
   // Delegate class to get notifications from the view.
@@ -97,11 +97,12 @@ class NewUserView : public ThrobberHostView,
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents);
 
+  // views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // views::LinkController:
-  virtual void LinkActivated(views::Link* source, int event_flags);
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
   // ThrobberHostView:

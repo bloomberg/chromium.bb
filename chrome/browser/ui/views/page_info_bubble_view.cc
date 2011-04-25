@@ -7,8 +7,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/cert_store.h"
@@ -19,6 +19,7 @@
 #include "ui/gfx/image.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/controls/link.h"
 #include "views/controls/separator.h"
 #include "views/layout/grid_layout.h"
 #include "views/widget/widget.h"
@@ -44,7 +45,7 @@ const int kPageInfoSlideDuration = 300;
 // A section contains an image that shows a status (good or bad), a title, an
 // optional head-line (in bold) and a description.
 class Section : public views::View,
-                public views::LinkController {
+                public views::LinkListener {
  public:
   Section(PageInfoBubbleView* owner,
           const PageInfoModel::SectionInfo& section_info,
@@ -56,8 +57,8 @@ class Section : public views::View,
   virtual int GetHeightForWidth(int w);
   virtual void Layout();
 
-  // views::LinkController methods:
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  // views::LinkListener methods:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
  private:
   // Calculate the layout if |compute_bounds_only|, otherwise does Layout also.
@@ -157,7 +158,7 @@ void PageInfoBubbleView::LayoutSections() {
   layout->StartRow(0, 1);
   help_center_link_ = new views::Link(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER_LINK)));
-  help_center_link_->SetController(this);
+  help_center_link_->set_listener(this);
   layout->AddView(help_center_link_);
 }
 
@@ -219,7 +220,7 @@ std::wstring PageInfoBubbleView::accessible_name() {
   return L"PageInfoBubble";
 }
 
-void PageInfoBubbleView::LinkActivated(views::Link* source, int event_flags) {
+void PageInfoBubbleView::LinkClicked(views::Link* source, int event_flags) {
   // We want to make sure the info bubble closes once the link is activated.  So
   // we close it explicitly rather than relying on a side-effect of opening a
   // new tab (see http://crosbug.com/10186).
@@ -273,7 +274,7 @@ Section::Section(PageInfoBubbleView* owner,
   if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY && show_cert) {
     link_ = new views::Link(
         UTF16ToWide(l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON)));
-    link_->SetController(this);
+    link_->set_listener(this);
     AddChildView(link_);
   }
 }
@@ -289,7 +290,7 @@ void Section::Layout() {
   LayoutItems(false, width());
 }
 
-void Section::LinkActivated(views::Link* source, int event_flags) {
+void Section::LinkClicked(views::Link* source, int event_flags) {
   owner_->ShowCertDialog();
 }
 

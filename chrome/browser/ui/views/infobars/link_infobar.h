@@ -6,14 +6,16 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_LINK_INFOBAR_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 
 class LinkInfoBarDelegate;
 
 // An infobar that shows a string with an embedded link.
 class LinkInfoBar : public InfoBarView,
-                    public views::LinkController {
+                    public views::LinkListener {
  public:
   explicit LinkInfoBar(LinkInfoBarDelegate* delegate);
 
@@ -24,8 +26,8 @@ class LinkInfoBar : public InfoBarView,
   virtual void Layout();
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
 
-  // views::LinkController:
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  // views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   LinkInfoBarDelegate* GetDelegate();
 

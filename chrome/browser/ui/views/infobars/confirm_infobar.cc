@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
+#include "views/controls/link.h"
 
 // ConfirmInfoBarDelegate -----------------------------------------------------
 
@@ -118,7 +119,7 @@ int ConfirmInfoBar::ContentMinimumWidth() const {
       (before_cancel_spacing + cancel_button_->GetPreferredSize().width()));
 }
 
-void ConfirmInfoBar::LinkActivated(views::Link* source, int event_flags) {
+void ConfirmInfoBar::LinkClicked(views::Link* source, int event_flags) {
   DCHECK(link_ != NULL);
   DCHECK_EQ(link_, source);
   if (GetDelegate()->LinkClicked(

@@ -12,21 +12,7 @@
 
 namespace views {
 
-class Link;
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// LinkController defines the method that should be implemented to
-// receive a notification when a link is clicked
-//
-////////////////////////////////////////////////////////////////////////////////
-class LinkController {
- public:
-  virtual void LinkActivated(Link* source, int event_flags) = 0;
-
- protected:
-  virtual ~LinkController() {}
-};
+class LinkListener;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -42,8 +28,8 @@ class Link : public Label {
   explicit Link(const std::wstring& title);
   virtual ~Link();
 
-  void SetController(LinkController* controller);
-  const LinkController* GetController();
+  const LinkListener* listener() { return listener_; }
+  void set_listener(LinkListener* listener) { listener_ = listener; }
 
   // Overridden from View:
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
@@ -85,7 +71,7 @@ class Link : public Label {
 
   void Init();
 
-  LinkController* controller_;
+  LinkListener* listener_;
 
   // Whether the link is currently highlighted.
   bool highlighted_;

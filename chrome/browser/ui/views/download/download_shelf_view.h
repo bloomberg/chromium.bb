@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_SHELF_VIEW_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/ui/views/accessible_pane_view.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "views/controls/button/button.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/mouse_watcher.h"
 
 class BaseDownloadItemModel;
@@ -37,7 +39,7 @@ class DownloadShelfView : public AccessiblePaneView,
                           public ui::AnimationDelegate,
                           public DownloadShelf,
                           public views::ButtonListener,
-                          public views::LinkController,
+                          public views::LinkListener,
                           public views::MouseWatcherListener {
  public:
   DownloadShelfView(Browser* browser, BrowserView* parent);
@@ -55,9 +57,9 @@ class DownloadShelfView : public AccessiblePaneView,
   virtual void AnimationProgressed(const ui::Animation* animation);
   virtual void AnimationEnded(const ui::Animation* animation);
 
-  // Implementation of LinkController.
+  // Implementation of views::LinkListener.
   // Invoked when the user clicks the 'show all downloads' link button.
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // Implementation of ButtonListener.
   // Invoked when the user clicks the close button. Asks the browser to

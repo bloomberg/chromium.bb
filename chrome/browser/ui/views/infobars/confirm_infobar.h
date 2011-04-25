@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_CONFIRM_INFOBAR_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 
 class ConfirmInfoBarDelegate;
+
 namespace views {
 class Label;
 class TextButton;
@@ -19,7 +22,7 @@ class TextButton;
 // right-aligned link.  This is commonly used to do things like:
 // "Would you like to do X?  [Yes]  [No]               _Learn More_ [x]"
 class ConfirmInfoBar : public InfoBarView,
-                       public views::LinkController {
+                       public views::LinkListener {
  public:
   explicit ConfirmInfoBar(ConfirmInfoBarDelegate* delegate);
 
@@ -32,8 +35,8 @@ class ConfirmInfoBar : public InfoBarView,
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
   virtual int ContentMinimumWidth() const;
 
-  // views::LinkController:
-  virtual void LinkActivated(views::Link* source, int event_flags);
+  // views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   ConfirmInfoBarDelegate* GetDelegate();
 

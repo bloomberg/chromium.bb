@@ -19,6 +19,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
+#include "views/controls/link.h"
 
 static const int kSadTabOffset = -64;
 static const int kIconTitleSpacing = 20;
@@ -65,7 +66,7 @@ SadTabView::SadTabView(TabContents* tab_contents, Kind kind)
         new views::Link(UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
     learn_more_link_->SetFont(*message_font_);
     learn_more_link_->SetNormalColor(kLinkColor);
-    learn_more_link_->SetController(this);
+    learn_more_link_->set_listener(this);
     AddChildView(learn_more_link_);
   }
 }
@@ -132,7 +133,7 @@ void SadTabView::Layout() {
   }
 }
 
-void SadTabView::LinkActivated(views::Link* source, int event_flags) {
+void SadTabView::LinkClicked(views::Link* source, int event_flags) {
   if (tab_contents_ != NULL && source == learn_more_link_) {
     GURL help_url =
         google_util::AppendGoogleLocaleParam(GURL(kind_ == CRASHED ?

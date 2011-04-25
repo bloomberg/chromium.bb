@@ -14,15 +14,16 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/radio_button.h"
 #include "views/controls/image_view.h"
+#include "views/controls/link.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -186,7 +187,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   // Fifth row views.
   layout->StartRowWithPadding(0, 4, 0, 10);
   views::Link* link = new views::Link(why_this);
-  link->SetController(this);
+  link->set_listener(this);
   layout->AddView(link);
 
   // We resize the window according to the layout manager. This takes into
@@ -255,6 +256,6 @@ void TryChromeDialogView::ButtonPressed(views::Button* sender,
   MessageLoop::current()->Quit();
 }
 
-void TryChromeDialogView::LinkActivated(views::Link* source, int event_flags) {
+void TryChromeDialogView::LinkClicked(views::Link* source, int event_flags) {
   ::ShellExecuteW(NULL, L"open", kHelpCenterUrl, NULL, NULL, SW_SHOW);
 }

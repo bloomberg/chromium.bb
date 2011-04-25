@@ -54,7 +54,7 @@ using ui::ViewProp;
 
 static const char kWindowObjectKey[] = "ChromeWindowObject";
 
-// This class overrides the LinkActivated function in the PageInfoBubbleView
+// This class overrides the LinkClicked function in the PageInfoBubbleView
 // class and routes the help center link navigation to the host browser.
 class ExternalTabPageInfoBubbleView : public PageInfoBubbleView {
  public:
@@ -71,8 +71,8 @@ class ExternalTabPageInfoBubbleView : public PageInfoBubbleView {
   virtual ~ExternalTabPageInfoBubbleView() {
     DVLOG(1) << __FUNCTION__;
   }
-  // LinkController methods:
-  virtual void LinkActivated(views::Link* source, int event_flags) {
+  // LinkListener methods:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE {
     GURL url = google_util::AppendGoogleLocaleParam(
         GURL(chrome::kPageInfoHelpCenterURL));
     container_->OpenURLFromTab(container_->tab_contents(), url, GURL(),

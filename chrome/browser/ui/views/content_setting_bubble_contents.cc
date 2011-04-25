@@ -24,6 +24,7 @@
 #include "views/controls/button/radio_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/controls/link.h"
 #include "views/controls/separator.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
@@ -88,7 +89,7 @@ void ContentSettingBubbleContents::Favicon::OnMouseReleased(
     const views::MouseEvent& event) {
   if ((event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
      HitTest(event.location())) {
-    parent_->LinkActivated(link_, event.flags());
+    parent_->LinkClicked(link_, event.flags());
   }
 }
 
@@ -157,8 +158,8 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
   NOTREACHED() << "unknown radio";
 }
 
-void ContentSettingBubbleContents::LinkActivated(views::Link* source,
-                                                 int event_flags) {
+void ContentSettingBubbleContents::LinkClicked(views::Link* source,
+                                               int event_flags) {
   if (source == custom_link_) {
     content_setting_bubble_model_->OnCustomLinkClicked();
     bubble_->set_fade_away_on_close(true);
@@ -245,7 +246,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
       layout->StartRow(0, popup_column_set_id);
 
       views::Link* link = new views::Link(UTF8ToWide(i->title));
-      link->SetController(this);
+      link->set_listener(this);
       link->SetElideInMiddle(true);
       popup_links_[link] = i - bubble_content.popup_items.begin();
       layout->AddView(new Favicon((*i).bitmap, this, link));
@@ -304,7 +305,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
   if (!bubble_content.custom_link.empty()) {
     custom_link_ = new views::Link(UTF8ToWide(bubble_content.custom_link));
     custom_link_->SetEnabled(bubble_content.custom_link_enabled);
-    custom_link_->SetController(this);
+    custom_link_->set_listener(this);
     if (!bubble_content_empty)
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     layout->StartRow(0, single_column_set_id);
@@ -332,7 +333,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
 
   layout->StartRow(0, double_column_set_id);
   manage_link_ = new views::Link(UTF8ToWide(bubble_content.manage_link));
-  manage_link_->SetController(this);
+  manage_link_->set_listener(this);
   layout->AddView(manage_link_);
 
   close_button_ =

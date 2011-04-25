@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_NETWORK_SELECTION_VIEW_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/chromeos/views/dropdown_button.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/window_delegate.h"
@@ -35,7 +37,7 @@ class ScreenObserver;
 
 // View for the network selection/initial welcome screen.
 class NetworkSelectionView : public views::View,
-                             public views::LinkController,
+                             public views::LinkListener,
                              public LoginHtmlDialog::Delegate {
  public:
   explicit NetworkSelectionView(NetworkScreenDelegate* delegate);
@@ -65,8 +67,8 @@ class NetworkSelectionView : public views::View,
   // Returns whether continue button is enabled.
   bool IsContinueEnabled() const;
 
-  // views::LinkController implementation.
-  virtual void LinkActivated(views::Link* source, int);
+  // views::LinkListener implementation.
+  virtual void LinkClicked(views::Link* source, int) OVERRIDE;
 
   // Returns true if any dialog box is currently open?
   bool is_dialog_open() const {

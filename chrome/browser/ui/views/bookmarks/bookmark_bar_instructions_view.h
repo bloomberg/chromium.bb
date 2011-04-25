@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_BAR_INSTRUCTIONS_VIEW_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/view.h"
 
 namespace views {
@@ -21,7 +23,7 @@ class Link;
 // with a link to import bookmarks. Clicking the link results in notifying the
 // delegate.
 class BookmarkBarInstructionsView : public views::View,
-                                    public views::LinkController {
+                                    public views::LinkListener {
  public:
   // The delegate is notified once the user clicks on the link to import
   // bookmarks.
@@ -35,7 +37,7 @@ class BookmarkBarInstructionsView : public views::View,
 
   explicit BookmarkBarInstructionsView(Delegate* delegate);
 
-  // View overrides.
+  // views::View overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
@@ -44,8 +46,8 @@ class BookmarkBarInstructionsView : public views::View,
                                     views::View* child) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // LinkController.
-  virtual void LinkActivated(views::Link* source, int event_flags) OVERRIDE;
+  // views::LinkListener overrides.
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
  private:
   void UpdateColors();

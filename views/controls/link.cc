@@ -4,6 +4,8 @@
 
 #include "views/controls/link.h"
 
+#include "build/build_config.h"
+
 #if defined(OS_LINUX)
 #include <gdk/gdk.h>
 #endif
@@ -13,6 +15,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
+#include "views/controls/link_listener.h"
 #include "views/events/event.h"
 
 #if defined(OS_LINUX)
@@ -67,14 +70,14 @@ static HCURSOR g_hand_cursor = NULL;
 const char Link::kViewClassName[] = "views/Link";
 
 Link::Link() : Label(L""),
-               controller_(NULL),
+               listener_(NULL),
                highlighted_(false) {
   Init();
   SetFocusable(true);
 }
 
 Link::Link(const std::wstring& title) : Label(title),
-                                        controller_(NULL),
+                                        listener_(NULL),
                                         highlighted_(false) {
   Init();
   SetFocusable(true);
@@ -87,14 +90,6 @@ void Link::Init() {
 }
 
 Link::~Link() {
-}
-
-void Link::SetController(LinkController* controller) {
-  controller_ = controller;
-}
-
-const LinkController* Link::GetController() {
-  return controller_;
 }
 
 bool Link::OnMousePressed(const MouseEvent& event) {
@@ -120,8 +115,8 @@ void Link::OnMouseReleased(const MouseEvent& event) {
     // Focus the link on click.
     RequestFocus();
 
-    if (controller_)
-      controller_->LinkActivated(this, event.flags());
+    if (listener_)
+      listener_->LinkClicked(this, event.flags());
   }
 }
 
@@ -140,8 +135,8 @@ bool Link::OnKeyPressed(const KeyEvent& event) {
   // Focus the link on key pressed.
   RequestFocus();
 
-  if (controller_)
-    controller_->LinkActivated(this, event.flags());
+  if (listener_)
+    listener_->LinkClicked(this, event.flags());
 
   return true;
 }

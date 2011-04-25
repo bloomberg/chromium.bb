@@ -4,6 +4,7 @@
 
 #include "views/examples/link_example.h"
 
+#include "views/controls/link.h"
 #include "views/layout/fill_layout.h"
 #include "views/view.h"
 
@@ -21,13 +22,13 @@ std::wstring LinkExample::GetExampleTitle() {
 
 void LinkExample::CreateExampleView(views::View* container) {
   link_ = new views::Link(L"Click me!");
-  link_->SetController(this);
+  link_->set_listener(this);
 
   container->SetLayoutManager(new views::FillLayout);
   container->AddChildView(link_);
 }
 
-void LinkExample::LinkActivated(views::Link* source, int event_flags) {
+void LinkExample::LinkClicked(views::Link* source, int event_flags) {
   PrintStatus(L"Link clicked");
 }
 

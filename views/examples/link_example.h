@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/examples/example_base.h"
 
 namespace views {
@@ -18,7 +18,7 @@ class View;
 namespace examples {
 
 class LinkExample : public ExampleBase,
-                    public views::LinkController {
+                    public views::LinkListener {
  public:
   explicit LinkExample(ExamplesMain* main);
   virtual ~LinkExample();
@@ -28,8 +28,8 @@ class LinkExample : public ExampleBase,
   virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:
-  // Overridden from views::LinkController:
-  virtual void LinkActivated(views::Link* source, int event_flags) OVERRIDE;
+  // Overridden from views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   views::Link* link_;
 

@@ -6,6 +6,7 @@
 
 #include <signal.h>
 #include <sys/types.h>
+
 #include <string>
 
 #include "base/utf_string_conversions.h"
@@ -23,6 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
+#include "views/controls/link.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
 #include "views/layout/fill_layout.h"
@@ -318,7 +320,7 @@ void NetworkSelectionView::Init() {
   connecting_network_label_->SetVisible(false);
 
   proxy_settings_link_ = new views::Link();
-  proxy_settings_link_->SetController(this);
+  proxy_settings_link_->set_listener(this);
   proxy_settings_link_->SetVisible(true);
   proxy_settings_link_->SetFocusable(true);
   proxy_settings_link_->SetNormalColor(login::kLinkColor);
@@ -440,9 +442,8 @@ bool NetworkSelectionView::IsContinueEnabled() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::LinkController implementation:
-
-void NetworkSelectionView::LinkActivated(views::Link* source, int) {
+// views::LinkListener implementation:
+void NetworkSelectionView::LinkClicked(views::Link* source, int) {
   delegate_->ClearErrors();
   if (source == proxy_settings_link_) {
     if (!proxy_settings_dialog_.get()) {
