@@ -197,6 +197,7 @@ struct wlsc_surface {
 	struct wlsc_compositor *compositor;
 	GLuint texture, saved_texture;
 	int32_t x, y, width, height;
+	int32_t pitch;
 	int32_t saved_x, saved_y;
 	struct wl_list link;
 	struct wl_list buffer_link;

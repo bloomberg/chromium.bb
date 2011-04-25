@@ -359,8 +359,9 @@ wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 		 * overwrite it.*/
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
 			     0, 0, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
+		es->pitch = wl_shm_buffer_get_stride(buffer) / 4;
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-			     buffer->width, buffer->height, 0,
+			     es->pitch, buffer->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
 			     wl_shm_buffer_get_data(buffer));
 		es->visual = buffer->visual;
@@ -377,6 +378,7 @@ wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 
 		glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, es->image);
 		es->visual = buffer->visual;
+		es->pitch = es->width;
 	}
 }
 
@@ -385,6 +387,7 @@ wlsc_sprite_attach(struct wlsc_sprite *sprite, struct wl_surface *surface)
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
+	es->pitch = es->width;
 	es->image = sprite->image;
 	if (sprite->image != EGL_NO_IMAGE_KHR) {
 		glBindTexture(GL_TEXTURE_2D, es->texture);
@@ -537,7 +540,7 @@ wlsc_surface_draw(struct wlsc_surface *es,
 	rectangles = pixman_region32_rectangles(&repaint, &n);
 	v = wl_array_add(&ec->vertices, n * 16 * sizeof *v);
 	p = wl_array_add(&ec->indices, n * 6 * sizeof *p);
-	inv_width = 1.0 / es->width;
+	inv_width = 1.0 / es->pitch;
 	inv_height = 1.0 / es->height;
 	for (i = 0; i < n; i++, v += 16, p += 6) {
 		v[ 0] = rectangles[i].x1;
@@ -1810,11 +1813,12 @@ shm_buffer_damaged(struct wl_buffer *buffer,
 {
 	struct wl_list *surfaces_attached_to = buffer->user_data;
 	struct wlsc_surface *es;
+	GLsizei tex_width = wl_shm_buffer_get_stride(buffer) / 4;
 
 	wl_list_for_each(es, surfaces_attached_to, buffer_link) {
 		glBindTexture(GL_TEXTURE_2D, es->texture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-			     buffer->width, buffer->height, 0,
+			     tex_width, buffer->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
 			     wl_shm_buffer_get_data(buffer));
 		/* Hmm, should use glTexSubImage2D() here but GLES2 doesn't
