@@ -10,11 +10,14 @@
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "base/string_piece.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -25,8 +28,14 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_TITLE));
   localized_strings->SetString(std::string("loading"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_LOADING));
+#if defined(GOOGLE_CHROME_BUILD)
+  localized_strings->SetString(std::string("noPlugin"),
+      l10n_util::GetStringFUTF8(IDS_PRINT_PREVIEW_NO_PLUGIN,
+                                ASCIIToUTF16("chrome://plugins/")));
+#else
   localized_strings->SetString(std::string("noPlugin"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_NO_PLUGIN));
+#endif
   localized_strings->SetString(std::string("previewFailed"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_FAILED));
 

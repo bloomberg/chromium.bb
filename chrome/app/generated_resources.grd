@@ -5513,16 +5513,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PRINT_PREVIEW_LOADING" desc="Message to display while the print preview is still loading.">
         Loading preview
       </message>
-      <if expr="pp_ifdef('_google_chrome')">
-        <message name="IDS_PRINT_PREVIEW_NO_PLUGIN" desc="Message to display when the PDF viewer is missing.">
-          Google Chrome cannot show the print preview when the built-in PDF viewer is disabled. In order to see the preview, please visit <ph name="BEGIN_LINK">&lt;a target="_blank" rel="noreferrer" href="chrome://plugins"&gt;</ph>chrome://plugins<ph name="END_LINK">&lt;/a&gt;</ph>, enable the "Chrome PDF Viewer", and try again.
-        </message>
-      </if>
-      <if expr="not pp_ifdef('_google_chrome')">
-        <message name="IDS_PRINT_PREVIEW_NO_PLUGIN" desc="Message to display when the PDF viewer is missing.">
-        Sorry! Chromium does not include the PDF viewer built into Google Chrome, which is required to show the print preview.
-        </message>
-      </if>
       <message name="IDS_PRINT_PREVIEW_FAILED" desc="Message to display when print preview fails.">
         Print preview failed.
       </message>
@@ -8326,7 +8316,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Unable to create folder "$1": $2
       </message>
       <message name="IDS_FILE_BROWSER_ERROR_INVALID_FOLDER_CHARACTER" desc="Error message displayed when the user enters an invalid character in a folder name.">
-	Invalid character in folder name: $1
+        Invalid character in folder name: $1
       </message>
       <message name="IDS_FILE_BROWSER_NEW_FOLDER_PROMPT" desc="Prompt displayed in a message box when user trys to create a new folder.">
         Enter a name for the new folder
@@ -11753,13 +11743,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_ENGLISH_MODE" desc="In the language menu button, this shows the input mode.">
-	English
+        English
       </message>
       <message name="IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_CHINESE_MODE" desc="In the language menu button, this shows the input mode.">
-	Chinese
+        Chinese
       </message>
       <message name="IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_FULL_WIDTH_ENGLISH_MODE" desc="In the language menu button, this shows the input mode.">
-	Full-width English
+        Full-width English
       </message>
 
       <message name="IDS_STATUSBAR_LAYOUT_JAPAN" desc="In the language menu button, this shows the input mode.">
