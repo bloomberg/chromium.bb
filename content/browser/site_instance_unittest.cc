@@ -137,7 +137,7 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
   EXPECT_EQ(0, siteDeleteCounter);
 
   NavigationEntry* e1 = new NavigationEntry(instance, 0, url, GURL(),
-                                            base::i18n::String16WithDirection(),
+                                            string16(),
                                             PageTransition::LINK);
 
   // Redundantly setting e1's SiteInstance shouldn't affect the ref count.
@@ -145,8 +145,8 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
   EXPECT_EQ(0, siteDeleteCounter);
 
   // Add a second reference
-  NavigationEntry* e2 = new NavigationEntry(instance, 0, url, GURL(),
-                                            base::i18n::String16WithDirection(),
+  NavigationEntry* e2 = new NavigationEntry(instance, 0, url,
+                                            GURL(), string16(),
                                             PageTransition::LINK);
 
   // Now delete both entries and be sure the SiteInstance goes away.
@@ -197,7 +197,7 @@ TEST_F(SiteInstanceTest, CloneNavigationEntry) {
                                                &browsingDeleteCounter);
 
   NavigationEntry* e1 = new NavigationEntry(instance1, 0, url, GURL(),
-                                            base::i18n::String16WithDirection(),
+                                            string16(),
                                             PageTransition::LINK);
   // Clone the entry
   NavigationEntry* e2 = new NavigationEntry(*e1);

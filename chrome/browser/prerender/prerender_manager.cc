@@ -376,14 +376,9 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
   if (p != NULL)
     tc->DidNavigate(rvh, *p);
 
-  // TODO(evan): use directionality of title.
-  // http://code.google.com/p/chromium/issues/detail?id=27094
-  string16 title_str = pc->title();
-  if (!title_str.empty()) {
-    base::i18n::String16WithDirection title(title_str,
-                                            base::i18n::LEFT_TO_RIGHT);
-    tc->UpdateTitle(rvh, pc->page_id(), title);
-  }
+  string16 title = pc->title();
+  if (!title.empty())
+    tc->UpdateTitle(rvh, pc->page_id(), UTF16ToWideHack(title));
 
   GURL icon_url = pc->icon_url();
   if (!icon_url.is_empty()) {

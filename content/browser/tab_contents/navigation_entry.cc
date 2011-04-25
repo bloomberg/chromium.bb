@@ -54,7 +54,7 @@ NavigationEntry::NavigationEntry(SiteInstance* instance,
                                  int page_id,
                                  const GURL& url,
                                  const GURL& referrer,
-                                 const base::i18n::String16WithDirection& title,
+                                 const string16& title,
                                  PageTransition::Type transition_type)
     : unique_id_(GetUniqueID()),
       site_instance_(instance),
@@ -76,16 +76,16 @@ void NavigationEntry::set_site_instance(SiteInstance* site_instance) {
   site_instance_ = site_instance;
 }
 
-const base::i18n::String16WithDirection& NavigationEntry::GetTitleForDisplay(
+const string16& NavigationEntry::GetTitleForDisplay(
     const std::string& languages) {
   // Most pages have real titles. Don't even bother caching anything if this is
   // the case.
-  if (!title_.is_empty())
+  if (!title_.empty())
     return title_;
 
   // More complicated cases will use the URLs as the title. This result we will
   // cache since it's more complicated to compute.
-  if (!cached_display_title_.is_empty())
+  if (!cached_display_title_.empty())
     return cached_display_title_;
 
   // Use the virtual URL first if any, and fall back on using the real URL.
@@ -103,13 +103,7 @@ const base::i18n::String16WithDirection& NavigationEntry::GetTitleForDisplay(
       title = title.substr(slashpos + 1);
   }
 
-  string16 elided_title;
-  ui::ElideString(title, content::kMaxTitleChars, &elided_title);
-
-  // The computed title is a URL or a filename; assume it's LTR.
-  cached_display_title_ =
-      base::i18n::String16WithDirection(elided_title,
-                                        base::i18n::LEFT_TO_RIGHT);
+  ui::ElideString(title, content::kMaxTitleChars, &cached_display_title_);
   return cached_display_title_;
 }
 

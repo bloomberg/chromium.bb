@@ -84,22 +84,19 @@ string16 BackForwardMenuModel::GetLabelAt(int index) const {
   // Return the entry title, escaping any '&' characters and eliding it if it's
   // super long.
   NavigationEntry* entry = GetNavigationEntry(index);
-  base::i18n::String16WithDirection menu_text(entry->GetTitleForDisplay(
+  string16 menu_text(entry->GetTitleForDisplay(
       GetTabContents()->profile()->GetPrefs()->
           GetString(prefs::kAcceptLanguages)));
-  string16 elided =
-      ui::ElideText(menu_text.string(), gfx::Font(), kMaxWidth, false);
+  menu_text = ui::ElideText(menu_text, gfx::Font(), kMaxWidth, false);
 
 #if !defined(OS_MACOSX)
-  for (size_t i = elided.find('&'); i != string16::npos;
-       i = elided.find('&', i + 2)) {
-    elided.insert(i, 1, '&');
+  for (size_t i = menu_text.find('&'); i != string16::npos;
+       i = menu_text.find('&', i + 2)) {
+    menu_text.insert(i, 1, '&');
   }
 #endif
 
-  // TODO(evan): use directionality of title.
-  // http://code.google.com/p/chromium/issues/detail?id=27094
-  return elided;
+  return menu_text;
 }
 
 bool BackForwardMenuModel::IsItemDynamicAt(int index) const {

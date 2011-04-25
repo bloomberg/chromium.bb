@@ -441,10 +441,8 @@ const string16& TabContents::GetTitle() const {
   // that are shown on top of existing pages.
   NavigationEntry* entry = controller_.GetTransientEntry();
   if (entry) {
-    // TODO(evan): use directionality of title.
-    // http://code.google.com/p/chromium/issues/detail?id=27094
     return entry->GetTitleForDisplay(profile()->GetPrefs()->
-        GetString(prefs::kAcceptLanguages)).string();
+        GetString(prefs::kAcceptLanguages));
   }
   WebUI* our_web_ui = render_manager_.pending_web_ui() ?
       render_manager_.pending_web_ui() : render_manager_.web_ui();
@@ -453,8 +451,6 @@ const string16& TabContents::GetTitle() const {
     entry = controller_.GetActiveEntry();
     if (!(entry && entry->IsViewSourceMode())) {
       // Give the Web UI the chance to override our title.
-      // TODO(evan): use directionality of title.
-      // http://code.google.com/p/chromium/issues/detail?id=27094
       const string16& title = our_web_ui->overridden_title();
       if (!title.empty())
         return title;
@@ -467,10 +463,8 @@ const string16& TabContents::GetTitle() const {
   // title.
   entry = controller_.GetLastCommittedEntry();
   if (entry) {
-    // TODO(evan): use directionality of title.
-    // http://code.google.com/p/chromium/issues/detail?id=27094
     return entry->GetTitleForDisplay(profile()->GetPrefs()->
-        GetString(prefs::kAcceptLanguages)).string();
+        GetString(prefs::kAcceptLanguages));
   }
   return EmptyString16();
 }
@@ -1094,11 +1088,8 @@ void TabContents::UpdateHistoryPageTitle(const NavigationEntry& entry) {
     return;
 
   HistoryService* hs = profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
-  if (hs) {
-    // TODO(evan): use directionality of title.
-    // http://code.google.com/p/chromium/issues/detail?id=27094
-    hs->SetPageTitle(entry.virtual_url(), entry.title().string());
-  }
+  if (hs)
+    hs->SetPageTitle(entry.virtual_url(), entry.title());
 }
 
 double TabContents::GetZoomLevel() const {
@@ -1563,23 +1554,18 @@ TabContents::CreateHistoryAddPageArgs(
   return add_page_args;
 }
 
-bool TabContents::UpdateTitleForEntry(
-    NavigationEntry* entry,
-    const base::i18n::String16WithDirection& title) {
+bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
+                                      const std::wstring& title) {
   // For file URLs without a title, use the pathname instead. In the case of a
   // synthesized title, we don't want the update to count toward the "one set
   // per page of the title to history."
-  base::i18n::String16WithDirection final_title;
+  string16 final_title;
   bool explicit_set;
-  if (entry->url().SchemeIsFile() && title.is_empty()) {
-    final_title = base::i18n::String16WithDirection(
-        UTF8ToUTF16(entry->url().ExtractFileName()),
-        base::i18n::LEFT_TO_RIGHT);
+  if (entry->url().SchemeIsFile() && title.empty()) {
+    final_title = UTF8ToUTF16(entry->url().ExtractFileName());
     explicit_set = false;  // Don't count synthetic titles toward the set limit.
   } else {
-    string16 trimmed;
-    TrimWhitespace(title.string(), TRIM_ALL, &trimmed);
-    final_title = base::i18n::String16WithDirection(trimmed, title.direction());
+    TrimWhitespace(WideToUTF16Hack(title), TRIM_ALL, &final_title);
     explicit_set = true;
   }
 
@@ -1594,9 +1580,7 @@ bool TabContents::UpdateTitleForEntry(
   }
 
   // Lastly, set the title for the view.
-  // TODO(evan): use directionality of title.
-  // http://code.google.com/p/chromium/issues/detail?id=27094
-  view_->SetPageTitle(UTF16ToWide(final_title.string()));
+  view_->SetPageTitle(UTF16ToWideHack(final_title));
 
   NotificationService::current()->Notify(
       NotificationType::TAB_CONTENTS_TITLE_UPDATED,
@@ -1893,8 +1877,7 @@ void TabContents::UpdateState(RenderViewHost* rvh,
 }
 
 void TabContents::UpdateTitle(RenderViewHost* rvh,
-                              int32 page_id,
-                              const base::i18n::String16WithDirection& title) {
+                              int32 page_id, const std::wstring& title) {
   // If we have a title, that's a pretty good indication that we've started
   // getting useful data.
   SetNotWaitingForResponse();

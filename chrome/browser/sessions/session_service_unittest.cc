@@ -71,11 +71,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     NavigationEntry entry;
     entry.set_url(navigation.virtual_url());
     entry.set_referrer(navigation.referrer());
-    // TODO(evan): use directionality of title.
-    // http://code.google.com/p/chromium/issues/detail?id=27094
-    entry.set_title(
-        base::i18n::String16WithDirection(navigation.title(),
-                                          base::i18n::LEFT_TO_RIGHT));
+    entry.set_title(navigation.title());
     entry.set_content_state(navigation.state());
     entry.set_transition_type(navigation.transition());
     entry.set_has_post_data(

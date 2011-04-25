@@ -18,13 +18,11 @@ class NavigationEntryTest : public testing::Test {
     entry1_.reset(new NavigationEntry);
 
     instance_ = SiteInstance::CreateSiteInstance(NULL);
-    entry2_.reset(new NavigationEntry(
-        instance_, 3,
-        GURL("test:url"),
-        GURL("from"),
-        base::i18n::String16WithDirection(ASCIIToUTF16("title"),
-                                          base::i18n::LEFT_TO_RIGHT),
-        PageTransition::TYPED));
+    entry2_.reset(new NavigationEntry(instance_, 3,
+                                      GURL("test:url"),
+                                      GURL("from"),
+                                      ASCIIToUTF16("title"),
+                                      PageTransition::TYPED));
   }
 
   virtual void TearDown() {
@@ -55,26 +53,23 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
 
   EXPECT_EQ(GURL(), entry1_.get()->url());
   EXPECT_EQ(GURL(), entry1_.get()->virtual_url());
-  EXPECT_TRUE(entry1_.get()->GetTitleForDisplay("").is_empty());
+  EXPECT_TRUE(entry1_.get()->GetTitleForDisplay("").empty());
 
   // Setting URL affects virtual_url and GetTitleForDisplay
   entry1_.get()->set_url(GURL("http://www.google.com"));
   EXPECT_EQ(GURL("http://www.google.com"), entry1_.get()->url());
   EXPECT_EQ(GURL("http://www.google.com"), entry1_.get()->virtual_url());
   EXPECT_EQ(ASCIIToUTF16("www.google.com"),
-            entry1_.get()->GetTitleForDisplay("").string());
+            entry1_.get()->GetTitleForDisplay(""));
 
   // file:/// URLs should only show the filename.
   entry1_.get()->set_url(GURL("file:///foo/bar baz.txt"));
   EXPECT_EQ(ASCIIToUTF16("bar baz.txt"),
-            entry1_.get()->GetTitleForDisplay("").string());
+            entry1_.get()->GetTitleForDisplay(""));
 
   // Title affects GetTitleForDisplay
-  entry1_.get()->set_title(
-      base::i18n::String16WithDirection(ASCIIToUTF16("Google"),
-                                        base::i18n::LEFT_TO_RIGHT));
-  EXPECT_EQ(ASCIIToUTF16("Google"),
-            entry1_.get()->GetTitleForDisplay("").string());
+  entry1_.get()->set_title(ASCIIToUTF16("Google"));
+  EXPECT_EQ(ASCIIToUTF16("Google"), entry1_.get()->GetTitleForDisplay(""));
 
   // Setting virtual_url doesn't affect URL
   entry2_.get()->set_virtual_url(GURL("display:url"));
@@ -83,8 +78,7 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
   EXPECT_EQ(GURL("display:url"), entry2_.get()->virtual_url());
 
   // Having a title set in constructor overrides virtual URL
-  EXPECT_EQ(ASCIIToUTF16("title"),
-            entry2_.get()->GetTitleForDisplay("").string());
+  EXPECT_EQ(ASCIIToUTF16("title"), entry2_.get()->GetTitleForDisplay(""));
 
   // User typed URL is independent of the others
   EXPECT_EQ(GURL(), entry1_.get()->user_typed_url());
@@ -157,12 +151,10 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(GURL("from2"), entry2_.get()->referrer());
 
   // Title
-  EXPECT_EQ(string16(), entry1_.get()->title().string());
-  EXPECT_EQ(ASCIIToUTF16("title"), entry2_.get()->title().string());
-  entry2_.get()->set_title(
-      base::i18n::String16WithDirection(ASCIIToUTF16("title2"),
-                                        base::i18n::LEFT_TO_RIGHT));
-  EXPECT_EQ(ASCIIToUTF16("title2"), entry2_.get()->title().string());
+  EXPECT_EQ(string16(), entry1_.get()->title());
+  EXPECT_EQ(ASCIIToUTF16("title"), entry2_.get()->title());
+  entry2_.get()->set_title(ASCIIToUTF16("title2"));
+  EXPECT_EQ(ASCIIToUTF16("title2"), entry2_.get()->title());
 
   // State
   EXPECT_EQ(std::string(), entry1_.get()->content_state());

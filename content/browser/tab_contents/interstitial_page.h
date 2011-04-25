@@ -9,7 +9,6 @@
 #include <map>
 #include <string>
 
-#include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -129,10 +128,9 @@ class InterstitialPage : public NotificationObserver,
                               int error_code);
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params);
-  virtual void UpdateTitle(
-      RenderViewHost* render_view_host,
-      int32 page_id,
-      const base::i18n::String16WithDirection& title) OVERRIDE;
+  virtual void UpdateTitle(RenderViewHost* render_view_host,
+                           int32 page_id,
+                           const std::wstring& title);
   virtual void DomOperationResponse(const std::string& json_string,
                                     int automation_id);
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
@@ -228,7 +226,7 @@ class InterstitialPage : public NotificationObserver,
 
   // The original title of the tab that should be reverted to when the
   // interstitial is hidden.
-  base::i18n::String16WithDirection original_tab_title_;
+  std::wstring original_tab_title_;
 
   // Our RenderViewHostViewDelegate, necessary for accelerators to work.
   scoped_ptr<InterstitialPageRVHViewDelegate> rvh_view_delegate_;

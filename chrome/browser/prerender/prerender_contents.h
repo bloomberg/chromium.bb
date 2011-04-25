@@ -120,10 +120,9 @@ class PrerenderContents : public RenderViewHostDelegate,
                               int error_code) OVERRIDE;
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params);
-  virtual void UpdateTitle(
-      RenderViewHost* render_view_host,
-      int32 page_id,
-      const base::i18n::String16WithDirection& title) OVERRIDE;
+  virtual void UpdateTitle(RenderViewHost* render_view_host,
+                           int32 page_id,
+                           const std::wstring& title);
   virtual WebPreferences GetWebkitPrefs();
   virtual void RunJavaScriptMessage(const std::wstring& message,
                                     const std::wstring& default_prompt,

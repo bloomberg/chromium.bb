@@ -158,10 +158,7 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
   WriteStringToPickle(pickle, &bytes_written, max_state_size,
                       entry.virtual_url().spec());
 
-  // TODO(evan): use directionality of title.
-  // http://code.google.com/p/chromium/issues/detail?id=27094
-  WriteString16ToPickle(pickle, &bytes_written, max_state_size,
-                        entry.title().string());
+  WriteString16ToPickle(pickle, &bytes_written, max_state_size, entry.title());
 
   if (entry.has_post_data()) {
     // Remove the form data, it may contain sensitive information.

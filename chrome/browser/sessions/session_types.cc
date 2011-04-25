@@ -68,10 +68,7 @@ NavigationEntry* TabNavigation::ToNavigationEntry(int page_id,
       profile);
 
   entry->set_page_id(page_id);
-  // TODO(evan): use directionality of title.
-  // http://code.google.com/p/chromium/issues/detail?id=27094
-  entry->set_title(
-      base::i18n::String16WithDirection(title_, base::i18n::LEFT_TO_RIGHT));
+  entry->set_title(title_);
   entry->set_content_state(state_);
   entry->set_has_post_data(type_mask_ & TabNavigation::HAS_POST_DATA);
 
@@ -81,9 +78,7 @@ NavigationEntry* TabNavigation::ToNavigationEntry(int page_id,
 void TabNavigation::SetFromNavigationEntry(const NavigationEntry& entry) {
   virtual_url_ = entry.virtual_url();
   referrer_ = entry.referrer();
-  // TODO(evan): use directionality of title.
-  // http://code.google.com/p/chromium/issues/detail?id=27094
-  title_ = entry.title().string();
+  title_ = entry.title();
   state_ = entry.content_state();
   transition_ = entry.transition_type();
   type_mask_ = entry.has_post_data() ? TabNavigation::HAS_POST_DATA : 0;

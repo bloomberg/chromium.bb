@@ -55,9 +55,6 @@ class WebKeyboardEvent;
 struct WebPreferences;
 
 namespace base {
-namespace i18n {
-class String16WithDirection;
-}
 class WaitableEvent;
 }
 
@@ -439,7 +436,7 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // The page's title was changed and should be updated.
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const base::i18n::String16WithDirection& title) {}
+                           const std::wstring& title) {}
 
   // The page's encoding was changed and should be updated.
   virtual void UpdateEncoding(RenderViewHost* render_view_host,

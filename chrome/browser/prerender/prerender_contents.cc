@@ -4,7 +4,6 @@
 
 #include "chrome/browser/prerender/prerender_contents.h"
 
-#include "base/i18n/rtl.h"
 #include "base/process_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
@@ -277,17 +276,14 @@ void PrerenderContents::DidNavigate(
   url_ = params.url;
 }
 
-void PrerenderContents::UpdateTitle(
-    RenderViewHost* render_view_host,
-    int32 page_id,
-    const base::i18n::String16WithDirection& title) {
+void PrerenderContents::UpdateTitle(RenderViewHost* render_view_host,
+                                    int32 page_id,
+                                    const std::wstring& title) {
   DCHECK_EQ(render_view_host_, render_view_host);
-  if (title.string().empty())
+  if (title.empty())
     return;
 
-  // TODO(evan): use directionality of title.
-  // http://code.google.com/p/chromium/issues/detail?id=27094
-  title_ = title.string();
+  title_ = WideToUTF16Hack(title);
   page_id_ = page_id;
 }
 

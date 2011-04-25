@@ -884,9 +884,7 @@ bool ExternalTabContainer::InitNavigationInfo(NavigationInfo* nav_info,
       tab_contents_->controller().GetCurrentEntryIndex();
   nav_info->url = entry->url();
   nav_info->referrer = entry->referrer();
-  // TODO(evan): use directionality of title.
-  // http://code.google.com/p/chromium/issues/detail?id=27094
-  nav_info->title = UTF16ToWideHack(entry->title().string());
+  nav_info->title =  UTF16ToWideHack(entry->title());
   if (nav_info->title.empty())
     nav_info->title = UTF8ToWide(nav_info->url.spec());
 
