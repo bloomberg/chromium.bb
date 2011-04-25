@@ -9,9 +9,10 @@
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/options/show_options_url.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -71,5 +72,10 @@ void InstantConfirmDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
 }
 
 void InstantConfirmDialogGtk::OnLinkButtonClicked(GtkWidget* button) {
-  browser::ShowOptionsURL(profile_, browser::InstantLearnMoreURL());
+  // We open a new browser window so the Options dialog doesn't get lost behind
+  // other windows.
+  Browser* browser = Browser::Create(profile_);
+  browser->AddSelectedTabWithURL(browser::InstantLearnMoreURL(),
+                                 PageTransition::LINK);
+  browser->window()->Show();
 }

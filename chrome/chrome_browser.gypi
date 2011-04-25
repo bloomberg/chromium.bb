@@ -2768,8 +2768,6 @@
         'browser/ui/omnibox/location_bar_util.h',
         'browser/ui/options/options_util.cc',
         'browser/ui/options/options_util.h',
-        'browser/ui/options/show_options_url.cc',
-        'browser/ui/options/show_options_url.h',
         'browser/ui/panels/panel.cc',
         'browser/ui/panels/panel.h',
         'browser/ui/panels/panel_browser_window_cocoa.mm',
