@@ -75,8 +75,15 @@ def main():
         options.base_url, version, flavor)
     parent_dir = os.path.dirname(os.path.dirname(__file__))
     dst = os.path.join(parent_dir, 'toolchain', flavor)
-    if version != 'latest' and download_utils.SourceIsCurrent(dst, url):
-      continue
+    if version == 'latest':
+      print flavor + ": downloading latest version..."
+    else:
+      msg = download_utils.SourceIsCurrent(dst, url)
+      if msg:
+        print flavor + ": " + msg + ".."
+        continue
+      else:
+        print flavor + ": downloading version " + version + "..."
 
     # TODO(bradnelson_): get rid of this when toolchain tarballs flattened.
     if 'arm' in flavor or 'pnacl' in flavor:

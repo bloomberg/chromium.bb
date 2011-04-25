@@ -67,31 +67,39 @@ def SyncTgz(url, target, compress='gzip', maindir='sdk',
   else:
     verbosechar = ''
   if sys.platform == 'win32':
-    os.makedirs(os.path.join(target, 'tmptar'))
+    for dirname in ['etc', 'tmptar']:
+      os.makedirs(os.path.join(target, dirname))
     tarfiles = ['cyggcc_s-1.dll', 'cygiconv-2.dll', 'cygintl-8.dll',
                 'cyglzma-1.dll', 'cygncursesw-10.dll', 'cygreadline7.dll',
                 'cygwin1.dll', 'bash.exe', 'bzip2.exe', 'find.exe',
-                'gzip.exe', 'ln.exe', 'readlink.exe', 'tar.exe', 'xz.exe']
+                'gzip.exe', 'ln.exe', 'mkgroup.exe', 'mkpasswd.exe',
+                'readlink.exe', 'tar.exe', 'xz.exe']
     for filename in tarfiles:
       http_download.HttpDownload(
         'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/'
         'cygwin_mirror/cygwin/' + filename,
-        os.path.join(target, 'tmptar', filename))
+        os.path.join(target, 'tmptar', filename), verbose=verbose)
     saveddir = os.getcwd()
     os.chdir(target)
-    os.spawnv(os.P_WAIT, os.path.join('tmptar', 'tar.exe'),
+    env = os.environ.copy()
+    env['LC_ALL']='C'
+    os.spawnve(os.P_WAIT, os.path.join('tmptar', 'bash.exe'),
+      ['/tmptar/bash', '-c', '"/tmptar/mkgroup -l -c > /etc/group"'], env)
+    os.spawnve(os.P_WAIT, os.path.join('tmptar', 'bash.exe'),
+      ['/tmptar/bash', '-c', '"/tmptar/mkpasswd -l -c > /etc/passwd"'], env)
+    os.spawnve(os.P_WAIT, os.path.join('tmptar', 'tar.exe'),
       ['/tmptar/tar', '--use-compress-program', '/tmptar/' + compress,
-       '-xS' + verbosechar + 'pf', '../.tgz'])
-    os.spawnv(os.P_WAIT, os.path.join('tmptar', 'bash.exe'),
+       '-xS' + verbosechar + 'pf', '../.tgz'], env)
+    os.spawnve(os.P_WAIT, os.path.join('tmptar', 'bash.exe'),
       ['/tmptar/bash', '-c',
        '"/tmptar/find -L ' + maindir + ' -type f -xtype l -print0 | ' +
        'while IFS=\\"\\" read -r -d \\"\\" name; do if [[ -L \\"$name\\" ]];' +
        'then /tmptar/ln -Tf \\"$(/tmptar/readlink -f \\"$name\\")\\" ' +
-       '\\"$name\\" ; fi ; done"'])
+       '\\"$name\\" ; fi ; done"'], env)
     os.chdir(saveddir)
     # Some antivirus software can prevent the removal - print message, but
     # don't stop.
-    for filename in tarfiles:
+    for filename in tarfiles + ['..\etc\group', '..\etc\passwd'] :
       count = 0
       while True:
         try:
@@ -102,12 +110,13 @@ def SyncTgz(url, target, compress='gzip', maindir='sdk',
             if verbose:
               print "Can not remove %s: %s" % (filename, e.strerror)
             break
-    try:
-      os.rmdir(os.path.join(target, 'tmptar'))
-    except EnvironmentError, e:
-      if verbose:
-        print "Can not rmdir %s: %s" % (os.path.join(target, 'tmptar'),
-                                        e.strerror)
+    for dirname in ['etc', 'tmptar']:
+      try:
+        os.rmdir(os.path.join(target, dirname))
+      except EnvironmentError, e:
+        if verbose:
+          print "Can not rmdir %s: %s" % (os.path.join(target, 'tmptar'),
+                                          e.strerror)
   elif sys.platform == 'linux2':
     os.spawnv(os.P_WAIT, '/bin/tar',
       ['tar', '-xS' + verbosechar + 'pf', tgz_filename, '-C', target])

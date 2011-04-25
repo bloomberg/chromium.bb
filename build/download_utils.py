@@ -90,7 +90,11 @@ def StampMatches(stampfile, expected):
     f = open(stampfile, 'r')
     stamp = f.read()
     f.close()
-    return stamp == expected or stamp.startswith('manual')
+    if stamp == expected:
+      return "already up-to-date."
+    elif stamp.startswith('manual'):
+      return "manual override."
+    return False
   except IOError:
     return False
 
