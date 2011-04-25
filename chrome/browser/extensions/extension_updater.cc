@@ -484,7 +484,7 @@ ExtensionUpdater::ExtensionUpdater(ExtensionServiceInterface* service,
 
 void ExtensionUpdater::Init() {
   DCHECK_GE(frequency_seconds_, 5);
-  DCHECK(frequency_seconds_ <= kMaxUpdateFrequencySeconds);
+  DCHECK_LE(frequency_seconds_, kMaxUpdateFrequencySeconds);
 #ifdef NDEBUG
   // In Release mode we enforce that update checks don't happen too often.
   frequency_seconds_ = std::max(frequency_seconds_, kMinUpdateFrequencySeconds);

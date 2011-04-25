@@ -78,7 +78,7 @@ void KeychainSearch::Init(const char* server, const UInt32& port,
   // a "const SecKeychainAttributeList *", so we trust that they won't try
   // to modify the list, and that casting away const-ness is thus safe.
   if (server != NULL) {
-    DCHECK(entries < kMaxEntryCount);
+    DCHECK_LT(entries, kMaxEntryCount);
     search_attributes_.attr[entries].tag = kSecServerItemAttr;
     search_attributes_.attr[entries].length = strlen(server);
     search_attributes_.attr[entries].data =
@@ -86,7 +86,7 @@ void KeychainSearch::Init(const char* server, const UInt32& port,
     ++entries;
   }
   if (port != kAnyPort) {
-    DCHECK(entries <= kMaxEntryCount);
+    DCHECK_LE(entries, kMaxEntryCount);
     search_attributes_.attr[entries].tag = kSecPortItemAttr;
     search_attributes_.attr[entries].length = sizeof(port);
     search_attributes_.attr[entries].data =
@@ -94,7 +94,7 @@ void KeychainSearch::Init(const char* server, const UInt32& port,
     ++entries;
   }
   if (protocol != kSecProtocolTypeAny) {
-    DCHECK(entries <= kMaxEntryCount);
+    DCHECK_LE(entries, kMaxEntryCount);
     search_attributes_.attr[entries].tag = kSecProtocolItemAttr;
     search_attributes_.attr[entries].length = sizeof(protocol);
     search_attributes_.attr[entries].data =
@@ -102,7 +102,7 @@ void KeychainSearch::Init(const char* server, const UInt32& port,
     ++entries;
   }
   if (auth_type != kSecAuthenticationTypeAny) {
-    DCHECK(entries <= kMaxEntryCount);
+    DCHECK_LE(entries, kMaxEntryCount);
     search_attributes_.attr[entries].tag = kSecAuthenticationTypeItemAttr;
     search_attributes_.attr[entries].length = sizeof(auth_type);
     search_attributes_.attr[entries].data =
@@ -110,7 +110,7 @@ void KeychainSearch::Init(const char* server, const UInt32& port,
     ++entries;
   }
   if (security_domain != NULL && strlen(security_domain) > 0) {
-    DCHECK(entries <= kMaxEntryCount);
+    DCHECK_LE(entries, kMaxEntryCount);
     search_attributes_.attr[entries].tag = kSecSecurityDomainItemAttr;
     search_attributes_.attr[entries].length = strlen(security_domain);
     search_attributes_.attr[entries].data =
@@ -118,7 +118,7 @@ void KeychainSearch::Init(const char* server, const UInt32& port,
     ++entries;
   }
   if (path != NULL && strlen(path) > 0 && strcmp(path, "/") != 0) {
-    DCHECK(entries <= kMaxEntryCount);
+    DCHECK_LE(entries, kMaxEntryCount);
     search_attributes_.attr[entries].tag = kSecPathItemAttr;
     search_attributes_.attr[entries].length = strlen(path);
     search_attributes_.attr[entries].data =
@@ -126,7 +126,7 @@ void KeychainSearch::Init(const char* server, const UInt32& port,
     ++entries;
   }
   if (username != NULL) {
-    DCHECK(entries <= kMaxEntryCount);
+    DCHECK_LE(entries, kMaxEntryCount);
     search_attributes_.attr[entries].tag = kSecAccountItemAttr;
     search_attributes_.attr[entries].length = strlen(username);
     search_attributes_.attr[entries].data =
@@ -134,7 +134,7 @@ void KeychainSearch::Init(const char* server, const UInt32& port,
     ++entries;
   }
   if (creator != 0) {
-    DCHECK(entries <= kMaxEntryCount);
+    DCHECK_LE(entries, kMaxEntryCount);
     search_attributes_.attr[entries].tag = kSecCreatorItemAttr;
     search_attributes_.attr[entries].length = sizeof(creator);
     search_attributes_.attr[entries].data =

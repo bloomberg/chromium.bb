@@ -200,7 +200,7 @@ void BackgroundModeManager::OnBackgroundAppUnloaded() {
   // When a background app unloads, decrement our count and also end
   // KeepAlive mode if appropriate.
   background_app_count_--;
-  DCHECK(background_app_count_ >= 0);
+  DCHECK_GE(background_app_count_, 0);
   if (background_app_count_ == 0)
     EndBackgroundMode();
 }

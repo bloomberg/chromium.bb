@@ -44,7 +44,7 @@ double AudioHandler::GetVolumePercent() {
 void AudioHandler::SetVolumePercent(double volume_percent) {
   if (!VerifyMixerConnection())
     return;
-  DCHECK(volume_percent >= 0.0);
+ DCHECK_GE(volume_percent, 0.0);
 
   double vol_db;
   if (volume_percent <= 0)

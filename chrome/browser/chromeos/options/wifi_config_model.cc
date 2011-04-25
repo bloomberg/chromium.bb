@@ -109,15 +109,15 @@ int WifiConfigModel::GetUserCertCount() const {
 }
 
 string16 WifiConfigModel::GetUserCertName(int cert_index) const {
-  DCHECK(cert_index >= 0);
-  DCHECK(cert_index < static_cast<int>(user_certs_.size()));
+  DCHECK_GE(cert_index, 0);
+  DCHECK_LT(cert_index, static_cast<int>(user_certs_.size()));
   net::X509Certificate* cert = user_certs_[cert_index].get();
   return GetCertDisplayString(cert);
 }
 
 std::string WifiConfigModel::GetUserCertPkcs11Id(int cert_index) const {
-  DCHECK(cert_index >= 0);
-  DCHECK(cert_index < static_cast<int>(user_certs_.size()));
+  DCHECK_GE(cert_index, 0);
+  DCHECK_LT(cert_index, static_cast<int>(user_certs_.size()));
   net::X509Certificate* cert = user_certs_[cert_index].get();
   net::X509Certificate::OSCertHandle cert_handle = cert->os_cert_handle();
   return x509_certificate_model::GetPkcs11Id(cert_handle);
@@ -141,15 +141,15 @@ int WifiConfigModel::GetServerCaCertCount() const {
 }
 
 string16 WifiConfigModel::GetServerCaCertName(int cert_index) const {
-  DCHECK(cert_index >= 0);
-  DCHECK(cert_index < static_cast<int>(server_ca_certs_.size()));
+  DCHECK_GE(cert_index, 0);
+  DCHECK_LT(cert_index, static_cast<int>(server_ca_certs_.size()));
   net::X509Certificate* cert = server_ca_certs_[cert_index].get();
   return GetCertDisplayString(cert);
 }
 
 std::string WifiConfigModel::GetServerCaCertNssNickname(int cert_index) const {
-  DCHECK(cert_index >= 0);
-  DCHECK(cert_index < static_cast<int>(server_ca_certs_.size()));
+  DCHECK_GE(cert_index, 0);
+  DCHECK_LT(cert_index, static_cast<int>(server_ca_certs_.size()));
   net::X509Certificate* cert = server_ca_certs_[cert_index].get();
   net::X509Certificate::OSCertHandle cert_handle = cert->os_cert_handle();
   return x509_certificate_model::GetNickname(cert_handle);
