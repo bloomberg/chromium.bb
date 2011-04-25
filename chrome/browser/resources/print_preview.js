@@ -59,8 +59,16 @@ function onLoad() {
   $('bw').addEventListener('click', function() { setColor(false); });
   $('printer-list').addEventListener(
       'change', updateControlsWithSelectedPrinterCapabilities);
+  $('system-dialog-link').addEventListener('click', showSystemDialog);
 
   chrome.send('getPrinters');
+}
+
+/**
+ * Asks the browser to show the native print dialog for printing.
+ */
+function showSystemDialog() {
+  chrome.send('showSystemDialog');
 }
 
 /**

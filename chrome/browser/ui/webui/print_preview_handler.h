@@ -54,6 +54,10 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // First element of |args| is the printer name.
   void HandleGetPrinterCapabilities(const ListValue* args);
 
+  // Ask the initiator renderer to show the native print system dialog.
+  // |args| is unused.
+  void HandleShowSystemDialog(const ListValue* args);
+
   // Send the printer capabilities to the Web UI.
   // |settings_info| contains printer capabilities information.
   void SendPrinterCapabilities(const DictionaryValue& settings_info);

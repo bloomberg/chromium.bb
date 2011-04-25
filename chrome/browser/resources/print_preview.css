@@ -20,7 +20,6 @@ body.loaded {
 a {
   -webkit-transition: text-shadow .15s;
   color: #506c40;
-  text-decoration: none;
   text-shadow: 0 0 1px white;
 }
 

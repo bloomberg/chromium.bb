@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
@@ -239,6 +240,8 @@ void PrintPreviewHandler::RegisterMessages() {
       NewCallback(this, &PrintPreviewHandler::HandlePrint));
   web_ui_->RegisterMessageCallback("getPrinterCapabilities",
       NewCallback(this, &PrintPreviewHandler::HandleGetPrinterCapabilities));
+  web_ui_->RegisterMessageCallback("showSystemDialog",
+      NewCallback(this, &PrintPreviewHandler::HandleShowSystemDialog));
 }
 
 void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
@@ -321,6 +324,22 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
       NewRunnableMethod(task.get(),
                         &PrintSystemTaskProxy::GetPrinterCapabilities,
                         printer_name));
+}
+
+void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* args) {
+  TabContents* preview_tab = web_ui_->tab_contents();
+  TabContents* initiator_tab = GetInitiatorTab(preview_tab);
+  if (!initiator_tab)
+    return;
+  initiator_tab->Activate();
+
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
+  wrapper->print_view_manager()->PrintNow();
+
+  Browser* preview_tab_browser = BrowserList::FindBrowserWithID(
+      preview_tab->controller().window_id().id());
+  preview_tab_browser->CloseTabContents(preview_tab);
 }
 
 void PrintPreviewHandler::SendPrinterCapabilities(

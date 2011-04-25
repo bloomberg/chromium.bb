@@ -211,7 +211,6 @@ bool PrintWebViewHelper::GetPrintFrame(WebKit::WebFrame** frame) {
 }
 
 void PrintWebViewHelper::OnPrintPages() {
-  DCHECK(!is_preview_);
   WebFrame* frame;
   if (GetPrintFrame(&frame))
     Print(frame, NULL);
@@ -264,7 +263,6 @@ void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
 }
 
 void PrintWebViewHelper::Print(WebKit::WebFrame* frame, WebKit::WebNode* node) {
-  DCHECK(!is_preview_);
   // If still not finished with earlier print request simply ignore.
   if (print_web_view_)
     return;
