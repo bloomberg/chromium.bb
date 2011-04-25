@@ -1046,6 +1046,8 @@ static NCNopTrieNode* nc_nop_root = NULL;
 
 static struct OpInfo nc_nop_info = { NACLi_NOP , 0 , IMM_NONE , 0 };
 
+static struct OpInfo nc_ud2_info = { NACLi_UD2 , 0 , IMM_NONE , 0 };
+
 /* Simple (fast hack) routine to extract a byte value from a character string.
  */
 static int NCExtractByte(const char* sequence, int index) {
@@ -1064,8 +1066,10 @@ static int NCExtractByte(const char* sequence, int index) {
   return strtoul(buffer, NULL, 16);
 }
 
-/* Define the given sequence of (hex) bytes as a nop. */
-static void NCDefNop(const char* sequence) {
+/* Define the given sequence of (hex) bytes as a nop instruction with
+ * the given nop_info.
+ */
+static void NCDefNopLikeOp(const char* sequence, struct OpInfo* nop_info) {
   NCNopTrieNode** next = &nc_nop_root;
   NCNopTrieNode* last = NULL;
   int i = 0;
@@ -1088,8 +1092,13 @@ static void NCDefNop(const char* sequence) {
       next = &((*next)->fail);
     }
   }
-  /* Next points to matching node, add NOP. */
-  last->matching_opinfo = &nc_nop_info;
+  /* Next points to matching node, add nop info. */
+  last->matching_opinfo = nop_info;
+}
+
+/* Define the given sequence of (hex) bytes as a nop. */
+static void NCDefNop(const char* sequence) {
+  NCDefNopLikeOp(sequence, &nc_nop_info);
 }
 
 /* Define set of explicitly defined nop byte sequences. */
@@ -1112,6 +1121,7 @@ static void NCDefNops() {
    * 0f 1f 80 00 00 00 00       nop
    * 0f 1f 84 00 00 00 00 00    nop
    */
+  NCDefNopLikeOp("0f0b", &nc_ud2_info);
   NCDefNop("660f1f440000");
   NCDefNop("660f1f840000000000");
   NCDefNop("662e0f1f840000000000");
@@ -2594,7 +2604,10 @@ static void PrintNopTrieNode(FILE* f, NCNopTrieNode* node, int index) {
   fprintf(f, "  /* %5d */ { 0x%02x, %s, ", index,
           (int) node->matching_byte,
           ((NULL == node->matching_opinfo)
-           ? "NULL" : "(struct OpInfo*)(&kNopInst)"));
+           ? "NULL"
+           : ((node->matching_opinfo == &nc_ud2_info)
+              ? "(struct OpInfo*)(&kUd2Inst)"
+              : "(struct OpInfo*)(&kNopInst)")));
   if (NULL == node->success) {
     fprintf(f, "NULL");
   } else {
@@ -2620,6 +2633,12 @@ static void PrintNopTables(FILE* f) {
             nc_nop_info.hasmrmbyte,
             nc_nop_info.immtype,
             nc_nop_info.opinmrm);
+    fprintf(f,
+            "static const struct OpInfo kUd2Inst = { %s, %d, %d, %d };\n\n",
+            NaClInstTypeString(nc_ud2_info.insttype),
+            nc_ud2_info.hasmrmbyte,
+            nc_ud2_info.immtype,
+            nc_ud2_info.opinmrm);
   }
   fprintf(f, "static const NCNopTrieNode kNcNopTrieNode[] = {\n");
   PrintNopTrieNode(f, nc_nop_root, 0);
