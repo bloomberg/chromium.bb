@@ -984,12 +984,6 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
       version_html, localized_strings, "t" /* template root node id */);
 }
 
-std::string VersionNumberToString(uint32 value) {
-  int hi = (value >> 8) & 0xff;
-  int low = value & 0xff;
-  return base::IntToString(hi) + "." + base::IntToString(low);
-}
-
 // AboutSource -----------------------------------------------------------------
 
 AboutSource::AboutSource()

@@ -89,20 +89,6 @@ int64 MakeNode(UserShare* share,
   return node.GetId();
 }
 
-// Make a folder as a child of the root node. Returns the id of the
-// newly-created node.
-int64 MakeFolder(UserShare* share,
-                 syncable::ModelType model_type,
-                 const std::string& client_tag) {
-  WriteTransaction trans(share);
-  ReadNode root_node(&trans);
-  root_node.InitByRootLookup();
-  WriteNode node(&trans);
-  EXPECT_TRUE(node.InitUniqueByCreation(model_type, root_node, client_tag));
-  node.SetIsFolder(true);
-  return node.GetId();
-}
-
 // Makes a non-folder child of a non-root node. Returns the id of the
 // newly-created node.
 int64 MakeNodeWithParent(UserShare* share,

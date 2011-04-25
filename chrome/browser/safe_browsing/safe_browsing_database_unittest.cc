@@ -164,26 +164,6 @@ void InsertSubChunkHost2PrefixUrls(SBChunk* chunk,
 }
 
 // Same as InsertSubChunkHost2PrefixUrls, but with full hashes.
-void InsertSubChunkHost2FullHashes(SBChunk* chunk,
-                                   int chunk_number,
-                                   int chunk_id_to_sub,
-                                   const std::string& host_name,
-                                   const std::string& url1,
-                                   const std::string& url2) {
-  chunk->chunk_number = chunk_number;
-  chunk->is_add = false;
-  SBChunkHost host;
-  host.host = Sha256Prefix(host_name);
-  host.entry = SBEntry::Create(SBEntry::SUB_FULL_HASH, 2);
-  host.entry->set_chunk_id(chunk->chunk_number);
-  host.entry->SetFullHashAt(0, Sha256Hash(url1));
-  host.entry->SetChunkIdAtPrefix(0, chunk_id_to_sub);
-  host.entry->SetFullHashAt(1, Sha256Hash(url2));
-  host.entry->SetChunkIdAtPrefix(1, chunk_id_to_sub);
-  chunk->hosts.push_back(host);
-}
-
-// Same as InsertSubChunkHost2PrefixUrls, but with full hashes.
 void InsertSubChunkHostFullHash(SBChunk* chunk,
                                 int chunk_number,
                                 int chunk_id_to_sub,

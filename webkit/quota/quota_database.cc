@@ -64,21 +64,6 @@ class HistogramUniquifier {
   static const char* name() { return "Sqlite.Quota.Error"; }
 };
 
-sql::ErrorDelegate* GetErrorHandlerForQuotaManagerDb() {
-  return new sql::DiagnosticErrorDelegate<HistogramUniquifier>();
-}
-
-bool PrepareUniqueStatement(
-    sql::Connection* db, const char* sql, sql::Statement* statement) {
-  DCHECK(db && sql && statement);
-  statement->Assign(db->GetUniqueStatement(sql));
-  if (!statement->is_valid()) {
-    NOTREACHED() << db->GetErrorMessage();
-    return false;
-  }
-  return true;
-}
-
 bool PrepareCachedStatement(
     sql::Connection* db, const sql::StatementID& id,
     const char* sql, sql::Statement* statement) {

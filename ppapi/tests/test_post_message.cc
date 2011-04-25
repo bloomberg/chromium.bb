@@ -15,13 +15,6 @@ REGISTER_TEST_CASE(PostMessage);
 
 namespace {
 
-const PPB_Testing_Dev* GetTestingInterface() {
-  static const PPB_Testing_Dev* g_testing_interface =
-      reinterpret_cast<PPB_Testing_Dev const*>(
-          pp::Module::Get()->GetBrowserInterface(PPB_TESTING_DEV_INTERFACE));
-  return g_testing_interface;
-}
-
 const char kTestString[] = "Hello world!";
 const bool kTestBool = true;
 const int32_t kTestInt = 42;

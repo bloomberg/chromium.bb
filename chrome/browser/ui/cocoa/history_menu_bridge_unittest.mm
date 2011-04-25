@@ -363,7 +363,6 @@ TEST_F(HistoryMenuBridgeTest, GotFaviconData) {
   // make icons look pretty.
   std::vector<unsigned char> raw;
   gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &raw);
-  scoped_refptr<RefCountedBytes> bytes();
 
   // Set up the HistoryItem.
   HistoryMenuBridge::HistoryItem item;

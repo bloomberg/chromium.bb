@@ -22,13 +22,6 @@ const void* MockGetInterface(const char* name) {
   return current_test->GetInterface(name);
 }
 
-int32_t MockInitModule(PP_Module, Dispatcher::GetInterfaceFunc) {
-  return PP_OK;
-}
-
-void MockShutdownModuleFunc() {
-}
-
 }  // namespace
 
 // ProxyTestBase ---------------------------------------------------------------
