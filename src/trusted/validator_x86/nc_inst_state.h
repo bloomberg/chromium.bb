@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -15,6 +15,8 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 #include "native_client/src/trusted/validator_x86/types_memory_model.h"
+
+EXTERN_C_BEGIN
 
 /* The meta model of an x86 opcode instruction. */
 struct NaClInst;
@@ -69,5 +71,7 @@ uint8_t NaClInstStateAddressSize(NaClInstState* state);
 
 /* Changes opcode encodings to match those used by xed. */
 void NaClChangeOpcodesToXedsModel();
+
+EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_STATE_H_ */

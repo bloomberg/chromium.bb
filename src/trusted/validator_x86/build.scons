@@ -153,23 +153,25 @@ env.Requires(ncdecode_tablegen, crt)
 
 # Segment register validator library
 NCVALIDATE_SOURCES = ['nacl_cpuid.c',
-                                    'ncdecode.c',
-                                    'ncinstbuffer.c',
-                                    'nc_segment.c',
-                                    'nc_inst_iter.c',
-                                    'nc_inst_state.c',
-                                    'nc_inst_trans.c',
-                                    'ncop_exps.c',
-                                    'ncvalidate.c',
-                                    'nccopycode.c',
-                                    'nccopycode_stores.S'
-                                    ]
-if env.Bit('target_x86_64'):
-  NCVALIDATE_SOURCES = NCVALIDATE_SOURCES + ncopcode_desc_o
+                      'ncdecode.c',
+                      'ncinstbuffer.c',
+                      'nc_segment.c',
+                      'nc_inst_iter.c',
+                      'nc_inst_state.c',
+                      'nc_inst_trans.c',
+                      'ncop_exps.c',
+                      'ncvalidate.c',
+                      'nccopycode.c',
+                      'nccopycode_stores.S'
+                      ]
+
+NCVALIDATE_SOURCES = NCVALIDATE_SOURCES + ncopcode_desc_o
 
 env.ComponentLibrary('ncvalidate', NCVALIDATE_SOURCES)
 
-# SFI validator library
+# SFI validator library.
+# Note: When loading this library, follow it with ncvalidate, since
+# it contains many routines and constants needed by this library.
 env.ComponentLibrary('ncvalidate_sfi',
                      ['ncvalidate_iter.c',
                       'ncvalidator_registry.c',
@@ -286,7 +288,6 @@ ncdis = test_env.ComponentProgram(
     'ncdis_util',
     'utils',
     'ncvalidate',
-    'ncopcode_utils',
     'nchelper',
     'ncdis_util',
     'platform',
@@ -393,7 +394,6 @@ ncval = test_env.ComponentProgram(
     'ncdis_util',
     'ncvalidate_sfi',
     'ncvalidate',
-    'ncopcode_utils',
     'nchelper',
     'platform',
     'gio',
@@ -567,7 +567,7 @@ __AddNegMaxErrors()
 #---------- UNIT TESTS ---------------------------------
 
 # Create an environment to run unit tests using Gtest.
-gtest_env = env.Clone();
+gtest_env = test_env.Clone();
 # gtest does not compile with our stringent settings.
 gtest_env.FilterOut(
     CCFLAGS=['-pedantic'],
@@ -576,13 +576,18 @@ gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
 
 # List of (unit) test file prefixes to run unit tests on.
 gtest_sources = ['NCRemainingMemory',
-                 'NCInstBytes']
+                 'NCInstBytes',
+                 'nc_inst_state_']
 
 for source in gtest_sources:
   test_exe = gtest_env.ComponentProgram(
     'x86_validator_tests' + source,
     [source+'Tests.cc'],
-    EXTRA_LIBS=['gtest', 'ncvalidate']);
+    EXTRA_LIBS=['gtest',
+                'ncvalidate',
+                'platform',
+                'gio',
+                ]);
   test_node = gtest_env.CommandTest(
       source+'Tests.out',
       command=[test_exe])

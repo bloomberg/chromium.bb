@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -12,6 +12,8 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_SEGMENT_H_
 
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
+
+EXTERN_C_BEGIN
 
 /* Model of a code segment. */
 typedef struct NaClSegment {
@@ -36,5 +38,7 @@ void NaClSegmentInitialize(
     NaClPcAddress vbase,
     NaClMemorySize size,
     NaClSegment* segment);
+
+EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_SEGMENT_H_ */

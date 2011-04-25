@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -10,7 +10,10 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOPCODE_DESC_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOPCODE_DESC_H_
 
+
 #include <stdio.h>
+
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
 #include "native_client/src/shared/utils/types.h"
@@ -22,6 +25,8 @@
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_opcode_flags.h"
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_operand_kind.h"
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_operand_flag.h"
+
+EXTERN_C_BEGIN
 
 /* Defines the maximum allowable bytes per x86 instruction. */
 #define NACL_MAX_BYTES_PER_X86_INSTRUCTION 15
@@ -162,5 +167,7 @@ void NaClOpPrint(struct Gio* f, const NaClOp* operand);
  * pattern.
  */
 void NaClInstPrint(struct Gio* f,  const NaClInst* inst);
+
+EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOPCODE_DESC_H_ */

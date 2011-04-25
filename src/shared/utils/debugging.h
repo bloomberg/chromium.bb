@@ -23,4 +23,9 @@
 #define DEBUG(s) do { if (0) { s; } } while (0)
 #endif
 
+/* Turn off debugging if not otherwise specified in the specific code file. */
+#ifndef DEBUGGING
+#define DEBUGGING 0
+#endif
+
 #endif  /* NATIVE_CLIENT_SRC_SHARED_UTILS_DEBUGGING_H__ */

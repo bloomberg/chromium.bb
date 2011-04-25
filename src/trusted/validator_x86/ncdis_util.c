@@ -20,7 +20,7 @@
 
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
 #include "gen/native_client/src/trusted/validator_x86/ncdisasmtab.h"
-
+#include "native_client/src/trusted/validator_x86/RexPrefixes.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -47,26 +47,27 @@ static INLINE uint8_t HasRexPrefix(const NCDecoderInst* dinst) {
 /* Returns true if REX.W is defined in the REX prefix byte. */
 static INLINE uint8_t GetRexPrefixW(const NCDecoderInst* dinst) {
   /* Note: the field rexprefix is non-zero only if a rexprefix was found. */
-  return 0 != (dinst->inst.rexprefix & 0x8);
+  return 0 != NaClRexW(dinst->inst.rexprefix);
 }
 
 /* Returns true if REX.R is defined in the REX prefix byte. */
 static INLINE uint8_t GetRexPrefixR(const NCDecoderInst* dinst) {
   /* Note: the field rexprefix is non-zero only if a rexprefix was found. */
-  return 0 != (dinst->inst.rexprefix & 0x4);
+  return 0 != NaClRexR(dinst->inst.rexprefix);
 }
 
 /* Returns true if REX.X is defined in the REX prefix byte. */
 static INLINE uint8_t GetRexPrefixX(const NCDecoderInst* dinst) {
   /* Note: the field rexprefix is non-zero only if a rexprefix was found. */
-  return 0 != (dinst->inst.rexprefix & 0x2);
+  return 0 != NaClRexX(dinst->inst.rexprefix);
 }
 
 /* Returns true if REX.B is defined in the REX prefix byte. */
 static INLINE uint8_t GetRexPrefixB(const NCDecoderInst* dinst) {
   /* Note: the field rexprefix is non-zero only if a rexprefix was found. */
-  return 0 != (dinst->inst.rexprefix & 0x1);
+  return 0 != NaClRexB(dinst ->inst.rexprefix);
 }
+
 #endif
 
 /* Returns the index into the general purpose registers based on the

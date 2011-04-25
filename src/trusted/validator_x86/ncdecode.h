@@ -57,6 +57,10 @@ typedef void (*NCDecoderStats)(struct NCValidatorState* vstate);
 #define kPrefixSEGDS  0x0400  /* 0x3e - disallowed */
 #define kPrefixREX    0x1000  /* 0x40 - 0x4f Rex prefix */
 
+/* Readability macros for bitset testing. */
+#define NaClHasBit(set, bit) ((set) & (bit))
+#define NaClExcludesBit(set, bit) (~(set) & bit)
+
 /* a new enumerated type for instructions.
  * Note: Each enumerate type is marked with one of the following symbols,
  * defining the validator it us used for:

@@ -14,6 +14,8 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 
+EXTERN_C_BEGIN
+
 /* The meta model of an x86 opcode instruction. */
 struct NaClInst;
 
@@ -107,6 +109,22 @@ struct NaClInstIter {
   struct NaClInstState* buffer;
 };
 
+/* Structure holding the results of consuming the opcode bytes of the
+ * instruction.
+ */
+typedef struct {
+  /* The (last) byte of the matched opcode. */
+  uint8_t opcode_byte;
+  /* The most specific prefix that the opcode bytes can match
+   * (or OpcodePrefixEnumSize if no such patterns exist).
+   */
+  NaClInstPrefix matched_prefix;
+  /* The number of bytes to subtract from the instruction length,
+   * the next time GetNextNaClInstCandidates is called.
+   */
+  uint8_t next_length_adjustment;
+} NaClInstPrefixDescriptor;
+
 /* Given the current location of the (relative) pc of the given instruction
  * iterator, update the given state to hold the matched opcode
  * (instruction) pattern. If no matching pattern exists, set the state
@@ -115,5 +133,13 @@ struct NaClInstIter {
  * instruction.
  */
 void NaClDecodeInst(struct NaClInstIter* iter, struct NaClInstState* state);
+
+/* Returns the (undecoded) instruction state of the iterator. Should only
+ * be used for testing.
+ */
+
+struct NaClInstState* NaClInstIterGetUndecodedState(struct NaClInstIter* iter);
+
+EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_STATE_INTERNAL_H_ */

@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -25,6 +25,8 @@
 
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 #include "native_client/src/shared/utils/types.h"
+
+EXTERN_C_BEGIN
 
 /* Defines a code segment in the elf file. */
 struct NaClSegment;
@@ -83,5 +85,7 @@ void NaClInstIterAdvance(NaClInstIter* iter);
  * matched instruction.
  */
 uint8_t* NaClInstIterGetInstMemory(NaClInstIter* iter);
+
+EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_ITER_h_ */

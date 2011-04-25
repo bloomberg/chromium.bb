@@ -1,6 +1,7 @@
 #!/usr/bin/python2.4
-# Copyright 2009, Google Inc.
-# All rights reserved.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -194,6 +195,10 @@ def _GenerateHeader(enumfile, constants):
   enumname = _GetEnumName(enumfile)
   print >>outfile, "#ifndef %s__" % _GetDefineName(simplified_filename)
   print >>outfile, "#define %s__" % _GetDefineName(simplified_filename)
+  print >>outfile, ""
+  print >>outfile, '#include "native_client/src/include/portability.h"'
+  print >>outfile, ""
+  print >>outfile, "EXTERN_C_BEGIN"
   print >>outfile, "typedef enum %s {" % enumname
   enum_value = 0
   for constant in constants:
@@ -206,6 +211,8 @@ def _GenerateHeader(enumfile, constants):
   print >>outfile, ""
   print >>outfile, "/* Returns the name of an %s constant. */" % enumname
   print >>outfile, "extern const char* %sName(%s name);" % (enumname, enumname)
+  print >>outfile, ""
+  print >>outfile, "EXTERN_C_END"
   print >>outfile, ""
   print >>outfile, "#endif /* %s__ */" % _GetDefineName(simplified_filename)
 

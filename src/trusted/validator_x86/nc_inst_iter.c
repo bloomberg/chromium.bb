@@ -74,8 +74,12 @@ void NaClInstIterDestroy(NaClInstIter* iter) {
   free(iter);
 }
 
+NaClInstState* NaClInstIterGetUndecodedState(NaClInstIter* iter) {
+  return &iter->buffer[iter->buffer_index];
+}
+
 NaClInstState* NaClInstIterGetState(NaClInstIter* iter) {
-  NaClInstState* state = &iter->buffer[iter->buffer_index];
+  NaClInstState* state = NaClInstIterGetUndecodedState(iter);
   if (NULL == state->inst) {
     NaClDecodeInst(iter, state);
   }
