@@ -344,21 +344,6 @@ void ExpireHistoryBackend::BroadcastDeleteNotifications(
     }
     delegate_->BroadcastNotifications(NotificationType::HISTORY_URLS_DELETED,
                                       deleted_details);
-
-    // Broadcast the typed URL changed modification (this updates the inline
-    // autocomplete database).
-    //
-    // Note: if we ever need to broadcast changes to more than just typed URLs,
-    // this notification should be changed rather than a new "non-typed"
-    // notification added. The in-memory database can always do the filtering
-    // itself in that case.
-    if (!typed_urls_changed.empty()) {
-      URLsModifiedDetails* modified_details = new URLsModifiedDetails;
-      modified_details->changed_urls.swap(typed_urls_changed);
-      delegate_->BroadcastNotifications(
-          NotificationType::HISTORY_TYPED_URLS_MODIFIED,
-          modified_details);
-    }
   }
 }
 
