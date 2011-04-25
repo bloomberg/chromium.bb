@@ -1445,3 +1445,9 @@
    ...
    fun:sync_notifier::::InvalidationNotifierTest::SetUp
 }
+{
+   bug_80467
+   Heapcheck:Leak
+   ...
+   fun:ExtensionService::RecordPermissionMessagesHistogram
+}
