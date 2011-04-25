@@ -105,12 +105,14 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
     fprintf(stderr, "Error while loading in SelMain: %s\n",
             NaClErrorString(errcode));
   }
-
-  /*
-   * Remove the handler and let error pass to Chrome's handlers.
-   */
+  /* Remove the handler that was used for platform qualification tests. */
   NaClSignalHandlerFini();
 
+  /*
+   * Check that Chrome did not register any signal handlers, because
+   * these are not always safe.
+   */
+  NaClSignalAssertNoHandlers();
 
   /* Give debuggers a well known point at which xlate_base is known.  */
   NaClGdbHook(&state);

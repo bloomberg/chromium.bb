@@ -100,6 +100,11 @@ void NaClSignalHandlerInit(void);
 void NaClSignalHandlerFini(void);
 
 /*
+ * Assert that no signal handlers are registered.
+ */
+void NaClSignalAssertNoHandlers(void);
+
+/*
  * Provides a signal safe method to write to stderr.
  */
 ssize_t NaClSignalErrorMessage(const char *str);

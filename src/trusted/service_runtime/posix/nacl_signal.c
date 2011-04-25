@@ -263,3 +263,29 @@ void NaClSignalHandlerFiniPlatform() {
     }
   }
 }
+
+/*
+ * Check that signal handlers are not registered.  We want to
+ * discourage Chrome or libraries from registering signal handlers
+ * themselves, because those signal handlers are often not safe when
+ * triggered from untrusted code.  For background, see:
+ * http://code.google.com/p/nativeclient/issues/detail?id=1607
+ */
+void NaClSignalAssertNoHandlers() {
+  int index;
+  for (index = 0; index < SIGNAL_COUNT; index++) {
+    int signum = s_Signals[index];
+    struct sigaction sa;
+    if (sigaction(signum, NULL, &sa) != 0) {
+      NaClLog(LOG_FATAL, "NaClSignalAssertNoHandlers: "
+              "sigaction() call failed\n");
+    }
+    if ((sa.sa_flags & SA_SIGINFO) != 0
+        ? sa.sa_sigaction != NULL
+        : (sa.sa_handler != SIG_DFL && sa.sa_handler != SIG_IGN)) {
+      NaClLog(LOG_FATAL, "NaClSignalAssertNoHandlers: "
+              "A signal handler is registered for signal %d.  "
+              "Did Breakpad register this?\n", signum);
+    }
+  }
+}

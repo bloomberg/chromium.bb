@@ -131,3 +131,10 @@ void NaClSignalHandlerFiniPlatform(void) {
   /* Remove our old catch if there is one, this allows us to add again */
   if (NULL != s_VEH) RemoveVectoredExceptionHandler(s_VEH);
 }
+
+void NaClSignalAssertNoHandlers() {
+  /*
+   * Windows has no direct equivalent of Unix signal handlers.  There
+   * is no interface for checking that no fault handlers are registered.
+   */
+}

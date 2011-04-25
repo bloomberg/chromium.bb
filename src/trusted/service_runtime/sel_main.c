@@ -503,7 +503,11 @@ int main(int  argc,
   }
 
   /* Remove the signal handler if we are not using it. */
-  if (!handle_signals) NaClSignalHandlerFini();
+  if (!handle_signals) {
+    NaClSignalHandlerFini();
+    /* Sanity check. */
+    NaClSignalAssertNoHandlers();
+  }
 
   /*
    * Open both files first because (on Mac OS X at least)
