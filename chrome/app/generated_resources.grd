@@ -6844,6 +6844,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ABOUT_TAB_TITLE" desc="Label used for tab of about page.">
         About
       </message>
+      <message name="IDS_ABOUT_PAGE_FIRMWARE" desc="Label used for Chrome OS bios firmware version.">
+        Firmware
+      </message>
       <message name="IDS_ABOUT_PAGE_LOADING" desc="Label used for async data before data is available. Example is Chrome OS version.">
         Loading&#x2026;
       </message>

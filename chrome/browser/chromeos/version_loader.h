@@ -28,6 +28,9 @@ namespace chromeos {
 //   void OnGetChromeOSVersion(chromeos::VersionLoader::Handle,
 //                             std::string version);
 // . When you want the version invoke:  loader.GetVersion(&consumer, callback);
+//
+// This class also provides the ability to load the bios firmware using
+//   loader.GetFirmware(&consumer, callback);
 class VersionLoader : public CancelableRequestProvider {
  public:
   VersionLoader();
@@ -40,8 +43,10 @@ class VersionLoader : public CancelableRequestProvider {
 
   // Signature
   typedef Callback2<Handle, std::string>::Type GetVersionCallback;
-
   typedef CancelableRequest<GetVersionCallback> GetVersionRequest;
+
+  typedef Callback2<Handle, std::string>::Type GetFirmwareCallback;
+  typedef CancelableRequest<GetFirmwareCallback> GetFirmwareRequest;
 
   // Asynchronously requests the version.
   // If |full_version| is true version string with extra info is extracted,
@@ -50,12 +55,17 @@ class VersionLoader : public CancelableRequestProvider {
                     GetVersionCallback* callback,
                     VersionFormat format);
 
+  Handle GetFirmware(CancelableRequestConsumerBase* consumer,
+                     GetFirmwareCallback* callback);
+
   static const char kFullVersionPrefix[];
   static const char kVersionPrefix[];
+  static const char kFirmwarePrefix[];
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VersionLoaderTest, ParseFullVersion);
   FRIEND_TEST_ALL_PREFIXES(VersionLoaderTest, ParseVersion);
+  FRIEND_TEST_ALL_PREFIXES(VersionLoaderTest, ParseFirmware);
 
   // VersionLoader calls into the Backend on the file thread to load
   // and extract the version.
@@ -69,6 +79,10 @@ class VersionLoader : public CancelableRequestProvider {
     void GetVersion(scoped_refptr<GetVersionRequest> request,
                     VersionFormat format);
 
+    // Calls ParseFirmware to get the firmware # and notifies request.
+    // This is invoked on the file thread.
+    void GetFirmware(scoped_refptr<GetFirmwareRequest> request);
+
    private:
     friend class base::RefCountedThreadSafe<Backend>;
 
@@ -81,6 +95,9 @@ class VersionLoader : public CancelableRequestProvider {
   // |prefix| specifies what key defines version data.
   static std::string ParseVersion(const std::string& contents,
                                   const std::string& prefix);
+
+  // Extracts the firmware from the file.
+  static std::string ParseFirmware(const std::string& contents);
 
   scoped_refptr<Backend> backend_;
 

@@ -19,7 +19,10 @@
 namespace chromeos {
 
 // File to look for version number in.
-static const char kPath[] = "/etc/lsb-release";
+static const char kPathVersion[] = "/etc/lsb-release";
+
+// File to look for firmware number in.
+static const char kPathFirmware[] = "/var/log/bios_info.txt";
 
 VersionLoader::VersionLoader() : backend_(new Backend()) {
 }
@@ -33,6 +36,9 @@ const char VersionLoader::kFullVersionPrefix[] =
 // Same but for short version (x.x.xx.x).
 // static
 const char VersionLoader::kVersionPrefix[] = "CHROMEOS_RELEASE_VERSION=";
+
+// Beginning of line we look for that gives the firmware version.
+const char VersionLoader::kFirmwarePrefix[] = "version";
 
 VersionLoader::Handle VersionLoader::GetVersion(
     CancelableRequestConsumerBase* consumer,
@@ -50,6 +56,24 @@ VersionLoader::Handle VersionLoader::GetVersion(
   g_browser_process->file_thread()->message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(backend_.get(), &Backend::GetVersion, request, format));
+  return request->handle();
+}
+
+VersionLoader::Handle VersionLoader::GetFirmware(
+    CancelableRequestConsumerBase* consumer,
+    VersionLoader::GetFirmwareCallback* callback) {
+  if (!g_browser_process->file_thread()) {
+    // This should only happen if Chrome is shutting down, so we don't do
+    // anything.
+    return 0;
+  }
+
+  scoped_refptr<GetFirmwareRequest> request(new GetFirmwareRequest(callback));
+  AddRequest(request, consumer);
+
+  g_browser_process->file_thread()->message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(backend_.get(), &Backend::GetFirmware, request));
   return request->handle();
 }
 
@@ -77,6 +101,29 @@ std::string VersionLoader::ParseVersion(const std::string& contents,
   return std::string();
 }
 
+// static
+std::string VersionLoader::ParseFirmware(const std::string& contents) {
+  // The file contains lines such as:
+  // vendor           | ...
+  // version          | ...
+  // release_date     | ...
+  // We don't make any assumption that the spaces between "version" and "|" is
+  //   fixed. So we just match kFirmwarePrefix at the start of the line and find
+  //   the first character that is not "|" or space
+
+  std::vector<std::string> lines;
+  base::SplitString(contents, '\n', &lines);
+  for (size_t i = 0; i < lines.size(); ++i) {
+    if (StartsWithASCII(lines[i], kFirmwarePrefix, false)) {
+      std::string str = lines[i].substr(std::string(kFirmwarePrefix).size());
+      size_t found = str.find_first_not_of("| ");
+      if (found != std::string::npos)
+        return str.substr(found);
+    }
+  }
+  return std::string();
+}
+
 void VersionLoader::Backend::GetVersion(
     scoped_refptr<GetVersionRequest> request,
     VersionFormat format) {
@@ -86,7 +133,7 @@ void VersionLoader::Backend::GetVersion(
 
   std::string version;
   std::string contents;
-  const FilePath file_path(kPath);
+  const FilePath file_path(kPathVersion);
   if (file_util::ReadFileToString(file_path, &contents)) {
     version = ParseVersion(
         contents,
@@ -107,6 +154,23 @@ void VersionLoader::Backend::GetVersion(
 
   request->ForwardResult(GetVersionCallback::TupleType(request->handle(),
                                                        version));
+}
+
+void VersionLoader::Backend::GetFirmware(
+    scoped_refptr<GetFirmwareRequest> request) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (request->canceled())
+    return;
+
+  std::string firmware;
+  std::string contents;
+  const FilePath file_path(kPathFirmware);
+  if (file_util::ReadFileToString(file_path, &contents)) {
+    firmware = ParseFirmware(contents);
+  }
+
+  request->ForwardResult(GetFirmwareCallback::TupleType(request->handle(),
+                                                        firmware));
 }
 
 }  // namespace chromeos

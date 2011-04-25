@@ -25,6 +25,13 @@ static const char kTest7[] = "DIST_ID=1\nCHROMEOS_RELEASE_VERSION=0.2.3.3";
 static const char kTest8[] = "CHROMEOS_RELEASE_VERSION=\"0.2.3.3\"";
 static const char kTest9[] = "CHROMEOS_RELEASE_VERSION=\"\"";
 
+static const char kTest10[] = "vendor            | FOO";
+static const char kTest11[] = "firmware          | FOO";
+static const char kTest12[] = "firmware          | FOO";
+static const char kTest13[] = "version           | 0.2.3.3";
+static const char kTest14[] = "version        | 0.2.3.3";
+static const char kTest15[] = "version             0.2.3.3";
+
 TEST_F(VersionLoaderTest, ParseFullVersion) {
   EXPECT_EQ("0.2.3.3",
             VersionLoader::ParseVersion(kTest1,
@@ -59,6 +66,15 @@ TEST_F(VersionLoaderTest, ParseVersion) {
   EXPECT_EQ(std::string(),
             VersionLoader::ParseVersion(kTest9,
                                         VersionLoader::kFullVersionPrefix));
+}
+
+TEST_F(VersionLoaderTest, ParseFirmware) {
+  EXPECT_EQ(std::string(), VersionLoader::ParseFirmware(kTest10));
+  EXPECT_EQ(std::string(), VersionLoader::ParseFirmware(kTest11));
+  EXPECT_EQ(std::string(), VersionLoader::ParseFirmware(kTest12));
+  EXPECT_EQ("0.2.3.3", VersionLoader::ParseFirmware(kTest13));
+  EXPECT_EQ("0.2.3.3", VersionLoader::ParseFirmware(kTest14));
+  EXPECT_EQ("0.2.3.3", VersionLoader::ParseFirmware(kTest15));
 }
 
 }  // namespace chromeos

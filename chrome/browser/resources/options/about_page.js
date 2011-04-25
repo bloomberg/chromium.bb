@@ -77,6 +77,11 @@ cr.define('options', function() {
       $('osVersion1').textContent = versionString;
     },
 
+    updateOSFirmware_: function(firmwareString) {
+      $('osFirmware0').textContent = firmwareString;
+      $('osFirmware1').textContent = firmwareString;
+    },
+
     /**
      * Updates the status message like "Checking for update...".
      * @param {string} message The message to be shown.
@@ -174,6 +179,10 @@ cr.define('options', function() {
 
   AboutPage.updateOSVersionCallback = function(versionString) {
     AboutPage.getInstance().updateOSVersion_(versionString);
+  };
+
+  AboutPage.updateOSFirmwareCallback = function(firmwareString) {
+    AboutPage.getInstance().updateOSFirmware_(firmwareString);
   };
 
   AboutPage.updateStatusCallback = function(message, insertDelay) {

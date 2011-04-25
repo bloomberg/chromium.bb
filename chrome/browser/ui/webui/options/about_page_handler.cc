@@ -108,6 +108,7 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 
   static OptionsStringResource resources[] = {
 #if defined (OS_CHROMEOS)
+    { "firmware", IDS_ABOUT_PAGE_FIRMWARE },
     { "product", IDS_PRODUCT_OS_NAME },
     { "os", IDS_PRODUCT_OS_NAME },
     { "loading", IDS_ABOUT_PAGE_LOADING },
@@ -275,6 +276,8 @@ void AboutPageHandler::PageReady(const ListValue* args) {
   loader_.GetVersion(&consumer_,
                      NewCallback(this, &AboutPageHandler::OnOSVersion),
                      chromeos::VersionLoader::VERSION_FULL);
+  loader_.GetFirmware(&consumer_,
+                      NewCallback(this, &AboutPageHandler::OnOSFirmware));
 
   chromeos::UpdateLibrary* update_library =
       chromeos::CrosLibrary::Get()->GetUpdateLibrary();
@@ -416,6 +419,15 @@ void AboutPageHandler::OnOSVersion(chromeos::VersionLoader::Handle handle,
     scoped_ptr<Value> version_string(Value::CreateStringValue(version));
     web_ui_->CallJavascriptFunction("AboutPage.updateOSVersionCallback",
                                     *version_string);
+  }
+}
+
+void AboutPageHandler::OnOSFirmware(chromeos::VersionLoader::Handle handle,
+                                    std::string firmware) {
+  if (firmware.size()) {
+    scoped_ptr<Value> firmware_string(Value::CreateStringValue(firmware));
+    web_ui_->CallJavascriptFunction("AboutPage.updateOSFirmwareCallback",
+                                    *firmware_string);
   }
 }
 
