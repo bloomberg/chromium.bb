@@ -544,13 +544,13 @@ void NewUserView::EnableInputControls(bool enabled) {
           prefs::kApplicationLocale));
   username_field_->SetEnabled(enabled);
   password_field_->SetEnabled(enabled);
-  sign_in_button_->SetEnabled(enabled);
   if (need_guest_link_) {
     guest_link_->SetEnabled(enabled);
   }
   if (need_create_account_) {
     create_account_link_->SetEnabled(enabled);
   }
+  UpdateSignInButtonState();
 }
 
 bool NewUserView::NavigateAway() {
