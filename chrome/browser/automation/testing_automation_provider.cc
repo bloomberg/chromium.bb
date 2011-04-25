@@ -2125,6 +2125,10 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["GetUpdateInfo"] = &TestingAutomationProvider::GetUpdateInfo;
   handler_map["UpdateCheck"] = &TestingAutomationProvider::UpdateCheck;
   handler_map["SetReleaseTrack"] = &TestingAutomationProvider::SetReleaseTrack;
+
+  handler_map["GetVolumeInfo"] = &TestingAutomationProvider::GetVolumeInfo;
+  handler_map["SetVolume"] = &TestingAutomationProvider::SetVolume;
+  handler_map["SetMute"] = &TestingAutomationProvider::SetMute;
 #endif  // defined(OS_CHROMEOS)
 
   std::map<std::string, BrowserJsonHandler> browser_handler_map;

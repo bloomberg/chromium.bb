@@ -2894,6 +2894,52 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
+  def GetVolumeInfo(self):
+    """Gets the volume and whether the device is muted.
+
+    Returns:
+      a tuple.
+      Sample:
+      (47.763456790123456, False)
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'GetVolumeInfo' }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def SetVolume(self, volume):
+    """Sets the volume on ChromeOS. Only valid if not muted.
+
+    Args:
+      volume: The desired volume level as a percent from 0 to 100.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    assert volume >= 0 and volume <= 100
+    cmd_dict = {
+        'command': 'SetVolume',
+        'volume': float(volume),
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def SetMute(self, mute):
+    """Sets whether ChromeOS is muted or not.
+
+    Args:
+      mute: True to mute, False to unmute.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'SetMute' }
+    cmd_dict = {
+        'command': 'SetMute',
+        'mute': mute,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
   ## ChromeOS section -- end
 
 

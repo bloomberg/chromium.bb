@@ -1079,6 +1079,12 @@ class TestingAutomationProvider : public AutomationProvider,
   void UpdateCheck(DictionaryValue* args, IPC::Message* reply_message);
 
   void SetReleaseTrack(DictionaryValue* args, IPC::Message* reply_message);
+
+  void GetVolumeInfo(DictionaryValue* args, IPC::Message* reply_message);
+
+  void SetVolume(DictionaryValue* args, IPC::Message* reply_message);
+
+  void SetMute(DictionaryValue* args, IPC::Message* reply_message);
 #endif  // defined(OS_CHROMEOS)
 
   void WaitForTabCountToBecome(int browser_handle,

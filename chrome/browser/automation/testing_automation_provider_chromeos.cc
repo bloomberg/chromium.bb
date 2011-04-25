@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
+#include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
@@ -511,5 +512,42 @@ void TestingAutomationProvider::SetReleaseTrack(DictionaryValue* args,
 
   UpdateLibrary* update_library = CrosLibrary::Get()->GetUpdateLibrary();
   update_library->SetReleaseTrack(track);
+  reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::GetVolumeInfo(DictionaryValue* args,
+                                              IPC::Message* reply_message) {
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
+  return_value->SetDouble("volume", audio_handler->GetVolumePercent());
+  return_value->SetBoolean("is_mute", audio_handler->IsMute());
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+}
+
+void TestingAutomationProvider::SetVolume(DictionaryValue* args,
+                                          IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  double volume_percent;
+  if (!args->GetDouble("volume", &volume_percent)) {
+    reply.SendError("Invalid or missing args.");
+    return;
+  }
+
+  chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
+  audio_handler->SetVolumePercent(volume_percent);
+  reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::SetMute(DictionaryValue* args,
+                                        IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  bool mute;
+  if (!args->GetBoolean("mute", &mute)) {
+    reply.SendError("Invalid or missing args.");
+    return;
+  }
+
+  chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
+  audio_handler->SetMute(mute);
   reply.SendSuccess(NULL);
 }
