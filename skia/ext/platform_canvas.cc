@@ -51,13 +51,6 @@ SkCanvas* CreateBitmapCanvas(int width, int height, bool is_opaque) {
   return new PlatformCanvas(width, height, is_opaque);
 }
 
-void MakeOpaque(const SkIRect& region, SkCanvas* canvas) {
-  BitmapPlatformDevice* device = static_cast<BitmapPlatformDevice*>(
-      GetTopPlatformDevice(canvas));
-  device->makeOpaque(region.fLeft, region.fTop,
-                     region.width(), region.height());
-}
-
 bool SupportsPlatformPaint(const SkCanvas* canvas) {
   // TODO(alokp): Rename PlatformDevice::IsNativeFontRenderingAllowed after
   // removing these calls from WebKit.
