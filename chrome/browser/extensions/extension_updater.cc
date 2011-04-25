@@ -918,7 +918,8 @@ void ExtensionUpdater::CheckSoon() {
   }
   if (BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          method_factory_.NewRunnableMethod(&ExtensionUpdater::CheckNow))) {
+          method_factory_.NewRunnableMethod(
+              &ExtensionUpdater::DoCheckSoon))) {
     will_check_soon_ = true;
   } else {
     NOTREACHED();

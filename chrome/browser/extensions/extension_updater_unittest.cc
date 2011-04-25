@@ -270,9 +270,10 @@ class ExtensionUpdaterTest : public testing::Test {
     updater->TimerFired();
   }
 
-  static void SimulateCheckSoon(ExtensionUpdater* updater) {
-    EXPECT_TRUE(updater->will_check_soon_);
-    updater->DoCheckSoon();
+  static void SimulateCheckSoon(const ExtensionUpdater& updater,
+                                MessageLoop* message_loop) {
+    EXPECT_TRUE(updater.will_check_soon_);
+    message_loop->RunAllPending();
   }
 
   // Adds a Result with the given data to results.
@@ -1133,7 +1134,7 @@ TEST(ExtensionUpdaterTest, TestCheckSoon) {
     EXPECT_TRUE(updater.WillCheckSoon());
     updater.CheckSoon();
     EXPECT_TRUE(updater.WillCheckSoon());
-    ExtensionUpdaterTest::SimulateCheckSoon(&updater);
+    ExtensionUpdaterTest::SimulateCheckSoon(updater, &message_loop);
     EXPECT_FALSE(updater.WillCheckSoon());
     updater.CheckSoon();
     EXPECT_TRUE(updater.WillCheckSoon());
