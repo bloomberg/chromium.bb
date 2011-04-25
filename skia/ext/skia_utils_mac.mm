@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "skia/ext/bitmap_platform_device_mac.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
@@ -168,67 +167,19 @@ SkBitmap NSImageToSkBitmap(NSImage* image, NSSize size, bool is_opaque) {
   return bitmap;
 }
 
-SkBitmap NSImageRepToSkBitmap(NSImageRep* image, NSSize size, bool is_opaque) {
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width, size.height);
-  if (!bitmap.allocPixels())
-    return bitmap;  // Return |bitmap| which should respond true to isNull().
-
-  bitmap.setIsOpaque(is_opaque);
-
-  base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
-      CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
-  void* data = bitmap.getPixels();
-
-  // Allocate a bitmap context with 4 components per pixel (BGRA). Apple
-  // recommends these flags for improved CG performance.
-#define HAS_ARGB_SHIFTS(a, r, g, b) \
-            (SK_A32_SHIFT == (a) && SK_R32_SHIFT == (r) \
-             && SK_G32_SHIFT == (g) && SK_B32_SHIFT == (b))
-#if defined(SK_CPU_LENDIAN) && HAS_ARGB_SHIFTS(24, 16, 8, 0)
-  base::mac::ScopedCFTypeRef<CGContextRef> context(
-    CGBitmapContextCreate(data, size.width, size.height, 8, size.width*4,
-                          color_space,
-                          kCGImageAlphaPremultipliedFirst |
-                              kCGBitmapByteOrder32Host));
-#else
-#error We require that Skia's and CoreGraphics's recommended \
-       image memory layout match.
-#endif
-#undef HAS_ARGB_SHIFTS
-
-  // Something went really wrong. Best guess is that the bitmap data is invalid.
-  DCHECK(context);
-
-  // Save the current graphics context so that we can restore it later.
-  [NSGraphicsContext saveGraphicsState];
-
-  // Dummy context that we will draw into.
-  NSGraphicsContext* context_cocoa =
-      [NSGraphicsContext graphicsContextWithGraphicsPort:context flipped:NO];
-  [NSGraphicsContext setCurrentContext:context_cocoa];
-
-  // This will stretch any images to |size| if it does not fit or is non-square.
-  [image drawInRect:NSMakeRect(0, 0, size.width, size.height)];
-
-  // Done drawing, restore context.
-  [NSGraphicsContext restoreGraphicsState];
-
-  return bitmap;
-}
-
 NSImage* SkBitmapToNSImageWithColorSpace(const SkBitmap& skiaBitmap,
                                          CGColorSpaceRef colorSpace) {
   if (skiaBitmap.isNull())
     return nil;
 
   // First convert SkBitmap to CGImageRef.
-  base::mac::ScopedCFTypeRef<CGImageRef> cgimage(
-      SkCreateCGImageRefWithColorspace(skiaBitmap, colorSpace));
+  CGImageRef cgimage =
+    SkCreateCGImageRefWithColorspace(skiaBitmap, colorSpace);
 
   // Now convert to NSImage.
-  scoped_nsobject<NSBitmapImageRep> bitmap(
-      [[NSBitmapImageRep alloc] initWithCGImage:cgimage]);
+  NSBitmapImageRep* bitmap = [[[NSBitmapImageRep alloc]
+                                   initWithCGImage:cgimage] autorelease];
+  CFRelease(cgimage);
   NSImage* image = [[[NSImage alloc] init] autorelease];
   [image addRepresentation:bitmap];
   [image setSize:NSMakeSize(skiaBitmap.width(), skiaBitmap.height())];
@@ -239,37 +190,6 @@ NSImage* SkBitmapToNSImage(const SkBitmap& skiaBitmap) {
   base::mac::ScopedCFTypeRef<CGColorSpaceRef> colorSpace(
       CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
   return SkBitmapToNSImageWithColorSpace(skiaBitmap, colorSpace.get());
-}
-
-NSImage* SkBitmapsToNSImage(const std::vector<const SkBitmap*>& bitmaps) {
-  if (bitmaps.empty())
-    return nil;
-
-  base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
-      CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
-  NSImage* image = [[[NSImage alloc] init] autorelease];
-  NSSize min_size = NSZeroSize;
-
-  for (std::vector<const SkBitmap*>::const_iterator it = bitmaps.begin();
-       it != bitmaps.end(); ++it) {
-    const SkBitmap& skiaBitmap = **it;
-    // First convert SkBitmap to CGImageRef.
-    base::mac::ScopedCFTypeRef<CGImageRef> cgimage(
-        SkCreateCGImageRefWithColorspace(skiaBitmap, color_space));
-
-    // Now convert to NSImage.
-    scoped_nsobject<NSBitmapImageRep> bitmap(
-        [[NSBitmapImageRep alloc] initWithCGImage:cgimage]);
-    [image addRepresentation:bitmap];
-
-    if (min_size.width == 0 || min_size.width > skiaBitmap.width()) {
-      min_size.width = skiaBitmap.width();
-      min_size.height = skiaBitmap.height();
-    }
-  }
-
-  [image setSize:min_size];
-  return image;
 }
 
 SkBitmap AppplicationIconAtSize(int size) {
