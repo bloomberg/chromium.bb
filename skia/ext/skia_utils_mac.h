@@ -7,7 +7,6 @@
 #pragma once
 
 #include <CoreGraphics/CGColor.h>
-#include <vector>
 
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -24,10 +23,8 @@ typedef struct _NSSize NSSize;
 
 #ifdef __OBJC__
 @class NSImage;
-@class NSImageRep;
 #else
 class NSImage;
-class NSImageRep;
 #endif
 
 namespace gfx {
@@ -67,9 +64,6 @@ SkBitmap CGImageToSkBitmap(CGImageRef image);
 // Draws an NSImage with a given size into a SkBitmap.
 SkBitmap NSImageToSkBitmap(NSImage* image, NSSize size, bool is_opaque);
 
-// Draws an NSImageRep with a given size into a SkBitmap.
-SkBitmap NSImageRepToSkBitmap(NSImageRep* image, NSSize size, bool is_opaque);
-
 // Given an SkBitmap and a color space, return an autoreleased NSImage.
 NSImage* SkBitmapToNSImageWithColorSpace(const SkBitmap& icon,
                                          CGColorSpaceRef colorSpace);
@@ -78,10 +72,6 @@ NSImage* SkBitmapToNSImageWithColorSpace(const SkBitmap& icon,
 // DEPRECATED, use SkBitmapToNSImageWithColorSpace() instead.
 // TODO(thakis): Remove this -- http://crbug.com/69432
 NSImage* SkBitmapToNSImage(const SkBitmap& icon);
-
-// Given a vector of SkBitmaps, return an NSImage with each bitmap added
-// as a representation.
-NSImage* SkBitmapsToNSImage(const std::vector<const SkBitmap*>& bitmaps);
 
 // Returns |[NSImage imageNamed:@"NSApplicationIcon"]| as SkBitmap.
 SkBitmap AppplicationIconAtSize(int size);
