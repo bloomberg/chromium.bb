@@ -981,13 +981,21 @@ buildbot-mark-version: | \
 # Run DejaGnu tests.
 ##################################################################
 
+SEL_LDR=$(abspath ../scons-out/opt-$(PLATFORM)-x86-$(BITSPLATFORM)/staging/sel_ldr)
 DEJAGNU_TIMESTAMP := $(shell date +%y%m%d%H%M%S)
 
-.PHONY: check
-check:
+.PHONY: $(SEL_LDR)
+$(SEL_LDR):
 	(cd .. && \
 	  ./$(SCONS) naclsdk_mode=custom:$(DESTDIR)$(SDKROOT) \
-	    --mode=dbg-linux,nacl platform=x86-$(BITSPLATFORM) \
+	    --mode=opt-host,nacl platform=x86-$(BITSPLATFORM) \
+	    sdl=none --verbose sel_ldr)
+
+.PHONY: check
+check: $(SEL_LDR)
+	(cd .. && \
+	  ./$(SCONS) naclsdk_mode=custom:$(DESTDIR)$(SDKROOT) \
+	    --mode=opt-host,nacl platform=x86-$(BITSPLATFORM) \
 	    sdl=none --verbose run_hello_world_test)
 	mkdir BUILD/build-gcc-$(CROSSARCH)/results.$(DEJAGNU_TIMESTAMP)
 	$(MAKE) \
@@ -996,9 +1004,22 @@ check:
 	    RUNTESTFLAGS=" \
 	        --target_board=nacl \
 	        --outdir=$(abspath BUILD/build-gcc-$(CROSSARCH)/results.$(DEJAGNU_TIMESTAMP)) \
-	        SIM=$(abspath ../scons-out/dbg-linux-x86-$(BITSPLATFORM)/staging/sel_ldr)" \
+	        SIM=$(SEL_LDR)" \
 	    LDFLAGS_FOR_TARGET="-lnosys" \
 	    check
+
+
+##################################################################
+# Run GlibC tests.
+##################################################################
+
+.PHONY: glibc-check
+glibc-check: $(SEL_LDR)
+	GLIBC_TST_COLLECT2="$(PREGCC_PREFIX)/libexec/gcc/$(CROSSARCH)/$(GCC_VERSION)/collect2" \
+	GLIBC_TST_STATIC_LDSCRIPT="$(DESTDIR)$(SDKROOT)/$(CROSSARCH)"/lib/ldscripts/elf64_nacl.x.static \
+	GLIBC_TST_NACL_LOADER="$(SEL_LDR)" \
+	GLIBC_TST_NACL_TOOLCHAIN="$(DESTDIR)$(SDKROOT)" \
+	  glibc-tests/run_tests.sh
 
 
 ##################################################################
@@ -1009,7 +1030,7 @@ nacl-check:
 	(cd .. && \
 	  ./$(SCONS) -k \
 	    $(SCONS_DESTINATIONS_NOLIB) \
-	    --mode=dbg-linux,nacl platform=x86-$(BITSPLATFORM) \
+	    --mode=opt-host,nacl platform=x86-$(BITSPLATFORM) \
 	    sdl=none --nacl_glibc --verbose small_tests)
 
 
