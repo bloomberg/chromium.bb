@@ -111,8 +111,17 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
   /*
    * Check that Chrome did not register any signal handlers, because
    * these are not always safe.
+   *
+   * This check is disabled for Mac OS X because it currently does not
+   * pass there in Chromium, which registers a handler for at least
+   * SIGILL (signal 4).  Luckily, OS X restores %gs when entering a
+   * signal handler, so there should not be a vulnerability.
+   * TODO(mseaborn): However, we should reinstate the check for Mac to
+   * be on the safe side.
    */
-  NaClSignalAssertNoHandlers();
+  if (!NACL_OSX) {
+    NaClSignalAssertNoHandlers();
+  }
 
   /* Give debuggers a well known point at which xlate_base is known.  */
   NaClGdbHook(&state);
