@@ -576,28 +576,19 @@ cr.define('options', function() {
       var f = $('gaia-login-form');
       var email = $('gaia-email');
       var passwd = $('gaia-passwd');
-      console.log(email);
-      console.log(passwd);
-      console.log(email.value);
-      console.log(passwd.value);
       if (null == email.value || "" == email.value) {
         this.setElementDisplay_("errormsg-0-email", 'table-row');
         this.setBlurbError_();
-        console.log('this one');
         return false;
       }
       if (null == passwd.value || "" == passwd.value) {
         this.setElementDisplay_("errormsg-0-password", 'table-row');
         this.setBlurbError_();
-        console.log('no here');
         return false;
       }
-      console.log(f.accessCode.disabled);
-      console.log(f.accessCode.value);
       if (!f.accessCode.disabled && (null == f.accessCode.value ||
           "" == f.accessCode.value)) {
         this.setElementDisplay_("errormsg-0-password", 'table-row');
-        console.log('what?');
         return false;
       }
       return true;
@@ -605,7 +596,6 @@ cr.define('options', function() {
 
     sendCredentialsAndClose_: function() {
       if (!this.setErrorVisibility_()) {
-        console.log('returning false');
         return false;
       }
 
@@ -624,8 +614,6 @@ cr.define('options', function() {
                                    "captcha" : f.captchaValue.value,
                                    "access_code" : f.accessCode.value});
       $('sign-in').disabled = true;
-      console.log('sending!');
-      console.log(result);
       chrome.send("SubmitAuth", [result]);
     },
 
