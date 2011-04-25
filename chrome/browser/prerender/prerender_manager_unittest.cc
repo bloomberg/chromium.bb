@@ -495,46 +495,4 @@ TEST_F(PrerenderManagerTest, SourceRenderViewClosed) {
       std::pair<int, int>(100, 100), url, std::vector<GURL>(), GURL()));
 }
 
-// Tests that the prerender manager ignores fragment references when matching
-// prerender URLs in the case the fragment is not in the prerender URL.
-TEST_F(PrerenderManagerTest, PageMatchesFragmentTest) {
-  GURL url("http://www.google.com/");
-  GURL fragment_url("http://www.google.com/#test");
-
-  DummyPrerenderContents* pc =
-      prerender_manager()->CreateNextPrerenderContents(url,
-                                                       FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
-  EXPECT_TRUE(pc->has_started());
-  ASSERT_EQ(pc, prerender_manager()->GetEntry(fragment_url));
-}
-
-// Tests that the prerender manager ignores fragment references when matching
-// prerender URLs in the case the fragment is in the prerender URL.
-TEST_F(PrerenderManagerTest, FragmentMatchesPageTest) {
-  GURL url("http://www.google.com/");
-  GURL fragment_url("http://www.google.com/#test");
-
-  DummyPrerenderContents* pc =
-      prerender_manager()->CreateNextPrerenderContents(fragment_url,
-                                                       FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(fragment_url));
-  EXPECT_TRUE(pc->has_started());
-  ASSERT_EQ(pc, prerender_manager()->GetEntry(url));
-}
-
-// Tests that the prerender manager ignores fragment references when matching
-// prerender URLs in the case the fragment is in both URLs.
-TEST_F(PrerenderManagerTest, FragmentMatchesFragmentTest) {
-  GURL fragment_url("http://www.google.com/#test");
-  GURL other_fragment_url("http://www.google.com/#other_test");
-
-  DummyPrerenderContents* pc =
-      prerender_manager()->CreateNextPrerenderContents(fragment_url,
-                                                       FINAL_STATUS_USED);
-  EXPECT_TRUE(prerender_manager()->AddSimplePreload(fragment_url));
-  EXPECT_TRUE(pc->has_started());
-  ASSERT_EQ(pc, prerender_manager()->GetEntry(other_fragment_url));
-}
-
 }  // namespace prerender

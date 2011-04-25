@@ -175,13 +175,18 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   }
 
   void NavigateToDestURL() const {
-    NavigateToURLImpl(dest_url_);
-  }
+    ui_test_utils::NavigateToURL(browser(), dest_url_);
 
-  // Should be const but test_server()->GetURL(...) is not const.
-  void NavigateToURL(const std::string& dest_html_file) {
-    GURL dest_url = test_server()->GetURL(dest_html_file);
-    NavigateToURLImpl(dest_url);
+    // Make sure the PrerenderContents found earlier was used or removed
+    EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) == NULL);
+
+    // Check if page behaved as expected when actually displayed.
+    bool display_test_result = false;
+    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        browser()->GetSelectedTabContents()->render_view_host(), L"",
+        L"window.domAutomationController.send(DidDisplayPass())",
+        &display_test_result));
+    EXPECT_TRUE(display_test_result);
   }
 
   bool UrlIsInPrerenderManager(const std::string& html_file) {
@@ -205,6 +210,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   TaskManagerModel* model() const {
     return TaskManager::GetInstance()->model();
   }
+
+  void set_dest_url(const GURL& dest_url) { dest_url_ = dest_url; }
 
  private:
   void PrerenderTestURLImpl(
@@ -277,24 +284,6 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         EXPECT_TRUE(prerender_contents == NULL);
         break;
     }
-  }
-
-  void NavigateToURLImpl(const GURL& dest_url) const {
-    // Make sure in navigating we have a URL to use in the PrerenderManager.
-    EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) != NULL);
-
-    ui_test_utils::NavigateToURL(browser(), dest_url);
-
-    // Make sure the PrerenderContents found earlier was used or removed.
-    EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) == NULL);
-
-    // Check if page behaved as expected when actually displayed.
-    bool display_test_result = false;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedTabContents()->render_view_host(), L"",
-        L"window.domAutomationController.send(DidDisplayPass())",
-        &display_test_result));
-    EXPECT_TRUE(display_test_result);
   }
 
   PrerenderManager* prerender_manager() const {
@@ -380,7 +369,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       CreateClientRedirect("files/prerender/prerender_page.html"),
       FINAL_STATUS_USED,
       2);
-  NavigateToURL("files/prerender/prerender_page.html");
+  set_dest_url(test_server()->GetURL("files/prerender/prerender_page.html"));
+  NavigateToDestURL();
 }
 
 // Checks that client-issued redirects to an https page will cancel prerenders.
@@ -458,7 +448,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       CreateServerRedirect("files/prerender/prerender_page.html"),
       FINAL_STATUS_USED,
       1);
-  NavigateToURL("files/prerender/prerender_page.html");
+  set_dest_url(test_server()->GetURL("files/prerender/prerender_page.html"));
+  NavigateToDestURL();
 }
 
 // TODO(cbentzel): Add server-redirect-to-https test. http://crbug.com/79182
@@ -558,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
 
 
 // Checks that renderers using excessive memory will be terminated.
-// Disabled, http://crbug.com/77870.
+// Disabled, http://crbug.com/80324.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        DISABLED_PrerenderExcessiveMemory) {
   PrerenderTestURL("files/prerender/prerender_excessive_memory.html",
@@ -567,7 +558,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 }
 
 // Checks that we don't prerender in an infinite loop.
-// Disabled, http://crbug.com/80324.
+// Disabled, http://crbug.com/77323.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderInfiniteLoop) {
   const char* const kHtmlFileA = "prerender_infinite_a.html";
   const char* const kHtmlFileB = "prerender_infinite_b.html";
@@ -693,56 +684,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
   PrerenderTestURL(CreateClientRedirect("files/prerender/prerender_page.html"),
                    FINAL_STATUS_RENDERER_CRASHED,
                    1);
-}
-
-// Checks that we correctly use a prerendered page when navigating to a
-// fragment.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNavigateFragment) {
-  PrerenderTestURL("files/prerender/prerender_fragment.html",
-                   FINAL_STATUS_USED,
-                   1);
-  NavigateToURL("files/prerender/prerender_fragment.html#fragment");
-}
-
-// Checks that we correctly use a prerendered page when we prerender a fragment
-// but navigate to the main page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFragmentNavigatePage) {
-  PrerenderTestURL("files/prerender/prerender_page.html#fragment",
-                   FINAL_STATUS_USED,
-                   1);
-  NavigateToURL("files/prerender/prerender_page.html");
-}
-
-// Checks that we correctly use a prerendered page when we prerender a fragment
-// but navigate to a different fragment on the same page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderFragmentNavigateFragment) {
-  PrerenderTestURL("files/prerender/prerender_fragment.html#other_fragment",
-                   FINAL_STATUS_USED,
-                   1);
-  NavigateToURL("files/prerender/prerender_fragment.html#fragment");
-}
-
-// Checks that we correctly use a prerendered page when the page uses meta
-// http-equiv to refresh to a fragment on the same page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderClientRedirectToFragment) {
-  PrerenderTestURL(
-      CreateClientRedirect("files/prerender/prerender_fragment.html#fragment"),
-      FINAL_STATUS_USED,
-      2);
-  NavigateToURL(
-      CreateClientRedirect("files/prerender/prerender_fragment.html"));
-}
-
-// Checks that we correctly use a prerendered page when the page uses JS to set
-// the window.location.hash to a fragment on the same page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderPageChangeFragmentLocationHash) {
-  PrerenderTestURL("files/prerender/prerender_fragment_location_hash.html",
-                   FINAL_STATUS_USED,
-                   1);
-  NavigateToURL("files/prerender/prerender_fragment_location_hash.html");
 }
 
 }  // namespace prerender
