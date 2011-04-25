@@ -29,8 +29,14 @@
 struct Gio;
 
 /* Build the arrays NaClGpSubregIndex and NaClGpReg64Index into
- * the file defined by the argument.
+ * the file defined by the argument, for the 32-bit architecture
  */
-void NaClPrintGpRegisterIndexes(struct Gio* f);
+void NaClPrintGpRegisterIndexes_32(struct Gio* f);
+
+/* Build the arrays NaClGpSubregIndex and NaClGpReg64Index into
+ * the file defined by the argument, for the 64-bit architecture
+ */
+void NaClPrintGpRegisterIndexes_64(struct Gio* f);
+
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_REGSREG_H_ */

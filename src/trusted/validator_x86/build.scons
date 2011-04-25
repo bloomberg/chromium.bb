@@ -30,6 +30,41 @@ test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 # Define where generated code should be put.
 ncv_gen_basedir = '${TARGET_ROOT}'
 ncv_gen_dir = ncv_gen_basedir +'/gen/native_client/src/trusted/validator_x86'
+# ======================================================================
+# Helper functions for getting automated tests from the corresponding
+# test directory.
+
+TESTDATA_DIR = 'testdata/'
+TESTDATA_SUBARCH_DIR = TESTDATA_DIR + env['TARGET_SUBARCH'] + '/'
+
+# Generates the set of test files with the given extension.
+def __GoldenFiles(ext):
+  return Glob(TESTDATA_SUBARCH_DIR + '*.' + ext)
+
+# Generates base names (i.e. minus path and extention (ext) suffix) of
+# all test data input files.
+def __FilterOutTestFileBaseGen(files, ext):
+  for f in files:
+    yield os.path.basename(f.path).replace('.' + ext, '')
+
+# Generates the set of golden bases for the given extension.
+def __GoldenBases(ext):
+  return __FilterOutTestFileBaseGen(__GoldenFiles(ext), ext)
+
+# Generates the corresponding test file from the given base.
+def __BaseTestFile(base, ext):
+  return test_env.File(TESTDATA_SUBARCH_DIR + base + '.' + ext)
+
+# Generates the corresponding test name from the given base.
+def __BaseTestName(test, base, ext):
+  return test + '_' + base + '_' + ext
+
+# Generates the corresponding output file from the given base.
+def __OutTestFile(test, base, ext):
+  return test + '_' + base + '.' + ext + '.out'
+
+def __AddTest(test, test_env, base, ext, command, groups):
+  test_env.AddNodeToTestSuite(command, groups, __BaseTestName(test, base, ext))
 
 #------------------------------------------------------
 # Generate the needed header files for enumerated types.
@@ -156,6 +191,40 @@ test_env.ComponentLibrary('ncdis_util',
 #------------------------------------------------------------------
 # Generate the header files containing the modeled x86 instructions.
 
+def GenerateInstructionTables(target_subarch, filename):
+  env.Command(
+      [filename],
+      [ncdecode_tablegen,
+       '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}'],
+      ['${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX} -m%s %s' %
+       (target_subarch, filename)])
+
+def TestGeneratedInstructionTables(target_subarch, golden_filename, groups):
+  test_name = 'ncdecode_tablegen_inst_tables_' + target_subarch + '.out'
+  golden_output = env.File(TESTDATA_DIR + test_subarch + '/' + golden_filename)
+  test = test_env.CommandTest(
+      test_name,
+      [ncdecode_tablegen, '-m%s' % (target_subarch,)],
+      stdout_golden = golden_output)
+  test_env.AddNodeToTestSuite(test, groups, test_name)
+
+def GenerateSubregisterTables(target_subarch, filename):
+  env.Command(
+      [filename],
+      [ncdecode_tablegen,
+       '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}'],
+      ['${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX} -m%s -nacl_subregs %s' %
+       (target_subarch, filename)])
+
+def TestGeneratedSubregisterTables(target_subarch, golden_filename, groups):
+  test_name = 'ncdecode_tablegen_subreg_tables_' + target_subarch + '.out'
+  golden_output = env.File(TESTDATA_DIR + test_subarch + '/' + golden_filename)
+  test = test_env.CommandTest(
+      test_name,
+      [ncdecode_tablegen, '-m%s -nacl_subregs' % (target_subarch,)],
+      stdout_golden = golden_output)
+  test_env.AddNodeToTestSuite(test, groups, test_name)
+
 ncv_decodetab_h = env.File(ncv_gen_dir + '/ncdecodetab.h')
 ncv_disasmtab_h = env.File(ncv_gen_dir + '/ncdisasmtab.h')
 ncv_badprefixmask_h = env.File(ncv_gen_dir + '/ncbadprefixmask.h')
@@ -175,19 +244,20 @@ else:
   ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table.h')
   ncv_subregs_h = env.File(ncv_gen_dir + '/nc_subregs.h')
 
-env.Command(
-    [ncv_opcode_table_h],
-    [ncdecode_tablegen,
-     '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}'],
-    ['${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX} -m%s %s' %
-     (env['TARGET_SUBARCH'], ncv_opcode_table_h)])
+GenerateInstructionTables(env['TARGET_SUBARCH'], ncv_opcode_table_h)
 
-env.Command(
-    [ncv_subregs_h],
-    [ncdecode_tablegen,
-     '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}'],
-    ['${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX} -m%s -nacl_subregs %s' %
-     (env['TARGET_SUBARCH'], ncv_subregs_h)])
+GenerateSubregisterTables(env['TARGET_SUBARCH'], ncv_subregs_h)
+
+# The following verifies that we generate the same source files, independent of
+# whether the 32 bit or 64 bit table generator is used.
+# Note: This is important in the 64-bit case on Windows, in that we want
+# to make sure if the 32-bit generator is used, we still generate the
+# same source files.
+for test_subarch in ['32', '64']:
+  TestGeneratedInstructionTables(test_subarch, 'nc_opcode_table.h',
+                                 ['small_tests', 'validator_tests'])
+  TestGeneratedSubregisterTables(test_subarch, 'nc_subregs.h',
+                                 ['small_tests', 'validator_tests'])
 
 # ======================================================================
 # Decoder unittests
@@ -251,42 +321,6 @@ node = test_env.CommandTest(
 test_env.AddNodeToTestSuite(node, ['large_tests'])
 
 # ======================================================================
-# Helper functions for getting automated tests from the corresponding
-# test directory.
-
-TESTDATA_DIR = 'testdata/' + env['TARGET_SUBARCH'] + '/'
-
-# Generates the set of test files with the given extension.
-def __GoldenFiles(ext):
-  return Glob(TESTDATA_DIR + '*.' + ext)
-
-# Generates base names (i.e. minus path and extention (ext) suffix) of
-# all test data input files.
-def __FilterOutTestFileBaseGen(files, ext):
-  for f in files:
-    yield os.path.basename(f.path).replace('.' + ext, '')
-
-# Generates the set of golden bases for the given extension.
-def __GoldenBases(ext):
-  return __FilterOutTestFileBaseGen(__GoldenFiles(ext), ext)
-
-# Generates the corresponding test file from the given base.
-def __BaseTestFile(base, ext):
-  return test_env.File(TESTDATA_DIR + base + '.' + ext)
-
-# Generates the corresponding test name from the given base.
-def __BaseTestName(test, base, ext):
-  return test + '_' + base + '_' + ext
-
-# Generates the corresponding output file from the given base.
-def __OutTestFile(test, base, ext):
-  return test + '_' + base + '.' + ext + '.out'
-
-def __AddTest(test, base, ext, command, groups):
-  test_env.AddNodeToTestSuite(command, groups, __BaseTestName(test, base, ext))
-
-
-# ======================================================================
 # Decoder vs objdump tests
 # TODO: add tests using the toolchain binaries in the sdk
 if test_env.Bit('linux') and test_env.Bit('target_x86_32'):
@@ -298,7 +332,7 @@ if test_env.Bit('linux') and test_env.Bit('target_x86_32'):
         ["${PYTHON}", test_env.File('discmp.py'), test_env.File('ncdis'),
          __BaseTestFile(base, ext)],
         )
-    __AddTest(test, base, ext, node, ['large_tests'])
+    __AddTest(test, test_env, base, ext, node, ['large_tests'])
 
 # ======================================================================
 # Decoder on sample instruction sequences.
@@ -306,7 +340,7 @@ TARGET_ARCH_NAME =  env['TARGET_ARCHITECTURE'] + '_' + env['TARGET_SUBARCH']
 
 NCDIS_TEST_NAME = 'ncdis_' + TARGET_ARCH_NAME + '_test'
 
-ncdis_input_golden = test_env.File(TESTDATA_DIR + 'ncdis_test.input')
+ncdis_input_golden = test_env.File(TESTDATA_SUBARCH_DIR + 'ncdis_test.input')
 
 ncdis_test = test_env.CommandTest(
     NCDIS_TEST_NAME + '.out',
@@ -321,7 +355,7 @@ test_env.AddNodeToTestSuite(ncdis_test, ['small_tests'], NCDIS_TEST_NAME)
 
 NCDIS_ITER_TEST_NAME = 'ncdis_iter_' + TARGET_ARCH_NAME + '_test'
 
-ncdis_iter_input_golden = test_env.File(TESTDATA_DIR + 'ncdis_iter_test.input')
+ncdis_iter_input_golden = test_env.File(TESTDATA_SUBARCH_DIR + 'ncdis_iter_test.input')
 
 ncdis_iter_test = test_env.CommandTest(
     NCDIS_ITER_TEST_NAME + '.out',
@@ -335,7 +369,7 @@ test_env.AddNodeToTestSuite(ncdis_iter_test,
 
 # Same as above, but comparing internal representation against golde files.
 
-ncdis_iter_internal_golden = test_env.File(TESTDATA_DIR +
+ncdis_iter_internal_golden = test_env.File(TESTDATA_SUBARCH_DIR +
                                            'ncdis_iter_test.internal')
 
 ncdis_internal_test = test_env.CommandTest(
@@ -382,7 +416,7 @@ if env.Bit('target_x86_32'):
         __OutTestFile(test, base, ext),
         [ncval, '-t', __BaseTestFile(base, ext)],
         )
-    __AddTest(test, base, ext, node, ['large_tests'])
+    __AddTest(test, test_env, base, ext, node, ['large_tests'])
 
 # Run tests using ncdis on test files. Assumes that extension
 # dis implies to use the iterator model, while ndis does not.
@@ -403,7 +437,7 @@ def __AddNcDisTests(use_iter):
         [ncdis] + options,
         stdin = __BaseTestFile(base, 'hex'),
         stdout_golden = __BaseTestFile(base, ext))
-    __AddTest(test, base, ext, node_dis,
+    __AddTest(test, test_env, base, ext, node_dis,
               ['small_tests', 'validator_tests'])
 
 __AddNcDisTests(True)
@@ -435,7 +469,8 @@ def __AddNcvalSfiTests(test_readwrite, test_cpuid_all):
           command,
           stdin = __BaseTestFile(base, 'hex'),
           stdout_golden = __BaseTestFile(base, ext))
-      __AddTest(test, base, ext, node_val, ['small_tests', 'validator_tests'])
+      __AddTest(test, test_env, base, ext, node_val,
+                ['small_tests', 'validator_tests'])
 
 for read_write in [False, True]:
   for cpu_features_all in [False, True]:
@@ -461,7 +496,7 @@ def __AddNcvalSegmentTests(test_cpuid_all):
           command,
           stdin = __BaseTestFile(base, 'hex'),
           stdout_golden = __BaseTestFile(base, ext))
-      __AddTest(test, base, ext, node_val,
+      __AddTest(test, test_env, base, ext, node_val,
                 ['small_tests', 'validator_tests'])
 
 for cpu_features_all in [False, True]:
@@ -487,7 +522,7 @@ def __AddNcValStuboutTests(use_sfi):
           command,
           stdin = __BaseTestFile(base, 'hex'),
           stdout_golden = __BaseTestFile(base, ext))
-      __AddTest(test, base, ext, node_stubout,
+      __AddTest(test, test_env, base, ext, node_stubout,
                 ['small_tests', 'validator_tests'])
 
 __AddNcValStuboutTests(True)
@@ -505,9 +540,10 @@ def __AddModeledInstsTest():
       __OutTestFile(test, base, ext),
       command,
       stdout_golden = __BaseTestFile(base, ext))
-  __AddTest(test, base, ext, model, ['small_tests',
-                                     'validator_tests',
-                                     'validator_modeling'])
+  __AddTest(test, test_env, base, ext, model,
+            ['small_tests',
+             'validator_tests',
+             'validator_modeling'])
 
 __AddModeledInstsTest()
 
@@ -523,7 +559,7 @@ def __AddNegMaxErrors():
         [ncval, '--use_iter=false', '--max_errors=-1', '--hex_text=-'],
         stdin = __BaseTestFile(base, 'hex'),
         stdout_golden = __BaseTestFile(base, ext))
-    __AddTest(test, base, ext, node_val,
+    __AddTest(test, test_env, base, ext, node_val,
               ['small_tests', 'validator_tests'])
 
 __AddNegMaxErrors()
