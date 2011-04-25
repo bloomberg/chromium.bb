@@ -10909,11 +10909,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SWITCH_INPUT_METHODS_HINT"
                desc="Explanatory message about how to switch input methods">
-        Press <ph name="HOTKEY_NAME">$1<ex>alt-shift</ex></ph> to switch between input methods.
+        Press alt+shift to switch between input methods.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SELECT_PREVIOUS_INPUT_METHOD_HINT"
                desc="Explanatory message about how to select the previous input method">
-        Press <ph name="HOTKEY_NAME">$1<ex>ctrl-space</ex></ph> to select the previous input method.
+        Press ctrl+space to select the previous input method.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD"
                desc="The label for a input method">
