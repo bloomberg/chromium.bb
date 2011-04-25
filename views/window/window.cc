@@ -5,6 +5,7 @@
 #include "views/window/window.h"
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_font_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -192,13 +193,13 @@ void Window::UpdateWindowTitle() {
 
   // Update the native frame's text. We do this regardless of whether or not
   // the native frame is being used, since this also updates the taskbar, etc.
-  std::wstring window_title;
+  string16 window_title;
   if (native_window_->AsNativeWidget()->IsScreenReaderActive())
-    window_title = window_delegate_->GetAccessibleWindowTitle();
+    window_title = WideToUTF16(window_delegate_->GetAccessibleWindowTitle());
   else
-    window_title = window_delegate_->GetWindowTitle();
+    window_title = WideToUTF16(window_delegate_->GetWindowTitle());
   base::i18n::AdjustStringForLocaleDirection(&window_title);
-  native_window_->SetWindowTitle(window_title);
+  native_window_->SetWindowTitle(UTF16ToWide(window_title));
 }
 
 void Window::UpdateWindowIcon() {

@@ -463,24 +463,24 @@ TEST(ExtensionTest, InitFromValueValidNameInRTL) {
 
   input_value.SetString(keys::kVersion, "1.0.0.0");
   // No strong RTL characters in name.
-  std::wstring name(L"Dictionary (by Google)");
-  input_value.SetString(keys::kName, WideToUTF16Hack(name));
+  string16 name(ASCIIToUTF16("Dictionary (by Google)"));
+  input_value.SetString(keys::kName, name);
   EXPECT_TRUE(extension.InitFromValue(input_value, Extension::NO_FLAGS,
                                       &error));
   EXPECT_EQ("", error);
-  std::wstring localized_name(name);
+  string16 localized_name(name);
   base::i18n::AdjustStringForLocaleDirection(&localized_name);
-  EXPECT_EQ(localized_name, UTF8ToWide(extension.name()));
+  EXPECT_EQ(localized_name, UTF8ToUTF16(extension.name()));
 
   // Strong RTL characters in name.
-  name = L"Dictionary (\x05D1\x05D2"L" Google)";
-  input_value.SetString(keys::kName, WideToUTF16Hack(name));
+  name = WideToUTF16(L"Dictionary (\x05D1\x05D2"L" Google)");
+  input_value.SetString(keys::kName, name);
   EXPECT_TRUE(extension.InitFromValue(input_value, Extension::NO_FLAGS,
                                       &error));
   EXPECT_EQ("", error);
   localized_name = name;
   base::i18n::AdjustStringForLocaleDirection(&localized_name);
-  EXPECT_EQ(localized_name, UTF8ToWide(extension.name()));
+  EXPECT_EQ(localized_name, UTF8ToUTF16(extension.name()));
 
   // Reset locale.
 #if defined(TOOLKIT_GTK)

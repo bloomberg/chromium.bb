@@ -1175,13 +1175,12 @@ void RenderViewHost::OnMsgSetTooltipText(
   // trying to detect the directionality from the tooltip text rather than the
   // element direction.  One could argue that would be a preferable solution
   // but we use the current approach to match Fx & IE's behavior.
-  std::wstring wrapped_tooltip_text = tooltip_text;
+  string16 wrapped_tooltip_text = WideToUTF16(tooltip_text);
   if (!tooltip_text.empty()) {
     if (text_direction_hint == WebKit::WebTextDirectionLeftToRight) {
       // Force the tooltip to have LTR directionality.
-      wrapped_tooltip_text = UTF16ToWide(
-          base::i18n::GetDisplayStringInLTRDirectionality(
-              WideToUTF16(wrapped_tooltip_text)));
+      wrapped_tooltip_text =
+          base::i18n::GetDisplayStringInLTRDirectionality(wrapped_tooltip_text);
     } else if (text_direction_hint == WebKit::WebTextDirectionRightToLeft &&
                !base::i18n::IsRTL()) {
       // Force the tooltip to have RTL directionality.
@@ -1189,7 +1188,7 @@ void RenderViewHost::OnMsgSetTooltipText(
     }
   }
   if (view())
-    view()->SetTooltipText(wrapped_tooltip_text);
+    view()->SetTooltipText(UTF16ToWide(wrapped_tooltip_text));
 }
 
 void RenderViewHost::OnMsgSelectionChanged(const std::string& text) {

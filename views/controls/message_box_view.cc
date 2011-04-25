@@ -129,7 +129,8 @@ void MessageBoxView::Init(int dialog_flags,
     // Determine the alignment and directionality based on the first character
     // with strong directionality.
     base::i18n::TextDirection direction =
-        base::i18n::GetFirstStrongCharacterDirection(message_label_->GetText());
+        base::i18n::GetFirstStrongCharacterDirection(
+            WideToUTF16(message_label_->GetText()));
     Label::Alignment alignment;
     if (direction == base::i18n::RIGHT_TO_LEFT)
       alignment = Label::ALIGN_RIGHT;

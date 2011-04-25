@@ -1576,20 +1576,19 @@ std::wstring BookmarkBarView::CreateToolTipForURLAndTitle(
   int max_width = views::TooltipManager::GetMaxWidth(screen_loc.x(),
                                                      screen_loc.y());
   gfx::Font tt_font = views::TooltipManager::GetDefaultFont();
-  std::wstring result;
+  string16 result;
 
   // First the title.
   if (!title.empty()) {
-    std::wstring localized_title = title;
+    string16 localized_title = WideToUTF16(title);
     base::i18n::AdjustStringForLocaleDirection(&localized_title);
-    result.append(UTF16ToWideHack(ui::ElideText(WideToUTF16Hack(
-        localized_title), tt_font, max_width, false)));
+    result.append(ui::ElideText(localized_title, tt_font, max_width, false));
   }
 
   // Only show the URL if the url and title differ.
   if (title != UTF8ToWide(url.spec())) {
     if (!result.empty())
-      result.append(views::TooltipManager::GetLineSeparator());
+      result.append(WideToUTF16(views::TooltipManager::GetLineSeparator()));
 
     // We need to explicitly specify the directionality of the URL's text to
     // make sure it is treated as an LTR string when the context is RTL. For
@@ -1601,9 +1600,9 @@ std::wstring BookmarkBarView::CreateToolTipForURLAndTitle(
         prefs::kAcceptLanguages);
     string16 elided_url(ui::ElideUrl(url, tt_font, max_width, languages));
     elided_url = base::i18n::GetDisplayStringInLTRDirectionality(elided_url);
-    result.append(UTF16ToWideHack(elided_url));
+    result.append(elided_url);
   }
-  return result;
+  return UTF16ToWide(result);
 }
 
 void BookmarkBarView::UpdateColors() {

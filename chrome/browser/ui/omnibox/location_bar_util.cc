@@ -27,19 +27,18 @@ std::wstring GetKeywordName(Profile* profile, const std::wstring& keyword) {
 
 std::wstring CalculateMinString(const std::wstring& description) {
   // Chop at the first '.' or whitespace.
-  const size_t dot_index = description.find(L'.');
+  const size_t dot_index = description.find('.');
   const size_t ws_index = description.find_first_of(kWhitespaceWide);
   size_t chop_index = std::min(dot_index, ws_index);
-  std::wstring min_string;
+  string16 min_string;
   if (chop_index == std::wstring::npos) {
     // No dot or whitespace, truncate to at most 3 chars.
-    min_string = UTF16ToWideHack(
-        l10n_util::TruncateString(WideToUTF16Hack(description), 3));
+    min_string = l10n_util::TruncateString(WideToUTF16Hack(description), 3);
   } else {
-    min_string = description.substr(0, chop_index);
+    min_string = WideToUTF16(description.substr(0, chop_index));
   }
   base::i18n::AdjustStringForLocaleDirection(&min_string);
-  return min_string;
+  return UTF16ToWide(min_string);
 }
 
 }  // namespace location_bar_util
