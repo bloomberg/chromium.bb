@@ -16,6 +16,7 @@
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/examples/button_example.h"
 #include "views/examples/combobox_example.h"
+#include "views/examples/link_example.h"
 #include "views/examples/menu_example.h"
 #include "views/examples/message_box_example.h"
 #include "views/examples/native_theme_button_example.h"
@@ -117,6 +118,10 @@ void ExamplesMain::Run() {
   examples::ComboboxExample combobox_example(this);
   tabbed_pane->AddTab(combobox_example.GetExampleTitle(),
                       combobox_example.GetExampleView());
+
+  examples::LinkExample link_example(this);
+  tabbed_pane->AddTab(link_example.GetExampleTitle(),
+                      link_example.GetExampleView());
 
   examples::TabbedPaneExample tabbed_pane_example(this);
   tabbed_pane->AddTab(tabbed_pane_example.GetExampleTitle(),

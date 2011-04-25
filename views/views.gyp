@@ -569,6 +569,8 @@
         'examples/example_base.h',
         'examples/examples_main.cc',
         'examples/examples_main.h',
+        'examples/link_example.cc',
+        'examples/link_example.h',
         'examples/message_box_example.cc',
         'examples/message_box_example.h',
         'examples/menu_example.cc',
