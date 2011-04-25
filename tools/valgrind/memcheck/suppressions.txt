@@ -4297,9 +4297,8 @@
 {
    bug_79865a
    Memcheck:Leak
-   ...
    fun:_Znw*
-   fun:_ZN14TestingProfile20CreateRequestContextEv
+   ...
    fun:_ZN33MalwareDetailsTest_HTTPCache_Test8TestBodyEv
 }
 {
