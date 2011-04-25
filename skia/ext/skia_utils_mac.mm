@@ -116,6 +116,9 @@ SkBitmap CGImageToSkBitmap(CGImageRef image) {
 }
 
 SkBitmap NSImageToSkBitmap(NSImage* image, NSSize size, bool is_opaque) {
+  // TODO(sail): For testing, will be reverted.
+  [image bestRepresentationForDevice:nil];
+
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width, size.height);
   if (bitmap.allocPixels() != true)
