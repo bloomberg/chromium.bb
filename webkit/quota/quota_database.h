@@ -38,13 +38,14 @@ class QuotaDatabase {
 
   void CloseConnection();
 
-  bool GetOriginQuota(const GURL& origin, StorageType type, int64* quota);
-  bool SetOriginQuota(const GURL& origin, StorageType type, int64 quota);
+  bool GetHostQuota(const std::string& host, StorageType type, int64* quota);
+  bool SetHostQuota(const std::string& host, StorageType type, int64 quota);
 
   bool SetOriginLastAccessTime(const GURL& origin, StorageType type,
                                base::Time last_access_time);
 
-  bool DeleteStorageInfo(const GURL& origin, StorageType type);
+  bool DeleteHostQuota(const std::string& host, StorageType type);
+  bool DeleteOriginLastAccessTime(const GURL& origin, StorageType type);
 
   bool GetGlobalQuota(StorageType type, int64* quota);
   bool SetGlobalQuota(StorageType type, int64 quota);
@@ -57,16 +58,9 @@ class QuotaDatabase {
                      int max_used_count, int num_origins_limit);
 
  private:
-  struct StorageInfoRecord;
-
-  bool FindOrigin(const GURL& origin_url, int64* origin_rowid);
-  bool InsertOrigin(const GURL& origin_url, int64* origin_rowid);
-
-  bool FindStorageInfo(int64 origin_rowid, StorageType type,
-                       StorageInfoRecord* record);
-  bool FindStorageInfo(const GURL& origin, StorageType type,
-                       StorageInfoRecord* record);
-  bool InsertStorageInfo(const StorageInfoRecord& record);
+  bool FindOriginUsedCount(const GURL& origin,
+                           StorageType type,
+                           int* used_count);
 
   bool LazyOpen(bool create_if_needed);
   bool EnsureDatabaseVersion();
@@ -81,7 +75,7 @@ class QuotaDatabase {
   bool is_disabled_;
 
   FRIEND_TEST_ALL_PREFIXES(QuotaDatabaseTest, LazyOpen);
-  FRIEND_TEST_ALL_PREFIXES(QuotaDatabaseTest, OriginQuota);
+  FRIEND_TEST_ALL_PREFIXES(QuotaDatabaseTest, HostQuota);
   FRIEND_TEST_ALL_PREFIXES(QuotaDatabaseTest, GlobalQuota);
   FRIEND_TEST_ALL_PREFIXES(QuotaDatabaseTest, OriginLastAccessTimeLRU);
 

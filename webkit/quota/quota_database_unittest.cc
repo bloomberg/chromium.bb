@@ -38,7 +38,7 @@ TEST(QuotaDatabaseTest, LazyOpen) {
   EXPECT_TRUE(file_util::PathExists(kDbFile));
 }
 
-TEST(QuotaDatabaseTest, OriginQuota) {
+TEST(QuotaDatabaseTest, HostQuota) {
   ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
 
@@ -46,30 +46,30 @@ TEST(QuotaDatabaseTest, OriginQuota) {
   QuotaDatabase db(kDbFile);
   ASSERT_TRUE(db.LazyOpen(true));
 
-  const GURL kOrigin("http://foo.com:8080/");
+  const char* kHost = "foo.com";
   const int kQuota1 = 13579;
   const int kQuota2 = kQuota1 + 1024;
 
   int64 quota = -1;
-  EXPECT_FALSE(db.GetOriginQuota(kOrigin, kStorageTypeTemporary, &quota));
-  EXPECT_FALSE(db.GetOriginQuota(kOrigin, kStorageTypePersistent, &quota));
+  EXPECT_FALSE(db.GetHostQuota(kHost, kStorageTypeTemporary, &quota));
+  EXPECT_FALSE(db.GetHostQuota(kHost, kStorageTypePersistent, &quota));
 
   // Insert quota for temporary.
-  EXPECT_TRUE(db.SetOriginQuota(kOrigin, kStorageTypeTemporary, kQuota1));
-  EXPECT_TRUE(db.GetOriginQuota(kOrigin, kStorageTypeTemporary, &quota));
+  EXPECT_TRUE(db.SetHostQuota(kHost, kStorageTypeTemporary, kQuota1));
+  EXPECT_TRUE(db.GetHostQuota(kHost, kStorageTypeTemporary, &quota));
   EXPECT_EQ(kQuota1, quota);
 
   // Update quota for temporary.
-  EXPECT_TRUE(db.SetOriginQuota(kOrigin, kStorageTypeTemporary, kQuota2));
-  EXPECT_TRUE(db.GetOriginQuota(kOrigin, kStorageTypeTemporary, &quota));
+  EXPECT_TRUE(db.SetHostQuota(kHost, kStorageTypeTemporary, kQuota2));
+  EXPECT_TRUE(db.GetHostQuota(kHost, kStorageTypeTemporary, &quota));
   EXPECT_EQ(kQuota2, quota);
 
   // Quota for persistent must not be updated.
-  EXPECT_FALSE(db.GetOriginQuota(kOrigin, kStorageTypePersistent, &quota));
+  EXPECT_FALSE(db.GetHostQuota(kHost, kStorageTypePersistent, &quota));
 
-  // Delete temporary storage info.
-  EXPECT_TRUE(db.DeleteStorageInfo(kOrigin, kStorageTypeTemporary));
-  EXPECT_FALSE(db.GetOriginQuota(kOrigin, kStorageTypeTemporary, &quota));
+  // Delete temporary storage quota.
+  EXPECT_TRUE(db.DeleteHostQuota(kHost, kStorageTypeTemporary));
+  EXPECT_FALSE(db.GetHostQuota(kHost, kStorageTypeTemporary, &quota));
 }
 
 TEST(QuotaDatabaseTest, GlobalQuota) {
@@ -156,6 +156,16 @@ TEST(QuotaDatabaseTest, OriginLastAccessTimeLRU) {
   EXPECT_EQ(kOrigin2.spec(), origins[0].spec());
   EXPECT_EQ(kOrigin3.spec(), origins[1].spec());
   EXPECT_EQ(kOrigin1.spec(), origins[2].spec());
+
+  // Delete origin/type last access time information.
+  EXPECT_TRUE(db.DeleteOriginLastAccessTime(kOrigin3, kStorageTypeTemporary));
+
+  // Querying again to see if the deletion has worked.
+  EXPECT_TRUE(db.GetLRUOrigins(kStorageTypeTemporary, &origins, -1, 10));
+
+  ASSERT_EQ(2U, origins.size());
+  EXPECT_EQ(kOrigin2.spec(), origins[0].spec());
+  EXPECT_EQ(kOrigin1.spec(), origins[1].spec());
 }
 
 }  // namespace quota
