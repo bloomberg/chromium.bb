@@ -6,9 +6,10 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_OPTIONS_MANAGED_BANNER_HANDLER_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/string16.h"
 #include "chrome/browser/policy/managed_prefs_banner_base.h"
-#include "chrome/browser/ui/options/options_window.h"
+#include "chrome/browser/ui/options/options_util.h"
 
 class WebUI;
 
@@ -17,7 +18,8 @@ class WebUI;
 // that are under administator control.
 class OptionsManagedBannerHandler : public policy::ManagedPrefsBannerBase {
  public:
-  OptionsManagedBannerHandler(WebUI* web_ui, const string16& page_name,
+  OptionsManagedBannerHandler(WebUI* web_ui,
+                              const string16& page_name,
                               OptionsPage page);
   virtual ~OptionsManagedBannerHandler();
 
