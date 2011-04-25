@@ -10,8 +10,6 @@ ResourceDispatcherTest.CrossSiteAfterCrash
 NewTabUITest.NTPHasThumbnails
 # http://crbug.com/45574   Unhappy on ChromeOS valgrind
 LayoutPluginTester.UnloadNoCrash
-# Video decoding under valgrind is really slow, see http://crbug.com/53825
-MediaTest.VideoBear*
 # These tests fail due to timeouts, see http://crbug.com/64619
 OptionsUITest.CommandAgainGoesBackToOptionsTab
 OptionsUITest.TwoCommandsOneTab

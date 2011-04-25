@@ -94,9 +94,6 @@ AutomatedUITestBase.CloseTab
 ResourceDispatcherTest.CrossSiteFailedRequest
 ResourceDispatcherTest.RespectNoSniffDirective
 
-# Video decoding under valgrind is really slow, see http://crbug.com/53825
-MediaTest.VideoBear*
-
 # Valgrind internal error: received SIGSEGV. http://crbug.com/51716
 AutomatedUITestBase.IncognitoWindow
 AutomatedUITestBase.Navigate
