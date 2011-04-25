@@ -8,6 +8,8 @@ const ENABLE_EXIF_READER = false;
 // TODO(rginda): Remove this when the thumbnail view is less janky.
 const ENABLE_THUMBNAIL_VIEW = false;
 
+var g_slideshow_data = null;
+
 /**
  * FileManager constructor.
  *
@@ -975,7 +977,20 @@ FileManager.prototype = {
     }
   };
 
+  FileManager.prototype.getExtensionId_ = function() {
+    return chrome.extension.getURL('').split('/')[2];
+  };
+
   FileManager.prototype.onTaskButtonClicked_ = function(event) {
+    // TODO(serya): This API assumes having a background page.
+    //              Adding it crashes a few of browser tests (they wonder
+    //              to see a new renderer process in a fresh profile).
+    if (event.srcElement.task.taskId == this.getExtensionId_() + '|preview') {
+      g_slideshow_data = this.selection.urls;
+      alert("create tab");
+      chrome.tabs.create({url: "slideshow.html"});
+      return;
+    }
     chrome.fileBrowserPrivate.executeTask(event.srcElement.task.taskId,
                                           this.selection.urls);
   }

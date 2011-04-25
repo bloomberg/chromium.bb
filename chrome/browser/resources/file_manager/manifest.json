@@ -13,5 +13,21 @@
     "fileBrowserPrivate",
     "chrome://extension-icon/",
     "chrome://resources/"
+  ],
+  "file_browser_handlers": [
+    {
+      "id": "preview",
+      "default_title": "Preview image",
+      "file_filters": [
+        "filesystem:*.gif",
+        "filesystem:*.jpg",
+        "filesystem:*.jpeg",
+        "filesystem:*.png",
+        "filesystem:*.GIF",
+        "filesystem:*.JPG",
+        "filesystem:*.JPEG",
+        "filesystem:*.PNG"
+      ]
+    }
   ]
 }

@@ -105,7 +105,6 @@
         <include name="IDR_OFFLINE_LOAD_HTML" file="resources\offline_load.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_OS_CREDITS_HTML" file="resources\about_os_credits.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_PROXY_SETTINGS_HTML" file="resources\chromeos\proxy_settings.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_SLIDESHOW_HTML" file="resources\slideshow.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_SIM_UNLOCK_HTML" file="resources\chromeos\sim_unlock.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MENU_HTML" file="resources\menu.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_NETWORK_MENU_CSS" file="resources\network_menu.css" flattenhtml="true" type="BINDATA" />
