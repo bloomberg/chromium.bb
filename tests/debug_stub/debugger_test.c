@@ -1,7 +1,7 @@
 /*
- * Copyright 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 void set_registers_and_stop() {
@@ -32,7 +32,14 @@ void set_registers_and_stop() {
 #endif
 }
 
-int main() {
+int main(int argc, char **argv) {
+  /*
+   * This will crash if the entry-point breakpoint has been mishandled such
+   * that our argc and argv values are bogus.  This should catch any
+   * regression of http://code.google.com/p/nativeclient/issues/detail?id=1730.
+   */
+  argv[argc] = 0;
+
   set_registers_and_stop();
   return 1;
 }
