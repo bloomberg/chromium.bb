@@ -21,7 +21,12 @@ namespace {
 
 const FilePath* g_override_versioned_directory = NULL;
 
+// Return a retained (NOT autoreleased) NSBundle* as the internal
+// implementation of chrome::OuterAppBundle(), which should be the only
+// caller.
 NSBundle* OuterAppBundleInternal() {
+  base::mac::ScopedNSAutoreleasePool pool;
+
   if (!base::mac::AmIBundled()) {
     // If unbundled (as in a test), there's no app bundle.
     return nil;
@@ -29,7 +34,7 @@ NSBundle* OuterAppBundleInternal() {
 
   if (!base::mac::IsBackgroundOnlyProcess()) {
     // Shortcut: in the browser process, just return the main app bundle.
-    return [NSBundle mainBundle];
+    return [[NSBundle mainBundle] retain];
   }
 
   // From C.app/Contents/Versions/1.2.3.4, go up three steps to get to C.app.
@@ -38,7 +43,7 @@ NSBundle* OuterAppBundleInternal() {
   const char* outer_app_dir_c = outer_app_dir.value().c_str();
   NSString* outer_app_dir_ns = [NSString stringWithUTF8String:outer_app_dir_c];
 
-  return [NSBundle bundleWithPath:outer_app_dir_ns];
+  return [[NSBundle bundleWithPath:outer_app_dir_ns] retain];
 }
 
 const char* ProductDirNameInternal() {
@@ -184,8 +189,9 @@ bool GetLocalLibraryDirectory(FilePath* result) {
 }
 
 NSBundle* OuterAppBundle() {
-  // Cache this. Foundation leaks it anyway.
-  static NSBundle* bundle = [OuterAppBundleInternal() retain];
+  // Cache this. Foundation leaks it anyway, and this should be the only call
+  // to OuterAppBundleInternal().
+  static NSBundle* bundle = OuterAppBundleInternal();
   return bundle;
 }
 

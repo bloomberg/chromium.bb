@@ -11,7 +11,8 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
+#import "base/mac/foundation_util.h"
+#import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -20,6 +21,8 @@
 namespace chrome_main {
 
 void CheckUserDataDirPolicy(FilePath* user_data_dir) {
+  base::mac::ScopedNSAutoreleasePool pool;
+
   // Since the configuration management infrastructure is not initialized when
   // this code runs, read the policy preference directly.
   NSString* key = base::SysUTF8ToNSString(policy::key::kUserDataDir);
@@ -35,6 +38,8 @@ void CheckUserDataDirPolicy(FilePath* user_data_dir) {
 }
 
 void SetUpBaseBundleID() {
+  base::mac::ScopedNSAutoreleasePool pool;
+
   NSBundle* base_bundle = chrome::OuterAppBundle();
   base::mac::SetBaseBundleID([[base_bundle bundleIdentifier] UTF8String]);
 }
