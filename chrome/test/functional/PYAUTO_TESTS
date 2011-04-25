@@ -49,15 +49,10 @@
       'codesign',
       'content',
       '-content.ContentTest.testTopSitesContent',  # crbug.com/71824
-      '-content.ContentTest.testLocalFileBasics',  # crbug.com/75533
       'cookies',
       'crash_reporter',
       'databases',
-      # crbug.com/66714
-      '-databases.DatabasesTest.testIncognitoDBPersistentAcrossTabs',
       'downloads',
-      # crbug.com/67233
-      '-downloads.DownloadsTest.testDownloadIncognitoAndRegular',
       'find_in_page',
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
@@ -67,8 +62,6 @@
       # crbug.com/77777
       '-imports',
       'infobars',
-      # crbug.com/72664
-      '-infobars.InfobarTest.testPluginCrashForMultiTabs',
       'instant',
       # crbug.com/76639
       '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
@@ -76,7 +69,6 @@
       'notifications',
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
-      '-notifications.NotificationsTest.testKillNotificationProcess',
       # crbug.com/79826
       '-notifications.NotificationsTest.testCreateSimpleNotification',
       '-notifications.NotificationsTest.testNotificationReplacement',
@@ -100,7 +92,7 @@
       '-search_engines.SearchEnginesTest.testSearchEngineSpecialChars',
       'shortcuts',
       'special_tabs',
-      # crbug.com/67851
+      # Flaky: crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
       'sync',
       'test_basic',
