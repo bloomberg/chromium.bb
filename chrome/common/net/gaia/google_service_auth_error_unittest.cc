@@ -14,7 +14,7 @@
 
 namespace {
 
-using test::ExpectStringValue;
+using test::ExpectDictStringValue;
 
 class GoogleServiceAuthErrorTest : public testing::Test {};
 
@@ -40,7 +40,7 @@ TEST_F(GoogleServiceAuthErrorTest, None) {
   GoogleServiceAuthError error(GoogleServiceAuthError::None());
   scoped_ptr<DictionaryValue> value(error.ToValue());
   EXPECT_EQ(1u, value->size());
-  ExpectStringValue("NONE", *value, "state");
+  ExpectDictStringValue("NONE", *value, "state");
 }
 
 TEST_F(GoogleServiceAuthErrorTest, ConnectionFailed) {
@@ -48,8 +48,8 @@ TEST_F(GoogleServiceAuthErrorTest, ConnectionFailed) {
       GoogleServiceAuthError::FromConnectionError(net::OK));
   scoped_ptr<DictionaryValue> value(error.ToValue());
   EXPECT_EQ(2u, value->size());
-  ExpectStringValue("CONNECTION_FAILED", *value, "state");
-  ExpectStringValue("net::OK", *value, "networkError");
+  ExpectDictStringValue("CONNECTION_FAILED", *value, "state");
+  ExpectDictStringValue("net::OK", *value, "networkError");
 }
 
 TEST_F(GoogleServiceAuthErrorTest, CaptchaChallenge) {
@@ -59,13 +59,13 @@ TEST_F(GoogleServiceAuthErrorTest, CaptchaChallenge) {
           GURL("http://www.bing.com")));
   scoped_ptr<DictionaryValue> value(error.ToValue());
   EXPECT_EQ(2u, value->size());
-  ExpectStringValue("CAPTCHA_REQUIRED", *value, "state");
+  ExpectDictStringValue("CAPTCHA_REQUIRED", *value, "state");
   DictionaryValue* captcha_value = NULL;
   EXPECT_TRUE(value->GetDictionary("captcha", &captcha_value));
   ASSERT_TRUE(captcha_value);
-  ExpectStringValue("captcha_token", *captcha_value, "token");
-  ExpectStringValue("http://www.google.com/", *captcha_value, "imageUrl");
-  ExpectStringValue("http://www.bing.com/", *captcha_value, "unlockUrl");
+  ExpectDictStringValue("captcha_token", *captcha_value, "token");
+  ExpectDictStringValue("http://www.google.com/", *captcha_value, "imageUrl");
+  ExpectDictStringValue("http://www.bing.com/", *captcha_value, "unlockUrl");
 }
 
 }  // namespace

@@ -54,8 +54,8 @@ using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::sessions::SyncSessionSnapshot;
 using syncable::ModelType;
 using syncable::ModelTypeSet;
-using test::ExpectDictionaryValue;
-using test::ExpectStringValue;
+using test::ExpectDictDictionaryValue;
+using test::ExpectDictStringValue;
 using testing::_;
 using testing::AtLeast;
 using testing::Invoke;
@@ -395,7 +395,7 @@ void CheckNodeValue(const BaseNode& node, const DictionaryValue& value) {
     EXPECT_TRUE(value.GetBoolean("isFolder", &is_folder));
     EXPECT_EQ(node.GetIsFolder(), is_folder);
   }
-  ExpectStringValue(WideToUTF8(node.GetTitle()), value, "title");
+  ExpectDictStringValue(WideToUTF8(node.GetTitle()), value, "title");
   {
     ModelType expected_model_type = node.GetModelType();
     std::string type_str;
@@ -472,7 +472,7 @@ void CheckNonDeleteChangeRecordValue(const SyncManager::ChangeRecord& record,
     ReadNode node(trans);
     EXPECT_TRUE(node.InitByIdLookup(record.id));
     scoped_ptr<DictionaryValue> expected_node_value(node.ToValue());
-    ExpectDictionaryValue(*expected_node_value, value, "node");
+    ExpectDictDictionaryValue(*expected_node_value, value, "node");
   }
 }
 
@@ -486,8 +486,8 @@ void CheckDeleteChangeRecordValue(const SyncManager::ChangeRecord& record,
     ExpectInt64Value(record.id, *node_value, "id");
     scoped_ptr<DictionaryValue> expected_specifics_value(
         browser_sync::EntitySpecificsToValue(record.specifics));
-    ExpectDictionaryValue(*expected_specifics_value,
-                          *node_value, "specifics");
+    ExpectDictDictionaryValue(*expected_specifics_value,
+                              *node_value, "specifics");
     scoped_ptr<DictionaryValue> expected_extra_value;
     if (record.extra.get()) {
       expected_extra_value.reset(record.extra->ToValue());

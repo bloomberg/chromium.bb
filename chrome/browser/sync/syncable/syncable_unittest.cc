@@ -40,8 +40,8 @@
 #include "third_party/sqlite/sqlite3.h"
 
 using browser_sync::TestIdFactory;
-using test::ExpectBooleanValue;
-using test::ExpectStringValue;
+using test::ExpectDictBooleanValue;
+using test::ExpectDictStringValue;
 
 namespace syncable {
 
@@ -268,7 +268,7 @@ TEST_F(SyncableGeneralTest, ToValue) {
     EXPECT_FALSE(e.good());  // Hasn't been written yet.
 
     scoped_ptr<DictionaryValue> value(e.ToValue());
-    ExpectBooleanValue(false, *value, "good");
+    ExpectDictBooleanValue(false, *value, "good");
     EXPECT_EQ(1u, value->size());
   }
 
@@ -281,13 +281,13 @@ TEST_F(SyncableGeneralTest, ToValue) {
     me.Put(BASE_VERSION, 1);
 
     scoped_ptr<DictionaryValue> value(me.ToValue());
-    ExpectBooleanValue(true, *value, "good");
+    ExpectDictBooleanValue(true, *value, "good");
     EXPECT_TRUE(value->HasKey("kernel"));
-    ExpectStringValue("Unspecified", *value, "serverModelType");
-    ExpectStringValue("Unspecified", *value, "modelType");
-    ExpectBooleanValue(false, *value, "shouldMaintainPosition");
-    ExpectBooleanValue(true, *value, "existsOnClientBecauseNameIsNonEmpty");
-    ExpectBooleanValue(false, *value, "isRoot");
+    ExpectDictStringValue("Unspecified", *value, "serverModelType");
+    ExpectDictStringValue("Unspecified", *value, "modelType");
+    ExpectDictBooleanValue(false, *value, "shouldMaintainPosition");
+    ExpectDictBooleanValue(true, *value, "existsOnClientBecauseNameIsNonEmpty");
+    ExpectDictBooleanValue(false, *value, "isRoot");
   }
 
   dir.SaveChanges();

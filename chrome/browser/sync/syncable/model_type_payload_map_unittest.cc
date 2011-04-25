@@ -14,11 +14,7 @@
 namespace syncable {
 namespace {
 
-using test::ExpectBooleanValue;
-using test::ExpectDictionaryValue;
-using test::ExpectIntegerValue;
-using test::ExpectListValue;
-using test::ExpectStringValue;
+using test::ExpectDictStringValue;
 
 class ModelTypePayloadMapTest : public testing::Test {};
 
@@ -29,8 +25,8 @@ TEST_F(ModelTypePayloadMapTest, TypePayloadMapToValue) {
 
   scoped_ptr<DictionaryValue> value(ModelTypePayloadMapToValue(payloads));
   EXPECT_EQ(2u, value->size());
-  ExpectStringValue("bookmarkpayload", *value, "Bookmarks");
-  ExpectStringValue("", *value, "Apps");
+  ExpectDictStringValue("bookmarkpayload", *value, "Bookmarks");
+  ExpectDictStringValue("", *value, "Apps");
   EXPECT_FALSE(value->HasKey("Preferences"));
 }
 
