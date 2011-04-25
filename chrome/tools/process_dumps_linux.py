@@ -15,7 +15,7 @@ import sys
 import tempfile
 
 
-def VerifySymbolAndCopyToTempDir(symbol_file, temp_dir):
+def VerifySymbolAndCopyToTempDir(symbol_file, temp_dir, sym_module_name):
   """Verify the symbol file looks correct and copy it to the right place
   in temp_dir.
 
@@ -31,7 +31,7 @@ def VerifySymbolAndCopyToTempDir(symbol_file, temp_dir):
   # signature_line should look like:
   # MODULE Linux x86 28D8A79A426807B5462CBA24F56746750 chrome
   if (len(signature_line) == 5 and signature_line[0] == 'MODULE' and
-      signature_line[1] == 'Linux' and signature_line[4] == 'chrome' and
+      signature_line[1] == 'Linux' and signature_line[4] == sym_module_name and
       len(signature_line[3]) == 33):
     dest = os.path.join(temp_dir, signature_line[4], signature_line[3])
     os.makedirs(dest)
@@ -243,7 +243,8 @@ def main_linux(options, args):
       dump_files.append(dump_file)
 
   temp_dir = tempfile.mkdtemp(suffix='chromedump')
-  if not VerifySymbolAndCopyToTempDir(symbol_file, temp_dir):
+  if not VerifySymbolAndCopyToTempDir(symbol_file, temp_dir,
+                                      options.sym_module_name):
     print 'Cannot parse symbols.'
     shutil.rmtree(temp_dir)
     return 1
@@ -285,6 +286,9 @@ if '__main__' == __name__:
   parser.add_option('', '--architecture', type='int', default=None,
                     help='Override automatic x86/x86-64 detection. '
                          'Valid values are 32 and 64')
+  parser.add_option('', '--sym-module-name', type='string', default='chrome',
+                    help='The module name for the symbol file.  '
+                         'Default: chrome')
 
   (options, args) = parser.parse_args()
 
