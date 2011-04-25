@@ -102,6 +102,8 @@
     'win': [
       # testBookmarkBarVisible fails on windows. crbug.com/42823
       '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
+      # crbug.com/66714
+      '-databases.DatabasesTest.testIncognitoDBPersistentAcrossTabs',
       # crbug.com/64664
       '-databases.DatabasesTest.testReloadActiveTab',
       '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
@@ -136,6 +138,8 @@
       '-downloads.DownloadsTest.testOpenWhenDone',
       '-downloads.DownloadsTest.testAlwaysOpenFileType',
       '-instant.InstantTest.testInstantNavigation',  # crbug.com/69090
+      # crbug.com/80510
+      '-notifications.NotificationsTest.testKillNotificationProcess',
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
       # crbug.com/70437
       '-omnibox.OmniboxTest.testHistoryResult',
