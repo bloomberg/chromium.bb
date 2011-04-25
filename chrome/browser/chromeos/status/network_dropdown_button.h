@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,13 +35,11 @@ class NetworkDropdownButton : public DropDownButton,
   void Refresh();
 
  protected:
-  // NetworkMenu implementation: -----------------------------------------------
-
-  virtual bool IsBrowserMode() const OVERRIDE;
-  virtual views::MenuButton* GetMenuButton() OVERRIDE;
-  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
-  virtual void OpenButtonOptions() OVERRIDE;
-  virtual bool ShouldOpenButtonOptions() const OVERRIDE;
+  // NetworkMenu implementation:
+  virtual bool IsBrowserMode() const { return browser_mode_; }
+  virtual gfx::NativeWindow GetNativeWindow() const { return parent_window_; }
+  virtual void OpenButtonOptions() {}
+  virtual bool ShouldOpenButtonOptions() const { return false; }
 
  private:
   bool browser_mode_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -456,7 +456,7 @@ void MenuItemView::Layout() {
 
 int MenuItemView::GetAcceleratorTextWidth() {
   string16 text = GetAcceleratorText();
-  return text.empty() ? 0 : GetFont().GetStringWidth(text);
+  return text.empty() ? 0 : MenuConfig::instance().font.GetStringWidth(text);
 }
 
 MenuItemView::MenuItemView(MenuItemView* parent,
@@ -584,15 +584,6 @@ int MenuItemView::GetDrawStringFlags() {
   return flags;
 }
 
-const gfx::Font& MenuItemView::GetFont() {
-  // Check for item-specific font.
-  const MenuDelegate* delegate = GetDelegate();
-  if (delegate)
-    return delegate->GetLabelFont(GetCommand());
-  else
-    return MenuConfig::instance().font;
-}
-
 void MenuItemView::AddEmptyMenus() {
   DCHECK(HasSubmenu());
   if (!submenu_->has_children()) {
@@ -632,7 +623,7 @@ void MenuItemView::PaintAccelerator(gfx::Canvas* canvas) {
   if (accel_text.empty())
     return;
 
-  const gfx::Font& font = GetFont();
+  const gfx::Font& font = MenuConfig::instance().font;
   int available_height = height() - GetTopMargin() - GetBottomMargin();
   int max_accel_width =
       parent_menu_item_->GetSubmenu()->max_accelerator_width();

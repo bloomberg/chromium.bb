@@ -21,10 +21,6 @@
 #include "ui/gfx/native_theme.h"
 #endif
 
-namespace gfx {
-class Font;
-}
-
 namespace ui {
 class MenuModel;
 }
@@ -319,9 +315,6 @@ class MenuItemView : public View {
 
   // Returns the flags passed to DrawStringInt.
   int GetDrawStringFlags();
-
-  // Returns the font to use for menu text.
-  const gfx::Font& GetFont();
 
   // If this menu item has no children a child is added showing it has no
   // children. Otherwise AddEmtpyMenus is recursively invoked on child menu
