@@ -21,7 +21,7 @@
 namespace {
 
 const char* const kChromeExtensionScheme = "chrome-extension:";
-const int32_t kExtensionRequestStatusOk = 0;
+const int32_t kExtensionRequestStatusOk = 200;
 
 // A helper function that tests to see if |url| is in the chrome-extension
 // scheme.  Note that this routine assumes that the scheme part of |url| is
