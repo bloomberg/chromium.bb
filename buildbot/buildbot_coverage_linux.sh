@@ -37,7 +37,10 @@ echo @@@BUILD_STEP scons_compile@@@
     --mode=coverage-linux,nacl,doc platform=x86-${BITS}
 
 echo @@@BUILD_STEP coverage@@@
-./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+XVFB_PREFIX="xvfb-run --auto-servernum"
+
+$XVFB_PREFIX \
+    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=coverage-linux,nacl,doc coverage platform=x86-${BITS}
 python tools/coverage_linux.py ${BITS}
 
