@@ -59,14 +59,18 @@ def getCDATAOf(top_node, name):
     return None
   return text
 
-def removeCommonRoot(source_dir, directory):
+def shortenFilePath(source_dir, directory):
   '''Returns a string with the string prefix |source_dir| removed from
   |directory|.'''
+  prefixes_to_cut = ["build/src/", "valgrind/coregrind/"]
+
   if source_dir:
-    # Do this for safety, just in case directory is an absolute path outside of
-    # source_dir.
-    prefix = os.path.commonprefix([source_dir, directory])
-    return directory[len(prefix) + 1:]
+    prefixes_to_cut.append(source_dir)
+
+  for p in prefixes_to_cut:
+    index = directory.rfind(p)
+    if index != -1:
+      directory = directory[index + len(p):]
 
   return directory
 
@@ -85,7 +89,7 @@ def gatherFrames(node, source_dir):
       INSTRUCTION_POINTER : getTextOf(frame, INSTRUCTION_POINTER),
       OBJECT_FILE         : getTextOf(frame, OBJECT_FILE),
       FUNCTION_NAME       : getTextOf(frame, FUNCTION_NAME),
-      SRC_FILE_DIR        : removeCommonRoot(
+      SRC_FILE_DIR        : shortenFilePath(
           source_dir, getTextOf(frame, SRC_FILE_DIR)),
       SRC_FILE_NAME       : getTextOf(frame, SRC_FILE_NAME),
       SRC_LINE            : getTextOf(frame, SRC_LINE)
