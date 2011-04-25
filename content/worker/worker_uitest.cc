@@ -182,6 +182,11 @@ TEST_F(WorkerTest, MultipleSharedWorkers) {
   RunTest(FilePath(FILE_PATH_LITERAL("multi_worker.html?shared=true")));
 }
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+// http://crbug.com/80446
+#define TerminateQueuedWorkers FLAKY_TerminateQueuedWorkers
+#endif
+
 TEST_F(WorkerTest, TerminateQueuedWorkers) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
   RunTest(FilePath(FILE_PATH_LITERAL("terminate_queued_workers.html")));
