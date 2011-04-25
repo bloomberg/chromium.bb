@@ -19,17 +19,28 @@
 RenderViewContextMenuViews::RenderViewContextMenuViews(
     TabContents* tab_contents,
     const ContextMenuParams& params)
-    : RenderViewContextMenu(tab_contents, params) {
+    : RenderViewContextMenu(tab_contents, params),
+      destroyed_flag_(NULL) {
 }
 
 RenderViewContextMenuViews::~RenderViewContextMenuViews() {
+  if (destroyed_flag_)
+    *destroyed_flag_ = true;
 }
 
 void RenderViewContextMenuViews::RunMenuAt(int x, int y) {
   RenderWidgetHostView* rwhv = source_tab_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->ShowingContextMenu(true);
+  bool destroyed = false;
+  // TODO(sky): tracking destruction is tedious and error prone. We should make
+  // the menus not run a nested message loop so that folks don't have to worry
+  // about being destroyed while the menu is up.
+  destroyed_flag_ = &destroyed;
   menu_->RunContextMenuAt(gfx::Point(x, y));
+  if (destroyed)
+    return;
+  destroyed_flag_ = NULL;
   if (rwhv)
     rwhv->ShowingContextMenu(false);
 }

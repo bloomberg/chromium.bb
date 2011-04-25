@@ -41,6 +41,11 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
   // The context menu itself and its contents.
   scoped_ptr<views::Menu2> menu_;
 
+  // If non-null the destructor sets this to true. This is set to non-null while
+  // the menu is showing. It is used to detect if the menu was deleted while
+  // running.
+  bool* destroyed_flag_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuViews);
 };
 
