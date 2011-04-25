@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-tmp=$(mktemp)
+tmp=$(mktemp -t chromium-update-copyrights.XXXXX)
 trap "rm -f $tmp" EXIT
 git diff --name-only $(git cl upstream)... | while read file; do
     cp "$file" "$tmp"
