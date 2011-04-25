@@ -36,7 +36,11 @@ NaClUITest::NaClUITest() {
 NaClUITest::~NaClUITest() {
 }
 
-TEST_F(NaClUITest, ServerTest) {
+/* None of these tests are enabled anymore, and the test framework seems
+ * not to be a good fit for nacl testing anyway.
+ * TODO(sehr): remove nacl_ui_test.cc entirely once the buildbots don't use it.
+ */
+TEST_F(NaClUITest, DISABLED_ServerTest) {
   FilePath test_file(kServerHtmlFileName);
   RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
@@ -82,4 +86,3 @@ TEST_F(NaClUITest, DISABLED_NpapiHwTest) {
 //   FilePath test_file(kSrpcHwHtmlFileName);
 //   RunMultiarchTest(test_file, TestTimeouts::action_max_timeout_ms());
 // }
-
