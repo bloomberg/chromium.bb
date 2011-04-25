@@ -21,6 +21,7 @@ const int kPacketHeaderSize = sizeof(uint16);
 P2PSocketHostTcp::P2PSocketHostTcp(IPC::Message::Sender* message_sender,
                                    int routing_id, int id)
     : P2PSocketHost(message_sender, routing_id, id),
+      authorized_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           connect_callback_(this, &P2PSocketHostTcp::OnConnected)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
