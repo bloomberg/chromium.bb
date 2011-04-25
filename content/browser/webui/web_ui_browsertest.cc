@@ -26,15 +26,19 @@ bool LogHandler(int severity,
                 int line,
                 size_t message_start,
                 const std::string& str) {
-  if (severity == logging::LOG_ERROR)
+  if (severity == logging::LOG_ERROR) {
     error_messages_.push_back(str);
-  return true;
+    return true;
+  } else {
+    // For debugging messages while developing tests.
+    return false;
+  }
 }
 
 WebUIBrowserTest::~WebUIBrowserTest() {}
 
 bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name) {
-  return RunJavascriptUsingHandler(function_name, false);
+  return RunJavascriptUsingHandler(function_name, true);
 }
 
 bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name) {
