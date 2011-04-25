@@ -134,6 +134,24 @@ std::string GetVersionStringModifier() {
   return modifier;
 }
 
+// Warning: this may be either Linux or ChromeOS.
+Channel GetChannel() {
+#if defined(GOOGLE_CHROME_BUILD)
+  std::string channel = GetVersionStringModifier();
+  if (channel.empty()) {
+    return CHANNEL_STABLE;
+  } else if (channel == "beta") {
+    return CHANNEL_BETA;
+  } else if (channel == "dev") {
+    return CHANNEL_DEV;
+  } else if (channel == "canary") {
+    return CHANNEL_CANARY;
+  }
+#endif
+
+  return CHANNEL_UNKNOWN;
+}
+
 bool CanSetAsDefaultBrowser() {
   return true;
 }

@@ -212,6 +212,29 @@ std::string GetVersionStringModifier() {
 #endif
 }
 
+Channel GetChannel() {
+#if defined(GOOGLE_CHROME_BUILD)
+  // Call GoogleUpdateSettings::GetChromeChannel with |false| as the first
+  // argument to avoid having it append "-m" to the channel name, or returning
+  // "m" for the stable channel.
+  string16 channel_16;
+  GoogleUpdateSettings::GetChromeChannel(false, &channel_16);
+  std::string channel = UTF16ToASCII(channel_16);
+
+  if (channel.empty()) {
+    return CHANNEL_STABLE;
+  } else if (channel == "beta") {
+    return CHANNEL_BETA;
+  } else if (channel == "dev") {
+    return CHANNEL_DEV;
+  } else if (channel == "canary") {
+    return CHANNEL_CANARY;
+  }
+#endif
+
+  return CHANNEL_UNKNOWN;
+}
+
 bool CanSetAsDefaultBrowser() {
   return BrowserDistribution::GetDistribution()->CanSetAsDefault();
 }

@@ -136,7 +136,7 @@ void ShowFirstRun(Profile* profile) {
 // True when the stats checkbox should be checked by default. This is only
 // the case when the canary is running.
 bool StatsCheckboxDefault() {
-  return platform_util::GetVersionStringModifier().compare("canary") == 0;
+  return platform_util::GetChannel() == platform_util::CHANNEL_CANARY;
 }
 
 }  // namespace

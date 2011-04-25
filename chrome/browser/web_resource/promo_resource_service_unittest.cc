@@ -167,7 +167,7 @@ TEST_F(PromoResourceServiceTest, UnpackPromoSignal) {
 }
 
 TEST_F(PromoResourceServiceTest, UnpackWebStoreSignal) {
-  web_resource_service_->set_channel("dev");
+  web_resource_service_->set_channel(platform_util::CHANNEL_DEV);
 
   // Set up start and end dates and promo line in a Dictionary as if parsed
   // from the service.
@@ -205,35 +205,39 @@ TEST_F(PromoResourceServiceTest, UnpackWebStoreSignal) {
 
 TEST_F(PromoResourceServiceTest, IsBuildTargeted) {
   // canary
-  EXPECT_FALSE(PromoResourceService::IsBuildTargeted("canary", 1));
-  EXPECT_FALSE(PromoResourceService::IsBuildTargeted("canary", 3));
-  EXPECT_FALSE(PromoResourceService::IsBuildTargeted("canary", 7));
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("canary", 15));
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("canary", 8));
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("canary", 11));
+  const platform_util::Channel canary = platform_util::CHANNEL_CANARY;
+  EXPECT_FALSE(PromoResourceService::IsBuildTargeted(canary, 1));
+  EXPECT_FALSE(PromoResourceService::IsBuildTargeted(canary, 3));
+  EXPECT_FALSE(PromoResourceService::IsBuildTargeted(canary, 7));
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(canary, 15));
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(canary, 8));
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(canary, 11));
 
   // dev
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("dev", 1));
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("dev", 3));
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("dev", 7));
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("dev", 15));
-  EXPECT_FALSE(PromoResourceService::IsBuildTargeted("dev", 8));
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("dev", 11));
+  const platform_util::Channel dev = platform_util::CHANNEL_DEV;
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(dev, 1));
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(dev, 3));
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(dev, 7));
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(dev, 15));
+  EXPECT_FALSE(PromoResourceService::IsBuildTargeted(dev, 8));
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(dev, 11));
 
   // beta
-  EXPECT_FALSE(PromoResourceService::IsBuildTargeted("beta", 1));
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("beta", 3));
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("beta", 7));
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("beta", 15));
-  EXPECT_FALSE(PromoResourceService::IsBuildTargeted("beta", 8));
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("beta", 11));
+  const platform_util::Channel beta = platform_util::CHANNEL_BETA;
+  EXPECT_FALSE(PromoResourceService::IsBuildTargeted(beta, 1));
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(beta, 3));
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(beta, 7));
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(beta, 15));
+  EXPECT_FALSE(PromoResourceService::IsBuildTargeted(beta, 8));
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(beta, 11));
 
   // stable
-  EXPECT_FALSE(PromoResourceService::IsBuildTargeted("", 1));
-  EXPECT_FALSE(PromoResourceService::IsBuildTargeted("", 3));
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("", 7));
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("", 15));
-  EXPECT_FALSE(PromoResourceService::IsBuildTargeted("", 8));
-  EXPECT_FALSE(PromoResourceService::IsBuildTargeted("", 11));
-  EXPECT_TRUE(PromoResourceService::IsBuildTargeted("", 12));
+  const platform_util::Channel stable = platform_util::CHANNEL_STABLE;
+  EXPECT_FALSE(PromoResourceService::IsBuildTargeted(stable, 1));
+  EXPECT_FALSE(PromoResourceService::IsBuildTargeted(stable, 3));
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(stable, 7));
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(stable, 15));
+  EXPECT_FALSE(PromoResourceService::IsBuildTargeted(stable, 8));
+  EXPECT_FALSE(PromoResourceService::IsBuildTargeted(stable, 11));
+  EXPECT_TRUE(PromoResourceService::IsBuildTargeted(stable, 12));
 }

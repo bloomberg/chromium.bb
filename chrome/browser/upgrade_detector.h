@@ -77,8 +77,8 @@ class UpgradeDetector {
   // When the upgrade was detected.
   base::Time upgrade_detected_time_;
 
-  // Whether this build is a dev channel build or not.
-  bool is_dev_channel_;
+  // True if this build is a dev or canary channel build.
+  bool is_unstable_channel_;
 
   // The stage at which the annoyance level for upgrade notifications is at.
   UpgradeNotificationAnnoyanceLevel upgrade_notification_stage_;

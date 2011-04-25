@@ -68,9 +68,9 @@ int GetCheckForUpgradeEveryMs() {
 class DetectUpgradeTask : public Task {
  public:
   explicit DetectUpgradeTask(Task* upgrade_detected_task,
-                             bool* is_dev_channel)
+                             bool* is_unstable_channel)
       : upgrade_detected_task_(upgrade_detected_task),
-        is_dev_channel_(is_dev_channel) {
+        is_unstable_channel_(is_unstable_channel) {
   }
 
   virtual ~DetectUpgradeTask() {
@@ -115,8 +115,9 @@ class DetectUpgradeTask : public Task {
     installed_version.reset(Version::GetVersionFromString(reply));
 #endif
 
-    const std::string channel = platform_util::GetVersionStringModifier();
-    *is_dev_channel_ = channel == "dev";
+    platform_util::Channel channel = platform_util::GetChannel();
+    *is_unstable_channel_ = channel == platform_util::CHANNEL_DEV ||
+                            channel == platform_util::CHANNEL_CANARY;
 
     // Get the version of the currently *running* instance of Chrome.
     chrome::VersionInfo version_info;
@@ -144,7 +145,7 @@ class DetectUpgradeTask : public Task {
 
  private:
   Task* upgrade_detected_task_;
-  bool* is_dev_channel_;
+  bool* is_unstable_channel_;
 };
 
 }  // namespace
@@ -156,7 +157,7 @@ void UpgradeDetector::RegisterPrefs(PrefService* prefs) {
 
 UpgradeDetector::UpgradeDetector()
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      is_dev_channel_(false),
+      is_unstable_channel_(false),
       upgrade_notification_stage_(UPGRADE_ANNOYANCE_NONE),
       notify_upgrade_(false) {
   CommandLine command_line(*CommandLine::ForCurrentProcess());
@@ -195,7 +196,7 @@ void UpgradeDetector::CheckForUpgrade() {
   // on Windows checking for an upgrade requires reading a file.
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           new DetectUpgradeTask(callback_task,
-                                                &is_dev_channel_));
+                                                &is_unstable_channel_));
 }
 
 void UpgradeDetector::UpgradeDetected() {
@@ -231,10 +232,10 @@ void UpgradeDetector::NotifyOnUpgrade() {
   const int kSevereThreshold = 14 * (interval.empty() ? 24 : 1);
   const int kHighThreshold = 7 * (interval.empty() ? 24 : 1);
   const int kElevatedThreshold = 4  * (interval.empty() ? 24 : 1);
-  // Dev channel is fixed at lowest severity after 1 hour. For other channels
-  // it is after 2 hours. And, as before, if a command line is passed in we
-  // drastically reduce the wait time.
-  const int multiplier = is_dev_channel_ ? 1 : 2;
+  // Unstable channels are fixed at lowest severity after 1 hour. For other
+  // channels it is after 2 hours. And, as before, if a command line is passed
+  // in we drastically reduce the wait time.
+  const int multiplier = is_unstable_channel_ ? 1 : 2;
   const int kLowThreshold = multiplier * (interval.empty() ? 24 : 1);
 
   // These if statements (except for the first one) must be sorted (highest
@@ -250,7 +251,7 @@ void UpgradeDetector::NotifyOnUpgrade() {
   else
     return;  // Not ready to recommend upgrade.
 
-  if (is_dev_channel_ ||
+  if (is_unstable_channel_ ||
       upgrade_notification_stage_ == UPGRADE_ANNOYANCE_SEVERE) {
     // We can't get any higher, baby.
     upgrade_notification_timer_.Stop();

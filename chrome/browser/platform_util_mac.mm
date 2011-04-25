@@ -209,8 +209,25 @@ std::string GetVersionStringModifier() {
 #endif
 }
 
+Channel GetChannel() {
+#if defined(GOOGLE_CHROME_BUILD)
+  std::string channel = GetVersionStringModifier();
+  if (channel.empty()) {
+    return CHANNEL_STABLE;
+  } else if (channel == "beta") {
+    return CHANNEL_BETA;
+  } else if (channel == "dev") {
+    return CHANNEL_DEV;
+  } else if (channel == "canary") {
+    return CHANNEL_CANARY;
+  }
+#endif
+
+  return CHANNEL_UNKNOWN;
+}
+
 bool CanSetAsDefaultBrowser() {
-  return GetVersionStringModifier().compare("canary") != 0;
+  return GetChannel() != CHANNEL_CANARY;
 }
 
 }  // namespace platform_util

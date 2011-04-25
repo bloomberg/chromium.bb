@@ -75,20 +75,21 @@ void PromoResourceService::RegisterUserPrefs(PrefService* prefs) {
 }
 
 // static
-bool PromoResourceService::IsBuildTargeted(const std::string& channel,
+bool PromoResourceService::IsBuildTargeted(platform_util::Channel channel,
                                            int builds_allowed) {
   if (builds_allowed == NO_BUILD)
     return false;
-  if (channel == "canary" || channel == "canary-m") {
-    return (CANARY_BUILD & builds_allowed) != 0;
-  } else if (channel == "dev" || channel == "dev-m") {
-    return (DEV_BUILD & builds_allowed) != 0;
-  } else if (channel == "beta" || channel == "beta-m") {
-    return (BETA_BUILD & builds_allowed) != 0;
-  } else if (channel == "" || channel == "m") {
-    return (STABLE_BUILD & builds_allowed) != 0;
-  } else {
-    return false;
+  switch (channel) {
+    case platform_util::CHANNEL_CANARY:
+      return (CANARY_BUILD & builds_allowed) != 0;
+    case platform_util::CHANNEL_DEV:
+      return (DEV_BUILD & builds_allowed) != 0;
+    case platform_util::CHANNEL_BETA:
+      return (BETA_BUILD & builds_allowed) != 0;
+    case platform_util::CHANNEL_STABLE:
+      return (STABLE_BUILD & builds_allowed) != 0;
+    default:
+      return false;
   }
 }
 
@@ -102,7 +103,7 @@ PromoResourceService::PromoResourceService(Profile* profile)
                          kStartResourceFetchDelay,
                          kCacheUpdateDelay),
       web_resource_cache_(NULL),
-      channel_(NULL) {
+      channel_(platform_util::CHANNEL_UNKNOWN) {
   Init();
 }
 
@@ -113,9 +114,10 @@ void PromoResourceService::Init() {
 }
 
 bool PromoResourceService::IsThisBuildTargeted(int builds_targeted) {
-  if (channel_ == NULL) {
+  if (channel_ == platform_util::CHANNEL_UNKNOWN) {
+    // GetChannel hits the registry on Windows. See http://crbug.com/70898.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    channel_ = platform_util::GetVersionStringModifier().c_str();
+    channel_ = platform_util::GetChannel();
   }
 
   return IsBuildTargeted(channel_, builds_targeted);
@@ -428,9 +430,9 @@ bool CanShowPromo(Profile* profile) {
 
   bool is_promo_build = false;
   if (prefs->HasPrefPath(prefs::kNTPPromoBuild)) {
-    // GetVersionStringModifier hits the registry. See http://crbug.com/70898.
+    // GetChannel hits the registry on Windows. See http://crbug.com/70898.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    const std::string channel = platform_util::GetVersionStringModifier();
+    platform_util::Channel channel = platform_util::GetChannel();
     is_promo_build = PromoResourceService::IsBuildTargeted(
         channel, prefs->GetInteger(prefs::kNTPPromoBuild));
   }
