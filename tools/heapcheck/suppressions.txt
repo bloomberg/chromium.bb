@@ -1456,3 +1456,9 @@
    Heapcheck:Leak
    fun:fileapi::::FileSystemURLRequestJobTest::SetUp
 }
+{
+   bug_80473
+   Heapcheck:Leak
+   ...
+   fun:fileapi::::FileSystemDirURLRequestJobTest::SetUp
+}
