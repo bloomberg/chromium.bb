@@ -9,12 +9,9 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
-#include "content/browser/renderer_host/backing_store_skia.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
-#include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/common/notification_service.h"
-#include "content/common/view_messages.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
@@ -24,34 +21,12 @@
 static const int kBitmapWidth = 100;
 static const int kBitmapHeight = 100;
 
-// TODO(brettw,satorux) enable this when GetThumbnailForBackingStore is
-// implemented for Mac in thumbnail_generator.cc
-//
-// The test fails on Windows for the following error. Figure it out and fix.
-//
-// transport_dib_win.cc(71)] Check failed: !memory(). Mapped file twice in
-// the same process.
-//
-#if !defined(OS_MACOSX) && !defined(OS_WIN)
-
-// This test render widget host view uses BackingStoreSkia instead of
-// TestBackingStore, so that basic operations like CopyFromBackingStore()
-// works. The skia implementation doesn't have any hardware or system
-// dependencies.
-class TestRenderWidgetHostViewWithBackingStoreSkia
-    : public TestRenderWidgetHostView {
- public:
-  explicit TestRenderWidgetHostViewWithBackingStoreSkia(RenderWidgetHost* rwh)
-      : TestRenderWidgetHostView(rwh), rwh_(rwh) {}
-
-  BackingStore* AllocBackingStore(const gfx::Size& size) {
-    return new BackingStoreSkia(rwh_, size);
-  }
-
- private:
-  RenderWidgetHost* rwh_;
-  DISALLOW_COPY_AND_ASSIGN(TestRenderWidgetHostViewWithBackingStoreSkia);
-};
+// TODO(brettw) enable this when GetThumbnailForBackingStore is implemented
+// for other platforms in thumbnail_generator.cc
+// #if defined(OS_WIN)
+// TODO(brettw) enable this on Windows after we clobber a build to see if the
+// failures of this on the buildbot can be resolved.
+#if 0
 
 class ThumbnailGeneratorTest : public testing::Test {
  public:
@@ -74,7 +49,9 @@ class ThumbnailGeneratorTest : public testing::Test {
     transport_dib_.reset(TransportDIB::Create(kBitmapWidth * kBitmapHeight * 4,
                                               1));
 
+    // We don't want to be sensitive to timing.
     generator_.StartThumbnailing();
+    generator_.set_no_timeout(true);
   }
 
  protected:
@@ -83,10 +60,9 @@ class ThumbnailGeneratorTest : public testing::Test {
   enum TransportType { TRANSPORT_BLACK, TRANSPORT_WHITE, TRANSPORT_OTHER };
 
   void SendPaint(TransportType type) {
-    ViewHostMsg_UpdateRect_Params params;
+    ViewHostMsg_PaintRect_Params params;
     params.bitmap_rect = gfx::Rect(0, 0, kBitmapWidth, kBitmapHeight);
     params.view_size = params.bitmap_rect.size();
-    params.copy_rects.push_back(params.bitmap_rect);
     params.flags = 0;
 
     scoped_ptr<skia::PlatformCanvas> canvas(
@@ -108,7 +84,7 @@ class ThumbnailGeneratorTest : public testing::Test {
 
     params.bitmap = transport_dib_->id();
 
-    ViewHostMsg_UpdateRect msg(1, params);
+    ViewHostMsg_PaintRect msg(1, params);
     widget_.OnMessageReceived(msg);
   }
 
@@ -143,7 +119,7 @@ class ThumbnailGeneratorTest : public testing::Test {
   MockRenderProcessHost* process_;
 
   RenderWidgetHost widget_;
-  TestRenderWidgetHostViewWithBackingStoreSkia view_;
+  TestRenderWidgetHostView view_;
   ThumbnailGenerator generator_;
 
   scoped_ptr<TransportDIB> transport_dib_;
@@ -165,26 +141,46 @@ TEST_F(ThumbnailGeneratorTest, NoThumbnail) {
 
 // Tests basic thumbnail generation when a backing store is discarded.
 TEST_F(ThumbnailGeneratorTest, DiscardBackingStore) {
-  // First set up a backing store.
+  // First set up a backing store and then discard it.
   SendPaint(TRANSPORT_BLACK);
-  ASSERT_TRUE(widget_.GetBackingStore(false));
+  widget_.WasHidden();
+  ASSERT_TRUE(BackingStoreManager::ExpireBackingStoreForTest(&widget_));
+  ASSERT_FALSE(widget_.GetBackingStore(false, false));
 
-  // The thumbnail generator should be able to retrieve a thumbnail.
+  // The thumbnail generator should have stashed a thumbnail of the page.
+  SkBitmap result = generator_.GetThumbnailForRenderer(&widget_);
+  ASSERT_FALSE(result.isNull());
+  EXPECT_EQ(TRANSPORT_BLACK, ClassifyFirstPixel(result));
+}
+
+TEST_F(ThumbnailGeneratorTest, QuickShow) {
+  // Set up a hidden widget with a black cached thumbnail and an expired
+  // backing store.
+  SendPaint(TRANSPORT_BLACK);
+  widget_.WasHidden();
+  ASSERT_TRUE(BackingStoreManager::ExpireBackingStoreForTest(&widget_));
+  ASSERT_FALSE(widget_.GetBackingStore(false, false));
+
+  // Now show the widget and paint white.
+  widget_.WasRestored();
+  SendPaint(TRANSPORT_WHITE);
+
+  // The black thumbnail should still be cached because it hasn't processed the
+  // timer message yet.
   SkBitmap result = generator_.GetThumbnailForRenderer(&widget_);
   ASSERT_FALSE(result.isNull());
   EXPECT_EQ(TRANSPORT_BLACK, ClassifyFirstPixel(result));
 
-  // Discard the backing store.
-  ASSERT_TRUE(BackingStoreManager::ExpireBackingStoreForTest(&widget_));
-  ASSERT_FALSE(widget_.GetBackingStore(false));
-
-  // The thumbnail generator should not be able to retrieve a thumbnail,
-  // as the backing store is now gone.
+  // Running the message loop will process the timer, which should expire the
+  // cached thumbnail. Asking again should give us a new one computed from the
+  // backing store.
+  message_loop_.RunAllPending();
   result = generator_.GetThumbnailForRenderer(&widget_);
-  ASSERT_TRUE(result.isNull());
+  ASSERT_FALSE(result.isNull());
+  EXPECT_EQ(TRANSPORT_WHITE, ClassifyFirstPixel(result));
 }
 
-#endif  // !defined(OS_MAC)
+#endif
 
 TEST(ThumbnailGeneratorSimpleTest, CalculateBoringScore_Empty) {
   SkBitmap bitmap;
