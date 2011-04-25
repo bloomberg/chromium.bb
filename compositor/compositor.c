@@ -1853,7 +1853,9 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wl_compositor_init(&ec->compositor, &compositor_interface, display);
 
 	ec->shm = wl_shm_init(display, &shm_callbacks);
-	eglBindWaylandDisplayWL(ec->display, ec->wl_display);
+	if (strstr(eglQueryString(ec->display, EGL_EXTENSIONS),
+		   "EGL_WL_bind_wayland_display"))
+		eglBindWaylandDisplayWL(ec->display, ec->wl_display);
 
 	wl_list_init(&ec->surface_list);
 	wl_list_init(&ec->input_device_list);
@@ -1992,7 +1994,9 @@ int main(int argc, char *argv[])
 
 	wl_display_run(display);
 
-	eglUnbindWaylandDisplayWL(ec->display, display);
+	if (strstr(eglQueryString(ec->display, EGL_EXTENSIONS),
+		   "EGL_WL_bind_wayland_display"))
+		eglUnbindWaylandDisplayWL(ec->display, display);
 	wl_display_destroy(display);
 
 	ec->destroy(ec);
