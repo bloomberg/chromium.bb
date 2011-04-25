@@ -389,6 +389,9 @@ void NcInstStateTests::VerifyConsumeOneByteInstructions() {
 
 void NcInstStateTests::dummy() {
   NaClInstPrefixDescriptor prefix_desc;
+  prefix_desc.opcode_byte = 0x0;
+  prefix_desc.next_length_adjustment = 0;
+  prefix_desc.matched_prefix = NoPrefix;
   NaClConsumeAndCheckOperandSize(_state);
   NaClConsumeAndCheckAddressSize(_state);
   NaClConsumeModRm(_state);
