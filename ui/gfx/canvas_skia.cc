@@ -232,8 +232,8 @@ void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap,
                                const SkPaint& paint) {
   DLOG_ASSERT(src_x + src_w < std::numeric_limits<int16_t>::max() &&
               src_y + src_h < std::numeric_limits<int16_t>::max());
-  if (src_w <= 0 || src_h <= 0 || dest_w <= 0 || dest_h <= 0) {
-    NOTREACHED() << "Attempting to draw bitmap to/from an empty rect!";
+  if (src_w <= 0 || src_h <= 0) {
+    NOTREACHED() << "Attempting to draw bitmap from an empty rect!";
     return;
   }
 

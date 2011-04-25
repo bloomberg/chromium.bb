@@ -351,7 +351,7 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
                                     const SkColor& halo_color,
                                     int x, int y, int w, int h,
                                     int flags) {
-  if (w <= 0 || h <= 0)
+  if (!IntersectsClipRectInt(x, y, w, h))
     return;
 
   gfx::Rect bounds(x, y, w, h);
@@ -365,7 +365,7 @@ void CanvasSkia::DrawStringInt(const string16& text,
                                const SkColor& color,
                                int x, int y, int w, int h,
                                int flags) {
-  if (w <= 0 || h <= 0)
+  if (!IntersectsClipRectInt(x, y, w, h))
     return;
 
   gfx::Rect bounds(x, y, w, h);
