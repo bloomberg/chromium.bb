@@ -4,14 +4,13 @@
 
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -37,33 +36,17 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using bindings_utils::GetStringResource;
-using bindings_utils::ContextInfo;
-using bindings_utils::ContextList;
-using bindings_utils::GetContexts;
 using bindings_utils::GetPendingRequestMap;
 using bindings_utils::PendingRequest;
 using bindings_utils::PendingRequestMap;
 using bindings_utils::ExtensionBase;
 using WebKit::WebFrame;
-using WebKit::WebSecurityPolicy;
 using WebKit::WebView;
 
 namespace {
-
-// A map of extension ID to vector of page action ids.
-typedef std::map< std::string, std::vector<std::string> > PageActionIdMap;
-
-// A list of permissions that are enabled for this extension.
-typedef std::set<std::string> PermissionsList;
-
-// A map of extension ID to permissions map.
-typedef std::map<std::string, PermissionsList> ExtensionPermissionsList;
 
 const char kExtensionName[] = "chrome/ExtensionProcessBindings";
 const char* kExtensionDeps[] = {
@@ -73,36 +56,6 @@ const char* kExtensionDeps[] = {
   RendererExtensionBindings::kName,
   ExtensionApiTestV8Extension::kName,
 };
-
-struct SingletonData {
-  std::set<std::string> function_names_;
-  PageActionIdMap page_action_ids_;
-  ExtensionPermissionsList permissions_;
-};
-
-static base::LazyInstance<SingletonData> g_singleton_data(
-    base::LINKER_INITIALIZED);
-
-static std::set<std::string>* GetFunctionNameSet() {
-  return &g_singleton_data.Get().function_names_;
-}
-
-static PageActionIdMap* GetPageActionMap() {
-  return &g_singleton_data.Get().page_action_ids_;
-}
-
-static PermissionsList* GetPermissionsList(const std::string& extension_id) {
-  return &g_singleton_data.Get().permissions_[extension_id];
-}
-
-static void GetActiveExtensionIDs(std::set<std::string>* extension_ids) {
-  ExtensionPermissionsList& permissions = g_singleton_data.Get().permissions_;
-
-  for (ExtensionPermissionsList::iterator iter = permissions.begin();
-       iter != permissions.end(); ++iter) {
-    extension_ids->insert(iter->first);
-  }
-}
 
 // A RenderViewVisitor class that iterates through the set of available
 // views, looking for a view of the given type, in the given browser window
@@ -189,43 +142,18 @@ class ExtensionImpl : public ExtensionBase {
     : ExtensionBase(kExtensionName,
                     GetStringResource(IDR_EXTENSION_PROCESS_BINDINGS_JS),
                     arraysize(kExtensionDeps),
-                    kExtensionDeps) {
-    extension_dispatcher_ = extension_dispatcher;
+                    kExtensionDeps,
+                    extension_dispatcher) {
   }
-
-  ~ExtensionImpl() {
-    extension_dispatcher_ = NULL;
-  }
-
-  static void SetFunctionNames(const std::vector<std::string>& names) {
-    std::set<std::string>* name_set = GetFunctionNameSet();
-    for (size_t i = 0; i < names.size(); ++i) {
-      name_set->insert(names[i]);
-    }
-  }
-
-  // Note: do not call this function before or during the chromeHidden.onLoad
-  // event dispatch. The URL might not have been committed yet and might not
-  // be an extension URL.
-  static std::string ExtensionIdForCurrentContext() {
-    RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
-    if (!renderview)
-      return std::string();  // this can happen as a tab is closing.
-
-    GURL url = renderview->webview()->mainFrame()->url();
-    const ExtensionSet* extensions = extension_dispatcher_->extensions();
-    if (!extensions->ExtensionBindingsAllowed(url))
-      return std::string();
-
-    return extensions->GetIdByURL(url);
-  }
+  ~ExtensionImpl() {}
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
       v8::Handle<v8::String> name) {
     if (name->Equals(v8::String::New("GetExtensionAPIDefinition"))) {
       return v8::FunctionTemplate::New(GetExtensionAPIDefinition);
     } else if (name->Equals(v8::String::New("GetExtensionViews"))) {
-      return v8::FunctionTemplate::New(GetExtensionViews);
+      return v8::FunctionTemplate::New(GetExtensionViews,
+                                       v8::External::New(this));
     } else if (name->Equals(v8::String::New("GetNextRequestId"))) {
       return v8::FunctionTemplate::New(GetNextRequestId);
     } else if (name->Equals(v8::String::New("OpenChannelToTab"))) {
@@ -233,15 +161,19 @@ class ExtensionImpl : public ExtensionBase {
     } else if (name->Equals(v8::String::New("GetNextContextMenuId"))) {
       return v8::FunctionTemplate::New(GetNextContextMenuId);
     } else if (name->Equals(v8::String::New("GetCurrentPageActions"))) {
-      return v8::FunctionTemplate::New(GetCurrentPageActions);
+      return v8::FunctionTemplate::New(GetCurrentPageActions,
+                                       v8::External::New(this));
     } else if (name->Equals(v8::String::New("StartRequest"))) {
-      return v8::FunctionTemplate::New(StartRequest);
+      return v8::FunctionTemplate::New(StartRequest,
+                                       v8::External::New(this));
     } else if (name->Equals(v8::String::New("GetRenderViewId"))) {
       return v8::FunctionTemplate::New(GetRenderViewId);
     } else if (name->Equals(v8::String::New("SetIconCommon"))) {
-      return v8::FunctionTemplate::New(SetIconCommon);
+      return v8::FunctionTemplate::New(SetIconCommon,
+                                       v8::External::New(this));
     } else if (name->Equals(v8::String::New("IsExtensionProcess"))) {
-      return v8::FunctionTemplate::New(IsExtensionProcess);
+      return v8::FunctionTemplate::New(IsExtensionProcess,
+                                       v8::External::New(this));
     } else if (name->Equals(v8::String::New("IsIncognitoProcess"))) {
       return v8::FunctionTemplate::New(IsIncognitoProcess);
     } else if (name->Equals(v8::String::New("GetUniqueSubEventName"))) {
@@ -288,11 +220,13 @@ class ExtensionImpl : public ExtensionBase {
       return v8::Undefined();
     }
 
-    std::string extension_id = ExtensionIdForCurrentContext();
-    if (extension_id.empty())
+    ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
+    const ::Extension* extension =
+        v8_extension->GetExtensionForCurrentContext();
+    if (!extension)
       return v8::Undefined();
 
-    ExtensionViewAccumulator accumulator(extension_id, browser_window_id,
+    ExtensionViewAccumulator accumulator(extension->id(), browser_window_id,
                                          view_type);
     RenderView::ForEach(&accumulator);
     return accumulator.views();
@@ -368,13 +302,16 @@ class ExtensionImpl : public ExtensionBase {
 
   static v8::Handle<v8::Value> GetCurrentPageActions(
       const v8::Arguments& args) {
+    ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
     std::string extension_id = *v8::String::Utf8Value(args[0]->ToString());
-    PageActionIdMap* page_action_map = GetPageActionMap();
-    PageActionIdMap::const_iterator it = page_action_map->find(extension_id);
+    const ExtensionDispatcher::PageActionIdMap& page_action_map =
+        v8_extension->extension_dispatcher_->page_action_map();
+    ExtensionDispatcher::PageActionIdMap::const_iterator it =
+        page_action_map.find(extension_id);
 
     std::vector<std::string> page_actions;
     size_t size  = 0;
-    if (it != page_action_map->end()) {
+    if (it != page_action_map.end()) {
       page_actions = it->second;
       size = page_actions.size();
     }
@@ -394,6 +331,8 @@ class ExtensionImpl : public ExtensionBase {
   // Steals value_args contents for efficiency.
   static v8::Handle<v8::Value> StartRequestCommon(
       const v8::Arguments& args, ListValue* value_args) {
+    ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
+
     // Get the current RenderView so that we can send a routed IPC message from
     // the correct source.
     RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
@@ -401,14 +340,15 @@ class ExtensionImpl : public ExtensionBase {
       return v8::Undefined();
 
     std::string name = *v8::String::AsciiValue(args[0]);
-    if (GetFunctionNameSet()->find(name) == GetFunctionNameSet()->end()) {
+    const std::set<std::string>& function_names =
+        v8_extension->extension_dispatcher_->function_names();
+    if (function_names.find(name) == function_names.end()) {
       NOTREACHED() << "Unexpected function " << name;
       return v8::Undefined();
     }
 
-    if (!ExtensionProcessBindings::CurrentContextHasPermission(name)) {
-      return ExtensionProcessBindings::ThrowPermissionDeniedException(name);
-    }
+    if (!v8_extension->CheckPermissionForCurrentContext(name))
+      return v8::Undefined();
 
     GURL source_url;
     WebFrame* webframe = WebFrame::frameForCurrentContext();
@@ -532,18 +472,16 @@ class ExtensionImpl : public ExtensionBase {
   }
 
   static v8::Handle<v8::Value> IsExtensionProcess(const v8::Arguments& args) {
-    return v8::Boolean::New(extension_dispatcher_->is_extension_process());
+    ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
+    return v8::Boolean::New(
+        v8_extension->extension_dispatcher_->is_extension_process());
   }
 
   static v8::Handle<v8::Value> IsIncognitoProcess(const v8::Arguments& args) {
     return v8::Boolean::New(
         ChromeRenderProcessObserver::is_incognito_process());
   }
-
-  static ExtensionDispatcher* extension_dispatcher_;
 };
-
-ExtensionDispatcher* ExtensionImpl::extension_dispatcher_;
 
 }  // namespace
 
@@ -551,16 +489,6 @@ v8::Extension* ExtensionProcessBindings::Get(
     ExtensionDispatcher* extension_dispatcher) {
   static v8::Extension* extension = new ExtensionImpl(extension_dispatcher);
   return extension;
-}
-
-void ExtensionProcessBindings::GetActiveExtensions(
-    std::set<std::string>* extension_ids) {
-  GetActiveExtensionIDs(extension_ids);
-}
-
-void ExtensionProcessBindings::SetFunctionNames(
-    const std::vector<std::string>& names) {
-  ExtensionImpl::SetFunctionNames(names);
 }
 
 // static
@@ -593,91 +521,4 @@ void ExtensionProcessBindings::HandleResponse(int request_id, bool success,
   request->second->context.Dispose();
   request->second->context.Clear();
   pending_requests.erase(request);
-}
-
-// static
-void ExtensionProcessBindings::SetPageActions(
-    const std::string& extension_id,
-    const std::vector<std::string>& page_actions) {
-  PageActionIdMap& page_action_map = *GetPageActionMap();
-  if (!page_actions.empty()) {
-    page_action_map[extension_id] = page_actions;
-  } else {
-    if (page_action_map.find(extension_id) != page_action_map.end())
-      page_action_map.erase(extension_id);
-  }
-}
-
-// static
-void ExtensionProcessBindings::SetAPIPermissions(
-    const std::string& extension_id,
-    const std::set<std::string>& permissions) {
-  PermissionsList& permissions_list = *GetPermissionsList(extension_id);
-  permissions_list.clear();
-  permissions_list.insert(permissions.begin(), permissions.end());
-
-  // The RenderViewTests set API permissions without an |extension_id|. If
-  // there's no ID, there will be no extension URL and no need to proceed.
-  if (extension_id.empty()) return;
-
-  // Grant access to chrome://extension-icon resources if they have the
-  // 'management' permission.
-  if (permissions_list.find(Extension::kManagementPermission) !=
-      permissions_list.end()) {
-    WebSecurityPolicy::addOriginAccessWhitelistEntry(
-        Extension::GetBaseURLFromExtensionId(extension_id),
-        WebKit::WebString::fromUTF8(chrome::kChromeUIScheme),
-        WebKit::WebString::fromUTF8(chrome::kChromeUIExtensionIconHost),
-        false);
-  }
-}
-
-// static
-void ExtensionProcessBindings::SetHostPermissions(
-    const GURL& extension_url,
-    const std::vector<URLPattern>& permissions) {
-  for (size_t i = 0; i < permissions.size(); ++i) {
-    const char* schemes[] = {
-      chrome::kHttpScheme,
-      chrome::kHttpsScheme,
-      chrome::kFileScheme,
-      chrome::kChromeUIScheme,
-    };
-    for (size_t j = 0; j < arraysize(schemes); ++j) {
-      if (permissions[i].MatchesScheme(schemes[j])) {
-        WebSecurityPolicy::addOriginAccessWhitelistEntry(
-            extension_url,
-            WebKit::WebString::fromUTF8(schemes[j]),
-            WebKit::WebString::fromUTF8(permissions[i].host()),
-            permissions[i].match_subdomains());
-      }
-    }
-  }
-}
-
-// static
-bool ExtensionProcessBindings::CurrentContextHasPermission(
-    const std::string& function_name) {
-  std::string extension_id = ExtensionImpl::ExtensionIdForCurrentContext();
-  return HasPermission(extension_id, function_name);
-}
-
-// static
-bool ExtensionProcessBindings::HasPermission(const std::string& extension_id,
-                                             const std::string& permission) {
-  PermissionsList& permissions_list = *GetPermissionsList(extension_id);
-  return Extension::HasApiPermission(permissions_list, permission);
-}
-
-// static
-v8::Handle<v8::Value>
-    ExtensionProcessBindings::ThrowPermissionDeniedException(
-      const std::string& function_name) {
-  static const char kMessage[] =
-      "You do not have permission to use '%s'. Be sure to declare"
-      " in your manifest what permissions you need.";
-  std::string error_msg = StringPrintf(kMessage, function_name.c_str());
-
-  return v8::ThrowException(v8::Exception::Error(
-      v8::String::New(error_msg.c_str())));
 }

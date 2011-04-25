@@ -15,6 +15,8 @@
 #include <list>
 #include <string>
 
+class Extension;
+class ExtensionDispatcher;
 class RenderView;
 
 namespace WebKit {
@@ -30,13 +32,11 @@ class ExtensionBase : public v8::Extension {
   ExtensionBase(const char* name,
                 const char* source,
                 int dep_count,
-                const char** deps)
-      : v8::Extension(name, source, dep_count, deps) {}
-
-  // Note: do not call this function before or during the chromeHidden.onLoad
-  // event dispatch. The URL might not have been committed yet and might not
-  // be an extension URL.
-  static std::string ExtensionIdForCurrentContext();
+                const char** deps,
+                ExtensionDispatcher* extension_dispatcher)
+      : v8::Extension(name, source, dep_count, deps),
+        extension_dispatcher_(extension_dispatcher) {
+  }
 
   // Derived classes should call this at the end of their implementation in
   // order to expose common native functions, like GetChromeHidden, to the
@@ -45,9 +45,28 @@ class ExtensionBase : public v8::Extension {
       GetNativeFunction(v8::Handle<v8::String> name);
 
  protected:
+  template<class T>
+  static T* GetFromArguments(const v8::Arguments& args) {
+    CHECK(!args.Data().IsEmpty());
+    T* result = static_cast<T*>(args.Data().As<v8::External>()->Value());
+    return result;
+  }
+
+  // Note: do not call this function before or during the chromeHidden.onLoad
+  // event dispatch. The URL might not have been committed yet and might not
+  // be an extension URL.
+  const ::Extension* GetExtensionForCurrentContext() const;
+
+  // Checks that the current context contains an extension that has permission
+  // to execute the specified function. If it does not, a v8 exception is thrown
+  // and the method returns false. Otherwise returns true.
+  bool CheckPermissionForCurrentContext(const std::string& function_name) const;
+
   // Returns a hidden variable for use by the bindings that is unreachable
   // by the page.
   static v8::Handle<v8::Value> GetChromeHidden(const v8::Arguments& args);
+
+  ExtensionDispatcher* extension_dispatcher_;
 };
 
 const char* GetStringResource(int resource_id);

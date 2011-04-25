@@ -427,13 +427,10 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
     profile_->GetChromeURLDataManager()->AddDataSource(favicon_source);
   }
 
-  // Update the extension permissions. Doing this each time we create an EFD
-  // ensures that new processes are informed of permissions for newly installed
-  // extensions.
-  render_view_host->Send(new ExtensionMsg_SetAPIPermissions(
-      extension->id(), extension->api_permissions()));
-  render_view_host->Send(new ExtensionMsg_SetHostPermissions(
-      extension->url(), extension->host_permissions()));
+  // Activate this extension in the renderer. This must be done before any
+  // extension JavaScript code runs because it controls some privileges the
+  // extension code has in the renderer.
+  render_view_host->Send(new ExtensionMsg_ActivateExtension(extension->id()));
 
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_FUNCTION_DISPATCHER_CREATED,

@@ -166,21 +166,14 @@ IPC_MESSAGE_ROUTED4(ExtensionMsg_MessageInvoke,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_SetFunctionNames,
                      std::vector<std::string>)
 
-// TODO(aa): SetAPIPermissions, SetHostPermissions, and possibly
-// UpdatePageActions should be replaced with just sending additional data in
-// ExtensionLoaded. See: crbug.com/70516.
+// Marks an extension as 'active' in an extension process. 'Active' extensions
+// have more privileges than other extension content that might end up running
+// in the process (e.g. because of iframes or content scripts).
+IPC_MESSAGE_CONTROL1(ExtensionMsg_ActivateExtension,
+                     std::string /* extension_id */)
 
-// Tell the renderer process which permissions the given extension has. See
-// Extension::Permissions for which elements correspond to which permissions.
-IPC_MESSAGE_CONTROL2(ExtensionMsg_SetAPIPermissions,
-                     std::string /* extension_id */,
-                     std::set<std::string> /* permissions */)
-
-// Tell the renderer process which host permissions the given extension has.
-IPC_MESSAGE_CONTROL2(ExtensionMsg_SetHostPermissions,
-                     GURL /* source extension's origin */,
-                     /* URLPatterns the extension can access */
-                     std::vector<URLPattern>)
+// TODO(aa): UpdatePageActions might be replaced with just sending additional
+// data in ExtensionLoaded. See: crbug.com/70516.
 
 // Tell the renderer process all known page action ids for a particular
 // extension.

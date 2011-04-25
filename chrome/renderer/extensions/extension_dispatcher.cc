@@ -9,6 +9,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/chrome_app_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
@@ -17,6 +18,8 @@
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/renderer/render_thread.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "v8/include/v8.h"
 
 namespace {
@@ -24,7 +27,7 @@ static const double kInitialExtensionIdleHandlerDelayS = 5.0 /* seconds */;
 static const int64 kMaxExtensionIdleHandlerDelayS = 5*60 /* seconds */;
 }
 
-using WebKit::WebFrame;
+using WebKit::WebSecurityPolicy;
 
 ExtensionDispatcher::ExtensionDispatcher() {
   std::string type_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -54,8 +57,7 @@ bool ExtensionDispatcher::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetScriptingWhitelist,
                         OnSetScriptingWhitelist)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePageActions, OnPageActionsUpdated)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_SetAPIPermissions, OnSetAPIPermissions)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_SetHostPermissions, OnSetHostPermissions)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_ActivateExtension, OnActivateExtension)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateUserScripts, OnUpdateUserScripts)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -78,8 +80,8 @@ void ExtensionDispatcher::WebKitInitialized() {
   RegisterExtension(ExtensionProcessBindings::Get(this), true);
   RegisterExtension(BaseJsV8Extension::Get(), true);
   RegisterExtension(JsonSchemaJsV8Extension::Get(), true);
-  RegisterExtension(EventBindings::Get(), true);
-  RegisterExtension(RendererExtensionBindings::Get(), true);
+  RegisterExtension(EventBindings::Get(this), true);
+  RegisterExtension(RendererExtensionBindings::Get(this), true);
   RegisterExtension(ExtensionApiTestV8Extension::Get(), true);
 }
 
@@ -117,7 +119,9 @@ void ExtensionDispatcher::IdleNotification() {
 
 void ExtensionDispatcher::OnSetFunctionNames(
     const std::vector<std::string>& names) {
-  ExtensionProcessBindings::SetFunctionNames(names);
+  function_names_.clear();
+  for (size_t i = 0; i < names.size(); ++i)
+    function_names_.insert(names[i]);
 }
 
 void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
@@ -160,13 +164,22 @@ void ExtensionDispatcher::OnSetScriptingWhitelist(
 void ExtensionDispatcher::OnPageActionsUpdated(
     const std::string& extension_id,
     const std::vector<std::string>& page_actions) {
-  ExtensionProcessBindings::SetPageActions(extension_id, page_actions);
+  if (!page_actions.empty()) {
+    page_action_ids_[extension_id] = page_actions;
+  } else {
+    if (page_action_ids_.find(extension_id) != page_action_ids_.end())
+      page_action_ids_.erase(extension_id);
+  }
 }
 
-void ExtensionDispatcher::OnSetAPIPermissions(
-    const std::string& extension_id,
-    const std::set<std::string>& permissions) {
-  ExtensionProcessBindings::SetAPIPermissions(extension_id, permissions);
+bool ExtensionDispatcher::IsExtensionActive(const std::string& extension_id) {
+  return active_extension_ids_.find(extension_id) !=
+      active_extension_ids_.end();
+}
+
+void ExtensionDispatcher::OnActivateExtension(
+    const std::string& extension_id) {
+  active_extension_ids_.insert(extension_id);
 
   // This is called when starting a new extension page, so start the idle
   // handler ticking.
@@ -174,11 +187,43 @@ void ExtensionDispatcher::OnSetAPIPermissions(
       kInitialExtensionIdleHandlerDelayS);
 
   UpdateActiveExtensions();
+
+  const Extension* extension = extensions_.GetByID(extension_id);
+  if (!extension)
+    return;
+
+  if (extension->HasApiPermission(Extension::kManagementPermission)) {
+    WebSecurityPolicy::addOriginAccessWhitelistEntry(
+        extension->url(),
+        WebKit::WebString::fromUTF8(chrome::kChromeUIScheme),
+        WebKit::WebString::fromUTF8(chrome::kChromeUIExtensionIconHost),
+        false);
+  }
+
+  SetHostPermissions(extension->url(),
+                     extension->host_permissions());
 }
 
-void ExtensionDispatcher::OnSetHostPermissions(
-    const GURL& extension_url, const std::vector<URLPattern>& permissions) {
-  ExtensionProcessBindings::SetHostPermissions(extension_url, permissions);
+void ExtensionDispatcher::SetHostPermissions(
+    const GURL& extension_url,
+    const std::vector<URLPattern>& permissions) {
+  for (size_t i = 0; i < permissions.size(); ++i) {
+    const char* schemes[] = {
+      chrome::kHttpScheme,
+      chrome::kHttpsScheme,
+      chrome::kFileScheme,
+      chrome::kChromeUIScheme,
+    };
+    for (size_t j = 0; j < arraysize(schemes); ++j) {
+      if (permissions[i].MatchesScheme(schemes[j])) {
+        WebSecurityPolicy::addOriginAccessWhitelistEntry(
+            extension_url,
+            WebKit::WebString::fromUTF8(schemes[j]),
+            WebKit::WebString::fromUTF8(permissions[i].host()),
+            permissions[i].match_subdomains());
+      }
+    }
+  }
 }
 
 void ExtensionDispatcher::OnUpdateUserScripts(
@@ -193,9 +238,8 @@ void ExtensionDispatcher::UpdateActiveExtensions() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
 
-  std::set<std::string> active_extensions;
+  std::set<std::string> active_extensions = active_extension_ids_;
   user_script_slave_->GetActiveExtensions(&active_extensions);
-  ExtensionProcessBindings::GetActiveExtensions(&active_extensions);
   child_process_logging::SetActiveExtensions(active_extensions);
 }
 

@@ -75,17 +75,17 @@ static EventListenerCounts& GetListenerCounts(const std::string& extension_id) {
 
 class ExtensionImpl : public ExtensionBase {
  public:
-  ExtensionImpl()
+  explicit ExtensionImpl(ExtensionDispatcher* dispatcher)
       : ExtensionBase(EventBindings::kName,
                       GetStringResource(IDR_EVENT_BINDINGS_JS),
-                      0, NULL) {
+                      0, NULL, dispatcher) {
   }
   ~ExtensionImpl() {}
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
       v8::Handle<v8::String> name) {
     if (name->Equals(v8::String::New("AttachEvent"))) {
-      return v8::FunctionTemplate::New(AttachEvent);
+      return v8::FunctionTemplate::New(AttachEvent, v8::External::New(this));
     } else if (name->Equals(v8::String::New("DetachEvent"))) {
       return v8::FunctionTemplate::New(DetachEvent);
     } else if (name->Equals(v8::String::New("GetExternalFileEntry"))) {
@@ -105,13 +105,10 @@ class ExtensionImpl : public ExtensionBase {
       EventListenerCounts& listener_counts =
           GetListenerCounts(context_info->extension_id);
       std::string event_name(*v8::String::AsciiValue(args[0]));
-      bool has_permission =
-          ExtensionProcessBindings::CurrentContextHasPermission(event_name);
 
-      if (!has_permission) {
-        return ExtensionProcessBindings::ThrowPermissionDeniedException(
-            event_name);
-      }
+      ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
+      if (!v8_extension->CheckPermissionForCurrentContext(event_name))
+        return v8::Undefined();
 
       if (++listener_counts[event_name] == 1) {
         EventBindings::GetRenderThread()->Send(
@@ -215,8 +212,8 @@ const char* EventBindings::kName = "chrome/EventBindings";
 const char* EventBindings::kTestingExtensionId =
     "oooooooooooooooooooooooooooooooo";
 
-v8::Extension* EventBindings::Get() {
-  static v8::Extension* extension = new ExtensionImpl();
+v8::Extension* EventBindings::Get(ExtensionDispatcher* dispatcher) {
+  static v8::Extension* extension = new ExtensionImpl(dispatcher);
   bindings_registered = true;
   return extension;
 }

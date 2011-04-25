@@ -26,7 +26,7 @@ class EventBindings {
   static const char* kName;  // The v8::Extension name, for dependencies.
   static const char* kTestingExtensionId;
 
-  static v8::Extension* Get();
+  static v8::Extension* Get(ExtensionDispatcher* dispatcher);
 
   // Allow RenderThread to be mocked out.
   static void SetRenderThread(RenderThreadBase* thread);

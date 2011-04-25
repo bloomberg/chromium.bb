@@ -34,12 +34,24 @@ class Extension;
 // renderer extension related state.
 class ExtensionDispatcher : public RenderProcessObserver {
  public:
+  typedef std::map< std::string, std::vector<std::string> > PageActionIdMap;
+
   ExtensionDispatcher();
   virtual ~ExtensionDispatcher();
+
+  const std::set<std::string>& function_names() const {
+    return function_names_;
+  }
+
+  const PageActionIdMap& page_action_map() const {
+    return page_action_ids_;
+  }
 
   bool is_extension_process() const { return is_extension_process_; }
   const ExtensionSet* extensions() const { return &extensions_; }
   UserScriptSlave* user_script_slave() { return user_script_slave_.get(); }
+
+  bool IsExtensionActive(const std::string& extension_id);
 
  private:
   friend class RenderViewTest;
@@ -63,10 +75,7 @@ class ExtensionDispatcher : public RenderProcessObserver {
       const Extension::ScriptingWhitelist& extension_ids);
   void OnPageActionsUpdated(const std::string& extension_id,
       const std::vector<std::string>& page_actions);
-  void OnSetAPIPermissions(const std::string& extension_id,
-                           const std::set<std::string>& permissions);
-  void OnSetHostPermissions(const GURL& extension_url,
-                            const std::vector<URLPattern>& permissions);
+  void OnActivateExtension(const std::string& extension_id);
   void OnUpdateUserScripts(base::SharedMemoryHandle table);
 
   // Update the list of active extensions that will be reported when we crash.
@@ -75,6 +84,10 @@ class ExtensionDispatcher : public RenderProcessObserver {
   // Calls RenderThread's RegisterExtension and keeps tracks of which v8
   // extension is for Chrome Extensions only.
   void RegisterExtension(v8::Extension* extension, bool restrict_to_extensions);
+
+  // Sets the host permissions for a particular extension.
+  void SetHostPermissions(const GURL& extension_url,
+                          const std::vector<URLPattern>& permissions);
 
   // True if this renderer is running extensions.
   bool is_extension_process_;
@@ -92,6 +105,15 @@ class ExtensionDispatcher : public RenderProcessObserver {
 
   // The v8 extensions which are restricted to extension-related contexts.
   std::set<std::string> restricted_v8_extensions_;
+
+  // All declared function names from extension_api.json.
+  std::set<std::string> function_names_;
+
+  // A map of extension ID to vector of page action ids.
+  PageActionIdMap page_action_ids_;
+
+  // The extensions that are active in this process.
+  std::set<std::string> active_extension_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDispatcher);
 };

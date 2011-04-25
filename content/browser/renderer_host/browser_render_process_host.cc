@@ -989,14 +989,21 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
   if (max_page_id_ != -1)
     Send(new ViewMsg_SetNextPageID(max_page_id_ + 1));
 
+  // NOTE: This needs to be before sending queued messages because
+  // ExtensionService uses this notification to initialize the renderer process
+  // with state that must be there before any JavaScript executes.
+  //
+  // The queued messages contain such things as "navigate". If this notification
+  // was after, we can end up executing JavaScript before the initialization
+  // happens.
+  NotificationService::current()->Notify(
+      NotificationType::RENDERER_PROCESS_CREATED,
+      Source<RenderProcessHost>(this), NotificationService::NoDetails());
+
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());
     queued_messages_.pop();
   }
-
-  NotificationService::current()->Notify(
-      NotificationType::RENDERER_PROCESS_CREATED,
-      Source<RenderProcessHost>(this), NotificationService::NoDetails());
 }
 
 void BrowserRenderProcessHost::OnUserMetricsRecordAction(

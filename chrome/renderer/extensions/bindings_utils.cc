@@ -7,8 +7,13 @@
 #include "base/lazy_instance.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "v8/include/v8.h"
 
 using WebKit::WebFrame;
 using WebKit::WebView;
@@ -41,6 +46,36 @@ const char* GetStringResource(int resource_id) {
 }
 
 // ExtensionBase
+
+const Extension* ExtensionBase::GetExtensionForCurrentContext() const {
+  RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
+  if (!renderview)
+    return NULL;  // this can happen as a tab is closing.
+
+  GURL url = renderview->webview()->mainFrame()->url();
+  const ExtensionSet* extensions = extension_dispatcher_->extensions();
+  if (!extensions->ExtensionBindingsAllowed(url))
+    return NULL;
+
+  return extensions->GetByURL(url);
+}
+
+bool ExtensionBase::CheckPermissionForCurrentContext(
+    const std::string& function_name) const {
+  const ::Extension* extension = GetExtensionForCurrentContext();
+  if (extension &&
+      extension_dispatcher_->IsExtensionActive(extension->id()) &&
+      extension->HasApiPermission(function_name))
+    return true;
+
+  static const char kMessage[] =
+      "You do not have permission to use '%s'. Be sure to declare"
+      " in your manifest what permissions you need.";
+  std::string error_msg = StringPrintf(kMessage, function_name.c_str());
+
+  v8::ThrowException(v8::Exception::Error(v8::String::New(error_msg.c_str())));
+  return false;
+}
 
 v8::Handle<v8::FunctionTemplate>
     ExtensionBase::GetNativeFunction(v8::Handle<v8::String> name) {

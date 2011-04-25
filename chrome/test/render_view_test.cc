@@ -110,22 +110,14 @@ void RenderViewTest::SetUp() {
   WebKit::initialize(&webkitclient_);
   WebScriptController::registerExtension(BaseJsV8Extension::Get());
   WebScriptController::registerExtension(JsonSchemaJsV8Extension::Get());
-  WebScriptController::registerExtension(EventBindings::Get());
+  WebScriptController::registerExtension(EventBindings::Get(
+      extension_dispatcher_));
   WebScriptController::registerExtension(ExtensionApiTestV8Extension::Get());
   WebScriptController::registerExtension(ExtensionProcessBindings::Get(
       extension_dispatcher_));
-  WebScriptController::registerExtension(RendererExtensionBindings::Get());
+  WebScriptController::registerExtension(RendererExtensionBindings::Get(
+      extension_dispatcher_));
   EventBindings::SetRenderThread(&render_thread_);
-
-  // TODO(aa): Should some of this go to some other inheriting class?
-  std::vector<std::string> names;
-  ExtensionFunctionDispatcher::GetAllFunctionNames(&names);
-  ExtensionProcessBindings::SetFunctionNames(names);
-
-  std::set<std::string> all_permissions;
-  for (size_t i = 0; i < Extension::kNumPermissions; ++i)
-    all_permissions.insert(Extension::kPermissions[i].name);
-  ExtensionProcessBindings::SetAPIPermissions("", all_permissions);
 
   mock_process_.reset(new MockRenderProcess);
 
