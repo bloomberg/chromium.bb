@@ -247,9 +247,19 @@ int PrerenderContents::GetBrowserWindowID() const {
   return extension_misc::kUnknownWindowId;
 }
 
+void PrerenderContents::RenderViewGone(RenderViewHost* render_view_host,
+                                       base::TerminationStatus status,
+                                       int error_code) {
+  DCHECK_EQ(render_view_host_, render_view_host);
+  // Cancel the prerender if the RenderView crashes.
+  Destroy(FINAL_STATUS_RENDERER_CRASHED);
+}
+
 void PrerenderContents::DidNavigate(
     RenderViewHost* render_view_host,
     const ViewHostMsg_FrameNavigate_Params& params) {
+  DCHECK_EQ(render_view_host_, render_view_host);
+
   // We only care when the outer frame changes.
   if (!PageTransition::IsMainFrame(params.transition))
     return;
@@ -271,6 +281,7 @@ void PrerenderContents::UpdateTitle(
     RenderViewHost* render_view_host,
     int32 page_id,
     const base::i18n::String16WithDirection& title) {
+  DCHECK_EQ(render_view_host_, render_view_host);
   if (title.string().empty())
     return;
 
@@ -527,6 +538,7 @@ void PrerenderContents::OnJSOutOfMemory() {
 
 void PrerenderContents::RendererUnresponsive(RenderViewHost* render_view_host,
                                              bool is_during_unload) {
+  DCHECK_EQ(render_view_host_, render_view_host);
   Destroy(FINAL_STATUS_RENDERER_UNRESPONSIVE);
 }
 

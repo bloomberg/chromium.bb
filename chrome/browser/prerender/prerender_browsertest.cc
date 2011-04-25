@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request_context.h"
@@ -77,6 +78,12 @@ class TestPrerenderContents : public PrerenderContents {
     if (expected_final_status_ == FINAL_STATUS_USED &&
         number_of_loads_ >= expected_number_of_loads_) {
       MessageLoopForUI::current()->Quit();
+    } else if (expected_final_status_ == FINAL_STATUS_RENDERER_CRASHED) {
+      // Crash the render process.  This has to be done here because
+      // a prerender navigating to about:crash is cancelled with
+      // "FINAL_STATUS_HTTPS".  Even if this were worked around,
+      // about:crash can't be navigated to by a normal webpage.
+      render_view_host()->NavigateToURL(GURL("about:crash"));
     }
   }
 
@@ -669,6 +676,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowSize) {
                    FINAL_STATUS_USED,
                    1);
   NavigateToDestURL();
+}
+
+// Checks that prerenderers will terminate when the RenderView crashes.
+// Note that the prerendering RenderView will be redirected to about:crash.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
+  PrerenderTestURL(CreateClientRedirect("files/prerender/prerender_page.html"),
+                   FINAL_STATUS_RENDERER_CRASHED,
+                   1);
 }
 
 }  // namespace prerender

@@ -115,6 +115,9 @@ class PrerenderContents : public RenderViewHostDelegate,
   virtual const GURL& GetURL() const;
   virtual ViewType::Type GetRenderViewType() const;
   virtual int GetBrowserWindowID() const;
+  virtual void RenderViewGone(RenderViewHost* render_view_host,
+                              base::TerminationStatus status,
+                              int error_code) OVERRIDE;
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params);
   virtual void UpdateTitle(
