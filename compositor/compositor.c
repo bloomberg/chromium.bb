@@ -54,11 +54,11 @@ static const GOptionEntry option_entries[] = {
 	  &option_connector, "KMS connector" },
 	{ "geometry", 'g', 0, G_OPTION_ARG_STRING,
 	  &option_geometry, "Geometry" },
-	{ "socket", 's', 0, G_OPTION_ARG_STRING,
+	{ "socket", 0, 0, G_OPTION_ARG_STRING,
 	  &option_socket_name, "Socket Name" },
 	{ "idle-time", 'i', 0, G_OPTION_ARG_INT,
 	  &option_idle_time, "Screensaver idle time" },
-	{ "shell", 'i', 0, G_OPTION_ARG_STRING,
+	{ "shell", 's', 0, G_OPTION_ARG_STRING,
 	  &option_shell, "Shell module" },
 	{ NULL }
 };
