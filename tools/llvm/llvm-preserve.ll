@@ -14,7 +14,10 @@ declare float @sinf(float) nounwind
 declare double @pow(double, double) nounwind
 declare float @powf(float, float) nounwind
 
-@llvm.used = appending global [11 x i8*] [
+; NaCl function that will be called for TLS exec accesses.
+declare i8* @__nacl_read_tp() nounwind
+
+@llvm.used = appending global [12 x i8*] [
     i8* bitcast (i8* (i8*,i32,i32)* @memset to i8*),
     i8* bitcast (i8* (i8*,i8*,i32)* @memcpy to i8*),
     i8* bitcast (i8* (i8*,i8*,i32)* @memmove to i8*),
@@ -25,5 +28,6 @@ declare float @powf(float, float) nounwind
     i8* bitcast (double (double)* @sin to i8*),
     i8* bitcast (float (float)* @sinf to i8*),
     i8* bitcast (double (double, double)* @pow to i8*),
-    i8* bitcast (float (float, float)* @powf to i8*)
+    i8* bitcast (float (float, float)* @powf to i8*),
+    i8* bitcast (i8* ()* @__nacl_read_tp to i8*)
 ], section "llvm.metadata"

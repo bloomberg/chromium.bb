@@ -371,8 +371,9 @@ INITIAL_ENV = {
 
   'RUN_BCLD': '${BCLD} ${BCLD_FLAGS} ' +
               '${STDLIB_NATIVE_PREFIX} ${STDLIB_BC_PREFIX} ${inputs} ' +
+              '${BASE}/llvm-preserve.bc ' +
               '${STDLIB_BC_SUFFIX} ${STDLIB_NATIVE_SUFFIX} ' +
-              '${BASE}/llvm-intrinsics.bc ${BASE}/llvm-preserve.bc ' +
+              '${BASE}/llvm-intrinsics.bc ' +
               '-o "${output}${BCLD_EXT}"',
 
   'RUN_PEXECHECK': '${LLVM_LD} --nacl-abi-check ' +
