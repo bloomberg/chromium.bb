@@ -6714,14 +6714,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FIRSTRUN_DLG_MAC_WINDOW_TITLE" desc="Window title of First Run Title on OS X - displayed in Window title bar">
           Welcome to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
         </message>
-        <message name="IDS_FIRSTRUN_DLG_MAC_MAIN_LABEL" desc="Main label for first run dialog, displayed above options">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will do these tasks:
-        </message>
         <message name="IDS_FIRSTRUN_DLG_MAC_COMPLETE_INSTALLATION_LABEL" desc="Label at top of Dialog noting what's going to happen">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is ready to complete your installation
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is ready to complete your installation
+        </message>
+        <message name="IDS_FIRSTRUN_DLG_MAC_SET_DEFAULT_BROWSER_LABEL" desc="Label for checkbox that sets the default browser">
+          Set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as my default browser
         </message>
         <message name="IDS_FIRSTRUN_DLG_MAC_OPTIONS_SEND_USAGE_STATS_LABEL" desc="Label for checkbox to ask whether to send usage stats to Google">
-        Help make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> better by automatically sending usage statistics and crash reports to Google
+          Help make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> better by automatically sending usage statistics and crash reports to Google
         </message>
         <message name="IDS_FIRSTRUN_DLG_MAC_START_CHROME_BUTTON" desc="Button to Start Google Chrome">
           Start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
