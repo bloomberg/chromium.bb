@@ -10,7 +10,6 @@
 #include <time.h>
 
 #include <algorithm>
-#include <sstream>
 
 #include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
@@ -18,7 +17,6 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/c/pp_rect.h"
-#include "ppapi/c/ppb_var.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/graphics_2d.h"
@@ -29,6 +27,7 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/url_request_info.h"
+#include "ppapi/cpp/var.h"
 
 static const int kStepsPerCircle = 800;
 
@@ -195,22 +194,6 @@ class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
     return true;
   }
 
-  void HandleKeyEvent(const PP_InputEvent_Key& key_event) {
-    Log(PP_LOGLEVEL_LOG, "HandleKeyDownEvent");
-
-    // Stringify the Windows-style and Native key codes
-    std::ostringstream last_key_down_text;
-    last_key_down_text << "vkey=" << key_event.key_code
-                       << " native=" << key_event.native_key_code
-                       << " usb=" << std::hex << key_event.usb_key_code;
-
-    // Locate the field to update in the page DOM
-    pp::VarPrivate window = GetWindowObject();
-    pp::VarPrivate doc = window.GetProperty("document");
-    pp::VarPrivate last_key_down = doc.Call("getElementById", "lastKeyDown");
-    last_key_down.SetProperty("innerHTML", last_key_down_text.str());
-  }
-
   virtual bool HandleInputEvent(const PP_InputEvent& event) {
     switch (event.type) {
       case PP_INPUTEVENT_TYPE_MOUSEDOWN:
@@ -220,7 +203,6 @@ class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
       case PP_INPUTEVENT_TYPE_MOUSEMOVE:
         return true;
       case PP_INPUTEVENT_TYPE_KEYDOWN:
-        HandleKeyEvent(event.u.key);
         return true;
       default:
         return false;
