@@ -113,9 +113,7 @@ function RPCWrapper() {
     var full_message = '[SHUTDOWN] ';
     full_message += this.num_passed + ' passed';
     full_message += ', ' + this.num_failed + ' failed';
-    if (this.num_errors > 0) {
-      full_message += ', ' + this.num_errors + ' errors';
-    }
+    full_message += ', ' + this.num_errors + ' errors';
     this.logLocal(full_message);
     rpcCall('Shutdown', {message: full_message, passed: !this.ever_failed});
 

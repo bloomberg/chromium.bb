@@ -5,22 +5,20 @@
 
 import pyauto_nacl  # Must be imported before pyauto
 import pyauto
+import nacl_utils
 
 
 class NaClTest(pyauto.PyUITest):
   """Tests for NaCl."""
 
   def testSurfAway(self):
-    """Navigate to the hello world nexe and then surf away."""
+    """Navigate to a sample nexe and then surf away."""
     self.NavigateToURL('about:version')
     title = self.GetActiveTabTitle()
-    url = self.GetHttpURLForDataPath('srpc_hw.html')
+    url = self.GetHttpURLForDataPath('ppapi_geturl.html')
     self.NavigateToURL(url)
-    self.WaitUntil(
-        lambda: self.FindInPage('[SHUTDOWN]')['match_count'],
-        expect_retval=1)
-    self.assertEqual(1, self.FindInPage(
-        '[SHUTDOWN] 2 passed, 0 failed')['match_count'])
+    nacl_utils.WaitForNexeLoad(self)
+    nacl_utils.VerifyAllTestsPassed(self)
     self.GetBrowserWindow(0).GetTab(0).GoBack()
     self.assertEqual(title, self.GetActiveTabTitle())
 
