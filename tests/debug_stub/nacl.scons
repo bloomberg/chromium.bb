@@ -5,15 +5,17 @@
 
 Import('env')
 
+import sys
+
 if 'TRUSTED_ENV' not in env:
   Return()
 trusted_env = env['TRUSTED_ENV']
 
-# Skip this file when code coverage is turned on.
-if trusted_env.Bit('coverage_enabled'):
-  Return()
 # The debug stub currently only works on x86-64.
 if not env.Bit('target_x86_64'):
+  Return()
+# The test has to be able to kill the subprocess.
+if sys.version_info < (2, 6):
   Return()
 # Our test uses inline assembly.
 if env.Bit('bitcode'):
