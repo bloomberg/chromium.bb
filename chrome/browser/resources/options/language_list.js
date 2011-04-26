@@ -221,6 +221,20 @@ cr.define('options', function() {
     },
 
     /*
+     * Computes the target item of drop event.
+     * @param {Event} e The drop or dragover event.
+     * @private
+     */
+    getTargetFromDropEvent_ : function(e) {
+      var target = e.target;
+      // e.target may be an inner element of the list item
+      while (target != null && !(target instanceof ListItem)) {
+        target = target.parentNode;
+      }
+      return target;
+    },
+
+    /*
      * Handles the dragstart event.
      * @param {Event} e The dragstart event.
      * @private
@@ -254,8 +268,8 @@ cr.define('options', function() {
      * @private
      */
     handleDragOver_: function(e) {
-      var dropTarget = e.target;
-      // Determins whether the drop target is to accept the drop.
+      var dropTarget = this.getTargetFromDropEvent_(e);
+      // Determines whether the drop target is to accept the drop.
       // The drop is only successful on another ListItem.
       if (!(dropTarget instanceof ListItem) ||
           dropTarget == this.draggedItem) {
@@ -278,7 +292,7 @@ cr.define('options', function() {
      * @private
      */
     handleDrop_: function(e) {
-      var dropTarget = e.target;
+      var dropTarget = this.getTargetFromDropEvent_(e);
 
       // Delete the language from the original position.
       var languageCode = this.draggedItem.languageCode;
