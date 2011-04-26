@@ -48,6 +48,15 @@ ProfileSyncService* test_sync_service = NULL;
 BrowserSignin* test_signin = NULL;
 bool ignore_user_gesture_for_tests = false;
 
+// A flag used for BeginInstallWithManifest::SetAutoConfirmForTests.
+enum AutoConfirmForTest {
+  DO_NOT_SKIP = 0,
+  PROCEED,
+  ABORT
+};
+AutoConfirmForTest auto_confirm_for_tests = DO_NOT_SKIP;
+
+
 // Returns either the test sync service, or the real one from |profile|.
 ProfileSyncService* GetSyncService(Profile* profile) {
   if (test_sync_service)
@@ -337,6 +346,16 @@ void BeginInstallWithManifestFunction::SetResult(ResultCode code) {
   }
 }
 
+// static
+void BeginInstallWithManifestFunction::SetIgnoreUserGestureForTests(
+    bool ignore) {
+  ignore_user_gesture_for_tests = ignore;
+}
+
+void BeginInstallWithManifestFunction::SetAutoConfirmForTests(
+    bool should_proceed) {
+  auto_confirm_for_tests = should_proceed ? PROCEED : ABORT;
+}
 
 void BeginInstallWithManifestFunction::OnParseSuccess(
     const SkBitmap& icon, DictionaryValue* parsed_manifest) {
@@ -359,6 +378,16 @@ void BeginInstallWithManifestFunction::OnParseSuccess(
   }
   if (icon_.empty())
     icon_ = Extension::GetDefaultIcon(dummy_extension_->is_app());
+
+  // In tests, we may have setup to proceed or abort without putting up the real
+  // confirmation dialog.
+  if (auto_confirm_for_tests != DO_NOT_SKIP) {
+    if (auto_confirm_for_tests == PROCEED)
+      this->InstallUIProceed();
+    else
+      this->InstallUIAbort();
+    return;
+  }
 
   ShowExtensionInstallDialog(profile(),
                              this,

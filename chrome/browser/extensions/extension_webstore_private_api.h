@@ -77,6 +77,11 @@ class BeginInstallWithManifestFunction : public AsyncExtensionFunction,
   // the normal requirement that it is called during a user gesture.
   static void SetIgnoreUserGestureForTests(bool ignore);
 
+  // For use only in tests - sets a flag that makes invocations of
+  // beginInstallWithManifest skip putting up a real dialog, and instead act
+  // as if the dialog choice was to proceed or abort.
+  static void SetAutoConfirmForTests(bool should_proceed);
+
   // Called when we've successfully parsed the manifest and icon data in the
   // utility process. Ownership of parsed_manifest is transferred.
   void OnParseSuccess(const SkBitmap& icon, DictionaryValue* parsed_manifest);

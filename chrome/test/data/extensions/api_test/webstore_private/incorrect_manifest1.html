@@ -1,0 +1,12 @@
+<script src="common.js"></script>
+<script>
+
+function alterManifest(manifestObj) {
+  // Change the version to be incorrect.
+  manifestObj["version"] =
+      (parseFloat(manifestObj["version"]) + 1).toString();
+  return JSON.stringify(manifestObj);
+}
+
+</script>
+<script src="incorrect_manifest.js"></script>
