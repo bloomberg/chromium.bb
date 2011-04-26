@@ -47,16 +47,20 @@ echo @@@BUILD_STEP compile_toolchain@@@
   make -j8 buildbot-build-with-glibc
 )
 
-echo @@@BUILD_STEP tar_toolchain@@@
-(
-  cd tools
-  tar Scf toolchain.tar toolchain/
-  bzip2 -k -9 toolchain.tar
-  gzip -9 toolchain.tar
-  chmod a+r toolchain.tar.gz toolchain.tar.bz2
-)
+if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
+  mkdir -p "$TOOLCHAINLOC"
+  rm -rf "$TOOLCHAINLOC/$TOOLCHAINNAME"
+  mv {tools/,}"$TOOLCHAINLOC/$TOOLCHAINNAME"
+else
+  echo @@@BUILD_STEP tar_toolchain@@@
+  (
+    cd tools
+    tar Scf toolchain.tar toolchain/
+    bzip2 -k -9 toolchain.tar
+    gzip -9 toolchain.tar
+    chmod a+r toolchain.tar.gz toolchain.tar.bz2
+  )
 
-if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   echo @@@BUILD_STEP archive_build@@@
   for suffix in gz bz2; do
     /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
@@ -64,17 +68,17 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
       gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_mac_x86.tar.$suffix
   done
   echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
-fi
 
-echo @@@BUILD_STEP untar_toolchain@@@
-(
-  mkdir -p .tmp
-  cd .tmp
-  # GNU tar does not like some headers, regular tar can not create sparse files.
-  # Use regular tar with non-sparse files for now.
-  tar zxf ../tools/toolchain.tar.gz
-  mv toolchain ..
-)
+  echo @@@BUILD_STEP untar_toolchain@@@
+  (
+    mkdir -p .tmp
+    cd .tmp
+    # GNU tar does not like some headers, regular tar can not create sparse files.
+    # Use regular tar with non-sparse files for now.
+    tar zxf ../tools/toolchain.tar.gz
+    mv toolchain ..
+  )
+fi
 
 export INSIDE_TOOLCHAIN=1
 exec buildbot/buildbot_mac.sh opt 32 glibc

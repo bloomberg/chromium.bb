@@ -21,6 +21,18 @@ export INST_GLIBC_PROGRAM="$PWD/tools/glibc_download.sh"
 # More info here: http://cygwin.com/ml/cygwin/2011-03/msg00596.html
 export ac_cv_func_mmap_fixed_mapped=yes
 
+function convert_symlinks_to_hardlinks
+{
+  find -L "$0" -type f -xtype l -print0 |
+  while IFS="" read -r -d "" name ; do
+    # Find gives us some files twice because there are symlinks.  Second time
+    # ‘ln’ will fail with ln: “‘xxx’ and ‘yyy’ are the same file” despite ‘-f’.
+    if [[ -L "$name" ]]; then
+      ln -Tf "$(readlink -f "$name")" "$name"
+    fi
+  done
+}
+
 echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out tools/SRC tools/BUILD tools/out tools/toolchain \
   tools/glibc tools/glibc.tar tools/toolchain.t* toolchain .tmp ||
@@ -50,28 +62,28 @@ echo @@@BUILD_STEP compile_toolchain@@@
   rm toolchain/win_x86/tmp
 )
 
-echo @@@BUILD_STEP tar_toolchain@@@
-(
-  cd tools
-  tar Scf toolchain.tar toolchain/
-  xz -k -9 toolchain.tar
-  bzip2 -k -9 toolchain.tar
-  gzip -9 toolchain.tar
-  chmod a+r toolchain.tar.gz toolchain.tar.bz2 toolchain.tar.xz
-)
+if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
+  mkdir -p "$TOOLCHAINLOC"
+  rm -rf "$TOOLCHAINLOC/$TOOLCHAINNAME"
+  mv {tools/,}"$TOOLCHAINLOC/$TOOLCHAINNAME"
+  convert_symlinks_to_hardlinks "$TOOLCHAINLOC/$TOOLCHAINNAME"
+else
+  echo @@@BUILD_STEP tar_toolchain@@@
+  (
+    cd tools
+    tar Scf toolchain.tar toolchain/
+    xz -k -9 toolchain.tar
+    bzip2 -k -9 toolchain.tar
+    gzip -9 toolchain.tar
+    chmod a+r toolchain.tar.gz toolchain.tar.bz2 toolchain.tar.xz
+  )
 
-echo @@@BUILD_STEP untar_toolchain@@@
-(
-  mkdir -p .tmp
-  cd .tmp
-  tar JSxf ../tools/toolchain.tar.xz
-  find -L toolchain -type f -xtype l -print0 |
-  while IFS="" read -r -d "" name ; do
-    # Find gives us some files twice because there are symlinks.  Second time
-    # ‘ln’ will fail with ln: “‘xxx’ and ‘yyy’ are the same file” despite ‘-f’.
-    if [[ -L "$name" ]]; then
-      ln -Tf "$(readlink -f "$name")" "$name"
-    fi
-  done
-  mv toolchain ..
-)
+  echo @@@BUILD_STEP untar_toolchain@@@
+  (
+    mkdir -p .tmp
+    cd .tmp
+    tar JSxf ../tools/toolchain.tar.xz
+    convert_symlinks_to_hardlinks toolchain
+    mv toolchain ..
+  )
+fi
