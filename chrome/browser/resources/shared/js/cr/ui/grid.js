@@ -88,7 +88,7 @@ cr.define('cr.ui', function() {
      */
     getColumnCount_: function() {
       var width = this.getItemWidth_();
-      return width ? Math.floor(this.clientWidth / width) : 1;
+      return width ? Math.floor(this.clientWidth / width) : 0;
     },
 
     /**
@@ -97,7 +97,10 @@ cr.define('cr.ui', function() {
      * @type {number}
      */
     get columns() {
-      return this.columns_ || (this.columns_ = this.getColumnCount_());
+      if (!this.columns_) {
+        this.columns_ = this.getColumnCount_();
+      }
+      return this.columns_ || 1;
     },
     set columns(value) {
       if (value >= 0 && value != this.columns_) {
