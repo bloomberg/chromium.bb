@@ -7,6 +7,8 @@
 #pragma once
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -44,29 +46,30 @@ class PrerenderResourceHandler : public ResourceHandler {
   // prerendering the requested resource if it is of an appropriate
   // content type. The next handler is still invoked.
   virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response);
+                                 ResourceResponse* response) OVERRIDE;
 
   // The following methods simply delegate to the next_handler.
   virtual bool OnUploadProgress(int request_id,
                                 uint64 position,
-                                uint64 size);
+                                uint64 size) OVERRIDE;
   virtual bool OnRequestRedirected(int request_id, const GURL& url,
                                    ResourceResponse* response,
-                                   bool* defer);
-  virtual bool OnWillStart(int request_id, const GURL& url, bool* defer);
+                                   bool* defer) OVERRIDE;
+  virtual bool OnWillStart(int request_id, const GURL& url,
+                           bool* defer) OVERRIDE;
 
   virtual bool OnWillRead(int request_id,
                           net::IOBuffer** buf,
                           int* buf_size,
-                          int min_size);
+                          int min_size) OVERRIDE;
 
-  virtual bool OnReadCompleted(int request_id, int* bytes_read);
+  virtual bool OnReadCompleted(int request_id, int* bytes_read) OVERRIDE;
 
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
-                                   const std::string& security_info);
+                                   const std::string& security_info) OVERRIDE;
 
-  virtual void OnRequestClosed();
+  virtual void OnRequestClosed() OVERRIDE;
 
  private:
   friend class PrerenderResourceHandlerTest;

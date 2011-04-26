@@ -77,7 +77,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // determines whether a preloaded version of the URL can be used,
   // and substitutes the prerendered RVH into the TabContents.  Returns
   // whether or not a prerendered RVH could be used or not.
-  bool MaybeUsePreloadedPage(TabContents* tc, const GURL& url);
+  bool MaybeUsePreloadedPage(TabContents* tab_contents, const GURL& url);
 
   // Allows PrerenderContents to remove itself when prerendering should
   // be cancelled.
@@ -127,11 +127,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Maintaining and querying the set of TabContents belonging to this
   // PrerenderManager that are currently showing prerendered pages.
-  void MarkTabContentsAsPrerendered(TabContents* tc);
-  void MarkTabContentsAsWouldBePrerendered(TabContents* tc);
-  void MarkTabContentsAsNotPrerendered(TabContents* tc);
-  bool IsTabContentsPrerendered(TabContents* tc) const;
-  bool WouldTabContentsBePrerendered(TabContents* tc) const;
+  void MarkTabContentsAsPrerendered(TabContents* tab_contents);
+  void MarkTabContentsAsWouldBePrerendered(TabContents* tab_contents);
+  void MarkTabContentsAsNotPrerendered(TabContents* tab_contents);
+  bool IsTabContentsPrerendered(TabContents* tab_contents) const;
+  bool WouldTabContentsBePrerendered(TabContents* tab_contents) const;
 
   // Extracts a urlencoded URL stored in a url= query parameter from a URL
   // supplied, if available, and stores it in alias_url.  Returns whether or not
@@ -203,11 +203,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   std::list<PrerenderContentsData> prerender_list_;
 
   // Set of TabContents which are currently displaying a prerendered page.
-  base::hash_set<TabContents*> prerendered_tc_set_;
+  base::hash_set<TabContents*> prerendered_tab_contents_set_;
 
   // Set of TabContents which would be displaying a prerendered page
   // (for the control group).
-  base::hash_set<TabContents*> would_be_prerendered_tc_set_;
+  base::hash_set<TabContents*> would_be_prerendered_tab_contents_set_;
 
   // Map of child/route id pairs to pending prerender data.
   typedef std::map<std::pair<int, int>, std::vector<PendingContentsData> >
@@ -238,6 +238,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };
 
-}  // prerender
+}  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_MANAGER_H_

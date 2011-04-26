@@ -18,23 +18,24 @@ class MockResourceHandler : public ResourceHandler {
 
   virtual bool OnUploadProgress(int request_id,
                                 uint64 position,
-                                uint64 size) {
+                                uint64 size) OVERRIDE {
     return true;
   }
 
   virtual bool OnRequestRedirected(int request_id, const GURL& url,
                                    ResourceResponse* response,
-                                   bool* defer) {
+                                   bool* defer) OVERRIDE {
     *defer = false;
     return true;
   }
 
   virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response) {
+                                 ResourceResponse* response) OVERRIDE {
     return true;
   }
 
-  virtual bool OnWillStart(int request_id, const GURL& url, bool* defer) {
+  virtual bool OnWillStart(int request_id, const GURL& url,
+                           bool* defer) OVERRIDE {
     *defer = false;
     return true;
   }
@@ -42,24 +43,25 @@ class MockResourceHandler : public ResourceHandler {
   virtual bool OnWillRead(int request_id,
                           net::IOBuffer** buf,
                           int* buf_size,
-                          int min_size) {
+                          int min_size) OVERRIDE {
     return true;
   }
 
-  virtual bool OnReadCompleted(int request_id, int* bytes_read) {
+  virtual bool OnReadCompleted(int request_id, int* bytes_read) OVERRIDE {
     return true;
   }
 
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
-                                   const std::string& security_info) {
+                                   const std::string& security_info) OVERRIDE {
     return true;
   }
 
-  virtual void OnRequestClosed() {
+  virtual void OnRequestClosed() OVERRIDE {
   }
 
-  virtual void OnDataDownloaded(int request_id, int bytes_downloaded) {}
+  virtual void OnDataDownloaded(int request_id,
+                                int bytes_downloaded) OVERRIDE {}
 };
 
 // HttpResponseHeaders expects the raw input for it's constructor

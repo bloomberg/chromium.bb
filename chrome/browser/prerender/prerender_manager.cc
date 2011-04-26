@@ -246,16 +246,17 @@ void PrerenderManager::AddPendingPreload(
     const std::vector<GURL>& alias_urls,
     const GURL& referrer) {
   DCHECK(CalledOnValidThread());
-  // Check if this is coming from a valid prerender rvh.
+  // Check if this is coming from a valid prerender RenderViewHost.
   bool is_valid_prerender = false;
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
        it != prerender_list_.end(); ++it) {
-    PrerenderContents* pc = it->contents_;
+    PrerenderContents* prerender_contents = it->contents_;
 
     int child_id;
     int route_id;
-    bool has_child_id = pc->GetChildId(&child_id);
-    bool has_route_id = has_child_id && pc->GetRouteId(&route_id);
+    bool has_child_id = prerender_contents->GetChildId(&child_id);
+    bool has_route_id = has_child_id &&
+                        prerender_contents->GetRouteId(&route_id);
 
     if (has_child_id && has_route_id &&
         child_id == child_route_id_pair.first &&
@@ -307,50 +308,53 @@ PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
        it != prerender_list_.end();
        ++it) {
-    PrerenderContents* pc = it->contents_;
-    if (pc->MatchesURL(url)) {
+    PrerenderContents* prerender_contents = it->contents_;
+    if (prerender_contents->MatchesURL(url)) {
       prerender_list_.erase(it);
-      return pc;
+      return prerender_contents;
     }
   }
   // Entry not found.
   return NULL;
 }
 
-bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
+bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
+                                             const GURL& url) {
   DCHECK(CalledOnValidThread());
-  scoped_ptr<PrerenderContents> pc(GetEntry(url));
-  if (pc.get() == NULL)
+  scoped_ptr<PrerenderContents> prerender_contents(GetEntry(url));
+  if (prerender_contents.get() == NULL)
     return false;
 
   // If we are just in the control group (which can be detected by noticing
-  // that prerendering hasn't even started yet), record that this TC now would
-  // be showing a prerendered contents, but otherwise, don't do anything.
-  if (!pc->prerendering_has_started()) {
-    MarkTabContentsAsWouldBePrerendered(tc);
+  // that prerendering hasn't even started yet), record that |tab_contents| now
+  // would be showing a prerendered contents, but otherwise, don't do anything.
+  if (!prerender_contents->prerendering_has_started()) {
+    MarkTabContentsAsWouldBePrerendered(tab_contents);
     return false;
   }
 
-  if (!pc->load_start_time().is_null())
-    RecordTimeUntilUsed(GetCurrentTimeTicks() - pc->load_start_time());
+  if (!prerender_contents->load_start_time().is_null())
+    RecordTimeUntilUsed(GetCurrentTimeTicks() -
+                        prerender_contents->load_start_time());
 
   UMA_HISTOGRAM_COUNTS("Prerender.PrerendersPerSessionCount",
                        ++prerenders_per_session_count_);
-  pc->set_final_status(FINAL_STATUS_USED);
+  prerender_contents->set_final_status(FINAL_STATUS_USED);
 
   int child_id;
   int route_id;
-  CHECK(pc->GetChildId(&child_id));
-  CHECK(pc->GetRouteId(&route_id));
+  CHECK(prerender_contents->GetChildId(&child_id));
+  CHECK(prerender_contents->GetRouteId(&route_id));
 
-  RenderViewHost* rvh = pc->render_view_host();
+  RenderViewHost* render_view_host = prerender_contents->render_view_host();
   // RenderViewHosts in PrerenderContents start out hidden.
   // Since we are actually using it now, restore it.
-  rvh->WasRestored();
-  pc->set_render_view_host(NULL);
-  rvh->Send(new ViewMsg_DisplayPrerenderedPage(rvh->routing_id()));
-  tc->SwapInRenderViewHost(rvh);
-  MarkTabContentsAsPrerendered(tc);
+  render_view_host->WasRestored();
+  prerender_contents->set_render_view_host(NULL);
+  render_view_host->Send(
+      new ViewMsg_DisplayPrerenderedPage(render_view_host->routing_id()));
+  tab_contents->SwapInRenderViewHost(render_view_host);
+  MarkTabContentsAsPrerendered(tab_contents);
 
   // See if we have any pending prerender requests for this routing id and start
   // the preload if we do.
@@ -372,23 +376,29 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
       Source<std::pair<int, int> >(&child_route_pair),
       NotificationService::NoDetails());
 
-  ViewHostMsg_FrameNavigate_Params* p = pc->navigate_params();
-  if (p != NULL)
-    tc->DidNavigate(rvh, *p);
+  ViewHostMsg_FrameNavigate_Params* params =
+      prerender_contents->navigate_params();
+  if (params != NULL)
+    tab_contents->DidNavigate(render_view_host, *params);
 
-  string16 title = pc->title();
-  if (!title.empty())
-    tc->UpdateTitle(rvh, pc->page_id(), UTF16ToWideHack(title));
+  string16 title = prerender_contents->title();
+  if (!title.empty()) {
+    tab_contents->UpdateTitle(render_view_host,
+                              prerender_contents->page_id(),
+                              UTF16ToWideHack(title));
+  }
 
-  GURL icon_url = pc->icon_url();
+  GURL icon_url = prerender_contents->icon_url();
   if (!icon_url.is_empty()) {
     std::vector<FaviconURL> urls;
     urls.push_back(FaviconURL(icon_url, FaviconURL::FAVICON));
-    tc->favicon_helper().OnUpdateFaviconURL(pc->page_id(), urls);
+    tab_contents->favicon_helper().OnUpdateFaviconURL(
+        prerender_contents->page_id(),
+        urls);
   }
 
-  if (pc->has_stopped_loading())
-    tc->DidStopLoading();
+  if (prerender_contents->has_stopped_loading())
+    tab_contents->DidStopLoading();
 
   return true;
 }
@@ -636,30 +646,34 @@ void PrerenderManager::PeriodicCleanup() {
   }
 }
 
-void PrerenderManager::MarkTabContentsAsPrerendered(TabContents* tc) {
+void PrerenderManager::MarkTabContentsAsPrerendered(TabContents* tab_contents) {
   DCHECK(CalledOnValidThread());
-  prerendered_tc_set_.insert(tc);
+  prerendered_tab_contents_set_.insert(tab_contents);
 }
 
-void PrerenderManager::MarkTabContentsAsWouldBePrerendered(TabContents* tc) {
+void PrerenderManager::MarkTabContentsAsWouldBePrerendered(
+    TabContents* tab_contents) {
   DCHECK(CalledOnValidThread());
-  would_be_prerendered_tc_set_.insert(tc);
+  would_be_prerendered_tab_contents_set_.insert(tab_contents);
 }
 
-void PrerenderManager::MarkTabContentsAsNotPrerendered(TabContents* tc) {
+void PrerenderManager::MarkTabContentsAsNotPrerendered(
+    TabContents* tab_contents) {
   DCHECK(CalledOnValidThread());
-  prerendered_tc_set_.erase(tc);
-  would_be_prerendered_tc_set_.erase(tc);
+  prerendered_tab_contents_set_.erase(tab_contents);
+  would_be_prerendered_tab_contents_set_.erase(tab_contents);
 }
 
-bool PrerenderManager::IsTabContentsPrerendered(TabContents* tc) const {
+bool PrerenderManager::IsTabContentsPrerendered(
+    TabContents* tab_contents) const {
   DCHECK(CalledOnValidThread());
-  return prerendered_tc_set_.count(tc) > 0;
+  return prerendered_tab_contents_set_.count(tab_contents) > 0;
 }
 
-bool PrerenderManager::WouldTabContentsBePrerendered(TabContents* tc) const {
+bool PrerenderManager::WouldTabContentsBePrerendered(
+    TabContents* tab_contents) const {
   DCHECK(CalledOnValidThread());
-  return would_be_prerendered_tc_set_.count(tc) > 0;
+  return would_be_prerendered_tab_contents_set_.count(tab_contents) > 0;
 }
 
 }  // namespace prerender

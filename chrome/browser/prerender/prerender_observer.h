@@ -30,15 +30,14 @@ class PrerenderObserver : public TabContentsObserver {
   virtual ~PrerenderObserver();
 
   // TabContentsObserver implementation.
-  virtual void ProvisionalChangeToMainFrameUrl(const GURL& url);
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void ProvisionalChangeToMainFrameUrl(const GURL& url) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidStopLoading() OVERRIDE;
 
   // Message handler.
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                          bool main_frame,
                                          const GURL& url);
-
-  virtual void DidStopLoading();
 
  private:
   // Retrieves the PrerenderManager, or NULL, if none was found.
@@ -56,6 +55,6 @@ class PrerenderObserver : public TabContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(PrerenderObserver);
 };
 
-}  // prerender
+}  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_OBSERVER_H_

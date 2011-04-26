@@ -80,7 +80,9 @@ class PrerenderContents : public RenderViewHostDelegate,
   // Allows replacing of the RenderViewHost owned by this class, including
   // replacing with a NULL value.  When a caller uses this, the caller will
   // own (and is responsible for freeing) the old RVH.
-  void set_render_view_host(RenderViewHost* rvh) { render_view_host_ = rvh; }
+  void set_render_view_host(RenderViewHost* render_view_host) {
+    render_view_host_ = render_view_host;
+  }
   ViewHostMsg_FrameNavigate_Params* navigate_params() {
     return navigate_params_.get();
   }
@@ -111,90 +113,94 @@ class PrerenderContents : public RenderViewHostDelegate,
   bool MatchesURL(const GURL& url) const;
 
   // RenderViewHostDelegate implementation.
-  virtual RenderViewHostDelegate::View* GetViewDelegate();
-  virtual const GURL& GetURL() const;
-  virtual ViewType::Type GetRenderViewType() const;
-  virtual int GetBrowserWindowID() const;
+  virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
+  virtual const GURL& GetURL() const OVERRIDE;
+  virtual ViewType::Type GetRenderViewType() const OVERRIDE;
+  virtual int GetBrowserWindowID() const OVERRIDE;
   virtual void RenderViewGone(RenderViewHost* render_view_host,
                               base::TerminationStatus status,
                               int error_code) OVERRIDE;
-  virtual void DidNavigate(RenderViewHost* render_view_host,
-                           const ViewHostMsg_FrameNavigate_Params& params);
+  virtual void DidNavigate(
+      RenderViewHost* render_view_host,
+      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
                            const std::wstring& title);
-  virtual WebPreferences GetWebkitPrefs();
+  virtual WebPreferences GetWebkitPrefs() OVERRIDE;
   virtual void RunJavaScriptMessage(const std::wstring& message,
                                     const std::wstring& default_prompt,
                                     const GURL& frame_url,
                                     const int flags,
                                     IPC::Message* reply_msg,
-                                    bool* did_suppress_message);
-  virtual void Close(RenderViewHost* render_view_host);
-  virtual void DidStopLoading();
-  virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
+                                    bool* did_suppress_message) OVERRIDE;
+  virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidStopLoading() OVERRIDE;
+  virtual RendererPreferences GetRendererPrefs(Profile* profile) const OVERRIDE;
 
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(
       int route_id,
-      const ViewHostMsg_CreateWindow_Params& params);
-  virtual void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type);
-  virtual void CreateNewFullscreenWidget(int route_id);
+      const ViewHostMsg_CreateWindow_Params& params) OVERRIDE;
+  virtual void CreateNewWidget(int route_id,
+                               WebKit::WebPopupType popup_type) OVERRIDE;
+  virtual void CreateNewFullscreenWidget(int route_id) OVERRIDE;
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
-                                 bool user_gesture);
+                                 bool user_gesture) OVERRIDE;
   virtual void ShowCreatedWidget(int route_id,
-                                 const gfx::Rect& initial_pos);
-  virtual void ShowCreatedFullscreenWidget(int route_id);
-  virtual void ShowContextMenu(const ContextMenuParams& params) {}
+                                 const gfx::Rect& initial_pos) OVERRIDE;
+  virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
+  virtual void ShowContextMenu(const ContextMenuParams& params) OVERRIDE {}
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
                              double item_font_size,
                              int selected_item,
                              const std::vector<WebMenuItem>& items,
-                             bool right_aligned) {}
+                             bool right_aligned) OVERRIDE {}
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask allowed_operations,
                              const SkBitmap& image,
-                             const gfx::Point& image_offset) {}
-  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) {}
-  virtual void GotFocus() {}
-  virtual void TakeFocus(bool reverse) {}
-  virtual void LostCapture() {}
-  virtual void Activate() {}
-  virtual void Deactivate() {}
+                             const gfx::Point& image_offset) OVERRIDE {}
+  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE {}
+  virtual void GotFocus() OVERRIDE {}
+  virtual void TakeFocus(bool reverse) OVERRIDE {}
+  virtual void LostCapture() OVERRIDE {}
+  virtual void Activate() OVERRIDE {}
+  virtual void Deactivate() OVERRIDE {}
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut);
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
-  virtual void HandleMouseMove() {}
-  virtual void HandleMouseDown() {}
-  virtual void HandleMouseLeave() {}
-  virtual void HandleMouseUp() {}
-  virtual void HandleMouseActivate() {}
-  virtual void UpdatePreferredSize(const gfx::Size& new_size) {}
+                                      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE {}
+  virtual void HandleMouseMove() OVERRIDE {}
+  virtual void HandleMouseDown() OVERRIDE {}
+  virtual void HandleMouseLeave() OVERRIDE {}
+  virtual void HandleMouseUp() OVERRIDE {}
+  virtual void HandleMouseActivate() OVERRIDE {}
+  virtual void UpdatePreferredSize(const gfx::Size& new_size) OVERRIDE {}
 
   // NotificationObserver
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Overridden from JavaScriptAppModalDialogDelegate:
   virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
                                   bool success,
-                                  const std::wstring& prompt);
-  virtual void SetSuppressMessageBoxes(bool suppress_message_boxes) {}
-  virtual gfx::NativeWindow GetMessageBoxRootWindow();
-  virtual TabContents* AsTabContents();
-  virtual ExtensionHost* AsExtensionHost();
+                                  const std::wstring& prompt) OVERRIDE;
+  virtual void SetSuppressMessageBoxes(bool suppress_message_boxes) OVERRIDE {}
+  virtual gfx::NativeWindow GetMessageBoxRootWindow() OVERRIDE;
+  virtual TabContents* AsTabContents() OVERRIDE;
+  virtual ExtensionHost* AsExtensionHost() OVERRIDE;
 
   virtual void UpdateInspectorSetting(const std::string& key,
-                                      const std::string& value);
-  virtual void ClearInspectorSettings();
+                                      const std::string& value) OVERRIDE;
+  virtual void ClearInspectorSettings() OVERRIDE;
 
-  virtual void OnJSOutOfMemory();
   virtual void RendererUnresponsive(RenderViewHost* render_view_host,
-                                    bool is_during_unload);
+                                    bool is_during_unload) OVERRIDE;
+
+  void OnJSOutOfMemory();
 
  protected:
   PrerenderContents(PrerenderManager* prerender_manager, Profile* profile,
@@ -202,7 +208,7 @@ class PrerenderContents : public RenderViewHostDelegate,
                     const GURL& referrer);
 
   // from RenderViewHostDelegate.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   const GURL& prerender_url() const { return prerender_url_; }
 
@@ -287,6 +293,6 @@ class PrerenderContents : public RenderViewHostDelegate,
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };
 
-}  // prerender
+}  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_CONTENTS_H_

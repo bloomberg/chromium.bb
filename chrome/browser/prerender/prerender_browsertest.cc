@@ -72,7 +72,7 @@ class TestPrerenderContents : public PrerenderContents {
     MessageLoopForUI::current()->Quit();
   }
 
-  virtual void DidStopLoading() {
+  virtual void DidStopLoading() OVERRIDE {
     PrerenderContents::DidStopLoading();
     ++number_of_loads_;
     if (expected_final_status_ == FINAL_STATUS_USED &&
@@ -110,7 +110,7 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
 
   virtual PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
-      const std::vector<GURL>& alias_urls, const GURL& referrer) {
+      const std::vector<GURL>& alias_urls, const GURL& referrer) OVERRIDE {
     CHECK(!expected_final_status_queue_.empty()) <<
           "Creating prerender contents for " << url.path() <<
           " with no expected final status";
@@ -135,12 +135,12 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
 class PrerenderBrowserTest : public InProcessBrowserTest {
  public:
   PrerenderBrowserTest()
-      : prc_factory_(NULL),
+      : prerender_contents_factory_(NULL),
         use_https_src_server_(false) {
     EnableDOMAutomation();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(switches::kPrerender,
                                     switches::kPrerenderSwitchValueEnabled);
 #if defined(OS_MACOSX)
@@ -245,11 +245,12 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // stopped loading or was cancelled.
     ASSERT_TRUE(prerender_manager());
     prerender_manager()->rate_limit_enabled_ = false;
-    ASSERT_TRUE(prc_factory_ == NULL);
-    prc_factory_ =
+    ASSERT_TRUE(prerender_contents_factory_ == NULL);
+    prerender_contents_factory_ =
         new WaitForLoadPrerenderContentsFactory(total_navigations,
                                                 expected_final_status_queue);
-    prerender_manager()->SetPrerenderContentsFactory(prc_factory_);
+    prerender_manager()->SetPrerenderContentsFactory(
+        prerender_contents_factory_);
     FinalStatus expected_final_status = expected_final_status_queue.front();
 
     // ui_test_utils::NavigateToURL uses its own observer and message loop.
@@ -292,7 +293,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     return prerender_manager;
   }
 
-  WaitForLoadPrerenderContentsFactory* prc_factory_;
+  WaitForLoadPrerenderContentsFactory* prerender_contents_factory_;
   GURL dest_url_;
   bool use_https_src_server_;
 };

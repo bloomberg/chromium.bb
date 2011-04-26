@@ -36,23 +36,23 @@
 
 namespace prerender {
 
-void AddChildRoutePair(ResourceDispatcherHost* rdh,
+void AddChildRoutePair(ResourceDispatcherHost* resource_dispatcher_host,
                        int child_id, int route_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  rdh->AddPrerenderChildRoutePair(child_id, route_id);
+  resource_dispatcher_host->AddPrerenderChildRoutePair(child_id, route_id);
 }
 
-void RemoveChildRoutePair(ResourceDispatcherHost* rdh,
+void RemoveChildRoutePair(ResourceDispatcherHost* resource_dispatcher_host,
                           int child_id, int route_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  rdh->RemovePrerenderChildRoutePair(child_id, route_id);
+  resource_dispatcher_host->RemovePrerenderChildRoutePair(child_id, route_id);
 }
 
 class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
   virtual PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
-      const std::vector<GURL>& alias_urls, const GURL& referrer) {
+      const std::vector<GURL>& alias_urls, const GURL& referrer) OVERRIDE {
     return new PrerenderContents(prerender_manager, profile, url, alias_urls,
                                  referrer);
   }
@@ -121,10 +121,11 @@ void PrerenderContents::StartPrerendering(
   // RenderViewHost. This must be done before the Navigate message to catch all
   // resource requests, but as it is on the same thread as the Navigate message
   // (IO) there is no race condition.
-  ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          NewRunnableFunction(&AddChildRoutePair, rdh,
-                                              process_id, view_id));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(&AddChildRoutePair,
+                          g_browser_process->resource_dispatcher_host(),
+                          process_id, view_id));
 
 
   // Close ourselves when the application is shutting down.
@@ -223,10 +224,11 @@ PrerenderContents::~PrerenderContents() {
       Source<std::pair<int, int> >(&process_view_pair),
       NotificationService::NoDetails());
 
-  ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          NewRunnableFunction(&RemoveChildRoutePair, rdh,
-                                              process_id, view_id));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(&RemoveChildRoutePair,
+                          g_browser_process->resource_dispatcher_host(),
+                          process_id, view_id));
   render_view_host_->Shutdown();  // deletes render_view_host
 }
 
@@ -264,9 +266,8 @@ void PrerenderContents::DidNavigate(
     return;
 
   // Store the navigation params.
-  ViewHostMsg_FrameNavigate_Params* p = new ViewHostMsg_FrameNavigate_Params();
-  *p = params;
-  navigate_params_.reset(p);
+  navigate_params_.reset(new ViewHostMsg_FrameNavigate_Params());
+  *navigate_params_ = params;
 
   if (!AddAliasURL(params.url)) {
     Destroy(FINAL_STATUS_HTTPS);
@@ -344,9 +345,9 @@ void PrerenderContents::Observe(NotificationType type,
       // though the download never actually started thanks to the
       // DownloadRequestLimiter.
       DCHECK(NotificationService::NoDetails() == details);
-      RenderViewHost* rvh = Source<RenderViewHost>(source).ptr();
-      CHECK(rvh != NULL);
-      if (rvh->delegate() == this) {
+      RenderViewHost* render_view_host = Source<RenderViewHost>(source).ptr();
+      CHECK(render_view_host != NULL);
+      if (render_view_host->delegate() == this) {
         Destroy(FINAL_STATUS_DOWNLOAD);
         return;
       }
@@ -464,6 +465,7 @@ bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MaybeCancelPrerenderForHTML5Media,
                         OnMaybeCancelPrerenderForHTML5Media)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -492,10 +494,10 @@ void PrerenderContents::OnUpdateFaviconURL(
     int32 page_id,
     const std::vector<FaviconURL>& urls) {
   LOG(INFO) << "PrerenderContents::OnUpdateFaviconURL" << icon_url_;
-  for (std::vector<FaviconURL>::const_iterator i = urls.begin();
-       i != urls.end(); ++i) {
-    if (i->icon_type == FaviconURL::FAVICON) {
-      icon_url_ = i->icon_url;
+  for (std::vector<FaviconURL>::const_iterator it = urls.begin();
+       it != urls.end(); ++it) {
+    if (it->icon_type == FaviconURL::FAVICON) {
+      icon_url_ = it->icon_url;
       LOG(INFO) << icon_url_;
       return;
     }
