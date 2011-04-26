@@ -72,6 +72,19 @@ class TestPrerenderContents : public PrerenderContents {
     MessageLoopForUI::current()->Quit();
   }
 
+  virtual void RenderViewGone(RenderViewHost* render_view_host,
+                              base::TerminationStatus status,
+                              int error_code) OVERRIDE {
+    // On quit, it's possible to end up here when render processes are closed
+    // before the PrerenderManager is destroyed.  As a result, it's possible to
+    // get either FINAL_STATUS_APP_TERMINATING or FINAL_STATUS_RENDERER_CRASHED
+    // on quit.
+    if (expected_final_status_ == FINAL_STATUS_APP_TERMINATING)
+      expected_final_status_ = FINAL_STATUS_RENDERER_CRASHED;
+
+    PrerenderContents::RenderViewGone(render_view_host, status, error_code);
+  }
+
   virtual void DidStopLoading() OVERRIDE {
     PrerenderContents::DidStopLoading();
     ++number_of_loads_;
@@ -568,10 +581,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 }
 
 // Checks that we don't prerender in an infinite loop.
-// Disabled, http://crbug.com/80324.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderInfiniteLoop) {
-  const char* const kHtmlFileA = "prerender_infinite_a.html";
-  const char* const kHtmlFileB = "prerender_infinite_b.html";
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
+  const char* const kHtmlFileA = "files/prerender/prerender_infinite_a.html";
+  const char* const kHtmlFileB = "files/prerender/prerender_infinite_b.html";
 
   std::deque<FinalStatus> expected_final_status_queue;
   expected_final_status_queue.push_back(FINAL_STATUS_USED);
