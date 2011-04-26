@@ -201,9 +201,11 @@ class Bubble
   // Whether to fade away when the bubble closes.
   bool fade_away_on_close_;
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
   // Some callers want the bubble to be a child control instead of a window.
   views::Widget::CreateParams::Type type_;
+#endif
+#if defined(OS_CHROMEOS)
   // Should we set a property telling the window manager to show this window
   // onscreen even when the screen is locked?
   bool show_while_screen_is_locked_;

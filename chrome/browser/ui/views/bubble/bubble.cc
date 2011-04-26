@@ -129,8 +129,10 @@ Bubble::Bubble()
       delegate_(NULL),
       show_status_(kOpen),
       fade_away_on_close_(false),
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
       type_(views::Widget::CreateParams::TYPE_WINDOW),
+#endif
+#if defined(OS_CHROMEOS)
       show_while_screen_is_locked_(false),
 #endif
       arrow_location_(BubbleBorder::NONE),
