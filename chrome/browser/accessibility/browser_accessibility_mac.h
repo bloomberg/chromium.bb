@@ -22,11 +22,6 @@ class BrowserAccessibilityMac : public BrowserAccessibility {
   virtual void NativeReleaseReference();
 
   // Overrides from BrowserAccessibility.
-  // Used to know when to update the cocoa children.
-  virtual void ReplaceChild(
-      BrowserAccessibility* old_acc,
-      BrowserAccessibility* new_acc);
-
   // The BrowserAccessibilityCocoa associated with us.
   BrowserAccessibilityCocoa* native_view() const {
     return browser_accessibility_cocoa_;

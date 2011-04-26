@@ -48,11 +48,6 @@ class BrowserAccessibility {
   // have been reset with new values from the renderer process.
   virtual void Initialize();
 
-  // Replace a child object. Used when updating the accessibility tree.
-  virtual void ReplaceChild(
-      BrowserAccessibility* old_acc,
-      BrowserAccessibility* new_acc);
-
   // Initialize this object, reading attributes from |src|. Does not
   // recurse into children of |src| and build the whole subtree.
   void Initialize(BrowserAccessibilityManager* manager,

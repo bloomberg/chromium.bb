@@ -282,6 +282,9 @@ BrowserAccessibility* BrowserAccessibilityManager::UpdateNode(
     return current;
   }
 
+  BrowserAccessibility* current_parent = current->parent();
+  int current_index_in_parent = current->index_in_parent();
+
   // Detach all of the nodes in the old tree and get a single flat vector
   // of all node pointers.
   std::vector<BrowserAccessibility*> old_tree_nodes;
@@ -289,7 +292,8 @@ BrowserAccessibility* BrowserAccessibilityManager::UpdateNode(
 
   // Build a new tree, reusing old nodes if possible. Each node that's
   // reused will have its reference count incremented by one.
-  current = CreateAccessibilityTree(NULL, src, -1);
+  current =
+      CreateAccessibilityTree(current_parent, src, current_index_in_parent);
 
   // Decrement the reference count of all nodes in the old tree, which will
   // delete any nodes no longer needed.

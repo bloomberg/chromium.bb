@@ -47,13 +47,6 @@ void BrowserAccessibilityMac::NativeReleaseReference() {
   }
 }
 
-void BrowserAccessibilityMac::ReplaceChild(
-      BrowserAccessibility* old_acc,
-      BrowserAccessibility* new_acc) {
-  BrowserAccessibility::ReplaceChild(old_acc, new_acc);
-  [browser_accessibility_cocoa_ childrenChanged];
-}
-
 BrowserAccessibilityCocoa* BrowserAccessibility::toBrowserAccessibilityCocoa() {
   return static_cast<BrowserAccessibilityMac*>(this)->
       native_view();
