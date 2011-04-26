@@ -1571,7 +1571,7 @@ class EmergeQueue(object):
     # chromeos (merge) -> eselect (nomerge) -> python (merge)
     if self._deps_map[target]["action"] == "nomerge":
       self._Finish(target)
-    else:
+    elif target not in self._jobs:
       # Kick off the build if it's marked to be built.
       self._jobs[target] = None
       self._emerge_queue.put(target)
