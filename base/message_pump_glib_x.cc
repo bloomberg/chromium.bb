@@ -79,15 +79,6 @@ bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
         Quit();
       } else if (status == MessagePumpGlibXDispatcher::EVENT_IGNORED) {
         DLOG(WARNING) << "Event (" << xev.type << ") not handled.";
-
-        // TODO(sad): It is necessary to put back the event so that the default
-        // GDK events handler can take care of it. Without this, it is
-        // impossible to use the omnibox at the moment. However, this will
-        // eventually be removed once the omnibox code is updated for touchui.
-        XPutBackEvent(display, &xev);
-        if (gdksource_)
-          gdksource_->source_funcs->dispatch = gdkdispatcher_;
-        g_main_context_iteration(context, FALSE);
       }
 
 #if defined(HAVE_XINPUT2)
