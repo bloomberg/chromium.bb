@@ -65,8 +65,9 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
 };
 
 // Tests several basic install cases.
+// TODO(asargent): disabled - see crbug.com/80606 for details.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       Install) {
+                       DISABLED_Install) {
   // Test cases where the user accepts the install confirmation dialog.
   ASSERT_TRUE(RunInstallTest("accepted.html"));
 
@@ -78,8 +79,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   ASSERT_TRUE(RunInstallTest("no_user_gesture.html"));
 }
 
+// TODO(asargent): disabled - see crbug.com/80606 for details.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       IncorrectManifest1) {
+                       DISABLED_IncorrectManifest1) {
   ui_test_utils::WindowedNotificationObserver observer(
       NotificationType::EXTENSION_INSTALL_ERROR,
       NotificationService::AllSources());
@@ -87,8 +89,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   observer.Wait();
 }
 
+// TODO(asargent): disabled - see crbug.com/80606 for details.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       IncorrectManifest2) {
+                       DISABLED_IncorrectManifest2) {
   ui_test_utils::WindowedNotificationObserver observer(
       NotificationType::EXTENSION_INSTALL_ERROR,
       NotificationService::AllSources());
