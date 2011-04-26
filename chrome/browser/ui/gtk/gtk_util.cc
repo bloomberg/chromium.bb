@@ -65,6 +65,10 @@ static const char* kIconName = "chromium-browser";
 
 const char kBoldLabelMarkup[] = "<span weight='bold'>%s</span>";
 
+// Max size of each component of the button tooltips.
+const size_t kMaxTooltipTitleLength = 100;
+const size_t kMaxTooltipURLLength = 400;
+
 // Callback used in RemoveAllChildren.
 void RemoveWidget(GtkWidget* widget, gpointer container) {
   gtk_container_remove(GTK_CONTAINER(container), widget);
@@ -768,6 +772,35 @@ gfx::Point ClientPoint(GtkWidget* widget) {
 GdkPoint MakeBidiGdkPoint(gint x, gint y, gint width, bool ltr) {
   GdkPoint point = {ltr ? x : width - x, y};
   return point;
+}
+
+std::string BuildTooltipTitleFor(string16 title, GURL url) {
+  const std::string& url_str = url.possibly_invalid_spec();
+  const std::string& title_str = UTF16ToUTF8(title);
+
+  std::string truncated_url = UTF16ToUTF8(l10n_util::TruncateString(
+      UTF8ToUTF16(url_str), kMaxTooltipURLLength));
+  gchar* escaped_url_cstr = g_markup_escape_text(truncated_url.c_str(),
+                                                 truncated_url.size());
+  std::string escaped_url(escaped_url_cstr);
+  g_free(escaped_url_cstr);
+
+  std::string tooltip;
+  if (url_str == title_str || title.empty()) {
+    return escaped_url;
+  } else {
+    std::string truncated_title = UTF16ToUTF8(l10n_util::TruncateString(
+        title, kMaxTooltipTitleLength));
+    gchar* escaped_title_cstr = g_markup_escape_text(truncated_title.c_str(),
+                                                     truncated_title.size());
+    std::string escaped_title(escaped_title_cstr);
+    g_free(escaped_title_cstr);
+
+    if (!escaped_url.empty())
+      return std::string("<b>") + escaped_title + "</b>\n" + escaped_url;
+    else
+      return std::string("<b>") + escaped_title + "</b>";
+  }
 }
 
 void DrawTextEntryBackground(GtkWidget* offscreen_entry,

@@ -8,12 +8,13 @@
 #include <map>
 
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/ui/gtk/global_history_menu.h"
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class Browser;
-class BrowserWindowGtk;
 struct GlobalMenuBarCommand;
 
 typedef struct _GtkAccelGroup GtkAccelGroup;
@@ -30,18 +31,31 @@ typedef struct _GtkWidget GtkWidget;
 class GlobalMenuBar : public CommandUpdater::CommandObserver,
                       public NotificationObserver {
  public:
-  GlobalMenuBar(Browser* browser, BrowserWindowGtk* window);
+  static const int TAG_NORMAL = 0;
+  static const int TAG_MOST_VISITED = 1;
+  static const int TAG_RECENTLY_CLOSED = 2;
+  static const int TAG_MOST_VISITED_HEADER = 3;
+  static const int TAG_RECENTLY_CLOSED_HEADER = 4;
+
+  explicit GlobalMenuBar(Browser* browser);
   virtual ~GlobalMenuBar();
 
-  GtkWidget* widget() { return menu_bar_; }
+  GtkWidget* widget() { return menu_bar_.get(); }
 
  private:
-  typedef std::map<int, GtkWidget*> IDMenuItemMap;
+  typedef std::map<int, GtkWidget*> CommandIDMenuItemMap;
 
   // Helper function that builds the data.
-  void BuildGtkMenuFrom(int menu_str_id,
-                        std::map<int, GtkWidget*>* id_to_menu_item,
-                        GlobalMenuBarCommand* commands);
+  GtkWidget* BuildGtkMenuFrom(int menu_str_id,
+                              std::map<int, GtkWidget*>* id_to_menu_item,
+                              GlobalMenuBarCommand* commands);
+
+  // Builds an individual menu item.
+  GtkWidget* BuildMenuItem(int string_id,
+                           int command_id,
+                           int tag_id,
+                           std::map<int, GtkWidget*>* id_to_menu_item,
+                           GtkWidget* menu_to_add_to);
 
   // CommandUpdater::CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled);
@@ -54,12 +68,16 @@ class GlobalMenuBar : public CommandUpdater::CommandObserver,
   CHROMEGTK_CALLBACK_0(GlobalMenuBar, void, OnItemActivated);
 
   Browser* browser_;
-  BrowserWindowGtk* browser_window_;
+  Profile* profile_;
 
   NotificationRegistrar registrar_;
 
   // Our menu bar widget.
-  GtkWidget* menu_bar_;
+  OwnedWidgetGtk menu_bar_;
+
+  // Listens to the TabRestoreService and the HistoryService and keeps the
+  // history menu fresh.
+  GlobalHistoryMenu history_menu_;
 
   // For some menu items, we want to show the accelerator, but not actually
   // explicitly handle it. To this end we connect those menu items' accelerators
@@ -67,8 +85,8 @@ class GlobalMenuBar : public CommandUpdater::CommandObserver,
   GtkAccelGroup* dummy_accel_group_;
 
   // A mapping from command ids to GtkMenuItem objects. We use this to update
-  // the enable state since we are a .
-  IDMenuItemMap id_to_menu_item_;
+  // the command enable state.
+  CommandIDMenuItemMap id_to_menu_item_;
 
   // gtk_check_menu_item_set_active() will call the "activate" signal. We need
   // to block this activation while we change the checked state.

@@ -1594,7 +1594,7 @@ void BrowserWindowGtk::InitWidgets() {
   // GtkMenuBar it sees into the global menu bar. (It doesn't seem to check the
   // visibility of the GtkMenuBar, so we can just permanently hide it.)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGlobalGnomeMenu)) {
-    global_menu_bar_.reset(new GlobalMenuBar(browser_.get(), this));
+    global_menu_bar_.reset(new GlobalMenuBar(browser_.get()));
     gtk_container_add(GTK_CONTAINER(window_vbox_), global_menu_bar_->widget());
   }
 

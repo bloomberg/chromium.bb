@@ -1,0 +1,111 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_GTK_GLOBAL_HISTORY_MENU_H_
+#define CHROME_BROWSER_UI_GTK_GLOBAL_HISTORY_MENU_H_
+
+#include <map>
+
+#include "content/browser/cancelable_request.h"
+#include "chrome/browser/favicon_service.h"
+#include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_observer.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
+#include "ui/base/gtk/gtk_signal.h"
+
+class Browser;
+typedef struct _GdkPixbuf GdkPixbuf;
+
+// Controls the History menu.
+class GlobalHistoryMenu : public NotificationObserver,
+                          public TabRestoreServiceObserver {
+ public:
+  explicit GlobalHistoryMenu(Browser* browser);
+  virtual ~GlobalHistoryMenu();
+
+  // Takes the history menu we need to modify based on the tab restore/most
+  // visited state.
+  void Init(GtkWidget* history_menu);
+
+ private:
+  class HistoryItem;
+  struct ClearMenuClosure;
+  struct GetIndexClosure;
+
+  typedef std::map<GtkWidget*, HistoryItem*> MenuItemToHistoryMap;
+
+  // Returns the currently existing HistoryItem associated with
+  // |menu_item|. Can return NULL.
+  HistoryItem* HistoryItemForMenuItem(GtkWidget* menu_item);
+
+  // Returns whether there's a valid HistoryItem representation of |entry|.
+  bool HasValidHistoryItemForTab(const TabRestoreService::Tab& entry);
+
+  // Creates a HistoryItem from the data in |entry|.
+  HistoryItem* HistoryItemForTab(const TabRestoreService::Tab& entry);
+
+  // Creates a menu item form |item| and inserts it in |menu| at |index|.
+  GtkWidget* AddHistoryItemToMenu(HistoryItem* item,
+                                  GtkWidget* menu,
+                                  int tag,
+                                  int index);
+
+  // Requests a FavIcon; we'll receive the data in the future through the
+  // GotFaviconData() callback.
+  void GetFaviconForHistoryItem(HistoryItem* item);
+
+  // Callback for GetFaviconForHistoryItem().
+  void GotFaviconData(FaviconService::Handle handle,
+                      history::FaviconData favicon);
+
+  // Cancels an outstanding favicon request.
+  void CancelFaviconRequest(HistoryItem* item);
+
+  // Find the first index of the item in |menu| with the tag |tag_id|.
+  int GetIndexOfMenuItemWithTag(GtkWidget* menu, int tag_id);
+
+  // This will remove all menu items in |menu| with |tag| as their tag. This
+  // clears state about HistoryItems* that we keep to prevent that data from
+  // going stale. That's why this method recurses into its child menus.
+  void ClearMenuSection(GtkWidget* menu, int tag);
+
+  // Implementation detail of GetIndexOfMenuItemWithTag.
+  static void GetIndexCallback(GtkWidget* widget, GetIndexClosure* closure);
+
+  // Implementation detail of ClearMenuSection.
+  static void ClearMenuCallback(GtkWidget* widget, ClearMenuClosure* closure);
+
+  // NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  // For TabRestoreServiceObserver
+  virtual void TabRestoreServiceChanged(TabRestoreService* service);
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
+
+  CHROMEGTK_CALLBACK_0(GlobalHistoryMenu, void, OnRecentlyClosedItemActivated);
+
+  Browser* browser_;
+  Profile* profile_;
+
+  NotificationRegistrar registrar_;
+
+  GdkPixbuf* default_favicon_;
+
+  // The history menu. We keep this since we need to rewrite parts of it
+  // periodically.
+  GtkWidget* history_menu_;
+
+  TabRestoreService* tab_restore_service_;  // weak
+
+  // A mapping from GtkMenuItems to HistoryItems that maintain data.
+  MenuItemToHistoryMap menu_item_history_map_;
+
+  // Maps HistoryItems to favicon request Handles.
+  CancelableRequestConsumerTSimple<HistoryItem*> favicon_consumer_;
+};
+
+#endif  // CHROME_BROWSER_UI_GTK_GLOBAL_HISTORY_MENU_H_

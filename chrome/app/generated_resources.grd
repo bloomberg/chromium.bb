@@ -9373,7 +9373,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
              additional ones with different formatting. -->
 
         <!-- Menubar Menu Titles -->
-        <!-- NOTE: Some of these exist in context menus with Title Case support, but we use different IDs in case we need slightly different strings in some language due to the different context. -->
         <message name="IDS_FILE_MENU_LINUX" desc="The menu title of the Linux file menu.">
           &amp;File
         </message>
@@ -9430,6 +9429,33 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Zoom &amp;Out
         </message>
 
+        <!-- History menu -->
+        <message name="IDS_HISTORY_HOME_LINUX" desc="The Linux menu item for home in the history menu.">
+          Home
+        </message>
+        <message name="IDS_HISTORY_BACK_LINUX" desc="The Linux menu item for back in the history menu.">
+          &amp;Back
+        </message>
+        <message name="IDS_HISTORY_FORWARD_LINUX" desc="The Linux menu item for forward in the history menu.">
+          &amp;Forward
+        </message>
+        <message name="IDS_HISTORY_VISITED_LINUX" desc="The Linux menu item for the header of most visited items in the history menu.">
+          Most Visited
+        </message>
+        <message name="IDS_HISTORY_CLOSED_LINUX" desc="The Linux menu item for the header of recently closed items in the history menu.">
+          Recently Closed
+        </message>
+        <message name="IDS_HISTORY_CLOSED_RESTORE_WINDOW_LINUX" desc="The Linux menu item for restoring all the tabs of a recently closed window.">
+          Restore All Tabs
+        </message>
+
+        <!-- Bookmarks menu -->
+        <message name="IDS_BOOKMARK_CURRENT_PAGE_LINUX" desc="The Linux menu item for bookmarking the current page in the bookmark menu.">
+          Bookmark This Page...
+        </message>
+        <message name="IDS_BOOKMARK_ALL_TABS_LINUX" desc="The Linux menu item for bookmarking all tabs in the current window.">
+          Bookmark All Tabs...
+        </message>
       </if>
 
     <!-- File chooser dialog default titles (only used on Linux) -->

@@ -34,10 +34,6 @@ const int kBitsInAByte = 8;
 // Maximum number of characters on a bookmark button.
 const size_t kMaxCharsOnAButton = 15;
 
-// Max size of each component of the button tooltips.
-const size_t kMaxTooltipTitleLength = 100;
-const size_t kMaxTooltipURLLength = 400;
-
 // Padding between the chrome button highlight border and the contents (favicon,
 // text).
 const int kButtonPaddingTop = 0;
@@ -245,32 +241,7 @@ std::string BuildTooltipFor(const BookmarkNode* node) {
   if (node->is_folder())
     return std::string();
 
-  const std::string& url = node->GetURL().possibly_invalid_spec();
-  const std::string& title = UTF16ToUTF8(node->GetTitle());
-
-  std::string truncated_url = UTF16ToUTF8(l10n_util::TruncateString(
-      UTF8ToUTF16(url), kMaxTooltipURLLength));
-  gchar* escaped_url_cstr = g_markup_escape_text(truncated_url.c_str(),
-                                                 truncated_url.size());
-  std::string escaped_url(escaped_url_cstr);
-  g_free(escaped_url_cstr);
-
-  std::string tooltip;
-  if (url == title || title.empty()) {
-    return escaped_url;
-  } else {
-    std::string truncated_title = UTF16ToUTF8(l10n_util::TruncateString(
-        node->GetTitle(), kMaxTooltipTitleLength));
-    gchar* escaped_title_cstr = g_markup_escape_text(truncated_title.c_str(),
-                                                     truncated_title.size());
-    std::string escaped_title(escaped_title_cstr);
-    g_free(escaped_title_cstr);
-
-    if (!escaped_url.empty())
-      return std::string("<b>") + escaped_title + "</b>\n" + escaped_url;
-    else
-      return std::string("<b>") + escaped_title + "</b>";
-  }
+  return gtk_util::BuildTooltipTitleFor(node->GetTitle(), node->GetURL());
 }
 
 const BookmarkNode* BookmarkNodeForWidget(GtkWidget* widget) {

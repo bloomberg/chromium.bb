@@ -238,6 +238,10 @@ gfx::Point ClientPoint(GtkWidget* widget);
 // shapes.
 GdkPoint MakeBidiGdkPoint(gint x, gint y, gint width, bool ltr);
 
+// Creates a tooltip string to be passed to gtk_widget_set_tooltip_markup from
+// the title and URL.
+std::string BuildTooltipTitleFor(string16 title, GURL url);
+
 // Draws a GTK text entry with the style parameters of GtkEntry
 // |offscreen_entry| onto |widget_to_draw_on| in the rectangle |rec|. Drawing
 // is only done in the clip rectangle |dirty_rec|.
