@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_TAB_CLOSEABLE_STATE_WATCHER_H_
 #define CHROME_BROWSER_TAB_CLOSEABLE_STATE_WATCHER_H_
 #pragma once
+
+#include <vector>
 
 #include "base/basictypes.h"
 
@@ -33,6 +35,15 @@ class TabCloseableStateWatcher {
   //   should be enabled
   // - determining if accelerator keys to close tab should be processed
   virtual bool CanCloseTab(const Browser* browser) const;
+
+  // Called from Browser::CanCloseContents which overrides
+  // TabStripModelDelegate::CanCloseContents, and is called in
+  // TabStripModel::InternalCloseTabs.
+  // Returns true if all contents in entire array of |indices| can be closed.
+  // Returns false if one or more contents can't be closed.
+  // Indices of contents that cannot be closed will be removed from |indices|.
+  virtual bool CanCloseTabs(const Browser* browser,
+                            std::vector<int>* indices) const;
 
   // Called from Browser::IsClosingPermitted which is in turn called from
   // Browser::ShouldCloseWindow to check if |browser| can be closed.

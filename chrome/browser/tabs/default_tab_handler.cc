@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,8 +95,8 @@ bool DefaultTabHandler::RunUnloadListenerBeforeClosing(
   return delegate_->AsBrowser()->RunUnloadListenerBeforeClosing(contents);
 }
 
-bool DefaultTabHandler::CanCloseContentsAt(int index) {
-  return delegate_->AsBrowser()->CanCloseContentsAt(index);
+bool DefaultTabHandler::CanCloseContents(std::vector<int>* indices) {
+  return delegate_->AsBrowser()->CanCloseContents(indices);
 }
 
 bool DefaultTabHandler::CanBookmarkAllTabs() const {

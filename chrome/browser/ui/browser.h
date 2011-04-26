@@ -694,7 +694,7 @@ class Browser : public TabHandlerDelegate,
   virtual void CloseFrameAfterDragSession();
   virtual void CreateHistoricalTab(TabContentsWrapper* contents);
   virtual bool RunUnloadListenerBeforeClosing(TabContentsWrapper* contents);
-  virtual bool CanCloseContentsAt(int index);
+  virtual bool CanCloseContents(std::vector<int>* indices);
   virtual bool CanBookmarkAllTabs() const;
   virtual void BookmarkAllTabs();
   virtual bool CanCloseTab() const;

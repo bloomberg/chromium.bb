@@ -1100,12 +1100,15 @@ bool TabStripModel::IsNewTabAtEndOfTabStrip(
       contents->controller().entry_count() == 1;
 }
 
-bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
+bool TabStripModel::InternalCloseTabs(const std::vector<int>& in_indices,
                                       uint32 close_types) {
-  if (indices.empty())
+  if (in_indices.empty())
     return true;
 
-  bool retval = true;
+  std::vector<int> indices(in_indices);
+  bool retval = delegate_->CanCloseContents(&indices);
+  if (indices.empty())
+    return retval;
 
   // Map the indices to TabContents, that way if deleting a tab deletes other
   // tabs we're ok. Crashes seem to indicate during tab deletion other tabs are
@@ -1122,11 +1125,6 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
     // closing.
     std::map<RenderProcessHost*, size_t> processes;
     for (size_t i = 0; i < indices.size(); ++i) {
-      if (!delegate_->CanCloseContentsAt(indices[i])) {
-        retval = false;
-        continue;
-      }
-
       TabContentsWrapper* detached_contents = GetContentsAt(indices[i]);
       RenderProcessHost* process =
           detached_contents->tab_contents()->GetRenderProcessHost();
@@ -1156,11 +1154,6 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
       continue;
 
     detached_contents->tab_contents()->OnCloseStarted();
-
-    if (!delegate_->CanCloseContentsAt(index)) {
-      retval = false;
-      continue;
-    }
 
     // Update the explicitly closed state. If the unload handlers cancel the
     // close the state is reset in Browser. We don't update the explicitly

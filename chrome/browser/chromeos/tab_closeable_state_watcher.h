@@ -48,6 +48,8 @@ class TabCloseableStateWatcher : public ::TabCloseableStateWatcher,
 
   // TabCloseableStateWatcher implementation:
   virtual bool CanCloseTab(const Browser* browser) const;
+  virtual bool CanCloseTabs(const Browser* browser,
+                            std::vector<int>* indices) const;
   virtual bool CanCloseBrowser(Browser* browser);
   virtual void OnWindowCloseCanceled(Browser* browser);
 

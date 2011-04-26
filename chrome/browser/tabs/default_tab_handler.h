@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_TABS_DEFAULT_TAB_HANDLER_H_
 #pragma once
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tabs/tab_handler.h"
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"
@@ -45,7 +47,7 @@ class DefaultTabHandler : public TabHandler,
   virtual void CloseFrameAfterDragSession();
   virtual void CreateHistoricalTab(TabContentsWrapper* contents);
   virtual bool RunUnloadListenerBeforeClosing(TabContentsWrapper* contents);
-  virtual bool CanCloseContentsAt(int index);
+  virtual bool CanCloseContents(std::vector<int>* indices);
   virtual bool CanBookmarkAllTabs() const;
   virtual void BookmarkAllTabs();
   virtual bool CanCloseTab() const;

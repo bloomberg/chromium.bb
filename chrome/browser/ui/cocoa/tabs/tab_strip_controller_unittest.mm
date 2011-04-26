@@ -4,6 +4,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <vector>
+
 #import "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
@@ -78,7 +80,7 @@ class TestTabStripDelegate : public TabStripModelDelegate {
   }
   virtual void RestoreTab() {}
 
-  virtual bool CanCloseContentsAt(int index) { return true; }
+  virtual bool CanCloseContents(std::vector<int>* indices) { return true; }
 
   virtual bool CanBookmarkAllTabs() const { return false; }
 

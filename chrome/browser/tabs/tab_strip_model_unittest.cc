@@ -120,7 +120,11 @@ class TabStripDummyDelegate : public TabStripModelDelegate {
   }
   virtual bool CanRestoreTab() { return false; }
   virtual void RestoreTab() {}
-  virtual bool CanCloseContentsAt(int index) { return can_close_ ; }
+  virtual bool CanCloseContents(std::vector<int>* indices) {
+    if (!can_close_)
+      indices->clear();
+    return can_close_;
+  }
   virtual bool CanBookmarkAllTabs() const { return false; }
   virtual void BookmarkAllTabs() {}
   virtual bool CanCloseTab() const { return true; }

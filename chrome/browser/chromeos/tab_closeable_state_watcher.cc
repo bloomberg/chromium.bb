@@ -85,6 +85,48 @@ bool TabCloseableStateWatcher::CanCloseTab(const Browser* browser) const {
       (can_close_tab_ || waiting_for_browser_);
 }
 
+bool TabCloseableStateWatcher::CanCloseTabs(const Browser* browser,
+    std::vector<int>* indices) const {
+  if (signing_off_ || waiting_for_browser_ || tabstrip_watchers_.size() > 1 ||
+      browser->type() != Browser::TYPE_NORMAL ||
+      (browser->profile()->IsOffTheRecord() && !guest_session_))
+    return true;
+
+  if (!can_close_tab_) {
+    indices->clear();
+    return false;
+  }
+
+  TabStripModel* tabstrip_model = browser->tabstrip_model();
+  // If we're not closing all tabs, there's no restriction.
+  if (static_cast<int>(indices->size()) != tabstrip_model->count())
+    return true;
+
+  // If first tab is NTP, it can't be closed.
+  // In TabStripModel::InternalCloseTabs (which calls
+  // Browser::CanCloseContents which in turn calls this method), all
+  // renderer processes of tabs could be terminated before the tabs are actually
+  // closed.
+  // As tabs are being closed, notification TabDetachedAt is called.
+  // When this happens to the last second tab, we would prevent the last NTP
+  // tab from being closed.
+  // If we don't prevent this NTP tab from being closed now, its renderer
+  // process would have been terminated but the tab won't be detached later,
+  // resulting in the "Aw, Snap" page replacing the first NTP.
+  // This is the main purpose of this method CanCloseTabs.
+  for (size_t i = 0; i < indices->size(); ++i) {
+    if ((*indices)[i] == 0) {
+      if (tabstrip_model->GetTabContentsAt(0)->tab_contents()->GetURL() ==
+          GURL(chrome::kChromeUINewTabURL)) {  // First tab is NewTabPage.
+        indices->erase(indices->begin() + i);  // Don't close it.
+        return false;
+      }
+      break;
+    }
+  }
+  return true;
+}
+
 bool TabCloseableStateWatcher::CanCloseBrowser(Browser* browser) {
   BrowserActionType action_type;
   bool can_close = CanCloseBrowserImpl(browser, &action_type);

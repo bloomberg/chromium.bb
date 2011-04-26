@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,8 +97,10 @@ class TabStripModelDelegate {
   // Restores the last closed tab if CanRestoreTab would return true.
   virtual void RestoreTab() = 0;
 
-  // Returns whether some contents can be closed.
-  virtual bool CanCloseContentsAt(int index) = 0;
+  // Returns true if all contents in array of |indices| can be closed.
+  // Returns false if one or more of the contents can't be closed.
+  // Indices of contents that cannot be closed will be removed from |indices|.
+  virtual bool CanCloseContents(std::vector<int>* indices) = 0;
 
   // Returns true if we should allow "bookmark all tabs" in this window; this is
   // true when there is more than one bookmarkable tab open.
