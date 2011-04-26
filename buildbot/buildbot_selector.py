@@ -34,17 +34,30 @@ BOT_ASSIGNMENT = {
     'lucid32-bare-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
     'lucid64-bare-m64-n64-opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
      # pnacl bots.
-    'hardy64-marm-narm-dbg':
+
+    'pnacl-arm-dbg':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-dbg',
-    'hardy64-marm-narm-opt':
+    'hardy64-marm-narm-dbg': # obsolete
+        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-dbg',
+    'pnacl-arm-opt':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-opt',
-    'arm-marm-narm-test-dbg':
+    'hardy64-marm-narm-opt':  # obsolete
+        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-opt',
+    'pnacl-arm-hw-dbg':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-dbg',
-    'arm-marm-narm-test-opt':
+    'arm-marm-narm-test-dbg':  # obsolete
+        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-dbg',
+    'pnacl-arm-hw-opt':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-opt',
-    'lucid64-pnacl1':
+    'arm-marm-narm-test-opt': # obsolete
+        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-opt',
+    'pnacl-x8632':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8632',
-    'lucid64-pnacl2':
+    'lucid64-pnacl1': # obsolete
+        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8632',
+    'pnacl-x8664':
+        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8664',
+    'lucid64-pnacl2': # obsolete
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8664',
     # Pnacl spec2k bots.
     'lucid64-spec-arm':
