@@ -1,0 +1,16 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/views/handle_web_keyboard_event_gtk.h"
+
+#include "content/common/native_web_keyboard_event.h"
+#include "views/widget/widget_gtk.h"
+
+void HandleWebKeyboardEvent(views::Widget* widget,
+                            const NativeWebKeyboardEvent& event) {
+  if (widget && event.os_event && !event.skip_in_browser) {
+    views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
+    static_cast<views::WidgetGtk*>(widget)->HandleKeyboardEvent(views_event);
+  }
+}

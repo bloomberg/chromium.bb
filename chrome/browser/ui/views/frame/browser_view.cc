@@ -101,6 +101,9 @@
 #include "chrome/browser/ui/views/accelerator_table_gtk.h"
 #include "views/window/hit_test.h"
 #include "views/window/window_gtk.h"
+#if !defined(TOUCH_UI)
+#include "chrome/browser/ui/views/handle_web_keyboard_event_gtk.h"
+#endif
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1140,12 +1143,9 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 }
 
 void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  // TODO(ben): figure out why are these two code paths so different
 #if defined(OS_LINUX) && !defined(TOUCH_UI)
-  views::Window* window = GetWidget()->GetWindow();
-  if (window && event.os_event && !event.skip_in_browser) {
-    views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
-    static_cast<views::WindowGtk*>(window)->HandleKeyboardEvent(views_event);
-  }
+  HandleWebKeyboardEvent(GetWidget(), event);
 #else
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
                                                         GetFocusManager());

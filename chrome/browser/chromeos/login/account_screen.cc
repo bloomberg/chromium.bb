@@ -11,12 +11,12 @@
 #include "chrome/browser/chromeos/login/account_creation_view.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/views/handle_web_keyboard_event_gtk.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "views/events/event.h"
-#include "views/widget/widget_gtk.h"
 
 namespace chromeos {
 
@@ -132,11 +132,7 @@ void AccountScreen::NavigationStateChanged(const TabContents* source,
 }
 
 void AccountScreen::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-  views::Widget* widget = view()->GetWidget();
-  if (widget && event.os_event && !event.skip_in_browser) {
-    views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
-    static_cast<views::WidgetGtk*>(widget)->HandleKeyboardEvent(views_event);
-  }
+  HandleWebKeyboardEvent(view()->GetWidget(), event);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
