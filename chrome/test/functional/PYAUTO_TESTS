@@ -145,9 +145,7 @@
     ],
 
     'linux': [  # linux != chromeos
-      '-autofill.AutofillTest.testAutofillInvalid', # crbug.com/74843
       '-browser.BrowserTest.testWindowResize',  # crbug.com/44963
-      '-browser.BrowserTest.testFlashLoadsAfterKill',  # crbug.com/63039
       # crbug.com/70694
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
