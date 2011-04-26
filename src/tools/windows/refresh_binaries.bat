@@ -11,7 +11,7 @@ REM README.binaries file to contain
 REM the revision number, and builds the tools.  You must run 'svn commit' to
 REM commit the pending edits to the repository.
 
-cd ..\..\
+pushd %~dp0\..\..\
 call svn update --accept postpone
 cd tools\windows
 devenv symupload\symupload.vcproj /rebuild Release
@@ -24,3 +24,4 @@ echo Repository information (output of 'svn info') follows: >> %TEMP%\checkin.tx
 call svn info >> %TEMP%\checkin.txt
 echo Done!
 echo type 'svn commit -F %%TEMP%%\checkin.txt' to commit.
+popd
