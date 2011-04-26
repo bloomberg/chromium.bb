@@ -307,6 +307,15 @@ UNINITIALIZED READ
 GDI32.dll!SetPolyFillMode
 GDI32.dll!CreateICW
 
+# http://code.google.com/p/drmemory/issues/detail?id=362
+UNINITIALIZED READ
+USER32.dll!UnregisterClass*
+...
+ntdll.dll!RtlDestroyEnvironment
+KERNEL32.dll!IsValidLocale
+...
+*!__crtExitProcess
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
