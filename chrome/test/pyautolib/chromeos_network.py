@@ -196,7 +196,7 @@ class PyNetworkUITest(pyauto.PyUITest):
         return [wifi for wifi in
                 self.NetworkScan().get('wifi_networks', {}).values()
                 if wifi.get('name') == ssid]
-      except pyauto_errors.JSONInterfaceError:
+      except pyauto.pyauto_errors.JSONInterfaceError:
         # Temporary fix until crosbug.com/14174 is fixed.
         # NetworkScan is only used in updating the list of networks so errors
         # thrown by it are not critical to the results of wifi tests that use
@@ -251,3 +251,14 @@ class PyNetworkUITest(pyauto.PyUITest):
 
     logging.debug('Connecting to router %s.' % router_name)
     return self.ConnectToWifiNetwork(service_path, passphrase)
+
+  def PowerDownAllRouters(self):
+    """Turns off all of the routers.
+
+    Convenience method that allows all subclasses to turn everything off and
+    start fresh.
+
+    """
+    if self._wifi_power_strip:
+      self._wifi_power_strip.TurnOffAllRouters()
+
