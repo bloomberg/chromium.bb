@@ -99,8 +99,14 @@
                 '<(INTERMEDIATE_DIR)/app_manifest/<(mac_bundle_id).manifest',
               ],
               'action': [
-                'cp',
+                # Use plutil -convert xml1 to put the plist into Apple's
+                # canonical format. As a side effect, this ensures that the
+                # plist is well-formed.
+                'plutil',
+                '-convert',
+                'xml1',
                 '<@(_inputs)',
+                '-o',
                 '<@(_outputs)',
               ],
               'message':
