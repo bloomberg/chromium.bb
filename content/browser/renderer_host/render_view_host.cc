@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/translate_errors.h"
@@ -763,7 +762,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgDidContentsPreferredSizeChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DomOperationResponse,
                         OnMsgDomOperationResponse)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnMsgWebUISend)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardMessageToExternalHost,
                         OnMsgForwardMessageToExternalHost)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnMsgSetTooltipText)
@@ -1086,40 +1084,6 @@ void RenderViewHost::OnMsgDomOperationResponse(
   NotificationService::current()->Notify(
       NotificationType::DOM_OPERATION_RESPONSE, Source<RenderViewHost>(this),
       Details<DomOperationNotificationDetails>(&details));
-}
-
-void RenderViewHost::OnMsgWebUISend(
-    const GURL& source_url, const std::string& message,
-    const std::string& content) {
-  if (!ChildProcessSecurityPolicy::GetInstance()->
-          HasWebUIBindings(process()->id())) {
-    NOTREACHED() << "Blocked unauthorized use of WebUIBindings.";
-    return;
-  }
-
-  scoped_ptr<Value> value;
-  if (!content.empty()) {
-    value.reset(base::JSONReader::Read(content, false));
-    if (!value.get() || !value->IsType(Value::TYPE_LIST)) {
-      // The page sent us something that we didn't understand.
-      // This probably indicates a programming error.
-      NOTREACHED() << "Invalid JSON argument in OnMsgWebUISend.";
-      return;
-    }
-  }
-
-  ExtensionHostMsg_DomMessage_Params params;
-  params.name = message;
-  if (value.get())
-    params.arguments.Swap(static_cast<ListValue*>(value.get()));
-  params.source_url = source_url;
-  // WebUI doesn't use these values yet.
-  // TODO(aa): When WebUI is ported to ExtensionFunctionDispatcher, send real
-  // values here.
-  params.request_id = -1;
-  params.has_callback = false;
-  params.user_gesture = false;
-  delegate_->ProcessWebUIMessage(params);
 }
 
 void RenderViewHost::OnMsgForwardMessageToExternalHost(

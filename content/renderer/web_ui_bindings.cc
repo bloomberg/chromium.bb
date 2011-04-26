@@ -4,7 +4,6 @@
 
 #include "content/renderer/web_ui_bindings.h"
 
-#include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/values.h"
@@ -69,14 +68,17 @@ void WebUIBindings::send(const CppArgumentList& args, CppVariant* result) {
     return;
   const std::string message = args[0].ToString();
 
-  // If they've provided an optional message parameter, convert that into JSON.
-  std::string content;
+  // If they've provided an optional message parameter, convert that into a
+  // Value to send to the browser process.
+  scoped_ptr<Value> content;
   if (args.size() == 2) {
     if (!args[1].isObject())
       return;
 
-    scoped_ptr<Value> value(CreateValueFromCppVariant(args[1]));
-    base::JSONWriter::Write(value.get(), /* pretty_print= */ false, &content);
+    content.reset(CreateValueFromCppVariant(args[1]));
+    CHECK(content->IsType(Value::TYPE_LIST));
+  } else {
+    content.reset(new ListValue());
   }
 
   // Retrieve the source frame's url
@@ -86,8 +88,11 @@ void WebUIBindings::send(const CppArgumentList& args, CppVariant* result) {
     source_url = webframe->url();
 
   // Send the message up to the browser.
-  sender()->Send(
-      new ViewHostMsg_WebUISend(routing_id(), source_url, message, content));
+  sender()->Send(new ViewHostMsg_WebUISend(
+      routing_id(),
+      source_url,
+      message,
+      *(static_cast<ListValue*>(content.get()))));
 }
 
 void DOMBoundBrowserObject::SetProperty(const std::string& name,

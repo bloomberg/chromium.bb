@@ -28,6 +28,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/bindings_policy.h"
 #include "content/common/page_transition_types.h"
+#include "ipc/ipc_message.h"
 #include "net/base/file_stream.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -184,9 +185,11 @@ void ExtensionWebUI::RenderViewReused(RenderViewHost* render_view_host) {
   ResetExtensionBookmarkManagerEventRouter();
 }
 
-void ExtensionWebUI::ProcessWebUIMessage(
-    const ExtensionHostMsg_DomMessage_Params& params) {
-  extension_function_dispatcher_->HandleRequest(params);
+bool ExtensionWebUI::OnMessageReceived(const IPC::Message& message) {
+  if (extension_function_dispatcher_.get())
+    return extension_function_dispatcher_->OnMessageReceived(message);
+
+  return false;
 }
 
 Browser* ExtensionWebUI::GetBrowser() {

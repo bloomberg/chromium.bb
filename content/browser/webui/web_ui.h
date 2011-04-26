@@ -11,8 +11,10 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "content/common/page_transition_types.h"
+#include "ipc/ipc_channel.h"
 
 class DictionaryValue;
 class WebUIMessageHandler;
@@ -22,14 +24,19 @@ class Profile;
 class RenderViewHost;
 class TabContents;
 class Value;
-struct ExtensionHostMsg_DomMessage_Params;
 
 // A WebUI sets up the datasources and message handlers for a given HTML-based
 // UI. It is contained by a WebUIManager.
-class WebUI {
+class WebUI : public IPC::Channel::Listener {
  public:
   explicit WebUI(TabContents* contents);
   virtual ~WebUI();
+
+  // IPC message handling.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnWebUISend(const GURL& source_url,
+                           const std::string& message,
+                           const ListValue& args);
 
   // Called by RenderViewHost when the RenderView is first created. This is
   // *not* called for every page load because in some cases
@@ -51,10 +58,6 @@ class WebUI {
   // within the same page), and if so trigger that code manually since onload
   // won't be run in that case.
   virtual void DidBecomeActiveForReusedRenderView() {}
-
-  // Called from TabContents.
-  virtual void ProcessWebUIMessage(
-      const ExtensionHostMsg_DomMessage_Params& params);
 
   // Used by WebUIMessageHandlers.
   typedef Callback1<const ListValue*>::Type MessageCallback;

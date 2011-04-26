@@ -364,7 +364,7 @@ class ExtensionImpl : public ExtensionBase {
     GetPendingRequestMap()[request_id].reset(new PendingRequest(
         current_context, name));
 
-    ExtensionHostMsg_DomMessage_Params params;
+    ExtensionHostMsg_Request_Params params;
     params.name = name;
     params.arguments.Swap(value_args);
     params.source_url = source_url;

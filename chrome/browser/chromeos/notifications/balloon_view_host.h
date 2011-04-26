@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "ui/gfx/native_widget_types.h"
 
 class ListValue;
@@ -33,14 +34,18 @@ class BalloonViewHost : public ::BalloonViewHost {
   bool AddWebUIMessageCallback(const std::string& message,
                                MessageCallback* callback);
 
-  // Process WebUI message.
-  virtual void ProcessWebUIMessage(
-      const ExtensionHostMsg_DomMessage_Params& params);
-
  private:
+  // RenderViewHostDelegate
+  virtual void OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
   // A map of message name -> message handling callback.
   typedef std::map<std::string, MessageCallback*> MessageCallbackMap;
   MessageCallbackMap message_callbacks_;
+
+  // Message handlers.
+  virtual void OnWebUISend(const GURL& source_url,
+                           const std::string& name,
+                           const ListValue& args);
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewHost);
 };
