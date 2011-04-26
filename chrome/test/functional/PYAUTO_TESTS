@@ -34,8 +34,6 @@
       '-autofill.AutofillTest.testNoAutofillForReadOnlyFields',
       # crbug.com/77113 - M13 feature.
       '-autofill.AutofillTest.testProfileWithEmailInOtherFieldNotSaved',
-      # crbug.com/79802
-      '-autofill.AutofillTest.testWhitespacesAndSeparatorCharsStrippedForValidCCNums',
       # crbug.com/80190
       '-autofill.AutofillTest.testDistinguishMiddleInitialWithinName',
       '-autofill.AutofillTest.testFormFillableOnReset',
