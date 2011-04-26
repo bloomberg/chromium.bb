@@ -615,9 +615,9 @@ void WidgetGtk::Init(GtkWidget* parent,
   // See views::Views::Focus and views::FocusManager::ClearNativeFocus
   // for more details.
   g_signal_connect(widget_, "key_press_event",
-                   G_CALLBACK(&OnKeyEventThunk), this);
+                   G_CALLBACK(&OnEventKeyThunk), this);
   g_signal_connect(widget_, "key_release_event",
-                   G_CALLBACK(&OnKeyEventThunk), this);
+                   G_CALLBACK(&OnEventKeyThunk), this);
 
   // Drag and drop.
   gtk_drag_dest_set(window_contents_, static_cast<GtkDestDefaults>(0),
@@ -1291,7 +1291,7 @@ gboolean WidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
   return false;
 }
 
-gboolean WidgetGtk::OnKeyEvent(GtkWidget* widget, GdkEventKey* event) {
+gboolean WidgetGtk::OnEventKey(GtkWidget* widget, GdkEventKey* event) {
   KeyEvent key(reinterpret_cast<NativeEvent>(event));
   if (input_method_.get())
     input_method_->DispatchKeyEvent(key);
@@ -1385,10 +1385,8 @@ void WidgetGtk::DispatchKeyEventPostIME(const KeyEvent& key) {
   if (key.key_code() != ui::VKEY_MENU || key.type() != ui::ET_KEY_RELEASED)
     should_handle_menu_key_release_ = false;
 
-  bool handled = false;
-
-  // Dispatch the key event to View hierarchy first.
-  handled = GetRootView()->ProcessKeyEvent(key);
+  // Send the key event to View hierarchy first.
+  bool handled = delegate_->OnKeyEvent(key);
 
   if (key.key_code() == ui::VKEY_PROCESSKEY || handled)
     return;

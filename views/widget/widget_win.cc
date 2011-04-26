@@ -1028,19 +1028,6 @@ Window* WidgetWin::GetWindowImpl(HWND hwnd) {
   return NULL;
 }
 
-RootView* WidgetWin::GetFocusedViewRootView() {
-  // TODO(beng): get rid of this
-  FocusManager* focus_manager = GetFocusManager();
-  if (!focus_manager) {
-    NOTREACHED();
-    return NULL;
-  }
-  View* focused_view = focus_manager->GetFocusedView();
-  if (!focused_view)
-    return NULL;
-  return focused_view->GetRootView();
-}
-
 // static
 void WidgetWin::PostProcessActivateMessage(WidgetWin* widget,
                                            int activation_state) {
@@ -1129,11 +1116,7 @@ gfx::AcceleratedWidget WidgetWin::GetAcceleratedWidget() {
 }
 
 void WidgetWin::DispatchKeyEventPostIME(const KeyEvent& key) {
-  RootView* root_view = GetFocusedViewRootView();
-  if (!root_view)
-    root_view = GetRootView();
-
-  SetMsgHandled(root_view->ProcessKeyEvent(key));
+  SetMsgHandled(delegate_->OnKeyEvent(key));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

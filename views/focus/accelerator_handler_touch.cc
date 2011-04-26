@@ -186,7 +186,7 @@ bool DispatchXEvent(XEvent* xev) {
           ime->DispatchKeyEvent(keyev);
           return true;
         }
-        return root->ProcessKeyEvent(keyev);
+        return widget->OnKeyEvent(keyev);
       }
 
       case ButtonPress:

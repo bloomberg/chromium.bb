@@ -82,7 +82,7 @@ void RootView::NotifyNativeViewHierarchyChanged(bool attached,
 
 // Input -----------------------------------------------------------------------
 
-bool RootView::ProcessKeyEvent(const KeyEvent& event) {
+bool RootView::OnKeyEvent(const KeyEvent& event) {
   bool consumed = false;
 
   View* v = GetFocusManager()->GetFocusedView();

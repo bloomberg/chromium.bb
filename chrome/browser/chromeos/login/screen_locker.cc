@@ -82,7 +82,7 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
   // NotificationObserver overrides:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const NotificationDetails& details) OVERRIDE {
     if (type == NotificationType::LOGIN_USER_CHANGED) {
       // Register Screen Lock after login screen to make sure
       // we don't show the screen lock on top of the login screen by accident.
@@ -91,18 +91,18 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
     }
   }
 
-  virtual void LockScreen(chromeos::ScreenLockLibrary* obj) {
+  virtual void LockScreen(chromeos::ScreenLockLibrary* obj) OVERRIDE {
     VLOG(1) << "In: ScreenLockObserver::LockScreen";
     SetupInputMethodsForScreenLocker();
     chromeos::ScreenLocker::Show();
   }
 
-  virtual void UnlockScreen(chromeos::ScreenLockLibrary* obj) {
+  virtual void UnlockScreen(chromeos::ScreenLockLibrary* obj) OVERRIDE {
     RestoreInputMethods();
     chromeos::ScreenLocker::Hide();
   }
 
-  virtual void UnlockScreenFailed(chromeos::ScreenLockLibrary* obj) {
+  virtual void UnlockScreenFailed(chromeos::ScreenLockLibrary* obj) OVERRIDE {
     chromeos::ScreenLocker::UnlockScreenFailed();
   }
 
@@ -206,17 +206,17 @@ class LockWindow : public views::WidgetGtk {
 
   // GTK propagates key events from parents to children.
   // Make sure LockWindow will never handle key events.
-  virtual gboolean OnKeyEvent(GtkWidget* widget, GdkEventKey* event) {
+  virtual gboolean OnEventKey(GtkWidget* widget, GdkEventKey* event) OVERRIDE {
     // Don't handle key event in the lock window.
     return false;
   }
 
-  virtual void OnDestroy(GtkWidget* object) {
+  virtual void OnDestroy(GtkWidget* object) OVERRIDE {
     VLOG(1) << "OnDestroy: LockWindow destroyed";
     views::WidgetGtk::OnDestroy(object);
   }
 
-  virtual void ClearNativeFocus() {
+  virtual void ClearNativeFocus() OVERRIDE {
     DCHECK(toplevel_focus_widget_);
     gtk_widget_grab_focus(toplevel_focus_widget_);
   }
@@ -254,14 +254,14 @@ class GrabWidgetRootView
   }
 
   // views::View implementation.
-  virtual void Layout() {
+  virtual void Layout() OVERRIDE {
     gfx::Size size = screen_lock_view_->GetPreferredSize();
     screen_lock_view_->SetBounds(0, 0, size.width(), size.height());
     shutdown_button_->LayoutIn(this);
   }
 
   // ScreenLocker::ScreenLockViewContainer implementation:
-  void SetScreenLockView(views::View* screen_lock_view) {
+  void SetScreenLockView(views::View* screen_lock_view) OVERRIDE {
     if (screen_lock_view_) {
       RemoveChildView(screen_lock_view_);
     }
@@ -294,7 +294,7 @@ class GrabWidget : public views::WidgetGtk {
         shutdown_(NULL) {
   }
 
-  virtual void Show() {
+  virtual void Show() OVERRIDE {
     views::WidgetGtk::Show();
     signout_link_ =
         screen_locker_->GetViewByID(VIEW_ID_SCREEN_LOCKER_SIGNOUT_LINK);
@@ -317,7 +317,7 @@ class GrabWidget : public views::WidgetGtk {
       gtk_grab_remove(current_grab_window);
   }
 
-  virtual gboolean OnKeyEvent(GtkWidget* widget, GdkEventKey* event) {
+  virtual gboolean OnEventKey(GtkWidget* widget, GdkEventKey* event) OVERRIDE {
     views::KeyEvent key_event(reinterpret_cast<GdkEvent*>(event));
     // This is a hack to workaround the issue crosbug.com/10655 due to
     // the limitation that a focus manager cannot handle views in
@@ -338,10 +338,11 @@ class GrabWidget : public views::WidgetGtk {
         return true;
       }
     }
-    return views::WidgetGtk::OnKeyEvent(widget, event);
+    return views::WidgetGtk::OnEventKey(widget, event);
   }
 
-  virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
+  virtual gboolean OnButtonPress(GtkWidget* widget,
+                                 GdkEventButton* event) OVERRIDE {
     WidgetGtk::OnButtonPress(widget, event);
     // Never propagate event to parent.
     return true;
@@ -357,7 +358,7 @@ class GrabWidget : public views::WidgetGtk {
   void TryUngrabOtherClients();
 
  private:
-  virtual void HandleGtkGrabBroke() {
+  virtual void HandleGtkGrabBroke() OVERRIDE {
     // Input should never be stolen from ScreenLocker once it's
     // grabbed.  If this happens, it's a bug and has to be fixed. We
     // let chrome crash to get a crash report and dump, and
@@ -483,11 +484,11 @@ class ScreenLockerBackgroundView
         screen_lock_view_(screen_lock_view) {
   }
 
-  virtual ScreenMode GetScreenMode() const {
+  virtual ScreenMode GetScreenMode() const OVERRIDE {
     return kScreenLockerMode;
   }
 
-  virtual void Layout() {
+  virtual void Layout() OVERRIDE {
     chromeos::BackgroundView::Layout();
     gfx::Rect screen = bounds();
     if (screen_lock_view_) {
@@ -504,7 +505,7 @@ class ScreenLockerBackgroundView
   }
 
   // ScreenLocker::ScreenLockViewContainer implementation:
-  void SetScreenLockView(views::View* screen_lock_view) {
+  virtual void SetScreenLockView(views::View* screen_lock_view) OVERRIDE {
     screen_lock_view_ =  screen_lock_view;
     Layout();
   }
@@ -536,9 +537,9 @@ class MouseEventRelay : public MessageLoopForUI::Observer {
     DCHECK(dest_);
   }
 
-  virtual void WillProcessEvent(GdkEvent* event) {}
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {}
 
-  virtual void DidProcessEvent(GdkEvent* event) {
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {
     if (event->any.window != src_)
       return;
     if (!initialized_) {
@@ -595,7 +596,7 @@ class InputEventObserver : public MessageLoopForUI::Observer {
         activated_(false) {
   }
 
-  virtual void WillProcessEvent(GdkEvent* event) {
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {
     if ((event->type == GDK_KEY_PRESS ||
          event->type == GDK_BUTTON_PRESS ||
          event->type == GDK_MOTION_NOTIFY) &&
@@ -610,7 +611,7 @@ class InputEventObserver : public MessageLoopForUI::Observer {
     }
   }
 
-  virtual void DidProcessEvent(GdkEvent* event) {
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {
   }
 
  private:
@@ -633,7 +634,7 @@ class LockerInputEventObserver : public MessageLoopForUI::Observer {
                    &LockerInputEventObserver::StartScreenSaver)) {
   }
 
-  virtual void WillProcessEvent(GdkEvent* event) {
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {
     if ((event->type == GDK_KEY_PRESS ||
          event->type == GDK_BUTTON_PRESS ||
          event->type == GDK_MOTION_NOTIFY)) {
@@ -642,7 +643,7 @@ class LockerInputEventObserver : public MessageLoopForUI::Observer {
     }
   }
 
-  virtual void DidProcessEvent(GdkEvent* event) {
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {
   }
 
  private:

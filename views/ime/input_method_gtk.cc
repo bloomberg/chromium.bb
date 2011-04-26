@@ -110,13 +110,13 @@ void InputMethodGtk::OnBlur() {
 }
 
 void InputMethodGtk::DispatchKeyEvent(const KeyEvent& key) {
+  DCHECK(key.type() == ui::ET_KEY_PRESSED || key.type() == ui::ET_KEY_RELEASED);
   suppress_next_result_ = false;
 
   // We should bypass |context_| and |context_simple_| only if there is no
-  // text input client is focused at all. Otherwise, we should always send the
-  // key event to either |context_| or |context_simple_| even if the text input
-  // type is ui::TEXT_INPUT_TYPE_NONE, to make sure we can get correct character
-  // result.
+  // text input client focused. Otherwise, always send the key event to either
+  // |context_| or |context_simple_| even if the text input type is
+  // ui::TEXT_INPUT_TYPE_NONE, to make sure we can get correct character result.
   if (!GetTextInputClient()) {
     DispatchKeyEventPostIME(key);
     return;
@@ -126,22 +126,11 @@ void InputMethodGtk::DispatchKeyEvent(const KeyEvent& key) {
   composition_changed_ = false;
   result_text_.clear();
 
-  GdkEvent* event = key.native_event();
-  DCHECK(!event || event->type == GDK_KEY_PRESS ||
-         event->type == GDK_KEY_RELEASE);
-
-  // If it's a fake key event, then we need to synthesis a GdkEventKey.
-  bool need_free_event = false;
-  if (!event) {
-    event = SynthesizeGdkEventKey(key);
-    need_free_event = true;
-  }
-
-  gboolean filtered = false;
-  if (context_focused_)
-    filtered = gtk_im_context_filter_keypress(context_, &event->key);
-  else
-    filtered = gtk_im_context_filter_keypress(context_simple_, &event->key);
+  // If it's a fake key event, then we need to synthesize a GdkEventKey.
+  GdkEvent* event = key.native_event() ? key.native_event() :
+                                         SynthesizeGdkEventKey(key);
+  gboolean filtered = gtk_im_context_filter_keypress(
+      context_focused_ ? context_ : context_simple_, &event->key);
 
   handling_key_event_ = false;
 
@@ -149,24 +138,21 @@ void InputMethodGtk::DispatchKeyEvent(const KeyEvent& key) {
   if (key.type() == ui::ET_KEY_PRESSED && filtered)
     ProcessFilteredKeyPressEvent(key);
 
-  // In case the focus was changed by the key event.
-  if (old_focused_view != focused_view())
-    return;
+  // Ensure no focus change from processing the key event.
+  if (old_focused_view == focused_view()) {
+    if (HasInputMethodResult())
+      ProcessInputMethodResult(key, filtered);
+    // Ensure no focus change sending input method results to the focused View.
+    if (old_focused_view == focused_view()) {
+      if (key.type() == ui::ET_KEY_PRESSED && !filtered)
+        ProcessUnfilteredKeyPressEvent(key);
+      else if (key.type() == ui::ET_KEY_RELEASED)
+        DispatchKeyEventPostIME(key);
+    }
+  }
 
-  if (HasInputMethodResult())
-    ProcessInputMethodResult(key, filtered);
-
-  // In case the focus was changed when sending input method results to the
-  // focused View.
-  if (old_focused_view != focused_view())
-    return;
-
-  if (key.type() == ui::ET_KEY_PRESSED && !filtered)
-    ProcessUnfilteredKeyPressEvent(key);
-  else if (key.type() == ui::ET_KEY_RELEASED)
-    DispatchKeyEventPostIME(key);
-
-  if (need_free_event)
+  // Free the synthesized event if there was no underlying native event.
+  if (event != key.native_event())
     gdk_event_free(event);
 }
 
@@ -360,14 +346,10 @@ GdkEvent* InputMethodGtk::SynthesizeGdkEventKey(const KeyEvent& key) const {
   guint keyval =
       ui::GdkKeyCodeForWindowsKeyCode(key.key_code(), key.IsShiftDown());
   guint state = 0;
-  if (key.IsShiftDown())
-    state |= GDK_SHIFT_MASK;
-  if (key.IsControlDown())
-    state |= GDK_CONTROL_MASK;
-  if (key.IsAltDown())
-    state |= GDK_MOD1_MASK;
-  if (key.IsCapsLockDown())
-    state |= GDK_LOCK_MASK;
+  state |= key.IsShiftDown() ? GDK_SHIFT_MASK : 0;
+  state |= key.IsControlDown() ? GDK_CONTROL_MASK : 0;
+  state |= key.IsAltDown() ? GDK_MOD1_MASK : 0;
+  state |= key.IsCapsLockDown() ? GDK_LOCK_MASK : 0;
 
   DCHECK(widget()->GetNativeView()->window);
   return ui::SynthesizeKeyEvent(widget()->GetNativeView()->window,
