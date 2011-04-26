@@ -500,6 +500,7 @@ void BackgroundView::UpdateEnterpriseInfo() {
         status_text = l10n_util::GetStringUTF8(
             IDS_LOGIN_MANAGED_BY_STATUS_NETWORK_ERROR);
         break;
+      case policy::CloudPolicySubsystem::TOKEN_FETCHED:
       case policy::CloudPolicySubsystem::SUCCESS:
         break;
     }

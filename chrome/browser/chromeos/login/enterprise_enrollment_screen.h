@@ -84,7 +84,7 @@ class EnterpriseEnrollmentScreen
   void HandleAuthError(const GoogleServiceAuthError& error);
 
   // Starts the Lockbox storage process.
-  void WriteInstallAttributesData(const ClientLoginResult& result);
+  void WriteInstallAttributesData();
 
   scoped_ptr<GaiaAuthFetcher> auth_fetcher_;
   std::string user_;

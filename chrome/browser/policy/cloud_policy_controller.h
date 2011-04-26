@@ -136,7 +136,6 @@ class CloudPolicyController
   DeviceTokenFetcher* token_fetcher_;
   scoped_ptr<DeviceManagementBackend> backend_;
   ControllerState state_;
-  bool initial_fetch_done_;
   PolicyNotifier* notifier_;
 
   int64 policy_refresh_rate_ms_;

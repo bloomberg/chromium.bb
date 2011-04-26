@@ -40,6 +40,7 @@ class CloudPolicySubsystem
     UNMANAGED,      // This device is unmanaged.
     NETWORK_ERROR,  // A network error occurred, retrying makes sense.
     LOCAL_ERROR,    // Retrying is futile.
+    TOKEN_FETCHED,  // Device has been successfully registered.
     SUCCESS         // Policy has been fetched successfully and is in effect.
   };
 

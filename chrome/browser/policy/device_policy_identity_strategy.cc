@@ -84,6 +84,11 @@ void DevicePolicyIdentityStrategy::SetDeviceManagementCredentials(
   NotifyDeviceTokenChanged();
 }
 
+void DevicePolicyIdentityStrategy::FetchPolicy() {
+  DCHECK(!device_token_.empty());
+  NotifyDeviceTokenChanged();
+}
+
 bool DevicePolicyIdentityStrategy::GetCredentials(std::string* username,
                                                   std::string* auth_token) {
   *username = username_;
@@ -95,7 +100,6 @@ bool DevicePolicyIdentityStrategy::GetCredentials(std::string* username,
 void DevicePolicyIdentityStrategy::OnDeviceTokenAvailable(
     const std::string& token) {
   device_token_ = token;
-  NotifyDeviceTokenChanged();
 }
 
 }  // namespace policy

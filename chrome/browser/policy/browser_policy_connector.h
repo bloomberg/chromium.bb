@@ -66,6 +66,9 @@ class BrowserPolicyConnector {
   // retrying behavior.
   void StopAutoRetry();
 
+  // Initiates a policy fetch after a successful device registration.
+  void FetchPolicy();
+
  private:
   friend class ::TestingBrowserProcess;
 

@@ -100,7 +100,8 @@ bool EnterpriseEnrollmentScreen::GetInitialUser(std::string* user) {
 
 void EnterpriseEnrollmentScreen::OnClientLoginSuccess(
     const ClientLoginResult& result) {
-  WriteInstallAttributesData(result);
+  auth_fetcher_->StartIssueAuthToken(
+          result.sid, result.lsid, GaiaConstants::kDeviceManagementService);
 }
 
 void EnterpriseEnrollmentScreen::OnClientLoginFailure(
@@ -165,6 +166,9 @@ void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
       case policy::CloudPolicySubsystem::NETWORK_ERROR:
         view()->ShowNetworkEnrollmentError();
         break;
+      case policy::CloudPolicySubsystem::TOKEN_FETCHED:
+        WriteInstallAttributesData();
+        return;
       case policy::CloudPolicySubsystem::SUCCESS:
         // Success!
         registrar_.reset();
@@ -219,8 +223,7 @@ void EnterpriseEnrollmentScreen::HandleAuthError(
   NOTREACHED() << error.state();
 }
 
-void EnterpriseEnrollmentScreen::WriteInstallAttributesData(
-    const ClientLoginResult& result) {
+void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
   // Since this method is also called directly.
   runnable_method_factory_.RevokeAll();
 
@@ -228,29 +231,34 @@ void EnterpriseEnrollmentScreen::WriteInstallAttributesData(
     return;
 
   switch (g_browser_process->browser_policy_connector()->LockDevice(user_)) {
-    case policy::EnterpriseInstallAttributes::LOCK_SUCCESS:
-      // Proceed with register and policy fetch.
-      auth_fetcher_->StartIssueAuthToken(
-          result.sid, result.lsid, GaiaConstants::kDeviceManagementService);
+    case policy::EnterpriseInstallAttributes::LOCK_SUCCESS: {
+      // Proceed with policy fetch.
+      policy::BrowserPolicyConnector* connector =
+          g_browser_process->browser_policy_connector();
+      connector->FetchPolicy();
       return;
-    case policy::EnterpriseInstallAttributes::LOCK_NOT_READY:
+    }
+    case policy::EnterpriseInstallAttributes::LOCK_NOT_READY: {
       // InstallAttributes not ready yet, retry later.
       LOG(WARNING) << "Install Attributes not ready yet will retry in "
                    << kLockRetryIntervalMs << "ms.";
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           runnable_method_factory_.NewRunnableMethod(
-              &EnterpriseEnrollmentScreen::WriteInstallAttributesData, result),
+              &EnterpriseEnrollmentScreen::WriteInstallAttributesData),
           kLockRetryIntervalMs);
       return;
-    case policy::EnterpriseInstallAttributes::LOCK_BACKEND_ERROR:
+    }
+    case policy::EnterpriseInstallAttributes::LOCK_BACKEND_ERROR: {
       view()->ShowFatalEnrollmentError();
       return;
-    case policy::EnterpriseInstallAttributes::LOCK_WRONG_USER:
+    }
+    case policy::EnterpriseInstallAttributes::LOCK_WRONG_USER: {
       LOG(ERROR) << "Enrollment can not proceed because the InstallAttrs "
                  << "has been locked already!";
       view()->ShowFatalEnrollmentError();
       return;
+    }
   }
 
   NOTREACHED();

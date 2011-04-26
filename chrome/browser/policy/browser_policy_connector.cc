@@ -177,6 +177,13 @@ void BrowserPolicyConnector::StopAutoRetry() {
     cloud_policy_subsystem_->StopAutoRetry();
 }
 
+void BrowserPolicyConnector::FetchPolicy() {
+#if defined(OS_CHROMEOS)
+  if (identity_strategy_.get())
+    return identity_strategy_->FetchPolicy();
+#endif
+}
+
 void BrowserPolicyConnector::Initialize() {
   // TODO(jkummerow, mnissler): Move this out of the browser startup path.
   if (cloud_policy_subsystem_.get()) {

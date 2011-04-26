@@ -33,6 +33,11 @@ class DevicePolicyIdentityStrategy : public CloudPolicyIdentityStrategy {
                                       const std::string& device_id,
                                       const std::string& device_token);
 
+  // Initiates a policy fetch after a successful device registration. This
+  // function should be called only after the device token has been fetched
+  // either through the DMServer or loaded from the cache.
+  void FetchPolicy();
+
   // CloudPolicyIdentityStrategy implementation:
   virtual std::string GetDeviceToken() OVERRIDE;
   virtual std::string GetDeviceID() OVERRIDE;
