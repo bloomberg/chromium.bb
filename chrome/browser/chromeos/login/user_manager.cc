@@ -446,7 +446,6 @@ const UserManager::User& UserManager::logged_in_user() const {
 void UserManager::SetLoggedInUserImage(const SkBitmap& image) {
   if (logged_in_user_.email().empty())
     return;
-  logged_in_user_.set_image(image);
   OnImageLoaded(logged_in_user_.email(), image, false);
 }
 
@@ -520,6 +519,8 @@ void UserManager::OnImageLoaded(const std::string& username,
   User user;
   user.set_email(username);
   user.set_image(image);
+  if (logged_in_user_.email() == username)
+    logged_in_user_.set_image(image);
   if (should_save_image)
     SaveUserImage(username, image);
   NotificationService::current()->Notify(
