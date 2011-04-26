@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/process_util.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
 
@@ -53,6 +54,19 @@ class LiveSyncTest : public InProcessBrowserTest {
     // Tests where several client profiles are synced with the server. Only used
     // by stress tests.
     MANY_CLIENT
+  };
+
+  // The type of server we're running against.
+  enum ServerType {
+    SERVER_TYPE_UNDECIDED,
+    LOCAL_PYTHON_SERVER,   // The mock python server that runs locally and is
+                           // part of the Chromium checkout.
+    LOCAL_LIVE_SERVER,     // Some other server (maybe the real binary used by
+                           // Google's sync service) that can be started on
+                           // a per-test basis by running a command
+    EXTERNAL_LIVE_SERVER,  // A remote server that the test code has no control
+                           // over whatsoever; cross your fingers that the
+                           // account state is initially clean.
   };
 
   // A LiveSyncTest must be associated with a particular test type.
@@ -106,6 +120,14 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Blocks until all sync clients have completed their mutual sync cycles.
   // Returns true if a quiescent state was successfully reached.
   bool AwaitQuiescence();
+
+  // Returns true if the server being used supports injecting errors.
+  bool ServerSupportsErrorTriggering();
+
+  // Triggers a migration for one or more datatypes, and waits
+  // for the server to complete it.  This operation is available
+  // only if ServerSupportsErrorTriggering() returned true.
+  void TriggerMigrationDoneError(const syncable::ModelTypeSet& model_types);
 
  protected:
   // InProcessBrowserTest override. Destroys all the sync clients and sync
@@ -186,6 +208,10 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Used to differentiate between single-client, two-client, multi-client and
   // many-client tests.
   TestType test_type_;
+
+  // Tells us what kind of server we're using (some tests run only on certain
+  // server types).
+  ServerType server_type_;
 
   // Number of sync clients that will be created by a test.
   int num_clients_;

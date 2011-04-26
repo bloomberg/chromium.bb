@@ -355,6 +355,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // server.
   bool HasUnsyncedItems() const;
 
+  // Returns whether or not the sync service is reconfiguring due
+  // to server-initiated resynchronization.
+  bool HasPendingBackendMigration() const;
+
   // Get the current routing information for all enabled model types.
   // If a model type is not enabled (that is, if the syncer should not
   // be trying to sync it), it is not in this map.

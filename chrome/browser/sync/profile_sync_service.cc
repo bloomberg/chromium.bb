@@ -1023,6 +1023,11 @@ bool ProfileSyncService::HasUnsyncedItems() const {
   return false;
 }
 
+bool ProfileSyncService::HasPendingBackendMigration() const {
+  return migrator_.get() &&
+      migrator_->state() != browser_sync::BackendMigrator::IDLE;
+}
+
 void ProfileSyncService::GetModelSafeRoutingInfo(
     browser_sync::ModelSafeRoutingInfo* out) {
   if (backend_.get() && backend_initialized_) {

@@ -487,7 +487,8 @@ bool ProfileSyncServiceHarness::IsSynced() {
           GetStatus().notifications_enabled &&
           !service()->HasUnsyncedItems() &&
           !snap->has_more_to_sync &&
-          snap->unsynced_count == 0);
+          snap->unsynced_count == 0 &&
+          !service()->HasPendingBackendMigration());
 }
 
 bool ProfileSyncServiceHarness::MatchesOtherClient(
@@ -625,7 +626,9 @@ void ProfileSyncServiceHarness::LogClientInfo(const std::string& message) {
               << service()->observed_passphrase_required()
               << ", notifications_enabled: "
               << GetStatus().notifications_enabled
-              << ", service_is_pushing_changes: " << ServiceIsPushingChanges();
+              << ", service_is_pushing_changes: " << ServiceIsPushingChanges()
+              << ", has_pending_backend_migration: "
+              << service()->HasPendingBackendMigration();
     } else {
       VLOG(1) << "Client " << id_ << ": " << message
               << ": Sync session snapshot not available.";

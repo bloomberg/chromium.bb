@@ -3143,6 +3143,7 @@
         'test/live_sync/many_client_live_bookmarks_sync_test.cc',
         'test/live_sync/many_client_live_passwords_sync_test.cc',
         'test/live_sync/many_client_live_preferences_sync_test.cc',
+        'test/live_sync/migration_errors_test.cc',
         'test/live_sync/multiple_client_live_bookmarks_sync_test.cc',
         'test/live_sync/multiple_client_live_passwords_sync_test.cc',
         'test/live_sync/multiple_client_live_preferences_sync_test.cc',

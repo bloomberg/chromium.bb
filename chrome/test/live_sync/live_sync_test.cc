@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_fetcher.h"
@@ -28,6 +29,7 @@
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/network_change_notifier.h"
@@ -105,6 +107,7 @@ class SetProxyConfigTask : public Task {
 LiveSyncTest::LiveSyncTest(TestType test_type)
     : sync_server_(net::TestServer::TYPE_SYNC, FilePath()),
       test_type_(test_type),
+      server_type_(SERVER_TYPE_UNDECIDED),
       num_clients_(-1),
       test_server_handle_(base::kNullProcessHandle) {
   InProcessBrowserTest::set_show_window(true);
@@ -142,6 +145,33 @@ void LiveSyncTest::SetUp() {
   } else {
     SetupMockGaiaResponses();
   }
+
+   if (!cl->HasSwitch(switches::kSyncServiceURL) &&
+       !cl->HasSwitch(switches::kSyncServerCommandLine)) {
+    // If neither a sync server URL nor a sync server command line is
+    // provided, start up a local python sync test server and point Chrome
+    // to its URL.  This is the most common configuration, and the only
+    // one that makes sense for most developers.
+    server_type_ = LOCAL_PYTHON_SERVER;
+   } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
+              cl->HasSwitch(switches::kSyncServerCommandLine)) {
+    // If a sync server URL and a sync server command line are provided,
+    // start up a local sync server by running the command line. Chrome
+    // will connect to the server at the URL that was provided.
+    server_type_ = LOCAL_LIVE_SERVER;
+  } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
+             !cl->HasSwitch(switches::kSyncServerCommandLine)) {
+    // If a sync server URL is provided, but not a server command line,
+    // it is assumed that the server is already running. Chrome will
+    // automatically connect to it at the URL provided. There is nothing
+    // to do here.
+    server_type_ = EXTERNAL_LIVE_SERVER;
+  } else {
+    // If a sync server command line is provided, but not a server URL,
+    // we flag an error.
+    LOG(FATAL) << "Can't figure out how to run a server.";
+  }
+
   if (username_.empty() || password_.empty())
     LOG(FATAL) << "Cannot run sync tests without GAIA credentials.";
 
@@ -322,31 +352,19 @@ void LiveSyncTest::SetupMockGaiaResponses() {
   URLFetcher::set_factory(factory_.get());
 }
 
-// Start up a local sync server if required.
-// - If a sync server URL and a sync server command line are provided, start up
-//   a local sync server by running the command line. Chrome will connect to the
-//   server at the URL that was provided.
-// - If neither a sync server URL nor a sync server command line are provided,
-//   start up a local python sync test server and point Chrome to its URL.
-// - If a sync server URL is provided, but not a server command line, it is
-//   assumed that the server is already running. Chrome will automatically
-//   connect to it at the URL provided. There is nothing to do here.
-// - If a sync server command line is provided, but not a server URL, we flag an
-//   error.
+// Start up a local sync server based on the value of server_type_, which
+// was determined from the command line parameters.
 void LiveSyncTest::SetUpTestServerIfRequired() {
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kSyncServiceURL) &&
-      cl->HasSwitch(switches::kSyncServerCommandLine)) {
-    if (!SetUpLocalTestServer())
-      LOG(FATAL) << "Failed to set up local test server";
-  } else if (!cl->HasSwitch(switches::kSyncServiceURL) &&
-             !cl->HasSwitch(switches::kSyncServerCommandLine)) {
+  if (server_type_ == LOCAL_PYTHON_SERVER) {
     if (!SetUpLocalPythonTestServer())
       LOG(FATAL) << "Failed to set up local python test server";
-  } else if (!cl->HasSwitch(switches::kSyncServiceURL) &&
-             cl->HasSwitch(switches::kSyncServerCommandLine)) {
-    LOG(FATAL) << "Sync server command line must be accompanied by sync "
-                  "service URL.";
+  } else if (server_type_ == LOCAL_LIVE_SERVER) {
+    if (!SetUpLocalTestServer())
+      LOG(FATAL) << "Failed to set up local test server";
+  } else if (server_type_ == EXTERNAL_LIVE_SERVER) {
+    // Nothing to do; we'll just talk to the URL we were given.
+  } else {
+    LOG(FATAL) << "Don't know which server environment to run test in.";
   }
 }
 
@@ -470,6 +488,29 @@ void LiveSyncTest::DisableNetwork(Profile* profile) {
 
 bool LiveSyncTest::AwaitQuiescence() {
   return ProfileSyncServiceHarness::AwaitQuiescence(clients());
+}
+
+bool LiveSyncTest::ServerSupportsErrorTriggering() {
+  EXPECT_TRUE(server_type_ != SERVER_TYPE_UNDECIDED);
+
+  // Supported only if we're using the python testserver.
+  return server_type_ == LOCAL_PYTHON_SERVER;
+}
+
+void LiveSyncTest::TriggerMigrationDoneError(
+    const syncable::ModelTypeSet& model_types) {
+  ASSERT_TRUE(ServerSupportsErrorTriggering());
+  std::string path = "chromiumsync/migrate";
+  char joiner = '?';
+  for (syncable::ModelTypeSet::const_iterator it = model_types.begin();
+       it != model_types.end(); ++it) {
+    path.append(base::StringPrintf("%ctype=%d", joiner,
+        syncable::GetExtensionFieldNumberFromModelType(*it)));
+    joiner = '&';
+  }
+  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
+  ASSERT_EQ(ASCIIToUTF16("Migration: 200"),
+            browser()->GetSelectedTabContents()->GetTitle());
 }
 
 void LiveSyncTest::SetProxyConfig(net::URLRequestContextGetter* context_getter,
