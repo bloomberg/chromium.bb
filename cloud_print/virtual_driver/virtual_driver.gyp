@@ -1,7 +1,8 @@
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
+# TODO(abodenha@chromium.org) Consider splitting port monitor stuff into
+# its own file.
 {
   'includes': [
     '../../build/common.gypi',
@@ -19,9 +20,10 @@
       'userenv.lib',
     ],
     'sources': [
-      'win/port_monitor/port_monitor.cc',
-      'win/port_monitor/port_monitor.h',
-      'win/port_monitor/port_monitor.def',
+      'win/virtual_driver_helpers.h',
+      'win/virtual_driver_helpers.cc',
+      'win/virtual_driver_consts.h',
+      'win/virtual_driver_consts.cc',
     ],
   },
   'conditions': [
@@ -34,6 +36,11 @@
           '../../base/base.gyp:base',
         ],
         'msvs_guid': 'ED3D7186-C94E-4D8B-A8E7-B7260F638F46',
+        'sources': [
+          'win/port_monitor/port_monitor.cc',
+          'win/port_monitor/port_monitor.h',
+          'win/port_monitor/port_monitor.def',
+        ],
       },
       {
         'target_name': 'gcp_portmon64',
@@ -43,6 +50,11 @@
         ],
         'dependencies': [
           '../../base/base.gyp:base_nacl_win64',
+        ],
+        'sources': [
+          'win/port_monitor/port_monitor.cc',
+          'win/port_monitor/port_monitor.h',
+          'win/port_monitor/port_monitor.def',
         ],
         'msvs_guid': '9BB292F4-6104-495A-B415-C3E314F46D6F',
         'configurations': {
@@ -64,8 +76,26 @@
         'sources': [
         # Infrastructure files.
           '../../base/test/run_all_unittests.cc',
+          'win/port_monitor/port_monitor.cc',
+          'win/port_monitor/port_monitor.h',
           'win/port_monitor/port_monitor_unittest.cc'
         ],
+      },
+      {
+        'target_name': 'virtual_driver_setup',
+        'type': 'executable',
+        'msvs_guid': 'E1E25ACA-043D-4D6E-A06F-97126532843A',
+        'dependencies': [
+          '../../base/base.gyp:base',
+        ],
+        'sources': [
+          'win/install/setup.cc',
+        ],
+        'msvs_settings': {
+          'VCLinkerTool': {
+            'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
+          },
+        },
       },
     ],
     },

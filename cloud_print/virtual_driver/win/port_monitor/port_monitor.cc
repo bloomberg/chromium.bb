@@ -21,7 +21,10 @@
 #include "base/string16.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "cloud_print/virtual_driver/win/port_monitor/spooler_win.h"
+#include "cloud_print/virtual_driver/win/virtual_driver_consts.h"
+#include "cloud_print/virtual_driver/win/virtual_driver_helpers.h"
 
 namespace switches {
 // These constants are duplicated from chrome/common/chrome_switches.cc
@@ -57,9 +60,9 @@ const wchar_t kChromePathRegKey[] = L"Software\\Google\\CloudPrint";
 
 namespace {
 #ifdef _WIN64
-const wchar_t kPortMonitorDllName[] = L"gcp_portmon64.dll";
+const wchar_t *kPortMonitorDllName = kPortMonitorDllName64;
 #else
-const wchar_t kPortMonitorDllName[] = L"gcp_portmon.dll";
+const wchar_t *kPortMonitorDllName = kPortMonitorDllName32;
 #endif
 
 const wchar_t kPortName[] = L"GCP:";
@@ -68,7 +71,6 @@ const wchar_t kXpsMimeType[] = L"application/vnd.ms-xpsdocument";
 
 const size_t kMaxCommandLineLen = 0x7FFF;
 
-const size_t kMaxMessageLen = 100;
 
 struct MonitorData {
   base::AtExitManager* at_exit_manager;
@@ -115,16 +117,51 @@ MONITOR2 g_monitor_2 = {
   Monitor2Shutdown
 };
 
-// Returns true if registration/unregistration can be attempted.
-bool CanRegister() {
-  // TODO(abodenha@chromium.org) Add handling for XP.
-  // Should Verify admin rights and that XPS is installed.
-  base::IntegrityLevel level = base::INTEGRITY_UNKNOWN;
-  if (!GetProcessIntegrityLevel(base::GetCurrentProcessHandle(), &level)) {
+// Gets the standard install path for "version 3" print drivers.
+HRESULT GetPrinterDriverPath(FilePath* path) {
+  BYTE driver_dir_buffer[MAX_PATH * sizeof(wchar_t)];
+  DWORD needed = 0;
+  if (!GetPrinterDriverDirectory(NULL,
+                                 NULL,
+                                 1,
+                                 driver_dir_buffer,
+                                 MAX_PATH * sizeof(wchar_t),
+                                 &needed)) {
+    // We could try to allocate a larger buffer if needed > MAX_PATH
+    // but that really shouldn't happen.
+    return cloud_print::GetLastHResult();
+  }
+  *path = FilePath(reinterpret_cast<wchar_t*>(driver_dir_buffer));
+  *path = path->Append(L"3");
+  return S_OK;
+}
+
+// Returns true if Xps support is installed.
+bool XpsIsInstalled() {
+  FilePath xps_path;
+  if (!SUCCEEDED(GetPrinterDriverPath(&xps_path))) {
     return false;
   }
-  if (level != base::HIGH_INTEGRITY) {
+  xps_path = xps_path.Append(L"mxdwdrv.dll");
+  if (!file_util::PathExists(xps_path)) {
     return false;
+  }
+  return true;
+}
+
+// Returns true if registration/unregistration can be attempted.
+bool CanRegister() {
+  if (!XpsIsInstalled()) {
+    return false;
+  }
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    base::IntegrityLevel level = base::INTEGRITY_UNKNOWN;
+    if (!GetProcessIntegrityLevel(base::GetCurrentProcessHandle(), &level)) {
+      return false;
+    }
+    if (level != base::HIGH_INTEGRITY) {
+      return false;
+    }
   }
   return true;
 }
@@ -179,16 +216,7 @@ bool GetJobTitle(HANDLE printer_handle,
 // configuration.
 void HandlePortUi(HWND hwnd, const string16& caption) {
   if (hwnd != NULL && IsWindow(hwnd)) {
-    wchar_t message_text[kMaxMessageLen + 1] = L"";
-
-    ::FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
-                    NULL,
-                    CO_E_NOT_SUPPORTED,
-                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                    message_text,
-                    kMaxMessageLen,
-                    NULL);
-    ::MessageBox(hwnd, message_text, caption.c_str(), MB_OK);
+    DisplayWindowsMessage(hwnd, CO_E_NOT_SUPPORTED);
   }
 }
 
@@ -625,8 +653,7 @@ HRESULT WINAPI DllRegisterServer(void) {
   if (AddMonitor(NULL, 2, reinterpret_cast<BYTE*>(&monitor_info))) {
     return S_OK;
   }
-  DWORD error_code = GetLastError();
-  return HRESULT_FROM_WIN32(error_code);
+  return cloud_print::GetLastHResult();
 }
 
 HRESULT WINAPI DllUnregisterServer(void) {
@@ -639,6 +666,5 @@ HRESULT WINAPI DllUnregisterServer(void) {
                     const_cast<LPWSTR>(cloud_print::kPortMonitorDllName))) {
     return S_OK;
   }
-  DWORD error_code = GetLastError();
-  return HRESULT_FROM_WIN32(error_code);
+  return cloud_print::GetLastHResult();
 }
