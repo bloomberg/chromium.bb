@@ -2,15 +2,21 @@ noinst_PROGRAMS = compositor
 
 AM_CPPFLAGS =					\
 	-DDATADIR='"$(datadir)"'		\
-	-I$(top_builddir)/wayland		\
-	-I$(top_srcdir)/wayland			\
-	$(COMPOSITOR_CFLAGS)
+	$(COMPOSITOR_CFLAGS)			\
+	$(X11_COMPOSITOR_CFLAGS)		\
+	$(WAYLAND_COMPOSITOR_CFLAGS)		\
+	$(WAYLAND_COMPOSITOR_CFLAGS)		\
+	$(OPENWFD_COMPOSITOR_CFLAGS)
 
 AM_CFLAGS = $(GCC_CFLAGS)
 
 compositor_LDFLAGS = -export-dynamic
 compositor_LDADD =				\
 	$(COMPOSITOR_LIBS)			\
+	$(X11_COMPOSITOR_LIBS)			\
+	$(DRM_COMPOSITOR_LIBS)			\
+	$(WAYLAND_COMPOSITOR_LIBS)		\
+	$(OPENWFD_COMPOSITOR_LIBS)		\
 	$(DLOPEN_LIBS)
 
 if ENABLE_DRM_COMPOSITOR
@@ -27,8 +33,6 @@ endif
 
 if ENABLE_OPENWFD_COMPOSITOR
 openwfd_compositor_sources = compositor-openwfd.c
-AM_CPPFLAGS += $(OPENWFD_CFLAGS)
-compositor_LDADD += $(OPENWFD_LIBS)
 endif
 
 compositor_SOURCES =				\

@@ -35,7 +35,7 @@ AC_CHECK_FUNC([dlopen], [],
 AC_SUBST(DLOPEN_LIBS)
 
 PKG_CHECK_MODULES(COMPOSITOR,
-		  [wayland-server wayland-client wayland-egl egl >= 7.10 glesv2 gdk-pixbuf-2.0 libudev >= 136 libdrm >= 2.4.23] pixman-1 x11 x11-xcb)
+		  [wayland-server egl >= 7.10 glesv2 gdk-pixbuf-2.0 pixman-1])
 PKG_CHECK_MODULES(SIMPLE_CLIENT, [egl >= 7.10 glesv2 wayland-client wayland-egl])
 PKG_CHECK_MODULES(CLIENT, [wayland-client wayland-egl egl >= 7.10 gl cairo >= 1.10.0 gdk-pixbuf-2.0 glib-2.0 gobject-2.0 xkbcommon])
 PKG_CHECK_MODULES(POPPLER, [poppler-glib gdk-2.0 gio-2.0],
@@ -50,6 +50,7 @@ AC_ARG_ENABLE(x11-compositor, [  --enable-x11-compositor],,
 AM_CONDITIONAL(ENABLE_X11_COMPOSITOR, test x$enable_x11_compositor == xyes)
 if test x$enable_x11_compositor == xyes; then
   AC_DEFINE([BUILD_X11_COMPOSITOR], [1], [Build the X11 compositor])
+  PKG_CHECK_MODULES(X11_COMPOSITOR, [x11 x11-xcb])
 fi
 
 
@@ -58,6 +59,7 @@ AC_ARG_ENABLE(drm-compositor, [  --enable-drm-compositor],,
 AM_CONDITIONAL(ENABLE_DRM_COMPOSITOR, test x$enable_drm_compositor == xyes)
 if test x$enable_drm_compositor == xyes; then
   AC_DEFINE([BUILD_DRM_COMPOSITOR], [1], [Build the DRM compositor])
+  PKG_CHECK_MODULES(DRM_COMPOSITOR, [libudev >= 136 libdrm >= 2.4.23])
 fi
 
 
@@ -66,7 +68,7 @@ AC_ARG_ENABLE(openwfd-compositor, [  --enable-openwfd-compositor],,
 AM_CONDITIONAL(ENABLE_OPENWFD_COMPOSITOR, test x$enable_openwfd_compositor == xyes)
 if test x$enable_openwfd_compositor == xyes; then
   AC_DEFINE([BUILD_OPENWFD_COMPOSITOR], [1], [Build the OpenWF compositor])
-  PKG_CHECK_MODULES(OPENWFD, [openwfd])
+  PKG_CHECK_MODULES(OPENWFD_COMPOSITOR, [openwfd])
 fi
 
 
@@ -77,6 +79,7 @@ AM_CONDITIONAL(ENABLE_WAYLAND_COMPOSITOR,
 if test x$enable_wayland_compositor == xyes; then
   AC_DEFINE([BUILD_WAYLAND_COMPOSITOR], [1],
 	    [Build the Wayland (nested) compositor])
+  PKG_CHECK_MODULES(WAYLAND_COMPOSITOR, [wayland-client wayland-egl])
 fi
 
 

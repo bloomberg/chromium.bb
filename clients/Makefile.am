@@ -16,8 +16,6 @@ noinst_LIBRARIES = libtoytoolkit.a
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS =					\
 	-DDATADIR='"$(datadir)"'		\
-	-I$(top_builddir)/wayland		\
-	-I$(top_srcdir)/wayland			\
 	$(CLIENT_CFLAGS)
 
 libtoytoolkit_a_SOURCES =			\
