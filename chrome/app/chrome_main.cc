@@ -528,7 +528,7 @@ int ChromeMain(int argc, char** argv) {
 #endif
 
 #if defined(OS_MACOSX)
-  chrome_main::SetUpBaseBundleID();
+  chrome_main::SetUpBundleOverrides();
 #endif
 
   CommandLine::Init(argc, argv);
@@ -547,10 +547,6 @@ int ChromeMain(int argc, char** argv) {
 
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
-
-#if defined(OS_MACOSX)
-  base::mac::SetOverrideAppBundlePath(chrome::GetFrameworkBundlePath());
-#endif  // OS_MACOSX
 
   // If we are in diagnostics mode this is the end of the line. After the
   // diagnostics are run the process will invariably exit.

@@ -37,8 +37,10 @@ void CheckUserDataDirPolicy(FilePath* user_data_dir) {
   }
 }
 
-void SetUpBaseBundleID() {
+void SetUpBundleOverrides() {
   base::mac::ScopedNSAutoreleasePool pool;
+
+  base::mac::SetOverrideAppBundlePath(chrome::GetFrameworkBundlePath());
 
   NSBundle* base_bundle = chrome::OuterAppBundle();
   base::mac::SetBaseBundleID([[base_bundle bundleIdentifier] UTF8String]);
