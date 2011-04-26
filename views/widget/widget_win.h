@@ -115,6 +115,7 @@ class WidgetWin : public ui::WindowImpl,
 
   // Overridden from Widget:
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual bool GetAccelerator(int cmd_id,
                               ui::Accelerator* accelerator) OVERRIDE;
   virtual Window* GetWindow() OVERRIDE;

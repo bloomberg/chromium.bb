@@ -40,7 +40,6 @@
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/screen.h"
-#include "views/widget/widget_gtk.h"
 #include "views/window/window.h"
 
 // X Windows headers have "#define Status int". That interferes with
@@ -49,7 +48,6 @@
 #include <X11/Xcursor/Xcursor.h>  // NOLINT
 
 using views::Widget;
-using views::WidgetGtk;
 
 namespace {
 
@@ -200,8 +198,7 @@ void BackgroundView::CreateModalPopup(views::WindowDelegate* view) {
 }
 
 gfx::NativeWindow BackgroundView::GetNativeWindow() const {
-  return
-      GTK_WINDOW(static_cast<const WidgetGtk*>(GetWidget())->GetNativeView());
+  return GetWidget()->GetNativeWindow();
 }
 
 void BackgroundView::SetStatusAreaVisible(bool visible) {

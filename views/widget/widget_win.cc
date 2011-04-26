@@ -198,6 +198,10 @@ gfx::NativeView WidgetWin::GetNativeView() const {
   return WindowImpl::hwnd();
 }
 
+gfx::NativeWindow WidgetWin::GetNativeWindow() const {
+  return WindowImpl::hwnd();
+}
+
 bool WidgetWin::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
   return false;
 }

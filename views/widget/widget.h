@@ -119,6 +119,11 @@ class Widget : public internal::NativeWidgetDelegate,
   // Returns the gfx::NativeView associated with this Widget.
   virtual gfx::NativeView GetNativeView() const;
 
+  // Returns the gfx::NativeWindow associated with this Widget. This may return
+  // NULL on some platforms if the widget was created with a type other than
+  // TYPE_WINDOW.
+  virtual gfx::NativeWindow GetNativeWindow() const;
+
   // Starts a drag operation for the specified view. |point| is a position in
   // |view| coordinates that the drag was initiated from.
   virtual void GenerateMousePressedForView(View* view,

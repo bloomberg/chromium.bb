@@ -503,6 +503,10 @@ gfx::NativeView WidgetGtk::GetNativeView() const {
   return widget_;
 }
 
+gfx::NativeWindow WidgetGtk::GetNativeWindow() const {
+  return child_ ? NULL : GTK_WINDOW(widget_);
+}
+
 bool WidgetGtk::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
   NOTIMPLEMENTED();
   return false;

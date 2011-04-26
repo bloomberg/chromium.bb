@@ -79,6 +79,10 @@ gfx::NativeView Widget::GetNativeView() const {
   return NULL;
 }
 
+gfx::NativeWindow Widget::GetNativeWindow() const {
+  return NULL;
+}
+
 void Widget::GenerateMousePressedForView(View* view, const gfx::Point& point) {
 }
 

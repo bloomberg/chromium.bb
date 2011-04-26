@@ -125,6 +125,7 @@ class WidgetGtk : public Widget,
 
   // Overridden from Widget:
   virtual gfx::NativeView GetNativeView() const;
+  virtual gfx::NativeWindow GetNativeWindow() const;
   virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
   virtual Window* GetWindow();
   virtual const Window* GetWindow() const;
