@@ -53,8 +53,6 @@ class DecoderBase : public Decoder {
                           callback));
   }
 
-  virtual const MediaFormat& media_format() { return media_format_; }
-
   // Audio decoder.
   // Note that this class is only used by the audio decoder, this will
   // eventually be merged into FFmpegAudioDecoder.
@@ -97,8 +95,7 @@ class DecoderBase : public Decoder {
   // the demuxer stream.  Returns true if successful, otherwise false indicates
   // a fatal error.  The derived class should NOT call the filter host's
   // InitializationComplete() method.  If this method returns true, then the
-  // base class will call the host to complete initialization.  During this
-  // call, the derived class must fill in the media_format_ member.
+  // base class will call the host to complete initialization.
   virtual void DoInitialize(DemuxerStream* demuxer_stream, bool* success,
                             Task* done_cb) = 0;
 
@@ -117,8 +114,6 @@ class DecoderBase : public Decoder {
   // operation produces one or more outputs, the derived class should call
   // the EnequeueResult() method from within this method.
   virtual void DoDecode(Buffer* input) = 0;
-
-  MediaFormat media_format_;
 
   void OnDecodeComplete(const PipelineStatistics& statistics) {
     statistics_callback_->Run(statistics);

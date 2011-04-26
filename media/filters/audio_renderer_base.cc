@@ -90,16 +90,6 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
 
   decoder_->set_consume_audio_samples_callback(
       NewCallback(this, &AudioRendererBase::ConsumeAudioSamples));
-  // Get the media properties to initialize our algorithms.
-  int channels = 0;
-  int sample_rate = 0;
-  int sample_bits = 0;
-  if (!ParseMediaFormat(decoder_->media_format(), &channels, &sample_rate,
-                        &sample_bits)) {
-    host()->SetError(PIPELINE_ERROR_INITIALIZATION_FAILED);
-    callback->Run();
-    return;
-  }
 
   // Create a callback so our algorithm can request more reads.
   AudioRendererAlgorithmBase::RequestReadCallback* cb =
@@ -110,14 +100,15 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
 
   // Initialize our algorithm with media properties, initial playback rate,
   // and a callback to request more reads from the data source.
-  algorithm_->Initialize(channels,
-                         sample_rate,
-                         sample_bits,
+  AudioDecoderConfig config = decoder_->config();
+  algorithm_->Initialize(config.channels_per_sample,
+                         config.sample_rate,
+                         config.bits_per_channel,
                          0.0f,
                          cb);
 
   // Give the subclass an opportunity to initialize itself.
-  if (!OnInitialize(decoder_->media_format())) {
+  if (!OnInitialize(config)) {
     host()->SetError(PIPELINE_ERROR_INITIALIZATION_FAILED);
     callback->Run();
     return;
@@ -251,17 +242,6 @@ void AudioRendererBase::ScheduleRead_Locked() {
   // buffer pool to recycle buffers.
   scoped_refptr<Buffer> buffer;
   decoder_->ProduceAudioSamples(buffer);
-}
-
-// static
-bool AudioRendererBase::ParseMediaFormat(const MediaFormat& media_format,
-                                         int* channels_out,
-                                         int* sample_rate_out,
-                                         int* sample_bits_out) {
-  // TODO(scherkus): might be handy to support NULL parameters.
-  return media_format.GetAsInteger(MediaFormat::kChannels, channels_out) &&
-      media_format.GetAsInteger(MediaFormat::kSampleRate, sample_rate_out) &&
-      media_format.GetAsInteger(MediaFormat::kSampleBits, sample_bits_out);
 }
 
 void AudioRendererBase::SetPlaybackRate(float playback_rate) {

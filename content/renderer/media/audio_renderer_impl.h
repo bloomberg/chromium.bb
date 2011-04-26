@@ -82,7 +82,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
  protected:
   // Methods called on audio renderer thread ----------------------------------
   // These methods are called from AudioRendererBase.
-  virtual bool OnInitialize(const media::MediaFormat& media_format);
+  virtual bool OnInitialize(const media::AudioDecoderConfig& config);
   virtual void OnStop();
 
   // Called when the decoder completes a Read().
@@ -114,8 +114,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
   // Called on IO thread when message loop is dying.
   virtual void WillDestroyCurrentMessageLoop();
 
-  // Information about the audio stream.
-  AudioParameters params_;
+  // Used to calculate audio delay given bytes.
   uint32 bytes_per_second_;
 
   scoped_refptr<AudioMessageFilter> filter_;

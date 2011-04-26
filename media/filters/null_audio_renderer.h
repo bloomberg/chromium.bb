@@ -41,7 +41,7 @@ class NullAudioRenderer : public AudioRendererBase,
 
  protected:
   // AudioRendererBase implementation.
-  virtual bool OnInitialize(const MediaFormat& media_format);
+  virtual bool OnInitialize(const AudioDecoderConfig& config);
   virtual void OnStop();
 
  private:

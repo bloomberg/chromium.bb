@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,22 +50,14 @@ base::TimeDelta AudioRendererImpl::ConvertToDuration(int bytes) {
   return base::TimeDelta();
 }
 
-bool AudioRendererImpl::OnInitialize(const media::MediaFormat& media_format) {
-  // Parse integer values in MediaFormat.
-  if (!ParseMediaFormat(media_format,
-                        &params_.channels,
-                        &params_.sample_rate,
-                        &params_.bits_per_sample)) {
-    return false;
-  }
-  params_.format = AudioParameters::AUDIO_PCM_LINEAR;
+bool AudioRendererImpl::OnInitialize(const media::AudioDecoderConfig& config) {
+  AudioParameters params(config);
+  params.format = AudioParameters::AUDIO_PCM_LINEAR;
 
-  // Calculate the number of bytes per second using information of the stream.
-  bytes_per_second_ = params_.sample_rate * params_.channels *
-      params_.bits_per_sample / 8;
+  bytes_per_second_ = params.GetBytesPerSecond();
 
   io_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererImpl::CreateStreamTask, params_));
+      NewRunnableMethod(this, &AudioRendererImpl::CreateStreamTask, params));
   return true;
 }
 

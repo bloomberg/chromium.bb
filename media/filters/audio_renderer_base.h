@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,10 +44,9 @@ class AudioRendererBase : public AudioRenderer {
   virtual bool HasEnded();
 
  protected:
-  // Called by Initialize().  |media_format| is the format of the AudioDecoder.
   // Subclasses should return true if they were able to initialize, false
   // otherwise.
-  virtual bool OnInitialize(const MediaFormat& media_format) = 0;
+  virtual bool OnInitialize(const AudioDecoderConfig& config) = 0;
 
   // Called by Stop().  Subclasses should perform any necessary cleanup during
   // this time, such as stopping any running threads.
@@ -78,12 +77,6 @@ class AudioRendererBase : public AudioRenderer {
                     uint32 len,
                     const base::TimeDelta& playback_delay,
                     bool buffers_empty);
-
-  // Helper to parse a media format and return whether we were successful
-  // retrieving all the information we care about.
-  static bool ParseMediaFormat(const MediaFormat& media_format,
-                               int* channels_out, int* sample_rate_out,
-                               int* sample_bits_out);
 
   // Get/Set the playback rate of |algorithm_|.
   virtual void SetPlaybackRate(float playback_rate);

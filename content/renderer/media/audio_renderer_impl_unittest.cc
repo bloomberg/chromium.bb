@@ -6,13 +6,12 @@
 #include "content/common/audio_messages.h"
 #include "content/renderer/media/audio_renderer_impl.h"
 #include "media/base/data_buffer.h"
-#include "media/base/media_format.h"
 #include "media/base/mock_callback.h"
 #include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::ReturnRef;
+using ::testing::Return;
 
 class AudioRendererImplTest : public ::testing::Test {
  public:
@@ -33,12 +32,8 @@ class AudioRendererImplTest : public ::testing::Test {
     // Setup expectations for initialization.
     decoder_ = new media::MockAudioDecoder();
 
-    // Associate media format with decoder
-    decoder_media_format_.SetAsInteger(media::MediaFormat::kChannels, 2);
-    decoder_media_format_.SetAsInteger(media::MediaFormat::kSampleRate, 48000);
-    decoder_media_format_.SetAsInteger(media::MediaFormat::kSampleBits, 16);
-    EXPECT_CALL(*decoder_, media_format())
-        .WillRepeatedly(ReturnRef(decoder_media_format_));
+    ON_CALL(*decoder_, config())
+        .WillByDefault(Return(media::AudioDecoderConfig(16, 1, 44100)));
 
     // Create and initialize audio renderer.
     renderer_ = new AudioRendererImpl(filter_);
@@ -68,7 +63,6 @@ class AudioRendererImplTest : public ::testing::Test {
   media::MockFilterHost host_;
   scoped_refptr<media::MockAudioDecoder> decoder_;
   scoped_refptr<AudioRendererImpl> renderer_;
-  media::MediaFormat decoder_media_format_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImplTest);

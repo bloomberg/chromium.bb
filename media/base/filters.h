@@ -30,6 +30,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/media_format.h"
 #include "media/base/video_frame.h"
 
@@ -238,6 +239,8 @@ class AudioDecoder : public Filter {
   virtual void Initialize(DemuxerStream* stream, FilterCallback* callback,
                           StatisticsCallback* stats_callback) = 0;
 
+  virtual AudioDecoderConfig config() = 0;
+
   // |set_fill_buffer_done_callback| install permanent callback from downstream
   // filter (i.e. Renderer). The callback is used to deliver buffers at
   // runtime to downstream filter.
@@ -254,9 +257,6 @@ class AudioDecoder : public Filter {
   // will be recycled to renderer by fill_buffer_done_callback_;
   // We could also pass empty pointer here to let decoder provide buffers pool.
   virtual void ProduceAudioSamples(scoped_refptr<Buffer> buffer) = 0;
-
-  // Returns the media format produced by this decoder.
-  virtual const MediaFormat& media_format() = 0;
 
  protected:
   AudioDecoder();
