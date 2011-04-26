@@ -11126,6 +11126,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_NETWORK_OPEN_PROXY_SETTINGS_DIALOG" desc="The menu item in the network menu button at login screen for opening the options dialog">
         Proxy settings...
       </message>
+      <message name="IDS_STATUSBAR_NETWORK_MORE" desc="Message for last link in the network menu requesting more technical and less common stuff (proxy settings, IP and hardware addresses)">
+        More...
+      </message>
       <message name="IDS_STATUSBAR_NETWORK_PRIVATE_NETWORKS" desc="In the network status menu, the text for submenu of private networks.">
         Private networks
       </message>

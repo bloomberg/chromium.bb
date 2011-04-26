@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 
 namespace chromeos {
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -63,6 +64,10 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     EXPECT_CALL(*mock_network_library_, AddNetworkManagerObserver(_))
         .Times(1)
         .RetiresOnSaturation();
+    EXPECT_CALL(*mock_network_library_, FindWifiDevice())
+        .Times(AnyNumber());
+    EXPECT_CALL(*mock_network_library_, FindEthernetDevice())
+        .Times(AnyNumber());
   }
 
   virtual void TearDownInProcessBrowserTestFixture() {

@@ -30,19 +30,18 @@
 
 namespace chromeos {
 
-class MainMenuModel : public NetworkMenuModel {
+class MoreMenuModel : public NetworkMenuModel {
  public:
-  explicit MainMenuModel(NetworkMenu* owner);
-  virtual ~MainMenuModel() {}
+  explicit MoreMenuModel(NetworkMenu* owner);
+  virtual ~MoreMenuModel() {}
 
   // NetworkMenuModel implementation.
   virtual void InitMenuItems(bool is_browser_mode,
                              bool should_open_button_options);
 
  private:
-  scoped_ptr<NetworkMenuModel> vpn_menu_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(MainMenuModel);
+  friend class MainMenuModel;
+  DISALLOW_COPY_AND_ASSIGN(MoreMenuModel);
 };
 
 class VPNMenuModel : public NetworkMenuModel {
@@ -58,6 +57,22 @@ class VPNMenuModel : public NetworkMenuModel {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VPNMenuModel);
+};
+
+class MainMenuModel : public NetworkMenuModel {
+ public:
+  explicit MainMenuModel(NetworkMenu* owner);
+  virtual ~MainMenuModel() {}
+
+  // NetworkMenuModel implementation.
+  virtual void InitMenuItems(bool is_browser_mode,
+                             bool should_open_button_options);
+
+ private:
+  scoped_ptr<NetworkMenuModel> vpn_menu_model_;
+  scoped_ptr<MoreMenuModel> more_menu_model_;
+
+  DISALLOW_COPY_AND_ASSIGN(MainMenuModel);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -289,8 +304,9 @@ void NetworkMenuModel::ShowOtherCellular() const {
 // MainMenuModel
 
 MainMenuModel::MainMenuModel(NetworkMenu* owner)
-    : NetworkMenuModel(owner) {
-  vpn_menu_model_.reset(new VPNMenuModel(owner));
+    : NetworkMenuModel(owner),
+      vpn_menu_model_(new VPNMenuModel(owner)),
+      more_menu_model_(new MoreMenuModel(owner)) {
 }
 
 void MainMenuModel::InitMenuItems(bool is_browser_mode,
@@ -508,7 +524,9 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
           ui::MenuModel::TYPE_SUBMENU,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_PRIVATE_NETWORKS),
           VPNMenuModel::IconForDisplay(connected_network),
-          vpn_menu_model_.get(), FLAG_PRIVATE_NETWORKS));
+          vpn_menu_model_.get(), FLAG_NONE));
+      vpn_menu_model_->InitMenuItems(
+          is_browser_mode, should_open_button_options);
     }
   }
 
@@ -561,34 +579,24 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
   //     l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_OFFLINE_MODE),
   //     SkBitmap(), std::string(), FLAG_TOGGLE_OFFLINE));
 
-  bool connected = cros->Connected();  // always call for test expectations.
-  bool oobe = !should_open_button_options;  // we don't show options for OOBE.
-  // Network settings. (And IP Address)
-  if (!oobe) {
-    menu_items_.push_back(MenuItem());  // Separator
-
-    if (connected) {
-      std::string ip_address = cros->IPAddress();
-      if (!ip_address.empty()) {
-        menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
-            ASCIIToUTF16(cros->IPAddress()), SkBitmap(), std::string(),
-                         FLAG_DISABLED));
-      }
-    }
-
-    label = l10n_util::GetStringUTF16(is_browser_mode ?
-        IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG :
-        IDS_STATUSBAR_NETWORK_OPEN_PROXY_SETTINGS_DIALOG);
-    menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
-                                   SkBitmap(), std::string(), FLAG_OPTIONS));
-  }
-
-  // Recursively call each submenu to populate its own menu items.
-  for (size_t i = 0; i < menu_items_.size(); ++i) {
-    if (menu_items_[i].type == ui::MenuModel::TYPE_SUBMENU &&
-        menu_items_[i].sub_menu_model) {
-      menu_items_[i].sub_menu_model->InitMenuItems(is_browser_mode,
-                                                   should_open_button_options);
+  // Additional links like:
+  // * Network settings;
+  // * IP Address on active interface;
+  // * Hardware addresses for wifi and ethernet.
+  menu_items_.push_back(MenuItem());  // Separator
+  more_menu_model_->InitMenuItems(is_browser_mode, should_open_button_options);
+  if (is_browser_mode) {
+    // In browser mode we do not want separate submenu, inline items.
+    menu_items_.insert(
+        menu_items_.end(),
+        more_menu_model_->menu_items_.begin(),
+        more_menu_model_->menu_items_.end());
+  } else {
+    if (!more_menu_model_->menu_items_.empty()) {
+      menu_items_.push_back(MenuItem(
+          ui::MenuModel::TYPE_SUBMENU,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_MORE),
+          SkBitmap(), more_menu_model_.get(), FLAG_NONE));
     }
   }
 }
@@ -702,6 +710,79 @@ SkBitmap VPNMenuModel::IconForDisplay(const Network* network) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// MoreMenuModel
+
+MoreMenuModel::MoreMenuModel(NetworkMenu* owner)
+    : NetworkMenuModel(owner) {
+}
+
+void MoreMenuModel::InitMenuItems(
+    bool is_browser_mode, bool should_open_button_options) {
+  // This gets called on initialization, so any changes should be reflected
+  // in CrosMock::SetNetworkLibraryStatusAreaExpectations().
+
+  menu_items_.clear();
+  MenuItemVector link_items;
+  MenuItemVector address_items;
+
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  bool oobe = !should_open_button_options;  // we don't show options for OOBE.
+  if (!oobe) {
+    string16 label = l10n_util::GetStringUTF16(is_browser_mode ?
+        IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG :
+        IDS_STATUSBAR_NETWORK_OPEN_PROXY_SETTINGS_DIALOG);
+    link_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
+                                  SkBitmap(), std::string(), FLAG_OPTIONS));
+  }
+
+  bool connected = cros->Connected();  // always call for test expectations.
+  if (connected) {
+    std::string ip_address = cros->IPAddress();
+    if (!ip_address.empty()) {
+      address_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
+          ASCIIToUTF16(cros->IPAddress()), SkBitmap(), std::string(),
+                       FLAG_DISABLED));
+    }
+  }
+
+  if (!is_browser_mode) {
+    const NetworkDevice* ether = cros->FindEthernetDevice();
+    if (ether) {
+      std::string hardware_address;
+      cros->GetIPConfigs(ether->device_path(), &hardware_address,
+          NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
+      if (!hardware_address.empty()) {
+        std::string label = l10n_util::GetStringUTF8(
+            IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET) + " " + hardware_address;
+        address_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
+            UTF8ToUTF16(label), SkBitmap(), std::string(), FLAG_DISABLED));
+      }
+    }
+
+    if (cros->wifi_enabled()) {
+      const NetworkDevice* wifi = cros->FindWifiDevice();
+      if (wifi) {
+        std::string hardware_address;
+        cros->GetIPConfigs(wifi->device_path(),
+            &hardware_address, NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
+        if (!hardware_address.empty()) {
+          std::string label = l10n_util::GetStringUTF8(
+              IDS_STATUSBAR_NETWORK_DEVICE_WIFI) + " " + hardware_address;
+          address_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
+              UTF8ToUTF16(label), SkBitmap(), std::string(), FLAG_DISABLED));
+        }
+      }
+    }
+  }
+
+  menu_items_ = link_items;
+  if (!menu_items_.empty() && address_items.size() > 1)
+    menu_items_.push_back(MenuItem());  // Separator
+  menu_items_.insert(menu_items_.end(),
+      address_items.begin(), address_items.end());
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NetworkMenu
 
 // static
@@ -749,8 +830,7 @@ SkBitmap NetworkMenu::kAnimatingImages[kNumAnimatingImages];
 // static
 SkBitmap NetworkMenu::kAnimatingImagesBlack[kNumAnimatingImages];
 
-NetworkMenu::NetworkMenu()
-    : min_width_(-1) {
+NetworkMenu::NetworkMenu() : min_width_(-1) {
   main_menu_model_.reset(new MainMenuModel(this));
   network_menu_.reset(new views::Menu2(main_menu_model_.get()));
 }
@@ -993,3 +1073,5 @@ void NetworkMenu::RunMenu(views::View* source, const gfx::Point& pt) {
 }
 
 }  // namespace chromeos
+
+

@@ -2216,6 +2216,24 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return NULL;
   }
 
+  virtual const NetworkDevice* FindEthernetDevice() const {
+    for (NetworkDeviceMap::const_iterator iter = device_map_.begin();
+         iter != device_map_.end(); ++iter) {
+      if (iter->second->type() == TYPE_ETHERNET)
+        return iter->second;
+    }
+    return NULL;
+  }
+
+  virtual const NetworkDevice* FindWifiDevice() const {
+    for (NetworkDeviceMap::const_iterator iter = device_map_.begin();
+         iter != device_map_.end(); ++iter) {
+      if (iter->second->type() == TYPE_WIFI)
+        return iter->second;
+    }
+    return NULL;
+  }
+
   virtual Network* FindNetworkByPath(const std::string& path) const {
     NetworkMap::const_iterator iter = network_map_.find(path);
     if (iter != network_map_.end())
@@ -2831,7 +2849,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   virtual NetworkIPConfigVector GetIPConfigs(const std::string& device_path,
-                                             std::string* hardware_address) {
+                                             std::string* hardware_address,
+                                             HardwareAddressFormat format) {
+    DCHECK(hardware_address);
     hardware_address->clear();
     NetworkIPConfigVector ipconfig_vector;
     if (EnsureCrosLoaded() && !device_path.empty()) {
@@ -2849,6 +2869,22 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         // Sort the list of ip configs by type.
         std::sort(ipconfig_vector.begin(), ipconfig_vector.end());
       }
+    }
+
+    for (size_t i = 0; i < hardware_address->size(); ++i)
+      (*hardware_address)[i] = toupper((*hardware_address)[i]);
+    if (format == FORMAT_COLON_SEPARATED_HEX) {
+      if (hardware_address->size() % 2 == 0) {
+        std::string output;
+        for (size_t i = 0; i < hardware_address->size(); ++i) {
+          if ((i != 0) && (i % 2 == 0))
+            output.push_back(':');
+          output.push_back((*hardware_address)[i]);
+        }
+        *hardware_address = output;
+      }
+    } else {
+      DCHECK(format == FORMAT_RAW_HEX);
     }
     return ipconfig_vector;
   }
@@ -4202,6 +4238,12 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual const NetworkDevice* FindCellularDevice() const {
     return NULL;
   }
+  virtual const NetworkDevice* FindEthernetDevice() const {
+    return NULL;
+  }
+  virtual const NetworkDevice* FindWifiDevice() const {
+    return NULL;
+  }
   virtual Network* FindNetworkByPath(
       const std::string& path) const { return NULL; }
   virtual WifiNetwork* FindWifiNetworkByPath(
@@ -4273,7 +4315,8 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual void EnableCellularNetworkDevice(bool enable) {}
   virtual void EnableOfflineMode(bool enable) {}
   virtual NetworkIPConfigVector GetIPConfigs(const std::string& device_path,
-                                             std::string* hardware_address) {
+                                             std::string* hardware_address,
+                                             HardwareAddressFormat) {
     hardware_address->clear();
     return NetworkIPConfigVector();
   }

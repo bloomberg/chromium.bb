@@ -63,7 +63,7 @@ class NetworkMenuModel : public ui::MenuModel {
 
   // Called by NetworkMenu::RunMenu to initialize list of menu items.
   virtual void InitMenuItems(bool is_browser_mode,
-                             bool should_open_button_options) {}
+                             bool should_open_button_options) = 0;
 
   // ui::MenuModel implementation.
   virtual bool HasIcons() const  { return true; }
@@ -90,6 +90,7 @@ class NetworkMenuModel : public ui::MenuModel {
 
  protected:
   enum MenuItemFlags {
+    FLAG_NONE              = 0,
     FLAG_DISABLED          = 1 << 0,
     FLAG_TOGGLE_ETHERNET   = 1 << 1,
     FLAG_TOGGLE_WIFI       = 1 << 2,
@@ -99,13 +100,12 @@ class NetworkMenuModel : public ui::MenuModel {
     FLAG_ETHERNET          = 1 << 6,
     FLAG_WIFI              = 1 << 7,
     FLAG_CELLULAR          = 1 << 8,
-    FLAG_PRIVATE_NETWORKS  = 1 << 9,
-    FLAG_OPTIONS           = 1 << 10,
-    FLAG_ADD_WIFI          = 1 << 11,
-    FLAG_ADD_CELLULAR      = 1 << 12,
-    FLAG_VPN               = 1 << 13,
-    FLAG_ADD_VPN           = 1 << 14,
-    FLAG_DISCONNECT_VPN    = 1 << 15,
+    FLAG_OPTIONS           = 1 << 9,
+    FLAG_ADD_WIFI          = 1 << 10,
+    FLAG_ADD_CELLULAR      = 1 << 11,
+    FLAG_VPN               = 1 << 12,
+    FLAG_ADD_VPN           = 1 << 13,
+    FLAG_DISCONNECT_VPN    = 1 << 14,
   };
 
   struct MenuItem {

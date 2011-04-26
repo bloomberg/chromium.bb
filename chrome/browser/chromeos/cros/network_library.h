@@ -847,6 +847,11 @@ typedef std::vector<NetworkIPConfig> NetworkIPConfigVector;
 // library like this: chromeos::CrosLibrary::Get()->GetNetworkLibrary()
 class NetworkLibrary {
  public:
+  enum HardwareAddressFormat {
+    FORMAT_RAW_HEX,
+    FORMAT_COLON_SEPARATED_HEX
+  };
+
   class NetworkManagerObserver {
    public:
     // Called when the state of the network manager has changed,
@@ -980,9 +985,14 @@ class NetworkLibrary {
   virtual const NetworkDevice* FindNetworkDeviceByPath(
       const std::string& path) const = 0;
 
-  // Returns device with TYPE_CELLULAR. Returns NULL if such a device doesn't
-  // exist.
+  // Returns device with TYPE_CELLULAR. Returns NULL if none exists.
   virtual const NetworkDevice* FindCellularDevice() const = 0;
+
+  // Returns device with TYPE_ETHERNET. Returns NULL if none exists.
+  virtual const NetworkDevice* FindEthernetDevice() const = 0;
+
+  // Returns device with TYPE_WIFI. Returns NULL if none exists.
+  virtual const NetworkDevice* FindWifiDevice() const = 0;
 
   // Return a pointer to the network, if it exists, or NULL.
   // NOTE: Never store these results, store service paths instead.
@@ -1136,7 +1146,8 @@ class NetworkLibrary {
   // found.
   virtual NetworkIPConfigVector GetIPConfigs(
       const std::string& device_path,
-      std::string* hardware_address) = 0;
+      std::string* hardware_address,
+      HardwareAddressFormat) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().

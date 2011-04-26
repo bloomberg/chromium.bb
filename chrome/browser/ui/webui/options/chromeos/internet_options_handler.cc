@@ -46,22 +46,6 @@
 
 static const char kOtherNetworksFakePath[] = "?";
 
-namespace {
-
-// Format the hardware address like "0011AA22BB33" => "00:11:AA:22:BB:33".
-std::string FormatHardwareAddress(const std::string& address) {
-  std::string output;
-  for (size_t i = 0; i < address.size(); ++i) {
-    if (i != 0 && i % 2 == 0) {
-      output.push_back(':');
-    }
-    output.push_back(toupper(address[i]));
-  }
-  return output;
-}
-
-}  // namespace
-
 InternetOptionsHandler::InternetOptionsHandler()
     : chromeos::CrosOptionsPageUIHandler(
           new chromeos::UserCrosSettingsProvider),
@@ -593,12 +577,11 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   DCHECK(net);
   DictionaryValue dictionary;
   std::string hardware_address;
-  chromeos::NetworkIPConfigVector ipconfigs =
-      cros->GetIPConfigs(net->device_path(), &hardware_address);
-  if (!hardware_address.empty()) {
-    dictionary.SetString("hardwareAddress",
-                         FormatHardwareAddress(hardware_address));
-  }
+  chromeos::NetworkIPConfigVector ipconfigs = cros->GetIPConfigs(
+      net->device_path(), &hardware_address,
+      chromeos::NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
+  if (!hardware_address.empty())
+    dictionary.SetString("hardwareAddress", hardware_address);
   scoped_ptr<ListValue> ipconfig_list(new ListValue());
   for (chromeos::NetworkIPConfigVector::const_iterator it = ipconfigs.begin();
        it != ipconfigs.end(); ++it) {

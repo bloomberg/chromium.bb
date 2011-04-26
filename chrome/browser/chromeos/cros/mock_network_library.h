@@ -64,6 +64,8 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD1(FindNetworkDeviceByPath,
                      NetworkDevice*(const std::string&));
   MOCK_CONST_METHOD0(FindCellularDevice, const NetworkDevice*(void));
+  MOCK_CONST_METHOD0(FindWifiDevice, const NetworkDevice*(void));
+  MOCK_CONST_METHOD0(FindEthernetDevice, const NetworkDevice*(void));
   MOCK_CONST_METHOD1(FindNetworkByPath,
                      Network*(const std::string&));
   MOCK_CONST_METHOD1(FindWifiNetworkByPath,
@@ -135,8 +137,9 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(EnableWifiNetworkDevice, void(bool));
   MOCK_METHOD1(EnableCellularNetworkDevice, void(bool));
   MOCK_METHOD1(EnableOfflineMode, void(bool));
-  MOCK_METHOD2(GetIPConfigs, NetworkIPConfigVector(const std::string&,
-                                                   std::string*));
+  MOCK_METHOD3(GetIPConfigs, NetworkIPConfigVector(const std::string&,
+                                                   std::string*,
+                                                   HardwareAddressFormat));
   MOCK_METHOD1(GetHtmlInfo, std::string(int));
 };
 

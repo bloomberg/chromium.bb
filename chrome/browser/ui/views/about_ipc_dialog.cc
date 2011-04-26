@@ -219,7 +219,7 @@ void AboutIPCDialog::RunDialog() {
     views::Window::CreateChromeWindow(NULL, gfx::Rect(),
                                       g_active_dialog)->Show();
   } else {
-    // TOOD(brettw) it would be nice to focus the existing window.
+    // TODO(brettw) it would be nice to focus the existing window.
   }
 }
 
