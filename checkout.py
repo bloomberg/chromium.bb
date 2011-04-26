@@ -191,7 +191,8 @@ class SvnMixIn(object):
     """Runs svn and throws an exception if the command failed."""
     kwargs.setdefault('cwd', self.project_path)
     kwargs.setdefault('stdout', self.VOID)
-    return subprocess2.check_call(self._add_svn_flags(args, False), **kwargs)
+    return subprocess2.check_call_out(
+        self._add_svn_flags(args, False), **kwargs)
 
   def _check_output_svn(self, args, **kwargs):
     """Runs svn and throws an exception if the command failed.
@@ -429,7 +430,7 @@ class GitCheckoutBase(CheckoutBase):
   def _check_call_git(self, args, **kwargs):
     kwargs.setdefault('cwd', self.project_path)
     kwargs.setdefault('stdout', self.VOID)
-    return subprocess2.check_call(['git'] + args, **kwargs)
+    return subprocess2.check_call_out(['git'] + args, **kwargs)
 
   def _call_git(self, args, **kwargs):
     """Like check_call but doesn't throw on failure."""

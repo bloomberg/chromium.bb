@@ -256,7 +256,7 @@ def call(args, **kwargs):
   return communicate(args, **kwargs)[1]
 
 
-def check_call(args, **kwargs):
+def check_call_out(args, **kwargs):
   """Improved version of subprocess.check_call().
 
   Returns (stdout, stderr), unlike subprocess.check_call().
@@ -266,6 +266,12 @@ def check_call(args, **kwargs):
     raise CalledProcessError(
         returncode, args, kwargs.get('cwd'), out[0], out[1])
   return out
+
+
+def check_call(args, **kwargs):
+  """Emulate subprocess.check_call()."""
+  check_call_out(args, **kwargs)
+  return 0
 
 
 def capture(args, **kwargs):
@@ -287,9 +293,9 @@ def capture(args, **kwargs):
 
 
 def check_output(args, **kwargs):
-  """Captures stdout of a process call and returns it.
+  """Emulates subprocess.check_output().
 
-  Returns stdout.
+  Captures stdout of a process call and returns stdout only.
 
   - Discards stderr. By default sets stderr=STDOUT.
   - Throws if return code is not 0.
@@ -302,4 +308,4 @@ def check_output(args, **kwargs):
     kwargs['stdout'] = PIPE
   if kwargs.get('stderr') is None:
     kwargs['stderr'] = STDOUT
-  return check_call(args, **kwargs)[0]
+  return check_call_out(args, **kwargs)[0]

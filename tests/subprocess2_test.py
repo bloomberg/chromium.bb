@@ -82,7 +82,7 @@ class Subprocess2Test(unittest.TestCase):
   def test_check_call_defaults(self):
     results = self._fake_communicate()
     self.assertEquals(
-        ['stdout', 'stderr'], subprocess2.check_call(['foo'], a=True))
+        ['stdout', 'stderr'], subprocess2.check_call_out(['foo'], a=True))
     expected = {
         'args': ['foo'],
         'a':True,
