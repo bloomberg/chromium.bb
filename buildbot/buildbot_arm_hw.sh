@@ -64,21 +64,21 @@ ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl small_tests platform=arm bitcode=1 \
     sdl=none naclsdk_validate=0 built_elsewhere=1 ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 echo @@@BUILD_STEP medium_tests@@@
 ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl medium_tests platform=arm bitcode=1 \
     sdl=none naclsdk_validate=0 built_elsewhere=1 ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 echo @@@BUILD_STEP large_tests@@@
 ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=${MODE}-linux,nacl large_tests platform=arm bitcode=1 \
     sdl=none naclsdk_validate=0 built_elsewhere=1 ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 echo @@@BUILD_STEP chrome_browser_tests@@@
 # Although we could use the "browser_headless=1" Scons option, it runs
@@ -93,7 +93,7 @@ ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     --mode=${MODE}-linux,nacl SILENT=1 platform=arm bitcode=1 sdl=none \
     built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 \
     chrome_browser_tests ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 # TODO(mseaborn): Drop support for non-IRT builds so that this is the
 # default.  See http://code.google.com/p/nativeclient/issues/detail?id=1691
@@ -104,7 +104,7 @@ ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     --mode=${MODE}-linux,nacl SILENT=1 platform=arm bitcode=1 sdl=none \
     built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 \
     chrome_browser_tests irt=1 ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 echo @@@BUILD_STEP pyauto_tests@@@
 ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
@@ -113,7 +113,7 @@ ARM_CC=gcc ARM_CXX=g++ ARM_LIB_DIR=/usr/lib \
     --mode=${MODE}-linux,nacl SILENT=1 platform=arm bitcode=1 sdl=none \
     built_elsewhere=1 naclsdk_mode=manual naclsdk_validate=0 \
     pyauto_tests ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 
 exit ${RETCODE}

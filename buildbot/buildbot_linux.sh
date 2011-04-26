@@ -76,7 +76,7 @@ echo @@@BUILD_STEP small_tests${BITS}@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc small_tests \
     platform=x86-${BITS} ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 # TODO(khim): run other tests with glibc toolchain
 if [[ $TOOLCHAIN != glibc ]]; then
@@ -84,13 +84,13 @@ echo @@@BUILD_STEP medium_tests${BITS}@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc medium_tests \
     platform=x86-${BITS} ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 echo @@@BUILD_STEP large_tests${BITS}@@@
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc large_tests \
     platform=x86-${BITS} ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 if [[ "${INSIDE_TOOLCHAIN:-}" == "" ]]; then
 
@@ -105,7 +105,7 @@ $XVFB_PREFIX \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
     chrome_browser_tests ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 # TODO(mseaborn): Drop support for non-IRT builds so that this is the
 # default.  See http://code.google.com/p/nativeclient/issues/detail?id=1691
@@ -114,14 +114,14 @@ $XVFB_PREFIX \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
     chrome_browser_tests irt=1 ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 echo @@@BUILD_STEP pyauto_tests${BITS}@@@
 $XVFB_PREFIX \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
     pyauto_tests ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 echo @@@BUILD_STEP archive irt.nexe@@@
 # Upload the integrated runtime (IRT) library so that it can be pulled

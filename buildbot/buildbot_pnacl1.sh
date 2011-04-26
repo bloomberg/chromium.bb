@@ -129,7 +129,7 @@ single-scons-test() {
   local test=$4
   echo "@@@BUILD_STEP scons [${platform}] [${test}] [${extra2}]@@@"
   ${SCONS_COMMON} ${extra} ${extra2} platform=${platform} ${test} || \
-     (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+     { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 
 }

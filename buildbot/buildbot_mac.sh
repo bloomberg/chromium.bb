@@ -75,7 +75,7 @@ echo @@@BUILD_STEP scons_compile@@@
 echo @@@BUILD_STEP small_tests@@@
 ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc small_tests platform=x86-${BITS} ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 # TODO(khim): run other tests with glibc toolchain
 if [[ $TOOLCHAIN != glibc ]]; then
@@ -83,13 +83,13 @@ echo @@@BUILD_STEP medium_tests@@@
 ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc medium_tests \
     platform=x86-${BITS} ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 echo @@@BUILD_STEP large_tests@@@
 ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc large_tests \
     platform=x86-${BITS} ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 if [[ "${INSIDE_TOOLCHAIN:-}" == "" ]]; then
 
@@ -97,7 +97,7 @@ echo @@@BUILD_STEP chrome_browser_tests@@@
 ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-${BITS} \
     chrome_browser_tests ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 # TODO(mseaborn): Drop support for non-IRT builds so that this is the
 # default.  See http://code.google.com/p/nativeclient/issues/detail?id=1691
@@ -105,13 +105,13 @@ echo @@@BUILD_STEP chrome_browser_tests using IRT@@@
 ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-${BITS} \
     chrome_browser_tests irt=1 ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 echo @@@BUILD_STEP pyauto_tests@@@
 ./scons DOXYGEN=../third_party/doxygen/osx/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc SILENT=1 platform=x86-${BITS} \
     pyauto_tests ||
-    (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
 
 fi

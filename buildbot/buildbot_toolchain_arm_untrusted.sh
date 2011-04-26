@@ -73,7 +73,7 @@ GS_BASE=gs://nativeclient-archive2/toolchain
 for arch in ${RUN_TESTS} ; do
   echo @@@BUILD_STEP test-${arch}@@@
   UTMAN_BUILDBOT=true tools/llvm/utman.sh test-${arch} ||
-      (RETCODE=$? && echo @@@STEP_FAILURE@@@)
+      { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 done
 
 exit ${RETCODE}
