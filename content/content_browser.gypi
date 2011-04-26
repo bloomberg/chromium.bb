@@ -15,6 +15,7 @@
         '../third_party/flac/flac.gyp:libflac',
         '../third_party/speex/speex.gyp:libspeex',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/zlib/zlib.gyp:zlib',
         '../ui/ui.gyp:ui_base',
       ],
       'include_dirs': [
