@@ -680,7 +680,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowSize) {
 
 // Checks that prerenderers will terminate when the RenderView crashes.
 // Note that the prerendering RenderView will be redirected to about:crash.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
+// Disabled, http://crbug.com/80561
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderRendererCrash) {
   PrerenderTestURL(CreateClientRedirect("files/prerender/prerender_page.html"),
                    FINAL_STATUS_RENDERER_CRASHED,
                    1);
