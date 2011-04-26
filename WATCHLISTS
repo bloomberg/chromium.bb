@@ -143,6 +143,13 @@
                   'chrome/browser/resources/options.html|'\
                   'chrome/browser/dom_ui/options/.*',
     },
+    'ntp' : {
+      'filepath': 'chrome/browser/resources/ntp/.*|'\
+        'chrome/browser/resources/ntp4/.*|'\
+        'chrome/browser/resources/touch_ntp/.*|'\
+        'chrome/browser/resources/touch_ntp/.*|'\
+        'chrome/browser/ui/webui/ntp/.*',
+    },
     'cookie_monster': {
       'filepath': 'net/base/cookie_.*|'\
         'chrome/browser/net/sqlite_persistent_cookie_store.*',
@@ -259,6 +266,7 @@
                  'sergeyu+watch@chromium.org',
                  'simonmorris+watch@chromium.org',
                  'wez+watch@chromium.org'],
+    'ntp': ['estade+watch@chromium.org'],
     'cookie_monster': ['rdsmith@chromium.org'],
     'autofill': ['dhollowa@chromium.org', 'georgey@chromium.org',
                  'isherman@chromium.org'],

@@ -10,7 +10,7 @@
 #include "chrome/browser/resources_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/webui/ntp_resource_cache.h"
+#include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"

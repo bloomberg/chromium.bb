@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_SHOWN_SECTIONS_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_SHOWN_SECTIONS_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_NTP_SHOWN_SECTIONS_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_NTP_SHOWN_SECTIONS_HANDLER_H_
 #pragma once
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -76,4 +76,4 @@ class ShownSectionsHandler : public WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(ShownSectionsHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_SHOWN_SECTIONS_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_NTP_SHOWN_SECTIONS_HANDLER_H_

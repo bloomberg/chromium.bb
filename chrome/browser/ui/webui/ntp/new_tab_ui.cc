@@ -4,7 +4,7 @@
 
 #include "build/build_config.h"
 
-#include "chrome/browser/ui/webui/new_tab_ui.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 
 #include <set>
 
@@ -27,15 +27,15 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/webui/app_launcher_handler.h"
-#include "chrome/browser/ui/webui/foreign_session_handler.h"
-#include "chrome/browser/ui/webui/most_visited_handler.h"
-#include "chrome/browser/ui/webui/new_tab_page_sync_handler.h"
-#include "chrome/browser/ui/webui/ntp_login_handler.h"
-#include "chrome/browser/ui/webui/ntp_resource_cache.h"
-#include "chrome/browser/ui/webui/shown_sections_handler.h"
+#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
+#include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
+#include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
+#include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
+#include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
+#include "chrome/browser/ui/webui/ntp/value_helper.h"
 #include "chrome/browser/ui/webui/theme_source.h"
-#include "chrome/browser/ui/webui/value_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
