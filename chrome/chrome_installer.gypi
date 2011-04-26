@@ -196,6 +196,7 @@
           'dependencies': [
             'installer_util',
             'installer_util_strings',
+            '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
             '<(DEPTH)/build/util/build_util.gyp:lastchange',
             '<(DEPTH)/build/util/support/support.gyp:*',

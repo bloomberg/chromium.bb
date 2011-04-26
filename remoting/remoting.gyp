@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -114,6 +114,7 @@
       'target_name': 'chromoting_base',
       'type': '<(library)',
       'dependencies': [
+        '../base/base.gyp:base',
         '../ui/ui.gyp:ui_gfx',
         '../media/media.gyp:media',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
@@ -126,6 +127,7 @@
         #'third_party/on2/on2.gyp:vp8',
       ],
       'export_dependent_settings': [
+        '../base/base.gyp:base',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'proto/chromotocol.gyp:chromotocol_proto_lib',
       ],
@@ -331,6 +333,7 @@
       'target_name': 'chromoting_jingle_glue',
       'type': '<(library)',
       'dependencies': [
+        '../base/base.gyp:base',
         '../jingle/jingle.gyp:jingle_glue',
         '../jingle/jingle.gyp:notifier',
         '../third_party/libjingle/libjingle.gyp:libjingle',

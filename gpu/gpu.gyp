@@ -49,6 +49,12 @@
           '.',
         ],
       },
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
+      ],
       'sources': [
         'command_buffer/common/bitfield_helpers.h',
         'command_buffer/common/buffer.h',
@@ -375,6 +381,7 @@
       'dependencies': [
         'command_buffer_client',
         'gles2_c_lib',
+        '../base/base.gyp:base',
       ],
       'include_dirs': [
         '..',

@@ -64,6 +64,7 @@
       'dependencies': [
         '../app/app.gyp:app_base',
         '../app/app.gyp:app_resources',
+        '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',

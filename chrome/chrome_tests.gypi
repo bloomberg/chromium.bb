@@ -870,6 +870,7 @@
       'msvs_guid': '3F9C9B6D-BBB6-480F-B038-23BF35A432DC',
       'dependencies': [
         'chromedriver_lib',
+        '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
       ],

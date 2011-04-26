@@ -849,7 +849,13 @@
         'sync_msg_reply_dispatcher.cc',
         'task_marshaller.h',
         'task_marshaller.cc',
-      ]
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
+      ],
     },
     {
       'target_name': 'npchrome_frame',

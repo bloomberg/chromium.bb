@@ -8,6 +8,7 @@
       'target_name': 'content_common',
       'type': '<(library)',
       'dependencies': [
+        '../base/base.gyp:base',
         '../ipc/ipc.gyp:ipc',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icuuc',
@@ -21,6 +22,9 @@
       ],
       'include_dirs': [
         '..',
+      ],
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
       ],
       'sources': [
         'common/appcache/appcache_backend_proxy.cc',

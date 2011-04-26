@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,6 +25,9 @@
         'nt_loader.h',
         'vectored_handler-impl.h',
         'vectored_handler.h',
+      ],
+      'dependencies': [
+        '../../base/base.gyp:base',
       ],
       'conditions': [
         ['OS=="win"', {

@@ -62,6 +62,7 @@
         # target, but it doesn't work due to a bug in gyp
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
+        '../base/base.gyp:base_static',
         '../ui/ui.gyp:ui_gfx',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
@@ -72,6 +73,10 @@
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '<(libjpeg_gyp_path):libjpeg',
+      ],
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_static',
       ],
       # TODO(gregoryd): The direct_dependent_settings should be shared with
       # the 64-bit target, but it doesn't work due to a bug in gyp

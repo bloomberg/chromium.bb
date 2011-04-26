@@ -526,6 +526,9 @@
             '../../plugins/npapi/test/plugin_test.h',
             '../../plugins/npapi/test/plugin_test_factory.h',
           ],
+          'export_dependent_settings': [
+            '<(DEPTH)/base/base.gyp:base',
+          ],
         },
         {
           'target_name': 'npapi_test_plugin',

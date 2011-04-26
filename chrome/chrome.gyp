@@ -1154,6 +1154,9 @@
           'include_dirs': [
             '..',
           ],
+          'dependencies': [
+            '../base/base.gyp:base',
+          ],
           'sources': [
             'tools/convert_dict/aff_reader.cc',
             'tools/convert_dict/aff_reader.h',

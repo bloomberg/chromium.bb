@@ -1,3 +1,7 @@
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 {
   'variables': {
     'version_py': '<(DEPTH)/chrome/tools/build/version.py',
@@ -15,6 +19,7 @@
           'msvs_guid': '7CC08DA8-E9CA-4573-A8C4-E7F0D0CF8EBA',
           'type': 'executable',
           'dependencies': [
+            '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/chrome/chrome.gyp:common_constants',
             '<(DEPTH)/chrome/chrome.gyp:installer_util',
             '<(DEPTH)/chrome/chrome.gyp:installer_util_strings',

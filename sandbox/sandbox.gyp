@@ -190,6 +190,9 @@
             '../base/base.gyp:base',
             '../base/base.gyp:base_static',
           ],
+          'export_dependent_settings': [
+            '../base/base.gyp:base',
+          ],
           'msvs_guid': '881F6A97-D539-4C48-B401-DF04385B2343',
           'sources': [
             # Files that are used by the 32-bit version of Windows sandbox only.
