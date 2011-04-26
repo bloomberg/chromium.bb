@@ -264,7 +264,7 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 	}
 
 	ec->drm.fd = fd;
-	ec->base.display = eglGetDisplay((EGLNativeDisplayType) ec->drm.fd);
+	ec->base.display = eglGetDisplay(FD_TO_EGL_NATIVE_DPY(ec->drm.fd));
 	if (ec->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;

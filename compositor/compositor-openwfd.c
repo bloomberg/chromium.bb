@@ -116,7 +116,7 @@ init_egl(struct wfd_compositor *ec)
 		return -1;
 
 	ec->wfd_fd = fd;
-	ec->base.display = eglGetDRMDisplayMESA(ec->wfd_fd);
+	ec->base.display = eglGetDisplay(FD_TO_EGL_NATIVE_DPY(ec->wfd_fd));
 	if (ec->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
@@ -374,7 +374,7 @@ destroy_output(struct wfd_output *output)
 	glDeleteRenderbuffers(2, output->rbo);
 
 	for (i = 0; i < 2; i++) {
-		eglDestroyImageKHR(ec->base.display, output->image[i]);
+		ec->base.destroy_image(ec->base.display, output->image[i]);
 		wfdDestroySource(ec->dev, output->source[i]);
 	}
 	
