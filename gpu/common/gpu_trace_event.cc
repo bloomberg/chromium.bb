@@ -21,15 +21,20 @@ namespace gpu {
 #define TRACE_EVENT_BUFFER_SIZE 500000
 #define TRACE_EVENT_BATCH_SIZE 1000
 
+#define TRACE_EVENT_MAX_CATEGORIES 42
+
+static TraceCategory g_categories[TRACE_EVENT_MAX_CATEGORIES];
+static int g_category_index = 0;
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // TraceLog::Category
 //
 ////////////////////////////////////////////////////////////////////////////////
-TraceCategory::TraceCategory(const char* name, bool enabled)
-    : name_(name) {
+TraceCategory::TraceCategory()
+    : name_(NULL) {
   base::subtle::NoBarrier_Store(&enabled_,
-      static_cast<base::subtle::Atomic32>(enabled));
+      static_cast<base::subtle::Atomic32>(0));
 }
 
 TraceCategory::~TraceCategory() {
@@ -215,14 +220,15 @@ TraceLog::~TraceLog() {
 
 TraceCategory* TraceLog::GetCategory(const char* name) {
   AutoLock lock(lock_);
-  // TODO(nduca): replace with a hash_map.
-  for (int i = static_cast<int>(categories_.size()) - 1; i >= 0; i--) {
-    if (strcmp(categories_[i]->name(), name) == 0)
-      return categories_[i];
+  for (int i = 0; i < g_category_index; i++) {
+    if (strcmp(g_categories[i].name(), name) == 0)
+      return &g_categories[i];
   }
-  TraceCategory* category = new TraceCategory(name, enabled_);
-  categories_.push_back(category);
-  return category;
+  CHECK(g_category_index < TRACE_EVENT_MAX_CATEGORIES) <<
+      "must increase TRACE_EVENT_MAX_CATEGORIES";
+  int new_index = g_category_index++;
+  g_categories[new_index].set(name, enabled_);
+  return &g_categories[new_index];
 }
 
 void TraceLog::SetEnabled(bool enabled) {
@@ -232,14 +238,14 @@ void TraceLog::SetEnabled(bool enabled) {
   if (enabled) {
     // Enable all categories.
     enabled_ = true;
-    for (size_t i = 0; i < categories_.size(); i++) {
-      base::subtle::NoBarrier_Store(&categories_[i]->enabled_,
+    for (int i = 0; i < g_category_index; i++) {
+      base::subtle::NoBarrier_Store(&g_categories[i].enabled_,
                                     static_cast<base::subtle::Atomic32>(1));
     }
   } else {
     // Disable all categories.
-    for (size_t i = 0; i < categories_.size(); i++) {
-      base::subtle::NoBarrier_Store(&categories_[i]->enabled_,
+    for (int i = 0; i < g_category_index; i++) {
+      base::subtle::NoBarrier_Store(&g_categories[i].enabled_,
                                     static_cast<base::subtle::Atomic32>(0));
     }
     enabled_ = false;

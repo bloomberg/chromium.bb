@@ -181,8 +181,14 @@ namespace gpu {
 // to threading issues. Use the TraceLog methods instead.
 class TraceCategory {
  public:
-  TraceCategory(const char* name, bool enabled);
+  TraceCategory();
   ~TraceCategory();
+
+  void set(const char* name, bool enabled) {
+    name_ = name;
+    base::subtle::NoBarrier_Store(&enabled_,
+                                  static_cast<base::subtle::Atomic32>(enabled));
+  }
 
   const char* name() const { return name_; }
 
@@ -389,7 +395,6 @@ class TraceLog {
   // synchronization.
   base::Lock lock_;
   bool enabled_;
-  ScopedVector<TraceCategory> categories_;
   scoped_ptr<OutputCallback> output_callback_;
   scoped_ptr<BufferFullCallback> buffer_full_callback_;
   std::vector<TraceEvent> logged_events_;
