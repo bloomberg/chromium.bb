@@ -161,8 +161,6 @@
       'chromeos_wifi',
       '-chromeos_basic.ChromeosBasic.testScreenLocker',
 
-      # crbug.com/42823
-      '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
       # you cannot resize browser window on chromeos
       '-browser.BrowserTest.testWindowResize',
       # Flaky: crosbug.com/14394
@@ -214,7 +212,6 @@
       # Exclusions that have not been narrowed to other categories yet.
       # crosbug.com/12653
       '-autofill',
-      '-bookmark_bar',
       '-content.ContentTest.testHttpsPage',
       '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
       '-cookies.CookiesTest.testAllowCookiesUsingExceptions',

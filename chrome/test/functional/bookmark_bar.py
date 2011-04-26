@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,9 +16,10 @@ class BookmarkBarTest(pyauto.PyUITest):
     """Open and close the bookmark bar, confirming visibility at each step."""
     self.assertFalse(self.GetBookmarkBarVisibility())
     self.ApplyAccelerator(pyauto.IDC_SHOW_BOOKMARK_BAR)
-    self.assertTrue(self.GetBookmarkBarVisibility())
+    self.assertTrue(self.WaitUntil(self.GetBookmarkBarVisibility))
     self.ApplyAccelerator(pyauto.IDC_SHOW_BOOKMARK_BAR)
-    self.assertFalse(self.GetBookmarkBarVisibility())
+    self.assertTrue(self.WaitUntil(lambda:
+                                   self.GetBookmarkBarVisibility() == False))
 
   def _timeAndWaitForBookmarkBarVisibilityChange(self, wait_for_open):
     """Wait for a bookmark bar visibility change and print the wait time.
