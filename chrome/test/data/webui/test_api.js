@@ -38,12 +38,13 @@
   }
 
   function assertEquals(expected, actual, message) {
-    if (expected != actual) {
-      throw new Error('Test Error. Actual: ' + actual + '\nExpected: ' +
-                       expected + '\n' + message);
+    if (expected !== actual) {
+      throw new Error('Test Error in ' + testName(currentTest) +
+                      '\nActual: ' + actual + '\nExpected: ' + expected +
+                      '\n' + message);
     }
     if (typeof expected != typeof actual) {
-      throw new Error('Test Error' +
+      throw new Error('Test Error in ' + testName(currentTest) +
                       ' (type mismatch)\nActual Type: ' + typeof actual +
                       '\nExpected Type:' + typeof expected + '\n' + message);
     }
@@ -58,7 +59,7 @@
       console.log('Running test ' + currentTest.name);
       currentTest.call();
     } catch (e) {
-      console.log(
+      console.error(
           'Failed: ' + currentTest.name + '\nwith exception: ' + e.message);
 
       fail(e.message);

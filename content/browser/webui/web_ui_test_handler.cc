@@ -33,7 +33,7 @@ void WebUITestHandler::HandleFail(const ListValue* args) {
 
   std::string message;
   ASSERT_TRUE(args->GetString(0, &message));
-  LOG(ERROR) << message;
+  LOG(INFO) << message;
 }
 
 void WebUITestHandler::RegisterMessages() {

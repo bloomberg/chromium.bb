@@ -97,22 +97,14 @@ class SettingsWebUITest : public WebUIBrowserTest {
 #define MAYBE_TestSetBooleanPrefTriggers TestSetBooleanPrefTriggers
 #endif
 IN_PROC_BROWSER_TEST_F(SettingsWebUITest, MAYBE_TestSetBooleanPrefTriggers) {
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
   // This serves as an example of a very constrained test.
   ListValue true_list_value;
   true_list_value.Append(Value::CreateStringValue("browser.show_home_button"));
   true_list_value.Append(Value::CreateBooleanValue(true));
   true_list_value.Append(
       Value::CreateStringValue("Options_Homepage_HomeButton"));
-
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
   EXPECT_CALL(*mock_core_options_handler_,
       HandleSetBooleanPref(Eq_ListValue(&true_list_value)));
   ASSERT_TRUE(RunJavascriptTest("testSetBooleanPrefTriggers"));
-}
-
-IN_PROC_BROWSER_TEST_F(SettingsWebUITest, testRefreshStaysOnCurrentPage) {
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
-  ASSERT_TRUE(RunJavascriptFunction("openUnderTheHood"));
-  ASSERT_TRUE(RunJavascriptFunction("refreshPage"));
-  ASSERT_TRUE(RunJavascriptTest("testPageIsUnderTheHood"));
 }
