@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_GTK_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_OMNIBOX_OMNIBOX_VIEW_GTK_H_
+#define CHROME_BROWSER_UI_GTK_OMNIBOX_OMNIBOX_VIEW_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -48,9 +48,9 @@ class View;
 class GtkThemeService;
 #endif
 
-class AutocompleteEditViewGtk : public AutocompleteEditView,
-                                public NotificationObserver,
-                                public ui::AnimationDelegate {
+class OmniboxViewGtk : public AutocompleteEditView,
+                       public NotificationObserver,
+                       public ui::AnimationDelegate {
  public:
   // Modeled like the Windows CHARRANGE.  Represent a pair of cursor position
   // offsets.  Since GtkTextIters are invalid after the buffer is changed, we
@@ -68,18 +68,18 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
     int cp_max;  // For a selection: Represents the end (insert position).
   };
 
-  AutocompleteEditViewGtk(AutocompleteEditController* controller,
-                          ToolbarModel* toolbar_model,
-                          Profile* profile,
-                          CommandUpdater* command_updater,
-                          bool popup_window_mode,
+  OmniboxViewGtk(AutocompleteEditController* controller,
+                 ToolbarModel* toolbar_model,
+                 Profile* profile,
+                 CommandUpdater* command_updater,
+                 bool popup_window_mode,
 #if defined(TOOLKIT_VIEWS)
-                          views::View* location_bar
+                 views::View* location_bar
 #else
-                          GtkWidget* location_bar
+                 GtkWidget* location_bar
 #endif
                           );
-  virtual ~AutocompleteEditViewGtk();
+  virtual ~OmniboxViewGtk();
 
   // Initialize, create the underlying widgets, etc.
   void Init();
@@ -150,9 +150,9 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
 
   // A factory method to create an AutocompleteEditView instance initialized for
-  // linux_views.  This currently returns an instance of
-  // AutocompleteEditViewGtk only, but AutocompleteEditViewViews will
-  // be added as an option when TextfieldViews is enabled.
+  // linux_views.  This currently returns an instance of OmniboxViewGtk only,
+  // but AutocompleteEditViewViews will be added as an option when
+  // TextfieldViews is enabled.
   static AutocompleteEditView* Create(AutocompleteEditController* controller,
                                       ToolbarModel* toolbar_model,
                                       Profile* profile,
@@ -184,84 +184,80 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   }
 
  private:
-  CHROMEG_CALLBACK_0(AutocompleteEditViewGtk, void, HandleBeginUserAction,
+  CHROMEG_CALLBACK_0(OmniboxViewGtk, void, HandleBeginUserAction,
                      GtkTextBuffer*);
-  CHROMEG_CALLBACK_0(AutocompleteEditViewGtk, void, HandleEndUserAction,
-                     GtkTextBuffer*);
-  CHROMEG_CALLBACK_2(AutocompleteEditViewGtk, void, HandleMarkSet,
-                     GtkTextBuffer*, GtkTextIter*, GtkTextMark*);
+  CHROMEG_CALLBACK_0(OmniboxViewGtk, void, HandleEndUserAction, GtkTextBuffer*);
+  CHROMEG_CALLBACK_2(OmniboxViewGtk, void, HandleMarkSet, GtkTextBuffer*,
+                     GtkTextIter*, GtkTextMark*);
   // As above, but called after the default handler.
-  CHROMEG_CALLBACK_2(AutocompleteEditViewGtk, void, HandleMarkSetAfter,
-                     GtkTextBuffer*, GtkTextIter*, GtkTextMark*);
-  CHROMEG_CALLBACK_3(AutocompleteEditViewGtk, void, HandleInsertText,
-                     GtkTextBuffer*, GtkTextIter*, const gchar*, gint);
-  CHROMEG_CALLBACK_0(AutocompleteEditViewGtk, void,
-                     HandleKeymapDirectionChanged, GdkKeymap*);
-  CHROMEG_CALLBACK_2(AutocompleteEditViewGtk, void, HandleDeleteRange,
-                     GtkTextBuffer*, GtkTextIter*, GtkTextIter*);
+  CHROMEG_CALLBACK_2(OmniboxViewGtk, void, HandleMarkSetAfter, GtkTextBuffer*,
+                     GtkTextIter*, GtkTextMark*);
+  CHROMEG_CALLBACK_3(OmniboxViewGtk, void, HandleInsertText, GtkTextBuffer*,
+                     GtkTextIter*, const gchar*, gint);
+  CHROMEG_CALLBACK_0(OmniboxViewGtk, void, HandleKeymapDirectionChanged,
+                     GdkKeymap*);
+  CHROMEG_CALLBACK_2(OmniboxViewGtk, void, HandleDeleteRange, GtkTextBuffer*,
+                     GtkTextIter*, GtkTextIter*);
   // Unlike above HandleMarkSet and HandleMarkSetAfter, this handler will always
   // be connected to the signal.
-  CHROMEG_CALLBACK_2(AutocompleteEditViewGtk, void, HandleMarkSetAlways,
-                     GtkTextBuffer*, GtkTextIter*, GtkTextMark*);
+  CHROMEG_CALLBACK_2(OmniboxViewGtk, void, HandleMarkSetAlways, GtkTextBuffer*,
+                     GtkTextIter*, GtkTextMark*);
 
-  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean, HandleKeyPress,
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, gboolean, HandleKeyPress, GdkEventKey*);
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, gboolean, HandleKeyRelease,
                        GdkEventKey*);
-  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean, HandleKeyRelease,
-                       GdkEventKey*);
-  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean, HandleViewButtonPress,
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, gboolean, HandleViewButtonPress,
                        GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean,
-                       HandleViewButtonRelease, GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean, HandleViewFocusIn,
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, gboolean, HandleViewButtonRelease,
+                       GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, gboolean, HandleViewFocusIn,
                        GdkEventFocus*);
-  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean, HandleViewFocusOut,
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, gboolean, HandleViewFocusOut,
                        GdkEventFocus*);
-  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void, HandleViewMoveFocus,
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandleViewMoveFocus,
                        GtkDirectionType);
-  CHROMEGTK_CALLBACK_3(AutocompleteEditViewGtk, void, HandleViewMoveCursor,
+  CHROMEGTK_CALLBACK_3(OmniboxViewGtk, void, HandleViewMoveCursor,
                        GtkMovementStep, gint, gboolean);
-  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void, HandleViewSizeRequest,
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandleViewSizeRequest,
                        GtkRequisition*);
-  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void, HandlePopulatePopup,
-                       GtkMenu*);
-  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleEditSearchEngines);
-  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandlePasteAndGo);
-  CHROMEGTK_CALLBACK_6(AutocompleteEditViewGtk, void, HandleDragDataReceived,
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandlePopulatePopup, GtkMenu*);
+  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleEditSearchEngines);
+  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandlePasteAndGo);
+  CHROMEGTK_CALLBACK_6(OmniboxViewGtk, void, HandleDragDataReceived,
                        GdkDragContext*, gint, gint, GtkSelectionData*,
                        guint, guint);
-  CHROMEGTK_CALLBACK_4(AutocompleteEditViewGtk, void, HandleDragDataGet,
+  CHROMEGTK_CALLBACK_4(OmniboxViewGtk, void, HandleDragDataGet,
                        GdkDragContext*, GtkSelectionData*, guint, guint);
-  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleBackSpace);
-  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleCopyClipboard);
-  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleCutClipboard);
-  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandlePasteClipboard);
-  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean, HandleExposeEvent,
+  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleBackSpace);
+  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleCopyClipboard);
+  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleCutClipboard);
+  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandlePasteClipboard);
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, gboolean, HandleExposeEvent,
                        GdkEventExpose*);
-  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void,
-                       HandleWidgetDirectionChanged, GtkTextDirection);
-  CHROMEGTK_CALLBACK_2(AutocompleteEditViewGtk, void,
-                       HandleDeleteFromCursor, GtkDeleteType, gint);
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandleWidgetDirectionChanged,
+                       GtkTextDirection);
+  CHROMEGTK_CALLBACK_2(OmniboxViewGtk, void, HandleDeleteFromCursor,
+                       GtkDeleteType, gint);
   // We connect to this so we can determine our toplevel window, so we can
   // listen to focus change events on it.
-  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void, HandleHierarchyChanged,
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandleHierarchyChanged,
                        GtkWidget*);
 #if GTK_CHECK_VERSION(2, 20, 0)
-  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void, HandlePreeditChanged,
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandlePreeditChanged,
                        const gchar*);
 #endif
   // Undo/redo operations won't trigger "begin-user-action" and
   // "end-user-action" signals, so we need to hook into "undo" and "redo"
   // signals and call OnBeforePossibleChange()/OnAfterPossibleChange() by
   // ourselves.
-  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleUndoRedo);
-  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleUndoRedoAfter);
+  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleUndoRedo);
+  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleUndoRedoAfter);
 
-  CHROMEG_CALLBACK_1(AutocompleteEditViewGtk, void, HandleWindowSetFocus,
+  CHROMEG_CALLBACK_1(OmniboxViewGtk, void, HandleWindowSetFocus,
                      GtkWindow*, GtkWidget*);
 
   // Callback function called after context menu is closed.
-  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void,
-                       HandlePopupMenuDeactivate);
+  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandlePopupMenuDeactivate);
 
   // Callback for the PRIMARY selection clipboard.
   static void ClipboardGetSelectionThunk(GtkClipboard* clipboard,
@@ -544,7 +540,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   ui::GtkSignalRegistrar signals_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewGtk);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxViewGtk);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_OMNIBOX_OMNIBOX_VIEW_GTK_H_

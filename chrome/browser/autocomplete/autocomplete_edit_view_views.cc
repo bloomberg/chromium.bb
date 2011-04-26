@@ -230,7 +230,7 @@ bool AutocompleteEditViewViews::HandleKeyReleaseEvent(
   // the control-key state is changed.
   if (event.key_code() == ui::VKEY_CONTROL) {
     // TODO(oshima): investigate if we need to support keyboard with two
-    // controls. See autocomplete_edit_view_gtk.cc.
+    // controls. See omnibox_view_gtk.cc.
     model_->OnControlKeyChanged(false);
     return true;
   }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
+#include "chrome/browser/ui/gtk/omnibox/omnibox_view_gtk.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -53,7 +53,7 @@
 
 namespace {
 
-const gchar* kAutocompleteEditViewGtkKey = "__ACE_VIEW_GTK__";
+const gchar* kOmniboxViewGtkKey = "__OMNIBOX_VIEW_GTK__";
 
 const char kTextBaseColor[] = "#808080";
 const char kSecureSchemeColor[] = "#079500";
@@ -78,12 +78,12 @@ int CopyOrLinkDragOperation(int drag_operation) {
 
 // Stores GTK+-specific state so it can be restored after switching tabs.
 struct ViewState {
-  explicit ViewState(const AutocompleteEditViewGtk::CharRange& selection_range)
+  explicit ViewState(const OmniboxViewGtk::CharRange& selection_range)
       : selection_range(selection_range) {
   }
 
   // Range of selected text.
-  AutocompleteEditViewGtk::CharRange selection_range;
+  OmniboxViewGtk::CharRange selection_range;
 };
 
 struct AutocompleteEditState {
@@ -150,7 +150,7 @@ void ClipboardSelectionCleared(GtkClipboard* clipboard,
 
 }  // namespace
 
-AutocompleteEditViewGtk::AutocompleteEditViewGtk(
+OmniboxViewGtk::OmniboxViewGtk(
     AutocompleteEditController* controller,
     ToolbarModel* toolbar_model,
     Profile* profile,
@@ -211,10 +211,10 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
           (GetFont(), this, model_.get(), profile, location_bar));
 }
 
-AutocompleteEditViewGtk::~AutocompleteEditViewGtk() {
+OmniboxViewGtk::~OmniboxViewGtk() {
   NotificationService::current()->Notify(
       NotificationType::AUTOCOMPLETE_EDIT_DESTROYED,
-      Source<AutocompleteEditViewGtk>(this),
+      Source<OmniboxViewGtk>(this),
       NotificationService::NoDetails());
 
   // Explicitly teardown members which have a reference to us.  Just to be safe
@@ -232,7 +232,7 @@ AutocompleteEditViewGtk::~AutocompleteEditViewGtk() {
   }
 }
 
-void AutocompleteEditViewGtk::Init() {
+void OmniboxViewGtk::Init() {
   SetEntryStyle();
 
   // The height of the text view is going to change based on the font used.  We
@@ -246,7 +246,7 @@ void AutocompleteEditViewGtk::Init() {
   // the other objects adds a reference; it doesn't adopt them.
   tag_table_ = gtk_text_tag_table_new();
   text_buffer_ = gtk_text_buffer_new(tag_table_);
-  g_object_set_data(G_OBJECT(text_buffer_), kAutocompleteEditViewGtkKey, this);
+  g_object_set_data(G_OBJECT(text_buffer_), kOmniboxViewGtkKey, this);
 
   // We need to run this two handlers before undo manager's handlers, so that
   // text iterators modified by these handlers can be passed down to undo
@@ -421,8 +421,8 @@ void AutocompleteEditViewGtk::Init() {
   ViewIDUtil::SetID(GetNativeView(), VIEW_ID_AUTOCOMPLETE);
 }
 
-void AutocompleteEditViewGtk::HandleHierarchyChanged(
-    GtkWidget* sender, GtkWidget* old_toplevel) {
+void OmniboxViewGtk::HandleHierarchyChanged(GtkWidget* sender,
+                                            GtkWidget* old_toplevel) {
   GtkWindow* new_toplevel = platform_util::GetTopLevel(sender);
   if (!new_toplevel)
     return;
@@ -432,25 +432,25 @@ void AutocompleteEditViewGtk::HandleHierarchyChanged(
                    G_CALLBACK(&HandleWindowSetFocusThunk), this);
 }
 
-void AutocompleteEditViewGtk::SetFocus() {
+void OmniboxViewGtk::SetFocus() {
   DCHECK(text_view_);
   gtk_widget_grab_focus(text_view_);
 }
 
-int AutocompleteEditViewGtk::WidthOfTextAfterCursor() {
+int OmniboxViewGtk::WidthOfTextAfterCursor() {
   // Not used.
   return -1;
 }
 
-AutocompleteEditModel* AutocompleteEditViewGtk::model() {
+AutocompleteEditModel* OmniboxViewGtk::model() {
   return model_.get();
 }
 
-const AutocompleteEditModel* AutocompleteEditViewGtk::model() const {
+const AutocompleteEditModel* OmniboxViewGtk::model() const {
   return model_.get();
 }
 
-void AutocompleteEditViewGtk::SaveStateToTab(TabContents* tab) {
+void OmniboxViewGtk::SaveStateToTab(TabContents* tab) {
   DCHECK(tab);
   // If any text has been selected, register it as the PRIMARY selection so it
   // can still be pasted via middle-click after the text view is cleared.
@@ -463,7 +463,7 @@ void AutocompleteEditViewGtk::SaveStateToTab(TabContents* tab) {
       AutocompleteEditState(model_state, ViewState(GetSelection())));
 }
 
-void AutocompleteEditViewGtk::Update(const TabContents* contents) {
+void OmniboxViewGtk::Update(const TabContents* contents) {
   // NOTE: We're getting the URL text here from the ToolbarModel.
   bool visibly_changed_permanent_text =
       model_->UpdatePermanentText(WideToUTF16Hack(toolbar_model_->GetText()));
@@ -495,12 +495,12 @@ void AutocompleteEditViewGtk::Update(const TabContents* contents) {
   }
 }
 
-void AutocompleteEditViewGtk::OpenURL(const GURL& url,
-                                      WindowOpenDisposition disposition,
-                                      PageTransition::Type transition,
-                                      const GURL& alternate_nav_url,
-                                      size_t selected_line,
-                                      const string16& keyword) {
+void OmniboxViewGtk::OpenURL(const GURL& url,
+                             WindowOpenDisposition disposition,
+                             PageTransition::Type transition,
+                             const GURL& alternate_nav_url,
+                             size_t selected_line,
+                             const string16& keyword) {
   if (!url.is_valid())
     return;
 
@@ -508,7 +508,7 @@ void AutocompleteEditViewGtk::OpenURL(const GURL& url,
                   selected_line, keyword);
 }
 
-string16 AutocompleteEditViewGtk::GetText() const {
+string16 OmniboxViewGtk::GetText() const {
   GtkTextIter start, end;
   GetTextBufferBounds(&start, &end);
   gchar* utf8 = gtk_text_buffer_get_text(text_buffer_, &start, &end, false);
@@ -528,23 +528,23 @@ string16 AutocompleteEditViewGtk::GetText() const {
   return out;
 }
 
-bool AutocompleteEditViewGtk::IsEditingOrEmpty() const {
+bool OmniboxViewGtk::IsEditingOrEmpty() const {
   return model_->user_input_in_progress() || (GetTextLength() == 0);
 }
 
-int AutocompleteEditViewGtk::GetIcon() const {
+int OmniboxViewGtk::GetIcon() const {
   return IsEditingOrEmpty() ?
       AutocompleteMatch::TypeToIcon(model_->CurrentTextType()) :
       toolbar_model_->GetIcon();
 }
 
-void AutocompleteEditViewGtk::SetUserText(const string16& text) {
+void OmniboxViewGtk::SetUserText(const string16& text) {
   SetUserText(text, text, true);
 }
 
-void AutocompleteEditViewGtk::SetUserText(const string16& text,
-                                          const string16& display_text,
-                                          bool update_popup) {
+void OmniboxViewGtk::SetUserText(const string16& text,
+                                 const string16& display_text,
+                                 bool update_popup) {
   model_->SetUserText(text);
   // TODO(deanm): something about selection / focus change here.
   SetWindowTextAndCaretPos(display_text, display_text.length());
@@ -553,13 +553,13 @@ void AutocompleteEditViewGtk::SetUserText(const string16& text,
   TextChanged();
 }
 
-void AutocompleteEditViewGtk::SetWindowTextAndCaretPos(const string16& text,
-                                                       size_t caret_pos) {
+void OmniboxViewGtk::SetWindowTextAndCaretPos(const string16& text,
+                                              size_t caret_pos) {
   CharRange range(static_cast<int>(caret_pos), static_cast<int>(caret_pos));
   SetTextAndSelectedRange(text, range);
 }
 
-void AutocompleteEditViewGtk::SetForcedQuery() {
+void OmniboxViewGtk::SetForcedQuery() {
   const string16 current_text(GetText());
   const size_t start = current_text.find_first_not_of(kWhitespaceUTF16);
   if (start == string16::npos || (current_text[start] != '?')) {
@@ -571,7 +571,7 @@ void AutocompleteEditViewGtk::SetForcedQuery() {
   }
 }
 
-bool AutocompleteEditViewGtk::IsSelectAll() {
+bool OmniboxViewGtk::IsSelectAll() {
   GtkTextIter sel_start, sel_end;
   gtk_text_buffer_get_selection_bounds(text_buffer_, &sel_start, &sel_end);
 
@@ -583,31 +583,31 @@ bool AutocompleteEditViewGtk::IsSelectAll() {
       gtk_text_iter_equal(&end, &sel_end);
 }
 
-bool AutocompleteEditViewGtk::DeleteAtEndPressed() {
+bool OmniboxViewGtk::DeleteAtEndPressed() {
   return delete_at_end_pressed_;
 }
 
-void AutocompleteEditViewGtk::GetSelectionBounds(string16::size_type* start,
-                                                 string16::size_type* end) {
+void OmniboxViewGtk::GetSelectionBounds(string16::size_type* start,
+                                        string16::size_type* end) {
   CharRange selection = GetSelection();
   *start = static_cast<size_t>(selection.cp_min);
   *end = static_cast<size_t>(selection.cp_max);
 }
 
-void AutocompleteEditViewGtk::SelectAll(bool reversed) {
+void OmniboxViewGtk::SelectAll(bool reversed) {
   // SelectAll() is invoked as a side effect of other actions (e.g.  switching
   // tabs or hitting Escape) in autocomplete_edit.cc, so we don't update the
   // PRIMARY selection here.
   SelectAllInternal(reversed, false);
 }
 
-void AutocompleteEditViewGtk::RevertAll() {
+void OmniboxViewGtk::RevertAll() {
   ClosePopup();
   model_->Revert();
   TextChanged();
 }
 
-void AutocompleteEditViewGtk::UpdatePopup() {
+void OmniboxViewGtk::UpdatePopup() {
   model_->SetInputInProgress(true);
   if (!update_popup_without_focus_ && !model_->has_focus())
     return;
@@ -620,11 +620,11 @@ void AutocompleteEditViewGtk::UpdatePopup() {
   model_->StartAutocomplete(sel.cp_min != sel.cp_max, no_inline_autocomplete);
 }
 
-void AutocompleteEditViewGtk::ClosePopup() {
+void OmniboxViewGtk::ClosePopup() {
   model_->StopAutocomplete();
 }
 
-void AutocompleteEditViewGtk::OnTemporaryTextMaybeChanged(
+void OmniboxViewGtk::OnTemporaryTextMaybeChanged(
     const string16& display_text,
     bool save_original_selection) {
   if (save_original_selection)
@@ -636,7 +636,7 @@ void AutocompleteEditViewGtk::OnTemporaryTextMaybeChanged(
   TextChanged();
 }
 
-bool AutocompleteEditViewGtk::OnInlineAutocompleteTextMaybeChanged(
+bool OmniboxViewGtk::OnInlineAutocompleteTextMaybeChanged(
     const string16& display_text,
     size_t user_text_length) {
   if (display_text == GetText())
@@ -650,14 +650,14 @@ bool AutocompleteEditViewGtk::OnInlineAutocompleteTextMaybeChanged(
   return true;
 }
 
-void AutocompleteEditViewGtk::OnRevertTemporaryText() {
+void OmniboxViewGtk::OnRevertTemporaryText() {
   StartUpdatingHighlightedText();
   SetSelectedRange(saved_temporary_selection_);
   FinishUpdatingHighlightedText();
   TextChanged();
 }
 
-void AutocompleteEditViewGtk::OnBeforePossibleChange() {
+void OmniboxViewGtk::OnBeforePossibleChange() {
   // Record this paste, so we can do different behavior.
   if (paste_clipboard_requested_) {
     paste_clipboard_requested_ = false;
@@ -679,7 +679,7 @@ void AutocompleteEditViewGtk::OnBeforePossibleChange() {
 }
 
 // TODO(deanm): This is mostly stolen from Windows, and will need some work.
-bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
+bool OmniboxViewGtk::OnAfterPossibleChange() {
   // This method will be called in HandleKeyPress() method just after
   // handling a key press event. So we should prevent it from being called
   // when handling the key press event.
@@ -754,16 +754,16 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
   return something_changed;
 }
 
-gfx::NativeView AutocompleteEditViewGtk::GetNativeView() const {
+gfx::NativeView OmniboxViewGtk::GetNativeView() const {
   return alignment_.get();
 }
 
-CommandUpdater* AutocompleteEditViewGtk::GetCommandUpdater() {
+CommandUpdater* OmniboxViewGtk::GetCommandUpdater() {
   return command_updater_;
 }
 
-void AutocompleteEditViewGtk::SetInstantSuggestion(const string16& suggestion,
-                                                   bool animate_to_complete) {
+void OmniboxViewGtk::SetInstantSuggestion(const string16& suggestion,
+                                          bool animate_to_complete) {
   std::string suggestion_utf8 = UTF16ToUTF8(suggestion);
 
   gtk_label_set_text(GTK_LABEL(instant_view_), suggestion_utf8.c_str());
@@ -788,14 +788,14 @@ void AutocompleteEditViewGtk::SetInstantSuggestion(const string16& suggestion,
   UpdateInstantViewColors();
 }
 
-string16 AutocompleteEditViewGtk::GetInstantSuggestion() const {
+string16 OmniboxViewGtk::GetInstantSuggestion() const {
   const gchar* suggestion = gtk_label_get_text(GTK_LABEL(instant_view_));
   return suggestion ? UTF8ToUTF16(suggestion) : string16();
 }
 
-int AutocompleteEditViewGtk::TextWidth() const {
+int OmniboxViewGtk::TextWidth() const {
   // TextWidth may be called after gtk widget tree is destroyed but
-  // before AutocompleteEditViewGtk gets deleted.  This is a safe guard
+  // before OmniboxViewGtk gets deleted.  This is a safe guard
   // to avoid accessing |text_view_| that has already been destroyed.
   // See crbug.com/70192.
   if (!text_view_)
@@ -838,7 +838,7 @@ int AutocompleteEditViewGtk::TextWidth() const {
   return text_width + horizontal_border_size;
 }
 
-bool AutocompleteEditViewGtk::IsImeComposing() const {
+bool OmniboxViewGtk::IsImeComposing() const {
 #if GTK_CHECK_VERSION(2, 20, 0)
   return !preedit_.empty();
 #else
@@ -847,7 +847,7 @@ bool AutocompleteEditViewGtk::IsImeComposing() const {
 }
 
 #if defined(TOOLKIT_VIEWS)
-views::View* AutocompleteEditViewGtk::AddToView(views::View* parent) {
+views::View* OmniboxViewGtk::AddToView(views::View* parent) {
   views::NativeViewHost* host = new views::NativeViewHost;
   parent->AddChildView(host);
   host->set_focus_view(parent);
@@ -855,7 +855,7 @@ views::View* AutocompleteEditViewGtk::AddToView(views::View* parent) {
   return host;
 }
 
-int AutocompleteEditViewGtk::OnPerformDrop(
+int OmniboxViewGtk::OnPerformDrop(
     const views::DropTargetEvent& event) {
   string16 text;
   const ui::OSExchangeData& data = event.data();
@@ -877,7 +877,7 @@ int AutocompleteEditViewGtk::OnPerformDrop(
 }
 
 // static
-AutocompleteEditView* AutocompleteEditViewGtk::Create(
+AutocompleteEditView* OmniboxViewGtk::Create(
     AutocompleteEditController* controller,
     ToolbarModel* toolbar_model,
     Profile* profile,
@@ -896,13 +896,12 @@ AutocompleteEditView* AutocompleteEditViewGtk::Create(
     return autocomplete;
   }
 
-  AutocompleteEditViewGtk* autocomplete =
-      new AutocompleteEditViewGtk(controller,
-                                  toolbar_model,
-                                  profile,
-                                  command_updater,
-                                  popup_window_mode,
-                                  location_bar);
+  OmniboxViewGtk* autocomplete = new OmniboxViewGtk(controller,
+                                                    toolbar_model,
+                                                    profile,
+                                                    command_updater,
+                                                    popup_window_mode,
+                                                    location_bar);
   autocomplete->Init();
 
   // Make all the children of the widget visible. NOTE: this won't display
@@ -916,29 +915,27 @@ AutocompleteEditView* AutocompleteEditViewGtk::Create(
 }
 #endif
 
-void AutocompleteEditViewGtk::Observe(NotificationType type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void OmniboxViewGtk::Observe(NotificationType type,
+                             const NotificationSource& source,
+                             const NotificationDetails& details) {
   DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
 
   SetBaseColor();
 }
 
-void AutocompleteEditViewGtk::AnimationEnded(const ui::Animation* animation) {
+void OmniboxViewGtk::AnimationEnded(const ui::Animation* animation) {
   model_->CommitSuggestedText(false);
 }
 
-void AutocompleteEditViewGtk::AnimationProgressed(
-    const ui::Animation* animation) {
+void OmniboxViewGtk::AnimationProgressed(const ui::Animation* animation) {
   UpdateInstantViewColors();
 }
 
-void AutocompleteEditViewGtk::AnimationCanceled(
-    const ui::Animation* animation) {
+void OmniboxViewGtk::AnimationCanceled(const ui::Animation* animation) {
   UpdateInstantViewColors();
 }
 
-void AutocompleteEditViewGtk::SetBaseColor() {
+void OmniboxViewGtk::SetBaseColor() {
   DCHECK(text_view_);
 
 #if defined(TOOLKIT_VIEWS)
@@ -1015,7 +1012,7 @@ void AutocompleteEditViewGtk::SetBaseColor() {
   UpdateInstantViewColors();
 }
 
-void AutocompleteEditViewGtk::UpdateInstantViewColors() {
+void OmniboxViewGtk::UpdateInstantViewColors() {
   SkColor selection_text, selection_bg;
   GdkColor faded_text, normal_bg;
 
@@ -1078,16 +1075,15 @@ void AutocompleteEditViewGtk::UpdateInstantViewColors() {
   }
 }
 
-void AutocompleteEditViewGtk::HandleBeginUserAction(GtkTextBuffer* sender) {
+void OmniboxViewGtk::HandleBeginUserAction(GtkTextBuffer* sender) {
   OnBeforePossibleChange();
 }
 
-void AutocompleteEditViewGtk::HandleEndUserAction(GtkTextBuffer* sender) {
+void OmniboxViewGtk::HandleEndUserAction(GtkTextBuffer* sender) {
   OnAfterPossibleChange();
 }
 
-gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
-                                                 GdkEventKey* event) {
+gboolean OmniboxViewGtk::HandleKeyPress(GtkWidget* widget, GdkEventKey* event) {
   // Background of this piece of complicated code:
   // The omnibox supports several special behaviors which may be triggered by
   // certain key events:
@@ -1231,8 +1227,8 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
   return result;
 }
 
-gboolean AutocompleteEditViewGtk::HandleKeyRelease(GtkWidget* widget,
-                                                   GdkEventKey* event) {
+gboolean OmniboxViewGtk::HandleKeyRelease(GtkWidget* widget,
+                                          GdkEventKey* event) {
   // Omnibox2 can switch its contents while pressing a control key. To switch
   // the contents of omnibox2, we notify the AutocompleteEditModel class when
   // the control-key state is changed.
@@ -1252,8 +1248,8 @@ gboolean AutocompleteEditViewGtk::HandleKeyRelease(GtkWidget* widget,
   return FALSE;  // Propagate into GtkTextView.
 }
 
-gboolean AutocompleteEditViewGtk::HandleViewButtonPress(GtkWidget* sender,
-                                                        GdkEventButton* event) {
+gboolean OmniboxViewGtk::HandleViewButtonPress(GtkWidget* sender,
+                                               GdkEventButton* event) {
   // We don't need to care about double and triple clicks.
   if (event->type != GDK_BUTTON_PRESS)
     return FALSE;
@@ -1282,8 +1278,8 @@ gboolean AutocompleteEditViewGtk::HandleViewButtonPress(GtkWidget* sender,
   return FALSE;
 }
 
-gboolean AutocompleteEditViewGtk::HandleViewButtonRelease(
-    GtkWidget* sender, GdkEventButton* event) {
+gboolean OmniboxViewGtk::HandleViewButtonRelease(GtkWidget* sender,
+                                                 GdkEventButton* event) {
   if (event->button != 1)
     return FALSE;
 
@@ -1320,8 +1316,8 @@ gboolean AutocompleteEditViewGtk::HandleViewButtonRelease(
   return TRUE;  // Don't continue, we called the default handler already.
 }
 
-gboolean AutocompleteEditViewGtk::HandleViewFocusIn(GtkWidget* sender,
-                                                    GdkEventFocus* event) {
+gboolean OmniboxViewGtk::HandleViewFocusIn(GtkWidget* sender,
+                                           GdkEventFocus* event) {
   DCHECK(text_view_);
   update_popup_without_focus_ = false;
 
@@ -1341,8 +1337,8 @@ gboolean AutocompleteEditViewGtk::HandleViewFocusIn(GtkWidget* sender,
   return FALSE;  // Continue propagation.
 }
 
-gboolean AutocompleteEditViewGtk::HandleViewFocusOut(GtkWidget* sender,
-                                                     GdkEventFocus* event) {
+gboolean OmniboxViewGtk::HandleViewFocusOut(GtkWidget* sender,
+                                            GdkEventFocus* event) {
   DCHECK(text_view_);
   GtkWidget* view_getting_focus = NULL;
   GtkWindow* toplevel = platform_util::GetTopLevel(sender);
@@ -1365,7 +1361,7 @@ gboolean AutocompleteEditViewGtk::HandleViewFocusOut(GtkWidget* sender,
   return FALSE;  // Pass the event on to the GtkTextView.
 }
 
-void AutocompleteEditViewGtk::HandleViewMoveCursor(
+void OmniboxViewGtk::HandleViewMoveCursor(
     GtkWidget* sender,
     GtkMovementStep step,
     gint count,
@@ -1433,14 +1429,14 @@ void AutocompleteEditViewGtk::HandleViewMoveCursor(
   g_signal_stop_emission(text_view_, signal_id, 0);
 }
 
-void AutocompleteEditViewGtk::HandleViewSizeRequest(GtkWidget* sender,
-                                                    GtkRequisition* req) {
+void OmniboxViewGtk::HandleViewSizeRequest(GtkWidget* sender,
+                                           GtkRequisition* req) {
   // Don't force a minimum width, but use the font-relative height.  This is a
   // run-first handler, so the default handler was already called.
   req->width = 1;
 }
 
-void AutocompleteEditViewGtk::HandlePopupMenuDeactivate(GtkWidget* sender) {
+void OmniboxViewGtk::HandlePopupMenuDeactivate(GtkWidget* sender) {
   // When the context menu appears, |text_view_|'s focus is lost. After an item
   // is activated, the focus comes back to |text_view_|, but only after the
   // check in UpdatePopup(). We set this flag to make UpdatePopup() aware that
@@ -1449,8 +1445,7 @@ void AutocompleteEditViewGtk::HandlePopupMenuDeactivate(GtkWidget* sender) {
     update_popup_without_focus_ = true;
 }
 
-void AutocompleteEditViewGtk::HandlePopulatePopup(GtkWidget* sender,
-                                                  GtkMenu* menu) {
+void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
   GtkWidget* separator = gtk_separator_menu_item_new();
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
   gtk_widget_show(separator);
@@ -1491,17 +1486,17 @@ void AutocompleteEditViewGtk::HandlePopulatePopup(GtkWidget* sender,
                    G_CALLBACK(HandlePopupMenuDeactivateThunk), this);
 }
 
-void AutocompleteEditViewGtk::HandleEditSearchEngines(GtkWidget* sender) {
+void OmniboxViewGtk::HandleEditSearchEngines(GtkWidget* sender) {
   command_updater_->ExecuteCommand(IDC_EDIT_SEARCH_ENGINES);
 }
 
-void AutocompleteEditViewGtk::HandlePasteAndGo(GtkWidget* sender) {
+void OmniboxViewGtk::HandlePasteAndGo(GtkWidget* sender) {
   model_->PasteAndGo();
 }
 
-void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
-                                            GtkTextIter* location,
-                                            GtkTextMark* mark) {
+void OmniboxViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
+                                   GtkTextIter* location,
+                                   GtkTextMark* mark) {
   if (!text_buffer_ || buffer != text_buffer_)
     return;
 
@@ -1546,9 +1541,9 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
 
 // Override the primary selection the text buffer has set. This has to happen
 // after the default handler for the "mark-set" signal.
-void AutocompleteEditViewGtk::HandleMarkSetAfter(GtkTextBuffer* buffer,
-                                                 GtkTextIter* location,
-                                                 GtkTextMark* mark) {
+void OmniboxViewGtk::HandleMarkSetAfter(GtkTextBuffer* buffer,
+                                        GtkTextIter* location,
+                                        GtkTextMark* mark) {
   if (!text_buffer_ || buffer != text_buffer_)
     return;
 
@@ -1564,9 +1559,13 @@ void AutocompleteEditViewGtk::HandleMarkSetAfter(GtkTextBuffer* buffer,
 
 // Just use the default behavior for DnD, except if the drop can be a PasteAndGo
 // then override.
-void AutocompleteEditViewGtk::HandleDragDataReceived(
-    GtkWidget* sender, GdkDragContext* context, gint x, gint y,
-    GtkSelectionData* selection_data, guint target_type, guint time) {
+void OmniboxViewGtk::HandleDragDataReceived(GtkWidget* sender,
+                                            GdkDragContext* context,
+                                            gint x,
+                                            gint y,
+                                            GtkSelectionData* selection_data,
+                                            guint target_type,
+                                            guint time) {
   DCHECK(text_view_);
 
   // Reset |paste_clipboard_requested_| to make sure we won't misinterpret this
@@ -1593,12 +1592,11 @@ void AutocompleteEditViewGtk::HandleDragDataReceived(
   }
 }
 
-void AutocompleteEditViewGtk::HandleDragDataGet(
-    GtkWidget* widget,
-    GdkDragContext* context,
-    GtkSelectionData* selection_data,
-    guint target_type,
-    guint time) {
+void OmniboxViewGtk::HandleDragDataGet(GtkWidget* widget,
+                                       GdkDragContext* context,
+                                       GtkSelectionData* selection_data,
+                                       guint target_type,
+                                       guint time) {
   DCHECK(text_view_);
   // If GTK put the normal textual version of the selection in our drag data,
   // put our doctored selection that might have the 'http://' prefix. Also, GTK
@@ -1611,8 +1609,10 @@ void AutocompleteEditViewGtk::HandleDragDataGet(
   }
 }
 
-void AutocompleteEditViewGtk::HandleInsertText(
-    GtkTextBuffer* buffer, GtkTextIter* location, const gchar* text, gint len) {
+void OmniboxViewGtk::HandleInsertText(GtkTextBuffer* buffer,
+                                      GtkTextIter* location,
+                                      const gchar* text,
+                                      gint len) {
   std::string filtered_text;
   filtered_text.reserve(len);
 
@@ -1658,7 +1658,7 @@ void AutocompleteEditViewGtk::HandleInsertText(
   g_signal_stop_emission(buffer, signal_id, 0);
 }
 
-void AutocompleteEditViewGtk::HandleBackSpace(GtkWidget* sender) {
+void OmniboxViewGtk::HandleBackSpace(GtkWidget* sender) {
   // Checks if it's currently in keyword search mode.
   if (model_->is_keyword_hint() || model_->keyword().empty())
     return;  // Propgate into GtkTextView.
@@ -1685,8 +1685,8 @@ void AutocompleteEditViewGtk::HandleBackSpace(GtkWidget* sender) {
   g_signal_stop_emission(text_view_, signal_id, 0);
 }
 
-void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget,
-                                                  GtkDirectionType direction) {
+void OmniboxViewGtk::HandleViewMoveFocus(GtkWidget* widget,
+                                         GtkDirectionType direction) {
   if (!tab_was_pressed_)
     return;
 
@@ -1724,15 +1724,15 @@ void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget,
   }
 }
 
-void AutocompleteEditViewGtk::HandleCopyClipboard(GtkWidget* sender) {
+void OmniboxViewGtk::HandleCopyClipboard(GtkWidget* sender) {
   HandleCopyOrCutClipboard(true);
 }
 
-void AutocompleteEditViewGtk::HandleCutClipboard(GtkWidget* sender) {
+void OmniboxViewGtk::HandleCutClipboard(GtkWidget* sender) {
   HandleCopyOrCutClipboard(false);
 }
 
-void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(bool copy) {
+void OmniboxViewGtk::HandleCopyOrCutClipboard(bool copy) {
   DCHECK(text_view_);
 
   // On copy or cut, we manually update the PRIMARY selection to contain the
@@ -1775,7 +1775,7 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(bool copy) {
   OwnPrimarySelection(UTF16ToUTF8(text));
 }
 
-bool AutocompleteEditViewGtk::OnPerformDropImpl(const string16& text) {
+bool OmniboxViewGtk::OnPerformDropImpl(const string16& text) {
   if (model_->CanPasteAndGo(CollapseWhitespace(text, true))) {
     model_->PasteAndGo();
     return true;
@@ -1784,7 +1784,7 @@ bool AutocompleteEditViewGtk::OnPerformDropImpl(const string16& text) {
   return false;
 }
 
-gfx::Font AutocompleteEditViewGtk::GetFont() {
+gfx::Font OmniboxViewGtk::GetFont() {
 #if defined(TOOLKIT_VIEWS)
   bool use_gtk = false;
 #else
@@ -1815,7 +1815,7 @@ gfx::Font AutocompleteEditViewGtk::GetFont() {
   }
 }
 
-void AutocompleteEditViewGtk::OwnPrimarySelection(const std::string& text) {
+void OmniboxViewGtk::OwnPrimarySelection(const std::string& text) {
   primary_selection_text_ = text;
 
   GtkTargetList* list = gtk_target_list_new(NULL, 0);
@@ -1835,14 +1835,14 @@ void AutocompleteEditViewGtk::OwnPrimarySelection(const std::string& text) {
   gtk_target_table_free(entries, len);
 }
 
-void AutocompleteEditViewGtk::HandlePasteClipboard(GtkWidget* sender) {
+void OmniboxViewGtk::HandlePasteClipboard(GtkWidget* sender) {
   // We can't call model_->on_paste_replacing_all() here, because the actual
   // paste clipboard action may not be performed if the clipboard is empty.
   paste_clipboard_requested_ = true;
 }
 
-gfx::Rect AutocompleteEditViewGtk::WindowBoundsFromIters(
-    GtkTextIter* iter1, GtkTextIter* iter2) {
+gfx::Rect OmniboxViewGtk::WindowBoundsFromIters(GtkTextIter* iter1,
+                                                GtkTextIter* iter2) {
   GdkRectangle start_location, end_location;
   GtkTextView* text_view = GTK_TEXT_VIEW(text_view_);
   gtk_text_view_get_iter_location(text_view, iter1, &start_location);
@@ -1860,8 +1860,8 @@ gfx::Rect AutocompleteEditViewGtk::WindowBoundsFromIters(
   return gfx::Rect(x1, y1, x2 - x1, y2 - y1);
 }
 
-gboolean AutocompleteEditViewGtk::HandleExposeEvent(GtkWidget* sender,
-                                                    GdkEventExpose* expose) {
+gboolean OmniboxViewGtk::HandleExposeEvent(GtkWidget* sender,
+                                           GdkEventExpose* expose) {
   if (strikethrough_.cp_min >= strikethrough_.cp_max)
     return FALSE;
   DCHECK(text_view_);
@@ -1897,8 +1897,8 @@ gboolean AutocompleteEditViewGtk::HandleExposeEvent(GtkWidget* sender,
   return FALSE;
 }
 
-void AutocompleteEditViewGtk::SelectAllInternal(bool reversed,
-                                                bool update_primary_selection) {
+void OmniboxViewGtk::SelectAllInternal(bool reversed,
+                                       bool update_primary_selection) {
   GtkTextIter start, end;
   if (reversed) {
     GetTextBufferBounds(&end, &start);
@@ -1912,7 +1912,7 @@ void AutocompleteEditViewGtk::SelectAllInternal(bool reversed,
     FinishUpdatingHighlightedText();
 }
 
-void AutocompleteEditViewGtk::StartUpdatingHighlightedText() {
+void OmniboxViewGtk::StartUpdatingHighlightedText() {
   if (GTK_WIDGET_REALIZED(text_view_)) {
     GtkClipboard* clipboard =
         gtk_widget_get_clipboard(text_view_, GDK_SELECTION_PRIMARY);
@@ -1924,7 +1924,7 @@ void AutocompleteEditViewGtk::StartUpdatingHighlightedText() {
   g_signal_handler_block(text_buffer_, mark_set_handler_id2_);
 }
 
-void AutocompleteEditViewGtk::FinishUpdatingHighlightedText() {
+void OmniboxViewGtk::FinishUpdatingHighlightedText() {
   if (GTK_WIDGET_REALIZED(text_view_)) {
     GtkClipboard* clipboard =
         gtk_widget_get_clipboard(text_view_, GDK_SELECTION_PRIMARY);
@@ -1936,8 +1936,7 @@ void AutocompleteEditViewGtk::FinishUpdatingHighlightedText() {
   g_signal_handler_unblock(text_buffer_, mark_set_handler_id2_);
 }
 
-AutocompleteEditViewGtk::CharRange
-  AutocompleteEditViewGtk::GetSelection() const {
+OmniboxViewGtk::CharRange OmniboxViewGtk::GetSelection() const {
   // You can not just use get_selection_bounds here, since the order will be
   // ascending, and you don't know where the user's start and end of the
   // selection was (if the selection was forwards or backwards).  Get the
@@ -1966,15 +1965,15 @@ AutocompleteEditViewGtk::CharRange
   return CharRange(start_offset, end_offset);
 }
 
-void AutocompleteEditViewGtk::ItersFromCharRange(const CharRange& range,
-                                                 GtkTextIter* iter_min,
-                                                 GtkTextIter* iter_max) {
+void OmniboxViewGtk::ItersFromCharRange(const CharRange& range,
+                                        GtkTextIter* iter_min,
+                                        GtkTextIter* iter_max) {
   DCHECK(!IsImeComposing());
   gtk_text_buffer_get_iter_at_offset(text_buffer_, iter_min, range.cp_min);
   gtk_text_buffer_get_iter_at_offset(text_buffer_, iter_max, range.cp_max);
 }
 
-int AutocompleteEditViewGtk::GetTextLength() const {
+int OmniboxViewGtk::GetTextLength() const {
   GtkTextIter end;
   gtk_text_buffer_get_iter_at_mark(text_buffer_, &end, instant_mark_);
 #if GTK_CHECK_VERSION(2, 20, 0)
@@ -1986,19 +1985,19 @@ int AutocompleteEditViewGtk::GetTextLength() const {
 #endif
 }
 
-void AutocompleteEditViewGtk::PlaceCaretAt(int pos) {
+void OmniboxViewGtk::PlaceCaretAt(int pos) {
   GtkTextIter cursor;
   gtk_text_buffer_get_iter_at_offset(text_buffer_, &cursor, pos);
   gtk_text_buffer_place_cursor(text_buffer_, &cursor);
 }
 
-bool AutocompleteEditViewGtk::IsCaretAtEnd() const {
+bool OmniboxViewGtk::IsCaretAtEnd() const {
   const CharRange selection = GetSelection();
   return selection.cp_min == selection.cp_max &&
       selection.cp_min == GetTextLength();
 }
 
-void AutocompleteEditViewGtk::EmphasizeURLComponents() {
+void OmniboxViewGtk::EmphasizeURLComponents() {
 #if GTK_CHECK_VERSION(2, 20, 0)
   // We can't change the text style easily, if the preedit string (the text
   // being composed by the input method) is not empty, which is not treated as
@@ -2066,20 +2065,19 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
   }
 }
 
-void AutocompleteEditViewGtk::StopAnimation() {
+void OmniboxViewGtk::StopAnimation() {
   // Clear the animation delegate so we don't get an AnimationEnded() callback.
   instant_animation_->set_delegate(NULL);
   instant_animation_->Stop();
   UpdateInstantViewColors();
 }
 
-void AutocompleteEditViewGtk::TextChanged() {
+void OmniboxViewGtk::TextChanged() {
   EmphasizeURLComponents();
   model_->OnChanged();
 }
 
-void AutocompleteEditViewGtk::SavePrimarySelection(
-    const std::string& selected_text) {
+void OmniboxViewGtk::SavePrimarySelection(const std::string& selected_text) {
   DCHECK(text_view_);
 
   GtkClipboard* clipboard =
@@ -2092,8 +2090,8 @@ void AutocompleteEditViewGtk::SavePrimarySelection(
       clipboard, selected_text.data(), selected_text.size());
 }
 
-void AutocompleteEditViewGtk::SetTextAndSelectedRange(const string16& text,
-                                                      const CharRange& range) {
+void OmniboxViewGtk::SetTextAndSelectedRange(const string16& text,
+                                             const CharRange& range) {
   if (text != GetText()) {
     std::string utf8 = UTF16ToUTF8(text);
     gtk_text_buffer_set_text(text_buffer_, utf8.data(), utf8.length());
@@ -2102,7 +2100,7 @@ void AutocompleteEditViewGtk::SetTextAndSelectedRange(const string16& text,
   AdjustTextJustification();
 }
 
-void AutocompleteEditViewGtk::SetSelectedRange(const CharRange& range) {
+void OmniboxViewGtk::SetSelectedRange(const CharRange& range) {
   GtkTextIter insert, bound;
   ItersFromCharRange(range, &bound, &insert);
   gtk_text_buffer_select_range(text_buffer_, &insert, &bound);
@@ -2113,7 +2111,7 @@ void AutocompleteEditViewGtk::SetSelectedRange(const CharRange& range) {
   selection_suggested_ = true;
 }
 
-void AutocompleteEditViewGtk::AdjustTextJustification() {
+void OmniboxViewGtk::AdjustTextJustification() {
   DCHECK(text_view_);
 
   PangoDirection content_dir = GetContentDirection();
@@ -2137,7 +2135,7 @@ void AutocompleteEditViewGtk::AdjustTextJustification() {
   }
 }
 
-PangoDirection AutocompleteEditViewGtk::GetContentDirection() {
+PangoDirection OmniboxViewGtk::GetContentDirection() {
   GtkTextIter iter;
   gtk_text_buffer_get_start_iter(text_buffer_, &iter);
 
@@ -2151,13 +2149,15 @@ PangoDirection AutocompleteEditViewGtk::GetContentDirection() {
   return dir;
 }
 
-void AutocompleteEditViewGtk::HandleWidgetDirectionChanged(
-    GtkWidget* sender, GtkTextDirection previous_direction) {
+void OmniboxViewGtk::HandleWidgetDirectionChanged(
+    GtkWidget* sender,
+    GtkTextDirection previous_direction) {
   AdjustTextJustification();
 }
 
-void AutocompleteEditViewGtk::HandleDeleteFromCursor(GtkWidget *sender,
-    GtkDeleteType type, gint count) {
+void OmniboxViewGtk::HandleDeleteFromCursor(GtkWidget* sender,
+                                            GtkDeleteType type,
+                                            gint count) {
   // If the selected text was suggested for autocompletion, then erase those
   // first and then let the default handler take over.
   if (selection_suggested_) {
@@ -2166,13 +2166,13 @@ void AutocompleteEditViewGtk::HandleDeleteFromCursor(GtkWidget *sender,
   }
 }
 
-void AutocompleteEditViewGtk::HandleKeymapDirectionChanged(GdkKeymap* sender) {
+void OmniboxViewGtk::HandleKeymapDirectionChanged(GdkKeymap* sender) {
   AdjustTextJustification();
 }
 
-void AutocompleteEditViewGtk::HandleDeleteRange(GtkTextBuffer* buffer,
-                                                GtkTextIter* start,
-                                                GtkTextIter* end) {
+void OmniboxViewGtk::HandleDeleteRange(GtkTextBuffer* buffer,
+                                       GtkTextIter* start,
+                                       GtkTextIter* end) {
   // Prevent the user from deleting the instant anchor. We can't simply set the
   // instant anchor readonly by applying a tag with "editable" = FALSE, because
   // it'll prevent the insert caret from blinking.
@@ -2185,9 +2185,9 @@ void AutocompleteEditViewGtk::HandleDeleteRange(GtkTextBuffer* buffer,
   }
 }
 
-void AutocompleteEditViewGtk::HandleMarkSetAlways(GtkTextBuffer* buffer,
-                                                  GtkTextIter* location,
-                                                  GtkTextMark* mark) {
+void OmniboxViewGtk::HandleMarkSetAlways(GtkTextBuffer* buffer,
+                                         GtkTextIter* location,
+                                         GtkTextMark* mark) {
   if (mark == instant_mark_ || !instant_mark_)
     return;
 
@@ -2230,26 +2230,25 @@ void AutocompleteEditViewGtk::HandleMarkSetAlways(GtkTextBuffer* buffer,
 }
 
 // static
-void AutocompleteEditViewGtk::ClipboardGetSelectionThunk(
+void OmniboxViewGtk::ClipboardGetSelectionThunk(
     GtkClipboard* clipboard,
     GtkSelectionData* selection_data,
     guint info,
     gpointer object) {
-  AutocompleteEditViewGtk* edit_view =
-      reinterpret_cast<AutocompleteEditViewGtk*>(
-          g_object_get_data(G_OBJECT(object), kAutocompleteEditViewGtkKey));
+  OmniboxViewGtk* edit_view =
+      reinterpret_cast<OmniboxViewGtk*>(
+          g_object_get_data(G_OBJECT(object), kOmniboxViewGtkKey));
   edit_view->ClipboardGetSelection(clipboard, selection_data, info);
 }
 
-void AutocompleteEditViewGtk::ClipboardGetSelection(
-    GtkClipboard* clipboard,
-    GtkSelectionData* selection_data,
-    guint info) {
+void OmniboxViewGtk::ClipboardGetSelection(GtkClipboard* clipboard,
+                                           GtkSelectionData* selection_data,
+                                           guint info) {
   gtk_selection_data_set_text(selection_data, primary_selection_text_.c_str(),
                               primary_selection_text_.size());
 }
 
-std::string AutocompleteEditViewGtk::GetSelectedText() const {
+std::string OmniboxViewGtk::GetSelectedText() const {
   GtkTextIter start, end;
   std::string result;
   if (gtk_text_buffer_get_selection_bounds(text_buffer_, &start, &end)) {
@@ -2262,7 +2261,7 @@ std::string AutocompleteEditViewGtk::GetSelectedText() const {
   return result;
 }
 
-void AutocompleteEditViewGtk::UpdatePrimarySelectionIfValidURL() {
+void OmniboxViewGtk::UpdatePrimarySelectionIfValidURL() {
   string16 text = UTF8ToUTF16(GetSelectedText());
 
   if (text.empty())
@@ -2281,8 +2280,8 @@ void AutocompleteEditViewGtk::UpdatePrimarySelectionIfValidURL() {
 }
 
 #if GTK_CHECK_VERSION(2, 20, 0)
-void AutocompleteEditViewGtk::HandlePreeditChanged(GtkWidget* sender,
-                                                   const gchar* preedit) {
+void OmniboxViewGtk::HandlePreeditChanged(GtkWidget* sender,
+                                          const gchar* preedit) {
   // GtkTextView won't fire "begin-user-action" and "end-user-action" signals
   // when changing the preedit string, so we need to call
   // OnBeforePossibleChange() and OnAfterPossibleChange() by ourselves.
@@ -2301,29 +2300,29 @@ void AutocompleteEditViewGtk::HandlePreeditChanged(GtkWidget* sender,
 }
 #endif
 
-void AutocompleteEditViewGtk::HandleWindowSetFocus(
-    GtkWindow* sender, GtkWidget* focus) {
+void OmniboxViewGtk::HandleWindowSetFocus(GtkWindow* sender,
+                                          GtkWidget* focus) {
   // This is actually a guess. If the focused widget changes in "focus-out"
   // event handler, then the window will respect that and won't focus
   // |focus|. I doubt that is likely to happen however.
   going_to_focus_ = focus;
 }
 
-void AutocompleteEditViewGtk::HandleUndoRedo(GtkWidget* sender) {
+void OmniboxViewGtk::HandleUndoRedo(GtkWidget* sender) {
   OnBeforePossibleChange();
 }
 
-void AutocompleteEditViewGtk::HandleUndoRedoAfter(GtkWidget* sender) {
+void OmniboxViewGtk::HandleUndoRedoAfter(GtkWidget* sender) {
   OnAfterPossibleChange();
 }
 
-void AutocompleteEditViewGtk::GetTextBufferBounds(GtkTextIter* start,
-                                                  GtkTextIter* end) const {
+void OmniboxViewGtk::GetTextBufferBounds(GtkTextIter* start,
+                                         GtkTextIter* end) const {
   gtk_text_buffer_get_start_iter(text_buffer_, start);
   gtk_text_buffer_get_iter_at_mark(text_buffer_, end, instant_mark_);
 }
 
-void AutocompleteEditViewGtk::ValidateTextBufferIter(GtkTextIter* iter) const {
+void OmniboxViewGtk::ValidateTextBufferIter(GtkTextIter* iter) const {
   if (!instant_mark_)
     return;
 
@@ -2333,7 +2332,7 @@ void AutocompleteEditViewGtk::ValidateTextBufferIter(GtkTextIter* iter) const {
     *iter = end;
 }
 
-void AutocompleteEditViewGtk::AdjustVerticalAlignmentOfInstantView() {
+void OmniboxViewGtk::AdjustVerticalAlignmentOfInstantView() {
   // By default, GtkTextView layouts an anchored child widget just above the
   // baseline, so we need to move the |instant_view_| down to make sure it
   // has the same baseline as the |text_view_|.

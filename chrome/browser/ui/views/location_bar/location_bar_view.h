@@ -26,7 +26,7 @@
 #if defined(OS_WIN)
 #include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
 #elif defined(OS_LINUX)
-#include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
+#include "chrome/browser/ui/gtk/omnibox/omnibox_view_gtk.h"
 #endif
 
 class CommandUpdater;

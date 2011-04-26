@@ -16,7 +16,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -30,11 +29,12 @@
 #include "content/common/notification_registrar.h"
 #include "content/common/page_transition_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class AutocompleteEditViewGtk;
+class OmniboxViewGtk;
 class Browser;
 class CommandUpdater;
 class ContentSettingImageModel;
@@ -403,7 +403,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   GtkWidget* tab_to_search_hint_icon_;
   GtkWidget* tab_to_search_hint_trailing_label_;
 
-  scoped_ptr<AutocompleteEditViewGtk> location_entry_;
+  scoped_ptr<OmniboxViewGtk> location_entry_;
 
   // Alignment used to wrap |location_entry_|.
   GtkWidget* location_entry_alignment_;

@@ -171,10 +171,8 @@ void LocationBarView::Init() {
       GetWidget()->GetNativeView(), profile_, command_updater_,
       mode_ == POPUP, this));
 #else
-  location_entry_.reset(
-      AutocompleteEditViewGtk::Create(
-          this, model_, profile_,
-          command_updater_, mode_ == POPUP, this));
+  location_entry_.reset(OmniboxViewGtk::Create(this, model_, profile_,
+      command_updater_, mode_ == POPUP, this));
 #endif
 
   location_entry_view_ = location_entry_->AddToView(this);
