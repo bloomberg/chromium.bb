@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/sync/util/cryptographer.h"
-#include "chrome/test/profile_mock.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 
 using browser_sync::TestIdFactory;
@@ -96,9 +95,27 @@ bool ProfileSyncServiceTestHelper::CreateRoot(
 }
 
 AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()
-    : ui_thread_(BrowserThread::UI, &message_loop_) {}
+    : ui_thread_(BrowserThread::UI, &ui_loop_),
+      db_thread_(BrowserThread::DB),
+      io_thread_(BrowserThread::IO) {}
 
 AbstractProfileSyncServiceTest::~AbstractProfileSyncServiceTest() {}
+
+void AbstractProfileSyncServiceTest::SetUp() {
+  db_thread_.Start();
+  base::Thread::Options options;
+  options.message_loop_type = MessageLoop::TYPE_IO;
+  io_thread_.StartWithOptions(options);
+}
+
+void AbstractProfileSyncServiceTest::TearDown() {
+  // Pump messages posted by the sync core thread (which may end up
+  // posting on the IO thread).
+  ui_loop_.RunAllPending();
+  io_thread_.Stop();
+  db_thread_.Stop();
+  ui_loop_.RunAllPending();
+}
 
 bool AbstractProfileSyncServiceTest::CreateRoot(ModelType model_type) {
   return ProfileSyncServiceTestHelper::CreateRoot(

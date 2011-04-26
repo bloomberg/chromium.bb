@@ -25,10 +25,14 @@ using ::testing::StrictMock;
 
 class NonBlockingInvalidationNotifierTest : public testing::Test {
  public:
-  NonBlockingInvalidationNotifierTest() {}
+  NonBlockingInvalidationNotifierTest()
+      : io_thread_(BrowserThread::IO) {}
 
  protected:
   virtual void SetUp() {
+    base::Thread::Options options;
+    options.message_loop_type = MessageLoop::TYPE_IO;
+    io_thread_.StartWithOptions(options);
     request_context_getter_ = new TestURLRequestContextGetter;
     notifier::NotifierOptions notifier_options;
     notifier_options.request_context_getter = request_context_getter_;
@@ -41,16 +45,13 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
   virtual void TearDown() {
     invalidation_notifier_->RemoveObserver(&mock_observer_);
     invalidation_notifier_.reset();
-    {
-      // The request context getter gets deleted on the I/O thread. To prevent a
-      // leak supply one here.
-      BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
-      request_context_getter_ = NULL;
-    }
-    MessageLoop::current()->RunAllPending();
+    request_context_getter_ = NULL;
+    io_thread_.Stop();
+    ui_loop_.RunAllPending();
   }
 
-  MessageLoop message_loop_;
+  MessageLoop ui_loop_;
+  BrowserThread io_thread_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_ptr<NonBlockingInvalidationNotifier> invalidation_notifier_;
   StrictMock<MockSyncNotifierObserver> mock_observer_;

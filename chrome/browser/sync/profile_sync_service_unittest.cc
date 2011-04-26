@@ -38,28 +38,29 @@ using testing::StrictMock;
 class ProfileSyncServiceTest : public testing::Test {
  protected:
   ProfileSyncServiceTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {
+      : ui_thread_(BrowserThread::UI, &ui_loop_),
+        io_thread_(BrowserThread::IO) {}
+
+  virtual ~ProfileSyncServiceTest() {}
+
+  virtual void SetUp() {
+    base::Thread::Options options;
+    options.message_loop_type = MessageLoop::TYPE_IO;
+    io_thread_.StartWithOptions(options);
     profile_.reset(new TestingProfile());
+    profile_->CreateRequestContext();
   }
-  virtual ~ProfileSyncServiceTest() {
+
+  virtual void TearDown() {
     // Kill the service before the profile.
     service_.reset();
     profile_.reset();
-
+    // Pump messages posted by the sync core thread (which may end up
+    // posting on the IO thread).
+    ui_loop_.RunAllPending();
+    io_thread_.Stop();
     // Ensure that the sync objects destruct to avoid memory leaks.
-    MessageLoop::current()->RunAllPending();
-  }
-  virtual void SetUp() {
-    profile_->CreateRequestContext();
-  }
-  virtual void TearDown() {
-    {
-      // The request context gets deleted on the I/O thread. To prevent a leak
-      // supply one here.
-      BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
-      profile_->ResetRequestContext();
-    }
-    MessageLoop::current()->RunAllPending();
+    ui_loop_.RunAllPending();
   }
 
   // TODO(akalin): Refactor the StartSyncService*() functions below.
@@ -97,15 +98,11 @@ class ProfileSyncServiceTest : public testing::Test {
     }
   }
 
-  // This serves as the "UI loop" on which the ProfileSyncService lives and
-  // operates. It is needed because the SyncBackend can post tasks back to
-  // the service, meaning it can't be null. It doesn't have to be running,
-  // though -- OnInitializationCompleted is the only example (so far) in this
-  // test where we need to Run the loop to swallow a task and then quit, to
-  // avoid leaking the ProfileSyncService (the PostTask will retain the callee
-  // and caller until the task is run).
-  MessageLoop message_loop_;
+  MessageLoop ui_loop_;
+  // Needed by |service_|.
   BrowserThread ui_thread_;
+  // Needed by |service| and |profile_|'s request context.
+  BrowserThread io_thread_;
 
   scoped_ptr<TestProfileSyncService> service_;
   scoped_ptr<TestingProfile> profile_;
@@ -145,12 +142,8 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   service_->Initialize();
   service_.reset();
 }
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
-#define MAYBE_JsFrontendHandlersBasic DISABLED_JsFrontendHandlersBasic
-#else
-#define MAYBE_JsFrontendHandlersBasic JsFrontendHandlersBasic
-#endif
-TEST_F(ProfileSyncServiceTest, MAYBE_JsFrontendHandlersBasic) {
+
+TEST_F(ProfileSyncServiceTest, JsFrontendHandlersBasic) {
   StartSyncService();
 
   StrictMock<MockJsEventHandler> event_handler;
@@ -257,14 +250,14 @@ TEST_F(ProfileSyncServiceTest, JsFrontendProcessMessageBasic) {
   js_backend->ProcessMessage("testMessage1", args1, &event_handler);
 
   // Fires off reply for delayTestMessage2.
-  message_loop_.RunAllPending();
+  ui_loop_.RunAllPending();
 
   // Never replied to.
   js_backend->ProcessMessage("delayNotRepliedTo", args3, &event_handler);
 
   js_backend->RemoveHandler(&event_handler);
 
-  message_loop_.RunAllPending();
+  ui_loop_.RunAllPending();
 
   // Never replied to.
   js_backend->ProcessMessage("notRepliedTo", args3, &event_handler);
@@ -323,13 +316,13 @@ TEST_F(ProfileSyncServiceTest,
       GaiaConstants::kSyncService, "token");
 
   // Fires delayTestMessage3.
-  message_loop_.RunAllPending();
+  ui_loop_.RunAllPending();
 
   js_backend->ProcessMessage("delayNotRepliedTo", kNoArgs, &event_handler);
 
   js_backend->RemoveHandler(&event_handler);
 
-  message_loop_.RunAllPending();
+  ui_loop_.RunAllPending();
 
   js_backend->ProcessMessage("notRepliedTo", kNoArgs, &event_handler);
 }

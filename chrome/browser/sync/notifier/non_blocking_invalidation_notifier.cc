@@ -137,21 +137,23 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
               base::MessageLoopProxy::CreateForCurrentThread()),
           io_message_loop_proxy_(notifier_options.request_context_getter->
               GetIOMessageLoopProxy()) {
-  io_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          core_.get(),
-          &NonBlockingInvalidationNotifier::Core::Initialize,
-          notifier_options, client_info));
+  if (!io_message_loop_proxy_->PostTask(
+          FROM_HERE,
+          NewRunnableMethod(
+              core_.get(),
+              &NonBlockingInvalidationNotifier::Core::Initialize,
+              notifier_options, client_info)))
+    NOTREACHED();
 }
 
 NonBlockingInvalidationNotifier::~NonBlockingInvalidationNotifier() {
   DCHECK(construction_message_loop_proxy_->BelongsToCurrentThread());
-  io_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          core_.get(),
-          &NonBlockingInvalidationNotifier::Core::Teardown));
+  if (!io_message_loop_proxy_->PostTask(
+          FROM_HERE,
+          NewRunnableMethod(
+              core_.get(),
+              &NonBlockingInvalidationNotifier::Core::Teardown)))
+    NOTREACHED();
 }
 
 void NonBlockingInvalidationNotifier::AddObserver(
@@ -168,34 +170,37 @@ void NonBlockingInvalidationNotifier::RemoveObserver(
 
 void NonBlockingInvalidationNotifier::SetState(const std::string& state) {
   CheckOrSetValidThread();
-  io_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          core_.get(),
-          &NonBlockingInvalidationNotifier::Core::SetState,
-          state));
+  if (!io_message_loop_proxy_->PostTask(
+          FROM_HERE,
+          NewRunnableMethod(
+              core_.get(),
+              &NonBlockingInvalidationNotifier::Core::SetState,
+              state)))
+    NOTREACHED();
 }
 
 void NonBlockingInvalidationNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
   CheckOrSetValidThread();
-  io_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          core_.get(),
-          &NonBlockingInvalidationNotifier::Core::UpdateCredentials,
-          email, token));
+  if (!io_message_loop_proxy_->PostTask(
+          FROM_HERE,
+          NewRunnableMethod(
+              core_.get(),
+              &NonBlockingInvalidationNotifier::Core::UpdateCredentials,
+              email, token)))
+    NOTREACHED();
 }
 
 void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
     const syncable::ModelTypeSet& types) {
   CheckOrSetValidThread();
-  io_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          core_.get(),
-          &NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes,
-          types));
+  if (!io_message_loop_proxy_->PostTask(
+          FROM_HERE,
+          NewRunnableMethod(
+              core_.get(),
+              &NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes,
+              types)))
+    NOTREACHED();
 }
 
 void NonBlockingInvalidationNotifier::SendNotification() {

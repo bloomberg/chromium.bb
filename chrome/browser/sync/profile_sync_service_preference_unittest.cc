@@ -51,6 +51,7 @@ class ProfileSyncServicePreferenceTest
         non_default_charset_value_("foo") {}
 
   virtual void SetUp() {
+    AbstractProfileSyncServiceTest::SetUp();
     profile_.reset(new TestingProfile());
     profile_->CreateRequestContext();
     prefs_ = profile_->GetTestingPrefService();
@@ -61,13 +62,8 @@ class ProfileSyncServicePreferenceTest
 
   virtual void TearDown() {
     service_.reset();
-    {
-      // The request context gets deleted on the I/O thread. To prevent a leak
-      // supply one here.
-      BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
-      profile_.reset();
-    }
-    MessageLoop::current()->RunAllPending();
+    profile_.reset();
+    AbstractProfileSyncServiceTest::TearDown();
   }
 
   bool StartSyncService(Task* task, bool will_fail_association) {

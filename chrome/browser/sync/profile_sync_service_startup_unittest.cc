@@ -46,16 +46,16 @@ ACTION_P(InvokeCallback, callback_result) {
 class ProfileSyncServiceStartupTest : public testing::Test {
  public:
   ProfileSyncServiceStartupTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {}
+      : ui_thread_(BrowserThread::UI, &ui_loop_),
+        io_thread_(BrowserThread::IO) {}
 
   virtual ~ProfileSyncServiceStartupTest() {
-    // The PSS has some deletes that are scheduled on the main thread
-    // so we must delete the service and run the message loop.
-    service_.reset();
-    MessageLoop::current()->RunAllPending();
   }
 
   virtual void SetUp() {
+    base::Thread::Options options;
+    options.message_loop_type = MessageLoop::TYPE_IO;
+    io_thread_.StartWithOptions(options);
     profile_.CreateRequestContext();
     service_.reset(new TestProfileSyncService(&factory_, &profile_,
                                               "test", true, NULL));
@@ -65,13 +65,13 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   virtual void TearDown() {
     service_->RemoveObserver(&observer_);
-    {
-      // The request context gets deleted on the I/O thread. To prevent a leak
-      // supply one here.
-      BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
-      profile_.ResetRequestContext();
-    }
-    MessageLoop::current()->RunAllPending();
+    service_.reset();
+    profile_.ResetRequestContext();
+    // Pump messages posted by the sync core thread (which may end up
+    // posting on the IO thread).
+    ui_loop_.RunAllPending();
+    io_thread_.Stop();
+    ui_loop_.RunAllPending();
   }
 
  protected:
@@ -82,8 +82,9 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     return data_type_manager;
   }
 
-  MessageLoop message_loop_;
+  MessageLoop ui_loop_;
   BrowserThread ui_thread_;
+  BrowserThread io_thread_;
   TestingProfile profile_;
   ProfileSyncFactoryMock factory_;
   scoped_ptr<TestProfileSyncService> service_;

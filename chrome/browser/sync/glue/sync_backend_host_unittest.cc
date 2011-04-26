@@ -47,11 +47,30 @@ class MockSyncFrontend : public SyncFrontend {
 class SyncBackendHostTest : public testing::Test {
  protected:
   SyncBackendHostTest()
-      : ui_thread_(BrowserThread::UI, &ui_loop_) {}
+      : ui_thread_(BrowserThread::UI, &ui_loop_),
+        io_thread_(BrowserThread::IO) {}
+
+  virtual ~SyncBackendHostTest() {}
+
+  virtual void SetUp() {
+    base::Thread::Options options;
+    options.message_loop_type = MessageLoop::TYPE_IO;
+    io_thread_.StartWithOptions(options);
+  }
+
+  virtual void TearDown() {
+    // Pump messages posted by the sync core thread (which may end up
+    // posting on the IO thread).
+    ui_loop_.RunAllPending();
+    io_thread_.Stop();
+    // Pump any messages posted by the IO thread.
+    ui_loop_.RunAllPending();
+  }
 
  private:
   MessageLoop ui_loop_;
   BrowserThread ui_thread_;
+  BrowserThread io_thread_;
 };
 
 TEST_F(SyncBackendHostTest, InitShutdown) {
@@ -77,16 +96,6 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
                      credentials,
                      true);
   backend.Shutdown(false);
-  // Scoping for io_thread to get destroyed before other locals.
-  {
-    // The request context gets deleted on the I/O thread. To prevent a leak
-    // supply one here.
-    // TODO(sanjeevr): Investigate whether we can do this within
-    // ResetRequestContext
-    BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
-    profile.ResetRequestContext();
-  }
-  MessageLoop::current()->RunAllPending();
 }
 
 TEST_F(SyncBackendHostTest, MakePendingConfigModeState) {

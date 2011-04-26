@@ -32,6 +32,7 @@
 #include "chrome/test/profile_mock.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
@@ -54,7 +55,8 @@ class ProfileSyncServiceSessionTest
       public NotificationObserver {
  public:
   ProfileSyncServiceSessionTest()
-      : window_bounds_(0, 1, 2, 3),
+      : io_thread_(BrowserThread::IO),
+        window_bounds_(0, 1, 2, 3),
         notified_of_update_(false) {}
   ProfileSyncService* sync_service() { return sync_service_.get(); }
 
@@ -66,6 +68,9 @@ class ProfileSyncServiceSessionTest
   virtual void SetUp() {
     // BrowserWithTestWindowTest implementation.
     BrowserWithTestWindowTest::SetUp();
+    base::Thread::Options options;
+    options.message_loop_type = MessageLoop::TYPE_IO;
+    io_thread_.StartWithOptions(options);
     profile()->CreateRequestContext();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     SessionService* session_service = new SessionService(temp_dir_.path());
@@ -93,13 +98,13 @@ class ProfileSyncServiceSessionTest
     helper_.set_service(NULL);
     profile()->set_session_service(NULL);
     sync_service_.reset();
-    {
-      // The request context gets deleted on the I/O thread. To prevent a leak
-      // supply one here.
-      BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
-      profile()->ResetRequestContext();
-    }
+    profile()->ResetRequestContext();
+    // Pump messages posted by the sync core thread (which may end up
+    // posting on the IO thread).
     MessageLoop::current()->RunAllPending();
+    io_thread_.Stop();
+    MessageLoop::current()->RunAllPending();
+    BrowserWithTestWindowTest::TearDown();
   }
 
   bool StartSyncService(Task* task, bool will_fail_association) {
@@ -132,6 +137,7 @@ class ProfileSyncServiceSessionTest
     return true;
   }
 
+  BrowserThread io_thread_;
   // Path used in testing.
   ScopedTempDir temp_dir_;
   SessionServiceTestHelper helper_;

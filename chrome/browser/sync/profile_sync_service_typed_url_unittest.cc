@@ -130,6 +130,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   }
 
   virtual void SetUp() {
+    AbstractProfileSyncServiceTest::SetUp();
     profile_.CreateRequestContext();
     history_backend_ = new HistoryBackendMock();
     history_service_ = new HistoryServiceMock();
@@ -149,13 +150,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     service_.reset();
     notification_service_->TearDown();
     history_thread_.Stop();
-    {
-      // The request context gets deleted on the I/O thread. To prevent a leak
-      // supply one here.
-      BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
-      profile_.ResetRequestContext();
-    }
-    MessageLoop::current()->RunAllPending();
+    profile_.ResetRequestContext();
+    AbstractProfileSyncServiceTest::TearDown();
   }
 
   void StartSyncService(Task* task) {

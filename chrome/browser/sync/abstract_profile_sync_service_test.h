@@ -42,11 +42,17 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   AbstractProfileSyncServiceTest();
   virtual ~AbstractProfileSyncServiceTest();
 
+  virtual void SetUp();
+
+  virtual void TearDown();
+
   bool CreateRoot(syncable::ModelType model_type);
 
  protected:
-  MessageLoopForUI message_loop_;
+  MessageLoopForUI ui_loop_;
   BrowserThread ui_thread_;
+  BrowserThread db_thread_;
+  BrowserThread io_thread_;
   ProfileSyncFactoryMock factory_;
   TokenService token_service_;
   scoped_ptr<TestProfileSyncService> service_;
