@@ -1746,7 +1746,6 @@ base_env.Append(
     'tests/ppapi_file_system/build.scons',
     'tests/ppapi_geturl/build.scons',
     'tests/python_version/build.scons',
-    'tests/selenium_self_test/build.scons',
     'tests/tools/build.scons',
     'tests/unittests/shared/srpc/build.scons',
     'tests/unittests/shared/imc/build.scons',
