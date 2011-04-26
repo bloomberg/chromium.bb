@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
+#include "chrome/browser/ui/webui/thumbnail_source.h"
 
 #include "base/callback.h"
 #include "chrome/browser/history/top_sites.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
+#include "chrome/browser/ui/webui/foreign_session_handler.h"
 
 #include <algorithm>
 #include <string>
@@ -15,7 +15,7 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/ui/webui/new_tab_ui.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "chrome/common/url_constants.h"

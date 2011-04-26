@@ -39,7 +39,7 @@
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
+#include "chrome/browser/ui/webui/ntp_resource_cache.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/test_url_request_context_getter.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_NTP_VALUE_HELPER_H_
-#define CHROME_BROWSER_UI_WEBUI_NTP_VALUE_HELPER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_VALUE_HELPER_H_
+#define CHROME_BROWSER_UI_WEBUI_VALUE_HELPER_H_
 #pragma once
 
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -21,5 +21,5 @@ class ValueHelper {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ValueHelper);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_NTP_VALUE_HELPER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_VALUE_HELPER_H_
 
