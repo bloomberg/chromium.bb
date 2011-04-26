@@ -155,7 +155,9 @@ class IDLLexer(object):
 
   def SourceLine(self, file, line, pos):
     caret = '\t^'.expandtabs(pos)
-    return "%s\n%s" % (self.lines[line], caret)
+    # We decrement the line number since the array is 0 based while the
+    # line numbers are 1 based.
+    return "%s\n%s" % (self.lines[line - 1], caret)
 
   def ErrorMessage(self, file, line, pos, msg):
     return "\n%s\n%s" % (
@@ -163,8 +165,9 @@ class IDLLexer(object):
         self.SourceLine(file, line, pos))
 
   def SetData(self, filename, data):
+    # Start with line 1, not zero
+    self.lexobj.lineno = 1
     self.lexobj.filename = filename
-    self.lexobj.lineno = 0
     self.lines = data.split('\n')
     self.index = [0]
     self.lexobj.input(data)
