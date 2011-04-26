@@ -726,7 +726,7 @@ std::string GetHardwareInputMethodId() {
 }
 
 InputMethodDescriptor GetFallbackInputMethodDescriptor() {
-  return InputMethodDescriptor("xkb:us::eng", "USA", "us", "us", "eng");
+  return InputMethodDescriptor("xkb:us::eng", "USA", "us", "eng");
 }
 
 void ReloadInternalMaps() {
