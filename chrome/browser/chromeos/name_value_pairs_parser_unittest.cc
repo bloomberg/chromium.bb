@@ -2,53 +2,63 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/chromeos/name_value_pairs_parser.h"
 
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
-namespace system_access {
 
-TEST(SystemAccessTest, TestGetSingleValueFromTool) {
-  MachineInfo machine_info;
-  NameValuePairsParser parser(&machine_info);
+TEST(NameValuePairsParser, TestGetSingleValueFromTool) {
+  NameValuePairsParser::NameValueMap map;
+  NameValuePairsParser parser(&map);
   const char* command[] = { "echo", "Foo" };
   EXPECT_TRUE(parser.GetSingleValueFromTool(arraysize(command), command,
                                             "foo"));
-  ASSERT_EQ(1U, machine_info.size());
-  EXPECT_EQ("Foo", machine_info["foo"]);
+  ASSERT_EQ(1U, map.size());
+  EXPECT_EQ("Foo", map["foo"]);
 }
 
-TEST(SystemAccessTest, TestParseNameValuePairsFromTool) {
-  MachineInfo machine_info;
-  NameValuePairsParser parser(&machine_info);
+TEST(NameValuePairsParser, TestParseNameValuePairsFromTool) {
+  NameValuePairsParser::NameValueMap map;
+  NameValuePairsParser parser(&map);
   const char* command1[] = { "echo", "foo=Foo bar=Bar\nfoobar=FooBar\n" };
   EXPECT_TRUE(parser.ParseNameValuePairsFromTool(
       arraysize(command1), command1, "=", " \n"));
-  ASSERT_EQ(3U, machine_info.size());
-  EXPECT_EQ("Foo", machine_info["foo"]);
-  EXPECT_EQ("Bar", machine_info["bar"]);
-  EXPECT_EQ("FooBar", machine_info["foobar"]);
+  ASSERT_EQ(3U, map.size());
+  EXPECT_EQ("Foo", map["foo"]);
+  EXPECT_EQ("Bar", map["bar"]);
+  EXPECT_EQ("FooBar", map["foobar"]);
 
-  machine_info.clear();
+  map.clear();
   const char* command2[] = { "echo", "foo=Foo,bar=Bar" };
   EXPECT_TRUE(parser.ParseNameValuePairsFromTool(
       arraysize(command2), command2, "=", ",\n"));
-  ASSERT_EQ(2U, machine_info.size());
-  EXPECT_EQ("Foo", machine_info["foo"]);
-  EXPECT_EQ("Bar", machine_info["bar"]);
+  ASSERT_EQ(2U, map.size());
+  EXPECT_EQ("Foo", map["foo"]);
+  EXPECT_EQ("Bar", map["bar"]);
 
-  machine_info.clear();
+  map.clear();
   const char* command3[] = { "echo", "foo=Foo=foo,bar=Bar" };
   EXPECT_FALSE(parser.ParseNameValuePairsFromTool(
       arraysize(command3), command3, "=", ",\n"));
 
-  machine_info.clear();
+  map.clear();
   const char* command4[] = { "echo", "foo=Foo,=Bar" };
   EXPECT_FALSE(parser.ParseNameValuePairsFromTool(
       arraysize(command4), command4, "=", ",\n"));
+
+  map.clear();
+  const char* command5[] = { "echo",
+      "\"initial_locale\"=\"ja\"\n"
+      "\"initial_timezone\"=\"Asia/Tokyo\"\n"
+      "\"keyboard_layout\"=\"mozc-jp\"\n" };
+  EXPECT_TRUE(parser.ParseNameValuePairsFromTool(
+      arraysize(command5), command5, "=", "\n"));
+  ASSERT_EQ(3U, map.size());
+  EXPECT_EQ("ja", map["initial_locale"]);
+  EXPECT_EQ("Asia/Tokyo", map["initial_timezone"]);
+  EXPECT_EQ("mozc-jp", map["keyboard_layout"]);
 }
 
-}  // namespace system_access
 }  // namespace chromeos

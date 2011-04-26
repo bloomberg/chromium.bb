@@ -7,15 +7,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function.h"
-
-class DictionaryValue;
-
-namespace chromeos {
-class StartupCustomizationDocument;
-}  // namespace chromeos
 
 class GetChromeosInfoFunction : public AsyncExtensionFunction {
  public:
@@ -27,15 +19,7 @@ class GetChromeosInfoFunction : public AsyncExtensionFunction {
   virtual bool RunImpl();
 
  private:
-  // This method is called on FILE thread.
-  void LoadValues();
-
-  // This method is called on UI thread.
-  void RespondOnUIThread();
-
-  scoped_ptr<DictionaryValue> result_dictionary_;
-  std::vector<std::string> properties_;
-  std::vector<std::pair<std::string, std::string> > new_results_;
+  bool GetValue(const std::string& property_name, std::string* value);
 
   DECLARE_EXTENSION_FUNCTION_NAME("chromeosInfoPrivate.get");
 };

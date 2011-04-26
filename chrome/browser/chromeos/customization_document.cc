@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/system_access.h"
 
 // Manifest attributes names.
 
@@ -31,8 +32,7 @@ const char kSupportPageAttr[] = "support_page";
 
 const char kAcceptedManifestVersion[] = "1.0";
 
-const char kHWIDPath[] = "/sys/devices/platform/chromeos_acpi/HWID";
-const char kVPDPath[] = "/var/log/vpd_2.0.txt";
+const char kHwid[] = "hwid";
 
 }  // anonymous namespace
 
@@ -93,8 +93,15 @@ std::string CustomizationDocument::GetLocaleSpecificString(
 }
 
 // StartupCustomizationDocument implementation.
+StartupCustomizationDocument::StartupCustomizationDocument(
+    SystemAccess* system_access)
+    : system_access_(system_access) {
+}
+
 bool StartupCustomizationDocument::LoadManifestFromString(
     const std::string& manifest) {
+  DCHECK(system_access_);
+
   if (!CustomizationDocument::LoadManifestFromString(manifest)) {
     return false;
   }
@@ -104,8 +111,8 @@ bool StartupCustomizationDocument::LoadManifestFromString(
   root_->GetString(kKeyboardLayoutAttr, &keyboard_layout_);
   root_->GetString(kRegistrationUrlAttr, &registration_url_);
 
-  std::string hwid = GetHWID();
-  if (!hwid.empty()) {
+  std::string hwid;
+  if (system_access_->GetMachineStatistic(kHwid, &hwid)) {
     ListValue* hwid_list = NULL;
     if (root_->GetList(kHwidMapAttr, &hwid_list)) {
       for (size_t i = 0; i < hwid_list->GetSize(); ++i) {
@@ -133,88 +140,17 @@ bool StartupCustomizationDocument::LoadManifestFromString(
       }
     }
   } else {
-    LOG(ERROR) << "Can't read HWID from " << kHWIDPath;
+    LOG(ERROR) << "HWID is missing in machine statistics";
   }
 
-  VPDMap vpd_map;
-  if (ParseVPD(GetVPD(), &vpd_map)) {
-    InitFromVPD(vpd_map, kInitialLocaleAttr, &initial_locale_);
-    InitFromVPD(vpd_map, kInitialTimezoneAttr, &initial_timezone_);
-    InitFromVPD(vpd_map, kKeyboardLayoutAttr, &keyboard_layout_);
-  }
+  system_access_->GetMachineStatistic(kInitialLocaleAttr, &initial_locale_);
+  system_access_->GetMachineStatistic(kInitialTimezoneAttr, &initial_timezone_);
+  system_access_->GetMachineStatistic(kKeyboardLayoutAttr, &keyboard_layout_);
+
+  // system_access_ is no longer used.
+  system_access_ = NULL;
 
   return true;
-}
-
-std::string StartupCustomizationDocument::GetHWID() const {
-  // TODO(dpolukhin): move to SystemLibrary to be reusable.
-  std::string hwid;
-  FilePath hwid_file_path(kHWIDPath);
-  if (!file_util::ReadFileToString(hwid_file_path, &hwid))
-    LOG(ERROR) << "Can't read HWID from " << kHWIDPath;
-  return hwid;
-}
-
-std::string StartupCustomizationDocument::GetVPD() const {
-  // TODO(dpolukhin): move to SystemLibrary to be reusable.
-  std::string vpd;
-  FilePath vpd_file_path(kVPDPath);
-  if (!file_util::ReadFileToString(vpd_file_path, &vpd))
-    LOG(ERROR) << "Can't read VPD from " << kVPDPath;
-  return vpd;
-}
-
-bool StartupCustomizationDocument::ParseVPD(const std::string& vpd_string,
-                                            VPDMap* vpd_map) {
-  // TODO(dpolukhin): move to SystemLibrary to be reusable.
-  const char kDelimiterChars[] = "= \n";
-  const char kQuotaChars[] = "\"\'";
-
-  StringTokenizer tok(vpd_string, kDelimiterChars);
-  tok.set_quote_chars(kQuotaChars);
-  tok.set_options(StringTokenizer::RETURN_DELIMS);
-  bool next_is_equal = false;
-  bool next_is_value = false;
-  std::string name;
-  std::string value;
-  while (tok.GetNext()) {
-    // Skip all delimiters that are not '='.
-    if (tok.token_is_delim() && tok.token() != "=")
-      continue;
-
-    if (next_is_equal) {
-      if (tok.token() != "=")
-        break;
-
-      next_is_equal = false;
-      next_is_value = true;
-    } else if (next_is_value) {
-      TrimString(tok.token(), kQuotaChars, &value);
-      next_is_value = false;
-
-      if (!vpd_map->insert(VPDMap::value_type(name, value)).second) {
-        LOG(ERROR) << "Identical keys in VPD " << name;
-        return false;
-      }
-    } else {
-      TrimString(tok.token(), kQuotaChars, &name);
-      next_is_equal = true;
-    }
-  }
-
-  if (next_is_equal || next_is_value) {
-    LOG(ERROR) << "Syntax error in VPD " << vpd_string;
-    return false;
-  }
-
-  return true;
-}
-
-void StartupCustomizationDocument::InitFromVPD(
-    const VPDMap& vpd_map, const char* attr, std::string* value) {
-  VPDMap::const_iterator it = vpd_map.find(attr);
-  if (it != vpd_map.end())
-    *value = it->second;
 }
 
 std::string StartupCustomizationDocument::GetHelpPage(

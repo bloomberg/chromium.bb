@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/system_access.h"
 #include "chrome/browser/google/google_util.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -227,8 +228,9 @@ const chromeos::StartupCustomizationDocument* LoadStartupManifest() {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   FilePath startup_manifest_path(kStartupCustomizationManifestPath);
   if (file_util::PathExists(startup_manifest_path)) {
+    chromeos::SystemAccess* system = chromeos::SystemAccess::GetInstance();
     scoped_ptr<chromeos::StartupCustomizationDocument> customization(
-        new chromeos::StartupCustomizationDocument());
+        new chromeos::StartupCustomizationDocument(system));
     bool manifest_loaded = customization->LoadManifestFromFile(
         startup_manifest_path);
     if (manifest_loaded) {

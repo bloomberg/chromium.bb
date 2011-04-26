@@ -613,6 +613,8 @@
         'browser/chromeos/low_battery_observer.h',
         'browser/chromeos/metrics_cros_settings_provider.cc',
         'browser/chromeos/metrics_cros_settings_provider.h',
+        'browser/chromeos/name_value_pairs_parser.cc',
+        'browser/chromeos/name_value_pairs_parser.h',
         'browser/chromeos/native_dialog_window.cc',
         'browser/chromeos/native_dialog_window.h',
         'browser/chromeos/network_login_observer.cc',

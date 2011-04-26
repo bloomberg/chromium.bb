@@ -17,6 +17,8 @@ class ListValue;
 
 namespace chromeos {
 
+class SystemAccess;
+
 // Base class for OEM customization document classes.
 class CustomizationDocument {
  public:
@@ -40,7 +42,7 @@ class CustomizationDocument {
 // OEM startup customization document class.
 class StartupCustomizationDocument : public CustomizationDocument {
  public:
-  StartupCustomizationDocument() {}
+  explicit StartupCustomizationDocument(SystemAccess* system_access);
 
   virtual bool LoadManifestFromString(const std::string& manifest);
 
@@ -52,20 +54,11 @@ class StartupCustomizationDocument : public CustomizationDocument {
   std::string GetHelpPage(const std::string& locale) const;
   std::string GetEULAPage(const std::string& locale) const;
 
-  // Returns HWID for the machine. Declared as virtual to override in tests.
-  virtual std::string GetHWID() const;
-
  private:
-  typedef std::map<std::string, std::string> VPDMap;
+  // If |attr| exists in machine stat, assign it to |value|.
+  void InitFromMachineStatistic(const char* attr, std::string* value);
 
-  // Returns VPD as string. Declared as virtual to override in tests.
-  virtual std::string GetVPD() const;
-
-  // Parse VPD file as string and initialize |vpd_map|.
-  bool ParseVPD(const std::string& vpd_string, VPDMap* vpd_map);
-
-  // If |attr| exists in |vpd_map|, assign it value to |value|;
-  void InitFromVPD(const VPDMap& vpd_map, const char* attr, std::string* value);
+  SystemAccess* system_access_;
 
   std::string initial_locale_;
   std::string initial_timezone_;
