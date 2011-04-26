@@ -970,13 +970,16 @@ ListValue* InternetOptionsHandler::GetNetwork(
     bool needs_new_plan) {
   ListValue* network = new ListValue();
 
+  // 802.1X networks can be connected but not have saved credentials, and
+  // hence be "not configured".  Give preference to the "connected" and
+  // "connecting" states.  http://crosbug.com/14459
   int connection_state = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
-  if (!connectable)
-    connection_state = IDS_STATUSBAR_NETWORK_DEVICE_NOT_CONFIGURED;
+  if (connected)
+    connection_state = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
   else if (connecting)
     connection_state = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
-  else if (connected)
-    connection_state = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
+  else if (!connectable)
+    connection_state = IDS_STATUSBAR_NETWORK_DEVICE_NOT_CONFIGURED;
   std::string status = l10n_util::GetStringUTF8(connection_state);
   if (connection_type == chromeos::TYPE_CELLULAR) {
     if (needs_new_plan) {
