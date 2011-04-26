@@ -19,8 +19,14 @@ NSImage* FaviconForTabContents(TabContents* contents) {
   // favicon.
   if (contents && contents->FaviconIsValid()) {
     CGColorSpaceRef color_space = base::mac::GetSystemColorSpace();
-    return gfx::SkBitmapToNSImageWithColorSpace(contents->GetFavicon(),
-                                                color_space);
+    NSImage* image =
+        gfx::SkBitmapToNSImageWithColorSpace(contents->GetFavicon(),
+                                             color_space);
+    // The |image| could be nil if the bitmap is null. In that case, fallback
+    // to the default image.
+    if (image) {
+      return image;
+    }
   }
 
   return app::mac::GetCachedImageWithName(@"nav.pdf");
