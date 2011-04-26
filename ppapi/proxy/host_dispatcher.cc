@@ -62,7 +62,8 @@ HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
                                GetInterfaceFunc local_get_interface)
     : Dispatcher(remote_process_handle, local_get_interface),
       pp_module_(module),
-      ppb_proxy_(NULL) {
+      ppb_proxy_(NULL),
+      allow_plugin_reentrancy_(false) {
   if (!g_module_to_dispatcher)
     g_module_to_dispatcher = new ModuleToDispatcherMap;
   (*g_module_to_dispatcher)[pp_module_] = this;
