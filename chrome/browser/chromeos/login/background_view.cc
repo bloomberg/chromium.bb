@@ -400,9 +400,13 @@ void BackgroundView::InitInfoLabels() {
   policy::CloudPolicySubsystem* cloud_policy =
       g_browser_process->browser_policy_connector()->cloud_policy_subsystem();
   if (cloud_policy) {
+    // Two-step reset because we want to construct new ObserverRegistrar after
+    // destruction of old ObserverRegistrar to avoid DCHECK violation because
+    // of adding existing observer.
+    cloud_policy_registrar_.reset();
     cloud_policy_registrar_.reset(
         new policy::CloudPolicySubsystem::ObserverRegistrar(
-          cloud_policy, this));
+            cloud_policy, this));
 
     // Ensure that we have up-to-date enterprise info in case enterprise policy
     // is already fetched and has finished initialization.
