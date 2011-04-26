@@ -90,7 +90,7 @@ default = {
   'vm_tests' : True,
   'quick_vm' : True,
 
-  'gs_path': 'default',
+  'gs_path': None,
 
   'build_type' : False,
   'archive_build_debug' : False,
