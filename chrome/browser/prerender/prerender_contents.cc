@@ -4,6 +4,8 @@
 
 #include "chrome/browser/prerender/prerender_contents.h"
 
+#include <algorithm>
+
 #include "base/process_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
@@ -35,6 +37,23 @@
 #endif
 
 namespace prerender {
+
+// Compares URLs ignoring any ref for the purposes of matching URLs when
+// prerendering.
+struct PrerenderUrlPredicate {
+  explicit PrerenderUrlPredicate(const GURL& url)
+      : url_(url) {
+  }
+
+  bool operator()(const GURL& url) const {
+    return url.scheme() == url_.scheme() &&
+           url.host() == url_.host() &&
+           url.port() == url_.port() &&
+           url.path() == url_.path() &&
+           url.query() == url_.query();
+  }
+  GURL url_;
+};
 
 void AddChildRoutePair(ResourceDispatcherHost* resource_dispatcher_host,
                        int child_id, int route_id) {
@@ -516,8 +535,9 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
 }
 
 bool PrerenderContents::MatchesURL(const GURL& url) const {
-  return std::find(alias_urls_.begin(), alias_urls_.end(), url)
-      != alias_urls_.end();
+  return std::find_if(alias_urls_.begin(),
+                      alias_urls_.end(),
+                      PrerenderUrlPredicate(url)) != alias_urls_.end();
 }
 
 void PrerenderContents::DidStopLoading() {
