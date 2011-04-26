@@ -136,9 +136,6 @@ class DropdownBarHost : public views::AcceleratorTarget,
   // truncated to prevent from drawing onto Chrome's window border.
   void UpdateWindowEdges(const gfx::Rect& new_pos);
 
-  // Creates and returns the native Widget.
-  views::Widget* CreateHost();
-
   // Allows implementation to tweak widget position.
   void SetWidgetPositionNative(const gfx::Rect& new_pos, bool no_redraw);
 

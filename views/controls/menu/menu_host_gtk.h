@@ -24,12 +24,11 @@ class MenuHostGtk : public WidgetGtk,
 
  private:
   // Overridden from NativeMenuHost:
-  virtual void InitMenuHost(gfx::NativeWindow parent,
-                            const gfx::Rect& bounds) OVERRIDE;
   virtual void StartCapturing() OVERRIDE;
   virtual NativeWidget* AsNativeWidget() OVERRIDE;
 
   // Overridden from WidgetGtk:
+  virtual void InitNativeWidget(const Widget::CreateParams& params) OVERRIDE;
   virtual RootView* CreateRootView() OVERRIDE;
   virtual bool ShouldReleaseCaptureOnMouseReleased() const OVERRIDE;
   virtual void ReleaseMouseCapture() OVERRIDE;

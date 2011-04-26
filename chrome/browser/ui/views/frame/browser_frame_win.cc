@@ -60,7 +60,7 @@ BrowserFrameWin::~BrowserFrameWin() {
 }
 
 void BrowserFrameWin::InitBrowserFrame() {
-  WindowWin::Init(NULL, gfx::Rect());
+  GetWidget()->Init(views::Widget::WindowCreateParams());
 }
 
 // static

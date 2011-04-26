@@ -30,9 +30,9 @@ HWND GetHiddenTabHostWindow() {
   static views::Widget* widget = NULL;
 
   if (!widget) {
+    widget = views::Widget::CreateWidget();
     views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
-    widget = views::Widget::CreateWidget(params);
-    widget->Init(NULL, gfx::Rect());
+    widget->Init(params);
     // If a background window requests focus, the hidden tab host will
     // be activated to focus the tab.  Use WS_DISABLED to prevent
     // this.
@@ -72,8 +72,8 @@ void NativeTabContentsViewWin::EndDragging() {
 void NativeTabContentsViewWin::InitNativeTabContentsView() {
   views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CONTROL);
   params.delete_on_destroy = false;
-  SetCreateParams(params);
-  WidgetWin::Init(GetHiddenTabHostWindow(), gfx::Rect());
+  params.parent = GetHiddenTabHostWindow();
+  GetWidget()->Init(params);
 
   // Remove the root view drop target so we can register our own.
   RevokeDragDrop(GetNativeView());

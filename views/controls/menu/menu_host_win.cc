@@ -21,11 +21,6 @@ MenuHostWin::~MenuHostWin() {
 ////////////////////////////////////////////////////////////////////////////////
 // MenuHostWin, NativeMenuHost implementation:
 
-void MenuHostWin::InitMenuHost(gfx::NativeWindow parent,
-                               const gfx::Rect& bounds) {
-  WidgetWin::Init(parent, bounds);
-}
-
 void MenuHostWin::StartCapturing() {
   SetMouseCapture();
 }

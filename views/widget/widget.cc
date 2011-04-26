@@ -28,6 +28,8 @@ Widget::CreateParams::CreateParams()
       delete_on_destroy(true),
       mirror_origin_in_rtl(false),
       has_dropshadow(false),
+      parent(NULL),
+      parent_widget(NULL),
       native_widget(NULL) {
 }
 
@@ -41,11 +43,18 @@ Widget::CreateParams::CreateParams(Type type)
       delete_on_destroy(true),
       mirror_origin_in_rtl(false),
       has_dropshadow(false),
+      parent(NULL),
+      parent_widget(NULL),
       native_widget(NULL) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
+
+// static
+Widget::CreateParams Widget::WindowCreateParams() {
+  return CreateParams(CreateParams::TYPE_WINDOW);
+}
 
 Widget::Widget()
     : is_mouse_button_pressed_(false),
@@ -58,19 +67,13 @@ Widget::Widget()
 Widget::~Widget() {
 }
 
-void Widget::SetCreateParams(const CreateParams& params) {
-  native_widget_->SetCreateParams(params);
+void Widget::Init(const CreateParams& params) {
+  GetRootView();
+  default_theme_provider_.reset(new DefaultThemeProvider);
+  native_widget_->InitNativeWidget(params);
 }
 
 // Unconverted methods (see header) --------------------------------------------
-
-void Widget::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
-  GetRootView();
-  default_theme_provider_.reset(new DefaultThemeProvider);
-}
-
-void Widget::InitWithWidget(Widget* parent, const gfx::Rect& bounds) {
-}
 
 gfx::NativeView Widget::GetNativeView() const {
   return NULL;

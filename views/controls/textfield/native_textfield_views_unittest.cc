@@ -154,10 +154,10 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     ASSERT_FALSE(textfield_);
     textfield_ = new TestTextfield(style);
     textfield_->SetController(this);
+    widget_ = Widget::CreateWidget();
     Widget::CreateParams params(Widget::CreateParams::TYPE_POPUP);
-    params.mirror_origin_in_rtl = false;
-    widget_ = Widget::CreateWidget(params);
-    widget_->Init(NULL, gfx::Rect(100, 100, 100, 100));
+    params.bounds = gfx::Rect(100, 100, 100, 100);
+    widget_->Init(params);
     View* container = new View();
     widget_->SetContentsView(container);
     container->AddChildView(textfield_);

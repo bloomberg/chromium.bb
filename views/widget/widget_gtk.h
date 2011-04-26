@@ -46,27 +46,7 @@ class WidgetGtk : public Widget,
                   public ui::ActiveWindowWatcherX::Observer,
                   public internal::InputMethodDelegate {
  public:
-  // Type of widget.
-  enum Type {
-    // Used for popup type windows (bubbles, menus ...).
-    // NOTE: on X windows of this type can NOT get focus. If you need a popup
-    // like widget that can be focused use TYPE_WINDOW and set the window type
-    // to WINDOW_TYPE_CHROME_INFO_BUBBLE.
-    TYPE_POPUP,
-
-    // A top level window with no title or control buttons.
-    // NOTE: On ChromeOS TYPE_WINDOW and TYPE_DECORATED_WINDOW behave the same.
-    TYPE_WINDOW,
-
-    // A top level, decorated window.
-    // NOTE: On ChromeOS TYPE_WINDOW and TYPE_DECORATED_WINDOW behave the same.
-    TYPE_DECORATED_WINDOW,
-
-    // A child widget.
-    TYPE_CHILD
-  };
-
-  explicit WidgetGtk(Type type);
+  WidgetGtk();
   virtual ~WidgetGtk();
 
   // Marks this window as transient to its parent. A window that is transient
@@ -98,18 +78,7 @@ class WidgetGtk : public Widget,
   void EnableDoubleBuffer(bool enabled);
   bool is_double_buffered() const { return is_double_buffered_; }
 
-  // Makes the window pass all events through to any windows behind it.
-  // This must be invoked before Init. This does a couple of checks and returns
-  // true if the window can be made to ignore events. The actual work of making
-  // the window ignore events is done by ConfigureWidgetForIgnoreEvents.
-  bool MakeIgnoreEvents();
   bool is_ignore_events() const { return ignore_events_; }
-
-  // Sets whether or not we are deleted when the widget is destroyed. The
-  // default is true.
-  void set_delete_on_destroy(bool delete_on_destroy) {
-    delete_on_destroy_ = delete_on_destroy;
-  }
 
   // Adds and removes the specified widget as a child of this widget's contents.
   // These methods make sure to add the widget to the window's contents
@@ -155,8 +124,6 @@ class WidgetGtk : public Widget,
   virtual void ActiveWindowChanged(GdkWindow* active_window);
 
   // Overridden from Widget:
-  virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
-  virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
   virtual gfx::NativeView GetNativeView() const;
   virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
   virtual Window* GetWindow();
@@ -201,7 +168,7 @@ class WidgetGtk : public Widget,
   static void RegisterChildExposeHandler(GtkWidget* widget);
 
   // Overridden from NativeWidget:
-  virtual void SetCreateParams(const CreateParams& params) OVERRIDE;
+  virtual void InitNativeWidget(const CreateParams& params) OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
@@ -309,6 +276,8 @@ class WidgetGtk : public Widget,
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
 
+  void SetCreateParams(const CreateParams& params);
+
   // This is called only when the window is transparent.
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnWindowPaint, GdkEventExpose*);
 
@@ -321,7 +290,7 @@ class WidgetGtk : public Widget,
   static Window* GetWindowImpl(GtkWidget* widget);
 
   // Creates the GtkWidget.
-  void CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds);
+  void CreateGtkWidget(const CreateParams& params);
 
   // Invoked from create widget to enable the various bits needed for a
   // transparent background. This is only invoked if MakeTransparent has been
@@ -329,8 +298,7 @@ class WidgetGtk : public Widget,
   void ConfigureWidgetForTransparentBackground(GtkWidget* parent);
 
   // Invoked from create widget to enable the various bits needed for a
-  // window which doesn't receive events. This is only invoked if
-  // MakeIgnoreEvents has been invoked.
+  // window which doesn't receive events.
   void ConfigureWidgetForIgnoreEvents();
 
   // A utility function to draw a transparent background onto the |widget|.
@@ -339,8 +307,6 @@ class WidgetGtk : public Widget,
 
   // A delegate implementation that handles events received here.
   internal::NativeWidgetDelegate* delegate_;
-
-  const Type type_;
 
   // Our native views. If we're a window/popup, then widget_ is the window and
   // window_contents_ is a GtkFixed. If we're not a window/popup, then widget_
@@ -352,6 +318,9 @@ class WidgetGtk : public Widget,
   // level window otherwise Gtk throws a fit. |null_parent_| is an invisible
   // popup that such GtkWidgets are parented to.
   static GtkWidget* null_parent_;
+
+  // True if the widget is a child of some other widget.
+  bool child_;
 
   // The TooltipManager.
   // WARNING: RootView's destructor calls into the TooltipManager. As such, this
@@ -369,7 +338,9 @@ class WidgetGtk : public Widget,
   // See description above make_transparent for details.
   bool transparent_;
 
-  // See description above MakeIgnoreEvents for details.
+  // Makes the window pass all events through to any windows behind it.
+  // Set during SetCreateParams before the widget is created. The actual work of
+  // making the window ignore events is done by ConfigureWidgetForIgnoreEvents.
   bool ignore_events_;
 
   // See note in DropObserver for details on this.

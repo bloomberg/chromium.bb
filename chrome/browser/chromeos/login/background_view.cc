@@ -169,9 +169,10 @@ views::Widget* BackgroundView::CreateWindowContainingView(
     BackgroundView** view) {
   ResetXCursor();
 
-  Widget* window = Widget::CreateWidget(
-      Widget::CreateParams(Widget::CreateParams::TYPE_WINDOW));
-  window->Init(NULL, bounds);
+  Widget* window = Widget::CreateWidget();
+  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  params.bounds = bounds;
+  window->Init(params);
   *view = new BackgroundView();
   (*view)->Init(background_url);
 

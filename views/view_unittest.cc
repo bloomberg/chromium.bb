@@ -52,11 +52,6 @@ class ViewTest : public ViewsTestBase {
 
   virtual ~ViewTest() {
   }
-
-  Widget* CreateWidget() {
-    return Widget::CreateWidget(
-        Widget::CreateParams(Widget::CreateParams::TYPE_WINDOW));
-  }
 };
 
 /*
@@ -366,11 +361,11 @@ TEST_F(ViewTest, MouseEvent) {
   TestView* v2 = new TestView();
   v2->SetBounds(100, 100, 100, 100);
 
-  scoped_ptr<Widget> widget(CreateWidget());
+  scoped_ptr<Widget> widget(Widget::CreateWidget());
   Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
   params.delete_on_destroy = false;
-  widget->SetCreateParams(params);
-  widget->Init(NULL, gfx::Rect(50, 50, 650, 650));
+  params.bounds = gfx::Rect(50, 50, 650, 650);
+  widget->Init(params);
   RootView* root = widget->GetRootView();
 
   root->AddChildView(v1);
@@ -475,15 +470,11 @@ TEST_F(ViewTest, TouchEvent) {
   TestView* v3 = new TestViewIgnoreTouch();
   v3->SetBounds(0, 0, 100, 100);
 
-  scoped_ptr<Widget> window(CreateWidget());
-#if defined(OS_WIN)
-  // This code would need to be here when we support
-  // touch on windows?
-  WidgetWin* window_win = static_cast<WidgetWin*>(window.get());
-  window_win->set_delete_on_destroy(false);
-  window_win->set_window_style(WS_OVERLAPPEDWINDOW);
-  window_win->Init(NULL, gfx::Rect(50, 50, 650, 650));
-#endif
+  scoped_ptr<Widget> widget(Widget::CreateWidget());
+  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  params.delete_on_destroy = false;
+  params.bounds = gfx::Rect(50, 50, 650, 650);
+  widget->Init(params);
   RootView* root = window->GetRootView();
 
   root->AddChildView(v1);
@@ -578,7 +569,7 @@ TEST_F(ViewTest, TouchEvent) {
   EXPECT_EQ(NULL, gm->last_view_);
   EXPECT_EQ(gm->previously_handled_flag_, false);
 
-  window->CloseNow();
+  widget->CloseNow();
 }
 #endif
 
@@ -673,8 +664,8 @@ TEST_F(ViewTest, DISABLED_Painting) {
 
 TEST_F(ViewTest, RemoveNotification) {
   views::ViewStorage* vs = views::ViewStorage::GetInstance();
-  views::Widget* window = CreateWidget();
-  views::RootView* root_view = window->GetRootView();
+  views::Widget* widget = Widget::CreateWidget();
+  views::RootView* root_view = widget->GetRootView();
 
   View* v1 = new View;
   int s1 = vs->CreateStorageID();
@@ -748,7 +739,7 @@ TEST_F(ViewTest, RemoveNotification) {
 
   // Now delete the root view (deleting the window will trigger a delete of the
   // RootView) and make sure we are notified that the views were removed.
-  delete window;
+  delete widget;
   EXPECT_EQ(stored_views - 10, vs->view_count());
   EXPECT_EQ(NULL, vs->RetrieveView(s1));
   EXPECT_EQ(NULL, vs->RetrieveView(s12));
@@ -800,8 +791,8 @@ gfx::Point ConvertPointToView(views::View* view, const gfx::Point& p) {
 }
 
 TEST_F(ViewTest, HitTestMasks) {
-  scoped_ptr<views::Widget> window(CreateWidget());
-  views::RootView* root_view = window->GetRootView();
+  scoped_ptr<views::Widget> widget(Widget::CreateWidget());
+  views::RootView* root_view = widget->GetRootView();
   root_view->SetBounds(0, 0, 500, 500);
 
   gfx::Rect v1_bounds = gfx::Rect(0, 0, 100, 100);
@@ -841,9 +832,11 @@ TEST_F(ViewTest, Textfield) {
 
   ui::Clipboard clipboard;
 
-  Widget* window = CreateWidget();
-  window->Init(NULL, gfx::Rect(0, 0, 100, 100));
-  RootView* root_view = window->GetRootView();
+  Widget* widget = Widget::CreateWidget();
+  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  widget->Init(params);
+  RootView* root_view = widget->GetRootView();
 
   Textfield* textfield = new Textfield();
   root_view->AddChildView(textfield);
@@ -877,11 +870,11 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
 
   ui::Clipboard clipboard;
 
-  Widget* window = CreateWidget();
-#if defined(OS_WIN)
-  static_cast<WidgetWin*>(window)->Init(NULL, gfx::Rect(0, 0, 100, 100));
-#endif
-  RootView* root_view = window->GetRootView();
+  Widget* widget = Widget::CreateWidget();
+  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  widget->Init(params);
+  RootView* root_view = widget->GetRootView();
 
   Textfield* normal = new Textfield();
   Textfield* read_only = new Textfield();
@@ -1001,17 +994,18 @@ TEST_F(ViewTest, ActivateAccelerator) {
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
 
   // Create a window and add the view as its child.
-  WidgetWin widget;
+  scoped_ptr<Widget> widget(Widget::CreateWidget());
   Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
   params.delete_on_destroy = false;
-  widget.SetCreateParams(params);
-  widget.Init(NULL, gfx::Rect(0, 0, 100, 100));
-  RootView* root = widget.GetRootView();
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  widget->Init(params);
+  RootView* root = widget->GetRootView();
   root->AddChildView(view);
 
   // Get the focus manager.
   views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(widget.GetNativeView());
+      views::FocusManager::GetFocusManagerForNativeView(
+          widget->GetNativeView());
   ASSERT_TRUE(focus_manager);
 
   // Hit the return key and see if it takes effect.
@@ -1054,7 +1048,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 2);
   EXPECT_EQ(view->accelerator_count_map_[escape_accelerator], 2);
 
-  widget.CloseNow();
+  widget->CloseNow();
 }
 #endif
 
@@ -1066,16 +1060,17 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
   view->AddAccelerator(return_accelerator);
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
 
-  WidgetWin widget;
+  scoped_ptr<Widget> widget(Widget::CreateWidget());
   Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
   params.delete_on_destroy = false;
-  widget.SetCreateParams(params);
-  widget.Init(NULL, gfx::Rect(0, 0, 100, 100));
-  RootView* root = widget.GetRootView();
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  widget->Init(params);
+  RootView* root = widget->GetRootView();
   root->AddChildView(view);
 
   views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(widget.GetNativeView());
+      views::FocusManager::GetFocusManagerForNativeView(
+          widget->GetNativeView());
   ASSERT_TRUE(focus_manager);
 
   view->SetVisible(false);
@@ -1086,7 +1081,7 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
   EXPECT_EQ(view,
             focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
 
-  widget.CloseNow();
+  widget->CloseNow();
 }
 #endif
 
@@ -1558,12 +1553,17 @@ class TestChangeNativeViewHierarchy {
   explicit TestChangeNativeViewHierarchy(ViewTest *view_test) {
     view_test_ = view_test;
     native_host_ = new views::NativeViewHost();
-    host_ = view_test->CreateWidget();
-    host_->Init(NULL, gfx::Rect(0, 0, 500, 300));
+    host_ = Widget::CreateWidget();
+    Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+    params.bounds = gfx::Rect(0, 0, 500, 300);
+    host_->Init(params);
     host_->GetRootView()->AddChildView(native_host_);
     for (size_t i = 0; i < TestNativeViewHierarchy::kTotalViews; ++i) {
-      windows_[i] = view_test->CreateWidget();
-      windows_[i]->Init(host_->GetNativeView(), gfx::Rect(0, 0, 500, 300));
+      windows_[i] = Widget::CreateWidget();
+      Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+      params.parent = host_->GetNativeView();
+      params.bounds = gfx::Rect(0, 0, 500, 300);
+      windows_[i]->Init(params);
       root_views_[i] = windows_[i]->GetRootView();
       test_views_[i] = new TestNativeViewHierarchy;
       root_views_[i]->AddChildView(test_views_[i]);
@@ -1684,12 +1684,10 @@ TEST_F(ViewTest, TransformPaint) {
   TestView* v2 = new TestView();
   v2->SetBounds(100, 100, 200, 100);
 
-  Widget* widget = CreateWidget();
-#if defined(OS_WIN)
-  WidgetWin* window_win = static_cast<WidgetWin*>(widget);
-  window_win->set_window_style(WS_OVERLAPPEDWINDOW);
-  window_win->Init(NULL, gfx::Rect(50, 50, 650, 650));
-#endif
+  Widget* widget = Widget::CreateWidget();
+  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(50, 50, 650, 650);
+  widget->Init(params);
   widget->Show();
   RootView* root = widget->GetRootView();
 
@@ -1723,12 +1721,10 @@ TEST_F(ViewTest, TransformEvent) {
   TestView* v2 = new TestView();
   v2->SetBounds(100, 100, 200, 100);
 
-  Widget* widget = CreateWidget();
-#if defined(OS_WIN)
-  WidgetWin* window_win = static_cast<WidgetWin*>(widget);
-  window_win->set_window_style(WS_OVERLAPPEDWINDOW);
-  window_win->Init(NULL, gfx::Rect(50, 50, 650, 650));
-#endif
+  Widget* widget = Widget::CreateWidget();
+  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(50, 50, 650, 650);
+  widget->Init(params);
   RootView* root = widget->GetRootView();
 
   root->AddChildView(v1);
@@ -1875,11 +1871,11 @@ class VisibleBoundsView : public View {
 TEST_F(ViewTest, OnVisibleBoundsChanged) {
   gfx::Rect viewport_bounds(0, 0, 100, 100);
 
-  scoped_ptr<Widget> widget(CreateWidget());
+  scoped_ptr<Widget> widget(Widget::CreateWidget());
   Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
   params.delete_on_destroy = false;
-  widget->SetCreateParams(params);
-  widget->Init(NULL, viewport_bounds);
+  params.bounds = viewport_bounds;
+  widget->Init(params);
   widget->GetRootView()->SetBoundsRect(viewport_bounds);
 
   View* viewport = new View;

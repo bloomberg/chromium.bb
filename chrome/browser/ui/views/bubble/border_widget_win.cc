@@ -10,15 +10,18 @@
 
 BorderWidgetWin::BorderWidgetWin()
     : border_contents_(NULL) {
-  set_window_style(WS_POPUP);
-  set_window_ex_style(WS_EX_TOOLWINDOW | WS_EX_LAYERED);
 }
 
-void BorderWidgetWin::Init(BorderContents* border_contents, HWND owner) {
+void BorderWidgetWin::InitBorderWidgetWin(BorderContents* border_contents,
+                                          HWND owner) {
   DCHECK(!border_contents_);
   border_contents_ = border_contents;
   border_contents_->Init();
-  WidgetWin::Init(owner, gfx::Rect());
+
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  params.transparent = true;
+  params.parent = owner;
+  GetWidget()->Init(params);
   SetContentsView(border_contents_);
   SetWindowPos(owner, 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOREDRAW);

@@ -168,10 +168,10 @@ class ScreenLocker : public LoginStatusConsumer,
   CHROMEGTK_CALLBACK_1(ScreenLocker, void, OnClientEvent, GdkEventClient*);
 
   // The screen locker window.
-  views::WidgetGtk* lock_window_;
+  views::Widget* lock_window_;
 
-  // TYPE_CHILD widget to grab the keyboard/mouse input.
-  views::WidgetGtk* lock_widget_;
+  // Child widget to grab the keyboard/mouse input.
+  views::Widget* lock_widget_;
 
   // A view that accepts password.
   ScreenLockView* screen_lock_view_;

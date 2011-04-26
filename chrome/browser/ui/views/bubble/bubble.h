@@ -135,7 +135,8 @@ class Bubble
  protected:
   Bubble();
 #if defined(OS_CHROMEOS)
-  Bubble(views::WidgetGtk::Type type, bool show_while_screen_is_locked);
+  Bubble(views::Widget::CreateParams::Type type,
+         bool show_while_screen_is_locked);
 #endif
   virtual ~Bubble();
 
@@ -201,6 +202,8 @@ class Bubble
   bool fade_away_on_close_;
 
 #if defined(OS_CHROMEOS)
+  // Some callers want the bubble to be a child control instead of a window.
+  views::Widget::CreateParams::Type type_;
   // Should we set a property telling the window manager to show this window
   // onscreen even when the screen is locked?
   bool show_while_screen_is_locked_;

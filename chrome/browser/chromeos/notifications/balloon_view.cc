@@ -267,19 +267,19 @@ void BalloonViewImpl::Layout() {
 void BalloonViewImpl::ViewHierarchyChanged(
     bool is_add, View* parent, View* child) {
   if (is_add && GetWidget() && !control_view_host_.get() && controls_) {
+    control_view_host_.reset(views::Widget::CreateWidget());
+    static_cast<views::WidgetGtk*>(control_view_host_.get())->
+        EnableDoubleBuffer(true);
     views::Widget::CreateParams params(
         views::Widget::CreateParams::TYPE_CONTROL);
     params.delete_on_destroy = false;
-    control_view_host_.reset(views::Widget::CreateWidget(params));
-    static_cast<views::WidgetGtk*>(control_view_host_.get())->
-        EnableDoubleBuffer(true);
-    control_view_host_->Init(GetParentNativeView(), gfx::Rect());
+    params.parent = GetParentNativeView();
+    control_view_host_->Init(params);
     NotificationControlView* control = new NotificationControlView(this);
     control_view_host_->SetContentsView(control);
   }
-  if (!is_add && this == child && control_view_host_.get() && controls_) {
+  if (!is_add && this == child && control_view_host_.get() && controls_)
     control_view_host_.release()->CloseNow();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

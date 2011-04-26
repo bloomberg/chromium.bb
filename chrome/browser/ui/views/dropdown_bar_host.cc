@@ -54,8 +54,11 @@ void DropdownBarHost::Init(DropdownBarView* view) {
   view_ = view;
 
   // Initialize the host.
-  host_.reset(CreateHost());
-  host_->InitWithWidget(browser_view_->GetWidget(), gfx::Rect());
+  host_.reset(views::Widget::CreateWidget());
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CONTROL);
+  params.delete_on_destroy = false;
+  params.parent_widget = browser_view_->GetWidget();
+  host_->Init(params);
   host_->SetContentsView(view_);
 
   // Start listening to focus changes, so we can register and unregister our

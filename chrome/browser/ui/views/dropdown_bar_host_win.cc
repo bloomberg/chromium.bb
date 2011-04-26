@@ -22,16 +22,6 @@ NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
   return NativeWebKeyboardEvent(hwnd, key_event.native_event().message, key, 0);
 }
 
-views::Widget* DropdownBarHost::CreateHost() {
-  views::WidgetWin* widget = new views::WidgetWin();
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CONTROL);
-  // Don't let WidgetWin manage our lifetime. We want our lifetime to
-  // coincide with TabContents.
-  params.delete_on_destroy = false;
-  widget->SetCreateParams(params);
-  return widget;
-}
-
 void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
                                               bool no_redraw) {
   gfx::Rect window_rect = host_->GetWindowScreenBounds();

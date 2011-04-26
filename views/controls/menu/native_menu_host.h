@@ -24,10 +24,6 @@ class NativeMenuHost {
   static NativeMenuHost* CreateNativeMenuHost(
       internal::NativeMenuHostDelegate* delegate);
 
-  // Initializes and shows the MenuHost.
-  virtual void InitMenuHost(gfx::NativeWindow parent,
-                            const gfx::Rect& bounds) = 0;
-
   // Starts capturing input events.
   virtual void StartCapturing() = 0;
 

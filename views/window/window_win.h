@@ -72,12 +72,6 @@ class WindowWin : public WidgetWin,
   // Constructs the WindowWin. |window_delegate| cannot be NULL.
   explicit WindowWin(WindowDelegate* window_delegate);
 
-  // Create the Window.
-  // If parent is NULL, this WindowWin is top level on the desktop.
-  // If |bounds| is empty, the view is queried for its preferred size and
-  // centered on screen.
-  virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds) OVERRIDE;
-
   // Returns the insets of the client area relative to the non-client area of
   // the window. Override this function instead of OnNCCalcSize, which is
   // crazily complicated.
@@ -91,6 +85,7 @@ class WindowWin : public WidgetWin,
   virtual int GetShowState() const;
 
   // Overridden from WidgetWin:
+  virtual void InitNativeWidget(const Widget::CreateParams& params) OVERRIDE;
   virtual void OnActivateApp(BOOL active, DWORD thread_id) OVERRIDE;
   virtual LRESULT OnAppCommand(HWND window,
                                short app_command,

@@ -108,9 +108,7 @@ void WidgetExample::InitWidget(views::Widget* widget, bool transparent) {
 
 #if defined(OS_LINUX)
 void WidgetExample::CreateChild(views::View* parent, bool transparent) {
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CONTROL);
-  params.transparent = transparent;
-  views::Widget* widget = views::Widget::CreateWidget(params);
+  views::Widget* widget = views::Widget::CreateWidget();
   // Compute where to place the child widget.
   // We'll place it at the center of the root widget.
   views::Widget* parent_widget = parent->GetWidget();
@@ -119,15 +117,16 @@ void WidgetExample::CreateChild(views::View* parent, bool transparent) {
   bounds.SetRect((bounds.width() - 200) / 2, (bounds.height() - 200) / 2,
       200, 200);
   // Initialize the child widget with the computed bounds.
-  widget->InitWithWidget(parent_widget, bounds);
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CONTROL);
+  params.transparent = transparent;
+  params.parent_widget = parent_widget;
+  widget->Init(params);
   InitWidget(widget, transparent);
 }
 #endif
 
 void WidgetExample::CreatePopup(views::View* parent, bool transparent) {
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
-  params.transparent = transparent;
-  views::Widget* widget = views::Widget::CreateWidget(params);
+  views::Widget* widget = views::Widget::CreateWidget();
 
   // Compute where to place the popup widget.
   // We'll place it right below the create button.
@@ -136,9 +135,13 @@ void WidgetExample::CreatePopup(views::View* parent, bool transparent) {
   views::View::ConvertPointToScreen(parent, &point);
   // Add the height of create_button_.
   point.Offset(0, parent->size().height());
-  gfx::Rect bounds(point.x(), point.y(), 200, 300);
+
   // Initialize the popup widget with the computed bounds.
-  widget->InitWithWidget(parent->GetWidget(), bounds);
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  params.transparent = transparent;
+  params.parent_widget = parent->GetWidget();
+  params.bounds = gfx::Rect(point.x(), point.y(), 200, 300);
+  widget->Init(params);
   InitWidget(widget, transparent);
 }
 

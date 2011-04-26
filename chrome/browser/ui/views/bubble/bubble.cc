@@ -69,7 +69,7 @@ Bubble* Bubble::ShowFocusless(
     views::View* contents,
     BubbleDelegate* delegate,
     bool show_while_screen_is_locked) {
-  Bubble* bubble = new Bubble(views::WidgetGtk::TYPE_POPUP,
+  Bubble* bubble = new Bubble(views::Widget::CreateParams::TYPE_POPUP,
                               show_while_screen_is_locked);
   bubble->InitBubble(parent, position_relative_to, arrow_location,
                      contents, delegate);
@@ -122,7 +122,6 @@ void Bubble::AnimationProgressed(const ui::Animation* animation) {
 Bubble::Bubble()
     :
 #if defined(OS_LINUX)
-      WidgetGtk(TYPE_WINDOW),
       border_contents_(NULL),
 #elif defined(OS_WIN)
       border_(NULL),
@@ -131,6 +130,7 @@ Bubble::Bubble()
       show_status_(kOpen),
       fade_away_on_close_(false),
 #if defined(OS_CHROMEOS)
+      type_(views::Widget::CreateParams::TYPE_WINDOW),
       show_while_screen_is_locked_(false),
 #endif
       arrow_location_(BubbleBorder::NONE),
@@ -138,12 +138,13 @@ Bubble::Bubble()
 }
 
 #if defined(OS_CHROMEOS)
-Bubble::Bubble(views::WidgetGtk::Type type, bool show_while_screen_is_locked)
-    : WidgetGtk(type),
-      border_contents_(NULL),
+Bubble::Bubble(views::Widget::CreateParams::Type type,
+               bool show_while_screen_is_locked)
+    : border_contents_(NULL),
       delegate_(NULL),
       show_status_(kOpen),
       fade_away_on_close_(false),
+      type_(type),
       show_while_screen_is_locked_(show_while_screen_is_locked),
       arrow_location_(BubbleBorder::NONE),
       contents_(NULL) {
@@ -185,18 +186,21 @@ void Bubble::InitBubble(views::Widget* parent,
     SetOpacity(0);
   }
 
-  border_->Init(CreateBorderContents(), parent->GetNativeView());
+  border_->InitBorderWidgetWin(CreateBorderContents(), parent->GetNativeView());
   border_->border_contents()->SetBackgroundColor(kBackgroundColor);
 
   // We make the BorderWidgetWin the owner of the Bubble HWND, so that the
   // latter is displayed on top of the former.
-  WidgetWin::Init(border_->GetNativeView(), gfx::Rect());
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  params.parent = border_->GetNativeView();
+  GetWidget()->Init(params);
 
   SetWindowText(GetNativeView(), delegate_->accessible_name().c_str());
 #elif defined(OS_LINUX)
-  MakeTransparent();
-  make_transient_to_parent();
-  WidgetGtk::InitWithWidget(parent, gfx::Rect());
+  views::Widget::CreateParams params(type_);
+  params.transparent = true;
+  params.parent_widget = parent;
+  GetWidget()->Init(params);
 #if defined(OS_CHROMEOS)
   {
     vector<int> params;

@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/native_widget_delegate.h"
 
@@ -61,6 +62,7 @@ class Window;
 class Widget : public internal::NativeWidgetDelegate,
                public FocusTraversable {
  public:
+  // TODO(beng): Rename to InitParams now this is required for Init().
   struct CreateParams {
     enum Type {
       TYPE_WINDOW,      // A Window, like a frame window.
@@ -74,7 +76,6 @@ class Widget : public internal::NativeWidgetDelegate,
     explicit CreateParams(Type type);
 
     Type type;
-
     bool child;
     bool transparent;
     bool accept_events;
@@ -83,14 +84,18 @@ class Widget : public internal::NativeWidgetDelegate,
     bool delete_on_destroy;
     bool mirror_origin_in_rtl;
     bool has_dropshadow;
+    gfx::NativeView parent;
+    Widget* parent_widget;
+    gfx::Rect bounds;
     NativeWidget* native_widget;
   };
+  static CreateParams WindowCreateParams();
 
   Widget();
   virtual ~Widget();
 
   // Creates a Widget instance with the supplied params.
-  static Widget* CreateWidget(const CreateParams& params);
+  static Widget* CreateWidget();
 
   // Enumerates all windows pertaining to us and notifies their
   // view hierarchies that the locale has changed.
@@ -104,24 +109,13 @@ class Widget : public internal::NativeWidgetDelegate,
                           const Widget* target,
                           gfx::Rect* rect);
 
-  // Sets the creation params for the Widget.
-  void SetCreateParams(const CreateParams& params);
+  void Init(const CreateParams& params);
 
   // Unconverted methods -------------------------------------------------------
 
   // TODO(beng):
   // Widget subclasses are still implementing these methods by overriding from
   // here rather than by implementing NativeWidget.
-
-  // Initialize the Widget with a parent and an initial desired size.
-  // |contents_view| is the view that will be the single child of RootView
-  // within this Widget. As contents_view is inserted into RootView's tree,
-  // RootView assumes ownership of this view and cleaning it up. If you remove
-  // this view, you are responsible for its destruction. If this value is NULL,
-  // the caller is responsible for populating the RootView, and sizing its
-  // contents as the window is sized.
-  virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
-  virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
 
   // Returns the gfx::NativeView associated with this Widget.
   virtual gfx::NativeView GetNativeView() const;

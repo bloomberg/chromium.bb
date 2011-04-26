@@ -43,12 +43,12 @@ class WidgetWinTest : public testing::Test {
 
 
 WidgetWin* WidgetWinTest::CreateWidgetWin() {
-  scoped_ptr<WidgetWin> widget(new WidgetWin());
+  scoped_ptr<Widget> widget(Widget::CreateWidget());
   Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
   params.delete_on_destroy = false;
-  widget->SetCreateParams(params);
-  widget->Init(NULL, gfx::Rect(50, 50, 650, 650));
-  return widget.release();
+  params.bounds = gfx::Rect(50, 50, 650, 650);
+  widget->Init(params);
+  return static_cast<WidgetWin*>(widget.release()->native_widget());
 }
 
 TEST_F(WidgetWinTest, ZoomWindow) {

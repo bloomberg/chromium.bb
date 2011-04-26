@@ -19,10 +19,6 @@ class NativeConstrainedWindowWin : public NativeConstrainedWindow,
                              views::WindowDelegate* window_delegate)
       : WindowWin(window_delegate),
         delegate_(delegate) {
-    views::Widget::CreateParams params(
-        views::Widget::CreateParams::TYPE_WINDOW);
-    params.child = true;
-    SetCreateParams(params);
   }
 
   virtual ~NativeConstrainedWindowWin() {
@@ -31,7 +27,11 @@ class NativeConstrainedWindowWin : public NativeConstrainedWindow,
  private:
   // Overridden from NativeConstrainedWindow:
   virtual void InitNativeConstrainedWindow(gfx::NativeView parent) OVERRIDE {
-    WindowWin::Init(parent, gfx::Rect());
+    views::Widget::CreateParams params(
+        views::Widget::CreateParams::TYPE_WINDOW);
+    params.child = true;
+    params.parent = parent;
+    GetWidget()->Init(params);
   }
   virtual views::NativeWindow* AsNativeWindow() OVERRIDE {
     return this;

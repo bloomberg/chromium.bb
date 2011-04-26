@@ -22,10 +22,6 @@ MenuHost::MenuHost(SubmenuView* submenu)
           NativeMenuHost::CreateNativeMenuHost(this))),
       submenu_(submenu),
       destroying_(false) {
-  Widget::CreateParams params;
-  params.type = Widget::CreateParams::TYPE_MENU;
-  params.has_dropshadow = true;
-  GetWidget()->SetCreateParams(params);
 }
 
 MenuHost::~MenuHost() {
@@ -35,7 +31,16 @@ void MenuHost::InitMenuHost(gfx::NativeWindow parent,
                             const gfx::Rect& bounds,
                             View* contents_view,
                             bool do_capture) {
-  native_menu_host_->InitMenuHost(parent, bounds);
+  Widget::CreateParams params;
+  params.type = Widget::CreateParams::TYPE_MENU;
+  params.has_dropshadow = true;
+#if defined(OS_WIN)
+  params.parent = parent;
+#elif defined(TOOLKIT_USES_GTK)
+  params.parent = GTK_WIDGET(parent);
+#endif
+  params.bounds = bounds;
+  GetWidget()->Init(params);
   GetWidget()->SetContentsView(contents_view);
   ShowMenuHost(do_capture);
 }

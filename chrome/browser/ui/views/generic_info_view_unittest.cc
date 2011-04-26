@@ -23,11 +23,6 @@
 using namespace views;
 
 class GenericInfoViewTest : public testing::Test {
- public:
-  Widget* CreateWidget() {
-    return views::Widget::CreateWidget(
-        Widget::CreateParams(Widget::CreateParams::TYPE_POPUP));
-  }
  private:
   MessageLoopForUI message_loop_;
 };
@@ -36,8 +31,10 @@ TEST_F(GenericInfoViewTest, GenericInfoView) {
   const string16 kName = ASCIIToUTF16("Name");
   const string16 kValue = ASCIIToUTF16("Value");
 
-  Widget* widget = CreateWidget();
-  widget->Init(NULL, gfx::Rect(0, 0, 100, 100));
+  Widget* widget = Widget::CreateWidget();
+  Widget::CreateParams params(Widget::CreateParams::TYPE_POPUP);
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  widget->Init(params);
   RootView* root_view = widget->GetRootView();
 
   GenericInfoView* view1 = new GenericInfoView(1);

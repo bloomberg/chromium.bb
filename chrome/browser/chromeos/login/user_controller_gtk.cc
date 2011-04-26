@@ -14,7 +14,7 @@ namespace {
 
 class ControlsWidget : public WidgetGtk {
  public:
-  ControlsWidget() : WidgetGtk(WidgetGtk::TYPE_WINDOW) {
+  ControlsWidget() {
   }
 
  private:
@@ -38,8 +38,7 @@ class ControlsWidget : public WidgetGtk {
 class ClickNotifyingWidget : public WidgetGtk {
  public:
   explicit ClickNotifyingWidget(UserController* controller)
-      : WidgetGtk(WidgetGtk::TYPE_WINDOW),
-        controller_(controller) {
+      : controller_(controller) {
   }
 
  private:
@@ -55,9 +54,11 @@ class ClickNotifyingWidget : public WidgetGtk {
   DISALLOW_COPY_AND_ASSIGN(ClickNotifyingWidget);
 };
 
-WidgetGtk* InitWidget(WidgetGtk* widget, const gfx::Rect& bounds) {
-  widget->MakeTransparent();
-  widget->Init(NULL, bounds);
+views::Widget* InitWidget(views::Widget* widget, const gfx::Rect& bounds) {
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_WINDOW);
+  params.transparent = true;
+  params.bounds = bounds;
+  widget->Init(params);
   GdkWindow* gdk_window = widget->GetNativeView()->window;
   gdk_window_set_back_pixmap(gdk_window, NULL, false);
   return widget;

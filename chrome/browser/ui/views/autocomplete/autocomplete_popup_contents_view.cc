@@ -332,8 +332,9 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
     params.can_activate = false;
     params.transparent = true;
-    popup_->SetCreateParams(params);
-    popup_->Init(location_bar_->GetWidget()->GetNativeView(), GetPopupBounds());
+    params.parent = location_bar_->GetWidget()->GetNativeView();
+    params.bounds = GetPopupBounds();
+    popup_->GetWidget()->Init(params);
     popup_->SetContentsView(this);
     popup_->MoveAbove(popup_->GetRelativeWindowForPopup(
         edit_view_->GetNativeView()));

@@ -283,12 +283,12 @@ bool WidgetGtk::debug_paint_enabled_ = false;
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, public:
 
-WidgetGtk::WidgetGtk(Type type)
+WidgetGtk::WidgetGtk()
     : is_window_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
-      type_(type),
       widget_(NULL),
       window_contents_(NULL),
+      child_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       delete_on_destroy_(true),
       transparent_(false),
@@ -326,12 +326,10 @@ WidgetGtk::~WidgetGtk() {
   input_method_.reset();
   DestroyRootView();
   DCHECK(delete_on_destroy_ || widget_ == NULL);
-  if (type_ != TYPE_CHILD)
-    ActiveWindowWatcherX::RemoveObserver(this);
 }
 
 GtkWindow* WidgetGtk::GetTransientParent() const {
-  return (type_ != TYPE_CHILD && widget_) ?
+  return (!child_ && widget_) ?
       gtk_window_get_transient_for(GTK_WINDOW(widget_)) : NULL;
 }
 
@@ -364,15 +362,6 @@ void WidgetGtk::EnableDoubleBuffer(bool enabled) {
     else
       GTK_WIDGET_UNSET_FLAGS(window_contents_, GTK_DOUBLE_BUFFERED);
   }
-}
-
-bool WidgetGtk::MakeIgnoreEvents() {
-  // Transparency can only be enabled for windows/popups and only if we haven't
-  // realized the widget.
-  DCHECK(!widget_ && type_ != TYPE_CHILD);
-
-  ignore_events_ = true;
-  return true;
 }
 
 void WidgetGtk::AddChild(GtkWidget* child) {
@@ -490,7 +479,7 @@ void WidgetGtk::ActiveWindowChanged(GdkWindow* active_window) {
 
   bool was_active = IsActive();
   is_active_ = (active_window == GTK_WIDGET(GetNativeView())->window);
-  if (!is_active_ && active_window && type_ != TYPE_CHILD) {
+  if (!is_active_ && active_window && !child_) {
     // We're not active, but the force the window to be rendered as active if
     // a child window is transient to us.
     gpointer data = NULL;
@@ -510,29 +499,142 @@ void WidgetGtk::ActiveWindowChanged(GdkWindow* active_window) {
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, Widget implementation:
 
-void WidgetGtk::InitWithWidget(Widget* parent,
-                               const gfx::Rect& bounds) {
-  WidgetGtk* parent_gtk = static_cast<WidgetGtk*>(parent);
-  GtkWidget* native_parent = NULL;
-  if (parent != NULL) {
-    if (type_ != TYPE_CHILD) {
-      // window's parent has to be window.
-      native_parent = parent_gtk->GetNativeView();
-    } else {
-      native_parent = parent_gtk->window_contents();
-    }
-  }
-  Init(native_parent, bounds);
+gfx::NativeView WidgetGtk::GetNativeView() const {
+  return widget_;
 }
 
-void WidgetGtk::Init(GtkWidget* parent,
-                     const gfx::Rect& bounds) {
-  Widget::Init(parent, bounds);
-  if (type_ != TYPE_CHILD)
+bool WidgetGtk::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+Window* WidgetGtk::GetWindow() {
+  return GetWindowImpl(widget_);
+}
+
+const Window* WidgetGtk::GetWindow() const {
+  return GetWindowImpl(widget_);
+}
+
+void WidgetGtk::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
+  Widget::ViewHierarchyChanged(is_add, parent, child);
+  if (drop_target_.get())
+    drop_target_->ResetTargetViewIfEquals(child);
+}
+
+void WidgetGtk::NotifyAccessibilityEvent(
+    View* view,
+    ui::AccessibilityTypes::Event event_type,
+    bool send_native_event) {
+  // Send the notification to the delegate.
+  if (ViewsDelegate::views_delegate)
+    ViewsDelegate::views_delegate->NotifyAccessibilityEvent(view, event_type);
+
+  // In the future if we add native GTK accessibility support, the
+  // notification should be sent here.
+}
+
+void WidgetGtk::ClearNativeFocus() {
+  DCHECK(!child_);
+  if (!GetNativeView()) {
+    NOTREACHED();
+    return;
+  }
+  gtk_window_set_focus(GTK_WINDOW(GetNativeView()), NULL);
+}
+
+bool WidgetGtk::HandleKeyboardEvent(const KeyEvent& key) {
+  if (!GetFocusManager())
+    return false;
+
+  const int key_code = key.key_code();
+  bool handled = false;
+
+  // Always reset |should_handle_menu_key_release_| unless we are handling a
+  // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
+  // be activated when handling a VKEY_MENU key release event which is preceded
+  // by an un-handled VKEY_MENU key press event.
+  if (key_code != ui::VKEY_MENU || key.type() != ui::ET_KEY_RELEASED)
+    should_handle_menu_key_release_ = false;
+
+  if (key.type() == ui::ET_KEY_PRESSED) {
+    // VKEY_MENU is triggered by key release event.
+    // FocusManager::OnKeyEvent() returns false when the key has been consumed.
+    if (key_code != ui::VKEY_MENU)
+      handled = !GetFocusManager()->OnKeyEvent(key);
+    else
+      should_handle_menu_key_release_ = true;
+  } else if (key_code == ui::VKEY_MENU && should_handle_menu_key_release_ &&
+             (key.flags() & ~ui::EF_ALT_DOWN) == 0) {
+    // Trigger VKEY_MENU when only this key is pressed and released, and both
+    // press and release events are not handled by others.
+    Accelerator accelerator(ui::VKEY_MENU, false, false, false);
+    handled = GetFocusManager()->ProcessAccelerator(accelerator);
+  }
+
+  return handled;
+}
+
+// static
+void WidgetGtk::EnableDebugPaint() {
+  debug_paint_enabled_ = true;
+}
+
+// static
+void WidgetGtk::UpdateFreezeUpdatesProperty(GtkWindow* window, bool enable) {
+  if (!GTK_WIDGET_REALIZED(GTK_WIDGET(window)))
+    gtk_widget_realize(GTK_WIDGET(window));
+  GdkWindow* gdk_window = GTK_WIDGET(window)->window;
+
+  static GdkAtom freeze_atom_ =
+      gdk_atom_intern("_CHROME_FREEZE_UPDATES", FALSE);
+  if (enable) {
+    VLOG(1) << "setting FREEZE UPDATES property. xid=" <<
+        GDK_WINDOW_XID(gdk_window);
+    int32 val = 1;
+    gdk_property_change(gdk_window,
+                        freeze_atom_,
+                        freeze_atom_,
+                        32,
+                        GDK_PROP_MODE_REPLACE,
+                        reinterpret_cast<const guchar*>(&val),
+                        1);
+  } else {
+    VLOG(1) << "deleting FREEZE UPDATES property. xid=" <<
+        GDK_WINDOW_XID(gdk_window);
+    gdk_property_delete(gdk_window, freeze_atom_);
+  }
+}
+
+// static
+void WidgetGtk::RegisterChildExposeHandler(GtkWidget* child) {
+  RemoveExposeHandlerIfExists(child);
+  gulong id = g_signal_connect_after(child, "expose-event",
+                                     G_CALLBACK(&ChildExposeHandler), NULL);
+  g_object_set_data(G_OBJECT(child), kExposeHandlerIdKey,
+                    reinterpret_cast<void*>(id));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WidgetGtk, NativeWidget implementation:
+
+void WidgetGtk::InitNativeWidget(const CreateParams& params) {
+  SetCreateParams(params);
+
+  CreateParams modified_params = params;
+  gfx::NativeView parent = params.parent;
+  if (params.parent_widget) {
+    WidgetGtk* parent_gtk =
+        static_cast<WidgetGtk*>(params.parent_widget->native_widget());
+    modified_params.parent = child_ ? parent_gtk->window_contents()
+                                    : params.parent_widget->GetNativeView();
+  }
+
+  if (!child_)
     ActiveWindowWatcherX::AddObserver(this);
 
   // Make container here.
-  CreateGtkWidget(parent, bounds);
+  CreateGtkWidget(modified_params);
   delegate_->OnNativeWidgetCreated();
 
   // Creates input method for toplevel widget after calling
@@ -541,10 +643,10 @@ void WidgetGtk::Init(GtkWidget* parent,
   // TODO(suzhe): Always enable input method when we start to use
   // RenderWidgetHostViewViews in normal ChromeOS.
 #if defined(TOUCH_UI) && defined(HAVE_IBUS)
-  if (type_ != TYPE_CHILD) {
+  if (!child_) {
     input_method_.reset(new InputMethodIBus(this));
 #else
-  if (type_ != TYPE_CHILD && NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+  if (!child_ && NativeTextfieldViews::IsTextfieldViewsEnabled()) {
     input_method_.reset(new InputMethodGtk(this));
 #endif
     input_method_->Init(GetWidget());
@@ -644,155 +746,14 @@ void WidgetGtk::Init(GtkWidget* parent,
   g_signal_connect(window_contents_, "query_tooltip",
                    G_CALLBACK(&OnQueryTooltipThunk), this);
 
-  if (type_ == TYPE_CHILD) {
-    if (parent) {
-      SetBounds(bounds);
-    }
+  if (child_) {
+    if (parent)
+      SetBounds(params.bounds);
   } else {
-    if (bounds.width() > 0 && bounds.height() > 0)
-      gtk_window_resize(GTK_WINDOW(widget_), bounds.width(), bounds.height());
-    gtk_window_move(GTK_WINDOW(widget_), bounds.x(), bounds.y());
-  }
-}
-
-gfx::NativeView WidgetGtk::GetNativeView() const {
-  return widget_;
-}
-
-bool WidgetGtk::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-Window* WidgetGtk::GetWindow() {
-  return GetWindowImpl(widget_);
-}
-
-const Window* WidgetGtk::GetWindow() const {
-  return GetWindowImpl(widget_);
-}
-
-void WidgetGtk::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
-  Widget::ViewHierarchyChanged(is_add, parent, child);
-  if (drop_target_.get())
-    drop_target_->ResetTargetViewIfEquals(child);
-}
-
-void WidgetGtk::NotifyAccessibilityEvent(
-    View* view,
-    ui::AccessibilityTypes::Event event_type,
-    bool send_native_event) {
-  // Send the notification to the delegate.
-  if (ViewsDelegate::views_delegate)
-    ViewsDelegate::views_delegate->NotifyAccessibilityEvent(view, event_type);
-
-  // In the future if we add native GTK accessibility support, the
-  // notification should be sent here.
-}
-
-void WidgetGtk::ClearNativeFocus() {
-  DCHECK(type_ != TYPE_CHILD);
-  if (!GetNativeView()) {
-    NOTREACHED();
-    return;
-  }
-  gtk_window_set_focus(GTK_WINDOW(GetNativeView()), NULL);
-}
-
-bool WidgetGtk::HandleKeyboardEvent(const KeyEvent& key) {
-  if (!GetFocusManager())
-    return false;
-
-  const int key_code = key.key_code();
-  bool handled = false;
-
-  // Always reset |should_handle_menu_key_release_| unless we are handling a
-  // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
-  // be activated when handling a VKEY_MENU key release event which is preceded
-  // by an un-handled VKEY_MENU key press event.
-  if (key_code != ui::VKEY_MENU || key.type() != ui::ET_KEY_RELEASED)
-    should_handle_menu_key_release_ = false;
-
-  if (key.type() == ui::ET_KEY_PRESSED) {
-    // VKEY_MENU is triggered by key release event.
-    // FocusManager::OnKeyEvent() returns false when the key has been consumed.
-    if (key_code != ui::VKEY_MENU)
-      handled = !GetFocusManager()->OnKeyEvent(key);
-    else
-      should_handle_menu_key_release_ = true;
-  } else if (key_code == ui::VKEY_MENU && should_handle_menu_key_release_ &&
-             (key.flags() & ~ui::EF_ALT_DOWN) == 0) {
-    // Trigger VKEY_MENU when only this key is pressed and released, and both
-    // press and release events are not handled by others.
-    Accelerator accelerator(ui::VKEY_MENU, false, false, false);
-    handled = GetFocusManager()->ProcessAccelerator(accelerator);
-  }
-
-  return handled;
-}
-
-// static
-void WidgetGtk::EnableDebugPaint() {
-  debug_paint_enabled_ = true;
-}
-
-// static
-void WidgetGtk::UpdateFreezeUpdatesProperty(GtkWindow* window, bool enable) {
-  if (!GTK_WIDGET_REALIZED(GTK_WIDGET(window)))
-    gtk_widget_realize(GTK_WIDGET(window));
-  GdkWindow* gdk_window = GTK_WIDGET(window)->window;
-
-  static GdkAtom freeze_atom_ =
-      gdk_atom_intern("_CHROME_FREEZE_UPDATES", FALSE);
-  if (enable) {
-    VLOG(1) << "setting FREEZE UPDATES property. xid=" <<
-        GDK_WINDOW_XID(gdk_window);
-    int32 val = 1;
-    gdk_property_change(gdk_window,
-                        freeze_atom_,
-                        freeze_atom_,
-                        32,
-                        GDK_PROP_MODE_REPLACE,
-                        reinterpret_cast<const guchar*>(&val),
-                        1);
-  } else {
-    VLOG(1) << "deleting FREEZE UPDATES property. xid=" <<
-        GDK_WINDOW_XID(gdk_window);
-    gdk_property_delete(gdk_window, freeze_atom_);
-  }
-}
-
-// static
-void WidgetGtk::RegisterChildExposeHandler(GtkWidget* child) {
-  RemoveExposeHandlerIfExists(child);
-  gulong id = g_signal_connect_after(child, "expose-event",
-                                     G_CALLBACK(&ChildExposeHandler), NULL);
-  g_object_set_data(G_OBJECT(child), kExposeHandlerIdKey,
-                    reinterpret_cast<void*>(id));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WidgetGtk, NativeWidget implementation:
-
-void WidgetGtk::SetCreateParams(const CreateParams& params) {
-  DCHECK(!GetNativeView());
-
-  // Set non-style attributes.
-  set_delete_on_destroy(params.delete_on_destroy);
-
-  if (params.transparent)
-    MakeTransparent();
-  if (!params.accept_events)
-    MakeIgnoreEvents();
-
-  if (params.type == CreateParams::TYPE_MENU) {
-    GdkEvent* event = gtk_get_current_event();
-    if (event) {
-      is_mouse_button_pressed_ = event->type == GDK_BUTTON_PRESS ||
-        event->type == GDK_2BUTTON_PRESS ||
-        event->type == GDK_3BUTTON_PRESS;
-      gdk_event_free(event);
-    }
+    if (params.bounds.width() > 0 && params.bounds.height() > 0)
+      gtk_window_resize(GTK_WINDOW(widget_), params.bounds.width(),
+                        params.bounds.height());
+    gtk_window_move(GTK_WINDOW(widget_), params.bounds.x(), params.bounds.y());
   }
 }
 
@@ -870,7 +831,7 @@ gfx::Rect WidgetGtk::GetClientAreaScreenBounds() const {
 }
 
 void WidgetGtk::SetBounds(const gfx::Rect& bounds) {
-  if (type_ == TYPE_CHILD) {
+  if (child_) {
     GtkWidget* parent = gtk_widget_get_parent(widget_);
     if (GTK_IS_VIEWS_FIXED(parent)) {
       WidgetGtk* parent_widget = static_cast<WidgetGtk*>(
@@ -908,7 +869,7 @@ void WidgetGtk::SetBounds(const gfx::Rect& bounds) {
 }
 
 void WidgetGtk::SetSize(const gfx::Size& size) {
-  if (type_ == TYPE_CHILD) {
+  if (child_) {
     GtkWidget* parent = gtk_widget_get_parent(widget_);
     if (GTK_IS_VIEWS_FIXED(parent)) {
       gtk_views_fixed_set_widget_size(widget_, size.width(), size.height());
@@ -984,7 +945,7 @@ void WidgetGtk::SetOpacity(unsigned char opacity) {
 }
 
 void WidgetGtk::SetAlwaysOnTop(bool on_top) {
-  DCHECK(type_ != TYPE_CHILD);
+  DCHECK(!child_);
   always_on_top_ = on_top;
   if (widget_)
     gtk_window_set_keep_above(GTK_WINDOW(widget_), on_top);
@@ -995,7 +956,7 @@ bool WidgetGtk::IsVisible() const {
 }
 
 bool WidgetGtk::IsActive() const {
-  DCHECK(type_ != TYPE_CHILD);
+  DCHECK(!child_);
   return is_active_;
 }
 
@@ -1048,7 +1009,7 @@ void WidgetGtk::OnSizeRequest(GtkWidget* widget, GtkRequisition* requisition) {
   // the requisition as a minimum size for top level windows, returning a
   // preferred size for these would prevents us from setting smaller window
   // sizes.
-  if (type_ == TYPE_CHILD) {
+  if (child_) {
     gfx::Size size(GetRootView()->GetPreferredSize());
     requisition->width = size.width();
     requisition->height = size.height();
@@ -1068,7 +1029,7 @@ void WidgetGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
 }
 
 gboolean WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
-  if (transparent_ && type_ == TYPE_CHILD) {
+  if (transparent_ && child_) {
     // Clear the background before drawing any view and native components.
     DrawTransparentBackground(widget, event);
     if (!CompositePainter::IsComposited(widget_) &&
@@ -1101,7 +1062,7 @@ gboolean WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
 
   if (!painted_) {
     painted_ = true;
-    if (type_ != TYPE_CHILD)
+    if (!child_)
       UpdateFreezeUpdatesProperty(GTK_WINDOW(widget_), false /* remove */);
   }
   return false;  // False indicates other widgets should get the event as well.
@@ -1262,7 +1223,7 @@ gboolean WidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
 
   should_handle_menu_key_release_ = false;
 
-  if (type_ == TYPE_CHILD)
+  if (child_)
     return false;
 
   // Only top-level Widget should have an InputMethod instance.
@@ -1282,7 +1243,7 @@ gboolean WidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
     return false;  // This is the second focus-out event in a row, ignore it.
   has_focus_ = false;
 
-  if (type_ == TYPE_CHILD)
+  if (child_)
     return false;
 
   // Only top-level Widget should have an InputMethod instance.
@@ -1328,6 +1289,8 @@ void WidgetGtk::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
 }
 
 void WidgetGtk::OnDestroy(GtkWidget* object) {
+  if (!child_)
+    ActiveWindowWatcherX::RemoveObserver(this);
   // Note that this handler is hooked to GtkObject::destroy.
   // NULL out pointers here since we might still be in an observerer list
   // until delstion happens.
@@ -1414,6 +1377,28 @@ void WidgetGtk::DispatchKeyEventPostIME(const KeyEvent& key) {
     gtk_bindings_activate_event(GTK_OBJECT(widget_), event);
 }
 
+void WidgetGtk::SetCreateParams(const CreateParams& params) {
+  DCHECK(!GetNativeView());
+
+  delete_on_destroy_ = params.delete_on_destroy;
+  child_ = params.child;
+
+  if (params.transparent)
+    MakeTransparent();
+  if (!params.accept_events && !child_)
+    ignore_events_ = true;
+
+  if (params.type == CreateParams::TYPE_MENU) {
+    GdkEvent* event = gtk_get_current_event();
+    if (event) {
+      is_mouse_button_pressed_ = event->type == GDK_BUTTON_PRESS ||
+          event->type == GDK_2BUTTON_PRESS ||
+          event->type == GDK_3BUTTON_PRESS;
+      gdk_event_free(event);
+    }
+  }
+}
+
 gboolean WidgetGtk::OnWindowPaint(GtkWidget* widget, GdkEventExpose* event) {
   // Clear the background to be totally transparent. We don't need to
   // paint the root view here as that is done by OnPaint.
@@ -1430,7 +1415,7 @@ gboolean WidgetGtk::OnWindowPaint(GtkWidget* widget, GdkEventExpose* event) {
 }
 
 void WidgetGtk::OnChildExpose(GtkWidget* child) {
-  DCHECK(type_ != TYPE_CHILD);
+  DCHECK(!child_);
   if (!painted_) {
     painted_ = true;
     UpdateFreezeUpdatesProperty(GTK_WINDOW(widget_), false /* remove */);
@@ -1464,7 +1449,7 @@ Window* WidgetGtk::GetWindowImpl(GtkWidget* widget) {
   return NULL;
 }
 
-void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
+void WidgetGtk::CreateGtkWidget(const CreateParams& params) {
   // We turn off double buffering for two reasons:
   // 1. We draw to a canvas then composite to the screen, which means we're
   //    doing our own double buffering already.
@@ -1472,13 +1457,13 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
   //    needs to expand the paint region (see RootView::OnPaint). This means
   //    that if we use GTK's double buffering and we tried to expand the dirty
   //    region, it wouldn't get painted.
-  if (type_ == TYPE_CHILD) {
+  if (child_) {
     window_contents_ = widget_ = gtk_views_fixed_new();
     gtk_widget_set_name(widget_, "views-gtkwidget-child-fixed");
     if (!is_double_buffered_)
       GTK_WIDGET_UNSET_FLAGS(widget_, GTK_DOUBLE_BUFFERED);
     gtk_fixed_set_has_window(GTK_FIXED(widget_), true);
-    if (!parent && !null_parent_) {
+    if (!params.parent && !null_parent_) {
       GtkWidget* popup = gtk_window_new(GTK_WINDOW_POPUP);
       null_parent_ = gtk_fixed_new();
       gtk_widget_set_name(widget_, "views-gtkwidget-null-parent");
@@ -1487,10 +1472,12 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
     }
     if (transparent_) {
       // transparency has to be configured before widget is realized.
-      DCHECK(parent) << "Transparent widget must have parent when initialized";
-      ConfigureWidgetForTransparentBackground(parent);
+      DCHECK(params.parent) <<
+          "Transparent widget must have parent when initialized";
+      ConfigureWidgetForTransparentBackground(params.parent);
     }
-    gtk_container_add(GTK_CONTAINER(parent ? parent : null_parent_), widget_);
+    gtk_container_add(
+        GTK_CONTAINER(params.parent ? params.parent : null_parent_), widget_);
     gtk_widget_realize(widget_);
     if (transparent_) {
       // The widget has to be realized to set composited flag.
@@ -1499,7 +1486,7 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
       DCHECK(GTK_WIDGET_REALIZED(widget_));
       gdk_window_set_composited(widget_->window, true);
     }
-    if (parent && !bounds.size().IsEmpty()) {
+    if (params.parent && !params.bounds.size().IsEmpty()) {
       // Make sure that an widget is given it's initial size before
       // we're done initializing, to take care of some potential
       // corner cases when programmatically arranging hierarchies as
@@ -1509,17 +1496,20 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
       // This can't be done without a parent present, or stale data
       // might show up on the screen as seen in
       // http://code.google.com/p/chromium/issues/detail?id=53870
-      GtkAllocation alloc = { 0, 0, bounds.width(), bounds.height() };
+      GtkAllocation alloc =
+          { 0, 0, params.bounds.width(), params.bounds.height() };
       gtk_widget_size_allocate(widget_, &alloc);
     }
   } else {
     // Use our own window class to override GtkWindow's move_focus method.
     widget_ = gtk_views_window_new(
-        (type_ == TYPE_WINDOW || type_ == TYPE_DECORATED_WINDOW) ?
-        GTK_WINDOW_TOPLEVEL : GTK_WINDOW_POPUP);
+        params.type == CreateParams::TYPE_WINDOW ? GTK_WINDOW_TOPLEVEL
+                                                 : GTK_WINDOW_POPUP);
     gtk_widget_set_name(widget_, "views-gtkwidget-window");
-    if (transient_to_parent_)
-      gtk_window_set_transient_for(GTK_WINDOW(widget_), GTK_WINDOW(parent));
+    if (transient_to_parent_) {
+      gtk_window_set_transient_for(GTK_WINDOW(widget_),
+                                   GTK_WINDOW(params.parent));
+    }
     GTK_WIDGET_UNSET_FLAGS(widget_, GTK_DOUBLE_BUFFERED);
 
     // Gtk determines the size for windows based on the requested size of the
@@ -1533,18 +1523,17 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
     // time.
     gtk_widget_set_size_request(widget_, 1, 1);
 
-    if (!bounds.size().IsEmpty()) {
+    if (!params.bounds.size().IsEmpty()) {
       // When we realize the window, the window manager is given a size. If we
       // don't specify a size before then GTK defaults to 200x200. Specify
       // a size now so that the window manager sees the requested size.
-      GtkAllocation alloc = { 0, 0, bounds.width(), bounds.height() };
+      GtkAllocation alloc =
+          { 0, 0, params.bounds.width(), params.bounds.height() };
       gtk_widget_size_allocate(widget_, &alloc);
     }
-    if (type_ != TYPE_DECORATED_WINDOW) {
-      gtk_window_set_decorated(GTK_WINDOW(widget_), false);
-      // We'll take care of positioning our window.
-      gtk_window_set_position(GTK_WINDOW(widget_), GTK_WIN_POS_NONE);
-    }
+    gtk_window_set_decorated(GTK_WINDOW(widget_), false);
+    // We'll take care of positioning our window.
+    gtk_window_set_position(GTK_WINDOW(widget_), GTK_WIN_POS_NONE);
 
     window_contents_ = gtk_views_fixed_new();
     gtk_widget_set_name(window_contents_, "views-gtkwidget-window-fixed");
@@ -1582,7 +1571,7 @@ void WidgetGtk::ConfigureWidgetForTransparentBackground(GtkWidget* parent) {
   // on both the window and fixed. In addition we need to make sure no
   // decorations are drawn. The last bit is to make sure the widget doesn't
   // attempt to draw a pixmap in it's background.
-  if (type_ != TYPE_CHILD) {
+  if (!child_) {
     DCHECK(parent == NULL);
     gtk_widget_set_colormap(widget_, rgba_colormap);
     gtk_widget_set_app_paintable(widget_, true);
@@ -1632,30 +1621,8 @@ void WidgetGtk::DrawTransparentBackground(GtkWidget* widget,
 // Widget, public:
 
 // static
-Widget* Widget::CreateWidget(const CreateParams& params) {
-  // TODO(beng): coalesce with CreateParams::Type.
-  WidgetGtk::Type widget_gtk_type = WidgetGtk::TYPE_DECORATED_WINDOW;
-  switch (params.type) {
-    case CreateParams::TYPE_CONTROL:
-      widget_gtk_type = WidgetGtk::TYPE_CHILD;
-      break;
-    case CreateParams::TYPE_MENU:
-      widget_gtk_type = WidgetGtk::TYPE_POPUP;
-      break;
-    case CreateParams::TYPE_POPUP:
-      widget_gtk_type = WidgetGtk::TYPE_POPUP;
-      break;
-    case CreateParams::TYPE_WINDOW:
-      widget_gtk_type = WidgetGtk::TYPE_DECORATED_WINDOW;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  WidgetGtk* widget = new WidgetGtk(widget_gtk_type);
-  widget->SetCreateParams(params);
-  return widget;
+Widget* Widget::CreateWidget() {
+  return new WidgetGtk();
 }
 
 // static

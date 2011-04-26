@@ -291,9 +291,10 @@ void NativeTabbedPaneWin::CreateNativeControl() {
   SendMessage(tab_control, WM_SETFONT, reinterpret_cast<WPARAM>(font), FALSE);
 
   // Create the view container which is a child of the TabControl.
-  content_window_ = Widget::CreateWidget(
-      Widget::CreateParams(Widget::CreateParams::TYPE_CONTROL));
-  content_window_->Init(tab_control, gfx::Rect());
+  content_window_ = Widget::CreateWidget();
+  Widget::CreateParams params(Widget::CreateParams::TYPE_CONTROL);
+  params.parent = tab_control;
+  content_window_->Init(params);
 
   // Explicitly setting the WS_EX_LAYOUTRTL property for the HWND (see above
   // for why we waited until |content_window_| is created before we set this

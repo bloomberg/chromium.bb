@@ -80,9 +80,10 @@ PanelScroller::~PanelScroller() {
 
 // static
 PanelScroller* PanelScroller::CreateWindow() {
-  views::Widget* widget = views::Widget::CreateWidget(
-      views::Widget::CreateParams(views::Widget::CreateParams::TYPE_WINDOW));
-  widget->Init(NULL, gfx::Rect(0, 0, 100, 800));
+  views::Widget* widget = views::Widget::CreateWidget();
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 100, 800);
+  widget->Init(params);
 
   PanelScroller* scroller = new PanelScroller();
   widget->SetContentsView(scroller);

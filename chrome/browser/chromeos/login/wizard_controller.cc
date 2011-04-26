@@ -596,18 +596,19 @@ void WizardController::InitiateOOBEUpdate() {
 
 views::Widget* WizardController::CreateScreenWindow(
     const gfx::Rect& bounds, bool initial_show) {
-  views::Widget::CreateParams widget_params(
-      views::Widget::CreateParams::TYPE_WINDOW);
-  widget_params.transparent = true;
-  widget_ = views::Widget::CreateWidget(widget_params);
+  widget_ = views::Widget::CreateWidget();
   // Window transparency makes background flicker through controls that
   // are constantly updating its contents (like image view with video
   // stream). Hence enabling double buffer.
   static_cast<views::WidgetGtk*>(widget_)->EnableDoubleBuffer(true);
-  widget_->Init(NULL, bounds);
+  views::Widget::CreateParams widget_params(
+      views::Widget::CreateParams::TYPE_WINDOW);
+  widget_params.transparent = true;
+  widget_params.bounds = bounds;
+  widget_->Init(widget_params);
   std::vector<int> params;
   // For initial show WM would animate background window.
-  // Otherwise it stays unchaged.
+  // Otherwise it stays unchanged.
   params.push_back(initial_show);
   chromeos::WmIpc::instance()->SetWindowType(
       widget_->GetNativeView(),

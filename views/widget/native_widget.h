@@ -58,8 +58,8 @@ class NativeWidget {
   static void ReparentNativeView(gfx::NativeView native_view,
                                  gfx::NativeView new_parent);
 
-  // Sets the create params for the NativeWidget.
-  virtual void SetCreateParams(const Widget::CreateParams& params) = 0;
+  // Initializes the NativeWidget.
+  virtual void InitNativeWidget(const Widget::CreateParams& params) = 0;
 
   // Returns the Widget associated with this NativeWidget. This function is
   // guaranteed to return non-NULL for the lifetime of the NativeWidget.

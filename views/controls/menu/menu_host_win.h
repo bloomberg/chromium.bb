@@ -23,8 +23,6 @@ class MenuHostWin : public WidgetWin,
 
  private:
   // Overridden from NativeMenuHost:
-  virtual void InitMenuHost(gfx::NativeWindow parent,
-                            const gfx::Rect& bounds) OVERRIDE;
   virtual void StartCapturing() OVERRIDE;
   virtual NativeWidget* AsNativeWidget() OVERRIDE;
 

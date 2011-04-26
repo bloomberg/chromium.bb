@@ -134,7 +134,10 @@ bool ExternalTabContainer::Init(Profile* profile,
   route_all_top_level_navigations_ = route_all_top_level_navigations;
 
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
-  views::WidgetWin::Init(NULL, bounds);
+
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  params.bounds = bounds;
+  GetWidget()->Init(params);
   if (!IsWindow()) {
     NOTREACHED();
     return false;

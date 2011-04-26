@@ -860,15 +860,14 @@ TabStrip::DropInfo::DropInfo(int drop_index, bool drop_before, bool point_down)
   arrow_view = new views::ImageView;
   arrow_view->SetImage(GetDropArrowImage(point_down));
 
+  arrow_window = views::Widget::CreateWidget();
   views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
   params.keep_on_top = true;
   params.transparent = true;
   params.accept_events = false;
   params.can_activate = false;
-  arrow_window = views::Widget::CreateWidget(params);
-  arrow_window->Init(
-      NULL,
-      gfx::Rect(0, 0, drop_indicator_width, drop_indicator_height));
+  params.bounds = gfx::Rect(drop_indicator_width, drop_indicator_height);
+  arrow_window->Init(params);
   arrow_window->SetContentsView(arrow_view);
 }
 

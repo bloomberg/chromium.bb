@@ -242,10 +242,12 @@ WindowWin::~WindowWin() {
 Window* Window::CreateChromeWindow(gfx::NativeWindow parent,
                                    const gfx::Rect& bounds,
                                    WindowDelegate* window_delegate) {
-  WindowWin* window = new WindowWin(window_delegate);
-  window->GetWindow()->non_client_view()->SetFrameView(
-      window->CreateFrameViewForWindow());
-  window->Init(parent, bounds);
+  Window* window = new WindowWin(window_delegate);
+  window->non_client_view()->SetFrameView(window->CreateFrameViewForWindow());
+  Widget::CreateParams params(Widget::WindowCreateParams());
+  params.parent = parent;
+  params.bounds = bounds;
+  window->AsWidget()->Init(params);
   return window;
 }
 
@@ -321,20 +323,6 @@ WindowWin::WindowWin(WindowDelegate* window_delegate)
   set_window_ex_style(0);
 }
 
-void WindowWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
-  if (window_style() == 0)
-    set_window_style(CalculateWindowStyle());
-  if (window_ex_style() == 0)
-    set_window_ex_style(CalculateWindowExStyle());
-
-  GetMonitorAndRects(bounds.ToRECT(), &last_monitor_, &last_monitor_rect_,
-                     &last_work_area_);
-
-  WidgetWin::Init(parent, bounds);
-
-  delegate_->OnNativeWindowCreated(bounds);
-}
-
 gfx::Insets WindowWin::GetClientAreaInsets() const {
   // Returning an empty Insets object causes the default handling in
   // WidgetWin::OnNCCalcSize() to be invoked.
@@ -368,6 +356,20 @@ int WindowWin::GetShowState() const {
 
 ///////////////////////////////////////////////////////////////////////////////
 // WindowWin, WidgetWin overrides:
+
+void WindowWin::InitNativeWidget(const Widget::CreateParams& params) {
+  if (window_style() == 0)
+    set_window_style(CalculateWindowStyle());
+  if (window_ex_style() == 0)
+    set_window_ex_style(CalculateWindowExStyle());
+
+  GetMonitorAndRects(params.bounds.ToRECT(), &last_monitor_,
+                     &last_monitor_rect_, &last_work_area_);
+
+  WidgetWin::InitNativeWidget(params);
+
+  delegate_->OnNativeWindowCreated(params.bounds);
+}
 
 void WindowWin::OnActivateApp(BOOL active, DWORD thread_id) {
   if (!active && thread_id != GetCurrentThreadId()) {

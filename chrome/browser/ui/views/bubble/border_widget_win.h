@@ -22,7 +22,7 @@ class BorderWidgetWin : public views::WidgetWin {
   virtual ~BorderWidgetWin() { }
 
   // Initializes the BrowserWidget making |owner| its owning window.
-  void Init(BorderContents* border_contents, HWND owner);
+  void InitBorderWidgetWin(BorderContents* border_contents, HWND owner);
 
   // Given the size of the contained contents (without margins), and the rect
   // (in screen coordinates) to point to, sets the border window positions and

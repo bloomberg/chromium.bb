@@ -141,10 +141,11 @@ void PanelController::Init(bool initial_focus,
                            WmIpcPanelUserResizeType resize_type) {
   gfx::Rect title_bounds(0, 0, window_bounds.width(), kTitleHeight);
 
+  title_window_ = views::Widget::CreateWidget();
   views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_WINDOW);
   params.transparent = true;
-  title_window_ = views::Widget::CreateWidget(params);
-  title_window_->Init(NULL, title_bounds);
+  params.bounds = title_bounds;
+  title_window_->Init(params);
   gtk_widget_set_size_request(title_window_->GetNativeView(),
                               title_bounds.width(), title_bounds.height());
   title_ = title_window_->GetNativeView();

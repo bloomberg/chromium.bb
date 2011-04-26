@@ -15,13 +15,6 @@
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #endif
 
-views::Widget* DropdownBarHost::CreateHost() {
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CONTROL);
-  // We own the host.
-  params.delete_on_destroy = false;
-  return views::Widget::CreateWidget(params);
-}
-
 void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
                                               bool no_redraw) {
   host_->SetBounds(new_pos);

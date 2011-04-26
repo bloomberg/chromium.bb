@@ -65,16 +65,16 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   gfx::Size icon_size = icon->GetPreferredSize();
 
   // An approximate window size. After Layout() we'll get better bounds.
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
-  params.can_activate = true;
-  popup_ = views::Widget::CreateWidget(params);
+  popup_ = views::Widget::CreateWidget();
   if (!popup_) {
     NOTREACHED();
     return DIALOG_ERROR;
   }
 
-  gfx::Rect pos(310, 160);
-  popup_->Init(NULL, pos);
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  params.can_activate = true;
+  params.bounds = gfx::Rect(310, 160);
+  popup_->Init(params);
 
   views::RootView* root_view = popup_->GetRootView();
   // The window color is a tiny bit off-white.
@@ -194,8 +194,8 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   // account the differences between XP and Vista fonts and buttons.
   layout->Layout(root_view);
   gfx::Size preferred = layout->GetPreferredSize(root_view);
-  pos = ComputeWindowPosition(preferred.width(), preferred.height(),
-                              base::i18n::IsRTL());
+  gfx::Rect pos = ComputeWindowPosition(preferred.width(), preferred.height(),
+                                        base::i18n::IsRTL());
   popup_->SetBounds(pos);
 
   // Carve the toast shape into the window.

@@ -9,8 +9,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupGtk, public:
 
-AutocompletePopupGtk::AutocompletePopupGtk()
-    : WidgetGtk(WidgetGtk::TYPE_POPUP) {
+AutocompletePopupGtk::AutocompletePopupGtk() {
 }
 
 AutocompletePopupGtk::~AutocompletePopupGtk() {

@@ -73,8 +73,7 @@ chromeos::BalloonViewImpl* GetBalloonViewOf(const Balloon* balloon) {
 class ViewportWidget : public views::WidgetGtk {
  public:
   explicit ViewportWidget(chromeos::NotificationPanel* panel)
-      : WidgetGtk(views::WidgetGtk::TYPE_CHILD),
-        panel_(panel) {
+      : panel_(panel) {
   }
 
   void UpdateControl() {
@@ -415,18 +414,18 @@ NotificationPanel::~NotificationPanel() {
 
 void NotificationPanel::Show() {
   if (!panel_widget_) {
-    // TODO(oshima): Using window because Popup widget behaves weird
-    // when resizing. This needs to be investigated.
-    views::WidgetGtk* widget_gtk =
-        new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
+    panel_widget_ = views::Widget::CreateWidget();
     // Enable double buffering because the panel has both pure views
     // control and native controls (scroll bar).
-    widget_gtk->EnableDoubleBuffer(true);
-    panel_widget_ = widget_gtk;
+    static_cast<views::WidgetGtk*>(panel_widget_->native_widget())->
+        EnableDoubleBuffer(true);
 
     gfx::Rect bounds = GetPreferredBounds();
     bounds = bounds.Union(min_bounds_);
-    panel_widget_->Init(NULL, bounds);
+    views::Widget::CreateParams params(
+        views::Widget::CreateParams::TYPE_WINDOW);
+    params.bounds = bounds;
+    panel_widget_->Init(params);
     // Set minimum bounds so that it can grow freely.
     gtk_widget_set_size_request(GTK_WIDGET(panel_widget_->GetNativeView()),
                                 min_bounds_.width(), min_bounds_.height());
@@ -439,7 +438,8 @@ void NotificationPanel::Show() {
     // Add the view port after scroll_view is attached to the panel widget.
     ViewportWidget* widget = new ViewportWidget(this);
     container_host_ = widget;
-    container_host_->Init(NULL, gfx::Rect());
+    container_host_->Init(
+        views::Widget::CreateParams(views::Widget::CreateParams::TYPE_CONTROL));
     container_host_->SetContentsView(balloon_container_.get());
     // The window_contents_ is onwed by the WidgetGtk. Increase ref count
     // so that window_contents does not get deleted when detached.

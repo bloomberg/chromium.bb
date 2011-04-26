@@ -15,23 +15,23 @@ NativeWidget* CreateNativeWidget() {
 }
 
 NativeWidget* CreateNativeWidgetWithContents(View* contents_view) {
-  WidgetWin* widget = new WidgetWin;
+  Widget* widget = Widget::CreateWidget();
   Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
   params.delete_on_destroy = false;
-  widget->SetCreateParams(params);
-  widget->Init(NULL, gfx::Rect(10, 10, 200, 200));
-  return widget;
+  params.bounds = gfx::Rect(10, 10, 200, 200);
+  widget->Init(params);
+  return widget->native_widget();
 }
 
 NativeWidget* CreateNativeWidgetWithParent(NativeWidget* parent) {
-  WidgetWin* widget = new WidgetWin;
+  Widget* widget = Widget::CreateWidget();
   Widget::CreateParams params(Widget::CreateParams::TYPE_CONTROL);
   params.delete_on_destroy = false;
   params.child = false; // Implicitly set to true by ctor with TYPE_CONTROL.
-  widget->SetCreateParams(params);
-  widget->Init(parent ? parent->GetWidget()->GetNativeView() : NULL,
-               gfx::Rect(10, 10, 200, 200));
-  return widget;
+  params.parent = parent ? parent->GetWidget()->GetNativeView() : NULL;
+  params.bounds = gfx::Rect(10, 10, 200, 200);
+  widget->Init(params);
+  return widget->native_widget();
 }
 
 }  // namespace internal

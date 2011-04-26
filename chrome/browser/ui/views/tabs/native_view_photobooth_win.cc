@@ -151,12 +151,13 @@ void NativeViewPhotoboothWin::CreateCaptureWindow(HWND initial_hwnd) {
   gfx::Rect capture_bounds(window_position.x(), window_position.y(),
                            contents_rect.right - contents_rect.left,
                            contents_rect.bottom - contents_rect.top);
+  capture_window_ = views::Widget::CreateWidget();
   views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
   params.transparent = true;
-  capture_window_ = views::Widget::CreateWidget(params);
+  params.bounds = capture_bounds;
+  capture_window_->Init(params);
   // If the capture window isn't visible, blitting from the TabContents'
   // HWND's DC to the capture bitmap produces blankness.
-  capture_window_->Init(NULL, capture_bounds);
   capture_window_->Show();
   SetLayeredWindowAttributes(
       capture_window_->GetNativeView(), RGB(0xFF, 0xFF, 0xFF), 0xFF, LWA_ALPHA);

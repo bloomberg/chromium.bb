@@ -132,13 +132,15 @@ FullscreenExitBubble::FullscreenExitBubble(
       this, UTF16ToWideHack(accelerator.GetShortcutText()));
 
   // Initialize the popup.
+  popup_ = views::Widget::CreateWidget();
+  popup_->SetOpacity(static_cast<unsigned char>(0xff * kOpacity));
   views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
   params.transparent = true;
   params.can_activate = false;
   params.delete_on_destroy = false;
-  popup_ = views::Widget::CreateWidget(params);
-  popup_->SetOpacity(static_cast<unsigned char>(0xff * kOpacity));
-  popup_->Init(frame->GetNativeView(), GetPopupRect(false));
+  params.parent = frame->GetNativeView();
+  params.bounds = GetPopupRect(false);
+  popup_->Init(params);
   popup_->SetContentsView(view_);
   popup_->Show();  // This does not activate the popup.
 

@@ -114,8 +114,6 @@ class WidgetWin : public ui::WindowImpl,
   void ClearAccessibilityViewEvent(View* view);
 
   // Overridden from Widget:
-  virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds) OVERRIDE;
-  virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual bool GetAccelerator(int cmd_id,
                               ui::Accelerator* accelerator) OVERRIDE;
@@ -193,7 +191,7 @@ class WidgetWin : public ui::WindowImpl,
   }
 
   // Overridden from NativeWidget:
-  virtual void SetCreateParams(const Widget::CreateParams& params) OVERRIDE;
+  virtual void InitNativeWidget(const Widget::CreateParams& params) OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
@@ -423,6 +421,8 @@ class WidgetWin : public ui::WindowImpl,
   // windows procedure.
   static void PostProcessActivateMessage(WidgetWin* widget,
                                          int activation_state);
+
+  void SetCreateParams(const Widget::CreateParams& params);
 
   // Synchronously paints the invalid contents of the Widget.
   void RedrawInvalidRect();

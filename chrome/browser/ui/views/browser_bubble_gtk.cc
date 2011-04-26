@@ -23,8 +23,7 @@ namespace {
 class BubbleWidget : public views::WidgetGtk {
  public:
   explicit BubbleWidget(BrowserBubble* bubble)
-      : views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW),
-        bubble_(bubble),
+      : bubble_(bubble),
         border_contents_(new BorderContents) {
     border_contents_->Init();
   }
@@ -95,7 +94,9 @@ void BrowserBubble::InitPopup() {
   BubbleWidget* pop = new BubbleWidget(this);
   pop->MakeTransparent();
   pop->make_transient_to_parent();
-  pop->Init(frame_->GetNativeView(), gfx::Rect());
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_WINDOW);
+  params.parent = frame_->GetNativeView();
+  pop->Init(params);
 #if defined(OS_CHROMEOS)
   {
     vector<int> params;

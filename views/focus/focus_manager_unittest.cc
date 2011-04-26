@@ -290,15 +290,14 @@ class BorderView : public NativeViewHost {
 
     if (child == this && is_add) {
       if (!widget_) {
-        widget_ = Widget::CreateWidget(
-            Widget::CreateParams(Widget::CreateParams::TYPE_CONTROL));
+        widget_ = Widget::CreateWidget();
+        Widget::CreateParams params(Widget::CreateParams::TYPE_CONTROL);
 #if defined(OS_WIN)
-        gfx::NativeView parent_native_view =
-            parent->GetRootView()->GetWidget()->GetNativeView();
+        params.parent = parent->GetRootView()->GetWidget()->GetNativeView();
 #elif defined(TOOLKIT_USES_GTK)
-        gfx::NativeView parent_native_view = native_view();
+        params.parent = native_view();
 #endif
-        widget_->Init(parent_native_view, gfx::Rect(0, 0, 0, 0));
+        widget_->Init(params);
         widget_->SetFocusTraversableParentView(this);
         widget_->SetContentsView(child_);
       }
@@ -1603,40 +1602,40 @@ TEST_F(FocusManagerTest, CreationForNativeRoot) {
   ASSERT_TRUE(hwnd);
 
   // Create a view window parented to native dialog.
-  WidgetWin widget1;
+  scoped_ptr<Widget> widget1(Widget::CreateWidget());
   Widget::CreateParams params(Widget::CreateParams::TYPE_CONTROL);
   params.delete_on_destroy = false;
-  widget1.SetCreateParams(params);
-  widget1.set_window_style(WS_CHILD);
-  widget1.Init(hwnd, gfx::Rect(0, 0, 100, 100));
+  params.parent = hwnd;
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  widget1->Init(params);
 
   // Get the focus manager directly from the first window.  Should exist
   // because the first window is the root widget.
-  views::FocusManager* focus_manager_member1 = widget1.GetFocusManager();
+  views::FocusManager* focus_manager_member1 = widget1->GetFocusManager();
   EXPECT_TRUE(focus_manager_member1);
 
   // Create another view window parented to the first view window.
-  WidgetWin widget2;
-  widget2.SetCreateParams(params);
-  widget2.Init(widget1.GetNativeView(), gfx::Rect(0, 0, 100, 100));
+  scoped_ptr<Widget> widget2(Widget::CreateWidget());
+  params.parent = widget1->GetNativeView();
+  widget2->Init(params);
 
   // Get the focus manager directly from the second window. Should return the
   // first window's focus manager.
-  views::FocusManager* focus_manager_member2 = widget2.GetFocusManager();
+  views::FocusManager* focus_manager_member2 = widget2->GetFocusManager();
   EXPECT_EQ(focus_manager_member2, focus_manager_member1);
 
   // Get the focus manager indirectly using the first window handle. Should
   // return the first window's focus manager.
   views::FocusManager* focus_manager_indirect =
       views::FocusManager::GetFocusManagerForNativeView(
-          widget1.GetNativeView());
+          widget1->GetNativeView());
   EXPECT_EQ(focus_manager_indirect, focus_manager_member1);
 
   // Get the focus manager indirectly using the second window handle. Should
   // return the first window's focus manager.
   focus_manager_indirect =
       views::FocusManager::GetFocusManagerForNativeView(
-          widget2.GetNativeView());
+          widget2->GetNativeView());
   EXPECT_EQ(focus_manager_indirect, focus_manager_member1);
 
   DestroyWindow(hwnd);

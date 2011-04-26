@@ -109,16 +109,19 @@ void BrowserBubble::InitPopup() {
   // popup_ is a Widget, but we need to do some WidgetWin stuff first, then
   // we'll assign it into popup_.
   BubbleWidget* pop = new BubbleWidget(this);
+  popup_ = pop;
 
   BorderWidgetWin* border_widget = pop->border_widget();
-  border_widget->Init(new BorderContents, frame_->GetNativeView());
+  border_widget->InitBorderWidgetWin(new BorderContents,
+                                     frame_->GetNativeView());
 
   // We make the BorderWidgetWin the owner of the Bubble HWND, so that the
   // latter is displayed on top of the former.
-  pop->Init(border_widget->GetNativeView(), gfx::Rect());
-  pop->SetContentsView(view_);
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  params.parent = border_widget->GetNativeView();
+  popup_->Init(params);
+  popup_->SetContentsView(view_);
 
-  popup_ = pop;
 
   ResizeToView();
   Reposition();

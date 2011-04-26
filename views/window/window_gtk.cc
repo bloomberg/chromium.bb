@@ -408,8 +408,7 @@ void WindowGtk::FrameTypeChanged() {
 // WindowGtk, protected:
 
 WindowGtk::WindowGtk(WindowDelegate* window_delegate)
-    : WidgetGtk(TYPE_WINDOW),
-      Window(window_delegate),
+    : Window(window_delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
       window_state_(GDK_WINDOW_STATE_WITHDRAWN),
       window_closed_(false) {
@@ -420,7 +419,10 @@ WindowGtk::WindowGtk(WindowDelegate* window_delegate)
 void WindowGtk::InitWindow(GtkWindow* parent, const gfx::Rect& bounds) {
   if (parent)
     make_transient_to_parent();
-  WidgetGtk::Init(GTK_WIDGET(parent), bounds);
+  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  params.parent = GTK_WIDGET(parent);
+  params.bounds = bounds;
+  GetWidget()->Init(params);
   delegate_->OnNativeWindowCreated(bounds);
 
   g_signal_connect(G_OBJECT(GetNativeWindow()), "configure-event",

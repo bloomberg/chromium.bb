@@ -39,11 +39,7 @@ DraggedTabView::DraggedTabView(const std::vector<views::View*>& renderers,
       contents_size_(contents_size) {
   set_parent_owned(false);
 
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
-  params.transparent = true;
-  params.keep_on_top = true;
-  params.delete_on_destroy = false;
-  container_.reset(views::Widget::CreateWidget(params));
+  container_.reset(views::Widget::CreateWidget());
 #if defined(OS_WIN)
   static_cast<views::WidgetWin*>(container_.get())->
       set_can_update_layered_window(false);
@@ -54,11 +50,15 @@ DraggedTabView::DraggedTabView(const std::vector<views::View*>& renderers,
     show_contents_on_drag_ = false;
   }
 #endif
-  gfx::Size container_size(PreferredContainerSize());
-  container_->Init(NULL, gfx::Rect(gfx::Point(), container_size));
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  params.transparent = true;
+  params.keep_on_top = true;
+  params.delete_on_destroy = false;
+  params.bounds = gfx::Rect(PreferredContainerSize());
+  container_->Init(params);
   container_->SetContentsView(this);
   container_->SetOpacity(kTransparentAlpha);
-  container_->SetBounds(gfx::Rect(gfx::Point(), container_size));
+  container_->SetBounds(gfx::Rect(gfx::Point(), params.bounds.size()));
 }
 
 DraggedTabView::~DraggedTabView() {

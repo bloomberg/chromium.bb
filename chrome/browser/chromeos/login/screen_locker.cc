@@ -198,9 +198,7 @@ static base::LazyInstance<ScreenLockObserver> g_screen_lock_observer(
 // focus/events inside the grab widget.
 class LockWindow : public views::WidgetGtk {
  public:
-  LockWindow()
-      : views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW),
-        toplevel_focus_widget_(NULL) {
+  LockWindow() : toplevel_focus_widget_(NULL) {
     EnableDoubleBuffer(true);
   }
 
@@ -284,8 +282,7 @@ class GrabWidgetRootView
 class GrabWidget : public views::WidgetGtk {
  public:
   explicit GrabWidget(chromeos::ScreenLocker* screen_locker)
-      : views::WidgetGtk(views::WidgetGtk::TYPE_CHILD),
-        screen_locker_(screen_locker),
+      : screen_locker_(screen_locker),
         ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
         grab_failure_count_(0),
         kbd_grab_status_(GDK_GRAB_INVALID_TIME),
@@ -478,7 +475,7 @@ class ScreenLockerBackgroundView
     : public chromeos::BackgroundView,
       public chromeos::ScreenLocker::ScreenLockViewContainer {
  public:
-  ScreenLockerBackgroundView(views::WidgetGtk* lock_widget,
+  ScreenLockerBackgroundView(views::Widget* lock_widget,
                              views::View* screen_lock_view)
       : lock_widget_(lock_widget),
         screen_lock_view_(screen_lock_view) {
@@ -511,7 +508,7 @@ class ScreenLockerBackgroundView
   }
 
  private:
-  views::WidgetGtk* lock_widget_;
+  views::Widget* lock_widget_;
 
   views::View* screen_lock_view_;
 
@@ -688,7 +685,9 @@ void ScreenLocker::Init() {
 
   LockWindow* lock_window = new LockWindow();
   lock_window_ = lock_window;
-  lock_window_->Init(NULL, init_bounds);
+  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_WINDOW);
+  params.bounds = init_bounds;
+  lock_window_->Init(params);
 
   g_signal_connect(lock_window_->GetNativeView(), "client-event",
                    G_CALLBACK(OnClientEventThunk), this);
@@ -710,8 +709,11 @@ void ScreenLocker::Init() {
   // namespace feels a bit ugly.)
   GrabWidget* cast_lock_widget = new GrabWidget(this);
   lock_widget_ = cast_lock_widget;
-  lock_widget_->MakeTransparent();
-  lock_widget_->InitWithWidget(lock_window_, gfx::Rect());
+  views::Widget::CreateParams lock_params(
+      views::Widget::CreateParams::TYPE_CONTROL);
+  lock_params.transparent = true;
+  lock_params.parent_widget = lock_window_;
+  lock_widget_->Init(lock_params);
   if (screen_lock_view_) {
     GrabWidgetRootView* root_view = new GrabWidgetRootView(screen_lock_view_);
     grab_container_ = root_view;
@@ -762,7 +764,9 @@ void ScreenLocker::Init() {
                              NULL, false);
   gdk_window_set_back_pixmap(lock_widget_->GetNativeView()->window,
                              NULL, false);
-  lock_window->set_toplevel_focus_widget(lock_widget_->window_contents());
+  lock_window->set_toplevel_focus_widget(
+      static_cast<views::WidgetGtk*>(lock_widget_->native_widget())->
+          window_contents());
 
   // Create the SystemKeyEventListener so it can listen for system keyboard
   // messages regardless of focus while screen locked.
