@@ -222,7 +222,7 @@ void GlobalHistoryMenu::GotFaviconData(FaviconService::Handle handle,
           profile_->GetFaviconService(Profile::EXPLICIT_ACCESS), handle);
   DCHECK(item);
   item->icon_requested = false;
-  item->icon_handle = NULL;
+  item->icon_handle = static_cast<CancelableRequestProvider::Handle>(NULL);
 
   SkBitmap icon;
   if (favicon.is_valid() &&
@@ -249,7 +249,7 @@ void GlobalHistoryMenu::CancelFaviconRequest(HistoryItem* item) {
         profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
     service->CancelRequest(item->icon_handle);
     item->icon_requested = false;
-    item->icon_handle = NULL;
+    item->icon_handle = static_cast<CancelableRequestProvider::Handle>(NULL);
   }
 }
 
