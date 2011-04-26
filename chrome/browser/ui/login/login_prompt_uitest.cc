@@ -146,8 +146,10 @@ TEST_F(LoginPromptTest, MAYBE_TestTwoAuths) {
   EXPECT_EQ(ExpectedTitleFromAuth(username_digest_, password_), title);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // Probably related to test server flakiness in http://crbug.com/60937
+// Linux seems to be racy as well, see:
+//   https://bugs.webkit.org/show_bug.cgi?id=59406
 #define MAYBE_TestCancelAuth FLAKY_TestCancelAuth
 #else
 #define MAYBE_TestCancelAuth TestCancelAuth
