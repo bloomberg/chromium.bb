@@ -111,7 +111,6 @@ LiveSyncTest::LiveSyncTest(TestType test_type)
       num_clients_(-1),
       test_server_handle_(base::kNullProcessHandle) {
   InProcessBrowserTest::set_show_window(true);
-  logging::SetMinLogLevel(logging::LOG_VERBOSE);
   switch (test_type_) {
     case SINGLE_CLIENT: {
       num_clients_ = 1;
