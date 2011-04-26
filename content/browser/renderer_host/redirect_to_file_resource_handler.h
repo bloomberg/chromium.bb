@@ -83,6 +83,9 @@ class RedirectToFileResourceHandler : public ResourceHandler {
   // a result of the download.
   scoped_refptr<webkit_blob::DeletableFileReference> deletable_file_;
 
+  // True if OnRequestClosed() has already been called.
+  bool request_was_closed_;
+
   DISALLOW_COPY_AND_ASSIGN(RedirectToFileResourceHandler);
 };
 

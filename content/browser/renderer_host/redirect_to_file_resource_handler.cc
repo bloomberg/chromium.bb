@@ -36,7 +36,8 @@ RedirectToFileResourceHandler::RedirectToFileResourceHandler(
       write_cursor_(0),
       write_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                       &RedirectToFileResourceHandler::DidWriteToFile),
-      write_callback_pending_(false) {
+      write_callback_pending_(false),
+      request_was_closed_(false) {
 }
 
 bool RedirectToFileResourceHandler::OnUploadProgress(int request_id,
@@ -139,12 +140,18 @@ bool RedirectToFileResourceHandler::OnResponseCompleted(
 }
 
 void RedirectToFileResourceHandler::OnRequestClosed() {
-  // We require this explicit call to Close since file_stream_ was constructed
-  // directly from a PlatformFile.
-  file_stream_->Close();
-  file_stream_.reset();
-  deletable_file_ = NULL;
+  DCHECK(!request_was_closed_);
+  request_was_closed_ = true;
 
+  // It is possible for |file_stream_| to be NULL if the request was closed
+  // before the temporary file creation finished.
+  if (file_stream_.get()) {
+    // We require this explicit call to Close since file_stream_ was constructed
+    // directly from a PlatformFile.
+    file_stream_->Close();
+    file_stream_.reset();
+  }
+  deletable_file_ = NULL;
   next_handler_->OnRequestClosed();
 }
 
@@ -156,6 +163,11 @@ void RedirectToFileResourceHandler::DidCreateTemporaryFile(
     base::PlatformFileError /*error_code*/,
     base::PassPlatformFile file_handle,
     FilePath file_path) {
+  if (request_was_closed_) {
+    // If the request was already closed, then don't bother allocating the
+    // file_stream_ (otherwise we will leak it).
+    return;
+  }
   deletable_file_ = DeletableFileReference::GetOrCreate(
       file_path,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
