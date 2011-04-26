@@ -19,6 +19,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class TabContents;
+struct ExtensionHostMsg_DomMessage_Params;
 struct WebPreferences;
 
 namespace gfx {
@@ -67,6 +68,8 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params);
   virtual WebPreferences GetWebkitPrefs();
+  virtual void ProcessWebUIMessage(
+      const ExtensionHostMsg_DomMessage_Params& params);
   virtual void RunJavaScriptMessage(const std::wstring& message,
                                     const std::wstring& default_prompt,
                                     const GURL& frame_url,

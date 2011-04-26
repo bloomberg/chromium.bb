@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/extension_idle_api.h"
 #include "chrome/browser/extensions/extension_infobar_module.h"
 #include "chrome/browser/extensions/extension_management_api.h"
+#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_metrics_module.h"
 #include "chrome/browser/extensions/extension_module.h"
 #include "chrome/browser/extensions/extension_omnibox_api.h"
@@ -53,13 +54,10 @@
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/notification_service.h"
 #include "content/common/result_codes.h"
-#include "ipc/ipc_message.h"
-#include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -475,28 +473,8 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
   return browser;
 }
 
-bool ExtensionFunctionDispatcher::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ExtensionFunctionDispatcher, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void ExtensionFunctionDispatcher::OnRequest(
-    const ExtensionHostMsg_Request_Params& params) {
-  if (!ChildProcessSecurityPolicy::GetInstance()->
-          HasExtensionBindings(render_view_host_->process()->id())) {
-    // This can happen if someone uses window.open() to open an extension URL
-    // from a non-extension context.
-    render_view_host_->Send(new ExtensionMsg_Response(
-        render_view_host_->routing_id(), params.request_id, false,
-        std::string(), "Access to extension API denied."));
-    return;
-  }
-
+void ExtensionFunctionDispatcher::HandleRequest(
+    const ExtensionHostMsg_DomMessage_Params& params) {
   scoped_refptr<ExtensionFunction> function(
       FactoryRegistry::GetInstance()->NewFunction(params.name));
   function->set_dispatcher_peer(peer_);

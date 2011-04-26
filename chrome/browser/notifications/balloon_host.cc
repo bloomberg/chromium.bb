@@ -22,7 +22,6 @@
 #include "content/common/notification_type.h"
 #include "content/common/renderer_preferences.h"
 #include "content/common/view_messages.h"
-#include "ipc/ipc_message.h"
 #include "webkit/glue/webpreferences.h"
 
 BalloonHost::BalloonHost(Balloon* balloon)
@@ -132,11 +131,11 @@ RenderViewHostDelegate::View* BalloonHost::GetViewDelegate() {
   return this;
 }
 
-bool BalloonHost::OnMessageReceived(const IPC::Message& message) {
-  if (extension_function_dispatcher_.get())
-    return extension_function_dispatcher_->OnMessageReceived(message);
-
-  return false;
+void BalloonHost::ProcessWebUIMessage(
+    const ExtensionHostMsg_DomMessage_Params& params) {
+  if (extension_function_dispatcher_.get()) {
+    extension_function_dispatcher_->HandleRequest(params);
+  }
 }
 
 // RenderViewHostDelegate::View methods implemented to allow links to

@@ -14,7 +14,6 @@
 #include "chrome/browser/favicon_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/webui/web_ui.h"
-#include "ipc/ipc_channel.h"
 
 class GURL;
 class ListValue;
@@ -22,7 +21,7 @@ class PrefService;
 class Profile;
 class RenderViewHost;
 class TabContents;
-struct ExtensionHostMsg_Request_Params;
+struct ExtensionHostMsg_DomMessage_Params;
 
 // This class implements WebUI for extensions and allows extensions to put UI in
 // the main tab contents area. For example, each extension can specify an
@@ -43,9 +42,10 @@ class ExtensionWebUI
   }
 
   // WebUI
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void RenderViewReused(RenderViewHost* render_view_host);
+  virtual void ProcessWebUIMessage(
+      const ExtensionHostMsg_DomMessage_Params& params);
 
   // ExtensionFunctionDispatcher::Delegate
   virtual Browser* GetBrowser();

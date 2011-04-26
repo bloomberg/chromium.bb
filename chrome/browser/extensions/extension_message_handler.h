@@ -14,12 +14,6 @@ struct ExtensionHostMsg_DomMessage_Params;
 // Filters and dispatches extension-related IPC messages that arrive from
 // renderers. There is one of these objects for each RenderViewHost in Chrome.
 // Contrast this with ExtensionTabHelper, which is only created for TabContents.
-//
-// TODO(aa): Handling of content script messaging should be able to move to EFD
-// once there is an EFD for every RVHD where extension code can run. Then we
-// could eliminate this class. Right now, we don't end up with an EFD for tab
-// contents unless that tab contents is hosting chrome-extension:// URLs. That
-// still leaves content scripts. See also: crbug.com/80307.
 class ExtensionMessageHandler : public RenderViewHostObserver {
  public:
   // |sender| is guaranteed to outlive this object.
@@ -32,6 +26,7 @@ class ExtensionMessageHandler : public RenderViewHostObserver {
  private:
   // Message handlers.
   void OnPostMessage(int port_id, const std::string& message);
+  void OnRequest(const ExtensionHostMsg_DomMessage_Params& params);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageHandler);
 };

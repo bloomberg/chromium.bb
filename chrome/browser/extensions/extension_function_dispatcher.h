@@ -11,7 +11,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "googleurl/src/gurl.h"
-#include "ipc/ipc_channel.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
@@ -21,7 +20,7 @@ class ListValue;
 class Profile;
 class RenderViewHost;
 class TabContents;
-struct ExtensionHostMsg_Request_Params;
+struct ExtensionHostMsg_DomMessage_Params;
 
 // A factory function for creating new ExtensionFunction instances.
 typedef ExtensionFunction* (*ExtensionFunctionFactory)();
@@ -29,7 +28,7 @@ typedef ExtensionFunction* (*ExtensionFunctionFactory)();
 // ExtensionFunctionDispatcher receives requests to execute functions from
 // Chromium extensions running in a RenderViewHost and dispatches them to the
 // appropriate handler. It lives entirely on the UI thread.
-class ExtensionFunctionDispatcher : public IPC::Channel::Listener {
+class ExtensionFunctionDispatcher {
  public:
   class Delegate {
    public:
@@ -86,8 +85,8 @@ class ExtensionFunctionDispatcher : public IPC::Channel::Listener {
 
   Delegate* delegate() { return delegate_; }
 
-  // If |message| is an extension request, handle it. Returns true if handled.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  // Handle a request to execute an extension function.
+  void HandleRequest(const ExtensionHostMsg_DomMessage_Params& params);
 
   // Send a response to a function.
   void SendResponse(ExtensionFunction* api, bool success);
@@ -121,9 +120,6 @@ class ExtensionFunctionDispatcher : public IPC::Channel::Listener {
                               Delegate* delegate,
                               const Extension* extension,
                               const GURL& url);
-
-  // Message handlers.
-  void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // We need to keep a pointer to the profile because we use it in the dtor
   // in sending EXTENSION_FUNCTION_DISPATCHER_DESTROYED, but by that point

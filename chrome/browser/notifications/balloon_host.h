@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
@@ -23,10 +22,6 @@ class Profile;
 class SiteInstance;
 struct RendererPreferences;
 struct WebPreferences;
-
-namespace IPC {
-class Message;
-}
 
 class BalloonHost : public RenderViewHostDelegate,
                     public RenderViewHostDelegate::View,
@@ -66,6 +61,8 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual int GetBrowserWindowID() const;
   virtual ViewType::Type GetRenderViewType() const;
   virtual RenderViewHostDelegate::View* GetViewDelegate();
+  virtual void ProcessWebUIMessage(
+      const ExtensionHostMsg_DomMessage_Params& params);
 
   // NotificationObserver override.
   virtual void Observe(NotificationType type,
@@ -134,9 +131,6 @@ class BalloonHost : public RenderViewHostDelegate,
   RenderViewHost* render_view_host_;
 
  private:
-  // RenderViewHostDelegate
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
   // Called to send an event that the balloon has been disconnected from
   // a renderer (if should_notify_on_disconnect_ is true).
   void NotifyDisconnect();
