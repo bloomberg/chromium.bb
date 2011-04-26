@@ -37,27 +37,15 @@ BOT_ASSIGNMENT = {
 
     'pnacl-arm-dbg':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-dbg',
-    'hardy64-marm-narm-dbg': # obsolete
-        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-dbg',
     'pnacl-arm-opt':
-        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-opt',
-    'hardy64-marm-narm-opt':  # obsolete
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-opt',
     'pnacl-arm-hw-dbg':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-dbg',
-    'arm-marm-narm-test-dbg':  # obsolete
-        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-dbg',
     'pnacl-arm-hw-opt':
-        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-opt',
-    'arm-marm-narm-test-opt': # obsolete
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-opt',
     'pnacl-x8632':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8632',
-    'lucid64-pnacl1': # obsolete
-        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8632',
     'pnacl-x8664':
-        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8664',
-    'lucid64-pnacl2': # obsolete
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8664',
     # Pnacl spec2k bots.
     'lucid64-spec-arm':
