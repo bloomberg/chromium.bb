@@ -518,6 +518,8 @@ class SVN(object):
     if info is None:
       return result
     entry = info.find('entry')
+    if entry is None:
+      return result
 
     # Use .text when the item is not optional.
     result['Path'] = entry.attrib['path']
