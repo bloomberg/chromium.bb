@@ -8,7 +8,6 @@
 <translation id="8275038454117074363">Ingiza</translation>
 <translation id="8418445294933751433">Onye&amp;sha kama kichupo</translation>
 <translation id="6985276906761169321">Kitambulisho:</translation>
-<translation id="3835835603544455972">Sanidi usawazishaji</translation>
 <translation id="1497897566809397301">Ruhusu data kwenye kompyuta yako iwekwe (inapendekezwa)</translation>
 <translation id="509988127256758334">Ta&amp;futa nini:</translation>
 <translation id="1420684932347524586">Lo! Imeshindwa kuzindua ufunguo binafsi wa RSA usio na utaratibu.</translation>
@@ -27,6 +26,7 @@
 <translation id="6322279351188361895">Imeshindwa kusoma ufunguo wa kibinafsi</translation>
 <translation id="4428782877951507641">Inasanidi usawazishaji</translation>
 <translation id="2972581237482394796">&amp;Rudia</translation>
+<translation id="5895138241574237353">Anzisha upya</translation>
 <translation id="528468243742722775">Mwisho</translation>
 <translation id="1723824996674794290">&amp;Dirisha jipya</translation>
 <translation id="1589055389569595240">Onyesha Tahajia na Sarufi</translation>
@@ -38,7 +38,6 @@
 <translation id="7600965453749440009">Usitafsiri <ph name="LANGUAGE"/> kamwe</translation>
 <translation id="5341849548509163798">masaa <ph name="NUMBER_MANY"/> yaliyopita</translation>
 <translation id="4422428420715047158">Kikoa:</translation>
-<translation id="2425693476159185661">Haujasanidi usawazishaji wa data yako ya <ph name="PRODUCT_NAME"/> kwa kompyuta zako zingine.</translation>
 <translation id="5376169624176189338">Bofya kurudi nyuma, shikilia kuona historia</translation>
 <translation id="6310545596129886942">zimesalia sekunde <ph name="NUMBER_FEW"/></translation>
 <translation id="9181716872983600413">Unicode</translation>
@@ -56,6 +55,7 @@
 <translation id="558170650521898289">Uthibitishaji wa Viendeshi vya Maunzi vya Microsoft Windows</translation>
 <translation id="8974161578568356045">Gundua Atomatiki</translation>
 <translation id="1818606096021558659">Ukurasa</translation>
+<translation id="5388588172257446328">Jina la mtumiaji:</translation>
 <translation id="1657406563541664238">Saidia kuboresha <ph name="PRODUCT_NAME"/> kwa kutuma takwimu za utumiaji na ripoti za kuzimika kwa Google kiatomatiki</translation>
 <translation id="7982789257301363584">Mtandao</translation>
 <translation id="2336228925368920074">Alamisha Vichupo Vyote...</translation>
@@ -918,6 +918,7 @@
 <translation id="8590375307970699841">Weka sasisho atomatiki</translation>
 <translation id="2797524280730715045">Masaa <ph name="NUMBER_DEFAULT"/> yaliyopita</translation>
 <translation id="265390580714150011">Thamani ya Uga</translation>
+<translation id="7180865173735832675">Binafsisha</translation>
 <translation id="2115926821277323019">Lazima iwe URL sahihi</translation>
 <translation id="527605982717517565">Ruhusu <ph name="HOST"/> iendeshe JavaScript kila wakati</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 Na Usimbaji wa RSA</translation>
@@ -927,7 +928,6 @@
 <translation id="5503844897713343920">Ulijaribu kufikia <ph name="DOMAIN"/>, lakini cheti kilichowasilishwa na seva kimebatilishwa na mtoaji wake. Hii inamaanisha kuwa stakabadhi za usalama zilizowasilishwa na seva hii hazifai kuaminiwa kabisa. Yawezekana kuwa unawasiliana na mshambulizi. Hufai kuendelea.</translation>
 <translation id="1308727876662951186">zimesalia dakika <ph name="NUMBER_ZERO"/></translation>
 <translation id="1103966635949043187">Nenda kwenye ukurasa wa nyumbani wa tovuti:</translation>
-<translation id="4400697530699263877">Tumia upataji-awali wa DNS kuboresha utendaji wa kupakia kurasa.</translation>
 <translation id="1086613338090581534">Kwa cheti ambacho hakijakwisha muda, mtoaji wa cheti hicho anawajibika kuweka kitu kiitwacho &quot;orodha ya ubatilishaji&quot;. Ikiwa cheti kimoja kitawahi kuingiliwa, mtoaji anaweza kukibatili kwa kukiweka kwenye orodha ya ubatilishaji, kisha cheti hicho hakitaaminiwa na kivinjari chako tena. Hadhi ya ubatilishwaji kwa vyeti vilivyokwisha muda si lazima idumishwe, hivyo basi ingawa wakati mmoja cheti hiki kilikuwa sahihi kwa tovuti unayotembelea, kwa sasa hatuwezi kujua kama cheti kiliingiliwa na kubatilishwa baadaye au kingali salama. Kwa hivyo hatuwezi kujua ikiwa unawasiliana na tovuti ile ya kweli, au cheti kiliingiliwa na kinamilikiwa na mshamulizi ambaye sasa unawasiliana naye. Haufai kuendelea kupita hapa.</translation>
 <translation id="2645575947416143543">Hata hivyo, ikiwa unafanya kazi na shirika linalounda vyeti vyake yenyewe, na unajaribu kuunganisha kwa tovuti ya kindani ya shirika hilo ukitumia cheti kama hicho, unaweza kutatua tatizo hili kwa usalama. Unaweza cheti shina cha shirika kama “cheti shina”, kisha vyeti vilivyotolewa au kuthibitishwa ba shirika lako vitaaminiwa na hutaona hitilafu hii utakapounganisha kwa tovuti ya kindani mara nyingine. Wasiliana na wasaidizi katika shirika lako kwa msaada wa kuongeza cheti shina kipya kwa kompyuta yako.</translation>
 <translation id="1056898198331236512">Ilani</translation>
@@ -1176,6 +1176,7 @@
 <translation id="1963692530539281474">Zimesalia siku <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="4470270245053809099">Kimetolewa na: <ph name="NAME"/></translation>
 <translation id="2403091441537561402">Lango:</translation>
+<translation id="668171684555832681">Mengine...</translation>
 <translation id="1932098463447129402">Sio Kabla</translation>
 <translation id="2192664328428693215">Niulize wakati tovuti inataka kuonyesha arifa kwenye eneo-kazi (imependekezwa)</translation>
 <translation id="6708242697268981054">Asili:</translation>
@@ -1276,6 +1277,7 @@
 <translation id="6263284346895336537">Sio Muhimu</translation>
 <translation id="6409731863280057959">Viibukizi</translation>
 <translation id="3459774175445953971">Ilibadilishwa mwisho:</translation>
+<translation id="3435738964857648380">Usalama</translation>
 <translation id="9112987648460918699">Pata...</translation>
 <translation id="2231233239095101917">Hati iliyo kwenye ukurasa imetumia kumbukumbu kubwa zaidi. Pakia tena kuwezesha hati tena.</translation>
 <translation id="870805141700401153">Uwekaji Sahihi Binafsi wa Misimbo kutoka Microsoft</translation>
@@ -1349,6 +1351,7 @@ Weka faili yako ya funguo mahali salama. Utaihitaji kuunda matoleo mapya ya kien
 <translation id="3036649622769666520">Fungua Mafaili</translation>
 <translation id="7685049629764448582">Kumbukumbu ya JavaScript</translation>
 <translation id="6059652578941944813">Hadhi ya Vyeti:</translation>
+<translation id="5729712731028706266">&amp;Ona</translation>
 <translation id="774576312655125744">Data yako kwenye <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> na tovuti zingine <ph name="NUMBER_OF_OTHER_WEBSITES"/></translation>
 <translation id="4508765956121923607">Tazama &amp;Asili</translation>
 <translation id="8080048886850452639">&amp;Nakili URL ya audio</translation>

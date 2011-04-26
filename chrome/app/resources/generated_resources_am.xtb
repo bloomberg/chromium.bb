@@ -8,7 +8,6 @@
 <translation id="8275038454117074363">ከውጭ አስመጣ</translation>
 <translation id="8418445294933751433">&amp;በትር አሳይ</translation>
 <translation id="6985276906761169321">መታወቂያ፦</translation>
-<translation id="3835835603544455972">ማመሳሰል አዋቅር</translation>
 <translation id="1497897566809397301">የውስጥ ውሂብ እንዲዘጋጅ ፍቀድ (የሚደገፍ)</translation>
 <translation id="509988127256758334">ምን ማ&amp;ግኘት ፈለግህ፦</translation>
 <translation id="1420684932347524586">አይይ! RSA የግል ኩልፍ በዘፈቀደ ለመፍጠር አልተቻለም።</translation>
@@ -26,6 +25,7 @@
 <translation id="6322279351188361895">ግላዊ ቁልፍን ማንበብ አልተሳካም።</translation>
 <translation id="4428782877951507641">ማመሳሰልን ማዋቀር</translation>
 <translation id="2972581237482394796">&amp;ድገም</translation>
+<translation id="5895138241574237353">እንደገና ጀምር</translation>
 <translation id="528468243742722775">ጨርስ</translation>
 <translation id="1723824996674794290">&amp;አዲስ መስኮት</translation>
 <translation id="1589055389569595240">እረማ ሆሄ እና ሰዋስው አሳይ</translation>
@@ -37,7 +37,6 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE"/>ን በጭራሽ አትተርጉም</translation>
 <translation id="5341849548509163798">ከ<ph name="NUMBER_MANY"/> ሰዓታት በፊት</translation>
 <translation id="4422428420715047158">ጎራ፦</translation>
-<translation id="2425693476159185661">ያንተን <ph name="PRODUCT_NAME"/> ውሂብ ከሌሎች ኮምፑዩተሮችህ ጋር ለማስማማት ቅንጅቶችህ አልተስተካከሉም።</translation>
 <translation id="5376169624176189338">ወደ ኋላ ለመመለስ ጠቅ ያድርጉ፣ ታሪክ ለማየት ይያዙ</translation>
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> ሰከንድ ይቀራል</translation>
 <translation id="9181716872983600413">ዩኒኮድ</translation>
@@ -896,6 +895,7 @@ nil</translation>
 <translation id="8590375307970699841">አውቶማቲክ ዝምኖችን አዋቅር</translation>
 <translation id="2797524280730715045">ከ<ph name="NUMBER_DEFAULT"/> ሰዓት በፊት</translation>
 <translation id="265390580714150011">የመስክ እሴት</translation>
+<translation id="7180865173735832675">አብጅ</translation>
 <translation id="2115926821277323019">ትክክለኛ URL መሆን ይኖርበታል</translation>
 <translation id="527605982717517565">ሁልጊዜ በ<ph name="HOST"/> ላይ JavaScript ፍቀድ</translation>
 <translation id="1221024147024329929">PKCS #1 MD2  ከRSA ምስጠራ ጋር</translation>
@@ -904,7 +904,6 @@ nil</translation>
 <translation id="7554791636758816595">አዲስ ትር</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> ደቂቃ ይቀራል</translation>
 <translation id="1103966635949043187">ወደ ጣቢያው የመጀመሪያ ገጽ ሂድ፦</translation>
-<translation id="4400697530699263877">የገጽ ጭነት አቅምን ለማሻሻል የዲኤንኤስ ቅድመ-ማምጣትን ይጠቀሙ</translation>
 <translation id="1086613338090581534">ጊዜው ላለፈበት ሰርቲፊኬት፣ የሰርቲፊኬቱ ሰጪ ‹‹የተሻረ ዝርዝር›› ተብሎ የሚጠራውን የመጠበቅ ሃላፊነት አለበት። ሰርቲፊኬቱ ከጠፋ፣ ሰጪው ‹‹የተሻረ ዝርዝር›› ውስጥ በመጨመር መሻር ይችላል፤ እናም ከዚህ በኋላ ይህ ሰርቲፊኬት በአሳሽዎ የሚታመን አይሆንም። የመሻሩ ሁኔታ ጊዜው ላለፈባቸው ሰርቲፊኬቶች መጠበቅ አያስፈልግም፤ ስለዚህ ይህ ሰርቲፊኬት ለሚጎበኙት ድር ጣቢያ ትክክለኛ ሆኖ ያገለግላል፤ በዚህ ጊዜ ሰርቲፊኬቱ እንደጠፋ እና የኋላ ኋላ እንደሚሻር ወይም ደህንነቱ አነደተጠበቀ እንደሚቆይ መወሰን አይቻልም። እንደተቀሰው ህጋዊ ከሆነ ድር ጣቢያ ጋር እየተገናኙ እንደሆነ፣ ወይም ሰርቲፊኬቱ የጠፋ እንደሆነና እየተገናኙት ያሉት በአጥቂ የተያዘ መሆኑን መናገር አይቻልም። ይህን ነጥብ እንዳለፈ መቀጠል አይኖርብዎትም።</translation>
 <translation id="2645575947416143543">የራሱን ሰርቲፊኬቶች የሚፈጥር ድርጅት ውስጥ የሚሰሩ ከሆነና እንዲህ አይነት ሰርቲፊኬት በመጠቀም ከድርጅቱ ውስጠኛ ድረ-ገጽ ጋር መገናኘት እየሞከሩ ከሆነ፣ ይህን ችግር ደህንነቱ በተጠበቀ ሁኔታ ሊፈቱት ይችሉ ይሆናል። የድርጅትዎን ‹‹ስርወ-ሰርቲፊኬት›› ማስመጣት ይችላሉ፣ ከዚያ በኋላ በድርጅትዎ የተሰጡ ወይም የተረጋገጡ ሰርቲፊኬቶች አመኔታ ይኖራቸዋል፤ ይህን ስህተትም በሚቀጥለው ጊዜ ከውስጠኛ ድረ-ገጽ ጋር ለመገናኘት ሲሞከሩ አያያቱም። ወደ ኮምፒውተርዎ ስርወ-ሰርቲፊኬት ለመጨመር ርዳታ ከፈለጉ የድርጅትዎን የእገዛ ማዕከል ይገናኙ።</translation>
 <translation id="1056898198331236512">ማስጠንቀቂያ</translation>
@@ -1145,6 +1144,7 @@ nil</translation>
 <translation id="8906421963862390172">የ&amp;ሆሄ አራሚ አማራጮች</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> ቀን ይቀራል</translation>
 <translation id="2403091441537561402">ጌትዌይ፦</translation>
+<translation id="668171684555832681">ሌላ…</translation>
 <translation id="1932098463447129402">በፊት ያልሆነ</translation>
 <translation id="2192664328428693215">አንድ ጣቢያ የዴስክቶፕ ማስታወቂያዎችን  ለማሳየት ሲፈልግ ጠይቀኝ (የሚመከር)።</translation>
 <translation id="6708242697268981054">መነሻ፦</translation>
@@ -1238,6 +1238,7 @@ nil</translation>
 <translation id="6263284346895336537">ዋነኛ ያልሆነ</translation>
 <translation id="6409731863280057959">ብቅ-ባዮች</translation>
 <translation id="3459774175445953971">ለመጨረሻ ጊዜ የተሻሻለው፦</translation>
+<translation id="3435738964857648380">የደህንነት ጥበቃ</translation>
 <translation id="9112987648460918699">አግኝ…</translation>
 <translation id="2231233239095101917">በገጹ ላይ ያለው ስክሪፕት ከመጠን ያለፈ ማህደረ ትውስታ ተጠቅሟል። ስክርፕቶችን እንደገና ለማንቃት ዳግም ይጫኑት።</translation>
 <translation id="870805141700401153">Microsoft Individual Code Signing</translation>
@@ -1314,6 +1315,7 @@ nil</translation>
 <translation id="3036649622769666520">ፋይሎች ክፈት</translation>
 <translation id="7685049629764448582">JavaScript ማህደረ ትውስታ</translation>
 <translation id="6059652578941944813">የሰርቲፊኬት ተዋረድ</translation>
+<translation id="5729712731028706266">&amp;እይታ</translation>
 <translation id="4508765956121923607">ም&amp;ንጭ አሳይ</translation>
 <translation id="8080048886850452639">የተሰሚ/ኦዲዮ URL ቅ&amp;ዳ</translation>
 <translation id="5849869942539715694">ቅጥያ ጠቅልል…</translation>
