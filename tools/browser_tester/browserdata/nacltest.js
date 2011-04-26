@@ -394,7 +394,7 @@ function NaClWaiter() {
     // TODO(ncbray) use error handling mechanisms (when they are implemented)
     // rather than a timeout.
     this.totalWait = 0;
-    this.maxTotalWait = 30000;
+    this.maxTotalWait = 90000;
     this.retryWait = 10;
     this.waitForPlugins();
   }
