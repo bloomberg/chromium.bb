@@ -65,7 +65,6 @@ const int kSmallPopupHeight = 50;
 static const char kPropertyPath[] = "path";
 static const char kPropertyTitle[] = "title";
 static const char kPropertyDirectory[] = "isDirectory";
-static const char kActiveDownloadsURLHash[] = "chrome://active-downloads#";
 static const int kPopupLeft = 0;
 static const int kPopupTop = 0;
 
@@ -786,20 +785,37 @@ ActiveDownloadsUI::ActiveDownloadsUI(TabContents* contents)
 // static
 Browser* ActiveDownloadsUI::OpenPopup(Profile* profile,
                                       DownloadItem* item) {
-  // Get existing pop up for given hashArgument.
-  std::string hashArgument = item->full_path().DirName().value();
-  Browser* browser = GetPopupForPath(hashArgument, profile);
+  // Get the directory that the item is being downloaded to.
+  std::string path = item->full_path().DirName().value();
+
+  // If the ActiveDownloadsUI doesn't exist, there is nothing to observe
+  // DownloadManager events, so we have to add the first item manually.
+  if (GetPopupForPath(path, profile) == NULL)
+    first_download_item_ = item;
+
+  return OpenPopup(profile, path);
+}
+
+// static
+Browser* ActiveDownloadsUI::OpenPopup(Profile* profile,
+                                      const std::string& path) {
+  // Get existing pop up for given path.
+  Browser* browser = GetPopupForPath(path, profile);
 
   // Create new browser if no matching pop up is found.
   if (browser == NULL) {
-    first_download_item_ = item;
     browser = Browser::CreateForType(Browser::TYPE_APP_PANEL, profile);
-    std::string url;
-    if (hashArgument.empty()) {
-      url = chrome::kChromeUIActiveDownloadsURL;
+    std::string url = chrome::kChromeUIActiveDownloadsURL;
+    url.append("#");
+    if (path.empty()) {
+      FilePath default_download_path;
+      if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
+                            &default_download_path)) {
+        NOTREACHED();
+      }
+      url.append(default_download_path.value());
     } else {
-      url = kActiveDownloadsURLHash;
-      url.append(hashArgument);
+      url.append(path);
     }
 
     browser::NavigateParams params(browser, GURL(url), PageTransition::LINK);
@@ -820,7 +836,7 @@ Browser* ActiveDownloadsUI::OpenPopup(Profile* profile,
 }
 
 Browser* ActiveDownloadsUI::GetPopupForPath(const std::string& path,
-                                       Profile* profile) {
+                                            Profile* profile) {
   std::string current_path = path;
   if (current_path.empty()) {
     FilePath default_download_path;

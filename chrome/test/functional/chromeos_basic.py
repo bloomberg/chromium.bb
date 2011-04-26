@@ -34,6 +34,13 @@ class ChromeosBasic(pyauto.PyUITest):
     self.UnlockScreen()
     self.assertFalse(self.GetLoginInfo()['is_screen_locked'])
 
+  def testSetDownloadShelfVisible(self):
+    self.assertFalse(self.IsDownloadShelfVisible())
+    self.SetDownloadShelfVisible(True)
+    self.assertTrue(self.IsDownloadShelfVisible())
+    self.SetDownloadShelfVisible(False)
+    self.assertFalse(self.IsDownloadShelfVisible())
+
   def testSetVolume(self):
     """Basic test for setting and getting the volume and mute state."""
     volume_info = self.GetVolumeInfo()

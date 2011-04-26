@@ -23,8 +23,8 @@ class ActiveDownloadsUI : public HtmlDialogUI {
   explicit ActiveDownloadsUI(TabContents* contents);
 
   static Browser* OpenPopup(Profile* profile, DownloadItem* download_item);
-  static Browser* GetPopupForPath(const std::string& path,
-                                  Profile* profile);
+  static Browser* OpenPopup(Profile* profile, const std::string& path);
+  static Browser* GetPopupForPath(const std::string& path, Profile* profile);
 
  private:
   ActiveDownloadsHandler* handler_;

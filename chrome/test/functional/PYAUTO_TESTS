@@ -222,11 +222,6 @@
       '-downloads.DownloadsTest.testCrazyFilenames',
       '-omnibox.OmniboxTest.testCrazyFilenames',
 
-      # Download shelf visibility automation broken on ChromeOS.
-      # crosbug.com/12644
-      '-downloads.DownloadsTest.testZip',
-      '-downloads.DownloadsTest.testZipInIncognito',
-
       # Session restore not working with PyAuto.  crosbug.com/12648
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       '-prefs.PrefsTest.testSessionRestoreURLs',
