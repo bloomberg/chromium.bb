@@ -4472,6 +4472,15 @@
    ...
    fun:_ZN3gfx15GLContextOSMesa11MakeCurrentEv
 }
+{
+   bug_80551
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z11BrowserMainRK18MainFunctionParams
+   fun:_ZN20InProcessBrowserTest5SetUpEv
+   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
