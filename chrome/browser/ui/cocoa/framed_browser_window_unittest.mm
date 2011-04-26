@@ -25,9 +25,9 @@ class FramedBrowserWindowTest : public CocoaTest {
         NSMiniaturizableWindowMask | NSResizableWindowMask;
     window_ = [[FramedBrowserWindow alloc]
                initWithContentRect:NSMakeRect(0, 0, 800, 600)
-               styleMask:mask
-               backing:NSBackingStoreBuffered
-               defer:NO];
+                         styleMask:mask
+                           backing:NSBackingStoreBuffered
+                             defer:NO];
     if (base::debug::BeingDebugged()) {
       [window_ orderFront:nil];
     } else {
@@ -100,13 +100,19 @@ TEST_F(FramedBrowserWindowTest, DoesHideTitle) {
 
 // Test to make sure that our window widgets are in the right place.
 TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
+  // The window widgets only reposition themselves when the window is resized.
+  // Wiggle the frame view to force that.
+  NSView* frameView = [[window_ contentView] superview];
+  NSRect oldFrameViewFrame = [frameView frame];
+  [frameView setFrame:NSZeroRect];
+  [frameView setFrame:oldFrameViewFrame];
+
   // First without tabstrip.
-  NSCell* closeBoxCell = [window_ accessibilityAttributeValue:
-                          NSAccessibilityCloseButtonAttribute];
-  NSView* closeBoxControl = [closeBoxCell controlView];
+  NSView* closeBoxControl = [window_ standardWindowButton:NSWindowCloseButton];
   EXPECT_TRUE(closeBoxControl);
   NSRect closeBoxFrame = [closeBoxControl frame];
   NSRect windowBounds = [window_ frame];
+  windowBounds = [[window_ contentView] convertRect:windowBounds fromView:nil];
   windowBounds.origin = NSZeroPoint;
   EXPECT_EQ(NSMaxY(closeBoxFrame),
             NSMaxY(windowBounds) -
@@ -114,9 +120,8 @@ TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
   EXPECT_EQ(NSMinX(closeBoxFrame),
             kFramedWindowButtonsWithoutTabStripOffsetFromLeft);
 
-  NSCell* miniaturizeCell = [window_ accessibilityAttributeValue:
-                             NSAccessibilityMinimizeButtonAttribute];
-  NSView* miniaturizeControl = [miniaturizeCell controlView];
+  NSView* miniaturizeControl =
+      [window_ standardWindowButton:NSWindowMiniaturizeButton];
   EXPECT_TRUE(miniaturizeControl);
   NSRect miniaturizeFrame = [miniaturizeControl frame];
   EXPECT_EQ(NSMaxY(miniaturizeFrame),
@@ -136,12 +141,18 @@ TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
   [[[controller expect] andReturnValue:OCMOCK_VALUE(yes)] isNormalWindow];
   [window_ setWindowController:controller];
 
-  closeBoxCell = [window_ accessibilityAttributeValue:
-                  NSAccessibilityCloseButtonAttribute];
-  closeBoxControl = [closeBoxCell controlView];
+  // The widgets have different positions with a tabstrip. Wiggle the frame
+  // view to force a relayout.
+  frameView = [[window_ contentView] superview];
+  oldFrameViewFrame = [frameView frame];
+  [frameView setFrame:NSZeroRect];
+  [frameView setFrame:oldFrameViewFrame];
+
+  closeBoxControl = [window_ standardWindowButton:NSWindowCloseButton];
   EXPECT_TRUE(closeBoxControl);
   closeBoxFrame = [closeBoxControl frame];
   windowBounds = [window_ frame];
+  windowBounds = [[window_ contentView] convertRect:windowBounds fromView:nil];
   windowBounds.origin = NSZeroPoint;
   EXPECT_EQ(NSMaxY(closeBoxFrame),
             NSMaxY(windowBounds) -
@@ -149,9 +160,7 @@ TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
   EXPECT_EQ(NSMinX(closeBoxFrame),
             kFramedWindowButtonsWithTabStripOffsetFromLeft);
 
-  miniaturizeCell = [window_ accessibilityAttributeValue:
-                     NSAccessibilityMinimizeButtonAttribute];
-  miniaturizeControl = [miniaturizeCell controlView];
+  miniaturizeControl = [window_ standardWindowButton:NSWindowMiniaturizeButton];
   EXPECT_TRUE(miniaturizeControl);
   miniaturizeFrame = [miniaturizeControl frame];
   EXPECT_EQ(NSMaxY(miniaturizeFrame),
@@ -160,27 +169,5 @@ TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
   EXPECT_EQ(NSMinX(miniaturizeFrame),
             NSMaxX(closeBoxFrame) + kFramedWindowButtonsInterButtonSpacing);
   [window_ setWindowController:nil];
-}
-
-// Test that we actually have a tracking area in place.
-TEST_F(FramedBrowserWindowTest, WindowWidgetTrackingArea) {
-  NSCell* closeBoxCell =
-      [window_ accessibilityAttributeValue:NSAccessibilityCloseButtonAttribute];
-  NSView* closeBoxControl = [closeBoxCell controlView];
-  NSView* frameView = [[window_ contentView] superview];
-  NSArray* trackingAreas = [frameView trackingAreas];
-  NSPoint point = [closeBoxControl frame].origin;
-  point.x += 1;
-  point.y += 1;
-  BOOL foundArea = NO;
-  for (NSTrackingArea* area in trackingAreas) {
-    NSRect rect = [area rect];
-    foundArea = NSPointInRect(point, rect);
-    if (foundArea) {
-      EXPECT_NSEQ(frameView, [area owner]);
-      break;
-    }
-  }
-  EXPECT_TRUE(foundArea);
 }
 

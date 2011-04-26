@@ -31,22 +31,14 @@ const NSInteger kFramedWindowButtonsInterButtonSpacing = 7;
 @interface FramedBrowserWindow : ChromeBrowserWindow {
  @private
   BOOL shouldHideTitle_;
+  BOOL hasTabStrip_;
   NSButton* closeButton_;
   NSButton* miniaturizeButton_;
   NSButton* zoomButton_;
-  BOOL entered_;
-  scoped_nsobject<NSTrackingArea> widgetTrackingArea_;
 }
 
 // Tells the window to suppress title drawing.
 - (void)setShouldHideTitle:(BOOL)flag;
-
-// Return true if the mouse is currently in our tracking area for our window
-// widgets.
-- (BOOL)mouseInGroup:(NSButton*)widget;
-
-// Update the tracking areas for our window widgets as appropriate.
-- (void)updateTrackingAreas;
 
 @end
 

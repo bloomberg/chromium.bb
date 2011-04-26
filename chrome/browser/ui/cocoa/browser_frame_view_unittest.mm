@@ -26,23 +26,15 @@ class BrowserFrameViewTest : public PlatformTest {
 //  Test to make sure our class modifications were successful.
 TEST_F(BrowserFrameViewTest, SuccessfulClassModifications) {
   unsigned int count;
-  BOOL foundMouseInGroup = NO;
   BOOL foundDrawRectOriginal = NO;
-  BOOL foundUpdateTrackingAreas = NO;
 
   Method* methods = class_copyMethodList([view_ class], &count);
   for (unsigned int i = 0; i < count; ++i) {
     SEL selector = method_getName(methods[i]);
-    if (selector == @selector(_mouseInGroup:)) {
-      foundMouseInGroup = YES;
-    } else if (selector == @selector(drawRectOriginal:)) {
+    if (selector == @selector(drawRectOriginal:)) {
       foundDrawRectOriginal = YES;
-    } else if (selector == @selector(updateTrackingAreas)) {
-      foundUpdateTrackingAreas = YES;
     }
   }
-  EXPECT_TRUE(foundMouseInGroup);
   EXPECT_TRUE(foundDrawRectOriginal);
-  EXPECT_TRUE(foundUpdateTrackingAreas);
   free(methods);
 }
