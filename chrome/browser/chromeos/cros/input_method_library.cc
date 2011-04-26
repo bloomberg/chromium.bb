@@ -58,8 +58,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
  public:
   InputMethodLibraryImpl()
       : input_method_status_connection_(NULL),
-        previous_input_method_("", "", "", ""),
-        current_input_method_("", "", "", ""),
         should_launch_ime_(false),
         ime_connected_(false),
         defer_ime_startup_(false),
@@ -835,10 +833,7 @@ InputMethodLibraryImpl::Observer::~Observer() {}
 class InputMethodLibraryStubImpl : public InputMethodLibrary {
  public:
   InputMethodLibraryStubImpl()
-      : previous_input_method_("", "", "", ""),
-        current_input_method_("", "", "", ""),
-        keyboard_overlay_map_(
-            GetKeyboardOverlayMapForTesting()) {
+      : keyboard_overlay_map_(GetKeyboardOverlayMapForTesting()) {
     current_input_method_ = input_method::GetFallbackInputMethodDescriptor();
   }
 
@@ -912,147 +907,151 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     // $SHARE/chromeos-assets/input_methods/whitelist.txt
     // $SHARE/ibus/component/{chewing,hangul,m17n,mozc,pinyin,xkb-layouts}.xml
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:nl::nld", "Netherlands", "nl", "nld"));
+        "xkb:nl::nld", "Netherlands", "nl", "nl", "nld"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:be::nld", "Belgium", "be", "nld"));
+        "xkb:be::nld", "Belgium", "be", "be", "nld"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:fr::fra", "France", "fr", "fra"));
+        "xkb:fr::fra", "France", "fr", "fr", "fra"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:be::fra", "Belgium", "be", "fra"));
+        "xkb:be::fra", "Belgium", "be", "be", "fra"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:ca::fra", "Canada", "ca", "fra"));
+        "xkb:ca::fra", "Canada", "ca", "ca", "fra"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:ch:fr:fra", "Switzerland - French", "ch(fr)", "fra"));
+        "xkb:ch:fr:fra", "Switzerland - French", "ch(fr)", "ch(fr)", "fra"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:de::ger", "Germany", "de", "ger"));
+        "xkb:de::ger", "Germany", "de", "de", "ger"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:de:neo:ger", "Germany - Neo 2", "de(neo)", "ger"));
+        "xkb:de:neo:ger", "Germany - Neo 2", "de(neo)", "de(neo)", "ger"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:be::ger", "Belgium", "be", "ger"));
+        "xkb:be::ger", "Belgium", "be", "be", "ger"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:ch::ger", "Switzerland", "ch", "ger"));
+        "xkb:ch::ger", "Switzerland", "ch", "ch", "ger"));
     descriptions->push_back(InputMethodDescriptor(
-        "mozc", "Mozc (US keyboard layout)", "us", "ja"));
+        "mozc", "Mozc (US keyboard layout)", "us", "us", "ja"));
     descriptions->push_back(InputMethodDescriptor(
-        "mozc-jp", "Mozc (Japanese keyboard layout)", "jp", "ja"));
+        "mozc-jp", "Mozc (Japanese keyboard layout)", "jp", "jp", "ja"));
     descriptions->push_back(InputMethodDescriptor(
-        "mozc-dv", "Mozc (US Dvorak keyboard layout)", "us(dvorak)", "ja"));
+        "mozc-dv",
+        "Mozc (US Dvorak keyboard layout)", "us(dvorak)", "us(dvorak)", "ja"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:jp::jpn", "Japan", "jp", "jpn"));
+        "xkb:jp::jpn", "Japan", "jp", "jp", "jpn"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:ru::rus", "Russia", "ru", "rus"));
+        "xkb:ru::rus", "Russia", "ru", "ru", "rus"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:ru:phonetic:rus", "Russia - Phonetic", "ru(phonetic)", "rus"));
+        "xkb:ru:phonetic:rus",
+        "Russia - Phonetic", "ru(phonetic)", "ru(phonetic)", "rus"));
     descriptions->push_back(InputMethodDescriptor(
-        "m17n:th:kesmanee", "kesmanee (m17n)", "us", "th"));
+        "m17n:th:kesmanee", "kesmanee (m17n)", "us", "us", "th"));
     descriptions->push_back(InputMethodDescriptor(
-        "m17n:th:pattachote", "pattachote (m17n)", "us", "th"));
+        "m17n:th:pattachote", "pattachote (m17n)", "us", "us", "th"));
     descriptions->push_back(InputMethodDescriptor(
-        "m17n:th:tis820", "tis820 (m17n)", "us", "th"));
+        "m17n:th:tis820", "tis820 (m17n)", "us", "us", "th"));
     descriptions->push_back(InputMethodDescriptor(
-        "mozc-chewing", "Mozc Chewing (Chewing)", "us", "zh_TW"));
+        "mozc-chewing", "Mozc Chewing (Chewing)", "us", "us", "zh_TW"));
     descriptions->push_back(InputMethodDescriptor(
-        "m17n:zh:cangjie", "cangjie (m17n)", "us", "zh"));
+        "m17n:zh:cangjie", "cangjie (m17n)", "us", "us", "zh"));
     descriptions->push_back(InputMethodDescriptor(
-        "m17n:zh:quick", "quick (m17n)", "us", "zh"));
+        "m17n:zh:quick", "quick (m17n)", "us", "us", "zh"));
     descriptions->push_back(InputMethodDescriptor(
-        "m17n:vi:tcvn", "tcvn (m17n)", "us", "vi"));
+        "m17n:vi:tcvn", "tcvn (m17n)", "us", "us", "vi"));
     descriptions->push_back(InputMethodDescriptor(
-        "m17n:vi:telex", "telex (m17n)", "us", "vi"));
+        "m17n:vi:telex", "telex (m17n)", "us", "us", "vi"));
     descriptions->push_back(InputMethodDescriptor(
-        "m17n:vi:viqr", "viqr (m17n)", "us", "vi"));
+        "m17n:vi:viqr", "viqr (m17n)", "us", "us", "vi"));
     descriptions->push_back(InputMethodDescriptor(
-        "m17n:vi:vni", "vni (m17n)", "us", "vi"));
+        "m17n:vi:vni", "vni (m17n)", "us", "us", "vi"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:us::eng", "USA", "us", "eng"));
+        "xkb:us::eng", "USA", "us", "us", "eng"));
     descriptions->push_back(InputMethodDescriptor(
         "xkb:us:intl:eng",
-        "USA - International (with dead keys)", "us(intl)", "eng"));
+        "USA - International (with dead keys)", "us(intl)", "us(intl)", "eng"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:us:altgr-intl:eng",
-        "USA - International (AltGr dead keys)", "us(altgr-intl)", "eng"));
+        "xkb:us:altgr-intl:eng", "USA - International (AltGr dead keys)",
+        "us(altgr-intl)", "us(altgr-intl)", "eng"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:us:dvorak:eng", "USA - Dvorak", "us(dvorak)", "eng"));
+        "xkb:us:dvorak:eng",
+        "USA - Dvorak", "us(dvorak)", "us(dvorak)", "eng"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:us:colemak:eng", "USA - Colemak", "us(colemak)", "eng"));
+        "xkb:us:colemak:eng",
+        "USA - Colemak", "us(colemak)", "us(colemak)", "eng"));
     descriptions->push_back(InputMethodDescriptor(
-        "hangul", "Korean", "kr(kr104)", "ko"));
+        "hangul", "Korean", "kr(kr104)", "kr(kr104)", "ko"));
     descriptions->push_back(InputMethodDescriptor(
-        "pinyin", "Pinyin", "us", "zh"));
+        "pinyin", "Pinyin", "us", "us", "zh"));
     descriptions->push_back(InputMethodDescriptor(
-        "m17n:ar:kbd", "kbd (m17n)", "us", "ar"));
+        "m17n:ar:kbd", "kbd (m17n)", "us", "us", "ar"));
     descriptions->push_back(InputMethodDescriptor(
-        "m17n:hi:itrans", "itrans (m17n)", "us", "hi"));
+        "m17n:hi:itrans", "itrans (m17n)", "us", "us", "hi"));
     descriptions->push_back(InputMethodDescriptor(
-        "m17n:fa:isiri", "isiri (m17n)", "us", "fa"));
+        "m17n:fa:isiri", "isiri (m17n)", "us", "us", "fa"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:br::por", "Brazil", "br", "por"));
+        "xkb:br::por", "Brazil", "br", "br", "por"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:bg::bul", "Bulgaria", "bg", "bul"));
+        "xkb:bg::bul", "Bulgaria", "bg", "bg", "bul"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:bg:phonetic:bul",
-        "Bulgaria - Traditional phonetic", "bg(phonetic)", "bul"));
+        "xkb:bg:phonetic:bul", "Bulgaria - Traditional phonetic",
+        "bg(phonetic)", "bg(phonetic)", "bul"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:ca:eng:eng", "Canada - English", "ca(eng)", "eng"));
+        "xkb:ca:eng:eng", "Canada - English", "ca(eng)", "ca(eng)", "eng"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:cz::cze", "Czechia", "cz", "cze"));
+        "xkb:cz::cze", "Czechia", "cz", "cz", "cze"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:ee::est", "Estonia", "ee", "est"));
+        "xkb:ee::est", "Estonia", "ee", "ee", "est"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:es::spa", "Spain", "es", "spa"));
+        "xkb:es::spa", "Spain", "es", "es", "spa"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:es:cat:cat",
-        "Spain - Catalan variant with middle-dot L", "es(cat)", "cat"));
+        "xkb:es:cat:cat", "Spain - Catalan variant with middle-dot L",
+        "es(cat)", "es(cat)", "cat"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:dk::dan", "Denmark", "dk", "dan"));
+        "xkb:dk::dan", "Denmark", "dk", "dk", "dan"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:gr::gre", "Greece", "gr", "gre"));
+        "xkb:gr::gre", "Greece", "gr", "gr", "gre"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:il::heb", "Israel", "il", "heb"));
+        "xkb:il::heb", "Israel", "il", "il", "heb"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:kr:kr104:kor",
-        "Korea, Republic of - 101/104 key Compatible", "kr(kr104)", "kor"));
+        "xkb:kr:kr104:kor", "Korea, Republic of - 101/104 key Compatible",
+        "kr(kr104)", "kr(kr104)", "kor"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:latam::spa", "Latin American", "latam", "spa"));
+        "xkb:latam::spa", "Latin American", "latam", "latam", "spa"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:lt::lit", "Lithuania", "lt", "lit"));
+        "xkb:lt::lit", "Lithuania", "lt", "lt", "lit"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:lv:apostrophe:lav",
-        "Latvia - Apostrophe (') variant", "lv(apostrophe)", "lav"));
+        "xkb:lv:apostrophe:lav", "Latvia - Apostrophe (') variant",
+        "lv(apostrophe)", "lv(apostrophe)", "lav"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:hr::scr", "Croatia", "hr", "scr"));
+        "xkb:hr::scr", "Croatia", "hr", "hr", "scr"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:gb:extd:eng",
-        "United Kingdom - Extended - Winkeys", "gb(extd)", "eng"));
+        "xkb:gb:extd:eng", "United Kingdom - Extended - Winkeys",
+        "gb(extd)", "gb(extd)", "eng"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:gb:dvorak:eng",
-        "United Kingdom - Dvorak", "gb(dvorak)", "eng"));
+        "xkb:gb:dvorak:eng", "United Kingdom - Dvorak",
+        "gb(dvorak)", "gb(dvorak)", "eng"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:fi::fin", "Finland", "fi", "fin"));
+        "xkb:fi::fin", "Finland", "fi", "fi", "fin"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:hu::hun", "Hungary", "hu", "hun"));
+        "xkb:hu::hun", "Hungary", "hu", "hu", "hun"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:it::ita", "Italy", "it", "ita"));
+        "xkb:it::ita", "Italy", "it", "it", "ita"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:no::nob", "Norway", "no", "nob"));
+        "xkb:no::nob", "Norway", "no", "no", "nob"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:pl::pol", "Poland", "pl", "pol"));
+        "xkb:pl::pol", "Poland", "pl", "pl", "pol"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:pt::por", "Portugal", "pt", "por"));
+        "xkb:pt::por", "Portugal", "pt", "pt", "por"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:ro::rum", "Romania", "ro", "rum"));
+        "xkb:ro::rum", "Romania", "ro", "ro", "rum"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:se::swe", "Sweden", "se", "swe"));
+        "xkb:se::swe", "Sweden", "se", "se", "swe"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:sk::slo", "Slovakia", "sk", "slo"));
+        "xkb:sk::slo", "Slovakia", "sk", "sk", "slo"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:si::slv", "Slovenia", "si", "slv"));
+        "xkb:si::slv", "Slovenia", "si", "si", "slv"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:rs::srp", "Serbia", "rs", "srp"));
+        "xkb:rs::srp", "Serbia", "rs", "rs", "srp"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:tr::tur", "Turkey", "tr", "tur"));
+        "xkb:tr::tur", "Turkey", "tr", "tr", "tur"));
     descriptions->push_back(InputMethodDescriptor(
-        "xkb:ua::ukr", "Ukraine", "ua", "ukr"));
+        "xkb:ua::ukr", "Ukraine", "ua", "ua", "ukr"));
     return descriptions;
   }
 
