@@ -27,10 +27,7 @@ rm -rf scons-out tools/SRC tools/BUILD tools/out tools/toolchain \
 echo @@@BUILD_STEP compile_toolchain@@@
 (
   cd tools
-  make -j8 buildbot-mark-version pinned-src-glibc pinned-src-linux-headers-for-nacl
-  perl -pi -e s'|ppl_minor_version=10|ppl_minor_version=11|' SRC/{binutils,gcc}/configure{,.ac}
-  find SRC -print0 | xargs -0 touch -r SRC
-  make -j8 build-with-glibc
+  make -j8 buildbot-build-with-glibc
   make install-glibc INST_GLIBC_PREFIX="$PWD"
 )
 

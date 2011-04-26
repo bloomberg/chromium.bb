@@ -29,7 +29,9 @@ GCC_CONFIGURE_FLAGS = \
     --disable-libssp \
     --disable-libstdcxx-pch \
     --prefix=$(prefix) \
-    --target=$(target)
+    --target=$(target) \
+    --disable-ppl-version-check \
+    --disable-cloog-version-check
 
 # At the moment multilib build with glibc is broken.
 # TODO(eaeltsin): fix glibc and get rid of MULTILIB variable!
