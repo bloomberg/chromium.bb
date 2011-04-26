@@ -8,10 +8,9 @@
 
 #include <string>
 
-#include "base/basictypes.h"
-
 class DictionaryValue;
 class ListValue;
+class StringValue;
 
 namespace test {
 
@@ -37,6 +36,9 @@ void ExpectDictListValue(const ListValue& expected_value,
 void ExpectDictStringValue(const std::string& expected_value,
                            const DictionaryValue& value,
                            const std::string& key);
+
+// Takes ownership of |actual|.
+void ExpectStringValue(const std::string& expected_str, StringValue* actual);
 
 }  // namespace test
 

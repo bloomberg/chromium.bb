@@ -4,6 +4,7 @@
 
 #include "chrome/test/values_test_util.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,6 +49,14 @@ void ExpectDictStringValue(const std::string& expected_value,
   std::string string_value;
   EXPECT_TRUE(value.GetString(key, &string_value)) << key;
   EXPECT_EQ(expected_value, string_value) << key;
+}
+
+void ExpectStringValue(const std::string& expected_str,
+                       StringValue* actual) {
+  scoped_ptr<StringValue> scoped_actual(actual);
+  std::string actual_str;
+  EXPECT_TRUE(scoped_actual->GetAsString(&actual_str));
+  EXPECT_EQ(expected_str, actual_str);
 }
 
 }  // namespace test

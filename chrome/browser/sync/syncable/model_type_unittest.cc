@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/test/values_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncable {
@@ -15,28 +16,17 @@ namespace {
 
 class ModelTypeTest : public testing::Test {};
 
-// TODO(akalin): Move this to values_test_util.h.
-
-// Takes ownership of |actual|.
-void ExpectStringValue(const std::string& expected_str,
-                       StringValue* actual) {
-  scoped_ptr<StringValue> scoped_actual(actual);
-  std::string actual_str;
-  EXPECT_TRUE(scoped_actual->GetAsString(&actual_str));
-  EXPECT_EQ(expected_str, actual_str);
-}
-
 TEST_F(ModelTypeTest, ModelTypeToValue) {
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     ModelType model_type = ModelTypeFromInt(i);
-    ExpectStringValue(ModelTypeToString(model_type),
-                      ModelTypeToValue(model_type));
+    test::ExpectStringValue(ModelTypeToString(model_type),
+                            ModelTypeToValue(model_type));
   }
-  ExpectStringValue("Top-level folder",
-                    ModelTypeToValue(TOP_LEVEL_FOLDER));
-  ExpectStringValue("Unspecified",
-                    ModelTypeToValue(UNSPECIFIED));
+  test::ExpectStringValue("Top-level folder",
+                          ModelTypeToValue(TOP_LEVEL_FOLDER));
+  test::ExpectStringValue("Unspecified",
+                          ModelTypeToValue(UNSPECIFIED));
 }
 
 TEST_F(ModelTypeTest, ModelTypeBitSetToValue) {
