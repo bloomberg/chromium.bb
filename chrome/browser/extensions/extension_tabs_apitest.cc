@@ -37,13 +37,6 @@
 #define MAYBE_UpdateWindowSizeExitsFullscreen UpdateWindowSizeExitsFullscreen
 #endif
 
-// Times out on Mac. http://crbug.com/80212
-#if defined(OS_MACOSX)
-#define MAYBE_CaptureVisibleTabRace DISABLED_CaptureVisibleTabRace
-#else
-#define MAYBE_CaptureVisibleTabRace CaptureVisibleTabRace
-#endif
-
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
   ASSERT_TRUE(StartTestServer());
 
@@ -113,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabPng) {
                                   "test_png.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleTabRace) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabRace) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_race.html")) << message_;
