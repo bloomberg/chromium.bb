@@ -73,8 +73,8 @@ def BuildAndTest(options):
       bits = 64
     elif options.bits == 32:
       bits = 32
-    elif (os.environ.get('PROCESSOR_ARCHITECTURE', '').find('64') >= 0 or
-          os.environ.get('PROCESSOR_ARCHITEW6432', '').find('64') >= 0):
+    elif '64' in os.environ.get('PROCESSOR_ARCHITECTURE', '') or \
+         '64' in os.environ.get('PROCESSOR_ARCHITEW6432', ''):
       bits = 64
     else:
       bits = 32
@@ -122,6 +122,18 @@ def BuildAndTest(options):
   # Incremental builds can get wedged in wierd ways, so we're trading speed
   # for reliability.
   shutil.rmtree(os.path.join(nacl_dir, 'scons-out'), True)
+
+  # check that the HOST (not target) is 64bit
+  # this is emulating what msvs_env.bat is doing
+  if '64' in os.environ.get('PROCESSOR_ARCHITECTURE', '') or \
+     '64' in os.environ.get('PROCESSOR_ARCHITEW6432', ''):
+    # 64bit HOST
+    env['VS90COMNTOOLS'] = 'c:\\Program Files (x86)\\Microsoft Visual Studio 9.0\\Common7\\Tools\\'
+    env['VS80COMNTOOLS'] = 'c:\\Program Files (x86)\\Microsoft Visual Studio 8.0\\Common7\\Tools\\'
+  else:
+    # 32bit HOST
+    env['VS90COMNTOOLS'] = 'c:\\Program Files\\Microsoft Visual Studio 9.0\\Common7\\Tools\\'
+    env['VS80COMNTOOLS'] = 'c:\\Program Files\\Microsoft Visual Studio 8.0\\Common7\\Tools\\'
 
   if options.partial_sdk:
     # Build the partial sdk
