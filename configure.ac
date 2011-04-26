@@ -36,11 +36,6 @@ AC_SUBST(DLOPEN_LIBS)
 
 PKG_CHECK_MODULES(COMPOSITOR,
 		  [wayland-server egl >= 7.10 glesv2 gdk-pixbuf-2.0 pixman-1])
-PKG_CHECK_MODULES(SIMPLE_CLIENT, [egl >= 7.10 glesv2 wayland-client wayland-egl])
-PKG_CHECK_MODULES(CLIENT, [wayland-client wayland-egl egl >= 7.10 gl cairo >= 1.10.0 gdk-pixbuf-2.0 glib-2.0 gobject-2.0 xkbcommon])
-PKG_CHECK_MODULES(POPPLER, [poppler-glib gdk-2.0 gio-2.0],
-			   [have_poppler=yes], [have_poppler=no])
-AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
 
 AC_CHECK_PROG(RSVG_CONVERT, rsvg-convert, rsvg-convert)
 AM_CONDITIONAL(HAVE_RSVG_CONVERT, test -n "$RSVG_CONVERT")
@@ -83,10 +78,24 @@ if test x$enable_wayland_compositor == xyes; then
 fi
 
 
-PKG_CHECK_MODULES(CAIRO_EGL, [cairo-egl >= 1.11.3],
-		  [have_cairo_egl=yes], [have_cairo_egl=no])
-AS_IF([test "x$have_cairo_egl" = "xyes"],
-      [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])])
+AC_ARG_ENABLE(clients, [  --enable-clients],, enable_clients=yes)
+AM_CONDITIONAL(BUILD_CLIENTS, test x$enable_clients == xyes)
+if test x$enable_clients == xyes; then
+  AC_DEFINE([BUILD_CLIENTS], [1], [Build the Wayland clients])
+
+  PKG_CHECK_MODULES(SIMPLE_CLIENT,
+                    [egl >= 7.10 glesv2 wayland-client wayland-egl])
+  PKG_CHECK_MODULES(CLIENT, [wayland-client wayland-egl egl >= 7.10 gl cairo >= 1.10.0 gdk-pixbuf-2.0 glib-2.0 gobject-2.0 xkbcommon])
+
+  PKG_CHECK_MODULES(POPPLER, [poppler-glib gdk-2.0 gio-2.0],
+			     [have_poppler=yes], [have_poppler=no])
+  PKG_CHECK_MODULES(CAIRO_EGL, [cairo-egl >= 1.11.3],
+		    [have_cairo_egl=yes], [have_cairo_egl=no])
+  AS_IF([test "x$have_cairo_egl" = "xyes"],
+        [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])])
+fi
+
+AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
 
 if test "x$GCC" = "xyes"; then
 	GCC_CFLAGS="-Wall -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"
