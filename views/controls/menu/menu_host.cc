@@ -63,6 +63,7 @@ void MenuHost::HideMenuHost() {
 void MenuHost::DestroyMenuHost() {
   HideMenuHost();
   destroying_ = true;
+  static_cast<MenuHostRootView*>(GetWidget()->GetRootView())->ClearSubmenu();
   GetWidget()->Close();
 }
 
@@ -100,8 +101,7 @@ void MenuHost::OnNativeMenuHostCancelCapture() {
     return;
   MenuController* menu_controller =
       submenu_->GetMenuItem()->GetMenuController();
-  if (menu_controller &&
-      !menu_controller->drag_in_progress())
+  if (menu_controller && !menu_controller->drag_in_progress())
     menu_controller->CancelAll();
 }
 

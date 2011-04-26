@@ -400,7 +400,7 @@ void MenuController::OnMousePressed(SubmenuView* source,
 
   DCHECK(!active_mouse_view_);
 
-  MenuPart part = GetMenuPartByScreenCoordinate(source, event.x(), event.y());
+  MenuPart part = GetMenuPart(source, event.location());
   if (part.is_scroll())
     return;  // Ignore presses on scroll buttons.
 
@@ -418,7 +418,18 @@ void MenuController::OnMousePressed(SubmenuView* source,
 #endif
 
     // And close.
-    Cancel(EXIT_ALL);
+    ExitType exit_type = EXIT_ALL;
+    if (!menu_stack_.empty()) {
+      // We're running nested menus. Only exit all if the mouse wasn't over one
+      // of the menus from the last run.
+      gfx::Point screen_loc(event.location());
+      View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
+      MenuPart last_part = GetMenuPartByScreenCoordinateUsingMenu(
+          menu_stack_.back().item, screen_loc);
+      if (last_part.type != MenuPart::NONE)
+        exit_type = EXIT_OUTERMOST;
+    }
+    Cancel(exit_type);
     return;
   }
 
@@ -441,7 +452,7 @@ void MenuController::OnMousePressed(SubmenuView* source,
 
 void MenuController::OnMouseDragged(SubmenuView* source,
                                     const MouseEvent& event) {
-  MenuPart part = GetMenuPartByScreenCoordinate(source, event.x(), event.y());
+  MenuPart part = GetMenuPart(source, event.location());
   UpdateScrolling(part);
 
   if (!blocking_run_)
@@ -503,7 +514,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
   DCHECK(state_.item);
   possible_drag_ = false;
   DCHECK(blocking_run_);
-  MenuPart part = GetMenuPartByScreenCoordinate(source, event.x(), event.y());
+  MenuPart part = GetMenuPart(source, event.location());
   if (event.IsRightMouseButton() && (part.type == MenuPart::MENU_ITEM &&
                                      part.menu)) {
     // Set the selection immediately, making sure the submenu is only open
@@ -550,7 +561,7 @@ void MenuController::OnMouseMoved(SubmenuView* source,
   if (showing_submenu_)
     return;
 
-  MenuPart part = GetMenuPartByScreenCoordinate(source, event.x(), event.y());
+  MenuPart part = GetMenuPart(source, event.location());
 
   UpdateScrolling(part);
 
@@ -582,7 +593,7 @@ void MenuController::OnMouseEntered(SubmenuView* source,
 #if defined(OS_LINUX)
 bool MenuController::OnMouseWheel(SubmenuView* source,
                                   const MouseWheelEvent& event) {
-  MenuPart part = GetMenuPartByScreenCoordinate(source, event.x(), event.y());
+  MenuPart part = GetMenuPart(source, event.location());
   return part.submenu && part.submenu->OnMouseWheel(event);
 }
 #endif
@@ -1151,25 +1162,26 @@ bool MenuController::IsScrollButtonAt(SubmenuView* source,
   return false;
 }
 
-MenuController::MenuPart MenuController::GetMenuPartByScreenCoordinate(
+MenuController::MenuPart MenuController::GetMenuPart(
     SubmenuView* source,
-    int source_x,
-    int source_y) {
-  MenuPart part;
-
-  gfx::Point screen_loc(source_x, source_y);
+    const gfx::Point& source_loc) {
+  gfx::Point screen_loc(source_loc);
   View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
+  return GetMenuPartByScreenCoordinateUsingMenu(state_.item, screen_loc);
+}
 
-  MenuItemView* item = state_.item;
+MenuController::MenuPart MenuController::GetMenuPartByScreenCoordinateUsingMenu(
+    MenuItemView* item,
+    const gfx::Point& screen_loc) {
+  MenuPart part;
   while (item) {
     if (item->HasSubmenu() && item->GetSubmenu()->IsShowing() &&
-        GetMenuPartByScreenCoordinateImpl(item->GetSubmenu(), screen_loc,
-                                          &part)) {
+        GetMenuPartByScreenCoordinateImpl(
+            item->GetSubmenu(), screen_loc, &part)) {
       return part;
     }
     item = item->GetParentMenuItem();
   }
-
   return part;
 }
 

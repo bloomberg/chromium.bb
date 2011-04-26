@@ -73,7 +73,7 @@ bool MenuHostRootView::OnMouseWheel(const MouseWheelEvent& event) {
 }
 
 MenuController* MenuHostRootView::GetMenuController() {
-  return submenu_->GetMenuItem()->GetMenuController();
+  return submenu_ ? submenu_->GetMenuItem()->GetMenuController() : NULL;
 }
 
 }  // namespace views

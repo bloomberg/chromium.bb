@@ -44,6 +44,9 @@
 // See http://crbug.com/47089 for details.
 #define MAYBE_CloseMenuAfterClosingContextMenu \
         DISABLED_CloseMenuAfterClosingContextMenu
+
+// See bug http://crbug.com/60444 for details.
+#define MAYBE_ScrollButtonScrolls DISABLED_ScrollButtonScrolls
 #else
 
 #define MAYBE_DND DND
@@ -53,14 +56,8 @@
 #define MAYBE_KeyEvents KeyEvents
 #define MAYBE_CloseWithModalDialog CloseWithModalDialog
 #define MAYBE_CloseMenuAfterClosingContextMenu CloseMenuAfterClosingContextMenu
-
-#endif
-
-#if defined(OS_LINUX)
-// See bug http://crbug.com/60444 for details.
-#define MAYBE_ScrollButtonScrolls DISABLED_ScrollButtonScrolls
-#else
 #define MAYBE_ScrollButtonScrolls ScrollButtonScrolls
+
 #endif
 
 namespace {
@@ -462,6 +459,9 @@ class ContextMenuNotificationObserver : public NotificationObserver {
                        const NotificationDetails& details) {
     MessageLoop::current()->PostTask(FROM_HERE, task_);
   }
+
+  // Sets the task that is posted when the context menu is shown.
+  void set_task(Task* task) { task_ = task; }
 
  private:
   NotificationRegistrar registrar_;
@@ -1216,7 +1216,7 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
 
 VIEW_TEST(BookmarkBarViewTest13, ClickOnContextMenuSeparator)
 
-// Makes sure right cliking on a folder on the bookmark bar doesn't result in
+// Makes sure right clicking on a folder on the bookmark bar doesn't result in
 // both a context menu and showing the menu.
 class BookmarkBarViewTest14 : public BookmarkBarViewEventTestBase {
  public:
@@ -1368,3 +1368,77 @@ class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
 
 // Disabled, http://crbug.com/64303.
 VIEW_TEST(BookmarkBarViewTest16, DISABLED_DeleteMenu)
+
+// Makes sure right clicking on an item while a context menu is already showing
+// doesn't crash and works.
+class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
+ public:
+  BookmarkBarViewTest17()
+      : ALLOW_THIS_IN_INITIALIZER_LIST(
+          observer_(CreateEventTask(this, &BookmarkBarViewTest17::Step3))) {
+  }
+
+ protected:
+  virtual void DoTestOnMessageLoop() {
+    // Move the mouse to the other folder on the bookmark bar and press the
+    // left mouse button.
+    views::TextButton* button = bb_view_->other_bookmarked_button();
+    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+        ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest17::Step2));
+  }
+
+ private:
+  void Step2() {
+    // Menu should be showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu != NULL);
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    // Right click on the second item to show its context menu.
+    views::MenuItemView* child_menu = menu->GetSubmenu()->GetMenuItemAt(2);
+    ASSERT_TRUE(child_menu != NULL);
+    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
+        ui_controls::DOWN | ui_controls::UP, NULL);
+    // Step3 will be invoked by ContextMenuNotificationObserver.
+  }
+
+  void Step3() {
+    // Make sure the context menu is showing.
+    views::MenuItemView* context_menu = bb_view_->GetContextMenu();
+    ASSERT_TRUE(context_menu != NULL);
+    ASSERT_TRUE(context_menu->GetSubmenu());
+    ASSERT_TRUE(context_menu->GetSubmenu()->IsShowing());
+
+    // Right click on the first menu item to trigger its context menu.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu != NULL);
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+    views::MenuItemView* child_menu = menu->GetSubmenu()->GetMenuItemAt(1);
+    ASSERT_TRUE(child_menu != NULL);
+
+    observer_.set_task(CreateEventTask(this, &BookmarkBarViewTest17::Step4));
+    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
+        ui_controls::DOWN | ui_controls::UP, NULL);
+    // Step4 will be invoked by ContextMenuNotificationObserver.
+  }
+
+  void Step4() {
+    // The context menu should still be showing.
+    views::MenuItemView* context_menu = bb_view_->GetContextMenu();
+    ASSERT_TRUE(context_menu != NULL);
+
+    // And the menu should be showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu != NULL);
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    bb_view_->GetMenu()->GetMenuController()->CancelAll();
+
+    Done();
+  }
+
+  ContextMenuNotificationObserver observer_;
+};
+
+VIEW_TEST(BookmarkBarViewTest17, ContextMenus3)

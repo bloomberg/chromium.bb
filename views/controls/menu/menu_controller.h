@@ -157,8 +157,7 @@ class MenuController : public MessageLoopForUI::Dispatcher {
     gfx::Rect monitor_bounds;
   };
 
-  // Used by GetMenuPartByScreenCoordinate to indicate the menu part at a
-  // particular location.
+  // Used by GetMenuPart to indicate the menu part at a particular location.
   struct MenuPart {
     // Type of part.
     enum Type {
@@ -264,10 +263,14 @@ class MenuController : public MessageLoopForUI::Dispatcher {
                         int y,
                         MenuPart::Type* part);
 
-  // Returns the target for the mouse event.
-  MenuPart GetMenuPartByScreenCoordinate(SubmenuView* source,
-                                         int source_x,
-                                         int source_y);
+  // Returns the target for the mouse event. The coordinates are in terms of
+  // source's scroll view container.
+  MenuPart GetMenuPart(SubmenuView* source, const gfx::Point& source_loc);
+
+  // Returns the target for mouse events. The search is done through |item| and
+  // all its parents.
+  MenuPart GetMenuPartByScreenCoordinateUsingMenu(MenuItemView* item,
+                                                  const gfx::Point& screen_loc);
 
   // Implementation of GetMenuPartByScreenCoordinate for a single menu. Returns
   // true if the supplied SubmenuView contains the location in terms of the

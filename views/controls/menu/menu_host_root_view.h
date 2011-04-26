@@ -24,6 +24,8 @@ class MenuHostRootView : public RootView {
   MenuHostRootView(Widget* widget, SubmenuView* submenu);
   ~MenuHostRootView();
 
+  void ClearSubmenu() { submenu_ = NULL; }
+
   // Overridden from View:
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
