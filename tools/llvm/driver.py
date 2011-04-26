@@ -596,7 +596,8 @@ def PrepareFlags():
   arch = GetArch()
   if arch and arch == 'ARM':
     env.set('USE_MC_ASM', '0')
-    env.set('MC_DIRECT', '0')
+    if env.getbool('PIC'):
+      env.set('MC_DIRECT', '0')
     env.set('SANDBOXED_AS', '0')
     env.set('SANDBOXED_LD', '0')
 
