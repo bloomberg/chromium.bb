@@ -56,7 +56,6 @@
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/net/websocket_experiment/websocket_experiment_runner.h"
-#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -1320,9 +1319,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // WatchDogThread to keep track of information about threads that are being
   // watched.
   scoped_ptr<ThreadWatcherList> thread_watcher_list(new ThreadWatcherList());
-
-  // Initialize the prefs of the local state.
-  browser::RegisterLocalState(local_state);
 
   // Convert active labs into switches. Modifies the current command line.
   about_flags::ConvertFlagsToSwitches(local_state,

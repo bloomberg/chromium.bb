@@ -41,6 +41,7 @@
 #include "chrome/browser/plugin_data_remover.h"
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
@@ -834,6 +835,9 @@ void BrowserProcessImpl::CreateLocalState() {
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   local_state_.reset(
       PrefService::CreatePrefService(local_state_path, NULL, NULL));
+
+  // Initialize the prefs of the local state.
+  browser::RegisterLocalState(local_state_.get());
 
   pref_change_registrar_.Init(local_state_.get());
 
