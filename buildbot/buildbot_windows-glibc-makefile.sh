@@ -23,7 +23,7 @@ export ac_cv_func_mmap_fixed_mapped=yes
 
 function convert_symlinks_to_hardlinks
 {
-  find -L "$0" -type f -xtype l -print0 |
+  find -L "$1" -type f -xtype l -print0 |
   while IFS="" read -r -d "" name ; do
     # Find gives us some files twice because there are symlinks.  Second time
     # ‘ln’ will fail with ln: “‘xxx’ and ‘yyy’ are the same file” despite ‘-f’.
