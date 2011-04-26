@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/tab_contents/web_drag_source.h"
 
+#include <sys/param.h>
+
 #include "app/mac/nsimage_cache.h"
 #include "base/file_path.h"
 #include "base/string_util.h"
@@ -38,6 +40,17 @@ namespace {
 // |NSURLPboardType|.
 NSString* const kNSURLTitlePboardType = @"public.url-name";
 
+// Converts a string16 into a FilePath. Use this method instead of
+// -[NSString fileSystemRepresentation] to prevent exceptions from being thrown.
+// See http://crbug.com/78782 for more info.
+FilePath FilePathFromFilename(const string16& filename) {
+  NSString* str = SysUTF16ToNSString(filename);
+  char buf[MAXPATHLEN];
+  if (![str getFileSystemRepresentation:buf maxLength:sizeof(buf)])
+    return FilePath();
+  return FilePath(buf);
+}
+
 // Returns a filename appropriate for the drop data
 // TODO(viettrungluu): Refactor to make it common across platforms,
 // and move it somewhere sensible.
@@ -50,20 +63,17 @@ FilePath GetFileNameFromDragData(const WebDropData& drop_data) {
 
   // Images without ALT text will only have a file extension so we need to
   // synthesize one from the provided extension and URL.
-  FilePath file_name([SysUTF16ToNSString(drop_data.file_description_filename)
-          fileSystemRepresentation]);
+  FilePath file_name(FilePathFromFilename(drop_data.file_description_filename));
   file_name = file_name.BaseName().RemoveExtension();
 
   if (file_name.empty()) {
     // Retrieve the name from the URL.
     string16 suggested_filename =
         net::GetSuggestedFilename(drop_data.url, "", "", string16());
-    file_name = FilePath(
-        [SysUTF16ToNSString(suggested_filename) fileSystemRepresentation]);
+    file_name = FilePathFromFilename(suggested_filename);
   }
 
-  file_name = file_name.ReplaceExtension([SysUTF16ToNSString(
-          drop_data.file_extension) fileSystemRepresentation]);
+  file_name = file_name.ReplaceExtension(UTF16ToUTF8(drop_data.file_extension));
 
   return file_name;
 }
@@ -276,6 +286,12 @@ void PromiseWriterTask::Run() {
     // Flip |screenPoint|.
     NSRect screenFrame = [[[contentsView_ window] screen] frame];
     screenPoint.y = screenFrame.size.height - screenPoint.y;
+
+    // If AppKit returns a copy and move operation, mask off the move bit
+    // because WebCore does not understand what it means to do both, which
+    // results in an assertion failure/renderer crash.
+    if (operation == (NSDragOperationMove | NSDragOperationCopy))
+      operation &= ~NSDragOperationMove;
 
     rvh->DragSourceEndedAt(localPoint.x, localPoint.y,
                            screenPoint.x, screenPoint.y,
