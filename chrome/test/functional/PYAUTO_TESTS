@@ -182,8 +182,10 @@
       '-browser.BrowserTest.testFlashLoadsAfterKill',
       '-browser.BrowserTest.testSingleFlashPluginProcess',
       '-infobars.InfobarTest.testPluginCrashInfobar',
-      '-pdf',
-      '-plugins',
+      '-plugins.PluginsTest.testAllowPluginException',
+      '-plugins.PluginsTest.testBlockAllPlugins',
+      '-plugins.PluginsTest.testBlockPluginException',
+      '-plugins.PluginsTest.testKillAndReloadAllPlugins',
 
       # Local http server not working on chromeos.  crosbug.com/12641
       '-popups.PopupsTest.testMultiplePopups',
