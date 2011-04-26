@@ -252,12 +252,14 @@ bool ServiceRuntime::StartFromBrowser(nacl::string nacl_url,
   async_receive_desc_ = plugin()->wrapper_factory()->MakeImcSock(sockets[1]);
   async_send_desc_ = plugin()->wrapper_factory()->MakeImcSock(sockets[2]);
 
+  subprocess_ = tmp_subprocess.release();
   if (!InitCommunication(bootstrap_socket, nacl_desc, error_string)) {
+    delete subprocess_;
+    subprocess_ = NULL;
     return false;
   }
 
   PLUGIN_PRINTF(("ServiceRuntime::StartFromBrowser (return 1)\n"));
-  subprocess_ = tmp_subprocess.release();
   return true;
 }
 
