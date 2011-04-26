@@ -28,7 +28,6 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/net/predictor_api.h"
@@ -48,6 +47,7 @@
 #include "content/browser/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -1328,22 +1328,12 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
 
   // Handle URLs to wreck the gpu process.
   if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuCrashURL)) {
-    GpuProcessHostUIShim* gpu_ui_shim =
-        GpuProcessHostUIShim::GetForRenderer(0,
-          content::CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUCRASH);
-    if (gpu_ui_shim) {
-      gpu_ui_shim->SendAboutGpuCrash();
-      return true;
-    }
+    GpuProcessHost::SendOnIO(
+        0, content::CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUCRASH, new GpuMsg_Crash());
   }
   if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuHangURL)) {
-    GpuProcessHostUIShim* gpu_ui_shim =
-        GpuProcessHostUIShim::GetForRenderer(0,
-          content::CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUHANG);
-    if (gpu_ui_shim) {
-      gpu_ui_shim->SendAboutGpuHang();
-      return true;
-    }
+    GpuProcessHost::SendOnIO(
+        0, content::CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUHANG, new GpuMsg_Hang());
   }
 
   // There are a few about: URLs that we hand over to the renderer. If the

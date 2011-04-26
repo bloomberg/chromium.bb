@@ -43,7 +43,6 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_browser_process.h"
 #include "chrome/browser/first_run/upgrade_util.h"
-#include "chrome/browser/gpu_data_manager.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
@@ -75,6 +74,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
+#include "chrome/browser/web_resource/gpu_blacklist_updater.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -113,6 +113,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/system_monitor/system_monitor.h"
+#include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "base/linux_util.h"
@@ -1771,11 +1773,14 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // might have shutdown because an update was available.
   profile->GetCloudPrintProxyService();
 
-  // Need to initialize GpuDataManager to load the current GPU blacklist,
-  // collect preliminary GPU info, run through GPU blacklist, and schedule
-  // a GPU blacklist auto update.
-  GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
-  DCHECK(gpu_data_manager);
+  // Schedule a GPU blacklist auto update.  This also loads the current one.
+  scoped_refptr<GpuBlacklistUpdater> gpu_blacklist_updater =
+      new GpuBlacklistUpdater();
+  // Don't start auto update in tests.
+  if (parsed_command_line.GetSwitchValueASCII(switches::kUseGL) !=
+          gfx::kGLImplementationOSMesaName) {
+    gpu_blacklist_updater->StartAfterDelay();
+  }
 
   // Start watching all browser threads for responsiveness.
   ThreadWatcherList::StartWatchingAll();

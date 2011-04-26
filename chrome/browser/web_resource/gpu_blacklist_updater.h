@@ -8,6 +8,9 @@
 
 #include "chrome/browser/web_resource/web_resource_service.h"
 
+class DictionaryValue;
+class GpuBlacklist;
+
 class GpuBlacklistUpdater
     : public WebResourceService {
  public:
@@ -20,6 +23,12 @@ class GpuBlacklistUpdater
   virtual ~GpuBlacklistUpdater();
 
   virtual void Unpack(const DictionaryValue& parsed_json);
+
+  void LoadGpuBlacklist();
+
+  // This is the version cached in local state that's automatically updated
+  // from the web.
+  const DictionaryValue* gpu_blacklist_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuBlacklistUpdater);
 };

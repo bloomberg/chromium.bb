@@ -1101,14 +1101,12 @@ void RenderWidgetHostViewMac::DeallocFakePluginWindowHandle(
   // channel error.
   if (render_widget_host_ &&
       plugin_container_manager_.IsRootContainer(window)) {
-    GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(
+    GpuProcessHost::SendOnIO(
         render_widget_host_->process()->id(),
-        content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH);
-    if (ui_shim) {
-      ui_shim->DidDestroyAcceleratedSurface(
-          render_widget_host_->process()->id(),
-          render_widget_host_->routing_id());
-    }
+        content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
+        new GpuMsg_DestroyCommandBuffer(
+            render_widget_host_->process()->id(),
+            render_widget_host_->routing_id()));
   }
 
   plugin_container_manager_.DestroyFakePluginWindowHandle(window);
@@ -1214,39 +1212,6 @@ void RenderWidgetHostViewMac::HandleDelayedGpuViewHiding() {
   }
 }
 
-namespace {
-class BuffersSwappedAcknowledger : public Task {
- public:
-  BuffersSwappedAcknowledger(
-      int gpu_host_id,
-      int renderer_id,
-      int32 route_id,
-      uint64 swap_buffers_count)
-      : gpu_host_id_(gpu_host_id),
-        renderer_id_(renderer_id),
-        route_id_(route_id),
-        swap_buffers_count_(swap_buffers_count) {
-  }
-
-  void Run() {
-    GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
-    if (!host)
-      return;
-
-    host->Send(new GpuMsg_AcceleratedSurfaceBuffersSwappedACK(
-        renderer_id_, route_id_, swap_buffers_count_));
-  }
-
- private:
-  int gpu_host_id_;
-  int renderer_id_;
-  int32 route_id_;
-  uint64 swap_buffers_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(BuffersSwappedAcknowledger);
-};
-}  // anonymous namespace
-
 void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
     int renderer_id,
     int32 route_id,
@@ -1279,11 +1244,11 @@ void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
                                 route_id,
                                 swap_buffers_count)));
   } else {
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        new BuffersSwappedAcknowledger(
-            gpu_host_id, renderer_id, route_id, swap_buffers_count));
+    GpuProcessHost::SendOnIO(
+        gpu_host_id,
+        content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
+        new GpuMsg_AcceleratedSurfaceBuffersSwappedACK(
+            renderer_id, route_id, swap_buffers_count));
   }
 }
 

@@ -9,11 +9,11 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
-#include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "content/browser/gpu_process_host.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -229,13 +229,10 @@ void RenderWidgetHost::WasHidden() {
   // reduce its resource utilization.
   Send(new ViewMsg_WasHidden(routing_id_));
 
-  GpuProcessHostUIShim* host_ui_shim =
-      GpuProcessHostUIShim::GetForRenderer(
-          process()->id(), content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH);
-  if (host_ui_shim) {
-    host_ui_shim->Send(new GpuMsg_VisibilityChanged(
-        routing_id_, process()->id(), false));
-  }
+  GpuProcessHost::SendOnIO(
+      0,
+      content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
+      new GpuMsg_VisibilityChanged(routing_id_, process()->id(), false));
 
   // TODO(darin): what about constrained windows?  it doesn't look like they
   // see a message when their parent is hidden.  maybe there is something more
@@ -273,13 +270,10 @@ void RenderWidgetHost::WasRestored() {
   }
   Send(new ViewMsg_WasRestored(routing_id_, needs_repainting));
 
-  GpuProcessHostUIShim* host_ui_shim =
-      GpuProcessHostUIShim::GetForRenderer(
-          process()->id(), content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH);
-  if (host_ui_shim) {
-    host_ui_shim->Send(new GpuMsg_VisibilityChanged(
-        routing_id_, process()->id(), true));
-  }
+  GpuProcessHost::SendOnIO(
+      0,
+      content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
+      new GpuMsg_VisibilityChanged(routing_id_, process()->id(), true));
 
   process_->WidgetRestored();
 

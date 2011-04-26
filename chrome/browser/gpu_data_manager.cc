@@ -5,60 +5,30 @@
 #include "chrome/browser/gpu_data_manager.h"
 
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/gpu_process_host_ui_shim.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/gpu_blacklist.h"
+#include "content/browser/gpu_process_host.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/gpu/gpu_info_collector.h"
-#include "grit/browser_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_switches.h"
 
 GpuDataManager::GpuDataManager()
-    : complete_gpu_info_already_requested_(false),
-      gpu_feature_flags_set_(false),
-      gpu_blacklist_cache_(NULL) {
+    : complete_gpu_info_already_requested_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(g_browser_process);
-  PrefService* local_state = g_browser_process->local_state();
-  // If we bring up chrome normally, prefs should never be NULL; however, we
-  // we handle the case where local_state == NULL for certain tests.
-  if (local_state) {
-    local_state->RegisterDictionaryPref(prefs::kGpuBlacklist);
-    gpu_blacklist_cache_ = local_state->GetDictionary(prefs::kGpuBlacklist);
-    DCHECK(gpu_blacklist_cache_);
-
-    gpu_blacklist_updater_ = new GpuBlacklistUpdater();
-    // Don't start auto update in tests.
-    const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-    if (browser_command_line.GetSwitchValueASCII(
-            switches::kUseGL) != gfx::kGLImplementationOSMesaName)
-      gpu_blacklist_updater_->StartAfterDelay();
-  }
-
-  LoadGpuBlacklist();
-  UpdateGpuBlacklist();
 
   GPUInfo gpu_info;
   gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
   UpdateGpuInfo(gpu_info);
-  UpdateGpuFeatureFlags();
-
-  preliminary_gpu_feature_flags_ = gpu_feature_flags_;
 }
 
 GpuDataManager::~GpuDataManager() { }
 
 GpuDataManager* GpuDataManager::GetInstance() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return Singleton<GpuDataManager>::get();
 }
 
@@ -68,26 +38,21 @@ void GpuDataManager::RequestCompleteGpuInfoIfNeeded() {
     return;
   complete_gpu_info_already_requested_ = true;
 
-  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0,
-    content::
-      CAUSE_FOR_GPU_LAUNCH_GPUDATAMANAGER_REQUESTCOMPLETEGPUINFOIFNEEDED);
-  if (ui_shim)
-    ui_shim->CollectGpuInfoAsynchronously();
+  GpuProcessHost::SendOnIO(
+      0,
+      content::CAUSE_FOR_GPU_LAUNCH_GPUDATAMANAGER_REQUESTCOMPLETEGPUINFOIFNEEDED,
+      new GpuMsg_CollectGraphicsInfo());
 }
 
 void GpuDataManager::UpdateGpuInfo(const GPUInfo& gpu_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::AutoLock auto_lock(gpu_info_lock_);
   if (!gpu_info_.Merge(gpu_info))
     return;
   child_process_logging::SetGpuInfo(gpu_info_);
-  // Clear the flag to triger a re-computation of GpuFeatureFlags using the
-  // updated GPU info.
-  gpu_feature_flags_set_ = false;
-  RunGpuInfoUpdateCallbacks();
 }
 
 const GPUInfo& GpuDataManager::gpu_info() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::AutoLock auto_lock(gpu_info_lock_);
   return gpu_info_;
 }
 
@@ -128,22 +93,11 @@ const ListValue& GpuDataManager::log_messages() const {
 }
 
 GpuFeatureFlags GpuDataManager::GetGpuFeatureFlags() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UpdateGpuFeatureFlags();
   return gpu_feature_flags_;
 }
 
 bool GpuDataManager::GpuAccessAllowed() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UpdateGpuFeatureFlags();
-  // We only need to block GPU process if more features are disallowed other
-  // than those in the preliminary gpu feature flags because the latter work
-  // through renderer commandline switches.
-  // However, if accelerated_compositing is not allowed, then we should always
-  // deny gpu access.
-  uint32 mask = (~(preliminary_gpu_feature_flags_.flags())) |
-                GpuFeatureFlags::kGpuFeatureAcceleratedCompositing;
-  return (gpu_feature_flags_.flags() & mask) == 0;
+  return gpu_feature_flags_.flags() == 0;
 }
 
 void GpuDataManager::AddGpuInfoUpdateCallback(Callback0::Type* callback) {
@@ -167,7 +121,7 @@ void GpuDataManager::AppendRendererCommandLine(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(command_line);
 
-  uint32 flags = preliminary_gpu_feature_flags_.flags();
+  uint32 flags = gpu_feature_flags_.flags();
   if ((flags & GpuFeatureFlags::kGpuFeatureWebgl) &&
       !command_line->HasSwitch(switches::kDisableExperimentalWebGL))
     command_line->AppendSwitch(switches::kDisableExperimentalWebGL);
@@ -188,6 +142,12 @@ void GpuDataManager::AppendRendererCommandLine(
   }
 }
 
+void GpuDataManager::UpdateGpuBlacklist(GpuBlacklist* gpu_blacklist) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  gpu_blacklist_.reset(gpu_blacklist);
+  UpdateGpuFeatureFlags();
+}
+
 void GpuDataManager::RunGpuInfoUpdateCallbacks() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::set<Callback0::Type*>::iterator i = gpu_info_update_callbacks_.begin();
@@ -196,104 +156,47 @@ void GpuDataManager::RunGpuInfoUpdateCallbacks() {
   }
 }
 
-bool GpuDataManager::LoadGpuBlacklist() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (gpu_blacklist_.get() != NULL)
-    return true;
-  static const base::StringPiece gpu_blacklist_json(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_GPU_BLACKLIST));
-  chrome::VersionInfo version_info;
-  std::string chrome_version_string =
-      version_info.is_valid() ? version_info.Version() : "0";
-  gpu_blacklist_.reset(new GpuBlacklist(chrome_version_string));
-  if (gpu_blacklist_->LoadGpuBlacklist(gpu_blacklist_json.as_string(), true)) {
-    uint16 version_major, version_minor;
-    bool succeed = gpu_blacklist_->GetVersion(&version_major,
-                                              &version_minor);
-    DCHECK(succeed);
-    VLOG(1) << "Using software rendering list version "
-            << version_major << "." << version_minor;
-    return true;
-  }
-  gpu_blacklist_.reset(NULL);
-  return false;
-}
-
-bool GpuDataManager::UpdateGpuBlacklist() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (gpu_blacklist_cache_ == NULL)
-    return false;
-  uint16 cached_version_major, cached_version_minor;
-  if (!GpuBlacklist::GetVersion(*gpu_blacklist_cache_,
-                                &cached_version_major,
-                                &cached_version_minor))
-    return false;
-  if (gpu_blacklist_.get() != NULL) {
-    uint16 current_version_major, current_version_minor;
-    if (gpu_blacklist_->GetVersion(&current_version_major,
-                                   &current_version_minor) &&
-        (cached_version_major < current_version_major ||
-         (cached_version_major == current_version_major &&
-          cached_version_minor <= current_version_minor)))
-      return false;
-  }
-  chrome::VersionInfo version_info;
-  std::string chrome_version_string =
-      version_info.is_valid() ? version_info.Version() : "0";
-  GpuBlacklist* updated_list = new GpuBlacklist(chrome_version_string);
-  if (!updated_list->LoadGpuBlacklist(*gpu_blacklist_cache_, true)) {
-    delete updated_list;
-    return false;
-  }
-  gpu_blacklist_.reset(updated_list);
-  VLOG(1) << "Using software rendering list version "
-          << cached_version_major << "." << cached_version_minor;
-  // Clear the flag to triger a re-computation of GpuFeatureFlags using the
-  // updated GPU blacklist.
-  gpu_feature_flags_set_ = false;
-  return true;
-}
-
 void GpuDataManager::UpdateGpuFeatureFlags() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Need to call this before checking gpu_feature_flags_set_ because it might
-  // be reset if a newer version of GPU blacklist is downloaed.
   GpuBlacklist* gpu_blacklist = GetGpuBlacklist();
   if (gpu_blacklist == NULL)
     return;
 
-  if (gpu_feature_flags_set_)
+  // We don't set a lock around modifying gpu_feature_flags_ since it's just an
+  // int.
+  if (!gpu_blacklist) {
+    gpu_feature_flags_.set_flags(0);
     return;
+  }
 
-  gpu_feature_flags_set_ = true;
-  gpu_feature_flags_.set_flags(0);
-
-  if (gpu_blacklist != NULL) {
+  {
+    base::AutoLock auto_lock(gpu_info_lock_);
     gpu_feature_flags_ = gpu_blacklist->DetermineGpuFeatureFlags(
         GpuBlacklist::kOsAny, NULL, gpu_info_);
-    uint32 max_entry_id = gpu_blacklist->max_entry_id();
-    if (gpu_feature_flags_.flags() != 0) {
-      // If gpu is blacklisted, no further GPUInfo will be collected.
-      gpu_info_.finalized = true;
 
-      // Notify clients that GpuInfo state has changed
-      RunGpuInfoUpdateCallbacks();
+    // If gpu is blacklisted, no further GPUInfo will be collected.
+    gpu_info_.finalized = true;
+  }
 
-      // TODO(zmo): move histograming to GpuBlacklist::DetermineGpuFeatureFlags.
-      std::vector<uint32> flag_entries;
-      gpu_blacklist->GetGpuFeatureFlagEntries(
-          GpuFeatureFlags::kGpuFeatureAll, flag_entries);
-      DCHECK_GT(flag_entries.size(), 0u);
-      for (size_t i = 0; i < flag_entries.size(); ++i) {
-        UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-            flag_entries[i], max_entry_id + 1);
-      }
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-          0, max_entry_id + 1);
-    }
+  uint32 max_entry_id = gpu_blacklist->max_entry_id();
+  if (!gpu_feature_flags_.flags()) {
+    UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
+        0, max_entry_id + 1);
+    return;
+  }
+
+  // Notify clients that GpuInfo state has changed
+  RunGpuInfoUpdateCallbacks();
+
+  // TODO(zmo): move histograming to GpuBlacklist::DetermineGpuFeatureFlags.
+  std::vector<uint32> flag_entries;
+  gpu_blacklist->GetGpuFeatureFlagEntries(
+      GpuFeatureFlags::kGpuFeatureAll, flag_entries);
+  DCHECK_GT(flag_entries.size(), 0u);
+  for (size_t i = 0; i < flag_entries.size(); ++i) {
+    UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
+        flag_entries[i], max_entry_id + 1);
   }
 }
 
@@ -304,7 +207,6 @@ GpuBlacklist* GpuDataManager::GetGpuBlacklist() {
       browser_command_line.GetSwitchValueASCII(
           switches::kUseGL) == gfx::kGLImplementationOSMesaName)
     return NULL;
-  UpdateGpuBlacklist();
   // No need to return an empty blacklist.
   if (gpu_blacklist_.get() != NULL && gpu_blacklist_->max_entry_id() == 0)
     return NULL;

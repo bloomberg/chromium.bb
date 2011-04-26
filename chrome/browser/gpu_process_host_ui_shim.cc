@@ -21,7 +21,6 @@
 #include "content/common/content_switches.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "gpu/common/gpu_trace_event.h"
-#include "ui/gfx/gl/gl_context.h"
 
 #if defined(OS_LINUX)
 // These two #includes need to come after gpu_messages.h.
@@ -38,7 +37,6 @@ namespace {
 #undef DestroyAll
 #endif
 
-int g_last_host_id = 0;
 IDMap<GpuProcessHostUIShim> g_hosts_by_id;
 
 class SendOnIOThreadTask : public Task {
@@ -112,111 +110,25 @@ void RouteToGpuProcessHostUIShimTask::Run() {
     ui_shim->OnMessageReceived(msg_);
 }
 
-#if defined(OS_LINUX)
-// Used to put a lock on surfaces so that the window to which the GPU
-// process is drawing to doesn't disappear while it is drawing when
-// a tab is closed.
-class GpuProcessHostUIShim::SurfaceRef {
- public:
-  explicit SurfaceRef(gfx::PluginWindowHandle surface);
-  ~SurfaceRef();
- private:
-  gfx::PluginWindowHandle surface_;
-};
-
-GpuProcessHostUIShim::SurfaceRef::SurfaceRef(gfx::PluginWindowHandle surface)
-    : surface_(surface) {
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  if (!manager->AddRefPermanentXID(surface_)) {
-    LOG(ERROR) << "Surface " << surface << " cannot be referenced.";
-  }
-}
-
-GpuProcessHostUIShim::SurfaceRef::~SurfaceRef() {
-  // TODO(backer): ReleasePermanentXID has to be done on the UI thread.
-  // Post task to release once we move this code to the IO thread.
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  manager->ReleasePermanentXID(surface_);
-}
-#endif  // defined(OS_LINUX)
-
-GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id,
-    content::CauseForGpuLaunch cause_for_gpu_launch)
+GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id)
     : host_id_(host_id),
-      gpu_process_(base::kNullProcessHandle),
       gpu_channel_manager_(NULL),
       ui_thread_sender_(NULL) {
   g_hosts_by_id.AddWithID(this, host_id_);
-  gpu_data_manager_ = GpuDataManager::GetInstance();
-  DCHECK(gpu_data_manager_);
-
   if (host_id == 0) {
-    gpu_process_ = base::GetCurrentProcessHandle();
     ui_thread_sender_ = new UIThreadSender;
     gpu_channel_manager_ = new GpuChannelManager(
         ui_thread_sender_,
         NULL,
         g_browser_process->io_thread()->message_loop(),
         g_browser_process->shutdown_event());
-  } else {
-    // Post a task to create the corresponding GpuProcessHost.
-    // The GpuProcessHostUIShim will be destroyed if either the browser exits,
-    // in which case it calls GpuProcessHostUIShim::DestroyAll, or the
-    // GpuProcessHost is destroyed, which happens when the corresponding GPU
-    // process terminates or fails to launch.
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        NewRunnableFunction(
-            &GpuProcessHost::Create,
-            host_id,
-            GpuDataManager::GetInstance()->GetGpuFeatureFlags(),
-            cause_for_gpu_launch));
   }
 }
 
 // static
-GpuProcessHostUIShim* GpuProcessHostUIShim::GetForRenderer(int renderer_id,
-    content::CauseForGpuLaunch cause_for_gpu_launch) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Don't grant further access to GPU if it is not allowed.
-  GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
-  if (gpu_data_manager != NULL && !gpu_data_manager->GpuAccessAllowed())
-    return NULL;
-
-  // The current policy is to ignore the renderer ID and use a single GPU
-  // process for all renderers. Later this will be extended to allow the
-  // use of multiple GPU processes.
-  if (!g_hosts_by_id.IsEmpty()) {
-    IDMap<GpuProcessHostUIShim>::iterator it(&g_hosts_by_id);
-    return it.GetCurrentValue();
-  }
-
-  if (cause_for_gpu_launch == content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH)
-    return NULL;
-
-  int host_id;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU)) {
-    if (!g_browser_process->gpu_thread())
-      return NULL;
-
-    // Initialize GL on the GPU thread.
-    // TODO(apatrick): Handle failure to initialize (asynchronously).
-    if (!BrowserThread::PostTask(
-        BrowserThread::GPU,
-        FROM_HERE,
-        NewRunnableFunction(&gfx::GLContext::InitializeOneOff))) {
-      return NULL;
-    }
-
-    host_id = 0;
-  } else {
-    host_id = ++g_last_host_id;
-  }
-
-  return new GpuProcessHostUIShim(host_id, cause_for_gpu_launch);
+GpuProcessHostUIShim* GpuProcessHostUIShim::Create(int host_id) {
+  DCHECK(!FromID(host_id));
+  return new GpuProcessHostUIShim(host_id);
 }
 
 // static
@@ -232,18 +144,6 @@ void GpuProcessHostUIShim::DestroyAll() {
     IDMap<GpuProcessHostUIShim>::iterator it(&g_hosts_by_id);
     delete it.GetCurrentValue();
   }
-}
-
-// static
-void GpuProcessHostUIShim::NotifyGpuProcessLaunched(
-    int host_id,
-    base::ProcessHandle gpu_process) {
-  DCHECK(gpu_process);
-
-  GpuProcessHostUIShim* ui_shim = FromID(host_id);
-  DCHECK(ui_shim);
-
-  ui_shim->gpu_process_ = gpu_process;
 }
 
 // static
@@ -274,86 +174,6 @@ bool GpuProcessHostUIShim::Send(IPC::Message* msg) {
   return success;
 }
 
-// Post a Task to execute callbacks on a error conditions in order to
-// clear the call stacks (and aid debugging).
-namespace {
-
-void EstablishChannelCallbackDispatcher(
-    GpuProcessHostUIShim::EstablishChannelCallback* callback,
-    const IPC::ChannelHandle& channel_handle,
-    base::ProcessHandle renderer_process_for_gpu,
-    const GPUInfo& gpu_info) {
-  scoped_ptr<GpuProcessHostUIShim::EstablishChannelCallback>
-    wrapped_callback(callback);
-  wrapped_callback->Run(channel_handle, renderer_process_for_gpu, gpu_info);
-}
-
-void EstablishChannelError(
-    GpuProcessHostUIShim::EstablishChannelCallback* callback,
-    const IPC::ChannelHandle& channel_handle,
-    base::ProcessHandle renderer_process_for_gpu,
-    const GPUInfo& gpu_info) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&EstablishChannelCallbackDispatcher,
-                          callback,
-                          channel_handle,
-                          renderer_process_for_gpu,
-                          gpu_info));
-}
-
-void SynchronizeCallbackDispatcher(
-    GpuProcessHostUIShim::SynchronizeCallback* callback) {
-  scoped_ptr<GpuProcessHostUIShim::SynchronizeCallback>
-    wrapped_callback(callback);
-  wrapped_callback->Run();
-}
-
-void SynchronizeError(
-    GpuProcessHostUIShim::SynchronizeCallback* callback) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&SynchronizeCallbackDispatcher, callback));
-}
-
-void CreateCommandBufferCallbackDispatcher(
-    GpuProcessHostUIShim::CreateCommandBufferCallback* callback,
-    int32 route_id) {
-  scoped_ptr<GpuProcessHostUIShim::CreateCommandBufferCallback>
-    wrapped_callback(callback);
-  callback->Run(route_id);
-}
-
-void CreateCommandBufferError(
-    GpuProcessHostUIShim::CreateCommandBufferCallback* callback,
-    int32 route_id) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&CreateCommandBufferCallbackDispatcher,
-                          callback, route_id));
-}
-
-}  // namespace
-
-void GpuProcessHostUIShim::SendOutstandingReplies() {
-  // First send empty channel handles for all EstablishChannel requests.
-  while (!channel_requests_.empty()) {
-    linked_ptr<EstablishChannelCallback> callback = channel_requests_.front();
-    channel_requests_.pop();
-    EstablishChannelError(callback.release(),
-                          IPC::ChannelHandle(),
-                          base::kNullProcessHandle,
-                          GPUInfo());
-  }
-
-  // Now unblock all renderers waiting for synchronization replies.
-  while (!synchronize_requests_.empty()) {
-    linked_ptr<SynchronizeCallback> callback = synchronize_requests_.front();
-    synchronize_requests_.pop();
-    SynchronizeError(callback.release());
-  }
-}
-
 bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
 
@@ -361,78 +181,6 @@ bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
     return false;
 
   return OnControlMessageReceived(message);
-}
-
-void GpuProcessHostUIShim::EstablishGpuChannel(
-    int renderer_id,
-    EstablishChannelCallback *callback) {
-  DCHECK(CalledOnValidThread());
-  GPU_TRACE_EVENT0("gpu", "GpuProcessHostUIShim::EstablishGpuChannel");
-  linked_ptr<EstablishChannelCallback> wrapped_callback(callback);
-
-  // If GPU features are already blacklisted, no need to establish the channel.
-  if (!gpu_data_manager_->GpuAccessAllowed()) {
-    EstablishChannelError(
-        wrapped_callback.release(), IPC::ChannelHandle(),
-        base::kNullProcessHandle, GPUInfo());
-    return;
-  }
-
-  if (Send(new GpuMsg_EstablishChannel(renderer_id))) {
-    channel_requests_.push(wrapped_callback);
-  } else {
-    EstablishChannelError(
-        wrapped_callback.release(), IPC::ChannelHandle(),
-        base::kNullProcessHandle, GPUInfo());
-  }
-}
-
-void GpuProcessHostUIShim::Synchronize(SynchronizeCallback* callback) {
-  DCHECK(CalledOnValidThread());
-  linked_ptr<SynchronizeCallback> wrapped_callback(callback);
-
-  if (Send(new GpuMsg_Synchronize())) {
-    synchronize_requests_.push(wrapped_callback);
-  } else {
-    SynchronizeError(wrapped_callback.release());
-  }
-}
-
-void GpuProcessHostUIShim::CreateViewCommandBuffer(
-    gfx::PluginWindowHandle compositing_surface,
-    int32 render_view_id,
-    int32 renderer_id,
-    const GPUCreateCommandBufferConfig& init_params,
-    CreateCommandBufferCallback* callback) {
-  DCHECK(CalledOnValidThread());
-  linked_ptr<CreateCommandBufferCallback> wrapped_callback(callback);
-
-#if defined(OS_LINUX)
-  ViewID view_id(renderer_id, render_view_id);
-
-  // There should only be one such command buffer (for the compositor).  In
-  // practice, if the GPU process lost a context, GraphicsContext3D with
-  // associated command buffer and view surface will not be gone until new
-  // one is in place and all layers are reattached.
-  linked_ptr<SurfaceRef> surface_ref;
-  SurfaceRefMap::iterator it = surface_refs_.find(view_id);
-  if (it != surface_refs_.end())
-    surface_ref = (*it).second;
-  else
-    surface_ref.reset(new SurfaceRef(compositing_surface));
-#endif  // defined(OS_LINUX)
-
-  if (compositing_surface != gfx::kNullPluginWindow &&
-      Send(new GpuMsg_CreateViewCommandBuffer(
-          compositing_surface, render_view_id, renderer_id, init_params))) {
-    create_command_buffer_requests_.push(wrapped_callback);
-#if defined(OS_LINUX)
-    surface_refs_.insert(std::pair<ViewID, linked_ptr<SurfaceRef> >(
-        view_id, surface_ref));
-#endif  // defined(OS_LINUX)
-  } else {
-    CreateCommandBufferError(wrapped_callback.release(), MSG_ROUTING_NONE);
-  }
 }
 
 #if defined(OS_MACOSX)
@@ -453,29 +201,9 @@ void GpuProcessHostUIShim::SendToGpuHost(int host_id, IPC::Message* msg) {
 
 #endif
 
-void GpuProcessHostUIShim::CollectGpuInfoAsynchronously() {
-  DCHECK(CalledOnValidThread());
-  Send(new GpuMsg_CollectGraphicsInfo());
-}
-
-void GpuProcessHostUIShim::SendAboutGpuCrash() {
-  DCHECK(CalledOnValidThread());
-  Send(new GpuMsg_Crash());
-}
-
-void GpuProcessHostUIShim::SendAboutGpuHang() {
-  DCHECK(CalledOnValidThread());
-  Send(new GpuMsg_Hang());
-}
-
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   DCHECK(CalledOnValidThread());
   g_hosts_by_id.Remove(host_id_);
-
-#if defined(OS_WIN)
-  if (gpu_process_)
-    CloseHandle(gpu_process_);
-#endif
 
   // Ensure these are destroyed on the GPU thread.
   if (gpu_channel_manager_) {
@@ -492,29 +220,13 @@ GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   }
 }
 
-void GpuProcessHostUIShim::AddCustomLogMessage(int level,
-    const std::string& header,
-    const std::string& message) {
-  OnLogMessage(level, header, message);
-}
-
 bool GpuProcessHostUIShim::OnControlMessageReceived(
     const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
 
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHostUIShim, message)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished,
-                        OnChannelEstablished)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_CommandBufferCreated,
-                        OnCommandBufferCreated)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyCommandBuffer,
-                        OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
-                        OnGraphicsInfoCollected)
     IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage,
                         OnLogMessage)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_SynchronizeReply,
-                        OnSynchronizeReply)
 #if defined(OS_LINUX) && !defined(TOUCH_UI)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_ResizeXID, OnResizeXID)
 #elif defined(OS_MACOSX)
@@ -531,76 +243,15 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
   return true;
 }
 
-void GpuProcessHostUIShim::OnChannelEstablished(
-    const IPC::ChannelHandle& channel_handle) {
-  // The GPU process should have launched at this point and this object should
-  // have been notified of its process handle.
-  DCHECK(gpu_process_);
-
-  linked_ptr<EstablishChannelCallback> callback = channel_requests_.front();
-  channel_requests_.pop();
-
-  // Currently if any of the GPU features are blacklisted, we don't establish a
-  // GPU channel.
-  if (!channel_handle.name.empty() &&
-      !gpu_data_manager_->GpuAccessAllowed()) {
-    Send(new GpuMsg_CloseChannel(channel_handle));
-    EstablishChannelError(callback.release(),
-                          IPC::ChannelHandle(),
-                          base::kNullProcessHandle,
-                          GPUInfo());
-    AddCustomLogMessage(logging::LOG_WARNING, "WARNING",
-        "Hardware acceleration is unavailable.");
-    return;
-  }
-
-  callback->Run(channel_handle, gpu_process_, gpu_data_manager_->gpu_info());
-}
-
-void GpuProcessHostUIShim::OnSynchronizeReply() {
-  // Guard against race conditions in abrupt GPU process termination.
-  if (!synchronize_requests_.empty()) {
-    linked_ptr<SynchronizeCallback> callback(synchronize_requests_.front());
-    synchronize_requests_.pop();
-    callback->Run();
-  }
-}
-
-void GpuProcessHostUIShim::OnCommandBufferCreated(const int32 route_id) {
-  if (!create_command_buffer_requests_.empty()) {
-    linked_ptr<CreateCommandBufferCallback> callback =
-        create_command_buffer_requests_.front();
-    create_command_buffer_requests_.pop();
-    if (route_id == MSG_ROUTING_NONE)
-      CreateCommandBufferError(callback.release(), route_id);
-    else
-      callback->Run(route_id);
-  }
-}
-
-void GpuProcessHostUIShim::OnDestroyCommandBuffer(
-    gfx::PluginWindowHandle window, int32 renderer_id,
-    int32 render_view_id) {
-#if defined(OS_LINUX)
-  ViewID view_id(renderer_id, render_view_id);
-  SurfaceRefMap::iterator it = surface_refs_.find(view_id);
-  if (it != surface_refs_.end())
-    surface_refs_.erase(it);
-#endif  // defined(OS_LINUX)
-}
-
-void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
-  gpu_data_manager_->UpdateGpuInfo(gpu_info);
-}
-
-void GpuProcessHostUIShim::OnLogMessage(int level,
+void GpuProcessHostUIShim::OnLogMessage(
+    int level,
     const std::string& header,
     const std::string& message) {
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger("level", level);
   dict->SetString("header", header);
   dict->SetString("message", message);
-  gpu_data_manager_->AddLogMessage(dict);
+  GpuDataManager::GetInstance()->AddLogMessage(dict);
 }
 
 #if defined(OS_LINUX) && !defined(TOUCH_UI)
