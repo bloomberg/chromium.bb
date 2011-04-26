@@ -4275,7 +4275,7 @@
    fun:_ZN8chromeos14AudioMixerAlsa6DoInitEP14CallbackRunnerI6Tuple1IbEE
 }
 {
-   bug_79654
+   bug_79654_a
    Memcheck:Leak
    fun:_Znw*
    ...
@@ -4283,6 +4283,17 @@
    fun:_ZN*9TabLoader12TabIsLoadingEP20NavigationController
    fun:_ZN*18SessionRestoreImpl21ProcessSessionWindowsEPSt6vectorIP13SessionWindowSaIS3_EE
    fun:_ZN*18SessionRestoreImpl12OnGotSessionEiPSt6vectorIP13SessionWindowSaIS3_EE
+}
+{
+   bug_79654_b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZNSt3setIP16RenderWidgetHostSt4lessIS1_ESaIS1_EE6insertERKS1_
+   fun:*TabLoader7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN11TabContents12SetIsLoadingEbP23LoadNotificationDetails
+   fun:_ZN11TabContents14DidStopLoadingEv
 }
 {
    bug_79671
