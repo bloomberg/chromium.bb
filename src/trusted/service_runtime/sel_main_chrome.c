@@ -20,6 +20,8 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/gio/gio_nacl_desc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
@@ -33,6 +35,65 @@ static int const kSrpcFd = 5;
 
 int verbosity = 0;
 
+static int g_irt_file_desc = -1;
+
+
+void NaClSetIrtFileDesc(int fd) {
+  CHECK(g_irt_file_desc == -1);
+  g_irt_file_desc = fd;
+}
+
+static void NaClLoadIrt(struct NaClApp *nap) {
+  int file_desc;
+  struct NaClDesc *nacl_desc;
+  struct NaClGioNaClDesc gio_nacl_desc;
+  struct Gio *gio_desc;
+
+  /*
+   * TODO(mseaborn): Eventually we should make the two warnings below
+   * into errors, and require use of the IRT.
+   * See http://code.google.com/p/nativeclient/issues/detail?id=1691
+   */
+  if (g_irt_file_desc == -1) {
+    NaClLog(0, "NaClLoadIrt: Integrated runtime (IRT) not present.  "
+            "Continuing anyway.\n");
+    return;
+  }
+
+  file_desc = DUP(g_irt_file_desc);
+  if (file_desc < 0) {
+    NaClLog(LOG_FATAL, "NaClLoadIrt: Failed to dup() file descriptor\n");
+  }
+  nacl_desc = (struct NaClDesc *)
+    NaClDescIoDescMake(NaClHostDescPosixMake(file_desc, /* mode= */ 0));
+  if (NULL == nacl_desc) {
+    NaClLog(LOG_FATAL, "NaClLoadIrt: Failed to create NaClDesc wrapper\n");
+  }
+  /*
+   * TODO(mseaborn): Ideally we would use NaClGioShm rather than
+   * NaClGioNaClDesc.  NaClGioNaClDesc will modify the file
+   * descriptor's seek position when we call
+   * NaClAppLoadFileDynamically(), which has a race condition if
+   * Chromium shares the file descriptor between multiple sel_ldr
+   * instances.
+   *
+   * However, NaClGioShm currently does not work with NaClDescIoDesc
+   * instances because NaClDescIoDescMap() requires MAP_FIXED.
+   * See http://code.google.com/p/nativeclient/issues/detail?id=1705
+   */
+  if (!NaClGioNaClDescCtor(&gio_nacl_desc, nacl_desc)) {
+    NaClLog(LOG_FATAL, "NaClLoadIrt: Failed to create Gio wrapper\n");
+  }
+  NaClDescUnref(nacl_desc);
+  gio_desc = (struct Gio *) &gio_nacl_desc;
+  if (NaClAppLoadFileDynamically(nap, gio_desc) != LOAD_OK) {
+    NaClLog(0, "NaClLoadIrt: Failed to load the integrated runtime (IRT).  "
+            "The user executable was probably not built to use the IRT.  "
+            "Continuing anyway.\n");
+  }
+  (*NACL_VTBL(Gio, gio_desc)->Close)(gio_desc);
+  (*NACL_VTBL(Gio, gio_desc)->Dtor)(gio_desc);
+}
 
 int NaClMainForChromium(int handle_count, const NaClHandle *handles,
                         int debug) {
@@ -163,6 +224,11 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
      * wait for start_module RPC call on secure channel thread.
      */
     errcode = NaClWaitForStartModuleCommand(nap);
+  }
+
+  /* Load the integrated runtime (IRT) library. */
+  if (LOAD_OK == errcode) {
+    NaClLoadIrt(nap);
   }
 
   /*
