@@ -87,6 +87,7 @@ class ChromotingInstance : public pp::Instance {
   void LogDebugInfo(const std::string& info);
 
   // Return statistics record by ChromotingClient.
+  // If no connection is currently active then NULL will be returned.
   ChromotingStats* GetStats();
 
  private:

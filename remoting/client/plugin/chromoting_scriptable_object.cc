@@ -142,16 +142,17 @@ Var ChromotingScriptableObject::GetProperty(const Var& name, Var* exception) {
 
   // If this is a statistics attribute then return the value from
   // ChromotingStats structure.
+  ChromotingStats* stats = instance_->GetStats();
   if (name.AsString() == kVideoBandwidthAttribute)
-    return instance_->GetStats()->video_bandwidth()->Rate();
+    return stats ? stats->video_bandwidth()->Rate() : Var();
   if (name.AsString() == kVideoCaptureLatencyAttribute)
-    return instance_->GetStats()->video_capture_ms()->Average();
+    return stats ? stats->video_capture_ms()->Average() : Var();
   if (name.AsString() == kVideoEncodeLatencyAttribute)
-    return instance_->GetStats()->video_encode_ms()->Average();
+    return stats ? stats->video_encode_ms()->Average() : Var();
   if (name.AsString() == kVideoDecodeLatencyAttribute)
-    return instance_->GetStats()->video_decode_ms()->Average();
+    return stats ? stats->video_decode_ms()->Average() : Var();
   if (name.AsString() == kVideoRenderLatencyAttribute)
-    return instance_->GetStats()->video_paint_ms()->Average();
+    return stats ? stats->video_paint_ms()->Average() : Var();
 
   // TODO(ajwong): This incorrectly return a null object if a function
   // property is requested.
