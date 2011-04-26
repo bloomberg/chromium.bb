@@ -64,8 +64,7 @@ event_example_nexe = env.ComponentProgram(event_target,
 # Note that the html and a .nmf manifest is required to run this program.
 dest_copy = env.Replicate('$STAGING_DIR',
                           ['event_example.html',
-                           'event_example.nmf',
-                           env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')])
+                           'event_example.nmf'])
 env.Depends(event_target, dest_copy)
 
 node = env.SelUniversalTest(
