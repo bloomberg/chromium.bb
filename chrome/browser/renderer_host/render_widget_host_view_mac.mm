@@ -24,6 +24,7 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu_process_host.h"
 #include "content/browser/plugin_process_host.h"
@@ -2227,7 +2228,9 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 // This is also called from the Edit -> Spelling -> Check Spelling menu item.
 - (void)checkSpelling:(id)sender {
   RenderWidgetHostViewMac* thisHostView = [self renderWidgetHostViewMac];
-  thisHostView->GetRenderWidgetHost()->AdvanceToNextMisspelling();
+  RenderWidgetHost* widget = thisHostView->GetRenderWidgetHost();
+  widget->Send(new SpellCheckMsg_AdvanceToNextMisspelling(
+      widget->routing_id()));
 }
 
 // This message is sent by the spelling panel whenever a word is ignored.
@@ -2243,15 +2246,14 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
 - (void)showGuessPanel:(id)sender {
   RenderWidgetHostViewMac* thisHostView = [self renderWidgetHostViewMac];
-  thisHostView->GetRenderWidgetHost()->ToggleSpellPanel(
-      SpellCheckerPlatform::SpellingPanelVisible());
+  RenderWidgetHost* widget = thisHostView->GetRenderWidgetHost();
+  widget->Send(new SpellCheckMsg_ToggleSpellPanel(
+      widget->routing_id(), SpellCheckerPlatform::SpellingPanelVisible()));
 }
 
 - (void)toggleContinuousSpellChecking:(id)sender {
-  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-      ToggleSpellCheck();
-  }
+  RenderWidgetHost* widget = renderWidgetHostView_->render_widget_host_;
+  widget->Send(new SpellCheckMsg_ToggleSpellCheck(widget->routing_id()));
 }
 
 // END Spellchecking methods

@@ -48,6 +48,7 @@
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -1456,9 +1457,11 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
           params_.dictionary_suggestions[id - IDC_SPELLCHECK_SUGGESTION_0]);
       break;
 
-    case IDC_CHECK_SPELLING_OF_THIS_FIELD:
-      source_tab_contents_->render_view_host()->ToggleSpellCheck();
+    case IDC_CHECK_SPELLING_OF_THIS_FIELD: {
+      RenderViewHost* view = source_tab_contents_->render_view_host();
+      view->Send(new SpellCheckMsg_ToggleSpellCheck(view->routing_id()));
       break;
+    }
     case IDC_SPELLCHECK_ADD_TO_DICTIONARY: {
       SpellCheckHost* spellcheck_host = profile_->GetSpellCheckHost();
       if (!spellcheck_host) {
@@ -1477,10 +1480,12 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       break;
     }
 
-    case IDC_SPELLPANEL_TOGGLE:
-      source_tab_contents_->render_view_host()->ToggleSpellPanel(
-          SpellCheckerPlatform::SpellingPanelVisible());
+    case IDC_SPELLPANEL_TOGGLE: {
+      RenderViewHost* view = source_tab_contents_->render_view_host();
+      view->Send(new SpellCheckMsg_ToggleSpellPanel(
+          view->routing_id(), SpellCheckerPlatform::SpellingPanelVisible()));
       break;
+    }
 
 #if defined(OS_MACOSX)
     case IDC_WRITING_DIRECTION_DEFAULT:

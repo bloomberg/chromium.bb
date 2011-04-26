@@ -24,8 +24,6 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/safe_browsing/safebrowsing_messages.h"
-#include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
@@ -547,10 +545,6 @@ void RenderViewHost::Paste() {
   UserMetrics::RecordAction(UserMetricsAction("Paste"));
 }
 
-void RenderViewHost::ToggleSpellCheck() {
-  Send(new SpellCheckMsg_ToggleSpellCheck(routing_id()));
-}
-
 void RenderViewHost::Delete() {
   Send(new ViewMsg_Delete(routing_id()));
   UserMetrics::RecordAction(UserMetricsAction("DeleteSelection"));
@@ -559,10 +553,6 @@ void RenderViewHost::Delete() {
 void RenderViewHost::SelectAll() {
   Send(new ViewMsg_SelectAll(routing_id()));
   UserMetrics::RecordAction(UserMetricsAction("SelectAll"));
-}
-
-void RenderViewHost::ToggleSpellPanel(bool is_currently_visible) {
-  Send(new SpellCheckMsg_ToggleSpellPanel(routing_id(), is_currently_visible));
 }
 
 int RenderViewHost::DownloadFavicon(const GURL& url, int image_size) {
@@ -1289,10 +1279,6 @@ void RenderViewHost::UnhandledKeyboardEvent(
 
 void RenderViewHost::OnUserGesture() {
   delegate_->OnUserGesture();
-}
-
-void RenderViewHost::GetMalwareDOMDetails() {
-  Send(new SafeBrowsingMsg_GetMalwareDOMDetails(routing_id()));
 }
 
 void RenderViewHost::GetAllSavableResourceLinksForCurrentPage(

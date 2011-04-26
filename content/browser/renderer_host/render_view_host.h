@@ -275,10 +275,8 @@ class RenderViewHost : public RenderWidgetHost {
   void Copy();
   void CopyToFindPboard();
   void Paste();
-  void ToggleSpellCheck();
   void Delete();
   void SelectAll();
-  void ToggleSpellPanel(bool is_currently_visible);
 
   // Downloads an image notifying the favicon delegate appropriately. The
   // returned integer uniquely identifies the download for the lifetime of the
@@ -356,10 +354,6 @@ class RenderViewHost : public RenderWidgetHost {
 
   // Load all blocked plugins in the RenderView.
   void LoadBlockedPlugins();
-
-  // Get all script and frame urls from all frames in the current document.
-  // Called when a malware interstitial page is shown.
-  void GetMalwareDOMDetails();
 
   // Get all savable resource links from current webpage, include main
   // frame and sub-frame.
