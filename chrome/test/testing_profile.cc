@@ -690,7 +690,7 @@ SpellCheckHost* TestingProfile::GetSpellCheckHost() {
 }
 
 void TestingProfile::set_session_service(SessionService* session_service) {
-  session_service_ = session_service;
+  session_service_.reset(session_service);
 }
 
 WebKitContext* TestingProfile::GetWebKitContext() {

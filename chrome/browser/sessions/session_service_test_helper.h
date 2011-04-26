@@ -9,7 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 
 class SessionBackend;
 class SessionCommand;
@@ -61,14 +62,14 @@ class SessionServiceTestHelper {
       const std::vector<SessionWindow*>& windows,
       size_t nav_count);
 
-  void set_service(SessionService* service) { service_ = service; }
+  void set_service(SessionService* service) { service_.reset(service); }
   SessionService* ReleaseService() { return service_.release(); }
   SessionService* service() { return service_.get(); }
 
   SessionBackend* backend();
 
  private:
-  scoped_refptr<SessionService> service_;
+  scoped_ptr<SessionService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionServiceTestHelper);
 };

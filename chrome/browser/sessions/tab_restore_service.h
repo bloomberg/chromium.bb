@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,6 +120,8 @@ class TabRestoreService : public BaseSessionService {
   explicit TabRestoreService(Profile* profile,
                              TimeFactory* time_factory_ = NULL);
 
+  virtual ~TabRestoreService();
+
   // Adds/removes an observer. TabRestoreService does not take ownership of
   // the observer.
   void AddObserver(TabRestoreServiceObserver* observer);
@@ -171,8 +173,6 @@ class TabRestoreService : public BaseSessionService {
 
  protected:
   virtual void Save();
-
-  virtual ~TabRestoreService();
 
  private:
   // Used to indicate what has loaded.

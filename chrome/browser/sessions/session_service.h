@@ -56,6 +56,8 @@ class SessionService : public BaseSessionService,
   // For testing.
   explicit SessionService(const FilePath& save_path);
 
+  virtual ~SessionService();
+
   // Invoke at a point when you think session restore might occur. For example,
   // during startup and window creation this is invoked to see if a session
   // needs to be restored. If a session needs to be restored it is done so
@@ -181,8 +183,6 @@ class SessionService : public BaseSessionService,
   typedef std::map<SessionID::id_type, SessionTab*> IdToSessionTab;
   typedef std::map<SessionID::id_type, SessionWindow*> IdToSessionWindow;
 
-
-  virtual ~SessionService();
 
   // These types mirror Browser::Type, but are re-defined here because these
   // specific enumeration _values_ are written into the session database and

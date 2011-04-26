@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted_memory.h"
+#include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -209,7 +210,7 @@ TEST_F(HistoryMenuBridgeTest, AddItemToMenu) {
 
 // Test that the menu is created for a set of simple tabs.
 TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabs) {
-  scoped_refptr<MockTRS> trs(new MockTRS(browser_test_helper_.profile()));
+  scoped_ptr<MockTRS> trs(new MockTRS(browser_test_helper_.profile()));
   MockTRS::Entries entries;
 
   MockTRS::Tab tab1 = CreateSessionTab(GURL("http://google.com"),
@@ -245,7 +246,7 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabs) {
 
 // Test that the menu is created for a mix of windows and tabs.
 TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabsAndWindows) {
-  scoped_refptr<MockTRS> trs(new MockTRS(browser_test_helper_.profile()));
+  scoped_ptr<MockTRS> trs(new MockTRS(browser_test_helper_.profile()));
   MockTRS::Entries entries;
 
   MockTRS::Tab tab1 = CreateSessionTab(GURL("http://google.com"),

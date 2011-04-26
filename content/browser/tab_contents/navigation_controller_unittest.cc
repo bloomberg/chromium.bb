@@ -74,8 +74,8 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
   virtual void TearDown() {
     // Release profile's reference to the session service. Otherwise the file
     // will still be open and we won't be able to delete the directory below.
+    session_helper_.ReleaseService(); // profile owns this
     profile()->set_session_service(NULL);
-    session_helper_.set_service(NULL);
 
     // Make sure we wait for history to shut down before continuing. The task
     // we add will cause our message loop to quit once it is destroyed.

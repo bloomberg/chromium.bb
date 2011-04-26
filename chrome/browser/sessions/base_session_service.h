@@ -27,8 +27,7 @@ class Thread;
 // session service. It contains commonality needed by both, in particular
 // it manages a set of SessionCommands that are periodically sent to a
 // SessionBackend.
-class BaseSessionService : public CancelableRequestProvider,
-    public base::RefCountedThreadSafe<BaseSessionService> {
+class BaseSessionService : public CancelableRequestProvider {
  public:
   // Identifies the type of session service this is. This is used by the
   // backend to determine the name of the files.
@@ -76,8 +75,6 @@ class BaseSessionService : public CancelableRequestProvider,
   };
 
  protected:
-  friend class base::RefCountedThreadSafe<BaseSessionService>;
-
   virtual ~BaseSessionService();
 
   // Returns the backend.

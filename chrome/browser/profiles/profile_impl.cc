@@ -592,7 +592,7 @@ ProfileImpl::~ProfileImpl() {
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
-  tab_restore_service_ = NULL;
+  tab_restore_service_.reset();
 
   StopCreateSessionServiceTimer();
   // TemplateURLModel schedules a task on the WebDataService from its
@@ -1168,7 +1168,7 @@ fileapi::FileSystemContext* ProfileImpl::GetFileSystemContext() {
 
 SessionService* ProfileImpl::GetSessionService() {
   if (!session_service_.get() && !shutdown_session_service_) {
-    session_service_ = new SessionService(this);
+    session_service_.reset(new SessionService(this));
     session_service_->ResetFromCurrentBrowsers();
   }
   return session_service_.get();
@@ -1183,7 +1183,7 @@ void ProfileImpl::ShutdownSessionService() {
   // time the user exited.
   GetSessionService();
   shutdown_session_service_ = true;
-  session_service_ = NULL;
+  session_service_.reset();
 }
 
 bool ProfileImpl::HasSessionService() const {
@@ -1226,7 +1226,7 @@ Time ProfileImpl::GetStartTime() const {
 
 TabRestoreService* ProfileImpl::GetTabRestoreService() {
   if (!tab_restore_service_.get())
-    tab_restore_service_ = new TabRestoreService(this);
+    tab_restore_service_.reset(new TabRestoreService(this));
   return tab_restore_service_.get();
 }
 
@@ -1243,7 +1243,7 @@ history::TopSites* ProfileImpl::GetTopSitesWithoutCreating() {
 }
 
 void ProfileImpl::ResetTabRestoreService() {
-  tab_restore_service_ = NULL;
+  tab_restore_service_.reset();
 }
 
 SpellCheckHost* ProfileImpl::GetSpellCheckHost() {

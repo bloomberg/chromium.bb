@@ -246,7 +246,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;
   scoped_refptr<WebDataService> web_data_service_;
   scoped_refptr<PasswordStore> password_store_;
-  scoped_refptr<SessionService> session_service_;
+  scoped_ptr<SessionService> session_service_;
   scoped_refptr<WebKitContext> webkit_context_;
   scoped_ptr<StatusTray> status_tray_;
   scoped_refptr<PersonalDataManager> personal_data_manager_;
@@ -268,7 +268,7 @@ class ProfileImpl : public Profile,
   // See GetStartTime for details.
   base::Time start_time_;
 
-  scoped_refptr<TabRestoreService> tab_restore_service_;
+  scoped_ptr<TabRestoreService> tab_restore_service_;
 
   scoped_refptr<SpellCheckHost> spellcheck_host_;
 

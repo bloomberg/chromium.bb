@@ -347,7 +347,7 @@ class TestingProfile : public Profile {
   scoped_ptr<NTPResourceCache> ntp_resource_cache_;
 
   // The SessionService. Defaults to NULL, but can be set using the setter.
-  scoped_refptr<SessionService> session_service_;
+  scoped_ptr<SessionService> session_service_;
 
   // Internally, this is a TestURLRequestContextGetter that creates a dummy
   // request context. Currently, only the CookieMonster is hooked up.

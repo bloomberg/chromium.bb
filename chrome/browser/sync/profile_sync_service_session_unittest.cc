@@ -95,7 +95,10 @@ class ProfileSyncServiceSessionTest
   }
 
   virtual void TearDown() {
-    helper_.set_service(NULL);
+    if (profile()->GetSessionService() == service())
+      helper_.ReleaseService(); // we transferred ownership to profile
+    else
+      helper_.set_service(NULL);
     profile()->set_session_service(NULL);
     sync_service_.reset();
     profile()->ResetRequestContext();

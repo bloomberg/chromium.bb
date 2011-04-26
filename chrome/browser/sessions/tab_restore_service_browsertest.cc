@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,12 +46,12 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
   virtual void SetUp() {
     RenderViewHostTestHarness::SetUp();
     time_factory_ = new TabRestoreTimeFactory();
-    service_ = new TabRestoreService(profile(), time_factory_);
+    service_.reset(new TabRestoreService(profile(), time_factory_));
     WebKit::initialize(&webkitclient_);
   }
 
   virtual void TearDown() {
-    service_ = NULL;
+    service_.reset();
     delete time_factory_;
     RenderViewHostTestHarness::TearDown();
     WebKit::shutdown();
@@ -74,8 +74,8 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
   void RecreateService() {
     // Must set service to null first so that it is destroyed before the new
     // one is created.
-    service_ = NULL;
-    service_ = new TabRestoreService(profile(), time_factory_);
+    service_.reset();
+    service_.reset(new TabRestoreService(profile(), time_factory_));
     service_->LoadTabsFromLastSession();
   }
 
@@ -114,7 +114,7 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
   GURL url1_;
   GURL url2_;
   GURL url3_;
-  scoped_refptr<TabRestoreService> service_;
+  scoped_ptr<TabRestoreService> service_;
   TabRestoreTimeFactory* time_factory_;
   RenderViewTest::RendererWebKitClientImplNoSandbox webkitclient_;
 };
