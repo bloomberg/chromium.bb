@@ -449,7 +449,8 @@ void ResourceDispatcherHost::BeginRequest(
 
   request->set_load_flags(load_flags);
   request->set_context(context);
-  request->set_priority(DetermineRequestPriority(request_data.resource_type));
+  request->set_priority(DetermineRequestPriority(request_data.resource_type,
+                                                 load_flags));
 
   // Set upload data.
   uint64 upload_size = 0;
@@ -1874,12 +1875,18 @@ bool ResourceDispatcherHost::IsValidRequest(net::URLRequest* request) {
 
 // static
 net::RequestPriority ResourceDispatcherHost::DetermineRequestPriority(
-    ResourceType::Type type) {
+    ResourceType::Type type,
+    int load_flags) {
   // Determine request priority based on how critical this resource typically
   // is to user-perceived page load performance. Important considerations are:
   // * Can this resource block the download of other resources.
   // * Can this resource block the rendering of the page.
   // * How useful is the page to the user if this resource is not loaded yet.
+
+  // Prerender-motivated requests should be made at IDLE.
+  if (load_flags & net::LOAD_PRERENDER)
+    return net::IDLE;
+
   switch (type) {
     // Main frames are the highest priority because they can block nearly every
     // type of other resource and there is no useful display without them.

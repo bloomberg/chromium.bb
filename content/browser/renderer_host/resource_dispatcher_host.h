@@ -424,7 +424,8 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   // Determine request priority based on how critical this resource typically
   // is to user-perceived page load performance.
-  static net::RequestPriority DetermineRequestPriority(ResourceType::Type type);
+  static net::RequestPriority DetermineRequestPriority(ResourceType::Type type,
+                                                       int load_flags);
 
   // Sends the given notification on the UI thread.  The RenderViewHost's
   // controller is used as the source.
