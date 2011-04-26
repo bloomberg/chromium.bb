@@ -197,4 +197,7 @@
 <translation id="6201377048834849301">Precísase activar la depuración enantes de poder utilizar el panel de scripts</translation>
 <translation id="6214555124211713909"><ph name="COUNT"/> cookies (<ph name="SIZE"/>)</translation>
 <translation id="6223807494898827645">Anubre los rexistros menores de <ph name="DURATION"/></translation>
+<translation id="2739191690716947896">Depurar</translation>
+<translation id="3278501001215972235">Posáu nun puntu de rotura &quot;<ph name="BREAKPOINT"/>&quot; establecíu en <ph name="NODE"/>, porque s'amestó nun fíu nuevu a esti nodu.</translation>
+<translation id="3408014864900061151">Zarru</translation>
 </translationbundle>
