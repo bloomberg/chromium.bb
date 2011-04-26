@@ -27,7 +27,20 @@
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
+#include "ppapi/c/dev/ppp_find_dev.h"
+#include "ppapi/c/dev/ppp_printing_dev.h"
+#include "ppapi/c/dev/ppp_scrollbar_dev.h"
+#include "ppapi/c/dev/ppp_selection_dev.h"
+#include "ppapi/c/dev/ppp_widget_dev.h"
+#include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/cpp/dev/find_dev.h"
+#include "ppapi/cpp/dev/printing_dev.h"
+#include "ppapi/cpp/dev/scrollbar_dev.h"
+#include "ppapi/cpp/dev/selection_dev.h"
+#include "ppapi/cpp/dev/widget_client_dev.h"
+#include "ppapi/cpp/dev/zoom_dev.h"
+#include "ppapi/cpp/image_data.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
@@ -73,6 +86,244 @@ bool GetLastError(void* obj, plugin::SrpcParams* params) {
       static_cast<PluginPpapi*>(reinterpret_cast<Plugin*>(obj));
   outs[0]->arrays.str = strdup(plugin->last_error_string().c_str());
   return true;
+}
+
+// Derive a class from pp::Find_Dev to forward PPP_Find_Dev calls to
+// the plugin.
+class FindAdapter : public pp::Find_Dev {
+ public:
+  explicit FindAdapter(PluginPpapi* plugin,
+                       ppapi_proxy::BrowserPpp& proxy)
+    : pp::Find_Dev(plugin),
+      plugin_(plugin) {
+    ppp_find_ = reinterpret_cast<const PPP_Find_Dev*>(
+        proxy.GetPluginInterface(PPP_FIND_DEV_INTERFACE));
+  }
+
+  bool StartFind(const std::string& text, bool case_sensitive);
+  void SelectFindResult(bool forward);
+  void StopFind();
+
+ private:
+  PluginPpapi* plugin_;
+  const PPP_Find_Dev* ppp_find_;
+
+  NACL_DISALLOW_COPY_AND_ASSIGN(FindAdapter);
+};
+
+
+bool FindAdapter::StartFind(const std::string& text, bool case_sensitive) {
+  bool success = false;
+  if (ppp_find_ != NULL) {
+    PP_Bool pp_success =
+        ppp_find_->StartFind(plugin_->pp_instance(),
+                             text.c_str(),
+                             pp::BoolToPPBool(case_sensitive));
+    success = pp::PPBoolToBool(pp_success);
+  }
+  return success;
+}
+
+
+void FindAdapter::SelectFindResult(bool forward) {
+  if (ppp_find_ != NULL) {
+    ppp_find_->SelectFindResult(plugin_->pp_instance(),
+                                pp::BoolToPPBool(forward));
+  }
+}
+
+
+void FindAdapter::StopFind() {
+  if (ppp_find_ != NULL)
+    ppp_find_->StopFind(plugin_->pp_instance());
+}
+
+
+// Derive a class from pp::Printing_Dev to forward PPP_Printing_Dev calls to
+// the plugin.
+class PrintingAdapter : public pp::Printing_Dev {
+ public:
+  explicit PrintingAdapter(PluginPpapi* plugin,
+                           ppapi_proxy::BrowserPpp& proxy)
+    : pp::Printing_Dev(plugin),
+      plugin_(plugin) {
+    ppp_printing_ = reinterpret_cast<const PPP_Printing_Dev*>(
+        proxy.GetPluginInterface(PPP_PRINTING_DEV_INTERFACE));
+  }
+
+  PP_PrintOutputFormat_Dev*
+      QuerySupportedPrintOutputFormats(uint32_t* format_count);
+
+  int32_t PrintBegin(const PP_PrintSettings_Dev& print_settings);
+
+  pp::Resource PrintPages(const PP_PrintPageNumberRange_Dev* page_ranges,
+                          uint32_t page_range_count);
+
+  void PrintEnd();
+
+ private:
+  PluginPpapi* plugin_;
+  const PPP_Printing_Dev* ppp_printing_;
+
+  NACL_DISALLOW_COPY_AND_ASSIGN(PrintingAdapter);
+};
+
+
+PP_PrintOutputFormat_Dev*
+    PrintingAdapter::QuerySupportedPrintOutputFormats(uint32_t* format_count) {
+  uint32_t count = 0;
+  PP_PrintOutputFormat_Dev* formats = NULL;
+  if (ppp_printing_ != NULL) {
+    formats = ppp_printing_->QuerySupportedFormats(plugin_->pp_instance(),
+                                                   &count);
+  }
+  *format_count = count;
+  return formats;
+}
+
+
+int32_t PrintingAdapter::PrintBegin(
+    const PP_PrintSettings_Dev& print_settings) {
+  int32_t pages_required = 0;
+  if (ppp_printing_ != NULL) {
+    pages_required = ppp_printing_->Begin(plugin_->pp_instance(),
+                                          &print_settings);
+  }
+  return pages_required;
+}
+
+
+pp::Resource PrintingAdapter::PrintPages(
+    const PP_PrintPageNumberRange_Dev* page_ranges,
+    uint32_t page_range_count) {
+  if (ppp_printing_ != NULL) {
+    PP_Resource image_data = ppp_printing_->PrintPages(plugin_->pp_instance(),
+                                                       page_ranges,
+                                                       page_range_count);
+    return pp::ImageData(pp::ImageData::PassRef(), image_data);
+  }
+  return pp::Resource();
+}
+
+
+void PrintingAdapter::PrintEnd() {
+  if (ppp_printing_ != NULL)
+    ppp_printing_->End(plugin_->pp_instance());
+}
+
+
+// Derive a class from pp::Selection_Dev to forward PPP_Selection_Dev calls to
+// the plugin.
+class SelectionAdapter : public pp::Selection_Dev {
+ public:
+  explicit SelectionAdapter(PluginPpapi* plugin,
+                            ppapi_proxy::BrowserPpp& proxy)
+    : pp::Selection_Dev(plugin),
+      plugin_(plugin) {
+    ppp_selection_ = reinterpret_cast<const PPP_Selection_Dev*>(
+        proxy.GetPluginInterface(PPP_SELECTION_DEV_INTERFACE));
+  }
+
+  pp::Var GetSelectedText(bool html);
+
+ private:
+  PluginPpapi* plugin_;
+  const PPP_Selection_Dev* ppp_selection_;
+
+  NACL_DISALLOW_COPY_AND_ASSIGN(SelectionAdapter);
+};
+
+
+pp::Var SelectionAdapter::GetSelectedText(bool html) {
+  ppapi_proxy::BrowserPpp* proxy = plugin_->ppapi_proxy();
+  if (proxy != NULL) {
+    if (ppp_selection_ != NULL) {
+        PP_Var var = ppp_selection_->GetSelectedText(plugin_->pp_instance(),
+                                                     pp::BoolToPPBool(html));
+        return pp::Var(pp::Var::PassRef(), var);
+    }
+  }
+  return pp::Var();
+}
+
+
+// Derive a class from pp::WidgetClient_Dev to forward PPP_Widget_Dev
+// and PPP_Scrollbar_Dev calls to the plugin.
+class WidgetClientAdapter : public pp::WidgetClient_Dev {
+ public:
+  explicit WidgetClientAdapter(PluginPpapi* plugin,
+                               ppapi_proxy::BrowserPpp& proxy)
+    : pp::WidgetClient_Dev(plugin),
+      plugin_(plugin) {
+    ppp_widget_ = reinterpret_cast<const PPP_Widget_Dev*>(
+        proxy.GetPluginInterface(PPP_WIDGET_DEV_INTERFACE));
+    ppp_scrollbar_ = reinterpret_cast<const PPP_Scrollbar_Dev*>(
+        proxy.GetPluginInterface(PPP_SCROLLBAR_DEV_INTERFACE));
+  }
+
+  void InvalidateWidget(pp::Widget_Dev widget, const pp::Rect& dirty_rect);
+
+  void ScrollbarValueChanged(pp::Scrollbar_Dev scrollbar, uint32_t value);
+
+ private:
+  PluginPpapi* plugin_;
+  const PPP_Widget_Dev* ppp_widget_;
+  const PPP_Scrollbar_Dev* ppp_scrollbar_;
+
+  NACL_DISALLOW_COPY_AND_ASSIGN(WidgetClientAdapter);
+};
+
+
+void WidgetClientAdapter::InvalidateWidget(
+    pp::Widget_Dev widget,
+    const pp::Rect& dirty_rect) {
+  if (ppp_widget_ != NULL) {
+    ppp_widget_->Invalidate(plugin_->pp_instance(),
+                            widget.pp_resource(),
+                            &dirty_rect.pp_rect());
+  }
+}
+
+
+void WidgetClientAdapter::ScrollbarValueChanged(
+    pp::Scrollbar_Dev scrollbar,
+    uint32_t value) {
+  if (ppp_scrollbar_ != NULL) {
+    ppp_scrollbar_->ValueChanged(plugin_->pp_instance(),
+                                 scrollbar.pp_resource(),
+                                 value);
+  }
+}
+
+
+// Derive a class from pp::Zoom_Dev to forward PPP_Zoom_Dev calls to
+// the plugin.
+class ZoomAdapter : public pp::Zoom_Dev {
+ public:
+  explicit ZoomAdapter(PluginPpapi* plugin,
+                       ppapi_proxy::BrowserPpp& proxy)
+    : pp::Zoom_Dev(plugin),
+      plugin_(plugin) {
+    ppp_zoom_ = reinterpret_cast<const PPP_Zoom_Dev*>(
+        proxy.GetPluginInterface(PPP_ZOOM_DEV_INTERFACE));
+  }
+
+  void Zoom(double factor, bool text_only);
+
+ private:
+  PluginPpapi* plugin_;
+  const PPP_Zoom_Dev* ppp_zoom_;
+
+  NACL_DISALLOW_COPY_AND_ASSIGN(ZoomAdapter);
+};
+
+
+void ZoomAdapter::Zoom(double factor, bool text_only) {
+  if (ppp_zoom_ != NULL) {
+    ppp_zoom_->Zoom(plugin_->pp_instance(),
+                    factor,
+                    pp::BoolToPPBool(text_only));
+  }
 }
 
 }  // namespace
@@ -372,6 +623,18 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   PP_Var scriptable_proxy =
       instance_interface->GetInstanceObject(pp_instance());
   handle->set_scriptable_proxy(pp::Var(pp::Var::PassRef(), scriptable_proxy));
+
+  // Create PPP* interface adapters to forward calls to .nexe.
+  find_adapter_.reset(
+      new(std::nothrow) FindAdapter(this, *ppapi_proxy_));
+  printing_adapter_.reset(
+      new(std::nothrow) PrintingAdapter(this, *ppapi_proxy_));
+  selection_adapter_.reset(
+      new(std::nothrow) SelectionAdapter(this, *ppapi_proxy_));
+  widget_client_adapter_.reset(
+      new(std::nothrow) WidgetClientAdapter(this, *ppapi_proxy_));
+  zoom_adapter_.reset(
+      new(std::nothrow) ZoomAdapter(this, *ppapi_proxy_));
 
   // Replay missed events.
   if (replayDidChangeView) {

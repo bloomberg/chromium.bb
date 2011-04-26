@@ -29,7 +29,12 @@ class BrowserPpp;
 }
 
 namespace pp {
+class Find_Dev;
+class Printing_Dev;
+class Selection_Dev;
 class URLLoader;
+class WidgetClient_Dev;
+class Zoom_Dev;
 }
 
 namespace plugin {
@@ -216,6 +221,14 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Keep track of file descriptors opened by StreamAsFile().
   // These are owned by the browser.
   std::map<nacl::string, int32_t> url_fd_map_;
+
+  // Adapter class constructors require a reference to 'this', so we can't
+  // contain them directly.
+  nacl::scoped_ptr<pp::Find_Dev> find_adapter_;
+  nacl::scoped_ptr<pp::Printing_Dev> printing_adapter_;
+  nacl::scoped_ptr<pp::Selection_Dev> selection_adapter_;
+  nacl::scoped_ptr<pp::WidgetClient_Dev> widget_client_adapter_;
+  nacl::scoped_ptr<pp::Zoom_Dev> zoom_adapter_;
 };
 
 }  // namespace plugin
