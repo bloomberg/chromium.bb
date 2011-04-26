@@ -24,6 +24,10 @@ class QuotaFileUtil : public FileSystemFileUtil {
     const FilePath& dest_file_path,
     bool copy);
 
+  virtual base::PlatformFileError DeleteFile(
+      FileSystemOperationContext* fs_context,
+      const FilePath& file_path);
+
   // TODO(dmikurube): Charge some amount of quota for directories.
 
   virtual base::PlatformFileError Truncate(

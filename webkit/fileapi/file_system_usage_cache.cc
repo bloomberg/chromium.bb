@@ -55,6 +55,16 @@ bool FileSystemUsageCache::DecrementDirty(const FilePath& usage_file_path) {
 }
 
 // static
+int FileSystemUsageCache::AtomicUpdateUsageByDelta(
+    const FilePath& usage_file_path, int64 delta) {
+  uint32 dirty = 0;
+  int64 fs_usage;
+  fs_usage = Read(usage_file_path, &dirty);
+
+  return Write(usage_file_path, dirty, fs_usage + delta);
+}
+
+// static
 int FileSystemUsageCache::UpdateUsage(const FilePath& usage_file_path,
                                       int64 fs_usage) {
   return Write(usage_file_path, 0, fs_usage);

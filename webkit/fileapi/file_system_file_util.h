@@ -125,12 +125,40 @@ class FileSystemFileUtil {
       const FilePath& src_file_path,
       const FilePath& dest_file_path);
 
+  // TODO(dmikurube): Make this method non-virtual if it's possible.
+  // It conflicts with LocalFileSystemFileUtil for now.
+  //
   // Deletes a file or a directory.
   // It is an error to delete a non-empty directory with recursive=false.
+  //
+  // The method should not be overridden. It calls one of the followint methods
+  // depending on whether the target is a directory or not, and whether the
+  // |recursive| flag is given or not.
+  // - (virtual) DeleteFile,
+  // - (virtual) DeleteSingleDirectory or
+  // - (non-virtual) DeleteDirectoryRecursive which calls two methods above.
   virtual PlatformFileError Delete(
       FileSystemOperationContext* context,
       const FilePath& file_path,
       bool recursive);
+
+  // Deletes a single file.
+  // It assumes the given path points a file.
+  //
+  // The method can be overridden for file deletion. It is called from
+  // DeleteDirectoryRecursive and Delete (both are non-virtual).
+  virtual PlatformFileError DeleteFile(
+      FileSystemOperationContext* unused,
+      const FilePath& file_path);
+
+  // Deletes a single empty directory.
+  // It assumes the given path points an empty directory.
+  //
+  // The method can be overridden for directory deletion. It is called from
+  // DeleteDirectoryRecursive and Delete (both are non-virtual).
+  virtual PlatformFileError DeleteSingleDirectory(
+      FileSystemOperationContext* unused,
+      const FilePath& file_path);
 
   // Touches a file. The callback can be NULL.
   virtual PlatformFileError Touch(
@@ -160,6 +188,17 @@ class FileSystemFileUtil {
 
  protected:
   FileSystemFileUtil() { }
+
+  // Deletes a directory and all entries under the directory.
+  // This method is non-virtual, not to be overridden.
+  //
+  // The method should not be overridden. It is called from Delete. It
+  // internally calls two virtual methods, DeleteFile() to delete files and
+  // DeleteSingleDirectory() to delete empty directories after all the files are
+  // deleted.
+  PlatformFileError DeleteDirectoryRecursive(
+      FileSystemOperationContext* context,
+      const FilePath& file_path);
 
   // This also removes the destination directory if it's non-empty and all
   // other checks are passed (so that the copy/move correctly overwrites the

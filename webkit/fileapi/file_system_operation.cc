@@ -341,7 +341,7 @@ void FileSystemOperation::Write(
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
   DCHECK(blob_url.is_valid());
-  file_writer_delegate_.reset(new FileWriterDelegate(this, offset));
+  file_writer_delegate_.reset(new FileWriterDelegate(this, offset, proxy_));
   blob_request_.reset(
       new net::URLRequest(blob_url, file_writer_delegate_.get()));
   blob_request_->set_context(url_request_context);
@@ -629,7 +629,7 @@ void FileSystemOperation::OnFileOpenedForWrite(
     return;
   }
   file_writer_delegate_->Start(file.ReleaseValue(), blob_request_.get(),
-      file_system_operation_context_.allowed_bytes_growth(), proxy_);
+      file_system_operation_context_);
 }
 
 bool FileSystemOperation::VerifyFileSystemPathForRead(

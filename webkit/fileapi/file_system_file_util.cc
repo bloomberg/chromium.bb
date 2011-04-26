@@ -4,9 +4,12 @@
 
 #include "webkit/fileapi/file_system_file_util.h"
 
+#include <stack>
+
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "webkit/fileapi/file_system_operation_context.h"
 
 namespace fileapi {
 
@@ -170,19 +173,16 @@ PlatformFileError FileSystemFileUtil::Move(
 }
 
 PlatformFileError FileSystemFileUtil::Delete(
-    FileSystemOperationContext* unused,
+    FileSystemOperationContext* context,
     const FilePath& file_path,
     bool recursive) {
-  if (!file_util::PathExists(file_path)) {
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  }
-  if (!file_util::Delete(file_path, recursive)) {
-    if (!recursive && !file_util::IsDirectoryEmpty(file_path)) {
-      return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
-    }
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  }
-  return base::PLATFORM_FILE_OK;
+  if (DirectoryExists(context, file_path)) {
+    if (!recursive)
+      return DeleteSingleDirectory(context, file_path);
+    else
+      return DeleteDirectoryRecursive(context, file_path);
+  } else
+    return DeleteFile(context, file_path);
 }
 
 PlatformFileError FileSystemFileUtil::Touch(
@@ -330,6 +330,67 @@ PlatformFileError FileSystemFileUtil::CopyOrMoveDirectory(
       return error;
   }
   return base::PLATFORM_FILE_OK;
+}
+
+PlatformFileError FileSystemFileUtil::DeleteFile(
+    FileSystemOperationContext* unused,
+    const FilePath& file_path) {
+  if (!file_util::PathExists(file_path))
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  if (file_util::DirectoryExists(file_path))
+    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+  if (!file_util::Delete(file_path, false))
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  return base::PLATFORM_FILE_OK;
+}
+
+PlatformFileError FileSystemFileUtil::DeleteSingleDirectory(
+    FileSystemOperationContext* unused,
+    const FilePath& file_path) {
+  if (!file_util::PathExists(file_path))
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  if (!file_util::DirectoryExists(file_path)) {
+    // TODO(dmikurube): Check if this error code is appropriate.
+    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+  }
+  if (!file_util::IsDirectoryEmpty(file_path)) {
+    // TODO(dmikurube): Check if this error code is appropriate.
+    return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
+  }
+  if (!file_util::Delete(file_path, false))
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  return base::PLATFORM_FILE_OK;
+}
+
+PlatformFileError FileSystemFileUtil::DeleteDirectoryRecursive(
+    FileSystemOperationContext* context,
+    const FilePath& file_path) {
+  scoped_ptr<AbstractFileEnumerator> file_enum(CreateFileEnumerator(file_path));
+  FilePath file_path_each;
+
+  std::stack<FilePath> directories;
+  while (!(file_path_each = file_enum->Next()).empty()) {
+    if (file_enum->IsDirectory()) {
+      directories.push(file_path_each);
+    } else {
+      // DeleteFile here is the virtual overridden member function.
+      PlatformFileError error = DeleteFile(context, file_path_each);
+      if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
+        return base::PLATFORM_FILE_ERROR_FAILED;
+      else if (error != base::PLATFORM_FILE_OK)
+        return error;
+    }
+  }
+
+  while (!directories.empty()) {
+    PlatformFileError error = DeleteSingleDirectory(context, directories.top());
+    if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
+      return base::PLATFORM_FILE_ERROR_FAILED;
+    else if (error != base::PLATFORM_FILE_OK)
+      return error;
+    directories.pop();
+  }
+  return DeleteSingleDirectory(context, file_path);
 }
 
 bool FileSystemFileUtil::PathExists(

@@ -24,6 +24,11 @@ class FileSystemUsageCache {
   // Updates the size described in the .usage file.
   static int UpdateUsage(const FilePath& usage_file_path, int64 fs_usage);
 
+  // Updates the size described in the .usage file by delta with keeping dirty
+  // even if dirty > 0.
+  static int AtomicUpdateUsageByDelta(
+      const FilePath& usage_file_path, int64 delta);
+
   static bool Exists(const FilePath& usage_file_path);
   static bool Delete(const FilePath& usage_file_path);
 

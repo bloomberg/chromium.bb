@@ -21,8 +21,12 @@
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/blob_url_request_job.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
+#include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/local_file_system_file_util.h"
 
 namespace fileapi {
 
@@ -56,20 +60,18 @@ class FileSystemOperationWriteTest : public testing::Test {
   virtual void TearDown();
 
  protected:
-  GURL URLForRelativePath(const std::string& path) const {
-    // Only the path will actually get used.
-    return GURL("file://").Resolve(file_.value()).Resolve(path);
-  }
-
   GURL URLForPath(const FilePath& path) const {
     // Only the path will actually get used.
-    return GURL("file://").Resolve(path.value());
+    return GURL(GetFileSystemRootURI(GURL("http://www.example.com/"),
+        kFileSystemTypeTemporary).spec() + path.MaybeAsASCII());
   }
 
   MessageLoop loop_;
 
   ScopedTempDir dir_;
+  FilePath filesystem_dir_;
   FilePath file_;
+  FilePath virtual_path_;
 
   // For post-operation status.
   base::PlatformFileError status_;
@@ -80,6 +82,25 @@ class FileSystemOperationWriteTest : public testing::Test {
 };
 
 namespace {
+
+class MockFileSystemPathManager : public FileSystemPathManager {
+ public:
+  MockFileSystemPathManager(const FilePath& filesystem_path)
+      : FileSystemPathManager(base::MessageLoopProxy::CreateForCurrentThread(),
+                              filesystem_path, NULL, false, true),
+        test_filesystem_path_(filesystem_path) {}
+
+  virtual FilePath ValidateFileSystemRootAndGetPathOnFileThread(
+      const GURL& origin_url,
+      FileSystemType type,
+      const FilePath& virtual_path,
+      bool create) {
+    return test_filesystem_path_;
+  }
+
+ private:
+  FilePath test_filesystem_path_;
+};
 
 class TestURLRequestContext : public net::URLRequestContext {
  public:
@@ -149,7 +170,11 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
 
 void FileSystemOperationWriteTest::SetUp() {
   ASSERT_TRUE(dir_.CreateUniqueTempDir());
-  file_util::CreateTemporaryFileInDir(dir_.path(), &file_);
+  filesystem_dir_ = dir_.path().AppendASCII("filesystem");
+  file_util::CreateDirectory(filesystem_dir_);
+  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(filesystem_dir_, &file_));
+  virtual_path_ = file_.BaseName();
+
   net::URLRequest::RegisterProtocolFactory("blob", &BlobURLRequestJobFactory);
 }
 
@@ -161,8 +186,12 @@ FileSystemOperation* FileSystemOperationWriteTest::operation() {
   FileSystemOperation* operation = new FileSystemOperation(
       new MockDispatcher(this),
       base::MessageLoopProxy::CreateForCurrentThread(),
-      NULL,
-      FileSystemFileUtil::GetInstance());
+      new FileSystemContext(base::MessageLoopProxy::CreateForCurrentThread(),
+                            base::MessageLoopProxy::CreateForCurrentThread(),
+                            NULL, FilePath(), false /* is_incognito */,
+                            true, true,
+                            new MockFileSystemPathManager(filesystem_dir_)),
+      LocalFileSystemFileUtil::GetInstance());
   operation->file_system_operation_context()->set_src_type(
       kFileSystemTypeTemporary);
   operation->file_system_operation_context()->set_dest_type(
@@ -180,7 +209,8 @@ TEST_F(FileSystemOperationWriteTest, TestWriteSuccess) {
   url_request_context->blob_storage_controller()->
       RegisterBlobUrl(blob_url, blob_data);
 
-  operation()->Write(url_request_context, URLForPath(file_), blob_url, 0);
+  operation()->Write(url_request_context, URLForPath(virtual_path_), blob_url,
+                     0);
   MessageLoop::current()->Run();
 
   url_request_context->blob_storage_controller()->UnregisterBlobUrl(blob_url);
@@ -200,7 +230,8 @@ TEST_F(FileSystemOperationWriteTest, TestWriteZero) {
   url_request_context->blob_storage_controller()->
       RegisterBlobUrl(blob_url, blob_data);
 
-  operation()->Write(url_request_context, URLForPath(file_), blob_url, 0);
+  operation()->Write(url_request_context, URLForPath(virtual_path_),
+                     blob_url, 0);
   MessageLoop::current()->Run();
 
   url_request_context->blob_storage_controller()->UnregisterBlobUrl(blob_url);
@@ -214,7 +245,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteInvalidBlobUrl) {
   scoped_refptr<TestURLRequestContext> url_request_context(
       new TestURLRequestContext());
 
-  operation()->Write(url_request_context, URLForPath(file_),
+  operation()->Write(url_request_context, URLForPath(virtual_path_),
       GURL("blob:invalid"), 0);
   MessageLoop::current()->Run();
 
@@ -234,7 +265,8 @@ TEST_F(FileSystemOperationWriteTest, TestWriteInvalidFile) {
       RegisterBlobUrl(blob_url, blob_data);
 
   operation()->Write(url_request_context,
-                     URLForRelativePath("nonexist"), blob_url, 0);
+                     URLForPath(FilePath(FILE_PATH_LITERAL("nonexist"))),
+                     blob_url, 0);
   MessageLoop::current()->Run();
 
   url_request_context->blob_storage_controller()->UnregisterBlobUrl(blob_url);
@@ -245,6 +277,12 @@ TEST_F(FileSystemOperationWriteTest, TestWriteInvalidFile) {
 }
 
 TEST_F(FileSystemOperationWriteTest, TestWriteDir) {
+  FilePath subdir;
+  ASSERT_TRUE(file_util::CreateTemporaryDirInDir(filesystem_dir_,
+                                                 FILE_PATH_LITERAL("d"),
+                                                 &subdir));
+  FilePath virtual_subdir_path = subdir.BaseName();
+
   GURL blob_url("blob:writedir");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("It\'ll not be written, too.");
@@ -254,7 +292,8 @@ TEST_F(FileSystemOperationWriteTest, TestWriteDir) {
   url_request_context->blob_storage_controller()->
       RegisterBlobUrl(blob_url, blob_data);
 
-  operation()->Write(url_request_context, URLForPath(dir_.path()), blob_url, 0);
+  operation()->Write(url_request_context, URLForPath(virtual_subdir_path),
+                     blob_url, 0);
   MessageLoop::current()->Run();
 
   url_request_context->blob_storage_controller()->UnregisterBlobUrl(blob_url);

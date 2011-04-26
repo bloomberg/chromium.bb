@@ -40,7 +40,7 @@ class FileSystemPathManager {
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
       bool is_incognito,
       bool allow_file_access_from_files);
-  ~FileSystemPathManager();
+  virtual ~FileSystemPathManager();
 
   // Callback for GetFileSystemRootPath.
   // If the request is accepted and the root filesystem for the origin exists

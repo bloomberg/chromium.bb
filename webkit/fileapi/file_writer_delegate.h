@@ -21,16 +21,19 @@
 namespace fileapi {
 
 class FileSystemOperation;
+class FileSystemOperationContext;
 
 class FileWriterDelegate : public net::URLRequest::Delegate {
  public:
-  FileWriterDelegate(FileSystemOperation* write_operation, int64 offset);
+  FileWriterDelegate(
+      FileSystemOperation* write_operation,
+      int64 offset,
+      scoped_refptr<base::MessageLoopProxy> proxy);
   virtual ~FileWriterDelegate();
 
   void Start(base::PlatformFile file,
              net::URLRequest* request,
-             int64 allowed_bytes_growth,
-             scoped_refptr<base::MessageLoopProxy> proxy);
+             const FileSystemOperationContext& context);
   base::PlatformFile file() {
     return file_;
   }
@@ -47,9 +50,10 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
  private:
-  void OnGetFileInfoForWrite(
+  void OnGetFileInfoAndPrepareUsageFile(
       base::PlatformFileError error,
-      const base::PlatformFileInfo& file_info);
+      const base::PlatformFileInfo& file_info,
+      const FilePath& usage_file_path);
   void Read();
   void OnDataReceived(int bytes_read);
   void Write();
@@ -61,10 +65,12 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   base::PlatformFile file_;
   base::PlatformFileInfo file_info_;
   int64 offset_;
+  scoped_refptr<base::MessageLoopProxy> proxy_;
   base::Time last_progress_event_time_;
   int bytes_read_backlog_;
   int bytes_written_;
   int bytes_read_;
+  FilePath usage_file_path_;
   int64 total_bytes_written_;
   int64 allowed_bytes_growth_;
   int64 allowed_bytes_to_write_;
