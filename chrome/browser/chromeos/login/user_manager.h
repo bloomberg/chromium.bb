@@ -104,6 +104,10 @@ class UserManager : public UserImageLoader::Delegate,
   void SaveUserImage(const std::string& username,
                      const SkBitmap& image);
 
+  // Saves user image path for the user. Can be used to set default images.
+  void SaveUserImagePath(const std::string& username,
+                         const std::string& image_path);
+
   // chromeos::UserImageLoader::Delegate implementation.
   virtual void OnImageLoaded(const std::string& username,
                              const SkBitmap& image,

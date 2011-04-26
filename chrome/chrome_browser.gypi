@@ -477,6 +477,7 @@
         'browser/chromeos/login/cookie_fetcher.h',
         'browser/chromeos/login/cryptohome_op.cc',
         'browser/chromeos/login/cryptohome_op.h',
+        'browser/chromeos/login/default_user_images.h',
         'browser/chromeos/login/dom_login_display.cc',
         'browser/chromeos/login/dom_login_display.h',
         'browser/chromeos/login/dom_login_display_host.cc',

@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
@@ -33,7 +34,6 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
-#include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -49,24 +49,6 @@ const char kUserImages[] = "UserImages";
 // Incognito user is represented by an empty string (since some code already
 // depends on that and it's hard to figure out what).
 const char kGuestUser[] = "";
-
-// Special pathes to default user images.
-const char* kDefaultImageNames[] = {
-    "default:gray",
-    "default:green",
-    "default:blue",
-    "default:yellow",
-    "default:red",
-};
-
-// Resource IDs of default user images.
-const int kDefaultImageResources[] = {
-  IDR_LOGIN_DEFAULT_USER,
-  IDR_LOGIN_DEFAULT_USER_1,
-  IDR_LOGIN_DEFAULT_USER_2,
-  IDR_LOGIN_DEFAULT_USER_3,
-  IDR_LOGIN_DEFAULT_USER_4
-};
 
 base::LazyInstance<UserManager> g_user_manager(base::LINKER_INITIALIZED);
 
@@ -231,7 +213,7 @@ class RemoveAttempt : public CryptohomeLibrary::Delegate {
 
 UserManager::User::User() {
   image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_LOGIN_DEFAULT_USER);
+      kDefaultImageResources[0]);
 }
 
 UserManager::User::~User() {}
@@ -466,6 +448,11 @@ void UserManager::SaveUserImage(const std::string& username,
       FROM_HERE,
       NewRunnableFunction(&SaveImageToFile,
                           image, image_path, username));
+}
+
+void UserManager::SaveUserImagePath(const std::string& username,
+                                    const std::string& image_path) {
+  SavePathToLocalState(username, image_path);
 }
 
 void UserManager::SetDefaultUserImage(const std::string& username) {

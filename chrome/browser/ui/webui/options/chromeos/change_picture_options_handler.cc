@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/path_service.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -24,31 +25,22 @@ namespace chromeos {
 
 namespace {
 
-// Resource IDs of default user images.
-const int kDefaultImageResources[] = {
-    IDR_LOGIN_DEFAULT_USER,
-    IDR_LOGIN_DEFAULT_USER_1,
-    IDR_LOGIN_DEFAULT_USER_2,
-    IDR_LOGIN_DEFAULT_USER_3,
-    IDR_LOGIN_DEFAULT_USER_4
-};
-
+// URLs to default user images through chrome://theme/ scheme.
 const char* kDefaultImagePaths[] = {
-    "chrome://theme/IDR_LOGIN_DEFAULT_USER",
-    "chrome://theme/IDR_LOGIN_DEFAULT_USER_1",
-    "chrome://theme/IDR_LOGIN_DEFAULT_USER_2",
-    "chrome://theme/IDR_LOGIN_DEFAULT_USER_3",
-    "chrome://theme/IDR_LOGIN_DEFAULT_USER_4"
+  "chrome://theme/IDR_LOGIN_DEFAULT_USER",
+  "chrome://theme/IDR_LOGIN_DEFAULT_USER_1",
+  "chrome://theme/IDR_LOGIN_DEFAULT_USER_2",
+  "chrome://theme/IDR_LOGIN_DEFAULT_USER_3",
+  "chrome://theme/IDR_LOGIN_DEFAULT_USER_4"
 };
 
-SkBitmap* GetUserImageFromURL(const std::string& url) {
+int GetUserImageIndexFromURL(const std::string& url) {
   for (size_t i = 0; i < arraysize(kDefaultImagePaths); ++i) {
     if (url == kDefaultImagePaths[i]) {
-      return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          kDefaultImageResources[i]);
+      return i;
     }
   }
-  return NULL;
+  return -1;
 }
 
 // Returns info about extensions for files we support as user images.
@@ -166,9 +158,16 @@ void ChangePictureOptionsHandler::SelectImage(const ListValue* args) {
     NOTREACHED();
     return;
   }
-  const SkBitmap* image = GetUserImageFromURL(image_url);
-  if (image)
-    UserManager::Get()->SetLoggedInUserImage(*image);
+  int user_image_index = GetUserImageIndexFromURL(image_url);
+  if (user_image_index == -1)
+    return;
+
+  const SkBitmap* image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          kDefaultImageResources[user_image_index]);
+  UserManager* user_manager = UserManager::Get();
+  user_manager->SetLoggedInUserImage(*image);
+  user_manager->SaveUserImagePath(user_manager->logged_in_user().email(),
+                                  kDefaultImageNames[user_image_index]);
 }
 
 void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
