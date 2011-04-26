@@ -17,6 +17,9 @@ important -- Master bot uses important bots to determine overall status.
 hostname -- Needed for 'important' slaves.  The hostname of the bot.  Should
             match hostname in slaves.cfg in buildbot checkout.
 
+useflags -- emerge use flags to use while setting up the board, building
+            packages, making images, etc.
+
 uprev -- Uprevs the local ebuilds to build new changes since last stable.
          build.  If master then also pushes these changes on success.
 rev_overlays -- Select what overlays to look at for revving. This can be
@@ -25,6 +28,7 @@ push_overlays -- Select what overlays to push at. This should be a subset of
                  rev_overlays for the particular builder.  Must be None if
                  not a master.  There should only be one master bot pushing
                  changes to each overlay per branch.
+chrome_rev -- Uprev Chrome, values of 'tot', 'stable_release', or None.
 
 chrome_tests -- runs chrome testing binaries in a vm.
 
@@ -37,9 +41,14 @@ vm_tests -- Runs the smoke suite and au test harness in a qemu-based VM
 quick_vm -- If vm_tests is true, run a minimal au test harness suite.
 
 usepkg -- Use binary packages to bootstrap, when possible. (emerge --usepkg)
+
 chroot_replace -- wipe and replace chroot, but not source.
 
-gs_path -- Google Storage path to offload files to
+gs_path -- Google Storage path to offload files to.
+           None - No upload
+           'default' - 'gs://chromeos-archive/' + bot_id
+           value - Upload to explicit path
+
 build_type -- Upload prebuilts under the specified category. Can be any of
               [preflight|full|chrome].
 test_mod -- Create a test mod image for archival.
@@ -64,9 +73,14 @@ default = {
   'important' : False,
   # 'hostname' No default value
 
+  'useflags' : None,
+  'usepkg' : True,
+  'chroot_replace' : False,
+
   'uprev' : False,
   'rev_overlays': 'public',
   'push_overlays': None,
+  'chrome_rev' : None,
 
   'chrome_tests' : False,
 
@@ -76,8 +90,7 @@ default = {
   'vm_tests' : True,
   'quick_vm' : True,
 
-  'usepkg' : True,
-  'chroot_replace' : False,
+  'gs_path': 'default',
 
   'build_type' : False,
   'archive_build_debug' : False,
@@ -120,8 +133,15 @@ full = {
 
 config = {}
 
-config['x86-generic-pre-flight-queue'] = default.copy()
-config['x86-generic-pre-flight-queue'].update({
+def add_config(name, updates):
+  new_config = default.copy()
+  for update_config in updates:
+    new_config.update(update_config)
+
+  config[name] = new_config
+
+
+add_config('x86-generic-pre-flight-queue', [{
   'board' : 'x86-generic',
   'master' : True,
   'hostname' : 'chromeosbuild2',
@@ -130,10 +150,9 @@ config['x86-generic-pre-flight-queue'].update({
   'build_type': 'preflight',
   'rev_overlays': 'public',
   'push_overlays': 'public',
-})
+}])
 
-config['x86-generic-chrome-pre-flight-queue'] = default.copy()
-config['x86-generic-chrome-pre-flight-queue'].update({
+add_config('x86-generic-chrome-pre-flight-queue', [{
   'board' : 'x86-generic',
   'master' : True,
 
@@ -142,11 +161,10 @@ config['x86-generic-chrome-pre-flight-queue'].update({
   'chrome_tests' : True,
   'rev_overlays': 'public',
   'push_overlays': 'public',
-})
+}])
 
 
-config['x86-mario-pre-flight-queue'] = default.copy()
-config['x86-mario-pre-flight-queue'].update({
+add_config('x86-mario-pre-flight-queue', [{
   'board' : 'x86-mario',
   'master' : True,
 
@@ -154,114 +172,89 @@ config['x86-mario-pre-flight-queue'].update({
   'rev_overlays': 'both',
   'push_overlays': 'private',
   'gs_path': 'gs://chromeos-x86-mario/pre-flight-master'
-})
+}])
 
-config['x86-alex-pre-flight-branch'] = default.copy()
-config['x86-alex-pre-flight-branch'].update({
+add_config('x86-alex-pre-flight-branch', [{
   'board' : 'x86-alex',
   'master' : False,
 
   'uprev' : True,
   'rev_overlays': 'both',
   'push_overlays': None,
-})
+}])
 
-config['x86-mario-pre-flight-branch'] = default.copy()
-config['x86-mario-pre-flight-branch'].update({
+add_config('x86-mario-pre-flight-branch', [{
   'board' : 'x86-mario',
   'master' : True,
 
   'uprev' : True,
   'rev_overlays': 'both',
   'push_overlays': 'both',
-})
+}])
 
-config['x86-agz-bin'] = default.copy()
-config['x86-agz-bin'].update({
+add_config('x86-agz-bin', [{
   'board' : 'x86-agz',
 
   'uprev' : True,
   'rev_overlays': 'both',
   'push_overlays': None,
-})
+}])
 
-config['x86-dogfood-bin'] = default.copy()
-config['x86-dogfood-bin'].update({
+add_config('x86-dogfood-bin', [{
   'board' : 'x86-dogfood',
 
   'uprev' : True,
   'rev_overlays': 'both',
   'push_overlays': None,
-})
+}])
 
-config['x86-pineview-bin'] = default.copy()
-config['x86-pineview-bin'].update({
+add_config('x86-pineview-bin', [{
   'board' : 'x86-pineview',
 
   'uprev' : True,
   'rev_overlays': 'public',
   'push_overlays': None,
-})
+}])
 
-config['arm-tegra2-bin'] = default.copy()
-config['arm-tegra2-bin'].update(arm)
-config['arm-tegra2-bin'].update({
+add_config('arm-tegra2-bin', [arm, {
   'board' : 'tegra2_dev-board',
 
   'uprev' : True,
   'rev_overlays': 'public',
   'push_overlays': None,
-})
+}])
 
-config['arm-generic-bin'] = default.copy()
-config['arm-generic-bin'].update(arm)
-config['arm-generic-bin'].update({
+add_config('arm-generic-bin', [arm, {
   'board' : 'arm-generic',
 
   'uprev' : True,
   'rev_overlays': 'public',
   'push_overlays': None,
-})
+}])
 
-config['arm-generic-full'] = default.copy()
-config['arm-generic-full'].update(arm)
-config['arm-generic-full'].update(full)
-config['arm-generic-full'].update({
+add_config('arm-generic-full', [arm, full, {
   'board' : 'arm-generic',
-})
+}])
 
-config['arm-tegra2-full'] = default.copy()
-config['arm-tegra2-full'].update(arm)
-config['arm-tegra2-full'].update(full)
-config['arm-tegra2-full'].update({
+add_config('arm-tegra2-full', [arm, full, {
   'board' : 'tegra2_dev-board',
-})
+}])
 
-config['arm-tegra2-seaboard-full'] = default.copy()
-config['arm-tegra2-seaboard-full'].update(arm)
-config['arm-tegra2-seaboard-full'].update(full)
-config['arm-tegra2-seaboard-full'].update({
+add_config('arm-tegra2-seaboard-full', [arm, full, {
   'board' : 'tegra2_seaboard',
-})
+}])
 
-config['x86-generic-full'] = default.copy()
-config['x86-generic-full'].update(full)
-config['x86-generic-full'].update({
+add_config('x86-generic-full', [full, {
   'board' : 'x86-generic',
-})
+}])
 
-config['x86-pineview-full'] = default.copy()
-config['x86-pineview-full'].update(full)
-config['x86-pineview-full'].update({
+add_config('x86-pineview-full', [full, {
   'board' : 'x86-pineview',
-})
+}])
 
-config['x86-generic-manifest'] = default.copy()
-config['x86-generic-manifest'].update({
+add_config('x86-generic-manifest', [{
   'board' : 'x86-generic',
 
   'git_url' : 'ssh://git@gitrw.chromium.org:9222/manifest-internal',
   'manifest_version' : 'ssh://git@gitrw.chromium.org:9222/manifest-versions',
-})
-
-
+}])

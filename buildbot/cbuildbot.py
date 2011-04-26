@@ -13,6 +13,7 @@ full and pre-flight-queue builds.
 import errno
 import optparse
 import os
+import pprint
 import sys
 import traceback
 
@@ -30,12 +31,12 @@ def _GetConfig(config_name, options):
   """Gets the configuration for the build"""
   build_config = {}
   if not cbuildbot_config.config.has_key(config_name):
-    Warning('Non-existent configuration specified.')
-    Warning('Please specify one of:')
-    config_names = config.keys()
+    print 'Non-existent configuration specified.'
+    print 'Please specify one of:'
+    config_names = cbuildbot_config.config.keys()
     config_names.sort()
     for name in config_names:
-      Warning('  %s' % name)
+      print '  %s' % name
     sys.exit(1)
 
   result = cbuildbot_config.config[config_name]
@@ -160,6 +161,9 @@ def main():
   parser.add_option('--debug', action='store_true', dest='debug',
                     default=False,
                     help='Override some options to run as a developer.')
+  parser.add_option('--dump_config', action='store_true', dest='dump_config',
+                    default=False,
+                    help='Dump out build config options, and exit.')
   parser.add_option('--noarchive', action='store_false', dest='archive',
                     default=True,
                     help="Don't run archive stage.")
@@ -196,6 +200,13 @@ def main():
     build_config = _GetConfig(bot_id, options)
   else:
     parser.error('Invalid usage.  Use -h to see usage.')
+
+  if options.dump_config:
+    # This works, but option ordering is bad...
+    print 'Configuration %s:' % bot_id
+    pp = pprint.PrettyPrinter(indent=2)
+    pp.pprint(build_config)
+    exit(0)
 
   RunEverything(bot_id, options, build_config)
 
