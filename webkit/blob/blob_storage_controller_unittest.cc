@@ -18,8 +18,8 @@ namespace webkit_blob {
 TEST(BlobStorageControllerTest, RegisterBlobUrl) {
   // Setup a set of blob data for testing.
   base::Time time1, time2;
-  base::Time::FromString(L"Tue, 15 Nov 1994, 12:45:26 GMT", &time1);
-  base::Time::FromString(L"Mon, 14 Nov 1994, 11:30:49 GMT", &time2);
+  base::Time::FromString("Tue, 15 Nov 1994, 12:45:26 GMT", &time1);
+  base::Time::FromString("Mon, 14 Nov 1994, 11:30:49 GMT", &time2);
 
   scoped_refptr<BlobData> blob_data1(new BlobData());
   blob_data1->AppendData("Data1");
@@ -80,8 +80,8 @@ TEST(BlobStorageControllerTest, RegisterBlobUrl) {
 TEST(BlobStorageControllerTest, ResolveBlobReferencesInUploadData) {
   // Setup blob data for testing.
   base::Time time1, time2;
-  base::Time::FromString(L"Tue, 15 Nov 1994, 12:45:26 GMT", &time1);
-  base::Time::FromString(L"Mon, 14 Nov 1994, 11:30:49 GMT", &time2);
+  base::Time::FromString("Tue, 15 Nov 1994, 12:45:26 GMT", &time1);
+  base::Time::FromString("Mon, 14 Nov 1994, 11:30:49 GMT", &time2);
 
   scoped_ptr<BlobStorageController> blob_storage_controller(
       new BlobStorageController());

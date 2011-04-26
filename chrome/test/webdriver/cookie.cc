@@ -40,7 +40,7 @@ Cookie::Cookie(const std::string& cookie) {
 
   if (pc.HasExpires()) {
     base::Time parsed_time;
-    if (base::Time::FromString(UTF8ToWide(pc.Expires()).c_str(), &parsed_time))
+    if (base::Time::FromString(pc.Expires().c_str(), &parsed_time))
       expiration_ = parsed_time;
   }
 }

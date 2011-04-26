@@ -252,9 +252,9 @@ void PromoResourceService::UnpackPromoSignal(
         base::Time start_time;
         base::Time end_time;
         if (base::Time::FromString(
-                ASCIIToWide(promo_start_string).c_str(), &start_time) &&
+                promo_start_string.c_str(), &start_time) &&
             base::Time::FromString(
-                ASCIIToWide(promo_end_string).c_str(), &end_time)) {
+                promo_end_string.c_str(), &end_time)) {
           // Add group time slice, adjusted from hours to seconds.
           promo_start = start_time.ToDoubleT() +
               (prefs_->FindPreference(prefs::kNTPPromoGroup) ?
@@ -389,9 +389,9 @@ void PromoResourceService::UnpackLogoSignal(
         base::Time start_time;
         base::Time end_time;
         if (base::Time::FromString(
-                ASCIIToWide(logo_start_string).c_str(), &start_time) &&
+                logo_start_string.c_str(), &start_time) &&
             base::Time::FromString(
-                ASCIIToWide(logo_end_string).c_str(), &end_time)) {
+                logo_end_string.c_str(), &end_time)) {
           logo_start = start_time.ToDoubleT();
           logo_end = end_time.ToDoubleT();
         }
