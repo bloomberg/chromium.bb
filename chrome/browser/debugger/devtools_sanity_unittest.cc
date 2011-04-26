@@ -56,9 +56,6 @@ const char kPauseWhenScriptIsRunning[] =
     "files/devtools/pause_when_script_is_running.html";
 const char kPageWithContentScript[] =
     "files/devtools/page_with_content_script.html";
-const char kChunkedTestPage[] = "chunked";
-const char kSlowTestPage[] =
-    "chunked?waitBeforeHeaders=100&waitBetweenChunks=100&chunksNumber=2";
 
 
 class DevToolsSanityTest : public InProcessBrowserTest {
@@ -295,28 +292,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenLoadingDevTools) {
 // is already running.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
-}
-
-// Tests network timing.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkTiming) {
-  RunTest("testNetworkTiming", kSlowTestPage);
-}
-
-// Tests network size.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkSize) {
-  RunTest("testNetworkSize", kChunkedTestPage);
-}
-
-// Tests raw headers text.
-// FIXME(vsevik): remove fails once encoded data length enabled for syncrequests
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FAILS_TestNetworkSyncSize) {
-  RunTest("testNetworkSyncSize", kChunkedTestPage);
-}
-
-// Tests raw headers text.
-// FIXME(vsevik): remove fails once raw headers text support enabled
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FAILS_TestNetworkRawHeadersText) {
-  RunTest("testNetworkRawHeadersText", kChunkedTestPage);
 }
 
 }  // namespace
