@@ -37,16 +37,6 @@
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace {
-
-// The number of most visited pages we show.
-const size_t kMostVisitedPages = 8;
-
-// The number of days of history we consider for most visited entries.
-const int kMostVisitedScope = 90;
-
-}  // namespace
-
 // This struct is used when getting the pre-populated pages in case the user
 // hasn't filled up his most visited pages.
 struct MostVisitedHandler::MostVisitedPage {
