@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gpu_data_manager.h"
+#include "content/browser/gpu_data_manager.h"
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"

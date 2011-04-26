@@ -1,19 +1,16 @@
-// TODO(jam): move this file to src/content once we have an interface that the
-// embedder provides.  We can then use it to get the resource and resize the
-// window.
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gpu_process_host_ui_shim.h"
+#include "content/browser/gpu_process_host_ui_shim.h"
 
 #include "base/command_line.h"
 #include "base/id_map.h"
 #include "base/process_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/gpu_data_manager.h"
 #include "chrome/browser/io_thread.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/gpu_data_manager.h"
 #include "content/browser/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
