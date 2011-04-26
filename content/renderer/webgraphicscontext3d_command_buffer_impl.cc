@@ -25,6 +25,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
 
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
     : context_(NULL),
@@ -52,6 +53,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes,
     WebKit::WebView* web_view,
     bool render_directly_to_web_view) {
+  webkit_glue::BindSkiaToCommandBufferGL();
   RenderThread* render_thread = RenderThread::current();
   if (!render_thread)
     return false;

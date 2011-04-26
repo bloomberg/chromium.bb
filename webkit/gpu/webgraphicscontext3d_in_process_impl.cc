@@ -14,6 +14,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_bindings_skia_in_process.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
 
@@ -103,6 +104,7 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
     bool render_directly_to_web_view) {
   if (!gfx::GLContext::InitializeOneOff())
     return false;
+  gfx::BindSkiaToInProcessGL();
 
   render_directly_to_web_view_ = render_directly_to_web_view;
   gfx::GLContext* share_context = 0;
