@@ -21,71 +21,74 @@ function createTable() {
   if (!g_db) {
     sendErrorToTest("database is not open");
   }
-  g_db.transaction(function(tx) {
-    tx.executeSql(
-        "CREATE TABLE table1 (data TEXT)",
-        [],
-        function(tx, result) {
-          sendValueToTest("created");
-        },
-        function(tx, error) {
-          sendErrorToTest("cannot create table: " + error);
-        });
-  });
+  g_db.transaction(
+      function(tx) {
+        tx.executeSql("CREATE TABLE table1 (data TEXT)");
+      },
+      function(error) {
+        sendErrorToTest("cannot create table: " + error);
+      },
+      function() {
+        sendValueToTest("created");
+      });
 }
 
 // Inserts a record into the database.
 function insertRecord(text) {
-  g_db.transaction(function(tx) {
-    tx.executeSql(
-        "INSERT INTO table1 VALUES (?)",
-        [text],
-        function(tx, result) {
-          sendValueToTest("inserted");
-        },
-        function(tx, error) {
-          sendErrorToTest("insert error: " + error);
-        });
-  });
+  g_db.transaction(
+      function(tx) {
+        tx.executeSql("INSERT INTO table1 VALUES (?)", [text]);
+      },
+      function(error) {
+        sendErrorToTest("insert error: " + error);
+      },
+      function() {
+        sendValueToTest("inserted");
+      });
 }
 
 // Updates a record at the given index with the given text. The indices are
 // 0-based and are ordered from oldest record, to newest record.
 function updateRecord(index, text) {
+  var didUpdate = false;
   findId(index, function(rowId) {
-    g_db.transaction(function(tx) {
-      tx.executeSql(
-          "UPDATE table1 SET data=? WHERE ROWID=?",
-          [text, rowId],
-          function(tx, result) {
-            if (result.rowsAffected == 1)
-              sendValueToTest("updated");
-            else if (result.rowsAffected == 0)
-              sendErrorToTest("could not update index: " + index);
-            else
-              sendErrorToTest("multiple rows with index: " + index);
-          },
-          function(tx, error) {
-            sendErrorToTest("update error: " + error);
-          });
-    });
+    g_db.transaction(
+        function(tx) {
+          tx.executeSql(
+              "UPDATE table1 SET data=? WHERE ROWID=?",
+              [text, rowId],
+              function(tx, result) {
+                if (result.rowsAffected == 1)
+                  didUpdate = true;
+                else if (result.rowsAffected == 0)
+                  sendErrorToTest("could not update index: " + index);
+                else
+                  sendErrorToTest("multiple rows with index: " + index);
+              });
+        },
+        function(error) {
+          sendErrorToTest("update error: " + error);
+        },
+        function() {
+          if (didUpdate)
+            sendValueToTest("updated");
+        });
   });
 }
 
 // Deletes a record at the given index.
 function deleteRecord(index) {
-  findId(index, function (rowId) {
-    g_db.transaction(function(tx) {
-      tx.executeSql(
-          "DELETE FROM table1 WHERE ROWID=?",
-          [rowId],
-          function(tx, result) {
-            sendValueToTest("deleted");
-          },
-          function(tx, error) {
-            sendErrorToTest("delete error: " + error);
-          });
-    });
+  findId(index, function(rowId) {
+    g_db.transaction(
+        function(tx) {
+          tx.executeSql("DELETE FROM table1 WHERE ROWID=?", [rowId]);
+        },
+        function(error) {
+          sendErrorToTest("delete error: " + error);
+        },
+        function() {
+          sendValueToTest("deleted");
+        });
   });
 }
 
