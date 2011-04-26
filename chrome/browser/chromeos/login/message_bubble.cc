@@ -21,7 +21,7 @@ namespace chromeos {
 static const int kBorderSize = 4;
 static const int kMaxLabelWidth = 250;
 
-MessageBubble::MessageBubble(views::Widget::CreateParams::Type type,
+MessageBubble::MessageBubble(views::Widget::InitParams::Type type,
                              views::Widget* parent,
                              SkBitmap* image,
                              const std::wstring& text,
@@ -114,7 +114,7 @@ MessageBubble* MessageBubble::Show(views::Widget* parent,
                                    MessageBubbleDelegate* delegate) {
   // The bubble will be destroyed when it is closed.
   MessageBubble* bubble = new MessageBubble(
-      views::Widget::CreateParams::TYPE_WINDOW, parent, image, text, help,
+      views::Widget::InitParams::TYPE_WINDOW, parent, image, text, help,
       true, delegate);
   bubble->InitBubble(parent, position_relative_to, arrow_location,
                      bubble->text_->parent(), delegate);
@@ -132,7 +132,7 @@ MessageBubble* MessageBubble::ShowNoGrab(
     MessageBubbleDelegate* delegate) {
   // The bubble will be destroyed when it is closed.
   MessageBubble* bubble = new MessageBubble(
-      views::Widget::CreateParams::TYPE_CONTROL, parent, image, text, help,
+      views::Widget::InitParams::TYPE_CONTROL, parent, image, text, help,
       false, delegate);
   bubble->InitBubble(parent, position_relative_to, arrow_location,
                      bubble->text_->parent(), delegate);

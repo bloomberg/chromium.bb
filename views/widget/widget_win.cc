@@ -223,8 +223,8 @@ void WidgetWin::ViewHierarchyChanged(bool is_add, View* parent,
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetWin, NativeWidget implementation:
 
-void WidgetWin::InitNativeWidget(const Widget::CreateParams& params) {
-  SetCreateParams(params);
+void WidgetWin::InitNativeWidget(const Widget::InitParams& params) {
+  SetInitParams(params);
 
   // Create the window.
   gfx::NativeView parent = params.parent_widget ?
@@ -1002,7 +1002,7 @@ void WidgetWin::PostProcessActivateMessage(WidgetWin* widget,
   }
 }
 
-void WidgetWin::SetCreateParams(const CreateParams& params) {
+void WidgetWin::SetInitParams(const InitParams& params) {
   // Set non-style attributes.
   delete_on_destroy_ = params.delete_on_destroy;
 
@@ -1030,14 +1030,14 @@ void WidgetWin::SetCreateParams(const CreateParams& params) {
 
   // Set type-dependent style attributes.
   switch (params.type) {
-    case CreateParams::TYPE_WINDOW:
-    case CreateParams::TYPE_CONTROL:
+    case InitParams::TYPE_WINDOW:
+    case InitParams::TYPE_CONTROL:
       break;
-    case CreateParams::TYPE_POPUP:
+    case InitParams::TYPE_POPUP:
       style |= WS_POPUP;
       ex_style |= WS_EX_TOOLWINDOW;
       break;
-    case CreateParams::TYPE_MENU:
+    case InitParams::TYPE_MENU:
       style |= WS_POPUP;
       is_mouse_button_pressed_ =
           ((GetKeyState(VK_LBUTTON) & 0x80) ||
@@ -1093,7 +1093,7 @@ void WidgetWin::RedrawLayeredWindowContents() {
 
 void WidgetWin::ClientAreaSizeChanged() {
   RECT r;
-  if (GetThemeProvider()->ShouldUseNativeFrame())
+  if (GetThemeProvider()->ShouldUseNativeFrame() || IsZoomed())
     GetClientRect(&r);
   else
     GetWindowRect(&r);

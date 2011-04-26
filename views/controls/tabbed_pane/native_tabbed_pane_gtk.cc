@@ -156,7 +156,7 @@ void NativeTabbedPaneGtk::DoAddTabAtIndex(int index,
 
   Widget* page_container = Widget::CreateWidget();
   page_container->Init(
-      Widget::CreateParams(Widget::CreateParams::TYPE_CONTROL));
+      Widget::InitParams(Widget::InitParams::TYPE_CONTROL));
   page_container->SetContentsView(contents);
   page_container->SetFocusTraversableParent(GetWidget()->GetFocusTraversable());
   page_container->SetFocusTraversableParentView(this);

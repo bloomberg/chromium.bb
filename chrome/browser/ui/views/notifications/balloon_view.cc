@@ -318,7 +318,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   html_contents_->SetPreferredSize(gfx::Size(10000, 10000));
   html_container_ = Widget::CreateWidget();
   html_container_->SetAlwaysOnTop(true);
-  Widget::CreateParams params(Widget::CreateParams::TYPE_POPUP);
+  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
   params.bounds = contents_rect;
   html_container_->Init(params);
   html_container_->SetContentsView(html_contents_->view());

@@ -85,7 +85,7 @@ class WindowWin : public WidgetWin,
   virtual int GetShowState() const;
 
   // Overridden from WidgetWin:
-  virtual void InitNativeWidget(const Widget::CreateParams& params) OVERRIDE;
+  virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
   virtual void OnActivateApp(BOOL active, DWORD thread_id) OVERRIDE;
   virtual LRESULT OnAppCommand(HWND window,
                                short app_command,

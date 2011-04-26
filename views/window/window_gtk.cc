@@ -419,7 +419,7 @@ WindowGtk::WindowGtk(WindowDelegate* window_delegate)
 void WindowGtk::InitWindow(GtkWindow* parent, const gfx::Rect& bounds) {
   if (parent)
     make_transient_to_parent();
-  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.parent = GTK_WIDGET(parent);
   params.bounds = bounds;
   GetWidget()->Init(params);

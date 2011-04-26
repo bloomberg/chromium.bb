@@ -117,7 +117,7 @@ void BrowserBubble::InitPopup() {
 
   // We make the BorderWidgetWin the owner of the Bubble HWND, so that the
   // latter is displayed on top of the former.
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.parent = border_widget->GetNativeView();
   popup_->Init(params);
   popup_->SetContentsView(view_);

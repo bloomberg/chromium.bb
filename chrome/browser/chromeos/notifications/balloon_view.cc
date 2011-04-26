@@ -270,8 +270,8 @@ void BalloonViewImpl::ViewHierarchyChanged(
     control_view_host_.reset(views::Widget::CreateWidget());
     static_cast<views::WidgetGtk*>(control_view_host_.get())->
         EnableDoubleBuffer(true);
-    views::Widget::CreateParams params(
-        views::Widget::CreateParams::TYPE_CONTROL);
+    views::Widget::InitParams params(
+        views::Widget::InitParams::TYPE_CONTROL);
     params.delete_on_destroy = false;
     params.parent = GetParentNativeView();
     control_view_host_->Init(params);

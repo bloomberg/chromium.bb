@@ -566,7 +566,7 @@ void StatusBubbleViews::Init() {
     if (!expand_view_.get())
       expand_view_.reset(new StatusViewExpander(this, view_));
     popup_->SetOpacity(0x00);
-    Widget::CreateParams params(Widget::CreateParams::TYPE_POPUP);
+    Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
     params.transparent = true;
     params.accept_events = false;
     params.delete_on_destroy = false;

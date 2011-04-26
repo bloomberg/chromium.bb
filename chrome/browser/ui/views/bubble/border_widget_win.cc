@@ -18,7 +18,7 @@ void BorderWidgetWin::InitBorderWidgetWin(BorderContents* border_contents,
   border_contents_ = border_contents;
   border_contents_->Init();
 
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   params.parent = owner;
   GetWidget()->Init(params);

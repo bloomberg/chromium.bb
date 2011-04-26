@@ -329,7 +329,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   if (popup_ == NULL) {
     // If the popup is currently closed, we need to create it.
     popup_ = (new AutocompletePopupClass)->AsWeakPtr();
-    views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.can_activate = false;
     params.transparent = true;
     params.parent = location_bar_->GetWidget()->GetNativeView();

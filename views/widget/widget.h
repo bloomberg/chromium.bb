@@ -62,8 +62,7 @@ class Window;
 class Widget : public internal::NativeWidgetDelegate,
                public FocusTraversable {
  public:
-  // TODO(beng): Rename to InitParams now this is required for Init().
-  struct CreateParams {
+  struct InitParams {
     enum Type {
       TYPE_WINDOW,      // A Window, like a frame window.
       TYPE_CONTROL,     // A control, like a button.
@@ -72,8 +71,8 @@ class Widget : public internal::NativeWidgetDelegate,
                         // specialized to menus.
     };
 
-    CreateParams();
-    explicit CreateParams(Type type);
+    InitParams();
+    explicit InitParams(Type type);
 
     Type type;
     bool child;
@@ -89,7 +88,7 @@ class Widget : public internal::NativeWidgetDelegate,
     gfx::Rect bounds;
     NativeWidget* native_widget;
   };
-  static CreateParams WindowCreateParams();
+  static InitParams WindowInitParams();
 
   Widget();
   virtual ~Widget();
@@ -109,7 +108,7 @@ class Widget : public internal::NativeWidgetDelegate,
                           const Widget* target,
                           gfx::Rect* rect);
 
-  void Init(const CreateParams& params);
+  void Init(const InitParams& params);
 
   // Unconverted methods -------------------------------------------------------
 

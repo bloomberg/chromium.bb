@@ -117,7 +117,7 @@ void WidgetExample::CreateChild(views::View* parent, bool transparent) {
   bounds.SetRect((bounds.width() - 200) / 2, (bounds.height() - 200) / 2,
       200, 200);
   // Initialize the child widget with the computed bounds.
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CONTROL);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.transparent = transparent;
   params.parent_widget = parent_widget;
   widget->Init(params);
@@ -137,7 +137,7 @@ void WidgetExample::CreatePopup(views::View* parent, bool transparent) {
   point.Offset(0, parent->size().height());
 
   // Initialize the popup widget with the computed bounds.
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = transparent;
   params.parent_widget = parent->GetWidget();
   params.bounds = gfx::Rect(point.x(), point.y(), 200, 300);

@@ -206,7 +206,7 @@ class DraggedTabController::DockDisplayer : public ui::AnimationDelegate {
     popup_ = views::Widget::CreateWidget();
     popup_->SetOpacity(0x00);
     // TODO(sky): This should "just work" on Gtk now.
-    views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.transparent = true;
     params.keep_on_top = true;
     params.bounds = info.GetPopupRect();

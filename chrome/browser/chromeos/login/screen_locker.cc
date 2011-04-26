@@ -685,7 +685,7 @@ void ScreenLocker::Init() {
 
   LockWindow* lock_window = new LockWindow();
   lock_window_ = lock_window;
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_WINDOW);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = init_bounds;
   lock_window_->Init(params);
 
@@ -709,8 +709,8 @@ void ScreenLocker::Init() {
   // namespace feels a bit ugly.)
   GrabWidget* cast_lock_widget = new GrabWidget(this);
   lock_widget_ = cast_lock_widget;
-  views::Widget::CreateParams lock_params(
-      views::Widget::CreateParams::TYPE_CONTROL);
+  views::Widget::InitParams lock_params(
+      views::Widget::InitParams::TYPE_CONTROL);
   lock_params.transparent = true;
   lock_params.parent_widget = lock_window_;
   lock_widget_->Init(lock_params);

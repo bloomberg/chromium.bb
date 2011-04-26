@@ -84,7 +84,7 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
                                           GURL(),
                                           PageTransition::START_PAGE);
 
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CONTROL);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   GetWidget()->Init(params);
 
   tab_container_ = new TabContentsContainer;

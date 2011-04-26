@@ -31,7 +31,7 @@ HWND GetHiddenTabHostWindow() {
 
   if (!widget) {
     widget = views::Widget::CreateWidget();
-    views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     widget->Init(params);
     // If a background window requests focus, the hidden tab host will
     // be activated to focus the tab.  Use WS_DISABLED to prevent
@@ -70,7 +70,7 @@ void NativeTabContentsViewWin::EndDragging() {
 // NativeTabContentsViewWin, NativeTabContentsView implementation:
 
 void NativeTabContentsViewWin::InitNativeTabContentsView() {
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CONTROL);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.delete_on_destroy = false;
   params.parent = GetHiddenTabHostWindow();
   GetWidget()->Init(params);

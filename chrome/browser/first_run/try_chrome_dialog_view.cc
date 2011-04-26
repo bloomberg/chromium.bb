@@ -71,7 +71,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
     return DIALOG_ERROR;
   }
 
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.can_activate = true;
   params.bounds = gfx::Rect(310, 160);
   popup_->Init(params);

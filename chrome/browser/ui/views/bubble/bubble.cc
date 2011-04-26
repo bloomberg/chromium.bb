@@ -69,7 +69,7 @@ Bubble* Bubble::ShowFocusless(
     views::View* contents,
     BubbleDelegate* delegate,
     bool show_while_screen_is_locked) {
-  Bubble* bubble = new Bubble(views::Widget::CreateParams::TYPE_POPUP,
+  Bubble* bubble = new Bubble(views::Widget::InitParams::TYPE_POPUP,
                               show_while_screen_is_locked);
   bubble->InitBubble(parent, position_relative_to, arrow_location,
                      contents, delegate);
@@ -130,7 +130,7 @@ Bubble::Bubble()
       show_status_(kOpen),
       fade_away_on_close_(false),
 #if defined(OS_LINUX)
-      type_(views::Widget::CreateParams::TYPE_WINDOW),
+      type_(views::Widget::InitParams::TYPE_WINDOW),
 #endif
 #if defined(OS_CHROMEOS)
       show_while_screen_is_locked_(false),
@@ -140,7 +140,7 @@ Bubble::Bubble()
 }
 
 #if defined(OS_CHROMEOS)
-Bubble::Bubble(views::Widget::CreateParams::Type type,
+Bubble::Bubble(views::Widget::InitParams::Type type,
                bool show_while_screen_is_locked)
     : border_contents_(NULL),
       delegate_(NULL),
@@ -193,13 +193,13 @@ void Bubble::InitBubble(views::Widget* parent,
 
   // We make the BorderWidgetWin the owner of the Bubble HWND, so that the
   // latter is displayed on top of the former.
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.parent = border_->GetNativeView();
   GetWidget()->Init(params);
 
   SetWindowText(GetNativeView(), delegate_->accessible_name().c_str());
 #elif defined(OS_LINUX)
-  views::Widget::CreateParams params(type_);
+  views::Widget::InitParams params(type_);
   params.transparent = true;
   params.parent_widget = parent;
   GetWidget()->Init(params);

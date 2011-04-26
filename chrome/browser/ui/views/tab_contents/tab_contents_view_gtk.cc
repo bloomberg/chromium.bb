@@ -149,7 +149,7 @@ void TabContentsViewGtk::RemoveConstrainedWindow(
 }
 
 void TabContentsViewGtk::CreateView(const gfx::Size& initial_size) {
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CONTROL);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.delete_on_destroy = false;
   params.bounds = gfx::Rect(initial_size);
   GetWidget()->Init(params);

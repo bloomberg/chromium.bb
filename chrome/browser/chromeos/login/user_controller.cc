@@ -420,7 +420,7 @@ void UserController::CreateBorderWindow(int index,
   }
 
   border_window_ = Widget::CreateWidget();
-  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.transparent = true;
   params.bounds = gfx::Rect(0, 0, width, height);
   border_window_->Init(params);

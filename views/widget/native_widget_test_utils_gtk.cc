@@ -17,7 +17,7 @@ NativeWidget* CreateNativeWidget() {
 
 NativeWidget* CreateNativeWidgetWithContents(View* contents_view) {
   Widget* widget = Widget::CreateWidget();
-  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.delete_on_destroy = false;
   params.bounds = gfx::Rect(10, 10, 200, 200);
   widget->Init(params);
@@ -26,7 +26,7 @@ NativeWidget* CreateNativeWidgetWithContents(View* contents_view) {
 
 NativeWidget* CreateNativeWidgetWithParent(NativeWidget* parent) {
   Widget* widget = Widget::CreateWidget();
-  Widget::CreateParams params(Widget::CreateParams::TYPE_CONTROL);
+  Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
   params.delete_on_destroy = false;
   params.parent = parent ? parent->GetWidget()->GetNativeView() : NULL;
   params.bounds = gfx::Rect(10, 10, 200, 200);

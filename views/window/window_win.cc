@@ -244,7 +244,7 @@ Window* Window::CreateChromeWindow(gfx::NativeWindow parent,
                                    WindowDelegate* window_delegate) {
   Window* window = new WindowWin(window_delegate);
   window->non_client_view()->SetFrameView(window->CreateFrameViewForWindow());
-  Widget::CreateParams params(Widget::WindowCreateParams());
+  Widget::InitParams params(Widget::WindowInitParams());
   params.parent = parent;
   params.bounds = bounds;
   window->AsWidget()->Init(params);
@@ -357,7 +357,7 @@ int WindowWin::GetShowState() const {
 ///////////////////////////////////////////////////////////////////////////////
 // WindowWin, WidgetWin overrides:
 
-void WindowWin::InitNativeWidget(const Widget::CreateParams& params) {
+void WindowWin::InitNativeWidget(const Widget::InitParams& params) {
   if (window_style() == 0)
     set_window_style(CalculateWindowStyle());
   if (window_ex_style() == 0)

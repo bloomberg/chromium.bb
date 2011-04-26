@@ -77,7 +77,7 @@ class MessageBubble : public Bubble,
   virtual void SetMouseCapture();
 
  private:
-  MessageBubble(views::Widget::CreateParams::Type type,
+  MessageBubble(views::Widget::InitParams::Type type,
                 views::Widget* parent,
                 SkBitmap* image,
                 const std::wstring& text,

@@ -422,8 +422,8 @@ void NotificationPanel::Show() {
 
     gfx::Rect bounds = GetPreferredBounds();
     bounds = bounds.Union(min_bounds_);
-    views::Widget::CreateParams params(
-        views::Widget::CreateParams::TYPE_WINDOW);
+    views::Widget::InitParams params(
+        views::Widget::InitParams::TYPE_WINDOW);
     params.bounds = bounds;
     panel_widget_->Init(params);
     // Set minimum bounds so that it can grow freely.
@@ -439,7 +439,7 @@ void NotificationPanel::Show() {
     ViewportWidget* widget = new ViewportWidget(this);
     container_host_ = widget;
     container_host_->Init(
-        views::Widget::CreateParams(views::Widget::CreateParams::TYPE_CONTROL));
+        views::Widget::InitParams(views::Widget::InitParams::TYPE_CONTROL));
     container_host_->SetContentsView(balloon_container_.get());
     // The window_contents_ is onwed by the WidgetGtk. Increase ref count
     // so that window_contents does not get deleted when detached.

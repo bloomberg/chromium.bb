@@ -292,7 +292,7 @@ void NativeTabbedPaneWin::CreateNativeControl() {
 
   // Create the view container which is a child of the TabControl.
   content_window_ = Widget::CreateWidget();
-  Widget::CreateParams params(Widget::CreateParams::TYPE_CONTROL);
+  Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
   params.parent = tab_control;
   content_window_->Init(params);
 

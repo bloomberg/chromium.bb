@@ -44,7 +44,7 @@ class WidgetWinTest : public testing::Test {
 
 WidgetWin* WidgetWinTest::CreateWidgetWin() {
   scoped_ptr<Widget> widget(Widget::CreateWidget());
-  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.delete_on_destroy = false;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);

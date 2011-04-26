@@ -32,7 +32,7 @@ TEST_F(GenericInfoViewTest, GenericInfoView) {
   const string16 kValue = ASCIIToUTF16("Value");
 
   Widget* widget = Widget::CreateWidget();
-  Widget::CreateParams params(Widget::CreateParams::TYPE_POPUP);
+  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
   RootView* root_view = widget->GetRootView();

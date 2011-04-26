@@ -27,8 +27,8 @@ class NativeConstrainedWindowWin : public NativeConstrainedWindow,
  private:
   // Overridden from NativeConstrainedWindow:
   virtual void InitNativeConstrainedWindow(gfx::NativeView parent) OVERRIDE {
-    views::Widget::CreateParams params(
-        views::Widget::CreateParams::TYPE_WINDOW);
+    views::Widget::InitParams params(
+        views::Widget::InitParams::TYPE_WINDOW);
     params.child = true;
     params.parent = parent;
     GetWidget()->Init(params);

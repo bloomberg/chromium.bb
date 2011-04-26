@@ -104,7 +104,7 @@ DownloadStartedAnimationWin::DownloadStartedAnimationWin(
   popup_ = views::Widget::CreateWidget();
   popup_->SetOpacity(0x00);
 
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   params.accept_events = false;
   params.parent = tab_contents_->GetNativeView();

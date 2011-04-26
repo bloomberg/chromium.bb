@@ -601,8 +601,8 @@ views::Widget* WizardController::CreateScreenWindow(
   // are constantly updating its contents (like image view with video
   // stream). Hence enabling double buffer.
   static_cast<views::WidgetGtk*>(widget_)->EnableDoubleBuffer(true);
-  views::Widget::CreateParams widget_params(
-      views::Widget::CreateParams::TYPE_WINDOW);
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW);
   widget_params.transparent = true;
   widget_params.bounds = bounds;
   widget_->Init(widget_params);

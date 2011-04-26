@@ -59,7 +59,7 @@ class NativeWidget {
                                  gfx::NativeView new_parent);
 
   // Initializes the NativeWidget.
-  virtual void InitNativeWidget(const Widget::CreateParams& params) = 0;
+  virtual void InitNativeWidget(const Widget::InitParams& params) = 0;
 
   // Returns the Widget associated with this NativeWidget. This function is
   // guaranteed to return non-NULL for the lifetime of the NativeWidget.

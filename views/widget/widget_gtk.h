@@ -168,7 +168,7 @@ class WidgetGtk : public Widget,
   static void RegisterChildExposeHandler(GtkWidget* widget);
 
   // Overridden from NativeWidget:
-  virtual void InitNativeWidget(const CreateParams& params) OVERRIDE;
+  virtual void InitNativeWidget(const InitParams& params) OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
@@ -276,7 +276,7 @@ class WidgetGtk : public Widget,
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
 
-  void SetCreateParams(const CreateParams& params);
+  void SetInitParams(const InitParams& params);
 
   // This is called only when the window is transparent.
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnWindowPaint, GdkEventExpose*);
@@ -290,7 +290,7 @@ class WidgetGtk : public Widget,
   static Window* GetWindowImpl(GtkWidget* widget);
 
   // Creates the GtkWidget.
-  void CreateGtkWidget(const CreateParams& params);
+  void CreateGtkWidget(const InitParams& params);
 
   // Invoked from create widget to enable the various bits needed for a
   // transparent background. This is only invoked if MakeTransparent has been
@@ -339,7 +339,7 @@ class WidgetGtk : public Widget,
   bool transparent_;
 
   // Makes the window pass all events through to any windows behind it.
-  // Set during SetCreateParams before the widget is created. The actual work of
+  // Set during SetInitParams before the widget is created. The actual work of
   // making the window ignore events is done by ConfigureWidgetForIgnoreEvents.
   bool ignore_events_;
 

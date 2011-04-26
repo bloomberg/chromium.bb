@@ -114,7 +114,7 @@ void ThrobberHostView::StartThrobber() {
       make_transient_to_parent();
 
   throbber_bounds.Offset(host_view_->GetScreenBounds().origin());
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_WINDOW);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.transparent = true;
   params.bounds = throbber_bounds;
   params.parent = host_gtk_window;

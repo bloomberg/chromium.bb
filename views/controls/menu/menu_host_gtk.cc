@@ -81,7 +81,7 @@ NativeWidget* MenuHostGtk::AsNativeWidget() {
 ////////////////////////////////////////////////////////////////////////////////
 // MenuHostGtk, WidgetGtk overrides:
 
-void MenuHostGtk::InitNativeWidget(const Widget::CreateParams& params) {
+void MenuHostGtk::InitNativeWidget(const Widget::InitParams& params) {
   make_transient_to_parent();
   WidgetGtk::InitNativeWidget(params);
   // Make sure we get destroyed when the parent is destroyed.

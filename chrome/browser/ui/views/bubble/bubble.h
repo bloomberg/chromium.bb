@@ -135,7 +135,7 @@ class Bubble
  protected:
   Bubble();
 #if defined(OS_CHROMEOS)
-  Bubble(views::Widget::CreateParams::Type type,
+  Bubble(views::Widget::InitParams::Type type,
          bool show_while_screen_is_locked);
 #endif
   virtual ~Bubble();
@@ -203,7 +203,7 @@ class Bubble
 
 #if defined(OS_LINUX)
   // Some callers want the bubble to be a child control instead of a window.
-  views::Widget::CreateParams::Type type_;
+  views::Widget::InitParams::Type type_;
 #endif
 #if defined(OS_CHROMEOS)
   // Should we set a property telling the window manager to show this window

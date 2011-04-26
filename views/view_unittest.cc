@@ -362,7 +362,7 @@ TEST_F(ViewTest, MouseEvent) {
   v2->SetBounds(100, 100, 100, 100);
 
   scoped_ptr<Widget> widget(Widget::CreateWidget());
-  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.delete_on_destroy = false;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -471,7 +471,7 @@ TEST_F(ViewTest, TouchEvent) {
   v3->SetBounds(0, 0, 100, 100);
 
   scoped_ptr<Widget> widget(Widget::CreateWidget());
-  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.delete_on_destroy = false;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -833,7 +833,7 @@ TEST_F(ViewTest, Textfield) {
   ui::Clipboard clipboard;
 
   Widget* widget = Widget::CreateWidget();
-  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
   RootView* root_view = widget->GetRootView();
@@ -871,7 +871,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   ui::Clipboard clipboard;
 
   Widget* widget = Widget::CreateWidget();
-  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
   RootView* root_view = widget->GetRootView();
@@ -995,7 +995,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
 
   // Create a window and add the view as its child.
   scoped_ptr<Widget> widget(Widget::CreateWidget());
-  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.delete_on_destroy = false;
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
@@ -1061,7 +1061,7 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
 
   scoped_ptr<Widget> widget(Widget::CreateWidget());
-  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.delete_on_destroy = false;
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
@@ -1554,13 +1554,13 @@ class TestChangeNativeViewHierarchy {
     view_test_ = view_test;
     native_host_ = new views::NativeViewHost();
     host_ = Widget::CreateWidget();
-    Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
     params.bounds = gfx::Rect(0, 0, 500, 300);
     host_->Init(params);
     host_->GetRootView()->AddChildView(native_host_);
     for (size_t i = 0; i < TestNativeViewHierarchy::kTotalViews; ++i) {
       windows_[i] = Widget::CreateWidget();
-      Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+      Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
       params.parent = host_->GetNativeView();
       params.bounds = gfx::Rect(0, 0, 500, 300);
       windows_[i]->Init(params);
@@ -1685,7 +1685,7 @@ TEST_F(ViewTest, TransformPaint) {
   v2->SetBounds(100, 100, 200, 100);
 
   Widget* widget = Widget::CreateWidget();
-  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
   widget->Show();
@@ -1722,7 +1722,7 @@ TEST_F(ViewTest, TransformEvent) {
   v2->SetBounds(100, 100, 200, 100);
 
   Widget* widget = Widget::CreateWidget();
-  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
   RootView* root = widget->GetRootView();
@@ -1872,7 +1872,7 @@ TEST_F(ViewTest, OnVisibleBoundsChanged) {
   gfx::Rect viewport_bounds(0, 0, 100, 100);
 
   scoped_ptr<Widget> widget(Widget::CreateWidget());
-  Widget::CreateParams params(Widget::CreateParams::TYPE_WINDOW);
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.delete_on_destroy = false;
   params.bounds = viewport_bounds;
   widget->Init(params);

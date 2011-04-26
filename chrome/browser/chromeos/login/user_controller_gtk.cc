@@ -55,7 +55,7 @@ class ClickNotifyingWidget : public WidgetGtk {
 };
 
 views::Widget* InitWidget(views::Widget* widget, const gfx::Rect& bounds) {
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_WINDOW);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.transparent = true;
   params.bounds = bounds;
   widget->Init(params);

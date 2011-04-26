@@ -94,7 +94,7 @@ void BrowserBubble::InitPopup() {
   BubbleWidget* pop = new BubbleWidget(this);
   pop->MakeTransparent();
   pop->make_transient_to_parent();
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_WINDOW);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.parent = frame_->GetNativeView();
   pop->Init(params);
 #if defined(OS_CHROMEOS)

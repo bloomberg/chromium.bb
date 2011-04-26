@@ -155,7 +155,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     textfield_ = new TestTextfield(style);
     textfield_->SetController(this);
     widget_ = Widget::CreateWidget();
-    Widget::CreateParams params(Widget::CreateParams::TYPE_POPUP);
+    Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(100, 100, 100, 100);
     widget_->Init(params);
     View* container = new View();

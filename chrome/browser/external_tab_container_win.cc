@@ -135,7 +135,7 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
 
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.bounds = bounds;
   GetWidget()->Init(params);
   if (!IsWindow()) {

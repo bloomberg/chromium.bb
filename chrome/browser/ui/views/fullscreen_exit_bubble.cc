@@ -134,7 +134,7 @@ FullscreenExitBubble::FullscreenExitBubble(
   // Initialize the popup.
   popup_ = views::Widget::CreateWidget();
   popup_->SetOpacity(static_cast<unsigned char>(0xff * kOpacity));
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   params.can_activate = false;
   params.delete_on_destroy = false;

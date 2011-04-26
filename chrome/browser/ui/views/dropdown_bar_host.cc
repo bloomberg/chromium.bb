@@ -55,7 +55,7 @@ void DropdownBarHost::Init(DropdownBarView* view) {
 
   // Initialize the host.
   host_.reset(views::Widget::CreateWidget());
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_CONTROL);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.delete_on_destroy = false;
   params.parent_widget = browser_view_->GetWidget();
   host_->Init(params);

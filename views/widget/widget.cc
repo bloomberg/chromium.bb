@@ -16,9 +16,9 @@
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Widget, CreateParams:
+// Widget, InitParams:
 
-Widget::CreateParams::CreateParams()
+Widget::InitParams::InitParams()
     : type(TYPE_WINDOW),
       child(false),
       transparent(false),
@@ -33,7 +33,7 @@ Widget::CreateParams::CreateParams()
       native_widget(NULL) {
 }
 
-Widget::CreateParams::CreateParams(Type type)
+Widget::InitParams::InitParams(Type type)
     : type(type),
       child(type == TYPE_CONTROL),
       transparent(false),
@@ -52,8 +52,8 @@ Widget::CreateParams::CreateParams(Type type)
 // Widget, public:
 
 // static
-Widget::CreateParams Widget::WindowCreateParams() {
-  return CreateParams(CreateParams::TYPE_WINDOW);
+Widget::InitParams Widget::WindowInitParams() {
+  return InitParams(InitParams::TYPE_WINDOW);
 }
 
 Widget::Widget()
@@ -67,7 +67,7 @@ Widget::Widget()
 Widget::~Widget() {
 }
 
-void Widget::Init(const CreateParams& params) {
+void Widget::Init(const InitParams& params) {
   GetRootView();
   default_theme_provider_.reset(new DefaultThemeProvider);
   native_widget_->InitNativeWidget(params);

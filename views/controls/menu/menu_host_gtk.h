@@ -28,7 +28,7 @@ class MenuHostGtk : public WidgetGtk,
   virtual NativeWidget* AsNativeWidget() OVERRIDE;
 
   // Overridden from WidgetGtk:
-  virtual void InitNativeWidget(const Widget::CreateParams& params) OVERRIDE;
+  virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
   virtual RootView* CreateRootView() OVERRIDE;
   virtual bool ShouldReleaseCaptureOnMouseReleased() const OVERRIDE;
   virtual void ReleaseMouseCapture() OVERRIDE;

@@ -31,8 +31,8 @@ void MenuHost::InitMenuHost(gfx::NativeWindow parent,
                             const gfx::Rect& bounds,
                             View* contents_view,
                             bool do_capture) {
-  Widget::CreateParams params;
-  params.type = Widget::CreateParams::TYPE_MENU;
+  Widget::InitParams params;
+  params.type = Widget::InitParams::TYPE_MENU;
   params.has_dropshadow = true;
 #if defined(OS_WIN)
   params.parent = parent;

@@ -802,7 +802,7 @@ void CandidateWindowView::HideLookupTable() {
   // not release mouse/keyboard grab even after it gets hidden.
   //
   // 1. create a popup window by views::Widget::CreateWidget() with the
-  //    accept_events flag set to true on the CreateParams.
+  //    accept_events flag set to true on the InitParams.
   // 2. press a mouse button on the window.
   // 3. before releasing the mouse button, Hide() the window.
   // 4. release the button.
@@ -1285,7 +1285,7 @@ void CandidateWindowController::Impl::CreateView() {
   frame_.reset(views::Widget::CreateWidget());
   // The size is initially zero.
   frame_->Init(
-      views::Widget::CreateParams(views::Widget::CreateParams::TYPE_POPUP));
+      views::Widget::InitParams(views::Widget::InitParams::TYPE_POPUP));
 
   // Create the candidate window.
   candidate_window_ = new CandidateWindowView(frame_.get());

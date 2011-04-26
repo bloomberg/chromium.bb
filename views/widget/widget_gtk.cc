@@ -618,10 +618,10 @@ void WidgetGtk::RegisterChildExposeHandler(GtkWidget* child) {
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, NativeWidget implementation:
 
-void WidgetGtk::InitNativeWidget(const CreateParams& params) {
-  SetCreateParams(params);
+void WidgetGtk::InitNativeWidget(const InitParams& params) {
+  SetInitParams(params);
 
-  CreateParams modified_params = params;
+  InitParams modified_params = params;
   gfx::NativeView parent = params.parent;
   if (params.parent_widget) {
     WidgetGtk* parent_gtk =
@@ -1377,7 +1377,7 @@ void WidgetGtk::DispatchKeyEventPostIME(const KeyEvent& key) {
     gtk_bindings_activate_event(GTK_OBJECT(widget_), event);
 }
 
-void WidgetGtk::SetCreateParams(const CreateParams& params) {
+void WidgetGtk::SetInitParams(const InitParams& params) {
   DCHECK(!GetNativeView());
 
   delete_on_destroy_ = params.delete_on_destroy;
@@ -1388,7 +1388,7 @@ void WidgetGtk::SetCreateParams(const CreateParams& params) {
   if (!params.accept_events && !child_)
     ignore_events_ = true;
 
-  if (params.type == CreateParams::TYPE_MENU) {
+  if (params.type == InitParams::TYPE_MENU) {
     GdkEvent* event = gtk_get_current_event();
     if (event) {
       is_mouse_button_pressed_ = event->type == GDK_BUTTON_PRESS ||
@@ -1449,7 +1449,7 @@ Window* WidgetGtk::GetWindowImpl(GtkWidget* widget) {
   return NULL;
 }
 
-void WidgetGtk::CreateGtkWidget(const CreateParams& params) {
+void WidgetGtk::CreateGtkWidget(const InitParams& params) {
   // We turn off double buffering for two reasons:
   // 1. We draw to a canvas then composite to the screen, which means we're
   //    doing our own double buffering already.
@@ -1503,8 +1503,8 @@ void WidgetGtk::CreateGtkWidget(const CreateParams& params) {
   } else {
     // Use our own window class to override GtkWindow's move_focus method.
     widget_ = gtk_views_window_new(
-        params.type == CreateParams::TYPE_WINDOW ? GTK_WINDOW_TOPLEVEL
-                                                 : GTK_WINDOW_POPUP);
+        params.type == InitParams::TYPE_WINDOW ? GTK_WINDOW_TOPLEVEL
+                                               : GTK_WINDOW_POPUP);
     gtk_widget_set_name(widget_, "views-gtkwidget-window");
     if (transient_to_parent_) {
       gtk_window_set_transient_for(GTK_WINDOW(widget_),

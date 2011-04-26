@@ -291,7 +291,7 @@ class BorderView : public NativeViewHost {
     if (child == this && is_add) {
       if (!widget_) {
         widget_ = Widget::CreateWidget();
-        Widget::CreateParams params(Widget::CreateParams::TYPE_CONTROL);
+        Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
 #if defined(OS_WIN)
         params.parent = parent->GetRootView()->GetWidget()->GetNativeView();
 #elif defined(TOOLKIT_USES_GTK)
@@ -1603,7 +1603,7 @@ TEST_F(FocusManagerTest, CreationForNativeRoot) {
 
   // Create a view window parented to native dialog.
   scoped_ptr<Widget> widget1(Widget::CreateWidget());
-  Widget::CreateParams params(Widget::CreateParams::TYPE_CONTROL);
+  Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
   params.delete_on_destroy = false;
   params.parent = hwnd;
   params.bounds = gfx::Rect(0, 0, 100, 100);

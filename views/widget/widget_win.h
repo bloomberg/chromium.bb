@@ -191,7 +191,7 @@ class WidgetWin : public ui::WindowImpl,
   }
 
   // Overridden from NativeWidget:
-  virtual void InitNativeWidget(const Widget::CreateParams& params) OVERRIDE;
+  virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
@@ -422,7 +422,7 @@ class WidgetWin : public ui::WindowImpl,
   static void PostProcessActivateMessage(WidgetWin* widget,
                                          int activation_state);
 
-  void SetCreateParams(const Widget::CreateParams& params);
+  void SetInitParams(const Widget::InitParams& params);
 
   // Synchronously paints the invalid contents of the Widget.
   void RedrawInvalidRect();

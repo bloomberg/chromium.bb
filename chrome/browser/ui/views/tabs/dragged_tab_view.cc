@@ -50,7 +50,7 @@ DraggedTabView::DraggedTabView(const std::vector<views::View*>& renderers,
     show_contents_on_drag_ = false;
   }
 #endif
-  views::Widget::CreateParams params(views::Widget::CreateParams::TYPE_POPUP);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   params.keep_on_top = true;
   params.delete_on_destroy = false;
