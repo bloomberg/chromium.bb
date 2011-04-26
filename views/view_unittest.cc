@@ -475,7 +475,7 @@ TEST_F(ViewTest, TouchEvent) {
   params.delete_on_destroy = false;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
-  RootView* root = window->GetRootView();
+  RootView* root = widget->GetRootView();
 
   root->AddChildView(v1);
   root->SetGestureManager(gm);
