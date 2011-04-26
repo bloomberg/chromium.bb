@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,13 +43,6 @@ int calcHue(double temp1, double temp2, double hue) {
   return static_cast<int>(result * 255 + .5);
 }
 
-int GetLumaForColor(SkColor* color) {
-  int luma = static_cast<int>((0.3 * SkColorGetR(*color)) +
-                              (0.59 * SkColorGetG(*color)) +
-                              (0.11 * SkColorGetB(*color)));
-  return std::max(std::min(luma, 255), 0);
-}
-
 // Next two functions' formulas from:
 // http://www.w3.org/TR/WCAG20/#relativeluminancedef
 // http://www.w3.org/TR/WCAG20/#contrast-ratiodef
@@ -78,6 +71,13 @@ double ContrastRatio(double foreground_luminance, double background_luminance) {
 }  // namespace
 
 // ----------------------------------------------------------------------------
+
+unsigned char GetLuminanceForColor(SkColor color) {
+  int luma = static_cast<int>((0.3 * SkColorGetR(color)) +
+                              (0.59 * SkColorGetG(color)) +
+                              (0.11 * SkColorGetB(color)));
+  return std::max(std::min(luma, 255), 0);
+}
 
 double RelativeLuminance(SkColor color) {
   return (0.2126 * ConvertSRGB(SkColorGetR(color))) +
@@ -249,7 +249,7 @@ void BuildLumaHistogram(SkBitmap* bitmap, int histogram[256]) {
   for (int y = 0; y < pixel_height; ++y) {
     SkColor* current_color = static_cast<uint32_t*>(bitmap->getAddr32(0, y));
     for (int x = 0; x < pixel_width; ++x, ++current_color)
-      histogram[GetLumaForColor(current_color)]++;
+      histogram[GetLuminanceForColor(*current_color)]++;
   }
 }
 

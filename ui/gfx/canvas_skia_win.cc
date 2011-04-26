@@ -13,6 +13,7 @@
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 
@@ -209,8 +210,9 @@ void DrawTextAndClearBackground(skia::BitmapPlatformDevice& bmp_device,
       // Gets the color directly. DrawText doesn't premultiply alpha so
       // using SkBitmap::getColor() won't work here.
       SkColor color = *bmp.getAddr32(x, y);
-      // Use any of the color channels as alpha.
-      BYTE alpha = 0xFF - SkColorGetB(color);
+      // Calculate the alpha using the luminance. Since this is black text
+      // on a white background the luminosity must be inverted.
+      BYTE alpha = 0xFF - color_utils::GetLuminanceForColor(color);
       *bmp.getAddr32(x, y) = SkPreMultiplyColor(
           SkColorSetARGB(alpha, text_color_r, text_color_b, text_color_g));
     }
@@ -550,13 +552,6 @@ void CanvasSkia::DrawFadeTruncatingString(
     text_rect.set_x(text_rect.x() - offset_x);
   text_rect.set_width(text_rect.width() + offset_x);
 
-  // Disable clear type. This makes the text render in gray scale which
-  // makes it easier to compute the alpha value.
-  LOGFONT font_info;
-  GetObject(font.GetNativeFont(), sizeof(font_info), &font_info);
-  font_info.lfQuality = ANTIALIASED_QUALITY;
-  base::win::ScopedHFONT gray_scale_font(CreateFontIndirect(&font_info));
-
   // Create a temporary bitmap to draw the gradient to.
   scoped_ptr<skia::BitmapPlatformDevice> gradient_bitmap(
       skia::BitmapPlatformDevice::create(
@@ -565,11 +560,13 @@ void CanvasSkia::DrawFadeTruncatingString(
 
   HDC hdc = beginPlatformPaint();
   if (is_truncating_head)
-    DrawTextGradientPart(hdc, *gradient_bitmap, text, color, gray_scale_font,
-                         text_rect, head_part, is_rtl, flags);
+    DrawTextGradientPart(hdc, *gradient_bitmap, text, color,
+                         font.GetNativeFont(), text_rect, head_part, is_rtl,
+                         flags);
   if (is_truncating_tail)
-    DrawTextGradientPart(hdc, *gradient_bitmap, text, color, gray_scale_font,
-                         text_rect, tail_part, !is_rtl, flags);
+    DrawTextGradientPart(hdc, *gradient_bitmap, text, color,
+                         font.GetNativeFont(), text_rect, tail_part, !is_rtl,
+                         flags);
   endPlatformPaint();
 
   // Draw the solid part.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,8 @@ struct HSL {
   double s;
   double l;
 };
+
+unsigned char GetLuminanceForColor(SkColor color);
 
 // Calculated according to http://www.w3.org/TR/WCAG20/#relativeluminancedef
 double RelativeLuminance(SkColor color);
