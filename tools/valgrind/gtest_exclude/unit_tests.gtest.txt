@@ -20,9 +20,4 @@ P2PTransportImplTest.SendData
 SignedSettingsTest.StorePolicyNoPolicyData
 
 # Failing on CrOS, see http://crbug.com/80438
-InputMethodUtilTest.GetFirstLoginInputMethodIds_JP_And_Ja
-InputMethodUtilTest.GetFirstLoginInputMethodIds_Us_And_Ru
-InputMethodUtilTest.GetFirstLoginInputMethodIds_Us_And_Th
-InputMethodUtilTest.GetInputMethodDescriptorFromId
-InputMethodUtilTest.GetLanguageCodeFromInputMethodId
-InputMethodUtilTest.GetLanguageCodesFromInputMethodIds
+InputMethodUtilTest.*
