@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "printing/printing_context.h"
+#include "printing/print_job_constants.h"
 
 #ifdef __OBJC__
 @class NSPrintInfo;

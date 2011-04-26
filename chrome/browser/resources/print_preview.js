@@ -268,7 +268,7 @@ function isTwoSided() {
  * @return {number} duplex mode.
  */
 function getDuplexMode() {
-  // Constants values matches printing::PrintingContext::DuplexMode enum.
+  // Constants values matches printing::DuplexMode enum.
   const SIMPLEX = 0;
   const LONG_EDGE = 1;
   const SHORT_EDGE = 2;

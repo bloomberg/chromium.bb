@@ -29,6 +29,17 @@ using printing::PrintSettings;
 
 namespace {
 
+// CUPS ColorModel attribute and values.
+const char kCUPSColorModel[] = "cups-ColorModel";
+const char kColor[] = "Color";
+const char kGrayscale[] = "Grayscale";
+
+// CUPS Duplex attribute and values.
+const char kCUPSDuplex[] = "cups-Duplex";
+const char kDuplexNone[] = "None";
+const char kDuplexTumble[] = "DuplexTumble";
+const char kDuplexNoTumble[] = "DuplexNoTumble";
+
 // Helper class to track GTK printers.
 class GtkPrinterList {
  public:
@@ -179,8 +190,29 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
     return false;
   gtk_print_settings_set_collate(gtk_settings_, collate);
 
-  // TODO(thestig) Color: gtk_print_settings_set_color() does not work.
-  // TODO(thestig) Duplex: gtk_print_settings_set_duplex() does not work.
+  bool is_color;
+  if (!settings.GetBoolean(printing::kSettingColor, &is_color))
+    return false;
+
+  gtk_print_settings_set(gtk_settings_, kCUPSColorModel,
+                         is_color ? kColor : kGrayscale);
+  int mode;
+  if (!settings.GetInteger(printing::kSettingDuplexMode, &mode))
+    return false;
+
+  const char* cups_duplex_mode;
+  switch (mode) {
+    case printing::LONG_EDGE:
+      cups_duplex_mode = kDuplexNoTumble;
+      break;
+    case printing::SHORT_EDGE:
+      cups_duplex_mode = kDuplexTumble;
+      break;
+    default:
+      cups_duplex_mode = kDuplexNone;
+      break;
+  }
+  gtk_print_settings_set(gtk_settings_, kCUPSDuplex, cups_duplex_mode);
 
   InitPrintSettings(ranges);
   return true;

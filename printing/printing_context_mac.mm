@@ -11,7 +11,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "base/values.h"
-#include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_mac.h"
 
 static const CFStringRef kColorModel = CFSTR("ColorModel");

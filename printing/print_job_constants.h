@@ -18,6 +18,13 @@ extern const char kSettingPageRangeTo[];
 extern const char kSettingPrinterName[];
 extern const char kSettingPrintToPDF[];
 
+// Print job duplex mode values.
+enum DuplexMode {
+  SIMPLEX,
+  LONG_EDGE,
+  SHORT_EDGE,
+};
+
 }  // namespace printing
 
 #endif  // PRINTING_PRINT_JOB_CONSTANTS_H_
