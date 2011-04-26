@@ -20,12 +20,7 @@ var kWindowRect = {
 
 chrome.test.runTests([
   function captureVisibleTabRace() {
-    // Simulate a callback being added to make sure that the test isn't
-    // considered complete until all of the 10 windows are test (this happens
-    // in parallel, so the normal nesting of pass() call is not sufficient).
-    var callbackCompleted = chrome.test.callbackAdded();
-
-    var windowsAndColors = [];
+    var windowIdToExpectedColor = {};
     for (var i = 0; i < 10; i++) {
       var colorName;
       var expectedColor;
@@ -40,28 +35,22 @@ chrome.test.runTests([
       createWindow(
           [url],
           kWindowRect,
-          (function(expectedColor, winId, tabIds) {
-            windowsAndColors.push([winId, expectedColor]);
-          }).bind(this, expectedColor));
+          pass((function(expectedColor, winId, tabIds) {
+            windowIdToExpectedColor[winId] = expectedColor;
+          }).bind(this, expectedColor)));
     }
 
-    waitForAllTabs(function() {
-      var testedWindowCount = 0;
-      windowsAndColors.forEach(function(windowIdAndExpectedColor) {
-        var windowId = windowIdAndExpectedColor[0];
-        var expectedColor = windowIdAndExpectedColor[1];
+    waitForAllTabs(pass(function() {
+      for (var windowId in windowIdToExpectedColor) {
+        var expectedColor = windowIdToExpectedColor[windowId];
+        windowId = parseInt(windowId, 10);
         chrome.tabs.captureVisibleTab(
             windowId,
-            {'format': 'png'},
-            function(imgDataUrl) {
+            pass((function(expectedColor, imgDataUrl) {
               testPixelsAreExpectedColor(
                   imgDataUrl, kWindowRect, expectedColor);
-              testedWindowCount++;
-              if (testedWindowCount == windowsAndColors.length) {
-                callbackCompleted();
-              }
-            });
-      });
-    });
+            }).bind(this, expectedColor)));
+      }
+    }));
  }
 ]);

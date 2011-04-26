@@ -1211,7 +1211,8 @@ void CaptureVisibleTabFunction::SendResultFromBitmap(
   }
 
   if (!encoded) {
-    error_ = keys::kInternalVisibleTabCaptureError;
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        keys::kInternalVisibleTabCaptureError, "");
     SendResponse(false);
     return;
   }
