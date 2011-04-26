@@ -20,8 +20,8 @@ nexe = env.ComponentProgram(nexe_name,
                                         'm'])
 
 # Note that the html is required to run this program.
-env.Publish(nexe, 'run',
-            ['ppapi_example_audio.html' ])
+env.Publish(nexe_name, 'run',
+            ['ppapi_example_audio.html' , 'ppapi_example_audio.nmf'])
 
 test = env.PPAPIBrowserTester('ppapi_example_audio_test.out',
                               url='ppapi_audio_test.html',

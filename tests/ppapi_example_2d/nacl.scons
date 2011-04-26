@@ -15,5 +15,5 @@ ppapi_example_2d_nexe = env.ComponentProgram(nexe_name,
     EXTRA_LIBS=['${PPAPI_LIBS}'])
 
 # Note that the html is required to run this program.
-env.Publish('ppapi_example_2d.nexe', 'run',
+env.Publish(nexe_name, 'run',
             ['ppapi_example_2d.html', 'ppapi_example_2d.nmf' ])
