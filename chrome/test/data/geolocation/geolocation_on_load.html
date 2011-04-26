@@ -9,7 +9,9 @@ function triggerGeo() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(showPosition, onError);
   } else {
-    onError();
+    document.getElementById('lat').innerHTML =
+        'Error: navigator.geolocation is false';
+    document.getElementById('lng').innerHTML = '';
   }
 }
 
@@ -20,7 +22,10 @@ function showPosition(position) {
   document.getElementById('lng').innerHTML = lng;
 }
 
-function onError() {
+function onError(positionError) {
+  document.getElementById('lat').innerHTML =
+      positionError.message;
+  document.getElementById('lng').innerHTML = '';
 }
 
     </script>

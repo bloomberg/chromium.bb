@@ -193,12 +193,6 @@
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
       '-test_basic.SimpleTest.testHTTP',
 
-      # file:/// urls not prompting geolocation infobar on chromeos.
-      # crosbug.com/13009
-      '-infobars.InfobarTest.testGeolocationInfobar',
-      '-infobars.InfobarTest.testGeolocationInfobarInMultipleTabsAndWindows',
-      '-prefs.PrefsTest.testGeolocationPref',
-
       # Deal with i18n chars.  crosbug.com/12639
       '-downloads.DownloadsTest.testCrazyFilenames',
       '-omnibox.OmniboxTest.testCrazyFilenames',

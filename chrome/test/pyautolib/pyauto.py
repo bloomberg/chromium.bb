@@ -225,6 +225,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return [
        '--homepage=about:blank',
        '--allow-file-access',
+       '--allow-file-access-from-files',
        '--enable-file-cookies',
        '--dom-automation',
     ]
