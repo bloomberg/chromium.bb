@@ -81,19 +81,20 @@ TEST_F(InputMethodUtilTest, IsKeyboardLayout) {
 
 TEST_F(InputMethodUtilTest, GetLanguageCodeFromDescriptor) {
   EXPECT_EQ("ja", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("mozc", "Mozc", "us", "ja")));
+      InputMethodDescriptor("mozc", "Mozc", "us", "us", "ja")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("mozc-chewing", "Chewing", "us", "zh")));
+      InputMethodDescriptor("mozc-chewing", "Chewing", "us", "us", "zh")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("m17n:zh:cangjie", "Cangjie", "us", "zh")));
+      InputMethodDescriptor("m17n:zh:cangjie", "Cangjie", "us", "us", "zh")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("m17n:zh:quick", "Quick", "us", "zh")));
+      InputMethodDescriptor("m17n:zh:quick", "Quick", "us", "us", "zh")));
   EXPECT_EQ("zh-CN", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("pinyin", "Pinyin", "us", "zh")));
+      InputMethodDescriptor("pinyin", "Pinyin", "us", "us", "zh")));
   EXPECT_EQ("en-US", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("xkb:us::eng", "USA", "us", "eng")));
+      InputMethodDescriptor("xkb:us::eng", "USA", "us", "us", "eng")));
   EXPECT_EQ("en-UK", GetLanguageCodeFromDescriptor(
-      InputMethodDescriptor("xkb:uk::eng", "United Kingdom", "us", "eng")));
+      InputMethodDescriptor("xkb:uk::eng", "United Kingdom",
+                            "us", "us", "eng")));
 }
 
 TEST_F(InputMethodUtilTest, GetKeyboardLayoutName) {
