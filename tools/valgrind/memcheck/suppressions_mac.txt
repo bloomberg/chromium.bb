@@ -1667,3 +1667,15 @@
    fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
    fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
 }
+{
+   bug_80550_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16RenderWidgetHost11WasRestoredEv
+}
+{
+   bug_80550_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16RenderWidgetHost9WasHiddenEv
+}
