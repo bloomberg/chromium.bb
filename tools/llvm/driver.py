@@ -109,8 +109,9 @@ INITIAL_ENV = {
   'BUILD_OS'        : '',   # "linux" or "darwin"
   'BUILD_ARCH'      : '',   # "x86_64" or "i686" or "i386"
 
-  'BASE'            : '${BASE_NACL}/toolchain/pnacl_${BUILD_OS}_${BUILD_ARCH}',
-  'BASE_TRUSTED'    : '${BASE_NACL}/toolchain/linux_arm-trusted',
+  'BASE_TOOLCHAIN'  : '${BASE_NACL}/toolchain',
+  'BASE'            : '${BASE_TOOLCHAIN}/pnacl_${BUILD_OS}_${BUILD_ARCH}',
+  'BASE_TRUSTED'    : '${BASE_TOOLCHAIN}/linux_arm-trusted',
   'BASE_ARM'        : '${BASE}/arm-none-linux-gnueabi',
   'BASE_ARM_INCLUDE': '${BASE_ARM}/arm-none-linux-gnueabi/include',
   'BASE_BIN'        : '${BASE}/bin',
@@ -118,7 +119,7 @@ INITIAL_ENV = {
   'DRY_RUN'              : '0',
 
   'LOG_TO_FILE'          : '1',
-  'LOG_FILENAME'         : '${BASE_NACL}/toolchain/hg-log/driver.log',
+  'LOG_FILENAME'         : '${BASE_TOOLCHAIN}/hg-log/driver.log',
   'LOG_FILE_SIZE_LIMIT'  : str(20 * 1024 * 1024),
   'LOG_PRETTY_PRINT'     : '1',
 
@@ -284,8 +285,8 @@ INITIAL_ENV = {
   'OBJDUMP_X8664' : '${BINUTILS_BASE}objdump',
 
   'AS_ARM'        : '${BINUTILS_BASE}as',
-  'AS_X8632'      : '${BASE_NACL}/toolchain/linux_x86_newlib/bin/nacl-as',
-  'AS_X8664'      : '${BASE_NACL}/toolchain/linux_x86_newlib/bin/nacl64-as',
+  'AS_X8632'      : '${BASE_TOOLCHAIN}/${SCONS_OS}_x86_newlib/bin/nacl-as',
+  'AS_X8664'      : '${BASE_TOOLCHAIN}/${SCONS_OS}_x86_newlib/bin/nacl64-as',
 
   'AS_FLAGS_ARM'  : '-mfpu=vfp -march=armv7-a',
   'AS_FLAGS_X8632': '--32 --nacl-align 5 -n -march=pentium4 -mtune=i386',
