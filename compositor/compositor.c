@@ -926,8 +926,16 @@ surface_attach(struct wl_client *client,
 	wlsc_buffer_attach(buffer, surface);
 
 	es->buffer = buffer;
-	es->x += x;
-	es->y += y;
+	switch (es->map_type) {
+	case WLSC_SURFACE_MAP_FULLSCREEN:
+		es->x = (es->fullscreen_output->width - es->width) / 2;
+		es->y = (es->fullscreen_output->height - es->height) / 2;
+		break;
+	default:
+		es->x += x;
+		es->y += y;
+		break;
+	}
 	es->width = buffer->width;
 	es->height = buffer->height;
 	if (x != 0 || y != 0)
