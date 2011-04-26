@@ -40,15 +40,23 @@ prog_env = env.Clone()
 if env.Bit('bitcode'):
   prog_env.AddBiasForPNaCl()
 
-prog_env.ComponentProgram('dynamic_load_test.nexe',
-                          ['dynamic_load_test.c',
-                           template_obj],
-                          EXTRA_LIBS=['testrunner', 'srpc', 'pthread'])
+dynamic_load_test_nexe_name = ('dynamic_load_test_%s.nexe' %
+                               env.get('TARGET_FULLARCH'))
+dynamic_load_test_nexe = prog_env.ComponentProgram(
+    dynamic_load_test_nexe_name,
+    ['dynamic_load_test.c',
+    template_obj],
+    EXTRA_LIBS=['testrunner', 'srpc', 'pthread'])
+env.Publish(dynamic_load_test_nexe_name, 'run', ['dynamic_load_test.nmf'])
 
-prog_env.ComponentProgram('dynamic_modify_test.nexe',
-                          ['dynamic_modify_test.c',
-                           template_obj],
-                          EXTRA_LIBS=['testrunner', 'srpc', 'pthread'])
+dynamic_modify_test_nexe_name = ('dynamic_modify_test_%s.nexe' %
+                                 env.get('TARGET_FULLARCH'))
+dynamic_modify_test_nexe = prog_env.ComponentProgram(
+    dynamic_modify_test_nexe_name,
+    ['dynamic_modify_test.c',
+    template_obj],
+    EXTRA_LIBS=['testrunner', 'srpc', 'pthread'])
+env.Publish(dynamic_modify_test_nexe_name, 'run', ['dynamic_modify_test.nmf'])
 
 prog_env.ComponentProgram('write_to_dyncode.nexe',
                           ['write_to_dyncode.c'])
@@ -63,7 +71,7 @@ prog_env.ComponentProgram('debug_mode_test.nexe',
 tests = [
     prog_env.CommandSelLdrTestNacl(
         'dynamic_load_test.out',
-        command=[prog_env.File('dynamic_load_test.nexe')],
+        command=[dynamic_load_test_nexe],
         # We need to set this because the test needs to behave
         # differently in the plugin, but the plugin does not provide a
         # way to distinguish itself.  TODO(mseaborn): Fix that.
@@ -91,7 +99,7 @@ tests = [
 if not prog_env.Bit('target_arm'):
   tests.append(prog_env.CommandSelLdrTestNacl(
        'dynamic_modify_test.out',
-       command=[prog_env.File('dynamic_modify_test.nexe')],
+       command=[dynamic_modify_test_nexe],
        sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1']))
 
 # TODO(kcc): non-standard linking options confuse Valgrind debug info reader.

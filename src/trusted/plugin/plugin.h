@@ -129,10 +129,10 @@ class Plugin : public PortableHandle {
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
 
   // Complex methods to set member data.
-  bool SetSrcPropertyImpl(const nacl::string &url);
+  bool SetNaClPropertyImpl(const nacl::string &url);
 
-  // Requesting a nacl module from a specified url.
-  virtual bool RequestNaClModule(const nacl::string& url) = 0;
+  // Requesting a nacl manifest from a specified url.
+  virtual bool RequestNaClManifest(const nacl::string& url) = 0;
 
   // Start up proxied execution of the browser API.
   virtual bool StartProxiedExecution(NaClSrpcChannel* srpc_channel,

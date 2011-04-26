@@ -69,8 +69,8 @@ fake_browser = trusted_env.ComponentProgram('fake_browser_ppapi',
                                              'test_scriptable.cc',
                                              'utility.cc'])
 
-target_nexe = 'ppapi_basic_object_%s.nexe' % env.get('TARGET_FULLARCH')
-ppapi_basic_object_nexe = env.File('${STAGING_DIR}/%s' % target_nexe)
+target_nmf = 'basic_object.nmf';
+basic_object_nmf = env.File('${STAGING_DIR}/' + target_nmf)
 
 if trusted_env.Bit('mac'):
   plugin = trusted_env.File('${STAGING_DIR}/ppNaClPlugin')
@@ -86,12 +86,12 @@ node = env.CommandTest('fake_browser_ppapi.out',
                         'http://localhost:5103/basic_object.html',
                         # Must use relative nexe url for the test to work.
                         # See TODO in URLLoader::FinishStreamingToFile().
-                        '"id=nacl_module;src=%s"' % target_nexe,
+                        '"id=nacl_module;nacl=%s"' % target_nmf,
                         '${STAGING_DIR}'
                        ],
                        'medium',
                        osenv=('NACL_SEL_LDR=%s,NACLLOG=%s'
                               % (sel_ldr, log_file)),
-                       extra_deps=[sel_ldr, ppapi_basic_object_nexe])
+                       extra_deps=[sel_ldr, basic_object_nmf])
 
 env.AddNodeToTestSuite(node, ['medium_tests'], 'run_fake_browser_ppapi_test')

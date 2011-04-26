@@ -62,11 +62,8 @@ function startProcess(url, callback) {
   node.innerHTML = '<embed name=foo width=0 height=0 ' +
     'type="application/x-nacl" onload="'+onload_id+'()" />';
   var plugin = node.childNodes[0];
-  // Assigning to "src" works in the NPAPI plugin.
-  // Assigning to "__src" works in the PPAPI plugin.
-  // TODO(mseaborn): Sort out this incompatibility.
-  plugin.src = url;
-  plugin.__src = url;
+  // Assigning to "nacl" causes manifest and then nexe to be loaded.
+  plugin.nacl = url;
 }
 
 function runTest(url, callback) {
@@ -130,9 +127,9 @@ function runAllTests() {
 
   rpc.startup();
   rpc.blankLine();
-  addTest('dynamic_load_test.nexe');
-  addTest('dynamic_modify_test.nexe');
-  addTest('imc_shm_mmap_test.nexe');
+  addTest('dynamic_load_test.nmf');
+  addTest('dynamic_modify_test.nmf');
+  addTest('imc_shm_mmap_test.nmf');
 }
 
 window.onload = runAllTests;

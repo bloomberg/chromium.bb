@@ -5,13 +5,18 @@
 
 Import('env')
 
-env.ComponentProgram('imc_shm_mmap_test.nexe',
-                     'imc_shm_mmap_test.c',
-                     EXTRA_LIBS=['testrunner', 'srpc', 'pthread'])
+imc_shm_mmap_test_nexe_name = ('imc_shm_mmap_test_%s.nexe' %
+                               env.get('TARGET_FULLARCH'))
+imc_shm_mmap_test_nexe = env.ComponentProgram(imc_shm_mmap_test_nexe_name,
+                                              'imc_shm_mmap_test.c',
+                                              EXTRA_LIBS=['testrunner',
+                                                          'srpc',
+                                                          'pthread'])
+env.Publish(imc_shm_mmap_test_nexe_name, 'run', ['imc_shm_mmap_test.nmf'])
 
 node = env.CommandSelLdrTestNacl(
     'imc_shm_mmap_test.out',
-    command=[env.File('imc_shm_mmap_test.nexe')],
+    command=[imc_shm_mmap_test_nexe],
     # We need to set this because the test needs to behave
     # differently in the plugin, but the plugin does not provide a
     # way to distinguish itself.  TODO(mseaborn): Fix that.

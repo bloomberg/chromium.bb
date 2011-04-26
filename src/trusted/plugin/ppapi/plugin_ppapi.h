@@ -65,9 +65,9 @@ class PluginPpapi : public pp::Instance, public Plugin {
 
   // ----- Methods inherited from Plugin:
 
-  // Requests a NaCl module download from a |url| relative to the page origin.
+  // Requests a NaCl manifest download from a |url| relative to the page origin.
   // Returns false on failure.
-  virtual bool RequestNaClModule(const nacl::string& url);
+  virtual bool RequestNaClManifest(const nacl::string& url);
 
   // Support for proxied execution.
   virtual bool StartProxiedExecution(NaClSrpcChannel* srpc_channel,
@@ -143,9 +143,6 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // chosen for the sandbox ISA, any current service runtime is shut down, the
   // .nexe is loaded and run.
 
-  // Requests a NaCl manifest download from a |url| relative to the page origin.
-  // Returns false on failure.
-  bool RequestNaClManifest(const nacl::string& url);
   // Callback used when getting the URL for the NaCl manifest file.
   void NaClManifestFileDidOpen(int32_t pp_error);
 

@@ -36,9 +36,6 @@ namespace plugin {
 
 namespace {
 
-// The "src" attribute of the <embed> tag. The value is expected to be a URL
-// pointing to the nexe (aka nacl module) file.
-const char* const kSrcAttribute = "src";
 const char* const kTypeAttribute = "type";
 // The "nacl" attribute of the <embed> tag.  The value is expected to be either
 // a URL or URI pointing to the manifest file (which is expected to contain
@@ -164,28 +161,14 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       std::transform(mime_type_.begin(), mime_type_.end(), mime_type_.begin(),
                      tolower);
     }
-    // Note: The order of attribute lookup is important.  This pattern looks
-    // for a "nacl" attribute first, then a "src" attribute.
     const char* nacl_attr = LookupArgument(kNaclManifestAttribute);
     PLUGIN_PRINTF(("PluginPpapi::Init (nacl_attr=%s)\n", nacl_attr));
     if (nacl_attr != NULL) {
       // Issue a GET for the "nacl" attribute.  The value of the attribute
       // can be a URI or a URL pointing to the manifest file. The manifest
-      // file will be parsed to determine the nexe URL. Then, just like for
-      // the "src" attribute below, SetSrcPropertyImpl() will be called.
-      //
-      // Sets __nacl property to full manifest URL.
-      // Sets __src property to full nexe URL.
+      // file will be parsed to determine the nexe URL.
+      // Sets nacl property to full manifest URL.
       status = RequestNaClManifest(nacl_attr);
-    } else {
-      const char* src_attr = LookupArgument(kSrcAttribute);
-      PLUGIN_PRINTF(("PluginPpapi::Init (src_attr=%s)\n", src_attr));
-      if (src_attr != NULL) {
-        // This will load the nexe and, if successful, start sel_ldr to run it.
-        //
-        // Sets __src property to full nexe URL.
-        status = SetSrcPropertyImpl(src_attr);
-      }
     }
   }
 
@@ -341,15 +324,6 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
 }
 
 
-bool PluginPpapi::RequestNaClModule(const nacl::string& url) {
-  PLUGIN_PRINTF(("PluginPpapi::RequestNaClModule (url='%s')\n", url.c_str()));
-  pp::CompletionCallback open_callback =
-      callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
-  // Will always call the callback on success or failure.
-  return nexe_downloader_.Open(url, open_callback);
-}
-
-
 bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
                                         nacl::string* error_string) {
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (srpc_channel=%p)\n",
@@ -478,10 +452,12 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   json_buffer[read_byte_count] = '\0';  // Force null termination.
   nacl::string nexe_url;
   if (SelectNexeURLFromManifest(json_buffer.get(), &nexe_url)) {
-    // Success, load the .nexe by setting the "src" attribute.
     PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (nexe_url=%s)\n",
                    nexe_url.c_str()));
-    SetSrcPropertyImpl(nexe_url);
+    pp::CompletionCallback open_callback =
+        callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
+    // Will always call the callback on success or failure.
+    nexe_downloader_.Open(nexe_url, open_callback);
     // Inform JavaScript that progress is being made.
     DispatchProgressEvent("progress", false, kUnknownBytes, kUnknownBytes);
     return;

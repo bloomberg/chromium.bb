@@ -111,42 +111,23 @@ bool SetModuleReadyProperty(void* obj, SrpcParams* params) {
   return false;
 }
 
-bool GetNaclProperty(void* obj, SrpcParams* params) {
-  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
-  const char* url = plugin->nacl_manifest_url().c_str();
-  PLUGIN_PRINTF(("GetNaclProperty ('__nacl'='%s')\n", url));
-  if (NACL_NO_URL != plugin->nacl_manifest_url()) {
-    params->outs()[0]->arrays.str = strdup(url);
-    return true;
-  } else {
-    // No url to set '__nacl' to.
-    return false;
-  }
-}
-
-bool SetNaclProperty(void* obj, SrpcParams* params) {
-  UNREFERENCED_PARAMETER(obj);
-  params->set_exception_string("__nacl is a read-only property");
-  return false;
-}
-
-bool GetSrcProperty(void* obj, SrpcParams* params) {
+bool GetNaClProperty(void* obj, SrpcParams* params) {
   Plugin* plugin = reinterpret_cast<Plugin*>(obj);
   const char* url = plugin->nacl_module_url().c_str();
-  PLUGIN_PRINTF(("GetSrcProperty ('src'='%s')\n", url));
+  PLUGIN_PRINTF(("GetNaClProperty ('nacl'='%s')\n", url));
   if (NACL_NO_URL != plugin->nacl_module_url()) {
     params->outs()[0]->arrays.str = strdup(url);
     return true;
   } else {
-    // No url to set 'src' to.
+    // No url to set 'nacl' to.
     return false;
   }
 }
 
-bool SetSrcProperty(void* obj, SrpcParams* params) {
-  PLUGIN_PRINTF(("SetSrcProperty ()\n"));
+bool SetNaClProperty(void* obj, SrpcParams* params) {
+  PLUGIN_PRINTF(("SetNaClProperty ()\n"));
   return reinterpret_cast<Plugin*>(obj)->
-      SetSrcPropertyImpl(params->ins()[0]->arrays.str);
+      SetNaClPropertyImpl(params->ins()[0]->arrays.str);
 }
 
 bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
@@ -270,6 +251,8 @@ void Plugin::LoadMethods() {
   AddPropertyGet(GetModuleReadyProperty, "__moduleReady", "i");
   AddPropertySet(SetModuleReadyProperty, "__moduleReady", "i");
 
+  AddPropertyGet(GetNaClProperty, "nacl", "s");
+  AddPropertySet(SetNaClProperty, "nacl", "s");
   if (!ExperimentalJavaScriptApisAreEnabled()) {
     return;
   }
@@ -290,10 +273,6 @@ void Plugin::LoadMethods() {
   // access to these properties.
   AddPropertyGet(GetHeightProperty, "__height", "i");
   AddPropertySet(SetHeightProperty, "__height", "i");
-  AddPropertyGet(GetNaclProperty, "__nacl", "s");
-  AddPropertySet(SetNaclProperty, "__nacl", "s");
-  AddPropertyGet(GetSrcProperty, "__src", "s");
-  AddPropertySet(SetSrcProperty, "__src", "s");
   AddPropertyGet(GetWidthProperty, "__width", "i");
   AddPropertySet(SetWidthProperty, "__width", "i");
 }
@@ -332,14 +311,14 @@ bool Plugin::InitParamsEx(uintptr_t method_id,
   return socket_->handle()->InitParams(method_id, call_type, params);
 }
 
-bool Plugin::SetSrcPropertyImpl(const nacl::string& url) {
-  PLUGIN_PRINTF(("Plugin::SetSrcPropertyImpl (unloading previous)\n"));
+bool Plugin::SetNaClPropertyImpl(const nacl::string& url) {
+  PLUGIN_PRINTF(("Plugin::SetNaClPropertyImpl (unloading previous)\n"));
   // We do not actually need to shut down the process here when
   // initiating the (asynchronous) download.  It is more important to
   // shut down the old process when the download completes and a new
   // process is launched.
   ShutDownSubprocess();
-  return RequestNaClModule(url);
+  return RequestNaClManifest(url);
 }
 
 bool Plugin::Init(BrowserInterface* browser_interface,

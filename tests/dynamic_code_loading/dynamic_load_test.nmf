@@ -1,0 +1,7 @@
+{
+  "nexes": {
+    "x86-32": "dynamic_load_test_x86-32.nexe",
+    "x86-64": "dynamic_load_test_x86-64.nexe",
+    "arm": "dynamic_load_test_arm.nexe",
+  }
+}
