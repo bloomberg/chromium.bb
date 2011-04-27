@@ -160,10 +160,18 @@ void ExtensionInstallUI::OnInstallSuccess(const Extension* extension,
   browser::ShowExtensionInstalledBubble(extension, browser, icon_, profile);
 }
 
+namespace {
+
+bool disable_failure_ui_for_tests = false;
+
+}  // namespace
+
 void ExtensionInstallUI::OnInstallFailure(const std::string& error) {
   DCHECK(ui_loop_ == MessageLoop::current());
 
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  if (disable_failure_ui_for_tests)
+    return;
   platform_util::SimpleErrorBox(
       browser ? browser->window()->GetNativeHandle() : NULL,
       l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_FAILURE_TITLE),
@@ -203,6 +211,11 @@ void ExtensionInstallUI::OnImageLoaded(
       NOTREACHED() << "Unknown message";
       break;
   }
+}
+
+// static
+void ExtensionInstallUI::DisableFailureUIForTests() {
+  disable_failure_ui_for_tests = true;
 }
 
 void ExtensionInstallUI::ShowThemeInfoBar(const std::string& previous_theme_id,

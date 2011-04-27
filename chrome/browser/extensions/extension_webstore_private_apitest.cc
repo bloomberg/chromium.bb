@@ -4,6 +4,7 @@
 
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,6 +32,7 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
     ASSERT_TRUE(test_server()->Start());
     BeginInstallWithManifestFunction::SetIgnoreUserGestureForTests(true);
     BeginInstallWithManifestFunction::SetAutoConfirmForTests(true);
+    ExtensionInstallUI::DisableFailureUIForTests();
   }
 
  protected:
@@ -65,9 +67,7 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
 };
 
 // Tests several basic install cases.
-// TODO(asargent): disabled - see crbug.com/80606 for details.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       DISABLED_Install) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, Install) {
   // Test cases where the user accepts the install confirmation dialog.
   ASSERT_TRUE(RunInstallTest("accepted.html"));
 
@@ -79,9 +79,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   ASSERT_TRUE(RunInstallTest("no_user_gesture.html"));
 }
 
-// TODO(asargent): disabled - see crbug.com/80606 for details.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       DISABLED_IncorrectManifest1) {
+                       IncorrectManifest1) {
   ui_test_utils::WindowedNotificationObserver observer(
       NotificationType::EXTENSION_INSTALL_ERROR,
       NotificationService::AllSources());
@@ -89,9 +88,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   observer.Wait();
 }
 
-// TODO(asargent): disabled - see crbug.com/80606 for details.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       DISABLED_IncorrectManifest2) {
+                       IncorrectManifest2) {
   ui_test_utils::WindowedNotificationObserver observer(
       NotificationType::EXTENSION_INSTALL_ERROR,
       NotificationService::AllSources());

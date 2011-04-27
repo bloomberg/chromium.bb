@@ -74,6 +74,13 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   virtual void OnImageLoaded(
       SkBitmap* image, const ExtensionResource& resource, int index);
 
+ protected:
+  friend class ExtensionWebstorePrivateApiTest;
+
+  // Disables showing UI (ErrorBox, etc.) for install failures. To be used only
+  // in tests.
+  static void DisableFailureUIForTests();
+
  private:
   // Show an infobar for a newly-installed theme.  previous_theme_id
   // should be empty if the previous theme was the system/default
