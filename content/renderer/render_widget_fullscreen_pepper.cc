@@ -141,6 +141,10 @@ class PepperWidget : public WebWidget {
     return false;
   }
 
+  virtual bool compositionRange(size_t* location, size_t* length) {
+    return false;
+  }
+
   virtual bool confirmComposition(const WebString& text) {
     return false;
   }
@@ -154,6 +158,10 @@ class PepperWidget : public WebWidget {
   }
 
   virtual bool selectionRange(WebPoint& start, WebPoint& end) const {
+    return false;
+  }
+
+  virtual bool selectionRange(size_t *location, size_t *length) {
     return false;
   }
 
