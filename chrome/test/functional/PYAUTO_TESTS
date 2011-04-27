@@ -41,8 +41,6 @@
       'bookmark_bar',
       'bookmarks',
       'browser',
-      # crbug.com/80479
-      '-browser.BrowserTest.testKillAndReloadSharedProcess',
       'browsing_data',
       'codesign',
       'content',

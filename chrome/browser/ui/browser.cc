@@ -2908,7 +2908,10 @@ void Browser::AddNewContents(TabContents* source,
 
   TabContentsWrapper* source_wrapper = NULL;
   BlockedContentTabHelper* source_blocked_content = NULL;
-  TabContentsWrapper* new_wrapper = new TabContentsWrapper(new_contents);
+  TabContentsWrapper* new_wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(new_contents);
+  if (!new_wrapper)
+    new_wrapper = new TabContentsWrapper(new_contents);
   if (source) {
     source_wrapper = TabContentsWrapper::GetCurrentWrapperForContents(source);
     source_blocked_content = source_wrapper->blocked_content_tab_helper();
