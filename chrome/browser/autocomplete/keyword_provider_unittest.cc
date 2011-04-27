@@ -81,7 +81,8 @@ void KeywordProviderTest::RunTest(
   }
 }
 
-TEST_F(KeywordProviderTest, FLAKY_Edit) {
+// http://crbug.com/80612
+TEST_F(KeywordProviderTest, DISABLED_Edit) {
   test_data<string16> edit_cases[] = {
     // Searching for a nonexistent prefix should give nothing.
     {ASCIIToUTF16("Not Found"),       0, {}},
