@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "content/browser/browser_thread.h"
@@ -204,7 +205,12 @@ void DataTypeManagerImpl::StartNextType() {
     needs_reconfigure_ = false;
     VLOG(1) << "Reconfiguring due to previous configure attempt occuring while"
             << " busy.";
-    Configure(last_requested_types_);
+
+    // Unwind the stack before executing configure. The method configure and its
+    // callees are not re-entrant.
+    MessageLoop::current()->PostTask(FROM_HERE,
+        method_factory_.NewRunnableMethod(&DataTypeManagerImpl::Configure,
+            last_requested_types_));
     return;
   }
 

@@ -34,6 +34,9 @@ using testing::AtLeast;
 using testing::DoAll;
 using testing::DoDefault;
 using testing::InSequence;
+using testing::Invoke;
+using testing::InvokeWithoutArgs;
+using testing::InvokeWithoutArgs;
 using testing::Mock;
 using testing::Property;
 using testing::Pointee;
@@ -310,6 +313,18 @@ TEST_F(DataTypeManagerImpl2Test, ConfigureOneThenSwitch) {
   EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
 }
 
+void DoConfigureDataTypes(
+    const DataTypeController::TypeMap& data_type_controllers,
+    const syncable::ModelTypeSet& types,
+    CancelableTask* ready_task) {
+  ready_task->Run();
+  delete ready_task;
+}
+
+void QuitMessageLoop() {
+  MessageLoop::current()->Quit();
+}
+
 TEST_F(DataTypeManagerImpl2Test, ConfigureWhileOneInFlight) {
   DataTypeControllerMock* bookmark_dtc = MakeBookmarkDTC();
   // Save the callback here so we can interrupt startup.
@@ -332,8 +347,12 @@ TEST_F(DataTypeManagerImpl2Test, ConfigureWhileOneInFlight) {
   SetStartStopExpectations(preference_dtc);
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(2);
   DataTypeManagerImpl dtm(&backend_, controllers_);
+  EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _))
+    .WillOnce(Invoke(DoConfigureDataTypes))
+    .WillOnce(DoAll(Invoke(DoConfigureDataTypes),
+     InvokeWithoutArgs(QuitMessageLoop)));
+
   types_.insert(syncable::BOOKMARKS);
 
   SetConfigureStartExpectation();
@@ -346,6 +365,8 @@ TEST_F(DataTypeManagerImpl2Test, ConfigureWhileOneInFlight) {
   dtm.Configure(types_);
   callback->Run(DataTypeController::OK, FROM_HERE);
   delete callback;
+
+  MessageLoop::current()->Run();
 
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
 
