@@ -312,8 +312,9 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
     case SyncSetupWizard::PASSPHRASE_MIGRATION:
       return current_state_ == SyncSetupWizard::GAIA_LOGIN;
     case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR:
-      return current_state_ == SyncSetupWizard::SYNC_EVERYTHING ||
-             current_state_ == SyncSetupWizard::CONFIGURE;
+      DCHECK(current_state_ != SyncSetupWizard::GAIA_LOGIN &&
+             current_state_ != SyncSetupWizard::GAIA_SUCCESS);
+      return true;
     case SyncSetupWizard::SETTING_UP:
       return current_state_ == SyncSetupWizard::SYNC_EVERYTHING ||
              current_state_ == SyncSetupWizard::CONFIGURE ||
