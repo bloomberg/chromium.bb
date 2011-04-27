@@ -211,7 +211,7 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   { "a1ed94a7", "ea9d6b36", "", "", "", kUninstallLink },
 
   // rooksdol.dll, "%programfiles%\\trusteer\\rapport\\bin\\".
-  { "802aefef", "06120e13", "", "", "", INVESTIGATING },
+  { "802aefef", "06120e13", "", "", "3.5.1008.40", INVESTIGATING },
 
   // sdata.dll, "%programdata%\\srtserv\\".
   { "1936d5cc", "223c44be", "", "", "", kUninstallLink },
