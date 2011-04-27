@@ -231,6 +231,12 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     return TaskManager::GetInstance()->model();
   }
 
+  PrerenderManager* prerender_manager() const {
+    Profile* profile = browser()->GetSelectedTabContents()->profile();
+    PrerenderManager* prerender_manager = profile->GetPrerenderManager();
+    return prerender_manager;
+  }
+
  private:
   void PrerenderTestURLImpl(
       const GURL& url,
@@ -320,12 +326,6 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         L"window.domAutomationController.send(DidDisplayPass())",
         &display_test_result));
     EXPECT_TRUE(display_test_result);
-  }
-
-  PrerenderManager* prerender_manager() const {
-    Profile* profile = browser()->GetSelectedTabContents()->profile();
-    PrerenderManager* prerender_manager = profile->GetPrerenderManager();
-    return prerender_manager;
   }
 
   WaitForLoadPrerenderContentsFactory* prerender_contents_factory_;
@@ -602,12 +602,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
                    1);
 }
 
-
-
 // Checks that renderers using excessive memory will be terminated.
-// Disabled, http://crbug.com/77870.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderExcessiveMemory) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExcessiveMemory) {
+  ASSERT_TRUE(prerender_manager());
+  prerender_manager()->set_max_prerender_memory_mb(30);
   PrerenderTestURL("files/prerender/prerender_excessive_memory.html",
                    FINAL_STATUS_MEMORY_LIMIT_EXCEEDED,
                    1);

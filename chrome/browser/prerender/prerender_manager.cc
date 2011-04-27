@@ -31,6 +31,10 @@ namespace {
 // Default maximum permitted elements to prerender.
 const unsigned int kDefaultMaxPrerenderElements = 1;
 
+// Default maximum amount of private memory that may be used per
+// PrerenderContents, in MB.
+const unsigned int kDefaultMaxPrerenderMemoryMB = 100;
+
 // Default maximum age a prerendered element may have, in seconds.
 const int kDefaultMaxPrerenderAgeSeconds = 30;
 
@@ -149,6 +153,7 @@ PrerenderManager::PrerenderManager(Profile* profile)
       profile_(profile),
       max_prerender_age_(base::TimeDelta::FromSeconds(
           kDefaultMaxPrerenderAgeSeconds)),
+      max_prerender_memory_mb_(kDefaultMaxPrerenderMemoryMB),
       max_elements_(kDefaultMaxPrerenderElements),
       prerender_contents_factory_(PrerenderContents::CreateFactory()),
       last_prerender_start_time_(GetCurrentTimeTicks() -
@@ -507,6 +512,16 @@ base::TimeDelta PrerenderManager::max_prerender_age() const {
 void PrerenderManager::set_max_prerender_age(base::TimeDelta max_age) {
   DCHECK(CalledOnValidThread());
   max_prerender_age_ = max_age;
+}
+
+size_t PrerenderManager::max_prerender_memory_mb() const {
+  DCHECK(CalledOnValidThread());
+  return max_prerender_memory_mb_;
+}
+
+void PrerenderManager::set_max_prerender_memory_mb(size_t max_memory_mb) {
+  DCHECK(CalledOnValidThread());
+  max_prerender_memory_mb_ = max_memory_mb;
 }
 
 unsigned int PrerenderManager::max_elements() const {

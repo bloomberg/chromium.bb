@@ -293,10 +293,6 @@ class PrerenderContents : public RenderViewHostDelegate,
   // RenderViewHost for this object.
   scoped_ptr<base::ProcessMetrics> process_metrics_;
 
-  // Maximum amount of private memory that may be used per PrerenderContents,
-  // in MB.
-  static const int kMaxPrerenderPrivateMB = 100;
-
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };
 

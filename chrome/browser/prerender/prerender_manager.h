@@ -108,6 +108,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   base::TimeDelta max_prerender_age() const;
   void set_max_prerender_age(base::TimeDelta max_age);
+  size_t max_prerender_memory_mb() const;
+  void set_max_prerender_memory_mb(size_t prerender_memory_mb);
   unsigned int max_elements() const;
   void set_max_elements(unsigned int num);
 
@@ -201,6 +203,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   Profile* profile_;
 
   base::TimeDelta max_prerender_age_;
+  // Maximum amount of memory, in megabytes, that a single PrerenderContents
+  // can use before it's cancelled.
+  size_t max_prerender_memory_mb_;
   unsigned int max_elements_;
 
   // List of prerendered elements.
