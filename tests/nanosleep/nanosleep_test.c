@@ -26,9 +26,8 @@
 
 #define NANOS_PER_MICRO   (1000)
 #define MICROS_PER_MILLI  (1000)
-#define MILLIS_PER_UNIT  (1000)
 #define NANOS_PER_MILLI   (NANOS_PER_MICRO * MICROS_PER_MILLI)
-#define NANOS_PER_UNIT    (NANOS_PER_MICRO * MICROS_PER_MILLI * MILLIS_PER_UNIT)
+#define MICROS_PER_UNIT   (1000 * 1000)
 
 /*
  * Returns failure count.  t_suspend should not be shorter than 1us,
@@ -82,20 +81,12 @@ int TestNanoSleep(struct timespec *t_suspend) {
   t_elapsed.tv_usec = t_end.tv_usec - t_start.tv_usec + 1;
 
   if (t_elapsed.tv_usec < 0) {
-    t_elapsed.tv_usec += NANOS_PER_UNIT;
+    t_elapsed.tv_usec += MICROS_PER_UNIT;
     t_elapsed.tv_sec -= 1;
   }
-  if (t_elapsed.tv_usec >= NANOS_PER_UNIT) {
-    t_elapsed.tv_usec -= NANOS_PER_UNIT;
+  if (t_elapsed.tv_usec >= MICROS_PER_UNIT) {
+    t_elapsed.tv_usec -= MICROS_PER_UNIT;
     t_elapsed.tv_sec += 1;
-  }
-  if (t_elapsed.tv_usec < 0) {
-    printf("Test internal error: t_elapsed.tv_usec field negative\n");
-    return 1;
-  }
-  if (t_elapsed.tv_sec < 0) {
-    printf("Test internal error: t_elapsed.tv_sec field negative\n");
-    return 1;
   }
 
   printf("%40s: %"NACL_PRIdNACL_TIME".%06ld seconds\n",
