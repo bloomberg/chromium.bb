@@ -1383,6 +1383,7 @@ gboolean BrowserWindowGtk::OnWindowState(GtkWidget* sender,
     }
   }
 
+  titlebar_->UpdateCustomFrame(UseCustomFrame() && !IsFullscreen());
   UpdateWindowShape(bounds_.width(), bounds_.height());
   SaveWindowPosition();
   return FALSE;
@@ -2348,6 +2349,7 @@ bool BrowserWindowGtk::GetCustomFramePrefDefault() {
   // are taken from the WMs' source code.
   return (wm_name == "Blackbox" ||
           wm_name == "compiz" ||
+          wm_name == "Compiz" ||
           wm_name == "e16" ||  // Enlightenment DR16
           wm_name == "Metacity" ||
           wm_name == "Mutter" ||

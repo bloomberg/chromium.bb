@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
+#include "chrome/browser/ui/gtk/unity_service.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/common/pref_names.h"
@@ -523,16 +524,17 @@ CustomDrawButton* BrowserTitlebar::BuildTitlebarButton(int image,
 
 void BrowserTitlebar::UpdateCustomFrame(bool use_custom_frame) {
   using_custom_frame_ = use_custom_frame;
-  if (use_custom_frame) {
-    if (titlebar_left_buttons_vbox_)
-      gtk_widget_show_all(titlebar_left_buttons_vbox_);
-    if (titlebar_right_buttons_vbox_)
-      gtk_widget_show_all(titlebar_right_buttons_vbox_);
-  } else {
+  if (!use_custom_frame ||
+      (browser_window_->IsMaximized() && unity::IsRunning())) {
     if (titlebar_left_buttons_vbox_)
       gtk_widget_hide(titlebar_left_buttons_vbox_);
     if (titlebar_right_buttons_vbox_)
       gtk_widget_hide(titlebar_right_buttons_vbox_);
+  } else {
+    if (titlebar_left_buttons_vbox_)
+      gtk_widget_show_all(titlebar_left_buttons_vbox_);
+    if (titlebar_right_buttons_vbox_)
+      gtk_widget_show_all(titlebar_right_buttons_vbox_);
   }
   UpdateTitlebarAlignment();
   UpdateMaximizeRestoreVisibility();
@@ -607,7 +609,8 @@ void BrowserTitlebar::UpdateTitlebarAlignment() {
         top_padding = kTitlebarHeight;
       } else if (using_custom_frame_ && browser_window_->IsMaximized()) {
         vertical_offset = 0;
-        side_padding = kMaximizedTabstripPadding;
+        if (!unity::IsRunning())
+          side_padding = kMaximizedTabstripPadding;
       }
     }
 

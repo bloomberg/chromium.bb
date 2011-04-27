@@ -70,6 +70,7 @@
 #include "views/widget/widget_gtk.h"
 #elif defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/custom_drag.h"
+#include "chrome/browser/ui/gtk/unity_service.h"
 #endif  // defined(TOOLKIT_GTK)
 #endif  // defined(TOOLKIT_USES_GTK)
 
@@ -756,6 +757,9 @@ void UpdateAppIconDownloadProgress(int download_count,
     else
       taskbar->SetProgressValue(frame, static_cast<int>(progress * 100), 100);
   }
+#elif defined(TOOLKIT_GTK)
+  unity::SetDownloadCount(download_count);
+  unity::SetProgressFraction(progress);
 #endif
 }
 #endif

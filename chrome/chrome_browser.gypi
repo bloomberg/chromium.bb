@@ -2749,6 +2749,8 @@
         'browser/ui/gtk/task_manager_gtk.h',
         'browser/ui/gtk/theme_install_bubble_view_gtk.cc',
         'browser/ui/gtk/theme_install_bubble_view_gtk.h',
+        'browser/ui/gtk/unity_service.cc',
+        'browser/ui/gtk/unity_service.h',
         'browser/ui/gtk/update_recommended_dialog.cc',
         'browser/ui/gtk/update_recommended_dialog.h',
         'browser/ui/gtk/view_id_util.cc',
