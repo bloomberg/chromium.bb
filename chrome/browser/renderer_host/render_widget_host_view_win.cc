@@ -80,6 +80,10 @@ const int kMaxTooltipLength = 1024;
 // listening for MSAA events.
 const int kIdCustom = 1;
 
+// The delay before the compositor host window is destroyed. This gives the GPU
+// process a grace period to stop referencing it.
+const int kDestroyCompositorHostWindowDelay = 10000;
+
 const char* const kRenderWidgetHostViewKey = "__RENDER_WIDGET_HOST_VIEW__";
 
 // A callback function for EnumThreadWindows to enumerate and dismiss
@@ -319,11 +323,6 @@ void RenderWidgetHostViewWin::SetBounds(const gfx::Rect& rect) {
     ScreenToClient(&point);
 
   SetWindowPos(NULL, point.x, point.y, rect.width(), rect.height(), swp_flags);
-  if (compositor_host_window_) {
-    ::SetWindowPos(compositor_host_window_, NULL, point.x, point.y,
-        rect.width(), rect.height(),
-        SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOACTIVATE);
-  }
   render_widget_host_->WasResized();
   EnsureTooltip();
 }
@@ -462,14 +461,20 @@ void RenderWidgetHostViewWin::CleanupCompositorWindow() {
   if (!compositor_host_window_)
     return;
 
-  std::vector<HWND> all_child_windows;
-  ::EnumChildWindows(compositor_host_window_, AddChildWindowToVector,
-    reinterpret_cast<LPARAM>(&all_child_windows));
-  if (all_child_windows.size()) {
-    DCHECK(all_child_windows.size() == 1);
-    ::ShowWindow(all_child_windows[0], SW_HIDE);
-    ::SetParent(all_child_windows[0], NULL);
-  }
+  // Hide the compositor and parent it to the desktop rather than destroying
+  // it immediately. The GPU process has a grace period to stop accessing the
+  // window. TODO(apatrick): the GPU process should acknowledge that it has
+  // finished with the window handle and the browser process should destroy it
+  // at that point.
+  ::ShowWindow(compositor_host_window_, SW_HIDE);
+  ::SetParent(compositor_host_window_, NULL);
+
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      NewRunnableFunction(::DestroyWindow, compositor_host_window_),
+      kDestroyCompositorHostWindowDelay);
+
   compositor_host_window_ = NULL;
 }
 
@@ -1466,31 +1471,10 @@ void RenderWidgetHostViewWin::Observe(NotificationType type,
   browser_accessibility_manager_.reset(NULL);
 }
 
-// Looks through the children windows of the CompositorHostWindow. If the
-// compositor child window is found, its size is checked against the host
-// window's size. If the child is smaller in either dimensions, we fill
-// the host window with white to avoid unseemly cracks.
 static void PaintCompositorHostWindow(HWND hWnd) {
   PAINTSTRUCT paint;
   BeginPaint(hWnd, &paint);
 
-  std::vector<HWND> child_windows;
-  EnumChildWindows(hWnd, AddChildWindowToVector,
-      reinterpret_cast<LPARAM>(&child_windows));
-
-  if (child_windows.size()) {
-    HWND child = child_windows[0];
-
-    RECT host_rect, child_rect;
-    GetClientRect(hWnd, &host_rect);
-    if (GetClientRect(child, &child_rect)) {
-      if (child_rect.right < host_rect.right ||
-         child_rect.bottom != host_rect.bottom) {
-          FillRect(paint.hdc, &host_rect,
-              static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
-      }
-    }
-  }
   EndPaint(hWnd, &paint);
 }
 
@@ -1562,12 +1546,7 @@ void RenderWidgetHostViewWin::ShowCompositorHostWindow(bool show) {
     return;
 
   if (show) {
-    UINT flags = SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER |
-      SWP_NOACTIVATE | SWP_DEFERERASE | SWP_SHOWWINDOW;
-    gfx::Rect rect = GetViewBounds();
-    ::SetWindowPos(compositor_host_window_, NULL, 0, 0,
-        rect.width(), rect.height(),
-        flags);
+    ::ShowWindow(compositor_host_window_, SW_SHOW);
 
     // Get all the child windows of this view, including the compositor window.
     std::vector<HWND> all_child_windows;

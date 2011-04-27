@@ -64,12 +64,15 @@ void GpuChannel::OnLatchCallback(int route_id, bool is_set_latch) {
          i != latched_routes_.end(); ++i) {
       GpuCommandBufferStub* stub = stubs_.Lookup(*i);
       if (stub)
-        stub->scheduler()->ScheduleProcessCommands();
+        stub->scheduler()->SetScheduled(true);
     }
     latched_routes_.clear();
   } else {
     // Add route_id context to a set to be woken upon any set latch.
     latched_routes_.insert(route_id);
+    GpuCommandBufferStub* stub = stubs_.Lookup(route_id);
+    if (stub)
+      stub->scheduler()->SetScheduled(false);
   }
 #endif
 }
@@ -140,6 +143,14 @@ void GpuChannel::CreateViewCommandBuffer(
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
 #endif  // ENABLE_GPU
+}
+
+void GpuChannel::ViewResized(int32 command_buffer_route_id) {
+  GpuCommandBufferStub* stub = stubs_.Lookup(command_buffer_route_id);
+  if (stub == NULL)
+    return;
+
+  stub->ViewResized();
 }
 
 #if defined(OS_MACOSX)

@@ -49,7 +49,9 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
                         OnCreateViewCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_Synchronize, OnSynchronize)
     IPC_MESSAGE_HANDLER(GpuMsg_VisibilityChanged, OnVisibilityChanged)
-#if defined(OS_MACOSX)
+#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(GpuMsg_ResizeViewACK, OnResizeViewACK);
+#elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuMsg_AcceleratedSurfaceBuffersSwappedACK,
                         OnAcceleratedSurfaceBuffersSwappedACK)
     IPC_MESSAGE_HANDLER(GpuMsg_DestroyCommandBuffer,
@@ -131,6 +133,16 @@ void GpuChannelManager::OnCreateViewCommandBuffer(
   Send(new GpuHostMsg_CommandBufferCreated(route_id));
 }
 
+void GpuChannelManager::OnResizeViewACK(int32 renderer_id,
+                                        int32 command_buffer_route_id) {
+  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
+  if (iter == gpu_channels_.end())
+    return;
+  scoped_refptr<GpuChannel> channel = iter->second;
+
+  channel->ViewResized(command_buffer_route_id);
+}
+
 #if defined(OS_MACOSX)
 void GpuChannelManager::OnAcceleratedSurfaceBuffersSwappedACK(
     int renderer_id, int32 route_id, uint64 swap_buffers_count) {
@@ -140,6 +152,7 @@ void GpuChannelManager::OnAcceleratedSurfaceBuffersSwappedACK(
   scoped_refptr<GpuChannel> channel = iter->second;
   channel->AcceleratedSurfaceBuffersSwapped(route_id, swap_buffers_count);
 }
+
 void GpuChannelManager::OnDestroyCommandBuffer(
     int renderer_id, int32 renderer_view_id) {
   GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);

@@ -68,6 +68,8 @@ class GpuCommandBufferStub
   void OnCompositorWindowPainted();
 #endif  // defined(OS_WIN)
 
+  void ViewResized();
+
 #if defined(OS_MACOSX)
   // Called only by the GpuChannel.
   void AcceleratedSurfaceBuffersSwapped(uint64 swap_buffers_count);
@@ -101,10 +103,6 @@ class GpuCommandBufferStub
   void SwapBuffersCallback();
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_WIN)
-  bool CreateCompositorWindow();
-#endif  // defined(OS_WIN)
-
   void ResizeCallback(gfx::Size size);
 
   // The lifetime of objects of this class is managed by a GpuChannel. The
@@ -120,10 +118,6 @@ class GpuCommandBufferStub
   std::vector<int32> requested_attribs_;
   uint32 parent_texture_id_;
   int32 route_id_;
-
-#if defined(OS_WIN)
-  HWND compositor_window_;
-#endif  // defined(OS_WIN)
 
   // The following two fields are used on Mac OS X to identify the window
   // for the rendering results on the browser side.

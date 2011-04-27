@@ -161,7 +161,13 @@ IPC_MESSAGE_CONTROL4(GpuMsg_CreateViewCommandBuffer,
 // information.
 IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 
-#if defined(OS_MACOSX)
+#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
+// Tells the GPU process that the browser process has finished resizing the
+// view.
+IPC_MESSAGE_CONTROL2(GpuMsg_ResizeViewACK,
+                     int32 /* renderer_id */,
+                     int32 /* command_buffer_id */)
+#elif defined(OS_MACOSX)
 // Tells the GPU process that the browser process handled the swap
 // buffers request with the given number. Note that it is possible
 // for the browser process to coalesce frames; it is not guaranteed
@@ -244,13 +250,14 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,
 // Response from GPU to a GpuMsg_Synchronize message.
 IPC_MESSAGE_CONTROL0(GpuHostMsg_SynchronizeReply)
 
-#if defined(OS_LINUX) && !defined(TOUCH_UI)
+#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
 // Resize the window that is being drawn into. It's important that this
 // resize be synchronized with the swapping of the front and back buffers.
-IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_ResizeXID,
-                            unsigned long, /* xid */
-                            gfx::Size, /* size */
-                            bool /* success */)
+IPC_MESSAGE_CONTROL4(GpuHostMsg_ResizeView,
+                     int32 /* renderer_id */,
+                     int32 /* render_view_id */,
+                     int32 /* command_buffer_route_id */,
+                     gfx::Size /* size */)
 #elif defined(OS_MACOSX)
 // This message, used on Mac OS X 10.6 and later (where IOSurface is
 // supported), is sent from the GPU process to the browser to indicate that a

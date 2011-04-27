@@ -19,6 +19,7 @@ GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
                            gles2::ContextGroup* group)
     : command_buffer_(command_buffer),
       commands_per_update_(100),
+      unscheduled_count_(0),
 #if defined(OS_MACOSX)
       swap_buffers_count_(0),
       acknowledged_swap_buffers_count_(0),
@@ -35,6 +36,7 @@ GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
                            int commands_per_update)
     : command_buffer_(command_buffer),
       commands_per_update_(commands_per_update),
+      unscheduled_count_(0),
 #if defined(OS_MACOSX)
       swap_buffers_count_(0),
       acknowledged_swap_buffers_count_(0),
@@ -121,6 +123,9 @@ void GpuScheduler::ProcessCommands() {
   if (state.error != error::kNoError)
     return;
 
+  if (unscheduled_count_ > 0)
+    return;
+
   if (decoder_.get()) {
     if (!decoder_->MakeCurrent()) {
       LOG(ERROR) << "Context lost because MakeCurrent failed.";
@@ -157,6 +162,9 @@ void GpuScheduler::ProcessCommands() {
       return;
     }
 
+    if (unscheduled_count_ > 0)
+      break;
+
     ++commands_processed;
     if (command_processed_callback_.get()) {
       command_processed_callback_->Run();
@@ -165,15 +173,23 @@ void GpuScheduler::ProcessCommands() {
 
   command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
 
-  if (error != error::kWaiting && !parser_->IsEmpty()) {
+  if (unscheduled_count_ == 0 &&
+      error != error::kWaiting &&
+      !parser_->IsEmpty()) {
     ScheduleProcessCommands();
   }
 }
 
-void GpuScheduler::ScheduleProcessCommands() {
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      method_factory_.NewRunnableMethod(&GpuScheduler::ProcessCommands));
+void GpuScheduler::SetScheduled(bool scheduled) {
+  if (scheduled) {
+    --unscheduled_count_;
+    DCHECK_GE(unscheduled_count_, 0);
+
+    if (unscheduled_count_ == 0)
+      ScheduleProcessCommands();
+  } else {
+    ++unscheduled_count_;
+  }
 }
 
 Buffer GpuScheduler::GetSharedMemoryBuffer(int32 shm_id) {
@@ -215,6 +231,12 @@ void GpuScheduler::SetSwapBuffersCallback(
 void GpuScheduler::SetCommandProcessedCallback(
     Callback0::Type* callback) {
   command_processed_callback_.reset(callback);
+}
+
+void GpuScheduler::ScheduleProcessCommands() {
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(&GpuScheduler::ProcessCommands));
 }
 
 }  // namespace gpu

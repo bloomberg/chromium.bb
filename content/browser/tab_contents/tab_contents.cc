@@ -2273,11 +2273,11 @@ bool TabContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host) {
   RenderWidgetHostView* rwh_view = view_->CreateViewForWidget(render_view_host);
 
-  if (!render_view_host->CreateRenderView(string16()))
-    return false;
-
   // Now that the RenderView has been created, we need to tell it its size.
   rwh_view->SetSize(view_->GetContainerSize());
+
+  if (!render_view_host->CreateRenderView(string16()))
+    return false;
 
   UpdateMaxPageIDIfNecessary(render_view_host->site_instance(),
                              render_view_host);

@@ -95,14 +95,18 @@ class GpuProcessHostUIShim
 
   void OnLogMessage(int level, const std::string& header,
       const std::string& message);
-#if defined(OS_LINUX)
-  void OnResizeXID(unsigned long xid, gfx::Size size, IPC::Message* reply_msg);
+#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
+  void OnResizeView(int32 renderer_id,
+                    int32 render_view_id,
+                    int32 command_buffer_route_id,
+                    gfx::Size size);
 #elif defined(OS_MACOSX)
   void OnAcceleratedSurfaceSetIOSurface(
       const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params);
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
-#elif defined(OS_WIN)
+#endif
+#if defined(OS_WIN)
   void OnScheduleComposite(int32 renderer_id, int32 render_view_id);
 #endif
 

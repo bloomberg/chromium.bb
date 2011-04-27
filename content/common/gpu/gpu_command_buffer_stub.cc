@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/common/gpu_trace_event.h"
 #include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_surface.h"
 
 #if defined(OS_WIN)
 #include "base/win/wrapped_window_proc.h"
@@ -51,122 +52,15 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       requested_attribs_(attribs),
       parent_texture_id_(parent_texture_id),
       route_id_(route_id),
-#if defined(OS_WIN)
-      compositor_window_(NULL),
-#endif  // defined(OS_WIN)
       renderer_id_(renderer_id),
       render_view_id_(render_view_id),
       watchdog_(watchdog) {
 }
 
-#if defined(OS_WIN)
-static LRESULT CALLBACK CompositorWindowProc(
-    HWND hwnd,
-    UINT message,
-    WPARAM wparam,
-    LPARAM lparam) {
-  switch (message) {
-    case WM_ERASEBKGND:
-      return 0;
-    case WM_DESTROY:
-      RemoveProp(hwnd, kCompositorWindowOwner);
-      return 0;
-    case WM_PAINT: {
-      PAINTSTRUCT paint;
-      HDC dc = BeginPaint(hwnd, &paint);
-      if (dc) {
-        HANDLE h = GetProp(hwnd, kCompositorWindowOwner);
-        if (h) {
-          GpuCommandBufferStub* stub =
-              reinterpret_cast<GpuCommandBufferStub*>(h);
-          stub->OnCompositorWindowPainted();
-        }
-        EndPaint(hwnd, &paint);
-      }
-      break;
-    }
-    default:
-      return DefWindowProc(hwnd, message, wparam, lparam);
-  }
-  return 0;
-}
-
-bool GpuCommandBufferStub::CreateCompositorWindow() {
-  DCHECK(handle_ != gfx::kNullPluginWindow);
-  HWND host_window = static_cast<HWND>(handle_);
-
-  // Create the compositor window itself.
-  DCHECK(host_window);
-  static ATOM window_class = 0;
-  if (!window_class) {
-    WNDCLASSEX wcex;
-    wcex.cbSize         = sizeof(wcex);
-    wcex.style          = 0;
-    wcex.lpfnWndProc    = base::win::WrappedWindowProc<CompositorWindowProc>;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = GetModuleHandle(NULL);
-    wcex.hIcon          = 0;
-    wcex.hCursor        = 0;
-    wcex.hbrBackground  = NULL;
-    wcex.lpszMenuName   = 0;
-    wcex.lpszClassName  = L"CompositorWindowClass";
-    wcex.hIconSm        = 0;
-    window_class = RegisterClassEx(&wcex);
-    DCHECK(window_class);
-  }
-
-  HWND compositor_window = CreateWindowEx(
-      WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
-      MAKEINTATOM(window_class),
-      0,
-      WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_DISABLED,
-      0, 0,
-      0, 0,
-      host_window,
-      0,
-      GetModuleHandle(NULL),
-      0);
-  if (!compositor_window) {
-    compositor_window_ = gfx::kNullPluginWindow;
-    return false;
-  }
-  SetProp(compositor_window, kCompositorWindowOwner,
-      reinterpret_cast<HANDLE>(this));
-
-  RECT parent_rect;
-  GetClientRect(host_window, &parent_rect);
-
-  UINT flags = SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER |
-      SWP_NOACTIVATE | SWP_DEFERERASE | SWP_SHOWWINDOW;
-  SetWindowPos(compositor_window,
-      NULL,
-      0, 0,
-      parent_rect.right - parent_rect.left,
-      parent_rect.bottom - parent_rect.top,
-      flags);
-  compositor_window_ = static_cast<gfx::PluginWindowHandle>(compositor_window);
-  return true;
-}
-
-void GpuCommandBufferStub::OnCompositorWindowPainted() {
-  GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-  gpu_channel_manager->Send(new GpuHostMsg_ScheduleComposite(
-      renderer_id_, render_view_id_));
-}
-#endif  // defined(OS_WIN)
-
-
 GpuCommandBufferStub::~GpuCommandBufferStub() {
   if (scheduler_.get()) {
     scheduler_->Destroy();
   }
-#if defined(OS_WIN)
-  if (compositor_window_) {
-    DestroyWindow(static_cast<HWND>(compositor_window_));
-    compositor_window_ = NULL;
-  }
-#endif  // defined(OS_WIN)
 
   GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
   gpu_channel_manager->Send(new GpuHostMsg_DestroyCommandBuffer(
@@ -214,21 +108,6 @@ void GpuCommandBufferStub::OnInitialize(
 
   command_buffer_.reset(new gpu::CommandBufferService);
 
-  // Create the child window, if needed
-#if defined(OS_WIN)
-  gfx::PluginWindowHandle output_window_handle;
-  if (handle_) {
-    if (!CreateCompositorWindow()) {
-      return;
-    }
-    output_window_handle = compositor_window_;
-  } else {
-    output_window_handle = handle_;
-  }
-#else
-  gfx::PluginWindowHandle output_window_handle = handle_;
-#endif  // defined(OS_WIN)
-
 #if defined(OS_WIN)
   // Windows dups the shared memory handle it receives into the current process
   // and closes it when this variable goes out of scope.
@@ -247,7 +126,7 @@ void GpuCommandBufferStub::OnInitialize(
         parent_ ? parent_->scheduler_.get() : NULL;
     scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(), NULL));
     if (scheduler_->Initialize(
-        output_window_handle,
+        handle_,
         initial_size_,
         disallowed_extensions_,
         allowed_extensions_.c_str(),
@@ -419,13 +298,16 @@ void GpuCommandBufferStub::SwapBuffersCallback() {
   params.swap_buffers_count = scheduler_->swap_buffers_count();
   gpu_channel_manager->Send(
       new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
+
+  scheduler_->SetScheduled(false);
 }
 
 void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
     uint64 swap_buffers_count) {
   scheduler_->set_acknowledged_swap_buffers_count(swap_buffers_count);
+
   // Wake up the GpuScheduler to start doing work again.
-  scheduler_->ScheduleProcessCommands();
+  scheduler_->SetScheduled(true);
 }
 #endif  // defined(OS_MACOSX)
 
@@ -434,18 +316,34 @@ void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
     scheduler_->decoder()->ResizeOffscreenFrameBuffer(size);
     scheduler_->decoder()->UpdateOffscreenFrameBufferSize();
   } else {
-#if defined(OS_LINUX) && !defined(TOUCH_UI)
+#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
     GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-    bool result = false;
     gpu_channel_manager->Send(
-        new GpuHostMsg_ResizeXID(handle_, size, &result));
-#elif defined(OS_WIN)
-    HWND hwnd = static_cast<HWND>(compositor_window_);
-    UINT swp_flags = SWP_NOSENDCHANGING | SWP_NOOWNERZORDER | SWP_NOCOPYBITS |
-      SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE;
-    SetWindowPos(hwnd, NULL, 0, 0, size.width(), size.height(), swp_flags);
-#endif  // defined(OS_LINUX)
+        new GpuHostMsg_ResizeView(renderer_id_,
+                                  render_view_id_,
+                                  route_id_,
+                                  size));
+
+    scheduler_->SetScheduled(false);
+#endif
   }
+}
+
+void GpuCommandBufferStub::ViewResized() {
+#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
+  DCHECK(handle_ != gfx::kNullPluginWindow);
+  scheduler_->SetScheduled(true);
+
+  // Recreate the view surface to match the window size. TODO(apatrick): this is
+  // likely not necessary on all platforms.
+  gfx::GLContext* context = scheduler_->decoder()->GetGLContext();
+  context->ReleaseCurrent();
+  gfx::GLSurface* surface = context->GetSurface();
+  if (surface) {
+    surface->Destroy();
+    surface->Initialize();
+  }
+#endif
 }
 
 #endif  // defined(ENABLE_GPU)

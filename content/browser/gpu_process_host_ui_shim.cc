@@ -224,8 +224,8 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHostUIShim, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage,
                         OnLogMessage)
-#if defined(OS_LINUX) && !defined(TOUCH_UI)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_ResizeXID, OnResizeXID)
+#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
 #elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
                         OnAcceleratedSurfaceSetIOSurface)
@@ -251,19 +251,45 @@ void GpuProcessHostUIShim::OnLogMessage(
   GpuDataManager::GetInstance()->AddLogMessage(dict);
 }
 
-#if defined(OS_LINUX) && !defined(TOUCH_UI)
+#if defined(OS_LINUX) && !defined(TOUCH_UI) || defined(OS_WIN)
 
-void GpuProcessHostUIShim::OnResizeXID(unsigned long xid, gfx::Size size,
-                                       IPC::Message *reply_msg) {
-  GdkWindow* window = reinterpret_cast<GdkWindow*>(gdk_xid_table_lookup(xid));
-  if (window) {
-    Display* display = GDK_WINDOW_XDISPLAY(window);
-    gdk_window_resize(window, size.width(), size.height());
-    XSync(display, False);
+void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
+                                        int32 render_view_id,
+                                        int32 command_buffer_route_id,
+                                        gfx::Size size) {
+  RenderViewHost* host = RenderViewHost::FromID(renderer_id, render_view_id);
+  if (host) {
+    RenderWidgetHostView* view = host->view();
+    if (view) {
+      gfx::PluginWindowHandle handle = view->GetCompositingSurface();
+
+      // Resize the window synchronously. The GPU process must not issue GL
+      // calls on the command buffer until the window is the size it expects it
+      // to be.
+#if defined(OS_LINUX) && !defined(TOUCH_UI)
+      GdkWindow* window = reinterpret_cast<GdkWindow*>(
+          gdk_xid_table_lookup(handle));
+      if (window) {
+        Display* display = GDK_WINDOW_XDISPLAY(window);
+        gdk_window_resize(window, size.width(), size.height());
+        XSync(display, False);
+      }
+#elif defined(OS_WIN)
+      SetWindowPos(handle,
+          NULL,
+          0, 0,
+          size.width(),
+          size.height(),
+          SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER |
+              SWP_NOACTIVATE | SWP_DEFERERASE | SWP_SHOWWINDOW);
+#endif
+    }
   }
 
-  GpuHostMsg_ResizeXID::WriteReplyParams(reply_msg, (window != NULL));
-  Send(reply_msg);
+  // Always respond even if the window no longer exists. The GPU process cannot
+  // make progress on the resizing command buffer until it receives the
+  // response.
+  Send(new GpuMsg_ResizeViewACK(renderer_id, command_buffer_route_id));
 }
 
 #elif defined(OS_MACOSX)
@@ -303,7 +329,9 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
       params.swap_buffers_count);
 }
 
-#elif defined(OS_WIN)
+#endif
+
+#if defined(OS_WIN)
 
 void GpuProcessHostUIShim::OnScheduleComposite(int renderer_id,
     int render_view_id) {

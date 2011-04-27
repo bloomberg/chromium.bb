@@ -74,6 +74,8 @@ class GpuChannel : public IPC::Channel::Listener,
       const GPUCreateCommandBufferConfig& init_params,
       int32* route_id);
 
+  void ViewResized(int32 command_buffer_route_id);
+
 #if defined(OS_MACOSX)
   virtual void AcceleratedSurfaceBuffersSwapped(
       int32 route_id, uint64 swap_buffers_count);

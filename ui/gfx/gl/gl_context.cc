@@ -13,6 +13,15 @@
 
 namespace gfx {
 
+void GLContext::ReleaseCurrent() {
+  // TODO(apatrick): Implement this in GLContext derivatives.
+}
+
+GLSurface* GLContext::GetSurface() {
+  // TODO(apatrick): Remove this when surfaces are split from contexts.
+  return NULL;
+}
+
 unsigned int GLContext::GetBackingFrameBufferObject() {
   return 0;
 }

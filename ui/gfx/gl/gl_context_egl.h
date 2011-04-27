@@ -18,7 +18,7 @@ namespace gfx {
 
 class GLSurfaceEGL;
 
-// Encapsulates an EGL OpenGL ES context that renders to a view.
+// Encapsulates an EGL OpenGL ES context.
 class GLContextEGL : public GLContext {
  public:
   // Takes ownership of surface. TODO(apatrick): separate notion of surface
@@ -33,10 +33,12 @@ class GLContextEGL : public GLContext {
   // Implement GLContext.
   virtual void Destroy();
   virtual bool MakeCurrent();
+  virtual void ReleaseCurrent();
   virtual bool IsCurrent();
   virtual bool IsOffscreen();
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
+  virtual GLSurface* GetSurface();
   virtual void* GetHandle();
   virtual void SetSwapInterval(int interval);
   virtual std::string GetExtensions();

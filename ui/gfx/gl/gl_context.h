@@ -14,6 +14,8 @@
 
 namespace gfx {
 
+class GLSurface;
+
 // Encapsulates an OpenGL context, hiding platform specific management.
 class GLContext {
  public:
@@ -25,6 +27,10 @@ class GLContext {
 
   // Makes the GL context current on the current thread.
   virtual bool MakeCurrent() = 0;
+
+  // Releases this GL context as current on the current thread. TODO(apatrick):
+  // implement this in the other GLContexts.
+  virtual void ReleaseCurrent();
 
   // Returns true if this context is current.
   virtual bool IsCurrent() = 0;
@@ -38,6 +44,10 @@ class GLContext {
 
   // Get the size of the back buffer.
   virtual gfx::Size GetSize() = 0;
+
+  // Get the surface. TODO(apatrick): remove this when contexts are split from
+  // surfaces.
+  virtual GLSurface* GetSurface();
 
   // Get the underlying platform specific GL context "handle".
   virtual void* GetHandle() = 0;

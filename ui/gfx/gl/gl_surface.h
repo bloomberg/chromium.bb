@@ -19,6 +19,12 @@ class GLSurface {
   GLSurface() {}
   virtual ~GLSurface() {}
 
+  // (Re)create the surface. TODO(apatrick): This is an ugly hack to allow the
+  // EGL surface associated to be recreated without destroying the associated
+  // context. The implementation of this function for other GLSurface derived
+  // classes is in a pending changelist.
+  virtual bool Initialize() { return true; }
+
   // Destroys the surface.
   virtual void Destroy() = 0;
 

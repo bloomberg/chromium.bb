@@ -111,9 +111,20 @@ bool GLContextEGL::MakeCurrent() {
   return true;
 }
 
+void GLContextEGL::ReleaseCurrent() {
+  if (!IsCurrent())
+    return;
+
+  eglMakeCurrent(GLSurfaceEGL::GetDisplay(),
+                 EGL_NO_SURFACE,
+                 EGL_NO_SURFACE,
+                 EGL_NO_CONTEXT);
+}
+
 bool GLContextEGL::IsCurrent() {
   DCHECK(context_);
-  return context_ == eglGetCurrentContext();
+  return context_ == eglGetCurrentContext() &&
+      surface_->GetHandle() == eglGetCurrentSurface(EGL_DRAW);
 }
 
 bool GLContextEGL::IsOffscreen() {
@@ -129,6 +140,11 @@ bool GLContextEGL::SwapBuffers() {
 gfx::Size GLContextEGL::GetSize() {
   // TODO(apatrick): remove this from GLContext interface.
   return surface_->GetSize();
+}
+
+GLSurface* GLContextEGL::GetSurface() {
+  // TODO(apatrick): remove this from GLContext interface.
+  return surface_.get();
 }
 
 void* GLContextEGL::GetHandle() {

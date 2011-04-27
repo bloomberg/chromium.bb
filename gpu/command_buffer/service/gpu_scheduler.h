@@ -63,8 +63,11 @@ class GpuScheduler : public CommandBufferEngine {
 
   virtual void ProcessCommands();
 
-  // Helper which causes a call to ProcessCommands to be scheduled later.
-  void ScheduleProcessCommands();
+  // Sets whether commands should be processed by this scheduler. Setting to
+  // false unschedules. Setting to true reschedules. Whether or not the
+  // scheduler is currently scheduled is "reference counted". Every call with
+  // false must eventually be paired by a call with true.
+  void SetScheduled(bool is_scheduled);
 
   // Implementation of CommandBufferEngine.
   virtual Buffer GetSharedMemoryBuffer(int32 shm_id);
@@ -137,6 +140,9 @@ class GpuScheduler : public CommandBufferEngine {
 
 
  private:
+  // Helper which causes a call to ProcessCommands to be scheduled later.
+  void ScheduleProcessCommands();
+
   // Called via a callback just before we are supposed to call the
   // user's swap buffers callback.
   virtual void WillSwapBuffers();
@@ -150,6 +156,9 @@ class GpuScheduler : public CommandBufferEngine {
 
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_ptr<CommandParser> parser_;
+
+  // Greater than zero if this is waiting to be rescheduled before continuing.
+  int unscheduled_count_;
 
 #if defined(OS_MACOSX)
   scoped_ptr<AcceleratedSurface> surface_;
