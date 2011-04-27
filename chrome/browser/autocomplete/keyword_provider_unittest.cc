@@ -181,7 +181,7 @@ TEST_F(KeywordProviderTest, Contents) {
                         &AutocompleteMatch::contents);
 }
 
-TEST_F(KeywordProviderTest, Description) {
+TEST_F(KeywordProviderTest, DISABLED_Description) {
   test_data<string16> description_cases[] = {
     // Whole keyword should be returned for both exact and inexact matches.
     {ASCIIToUTF16("z foo"),           1, {ASCIIToUTF16("(Keyword: z)")}},
