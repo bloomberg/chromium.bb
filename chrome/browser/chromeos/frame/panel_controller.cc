@@ -4,6 +4,13 @@
 
 #include "chrome/browser/chromeos/frame/panel_controller.h"
 
+#if defined(TOUCH_UI)
+#include <X11/Xlib.h>
+#if defined(HAVE_XINPUT2)
+#include <X11/extensions/XInput2.h>
+#endif
+#endif
+
 #include <vector>
 
 #include "base/logging.h"
@@ -30,6 +37,41 @@
 #include "views/view.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
+
+#if defined(TOUCH_UI)
+namespace {
+
+gfx::Point RootLocationFromXEvent(const XEvent* xev) {
+  switch (xev->type) {
+    case ButtonPress:
+    case ButtonRelease:
+      return gfx::Point(xev->xbutton.x_root, xev->xbutton.y_root);
+    case MotionNotify:
+      return gfx::Point(xev->xmotion.x_root, xev->xmotion.y_root);
+
+#if defined(HAVE_XINPUT2)
+    case GenericEvent: {
+      const XIDeviceEvent* xiev =
+          static_cast<XIDeviceEvent*>(xev->xcookie.data);
+      switch (xiev->evtype) {
+        case XI_ButtonPress:
+        case XI_ButtonRelease:
+        case XI_Motion:
+          return gfx::Point(static_cast<int>(xiev->root_x),
+                            static_cast<int>(xiev->root_y));
+      }
+    }
+#endif  // defined(HAVE_XINPUT2)
+
+    default:
+      NOTREACHED();
+  }
+
+  return gfx::Point();
+}
+
+}  // namespace
+#endif  // defined(TOUCH_UI)
 
 namespace chromeos {
 
@@ -202,9 +244,7 @@ void PanelController::SetUrgent(bool urgent) {
 bool PanelController::TitleMousePressed(const views::MouseEvent& event) {
   if (!event.IsOnlyLeftMouseButton())
     return false;
-  GdkEvent* gdk_event = gtk_get_current_event();
-  if (gdk_event->type != GDK_BUTTON_PRESS) {
-    gdk_event_free(gdk_event);
+  if (event.type() != ui::ET_MOUSE_PRESSED) {
     NOTREACHED();
     return false;
   }
@@ -216,14 +256,22 @@ bool PanelController::TitleMousePressed(const views::MouseEvent& event) {
   gint title_width = 1;
   gtk_window_get_size(GTK_WINDOW(title_), &title_width, NULL);
 
-  GdkEventButton last_button_event = gdk_event->button;
   mouse_down_ = true;
-  mouse_down_abs_x_ = last_button_event.x_root;
-  mouse_down_abs_y_ = last_button_event.y_root;
   mouse_down_offset_x_ = event.x() - title_width;
   mouse_down_offset_y_ = event.y();
   dragging_ = false;
-  gdk_event_free(gdk_event);
+
+#if !defined(TOUCH_UI)
+  const GdkEvent* gdk_event = event.native_event();
+  GdkEventButton last_button_event = gdk_event->button;
+  mouse_down_abs_x_ = last_button_event.x_root;
+  mouse_down_abs_y_ = last_button_event.y_root;
+#else
+  const XEvent* xev = event.native_event_2();
+  gfx::Point abs_location = RootLocationFromXEvent(xev);
+  mouse_down_abs_x_ = abs_location.x();
+  mouse_down_abs_y_ = abs_location.y();
+#endif
   return true;
 }
 
@@ -265,28 +313,37 @@ void PanelController::SetState(State state) {
 bool PanelController::TitleMouseDragged(const views::MouseEvent& event) {
   if (!mouse_down_)
     return false;
-  GdkEvent* gdk_event = gtk_get_current_event();
-  if (gdk_event->type != GDK_MOTION_NOTIFY) {
-    gdk_event_free(gdk_event);
+  if (event.type() != ui::ET_MOUSE_MOVED &&
+      event.type() != ui::ET_MOUSE_DRAGGED) {
     NOTREACHED();
     return false;
   }
+
+#if !defined(TOUCH_UI)
+  const GdkEvent* gdk_event = event.native_event();
   GdkEventMotion last_motion_event = gdk_event->motion;
+  int x_root = last_motion_event.x_root;
+  int y_root = last_motion_event.y_root;
+#else
+  const XEvent* xev = event.native_event_2();
+  gfx::Point abs_location = RootLocationFromXEvent(xev);
+  int x_root = abs_location.x();
+  int y_root = abs_location.y();
+#endif
+
   if (!dragging_) {
-    if (views::View::ExceededDragThreshold(
-        last_motion_event.x_root - mouse_down_abs_x_,
-        last_motion_event.y_root - mouse_down_abs_y_)) {
+    if (views::View::ExceededDragThreshold(x_root - mouse_down_abs_x_,
+                                           y_root - mouse_down_abs_y_)) {
       dragging_ = true;
     }
   }
   if (dragging_) {
     WmIpc::Message msg(WM_IPC_MESSAGE_WM_NOTIFY_PANEL_DRAGGED);
     msg.set_param(0, panel_xid_);
-    msg.set_param(1, last_motion_event.x_root - mouse_down_offset_x_);
-    msg.set_param(2, last_motion_event.y_root - mouse_down_offset_y_);
+    msg.set_param(1, x_root - mouse_down_offset_x_);
+    msg.set_param(2, y_root - mouse_down_offset_y_);
     WmIpc::instance()->SendMessage(msg);
   }
-  gdk_event_free(gdk_event);
   return true;
 }
 
