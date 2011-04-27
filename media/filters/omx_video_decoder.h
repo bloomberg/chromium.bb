@@ -9,6 +9,7 @@
 
 #include "media/base/filters.h"
 #include "media/base/media_format.h"
+#include "media/base/pts_stream.h"
 #include "media/video/video_decode_context.h"
 #include "media/video/video_decode_engine.h"
 
@@ -53,6 +54,7 @@ class OmxVideoDecoder : public VideoDecoder,
   // TODO(hclam): This is very ugly that we keep reference instead of
   // scoped_refptr.
   void DemuxCompleteTask(Buffer* buffer);
+  void ConsumeVideoSample(scoped_refptr<Buffer> buffer);
 
   MessageLoop* message_loop_;
 
@@ -69,6 +71,8 @@ class OmxVideoDecoder : public VideoDecoder,
   scoped_ptr<StatisticsCallback> statistics_callback_;
 
   VideoCodecInfo info_;
+
+  PtsStream pts_stream_;  // Stream of presentation timestamps.
 
   DISALLOW_COPY_AND_ASSIGN(OmxVideoDecoder);
 };

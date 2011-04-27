@@ -59,6 +59,8 @@ void OmxVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
     return;
   }
 
+  pts_stream_.Initialize(GetFrameDuration(av_stream));
+
   int width = av_stream->codec->coded_width;
   int height = av_stream->codec->coded_height;
   if (width > Limits::kMaxDimension ||
@@ -149,6 +151,8 @@ void OmxVideoDecoder::OnFlushComplete() {
   DCHECK(flush_callback_.get());
 
   AutoCallbackRunner done_runner(flush_callback_.release());
+
+  pts_stream_.Flush();
 }
 
 void OmxVideoDecoder::Seek(base::TimeDelta time,
@@ -165,6 +169,7 @@ void OmxVideoDecoder::Seek(base::TimeDelta time,
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(!seek_callback_.get());
 
+  pts_stream_.Seek(time);
   seek_callback_.reset(callback);
   decode_engine_->Seek();
 }
@@ -194,6 +199,14 @@ void OmxVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame,
                                         const PipelineStatistics& statistics) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   statistics_callback_->Run(statistics);
+
+  if (frame.get()) {
+    pts_stream_.UpdatePtsAndDuration(frame.get());
+
+    frame->SetTimestamp(pts_stream_.current_pts());
+    frame->SetDuration(pts_stream_.current_duration());
+  }
+
   VideoFrameReady(frame);
 }
 
@@ -220,8 +233,14 @@ void OmxVideoDecoder::DemuxCompleteTask(Buffer* buffer) {
   DCHECK(decode_engine_.get());
   message_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(decode_engine_.get(),
-                        &VideoDecodeEngine::ConsumeVideoSample, ref_buffer));
+      NewRunnableMethod(this,
+                        &OmxVideoDecoder::ConsumeVideoSample, ref_buffer));
+}
+
+void OmxVideoDecoder::ConsumeVideoSample(scoped_refptr<Buffer> buffer) {
+  if (buffer.get())
+    pts_stream_.EnqueuePts(buffer.get());
+  decode_engine_->ConsumeVideoSample(buffer);
 }
 
 }  // namespace media
