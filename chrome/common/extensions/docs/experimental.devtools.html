@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.experimental.* APIs - Google Chrome Extensions - Google Code</title></head>
+  <title>chrome.experimental.devtools.* APIs - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -251,7 +251,7 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.* APIs</h1>
+        <h1 class="page_title">chrome.experimental.devtools.* APIs</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc" style="display: none; ">
@@ -307,99 +307,73 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
+        <p id="classSummary">
           For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">chrome.experimental.* APIs</div>
+        <div id="static"><div id="pageData-name" class="pageData">chrome.experimental.devtools.* APIs</div>
 
 <p>
-We'd like your <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">feedback</a>
-on the following experimental APIs:
+The following API modules provide support for extending
+Chrome Developer Tools:
 </p>
 
+<a name="api-list"></a>
 <ul>
   <li>
-  <a href="experimental.clipboard.html">experimental.clipboard</a></li><li>
-  <a href="experimental.contentSettings.misc.html">experimental.contentSettings.misc</a></li><li>
-  <a href="experimental.debugger.html">experimental.debugger</a></li><li>
   <a href="experimental.devtools.audits.html">experimental.devtools.audits</a></li><li>
   <a href="experimental.devtools.panels.html">experimental.devtools.panels</a></li><li>
-  <a href="experimental.devtools.resources.html">experimental.devtools.resources</a></li><li>
-  <a href="experimental.extension.html">experimental.extension</a></li><li>
-  <a href="experimental.infobars.html">experimental.infobars</a></li><li>
-  <a href="experimental.processes.html">experimental.processes</a></li><li>
-  <a href="experimental.proxy.html">experimental.proxy</a></li><li>
-  <a href="experimental.sidebar.html">experimental.sidebar</a></li><li>
-  <a href="experimental.tts.html">experimental.tts</a></li><li>
-  <a href="experimental.webNavigation.html">experimental.webNavigation</a></li><li>
-  <a href="experimental.webRequest.html">experimental.webRequest</a></li>
+  <a href="experimental.devtools.resources.html">experimental.devtools.resources</a></li>
 </ul>
 
 <p class="warning">
 <b>Caution:</b>
-Don't depend on these experimental APIs.
-They might disappear,
-and they <em>will</em> change.
+Don't depend on these experimental APIs. They might disappear, and they
+<em>will</em> change.
 Also, the Chrome Developer Dashboard doesn't allow you to
 upload extensions that use experimental APIs.
 </p>
 
-<h2 id="using">How to use experimental APIs</h2>
+<h2 id="using">How to use DevTools APIs</h2>
 
 <ol>
   <li>
-    Make sure you're using the
-<a href="http://www.chromium.org/getting-involved/dev-channel">Dev channel</a>
-    of Google Chrome.
-    Although the experimental APIs might work in other versions,
-    we need your feedback on the latest incarnation of the APIs,
-    which you can find on the Dev channel.
+    Developer Tools APIs are currently experimental, so please start with
+    <a href="experimental.html">the steps for using experimental extension
+    APIs</a>.
   </li>
   <li>
-    Using the
-    <a href="http://code.google.com/chrome/extensions/dev/experimental.html">API documentation for the Dev channel</a>,
-    write the code for your extension.
-  </li>
-  <li>
-    Specify the "experimental"
-    <a href="manifest.html#permissions">permission</a>
-    in your extension's manifest, like this:
-<pre>"permissions": [
-  <b>"experimental"</b>,
+    Specify the "devtools_page" field in your extension's manifest and make
+    sure you have "experimental" permission:
+<pre>{
+  "name": ...
+  "version": "1.0",
+  "minimum_chrome_version": "10.0",
+  <b>"devtools_page": "devtools.html"</b>,
+  "permissions": [ <b>"experimental"</b> ... ],
   ...
-],
+}
 </pre>
   </li>
   <li>
-    Enable the experimental API in your browser.
-    You can do this in either of two ways:
-    <ul>
-      <li> Go to <b>chrome://flags</b>,
-        find "Experimental Extension APIs",
-        click its "Enable" link,
-        and restart Chrome.
-        From now on,
-        unless you return to that page and disable experimental APIs,
-        you'll be able to run extensions that use experimental APIs.
-      </li>
-      <li> Specify the <b>--enable-experimental-extension-apis</b> flag
-        each time you launch the browser.
-        On Windows, you can do this by modifying
-        the properties of the shortcut that you use to launch Google Chrome.
-        For example:
-
-<pre><em>path_to_chrome.exe</em> <b>--enable-experimental-extension-apis</b></pre>
-      </li>
-    </ul>
+    An instance of the devtools_page specified in your extension's manifest
+    will be created for every Developer Tools window opened. The page may add
+    other extension pages as panels and sidebars to the Developer Tools window
+    using <a href="experimental.devtools.panels">experimental.devtools.panels</a>
+    API.
   </li>
-
-  <li>
-    <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">Give us feedback!</a>
-    Your comments and suggestions help us
-    improve the APIs and decide
-    which ones should move from experimental to supported.
+  <li>The APIs available to extension pages within the Developer Tools
+    window include all <a href="#api-list">experimental.devtools modules
+    listed above</a> and <a href="extension.html">chrome.extension</a> API.
+    Other extension APIs are not available to the Developer Tools pages, but
+    you may invoke them by sending a request to the background page of your
+    extension, similarly to how it's done in the
+    <a href="overview.html#contentScripts">content scripts</a>.
+  </li><li>
+    <a href="http://groups.google.com/group/google-chrome-developer-tools/topics">Give us feedback!</a>
+    Your comments and suggestions help us improve the APIs and decide which
+    ones should move from experimental to supported.
   </li>
 </ol>
 

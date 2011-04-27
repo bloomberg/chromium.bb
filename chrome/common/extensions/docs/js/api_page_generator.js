@@ -19,13 +19,11 @@
  */
 
 var API_TEMPLATE = "template/api_template.html";
-var WEBKIT_PATH = "../../../../third_party/WebKit";
 var SCHEMA = "../api/extension_api.json";
-var DEVTOOLS_SCHEMA = WEBKIT_PATH +
-  "/Source/WebCore/inspector/front-end/ExtensionAPISchema.json";
+var DEVTOOLS_SCHEMA = "../api/devtools_api.json";
 var USE_DEVTOOLS_SCHEMA =
-  /\.webInspector[^/]*\.html/.test(location.pathname);
-var API_MODULE_PREFIX = USE_DEVTOOLS_SCHEMA ? "" : "chrome.";
+  /\.devtools[^/]*\.html/.test(location.pathname);
+var API_MODULE_PREFIX = "chrome.";
 var SAMPLES = "samples.json";
 var REQUEST_TIMEOUT = 2000;
 
@@ -347,9 +345,9 @@ function experimentalAPIs() {
   }).sort();
 }
 
-function webInspectorAPIs() {
+function devtoolsAPIs() {
   return schema.filter(function(module) {
-    return !module.nodoc && module.namespace.indexOf("webInspector.") !== 0;
+    return !module.nodoc && module.namespace.indexOf("devtools.") !== 0;
   }).map(function(module) {
     return module.namespace;
   }).sort();
