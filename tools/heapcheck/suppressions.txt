@@ -1463,3 +1463,48 @@
    ...
    fun:fileapi::::FileSystemDirURLRequestJobTest::SetUp
 }
+{
+   bug_80550_a
+   Heapcheck:Leak
+   ...
+   fun:RenderWidgetHost::WasRestored
+}
+{
+   bug_80550_b
+   Heapcheck:Leak
+   ...
+   fun:RenderWidgetHost::WasHidden
+}
+{
+   bug_44385
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Rb_tree::_M_get_node
+   fun:std::_Rb_tree::_M_create_node
+   ...
+   fun:std::map::insert
+   fun:std::map::operator[]
+   fun:net::HostCache::Set
+   fun:net::HostResolverImpl::OnJobComplete
+   fun:net::HostResolverImpl::Job::OnLookupComplete
+   fun:void DispatchToMethod
+   fun:RunnableMethod::Run
+   fun:::TaskClosureAdapter::Run
+   fun:base::internal::Invoker1::DoInvoke
+   fun:base::Callback::Run
+   fun:MessageLoop::RunTask
+}
+{
+   bug_74413
+   Heapcheck:Leak
+   ...
+   fun:net::HttpAuthHandlerFactory::CreateDefault
+   fun:TestURLRequestContext::Init
+   fun:TestURLRequestContext
+   fun:TestURLRequestContextGetter::GetURLRequestContext
+   fun:SingleLoginAttempt
+   fun:notifier::Login::StartConnection
+   fun:sync_notifier::InvalidationNotifier::UpdateCredentials
+   fun:sync_notifier::NonBlockingInvalidationNotifier::Core::UpdateCredentials
+   fun:void DispatchToMethod
+}
