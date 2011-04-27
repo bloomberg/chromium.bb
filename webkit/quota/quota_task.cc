@@ -75,6 +75,9 @@ QuotaTaskObserver::~QuotaTaskObserver() {
                 std::mem_fun(&QuotaTask::Abort));
 }
 
+QuotaTaskObserver::QuotaTaskObserver() {
+}
+
 void QuotaTaskObserver::RegisterTask(QuotaTask* task) {
   running_quota_tasks_.insert(task);
 }

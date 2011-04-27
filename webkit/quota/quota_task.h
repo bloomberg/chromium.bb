@@ -85,6 +85,7 @@ class QuotaTaskObserver {
   friend class QuotaTask;
   friend class QuotaThreadTask;
 
+  QuotaTaskObserver();
   void RegisterTask(QuotaTask* task);
   void UnregisterTask(QuotaTask* task);
 
