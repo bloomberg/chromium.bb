@@ -213,11 +213,11 @@ void DevToolsNetLogObserver::OnAddSocketEntry(
 
   if (net::NetLog::TYPE_SOCKET_BYTES_RECEIVED == type) {
     int byte_count = 0;
-    Value* value = params->ToValue();
+    scoped_ptr<Value> value(params->ToValue());
     if (!value->IsType(Value::TYPE_DICTIONARY))
       return;
 
-    DictionaryValue* dValue = static_cast<DictionaryValue*>(value);
+    DictionaryValue* dValue = static_cast<DictionaryValue*>(value.get());
     if (!dValue->GetInteger("byte_count", &byte_count))
       return;
 

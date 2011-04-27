@@ -4493,25 +4493,6 @@
    fun:_Znw*
    fun:_ZN16RenderWidgetHost9WasHiddenEv
 }
-{
-   bug_80658
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZNSt3mapISsP5ValueSt4lessISsESaISt4pairIKSsS1_EEEixERS5_
-   fun:_ZN15DictionaryValue23SetWithoutPathExpansionERKSsP5Value
-   fun:_ZN15DictionaryValue3SetERKSsP5Value
-   fun:_ZN15DictionaryValue10SetIntegerERKSsi
-   fun:*31NetLogBytesTransferredParameter7ToValueEv
-   fun:_ZN22DevToolsNetLogObserver16OnAddSocketEntryEN3net6NetLog9EventTypeERKN4base9TimeTicksERKNS1_6SourceENS1_10EventPhaseEPNS1_15EventParametersE
-   fun:_ZN22DevToolsNetLogObserver10OnAddEntryEN3net6NetLog9EventTypeERKN4base9TimeTicksERKNS1_6SourceENS1_10EventPhaseEPNS1_15EventParametersE
-   fun:_ZN12ChromeNetLog8AddEntryEN3net6NetLog9EventTypeERKN4base9TimeTicksERKNS1_6SourceENS1_10EventPhaseEPNS1_15EventParametersE
-   fun:_ZNK3net11BoundNetLog8AddEntryENS_6NetLog9EventTypeENS1_10EventPhaseERK13scoped_refptrINS1_15EventParametersEE
-   fun:_ZNK3net11BoundNetLog8AddEventENS_6NetLog9EventTypeERK13scoped_refptrINS1_15EventParametersEE
-   fun:_ZNK3net12ClientSocket15LogByteTransferERKNS_11BoundNetLogENS_6NetLog9EventTypeEiPc
-   fun:_ZN3net23TCPClientSocketLibevent15DidCompleteReadEv
-   fun:_ZN3net23TCPClientSocketLibevent11ReadWatcher28OnFileCanReadWithoutBlockingEi
-}
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
