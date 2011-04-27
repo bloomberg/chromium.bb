@@ -55,6 +55,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
       is_starred_(false),
       tab_contents_(contents) {
   DCHECK(contents);
+  DCHECK(!GetCurrentWrapperForContents(contents));
   // Stash this in the property bag so it can be retrieved without having to
   // go to a Browser.
   property_accessor()->SetProperty(contents->property_bag(), this);
