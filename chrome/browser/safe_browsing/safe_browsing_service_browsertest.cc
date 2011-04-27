@@ -394,7 +394,8 @@ const char kPrefetchMalwarePage[] = "files/safe_browsing/prefetch_malware.html";
 
 // This test confirms that prefetches don't themselves get the
 // interstitial treatment.
-IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Prefetch) {
+// FLAKY: http://crbug.com/80719
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, FLAKY_Prefetch) {
   GURL url = test_server()->GetURL(kPrefetchMalwarePage);
   GURL malware_url = test_server()->GetURL(kMalwarePage);
 
