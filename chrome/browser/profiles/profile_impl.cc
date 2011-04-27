@@ -651,9 +651,6 @@ ProfileImpl::~ProfileImpl() {
   if (extension_message_service_)
     extension_message_service_->DestroyingProfile();
 
-  if (extension_service_.get())
-    extension_service_->DestroyingProfile();
-
   if (pref_proxy_config_tracker_)
     pref_proxy_config_tracker_->DetachFromPrefService();
 

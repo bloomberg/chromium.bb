@@ -34,10 +34,6 @@ ExtensionToolbarModel::ExtensionToolbarModel(ExtensionService* service)
 ExtensionToolbarModel::~ExtensionToolbarModel() {
 }
 
-void ExtensionToolbarModel::DestroyingProfile() {
-  registrar_.RemoveAll();
-}
-
 void ExtensionToolbarModel::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
