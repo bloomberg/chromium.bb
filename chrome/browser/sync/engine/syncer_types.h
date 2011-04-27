@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/observer_list.h"
-#include "chrome/browser/sync/util/channel.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
 namespace syncable {

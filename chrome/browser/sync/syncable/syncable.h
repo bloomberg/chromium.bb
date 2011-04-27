@@ -27,7 +27,6 @@
 #include "chrome/browser/sync/syncable/directory_event.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/util/channel.h"
 #include "chrome/browser/sync/util/dbgq.h"
 #include "chrome/common/deprecated/event_sys.h"
 
@@ -41,6 +40,7 @@ class ReadNode;
 }
 
 namespace syncable {
+class DirectoryChangeListener;
 class Entry;
 
 std::ostream& operator<<(std::ostream& s, const Entry& e);
@@ -633,35 +633,6 @@ enum WriterTag {
   SYNCAPI
 };
 
-// A separate Event type and channel for very frequent changes, caused
-// by anything, not just the user.
-struct DirectoryChangeEvent {
-  enum {
-    // Means listener should go through list of original entries and
-    // calculate what it needs to notify.  It should *not* call any
-    // callbacks or attempt to lock anything because a
-    // WriteTransaction is being held until the listener returns.
-    CALCULATE_CHANGES,
-    // Means the WriteTransaction is ending, and this is the absolute
-    // last chance to perform any read operations in the current transaction.
-    // It is not recommended that the listener perform any writes.
-    TRANSACTION_ENDING,
-    // Means the WriteTransaction has been released and the listener
-    // can now take action on the changes it calculated.
-    TRANSACTION_COMPLETE,
-    // Channel is closing.
-    SHUTDOWN
-  } todo;
-  // These members are only valid for CALCULATE_CHANGES.
-  const OriginalEntries* originals;
-  BaseTransaction* trans;  // This is valid also for TRANSACTION_ENDING
-  WriterTag writer;
-  typedef DirectoryChangeEvent EventType;
-  static inline bool IsChannelShutdownEvent(const EventType& e) {
-    return SHUTDOWN == e.todo;
-  }
-};
-
 // The name Directory in this case means the entire directory
 // structure within a single user account.
 //
@@ -822,8 +793,7 @@ class Directory {
   // Unique to each account / client pair.
   std::string cache_guid() const;
 
-  browser_sync::ChannelHookup<DirectoryChangeEvent>* AddChangeObserver(
-      browser_sync::ChannelEventHandler<DirectoryChangeEvent>* observer);
+  void SetChangeListener(DirectoryChangeListener* listener);
 
  protected:  // for friends, mainly used by Entry constructors
   virtual EntryKernel* GetEntryByHandle(int64 handle);
@@ -1045,12 +1015,10 @@ class Directory {
     // TODO(ncarter): Figure out what the hell this is, and comment it.
     Channel* const channel;
 
-    // The changes channel mutex is explicit because it must be locked
-    // while holding the transaction mutex and released after
-    // releasing the transaction mutex.
-    browser_sync::Channel<DirectoryChangeEvent> changes_channel;
+    // The listener for directory change events, triggered when the transaction
+    // is ending.
+    DirectoryChangeListener* change_listener_;
 
-    base::Lock changes_channel_mutex;
     KernelShareInfoStatus info_status;
 
     // These 3 members are backed in the share_info table, and
@@ -1127,8 +1095,10 @@ class BaseTransaction {
   explicit BaseTransaction(Directory* directory);
 
   void UnlockAndLog(OriginalEntries* entries);
-  bool NotifyTransactionChangingAndEnding(OriginalEntries* entries);
-  virtual void NotifyTransactionComplete();
+  virtual bool NotifyTransactionChangingAndEnding(
+      OriginalEntries* entries,
+      ModelTypeBitSet* models_with_changes);
+  virtual void NotifyTransactionComplete(ModelTypeBitSet models_with_changes);
 
   Directory* const directory_;
   Directory::Kernel* const dirkernel_;  // for brevity

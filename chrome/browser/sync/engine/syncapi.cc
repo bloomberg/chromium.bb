@@ -55,6 +55,7 @@
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/syncable/autofill_migration.h"
+#include "chrome/browser/sync/syncable/directory_change_listener.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -91,6 +92,8 @@ using syncable::Directory;
 using syncable::DirectoryManager;
 using syncable::Entry;
 using syncable::ModelTypeBitSet;
+using syncable::OriginalEntries;
+using syncable::WriterTag;
 using syncable::SPECIFICS;
 using sync_pb::AutofillProfileSpecifics;
 
@@ -1170,10 +1173,10 @@ DictionaryValue* NotificationInfoToValue(
 class SyncManager::SyncInternal
     : public net::NetworkChangeNotifier::IPAddressObserver,
       public sync_notifier::SyncNotifierObserver,
-      public browser_sync::ChannelEventHandler<syncable::DirectoryChangeEvent>,
       public browser_sync::JsBackend,
       public SyncEngineEventListener,
-      public ServerConnectionEventListener {
+      public ServerConnectionEventListener,
+      public syncable::DirectoryChangeListener {
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
  public:
@@ -1234,18 +1237,22 @@ class SyncManager::SyncInternal
   // to the syncapi model.
   void SaveChanges();
 
+  // DirectoryChangeListener implementation.
   // This listener is called upon completion of a syncable transaction, and
   // builds the list of sync-engine initiated changes that will be forwarded to
   // the SyncManager's Observers.
-  virtual void HandleChannelEvent(const syncable::DirectoryChangeEvent& event);
-  void HandleTransactionCompleteChangeEvent(
-      const syncable::DirectoryChangeEvent& event);
-  void HandleTransactionEndingChangeEvent(
-      const syncable::DirectoryChangeEvent& event);
-  void HandleCalculateChangesChangeEventFromSyncApi(
-      const syncable::DirectoryChangeEvent& event);
-  void HandleCalculateChangesChangeEventFromSyncer(
-      const syncable::DirectoryChangeEvent& event);
+  virtual void HandleTransactionCompleteChangeEvent(
+      const ModelTypeBitSet& models_with_changes);
+  virtual ModelTypeBitSet HandleTransactionEndingChangeEvent(
+      syncable::BaseTransaction* trans);
+  virtual void HandleCalculateChangesChangeEventFromSyncApi(
+      const OriginalEntries& originals,
+      const WriterTag& writer,
+      syncable::BaseTransaction* trans);
+  virtual void HandleCalculateChangesChangeEventFromSyncer(
+      const OriginalEntries& originals,
+      const WriterTag& writer,
+      syncable::BaseTransaction* trans);
 
   // Listens for notifications from the ServerConnectionManager
   void HandleServerConnectionEvent(const ServerConnectionEvent& event);
@@ -1541,17 +1548,6 @@ class SyncManager::SyncInternal
   // TRANSACTION_COMPLETE step by HandleTransactionCompleteChangeEvent.
   ChangeReorderBuffer change_buffers_[syncable::MODEL_TYPE_COUNT];
 
-  // Bit vector keeping track of which models need to have their
-  // OnChangesComplete observer set.
-  //
-  // Set by HandleTransactionEndingChangeEvent, cleared in
-  // HandleTransactionCompleteChangeEvent.
-  std::bitset<syncable::MODEL_TYPE_COUNT> model_has_change_;
-
-  // The event listener hookup that is registered for HandleChangeEvent.
-  scoped_ptr<browser_sync::ChannelHookup<syncable::DirectoryChangeEvent> >
-      dir_change_hookup_;
-
   // Event listener hookup for the ServerConnectionManager.
   scoped_ptr<EventListenerHookup> connection_manager_hookup_;
 
@@ -1809,10 +1805,10 @@ void SyncManager::SyncInternal::BootstrapEncryption(
 }
 
 void SyncManager::SyncInternal::StartSyncing() {
-   // Start the syncer thread. This won't actually
-   // result in any syncing until at least the
-   // DirectoryManager broadcasts the OPENED event,
-   // and a valid server connection is detected.
+  // Start the syncer thread. This won't actually
+  // result in any syncing until at least the
+  // DirectoryManager broadcasts the OPENED event,
+  // and a valid server connection is detected.
   if (syncer_thread())  // NULL during certain unittests.
     syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
 }
@@ -1867,7 +1863,7 @@ bool SyncManager::SyncInternal::OpenDirectory() {
 
   connection_manager()->set_client_id(lookup->cache_guid());
 
-  dir_change_hookup_.reset(lookup->AddChangeObserver(this));
+  lookup->SetChangeListener(this);
   return true;
 }
 
@@ -2229,9 +2225,6 @@ void SyncManager::SyncInternal::Shutdown() {
   // handles to backing files.
   share_.dir_manager.reset();
 
-  // We don't want to process any more events.
-  dir_change_hookup_.reset();
-
   core_message_loop_ = NULL;
 }
 
@@ -2254,49 +2247,6 @@ void SyncManager::SyncInternal::OnIPAddressChangedImpl() {
   // jank if we try to shut down sync.  Fix this.
   connection_manager()->CheckServerReachable();
   RequestNudge(FROM_HERE);
-}
-
-// Listen to model changes, filter out ones initiated by the sync API, and
-// saves the rest (hopefully just backend Syncer changes resulting from
-// ApplyUpdates) to data_->changelist.
-void SyncManager::SyncInternal::HandleChannelEvent(
-    const syncable::DirectoryChangeEvent& event) {
-  if (event.todo == syncable::DirectoryChangeEvent::TRANSACTION_COMPLETE) {
-    // Safe to perform slow I/O operations now, go ahead and commit.
-    HandleTransactionCompleteChangeEvent(event);
-    return;
-  } else if (event.todo == syncable::DirectoryChangeEvent::TRANSACTION_ENDING) {
-    HandleTransactionEndingChangeEvent(event);
-    return;
-  } else if (event.todo == syncable::DirectoryChangeEvent::CALCULATE_CHANGES) {
-    if (event.writer == syncable::SYNCAPI) {
-      HandleCalculateChangesChangeEventFromSyncApi(event);
-      return;
-    }
-    HandleCalculateChangesChangeEventFromSyncer(event);
-    return;
-  } else if (event.todo == syncable::DirectoryChangeEvent::SHUTDOWN) {
-    dir_change_hookup_.reset();
-  }
-}
-
-void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
-    const syncable::DirectoryChangeEvent& event) {
-  // This notification happens immediately after the channel mutex is released
-  // This allows work to be performed without holding the WriteTransaction lock
-  // but before the transaction is finished.
-  DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::TRANSACTION_COMPLETE);
-  if (observers_.size() <= 0)
-    return;
-
-  // Call commit
-  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
-    if (model_has_change_.test(i)) {
-      FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                        OnChangesComplete(syncable::ModelTypeFromInt(i)));
-      model_has_change_.reset(i);
-    }
-  }
 }
 
 void SyncManager::SyncInternal::OnServerConnectionEvent(
@@ -2326,55 +2276,74 @@ void SyncManager::SyncInternal::HandleServerConnectionEvent(
   }
 }
 
-void SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
-    const syncable::DirectoryChangeEvent& event) {
+void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
+    const syncable::ModelTypeBitSet& models_with_changes) {
+  // This notification happens immediately after the transaction mutex is
+  // released. This allows work to be performed without blocking other threads
+  // from acquiring a transaction.
+  if (observers_.size() <= 0)
+    return;
+
+  // Call commit.
+  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+    if (models_with_changes.test(i)) {
+      FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                        OnChangesComplete(syncable::ModelTypeFromInt(i)));
+    }
+  }
+}
+
+ModelTypeBitSet SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
+    syncable::BaseTransaction* trans) {
   // This notification happens immediately before a syncable WriteTransaction
   // falls out of scope. It happens while the channel mutex is still held,
   // and while the transaction mutex is held, so it cannot be re-entrant.
-  DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::TRANSACTION_ENDING);
   if (observers_.size() <= 0 || ChangeBuffersAreEmpty())
-    return;
+    return ModelTypeBitSet();
 
   // This will continue the WriteTransaction using a read only wrapper.
   // This is the last chance for read to occur in the WriteTransaction
   // that's closing. This special ReadTransaction will not close the
   // underlying transaction.
-  ReadTransaction trans(GetUserShare(), event.trans);
+  ReadTransaction read_trans(GetUserShare(), trans);
 
+  syncable::ModelTypeBitSet models_with_changes;
   for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
     if (change_buffers_[i].IsEmpty())
       continue;
 
     vector<ChangeRecord> ordered_changes;
-    change_buffers_[i].GetAllChangesInTreeOrder(&trans, &ordered_changes);
+    change_buffers_[i].GetAllChangesInTreeOrder(&read_trans, &ordered_changes);
     if (!ordered_changes.empty()) {
       FOR_EACH_OBSERVER(
           SyncManager::Observer, observers_,
-          OnChangesApplied(syncable::ModelTypeFromInt(i), &trans,
+          OnChangesApplied(syncable::ModelTypeFromInt(i), &read_trans,
                            &ordered_changes[0], ordered_changes.size()));
-      model_has_change_.set(i, true);
+      models_with_changes.set(i, true);
     }
     change_buffers_[i].Clear();
   }
+  return models_with_changes;
 }
 
 void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
-    const syncable::DirectoryChangeEvent& event) {
-  // We have been notified about a user action changing the bookmark model.
-  DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::CALCULATE_CHANGES);
-  DCHECK(event.writer == syncable::SYNCAPI ||
-         event.writer == syncable::UNITTEST);
+    const OriginalEntries& originals,
+    const WriterTag& writer,
+    syncable::BaseTransaction* trans) {
+  // We have been notified about a user action changing a sync model.
+  DCHECK(writer == syncable::SYNCAPI ||
+         writer == syncable::UNITTEST);
   LOG_IF(WARNING, !ChangeBuffersAreEmpty()) <<
       "CALCULATE_CHANGES called with unapplied old changes.";
 
   bool exists_unsynced_items = false;
   bool only_preference_changes = true;
   syncable::ModelTypeBitSet model_types;
-  for (syncable::OriginalEntries::const_iterator i = event.originals->begin();
-       i != event.originals->end() && !exists_unsynced_items;
+  for (syncable::OriginalEntries::const_iterator i = originals.begin();
+       i != originals.end() && !exists_unsynced_items;
        ++i) {
     int64 id = i->ref(syncable::META_HANDLE);
-    syncable::Entry e(event.trans, syncable::GET_BY_HANDLE, id);
+    syncable::Entry e(trans, syncable::GET_BY_HANDLE, id);
     DCHECK(e.good());
 
     syncable::ModelType model_type = e.GetModelType();
@@ -2436,20 +2405,21 @@ void SyncManager::SyncInternal::SetExtraChangeRecordData(int64 id,
 }
 
 void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
-    const syncable::DirectoryChangeEvent& event) {
+    const OriginalEntries& originals,
+    const WriterTag& writer,
+    syncable::BaseTransaction* trans) {
   // We only expect one notification per sync step, so change_buffers_ should
   // contain no pending entries.
-  DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::CALCULATE_CHANGES);
-  DCHECK(event.writer == syncable::SYNCER ||
-         event.writer == syncable::UNITTEST);
+  DCHECK(writer == syncable::SYNCER ||
+         writer == syncable::UNITTEST);
   LOG_IF(WARNING, !ChangeBuffersAreEmpty()) <<
       "CALCULATE_CHANGES called with unapplied old changes.";
 
-  Cryptographer* crypto = dir_manager()->GetCryptographer(event.trans);
-  for (syncable::OriginalEntries::const_iterator i = event.originals->begin();
-       i != event.originals->end(); ++i) {
+  Cryptographer* crypto = dir_manager()->GetCryptographer(trans);
+  for (syncable::OriginalEntries::const_iterator i = originals.begin();
+       i != originals.end(); ++i) {
     int64 id = i->ref(syncable::META_HANDLE);
-    syncable::Entry e(event.trans, syncable::GET_BY_HANDLE, id);
+    syncable::Entry e(trans, syncable::GET_BY_HANDLE, id);
     bool existed_before = !i->ref(syncable::IS_DEL);
     bool exists_now = e.good() && !e.Get(syncable::IS_DEL);
     DCHECK(e.good());

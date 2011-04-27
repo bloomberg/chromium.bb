@@ -42,6 +42,7 @@
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
+#include "chrome/browser/sync/syncable/directory_change_listener.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
@@ -269,9 +270,6 @@ DictionaryValue* EntryKernel::ToValue() const {
 ///////////////////////////////////////////////////////////////////////////
 // Directory
 
-static const DirectoryChangeEvent kShutdownChangesEvent =
-    { DirectoryChangeEvent::SHUTDOWN, 0, 0 };
-
 void Directory::init_kernel(const std::string& name) {
   DCHECK(kernel_ == NULL);
   kernel_ = new Kernel(FilePath(), name, KernelLoadInfo());
@@ -318,6 +316,7 @@ Directory::Kernel::Kernel(const FilePath& db_path,
       dirty_metahandles(new MetahandleSet),
       metahandles_to_purge(new MetahandleSet),
       channel(new Directory::Channel(syncable::DIRECTORY_DESTROYED)),
+      change_listener_(NULL),
       info_status(Directory::KERNEL_SHARE_INFO_VALID),
       persisted_info(info.kernel_info),
       cache_guid(info.cache_guid),
@@ -336,7 +335,6 @@ void Directory::Kernel::Release() {
 Directory::Kernel::~Kernel() {
   CHECK_EQ(0, refcount);
   delete channel;
-  changes_channel.Notify(kShutdownChangesEvent);
   delete unsynced_metahandles;
   delete unapplied_update_metahandles;
   delete dirty_metahandles;
@@ -1088,9 +1086,9 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
   }
 }
 
-browser_sync::ChannelHookup<DirectoryChangeEvent>* Directory::AddChangeObserver(
-    browser_sync::ChannelEventHandler<DirectoryChangeEvent>* observer) {
-  return kernel_->changes_channel.AddObserver(observer);
+void Directory::SetChangeListener(DirectoryChangeListener* listener) {
+  DCHECK(!kernel_->change_listener_);
+  kernel_->change_listener_ = listener;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1138,23 +1136,22 @@ BaseTransaction::BaseTransaction(Directory* directory)
 
 BaseTransaction::~BaseTransaction() {}
 
-void BaseTransaction::UnlockAndLog(OriginalEntries* originals_arg) {
-  // Triggers the CALCULATE_CHANGES and TRANSACTION_ENDING events while
-  // holding dir_kernel_'s transaction_mutex and changes_channel mutex.
-  // Releases all mutexes upon completion.
-  if (!NotifyTransactionChangingAndEnding(originals_arg)) {
+void BaseTransaction::UnlockAndLog(OriginalEntries* entries) {
+  // Work while trasnaction mutex is held
+  ModelTypeBitSet models_with_changes;
+  if (!NotifyTransactionChangingAndEnding(entries, &models_with_changes))
     return;
-  }
 
-  // Triggers the TRANSACTION_COMPLETE event (and does not hold any mutexes).
-  NotifyTransactionComplete();
+  // Work after mutex is relased.
+  NotifyTransactionComplete(models_with_changes);
 }
 
 bool BaseTransaction::NotifyTransactionChangingAndEnding(
-    OriginalEntries* originals_arg) {
+    OriginalEntries* entries,
+    ModelTypeBitSet* models_with_changes) {
   dirkernel_->transaction_mutex.AssertAcquired();
 
-  scoped_ptr<OriginalEntries> originals(originals_arg);
+  scoped_ptr<OriginalEntries> originals(entries);
   const base::TimeDelta elapsed = base::TimeTicks::Now() - time_acquired_;
   if (LOG_IS_ON(INFO) &&
       (1 <= logging::GetVlogLevelHelper(
@@ -1165,43 +1162,40 @@ bool BaseTransaction::NotifyTransactionChangingAndEnding(
         << " seconds.";
   }
 
-  if (NULL == originals.get() || originals->empty()) {
+  if (NULL == originals.get() || originals->empty() ||
+      !dirkernel_->change_listener_) {
     dirkernel_->transaction_mutex.Release();
     return false;
   }
 
-
-  {
-    // Scoped_lock is only active through the calculate_changes and
-    // transaction_ending events.
-    base::AutoLock scoped_lock(dirkernel_->changes_channel_mutex);
-
-    // Tell listeners to calculate changes while we still have the mutex.
-    DirectoryChangeEvent event = { DirectoryChangeEvent::CALCULATE_CHANGES,
-                                   originals.get(), this, writer_ };
-    dirkernel_->changes_channel.Notify(event);
-
-    // Necessary for reads to be performed prior to transaction mutex release.
-    // Allows the listener to use the current transaction to perform reads.
-    DirectoryChangeEvent ending_event =
-        { DirectoryChangeEvent::TRANSACTION_ENDING,
-          NULL, this, INVALID };
-    dirkernel_->changes_channel.Notify(ending_event);
-
-    dirkernel_->transaction_mutex.Release();
+  if (writer_ == syncable::SYNCAPI) {
+    dirkernel_->change_listener_->HandleCalculateChangesChangeEventFromSyncApi(
+        *originals.get(),
+        writer_,
+        this);
+  } else {
+    dirkernel_->change_listener_->HandleCalculateChangesChangeEventFromSyncer(
+        *originals.get(),
+        writer_,
+        this);
   }
 
+  *models_with_changes = dirkernel_->change_listener_->
+      HandleTransactionEndingChangeEvent(this);
+
+  // Release the transaction. Note, once the transaction is released this thread
+  // can be interrupted by another that was waiting for the transaction,
+  // resulting in this code possibly being interrupted with another thread
+  // performing following the same code path. From this point foward, only
+  // local state can be touched.
+  dirkernel_->transaction_mutex.Release();
   return true;
 }
 
-void BaseTransaction::NotifyTransactionComplete() {
-  // Transaction is no longer holding any locks/mutexes, notify that we're
-  // complete (and commit any outstanding changes that should not be performed
-  // while holding mutexes).
-  DirectoryChangeEvent complete_event =
-      { DirectoryChangeEvent::TRANSACTION_COMPLETE,
-        NULL, NULL, INVALID };
-  dirkernel_->changes_channel.Notify(complete_event);
+void BaseTransaction::NotifyTransactionComplete(
+    ModelTypeBitSet models_with_changes) {
+  dirkernel_->change_listener_->HandleTransactionCompleteChangeEvent(
+      models_with_changes);
 }
 
 ReadTransaction::ReadTransaction(Directory* directory, const char* file,
