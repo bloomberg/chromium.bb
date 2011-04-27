@@ -991,6 +991,39 @@ class TestingAutomationProvider : public AutomationProvider,
   void WebkitMouseDrag(DictionaryValue* args,
                        IPC::Message* message);
 
+  // Sends the WebKit events for a mouse button down at a given coordinate.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "x": 100,
+  //            "y": 100
+  //          }
+  //   output: none
+  void WebkitMouseButtonDown(DictionaryValue* args,
+                             IPC::Message* message);
+
+  // Sends the WebKit events for a mouse button up at a given coordinate.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "x": 100,
+  //            "y": 100
+  //          }
+  //   output: none
+  void WebkitMouseButtonUp(DictionaryValue* args,
+                           IPC::Message* message);
+
+  // Sends the WebKit events for a mouse double click at a given coordinate.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "x": 100,
+  //            "y": 100
+  //          }
+  //   output: none
+  void WebkitMouseDoubleClick(DictionaryValue* args,
+                              IPC::Message* message);
+
   // Sends the WebKit key event with the specified properties.
   // Example:
   //   input: { "windex": 1,

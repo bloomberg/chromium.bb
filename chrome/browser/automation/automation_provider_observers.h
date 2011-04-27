@@ -1244,13 +1244,13 @@ class RendererProcessClosedObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(RendererProcessClosedObserver);
 };
 
-// Allows the automation provider to wait for acknowledgement that a input
-// event has been handled.
+// Allows the automation provider to wait for acknowledgement that a certain
+// type and number of input events has been processed by the renderer.
 class InputEventAckNotificationObserver : public NotificationObserver {
  public:
   InputEventAckNotificationObserver(AutomationProvider* automation,
                                     IPC::Message* reply_message,
-                                    int event_type);
+                                    int event_type, int count);
   virtual ~InputEventAckNotificationObserver();
 
   virtual void Observe(NotificationType type,
@@ -1262,6 +1262,7 @@ class InputEventAckNotificationObserver : public NotificationObserver {
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
   int event_type_;
+  int count_;
 
   DISALLOW_COPY_AND_ASSIGN(InputEventAckNotificationObserver);
 };

@@ -109,9 +109,15 @@ void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
   dispatcher->Add<ScreenshotCommand>("/session/*/screenshot");
 
   // Mouse Commands
-  dispatcher->Add<ClickCommand>("/session/*/element/*/click");
-  dispatcher->Add<DragCommand>( "/session/*/element/*/drag");
-  dispatcher->Add<HoverCommand>("/session/*/element/*/hover");
+  dispatcher->Add<MoveAndClickCommand>("/session/*/element/*/click");
+  dispatcher->Add<DragCommand>(        "/session/*/element/*/drag");
+  dispatcher->Add<HoverCommand>(       "/session/*/element/*/hover");
+
+  dispatcher->Add<MoveToCommand>(     "/session/*/moveto");
+  dispatcher->Add<ClickCommand>(      "/session/*/click");
+  dispatcher->Add<ButtonDownCommand>( "/session/*/buttondown");
+  dispatcher->Add<ButtonUpCommand>(   "/session/*/buttonup");
+  dispatcher->Add<DoubleClickCommand>("/session/*/doubleclick");
 
   // All session based commands should be listed after the element based
   // commands to avoid potential mapping conflicts from an overzealous

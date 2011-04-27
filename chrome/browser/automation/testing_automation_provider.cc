@@ -900,7 +900,8 @@ void TestingAutomationProvider::WebkitMouseClick(DictionaryValue* args,
   tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
 
   mouse_event.type = WebKit::WebInputEvent::MouseUp;
-  new InputEventAckNotificationObserver(this, reply_message, mouse_event.type);
+  new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
+                                        1);
   tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
 }
 
@@ -922,7 +923,8 @@ void TestingAutomationProvider::WebkitMouseMove(
   }
 
   mouse_event.type = WebKit::WebInputEvent::MouseMove;
-  new InputEventAckNotificationObserver(this, reply_message, mouse_event.type);
+  new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
+                                        1);
   tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
 }
 
@@ -970,7 +972,93 @@ void TestingAutomationProvider::WebkitMouseDrag(DictionaryValue* args,
   // Step 4 - Release the left mouse button.
   mouse_event.type = WebKit::WebInputEvent::MouseUp;
   mouse_event.clickCount = 1;
-  new InputEventAckNotificationObserver(this, reply_message, mouse_event.type);
+  new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
+                                        1);
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+}
+
+void TestingAutomationProvider::WebkitMouseButtonDown(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+
+  WebKit::WebMouseEvent mouse_event;
+  if (!args->GetInteger("x", &mouse_event.x) ||
+      !args->GetInteger("y", &mouse_event.y)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("(X,Y) coordinates missing or invalid");
+    return;
+  }
+
+  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.clickCount = 1;
+  new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
+                                        1);
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+}
+
+void TestingAutomationProvider::WebkitMouseButtonUp(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+
+  WebKit::WebMouseEvent mouse_event;
+  if (!args->GetInteger("x", &mouse_event.x) ||
+      !args->GetInteger("y", &mouse_event.y)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("(X,Y) coordinates missing or invalid");
+    return;
+  }
+
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.clickCount = 1;
+  new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
+                                        1);
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+}
+
+void TestingAutomationProvider::WebkitMouseDoubleClick(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  TabContents* tab_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+
+  WebKit::WebMouseEvent mouse_event;
+  if (!args->GetInteger("x", &mouse_event.x) ||
+      !args->GetInteger("y", &mouse_event.y)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("(X,Y) coordinates missing or invalid");
+    return;
+  }
+
+  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.clickCount = 1;
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
+                                        2);
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+
+  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.clickCount = 2;
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
   tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
 }
 
@@ -2083,6 +2171,12 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::WebkitMouseClick;
   handler_map["WebkitMouseDrag"] =
       &TestingAutomationProvider::WebkitMouseDrag;
+  handler_map["WebkitMouseButtonUp"] =
+      &TestingAutomationProvider::WebkitMouseButtonUp;
+  handler_map["WebkitMouseButtonDown"] =
+      &TestingAutomationProvider::WebkitMouseButtonDown;
+  handler_map["WebkitMouseDoubleClick"] =
+      &TestingAutomationProvider::WebkitMouseDoubleClick;
   handler_map["SendWebkitKeyEvent"] =
       &TestingAutomationProvider::SendWebkitKeyEvent;
   handler_map["SendOSLevelKeyEventToTab"] =
@@ -4765,7 +4859,7 @@ void TestingAutomationProvider::SendWebkitKeyEvent(
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  new InputEventAckNotificationObserver(this, reply_message, event.type);
+  new InputEventAckNotificationObserver(this, reply_message, event.type, 1);
   tab_contents->render_view_host()->ForwardKeyboardEvent(event);
 }
 

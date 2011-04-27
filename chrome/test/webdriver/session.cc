@@ -310,16 +310,18 @@ ErrorCode Session::GetTitle(std::string* tab_title) {
   return kSuccess;
 }
 
-bool Session::MouseClick(const gfx::Point& click,
-                         automation::MouseButton button) {
+bool Session::MouseMoveAndClick(const gfx::Point& location,
+                                automation::MouseButton button) {
   bool success = false;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::MouseClick,
       current_target_.window_id,
-      click,
+      location,
       button,
       &success));
+  if (success)
+    mouse_position_ = location;
   return success;
 }
 
@@ -331,6 +333,8 @@ bool Session::MouseMove(const gfx::Point& location) {
       current_target_.window_id,
       location,
       &success));
+  if (success)
+    mouse_position_ = location;
   return success;
 }
 
@@ -343,6 +347,53 @@ bool Session::MouseDrag(const gfx::Point& start,
       current_target_.window_id,
       start,
       end,
+      &success));
+  if (success)
+    mouse_position_ = end;
+  return success;
+}
+
+bool Session::MouseClick(automation::MouseButton button) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::MouseClick,
+      current_target_.window_id,
+      mouse_position_,
+      button,
+      &success));
+  return success;
+}
+
+bool Session::MouseButtonDown() {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::MouseButtonDown,
+      current_target_.window_id,
+      mouse_position_,
+      &success));
+  return success;
+}
+
+bool Session::MouseButtonUp() {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::MouseButtonUp,
+      current_target_.window_id,
+      mouse_position_,
+      &success));
+  return success;
+}
+
+bool Session::MouseDoubleClick() {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::MouseDoubleClick,
+      current_target_.window_id,
+      mouse_position_,
       &success));
   return success;
 }
@@ -1150,6 +1201,10 @@ bool Session::GetScreenShot(std::string* png) {
     success = file_util::ReadFileToString(path, png);
   }
   return success;
+}
+
+const gfx::Point& Session::get_mouse_position() const {
+  return mouse_position_;
 }
 
 }  // namespace webdriver

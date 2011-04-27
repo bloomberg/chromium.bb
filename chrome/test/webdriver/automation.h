@@ -104,6 +104,9 @@ class Automation {
                  const gfx::Point& start,
                  const gfx::Point& end,
                  bool* success);
+  void MouseButtonDown(int tab_id, const gfx::Point& p, bool* success);
+  void MouseButtonUp(int tab_id, const gfx::Point& p, bool* success);
+  void MouseDoubleClick(int tab_id, const gfx::Point& p, bool* success);
 
   // Get persistent IDs for all the tabs currently open. These IDs can be used
   // to identify the tab as long as the tab exists.

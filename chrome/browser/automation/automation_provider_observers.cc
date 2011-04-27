@@ -2201,10 +2201,13 @@ void RendererProcessClosedObserver::Observe(
 InputEventAckNotificationObserver::InputEventAckNotificationObserver(
     AutomationProvider* automation,
     IPC::Message* reply_message,
-    int event_type)
+    int event_type,
+    int count)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
-      event_type_(event_type) {
+      event_type_(event_type),
+      count_(count) {
+  DCHECK(1 <= count);
   registrar_.Add(
       this, NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
       NotificationService::AllSources());
@@ -2217,7 +2220,8 @@ void InputEventAckNotificationObserver::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   Details<int> request_details(details);
-  if (event_type_ == *request_details.ptr()) {
+  // If the event type matches for "count" times, replies with a JSON message.
+  if (event_type_ == *request_details.ptr() && --count_ == 0) {
     if (automation_) {
       AutomationJSONReply(automation_,
                           reply_message_.release()).SendSuccess(NULL);

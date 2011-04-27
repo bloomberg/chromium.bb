@@ -432,6 +432,54 @@ bool SendMouseDragJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict);
 }
 
+bool SendMouseButtonDownJSONRequest(
+    AutomationMessageSender* sender,
+    int browser_index,
+    int tab_index,
+    int x,
+    int y) {
+  DictionaryValue dict;
+  dict.SetString("command", "WebkitMouseButtonDown");
+  dict.SetInteger("windex", browser_index);
+  dict.SetInteger("tab_index", tab_index);
+  dict.SetInteger("x", x);
+  dict.SetInteger("y", y);
+  DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, dict, &reply_dict);
+}
+
+bool SendMouseButtonUpJSONRequest(
+    AutomationMessageSender* sender,
+    int browser_index,
+    int tab_index,
+    int x,
+    int y)  {
+  DictionaryValue dict;
+  dict.SetString("command", "WebkitMouseButtonUp");
+  dict.SetInteger("windex", browser_index);
+  dict.SetInteger("tab_index", tab_index);
+  dict.SetInteger("x", x);
+  dict.SetInteger("y", y);
+  DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, dict, &reply_dict);
+}
+
+bool SendMouseDoubleClickJSONRequest(
+    AutomationMessageSender* sender,
+    int browser_index,
+    int tab_index,
+    int x,
+    int y)  {
+  DictionaryValue dict;
+  dict.SetString("command", "WebkitMouseDoubleClick");
+  dict.SetInteger("windex", browser_index);
+  dict.SetInteger("tab_index", tab_index);
+  dict.SetInteger("x", x);
+  dict.SetInteger("y", y);
+  DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, dict, &reply_dict);
+}
+
 bool SendWebKeyEventJSONRequest(
     AutomationMessageSender* sender,
     int browser_index,

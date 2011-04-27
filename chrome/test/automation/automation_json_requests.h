@@ -223,6 +223,33 @@ bool SendMouseDragJSONRequest(
     int end_x,
     int end_y) WARN_UNUSED_RESULT;
 
+// Requests to send the WebKit event for a mouse button down at the given
+// coordinate in the specified tab. Returns true on success.
+bool SendMouseButtonDownJSONRequest(
+    AutomationMessageSender* sender,
+    int browser_index,
+    int tab_index,
+    int x,
+    int y) WARN_UNUSED_RESULT;
+
+// Requests to send the WebKit event for a mouse button up at the given
+// coordinate in the specified tab. Returns true on success.
+bool SendMouseButtonUpJSONRequest(
+    AutomationMessageSender* sender,
+    int browser_index,
+    int tab_index,
+    int x,
+    int y) WARN_UNUSED_RESULT;
+
+// Requests to send the WebKit event for a mouse double click at the given
+// coordinate in the specified tab. Returns true on success.
+bool SendMouseDoubleClickJSONRequest(
+    AutomationMessageSender* sender,
+    int browser_index,
+    int tab_index,
+    int x,
+    int y) WARN_UNUSED_RESULT;
+
 // Requests to send the WebKit event for the given |WebKeyEvent| in a
 // specified tab. Returns true on success.
 bool SendWebKeyEventJSONRequest(

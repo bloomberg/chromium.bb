@@ -17,6 +17,7 @@
 #include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/frame_path.h"
 #include "chrome/test/webdriver/web_element_id.h"
+#include "ui/gfx/point.h"
 
 class DictionaryValue;
 class FilePath;
@@ -29,7 +30,6 @@ class WaitableEvent;
 }
 
 namespace gfx {
-class Point;
 class Rect;
 class Size;
 }
@@ -88,9 +88,14 @@ class Session {
   ErrorCode SendKeys(const WebElementId& element, const string16& keys);
 
   // Clicks the mouse at the given location using the given button.
-  bool MouseClick(const gfx::Point& click, automation::MouseButton button);
+  bool MouseMoveAndClick(const gfx::Point& location,
+                         automation::MouseButton button);
   bool MouseMove(const gfx::Point& location);
   bool MouseDrag(const gfx::Point& start, const gfx::Point& end);
+  bool MouseClick(automation::MouseButton button);
+  bool MouseButtonDown();
+  bool MouseButtonUp();
+  bool MouseDoubleClick();
 
   bool NavigateToURL(const std::string& url);
   bool GoForward();
@@ -221,6 +226,8 @@ class Session {
   void set_use_native_events(bool use_native_events);
   bool use_native_events() const;
 
+  const gfx::Point& get_mouse_position() const;
+
  private:
   void RunSessionTask(Task* task);
   void RunSessionTaskOnSessionThread(
@@ -267,6 +274,9 @@ class Session {
   // path. The first refers to the first frame element in the root document.
   // If the target frame is window.top, this will be empty.
   std::vector<WebElementId> frame_elements_;
+
+  // Last mouse position. Advanced APIs need this value.
+  gfx::Point mouse_position_;
 
   DISALLOW_COPY_AND_ASSIGN(Session);
 };

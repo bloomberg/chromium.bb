@@ -67,8 +67,8 @@ void CreateSession::ExecutePost(Response* const response) {
   DictionaryValue* capabilities = NULL;
   bool native_events_required = false;
   if (GetDictionaryParameter("desiredCapabilities", &capabilities)) {
-   capabilities->GetBoolean("chrome.nativeEvents", &native_events_required);
-   session->set_use_native_events(native_events_required);
+    capabilities->GetBoolean("chrome.nativeEvents", &native_events_required);
+    session->set_use_native_events(native_events_required);
   }
 
   bool screenshot_on_error = false;

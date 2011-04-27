@@ -227,6 +227,45 @@ void Automation::MouseDrag(int tab_id,
       automation(), windex, tab_index, start.x(), start.y(), end.x(), end.y());
 }
 
+void Automation::MouseButtonUp(int tab_id,
+                               const gfx::Point& p,
+                               bool* success) {
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
+    *success = false;
+    return;
+  }
+
+  *success = SendMouseButtonUpJSONRequest(
+      automation(), windex, tab_index, p.x(), p.y());
+}
+
+void Automation::MouseButtonDown(int tab_id,
+                                 const gfx::Point& p,
+                                 bool* success) {
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
+    *success = false;
+    return;
+  }
+
+  *success = SendMouseButtonDownJSONRequest(
+      automation(), windex, tab_index, p.x(), p.y());
+}
+
+void Automation::MouseDoubleClick(int tab_id,
+                                  const gfx::Point& p,
+                                  bool* success) {
+  int windex = 0, tab_index = 0;
+  if (!GetIndicesForTab(tab_id, &windex, &tab_index)) {
+    *success = false;
+    return;
+  }
+
+  *success = SendMouseDoubleClickJSONRequest(
+      automation(), windex, tab_index, p.x(), p.y());
+}
+
 void Automation::SendWebKeyEvent(int tab_id,
                                  const WebKeyEvent& key_event,
                                  bool* success) {
