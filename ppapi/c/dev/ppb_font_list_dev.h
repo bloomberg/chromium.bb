@@ -10,7 +10,8 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_FONT_LIST_DEV_INTERFACE "PPB_FontList(Dev);0.1"
+#define PPB_FONT_LIST_DEV_INTERFACE_0_1 "PPB_FontList(Dev);0.1"
+#define PPB_FONT_LIST_DEV_INTERFACE PPB_FONT_LIST_DEV_INTERFACE_0_1
 
 struct PPB_FontList_Dev {
   /* Creates a font list resource. By default, the list will be empty, you must

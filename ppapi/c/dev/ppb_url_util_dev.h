@@ -11,7 +11,8 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_URLUTIL_DEV_INTERFACE "PPB_URLUtil(Dev);0.6"
+#define PPB_URLUTIL_DEV_INTERFACE_0_6 "PPB_URLUtil(Dev);0.6"
+#define PPB_URLUTIL_DEV_INTERFACE PPB_URLUTIL_DEV_INTERFACE_0_6
 
 // A component specifies the range of the part of the URL. The begin specifies
 // the index into the string of the first character of that component. The len

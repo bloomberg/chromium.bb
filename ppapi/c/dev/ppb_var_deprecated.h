@@ -13,7 +13,8 @@
 
 struct PPP_Class_Deprecated;
 
-#define PPB_VAR_DEPRECATED_INTERFACE "PPB_Var(Deprecated);0.3"
+#define PPB_VAR_DEPRECATED_INTERFACE_0_3 "PPB_Var(Deprecated);0.3"
+#define PPB_VAR_DEPRECATED_INTERFACE PPB_VAR_DEPRECATED_INTERFACE_0_3
 
 /**
  * @file

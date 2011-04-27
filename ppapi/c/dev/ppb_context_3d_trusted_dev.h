@@ -11,7 +11,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE "PPB_Context3DTrusted(Dev);0.3"
+#define PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE_0_3 "PPB_Context3DTrusted(Dev);0.3"
+#define PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE \
+    PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE_0_3
 
 typedef enum {
   kNoError,

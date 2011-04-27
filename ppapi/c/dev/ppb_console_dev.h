@@ -8,7 +8,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_CONSOLE_DEV_INTERFACE "PPB_Console(Dev);0.1"
+#define PPB_CONSOLE_DEV_INTERFACE_0_1 "PPB_Console(Dev);0.1"
+#define PPB_CONSOLE_DEV_INTERFACE PPB_CONSOLE_DEV_INTERFACE_0_1
 
 typedef enum {
   PP_LOGLEVEL_TIP = 0,

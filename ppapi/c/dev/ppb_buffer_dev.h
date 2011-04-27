@@ -10,7 +10,8 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_BUFFER_DEV_INTERFACE "PPB_Buffer(Dev);0.4"
+#define PPB_BUFFER_DEV_INTERFACE_0_4 "PPB_Buffer(Dev);0.4"
+#define PPB_BUFFER_DEV_INTERFACE PPB_BUFFER_DEV_INTERFACE_0_4
 
 struct PPB_Buffer_Dev {
   // Allocates a buffer of the given size in bytes. The return value will have

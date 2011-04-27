@@ -10,7 +10,8 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_FULLSCREEN_DEV_INTERFACE "PPB_Fullscreen(Dev);0.4"
+#define PPB_FULLSCREEN_DEV_INTERFACE_0_4 "PPB_Fullscreen(Dev);0.4"
+#define PPB_FULLSCREEN_DEV_INTERFACE PPB_FULLSCREEN_DEV_INTERFACE_0_4
 
 // Use this interface to change a plugin instance to fullscreen mode.
 struct PPB_Fullscreen_Dev {

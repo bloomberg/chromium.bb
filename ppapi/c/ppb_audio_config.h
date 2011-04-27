@@ -11,7 +11,8 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_AUDIO_CONFIG_INTERFACE "PPB_AudioConfig;0.5"
+#define PPB_AUDIO_CONFIG_INTERFACE_0_5 "PPB_AudioConfig;0.5"
+#define PPB_AUDIO_CONFIG_INTERFACE PPB_AUDIO_CONFIG_INTERFACE_0_5
 
 /**
  * @file

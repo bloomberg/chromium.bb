@@ -10,7 +10,8 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_INSTANCE_INTERFACE "PPB_Instance;0.4"
+#define PPB_INSTANCE_INTERFACE_0_4 "PPB_Instance;0.4"
+#define PPB_INSTANCE_INTERFACE PPB_INSTANCE_INTERFACE_0_4
 
 /**
  * @file

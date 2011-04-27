@@ -19,7 +19,8 @@ struct PP_DirectoryEntry_Dev {
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_DirectoryEntry_Dev, 8);
 
-#define PPB_DIRECTORYREADER_DEV_INTERFACE "PPB_DirectoryReader(Dev);0.4"
+#define PPB_DIRECTORYREADER_DEV_INTERFACE_0_4 "PPB_DirectoryReader(Dev);0.4"
+#define PPB_DIRECTORYREADER_DEV_INTERFACE PPB_DIRECTORYREADER_DEV_INTERFACE_0_4
 
 struct PPB_DirectoryReader_Dev {
   // Creates a DirectoryReader for the given directory.  Upon success, the

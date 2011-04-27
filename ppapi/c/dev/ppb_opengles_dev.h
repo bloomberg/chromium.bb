@@ -31,7 +31,11 @@ typedef unsigned short GLushort;
 typedef int GLclampx;
 #endif  // __gl2_h_
 
-#define PPB_OPENGLES2_DEV_INTERFACE "PPB_OpenGLES(Dev);2.0"
+// TODO(brettw) this string should be PPB_OpenGLES2;1.0 when this is frozen.
+// The 2.0 is trying to describe the version of OpenGL ES which is different
+// than the Pepper interface version.
+#define PPB_OPENGLES2_DEV_INTERFACE_0_1 "PPB_OpenGLES(Dev);2.0"
+#define PPB_OPENGLES2_DEV_INTERFACE PPB_OPENGLES2_DEV_INTERFACE_0_1
 
 struct PPB_OpenGLES2_Dev {
   void (*ActiveTexture)(PP_Resource context, GLenum texture);

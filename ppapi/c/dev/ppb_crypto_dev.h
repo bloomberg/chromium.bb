@@ -8,7 +8,8 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_CRYPTO_DEV_INTERFACE "PPB_Crypto(Dev);0.1"
+#define PPB_CRYPTO_DEV_INTERFACE_0_1 "PPB_Crypto(Dev);0.1"
+#define PPB_CRYPTO_DEV_INTERFACE PPB_CRYPTO_DEV_INTERFACE_0_1
 
 struct PPB_Crypto_Dev {
   /**

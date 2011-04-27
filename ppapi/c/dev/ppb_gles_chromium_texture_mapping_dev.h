@@ -8,7 +8,10 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"
 
-#define PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE "PPB_GLESChromiumTextureMapping(Dev);0.1"
+#define PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE_0_1 \
+    "PPB_GLESChromiumTextureMapping(Dev);0.1"
+#define PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE \
+    PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE_0_1
 
 struct PPB_GLESChromiumTextureMapping_Dev {
   // Maps the sub-image of a texture. 'level', 'xoffset', 'yoffset', 'width',

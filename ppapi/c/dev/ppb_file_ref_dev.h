@@ -13,7 +13,8 @@
 
 struct PP_CompletionCallback;
 
-#define PPB_FILEREF_DEV_INTERFACE "PPB_FileRef(Dev);0.7"
+#define PPB_FILEREF_DEV_INTERFACE_0_7 "PPB_FileRef(Dev);0.7"
+#define PPB_FILEREF_DEV_INTERFACE PPB_FILEREF_DEV_INTERFACE_0_7
 
 // A FileRef is a "weak pointer" to a file in a file system.  It contains a
 // PP_FileSystemType identifier and a file path string.

@@ -9,7 +9,8 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_VIDEODECODER_DEV_INTERFACE "PPB_VideoDecoder(Dev);0.5"
+#define PPB_VIDEODECODER_DEV_INTERFACE_0_5 "PPB_VideoDecoder(Dev);0.5"
+#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_5
 
 // Video decoder interface.
 //

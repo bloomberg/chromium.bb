@@ -12,7 +12,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 
-#define PPB_CONTEXT_3D_DEV_INTERFACE "PPB_Context3D(Dev);0.1"
+#define PPB_CONTEXT_3D_DEV_INTERFACE_0_1 "PPB_Context3D(Dev);0.1"
+#define PPB_CONTEXT_3D_DEV_INTERFACE PPB_CONTEXT_3D_DEV_INTERFACE_0_1
 
 struct PPB_Context3D_Dev {
   // Creates and initializes a rendering context and returns a handle to it.

@@ -12,7 +12,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 
-#define PPB_SURFACE_3D_DEV_INTERFACE "PPB_Surface3D(Dev);0.1"
+#define PPB_SURFACE_3D_DEV_INTERFACE_0_1 "PPB_Surface3D(Dev);0.1"
+#define PPB_SURFACE_3D_DEV_INTERFACE PPB_SURFACE_3D_DEV_INTERFACE_0_1
 
 struct PPB_Surface3D_Dev {
   // Creates a render surface and returns a handle to it.
