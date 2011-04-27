@@ -21,10 +21,10 @@
 
 #include "native_client/src/trusted/validator_x86/nacl_regs.h"
 
-#ifdef _WIN64
-#include "gen/native_client/src/trusted/validator_x86/nc_subregs64.h"
+#if NACL_TARGET_SUBARCH == 64
+# include "gen/native_client/src/trusted/validator_x86/nc_subregs_64.h"
 #else
-#include "gen/native_client/src/trusted/validator_x86/nc_subregs.h"
+# include "gen/native_client/src/trusted/validator_x86/nc_subregs_32.h"
 #endif
 
 

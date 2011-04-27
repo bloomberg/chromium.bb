@@ -1,31 +1,6 @@
-# Copyright 2011, Google Inc.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 # TODO(bradchen): eliminate need for the warning flag removals below
 {
@@ -138,42 +113,56 @@
             'process_outputs_as_sources': 1,
           },
           {
-            'action_name': 'ncdecode_tablegen',
+            'action_name': 'ncdecode_tablegen_32',
             'msvs_cygwin_shell': 0,
             'inputs': [
               '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
             ],
             'outputs': [
-              '<(validate_gen_out)/nc_opcode_table.h',
+              '<(validate_gen_out)/nc_opcode_table_32.h',
             ],
-            'message': 'Running ncdecode_tablegen',
+            'message': 'Running ncdecode_tablegen -m32',
             'process_outputs_as_sources': 1,
-            'conditions': [
-              ['target_arch=="ia32"', {
-                'action': ['<@(_inputs)', '-m32', '<@(_outputs)'],
-              }, {
-                'action': ['<@(_inputs)', '-m64', '<@(_outputs)'],
-              }],
-            ],
+            'action': ['<@(_inputs)', '-m32', '<@(_outputs)'],
           },
           {
-            'action_name': 'ncdecode_tablegen_subregs',
+            'action_name': 'ncdecode_tablegen_64',
             'msvs_cygwin_shell': 0,
             'inputs': [
               '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
             ],
             'outputs': [
-              '<(validate_gen_out)/nc_subregs.h',
+              '<(validate_gen_out)/nc_opcode_table_64.h',
             ],
-            'message': 'Running ncdecode_tablegen -naclsubregs',
+            'message': 'Running ncdecode_tablegen -m64',
             'process_outputs_as_sources': 1,
-            'conditions': [
-              ['target_arch=="ia32"', {
-                'action': ['<@(_inputs)', '-m32', '-nacl_subregs', '<@(_outputs)'],
-              }, {
-                'action': ['<@(_inputs)', '-m64', '-nacl_subregs', '<@(_outputs)'],
-              }],
+            'action': ['<@(_inputs)', '-m64', '<@(_outputs)'],
+          },
+          {
+            'action_name': 'ncdecode_tablegen_subregs_32',
+            'msvs_cygwin_shell': 0,
+            'inputs': [
+              '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
             ],
+            'outputs': [
+              '<(validate_gen_out)/nc_subregs_32.h',
+            ],
+            'message': 'Running ncdecode_tablegen -m32 -naclsubregs',
+            'process_outputs_as_sources': 1,
+            'action': ['<@(_inputs)', '-m32', '-nacl_subregs', '<@(_outputs)'],
+          },
+          {
+            'action_name': 'ncdecode_tablegen_subregs_64',
+            'msvs_cygwin_shell': 0,
+            'inputs': [
+              '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
+            ],
+            'outputs': [
+              '<(validate_gen_out)/nc_subregs_64.h',
+            ],
+            'message': 'Running ncdecode_tablegen -m64 -naclsubregs',
+            'process_outputs_as_sources': 1,
+            'action': ['<@(_inputs)', '-m64', '-nacl_subregs', '<@(_outputs)'],
           },
           {
             'action_name': 'ncop_expr_node_flag',
@@ -530,61 +519,6 @@
   'conditions': [
     ['OS=="win"', {
       'targets': [
-        # ---------------------------------------------------------------------
-        {
-          'target_name': 'ncvalidate_gen64',
-          'type': 'none',
-          'hard_dependency': 1,
-          'variables': {
-            'target_base': 'ncvalidate_gen',
-            'win_target': 'x64',
-          },
-          'dependencies': [
-            'ncdecode_table',
-            'ncdecode_tablegen',
-            'ncopcode_utils64',
-            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
-            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64'
-          ],
-          'actions': [
-            {
-              'action_name': 'ncdecode_tablegen64',
-              'msvs_cygwin_shell': 0,
-              'inputs': [
-                '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
-              ],
-              'outputs': [
-                '<(validate_gen_out)/nc_opcode_table64.h',
-              ],
-              'action': [
-                '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
-                '-m64',
-                '<@(_outputs)'
-              ],
-              'message': 'Running ncdecode_tablegen64',
-              'process_outputs_as_sources': 1,
-            },
-            {
-              'action_name': 'ncdecode_tablegen64_subregs',
-              'msvs_cygwin_shell': 0,
-              'inputs': [
-                '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
-              ],
-              'outputs': [
-                '<(validate_gen_out)/nc_subregs64.h',
-              ],
-              'action': [
-                '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
-                '-m64',
-                '-nacl_subregs',
-                '<@(_outputs)'
-              ],
-              'message': 'Running ncdecode_tablegen64 -naclsubregs',
-              'process_outputs_as_sources': 1,
-            },
-          ],
-        },
-        # ---------------------------------------------------------------------
         {
           'target_name': 'ncvalidate_sfi64',
           'type': 'static_library',
@@ -614,7 +548,8 @@
             'win_target': 'x64',
           },
           'dependencies': [
-            'ncvalidate_gen64',
+            'ncvalidate_gen',
+            'ncopcode_utils64',
           ],
           'hard_dependency': 1,
         },

@@ -17,20 +17,20 @@
 #include <stdio.h>
 #include <assert.h>
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/utils/debugging.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_trans.h"
 #include "native_client/src/trusted/validator_x86/nc_segment.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
-#ifdef _WIN64
-#include "gen/native_client/src/trusted/validator_x86/nc_opcode_table64.h"
-#else
-#include "gen/native_client/src/trusted/validator_x86/nc_opcode_table.h"
-#endif
 #include "native_client/src/trusted/validator_x86/RexPrefixes.h"
 
-#include "native_client/src/shared/utils/debugging.h"
+#if NACL_TARGET_SUBARCH == 64
+# include "gen/native_client/src/trusted/validator_x86/nc_opcode_table_64.h"
+#else
+# include "gen/native_client/src/trusted/validator_x86/nc_opcode_table_32.h"
+#endif
 
 EXTERN_C_BEGIN
 

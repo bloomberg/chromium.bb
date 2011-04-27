@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 
 import os
@@ -238,13 +238,12 @@ env.Command(
      (env['TARGET_SUBARCH'],
       ncv_decodetab_h, ncv_disasmtab_h, ncv_badprefixmask_h )])
 
-# TODO(gregoryd): use nc_opcode_table64.h on all 64-bit platforms.
-if env.Bit('target_x86_64') and env.Bit('windows'):
-  ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table64.h')
-  ncv_subregs_h = env.File(ncv_gen_dir + '/nc_subregs64.h')
+if env.Bit('target_x86_64'):
+  ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table_64.h')
+  ncv_subregs_h = env.File(ncv_gen_dir + '/nc_subregs_64.h')
 else:
-  ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table.h')
-  ncv_subregs_h = env.File(ncv_gen_dir + '/nc_subregs.h')
+  ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table_32.h')
+  ncv_subregs_h = env.File(ncv_gen_dir + '/nc_subregs_32.h')
 
 GenerateInstructionTables(env['TARGET_SUBARCH'], ncv_opcode_table_h)
 
