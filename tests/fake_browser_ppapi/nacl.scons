@@ -72,6 +72,9 @@ fake_browser = trusted_env.ComponentProgram('fake_browser_ppapi',
 target_nmf = 'basic_object.nmf';
 basic_object_nmf = env.File('${STAGING_DIR}/' + target_nmf)
 
+basic_object_target = env.File('$STAGING_DIR/ppapi_basic_object_%s.nexe' %
+                               env.get('TARGET_FULLARCH'))
+
 if trusted_env.Bit('mac'):
   plugin = trusted_env.File('${STAGING_DIR}/ppNaClPlugin')
 else:
@@ -92,6 +95,8 @@ node = env.CommandTest('fake_browser_ppapi.out',
                        'medium',
                        osenv=('NACL_SEL_LDR=%s,NACLLOG=%s'
                               % (sel_ldr, log_file)),
-                       extra_deps=[sel_ldr, basic_object_nmf])
+                       extra_deps=[sel_ldr,
+                                   basic_object_nmf,
+                                   basic_object_target])
 
 env.AddNodeToTestSuite(node, ['medium_tests'], 'run_fake_browser_ppapi_test')
