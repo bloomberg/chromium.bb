@@ -39,6 +39,7 @@ class PasswordManager;
 class PasswordManagerDelegate;
 class SearchEngineTabHelper;
 class TabContentsWrapperDelegate;
+class ThumbnailGenerator;
 class TranslateTabHelper;
 
 // Wraps TabContents and all of its supporting objects in order to control
@@ -211,6 +212,7 @@ class TabContentsWrapper : public NotificationObserver,
   scoped_ptr<prerender::PrerenderObserver> prerender_observer_;
   scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
   scoped_ptr<ExtensionWebNavigationTabObserver> webnavigation_observer_;
+  scoped_ptr<ThumbnailGenerator> thumbnail_generation_observer_;
 
   // TabContents (MUST BE LAST) ------------------------------------------------
 

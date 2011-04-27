@@ -56,9 +56,8 @@ class ThumbnailGenerator : NotificationObserver {
   ThumbnailGenerator();
   ~ThumbnailGenerator();
 
-  // Ensures that we're properly hooked in to generated thumbnails. This can
-  // be called repeatedly and with wild abandon to no ill effect.
-  void StartThumbnailing();
+  // Starts taking thumbnails of the given tab contents.
+  void StartThumbnailing(TabContents* tab_contents);
 
   // This registers a callback that can receive the resulting SkBitmap
   // from the renderer when it is done rendering it.  This differs
@@ -147,6 +146,8 @@ class ThumbnailGenerator : NotificationObserver {
   typedef std::map<int,
                    linked_ptr<AsyncRequestInfo> > ThumbnailCallbackMap;
   ThumbnailCallbackMap callback_map_;
+
+  TabContents* tab_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailGenerator);
 };

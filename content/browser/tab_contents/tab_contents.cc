@@ -47,7 +47,6 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
-#include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
@@ -257,14 +256,6 @@ TabContents::TabContents(Profile* profile,
 
   content_settings_delegate_.reset(
       new TabSpecificContentSettings(this, profile));
-
-  // Start the in-browser thumbnailing if the feature is enabled.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableInBrowserThumbnailing)) {
-    ThumbnailGenerator* generator = g_browser_process->GetThumbnailGenerator();
-    if (generator)
-      generator->StartThumbnailing();
-  }
 
   render_manager_.Init(profile, site_instance, routing_id);
 

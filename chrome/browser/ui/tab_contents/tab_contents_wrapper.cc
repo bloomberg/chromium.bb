@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_manager.h"
@@ -23,12 +24,14 @@
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
+#include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -83,6 +86,12 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
   webnavigation_observer_.reset(
       new ExtensionWebNavigationTabObserver(contents));
+  // Start the in-browser thumbnailing if the feature is enabled.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableInBrowserThumbnailing)) {
+    thumbnail_generation_observer_.reset(new ThumbnailGenerator);
+    thumbnail_generation_observer_->StartThumbnailing(tab_contents_.get());
+  }
 }
 
 TabContentsWrapper::~TabContentsWrapper() {
