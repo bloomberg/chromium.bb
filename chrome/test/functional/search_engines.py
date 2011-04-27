@@ -94,28 +94,6 @@ class SearchEnginesTest(pyauto.PyUITest):
     self.assertEqual(self._localhost_prefix + '?q=foobar',
                      self.GetActiveTabURL().spec())
 
-  def testTabToSearch(self):
-    """Test to verify that tab to search feature works."""
-    # Verify tab to search with tab, space, and keyord variants
-    omnibox_inputs = ['google.com test',
-                      'google.com\ttest',
-                      'http://www.google.com\ttest']
-    for omnibox_input in omnibox_inputs:
-      self.SetOmniboxText(omnibox_input)
-      self.OmniboxAcceptInput()
-      loc = self.GetActiveTabURL().spec()
-      self.assertTrue(loc.startswith('http://www.google.com/search?') and
-                      loc.endswith('q=test'))
-
-    # Test tab to search in an incognito window.
-    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
-    self.WaitUntilOmniboxReadyHack(windex=1)
-    self.SetOmniboxText('google.com\tincognito', 1)
-    self.OmniboxAcceptInput(1)
-    loc = self.GetActiveTabURL(1).spec()
-    self.assertTrue(loc.startswith('http://www.google.com/search?') and
-                    loc.endswith('q=incognito'))
-
   def testDefaultSearchEngines(self):
     """Test that we have 3 default search options."""
     info = self.GetSearchEngineInfo()

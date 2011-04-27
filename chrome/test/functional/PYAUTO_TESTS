@@ -80,8 +80,6 @@
       'popups',
       'prefs',
       'search_engines',
-      # crbug.com/67628
-      '-search_engines.SearchEnginesTest.testTabToSearch',
       'shortcuts',
       'special_tabs',
       # Flaky: crbug.com/67851
