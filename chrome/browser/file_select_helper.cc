@@ -38,7 +38,7 @@ struct FileSelectHelper::ActiveDirectoryEnumeration {
   ActiveDirectoryEnumeration() {}
 
   scoped_ptr<DirectoryListerDispatchDelegate> delegate_;
-  scoped_refptr<net::DirectoryLister> lister_;
+  scoped_ptr<net::DirectoryLister> lister_;
   RenderViewHost* rvh_;
   std::vector<FilePath> results_;
 };
@@ -62,10 +62,7 @@ FileSelectHelper::~FileSelectHelper() {
   for (iter = directory_enumerations_.begin();
        iter != directory_enumerations_.end();
        ++iter) {
-    if (iter->second->lister_.get()) {
-      iter->second->lister_->set_delegate(NULL);
-      iter->second->lister_->Cancel();
-    }
+    iter->second->lister_.reset();
     delete iter->second;
   }
 }
@@ -119,10 +116,10 @@ void FileSelectHelper::StartNewEnumeration(const FilePath& path,
   scoped_ptr<ActiveDirectoryEnumeration> entry(new ActiveDirectoryEnumeration);
   entry->rvh_ = render_view_host;
   entry->delegate_.reset(new DirectoryListerDispatchDelegate(this, request_id));
-  entry->lister_ = new net::DirectoryLister(path,
-                                            true,
-                                            net::DirectoryLister::NO_SORT,
-                                            entry->delegate_.get());
+  entry->lister_.reset(new net::DirectoryLister(path,
+                                                true,
+                                                net::DirectoryLister::NO_SORT,
+                                                entry->delegate_.get()));
   if (!entry->lister_->Start()) {
     if (request_id == kFileSelectEnumerationId)
       FileSelectionCanceled(NULL);

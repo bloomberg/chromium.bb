@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
@@ -159,7 +160,7 @@ class ActiveDownloadsHandler
   TabContents* tab_contents_;
   std::string current_file_contents_;
   TaskProxy* current_task_;
-  scoped_refptr<net::DirectoryLister> lister_;
+  scoped_ptr<net::DirectoryLister> lister_;
   bool is_refresh_;
 
   DownloadManager* download_manager_;
@@ -310,15 +311,9 @@ ActiveDownloadsHandler::ActiveDownloadsHandler()
       tab_contents_(NULL),
       is_refresh_(false),
       download_manager_(NULL) {
-  lister_ = NULL;
 }
 
 ActiveDownloadsHandler::~ActiveDownloadsHandler() {
-  if (lister_.get()) {
-    lister_->Cancel();
-    lister_->set_delegate(NULL);
-  }
-
   ClearDownloadItems();
   download_manager_->RemoveObserver(this);
 }
@@ -471,12 +466,7 @@ void ActiveDownloadsHandler::GetChildrenForPath(const FilePath& path,
   filelist_value_.reset(new ListValue());
   currentpath_ = path;
 
-  if (lister_.get()) {
-    lister_->Cancel();
-    lister_->set_delegate(NULL);
-    lister_ = NULL;
-  }
-
+  lister_.reset();
   is_refresh_ = is_refresh;
 
 #if defined(OS_CHROMEOS)
@@ -492,12 +482,12 @@ void ActiveDownloadsHandler::GetChildrenForPath(const FilePath& path,
   }
 
   if (currentpath_ == default_download_path) {
-    lister_ = new net::DirectoryLister(currentpath_,
-                                       false,
-                                       net::DirectoryLister::DATE,
-                                       this);
+    lister_.reset(new net::DirectoryLister(currentpath_,
+                                           false,
+                                           net::DirectoryLister::DATE,
+                                           this));
   } else {
-    lister_ = new net::DirectoryLister(currentpath_, this);
+    lister_.reset(new net::DirectoryLister(currentpath_, this));
   }
   // lister_->Start();
   OnListDone(0);
