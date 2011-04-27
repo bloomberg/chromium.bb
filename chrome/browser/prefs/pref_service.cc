@@ -517,21 +517,7 @@ void PrefService::ClearPref(const char* path) {
 }
 
 void PrefService::Set(const char* path, const Value& value) {
-  DCHECK(CalledOnValidThread());
-
-  const Preference* pref = FindPreference(path);
-  if (!pref) {
-    NOTREACHED() << "Trying to write an unregistered pref: " << path;
-    return;
-  }
-
-  if (pref->GetType() != value.GetType()) {
-    NOTREACHED() << "Trying to set pref " << path
-                 << " of type " << pref->GetType()
-                 << " to value of type " << value.GetType();
-  } else {
-    user_pref_store_->SetValue(path, value.DeepCopy());
-  }
+  SetUserPrefValue(path, value.DeepCopy());
 }
 
 void PrefService::SetBoolean(const char* path, bool value) {
@@ -552,10 +538,6 @@ void PrefService::SetString(const char* path, const std::string& value) {
 
 void PrefService::SetFilePath(const char* path, const FilePath& value) {
   SetUserPrefValue(path, base::CreateFilePathValue(value));
-}
-
-void PrefService::SetList(const char* path, ListValue* value) {
-  SetUserPrefValue(path, value);
 }
 
 void PrefService::SetInt64(const char* path, int64 value) {
@@ -624,6 +606,7 @@ void PrefService::ReportUserPrefChanged(const std::string& key) {
 }
 
 void PrefService::SetUserPrefValue(const char* path, Value* new_value) {
+  scoped_ptr<Value> owned_value(new_value);
   DCHECK(CalledOnValidThread());
   DLOG_IF(WARNING, IsManagedPreference(path)) <<
       "Attempt to change managed preference " << path;
@@ -640,7 +623,7 @@ void PrefService::SetUserPrefValue(const char* path, Value* new_value) {
     return;
   }
 
-  user_pref_store_->SetValue(path, new_value);
+  user_pref_store_->SetValue(path, owned_value.release());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

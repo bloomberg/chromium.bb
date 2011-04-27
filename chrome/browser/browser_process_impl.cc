@@ -871,11 +871,10 @@ void BrowserProcessImpl::CreateLocalState() {
                                    local_state_.get(), NULL);
   plugin_finder_disabled_pref_.MoveToThread(BrowserThread::IO);
 
-  // Initialize the preference for the disabled schemes policy, and
-  // load the initial policy on startup.
+  // This is observed by ChildProcessSecurityPolicy, which lives in content/
+  // though, so it can't register itself.
   local_state_->RegisterListPref(prefs::kDisabledSchemes);
-  disabled_schemes_pref_.Init(prefs::kDisabledSchemes, local_state_.get(),
-                              this);
+  pref_change_registrar_.Add(prefs::kDisabledSchemes, this);
   ApplyDisabledSchemesPolicy();
 }
 
@@ -961,8 +960,9 @@ bool BrowserProcessImpl::IsSafeBrowsingDetectionServiceEnabled() {
 
 void BrowserProcessImpl::ApplyDisabledSchemesPolicy() {
   std::set<std::string> schemes;
-  for (ListValue::const_iterator iter = (*disabled_schemes_pref_)->begin();
-      iter != (*disabled_schemes_pref_)->end(); ++iter) {
+  const ListValue* scheme_list = local_state_->GetList(prefs::kDisabledSchemes);
+  for (ListValue::const_iterator iter = scheme_list->begin();
+       iter != scheme_list->end(); ++iter) {
     std::string scheme;
     if ((*iter)->GetAsString(&scheme))
       schemes.insert(scheme);

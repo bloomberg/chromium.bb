@@ -267,9 +267,6 @@ class BrowserProcessImpl : public BrowserProcess,
   // Monitors the state of the 'DisablePluginFinder' policy.
   BooleanPrefMember plugin_finder_disabled_pref_;
 
-  // Monitors the list of disabled schemes policy.
-  ListPrefMember disabled_schemes_pref_;
-
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   base::RepeatingTimer<BrowserProcessImpl> autoupdate_timer_;
 
