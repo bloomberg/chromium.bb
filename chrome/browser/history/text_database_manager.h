@@ -14,11 +14,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "base/task.h"
+#include "base/memory/mru_cache.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/text_database.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/history/url_database.h"
-#include "content/common/mru_cache.h"
 
 namespace history {
 
@@ -262,7 +262,7 @@ class TextDatabaseManager {
   // using Get. Instead, we keep them in the order they were inserted, since
   // this is the metric we use to measure age. The MRUCache gives us an ordered
   // list with fast lookup by URL.
-  typedef MRUCache<GURL, PageInfo> RecentChangeList;
+  typedef base::MRUCache<GURL, PageInfo> RecentChangeList;
   RecentChangeList recent_changes_;
 
   // Nesting levels of transactions. Since sqlite only allows one open
@@ -273,7 +273,7 @@ class TextDatabaseManager {
 
   // The cache owns the TextDatabase pointers, they will be automagically
   // deleted when the cache entry is removed or expired.
-  typedef OwningMRUCache<TextDatabase::DBIdent, TextDatabase*> DBCache;
+  typedef base::OwningMRUCache<TextDatabase::DBIdent, TextDatabase*> DBCache;
   DBCache db_cache_;
 
   // Tells us about the existence of database files on disk. All existing

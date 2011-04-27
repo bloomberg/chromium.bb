@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "content/common/mru_cache.h"
+#include "base/memory/mru_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -33,7 +33,7 @@ struct CachedItem {
 }  // namespace
 
 TEST(MRUCacheTest, Basic) {
-  typedef MRUCache<int, CachedItem> Cache;
+  typedef base::MRUCache<int, CachedItem> Cache;
   Cache cache(Cache::NO_AUTO_EVICT);
 
   // Check failure conditions
@@ -113,7 +113,7 @@ TEST(MRUCacheTest, Basic) {
 }
 
 TEST(MRUCacheTest, GetVsPeek) {
-  typedef MRUCache<int, CachedItem> Cache;
+  typedef base::MRUCache<int, CachedItem> Cache;
   Cache cache(Cache::NO_AUTO_EVICT);
 
   static const int kItem1Key = 1;
@@ -148,7 +148,7 @@ TEST(MRUCacheTest, GetVsPeek) {
 }
 
 TEST(MRUCacheTest, KeyReplacement) {
-  typedef MRUCache<int, CachedItem> Cache;
+  typedef base::MRUCache<int, CachedItem> Cache;
   Cache cache(Cache::NO_AUTO_EVICT);
 
   static const int kItem1Key = 1;
@@ -186,7 +186,7 @@ TEST(MRUCacheTest, KeyReplacement) {
 
 // Make sure that the owning version release its pointers properly.
 TEST(MRUCacheTest, Owning) {
-  typedef OwningMRUCache<int, CachedItem*> Cache;
+  typedef base::OwningMRUCache<int, CachedItem*> Cache;
   Cache cache(Cache::NO_AUTO_EVICT);
 
   int initial_count = cached_item_live_count;
@@ -229,7 +229,7 @@ TEST(MRUCacheTest, Owning) {
 }
 
 TEST(MRUCacheTest, AutoEvict) {
-  typedef OwningMRUCache<int, CachedItem*> Cache;
+  typedef base::OwningMRUCache<int, CachedItem*> Cache;
   static const Cache::size_type kMaxSize = 3;
 
   int initial_count = cached_item_live_count;

@@ -5,12 +5,12 @@
 #include "content/browser/renderer_host/backing_store_manager.h"
 
 #include "base/command_line.h"
+#include "base/memory/mru_cache.h"
 #include "base/sys_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/common/mru_cache.h"
 #include "content/common/notification_service.h"
 
 namespace {
@@ -20,7 +20,8 @@ namespace {
 // for small items (extension toolstrips and buttons, etc.).  The idea is that
 // we'll almost always try to evict from large_cache first since small_cache
 // items will tend to be visible more of the time.
-typedef OwningMRUCache<RenderWidgetHost*, BackingStore*> BackingStoreCache;
+typedef base::OwningMRUCache<RenderWidgetHost*, BackingStore*>
+    BackingStoreCache;
 static BackingStoreCache* large_cache = NULL;
 static BackingStoreCache* small_cache = NULL;
 

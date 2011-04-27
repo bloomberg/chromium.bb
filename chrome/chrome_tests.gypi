@@ -1907,7 +1907,6 @@
         '../content/common/gpu/gpu_feature_flags_unittest.cc',
         '../content/common/gpu/gpu_info_unittest.cc',
         '../content/common/gpu/gpu_video_decoder_unittest.cc',
-        '../content/common/mru_cache_unittest.cc',
         '../content/common/notification_service_unittest.cc',
         '../content/common/process_watcher_unittest.cc',
         '../content/common/property_bag_unittest.cc',
@@ -1965,13 +1964,6 @@
         }],
         ['OS=="linux"', {
           'conditions': [
-            ['gcc_version==44', {
-              # Avoid gcc 4.4 strict aliasing issues in stl_tree.h when
-              # building mru_cache_unittest.cc.
-              'cflags': [
-                '-fno-strict-aliasing',
-              ],
-            }],
             ['selinux==0', {
               'dependencies': [
                 '../sandbox/sandbox.gyp:*',

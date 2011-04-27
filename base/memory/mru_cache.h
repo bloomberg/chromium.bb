@@ -13,8 +13,8 @@
 // legibility rather than optimality. If future profiling identifies this as
 // a bottleneck, there is room for smaller values of 1 in the O(1). :]
 
-#ifndef CONTENT_COMMON_MRU_CACHE_H_
-#define CONTENT_COMMON_MRU_CACHE_H_
+#ifndef BASE_MEMORY_MRU_CACHE_H_
+#define BASE_MEMORY_MRU_CACHE_H_
 #pragma once
 
 #include <list>
@@ -23,6 +23,8 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+
+namespace base {
 
 // MRUCacheBase ----------------------------------------------------------------
 
@@ -66,6 +68,8 @@ class MRUCacheBase {
     while (i != end())
       i = Erase(i);
   }
+
+  size_type max_size() const { return max_size_; }
 
   // Inserts a payload item with the given key. If an existing item has
   // the same key, it is removed prior to insertion. An iterator indicating the
@@ -254,4 +258,6 @@ class OwningMRUCache
   DISALLOW_COPY_AND_ASSIGN(OwningMRUCache);
 };
 
-#endif  // CONTENT_COMMON_MRU_CACHE_H_
+}  // namespace base
+
+#endif  // BASE_MEMORY_MRU_CACHE_H_

@@ -12,6 +12,7 @@
 #include "app/sql/init_status.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/mru_cache.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/expire_history_backend.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/browser/history/visit_tracker.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "content/common/mru_cache.h"
 
 class BookmarkService;
 struct DownloadCreateInfo;
@@ -555,7 +555,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   //
   // As with AddPage, the last item in the redirect chain will be the
   // destination of the redirect (i.e., the key into recent_redirects_);
-  typedef MRUCache<GURL, history::RedirectList> RedirectCache;
+  typedef base::MRUCache<GURL, history::RedirectList> RedirectCache;
   RedirectCache recent_redirects_;
 
   // Timestamp of the last page addition request. We use this to detect when

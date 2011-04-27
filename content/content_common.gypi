@@ -138,7 +138,6 @@
         'common/message_router.cc',
         'common/message_router.h',
         'common/mime_registry_messages.h',
-        'common/mru_cache.h',
         'common/native_web_keyboard_event.h',
         'common/native_web_keyboard_event_linux.cc',
         'common/native_web_keyboard_event_mac.mm',
