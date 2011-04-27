@@ -52,7 +52,7 @@ MockStorageClient::~MockStorageClient() {
       origins_callbacks_.begin(), origins_callbacks_.end());
 }
 
-QuotaClient::ID id() const {
+QuotaClient::ID MockStorageClient::id() const {
   return id_;
 }
 
