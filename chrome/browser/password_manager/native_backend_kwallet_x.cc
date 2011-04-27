@@ -497,14 +497,19 @@ void NativeBackendKWallet::DeserializeValue(const string& signon_realm,
   void* iter = NULL;
 
   int version = -1;
-  pickle.ReadInt(&iter, &version);
-  if (version != kPickleVersion) {
+  if (!pickle.ReadInt(&iter, &version) || version != kPickleVersion) {
     // This is the only version so far, so anything else is an error.
+    LOG(ERROR) << "Failed to deserialize KWallet entry "
+               << "(realm: " << signon_realm << ")";
     return;
   }
 
   size_t count = 0;
-  pickle.ReadSize(&iter, &count);
+  if (!pickle.ReadSize(&iter, &count)) {
+    LOG(ERROR) << "Failed to deserialize KWallet entry "
+               << "(realm: " << signon_realm << ")";
+    return;
+  }
 
   forms->reserve(forms->size() + count);
   for (size_t i = 0; i < count; ++i) {
