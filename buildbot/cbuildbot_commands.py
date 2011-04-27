@@ -9,6 +9,7 @@ import re
 import shutil
 import sys
 
+import chromite.buildbot.cbuildbot_config as cbuildbot_config
 import chromite.lib.cros_build_lib as cros_lib
 
 _DEFAULT_RETRIES = 3
@@ -428,10 +429,14 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
 
   # Fixed properties
   keep_max = 3
-  gsutil_archive = 'gs://chromeos-archive/' + bot_id
-  gs_path = buildconfig.get('gs_path', None)
-  if gs_path:
-    gsutil_archive = gs_path
+
+  # This command shouldn't be called if there is no path at all.
+  assert buildconfig['gs_path'], "Error in cbuildbot handling of gs_path config"
+
+  if buildconfig['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
+    gsutil_archive = 'gs://chromeos-archive/' + bot_id
+  else:
+    gsutil_archive = buildconfig['gs_path']
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./archive_build.sh',

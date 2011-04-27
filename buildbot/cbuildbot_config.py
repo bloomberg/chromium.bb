@@ -66,6 +66,8 @@ manifest_version -- URL to git repo to store per-build manifest.
                     ssh://git@gitrw.chromium.org:9222/manifest-versions
 """
 
+GS_PATH_DEFAULT = 'default'
+
 default = {
   # 'board' No default value
 
@@ -90,7 +92,7 @@ default = {
   'vm_tests' : True,
   'quick_vm' : True,
 
-  'gs_path': None,
+  'gs_path': GS_PATH_DEFAULT,
 
   'build_type' : False,
   'archive_build_debug' : False,
