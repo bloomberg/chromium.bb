@@ -64,6 +64,8 @@ function hstsModeToString(m) {
     return 'OPPORTUNISTIC';
   } else if (m == 2) {
     return 'SPDY';
+  } else if (m == 3) {
+    return 'NONE';
   } else {
     return 'UNKNOWN';
   }

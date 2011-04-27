@@ -1067,7 +1067,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
       result->SetString("error", "no TransportSecurityState active");
     } else {
       net::TransportSecurityState::DomainState state;
-      const bool found = transport_security_state->IsEnabledForHost(
+      const bool found = transport_security_state->HasMetadata(
           &state, domain, true);
 
       result->SetBoolean("result", found);
