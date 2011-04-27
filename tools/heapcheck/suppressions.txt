@@ -1478,12 +1478,7 @@
 {
    bug_44385
    Heapcheck:Leak
-   fun:__gnu_cxx::new_allocator::allocate
-   fun:std::_Rb_tree::_M_get_node
-   fun:std::_Rb_tree::_M_create_node
    ...
-   fun:std::map::insert
-   fun:std::map::operator[]
    fun:net::HostCache::Set
    fun:net::HostResolverImpl::OnJobComplete
    fun:net::HostResolverImpl::Job::OnLookupComplete
@@ -1495,12 +1490,9 @@
    fun:MessageLoop::RunTask
 }
 {
-   bug_74413
+   bug_79651
    Heapcheck:Leak
    ...
-   fun:net::HttpAuthHandlerFactory::CreateDefault
-   fun:TestURLRequestContext::Init
-   fun:TestURLRequestContext
    fun:TestURLRequestContextGetter::GetURLRequestContext
    fun:SingleLoginAttempt
    fun:notifier::Login::StartConnection
@@ -1508,3 +1500,48 @@
    fun:sync_notifier::NonBlockingInvalidationNotifier::Core::UpdateCredentials
    fun:void DispatchToMethod
 }
+{
+   bug_80654
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_insert_aux
+   fun:std::vector::push_back
+   fun:ObserverListBase::AddObserver
+   fun:net::SSLConfigService::AddObserver
+   fun:SSLClientSocketPool
+   fun:ClientSocketPoolManager
+   fun:HttpNetworkSession
+   fun:ProxyResolvingClientSocket
+   fun:notifier::XmppClientSocketFactory::CreateTransportClientSocket
+   fun:notifier::ChromeAsyncSocket::Connect
+   fun:buzz::XmppClient::ProcessStartXmppLogin
+   fun:buzz::XmppClient::Process
+   fun:talk_base::Task::Step
+   fun:talk_base::TaskRunner::InternalRunTasks
+   fun:talk_base::TaskRunner::RunTasks
+   fun:notifier::TaskPump::CheckAndRunTasks
+   fun:void DispatchToMethod
+}
+{
+   bug_80663
+   Heapcheck:Leak
+   ...
+   fun:TestURLRequestContextGetter::GetURLRequestContext
+   fun:URLFetcher::Core::StartURLRequest
+   fun:URLFetcher::Core::StartURLRequestWhenAppropriate
+   fun:void DispatchToMethod
+}
+{
+   bug_80666
+   Heapcheck:Leak
+   ...
+   fun:basic_string
+   fun:GURL::ComponentString
+   fun:GURL::HostNoBrackets
+   fun:net::::InitSocketPoolHelper
+   fun:net::ClientSocketPoolManager::InitSocketHandleForRawConnect
+   fun:notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
+   fun:void DispatchToMethod
+}
+
