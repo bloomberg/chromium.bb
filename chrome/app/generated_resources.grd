@@ -3404,7 +3404,7 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
         Sign in
       </message>
       <message name="IDS_OOBE_PICTURE" desc="The label of OOBE progress bar step, must be short">
-        Choose an account picture
+        Choose your account picture
       </message>
 
       <!-- FindInPage strings -->
