@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "media/base/filter_host.h"
@@ -88,8 +89,10 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
   scoped_ptr<FilterCallback> c(callback);
   decoder_ = decoder;
 
+  // Use base::Unretained() as the decoder doesn't need to ref us.
   decoder_->set_consume_audio_samples_callback(
-      NewCallback(this, &AudioRendererBase::ConsumeAudioSamples));
+      base::Bind(&AudioRendererBase::ConsumeAudioSamples,
+                 base::Unretained(this)));
 
   // Create a callback so our algorithm can request more reads.
   AudioRendererAlgorithmBase::RequestReadCallback* cb =

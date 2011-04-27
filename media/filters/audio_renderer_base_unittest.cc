@@ -127,7 +127,7 @@ TEST_F(AudioRendererBaseTest, Initialize_Successful) {
     scoped_refptr<DataBuffer> buffer(new DataBuffer(1024));
     buffer->SetDataSize(1024);
     --pending_reads_;
-    decoder_->consume_audio_samples_callback()->Run(buffer);
+    decoder_->ConsumeAudioSamplesForTest(buffer);
   }
 }
 
@@ -156,7 +156,7 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
   while (pending_reads_) {
     scoped_refptr<DataBuffer> buffer(new DataBuffer(kDataSize));
     buffer->SetDataSize(kDataSize);
-    decoder_->consume_audio_samples_callback()->Run(buffer);
+    decoder_->ConsumeAudioSamplesForTest(buffer);
     --pending_reads_;
     bytes_buffered += kDataSize;
   }
@@ -180,7 +180,7 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
 
   // Fulfill the read with an end-of-stream packet.
   scoped_refptr<DataBuffer> last_buffer(new DataBuffer(0));
-  decoder_->consume_audio_samples_callback()->Run(last_buffer);
+  decoder_->ConsumeAudioSamplesForTest(last_buffer);
   --pending_reads_;
 
   // We shouldn't report ended until all data has been flushed out.

@@ -241,29 +241,27 @@ class AudioDecoder : public Filter {
 
   virtual AudioDecoderConfig config() = 0;
 
-  // |set_fill_buffer_done_callback| install permanent callback from downstream
-  // filter (i.e. Renderer). The callback is used to deliver buffers at
-  // runtime to downstream filter.
-  typedef Callback1<scoped_refptr<Buffer> >::Type ConsumeAudioSamplesCallback;
-  void set_consume_audio_samples_callback(
-      ConsumeAudioSamplesCallback* callback) {
-    consume_audio_samples_callback_.reset(callback);
-  }
-  ConsumeAudioSamplesCallback* consume_audio_samples_callback() {
-     return consume_audio_samples_callback_.get();
-   }
-
   // Renderer provides an output buffer for Decoder to write to. These buffers
   // will be recycled to renderer by fill_buffer_done_callback_;
   // We could also pass empty pointer here to let decoder provide buffers pool.
   virtual void ProduceAudioSamples(scoped_refptr<Buffer> buffer) = 0;
 
+  // Installs a permanent callback for passing decoded audio output.
+  typedef base::Callback<void(scoped_refptr<Buffer>)> ConsumeAudioSamplesCB;
+  void set_consume_audio_samples_callback(
+      const ConsumeAudioSamplesCB& callback) {
+    consume_audio_samples_callback_ = callback;
+  }
+
  protected:
   AudioDecoder();
   ~AudioDecoder();
 
+  // Executes the permanent callback to pass off decoded audio.
+  void ConsumeAudioSamples(scoped_refptr<Buffer> buffer);
+
  private:
-  scoped_ptr<ConsumeAudioSamplesCallback> consume_audio_samples_callback_;
+  ConsumeAudioSamplesCB consume_audio_samples_callback_;
 };
 
 

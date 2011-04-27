@@ -80,4 +80,8 @@ AudioDecoder::AudioDecoder() {}
 
 AudioDecoder::~AudioDecoder() {}
 
+void AudioDecoder::ConsumeAudioSamples(scoped_refptr<Buffer> buffer) {
+  consume_audio_samples_callback_.Run(buffer);
+}
+
 }  // namespace media

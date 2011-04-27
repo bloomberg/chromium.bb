@@ -53,10 +53,9 @@ class DecoderBase : public Decoder {
                           callback));
   }
 
-  // Audio decoder.
-  // Note that this class is only used by the audio decoder, this will
-  // eventually be merged into FFmpegAudioDecoder.
-  virtual void ProduceAudioSamples(scoped_refptr<Output> output) {
+  // TODO(scherkus): Since FFmpegAudioDecoder is the only subclass this is a
+  // temporary hack until I finish removing DecoderBase.
+  void PostReadTaskHack(scoped_refptr<Output> output) {
     message_loop_->PostTask(FROM_HERE,
         NewRunnableMethod(this, &DecoderBase::ReadTask, output));
   }
@@ -268,10 +267,9 @@ class DecoderBase : public Decoder {
     // Execute the callback!
     --pending_requests_;
 
-    // TODO(hclam): We only inherit this class from FFmpegAudioDecoder so we
-    // are making this call. We should correct this by merging this class into
-    // FFmpegAudioDecoder.
-    Decoder::consume_audio_samples_callback()->Run(output);
+    // TODO(scherkus): Since FFmpegAudioDecoder is the only subclass this is a
+    // temporary hack until I finish removing DecoderBase.
+    Decoder::ConsumeAudioSamples(output);
     return true;
   }
 
