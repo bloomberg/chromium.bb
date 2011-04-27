@@ -1215,12 +1215,18 @@ class AffectedFileUnittest(PresubmitTestsBase):
         {'URL': 'svn:/foo/foo/blat.cc'})
     self.mox.ReplayAll()
     af = presubmit.SvnAffectedFile('foo/blat.cc', 'M')
-    self.failUnless(af.ServerPath() == 'svn:/foo/foo/blat.cc')
-    self.failUnless(af.LocalPath() == presubmit.normpath('foo/blat.cc'))
-    self.failUnless(af.Action() == 'M')
-    self.assertEquals(af.NewContents(), ['whatever', 'cookie'])
+    self.assertEquals('svn:/foo/foo/blat.cc', af.ServerPath())
+    self.assertEquals(presubmit.normpath('foo/blat.cc'), af.LocalPath())
+    self.assertEquals('M', af.Action())
+    self.assertEquals(['whatever', 'cookie'], af.NewContents())
+
+  def testAffectedFileNotExists(self):
+    presubmit.os.path.exists('notfound.cc').AndReturn(False)
+    presubmit.gclient_utils.FileRead('notfound.cc', 'rU').AndRaise(IOError)
+    self.mox.ReplayAll()
     af = presubmit.AffectedFile('notfound.cc', 'A')
-    self.failUnless(af.ServerPath() == '')
+    self.assertEquals('', af.ServerPath())
+    self.assertEquals([], af.NewContents())
 
   def testProperty(self):
     presubmit.scm.SVN.GetFileProperty('foo.cc', 'svn:secret-property'
@@ -1228,10 +1234,10 @@ class AffectedFileUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
     affected_file = presubmit.SvnAffectedFile('foo.cc', 'A')
     # Verify cache coherency.
-    self.failUnless(affected_file.Property('svn:secret-property') ==
-                    'secret-property-value')
-    self.failUnless(affected_file.Property('svn:secret-property') ==
-                    'secret-property-value')
+    self.assertEquals('secret-property-value',
+                      affected_file.Property('svn:secret-property'))
+    self.assertEquals('secret-property-value',
+                      affected_file.Property('svn:secret-property'))
 
   def testIsDirectoryNotExists(self):
     presubmit.os.path.exists('foo.cc').AndReturn(False)
@@ -1267,8 +1273,8 @@ class AffectedFileUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
 
     output = filter(lambda x: x.IsTextFile(), files)
-    self.failUnless(len(output) == 1)
-    self.failUnless(files[0] == output[0])
+    self.assertEquals(1, len(output))
+    self.assertEquals(files[0], output[0])
 
 
 class ChangeUnittest(PresubmitTestsBase):

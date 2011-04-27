@@ -396,7 +396,7 @@ class InputApi(object):
         integer line number (1-based); and
         the contents of the line as a string.
 
-    Note: The cariage return (LF or CR) is stripped off.
+    Note: The carriage return (LF or CR) is stripped off.
     """
     files = self.AffectedSourceFiles(source_file_filter)
     return _RightHandSideLinesImpl(files)
@@ -423,6 +423,8 @@ class AffectedFile(object):
     self._local_root = repository_root
     self._is_directory = None
     self._properties = {}
+    self._cached_changed_contents = None
+    self._cached_new_contents = None
     logging.debug('%s(%s)' % (self.__class__.__name__, self._path))
 
   def ServerPath(self):
@@ -475,13 +477,17 @@ class AffectedFile(object):
     side".
 
     Contents will be empty if the file is a directory or does not exist.
-    Note: The cariage returns (LF or CR) are stripped off.
+    Note: The carriage returns (LF or CR) are stripped off.
     """
-    if self.IsDirectory():
-      return []
-    else:
-      return gclient_utils.FileRead(self.AbsoluteLocalPath(),
-                                    'rU').splitlines()
+    if self._cached_new_contents is None:
+      self._cached_new_contents = []
+      if not self.IsDirectory():
+        try:
+          self._cached_new_contents = gclient_utils.FileRead(
+              self.AbsoluteLocalPath(), 'rU').splitlines()
+        except IOError:
+          pass  # File not found?  That's fine; maybe it was deleted.
+    return self._cached_new_contents[:]
 
   def OldContents(self):
     """Returns an iterator over the lines in the old version of file.
@@ -507,7 +513,9 @@ class AffectedFile(object):
 
      ^@@ <old line num>,<old size> <new line num>,<new size> @@$
     """
-    new_lines = []
+    if self._cached_changed_contents is not None:
+      return self._cached_changed_contents[:]
+    self._cached_changed_contents = []
     line_num = 0
 
     if self.IsDirectory():
@@ -519,10 +527,10 @@ class AffectedFile(object):
         line_num = int(m.groups(1)[0])
         continue
       if line.startswith('+') and not line.startswith('++'):
-        new_lines.append((line_num, line[1:]))
+        self._cached_changed_contents.append((line_num, line[1:]))
       if not line.startswith('-'):
         line_num += 1
-    return new_lines
+    return self._cached_changed_contents[:]
 
   def __str__(self):
     return self.LocalPath()
