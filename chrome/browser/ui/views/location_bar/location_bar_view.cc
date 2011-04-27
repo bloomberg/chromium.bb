@@ -167,7 +167,7 @@ void LocationBarView::Init() {
   // URL edit field.
   // View container for URL edit field.
 #if defined(OS_WIN)
-  location_entry_.reset(new AutocompleteEditViewWin(font_, this, model_, this,
+  location_entry_.reset(new OmniboxViewWin(font_, this, model_, this,
       GetWidget()->GetNativeView(), profile_, command_updater_,
       mode_ == POPUP, this));
 #else

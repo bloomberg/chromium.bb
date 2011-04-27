@@ -2093,8 +2093,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
   ignore_layout_ = true;
   LocationBarView* location_bar = toolbar_->location_bar();
 #if defined(OS_WIN)
-  AutocompleteEditViewWin* edit_view =
-      static_cast<AutocompleteEditViewWin*>(location_bar->location_entry());
+  OmniboxViewWin* omnibox_view =
+      static_cast<OmniboxViewWin*>(location_bar->location_entry());
 #endif
   if (!fullscreen) {
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can
@@ -2113,8 +2113,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
     // will appear atop the web contents once we go into fullscreen mode.  This
     // has something to do with how we move the main window while it's hidden;
     // if we don't hide the main window below, we don't get this problem.
-    edit_view->set_force_hidden(true);
-    ShowWindow(edit_view->m_hWnd, SW_HIDE);
+    omnibox_view->set_force_hidden(true);
+    ShowWindow(omnibox_view->m_hWnd, SW_HIDE);
 #endif
   }
 #if defined(OS_WIN)
@@ -2150,8 +2150,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
   } else {
 #if defined(OS_WIN)
     // Show the edit again since we're no longer in fullscreen mode.
-    edit_view->set_force_hidden(false);
-    ShowWindow(edit_view->m_hWnd, SW_SHOW);
+    omnibox_view->set_force_hidden(false);
+    ShowWindow(omnibox_view->m_hWnd, SW_SHOW);
 #endif
   }
 

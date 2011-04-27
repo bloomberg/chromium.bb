@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_WIN_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_WIN_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEW_WIN_H_
+#define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEW_WIN_H_
 #pragma once
 
 #include <atlbase.h>
@@ -40,12 +40,12 @@ class LocationBarView;
 // Provides the implementation of an edit control with a drop-down
 // autocomplete box. The box itself is implemented in autocomplete_popup.cc
 // This file implements the edit box and management for the popup.
-class AutocompleteEditViewWin
-    : public CWindowImpl<AutocompleteEditViewWin,
+class OmniboxViewWin
+    : public CWindowImpl<OmniboxViewWin,
                          CRichEditCtrl,
                          CWinTraits<WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL |
                                     ES_NOHIDESEL> >,
-      public CRichEditCommands<AutocompleteEditViewWin>,
+      public CRichEditCommands<OmniboxViewWin>,
       public ui::SimpleMenuModel::Delegate,
       public AutocompleteEditView {
  public:
@@ -60,18 +60,18 @@ class AutocompleteEditViewWin
     const CHARRANGE saved_selection_for_focus_change;
   };
 
-  DECLARE_WND_CLASS(L"Chrome_AutocompleteEditView");
+  DECLARE_WND_CLASS(L"Chrome_OmniboxView");
 
-  AutocompleteEditViewWin(const gfx::Font& font,
-                          AutocompleteEditController* controller,
-                          ToolbarModel* toolbar_model,
-                          LocationBarView* parent_view,
-                          HWND hwnd,
-                          Profile* profile,
-                          CommandUpdater* command_updater,
-                          bool popup_window_mode,
-                          const views::View* location_bar);
-  ~AutocompleteEditViewWin();
+  OmniboxViewWin(const gfx::Font& font,
+                 AutocompleteEditController* controller,
+                 ToolbarModel* toolbar_model,
+                 LocationBarView* parent_view,
+                 HWND hwnd,
+                 Profile* profile,
+                 CommandUpdater* command_updater,
+                 bool popup_window_mode,
+                 const views::View* location_bar);
+  ~OmniboxViewWin();
 
   views::View* parent_view() const;
 
@@ -236,12 +236,11 @@ class AutocompleteEditViewWin
   // will unfreeze once both freezes are released (the freezes stack).
   class ScopedFreeze {
    public:
-    ScopedFreeze(AutocompleteEditViewWin* edit,
-                 ITextDocument* text_object_model);
+    ScopedFreeze(OmniboxViewWin* edit, ITextDocument* text_object_model);
     ~ScopedFreeze();
 
    private:
-    AutocompleteEditViewWin* const edit_;
+    OmniboxViewWin* const edit_;
     ITextDocument* const text_object_model_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedFreeze);
@@ -541,7 +540,7 @@ class AutocompleteEditViewWin
   // Instance of accessibility information and handling.
   mutable base::win::ScopedComPtr<IAccessible> autocomplete_accessibility_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewWin);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxViewWin);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_WIN_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEW_WIN_H_

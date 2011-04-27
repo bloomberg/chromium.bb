@@ -23,7 +23,6 @@
 #endif
 
 class AutocompleteEditModel;
-class AutocompleteEditViewWin;
 struct AutocompleteMatch;
 class AutocompleteResultView;
 class BubbleBorder;

@@ -24,7 +24,7 @@
 #include "views/controls/native/native_view_host.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/ui/gtk/omnibox/omnibox_view_gtk.h"
 #endif
@@ -155,7 +155,7 @@ class LocationBarView : public LocationBar,
   gfx::Point GetLocationEntryOrigin() const;
 
 #if defined(OS_WIN)
-  // Invoked from AutocompleteEditViewWin to show the instant suggestion.
+  // Invoked from OmniboxViewWin to show the instant suggestion.
   void SetInstantSuggestion(const string16& text,
                             bool animate_to_complete);
 
@@ -328,7 +328,7 @@ class LocationBarView : public LocationBar,
 
   // The Autocomplete Edit field.
 #if defined(OS_WIN)
-  scoped_ptr<AutocompleteEditViewWin> location_entry_;
+  scoped_ptr<OmniboxViewWin> location_entry_;
 #else
   scoped_ptr<AutocompleteEditView> location_entry_;
 #endif

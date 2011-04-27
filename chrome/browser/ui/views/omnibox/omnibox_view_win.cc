@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
 
 #include <algorithm>
 #include <locale>
@@ -85,18 +85,18 @@ int CopyOrLinkDragOperation(int drag_operation) {
 }
 
 // The AutocompleteEditState struct contains enough information about the
-// AutocompleteEditModel and AutocompleteEditViewWin to save/restore a user's
+// AutocompleteEditModel and OmniboxViewWin to save/restore a user's
 // typing, caret position, etc. across tab changes.  We explicitly don't
 // preserve things like whether the popup was open as this might be weird.
 struct AutocompleteEditState {
   AutocompleteEditState(const AutocompleteEditModel::State& model_state,
-                        const AutocompleteEditViewWin::State& view_state)
+                        const OmniboxViewWin::State& view_state)
       : model_state(model_state),
         view_state(view_state) {
   }
 
   const AutocompleteEditModel::State model_state;
-  const AutocompleteEditViewWin::State view_state;
+  const OmniboxViewWin::State view_state;
 };
 
 // Returns true if the current point is far enough from the origin that it
@@ -109,14 +109,14 @@ bool IsDrag(const POINT& origin, const POINT& current) {
 }  // namespace
 
 // EditDropTarget is the IDropTarget implementation installed on
-// AutocompleteEditViewWin. EditDropTarget prefers URL over plain text. A drop
+// OmniboxViewWin. EditDropTarget prefers URL over plain text. A drop
 // of a URL replaces all the text of the edit and navigates immediately to the
 // URL. A drop of plain text from the same edit either copies or moves the
 // selected text, and a drop of plain text from a source other than the edit
 // does a paste and go.
-class AutocompleteEditViewWin::EditDropTarget : public ui::DropTarget {
+class OmniboxViewWin::EditDropTarget : public ui::DropTarget {
  public:
-  explicit EditDropTarget(AutocompleteEditViewWin* edit);
+  explicit EditDropTarget(OmniboxViewWin* edit);
 
  protected:
   virtual DWORD OnDragEnter(IDataObject* data_object,
@@ -142,7 +142,7 @@ class AutocompleteEditViewWin::EditDropTarget : public ui::DropTarget {
   void ResetDropHighlights();
 
   // The edit we're the drop target for.
-  AutocompleteEditViewWin* edit_;
+  OmniboxViewWin* edit_;
 
   // If true, the drag session contains a URL.
   bool drag_has_url_;
@@ -154,19 +154,17 @@ class AutocompleteEditViewWin::EditDropTarget : public ui::DropTarget {
   DISALLOW_COPY_AND_ASSIGN(EditDropTarget);
 };
 
-AutocompleteEditViewWin::EditDropTarget::EditDropTarget(
-    AutocompleteEditViewWin* edit)
+OmniboxViewWin::EditDropTarget::EditDropTarget(OmniboxViewWin* edit)
     : ui::DropTarget(edit->m_hWnd),
       edit_(edit),
       drag_has_url_(false),
       drag_has_string_(false) {
 }
 
-DWORD AutocompleteEditViewWin::EditDropTarget::OnDragEnter(
-    IDataObject* data_object,
-    DWORD key_state,
-    POINT cursor_position,
-    DWORD effect) {
+DWORD OmniboxViewWin::EditDropTarget::OnDragEnter(IDataObject* data_object,
+                                                  DWORD key_state,
+                                                  POINT cursor_position,
+                                                  DWORD effect) {
   ui::OSExchangeData os_data(new ui::OSExchangeDataProviderWin(data_object));
   drag_has_url_ = os_data.HasURL();
   drag_has_string_ = !drag_has_url_ && os_data.HasString();
@@ -185,11 +183,10 @@ DWORD AutocompleteEditViewWin::EditDropTarget::OnDragEnter(
   return OnDragOver(data_object, key_state, cursor_position, effect);
 }
 
-DWORD AutocompleteEditViewWin::EditDropTarget::OnDragOver(
-    IDataObject* data_object,
-    DWORD key_state,
-    POINT cursor_position,
-    DWORD effect) {
+DWORD OmniboxViewWin::EditDropTarget::OnDragOver(IDataObject* data_object,
+                                                 DWORD key_state,
+                                                 POINT cursor_position,
+                                                 DWORD effect) {
   if (drag_has_url_)
     return CopyOrLinkDropEffect(effect);
 
@@ -210,16 +207,14 @@ DWORD AutocompleteEditViewWin::EditDropTarget::OnDragOver(
   return DROPEFFECT_NONE;
 }
 
-void AutocompleteEditViewWin::EditDropTarget::OnDragLeave(
-    IDataObject* data_object) {
+void OmniboxViewWin::EditDropTarget::OnDragLeave(IDataObject* data_object) {
   ResetDropHighlights();
 }
 
-DWORD AutocompleteEditViewWin::EditDropTarget::OnDrop(
-    IDataObject* data_object,
-    DWORD key_state,
-    POINT cursor_position,
-    DWORD effect) {
+DWORD OmniboxViewWin::EditDropTarget::OnDrop(IDataObject* data_object,
+                                             DWORD key_state,
+                                             POINT cursor_position,
+                                             DWORD effect) {
   effect = OnDragOver(data_object, key_state, cursor_position, effect);
 
   ui::OSExchangeData os_data(new ui::OSExchangeDataProviderWin(data_object));
@@ -234,7 +229,7 @@ DWORD AutocompleteEditViewWin::EditDropTarget::OnDrop(
   return ui::DragDropTypes::DragOperationToDropEffect(drag_operation);
 }
 
-void AutocompleteEditViewWin::EditDropTarget::UpdateDropHighlightPosition(
+void OmniboxViewWin::EditDropTarget::UpdateDropHighlightPosition(
     const POINT& cursor_screen_position) {
   if (drag_has_string_) {
     POINT client_position = cursor_screen_position;
@@ -258,7 +253,7 @@ void AutocompleteEditViewWin::EditDropTarget::UpdateDropHighlightPosition(
   }
 }
 
-void AutocompleteEditViewWin::EditDropTarget::ResetDropHighlights() {
+void OmniboxViewWin::EditDropTarget::ResetDropHighlights() {
   if (drag_has_string_)
     edit_->SetDropHighlightPosition(-1);
 }
@@ -267,9 +262,8 @@ void AutocompleteEditViewWin::EditDropTarget::ResetDropHighlights() {
 ///////////////////////////////////////////////////////////////////////////////
 // Helper classes
 
-AutocompleteEditViewWin::ScopedFreeze::ScopedFreeze(
-    AutocompleteEditViewWin* edit,
-    ITextDocument* text_object_model)
+OmniboxViewWin::ScopedFreeze::ScopedFreeze(OmniboxViewWin* edit,
+                                           ITextDocument* text_object_model)
     : edit_(edit),
       text_object_model_(text_object_model) {
   // Freeze the screen.
@@ -279,7 +273,7 @@ AutocompleteEditViewWin::ScopedFreeze::ScopedFreeze(
   }
 }
 
-AutocompleteEditViewWin::ScopedFreeze::~ScopedFreeze() {
+OmniboxViewWin::ScopedFreeze::~ScopedFreeze() {
   // Unfreeze the screen.
   // NOTE: If this destructor is reached while the edit is being destroyed (for
   // example, because we double-clicked the edit of a popup and caused it to
@@ -299,7 +293,7 @@ AutocompleteEditViewWin::ScopedFreeze::~ScopedFreeze() {
   }
 }
 
-AutocompleteEditViewWin::ScopedSuspendUndo::ScopedSuspendUndo(
+OmniboxViewWin::ScopedSuspendUndo::ScopedSuspendUndo(
     ITextDocument* text_object_model)
     : text_object_model_(text_object_model) {
   // Suspend Undo processing.
@@ -307,14 +301,14 @@ AutocompleteEditViewWin::ScopedSuspendUndo::ScopedSuspendUndo(
     text_object_model_->Undo(tomSuspend, NULL);
 }
 
-AutocompleteEditViewWin::ScopedSuspendUndo::~ScopedSuspendUndo() {
+OmniboxViewWin::ScopedSuspendUndo::~ScopedSuspendUndo() {
   // Resume Undo processing.
   if (text_object_model_)
     text_object_model_->Undo(tomResume, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// AutocompleteEditViewWin
+// OmniboxViewWin
 
 namespace {
 
@@ -397,16 +391,15 @@ const int kTwipsPerInch = 1440;
 
 }  // namespace
 
-AutocompleteEditViewWin::AutocompleteEditViewWin(
-    const gfx::Font& font,
-    AutocompleteEditController* controller,
-    ToolbarModel* toolbar_model,
-    LocationBarView* parent_view,
-    HWND hwnd,
-    Profile* profile,
-    CommandUpdater* command_updater,
-    bool popup_window_mode,
-    const views::View* location_bar)
+OmniboxViewWin::OmniboxViewWin(const gfx::Font& font,
+                               AutocompleteEditController* controller,
+                               ToolbarModel* toolbar_model,
+                               LocationBarView* parent_view,
+                               HWND hwnd,
+                               Profile* profile,
+                               CommandUpdater* command_updater,
+                               bool popup_window_mode,
+                               const views::View* location_bar)
     : model_(new AutocompleteEditModel(this, controller, profile)),
       popup_view_(new AutocompletePopupContentsView(font, this, model_.get(),
                                                     profile, location_bar)),
@@ -490,10 +483,10 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
   }
 }
 
-AutocompleteEditViewWin::~AutocompleteEditViewWin() {
+OmniboxViewWin::~OmniboxViewWin() {
   NotificationService::current()->Notify(
       NotificationType::AUTOCOMPLETE_EDIT_DESTROYED,
-      Source<AutocompleteEditViewWin>(this),
+      Source<OmniboxViewWin>(this),
       NotificationService::NoDetails());
 
   // Explicitly release the text object model now that we're done with it, and
@@ -507,22 +500,22 @@ AutocompleteEditViewWin::~AutocompleteEditViewWin() {
   g_paint_patcher.Pointer()->DerefPatch();
 }
 
-views::View* AutocompleteEditViewWin::parent_view() const {
+views::View* OmniboxViewWin::parent_view() const {
   return parent_view_;
 }
 
-int AutocompleteEditViewWin::WidthOfTextAfterCursor() {
+int OmniboxViewWin::WidthOfTextAfterCursor() {
   CHARRANGE selection;
   GetSelection(selection);
   const int start = std::max(0, static_cast<int>(selection.cpMax - 1));
   return WidthNeededToDisplay(GetText().substr(start));
 }
 
-gfx::Font AutocompleteEditViewWin::GetFont() {
+gfx::Font OmniboxViewWin::GetFont() {
   return font_;
 }
 
-void AutocompleteEditViewWin::SaveStateToTab(TabContents* tab) {
+void OmniboxViewWin::SaveStateToTab(TabContents* tab) {
   DCHECK(tab);
 
   const AutocompleteEditModel::State model_state(
@@ -536,8 +529,7 @@ void AutocompleteEditViewWin::SaveStateToTab(TabContents* tab) {
           State(selection, saved_selection_for_focus_change_)));
 }
 
-void AutocompleteEditViewWin::Update(
-    const TabContents* tab_for_state_restoring) {
+void OmniboxViewWin::Update(const TabContents* tab_for_state_restoring) {
   const bool visibly_changed_permanent_text =
       model_->UpdatePermanentText(toolbar_model_->GetText());
 
@@ -605,12 +597,12 @@ void AutocompleteEditViewWin::Update(
   }
 }
 
-void AutocompleteEditViewWin::OpenURL(const GURL& url,
-                                      WindowOpenDisposition disposition,
-                                      PageTransition::Type transition,
-                                      const GURL& alternate_nav_url,
-                                      size_t selected_line,
-                                      const string16& keyword) {
+void OmniboxViewWin::OpenURL(const GURL& url,
+                             WindowOpenDisposition disposition,
+                             PageTransition::Type transition,
+                             const GURL& alternate_nav_url,
+                             size_t selected_line,
+                             const string16& keyword) {
   if (!url.is_valid())
     return;
 
@@ -623,30 +615,30 @@ void AutocompleteEditViewWin::OpenURL(const GURL& url,
                   selected_line, keyword);
 }
 
-string16 AutocompleteEditViewWin::GetText() const {
+string16 OmniboxViewWin::GetText() const {
   const int len = GetTextLength() + 1;
   string16 str;
   GetWindowText(WriteInto(&str, len), len);
   return str;
 }
 
-bool AutocompleteEditViewWin::IsEditingOrEmpty() const {
+bool OmniboxViewWin::IsEditingOrEmpty() const {
   return model_->user_input_in_progress() || (GetTextLength() == 0);
 }
 
-int AutocompleteEditViewWin::GetIcon() const {
+int OmniboxViewWin::GetIcon() const {
   return IsEditingOrEmpty() ?
       AutocompleteMatch::TypeToIcon(model_->CurrentTextType()) :
       toolbar_model_->GetIcon();
 }
 
-void AutocompleteEditViewWin::SetUserText(const string16& text) {
+void OmniboxViewWin::SetUserText(const string16& text) {
   SetUserText(text, text, true);
 }
 
-void AutocompleteEditViewWin::SetUserText(const string16& text,
-                                          const string16& display_text,
-                                          bool update_popup) {
+void OmniboxViewWin::SetUserText(const string16& text,
+                                 const string16& display_text,
+                                 bool update_popup) {
   ScopedFreeze freeze(this, GetTextObjectModel());
   model_->SetUserText(text);
   saved_selection_for_focus_change_.cpMin = -1;
@@ -656,13 +648,13 @@ void AutocompleteEditViewWin::SetUserText(const string16& text,
   TextChanged();
 }
 
-void AutocompleteEditViewWin::SetWindowTextAndCaretPos(const string16& text,
-                                                       size_t caret_pos) {
+void OmniboxViewWin::SetWindowTextAndCaretPos(const string16& text,
+                                              size_t caret_pos) {
   SetWindowText(text.c_str());
   PlaceCaretAt(caret_pos);
 }
 
-void AutocompleteEditViewWin::SetForcedQuery() {
+void OmniboxViewWin::SetForcedQuery() {
   const string16 current_text(GetText());
   const size_t start = current_text.find_first_not_of(kWhitespaceWide);
   if (start == string16::npos || (current_text[start] != '?'))
@@ -671,32 +663,32 @@ void AutocompleteEditViewWin::SetForcedQuery() {
     SetSelection(current_text.length(), start + 1);
 }
 
-bool AutocompleteEditViewWin::IsSelectAll() {
+bool OmniboxViewWin::IsSelectAll() {
   CHARRANGE selection;
   GetSel(selection);
   return IsSelectAllForRange(selection);
 }
 
-bool AutocompleteEditViewWin::DeleteAtEndPressed() {
+bool OmniboxViewWin::DeleteAtEndPressed() {
   return delete_at_end_pressed_;
 }
 
-void AutocompleteEditViewWin::GetSelectionBounds(string16::size_type* start,
-                                                 string16::size_type* end) {
+void OmniboxViewWin::GetSelectionBounds(string16::size_type* start,
+                                        string16::size_type* end) {
   CHARRANGE selection;
   GetSel(selection);
   *start = static_cast<size_t>(selection.cpMin);
   *end = static_cast<size_t>(selection.cpMax);
 }
 
-void AutocompleteEditViewWin::SelectAll(bool reversed) {
+void OmniboxViewWin::SelectAll(bool reversed) {
   if (reversed)
     SetSelection(GetTextLength(), 0);
   else
     SetSelection(0, GetTextLength());
 }
 
-void AutocompleteEditViewWin::RevertAll() {
+void OmniboxViewWin::RevertAll() {
   ScopedFreeze freeze(this, GetTextObjectModel());
   ClosePopup();
   model_->Revert();
@@ -704,7 +696,7 @@ void AutocompleteEditViewWin::RevertAll() {
   TextChanged();
 }
 
-void AutocompleteEditViewWin::UpdatePopup() {
+void OmniboxViewWin::UpdatePopup() {
   ScopedFreeze freeze(this, GetTextObjectModel());
   model_->SetInputInProgress(true);
 
@@ -731,11 +723,11 @@ void AutocompleteEditViewWin::UpdatePopup() {
                             (sel.cpMax < GetTextLength()) || IsImeComposing());
 }
 
-void AutocompleteEditViewWin::ClosePopup() {
+void OmniboxViewWin::ClosePopup() {
   model_->StopAutocomplete();
 }
 
-void AutocompleteEditViewWin::SetFocus() {
+void OmniboxViewWin::SetFocus() {
   ::SetFocus(m_hWnd);
   parent_view_->GetWidget()->NotifyAccessibilityEvent(
       parent_view_,
@@ -743,7 +735,7 @@ void AutocompleteEditViewWin::SetFocus() {
       false);
 }
 
-IAccessible* AutocompleteEditViewWin::GetIAccessible() {
+IAccessible* OmniboxViewWin::GetIAccessible() {
   if (!autocomplete_accessibility_) {
     CComObject<AutocompleteAccessibility>* accessibility = NULL;
     if (!SUCCEEDED(CComObject<AutocompleteAccessibility>::CreateInstance(
@@ -764,7 +756,7 @@ IAccessible* AutocompleteEditViewWin::GetIAccessible() {
   return autocomplete_accessibility_.Detach();
 }
 
-void AutocompleteEditViewWin::SetDropHighlightPosition(int position) {
+void OmniboxViewWin::SetDropHighlightPosition(int position) {
   if (drop_highlight_position_ != position) {
     RepaintDropHighlight(drop_highlight_position_);
     drop_highlight_position_ = position;
@@ -772,7 +764,7 @@ void AutocompleteEditViewWin::SetDropHighlightPosition(int position) {
   }
 }
 
-void AutocompleteEditViewWin::MoveSelectedText(int new_position) {
+void OmniboxViewWin::MoveSelectedText(int new_position) {
   const string16 selected_text(GetSelectedText());
   CHARRANGE sel;
   GetSel(sel);
@@ -794,8 +786,7 @@ void AutocompleteEditViewWin::MoveSelectedText(int new_position) {
   OnAfterPossibleChange();
 }
 
-void AutocompleteEditViewWin::InsertText(int position,
-                                         const string16& text) {
+void OmniboxViewWin::InsertText(int position, const string16& text) {
   DCHECK((position >= 0) && (position <= GetTextLength()));
   ScopedFreeze freeze(this, GetTextObjectModel());
   OnBeforePossibleChange();
@@ -804,9 +795,8 @@ void AutocompleteEditViewWin::InsertText(int position,
   OnAfterPossibleChange();
 }
 
-void AutocompleteEditViewWin::OnTemporaryTextMaybeChanged(
-    const string16& display_text,
-    bool save_original_selection) {
+void OmniboxViewWin::OnTemporaryTextMaybeChanged(const string16& display_text,
+                                                 bool save_original_selection) {
   if (save_original_selection)
     GetSelection(original_selection_);
 
@@ -822,7 +812,7 @@ void AutocompleteEditViewWin::OnTemporaryTextMaybeChanged(
   TextChanged();
 }
 
-bool AutocompleteEditViewWin::OnInlineAutocompleteTextMaybeChanged(
+bool OmniboxViewWin::OnInlineAutocompleteTextMaybeChanged(
     const string16& display_text,
     size_t user_text_length) {
   // Update the text and selection.  Because this can be called repeatedly while
@@ -843,23 +833,22 @@ bool AutocompleteEditViewWin::OnInlineAutocompleteTextMaybeChanged(
   return true;
 }
 
-void AutocompleteEditViewWin::OnRevertTemporaryText() {
+void OmniboxViewWin::OnRevertTemporaryText() {
   SetSelectionRange(original_selection_);
   TextChanged();
 }
 
-void AutocompleteEditViewWin::OnBeforePossibleChange() {
+void OmniboxViewWin::OnBeforePossibleChange() {
   // Record our state.
   text_before_change_ = GetText();
   GetSelection(sel_before_change_);
 }
 
-bool AutocompleteEditViewWin::OnAfterPossibleChange() {
+bool OmniboxViewWin::OnAfterPossibleChange() {
   return OnAfterPossibleChangeInternal(false);
 }
 
-bool AutocompleteEditViewWin::OnAfterPossibleChangeInternal(
-    bool force_text_changed) {
+bool OmniboxViewWin::OnAfterPossibleChangeInternal(bool force_text_changed) {
   // Prevent the user from selecting the "phantom newline" at the end of the
   // edit.  If they try, we just silently move the end of the selection back to
   // the end of the real text.
@@ -920,28 +909,28 @@ bool AutocompleteEditViewWin::OnAfterPossibleChangeInternal(
   return something_changed;
 }
 
-gfx::NativeView AutocompleteEditViewWin::GetNativeView() const {
+gfx::NativeView OmniboxViewWin::GetNativeView() const {
   return m_hWnd;
 }
 
-CommandUpdater* AutocompleteEditViewWin::GetCommandUpdater() {
+CommandUpdater* OmniboxViewWin::GetCommandUpdater() {
   return command_updater_;
 }
 
-void AutocompleteEditViewWin::SetInstantSuggestion(const string16& suggestion,
-                                                   bool animate_to_complete) {
+void OmniboxViewWin::SetInstantSuggestion(const string16& suggestion,
+                                          bool animate_to_complete) {
   parent_view_->SetInstantSuggestion(suggestion, animate_to_complete);
 }
 
-int AutocompleteEditViewWin::TextWidth() const {
+int OmniboxViewWin::TextWidth() const {
   return WidthNeededToDisplay(GetText());
 }
 
-string16 AutocompleteEditViewWin::GetInstantSuggestion() const {
+string16 OmniboxViewWin::GetInstantSuggestion() const {
   return parent_view_->GetInstantSuggestion();
 }
 
-bool AutocompleteEditViewWin::IsImeComposing() const {
+bool OmniboxViewWin::IsImeComposing() const {
   bool ime_composing = false;
   HIMC context = ImmGetContext(m_hWnd);
   if (context) {
@@ -951,7 +940,7 @@ bool AutocompleteEditViewWin::IsImeComposing() const {
   return ime_composing;
 }
 
-views::View* AutocompleteEditViewWin::AddToView(views::View* parent) {
+views::View* OmniboxViewWin::AddToView(views::View* parent) {
   views::NativeViewHost* host = new views::NativeViewHost;
   parent->AddChildView(host);
   host->set_focus_view(parent);
@@ -959,14 +948,12 @@ views::View* AutocompleteEditViewWin::AddToView(views::View* parent) {
   return host;
 }
 
-int AutocompleteEditViewWin::OnPerformDrop(
-    const views::DropTargetEvent& event) {
+int OmniboxViewWin::OnPerformDrop(const views::DropTargetEvent& event) {
   return OnPerformDropImpl(event, false);
 }
 
-int AutocompleteEditViewWin::OnPerformDropImpl(
-    const views::DropTargetEvent& event,
-    bool in_drag) {
+int OmniboxViewWin::OnPerformDropImpl(const views::DropTargetEvent& event,
+                                      bool in_drag) {
   const ui::OSExchangeData& data = event.data();
 
   if (data.HasURL()) {
@@ -999,12 +986,12 @@ int AutocompleteEditViewWin::OnPerformDropImpl(
   return ui::DragDropTypes::DRAG_NONE;
 }
 
-void AutocompleteEditViewWin::PasteAndGo(const string16& text) {
+void OmniboxViewWin::PasteAndGo(const string16& text) {
   if (CanPasteAndGo(text))
     model_->PasteAndGo();
 }
 
-bool AutocompleteEditViewWin::SkipDefaultKeyEventProcessing(
+bool OmniboxViewWin::SkipDefaultKeyEventProcessing(
     const views::KeyEvent& event) {
   ui::KeyboardCode key = event.key_code();
   // We don't process ALT + numpad digit as accelerators, they are used for
@@ -1052,9 +1039,9 @@ bool AutocompleteEditViewWin::SkipDefaultKeyEventProcessing(
   }
 }
 
-void AutocompleteEditViewWin::HandleExternalMsg(UINT msg,
-                                                UINT flags,
-                                                const CPoint& screen_point) {
+void OmniboxViewWin::HandleExternalMsg(UINT msg,
+                                       UINT flags,
+                                       const CPoint& screen_point) {
   if (msg == WM_CAPTURECHANGED) {
     SendMessage(msg, 0, NULL);
     return;
@@ -1065,11 +1052,11 @@ void AutocompleteEditViewWin::HandleExternalMsg(UINT msg,
   SendMessage(msg, flags, MAKELPARAM(client_point.x, client_point.y));
 }
 
-bool AutocompleteEditViewWin::IsCommandIdChecked(int command_id) const {
+bool OmniboxViewWin::IsCommandIdChecked(int command_id) const {
   return false;
 }
 
-bool AutocompleteEditViewWin::IsCommandIdEnabled(int command_id) const {
+bool OmniboxViewWin::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
     case IDS_UNDO:         return !!CanUndo();
     case IDC_CUT:          return !!CanCut();
@@ -1085,26 +1072,25 @@ bool AutocompleteEditViewWin::IsCommandIdEnabled(int command_id) const {
   }
 }
 
-bool AutocompleteEditViewWin::GetAcceleratorForCommandId(
+bool OmniboxViewWin::GetAcceleratorForCommandId(
     int command_id,
     ui::Accelerator* accelerator) {
   return parent_view_->GetWidget()->GetAccelerator(command_id, accelerator);
 }
 
-bool AutocompleteEditViewWin::IsItemForCommandIdDynamic(int command_id) const {
+bool OmniboxViewWin::IsItemForCommandIdDynamic(int command_id) const {
   // No need to change the default IDS_PASTE_AND_GO label unless this is a
   // search.
   return command_id == IDS_PASTE_AND_GO;
 }
 
-string16 AutocompleteEditViewWin::GetLabelForCommandId(
-    int command_id) const {
+string16 OmniboxViewWin::GetLabelForCommandId(int command_id) const {
   DCHECK_EQ(IDS_PASTE_AND_GO, command_id);
   return l10n_util::GetStringUTF16(model_->is_paste_and_search() ?
       IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO);
 }
 
-void AutocompleteEditViewWin::ExecuteCommand(int command_id) {
+void OmniboxViewWin::ExecuteCommand(int command_id) {
   ScopedFreeze freeze(this, GetTextObjectModel());
   if (command_id == IDS_PASTE_AND_GO) {
     // This case is separate from the switch() below since we don't want to wrap
@@ -1147,10 +1133,10 @@ void AutocompleteEditViewWin::ExecuteCommand(int command_id) {
 }
 
 // static
-int CALLBACK AutocompleteEditViewWin::WordBreakProc(LPTSTR edit_text,
-                                                    int current_pos,
-                                                    int num_bytes,
-                                                    int action) {
+int CALLBACK OmniboxViewWin::WordBreakProc(LPTSTR edit_text,
+                                           int current_pos,
+                                           int num_bytes,
+                                           int action) {
   // TODO(pkasting): http://b/1111308 We should let other people, like ICU and
   // GURL, do the work for us here instead of writing all this ourselves.
 
@@ -1265,9 +1251,9 @@ int CALLBACK AutocompleteEditViewWin::WordBreakProc(LPTSTR edit_text,
 }
 
 // static
-bool AutocompleteEditViewWin::SchemeEnd(LPTSTR edit_text,
-                                        int current_pos,
-                                        int length) {
+bool OmniboxViewWin::SchemeEnd(LPTSTR edit_text,
+                               int current_pos,
+                               int length) {
   return (current_pos >= 0) &&
          ((length - current_pos) > 2) &&
          (edit_text[current_pos] == ':') &&
@@ -1275,7 +1261,7 @@ bool AutocompleteEditViewWin::SchemeEnd(LPTSTR edit_text,
          (edit_text[current_pos + 2] == '/');
 }
 
-void AutocompleteEditViewWin::OnChar(TCHAR ch, UINT repeat_count, UINT flags) {
+void OmniboxViewWin::OnChar(TCHAR ch, UINT repeat_count, UINT flags) {
   // Don't let alt-enter beep.  Not sure this is necessary, as the standard
   // alt-enter will hit DiscardWMSysChar() and get thrown away, and
   // ctrl-alt-enter doesn't seem to reach here for some reason?  At least not on
@@ -1296,7 +1282,7 @@ void AutocompleteEditViewWin::OnChar(TCHAR ch, UINT repeat_count, UINT flags) {
   HandleKeystroke(GetCurrentMessage()->message, ch, repeat_count, flags);
 }
 
-void AutocompleteEditViewWin::OnContextMenu(HWND window, const CPoint& point) {
+void OmniboxViewWin::OnContextMenu(HWND window, const CPoint& point) {
   BuildContextMenu();
   if (point.x == -1 || point.y == -1) {
     POINT p;
@@ -1308,7 +1294,7 @@ void AutocompleteEditViewWin::OnContextMenu(HWND window, const CPoint& point) {
   }
 }
 
-void AutocompleteEditViewWin::OnCopy() {
+void OmniboxViewWin::OnCopy() {
   string16 text(GetSelectedText());
   if (text.empty())
     return;
@@ -1328,7 +1314,7 @@ void AutocompleteEditViewWin::OnCopy() {
   }
 }
 
-void AutocompleteEditViewWin::OnCut() {
+void OmniboxViewWin::OnCut() {
   OnCopy();
 
   // This replace selection will have no effect (even on the undo stack) if the
@@ -1336,9 +1322,9 @@ void AutocompleteEditViewWin::OnCut() {
   ReplaceSel(L"", true);
 }
 
-LRESULT AutocompleteEditViewWin::OnGetObject(UINT uMsg,
-                                             WPARAM wparam,
-                                             LPARAM lparam) {
+LRESULT OmniboxViewWin::OnGetObject(UINT uMsg,
+                                    WPARAM wparam,
+                                    LPARAM lparam) {
   // Accessibility readers will send an OBJID_CLIENT message.
   if (lparam == OBJID_CLIENT) {
     // Re-attach for internal re-usage of accessibility pointer.
@@ -1352,9 +1338,9 @@ LRESULT AutocompleteEditViewWin::OnGetObject(UINT uMsg,
   return 0;
 }
 
-LRESULT AutocompleteEditViewWin::OnImeComposition(UINT message,
-                                                  WPARAM wparam,
-                                                  LPARAM lparam) {
+LRESULT OmniboxViewWin::OnImeComposition(UINT message,
+                                         WPARAM wparam,
+                                         LPARAM lparam) {
   if (ignore_ime_messages_) {
     // This message was sent while we're in the middle of meddling with the
     // underlying edit control.  If we handle it below, OnAfterPossibleChange()
@@ -1376,9 +1362,9 @@ LRESULT AutocompleteEditViewWin::OnImeComposition(UINT message,
   return result;
 }
 
-void AutocompleteEditViewWin::OnKeyDown(TCHAR key,
-                                        UINT repeat_count,
-                                        UINT flags) {
+void OmniboxViewWin::OnKeyDown(TCHAR key,
+                               UINT repeat_count,
+                               UINT flags) {
   delete_at_end_pressed_ = false;
 
   if (OnKeyDownAllModes(key, repeat_count, flags))
@@ -1399,9 +1385,9 @@ void AutocompleteEditViewWin::OnKeyDown(TCHAR key,
   HandleKeystroke(GetCurrentMessage()->message, key, repeat_count, flags);
 }
 
-void AutocompleteEditViewWin::OnKeyUp(TCHAR key,
-                                      UINT repeat_count,
-                                      UINT flags) {
+void OmniboxViewWin::OnKeyUp(TCHAR key,
+                             UINT repeat_count,
+                             UINT flags) {
   if (key == VK_CONTROL)
     model_->OnControlKeyChanged(false);
 
@@ -1433,7 +1419,7 @@ void AutocompleteEditViewWin::OnKeyUp(TCHAR key,
   SetMsgHandled(false);
 }
 
-void AutocompleteEditViewWin::OnKillFocus(HWND focus_wnd) {
+void OmniboxViewWin::OnKillFocus(HWND focus_wnd) {
   if (m_hWnd == focus_wnd) {
     // Focus isn't actually leaving.
     SetMsgHandled(false);
@@ -1465,7 +1451,7 @@ void AutocompleteEditViewWin::OnKillFocus(HWND focus_wnd) {
   PlaceCaretAt(0);
 }
 
-void AutocompleteEditViewWin::OnLButtonDblClk(UINT keys, const CPoint& point) {
+void OmniboxViewWin::OnLButtonDblClk(UINT keys, const CPoint& point) {
   // Save the double click info for later triple-click detection.
   tracking_double_click_ = true;
   double_click_point_ = point;
@@ -1483,7 +1469,7 @@ void AutocompleteEditViewWin::OnLButtonDblClk(UINT keys, const CPoint& point) {
   gaining_focus_.reset();  // See NOTE in OnMouseActivate().
 }
 
-void AutocompleteEditViewWin::OnLButtonDown(UINT keys, const CPoint& point) {
+void OmniboxViewWin::OnLButtonDown(UINT keys, const CPoint& point) {
   TrackMousePosition(kLeft, point);
   if (gaining_focus_.get()) {
     // When Chrome was already the activated app, we haven't reached
@@ -1528,7 +1514,7 @@ void AutocompleteEditViewWin::OnLButtonDown(UINT keys, const CPoint& point) {
   gaining_focus_.reset();
 }
 
-void AutocompleteEditViewWin::OnLButtonUp(UINT keys, const CPoint& point) {
+void OmniboxViewWin::OnLButtonUp(UINT keys, const CPoint& point) {
   // default processing should happen first so we can see the result of the
   // selection
   ScopedFreeze freeze(this, GetTextObjectModel());
@@ -1542,8 +1528,7 @@ void AutocompleteEditViewWin::OnLButtonUp(UINT keys, const CPoint& point) {
   possible_drag_ = false;
 }
 
-void AutocompleteEditViewWin::OnMButtonDblClk(UINT /*keys*/,
-                                              const CPoint& /*point*/) {
+void OmniboxViewWin::OnMButtonDblClk(UINT /*keys*/, const CPoint& /*point*/) {
   gaining_focus_.reset();  // See NOTE in OnMouseActivate().
 
   // By default, the edit responds to middle-clicks by capturing the mouse and
@@ -1555,23 +1540,21 @@ void AutocompleteEditViewWin::OnMButtonDblClk(UINT /*keys*/,
   // this.
 }
 
-void AutocompleteEditViewWin::OnMButtonDown(UINT /*keys*/,
-                                            const CPoint& /*point*/) {
+void OmniboxViewWin::OnMButtonDown(UINT /*keys*/, const CPoint& /*point*/) {
   tracking_double_click_ = false;
 
   // See note in OnMButtonDblClk above.
 }
 
-void AutocompleteEditViewWin::OnMButtonUp(UINT /*keys*/,
-                                          const CPoint& /*point*/) {
+void OmniboxViewWin::OnMButtonUp(UINT /*keys*/, const CPoint& /*point*/) {
   possible_drag_ = false;
 
   // See note in OnMButtonDblClk above.
 }
 
-LRESULT AutocompleteEditViewWin::OnMouseActivate(HWND window,
-                                                 UINT hit_test,
-                                                 UINT mouse_message) {
+LRESULT OmniboxViewWin::OnMouseActivate(HWND window,
+                                        UINT hit_test,
+                                        UINT mouse_message) {
   // First, give other handlers a chance to handle the message to see if we are
   // actually going to activate and gain focus.
   LRESULT result = DefWindowProc(WM_MOUSEACTIVATE,
@@ -1600,7 +1583,7 @@ LRESULT AutocompleteEditViewWin::OnMouseActivate(HWND window,
   return result;
 }
 
-void AutocompleteEditViewWin::OnMouseMove(UINT keys, const CPoint& point) {
+void OmniboxViewWin::OnMouseMove(UINT keys, const CPoint& point) {
   if (possible_drag_) {
     StartDragIfNecessary(point);
     // Don't fall through to default mouse handling, otherwise a second
@@ -1673,7 +1656,7 @@ void AutocompleteEditViewWin::OnMouseMove(UINT keys, const CPoint& point) {
   }
 }
 
-void AutocompleteEditViewWin::OnPaint(HDC bogus_hdc) {
+void OmniboxViewWin::OnPaint(HDC bogus_hdc) {
   // We need to paint over the top of the edit.  If we simply let the edit do
   // its default painting, then do ours into the window DC, the screen is
   // updated in between and we can get flicker.  To avoid this, we force the
@@ -1737,7 +1720,7 @@ void AutocompleteEditViewWin::OnPaint(HDC bogus_hdc) {
   edit_hwnd = old_edit_hwnd;
 }
 
-void AutocompleteEditViewWin::OnPaste() {
+void OmniboxViewWin::OnPaste() {
   // Replace the selection if we have something to paste.
   const string16 text(GetClipboardText());
   if (!text.empty()) {
@@ -1751,14 +1734,12 @@ void AutocompleteEditViewWin::OnPaste() {
   }
 }
 
-void AutocompleteEditViewWin::OnRButtonDblClk(UINT /*keys*/,
-                                              const CPoint& /*point*/) {
+void OmniboxViewWin::OnRButtonDblClk(UINT /*keys*/, const CPoint& /*point*/) {
   gaining_focus_.reset();  // See NOTE in OnMouseActivate().
   SetMsgHandled(false);
 }
 
-void AutocompleteEditViewWin::OnRButtonDown(UINT /*keys*/,
-                                            const CPoint& point) {
+void OmniboxViewWin::OnRButtonDown(UINT /*keys*/, const CPoint& point) {
   TrackMousePosition(kRight, point);
   tracking_double_click_ = false;
   possible_drag_ = false;
@@ -1766,13 +1747,13 @@ void AutocompleteEditViewWin::OnRButtonDown(UINT /*keys*/,
   SetMsgHandled(false);
 }
 
-void AutocompleteEditViewWin::OnRButtonUp(UINT /*keys*/, const CPoint& point) {
+void OmniboxViewWin::OnRButtonUp(UINT /*keys*/, const CPoint& point) {
   SelectAllIfNecessary(kRight, point);
   tracking_click_[kRight] = false;
   SetMsgHandled(false);
 }
 
-void AutocompleteEditViewWin::OnSetFocus(HWND focus_wnd) {
+void OmniboxViewWin::OnSetFocus(HWND focus_wnd) {
   views::FocusManager* focus_manager = parent_view_->GetFocusManager();
   if (focus_manager) {
     // Notify the FocusManager that the focused view is now the location bar
@@ -1793,7 +1774,7 @@ void AutocompleteEditViewWin::OnSetFocus(HWND focus_wnd) {
   SetMsgHandled(false);
 }
 
-LRESULT AutocompleteEditViewWin::OnSetText(const wchar_t* text) {
+LRESULT OmniboxViewWin::OnSetText(const wchar_t* text) {
   // Ignore all IME messages while we process this WM_SETTEXT message.
   // When SetWindowText() is called while an IME is composing text, the IME
   // calls SendMessage() to send a WM_IME_COMPOSITION message. When we receive
@@ -1807,9 +1788,9 @@ LRESULT AutocompleteEditViewWin::OnSetText(const wchar_t* text) {
   return DefWindowProc(WM_SETTEXT, 0, reinterpret_cast<LPARAM>(text));
 }
 
-void AutocompleteEditViewWin::OnSysChar(TCHAR ch,
-                                        UINT repeat_count,
-                                        UINT flags) {
+void OmniboxViewWin::OnSysChar(TCHAR ch,
+                               UINT repeat_count,
+                               UINT flags) {
   // Nearly all alt-<xxx> combos result in beeping rather than doing something
   // useful, so we discard most.  Exceptions:
   //   * ctrl-alt-<xxx>, which is sometimes important, generates WM_CHAR instead
@@ -1821,15 +1802,13 @@ void AutocompleteEditViewWin::OnSysChar(TCHAR ch,
     SetMsgHandled(false);
 }
 
-void AutocompleteEditViewWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
+void OmniboxViewWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
   if (force_hidden_)
     window_pos->flags &= ~SWP_SHOWWINDOW;
   SetMsgHandled(true);
 }
 
-BOOL AutocompleteEditViewWin::OnMouseWheel(UINT flags,
-                                           short delta,
-                                           CPoint point) {
+BOOL OmniboxViewWin::OnMouseWheel(UINT flags, short delta, CPoint point) {
   // Forward the mouse-wheel message to the window under the mouse.
   if (!views::RerouteMouseWheel(m_hWnd, MAKEWPARAM(flags, delta),
                                 MAKELPARAM(point.x, point.y)))
@@ -1837,10 +1816,10 @@ BOOL AutocompleteEditViewWin::OnMouseWheel(UINT flags,
   return 0;
 }
 
-void AutocompleteEditViewWin::HandleKeystroke(UINT message,
-                                              TCHAR key,
-                                              UINT repeat_count,
-                                              UINT flags) {
+void OmniboxViewWin::HandleKeystroke(UINT message,
+                                     TCHAR key,
+                                     UINT repeat_count,
+                                     UINT flags) {
   ScopedFreeze freeze(this, GetTextObjectModel());
   OnBeforePossibleChange();
 
@@ -1876,9 +1855,9 @@ void AutocompleteEditViewWin::HandleKeystroke(UINT message,
   OnAfterPossibleChange();
 }
 
-bool AutocompleteEditViewWin::OnKeyDownOnlyWritable(TCHAR key,
-                                                    UINT repeat_count,
-                                                    UINT flags) {
+bool OmniboxViewWin::OnKeyDownOnlyWritable(TCHAR key,
+                                           UINT repeat_count,
+                                           UINT flags) {
   // NOTE: Annoyingly, ctrl-alt-<key> generates WM_KEYDOWN rather than
   // WM_SYSKEYDOWN, so we need to check (flags & KF_ALTDOWN) in various places
   // in this function even with a WM_SYSKEYDOWN handler.
@@ -2045,9 +2024,9 @@ bool AutocompleteEditViewWin::OnKeyDownOnlyWritable(TCHAR key,
   }
 }
 
-bool AutocompleteEditViewWin::OnKeyDownAllModes(TCHAR key,
-                                                UINT repeat_count,
-                                                UINT flags) {
+bool OmniboxViewWin::OnKeyDownAllModes(TCHAR key,
+                                       UINT repeat_count,
+                                       UINT flags) {
   // See KF_ALTDOWN comment atop OnKeyDownOnlyWritable().
 
   switch (key) {
@@ -2069,7 +2048,7 @@ bool AutocompleteEditViewWin::OnKeyDownAllModes(TCHAR key,
   }
 }
 
-void AutocompleteEditViewWin::GetSelection(CHARRANGE& sel) const {
+void OmniboxViewWin::GetSelection(CHARRANGE& sel) const {
   GetSel(sel);
 
   // See if we need to reverse the direction of the selection.
@@ -2085,7 +2064,7 @@ void AutocompleteEditViewWin::GetSelection(CHARRANGE& sel) const {
     std::swap(sel.cpMin, sel.cpMax);
 }
 
-string16 AutocompleteEditViewWin::GetSelectedText() const {
+string16 OmniboxViewWin::GetSelectedText() const {
   // Figure out the length of the selection.
   CHARRANGE sel;
   GetSel(sel);
@@ -2096,7 +2075,7 @@ string16 AutocompleteEditViewWin::GetSelectedText() const {
   return str;
 }
 
-void AutocompleteEditViewWin::SetSelection(LONG start, LONG end) {
+void OmniboxViewWin::SetSelection(LONG start, LONG end) {
   SetSel(start, end);
 
   if (start <= end)
@@ -2112,18 +2091,18 @@ void AutocompleteEditViewWin::SetSelection(LONG start, LONG end) {
   selection->SetFlags(tomSelStartActive);
 }
 
-void AutocompleteEditViewWin::PlaceCaretAt(string16::size_type pos) {
+void OmniboxViewWin::PlaceCaretAt(string16::size_type pos) {
   SetSelection(static_cast<LONG>(pos), static_cast<LONG>(pos));
 }
 
-bool AutocompleteEditViewWin::IsSelectAllForRange(const CHARRANGE& sel) const {
+bool OmniboxViewWin::IsSelectAllForRange(const CHARRANGE& sel) const {
   const int text_length = GetTextLength();
   return ((sel.cpMin == 0) && (sel.cpMax >= text_length)) ||
       ((sel.cpMax == 0) && (sel.cpMin >= text_length));
 }
 
-LONG AutocompleteEditViewWin::ClipXCoordToVisibleText(
-    LONG x, bool is_triple_click) const {
+LONG OmniboxViewWin::ClipXCoordToVisibleText(LONG x,
+                                             bool is_triple_click) const {
   // Clip the X coordinate to the left edge of the text. Careful:
   // PosFromChar(0) may return a negative X coordinate if the beginning of the
   // text has scrolled off the edit, so don't go past the clip rect's edge.
@@ -2174,7 +2153,7 @@ LONG AutocompleteEditViewWin::ClipXCoordToVisibleText(
   return is_triple_click ? (right_bound - 1) : right_bound;
 }
 
-void AutocompleteEditViewWin::EmphasizeURLComponents() {
+void OmniboxViewWin::EmphasizeURLComponents() {
   ITextDocument* const text_object_model = GetTextObjectModel();
   ScopedFreeze freeze(this, text_object_model);
   ScopedSuspendUndo suspend_undo(text_object_model);
@@ -2235,8 +2214,9 @@ void AutocompleteEditViewWin::EmphasizeURLComponents() {
   SetSelectionRange(saved_sel);
 }
 
-void AutocompleteEditViewWin::EraseTopOfSelection(
-    CDC* dc, const CRect& client_rect, const CRect& paint_clip_rect) {
+void OmniboxViewWin::EraseTopOfSelection(CDC* dc,
+                                         const CRect& client_rect,
+                                         const CRect& paint_clip_rect) {
   // Find the area we care about painting.   We could calculate the rect
   // containing just the selected portion, but there's no harm in simply erasing
   // the whole top of the client area, and at least once I saw us manage to
@@ -2251,10 +2231,9 @@ void AutocompleteEditViewWin::EraseTopOfSelection(
     dc->FillSolidRect(&erase_rect, background_color_);
 }
 
-void AutocompleteEditViewWin::DrawSlashForInsecureScheme(
-    HDC hdc,
-    const CRect& client_rect,
-    const CRect& paint_clip_rect) {
+void OmniboxViewWin::DrawSlashForInsecureScheme(HDC hdc,
+                                                const CRect& client_rect,
+                                                const CRect& paint_clip_rect) {
   DCHECK(insecure_scheme_component_.is_nonempty());
 
   // Calculate the rect, in window coordinates, containing the portion of the
@@ -2342,9 +2321,9 @@ void AutocompleteEditViewWin::DrawSlashForInsecureScheme(
           canvas_clip_rect.top, &canvas_paint_clip_rect);
 }
 
-void AutocompleteEditViewWin::DrawDropHighlight(HDC hdc,
-                                                const CRect& client_rect,
-                                                const CRect& paint_clip_rect) {
+void OmniboxViewWin::DrawDropHighlight(HDC hdc,
+                                       const CRect& client_rect,
+                                       const CRect& paint_clip_rect) {
   DCHECK_NE(-1, drop_highlight_position_);
 
   const int highlight_y = client_rect.top + font_y_adjustment_;
@@ -2366,13 +2345,13 @@ void AutocompleteEditViewWin::DrawDropHighlight(HDC hdc,
   DeleteObject(SelectObject(hdc, last_pen));
 }
 
-void AutocompleteEditViewWin::TextChanged() {
+void OmniboxViewWin::TextChanged() {
   ScopedFreeze freeze(this, GetTextObjectModel());
   EmphasizeURLComponents();
   model_->OnChanged();
 }
 
-string16 AutocompleteEditViewWin::GetClipboardText() const {
+string16 OmniboxViewWin::GetClipboardText() const {
   // Try text format.
   ui::Clipboard* clipboard = g_browser_process->clipboard();
   if (clipboard->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
@@ -2409,11 +2388,11 @@ string16 AutocompleteEditViewWin::GetClipboardText() const {
   return string16();
 }
 
-bool AutocompleteEditViewWin::CanPasteAndGo(const string16& text) const {
+bool OmniboxViewWin::CanPasteAndGo(const string16& text) const {
   return !popup_window_mode_ && model_->CanPasteAndGo(text);
 }
 
-ITextDocument* AutocompleteEditViewWin::GetTextObjectModel() const {
+ITextDocument* OmniboxViewWin::GetTextObjectModel() const {
   if (!text_object_model_) {
     // This is lazily initialized, instead of being initialized in the
     // constructor, in order to avoid hurting startup performance.
@@ -2428,7 +2407,7 @@ ITextDocument* AutocompleteEditViewWin::GetTextObjectModel() const {
   return text_object_model_;
 }
 
-void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
+void OmniboxViewWin::StartDragIfNecessary(const CPoint& point) {
   if (initiated_drag_ || !IsDrag(click_point_[kLeft], point))
     return;
 
@@ -2526,7 +2505,7 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
   tracking_click_[kLeft] = false;
 }
 
-void AutocompleteEditViewWin::OnPossibleDrag(const CPoint& point) {
+void OmniboxViewWin::OnPossibleDrag(const CPoint& point) {
   if (possible_drag_)
     return;
 
@@ -2546,7 +2525,7 @@ void AutocompleteEditViewWin::OnPossibleDrag(const CPoint& point) {
   }
 }
 
-void AutocompleteEditViewWin::RepaintDropHighlight(int position) {
+void OmniboxViewWin::RepaintDropHighlight(int position) {
   if ((position != -1) && (position <= GetTextLength())) {
     const POINT min_loc(PosFromChar(position));
     const RECT highlight_bounds = {min_loc.x - 1, font_y_adjustment_,
@@ -2555,7 +2534,7 @@ void AutocompleteEditViewWin::RepaintDropHighlight(int position) {
   }
 }
 
-void AutocompleteEditViewWin::BuildContextMenu() {
+void OmniboxViewWin::BuildContextMenu() {
   if (context_menu_contents_.get())
     return;
 
@@ -2582,8 +2561,8 @@ void AutocompleteEditViewWin::BuildContextMenu() {
   context_menu_.reset(new views::Menu2(context_menu_contents_.get()));
 }
 
-void AutocompleteEditViewWin::SelectAllIfNecessary(MouseButton button,
-                                                   const CPoint& point) {
+void OmniboxViewWin::SelectAllIfNecessary(MouseButton button,
+                                          const CPoint& point) {
   // When the user has clicked and released to give us focus, select all.
   if (tracking_click_[button] &&
       !IsDrag(click_point_[button], point)) {
@@ -2594,8 +2573,8 @@ void AutocompleteEditViewWin::SelectAllIfNecessary(MouseButton button,
   }
 }
 
-void AutocompleteEditViewWin::TrackMousePosition(MouseButton button,
-                                                 const CPoint& point) {
+void OmniboxViewWin::TrackMousePosition(MouseButton button,
+                                        const CPoint& point) {
   if (gaining_focus_.get()) {
     // This click is giving us focus, so we need to track how much the mouse
     // moves to see if it's a drag or just a click. Clicks should select all
@@ -2605,7 +2584,7 @@ void AutocompleteEditViewWin::TrackMousePosition(MouseButton button,
   }
 }
 
-int AutocompleteEditViewWin::GetHorizontalMargin() const {
+int OmniboxViewWin::GetHorizontalMargin() const {
   RECT rect;
   GetRect(&rect);
   RECT client_rect;
@@ -2613,8 +2592,7 @@ int AutocompleteEditViewWin::GetHorizontalMargin() const {
   return (rect.left - client_rect.left) + (client_rect.right - rect.right);
 }
 
-int AutocompleteEditViewWin::WidthNeededToDisplay(
-    const string16& text) const {
+int OmniboxViewWin::WidthNeededToDisplay(const string16& text) const {
   // Use font_.GetStringWidth() instead of
   // PosFromChar(location_entry_->GetTextLength()) because PosFromChar() is
   // apparently buggy. In both LTR UI and RTL UI with left-to-right layout,
@@ -2622,7 +2600,7 @@ int AutocompleteEditViewWin::WidthNeededToDisplay(
   return font_.GetStringWidth(text) + GetHorizontalMargin();
 }
 
-bool AutocompleteEditViewWin::IsCaretAtEnd() const {
+bool OmniboxViewWin::IsCaretAtEnd() const {
   long length = GetTextLength();
   CHARRANGE sel;
   GetSelection(sel);

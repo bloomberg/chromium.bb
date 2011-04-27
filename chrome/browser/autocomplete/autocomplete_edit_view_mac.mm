@@ -430,7 +430,7 @@ void AutocompleteEditViewMac::UpdatePopup() {
   if (!model_->has_focus())
     return;
 
-  // Comment copied from AutocompleteEditViewWin::UpdatePopup():
+  // Comment copied from OmniboxViewWin::UpdatePopup():
   // Don't inline autocomplete when:
   //   * The user is deleting text
   //   * The caret/selection isn't at the end of the text

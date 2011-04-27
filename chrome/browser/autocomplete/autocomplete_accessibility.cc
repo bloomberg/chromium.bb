@@ -1,26 +1,26 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/autocomplete/autocomplete_accessibility.h"
 
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/accessibility/native_view_accessibility_win.h"
 #include "views/view.h"
 
 HRESULT AutocompleteAccessibility::Initialize(
-    const AutocompleteEditViewWin* edit_box) {
-  if (edit_box == NULL) {
+    const OmniboxViewWin* omnibox_view) {
+  if (omnibox_view == NULL) {
     return E_INVALIDARG;
   }
 
-  edit_box_ = edit_box;
+  omnibox_view_ = omnibox_view;
 
   // Create a default accessible object for this instance.
-  return CreateStdAccessibleObject(edit_box_->m_hWnd, OBJID_CLIENT,
+  return CreateStdAccessibleObject(omnibox_view_->m_hWnd, OBJID_CLIENT,
       IID_IAccessible,
       reinterpret_cast<void **>(default_accessibility_server_.Receive()));
 }
@@ -53,14 +53,14 @@ STDMETHODIMP AutocompleteAccessibility::get_accParent(IDispatch** disp_parent) {
     return E_INVALIDARG;
   }
 
-  if (edit_box_->parent_view() == NULL) {
+  if (omnibox_view_->parent_view() == NULL) {
     *disp_parent = NULL;
     return S_FALSE;
   }
 
   // Retrieve the IDispatch interface for the parent view.
   *disp_parent = NativeViewAccessibilityWin::GetAccessibleForView(
-      edit_box_->parent_view());
+      omnibox_view_->parent_view());
   // Increment the reference count for the retrieved interface.
   (*disp_parent)->AddRef();
   return S_OK;
@@ -126,7 +126,7 @@ STDMETHODIMP AutocompleteAccessibility::get_accValue(VARIANT var_id,
     return E_INVALIDARG;
 
   // Edit box has no children, only handle self.
-  temp_value = edit_box_->GetText();
+  temp_value = omnibox_view_->GetText();
   if (temp_value.empty())
     return S_FALSE;
 

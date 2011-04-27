@@ -2235,10 +2235,10 @@ void OmniboxViewGtk::ClipboardGetSelectionThunk(
     GtkSelectionData* selection_data,
     guint info,
     gpointer object) {
-  OmniboxViewGtk* edit_view =
+  OmniboxViewGtk* omnibox_view =
       reinterpret_cast<OmniboxViewGtk*>(
           g_object_get_data(G_OBJECT(object), kOmniboxViewGtkKey));
-  edit_view->ClipboardGetSelection(clipboard, selection_data, info);
+  omnibox_view->ClipboardGetSelection(clipboard, selection_data, info);
 }
 
 void OmniboxViewGtk::ClipboardGetSelection(GtkClipboard* clipboard,

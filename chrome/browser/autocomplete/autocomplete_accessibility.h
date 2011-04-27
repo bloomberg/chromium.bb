@@ -13,14 +13,14 @@
 #include "base/basictypes.h"
 #include "base/win/scoped_comptr.h"
 
-class AutocompleteEditViewWin;
+class OmniboxViewWin;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
 // AutocompleteAccessibility
 //
 // Class implementing the MSAA IAccessible COM interface for
-// AutocompleteEditViewWin, providing accessibility to be used by screen
+// OmniboxViewWin, providing accessibility to be used by screen
 // readers and other assistive technology (AT).
 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ class ATL_NO_VTABLE AutocompleteAccessibility
   AutocompleteAccessibility() {}
   ~AutocompleteAccessibility() {}
 
-  HRESULT Initialize(const AutocompleteEditViewWin* edit_box);
+  HRESULT Initialize(const OmniboxViewWin* omnibox_view);
 
   // Supported IAccessible methods.
 
@@ -108,7 +108,7 @@ class ATL_NO_VTABLE AutocompleteAccessibility
   base::win::ScopedComPtr<IAccessible> default_accessibility_server_;
 
  private:
-  const AutocompleteEditViewWin* edit_box_;
+  const OmniboxViewWin* omnibox_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteAccessibility);
 };
