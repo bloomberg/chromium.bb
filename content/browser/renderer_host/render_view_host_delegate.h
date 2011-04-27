@@ -45,6 +45,7 @@ class SkBitmap;
 class SSLClientAuthHandler;
 class SSLAddCertHandler;
 class TabContents;
+struct ExtensionHostMsg_DomMessage_Params;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 struct WebApplicationInfo;
@@ -487,6 +488,11 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // expressed in a json string.
   virtual void DomOperationResponse(const std::string& json_string,
                                     int automation_id) {}
+
+  // A message was sent from HTML-based UI.
+  // By default we ignore such messages.
+  virtual void ProcessWebUIMessage(
+      const ExtensionHostMsg_DomMessage_Params& params) {}
 
   // A message for external host. By default we ignore such messages.
   // |receiver| can be a receiving script and |message| is any

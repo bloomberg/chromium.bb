@@ -544,6 +544,9 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnMsgDomOperationResponse(const std::string& json_string,
                                  int automation_id);
+  void OnMsgWebUISend(const GURL& source_url,
+                      const std::string& message,
+                      const std::string& content);
   void OnMsgForwardMessageToExternalHost(const std::string& message,
                                          const std::string& origin,
                                          const std::string& target);

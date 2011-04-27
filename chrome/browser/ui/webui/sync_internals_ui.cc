@@ -42,10 +42,10 @@ SyncInternalsUI::~SyncInternalsUI() {
   }
 }
 
-void SyncInternalsUI::OnWebUISend(const GURL& source_url,
-                                  const std::string& name,
-                                  const ListValue& content) {
-  browser_sync::JsArgList args(content);
+void SyncInternalsUI::ProcessWebUIMessage(
+    const ExtensionHostMsg_DomMessage_Params& params) {
+  const std::string& name = params.name;
+  browser_sync::JsArgList args(params.arguments);
   VLOG(1) << "Received message: " << name << " with args "
           << args.ToString();
   // We handle this case directly because it needs to work even if

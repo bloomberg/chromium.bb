@@ -73,6 +73,7 @@ class TabContentsObserver;
 class TabContentsSSLHelper;
 class TabContentsView;
 class URLPattern;
+struct ExtensionHostMsg_DomMessage_Params;
 struct RendererPreferences;
 struct ThumbnailScore;
 struct ViewHostMsg_FrameNavigate_Params;
@@ -806,6 +807,8 @@ class TabContents : public PageNavigator,
                               WindowOpenDisposition disposition);
   virtual void DomOperationResponse(const std::string& json_string,
                                     int automation_id);
+  virtual void ProcessWebUIMessage(
+      const ExtensionHostMsg_DomMessage_Params& params);
   virtual void ProcessExternalHostMessage(const std::string& message,
                                           const std::string& origin,
                                           const std::string& target);
