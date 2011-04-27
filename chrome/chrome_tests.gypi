@@ -2384,6 +2384,7 @@
         'renderer/autofill/form_autocomplete_browsertest.cc',
         'renderer/autofill/form_manager_browsertest.cc',
         'renderer/autofill/password_autofill_manager_unittest.cc',
+        'renderer/content_settings_observer_browsertest.cc',
         'renderer/page_click_tracker_browsertest.cc',
         'renderer/print_web_view_helper_browsertest.cc',
         'renderer/safe_browsing/malware_dom_details_browsertest.cc',

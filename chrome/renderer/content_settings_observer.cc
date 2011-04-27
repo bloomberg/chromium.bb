@@ -71,7 +71,11 @@ ContentSetting ContentSettingsObserver::GetContentSetting(
 void ContentSettingsObserver::DidBlockContentType(
     ContentSettingsType settings_type,
     const std::string& resource_identifier) {
-  if (!content_blocked_[settings_type]) {
+  // Always send a message when |resource_identifier| is not empty, to tell the
+  // browser which resource was blocked (otherwise the browser will only show
+  // the first resource to be blocked, and none that are blocked at a later
+  // time).
+  if (!content_blocked_[settings_type] || !resource_identifier.empty()) {
     content_blocked_[settings_type] = true;
     Send(new ViewHostMsg_ContentBlocked(routing_id(), settings_type,
                                         resource_identifier));

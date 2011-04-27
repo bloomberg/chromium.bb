@@ -7,18 +7,70 @@
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/test/render_view_test.h"
 #include "content/common/view_messages.h"
+#include "ipc/ipc_message_macros.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+class MockContentSettingsObserver : public ContentSettingsObserver {
+ public:
+  explicit MockContentSettingsObserver(RenderView* render_view);
+
+  virtual bool Send(IPC::Message* message);
+
+  MOCK_METHOD2(OnContentBlocked,
+               void(ContentSettingsType, const std::string&));
+};
+
+MockContentSettingsObserver::MockContentSettingsObserver(
+    RenderView* render_view)
+    : ContentSettingsObserver(render_view) {
+}
+
+bool MockContentSettingsObserver::Send(IPC::Message* message) {
+  IPC_BEGIN_MESSAGE_MAP(MockContentSettingsObserver, *message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ContentBlocked, OnContentBlocked)
+    IPC_MESSAGE_UNHANDLED(ADD_FAILURE())
+  IPC_END_MESSAGE_MAP()
+
+  // Our super class deletes the message.
+  return RenderViewObserver::Send(message);
+}
+
+}  // namespace
+
+TEST_F(RenderViewTest, DidBlockContentType) {
+  MockContentSettingsObserver observer(view_);
+  EXPECT_CALL(observer,
+              OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  observer.DidBlockContentType(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+
+  // Blocking the same content type a second time shouldn't send a notification.
+  observer.DidBlockContentType(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // Blocking two different plugins should send two notifications.
+  std::string kFooPlugin = "foo";
+  std::string kBarPlugin = "bar";
+  EXPECT_CALL(observer,
+              OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS, kFooPlugin));
+  EXPECT_CALL(observer,
+              OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS, kBarPlugin));
+  observer.DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, kFooPlugin);
+  observer.DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, kBarPlugin);
+}
 
 // Regression test for http://crbug.com/35011
 TEST_F(RenderViewTest, JSBlockSentAfterPageLoad) {
   // 1. Load page with JS.
   std::string html = "<html>"
-           "<head>"
-           "<script>document.createElement('div');</script>"
-           "</head>"
-           "<body>"
-           "</body>"
-           "</html>";
+                     "<head>"
+                     "<script>document.createElement('div');</script>"
+                     "</head>"
+                     "<body>"
+                     "</body>"
+                     "</html>";
   render_thread_.sink().ClearMessages();
   LoadHTML(html.c_str());
 
