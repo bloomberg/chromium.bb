@@ -597,6 +597,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
 #endif
     switches::kEnablePepperTesting,
     switches::kEnablePrintPreview,
+    switches::kEnableQuota,
     switches::kEnableRemoting,
     switches::kEnableResourceContentSettings,
 #if defined(OS_MACOSX)

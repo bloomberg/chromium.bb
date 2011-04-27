@@ -51,6 +51,7 @@ extern const char kEnableGPUPlugin[];
 extern const char kEnableLogging[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnablePreparsedJsCaching[];
+extern const char kEnableQuota[];
 extern const char kEnableSandboxLogging[];
 extern const char kEnableSeccompSandbox[];
 extern const char kEnableStatsTable[];

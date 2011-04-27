@@ -603,6 +603,9 @@ void RenderThread::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableJavaScriptI18NAPI(
       !command_line.HasSwitch(switches::kDisableJavaScriptI18NAPI));
 
+  WebRuntimeFeatures::enableQuota(
+      command_line.HasSwitch(switches::kEnableQuota));
+
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 }
 
