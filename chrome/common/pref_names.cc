@@ -474,6 +474,10 @@ const char kEnableScreenLock[] = "settings.enable_screen_lock";
 const char kShowPlanNotifications[] =
     "settings.internet.mobile.show_plan_notifications";
 
+// A boolean pref of whether to show 3G promo notification.
+const char kShow3gPromoNotification[] =
+    "settings.internet.mobile.show_3g_promo_notification";
+
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

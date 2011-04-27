@@ -186,6 +186,10 @@ static const char* kSynchronizedPreferences[] = {
   //   Settings -> Internet -> Mobile plan details
   prefs::kShowPlanNotifications,
 
+  // Whether to show 3G promo notification. By default this notification is
+  // shown only once to user on a first usage of Mobile Data.
+  prefs::kShow3gPromoNotification,
+
   // Whether to require password to wake up from sleep
   //   Settings -> Personal Stuff -> Account
   prefs::kEnableScreenLock,

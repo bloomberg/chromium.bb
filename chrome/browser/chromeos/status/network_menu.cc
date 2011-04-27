@@ -93,7 +93,7 @@ bool NetworkMenuModel::ConnectToNetworkAt(int index,
         wifi->SetAutoConnect(auto_connect ? true : false);
       if (wifi->connecting_or_connected()) {
         // Show the config settings for the active network.
-        ShowTabbedNetworkSettings(wifi);
+        owner_->ShowTabbedNetworkSettings(wifi);
         return true;
       }
       if (wifi->IsPassphraseRequired()) {
@@ -125,7 +125,7 @@ bool NetworkMenuModel::ConnectToNetworkAt(int index,
       } else if (cellular->connecting_or_connected()) {
         // Cellular network is connecting or connected,
         // so we show the config settings for the cellular network.
-        ShowTabbedNetworkSettings(cellular);
+        owner_->ShowTabbedNetworkSettings(cellular);
         return true;
       }
       // Clicked on a disconnected cellular network, so connect to it.
@@ -150,7 +150,7 @@ bool NetworkMenuModel::ConnectToNetworkAt(int index,
       if (vpn->connecting_or_connected()) {
         // Show the config settings for the connected network.
         if (cros->connected_network())
-          ShowTabbedNetworkSettings(cros->connected_network());
+          owner_->ShowTabbedNetworkSettings(cros->connected_network());
         return true;
       }
       // Show the connection UI if info for a field is missing.
@@ -245,7 +245,7 @@ void NetworkMenuModel::ActivatedAt(int index) {
     cros->EnableOfflineMode(!cros->offline_mode());
   } else if (flags & FLAG_ETHERNET) {
     if (cros->ethernet_connected()) {
-      ShowTabbedNetworkSettings(cros->ethernet_network());
+      owner_->ShowTabbedNetworkSettings(cros->ethernet_network());
     }
   } else if (flags & (FLAG_WIFI | FLAG_ADD_WIFI |
                       FLAG_CELLULAR | FLAG_ADD_CELLULAR |
@@ -260,18 +260,6 @@ void NetworkMenuModel::ActivatedAt(int index) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuModel, private methods:
-
-void NetworkMenuModel::ShowTabbedNetworkSettings(const Network* network) const {
-  DCHECK(network);
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser)
-    return;
-  std::string page = StringPrintf("%s?servicePath=%s&networkType=%d",
-      chrome::kInternetOptionsSubPage,
-      EscapeUrlEncodedData(network->service_path()).c_str(),
-      network->type());
-  browser->ShowOptionsTab(page);
-}
 
 // TODO(stevenjb): deprecate this once we've committed to tabbed settings
 // and the embedded menu UI (and fully deprecated NetworkConfigView).
@@ -1048,6 +1036,18 @@ SkBitmap NetworkMenu::IconForDisplay(const SkBitmap* icon,
     canvas.DrawBitmapInt(*bottom_left_badge, kBottomLeftBadgeX,
                          kBottomLeftBadgeY);
   return canvas.ExtractBitmap();
+}
+
+void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {
+  DCHECK(network);
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser)
+    return;
+  std::string page = StringPrintf("%s?servicePath=%s&networkType=%d",
+      chrome::kInternetOptionsSubPage,
+      EscapeUrlEncodedData(network->service_path()).c_str(),
+      network->type());
+  browser->ShowOptionsTab(page);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

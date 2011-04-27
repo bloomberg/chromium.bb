@@ -517,7 +517,7 @@ void UserManager::OnImageLoaded(const std::string& username,
 }
 
 bool UserManager::IsLoggedInAsGuest() const {
-  return logged_in_user().email() == kGuestUser;
+  return user_is_logged_in() && logged_in_user().email() == kGuestUser;
 }
 
 // Private constructor and destructor. Do nothing.

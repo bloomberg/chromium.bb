@@ -73,9 +73,6 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     EXPECT_CALL(*mock_network_library_, wifi_connected())
         .Times(1)
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_network_library_, cellular_connected())
-        .Times(1)
-        .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, FindWifiDevice())
         .Times(AnyNumber());
     EXPECT_CALL(*mock_network_library_, FindEthernetDevice())

@@ -8,8 +8,10 @@
 
 #include <string>
 
+#include "base/task.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "ui/base/animation/throb_animation.h"
@@ -51,7 +53,8 @@ class NetworkMenuButton : public StatusAreaButton,
                           public NetworkLibrary::NetworkDeviceObserver,
                           public NetworkLibrary::NetworkManagerObserver,
                           public NetworkLibrary::NetworkObserver,
-                          public NetworkLibrary::CellularDataPlanObserver {
+                          public NetworkLibrary::CellularDataPlanObserver,
+                          public MessageBubbleDelegate {
  public:
   explicit NetworkMenuButton(StatusAreaHost* host);
   virtual ~NetworkMenuButton();
@@ -81,6 +84,14 @@ class NetworkMenuButton : public StatusAreaButton,
   // views::View
   virtual void OnLocaleChanged() OVERRIDE;
 
+  // MessageBubbleDelegate implementation:
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) {
+    mobile_data_bubble_ = NULL;
+  }
+  virtual bool CloseOnEscape() { return true; }
+  virtual bool FadeInOnShow() { return false; }
+  virtual void OnHelpLinkActivated();
+
  private:
   // Sets the icon and the badges (badges are at the bottom of the icon).
   void SetIconAndBadges(const SkBitmap* icon,
@@ -102,6 +113,9 @@ class NetworkMenuButton : public StatusAreaButton,
   // old network observer and add a network observer for the active network.
   void RefreshNetworkObserver(NetworkLibrary* cros);
 
+  // Shows 3G promo notification if needed.
+  void ShowOptionalMobileDataPromoNotification(NetworkLibrary* cros);
+
   // The status area host,
   StatusAreaHost* host_;
 
@@ -115,6 +129,9 @@ class NetworkMenuButton : public StatusAreaButton,
   // A  badge icon displayed on top of icon, in bottom-left corner.
   const SkBitmap* left_badge_;
 
+  // Notification bubble for 3G promo.
+  MessageBubble* mobile_data_bubble_;
+
   // The throb animation that does the wifi connecting animation.
   ui::ThrobAnimation animation_connecting_;
 
@@ -124,6 +141,9 @@ class NetworkMenuButton : public StatusAreaButton,
   // If any network is currently active, this is the service path of the one
   // whose status is displayed in the network menu button.
   std::string active_network_;
+
+  // Factory for delaying showing promo notification.
+  ScopedRunnableMethodFactory<NetworkMenuButton> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenuButton);
 };

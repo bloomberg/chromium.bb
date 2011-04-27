@@ -127,6 +127,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
 
   // Mobile plan notifications default to on.
   prefs->RegisterBooleanPref(prefs::kShowPlanNotifications, true);
+
+  // 3G first-time usage promo will be shown at least once.
+  prefs->RegisterBooleanPref(prefs::kShow3gPromoNotification, true);
 }
 
 void Preferences::Init(PrefService* prefs) {

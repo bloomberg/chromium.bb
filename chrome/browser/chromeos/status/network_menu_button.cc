@@ -8,17 +8,60 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/window/window.h"
+
+namespace {
+
+// Time in milliseconds to delay showing of promo
+// notification when Chrome window is not on screen.
+const int kPromoShowDelayMs = 5000;
+
+bool GetBooleanPref(const char* pref_name) {
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser || !browser->profile())
+    return true;
+
+  PrefService* prefs = browser->profile()->GetPrefs();
+  return prefs->GetBoolean(pref_name);
+}
+
+void SetBooleanPref(const char* pref_name, bool value) {
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser || !browser->profile())
+    return;
+
+  PrefService* prefs = browser->profile()->GetPrefs();
+  prefs->SetBoolean(pref_name, value);
+}
+
+// Returns prefs::kShow3gPromoNotification or true if there's no active browser.
+bool ShouldShow3gPromoNotification() {
+  return GetBooleanPref(prefs::kShow3gPromoNotification);
+}
+
+void SetShow3gPromoNotification(bool value) {
+  SetBooleanPref(prefs::kShow3gPromoNotification, value);
+}
+
+}  // namespace
 
 namespace chromeos {
 
@@ -35,7 +78,9 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
       icon_(NULL),
       right_badge_(NULL),
       left_badge_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)) {
+      mobile_data_bubble_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
   animation_connecting_.SetTweenType(ui::Tween::EASE_IN_OUT);
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
@@ -56,6 +101,8 @@ NetworkMenuButton::~NetworkMenuButton() {
   netlib->RemoveCellularDataPlanObserver(this);
   if (!cellular_device_path_.empty())
     netlib->RemoveNetworkDeviceObserver(cellular_device_path_, this);
+  if (mobile_data_bubble_)
+    mobile_data_bubble_->Close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -86,6 +133,7 @@ void NetworkMenuButton::OnNetworkDeviceChanged(NetworkLibrary* cros,
 
 void NetworkMenuButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
   OnNetworkChanged(cros, cros->active_network());
+  ShowOptionalMobileDataPromoNotification(cros);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -131,6 +179,20 @@ bool NetworkMenuButton::ShouldOpenButtonOptions() const {
 void NetworkMenuButton::OnLocaleChanged() {
   NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
   SetNetworkIcon(lib, lib->active_network());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MessageBubbleDelegate implementation:
+
+void NetworkMenuButton::OnHelpLinkActivated() {
+  // mobile_data_bubble_ will be set to NULL in callback.
+  if (mobile_data_bubble_)
+    mobile_data_bubble_->Close();
+  const Network* cellular =
+      CrosLibrary::Get()->GetNetworkLibrary()->cellular_network();
+  if (!cellular)
+    return;
+  ShowTabbedNetworkSettings(cellular);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -266,6 +328,52 @@ void NetworkMenuButton::RefreshNetworkDeviceObserver(NetworkLibrary* cros) {
       cros->AddNetworkDeviceObserver(new_cellular_device_path, this);
     }
     cellular_device_path_ = new_cellular_device_path;
+  }
+}
+
+void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
+    NetworkLibrary* cros) {
+  // Display one-time notification for non-Guest users on first use
+  // of Mobile Data connection.
+  if (IsBrowserMode() && !UserManager::Get()->IsLoggedInAsGuest() &&
+      ShouldShow3gPromoNotification() &&
+      cros->cellular_connected() && !cros->ethernet_connected() &&
+      !cros->wifi_connected()) {
+    const CellularNetwork* cellular = cros->cellular_network();
+    if (!cellular)
+      return;
+
+    gfx::Rect button_bounds = GetScreenBounds();
+    // StatusArea button Y position is usually -1, fix it so that
+    // Contains() method for screen bounds works correctly.
+    button_bounds.set_y(button_bounds.y() + 1);
+    gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
+
+    // Chrome window is initialized in visible state off screen and then is
+    // moved into visible screen area. Make sure that we're on screen
+    // so that bubble is shown correctly.
+    if (!screen_bounds.Contains(button_bounds)) {
+      // If we're not on screen yet, delay notification display.
+      // It may be shown earlier, on next NetworkLibrary callback processing.
+      if (method_factory_.empty()) {
+        MessageLoop::current()->PostDelayedTask(FROM_HERE,
+            method_factory_.NewRunnableMethod(
+                &NetworkMenuButton::ShowOptionalMobileDataPromoNotification,
+                cros),
+            kPromoShowDelayMs);
+      }
+      return;
+    }
+
+    mobile_data_bubble_ = MessageBubble::Show(
+        GetWidget(),
+        button_bounds,
+        BubbleBorder::TOP_RIGHT ,
+        ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_NOTIFICATION_3G),
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE)),
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_OFFLINE_NETWORK_SETTINGS)),
+        this);
+    SetShow3gPromoNotification(false);
   }
 }
 

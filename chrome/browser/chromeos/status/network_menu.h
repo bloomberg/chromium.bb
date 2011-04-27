@@ -144,9 +144,6 @@ class NetworkMenuModel : public ui::MenuModel {
   NetworkMenu* owner_;  // Weak pointer to NetworkMenu that owns this MenuModel.
 
  private:
-  // Shows network details in Web UI options window.
-  void ShowTabbedNetworkSettings(const Network* network) const;
-
   // Show a NetworkConfigView modal dialog instance.
   void ShowNetworkConfigView(NetworkConfigView* view) const;
 
@@ -260,6 +257,10 @@ class NetworkMenu : public views::ViewMenuDelegate {
   // Notify subclasses that connection to |network| was initiated.
   virtual void OnConnectNetwork(const Network* network,
                                 SkBitmap selected_icon_) {}
+
+  // Shows network details in Web UI options window.
+  void ShowTabbedNetworkSettings(const Network* network) const;
+
   // Update the menu (e.g. when the network list or status has changed).
   void UpdateMenu();
 
