@@ -69,6 +69,12 @@ TEST(InputMethodMenuTest, GetTextForIndicatorTest) {
               InputMethodMenu::GetTextForIndicator(desc));
   }
   {
+    InputMethodDescriptor desc("ibus-zinnia-japanese", "Zinnia",
+                               "us", "us", "ja");
+    EXPECT_EQ(UTF8ToWide("\xe6\x89\x8b"),
+              InputMethodMenu::GetTextForIndicator(desc));
+  }
+  {
     InputMethodDescriptor desc("pinyin", "Pinyin", "us", "us", "zh-CN");
     EXPECT_EQ(UTF8ToWide("\xe6\x8b\xbc"),
               InputMethodMenu::GetTextForIndicator(desc));

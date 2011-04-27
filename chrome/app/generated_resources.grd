@@ -11020,6 +11020,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for the Google Japanese Input input method for Japanese keyboard">
         Google Japanese Input (for Japanese keyboard)
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_HANDWRITING_INPUT_METHOD"
+               desc="The label for the Japanese handwriting input method">
+        Handwriting input method for Japanese
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KOREAN_INPUT_METHOD"
                desc="The label for the Korean input method">
         Korean input method

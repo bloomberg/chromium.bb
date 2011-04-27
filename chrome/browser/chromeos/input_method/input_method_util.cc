@@ -185,6 +185,8 @@ const struct EnglishToResouceId {
     IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_US_DV_INPUT_METHOD },
   { "Google Japanese Input (Japanese keyboard layout)",
     IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_JP_INPUT_METHOD },
+  { "Japanese hand-writing engine",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_HANDWRITING_INPUT_METHOD },
   { "Korean", IDS_OPTIONS_SETTINGS_LANGUAGES_KOREAN_INPUT_METHOD },
 
   // For ibus-xkb-layouts engine: third_party/ibus-xkb-layouts/files
