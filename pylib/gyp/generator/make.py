@@ -1248,7 +1248,7 @@ def RunSystemTests():
     # don't even use flock when linking in the cross-compile setup!
     # TODO(evan): refactor cross-compilation such that this code can
     # be reused.
-    link_flags = '-Wl,--threads --Wl,--thread-count=4'
+    link_flags = '-Wl,--threads -Wl,--thread-count=4'
 
   # TODO(evan): cache this output.  (But then we'll need to add extra
   # flags to gyp to flush the cache, yuk!  It's fast enough for now to
