@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -25,7 +25,8 @@ node = env.PPAPIBrowserTester(
     'async_messaging_chrome_browser_test.out',
     url='async_messaging.html',
     files=[env.File('async_messaging.html'),
-           env.File('async_message_test.nmf')] + test_files)
+           env.File('async_message_test.nmf')] + test_files,
+    args=['--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

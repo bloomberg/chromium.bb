@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -43,7 +43,8 @@ if 'TRUSTED_ENV' in env and not env['TRUSTED_ENV'].Bit('mac'):
 
 node = env.PPAPIBrowserTester(
     'inbrowser_test_runner_chrome.out', url='test_runner.html',
-    files=[env.File('test_runner.html')] + test_files)
+    files=[env.File('test_runner.html')] + test_files,
+    args=['--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node, ['chrome_browser_tests'],
                        'run_inbrowser_test_runner_chrome',

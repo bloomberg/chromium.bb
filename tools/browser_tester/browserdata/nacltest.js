@@ -352,11 +352,6 @@ function ends_with(s, suffix) {
 }
 
 
-function is_loaded(embed) {
-  return embed.__moduleReady == 1;
-}
-
-
 function embed_name(embed) {
   if (embed.name != undefined) {
     if (embed.id != undefined) {
@@ -372,10 +367,33 @@ function embed_name(embed) {
 }
 
 
-function NaClWaiter() {
+function NaClWaiter(body_element) {
   // Work around how JS binds 'this'
   var this_ = this;
   var embedsToWaitFor = [];
+  // embedsLoaded contains list of embeds that have dispatched the
+  // 'loadend' progress event.
+  this.embedsLoaded = [];
+  this.is_loaded = function(embed) {
+    for (var i = 0; i < this_.embedsLoaded.length; ++i) {
+      if (this_.embedsLoaded[i] === embed) {
+        return true;
+      }
+    }
+    return embed.__moduleReady == 1;
+  }
+
+  // If an argument was passed, it is the body element for registering
+  // event listeners for the 'loadend' event type.
+  if (body_element != undefined) {
+    var eventListener = function(e) {
+      if (e.type == 'loadend') {
+        this_.embedsLoaded.push(e.target);
+      }
+    }
+
+    body_element.addEventListener('loadend', eventListener, true);
+  }
 
   // Takes an arbitrary number of arguments.
   this.waitFor = function() {
@@ -402,7 +420,7 @@ function NaClWaiter() {
     var loaded = [];
 
     for (var i = 0; i < embedsToWaitFor.length; i++) {
-      if (is_loaded(embedsToWaitFor[i])) {
+      if (this_.is_loaded(embedsToWaitFor[i])) {
         loaded.push(embedsToWaitFor[i]);
       } else {
         waiting.push(embedsToWaitFor[i]);
@@ -432,13 +450,13 @@ function NaClWaiter() {
 }
 
 
-function Tester() {
+function Tester(body_element) {
   // Workaround how JS binds 'this'
   var this_ = this;
   // The tests being run.
   var tests = [];
   this.rpc = new RPCWrapper();
-  this.waiter = new NaClWaiter();
+  this.waiter = new NaClWaiter(body_element);
 
   //
   // BEGIN public interface

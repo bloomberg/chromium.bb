@@ -139,7 +139,8 @@ node = env.PPAPIBrowserTester(
     url='srpc_basic_port.html',
     files=[srpc_test_nexe,
            env.File('srpc_test.nmf'),
-           env.File('srpc_basic_port.html')])
+           env.File('srpc_basic_port.html')],
+    args=['--enable_experimental_js'])
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_srpc_basic_chrome_browser_test',

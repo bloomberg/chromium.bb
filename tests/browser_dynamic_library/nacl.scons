@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -54,7 +54,7 @@ node = env.PPAPIBrowserTester(
     # subdir is in nacl-glibc's search path (we should remove it) and
     # because we're not using an explicit mapping based on a manifest
     # file yet.
-    args=['--allow_404'])
+    args=['--allow_404', '--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node, ['dynamic_library_browser_tests'],
                        'run_browser_dynamic_library_test',

@@ -1,0 +1,7 @@
+{
+  "nexes": {
+    "x86-32": "http://www.google.com/crossorigin.nexe",
+    "x86-64": "http://www.google.com/crossorigin.nexe",
+    "arm": "http://www.google.com/crossorigin.nexe",
+  }
+}

@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -26,18 +26,17 @@ bool ElfHeaderLooksValid(const char* e_ident_bytes,
                          size_t size,
                          nacl::string* error) {
   if (size < EI_NIDENT) {
-    *error = "NaCl module load failed: not an ELF executable: file too short.";
+    *error = "not an ELF executable: file too short.";
     return false;
   }
   if (strncmp(e_ident_bytes, EI_MAG0123, strlen(EI_MAG0123)) != 0) {
     // This can happen if we read a 404 error page, for example.
-    *error = "NaCl module load failed: not an ELF executable: "
-             "bad magic number.";
+    *error = "not an ELF executable: bad magic number.";
     return false;
   }
   if (e_ident_bytes[EI_ABIVERSION] != EF_NACL_ABIVERSION) {
     nacl::stringstream ss;
-    ss << "NaCl module load failed: bad ELF executable: ABI version mismatch:"
+    ss << "bad ELF executable: ABI version mismatch:"
        << " expected " << EF_NACL_ABIVERSION
        << ", found " << (unsigned) e_ident_bytes[EI_ABIVERSION] << ".";
     *error = ss.str();
@@ -64,20 +63,20 @@ bool BrowserInterface::GetOrigin(InstanceIdentifier instance_id,
 bool BrowserInterface::MightBeElfExecutable(nacl::DescWrapper* wrapper,
                                             nacl::string* error) {
   if (wrapper == NULL) {
-    *error = "NaCl module load failed: bad descriptor for reading.";
+    *error = "bad descriptor for reading.";
     return false;
   }
   if (wrapper->type_tag() == NACL_DESC_SHM) {
     void* buf;
     size_t size;
     if (0 != wrapper->Map(&buf, &size)) {
-      *error = "NaCl module load failed: Map() failure.";
+      *error = "Map() failure.";
       return false;
     }
     char* header = reinterpret_cast<char*>(buf);
     bool might_be_elf = ElfHeaderLooksValid(header, size, error);
     if (0 != wrapper->Unmap(buf, size)) {
-      *error = "NaCl module load failed: Unmap() failure.";
+      *error = "Unmap() failure.";
       return false;
     }
     return might_be_elf;
@@ -85,7 +84,7 @@ bool BrowserInterface::MightBeElfExecutable(nacl::DescWrapper* wrapper,
     static int const kAbiHeaderSize = sizeof(Elf_Ehdr);
     char elf_hdr[kAbiHeaderSize];
     if (kAbiHeaderSize > wrapper->Read(elf_hdr, sizeof elf_hdr)) {
-      *error = "NaCl module load failed: Read() failure.";
+      *error = "Read() failure.";
       return false;
     }
     return ElfHeaderLooksValid(elf_hdr, kAbiHeaderSize, error);

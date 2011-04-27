@@ -71,8 +71,7 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // ----- Methods inherited from Plugin:
 
   // Requests a NaCl manifest download from a |url| relative to the page origin.
-  // Returns false on failure.
-  virtual bool RequestNaClManifest(const nacl::string& url);
+  virtual void RequestNaClManifest(const nacl::string& url);
 
   // Support for proxied execution.
   virtual bool StartProxiedExecution(NaClSrpcChannel* srpc_channel,

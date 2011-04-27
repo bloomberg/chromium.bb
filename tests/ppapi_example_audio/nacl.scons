@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -27,7 +27,8 @@ test = env.PPAPIBrowserTester('ppapi_example_audio_test.out',
                               url='ppapi_audio_test.html',
                               files=[nexe,
                                      env.File('ppapi_example_audio.nmf'),
-                                     env.File('ppapi_audio_test.html')])
+                                     env.File('ppapi_audio_test.html')],
+                              args=['--enable_experimental_js'])
 
 # Though this tests passes locally, it does not pass on the Windows
 # and Linux buildbots, which do not have audio devices.  Although

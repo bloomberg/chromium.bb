@@ -1,0 +1,7 @@
+{
+  "nexes": {
+    "x86-32": "ppapi_bad.html",
+    "x86-64": "ppapi_bad.html",
+    "arm": "ppapi_bad.html",
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "nexes": {
+    "x86-32": "ppapi_progress_events_x86-32.nexe",
+    "x86-64": "ppapi_progress_events_x86-64.nexe",
+    "arm": "ppapi_progress_events_arm.nexe",
+  }
+}

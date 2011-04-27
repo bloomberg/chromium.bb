@@ -63,7 +63,7 @@ const ssize_t kNaclManifestMaxFileBytesNoNull =
 // The key used to find the dictionary nexe URLs in the manifest file.
 const char* const kNexesKey = "nexes";
 
-bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
+bool UrlAsNaClDesc(void* obj, SrpcParams* params) {
   // TODO(sehr,polina): this API should take a selector specify which of
   // UMP, CORS, or traditional origin policy should be used.
   NaClSrpcArg** ins = params->ins();
@@ -78,7 +78,7 @@ bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
       url, *reinterpret_cast<pp::Var*>(ins[1]->arrays.oval));
 }
 
-bool GetLastError(void* obj, plugin::SrpcParams* params) {
+bool GetLastError(void* obj, SrpcParams* params) {
   NaClSrpcArg** outs = params->outs();
   PLUGIN_PRINTF(("GetLastError (obj=%p)\n", obj));
 
@@ -397,6 +397,7 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   set_scriptable_handle(handle);
   PLUGIN_PRINTF(("PluginPpapi::Init (scriptable_handle=%p)\n",
                  static_cast<void*>(scriptable_handle())));
+
   bool status = Plugin::Init(
       browser_interface,
       PPInstanceToInstanceIdentifier(static_cast<pp::Instance*>(this)),
@@ -419,7 +420,7 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       // can be a URI or a URL pointing to the manifest file. The manifest
       // file will be parsed to determine the nexe URL.
       // Sets nacl property to full manifest URL.
-      status = RequestNaClManifest(nacl_attr);
+      RequestNaClManifest(nacl_attr);
     }
   }
 
@@ -555,12 +556,14 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
                          NACL_NO_FILE_PATH,
                          &error_string)) {
     ReportLoadError(error_string);
+    return;
   }
   int32_t file_desc_ok_to_close = DUP(file_desc);
   if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
     ReportLoadError("could not duplicate loaded file handle.");
+    return;
   }
-  // Inform JavaScript that progress is being made.
+  // Inform JavaScript that we successfully loaded the manifest file.
   DispatchProgressEvent("progress", false, kUnknownBytes, kUnknownBytes);
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(wrapper_factory()->MakeFileDesc(file_desc_ok_to_close, O_RDONLY));
@@ -717,26 +720,26 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   if (SelectNexeURLFromManifest(json_buffer.get(), &nexe_url)) {
     PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (nexe_url=%s)\n",
                    nexe_url.c_str()));
+    // Inform JavaScript that we found a nexe URL to load.
+    DispatchProgressEvent("progress", false, kUnknownBytes, kUnknownBytes);
     pp::CompletionCallback open_callback =
         callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
     // Will always call the callback on success or failure.
     nexe_downloader_.Open(nexe_url, open_callback);
-    // Inform JavaScript that progress is being made.
-    DispatchProgressEvent("progress", false, kUnknownBytes, kUnknownBytes);
     return;
   }
   ReportLoadError("could not select from manifest file.");
 }
 
 
-bool PluginPpapi::RequestNaClManifest(const nacl::string& url) {
+void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
   PLUGIN_PRINTF(("PluginPpapi::RequestNaClManifest (url='%s')\n", url.c_str()));
   // Inform JavaScript that a load is starting.
   DispatchProgressEvent("loadstart", false, kUnknownBytes, kUnknownBytes);
   pp::CompletionCallback open_callback =
       callback_factory_.NewCallback(&PluginPpapi::NaClManifestFileDidOpen);
   // Will always call the callback on success or failure.
-  return nexe_downloader_.Open(url, open_callback);
+  nexe_downloader_.Open(url, open_callback);
 }
 
 
@@ -909,6 +912,7 @@ void PluginPpapi::ReportLoadError(const nacl::string& error) {
 void PluginPpapi::ReportLoadAbort() {
   PLUGIN_PRINTF(("PluginPpapi::ReportLoadAbort\n"));
   nacl::string error_string("NaCl module load failed: user aborted");
+  set_last_error_string(error_string);
   browser_interface()->AddToConsole(instance_id(), error_string);
   ShutdownProxy();
   // Inform JavaScript that loading was aborted and is complete.

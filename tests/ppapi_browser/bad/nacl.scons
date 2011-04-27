@@ -1,0 +1,48 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# TODO(robertm): those should not be necessary once we go -std=c99
+env.FilterOut(CFLAGS=['-pedantic'])
+env.FilterOut(CCFLAGS=['-pedantic'])
+
+bad_target = ('ppapi_bad_%s.nexe' % env.get('TARGET_FULLARCH'))
+ppapi_bad_nexe = env.ComponentProgram(bad_target,
+                                      ['ppapi_bad.cc'],
+                                      EXTRA_LIBS=['${PPAPI_LIBS}',
+                                                  'platform',
+                                                  'pthread',
+                                                  'gio'])
+
+# Note that the html and a .nmf manifest is required to run this program.
+bad_copy = env.Replicate('$STAGING_DIR',
+                         ['ppapi_bad.html',
+                          'ppapi_bad_crossorigin.nmf',
+                          'ppapi_bad_doesnotexist.nmf',
+                          'ppapi_bad_magic.nmf',
+                          'ppapi_bad_nexe.nmf',
+                          env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
+                                   'browserdata/nacltest.js')])
+env.Depends(ppapi_bad_nexe, bad_copy)
+
+node = env.PPAPIBrowserTester(
+    'ppapi_bad_browser_test.out',
+    url='ppapi_bad.html',
+    files=[ppapi_bad_nexe,
+           env.File('ppapi_bad.html'),
+           env.File('${SCONSTRUCT_DIR}/tests/ppapi_browser' +
+                    '/progress_events/ppapi_progress_events.js'),
+           env.File('ppapi_bad_crossorigin.nmf'),
+           env.File('ppapi_bad_doesnotexist.nmf'),
+           env.File('ppapi_bad_magic.nmf'),
+           env.File('ppapi_bad_nexe.nmf')],
+    args=['--allow_404'])
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_bad_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
+

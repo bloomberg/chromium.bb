@@ -126,8 +126,9 @@ bool GetNaClProperty(void* obj, SrpcParams* params) {
 
 bool SetNaClProperty(void* obj, SrpcParams* params) {
   PLUGIN_PRINTF(("SetNaClProperty ()\n"));
-  return reinterpret_cast<Plugin*>(obj)->
+  reinterpret_cast<Plugin*>(obj)->
       SetNaClPropertyImpl(params->ins()[0]->arrays.str);
+  return true;
 }
 
 bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
@@ -311,14 +312,14 @@ bool Plugin::InitParamsEx(uintptr_t method_id,
   return socket_->handle()->InitParams(method_id, call_type, params);
 }
 
-bool Plugin::SetNaClPropertyImpl(const nacl::string& url) {
+void Plugin::SetNaClPropertyImpl(const nacl::string& url) {
   PLUGIN_PRINTF(("Plugin::SetNaClPropertyImpl (unloading previous)\n"));
   // We do not actually need to shut down the process here when
   // initiating the (asynchronous) download.  It is more important to
   // shut down the old process when the download completes and a new
   // process is launched.
   ShutDownSubprocess();
-  return RequestNaClManifest(url);
+  RequestNaClManifest(url);
 }
 
 bool Plugin::Init(BrowserInterface* browser_interface,

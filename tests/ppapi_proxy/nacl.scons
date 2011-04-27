@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -47,7 +47,8 @@ node = env.PPAPIBrowserTester(
            user_main_nexe,
            env.File('basic_object.html'),
            env.File('basic_object.nmf'),
-           env.File('user_main.nmf')])
+           env.File('user_main.nmf')],
+           args=['--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

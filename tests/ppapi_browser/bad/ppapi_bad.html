@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2011 Google Inc.  All rights reserved. -->
+  <head>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+    <META HTTP-EQUIV="Expires" CONTENT="-1" />
+    <script type="text/javascript" src="nacltest.js"> </script>
+    <script type="text/javascript" src="ppapi_progress_events.js"> </script>
+    <title> PPAPI bad manifest/nexe URLs </title>
+  </head>
+  <body id="body">
+<script type="text/javascript">
+//<![CDATA[
+var tester = new Tester($('body'));
+// 'bad_magic' loads a manifest, then loads a nexe that tests as invalid.
+testProgressEventStateMachine(
+    tester,
+    'bad_magic',
+    1,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: not an ELF executable: bad magic number.');
+// 'cross_origin' loads a manifest, then tries to load a cross-origin nexe.
+testProgressEventStateMachine(
+    tester,
+    'cross_origin',
+    1,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: could not load nexe url.');
+// 'cross_manifest' tries to load a cross-origin manifest.
+testProgressEventStateMachine(
+    tester,
+    'cross_manifest',
+    0,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: could not load manifest url.');
+// 'nonexist_nexe' loads a manifest, then tries to load a nonexistent nexe.
+testProgressEventStateMachine(
+    tester,
+    'nonexist_nexe',
+    1,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: could not load nexe url.');
+// 'nonexist_manifest' tries to load a nonexistent manifest.
+testProgressEventStateMachine(
+    tester,
+    'nonexist_manifest',
+    0,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: could not load manifest url.');
+// 'bad_nexe' loads a manifest, then loads a nexe that fails to start.
+testProgressEventStateMachine(
+    tester,
+    'bad_nexe',
+    1,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: could not initialize module.');
+// 'bad_manifest' loads an invalid manifest.
+testProgressEventStateMachine(
+    tester,
+    'bad_manifest',
+    0,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: could not read manifest file.');
+// The driver invoked when the body has finished loading.
+function runTests() {
+  tester.waitFor(
+      $('bad_magic'),
+      $('cross_origin'),
+      $('cross_manifest'),
+      $('nonexist_nexe'),
+      $('nonexist_manifest'),
+      $('bad_nexe'),
+      $('bad_manifest'));
+  tester.run();
+}
+// Set all the listeners on the body.
+setListeners($('body'));
+//]]>
+</script>
+    <embed id="cross_manifest"
+      class="naclModule"
+      width=100 height=20
+      nacl="http://www.google.com/crossorigin.manifest"
+      style="background-color:gray"
+      type="application/x-nacl" />
+    <embed id="cross_manifest_pdf"
+      width=100 height=20
+      nacl="http://www.google.com/crossorigin.manifest"
+      style="background-color:gray"
+      type="application/pdf" />
+
+    <embed id="nonexist_manifest"
+      class="naclModule"
+      width=100 height=20
+      nacl="doesnotexist.manifest"
+      style="background-color:gray"
+      type="application/x-nacl" />
+
+    <embed id="bad_manifest"
+      class="naclModule"
+      width=100 height=20
+      nacl="ppapi_bad.html"
+      style="background-color:gray"
+      type="application/x-nacl" />
+
+    <embed id="cross_origin"
+      class="naclModule"
+      width=100 height=20
+      nacl="ppapi_bad_crossorigin.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
+    <!-- This load would have succeeded if the NEXE was from a chrome-extension
+         URL and NaCl had been registered as handling the PDF MIME type using
+         the nacl_modules attribute in a Chrome extension manifest. -->
+    <embed id="cross_origin_pdf"
+      width=100 height=20
+      nacl="ppapi_bad_crossorigin.nmf"
+      style="background-color:gray"
+      type="application/pdf" />
+
+    <embed id="nonexist_nexe"
+      class="naclModule"
+      width=100 height=20
+      nacl="ppapi_bad_doesnotexist.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
+
+    <embed id="bad_magic"
+      class="naclModule"
+      width=100 height=20
+      nacl="ppapi_bad_magic.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
+
+    <embed id="bad_nexe"
+      class="naclModule"
+      width=100 height=20
+      nacl="ppapi_bad_nexe.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
+  <script type="text/javascript">
+  //<![CDATA[
+  runTests();
+  //]]>
+  </script>
+  </body>
+</html>

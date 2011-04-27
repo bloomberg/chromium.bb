@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -61,7 +61,7 @@ node = env.PPAPIBrowserTester(
             env.File('${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/'
                      'nacltest.js'),
             ],
-     args=['--allow_404'],
+     args=['--allow_404', '--enable_experimental_js'],
      )
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

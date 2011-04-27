@@ -69,6 +69,7 @@ node = env.PPAPIBrowserTester(
            env.File('earth_c.html'),
            env.File('earth_c.nmf'),
            ],
+    args=['--enable_experimental_js']
     )
 
 env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_c')
@@ -80,6 +81,7 @@ node = env.PPAPIBrowserTester(
            env.File('earth_cc.html'),
            env.File('earth_cc.nmf'),
            ],
+    args=['--enable_experimental_js']
     )
 
 env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_cc')

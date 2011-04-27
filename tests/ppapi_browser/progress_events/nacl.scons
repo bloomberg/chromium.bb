@@ -13,8 +13,6 @@ progress_events_sources = env.ComponentObject('ppapi_progress_events.cc'),
 
 progress_events_target = ('ppapi_progress_events_%s.nexe' %
                           env.get('TARGET_FULLARCH'))
-env.Alias('ppapi_progress_events.nexe',
-          ['$STAGING_DIR/%s' % progress_events_target])
 progress_events_nexe = env.ComponentProgram(progress_events_target,
                                             [progress_events_sources],
                                             EXTRA_LIBS=['${PPAPI_LIBS}',
@@ -22,6 +20,9 @@ progress_events_nexe = env.ComponentProgram(progress_events_target,
                                                         'pthread',
                                                         'platform',
                                                         'gio'])
+# Needed by other tests using progress events.
+env.Publish(progress_events_target, 'run', ['ppapi_progress_events.js'])
+
 # Note that the html and a .nmf manifest is required to run this program.
 dest_copy = env.Replicate('$STAGING_DIR',
                           ['ppapi_progress_events.html',
@@ -37,7 +38,8 @@ node = env.PPAPIBrowserTester(
     files=[progress_events_nexe,
            env.File('ppapi_progress_events.html'),
            env.File('ppapi_progress_events.js'),
-           env.File('ppapi_progress_events.nmf')])
+           env.File('ppapi_progress_events.nmf')],
+    args=['--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

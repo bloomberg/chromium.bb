@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -34,7 +34,8 @@ node = env.PPAPIBrowserTester('ppapi_core_browser_test.out',
                               url='ppapi_core.html',
                               files=[ppapi_core_nexe,
                                      env.File('ppapi_core.nmf'),
-                                     env.File('ppapi_core.html')])
+                                     env.File('ppapi_core.html')],
+                              args=['--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

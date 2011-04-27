@@ -42,7 +42,8 @@ node = env.PPAPIBrowserTester('ppapi_test_example_browser_test.out',
                               url='ppapi_test_example.html',
                               files=[ ppapi_test_example_nexe,
                                       env.File('ppapi_test_example.nmf'),
-                                      env.File('ppapi_test_example.html')] )
+                                      env.File('ppapi_test_example.html')],
+                              args=['--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

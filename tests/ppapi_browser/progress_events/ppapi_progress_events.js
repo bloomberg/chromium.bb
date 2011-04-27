@@ -35,11 +35,13 @@ function EventStateMachine() {
     // The index values of this_.expectedNext are the only valid states.
     // Invalid event types are normalized to 'UNEXPECTED'.
     if (this_.expectedNext[event_type] == undefined) {
+      console.log('unexpected ' + event_type);
       event_type = 'UNEXPECTED';
     }
     // Check that the next event type is expected from the current state.
     // If not, we transition to the state 'UNEXPECTED'.
     if (!(event_type in this_.expectedNext[this_.currentState])) {
+      console.log('unexpected ' + event_type + ' from ' + this_.currentState);
       event_type = 'UNEXPECTED';
     }
     this_.currentState = event_type;
@@ -65,7 +67,6 @@ function lookupEventMachine(element_id) {
 // per document.
 var setListeners = function(body_element) {
   var eventListener = function(e) {
-    console.log('e.type = ' + e.type);
     // Find the target element of the event.
     var target_element = e.target;
     // Body only dispatches for elements having the 'naclModule' CSS class.
@@ -85,4 +86,64 @@ var setListeners = function(body_element) {
   body_element.addEventListener('abort', eventListener, true);
   body_element.addEventListener('load', eventListener, true);
   body_element.addEventListener('loadend', eventListener, true);
+}
+
+// Performs some tests to make sure that progress events follow the expected
+// state transitions to end in an expected state.
+function testProgressEventStateMachine(tester,
+                                       embedId,
+                                       progressMinCount,
+                                       errorCount,
+                                       abortCount,
+                                       loadCount,
+                                       lastError) {
+  var eventMachine = lookupEventMachine(embedId);
+  // Test the expected number of occurrences, with some duplication.
+  tester.addTest('begin_count_' + embedId, function() {
+    // There should be no 'BEGIN' event.
+    assertEqual(eventMachine.stateHistogram['BEGIN'], 0);
+  });
+  tester.addTest('loadstart_count_' + embedId, function() {
+    // There should be one 'loadstart' event.
+    assertEqual(eventMachine.stateHistogram['loadstart'], 1);
+  });
+  tester.addTest('progress_min_count_' + embedId, function() {
+    // There should be at least one progress event when the manifest file is
+    // loaded and another when the .nexe is loaded.
+    assert(eventMachine.stateHistogram['progress'] >= progressMinCount);
+  });
+  tester.addTest('error_count_' + embedId, function() {
+    // Check that the right number of 'error' events were dispatched.
+    assertEqual(eventMachine.stateHistogram['error'], errorCount);
+  });
+  tester.addTest('abort_count_' + embedId, function() {
+    // Check that the right number of 'abort' events were dispatched.
+    assertEqual(eventMachine.stateHistogram['abort'], abortCount);
+  });
+  tester.addTest('load_count_' + embedId, function() {
+    // Check that the right number of 'load' events were dispatched.
+    assertEqual(eventMachine.stateHistogram['load'], loadCount);
+  })
+  tester.addTest('loadend_count_' + embedId, function() {
+    // There should be one 'loadend' event.
+    assertEqual(eventMachine.stateHistogram['loadend'], 1);
+  });
+  tester.addTest('unexpected_count_' + embedId, function() {
+    // There should be no 'UNEXPECTED' event.
+    assertEqual(eventMachine.stateHistogram['UNEXPECTED'], 0);
+  });
+  tester.addTest('end_state_' + embedId, function() {
+    // Test that the progress events followed the expected sequence to
+    // completion in the 'loadend' state.
+    assertEqual(eventMachine.currentState, 'loadend');
+  });
+  tester.addTest('last_error_string_' + embedId, function() {
+    // If an error or abort was reported, check that lastError is set
+    // to the correct value.
+    if ((eventMachine.stateHistogram['error'] > 0 ||
+         eventMachine.stateHistogram['abort'] > 0)) {
+      var embed = $(embedId);
+      assertEqual(embed.lastError, lastError);
+    }
+  });
 }
