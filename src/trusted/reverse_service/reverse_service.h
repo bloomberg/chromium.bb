@@ -9,18 +9,25 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/reverse_service/reverse_socket.h"
+#include "native_client/src/shared/platform/refcount_base.h"
 
 namespace nacl {
 
 class DescWrapper;
 
-class ReverseService {
+class ReverseService : public RefCountBase {
  public:
   explicit ReverseService(nacl::DescWrapper* conn_cap);
 
-  ~ReverseService();
+  // covariant impl of Ref()
+  ReverseService* Ref() {
+    return reinterpret_cast<ReverseService*>(RefCountBase::Ref());
+  }
 
-  bool Start(void* server_instance_data);
+  bool Start();
+
+ protected:
+  ~ReverseService();
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ReverseService);

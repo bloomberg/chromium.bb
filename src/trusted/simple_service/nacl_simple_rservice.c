@@ -176,6 +176,9 @@ static void WINAPI ConnRpcBase(void *thread_state) {
   NaClLog(4, "Entered ConnRpcBase, invoking RpcHandler vfn\n");
   (*NACL_VTBL(NaClSimpleRevService, rev_conn->service)->RpcHandler)(
       rev_conn->service, rev_conn);
+  if (NULL != rev_conn->instance_data_cleanup) {
+    (*rev_conn->instance_data_cleanup)(rev_conn->instance_data);
+  }
   NaClThreadDtor(&rev_conn->thread);
   NaClLog(4, "Leaving ConnRpcBase\n");
   NaClRefCountUnref((struct NaClRefCount *) rev_conn);
@@ -183,7 +186,8 @@ static void WINAPI ConnRpcBase(void *thread_state) {
 
 int NaClSimpleRevServiceConnectAndSpawnHandler(
     struct NaClSimpleRevService *self,
-    void                        *instance_data) {
+    void                        *instance_data,
+    void                        (*instance_data_cleanup)(void *instance_data)) {
   int                             status;
   struct NaClDesc                 *conn = NULL;
   struct NaClSimpleRevConnection  *rev_conn;
@@ -198,7 +202,7 @@ int NaClSimpleRevServiceConnectAndSpawnHandler(
   }
   if (0 != (status =
             (*NACL_VTBL(NaClSimpleRevService, self)->RevConnectionFactory)(
-                self, conn, instance_data, &rev_conn))) {
+                self, conn, instance_data, instance_data_cleanup, &rev_conn))) {
     NaClDescUnref(conn);
     NaClLog(4,
             ("NaClSimpleRevServiceConnectAndSpawnHandler: factory failed,"
@@ -229,8 +233,9 @@ int NaClSimpleRevServiceConnectionFactory(
     struct NaClSimpleRevService     *self,
     struct NaClDesc                 *conn,
     void                            *instance_data,
+    void                            (*instance_data_cleanup)(
+        void *instance_data),
     struct NaClSimpleRevConnection  **out) {
-
   struct NaClSimpleRevConnection *rconn;
 
   rconn = (struct NaClSimpleRevConnection *) malloc(sizeof *rconn);
@@ -239,7 +244,8 @@ int NaClSimpleRevServiceConnectionFactory(
             " no memory\n");
     return -NACL_ABI_EAGAIN;
   }
-  if (!NaClSimpleRevConnectionCtor(rconn, self, conn, instance_data)) {
+  if (!NaClSimpleRevConnectionCtor(rconn, self, conn, instance_data,
+                                   instance_data_cleanup)) {
     NaClLog(4, "NaClSimpleRevServiceConnectionFactoryWithInstanceData:"
             " NaClSimpleRevConnectionCtor failed\n");
     free(rconn);
@@ -271,10 +277,13 @@ struct NaClSimpleRevServiceVtbl const kNaClSimpleRevServiceVtbl = {
   NaClSimpleRevServiceRpcHandler,
 };
 
-int NaClSimpleRevConnectionCtor(struct NaClSimpleRevConnection  *self,
-                                struct NaClSimpleRevService     *service,
-                                struct NaClDesc                 *conn,
-                                void                            *data) {
+int NaClSimpleRevConnectionCtor(
+    struct NaClSimpleRevConnection  *self,
+    struct NaClSimpleRevService     *service,
+    struct NaClDesc                 *conn,
+    void                            *instance_data,
+    void                            (*instance_data_cleanup)(
+        void *instance_data)) {
   NaClLog(4,
           "NaClSimpleRevConnectionCtor: this 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) self);
@@ -284,7 +293,8 @@ int NaClSimpleRevConnectionCtor(struct NaClSimpleRevConnection  *self,
 
   self->service = service;
   self->connected_socket = conn;
-  self->instance_data = data;
+  self->instance_data = instance_data;
+  self->instance_data_cleanup = instance_data_cleanup;
 
   return 1;
 }

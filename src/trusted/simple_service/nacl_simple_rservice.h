@@ -106,13 +106,17 @@ struct NaClSimpleRevServiceVtbl {
   /* syscall convention */
   int                         (*ConnectAndSpawnHandler)(
       struct NaClSimpleRevService *self,
-      void                        *instance_data);
+      void                        *instance_data,
+      void                        (*instance_data_cleanup)(
+          void *instance_data));
 
   /* syscall convention */
   int                         (*RevConnectionFactory)(
       struct NaClSimpleRevService     *self,
       struct NaClDesc                 *conn,
       void                            *instance_data,
+      void                            (*instance_data_cleanup)(
+          void *instance_data),
       struct NaClSimpleRevConnection  **out);
 
   void                        (*RpcHandler)(
@@ -129,12 +133,16 @@ struct NaClSimpleRevConnection {
   struct NaClThread           thread;
 
   void                        *instance_data;
+  void                        (*instance_data_cleanup)(void *instance_data);
 };
 
-int NaClSimpleRevConnectionCtor(struct NaClSimpleRevConnection  *self,
-                                struct NaClSimpleRevService     *service,
-                                struct NaClDesc                 *conn,
-                                void                            *instance_data);
+int NaClSimpleRevConnectionCtor(
+    struct NaClSimpleRevConnection  *self,
+    struct NaClSimpleRevService     *service,
+    struct NaClDesc                 *conn,
+    void                            *instance_data,
+    void                            (*instance_data_cleanup)(
+        void *instance_data));
 
 void NaClSimpleRevConnectionDtor(struct NaClRefCount *vself);
 
@@ -142,6 +150,8 @@ int NaClSimpleRevServiceConnectionFactory(
     struct NaClSimpleRevService     *self,
     struct NaClDesc                 *conn,
     void                            *instance_data,
+    void                            (*instance_data_cleanup)(
+        void *instance_data),
     struct NaClSimpleRevConnection  **out);
 
 extern struct NaClRefCountVtbl kNaClSimpleRevConnectionVtbl;

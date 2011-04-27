@@ -1410,7 +1410,7 @@ int NaClSecureServiceConnectionFactory(
 
   /* our instance_data is not connection specific */
   return NaClSimpleServiceConnectionFactoryWithInstanceData(
-      vself, conn, self->nap, out);
+      vself, conn, self->nap, (void (*)(void *)) NULL, out);
 }
 
 int NaClSecureServiceAcceptAndSpawnHandler(struct NaClSimpleService *vself) {

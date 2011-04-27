@@ -20,10 +20,13 @@
 /* NACL_KERN_STACK_SIZE */
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 
-int NaClSimpleServiceConnectionCtor(struct NaClSimpleServiceConnection  *self,
-                                    struct NaClSimpleService            *server,
-                                    struct NaClDesc                     *conn,
-                                    void                                *data) {
+int NaClSimpleServiceConnectionCtor(
+    struct NaClSimpleServiceConnection  *self,
+    struct NaClSimpleService            *server,
+    struct NaClDesc                     *conn,
+    void                                *instance_data,
+    void                                (*instance_data_cleanup)(
+        void *instance_data)) {
   NaClLog(4,
           "NaClSimpleServiceConnectionCtor: this 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) self);
@@ -34,7 +37,8 @@ int NaClSimpleServiceConnectionCtor(struct NaClSimpleServiceConnection  *self,
       (struct NaClRefCount *) server);
   self->connected_socket = (struct NaClDesc *) NaClRefCountRef(
       (struct NaClRefCount *) conn);
-  self->instance_data = data;
+  self->instance_data = instance_data;
+  self->instance_data_cleanup = instance_data_cleanup;
   self->base.vtbl = (struct NaClRefCountVtbl const *)
       &kNaClSimpleServiceConnectionVtbl;
   return 1;
@@ -65,6 +69,9 @@ int NaClSimpleServiceConnectionServerLoop(
   NaClLog(4,
           "NaClSimpleServiceConnectionServerLoop: NaClSrpcServerLoop exited,"
           " value %d\n", retval);
+  if (NULL != self->instance_data_cleanup) {
+    (*self->instance_data_cleanup)(self->instance_data);
+  }
   return retval;
 }
 
@@ -171,6 +178,8 @@ int NaClSimpleServiceConnectionFactoryWithInstanceData(
     struct NaClSimpleService            *self,
     struct NaClDesc                     *conn,
     void                                *instance_data,
+    void                                (*instance_data_cleanup)(
+        void *instance_data),
     struct NaClSimpleServiceConnection  **out) {
   struct NaClSimpleServiceConnection  *server_conn;
   int                                 status;
@@ -193,7 +202,8 @@ int NaClSimpleServiceConnectionFactoryWithInstanceData(
   if (!NaClSimpleServiceConnectionCtor(server_conn,
                                        self,
                                        conn,
-                                       instance_data)) {
+                                       instance_data,
+                                       instance_data_cleanup)) {
     free(server_conn);
     status = -NACL_ABI_EIO;
     goto abort;
@@ -213,7 +223,7 @@ int NaClSimpleServiceConnectionFactory(
     struct NaClDesc                     *conn,
     struct NaClSimpleServiceConnection  **out) {
   return NaClSimpleServiceConnectionFactoryWithInstanceData(
-      self, conn, self, out);
+      self, conn, self, (void (*)(void *)) NULL, out);
 }
 
 int NaClSimpleServiceAcceptConnection(

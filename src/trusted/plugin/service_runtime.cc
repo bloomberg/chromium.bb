@@ -14,6 +14,7 @@
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/scoped_ptr_refcount.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/desc/nrd_xfer_effector.h"
@@ -114,7 +115,7 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   }
   out_conn_cap = NULL;  // ownership passed
   reverse_service_ = new nacl::ReverseService(conn_cap);
-  if (!reverse_service_->Start(reinterpret_cast<void*>(reverse_service_))) {
+  if (!reverse_service_->Start()) {
     *error_string = "ServiceRuntime: starting reverse services failed";
     return false;
   }
@@ -286,8 +287,13 @@ void ServiceRuntime::Shutdown() {
   // subprocess_ killed, but threads waiting on messages from the
   // service runtime may not have noticed yet.  however, the low-level
   // NaClSimpleRevService code takes care to refcount the data objects
-  // that it needs, so this is (or should be) safe.
-  delete reverse_service_;
+  // that it needs, and reverse_service_ is also refcounted.
+  //
+  // BUG(bsy) the thread may still do a NaClLog, and we should join
+  // them prior to running module finalizers such as NaClLogFini.
+  if (reverse_service_ != NULL) {
+    reverse_service_->Unref();
+  }
   reverse_service_ = NULL;
 }
 
@@ -298,7 +304,9 @@ ServiceRuntime::~ServiceRuntime() {
   // We do this just in case Terminate() was not called.
   delete subprocess_;
   delete runtime_channel_;
-  delete reverse_service_;
+  if (reverse_service_ != NULL) {
+    reverse_service_->Unref();
+  }
 
   // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
   delete async_receive_desc_;

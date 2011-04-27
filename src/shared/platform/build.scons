@@ -1,7 +1,8 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+#
+# Copyright (c) 2008 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 
 import atexit
@@ -81,6 +82,7 @@ platform_inputs += [
     'nacl_sync_checked.c',
     'nacl_sync.cc',
     'platform_init.c',
+    'refcount_base.cc',
     'time.cc',
     ]
 

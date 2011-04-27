@@ -20,6 +20,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/scoped_ptr_refcount.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
@@ -236,7 +237,7 @@ int raii_main(int argc, char* argv[]) {
 
   delete host_file;
 
-  nacl::scoped_ptr<nacl::ReverseService> rev_svc;
+  nacl::scoped_ptr_refcount<nacl::ReverseService> rev_svc;
 
   if (rpc_services) {
     NaClLog(1, "Launching reverse RPC services\n");
@@ -262,7 +263,7 @@ int raii_main(int argc, char* argv[]) {
       exit(1);
     }
     conn_cap.release();
-    if (!rev_svc->Start(reinterpret_cast<void*>(NULL))) {
+    if (!rev_svc->Start()) {
       NaClLog(LOG_ERROR, "sel_universal: reverse service start failed\n");
       exit(1);
     }

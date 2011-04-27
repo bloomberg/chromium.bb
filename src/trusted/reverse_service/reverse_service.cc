@@ -34,10 +34,17 @@ void AddChannel(struct NaClSrpcRpc *rpc,
   UNREFERENCED_PARAMETER(in_args);
   UNREFERENCED_PARAMETER(out_args);
   NaClLog(4, "Entered AddChannel\n");
-  service->Start(reinterpret_cast<void*>(service));
+  out_args[0]->u.bval = service->Start();
   NaClLog(4, "Leaving AddChannel\n");
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
+}
+
+void Cleanup(void *self) {
+  nacl::ReverseService* service = reinterpret_cast<nacl::ReverseService*>(
+      self);
+
+  service->Unref();
 }
 
 }  // namespace
@@ -46,7 +53,7 @@ namespace nacl {
 
 NaClSrpcHandlerDesc ReverseService::handlers[] = {
   { "test:s:", Test, },
-  { "add_channel::", AddChannel, },
+  { "add_channel::b", AddChannel, },
   { NULL, NULL, },
 };
 
@@ -57,8 +64,8 @@ ReverseService::ReverseService(nacl::DescWrapper* conn_cap)
 
 ReverseService::~ReverseService() {}
 
-bool ReverseService::Start(void* server_instance_data) {
-  return service_socket_.StartService(server_instance_data);
+bool ReverseService::Start() {
+  return service_socket_.StartService(Ref(), Cleanup);
 }
 
 }  // namespace nacl

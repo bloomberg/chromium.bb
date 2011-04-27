@@ -37,7 +37,9 @@ class ReverseSocket {
 
   ~ReverseSocket();  // dtor will delete conn_cap
 
-  bool StartService(void* server_instance_data);
+  bool StartService(void* server_instance_data,
+                    void (*server_instance_data_cleanup)(
+                        void* server_instance_data));
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ReverseSocket);

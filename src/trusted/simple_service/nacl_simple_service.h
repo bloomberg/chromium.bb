@@ -110,15 +110,19 @@ struct NaClSimpleServiceConnection {
   struct NaClDesc             *connected_socket;
 
   void                        *instance_data;
+  void                        (*instance_data_cleanup)(void *instance_data);
 
   struct NaClThread           thread;
   /* other data is application specific, in subclasses only */
 };
 
-int NaClSimpleServiceConnectionCtor(struct NaClSimpleServiceConnection  *self,
-                                    struct NaClSimpleService            *server,
-                                    struct NaClDesc                     *conn,
-                                    void                                *data);
+int NaClSimpleServiceConnectionCtor(
+    struct NaClSimpleServiceConnection  *self,
+    struct NaClSimpleService            *server,
+    struct NaClDesc                     *conn,
+    void                                *instance_data,
+    void                                (*instance_data_cleanup)(
+        void *instance_data));
 
 /*
  * This Dtor should only be called after the thread has exited.
@@ -143,6 +147,8 @@ int NaClSimpleServiceConnectionFactoryWithInstanceData(
     struct NaClSimpleService            *self,
     struct NaClDesc                     *conn,
     void                                *instance_data,
+    void                                (*instance_data_cleanup)(
+        void *instance_data),
     struct NaClSimpleServiceConnection  **out);
 
 int NaClSimpleServiceConnectionFactory(

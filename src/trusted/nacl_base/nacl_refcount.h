@@ -88,15 +88,15 @@ class NaClScopedRefCountNaClDescDtor {
   }
 };
 
-// C must be a NaClRefCount subclass.  unfortunately we can only
-// enforce this by checking that the C struct contains a common
+// RC must be a NaClRefCount subclass.  unfortunately we can only
+// enforce this by checking that the RC struct contains a common
 // attribute -- the NACL_IS_REFCOUNT_SUBCLASS macro must be included
 // for every subclass that wants to use this template
 template <typename RC, typename DtorProc = NaClScopedRefCountNaClDescDtor>
-class scoped_ptr_refcount {
+class scoped_ptr_nacl_refcount {
  public:
   // standard ctor
-  scoped_ptr_refcount(nacl::scoped_ptr_malloc<RC>* p, int ctor_fn_result)
+  scoped_ptr_nacl_refcount(nacl::scoped_ptr_malloc<RC>* p, int ctor_fn_result)
       : ptr_(NULL) {
     enum { must_be_subclass = sizeof(typename RC::is_refcount_subclass) };
 
@@ -108,20 +108,22 @@ class scoped_ptr_refcount {
   }
 
   // copy ctor
-  scoped_ptr_refcount(scoped_ptr_refcount const& other) {
+  scoped_ptr_nacl_refcount(scoped_ptr_nacl_refcount const& other) {
     ptr_ = NaClRefCountRef(other.ptr_);
   }
 
   // assign
-  scoped_ptr_refcount& operator=(scoped_ptr_refcount const& other) {
-    if (NULL != ptr_) {
-      deref_(reinterpret_cast<NaClRefCount*>(ptr_));
+  scoped_ptr_nacl_refcount& operator=(scoped_ptr_nacl_refcount const& other) {
+    if (this != &other) {  // exclude self-assignment, which should be no-op
+      if (NULL != ptr_) {
+        deref_(reinterpret_cast<NaClRefCount*>(ptr_));
+      }
+      ptr_ = NaClRefCountRef(other.ptr_);
     }
-    ptr_ = NaClRefCountRef(other.ptr_);
     return *this;
   }
 
-  ~scoped_ptr_refcount() {
+  ~scoped_ptr_nacl_refcount() {
     if (NULL != ptr_) {
       deref_(reinterpret_cast<NaClRefCount*>(ptr_));
     }
@@ -163,7 +165,7 @@ class scoped_ptr_refcount {
   }
   bool operator!=(RC const* p) const { return ptr_ != p; }
 
-  void swap(scoped_ptr_refcount& p2) {
+  void swap(scoped_ptr_nacl_refcount& p2) {
     RC* tmp = ptr_;
     ptr_ = p2.ptr_;
     p2.ptr_ = tmp;
@@ -182,34 +184,35 @@ class scoped_ptr_refcount {
 };
 
 template<typename RC, typename DP>
-DP const scoped_ptr_refcount<RC, DP>::deref_ = DP();
+DP const scoped_ptr_nacl_refcount<RC, DP>::deref_ = DP();
 
 template<typename RC, typename DP>
-void swap(scoped_ptr_refcount<RC, DP>& a, scoped_ptr_refcount<RC, DP>& b) {
+void swap(scoped_ptr_nacl_refcount<RC, DP>& a,
+          scoped_ptr_nacl_refcount<RC, DP>& b) {
   a.swap(b);
 }
 
 template<typename RC, typename DP> inline
 bool operator==(nacl::scoped_ptr_malloc<RC> const& a,
-                scoped_ptr_refcount<RC, DP> const& b) {
+                scoped_ptr_nacl_refcount<RC, DP> const& b) {
   return a.get() == b.get();
 }
 
 template<class RC, typename DP> inline
 bool operator==(RC const* a,
-                scoped_ptr_refcount<RC, DP> const& b) {
+                scoped_ptr_nacl_refcount<RC, DP> const& b) {
   return a == b.get();
 }
 
 template<typename RC, typename DP> inline
-bool operator!=(nacl::scoped_ptr_malloc<RC>const & a,
-                scoped_ptr_refcount<RC, DP> const& b) {
+bool operator!=(nacl::scoped_ptr_malloc<RC> const& a,
+                scoped_ptr_nacl_refcount<RC, DP> const& b) {
   return a.get() != b.get();
 }
 
 template<typename RC, typename DP> inline
-bool operator!=(RC* a,
-                scoped_ptr_refcount<RC, DP> const& b) {
+bool operator!=(RC const* a,
+                scoped_ptr_nacl_refcount<RC, DP> const& b) {
   return a != b.get();
 }
 
