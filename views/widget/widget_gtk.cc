@@ -1391,6 +1391,8 @@ void WidgetGtk::SetInitParams(const InitParams& params) {
     MakeTransparent();
   if (!params.accept_events && !child_)
     ignore_events_ = true;
+  if (params.double_buffer)
+    EnableDoubleBuffer(true);
 
   if (params.type == InitParams::TYPE_MENU) {
     GdkEvent* event = gtk_get_current_event();

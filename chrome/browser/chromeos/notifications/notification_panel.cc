@@ -25,6 +25,8 @@
 
 #define SET_STATE(state) SetState(state, __PRETTY_FUNCTION__)
 
+using views::Widget;
+
 namespace {
 // Minimum and maximum size of balloon content.
 const int kBalloonMinWidth = 300;
@@ -66,59 +68,68 @@ chromeos::BalloonViewImpl* GetBalloonViewOf(const Balloon* balloon) {
   return static_cast<chromeos::BalloonViewImpl*>(balloon->view());
 }
 
-// A WidgetGtk that covers entire ScrollView's viewport. Without this,
-// all renderer's native gtk widgets are moved one by one via
-// View::VisibleBoundsInRootChanged() notification, which makes
-// scrolling not smooth.
+// A Widget that covers entire ScrollView's viewport. Without this, all
+// renderer's native gtk widgets are moved one by one via
+// View::VisibleBoundsInRootChanged() notification, which makes scrolling not
+// smooth.
+// TODO: this should subclass Widget and not WidgetGtk.
 class ViewportWidget : public views::WidgetGtk {
  public:
   explicit ViewportWidget(chromeos::NotificationPanel* panel)
-      : panel_(panel) {
+      : panel_(panel),
+        last_point_valid_(false) {
   }
 
   void UpdateControl() {
-    if (last_point_.get())
-      panel_->OnMouseMotion(*last_point_.get());
+    if (last_point_valid_)
+      panel_->OnMouseMotion(last_point_);
   }
 
-  // views::WidgetGtk overrides.
-  virtual gboolean OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
-    gboolean result = WidgetGtk::OnMotionNotify(widget, event);
-    gdouble x = event->x;
-    gdouble y = event->y;
-
-    // The window_contents_' allocation has been moved off the top left
-    // corner, so we need to adjust it.
-    GtkAllocation alloc = widget->allocation;
-    x -= alloc.x;
-    y -= alloc.y;
-
-    if (!last_point_.get()) {
-      last_point_.reset(new gfx::Point(x, y));
-    } else {
-      last_point_->set_x(x);
-      last_point_->set_y(y);
-    }
-    panel_->OnMouseMotion(*last_point_.get());
-    return result;
-  }
-
-  virtual gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
-    gboolean result = views::WidgetGtk::OnLeaveNotify(widget, event);
-    // Leave notify can happen if the mouse moves into the child gdk window.
-    // Make sure the mouse is outside of the panel.
-    gfx::Point p(event->x_root, event->y_root);
-    gfx::Rect bounds = GetWindowScreenBounds();
-    if (!bounds.Contains(p)) {
-      panel_->OnMouseLeave();
-      last_point_.reset();
+  // views::Widget overrides:
+  virtual bool OnMouseEvent(const views::MouseEvent& event) OVERRIDE {
+    bool result = Widget::OnMouseEvent(event);
+    switch (event.type()) {
+      case ui::ET_MOUSE_MOVED:
+        OnMouseMoved(event);
+        break;
+      case ui::ET_MOUSE_EXITED:
+        OnMouseExited(event);
+        break;
+      default:
+        break;
     }
     return result;
   }
 
  private:
+  void OnMouseMoved(const views::MouseEvent& event) {
+    // Convert the point to the panel's coordinate system.
+    Widget* top_level_widget = GetTopLevelWidget();
+    // TODO: remove cast when this extends Widget.
+    DCHECK(top_level_widget != static_cast<Widget*>(this));
+    gfx::Rect panel_rect(event.location(), gfx::Size());
+    Widget::ConvertRect(this, top_level_widget, &panel_rect);
+    last_point_ = panel_rect.origin();
+    last_point_valid_ = true;
+    panel_->OnMouseMotion(last_point_);
+  }
+
+  void OnMouseExited(const views::MouseEvent& event) {
+    // Leave notify can happen if the mouse moves into the child gdk window.
+    // Make sure the mouse is outside of the panel.
+    gfx::Rect bounds = GetWindowScreenBounds();
+    if (!bounds.Contains(event.location().x() + bounds.x(),
+                         event.location().y() + bounds.y())) {
+      panel_->OnMouseLeave();
+      last_point_valid_ = false;
+    }
+  }
+
+ private:
   chromeos::NotificationPanel* panel_;
-  scoped_ptr<gfx::Point> last_point_;
+  gfx::Point last_point_;
+  bool last_point_valid_;
+
   DISALLOW_COPY_AND_ASSIGN(ViewportWidget);
 };
 
@@ -415,15 +426,15 @@ NotificationPanel::~NotificationPanel() {
 void NotificationPanel::Show() {
   if (!panel_widget_) {
     panel_widget_ = views::Widget::CreateWidget();
+    // TODO(oshima): Using window because Popup widget behaves weird
+    // when resizing. This needs to be investigated.
+    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
     // Enable double buffering because the panel has both pure views
     // control and native controls (scroll bar).
-    static_cast<views::WidgetGtk*>(panel_widget_->native_widget())->
-        EnableDoubleBuffer(true);
+    params.double_buffer = true;
 
     gfx::Rect bounds = GetPreferredBounds();
     bounds = bounds.Union(min_bounds_);
-    views::Widget::InitParams params(
-        views::Widget::InitParams::TYPE_WINDOW);
     params.bounds = bounds;
     panel_widget_->Init(params);
     // Set minimum bounds so that it can grow freely.
@@ -441,7 +452,7 @@ void NotificationPanel::Show() {
     container_host_->Init(
         views::Widget::InitParams(views::Widget::InitParams::TYPE_CONTROL));
     container_host_->SetContentsView(balloon_container_.get());
-    // The window_contents_ is onwed by the WidgetGtk. Increase ref count
+    // The window_contents_ is onwed by the Widget. Increase ref count
     // so that window_contents does not get deleted when detached.
     g_object_ref(widget->window_contents());
     native->Attach(widget->window_contents());

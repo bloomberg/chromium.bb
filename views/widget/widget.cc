@@ -28,6 +28,7 @@ Widget::InitParams::InitParams()
       delete_on_destroy(true),
       mirror_origin_in_rtl(false),
       has_dropshadow(false),
+      double_buffer(false),
       parent(NULL),
       parent_widget(NULL),
       native_widget(NULL) {
@@ -43,6 +44,7 @@ Widget::InitParams::InitParams(Type type)
       delete_on_destroy(true),
       mirror_origin_in_rtl(false),
       has_dropshadow(false),
+      double_buffer(false),
       parent(NULL),
       parent_widget(NULL),
       native_widget(NULL) {

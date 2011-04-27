@@ -83,6 +83,8 @@ class Widget : public internal::NativeWidgetDelegate,
     bool delete_on_destroy;
     bool mirror_origin_in_rtl;
     bool has_dropshadow;
+    // Should the widget be double buffered? Default is false.
+    bool double_buffer;
     gfx::NativeView parent;
     Widget* parent_widget;
     gfx::Rect bounds;
