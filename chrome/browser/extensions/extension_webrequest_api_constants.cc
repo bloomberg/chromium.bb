@@ -16,6 +16,7 @@ const char kTabIdKey[] = "tabId";
 const char kTimeStampKey[] = "timeStamp";
 const char kTypeKey[] = "type";
 const char kUrlKey[] = "url";
+const char kRequestHeadersKey[] = "requestHeaders";
 
 const char kOnBeforeRedirect[] = "experimental.webRequest.onBeforeRedirect";
 const char kOnBeforeRequest[] = "experimental.webRequest.onBeforeRequest";

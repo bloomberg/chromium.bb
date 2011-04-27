@@ -5,12 +5,15 @@ var expectedEventData;
 var capturedEventData;
 var expectedEventOrder;
 var tabId;
+var eventsCaptured;
 
 // PORT will be changed to the port of the test server.
 var URL_HTTP_SIMPLE_LOAD =
     'http://www.a.com:PORT/files/extensions/api_test/webrequest/events/simpleLoad/a.html';
 var URL_HTTP_SIMPLE_LOAD_REDIRECT =
     'http://www.a.com:PORT/server-redirect?'+URL_HTTP_SIMPLE_LOAD;
+var URL_ECHO_USER_AGENT =
+    'http://www.a.com:PORT/echoheader?User-Agent';
 
 function runTests(tests) {
   chrome.tabs.getSelected(null, function(tab) {
@@ -21,29 +24,24 @@ function runTests(tests) {
       };
       URL_HTTP_SIMPLE_LOAD = fixPort(URL_HTTP_SIMPLE_LOAD);
       URL_HTTP_SIMPLE_LOAD_REDIRECT = fixPort(URL_HTTP_SIMPLE_LOAD_REDIRECT);
+      URL_ECHO_USER_AGENT = fixPort(URL_ECHO_USER_AGENT);
 
       chrome.test.runTests(tests);
     });
   });
 }
 
-var readyCount = 0;
-function succeedIfReady() {
-  if (++readyCount == 0)
-    chrome.test.succeed();
-}
-
 // Helper to advance to the next test only when the tab has finished loading.
 // This is because tabs.update can sometimes fail if the tab is in the middle
 // of a navigation (from the previous test), resulting in flakiness.
-function navigateAndWait(url) {
-  chrome.tabs.onUpdated.addListener(function listener(_, info, tab) {
+function navigateAndWait(url, callback) {
+  var done = chrome.test.listenForever(chrome.tabs.onUpdated,
+      function (_, info, tab) {
     if (tab.id == tabId && info.status == "complete") {
-      chrome.tabs.onUpdated.removeListener(listener);
-      succeedIfReady();
+      if (callback) callback();
+      done();
     }
   });
-  --readyCount;
   chrome.tabs.update(tabId, {url: url});
 }
 
@@ -63,7 +61,7 @@ function expect(data, order, filter, blocking) {
   expectedEventData = data;
   capturedEventData = [];
   expectedEventOrder = order;
-  --readyCount;
+  eventsCaptured = chrome.test.callbackAdded();
   removeListeners();
   initListeners(filter, blocking);
 }
@@ -102,7 +100,8 @@ function checkExpectations() {
       previousLabel = label;
     });
   });
-  succeedIfReady();
+
+  eventsCaptured();
 }
 
 function captureEvent(name, details) {
@@ -118,11 +117,15 @@ function captureEvent(name, details) {
   var currentIndex = capturedEventData.length;
   var extraOptions;
   if (expectedEventData.length > currentIndex) {
-    retval=expectedEventData[currentIndex].retval;
+    retval = expectedEventData[currentIndex].retval;
   }
 
   delete details.requestId;
   delete details.timeStamp;
+  if (details.requestHeaders) {
+    details.requestHeadersExist = true;
+    delete details.requestHeaders;
+  }
 
   // find |details| in expectedEventData
   var found = false;
@@ -249,7 +252,8 @@ runTests([
         { label: "onBeforeSendHeaders-1",
           event: "onBeforeSendHeaders",
           details: {
-            url: URL_HTTP_SIMPLE_LOAD_REDIRECT
+            url: URL_HTTP_SIMPLE_LOAD_REDIRECT,
+            requestHeadersExist: true
           }
         },
         { label: "onRequestSent-1",
@@ -270,7 +274,8 @@ runTests([
         { label: "onBeforeSendHeaders-2",
           event: "onBeforeSendHeaders",
           details: {
-            url: URL_HTTP_SIMPLE_LOAD
+            url: URL_HTTP_SIMPLE_LOAD,
+            requestHeadersExist: true
           }
         },
         { label: "onRequestSent-2",
@@ -395,7 +400,7 @@ runTests([
   function complexLoadCancelled() {
     expect(
       [  // events
-        { label: "",
+        { label: "onBeforeRequest",
           event: "onBeforeRequest",
           details: {
             method: "GET",
@@ -414,7 +419,9 @@ runTests([
           }
         },
       ],
-      [],  // event order
+      [  // event order
+        ["onBeforeRequest"]
+      ],
       {},  // filter
       true  // blocking
       );
@@ -423,7 +430,6 @@ runTests([
 
   // Navigates to a page with a blocking handler that redirects to a different
   // page.
-  // TODO(mpcomplete): will get an onBeforeRedirect event for the new request.
   function complexLoadRedirected() {
     expect(
       [  // events
@@ -439,7 +445,8 @@ runTests([
         },
         // TODO(mpcomplete): This second event should not fire in general. Our
         // process switching logic cancels the original redirect request and
-        // starts this new one. See http://crbug.com/79520.
+        // starts this new one. This should be an onBeforeRedirect instead. See
+        // http://crbug.com/79520.
         { label: "onBeforeRequest-2",
           event: "onBeforeRequest",
           details: {
@@ -534,7 +541,8 @@ runTests([
       {  // filters
         urls: [getURL("complexLoad/*")],
         types: ["main_frame", "image"],
-        tabId: tabId},
+        tabId: tabId
+      },
       false  // blocking
       );
     chrome.tabs.create({ url: getURL("simpleLoad/a.html") },
@@ -568,6 +576,69 @@ runTests([
       [  // event order
         ["onBeforeRequest", "onErrorOccurred"] ]);
     navigateAndWait(getURL("does_not_exist.html"));
+  },
+
+  // Loads a testserver page that echoes the User-Agent header that was
+  // sent to fetch it. We modify the outgoing User-Agent in
+  // onBeforeSendHeaders, so we should see that modified version.
+  function modifyRequestHeaders() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            tabId: tabId,
+            type: "main_frame",
+            url: URL_ECHO_USER_AGENT
+          }
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: URL_ECHO_USER_AGENT,
+            requestHeadersExist: true,
+          },
+          retval: {requestHeaders: "User-Agent: FoobarUA"}
+        },
+        { label: "onRequestSent",
+          event: "onRequestSent",
+          details: {
+            url: URL_ECHO_USER_AGENT,
+            ip: "127.0.0.1"
+          }
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: URL_ECHO_USER_AGENT,
+            statusCode: 200
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: URL_ECHO_USER_AGENT,
+            statusCode: 200
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onBeforeSendHeaders", "onRequestSent",
+         "onResponseStarted", "onCompleted"]
+      ],
+      {}, true);
+    // Check the page content for our modified User-Agent string.
+    navigateAndWait(URL_ECHO_USER_AGENT, function() {
+      chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
+        chrome.test.assertTrue(request.pass, "Request header was not set.");
+      });
+      chrome.tabs.executeScript(tabId,
+        {
+          code: "chrome.extension.sendRequest(" +
+              "{pass: document.body.innerText.indexOf('FoobarUA') >= 0});"
+        });
+    });
   },
 ]);
 </script>

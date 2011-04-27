@@ -131,10 +131,11 @@ static void EventHandledOnIOThread(
     const std::string& sub_event_name,
     uint64 request_id,
     bool cancel,
-    const GURL& new_url) {
+    const GURL& new_url,
+    net::HttpRequestHeaders* request_headers) {
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       profile_id, extension_id, event_name, sub_event_name, request_id,
-      cancel, new_url);
+      cancel, new_url, request_headers);
 }
 
 }  // namespace
@@ -194,6 +195,9 @@ struct ExtensionWebRequestEventRouter::EventListener {
 // Contains info about requests that are blocked waiting for a response from
 // an extension.
 struct ExtensionWebRequestEventRouter::BlockedRequest {
+  // The event that we're currently blocked on.
+  EventTypes event;
+
   // The number of event handlers that we are awaiting a response from.
   int num_handlers_blocking;
 
@@ -201,12 +205,22 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   net::CompletionCallback* callback;
 
   // If non-empty, this contains the new URL that the request will redirect to.
+  // Only valid for OnBeforeRequest.
   GURL* new_url;
 
-  // Time the request was issued. Used for logging purposes.
-  base::Time request_time;
+  // The request headers that will be issued along with this request. Only valid
+  // for OnBeforeSendHeaders.
+  net::HttpRequestHeaders* request_headers;
 
-  BlockedRequest() : num_handlers_blocking(0), callback(NULL), new_url(NULL) {}
+  // Time the request was paused. Used for logging purposes.
+  base::Time blocking_time;
+
+  BlockedRequest() :
+      event(kInvalidEvent),
+      num_handlers_blocking(0),
+      callback(NULL),
+      new_url(NULL),
+      request_headers(NULL) {}
 };
 
 bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
@@ -341,8 +355,9 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
                   request->request_time().ToDoubleT() * 1000);
   args.Append(dict);
 
-  if (DispatchEvent(profile_id, event_router, request, callback, listeners,
-                    args)) {
+  if (DispatchEvent(profile_id, event_router, request, listeners, args)) {
+    blocked_requests_[request->identifier()].event = kOnBeforeRequest;
+    blocked_requests_[request->identifier()].callback = callback;
     blocked_requests_[request->identifier()].new_url = new_url;
     return net::ERR_IO_PENDING;
   }
@@ -379,12 +394,16 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
                   base::Uint64ToString(request->identifier()));
   dict->SetString(keys::kUrlKey, request->url().spec());
   dict->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
-  // TODO(mpcomplete): request headers.
+  // TODO(mpcomplete): better format for headers?
+  dict->SetString(keys::kRequestHeadersKey, headers->ToString());
   args.Append(dict);
 
-  if (DispatchEvent(profile_id, event_router, request, callback, listeners,
-                    args))
+  if (DispatchEvent(profile_id, event_router, request, listeners, args)) {
+    blocked_requests_[request->identifier()].event = kOnBeforeSendHeaders;
+    blocked_requests_[request->identifier()].callback = callback;
+    blocked_requests_[request->identifier()].request_headers = headers;
     return net::ERR_IO_PENDING;
+  }
   return net::OK;
 }
 
@@ -423,7 +442,7 @@ void ExtensionWebRequestEventRouter::OnRequestSent(
   // TODO(battre): support "request line" and "request headers".
   args.Append(dict);
 
-  DispatchEvent(profile_id, event_router, request, NULL, listeners, args);
+  DispatchEvent(profile_id, event_router, request, listeners, args);
 }
 
 void ExtensionWebRequestEventRouter::OnBeforeRedirect(
@@ -460,7 +479,7 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   //     "redirectRequestLine" and "redirectRequestHeaders".
   args.Append(dict);
 
-  DispatchEvent(profile_id, event_router, request, NULL, listeners, args);
+  DispatchEvent(profile_id, event_router, request, listeners, args);
 }
 
 void ExtensionWebRequestEventRouter::OnResponseStarted(
@@ -496,7 +515,7 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
   // TODO(battre): support "statusLine", "responseHeaders".
   args.Append(dict);
 
-  DispatchEvent(profile_id, event_router, request, NULL, listeners, args);
+  DispatchEvent(profile_id, event_router, request, listeners, args);
 }
 
 void ExtensionWebRequestEventRouter::OnCompleted(
@@ -532,7 +551,7 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   // TODO(battre): support "statusLine", "responseHeaders".
   args.Append(dict);
 
-  DispatchEvent(profile_id, event_router, request, NULL, listeners, args);
+  DispatchEvent(profile_id, event_router, request, listeners, args);
 }
 
 void ExtensionWebRequestEventRouter::OnErrorOccurred(
@@ -566,21 +585,30 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   args.Append(dict);
 
-  DispatchEvent(profile_id, event_router, request, NULL, listeners, args);
+  DispatchEvent(profile_id, event_router, request, listeners, args);
 }
 
 void ExtensionWebRequestEventRouter::OnURLRequestDestroyed(
     ProfileId profile_id, net::URLRequest* request) {
-  http_requests_.erase(request->identifier());
   blocked_requests_.erase(request->identifier());
   signaled_requests_.erase(request->identifier());
+  http_requests_.erase(request->identifier());
+}
+
+void ExtensionWebRequestEventRouter::OnHttpTransactionDestroyed(
+    ProfileId profile_id, uint64 request_id) {
+  if (blocked_requests_.find(request_id) != blocked_requests_.end() &&
+      blocked_requests_[request_id].event == kOnBeforeSendHeaders) {
+    // Ensure we don't call into the deleted HttpTransaction.
+    blocked_requests_[request_id].callback = NULL;
+    blocked_requests_[request_id].request_headers = NULL;
+  }
 }
 
 bool ExtensionWebRequestEventRouter::DispatchEvent(
     ProfileId profile_id,
     ExtensionEventRouterForwarder* event_router,
     net::URLRequest* request,
-    net::CompletionCallback* callback,
     const std::vector<const EventListener*>& listeners,
     const ListValue& args) {
   std::string json_args;
@@ -594,7 +622,7 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     event_router->DispatchEventToExtension(
         (*it)->extension_id, (*it)->sub_event_name, json_args,
         profile_id, true, GURL());
-    if (callback && (*it)->extra_info_spec & ExtraInfoSpec::BLOCKING) {
+    if ((*it)->extra_info_spec & ExtraInfoSpec::BLOCKING) {
       (*it)->blocked_requests.insert(request->identifier());
       ++num_handlers_blocking;
     }
@@ -605,9 +633,7 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
           blocked_requests_.end());
     blocked_requests_[request->identifier()].num_handlers_blocking =
         num_handlers_blocking;
-    blocked_requests_[request->identifier()].callback = callback;
-    blocked_requests_[request->identifier()].request_time =
-        request->request_time();
+    blocked_requests_[request->identifier()].blocking_time = base::Time::Now();
 
     return true;
   }
@@ -622,7 +648,8 @@ void ExtensionWebRequestEventRouter::OnEventHandled(
     const std::string& sub_event_name,
     uint64 request_id,
     bool cancel,
-    const GURL& new_url) {
+    const GURL& new_url,
+    net::HttpRequestHeaders* request_headers) {
   EventListener listener;
   listener.extension_id = extension_id;
   listener.sub_event_name = sub_event_name;
@@ -634,7 +661,7 @@ void ExtensionWebRequestEventRouter::OnEventHandled(
   if (found != listeners_[profile_id][event_name].end())
     found->blocked_requests.erase(request_id);
 
-  DecrementBlockCount(request_id, cancel, new_url);
+  DecrementBlockCount(request_id, cancel, new_url, request_headers);
 }
 
 void ExtensionWebRequestEventRouter::AddEventListener(
@@ -686,7 +713,7 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
   // Unblock any request that this event listener may have been blocking.
   for (std::set<uint64>::iterator it = found->blocked_requests.begin();
        it != found->blocked_requests.end(); ++it) {
-    DecrementBlockCount(*it, false, GURL());
+    DecrementBlockCount(*it, false, GURL(), NULL);
   }
 
   listeners_[profile_id][event_name].erase(listener);
@@ -736,9 +763,13 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
       profile_id, event_name, request->url(), tab_id, window_id, resource_type);
 }
 
-void ExtensionWebRequestEventRouter::DecrementBlockCount(uint64 request_id,
-                                                         bool cancel,
-                                                         const GURL& new_url) {
+void ExtensionWebRequestEventRouter::DecrementBlockCount(
+    uint64 request_id,
+    bool cancel,
+    const GURL& new_url,
+    net::HttpRequestHeaders* request_headers) {
+  scoped_ptr<net::HttpRequestHeaders> request_headers_scoped(request_headers);
+
   // It's possible that this request was deleted, or cancelled by a previous
   // event handler. If so, ignore this response.
   if (blocked_requests_.find(request_id) == blocked_requests_.end())
@@ -748,19 +779,38 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(uint64 request_id,
   int num_handlers_blocking = --blocked_request.num_handlers_blocking;
   CHECK_GE(num_handlers_blocking, 0);
 
-  if (num_handlers_blocking == 0 || cancel || !new_url.is_empty()) {
+  // TODO(mpcomplete): handle conflicts more intelligently. Possibility: wait
+  // until all extensions respond, and process responses in order of
+  // extension_id.
+  if (num_handlers_blocking == 0 || cancel ||
+      !new_url.is_empty() || request_headers) {
+    // TODO(mpcomplete): it would be better if we accumulated the blocking times
+    // for a given request over all events.
     HISTOGRAM_TIMES("Extensions.NetworkDelay",
-                     base::Time::Now() - blocked_request.request_time);
+                     base::Time::Now() - blocked_request.blocking_time);
 
-    CHECK(blocked_request.callback);
-    if (!new_url.is_empty()) {
-      CHECK(new_url.is_valid());
-      *blocked_request.new_url = new_url;
+    if (blocked_request.event == kOnBeforeRequest) {
+      CHECK(blocked_request.callback);
+      if (!new_url.is_empty()) {
+        CHECK(new_url.is_valid());
+        *blocked_request.new_url = new_url;
+      }
+    } else if (blocked_request.event == kOnBeforeSendHeaders) {
+      // It's possible that the HttpTransaction was deleted before we could call
+      // the callback. In that case, we've already NULLed out the callback and
+      // headers, and we just drop the response on the floor.
+      if (request_headers && blocked_request.request_headers)
+        blocked_request.request_headers->Swap(request_headers);
+    } else {
+      NOTREACHED();
     }
+
     // This signals a failed request to subscribers of onErrorOccurred in case
     // a request is cancelled because net::ERR_EMPTY_RESPONSE cannot be
     // distinguished from a regular failure.
-    blocked_request.callback->Run(cancel ? net::ERR_EMPTY_RESPONSE : net::OK);
+    if (blocked_request.callback)
+      blocked_request.callback->Run(cancel ? net::ERR_EMPTY_RESPONSE : net::OK);
+
     blocked_requests_.erase(request_id);
   }
 }
@@ -840,6 +890,7 @@ bool WebRequestEventHandled::RunImpl() {
 
   bool cancel = false;
   GURL new_url;
+  scoped_ptr<net::HttpRequestHeaders> request_headers;
   if (HasOptionalArgument(3)) {
     DictionaryValue* value = NULL;
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(3, &value));
@@ -847,8 +898,8 @@ bool WebRequestEventHandled::RunImpl() {
     if (value->HasKey("cancel"))
       EXTENSION_FUNCTION_VALIDATE(value->GetBoolean("cancel", &cancel));
 
-    std::string new_url_str;
     if (value->HasKey("redirectUrl")) {
+      std::string new_url_str;
       EXTENSION_FUNCTION_VALIDATE(value->GetString("redirectUrl",
                                                    &new_url_str));
       new_url = GURL(new_url_str);
@@ -858,6 +909,14 @@ bool WebRequestEventHandled::RunImpl() {
         return false;
       }
     }
+
+    if (value->HasKey("requestHeaders")) {
+      std::string request_headers_str;
+      request_headers.reset(new net::HttpRequestHeaders());
+      EXTENSION_FUNCTION_VALIDATE(value->GetString("requestHeaders",
+                                                   &request_headers_str));
+      request_headers->AddHeadersFromString(request_headers_str);
+    }
   }
 
   BrowserThread::PostTask(
@@ -865,7 +924,8 @@ bool WebRequestEventHandled::RunImpl() {
       NewRunnableFunction(
           &EventHandledOnIOThread,
           profile()->GetRuntimeId(), extension_id(),
-          event_name, sub_event_name, request_id, cancel, new_url));
+          event_name, sub_event_name, request_id,
+          cancel, new_url, request_headers.release()));
 
   return true;
 }

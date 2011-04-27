@@ -52,6 +52,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   virtual void OnResponseStarted(net::URLRequest* request);
   virtual void OnCompleted(net::URLRequest* request);
   virtual void OnURLRequestDestroyed(net::URLRequest* request);
+  virtual void OnHttpTransactionDestroyed(uint64 request_id);
   virtual net::URLRequestJob* OnMaybeCreateURLRequestJob(
       net::URLRequest* request);
 

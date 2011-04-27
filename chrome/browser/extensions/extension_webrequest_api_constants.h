@@ -21,6 +21,7 @@ extern const char kTabIdKey[];
 extern const char kTimeStampKey[];
 extern const char kTypeKey[];
 extern const char kUrlKey[];
+extern const char kRequestHeadersKey[];
 
 // Events.
 extern const char kOnBeforeRedirect[];

@@ -121,6 +121,11 @@ void ChromeNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
       profile_id_, request);
 }
 
+void ChromeNetworkDelegate::OnHttpTransactionDestroyed(uint64 request_id) {
+  ExtensionWebRequestEventRouter::GetInstance()->OnHttpTransactionDestroyed(
+      profile_id_, request_id);
+}
+
 net::URLRequestJob* ChromeNetworkDelegate::OnMaybeCreateURLRequestJob(
       net::URLRequest* request) {
   if (!protocol_handler_registry_)

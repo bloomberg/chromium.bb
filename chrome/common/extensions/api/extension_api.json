@@ -3553,7 +3553,12 @@
           "redirectUrl": {
             "type": "string",
             "optional": true,
-            "description": "If set, the original request is prevented from being sent and is instead redirected to the given URL."
+            "description": "Only used as a response to the onBeforeRequest event. If set, the original request is prevented from being sent and is instead redirected to the given URL."
+          },
+          "requestHeaders": {
+            "type": "string",
+            "optional": true,
+            "description": "Only used as a response to the onBeforeSendHeaders event. If set, the request is made with these request headers instead. The headers should be delimited by literal \"\\r\\n\" substrings."
           }
         }
       }
@@ -3657,7 +3662,8 @@
             "properties": {
               "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
               "url": {"type": "string"},
-              "timeStamp": {"type": "number", "description": "The time when the browser was about to send headers, in milliseconds since the epoch."}
+              "timeStamp": {"type": "number", "description": "The time when the browser was about to send headers, in milliseconds since the epoch."},
+              "requestHeaders": {"type": "string", "description": "The HTTP request headers that are going to be sent out with this request."}
             }
           }
         ],

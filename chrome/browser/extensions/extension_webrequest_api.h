@@ -33,6 +33,7 @@ class URLRequest;
 class ExtensionWebRequestEventRouter {
  public:
   enum EventTypes {
+    kInvalidEvent = 0,
     kOnBeforeRequest = 1 << 0,
     kOnBeforeSendHeaders = 1 << 1,
     kOnRequestSent = 1 << 2,
@@ -96,7 +97,9 @@ class ExtensionWebRequestEventRouter {
                       ExtensionEventRouterForwarder* event_router,
                       net::URLRequest* request);
 
+  // Notifications when objects are going away.
   void OnURLRequestDestroyed(ProfileId profile_id, net::URLRequest* request);
+  void OnHttpTransactionDestroyed(ProfileId profile_id, uint64 request_id);
 
   // Called when an event listener handles a blocking event and responds.
   // TODO(mpcomplete): modify request
@@ -107,7 +110,8 @@ class ExtensionWebRequestEventRouter {
       const std::string& sub_event_name,
       uint64 request_id,
       bool cancel,
-      const GURL& new_url);
+      const GURL& new_url,
+      net::HttpRequestHeaders* request_headers);
 
   // Adds a listener to the given event. |event_name| specifies the event being
   // listened to. |sub_event_name| is an internal event uniquely generated in
@@ -145,7 +149,6 @@ class ExtensionWebRequestEventRouter {
       ProfileId profile_id,
       ExtensionEventRouterForwarder* event_router,
       net::URLRequest* request,
-      net::CompletionCallback* callback,
       const std::vector<const EventListener*>& listeners,
       const ListValue& args);
 
@@ -166,9 +169,15 @@ class ExtensionWebRequestEventRouter {
       net::URLRequest* request);
 
   // Decrements the count of event handlers blocking the given request. When the
-  // count reaches 0 (or immediately if the request is being cancelled), we
-  // stop blocking the request and either resume or cancel it.
-  void DecrementBlockCount(uint64 request_id, bool cancel, const GURL& new_url);
+  // count reaches 0 (or immediately if the request is being cancelled or
+  // modified headers are provided), we stop blocking the request and either
+  // resume or cancel it. If |request_headers| is non-NULL, this method assumes
+  // ownership.
+  void DecrementBlockCount(
+      uint64 request_id,
+      bool cancel,
+      const GURL& new_url,
+      net::HttpRequestHeaders* request_headers);
 
   void OnRequestDeleted(net::URLRequest* request);
 
