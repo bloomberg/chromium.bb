@@ -1,3 +1,7 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
 // Utility functions to help with tabs/windows testing.
 
 // Creates one window with tabs set to the urls in the array |tabUrls|.
@@ -63,7 +67,7 @@ function getPixels(imgUrl, windowRect, callbackFn) {
     var context = canvas.getContext('2d');
     context.drawImage(
       img,
-      10, 10, 20, 20,  // Source rect: Crop to x in 10..20, y in 10..20.
+      10, 10, 10, 10,  // Source rect: Crop to x in 10..20, y in 10..20.
       0, 0, 10, 10);   // Dest rect is 10x10.  No resizing is done.
 
     var imageData = context.getImageData(0, 0, 10, 10).data;

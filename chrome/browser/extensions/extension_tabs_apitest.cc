@@ -37,9 +37,9 @@
 #define MAYBE_UpdateWindowSizeExitsFullscreen UpdateWindowSizeExitsFullscreen
 #endif
 
-// Times out on Mac. http://crbug.com/80212
+// Times out on Mac (especially Leopard). http://crbug.com/80212
 #if defined(OS_MACOSX)
-#define MAYBE_CaptureVisibleTabRace DISABLED_CaptureVisibleTabRace
+#define MAYBE_CaptureVisibleTabRace FLAKY_CaptureVisibleTabRace
 #else
 #define MAYBE_CaptureVisibleTabRace CaptureVisibleTabRace
 #endif
