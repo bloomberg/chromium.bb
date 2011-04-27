@@ -1252,8 +1252,7 @@ LocationBarViewGtk::ContentSettingImageViewGtk::ContentSettingImageViewGtk(
   gtk_box_pack_start(GTK_BOX(hbox_), image_.get(), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_), label_.get(), FALSE, FALSE, 0);
 
-  // The +1 accounts for the pixel that is devoted to drawing the border.
-  gtk_container_set_border_width(GTK_CONTAINER(hbox_), kHboxBorder + 1);
+  gtk_container_set_border_width(GTK_CONTAINER(hbox_), kHboxBorder);
 
   gtk_container_add(GTK_CONTAINER(event_box_.get()), hbox_);
   gtk_widget_hide(widget());
