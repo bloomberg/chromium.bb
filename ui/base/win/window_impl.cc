@@ -197,20 +197,23 @@ std::wstring WindowImpl::GetWindowClassName() {
   if (ClassRegistrar::GetInstance()->RetrieveClassName(class_info, &name))
     return name;
 
+  HICON icon = GetDefaultWindowIcon();
+
   // No class found, need to register one.
-  WNDCLASSEX class_ex;
-  class_ex.cbSize = sizeof(WNDCLASSEX);
-  class_ex.style = class_info.style;
-  class_ex.lpfnWndProc = base::win::WrappedWindowProc<&WindowImpl::WndProc>;
-  class_ex.cbClsExtra = 0;
-  class_ex.cbWndExtra = 0;
-  class_ex.hInstance = NULL;
-  class_ex.hIcon = GetDefaultWindowIcon();
-  class_ex.hCursor = LoadCursor(NULL, IDC_ARROW);
-  class_ex.hbrBackground = reinterpret_cast<HBRUSH>(class_info.background + 1);
-  class_ex.lpszMenuName = NULL;
-  class_ex.lpszClassName = name.c_str();
-  class_ex.hIconSm = class_ex.hIcon;
+  WNDCLASSEX class_ex = {
+    sizeof(WNDCLASSEX),
+    class_info.style,
+    base::win::WrappedWindowProc<&WindowImpl::WndProc>,
+    0,
+    0,
+    NULL,
+    icon,
+    NULL,
+    reinterpret_cast<HBRUSH>(class_info.background + 1),
+    NULL,
+    name.c_str(),
+    icon
+  };
   ATOM atom = RegisterClassEx(&class_ex);
   CHECK(atom) << GetLastError();
 

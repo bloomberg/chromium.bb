@@ -97,9 +97,8 @@ UsernameView* UsernameView::CreateShapedUsernameView(
   return new HalfRoundedView<UsernameView>(username, use_small_shape);
 }
 
-gfx::NativeCursor UsernameView::GetCursorForPoint(
-    ui::EventType event_type,
-    const gfx::Point& p) {
+gfx::NativeCursor UsernameView::GetCursorForPoint(ui::EventType event_type,
+                                                  const gfx::Point& p) {
   return use_small_shape_ ? gfx::GetCursor(GDK_HAND2) : NULL;
 }
 

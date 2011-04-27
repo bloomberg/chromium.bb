@@ -213,13 +213,6 @@ class WindowWin : public WidgetWin,
   // Executes the specified SC_command.
   void ExecuteSystemMenuCommand(int command);
 
-  // Static resource initialization.
-  static void InitClass();
-  enum ResizeCursor {
-    RC_NORMAL = 0, RC_VERTICAL, RC_HORIZONTAL, RC_NESW, RC_NWSE
-  };
-  static HCURSOR resize_cursors_[6];
-
   // A delegate implementation that handles events received here.
   internal::NativeWindowDelegate* delegate_;
 

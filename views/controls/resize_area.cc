@@ -16,10 +16,6 @@ namespace views {
 
 const char ResizeArea::kViewClassName[] = "views/ResizeArea";
 
-#if defined(OS_WIN)
-static HCURSOR g_resize_cursor = NULL;
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // ResizeArea
 
@@ -40,8 +36,7 @@ gfx::NativeCursor ResizeArea::GetCursorForPoint(ui::EventType event_type,
   if (!enabled_)
     return NULL;
 #if defined(OS_WIN)
-  if (!g_resize_cursor)
-    g_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
+  static HCURSOR g_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
   return g_resize_cursor;
 #elif defined(OS_LINUX)
   return gfx::GetCursor(GDK_SB_H_DOUBLE_ARROW);

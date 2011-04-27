@@ -43,7 +43,7 @@ class HoverBackground : public views::Background {
   }
 
   // views::Background implementation.
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const {
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
     views::TextButton* button = static_cast<views::TextButton*>(view);
     if (button->state() == views::CustomButton::BS_HOT) {
       hover_->Paint(canvas, view);
@@ -114,13 +114,9 @@ void ShutdownButton::OnLocaleChanged() {
   }
 }
 
-gfx::NativeCursor ShutdownButton::GetCursorForPoint(
-    ui::EventType event_type,
-    const gfx::Point& p) {
-  if (!IsEnabled()) {
-    return NULL;
-  }
-  return gfx::GetCursor(GDK_HAND2);
+gfx::NativeCursor ShutdownButton::GetCursorForPoint(ui::EventType event_type,
+                                                    const gfx::Point& p) {
+  return IsEnabled() ? gfx::GetCursor(GDK_HAND2) : NULL;
 }
 
 void ShutdownButton::ButtonPressed(views::Button* sender,

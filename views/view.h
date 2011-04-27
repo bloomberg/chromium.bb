@@ -583,12 +583,11 @@ class View : public AcceleratorTarget {
   // Returns the deepest visible descendant that contains the specified point.
   virtual View* GetEventHandlerForPoint(const gfx::Point& point);
 
-  // Return the cursor that should be used for this view or NULL if
-  // the default cursor should be used. The provided point is in the
-  // receiver's coordinate system. The caller is responsible for managing the
-  // lifetime of the returned object, though that lifetime may vary from
-  // platform to platform. On Windows, the cursor is a shared resource but in
-  // Gtk, the framework destroys the returned cursor after setting it.
+  // Return the cursor that should be used for this view or the default cursor.
+  // The provided point is in the receiver's coordinate system. The caller is
+  // responsible for managing the lifetime of the returned object, though that
+  // lifetime may vary from platform to platform. On Windows, the cursor is a
+  // shared resource, but Gtk destroys the returned cursor after setting it.
   virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
                                               const gfx::Point& p);
 

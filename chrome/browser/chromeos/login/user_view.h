@@ -53,8 +53,8 @@ class UserView : public views::View,
   UserView(Delegate* delegate, bool is_login, bool need_background);
 
   // view::View overrides.
-  virtual gfx::Size GetPreferredSize();
-  virtual void OnLocaleChanged();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void OnLocaleChanged() OVERRIDE;
 
   // Sets the user's image. If image's size is less than
   // 75% of window size, image size is preserved to avoid blur. Otherwise,
@@ -76,7 +76,8 @@ class UserView : public views::View,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // Overridden from views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
  private:
   void Init(bool need_background);

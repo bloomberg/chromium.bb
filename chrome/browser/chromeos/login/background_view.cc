@@ -72,30 +72,6 @@ int GetStepId(size_t step) {
   }
 }
 
-// The same as TextButton but switches cursor to hand cursor when mouse
-// is over the button.
-class TextButtonWithHandCursorOver : public views::TextButton {
- public:
-  TextButtonWithHandCursorOver(views::ButtonListener* listener,
-                               const std::wstring& text)
-      : views::TextButton(listener, text) {
-  }
-
-  virtual ~TextButtonWithHandCursorOver() {}
-
-  virtual gfx::NativeCursor GetCursorForPoint(
-      ui::EventType event_type,
-      const gfx::Point& p) {
-    if (!IsEnabled()) {
-      return NULL;
-    }
-    return gfx::GetCursor(GDK_HAND2);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TextButtonWithHandCursorOver);
-};
-
 // This gets rid of the ugly X default cursor.
 static void ResetXCursor() {
   // TODO(sky): nuke this once new window manager is in place.

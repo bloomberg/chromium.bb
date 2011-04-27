@@ -24,17 +24,17 @@ class ShutdownButton : public views::TextButton,
 
  private:
   // views::View overrides.
-  virtual void OnLocaleChanged();
-  virtual gfx::NativeCursor GetCursorForPoint(
-      ui::EventType event_type,
-      const gfx::Point& p);
+  virtual void OnLocaleChanged() OVERRIDE;
+  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
+                                              const gfx::Point& p) OVERRIDE;
 
   // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownButton);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SHUTDOWN_BUTTON_H
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SHUTDOWN_BUTTON_H_

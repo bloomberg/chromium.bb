@@ -63,10 +63,6 @@ void GetColors(const SkColor* background_color,  // NULL means "use default"
 
 namespace views {
 
-#if defined(OS_WIN)
-static HCURSOR g_hand_cursor = NULL;
-#endif
-
 const char Link::kViewClassName[] = "views/Link";
 
 Link::Link() : Label(L""),
@@ -157,9 +153,9 @@ void Link::SetFont(const gfx::Font& font) {
   ValidateStyle();
 }
 
-void Link::SetEnabled(bool f) {
-  if (f != enabled_) {
-    enabled_ = f;
+void Link::SetEnabled(bool flag) {
+  if (flag != enabled_) {
+    enabled_ = flag;
     ValidateStyle();
     SchedulePaint();
   }
@@ -170,8 +166,7 @@ gfx::NativeCursor Link::GetCursorForPoint(ui::EventType event_type,
   if (!enabled_)
     return NULL;
 #if defined(OS_WIN)
-  if (!g_hand_cursor)
-    g_hand_cursor = LoadCursor(NULL, IDC_HAND);
+  static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;
 #elif defined(OS_LINUX)
   return gfx::GetCursor(GDK_HAND2);

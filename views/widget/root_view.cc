@@ -304,12 +304,11 @@ void RootView::OnMouseMoved(const MouseEvent& event) {
     MouseEvent moved_event(e, this, mouse_move_handler_);
     mouse_move_handler_->OnMouseMoved(moved_event);
 
-    gfx::NativeCursor cursor = mouse_move_handler_->GetCursorForPoint(
-        moved_event.type(), moved_event.location());
-    widget_->SetCursor(cursor);
+    if (!(event.flags() & ui::EF_IS_NON_CLIENT))
+      widget_->SetCursor(mouse_move_handler_->GetCursorForPoint(
+          moved_event.type(), moved_event.location()));
   } else if (mouse_move_handler_ != NULL) {
     mouse_move_handler_->OnMouseExited(e);
-    widget_->SetCursor(NULL);
   }
 }
 
@@ -463,7 +462,15 @@ bool RootView::ConvertPointToMouseHandler(const gfx::Point& l, gfx::Point* p) {
 // Input -----------------------------------------------------------------------
 
 void RootView::UpdateCursor(const MouseEvent& event) {
+  if (event.flags() & ui::EF_IS_NON_CLIENT)
+    return;
+
   gfx::NativeCursor cursor = NULL;
+#if defined(OS_WIN)
+  static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);
+  cursor = arrow;
+#endif
+
   View* v = GetEventHandlerForPoint(event.location());
   if (v && v != this) {
     gfx::Point l(event.location());

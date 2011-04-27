@@ -148,7 +148,7 @@ class RemoveButton : public views::TextButton {
 
  protected:
   // Overridden from View:
-  virtual void OnMouseExited(const views::MouseEvent& event) {
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
     SetIcon(icon_);
     views::TextButton::SetText(std::wstring());
     ClearMaxTextSize();
@@ -159,7 +159,7 @@ class RemoveButton : public views::TextButton {
     was_first_click_ = false;
   }
 
-  void NotifyClick(const views::Event& event) {
+  virtual void NotifyClick(const views::Event& event) OVERRIDE {
     if (!was_first_click_) {
       // On first click transform image to "remove" label.
       SetIcon(SkBitmap());
@@ -190,7 +190,7 @@ class RemoveButton : public views::TextButton {
     }
   }
 
-  void SetText(const std::wstring& text) {
+  virtual void SetText(const std::wstring& text) OVERRIDE {
     text_ = text;
   }
 
@@ -227,17 +227,16 @@ class PodImageView : public views::ImageView {
 
  protected:
   // Overridden from View:
-  virtual void OnMouseEntered(const views::MouseEvent& event) {
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
     views::ImageView::SetImage(image_hot_);
   }
 
-  virtual void OnMouseExited(const views::MouseEvent& event) {
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
     views::ImageView::SetImage(image_);
   }
 
-  gfx::NativeCursor GetCursorForPoint(
-      ui::EventType event_type,
-      const gfx::Point& p) {
+  gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
+                                      const gfx::Point& p) OVERRIDE {
     return (delegate_->IsUserSelected()) ? NULL : gfx::GetCursor(GDK_HAND2);
   }
 

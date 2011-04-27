@@ -50,10 +50,6 @@ class ContentSettingBubbleContents::Favicon : public views::ImageView {
   virtual ~Favicon();
 
  private:
-#if defined(OS_WIN)
-  static HCURSOR g_hand_cursor;
-#endif
-
   // views::View overrides:
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
@@ -63,10 +59,6 @@ class ContentSettingBubbleContents::Favicon : public views::ImageView {
   ContentSettingBubbleContents* parent_;
   views::Link* link_;
 };
-
-#if defined(OS_WIN)
-HCURSOR ContentSettingBubbleContents::Favicon::g_hand_cursor = NULL;
-#endif
 
 ContentSettingBubbleContents::Favicon::Favicon(
     const SkBitmap& image,
@@ -97,8 +89,7 @@ gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursorForPoint(
     ui::EventType event_type,
     const gfx::Point& p) {
 #if defined(OS_WIN)
-  if (!g_hand_cursor)
-    g_hand_cursor = LoadCursor(NULL, IDC_HAND);
+  static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;
 #elif defined(OS_LINUX)
   return gfx::GetCursor(GDK_HAND2);

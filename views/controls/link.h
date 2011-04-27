@@ -44,12 +44,12 @@ class Link : public Label {
   virtual void SetFont(const gfx::Font& font) OVERRIDE;
 
   // Set whether the link is enabled.
-  virtual void SetEnabled(bool f);
+  virtual void SetEnabled(bool flag) OVERRIDE;
 
   virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
-                                              const gfx::Point& p);
+                                              const gfx::Point& p) OVERRIDE;
 
-  virtual std::string GetClassName() const;
+  virtual std::string GetClassName() const OVERRIDE;
 
   void SetHighlightedColor(const SkColor& color);
   void SetDisabledColor(const SkColor& color);

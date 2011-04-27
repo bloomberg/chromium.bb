@@ -769,11 +769,16 @@ View* View::GetEventHandlerForPoint(const gfx::Point& point) {
 
 gfx::NativeCursor View::GetCursorForPoint(ui::EventType event_type,
                                           const gfx::Point& p) {
+#if defined(OS_WIN)
+  static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);
+  return arrow;
+#else
   return NULL;
+#endif
 }
 
 bool View::HitTest(const gfx::Point& l) const {
-  if (l.x() >= 0 && l.x() < width() && l.y() >= 0 && l.y() < height()) {
+  if (GetLocalBounds().Contains(l)) {
     if (HasHitTestMask()) {
       gfx::Path mask;
       GetHitTestMask(&mask);

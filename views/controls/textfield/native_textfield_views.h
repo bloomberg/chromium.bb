@@ -107,7 +107,7 @@ class NativeTextfieldViews : public views::View,
   static const char kViewClassName[];
 
   // Returns true when
-  // 1) built with GYP_DEFIENS="touchui=1"
+  // 1) built with GYP_DEFINES="touchui=1"
   // 2) enabled by SetEnableTextfieldViews(true)
   // 3) enabled by the command line flag "--enable-textfield-view".
   static bool IsTextfieldViewsEnabled();

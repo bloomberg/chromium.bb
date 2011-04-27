@@ -230,8 +230,6 @@ class WindowWin::ScopedRedrawLock {
   WindowWin* window_;
 };
 
-HCURSOR WindowWin::resize_cursors_[6];
-
 ////////////////////////////////////////////////////////////////////////////////
 // WindowWin, public:
 
@@ -316,7 +314,6 @@ WindowWin::WindowWin(WindowDelegate* window_delegate)
       is_in_size_move_(false) {
   SetNativeWindow(this);
   is_window_ = true;
-  InitClass();
   // Initialize these values to 0 so that subclasses can override the default
   // behavior before calling Init.
   set_window_style(0);
@@ -1340,18 +1337,6 @@ LRESULT WindowWin::CallDefaultNCActivateHandler(BOOL active) {
 void WindowWin::ExecuteSystemMenuCommand(int command) {
   if (command)
     SendMessage(GetNativeView(), WM_SYSCOMMAND, command, 0);
-}
-
-void WindowWin::InitClass() {
-  static bool initialized = false;
-  if (!initialized) {
-    resize_cursors_[RC_NORMAL] = LoadCursor(NULL, IDC_ARROW);
-    resize_cursors_[RC_VERTICAL] = LoadCursor(NULL, IDC_SIZENS);
-    resize_cursors_[RC_HORIZONTAL] = LoadCursor(NULL, IDC_SIZEWE);
-    resize_cursors_[RC_NESW] = LoadCursor(NULL, IDC_SIZENESW);
-    resize_cursors_[RC_NWSE] = LoadCursor(NULL, IDC_SIZENWSE);
-    initialized = true;
-  }
 }
 
 namespace {
