@@ -5,11 +5,12 @@
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.h"
 
 #include "base/memory/scoped_nsobject.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 @implementation WrenchMenuButtonCell
 
 - (void)drawBezelWithFrame:(NSRect)frame inView:(NSView*)controlView {
-  [NSGraphicsContext saveGraphicsState];
+  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
 
   // Inset the rect to match the appearance of the layout of interface builder.
   // The bounding rect of buttons is actually larger than the display rect shown
@@ -35,8 +36,6 @@
     [[NSColor selectedMenuItemColor] set];
     NSRectFill(frame);
   }
-
-  [NSGraphicsContext restoreGraphicsState];
 }
 
 - (NSBackgroundStyle)interiorBackgroundStyle {

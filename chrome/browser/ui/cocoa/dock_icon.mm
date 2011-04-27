@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/dock_icon.h"
 
 #include "base/memory/scoped_nsobject.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 // The fraction of the size of the dock icon that the badge is.
 static const float kBadgeFraction = 0.4f;
@@ -77,14 +78,15 @@ static const float kBadgeIndent = 5.0f;
       [[NSGradient alloc] initWithStartingColor:backgroundHighlight
                                     endingColor:backgroundColor]);
   NSBezierPath* badgeEdge = [NSBezierPath bezierPathWithOvalInRect:badgeRect];
-  [NSGraphicsContext saveGraphicsState];
-  [badgeEdge addClip];
-  [backgroundGradient drawFromCenter:badgeCenter
-                              radius:0.0
-                            toCenter:badgeCenter
-                              radius:badgeRadius
-                             options:0];
-  [NSGraphicsContext restoreGraphicsState];
+  {
+    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
+    [badgeEdge addClip];
+    [backgroundGradient drawFromCenter:badgeCenter
+                                radius:0.0
+                              toCenter:badgeCenter
+                                radius:badgeRadius
+                               options:0];
+  }
 
   // Slice
   if (!indeterminate_) {
@@ -114,26 +116,26 @@ static const float kBadgeIndent = 5.0f;
                                              clockwise:YES];
       [progressSlice closePath];
     }
-    [NSGraphicsContext saveGraphicsState];
+    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
     [progressSlice addClip];
     [sliceGradient drawFromCenter:badgeCenter
                            radius:0.0
                          toCenter:badgeCenter
                            radius:badgeRadius
                           options:0];
-    [NSGraphicsContext restoreGraphicsState];
   }
 
   // Edge
-  [NSGraphicsContext saveGraphicsState];
-  [[NSColor whiteColor] set];
-  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-  [shadow.get() setShadowOffset:NSMakeSize(0, -2)];
-  [shadow setShadowBlurRadius:2];
-  [shadow set];
-  [badgeEdge setLineWidth:2];
-  [badgeEdge stroke];
-  [NSGraphicsContext restoreGraphicsState];
+  {
+    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
+    [[NSColor whiteColor] set];
+    scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+    [shadow.get() setShadowOffset:NSMakeSize(0, -2)];
+    [shadow setShadowBlurRadius:2];
+    [shadow set];
+    [badgeEdge setLineWidth:2];
+    [badgeEdge stroke];
+  }
 
   // Download count
   scoped_nsobject<NSNumberFormatter> formatter(

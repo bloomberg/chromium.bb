@@ -12,6 +12,7 @@
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
 
@@ -67,25 +68,6 @@ void FrameRectWithInset(StyledTextFieldCellRoundedFlags roundedFlags,
   [path setLineWidth:lineWidth];
   [path stroke];
 }
-
-// TODO(shess): Maybe we need a |cocoa_util.h|?
-class ScopedSaveGraphicsState {
- public:
-  ScopedSaveGraphicsState()
-      : context_([NSGraphicsContext currentContext]) {
-    [context_ saveGraphicsState];
-  }
-  explicit ScopedSaveGraphicsState(NSGraphicsContext* context)
-      : context_(context) {
-    [context_ saveGraphicsState];
-  }
-  ~ScopedSaveGraphicsState() {
-    [context_ restoreGraphicsState];
-  }
-
-private:
-  NSGraphicsContext* context_;
-};
 
 }  // namespace
 
@@ -189,7 +171,7 @@ private:
   // outer border line on the bottom and right.  The clipping change
   // will clip the bottom and right edges (and corner).
   {
-    ScopedSaveGraphicsState state;
+    gfx::ScopedNSGraphicsContextSaveGState state;
     [RectPathWithInset(roundedFlags, frame, lineWidth, radius) addClip];
     const NSRect shadowFrame =
         NSOffsetRect(frame, halfLineWidth, halfLineWidth);

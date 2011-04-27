@@ -19,6 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
 
@@ -653,7 +654,7 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
   [triangle closePath];
 
   NSGraphicsContext* context = [NSGraphicsContext currentContext];
-  [context saveGraphicsState];
+  gfx::ScopedNSGraphicsContextSaveGState scopedGState(context);
 
   scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   [shadow.get() setShadowColor:[NSColor whiteColor]];
@@ -665,8 +666,6 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
   [fill setFill];
 
   [triangle fill];
-
-  [context restoreGraphicsState];
 }
 
 - (NSRect)imageRectForBounds:(NSRect)cellFrame {

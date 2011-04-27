@@ -43,6 +43,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/gl/gl_switches.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -417,7 +418,7 @@ static CVReturn DrawOneAcceleratedPluginCallback(
     int dirtyRectCount;
     [self getRectsBeingDrawn:&dirtyRects count:&dirtyRectCount];
 
-    [NSGraphicsContext saveGraphicsState];
+    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
 
     // Mask out any cutout rects--somewhat counterintuitively cutout rects are
     // places where clearColor is *not* drawn. The trick is that drawing nothing
@@ -445,8 +446,6 @@ static CVReturn DrawOneAcceleratedPluginCallback(
     // Punch a hole so that the OpenGL view shows through.
     [[NSColor clearColor] set];
     NSRectFillList(dirtyRects, dirtyRectCount);
-
-    [NSGraphicsContext restoreGraphicsState];
   }
 
   [self drawView];

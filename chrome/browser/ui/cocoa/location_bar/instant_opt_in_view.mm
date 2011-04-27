@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/instant_opt_in_view.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
 // How to round off the popup's corners.  Goal is to match star and go
@@ -30,7 +31,7 @@ const CGFloat kHorizontalLineInset = 2;
                         bottomLeftCornerRadius:kPopupRoundingRadius
                        bottomRightCornerRadius:kPopupRoundingRadius];
 
-  [NSGraphicsContext saveGraphicsState];
+  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
   [path addClip];
 
   // Background is white.
@@ -47,8 +48,6 @@ const CGFloat kHorizontalLineInset = 2;
 
   [[NSColor lightGrayColor] set];
   NSRectFill(NSMakeRect(minX, lineY, maxX - minX, 1));
-
-  [NSGraphicsContext restoreGraphicsState];
 }
 
 @end
