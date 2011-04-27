@@ -1624,8 +1624,6 @@
         'browser/prerender/prerender_observer.h',
         'browser/prerender/prerender_render_widget_host_view.cc',
         'browser/prerender/prerender_render_widget_host_view.h',
-        'browser/prerender/prerender_resource_handler.cc',
-        'browser/prerender/prerender_resource_handler.h',
         'browser/printing/cloud_print/cloud_print_proxy_service.cc',
         'browser/printing/cloud_print/cloud_print_proxy_service.h',
         'browser/printing/cloud_print/cloud_print_setup_flow.cc',

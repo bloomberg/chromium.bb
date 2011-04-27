@@ -50,9 +50,6 @@ const int kMinTimeBetweenPrerendersMs = 500;
 int PrerenderManager::prerenders_per_session_count_ = 0;
 
 // static
-base::TimeTicks PrerenderManager::last_prefetch_seen_time_;
-
-// static
 PrerenderManager::PrerenderManagerMode PrerenderManager::mode_ =
     PRERENDER_MODE_ENABLED;
 
@@ -118,15 +115,33 @@ struct PrerenderManager::PrerenderContentsData {
 };
 
 struct PrerenderManager::PendingContentsData {
-  PendingContentsData(const GURL& url, const std::vector<GURL>& alias_urls,
+  PendingContentsData(const GURL& url,
                       const GURL& referrer)
-      : url_(url), alias_urls_(alias_urls), referrer_(referrer) { }
+      : url_(url), referrer_(referrer) { }
   ~PendingContentsData() {}
   GURL url_;
-  std::vector<GURL> alias_urls_;
   GURL referrer_;
 };
 
+void HandlePrefetchTagOnUIThread(
+    const base::WeakPtr<PrerenderManager>& prerender_manager_weak_ptr,
+    const std::pair<int, int>& child_route_id_pair,
+    const GURL& url,
+    const GURL& referrer,
+    bool make_pending) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  PrerenderManager* prerender_manager = prerender_manager_weak_ptr.get();
+  if (!prerender_manager || !prerender_manager->is_enabled())
+    return;
+  prerender_manager->RecordPrefetchTagObserved();
+  // TODO(cbentzel): Should the decision to make pending be done on the
+  //                 UI thread rather than the IO thread? The page may have
+  //                 become activated at this point.
+  if (make_pending)
+    prerender_manager->AddPendingPreload(child_route_id_pair, url, referrer);
+  else
+    prerender_manager->AddPreload(child_route_id_pair, url, referrer);
+}
 
 PrerenderManager::PrerenderManager(Profile* profile)
     : rate_limit_enabled_(true),
@@ -161,22 +176,21 @@ void PrerenderManager::SetPrerenderContentsFactory(
 
 bool PrerenderManager::AddPreload(
     const std::pair<int, int>& child_route_id_pair,
-    const GURL& url,
-    const std::vector<GURL>& alias_urls,
+    const GURL& url_arg,
     const GURL& referrer) {
   DCHECK(CalledOnValidThread());
   DeleteOldEntries();
-  if (FindEntry(url))
-    return false;
 
-  // Local copy, since we may have to add an additional entry to it.
-  std::vector<GURL> all_alias_urls = alias_urls;
-
-  GURL additional_alias_url;
+  GURL url = url_arg;
+  GURL alias_url;
   if (IsControlGroup() &&
       PrerenderManager::MaybeGetQueryStringBasedAliasURL(
-          url, &additional_alias_url))
-    all_alias_urls.push_back(additional_alias_url);
+          url, &alias_url)) {
+    url = alias_url;
+  }
+
+  if (FindEntry(url))
+    return false;
 
   // Do not prerender if there are too many render processes, and we would
   // have to use an existing one.  We do not want prerendering to happen in
@@ -188,9 +202,7 @@ bool PrerenderManager::AddPreload(
   // case, when a new tab is added to a process used for prerendering.
   if (RenderProcessHost::ShouldTryToUseExistingProcessHost() &&
       !RenderProcessHost::run_renderer_in_process()) {
-    // Only record the status if we are not in the control group.
-    if (!IsControlGroup())
-      RecordFinalStatus(FINAL_STATUS_TOO_MANY_PROCESSES);
+    RecordFinalStatus(FINAL_STATUS_TOO_MANY_PROCESSES);
     return false;
   }
 
@@ -200,7 +212,6 @@ bool PrerenderManager::AddPreload(
     // this doesn't make sense as the next prerender request will be triggered
     // by a navigation and is unlikely to be the same site.
     RecordFinalStatus(FINAL_STATUS_RATE_LIMIT_EXCEEDED);
-
     return false;
   }
 
@@ -218,10 +229,13 @@ bool PrerenderManager::AddPreload(
     }
   }
 
+  PrerenderContents* prerender_contents =
+      CreatePrerenderContents(url, referrer);
+  if (!prerender_contents || !prerender_contents->Init())
+    return false;
+
   // TODO(cbentzel): Move invalid checks here instead of PrerenderContents?
-  PrerenderContentsData data(CreatePrerenderContents(url, all_alias_urls,
-                                                     referrer),
-                             GetCurrentTime());
+  PrerenderContentsData data(prerender_contents, GetCurrentTime());
 
   prerender_list_.push_back(data);
   if (IsControlGroup()) {
@@ -243,7 +257,6 @@ bool PrerenderManager::AddPreload(
 void PrerenderManager::AddPendingPreload(
     const std::pair<int, int>& child_route_id_pair,
     const GURL& url,
-    const std::vector<GURL>& alias_urls,
     const GURL& referrer) {
   DCHECK(CalledOnValidThread());
   // Check if this is coming from a valid prerender RenderViewHost.
@@ -285,7 +298,7 @@ void PrerenderManager::AddPendingPreload(
     it = pending_prerender_list_.insert(el).first;
   }
 
-  it->second.push_back(PendingContentsData(url, alias_urls, referrer));
+  it->second.push_back(PendingContentsData(url, referrer));
 }
 
 void PrerenderManager::DeleteOldEntries() {
@@ -365,8 +378,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
     for (std::vector<PendingContentsData>::iterator content_it =
             pending_it->second.begin();
          content_it != pending_it->second.end(); ++content_it) {
-      AddPreload(pending_it->first, content_it->url_, content_it->alias_urls_,
-                 content_it->referrer_);
+      AddPreload(pending_it->first, content_it->url_, content_it->referrer_);
     }
     pending_prerender_list_.erase(pending_it);
   }
@@ -433,11 +445,10 @@ bool PrerenderManager::IsPrerenderElementFresh(const base::Time start) const {
 
 PrerenderContents* PrerenderManager::CreatePrerenderContents(
     const GURL& url,
-    const std::vector<GURL>& alias_urls,
     const GURL& referrer) {
   DCHECK(CalledOnValidThread());
   return prerender_contents_factory_->CreatePrerenderContents(
-      this, profile_, url, alias_urls, referrer);
+      this, profile_, url, referrer);
 }
 
 // Helper macro for histograms.
@@ -456,13 +467,13 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
     base::TimeDelta perceived_page_load_time,
     TabContents* tab_contents) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool within_window = WithinWindow();
   PrerenderManager* prerender_manager =
       tab_contents->profile()->GetPrerenderManager();
   if (!prerender_manager)
     return;
   if (!prerender_manager->is_enabled())
     return;
+  bool within_window = prerender_manager->WithinWindow();
   RECORD_PLT("PerceivedPLT", perceived_page_load_time);
   if (within_window)
     RECORD_PLT("PerceivedPLTWindowed", perceived_page_load_time);
@@ -549,25 +560,8 @@ PrerenderManager::PendingContentsData*
   return NULL;
 }
 
-// static
 void PrerenderManager::RecordPrefetchTagObserved() {
-  // Ensure that we are in the UI thread, and post to the UI thread if
-  // necessary.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        NewRunnableFunction(
-            &PrerenderManager::RecordPrefetchTagObservedOnUIThread));
-  } else {
-    RecordPrefetchTagObservedOnUIThread();
-  }
-}
-
-// static
-void PrerenderManager::RecordPrefetchTagObservedOnUIThread() {
-  // Once we get here, we have to be on the UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
 
   // If we observe multiple tags within the 30 second window, we will still
   // reset the window to begin at the most recent occurrence, so that we will
@@ -590,9 +584,8 @@ void PrerenderManager::RemovePendingPreload(PrerenderContents* entry) {
   }
 }
 
-// static
-bool PrerenderManager::WithinWindow() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+bool PrerenderManager::WithinWindow() const {
+  DCHECK(CalledOnValidThread());
   if (last_prefetch_seen_time_.is_null())
     return false;
   base::TimeDelta elapsed_time =

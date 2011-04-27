@@ -56,14 +56,18 @@ class PrerenderContents : public RenderViewHostDelegate,
     virtual ~Factory() {}
 
     virtual PrerenderContents* CreatePrerenderContents(
-        PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
-        const std::vector<GURL>& alias_urls, const GURL& referrer) = 0;
+        PrerenderManager* prerender_manager,
+        Profile* profile,
+        const GURL& url,
+        const GURL& referrer) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Factory);
   };
 
   virtual ~PrerenderContents();
+
+  bool Init();
 
   static Factory* CreateFactory();
 
@@ -202,9 +206,16 @@ class PrerenderContents : public RenderViewHostDelegate,
 
   void OnJSOutOfMemory();
 
+  // Adds an alias URL, for one of the many redirections. If the URL can not
+  // be prerendered - for example, it's an ftp URL - |this| will be destroyed
+  // and false is returned. Otherwise, true is returned and the alias is
+  // remembered.
+  bool AddAliasURL(const GURL& url);
+
  protected:
-  PrerenderContents(PrerenderManager* prerender_manager, Profile* profile,
-                    const GURL& url, const std::vector<GURL>& alias_urls,
+  PrerenderContents(PrerenderManager* prerender_manager,
+                    Profile* profile,
+                    const GURL& url,
                     const GURL& referrer);
 
   // from RenderViewHostDelegate.
@@ -222,10 +233,6 @@ class PrerenderContents : public RenderViewHostDelegate,
                                          const GURL& url);
   void OnUpdateFaviconURL(int32 page_id, const std::vector<FaviconURL>& urls);
   void OnMaybeCancelPrerenderForHTML5Media();
-
-  // Adds an alias URL, for one of the many redirections. Returns whether
-  // the URL is valid.
-  bool AddAliasURL(const GURL& url);
 
   // Remove |this| from the PrerenderManager, set a final status, and
   // delete |this|.

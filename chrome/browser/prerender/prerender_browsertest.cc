@@ -52,13 +52,13 @@ std::string CreateServerRedirect(const std::string& dest_url) {
 class TestPrerenderContents : public PrerenderContents {
  public:
   TestPrerenderContents(
-      PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
-      const std::vector<GURL>& alias_urls,
+      PrerenderManager* prerender_manager,
+      Profile* profile,
+      const GURL& url,
       const GURL& referrer,
       int number_of_loads,
       FinalStatus expected_final_status)
-      : PrerenderContents(prerender_manager, profile, url, alias_urls,
-                          referrer),
+      : PrerenderContents(prerender_manager, profile, url, referrer),
         number_of_loads_(0),
         expected_number_of_loads_(number_of_loads),
         expected_final_status_(expected_final_status) {
@@ -122,8 +122,10 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
   }
 
   virtual PrerenderContents* CreatePrerenderContents(
-      PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
-      const std::vector<GURL>& alias_urls, const GURL& referrer) OVERRIDE {
+      PrerenderManager* prerender_manager,
+      Profile* profile,
+      const GURL& url,
+      const GURL& referrer) OVERRIDE {
     CHECK(!expected_final_status_queue_.empty()) <<
           "Creating prerender contents for " << url.path() <<
           " with no expected final status";
@@ -133,8 +135,7 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
                  " with expected final status " << expected_final_status;
     LOG(INFO) << expected_final_status_queue_.size() << " left in the queue.";
     return new TestPrerenderContents(prerender_manager, profile, url,
-                                     alias_urls, referrer,
-                                     number_of_loads_,
+                                     referrer, number_of_loads_,
                                      expected_final_status);
   }
 
@@ -173,18 +174,29 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
                         int total_navigations) {
     std::deque<FinalStatus> expected_final_status_queue(1,
                                                         expected_final_status);
-    PrerenderTestURLImpl(html_file,
-                         expected_final_status_queue,
-                         total_navigations);
+    PrerenderTestURL(html_file,
+                     expected_final_status_queue,
+                     total_navigations);
   }
 
   void PrerenderTestURL(
       const std::string& html_file,
       const std::deque<FinalStatus>& expected_final_status_queue,
       int total_navigations) {
-    PrerenderTestURLImpl(html_file,
+    ASSERT_TRUE(test_server()->Start());
+    PrerenderTestURLImpl(test_server()->GetURL(html_file),
                          expected_final_status_queue,
                          total_navigations);
+  }
+
+  void PrerenderTestURL(
+      const GURL& url,
+      FinalStatus expected_final_status,
+      int total_navigations) {
+    ASSERT_TRUE(test_server()->Start());
+    std::deque<FinalStatus> expected_final_status_queue(1,
+                                                        expected_final_status);
+    PrerenderTestURLImpl(url, expected_final_status_queue, total_navigations);
   }
 
   void NavigateToDestURL() const {
@@ -221,11 +233,10 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
  private:
   void PrerenderTestURLImpl(
-      const std::string& html_file,
+      const GURL& url,
       const std::deque<FinalStatus>& expected_final_status_queue,
       int total_navigations) {
-    ASSERT_TRUE(test_server()->Start());
-    dest_url_ = test_server()->GetURL(html_file);
+    dest_url_ = url;
 
     std::vector<net::TestServer::StringPair> replacement_text;
     replacement_text.push_back(
@@ -397,6 +408,17 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToURL("files/prerender/prerender_page.html");
 }
 
+// Checks that a prefetch for an https will prevent a prerender from happening.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttps) {
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
+  PrerenderTestURL(https_url,
+                   FINAL_STATUS_HTTPS,
+                   1);
+}
+
 // Checks that client-issued redirects to an https page will cancel prerenders.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectToHttps) {
   net::TestServer https_server(net::TestServer::TYPE_HTTPS,
@@ -475,7 +497,18 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToURL("files/prerender/prerender_page.html");
 }
 
-// TODO(cbentzel): Add server-redirect-to-https test. http://crbug.com/79182
+// Checks that server-issued redirects from an http to an https
+// location will cancel prerendering.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderServerRedirectToHttps) {
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
+  PrerenderTestURL(CreateServerRedirect(https_url.spec()),
+                   FINAL_STATUS_HTTPS,
+                   1);
+}
 
 // Checks that server-issued redirects within an iframe in a prerendered
 // page will not count as an "alias" for the prerendered page.

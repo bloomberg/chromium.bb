@@ -5,6 +5,7 @@
 #include "chrome/browser/prerender/prerender_final_status.h"
 
 #include "base/metrics/histogram.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 
 namespace prerender {
 
@@ -13,7 +14,8 @@ void RecordFinalStatus(FinalStatus final_status) {
   // FINAL_STATUS_CONTROL_GROUP indicates that the PrerenderContents
   // was created only to measure "would-have-been-prerendered" for
   // control group measurements. Don't pollute data with it.
-  if (final_status == FINAL_STATUS_CONTROL_GROUP)
+  if (PrerenderManager::IsControlGroup() ||
+      final_status == FINAL_STATUS_CONTROL_GROUP)
     return;
   UMA_HISTOGRAM_ENUMERATION("Prerender.FinalStatus",
                             final_status,

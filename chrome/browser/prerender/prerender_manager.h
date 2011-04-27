@@ -37,8 +37,16 @@ struct hash<TabContents*> {
 
 namespace prerender {
 
+void HandlePrefetchTagOnUIThread(
+    const base::WeakPtr<PrerenderManager>& prerender_manager,
+    const std::pair<int, int>& child_route_id_pair,
+    const GURL& url,
+    const GURL& referrer,
+    bool make_pending);
+
 // PrerenderManager is responsible for initiating and keeping prerendered
-// views of webpages.
+// views of webpages. All methods must be called on the UI thread unless
+// indicated otherwise.
 class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                          public base::NonThreadSafe {
  public:
@@ -57,20 +65,17 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   virtual ~PrerenderManager();
 
-  // Preloads |url| if valid.  |alias_urls| indicates URLs that redirect
-  // to the same URL to be preloaded.  |child_route_id_pair| identifies the
+  // Preloads |url| if valid.  |child_route_id_pair| identifies the
   // RenderViewHost that the prerender request came from and is used to
   // set the initial window size of the RenderViewHost used for prerendering.
   // Returns true if the URL was added, false if it was not.
   bool AddPreload(
       const std::pair<int, int>& child_route_id_pair,
       const GURL& url,
-      const std::vector<GURL>& alias_urls,
       const GURL& referrer);
 
   void AddPendingPreload(const std::pair<int, int>& child_route_id_pair,
                          const GURL& url,
-                         const std::vector<GURL>& alias_urls,
                          const GURL& referrer);
 
   // For a given TabContents that wants to navigate to the URL supplied,
@@ -121,9 +126,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   static bool IsPrerenderingPossible();
   static bool IsControlGroup();
 
-  // The following static method can be called from any thread, but will result
-  // in posting a task to the UI thread if we are not in the UI thread.
-  static void RecordPrefetchTagObserved();
+  // Records that a prefetch tag has been observed.
+  void RecordPrefetchTagObserved();
 
   // Maintaining and querying the set of TabContents belonging to this
   // PrerenderManager that are currently showing prerendered pages.
@@ -171,7 +175,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   virtual base::TimeTicks GetCurrentTimeTicks() const;
   virtual PrerenderContents* CreatePrerenderContents(
       const GURL& url,
-      const std::vector<GURL>& alias_urls,
       const GURL& referrer);
 
   // Finds the specified PrerenderContents and returns it, if it exists.
@@ -179,9 +182,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // ownership of the PrerenderContents.
   PrerenderContents* FindEntry(const GURL& url);
 
-  static bool WithinWindow();
-
-  static void RecordPrefetchTagObservedOnUIThread();
+  // Returns whether the PrerenderManager is currently within the prerender
+  // window - effectively, up to 30 seconds after a prefetch tag has been
+  // observed.
+  bool WithinWindow() const;
 
   // Called when removing a preload to ensure we clean up any pending preloads
   // that might remain in the map.
@@ -221,8 +225,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // The time when we last saw a prefetch request coming from a renderer.
   // This is used to record perceived PLT's for a certain amount of time
   // from the point that we last saw a <link rel=prefetch> tag.
-  // This static variable should only be modified on the UI thread.
-  static base::TimeTicks last_prefetch_seen_time_;
+  base::TimeTicks last_prefetch_seen_time_;
 
   // A count of how many prerenders we do per session. Initialized to 0 then
   // incremented and emitted to a histogram on each successful prerender.

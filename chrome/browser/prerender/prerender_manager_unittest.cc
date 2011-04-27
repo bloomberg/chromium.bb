@@ -20,9 +20,8 @@ class DummyPrerenderContents : public PrerenderContents {
  public:
   DummyPrerenderContents(PrerenderManager* prerender_manager,
                          const GURL& url,
-                         const std::vector<GURL> alias_urls,
                          FinalStatus expected_final_status)
-      : PrerenderContents(prerender_manager, NULL, url, alias_urls, GURL()),
+      : PrerenderContents(prerender_manager, NULL, url, GURL()),
         has_started_(false),
         expected_final_status_(expected_final_status) {
   }
@@ -93,27 +92,29 @@ class TestPrerenderManager : public PrerenderManager {
       const GURL& url,
       FinalStatus expected_final_status) {
     DummyPrerenderContents* prerender_contents =
-        new DummyPrerenderContents(this, url, std::vector<GURL>(),
-                                   expected_final_status);
+        new DummyPrerenderContents(this, url, expected_final_status);
     SetNextPrerenderContents(prerender_contents);
     return prerender_contents;
   }
 
   DummyPrerenderContents* CreateNextPrerenderContents(
       const GURL& url,
-      const std::vector<GURL> alias_urls,
+      const std::vector<GURL>& alias_urls,
       FinalStatus expected_final_status) {
     DummyPrerenderContents* prerender_contents =
-        new DummyPrerenderContents(this, url, alias_urls,
-                                   expected_final_status);
+        new DummyPrerenderContents(this, url, expected_final_status);
+    for (std::vector<GURL>::const_iterator it = alias_urls.begin();
+         it != alias_urls.end();
+         ++it) {
+      EXPECT_TRUE(prerender_contents->AddAliasURL(*it));
+    }
     SetNextPrerenderContents(prerender_contents);
     return prerender_contents;
   }
 
   // Shorthand to add a simple preload with no aliases.
   bool AddSimplePreload(const GURL& url) {
-    return AddPreload(std::pair<int, int>(-1, -1), url, std::vector<GURL>(),
-                      GURL());
+    return AddPreload(std::pair<int, int>(-1, -1), url, GURL());
   }
 
   bool IsPendingEntry(const GURL& url) {
@@ -121,12 +122,6 @@ class TestPrerenderManager : public PrerenderManager {
   }
 
   void set_rate_limit_enabled(bool enabled) { rate_limit_enabled_ = true; }
-
-  // Shorthand to add a simple preload with aliases.
-  bool AddSimplePreloadWithAliases(const GURL& url,
-                                   const std::vector<GURL>& alias_urls) {
-    return AddPreload(std::pair<int, int>(-1, -1), url, alias_urls, GURL());
-  }
 
   PrerenderContents* next_prerender_contents() {
     return next_prerender_contents_.get();
@@ -150,7 +145,6 @@ class TestPrerenderManager : public PrerenderManager {
 
   virtual PrerenderContents* CreatePrerenderContents(
       const GURL& url,
-      const std::vector<GURL>& alias_urls,
       const GURL& referrer) OVERRIDE {
     DCHECK(next_prerender_contents_.get());
     return next_prerender_contents_.release();
@@ -322,30 +316,26 @@ TEST_F(PrerenderManagerTest, AliasURLTest) {
   alias_urls.push_back(alias_url1);
   alias_urls.push_back(alias_url2);
 
-  // Test that all of the aliases work, but nont_an_alias_url does not.
+  // Test that all of the aliases work, but not_an_alias_url does not.
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
           url, alias_urls, FINAL_STATUS_USED);
-  EXPECT_TRUE(
-      prerender_manager()->AddSimplePreloadWithAliases(url, alias_urls));
+  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
   ASSERT_EQ(NULL, prerender_manager()->GetEntry(not_an_alias_url));
   ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(alias_url1));
   prerender_contents = prerender_manager()->CreateNextPrerenderContents(
           url, alias_urls, FINAL_STATUS_USED);
-  EXPECT_TRUE(
-      prerender_manager()->AddSimplePreloadWithAliases(url, alias_urls));
+  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
   ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(alias_url2));
   prerender_contents = prerender_manager()->CreateNextPrerenderContents(
           url, alias_urls, FINAL_STATUS_USED);
-  EXPECT_TRUE(
-      prerender_manager()->AddSimplePreloadWithAliases(url, alias_urls));
+  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
   ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(url));
 
   // Test that alias URLs can not be added.
   prerender_contents = prerender_manager()->CreateNextPrerenderContents(
           url, alias_urls, FINAL_STATUS_USED);
-  EXPECT_TRUE(
-      prerender_manager()->AddSimplePreloadWithAliases(url, alias_urls));
+  EXPECT_TRUE(prerender_manager()->AddSimplePreload(url));
   EXPECT_FALSE(prerender_manager()->AddSimplePreload(url));
   EXPECT_FALSE(prerender_manager()->AddSimplePreload(alias_url1));
   EXPECT_FALSE(prerender_manager()->AddSimplePreload(alias_url2));
@@ -419,7 +409,6 @@ TEST_F(PrerenderManagerTest, PendingPreloadTest) {
 
   prerender_manager()->AddPendingPreload(std::make_pair(child_id, route_id),
                                         pending_url,
-                                        std::vector<GURL>(),
                                         url);
 
   EXPECT_TRUE(prerender_manager()->IsPendingEntry(pending_url));
@@ -449,7 +438,6 @@ TEST_F(PrerenderManagerTest, PendingPreloadSkippedTest) {
 
   prerender_manager()->AddPendingPreload(std::make_pair(child_id, route_id),
                                         pending_url,
-                                        std::vector<GURL>(),
                                         url);
   EXPECT_FALSE(prerender_manager()->IsPendingEntry(pending_url));
 }
@@ -496,7 +484,7 @@ TEST_F(PrerenderManagerTest, SourceRenderViewClosed) {
       url,
       FINAL_STATUS_MANAGER_SHUTDOWN);
   EXPECT_FALSE(prerender_manager()->AddPreload(
-      std::pair<int, int>(100, 100), url, std::vector<GURL>(), GURL()));
+      std::pair<int, int>(100, 100), url, GURL()));
 }
 
 // Tests that the prerender manager ignores fragment references when matching

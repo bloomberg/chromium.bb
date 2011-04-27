@@ -71,16 +71,14 @@ class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
   virtual PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
-      const std::vector<GURL>& alias_urls, const GURL& referrer) OVERRIDE {
-    return new PrerenderContents(prerender_manager, profile, url, alias_urls,
-                                 referrer);
+      const GURL& referrer) OVERRIDE {
+    return new PrerenderContents(prerender_manager, profile, url, referrer);
   }
 };
 
 PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
                                      Profile* profile,
                                      const GURL& url,
-                                     const std::vector<GURL>& alias_urls,
                                      const GURL& referrer)
     : prerender_manager_(prerender_manager),
       render_view_host_(NULL),
@@ -92,14 +90,12 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       final_status_(FINAL_STATUS_MAX),
       prerendering_has_started_(false) {
   DCHECK(prerender_manager != NULL);
+}
+
+bool PrerenderContents::Init() {
   if (!AddAliasURL(prerender_url_))
-    LOG(DFATAL) << "PrerenderContents given invalid URL " << prerender_url_;
-  for (std::vector<GURL>::const_iterator it = alias_urls.begin();
-       it != alias_urls.end();
-       ++it) {
-    if (!AddAliasURL(*it))
-      LOG(DFATAL) << "PrerenderContents given invalid URL " << prerender_url_;
-  }
+    return false;
+  return true;
 }
 
 // static
@@ -134,7 +130,6 @@ void PrerenderContents::StartPrerendering(
   PrerenderRenderWidgetHostView* view =
       new PrerenderRenderWidgetHostView(render_view_host_, this);
   view->Init(source_render_view_host->view());
-
 
   // Register this with the ResourceDispatcherHost as a prerender
   // RenderViewHost. This must be done before the Navigate message to catch all
@@ -288,10 +283,8 @@ void PrerenderContents::DidNavigate(
   navigate_params_.reset(new ViewHostMsg_FrameNavigate_Params());
   *navigate_params_ = params;
 
-  if (!AddAliasURL(params.url)) {
-    Destroy(FINAL_STATUS_HTTPS);
+  if (!AddAliasURL(params.url))
     return;
-  }
 
   url_ = params.url;
 }
@@ -386,7 +379,7 @@ void PrerenderContents::Observe(NotificationType type,
       if (resource_redirect_details->resource_type() ==
           ResourceType::MAIN_FRAME) {
         if (!AddAliasURL(resource_redirect_details->new_url()))
-          Destroy(FINAL_STATUS_HTTPS);
+          return;
       }
       break;
     }
@@ -495,10 +488,8 @@ void PrerenderContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                           bool is_main_frame,
                                                           const GURL& url) {
   if (is_main_frame) {
-    if (!AddAliasURL(url)) {
-      Destroy(FINAL_STATUS_HTTPS);
+    if (!AddAliasURL(url))
       return;
-    }
 
     // Usually, this event fires if the user clicks or enters a new URL.
     // Neither of these can happen in the case of an invisible prerender.
@@ -528,8 +519,13 @@ void PrerenderContents::OnMaybeCancelPrerenderForHTML5Media() {
 }
 
 bool PrerenderContents::AddAliasURL(const GURL& url) {
-  if (!url.SchemeIs("http"))
+  if (!url.SchemeIs("http")) {
+    if (url.SchemeIs("https"))
+      Destroy(FINAL_STATUS_HTTPS);
+    else
+      Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
     return false;
+  }
   alias_urls_.push_back(url);
   return true;
 }
