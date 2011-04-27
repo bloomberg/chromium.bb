@@ -66,7 +66,7 @@ void TestShellRequestContext::Init(
 #endif
   set_host_resolver(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    NULL, NULL));
+                                    NULL));
   set_cert_verifier(new net::CertVerifier);
   set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
       proxy_config_service.release(), 0, NULL));

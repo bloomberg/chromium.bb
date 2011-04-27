@@ -108,7 +108,7 @@ ServiceURLRequestContext::ServiceURLRequestContext(
     net::ProxyService* net_proxy_service) : user_agent_(user_agent) {
   set_host_resolver(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    NULL, NULL));
+                                    NULL));
   set_proxy_service(net_proxy_service);
   set_cert_verifier(new net::CertVerifier);
   set_dnsrr_resolver(new net::DnsRRResolver);
