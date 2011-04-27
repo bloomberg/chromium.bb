@@ -136,6 +136,10 @@ gfx::NativeTheme::Part ExampleNativeThemeButton::GetThemePart() const {
   return gfx::NativeTheme::kPushButton;
 }
 
+gfx::Rect ExampleNativeThemeButton::GetThemePaintRect() const {
+  return bounds();
+}
+
 gfx::NativeTheme::State ExampleNativeThemeButton::GetThemeState(
     gfx::NativeTheme::ExtraParams* params) const {
   GetExtraParams(params);
@@ -182,7 +186,7 @@ void ExampleNativeThemeButton::GetExtraParams(
   params->button.background_color = SkColorSetARGB(0, 0, 0, 0);
 }
 
-ui::Animation* ExampleNativeThemeButton::GetThemeAnimation() const {
+const ui::Animation* ExampleNativeThemeButton::GetThemeAnimation() const {
   int selected = cb_state_->selected_item();
   return selected <= 3 ? NULL : hover_animation_.get();
 }

@@ -14,6 +14,9 @@ namespace views {
 // static
 const char Checkbox::kViewClassName[] = "views/Checkbox";
 
+// static
+const char CheckboxNt::kViewClassName[] = "views/CheckboxNt";
+
 static const int kCheckboxLabelSpacing = 4;
 static const int kLabelFocusPaddingHorizontal = 2;
 static const int kLabelFocusPaddingVertical = 1;
@@ -220,6 +223,91 @@ void Checkbox::Init(const std::wstring& label_text) {
   label_->SetHasFocusBorder(true);
   label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
   AddChildView(label_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CheckboxNt, public:
+
+CheckboxNt::CheckboxNt(const std::wstring& label)
+    : TextButtonBase(NULL, label),
+      checked_(false) {
+  set_border(new TextButtonNativeThemeBorder(this));
+}
+
+CheckboxNt::~CheckboxNt() {
+}
+
+void CheckboxNt::SetChecked(bool checked) {
+  checked_ = checked;
+  SchedulePaint();
+}
+
+void CheckboxNt::SetMultiLine(bool multiline) {
+  NOTREACHED() << "Not yet implemented";
+}
+
+gfx::Size CheckboxNt::GetPreferredSize() {
+  gfx::Size prefsize(TextButtonBase::GetPreferredSize());
+  gfx::Size size = gfx::NativeTheme::instance()->GetPartSize(GetThemePart());
+  prefsize.Enlarge(size.width(), 0);
+  prefsize.set_height(std::max(prefsize.height(), size.height()));
+
+  if (max_width_ > 0)
+    prefsize.set_width(std::min(max_width_, prefsize.width()));
+
+  return prefsize;
+}
+
+std::string CheckboxNt::GetClassName() const {
+  return kViewClassName;
+}
+
+void CheckboxNt::GetAccessibleState(ui::AccessibleViewState* state) {
+  TextButtonBase::GetAccessibleState(state);
+  state->role = ui::AccessibilityTypes::ROLE_CHECKBUTTON;
+  state->state = checked() ? ui::AccessibilityTypes::STATE_CHECKED : 0;
+}
+
+void CheckboxNt::OnPaintFocusBorder(gfx::Canvas* canvas) {
+  if (HasFocus() && (IsFocusable() || IsAccessibilityFocusableInRootView())) {
+    gfx::Rect bounds(GetTextBounds());
+    // Increate the bounding box by one on each side so that that focus border
+    // does not draw on top of the letters.
+    bounds.Inset(-1, -1, -1, -1);
+    canvas->DrawFocusRect(bounds.x(), bounds.y(), bounds.width(),
+                          bounds.height());
+  }
+}
+
+void CheckboxNt::NotifyClick(const views::Event& event) {
+  SetChecked(!checked());
+  RequestFocus();
+  TextButtonBase::NotifyClick(event);
+}
+
+gfx::NativeTheme::Part CheckboxNt::GetThemePart() const {
+  return gfx::NativeTheme::kCheckbox;
+}
+
+gfx::Rect CheckboxNt::GetThemePaintRect() const {
+  gfx::Size size(gfx::NativeTheme::instance()->GetPartSize(GetThemePart()));
+  gfx::Insets insets = GetInsets();
+  gfx::Rect rect(insets.left(), 0, size.width(), height());
+  rect.set_x(GetMirroredXForRect(rect));
+  return rect;
+}
+
+void CheckboxNt::GetExtraParams(gfx::NativeTheme::ExtraParams* params) const {
+  TextButtonBase::GetExtraParams(params);
+  params->button.is_default = false;
+  params->button.checked = checked_;
+}
+
+gfx::Rect CheckboxNt::GetTextBounds() const {
+  gfx::Rect bounds(TextButtonBase::GetTextBounds());
+  gfx::Size size(gfx::NativeTheme::instance()->GetPartSize(GetThemePart()));
+  bounds.Offset(size.width() + kCheckboxLabelSpacing, 0);
+  return bounds;
 }
 
 }  // namespace views
