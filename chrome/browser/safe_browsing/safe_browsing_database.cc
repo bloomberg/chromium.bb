@@ -63,23 +63,6 @@ int EncodeChunkId(const int chunk, const int list_id) {
   return chunk << 1 | list_id % 2;
 }
 
-// Get the prefixes matching the download |urls|.
-void GetDownloadUrlPrefixes(const std::vector<GURL>& urls,
-                            std::vector<SBPrefix>* prefixes) {
-  for (size_t i = 0; i < urls.size(); ++i) {
-    const GURL& url = urls[i];
-    std::string hostname;
-    std::string path;
-    std::string query;
-    safe_browsing_util::CanonicalizeUrl(url, &hostname, &path, &query);
-
-    SBFullHash full_hash;
-    crypto::SHA256HashString(hostname + path + query, &full_hash,
-                             sizeof(full_hash));
-    prefixes->push_back(full_hash.prefix);
-  }
-}
-
 // Generate the set of full hashes to check for |url|.  If
 // |include_whitelist_hashes| is true we will generate additional path-prefixes
 // to match against the csd whitelist.  E.g., if the path-prefix /foo is on the
@@ -123,6 +106,17 @@ void BrowseFullHashesToCheck(const GURL& url,
       }
     }
   }
+}
+
+// Get the prefixes matching the download |urls|.
+void GetDownloadUrlPrefixes(const std::vector<GURL>& urls,
+                            std::vector<SBPrefix>* prefixes) {
+  std::vector<SBFullHash> full_hashes;
+  for (size_t i = 0; i < urls.size(); ++i)
+    BrowseFullHashesToCheck(urls[i], false, &full_hashes);
+
+  for (size_t i = 0; i < full_hashes.size(); ++i)
+    prefixes->push_back(full_hashes[i].prefix);
 }
 
 // Find the entries in |full_hashes| with prefix in |prefix_hits|, and

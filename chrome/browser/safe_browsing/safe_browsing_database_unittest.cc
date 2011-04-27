@@ -1128,7 +1128,7 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   database_->Init(database_filename_);
 
   const char kEvil1Host[] = "www.evil1.com/";
-  const char kEvil1Url1[] = "www.evil1.com/download1.html";
+  const char kEvil1Url1[] = "www.evil1.com/download1/";
   const char kEvil1Url2[] = "www.evil1.com/download2.html";
 
   SBChunkList chunks;
@@ -1167,6 +1167,18 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
 
   urls[0] = GURL("http://www.randomevil.com");
   EXPECT_FALSE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+
+  // Should match with query args stripped.
+  urls[0] = GURL(std::string("http://") + kEvil1Url2 + "?blah");
+  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  ASSERT_EQ(prefix_hits.size(), 1U);
+  EXPECT_EQ(prefix_hits[0], Sha256Prefix(kEvil1Url2));
+
+  // Should match with extra path stuff and query args stripped.
+  urls[0] = GURL(std::string("http://") + kEvil1Url1 + "foo/bar?blah");
+  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  ASSERT_EQ(prefix_hits.size(), 1U);
+  EXPECT_EQ(prefix_hits[0], Sha256Prefix(kEvil1Url1));
 
   // First hit in redirect chain is malware.
   urls.clear();
