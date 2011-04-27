@@ -12,7 +12,6 @@
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/test/profile_mock.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -161,33 +160,33 @@ TEST_F(SyncInternalsUITest, HandleJsEventNullService) {
   GetTestSyncInternalsUI()->HandleJsEvent("testMessage", JsArgList(args));
 }
 
-TEST_F(SyncInternalsUITest, ProcessWebUIMessageBasic) {
+TEST_F(SyncInternalsUITest, OnWebUISendBasic) {
   ExpectSetupTeardownCalls();
 
-  ExtensionHostMsg_DomMessage_Params params;
-  params.name = "testName";
-  params.arguments.Append(Value::CreateIntegerValue(10));
+  std::string name = "testName";
+  ListValue args;
+  args.Append(Value::CreateIntegerValue(10));
 
   EXPECT_CALL(mock_js_backend_,
-              ProcessMessage(params.name, HasArgsAsList(params.arguments),
+              ProcessMessage(name, HasArgsAsList(args),
                              GetTestSyncInternalsUIAddress()));
 
   ConstructTestSyncInternalsUI();
 
-  GetTestSyncInternalsUI()->ProcessWebUIMessage(params);
+  GetTestSyncInternalsUI()->OnWebUISend(GURL(), name, args);
 }
 
-TEST_F(SyncInternalsUITest, ProcessWebUIMessageBasicNullService) {
+TEST_F(SyncInternalsUITest, OnWebUISendBasicNullService) {
   ExpectSetupTeardownCallsNullService();
 
   ConstructTestSyncInternalsUI();
 
-  ExtensionHostMsg_DomMessage_Params params;
-  params.name = "testName";
-  params.arguments.Append(Value::CreateIntegerValue(5));
+  std::string name = "testName";
+  ListValue args;
+  args.Append(Value::CreateIntegerValue(5));
 
   // Should drop the message.
-  GetTestSyncInternalsUI()->ProcessWebUIMessage(params);
+  GetTestSyncInternalsUI()->OnWebUISend(GURL(), name, args);
 }
 
 namespace {
@@ -195,32 +194,28 @@ const char kAboutInfoCall[] =
     "onGetAboutInfoFinished({\"summary\":\"SYNC DISABLED\"});";
 }  // namespace
 
-TEST_F(SyncInternalsUITest, ProcessWebUIMessageGetAboutInfo) {
+TEST_F(SyncInternalsUITest, OnWebUISendGetAboutInfo) {
   ExpectSetupTeardownCalls();
 
-  ExtensionHostMsg_DomMessage_Params params;
-  params.name = "getAboutInfo";
-
   ConstructTestSyncInternalsUI();
 
   EXPECT_CALL(*GetTestSyncInternalsUI(),
               ExecuteJavascript(ASCIIToUTF16(kAboutInfoCall)));
 
-  GetTestSyncInternalsUI()->ProcessWebUIMessage(params);
+  ListValue args;
+  GetTestSyncInternalsUI()->OnWebUISend(GURL(), "getAboutInfo", args);
 }
 
-TEST_F(SyncInternalsUITest, ProcessWebUIMessageGetAboutInfoNullService) {
+TEST_F(SyncInternalsUITest, OnWebUISendGetAboutInfoNullService) {
   ExpectSetupTeardownCallsNullService();
-
-  ExtensionHostMsg_DomMessage_Params params;
-  params.name = "getAboutInfo";
 
   ConstructTestSyncInternalsUI();
 
   EXPECT_CALL(*GetTestSyncInternalsUI(),
               ExecuteJavascript(ASCIIToUTF16(kAboutInfoCall)));
 
-  GetTestSyncInternalsUI()->ProcessWebUIMessage(params);
+  ListValue args;
+  GetTestSyncInternalsUI()->OnWebUISend(GURL(), "getAboutInfo", args);
 }
 
 }  // namespace

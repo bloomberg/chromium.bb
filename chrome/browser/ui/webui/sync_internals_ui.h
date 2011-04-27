@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/basictypes.h"
 #include "chrome/browser/sync/js_event_handler.h"
 #include "content/browser/webui/web_ui.h"
@@ -35,12 +36,13 @@ class SyncInternalsUI : public WebUI, public browser_sync::JsEventHandler {
   //
   // TODO(akalin): Add a simple isSyncEnabled() message and make
   // getAboutInfo() be handled by the sync service.
-  virtual void ProcessWebUIMessage(
-      const ExtensionHostMsg_DomMessage_Params& params);
+  virtual void OnWebUISend(const GURL& source_url,
+                           const std::string& name,
+                           const ListValue& args) OVERRIDE;
 
   // browser_sync::JsEventHandler implementation.
   virtual void HandleJsEvent(const std::string& name,
-                             const browser_sync::JsArgList& args);
+                             const browser_sync::JsArgList& args) OVERRIDE;
 
  private:
   // Returns the sync service's JsFrontend object, or NULL if the sync

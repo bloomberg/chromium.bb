@@ -15,7 +15,6 @@
 #include "base/platform_file.h"
 #include "base/process.h"
 #include "base/timer.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/notification_observer.h"

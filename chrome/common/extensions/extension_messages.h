@@ -16,7 +16,7 @@
 #define IPC_MESSAGE_START ExtensionMsgStart
 
 // Parameters structure for ExtensionHostMsg_Request.
-IPC_STRUCT_BEGIN(ExtensionHostMsg_DomMessage_Params)
+IPC_STRUCT_BEGIN(ExtensionHostMsg_Request_Params)
   // Message name.
   IPC_STRUCT_MEMBER(std::string, name)
 
@@ -214,7 +214,7 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_GetApplicationInfo,
 // A renderer sends this message when an extension process starts an API
 // request. The browser will always respond with a ExtensionMsg_Response.
 IPC_MESSAGE_ROUTED1(ExtensionHostMsg_Request,
-                    ExtensionHostMsg_DomMessage_Params)
+                    ExtensionHostMsg_Request_Params)
 
 // Notify the browser that the given extension added a listener to an event.
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddListener,

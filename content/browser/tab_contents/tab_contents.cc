@@ -52,7 +52,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_restriction.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -366,6 +365,9 @@ void TabContents::AddObservers() {
 }
 
 bool TabContents::OnMessageReceived(const IPC::Message& message) {
+  if (web_ui() && web_ui()->OnMessageReceived(message))
+    return true;
+
   ObserverListBase<TabContentsObserver>::Iterator it(observers_);
   TabContentsObserver* observer;
   while ((observer = it.GetNext()) != NULL)
@@ -2005,19 +2007,6 @@ void TabContents::RequestOpenURL(const GURL& url, const GURL& referrer,
 
 void TabContents::DomOperationResponse(const std::string& json_string,
                                        int automation_id) {
-}
-
-void TabContents::ProcessWebUIMessage(
-    const ExtensionHostMsg_DomMessage_Params& params) {
-  if (!render_manager_.web_ui()) {
-    // This can happen if someone uses window.open() to open an extension URL
-    // from a non-extension context.
-    render_view_host()->Send(new ExtensionMsg_Response(
-        render_view_host()->routing_id(), params.request_id, false, "",
-        "Access to extension API denied."));
-    return;
-  }
-  render_manager_.web_ui()->ProcessWebUIMessage(params);
 }
 
 void TabContents::ProcessExternalHostMessage(const std::string& message,

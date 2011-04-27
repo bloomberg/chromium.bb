@@ -67,7 +67,6 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params);
   virtual WebPreferences GetWebkitPrefs();
-  virtual void ProcessWebUIMessage(const ViewHostMsg_DomMessage_Params& params);
   virtual void RunJavaScriptMessage(const std::wstring& message,
                                     const std::wstring& default_prompt,
                                     const GURL& frame_url,
