@@ -397,6 +397,10 @@ class ExtensionService
 
   Profile* profile();
 
+  // Profile calls this when it is being destroyed so that we know not to call
+  // it.
+  void DestroyingProfile();
+
   // TODO(skerner): Change to const ExtensionPrefs& extension_prefs() const,
   // ExtensionPrefs* mutable_extension_prefs().
   ExtensionPrefs* extension_prefs();

@@ -507,6 +507,7 @@ PendingExtensionManager* ExtensionService::pending_extension_manager() {
 }
 
 ExtensionService::~ExtensionService() {
+  CHECK(!profile_);  // Profile should have told us it's going away.
   UnloadAllExtensions();
 
   ProviderCollection::const_iterator i;
@@ -1223,6 +1224,19 @@ void ExtensionService::UpdateExtensionBlacklist(
 
 Profile* ExtensionService::profile() {
   return profile_;
+}
+
+void ExtensionService::DestroyingProfile() {
+  if (updater_.get()) {
+    updater_->Stop();
+  }
+  browser_event_router_.reset();
+  preference_event_router_.reset();
+  pref_change_registrar_.RemoveAll();
+  profile_ = NULL;
+  toolbar_model_.DestroyingProfile();
+  method_factory_.RevokeAll();
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 ExtensionPrefs* ExtensionService::extension_prefs() {

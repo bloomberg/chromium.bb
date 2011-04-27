@@ -203,6 +203,7 @@ TestingProfile::~TestingProfile() {
   DestroyFaviconService();
   DestroyWebDataService();
   if (extension_service_.get()) {
+    extension_service_->DestroyingProfile();
     extension_service_.reset();
   }
   if (pref_proxy_config_tracker_.get())
