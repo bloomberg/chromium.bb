@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,13 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "grit/app_resources.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/button/button.h"
 #include "views/events/event.h"
 #include "views/widget/widget.h"
+#include "grit/app_resources.h"
 
 namespace views {
 
@@ -26,20 +26,17 @@ static const int kPreferredPaddingHorizontal = 6;
 static const int kPreferredPaddingVertical = 5;
 
 // static
-const SkColor TextButtonBase::kEnabledColor = SkColorSetRGB(6, 45, 117);
+const SkColor TextButton::kEnabledColor = SkColorSetRGB(6, 45, 117);
 // static
-const SkColor TextButtonBase::kHighlightColor =
-    SkColorSetARGB(200, 255, 255, 255);
+const SkColor TextButton::kHighlightColor = SkColorSetARGB(200, 255, 255, 255);
 // static
-const SkColor TextButtonBase::kDisabledColor = SkColorSetRGB(161, 161, 146);
+const SkColor TextButton::kDisabledColor = SkColorSetRGB(161, 161, 146);
 // static
-const SkColor TextButtonBase::kHoverColor = TextButton::kEnabledColor;
+const SkColor TextButton::kHoverColor = TextButton::kEnabledColor;
 
 // How long the hover fade animation should last.
 static const int kHoverAnimationDurationMs = 170;
 
-// static
-const char TextButtonBase::kViewClassName[] = "views/TextButtonBase";
 // static
 const char TextButton::kViewClassName[] = "views/TextButton";
 
@@ -96,8 +93,9 @@ TextButtonBorder::~TextButtonBorder() {
 // TextButtonBorder - painting
 //
 ////////////////////////////////////////////////////////////////////////////////
+
 void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) const {
-  const TextButtonBase* mb = static_cast<const TextButton*>(&view);
+  const TextButton* mb = static_cast<const TextButton*>(&view);
   int state = mb->state();
 
   // TextButton takes care of deciding when to call Paint.
@@ -105,24 +103,10 @@ void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) const {
   if (state == TextButton::BS_PUSHED)
     set = &pushed_set_;
 
-  bool is_animating = mb->GetAnimation()->is_animating();
-  bool show_mult_icons = mb->show_multiple_icon_states();
-  bool do_paint = (show_mult_icons && is_animating) ||
-      (show_mult_icons && (state == TextButton::BS_HOT ||
-                           state == TextButton::BS_PUSHED)) ||
-      (state == TextButton::BS_NORMAL && mb->normal_has_border());
-  if (set && do_paint) {
-    if (is_animating) {
-      canvas->SaveLayerAlpha(
-          static_cast<uint8>(mb->GetAnimation()->CurrentValueBetween(0, 255)));
-      canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255,
-                                       SkXfermode::kClear_Mode);
-    }
-
+  if (set) {
     Paint(view, canvas, *set);
-
-    if (is_animating)
-      canvas->Restore();
+  } else {
+    // Do nothing
   }
 }
 
@@ -196,63 +180,12 @@ void TextButtonBorder::GetInsets(gfx::Insets* insets) const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
-// TextButtonNativeThemeBorder
-//
-////////////////////////////////////////////////////////////////////////////////
+// TextButton, public:
 
-TextButtonNativeThemeBorder::TextButtonNativeThemeBorder(
-    NativeThemeDelegate* delegate)
-    : delegate_(delegate) {
-}
-
-TextButtonNativeThemeBorder::~TextButtonNativeThemeBorder() {
-}
-
-void TextButtonNativeThemeBorder::Paint(const View& view,
-                                        gfx::Canvas* canvas) const {
-  const TextButtonBase* tb = static_cast<const TextButton*>(&view);
-  const gfx::NativeTheme* native_theme = gfx::NativeTheme::instance();
-  gfx::NativeTheme::Part part = delegate_->GetThemePart();
-  gfx::CanvasSkia* skia_canvas = canvas->AsCanvasSkia();
-  gfx::Rect rect(delegate_->GetThemePaintRect());
-
-  if (tb->show_multiple_icon_states() &&
-      delegate_->GetThemeAnimation() != NULL &&
-      delegate_->GetThemeAnimation()->is_animating()) {
-    // Paint background state.
-    gfx::NativeTheme::ExtraParams prev_extra;
-    gfx::NativeTheme::State prev_state =
-        delegate_->GetBackgroundThemeState(&prev_extra);
-    native_theme->Paint(skia_canvas, part, prev_state, rect, prev_extra);
-
-    // Composite foreground state above it.
-    gfx::NativeTheme::ExtraParams extra;
-    gfx::NativeTheme::State state = delegate_->GetForegroundThemeState(&extra);
-    int alpha = delegate_->GetThemeAnimation()->CurrentValueBetween(0, 255);
-    skia_canvas->SaveLayerAlpha(static_cast<uint8>(alpha));
-    native_theme->Paint(skia_canvas, part, state, rect, extra);
-    skia_canvas->Restore();
-  } else {
-    gfx::NativeTheme::ExtraParams extra;
-    gfx::NativeTheme::State state = delegate_->GetThemeState(&extra);
-    native_theme->Paint(skia_canvas, part, state, rect, extra);
-  }
-}
-
-void TextButtonNativeThemeBorder::GetInsets(gfx::Insets* insets) const {
-  insets->Set(kPreferredPaddingVertical, kPreferredPaddingHorizontal,
-              kPreferredPaddingVertical, kPreferredPaddingHorizontal);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// TextButtonBase, public:
-
-TextButtonBase::TextButtonBase(ButtonListener* listener,
-                               const std::wstring& text)
+TextButton::TextButton(ButtonListener* listener, const std::wstring& text)
     : CustomButton(listener),
       alignment_(ALIGN_LEFT),
+      icon_placement_(ICON_ON_LEFT),
       font_(ResourceBundle::GetSharedInstance().GetFont(
           ResourceBundle::BaseFont)),
       color_(kEnabledColor),
@@ -265,171 +198,153 @@ TextButtonBase::TextButtonBase(ButtonListener* listener,
       active_text_shadow_color_(0),
       inactive_text_shadow_color_(0),
       has_shadow_(false),
+      has_hover_icon_(false),
+      has_pushed_icon_(false),
       max_width_(0),
       normal_has_border_(false),
       show_multiple_icon_states_(true),
-      is_default_(false),
-      prefix_type_(PREFIX_NONE) {
+      prefix_type_(PREFIX_NONE),
+      icon_text_spacing_(kDefaultIconTextSpacing) {
   SetText(text);
+  set_border(new TextButtonBorder);
   SetAnimationDuration(kHoverAnimationDurationMs);
 }
 
-TextButtonBase::~TextButtonBase() {
+TextButton::~TextButton() {
 }
 
-void TextButtonBase::SetIsDefault(bool is_default) {
-  if (is_default == is_default_)
-    return;
-  is_default_ = is_default;
-  if (is_default_)
-    AddAccelerator(Accelerator(ui::VKEY_RETURN, false, false, false));
-  else
-    RemoveAccelerator(Accelerator(ui::VKEY_RETURN, false, false, false));
-  SchedulePaint();
-}
-
-void TextButtonBase::SetText(const std::wstring& text) {
+void TextButton::SetText(const std::wstring& text) {
   text_ = WideToUTF16Hack(text);
   SetAccessibleName(WideToUTF16Hack(text));
   UpdateTextSize();
 }
 
-void TextButtonBase::SetFont(const gfx::Font& font) {
+void TextButton::SetIcon(const SkBitmap& icon) {
+  icon_ = icon;
+}
+
+void TextButton::SetHoverIcon(const SkBitmap& icon) {
+  icon_hover_ = icon;
+  has_hover_icon_ = true;
+}
+
+void TextButton::SetPushedIcon(const SkBitmap& icon) {
+  icon_pushed_ = icon;
+  has_pushed_icon_ = true;
+}
+
+void TextButton::SetFont(const gfx::Font& font) {
   font_ = font;
   UpdateTextSize();
 }
 
-void TextButtonBase::SetEnabledColor(SkColor color) {
+void TextButton::SetEnabledColor(SkColor color) {
   color_enabled_ = color;
   UpdateColor();
 }
 
-void TextButtonBase::SetDisabledColor(SkColor color) {
+void TextButton::SetDisabledColor(SkColor color) {
   color_disabled_ = color;
   UpdateColor();
 }
 
-void TextButtonBase::SetHighlightColor(SkColor color) {
+void TextButton::SetHighlightColor(SkColor color) {
   color_highlight_ = color;
 }
 
-void TextButtonBase::SetHoverColor(SkColor color) {
+void TextButton::SetHoverColor(SkColor color) {
   color_hover_ = color;
 }
 
-void TextButtonBase::SetTextHaloColor(SkColor color) {
+void TextButton::SetTextHaloColor(SkColor color) {
   text_halo_color_ = color;
   has_text_halo_ = true;
 }
 
-void TextButtonBase::SetTextShadowColors(SkColor active_color,
-                                         SkColor inactive_color) {
+void TextButton::SetTextShadowColors(SkColor active_color,
+                                     SkColor inactive_color) {
   active_text_shadow_color_ = active_color;
   inactive_text_shadow_color_ = inactive_color;
   has_shadow_ = true;
 }
 
-void TextButtonBase::ClearMaxTextSize() {
+void TextButton::ClearMaxTextSize() {
   max_text_size_ = text_size_;
 }
 
-void TextButtonBase::SetNormalHasBorder(bool normal_has_border) {
+void TextButton::SetNormalHasBorder(bool normal_has_border) {
   normal_has_border_ = normal_has_border;
 }
 
-void TextButtonBase::SetShowMultipleIconStates(bool show_multiple_icon_states) {
+void TextButton::SetShowMultipleIconStates(bool show_multiple_icon_states) {
   show_multiple_icon_states_ = show_multiple_icon_states;
 }
 
-gfx::Size TextButtonBase::GetPreferredSize() {
-  gfx::Insets insets = GetInsets();
-
-  // Use the max size to set the button boundaries.
-  gfx::Size prefsize(max_text_size_.width() + insets.width(),
-                     max_text_size_.height() + insets.height());
-
-  if (max_width_ > 0)
-    prefsize.set_width(std::min(max_width_, prefsize.width()));
-
-  return prefsize;
-}
-
-void TextButtonBase::OnPaint(gfx::Canvas* canvas) {
-  PaintButton(canvas, PB_NORMAL);
-}
-
-const ui::Animation* TextButtonBase::GetAnimation() const {
-  return hover_animation_.get();
-}
-
-void TextButtonBase::UpdateColor() {
-  color_ = IsEnabled() ? color_enabled_ : color_disabled_;
-}
-
-void TextButtonBase::UpdateTextSize() {
-  int width = 0, height = 0;
-  gfx::CanvasSkia::SizeStringInt(
-      text_, font_, &width, &height,
-      gfx::Canvas::NO_ELLIPSIS | PrefixTypeToCanvasType(prefix_type_));
-
-  // Add 2 extra pixels to width and height when text halo is used.
-  if (has_text_halo_) {
-    width += 2;
-    height += 2;
-  }
-
-  text_size_.SetSize(width, font_.GetHeight());
-  max_text_size_.SetSize(std::max(max_text_size_.width(), text_size_.width()),
-                         std::max(max_text_size_.height(),
-                                  text_size_.height()));
-  PreferredSizeChanged();
-}
-
-void TextButtonBase::GetExtraParams(
-    gfx::NativeTheme::ExtraParams* params) const {
-  params->button.checked = false;
-  params->button.indeterminate = false;
-  params->button.is_default = false;
-  params->button.has_border = false;
-  params->button.classic_state = 0;
-  params->button.background_color = kEnabledColor;
-}
-
-gfx::Rect TextButtonBase::GetTextBounds() const {
-  gfx::Insets insets = GetInsets();
-  int available_width = width() - insets.width();
-  int content_width = text_size_.width();
-  int text_x;
-  switch(alignment_) {
-    case ALIGN_LEFT:
-      text_x = insets.left();
-      break;
-    case ALIGN_RIGHT:
-      text_x = width() - insets.right() - content_width;
-      break;
-    case ALIGN_CENTER:
-      text_x = insets.left() + std::max(0,
-                                        (available_width - content_width) / 2);
-      break;
-  }
-  const int text_width = std::min(text_size_.width(),
-                                  width() - insets.right() - text_x);
-  int available_height = height() - insets.height();
-  int text_y = (available_height - text_size_.height()) / 2 + insets.top();
-
-  gfx::Rect bounds(text_x, text_y, text_width, text_size_.height());
-  return bounds;
-}
-
-void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
+void TextButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   if (mode == PB_NORMAL) {
     OnPaintBackground(canvas);
-    OnPaintBorder(canvas);
+
+    if (show_multiple_icon_states_ && hover_animation_->is_animating()) {
+      // Draw the hover bitmap into an offscreen buffer, then blend it
+      // back into the current canvas.
+      canvas->SaveLayerAlpha(
+          static_cast<int>(hover_animation_->GetCurrentValue() * 255));
+      canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255,
+                                       SkXfermode::kClear_Mode);
+      OnPaintBorder(canvas);
+      canvas->Restore();
+    } else if ((show_multiple_icon_states_ &&
+                (state_ == BS_HOT || state_ == BS_PUSHED)) ||
+               (state_ == BS_NORMAL && normal_has_border_)) {
+      OnPaintBorder(canvas);
+    }
+
     OnPaintFocusBorder(canvas);
   }
 
-  gfx::Rect text_bounds(GetTextBounds());
-  if (text_bounds.width() > 0) {
+  SkBitmap icon = icon_;
+  if (show_multiple_icon_states_) {
+    if (has_hover_icon_ && (state() == BS_HOT))
+      icon = icon_hover_;
+    else if (has_pushed_icon_ && (state() == BS_PUSHED))
+      icon = icon_pushed_;
+  }
+
+  gfx::Insets insets = GetInsets();
+  int available_width = width() - insets.width();
+  int available_height = height() - insets.height();
+  // Use the actual text (not max) size to properly center the text.
+  int content_width = text_size_.width();
+  if (icon.width() > 0) {
+    content_width += icon.width();
+    if (!text_.empty())
+      content_width += icon_text_spacing_;
+  }
+  // Place the icon along the left edge.
+  int icon_x;
+  if (alignment_ == ALIGN_LEFT) {
+    icon_x = insets.left();
+  } else if (alignment_ == ALIGN_RIGHT) {
+    icon_x = available_width - content_width;
+  } else {
+    icon_x =
+        std::max(0, (available_width - content_width) / 2) + insets.left();
+  }
+  int text_x = icon_x;
+  if (icon.width() > 0)
+    text_x += icon.width() + icon_text_spacing_;
+  const int text_width = std::min(text_size_.width(),
+                                  width() - insets.right() - text_x);
+  int text_y = (available_height - text_size_.height()) / 2 + insets.top();
+
+  // If the icon should go on the other side, swap the elements.
+  if (icon_placement_ == ICON_ON_RIGHT) {
+    int new_text_x = icon_x;
+    icon_x = new_text_x + text_width + icon_text_spacing_;
+    text_x = new_text_x;
+  }
+
+  if (text_width > 0) {
     // Because the text button can (at times) draw multiple elements on the
     // canvas, we can not mirror the button by simply flipping the canvas as
     // doing this will mirror the text itself. Flipping the canvas will also
@@ -438,6 +353,7 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     // horizontally.
     //
     // Due to the above, we must perform the flipping manually for RTL UIs.
+    gfx::Rect text_bounds(text_x, text_y, text_width, text_size_.height());
     text_bounds.set_x(GetMirroredXForRect(text_bounds));
 
     SkColor text_color = (show_multiple_icon_states_ &&
@@ -500,141 +416,8 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                             draw_string_flags);
     }
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// TextButtonBase, View overrides:
-
-gfx::Size TextButtonBase::GetMinimumSize() {
-  return max_text_size_;
-}
-
-void TextButtonBase::SetEnabled(bool enabled) {
-  if (enabled != IsEnabled()) {
-    CustomButton::SetEnabled(enabled);
-  }
-  // We should always call UpdateColor() since the state of the button might be
-  // changed by other functions like CustomButton::SetState().
-  UpdateColor();
-  SchedulePaint();
-}
-
-std::string TextButtonBase::GetClassName() const {
-  return kViewClassName;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// TextButtonBase, NativeThemeDelegate overrides:
-
-gfx::Rect TextButtonBase::GetThemePaintRect() const {
-  return bounds();
-}
-
-gfx::NativeTheme::State TextButtonBase::GetThemeState(
-    gfx::NativeTheme::ExtraParams* params) const {
-  GetExtraParams(params);
-  switch(state()) {
-    case BS_DISABLED:
-      return gfx::NativeTheme::kDisabled;
-    case BS_NORMAL:
-      return gfx::NativeTheme::kNormal;
-    case BS_HOT:
-      return gfx::NativeTheme::kHovered;
-    case BS_PUSHED:
-      return gfx::NativeTheme::kPressed;
-    default:
-      NOTREACHED() << "Unknown state: " << state();
-      return gfx::NativeTheme::kNormal;
-  }
-}
-
-const ui::Animation* TextButtonBase::GetThemeAnimation() const {
-  return hover_animation_.get();
-}
-
-gfx::NativeTheme::State TextButtonBase::GetBackgroundThemeState(
-  gfx::NativeTheme::ExtraParams* params) const {
-  GetExtraParams(params);
-  return gfx::NativeTheme::kNormal;
-}
-
-gfx::NativeTheme::State TextButtonBase::GetForegroundThemeState(
-  gfx::NativeTheme::ExtraParams* params) const {
-  GetExtraParams(params);
-  return gfx::NativeTheme::kHovered;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// TextButton
-//
-////////////////////////////////////////////////////////////////////////////////
-
-TextButton::TextButton(ButtonListener* listener,
-                       const std::wstring& text)
-    : TextButtonBase(listener, text),
-      icon_placement_(ICON_ON_LEFT),
-      has_hover_icon_(false),
-      has_pushed_icon_(false),
-      icon_text_spacing_(kDefaultIconTextSpacing) {
-  set_border(new TextButtonBorder);
-}
-
-TextButton::~TextButton() {
-}
-
-void TextButton::SetIcon(const SkBitmap& icon) {
-  icon_ = icon;
-}
-
-void TextButton::SetHoverIcon(const SkBitmap& icon) {
-  icon_hover_ = icon;
-  has_hover_icon_ = true;
-}
-
-void TextButton::SetPushedIcon(const SkBitmap& icon) {
-  icon_pushed_ = icon;
-  has_pushed_icon_ = true;
-}
-
-gfx::Size TextButton::GetPreferredSize() {
-  gfx::Size prefsize(TextButtonBase::GetPreferredSize());
-  prefsize.Enlarge(icon_.width(), 0);
-  prefsize.set_height(std::max(prefsize.height(), icon_.height()));
-
-  // Use the max size to set the button boundaries.
-  if (icon_.width() > 0 && !text_.empty())
-    prefsize.Enlarge(icon_text_spacing_, 0);
-
-  if (max_width_ > 0)
-    prefsize.set_width(std::min(max_width_, prefsize.width()));
-
-  return prefsize;
-}
-
-void TextButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
-  TextButtonBase::PaintButton(canvas, mode);
-
-  SkBitmap icon = icon_;
-  if (show_multiple_icon_states_) {
-    if (has_hover_icon_ && (state() == BS_HOT))
-      icon = icon_hover_;
-    else if (has_pushed_icon_ && (state() == BS_PUSHED))
-      icon = icon_pushed_;
-  }
 
   if (icon.width() > 0) {
-    gfx::Rect text_bounds = GetTextBounds();
-    int icon_x;
-    int spacing = text_.empty() ? 0 : icon_text_spacing_;
-    if (icon_placement_ == ICON_ON_LEFT) {
-      icon_x = text_bounds.x() - icon.width() - spacing;
-    } else {
-      icon_x = text_bounds.right() + spacing;
-    }
-
-    gfx::Insets insets = GetInsets();
-    int available_height = height() - insets.height();
     int icon_y = (available_height - icon.height()) / 2 + insets.top();
 
     // Mirroring the icon position if necessary.
@@ -644,83 +427,69 @@ void TextButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   }
 }
 
+void TextButton::UpdateColor() {
+  color_ = IsEnabled() ? color_enabled_ : color_disabled_;
+}
+
+void TextButton::UpdateTextSize() {
+  int width = 0, height = 0;
+  gfx::CanvasSkia::SizeStringInt(
+      text_, font_, &width, &height,
+      gfx::Canvas::NO_ELLIPSIS | PrefixTypeToCanvasType(prefix_type_));
+
+  // Add 2 extra pixels to width and height when text halo is used.
+  if (has_text_halo_) {
+    width += 2;
+    height += 2;
+  }
+
+  text_size_.SetSize(width, font_.GetHeight());
+  max_text_size_.SetSize(std::max(max_text_size_.width(), text_size_.width()),
+                         std::max(max_text_size_.height(),
+                                  text_size_.height()));
+  PreferredSizeChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TextButton, View overrides:
+
+gfx::Size TextButton::GetPreferredSize() {
+  gfx::Insets insets = GetInsets();
+
+  // Use the max size to set the button boundaries.
+  gfx::Size prefsize(max_text_size_.width() + icon_.width() + insets.width(),
+                     std::max(max_text_size_.height(), icon_.height()) +
+                         insets.height());
+
+  if (icon_.width() > 0 && !text_.empty())
+    prefsize.Enlarge(icon_text_spacing_, 0);
+
+  if (max_width_ > 0)
+    prefsize.set_width(std::min(max_width_, prefsize.width()));
+
+  return prefsize;
+}
+
+gfx::Size TextButton::GetMinimumSize() {
+  return max_text_size_;
+}
+
+void TextButton::SetEnabled(bool enabled) {
+  if (enabled != IsEnabled()) {
+    CustomButton::SetEnabled(enabled);
+  }
+  // We should always call UpdateColor() since the state of the button might be
+  // changed by other functions like CustomButton::SetState().
+  UpdateColor();
+  SchedulePaint();
+}
+
 std::string TextButton::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::NativeTheme::Part TextButton::GetThemePart() const {
-  return gfx::NativeTheme::kPushButton;
-}
-
-void TextButton::GetExtraParams(gfx::NativeTheme::ExtraParams* params) const {
-  params->button.checked = false;
-  params->button.indeterminate = false;
-  params->button.is_default = is_default_;
-  params->button.has_border = false;
-  params->button.classic_state = 0;
-  params->button.background_color = kEnabledColor;
-}
-
-gfx::Rect TextButton::GetTextBounds() const {
-  gfx::Rect bounds(TextButtonBase::GetTextBounds());
-
-  SkBitmap icon = icon_;
-  if (show_multiple_icon_states_) {
-    if (has_hover_icon_ && (state() == BS_HOT))
-      icon = icon_hover_;
-    else if (has_pushed_icon_ && (state() == BS_PUSHED))
-      icon = icon_pushed_;
-  }
-
-  if (icon.width() > 0) {
-    gfx::Insets insets = GetInsets();
-    int available_width = width() - insets.width();
-    int icon_width = icon.width() + (text_.empty() ? 0 : icon_text_spacing_);
-    int new_content_width = bounds.width() + icon_width;
-
-    if (new_content_width < available_width) {
-      switch(alignment_) {
-        case ALIGN_LEFT:
-          if (icon_placement_ == ICON_ON_LEFT)
-            bounds.Offset(icon_width, 0);
-          break;
-        case ALIGN_RIGHT:
-          if (icon_placement_ == ICON_ON_RIGHT)
-            bounds.Offset(-icon_width, 0);
-          break;
-        case ALIGN_CENTER:
-          if (icon_placement_ == ICON_ON_LEFT) {
-            bounds.Offset(icon_width / 2, 0);
-          } else {
-            bounds.Offset(-icon_width / 2, 0);
-          }
-          break;
-      }
-    } else {
-      // Make sure the icon is always fully visible.
-      switch(alignment_) {
-        case ALIGN_LEFT:
-        case ALIGN_CENTER:
-          if (icon_placement_ == ICON_ON_LEFT) {
-            bounds.Offset(icon_width, 0);
-          } else {
-            bounds.set_width(available_width - icon_width);
-          }
-          break;
-        case ALIGN_RIGHT:
-          if (icon_placement_ == ICON_ON_RIGHT) {
-            bounds.Offset(-icon_width, 0);
-          } else {
-            bounds.set_x(icon_width + insets.left());
-          }
-          break;
-      }
-    }
-  }
-
-  return bounds;
+void TextButton::OnPaint(gfx::Canvas* canvas) {
+  PaintButton(canvas, PB_NORMAL);
 }
 
 }  // namespace views
-
-

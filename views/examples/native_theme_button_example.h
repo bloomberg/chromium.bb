@@ -11,7 +11,6 @@
 #include "views/controls/button/custom_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/examples/example_base.h"
-#include "views/native_theme_delegate.h"
 #include "views/native_theme_painter.h"
 
 namespace views {
@@ -23,7 +22,7 @@ namespace examples {
 
 // A subclass of button to test native theme rendering.
 class ExampleNativeThemeButton : public views::CustomButton,
-                                 public views::NativeThemeDelegate,
+                                 public views::NativeThemePainter::Delegate,
                                  public views::Combobox::Listener {
  public:
   ExampleNativeThemeButton(views::ButtonListener* listener,
@@ -45,10 +44,9 @@ class ExampleNativeThemeButton : public views::CustomButton,
 
   // Overridden from views::NativeThemePainter::Delegate:
   virtual gfx::NativeTheme::Part GetThemePart() const OVERRIDE;
-  virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
   virtual gfx::NativeTheme::State GetThemeState(
       gfx::NativeTheme::ExtraParams* params) const OVERRIDE;
-  virtual const ui::Animation* GetThemeAnimation() const OVERRIDE;
+  virtual ui::Animation* GetThemeAnimation() const OVERRIDE;
   virtual gfx::NativeTheme::State GetBackgroundThemeState(
       gfx::NativeTheme::ExtraParams* params) const OVERRIDE;
   virtual gfx::NativeTheme::State GetForegroundThemeState(

@@ -35,11 +35,6 @@ class ButtonExample : public ExampleBase, public views::ButtonListener {
   // The only control in this test.
   views::TextButton* button_;
 
-  // Values used to modify the look and feel of the button.
-  views::TextButton::TextAlignment alignment_;
-  bool use_native_theme_border_;
-  SkBitmap* icon_;
-
   // The number of times the button is pressed.
   int count_;
 
