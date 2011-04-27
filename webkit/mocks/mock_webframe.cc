@@ -288,6 +288,10 @@ bool MockWebFrame::firstRectForCharacterRange(unsigned location,
   return false;
 }
 
+size_t MockWebFrame::characterIndexForPoint(const WebPoint&) const {
+  return 0U;
+}
+
 bool MockWebFrame::executeCommand(const WebString&) {
   return false;
 }

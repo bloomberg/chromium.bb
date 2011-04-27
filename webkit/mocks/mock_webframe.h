@@ -180,6 +180,7 @@ class MockWebFrame : public WebKit::WebFrame {
   virtual bool firstRectForCharacterRange(unsigned location,
                                           unsigned length,
                                           WebRect&) const;
+  virtual size_t characterIndexForPoint(const WebPoint&) const;
   virtual bool executeCommand(const WebString&);
   virtual bool executeCommand(const WebString&, const WebString& value);
   virtual bool isCommandEnabled(const WebString&) const;
