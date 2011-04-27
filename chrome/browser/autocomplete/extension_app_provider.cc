@@ -94,9 +94,10 @@ void ExtensionAppProvider::RefreshAppList() {
   extension_apps_.clear();
   for (ExtensionList::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {
-    if ((*app)->is_app() && !(*app)->launch_web_url().empty()) {
-      extension_apps_.push_back(std::make_pair((*app)->name(),
-                                               (*app)->launch_web_url()));
+    if ((*app)->is_app() && (*app)->GetFullLaunchURL().is_valid()) {
+      extension_apps_.push_back(
+          std::make_pair((*app)->name(),
+                         (*app)->GetFullLaunchURL().spec()));
     }
   }
 }
