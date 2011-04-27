@@ -351,7 +351,9 @@ void URLRequestAutomationJob::OnRequestEnd(
     // 1. We failed to connect to the server, in which case we did not receive
     //    a valid response.
     // 2. In response to a read request.
-    if (!has_response_started() || pending_buf_) {
+    if (!has_response_started()) {
+      NotifyStartError(status);
+    } else if (pending_buf_) {
       NotifyDone(status);
     } else {
       // Wait for the http stack to issue a Read request where we will notify
