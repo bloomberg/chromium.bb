@@ -7,15 +7,12 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/extension_data.h"
 #include "chrome/browser/sync/glue/extension_sync_traits.h"
 #include "chrome/browser/sync/glue/extension_util.h"
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 
 namespace browser_sync {
 
@@ -36,31 +33,6 @@ bool RootNodeHasChildren(const char* tag,
 
 namespace {
 
-// Updates the value in |extension_data_map| from the given data,
-// creating an entry if necessary.  Returns a pointer to the
-// updated/created ExtensionData object.
-ExtensionData* SetOrCreateExtensionData(
-    ExtensionDataMap* extension_data_map,
-    ExtensionData::Source source,
-    bool merge_user_properties,
-    const sync_pb::ExtensionSpecifics& data) {
-  DcheckIsExtensionSpecificsValid(data);
-  const std::string& extension_id = data.id();
-  std::pair<ExtensionDataMap::iterator, bool> result =
-      extension_data_map->insert(
-          std::make_pair(extension_id,
-                         ExtensionData::FromData(source, data)));
-  ExtensionData* extension_data = &result.first->second;
-  if (result.second) {
-    // The value was just inserted, so it shouldn't need an update
-    // from source.
-    DCHECK(!extension_data->NeedsUpdate(source));
-  } else {
-    extension_data->SetData(source, merge_user_properties, data);
-  }
-  return extension_data;
-}
-
 // Fills in |extension_data_map| with data from
 // extension_service.GetSyncDataList().
 void SlurpClientData(
@@ -72,13 +44,12 @@ void SlurpClientData(
   for (std::vector<ExtensionSyncData>::const_iterator it =
            sync_data_list.begin();
        it != sync_data_list.end(); ++it) {
-    sync_pb::ExtensionSpecifics client_specifics;
-    SyncDataToSpecifics(*it, &client_specifics);
-    const ExtensionData& extension_data =
-        *SetOrCreateExtensionData(
-            extension_data_map, ExtensionData::CLIENT,
-            true, client_specifics);
-    DcheckIsExtensionSpecificsValid(extension_data.merged_data());
+    std::pair<ExtensionDataMap::iterator, bool> result =
+        extension_data_map->insert(std::make_pair(it->id, *it));
+    if (!result.second) {
+      // The value wasn't inserted, so merge it in.
+      result.first->second.Merge(*it);
+    }
   }
 }
 
@@ -94,8 +65,7 @@ std::string GetRootNodeDoesNotExistError(const char* root_node_tag) {
 }
 
 // Gets the data from the server for extensions to be synced and
-// updates |extension_data_map|.  Skips all extensions in
-// |unsynced_extensions|.
+// updates |extension_data_map|.
 bool SlurpServerData(
     const char* root_node_tag,
     const ExtensionSpecificsGetter extension_specifics_getter,
@@ -117,16 +87,12 @@ bool SlurpServerData(
     }
     const sync_pb::ExtensionSpecifics& server_data =
         (*extension_specifics_getter)(sync_node);
-    if (!IsExtensionSpecificsValid(server_data)) {
+    ExtensionSyncData sync_data;
+    if (!SpecificsToSyncData(server_data, &sync_data)) {
       LOG(ERROR) << "Invalid extensions specifics for id " << id;
       return false;
     }
-    // Pass in false for merge_user_properties so client user
-    // settings always take precedence.
-    const ExtensionData& extension_data =
-        *SetOrCreateExtensionData(
-            extension_data_map, ExtensionData::SERVER, false, server_data);
-    DcheckIsExtensionSpecificsValid(extension_data.merged_data());
+    (*extension_data_map)[sync_data.id] = sync_data;
     id = sync_node.GetSuccessorId();
   }
   return true;
@@ -138,35 +104,31 @@ bool SlurpExtensionData(const ExtensionSyncTraits& traits,
                         const ExtensionServiceInterface& extension_service,
                         sync_api::UserShare* user_share,
                         ExtensionDataMap* extension_data_map) {
-  // Read client-side data first so server data takes precedence.
-  SlurpClientData(
-      traits.is_valid_and_syncable, extension_service,
-      extension_data_map);
-
+  // Read server-side data first so client user settings take
+  // precedence.
   if (!SlurpServerData(
           traits.root_node_tag, traits.extension_specifics_getter,
           user_share, extension_data_map)) {
     return false;
   }
+
+  SlurpClientData(
+      traits.is_valid_and_syncable, extension_service,
+      extension_data_map);
   return true;
 }
 
 namespace {
 
-// Updates the server data from the given extension data.
-// extension_data->ServerNeedsUpdate() must hold before this function
-// is called.  Returns whether or not the update was successful.  If
-// the update was successful, extension_data->ServerNeedsUpdate() will
-// be false after this function is called.  This function leaves
-// extension_data->ClientNeedsUpdate() unchanged.
+// Updates the server data from the given extension data.  Returns
+// whether or not the update was successful.
 bool UpdateServer(
     const ExtensionSyncTraits& traits,
-    ExtensionData* extension_data,
+    const ExtensionSyncData& data,
     sync_api::WriteTransaction* trans) {
-  DCHECK(extension_data->NeedsUpdate(ExtensionData::SERVER));
-  const sync_pb::ExtensionSpecifics& specifics =
-      extension_data->merged_data();
-  const std::string& id = specifics.id();
+  sync_pb::ExtensionSpecifics specifics;
+  SyncDataToSpecifics(data, &specifics);
+  const std::string& id = data.id;
   sync_api::WriteNode write_node(trans);
   if (write_node.InitByClientTagLookup(traits.model_type, id)) {
     (*traits.extension_specifics_setter)(specifics, &write_node);
@@ -183,12 +145,6 @@ bool UpdateServer(
     }
     (*traits.extension_specifics_setter)(specifics, &create_node);
   }
-  bool old_client_needs_update =
-      extension_data->NeedsUpdate(ExtensionData::CLIENT);
-  extension_data->ResolveData(ExtensionData::SERVER);
-  DCHECK(!extension_data->NeedsUpdate(ExtensionData::SERVER));
-  DCHECK_EQ(extension_data->NeedsUpdate(ExtensionData::CLIENT),
-            old_client_needs_update);
   return true;
 }
 
@@ -208,23 +164,13 @@ bool FlushExtensionData(const ExtensionSyncTraits& traits,
   // Update server and client as necessary.
   for (ExtensionDataMap::const_iterator it = extension_data_map.begin();
        it != extension_data_map.end(); ++it) {
-    ExtensionData extension_data = it->second;
-    // Update server first.
-    if (extension_data.NeedsUpdate(ExtensionData::SERVER)) {
-      if (!UpdateServer(traits, &extension_data, &trans)) {
-        LOG(ERROR) << "Could not update server data for extension "
-                   << it->first;
-        return false;
-      }
-    }
-    DCHECK(!extension_data.NeedsUpdate(ExtensionData::SERVER));
-    ExtensionSyncData sync_data;
-    if (!SpecificsToSyncData(extension_data.merged_data(), &sync_data)) {
-      // TODO(akalin): Should probably recover or drop.
-      NOTREACHED();
+    const ExtensionSyncData& extension_data = it->second;
+    if (!UpdateServer(traits, extension_data, &trans)) {
+      LOG(ERROR) << "Could not update server data for extension "
+                 << it->first;
       return false;
     }
-    extension_service->ProcessSyncData(sync_data,
+    extension_service->ProcessSyncData(extension_data,
                                        traits.is_valid_and_syncable);
   }
   return true;
@@ -244,45 +190,14 @@ bool UpdateServerData(const ExtensionSyncTraits& traits,
     LOG(DFATAL) << *error;
     return false;
   }
-  sync_pb::ExtensionSpecifics client_data;
-  SyncDataToSpecifics(data, &client_data);
-  DcheckIsExtensionSpecificsValid(client_data);
-  ExtensionData extension_data =
-      ExtensionData::FromData(ExtensionData::CLIENT, client_data);
 
   sync_api::WriteTransaction trans(user_share);
-
-  sync_api::ReadNode node(&trans);
-  if (node.InitByClientTagLookup(traits.model_type, id)) {
-    sync_pb::ExtensionSpecifics server_data =
-        (*traits.extension_specifics_getter)(node);
-    if (IsExtensionSpecificsValid(server_data)) {
-      // If server node exists and is valid, update |extension_data|
-      // from it (but with it taking precedence).
-      extension_data =
-          ExtensionData::FromData(ExtensionData::SERVER, server_data);
-      extension_data.SetData(ExtensionData::CLIENT, true, client_data);
-    } else {
-      LOG(ERROR) << "Invalid extensions specifics for id " << id
-                 << "; treating as empty";
-    }
+  if (!UpdateServer(traits, data, &trans)) {
+    *error =
+        std::string("Could not update server data for extension ") + id;
+    LOG(ERROR) << *error;
+    return false;
   }
-
-  if (extension_data.NeedsUpdate(ExtensionData::SERVER)) {
-    if (!UpdateServer(traits, &extension_data, &trans)) {
-      *error =
-          std::string("Could not update server data for extension ") + id;
-      LOG(ERROR) << *error;
-      return false;
-    }
-  }
-  DCHECK(!extension_data.NeedsUpdate(ExtensionData::SERVER));
-  // Client may still need updating, e.g. if we disable an extension
-  // while it's being auto-updated.  If so, then we'll be called
-  // again once the auto-update is finished.
-  //
-  // TODO(akalin): Figure out a way to tell when the above happens,
-  // so we know exactly what NeedsUpdate(CLIENT) should return.
   return true;
 }
 

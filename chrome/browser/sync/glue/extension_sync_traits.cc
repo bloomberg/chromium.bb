@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,15 +17,12 @@ namespace browser_sync {
 ExtensionSyncTraits::ExtensionSyncTraits(
     syncable::ModelType model_type,
     IsValidAndSyncablePredicate is_valid_and_syncable,
-    ShouldHandleExtensionUninstallPredicate
-        should_handle_extension_uninstall,
     const char* root_node_tag,
     ExtensionSpecificsGetter extension_specifics_getter,
     ExtensionSpecificsSetter extension_specifics_setter,
     ExtensionSpecificsEntityGetter extension_specifics_entity_getter)
     : model_type(model_type),
       is_valid_and_syncable(is_valid_and_syncable),
-      should_handle_extension_uninstall(should_handle_extension_uninstall),
       root_node_tag(root_node_tag),
       extension_specifics_getter(extension_specifics_getter),
       extension_specifics_setter(extension_specifics_setter),
@@ -75,18 +72,11 @@ bool IsValidAndSyncableExtension(const Extension& extension) {
       IsSyncableExtension(extension.GetType(), extension.update_url());
 }
 
-bool IsExtensionUninstall(
-    const UninstalledExtensionInfo& uninstalled_extension_info) {
-  return IsSyncableExtension(uninstalled_extension_info.extension_type,
-                             uninstalled_extension_info.update_url);
-}
-
 }  // namespace
 
 ExtensionSyncTraits GetExtensionSyncTraits() {
   return ExtensionSyncTraits(syncable::EXTENSIONS,
                              &IsValidAndSyncableExtension,
-                             &IsExtensionUninstall,
                              "google_chrome_extensions",
                              &GetExtensionSpecifics,
                              &SetExtensionSpecifics,
@@ -131,17 +121,11 @@ bool IsValidAndSyncableApp(
   return IsExtensionValid(extension) && IsSyncableApp(extension.GetType());
 }
 
-bool IsAppUninstall(
-    const UninstalledExtensionInfo& uninstalled_extension_info) {
-  return IsSyncableApp(uninstalled_extension_info.extension_type);
-}
-
 }  // namespace
 
 ExtensionSyncTraits GetAppSyncTraits() {
   return ExtensionSyncTraits(syncable::APPS,
                              &IsValidAndSyncableApp,
-                             &IsAppUninstall,
                              "google_chrome_apps",
                              &GetExtensionSpecificsOfApp,
                              &SetExtensionSpecificsOfApp,

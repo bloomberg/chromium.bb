@@ -13,8 +13,7 @@
 #include <string>
 
 class ExtensionServiceInterface;
-class Profile;
-class ProfileSyncService;
+struct ExtensionSyncData;
 
 namespace sync_api {
 struct UserShare;
@@ -26,11 +25,10 @@ class ExtensionSpecifics;
 
 namespace browser_sync {
 
-class ExtensionData;
 struct ExtensionSyncTraits;
 
-// A map from extension IDs to ExtensionData objects.
-typedef std::map<std::string, ExtensionData> ExtensionDataMap;
+// A map from extension IDs to ExtensionSyncData objects.
+typedef std::map<std::string, ExtensionSyncData> ExtensionDataMap;
 
 // Fills in |has_children| with whether or not the root node with the
 // given tag has child nodes.  Returns true iff the lookup succeeded.

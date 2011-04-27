@@ -5,8 +5,8 @@
 #include "chrome/browser/sync/glue/extension_model_associator.h"
 
 #include "base/logging.h"
+#include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/extension_data.h"
 #include "chrome/browser/sync/glue/extension_sync_traits.h"
 #include "chrome/browser/sync/glue/extension_sync.h"
 #include "chrome/browser/sync/profile_sync_service.h"

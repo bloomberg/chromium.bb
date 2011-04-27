@@ -1897,8 +1897,6 @@
         'browser/sync/glue/do_optimistic_refresh_task.h',
         'browser/sync/glue/extension_change_processor.cc',
         'browser/sync/glue/extension_change_processor.h',
-        'browser/sync/glue/extension_data.cc',
-        'browser/sync/glue/extension_data.h',
         'browser/sync/glue/extension_data_type_controller.cc',
         'browser/sync/glue/extension_data_type_controller.h',
         'browser/sync/glue/extension_model_associator.cc',

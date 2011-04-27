@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,8 +49,6 @@ struct ExtensionSyncTraits {
   ExtensionSyncTraits(
       syncable::ModelType model_type,
       IsValidAndSyncablePredicate is_valid_and_syncable,
-      ShouldHandleExtensionUninstallPredicate
-          should_handle_extension_uninstall,
       const char* root_node_tag,
       ExtensionSpecificsGetter extension_specifics_getter,
       ExtensionSpecificsSetter extension_specifics_setter,
@@ -62,9 +60,6 @@ struct ExtensionSyncTraits {
   // A checker to make sure that the downloaded extension is valid and
   // syncable.
   const IsValidAndSyncablePredicate is_valid_and_syncable;
-  // A checker to know which extension uninstall events to handle.
-  const ShouldHandleExtensionUninstallPredicate
-      should_handle_extension_uninstall;
   // The tag with which the top-level data type node is marked.
   const char* const root_node_tag;
   // The function that retrieves a ExtensionSpecifics reference (which
