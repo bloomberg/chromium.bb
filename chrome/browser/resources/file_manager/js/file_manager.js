@@ -64,9 +64,7 @@ function FileManager(dialogDom, rootEntries, params) {
   chrome.fileBrowserPrivate.onDiskChanged.addListener(
       this.onDiskChanged_.bind(this));
 
-  // TODO(rginda) Add a focus() method to the various list classes to take care
-  // of this.
-  // this.currentList_.list_.focus();
+  this.table_.list_.focus();
 
   if (ENABLE_EXIF_READER) {
     this.exifReader = new Worker('js/exif_reader.js');
@@ -414,6 +412,7 @@ FileManager.prototype = {
     this.taskButtons_ = this.dialogDom_.querySelector('.task-buttons');
     this.okButton_ = this.dialogDom_.querySelector('.ok');
     this.cancelButton_ = this.dialogDom_.querySelector('.cancel');
+    this.newFolderButton_ = this.dialogDom_.querySelector('.new-folder');
 
     this.filenameInput_.addEventListener(
         'keyup', this.onFilenameInputKeyUp_.bind(this));
@@ -956,8 +955,6 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onTasksFound_ = function(tasksList) {
-    console.log("FileManager.prototype.onTasksFound_");
-    console.log(tasksList);
     this.taskButtons_.innerHTML = '';
     for (var i = 0; i < tasksList.length; i++) {
       var task = tasksList[i];
@@ -1175,6 +1172,32 @@ FileManager.prototype = {
             self.changeDirectory('/');
           }
         });
+  };
+
+  FileManager.prototype.deleteEntries = function(entries) {
+    if (!window.confirm(str('CONFIRM_DELETE')))
+      return;
+
+    var count = entries.length;
+
+    var self = this;
+    function onDelete() {
+      if (--count == 0)
+         self.rescanDirectory_();
+    }
+
+    for (var i = 0; i < entries.length; i++) {
+      var entry = entries[i];
+      if (entry.isFile) {
+        entry.remove(
+            onDelete,
+            util.flog('Error deleting file: ' + entry.fullPath, onDelete));
+      } else {
+        entry.removeRecursively(
+            onDelete,
+            util.flog('Error deleting folder: ' + entry.fullPath, onDelete));
+      }
+    }
   };
 
   /**
@@ -1423,7 +1446,7 @@ FileManager.prototype = {
       return;
 
     switch (event.keyCode) {
-      case 8: // Backspace => Up one directory.
+      case 8:  // Backspace => Up one directory.
         event.preventDefault();
         var path = this.currentDirEntry_.fullPath;
         if (path && path != '/') {
@@ -1432,7 +1455,7 @@ FileManager.prototype = {
         }
         break;
 
-      case 13: // Enter => Change directory or complete dialog.
+      case 13:  // Enter => Change directory or complete dialog.
         if (this.selection.totalCount == 1 &&
             this.selection.leadEntry.isDirectory &&
             this.dialogType_ != FileManager.SELECT_FOLDER) {
@@ -1442,11 +1465,18 @@ FileManager.prototype = {
         }
         break;
 
-      case 32: // Ctrl-Space => New Folder.
-        if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE &&
-            event.ctrlKey) {
+      case 32:  // Ctrl-Space => New Folder.
+        if (this.newFolderButton_.style.display != 'none' && event.ctrlKey) {
           event.preventDefault();
           this.onNewFolderButtonClick_();
+        }
+        break;
+
+      case 46:  // Delete.
+        if (this.dialogType_ == FileManager.DialogType.FULL_PAGE &&
+            this.selection.totalCount > 0) {
+          event.preventDefault();
+          this.deleteEntries(this.selection.entries);
         }
         break;
     }
@@ -1471,7 +1501,6 @@ FileManager.prototype = {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onOk_ = function(event) {
-    console.log("dialogType = " + this.dialogType_);
     var currentDirUrl = this.currentDirEntry_.toURL();
 
     if (currentDirUrl.charAt(currentDirUrl.length - 1) != '/')

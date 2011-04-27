@@ -81,7 +81,8 @@
       <button class=detail-view>&#x1D306;</button
       ><button class=thumbnail-view>&#x283F;</button>
       <button i18n-content=NEW_FOLDER_BUTTON_LABEL class='new-folder'
-              visibleif='this.dialogType_ == "saveas-file"'
+              visibleif='this.dialogType_ == "saveas-file" ||
+                         this.dialogType_ == "full-page"'
               ></button>
     </div>
     <div class=dialog-body>

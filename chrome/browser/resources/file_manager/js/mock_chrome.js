@@ -173,6 +173,8 @@ chrome.fileBrowserPrivate = {
       NOTHING_SELECTED: 'No files selected',
       ONE_FILE_SELECTED: 'One file selected, $1',
       MANY_FILES_SELECTED: '$1 files selected, $2',
+
+      CONFIRM_DELETE: 'Are you sure?',
     });
   }
 };

@@ -985,6 +985,10 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, ONE_FILE_SELECTED);
   SET_STRING(IDS_FILE_BROWSER, MANY_FILES_SELECTED);
 
+  // FILEBROWSER, without the underscore, is from the old school codebase.
+  // TODO(rginda): Move these into IDS_FILE_BROWSER post M12.
+  SET_STRING(IDS_FILEBROWSER, CONFIRM_DELETE);
+
 #undef SET_STRING
 
   SendResponse(true);

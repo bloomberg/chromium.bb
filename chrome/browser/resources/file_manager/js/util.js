@@ -10,11 +10,14 @@ var util = {
    * Returns a function that console.log's its arguments, prefixed by |msg|.
    *
    * @param {string} msg The message prefix to use in the log.
+   * @param {function(*)} opt_callback A function to invoke after logging.
    */
-  flog: function(msg) {
+  flog: function(msg, opt_callback) {
     return function() {
       var ary = Array.apply(null, arguments);
       console.log(msg + ': ' + ary.join(', '));
+      if (opt_callback)
+        opt_callback.call(arguments);
     };
   },
 
