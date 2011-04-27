@@ -676,6 +676,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 - (IBAction)editBookmark:(id)sender {
+  [self closeFolderAndStopTrackingMenus];
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (!node)
     return;
