@@ -546,13 +546,6 @@ WebPreferences ExtensionHost::GetWebkitPrefs() {
   return webkit_prefs;
 }
 
-void ExtensionHost::ProcessWebUIMessage(
-    const ExtensionHostMsg_DomMessage_Params& params) {
-  if (extension_function_dispatcher_.get()) {
-    extension_function_dispatcher_->HandleRequest(params);
-  }
-}
-
 RenderViewHostDelegate::View* ExtensionHost::GetViewDelegate() {
   return this;
 }
@@ -784,6 +777,11 @@ ViewType::Type ExtensionHost::GetRenderViewType() const {
 }
 
 bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
+  if (extension_function_dispatcher_.get() &&
+      extension_function_dispatcher_->OnMessageReceived(message)) {
+    return true;
+  }
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionHost, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)

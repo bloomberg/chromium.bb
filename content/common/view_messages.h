@@ -1619,7 +1619,7 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
 IPC_MESSAGE_ROUTED3(ViewHostMsg_WebUISend,
                     GURL /* source_url */,
                     std::string  /* message */,
-                    std::string  /* args (as a JSON string) */)
+                    ListValue /* args */)
 
 // A renderer sends this to the browser process when it wants to
 // create a ppapi plugin.  The browser will create the plugin process if

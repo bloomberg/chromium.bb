@@ -12,11 +12,16 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/child_process_security_policy.h"
+#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/generic_handler.h"
 #include "content/common/bindings_policy.h"
+#include "content/common/view_messages.h"
+#include "ipc/ipc_message.h"
+#include "ipc/ipc_message_macros.h"
 
 namespace {
 
@@ -60,16 +65,32 @@ WebUI::~WebUI() {
 
 const WebUI::TypeID WebUI::kNoWebUI = NULL;
 
-void WebUI::ProcessWebUIMessage(
-    const ExtensionHostMsg_DomMessage_Params& params) {
+bool WebUI::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(WebUI, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void WebUI::OnWebUISend(const GURL& source_url,
+                        const std::string& message,
+                        const ListValue& args) {
+  if (!ChildProcessSecurityPolicy::GetInstance()->
+          HasWebUIBindings(tab_contents_->GetRenderProcessHost()->id())) {
+    NOTREACHED() << "Blocked unauthorized use of WebUIBindings.";
+    return;
+  }
+
   // Look up the callback for this message.
   MessageCallbackMap::const_iterator callback =
-      message_callbacks_.find(params.name);
+      message_callbacks_.find(message);
   if (callback == message_callbacks_.end())
     return;
 
   // Forward this message and content on.
-  callback->second->Run(&params.arguments);
+  callback->second->Run(&args);
 }
 
 void WebUI::CallJavascriptFunction(const std::string& function_name) {
