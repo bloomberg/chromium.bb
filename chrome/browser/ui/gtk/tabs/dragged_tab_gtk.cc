@@ -68,8 +68,7 @@ DraggedTabGtk::DraggedTabGtk(TabContents* datasource,
   container_ = gtk_window_new(GTK_WINDOW_POPUP);
   SetContainerColorMap();
   gtk_widget_set_app_paintable(container_, TRUE);
-  g_signal_connect(container_, "expose-event",
-                   G_CALLBACK(OnExposeEvent), this);
+  g_signal_connect(container_, "expose-event", G_CALLBACK(OnExposeThunk), this);
   gtk_widget_add_events(container_, GDK_STRUCTURE_MASK);
 
   // We contain the tab renderer in a GtkFixed in order to maintain the
@@ -274,27 +273,21 @@ void DraggedTabGtk::SetContainerShapeMask(cairo_surface_t* surface) {
   g_object_unref(pixmap);
 }
 
-// static
-gboolean DraggedTabGtk::OnExposeEvent(GtkWidget* widget,
-                                      GdkEventExpose* event,
-                                      DraggedTabGtk* dragged_tab) {
-  cairo_surface_t* surface = dragged_tab->renderer_->PaintToSurface();
-  if (gtk_util::IsScreenComposited()) {
-    dragged_tab->SetContainerTransparency();
-  } else {
-    dragged_tab->SetContainerShapeMask(surface);
-  }
+gboolean DraggedTabGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
+  cairo_surface_t* surface = renderer_->PaintToSurface();
+  if (gtk_util::IsScreenComposited())
+    SetContainerTransparency();
+  else
+    SetContainerShapeMask(surface);
 
   // Only used when not attached.
-  int tab_width = static_cast<int>(kScalingFactor *
-      dragged_tab->renderer_->width());
-  int tab_height = static_cast<int>(kScalingFactor *
-      dragged_tab->renderer_->height());
+  int tab_width = static_cast<int>(kScalingFactor * renderer_->width());
+  int tab_height = static_cast<int>(kScalingFactor * renderer_->height());
 
   // Draw the render area.
   BackingStore* backing_store =
-      dragged_tab->data_source_->render_view_host()->GetBackingStore(false);
-  if (backing_store && !dragged_tab->attached_) {
+      data_source_->render_view_host()->GetBackingStore(false);
+  if (backing_store && !attached_) {
     // This leaves room for the border.
     static_cast<BackingStoreX*>(backing_store)->PaintToRect(
         gfx::Rect(kDragFrameBorderSize, tab_height,
@@ -306,7 +299,7 @@ gboolean DraggedTabGtk::OnExposeEvent(GtkWidget* widget,
 
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
   // Draw the border.
-  if (!dragged_tab->attached_) {
+  if (!attached_) {
     cairo_set_line_width(cr, kDragFrameBorderSize);
     cairo_set_source_rgb(cr, kDraggedTabBorderColor[0],
                              kDraggedTabBorderColor[1],
@@ -331,7 +324,7 @@ gboolean DraggedTabGtk::OnExposeEvent(GtkWidget* widget,
   }
 
   // Draw the tab.
-  if (!dragged_tab->attached_)
+  if (!attached_)
     cairo_scale(cr, kScalingFactor, kScalingFactor);
   cairo_set_source_surface(cr, surface, 0, 0);
   cairo_paint(cr);
