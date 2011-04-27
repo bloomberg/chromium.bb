@@ -57,7 +57,6 @@
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "views/widget/widget_gtk.h"
 #include "ui/gfx/gl/gl_switches.h"
 
 namespace chromeos {

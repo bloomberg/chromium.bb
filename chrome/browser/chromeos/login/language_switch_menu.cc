@@ -21,7 +21,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/platform_font_gtk.h"
 #include "views/controls/button/menu_button.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/widget.h"
 
 namespace {
 

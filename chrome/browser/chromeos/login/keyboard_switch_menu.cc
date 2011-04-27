@@ -12,7 +12,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/button/menu_button.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/widget.h"
 
 namespace chromeos {
 

@@ -37,7 +37,6 @@
 #include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/throbber.h"
-#include "views/widget/widget_gtk.h"
 
 using views::View;
 

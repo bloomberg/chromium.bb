@@ -31,17 +31,14 @@
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
-#include "views/widget/widget_gtk.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
-#include "views/window/window_gtk.h"
 
 using views::Background;
 using views::GridLayout;
 using views::Label;
 using views::View;
 using views::Widget;
-using views::WidgetGtk;
 
 namespace {
 
@@ -397,8 +394,7 @@ void NetworkSelectionView::OnLocaleChanged() {
 // NetworkSelectionView, public:
 
 gfx::NativeWindow NetworkSelectionView::GetNativeWindow() const {
-  return
-      GTK_WINDOW(static_cast<const WidgetGtk*>(GetWidget())->GetNativeView());
+  return GetWidget()->GetNativeWindow();
 }
 
 views::View* NetworkSelectionView::GetNetworkControlView() const {

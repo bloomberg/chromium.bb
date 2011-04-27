@@ -22,12 +22,10 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
-#include "views/widget/widget_gtk.h"
 #include "views/window/window.h"
 
 using views::Label;
 using views::Textfield;
-using views::WidgetGtk;
 
 namespace chromeos {
 

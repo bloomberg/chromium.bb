@@ -34,7 +34,7 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/widget.h"
 
 namespace {
 // Menu commands
@@ -268,10 +268,9 @@ void BalloonViewImpl::ViewHierarchyChanged(
     bool is_add, View* parent, View* child) {
   if (is_add && GetWidget() && !control_view_host_.get() && controls_) {
     control_view_host_.reset(views::Widget::CreateWidget());
-    static_cast<views::WidgetGtk*>(control_view_host_.get())->
-        EnableDoubleBuffer(true);
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_CONTROL);
+    params.double_buffer = true;
     params.delete_on_destroy = false;
     params.parent = GetParentNativeView();
     control_view_host_->Init(params);

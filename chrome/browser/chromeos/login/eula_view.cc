@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
+#include "chrome/browser/ui/views/handle_web_keyboard_event_gtk.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
@@ -47,7 +48,6 @@
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/layout/layout_manager.h"
-#include "views/widget/widget_gtk.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
 
@@ -533,11 +533,7 @@ void EulaView::NavigationStateChanged(const TabContents* contents,
 }
 
 void EulaView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-  views::Widget* widget = GetWidget();
-  if (widget && event.os_event && !event.skip_in_browser) {
-    views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
-    static_cast<views::WidgetGtk*>(widget)->HandleKeyboardEvent(views_event);
-  }
+  HandleWebKeyboardEvent(GetWidget(), event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -28,9 +28,9 @@
 #include "views/controls/throbber.h"
 #include "views/focus/focus_manager.h"
 #include "views/painter.h"
+#include "views/widget/widget.h"
 
 using views::Widget;
-using views::WidgetGtk;
 
 namespace chromeos {
 

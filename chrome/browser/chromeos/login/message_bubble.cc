@@ -140,11 +140,10 @@ MessageBubble* MessageBubble::ShowNoGrab(
 }
 
 void MessageBubble::IsActiveChanged() {
-  // Active parent instead.
   if (parent_ && IsActive()) {
-    gtk_window_present_with_time(
-        GTK_WINDOW(static_cast<WidgetGtk*>(parent_)->GetNativeView()),
-                   gtk_get_current_event_time());
+    // Show the parent.
+    gtk_window_present_with_time(parent_->GetNativeWindow(),
+                                 gtk_get_current_event_time());
   }
 }
 

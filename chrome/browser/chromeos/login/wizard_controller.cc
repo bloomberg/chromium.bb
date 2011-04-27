@@ -44,7 +44,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "views/accelerator.h"
 #include "views/view.h"
-#include "views/widget/widget_gtk.h"
 
 namespace {
 
@@ -597,12 +596,12 @@ void WizardController::InitiateOOBEUpdate() {
 views::Widget* WizardController::CreateScreenWindow(
     const gfx::Rect& bounds, bool initial_show) {
   widget_ = views::Widget::CreateWidget();
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW);
   // Window transparency makes background flicker through controls that
   // are constantly updating its contents (like image view with video
   // stream). Hence enabling double buffer.
-  static_cast<views::WidgetGtk*>(widget_)->EnableDoubleBuffer(true);
-  views::Widget::InitParams widget_params(
-      views::Widget::InitParams::TYPE_WINDOW);
+  widget_params.double_buffer = true;
   widget_params.transparent = true;
   widget_params.bounds = bounds;
   widget_->Init(widget_params);

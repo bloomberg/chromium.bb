@@ -19,10 +19,8 @@
 #include "views/controls/button/native_button.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
-#include "views/widget/widget_gtk.h"
+#include "views/widget/widget.h"
 #include "views/window/window.h"
-
-using views::WidgetGtk;
 
 namespace chromeos {
 
@@ -61,8 +59,7 @@ NetworkConfigView::NetworkConfigView(ConnectionType type)
 }
 
 gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {
-  return
-      GTK_WINDOW(static_cast<const WidgetGtk*>(GetWidget())->GetNativeView());
+  return GetWidget()->GetNativeWindow();
 }
 
 std::wstring NetworkConfigView::GetDialogButtonLabel(
