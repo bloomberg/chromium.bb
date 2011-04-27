@@ -1,0 +1,39 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+nexe = 'ppapi_ppb_scrollbar_%s.nexe' % env.get('TARGET_FULLARCH')
+env.Alias('ppapi_ppb_scrollbar.nexe', [ '$STAGING_DIR/%s' % nexe ])
+
+ppapi_ppb_scrollbar_nexe = env.ComponentProgram(
+    nexe,
+    [ 'ppapi_ppb_scrollbar.cc' ],
+    EXTRA_LIBS=['${PPAPI_LIBS}',
+                'ppapi_test_lib',
+                'pthread',
+                'platform',
+                'gio'])
+
+dest_copy = env.Replicate('$STAGING_DIR',
+                          [ 'ppapi_ppb_scrollbar.html',
+                            'ppapi_ppb_scrollbar.nmf',
+                            env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
+                                     'browserdata/nacltest.js') ]
+                          )
+env.Depends(nexe, dest_copy)
+
+node = env.PPAPIBrowserTester('ppapi_ppb_scrollbar_browser_test.out',
+                              url='ppapi_ppb_scrollbar.html',
+                              files=[ ppapi_ppb_scrollbar_nexe,
+                                      env.File('ppapi_ppb_scrollbar.nmf'),
+                                      env.File('ppapi_ppb_scrollbar.html')] )
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_ppb_scrollbar_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

@@ -1071,6 +1071,122 @@ NaClSrpcError PpbInstanceRpcClient::PPB_Instance_ExecuteScript(
   return retval;
 }
 
+NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_Create(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t vertical,
+    PP_Resource* scrollbar)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Scrollbar_Create:ii:i",
+      instance,
+      vertical,
+      scrollbar
+  );
+  return retval;
+}
+
+NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_IsScrollbar(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t* is_scrollbar)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Scrollbar_IsScrollbar:i:i",
+      resource,
+      is_scrollbar
+  );
+  return retval;
+}
+
+NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_GetThickness(
+    NaClSrpcChannel* channel,
+    int32_t* thickness)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Scrollbar_GetThickness::i",
+      thickness
+  );
+  return retval;
+}
+
+NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_GetValue(
+    NaClSrpcChannel* channel,
+    PP_Resource scrollbar,
+    int32_t* value)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Scrollbar_GetValue:i:i",
+      scrollbar,
+      value
+  );
+  return retval;
+}
+
+NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_SetValue(
+    NaClSrpcChannel* channel,
+    PP_Resource scrollbar,
+    int32_t value)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Scrollbar_SetValue:ii:",
+      scrollbar,
+      value
+  );
+  return retval;
+}
+
+NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_SetDocumentSize(
+    NaClSrpcChannel* channel,
+    PP_Resource scrollbar,
+    int32_t size)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Scrollbar_SetDocumentSize:ii:",
+      scrollbar,
+      size
+  );
+  return retval;
+}
+
+NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_SetTickMarks(
+    NaClSrpcChannel* channel,
+    PP_Resource scrollbar,
+    nacl_abi_size_t tick_marks_bytes, char* tick_marks,
+    int32_t count)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Scrollbar_SetTickMarks:iCi:",
+      scrollbar,
+      tick_marks_bytes, tick_marks,
+      count
+  );
+  return retval;
+}
+
+NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_ScrollBy(
+    NaClSrpcChannel* channel,
+    PP_Resource scrollbar,
+    int32_t unit,
+    int32_t multiplier)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Scrollbar_ScrollBy:iii:",
+      scrollbar,
+      unit,
+      multiplier
+  );
+  return retval;
+}
+
 NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance,

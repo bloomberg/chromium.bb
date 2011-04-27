@@ -168,13 +168,6 @@ const PPB_Instance* PPBInstanceInterface() {
   return ppb;
 }
 
-const PPB_Surface3D_Dev* PPBSurface3DInterface() {
-  static const PPB_Surface3D_Dev* ppb =
-      reinterpret_cast<const PPB_Surface3D_Dev*>(
-          GetBrowserInterfaceSafe(PPB_SURFACE_3D_DEV_INTERFACE));
-  return ppb;
-}
-
 const PPB_URLLoader* PPBURLLoaderInterface() {
   static const PPB_URLLoader* ppb =
       reinterpret_cast<const PPB_URLLoader*>(
@@ -203,6 +196,7 @@ const PPB_Var_Deprecated* PPBVarInterface() {
   return ppb;
 }
 
+// Dev interfaces.
 const PPB_FileIO_Dev* PPBFileIOInterface() {
   static const PPB_FileIO_Dev* ppb =
       reinterpret_cast<const PPB_FileIO_Dev*>(
@@ -214,6 +208,20 @@ const PPB_FileSystem_Dev* PPBFileSystemInterface() {
   static const PPB_FileSystem_Dev* ppb =
       reinterpret_cast<const PPB_FileSystem_Dev*>(
         GetBrowserInterfaceSafe(PPB_FILESYSTEM_DEV_INTERFACE));
+  return ppb;
+}
+
+const PPB_Scrollbar_Dev* PPBScrollbarInterface() {
+  static const PPB_Scrollbar_Dev* ppb =
+      reinterpret_cast<const PPB_Scrollbar_Dev*>(
+          GetBrowserInterfaceSafe(PPB_SCROLLBAR_DEV_INTERFACE));
+  return ppb;
+}
+
+const PPB_Surface3D_Dev* PPBSurface3DInterface() {
+  static const PPB_Surface3D_Dev* ppb =
+      reinterpret_cast<const PPB_Surface3D_Dev*>(
+          GetBrowserInterfaceSafe(PPB_SURFACE_3D_DEV_INTERFACE));
   return ppb;
 }
 

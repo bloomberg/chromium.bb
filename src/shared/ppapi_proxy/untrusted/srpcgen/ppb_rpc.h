@@ -455,6 +455,49 @@ class PpbInstanceRpcClient {
   void operator=(const PpbInstanceRpcClient);
 };  // class PpbInstanceRpcClient
 
+class PpbScrollbarRpcClient {
+ public:
+  static NaClSrpcError PPB_Scrollbar_Create(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      int32_t vertical,
+      PP_Resource* scrollbar);
+  static NaClSrpcError PPB_Scrollbar_IsScrollbar(
+      NaClSrpcChannel* channel,
+      PP_Resource resource,
+      int32_t* is_scrollbar);
+  static NaClSrpcError PPB_Scrollbar_GetThickness(
+      NaClSrpcChannel* channel,
+      int32_t* thickness);
+  static NaClSrpcError PPB_Scrollbar_GetValue(
+      NaClSrpcChannel* channel,
+      PP_Resource scrollbar,
+      int32_t* value);
+  static NaClSrpcError PPB_Scrollbar_SetValue(
+      NaClSrpcChannel* channel,
+      PP_Resource scrollbar,
+      int32_t value);
+  static NaClSrpcError PPB_Scrollbar_SetDocumentSize(
+      NaClSrpcChannel* channel,
+      PP_Resource scrollbar,
+      int32_t size);
+  static NaClSrpcError PPB_Scrollbar_SetTickMarks(
+      NaClSrpcChannel* channel,
+      PP_Resource scrollbar,
+      nacl_abi_size_t tick_marks_bytes, char* tick_marks,
+      int32_t count);
+  static NaClSrpcError PPB_Scrollbar_ScrollBy(
+      NaClSrpcChannel* channel,
+      PP_Resource scrollbar,
+      int32_t unit,
+      int32_t multiplier);
+
+ private:
+  PpbScrollbarRpcClient();
+  PpbScrollbarRpcClient(const PpbScrollbarRpcClient&);
+  void operator=(const PpbScrollbarRpcClient);
+};  // class PpbScrollbarRpcClient
+
 class PpbURLLoaderRpcClient {
  public:
   static NaClSrpcError PPB_URLLoader_Create(

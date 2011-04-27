@@ -5,23 +5,24 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_GLOBALS_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_GLOBALS_H_
 
+#include "ppapi/c/dev/ppb_context_3d_dev.h"
+#include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/c/dev/ppb_file_system_dev.h"
+#include "ppapi/c/dev/ppb_scrollbar_dev.h"
+#include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
-#include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_graphics_2d.h"
-#include "ppapi/c/dev/ppb_context_3d_dev.h"
-#include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
-#include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
+#include "ppapi/c/trusted/ppb_image_data_trusted.h"
 
 struct NaClSrpcRpc;
 struct NaClSrpcChannel;
@@ -77,6 +78,7 @@ const PPB_Graphics2D* PPBGraphics2DInterface();
 const PPB_ImageData* PPBImageDataInterface();
 const PPB_ImageDataTrusted* PPBImageDataTrustedInterface();
 const PPB_Instance* PPBInstanceInterface();
+const PPB_Scrollbar_Dev* PPBScrollbarInterface();
 const PPB_Surface3D_Dev* PPBSurface3DInterface();
 const PPB_URLLoader* PPBURLLoaderInterface();
 const PPB_URLRequestInfo* PPBURLRequestInfoInterface();

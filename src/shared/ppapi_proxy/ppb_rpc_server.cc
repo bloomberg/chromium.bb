@@ -1017,6 +1017,125 @@ static void PPB_Instance_ExecuteScriptDispatcher(
   );
 }
 
+static void PPB_Scrollbar_CreateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbScrollbarRpcServer::PPB_Scrollbar_Create(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Scrollbar_IsScrollbarDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbScrollbarRpcServer::PPB_Scrollbar_IsScrollbar(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Scrollbar_GetThicknessDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(inputs);
+  PpbScrollbarRpcServer::PPB_Scrollbar_GetThickness(
+      rpc,
+      done,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Scrollbar_GetValueDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbScrollbarRpcServer::PPB_Scrollbar_GetValue(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Scrollbar_SetValueDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbScrollbarRpcServer::PPB_Scrollbar_SetValue(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival
+  );
+}
+
+static void PPB_Scrollbar_SetDocumentSizeDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbScrollbarRpcServer::PPB_Scrollbar_SetDocumentSize(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival
+  );
+}
+
+static void PPB_Scrollbar_SetTickMarksDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbScrollbarRpcServer::PPB_Scrollbar_SetTickMarks(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.ival
+  );
+}
+
+static void PPB_Scrollbar_ScrollByDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbScrollbarRpcServer::PPB_Scrollbar_ScrollBy(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival
+  );
+}
+
 static void PPB_URLLoader_CreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -1356,6 +1475,14 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Instance_BindGraphics:ii:i", PPB_Instance_BindGraphicsDispatcher },
   { "PPB_Instance_IsFullFrame:i:i", PPB_Instance_IsFullFrameDispatcher },
   { "PPB_Instance_ExecuteScript:iCC:CC", PPB_Instance_ExecuteScriptDispatcher },
+  { "PPB_Scrollbar_Create:ii:i", PPB_Scrollbar_CreateDispatcher },
+  { "PPB_Scrollbar_IsScrollbar:i:i", PPB_Scrollbar_IsScrollbarDispatcher },
+  { "PPB_Scrollbar_GetThickness::i", PPB_Scrollbar_GetThicknessDispatcher },
+  { "PPB_Scrollbar_GetValue:i:i", PPB_Scrollbar_GetValueDispatcher },
+  { "PPB_Scrollbar_SetValue:ii:", PPB_Scrollbar_SetValueDispatcher },
+  { "PPB_Scrollbar_SetDocumentSize:ii:", PPB_Scrollbar_SetDocumentSizeDispatcher },
+  { "PPB_Scrollbar_SetTickMarks:iCi:", PPB_Scrollbar_SetTickMarksDispatcher },
+  { "PPB_Scrollbar_ScrollBy:iii:", PPB_Scrollbar_ScrollByDispatcher },
   { "PPB_URLLoader_Create:i:i", PPB_URLLoader_CreateDispatcher },
   { "PPB_URLLoader_IsURLLoader:i:i", PPB_URLLoader_IsURLLoaderDispatcher },
   { "PPB_URLLoader_Open:iii:i", PPB_URLLoader_OpenDispatcher },
