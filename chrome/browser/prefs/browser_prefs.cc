@@ -36,6 +36,7 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -92,6 +93,7 @@ void RegisterLocalState(PrefService* local_state) {
   KeywordEditorController::RegisterPrefs(local_state);
   MetricsLog::RegisterPrefs(local_state);
   MetricsService::RegisterPrefs(local_state);
+  printing::PrintJobManager::RegisterPrefs(local_state);
   PromoResourceService::RegisterPrefs(local_state);
   SafeBrowsingService::RegisterPrefs(local_state);
   browser_shutdown::RegisterPrefs(local_state);

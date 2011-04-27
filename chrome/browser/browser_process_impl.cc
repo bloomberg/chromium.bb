@@ -853,14 +853,7 @@ void BrowserProcessImpl::CreateLocalState() {
   pref_change_registrar_.Add(prefs::kPluginsEnabledPlugins,
                              PluginUpdater::GetInstance());
 
-  // Initialize and set up notifications for the printing enabled
-  // preference.
-  local_state_->RegisterBooleanPref(prefs::kPrintingEnabled, true);
-  bool printing_enabled =
-      local_state_->GetBoolean(prefs::kPrintingEnabled);
-  print_job_manager_->set_printing_enabled(printing_enabled);
-  pref_change_registrar_.Add(prefs::kPrintingEnabled,
-                             print_job_manager_.get());
+  print_job_manager_->InitOnUIThread(local_state_.get());
 
   // Initialize the notification for the default browser setting policy.
   local_state_->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,

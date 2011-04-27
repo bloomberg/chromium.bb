@@ -25,6 +25,12 @@ PrintJobManager::~PrintJobManager() {
   queued_queries_.clear();
 }
 
+void PrintJobManager::InitOnUIThread(PrefService* prefs) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  printing_enabled_.Init(prefs::kPrintingEnabled, prefs, NULL);
+  printing_enabled_.MoveToThread(BrowserThread::IO);
+}
+
 void PrintJobManager::OnQuit() {
 #if defined(OS_MACOSX)
   // OnQuit is too late to try to wait for jobs on the Mac, since the runloop
@@ -82,6 +88,10 @@ void PrintJobManager::PopPrinterQuery(int document_cookie,
   }
 }
 
+// static
+void PrintJobManager::RegisterPrefs(PrefService* prefs) {
+  prefs->RegisterBooleanPref(prefs::kPrintingEnabled, true);
+}
 
 void PrintJobManager::Observe(NotificationType type,
                               const NotificationSource& source,
@@ -90,14 +100,6 @@ void PrintJobManager::Observe(NotificationType type,
     case NotificationType::PRINT_JOB_EVENT: {
       OnPrintJobEvent(Source<PrintJob>(source).ptr(),
                       *Details<JobEventDetails>(details).ptr());
-      break;
-    }
-    case NotificationType::PREF_CHANGED: {
-      const std::string* pref_name = Details<std::string>(details).ptr();
-      if (*pref_name == prefs::kPrintingEnabled) {
-        PrefService *local_state = g_browser_process->local_state();
-        set_printing_enabled(local_state->GetBoolean(prefs::kPrintingEnabled));
-      }
       break;
     }
     default: {
@@ -159,16 +161,6 @@ void PrintJobManager::OnPrintJobEvent(
       break;
     }
   }
-}
-
-bool PrintJobManager::printing_enabled() {
-  base::AutoLock lock(enabled_lock_);
-  return printing_enabled_;
-}
-
-void PrintJobManager::set_printing_enabled(bool printing_enabled) {
-  base::AutoLock lock(enabled_lock_);
-  printing_enabled_ = printing_enabled;
 }
 
 }  // namespace printing

@@ -10,8 +10,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+
+class PrefService;
 
 namespace printing {
 
@@ -25,6 +28,10 @@ class PrintJobManager : public NotificationObserver {
  public:
   PrintJobManager();
   ~PrintJobManager();
+
+  // Registers for changes to the printing enabled preference in |prefs|.
+  // This method should be called on the UI thread.
+  void InitOnUIThread(PrefService* prefs);
 
   // On browser quit, we should wait to have the print job finished.
   void OnQuit();
@@ -42,14 +49,16 @@ class PrintJobManager : public NotificationObserver {
   // called from any thread. Current use case is poping from the browser thread.
   void PopPrinterQuery(int document_cookie, scoped_refptr<PrinterQuery>* job);
 
+  static void RegisterPrefs(PrefService* prefs);
+
   // NotificationObserver
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  bool printing_enabled();
-
-  void set_printing_enabled(bool printing_enabled);
+  bool printing_enabled() {
+    return *printing_enabled_;
+  }
 
  private:
   typedef std::vector<scoped_refptr<PrintJob> > PrintJobs;
@@ -64,19 +73,16 @@ class PrintJobManager : public NotificationObserver {
   // Used to serialize access to queued_workers_.
   base::Lock lock_;
 
-  // Used to serialize access to printing_enabled_
-  base::Lock enabled_lock_;
+  // Printing is enabled/disabled. This variable is checked at only one place,
+  // by RenderMessageFilter::OnGetDefaultPrintSettings. If its value is true
+  // at that point, then the initiated print flow will complete itself,
+  // even if the value of this variable changes afterwards.
+  BooleanPrefMember printing_enabled_;
 
   PrinterQueries queued_queries_;
 
   // Current print jobs that are active.
   PrintJobs current_jobs_;
-
-  // Printing is enabled/disabled. This variable is checked at only one place,
-  // by RenderMessageFilter::OnGetDefaultPrintSettings. If its value is true
-  // at that point, then the initiated print flow will complete itself,
-  // even if the value of this variable changes afterwards.
-  bool printing_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintJobManager);
 };
