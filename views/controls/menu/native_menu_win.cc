@@ -279,9 +279,6 @@ class NativeMenuWin::MenuHostWindow {
         OnDrawItem(w_param, reinterpret_cast<DRAWITEMSTRUCT*>(l_param));
         *l_result = 0;
         return true;
-      case WM_EXITMENULOOP:
-        parent_->model_->MenuClosed();
-        return true;
       // TODO(beng): bring over owner draw from old menu system.
     }
     return false;
@@ -402,6 +399,9 @@ void NativeMenuWin::RunMenuAt(const gfx::Point& point, int alignment) {
             &NativeMenuWin::DelayedSelect));
     menu_action_ = MENU_ACTION_SELECTED;
   }
+  // Send MenuClosed after we schedule the select, otherwise MenuClosed is
+  // processed after the select (MenuClosed posts a delayed task too).
+  model_->MenuClosed();
 }
 
 void NativeMenuWin::CancelMenu() {
