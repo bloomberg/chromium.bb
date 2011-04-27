@@ -197,18 +197,17 @@ class VideoDecoder : public Filter {
   virtual void Initialize(DemuxerStream* stream, FilterCallback* callback,
                           StatisticsCallback* stats_callback) = 0;
 
-  // |set_fill_buffer_done_callback| install permanent callback from downstream
-  // filter (i.e. Renderer). The callback is used to deliver video frames at
-  // runtime to downstream filter
-  typedef Callback1<scoped_refptr<VideoFrame> >::Type ConsumeVideoFrameCallback;
-  void set_consume_video_frame_callback(ConsumeVideoFrameCallback* callback) {
-    consume_video_frame_callback_.reset(callback);
-  }
-
   // Renderer provides an output buffer for Decoder to write to. These buffers
-  // will be recycled to renderer by |fill_buffer_done_callback_|.
+  // will be recycled to renderer via the permanent callback.
+  //
   // We could also pass empty pointer here to let decoder provide buffers pool.
   virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame) = 0;
+
+  // Installs a permanent callback for passing decoded video output.
+  typedef base::Callback<void(scoped_refptr<VideoFrame>)> ConsumeVideoFrameCB;
+  void set_consume_video_frame_callback(const ConsumeVideoFrameCB& callback) {
+    consume_video_frame_callback_ = callback;
+  }
 
   // Indicate whether decoder provides its own output buffers
   virtual bool ProvidesBuffer() = 0;
@@ -217,17 +216,19 @@ class VideoDecoder : public Filter {
   virtual const MediaFormat& media_format() = 0;
 
  protected:
-  // A video frame is ready to be consumed. This method invoke
-  // |consume_video_frame_callback_| internally.
+  // Executes the permanent callback to pass off decoded video.
+  //
+  // TODO(scherkus): name this ConsumeVideoFrame() once we fix the TODO in
+  // VideoDecodeEngine::EventHandler to remove ConsumeVideoFrame() from there.
   void VideoFrameReady(scoped_refptr<VideoFrame> frame) {
-    consume_video_frame_callback_->Run(frame);
+    consume_video_frame_callback_.Run(frame);
   }
 
   VideoDecoder();
   virtual ~VideoDecoder();
 
  private:
-  scoped_ptr<ConsumeVideoFrameCallback> consume_video_frame_callback_;
+  ConsumeVideoFrameCB consume_video_frame_callback_;
 };
 
 
@@ -242,7 +243,8 @@ class AudioDecoder : public Filter {
   virtual AudioDecoderConfig config() = 0;
 
   // Renderer provides an output buffer for Decoder to write to. These buffers
-  // will be recycled to renderer by fill_buffer_done_callback_;
+  // will be recycled to renderer via the permanent callback.
+  //
   // We could also pass empty pointer here to let decoder provide buffers pool.
   virtual void ProduceAudioSamples(scoped_refptr<Buffer> buffer) = 0;
 
