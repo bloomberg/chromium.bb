@@ -12,9 +12,13 @@ namespace fileapi {
 
 class FileSystemUsageCache {
  public:
-  // Gets the size described in the .usage file.
-  // Returns less than zero if the size is not availble.
+  // Gets the size described in the .usage file even if dirty > 0.
+  // Returns less than zero if the .usage file is not available.
   static int64 GetUsage(const FilePath& usage_file_path);
+
+  // Gets the dirty count in the .usage file.
+  // Returns less than zero if the .usage file is not available.
+  static int32 GetDirty(const FilePath& usage_file_path);
 
   // Increments or decrements the "dirty" entry in the .usage file.
   // Returns false if no .usage is available.

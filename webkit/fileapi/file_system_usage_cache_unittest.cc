@@ -57,7 +57,8 @@ TEST_F(FileSystemUsageCacheTest, IncAndGetSizeTest) {
   ASSERT_EQ(FileSystemUsageCache::kUsageFileSize,
             FileSystemUsageCache::UpdateUsage(usage_file_path, 98214));
   ASSERT_TRUE(FileSystemUsageCache::IncrementDirty(usage_file_path));
-  EXPECT_EQ(-1, FileSystemUsageCache::GetUsage(usage_file_path));
+  EXPECT_EQ(1, FileSystemUsageCache::GetDirty(usage_file_path));
+  EXPECT_EQ(98214, FileSystemUsageCache::GetUsage(usage_file_path));
 }
 
 TEST_F(FileSystemUsageCacheTest, DecAndGetSizeTest) {
@@ -89,7 +90,8 @@ TEST_F(FileSystemUsageCacheTest, DecIncAndGetSizeTest) {
   ASSERT_TRUE(FileSystemUsageCache::IncrementDirty(usage_file_path));
   // It tests DecrementDirty (which returns false) has no effect, i.e
   // does not make dirty = -1 after DecrementDirty.
-  EXPECT_EQ(-1, FileSystemUsageCache::GetUsage(usage_file_path));
+  EXPECT_EQ(1, FileSystemUsageCache::GetDirty(usage_file_path));
+  EXPECT_EQ(854238, FileSystemUsageCache::GetUsage(usage_file_path));
 }
 
 TEST_F(FileSystemUsageCacheTest, ManyIncsSameDecsAndGetSizeTest) {
@@ -112,7 +114,8 @@ TEST_F(FileSystemUsageCacheTest, ManyIncsLessDecsAndGetSizeTest) {
     ASSERT_TRUE(FileSystemUsageCache::IncrementDirty(usage_file_path));
   for (int i = 0; i < 19; i++)
     ASSERT_TRUE(FileSystemUsageCache::DecrementDirty(usage_file_path));
-  EXPECT_EQ(-1, FileSystemUsageCache::GetUsage(usage_file_path));
+  EXPECT_EQ(1, FileSystemUsageCache::GetDirty(usage_file_path));
+  EXPECT_EQ(19319, FileSystemUsageCache::GetUsage(usage_file_path));
 }
 
 TEST_F(FileSystemUsageCacheTest, GetSizeWithoutCacheFileTest) {

@@ -24,10 +24,22 @@ int64 FileSystemUsageCache::GetUsage(const FilePath& usage_file_path) {
   int64 fs_usage;
   fs_usage = Read(usage_file_path, &dirty);
 
-  if (fs_usage < 0 || dirty > 0)
+  if (fs_usage < 0)
     return -1;
 
   return fs_usage;
+}
+
+// static
+int32 FileSystemUsageCache::GetDirty(const FilePath& usage_file_path) {
+  uint32 dirty = 0;
+  int64 fs_usage;
+  fs_usage = Read(usage_file_path, &dirty);
+
+  if (fs_usage < 0)
+    return -1;
+
+  return static_cast<int32>(dirty);
 }
 
 // static

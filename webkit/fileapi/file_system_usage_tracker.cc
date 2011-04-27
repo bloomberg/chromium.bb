@@ -59,9 +59,8 @@ class FileSystemUsageTracker::GetUsageTask
     else {
       FilePath usage_file_path = origin_base_path_.AppendASCII(
           FileSystemUsageCache::kUsageFileName);
-      fs_usage_ = FileSystemUsageCache::GetUsage(usage_file_path);
 
-      if (fs_usage_ < 0) {
+      if (FileSystemUsageCache::GetDirty(usage_file_path) != 0) {
         FilePath content_file_path = origin_base_path_;
         if (FileSystemUsageCache::Exists(usage_file_path))
           FileSystemUsageCache::Delete(usage_file_path);
@@ -70,6 +69,8 @@ class FileSystemUsageTracker::GetUsageTask
         // The result of ComputeDirectorySize does not include it.
         fs_usage_ += FileSystemUsageCache::kUsageFileSize;
         FileSystemUsageCache::UpdateUsage(usage_file_path, fs_usage_);
+      } else {
+        fs_usage_ = FileSystemUsageCache::GetUsage(usage_file_path);
       }
     }
 
