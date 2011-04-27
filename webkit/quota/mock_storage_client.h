@@ -22,7 +22,7 @@ class MockStorageClient : public QuotaClient {
   MockStorageClient(QuotaManager* qm);
   virtual ~MockStorageClient();
 
-  virtual ID id() const OVERRIDE { return id_; }
+  virtual QuotaClient::ID id() const OVERRIDE;
 
   // To add or modify mock data in this client.
   void AddMockOriginData(const GURL& origin_url, StorageType type, int64 size);

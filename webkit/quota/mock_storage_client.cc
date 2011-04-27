@@ -52,6 +52,10 @@ MockStorageClient::~MockStorageClient() {
       origins_callbacks_.begin(), origins_callbacks_.end());
 }
 
+QuotaClient::ID id() const {
+  return id_;
+}
+
 void MockStorageClient::AddMockOriginData(
     const GURL& origin_url, StorageType type, int64 size) {
   origin_data_.insert(std::make_pair(origin_url, MockOriginData(type, size)));
