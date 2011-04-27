@@ -4481,7 +4481,18 @@
    fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
    fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
 }
-
+{
+   bug_80550_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16RenderWidgetHost11WasRestoredEv
+}
+{
+   bug_80550_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16RenderWidgetHost9WasHiddenEv
+}
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
