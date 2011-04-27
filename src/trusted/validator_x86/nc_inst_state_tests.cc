@@ -21,7 +21,6 @@
 // Include static functions, so that we can test.
 extern "C" {
 #include "native_client/src/trusted/validator_x86/nc_inst_state_statics.c"
-#include "native_client/src/trusted/validator_x86/RexPrefixes.h"
 };
 
 namespace {

@@ -567,6 +567,7 @@ __AddNegMaxErrors()
 
 # Create an environment to run unit tests using Gtest.
 gtest_env = test_env.Clone();
+
 # gtest does not compile with our stringent settings.
 gtest_env.FilterOut(
     CCFLAGS=['-pedantic'],
@@ -574,14 +575,14 @@ gtest_env.FilterOut(
 gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
 
 # List of (unit) test file prefixes to run unit tests on.
-gtest_sources = ['NCRemainingMemory',
-                 'NCInstBytes',
-                 'nc_inst_state_']
+gtest_sources = ['nc_remaining_memory',
+                 'nc_inst_bytes',
+                 'nc_inst_state']
 
 for source in gtest_sources:
   test_exe = gtest_env.ComponentProgram(
-    'x86_validator_tests' + source,
-    [source+'Tests.cc'],
+    'x86_validator_tests_' + source,
+    [source+'_tests.cc'],
     EXTRA_LIBS=['gtest',
                 'ncvalidate',
                 'platform',

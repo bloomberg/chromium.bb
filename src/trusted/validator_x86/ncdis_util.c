@@ -20,7 +20,7 @@
 
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
 #include "gen/native_client/src/trusted/validator_x86/ncdisasmtab.h"
-#include "native_client/src/trusted/validator_x86/RexPrefixes.h"
+#include "native_client/src/trusted/validator_x86/rex_prefixes.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.

@@ -8,6 +8,10 @@
  * Unit tests for struct NCRemainingMemory in ncinstbuffer.{h,cc}.
  */
 
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB")
+#endif
+
 #include <stdio.h>
 
 #include "gtest/gtest.h"

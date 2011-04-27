@@ -6,8 +6,8 @@
 
 /* Defines accessor functions for rex prefixes. */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_REXPREFIXES_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_REXPREFIXES_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_REX_PREFIXES_H__
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_REX_PREFIXES_H__
 
 /* Defines the corresponding mask for the bits of the the Rex prefix. */
 #define NaClRexWMask 0x8
@@ -36,4 +36,4 @@ static INLINE uint8_t NaClRexB(uint8_t prefix) {
 #define NaClRexMin 0x40
 #define NaClRexMax 0x4F
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_REXPREFIXES_H_ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_REX_PREFIXES_H__ */
