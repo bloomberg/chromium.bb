@@ -7,10 +7,12 @@
 /* NaCl Earth demo */
 /* Pepper code in C */
 
+#include "native_client/tests/earth/earth.h"
+
 #include <assert.h>
 #include <stdbool.h>
+#include <stdio.h>
 
-#include "native_client/tests/earth/earth.h"
 /* Pepper includes */
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -25,6 +27,8 @@
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
+
+#define NUMBER_OF_IMAGES 2
 
 PPB_GetInterface g_get_browser_interface = NULL;
 
@@ -42,9 +46,10 @@ struct PepperState {
   const struct PPB_Graphics2D* graphics_2d_interface;
   const struct PPB_ImageData* image_data_interface;
   const struct PPB_Instance* instance_interface;
-  PP_Resource image ;
   PP_Resource device_context;
-  uint32_t* image_data;
+  int32_t which_image;
+  PP_Resource image[NUMBER_OF_IMAGES];
+  uint32_t* image_data[NUMBER_OF_IMAGES];
   PP_Instance instance;
   struct PP_Rect position;
   bool ready;
@@ -62,13 +67,29 @@ static void Repaint(struct PepperState *mystate) {
   struct PP_Rect rect = PP_MakeRectFromXYWH(0, 0,
                                             mystate->position.size.width,
                                             mystate->position.size.height);
+  int show, render;
 
-  Earth_Draw(mystate->image_data);
+  /* Wait for previous rendering (if applicable) to finish */
+  Earth_Sync();
+
+  /* Double buffer - show previously rendered image. */
+  show = mystate->which_image;
   mystate->graphics_2d_interface->PaintImageData(mystate->device_context,
-                                                 mystate->image,
+                                                 mystate->image[show],
                                                  &topleft, &rect);
-  mystate->graphics_2d_interface->Flush(mystate->device_context,
+  int32_t ret;
+  ret = mystate->graphics_2d_interface->Flush(mystate->device_context,
       PP_MakeCompletionCallback(&FlushCompletionCallback, mystate));
+
+  /* Start Rendering into the other image while presenting. */
+  render = (mystate->which_image + 1) % NUMBER_OF_IMAGES;
+
+  Earth_Draw(mystate->image_data[render],
+             mystate->position.size.width,
+             mystate->position.size.height);
+
+  /* In next callback, show what was rendered. */
+  mystate->which_image = render;
 }
 
 static PP_Bool Instance_DidCreate(PP_Instance instance,
@@ -91,7 +112,7 @@ static void Instance_DidDestroy(PP_Instance instance) {
   g_MyStateIsValid = false;
 }
 
-/** Returns a refed resource corresponding to the created device context. */
+/* Returns a refed resource corresponding to the created device context. */
 static PP_Resource MakeAndBindDeviceContext(PP_Instance instance,
                                             const struct PP_Size* size) {
   PP_Resource device_context;
@@ -123,21 +144,30 @@ static void Instance_DidChangeView(PP_Instance pp_instance,
       DebugPrintf("device_context is null!\n");
       return;
     }
-    /* Create image data to paint into. */
-    /* Note: This example does not use transparent pixels, as */
-    /* Pepper prefers to use a premultiplied alpha channel.   */
-    g_MyState.image =
-      g_MyState.image_data_interface->Create(pp_instance,
-        PP_IMAGEDATAFORMAT_BGRA_PREMUL, &position->size, PP_TRUE);
-    if (!g_MyState.image) {
-      DebugPrintf("image is null!\n");
-      return;
-    }
-    g_MyState.image_data =
-      (uint32_t*)g_MyState.image_data_interface->Map(g_MyState.image);
-    if (!g_MyState.image_data) {
-      DebugPrintf("could not allocate image_data\n");
-      return;
+    /*
+     * Create double-buffered image data.
+     * Note: This example does not use transparent pixels. All pixels are
+     * written into the framebuffer with alpha set to 255 (opaque)
+     * Note: Pepper uses premultiplied alpha.
+     */
+    g_MyState.which_image = 0;
+    for (int i = 0; i < NUMBER_OF_IMAGES; ++i) {
+      g_MyState.image[i] =
+        g_MyState.image_data_interface->Create(pp_instance,
+          PP_IMAGEDATAFORMAT_BGRA_PREMUL, &position->size, PP_TRUE);
+      if (!g_MyState.image[i]) {
+        DebugPrintf("image resource is invalid!\n");
+        return;
+      }
+      g_MyState.image_data[i] =
+        (uint32_t*)g_MyState.image_data_interface->Map(g_MyState.image[i]);
+      if (!g_MyState.image_data[i]) {
+        DebugPrintf("could not allocate image_data\n");
+        return;
+      }
+      size_t size_in_bytes = position->size.width * position->size.height *
+                             sizeof(uint32_t);
+      memset(g_MyState.image_data[i], 0, size_in_bytes);
     }
     g_MyState.ready = true;
     Repaint(&g_MyState);

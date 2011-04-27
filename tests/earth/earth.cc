@@ -7,6 +7,9 @@
 // NaCl Earth demo
 // Ray trace planet Earth
 
+#include "native_client/tests/earth/earth.h"
+
+#include <assert.h>
 #include <errno.h>
 #include <math.h>
 #include <pthread.h>
@@ -18,6 +21,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#define HAVE_THREADS 1
 #include "native_client/common/worker.h"
 
 // print/debug messages
@@ -110,14 +114,11 @@ Texture g_earth = {
 struct Surface {
   int width, height, pitch;
   uint32_t *pixels;
-  Surface(int w, int h) {
+  Surface(uint32_t *pix, int w, int h) {
     width = w;
     height = h;
     pitch = w;
-    pixels = new uint32_t[w * h];
-  }
-  ~Surface() {
-    delete[] pixels;
+    pixels = pix;
   }
 };
 
@@ -191,19 +192,18 @@ class Planet {
 
   // misc
   Texture *tex_;
-  Surface *surf_;
+  Surface surface_;
   ArcCosine acos_;
   int num_regions_;
-  int width_, height_;
   WorkerThreadManager *workers_;
   volatile bool exiting_;
+  bool rendering_;
 
 public:
 
   // methods prefixed with 'w' are only called by worker threads!
   // (unless MULTI_THREADING is false)
   uint32_t* wGetAddr(int x, int y);
-  void wPutPixel(int x, int y, unsigned int c);
   void wRenderPixelSpan(int x0, int x1, int y);
   void wMakeRect(int r, int *x, int *y, int *w, int *h);
   void wRenderRect(int x0, int y0, int x1, int y1);
@@ -219,13 +219,15 @@ public:
   void SetLightXYZ(float x, float y, float z);
   void SetAmbientRGB(float r, float g, float b);
   void SetDiffuseRGB(float r, float g, float b);
+  void SetSurface(Surface surface);
   bool CreateWorkerThreads(int num);
   void UpdateSim();
   void ParallelRender();
+  void ParallelRenderSync();
   void SequentialRender();
   void Render();
-  void Draw(uint32_t* buf);
-  Planet(Surface *s, int numRegions, bool multithreading, Texture *tex);
+  void Sync();
+  Planet(int numRegions, bool multithreading, Texture *tex);
   ~Planet();
 };
 
@@ -236,22 +238,17 @@ public:
 // This rectangle shouldn't overlap with work being done by other workers.
 // If multithreading, this function is only called by the worker threads.
 void Planet::wMakeRect(int r, int *x, int *y, int *w, int *h) {
-  int dy = height_ / num_regions_;
+  int dy = surface_.height / num_regions_;
   *x = 0;
-  *w = width_;
+  *w = surface_.width;
   *y = r * dy;
   *h = dy;
 }
 
 
 inline uint32_t* Planet::wGetAddr(int x, int y) {
-  return (surf_->pixels + y * surf_->pitch) + x;
-}
-
-
-inline void Planet::wPutPixel(int x, int y, unsigned int c) {
-  uint32_t *pixel = (surf_->pixels + y * surf_->pitch) + x;
-  *pixel = c;
+  assert(surface_.pixels);
+  return (surface_.pixels + y * surface_.pitch) + x;
 }
 
 
@@ -305,7 +302,7 @@ void Planet::wRenderPixelSpan(int x0, int x1, int y) {
   const int kColorBlack = MakeRGBA(0, 0, 0, 0xFF);
   float y0 = eye_y_;
   float z0 = eye_z_;
-  float y1 = (static_cast<float>(y) / height_) * 2.0f - 1.0f;
+  float y1 = (static_cast<float>(y) / surface_.height) * 2.0f - 1.0f;
   float z1 = 0.0f;
   float dy = (y1 - y0);
   float dz = (z1 - z0);
@@ -314,10 +311,11 @@ void Planet::wRenderPixelSpan(int x0, int x1, int y) {
                                   2.0f * dz * (z0 - planet_z_);
   float planet_xyz_eye_xyz = planet_xyz_ + eye_xyz_;
   float y_y0_z_z0 = planet_y_ * y0 + planet_z_ * z0;
+  float oowidth = 1.0f / surface_.width;
   uint32_t *pixels = this->wGetAddr(x0, y);
   for (int x = x0; x <= x1; ++x) {
     // scan normalized screen -1..1
-    float x1 = (static_cast<float>(x) / width_) * 2.0f - 1.0f;
+    float x1 = (static_cast<float>(x) * oowidth) * 2.0f - 1.0f;
     // eye
     float x0 = eye_x_;
     // delta from screen to eye
@@ -420,6 +418,7 @@ void Planet::wWorkerThreadEntry() {
   while (!exiting_) {
     // wait for some work
     workers_->WaitWork();
+
     // if main thread is exiting, have worker exit too
     if (exiting_) break;
     // okay, grab region to work on from worker counter
@@ -479,39 +478,43 @@ void Planet::UpdateSim() {
 // First, it sets the region counter to its max value.  This mutex guarded
 // counter is how worker threads determine which region of the diagram they
 // should be working on.  Then it pings the PostWork semaphore multiple times
-// to wake up the sleeping worker threads.  Finally, this thread needs to
-// sleep a little by waiting for the workers to finish.  It does that by
-// waiting on the WaitDone semaphore.
+// to wake up the sleeping worker threads.
 void Planet::ParallelRender() {
 
   // At this point, all worker threads are idle and sleeping
 
   // setup barrier counter before we wake workers
   workers_->SetCounter(num_regions_);
+  rendering_ = true;
 
   // wake up the workers
   for (int i = 0; i < num_regions_; ++i) {
     workers_->PostWork();
   }
-
   // At this point, all worker threads are awake and busy grabbing
   // work assignments by reading and decrementing the counter.
-  // This main thread will sleep on the semaphore below while
-  // waiting for the workers to finish.
+}
 
-  // wait for all work to be done
-  for (int i = 0; i < num_regions_; ++i) {
-    workers_->WaitDone();
+
+// ParallelRenderSync will sleep a little by waiting for the workers to
+// finish.  It does that by waiting on the WaitDone semaphore.
+void Planet::ParallelRenderSync() {
+
+  // Only wait if rendering is in progress.
+  if (rendering_) {
+    // wait for all work to be done
+    for (int i = 0; i < num_regions_; ++i) {
+      workers_->WaitDone();
+    }
+    // verify that our counter is where we expect it to be
+    int c = workers_->DecCounter();
+    if (-1 != c) {
+      InfoPrintf("We're not syncing correctly! (%d)\n", c);
+      exit(-1);
+    }
+    rendering_ = false;
   }
-
-  // verify that our counter is where we expect it to be
-  int c = workers_->DecCounter();
-  if (-1 != c) {
-    InfoPrintf("We're not syncing correctly! (%d)\n", c);
-    exit(-1);
-  }
-
-  // At this point, all worker threads are idle and sleeping.
+  // At this point, all worker threads are idle and sleeping again.
   // The main thread is free to muck with shared data, such
   // as updating the earth spin in the sim routine.
 }
@@ -519,11 +522,11 @@ void Planet::ParallelRender() {
 
 // Performs all rendering from the main thread.
 void Planet::SequentialRender() {
-  this->wRenderRect(0, 0, width_, height_);
+  this->wRenderRect(0, 0, surface_.width, surface_.height);
 }
 
 
-// Renders the Planet diagram
+// Renders the Planet diagram.
 // Picks either parallel or sequential rendering implementation.
 void Planet::Render() {
   if (NULL == workers_) {
@@ -534,13 +537,13 @@ void Planet::Render() {
 }
 
 
-// Copies sw rendered earth image to screen
-void Planet::Draw(uint32_t* buf) {
-  const int num_words = g_window_width * g_window_height;
-  int i;
-
-  for (i = 0; i < num_words; i++)  buf[i] = surf_->pixels[i];
+// Waits for a rendering to complete.
+void Planet::Sync() {
+  if (NULL != workers_) {
+    this->ParallelRenderSync();
+  }
 }
+
 
 // pre-calculations to make inner loops faster
 // these need to be recalculated when values change
@@ -629,17 +632,20 @@ void Planet::SetPlanetSpin(float a) {
 }
 
 
+void Planet::SetSurface(Surface surface) {
+  surface_ = surface;
+}
+
+
 // Setups and initializes planet data structures.
 // Seed planet, eye, and light
-Planet::Planet(Surface *surf, int numRegions, bool multi,
-               Texture *tex) {
-  surf_ = surf;
+Planet::Planet(int numRegions, bool multi, Texture *tex) :
+    surface_(NULL, 0, 0) {
   num_regions_ = numRegions;
-  width_ = surf->width;
-  height_ = surf->height;
   workers_ = multi ? new WorkerThreadManager() : NULL;
   tex_ = tex;
   exiting_ = false;
+  rendering_ = false;
 
   this->SetPlanetXYZR(0.0f, 0.0f, 48.0f, 4.0f);
   this->SetEyeXYZ(0.0f, 0.0f, -14.0f);
@@ -661,12 +667,6 @@ Planet::~Planet() {
     workers_->JoinAll();
     delete workers_;
   }
-}
-
-// Initializes a window buffer.
-static Surface* Initialize() {
-  Surface *surface = new Surface(g_window_width, g_window_height);
-  return surface;
 }
 
 
@@ -737,6 +737,8 @@ static void ParseCmdLineArgs(int argc, const char *argn[], const char *argv[]) {
         /* ignore id */
       } else if (argn[i] == strstr(argn[i], "src")) {
         /* ignore src */
+      } else if (argn[i] == strstr(argn[i], "style")) {
+        /* ignore style */
       } else if (argn[i] == strstr(argn[i], "type")) {
         /* ignore type */
       } else {
@@ -773,20 +775,26 @@ static void ParseCmdLineArgs(int argc, const char *argn[], const char *argv[]) {
   g_num_regions = ClampThreads(g_num_regions);
 }
 
-Surface *g_surface = Initialize();
-Planet g_planet(g_surface, g_num_regions, g_multi_threading, &g_earth);
+Planet *g_planet = NULL;
 
 // Parses cmd line options, initializes surface, runs the demo & shuts down.
 extern "C" void Earth_Init(int argc, const char *argn[], const char *argv[]) {
   ParseCmdLineArgs(argc, argn, argv);
-  if (!g_planet.CreateWorkerThreads(g_num_threads)) {
-    DebugPrintf("Earth_Init: thread creation failed.\n");
+  g_planet = new Planet(g_num_regions, g_multi_threading, &g_earth);
+  if (!g_planet->CreateWorkerThreads(g_num_threads)) {
+    DebugPrintf("Earth_Init: thread creation failed.  g_num_threads: %d\n",
+        g_num_threads);
     exit(-1);
   }
 }
 
-extern "C" void Earth_Draw(uint32_t* image_data) {
-  g_planet.UpdateSim();
-  g_planet.Render();
-  g_planet.Draw(image_data);
+extern "C" void Earth_Draw(uint32_t *image_data, int width, int height) {
+  g_planet->SetSurface(Surface(image_data, width, height));
+  g_planet->UpdateSim();
+  g_planet->Render();
+}
+
+extern "C" void Earth_Sync() {
+  g_planet->Sync();
+  g_planet->SetSurface(Surface(NULL, 0, 0));
 }

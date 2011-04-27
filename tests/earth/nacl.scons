@@ -5,6 +5,12 @@
 
 Import('env')
 
+if (not env.Bit('bitcode')):
+  flags = ['-mfpmath=sse', '-msse2', '-O3', '-ffast-math',
+           '-fomit-frame-pointer']
+  env.Append(CCFLAGS=flags)
+  env.Append(CXXFLAGS=flags)
+
 earthlib = env.ComponentLibrary('earthlib', ['earth.cc'])
 
 # build, C then C++
@@ -14,7 +20,7 @@ cnexe = env.ComponentProgram(c_nexe_name, cobj,
                             EXTRA_LIBS=['earthlib',
                                         '${PPAPI_LIBS}',
                                         'm', 'pthread'])
-env.Publish(cnexe, 'run', ['earth_c.html'])
+env.Publish(c_nexe_name, 'run', ['earth_c.html', 'earth_c.nmf'])
 
 node = env.DemoSelLdrNacl('demo_earth_c', cnexe, args=[])
 # Note: Make this available from top level
@@ -27,7 +33,7 @@ ccnexe = env.ComponentProgram(cc_nexe_name, ccobj,
                                         '${PPAPI_LIBS}',
                                         'ppapi_cpp',
                                         'm', 'pthread'])
-env.Publish(ccnexe, 'run', ['earth_cc.html'])
+env.Publish(cc_nexe_name, 'run', ['earth_cc.html', 'earth_cc.nmf'])
 
 node = env.DemoSelLdrNacl('demo_earth_cc', ccnexe, args=[])
 # Note: Make this available from top level

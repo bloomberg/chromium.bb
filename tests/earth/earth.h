@@ -16,7 +16,8 @@ extern "C" {
 
 void DebugPrintf(const char *fmt, ...);
 void Earth_Init(int argcount, const char *argname[], const char *argvalue[]);
-void Earth_Draw(uint32_t* image_data);
+void Earth_Draw(uint32_t* image_data, int width, int height);
+void Earth_Sync();
 
 #ifdef __cplusplus
 }

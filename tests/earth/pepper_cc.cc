@@ -8,7 +8,7 @@
 // Pepper code in C++
 
 #include "native_client/tests/earth/earth.h"
-#include "native_client/common/worker.h"
+
 // Pepper includes
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/pp_bool.h"
@@ -21,6 +21,7 @@
 #include <ppapi/cpp/rect.h>
 #include <ppapi/cpp/size.h>
 
+const int kNumberOfImages = 2;
 
 void RepaintCallback(void* data, int32_t result);
 
@@ -29,7 +30,8 @@ class GlobeInstance : public pp::Instance {
   explicit GlobeInstance(PP_Instance instance) : pp::Instance(instance),
                                                  ready_(false),
                                                  window_width_(0),
-                                                 window_height_(0) {
+                                                 window_height_(0),
+                                                 which_image_(0) {
     DebugPrintf("GlobeInstance::GlobeInstance()\n");
   }
 
@@ -42,14 +44,18 @@ class GlobeInstance : public pp::Instance {
   virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
     size_ = position.size();
     if (false == ready_) {
-      // Note: This example does not use translucent pixels.
-      // PPAPI uses pre-multiplied alpha.
-      pixel_buffer_ =  new pp::ImageData(this,
-                                         PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                                         size_, PP_TRUE);
-      if (!pixel_buffer_) {
-        DebugPrintf("couldn't allocate pixel_buffer_.\n");
-        return;
+      // Create double buffered image data.
+      // Note: This example does not use transparent pixels. All pixels are
+      // written into the framebuffer with alpha set to 255 (opaque)
+      // Note: Pepper uses premultiplied alpha.
+      for (int i = 0; i < kNumberOfImages; ++i) {
+        pixel_buffer_[i] =  new pp::ImageData(this,
+                                              PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                                              size_, PP_TRUE);
+        if (!pixel_buffer_[i]) {
+          DebugPrintf("couldn't allocate pixel_buffer_.\n");
+          return;
+        }
       }
       graphics_2d_context_ = new pp::Graphics2D(this, size_, false);
       if (!BindGraphics(*graphics_2d_context_)) {
@@ -70,19 +76,31 @@ class GlobeInstance : public pp::Instance {
   void Repaint() {
     if (ready_ != true) return;
 
-    Earth_Draw(static_cast<uint32_t*>(pixel_buffer_->data()));
+    int show = which_image_;
+
+    // Wait for rendering to complete.
+    Earth_Sync();
 
     // Don't use ReplaceContents; it causes the image to flicker!
-    graphics_2d_context_->PaintImageData(*pixel_buffer_, pp::Point());
+    graphics_2d_context_->PaintImageData(*pixel_buffer_[show], pp::Point());
     graphics_2d_context_->Flush(pp::CompletionCallback(&RepaintCallback, this));
+
+    int render = (which_image_ + 1) % kNumberOfImages;
+
+    // Start rendering into other image while presenting.
+    Earth_Draw(static_cast<uint32_t*>(pixel_buffer_[render]->data()),
+        window_width_, window_height_);
+
+    which_image_ = render;
   }
 
  private:
   bool ready_;
   int window_width_;
   int window_height_;
+  int which_image_;
   pp::Size size_;
-  pp::ImageData* pixel_buffer_;
+  pp::ImageData* pixel_buffer_[kNumberOfImages];
   pp::Graphics2D* graphics_2d_context_;
 };
 
