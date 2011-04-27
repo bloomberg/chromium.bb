@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -64,32 +64,6 @@ class SearchEnginesTest(pyauto.PyUITest):
                               re.IGNORECASE))
     self.assertFalse(youtube['in_default_list'])
     self.assertFalse(youtube['is_default'])
-
-  def testAddSearchEngine(self):
-    """Test searching using keyword of user-added search engine."""
-    self.AddSearchEngine(title='foo',
-                         keyword='foo.com',
-                         url=self._localhost_prefix + '?q=%s')
-    self.SetOmniboxText('foo.com foobar')
-    self.OmniboxAcceptInput()
-    self.assertEqual(self._localhost_prefix + '?q=foobar',
-                     self.GetActiveTabURL().spec())
-
-  def testEditSearchEngine(self):
-    """Test editing a search engine's properties."""
-    self.AddSearchEngine(title='foo',
-                         keyword='foo.com',
-                         url='http://foo/?q=%s')
-    self.EditSearchEngine(keyword='foo.com',
-                          new_title='bar',
-                          new_keyword='bar.com',
-                          new_url=self._localhost_prefix + '?bar=true&q=%s')
-    self.assertTrue(self._GetSearchEngineWithKeyword('bar.com'))
-    self.assertFalse(self._GetSearchEngineWithKeyword('foo.com'))
-    self.SetOmniboxText('bar.com foobar')
-    self.OmniboxAcceptInput()
-    self.assertEqual(self._localhost_prefix + '?bar=true&q=foobar',
-                     self.GetActiveTabURL().spec())
 
   def testDeleteSearchEngine(self):
     """Test adding then deleting a search engine."""
@@ -155,32 +129,6 @@ class SearchEnginesTest(pyauto.PyUITest):
       self.SetOmniboxText('test search')
       self.OmniboxAcceptInput()
       self.assertTrue(re.search(keyword, self.GetActiveTabURL().spec()))
-
-  def testSearchEngineSpecialChars(self):
-    """Test add/edit/delete a search engine's properties using special chars."""
-    # Add a search engine with special chars.
-    self.AddSearchEngine(title='testspecial@#',
-                         keyword='testspecial@#.com',
-                         url=self._localhost_prefix + '?q=%s')
-    self.SetOmniboxText('testspecial@#.com foobar')
-    self.OmniboxAcceptInput()
-    self.assertEqual(self._localhost_prefix + '?q=foobar',
-                     self.GetActiveTabURL().spec())
-    # Edit a search engine with special chars.
-    self.EditSearchEngine(keyword='testspecial@#.com',
-                          new_title='Title Edited',
-                          new_keyword='testspecial@!%^*#.com',
-                          new_url=self._localhost_prefix + '?edited=true&q=%s')
-    self.assertTrue(self._GetSearchEngineWithKeyword('testspecial@!%^*#.com'))
-    self.assertFalse(self._GetSearchEngineWithKeyword('testspecial@#.com'))
-    self.SetOmniboxText('testspecial@!%^*#.com foobar')
-    self.OmniboxAcceptInput()
-    self.assertEqual(self._localhost_prefix + '?edited=true&q=foobar',
-                     self.GetActiveTabURL().spec())
-    # Delete a search engine.
-    self.assertTrue(self._GetSearchEngineWithKeyword('testspecial@!%^*#.com'))
-    self.DeleteSearchEngine('testspecial@!%^*#.com')
-    self.assertFalse(self._GetSearchEngineWithKeyword('testspecial@!%^*#.com'))
 
 
 if __name__ == '__main__':
