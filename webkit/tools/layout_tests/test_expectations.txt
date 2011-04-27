@@ -4,3 +4,12 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+
+// Flakiness on the deps bots
+BUGDPRANKE WIN CPU DEBUG : editing/selection/select-line.html = PASS CRASH
+BUGDPRANKE WIN CPU DEBUG : fast/css/last-of-type-pseudo-class.html = PASS TEXT
+BUGDPRANKE WIN CPU DEBUG : fast/filesystem/file-writer-write-overlapped.html = TEXT PASS
+BUGDPRANKE WIN CPU DEBUG : http/tests/local/stylesheet-and-script-load-order-media-print.html = PASS CRASH
+BUGDPRANKE WIN CPU DEBUG : svg/text/select-textLength-spacingAndGlyphs-squeeze-3.svg = PASS CRASH
+BUGDPRANKE MAC CPU DEBUG : fast/block/float/overhanging-tall-block.html = PASS CRASH
+BUGDPRANKE MAC CPU DEBUG : fast/css/import_with_baseurl.html = PASS CRASH
