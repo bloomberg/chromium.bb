@@ -7,10 +7,10 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "content/browser/user_metrics.h"
 #include "third_party/libjingle/source/talk/base/urlencode.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
@@ -70,7 +70,7 @@ GURL FileManagerUtil::GetFileBrowserUrlWithParams(
 
 }
 // static
-void FileManagerUtil::ShowFullTabUrl(Profile* profile,
+void FileManagerUtil::ShowFullTabUrl(Profile*,
                                      const FilePath& default_path) {
   std::string json = GetArgumentsJson(SelectFileDialog::SELECT_NONE, string16(),
       default_path, NULL, 0, FilePath::StringType());
@@ -80,8 +80,7 @@ void FileManagerUtil::ShowFullTabUrl(Profile* profile,
   if (!browser)
     return;
 
-  UserMetrics::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"),
-                            profile);
+  UserMetrics::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
   browser->ShowSingletonTab(GURL(url));
 }
 

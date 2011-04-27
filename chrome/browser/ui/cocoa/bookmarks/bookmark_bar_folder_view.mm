@@ -5,9 +5,10 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_view.h"
 
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
+#include "content/browser/user_metrics.h"
+
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
 @implementation BookmarkBarFolderView

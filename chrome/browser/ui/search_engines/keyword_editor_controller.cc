@@ -5,13 +5,13 @@
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/user_metrics.h"
 
 KeywordEditorController::KeywordEditorController(Profile* profile)
     : profile_(profile) {
@@ -33,8 +33,7 @@ int KeywordEditorController::AddTemplateURL(const string16& title,
                                             const std::string& url) {
   DCHECK(!url.empty());
 
-  UserMetrics::RecordAction(UserMetricsAction("KeywordEditor_AddKeyword"),
-                            profile_);
+  UserMetrics::RecordAction(UserMetricsAction("KeywordEditor_AddKeyword"));
 
   TemplateURL* template_url = new TemplateURL();
   template_url->set_short_name(title);
@@ -74,8 +73,7 @@ void KeywordEditorController::ModifyTemplateURL(const TemplateURL* template_url,
 
   table_model_->ModifyTemplateURL(index, title, keyword, url);
 
-  UserMetrics::RecordAction(UserMetricsAction("KeywordEditor_ModifiedKeyword"),
-                            profile_);
+  UserMetrics::RecordAction(UserMetricsAction("KeywordEditor_ModifiedKeyword"));
 }
 
 bool KeywordEditorController::CanEdit(const TemplateURL* url) const {
@@ -93,8 +91,7 @@ bool KeywordEditorController::CanRemove(const TemplateURL* url) const {
 
 void KeywordEditorController::RemoveTemplateURL(int index) {
   table_model_->Remove(index);
-  UserMetrics::RecordAction(UserMetricsAction("KeywordEditor_RemoveKeyword"),
-                            profile_);
+  UserMetrics::RecordAction(UserMetricsAction("KeywordEditor_RemoveKeyword"));
 }
 
 int KeywordEditorController::MakeDefaultTemplateURL(int index) {

@@ -8,10 +8,10 @@
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
+#include "content/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 

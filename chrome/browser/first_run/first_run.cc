@@ -18,7 +18,6 @@
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -30,6 +29,7 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
+#include "content/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_WIN)

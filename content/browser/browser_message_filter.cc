@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/process.h"
 #include "base/process_util.h"
-#include "chrome/browser/metrics/user_metrics.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/result_codes.h"
 #include "ipc/ipc_sync_message.h"
 

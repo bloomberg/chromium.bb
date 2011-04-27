@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
-#include "chrome/browser/metrics/user_metrics.h"
+#include "content/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"

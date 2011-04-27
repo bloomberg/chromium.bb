@@ -17,7 +17,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"
@@ -30,6 +29,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 
 namespace {
@@ -794,14 +794,12 @@ void TabStripModel::ExecuteContextMenuCommand(
   DCHECK(command_id > CommandFirst && command_id < CommandLast);
   switch (command_id) {
     case CommandNewTab:
-      UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_NewTab"),
-                                profile_);
+      UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_NewTab"));
       delegate()->AddBlankTabAt(context_index + 1, true);
       break;
 
     case CommandReload: {
-      UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_Reload"),
-                                profile_);
+      UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_Reload"));
       std::vector<int> indices = GetIndicesForCommand(context_index);
       for (size_t i = 0; i < indices.size(); ++i) {
         TabContentsWrapper* tab = GetTabContentsAt(indices[i]);
@@ -814,8 +812,7 @@ void TabStripModel::ExecuteContextMenuCommand(
     }
 
     case CommandDuplicate: {
-      UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_Duplicate"),
-                                profile_);
+      UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_Duplicate"));
       std::vector<int> indices = GetIndicesForCommand(context_index);
       // Copy the TabContents off as the indices will change as tabs are
       // duplicated.
@@ -831,8 +828,7 @@ void TabStripModel::ExecuteContextMenuCommand(
     }
 
     case CommandCloseTab: {
-      UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_CloseTab"),
-                                profile_);
+      UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_CloseTab"));
       std::vector<int> indices = GetIndicesForCommand(context_index);
       // Copy the TabContents off as the indices will change as we remove
       // things.
@@ -851,8 +847,7 @@ void TabStripModel::ExecuteContextMenuCommand(
 
     case CommandCloseOtherTabs: {
       UserMetrics::RecordAction(
-          UserMetricsAction("TabContextMenu_CloseOtherTabs"),
-          profile_);
+          UserMetricsAction("TabContextMenu_CloseOtherTabs"));
       InternalCloseTabs(GetIndicesClosedByCommand(context_index, command_id),
                         CLOSE_CREATE_HISTORICAL_TAB);
       break;
@@ -860,24 +855,21 @@ void TabStripModel::ExecuteContextMenuCommand(
 
     case CommandCloseTabsToRight: {
       UserMetrics::RecordAction(
-          UserMetricsAction("TabContextMenu_CloseTabsToRight"),
-          profile_);
+          UserMetricsAction("TabContextMenu_CloseTabsToRight"));
       InternalCloseTabs(GetIndicesClosedByCommand(context_index, command_id),
                         CLOSE_CREATE_HISTORICAL_TAB);
       break;
     }
 
     case CommandRestoreTab: {
-      UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_RestoreTab"),
-                                profile_);
+      UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_RestoreTab"));
       delegate_->RestoreTab();
       break;
     }
 
     case CommandTogglePinned: {
       UserMetrics::RecordAction(
-          UserMetricsAction("TabContextMenu_TogglePinned"),
-          profile_);
+          UserMetricsAction("TabContextMenu_TogglePinned"));
       std::vector<int> indices = GetIndicesForCommand(context_index);
       bool pin = WillContextMenuPin(context_index);
       if (pin) {
@@ -898,8 +890,7 @@ void TabStripModel::ExecuteContextMenuCommand(
 
     case CommandBookmarkAllTabs: {
       UserMetrics::RecordAction(
-          UserMetricsAction("TabContextMenu_BookmarkAllTabs"),
-          profile_);
+          UserMetricsAction("TabContextMenu_BookmarkAllTabs"));
 
       delegate_->BookmarkAllTabs();
       break;
@@ -907,8 +898,7 @@ void TabStripModel::ExecuteContextMenuCommand(
 
     case CommandUseVerticalTabs: {
       UserMetrics::RecordAction(
-          UserMetricsAction("TabContextMenu_UseVerticalTabs"),
-          profile_);
+          UserMetricsAction("TabContextMenu_UseVerticalTabs"));
 
       delegate()->ToggleUseVerticalTabs();
       break;

@@ -6,11 +6,11 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "content/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 
 EditSearchEngineController::EditSearchEngineController(
@@ -101,8 +101,7 @@ void EditSearchEngineController::AcceptAddOrEdit(
     modifiable_url->SetURL(url_string, 0, 0);
     // TemplateURLModel takes ownership of template_url_.
     profile_->GetTemplateURLModel()->Add(modifiable_url);
-    UserMetrics::RecordAction(UserMetricsAction("KeywordEditor_AddKeywordJS"),
-                              profile_);
+    UserMetrics::RecordAction(UserMetricsAction("KeywordEditor_AddKeywordJS"));
   } else {
     // Adding or modifying an entry via the Delegate.
     edit_keyword_delegate_->OnEditedKeyword(template_url_,

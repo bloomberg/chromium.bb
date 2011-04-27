@@ -8,7 +8,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -756,7 +756,7 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
   } else if (ShouldShowIncompatibilityWarning()) {
 #if defined(OS_WIN)
     if (!was_showing)
-      UserMetrics::RecordAction(UserMetricsAction("ConflictBadge"), profile_);
+      UserMetrics::RecordAction(UserMetricsAction("ConflictBadge"));
     badge = *tp->GetBitmapNamed(IDR_CONFLICT_BADGE);
     incompatibility_badge_showing = true;
 #else

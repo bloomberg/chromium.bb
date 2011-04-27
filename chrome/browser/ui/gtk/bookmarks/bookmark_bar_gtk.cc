@@ -13,7 +13,6 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,6 +38,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
@@ -1038,8 +1038,7 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender) {
       gtk_util::DispositionForCurrentButtonPressEvent(),
       PageTransition::AUTO_BOOKMARK);
 
-  UserMetrics::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"),
-                            profile_);
+  UserMetrics::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
 }
 
 void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,

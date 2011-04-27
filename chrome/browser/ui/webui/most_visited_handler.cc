@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_source.h"
 #include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
@@ -150,8 +150,7 @@ void MostVisitedHandler::HandleRemoveURLsFromBlacklist(const ListValue* args) {
       NOTREACHED();
       return;
     }
-    UserMetrics::RecordAction(UserMetricsAction("MostVisited_UrlRemoved"),
-                              web_ui_->GetProfile());
+    UserMetrics::RecordAction(UserMetricsAction("MostVisited_UrlRemoved"));
     history::TopSites* ts = web_ui_->GetProfile()->GetTopSites();
     if (ts)
       ts->RemoveBlacklistedURL(GURL(url));
@@ -159,8 +158,7 @@ void MostVisitedHandler::HandleRemoveURLsFromBlacklist(const ListValue* args) {
 }
 
 void MostVisitedHandler::HandleClearBlacklist(const ListValue* args) {
-  UserMetrics::RecordAction(UserMetricsAction("MostVisited_BlacklistCleared"),
-                            web_ui_->GetProfile());
+  UserMetrics::RecordAction(UserMetricsAction("MostVisited_BlacklistCleared"));
 
   history::TopSites* ts = web_ui_->GetProfile()->GetTopSites();
   if (ts)

@@ -9,7 +9,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros_settings.h"
-#include "chrome/browser/metrics/user_metrics.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 

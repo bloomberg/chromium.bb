@@ -5,10 +5,10 @@
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 
 #include "base/callback.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/resource_context.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/appcache_messages.h"
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(

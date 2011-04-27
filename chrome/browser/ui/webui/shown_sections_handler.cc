@@ -10,11 +10,11 @@
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_type.h"
 
@@ -30,14 +30,12 @@ void NotifySectionDisabled(int new_mode, int old_mode, Profile *profile) {
 
   if (old_had_it && !new_has_it) {
     UserMetrics::RecordAction(
-        UserMetricsAction("ShowSections_RecentSitesDisabled"),
-        profile);
+        UserMetricsAction("ShowSections_RecentSitesDisabled"));
   }
 
   if (new_has_it && !old_had_it) {
     UserMetrics::RecordAction(
-        UserMetricsAction("ShowSections_RecentSitesEnabled"),
-        profile);
+        UserMetricsAction("ShowSections_RecentSitesEnabled"));
   }
 }
 

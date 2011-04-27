@@ -335,10 +335,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetSearchProviderInstallState,
                            GURL /* inquiry url */,
                            search_provider::InstallState /* install */)
 
-// Send back a string to be recorded by UserMetrics.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
-                     std::string /* action */)
-
 // Send back histograms as vector of pickled-histogram strings.
 IPC_MESSAGE_CONTROL2(ViewHostMsg_RendererHistograms,
                      int, /* sequence number of Renderer Histograms. */

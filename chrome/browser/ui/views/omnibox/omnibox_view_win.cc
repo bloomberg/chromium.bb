@@ -26,13 +26,13 @@
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/url_util.h"
 #include "grit/generated_resources.h"
@@ -2450,12 +2450,10 @@ void OmniboxViewWin::StartDragIfNecessary(const CPoint& point) {
       model_->GetDataForURLExport(&url, &title, &favicon);
     drag_utils::SetURLAndDragImage(url, title, favicon, &data);
     supported_modes |= DROPEFFECT_LINK;
-    UserMetrics::RecordAction(UserMetricsAction("Omnibox_DragURL"),
-                              model_->profile());
+    UserMetrics::RecordAction(UserMetricsAction("Omnibox_DragURL"));
   } else {
     supported_modes |= DROPEFFECT_MOVE;
-    UserMetrics::RecordAction(UserMetricsAction("Omnibox_DragString"),
-                              model_->profile());
+    UserMetrics::RecordAction(UserMetricsAction("Omnibox_DragString"));
   }
 
   data.SetString(text_to_write);

@@ -17,7 +17,6 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/about_page_handler.h"
 #include "chrome/browser/ui/webui/options/advanced_options_handler.h"
@@ -43,6 +42,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_type.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -147,7 +147,7 @@ bool OptionsPageUIHandler::IsEnabled() {
 
 void OptionsPageUIHandler::UserMetricsRecordAction(
     const UserMetricsAction& action) {
-  UserMetrics::RecordAction(action, web_ui_->GetProfile());
+  UserMetrics::RecordAction(action);
 }
 
 // static

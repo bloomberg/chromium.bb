@@ -7,7 +7,6 @@
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
 #include "base/string_number_conversions.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -16,6 +15,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/registry_controlled_domain.h"
@@ -158,14 +158,11 @@ void BackForwardMenuModel::ActivatedAt(int index) {
 
 void BackForwardMenuModel::ActivatedAtWithDisposition(
       int index, int disposition) {
-  Profile* profile = browser_->profile();
-
   DCHECK(!IsSeparator(index));
 
   // Execute the command for the last item: "Show Full History".
   if (index == GetItemCount() - 1) {
-    UserMetrics::RecordComputedAction(BuildActionName("ShowFullHistory", -1),
-                                      profile);
+    UserMetrics::RecordComputedAction(BuildActionName("ShowFullHistory", -1));
     browser_->ShowSingletonTab(GURL(chrome::kChromeUIHistoryURL));
     return;
   }
@@ -173,11 +170,10 @@ void BackForwardMenuModel::ActivatedAtWithDisposition(
   // Log whether it was a history or chapter click.
   if (index < GetHistoryItemCount()) {
     UserMetrics::RecordComputedAction(
-        BuildActionName("HistoryClick", index), profile);
+        BuildActionName("HistoryClick", index));
   } else {
     UserMetrics::RecordComputedAction(
-        BuildActionName("ChapterClick", index - GetHistoryItemCount() - 1),
-        profile);
+        BuildActionName("ChapterClick", index - GetHistoryItemCount() - 1));
   }
 
   int controller_index = MenuIndexToNavEntryIndex(index);
@@ -188,8 +184,7 @@ void BackForwardMenuModel::ActivatedAtWithDisposition(
 }
 
 void BackForwardMenuModel::MenuWillShow() {
-  UserMetrics::RecordComputedAction(BuildActionName("Popup", -1),
-                                    browser_->profile());
+  UserMetrics::RecordComputedAction(BuildActionName("Popup", -1));
   requested_favicons_.clear();
   load_consumer_.CancelAllRequests();
 }

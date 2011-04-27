@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/extension_omnibox_api.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/instant/instant_controller.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,6 +30,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
@@ -524,7 +524,7 @@ void AutocompleteEditModel::OpenURL(const GURL& url,
     }
 
     if (template_url) {
-      UserMetrics::RecordAction(UserMetricsAction("AcceptedKeyword"), profile_);
+      UserMetrics::RecordAction(UserMetricsAction("AcceptedKeyword"));
       template_url_model->IncrementUsageCount(template_url);
     }
 
@@ -556,7 +556,7 @@ bool AutocompleteEditModel::AcceptKeyword() {
                                // since the edit contents have disappeared.  It
                                // doesn't really matter, but we clear it to be
                                // consistent.
-  UserMetrics::RecordAction(UserMetricsAction("AcceptedKeywordHint"), profile_);
+  UserMetrics::RecordAction(UserMetricsAction("AcceptedKeywordHint"));
   return true;
 }
 

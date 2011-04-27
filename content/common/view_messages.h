@@ -1968,3 +1968,7 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateInspectorSetting,
 // may lead to the cancellation of a prerender. The message is sent only when
 // the renderer is in prerender mode.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_MaybeCancelPrerenderForHTML5Media)
+
+// Send back a string to be recorded by UserMetrics.
+IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
+                     std::string /* action */)

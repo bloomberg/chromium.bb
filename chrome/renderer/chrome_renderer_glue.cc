@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/render_messages.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
 #include "webkit/glue/webkit_glue.h"
 

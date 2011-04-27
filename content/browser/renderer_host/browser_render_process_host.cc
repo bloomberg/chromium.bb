@@ -29,7 +29,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -77,6 +76,7 @@
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/speech/speech_input_dispatcher_host.h"
 #include "content/browser/trace_message_filter.h"
+#include "content/browser/user_metrics.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/common/child_process_info.h"
 #include "content/common/child_process_messages.h"
@@ -1009,7 +1009,7 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
 
 void BrowserRenderProcessHost::OnUserMetricsRecordAction(
     const std::string& action) {
-  UserMetrics::RecordComputedAction(action, profile());
+  UserMetrics::RecordComputedAction(action);
 }
 
 void BrowserRenderProcessHost::OnSpellCheckerRequestDictionary() {

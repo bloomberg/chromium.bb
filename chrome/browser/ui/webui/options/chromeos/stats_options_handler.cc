@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
-#include "chrome/browser/metrics/user_metrics.h"
+#include "content/browser/user_metrics.h"
 
 namespace chromeos {
 

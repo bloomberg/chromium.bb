@@ -18,7 +18,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -28,6 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "content/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -711,21 +711,20 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
 
   switch (result) {
     case UPGRADE_STARTED:
-      UserMetrics::RecordAction(UserMetricsAction("Upgrade_Started"), profile_);
+      UserMetrics::RecordAction(UserMetricsAction("Upgrade_Started"));
       show_throbber = true;
       update_label_.SetText(
           UTF16ToWide(l10n_util::GetStringUTF16(IDS_UPGRADE_STARTED)));
       break;
     case UPGRADE_CHECK_STARTED:
-      UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Started"),
-                                profile_);
+      UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Started"));
       show_throbber = true;
       update_label_.SetText(
           UTF16ToWide(l10n_util::GetStringUTF16(IDS_UPGRADE_CHECK_STARTED)));
       break;
     case UPGRADE_IS_AVAILABLE:
       UserMetrics::RecordAction(
-          UserMetricsAction("UpgradeCheck_UpgradeIsAvailable"), profile_);
+          UserMetricsAction("UpgradeCheck_UpgradeIsAvailable"));
       DCHECK(!google_updater_);  // Should have been nulled out already.
       google_updater_ = new GoogleUpdate();
       google_updater_->set_status_listener(this);
@@ -759,7 +758,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
           (installed_version->CompareTo(*running_version) <= 0)) {
 #endif
         UserMetrics::RecordAction(
-            UserMetricsAction("UpgradeCheck_AlreadyUpToDate"), profile_);
+            UserMetricsAction("UpgradeCheck_AlreadyUpToDate"));
 #if defined(OS_CHROMEOS)
         std::wstring update_label_text = UTF16ToWide(l10n_util::GetStringFUTF16(
             IDS_UPGRADE_ALREADY_UP_TO_DATE,
@@ -785,10 +784,9 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
     case UPGRADE_SUCCESSFUL: {
       if (result == UPGRADE_ALREADY_UP_TO_DATE)
         UserMetrics::RecordAction(
-            UserMetricsAction("UpgradeCheck_AlreadyUpgraded"), profile_);
+            UserMetricsAction("UpgradeCheck_AlreadyUpgraded"));
       else
-        UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Upgraded"),
-                                  profile_);
+        UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Upgraded"));
       restart_button_visible_ = true;
       const std::wstring& update_string =
           UTF16ToWide(l10n_util::GetStringFUTF16(
@@ -799,8 +797,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       break;
     }
     case UPGRADE_ERROR:
-      UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Error"),
-                                profile_);
+      UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Error"));
       restart_button_visible_ = false;
       if (error_code != GOOGLE_UPDATE_DISABLED_BY_POLICY) {
         update_label_.SetText(UTF16ToWide(

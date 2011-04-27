@@ -35,6 +35,7 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "content/common/result_codes.h"
 #include "google_update_idl.h"

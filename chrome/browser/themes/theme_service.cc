@@ -8,11 +8,11 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "grit/app_resources.h"
@@ -314,7 +314,7 @@ void ThemeService::SetTheme(const Extension* extension) {
   SaveThemeID(extension->id());
 
   NotifyThemeChanged();
-  UserMetrics::RecordAction(UserMetricsAction("Themes_Installed"), profile_);
+  UserMetrics::RecordAction(UserMetricsAction("Themes_Installed"));
 }
 
 void ThemeService::RemoveUnusedThemes() {
@@ -339,7 +339,7 @@ void ThemeService::RemoveUnusedThemes() {
 void ThemeService::UseDefaultTheme() {
   ClearAllThemeData();
   NotifyThemeChanged();
-  UserMetrics::RecordAction(UserMetricsAction("Themes_Reset"), profile_);
+  UserMetrics::RecordAction(UserMetricsAction("Themes_Reset"));
 }
 
 void ThemeService::SetNativeTheme() {
@@ -576,7 +576,7 @@ void ThemeService::LoadThemePrefs() {
     }
 
     if (loaded_pack) {
-      UserMetrics::RecordAction(UserMetricsAction("Themes.Loaded"), profile_);
+      UserMetrics::RecordAction(UserMetricsAction("Themes.Loaded"));
     } else {
       // TODO(erg): We need to pop up a dialog informing the user that their
       // theme is being migrated.
@@ -587,12 +587,11 @@ void ThemeService::LoadThemePrefs() {
         if (extension) {
           DLOG(ERROR) << "Migrating theme";
           BuildFromExtension(extension);
-          UserMetrics::RecordAction(UserMetricsAction("Themes.Migrated"),
-                                    profile_);
+          UserMetrics::RecordAction(UserMetricsAction("Themes.Migrated"));
         } else {
           DLOG(ERROR) << "Theme is mysteriously gone.";
           ClearAllThemeData();
-          UserMetrics::RecordAction(UserMetricsAction("Themes.Gone"), profile_);
+          UserMetrics::RecordAction(UserMetricsAction("Themes.Gone"));
         }
       }
     }

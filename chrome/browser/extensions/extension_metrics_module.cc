@@ -7,9 +7,9 @@
 #include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "content/browser/user_metrics.h"
 
 using base::Histogram;
 using base::LinearHistogram;
@@ -57,7 +57,7 @@ bool MetricsRecordUserActionFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &name));
 
   name = BuildMetricName(name, GetExtension());
-  UserMetrics::RecordComputedAction(name, profile());
+  UserMetrics::RecordComputedAction(name);
   return true;
 }
 

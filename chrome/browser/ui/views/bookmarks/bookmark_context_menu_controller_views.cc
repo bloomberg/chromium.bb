@@ -10,11 +10,11 @@
 #include "chrome/browser/bookmarks/bookmark_folder_editor_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "content/browser/user_metrics.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "grit/generated_resources.h"
@@ -101,18 +101,15 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       if (id == IDC_BOOKMARK_BAR_OPEN_ALL) {
         initial_disposition = NEW_FOREGROUND_TAB;
         UserMetrics::RecordAction(
-            UserMetricsAction("BookmarkBar_ContextMenu_OpenAll"),
-            profile_);
+            UserMetricsAction("BookmarkBar_ContextMenu_OpenAll"));
       } else if (id == IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW) {
         initial_disposition = NEW_WINDOW;
         UserMetrics::RecordAction(
-            UserMetricsAction("BookmarkBar_ContextMenu_OpenAllInNewWindow"),
-            profile_);
+            UserMetricsAction("BookmarkBar_ContextMenu_OpenAllInNewWindow"));
       } else {
         initial_disposition = OFF_THE_RECORD;
         UserMetrics::RecordAction(
-            UserMetricsAction("BookmarkBar_ContextMenu_OpenAllIncognito"),
-            profile_);
+            UserMetricsAction("BookmarkBar_ContextMenu_OpenAllIncognito"));
       }
       bookmark_utils::OpenAll(parent_window_, profile_, navigator_, selection_,
                               initial_disposition);
@@ -122,7 +119,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
     case IDC_BOOKMARK_BAR_RENAME_FOLDER:
     case IDC_BOOKMARK_BAR_EDIT:
       UserMetrics::RecordAction(
-          UserMetricsAction("BookmarkBar_ContextMenu_Edit"), profile_);
+          UserMetricsAction("BookmarkBar_ContextMenu_Edit"));
 
       if (selection_.size() != 1) {
         NOTREACHED();
@@ -142,7 +139,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
 
     case IDC_BOOKMARK_BAR_REMOVE: {
       UserMetrics::RecordAction(
-          UserMetricsAction("BookmarkBar_ContextMenu_Remove"), profile_);
+          UserMetricsAction("BookmarkBar_ContextMenu_Remove"));
 
       delegate_->WillRemoveBookmarks(selection_);
       for (size_t i = 0; i < selection_.size(); ++i) {
@@ -156,7 +153,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
 
     case IDC_BOOKMARK_BAR_ADD_NEW_BOOKMARK: {
       UserMetrics::RecordAction(
-          UserMetricsAction("BookmarkBar_ContextMenu_Add"), profile_);
+          UserMetricsAction("BookmarkBar_ContextMenu_Add"));
 
       // TODO: this should honor the index from GetParentForNewNodes.
       BookmarkEditor::Show(
@@ -168,8 +165,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
 
     case IDC_BOOKMARK_BAR_NEW_FOLDER: {
       UserMetrics::RecordAction(
-          UserMetricsAction("BookmarkBar_ContextMenu_NewFolder"),
-          profile_);
+          UserMetricsAction("BookmarkBar_ContextMenu_NewFolder"));
       int index;
       const BookmarkNode* parent =
           bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
@@ -183,8 +179,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       break;
 
     case IDC_BOOKMARK_MANAGER:
-      UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"),
-                                profile_);
+      UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"));
       {
         Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
         if (browser)

@@ -8,10 +8,10 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"  // TODO(viettrungluu): remove
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
@@ -252,8 +252,7 @@ void BookmarkBubbleNotificationBridge::Observe(
 }
 
 - (IBAction)edit:(id)sender {
-  UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Edit"),
-                            model_->profile());
+  UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Edit"));
   [self showEditor];
 }
 
@@ -279,8 +278,7 @@ void BookmarkBubbleNotificationBridge::Observe(
   [self stopPulsingBookmarkButton];
   // TODO(viettrungluu): get rid of conversion and utf_string_conversions.h.
   model_->SetURLStarred(node_->GetURL(), node_->GetTitle(), false);
-  UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"),
-                            model_->profile());
+  UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
   node_ = NULL;  // no longer valid
   [self ok:sender];
 }
@@ -298,8 +296,7 @@ void BookmarkBubbleNotificationBridge::Observe(
   ChooseAnotherFolder* chooseItem = [[self class] chooseAnotherFolderObject];
   if ([[selected representedObject] isEqual:chooseItem]) {
     UserMetrics::RecordAction(
-        UserMetricsAction("BookmarkBubble_EditFromCombobox"),
-        model_->profile());
+        UserMetricsAction("BookmarkBubble_EditFromCombobox"));
     [self showEditor];
   }
 }
@@ -328,8 +325,7 @@ void BookmarkBubbleNotificationBridge::Observe(
   if (![oldTitle isEqual:newTitle]) {
     model_->SetTitle(node_, base::SysNSStringToUTF16(newTitle));
     UserMetrics::RecordAction(
-        UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"),
-        model_->profile());
+        UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
   }
   // Then the parent folder.
   const BookmarkNode* oldParent = node_->parent();
@@ -345,8 +341,7 @@ void BookmarkBubbleNotificationBridge::Observe(
   if (oldParent != newParent) {
     int index = newParent->child_count();
     model_->Move(node_, newParent, index);
-    UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_ChangeParent"),
-                              model_->profile());
+    UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_ChangeParent"));
   }
 }
 

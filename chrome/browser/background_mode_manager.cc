@@ -12,7 +12,6 @@
 #include "chrome/browser/background_application_list_model.h"
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "grit/chromium_strings.h"
@@ -339,7 +339,7 @@ void BackgroundModeManager::ExecuteCommand(int item) {
       GetBrowserWindow()->OpenAboutChromeDialog();
       break;
     case IDC_EXIT:
-      UserMetrics::RecordAction(UserMetricsAction("Exit"), profile_);
+      UserMetrics::RecordAction(UserMetricsAction("Exit"));
       BrowserList::CloseAllBrowsersAndExit();
       break;
     case IDC_OPTIONS:

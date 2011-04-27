@@ -18,7 +18,6 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/debugger/devtools_window.h"
@@ -52,6 +51,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
@@ -750,10 +750,7 @@ class NotificationBridge : public NotificationObserver {
   if (!tabStripModel_->ContainsIndex(index))
     return;
 
-  TabContentsWrapper* contents = tabStripModel_->GetTabContentsAt(index);
-  if (contents)
-    UserMetrics::RecordAction(UserMetricsAction("CloseTab_Mouse"),
-                              contents->tab_contents()->profile());
+  UserMetrics::RecordAction(UserMetricsAction("CloseTab_Mouse"));
   const NSInteger numberOfOpenTabs = [self numberOfOpenTabs];
   if (numberOfOpenTabs > 1) {
     bool isClosingLastTab = index == numberOfOpenTabs - 1;
@@ -1917,8 +1914,7 @@ class NotificationBridge : public NotificationObserver {
   // Either insert a new tab or open in a current tab.
   switch (disposition) {
     case NEW_FOREGROUND_TAB: {
-      UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"),
-                                browser_->profile());
+      UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
       browser::NavigateParams params(browser_, *url, PageTransition::TYPED);
       params.disposition = disposition;
       params.tabstrip_index = index;
@@ -1928,8 +1924,7 @@ class NotificationBridge : public NotificationObserver {
       break;
     }
     case CURRENT_TAB:
-      UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"),
-                                browser_->profile());
+      UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
       tabStripModel_->GetTabContentsAt(index)
           ->tab_contents()->OpenURL(*url, GURL(), CURRENT_TAB,
                                     PageTransition::TYPED);

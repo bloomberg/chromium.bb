@@ -9,7 +9,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/page_navigator.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/page_transition_types.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
@@ -236,8 +236,7 @@ void BookmarkMenuController::WriteDragData(MenuItemView* sender,
                                            ui::OSExchangeData* data) {
   DCHECK(sender && data);
 
-  UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_DragFromFolder"),
-                            profile_);
+  UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_DragFromFolder"));
 
   BookmarkNodeData drag_data(menu_id_to_node_map_[sender->GetCommand()]);
   drag_data.Write(profile_, data);

@@ -17,7 +17,6 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -35,6 +34,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "content/common/page_transition_types.h"
 #include "grit/app_resources.h"
@@ -1082,8 +1082,7 @@ void BookmarkBarView::BookmarkNodeFaviconLoaded(BookmarkModel* model,
 void BookmarkBarView::WriteDragDataForView(View* sender,
                                            const gfx::Point& press_pt,
                                            ui::OSExchangeData* data) {
-  UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_DragButton"),
-                            profile_);
+  UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_DragButton"));
 
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
@@ -1203,8 +1202,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
     bookmark_utils::OpenAll(GetWindow()->GetNativeWindow(), profile_,
         GetPageNavigator(), node, disposition_from_event_flags);
   }
-  UserMetrics::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"),
-                            profile_);
+  UserMetrics::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
 }
 
 void BookmarkBarView::ShowContextMenuForView(View* source,

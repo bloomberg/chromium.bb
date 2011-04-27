@@ -2,25 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/user_metrics.h"
+#include "content/browser/user_metrics.h"
 
-#include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 
-void UserMetrics::RecordAction(const UserMetricsAction& action,
-                               Profile* profile) {
-  Record(action.str_, profile);
-}
-
-void UserMetrics::RecordComputedAction(const std::string& action,
-                                       Profile* profile) {
-  Record(action.c_str(), profile);
-}
-
-void UserMetrics::Record(const char *action, Profile *profile) {
-  Record(action);
-}
 
 void UserMetrics::RecordAction(const UserMetricsAction& action) {
   Record(action.str_);

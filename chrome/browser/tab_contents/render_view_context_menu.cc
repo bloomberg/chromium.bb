@@ -26,7 +26,6 @@
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/platform_util.h"
@@ -54,6 +53,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
@@ -1259,11 +1259,9 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     case IDC_CONTENT_CONTEXT_PLAYPAUSE: {
       bool play = !!(params_.media_flags & WebContextMenuData::MediaPaused);
       if (play) {
-        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Play"),
-                                  profile_);
+        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Play"));
       } else {
-        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Pause"),
-                                  profile_);
+        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Pause"));
       }
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
@@ -1274,11 +1272,9 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     case IDC_CONTENT_CONTEXT_MUTE: {
       bool mute = !(params_.media_flags & WebContextMenuData::MediaMuted);
       if (mute) {
-        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Mute"),
-                                  profile_);
+        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Mute"));
       } else {
-        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Unmute"),
-                                  profile_);
+        UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Unmute"));
       }
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
@@ -1287,8 +1283,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     }
 
     case IDC_CONTENT_CONTEXT_LOOP:
-      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Loop"),
-                                profile_);
+      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Loop"));
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Loop,
@@ -1296,8 +1291,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       break;
 
     case IDC_CONTENT_CONTEXT_CONTROLS:
-      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Controls"),
-                                profile_);
+      UserMetrics::RecordAction(UserMetricsAction("MediaContextMenu_Controls"));
       MediaPlayerActionAt(
           gfx::Point(params_.x, params_.y),
           WebMediaPlayerAction(
@@ -1571,8 +1565,7 @@ void RenderViewContextMenu::CopyImageAt(int x, int y) {
 }
 
 void RenderViewContextMenu::Inspect(int x, int y) {
-  UserMetrics::RecordAction(UserMetricsAction("DevTools_InspectElement"),
-                            profile_);
+  UserMetrics::RecordAction(UserMetricsAction("DevTools_InspectElement"));
   DevToolsManager::GetInstance()->InspectElement(
       source_tab_contents_->render_view_host(), x, y);
 }

@@ -10,10 +10,10 @@
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
+#include "content/browser/user_metrics.h"
 #include "ui/base/text/text_elider.h"
 
 namespace {
@@ -109,8 +109,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   } else {
     metrics_action = "OpenAllBookmarksIncognitoWindow";
   }
-  UserMetrics::RecordAction(UserMetricsAction(metrics_action),
-                            browser->profile());
+  UserMetrics::RecordAction(UserMetricsAction(metrics_action));
 }
 
 - (IBAction)openBookmarkMenuItem:(id)sender {

@@ -19,7 +19,6 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -50,6 +49,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -791,8 +791,7 @@ void RecordLastRunAppBundlePath() {
       break;
     }
     case IDC_SHOW_BOOKMARK_MANAGER:
-      UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"),
-                                defaultProfile);
+      UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"));
       if (Browser* browser = ActivateBrowser(defaultProfile)) {
         // Open a bookmark manager tab.
         browser->OpenBookmarkManager();
@@ -853,8 +852,7 @@ void RecordLastRunAppBundlePath() {
           ProfileSyncService::START_FROM_WRENCH);
       break;
     case IDC_TASK_MANAGER:
-      UserMetrics::RecordAction(UserMetricsAction("TaskManager"),
-                                defaultProfile);
+      UserMetrics::RecordAction(UserMetricsAction("TaskManager"));
       TaskManagerMac::Show(false);
       break;
     case IDC_OPTIONS:

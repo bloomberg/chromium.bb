@@ -16,7 +16,6 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -43,6 +42,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -199,7 +199,7 @@ void MetricsHandler::RegisterMessages() {
 
 void MetricsHandler::HandleMetrics(const ListValue* args) {
   std::string string_action = UTF16ToUTF8(ExtractStringValue(args));
-  UserMetrics::RecordComputedAction(string_action, web_ui_->GetProfile());
+  UserMetrics::RecordComputedAction(string_action);
 }
 
 void MetricsHandler::HandleLogEventTime(const ListValue* args) {

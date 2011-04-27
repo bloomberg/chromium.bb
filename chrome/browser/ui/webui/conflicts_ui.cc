@@ -12,12 +12,12 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/enumerate_modules_model_win.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
@@ -198,7 +198,7 @@ void ConflictsDOMHandler::Observe(NotificationType type,
 
 ConflictsUI::ConflictsUI(TabContents* contents) : WebUI(contents) {
   UserMetrics::RecordAction(
-      UserMetricsAction("ViewAboutConflicts"), contents->profile());
+      UserMetricsAction("ViewAboutConflicts"));
 
   AddMessageHandler((new ConflictsDOMHandler())->Attach(this));
 

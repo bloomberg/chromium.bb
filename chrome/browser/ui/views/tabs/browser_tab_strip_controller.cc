@@ -7,7 +7,6 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,6 +17,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/widget/widget.h"
@@ -282,8 +282,7 @@ void BrowserTabStripController::PerformDrop(bool drop_before,
                                             int index,
                                             const GURL& url) {
   if (drop_before) {
-    UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"),
-                              model_->profile());
+    UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
 
     // Insert a new tab.
     TabContentsWrapper* contents = model_->delegate()->CreateTabContentsForURL(
@@ -291,8 +290,7 @@ void BrowserTabStripController::PerformDrop(bool drop_before,
     model_->AddTabContents(contents, index, PageTransition::GENERATED,
                            TabStripModel::ADD_ACTIVE);
   } else {
-    UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"),
-                              model_->profile());
+    UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
 
     model_->GetTabContentsAt(index)->controller().LoadURL(
         url, GURL(), PageTransition::GENERATED);
@@ -307,8 +305,7 @@ bool BrowserTabStripController::IsCompatibleWith(BaseTabStrip* other) const {
 }
 
 void BrowserTabStripController::CreateNewTab() {
-  UserMetrics::RecordAction(UserMetricsAction("NewTab_Button"),
-                            model_->profile());
+  UserMetrics::RecordAction(UserMetricsAction("NewTab_Button"));
 
   model_->delegate()->AddBlankTab(true);
 }

@@ -12,7 +12,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/themes/theme_service.h"
@@ -44,6 +43,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/user_metrics.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -753,8 +753,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
     [self openAll:node disposition:NEW_FOREGROUND_TAB];
-    UserMetrics::RecordAction(UserMetricsAction("OpenAllBookmarks"),
-                              browser_->profile());
+    UserMetrics::RecordAction(UserMetricsAction("OpenAllBookmarks"));
   }
 }
 
@@ -762,8 +761,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
     [self openAll:node disposition:NEW_WINDOW];
-    UserMetrics::RecordAction(UserMetricsAction("OpenAllBookmarksNewWindow"),
-                              browser_->profile());
+    UserMetrics::RecordAction(UserMetricsAction("OpenAllBookmarksNewWindow"));
   }
 }
 
@@ -772,8 +770,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (node) {
     [self openAll:node disposition:OFF_THE_RECORD];
     UserMetrics::RecordAction(
-        UserMetricsAction("OpenAllBookmarksIncognitoWindow"),
-        browser_->profile());
+        UserMetricsAction("OpenAllBookmarksIncognitoWindow"));
   }
 }
 

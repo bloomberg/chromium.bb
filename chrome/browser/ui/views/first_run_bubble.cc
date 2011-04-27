@@ -6,11 +6,11 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "content/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -145,14 +145,12 @@ void FirstRunBubbleView::BubbleShown() {
 
 void FirstRunBubbleView::ButtonPressed(views::Button* sender,
                                        const views::Event& event) {
-  UserMetrics::RecordAction(UserMetricsAction("FirstRunBubbleView_Clicked"),
-                            profile_);
+  UserMetrics::RecordAction(UserMetricsAction("FirstRunBubbleView_Clicked"));
   bubble_window_->set_fade_away_on_close(true);
   bubble_window_->Close();
   if (change_button_ == sender) {
     UserMetrics::RecordAction(
-                    UserMetricsAction("FirstRunBubbleView_ChangeButton"),
-                    profile_);
+                    UserMetricsAction("FirstRunBubbleView_ChangeButton"));
 
     Browser* browser = BrowserList::GetLastActive();
     if (browser) {
@@ -305,8 +303,8 @@ void FirstRunOEMBubbleView::BubbleShown() {
 
 void FirstRunOEMBubbleView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
-  UserMetrics::RecordAction(UserMetricsAction("FirstRunOEMBubbleView_Clicked"),
-                            profile_);
+  UserMetrics::RecordAction(
+      UserMetricsAction("FirstRunOEMBubbleView_Clicked"));
   bubble_window_->set_fade_away_on_close(true);
   bubble_window_->Close();
 }
