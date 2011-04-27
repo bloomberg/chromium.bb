@@ -112,14 +112,18 @@ NativeThemeWin::~NativeThemeWin() {
   }
 }
 
-gfx::Size NativeThemeWin::GetPartSize(Part part) const {
-  HDC hdc = GetDC(NULL);
+gfx::Size NativeThemeWin::GetPartSize(Part part,
+                                      State state,
+                                      const ExtraParams& extra) const {
   SIZE size;
-  HANDLE handle = GetThemeHandle(GetThemeName(part));
-  int part_win = GetWindowsPart(part);
-  HRESULT hr = get_theme_part_size_(handle, hdc, part_win, 0, NULL, TS_TRUE,
-                                    &size);
+  int part_id = GetWindowsPart(part, state, extra);
+  int state_id = GetWindowsState(part, state, extra);
+
+  HDC hdc = GetDC(NULL);
+  HRESULT hr = GetThemePartSize(GetThemeName(part), hdc, part_id, state_id,
+                                NULL, TS_TRUE, &size);
   ReleaseDC(NULL, hdc);
+
   return SUCCEEDED(hr) ? Size(size.cx, size.cy) : Size();
 }
 
@@ -191,8 +195,16 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
     case kProgressBar:
       PaintProgressBar(hdc, rect, extra.progress_bar);
       break;
-
+    case kWindowResizeGripper:
+      PaintWindowResizeGripper(hdc, rect);
+      break;
+    case kTabPanelBackground:
+      PaintTabPanelBackground(hdc, rect);
+      break;
     case kTextField:
+      PaintTextField(hdc, part, state, rect, extra.text_field);
+      break;
+
     case kSliderTrack:
     case kSliderThumb:
     default:
@@ -742,32 +754,32 @@ HRESULT NativeThemeWin::PaintSpinButton(
   return S_OK;
 }
 
-HRESULT NativeThemeWin::PaintStatusGripper(HDC hdc,
-                                           int part_id,
-                                           int state_id,
-                                           int classic_state,
-                                           RECT* rect) const {
+HRESULT NativeThemeWin::PaintWindowResizeGripper(HDC hdc,
+                                                 const gfx::Rect& rect) const {
   HANDLE handle = GetThemeHandle(STATUS);
+  RECT rect_win = rect.ToRECT();
   if (handle && draw_theme_) {
     // Paint the status bar gripper.  There doesn't seem to be a
     // standard gripper in Windows for the space between
     // scrollbars.  This is pretty close, but it's supposed to be
     // painted over a status bar.
-    return draw_theme_(handle, hdc, SP_GRIPPER, 0, rect, NULL);
+    return draw_theme_(handle, hdc, SP_GRIPPER, 0, &rect_win, NULL);
   }
 
   // Draw a windows classic scrollbar gripper.
-  DrawFrameControl(hdc, rect, DFC_SCROLL, DFCS_SCROLLSIZEGRIP);
+  DrawFrameControl(hdc, &rect_win, DFC_SCROLL, DFCS_SCROLLSIZEGRIP);
   return S_OK;
 }
 
-HRESULT NativeThemeWin::PaintTabPanelBackground(HDC hdc, RECT* rect) const {
+HRESULT NativeThemeWin::PaintTabPanelBackground(HDC hdc,
+                                                const gfx::Rect& rect) const {
   HANDLE handle = GetThemeHandle(TAB);
+  RECT rect_win = rect.ToRECT();
   if (handle && draw_theme_)
-    return draw_theme_(handle, hdc, TABP_BODY, 0, rect, NULL);
+    return draw_theme_(handle, hdc, TABP_BODY, 0, &rect_win, NULL);
 
   // Classic just renders a flat color background.
-  FillRect(hdc, rect, reinterpret_cast<HBRUSH>(COLOR_3DFACE + 1));
+  FillRect(hdc, &rect_win, reinterpret_cast<HBRUSH>(COLOR_3DFACE + 1));
   return S_OK;
 }
 
@@ -997,6 +1009,45 @@ HRESULT NativeThemeWin::PaintProgressBar(
   FillRect(hdc, &value_rect, fg_brush);
   DrawEdge(hdc, &bar_rect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
   return S_OK;
+}
+
+HRESULT NativeThemeWin::PaintTextField(
+    HDC hdc,
+    Part part,
+    State state,
+    const gfx::Rect& rect,
+    const TextFieldExtraParams& extra) const {
+  int part_id = EP_EDITTEXT;
+  int state_id = ETS_NORMAL;
+  switch(state) {
+    case kNormal:
+      if (extra.is_read_only) {
+        state_id = ETS_READONLY;
+      } else if (extra.is_focused) {
+        state_id = ETS_FOCUSED;
+      } else {
+        state_id = ETS_NORMAL;
+      }
+      break;
+    case kHovered:
+      state_id = ETS_HOT;
+      break;
+    case kPressed:
+      state_id = ETS_SELECTED;
+      break;
+    case kDisabled:
+      state_id = ETS_DISABLED;
+      break;
+    default:
+      NOTREACHED() << "Invalid state: " << state;
+      break;
+  }
+
+  RECT rect_win = rect.ToRECT();
+  return PaintTextField(hdc, part_id, state_id, extra.classic_state,
+                        &rect_win,
+                        skia::SkColorToCOLORREF(extra.background_color),
+                        extra.fill_content_area, extra.draw_edges);
 }
 
 HRESULT NativeThemeWin::PaintTextField(HDC hdc,
@@ -1260,6 +1311,24 @@ HANDLE NativeThemeWin::GetThemeHandle(ThemeName theme_name) const {
 NativeThemeWin::ThemeName NativeThemeWin::GetThemeName(Part part) {
   ThemeName name;
   switch(part) {
+    case kCheckbox:
+    case kRadio:
+    case kPushButton:
+      name = BUTTON;
+      break;
+    case kInnerSpinButton:
+      name = SPIN;
+      break;
+    case kMenuCheck:
+    case kMenuPopupGutter:
+    case kMenuList:
+    case kMenuPopupArrow:
+    case kMenuPopupSeparator:
+      name = MENU;
+      break;
+    case kProgressBar:
+      name = PROGRESS;
+      break;
     case kScrollbarDownArrow:
     case kScrollbarLeftArrow:
     case kScrollbarRightArrow:
@@ -1270,68 +1339,178 @@ NativeThemeWin::ThemeName NativeThemeWin::GetThemeName(Part part) {
     case kScrollbarVerticalTrack:
       name = SCROLLBAR;
       break;
-    case kCheckbox:
-    case kRadio:
-    case kPushButton:
-      name = BUTTON;
-      break;
-    case kTextField:
-      name = TEXTFIELD;
-      break;
-    case kMenuList:
-      name = MENU;
-      break;
     case kSliderTrack:
     case kSliderThumb:
       name = TRACKBAR;
       break;
-    case kInnerSpinButton:
-      name = SPIN;
+    case kTextField:
+      name = TEXTFIELD;
       break;
-    case kProgressBar:
-      name = PROGRESS;
+    case kWindowResizeGripper:
+      name = STATUS;
       break;
     default:
-      DCHECK(false);
+      NOTREACHED() << "Invalid part: " << part;
       break;
   }
   return name;
 }
 
 // static
-int NativeThemeWin::GetWindowsPart(Part part) {
+int NativeThemeWin::GetWindowsPart(Part part,
+                                   State state,
+                                   const ExtraParams& extra) {
   int part_id;
   switch(part) {
     case kCheckbox:
       part_id = BP_CHECKBOX;
       break;
-    case kRadio:
-      part_id = BP_RADIOBUTTON;
+    case kMenuCheck:
+      part_id = MENU_POPUPCHECK;
+      break;
+    case kMenuPopupArrow:
+      part_id = MENU_POPUPSUBMENU;
+      break;
+    case kMenuPopupGutter:
+      part_id = MENU_POPUPGUTTER;
+      break;
+    case kMenuPopupSeparator:
+      part_id = MENU_POPUPSEPARATOR;
       break;
     case kPushButton:
       part_id = BP_PUSHBUTTON;
       break;
-    case kTextField:
-    case kMenuList:
-    case kSliderTrack:
-    case kSliderThumb:
-    case kInnerSpinButton:
-    case kProgressBar:
-    case kScrollbarDownArrow:
-    case kScrollbarLeftArrow:
-    case kScrollbarRightArrow:
-    case kScrollbarUpArrow:
-    case kScrollbarHorizontalThumb:
-    case kScrollbarVerticalThumb:
-    case kScrollbarHorizontalTrack:
-    case kScrollbarVerticalTrack:
+    case kRadio:
+      part_id = BP_RADIOBUTTON;
+      break;
+    case kWindowResizeGripper:
+      part_id = SP_GRIPPER;
+      break;
     default:
-      // While transitioning NativeThemeWin to the single Paint() entry point,
-      // unsupported parts will DCHECK here.
-      DCHECK(false);
+      NOTREACHED() << "Invalid part: " << part;
       break;
   }
   return part_id;
+}
+
+int NativeThemeWin::GetWindowsState(Part part,
+                                    State state,
+                                    const ExtraParams& extra) {
+  int state_id;
+  switch(part) {
+    case kCheckbox:
+      switch(state) {
+        case kNormal:
+          state_id = CBS_UNCHECKEDNORMAL;
+          break;
+        case kHovered:
+          state_id = CBS_UNCHECKEDHOT;
+          break;
+        case kPressed:
+          state_id = CBS_UNCHECKEDPRESSED;
+          break;
+        case kDisabled:
+          state_id = CBS_UNCHECKEDDISABLED;
+          break;
+        default:
+          NOTREACHED() << "Invalid state: " << state;
+          break;
+      }
+      break;
+    case kMenuCheck:
+      switch(state) {
+        case kNormal:
+        case kHovered:
+        case kPressed:
+          state_id = extra.menu_check.is_radio ? MC_BULLETNORMAL
+                                               : MC_CHECKMARKNORMAL;
+          break;
+        case kDisabled:
+          state_id = extra.menu_check.is_radio ? MC_BULLETDISABLED
+                                               : MC_CHECKMARKDISABLED;
+          break;
+        default:
+          NOTREACHED() << "Invalid state: " << state;
+          break;
+      }
+      break;
+    case kMenuPopupArrow:
+    case kMenuPopupGutter:
+    case kMenuPopupSeparator:
+      switch(state) {
+        case kNormal:
+          state_id = MBI_NORMAL;
+          break;
+        case kHovered:
+          state_id = MBI_HOT;
+          break;
+        case kPressed:
+          state_id = MBI_PUSHED;
+          break;
+        case kDisabled:
+          state_id = MBI_DISABLED;
+          break;
+        default:
+          NOTREACHED() << "Invalid state: " << state;
+          break;
+      }
+      break;
+    case kPushButton:
+      switch(state) {
+        case kNormal:
+          state_id = PBS_NORMAL;
+          break;
+        case kHovered:
+          state_id = PBS_HOT;
+          break;
+        case kPressed:
+          state_id = PBS_PRESSED;
+          break;
+        case kDisabled:
+          state_id = PBS_DISABLED;
+          break;
+        default:
+          NOTREACHED() << "Invalid state: " << state;
+          break;
+      }
+      break;
+    case kRadio:
+      switch(state) {
+        case kNormal:
+          state_id = RBS_UNCHECKEDNORMAL;
+          break;
+        case kHovered:
+          state_id = RBS_UNCHECKEDHOT;
+          break;
+        case kPressed:
+          state_id = RBS_UNCHECKEDPRESSED;
+          break;
+        case kDisabled:
+          state_id = RBS_UNCHECKEDDISABLED;
+          break;
+        default:
+          NOTREACHED() << "Invalid state: " << state;
+          break;
+      }
+      break;
+    case kWindowResizeGripper:
+      switch(state) {
+        case kNormal:
+        case kHovered:
+        case kPressed:
+        case kDisabled:
+          state_id = 1;  // gripper has no windows state
+          break;
+        default:
+          NOTREACHED() << "Invalid state: " << state;
+          break;
+      }
+      break;
+    default:
+      NOTREACHED() << "Invalid part: " << part;
+      break;
+  }
+  return state_id;
 }
 
 }  // namespace gfx

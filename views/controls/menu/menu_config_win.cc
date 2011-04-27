@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/gfx/native_theme_win.h"
 
+using gfx::NativeTheme;
 using gfx::NativeThemeWin;
 
 namespace views {
@@ -32,64 +33,58 @@ MenuConfig* MenuConfig::Create() {
   DLOG_ASSERT(font);
   config->font = gfx::Font(font);
 
-  HDC dc = GetDC(NULL);
-  RECT bounds = { 0, 0, 200, 200 };
-  SIZE check_size;
-  if (NativeThemeWin::instance()->GetThemePartSize(
-          NativeThemeWin::MENU, dc, MENU_POPUPCHECK, MC_CHECKMARKNORMAL,
-          &bounds, TS_TRUE, &check_size) == S_OK) {
-    config->check_width = check_size.cx;
-    config->check_height = check_size.cy;
+  NativeTheme::ExtraParams extra;
+  extra.menu_check.is_radio = false;
+  gfx::Size check_size = NativeTheme::instance()->GetPartSize(
+      NativeTheme::kMenuCheck, NativeTheme::kNormal, extra);
+  if (!check_size.IsEmpty()) {
+    config->check_width = check_size.width();
+    config->check_height = check_size.height();
   } else {
     config->check_width = GetSystemMetrics(SM_CXMENUCHECK);
     config->check_height = GetSystemMetrics(SM_CYMENUCHECK);
   }
 
-  SIZE radio_size;
-  if (NativeThemeWin::instance()->GetThemePartSize(
-          NativeThemeWin::MENU, dc, MENU_POPUPCHECK, MC_BULLETNORMAL, &bounds,
-          TS_TRUE, &radio_size) == S_OK) {
-    config->radio_width = radio_size.cx;
-    config->radio_height = radio_size.cy;
+  extra.menu_check.is_radio = true;
+  gfx::Size radio_size = NativeTheme::instance()->GetPartSize(
+      NativeTheme::kMenuCheck, NativeTheme::kNormal, extra);
+  if (!radio_size.IsEmpty()) {
+    config->radio_width = radio_size.width();
+    config->radio_height = radio_size.height();
   } else {
     config->radio_width = GetSystemMetrics(SM_CXMENUCHECK);
     config->radio_height = GetSystemMetrics(SM_CYMENUCHECK);
   }
 
-  SIZE arrow_size;
-  if (NativeThemeWin::instance()->GetThemePartSize(
-          NativeThemeWin::MENU, dc, MENU_POPUPSUBMENU, MSM_NORMAL, &bounds,
-          TS_TRUE, &arrow_size) == S_OK) {
-    config->arrow_width = arrow_size.cx;
-    config->arrow_height = arrow_size.cy;
+  gfx::Size arrow_size = NativeTheme::instance()->GetPartSize(
+      NativeTheme::kMenuPopupArrow, NativeTheme::kNormal, extra);
+  if (!arrow_size.IsEmpty()) {
+    config->arrow_width = arrow_size.width();
+    config->arrow_height = arrow_size.height();
   } else {
     // Sadly I didn't see a specify metrics for this.
     config->arrow_width = GetSystemMetrics(SM_CXMENUCHECK);
     config->arrow_height = GetSystemMetrics(SM_CYMENUCHECK);
   }
 
-  SIZE gutter_size;
-  if (NativeThemeWin::instance()->GetThemePartSize(
-          NativeThemeWin::MENU, dc, MENU_POPUPGUTTER, MSM_NORMAL, &bounds,
-          TS_TRUE, &gutter_size) == S_OK) {
-    config->gutter_width = gutter_size.cx;
+  gfx::Size gutter_size = NativeTheme::instance()->GetPartSize(
+      NativeTheme::kMenuPopupGutter, NativeTheme::kNormal, extra);
+  if (!gutter_size.IsEmpty()) {
+    config->gutter_width = gutter_size.width();
     config->render_gutter = true;
   } else {
     config->gutter_width = 0;
     config->render_gutter = false;
   }
 
-  SIZE separator_size;
-  if (NativeThemeWin::instance()->GetThemePartSize(
-          NativeThemeWin::MENU, dc, MENU_POPUPSEPARATOR, MSM_NORMAL, &bounds,
-          TS_TRUE, &separator_size) == S_OK) {
-    config->separator_height = separator_size.cy;
+  gfx::Size separator_size = NativeTheme::instance()->GetPartSize(
+      NativeTheme::kMenuPopupSeparator, NativeTheme::kNormal, extra);
+  if (!separator_size.IsEmpty()) {
+    config->separator_height = separator_size.height();
   } else {
     // -1 makes separator centered.
     config->separator_height = GetSystemMetrics(SM_CYMENU) / 2 - 1;
   }
-
-  ReleaseDC(NULL, dc);
 
   BOOL show_cues;
   config->show_mnemonics =

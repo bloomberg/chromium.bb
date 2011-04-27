@@ -19,7 +19,9 @@ NativeThemePainter::NativeThemePainter(Delegate* delegate)
 
 gfx::Size NativeThemePainter::GetPreferredSize() {
   const gfx::NativeTheme* theme = gfx::NativeTheme::instance();
-  return theme->GetPartSize(delegate_->GetThemePart());
+  gfx::NativeTheme::ExtraParams extra;
+  gfx::NativeTheme::State state = delegate_->GetThemeState(&extra);
+  return theme->GetPartSize(delegate_->GetThemePart(), state, extra);
 }
 
 void NativeThemePainter::Paint(int w, int h, gfx::Canvas* canvas) {

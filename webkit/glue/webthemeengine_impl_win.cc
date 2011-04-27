@@ -10,7 +10,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
-#include "ui/gfx/native_theme_win.h"
+#include "ui/gfx/native_theme.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebColor;
@@ -28,13 +28,11 @@ static RECT WebRectToRECT(const WebRect& rect) {
 }
 
 static gfx::NativeTheme::State WebButtonStateToGfx(
-    int part,
-    int state,
-    gfx::NativeTheme::ButtonExtraParams* extra) {
+    int part, int state, gfx::NativeTheme::ButtonExtraParams* extra) {
   gfx::NativeTheme::State gfx_state = gfx::NativeTheme::kNormal;
 
   if (part == BP_PUSHBUTTON) {
-    switch(state) {
+    switch (state) {
       case PBS_NORMAL:
         gfx_state = gfx::NativeTheme::kNormal;
         extra->checked = false;
@@ -75,7 +73,7 @@ static gfx::NativeTheme::State WebButtonStateToGfx(
         NOTREACHED() << "Invalid state: " << state;
     }
   } else if (part == BP_RADIOBUTTON) {
-    switch(state) {
+    switch (state) {
       case RBS_UNCHECKEDNORMAL:
         gfx_state = gfx::NativeTheme::kNormal;
         extra->checked = false;
@@ -129,7 +127,7 @@ static gfx::NativeTheme::State WebButtonStateToGfx(
         break;
     }
   } else if (part == BP_CHECKBOX) {
-    switch(state) {
+    switch (state) {
       case CBS_UNCHECKEDNORMAL:
         gfx_state = gfx::NativeTheme::kNormal;
         extra->checked = false;
@@ -255,7 +253,7 @@ static gfx::NativeTheme::State WebButtonStateToGfx(
         break;
     }
   } else if (part == BP_GROUPBOX) {
-    switch(state) {
+    switch (state) {
       case GBS_NORMAL:
         gfx_state = gfx::NativeTheme::kNormal;
         extra->checked = false;
@@ -273,7 +271,7 @@ static gfx::NativeTheme::State WebButtonStateToGfx(
         break;
     }
   } else if (part == BP_COMMANDLINK) {
-    switch(state) {
+    switch (state) {
       case CMDLS_NORMAL:
         gfx_state = gfx::NativeTheme::kNormal;
         extra->checked = false;
@@ -315,7 +313,7 @@ static gfx::NativeTheme::State WebButtonStateToGfx(
         break;
     }
   } else if (part == BP_COMMANDLINKGLYPH) {
-    switch(state) {
+    switch (state) {
       case CMDLGS_NORMAL:
         gfx_state = gfx::NativeTheme::kNormal;
         extra->checked = false;
@@ -358,7 +356,7 @@ void WebThemeEngineImpl::paintButton(
     WebCanvas* canvas, int part, int state, int classic_state,
     const WebRect& rect) {
   gfx::NativeTheme::Part native_part = gfx::NativeTheme::kPushButton;
-  switch(part) {
+  switch (part) {
     case BP_PUSHBUTTON:
       native_part = gfx::NativeTheme::kPushButton;
       break;
@@ -384,9 +382,9 @@ void WebThemeEngineImpl::paintButton(
 static gfx::NativeTheme::State WebListMenuStateToGfx(int part, int state) {
   gfx::NativeTheme::State gfx_state = gfx::NativeTheme::kNormal;
 
-  switch(part) {
+  switch (part) {
     case CP_DROPDOWNBUTTON:
-      switch(state) {
+      switch (state) {
         case CBXS_NORMAL:
           gfx_state = gfx::NativeTheme::kNormal;
           break;
@@ -415,7 +413,7 @@ void WebThemeEngineImpl::paintMenuList(
     WebCanvas* canvas, int part, int state, int classic_state,
     const WebRect& rect) {
   gfx::NativeTheme::Part native_part = gfx::NativeTheme::kMenuList;
-  switch(part) {
+  switch (part) {
     case CP_DROPDOWNBUTTON:
       native_part = gfx::NativeTheme::kMenuList;
       break;
@@ -432,11 +430,10 @@ void WebThemeEngineImpl::paintMenuList(
 }
 
 static gfx::NativeTheme::State WebScrollbarArrowStateToGfx(
-    int state,
-    gfx::NativeTheme::Part* part,
+    int state, gfx::NativeTheme::Part* part,
     gfx::NativeTheme::ScrollbarArrowExtraParams* extra) {
   gfx::NativeTheme::State gfx_state = gfx::NativeTheme::kNormal;
-  switch(state) {
+  switch (state) {
     case ABS_UPNORMAL:
       gfx_state = gfx::NativeTheme::kNormal;
       *part = gfx::NativeTheme::kScrollbarUpArrow;
@@ -556,10 +553,9 @@ void WebThemeEngineImpl::paintScrollbarArrow(
 }
 
 static gfx::NativeTheme::State WebScrollbarThumbStateToGfx(
-    int state,
-    gfx::NativeTheme::ScrollbarThumbExtraParams* extra) {
+    int state, gfx::NativeTheme::ScrollbarThumbExtraParams* extra) {
   gfx::NativeTheme::State gfx_state = gfx::NativeTheme::kNormal;
-  switch(state) {
+  switch (state) {
     case SCRBS_NORMAL:
       gfx_state = gfx::NativeTheme::kNormal;
       extra->is_hovering = false;
@@ -613,14 +609,12 @@ void WebThemeEngineImpl::paintScrollbarThumb(
 }
 
 static gfx::NativeTheme::State WebScrollbarTrackStateToGfx(
-    int part,
-    int state,
-    gfx::NativeTheme::Part* gfx_part,
+    int part, int state, gfx::NativeTheme::Part* gfx_part,
     gfx::NativeTheme::ScrollbarTrackExtraParams* extra) {
   gfx::NativeTheme::State gfx_state = gfx::NativeTheme::kNormal;
-  switch(part) {
+  switch (part) {
     case SBP_LOWERTRACKHORZ:
-      switch(state) {
+      switch (state) {
         case SCRBS_NORMAL:
           gfx_state = gfx::NativeTheme::kNormal;
           *gfx_part = gfx::NativeTheme::kScrollbarHorizontalTrack;
@@ -648,7 +642,7 @@ static gfx::NativeTheme::State WebScrollbarTrackStateToGfx(
       }
       break;
     case SBP_UPPERTRACKHORZ:
-      switch(state) {
+      switch (state) {
         case SCRBS_NORMAL:
           gfx_state = gfx::NativeTheme::kNormal;
           *gfx_part = gfx::NativeTheme::kScrollbarHorizontalTrack;
@@ -676,7 +670,7 @@ static gfx::NativeTheme::State WebScrollbarTrackStateToGfx(
       }
       break;
     case SBP_LOWERTRACKVERT:
-      switch(state) {
+      switch (state) {
         case SCRBS_NORMAL:
           gfx_state = gfx::NativeTheme::kNormal;
           *gfx_part = gfx::NativeTheme::kScrollbarVerticalTrack;
@@ -704,7 +698,7 @@ static gfx::NativeTheme::State WebScrollbarTrackStateToGfx(
       }
       break;
     case SBP_UPPERTRACKVERT:
-      switch(state) {
+      switch (state) {
         case SCRBS_NORMAL:
           gfx_state = gfx::NativeTheme::kNormal;
           *gfx_part = gfx::NativeTheme::kScrollbarVerticalTrack;
@@ -757,13 +751,11 @@ void WebThemeEngineImpl::paintScrollbarTrack(
 }
 
 static gfx::NativeTheme::State WebSpinButtonStateToGfx(
-    int part,
-    int state,
-    gfx::NativeTheme::InnerSpinButtonExtraParams* extra) {
+    int part, int state, gfx::NativeTheme::InnerSpinButtonExtraParams* extra) {
   gfx::NativeTheme::State gfx_state = gfx::NativeTheme::kNormal;
-  switch(part) {
+  switch (part) {
     case SPNP_UP:
-      switch(state) {
+      switch (state) {
         case UPS_NORMAL:
           gfx_state = gfx::NativeTheme::kNormal;
           extra->spin_up = true;
@@ -790,7 +782,7 @@ static gfx::NativeTheme::State WebSpinButtonStateToGfx(
       }
       break;
     case SPNP_DOWN:
-      switch(state) {
+      switch (state) {
         case DNS_NORMAL:
           gfx_state = gfx::NativeTheme::kNormal;
           extra->spin_up = false;
@@ -838,25 +830,74 @@ void WebThemeEngineImpl::paintSpinButton(
                                       extra);
 }
 
+static gfx::NativeTheme::State WebTextFieldStateToGfx(
+    int part, int state, gfx::NativeTheme::TextFieldExtraParams* extra) {
+  gfx::NativeTheme::State gfx_state = gfx::NativeTheme::kNormal;
+  switch (part) {
+    case EP_EDITTEXT:
+      switch (state) {
+        case ETS_NORMAL:
+          gfx_state = gfx::NativeTheme::kNormal;
+          extra->is_read_only = false;
+          extra->is_focused = false;
+          break;
+        case ETS_HOT:
+          gfx_state = gfx::NativeTheme::kHovered;
+          extra->is_read_only = false;
+          extra->is_focused = false;
+          break;
+        case ETS_SELECTED:
+          gfx_state = gfx::NativeTheme::kPressed;
+          extra->is_read_only = false;
+          extra->is_focused = false;
+          break;
+        case ETS_DISABLED:
+          gfx_state = gfx::NativeTheme::kDisabled;
+          extra->is_read_only = false;
+          extra->is_focused = false;
+          break;
+        case ETS_FOCUSED:
+          gfx_state = gfx::NativeTheme::kNormal;
+          extra->is_read_only = false;
+          extra->is_focused = true;
+          break;
+        case ETS_READONLY:
+          gfx_state = gfx::NativeTheme::kNormal;
+          extra->is_read_only = true;
+          extra->is_focused = false;
+          break;
+        default:
+          NOTREACHED() << "Invalid state: " << state;
+          break;
+      }
+      break;
+    default:
+      NOTREACHED() << "Invalid part: " << part;
+      break;
+  }
+  return gfx_state;
+}
+
 void WebThemeEngineImpl::paintTextField(
     WebCanvas* canvas, int part, int state, int classic_state,
     const WebRect& rect, WebColor color, bool fill_content_area,
     bool draw_edges) {
-  HDC hdc = skia::BeginPlatformPaint(canvas);
+  gfx::NativeTheme::ExtraParams extra;
+  gfx::NativeTheme::State native_state = WebTextFieldStateToGfx(
+      part, state, &extra.text_field);
+  extra.text_field.fill_content_area = fill_content_area;
+  extra.text_field.draw_edges = draw_edges;
+  extra.text_field.background_color = color;
+  extra.text_field.classic_state = classic_state;
+  gfx::Rect gfx_rect(rect.x, rect.y, rect.width, rect.height);
 
-  RECT native_rect = WebRectToRECT(rect);
-  COLORREF c = skia::SkColorToCOLORREF(color);
-
-  gfx::NativeThemeWin::instance()->PaintTextField(
-      hdc, part, state, classic_state, &native_rect, c, fill_content_area,
-      draw_edges);
-
-  skia::EndPlatformPaint(canvas);
+  gfx::NativeTheme::instance()->Paint(canvas,
+      gfx::NativeTheme::kTextField, native_state, gfx_rect, extra);
 }
 
 static gfx::NativeTheme::State WebTrackbarStateToGfx(int part, int state) {
   gfx::NativeTheme::State gfx_state = gfx::NativeTheme::kNormal;
-  switch(state) {
+  switch (state) {
     case TUS_NORMAL:
       gfx_state = gfx::NativeTheme::kNormal;
       break;
@@ -880,7 +921,7 @@ void WebThemeEngineImpl::paintTrackbar(
     WebCanvas* canvas, int part, int state, int classic_state,
     const WebRect& rect) {
   gfx::NativeTheme::Part native_part = gfx::NativeTheme::kTrackbarTrack;
-  switch(part) {
+  switch (part) {
     case TKP_TRACK:
       native_part = gfx::NativeTheme::kTrackbarTrack;
       break;

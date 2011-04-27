@@ -18,7 +18,9 @@ class NativeThemeChromeos : public gfx::NativeThemeLinux {
   virtual ~NativeThemeChromeos();
 
   // NativeTheme overrides
-  virtual gfx::Size GetPartSize(Part part) const OVERRIDE;
+  virtual gfx::Size GetPartSize(Part part,
+                                State state,
+                                const ExtraParams& extra) const OVERRIDE;
 
   // NativeThemeLinux overrides
   virtual void PaintScrollbarTrack(SkCanvas* canvas,

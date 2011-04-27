@@ -160,7 +160,10 @@ static void GetNativeThemeExtraParams(
 }
 
 WebKit::WebSize WebThemeEngineImpl::getSize(WebKit::WebThemeEngine::Part part) {
-  return gfx::NativeTheme::instance()->GetPartSize(NativeThemePart(part));
+  gfx::NativeTheme::ExtraParams extra;
+  return gfx::NativeTheme::instance()->GetPartSize(NativeThemePart(part),
+                                                   gfx::NativeTheme::kNormal,
+                                                   extra);
 }
 
 void WebThemeEngineImpl::paint(

@@ -49,14 +49,6 @@ class NativeThemeWin : public NativeTheme {
 
   bool IsThemingActive() const;
 
-  HRESULT GetThemePartSize(ThemeName themeName,
-                           HDC hdc,
-                           int part_id,
-                           int state_id,
-                           RECT* rect,
-                           int ts,
-                           SIZE* size) const;
-
   HRESULT GetThemeColor(ThemeName theme,
                         int part_id,
                         int state_id,
@@ -71,12 +63,6 @@ class NativeThemeWin : public NativeTheme {
                                    int state_id,
                                    int prop_id,
                                    int default_sys_color) const;
-
-  HRESULT GetThemeInt(ThemeName theme,
-                      int part_id,
-                      int state_id,
-                      int prop_id,
-                      int *result) const;
 
   // Get the thickness of the border associated with the specified theme,
   // defaulting to GetSystemMetrics edge size if themes are disabled.
@@ -100,63 +86,6 @@ class NativeThemeWin : public NativeTheme {
   // Gets our singleton instance.
   static const NativeThemeWin* instance();
 
-  typedef HRESULT (WINAPI* DrawThemeBackgroundPtr)(HANDLE theme,
-                                                   HDC hdc,
-                                                   int part_id,
-                                                   int state_id,
-                                                   const RECT* rect,
-                                                   const RECT* clip_rect);
-  typedef HRESULT (WINAPI* DrawThemeBackgroundExPtr)(HANDLE theme,
-                                                     HDC hdc,
-                                                     int part_id,
-                                                     int state_id,
-                                                     const RECT* rect,
-                                                     const DTBGOPTS* opts);
-  typedef HRESULT (WINAPI* GetThemeColorPtr)(HANDLE hTheme,
-                                             int part_id,
-                                             int state_id,
-                                             int prop_id,
-                                             COLORREF* color);
-  typedef HRESULT (WINAPI* GetThemeContentRectPtr)(HANDLE hTheme,
-                                                   HDC hdc,
-                                                   int part_id,
-                                                   int state_id,
-                                                   const RECT* rect,
-                                                   RECT* content_rect);
-  typedef HRESULT (WINAPI* GetThemePartSizePtr)(HANDLE hTheme,
-                                                HDC hdc,
-                                                int part_id,
-                                                int state_id,
-                                                RECT* rect,
-                                                int ts,
-                                                SIZE* size);
-  typedef HANDLE (WINAPI* OpenThemeDataPtr)(HWND window,
-                                            LPCWSTR class_list);
-  typedef HRESULT (WINAPI* CloseThemeDataPtr)(HANDLE theme);
-
-  typedef void (WINAPI* SetThemeAppPropertiesPtr) (DWORD flags);
-  typedef BOOL (WINAPI* IsThemeActivePtr)();
-  typedef HRESULT (WINAPI* GetThemeIntPtr)(HANDLE hTheme,
-                                           int part_id,
-                                           int state_id,
-                                           int prop_id,
-                                           int *value);
-
-  // The PaintXXX methods below this point should be private or be deleted,
-  // but remain public while NativeThemeWin is transitioned over to use the
-  // single Paint() entry point.  Do not make new calls to these methods.
-
-  // This method is deprecated and will be removed in the near future.
-  HRESULT PaintStatusGripper(HDC hdc,
-                             int part_id,
-                             int state_id,
-                             int classic_state,
-                             RECT* rect) const;
-
-  // This method is deprecated and will be removed in the near future.
-  HRESULT PaintTabPanelBackground(HDC dc, RECT* rect) const;
-
-  // This method is deprecated and will be removed in the near future.
   HRESULT PaintTextField(HDC hdc,
                          int part_id,
                          int state_id,
@@ -171,12 +100,22 @@ class NativeThemeWin : public NativeTheme {
   ~NativeThemeWin();
 
   // NativeTheme Implementation:
-  virtual gfx::Size GetPartSize(Part part) const;
+  virtual gfx::Size GetPartSize(Part part,
+                                State state,
+                                const ExtraParams& extra) const;
   virtual void Paint(SkCanvas* canvas,
                      Part part,
                      State state,
                      const gfx::Rect& rect,
                      const ExtraParams& extra) const;
+
+  HRESULT GetThemePartSize(ThemeName themeName,
+                           HDC hdc,
+                           int part_id,
+                           int state_id,
+                           RECT* rect,
+                           int ts,
+                           SIZE* size) const;
 
   HRESULT PaintButton(HDC hdc,
                       int part_id,
@@ -279,11 +218,30 @@ class NativeThemeWin : public NativeTheme {
                            const gfx::Rect& rect,
                            const ProgressBarExtraParams& extra) const;
 
-  // Get the windows theme name that goes with the part.
-  static ThemeName GetThemeName(Part part);
+  HRESULT PaintWindowResizeGripper(HDC hdc, const gfx::Rect& rect) const;
 
-  // Get the windows theme part id that goes with the part.
-  static int GetWindowsPart(Part part);
+  HRESULT PaintTabPanelBackground(HDC hdc, const gfx::Rect& rect) const;
+
+  HRESULT PaintTextField(HDC hdc,
+                         Part part,
+                         State state,
+                         const gfx::Rect& rect,
+                         const TextFieldExtraParams& extra) const;
+
+
+  // Get the windows theme name/part/state.  These three helper functions are
+  // used only by GetPartSize(), as each of the corresponding PaintXXX()
+  // methods do further validation of the part and state that is required for
+  // getting the size.
+  static ThemeName GetThemeName(Part part);
+  static int GetWindowsPart(Part part, State state, const ExtraParams& extra);
+  static int GetWindowsState(Part part, State state, const ExtraParams& extra);
+
+  HRESULT GetThemeInt(ThemeName theme,
+                      int part_id,
+                      int state_id,
+                      int prop_id,
+                      int *result) const;
 
   HRESULT PaintFrameControl(HDC hdc,
                             const gfx::Rect& rect,
@@ -293,6 +251,48 @@ class NativeThemeWin : public NativeTheme {
 
   // Returns a handle to the theme data.
   HANDLE GetThemeHandle(ThemeName theme_name) const;
+
+  typedef HRESULT (WINAPI* DrawThemeBackgroundPtr)(HANDLE theme,
+                                                   HDC hdc,
+                                                   int part_id,
+                                                   int state_id,
+                                                   const RECT* rect,
+                                                   const RECT* clip_rect);
+  typedef HRESULT (WINAPI* DrawThemeBackgroundExPtr)(HANDLE theme,
+                                                     HDC hdc,
+                                                     int part_id,
+                                                     int state_id,
+                                                     const RECT* rect,
+                                                     const DTBGOPTS* opts);
+  typedef HRESULT (WINAPI* GetThemeColorPtr)(HANDLE hTheme,
+                                             int part_id,
+                                             int state_id,
+                                             int prop_id,
+                                             COLORREF* color);
+  typedef HRESULT (WINAPI* GetThemeContentRectPtr)(HANDLE hTheme,
+                                                   HDC hdc,
+                                                   int part_id,
+                                                   int state_id,
+                                                   const RECT* rect,
+                                                   RECT* content_rect);
+  typedef HRESULT (WINAPI* GetThemePartSizePtr)(HANDLE hTheme,
+                                                HDC hdc,
+                                                int part_id,
+                                                int state_id,
+                                                RECT* rect,
+                                                int ts,
+                                                SIZE* size);
+  typedef HANDLE (WINAPI* OpenThemeDataPtr)(HWND window,
+                                            LPCWSTR class_list);
+  typedef HRESULT (WINAPI* CloseThemeDataPtr)(HANDLE theme);
+
+  typedef void (WINAPI* SetThemeAppPropertiesPtr) (DWORD flags);
+  typedef BOOL (WINAPI* IsThemeActivePtr)();
+  typedef HRESULT (WINAPI* GetThemeIntPtr)(HANDLE hTheme,
+                                           int part_id,
+                                           int state_id,
+                                           int prop_id,
+                                           int *value);
 
   // Function pointers into uxtheme.dll.
   DrawThemeBackgroundPtr draw_theme_;

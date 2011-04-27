@@ -38,10 +38,11 @@ class TabBackground : public Background {
   virtual ~TabBackground() {}
 
   virtual void Paint(gfx::Canvas* canvas, View* view) const {
-    HDC dc = canvas->BeginPlatformPaint();
-    RECT r = {0, 0, view->width(), view->height()};
-    gfx::NativeThemeWin::instance()->PaintTabPanelBackground(dc, &r);
-    canvas->EndPlatformPaint();
+    gfx::Rect r(0, 0, view->width(), view->height());
+    gfx::NativeTheme::ExtraParams extra;
+    gfx::NativeTheme::instance()->Paint(
+        canvas->AsCanvasSkia(), gfx::NativeTheme::kTabPanelBackground,
+        gfx::NativeTheme::kNormal, r, extra);
   }
 
  private:

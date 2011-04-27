@@ -68,7 +68,9 @@ NativeThemeLinux::NativeThemeLinux() {
 NativeThemeLinux::~NativeThemeLinux() {
 }
 
-gfx::Size NativeThemeLinux::GetPartSize(Part part) const {
+gfx::Size NativeThemeLinux::GetPartSize(Part part,
+                                        State state,
+                                        const ExtraParams& extra) const {
   switch (part) {
     case kScrollbarDownArrow:
     case kScrollbarUpArrow:

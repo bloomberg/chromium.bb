@@ -243,7 +243,9 @@ NativeThemeChromeos::NativeThemeChromeos() {
 NativeThemeChromeos::~NativeThemeChromeos() {
 }
 
-gfx::Size NativeThemeChromeos::GetPartSize(Part part) const {
+gfx::Size NativeThemeChromeos::GetPartSize(Part part,
+                                           State state,
+                                           const ExtraParams& extra) const {
   // This function might be called from Worker process during html layout
   // without calling GfxModule::SetResourceProvider. So using dimension
   // constants instead of getting it from resource images.
@@ -290,7 +292,7 @@ gfx::Size NativeThemeChromeos::GetPartSize(Part part) const {
     case kInnerSpinButton:
       return gfx::Size(kScrollbarWidth, 0);
     default:
-      return NativeThemeLinux::GetPartSize(part);
+      return NativeThemeLinux::GetPartSize(part, state, extra);
   }
   return gfx::Size(width, height);
 }

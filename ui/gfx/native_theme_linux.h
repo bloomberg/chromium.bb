@@ -20,7 +20,9 @@ class NativeThemeLinux : public NativeTheme {
   static const NativeThemeLinux* instance();
 
   // NativeTheme implementation:
-  virtual gfx::Size GetPartSize(Part part) const;
+  virtual gfx::Size GetPartSize(Part part,
+                                State state,
+                                const ExtraParams& extra) const;
   virtual void Paint(SkCanvas* canvas,
                      Part part,
                      State state,

@@ -33,20 +33,8 @@ class NativeTheme {
  public:
   // The part to be painted / sized.
   enum Part {
-    kScrollbarDownArrow,
-    kScrollbarLeftArrow,
-    kScrollbarRightArrow,
-    kScrollbarUpArrow,
-    kScrollbarHorizontalThumb,
-    kScrollbarVerticalThumb,
-    kScrollbarHorizontalTrack,
-    kScrollbarVerticalTrack,
-    kScrollbarHorizontalGripper,
-    kScrollbarVerticalGripper,
     kCheckbox,
-    kRadio,
-    kPushButton,
-    kTextField,
+    kInnerSpinButton,
     kMenuList,
     kMenuCheck,
     kMenuCheckBackground,
@@ -55,12 +43,30 @@ class NativeTheme {
     kMenuPopupGutter,
     kMenuPopupSeparator,
     kMenuItemBackground,
+    kProgressBar,
+    kPushButton,
+    kRadio,
+
+    // The order of the arrow enums is important, do not change without also
+    // changing the code in platform implementations.
+    kScrollbarDownArrow,
+    kScrollbarLeftArrow,
+    kScrollbarRightArrow,
+    kScrollbarUpArrow,
+
+    kScrollbarHorizontalThumb,
+    kScrollbarVerticalThumb,
+    kScrollbarHorizontalTrack,
+    kScrollbarVerticalTrack,
+    kScrollbarHorizontalGripper,
+    kScrollbarVerticalGripper,
     kSliderTrack,
     kSliderThumb,
-    kInnerSpinButton,
-    kProgressBar,
+    kTabPanelBackground,
+    kTextField,
     kTrackbarThumb,
     kTrackbarTrack,
+    kWindowResizeGripper,
     kMaxPart,
   };
 
@@ -151,6 +157,11 @@ class NativeTheme {
     bool is_text_area;
     bool is_listbox;
     SkColor background_color;
+    bool is_read_only;
+    bool is_focused;
+    bool fill_content_area;
+    bool draw_edges;
+    int classic_state;  // Used on Windows when uxtheme is not available.
   };
 
   struct TrackbarExtraParams {
@@ -175,7 +186,9 @@ class NativeTheme {
   };
 
   // Return the size of the part.
-  virtual Size GetPartSize(Part part) const = 0;
+  virtual Size GetPartSize(Part part,
+                           State state,
+                           const ExtraParams& extra) const = 0;
 
   // Paint the part to the canvas.
   virtual void Paint(SkCanvas* canvas,
