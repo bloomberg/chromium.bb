@@ -112,6 +112,20 @@ bool LocalizeManifest(const ExtensionMessageBundle& messages,
   if (!LocalizeManifestValue(keys::kOmniboxKeyword, messages, manifest, error))
     return false;
 
+  ListValue* file_handlers = NULL;
+  if (manifest->GetList(keys::kFileBrowserHandlers, &file_handlers)) {
+    key.assign(keys::kFileBrowserHandlers);
+    for (size_t i = 0; i < file_handlers->GetSize(); i++) {
+      DictionaryValue* handler = NULL;
+      if (!file_handlers->GetDictionary(i, &handler)) {
+        *error = errors::kInvalidFileBrowserHandler;
+        return false;
+      }
+      if (!LocalizeManifestValue(keys::kPageActionDefaultTitle, messages,
+                                 handler, error))
+        return false;
+    }
+  }
   // Add current locale key to the manifest, so we can overwrite prefs
   // with new manifest when chrome locale changes.
   manifest->SetString(keys::kCurrentLocale, CurrentLocaleOrDefault());

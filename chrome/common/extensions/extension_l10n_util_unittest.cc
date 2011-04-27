@@ -234,6 +234,10 @@ ExtensionMessageBundle* CreateManifestBundle() {
   omnibox_keyword_tree->SetString("message", "omnibox keyword");
   catalog->Set("omnibox_keyword", omnibox_keyword_tree);
 
+  DictionaryValue* file_handler_title_tree = new DictionaryValue();
+  file_handler_title_tree->SetString("message", "file handler title");
+  catalog->Set("file_handler_title", file_handler_title_tree);
+
   std::vector<linked_ptr<DictionaryValue> > catalogs;
   catalogs.push_back(catalog);
 
@@ -361,6 +365,36 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionOmniboxMsgs) {
 
   ASSERT_TRUE(manifest.GetString(keys::kOmniboxKeyword, &result));
   EXPECT_EQ("omnibox keyword", result);
+
+  EXPECT_TRUE(error.empty());
+}
+
+TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionFileHandlerTitle) {
+  DictionaryValue manifest;
+  manifest.SetString(keys::kName, "__MSG_name__");
+  manifest.SetString(keys::kDescription, "__MSG_description__");
+  ListValue* handlers = new ListValue();
+  manifest.Set(keys::kFileBrowserHandlers, handlers);
+  DictionaryValue* handler = new DictionaryValue();
+  handlers->Append(handler);
+  handler->SetString(keys::kPageActionDefaultTitle,
+                     "__MSG_file_handler_title__");
+
+  std::string error;
+  scoped_ptr<ExtensionMessageBundle> messages(CreateManifestBundle());
+
+  EXPECT_TRUE(
+      extension_l10n_util::LocalizeManifest(*messages, &manifest, &error));
+
+  std::string result;
+  ASSERT_TRUE(manifest.GetString(keys::kName, &result));
+  EXPECT_EQ("name", result);
+
+  ASSERT_TRUE(manifest.GetString(keys::kDescription, &result));
+  EXPECT_EQ("description", result);
+
+  ASSERT_TRUE(handler->GetString(keys::kPageActionDefaultTitle, &result));
+  EXPECT_EQ("file handler title", result);
 
   EXPECT_TRUE(error.empty());
 }
