@@ -315,14 +315,16 @@ class TestUnsaveableDirectory : public Directory {
 // Test suite for syncable::Directory.
 class SyncableDirectoryTest : public testing::Test {
  protected:
-  static const FilePath::CharType kFilePath[];
+  ScopedTempDir temp_dir_;
   static const char kName[];
   static const Id kId;
 
   // SetUp() is called before each test case is run.
   // The sqlite3 DB is deleted before each test is run.
   virtual void SetUp() {
-    file_path_ = FilePath(kFilePath);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    file_path_ = temp_dir_.path().Append(
+        FILE_PATH_LITERAL("Test.sqlite3"));
     file_util::Delete(file_path_, true);
     dir_.reset(new Directory());
     ASSERT_TRUE(dir_.get());
@@ -675,8 +677,6 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsOnlyDirtyHandlesTest) {
   }
 }
 
-const FilePath::CharType SyncableDirectoryTest::kFilePath[] =
-    FILE_PATH_LITERAL("Test.sqlite3");
 const char SyncableDirectoryTest::kName[] = "Foo";
 const Id SyncableDirectoryTest::kId(TestIdFactory::FromNumber(-99));
 
@@ -1199,7 +1199,7 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
   // always fail.
   dir_.reset(new TestUnsaveableDirectory());
   ASSERT_TRUE(dir_.get());
-  ASSERT_TRUE(OPENED == dir_->Open(FilePath(kFilePath), kName));
+  ASSERT_TRUE(OPENED == dir_->Open(file_path_, kName));
   ASSERT_TRUE(dir_->good());
   int64 handle2 = 0;
   {
@@ -1272,7 +1272,7 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
   // always fail.
   dir_.reset(new TestUnsaveableDirectory());
   ASSERT_TRUE(dir_.get());
-  ASSERT_TRUE(OPENED == dir_->Open(FilePath(kFilePath), kName));
+  ASSERT_TRUE(OPENED == dir_->Open(file_path_, kName));
   ASSERT_TRUE(dir_->good());
 
   ModelTypeSet set;
