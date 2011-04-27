@@ -129,9 +129,36 @@ chrome.fileBrowserPrivate = {
 
       ERROR_CREATING_FOLDER: 'Unable to create folder "$1": $2',
       ERROR_INVALID_FOLDER_CHARACTER: 'Invalid character in folder name: $1',
+      ERROR_INVALID_FILE_CHARACTER: 'Invalid character in file name: $1',
       NEW_FOLDER_PROMPT: 'Enter a name for the new folder',
       NEW_FOLDER_BUTTON_LABEL: 'New Folder',
       FILENAME_LABEL: 'File Name',
+
+      EJECT_BUTTON: 'Eject',
+      IMAGE_DIMENSIONS: 'Image Dimensions',
+      VOLUME_LABEL: 'Volume Label',
+      READ_ONLY: 'Read Only',
+
+      ERROR_RENAMING: 'Unable to rename "$1": $2',
+      RENAME_PROMPT: 'Enter a new name',
+      RENAME_BUTTON_LABEL: 'Rename',
+
+      ERROR_DELETING: 'Unable to delete "$1": $2',
+      DELETE_BUTTON_LABEL: 'Delete',
+
+      ERROR_MOVING: 'Unable to move "$1": $2',
+      MOVE_BUTTON_LABEL: 'Move',
+
+      ERROR_PASTING: 'Unable to paste "$1": $2',
+      PASTE_BUTTON_LABEL: 'Paste',
+
+      COPY_BUTTON_LABEL: 'Copy',
+      CUT_BUTTON_LABEL: 'Cut',
+
+      DEVICE_TYPE_FLASH: 'Flash Device',
+      DEVICE_TYPE_HDD: 'Hard Disk Device',
+      DEVICE_TYPE_OPTICAL: 'Optical Device',
+      DEVICE_TYPE_UNDEFINED: 'Unknown Device',
 
       CANCEL_LABEL: 'Cancel',
       OPEN_LABEL: 'Open',

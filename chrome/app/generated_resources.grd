@@ -8321,6 +8321,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILE_BROWSER_ERROR_INVALID_FOLDER_CHARACTER" desc="Error message displayed when the user enters an invalid character in a folder name.">
         Invalid character in folder name: $1
       </message>
+      <message name="IDS_FILE_BROWSER_ERROR_INVALID_FILE_CHARACTER" desc="Error message displayed when the user enters an invalid character in a file name.">
+        Invalid character in file name: $1
+      </message>
       <message name="IDS_FILE_BROWSER_NEW_FOLDER_PROMPT" desc="Prompt displayed in a message box when user trys to create a new folder.">
         Enter a name for the new folder
       </message>
@@ -8329,6 +8332,71 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FILE_BROWSER_FILENAME_LABEL" desc="Filename text area label.">
         File name
+      </message>
+
+      <message name="IDS_FILE_BROWSER_EJECT_BUTTON" desc="Button label.">
+        Eject
+      </message>
+      <message name="IDS_FILE_BROWSER_IMAGE_DIMENSIONS" desc="Dimensions of a selected image.">
+        Image Dimensions
+      </message>
+      <message name="IDS_FILE_BROWSER_VOLUME_LABEL" desc="Label for the disk volume.">
+        Volume Label
+      </message>
+      <message name="IDS_FILE_BROWSER_READ_ONLY" desc="Indication that a volume is mounted read only.">
+        Read Only
+      </message>
+
+      <message name="IDS_FILE_BROWSER_ERROR_RENAMING" desc="Error message.">
+        Unable to rename "$1": $2
+      </message>
+      <message name="IDS_FILE_BROWSER_RENAME_PROMPT" desc="Dialog Prompt.">
+        Enter a new name
+      </message>
+      <message name="IDS_FILE_BROWSER_RENAME_BUTTON_LABEL" desc="Button Label.">
+        Rename
+      </message>
+
+
+      <message name="IDS_FILE_BROWSER_ERROR_DELETING" desc="Error Message.">
+        Unable to delete "$1": $2
+      </message>
+      <message name="IDS_FILE_BROWSER_DELETE_BUTTON_LABEL" desc="Button Label.">
+        Delete
+      </message>
+
+      <message name="IDS_FILE_BROWSER_ERROR_MOVING" desc="Error Message.">
+        Unable to move "$1": $2
+      </message>
+      <message name="IDS_FILE_BROWSER_MOVE_BUTTON_LABEL" desc="Button Label.">
+        Move
+      </message>
+
+      <message name="IDS_FILE_BROWSER_ERROR_PASTING" desc="Error Message.">
+        Unable to paste "$1": $2
+      </message>
+      <message name="IDS_FILE_BROWSER_PASTE_BUTTON_LABEL" desc="Button Label.">
+        Paste
+      </message>
+
+      <message name="IDS_FILE_BROWSER_COPY_BUTTON_LABEL" desc="Button Label.">
+        Copy
+      </message>
+      <message name="IDS_FILE_BROWSER_CUT_BUTTON_LABEL" desc="Button Label.">
+        Cut
+      </message>
+
+      <message name="IDS_FILE_BROWSER_DEVICE_TYPE_FLASH" desc="Indication of mounted device type.">
+        Flash Device
+      </message>
+      <message name="IDS_FILE_BROWSER_DEVICE_TYPE_HDD" desc="Indication of mounted device type.">
+        Hard Disk Device
+      </message>
+      <message name="IDS_FILE_BROWSER_DEVICE_TYPE_OPTICAL" desc="Indication of mounted device type.">
+        Optical Device
+      </message>
+      <message name="IDS_FILE_BROWSER_DEVICE_TYPE_UNDEFINED" desc="Indication of mounted device type.">
+        Unknown Device
       </message>
 
       <message name="IDS_FILE_BROWSER_CANCEL_LABEL" desc="Cancel label.">
