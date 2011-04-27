@@ -176,6 +176,7 @@ void NativeButtonBase::ViewHierarchyChanged(bool is_add, View* parent,
     // The native wrapper's lifetime will be managed by the view hierarchy after
     // we call AddChildView.
     native_wrapper_ = CreateWrapper();
+    UpdateAllStates();
     AddChildView(native_wrapper_->GetView());
   }
 }
@@ -220,16 +221,23 @@ void NativeButtonBase::OnPaintFocusBorder(gfx::Canvas* canvas) {
 // NativeButtonBase, protected:
 
 NativeButtonWrapper* NativeButtonBase::CreateWrapper() {
-  NativeButtonWrapper* native_wrapper =
-      NativeButtonWrapper::CreateNativeButtonWrapper(this);
-  native_wrapper->UpdateLabel();
-  native_wrapper->UpdateEnabled();
-  return native_wrapper;
+  return NativeButtonWrapper::CreateNativeButtonWrapper(this);
 }
 
 void NativeButtonBase::InitBorder() {
   set_border(Border::CreateEmptyBorder(0, kButtonBorderHWidth, 0,
                                        kButtonBorderHWidth));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeButtonBase, private:
+void NativeButtonBase::UpdateAllStates() {
+  native_wrapper_->UpdateLabel();
+  native_wrapper_->UpdateFont();
+  native_wrapper_->UpdateEnabled();
+  native_wrapper_->UpdateDefault();
+  native_wrapper_->UpdateChecked();
+  native_wrapper_->UpdateAccessibleName();
 }
 
 #if defined(TOUCH_UI)

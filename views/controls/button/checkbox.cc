@@ -199,11 +199,7 @@ void Checkbox::OnBlur() {
 // Checkbox, NativeButton overrides, protected:
 
 NativeButtonWrapper* Checkbox::CreateWrapper() {
-  NativeButtonWrapper* native_wrapper =
-      NativeButtonWrapper::CreateCheckboxWrapper(this);
-  native_wrapper->UpdateLabel();
-  native_wrapper->UpdateChecked();
-  return native_wrapper;
+  return NativeButtonWrapper::CreateCheckboxWrapper(this);
 }
 
 void Checkbox::InitBorder() {

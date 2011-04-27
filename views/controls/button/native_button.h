@@ -83,6 +83,9 @@ class NativeButtonBase : public Button {
   NativeButtonWrapper* native_wrapper_;
 
  private:
+  // Update all states.
+  void UpdateAllStates();
+
   // The button label.
   string16 label_;
 
