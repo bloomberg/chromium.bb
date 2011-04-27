@@ -23,7 +23,7 @@ class GLSurface {
   // EGL surface associated to be recreated without destroying the associated
   // context. The implementation of this function for other GLSurface derived
   // classes is in a pending changelist.
-  virtual bool Initialize() { return true; }
+  virtual bool Initialize();
 
   // Destroys the surface.
   virtual void Destroy() = 0;
