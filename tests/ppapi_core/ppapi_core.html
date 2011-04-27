@@ -47,6 +47,11 @@ function setupTests(tester, plugin) {
       assert(plugin.testCallOnMainThread_FromNonMainThread());
       tester.waitForCallback('CallOnMainThreadCallback_FromNonMainThread', 1);
     });
+
+    tester.addTest('PPB_Core::CallOnMainThread_ThreadStress', function() {
+      assert(plugin.testCallOnMainThread_FromNonMainThreadStress());
+      tester.waitForCallback('CallOnMainThreadCallback_ThreadStress', 1);
+    });
 }
       //]]>
     </script>

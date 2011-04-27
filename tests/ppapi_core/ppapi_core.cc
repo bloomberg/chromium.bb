@@ -30,6 +30,58 @@ void* InvokeCallOnMainThread(void* thread_argument) {
   return NULL;
 }
 
+const int kStressChecksum = 0x12345678;
+
+struct StressData {
+  const PPB_Core* ppb_core_;
+  const int callbacks_per_thread_;
+  int callback_counter_;
+  const int checksum_;
+  StressData(const PPB_Core* ppb_core, int callbacks_per_thread, int total)
+      : ppb_core_(ppb_core),
+        callbacks_per_thread_(callbacks_per_thread),
+        callback_counter_(total),
+        checksum_(kStressChecksum) {
+  }
+};
+
+// When passed in stress->callback_counter_ reaches zero, notify JS via
+// MakeTestableCompletionCallback.
+void ThreadStressCompletionCallback(void* data, int32_t result) {
+  if (PP_OK == result) {
+    StressData* stress = reinterpret_cast<StressData*>(data);
+    CHECK(kStressChecksum == stress->checksum_);
+    CHECK(NULL != stress->ppb_core_);
+    stress->callback_counter_ -= 1;
+    if (0 == stress->callback_counter_) {
+      // All the callbacks triggered, so now report back that this test passed.
+      PP_CompletionCallback callback = MakeTestableCompletionCallback(
+          "CallOnMainThreadCallback_ThreadStress",
+          EmptyCompletionCallback, NULL);
+      stress->ppb_core_->CallOnMainThread(0, callback, PP_OK);
+      // At this point we're done with the structure, so set it to zero.
+      // If anyone from here on out tries to access it, either the pointer
+      // check or the checksum should trip. It is intentionally left on the
+      // heap to prevent re-use of the memory.
+      memset(stress, 0, sizeof(*stress));
+    }
+  }
+}
+
+// Calls PPB_Core::CallOnMainThread(). To be invoked off the main thread.
+// This is a stess test version.
+void* InvokeCallOnMainThreadStress(void* thread_argument) {
+  StressData* stress = reinterpret_cast<StressData*>(thread_argument);
+  PP_CompletionCallback callback = PP_MakeCompletionCallback(
+      ThreadStressCompletionCallback, stress);
+  for (int i = 0; i < stress->callbacks_per_thread_; ++i) {
+    CHECK(NULL != stress->ppb_core_);
+    CHECK(kStressChecksum == stress->checksum_);
+    stress->ppb_core_->CallOnMainThread(0, callback, PP_OK);
+  }
+  return NULL;
+}
+
 // Calls PPB_Core::IsMainThread(). To be invoked off the main thread.
 void* InvokeIsMainThread(void* thread_argument) {
   PPB_Core* ppb_core = reinterpret_cast<PPB_Core*>(thread_argument);
@@ -83,6 +135,22 @@ PP_Var TestCallOnMainThreadFromNonMainThread() {
   // is called concurrently with the main thread.
   CHECK(pthread_detach(tid) == 0);
 
+  return TEST_PASSED;
+}
+
+// Tests PPB_Core::CallOnMainThread from non-main thread.
+// This is a stress test version that calls many times from many threads.
+PP_Var TestCallOnMainThreadFromNonMainThreadStress() {
+  const int kNumThreads = 10;
+  const int kNumPerThread = 100;
+  const int kNumCallbacks = kNumThreads * kNumPerThread;
+  StressData* stress = new StressData(PPBCore(), kNumPerThread, kNumCallbacks);
+  for (int i = 0; i < kNumThreads; ++i) {
+    pthread_t tid;
+    CHECK(pthread_create(
+        &tid, NULL, InvokeCallOnMainThreadStress, stress) == 0);
+    CHECK(pthread_detach(tid) == 0);
+  }
   return TEST_PASSED;
 }
 
@@ -166,6 +234,8 @@ void SetupScriptableTests() {
                          TestCallOnMainThreadFromMainThread);
   RegisterScriptableTest("testCallOnMainThread_FromNonMainThread",
                          TestCallOnMainThreadFromNonMainThread);
+  RegisterScriptableTest("testCallOnMainThread_FromNonMainThreadStress",
+                         TestCallOnMainThreadFromNonMainThreadStress);
 }
 
 void SetupPluginInterfaces() {
