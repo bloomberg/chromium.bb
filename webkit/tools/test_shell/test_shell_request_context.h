@@ -8,6 +8,7 @@
 #include "base/threading/thread.h"
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_storage.h"
 
 class FilePath;
 
@@ -47,6 +48,7 @@ class TestShellRequestContext : public net::URLRequestContext {
   void Init(const FilePath& cache_path, net::HttpCache::Mode cache_mode,
             bool no_proxy);
 
+  net::URLRequestContextStorage storage_;
   scoped_ptr<webkit_blob::BlobStorageController> blob_storage_controller_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 };

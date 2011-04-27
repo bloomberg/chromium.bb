@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/automation/automation_provider.h"

@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/notification_service.h"
 #include "net/proxy/proxy_resolver.h"
+#include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"

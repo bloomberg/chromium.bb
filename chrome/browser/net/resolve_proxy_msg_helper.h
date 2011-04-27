@@ -50,7 +50,7 @@ class ResolveProxyMsgHelper : public BrowserMessageFilter {
 
   // Get the proxy service instance to use. On success returns true and
   // sets |*out|. Otherwise returns false.
-  bool GetProxyService(scoped_refptr<net::ProxyService>* out) const;
+  bool GetProxyService(net::ProxyService** out) const;
 
   // A PendingRequest is a resolve request that is in progress, or queued.
   struct PendingRequest {
@@ -69,7 +69,7 @@ class ResolveProxyMsgHelper : public BrowserMessageFilter {
   };
 
   // Members for the current outstanding proxy request.
-  scoped_refptr<net::ProxyService> proxy_service_;
+  net::ProxyService* proxy_service_;
   net::CompletionCallbackImpl<ResolveProxyMsgHelper> callback_;
   net::ProxyInfo proxy_info_;
 
@@ -79,7 +79,7 @@ class ResolveProxyMsgHelper : public BrowserMessageFilter {
 
   // Specified by unit-tests, to use this proxy service in place of the
   // global one.
-  scoped_refptr<net::ProxyService> proxy_service_override_;
+  net::ProxyService* proxy_service_override_;
 };
 
 #endif  // CHROME_BROWSER_NET_RESOLVE_PROXY_MSG_HELPER_H_

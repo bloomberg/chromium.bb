@@ -9,6 +9,7 @@
 #include "net/base/net_errors.h"
 #include "net/proxy/mock_proxy_resolver.h"
 #include "net/proxy/proxy_config_service.h"
+#include "net/proxy/proxy_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // This ProxyConfigService always returns "http://pac" as the PAC url to use.
@@ -61,7 +62,7 @@ class ResolveProxyMsgHelperTest : public testing::Test,
   }
 
   net::MockAsyncProxyResolver* resolver_;
-  scoped_refptr<net::ProxyService> service_;
+  scoped_ptr<net::ProxyService> service_;
   scoped_refptr<ResolveProxyMsgHelper> helper_;
   scoped_ptr<PendingResult> pending_result_;
 

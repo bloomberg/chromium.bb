@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/profiles/profile.h"

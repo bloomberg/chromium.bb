@@ -302,12 +302,12 @@ void ProfileIOData::LazyInitialize() const {
       CreateDnsCertProvenanceChecker(io_thread_globals->dnsrr_resolver.get(),
                                      main_request_context_));
 
-  proxy_service_ =
+  proxy_service_.reset(
       ProxyServiceFactory::CreateProxyService(
           io_thread->net_log(),
           io_thread_globals->proxy_script_fetcher_context.get(),
           profile_params_->proxy_config_service.release(),
-          command_line);
+          command_line));
 
   // Take ownership over these parameters.
   database_tracker_ = profile_params_->database_tracker;

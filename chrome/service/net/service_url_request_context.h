@@ -20,6 +20,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_context_storage.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -31,6 +32,7 @@ class MessageLoopProxy;
 //
 class ServiceURLRequestContext : public net::URLRequestContext {
  public:
+  // This context takes ownership of |net_proxy_service|.
   explicit ServiceURLRequestContext(const std::string& user_agent,
                                     net::ProxyService* net_proxy_service);
 
@@ -42,6 +44,7 @@ class ServiceURLRequestContext : public net::URLRequestContext {
 
  private:
   std::string user_agent_;
+  net::URLRequestContextStorage storage_;
 };
 
 class ServiceURLRequestContextGetter : public net::URLRequestContextGetter {
@@ -61,12 +64,12 @@ class ServiceURLRequestContextGetter : public net::URLRequestContextGetter {
   ServiceURLRequestContextGetter();
   virtual ~ServiceURLRequestContextGetter();
 
-  void CreateProxyService();
+  void CreateProxyConfigService();
 
   std::string user_agent_;
   scoped_refptr<net::URLRequestContext> url_request_context_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
-  scoped_refptr<net::ProxyService> proxy_service_;
+  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
 };
 
 #endif  // CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_H_

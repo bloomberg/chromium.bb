@@ -28,8 +28,10 @@
 #include "net/http/http_network_session.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
+#include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_storage.h"
 
 namespace {
 
@@ -42,62 +44,58 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
  public:
   explicit ExperimentURLRequestContext(
       net::URLRequestContext* proxy_request_context)
-      : proxy_request_context_(proxy_request_context) {}
+      : proxy_request_context_(proxy_request_context),
+        ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {}
 
   int Init(const ConnectionTester::Experiment& experiment) {
     int rv;
 
     // Create a custom HostResolver for this experiment.
-    net::HostResolver* host_resolver_tmp = NULL;
+    scoped_ptr<net::HostResolver> host_resolver_tmp;
     rv = CreateHostResolver(experiment.host_resolver_experiment,
                             &host_resolver_tmp);
     if (rv != net::OK)
       return rv;  // Failure.
-    set_host_resolver(host_resolver_tmp);
+    storage_.set_host_resolver(host_resolver_tmp.release());
 
     // Create a custom ProxyService for this this experiment.
-    scoped_refptr<net::ProxyService> proxy_service_tmp = NULL;
+    scoped_ptr<net::ProxyService> proxy_service_tmp;
     rv = CreateProxyService(experiment.proxy_settings_experiment,
                             &proxy_service_tmp);
     if (rv != net::OK)
       return rv;  // Failure.
-    set_proxy_service(proxy_service_tmp);
+    storage_.set_proxy_service(proxy_service_tmp.release());
 
     // The rest of the dependencies are standard, and don't depend on the
     // experiment being run.
-    set_cert_verifier(new net::CertVerifier);
-    set_dnsrr_resolver(new net::DnsRRResolver);
-    set_ftp_transaction_factory(new net::FtpNetworkLayer(host_resolver_tmp));
-    set_ssl_config_service(new net::SSLConfigServiceDefaults);
-    set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(
-        host_resolver_tmp));
+    storage_.set_cert_verifier(new net::CertVerifier);
+    storage_.set_dnsrr_resolver(new net::DnsRRResolver);
+    storage_.set_ftp_transaction_factory(
+        new net::FtpNetworkLayer(host_resolver()));
+    storage_.set_ssl_config_service(new net::SSLConfigServiceDefaults);
+    storage_.set_http_auth_handler_factory(
+        net::HttpAuthHandlerFactory::CreateDefault(host_resolver()));
 
     net::HttpNetworkSession::Params session_params;
-    session_params.host_resolver = host_resolver_tmp;
+    session_params.host_resolver = host_resolver();
     session_params.dnsrr_resolver = dnsrr_resolver();
     session_params.cert_verifier = cert_verifier();
-    session_params.proxy_service = proxy_service_tmp;
+    session_params.proxy_service = proxy_service();
     session_params.http_auth_handler_factory = http_auth_handler_factory();
     session_params.ssl_config_service = ssl_config_service();
     scoped_refptr<net::HttpNetworkSession> network_session(
         new net::HttpNetworkSession(session_params));
-    set_http_transaction_factory(new net::HttpCache(
+    storage_.set_http_transaction_factory(new net::HttpCache(
         network_session,
         net::HttpCache::DefaultBackend::InMemory(0)));
     // In-memory cookie store.
-    set_cookie_store(new net::CookieMonster(NULL, NULL));
+    storage_.set_cookie_store(new net::CookieMonster(NULL, NULL));
 
     return net::OK;
   }
 
  protected:
   virtual ~ExperimentURLRequestContext() {
-    delete ftp_transaction_factory();
-    delete http_transaction_factory();
-    delete http_auth_handler_factory();
-    delete dnsrr_resolver();
-    delete cert_verifier();
-    delete host_resolver();
   }
 
  private:
@@ -106,13 +104,13 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
   // error code.
   int CreateHostResolver(
       ConnectionTester::HostResolverExperiment experiment,
-      net::HostResolver** host_resolver) {
+      scoped_ptr<net::HostResolver>* host_resolver) {
     // Create a vanilla HostResolver that disables caching.
     const size_t kMaxJobs = 50u;
     net::HostResolverImpl* impl =
         new net::HostResolverImpl(NULL, NULL, kMaxJobs, NULL);
 
-    *host_resolver = impl;
+    host_resolver->reset(impl);
 
     // Modify it slightly based on the experiment being run.
     switch (experiment) {
@@ -170,7 +168,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
   // error code.
   int CreateProxyService(
       ConnectionTester::ProxySettingsExperiment experiment,
-      scoped_refptr<net::ProxyService>* proxy_service) {
+      scoped_ptr<net::ProxyService>* proxy_service) {
     // Create an appropriate proxy config service.
     scoped_ptr<net::ProxyConfigService> config_service;
     int rv = CreateProxyConfigService(experiment, &config_service);
@@ -184,12 +182,12 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
       return net::ERR_NOT_IMPLEMENTED;
     }
 
-    *proxy_service = net::ProxyService::CreateUsingV8ProxyResolver(
+    proxy_service->reset(net::ProxyService::CreateUsingV8ProxyResolver(
         config_service.release(),
         0u,
         new net::ProxyScriptFetcherImpl(proxy_request_context_),
         host_resolver(),
-        NULL);
+        NULL));
 
     return net::OK;
   }
@@ -235,6 +233,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
   }
 
   const scoped_refptr<net::URLRequestContext> proxy_request_context_;
+  net::URLRequestContextStorage storage_;
 };
 
 }  // namespace

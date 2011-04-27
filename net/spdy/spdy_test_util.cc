@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "net/http/http_network_session.h"
@@ -920,7 +921,7 @@ HttpNetworkSession* SpdySessionDependencies::SpdyCreateSession(
   params.client_socket_factory = session_deps->socket_factory.get();
   params.host_resolver = session_deps->host_resolver.get();
   params.cert_verifier = session_deps->cert_verifier.get();
-  params.proxy_service = session_deps->proxy_service;
+  params.proxy_service = session_deps->proxy_service.get();
   params.ssl_config_service = session_deps->ssl_config_service;
   params.http_auth_handler_factory =
       session_deps->http_auth_handler_factory.get();
@@ -935,19 +936,20 @@ HttpNetworkSession* SpdySessionDependencies::SpdyCreateSessionDeterministic(
       session_deps->deterministic_socket_factory.get();
   params.host_resolver = session_deps->host_resolver.get();
   params.cert_verifier = session_deps->cert_verifier.get();
-  params.proxy_service = session_deps->proxy_service;
+  params.proxy_service = session_deps->proxy_service.get();
   params.ssl_config_service = session_deps->ssl_config_service;
   params.http_auth_handler_factory =
       session_deps->http_auth_handler_factory.get();
   return new HttpNetworkSession(params);
 }
 
-SpdyURLRequestContext::SpdyURLRequestContext() {
-  set_host_resolver(new MockHostResolver());
-  set_cert_verifier(new CertVerifier);
-  set_proxy_service(ProxyService::CreateDirect());
-  set_ssl_config_service(new SSLConfigServiceDefaults);
-  set_http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault(
+SpdyURLRequestContext::SpdyURLRequestContext()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {
+  storage_.set_host_resolver(new MockHostResolver());
+  storage_.set_cert_verifier(new CertVerifier);
+  storage_.set_proxy_service(ProxyService::CreateDirect());
+  storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
+  storage_.set_http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault(
       host_resolver()));
   net::HttpNetworkSession::Params params;
   params.client_socket_factory = &socket_factory_;
@@ -959,16 +961,12 @@ SpdyURLRequestContext::SpdyURLRequestContext() {
   params.network_delegate = network_delegate();
   scoped_refptr<HttpNetworkSession> network_session(
       new HttpNetworkSession(params));
-  set_http_transaction_factory(new HttpCache(
+  storage_.set_http_transaction_factory(new HttpCache(
       network_session,
       HttpCache::DefaultBackend::InMemory(0)));
 }
 
 SpdyURLRequestContext::~SpdyURLRequestContext() {
-  delete http_transaction_factory();
-  delete http_auth_handler_factory();
-  delete cert_verifier();
-  delete host_resolver();
 }
 
 const SpdyHeaderInfo make_spdy_header(spdy::SpdyControlType type) {

@@ -82,8 +82,7 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
     OnResolveProxyCompleted(result);
 }
 
-bool ResolveProxyMsgHelper::GetProxyService(
-    scoped_refptr<net::ProxyService>* out) const {
+bool ResolveProxyMsgHelper::GetProxyService(net::ProxyService** out) const {
   // Unit-tests specify their own proxy service to use.
   if (proxy_service_override_) {
     *out = proxy_service_override_;
@@ -102,8 +101,10 @@ bool ResolveProxyMsgHelper::GetProxyService(
 }
 
 ResolveProxyMsgHelper::~ResolveProxyMsgHelper() {
-  // Clear all pending requests.
-  if (!pending_requests_.empty()) {
+  // Clear all pending requests if the ProxyService is still alive (if we have a
+  // default request context or override).
+  if (!pending_requests_.empty() &&
+      (Profile::GetDefaultRequestContext() || proxy_service_override_)) {
     PendingRequest req = pending_requests_.front();
     proxy_service_->CancelPacRequest(req.pac_req);
   }

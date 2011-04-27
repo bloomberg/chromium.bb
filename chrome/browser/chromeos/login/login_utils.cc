@@ -54,6 +54,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_store.h"
 #include "net/proxy/proxy_config_service.h"
+#include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "views/widget/widget_gtk.h"

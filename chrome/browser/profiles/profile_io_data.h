@@ -213,7 +213,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   // Pointed to by URLRequestContext.
   mutable scoped_ptr<net::NetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::DnsCertProvenanceChecker> dns_cert_checker_;
-  mutable scoped_refptr<net::ProxyService> proxy_service_;
+  mutable scoped_ptr<net::ProxyService> proxy_service_;
   mutable scoped_ptr<net::CookiePolicy> cookie_policy_;
 
   // Pointed to by ResourceContext.

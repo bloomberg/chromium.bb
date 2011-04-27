@@ -28,16 +28,19 @@
 class ChromeURLDataManagerBackend;
 class ChromeURLRequestContextFactory;
 class IOThread;
+class PrefService;
+class Profile;
+class ProfileIOData;
+namespace base {
+class WaitableEvent;
+}
 namespace net {
 class DnsCertProvenanceChecker;
 class NetworkDelegate;
 }
-class PrefService;
 namespace prerender {
 class PrerenderManager;
 }
-class Profile;
-class ProfileIOData;
 
 // Subclass of net::URLRequestContext which can be used to store extra
 // information for requests.

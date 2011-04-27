@@ -20,6 +20,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_storage.h"
 
 namespace net {
 
@@ -347,7 +348,7 @@ class SpdySessionDependencies {
   // NOTE: host_resolver must be ordered before http_auth_handler_factory.
   scoped_ptr<MockHostResolverBase> host_resolver;
   scoped_ptr<CertVerifier> cert_verifier;
-  scoped_refptr<ProxyService> proxy_service;
+  scoped_ptr<ProxyService> proxy_service;
   scoped_refptr<SSLConfigService> ssl_config_service;
   scoped_ptr<MockClientSocketFactory> socket_factory;
   scoped_ptr<DeterministicMockClientSocketFactory> deterministic_socket_factory;
@@ -365,6 +366,7 @@ class SpdyURLRequestContext : public URLRequestContext {
 
  private:
   MockClientSocketFactory socket_factory_;
+  net::URLRequestContextStorage storage_;
 };
 
 const SpdyHeaderInfo make_spdy_header(spdy::SpdyControlType type);

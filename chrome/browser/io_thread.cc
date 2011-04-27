@@ -40,7 +40,6 @@
 #include "net/base/host_resolver_impl.h"
 #include "net/base/mapped_host_resolver.h"
 #include "net/base/net_util.h"
-#include "net/proxy/proxy_config_service.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -49,7 +48,9 @@
 #if defined(USE_NSS)
 #include "net/ocsp/nss_ocsp.h"
 #endif  // defined(USE_NSS)
+#include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
+#include "net/proxy/proxy_service.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
@@ -428,8 +429,8 @@ void IOThread::Init() {
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
   // For the ProxyScriptFetcher, we use a direct ProxyService.
-  globals_->proxy_script_fetcher_proxy_service =
-      net::ProxyService::CreateDirectWithNetLog(net_log_);
+  globals_->proxy_script_fetcher_proxy_service.reset(
+      net::ProxyService::CreateDirectWithNetLog(net_log_));
   net::HttpNetworkSession::Params session_params;
   session_params.host_resolver = globals_->host_resolver.get();
   session_params.cert_verifier = globals_->cert_verifier.get();
@@ -625,16 +626,16 @@ void IOThread::ClearHostCache() {
 
 void IOThread::InitSystemRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!globals_->system_proxy_service);
+  DCHECK(!globals_->system_proxy_service.get());
   DCHECK(system_proxy_config_service_.get());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  globals_->system_proxy_service =
+  globals_->system_proxy_service.reset(
       ProxyServiceFactory::CreateProxyService(
           net_log_,
           globals_->proxy_script_fetcher_context,
           system_proxy_config_service_.release(),
-          command_line);
+          command_line));
   net::HttpNetworkSession::Params system_params;
   system_params.host_resolver = globals_->host_resolver.get();
   system_params.cert_verifier = globals_->cert_verifier.get();

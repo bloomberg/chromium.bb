@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
@@ -25,14 +26,16 @@
 #include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
-TestShellRequestContext::TestShellRequestContext() {
+TestShellRequestContext::TestShellRequestContext()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {
   Init(FilePath(), net::HttpCache::NORMAL, false);
 }
 
 TestShellRequestContext::TestShellRequestContext(
     const FilePath& cache_path,
     net::HttpCache::Mode cache_mode,
-    bool no_proxy) {
+    bool no_proxy)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {
   Init(cache_path, cache_mode, no_proxy);
 }
 
@@ -40,8 +43,8 @@ void TestShellRequestContext::Init(
     const FilePath& cache_path,
     net::HttpCache::Mode cache_mode,
     bool no_proxy) {
-  set_cookie_store(new net::CookieMonster(NULL, NULL));
-  set_cookie_policy(new net::StaticCookiePolicy());
+  storage_.set_cookie_store(new net::CookieMonster(NULL, NULL));
+  storage_.set_cookie_policy(new net::StaticCookiePolicy());
 
   // hard-code A-L and A-C for test shells
   set_accept_language("en-us,en");
@@ -64,16 +67,17 @@ void TestShellRequestContext::Init(
       net::ProxyService::CreateSystemProxyConfigService(
           MessageLoop::current(), NULL));
 #endif
-  set_host_resolver(
+  storage_.set_host_resolver(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                     NULL));
-  set_cert_verifier(new net::CertVerifier);
-  set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
+  storage_.set_cert_verifier(new net::CertVerifier);
+  storage_.set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
       proxy_config_service.release(), 0, NULL));
-  set_ssl_config_service(net::SSLConfigService::CreateSystemSSLConfigService());
+  storage_.set_ssl_config_service(
+      net::SSLConfigService::CreateSystemSSLConfigService());
 
-  set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(
-      host_resolver()));
+  storage_.set_http_auth_handler_factory(
+      net::HttpAuthHandlerFactory::CreateDefault(host_resolver()));
 
   net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
       cache_path.empty() ? net::MEMORY_CACHE : net::DISK_CACHE,
@@ -85,9 +89,10 @@ void TestShellRequestContext::Init(
                          http_auth_handler_factory(), NULL, NULL, backend);
 
   cache->set_mode(cache_mode);
-  set_http_transaction_factory(cache);
+  storage_.set_http_transaction_factory(cache);
 
-  set_ftp_transaction_factory(new net::FtpNetworkLayer(host_resolver()));
+  storage_.set_ftp_transaction_factory(
+      new net::FtpNetworkLayer(host_resolver()));
 
   blob_storage_controller_.reset(new webkit_blob::BlobStorageController());
   file_system_context_ = static_cast<SimpleFileSystem*>(
@@ -95,12 +100,6 @@ void TestShellRequestContext::Init(
 }
 
 TestShellRequestContext::~TestShellRequestContext() {
-  delete ftp_transaction_factory();
-  delete http_transaction_factory();
-  delete http_auth_handler_factory();
-  delete cookie_policy();
-  delete cert_verifier();
-  delete host_resolver();
 }
 
 const std::string& TestShellRequestContext::GetUserAgent(

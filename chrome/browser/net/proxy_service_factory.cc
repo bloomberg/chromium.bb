@@ -14,6 +14,7 @@
 #include "net/base/net_log.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
+#include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 
 #if defined(OS_CHROMEOS)

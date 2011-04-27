@@ -117,7 +117,7 @@ class Client {
   net::CompletionCallbackImpl<Client> read_callback_;
 };
 
-int main(int argc, char**argv) {
+int main(int argc, char** argv) {
   base::AtExitManager exit;
   base::StatsTable table("fetchclient", 50, 1000);
   table.set_current(&table);
@@ -142,7 +142,7 @@ int main(int argc, char**argv) {
                                     NULL));
 
   scoped_ptr<net::CertVerifier> cert_verifier(new net::CertVerifier);
-  scoped_refptr<net::ProxyService> proxy_service(
+  scoped_ptr<net::ProxyService> proxy_service(
       net::ProxyService::CreateDirect());
   scoped_refptr<net::SSLConfigService> ssl_config_service(
       net::SSLConfigService::CreateSystemSSLConfigService());
@@ -153,7 +153,7 @@ int main(int argc, char**argv) {
   net::HttpNetworkSession::Params session_params;
   session_params.host_resolver = host_resolver.get();
   session_params.cert_verifier = cert_verifier.get();
-  session_params.proxy_service = proxy_service;
+  session_params.proxy_service = proxy_service.get();
   session_params.http_auth_handler_factory = http_auth_handler_factory.get();
   session_params.ssl_config_service = ssl_config_service;
 
