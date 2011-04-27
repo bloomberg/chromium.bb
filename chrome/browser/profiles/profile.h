@@ -33,9 +33,6 @@ class TransportSecurityState;
 class SSLConfigService;
 }
 
-namespace policy {
-class ProfilePolicyConnector;
-}
 
 namespace prerender {
 class PrerenderManager;
@@ -504,9 +501,6 @@ class Profile {
 
   // Returns the PromoCounter for Instant, or NULL if not applicable.
   virtual PromoCounter* GetInstantPromoCounter() = 0;
-
-  // Gets the policy connector associated with this profile.
-  virtual policy::ProfilePolicyConnector* GetPolicyConnector() = 0;
 
   // Returns the ChromeURLDataManager for this profile.
   virtual ChromeURLDataManager* GetChromeURLDataManager() = 0;

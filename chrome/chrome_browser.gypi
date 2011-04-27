@@ -1557,6 +1557,8 @@
         'browser/policy/policy_path_parser_win.cc',
         'browser/policy/profile_policy_connector.cc',
         'browser/policy/profile_policy_connector.h',
+        'browser/policy/profile_policy_connector_factory.cc',
+        'browser/policy/profile_policy_connector_factory.h',
         'browser/policy/user_policy_cache.cc',
         'browser/policy/user_policy_cache.h',
         'browser/policy/user_policy_identity_strategy.cc',

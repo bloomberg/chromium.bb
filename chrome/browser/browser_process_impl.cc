@@ -499,7 +499,7 @@ policy::BrowserPolicyConnector* BrowserProcessImpl::browser_policy_connector() {
   if (!created_browser_policy_connector_) {
     DCHECK(browser_policy_connector_.get() == NULL);
     created_browser_policy_connector_ = true;
-    browser_policy_connector_.reset(new policy::BrowserPolicyConnector());
+    browser_policy_connector_.reset(policy::BrowserPolicyConnector::Create());
   }
   return browser_policy_connector_.get();
 }

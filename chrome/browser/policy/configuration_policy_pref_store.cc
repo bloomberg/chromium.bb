@@ -22,6 +22,7 @@
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/profiles/profile.h"
@@ -785,7 +786,8 @@ ConfigurationPolicyPrefStore::CreateManagedCloudPolicyPrefStore(
   ConfigurationPolicyProvider* provider = NULL;
   if (profile) {
     // For user policy, return the profile's policy provider.
-    provider = profile->GetPolicyConnector()->GetManagedCloudProvider();
+    provider = policy::ProfilePolicyConnectorFactory::GetForProfile(profile)->
+        GetManagedCloudProvider();
   } else {
     // For device policy, return the provider of the browser process.
     BrowserPolicyConnector* connector =
@@ -811,7 +813,8 @@ ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore(
   ConfigurationPolicyProvider* provider = NULL;
   if (profile) {
     // For user policy, return the profile's policy provider.
-    provider = profile->GetPolicyConnector()->GetRecommendedCloudProvider();
+    provider = policy::ProfilePolicyConnectorFactory::GetForProfile(profile)->
+        GetRecommendedCloudProvider();
   } else {
     // For device policy, return the provider of the browser process.
     BrowserPolicyConnector* connector =

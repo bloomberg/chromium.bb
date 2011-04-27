@@ -50,6 +50,7 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -394,7 +395,7 @@ void ProfileImpl::DoFinalInit() {
 
   // Initialize the ProfilePolicyConnector after |io_data_| since it requires
   // the URLRequestContextGetter to be initialized.
-  GetPolicyConnector()->Initialize();
+  policy::ProfilePolicyConnectorFactory::GetForProfile(this);
 
   // Creation has been finished.
   if (delegate_)
@@ -583,8 +584,6 @@ ProfileImpl::~ProfileImpl() {
       NotificationType::PROFILE_DESTROYED,
       Source<Profile>(this),
       NotificationService::NoDetails());
-
-  GetPolicyConnector()->Shutdown();
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
@@ -1418,13 +1417,6 @@ ChromeBlobStorageContext* ProfileImpl::GetBlobStorageContext() {
 
 ExtensionInfoMap* ProfileImpl::GetExtensionInfoMap() {
   return extension_info_map_.get();
-}
-
-policy::ProfilePolicyConnector* ProfileImpl::GetPolicyConnector() {
-  if (!profile_policy_connector_.get())
-    profile_policy_connector_.reset(new policy::ProfilePolicyConnector(this));
-
-  return profile_policy_connector_.get();
 }
 
 ChromeURLDataManager* ProfileImpl::GetChromeURLDataManager() {

@@ -31,6 +31,11 @@
 
 namespace policy {
 
+// static
+BrowserPolicyConnector* BrowserPolicyConnector::Create() {
+  return new BrowserPolicyConnector();
+}
+
 BrowserPolicyConnector::BrowserPolicyConnector()
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   managed_platform_provider_.reset(CreateManagedPlatformProvider());

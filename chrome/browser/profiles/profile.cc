@@ -644,10 +644,6 @@ class OffTheRecordProfileImpl : public Profile,
     return profile_->GetExtensionInfoMap();
   }
 
-  virtual policy::ProfilePolicyConnector* GetPolicyConnector() {
-    return NULL;
-  }
-
   virtual ChromeURLDataManager* GetChromeURLDataManager() {
     if (!chrome_url_data_manager_.get())
       chrome_url_data_manager_.reset(new ChromeURLDataManager(this));

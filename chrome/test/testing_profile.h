@@ -284,7 +284,6 @@ class TestingProfile : public Profile {
   virtual ChromeBlobStorageContext* GetBlobStorageContext();
   virtual ExtensionInfoMap* GetExtensionInfoMap();
   virtual PromoCounter* GetInstantPromoCounter();
-  virtual policy::ProfilePolicyConnector* GetPolicyConnector();
   virtual ChromeURLDataManager* GetChromeURLDataManager();
   virtual prerender::PrerenderManager* GetPrerenderManager();
   virtual PrefService* GetOffTheRecordPrefs();

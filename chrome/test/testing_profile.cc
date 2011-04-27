@@ -780,10 +780,6 @@ PromoCounter* TestingProfile::GetInstantPromoCounter() {
   return NULL;
 }
 
-policy::ProfilePolicyConnector* TestingProfile::GetPolicyConnector() {
-  return NULL;
-}
-
 ChromeURLDataManager* TestingProfile::GetChromeURLDataManager() {
   if (!chrome_url_data_manager_.get())
     chrome_url_data_manager_.reset(new ChromeURLDataManager(this));

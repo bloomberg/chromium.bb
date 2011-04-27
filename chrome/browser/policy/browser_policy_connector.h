@@ -31,7 +31,7 @@ class DevicePolicyIdentityStrategy;
 // platform policy providers.
 class BrowserPolicyConnector {
  public:
-  BrowserPolicyConnector();
+  static BrowserPolicyConnector* Create();
   ~BrowserPolicyConnector();
 
   ConfigurationPolicyProvider* GetManagedPlatformProvider() const;
@@ -71,6 +71,8 @@ class BrowserPolicyConnector {
 
  private:
   friend class ::TestingBrowserProcess;
+
+  BrowserPolicyConnector();
 
   static ConfigurationPolicyProvider* CreateManagedPlatformProvider();
   static ConfigurationPolicyProvider* CreateRecommendedPlatformProvider();
