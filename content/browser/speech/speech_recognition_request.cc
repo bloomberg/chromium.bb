@@ -20,7 +20,8 @@
 namespace {
 
 const char* const kDefaultSpeechRecognitionUrl =
-    "https://www.google.com/speech-api/v1/recognize?xjerr=1&client=chromium&";
+    "https://www.google.com/speech-api/v1/recognize?xjerr=1&client=chromium&"
+    "pfilter=2&";
 const char* const kHypothesesString = "hypotheses";
 const char* const kUtteranceString = "utterance";
 const char* const kConfidenceString = "confidence";
