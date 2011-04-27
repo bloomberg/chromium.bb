@@ -131,7 +131,9 @@ bool ProfileSyncServiceHarness::SetupSync() {
       i < syncable::MODEL_TYPE_COUNT; ++i) {
     synced_datatypes.insert(syncable::ModelTypeFromInt(i));
   }
-  return SetupSync(synced_datatypes);
+  bool result = SetupSync(synced_datatypes);
+  VLOG(0) << "Client " << id_ << " PSH: Set up sync completed";
+  return result;
 }
 
 bool ProfileSyncServiceHarness::SetupSync(
@@ -611,10 +613,12 @@ std::string ProfileSyncServiceHarness::GetUpdatedTimestamp(
 }
 
 void ProfileSyncServiceHarness::LogClientInfo(const std::string& message) {
+  // TODO(lipalani): Change VLOG(0) to VLOG(1)
+  // http://crbug.com/80706
   if (service()) {
     const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
     if (snap) {
-      VLOG(1) << "Client " << id_ << ": " << message
+      VLOG(0) << "Client " << id_ << ": " << message
               << ": num_updates_downloaded : "
               << snap->syncer_status.num_updates_downloaded_total
               << ", has_more_to_sync: " << snap->has_more_to_sync
@@ -630,11 +634,11 @@ void ProfileSyncServiceHarness::LogClientInfo(const std::string& message) {
               << ", has_pending_backend_migration: "
               << service()->HasPendingBackendMigration();
     } else {
-      VLOG(1) << "Client " << id_ << ": " << message
+      VLOG(0) << "Client " << id_ << ": " << message
               << ": Sync session snapshot not available.";
     }
   } else {
-    VLOG(1) << "Client " << id_ << ": " << message
+    VLOG(0) << "Client " << id_ << ": " << message
             << ": Sync service not available.";
   }
 }

@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
