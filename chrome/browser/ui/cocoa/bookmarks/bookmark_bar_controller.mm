@@ -1522,6 +1522,35 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   }
 }
 
+// Scans through all buttons from left to right, calculating from scratch where
+// they should be based on the preceding widths, until it finds the one
+// requested.
+// Returns NSZeroRect if there is no such button in the bookmark bar.
+// Enables you to work out where a button will end up when it is done animating.
+- (NSRect)finalRectOfButton:(BookmarkButton*)wantedButton {
+  CGFloat left = bookmarks::kBookmarkHorizontalPadding;
+  NSRect buttonFrame = NSZeroRect;
+
+  for (NSButton* button in buttons_.get()) {
+    // Hidden buttons get no space.
+    if ([button isHidden])
+      continue;
+    buttonFrame = [button frame];
+    buttonFrame.origin.x = left;
+    left += buttonFrame.size.width + bookmarks::kBookmarkHorizontalPadding;
+    if (button == wantedButton)
+      return buttonFrame;
+  }
+  return NSZeroRect;
+}
+
+// Calculates the final position of the last button in the bar.
+// We can't just use [[self buttons] lastObject] frame] because the button
+// may be animating currently.
+- (NSRect)finalRectOfLastButton {
+  return [self finalRectOfButton:[[self buttons] lastObject]];
+}
+
 - (void)redistributeButtonsOnBarAsNeeded {
   const BookmarkNode* node = bookmarkModel_->GetBookmarkBarNode();
   NSInteger barCount = node->child_count();
@@ -1543,7 +1572,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   // the off-the-side folder.
   while (displayedButtonCount_ > 0) {
     BookmarkButton* button = [buttons_ lastObject];
-    if (NSMaxX([button frame]) < maxViewX)
+    if (NSMaxX([self finalRectOfLastButton]) < maxViewX)
       break;
     [buttons_ removeLastObject];
     [button setDelegate:nil];
@@ -1554,7 +1583,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   // As a result of cutting, deleting and dragging, the bar may now have room
   // for more buttons.
   int xOffset = displayedButtonCount_ > 0 ?
-      NSMaxX([[buttons_ lastObject] frame]) +
+      NSMaxX([self finalRectOfLastButton]) +
           bookmarks::kBookmarkHorizontalPadding : 0;
   for (int i = displayedButtonCount_; i < barCount; ++i) {
     const BookmarkNode* child = node->GetChild(i);
@@ -1681,13 +1710,13 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // A bookmark button's contents changed.  Check for growth
 // (e.g. increase the width up to the maximum).  If we grew, move
 // other bookmark buttons over.
-- (void)checkForBookmarkButtonGrowth:(NSButton*)button {
-  NSRect frame = [button frame];
-  CGFloat desiredSize = [self widthForBookmarkButtonCell:[button cell]];
+- (void)checkForBookmarkButtonGrowth:(NSButton*)changedButton {
+  NSRect frame = [changedButton frame];
+  CGFloat desiredSize = [self widthForBookmarkButtonCell:[changedButton cell]];
   CGFloat delta = desiredSize - frame.size.width;
   if (delta) {
     frame.size.width = desiredSize;
-    [button setFrame:frame];
+    [changedButton setFrame:frame];
     for (NSButton* button in buttons_.get()) {
       NSRect buttonFrame = [button frame];
       if (buttonFrame.origin.x > frame.origin.x) {
@@ -2136,6 +2165,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       // bookmark.  Test for it by growing the button (if needed)
       // and shifting everything else over.
       [self checkForBookmarkButtonGrowth:button];
+      return;
     }
   }
 
@@ -2664,6 +2694,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     [buttons_ removeObjectAtIndex:buttonIndex];
     --displayedButtonCount_;
     [self resetAllButtonPositionsWithAnimation:YES];
+    [self reconfigureBookmarkBar];
   } else if (folderController_ &&
              [folderController_ parentButton] == offTheSideButton_) {
     // The button being removed is in the OTS (off-the-side) and the OTS
