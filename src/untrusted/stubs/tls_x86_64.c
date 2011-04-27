@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -41,12 +41,4 @@ size_t __nacl_tdb_effective_payload_size(size_t tdb_size) {
 /* See src/untrusted/nacl/tls.h */
 size_t __nacl_return_address_size() {
   return 8;
-}
-
-
-/* Compiler intrinsic: we only use this for x86-64.
- * TODO(eaeltsin): get rid of this in favor of __nacl_read_tp.
- */
-void *__tls_get_addr(int offset) {
-  return ((char*) NACL_SYSCALL(tls_get)()) + offset;
 }

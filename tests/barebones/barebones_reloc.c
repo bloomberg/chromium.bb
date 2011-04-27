@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -17,7 +17,7 @@
  */
 
 #if !defined(NO_NACL_STUFF)
-#include "barebones.h"
+#include "native_client/tests/barebones/barebones.h"
 #endif
 
 volatile __thread int var_tls = 1;
@@ -36,7 +36,6 @@ volatile double var_global_double = 1.0;
 /* dummy functions to make the linker happy (for ARM and x86-64) */
 void __aeabi_read_tp() {}
 void __nacl_read_tp() {}
-void __tls_get_addr() {}
 
 int main(int argc, char* argv[]) {
   if (argc == 555) {
