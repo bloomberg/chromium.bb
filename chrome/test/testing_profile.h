@@ -188,6 +188,7 @@ class TestingProfile : public Profile {
   virtual DownloadManager* GetDownloadManager();
   virtual PersonalDataManager* GetPersonalDataManager();
   virtual fileapi::FileSystemContext* GetFileSystemContext();
+  virtual quota::QuotaManager* GetQuotaManager();
   virtual BrowserSignin* GetBrowserSignin();
   virtual bool HasCreatedDownloadManager() const;
 

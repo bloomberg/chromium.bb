@@ -38,6 +38,10 @@ namespace prerender {
 class PrerenderManager;
 }
 
+namespace quota {
+class QuotaManager;
+}
+
 namespace webkit_database {
 class DatabaseTracker;
 }
@@ -321,6 +325,8 @@ class Profile {
   // is lazily created the first time this method is called.  This is owned
   // by the profile.
   virtual fileapi::FileSystemContext* GetFileSystemContext() = 0;
+
+  virtual quota::QuotaManager* GetQuotaManager() = 0;
 
   // Returns the BrowserSignin object assigned to this profile.
   virtual BrowserSignin* GetBrowserSignin() = 0;

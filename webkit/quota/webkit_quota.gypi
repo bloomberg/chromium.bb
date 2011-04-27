@@ -14,10 +14,18 @@
         '<(DEPTH)/net/net.gyp:net',
       ],
       'sources': [
+        'quota_client.h',
         'quota_database.cc',
         'quota_database.h',
+        'quota_manager.cc',
+        'quota_manager.h',
+        'quota_task.cc',
+        'quota_task.h',
+        'quota_types.h',
         'special_storage_policy.cc',
         'special_storage_policy.h',
+        'usage_tracker.cc',
+        'usage_tracker.h',
       ],
       'conditions': [
         ['inside_chromium_build==0', {

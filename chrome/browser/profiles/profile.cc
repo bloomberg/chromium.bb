@@ -53,6 +53,7 @@
 #include "net/base/transport_security_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/database/database_tracker.h"
+#include "webkit/quota/quota_manager.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -407,6 +408,17 @@ class OffTheRecordProfileImpl : public Profile,
     return io_data_.GetMainRequestContextGetter();
   }
 
+  virtual quota::QuotaManager* GetQuotaManager() {
+    if (!quota_manager_.get()) {
+      quota_manager_ = new quota::QuotaManager(
+          IsOffTheRecord(),
+          GetPath(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
+    }
+    return quota_manager_.get();
+  }
+
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -732,6 +744,8 @@ class OffTheRecordProfileImpl : public Profile,
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
+
+  scoped_refptr<quota::QuotaManager> quota_manager_;
 
   // Used read-only.
   scoped_refptr<TransportSecurityPersister> transport_security_loader_;

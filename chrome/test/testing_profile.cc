@@ -541,6 +541,10 @@ fileapi::FileSystemContext* TestingProfile::GetFileSystemContext() {
   return NULL;
 }
 
+quota::QuotaManager* TestingProfile::GetQuotaManager() {
+  return NULL;
+}
+
 BrowserSignin* TestingProfile::GetBrowserSignin() {
   return NULL;
 }

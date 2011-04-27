@@ -419,7 +419,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
 
   channel_->AddFilter(new TraceMessageFilter());
   channel_->AddFilter(new ResolveProxyMsgHelper(NULL));
-  channel_->AddFilter(new QuotaDispatcherHost());
+  channel_->AddFilter(new QuotaDispatcherHost(profile()->GetQuotaManager()));
 }
 
 int BrowserRenderProcessHost::GetNextRoutingID() {

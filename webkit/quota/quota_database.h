@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "webkit/quota/quota_types.h"
 
 namespace sql {
 class Connection;
@@ -22,13 +23,6 @@ class Statement;
 class GURL;
 
 namespace quota {
-
-// TODO(kinuko): put this in a separated header file when we have more modules.
-enum StorageType {
-  kStorageTypeUnknown,
-  kStorageTypeTemporary,
-  kStorageTypePersistent,
-};
 
 // All the methods of this class must run on the DB thread.
 class QuotaDatabase {

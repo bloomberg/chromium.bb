@@ -79,6 +79,7 @@ class ProfileImpl : public Profile,
   virtual DownloadManager* GetDownloadManager();
   virtual PersonalDataManager* GetPersonalDataManager();
   virtual fileapi::FileSystemContext* GetFileSystemContext();
+  virtual quota::QuotaManager* GetQuotaManager();
   virtual bool HasCreatedDownloadManager() const;
   virtual net::URLRequestContextGetter* GetRequestContext();
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
@@ -250,6 +251,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<PersonalDataManager> personal_data_manager_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_ptr<BrowserSignin> browser_signin_;
+  scoped_refptr<quota::QuotaManager> quota_manager_;
   bool history_service_created_;
   bool favicon_service_created_;
   bool created_web_data_service_;

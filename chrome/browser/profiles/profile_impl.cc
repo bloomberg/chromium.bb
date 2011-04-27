@@ -99,6 +99,7 @@
 #include "net/base/transport_security_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/database/database_tracker.h"
+#include "webkit/quota/quota_manager.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/instant/promo_counter.h"
@@ -1159,6 +1160,17 @@ fileapi::FileSystemContext* ProfileImpl::GetFileSystemContext() {
         GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy());
   DCHECK(file_system_context_.get());
   return file_system_context_.get();
+}
+
+quota::QuotaManager* ProfileImpl::GetQuotaManager() {
+  if (!quota_manager_.get()) {
+    quota_manager_ = new quota::QuotaManager(
+        IsOffTheRecord(),
+        GetPath(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
+  }
+  return quota_manager_.get();
 }
 
 SessionService* ProfileImpl::GetSessionService() {
