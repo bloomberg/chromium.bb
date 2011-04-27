@@ -46,7 +46,7 @@ class MftH264DecodeEngine : public media::VideoDecodeEngine {
   virtual void Initialize(MessageLoop* message_loop,
                           media::VideoDecodeEngine::EventHandler* event_handler,
                           VideoDecodeContext* context,
-                          const VideoCodecConfig& config);
+                          const VideoDecoderConfig& config);
   virtual void Uninitialize();
   virtual void Flush();
   virtual void Seek();

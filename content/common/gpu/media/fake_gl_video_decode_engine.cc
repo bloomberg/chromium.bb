@@ -22,7 +22,7 @@ void FakeGlVideoDecodeEngine::Initialize(
     MessageLoop* message_loop,
     media::VideoDecodeEngine::EventHandler* event_handler,
     media::VideoDecodeContext* context,
-    const media::VideoCodecConfig& config) {
+    const media::VideoDecoderConfig& config) {
   handler_ = event_handler;
   context_ = context;
   width_ = config.width();

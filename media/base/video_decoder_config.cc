@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/video/video_decode_engine.h"
+#include "media/base/video_decoder_config.h"
 
 #include "base/logging.h"
 
 namespace media {
 
-VideoCodecConfig::VideoCodecConfig(VideoCodec codec,
-                                   int width,
-                                   int height,
-                                   int frame_rate_numerator,
-                                   int frame_rate_denominator,
-                                   uint8* extra_data,
-                                   size_t extra_data_size)
+VideoDecoderConfig::VideoDecoderConfig(VideoCodec codec,
+                                       int width,
+                                       int height,
+                                       int frame_rate_numerator,
+                                       int frame_rate_denominator,
+                                       uint8* extra_data,
+                                       size_t extra_data_size)
     : codec_(codec),
       width_(width),
       height_(height),
@@ -28,33 +28,33 @@ VideoCodecConfig::VideoCodecConfig(VideoCodec codec,
   }
 }
 
-VideoCodecConfig::~VideoCodecConfig() {}
+VideoDecoderConfig::~VideoDecoderConfig() {}
 
-VideoCodec VideoCodecConfig::codec() const {
+VideoCodec VideoDecoderConfig::codec() const {
   return codec_;
 }
 
-int VideoCodecConfig::width() const {
+int VideoDecoderConfig::width() const {
   return width_;
 }
 
-int VideoCodecConfig::height() const {
+int VideoDecoderConfig::height() const {
   return height_;
 }
 
-int VideoCodecConfig::frame_rate_numerator() const {
+int VideoDecoderConfig::frame_rate_numerator() const {
   return frame_rate_numerator_;
 }
 
-int VideoCodecConfig::frame_rate_denominator() const {
+int VideoDecoderConfig::frame_rate_denominator() const {
   return frame_rate_denominator_;
 }
 
-uint8* VideoCodecConfig::extra_data() const {
+uint8* VideoDecoderConfig::extra_data() const {
   return extra_data_.get();
 }
 
-size_t VideoCodecConfig::extra_data_size() const {
+size_t VideoDecoderConfig::extra_data_size() const {
   return extra_data_size_;
 }
 

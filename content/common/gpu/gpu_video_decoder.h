@@ -21,7 +21,7 @@
 
 using media::Buffer;
 using media::PipelineStatistics;
-using media::VideoCodecConfig;
+using media::VideoDecoderConfig;
 using media::VideoCodecInfo;
 using media::VideoStreamInfo;
 using media::VideoFrame;

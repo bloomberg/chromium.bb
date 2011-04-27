@@ -56,7 +56,7 @@ class GpuVideoDecoderHost : public media::VideoDecodeEngine,
   virtual void Initialize(MessageLoop* message_loop,
                           VideoDecodeEngine::EventHandler* event_handler,
                           media::VideoDecodeContext* context,
-                          const media::VideoCodecConfig& config);
+                          const media::VideoDecoderConfig& config);
   virtual void ConsumeVideoSample(scoped_refptr<Buffer> buffer);
   virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame);
   virtual void Uninitialize();

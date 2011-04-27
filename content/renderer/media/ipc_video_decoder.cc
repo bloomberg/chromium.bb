@@ -66,7 +66,7 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
   // Create a hardware video decoder handle.
   decode_engine_.reset(gl_context_->CreateVideoDecodeEngine());
 
-  media::VideoCodecConfig config(
+  media::VideoDecoderConfig config(
       media::CodecIDToVideoCodec(av_stream->codec->codec_id),
       width, height,
       av_stream->r_frame_rate.num,

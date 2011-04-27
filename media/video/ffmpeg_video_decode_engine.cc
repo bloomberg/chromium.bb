@@ -42,7 +42,7 @@ void FFmpegVideoDecodeEngine::Initialize(
     MessageLoop* message_loop,
     VideoDecodeEngine::EventHandler* event_handler,
     VideoDecodeContext* context,
-    const VideoCodecConfig& config) {
+    const VideoDecoderConfig& config) {
   allocator_.reset(new FFmpegVideoAllocator());
 
   // Always try to use three threads for video decoding.  There is little reason
@@ -60,7 +60,7 @@ void FFmpegVideoDecodeEngine::Initialize(
   // Initialize AVCodecContext structure.
   codec_context_ = avcodec_alloc_context();
 
-  // TODO(scherkus): should video format get passed in via VideoCodecConfig?
+  // TODO(scherkus): should video format get passed in via VideoDecoderConfig?
   codec_context_->pix_fmt = PIX_FMT_YUV420P;
   codec_context_->codec_type = AVMEDIA_TYPE_VIDEO;
   codec_context_->codec_id = VideoCodecToCodecID(config.codec());

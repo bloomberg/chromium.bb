@@ -272,13 +272,13 @@ GpuVideoDecoder::~GpuVideoDecoder() {}
 
 void GpuVideoDecoder::OnInitialize(const GpuVideoDecoderInitParam& param) {
   // TODO(jiesun): codec id should come from |param|.
-  media::VideoCodecConfig config(media::kCodecH264,
-                                 param.width,
-                                 param.height,
-                                 param.frame_rate_num,
-                                 param.frame_rate_den,
-                                 NULL,
-                                 0);
+  media::VideoDecoderConfig config(media::kCodecH264,
+                                   param.width,
+                                   param.height,
+                                   param.frame_rate_num,
+                                   param.frame_rate_den,
+                                   NULL,
+                                   0);
   decode_engine_->Initialize(message_loop_, this, this, config);
 }
 

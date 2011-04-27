@@ -170,7 +170,7 @@ class TestApp : public base::RefCountedThreadSafe<TestApp>,
   void Run() {
     StartProfiler();
 
-    media::VideoCodecConfig config(
+    media::VideoDecoderConfig config(
         media::CodecIDToVideoCodec(av_stream_->codec->codec_id),
         av_stream_->codec->coded_width,
         av_stream_->codec->coded_height,

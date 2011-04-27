@@ -26,7 +26,7 @@ class FakeGlVideoDecodeEngine : public media::VideoDecodeEngine {
       MessageLoop* message_loop,
       media::VideoDecodeEngine::EventHandler* event_handler,
       media::VideoDecodeContext* context,
-      const media::VideoCodecConfig& config);
+      const media::VideoDecoderConfig& config);
 
   virtual void Uninitialize();
   virtual void Flush();

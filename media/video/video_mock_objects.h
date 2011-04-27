@@ -19,7 +19,7 @@ class MockVideoDecodeEngine : public VideoDecodeEngine {
   MOCK_METHOD4(Initialize, void(MessageLoop* message_loop,
                                 EventHandler* event_handler,
                                 VideoDecodeContext* context,
-                                const VideoCodecConfig& config));
+                                const VideoDecoderConfig& config));
   MOCK_METHOD0(Uninitialize, void());
   MOCK_METHOD0(Flush, void());
   MOCK_METHOD0(Seek, void());

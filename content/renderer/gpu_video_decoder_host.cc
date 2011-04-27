@@ -64,8 +64,10 @@ bool GpuVideoDecoderHost::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void GpuVideoDecoderHost::Initialize(
-    MessageLoop* message_loop, VideoDecodeEngine::EventHandler* event_handler,
-    media::VideoDecodeContext* context, const media::VideoCodecConfig& config) {
+    MessageLoop* message_loop,
+    VideoDecodeEngine::EventHandler* event_handler,
+    media::VideoDecodeContext* context,
+    const media::VideoDecoderConfig& config) {
   DCHECK_EQ(kStateUninitialized, state_);
   DCHECK(!message_loop_);
   message_loop_ = message_loop;

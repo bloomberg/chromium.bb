@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 
 class MessageLoop;
@@ -17,50 +18,6 @@ class Buffer;
 class VideoDecodeContext;
 
 struct PipelineStatistics;
-
-enum VideoCodec {
-  kUnknown,
-  kCodecH264,
-  kCodecVC1,
-  kCodecMPEG2,
-  kCodecMPEG4,
-  kCodecTheora,
-  kCodecVP8,
-};
-
-class VideoCodecConfig {
- public:
-  VideoCodecConfig(VideoCodec codec, int width, int height,
-                   int frame_rate_numerator, int frame_rate_denominator,
-                   uint8* extra_data, size_t extra_data_size);
-  ~VideoCodecConfig();
-
-  VideoCodec codec() const;
-  int width() const;
-  int height() const;
-  int frame_rate_numerator() const;
-  int frame_rate_denominator() const;
-  uint8* extra_data() const;
-  size_t extra_data_size() const;
-
- private:
-  VideoCodec codec_;
-
-  // Container's concept of width and height of this video.
-  int width_;
-  int height_;
-
-  // Frame rate in seconds expressed as a fraction.
-  // TODO(scherkus): fairly certain decoders don't require frame rates.
-  int frame_rate_numerator_;
-  int frame_rate_denominator_;
-
-  // Optional byte data requied to initialize video decoders.
-  scoped_array<uint8> extra_data_;
-  size_t extra_data_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoCodecConfig);
-};
 
 struct VideoStreamInfo {
   VideoFrame::Format surface_format;
@@ -144,7 +101,7 @@ class VideoDecodeEngine {
   virtual void Initialize(MessageLoop* message_loop,
                           EventHandler* event_handler,
                           VideoDecodeContext* context,
-                          const VideoCodecConfig& config) = 0;
+                          const VideoDecoderConfig& config) = 0;
 
   // Uninitialize the engine. Engine should destroy all resources and call
   // EventHandler::OnUninitializeComplete().

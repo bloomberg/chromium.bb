@@ -84,7 +84,7 @@ void OmxVideoDecodeEngine::Initialize(
     MessageLoop* message_loop,
     VideoDecodeEngine::EventHandler* event_handler,
     VideoDecodeContext* context,
-    const VideoCodecConfig& config) {
+    const VideoDecoderConfig& config) {
   DCHECK_EQ(message_loop, MessageLoop::current());
 
   message_loop_ = message_loop;

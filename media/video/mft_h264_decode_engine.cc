@@ -167,7 +167,7 @@ void MftH264DecodeEngine::Initialize(
     MessageLoop* message_loop,
     VideoDecodeEngine::EventHandler* event_handler,
     VideoDecodeContext* context,
-    const VideoCodecConfig& config) {
+    const VideoDecoderConfig& config) {
   DCHECK(!use_dxva_ || context);
   if (state_ != kUninitialized) {
     LOG(ERROR) << "Initialize: invalid state";

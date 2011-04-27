@@ -146,7 +146,7 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
   }
 
  protected:
-  VideoCodecConfig config_;
+  VideoDecoderConfig config_;
   VideoCodecInfo info_;
   scoped_refptr<VideoFrame> video_frame_;
   scoped_ptr<FFmpegVideoDecodeEngine> test_engine_;

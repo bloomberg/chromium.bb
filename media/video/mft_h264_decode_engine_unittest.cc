@@ -198,7 +198,7 @@ class MftH264DecodeEngineTest : public testing::Test {
     ASSERT_TRUE(engine_.get());
   }
   void InitDecodeEngine(int width, int height) {
-    VideoCodecConfig config;
+    VideoDecoderConfig config;
     config.width = width;
     config.height = height;
 
@@ -237,7 +237,7 @@ class MftH264DecodeEngineTest : public testing::Test {
     ASSERT_TRUE(reader->GetWidth(&actual_width));
     ASSERT_TRUE(reader->GetHeight(&actual_height));
 
-    VideoCodecConfig config;
+    VideoDecoderConfig config;
     CreateDrawWindow(config.width, config.height);
     GetDecodeEngine(dxva);
     InitDecodeEngine();
@@ -303,7 +303,7 @@ TEST_F(MftH264DecodeEngineTest, DecoderUninitializedAtFirst) {
 }
 
 TEST_F(MftH264DecodeEngineTest, DecoderInitMissingArgs) {
-  VideoCodecConfig config;
+  VideoDecoderConfig config;
   GetDecodeEngine(false);
   engine_->Initialize(NULL, NULL, NULL, config);
   EXPECT_EQ(MftH264DecodeEngine::kUninitialized, engine_->state());

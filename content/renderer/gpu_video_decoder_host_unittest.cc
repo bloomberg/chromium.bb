@@ -130,7 +130,7 @@ class GpuVideoDecoderHostTest : public testing::Test,
         .WillOnce(SendMessage(decoder_host_.get(), msg2));
     EXPECT_CALL(*this, OnInitializeComplete(_));
 
-    media::VideoCodecConfig config(
+    media::VideoDecoderConfig config(
         media::kCodecH264,
         kWidth,
         kHeight,
