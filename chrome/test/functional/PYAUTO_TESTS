@@ -210,7 +210,6 @@
       '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
       '-cookies.CookiesTest.testAllowCookiesUsingExceptions',
       '-cookies.CookiesTest.testCookiesFile',
-      '-crash_reporter',
       '-history.HistoryTest.testFtpHistory',
       '-history.HistoryTest.testHttpsHistory',
       '-https.HTTPSTest.testSSLPageBasic',
