@@ -122,8 +122,6 @@ class Upgrader(object):
   def _UpgradePackage(self, info):
     """Updates |info| with latest_cpv and performs an upgrade if necessary."""
     cpv = info['cpv']
-    # No need to report or try to upgrade chromeos-base packages.
-    if cpv.startswith('chromeos-base/'): return
     info['latest_cpv'] = self._FindLatestVersion(cpv)
     info['upgraded'] = self._CopyUpstreamPackage(info)
     upgrade = ''
@@ -179,6 +177,8 @@ class Upgrader(object):
     """Returns a list of cpv/overlay info maps corresponding to |cpvlist|."""
     infolist = []
     for cpv in cpvlist:
+      # No need to report or try to upgrade chromeos-base packages.
+      if cpv.startswith('chromeos-base/'): continue
       # TODO(petkov): Use internal portage utilities to find the overlay instead
       # of equery to improve performance, if possible.
       equery = ['equery-%s' % self._options.board, 'which', cpv]
