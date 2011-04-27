@@ -1,6 +1,7 @@
 {
   "nexes": {
-    "x86-64": "ppapi_geturl_x86-64.nexe",
     "x86-32": "ppapi_geturl_x86-32.nexe",
+    "x86-64": "ppapi_geturl_x86-64.nexe",
+    "arm": "ppapi_geturl_arm.nexe"
   }
 }

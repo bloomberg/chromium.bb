@@ -149,25 +149,20 @@ PP_Var* NexesObject(PP_Module browser_module,
   return nexes_object;
 }
 
-// Emulates the window.eval method.
-PP_Var Eval(Object* object,
-            uint32_t argc,
-            PP_Var* argv,
-            PP_Var* exception) {
+// Emulates the window.JSON.parse method.
+PP_Var Parse(Object* object,
+             uint32_t argc,
+             PP_Var* argv,
+             PP_Var* exception) {
   UNREFERENCED_PARAMETER(object);
   UNREFERENCED_PARAMETER(exception);
-  printf("window.eval(");
+  printf("window.JSON.parse(");
   if (argc == 1) {
     printf("'%s')\n", PluginVar::DebugString(argv[0]).c_str());
   } else {
     printf("<BAD PARAMETER COUNT: %d>)\n", argc);
     return PP_MakeUndefined();
   }
-  // Eval is used for event dispatching.  Skip its function object construction.
-  if (strstr(PluginVar::DebugString(argv[0]).c_str(), "(function(")) {
-    return PP_MakeUndefined();
-  }
-
   // Build the nexes object from the json string.
   // Populate the properties map.
   Object::PropertyMap properties;
@@ -179,6 +174,21 @@ PP_Var Eval(Object* object,
   Object::MethodMap methods;
 
   return Object::New(g_browser_module, g_browser_instance, properties, methods);
+}
+
+// Returns a PP_Var that mocks the window.JSON object.
+PP_Var* JsonParserObject(PP_Module browser_module,
+                         PP_Instance browser_instance) {
+  // Populate the properties map.
+  Object::PropertyMap properties;
+
+  // Populate the methods map.
+  Object::MethodMap methods;
+  methods["parse"] = Parse;
+
+  PP_Var* console = reinterpret_cast<PP_Var*>(malloc(sizeof(*console)));
+  *console = Object::New(browser_module, browser_instance, properties, methods);
+  return console;
 }
 
 }  // namespace
@@ -194,10 +204,10 @@ FakeWindow::FakeWindow(PP_Module browser_module,
   properties["console"] = ConsoleObject(browser_module, browser_instance);
   properties["location"] = LocationObject(browser_module, browser_instance,
                                           page_url);
+  properties["JSON"] = JsonParserObject(browser_module, browser_instance);
   // Populate the methods map.
   Object::MethodMap methods;
   methods["alert"] = Alert;
-  methods["eval"] = Eval;
   Object* window_object = new Object(browser_module, browser_instance,
                                      properties, methods);
   window_var_ =

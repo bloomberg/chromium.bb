@@ -1,7 +1,7 @@
 {
   "nexes": {
-    "x86-64": "chrome_extension_x86-64.nexe",
     "x86-32": "chrome_extension_x86-32.nexe",
-    "ARM": "chrome_extension_ARM.nexe"
+    "x86-64": "chrome_extension_x86-64.nexe",
+    "arm": "chrome_extension_arm.nexe"
   }
 }

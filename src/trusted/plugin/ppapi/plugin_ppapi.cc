@@ -751,16 +751,15 @@ bool PluginPpapi::SelectNexeURLFromManifest(
        sandbox_isa.c_str(), nexe_manifest_json.c_str()));
   if (result == NULL)
     return false;
-  // Eval the JSON via the browser.
-  pp::Var window_object = GetWindowObject();
-  if (!window_object.is_object()) {
+  // Parse the JSON via the browser.
+  pp::Var exception;
+  pp::Var json_parser = GetWindowObject().GetProperty("JSON", &exception);
+  if (!exception.is_undefined()) {
     return false;
   }
-  nacl::string eval_string("(");
-  eval_string += nexe_manifest_json;
-  eval_string += ")";
-  pp::Var manifest_root = window_object.Call("eval", eval_string);
-  if (!manifest_root.is_object()) {
+  pp::Var manifest_root =
+      json_parser.Call("parse", nexe_manifest_json, &exception);
+  if (!exception.is_undefined()) {
     return false;
   }
   if (!manifest_root.HasProperty(kNexesKey)) {
