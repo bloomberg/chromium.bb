@@ -462,7 +462,7 @@
         <include name="IDR_LOGIN_GUEST" file="login_guest.png" type="BINDATA" />
         <include name="IDR_LOGIN_ADD_USER" file="login_add_user.png" type="BINDATA" />
         <include name="IDR_LOGIN_ADD_USER_HOVER" file="login_add_user_hover.png" type="BINDATA" />
-        <include name="IDR_NOTIFICATION_3G" file="notification_sms.png" type="BINDATA" />
+        <include name="IDR_NOTIFICATION_3G" file="notification_3g.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_BARS_EMPTY" file="notification_bars_empty.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_BARS_CRITICAL" file="notification_bars_critical.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_LOCALE_CHANGE" file="notification_locale_change.png" type="BINDATA" />
