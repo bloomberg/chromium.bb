@@ -77,11 +77,11 @@ class ViewportWidget : public views::WidgetGtk {
  public:
   explicit ViewportWidget(chromeos::NotificationPanel* panel)
       : panel_(panel),
-        last_point_valid_(false) {
+        pointer_inside_panel_(false) {
   }
 
   void UpdateControl() {
-    if (last_point_valid_)
+    if (pointer_inside_panel_)
       panel_->OnMouseMotion(last_point_);
   }
 
@@ -110,7 +110,7 @@ class ViewportWidget : public views::WidgetGtk {
     gfx::Rect panel_rect(event.location(), gfx::Size());
     Widget::ConvertRect(this, top_level_widget, &panel_rect);
     last_point_ = panel_rect.origin();
-    last_point_valid_ = true;
+    pointer_inside_panel_ = true;
     panel_->OnMouseMotion(last_point_);
   }
 
@@ -121,14 +121,14 @@ class ViewportWidget : public views::WidgetGtk {
     if (!bounds.Contains(event.location().x() + bounds.x(),
                          event.location().y() + bounds.y())) {
       panel_->OnMouseLeave();
-      last_point_valid_ = false;
+      pointer_inside_panel_ = false;
     }
   }
 
  private:
   chromeos::NotificationPanel* panel_;
   gfx::Point last_point_;
-  bool last_point_valid_;
+  bool pointer_inside_panel_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewportWidget);
 };
