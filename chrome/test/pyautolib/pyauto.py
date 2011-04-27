@@ -213,7 +213,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       return os.path.isfile(consent_file) and len(open(consent_file).read())
     if not _HasValidConsentFile():
       client_id = hashlib.md5('abcdefgh').hexdigest()
-      logging.debug('Using CLIENT_ID=%s' % client_id)
       open(consent_file, 'w').write(client_id)
     assert _HasValidConsentFile(), 'Could not create %s' % consent_file
 
@@ -238,7 +237,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     profile_dir = '/home/chronos/user'
     for item in os.listdir(profile_dir):
-      if item != '.pki':  # Causes stateful partition to get erased
+      # Deleting .pki causes stateful partition to get erased
+      if item != '.pki' and item != 'log':
         pyauto_utils.RemovePath(os.path.join(profile_dir, item))
 
     chronos_dir = '/home/chronos'
