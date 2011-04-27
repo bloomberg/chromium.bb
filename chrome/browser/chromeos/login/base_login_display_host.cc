@@ -90,19 +90,9 @@ BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
       NotificationService::AllSources());
   DCHECK(default_host_ == NULL);
   default_host_ = this;
-
-  // Add a reference count so the message loop won't exit when other
-  // message loop clients (e.g. menus) do.
-  g_browser_process->AddRefModule();
 }
 
 BaseLoginDisplayHost::~BaseLoginDisplayHost() {
-  // A browser should already exist when destructor is called since
-  // deletion is scheduled with MessageLoop::DeleteSoon() from
-  // OnSessionStart(), so the browser will already have incremented
-  // the reference count.
-  g_browser_process->ReleaseModule();
-
   default_host_ = NULL;
 }
 
