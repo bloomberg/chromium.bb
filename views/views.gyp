@@ -422,9 +422,6 @@
           ],
         }],
         ['touchui==1', {
-          'dependencies': [
-            '../build/linux/system.gyp:ibus',
-          ],
           'defines': ['TOUCH_UI=1'],
           'sources/': [
             ['exclude', 'focus/accelerator_handler_gtk.cc'],
@@ -438,15 +435,15 @@
                 ['exclude', 'touchui/touch_factory.h'],
               ],
             }],
-            # TODO(suzhe): We should not check ibus version here. Instead, we
-            # should use a variable to control whether or not to use ibus.
-            ['"<!@(<(pkg-config) --atleast-version=1.3.99 ibus-1.0 || echo $?)"==""', {
-              'defines': ['HAVE_IBUS=1'],
+            ['use_ibus==1', {
+              'dependencies': [
+                '../build/linux/system.gyp:ibus',
+              ],
               'sources/': [
                 ['exclude', 'ime/input_method_gtk.cc'],
                 ['exclude', 'ime/input_method_gtk.h'],
               ],
-            }, { # else: no ibus
+            }, { # else: use_ibus != 1
               'sources/': [
                 ['exclude', 'ime/input_method_ibus.cc'],
                 ['exclude', 'ime/input_method_ibus.h'],
