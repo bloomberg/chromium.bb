@@ -27,5 +27,6 @@ const char kOnResponseStarted[] = "experimental.webRequest.onResponseStarted";
 const char kOnRequestSent[] = "experimental.webRequest.onRequestSent";
 
 const char kInvalidRedirectUrl[] = "redirectUrl '*' is not a valid URL.";
+const char kInvalidRequestFilterUrl[] = "'*' is not a valid URL pattern.";
 
 }  // namespace extension_webrequest_api_constants

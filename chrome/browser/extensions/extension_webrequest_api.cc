@@ -148,7 +148,10 @@ struct ExtensionWebRequestEventRouter::RequestFilter {
   int window_id;
 
   RequestFilter() : tab_id(-1), window_id(-1) {}
-  bool InitFromValue(const DictionaryValue& value);
+  // Returns false if there was an error initializing. If it is a user error,
+  // an error message is provided, otherwise the error is internal (and
+  // unexpected).
+  bool InitFromValue(const DictionaryValue& value, std::string* error);
 };
 
 // Internal representation of the extraInfoSpec parameter on webRequest events,
@@ -207,7 +210,7 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
 };
 
 bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
-    const DictionaryValue& value) {
+    const DictionaryValue& value, std::string* error) {
   for (DictionaryValue::key_iterator key = value.begin_keys();
        key != value.end_keys(); ++key) {
     if (*key == "urls") {
@@ -219,8 +222,11 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         URLPattern pattern(URLPattern::SCHEME_ALL);
         if (!urls_value->GetString(i, &url) ||
             pattern.Parse(url, URLPattern::PARSE_STRICT) !=
-                URLPattern::PARSE_SUCCESS)
+                URLPattern::PARSE_SUCCESS) {
+          *error = ExtensionErrorUtils::FormatErrorMessage(
+              keys::kInvalidRequestFilterUrl, url);
           return false;
+        }
         urls.AddPattern(pattern);
       }
     } else if (*key == "types") {
@@ -666,12 +672,18 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
   listener.extension_id = extension_id;
   listener.sub_event_name = sub_event_name;
 
+  // It's possible for AddEventListener to fail asynchronously. In that case,
+  // the renderer believes the listener exists, while the browser does not.
+  // Ignore a RemoveEventListener in that case.
+  std::set<EventListener>::iterator found =
+      listeners_[profile_id][event_name].find(listener);
+  if (found == listeners_[profile_id][event_name].end())
+    return;
+
   CHECK_EQ(listeners_[profile_id][event_name].count(listener), 1u) <<
       "extension=" << extension_id << " event=" << event_name;
 
   // Unblock any request that this event listener may have been blocking.
-  std::set<EventListener>::iterator found =
-      listeners_[profile_id][event_name].find(listener);
   for (std::set<uint64>::iterator it = found->blocked_requests.begin();
        it != found->blocked_requests.end(); ++it) {
     DecrementBlockCount(*it, false, GURL());
@@ -779,8 +791,13 @@ bool WebRequestAddEventListener::RunImpl() {
   ExtensionWebRequestEventRouter::RequestFilter filter;
   if (HasOptionalArgument(1)) {
     DictionaryValue* value = NULL;
+    error_.clear();
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &value));
-    EXTENSION_FUNCTION_VALIDATE(filter.InitFromValue(*value));
+    // Failure + an empty error string means a fatal error.
+    EXTENSION_FUNCTION_VALIDATE(filter.InitFromValue(*value, &error_) ||
+                                !error_.empty());
+    if (!error_.empty())
+      return false;
   }
 
   int extra_info_spec = 0;
