@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_NEW_TAB_UI_H_
-#define CHROME_BROWSER_UI_WEBUI_NEW_TAB_UI_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_NTP_NEW_TAB_UI_H_
+#define CHROME_BROWSER_UI_WEBUI_NTP_NEW_TAB_UI_H_
 #pragma once
 
 #include <string>
@@ -117,4 +117,4 @@ class NewTabUI : public WebUI,
   DISALLOW_COPY_AND_ASSIGN(NewTabUI);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_NEW_TAB_UI_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_NTP_NEW_TAB_UI_H_
