@@ -164,7 +164,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
       self.tmpdir, self.source_repo, self.manifest_repo, self.branch,
       self.build_name, self.incr_type, dry_run=True)
 
-  def testGetMatchingSpecs(self):
+  def testLoadSpecs(self):
     """Tests whether we can load specs correctly."""
     self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
     self.mox.StubOutWithMock(manifest_version, '_CloneGitRepo')
@@ -200,6 +200,33 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.manager._LoadSpecs(info)
     self.mox.VerifyAll()
     self.assertEqual(self.manager.latest_unprocessed, '1.2.3.5')
+
+  def testGetMatchingSpecs(self):
+    """Tests whether we can get sorted specs correctly from a directory."""
+    self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
+    self.mox.StubOutWithMock(manifest_version, '_CloneGitRepo')
+    info = manifest_version._VersionInfo(version_string=FAKE_VERSION_STRING,
+                                         incr_type='patch')
+    dir_pfx = '1.2'
+    specs_dir = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx)
+    m1 = os.path.join(specs_dir, '1.2.3.5.xml')
+    m2 = os.path.join(specs_dir, '1.2.3.10.xml')
+    m3 = os.path.join(specs_dir, '1.2.4.6.xml')
+    m4 = os.path.join(specs_dir, '1.2.3.4.xml')
+    for_build = os.path.join(self.manager.manifests_dir, 'build-name',
+                             self.build_name)
+
+    # Create fake buildspecs.
+    _TouchFile(m1)
+    _TouchFile(m2)
+    _TouchFile(m3)
+    _TouchFile(m4)
+
+    self.mox.ReplayAll()
+    specs = self.manager._GetMatchingSpecs(info, specs_dir)
+    self.mox.VerifyAll()
+    # Should be the latest on the 1.2.3 branch.
+    self.assertEqual(specs[-1], '1.2.3.10')
 
   def testCreateNewBuildSpecNoCopy(self):
     """Tests whether we can create a new build spec correctly.

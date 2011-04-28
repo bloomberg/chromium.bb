@@ -399,7 +399,7 @@ class BuildSpecsManager(object):
     self.current_build_spec = None
 
   def _GetMatchingSpecs(self, version_info, directory):
-    """Returns the list of buildspecs that match '*.xml in given directory.'
+    """Returns the sorted list of buildspecs that match '*.xml in a directory.'
     Args:
       version_info: Info class for version information of cros.
       directory: Directory of the buildspecs.
@@ -416,7 +416,7 @@ class BuildSpecsManager(object):
           all_manifests, match_string)
       matched_manifests = [os.path.splitext(m)[0] for m in matched_manifests]
 
-    return matched_manifests
+    return sorted(matched_manifests, key=lambda s: map(int, s.split('.')))
 
   def _LoadSpecs(self, version_info):
     """Loads the specifications from the working directory.
