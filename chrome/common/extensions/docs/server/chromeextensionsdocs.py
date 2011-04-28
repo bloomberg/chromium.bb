@@ -108,12 +108,12 @@ class MainPage(webapp.RequestHandler):
     if path[1] == "":
       channel = Channel.DEFAULT
       if(Channel.DEFAULT == Channel.TRUNK):
-        url = url + "trunk/src/chrome/"
+        url = url + "trunk/src/"
       else:
-        url = url + "branches/%s/src/chrome/"
+        url = url + "branches/%s/src/"
       path = ""
     elif path[1] == Channel.TRUNK.name:
-      url = url + "trunk/src/chrome/"
+      url = url + "trunk/src/"
       channel = Channel.TRUNK
       path = path[2]
     else:
@@ -121,16 +121,16 @@ class MainPage(webapp.RequestHandler):
       for c in Channel.CHANNELS:
         if(path[1] == c.name):
           channel = c
-          url = url + "branches/%s/src/chrome/"
+          url = url + "branches/%s/src/"
           path = path[2]
           break
       # if the subdirectory doesn't correspond to a channel, use the default
       if channel is None:
         channel = Channel.DEFAULT
         if(Channel.DEFAULT == Channel.TRUNK):
-          url = url + "trunk/src/chrome/"
+          url = url + "trunk/src/"
         else:
-          url = url + "branches/%s/src/chrome/"
+          url = url + "branches/%s/src/"
         if path[2] != "":
           path = path[1] + "/" + path[2]
         else:
@@ -140,13 +140,13 @@ class MainPage(webapp.RequestHandler):
     if path == "third_party/jstemplate/jstemplate_compiled.js":
       url = url + path
     elif path == "api/extension_api.json":
-      url = url + "common/extensions/" + path
+      url = url + "chrome/common/extensions/" + path
     elif path == "favicon.ico":
       url = "http://src.chromium.org/favicon.ico"
     else:
       if path == "":
         path = "index.html"
-      url = url + "common/extensions/docs/" + path
+      url = url + "chrome/common/extensions/docs/" + path
     return [url, channel]
 
   # get the current version number for the channel requested (dev, beta or stable)
@@ -210,10 +210,10 @@ class MainPage(webapp.RequestHandler):
     self.check("/stable/images/toolstrip.png", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/images/toolstrip.png", Channel.STABLE)
 
     self.response.out.write("<br/>Testing jstemplate_compiled.js<br/>")
-    self.check("/trunk/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.TRUNK)
-    self.check("/dev/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.DEV)
-    self.check("/beta/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.BETA)
-    self.check("/stable/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.STABLE)
+    self.check("/trunk/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/trunk/src/third_party/jstemplate/jstemplate_compiled.js", Channel.TRUNK)
+    self.check("/dev/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/branches/%s/src/third_party/jstemplate/jstemplate_compiled.js", Channel.DEV)
+    self.check("/beta/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/branches/%s/src/third_party/jstemplate/jstemplate_compiled.js", Channel.BETA)
+    self.check("/stable/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/branches/%s/src/third_party/jstemplate/jstemplate_compiled.js", Channel.STABLE)
 
     self.response.out.write("<br/>Testing extension_api.json<br/>")
     self.check("/trunk/api/extension_api.json", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/api/extension_api.json", Channel.TRUNK)
@@ -234,7 +234,7 @@ class MainPage(webapp.RequestHandler):
     self.check("/index.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/index.html", Channel.DEV)
     self.check("/getstarted.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/getstarted.html", Channel.DEV)
     self.check("/images/toolstrip.png", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/images/toolstrip.png", Channel.DEV)
-    self.check("/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.DEV)
+    self.check("/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/branches/%s/src/third_party/jstemplate/jstemplate_compiled.js", Channel.DEV)
     self.check("/api/extension_api.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/extension_api.json", Channel.DEV)
     self.check("/css/ApiRefStyles.css", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/css/ApiRefStyles.css", Channel.DEV)
     self.check("/favicon.ico", "http://src.chromium.org/favicon.ico", Channel.DEV)
@@ -245,7 +245,7 @@ class MainPage(webapp.RequestHandler):
     self.check("/index.html", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/index.html", Channel.TRUNK)
     self.check("/getstarted.html", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/getstarted.html", Channel.TRUNK)
     self.check("/images/toolstrip.png", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/images/toolstrip.png", Channel.TRUNK)
-    self.check("/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.TRUNK)
+    self.check("/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/trunk/src/third_party/jstemplate/jstemplate_compiled.js", Channel.TRUNK)
     self.check("/api/extension_api.json", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/api/extension_api.json", Channel.TRUNK)
     self.check("/css/ApiRefStyles.css", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/css/ApiRefStyles.css", Channel.TRUNK)
     self.check("/favicon.ico", "http://src.chromium.org/favicon.ico", Channel.TRUNK)

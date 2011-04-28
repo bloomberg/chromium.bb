@@ -561,7 +561,7 @@
         "contentscript.js",
         "manifest.json"
       ],
-      "source_hash": "0fe56cea50dc18b7e5e31d47c383356a85d8b896",
+      "source_hash": "c8005edca96978032c5453c347bf9295f8948440",
       "zip_path": "examples\/howto\/contentscript_xhr.zip"
     },
     {
@@ -619,7 +619,7 @@
         "manifest.json",
         "popup.html"
       ],
-      "source_hash": "df2a19be905672c2ced4e7108e05170175847d6b",
+      "source_hash": "fe3f9c8747193bb282e8dc58637cc6cd70a09193",
       "zip_path": "examples\/api\/preferences\/enableReferrer.zip"
     },
     {
@@ -928,7 +928,7 @@
         "history.html",
         "manifest.json"
       ],
-      "source_hash": "1378042fee96e115d7b8003588eca369b43f772b",
+      "source_hash": "4f523c42764f6bef4604feab3501c888e03b9c2f",
       "zip_path": "examples\/api\/idle\/idle_simple.zip"
     },
     {
@@ -981,7 +981,7 @@
         "info.html",
         "manifest.json"
       ],
-      "source_hash": "c746d9114348f4b414c1ec05e988e2807feb963a",
+      "source_hash": "d4221d62fcfab23a87dec7e5f21ec190c62e7a46",
       "zip_path": "examples\/extensions\/imageinfo.zip"
     },
     {
@@ -1074,7 +1074,7 @@
         "background.html",
         "manifest.json"
       ],
-      "source_hash": "4b5fe52788e0bef2f3871b36105eb53cc760c454",
+      "source_hash": "c61c5a339cfb2ffc13dbd407d914b9066f24ec9d",
       "zip_path": "examples\/api\/windows\/merge_windows.zip"
     },
     {
@@ -1538,7 +1538,7 @@
         "infobar.html",
         "manifest.json"
       ],
-      "source_hash": "890d698634e5228ef7da8ffca3008f843b9a7cab",
+      "source_hash": "777161ddc15bcdf61085eff421e43183ec554619",
       "zip_path": "examples\/api\/infobars\/sandwichbar.zip"
     },
     {
@@ -1619,7 +1619,7 @@
         "manifest.json",
         "tabs_api.html"
       ],
-      "source_hash": "3076b39a4302d8e86f456e6d7367129187cce0c0",
+      "source_hash": "0855c733897abee07baccbf1d6cfd3171c4c636e",
       "zip_path": "examples\/api\/tabs\/inspector.zip"
     },
     {
