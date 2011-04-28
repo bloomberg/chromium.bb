@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_policy.h"
 #include "net/base/host_resolver.h"
@@ -17,7 +18,6 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
-#include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_storage.h"
@@ -26,15 +26,20 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace net {
+class ProxyConfigService;
+}
+
 // Subclass of net::URLRequestContext which can be used to store extra
 // information for requests. This subclass is meant to be used in the service
 // process where the profile is not available.
 //
 class ServiceURLRequestContext : public net::URLRequestContext {
  public:
-  // This context takes ownership of |net_proxy_service|.
-  explicit ServiceURLRequestContext(const std::string& user_agent,
-                                    net::ProxyService* net_proxy_service);
+  // This context takes ownership of |net_proxy_config_service|.
+  explicit ServiceURLRequestContext(
+      const std::string& user_agent,
+      net::ProxyConfigService* net_proxy_config_service);
 
   // Overridden from net::URLRequestContext:
   virtual const std::string& GetUserAgent(const GURL& url) const;
@@ -63,8 +68,6 @@ class ServiceURLRequestContextGetter : public net::URLRequestContextGetter {
   friend class ServiceProcess;
   ServiceURLRequestContextGetter();
   virtual ~ServiceURLRequestContextGetter();
-
-  void CreateProxyConfigService();
 
   std::string user_agent_;
   scoped_refptr<net::URLRequestContext> url_request_context_;
