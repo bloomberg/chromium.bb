@@ -257,6 +257,8 @@ class Main(object):
     """
     import imp
     sys.modules['pytest'] = imp.new_module('pytest')
+    sys.modules['pytest'].mark = imp.new_module('mark')
+    sys.modules['pytest'].mark.ignore_chrome = lambda x: x
 
   def _Run(self):
     """Run the tests."""

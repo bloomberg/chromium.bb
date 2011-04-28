@@ -444,7 +444,7 @@ class ElementEqualityTest(unittest.TestCase):
 
     # TODO(jleyba): WebDriver's python bindings should expose a proper API
     # for this.
-    result = body1.execute(Command.ELEMENT_EQUALS, {
+    result = body1._execute(Command.ELEMENT_EQUALS, {
       'other': body2.id
     })
     self.assertTrue(result['value'])
