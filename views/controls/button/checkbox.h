@@ -9,7 +9,6 @@
 #include <string>
 
 #include "views/controls/button/native_button.h"
-#include "views/controls/button/text_button.h"
 
 namespace views {
 
@@ -86,60 +85,6 @@ class Checkbox : public NativeButtonBase {
   bool checked_;
 
   DISALLOW_COPY_AND_ASSIGN(Checkbox);
-};
-
-// A native themed class representing a checkbox.  This class does not use
-// platform specific objects to replicate the native platforms looks and feel.
-//
-// This class will eventually be renamed to Checkbox to replace the class
-// above.
-//
-// TODO: A Checkbox feature not support by CheckboxNt is multi-line.
-class CheckboxNt : public TextButtonBase {
- public:
-  explicit CheckboxNt(const std::wstring& label);
-  virtual ~CheckboxNt();
-
-  // Sets a listener for this checkbox. Checkboxes aren't required to have them
-  // since their state can be read independently of them being toggled.
-  void set_listener(ButtonListener* listener) { listener_ = listener; }
-
-  // Sets/Gets whether or not the checkbox is checked.
-  virtual void SetChecked(bool checked);
-  bool checked() const { return checked_; }
-
-  // Sets whether or not the checkbox label should wrap multiple lines of text.
-  // If true, long lines are wrapped, and this is reflected in the preferred
-  // size returned by GetPreferredSize. If false, text that will not fit within
-  // the available bounds for the label will be cropped.
-  // TODO: not yet implemented.
-  void SetMultiLine(bool multiline);
-
- protected:
-  // Overridden from View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
-
- private:
-  // Overridden from Button:
-  virtual void NotifyClick(const views::Event& event) OVERRIDE;
-
-  // Overridden from TextButtonBase:
-  virtual gfx::NativeTheme::Part GetThemePart() const OVERRIDE;
-  virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
-  virtual void GetExtraParams(
-      gfx::NativeTheme::ExtraParams* params) const OVERRIDE;
-  virtual gfx::Rect GetTextBounds() const OVERRIDE;
-
-  // True if the checkbox is checked.
-  bool checked_;
-
-  // The button's class name.
-  static const char kViewClassName[];
-
-  DISALLOW_COPY_AND_ASSIGN(CheckboxNt);
 };
 
 }  // namespace views

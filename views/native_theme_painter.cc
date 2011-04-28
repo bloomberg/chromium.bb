@@ -9,11 +9,10 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/rect.h"
-#include "views/native_theme_delegate.h"
 
 namespace views {
 
-NativeThemePainter::NativeThemePainter(NativeThemeDelegate* delegate)
+NativeThemePainter::NativeThemePainter(Delegate* delegate)
     : delegate_(delegate) {
   DCHECK(delegate_);
 }

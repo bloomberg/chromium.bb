@@ -46,37 +46,6 @@ class RadioButton : public Checkbox {
   DISALLOW_COPY_AND_ASSIGN(RadioButton);
 };
 
-// A native themed class representing a radio button.  This class does not use
-// platform specific objects to replicate the native platforms looks and feel.
-//
-// This class will eventually be renamed to RadioButton to replace the class
-// above.
-class RadioButtonNt : public CheckboxNt {
- public:
-  // The button's class name.
-  static const char kViewClassName[];
-
-  RadioButtonNt(const std::wstring& label, int group_id);
-  virtual ~RadioButtonNt();
-
-  // Overridden from View:
-  virtual std::string GetClassName() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual View* GetSelectedViewForGroup(int group_id) OVERRIDE;
-  virtual bool IsGroupFocusTraversable() const OVERRIDE;
-
-  // Overridden from Button:
-  virtual void NotifyClick(const views::Event& event) OVERRIDE;
-
-  // Overridden from TextButtonBase:
-  virtual gfx::NativeTheme::Part GetThemePart() const OVERRIDE;
-
-  // Overridden from CheckboxNt:
-  virtual void SetChecked(bool checked) OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(RadioButtonNt);
-};
-
 }  // namespace views
 
 #endif  // VIEWS_CONTROLS_BUTTON_RADIO_BUTTON_H_
