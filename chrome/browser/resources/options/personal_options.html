@@ -1,6 +1,5 @@
 <div id="personal-page" class="page hidden">
   <h1 i18n-content="personalPage"></h1>
-
 <if expr="pp_ifdef('chromeos')">
   <section>
     <h3 i18n-content="account"></h3>
@@ -32,19 +31,20 @@
   <section id="sync-section">
     <h3 i18n-content="syncSection"></h3>
     <div>
-      <div id="sync-overview">
+      <div id="sync-overview" hidden>
         <div i18n-content="syncOverview"></div>
         <div i18n-content="syncFurtherOverview"></div>
       </div>
-      <div id="sync-status">
+      <div id="sync-status" hidden>
         <span id="sync-status-text"></span>
         <button id="sync-action-link" class="link-button"></button>
       </div>
       <div id="sync-buttons">
-        <button id="start-stop-sync"></button>
-        <button id="customize-sync" i18n-content="customizeSync"></button>
+        <button id="start-stop-sync" hidden></button>
+        <button id="customize-sync" i18n-content="customizeSync" hidden>
+        </button>
       </div>
-      <div id="profiles-create">
+      <div id="profiles-create" hidden>
         <span i18n-content="createNewProfile"></span>
         <div id="profiles-create-button">
           <button id="new-profile" i18n-content="createProfileButton"></button>

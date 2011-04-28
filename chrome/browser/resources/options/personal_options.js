@@ -103,6 +103,7 @@ cr.define('options', function() {
     },
 
     setElementVisible_: function(element, visible) {
+      element.hidden = !visible;
       if (visible)
         element.classList.remove('hidden');
       else
