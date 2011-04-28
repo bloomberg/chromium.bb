@@ -511,3 +511,8 @@
   fun:WebKit::WebWorkerImpl::terminateWorkerContext*
   fun:WebWorkerStub::OnTerminateWorkerContext*
 }
+{
+  bug_80776
+  ThreadSanitizer:Race
+  fun:ObserverListBase::Iterator::~Iterator
+}
