@@ -97,7 +97,8 @@ cr.define('options.internet', function() {
             InternetOptions.unlockUpdates();
             // If clicked on other networks item.
             if (data && data.servicePath == '?') {
-              if (InternetOptions.useSettingsUI) {
+              if (InternetOptions.useSettingsUI &&
+                  data.type != options.internet.Constants.TYPE_CELLULAR) {
                 item.showOtherLogin();
               } else {
                 chrome.send('buttonClickCallback',

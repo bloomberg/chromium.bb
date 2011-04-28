@@ -3915,6 +3915,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     NetworkDevice* cellular = new NetworkDevice("cellular");
     scoped_ptr<Value> cellular_type(Value::CreateStringValue(kTypeCellular));
     cellular->ParseValue(PROPERTY_INDEX_TYPE, cellular_type.get());
+    cellular->IMSI_ = "123456789012345";
     device_map_["cellular"] = cellular;
 
     // Networks

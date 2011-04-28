@@ -405,15 +405,10 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
     const CellularNetwork* active_cellular = cros->cellular_network();
 
     bool separator_added = false;
-    // TODO(dpolukhin): detect this on device level.
-    bool is_gsm = false;
     // List Cellular networks.
     for (size_t i = 0; i < cell_networks.size(); ++i) {
       chromeos::ActivationState activation_state =
           cell_networks[i]->activation_state();
-
-      if (cell_networks[i]->is_gsm())
-        is_gsm = true;
 
       // If we are on the OOBE/login screen, do not show activating 3G option.
       if (!is_browser_mode && activation_state != ACTIVATION_STATE_ACTIVATED)
@@ -481,7 +476,9 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
         }
       }
     }
-    if (is_gsm) {
+    const NetworkDevice* cellular_device = cros->FindCellularDevice();
+    // TODO(dpolukhin): replace imsi check with more specific supportNetworkScan
+    if (cellular_device && !cellular_device->imsi().empty()) {
       // For GSM add mobile network scan.
       if (!separator_added && !menu_items_.empty())
         menu_items_.push_back(MenuItem());

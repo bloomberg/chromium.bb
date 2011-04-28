@@ -20,6 +20,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
@@ -878,9 +879,10 @@ void InternetOptionsHandler::HandleCellularButtonClick(
     const std::string& command) {
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  chromeos::CellularNetwork* cellular =
-      cros->FindCellularNetworkByPath(service_path);
-  if (cellular) {
+  chromeos::CellularNetwork* cellular = NULL;
+  if (service_path == kOtherNetworksFakePath) {
+    chromeos::ChooseMobileNetworkDialog::ShowDialog(GetNativeWindow());
+  } else if ((cellular = cros->FindCellularNetworkByPath(service_path))) {
     if (command == "connect") {
       cros->ConnectToCellularNetwork(cellular);
     } else if (command == "disconnect") {
@@ -1114,6 +1116,23 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         false,
         (*it)->activation_state(),
         (*it)->restricted_pool()));
+  }
+
+  const chromeos::NetworkDevice* cellular_device = cros->FindCellularDevice();
+  // TODO(dpolukhin): replace imsi check with more specific supportNetworkScan
+  if (cellular_device && !cellular_device->imsi().empty() &&
+      cros->cellular_enabled()) {
+    list->Append(GetNetwork(
+        kOtherNetworksFakePath,
+        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
+        l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS),
+        false,
+        false,
+        true,
+        chromeos::TYPE_CELLULAR,
+        false,
+        chromeos::ACTIVATION_STATE_ACTIVATED,
+        false));
   }
 
   return list;
