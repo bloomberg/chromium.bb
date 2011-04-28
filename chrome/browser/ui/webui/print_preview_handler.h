@@ -60,6 +60,10 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // |args| is unused.
   void HandleShowSystemDialog(const ListValue* args);
 
+  // Ask the browser to show the native printer management dialog.
+  // |args| is unused.
+  void HandleManagePrinters(const ListValue* args);
+
   // Send the printer capabilities to the Web UI.
   // |settings_info| contains printer capabilities information.
   void SendPrinterCapabilities(const DictionaryValue& settings_info);

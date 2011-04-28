@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -234,6 +235,8 @@ void PrintPreviewHandler::RegisterMessages() {
       NewCallback(this, &PrintPreviewHandler::HandleGetPrinterCapabilities));
   web_ui_->RegisterMessageCallback("showSystemDialog",
       NewCallback(this, &PrintPreviewHandler::HandleShowSystemDialog));
+  web_ui_->RegisterMessageCallback("managePrinters",
+      NewCallback(this, &PrintPreviewHandler::HandleManagePrinters));
 }
 
 TabContents* PrintPreviewHandler::preview_tab() {
@@ -332,6 +335,10 @@ void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* args) {
   wrapper->print_view_manager()->PrintNow();
 
   ClosePrintPreviewTab();
+}
+
+void PrintPreviewHandler::HandleManagePrinters(const ListValue* args) {
+  printing::PrinterManagerDialog::ShowPrinterManagerDialog();
 }
 
 void PrintPreviewHandler::SendPrinterCapabilities(

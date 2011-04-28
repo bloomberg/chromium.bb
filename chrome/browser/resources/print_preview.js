@@ -32,6 +32,9 @@ var isPreviewStillLoading = false;
 // Currently selected printer capabilities.
 var printerCapabilities;
 
+// Store the last selected printer index.
+var lastSelectedPrinterIndex = 0;
+
 /**
  * Window onload handler, sets up the page and starts print preview by getting
  * the printer list.
@@ -102,11 +105,17 @@ function updateControlsWithSelectedPrinterCapabilities() {
   if (printerName == localStrings.getString('printToPDF')) {
     updateWithPrinterCapabilities({'disableColorOption': true,
                                    'setColorAsDefault': true});
+  } else if (printerName == localStrings.getString('managePrinters')) {
+    printerList.selectedIndex = lastSelectedPrinterIndex;
+    chrome.send('managePrinters');
+    return;
   } else {
     // This message will call back to 'updateWithPrinterCapabilities'
     // function.
     chrome.send('getPrinterCapabilities', [printerName]);
   }
+
+  lastSelectedPrinterIndex = selectedPrinter;
 }
 
 /**
@@ -336,24 +345,34 @@ function requestPrintPreview() {
  */
 function setPrinters(printers, defaultPrinterIndex) {
   var printerList = $('printer-list');
-  for (var i = 0; i < printers.length; ++i) {
-    var option = document.createElement('option');
-    option.textContent = printers[i];
-    printerList.add(option);
-    if (i == defaultPrinterIndex)
-      option.selected = true;
-  }
+  for (var i = 0; i < printers.length; ++i)
+    addDestinationListOption(printers[i], i == defaultPrinterIndex);
 
   // Adding option for saving PDF to disk.
-  var option = document.createElement('option');
-  option.textContent = localStrings.getString('printToPDF');
-  printerList.add(option);
+  addDestinationListOption(localStrings.getString('printToPDF'), false);
+
+  // Add an option to manage printers.
+  addDestinationListOption(localStrings.getString('managePrinters'), false);
+
   printerList.disabled = false;
 
   updateControlsWithSelectedPrinterCapabilities();
 
   // Once the printer list is populated, generate the initial preview.
   requestPrintPreview();
+}
+
+/**
+ * Adds an option to the printer destination list.
+ * @param {String} optionText specifies the option text content.
+ * @param {boolean} is_default is true if the option needs to be selected.
+ */
+function addDestinationListOption(optionText, is_default) {
+  var option = document.createElement('option');
+  option.textContent = optionText;
+  $('printer-list').add(option);
+  if (is_default)
+    option.selected = true;
 }
 
 /**
