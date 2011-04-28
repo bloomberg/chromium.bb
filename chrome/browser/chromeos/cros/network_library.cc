@@ -942,6 +942,21 @@ void NetworkDevice::ParseInfo(const DictionaryValue* info) {
 ////////////////////////////////////////////////////////////////////////////////
 // Network
 
+void Network::SetState(ConnectionState new_state) {
+  if (new_state == state_)
+    return;
+  state_ = new_state;
+  if (new_state == STATE_FAILURE) {
+    // The user needs to be notified of this failure.
+    notify_failure_ = true;
+  } else {
+    // State changed, so refresh IP address.
+    // Note: blocking DBus call. TODO(stevenjb): refactor this.
+    InitIPAddress();
+  }
+  VLOG(1) << " " << name() << ".State = " << GetStateString();
+}
+
 bool Network::ParseValue(int index, const Value* value) {
   switch (index) {
     case PROPERTY_INDEX_TYPE: {
@@ -962,13 +977,7 @@ bool Network::ParseValue(int index, const Value* value) {
     case PROPERTY_INDEX_STATE: {
       std::string state_string;
       if (value->GetAsString(&state_string)) {
-        ConnectionState prev_state = state_;
-        state_ = ParseState(state_string);
-        if (state_ != prev_state) {
-          // State changed, so refresh IP address.
-          // Note: blocking DBus call. TODO(stevenjb): refactor this.
-          InitIPAddress();
-        }
+        SetState(ParseState(state_string));
         return true;
       }
       break;
@@ -2476,7 +2485,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
           strcmp(error_message, kErrorPassphraseRequiredMsg) == 0) {
         // This will trigger the connection failed notification.
         // TODO(stevenjb): Remove if chromium-os:13203 gets fixed.
-        network->set_state(STATE_FAILURE);
+        network->SetState(STATE_FAILURE);
         network->set_error(ERROR_BAD_PASSPHRASE);
         networklib->NotifyNetworkManagerChanged(true);  // Forced update.
       }
@@ -3094,14 +3103,11 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
     DCHECK(networklib);
     if (service_path) {
-      if (!info) {
-        // Network no longer exists.
-        networklib->DeleteNetwork(std::string(service_path));
-      } else {
-        DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
-        const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
-        networklib->ParseNetwork(std::string(service_path), dict);
-      }
+      if (!info)
+        return;  // Network no longer in visible list, ignore.
+      DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
+      const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
+      networklib->ParseNetwork(std::string(service_path), dict);
     }
   }
 
@@ -3235,6 +3241,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     std::pair<NetworkMap::iterator,bool> result =
         network_map_.insert(std::make_pair(network->service_path(), network));
     DCHECK(result.second);  // Should only get called with new network.
+    VLOG(2) << "Adding Network: " << network->name();
     ConnectionType type(network->type());
     if (type == TYPE_WIFI) {
       if (wifi_enabled())
@@ -3248,62 +3255,18 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     // Do not set the active network here. Wait until we parse the network.
   }
 
-  // This only gets called when NetworkServiceUpdate receives a NULL update
-  // for an existing network, e.g. an error occurred while fetching a network.
-  void DeleteNetwork(const std::string& service_path) {
-    NetworkMap::iterator found = network_map_.find(service_path);
-    if (found == network_map_.end()) {
-      // This occurs when we receive an update request followed by a disconnect
-      // which triggers another update. See UpdateNetworkServiceList.
-      return;
-    }
-    Network* network = found->second;
-    network_map_.erase(found);
-    if (!network->unique_id().empty())
-      network_unique_id_map_.erase(network->unique_id());
+  // Deletes a network. It must already be removed from any lists.
+  void DeleteNetwork(Network* network) {
+    CHECK(network_map_.find(network->service_path()) == network_map_.end());
     ConnectionType type(network->type());
-    if (type == TYPE_ETHERNET) {
-      if (network == ethernet_) {
-        // This should never happen.
-        LOG(ERROR) << "Deleting active ethernet network: " << service_path;
-        ethernet_ = NULL;
-      }
-    } else if (type == TYPE_WIFI) {
-      WifiNetworkVector::iterator iter = std::find(
-          wifi_networks_.begin(), wifi_networks_.end(), network);
-      if (iter != wifi_networks_.end())
-        wifi_networks_.erase(iter);
-      if (network == active_wifi_) {
-        // This should never happen.
-        LOG(ERROR) << "Deleting active wifi network: " << service_path;
-        active_wifi_ = NULL;
-      }
-    } else if (type == TYPE_CELLULAR) {
-      CellularNetworkVector::iterator iter = std::find(
-          cellular_networks_.begin(), cellular_networks_.end(), network);
-      if (iter != cellular_networks_.end())
-        cellular_networks_.erase(iter);
-      if (network == active_cellular_) {
-        // This should never happen.
-        LOG(ERROR) << "Deleting active cellular network: " << service_path;
-        active_cellular_ = NULL;
-      }
+    if (type == TYPE_CELLULAR) {
       // Find and delete any existing data plans associated with |service_path|.
-      CellularDataPlanMap::iterator found =  data_plan_map_.find(service_path);
+      CellularDataPlanMap::iterator found =
+          data_plan_map_.find(network->service_path());
       if (found != data_plan_map_.end()) {
         CellularDataPlanVector* data_plans = found->second;
         delete data_plans;
         data_plan_map_.erase(found);
-      }
-    } else if (type == TYPE_VPN) {
-      VirtualNetworkVector::iterator iter = std::find(
-          virtual_networks_.begin(), virtual_networks_.end(), network);
-      if (iter != virtual_networks_.end())
-        virtual_networks_.erase(iter);
-      if (network == active_virtual_) {
-        // This should never happen.
-        LOG(ERROR) << "Deleting active virtual network: " << service_path;
-        active_virtual_ = NULL;
       }
     }
     delete network;
@@ -3381,10 +3344,23 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                                   this);
       }
     }
-    // Delete any old networks that no longer exist.
+    // Iterate through list of remaining networks that are no longer in the
+    // list and delete them or update their status and re-add them to the list.
     for (NetworkMap::iterator iter = old_network_map.begin();
          iter != old_network_map.end(); ++iter) {
-      delete iter->second;
+      Network* network = iter->second;
+      if (network->failed() && network->notify_failure()) {
+        // We have not notified observers of a connection failure yet.
+        AddNetwork(network);
+      } else if (network->connecting()) {
+        // Network was in connecting state; set state to failed.
+        network->SetState(STATE_FAILURE);
+        AddNetwork(network);
+      } else {
+        VLOG(2) << "Deleting non-existant Network: " << network->name()
+                << " State = " << network->GetStateString();
+        DeleteNetwork(network);
+      }
     }
   }
 
@@ -3696,6 +3672,11 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     FOR_EACH_OBSERVER(NetworkManagerObserver,
                       network_manager_observers_,
                       OnNetworkManagerChanged(this));
+    // Clear notification flags.
+    for (NetworkMap::iterator iter = network_map_.begin();
+         iter != network_map_.end(); ++iter) {
+      iter->second->set_notify_failure(false);
+    }
   }
 
   void NotifyNetworkChanged(Network* network) {

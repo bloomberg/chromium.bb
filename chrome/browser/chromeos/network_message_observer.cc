@@ -160,33 +160,13 @@ void NetworkMessageObserver::ShowLowDataNotification(
       false, false);
 }
 
-bool NetworkMessageObserver::CheckNetworkFailed(const Network* network) {
-  if (network->failed()) {
-    NetworkStateMap::iterator iter =
-        network_states_.find(network->service_path());
-    // If the network did not previously exist, then don't do anything.
-    // For example, if the user travels to a location and finds a service
-    // that has previously failed, we don't want to show a notification.
-    if (iter == network_states_.end())
-      return false;
-    // If network connection failed, display a notification.
-    // We only do this if we were trying to make a new connection.
-    // So if a previously connected network got disconnected for any reason,
-    // we don't display notification.
-    ConnectionState prev_state = iter->second;
-    if (Network::IsConnectingState(prev_state))
-      return true;
-  }
-  return false;
-}
-
 void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
   const Network* new_failed_network = NULL;
   // Check to see if we have any newly failed networks.
   for (WifiNetworkVector::const_iterator it = cros->wifi_networks().begin();
        it != cros->wifi_networks().end(); it++) {
     const WifiNetwork* net = *it;
-    if (CheckNetworkFailed(net)) {
+    if (net->notify_failure()) {
       new_failed_network = net;
       break;  // There should only be one failed network.
     }
@@ -197,7 +177,7 @@ void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
              cros->cellular_networks().begin();
          it != cros->cellular_networks().end(); it++) {
       const CellularNetwork* net = *it;
-      if (CheckNetworkFailed(net)) {
+      if (net->notify_failure()) {
         new_failed_network = net;
         break;  // There should only be one failed network.
       }
@@ -209,25 +189,12 @@ void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
              cros->virtual_networks().begin();
          it != cros->virtual_networks().end(); it++) {
       const VirtualNetwork* net = *it;
-      if (CheckNetworkFailed(net)) {
+      if (net->notify_failure()) {
         new_failed_network = net;
         break;  // There should only be one failed network.
       }
     }
   }
-
-  network_states_.clear();
-  for (WifiNetworkVector::const_iterator it = cros->wifi_networks().begin();
-       it != cros->wifi_networks().end(); it++)
-    network_states_[(*it)->service_path()] = (*it)->state();
-  for (CellularNetworkVector::const_iterator it =
-           cros->cellular_networks().begin();
-       it != cros->cellular_networks().end(); it++)
-    network_states_[(*it)->service_path()] = (*it)->state();
-  for (VirtualNetworkVector::const_iterator it =
-           cros->virtual_networks().begin();
-       it != cros->virtual_networks().end(); it++)
-    network_states_[(*it)->service_path()] = (*it)->state();
 
   // Show connection error notification if necessary.
   if (new_failed_network) {

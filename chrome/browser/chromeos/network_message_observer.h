@@ -36,7 +36,6 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
   virtual void ShowNeedsPlanNotification(const CellularNetwork* cellular);
   virtual void ShowNoDataNotification(CellularDataPlanType plan_type);
   virtual void ShowLowDataNotification(const CellularDataPlan* plan);
-  virtual bool CheckNetworkFailed(const Network* network);
 
   // NetworkLibrary::NetworkManagerObserver implementation.
   virtual void OnNetworkManagerChanged(NetworkLibrary* obj);
@@ -52,9 +51,6 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
                             const CellularDataPlan* plan);
 
   typedef std::map<std::string, ConnectionState> NetworkStateMap;
-
-  // Network state by service path.
-  NetworkStateMap network_states_;
 
   // Current connect celluar service path.
   std::string cellular_service_path_;

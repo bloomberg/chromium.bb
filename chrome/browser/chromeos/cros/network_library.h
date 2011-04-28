@@ -287,8 +287,11 @@ class Network {
   bool auto_connect() const { return auto_connect_; }
   ConnectivityState connectivity_state() const { return connectivity_state_; }
   bool added() const { return added_; }
+  bool notify_failure() const { return notify_failure_; }
 
   const std::string& unique_id() const { return unique_id_; }
+
+  void set_notify_failure(bool state) { notify_failure_ = state; }
 
   // We don't have a setter for |favorite_| because to unfavorite a network is
   // equivalent to forget a network, so we call forget network on cros for
@@ -318,6 +321,7 @@ class Network {
         connectivity_state_(CONN_STATE_UNKNOWN),
         priority_order_(0),
         added_(false),
+        notify_failure_(false),
         service_path_(service_path),
         type_(type) {}
 
@@ -361,7 +365,6 @@ class Network {
   void set_connected(bool connected) {
     state_ = (connected ? STATE_READY : STATE_IDLE);
   }
-  void set_state(ConnectionState state) { state_ = state; }
   void set_connectable(bool connectable) { connectable_ = connectable; }
   void set_active(bool is_active) { is_active_ = is_active; }
   void set_error(ConnectionError error) { error_ = error; }
@@ -369,6 +372,9 @@ class Network {
     connectivity_state_ = connectivity_state;
   }
   void set_added(bool added) { added_ = added; }
+
+  // Set the state and update flags if necessary.
+  void SetState(ConnectionState state);
 
   // Initialize the IP address field
   void InitIPAddress();
@@ -378,6 +384,10 @@ class Network {
 
   // Set to true if the UI requested this as a new network.
   bool added_;
+
+  // Set to true when a new connection failure occurs; cleared when observers
+  // are notified.
+  bool notify_failure_;
 
   // These must not be modified after construction.
   std::string service_path_;

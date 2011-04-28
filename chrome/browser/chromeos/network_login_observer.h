@@ -27,16 +27,10 @@ class NetworkLoginObserver : public NetworkLibrary::NetworkManagerObserver {
 
   typedef std::map<std::string, bool> NetworkFailureMap;
  private:
-  virtual void CreateModalPopup(views::WindowDelegate* view);
-
-  virtual void RefreshStoredNetworks(const WifiNetworkVector& wifi_networks,
-                                     const VirtualNetworkVector& vpn_networks);
+  void CreateModalPopup(views::WindowDelegate* view);
 
   // NetworkLibrary::NetworkManagerObserver implementation.
   virtual void OnNetworkManagerChanged(NetworkLibrary* obj);
-
-  // Wifi networks by service path mapped to if it failed previously.
-  NetworkFailureMap network_failures_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLoginObserver);
 };
