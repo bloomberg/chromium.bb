@@ -38,17 +38,8 @@ bool TestGraphics2D::Init() {
       pp::Module::Get()->GetBrowserInterface(PPB_GRAPHICS_2D_INTERFACE));
   image_data_interface_ = reinterpret_cast<PPB_ImageData const*>(
       pp::Module::Get()->GetBrowserInterface(PPB_IMAGEDATA_INTERFACE));
-  testing_interface_ = reinterpret_cast<PPB_Testing_Dev const*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_TESTING_DEV_INTERFACE));
-  if (!testing_interface_) {
-    // Give a more helpful error message for the testing interface being gone
-    // since that needs special enabling in Chrome.
-    instance_->AppendError("This test needs the testing interface, which is "
-        "not currently available. In Chrome, use --enable-pepper-testing when "
-        "launching.");
-  }
   return graphics_2d_interface_ && image_data_interface_ &&
-         testing_interface_;
+         InitTestingInterface();
 }
 
 void TestGraphics2D::RunTest() {

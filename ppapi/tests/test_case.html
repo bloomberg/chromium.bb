@@ -1,4 +1,6 @@
 <html><head>
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="-1" />
 <link rel="stylesheet" href="test_page.css">
 <script>
 function AdjustHeight(frameWin) {
@@ -25,7 +27,11 @@ function AppendFrame(testcase, i) {
   p.appendChild(title);
 
   var frame = document.createElement("IFRAME");
-  frame.setAttribute("src", "?" + testcase);
+  var mode = ExtractSearchParameter("mode");
+  if (mode == "nacl")
+    frame.setAttribute("src", "?testcase=" + testcase + "&mode=nacl");
+  else
+    frame.setAttribute("src", "?testcase=" + testcase);
   frame.setAttribute("onload", "LoadNext(" + (i + 1) + ")");
   p.appendChild(frame);
 
@@ -66,10 +72,9 @@ onload = function() {
   document.title = 'Test ' + testcase;
   var obj;
   if (mode == "nacl") {
-    var nexes = "ARM: ppapi_tests_arm.nexe \nx86-32: ppapi_tests.nexe \nx86-64: ppapi_tests_x86_64.";
     obj = document.createElement("OBJECT");
-    obj.setAttribute("type", "application/x-ppapi-nacl-srpc");
-    obj.setAttribute("nexes", nexes);
+    obj.setAttribute("type", "application/x-nacl");
+    obj.setAttribute("nacl", "test_case.nmf");
     obj.setAttribute("mode", mode);
   } else {
     var mimeType = "application/x-ppapi-tests";

@@ -54,19 +54,19 @@ std::string TestDirectoryReader::TestGetNextFile() {
   pp::FileRef_Dev file_ref_2(file_system, "/file_2");
   pp::FileRef_Dev file_ref_3(file_system, "/file_3");
 
-  pp::FileIO_Dev file_io_1;
+  pp::FileIO_Dev file_io_1(instance_);
   rv = file_io_1.Open(file_ref_1, PP_FILEOPENFLAG_CREATE, callback);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("FileIO::Open", rv);
-  pp::FileIO_Dev file_io_2;
+  pp::FileIO_Dev file_io_2(instance_);
   rv = file_io_2.Open(file_ref_2, PP_FILEOPENFLAG_CREATE, callback);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("FileIO::Open", rv);
-  pp::FileIO_Dev file_io_3;
+  pp::FileIO_Dev file_io_3(instance_);
   rv = file_io_3.Open(file_ref_3, PP_FILEOPENFLAG_CREATE, callback);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();

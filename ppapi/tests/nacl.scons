@@ -4,18 +4,25 @@
 
 Import('env')
 
-ppapi_tests_nexe = env.ComponentProgram('ppapi_tests.nexe',
-                                        Glob('*.cc'),
+ppapi_tests_target = 'ppapi_tests_%s.nexe' % env.get('TARGET_FULLARCH')
+
+ppapi_tests_nexe = env.ComponentProgram(ppapi_tests_target,
+                                        [Glob('*.cc')],
                                         EXTRA_LIBS=['ppruntime',
                                                     'ppapi_cpp',
+                                                    'platform',
+                                                    'imc',
+                                                    'gio',
                                                     'pthread',
                                                     'srpc'])
+
 # Note that the html is required to run this program.
 # To run, load page with mode=nacl search string:
 # http://localhost:5103/scons-out/nacl-x86-32/staging/test_case.html?mode=nacl
-env.Publish('ppapi_tests.nexe', 'run',
+# http://localhost:5103/scons-out/nacl-x86-64/staging/test_case.html?mode=nacl
+env.Publish(ppapi_tests_nexe, 'run',
             ['test_case.html',
+             'test_case.nmf',
              'test_image_data',
              'test_page.css',
-	     'test_url_loader_data'])
-
+             'test_url_loader_data'])

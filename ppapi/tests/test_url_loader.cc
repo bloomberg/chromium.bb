@@ -128,13 +128,13 @@ std::string TestURLLoader::LoadAndCompareBody(
 }
 
 std::string TestURLLoader::TestBasicGET() {
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   request.SetURL("test_url_loader_data/hello.txt");
   return LoadAndCompareBody(request, "hello\n");
 }
 
 std::string TestURLLoader::TestBasicPOST() {
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   request.SetURL("/echo");
   request.SetMethod("POST");
   std::string postdata("postdata");
@@ -143,7 +143,7 @@ std::string TestURLLoader::TestBasicPOST() {
 }
 
 std::string TestURLLoader::TestCompoundBodyPOST() {
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   request.SetURL("/echo");
   request.SetMethod("POST");
   std::string postdata1("post");
@@ -154,7 +154,7 @@ std::string TestURLLoader::TestCompoundBodyPOST() {
 }
 
 std::string TestURLLoader::TestEmptyDataPOST() {
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   request.SetURL("/echo");
   request.SetMethod("POST");
   request.AppendDataToBody("", 0);
@@ -162,7 +162,7 @@ std::string TestURLLoader::TestEmptyDataPOST() {
 }
 
 std::string TestURLLoader::TestBinaryDataPOST() {
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   request.SetURL("/echo");
   request.SetMethod("POST");
   const char postdata_chars[] =
@@ -174,14 +174,14 @@ std::string TestURLLoader::TestBinaryDataPOST() {
 }
 
 std::string TestURLLoader::TestCustomRequestHeader() {
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   request.SetURL("/echoheader?Foo");
   request.SetHeaders("Foo: 1");
   return LoadAndCompareBody(request, "1");
 }
 
 std::string TestURLLoader::TestIgnoresBogusContentLength() {
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   request.SetURL("/echo");
   request.SetMethod("POST");
   request.SetHeaders("Content-Length: 400");
@@ -191,7 +191,7 @@ std::string TestURLLoader::TestIgnoresBogusContentLength() {
 }
 
 std::string TestURLLoader::TestStreamToFile() {
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
@@ -249,7 +249,7 @@ std::string TestURLLoader::TestStreamToFile() {
 }
 
 std::string TestURLLoader::TestSameOriginRestriction() {
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   request.SetURL("http://www.google.com/");
 
   TestCompletionCallback callback(instance_->pp_instance());
@@ -272,7 +272,7 @@ std::string TestURLLoader::TestSameOriginRestriction() {
 }
 
 std::string TestURLLoader::TestCrossOriginRequest() {
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   // Create a URL that will be considered to be a different origin.
   request.SetURL("http://127.0.0.1/test_url_loader_data/hello.txt");
   request.SetAllowCrossOriginRequests(true);
@@ -294,7 +294,7 @@ std::string TestURLLoader::TestCrossOriginRequest() {
 // This test should cause a redirect and ensure that the loader runs
 // the callback, rather than following the redirect.
 std::string TestURLLoader::TestAuditURLRedirect() {
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   // This path will cause the server to return a 301 redirect.
   request.SetURL("/server-redirect?www.google.com");
   request.SetFollowRedirects(false);
@@ -323,7 +323,7 @@ std::string TestURLLoader::TestAuditURLRedirect() {
 }
 
 std::string TestURLLoader::TestAbortCalls() {
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   request.SetURL("test_url_loader_data/hello.txt");
 
   TestCompletionCallback callback(instance_->pp_instance());
