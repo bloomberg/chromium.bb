@@ -82,9 +82,6 @@
               # in such a location that can be found in both
               # NaCl and Chrome builds.
               ['<@(python_exe)', 'nacl_syscall_handlers_gen2.py', '-c',
-               '-f', 'Video',
-               '-f', 'Audio',
-               '-f', 'Multimedia',
                '-i', '<@(syscall_handler)',
                '-o', '<@(_outputs)'],
 

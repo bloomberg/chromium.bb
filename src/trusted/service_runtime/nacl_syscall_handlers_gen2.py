@@ -200,7 +200,7 @@ def GetProtoArgs(s, fin):
   return args
 
 
-def ParseFileToBeWrapped(fin, filter_regex):
+def ParseFileToBeWrapped(fin):
   protos = []
   for line in fin:
     match = re.search(r"^int32_t (NaClSys[_a-zA-Z0-9]+)[(](.*)$", line)
@@ -208,22 +208,19 @@ def ParseFileToBeWrapped(fin, filter_regex):
       continue
     name = match.group(1)
     args = GetProtoArgs(match.group(2), fin)
-    if filter_regex and re.search(filter_regex, name):
-      continue
     protos.append( (name, args) )
   return protos
 
 
 def main(argv):
   usage='Usage: nacl_syscall_handlers_gen2.py [-f regex] [-c] [-d] [-a arch]'
-  filter_regex = []
   mode = "dump"
   input_src = sys.stdin
   output_dst = sys.stdout
   arch = 'x86'
   subarch = '32'
   try:
-    opts, pargs = getopt.getopt(argv[1:], 'a:cdf:i:o:s:')
+    opts, pargs = getopt.getopt(argv[1:], 'a:cdi:o:s:')
   except getopt.error, e:
     print >>sys.stderr, 'Illegal option:', str(e)
     print >>sys.stderr, usage
@@ -236,8 +233,6 @@ def main(argv):
       mode = "dump"
     elif opt == '-c':
       mode = "codegen"
-    elif opt == '-f':
-      filter_regex.append(val)
     elif opt == '-i':
       input_src = open(val, 'r')
     elif opt == '-o':
@@ -256,8 +251,7 @@ def main(argv):
     assert 0
 
   data = input_src.read()
-  protos = ParseFileToBeWrapped(StringIO.StringIO(data),
-                                "|".join(filter_regex))
+  protos = ParseFileToBeWrapped(StringIO.StringIO(data))
   if mode == "dump":
     for f, a in  protos:
       print >>output_dst, f
