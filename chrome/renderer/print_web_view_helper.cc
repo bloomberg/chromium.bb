@@ -637,19 +637,23 @@ bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
 bool PrintWebViewHelper::IsScriptInitiatedPrintTooFrequent(
     WebKit::WebFrame* frame) {
   const int kMinSecondsToIgnoreJavascriptInitiatedPrint = 2;
-  const int kMaxSecondsToIgnoreJavascriptInitiatedPrint = 2 * 60;  // 2 Minutes.
+  const int kMaxSecondsToIgnoreJavascriptInitiatedPrint = 32;
 
   // Check if there is script repeatedly trying to print and ignore it if too
-  // frequent.  We use exponential wait time so for a page that calls print() in
-  // a loop the user will need to cancel the print dialog after 2 seconds, 4
-  // seconds, 8, ... up to the maximum of 2 minutes.
+  // frequent.  The first 3 times, we use a constant wait time, but if this
+  // gets excessive, we switch to exponential wait time. So for a page that
+  // calls print() in a loop the user will need to cancel the print dialog
+  // after: [2, 2, 2, 4, 8, 16, 32, 32, ...] seconds.
   // This gives the user time to navigate from the page.
   if (user_cancelled_scripted_print_count_ > 0) {
     base::TimeDelta diff = base::Time::Now() - last_cancelled_script_print_;
-    int min_wait_seconds = std::min(
-        kMinSecondsToIgnoreJavascriptInitiatedPrint <<
-            (user_cancelled_scripted_print_count_ - 1),
-        kMaxSecondsToIgnoreJavascriptInitiatedPrint);
+    int min_wait_seconds = kMinSecondsToIgnoreJavascriptInitiatedPrint;
+    if (user_cancelled_scripted_print_count_ > 3) {
+      min_wait_seconds = std::min(
+          kMinSecondsToIgnoreJavascriptInitiatedPrint <<
+              (user_cancelled_scripted_print_count_ - 3),
+          kMaxSecondsToIgnoreJavascriptInitiatedPrint);
+    }
     if (diff.InSeconds() < min_wait_seconds) {
       WebString message(WebString::fromUTF8(
           "Ignoring too frequent calls to print()."));
