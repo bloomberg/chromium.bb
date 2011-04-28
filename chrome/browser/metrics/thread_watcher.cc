@@ -207,6 +207,18 @@ void ThreadWatcher::Initialize() {
       base::TimeDelta::FromMilliseconds(1),
       base::TimeDelta::FromSeconds(100), 50,
       base::Histogram::kUmaTargetedHistogramFlag);
+
+  const std::string responsive_count_histogram_name =
+      "ThreadWatcher.ResponsiveThreads." + thread_name_;
+  responsive_count_histogram_ = base::LinearHistogram::FactoryGet(
+      responsive_count_histogram_name, 1, 10, 11,
+      base::Histogram::kUmaTargetedHistogramFlag);
+
+  const std::string unresponsive_count_histogram_name =
+      "ThreadWatcher.UnresponsiveThreads." + thread_name_;
+  unresponsive_count_histogram_ = base::LinearHistogram::FactoryGet(
+      unresponsive_count_histogram_name, 1, 10, 11,
+      base::Histogram::kUmaTargetedHistogramFlag);
 }
 
 // static
@@ -225,12 +237,20 @@ void ThreadWatcher::GotGoodResponse() {
 void ThreadWatcher::GotNoResponse() {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
   ++unresponsive_count_;
-  // If watched thread is the only unresponsive thread and all other threads are
-  // responding then record total unresponsive_time since last pong message.
-  if (ThreadWatcherList::GetNumberOfUnresponsiveThreads() == 1) {
-    base::TimeDelta unresponse_time = base::TimeTicks::Now() - pong_time_;
-    unresponsive_time_histogram_->AddTime(unresponse_time);
-  }
+  // Record total unresponsive_time since last pong message.
+  base::TimeDelta unresponse_time = base::TimeTicks::Now() - pong_time_;
+  unresponsive_time_histogram_->AddTime(unresponse_time);
+
+  int no_of_responding_threads = 0;
+  int no_of_unresponding_threads = 0;
+  ThreadWatcherList::GetStatusOfThreads(&no_of_responding_threads,
+                                        &no_of_unresponding_threads);
+
+  // Record how many watched threads are responding.
+  responsive_count_histogram_->Add(no_of_responding_threads);
+
+  // Record how many watched threads are not responding.
+  unresponsive_count_histogram_->Add(no_of_unresponding_threads);
 }
 
 // ThreadWatcherList methods and members.
@@ -338,20 +358,23 @@ void ThreadWatcherList::RemoveNotifications() {
 }
 
 // static
-int ThreadWatcherList::GetNumberOfUnresponsiveThreads() {
+void ThreadWatcherList::GetStatusOfThreads(int* no_of_responding_threads,
+                                           int* no_of_unresponding_threads) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
-  int no_of_unresponding_threads = 0;
+  *no_of_responding_threads = 0;
+  *no_of_unresponding_threads = 0;
   if (!global_)
-    return no_of_unresponding_threads;
+    return;
 
   base::AutoLock auto_lock(global_->lock_);
   for (RegistrationList::iterator it = global_->registered_.begin();
        global_->registered_.end() != it;
        ++it) {
     if (it->second->unresponsive_count_ > 0)
-      ++no_of_unresponding_threads;
+      ++(*no_of_unresponding_threads);
+    else
+      ++(*no_of_responding_threads);
   }
-  return no_of_unresponding_threads;
 }
 
 void ThreadWatcherList::DeleteAll() {

@@ -200,10 +200,17 @@ class ThreadWatcher {
   base::Histogram* response_time_histogram_;
 
   // Histogram that keeps track of unresponsive time since the last pong message
-  // when we got no response (GotNoResponse) from the watched thread. We record
-  // this when the watched thread is the only unresponsive thread and all other
-  // threads are responsive.
+  // when we got no response (GotNoResponse) from the watched thread.
   base::Histogram* unresponsive_time_histogram_;
+
+  // Histogram that keeps track of how many threads are responding when we got
+  // no response (GotNoResponse) from the watched thread.
+  base::Histogram* responsive_count_histogram_;
+
+  // Histogram that keeps track of how many threads are not responding when we
+  // got no response (GotNoResponse) from the watched thread. Count includes the
+  // thread that got no response.
+  base::Histogram* unresponsive_count_histogram_;
 
   // This counter tracks the unresponsiveness of watched thread. If this value
   // is zero then watched thread has responded with a pong message. This is
@@ -254,9 +261,10 @@ class ThreadWatcherList : public NotificationObserver {
   // This method is accessible on UI thread.
   static void RemoveNotifications();
 
-  // This method returns number of watched threads that haven't responded with a
-  // pong message (number of threads with unresponsive_count_ greater than 0).
-  static int GetNumberOfUnresponsiveThreads();
+  // This method returns number of watched threads that have responded and
+  // threads that have not responded with a pong message.
+  static void GetStatusOfThreads(int* no_of_responding_threads,
+                                 int* no_of_unresponding_threads);
 
  private:
   // Allow tests to access our innards for testing purposes.
