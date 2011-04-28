@@ -34,6 +34,16 @@ typedef struct SummaryStats {
   int sawfailure;          /* boolean */
 } SummaryStats;
 
+/* We track instructions in a three-entry circular buffer,
+ * allowing us to see the two previous instructions and to
+ * check the safe call sequence. I rounded up to
+ * four so we can use a mask, even though we only need to
+ * remember three instructions.
+ * This is #defined rather than const int because it is used
+ * as an array dimension
+ */
+#define kNCValidatorInstBufferSize 4
+
 /* put all formerly global data into a struct */
 typedef struct NCValidatorState {
   /* NOTE: Decoder state (dstate) must appear first so that we can use it like
@@ -41,6 +51,7 @@ typedef struct NCValidatorState {
    * same as a pointer to a decoder state.
    */
   NCDecoderState dstate;
+  NCDecoderInst inst_buffer[kNCValidatorInstBufferSize];
   CPUFeatures cpufeatures;  /* from CPUID bit masks; see nacl_cpuid.c */
   NaClPcAddress iadrbase;
   NaClPcAddress iadrlimit;

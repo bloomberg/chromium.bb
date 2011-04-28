@@ -265,10 +265,11 @@ for test_subarch in ['32', '64']:
 if test_env.Bit('target_x86_32'):
   # TODO(kschimpf): remove this when the validator builds as 64-bits.
   if test_env.Bit('build_x86_32'):
-    ncdecode_tests = test_env.ComponentProgram('ncdecode_tests',
-                                               ['ncdecode_tests.c'],
-                                               EXTRA_LIBS=['ncvalidate',
-                                                           'ncdis_util'])
+    ncdecode_tests = test_env.ComponentProgram(
+        'ncdecode_tests',
+        ['ncdecode_tests.c'],
+        EXTRA_LIBS=['ncdis_util',
+                    'ncvalidate'])
 
     node = test_env.CommandTest(
         'ncdecode_tests.out',

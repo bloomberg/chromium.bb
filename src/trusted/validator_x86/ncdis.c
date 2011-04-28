@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -499,7 +499,6 @@ int main(int argc, const char *argv[]) {
     return 1;
   }
   NaClLogModuleInitExtended(LOG_INFO, gout);
-  NCDecodeRegisterCallbacks(PrintInstStdout, NULL, NULL, NULL);
   ProcessCommandLine(argc, argv);
   NaClLogModuleFini();
   GioFileDtor(gout);

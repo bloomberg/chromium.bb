@@ -13,16 +13,19 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_H_
 
+#include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_x86/ncinstbuffer.h"
 
 struct NCDecoderInst;
 struct NCDecoderState;
-struct NCValidatorState;
-/* Function type for a decoder action */
-typedef void (*NCDecoderAction)(const struct NCDecoderInst* dinst);
-typedef void (*NCDecoderPairAction)(const struct NCDecoderInst* dinst_old,
-                                    const struct NCDecoderInst* dinst_new);
-typedef void (*NCDecoderStats)(struct NCValidatorState* vstate);
+
+/* Function type for a decoder action. Returns TRUE if action
+ * was applied successfully.
+ */
+typedef Bool (*NCDecoderStateAction)(const struct NCDecoderInst* dinst);
+
+/* Function type for other decoder state methods. */
+typedef void (*NCDecoderStateMethod)(struct NCDecoderState* vstate);
 
 /* Defines the corresponding byte encodings for each of the prefixes. */
 #define kValueSEGCS  0x2e
@@ -263,6 +266,19 @@ static const uint8_t kWAITOp = 0x9b;
 
 #define NCDTABLESIZE 256
 
+static const int kTwoByteOpcodeByte1 = 0x0f;
+static const int k3DNowOpcodeByte2 = 0x0f;
+static const int kMaxPrefixBytes = 4;
+
+/* Some essential non-macros... */
+static INLINE uint8_t modrm_mod(uint8_t modrm) { return ((modrm >> 6) & 0x03);}
+static INLINE uint8_t modrm_rm(uint8_t modrm) { return (modrm & 0x07); }
+static INLINE uint8_t modrm_reg(uint8_t modrm) { return ((modrm >> 3) & 0x07); }
+static INLINE uint8_t modrm_opcode(uint8_t modrm) { return modrm_reg(modrm); }
+static INLINE uint8_t sib_ss(uint8_t sib) { return ((sib >> 6) & 0x03); }
+static INLINE uint8_t sib_index(uint8_t sib) { return ((sib >> 3) & 0x07); }
+static INLINE uint8_t sib_base(uint8_t sib) { return (sib & 0x07); }
+
 /* Defines how to decode operands for byte codes. */
 typedef enum {
   /* Assume the default size of the operands is 64-bits (if
@@ -327,16 +343,6 @@ struct InstInfo {
   uint8_t rexprefix;
 };
 
-/* We track instructions in a three-entry circular buffer,
- * allowing us to see the two previous instructions and to
- * check the safe call sequence. I rounded up to
- * four so we can use a mask, even though we only need to
- * remember three instructions.
- * This is #defined rather than const int because it is used
- * as an array dimension
- */
-#define kDecodeInstBufferSize 4
-
 /* Models data collected about the parsed instruction. */
 typedef struct NCDecoderInst {
   /* The virtual (pc) address of the instruction. */
@@ -352,107 +358,128 @@ typedef struct NCDecoderInst {
   /* Corresopnding index of this instruction wrt to inst_buffer in
    * in the corresponding decoder state NCDecoderState.
    */
-  uint8_t inst_index;
+  size_t inst_index;
 } NCDecoderInst;
 
-/* Models data kept while decoding instructions. */
+/* Given a (decoded) instruction, return the instruction that appeared
+ * n elements before it.
+ *
+ * Parameters:
+ *    dinst - The instruction to look up relative to.
+ *    n - number of elements back to look (must be negative).
+ */
+extern NCDecoderInst *PreviousInst(const NCDecoderInst* dinst, int n);
+
+/* Models decoding instructions in a memory region.
+ *
+ * Note: This struct is modeling a notion of a (virtual) base class to parse
+ * a window of k instructions. In this model, we consider NCDecoderState a
+ * class that can be (singly) inherited by derived classes. This code
+ * assumes that the "this" pointer can be cast to a derived class
+ * using a C cast. This implies that derived classes should have the
+ * field NCDecoderState as its first field.
+ *
+ * Typical use is:
+ *
+ *    NCDecoderState dstate;
+ *    NCDecoder inst_buffer[BUF_SIZE]; // window of BUF_SIZE instructions.
+ *    NCDecoderStateConstruct(&dstate, mbase, vbase, size,
+ *                            inst_buffer, BUF_SIZE);
+ *    NCDecoderStateDecode(&dstate);
+ *    NCDecoderStateDestruct(&dstate);
+ *
+ * Note: The old API for this class is further down in this file,
+ * and should be considered deprecated.
+ */
 typedef struct NCDecoderState {
-  /* The instruction buffer is an array of size kDecodeInstBufferSize */
-  /* of NCDecoderInst records, used to allow the validator */
-  /* to inspect a small number of previous instructions.    */
-  struct NCDecoderInst inst_buffer[kDecodeInstBufferSize];
-  /* The index of the current instruction within inst_buffer. */
-  int cur_inst_index;
+  /* PROTECTED: */
+
+  /* The instruction buffer is an array of instructions, used
+   * by the decoder to define a window of decoded instructions.
+   * This window automatically moves as instructions are decoded
+   * so that one can always see the current decoded instruction,
+   * and some (fixed) number of previously decoded instructions.
+   */
+  NCDecoderInst* inst_buffer;
+
+  /* The number of elements in inst_buffer. Must be greater than zero. */
+  size_t inst_buffer_size;
+
   /* Remaining memory to decode. It is allocated on
    * the stack to make it thread-local, and included here
    * so that all decoder states have access to it.
    */
   NCRemainingMemory memory;
-  /* The validator state (or NULL) associated with the decoder state. */
-  struct NCValidatorState* vstate;
-  /* Function called to report an error with the validity of the memory segment.
+
+  /* The begining of the memory segment to decode. */
+  uint8_t* mbase;
+
+  /* The (virtual) base address of the memory segment. */
+  NaClPcAddress vbase;
+
+  /* The number of bytes in the memory segment. */
+  NaClMemorySize size;
+
+  /* The index of the current instruction within inst_buffer. */
+  size_t cur_inst_index;
+
+  /* Member function to apply actions to a decoded instruction. */
+  NCDecoderStateAction action_fn;
+
+  /* Member function to process new segment. */
+  NCDecoderStateMethod new_segment_fn;
+
+  /* Member function called to report an error with the validity of the
+   * memory segment.
    */
-  NCDecoderStats segmentation_error_fn;
-  /* Function called to report other errors while processing the memory segment.
+  NCDecoderStateMethod segmentation_error_fn;
+
+  /* Member function called to report other errors while processing the
+   * memory segment.
    */
-  NCDecoderStats internal_error_fn;
+  NCDecoderStateMethod internal_error_fn;
 } NCDecoderState;
 
-static const int kTwoByteOpcodeByte1 = 0x0f;
-static const int k3DNowOpcodeByte2 = 0x0f;
-static const int kMaxPrefixBytes = 4;
-
-/* Some essential non-macros... */
-static INLINE uint8_t modrm_mod(uint8_t modrm) { return ((modrm >> 6) & 0x03);}
-static INLINE uint8_t modrm_rm(uint8_t modrm) { return (modrm & 0x07); }
-static INLINE uint8_t modrm_reg(uint8_t modrm) { return ((modrm >> 3) & 0x07); }
-static INLINE uint8_t modrm_opcode(uint8_t modrm) { return modrm_reg(modrm); }
-static INLINE uint8_t sib_ss(uint8_t sib) { return ((sib >> 6) & 0x03); }
-static INLINE uint8_t sib_index(uint8_t sib) { return ((sib >> 3) & 0x07); }
-static INLINE uint8_t sib_base(uint8_t sib) { return (sib & 0x07); }
-
-/* Change the "virtuals" for the decoder to the given set. Should only be used
- * for testing, when one wants to override these functions for specific types
- * of testing.
+/*
+ * Construct a decoder state.
  *
  * Parameters are:
- *   decoderaction - How to process a decoded instruction (NULL == do nothing).
- *   newsegment - Called with validator state, immediately after NCDecoderState
- *                initialization by NCDecodeSegment (NULL = do nothing)
- *   segmentationerror - Called with validator state, when an error is
- *                detected about the memory segment being processed (NULL = do
- *                nothing).
- *   internalerror - Calle with validator state, when other internal errors
- *                are found (NULL = do nothing).
+ *   this  - The instance to be constructed.
+ *   mbase - The begining of the memory segment to decode.
+ *   vbase - The (virtual) base address of the memory segment.
+ *   sz - The number of bytes in the memory segment.
+ *
+ * Note: Constructors of subclasses of NCDecoderState should
+ * call this constructor first, to initialize the decoder state.
  */
-extern void NCDecodeRegisterCallbacks(NCDecoderAction decoderaction,
-                                      NCDecoderStats newsegment,
-                                      NCDecoderStats segmentationerror,
-                                      NCDecoderStats internalerror);
+extern void NCDecoderStateConstruct(NCDecoderState* tthis,
+                                    uint8_t* mbase, NaClPcAddress vbase,
+                                    NaClMemorySize sz,
+                                    NCDecoderInst* inst_buffer,
+                                    size_t inst_buffer_size);
 
-/* Run the decoder using the functions defined by last invocation of
- * NCDecodeRegisterCallbacks. If NCDecodeRegisterCallbacks was never called,
- * this function will use internal defaults for the four functions expected
- * by NCDecodeRegisterCallbacks.
+/*
+ * Decodes the memory segment associated with the decoder state.
+ * Returns TRUE if able to apply action to all decoded instructions.
  *
  * Parameters are:
- *   mbase - The beging of the memory segment to decode.
- *   vbase - The (virtual) base address of the memory segment.
- *   sz - The number of bytes in the memory segment.
- *   vstate - validator state (or NULL) to use with callbacks.
+ *   this  - The decoder state.
  */
-extern void NCDecodeSegment(uint8_t* mbase, NaClPcAddress vbase,
-                            NaClMemorySize sz, struct NCValidatorState* vstate);
+extern Bool NCDecoderStateDecode(NCDecoderState* tthis);
 
-/* Same as NCDecodeSegment, but uses the decoder state and
- * given callbacks for the decoding, rather than the global
- * bindings defined by the last call to
- * NCDecodeRegisterCallbacks.
- * Note: The main purpose of this function is to allow a reentrant version
- * of instruction decoding.
+/*
+ * Destruct a decoder state.
+ *
  * Parameters are:
- *   mbase - The beginning of the memory segment to decode.
- *   vbase - The (virtual) base address of the memory segment.
- *   sz - The number of bytes in the memory segment.
- *   vstate - validator state (or NULL) to use with callbacks.
- *   dstate - The decoder state to use.
- *   decoderaction - How to process a decoded instruction (NULL == do nothing).
- *   newsegment - Called with validator state, immediately after NCDecoderState
- *                initialization (NULL = do nothing).
- *   segmentationerror - Called with validator state, when an error is
- *                detected about the memory segment being processed (NULL = do
- *                nothing).
- *   internalerror - Calle with validator state, when other internal errors
- *                are found (NULL = do nothing).
+ *   this  - The decoder state.
+ *
+ * Note: Destructors of subclasses of NCDecoderState should
+ * call this destructor last, after the subinstance has been destructed.
  */
-extern void NCDecodeSegmentUsing(uint8_t* mbase, NaClPcAddress vbase,
-                                 NaClMemorySize sz,
-                                 struct NCValidatorState* vstate,
-                                 NCDecoderState* dstate,
-                                 NCDecoderAction decoderaction,
-                                 NCDecoderStats newsegment,
-                                 NCDecoderStats segmentationerror,
-                                 NCDecoderStats internalerror);
+extern void NCDecoderStateDestruct(NCDecoderState* tthis);
+
+typedef void (*NCDecoderPairAction)(const struct NCDecoderInst* dinst_old,
+                                    const struct NCDecoderInst* dinst_new);
 
 /* Walk two instruction segments at once. This function requires identical
  * instruction boundaries. Uses the functions passed as parameters
@@ -467,16 +494,12 @@ extern void NCDecodeSegmentUsing(uint8_t* mbase, NaClPcAddress vbase,
  *       (must be the same for the old and new memory segments).
  *   size - The number of bytes in the memory segments
  *       (must be the same for the old and new memory segments).
- *   vstate - validator state (or NULL) to use with callbacks. Note:
- *       If defined, assumes that vstate is associated with the decoder
- *       for the new memory segment.
  *   action - Action function to apply to the decoded instructions
  *       in both the old and new memory segments.
  */
 extern void NCDecodeSegmentPair(uint8_t* mbase_old, uint8_t* mbase_new,
-                         NaClPcAddress vbase, NaClMemorySize size,
-                         struct NCValidatorState* vstate,
-                         NCDecoderPairAction action);
+                                NaClPcAddress vbase, NaClMemorySize size,
+                                NCDecoderPairAction action);
 
 /* Same as NCDecodeSegmentPair, but uses the decoder state and
  * given callbacks for the decoding, rather than the
@@ -486,17 +509,15 @@ extern void NCDecodeSegmentPair(uint8_t* mbase_old, uint8_t* mbase_new,
 extern void NCDecodeSegmentPairUsing(
     uint8_t* mbase_old, uint8_t* mbase_new,
     NaClPcAddress vbase, NaClMemorySize size,
-    struct NCValidatorState* vstate,
     NCDecoderState* dstate_old,
+    NCDecoderInst* inst_buffer_old,
+    size_t inst_buffer_size_old,
     NCDecoderState* dstate_new,
+    NCDecoderInst* inst_buffer_new,
+    size_t inst_buffer_size_new,
     NCDecoderPairAction action,
-    NCDecoderStats newsegment,
-    NCDecoderStats segmentationerror,
-    NCDecoderStats internalerror);
-
-/* Given a (decoded) instruction, return the instruction that appeared
- * n elements before it.
- */
-extern NCDecoderInst *PreviousInst(const NCDecoderInst* dinst, int n);
+    NCDecoderStateMethod newsegment,
+    NCDecoderStateMethod segmentationerror,
+    NCDecoderStateMethod internalerror);
 
 #endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_H_ */

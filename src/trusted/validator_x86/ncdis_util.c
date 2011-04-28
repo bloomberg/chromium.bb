@@ -583,6 +583,20 @@ void PrintInst(const NCDecoderInst *dinst, FILE* fp) {
 }
 
 
-void PrintInstStdout(const NCDecoderInst *dinst) {
+static Bool PrintInstStdout(const NCDecoderInst *dinst) {
   PrintInst(dinst, stdout);
+  return TRUE;
+}
+
+void NCDecodeSegment(uint8_t* mbase, NaClPcAddress vbase,
+                     NaClMemorySize size) {
+  NCDecoderInst inst;
+  NCDecoderState dstate;
+  NCDecoderStateConstruct(&dstate, mbase, vbase, size, &inst, 1);
+  /* TODO(karl): Fix this so that we don't need to override the
+   * action function.
+   */
+  dstate.action_fn = PrintInstStdout;
+  NCDecoderStateDecode(&dstate);
+  NCDecoderStateDestruct(&dstate);
 }

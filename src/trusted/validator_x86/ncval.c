@@ -97,9 +97,6 @@ static void NaClMaybeDecodeDataSegment(
     uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize size) {
   if (NACL_FLAGS_stubout_memory) {
     /* Disassemble data segment to see how halts were inserted. */
-    if (!NACL_FLAGS_use_iter) {
-      NCDecodeRegisterCallbacks(PrintInstStdout, NULL, NULL, NULL);
-    }
     NaClDisassembleSegment(mbase, vbase, size);
   }
 }

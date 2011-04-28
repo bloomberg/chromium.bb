@@ -241,11 +241,12 @@ void CopyInstruction(const NCDecoderInst *dinst_old,
 
 int NCCopyCode(uint8_t *dst, uint8_t *src, NaClPcAddress vbase,
                size_t sz, int bundle_size) {
-  struct NCValidatorState *vstate;
-  vstate = NCValidateInit(vbase, vbase+sz, bundle_size);
-  CHECK(NULL != vstate);
-  NCDecodeSegmentPair(dst, src, vbase, sz, vstate, CopyInstruction);
-  NCValidateFreeState(&vstate);
+  /* TODO(karl): The current implementation dies with runtime
+   * errors if something goes wrong. Fix so that NCDecodeSegmentPair
+   * returns a status value, so that the proper value can be
+   * returned by this routine.
+   */
+  NCDecodeSegmentPair(dst, src, vbase, sz, CopyInstruction);
   return 1;
 }
 

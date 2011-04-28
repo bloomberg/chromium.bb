@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NACL_TRUSTED_BUT_NOT_TCB
@@ -11,6 +11,7 @@
 #include "native_client/src/trusted/validator_x86/ncdis_segments.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/validator_x86/ncdis_util.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_segment.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
@@ -37,6 +38,6 @@ void NaClDisassembleSegment(uint8_t* mbase, NaClPcAddress vbase,
     }
     NaClInstIterDestroy(iter);
   } else {
-    NCDecodeSegment(mbase, vbase, size, NULL);
+    NCDecodeSegment(mbase, vbase, size);
   }
 }

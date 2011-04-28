@@ -329,13 +329,11 @@ void ncdecode_unittests() {
     printf("%s\n", NCDecoderTests[i].description);
     NCDecodeSegment(NCDecoderTests[i].testbytes,
                     (uint32_t)(NCDecoderTests[i].testbytes),
-                    NCDecoderTests[i].testsize,
-                    NULL);
+                    NCDecoderTests[i].testsize);
   }
 }
 
 int main() {
-  NCDecodeRegisterCallbacks(PrintInstStdout, NULL, NULL, NULL);
   ncdecode_unittests();
   printf("PASSED\n");
   return 0;

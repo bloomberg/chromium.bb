@@ -87,22 +87,13 @@ static const struct OpInfo* kDecodeX87Op[8] = { kDecode87D8,
                                                 kDecode87DE,
                                                 kDecode87DF };
 
-static void NullDecoderAction(const struct NCDecoderInst* dinst) {
+static Bool NullDecoderAction(const struct NCDecoderInst* dinst) {
   UNREFERENCED_PARAMETER(dinst);
+  return TRUE;
 }
-static void NullDecoderStats(struct NCValidatorState* vstate) {
-  UNREFERENCED_PARAMETER(vstate);
+static void NullDecoderMethod(struct NCDecoderState* dstate) {
+  UNREFERENCED_PARAMETER(dstate);
 }
-static void DefaultInternalError(struct NCValidatorState* vstate) {
-  UNREFERENCED_PARAMETER(vstate);
-}
-
-/* TODO(bradchen): Thread safety? */
-/* TODO(bradchen): More comments */
-NCDecoderAction g_DecoderAction = NullDecoderAction;
-NCDecoderStats g_NewSegment = NullDecoderStats;
-NCDecoderStats g_InternalError = DefaultInternalError;
-NCDecoderStats g_SegFault = NullDecoderStats;
 
 /* Error Condition Handling */
 static void ErrorSegmentation(NCDecoderInst* dinst) {
@@ -111,7 +102,7 @@ static void ErrorSegmentation(NCDecoderInst* dinst) {
   /* When the decoder is used by the NaCl validator    */
   /* the validator provides an error handler that does */
   /* the necessary bookeeping to track these errors.   */
-  dstate->segmentation_error_fn(dstate->vstate);
+  dstate->segmentation_error_fn(dstate);
 }
 
 static void ErrorInternal(NCDecoderInst* dinst) {
@@ -120,7 +111,7 @@ static void ErrorInternal(NCDecoderInst* dinst) {
   /* When the decoder is used by the NaCl validator    */
   /* the validator provides an error handler that does */
   /* the necessary bookeeping to track these errors.   */
-  dstate->internal_error_fn(dstate->vstate);
+  dstate->internal_error_fn(dstate);
 }
 
 /* Defines how to handle errors found while parsing the memory segment. */
@@ -407,29 +398,62 @@ void MaybeGet3ByteOpInfo(NCDecoderInst* dinst) {
   }
 }
 
-void NCDecodeRegisterCallbacks(NCDecoderAction decoderaction,
-                               NCDecoderStats newsegment,
-                               NCDecoderStats segfault,
-                               NCDecoderStats internalerror) {
-  /* Clear old definitions before continuing. */
-  g_DecoderAction = NullDecoderAction;
-  g_NewSegment = NullDecoderStats;
-  g_InternalError = DefaultInternalError;
-  g_SegFault = NullDecoderStats;
-  if (decoderaction != NULL) g_DecoderAction = decoderaction;
-  if (newsegment != NULL) g_NewSegment = newsegment;
-  if (segfault != NULL) g_SegFault = segfault;
-  if (internalerror != NULL) g_InternalError = internalerror;
-}
-
 struct NCDecoderInst* PreviousInst(const NCDecoderInst* dinst,
                                    int nindex) {
   /* Note: This code also handles increments, so that we can
    * use the same code for both.
    */
-  int index = (dinst->inst_index + nindex + kDecodeInstBufferSize)
-      & (kDecodeInstBufferSize - 1);
+  size_t index = (dinst->inst_index + nindex + dinst->dstate->inst_buffer_size)
+      & (dinst->dstate->inst_buffer_size - 1);
   return &dinst->dstate->inst_buffer[index];
+}
+
+/* Initialize the decoder state fields, assuming constructor parameter
+ * fields mbase, vbase, size, inst_buffer, and inst_buffer_size have
+ * already been set.
+ */
+static void NCDecoderStateInitFields(NCDecoderState* this) {
+  size_t dbindex;
+  NCRemainingMemoryInit(this->mbase, this->size, &this->memory);
+  this->memory.error_fn = NCRemainingMemoryInternalError;
+  this->memory.error_fn_state = (void*) this;
+  for (dbindex = 0; dbindex < this->inst_buffer_size; ++dbindex) {
+    this->inst_buffer[dbindex].dstate       = this;
+    this->inst_buffer[dbindex].inst_index   = dbindex;
+    this->inst_buffer[dbindex].vpc          = 0;
+    NCInstBytesInitMemory(&this->inst_buffer[dbindex].inst.bytes,
+                          &this->memory);
+    NCInstBytesPtrInit((NCInstBytesPtr*) &this->inst_buffer[dbindex].inst_bytes,
+                       &this->inst_buffer[dbindex].inst.bytes);
+  }
+  this->cur_inst_index = 0;
+  this->inst_buffer[0].vpc = this->vbase;
+}
+
+void NCDecoderStateConstruct(NCDecoderState* this,
+                             uint8_t* mbase, NaClPcAddress vbase,
+                             NaClMemorySize size,
+                             NCDecoderInst* inst_buffer,
+                             size_t inst_buffer_size) {
+
+  /* Start by setting up virtual functions. */
+  this->action_fn = NullDecoderAction;
+  this->new_segment_fn = NullDecoderMethod;
+  this->segmentation_error_fn = NullDecoderMethod;
+  this->internal_error_fn = NullDecoderMethod;
+
+  /* Initialize the user-provided fields. */
+  this->mbase = mbase;
+  this->vbase = vbase;
+  this->size = size;
+  this->inst_buffer = inst_buffer;
+  this->inst_buffer_size = inst_buffer_size;
+
+  NCDecoderStateInitFields(this);
+}
+
+void NCDecoderStateDestruct(NCDecoderState* this) {
+  /* Currently, there is nothing to do. */
 }
 
 /* Initialize the ring buffer used to store decoded instructions. Returns
@@ -442,32 +466,16 @@ struct NCDecoderInst* PreviousInst(const NCDecoderInst* dinst,
  */
 static NCDecoderInst* InitDecoderState(uint8_t* mbase, NaClPcAddress vbase,
                                        NaClMemorySize size,
-                                       struct NCValidatorState* vstate,
                                        NCDecoderState* dstate,
-                                       NCDecoderStats segmentationerror,
-                                       NCDecoderStats internalerror) {
-  int dbindex;
-  NCRemainingMemory* memory = &dstate->memory;
-  NCDecoderInst* inst_buffer = dstate->inst_buffer;
-  NCDecoderInst* cur_inst = &inst_buffer[0];
+                                       NCDecoderInst* inst_buffer,
+                                       size_t inst_buffer_size,
+                                       NCDecoderStateMethod segmentationerror,
+                                       NCDecoderStateMethod internalerror) {
+  NCDecoderStateConstruct(dstate, mbase, vbase, size, inst_buffer,
+                          inst_buffer_size);
   dstate->segmentation_error_fn = segmentationerror;
   dstate->internal_error_fn = internalerror;
-  dstate->cur_inst_index = 0;
-  NCRemainingMemoryInit(mbase, size, memory);
-  memory->error_fn = NCRemainingMemoryInternalError;
-  memory->error_fn_state = (void*) dstate;
-  dstate->vstate = vstate;
-  for (dbindex = 0; dbindex < kDecodeInstBufferSize; ++dbindex) {
-    inst_buffer[dbindex].dstate = dstate;
-    inst_buffer[dbindex].inst_index   = dbindex;
-    inst_buffer[dbindex].vpc          = 0;
-    NCInstBytesInitMemory(&inst_buffer[dbindex].inst.bytes, memory);
-    NCInstBytesPtrInit((NCInstBytesPtr*) &inst_buffer[dbindex].inst_bytes,
-                       &inst_buffer[dbindex].inst.bytes);
-
-  }
-  cur_inst->vpc = vbase;
-  return cur_inst;
+  return &dstate->inst_buffer[dstate->cur_inst_index];
 }
 
 /* Modify the current instruction pointer to point to the next instruction
@@ -559,63 +567,44 @@ static void ConsumeNextInstruction(struct NCDecoderInst* inst) {
   MaybeConsumePredefinedNop(inst);
 }
 
-/* The actual decoder */
-void NCDecodeSegmentUsing(uint8_t* mbase, NaClPcAddress vbase,
-                          NaClMemorySize size,
-                          struct NCValidatorState* vstate,
-                          NCDecoderState* dstate,
-                          NCDecoderAction decoderaction,
-                          NCDecoderStats newsegment,
-                          NCDecoderStats segmentationerror,
-                          NCDecoderStats internalerror) {
-  const NaClPcAddress vlimit = vbase + size;
-  NCDecoderInst* dinst;
-  dinst = InitDecoderState(mbase, vbase, size, vstate, dstate,
-                           segmentationerror, internalerror);
-
+Bool NCDecoderStateDecode(NCDecoderState* this) {
+  NCDecoderInst* dinst = &this->inst_buffer[this->cur_inst_index];
+  const NaClPcAddress vlimit = this->vbase + this->size;
   DEBUG( printf("DecodeSegment(%p[%"NACL_PRIxNaClPcAddress
                 "-%"NACL_PRIxNaClPcAddress"])\n",
-                (void*) mbase, vbase, vlimit) );
-  newsegment(vstate);
+                (void*) this->memory.mpc, this->vbase, vlimit) );
+  (this->new_segment_fn)(this);
   while (dinst->vpc < vlimit) {
     ConsumeNextInstruction(dinst);
-    if (dstate->memory.overflow_count) {
+    if (this->memory.overflow_count) {
       NaClPcAddress newpc = dinst->vpc + dinst->inst.bytes.length;
       fprintf(stdout, "%"NACL_PRIxNaClPcAddress" > %"NACL_PRIxNaClPcAddress
               " (read overflow of %d bytes)\n",
-              newpc, vlimit, dstate->memory.overflow_count);
+              newpc, vlimit, this->memory.overflow_count);
       ErrorSegmentation(dinst);
       break;
     }
-    decoderaction(dinst);
+    if (!(this->action_fn)(dinst)) return FALSE;
     /* get ready for next round */
     dinst = IncrementInst(dinst);
   }
-}
-
-/* The actual decoder */
-void NCDecodeSegment(uint8_t* mbase, NaClPcAddress vbase,
-                     NaClMemorySize size,
-                     struct NCValidatorState* vstate) {
-  NCDecoderState dstate;
-  NCDecodeSegmentUsing(mbase, vbase, size, vstate, &dstate,
-                       g_DecoderAction,
-                       g_NewSegment,
-                       g_SegFault,
-                       g_InternalError);
+  return TRUE;
 }
 
 /* The actual decoder -- decodes two instruction segments in parallel */
 void NCDecodeSegmentPairUsing(
     uint8_t* mbase_old, uint8_t* mbase_new,
     NaClPcAddress vbase, NaClMemorySize size,
-    struct NCValidatorState* vstate,
     NCDecoderState* dstate_old,
+    NCDecoderInst* inst_buffer_old,
+    size_t inst_buffer_size_old,
     NCDecoderState* dstate_new,
+    NCDecoderInst* inst_buffer_new,
+    size_t inst_buffer_size_new,
     NCDecoderPairAction action,
-    NCDecoderStats newsegment,
-    NCDecoderStats segmentationerror,
-    NCDecoderStats internalerror) {
+    NCDecoderStateMethod newsegment,
+    NCDecoderStateMethod segmentationerror,
+    NCDecoderStateMethod internalerror) {
 
   const NaClPcAddress vlimit = vbase + size;
   NCDecoderInst* dinst_old;
@@ -623,15 +612,18 @@ void NCDecodeSegmentPairUsing(
   NaClPcAddress newpc_old;
   NaClPcAddress newpc_new;
 
-  dinst_old = InitDecoderState(mbase_old, vbase, size, vstate, dstate_old,
+
+  dinst_old = InitDecoderState(mbase_old, vbase, size, dstate_old,
+                               inst_buffer_old, inst_buffer_size_old,
                                segmentationerror, internalerror);
-  dinst_new = InitDecoderState(mbase_new, vbase, size, vstate, dstate_new,
+  dinst_new = InitDecoderState(mbase_new, vbase, size, dstate_new,
+                               inst_buffer_new, inst_buffer_size_new,
                                segmentationerror, internalerror);
 
   DEBUG( printf("DecodeSegmentPair(%"NACL_PRIxNaClPcAddress
                 "-%"NACL_PRIxNaClPcAddress")\n",
                 vbase, vlimit) );
-  newsegment(vstate);
+  newsegment(dstate_new);
   while (dinst_old->vpc < vlimit && dinst_new->vpc < vlimit) {
     ConsumeNextInstruction(dinst_old);
     ConsumeNextInstruction(dinst_new);
@@ -664,11 +656,14 @@ void NCDecodeSegmentPairUsing(
 /* The actual decoder -- decodes two instruction segments in parallel */
 void NCDecodeSegmentPair(uint8_t* mbase_old, uint8_t* mbase_new,
                          NaClPcAddress vbase, NaClMemorySize size,
-                         struct NCValidatorState* vstate,
                          NCDecoderPairAction action) {
   NCDecoderState dstate_old;
   NCDecoderState dstate_new;
-  NCDecodeSegmentPairUsing(mbase_old, mbase_new, vbase, size, vstate,
-                           &dstate_old, &dstate_new,
-                           action, g_NewSegment, g_SegFault, g_InternalError);
+  NCDecoderInst inst_buffer_old;
+  NCDecoderInst inst_buffer_new;
+  NCDecodeSegmentPairUsing(mbase_old, mbase_new, vbase, size,
+                           &dstate_old, &inst_buffer_old, 1,
+                           &dstate_new, &inst_buffer_new, 1,
+                           action, NullDecoderMethod, NullDecoderMethod,
+                           NullDecoderMethod);
 }

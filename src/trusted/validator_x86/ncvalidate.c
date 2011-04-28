@@ -44,6 +44,13 @@
 /* allows DCE but compiler can still do format string checks */
 #endif  /* VERBOSE */
 
+/* The following macro is used to clarify the derived class relationship
+ * of NCValidateState and NCDecoderState. That is, &this->dstate is also
+ * an instance of a validator state. Hence one can downcast this pointer.
+ */
+#define VALIDATOR_STATE_DOWNCAST(this_dstate) \
+  ((NCValidatorState*) (this_dstate))
+
 static const uint8_t kNaClFullStop = 0xf4;   /* x86 HALT opcode */
 
 /* Define how many diagnostic error messages are printed by the validator.
@@ -75,8 +82,9 @@ static void ValidatePrintError(const NaClPcAddress addr, const char *msg,
 
 static void BadInstructionError(const NCDecoderInst *dinst,
                                 const char *msg) {
-  ValidatePrintError(dinst->vpc, msg, dinst->dstate->vstate);
-  if (dinst->dstate->vstate->do_stub_out) {
+  NCValidatorState* vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
+  ValidatePrintError(dinst->vpc, msg, vstate);
+  if (vstate->do_stub_out) {
     memset(dinst->dstate->memory.mpc, kNaClFullStop,
            dinst->dstate->memory.read_length);
   }
@@ -265,9 +273,9 @@ static const uint8_t iadrmasks[8] = {0x01, 0x02, 0x04, 0x08,
   ((__TABLE)[IATOffset(__IOFF)] & IATMask(__IOFF))
 
 /* forward declarations, needed for registration */
-void ValidateInst(const NCDecoderInst *dinst);
-void ValidateInstReplacement(const NCDecoderInst *dinst_old,
-                             const NCDecoderInst *dinst_new);
+static Bool ValidateInst(const NCDecoderInst *dinst);
+static void ValidateInstReplacement(const NCDecoderInst *dinst_old,
+                                    const NCDecoderInst *dinst_new);
 
 /*
  * NCValidateInit: Initialize NaCl validator internal state
@@ -450,22 +458,23 @@ void NCValidateFreeState(struct NCValidatorState **vstate) {
 /* ValidateSFenceClFlush is called for the sfence/clflush opcode 0f ae /7 */
 /* It returns 0 if the current instruction is implemented, and 1 if not.  */
 static int ValidateSFenceClFlush(const NCDecoderInst *dinst) {
+  NCValidatorState* vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
   uint8_t mrm = NCInstBytesByte(&dinst->inst_bytes, 2);
 
   if (modrm_mod(mrm) == 3) {
     /* this is an sfence */
-    if (dinst->dstate->vstate->cpufeatures.f_FXSR) return 0;
+    if (vstate->cpufeatures.f_FXSR) return 0;
     return 1;
   } else {
     /* this is an clflush */
-    if (dinst->dstate->vstate->cpufeatures.f_CLFLUSH) return 0;
+    if (vstate->cpufeatures.f_CLFLUSH) return 0;
     return 1;
   }
 }
 
 static void ValidateCallAlignment(const NCDecoderInst *dinst) {
   NaClPcAddress fallthru = dinst->vpc + dinst->inst.bytes.length;
-  struct NCValidatorState* vstate = dinst->dstate->vstate;
+  struct NCValidatorState* vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
   if (fallthru & vstate->alignmask) {
     ValidatePrintError(dinst->vpc, "Bad call alignment", vstate);
     /* This makes bad call alignment a fatal error. */
@@ -478,7 +487,7 @@ static void ValidateJmp8(const NCDecoderInst *dinst) {
                                    dinst->inst.prefixbytes);
   int8_t offset = NCInstBytesByte(&dinst->inst_bytes,
                                   dinst->inst.prefixbytes+1);
-  struct NCValidatorState* vstate = dinst->dstate->vstate;
+  struct NCValidatorState* vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
   NaClPcAddress target =
       dinst->vpc + dinst->inst.bytes.length + offset;
   Stats_CheckTarget(vstate);
@@ -498,7 +507,7 @@ static void ValidateJmpz(const NCDecoderInst *dinst) {
   uint8_t opcode0;
   int32_t offset;
   NaClPcAddress target;
-  NCValidatorState* vstate = dinst->dstate->vstate;
+  NCValidatorState* vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
   NCInstBytesPtrInitInc(&opcode, &dinst->inst_bytes,
                         dinst->inst.prefixbytes);
   opcode0 = NCInstBytesByte(&opcode, 0);
@@ -544,7 +553,7 @@ static void ValidateIndirect5(const NCDecoderInst *dinst) {
   uint8_t               mrm;
   uint8_t               targetreg;
   const uint8_t         kReg_ESP = 4;
-  NCValidatorState* vstate = dinst->dstate->vstate;
+  NCValidatorState* vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
 
   struct NCDecoderInst *andinst = PreviousInst(dinst, -1);
   assert(andinst != NULL);
@@ -598,15 +607,16 @@ static void ValidateIndirect5(const NCDecoderInst *dinst) {
 static const size_t kMaxValidPrefixBytes = 1;
 static const size_t kMaxValidInstLength = 11;
 
-void ValidateInst(const NCDecoderInst *dinst) {
+static Bool ValidateInst(const NCDecoderInst *dinst) {
   CPUFeatures *cpufeatures;
   int squashme = 0;
-  NCValidatorState* vstate = dinst->dstate->vstate;
+  NCValidatorState* vstate;
+  if (dinst == NULL) return TRUE;
+  vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
 
  /*  dprint(("ValidateInst(%x, %x) at %x\n",
       (uint32_t)dinst, (uint32_t)vstate, dinst->vpc)); */
-  if (dinst == NULL) return;
-  if (vstate == NULL) return;
+
   OpcodeHisto(NCInstBytesByte(&dinst->inst_bytes, dinst->inst.prefixbytes),
               vstate);
   RememberIP(dinst->vpc, vstate);
@@ -765,6 +775,7 @@ void ValidateInst(const NCDecoderInst *dinst) {
   }
   if (squashme) memset(dinst->dstate->memory.mpc, kNaClFullStop,
                        dinst->dstate->memory.read_length);
+  return TRUE;
 }
 
 /*
@@ -793,21 +804,21 @@ void ValidateIndirect5Replacement(const struct NCDecoderInst *dinst_old,
   } while (0);
   BadInstructionError(dinst_new,
                       "Replacement indirect jump must match original");
-  Stats_UnsafeIndirect(dinst_new->dstate->vstate);
+  Stats_UnsafeIndirect(VALIDATOR_STATE_DOWNCAST(dinst_new->dstate));
 }
 
 /*
  * Check that mstate_new is a valid replacement instruction for mstate_old.
  * Note that mstate_old was validated when it was inserted originally.
  */
-void ValidateInstReplacement(const NCDecoderInst *dinst_old,
-                             const NCDecoderInst *dinst_new) {
+static void ValidateInstReplacement(const NCDecoderInst *dinst_old,
+                                    const NCDecoderInst *dinst_new) {
   /* Location/length must match */
   if (dinst_old->inst.bytes.length != dinst_new->inst.bytes.length
     || dinst_old->vpc != dinst_new->vpc) {
     BadInstructionError(dinst_new,
                         "New instruction does not match old instruction size");
-    Stats_BadInstLength(dinst_new->dstate->vstate);
+    Stats_BadInstLength(VALIDATOR_STATE_DOWNCAST(dinst_new->dstate));
   }
 
   /* Only validate individual instructions that have changed. */
@@ -820,7 +831,7 @@ void ValidateInstReplacement(const NCDecoderInst *dinst_old,
     /* Still need to record there is an intruction here for NCValidateFinish()
      * to verify basic block alignment.
      */
-    RememberIP(dinst_new->vpc, dinst_new->dstate->vstate);
+    RememberIP(dinst_new->vpc, VALIDATOR_STATE_DOWNCAST(dinst_new->dstate));
   }
 
   if (dinst_old->opinfo->insttype == NACLi_INDIRECT
@@ -832,13 +843,27 @@ void ValidateInstReplacement(const NCDecoderInst *dinst_old,
 
 void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, size_t sz,
                        struct NCValidatorState *vstate) {
+
   if (sz == 0) {
     ValidatePrintError(0, "Bad text segment (zero size)", vstate);
     Stats_SegFault(vstate);
     return;
+  } else {
+    /* TODO(karl): Refactor this so that NCValidatorState properly
+     * inherits from NCDecoderState. This means refactoring the
+     * API to have a constructor that does the following.
+     */
+    NCDecoderState* dstate = &vstate->dstate;
+    NCDecoderStateConstruct(dstate, mbase, vbase, sz,
+                            vstate->inst_buffer, kNCValidatorInstBufferSize);
+    dstate->action_fn = ValidateInst;
+    dstate->new_segment_fn = (NCDecoderStateMethod) Stats_NewSegment;
+    dstate->segmentation_error_fn = (NCDecoderStateMethod) Stats_SegFault;
+    dstate->internal_error_fn = (NCDecoderStateMethod) Stats_InternalError;
+
+    NCDecoderStateDecode(dstate);
+    NCDecoderStateDestruct(dstate);
   }
-  NCDecodeSegmentUsing(mbase, vbase, sz, vstate, &vstate->dstate, ValidateInst,
-                       Stats_NewSegment, Stats_SegFault, Stats_InternalError);
 }
 
 /*
@@ -849,14 +874,19 @@ void NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
                            NaClPcAddress vbase, size_t sz,
                            struct NCValidatorState *vstate) {
   NCDecoderState dstate_old;
+  NCDecoderInst inst_buffer_old[kNCValidatorInstBufferSize];
   if (sz == 0) {
     ValidatePrintError(0, "Bad text segment (zero size)", vstate);
     Stats_SegFault(vstate);
     return;
   }
   NCDecodeSegmentPairUsing(mbase_old, mbase_new, vbase, sz,
-                           vstate, &dstate_old, &vstate->dstate,
-                           ValidateInstReplacement,
-                           Stats_NewSegment,
-                           Stats_SegFault, Stats_InternalError);
+                           &dstate_old, inst_buffer_old,
+                           kNCValidatorInstBufferSize,
+                           &vstate->dstate, vstate->inst_buffer,
+                           kNCValidatorInstBufferSize,
+                           (NCDecoderPairAction) ValidateInstReplacement,
+                           (NCDecoderStateMethod) Stats_NewSegment,
+                           (NCDecoderStateMethod) Stats_SegFault,
+                           (NCDecoderStateMethod) Stats_InternalError);
 }
