@@ -26,12 +26,6 @@ var previouslySelectedLayout = null;
 // needed.
 var timerId;
 
-// Indicates whether a preview has been requested but not received yet.
-var isPreviewStillLoading = false;
-
-// Currently selected printer capabilities.
-var printerCapabilities;
-
 // Store the last selected printer index.
 var lastSelectedPrinterIndex = 0;
 
@@ -89,7 +83,7 @@ function disablePreviewControls() {
                     'individual-pages'];
   var controlCount = controlIDs.length;
   for (var i = 0; i < controlCount; i++)
-    controlIDs[i].disabled = true;
+    setControlAndLabelDisabled($(controlIDs[i]), true);
 }
 
 /**
@@ -123,19 +117,14 @@ function updateControlsWithSelectedPrinterCapabilities() {
  * @param {Object} settingInfo printer setting information.
  */
 function updateWithPrinterCapabilities(settingInfo) {
-  printerCapabilities = settingInfo;
-
-  if (isPreviewStillLoading)
-    return;
-
   var disableColorOption = settingInfo.disableColorOption;
   var setColorAsDefault = settingInfo.setColorAsDefault;
   var colorOption = $('color');
   var bwOption = $('bw');
 
   if (disableColorOption != colorOption.disabled) {
-    colorOption.disabled = disableColorOption;
-    bwOption.disabled = disableColorOption;
+    setControlAndLabelDisabled(colorOption, disableColorOption);
+    setControlAndLabelDisabled(bwOption, disableColorOption);
   }
 
   if (colorOption.checked != setColorAsDefault) {
@@ -146,16 +135,20 @@ function updateWithPrinterCapabilities(settingInfo) {
 }
 
 /**
- * Disables or enables all controls in the options pane except from the cancel
- * button.
+ * Disables the input control element and its associated label.
+ * @param {HTMLElement} controlElm An input control element.
+ * @param {boolean} disable set to true to disable element and label.
  */
-function setControlsDisabled(disabled) {
-  var elementList = $('controls').elements;
-  for (var i = 0; i < elementList.length; ++i) {
-    if (elementList[i] == $('cancel-button'))
-      continue;
-    elementList[i].disabled =  disabled;
-  }
+function setControlAndLabelDisabled(controlElm, disable) {
+  controlElm.disabled = disable;
+  var label = $(controlElm.getAttribute('label'));
+  if (label == undefined)
+    return;
+
+  if (disable)
+    label.classList.add('disabled-label-text');
+  else
+    label.classList.remove('disabled-label-text');
 }
 
 /**
@@ -331,8 +324,7 @@ function printFile() {
  * Asks the browser to generate a preview PDF based on current print settings.
  */
 function requestPrintPreview() {
-  isPreviewStillLoading = true;
-  setControlsDisabled(true);
+  $('dancing-dots').classList.remove('hidden');
   $('dancing-dots').classList.remove('invisible');
   chrome.send('getPreview', [getSettingsJSON()]);
 }
@@ -398,7 +390,6 @@ function setColor(color) {
 function printPreviewFailed() {
   $('dancing-dots').classList.add('hidden');
   $('preview-failed').classList.remove('hidden');
-  setControlsDisabled(true);
 
   var pdfViewer = $('pdf-viewer');
   if (pdfViewer)
@@ -415,8 +406,6 @@ function onPDFLoad() {
     $('pdf-viewer').fitToHeight();
 
   $('dancing-dots').classList.add('invisible');
-  setControlsDisabled(false);
-  updateWithPrinterCapabilities(printerCapabilities);
 }
 
 /**
@@ -444,9 +433,8 @@ function updatePrintPreview(pageCount, jobTitle) {
   document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
 
   createPDFPlugin();
-  isPreviewStillLoading = false;
-  updatePrintSummary();
 
+  updatePrintSummary();
 }
 
 /**

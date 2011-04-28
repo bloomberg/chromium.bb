@@ -18,110 +18,113 @@
       <h1 i18n-content="title"></h1>
     </header>
     <section class="body">
-      <form id="controls">
-        <section class="text form">
-          <div class="main">
-            <span id="print-summary"></span>
-            <button id="print-button" i18n-content="printButton"
-                class="default"></button>
-            <button id="cancel-button" i18n-content="cancelButton"></button>
-          </div>
-          <hr>
-          <h3 i18n-content="destinationLabel"></h3>
-          <div>
-            <select id="printer-list"></select>
-          </div>
-          <hr>
-          <div class="left-label">
-            <h3 i18n-content="pagesLabel"></h3>
-            <div class="options-block">
-              <div>
-                <input name="pages" checked type="radio" id="all-pages">
-                <label for="all-pages" i18n-content="optionAllPages"></label>
-              </div>
-              <div>
-                <input name="pages" type="radio" id="print-pages">
-                <label for="print-pages">
-                  <input id="individual-pages" type="text"
-                      class="medium with-hint"
-                      i18n-values="placeholder:examplePageRangeText"
-                      name="individual-pages">
-                </label>
-              </div>
+      <section class="text form">
+        <div class="main">
+          <span id="print-summary"></span>
+          <button id="print-button" i18n-content="printButton"
+              class="default"></button>
+          <button id="cancel-button" i18n-content="cancelButton"></button>
+        </div>
+        <hr>
+        <h3 i18n-content="destinationLabel"></h3>
+        <div>
+          <select id="printer-list"></select>
+        </div>
+        <hr>
+        <div class="left-label">
+          <h3 i18n-content="pagesLabel"></h3>
+          <div class="options-block">
+            <div>
+              <input name="pages" checked type="radio" id="all-pages"
+                  label="all-pages-label">
+              <label for="all-pages" id="all-pages-label"
+                  i18n-content="optionAllPages"></label>
             </div>
-          </div>
-          <div class="left-label">
-            <div class="options-block">
-              <input name="two-sided" type="checkbox" id="two-sided">
-              <label for="two-sided" i18n-content="optionTwoSided">
+            <div>
+              <input name="pages" type="radio" id="print-pages">
+              <label for="print-pages">
+                <input id="individual-pages" type="text"
+                    class="medium with-hint"
+                    i18n-values="placeholder:examplePageRangeText"
+                    name="individual-pages">
               </label>
             </div>
           </div>
-          <div class="left-label">
-            <div class="hidden-section" id="binding">
-              <div class="extra" style="margin-top: -10px">
-                <h3 i18n-content="bindingLabel"></h3>
-                <div class="options-block">
-                  <div>
-                    <input type="radio" name="binding" checked id="long-edge"/>
-                    <label for="long-edge"
-                        i18n-content="optionLongEdgeBinding"></label>
-                  </div>
-                  <div>
-                    <input type="radio" name="binding" id="short-edge">
-                    <label for="short-edge"
-                        i18n-content="optionShortEdgeBinding"></label>
-                  </div>
+        </div>
+        <div class="left-label">
+          <div class="options-block">
+            <input name="two-sided" type="checkbox" id="two-sided">
+              <label for="two-sided" i18n-content="optionTwoSided"></label>
+          </div>
+        </div>
+        <div class="left-label">
+          <div class="hidden-section" id="binding">
+            <div class="extra" style="margin-top: -10px">
+              <h3 i18n-content="bindingLabel"></h3>
+              <div class="options-block">
+                <div>
+                  <input type="radio" name="binding" checked id="long-edge">
+                  <label for="long-edge"
+                      i18n-content="optionLongEdgeBinding"></label>
+                </div>
+                <div>
+                  <input type="radio" name="binding" id="short-edge">
+                  <label for="short-edge"
+                      i18n-content="optionShortEdgeBinding"></label>
                 </div>
               </div>
             </div>
           </div>
-          <div class="left-label">
-            <h3 i18n-content="copiesLabel"></h3>
-            <div class="options-block">
-              <input type="text" name="copies" id="copies" value="1"
-                  class="small">
-              <span id="collate-option" hidden>
-                <input name="collate" type="checkbox" id="collate"
-                    label="collate-label">
-                <label for="collate" i18n-content="optionCollate"></label>
-              </span>
+        </div>
+        <div class="left-label">
+          <h3 i18n-content="copiesLabel"></h3>
+          <div class="options-block">
+            <input type="text" name="copies" id="copies" value="1"
+                class="small">
+            <span id="collate-option" hidden>
+              <input name="collate" type="checkbox" id="collate">
+              <label for="collate" i18n-content="optionCollate"></label>
+            </span>
+          </div>
+        </div>
+        <hr>
+        <div class="left-label">
+          <h3 i18n-content="layoutLabel"></h3>
+          <div class="options-block">
+            <div>
+              <input type="radio" name="layout" checked id="portrait"
+                  label="portrait-label">
+              <label for="portrait" id="portrait-label"
+                  i18n-content="optionPortrait"></label>
+            </div>
+            <div>
+              <input type="radio" name="layout" id="landscape"
+                  label="landscape-label">
+              <label for="landscape" id="landscape-label"
+                  i18n-content="optionLandscape"></label>
             </div>
           </div>
-          <hr>
-          <div class="left-label">
-            <h3 i18n-content="layoutLabel"></h3>
-            <div class="options-block">
-              <div>
-                <input type="radio" name="layout" checked id="portrait">
-                <label for="portrait" i18n-content="optionPortrait"></label>
-              </div>
-              <div>
-                <input type="radio" name="layout" id="landscape">
-                <label for="landscape" i18n-content="optionLandscape"></label>
-              </div>
+        </div>
+        <hr>
+        <div class="left-label">
+          <h3 i18n-content="optionColor"></h3>
+          <div class="options-block">
+            <div>
+              <input type="radio" name="color" id="color" label="color-label">
+              <label for="color" id="color-label" i18n-content="optionColor">
+              </label>
+            </div>
+            <div>
+              <input type="radio" name="color" checked id="bw" label="bw-label">
+              <label for="bw" id="bw-label" i18n-content="optionBw"></label>
             </div>
           </div>
-          <hr>
-          <div class="left-label">
-            <h3 i18n-content="optionColor"></h3>
-            <div class="options-block">
-              <div>
-                <input type="radio" name="color" id="color">
-                <label for="color" i18n-content="optionColor"></label>
-              </div>
-              <div>
-                <input type="radio" name="color" checked id="bw">
-                <label for="bw" i18n-content="optionBw"></label>
-              </div>
-            </div>
-          </div>
-          <hr>
-          <div>
-            <a href="#" id="system-dialog-link"
-                i18n-content="systemDialogOption"></a>
-          </div>
-        </form>
+        </div>
+        <hr>
+        <div>
+          <a href="#" id="system-dialog-link"
+              i18n-content="systemDialogOption"></a>
+        </div>
       </section>
     </section>
     </div>
