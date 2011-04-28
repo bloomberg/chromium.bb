@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -31,11 +31,12 @@ NaClOpcodeHistogram* NaClOpcodeHistogramMemoryCreate(
   NaClOpcodeHistogram* histogram =
       (NaClOpcodeHistogram*) malloc(sizeof(NaClOpcodeHistogram));
   if (histogram == NULL) {
-    NaClValidatorMessage(LOG_FATAL, state,
+    NaClValidatorMessage(LOG_ERROR, state,
                          "Out of memory, can't build histogram\n");
-  }
-  for (i = 0; i < 256; ++i) {
-    histogram->opcode_histogram[i] = 0;
+  } else {
+    for (i = 0; i < 256; ++i) {
+      histogram->opcode_histogram[i] = 0;
+    }
   }
   return histogram;
 }

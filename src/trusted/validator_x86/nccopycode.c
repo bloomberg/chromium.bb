@@ -278,7 +278,7 @@ int NaClCopyCodeIter(uint8_t *dst, uint8_t *src,
       /* Sanity check: this should never happen based on checks in
        * NaClValidateInstReplacement.
        */
-      NaClLog(LOG_FATAL,
+      NaClLog(LOG_ERROR,
               "Segment replacement: copied instructions misaligned\n");
       return 0;
     }

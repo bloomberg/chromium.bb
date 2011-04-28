@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NACL_TRUSTED_BUT_NOT_TCB
@@ -91,21 +91,23 @@ Bool NaClInstructionIsLegal(uint8_t* mbase,
   NaClSegment segment;
   NaClInstIter* iter;
   NaClValidatorState* state;
-  Bool is_legal;
+  Bool is_legal = FALSE;
   state = NaClValidatorStateCreate(vbase, (NaClMemorySize) size, 32, RegR15);
-  NaClValidatorStateInitializeValidators(state);
-  NaClSegmentInitialize(mbase, vbase, (NaClMemorySize) size, &segment);
-  iter = NaClInstIterCreate(&segment);
-  state->cur_inst_state = NaClInstIterGetState(iter);
-  state->cur_inst = NaClInstStateInst(state->cur_inst_state);
-  state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
-  NaClValidateInstructionLegal(state, iter, NULL);
-  NaClSafeSegmentReference(state, iter, NULL);
-  is_legal = NaClValidatesOk(state);
-  state->cur_inst_state = NULL;
-  state->cur_inst = NULL;
-  state->cur_inst_vector = NULL;
-  NaClInstIterDestroy(iter);
+  if (NaClValidatorStateInitializeValidators(state)) {
+    NaClSegmentInitialize(mbase, vbase, (NaClMemorySize) size, &segment);
+    iter = NaClInstIterCreate(&segment);
+    state->cur_inst_state = NaClInstIterGetState(iter);
+    state->cur_inst = NaClInstStateInst(state->cur_inst_state);
+    state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
+    NaClValidateInstructionLegal(state, iter, NULL);
+    NaClSafeSegmentReference(state, iter, NULL);
+    is_legal = NaClValidatesOk(state);
+    state->cur_inst_state = NULL;
+    state->cur_inst = NULL;
+    state->cur_inst_vector = NULL;
+    NaClInstIterDestroy(iter);
+  }
+  NaClValidatorStateCleanUpValidators(state);
   NaClValidatorStateDestroy(state);
   return is_legal;
 }

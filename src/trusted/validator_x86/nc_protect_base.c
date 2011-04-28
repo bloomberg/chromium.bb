@@ -113,15 +113,16 @@ NaClBaseRegisterLocals* NaClBaseRegisterMemoryCreate(
       malloc(sizeof(NaClBaseRegisterLocals));
   if (NULL == locals) {
     NaClValidatorMessage(
-        LOG_FATAL, state,
+        LOG_ERROR, state,
         "Out of memory, can't allocate NaClBaseRegisterLocals\n");
+  } else {
+    for (i = 0; i < NACL_REGISTER_LOCALS_BUFFER_SIZE; ++i) {
+      locals->buffer[i].esp_set_inst = NULL;
+      locals->buffer[i].ebp_set_inst = NULL;
+    }
+    locals->previous_index = 0;
+    locals->current_index = 1;
   }
-  for (i = 0; i < NACL_REGISTER_LOCALS_BUFFER_SIZE; ++i) {
-    locals->buffer[i].esp_set_inst = NULL;
-    locals->buffer[i].ebp_set_inst = NULL;
-  }
-  locals->previous_index = 0;
-  locals->current_index = 1;
   return locals;
 }
 

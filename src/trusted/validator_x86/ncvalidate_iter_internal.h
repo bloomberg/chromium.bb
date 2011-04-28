@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_ITER_INTERNAL_H__
@@ -109,9 +109,13 @@ struct NaClValidatorState {
 };
 
 /* Add validators to validator state if missing. Assumed to be called just
- * before analyzing a code segment.
+ * before analyzing a code segment. Returns TRUE if able to initialize
+ * validators. If FALSE is returned, DO NOT try to run the validator.
  */
-void NaClValidatorStateInitializeValidators(NaClValidatorState* state);
+Bool NaClValidatorStateInitializeValidators(NaClValidatorState* state);
+
+/* Clean up the state associated with validators. */
+void NaClValidatorStateCleanUpValidators(NaClValidatorState* state);
 
 #endif
   /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_ITER_INTERNAL_H__ */

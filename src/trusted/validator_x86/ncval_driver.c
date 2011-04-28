@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -87,8 +87,9 @@ int NaClRunValidatorGrokFlags(int argc, const char* argv[]) {
         }
       }
       if (i == NACL_ARRAY_SIZE(map)) {
-        NaClValidatorMessage(LOG_FATAL, NULL,
-                           "-error_level=%s not defined!\n", error_level);
+        NaClValidatorMessage(LOG_ERROR, NULL,
+                           "-error_level=%s not defined, ignoring!\n",
+                             error_level);
       }
       continue;
     } else {
@@ -122,7 +123,8 @@ Bool NaClRunValidator(int argc, const char* argv[],
   clock_0 = clock();
   return_value = load(argc, argv, data);
   if (!return_value) {
-    NaClValidatorMessage(LOG_FATAL, NULL, "Unable to load code to validate");
+    NaClValidatorMessage(LOG_ERROR, NULL, "Unable to load code to validate\n");
+    return FALSE;
   }
   clock_l = clock();
   return_value = analyze(data);
@@ -157,7 +159,8 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
                                    (uint8_t) NACL_FLAGS_block_alignment,
                                    nacl_base_register);
   if (NULL == state) {
-    NaClValidatorMessage(LOG_FATAL, NULL, "Unable to create validator state");
+    NaClValidatorMessage(LOG_ERROR, NULL, "Unable to create validator state");
+    return FALSE;
   }
   if (NACL_FLAGS_stubout_memory) {
     NaClValidatorStateSetDoStubOut(state, TRUE);

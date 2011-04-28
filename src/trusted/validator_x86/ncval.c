@@ -252,7 +252,8 @@ static Bool AnalyzeSfiCodeSegments(ncfile *ncf, const char *fname) {
   vstate = NaClValidatorStateCreate(vbase, vlimit - vbase,
                                     ncf->ncalign, nacl_base_register);
   if (vstate == NULL) {
-    NaClValidatorMessage(LOG_FATAL, vstate, "Unable to create validator state");
+    NaClValidatorMessage(LOG_ERROR, vstate, "Unable to create validator state");
+    return FALSE;
   }
   if (NACL_FLAGS_analyze_segments) {
     AnalyzeSfiSegments(ncf, vstate);
@@ -298,7 +299,8 @@ static ncfile *ValidateSfiLoadFile(const char *fname) {
 /* Load the elf file and return the loaded elf file. */
 static Bool ValidateSfiLoad(int argc, const char *argv[], ValidateData *data) {
   if (argc != 2) {
-    NaClValidatorMessage(LOG_FATAL, NULL, "expected: %s file\n", argv[0]);
+    NaClValidatorMessage(LOG_ERROR, NULL, "expected: %s file\n", argv[0]);
+    return FALSE;
   }
   data->fname = argv[1];
 
@@ -309,7 +311,7 @@ static Bool ValidateSfiLoad(int argc, const char *argv[], ValidateData *data) {
   data->ncf = ValidateSfiLoadFile(data->fname);
 
   if (NULL == data->ncf) {
-    NaClValidatorMessage(LOG_FATAL, NULL, "nc_loadfile(%s): %s\n",
+    NaClValidatorMessage(LOG_ERROR, NULL, "nc_loadfile(%s): %s\n",
                          data->fname, strerror(errno));
   }
   return NULL != data->ncf;
@@ -349,7 +351,7 @@ static void SfiHexFatal(const char *format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 static void SfiHexFatal(const char *format, ...) {
   va_list ap;
   va_start(ap, format);
-  NaClLogV(LOG_FATAL, format, ap);
+  NaClLogV(LOG_ERROR, format, ap);
   va_end(ap);
   /* always succed, so that the testing framework works. */
   exit(0);
@@ -619,6 +621,11 @@ int main(int argc, const char *argv[]) {
   int result = 0;
   struct GioFile gio_out_stream;
   struct Gio *gout = (struct Gio*) &gio_out_stream;
+
+  if (argc < 2) {
+    fprintf(stderr, "expected: %s file\n", argv[0]);
+  }
+
   if (!GioFileRefCtor(&gio_out_stream, stdout)) {
     fprintf(stderr, "Unable to create gio file for stdout!\n");
     return 1;

@@ -28,9 +28,16 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
-/* Default handler for errors while running instruction iterator. */
+static void NaClInstIterLogError(const char* error_message) {
+  NaClLog(LOG_ERROR, "*ERROR* %s\n", error_message);
+}
+
+/* Default handler for errors while running instruction iterator.
+ * Should only be called when caller has incorrectly called a
+ * method.
+ */
 static void NaClInstIterFatal(const char* error_message) {
-  NaClLog(LOG_FATAL, "*ERROR* %s\n", error_message);
+  NaClInstIterLogError(error_message);
   exit(1);
 }
 
@@ -38,7 +45,7 @@ static void NaClInstIterFatal(const char* error_message) {
 static void NaClInstIterReportRemainingMemoryError(
     NCRemainingMemoryError error,
     struct NCRemainingMemory* memory) {
-  NaClInstIterFatal(NCRemainingMemoryErrorMessage(error));
+  NaClInstIterLogError(NCRemainingMemoryErrorMessage(error));
 }
 
 NaClInstIter* NaClInstIterCreateWithLookback(

@@ -1,4 +1,5 @@
-/* Copyright (c) 2009 The Native Client Authors. All rights reserved.
+/*
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -160,10 +161,13 @@ NaClJumpSets* NaClJumpValidatorCreate(NaClValidatorState* state) {
     if (jump_sets->actual_targets == NULL ||
         jump_sets->possible_targets == NULL ||
         jump_sets->removed_targets == NULL) {
-      NaClValidatorMessage(LOG_FATAL, state, "unable to allocate jump sets");
+      NaClValidatorMessage(LOG_ERROR, state, "unable to allocate jump sets");
+      NaClJumpValidatorDestroy(state, jump_sets);
+      jump_sets = NULL;
+    } else {
+      jump_sets->set_array_size =
+          NaClAddressSetArraySize(state->vlimit - align_base);
     }
-    jump_sets->set_array_size =
-        NaClAddressSetArraySize(state->vlimit - align_base);
   }
   return jump_sets;
 }

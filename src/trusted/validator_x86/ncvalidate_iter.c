@@ -401,12 +401,13 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
 /* Add validators to validator state if missing. Assumed to be called just
  * before analyzing a code segment.
  */
-void NaClValidatorStateInitializeValidators(NaClValidatorState *state) {
+Bool NaClValidatorStateInitializeValidators(NaClValidatorState *state) {
   /* Note: Need to lazy initialize validators until after the call to
    * NaClValidateSegment, so that the user of the API can change flags.
    * Also, we must lazy initialize so that we don't break all callers,
    * who have followed the previous API.
    */
+  Bool success = TRUE;  /* until proven otherwise. */
   if (0 == state->number_validators) {
     int i;
     NaClValidatorRulesInit(state);
@@ -418,13 +419,26 @@ void NaClValidatorStateInitializeValidators(NaClValidatorState *state) {
         void *defn_memory = defn->create_memory(state);
         if (defn_memory == NULL) {
           NaClValidatorMessage(
-              LOG_FATAL, state,
+              LOG_ERROR, state,
               "Unable to create local memory for validator function!");
           state->local_memory[i] = NULL;
+          success = FALSE;
         } else {
           state->local_memory[i] = defn_memory;
         }
       }
+    }
+  }
+  return success;
+}
+
+void NaClValidatorStateCleanUpValidators(NaClValidatorState *state) {
+  int i;
+  for (i = 0; i < state->number_validators; ++i) {
+    NaClValidatorDefinition *defn = &state->validators[i];
+    void *defn_memory = state->local_memory[i];
+    if (defn->destroy_memory != NULL && defn_memory != NULL) {
+      defn->destroy_memory(state, defn_memory);
     }
   }
 }
@@ -478,23 +492,25 @@ void NaClValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
                          NaClMemorySize size, NaClValidatorState *state) {
   NaClSegment segment;
   NaClInstIter *iter;
-  NaClValidatorStateInitializeValidators(state);
-  NaClSegmentInitialize(mbase, vbase, size, &segment);
-  for (iter = NaClInstIterCreateWithLookback(&segment, kLookbackSize);
-       NaClInstIterHasNext(iter);
-       NaClInstIterAdvance(iter)) {
-    state->cur_inst_state = NaClInstIterGetState(iter);
-    state->cur_inst = NaClInstStateInst(state->cur_inst_state);
-    state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
-    NaClApplyValidators(state, iter);
-    if (state->quit) break;
+  if (NaClValidatorStateInitializeValidators(state)) {
+    NaClSegmentInitialize(mbase, vbase, size, &segment);
+    for (iter = NaClInstIterCreateWithLookback(&segment, kLookbackSize);
+         NaClInstIterHasNext(iter);
+         NaClInstIterAdvance(iter)) {
+      state->cur_inst_state = NaClInstIterGetState(iter);
+      state->cur_inst = NaClInstStateInst(state->cur_inst_state);
+      state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
+      NaClApplyValidators(state, iter);
+      if (state->quit) break;
+    }
+    state->cur_inst_state = NULL;
+    state->cur_inst = NULL;
+    state->cur_inst_vector = NULL;
+    NaClApplyPostValidators(state, iter);
+    NaClInstIterDestroy(iter);
+    NaClValidatorStatePrintStats(state);
   }
-  state->cur_inst_state = NULL;
-  state->cur_inst = NULL;
-  state->cur_inst_vector = NULL;
-  NaClApplyPostValidators(state, iter);
-  NaClInstIterDestroy(iter);
-  NaClValidatorStatePrintStats(state);
+  NaClValidatorStateCleanUpValidators(state);
 }
 
 Bool NaClValidatesOk(NaClValidatorState *state) {
@@ -512,14 +528,6 @@ static void NaClValidatorStatePrintStats(NaClValidatorState *state) {
 }
 
 void NaClValidatorStateDestroy(NaClValidatorState *state) {
-  int i;
-  for (i = 0; i < state->number_validators; ++i) {
-    NaClValidatorDefinition *defn = &state->validators[i];
-    void *defn_memory = state->local_memory[i];
-    if (defn->destroy_memory != NULL && defn_memory != NULL) {
-      defn->destroy_memory(state, defn_memory);
-    }
-  }
   free(state);
 }
 

@@ -116,7 +116,7 @@ static NaClExp* NaClAppendExp(NaClExpKind kind,
  * how to recover.
  */
 static void NaClLost(const char* message) {
-  NaClLog(LOG_FATAL, "FATAL: %s\n", message);
+  NaClLog(LOG_ERROR, "FATAL: %s\n", message);
   exit(1);
 }
 
@@ -129,7 +129,7 @@ static void NaClLost(const char* message) {
  */
 static NaClExp* NaClFatal(const char* message,
                           NaClInstState* state) {
-  NaClLog(LOG_FATAL,
+  NaClLog(LOG_ERROR,
           "FATAL: At %"NACL_PRIxNaClPcAddress", unable to translate: %s\n",
           NaClInstStateVpc(state), message);
   exit(1);
@@ -156,7 +156,7 @@ static NaClOpKind NaClGetMnemonicSegmentRegister(NaClInstState* state) {
     default:
       break;
   }
-  NaClFatal("Unable to determine segment regsiter form instruction name",
+  NaClFatal("Unable to determine segment regsiter from instruction name",
             state);
   /* NOT REACHED */
   return RegUnknown;
