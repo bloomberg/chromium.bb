@@ -41,34 +41,23 @@ GpuBlacklistUpdater::GpuBlacklistUpdater()
                          NotificationType::NOTIFICATION_TYPE_COUNT,
                          prefs::kGpuBlacklistUpdate,
                          kStartGpuBlacklistFetchDelay,
-                         kCacheUpdateDelay),
-      gpu_blacklist_cache_(NULL) {
-  PrefService* local_state = g_browser_process->local_state();
-  // If we bring up chrome normally, prefs should never be NULL; however, we
-  // we handle the case where local_state == NULL for certain tests.
-  if (local_state) {
-    local_state->RegisterDictionaryPref(prefs::kGpuBlacklist);
-    gpu_blacklist_cache_ = local_state->GetDictionary(prefs::kGpuBlacklist);
-    DCHECK(gpu_blacklist_cache_);   
-  }
-
-  LoadGpuBlacklist();
+                         kCacheUpdateDelay) {
+  prefs_->RegisterDictionaryPref(prefs::kGpuBlacklist);
+  const DictionaryValue* gpu_blacklist_cache =
+      prefs_->GetDictionary(prefs::kGpuBlacklist);
+  LoadGpuBlacklist(*gpu_blacklist_cache);
 }
 
 GpuBlacklistUpdater::~GpuBlacklistUpdater() { }
 
 void GpuBlacklistUpdater::Unpack(const DictionaryValue& parsed_json) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DictionaryPrefUpdate update(prefs_, prefs::kGpuBlacklist);
-  DictionaryValue* gpu_blacklist_cache = update.Get();
-  DCHECK(gpu_blacklist_cache);
-  gpu_blacklist_cache->Clear();
-  gpu_blacklist_cache->MergeDictionary(&parsed_json);
-
-  LoadGpuBlacklist();
+  prefs_->Set(prefs::kGpuBlacklist, parsed_json);
+  LoadGpuBlacklist(parsed_json);
 }
 
-void GpuBlacklistUpdater::LoadGpuBlacklist() {
+void GpuBlacklistUpdater::LoadGpuBlacklist(
+    const DictionaryValue& gpu_blacklist_cache) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<GpuBlacklist> gpu_blacklist;
@@ -90,29 +79,26 @@ void GpuBlacklistUpdater::LoadGpuBlacklist() {
   VLOG(1) << "Using software rendering list version "
           << version_major << "." << version_minor;
 
-  if (gpu_blacklist_cache_) {
-    uint16 cached_version_major, cached_version_minor;
-    if (GpuBlacklist::GetVersion(*gpu_blacklist_cache_,
-                                 &cached_version_major,
-                                 &cached_version_minor)) {
-      if (gpu_blacklist.get() != NULL) {
-        uint16 current_version_major, current_version_minor;
-        if (gpu_blacklist->GetVersion(&current_version_major,
-                                      &current_version_minor) &&
-            (cached_version_major > current_version_major ||
-             (cached_version_major == current_version_major &&
-              cached_version_minor > current_version_minor))) {
-          chrome::VersionInfo version_info;
-          std::string chrome_version_string =
-              version_info.is_valid() ? version_info.Version() : "0";
-          GpuBlacklist* updated_list = new GpuBlacklist(chrome_version_string);
-          if (updated_list->LoadGpuBlacklist(*gpu_blacklist_cache_, true)) {
-            gpu_blacklist.reset(updated_list);
-            VLOG(1) << "Using software rendering list version "
-                << cached_version_major << "." << cached_version_minor;
-          } else {
-            delete updated_list;
-          }
+  uint16 cached_version_major, cached_version_minor;
+  if (GpuBlacklist::GetVersion(gpu_blacklist_cache,
+                               &cached_version_major,
+                               &cached_version_minor)) {
+    if (gpu_blacklist.get() != NULL) {
+      uint16 current_version_major, current_version_minor;
+      if (gpu_blacklist->GetVersion(&current_version_major,
+                                    &current_version_minor) &&
+          (cached_version_major > current_version_major ||
+           (cached_version_major == current_version_major &&
+            cached_version_minor > current_version_minor))) {
+        chrome::VersionInfo version_info;
+        std::string chrome_version_string =
+            version_info.is_valid() ? version_info.Version() : "0";
+        scoped_ptr<GpuBlacklist> updated_list(
+            new GpuBlacklist(chrome_version_string));
+        if (updated_list->LoadGpuBlacklist(gpu_blacklist_cache, true)) {
+          gpu_blacklist.reset(updated_list.release());
+          VLOG(1) << "Using software rendering list version "
+              << cached_version_major << "." << cached_version_minor;
         }
       }
     }
