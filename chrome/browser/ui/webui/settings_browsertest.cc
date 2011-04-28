@@ -108,3 +108,18 @@ IN_PROC_BROWSER_TEST_F(SettingsWebUITest, MAYBE_TestSetBooleanPrefTriggers) {
       HandleSetBooleanPref(Eq_ListValue(&true_list_value)));
   ASSERT_TRUE(RunJavascriptTest("testSetBooleanPrefTriggers"));
 }
+
+// Not meant to run on ChromeOS at this time.
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestRefreshStaysOnCurrentPage\
+    DISABLED_TestRefreshStaysOnCurrentPage
+#else
+#define MAYBE_TestRefreshStaysOnCurrentPage TestRefreshStaysOnCurrentPage
+#endif
+IN_PROC_BROWSER_TEST_F(SettingsWebUITest,
+                       MAYBE_TestRefreshStaysOnCurrentPage) {
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
+  ASSERT_TRUE(RunJavascriptFunction("openUnderTheHood"));
+  ASSERT_TRUE(RunJavascriptFunction("refreshPage"));
+  ASSERT_TRUE(RunJavascriptTest("testPageIsUnderTheHood"));
+}

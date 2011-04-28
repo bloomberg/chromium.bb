@@ -27,9 +27,13 @@ bool LogHandler(int severity,
                 int line,
                 size_t message_start,
                 const std::string& str) {
-  if (severity == logging::LOG_ERROR)
+  if (severity == logging::LOG_ERROR) {
     error_messages_.push_back(str);
-  return true;
+    return true;
+  } else {
+    // For debugging messages while developing tests.
+    return false;
+  }
 }
 
 WebUIBrowserTest::~WebUIBrowserTest() {}
