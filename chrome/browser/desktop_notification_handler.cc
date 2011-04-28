@@ -41,7 +41,8 @@ void DesktopNotificationHandler::OnShow(
   // Disallow HTML notifications from unwanted schemes.  javascript:
   // in particular allows unwanted cross-domain access.
   GURL url = params.contents_url;
-  if (!url.SchemeIs(chrome::kHttpScheme) &&
+  if (params.is_html &&
+      !url.SchemeIs(chrome::kHttpScheme) &&
       !url.SchemeIs(chrome::kHttpsScheme) &&
       !url.SchemeIs(chrome::kExtensionScheme) &&
       !url.SchemeIs(chrome::kDataScheme)) {
