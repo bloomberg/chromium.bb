@@ -22,7 +22,7 @@
 
 
 class AutocompleteEditModel;
-class AutocompleteEditViewMac;
+class OmniboxViewMac;
 @class AutocompleteMatrix;
 class AutocompletePopupModel;
 @class InstantOptInController;
@@ -38,7 +38,7 @@ class Profile;
 class AutocompletePopupViewMac : public AutocompletePopupView,
                                  public InstantOptInControllerDelegate {
  public:
-  AutocompletePopupViewMac(AutocompleteEditViewMac* edit_view,
+  AutocompletePopupViewMac(OmniboxViewMac* omnibox_view,
                            AutocompleteEditModel* edit_model,
                            Profile* profile,
                            NSTextField* field);
@@ -137,7 +137,7 @@ class AutocompletePopupViewMac : public AutocompletePopupView,
   bool ShouldShowInstantOptIn();
 
   scoped_ptr<AutocompletePopupModel> model_;
-  AutocompleteEditViewMac* edit_view_;
+  OmniboxViewMac* omnibox_view_;
   NSTextField* field_;  // owned by tab controller
 
   // Child window containing a matrix which implements the popup.

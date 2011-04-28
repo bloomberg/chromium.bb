@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
+#import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -15,13 +15,13 @@
 
 namespace {
 
-TEST(AutocompleteEditViewMacTest, GetClipboardText) {
+TEST(OmniboxViewMacTest, GetClipboardText) {
   ui::Clipboard clipboard;
   string16 text;
 
   // Does an empty clipboard get empty text?
   clipboard.WriteObjects(ui::Clipboard::ObjectMap());
-  text = AutocompleteEditViewMac::GetClipboardText(&clipboard);
+  text = OmniboxViewMac::GetClipboardText(&clipboard);
   EXPECT_EQ(string16(), text);
 
   const string16 plainText(ASCIIToUTF16("test text"));
@@ -34,7 +34,7 @@ TEST(AutocompleteEditViewMacTest, GetClipboardText) {
     clipboard_writer.WriteText(plainText);
   }
 
-  text = AutocompleteEditViewMac::GetClipboardText(&clipboard);
+  text = OmniboxViewMac::GetClipboardText(&clipboard);
   EXPECT_EQ(plainText, text);
 
   // Can we pull a bookmark off the clipboard?
@@ -43,7 +43,7 @@ TEST(AutocompleteEditViewMacTest, GetClipboardText) {
     clipboard_writer.WriteBookmark(title, url);
   }
 
-  text = AutocompleteEditViewMac::GetClipboardText(&clipboard);
+  text = OmniboxViewMac::GetClipboardText(&clipboard);
   EXPECT_EQ(ASCIIToUTF16(url), text);
 
   // Do we pull text in preference to a bookmark?
@@ -53,7 +53,7 @@ TEST(AutocompleteEditViewMacTest, GetClipboardText) {
     clipboard_writer.WriteBookmark(title, url);
   }
 
-  text = AutocompleteEditViewMac::GetClipboardText(&clipboard);
+  text = OmniboxViewMac::GetClipboardText(&clipboard);
   EXPECT_EQ(plainText, text);
 
   // Do we get nothing if there is neither text nor a bookmark?
@@ -63,12 +63,12 @@ TEST(AutocompleteEditViewMacTest, GetClipboardText) {
     clipboard_writer.WriteHTML(markup, url);
   }
 
-  text = AutocompleteEditViewMac::GetClipboardText(&clipboard);
+  text = OmniboxViewMac::GetClipboardText(&clipboard);
   EXPECT_TRUE(text.empty());
 }
 
-TEST(AutocompleteEditViewMacTest, GetFieldFont) {
-  EXPECT_TRUE(AutocompleteEditViewMac::GetFieldFont());
+TEST(OmniboxViewMacTest, GetFieldFont) {
+  EXPECT_TRUE(OmniboxViewMac::GetFieldFont());
 }
 
 }  // namespace

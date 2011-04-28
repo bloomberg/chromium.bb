@@ -240,7 +240,7 @@
 // spurious -controlTextDidBeginEditing notifications are sent when an
 // NSTextField is firstResponder, even though -currentEditor on that
 // field returns nil.  That notification caused significant problems
-// in AutocompleteEditViewMac.  -textDidBeginEditing: was NOT being
+// in OmniboxViewMac.  -textDidBeginEditing: was NOT being
 // sent in those cases, so this approach doesn't have the problem.
 - (void)textDidBeginEditing:(NSNotification*)aNotification {
   [super textDidBeginEditing:aNotification];

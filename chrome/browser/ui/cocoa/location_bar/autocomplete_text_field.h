@@ -16,7 +16,7 @@
 @class AutocompleteTextFieldCell;
 
 // AutocompleteTextField intercepts UI actions for forwarding to
-// AutocompleteEditViewMac (*), and provides a custom look.  It works
+// OmniboxViewMac (*), and provides a custom look.  It works
 // together with AutocompleteTextFieldEditor (mostly for intercepting
 // user actions) and AutocompleteTextFieldCell (mostly for custom
 // drawing).
@@ -25,12 +25,12 @@
 // implementation of the Omnibox.  Chrome code seems to vary between
 // autocomplete and Omnibox in describing this.
 //
-// (*) AutocompleteEditViewMac is a view in the MVC sense for the
+// (*) OmniboxViewMac is a view in the MVC sense for the
 // Chrome internals, though it's really more of a mish-mash of model,
 // view, and controller.
 
 // Provides a hook so that we can call directly down to
-// AutocompleteEditViewMac rather than traversing the delegate chain.
+// OmniboxViewMac rather than traversing the delegate chain.
 class AutocompleteTextFieldObserver {
  public:
   // Called before changing the selected range of the field.
@@ -89,7 +89,7 @@ class AutocompleteTextFieldObserver {
   // decisions closer to the other autocomplete code is worthwhile,
   // since it calls a wide variety of methods which otherwise aren't
   // clearly relevent to expose here.  But consider pulling more of
-  // the AutocompleteEditViewMac calls up to here.
+  // the OmniboxViewMac calls up to here.
   virtual bool OnDoCommandBySelector(SEL cmd) = 0;
 
   // Called whenever the autocomplete text field gets focused.

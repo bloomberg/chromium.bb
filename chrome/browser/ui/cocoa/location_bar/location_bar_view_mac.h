@@ -14,10 +14,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/content_settings_types.h"
@@ -38,7 +38,7 @@ class StarDecoration;
 class ToolbarModel;
 
 // A C++ bridge class that represents the location bar UI element to
-// the portable code.  Wires up an AutocompleteEditViewMac instance to
+// the portable code.  Wires up an OmniboxViewMac instance to
 // the location bar text field, which handles most of the work.
 
 class LocationBarViewMac : public AutocompleteEditController,
@@ -174,7 +174,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   // Checks if the bookmark star should be enabled or not.
   bool IsStarEnabled();
 
-  scoped_ptr<AutocompleteEditViewMac> edit_view_;
+  scoped_ptr<OmniboxViewMac> omnibox_view_;
 
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
 

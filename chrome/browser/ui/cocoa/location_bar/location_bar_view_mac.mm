@@ -11,7 +11,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #import "chrome/browser/app_controller_mac.h"
-#import "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #import "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
@@ -37,6 +36,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/page_action_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
+#import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
@@ -72,21 +72,20 @@ LocationBarViewMac::LocationBarViewMac(
     ToolbarModel* toolbar_model,
     Profile* profile,
     Browser* browser)
-    : edit_view_(new AutocompleteEditViewMac(this, toolbar_model, profile,
-                                             command_updater, field)),
+    : omnibox_view_(new OmniboxViewMac(this, toolbar_model, profile,
+                                       command_updater, field)),
       command_updater_(command_updater),
       field_(field),
       disposition_(CURRENT_TAB),
       location_icon_decoration_(new LocationIconDecoration(this)),
       selected_keyword_decoration_(
-          new SelectedKeywordDecoration(
-              AutocompleteEditViewMac::GetFieldFont())),
+          new SelectedKeywordDecoration(OmniboxViewMac::GetFieldFont())),
       ev_bubble_decoration_(
           new EVBubbleDecoration(location_icon_decoration_.get(),
-                                 AutocompleteEditViewMac::GetFieldFont())),
+                                 OmniboxViewMac::GetFieldFont())),
       star_decoration_(new StarDecoration(command_updater)),
       keyword_hint_decoration_(
-          new KeywordHintDecoration(AutocompleteEditViewMac::GetFieldFont())),
+          new KeywordHintDecoration(OmniboxViewMac::GetFieldFont())),
       profile_(profile),
       browser_(browser),
       toolbar_model_(toolbar_model),
@@ -143,7 +142,7 @@ std::wstring LocationBarViewMac::GetInputString() const {
 
 void LocationBarViewMac::SetSuggestedText(const string16& text,
                                           InstantCompleteBehavior behavior) {
-  edit_view_->model()->SetSuggestedText(text, behavior);
+  omnibox_view_->model()->SetSuggestedText(text, behavior);
 }
 
 WindowOpenDisposition LocationBarViewMac::GetWindowOpenDisposition() const {
@@ -157,15 +156,15 @@ PageTransition::Type LocationBarViewMac::GetPageTransition() const {
 void LocationBarViewMac::AcceptInput() {
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  edit_view_->model()->AcceptInput(disposition, false);
+  omnibox_view_->model()->AcceptInput(disposition, false);
 }
 
 void LocationBarViewMac::FocusLocation(bool select_all) {
-  edit_view_->FocusLocation(select_all);
+  omnibox_view_->FocusLocation(select_all);
 }
 
 void LocationBarViewMac::FocusSearch() {
-  edit_view_->SetForcedQuery();
+  omnibox_view_->SetForcedQuery();
 }
 
 void LocationBarViewMac::UpdateContentSettingsIcons() {
@@ -201,7 +200,7 @@ void LocationBarViewMac::InvalidatePageActions() {
 
 void LocationBarViewMac::SaveStateToContents(TabContents* contents) {
   // TODO(shess): Why SaveStateToContents vs SaveStateToTab?
-  edit_view_->SaveStateToTab(contents);
+  omnibox_view_->SaveStateToTab(contents);
 }
 
 void LocationBarViewMac::Update(const TabContents* contents,
@@ -212,7 +211,7 @@ void LocationBarViewMac::Update(const TabContents* contents,
   RefreshPageActionDecorations();
   RefreshContentSettingsDecorations();
   // AutocompleteEditView restores state if the tab is non-NULL.
-  edit_view_->Update(should_restore_state ? contents : NULL);
+  omnibox_view_->Update(should_restore_state ? contents : NULL);
   OnChanged();
 }
 
@@ -252,8 +251,8 @@ void LocationBarViewMac::OnAutocompleteAccept(const GURL& url,
 
 void LocationBarViewMac::OnChanged() {
   // Update the location-bar icon.
-  const int resource_id = edit_view_->GetIcon();
-  NSImage* image = AutocompleteEditViewMac::ImageForResource(resource_id);
+  const int resource_id = omnibox_view_->GetIcon();
+  NSImage* image = OmniboxViewMac::ImageForResource(resource_id);
   location_icon_decoration_->SetImage(image);
   ev_bubble_decoration_->SetImage(image);
   Layout();
@@ -296,15 +295,15 @@ TabContentsWrapper* LocationBarViewMac::GetTabContentsWrapper() const {
 }
 
 void LocationBarViewMac::Revert() {
-  edit_view_->RevertAll();
+  omnibox_view_->RevertAll();
 }
 
 const AutocompleteEditView* LocationBarViewMac::location_entry() const {
-    return edit_view_.get();
+    return omnibox_view_.get();
   }
 
 AutocompleteEditView* LocationBarViewMac::location_entry() {
-    return edit_view_.get();
+    return omnibox_view_.get();
   }
 
 LocationBarTesting* LocationBarViewMac::GetLocationBarForTesting() {
@@ -473,7 +472,7 @@ NSImage* LocationBarViewMac::GetKeywordImage(const string16& keyword) {
     return gfx::SkBitmapToNSImage(bitmap);
   }
 
-  return AutocompleteEditViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);
+  return OmniboxViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);
 }
 
 void LocationBarViewMac::Observe(NotificationType type,
@@ -600,7 +599,7 @@ void LocationBarViewMac::Layout() {
   keyword_hint_decoration_->SetVisible(false);
 
   // Get the keyword to use for keyword-search and hinting.
-  const string16 keyword = edit_view_->model()->keyword();
+  const string16 keyword = omnibox_view_->model()->keyword();
   string16 short_name;
   bool is_extension_keyword = false;
   if (!keyword.empty()) {
@@ -608,7 +607,7 @@ void LocationBarViewMac::Layout() {
         GetKeywordShortName(keyword, &is_extension_keyword);
   }
 
-  const bool is_keyword_hint = edit_view_->model()->is_keyword_hint();
+  const bool is_keyword_hint = omnibox_view_->model()->is_keyword_hint();
 
   if (!keyword.empty() && !is_keyword_hint) {
     // Switch from location icon to keyword mode.

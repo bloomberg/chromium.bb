@@ -312,7 +312,7 @@ BOOL ThePasteboardIsTooDamnBig() {
 
   [super setMarkedText:aString selectedRange:selRange];
 
-  // Because the AutocompleteEditViewMac class treats marked text as content,
+  // Because the OmniboxViewMac class treats marked text as content,
   // we need to treat the change to marked text as content change as well.
   [self didChangeText];
 }

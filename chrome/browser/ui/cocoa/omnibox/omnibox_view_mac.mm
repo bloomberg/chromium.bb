@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
+#include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 
 #include <Carbon/Carbon.h>  // kVK_Return
 
@@ -37,7 +37,7 @@
 // initializes.  Visible activity happens only after the user edits.
 // NSTextField delegate receives messages around starting and ending
 // edits, so that suffices to catch focus changes.  Since all calls
-// into |model_| start from AutocompleteEditViewMac, in the worst case
+// into |model_| start from OmniboxViewMac, in the worst case
 // we can add code to sync up the sense of focus as needed.
 //
 // I've added DCHECK(IsFirstResponder()) in the places which I believe
@@ -85,9 +85,10 @@ NSColor* SecurityErrorSchemeColor() {
 }
 
 // Store's the model and view state across tab switches.
-struct AutocompleteEditViewMacState {
-  AutocompleteEditViewMacState(const AutocompleteEditModel::State model_state,
-                               const bool has_focus, const NSRange& selection)
+struct OmniboxViewMacState {
+  OmniboxViewMacState(const AutocompleteEditModel::State model_state,
+                      const bool has_focus,
+                      const NSRange& selection)
       : model_state(model_state),
         has_focus(has_focus),
         selection(selection) {
@@ -102,17 +103,17 @@ struct AutocompleteEditViewMacState {
 // state in a TabContents.  When constructed |accessor| generates a
 // globally-unique id used to index into the per-tab PropertyBag used
 // to store the state data.
-PropertyAccessor<AutocompleteEditViewMacState>* GetStateAccessor() {
-  static PropertyAccessor<AutocompleteEditViewMacState> accessor;
+PropertyAccessor<OmniboxViewMacState>* GetStateAccessor() {
+  static PropertyAccessor<OmniboxViewMacState> accessor;
   return &accessor;
 }
 
 // Accessors for storing and getting the state from the tab.
 void StoreStateToTab(TabContents* tab,
-                     const AutocompleteEditViewMacState& state) {
+                     const OmniboxViewMacState& state) {
   GetStateAccessor()->SetProperty(tab->property_bag(), state);
 }
-const AutocompleteEditViewMacState* GetStateFromTab(const TabContents* tab) {
+const OmniboxViewMacState* GetStateFromTab(const TabContents* tab) {
   return GetStateAccessor()->GetProperty(tab->property_bag());
 }
 
@@ -126,7 +127,7 @@ NSRange ComponentToNSRange(const url_parse::Component& component) {
 }  // namespace
 
 // static
-NSImage* AutocompleteEditViewMac::ImageForResource(int resource_id) {
+NSImage* OmniboxViewMac::ImageForResource(int resource_id) {
   NSString* image_name = nil;
 
   switch(resource_id) {
@@ -167,12 +168,11 @@ NSImage* AutocompleteEditViewMac::ImageForResource(int resource_id) {
   return rb.GetNativeImageNamed(resource_id);
 }
 
-AutocompleteEditViewMac::AutocompleteEditViewMac(
-    AutocompleteEditController* controller,
-    ToolbarModel* toolbar_model,
-    Profile* profile,
-    CommandUpdater* command_updater,
-    AutocompleteTextField* field)
+OmniboxViewMac::OmniboxViewMac(AutocompleteEditController* controller,
+                               ToolbarModel* toolbar_model,
+                               Profile* profile,
+                               CommandUpdater* command_updater,
+                               AutocompleteTextField* field)
     : model_(new AutocompleteEditModel(this, controller, profile)),
       popup_view_(new AutocompletePopupViewMac(this, model_.get(), profile,
                                                field)),
@@ -202,7 +202,7 @@ AutocompleteEditViewMac::AutocompleteEditViewMac(
   DCHECK_GT(line_height_, 0);
 }
 
-AutocompleteEditViewMac::~AutocompleteEditViewMac() {
+OmniboxViewMac::~OmniboxViewMac() {
   // Destroy popup view before this object in case it tries to call us
   // back in the destructor.  Likewise for destroying the model before
   // this object.
@@ -213,15 +213,15 @@ AutocompleteEditViewMac::~AutocompleteEditViewMac() {
   [field_ setObserver:NULL];
 }
 
-AutocompleteEditModel* AutocompleteEditViewMac::model() {
+AutocompleteEditModel* OmniboxViewMac::model() {
   return model_.get();
 }
 
-const AutocompleteEditModel* AutocompleteEditViewMac::model() const {
+const AutocompleteEditModel* OmniboxViewMac::model() const {
   return model_.get();
 }
 
-void AutocompleteEditViewMac::SaveStateToTab(TabContents* tab) {
+void OmniboxViewMac::SaveStateToTab(TabContents* tab) {
   DCHECK(tab);
 
   const bool hasFocus = [field_ currentEditor] ? true : false;
@@ -235,13 +235,11 @@ void AutocompleteEditViewMac::SaveStateToTab(TabContents* tab) {
     range = NSMakeRange(0, GetTextLength());
   }
 
-  AutocompleteEditViewMacState state(model_->GetStateForTabSwitch(),
-                                     hasFocus, range);
+  OmniboxViewMacState state(model_->GetStateForTabSwitch(), hasFocus, range);
   StoreStateToTab(tab, state);
 }
 
-void AutocompleteEditViewMac::Update(
-    const TabContents* tab_for_state_restoring) {
+void OmniboxViewMac::Update(const TabContents* tab_for_state_restoring) {
   // TODO(shess): It seems like if the tab is non-NULL, then this code
   // shouldn't need to be called at all.  When coded that way, I find
   // that the field isn't always updated correctly.  Figure out why
@@ -253,8 +251,7 @@ void AutocompleteEditViewMac::Update(
   if (tab_for_state_restoring) {
     RevertAll();
 
-    const AutocompleteEditViewMacState* state =
-        GetStateFromTab(tab_for_state_restoring);
+    const OmniboxViewMacState* state = GetStateFromTab(tab_for_state_restoring);
     if (state) {
       // Should restore the user's text via SetUserText().
       model_->RestoreState(state->model_state);
@@ -290,12 +287,12 @@ void AutocompleteEditViewMac::Update(
   }
 }
 
-void AutocompleteEditViewMac::OpenURL(const GURL& url,
-                                      WindowOpenDisposition disposition,
-                                      PageTransition::Type transition,
-                                      const GURL& alternate_nav_url,
-                                      size_t selected_line,
-                                      const string16& keyword) {
+void OmniboxViewMac::OpenURL(const GURL& url,
+                             WindowOpenDisposition disposition,
+                             PageTransition::Type transition,
+                             const GURL& alternate_nav_url,
+                             size_t selected_line,
+                             const string16& keyword) {
   // TODO(shess): Why is the caller passing an invalid url in the
   // first place?  Make sure that case isn't being dropped on the
   // floor.
@@ -307,27 +304,27 @@ void AutocompleteEditViewMac::OpenURL(const GURL& url,
                   selected_line, keyword);
 }
 
-string16 AutocompleteEditViewMac::GetText() const {
+string16 OmniboxViewMac::GetText() const {
   return base::SysNSStringToUTF16(GetNonSuggestTextSubstring());
 }
 
-bool AutocompleteEditViewMac::IsEditingOrEmpty() const {
+bool OmniboxViewMac::IsEditingOrEmpty() const {
   return model_->user_input_in_progress() || !GetTextLength();
 }
 
-int AutocompleteEditViewMac::GetIcon() const {
+int OmniboxViewMac::GetIcon() const {
   return IsEditingOrEmpty() ?
       AutocompleteMatch::TypeToIcon(model_->CurrentTextType()) :
       toolbar_model_->GetIcon();
 }
 
-void AutocompleteEditViewMac::SetUserText(const string16& text) {
+void OmniboxViewMac::SetUserText(const string16& text) {
   SetUserText(text, text, true);
 }
 
-void AutocompleteEditViewMac::SetUserText(const string16& text,
-                                          const string16& display_text,
-                                          bool update_popup) {
+void OmniboxViewMac::SetUserText(const string16& text,
+                                 const string16& display_text,
+                                 bool update_popup) {
   model_->SetUserText(text);
   // TODO(shess): TODO below from gtk.
   // TODO(deanm): something about selection / focus change here.
@@ -338,16 +335,16 @@ void AutocompleteEditViewMac::SetUserText(const string16& text,
   model_->OnChanged();
 }
 
-NSRange AutocompleteEditViewMac::GetSelectedRange() const {
+NSRange OmniboxViewMac::GetSelectedRange() const {
   return [[field_ currentEditor] selectedRange];
 }
 
-NSRange AutocompleteEditViewMac::GetMarkedRange() const {
+NSRange OmniboxViewMac::GetMarkedRange() const {
   DCHECK([field_ currentEditor]);
   return [(NSTextView*)[field_ currentEditor] markedRange];
 }
 
-void AutocompleteEditViewMac::SetSelectedRange(const NSRange range) {
+void OmniboxViewMac::SetSelectedRange(const NSRange range) {
   // This can be called when we don't have focus.  For instance, when
   // the user clicks the "Go" button.
   if (model_->has_focus()) {
@@ -365,13 +362,13 @@ void AutocompleteEditViewMac::SetSelectedRange(const NSRange range) {
   }
 }
 
-void AutocompleteEditViewMac::SetWindowTextAndCaretPos(const string16& text,
-                                                       size_t caret_pos) {
+void OmniboxViewMac::SetWindowTextAndCaretPos(const string16& text,
+                                              size_t caret_pos) {
   DCHECK_LE(caret_pos, text.size());
   SetTextAndSelectedRange(text, NSMakeRange(caret_pos, caret_pos));
 }
 
-void AutocompleteEditViewMac::SetForcedQuery() {
+void OmniboxViewMac::SetForcedQuery() {
   // We need to do this first, else |SetSelectedRange()| won't work.
   FocusLocation(true);
 
@@ -385,19 +382,19 @@ void AutocompleteEditViewMac::SetForcedQuery() {
   }
 }
 
-bool AutocompleteEditViewMac::IsSelectAll() {
+bool OmniboxViewMac::IsSelectAll() {
   if (![field_ currentEditor])
     return true;
   const NSRange all_range = NSMakeRange(0, GetTextLength());
   return NSEqualRanges(all_range, GetSelectedRange());
 }
 
-bool AutocompleteEditViewMac::DeleteAtEndPressed() {
+bool OmniboxViewMac::DeleteAtEndPressed() {
   return delete_at_end_pressed_;
 }
 
-void AutocompleteEditViewMac::GetSelectionBounds(string16::size_type* start,
-                                                 string16::size_type* end) {
+void OmniboxViewMac::GetSelectionBounds(string16::size_type* start,
+                                        string16::size_type* end) {
   if (![field_ currentEditor]) {
     *start = *end = 0;
     return;
@@ -408,7 +405,7 @@ void AutocompleteEditViewMac::GetSelectionBounds(string16::size_type* start,
   *end = static_cast<size_t>(NSMaxRange(selected_range));
 }
 
-void AutocompleteEditViewMac::SelectAll(bool reversed) {
+void OmniboxViewMac::SelectAll(bool reversed) {
   // TODO(shess): Figure out what |reversed| implies.  The gtk version
   // has it imply inverting the selection front to back, but I don't
   // even know if that makes sense for Mac.
@@ -418,14 +415,14 @@ void AutocompleteEditViewMac::SelectAll(bool reversed) {
   SetSelectedRange(NSMakeRange(0, GetTextLength()));
 }
 
-void AutocompleteEditViewMac::RevertAll() {
+void OmniboxViewMac::RevertAll() {
   ClosePopup();
   model_->Revert();
   model_->OnChanged();
   [field_ clearUndoChain];
 }
 
-void AutocompleteEditViewMac::UpdatePopup() {
+void OmniboxViewMac::UpdatePopup() {
   model_->SetInputInProgress(true);
   if (!model_->has_focus())
     return;
@@ -448,21 +445,20 @@ void AutocompleteEditViewMac::UpdatePopup() {
                             prevent_inline_autocomplete);
 }
 
-void AutocompleteEditViewMac::ClosePopup() {
+void OmniboxViewMac::ClosePopup() {
   model_->StopAutocomplete();
 }
 
-void AutocompleteEditViewMac::SetFocus() {
+void OmniboxViewMac::SetFocus() {
 }
 
-void AutocompleteEditViewMac::SetText(const string16& display_text) {
+void OmniboxViewMac::SetText(const string16& display_text) {
   // If we are setting the text directly, there cannot be any suggest text.
   suggest_text_length_ = 0;
   SetTextInternal(display_text);
 }
 
-void AutocompleteEditViewMac::SetTextInternal(
-    const string16& display_text) {
+void OmniboxViewMac::SetTextInternal(const string16& display_text) {
   NSString* ss = base::SysUTF16ToNSString(display_text);
   NSMutableAttributedString* as =
       [[[NSMutableAttributedString alloc] initWithString:ss] autorelease];
@@ -488,13 +484,13 @@ void AutocompleteEditViewMac::SetTextInternal(
   // text-field implementation.
 }
 
-void AutocompleteEditViewMac::SetTextAndSelectedRange(
-    const string16& display_text, const NSRange range) {
+void OmniboxViewMac::SetTextAndSelectedRange(const string16& display_text,
+                                             const NSRange range) {
   SetText(display_text);
   SetSelectedRange(range);
 }
 
-NSString* AutocompleteEditViewMac::GetNonSuggestTextSubstring() const {
+NSString* OmniboxViewMac::GetNonSuggestTextSubstring() const {
   NSString* text = [field_ stringValue];
   if (suggest_text_length_ > 0) {
     NSUInteger length = [text length];
@@ -505,7 +501,7 @@ NSString* AutocompleteEditViewMac::GetNonSuggestTextSubstring() const {
   return text;
 }
 
-NSString* AutocompleteEditViewMac::GetSuggestTextSubstring() const {
+NSString* OmniboxViewMac::GetSuggestTextSubstring() const {
   if (suggest_text_length_ == 0)
     return nil;
 
@@ -515,7 +511,7 @@ NSString* AutocompleteEditViewMac::GetSuggestTextSubstring() const {
   return [text substringFromIndex:(length - suggest_text_length_)];
 }
 
-void AutocompleteEditViewMac::EmphasizeURLComponents() {
+void OmniboxViewMac::EmphasizeURLComponents() {
   NSTextView* editor = (NSTextView*)[field_ currentEditor];
   // If the autocomplete text field is in editing mode, then we can just change
   // its attributes through its editor. Otherwise, we simply reset its content.
@@ -535,8 +531,8 @@ void AutocompleteEditViewMac::EmphasizeURLComponents() {
   }
 }
 
-void AutocompleteEditViewMac::ApplyTextAttributes(
-    const string16& display_text, NSMutableAttributedString* as) {
+void OmniboxViewMac::ApplyTextAttributes(const string16& display_text,
+                                         NSMutableAttributedString* as) {
   [as addAttribute:NSFontAttributeName value:GetFieldFont()
              range:NSMakeRange(0, [as length])];
 
@@ -595,8 +591,8 @@ void AutocompleteEditViewMac::ApplyTextAttributes(
   }
 }
 
-void AutocompleteEditViewMac::OnTemporaryTextMaybeChanged(
-    const string16& display_text, bool save_original_selection) {
+void OmniboxViewMac::OnTemporaryTextMaybeChanged(const string16& display_text,
+                                                 bool save_original_selection) {
   if (save_original_selection)
     saved_temporary_selection_ = GetSelectedRange();
 
@@ -606,15 +602,16 @@ void AutocompleteEditViewMac::OnTemporaryTextMaybeChanged(
   [field_ clearUndoChain];
 }
 
-void AutocompleteEditViewMac::OnStartingIME() {
+void OmniboxViewMac::OnStartingIME() {
   // Reset the suggest text just before starting an IME composition session,
   // otherwise the IME composition may be interrupted when the suggest text
   // gets reset by the IME composition change.
   SetInstantSuggestion(string16(), false);
 }
 
-bool AutocompleteEditViewMac::OnInlineAutocompleteTextMaybeChanged(
-    const string16& display_text, size_t user_text_length) {
+bool OmniboxViewMac::OnInlineAutocompleteTextMaybeChanged(
+    const string16& display_text,
+    size_t user_text_length) {
   // TODO(shess): Make sure that this actually works.  The round trip
   // to native form and back may mean that it's the same but not the
   // same.
@@ -631,15 +628,15 @@ bool AutocompleteEditViewMac::OnInlineAutocompleteTextMaybeChanged(
   return true;
 }
 
-void AutocompleteEditViewMac::OnRevertTemporaryText() {
+void OmniboxViewMac::OnRevertTemporaryText() {
   SetSelectedRange(saved_temporary_selection_);
 }
 
-bool AutocompleteEditViewMac::IsFirstResponder() const {
+bool OmniboxViewMac::IsFirstResponder() const {
   return [field_ currentEditor] != nil ? true : false;
 }
 
-void AutocompleteEditViewMac::OnBeforePossibleChange() {
+void OmniboxViewMac::OnBeforePossibleChange() {
   // We should only arrive here when the field is focussed.
   DCHECK(IsFirstResponder());
 
@@ -648,7 +645,7 @@ void AutocompleteEditViewMac::OnBeforePossibleChange() {
   marked_range_before_change_ = GetMarkedRange();
 }
 
-bool AutocompleteEditViewMac::OnAfterPossibleChange() {
+bool OmniboxViewMac::OnAfterPossibleChange() {
   // We should only arrive here when the field is focussed.
   DCHECK(IsFirstResponder());
 
@@ -700,17 +697,16 @@ bool AutocompleteEditViewMac::OnAfterPossibleChange() {
   return something_changed;
 }
 
-gfx::NativeView AutocompleteEditViewMac::GetNativeView() const {
+gfx::NativeView OmniboxViewMac::GetNativeView() const {
   return field_;
 }
 
-CommandUpdater* AutocompleteEditViewMac::GetCommandUpdater() {
+CommandUpdater* OmniboxViewMac::GetCommandUpdater() {
   return command_updater_;
 }
 
-void AutocompleteEditViewMac::SetInstantSuggestion(
-    const string16& suggest_text,
-    bool animate_to_complete) {
+void OmniboxViewMac::SetInstantSuggestion(const string16& suggest_text,
+                                          bool animate_to_complete) {
   NSString* text = GetNonSuggestTextSubstring();
   bool needs_update = (suggest_text_length_ > 0);
 
@@ -732,41 +728,41 @@ void AutocompleteEditViewMac::SetInstantSuggestion(
   }
 }
 
-string16 AutocompleteEditViewMac::GetInstantSuggestion() const {
+string16 OmniboxViewMac::GetInstantSuggestion() const {
   return suggest_text_length_ ?
       base::SysNSStringToUTF16(GetSuggestTextSubstring()) : string16();
 }
 
-int AutocompleteEditViewMac::TextWidth() const {
+int OmniboxViewMac::TextWidth() const {
   // Not used on mac.
   NOTREACHED();
   return 0;
 }
 
-bool AutocompleteEditViewMac::IsImeComposing() const {
+bool OmniboxViewMac::IsImeComposing() const {
   return [(NSTextView*)[field_ currentEditor] hasMarkedText];
 }
 
-void AutocompleteEditViewMac::OnDidBeginEditing() {
+void OmniboxViewMac::OnDidBeginEditing() {
   // We should only arrive here when the field is focussed.
   DCHECK([field_ currentEditor]);
 }
 
-void AutocompleteEditViewMac::OnBeforeChange() {
+void OmniboxViewMac::OnBeforeChange() {
   // Capture the current state.
   OnBeforePossibleChange();
 }
 
-void AutocompleteEditViewMac::OnDidChange() {
+void OmniboxViewMac::OnDidChange() {
   // Figure out what changed and notify the model_.
   OnAfterPossibleChange();
 }
 
-void AutocompleteEditViewMac::OnDidEndEditing() {
+void OmniboxViewMac::OnDidEndEditing() {
   ClosePopup();
 }
 
-bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
+bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
   // We should only arrive here when the field is focussed.
   DCHECK(IsFirstResponder());
 
@@ -893,24 +889,24 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
   return false;
 }
 
-void AutocompleteEditViewMac::OnSetFocus(bool control_down) {
+void OmniboxViewMac::OnSetFocus(bool control_down) {
   model_->OnSetFocus(control_down);
   controller_->OnSetFocus();
 }
 
-void AutocompleteEditViewMac::OnKillFocus() {
+void OmniboxViewMac::OnKillFocus() {
   // Tell the model to reset itself.
   model_->OnWillKillFocus(NULL);
   model_->OnKillFocus();
   controller_->OnKillFocus();
 }
 
-bool AutocompleteEditViewMac::CanCopy() {
+bool OmniboxViewMac::CanCopy() {
   const NSRange selection = GetSelectedRange();
   return selection.length > 0;
 }
 
-void AutocompleteEditViewMac::CopyToPasteboard(NSPasteboard* pb) {
+void OmniboxViewMac::CopyToPasteboard(NSPasteboard* pb) {
   DCHECK(CanCopy());
 
   const NSRange selection = GetSelectedRange();
@@ -932,7 +928,7 @@ void AutocompleteEditViewMac::CopyToPasteboard(NSPasteboard* pb) {
   }
 }
 
-void AutocompleteEditViewMac::OnPaste() {
+void OmniboxViewMac::OnPaste() {
   // This code currently expects |field_| to be focussed.
   DCHECK([field_ currentEditor]);
 
@@ -964,12 +960,12 @@ void AutocompleteEditViewMac::OnPaste() {
   }
 }
 
-bool AutocompleteEditViewMac::CanPasteAndGo() {
+bool OmniboxViewMac::CanPasteAndGo() {
   return
     model_->CanPasteAndGo(GetClipboardText(g_browser_process->clipboard()));
 }
 
-int AutocompleteEditViewMac::GetPasteActionStringId() {
+int OmniboxViewMac::GetPasteActionStringId() {
   DCHECK(CanPasteAndGo());
 
   // Use PASTE_AND_SEARCH as the default fallback (although the DCHECK above
@@ -980,12 +976,12 @@ int AutocompleteEditViewMac::GetPasteActionStringId() {
     return IDS_PASTE_AND_SEARCH;
 }
 
-void AutocompleteEditViewMac::OnPasteAndGo() {
+void OmniboxViewMac::OnPasteAndGo() {
   if (CanPasteAndGo())
     model_->PasteAndGo();
 }
 
-void AutocompleteEditViewMac::OnFrameChanged() {
+void OmniboxViewMac::OnFrameChanged() {
   // TODO(shess): UpdatePopupAppearance() is called frequently, so it
   // should be really cheap, but in this case we could probably make
   // things even cheaper by refactoring between the popup-placement
@@ -997,7 +993,7 @@ void AutocompleteEditViewMac::OnFrameChanged() {
   model_->OnChanged();
 }
 
-bool AutocompleteEditViewMac::OnBackspacePressed() {
+bool OmniboxViewMac::OnBackspacePressed() {
   // Don't intercept if not in keyword search mode.
   if (model_->is_keyword_hint() || model_->keyword().empty()) {
     return false;
@@ -1016,8 +1012,7 @@ bool AutocompleteEditViewMac::OnBackspacePressed() {
   return true;
 }
 
-NSRange AutocompleteEditViewMac::SelectionRangeForProposedRange(
-    NSRange proposed_range) {
+NSRange OmniboxViewMac::SelectionRangeForProposedRange(NSRange proposed_range) {
   // Should never call this function unless editing is in progress.
   DCHECK([field_ currentEditor]);
 
@@ -1044,11 +1039,11 @@ NSRange AutocompleteEditViewMac::SelectionRangeForProposedRange(
   return NSMakeRange(start, end - start);
 }
 
-void AutocompleteEditViewMac::OnControlKeyChanged(bool pressed) {
+void OmniboxViewMac::OnControlKeyChanged(bool pressed) {
   model_->OnControlKeyChanged(pressed);
 }
 
-void AutocompleteEditViewMac::FocusLocation(bool select_all) {
+void OmniboxViewMac::FocusLocation(bool select_all) {
   if ([field_ isEditable]) {
     // If the text field has a field editor, it's the first responder, meaning
     // that it's already focused. makeFirstResponder: will select all, so only
@@ -1059,12 +1054,10 @@ void AutocompleteEditViewMac::FocusLocation(bool select_all) {
   }
 }
 
-// TODO(shess): Copied from autocomplete_edit_view_win.cc.  Could this
-// be pushed into the model?
-string16 AutocompleteEditViewMac::GetClipboardText(
-    ui::Clipboard* clipboard) {
-  // autocomplete_edit_view_win.cc assumes this can never happen, we
-  // will too.
+// TODO(shess): Copied from omnibox_view_win.cc. Could this be pushed into the
+// model?
+string16 OmniboxViewMac::GetClipboardText(ui::Clipboard* clipboard) {
+  // omnibox_view_win.cc assumes this can never happen, we will too.
   DCHECK(clipboard);
 
   if (clipboard->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
@@ -1103,23 +1096,23 @@ string16 AutocompleteEditViewMac::GetClipboardText(
 }
 
 // static
-NSFont* AutocompleteEditViewMac::GetFieldFont() {
+NSFont* OmniboxViewMac::GetFieldFont() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetFont(ResourceBundle::BaseFont).GetNativeFont();
 }
 
-NSUInteger AutocompleteEditViewMac::GetTextLength() const {
+NSUInteger OmniboxViewMac::GetTextLength() const {
   return ([field_ currentEditor] ?
           [[[field_ currentEditor] string] length] :
           [[field_ stringValue] length]) - suggest_text_length_;
 }
 
-void AutocompleteEditViewMac::PlaceCaretAt(NSUInteger pos) {
+void OmniboxViewMac::PlaceCaretAt(NSUInteger pos) {
   DCHECK(pos <= GetTextLength());
   SetSelectedRange(NSMakeRange(pos, pos));
 }
 
-bool AutocompleteEditViewMac::IsCaretAtEnd() const {
+bool OmniboxViewMac::IsCaretAtEnd() const {
   const NSRange selection = GetSelectedRange();
   return selection.length == 0 && selection.location == GetTextLength();
 }

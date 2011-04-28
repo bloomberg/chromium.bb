@@ -18,7 +18,7 @@
 // positioned by the cell's -editWithFrame:inView:... method.  Using
 // the standard -makeFirstResponder: machinery to reposition the field
 // editor results in resetting the field editor's editing state, which
-// AutocompleteEditViewMac monitors.  This causes problems because
+// OmniboxViewMac monitors.  This causes problems because
 // editing can require the field editor to be repositioned, which
 // could disrupt editing.  This code repositions the subview directly,
 // which causes no editing-state changes.

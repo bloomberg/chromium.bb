@@ -10,7 +10,6 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
@@ -21,6 +20,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/instant_opt_in_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/instant_opt_in_view.h"
 #import "chrome/browser/ui/cocoa/location_bar/omnibox_popup_view.h"
+#include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
@@ -281,17 +281,17 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
 @end
 
 AutocompletePopupViewMac::AutocompletePopupViewMac(
-    AutocompleteEditViewMac* edit_view,
+    OmniboxViewMac* omnibox_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
     NSTextField* field)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
-      edit_view_(edit_view),
+      omnibox_view_(omnibox_view),
       field_(field),
       popup_(nil),
       opt_in_controller_(nil),
       targetPopupFrame_(NSZeroRect) {
-  DCHECK(edit_view);
+  DCHECK(omnibox_view);
   DCHECK(edit_model);
   DCHECK(profile);
 }
@@ -422,7 +422,7 @@ NSImage* AutocompletePopupViewMac::ImageForMatch(
 
   const int resource_id = match.starred ?
       IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match.type);
-  return AutocompleteEditViewMac::ImageForResource(resource_id);
+  return OmniboxViewMac::ImageForResource(resource_id);
 }
 
 void AutocompletePopupViewMac::UpdatePopupAppearance() {
@@ -448,7 +448,7 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   CreatePopupIfNeeded();
 
   // The popup's font is a slightly smaller version of the field's.
-  NSFont* fieldFont = AutocompleteEditViewMac::GetFieldFont();
+  NSFont* fieldFont = OmniboxViewMac::GetFieldFont();
   const CGFloat resultFontSize = [fieldFont pointSize] + kEditFontAdjust;
   gfx::Font resultFont(base::SysNSStringToUTF16([fieldFont fontName]),
                        static_cast<int>(resultFontSize));
@@ -547,8 +547,8 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
   const GURL url(match.destination_url);
   string16 keyword;
   const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
-  edit_view_->OpenURL(url, disposition, match.transition, GURL(), row,
-                      is_keyword_hint ? string16() : keyword);
+  omnibox_view_->OpenURL(url, disposition, match.transition, GURL(), row,
+                         is_keyword_hint ? string16() : keyword);
 }
 
 void AutocompletePopupViewMac::UserPressedOptIn(bool opt_in) {

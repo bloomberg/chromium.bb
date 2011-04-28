@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_MAC_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_MAC_H_
+#ifndef CHROME_BROWSER_UI_COCOA_OMNIBOX_OMNIBOX_VIEW_MAC_H_
+#define CHROME_BROWSER_UI_COCOA_OMNIBOX_OMNIBOX_VIEW_MAC_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -24,15 +24,15 @@ class Clipboard;
 
 // Implements AutocompleteEditView on an AutocompleteTextField.
 
-class AutocompleteEditViewMac : public AutocompleteEditView,
-                                public AutocompleteTextFieldObserver {
+class OmniboxViewMac : public AutocompleteEditView,
+                       public AutocompleteTextFieldObserver {
  public:
-  AutocompleteEditViewMac(AutocompleteEditController* controller,
-                          ToolbarModel* toolbar_model,
-                          Profile* profile,
-                          CommandUpdater* command_updater,
-                          AutocompleteTextField* field);
-  virtual ~AutocompleteEditViewMac();
+  OmniboxViewMac(AutocompleteEditController* controller,
+                 ToolbarModel* toolbar_model,
+                 Profile* profile,
+                 CommandUpdater* command_updater,
+                 AutocompleteTextField* field);
+  virtual ~OmniboxViewMac();
 
   // Implement the AutocompleteEditView interface.
   virtual AutocompleteEditModel* model();
@@ -219,7 +219,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   // The maximum/standard line height for the displayed text.
   CGFloat line_height_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewMac);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxViewMac);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_MAC_H_
+#endif  // CHROME_BROWSER_UI_COCOA_OMNIBOX_OMNIBOX_VIEW_MAC_H_

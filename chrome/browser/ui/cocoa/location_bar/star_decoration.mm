@@ -5,8 +5,8 @@
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 
 #include "chrome/app/chrome_command_ids.h"
-#import "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/command_updater.h"
+#import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -34,7 +34,7 @@ StarDecoration::~StarDecoration() {
 void StarDecoration::SetStarred(bool starred) {
   const int image_id = starred ? IDR_STAR_LIT : IDR_STAR;
   const int tip_id = starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR;
-  SetImage(AutocompleteEditViewMac::ImageForResource(image_id));
+  SetImage(OmniboxViewMac::ImageForResource(image_id));
   tooltip_.reset([l10n_util::GetNSStringWithFixup(tip_id) retain]);
 }
 
