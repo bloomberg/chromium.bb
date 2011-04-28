@@ -1,4 +1,5 @@
-/* Copyright (c) 2010 The Native Client Authors. All rights reserved.
+/*
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -38,7 +39,7 @@ const char* NaClStValueKindName(NaClStValueKind kind) {
     "nacl_int",
     "nacl_defop",
   };
-  return (kind >= 0 && kind < NACL_ARRAY_SIZE(name)) ? name[kind] : "???";
+  return kind < NACL_ARRAY_SIZE(name) ? name[kind] : "???";
 }
 
 void NaClStValueAssign(

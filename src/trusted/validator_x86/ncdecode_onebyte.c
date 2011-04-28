@@ -1,4 +1,5 @@
-/* Copyright (c) 2009 The Native Client Authors. All rights reserved.
+/*
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -195,7 +196,7 @@ static void NaClDefJumpRegZero(struct NaClSymbolTable* context_st) {
     /* The register XX the instruction conditionalizes the jump on. */
     const char* reg;
     /* The address size held in register XX. */
-    const NaClOpKind addr_size;
+    const NaClIFlag addr_size;
     /* The mnemonic name of the instruction. */
     const char* name;
   } inst[3] = {

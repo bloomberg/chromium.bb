@@ -201,12 +201,8 @@ static void NaClFatalOp(int index, const char* message) {
 
 /* Advance the buffer/buffer_size values by count characters. */
 static void CharAdvance(char** buffer, size_t* buffer_size, size_t count) {
-  if (count < 0) {
-    NaClFatal("Unable to advance buffer by count!");
-  } else {
-    *buffer += count;
-    *buffer_size += count;
-  }
+  *buffer += count;
+  *buffer_size += count;
 }
 
 /* Generates a (malloc allocated) string describing the form for the
