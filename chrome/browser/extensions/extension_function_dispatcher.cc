@@ -48,8 +48,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
@@ -419,15 +417,6 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
   ExtensionProcessManager* epm = profile()->GetExtensionProcessManager();
   epm->RegisterExtensionProcess(extension_id(),
                                 render_view_host->process()->id());
-
-  // If the extension has permission to load chrome://favicon/ resources we need
-  // to make sure that the FaviconSource is registered with the
-  // ChromeURLDataManager.
-  if (extension->HasHostPermission(GURL(chrome::kChromeUIFaviconURL))) {
-    FaviconSource* favicon_source = new FaviconSource(profile_,
-                                                      FaviconSource::FAVICON);
-    profile_->GetChromeURLDataManager()->AddDataSource(favicon_source);
-  }
 
   // Activate this extension in the renderer. This must be done before any
   // extension JavaScript code runs because it controls some privileges the

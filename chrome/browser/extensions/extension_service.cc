@@ -53,6 +53,8 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
@@ -505,8 +507,8 @@ PendingExtensionManager* ExtensionService::pending_extension_manager() {
 }
 
 ExtensionService::~ExtensionService() {
-  CHECK(!profile_);  // Profile should have told us it's going away.
-  UnloadAllExtensions();
+  // No need to unload extensions here because they are profile-scoped, and the
+  // profile is in the process of being deleted.
 
   ProviderCollection::const_iterator i;
   for (i = external_extension_providers_.begin();
@@ -768,11 +770,7 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
   // Make sure any browser action contained within it is not hidden.
   extension_prefs_->SetBrowserActionVisibility(extension, true);
 
-  ExtensionWebUI::RegisterChromeURLOverrides(profile_,
-      extension->GetChromeURLOverrides());
-
   NotifyExtensionLoaded(extension);
-  UpdateActiveExtensionsInCrashReporter();
 }
 
 void ExtensionService::DisableExtension(const std::string& extension_id) {
@@ -796,11 +794,7 @@ void ExtensionService::DisableExtension(const std::string& extension_id) {
                                            extension);
   extensions_.erase(iter);
 
-  ExtensionWebUI::UnregisterChromeURLOverrides(profile_,
-      extension->GetChromeURLOverrides());
-
   NotifyExtensionUnloaded(extension, UnloadedExtensionInfo::DISABLE);
-  UpdateActiveExtensionsInCrashReporter();
 }
 
 void ExtensionService::GrantPermissions(const Extension* extension) {
@@ -1091,23 +1085,58 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   // that the request context doesn't yet know about. The profile is responsible
   // for ensuring its URLRequestContexts appropriately discover the loaded
   // extension.
-  if (profile_) {
-    profile_->RegisterExtensionWithRequestContexts(extension);
-    profile_->GetExtensionSpecialStoragePolicy()->
-        GrantRightsForExtension(extension);
-  }
+  profile_->RegisterExtensionWithRequestContexts(extension);
 
+  // Tell subsystems that use the EXTENSION_LOADED notification about the new
+  // extension.
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_LOADED,
       Source<Profile>(profile_),
       Details<const Extension>(extension));
 
+  // Tell renderers about the new extension.
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    i.GetCurrentValue()->Send(
-        new ExtensionMsg_Loaded(ExtensionMsg_Loaded_Params(extension)));
+    RenderProcessHost* host = i.GetCurrentValue();
+    if (host->profile()->GetOriginalProfile() ==
+        profile_->GetOriginalProfile()) {
+      host->Send(
+          new ExtensionMsg_Loaded(ExtensionMsg_Loaded_Params(extension)));
+    }
   }
 
+  // Tell a random-ass collection of other subsystems about the new extension.
+  // TODO(aa): What should we do with all this goop? Can it move into the
+  // relevant objects via EXTENSION_LOADED?
+
+  profile_->GetExtensionSpecialStoragePolicy()->
+      GrantRightsForExtension(extension);
+
+  UpdateActiveExtensionsInCrashReporter();
+
+  ExtensionWebUI::RegisterChromeURLOverrides(
+      profile_, extension->GetChromeURLOverrides());
+
+  if (profile_->GetTemplateURLModel())
+    profile_->GetTemplateURLModel()->RegisterExtensionKeyword(extension);
+
+  // Load the icon for omnibox-enabled extensions so it will be ready to display
+  // in the URL bar.
+  if (!extension->omnibox_keyword().empty()) {
+    omnibox_popup_icon_manager_.LoadIcon(extension);
+    omnibox_icon_manager_.LoadIcon(extension);
+  }
+
+  // If the extension has permission to load chrome://favicon/ resources we need
+  // to make sure that the FaviconSource is registered with the
+  // ChromeURLDataManager.
+  if (extension->HasHostPermission(GURL(chrome::kChromeUIFaviconURL))) {
+    FaviconSource* favicon_source = new FaviconSource(profile_,
+                                                      FaviconSource::FAVICON);
+    profile_->GetChromeURLDataManager()->AddDataSource(favicon_source);
+  }
+
+  // TODO(mpcomplete): This ends up affecting all profiles. See crbug.com/80757.
   bool plugins_changed = false;
   for (size_t i = 0; i < extension->plugins().size(); ++i) {
     const Extension::PluginInfo& plugin = extension->plugins()[i];
@@ -1144,23 +1173,31 @@ void ExtensionService::NotifyExtensionUnloaded(
 
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    i.GetCurrentValue()->Send(new ExtensionMsg_Unloaded(extension->id()));
+    RenderProcessHost* host = i.GetCurrentValue();
+    if (host->profile()->GetOriginalProfile() ==
+        profile_->GetOriginalProfile()) {
+      host->Send(new ExtensionMsg_Unloaded(extension->id()));
+    }
   }
 
-  if (profile_) {
-    profile_->UnregisterExtensionWithRequestContexts(extension);
-    profile_->GetExtensionSpecialStoragePolicy()->
-        RevokeRightsForExtension(extension);
+  profile_->UnregisterExtensionWithRequestContexts(extension);
+  profile_->GetExtensionSpecialStoragePolicy()->
+      RevokeRightsForExtension(extension);
+
+  ExtensionWebUI::UnregisterChromeURLOverrides(
+      profile_, extension->GetChromeURLOverrides());
+
 #if defined(OS_CHROMEOS)
     // Revoke external file access to
-    if (profile_->GetFileSystemContext() &&
-        profile_->GetFileSystemContext()->path_manager() &&
-        profile_->GetFileSystemContext()->path_manager()->external_provider()) {
-      profile_->GetFileSystemContext()->path_manager()->external_provider()->
-          RevokeAccessForExtension(extension->id());
-    }
-#endif
+  if (profile_->GetFileSystemContext() &&
+      profile_->GetFileSystemContext()->path_manager() &&
+      profile_->GetFileSystemContext()->path_manager()->external_provider()) {
+    profile_->GetFileSystemContext()->path_manager()->external_provider()->
+        RevokeAccessForExtension(extension->id());
   }
+#endif
+
+  UpdateActiveExtensionsInCrashReporter();
 
   bool plugins_changed = false;
   for (size_t i = 0; i < extension->plugins().size(); ++i) {
@@ -1220,19 +1257,6 @@ void ExtensionService::UpdateExtensionBlacklist(
 
 Profile* ExtensionService::profile() {
   return profile_;
-}
-
-void ExtensionService::DestroyingProfile() {
-  if (updater_.get()) {
-    updater_->Stop();
-  }
-  browser_event_router_.reset();
-  preference_event_router_.reset();
-  pref_change_registrar_.RemoveAll();
-  profile_ = NULL;
-  toolbar_model_.DestroyingProfile();
-  method_factory_.RevokeAll();
-  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 ExtensionPrefs* ExtensionService::extension_prefs() {
@@ -1543,9 +1567,6 @@ void ExtensionService::UnloadExtension(
   // Clean up runtime data.
   extension_runtime_data_.erase(extension_id);
 
-  ExtensionWebUI::UnregisterChromeURLOverrides(profile_,
-      extension->GetChromeURLOverrides());
-
   ExtensionList::iterator iter = std::find(disabled_extensions_.begin(),
                                            disabled_extensions_.end(),
                                            extension.get());
@@ -1566,14 +1587,12 @@ void ExtensionService::UnloadExtension(
   extensions_.erase(iter);
 
   NotifyExtensionUnloaded(extension.get(), reason);
-  UpdateActiveExtensionsInCrashReporter();
 }
 
 void ExtensionService::UnloadAllExtensions() {
-  if (profile_) {
-    profile_->GetExtensionSpecialStoragePolicy()->
-        RevokeRightsForAllExtensions();
-  }
+  profile_->GetExtensionSpecialStoragePolicy()->
+      RevokeRightsForAllExtensions();
+
   extensions_.clear();
   disabled_extensions_.clear();
   terminated_extension_ids_.clear();
@@ -1633,6 +1652,17 @@ void ExtensionService::AddExtension(const Extension* extension) {
   // Ensure extension is deleted unless we transfer ownership.
   scoped_refptr<const Extension> scoped_extension(extension);
 
+  // TODO(jstritar): We may be able to get rid of this branch by overriding the
+  // default extension state to DISABLED when the --disable-extensions flag
+  // is set (http://crbug.com/29067).
+  if (!extensions_enabled() &&
+      !extension->is_theme() &&
+      extension->location() != Extension::COMPONENT &&
+      !Extension::IsExternalLocation(extension->location()))
+    return;
+
+  SetBeingUpgraded(extension, false);
+
   // The extension is now loaded, remove its data from unloaded extension map.
   unloaded_extension_paths_.erase(extension->id());
 
@@ -1643,53 +1673,28 @@ void ExtensionService::AddExtension(const Extension* extension) {
   if (disabled_extension_paths_.erase(extension->id()) > 0)
     EnableExtension(extension->id());
 
-  // TODO(jstritar): We may be able to get rid of this branch by overriding the
-  // default extension state to DISABLED when the --disable-extensions flag
-  // is set (http://crbug.com/29067).
-  if (!extensions_enabled() &&
-      !extension->is_theme() &&
-      extension->location() != Extension::COMPONENT &&
-      !Extension::IsExternalLocation(extension->location()))
-    return;
-
   // Check if the extension's privileges have changed and disable the
   // extension if necessary.
   DisableIfPrivilegeIncrease(extension);
 
-  switch (extension_prefs_->GetExtensionState(extension->id())) {
-    case Extension::ENABLED:
-      extensions_.push_back(scoped_extension);
-
-      NotifyExtensionLoaded(extension);
-
-      ExtensionWebUI::RegisterChromeURLOverrides(
-          profile_, extension->GetChromeURLOverrides());
-      break;
-    case Extension::DISABLED:
-      disabled_extensions_.push_back(scoped_extension);
-      NotificationService::current()->Notify(
-          NotificationType::EXTENSION_UPDATE_DISABLED,
-          Source<Profile>(profile_),
-          Details<const Extension>(extension));
-      break;
-    default:
-      NOTREACHED();
-      break;
+  Extension::State state = extension_prefs_->GetExtensionState(extension->id());
+  if (state == Extension::DISABLED) {
+    disabled_extensions_.push_back(scoped_extension);
+    // TODO(aa): This seems dodgy. It seems that AddExtension() could get called
+    // with a disabled extension for other reasons other than that an update was
+    // disabled.
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_UPDATE_DISABLED,
+        Source<Profile>(profile_),
+        Details<const Extension>(extension));
+    return;
   }
 
-  SetBeingUpgraded(extension, false);
-
-  UpdateActiveExtensionsInCrashReporter();
-
-  if (profile_->GetTemplateURLModel())
-    profile_->GetTemplateURLModel()->RegisterExtensionKeyword(extension);
-
-  // Load the icon for omnibox-enabled extensions so it will be ready to display
-  // in the URL bar.
-  if (!extension->omnibox_keyword().empty()) {
-    omnibox_popup_icon_manager_.LoadIcon(extension);
-    omnibox_icon_manager_.LoadIcon(extension);
-  }
+  // It should not be possible to get here with EXTERNAL_EXTENSION_UNINSTALLED
+  // because we would not have loaded the extension in that case.
+  CHECK(state == Extension::ENABLED);
+  extensions_.push_back(scoped_extension);
+  NotifyExtensionLoaded(extension);
 }
 
 void ExtensionService::DisableIfPrivilegeIncrease(const Extension* extension) {
