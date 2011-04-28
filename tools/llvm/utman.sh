@@ -164,10 +164,10 @@ SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
 
 # Current milestones in each repo
 # hg-update-stable  uses these
-readonly LLVM_REV=a4c09ba0275c
+readonly LLVM_REV=9ab92e74a444
 readonly LLVM_GCC_REV=38c54bef2849
 readonly NEWLIB_REV=eb9c4bb9ccd7
-readonly BINUTILS_REV=b785df3ef5e6
+readonly BINUTILS_REV=63e041d90309
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
@@ -571,26 +571,7 @@ rebuild-pnacl-libs() {
   libstdcpp-bitcode
   # NOTE: currently also builds some native code
   extrasdk-make-install
-  barebones-hack
   organize-native-code
-}
-
-barebones-hack() {
-  # Gold cannot auto-detect the target type when the only
-  # input files are bitcode. The only time this happens is
-  # when linking the barebones tests.
-  #
-  # As a temporary fix, include an empty object (empty.o)
-  # for the target in the link arguments.
-  #
-  # TODO(pdox): Fix this by giving gold the ability to
-  #             detect or receive the target info from the
-  #             LLVM gold plugin.
-  # http://code.google.com/p/nativeclient/issues/detail?id=1553
-  StepBanner "DRIVER" "Barebones empty.o hack"
-  "${PNACL_AS_ARM}"   /dev/null -o "${PNACL_ARM_ROOT}/empty.o"
-  "${PNACL_AS_X8632}" /dev/null -o "${PNACL_X8632_ROOT}/empty.o"
-  "${PNACL_AS_X8664}" /dev/null -o "${PNACL_X8664_ROOT}/empty.o"
 }
 
 #@ everything            - Build and install untrusted SDK.
@@ -1689,7 +1670,6 @@ llvm-tools-sb-setup() {
   local prefix
   local flags
 
-
   flags="-static"
   case ${mode} in
     srpc)    flags+=" -DNACL_SRPC" ;;
@@ -1699,26 +1679,15 @@ llvm-tools-sb-setup() {
   # Speed things up by avoiding an intermediate step
   flags+=" --pnacl-skip-ll"
 
-  # Configure needs correct symbol resolution at bitcode link time.
-  # So we include --pnacl-bcld-finish during configure.
-  local configure_flags="--pnacl-bcld-finish"
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
-    CC="${PNACL_GCC} ${configure_flags} ${flags}" \
-    CXX="${PNACL_GPP} ${configure_flags} ${flags}" \
-    LD="${PNACL_LD} ${configure_flags} ${flags}" \
+    CC="${PNACL_GCC} ${flags}" \
+    CXX="${PNACL_GPP} ${flags}" \
+    LD="${PNACL_LD} ${flags}" \
     NM="${PNACL_NM}" \
     RANLIB="${PNACL_RANLIB}" \
     LDFLAGS="") # TODO(pdox): Support -s
-
-  # During make, bcld-finish will slow things down considerably.
-  # We cannot get rid of the argument (since it was passed to
-  # configure as part of CC/CXX, but we can override it using
-  # --pnacl-bcld-fast.
-  LLVM_SB_MAKE_OPTS=( \
-    CFLAGS="--pnacl-bcld-fast" \
-    CXXFLAGS="--pnacl-bcld-fast")
 }
 
 # llvm-tools-sb-configure - Configure llvm tools (sandboxed) for x86
@@ -1793,7 +1762,7 @@ llvm-tools-sb-make() {
       KEEP_SYMBOLS=1 \
       VERBOSE=1 \
       make ENABLE_OPTIMIZED=1 OPTIMIZE_OPTION=-O3 \
-           "${LLVM_SB_MAKE_OPTS[@]}" ${MAKE_OPTS} tools-only
+           ${MAKE_OPTS} tools-only
 
   ts-touch-commit "${objdir}"
 
@@ -1815,7 +1784,7 @@ llvm-tools-sb-install() {
       ONLY_TOOLS=llc \
       NACL_SANDBOX=1 \
       KEEP_SYMBOLS=1 \
-      make "${LLVM_SB_MAKE_OPTS[@]}" ${MAKE_OPTS} install
+      make ${MAKE_OPTS} install
 
   spopd
 
@@ -2478,9 +2447,6 @@ driver-intrinsics() {
   "${INSTALL_DIR}"/bin/llvm-as \
     tools/llvm/llvm-intrinsics.ll \
     -o "${INSTALL_ROOT}/llvm-intrinsics.bc"
-  "${INSTALL_DIR}"/bin/llvm-as \
-    tools/llvm/llvm-preserve.ll \
-    -o "${INSTALL_ROOT}/llvm-preserve.bc"
 }
 
 # Just in case we're calling this manually

@@ -65,18 +65,6 @@ INITIAL_ENV = {
                           # TODO(pdox): Either eliminate gold native linking or
                           #             figure out why this is broken in the
                           #             first place.
-  'BCLD_FINISH' : '0',    # Force bitcode linking to go all the way to native
-                          # linking. This lets the toolchain determine if there
-                          # are missing symbols and/or gather dependency
-                          # information, but it produces a native executable
-                          # which we discard. (waste of CPU time)
-                          # TODO(pdox): Modify gold so that we can stop the
-                          #             linking process exactly where we want
-                          #             it to stop.
-  'BCLD_EXT'    : '',     # This extension is tacked onto the end of the output
-                          # filename for BCLD. When BCLD_FINISH is enabled,
-                          # this becomes '.discard' because the output is a
-                          # native executable we don't use.
   'BIAS'        : 'NONE', # This can be 'NONE', 'ARM', 'X8632', or 'X8664'.
                           # When not set to none, this causes the front-end to
                           # act like a target-specific compiler. This bias is
@@ -133,13 +121,6 @@ INITIAL_ENV = {
   'GOLD_PLUGIN_SO'  : '${BASE_ARM}/lib/libLLVMgold${SO_EXT}',
   'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
                       '-plugin-opt=emit-llvm',
-
-  'BCLD_FINISH_ARGS'  : # "also-emit-llvm" overwrites "emit-llvm"
-                        '-plugin-opt="also-emit-llvm=${output}" ' +
-                        '-plugin-opt="${LLC_FLAGS_BASE}" ' +
-                        '-plugin-opt="as=${PNACL_AS_%arch%}" ' +
-                        '-plugin-opt="mtriple=${TRIPLE_%arch%}" ' +
-                        '-plugin-opt="mcpu=${LLC_MCPU_%arch%}"',
 
   'ROOT_ARM'    : '${BASE}/libs-arm',
   'ROOT_X8632'  : '${BASE}/libs-x8632',
@@ -322,17 +303,11 @@ INITIAL_ENV = {
   'LD_SCRIPT_X8664': '${LDSCRIPTS_DIR}/ld_script_x8664_untrusted',
 
   'BCLD'      : '${BINUTILS_BASE}ld.gold',
-  'BCLD_FLAGS': '--native-client -T ${LD_SCRIPT_X8632} ' +
+  'BCLD_FLAGS': '--native-client --undef-sym-check -T ${LD_SCRIPT_X8632} ' +
                 '${GOLD_PLUGIN_ARGS} ${LD_SEARCH_DIRS}',
 
   # TODO(robertm): move this into the TC once this matures
   'PEXE_ALLOWED_UNDEFS': 'tools/llvm/non_bitcode_symbols.txt',
-
-  # TODO(pdox): empty.o is an empty native object file.
-  #             This is a temporary hack so that gold can auto-detect
-  #             which architecture is being targetted for the
-  #             barebones tests.
-  'EMPTY_OBJECT'        : '${ROOT_%arch%}/empty.o',
 
   'STDLIB_NATIVE_PREFIX': '${ROOT_%arch%}/crt1.o',
 
@@ -372,10 +347,9 @@ INITIAL_ENV = {
 
   'RUN_BCLD': '${BCLD} ${BCLD_FLAGS} ' +
               '${STDLIB_NATIVE_PREFIX} ${STDLIB_BC_PREFIX} ${inputs} ' +
-              '${BASE}/llvm-preserve.bc ' +
               '${STDLIB_BC_SUFFIX} ${STDLIB_NATIVE_SUFFIX} ' +
               '${BASE}/llvm-intrinsics.bc ' +
-              '-o "${output}${BCLD_EXT}"',
+              '-o "${output}"',
 
   'RUN_PEXECHECK': '${LLVM_LD} --nacl-abi-check ' +
                    '--nacl-legal-undefs ${PEXE_ALLOWED_UNDEFS} ${inputs}',
@@ -408,8 +382,6 @@ DriverPatterns = [
   ( '--pnacl-i686-bias',               "env.set('BIAS', 'X8632')"),
   ( '--pnacl-x86_64-bias',             "env.set('BIAS', 'X8664')"),
   ( '--pnacl-bias=(.+)',               "env.set('BIAS', FixArch($0))"),
-  ( '--pnacl-bcld-finish',             "env.set('BCLD_FINISH', '1')"),
-  ( '--pnacl-bcld-fast',               "env.set('BCLD_FINISH', '0')"),
   ( '--pnacl-skip-ll',                 "env.set('EMIT_LL', '0')"),
   ( '--pnacl-force-mc',                "env.set('FORCE_MC', '1')"),
   ( '--pnacl-force-mc-direct',         "env.set('FORCE_MC_DIRECT', '1')"),
@@ -574,7 +546,6 @@ def PrepareFlags():
   if env.getbool('PIC'):
     env.append('LLC_FLAGS_COMMON', '-relocation-model=pic')
     env.append('LLC_FLAGS_ARM', '-arm-elf-force-pic')
-    env.append('BCLD_FINISH_ARGS', '-plugin-opt=PIC')
 
   if env.getbool('USE_EMULATOR'):
     env.append('SEL_UNIVERSAL_FLAGS', '-Q')
@@ -650,20 +621,9 @@ def PrepareFlags():
   env.set('LD_FLAGS', shell.join(ld_flags))
   env.set('LD_WRAP_SYMBOLS', shell.join(symbols))
   if len(symbols) > 0:
-    # Currently, BCLD cannot finish when --wrap is given, since
-    # we don't have a way of modifying the bitcode or notifying gold
-    # of the symbol change. For now, disable BCLD_FINISH if it is
-    # enabled. This is OK for now because BCLD_FINISH is only needed
-    # during configure and --wrap is never used by configure.
-    # TODO(pdox): Figure out how to handle this properly.
-    env.set('BCLD_FINISH', '0')
     bcld_flags = shell.split(env.get('BCLD_FLAGS'))
     _,bcld_flags = ExtractWrapSymbols(bcld_flags)
     env.set('BCLD_FLAGS', shell.join(bcld_flags))
-
-  if env.getbool('BCLD_FINISH'):
-    env.append('GOLD_PLUGIN_ARGS', '${BCLD_FINISH_ARGS}')
-    env.set('BCLD_EXT', '.discard')
 
 def ExtractWrapSymbols(ld_flags):
   symbols = []
@@ -1230,13 +1190,6 @@ def LinkBC(inputs, output = None):
   arch = GetArch()
   if not arch:
     arch = 'X8632'
-
-  # If there are no native input files at all (e.g. barebones tests),
-  # then include empty.o so that gold knows the target arch.
-  if (env.getbool('BCLD_FINISH') and
-      env.getbool('NOSTDLIB') and
-      not HasNativeObject(inputs)):
-    env.append('BCLD_FLAGS', '${EMPTY_OBJECT}')
 
   # Produce combined bitcode file
   RunWithEnv('RUN_BCLD', arch = arch,

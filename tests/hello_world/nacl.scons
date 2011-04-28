@@ -88,7 +88,7 @@ env.AddNodeToTestSuite(node,
                        'run_dump_env_test')
 
 
-env.ComponentProgram('misc_math.nexe', 'misc_math.c')
+env.ComponentProgram('misc_math.nexe', 'misc_math.c', EXTRA_LIBS=['m'])
 node = env.CommandSelLdrTestNacl(
      'misc_math_test.out',
     command=[env.File('misc_math.nexe')],
