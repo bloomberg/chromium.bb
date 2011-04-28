@@ -55,8 +55,6 @@ test_mod -- Create a test mod image for archival.
 factory_install_mod -- Create a factory install image for archival.
 factory_test_mod -- Create a factory test image for archival.
 
-useflags -- Generic build modifying USE flags, passed as an array, or missing.
-
 git_url -- git repository URL for our manifests.
            External: http://git.chromium.org/git/manifest
            Internal: ssh://git@gitrw.chromium.org:9222/manifest-internal
@@ -113,7 +111,6 @@ arm = {
   # These images don't work for arm.
   'factory_install_mod' : False,
   'factory_test_mod' : False,
-  'useflags' : None,
 }
 
 full = {
@@ -132,6 +129,77 @@ full = {
   'factory_test_mod' : True,
 }
 
+internal = {
+  'git_url' : 'ssh://git@git.chromium.org:9222/manifest-internal',
+}
+
+#
+# Internal Builds
+#
+
+release = {
+  # Typical matching cbuild command line
+  # --autorev --official --officialversion --chromeos --with-pdf
+  #   --bvt --clean --no-gstorage --ctest
+
+  'master' : False,
+  'uprev' : True,
+  'rev_overlays': 'both',
+
+  'chroot_replace' : True,
+
+  'useflags' : 'chrome_internal chrome_pdf',
+
+  'unittests' : True,
+  'quick_unit' : False,
+
+  'vm_tests' : True,
+  'quick_vm' : False,
+
+  'chrome_tests' : True,
+
+  'usepkg' : False,
+  'chroot_replace' : True,
+
+  'build_type': 'full',
+  'archive_build_debug' : True,
+  'test_mod' : True,
+  'factory_install_mod' : True,
+  'factory_test_mod' : True,
+
+  'gs_path' : None,
+
+
+# --official
+# --officialversion
+}
+
+internal_full = {
+
+  # Typical matching cbuild command line
+  # master --official --chromeos --clean --upload-board-prebuilt
+  #   --ctest --unittests --bvt
+
+  'use_flags' : 'chrome_internal chrome_pdf',
+
+  'usepkg' : False,
+  'chroot_replace' : True,
+
+  'unittests' : True,
+  'quick_unit' : False,
+
+  'vm_tests' : True,
+  'quick_vm' : False,
+
+  'build_type': 'full',
+  'test_mod' : True,
+  'factory_install_mod' : True,
+  'factory_test_mod' : True,
+
+  'git_url' : 'ssh://git@git.chromium.org:9222/manifest-internal',
+
+  # cbuild --official
+}
 
 config = {}
 
@@ -142,6 +210,9 @@ def add_config(name, updates):
 
   config[name] = new_config
 
+#
+# External Builds
+#
 
 add_config('x86-generic-pre-flight-queue', [{
   'board' : 'x86-generic',
@@ -254,9 +325,97 @@ add_config('x86-pineview-full', [full, {
   'board' : 'x86-pineview',
 }])
 
-add_config('x86-generic-manifest', [{
-  'board' : 'x86-generic',
+#
+# Internal Builds
+#
 
-  'git_url' : 'ssh://git@gitrw.chromium.org:9222/manifest-internal',
-  'manifest_version' : 'ssh://git@gitrw.chromium.org:9222/manifest-versions',
+add_config('x86-mario-pre-flight-queue', [internal, {
+  'board' : 'x86-mario',
+  'master' : True,
+
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': 'private',
+  'chrome_rev' : 'stable_release',
+
+  'gs_path': 'gs://chromeos-x86-mario/pre-flight-master'
+}])
+
+# cbuild --board=x86-mario  master --official --chromeos --clean
+#   --upload-board-prebuilt --ctest --unittests --bvt
+add_config('x86-mario-private-full', [internal_full, {
+  'board' : 'x86-mario',
+
+  'master' : True,
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': 'private',
+}])
+
+# cbuild --board=x86-zgb  master --official --chromeos --clean
+#   --upload-board-prebuilt --ctest --unittests --bvt
+add_config('x86-zgb-private-full', [internal_full, {
+  'board' : 'x86-zgb',
+
+  'master' : True,
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': 'private',
+}])
+
+# cbuild --board=x86-alex master --official --chromeos --clean
+#   --upload-board-prebuilt --unittests --bvt
+add_config('x86-alex-private-full', [internal_full, {
+  'board' : 'x86-alex',
+
+  'master' : True,
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': 'private',
+}])
+
+# cbuild --board=tegra2_seaboard master --official --chromeos --clean
+#   --upload-board-prebuilt
+add_config('arm-tegra2_seaboard-private-full', [internal_full, {
+  'board' : 'arm-tegra2_seaboard',
+
+  'master' : True,
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': 'private',
+}])
+
+# cbuild --board=tegra2_aebl  master --official --chromeos --clean
+#   --upload-board-prebuilt
+add_config('arm-tegra2_seaboard-private-full', [internal_full, {
+  'board' : 'arm-tegra2_seaboard',
+
+  'master' : True,
+  'uprev' : True,
+  'rev_overlays': 'both',
+  'push_overlays': 'private',
+}])
+
+add_config('x86-mario-release', [internal, release, {
+  'board' : 'x86-mario',
+}])
+
+add_config('x86-alex-release', [internal, release, {
+  'board' : 'x86-alex',
+}])
+
+add_config('x86-zgb-release', [internal, release, {
+  'board' : 'x86-zgb',
+}])
+
+add_config('arm-tegra2_seaboard-release', [internal, release, arm, {
+  'board' : 'tegra2_seaboard',
+}])
+
+add_config('arm-tegra2_aebl-release', [internal, release, arm, {
+  'board' : 'tegra2_aebl',
+}])
+
+add_config('arm-tegra2_kaen-release', [internal, release, arm, {
+  'board' : 'tegra2_kaen',
 }])
