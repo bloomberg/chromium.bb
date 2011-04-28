@@ -94,7 +94,7 @@ class ThreadedWorkQueue {
       }
       job->Run();
     }
-    NaClThreadExit();
+    NaClThreadExit(0);
   }
 
   void StartInAnotherThread() {
