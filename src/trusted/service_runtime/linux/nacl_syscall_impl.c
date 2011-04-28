@@ -19,6 +19,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_platform.h"
+#include "native_client/src/include/nacl_macros.h"
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -332,6 +333,8 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
     if (!NaClHighResolutionTimerEnabled()) {
       now.nacl_abi_tv_usec = (now.nacl_abi_tv_usec / 1000) * 1000;
     }
+    CHECK(now.nacl_abi_tv_usec >= 0);
+    CHECK(now.nacl_abi_tv_usec < NACL_MICROS_PER_UNIT);
     *(struct nacl_abi_timeval *) sysaddr = now;
   }
 cleanup:

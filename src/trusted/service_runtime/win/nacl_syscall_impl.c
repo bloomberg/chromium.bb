@@ -17,6 +17,9 @@
 
 #include <time.h>
 
+#include "native_client/src/include/nacl_macros.h"
+
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_time.h"
@@ -344,6 +347,7 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
                             struct nacl_abi_timezone  *tz) {
   int32_t                 retval;
   uintptr_t               sysaddr;
+  struct nacl_abi_timeval now;
 
   UNREFERENCED_PARAMETER(tz);
 
@@ -368,7 +372,12 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
     goto cleanup;
   }
 
-  retval = NaClGetTimeOfDay((struct nacl_abi_timeval *) sysaddr);
+  retval = NaClGetTimeOfDay(&now);
+  if (0 == retval) {
+    CHECK(now.nacl_abi_tv_usec >= 0);
+    CHECK(now.nacl_abi_tv_usec < NACL_MICROS_PER_UNIT);
+    *(struct nacl_abi_timeval volatile *) sysaddr = now;
+  }
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;

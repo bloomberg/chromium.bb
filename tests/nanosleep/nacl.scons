@@ -1,10 +1,20 @@
 # -*- python -*-
-# Copyright 2009 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 
 Import('env')
+
+trusted_env = env['TRUSTED_ENV'].Clone()
+
+if trusted_env.Bit('windows'):
+  env.Append(CPPDEFINES=[
+      # Number of milliseconds by which a thread is allowed to wake up
+      # early, after invoking nanosleep (on Windows, implemnted via
+      # Sleep()).  On WinXP, Sleep sometimes return early.
+      ['EARLY_WAKEUP_SLOP_MS', 10]
+  ])
 
 env.ComponentProgram('nanosleep_test.nexe',
                      'nanosleep_test.c',

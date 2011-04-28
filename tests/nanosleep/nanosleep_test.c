@@ -80,6 +80,16 @@ int TestNanoSleep(struct timespec *t_suspend) {
   t_elapsed.tv_sec = t_end.tv_sec - t_start.tv_sec;
   t_elapsed.tv_usec = t_end.tv_usec - t_start.tv_usec + 1;
 
+#if defined(EARLY_WAKEUP_SLOP_MS)
+  /*
+   * On WinXP, Sleep(num_ms) sometimes -- though rarely -- return
+   * earlier than it is supposed to.  We add in some slop here to the
+   * elapsed time so that we can ignore the approximately 1/1000
+   * random test failures that would occur.
+   */
+  t_elapsed.tv_usec += EARLY_WAKEUP_SLOP_MS * MICROS_PER_MILLI;
+#endif
+
   if (t_elapsed.tv_usec < 0) {
     t_elapsed.tv_usec += MICROS_PER_UNIT;
     t_elapsed.tv_sec -= 1;

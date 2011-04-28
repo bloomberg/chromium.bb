@@ -231,14 +231,15 @@ static inline void *NaClArrayCheckHelper(void *arg) {
  * Readability macros                                                        *
  ****************************************************************************/
 
-#define NACL_NANOS_PER_MICRO          1000
+#define NACL_NANOS_PER_MICRO          (1000)
 #define NACL_100_NANOS_PER_MILLI      (10 * 1000)
 #define NACL_NANOS_PER_MILLI          (1000 * 1000)
+#define NACL_MICROS_PER_MILLI         (1000)
 #define NACL_MICROS_PER_UNIT          (1000 * 1000)
-#define NACL_MILLIS_PER_UNIT          1000
+#define NACL_MILLIS_PER_UNIT          (1000)
 #define NACL_UNIT_CONVERT_ROUND(v, m) (((v) + (m) - 1)/(m))
 
-#define NACL_NO_FILE_DESC             -1
+#define NACL_NO_FILE_DESC             (-1)
 #define NACL_NO_URL                   ""
 #define NACL_NO_FILE_PATH             ""
 
