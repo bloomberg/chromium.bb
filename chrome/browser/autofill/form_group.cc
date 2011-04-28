@@ -31,7 +31,8 @@ bool FormGroup::IsSubsetOf(const FormGroup& form_group) const {
 
   for (FieldTypeSet::const_iterator iter = types.begin(); iter != types.end();
        ++iter) {
-    if (GetInfo(*iter) != form_group.GetInfo(*iter))
+    if (StringToLowerASCII(GetInfo(*iter)) !=
+          StringToLowerASCII(form_group.GetInfo(*iter)))
       return false;
   }
 
@@ -53,7 +54,8 @@ bool FormGroup::IntersectionOfTypesHasEqualValues(
 
   for (FieldTypeSet::const_iterator iter = intersection.begin();
        iter != intersection.end(); ++iter) {
-    if (GetInfo(*iter) != form_group.GetInfo(*iter))
+    if (StringToLowerASCII(GetInfo(*iter)) !=
+          StringToLowerASCII(form_group.GetInfo(*iter)))
       return false;
   }
 
