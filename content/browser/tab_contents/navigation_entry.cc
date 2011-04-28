@@ -10,7 +10,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
-#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/common/content_constants.h"
 #include "grit/app_resources.h"
 #include "net/base/net_util.h"
