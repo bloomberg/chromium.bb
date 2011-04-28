@@ -314,6 +314,12 @@
             'src/common/string_conversion.h',
           ],
 
+          'conditions': [
+            ['target_arch=="arm"', {
+              'cflags': ['-Wa,-mimplicit-it=always'],
+            }],
+          ],
+
           'link_settings': {
             'libraries': [
               '-ldl',
