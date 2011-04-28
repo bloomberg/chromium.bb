@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
@@ -361,7 +362,8 @@ class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
   virtual void OnCustomLinkClicked() OVERRIDE {
     UserMetrics::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
     DCHECK(tab_contents());
-    tab_contents()->render_view_host()->LoadBlockedPlugins();
+    RenderViewHost* host = tab_contents()->render_view_host();
+    host->Send(new ViewMsg_LoadBlockedPlugins(host->routing_id()));
     set_custom_link_enabled(false);
     tab_contents()->tab_contents()->GetTabSpecificContentSettings()->
         set_load_plugins_link_enabled(false);

@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/icon_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -250,8 +251,16 @@ NavigationEntry* FaviconHandler::GetEntry() {
 }
 
 int FaviconHandler::DownloadFavicon(const GURL& image_url, int image_size) {
-  return tab_contents()->render_view_host()->DownloadFavicon(image_url,
-                                                             image_size);
+  if (!image_url.is_valid()) {
+    NOTREACHED();
+    return 0;
+  }
+  static int next_id = 1;
+  int id = next_id++;
+  RenderViewHost* host = tab_contents()->render_view_host();
+  host->Send(new IconMsg_DownloadFavicon(
+      host->routing_id(), id, image_url, image_size));
+  return id;
 }
 
 void FaviconHandler::UpdateFaviconMappingAndFetch(

@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/common/automation_messages.h"
+#include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/page_zoom.h"
@@ -421,7 +422,8 @@ void AutomationProvider::OnMessageFromExternalHost(int handle,
   if (!view_host)
     return;
 
-  view_host->ForwardMessageFromExternalHost(message, origin, target);
+  view_host->Send(new ViewMsg_HandleMessageFromExternalHost(
+      view_host->routing_id(), message, origin, target));
 }
 
 void AutomationProvider::NavigateInExternalTab(

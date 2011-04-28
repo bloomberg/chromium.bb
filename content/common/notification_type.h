@@ -263,9 +263,9 @@ class NotificationType {
     PAGE_TRANSLATED,
 
     // Sent after the renderer returns a snapshot of tab contents.
-    // The source (Source<RenderViewHost>) is the RenderViewHost for which the
-    // snapshot was generated and the details (Details<const SkBitmap>) is the
-    // actual snapshot.
+    // The source (Source<TabContentsWrapper>) is the RenderViewHost for which
+    // the snapshot was generated and the details (Details<const SkBitmap>) is
+    // the actual snapshot.
     TAB_SNAPSHOT_TAKEN,
 
     // The user has changed the browser theme.  There are no details.

@@ -214,6 +214,10 @@ TabContentsWrapper* TabContentsWrapper::Clone() {
   return new_wrapper;
 }
 
+void TabContentsWrapper::CaptureSnapshot() {
+  Send(new ViewMsg_CaptureSnapshot(routing_id()));
+}
+
 TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
     TabContents* contents) {
   TabContentsWrapper** wrapper =
@@ -238,7 +242,8 @@ bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Thumbnail, OnMsgThumbnail)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Thumbnail, OnThumbnail)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Snapshot, OnSnapshot)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -318,9 +323,9 @@ void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
   }
 }
 
-void TabContentsWrapper::OnMsgThumbnail(const GURL& url,
-                                        const ThumbnailScore& score,
-                                        const SkBitmap& bitmap) {
+void TabContentsWrapper::OnThumbnail(const GURL& url,
+                                     const ThumbnailScore& score,
+                                     const SkBitmap& bitmap) {
   if (profile()->IsOffTheRecord())
     return;
 
@@ -328,6 +333,13 @@ void TabContentsWrapper::OnMsgThumbnail(const GURL& url,
   history::TopSites* ts = profile()->GetTopSites();
   if (ts)
     ts->SetPageThumbnail(url, bitmap, score);
+}
+
+void TabContentsWrapper::OnSnapshot(const SkBitmap& bitmap) {
+  NotificationService::current()->Notify(
+      NotificationType::TAB_SNAPSHOT_TAKEN,
+      Source<TabContentsWrapper>(this),
+      Details<const SkBitmap>(&bitmap));
 }
 
 void TabContentsWrapper::UpdateStarredStateForCurrentURL() {

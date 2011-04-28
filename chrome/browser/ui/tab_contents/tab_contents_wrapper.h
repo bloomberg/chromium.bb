@@ -72,6 +72,9 @@ class TabContentsWrapper : public NotificationObserver,
   // heap-allocated pointer is owned by the caller.
   TabContentsWrapper* Clone();
 
+  // Captures a snapshot of the page.
+  void CaptureSnapshot();
+
   // Helper to retrieve the existing instance that wraps a given TabContents.
   // Returns NULL if there is no such existing instance.
   // NOTE: This is not intended for general use. It is intended for situations
@@ -160,9 +163,10 @@ class TabContentsWrapper : public NotificationObserver,
   void OnRegisterProtocolHandler(const std::string& protocol,
                                  const GURL& url,
                                  const string16& title);
-  void OnMsgThumbnail(const GURL& url,
-                      const ThumbnailScore& score,
-                      const SkBitmap& bitmap);
+  void OnThumbnail(const GURL& url,
+                   const ThumbnailScore& score,
+                   const SkBitmap& bitmap);
+  void OnSnapshot(const SkBitmap& bitmap);
 
   // Updates the starred state from the bookmark bar model. If the state has
   // changed, the delegate is notified.

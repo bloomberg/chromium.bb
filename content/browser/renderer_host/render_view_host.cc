@@ -15,15 +15,10 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/translate_errors.h"
-#include "chrome/common/url_constants.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
@@ -44,6 +39,7 @@
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "content/common/result_codes.h"
+#include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -555,21 +551,6 @@ void RenderViewHost::SelectAll() {
   UserMetrics::RecordAction(UserMetricsAction("SelectAll"));
 }
 
-int RenderViewHost::DownloadFavicon(const GURL& url, int image_size) {
-  if (!url.is_valid()) {
-    NOTREACHED();
-    return 0;
-  }
-  static int next_id = 1;
-  int id = next_id++;
-  Send(new IconMsg_DownloadFavicon(routing_id(), id, url, image_size));
-  return id;
-}
-
-void RenderViewHost::CaptureSnapshot() {
-  Send(new ViewMsg_CaptureSnapshot(routing_id()));
-}
-
 void RenderViewHost::JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
                                                 bool success,
                                                 const std::wstring& prompt) {
@@ -663,14 +644,6 @@ void RenderViewHost::UpdateWebPreferences(const WebPreferences& prefs) {
   Send(new ViewMsg_UpdateWebPreferences(routing_id(), prefs));
 }
 
-void RenderViewHost::InstallMissingPlugin() {
-  Send(new ViewMsg_InstallMissingPlugin(routing_id()));
-}
-
-void RenderViewHost::LoadBlockedPlugins() {
-  Send(new ViewMsg_LoadBlockedPlugins(routing_id()));
-}
-
 void RenderViewHost::FilesSelectedInChooser(
     const std::vector<FilePath>& files) {
   // Grant the security access requested to the given files.
@@ -743,7 +716,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTitle, OnMsgUpdateTitle)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateEncoding, OnMsgUpdateEncoding)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnMsgUpdateTargetURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Snapshot, OnMsgScreenshot)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateInspectorSetting,
                         OnUpdateInspectorSetting)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnMsgClose)
@@ -760,8 +732,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenURL, OnMsgOpenURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
                         OnMsgDidContentsPreferredSizeChange)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DomOperationResponse,
-                        OnMsgDomOperationResponse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardMessageToExternalHost,
                         OnMsgForwardMessageToExternalHost)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnMsgSetTooltipText)
@@ -992,13 +962,6 @@ void RenderViewHost::OnMsgUpdateTargetURL(int32 page_id,
   Send(new ViewMsg_UpdateTargetURL_ACK(routing_id()));
 }
 
-void RenderViewHost::OnMsgScreenshot(const SkBitmap& bitmap) {
-  NotificationService::current()->Notify(
-      NotificationType::TAB_SNAPSHOT_TAKEN,
-      Source<RenderViewHost>(this),
-      Details<const SkBitmap>(&bitmap));
-}
-
 void RenderViewHost::OnUpdateInspectorSetting(
     const std::string& key, const std::string& value) {
   delegate_->UpdateInspectorSetting(key, value);
@@ -1073,17 +1036,6 @@ void RenderViewHost::OnMsgDidContentsPreferredSizeChange(
   if (!view)
     return;
   view->UpdatePreferredSize(new_size);
-}
-
-void RenderViewHost::OnMsgDomOperationResponse(
-    const std::string& json_string, int automation_id) {
-  delegate_->DomOperationResponse(json_string, automation_id);
-
-  // We also fire a notification for more loosely-coupled use cases.
-  DomOperationNotificationDetails details(json_string, automation_id);
-  NotificationService::current()->Notify(
-      NotificationType::DOM_OPERATION_RESPONSE, Source<RenderViewHost>(this),
-      Details<DomOperationNotificationDetails>(&details));
 }
 
 void RenderViewHost::OnMsgForwardMessageToExternalHost(
@@ -1228,20 +1180,6 @@ void RenderViewHost::OnUserGesture() {
   delegate_->OnUserGesture();
 }
 
-void RenderViewHost::GetAllSavableResourceLinksForCurrentPage(
-    const GURL& page_url) {
-  Send(new ViewMsg_GetAllSavableResourceLinksForCurrentPage(routing_id(),
-                                                            page_url));
-}
-
-void RenderViewHost::GetSerializedHtmlDataForCurrentPageWithLocalLinks(
-    const std::vector<GURL>& links,
-    const std::vector<FilePath>& local_paths,
-    const FilePath& local_directory_name) {
-  Send(new ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks(
-      routing_id(), links, local_paths, local_directory_name));
-}
-
 void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
   StopHangMonitorTimeout();
   // If this renderer navigated while the beforeunload request was in flight, we
@@ -1348,13 +1286,6 @@ void RenderViewHost::ForwardEditCommandsForNextKeyEvent(
   Send(new ViewMsg_SetEditCommandsForNextKeyEvent(routing_id(), edit_commands));
 }
 
-void RenderViewHost::ForwardMessageFromExternalHost(const std::string& message,
-                                                    const std::string& origin,
-                                                    const std::string& target) {
-  Send(new ViewMsg_HandleMessageFromExternalHost(routing_id(), message, origin,
-                                                 target));
-}
-
 void RenderViewHost::UpdateBrowserWindowId(int window_id) {
   Send(new ViewMsg_UpdateBrowserWindowId(routing_id(), window_id));
 }
@@ -1386,35 +1317,6 @@ void RenderViewHost::DidCancelPopupMenu() {
 }
 #endif
 
-void RenderViewHost::SearchBoxChange(const string16& value,
-                                     bool verbatim,
-                                     int selection_start,
-                                     int selection_end) {
-  Send(new ViewMsg_SearchBoxChange(
-      routing_id(), value, verbatim, selection_start, selection_end));
-}
-
-void RenderViewHost::SearchBoxSubmit(const string16& value,
-                                     bool verbatim) {
-  Send(new ViewMsg_SearchBoxSubmit(routing_id(), value, verbatim));
-}
-
-void RenderViewHost::SearchBoxCancel() {
-  Send(new ViewMsg_SearchBoxCancel(routing_id()));
-}
-
-void RenderViewHost::SearchBoxResize(const gfx::Rect& search_box_bounds) {
-  Send(new ViewMsg_SearchBoxResize(routing_id(), search_box_bounds));
-}
-
-void RenderViewHost::DetermineIfPageSupportsInstant(const string16& value,
-                                                    bool verbatim,
-                                                    int selection_start,
-                                                    int selection_end) {
-  Send(new ViewMsg_DetermineIfPageSupportsInstant(
-           routing_id(), value, verbatim, selection_start, selection_end));
-}
-
 void RenderViewHost::FilterURL(ChildProcessSecurityPolicy* policy,
                                int renderer_id,
                                GURL* url) {
@@ -1434,10 +1336,6 @@ void RenderViewHost::FilterURL(ChildProcessSecurityPolicy* policy,
     VLOG(1) << "Blocked URL " << url->spec();
     *url = GURL();
   }
-}
-
-void RenderViewHost::JavaScriptStressTestControl(int cmd, int param) {
-  Send(new ViewMsg_JavaScriptStressTestControl(routing_id(), cmd, param));
 }
 
 void RenderViewHost::OnAccessibilityNotifications(

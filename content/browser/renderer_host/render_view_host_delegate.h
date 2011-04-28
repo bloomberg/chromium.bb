@@ -483,11 +483,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
                               const GURL& referrer,
                               WindowOpenDisposition disposition) {}
 
-  // A DOM automation operation completed. The result of the operation is
-  // expressed in a json string.
-  virtual void DomOperationResponse(const std::string& json_string,
-                                    int automation_id) {}
-
   // A message for external host. By default we ignore such messages.
   // |receiver| can be a receiving script and |message| is any
   // arbitrary string that makes sense to the receiver.

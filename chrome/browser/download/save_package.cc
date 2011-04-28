@@ -993,9 +993,8 @@ void SavePackage::GetSerializedHtmlDataForCurrentPageWithLocalLinks() {
   // Get the relative directory name.
   FilePath relative_dir_name = saved_main_directory_path_.BaseName();
 
-  tab_contents()->render_view_host()->
-      GetSerializedHtmlDataForCurrentPageWithLocalLinks(
-      saved_links, saved_file_paths, relative_dir_name);
+  Send(new ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks(
+      routing_id(), saved_links, saved_file_paths, relative_dir_name));
 }
 
 // Process the serialized HTML content data of a specified web page
@@ -1074,8 +1073,8 @@ void SavePackage::GetAllSavableResourceLinksForCurrentPage() {
     return;
 
   wait_state_ = RESOURCES_LIST;
-  tab_contents()->render_view_host()->
-      GetAllSavableResourceLinksForCurrentPage(page_url_);
+  Send(new ViewMsg_GetAllSavableResourceLinksForCurrentPage(routing_id(),
+                                                            page_url_));
 }
 
 // Give backend the lists which contain all resource links that have local

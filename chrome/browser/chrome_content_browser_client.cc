@@ -11,6 +11,7 @@
 #include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
+#include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 #include "chrome/browser/spellcheck_message_filter.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
@@ -21,6 +22,7 @@ namespace chrome {
 
 void ChromeContentBrowserClient::RenderViewHostCreated(
     RenderViewHost* render_view_host) {
+  new ChromeRenderViewHostObserver(render_view_host);
   new DesktopNotificationHandler(render_view_host);
   new DevToolsHandler(render_view_host);
   new ExtensionMessageHandler(render_view_host);

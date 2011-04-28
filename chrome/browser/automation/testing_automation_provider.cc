@@ -89,6 +89,7 @@
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -5613,7 +5614,8 @@ void TestingAutomationProvider::LoadBlockedPlugins(int tab_handle,
     TabContents* contents = nav->tab_contents();
     if (!contents)
       return;
-    contents->render_view_host()->LoadBlockedPlugins();
+    RenderViewHost* host = contents->render_view_host();
+    host->Send(new ViewMsg_LoadBlockedPlugins(host->routing_id()));
     *success = true;
   }
 }

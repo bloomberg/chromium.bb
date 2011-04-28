@@ -278,14 +278,6 @@ class RenderViewHost : public RenderWidgetHost {
   void Delete();
   void SelectAll();
 
-  // Downloads an image notifying the favicon delegate appropriately. The
-  // returned integer uniquely identifies the download for the lifetime of the
-  // browser.
-  int DownloadFavicon(const GURL& url, int image_size);
-
-  // Captures a snapshot of the page.
-  void CaptureSnapshot();
-
   // Notifies the RenderView that the JavaScript message that was shown was
   // closed by the user.
   void JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
@@ -348,17 +340,6 @@ class RenderViewHost : public RenderWidgetHost {
   // Update render view specific (WebKit) preferences.
   void UpdateWebPreferences(const WebPreferences& prefs);
 
-  // Request the Renderer to ask the default plugin to start installation of
-  // missing plugin. Called by PluginInstallerInfoBarDelegate.
-  void InstallMissingPlugin();
-
-  // Load all blocked plugins in the RenderView.
-  void LoadBlockedPlugins();
-
-  // Get all savable resource links from current webpage, include main
-  // frame and sub-frame.
-  void GetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
-
   // Get html data by serializing all frames of current page with lists
   // which contain all resource links that have local copy.
   // The parameter links contain original URLs of all saved links.
@@ -387,11 +368,6 @@ class RenderViewHost : public RenderWidgetHost {
   void set_sudden_termination_allowed(bool enabled) {
     sudden_termination_allowed_ = enabled;
   }
-
-  // Forward a message from external host to chrome renderer.
-  void ForwardMessageFromExternalHost(const std::string& message,
-                                      const std::string& origin,
-                                      const std::string& target);
 
   // Message the renderer that we should be counted as a new document and not
   // as a popup.
@@ -450,26 +426,6 @@ class RenderViewHost : public RenderWidgetHost {
   void DidCancelPopupMenu();
 #endif
 
-  // SearchBox notifications.
-  void SearchBoxChange(const string16& value,
-                       bool verbatim,
-                       int selection_start,
-                       int selection_end);
-  void SearchBoxSubmit(const string16& value,
-                       bool verbatim);
-  void SearchBoxCancel();
-  void SearchBoxResize(const gfx::Rect& search_box_bounds);
-  void DetermineIfPageSupportsInstant(const string16& value,
-                                      bool verbatim,
-                                      int selection_start,
-                                      int selection_end);
-
-  // Send a notification to the V8 JavaScript engine to change its parameters
-  // while performing stress testing. |cmd| is one of the values defined by
-  // |ViewHostMsg_JavaScriptStressTestControl_Commands|, which is defined
-  // in render_messages.h.
-  void JavaScriptStressTestControl(int cmd, int param);
-
 #if defined(UNIT_TEST)
   // These functions shouldn't be necessary outside of testing.
 
@@ -525,7 +481,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgUpdateTitle(int32 page_id, const std::wstring& title);
   void OnMsgUpdateEncoding(const std::string& encoding);
   void OnMsgUpdateTargetURL(int32 page_id, const GURL& url);
-  void OnMsgScreenshot(const SkBitmap& bitmap);
   void OnMsgClose();
   void OnMsgRequestMove(const gfx::Rect& pos);
   void OnMsgDidStartLoading();
@@ -533,17 +488,10 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgDidChangeLoadProgress(double load_progress);
   void OnMsgDocumentAvailableInMainFrame();
   void OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id);
-  void OnMsgUpdateFaviconURL(int32 page_id, const GURL& icon_url);
-  void OnMsgDidDownloadFavicon(int id,
-                               const GURL& image_url,
-                               bool errored,
-                               const SkBitmap& image_data);
   void OnMsgContextMenu(const ContextMenuParams& params);
   void OnMsgOpenURL(const GURL& url, const GURL& referrer,
                     WindowOpenDisposition disposition);
   void OnMsgDidContentsPreferredSizeChange(const gfx::Size& new_size);
-  void OnMsgDomOperationResponse(const std::string& json_string,
-                                 int automation_id);
   void OnMsgForwardMessageToExternalHost(const std::string& message,
                                          const std::string& origin,
                                          const std::string& target);

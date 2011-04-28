@@ -1571,7 +1571,7 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_ForwardToWorker,
 IPC_MESSAGE_CONTROL1(ViewHostMsg_CancelCreateDedicatedWorker,
                      int /* route_id */)
 
-// Tells the browser that  a specific Appcache manifest in the current page
+// Tells the browser that a specific Appcache manifest in the current page
 // was accessed.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_AppCacheAccessed,
                     GURL /* manifest url */,

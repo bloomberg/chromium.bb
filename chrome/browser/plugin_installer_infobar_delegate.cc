@@ -6,6 +6,7 @@
 
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -46,7 +47,8 @@ string16 PluginInstallerInfoBarDelegate::GetButtonLabel(
 }
 
 bool PluginInstallerInfoBarDelegate::Accept() {
-  tab_contents_->render_view_host()->InstallMissingPlugin();
+  RenderViewHost* host = tab_contents_->render_view_host();
+  host->Send(new ViewMsg_InstallMissingPlugin(host->routing_id()));
   return true;
 }
 

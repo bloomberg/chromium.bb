@@ -2005,10 +2005,6 @@ void TabContents::RequestOpenURL(const GURL& url, const GURL& referrer,
   }
 }
 
-void TabContents::DomOperationResponse(const std::string& json_string,
-                                       int automation_id) {
-}
-
 void TabContents::ProcessExternalHostMessage(const std::string& message,
                                              const std::string& origin,
                                              const std::string& target) {

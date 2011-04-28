@@ -1129,10 +1129,11 @@ bool CaptureVisibleTabFunction::RunImpl() {
     return true;
 
   // Ask the renderer for a snapshot of the tab.
-  render_view_host->CaptureSnapshot();
+  TabContentsWrapper* wrapper = browser->GetSelectedTabContentsWrapper();
+  wrapper->CaptureSnapshot();
   registrar_.Add(this,
                  NotificationType::TAB_SNAPSHOT_TAKEN,
-                 Source<RenderViewHost>(render_view_host));
+                 Source<TabContentsWrapper>(wrapper));
   AddRef();  // Balanced in CaptureVisibleTabFunction::Observe().
 
   return true;

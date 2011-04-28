@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -77,13 +78,11 @@ class PDFBrowserTest : public InProcessBrowserTest,
   void VerifySnapshot(const std::string& expected_filename) {
     snapshot_different_ = true;
     expected_filename_ = expected_filename;
-    RenderViewHost* host =
-        browser()->GetSelectedTabContents()->render_view_host();
-
-    host->CaptureSnapshot();
+    TabContentsWrapper* wrapper =  browser()->GetSelectedTabContentsWrapper();
+    wrapper->CaptureSnapshot();
     ui_test_utils::RegisterAndWait(this,
                                    NotificationType::TAB_SNAPSHOT_TAKEN,
-                                   Source<RenderViewHost>(host));
+                                   Source<TabContentsWrapper>(wrapper));
     ASSERT_FALSE(snapshot_different_) << "Rendering didn't match, see result "
         "at " << snapshot_filename_.value().c_str();
   }

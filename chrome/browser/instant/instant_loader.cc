@@ -125,8 +125,9 @@ void InstantLoader::FrameLoadObserver::Observe(
       loader_->SendBoundsToPage(true);
       // TODO: support real cursor position.
       int text_length = static_cast<int>(text_.size());
-      tab_contents_->render_view_host()->DetermineIfPageSupportsInstant(
-          text_, verbatim_, text_length, text_length);
+      RenderViewHost* host = tab_contents_->render_view_host();
+      host->Send(new ViewMsg_DetermineIfPageSupportsInstant(
+          host->routing_id(), text_, verbatim_, text_length, text_length));
       break;
     }
     default:
@@ -680,8 +681,9 @@ bool InstantLoader::Update(TabContentsWrapper* tab_contents,
       }
       // TODO: support real cursor position.
       int text_length = static_cast<int>(user_text_.size());
-      preview_contents_->render_view_host()->SearchBoxChange(
-          user_text_, verbatim, text_length, text_length);
+      RenderViewHost* host = preview_contents_->render_view_host();
+      host->Send(new ViewMsg_SearchBoxChange(
+          host->routing_id(), user_text_, verbatim, text_length, text_length));
 
       string16 complete_suggested_text_lower = l10n_util::ToLower(
           complete_suggested_text_);
@@ -712,8 +714,9 @@ bool InstantLoader::Update(TabContentsWrapper* tab_contents,
         instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));
       preview_contents_->controller().LoadURL(
           instant_url, GURL(), transition_type);
-      preview_contents_->render_view_host()->SearchBoxChange(
-          user_text_, verbatim, 0, 0);
+      RenderViewHost* host = preview_contents_->render_view_host();
+      host->Send(new ViewMsg_SearchBoxChange(
+          host->routing_id(), user_text_, verbatim, 0, 0));
       frame_load_observer_.reset(
           new FrameLoadObserver(this,
                                 preview_contents()->tab_contents(),
@@ -770,11 +773,14 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
   DCHECK(type == INSTANT_COMMIT_DESTROY || !frame_load_observer_.get());
 
   if (type != INSTANT_COMMIT_DESTROY && is_showing_instant()) {
-    if (type == INSTANT_COMMIT_FOCUS_LOST)
-      preview_contents_->render_view_host()->SearchBoxCancel();
-    else
-      preview_contents_->render_view_host()->SearchBoxSubmit(
-          user_text_, type == INSTANT_COMMIT_PRESSED_ENTER);
+    RenderViewHost* host = preview_contents_->render_view_host();
+    if (type == INSTANT_COMMIT_FOCUS_LOST) {
+      host->Send(new ViewMsg_SearchBoxCancel(host->routing_id()));
+    } else {
+      host->Send(new ViewMsg_SearchBoxSubmit(
+          host->routing_id(), user_text_,
+          type == INSTANT_COMMIT_PRESSED_ENTER));
+    }
   }
   omnibox_bounds_ = gfx::Rect();
   last_omnibox_bounds_ = gfx::Rect();
@@ -965,8 +971,9 @@ void InstantLoader::SendBoundsToPage(bool force_if_waiting) {
   if (preview_contents_.get() && is_showing_instant() &&
       (force_if_waiting || !is_waiting_for_load())) {
     last_omnibox_bounds_ = omnibox_bounds_;
-    preview_contents_->render_view_host()->SearchBoxResize(
-        GetOmniboxBoundsInTermsOfPreview());
+    RenderViewHost*host = preview_contents_->render_view_host();
+    host->Send(new ViewMsg_SearchBoxResize(
+        host->routing_id(), GetOmniboxBoundsInTermsOfPreview()));
   }
 }
 
