@@ -92,6 +92,45 @@ void LiveSyncExtensionHelper::InstallExtensionsPendingForSync(
   }
 }
 
+LiveSyncExtensionHelper::ExtensionStateMap
+    LiveSyncExtensionHelper::GetExtensionStates(
+        Profile* profile) const {
+  const std::string& profile_name = GetProfileName(profile);
+
+  ExtensionStateMap extension_state_map;
+
+  ExtensionService* extension_service = profile->GetExtensionService();
+
+  const ExtensionList* extensions = extension_service->extensions();
+  for (ExtensionList::const_iterator it = extensions->begin();
+       it != extensions->end(); ++it) {
+    extension_state_map[(*it)->id()] = ENABLED;
+    VLOG(2) << "Extension " << (*it)->id() << " in profile "
+            << profile_name << " is enabled";
+  }
+
+  const ExtensionList* disabled_extensions =
+      extension_service->disabled_extensions();
+  for (ExtensionList::const_iterator it = disabled_extensions->begin();
+       it != disabled_extensions->end(); ++it) {
+    extension_state_map[(*it)->id()] = DISABLED;
+    VLOG(2) << "Extension " << (*it)->id() << " in profile "
+            << profile_name << " is disabled";
+  }
+
+  const PendingExtensionManager* pending_extension_manager =
+      extension_service->pending_extension_manager();
+  PendingExtensionManager::const_iterator it;
+  for (it = pending_extension_manager->begin();
+       it != pending_extension_manager->end(); ++it) {
+    extension_state_map[it->first] = PENDING;
+    VLOG(2) << "Extension " << it->first << " in profile "
+            << profile_name << " is pending";
+  }
+
+  return extension_state_map;
+}
+
 void LiveSyncExtensionHelper::SetupProfile(Profile* profile) {
   profile->InitExtensions(true);
   profile_extensions_.insert(make_pair(profile, ExtensionNameMap()));
@@ -118,12 +157,22 @@ scoped_refptr<Extension> CreateExtension(
   const std::string& public_key = NameToPublicKey(name);
   source.SetString(extension_manifest_keys::kPublicKey, public_key);
   source.SetString(extension_manifest_keys::kVersion, "0.0.0.0");
-  if (type == Extension::TYPE_THEME) {
-    source.Set(extension_manifest_keys::kTheme, new DictionaryValue());
-  } else if (type != Extension::TYPE_EXTENSION) {
-    // TODO(akalin): Handle other types.
-    ADD_FAILURE();
-    return NULL;
+  switch (type) {
+    case Extension::TYPE_EXTENSION:
+      // Do nothing.
+      break;
+    case Extension::TYPE_THEME:
+      source.Set(extension_manifest_keys::kTheme, new DictionaryValue());
+      break;
+    case Extension::TYPE_HOSTED_APP:
+    case Extension::TYPE_PACKAGED_APP:
+      source.Set(extension_manifest_keys::kApp, new DictionaryValue());
+      source.SetString(extension_manifest_keys::kLaunchWebURL,
+                       "http://www.example.com");
+      break;
+    default:
+      ADD_FAILURE();
+      return NULL;
   }
   const FilePath sub_dir = FilePath().AppendASCII(name);
   FilePath extension_dir;

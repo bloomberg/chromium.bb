@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/live_sync/live_extensions_sync_test.h"
+#include "chrome/test/live_sync/live_apps_sync_test.h"
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 
-LiveExtensionsSyncTest::LiveExtensionsSyncTest(TestType test_type)
+LiveAppsSyncTest::LiveAppsSyncTest(TestType test_type)
     : LiveSyncTest(test_type) {}
 
-LiveExtensionsSyncTest::~LiveExtensionsSyncTest() {}
+LiveAppsSyncTest::~LiveAppsSyncTest() {}
 
-bool LiveExtensionsSyncTest::SetupClients() {
+bool LiveAppsSyncTest::SetupClients() {
   if (!LiveSyncTest::SetupClients())
     return false;
 
@@ -22,7 +22,8 @@ bool LiveExtensionsSyncTest::SetupClients() {
   return true;
 }
 
-bool LiveExtensionsSyncTest::AllProfilesHaveSameExtensionsAsVerifier() {
+bool LiveAppsSyncTest::AllProfilesHaveSameAppsAsVerifier() {
+  // TODO(akalin): We may want to filter out non-apps for some tests.
   LiveSyncExtensionHelper::ExtensionStateMap
       verifier_extension_state_map(
           extension_helper_.GetExtensionStates(verifier()));
@@ -37,14 +38,14 @@ bool LiveExtensionsSyncTest::AllProfilesHaveSameExtensionsAsVerifier() {
   return true;
 }
 
-void LiveExtensionsSyncTest::InstallExtension(Profile* profile, int index) {
-  std::string name = "fakeextension" + base::IntToString(index);
+void LiveAppsSyncTest::InstallApp(Profile* profile, int index) {
+  std::string name = "fakeapp" + base::IntToString(index);
   return extension_helper_.InstallExtension(
-      profile, name, Extension::TYPE_EXTENSION);
+      profile, name, Extension::TYPE_HOSTED_APP);
 }
 
-void LiveExtensionsSyncTest::InstallExtensionsPendingForSync(
+void LiveAppsSyncTest::InstallAppsPendingForSync(
     Profile* profile) {
   extension_helper_.InstallExtensionsPendingForSync(
-      profile, Extension::TYPE_EXTENSION);
+      profile, Extension::TYPE_HOSTED_APP);
 }
