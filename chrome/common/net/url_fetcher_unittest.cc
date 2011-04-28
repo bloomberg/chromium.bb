@@ -174,6 +174,21 @@ class URLFetcherHeadersTest : public URLFetcherTest {
                                   const std::string& data);
 };
 
+// Version of URLFetcherTest that tests SocketAddress.
+class URLFetcherSocketAddressTest : public URLFetcherTest {
+ public:
+  // URLFetcher::Delegate
+  virtual void OnURLFetchComplete(const URLFetcher* source,
+                                  const GURL& url,
+                                  const net::URLRequestStatus& status,
+                                  int response_code,
+                                  const ResponseCookies& cookies,
+                                  const std::string& data);
+ protected:
+  std::string expected_host_;
+  uint16 expected_port_;
+};
+
 // Version of URLFetcherTest that tests overload protection.
 class URLFetcherProtectTest : public URLFetcherTest {
  public:
@@ -339,6 +354,19 @@ void URLFetcherHeadersTest::OnURLFetchComplete(
   EXPECT_TRUE(source->response_headers()->GetNormalizedHeader("cache-control",
                                                               &header));
   EXPECT_EQ("private", header);
+  URLFetcherTest::OnURLFetchComplete(source, url, status, response_code,
+                                     cookies, data);
+}
+
+void URLFetcherSocketAddressTest::OnURLFetchComplete(
+    const URLFetcher* source,
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
+    const std::string& data) {
+  EXPECT_EQ("127.0.0.1", source->socket_address().host());
+  EXPECT_EQ(expected_port_, source->socket_address().port());
   URLFetcherTest::OnURLFetchComplete(source, url, status, response_code,
                                      cookies, data);
 }
@@ -566,6 +594,18 @@ TEST_F(URLFetcherHeadersTest, Headers) {
   CreateFetcher(test_server.GetURL("files/with-headers.html"));
   MessageLoop::current()->Run();
   // The actual tests are in the URLFetcherHeadersTest fixture.
+}
+
+TEST_F(URLFetcherSocketAddressTest, SocketAddress) {
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+      FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
+  ASSERT_TRUE(test_server.Start());
+  expected_port_ = test_server.host_port_pair().port();
+
+  // Reusing "with-headers.html" but doesn't really matter.
+  CreateFetcher(test_server.GetURL("files/with-headers.html"));
+  MessageLoop::current()->Run();
+  // The actual tests are in the URLFetcherSocketAddressTest fixture.
 }
 
 TEST_F(URLFetcherProtectTest, Overload) {

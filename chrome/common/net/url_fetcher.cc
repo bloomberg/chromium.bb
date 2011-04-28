@@ -17,6 +17,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/host_port_pair.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -132,6 +133,8 @@ class URLFetcher::Core
   ResponseCookies cookies_;          // Response cookies
   net::HttpRequestHeaders extra_request_headers_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
+  bool was_fetched_via_proxy_;
+  net::HostPortPair socket_address_;
 
   std::string upload_content_;       // HTTP POST payload
   std::string upload_content_type_;  // MIME type of POST payload
@@ -280,6 +283,8 @@ void URLFetcher::Core::OnResponseStarted(net::URLRequest* request) {
   if (request_->status().is_success()) {
     response_code_ = request_->GetResponseCode();
     response_headers_ = request_->response_headers();
+    socket_address_ = request_->GetSocketAddress();
+    was_fetched_via_proxy_ = request_->was_fetched_via_proxy();
   }
 
   int bytes_read = 0;
@@ -561,6 +566,17 @@ void URLFetcher::set_automatically_retry_on_5xx(bool retry) {
 
 net::HttpResponseHeaders* URLFetcher::response_headers() const {
   return core_->response_headers_;
+}
+
+// TODO(panayiotis): socket_address_ is written in the IO thread,
+// if this is accessed in the UI thread, this could result in a race.
+// Same for response_headers_ above and was_fetched_via_proxy_ below.
+net::HostPortPair URLFetcher::socket_address() const {
+  return core_->socket_address_;
+}
+
+bool URLFetcher::was_fetched_via_proxy() const {
+  return core_->was_fetched_via_proxy_;
 }
 
 void URLFetcher::Start() {

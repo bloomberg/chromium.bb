@@ -26,6 +26,7 @@ class GURL;
 typedef std::vector<std::string> ResponseCookies;
 
 namespace net {
+class HostPortPair;
 class HttpResponseHeaders;
 class URLRequestContextGetter;
 class URLRequestStatus;
@@ -185,6 +186,16 @@ class URLFetcher {
   // Retrieve the response headers from the request.  Must only be called after
   // the OnURLFetchComplete callback has run.
   virtual net::HttpResponseHeaders* response_headers() const;
+
+  // Retrieve the remote socket address from the request.  Must only
+  // be called after the OnURLFetchComplete callback has run and if
+  // the request has not failed.
+  net::HostPortPair socket_address() const;
+
+  // Returns true if the request was delivered through a proxy.  Must only
+  // be called after the OnURLFetchComplete callback has run and the request
+  // has not failed.
+  bool was_fetched_via_proxy() const;
 
   // Start the request.  After this is called, you may not change any other
   // settings.
