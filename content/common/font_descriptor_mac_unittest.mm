@@ -7,13 +7,16 @@
 #include <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "base/utf_string_conversions.h"
+#include "base/sys_string_conversions.h"
+#include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 namespace {
 
 class FontSerializationTest : public PlatformTest {};
 
+const std::string kCourierFontName("Courier");
 
 // Compare 2 fonts, make sure they point at the same font definition and have
 // the same style.  Only Bold & Italic style attributes are tested since those
@@ -64,6 +67,14 @@ bool CompareFonts(NSFont* font1, NSFont* font2) {
   return true;
 }
 
+// Create an NSFont via a FontDescriptor object.
+NSFont* MakeNSFont(const std::string& font_name, float font_point_size) {
+  FontDescriptor desc;
+  desc.font_name = UTF8ToUTF16(font_name);
+  desc.font_point_size = font_point_size;
+  return desc.nsFont();
+}
+
 // Verify that serialization and deserialization of fonts with various styles
 // is performed correctly by FontDescriptor.
 TEST_F(FontSerializationTest, StyledFonts) {
@@ -79,7 +90,7 @@ TEST_F(FontSerializationTest, StyledFonts) {
   
   NSFont* italic_bold_font =
       [[NSFontManager sharedFontManager]
-          fontWithFamily:@"Courier"
+          fontWithFamily:base::SysUTF8ToNSString(kCourierFontName)
                   traits:(NSBoldFontMask | NSItalicFontMask)
                   weight:5
                     size:18.0];
@@ -88,4 +99,16 @@ TEST_F(FontSerializationTest, StyledFonts) {
   EXPECT_TRUE(CompareFonts(italic_bold_font, desc_italic_bold.nsFont()));
 }
 
-}  // namsepace
+// Test that FontDescriptor doesn't crash when used with bad parameters.
+// This is important since FontDescriptors are constructed with parameters
+// sent over IPC and bad values must not trigger unexpected behavior.
+TEST_F(FontSerializationTest, BadParameters) {
+  EXPECT_NSNE(MakeNSFont(kCourierFontName, 12), nil);
+  EXPECT_NSNE(MakeNSFont(kCourierFontName, std::numeric_limits<float>::min()),
+              nil);
+  EXPECT_NSNE(MakeNSFont(kCourierFontName, 0), nil);
+  EXPECT_NSNE(MakeNSFont(kCourierFontName, std::numeric_limits<float>::max()),
+              nil);
+}
+
+}  // namespace
