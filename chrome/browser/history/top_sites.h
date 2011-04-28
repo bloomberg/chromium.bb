@@ -68,7 +68,7 @@ class TopSites
 
   // Returns a list of most visited URLs via a callback.
   // This may be invoked on any thread.
-  // NOTE: the callback may be called immediately if we have the data cached.
+  // NOTE: the callback is called immediately if we have the data cached.
   void GetMostVisitedURLs(CancelableRequestConsumer* consumer,
                           GetTopSitesCallback* callback);
 
@@ -99,6 +99,10 @@ class TopSites
   // Invoked from history when it finishes loading. If MigrateFromHistory was
   // not invoked at this point then we load from the top sites service.
   void HistoryLoaded();
+
+  // Asks TopSites to refresh what it thinks the top sites are. This may do
+  // nothing.
+  void SyncWithHistory();
 
   // Blacklisted URLs
 

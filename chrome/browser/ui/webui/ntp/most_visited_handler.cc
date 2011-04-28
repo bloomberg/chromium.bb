@@ -62,11 +62,20 @@ WebUIMessageHandler* MostVisitedHandler::Attach(WebUI* web_ui) {
   profile->GetChromeURLDataManager()->AddDataSource(
       new FaviconSource(profile, FaviconSource::FAVICON));
 
-  // Get notifications when history is cleared.
-  registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
-                 Source<Profile>(profile));
-
   WebUIMessageHandler* result = WebUIMessageHandler::Attach(web_ui);
+
+  history::TopSites* ts = profile->GetTopSites();
+  if (ts) {
+    // TopSites updates itself after a delay. This is especially noticable when
+    // your profile is empty. Ask TopSites to update itself when we're about to
+    // show the new tab page.
+    ts->SyncWithHistory();
+
+    // Register for notification when TopSites changes so that we can update
+    // ourself.
+    registrar_.Add(this, NotificationType::TOP_SITES_CHANGED,
+                   Source<history::TopSites>(ts));
+  }
 
   // We pre-emptively make a fetch for the most visited pages so we have the
   // results sooner.
@@ -125,7 +134,6 @@ void MostVisitedHandler::SendPagesValue() {
 }
 
 void MostVisitedHandler::StartQueryForMostVisited() {
-  // Use TopSites.
   history::TopSites* ts = web_ui_->GetProfile()->GetTopSites();
   if (ts) {
     ts->GetMostVisitedURLs(
@@ -342,12 +350,9 @@ const std::vector<MostVisitedHandler::MostVisitedPage>&
 void MostVisitedHandler::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  if (type != NotificationType::HISTORY_URLS_DELETED) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK_EQ(type.value, NotificationType::TOP_SITES_CHANGED);
 
-  // Some URLs were deleted from history.  Reload the most visited list.
+  // Most visited urls changed, query again.
   HandleGetMostVisited(NULL);
 }
 

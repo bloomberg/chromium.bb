@@ -683,6 +683,11 @@ class NotificationType {
     // Used only in testing.
     TOP_SITES_UPDATED,
 
+    // Sent by TopSites when the either one of the most visited urls changed, or
+    // one of the images changes. The source is the TopSites, the details not
+    // used.
+    TOP_SITES_CHANGED,
+
     // Thumbnails---------------------------------------------------------------
 
     // Sent by the ThumbnailGenerator whenever a render widget host

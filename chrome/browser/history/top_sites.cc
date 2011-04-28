@@ -340,6 +340,19 @@ void TopSites::HistoryLoaded() {
   }
 }
 
+void TopSites::SyncWithHistory() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (loaded_ && temp_images_.size()) {
+    // If we have temporary thumbnails it means there isn't much data, and most
+    // likely the user is first running Chrome. During this time we throttle
+    // updating from history by 30 seconds. If the user creates a new tab page
+    // during this window of time we force updating from history so that the new
+    // tab page isn't so far out of date.
+    timer_.Stop();
+    StartQueryForMostVisited();
+  }
+}
+
 bool TopSites::HasBlacklistedItems() const {
   return !blacklist_->empty();
 }
@@ -819,10 +832,13 @@ void TopSites::SetTopSites(const MostVisitedURLList& new_top_sites) {
   MostVisitedURLList top_sites(new_top_sites);
   AddPrepopulatedPages(&top_sites);
 
+  bool changed = false;
   TopSitesDelta delta;
   DiffMostVisited(cache_->top_sites(), top_sites, &delta);
-  if (!delta.deleted.empty() || !delta.added.empty() || !delta.moved.empty())
+  if (!delta.deleted.empty() || !delta.added.empty() || !delta.moved.empty()) {
+    changed = true;
     backend_->UpdateTopSites(delta);
+  }
 
   last_num_urls_changed_ = delta.added.size() + delta.moved.size();
 
@@ -844,6 +860,7 @@ void TopSites::SetTopSites(const MostVisitedURLList& new_top_sites) {
           SetPageThumbnailEncoded(mv.url,
                                   it->second.thumbnail,
                                   it->second.thumbnail_score);
+          changed = true;
           temp_images_.erase(it);
           break;
         }
@@ -856,6 +873,13 @@ void TopSites::SetTopSites(const MostVisitedURLList& new_top_sites) {
 
   ResetThreadSafeCache();
   ResetThreadSafeImageCache();
+
+  if (changed) {
+    NotificationService::current()->Notify(
+        NotificationType::TOP_SITES_CHANGED,
+        Source<TopSites>(this),
+        NotificationService::NoDetails());
+  }
 
   // Restart the timer that queries history for top sites. This is done to
   // ensure we stay in sync with history.
