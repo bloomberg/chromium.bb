@@ -169,7 +169,7 @@ class ExtensionPrefsExtensionState : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
     extension = prefs_.AddExtension("test");
-    prefs()->SetExtensionState(extension.get(), Extension::DISABLED);
+    prefs()->SetExtensionState(extension->id(), Extension::DISABLED);
   }
 
   virtual void Verify() {
@@ -637,7 +637,7 @@ class ExtensionPrefsIdChange : public ExtensionPrefsTest {
 
   virtual void Verify() {
     prefs_.RecreateExtensionPrefs();
-    prefs()->SetExtensionState(extension_.get(), Extension::DISABLED);
+    prefs()->SetExtensionState(extension_->id(), Extension::DISABLED);
     ExtensionPrefs::ExtensionIdSet extension_ids;
     prefs()->GetExtensions(&extension_ids);
     EXPECT_EQ(1U, extension_ids.size());
@@ -888,7 +888,7 @@ class ExtensionPrefsDisableExt
     InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
     std::string actual = prefs()->pref_service()->GetString(kPref1);
     EXPECT_EQ("val1", actual);
-    prefs()->SetExtensionState(ext1_, Extension::DISABLED);
+    prefs()->SetExtensionState(ext1_->id(), Extension::DISABLED);
   }
   virtual void Verify() {
     std::string actual = prefs()->pref_service()->GetString(kPref1);
@@ -902,8 +902,8 @@ class ExtensionPrefsReenableExt
     : public ExtensionPrefsPreferencesBase {
   virtual void Initialize() {
     InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
-    prefs()->SetExtensionState(ext1_, Extension::DISABLED);
-    prefs()->SetExtensionState(ext1_, Extension::ENABLED);
+    prefs()->SetExtensionState(ext1_->id(), Extension::DISABLED);
+    prefs()->SetExtensionState(ext1_->id(), Extension::ENABLED);
   }
   virtual void Verify() {
     std::string actual = prefs()->pref_service()->GetString(kPref1);

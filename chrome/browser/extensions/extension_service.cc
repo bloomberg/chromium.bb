@@ -737,10 +737,6 @@ void ExtensionService::ClearExtensionData(const GURL& extension_url) {
 
 bool ExtensionService::IsExtensionEnabled(
     const std::string& extension_id) const {
-  // TODO(akalin): GetExtensionState() isn't very safe as it returns
-  // Extension::ENABLED by default; either change it to return
-  // something else by default or create a separate function that does
-  // so.
   return
       extension_prefs_->GetExtensionState(extension_id) == Extension::ENABLED;
 }
@@ -758,7 +754,7 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
   if (!extension)
     return;
 
-  extension_prefs_->SetExtensionState(extension, Extension::ENABLED);
+  extension_prefs_->SetExtensionState(extension_id, Extension::ENABLED);
 
   // Move it over to the enabled list.
   extensions_.push_back(make_scoped_refptr(extension));
@@ -785,7 +781,7 @@ void ExtensionService::DisableExtension(const std::string& extension_id) {
   if (!Extension::UserMayDisable(extension->location()))
     return;
 
-  extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
+  extension_prefs_->SetExtensionState(extension_id, Extension::DISABLED);
 
   // Move it over to the disabled list.
   disabled_extensions_.push_back(make_scoped_refptr(extension));
@@ -1778,7 +1774,7 @@ void ExtensionService::DisableIfPrivilegeIncrease(const Extension* extension) {
       RecordPermissionMessagesHistogram(
           extension, "Extensions.Permissions_AutoDisable");
     }
-    extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
+    extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
     extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
   }
 }

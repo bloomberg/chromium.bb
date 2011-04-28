@@ -927,14 +927,14 @@ Extension::State ExtensionPrefs::GetExtensionState(
   return static_cast<Extension::State>(state);
 }
 
-void ExtensionPrefs::SetExtensionState(const Extension* extension,
+void ExtensionPrefs::SetExtensionState(const std::string& extension_id,
                                        Extension::State state) {
-  UpdateExtensionPref(extension->id(), kPrefState,
+  UpdateExtensionPref(extension_id, kPrefState,
                       Value::CreateIntegerValue(state));
   SavePrefs();
 
   bool enabled = (state == Extension::ENABLED);
-  extension_pref_value_map_->SetExtensionState(extension->id(), enabled);
+  extension_pref_value_map_->SetExtensionState(extension_id, enabled);
 }
 
 bool ExtensionPrefs::GetBrowserActionVisibility(const Extension* extension) {

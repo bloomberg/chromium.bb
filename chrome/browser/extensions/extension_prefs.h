@@ -106,7 +106,7 @@ class ExtensionPrefs {
   Extension::State GetExtensionState(const std::string& extension_id) const;
 
   // Called to change the extension's state when it is enabled/disabled.
-  void SetExtensionState(const Extension* extension, Extension::State);
+  void SetExtensionState(const std::string& extension_id, Extension::State);
 
   // Returns all installed extensions
   void GetExtensions(ExtensionIdSet* out);
