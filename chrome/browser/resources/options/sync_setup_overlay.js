@@ -357,6 +357,8 @@ cr.define('options', function() {
         self.setCheckboxesToKeepEverythingSynced_(syncAll);
       };
 
+      $('sync-setup-configure').classList.remove('hidden');
+
       if (args) {
         this.setCheckboxesAndErrors_(args);
 
@@ -371,8 +373,6 @@ cr.define('options', function() {
           this.showCustomizePage_(syncAllDataTypes);
         }
       }
-
-      $('sync-setup-configure').classList.remove('hidden');
     },
 
     showSyncEverythingPage_: function() {
@@ -385,6 +385,7 @@ cr.define('options', function() {
       // The default state is to sync everything; the passphrase option is
       // unchanged.
       this.setCheckboxesToKeepEverythingSynced_(true);
+      $('confirm-everything-ok').focus();
     },
 
     showCustomizePage_: function(syncEverything) {
@@ -397,6 +398,7 @@ cr.define('options', function() {
       var index = syncEverything ? 0 : 1;
       document.getElementById('sync-select-datatypes').selectedIndex = index;
       this.setDataTypeCheckboxesEnabled_(!syncEverything);
+      $('choose-datatypes-ok').focus();
     },
 
     showSyncSetupPage_: function(page, args) {
@@ -433,14 +435,18 @@ cr.define('options', function() {
       if (args["passphrase_setting_rejected"]) {
         $('incorrectPassphrase').style.display = "block";
       }
+
+      $('passphrase-ok').focus();
     },
 
     showSettingUp_: function() {
       $('sync-setup-setting-up').classList.remove('hidden');
+      $('setting-up-cancel').focus();
     },
 
     showSetupDone_: function() {
       $('sync-setup-done').classList.remove('hidden');
+      $('setup-done-close').focus();
     },
 
     setElementDisplay_: function(id, display) {
@@ -462,8 +468,7 @@ cr.define('options', function() {
     showAccessCodeRequired_: function() {
       this.setElementDisplay_("password-row", "none");
       this.setElementDisplay_("email-row", "none");
-      $('create-account-cell').style.visibility =
-          "hidden";
+      $('create-account-cell').style.visibility = "hidden";
 
       this.setElementDisplay_("access-code-label-row", "table-row");
       this.setElementDisplay_("access-code-input-row", "table-row");
@@ -490,8 +495,9 @@ cr.define('options', function() {
     },
 
     showGaiaLogin_: function(args) {
-      document.getElementById('logging-in-throbber').style.display = "none";
+      $('sync-setup-login').classList.remove('hidden');
 
+      document.getElementById('logging-in-throbber').style.display = "none";
       document.getElementById('gaia-email').disabled = false;
       document.getElementById('gaia-passwd').disabled = false;
 
@@ -539,8 +545,6 @@ cr.define('options', function() {
       $('sign-in').disabled = false;
       $('sign-in').value = templateData['signin'];
       this.loginSetFocus_();
-
-      $('sync-setup-login').classList.remove('hidden');
     },
 
     resetErrorVisibility_: function() {
