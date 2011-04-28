@@ -66,8 +66,6 @@ bool CornerSelectionMenuModel::IsCommandIdChecked(int command_id) const {
   NotificationUIManager* ui = g_browser_process->notification_ui_manager();
   BalloonCollection::PositionPreference current = ui->GetPositionPreference();
 
-  LOG(INFO) << "Current position preference: " << current;
-
   if (command_id == kCornerUpperLeft)
     return (current == BalloonCollection::UPPER_LEFT);
   else if (command_id == kCornerUpperRight)
@@ -97,8 +95,6 @@ bool CornerSelectionMenuModel::GetAcceleratorForCommandId(
 void CornerSelectionMenuModel::ExecuteCommand(int command_id) {
   NotificationUIManager* ui = g_browser_process->notification_ui_manager();
 
-  LOG(INFO) << "Executing command: " << command_id;
-
   if (command_id == kCornerUpperLeft)
     ui->SetPositionPreference(BalloonCollection::UPPER_LEFT);
   else if (command_id == kCornerUpperRight)
@@ -116,14 +112,20 @@ void CornerSelectionMenuModel::ExecuteCommand(int command_id) {
 NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       balloon_(balloon) {
-
   const Notification& notification = balloon->notification();
   const GURL& origin = notification.origin_url();
 
   if (origin.SchemeIs(chrome::kExtensionScheme)) {
-    const string16 disable_label = l10n_util::GetStringUTF16(
-        IDS_EXTENSIONS_DISABLE);
-    AddItem(kToggleExtensionCommand, disable_label);
+    ExtensionService* ext_service =
+        balloon_->profile()->GetExtensionService();
+    const Extension* extension = ext_service->GetExtensionByURL(origin);
+    // We get back no extension here when we show the notification after
+    // the extension has crashed.
+    if (extension) {
+      const string16 disable_label = l10n_util::GetStringUTF16(
+          IDS_EXTENSIONS_DISABLE);
+      AddItem(kToggleExtensionCommand, disable_label);
+    }
   } else {
     const string16 disable_label = l10n_util::GetStringFUTF16(
         IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
