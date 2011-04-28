@@ -23,3 +23,4 @@ BUGCR80745 DEBUG : fast/borders/border-image-border-radius.html = PASS CRASH
 
 BUGWK59742 MAC LEOPARD SNOWLEOPARD : fast/speech/input-appearance-numberandspeech.html = IMAGE IMAGE+TEXT
 BUGWK59742 MAC LEOPARD SNOWLEOPARD : fast/speech/input-appearance-speechbutton.html = IMAGE IMAGE+TEXT
+BUGWK59750 : fast/harness/results.html = PASS TEXT
