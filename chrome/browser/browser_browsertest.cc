@@ -35,6 +35,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
+#include "content/common/notification_type.h"
 #include "content/common/page_transition_types.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -56,6 +57,9 @@ const char* kBeforeUnloadHTML =
 
 const char* kOpenNewBeforeUnloadPage =
     "w=window.open(); w.onbeforeunload=function(e){return 'foo'};";
+
+const FilePath::CharType* kBeforeUnloadFile =
+    FILE_PATH_LITERAL("beforeunload.html");
 
 const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 const FilePath::CharType* kTitle2File = FILE_PATH_LITERAL("title2.html");
@@ -268,6 +272,35 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->CloseModalDialog();
   EXPECT_FALSE(browser()->GetSelectedTabContents()->is_loading());
+
+  // Clear the beforeunload handler so the test can easily exit.
+  browser()->GetSelectedTabContents()->render_view_host()->
+      ExecuteJavascriptInWebFrame(string16(),
+                                  ASCIIToUTF16("onbeforeunload=null;"));
+}
+
+// Test for crbug.com/80401.  Canceling a before unload dialog should reset
+// the URL to the previous page's URL.
+IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
+  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                     FilePath(kBeforeUnloadFile)));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Navigate to a page that triggers a cross-site transition.
+  ASSERT_TRUE(test_server()->Start());
+  GURL url2(test_server()->GetURL("files/title1.html"));
+  browser()->OpenURL(url2, GURL(), CURRENT_TAB, PageTransition::TYPED);
+
+  // Cancel the dialog.
+  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  alert->CloseModalDialog();
+  EXPECT_FALSE(browser()->GetSelectedTabContents()->is_loading());
+
+  // Wait for the ShouldClose_ACK to arrive.  We can detect it by waiting for
+  // the pending RVH to be destroyed.
+  ui_test_utils::WaitForNotification(
+      NotificationType::RENDER_WIDGET_HOST_DESTROYED);
+  EXPECT_EQ(url.spec(), WideToUTF8(browser()->toolbar_model()->GetText()));
 
   // Clear the beforeunload handler so the test can easily exit.
   browser()->GetSelectedTabContents()->render_view_host()->

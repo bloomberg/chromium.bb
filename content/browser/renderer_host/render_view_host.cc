@@ -1196,6 +1196,10 @@ void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
     management_delegate->ShouldClosePage(
         unload_ack_is_for_cross_site_transition_, proceed);
   }
+
+  // If canceled, notify the delegate to cancel its pending navigation entry.
+  if (!proceed)
+    delegate_->DidCancelLoading();
 }
 
 void RenderViewHost::WindowMoveOrResizeStarted() {

@@ -1225,9 +1225,7 @@ void TabContents::OnDidFailProvisionalLoadWithError(
     // before the page loaded so that the discard would discard the wrong entry.
     NavigationEntry* pending_entry = controller_.pending_entry();
     if (pending_entry && pending_entry->url() == validated_url) {
-      controller_.DiscardNonCommittedEntries();
-      // Update the URL display.
-      NotifyNavigationStateChanged(TabContents::INVALIDATE_URL);
+      DidCancelLoading();
     }
 
     render_manager_.RendererAbortedProvisionalLoad(render_view_host());
@@ -1973,6 +1971,13 @@ void TabContents::DidStopLoading() {
 
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_, DidStopLoading());
+}
+
+void TabContents::DidCancelLoading() {
+  controller_.DiscardNonCommittedEntries();
+
+  // Update the URL display.
+  NotifyNavigationStateChanged(TabContents::INVALIDATE_URL);
 }
 
 void TabContents::DidChangeLoadProgress(double progress) {

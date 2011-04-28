@@ -1,0 +1,11 @@
+<html>
+  <head>
+    <title>Loading...</title>
+  </head>
+  <body onload="attachUnloadListener()">
+    <script>
+      window.onbeforeunload = function(e) { return 'foo'; };
+    </script>
+    <p>Navigate to another page to trigger beforeunload handler.</p>
+  </body>
+</html>

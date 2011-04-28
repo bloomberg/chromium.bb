@@ -798,6 +798,7 @@ class TabContents : public PageNavigator,
   virtual void RequestMove(const gfx::Rect& new_bounds);
   virtual void DidStartLoading();
   virtual void DidStopLoading();
+  virtual void DidCancelLoading();
   virtual void DidChangeLoadProgress(double progress);
   virtual void DocumentOnLoadCompletedInMainFrame(
       RenderViewHost* render_view_host,
