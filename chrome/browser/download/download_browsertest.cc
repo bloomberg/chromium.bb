@@ -1139,7 +1139,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
 
 // http://crbug.com/80327
 #if defined(OS_CHROMEOS)
-#define MAYBE_DownloadCancelled FLAKY_DownloadCancelled
+// Need to disable as failure is a crash->timeout.
+#define MAYBE_DownloadCancelled DISABLED_DownloadCancelled
 #else
 #define MAYBE_DownloadCancelled DownloadCancelled
 #endif
