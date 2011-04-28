@@ -68,7 +68,7 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ManageSearchEngines']);
       };
-      $('defaultSearchEngine').onchange = this.setDefaultSearchEngine;
+      $('defaultSearchEngine').onchange = this.setDefaultSearchEngine_;
 
       var self = this;
       $('instantEnableCheckbox').onclick = function(event) {
@@ -214,6 +214,8 @@ cr.define('options', function() {
       }
       if (defaultIndex >= 0)
         engineSelect.selectedIndex = defaultIndex;
+
+      this.setDefaultSearchEngine_();
     },
 
     /**
@@ -422,7 +424,7 @@ cr.define('options', function() {
     /**
      * Set the default search engine based on the popup selection.
      */
-    setDefaultSearchEngine: function() {
+    setDefaultSearchEngine_: function() {
       var engineSelect = $('defaultSearchEngine');
       var selectedIndex = engineSelect.selectedIndex;
       if (selectedIndex >= 0) {
