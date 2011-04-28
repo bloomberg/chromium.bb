@@ -1667,3 +1667,19 @@
    fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
    fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
 }
+{
+   bug_44385
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN3net9HostCache3SetERKNS0_3KeyEiRKNS_11AddressListEN4base9TimeTicksE
+   fun:_ZN3net16HostResolverImpl13OnJobCompleteEPNS0_3JobEiiRKNS_11AddressListE
+   fun:_ZN3net16HostResolverImpl3Job16OnLookupCompleteEv
+   fun:_Z16DispatchToMethodIN3net16HostResolverImpl3JobEMS2_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN3net16HostResolverImpl3JobEMS2_FvvE6Tuple0E3RunEv
+   fun:_ZN12_GLOBAL__N_118TaskClosureAdapter3RunEv
+   fun:_ZN4base8internal8Invoker1INS0_15InvokerStorage1IMN12_GLOBAL__N_118TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
+   fun:_ZNK4base8CallbackIFvvEE3RunEv
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
+}
+

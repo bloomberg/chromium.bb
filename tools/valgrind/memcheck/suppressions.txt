@@ -3849,7 +3849,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN5views6Widget21OnNativeWidgetCreatedEv
-   fun:_ZN5views9WidgetGtk4InitEP10_GtkWidgetRKN3gfx4RectE
+   ...
    fun:_ZN18TabContentsViewGtk10CreateViewERKN3gfx4SizeE
    fun:_ZN11TabContentsC2EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
    fun:_ZN15TestTabContentsC1EP7ProfileP12SiteInstance
@@ -4492,6 +4492,24 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN16RenderWidgetHost9WasHiddenEv
+}
+{
+   bug_80784
+   Memcheck:Leak
+   ...
+   fun:g_closure_invoke
+   fun:signal_emit_unlocked_R
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   fun:gtk_text_buffer_mark_set
+   fun:gtk_text_buffer_select_range
+   fun:_ZN14OmniboxViewGtk16SetSelectedRangeERKNS_9CharRangeE
+   fun:_ZN14OmniboxViewGtk23SetTextAndSelectedRangeERKSbItN4base20string16_char_traitsESaItEERKNS_9CharRangeE
+   fun:_ZN14OmniboxViewGtk24SetWindowTextAndCaretPosERKSbItN4base20string16_char_traitsESaItEEj
+   fun:_ZN21AutocompleteEditModel6RevertEv
+   fun:_ZN14OmniboxViewGtk9RevertAllEv
+   fun:_ZN14OmniboxViewGtk6UpdateEPK11TabContents
+   fun:_ZN15LocationBarView6UpdateEPK11TabContents
 }
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
