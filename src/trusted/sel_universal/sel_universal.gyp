@@ -12,6 +12,7 @@
       'src_files': ['sel_universal.cc',
                     'rpc_universal.cc',
                     'rpc_universal_system.cc',
+                    'file_handler.cc',
                     'replay_handler.cc',
                     'pepper_handler.cc',
                     'parsing.cc',

@@ -58,6 +58,7 @@ if env.Bit('linux') and env.Bit('target_x86'):
 env.ComponentProgram('sel_universal',
                     ['sel_universal.cc',
                      'rpc_universal.cc',
+                     'file_handler.cc',
                      'pepper_handler.cc',
                      'replay_handler.cc',
                      'parsing.cc',
