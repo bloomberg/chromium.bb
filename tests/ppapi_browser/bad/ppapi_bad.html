@@ -78,6 +78,7 @@ testProgressEventStateMachine(
     'NaCl module load failed: could not read manifest file.');
 // The driver invoked when the body has finished loading.
 function runTests() {
+  tester.loadErrorsAreOK();
   tester.waitFor(
       $('bad_magic'),
       $('cross_origin'),

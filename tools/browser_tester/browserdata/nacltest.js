@@ -374,6 +374,7 @@ function NaClWaiter(body_element) {
   // embedsLoaded contains list of embeds that have dispatched the
   // 'loadend' progress event.
   this.embedsLoaded = [];
+
   this.is_loaded = function(embed) {
     for (var i = 0; i < this_.embedsLoaded.length; ++i) {
       if (this_.embedsLoaded[i] === embed) {
@@ -381,6 +382,11 @@ function NaClWaiter(body_element) {
       }
     }
     return embed.__moduleReady == 1;
+  }
+
+  this.has_errored = function(embed) {
+    var msg = embed.lastError;
+    return embed.lastError != undefined && embed.lastError != '';
   }
 
   // If an argument was passed, it is the body element for registering
@@ -416,23 +422,28 @@ function NaClWaiter(body_element) {
   }
 
   this.waitForPlugins = function() {
-    var waiting = [];
+    var errored = [];
     var loaded = [];
+    var waiting = [];
 
     for (var i = 0; i < embedsToWaitFor.length; i++) {
-      if (this_.is_loaded(embedsToWaitFor[i])) {
-        loaded.push(embedsToWaitFor[i]);
+      var e = embedsToWaitFor[i];
+      if (this.has_errored(e)) {
+        errored.push(e);
+      } else if (this.is_loaded(e)) {
+        loaded.push(e);
       } else {
-        waiting.push(embedsToWaitFor[i]);
+        waiting.push(e);
       }
     }
 
     this.totalWait += this.retryWait;
 
     if (waiting.length == 0) {
-      this.doneCallback(loaded, waiting);
+      this.doneCallback(loaded, errored);
     } else if (this.totalWait >= this.maxTotalWait) {
-      this.doneCallback(loaded, waiting);
+      // Timeouts are considered errors.
+      this.doneCallback(loaded, errored.concat(waiting));
     } else {
       setTimeout(function() { this_.waitForPlugins(); }, this.retryWait);
       // Capped exponential backoff
@@ -458,9 +469,15 @@ function Tester(body_element) {
   this.rpc = new RPCWrapper();
   this.waiter = new NaClWaiter(body_element);
 
+  var load_errors_are_test_errors = true;
+
   //
   // BEGIN public interface
   //
+
+  this.loadErrorsAreOK = function() {
+    load_errors_are_test_errors = false;
+  }
 
   this.log = function(message) {
     this.rpc.log(this.currentTest, message);
@@ -507,9 +524,16 @@ function Tester(body_element) {
           this_.rpc.log(embed_name(loaded[i]) + ' loaded');
         }
         for (var j = 0; j < waiting.length; j++) {
-          this_.rpc.client_error(embed_name(waiting[j]) +
-                                ' took too long to load with status: ' +
-                                toString(waiting[j].__moduleReady));
+          var msg = (embed_name(waiting[j]) +
+                     ' did not load. Status: ' +
+                     toString(waiting[j].__moduleReady) +
+                     ' / ' +
+                     toString(waiting[j].lastError));
+          if(load_errors_are_test_errors) {
+            this_.rpc.client_error(msg);
+          } else {
+            this_.rpc.log(msg);
+          }
         }
         this_.startTesting();
       },
