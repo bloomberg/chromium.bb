@@ -185,10 +185,21 @@ bool ContentSettingDecoration::UpdateFromTabContents(
     SetImage(rb.GetNativeImageNamed(content_setting_image_model_->get_icon()));
     SetToolTip(base::SysUTF8ToNSString(
         content_setting_image_model_->get_tooltip()));
+
     // Check if there is an animation and start it if it hasn't yet started.
     bool has_animated_text =
         content_setting_image_model_->explanatory_string_id();
-    if (has_animated_text && !animation_) {
+
+    // Check if the animation has already run.
+    TabSpecificContentSettings* content_settings =
+        tab_contents->GetTabSpecificContentSettings();
+    ContentSettingsType content_type =
+        content_setting_image_model_->get_content_settings_type();
+    bool ran_animation = content_settings->IsBlockageIndicated(content_type);
+
+    if (has_animated_text && !ran_animation && !animation_) {
+      // Mark the animation as having been run.
+      content_settings->SetBlockageHasBeenIndicated(content_type);
       // Start animation, its timer will drive reflow. Note the text is
       // cached so it is not allowed to change during the animation.
       animation_.reset(
