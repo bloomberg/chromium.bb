@@ -327,6 +327,43 @@ class GClientSmokeSVN(GClientSmokeBase):
     tree['src/svn_hooked1'] = 'svn_hooked1'
     self.assertTree(tree)
 
+  def testSyncTransitive(self):
+    # TODO(maruel): safesync.
+    if not self.enabled:
+      return
+    self.gclient(['config', self.svn_base + 'trunk/src/'])
+
+    # Make sure we can populate a new repository with --transitive.
+    self.parseGclient(
+        ['sync', '--transitive', '--revision', 'src@1', '--deps', 'mac',
+          '--jobs', '1'],
+        ['running', 'running', 'running', 'running'])
+    tree = self.mangle_svn_tree(
+        ('trunk/src@1', 'src'),
+        ('trunk/third_party/foo@1', 'src/third_party/fpp'),
+        ('trunk/other@1', 'src/other'),
+        ('trunk/third_party/foo@1', 'src/third_party/prout'))
+
+    # Get up to date, so we can test synching back.
+    self.gclient(['sync', '--deps', 'mac', '--jobs', '1'])
+
+    # Manually remove svn_hooked1 before synching to make sure it's not
+    # recreated.
+    os.remove(join(self.root_dir, 'src', 'svn_hooked1'))
+
+    self.parseGclient(
+        ['sync', '--transitive', '--revision', 'src@1', '--deps', 'mac',
+          '--delete_unversioned_trees', '--jobs', '1'],
+        ['running', 'running', 'running', 'running', 'deleting'])
+    tree = self.mangle_svn_tree(
+        ('trunk/src@1', 'src'),
+        ('trunk/third_party/foo@1', 'src/third_party/fpp'),
+        ('trunk/other@1', 'src/other'),
+        ('trunk/third_party/foo@1', 'src/third_party/prout'))
+    tree['src/file/other/DEPS'] = (
+        self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
+    self.assertTree(tree)
+
   def testSyncIgnoredSolutionName(self):
     """TODO(maruel): This will become an error soon."""
     if not self.enabled:

@@ -82,7 +82,7 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def testDir(self):
     members = [
-        'FullUrlForRelativeUrl', 'RunCommand',
+        'FullUrlForRelativeUrl', 'GetRevisionDate', 'RunCommand',
         'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
         'revinfo', 'runhooks', 'status', 'update',
         'updatesingle', 'url',
@@ -543,7 +543,7 @@ from :3
 
   def testDir(self):
     members = [
-        'FullUrlForRelativeUrl', 'RunCommand',
+        'FullUrlForRelativeUrl', 'GetRevisionDate', 'RunCommand',
         'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
         'revinfo', 'runhooks', 'status', 'update', 'url',
     ]

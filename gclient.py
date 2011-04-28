@@ -339,6 +339,40 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
   def run(self, revision_overrides, command, args, work_queue, options):
     """Runs 'command' before parsing the DEPS in case it's a initial checkout
     or a revert."""
+
+    def maybeGetParentRevision(options):
+      """If we are performing an update and --transitive is set, set the
+      revision to the parent's revision. If we have an explicit revision
+      do nothing."""
+      if command == 'update' and options.transitive and not options.revision:
+        _, revision = gclient_utils.SplitUrlRevision(self.parsed_url)
+        if not revision:
+          options.revision = revision_overrides.get(self.parent.name)
+          if options.verbose and options.revision:
+            print("Using parent's revision date: %s" % options.revision)
+          # If the parent has a revision override, then it must have been
+          # converted to date format.
+          assert (not options.revision or
+                  gclient_utils.IsDateRevision(options.revision))
+
+    def maybeConvertToDateRevision(options):
+      """If we are performing an update and --transitive is set, convert the
+      revision to a date-revision (if necessary). Instead of having
+      -r 101 replace the revision with the time stamp of 101 (e.g.
+      "{2011-18-04}").
+      This way dependencies are upgraded to the revision they had at the
+      check-in of revision 101."""
+      if (command == 'update' and
+          options.transitive and
+          options.revision and
+          not gclient_utils.IsDateRevision(options.revision)):
+        revision_date = scm.GetRevisionDate(options.revision)
+        revision = gclient_utils.MakeDateRevision(revision_date)
+        if options.verbose:
+          print("Updating revision override from %s to %s." %
+                (options.revision, revision))
+        revision_overrides[self.name] = revision
+
     assert self._file_list == []
     if not self.should_process:
       return
@@ -362,8 +396,10 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
         # Create a shallow copy to mutate revision.
         options = copy.copy(options)
         options.revision = revision_overrides.get(self.name)
+        maybeGetParentRevision(options)
         scm = gclient_scm.CreateSCM(self.parsed_url, self.root_dir(), self.name)
         scm.RunCommand(command, options, args, self._file_list)
+        maybeConvertToDateRevision(options)
         self._file_list = [os.path.join(self.name, f.strip())
                            for f in self._file_list]
     self.processed = True
@@ -1043,6 +1079,11 @@ def CMDsync(parser, args):
                          'has multiple solutions configured and will work even '
                          'if the src@ part is skipped. Note that specifying '
                          '--revision means your safesync_url gets ignored.')
+  parser.add_option('-t', '--transitive', action='store_true',
+                    help='When a revision is specified (in the DEPS file or '
+                          'with the command-line flag), transitively update '
+                          'the dependencies to the date of the given revision. '
+                          'Only supported for SVN repositories.')
   parser.add_option('-H', '--head', action='store_true',
                     help='skips any safesync_urls specified in '
                          'configured solutions and sync to head instead')

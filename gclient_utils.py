@@ -112,6 +112,17 @@ def SplitUrlRevision(url):
   return tuple(components)
 
 
+def IsDateRevision(revision):
+  """Returns true if the given revision is of the form "{ ... }"."""
+  return bool(revision and re.match(r'^\{.+\}$', str(revision)))
+
+
+def MakeDateRevision(date):
+  """Returns a revision representing the latest revision before the given
+  date."""
+  return "{" + date + "}"
+
+
 def SyntaxErrorToError(filename, e):
   """Raises a gclient_utils.Error exception with the human readable message"""
   try:

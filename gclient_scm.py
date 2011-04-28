@@ -126,6 +126,13 @@ class SCMWrapper(object):
 class GitWrapper(SCMWrapper):
   """Wrapper for Git"""
 
+  def GetRevisionDate(self, revision):
+    """Returns the given revision's date in ISO-8601 format (which contains the
+    time zone)."""
+    # TODO(floitsch): get the time-stamp of the given revision and not just the
+    # time-stamp of the currently checked out revision.
+    return self._Capture(['log', '-n', '1', '--format=%ai'])
+
   @staticmethod
   def cleanup(options, args, file_list):
     """'Cleanup' the repo.
@@ -185,6 +192,14 @@ class GitWrapper(SCMWrapper):
       revision = str(options.revision)
     if not revision:
       revision = default_rev
+
+    if gclient_utils.IsDateRevision(revision):
+      # Date-revisions only work on git-repositories if the reflog hasn't
+      # expired yet. Use rev-list to get the corresponding revision.
+      #  git rev-list -n 1 --before='time-stamp' branchname
+      if options.transitive:
+        print('Warning: --transitive only works for SVN repositories.')
+        revision = default_rev
 
     rev_str = ' at %s' % revision
     files = []
@@ -667,6 +682,13 @@ class GitWrapper(SCMWrapper):
 
 class SVNWrapper(SCMWrapper):
   """ Wrapper for SVN """
+
+  def GetRevisionDate(self, revision):
+    """Returns the given revision's date in ISO-8601 format (which contains the
+    time zone)."""
+    date = scm.SVN.Capture(['propget', '--revprop', 'svn:date', '-r', revision,
+                            os.path.join(self.checkout_path, '.')])
+    return date.strip()
 
   def cleanup(self, options, args, file_list):
     """Cleanup working copy."""
