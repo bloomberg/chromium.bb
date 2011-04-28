@@ -14,11 +14,11 @@ class FormGroupMatchesByCompareFunctor {
   }
 
   bool operator()(const T* form_group) {
-    return form_group->Compare(form_group_) == 0;
+    return form_group->CompareMulti(form_group_) == 0;
   }
 
   bool operator()(const T& form_group) {
-    return form_group.Compare(form_group_) == 0;
+    return form_group.CompareMulti(form_group_) == 0;
   }
 
  private:

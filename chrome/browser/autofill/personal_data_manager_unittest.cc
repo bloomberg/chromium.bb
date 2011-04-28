@@ -87,6 +87,74 @@ class PersonalDataManagerTest : public testing::Test {
   PersonalDataLoadedObserverMock personal_data_observer_;
 };
 
+TEST_F(PersonalDataManagerTest, AddProfile) {
+  // This will verify that the web database has been loaded and the notification
+  // sent out.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  // The message loop will exit when the mock observer is notified.
+  MessageLoop::current()->Run();
+
+  AutofillProfile profile0;
+  autofill_test::SetProfileInfo(&profile0,
+      "John", "Mitchell", "Smith",
+      "j@s.com", "Acme Inc.", "1 Main", "Apt A", "San Francisco", "CA",
+      "94102", "USA", "4158889999", "4152223333");
+
+  // Add profile0 to the database.
+  personal_data_->AddProfile(profile0);
+
+  // Reload the database.
+  ResetPersonalDataManager();
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
+
+  // Verify the addition.
+  const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
+  ASSERT_EQ(1U, results1.size());
+  EXPECT_EQ(0, profile0.CompareMulti(*results1.at(0)));
+
+  // Add profile with identical values.  Duplicates should not get saved.
+  AutofillProfile profile0a = profile0;
+  profile0a.set_guid(guid::GenerateGUID());
+  personal_data_->AddProfile(profile0a);
+
+  // Reload the database.
+  ResetPersonalDataManager();
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
+
+  // Verify the non-addition.
+  const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
+  ASSERT_EQ(1U, results2.size());
+  EXPECT_EQ(0, profile0.CompareMulti(*results2.at(0)));
+
+  // New profile with different email.
+  AutofillProfile profile1 = profile0;
+  profile1.set_guid(guid::GenerateGUID());
+  profile1.SetInfo(EMAIL_ADDRESS, ASCIIToUTF16("john@smith.com"));
+
+  // Add the different profile.  This should save as a separate profile.
+  // Note that if this same profile was "merged" it would collapse to one
+  // profile with a multi-valued entry for email.
+  personal_data_->AddProfile(profile1);
+
+  // Reload the database.
+  ResetPersonalDataManager();
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
+
+  // Verify the addition.
+  const std::vector<AutofillProfile*>& results3 = personal_data_->profiles();
+  ASSERT_EQ(2U, results3.size());
+  EXPECT_EQ(0, profile0.CompareMulti(*results3.at(0)));
+  EXPECT_EQ(0, profile1.CompareMulti(*results3.at(1)));
+}
+
 // TODO(jhawkins): Test SetProfiles w/out a WebDataService in the profile.
 TEST_F(PersonalDataManagerTest, SetProfiles) {
   AutofillProfile profile0;

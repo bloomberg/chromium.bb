@@ -58,6 +58,10 @@ class CreditCard : public FormGroup {
   // credit cards themselves.
   int Compare(const CreditCard& credit_card) const;
 
+  // This is same as |Compare| for credit cards as they are single-valued.
+  // This is here to unify templated code that deals with |FormGroup|s.
+  int CompareMulti(const CreditCard& credit_card) const;
+
   // Used by tests.
   bool operator==(const CreditCard& credit_card) const;
   bool operator!=(const CreditCard& credit_card) const;

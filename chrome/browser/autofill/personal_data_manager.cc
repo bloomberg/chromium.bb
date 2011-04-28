@@ -450,19 +450,15 @@ void PersonalDataManager::SetCreditCards(
   FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
 
-// TODO(jhawkins): Refactor SetProfiles so this isn't so hacky.
+// TODO(dhollowa): Refactor to eliminate batch update of |SetProfiles|.
+// http://crbug.com/73068
 void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
-  // Don't save a web profile if the data in the profile is a subset of an
-  // auxiliary profile.
-  for (std::vector<AutofillProfile*>::const_iterator iter =
-           auxiliary_profiles_.begin();
-       iter != auxiliary_profiles_.end(); ++iter) {
-    if (profile.IsSubsetOf(**iter))
-      return;
-  }
+  std::vector<AutofillProfile> profiles(web_profiles_.size());
+  std::transform(web_profiles_.begin(), web_profiles_.end(),
+                 profiles.begin(),
+                 DereferenceFunctor<AutofillProfile>());
 
-  std::vector<AutofillProfile> profiles;
-  MergeProfile(profile, web_profiles_.get(), &profiles);
+  profiles.push_back(profile);
   SetProfiles(&profiles);
 }
 
@@ -488,8 +484,9 @@ void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
   FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
 
+// TODO(dhollowa): Refactor to eliminate batch update of |SetProfiles|.
+// http://crbug.com/73068
 void PersonalDataManager::RemoveProfile(const std::string& guid) {
-  // TODO(jhawkins): Refactor SetProfiles so this isn't so hacky.
   std::vector<AutofillProfile> profiles(web_profiles_.size());
   std::transform(web_profiles_.begin(), web_profiles_.end(),
                  profiles.begin(),
@@ -514,7 +511,8 @@ AutofillProfile* PersonalDataManager::GetProfileByGUID(
   return NULL;
 }
 
-// TODO(jhawkins): Refactor SetCreditCards so this isn't so hacky.
+// TODO(dhollowa): Refactor to eliminate batch update of |SetCreditCards|.
+// http://crbug.com/73068
 void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
   std::vector<CreditCard> credit_cards(credit_cards_.size());
   std::transform(credit_cards_.begin(), credit_cards_.end(),
@@ -544,8 +542,9 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
   FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
 
+// TODO(dhollowa): Refactor to eliminate batch update of |SetCreditCards|.
+// http://crbug.com/73068
 void PersonalDataManager::RemoveCreditCard(const std::string& guid) {
-  // TODO(jhawkins): Refactor SetCreditCards so this isn't so hacky.
   std::vector<CreditCard> credit_cards(credit_cards_.size());
   std::transform(credit_cards_.begin(), credit_cards_.end(),
                  credit_cards.begin(),
@@ -839,7 +838,18 @@ void PersonalDataManager::SaveImportedProfile(
   if (profile_->IsOffTheRecord())
     return;
 
-  AddProfile(imported_profile);
+  // Don't save a web profile if the data in the profile is a subset of an
+  // auxiliary profile.
+  for (std::vector<AutofillProfile*>::const_iterator iter =
+           auxiliary_profiles_.begin();
+       iter != auxiliary_profiles_.end(); ++iter) {
+    if (imported_profile.IsSubsetOf(**iter))
+      return;
+  }
+
+  std::vector<AutofillProfile> profiles;
+  MergeProfile(imported_profile, web_profiles_.get(), &profiles);
+  SetProfiles(&profiles);
 }
 
 

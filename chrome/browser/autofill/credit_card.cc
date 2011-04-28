@@ -372,6 +372,10 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
   return 0;
 }
 
+int CreditCard::CompareMulti(const CreditCard& credit_card) const {
+  return Compare(credit_card);
+}
+
 bool CreditCard::operator==(const CreditCard& credit_card) const {
   if (guid_ != credit_card.guid_)
     return false;
