@@ -1385,8 +1385,20 @@ void SyncableDirectoryTest::ValidateEntry(BaseTransaction* trans,
 
 namespace {
 
-TEST(SyncableDirectoryManager, TestFileRelease) {
-  DirectoryManager dm(FilePath(FILE_PATH_LITERAL(".")));
+class SyncableDirectoryManager : public testing::Test {
+ public:
+  virtual void SetUp() {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  }
+
+  virtual void TearDown() {
+  }
+ protected:
+  ScopedTempDir temp_dir_;
+};
+
+TEST_F(SyncableDirectoryManager, TestFileRelease) {
+  DirectoryManager dm(FilePath(temp_dir_.path()));
   ASSERT_TRUE(dm.Open("ScopeTest"));
   {
     ScopedDirLookup(&dm, "ScopeTest");
@@ -1410,8 +1422,8 @@ class ThreadOpenTestDelegate : public base::PlatformThread::Delegate {
   DISALLOW_COPY_AND_ASSIGN(ThreadOpenTestDelegate);
 };
 
-TEST(SyncableDirectoryManager, ThreadOpenTest) {
-  DirectoryManager dm(FilePath(FILE_PATH_LITERAL(".")));
+TEST_F(SyncableDirectoryManager, ThreadOpenTest) {
+  DirectoryManager dm(FilePath(temp_dir_.path()));
   base::PlatformThreadHandle thread_handle;
   ThreadOpenTestDelegate test_delegate(&dm);
   ASSERT_TRUE(base::PlatformThread::Create(0, &test_delegate, &thread_handle));
@@ -1489,10 +1501,10 @@ class ThreadBugDelegate : public base::PlatformThread::Delegate {
   DISALLOW_COPY_AND_ASSIGN(ThreadBugDelegate);
 };
 
-TEST(SyncableDirectoryManager, ThreadBug1) {
+TEST_F(SyncableDirectoryManager, ThreadBug1) {
   Step step;
   step.number = 0;
-  DirectoryManager dirman(FilePath(FILE_PATH_LITERAL(".")));
+  DirectoryManager dirman(FilePath(temp_dir_.path()));
   ThreadBugDelegate thread_delegate_1(0, &step, &dirman);
   ThreadBugDelegate thread_delegate_2(1, &step, &dirman);
 
@@ -1586,10 +1598,10 @@ class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
   DISALLOW_COPY_AND_ASSIGN(DirectoryKernelStalenessBugDelegate);
 };
 
-TEST(SyncableDirectoryManager, DirectoryKernelStalenessBug) {
+TEST_F(SyncableDirectoryManager, DirectoryKernelStalenessBug) {
   Step step;
 
-  DirectoryManager dirman(FilePath(FILE_PATH_LITERAL(".")));
+  DirectoryManager dirman(FilePath(temp_dir_.path()));
   DirectoryKernelStalenessBugDelegate thread_delegate_1(0, &step, &dirman);
   DirectoryKernelStalenessBugDelegate thread_delegate_2(1, &step, &dirman);
 
@@ -1653,7 +1665,9 @@ class StressTransactionsDelegate : public base::PlatformThread::Delegate {
 };
 
 TEST(SyncableDirectory, StressTransactions) {
-  DirectoryManager dirman(FilePath(FILE_PATH_LITERAL(".")));
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  DirectoryManager dirman(FilePath(temp_dir.path()));
   std::string dirname = "stress";
   file_util::Delete(dirman.GetSyncDataDatabasePath(), true);
   dirman.Open(dirname);
