@@ -4,10 +4,9 @@ include_rules = [
   "+app",
   "+crypto",
 
-  # TEMPORARY ONLY WHILE WE REDUCE THE DEPENDENCIES.
-  # When the src\content refactoring is complete, this will be unnecessary (and
-  # in fact, a layering violation).
-  "+chrome",
+  # Until we move most of our testing infrastructure in a way that content can
+  # make use of it.
+  "+chrome/test",
 
   # The following directories have been refactored, so no new dependencies
   # should be added from these directories.

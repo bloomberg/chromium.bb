@@ -1,6 +1,207 @@
 include_rules = [
-  # The following directories have been refactored, so no new dependencies
-  # should be added from these directories.
-  "-chrome/browser/extensions",
   "+content/gpu",  # For gpu_info_collector.h.  Needs to move to common\gpu.
+
+  # Listing of the remaining #chrome includes in content\browser.  People are
+  # actively working on reducing this to 0.  Do not add anymore!
+
+  "+chrome/browser/net/chrome_url_request_context.h",  # going away in http://codereview.chromium.org/6880263/
+
+  # jam will move asap, this was forgotten
+  "+chrome/browser/renderer_host/render_view_host_delegate.h",
+
+  # http://crbug.com/77093
+  "+chrome/app/breakpad_mac.h",
+  "+chrome/browser/crash_handler_host_linux.h",
+
+  "+chrome/browser/accessibility/browser_accessibility_state.h",
+
+  "+chrome/browser/automation/automation_resource_message_filter.h",
+  "+chrome/browser/automation/automation_resource_routing_delegate.h",
+
+  "+chrome/browser/clipboard_dispatcher.h",
+
+  "+chrome/browser/browser_about_handler.h",
+
+  "+chrome/browser/browser_process.h",
+
+  "+chrome/browser/browser_shutdown.h",
+
+  "+chrome/browser/browser_url_handler.h",
+
+  "+chrome/browser/character_encoding.h",
+
+  # http://crbug.com/76793
+  "+chrome/browser/content_settings/content_settings_details.h",
+  "+chrome/browser/content_settings/host_content_settings_map.h",
+  "+chrome/browser/tab_contents/tab_specific_content_settings.h",
+  "+chrome/common/content_settings.h",
+  "+chrome/common/content_settings_types.h",
+
+  "+chrome/browser/chromeos/cros/cros_library.h",
+  "+chrome/browser/chromeos/cros/network_library.h",
+  "+chrome/browser/chromeos/plugin_selection_policy.h",
+
+  "+chrome/browser/debugger/devtools_manager.h",
+  "+chrome/browser/debugger/devtools_netlog_observer.h",
+
+  "+chrome/browser/defaults.h",
+
+  "+chrome/browser/dom_operation_notification_details.h",
+
+  "+chrome/browser/download/download_file_manager.h",
+  "+chrome/browser/download/download_item_model.h",
+  "+chrome/browser/download/download_manager.h",
+  "+chrome/browser/download/download_request_limiter.h",
+  "+chrome/browser/download/save_file_manager.h",
+  "+chrome/browser/download/download_types.h",
+  "+chrome/browser/download/download_util.h",
+  "+chrome/browser/renderer_host/download_resource_handler.h",
+  "+chrome/browser/renderer_host/save_file_resource_handler.h",
+
+  # http://crbug.com/76789
+  "+chrome/browser/extensions/extension_info_map.h",
+  "+chrome/common/extensions/extension.h",
+  "+chrome/common/extensions/user_script.h",
+
+  "+chrome/browser/external_protocol_handler.h",
+
+  "+chrome/browser/favicon/favicon_tab_helper.h",
+  "+chrome/browser/favicon/favicon_service.h",
+
+  "+chrome/browser/google/google_util.h",
+
+  # http://crbug.com/76794
+  "+chrome/browser/history/history.h",
+  "+chrome/browser/history/history_types.h",
+
+  "+chrome/browser/io_thread.h",
+
+  "+chrome/browser/load_from_memory_cache_details.h",
+  "+chrome/browser/load_notification_details.h",
+
+  "+chrome/browser/mach_broker_mac.h",
+
+  "+chrome/browser/metrics/metric_event_duration_details.h",
+
+  "+chrome/browser/net/load_timing_observer.h",
+  "+chrome/browser/net/predictor_api.h",
+  "+chrome/browser/net/resolve_proxy_msg_helper.h",
+  "+chrome/browser/net/url_request_tracking.h",
+
+  "+chrome/browser/notifications/desktop_notification_service.h",
+  "+chrome/browser/notifications/desktop_notification_service_factory.h",
+  "+chrome/browser/notifications/notifications_prefs_cache.h",
+
+  "+chrome/browser/omnibox_search_hint.h",
+
+  "+chrome/browser/pdf_unsupported_feature.h",
+
+  "+chrome/browser/platform_util.h",
+
+  "+chrome/browser/plugin_download_helper.h",
+  "+chrome/browser/plugin_observer.h",
+  "+chrome/common/default_plugin.h",
+
+  "+chrome/browser/prefs/pref_change_registrar.h",
+  "+chrome/browser/prefs/pref_service.h",
+  "+chrome/browser/prefs/scoped_user_pref_update.h",
+  "+chrome/common/pref_names.h",
+
+  # http://crbug.com/77090
+  "+chrome/browser/prerender/prerender_manager.h",
+
+  # http://crbug.com/76788
+  "+chrome/browser/profiles/profile.h",
+
+  "+chrome/browser/renderer_host/download_throttling_resource_handler.h",
+
+  "+chrome/browser/renderer_host/offline_resource_handler.h",
+
+  "+chrome/browser/renderer_host/web_cache_manager.h",
+
+  "+chrome/browser/renderer_preferences_util.h",
+
+  # http://crbug.com/77089
+  "+chrome/browser/safe_browsing/client_side_detection_host.h",
+  "+chrome/browser/safe_browsing/client_side_detection_service.h",
+  "+chrome/browser/safe_browsing/safe_browsing_service.h",
+  "+chrome/browser/renderer_host/safe_browsing_resource_handler.h",
+  "+chrome/common/safe_browsing/safebrowsing_messages.h",
+
+  "+chrome/browser/spellcheck_host.h",
+  "+chrome/common/spellcheck_messages.h",
+
+  "+chrome/browser/sessions/session_id.h",
+  "+chrome/browser/sessions/session_types.h",
+
+  "+chrome/browser/ssl/ssl_add_cert_handler.h",
+  "+chrome/browser/ssl/ssl_client_auth_handler.h",
+  "+chrome/browser/ssl/ssl_manager.h",
+  "+chrome/browser/tab_contents/tab_contents_ssl_helper.h",
+
+  # http://crbug.com/76792
+  "+chrome/browser/tab_contents/infobar_delegate.h",
+
+  "+chrome/browser/tab_contents/render_view_host_delegate_helper.h",
+
+  "+chrome/browser/utility_process_host.h",
+
+  "+chrome/browser/ui/browser_list.h",
+
+  "+chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h",
+  "+chrome/browser/ui/app_modal_dialogs/message_box_handler.h",
+  "+chrome/browser/ui/browser_dialogs.h",
+  "+chrome/browser/ui/crypto_module_password_dialog.h",
+  "+chrome/browser/ui/find_bar/find_bar_controller.h",
+  "+chrome/browser/ui/login/login_prompt.h",
+
+  "+chrome/browser/ui/gtk/gtk_util.h",
+
+  "+chrome/common/child_process_logging.h",
+  "+chrome/common/chrome_constants.h",
+  "+chrome/common/chrome_switches.h",
+  "+chrome/common/chrome_paths.h",
+  "+chrome/common/chrome_paths_internal.h",
+  "+chrome/common/logging_chrome.h",
+  "+chrome/common/render_messages.h",
+  "+chrome/common/url_constants.h",
+
+  "+chrome/common/content_restriction.h",
+
+  "+chrome/common/icon_messages.h",
+
+  # http://crbug.com/77091
+  "+chrome/common/instant_types.h",
+
+  "+chrome/common/net/url_fetcher.h",
+
+  "+chrome/common/render_view_commands.h",
+
+  "+chrome/common/sandbox_policy.h",
+
+  "+chrome/common/security_style.h",
+
+  # http://crbug.com/77088
+  "+chrome/common/translate_errors.h",
+
+  "+chrome/common/view_types.h",
+
+  "+chrome/common/window_container_type.h",
+
+  "+chrome/common/net/x509_certificate_model.h",
+
+  "+chrome/installer/util/google_update_settings.h",
+
+  # ONLY USED BY TESTS
+  "+chrome/browser/chromeos/cros/mock_network_library.h",
+  "+chrome/browser/net/url_request_failed_dns_job.h",
+  "+chrome/browser/net/url_request_mock_http_job.h",
+  "+chrome/browser/profiles/profile_manager.h",
+  "+chrome/browser/sessions/session_service.h",
+  "+chrome/browser/sessions/session_service_factory.h",
+  "+chrome/browser/sessions/session_service_test_helper.h",
+  "+chrome/browser/ui/browser.h",
+  "+chrome/browser/ui/cocoa/find_pasteboard.h",
+  "+chrome/browser/ui/tab_contents/tab_contents_wrapper.h",
+  "+chrome/common/net/test_url_fetcher_factory.h",
 ]
