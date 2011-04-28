@@ -45,8 +45,8 @@ Index: jpeglib.h
 Index: jpeglibmangler.h
 ===================================================================
 --- jpeglibmangler.h	(revision 0)
-+++ jpeglibmangler.h	(revision 73971)
-@@ -0,0 +1,115 @@
++++ jpeglibmangler.h	(revision 78340)
+@@ -0,0 +1,113 @@
 +// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -158,8 +158,6 @@ Index: jpeglibmangler.h
 +#define jpeg_open_backing_store chromium_jpeg_open_backing_store
 +#define jpeg_mem_init chromium_jpeg_mem_init
 +#define jpeg_mem_term chromium_jpeg_mem_term
-+#define jpeg_std_message_table chromium_jpeg_std_message_table
-+#define jpeg_natural_order chromium_jpeg_natural_order
 +
 +#endif  // THIRD_PARTY_LIBJPEG_TURBO_JPEGLIBMANGLER_H_
 Index: jdhuff.c
@@ -301,7 +299,20 @@ Index: simd/jcclrss2-64.asm
 ===================================================================
 --- simd/jcclrss2-64.asm	(revision 64575)
 +++ simd/jcclrss2-64.asm	(working copy)
-@@ -39,7 +39,7 @@
+@@ -17,8 +17,12 @@
+ %include "jcolsamp.inc"
+ 
+ ; --------------------------------------------------------------------------
++%ifndef NEED_SECTION
++%define NEED_SECTION
+ 	SECTION	SEG_TEXT
+ 	BITS	64
++%endif
++
+ ;
+ ; Convert some rows of samples to the output colorspace.
+ ;
+@@ -39,7 +43,7 @@
  
  	align	16
  
@@ -579,7 +590,20 @@ Index: simd/jdmrgmmx.asm
 ===================================================================
 --- simd/jdmrgmmx.asm	(revision 64575)
 +++ simd/jdmrgmmx.asm	(working copy)
-@@ -42,7 +42,7 @@
+@@ -19,8 +19,12 @@
+ %include "jcolsamp.inc"
+ 
+ ; --------------------------------------------------------------------------
++%ifndef NEED_SECTION
++%define NEED_SECTION
+ 	SECTION	SEG_TEXT
+ 	BITS	32
++%endif
++
+ ;
+ ; Upsample and color convert for the case of 2:1 horizontal and 1:1 vertical.
+ ;
+@@ -42,7 +46,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
  
  	align	16
@@ -588,7 +612,7 @@ Index: simd/jdmrgmmx.asm
  
  EXTN(jsimd_h2v1_merged_upsample_mmx):
  	push	ebp
-@@ -411,7 +411,7 @@
+@@ -411,7 +415,7 @@
  %define output_buf(b)		(b)+20		; JSAMPARRAY output_buf
  
  	align	16
@@ -716,7 +740,20 @@ Index: simd/jdmrgss2.asm
 ===================================================================
 --- simd/jdmrgss2.asm	(revision 64575)
 +++ simd/jdmrgss2.asm	(working copy)
-@@ -42,7 +42,7 @@
+@@ -19,8 +19,12 @@
+ %include "jcolsamp.inc"
+ 				
+ ; --------------------------------------------------------------------------
++%ifndef NEED_SECTION
++%define NEED_SECTION
+ 	SECTION	SEG_TEXT
+ 	BITS	32
++%endif
++
+ ;
+ ; Upsample and color convert for the case of 2:1 horizontal and 1:1 vertical.
+ ;
+@@ -42,7 +46,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
  
  	align	16
@@ -725,7 +762,7 @@ Index: simd/jdmrgss2.asm
  
  EXTN(jsimd_h2v1_merged_upsample_sse2):
  	push	ebp
-@@ -309,6 +309,41 @@
+@@ -309,6 +313,41 @@
  	movdqa	xmmA,xmmD
  	sub	ecx, byte SIZEOF_XMMWORD
  .column_st15:
@@ -761,13 +798,13 @@ Index: simd/jdmrgss2.asm
 +	; Store the lower 1 byte of eax to the output when it has enough
 +	; space.
 +	test	ecx, ecx
-+	jz	short .nextrow
++	jz	short .endcolumn
 +	mov	BYTE [edi], al
 +%else
  	mov	eax,ecx
  	xor	ecx, byte 0x0F
  	shl	ecx, 2
-@@ -348,6 +383,7 @@
+@@ -348,6 +387,7 @@
  	por	xmmE,xmmC
  .adj0:	; ----------------
  	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [edi], xmmA
@@ -775,7 +812,7 @@ Index: simd/jdmrgss2.asm
  
  %else ; RGB_PIXELSIZE == 4 ; -----------
  
-@@ -436,6 +472,22 @@
+@@ -436,6 +476,22 @@
  	movdqa	xmmA,xmmD
  	sub	ecx, byte SIZEOF_XMMWORD/4
  .column_st15:
@@ -792,13 +829,13 @@ Index: simd/jdmrgss2.asm
 +	; Store one pixel (4 bytes) of xmmA to the output when it has enough
 +	; space.
 +	test	ecx, ecx
-+	jz	short .nextrow
++	jz	short .endcolumn
 +	movd	DWORD [edi], xmmA
 +%else
  	cmp	ecx, byte SIZEOF_XMMWORD/16
  	jb	short .endcolumn
  	mov	eax,ecx
-@@ -475,6 +527,7 @@
+@@ -475,6 +531,7 @@
  	por	xmmE,xmmG
  .adj0:	; ----------------
  	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [edi], xmmA
@@ -806,7 +843,7 @@ Index: simd/jdmrgss2.asm
  
  %endif ; RGB_PIXELSIZE ; ---------------
  
-@@ -509,7 +562,7 @@
+@@ -509,7 +566,7 @@
  %define output_buf(b)		(b)+20		; JSAMPARRAY output_buf
  
  	align	16
@@ -1056,7 +1093,20 @@ Index: simd/jdclrss2-64.asm
 ===================================================================
 --- simd/jdclrss2-64.asm	(revision 64575)
 +++ simd/jdclrss2-64.asm	(working copy)
-@@ -41,7 +41,7 @@
+@@ -20,8 +20,12 @@
+ %include "jcolsamp.inc"
+ 				
+ ; --------------------------------------------------------------------------
++%ifndef NEED_SECTION
++%define NEED_SECTION
+ 	SECTION	SEG_TEXT
+ 	BITS	64
++%endif
++
+ ;
+ ; Convert some rows of samples to the output colorspace.
+ ;
+@@ -41,7 +45,7 @@
  %define WK_NUM		2
  
  	align	16
@@ -1065,7 +1115,7 @@ Index: simd/jdclrss2-64.asm
  
  EXTN(jsimd_ycc_rgb_convert_sse2):
  	push	rbp
-@@ -292,6 +292,41 @@
+@@ -292,6 +296,41 @@
  	movdqa	xmmA,xmmD
  	sub	rcx, byte SIZEOF_XMMWORD
  .column_st15:
@@ -1107,7 +1157,7 @@ Index: simd/jdclrss2-64.asm
  	mov	rax,rcx
  	xor	rcx, byte 0x0F
  	shl	rcx, 2
-@@ -331,6 +366,7 @@
+@@ -331,6 +370,7 @@
  	por	xmmE,xmmC
  .adj0:	; ----------------
  	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [rdi], xmmA
@@ -1115,7 +1165,7 @@ Index: simd/jdclrss2-64.asm
  
  %else ; RGB_PIXELSIZE == 4 ; -----------
  
-@@ -415,6 +451,22 @@
+@@ -415,6 +455,22 @@
  	movdqa	xmmA,xmmD
  	sub	rcx, byte SIZEOF_XMMWORD/4
  .column_st15:
@@ -1138,7 +1188,7 @@ Index: simd/jdclrss2-64.asm
  	cmp	rcx, byte SIZEOF_XMMWORD/16
  	jb	near .nextrow
  	mov	rax,rcx
-@@ -454,6 +506,7 @@
+@@ -454,6 +510,7 @@
  	por	xmmE,xmmG
  .adj0:	; ----------------
  	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [rdi], xmmA
@@ -1150,7 +1200,20 @@ Index: simd/jcclrmmx.asm
 ===================================================================
 --- simd/jcclrmmx.asm	(revision 64575)
 +++ simd/jcclrmmx.asm	(working copy)
-@@ -42,7 +42,7 @@
+@@ -19,8 +19,12 @@
+ %include "jcolsamp.inc"
+ 
+ ; --------------------------------------------------------------------------
++%ifndef NEED_SECTION
++%define NEED_SECTION
+ 	SECTION	SEG_TEXT
+ 	BITS	32
++%endif
++
+ ;
+ ; Convert some rows of samples to the output colorspace.
+ ;
+@@ -42,7 +46,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
  
  	align	16
@@ -1194,7 +1257,20 @@ Index: simd/jdclrmmx.asm
 ===================================================================
 --- simd/jdclrmmx.asm	(revision 64575)
 +++ simd/jdclrmmx.asm	(working copy)
-@@ -42,7 +42,7 @@
+@@ -19,8 +19,12 @@
+ %include "jcolsamp.inc"
+ 
+ ; --------------------------------------------------------------------------
++%ifndef NEED_SECTION
++%define NEED_SECTION
+ 	SECTION	SEG_TEXT
+ 	BITS	32
++%endif
++
+ ;
+ ; Convert some rows of samples to the output colorspace.
+ ;
+@@ -42,7 +46,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
  
  	align	16
@@ -1229,6 +1305,27 @@ Index: simd/jsimdext.inc
 ===================================================================
 --- simd/jsimdext.inc	(revision 64575)
 +++ simd/jsimdext.inc	(working copy)
+@@ -38,16 +38,16 @@
+ 
+ ; -- segment definition --
+ ;
+-%define SEG_TEXT    .text  align=16 public use32 class=CODE
+-%define SEG_CONST   .rdata align=16 public use32 class=CONST
++%define SEG_TEXT    .text  align=16 ; public use32 class=CODE
++%define SEG_CONST   .rdata align=16 ; public use32 class=CONST
+ 
+ %elifdef WIN64	; ----(nasm -fwin64 -DWIN64 ...)--------
+ ; * Microsoft Visual C++
+ 
+ ; -- segment definition --
+ ;
+-%define SEG_TEXT    .text  align=16 public use64 class=CODE
+-%define SEG_CONST   .rdata align=16 public use64 class=CONST
++%define SEG_TEXT    .text  align=16 ; public use64 class=CODE
++%define SEG_CONST   .rdata align=16 ; public use64 class=CONST
+ %ifdef MSVC
+ %define EXTN(name)  name			; foo() -> foo
+ %endif
 @@ -369,4 +369,14 @@
  ;
  %include "jsimdcfg.inc"
@@ -1248,7 +1345,20 @@ Index: simd/jdmrgss2-64.asm
 ===================================================================
 --- simd/jdmrgss2-64.asm	(revision 64575)
 +++ simd/jdmrgss2-64.asm	(working copy)
-@@ -41,7 +41,7 @@
+@@ -20,8 +20,12 @@
+ %include "jcolsamp.inc"
+ 				
+ ; --------------------------------------------------------------------------
++%ifndef NEED_SECTION
++%define NEED_SECTION
+ 	SECTION	SEG_TEXT
+ 	BITS	64
++%endif
++
+ ;
+ ; Upsample and color convert for the case of 2:1 horizontal and 1:1 vertical.
+ ;
+@@ -41,7 +45,7 @@
  %define WK_NUM		3
  
  	align	16
@@ -1257,7 +1367,7 @@ Index: simd/jdmrgss2-64.asm
  
  EXTN(jsimd_h2v1_merged_upsample_sse2):
  	push	rbp
-@@ -296,6 +296,41 @@
+@@ -296,6 +300,41 @@
  	movdqa	xmmA,xmmD
  	sub	rcx, byte SIZEOF_XMMWORD
  .column_st15:
@@ -1293,13 +1403,13 @@ Index: simd/jdmrgss2-64.asm
 +	; Store the lower 1 byte of rax to the output when it has enough
 +	; space.
 +	test	rcx, rcx
-+	jz	short .nextrow
++	jz	short .endcolumn
 +	mov	BYTE [rdi], al
 +%else
  	mov	rax,rcx
  	xor	rcx, byte 0x0F
  	shl	rcx, 2
-@@ -335,6 +370,7 @@
+@@ -335,6 +374,7 @@
  	por	xmmE,xmmC
  .adj0:	; ----------------
  	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [edi], xmmA
@@ -1307,7 +1417,7 @@ Index: simd/jdmrgss2-64.asm
  
  %else ; RGB_PIXELSIZE == 4 ; -----------
  
-@@ -422,6 +458,22 @@
+@@ -422,6 +462,22 @@
  	movdqa	xmmA,xmmD
  	sub	rcx, byte SIZEOF_XMMWORD/4
  .column_st15:
@@ -1324,13 +1434,13 @@ Index: simd/jdmrgss2-64.asm
 +	; Store one pixel (4 bytes) of xmmA to the output when it has enough
 +	; space.
 +	test	rcx, rcx
-+	jz	short .nextrow
++	jz	short .endcolumn
 +	movd	DWORD [rdi], xmmA
 +%else
  	cmp	rcx, byte SIZEOF_XMMWORD/16
  	jb	near .endcolumn
  	mov	rax,rcx
-@@ -461,6 +513,7 @@
+@@ -461,6 +517,7 @@
  	por	xmmE,xmmG
  .adj0:	; ----------------
  	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [edi], xmmA
@@ -1338,7 +1448,7 @@ Index: simd/jdmrgss2-64.asm
  
  %endif ; RGB_PIXELSIZE ; ---------------
  
-@@ -492,7 +545,7 @@
+@@ -492,7 +549,7 @@
  ; r13 = JSAMPARRAY output_buf
  
  	align	16
@@ -1434,7 +1544,20 @@ Index: simd/jcclrss2.asm
 ===================================================================
 --- simd/jcclrss2.asm	(revision 64575)
 +++ simd/jcclrss2.asm	(working copy)
-@@ -40,7 +40,7 @@
+@@ -16,8 +16,12 @@
+ %include "jcolsamp.inc"
+ 
+ ; --------------------------------------------------------------------------
++%ifndef NEED_SECTION
++%define NEED_SECTION
+ 	SECTION	SEG_TEXT
+ 	BITS	32
++%endif
++
+ ;
+ ; Convert some rows of samples to the output colorspace.
+ ;
+@@ -40,7 +44,7 @@
  
  	align	16
  
@@ -1478,7 +1601,20 @@ Index: simd/jdclrss2.asm
 ===================================================================
 --- simd/jdclrss2.asm	(revision 64575)
 +++ simd/jdclrss2.asm	(working copy)
-@@ -42,7 +42,7 @@
+@@ -19,8 +19,12 @@
+ %include "jcolsamp.inc"
+ 				
+ ; --------------------------------------------------------------------------
++%ifndef NEED_SECTION
++%define NEED_SECTION
+ 	SECTION	SEG_TEXT
+ 	BITS	32
++%endif
++
+ ;
+ ; Convert some rows of samples to the output colorspace.
+ ;
+@@ -42,7 +46,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
  
  	align	16
@@ -1487,7 +1623,7 @@ Index: simd/jdclrss2.asm
  
  EXTN(jsimd_ycc_rgb_convert_sse2):
  	push	ebp
-@@ -304,6 +304,41 @@
+@@ -304,6 +308,41 @@
  	movdqa	xmmA,xmmD
  	sub	ecx, byte SIZEOF_XMMWORD
  .column_st15:
@@ -1529,7 +1665,7 @@ Index: simd/jdclrss2.asm
  	mov	eax,ecx
  	xor	ecx, byte 0x0F
  	shl	ecx, 2
-@@ -343,6 +378,7 @@
+@@ -343,6 +382,7 @@
  	por	xmmE,xmmC
  .adj0:	; ----------------
  	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [edi], xmmA
@@ -1537,7 +1673,7 @@ Index: simd/jdclrss2.asm
  
  %else ; RGB_PIXELSIZE == 4 ; -----------
  
-@@ -428,6 +464,22 @@
+@@ -428,6 +468,22 @@
  	movdqa	xmmA,xmmD
  	sub	ecx, byte SIZEOF_XMMWORD/4
  .column_st15:
@@ -1560,7 +1696,7 @@ Index: simd/jdclrss2.asm
  	cmp	ecx, byte SIZEOF_XMMWORD/16
  	jb	short .nextrow
  	mov	eax,ecx
-@@ -467,6 +519,7 @@
+@@ -467,6 +523,7 @@
  	por	xmmE,xmmG
  .adj0:	; ----------------
  	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [edi], xmmA

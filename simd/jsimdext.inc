@@ -38,16 +38,16 @@
 
 ; -- segment definition --
 ;
-%define SEG_TEXT    .text  align=16 public use32 class=CODE
-%define SEG_CONST   .rdata align=16 public use32 class=CONST
+%define SEG_TEXT    .text  align=16 ; public use32 class=CODE
+%define SEG_CONST   .rdata align=16 ; public use32 class=CONST
 
 %elifdef WIN64	; ----(nasm -fwin64 -DWIN64 ...)--------
 ; * Microsoft Visual C++
 
 ; -- segment definition --
 ;
-%define SEG_TEXT    .text  align=16 public use64 class=CODE
-%define SEG_CONST   .rdata align=16 public use64 class=CONST
+%define SEG_TEXT    .text  align=16 ; public use64 class=CODE
+%define SEG_CONST   .rdata align=16 ; public use64 class=CONST
 %ifdef MSVC
 %define EXTN(name)  name			; foo() -> foo
 %endif
