@@ -28,9 +28,12 @@ import sys
 
 def _SetupPaths():
   """Setting path to find pyauto_functional.py."""
-  media_dir = os.path.dirname(__file__)
+  media_dir = os.path.abspath(os.path.dirname(__file__))
   sys.path.append(media_dir)
-  sys.path.append(os.path.join(media_dir, os.pardir))
+  sys.path.append(os.path.normpath(os.path.join(media_dir, os.pardir)))
+  sys.path.append(os.path.normpath(os.path.join(
+      media_dir, os.pardir, os.pardir, os.pardir, os.pardir,
+      'third_party', 'psutil')))
 
 _SetupPaths()
 

@@ -8,6 +8,7 @@ deps = {
   'src/third_party/pyftpdlib': '/trunk/src/third_party/pyftpdlib',
   'src/third_party/simplejson': '/trunk/src/third_party/simplejson',
   'src/third_party/tlslite': '/trunk/src/third_party/tlslite',
+  'src/third_party/psutil': '/trunk/src/third_party/psutil',
 }
 
 deps_os = {
