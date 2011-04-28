@@ -274,6 +274,8 @@ def main(argv):
   # Walk the source tree to process all .cc files.
   chrome_root = os.path.join(path_utils.ScriptDir(), '..')
   WalkDirectory(chrome_root, actions)
+  content_root = os.path.join(path_utils.ScriptDir(), '..', '..', 'content')
+  WalkDirectory(content_root, actions)
   webkit_root = os.path.join(path_utils.ScriptDir(), '..', '..', 'webkit')
   WalkDirectory(os.path.join(webkit_root, 'glue'), actions)
   WalkDirectory(os.path.join(webkit_root, 'port'), actions)

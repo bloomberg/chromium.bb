@@ -192,6 +192,7 @@
 0x33056b44f816c204	CookieBlockingDisabledPerDefault
 0xcc192d44d8f426c7	CookieBlockingEnabledPerDefault
 0x5fb63579fc981698	Copy
+0x89d1b3eda3d01e3a	CopyToFindPboard
 0xb3d0f42456c6eaf6	CopyURLToClipBoard
 0x2aeb39c03cc86464	CreateLink
 0x1225d110ef7fba17	CreateProfile
@@ -964,6 +965,7 @@
 0x7e7073691a152241	OutdatedPluginInfobar.Update
 0x016839db155e0468	Outdent
 0x69fae31849862d21	OverrideEncoding
+0xdcb4676e49e95259	PDF.FitToHeightButton
 0xac15a659a088ccc5	PDF.FitToPageButton
 0x5f58a2db6428c1a0	PDF.FitToWidthButton
 0xc3c876c4e5846f66	PDF.LoadFailure
@@ -1030,6 +1032,8 @@
 0x60578de80374e115	SBInterstitialPhishingDontProceed
 0x340331e81b86f933	SBInterstitialPhishingProceed
 0xf8af4ff865669301	SBInterstitialPhishingShow
+0xe1df5f4bee6d0e2f	SSL.DisplayedInsecureContent
+0xba6bde79f10497a9	SSL.RanInsecureContent
 0xc9cc8cce247e49ba	Save
 0xfc7723f7c10f79d5	SavePage
 0xc849f604a9954989	ScreenLocker_OnLoginFailure
@@ -1062,6 +1066,7 @@
 0xe8705f2d7890043e	ShowControlPanel
 0x3d0170d09a816e7f	ShowDownloads
 0xf530f742ba5b2683	ShowExtensions
+0xa0118397d83c34d0	ShowFileBrowserFullTab
 0xb04b2eea6e26ebef	ShowHistory
 0x404c3c24f3091fd7	ShowJSConsole
 0x658963e1a47a5018	ShowOptions
