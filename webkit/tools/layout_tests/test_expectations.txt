@@ -13,3 +13,8 @@ BUGDPRANKE WIN CPU DEBUG : http/tests/local/stylesheet-and-script-load-order-med
 BUGDPRANKE WIN CPU DEBUG : svg/text/select-textLength-spacingAndGlyphs-squeeze-3.svg = PASS CRASH
 BUGDPRANKE MAC CPU DEBUG : fast/block/float/overhanging-tall-block.html = PASS CRASH
 BUGDPRANKE MAC CPU DEBUG : fast/css/import_with_baseurl.html = PASS CRASH
+
+// Flakiness since 4/28 on deps
+BUGDPRANKE SNOWLEOPARD : svg/custom/foreign-object-skew.svg = IMAGE
+BUGDPRANKE SNOWLEOPARD : svg/hixie/rendering-model/003.xhtml = IMAGE+TEXT PASS
+BUGDPRANKE SNOWLEOPARD : svg/custom/font-face-name-without-name-attr.svg = CRASH
