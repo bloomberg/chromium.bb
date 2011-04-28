@@ -13,6 +13,7 @@ void ParamTraits<gpu::CommandBuffer::State> ::Write(Message* m,
   WriteParam(m, p.put_offset);
   WriteParam(m, p.token);
   WriteParam(m, static_cast<int32>(p.error));
+  WriteParam(m, p.generation);
 }
 
 bool ParamTraits<gpu::CommandBuffer::State> ::Read(const Message* m,
@@ -23,7 +24,8 @@ bool ParamTraits<gpu::CommandBuffer::State> ::Read(const Message* m,
       ReadParam(m, iter, &p->get_offset) &&
       ReadParam(m, iter, &p->put_offset) &&
       ReadParam(m, iter, &p->token) &&
-      ReadParam(m, iter, &temp)) {
+      ReadParam(m, iter, &temp) &&
+      ReadParam(m, iter, &p->generation)) {
     p->error = static_cast<gpu::error::Error>(temp);
     return true;
   } else {

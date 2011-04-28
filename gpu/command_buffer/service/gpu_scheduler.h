@@ -61,7 +61,7 @@ class GpuScheduler : public CommandBufferEngine {
   void Destroy();
   void DestroyCommon();
 
-  virtual void ProcessCommands();
+  void PutChanged(bool sync);
 
   // Sets whether commands should be processed by this scheduler. Setting to
   // false unschedules. Setting to true reschedules. Whether or not the
@@ -108,14 +108,14 @@ class GpuScheduler : public CommandBufferEngine {
 
   // Sets a callback that is called when a glResizeCHROMIUM command
   // is processed.
-  virtual void SetResizeCallback(Callback1<gfx::Size>::Type* callback);
+  void SetResizeCallback(Callback1<gfx::Size>::Type* callback);
 
   // Sets a callback which is called when a SwapBuffers command is processed.
   // Must be called after Initialize().
   // It is not defined on which thread this callback is called.
-  virtual void SetSwapBuffersCallback(Callback0::Type* callback);
+  void SetSwapBuffersCallback(Callback0::Type* callback);
 
-  virtual void SetCommandProcessedCallback(Callback0::Type* callback);
+  void SetCommandProcessedCallback(Callback0::Type* callback);
 
   // Sets a callback which is called after a Set/WaitLatch command is processed.
   // The bool parameter will be true for SetLatch, and false for a WaitLatch
@@ -145,7 +145,8 @@ class GpuScheduler : public CommandBufferEngine {
 
   // Called via a callback just before we are supposed to call the
   // user's swap buffers callback.
-  virtual void WillSwapBuffers();
+  void WillSwapBuffers();
+  void ProcessCommands();
 
   // The GpuScheduler holds a weak reference to the CommandBuffer. The
   // CommandBuffer owns the GpuScheduler and holds a strong reference to it

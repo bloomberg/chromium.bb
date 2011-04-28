@@ -49,7 +49,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual gpu::Buffer GetRingBuffer();
   virtual State GetState();
   virtual void Flush(int32 put_offset);
-  virtual State FlushSync(int32 put_offset);
+  virtual State FlushSync(int32 put_offset, int32 last_known_get);
   virtual void SetGetOffset(int32 get_offset);
   virtual int32 CreateTransferBuffer(size_t size, int32 id_request);
   virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
@@ -82,14 +82,6 @@ class CommandBufferProxy : public gpu::CommandBuffer,
     return last_state_;
   }
 
-  // Get the state asynchronously. The task is posted when the state is
-  // updated. Takes ownership of the task object.
-  void AsyncGetState(Task* completion_task);
-
-  // Flush the command buffer asynchronously. The task is posted when the flush
-  // completes. Takes ownership of the task object.
-  void AsyncFlush(int32 put_offset, Task* completion_task);
-
  private:
 
   // Send an IPC message over the GPU channel. This is private to fully
@@ -114,10 +106,6 @@ class CommandBufferProxy : public gpu::CommandBuffer,
 
   IPC::Channel::Sender* channel_;
   int route_id_;
-
-  // Pending asynchronous flush callbacks.
-  typedef std::queue<linked_ptr<Task> > AsyncFlushTaskQueue;
-  AsyncFlushTaskQueue pending_async_flush_tasks_;
 
   scoped_ptr<Task> notify_repaint_task_;
 

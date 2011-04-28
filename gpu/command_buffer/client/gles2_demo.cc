@@ -68,7 +68,7 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
   }
 
   command_buffer->SetPutOffsetChangeCallback(
-      NewCallback(gpu_scheduler, &GpuScheduler::ProcessCommands));
+      NewCallback(gpu_scheduler, &GpuScheduler::PutChanged));
 
   GLES2CmdHelper* helper = new GLES2CmdHelper(command_buffer.get());
   if (!helper->Initialize(size)) {

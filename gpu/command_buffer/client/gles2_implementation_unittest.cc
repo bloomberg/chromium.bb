@@ -50,7 +50,7 @@ class GLES2MockCommandBufferHelper : public CommandBuffer {
     state_.put_offset = put_offset;
   }
 
-  virtual State FlushSync(int32 put_offset) {
+  virtual State FlushSync(int32 put_offset, int32 last_known_get) {
     state_.put_offset = put_offset;
     state_.get_offset = put_offset;
     OnFlush(transfer_buffer_buffer_.ptr);

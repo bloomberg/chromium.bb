@@ -30,7 +30,7 @@ class CommandBufferService : public CommandBuffer {
   virtual Buffer GetRingBuffer();
   virtual State GetState();
   virtual void Flush(int32 put_offset);
-  virtual State FlushSync(int32 put_offset);
+  virtual State FlushSync(int32 put_offset, int32 last_known_get);
   virtual void SetGetOffset(int32 get_offset);
   virtual int32 CreateTransferBuffer(size_t size, int32 id_request);
   virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
@@ -41,27 +41,26 @@ class CommandBufferService : public CommandBuffer {
   virtual void SetToken(int32 token);
   virtual void SetParseError(error::Error error);
 
-  // Sets a callback that should be posted on another thread whenever the put
-  // offset is changed. The callback must not return until some progress has
-  // been made (unless the command buffer is empty), i.e. the
-  // get offset must have changed. It need not process the entire command
-  // buffer though. This allows concurrency between the writer and the reader
-  // while giving the writer a means of waiting for the reader to make some
-  // progress before attempting to write more to the command buffer. Avoiding
-  // the use of a synchronization primitive like a condition variable to
-  // synchronize reader and writer reduces the risk of deadlock.
-  // Takes ownership of callback. The callback is invoked on the plugin thread.
-  virtual void SetPutOffsetChangeCallback(Callback0::Type* callback);
+  // Sets a callback that is called whenever the put offset is changed. When
+  // called with sync==true, the callback must not return until some progress
+  // has been made (unless the command buffer is empty), i.e. the get offset
+  // must have changed. It need not process the entire command buffer though.
+  // This allows concurrency between the writer and the reader while giving the
+  // writer a means of waiting for the reader to make some progress before
+  // attempting to write more to the command buffer. Takes ownership of
+  // callback.
+  virtual void SetPutOffsetChangeCallback(Callback1<bool>::Type* callback);
 
  private:
   Buffer ring_buffer_;
   int32 num_entries_;
   int32 get_offset_;
   int32 put_offset_;
-  scoped_ptr<Callback0::Type> put_offset_change_callback_;
+  scoped_ptr<Callback1<bool>::Type> put_offset_change_callback_;
   std::vector<Buffer> registered_objects_;
   std::set<int32> unused_registered_object_elements_;
   int32 token_;
+  uint32 generation_;
   error::Error error_;
 };
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,6 +100,7 @@ class PPB_Context3D_Proxy : public InterfaceProxy {
                      gpu::CommandBuffer::State* state);
   void OnMsgFlush(const HostResource& context,
                   int32 put_offset,
+                  int32 last_known_get,
                   gpu::CommandBuffer::State* state);
   void OnMsgAsyncFlush(const HostResource& context,
                        int32 put_offset);

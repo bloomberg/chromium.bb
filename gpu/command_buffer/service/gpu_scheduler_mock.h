@@ -16,7 +16,6 @@ class MockGpuScheduler : public GpuScheduler {
       : GpuScheduler(command_buffer) {
   }
 
-  MOCK_METHOD0(ProcessCommands, void());
   MOCK_METHOD1(GetSharedMemoryBuffer, Buffer(int32 shm_id));
   MOCK_METHOD1(set_token, void(int32 token));
 

@@ -155,6 +155,7 @@ gpu::CommandBuffer::State GPUStateFromPPState(
   state.put_offset = s.put_offset;
   state.token = s.token;
   state.error = static_cast<gpu::error::Error>(s.error);
+  state.generation = s.generation;
   return state;
 }
 
@@ -181,7 +182,7 @@ class PepperCommandBuffer : public gpu::CommandBuffer {
   virtual gpu::Buffer GetRingBuffer();
   virtual State GetState();
   virtual void Flush(int32 put_offset);
-  virtual State FlushSync(int32 put_offset);
+  virtual State FlushSync(int32 put_offset, int32 last_known_get);
   virtual void SetGetOffset(int32 get_offset);
   virtual int32 CreateTransferBuffer(size_t size, int32 id_request);
   virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
@@ -194,6 +195,7 @@ class PepperCommandBuffer : public gpu::CommandBuffer {
 
  private:
   bool Send(IPC::Message* msg);
+  void UpdateState(const gpu::CommandBuffer::State& state);
 
   int32 num_entries_;
   scoped_ptr<base::SharedMemory> ring_buffer_;
@@ -268,8 +270,10 @@ gpu::Buffer PepperCommandBuffer::GetRingBuffer() {
 gpu::CommandBuffer::State PepperCommandBuffer::GetState() {
   // Send will flag state with lost context if IPC fails.
   if (last_state_.error == gpu::error::kNoError) {
-    Send(new PpapiHostMsg_PPBContext3D_GetState(
-        INTERFACE_ID_PPB_CONTEXT_3D, resource_, &last_state_));
+    gpu::CommandBuffer::State state;
+    if (Send(new PpapiHostMsg_PPBContext3D_GetState(
+             INTERFACE_ID_PPB_CONTEXT_3D, resource_, &state)))
+      UpdateState(state);
   }
 
   return last_state_;
@@ -289,11 +293,19 @@ void PepperCommandBuffer::Flush(int32 put_offset) {
   Send(message);
 }
 
-gpu::CommandBuffer::State PepperCommandBuffer::FlushSync(int32 put_offset) {
-  // Send will flag state with lost context if IPC fails.
-  if (last_state_.error == gpu::error::kNoError) {
-    Send(new PpapiHostMsg_PPBContext3D_Flush(
-        INTERFACE_ID_PPB_CONTEXT_3D, resource_, put_offset, &last_state_));
+gpu::CommandBuffer::State PepperCommandBuffer::FlushSync(
+    int32 put_offset, int32 last_known_get) {
+  if (last_known_get == last_state_.get_offset) {
+    // Send will flag state with lost context if IPC fails.
+    if (last_state_.error == gpu::error::kNoError) {
+      gpu::CommandBuffer::State state;
+      if (Send(new PpapiHostMsg_PPBContext3D_Flush(
+              INTERFACE_ID_PPB_CONTEXT_3D, resource_, put_offset,
+              last_known_get, &state)))
+        UpdateState(state);
+    }
+  } else {
+    Flush(put_offset);
   }
 
   return last_state_;
@@ -398,6 +410,13 @@ bool PepperCommandBuffer::Send(IPC::Message* msg) {
 
   last_state_.error = gpu::error::kLostContext;
   return false;
+}
+
+void PepperCommandBuffer::UpdateState(const gpu::CommandBuffer::State& state) {
+  // Handle wraparound. It works as long as we don't have more than 2B state
+  // updates in flight across which reordering occurs.
+  if (state.generation - last_state_.generation < 0x80000000U)
+    last_state_ = state;
 }
 
 Context3D::Context3D(const HostResource& resource)
@@ -571,9 +590,10 @@ void PPB_Context3D_Proxy::OnMsgGetState(const HostResource& context,
 
 void PPB_Context3D_Proxy::OnMsgFlush(const HostResource& context,
                                      int32 put_offset,
+                                     int32 last_known_get,
                                      gpu::CommandBuffer::State* state) {
-  PP_Context3DTrustedState pp_state =
-      ppb_context_3d_trusted()->FlushSync(context.host_resource(), put_offset);
+  PP_Context3DTrustedState pp_state = ppb_context_3d_trusted()->FlushSyncFast(
+      context.host_resource(), put_offset, last_known_get);
   *state = GPUStateFromPPState(pp_state);
 }
 

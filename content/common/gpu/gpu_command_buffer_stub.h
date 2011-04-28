@@ -13,6 +13,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/process.h"
+#include "base/task.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ipc/ipc_channel.h"
@@ -81,8 +82,9 @@ class GpuCommandBufferStub
                     int32 size,
                     bool* result);
   void OnGetState(gpu::CommandBuffer::State* state);
-  void OnAsyncGetState();
-  void OnFlush(int32 put_offset, gpu::CommandBuffer::State* state);
+  void OnFlush(int32 put_offset,
+               int32 last_known_get,
+               gpu::CommandBuffer::State* state);
   void OnAsyncFlush(int32 put_offset);
   void OnCreateTransferBuffer(int32 size, int32 id_request, int32* id);
   void OnRegisterTransferBuffer(base::SharedMemoryHandle transfer_buffer,
@@ -104,6 +106,7 @@ class GpuCommandBufferStub
 #endif  // defined(OS_MACOSX)
 
   void ResizeCallback(gfx::Size size);
+  void ReportState();
 
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they
@@ -127,6 +130,7 @@ class GpuCommandBufferStub
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
   GpuWatchdog* watchdog_;
+  ScopedRunnableMethodFactory<GpuCommandBufferStub> task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };

@@ -353,30 +353,6 @@
       ],
     },
     {
-      'target_name': 'pgl',
-      'type': 'static_library',
-      'dependencies': [
-        'command_buffer_client',
-        'gles2_c_lib',
-        '../third_party/npapi/npapi.gyp:npapi',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'all_dependent_settings': {
-        'include_dirs': [
-          '../third_party/npapi/bindings',
-        ],
-      },
-      'sources': [
-        'pgl/command_buffer_pepper.cc',
-        'pgl/command_buffer_pepper.h',
-        'pgl/pgl_proc_address.cc',
-        'pgl/pgl.cc',
-        'pgl/pgl.h',
-      ],
-    },
-    {
       'target_name': 'gpu_ipc',
       'type': 'static_library',
       'dependencies': [

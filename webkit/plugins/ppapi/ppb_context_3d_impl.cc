@@ -46,7 +46,8 @@ PP_Context3DTrustedState PPStateFromGPUState(gpu::CommandBuffer::State s) {
       s.get_offset,
       s.put_offset,
       s.token,
-      static_cast<PPB_Context3DTrustedError>(s.error)
+      static_cast<PPB_Context3DTrustedError>(s.error),
+      s.generation
   };
   return state;
 }
@@ -191,7 +192,9 @@ PP_Context3DTrustedState FlushSync(PP_Resource context_id, int32_t put_offset) {
     return error_state;
   }
 
-  return PPStateFromGPUState(context->command_buffer()->FlushSync(put_offset));
+  gpu::CommandBuffer::State state = context->command_buffer()->GetState();
+  return PPStateFromGPUState(
+      context->command_buffer()->FlushSync(put_offset, state.get_offset));
 }
 
 int32_t CreateTransferBuffer(PP_Resource context_id, uint32_t size) {
@@ -225,6 +228,18 @@ PP_Bool GetTransferBuffer(PP_Resource context_id,
       ? PP_TRUE : PP_FALSE;
 }
 
+PP_Context3DTrustedState FlushSyncFast(
+    PP_Resource context_id, int32_t put_offset, int32 last_known_get) {
+  scoped_refptr<PPB_Context3D_Impl> context(
+      Resource::GetAs<PPB_Context3D_Impl>(context_id));
+  if (!context.get() || !context->command_buffer()) {
+    PP_Context3DTrustedState error_state = { 0 };
+    return error_state;
+  }
+
+  return PPStateFromGPUState(
+      context->command_buffer()->FlushSync(put_offset, last_known_get));
+}
 }  // namespace
 
 PPB_Context3D_Impl::PPB_Context3D_Impl(PluginInstance* instance)
@@ -254,7 +269,8 @@ const PPB_Context3DTrusted_Dev* PPB_Context3D_Impl::GetTrustedInterface() {
     &FlushSync,
     &CreateTransferBuffer,
     &DestroyTransferBuffer,
-    &GetTransferBuffer
+    &GetTransferBuffer,
+    &FlushSyncFast,
   };
   return &iface;
 }

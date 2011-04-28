@@ -117,6 +117,16 @@ const unsigned int kMaxOutstandingSwapBuffersCallsPerOnscreenContext = 1;
 }
 #endif
 
+void GpuScheduler::PutChanged(bool sync) {
+  CommandBuffer::State state = command_buffer_->GetState();
+  parser_->set_put(state.put_offset);
+
+  if (sync)
+    ProcessCommands();
+  else
+    ScheduleProcessCommands();
+}
+
 void GpuScheduler::ProcessCommands() {
   GPU_TRACE_EVENT0("gpu", "GpuScheduler:ProcessCommands");
   CommandBuffer::State state = command_buffer_->GetState();
@@ -133,8 +143,6 @@ void GpuScheduler::ProcessCommands() {
       return;
     }
   }
-
-  parser_->set_put(state.put_offset);
 
 #if defined(OS_MACOSX)
   bool do_rate_limiting = surface_.get() != NULL;

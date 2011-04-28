@@ -54,7 +54,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       route_id_(route_id),
       renderer_id_(renderer_id),
       render_view_id_(render_view_id),
-      watchdog_(watchdog) {
+      watchdog_(watchdog),
+      task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 GpuCommandBufferStub::~GpuCommandBufferStub() {
@@ -72,7 +73,6 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(GpuCommandBufferStub, message)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Initialize, OnInitialize);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_GetState, OnGetState);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncGetState, OnAsyncGetState);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Flush, OnFlush);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncFlush, OnAsyncFlush);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateTransferBuffer,
@@ -135,7 +135,7 @@ void GpuCommandBufferStub::OnInitialize(
         parent_texture_id_)) {
       command_buffer_->SetPutOffsetChangeCallback(
           NewCallback(scheduler_.get(),
-                      &gpu::GpuScheduler::ProcessCommands));
+                      &gpu::GpuScheduler::PutChanged));
       scheduler_->SetSwapBuffersCallback(
           NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
       scheduler_->SetLatchCallback(base::Bind(
@@ -176,17 +176,16 @@ void GpuCommandBufferStub::OnCommandProcessed() {
 
 void GpuCommandBufferStub::OnGetState(gpu::CommandBuffer::State* state) {
   *state = command_buffer_->GetState();
-}
-
-void GpuCommandBufferStub::OnAsyncGetState() {
-  gpu::CommandBuffer::State state = command_buffer_->GetState();
-  Send(new GpuCommandBufferMsg_UpdateState(route_id_, state));
+  if (state->error == gpu::error::kLostContext &&
+      gfx::GLContext::LosesAllContextsOnContextLost())
+    channel_->LoseAllContexts();
 }
 
 void GpuCommandBufferStub::OnFlush(int32 put_offset,
+                                   int32 last_known_get,
                                    gpu::CommandBuffer::State* state) {
   GPU_TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnFlush");
-  *state = command_buffer_->FlushSync(put_offset);
+  *state = command_buffer_->FlushSync(put_offset, last_known_get);
   if (state->error == gpu::error::kLostContext &&
       gfx::GLContext::LosesAllContextsOnContextLost())
     channel_->LoseAllContexts();
@@ -194,12 +193,11 @@ void GpuCommandBufferStub::OnFlush(int32 put_offset,
 
 void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset) {
   GPU_TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnAsyncFlush");
-  gpu::CommandBuffer::State state = command_buffer_->FlushSync(put_offset);
-  if (state.error == gpu::error::kLostContext &&
-      gfx::GLContext::LosesAllContextsOnContextLost())
-    channel_->LoseAllContexts();
-  else
-    Send(new GpuCommandBufferMsg_UpdateState(route_id_, state));
+  command_buffer_->Flush(put_offset);
+  // TODO(piman): Do this everytime the scheduler finishes processing a batch of
+  // commands.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      task_factory_.NewRunnableMethod(&GpuCommandBufferStub::ReportState));
 }
 
 void GpuCommandBufferStub::OnCreateTransferBuffer(int32 size,
@@ -344,6 +342,18 @@ void GpuCommandBufferStub::ViewResized() {
     surface->Initialize();
   }
 #endif
+}
+
+void GpuCommandBufferStub::ReportState() {
+  gpu::CommandBuffer::State state = command_buffer_->GetState();
+  if (state.error == gpu::error::kLostContext &&
+      gfx::GLContext::LosesAllContextsOnContextLost()) {
+    channel_->LoseAllContexts();
+  } else {
+    IPC::Message* msg = new GpuCommandBufferMsg_UpdateState(route_id_, state);
+    msg->set_unblock(true);
+    Send(msg);
+  }
 }
 
 #endif  // defined(ENABLE_GPU)

@@ -27,7 +27,8 @@ class CommandBuffer {
           get_offset(0),
           put_offset(0),
           token(-1),
-          error(error::kNoError) {
+          error(error::kNoError),
+          generation(0) {
     }
 
     // Size of the command buffer in command buffer entries.
@@ -48,6 +49,11 @@ class CommandBuffer {
 
     // Error status.
     error::Error error;
+
+    // Generation index of this state. The generation index is incremented every
+    // time a new state is retrieved from the command processor, so that
+    // consistency can be kept even if IPC messages are processed out-of-order.
+    uint32 generation;
   };
 
   CommandBuffer() {
@@ -75,10 +81,11 @@ class CommandBuffer {
   // The writer calls this to update its put offset. This function returns the
   // reader's most recent get offset. Does not return until after the put offset
   // change callback has been invoked. Returns -1 if the put offset is invalid.
-  // As opposed to Flush(), this function guarantees that the reader has
-  // processed some commands before returning (assuming the command buffer isn't
-  // empty and there is no error).
-  virtual State FlushSync(int32 put_offset) = 0;
+  // If last_known_get is different from the reader's current get pointer, this
+  // function will return immediately, otherwise it guarantees that the reader
+  // has processed some commands before returning (assuming the command buffer
+  // isn't empty and there is no error).
+  virtual State FlushSync(int32 put_offset, int32 last_known_get) = 0;
 
   // Sets the current get offset. This can be called from any thread.
   virtual void SetGetOffset(int32 get_offset) = 0;

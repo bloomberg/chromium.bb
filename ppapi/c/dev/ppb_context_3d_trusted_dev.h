@@ -11,9 +11,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE_0_3 "PPB_Context3DTrusted(Dev);0.3"
+#define PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE_0_4 "PPB_Context3DTrusted(Dev);0.4"
 #define PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE \
-    PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE_0_3
+    PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE_0_4
 
 typedef enum {
   kNoError,
@@ -44,6 +44,11 @@ struct PP_Context3DTrustedState {
 
   // Error status.
   PPB_Context3DTrustedError error;
+
+  // Generation index of this state. The generation index is incremented every
+  // time a new state is retrieved from the command processor, so that
+  // consistency can be kept even if IPC messages are processed out-of-order.
+  uint32_t generation;
 };
 
 struct PPB_Context3DTrusted_Dev {
@@ -89,6 +94,13 @@ struct PPB_Context3DTrusted_Dev {
                                int32_t id,
                                int* shm_handle,
                                uint32_t* shm_size);
+
+  // Like FlushSync, but returns before processing commands if the get offset is
+  // different than last_known_get. Allows synchronization with the command
+  // processor without forcing immediate command execution.
+  struct PP_Context3DTrustedState (*FlushSyncFast)(PP_Resource context,
+                                                   int32_t put_offset,
+                                                   int32_t last_known_get);
 };
 
 #endif  // PPAPI_C_DEV_PPB_CONTEXT_3D_TRUSTED_DEV_H_

@@ -316,9 +316,10 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBContext3D_GetState,
                            pp::proxy::HostResource /* context */,
                            gpu::CommandBuffer::State /* state */)
 
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBContext3D_Flush,
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBContext3D_Flush,
                            pp::proxy::HostResource /* context */,
                            int32 /* put_offset */,
+                           int32 /* last_known_get */,
                            gpu::CommandBuffer::State /* state */)
 
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBContext3D_AsyncFlush,

@@ -342,14 +342,11 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_Initialize,
 IPC_SYNC_MESSAGE_ROUTED0_1(GpuCommandBufferMsg_GetState,
                            gpu::CommandBuffer::State /* state */)
 
-// Get the current state of the command buffer asynchronously. State is
-// returned via UpdateState message.
-IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_AsyncGetState)
-
 // Synchronize the put and get offsets of both processes. Caller passes its
 // current put offset. Current state (including get offset) is returned.
-IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_Flush,
+IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_Flush,
                            int32 /* put_offset */,
+                           int32 /* last_known_get */,
                            gpu::CommandBuffer::State /* state */)
 
 // Asynchronously synchronize the put and get offsets of both processes.

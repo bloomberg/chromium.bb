@@ -69,7 +69,7 @@ bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
   }
 
   command_buffer->SetPutOffsetChangeCallback(
-      NewCallback(gpu_scheduler, &GpuScheduler::ProcessCommands));
+      NewCallback(gpu_scheduler, &GpuScheduler::PutChanged));
 
   GLES2CmdHelper* helper = new GLES2CmdHelper(command_buffer.get());
   if (!helper->Initialize(kCommandBufferSize)) {

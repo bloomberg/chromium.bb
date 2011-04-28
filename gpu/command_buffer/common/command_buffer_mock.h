@@ -26,7 +26,7 @@ class MockCommandBuffer : public CommandBuffer {
   MOCK_METHOD0(GetRingBuffer, Buffer());
   MOCK_METHOD0(GetState, State());
   MOCK_METHOD1(Flush, void(int32 put_offset));
-  MOCK_METHOD1(FlushSync, State(int32 put_offset));
+  MOCK_METHOD2(FlushSync, State(int32 put_offset, int32 last_known_get));
   MOCK_METHOD1(SetGetOffset, void(int32 get_offset));
   MOCK_METHOD2(CreateTransferBuffer, int32(size_t size, int32 id_request));
   MOCK_METHOD1(DestroyTransferBuffer, void(int32 handle));

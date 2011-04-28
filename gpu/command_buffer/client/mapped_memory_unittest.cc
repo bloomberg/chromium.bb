@@ -52,7 +52,7 @@ class MappedMemoryTestBase : public testing::Test {
     gpu_scheduler_.reset(new GpuScheduler(
         command_buffer_.get(), NULL, parser_, INT_MAX));
     command_buffer_->SetPutOffsetChangeCallback(NewCallback(
-        gpu_scheduler_.get(), &GpuScheduler::ProcessCommands));
+        gpu_scheduler_.get(), &GpuScheduler::PutChanged));
 
     api_mock_->set_engine(gpu_scheduler_.get());
 

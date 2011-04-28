@@ -92,13 +92,13 @@ TEST_F(GpuSchedulerTest, SchedulerDoesNothingIfRingBufferIsEmpty) {
 
   state.put_offset = 0;
   EXPECT_CALL(*command_buffer_, GetState())
-    .WillOnce(Return(state));
+    .WillRepeatedly(Return(state));
   EXPECT_CALL(*command_buffer_, SetGetOffset(0));
 
   EXPECT_CALL(*command_buffer_, SetParseError(_))
     .Times(0);
 
-  scheduler_->ProcessCommands();
+  scheduler_->PutChanged(true);
 }
 
 TEST_F(GpuSchedulerTest, ProcessesOneCommand) {
@@ -111,7 +111,7 @@ TEST_F(GpuSchedulerTest, ProcessesOneCommand) {
 
   state.put_offset = 2;
   EXPECT_CALL(*command_buffer_, GetState())
-    .WillOnce(Return(state));
+    .WillRepeatedly(Return(state));
   EXPECT_CALL(*command_buffer_, SetGetOffset(2));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
@@ -120,7 +120,7 @@ TEST_F(GpuSchedulerTest, ProcessesOneCommand) {
   EXPECT_CALL(*command_buffer_, SetParseError(_))
     .Times(0);
 
-  scheduler_->ProcessCommands();
+  scheduler_->PutChanged(true);
 }
 
 TEST_F(GpuSchedulerTest, ProcessesTwoCommands) {
@@ -135,7 +135,7 @@ TEST_F(GpuSchedulerTest, ProcessesTwoCommands) {
 
   state.put_offset = 3;
   EXPECT_CALL(*command_buffer_, GetState())
-    .WillOnce(Return(state));
+    .WillRepeatedly(Return(state));
   EXPECT_CALL(*command_buffer_, SetGetOffset(3));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
@@ -144,7 +144,7 @@ TEST_F(GpuSchedulerTest, ProcessesTwoCommands) {
   EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[2]))
     .WillOnce(Return(error::kNoError));
 
-  scheduler_->ProcessCommands();
+  scheduler_->PutChanged(true);
 }
 
 TEST_F(GpuSchedulerTest, SchedulerSetsTheGLContext) {
@@ -155,11 +155,11 @@ TEST_F(GpuSchedulerTest, SchedulerSetsTheGLContext) {
   CommandBuffer::State state;
   state.put_offset = 0;
   EXPECT_CALL(*command_buffer_, GetState())
-    .WillOnce(Return(state));
+    .WillRepeatedly(Return(state));
 
   EXPECT_CALL(*command_buffer_, SetGetOffset(0));
 
-  scheduler_->ProcessCommands();
+  scheduler_->PutChanged(true);
 }
 
 TEST_F(GpuSchedulerTest, PostsTaskToFinishRemainingCommands) {
@@ -176,7 +176,7 @@ TEST_F(GpuSchedulerTest, PostsTaskToFinishRemainingCommands) {
 
   state.put_offset = 4;
   EXPECT_CALL(*command_buffer_, GetState())
-    .WillOnce(Return(state));
+    .WillRepeatedly(Return(state));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
     .WillOnce(Return(error::kNoError));
@@ -186,13 +186,13 @@ TEST_F(GpuSchedulerTest, PostsTaskToFinishRemainingCommands) {
 
   EXPECT_CALL(*command_buffer_, SetGetOffset(3));
 
-  scheduler_->ProcessCommands();
+  scheduler_->PutChanged(true);
 
   // ProcessCommands is called a second time when the pending task is run.
 
   state.put_offset = 4;
   EXPECT_CALL(*command_buffer_, GetState())
-    .WillOnce(Return(state));
+    .WillRepeatedly(Return(state));
 
   EXPECT_CALL(*async_api_, DoCommand(9, 0, &buffer_[3]))
     .WillOnce(Return(error::kNoError));
@@ -211,7 +211,7 @@ TEST_F(GpuSchedulerTest, SetsErrorCodeOnCommandBuffer) {
 
   state.put_offset = 1;
   EXPECT_CALL(*command_buffer_, GetState())
-    .WillOnce(Return(state));
+    .WillRepeatedly(Return(state));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
     .WillOnce(Return(
@@ -220,7 +220,7 @@ TEST_F(GpuSchedulerTest, SetsErrorCodeOnCommandBuffer) {
   EXPECT_CALL(*command_buffer_,
       SetParseError(error::kUnknownCommand));
 
-  scheduler_->ProcessCommands();
+  scheduler_->PutChanged(true);
 }
 
 TEST_F(GpuSchedulerTest, ProcessCommandsDoesNothingAfterError) {
@@ -228,9 +228,9 @@ TEST_F(GpuSchedulerTest, ProcessCommandsDoesNothingAfterError) {
   state.error = error::kGenericError;
 
   EXPECT_CALL(*command_buffer_, GetState())
-    .WillOnce(Return(state));
+    .WillRepeatedly(Return(state));
 
-  scheduler_->ProcessCommands();
+  scheduler_->PutChanged(true);
 }
 
 TEST_F(GpuSchedulerTest, CanGetAddressOfSharedMemory) {

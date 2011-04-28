@@ -140,23 +140,37 @@ Buffer CommandBufferProxy::GetRingBuffer() {
 
 gpu::CommandBuffer::State CommandBufferProxy::GetState() {
   // Send will flag state with lost context if IPC fails.
-  if (last_state_.error == gpu::error::kNoError)
-    Send(new GpuCommandBufferMsg_GetState(route_id_, &last_state_));
+  if (last_state_.error == gpu::error::kNoError) {
+    gpu::CommandBuffer::State state;
+    if (Send(new GpuCommandBufferMsg_GetState(route_id_, &state)))
+      OnUpdateState(state);
+  }
 
   return last_state_;
 }
 
 void CommandBufferProxy::Flush(int32 put_offset) {
-  AsyncFlush(put_offset, NULL);
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
+  Send(new GpuCommandBufferMsg_AsyncFlush(route_id_, put_offset));
 }
 
-gpu::CommandBuffer::State CommandBufferProxy::FlushSync(int32 put_offset) {
+gpu::CommandBuffer::State CommandBufferProxy::FlushSync(int32 put_offset,
+                                                        int32 last_known_get) {
   GPU_TRACE_EVENT0("gpu", "CommandBufferProxy::FlushSync");
-  // Send will flag state with lost context if IPC fails.
-  if (last_state_.error == gpu::error::kNoError) {
-    Send(new GpuCommandBufferMsg_Flush(route_id_,
-                                       put_offset,
-                                       &last_state_));
+  if (last_known_get == last_state_.get_offset) {
+    // Send will flag state with lost context if IPC fails.
+    if (last_state_.error == gpu::error::kNoError) {
+      gpu::CommandBuffer::State state;
+      if (Send(new GpuCommandBufferMsg_Flush(route_id_,
+                                             put_offset,
+                                             last_known_get,
+                                             &state)))
+        OnUpdateState(state);
+    }
+  } else {
+    Flush(put_offset);
   }
 
   return last_state_;
@@ -345,37 +359,6 @@ void CommandBufferProxy::SetWindowSize(const gfx::Size& size) {
 }
 #endif
 
-void CommandBufferProxy::AsyncGetState(Task* completion_task) {
-  if (last_state_.error != gpu::error::kNoError)
-    return;
-
-  IPC::Message* message = new GpuCommandBufferMsg_AsyncGetState(route_id_);
-
-  // Do not let a synchronous flush hold up this message. If this handler is
-  // deferred until after the synchronous flush completes, it will overwrite the
-  // cached last_state_ with out-of-date data.
-  message->set_unblock(true);
-
-  if (Send(message))
-    pending_async_flush_tasks_.push(linked_ptr<Task>(completion_task));
-}
-
-void CommandBufferProxy::AsyncFlush(int32 put_offset, Task* completion_task) {
-  if (last_state_.error != gpu::error::kNoError)
-    return;
-
-  IPC::Message* message = new GpuCommandBufferMsg_AsyncFlush(route_id_,
-                                                          put_offset);
-
-  // Do not let a synchronous flush hold up this message. If this handler is
-  // deferred until after the synchronous flush completes, it will overwrite the
-  // cached last_state_ with out-of-date data.
-  message->set_unblock(true);
-
-  if (Send(message))
-    pending_async_flush_tasks_.push(linked_ptr<Task>(completion_task));
-}
-
 bool CommandBufferProxy::Send(IPC::Message* msg) {
   // Caller should not intentionally send a message if the context is lost.
   DCHECK(last_state_.error == gpu::error::kNoError);
@@ -399,16 +382,8 @@ bool CommandBufferProxy::Send(IPC::Message* msg) {
 }
 
 void CommandBufferProxy::OnUpdateState(const gpu::CommandBuffer::State& state) {
-  last_state_ = state;
-
-  linked_ptr<Task> task = pending_async_flush_tasks_.front();
-  pending_async_flush_tasks_.pop();
-
-  if (task.get()) {
-    // Although we need need to update last_state_ while potentially waiting
-    // for a synchronous flush to complete, we do not need to invoke the
-    // callback synchonously. Also, post it as a non nestable task so it is
-    // always invoked by the outermost message loop.
-    MessageLoop::current()->PostNonNestableTask(FROM_HERE, task.release());
-  }
+  // Handle wraparound. It works as long as we don't have more than 2B state
+  // updates in flight across which reordering occurs.
+  if (state.generation - last_state_.generation < 0x80000000U)
+    last_state_ = state;
 }
