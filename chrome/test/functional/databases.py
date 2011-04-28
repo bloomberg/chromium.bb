@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -22,7 +22,7 @@ class DatabasesTest(pyauto.PyUITest):
     super(DatabasesTest, self).__init__(methodName)
     # HTML page used for database testing.
     self.TEST_PAGE_URL = self.GetFileURLForDataPath(
-        os.path.join('database', 'database_tester.html'))
+        'database', 'database_tester.html')
 
   def _ParseAndCheckResultFromTestPage(self, json):
     """Helper function that parses the message sent from |TEST_PAGE_URL| and

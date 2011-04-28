@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,7 +15,7 @@ class HistoryTest(pyauto.PyUITest):
   """TestCase for History."""
 
   def testBasic(self):
-    url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title2.html'))
+    url = self.GetFileURLForDataPath('title2.html')
     title = 'Title Of Awesomeness'
     self.NavigateToURL(url)
 
@@ -40,7 +40,7 @@ class HistoryTest(pyauto.PyUITest):
   def testHistoryPersists(self):
     """Verify that history persists after session restart."""
     assert not self.GetHistoryInfo().History(), 'Expecting clean history.'
-    url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title2.html'))
+    url = self.GetFileURLForDataPath('title2.html')
     title = 'Title Of Awesomeness'
     self.NavigateToURL(url)
     history = self.GetHistoryInfo().History()
@@ -76,14 +76,14 @@ class HistoryTest(pyauto.PyUITest):
   def testIncognitoNoHistory(self):
     """Incognito browsing should not show up in history."""
     assert not self.GetHistoryInfo().History(), 'Expecting clean history.'
-    url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title2.html'))
+    url = self.GetFileURLForDataPath('title2.html')
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.NavigateToURL(url, 1, 0)
     self.assertEqual(0, len(self.GetHistoryInfo().History()))
 
   def testStarredBookmarkInHistory(self):
     """Verify "starred" URLs in history."""
-    url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title2.html'))
+    url = self.GetFileURLForDataPath('title2.html')
     title = 'Title Of Awesomeness'
     self.NavigateToURL(url)
 
@@ -117,7 +117,7 @@ class HistoryTest(pyauto.PyUITest):
   def testNavigateMultiTimes(self):
     """Multiple navigations to the same url should have a single history."""
     assert not self.GetHistoryInfo().History(), 'Expecting clean history.'
-    url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title2.html'))
+    url = self.GetFileURLForDataPath('title2.html')
     for i in range(5):
       self.NavigateToURL(url)
     self.assertEqual(1, len(self.GetHistoryInfo().History()))
@@ -127,7 +127,7 @@ class HistoryTest(pyauto.PyUITest):
     assert not self.GetHistoryInfo().History(), 'Expecting clean history.'
     urls = []
     for name in ['title2.html', 'title1.html', 'title3.html', 'simple.html']:
-       urls.append(self.GetFileURLForPath(os.path.join(self.DataDir(), name)))
+       urls.append(self.GetFileURLForDataPath(name))
     num_urls = len(urls)
     assert num_urls == 4, 'Need 4 urls'
 
@@ -156,9 +156,8 @@ class HistoryTest(pyauto.PyUITest):
   def testRedirectHistory(self):
     """HTTP meta-refresh redirects should have separate history entries."""
     assert not self.GetHistoryInfo().History(), 'Expecting clean history.'
-    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'History')
-    file_url = self.GetFileURLForPath(os.path.join(test_dir, 'redirector.html'))
-    landing_url = self.GetFileURLForPath(os.path.join(test_dir, 'landing.html'))
+    file_url = self.GetFileURLForDataPath('History', 'redirector.html')
+    landing_url = self.GetFileURLForDataPath('History', 'landing.html')
     tab = self.GetBrowserWindow(0).GetTab(0)
     tab.NavigateToURLBlockUntilNavigationsComplete(pyauto.GURL(file_url), 2)
     self.assertEqual(landing_url, self.GetActiveTabURL().spec())

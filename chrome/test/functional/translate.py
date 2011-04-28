@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -30,16 +30,11 @@ class TranslateTest(pyauto.PyUITest):
       raw_input('Hit <enter> to dump translate info.. ')
       pp.pprint(self.GetTranslateInfo())
 
-  def _GetURLForDataDirFile(self, filename):
-    """Return the file URL for the given file in the data directory."""
-    return self.GetFileURLForPath(os.path.join(self.DataDir(), filename))
-
   def _GetDefaultSpanishURL(self):
-    return self._GetURLForDataDirFile(
-        os.path.join('translate', self.spanish, 'google.html'))
+    return self.GetFileURLForDataPath('translate', self.spanish, 'google.html')
 
   def _GetDefaultEnglishURL(self):
-    return self._GetURLForDataDirFile('title1.html')
+    return self.GetFileURLForDataPath('title1.html')
 
   def _NavigateAndWaitForBar(self, url, window_index=0, tab_index=0):
     self.NavigateToURL(url, window_index, tab_index)
@@ -200,8 +195,8 @@ class TranslateTest(pyauto.PyUITest):
   def testNotranslateMetaTag(self):
     """Test "notranslate" meta tag."""
     self._NavigateAndWaitForBar(self._GetDefaultSpanishURL())
-    self.NavigateToURL(self._GetURLForDataDirFile(
-          os.path.join('translate', 'notranslate_meta_tag.html')))
+    self.NavigateToURL(self.GetFileURLForDataPath(
+        'translate', 'notranslate_meta_tag.html'))
     self.assertTrue(self.WaitForInfobarCount(0))
     translate_info = self.GetTranslateInfo()
     self.assertFalse('translate_bar' in translate_info)

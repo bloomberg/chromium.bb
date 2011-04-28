@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -19,13 +19,13 @@ class FindMatchTests(pyauto.PyUITest):
 
   def testCanFindMatchCount(self):
     """Verify Find match count for valid search"""
-    url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title1.html'))
+    url = self.GetFileURLForDataPath('title1.html')
     self.NavigateToURL(url)
     self.assertEqual(1, self.FindInPage('title')['match_count'])
 
   def testCanFindMatchCountFail(self):
     """Verify Find match count for invalid search"""
-    url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title1.html'))
+    url = self.GetFileURLForDataPath('title1.html')
     self.NavigateToURL(url)
     self.assertEqual(0, self.FindInPage('blah')['match_count'])
 
@@ -36,8 +36,7 @@ class FindMatchTests(pyauto.PyUITest):
     case-sensitive by default we are confirming that we get a
     different result when we turn off case matching.
     """
-    url = self.GetFileURLForPath(
-        os.path.join(self.DataDir(), 'find_in_page', 'largepage.html'))
+    url = self.GetFileURLForDataPath('find_in_page', 'largepage.html')
     self.NavigateToURL(url)
     case_sensitive_result = self.FindInPage('The')['match_count']
     case_insenstive_result = (self.FindInPage('The', match_case=False)
@@ -50,8 +49,7 @@ class FindMatchTests(pyauto.PyUITest):
     Here we check the Turkish-i scenario where we verify that we
     find both dotted and dotless I's.
     """
-    url = self.GetFileURLForPath(
-        os.path.join(self.DataDir(), 'find_in_page', 'turkish.html'))
+    url = self.GetFileURLForDataPath('find_in_page', 'turkish.html')
     self.NavigateToURL(url)
     dotless = self.FindInPage(u'\u0131')['match_count']
     dotted = self.FindInPage('i')['match_count']
@@ -64,12 +62,12 @@ class FindMatchTests(pyauto.PyUITest):
   def testSearchInTextAreas(self):
     """Verify search for text within various forms and text areas."""
     urls = []
-    urls.append(self.GetFileURLForPath(
-        os.path.join(self.DataDir(), 'find_in_page', 'textintextarea.html')))
-    urls.append(self.GetFileURLForPath(
-        os.path.join(self.DataDir(), 'find_in_page', 'smalltextarea.html')))
-    urls.append(self.GetFileURLForPath(os.path.join(
-        self.DataDir(), 'find_in_page', 'populatedform.html')))
+    urls.append(self.GetFileURLForDataPath(
+        'find_in_page', 'textintextarea.html'))
+    urls.append(self.GetFileURLForDataPath(
+        'find_in_page', 'smalltextarea.html'))
+    urls.append(self.GetFileURLForDataPath(
+        'find_in_page', 'populatedform.html'))
     for url in urls:
       self.NavigateToURL(url)
       self.assertEqual(1, self.FindInPage('cat')['match_count'])
@@ -111,8 +109,8 @@ class FindMatchTests(pyauto.PyUITest):
     and we verify their positions by verifying their relative positions.
     """
     search_string = u'\u5728\u897f\u660c\u536b\u661f\u53d1'
-    url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), self.find_test_data_dir, 'specialchar.html'))
+    url = self.GetFileURLForDataPath(
+        self.find_test_data_dir, 'specialchar.html')
     self.NavigateToURL(url)
     first_find = self.FindInPage(search_string)
     second_find = self.FindInPage(search_string, find_next=True)
@@ -143,8 +141,8 @@ class FindMatchTests(pyauto.PyUITest):
     and meta data are not searchable.
     """
     search_string = u'\u5728\u897f\u660c\u536b\u661f\u53d1'
-    url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), self.find_test_data_dir, 'specialchar.html'))
+    url = self.GetFileURLForDataPath(
+        self.find_test_data_dir, 'specialchar.html')
     self.NavigateToURL(url)
     self.assertEqual(4, self.FindInPage(search_string)['match_count'])
     search_string = u'240^*&%!#~!*&\u518d\u5c31\u8077\u624b\u5f53'
@@ -157,15 +155,14 @@ class FindMatchTests(pyauto.PyUITest):
 
   def testFindInLargePage(self):
     """Find in a very large page"""
-    url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), self.find_test_data_dir, 'largepage.html'))
+    url = self.GetFileURLForDataPath(self.find_test_data_dir, 'largepage.html')
     self.NavigateToURL(url)
     self.assertEqual(373, self.FindInPage('daughter of Prince')['match_count'])
 
   def testFindLongString(self):
     """Find a very long string in a large page"""
-    url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), self.find_test_data_dir, 'largepage.html'))
+    url = self.GetFileURLForDataPath(
+        self.find_test_data_dir, 'largepage.html')
     self.NavigateToURL(url)
     file = codecs.open(os.path.join(self.DataDir(), self.find_test_data_dir,
                                     'LongFind.txt'), 'r', 'utf-8')
@@ -174,15 +171,15 @@ class FindMatchTests(pyauto.PyUITest):
 
   def testFindBigString(self):
     """Find a big font string in a page"""
-    url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), self.find_test_data_dir, 'BigText.html'))
+    url = self.GetFileURLForDataPath(
+        self.find_test_data_dir, 'BigText.html')
     self.NavigateToURL(url)
     self.assertEqual(1, self.FindInPage('SomeLargeString')['match_count'])
 
   def testVariousFindTests(self):
     """Test find in page for <span> style text, lists, html comments, etc."""
-    url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), self.find_test_data_dir, 'FindRandomTests.html'))
+    url = self.GetFileURLForDataPath(
+        self.find_test_data_dir, 'FindRandomTests.html')
     self.NavigateToURL(url)
     search = 'has light blue eyes and my father has dark'
     self.assertEqual(1, self.FindInPage(search)['match_count'],
@@ -208,8 +205,8 @@ class FindMatchTests(pyauto.PyUITest):
 
   def testSingleOccurrence(self):
     """Search Back and Forward on a single occurrence"""
-    url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), self.find_test_data_dir, 'FindRandomTests.html'))
+    url = self.GetFileURLForDataPath(
+        self.find_test_data_dir, 'FindRandomTests.html')
     self.NavigateToURL(url)
     self.assertEqual(1, self.FindInPage('2010 Pro Bowl')['match_count'])
     # First occurrence find
@@ -247,8 +244,7 @@ class FindMatchTests(pyauto.PyUITest):
     if properties['branding'] != 'Google Chrome':
       return
     # Search in pdf file over file://.
-    file_url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), 'plugin', 'Embed.pdf'))
+    file_url = self.GetFileURLForDataPath('plugin', 'Embed.pdf')
     self._VerifySearchInPDFURL(file_url, 'adobe', 8) 
 
     # Disabling this test crbug.com/70927 

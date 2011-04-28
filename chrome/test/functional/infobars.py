@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -40,8 +40,7 @@ class InfobarTest(pyauto.PyUITest):
 
   def testPluginCrashInfobar(self):
     """Verify the "plugin crashed" infobar."""
-    flash_url = self.GetFileURLForPath(os.path.join(self.DataDir(),
-                                                    'plugin', 'flash.swf'))
+    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
     # Trigger flash plugin
     self.NavigateToURL(flash_url)
     child_processes = self.GetBrowserInfo()['child_processes']
@@ -79,8 +78,8 @@ class InfobarTest(pyauto.PyUITest):
 
   def testGeolocationInfobar(self):
     """Verify geoLocation infobar."""
-    url = self.GetFileURLForPath(os.path.join(  # triggers geolocation
-        self.DataDir(), 'geolocation', 'geolocation_on_load.html'))
+    url = self.GetFileURLForDataPath(  # triggers geolocation
+        'geolocation', 'geolocation_on_load.html')
     match_text='file:/// wants to track your physical location'
     self.NavigateToURL(url)
     self.assertTrue(self.WaitForInfobarCount(1))
@@ -91,8 +90,8 @@ class InfobarTest(pyauto.PyUITest):
 
   def testGeolocationInfobarInMultipleTabsAndWindows(self):
     """Verify GeoLocation inforbar in multiple tabs."""
-    url = self.GetFileURLForPath(os.path.join(  # triggers geolocation
-        self.DataDir(), 'geolocation', 'geolocation_on_load.html'))
+    url = self.GetFileURLForDataPath(  # triggers geolocation
+        'geolocation', 'geolocation_on_load.html')
     match_text='file:/// wants to track your physical location'
     for tab_index in range(1, 2):
       self.AppendTab(pyauto.GURL(url))
@@ -116,8 +115,7 @@ class InfobarTest(pyauto.PyUITest):
     zip_file = 'a_zip_file.zip'
     html_file = 'download-a_zip_file.html'
     assert pyauto.PyUITest.IsEnUS()
-    file_url = self.GetFileURLForPath(
-        os.path.join(self.DataDir(), 'downloads', html_file))
+    file_url = self.GetFileURLForDataPath('downloads', html_file)
     match_text = 'This site is attempting to download multiple files. ' \
                  'Do you want to allow this?'
     self.NavigateToURL('chrome://downloads')  # trigger download manager
@@ -141,8 +139,7 @@ class InfobarTest(pyauto.PyUITest):
     """Verify that plugin crash infobar only shows up on the tabs using the
        plugin"""
     non_flash_url = self.GetFileURLForDataPath('english_page.html')
-    flash_url = self.GetFileURLForPath(
-        os.path.join(self.DataDir(), 'plugin', 'FlashSpin.swf'))
+    flash_url = self.GetFileURLForDataPath('plugin', 'FlashSpin.swf')
     # False = Non flash url, True = Flash url
     # We have set of these values to compare a flash page and a non-flash page
     urls_type = [False, True, False, True, False]

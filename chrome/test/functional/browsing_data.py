@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,13 +14,9 @@ import test_utils
 class BrowsingDataTest(pyauto.PyUITest):
   """Tests that clearing browsing data works correctly."""
 
-  def _GetURLForFile(self, file_name):
-    """Returns the url for the file in the 'data' directory."""
-    return self.GetFileURLForPath(os.path.join(self.DataDir(), file_name))
-
   def testClearHistory(self):
     """Verify that clearing the history works."""
-    self.NavigateToURL(self._GetURLForFile('title2.html'))
+    self.NavigateToURL(self.GetFileURLForDataPath('title2.html'))
     history = self.GetHistoryInfo().History()
     self.assertEqual(1, len(history))
 
@@ -31,7 +27,7 @@ class BrowsingDataTest(pyauto.PyUITest):
   def testClearCookies(self):
     """Verify clearing cookies."""
     # First build up some data with cookies.
-    cookie_url = pyauto.GURL(self._GetURLForFile('title2.html'))
+    cookie_url = pyauto.GURL(self.GetFileURLForDataPath('title2.html'))
     cookie_val = 'foo=bar'
     self.SetCookie(cookie_url, cookie_val)
     self.assertEqual(cookie_val, self.GetCookie(cookie_url))
@@ -82,7 +78,7 @@ class BrowsingDataTest(pyauto.PyUITest):
     """Verify that we can clear history and downloads at the same time."""
     zip_file = 'a_zip_file.zip'
     # First build up some history and download something.
-    self.NavigateToURL(self._GetURLForFile('title2.html'))
+    self.NavigateToURL(self.GetFileURLForDataPath('title2.html'))
     test_utils.DownloadFileFromDownloadsDataDir(self, zip_file)
 
     # Verify that the history and download exist.
@@ -100,7 +96,7 @@ class BrowsingDataTest(pyauto.PyUITest):
     """Verify that clearing one thing does not clear another."""
     zip_file = 'a_zip_file.zip'
     # First build up some history and download something.
-    self.NavigateToURL(self._GetURLForFile('title2.html'))
+    self.NavigateToURL(self.GetFileURLForDataPath('title2.html'))
     test_utils.DownloadFileFromDownloadsDataDir(self, zip_file)
     # Verify that the history and download exist.
     self.assertEqual(1, len(self.GetHistoryInfo().History()))

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,8 +21,7 @@ class CookiesTest(pyauto.PyUITest):
 
   def testSetCookies(self):
     """Test setting cookies and getting the value."""
-    cookie_url = pyauto.GURL(self.GetFileURLForPath(
-        os.path.join(self.DataDir(), 'title1.html')))
+    cookie_url = pyauto.GURL(self.GetFileURLForDataPath('title1.html'))
     cookie_val = 'foo=bar'
     self.SetCookie(cookie_url, cookie_val)
     self.assertEqual(cookie_val, self.GetCookie(cookie_url))
@@ -55,8 +54,7 @@ class CookiesTest(pyauto.PyUITest):
 
   def testCookiesFile(self):
     """Test cookies set from file:// url for incognito and regular windows."""
-    file_url = self.GetFileURLForPath(
-        os.path.join(self.DataDir(), 'setcookie.html'))
+    file_url = self.GetFileURLForDataPath('setcookie.html')
     self.assertFalse(self.GetCookie(pyauto.GURL(file_url)))
     # Incognito window
     self._CookieCheckIncognitoWindow(file_url)
@@ -69,8 +67,7 @@ class CookiesTest(pyauto.PyUITest):
 
   def testBlockCookies(self):
     """Verify that cookies are being blocked."""
-    file_url = self.GetFileURLForPath(
-        os.path.join(self.DataDir(), 'setcookie.html'))
+    file_url = self.GetFileURLForDataPath('setcookie.html')
     self.assertFalse(self.GetCookie(pyauto.GURL(file_url)))
 
     # Set the preference to block all cookies.
@@ -95,8 +92,7 @@ class CookiesTest(pyauto.PyUITest):
 
   def testClearCookiesOnEndingSession(self):
     """Verify that cookies are cleared when the browsing session is closed."""
-    file_url = self.GetFileURLForPath(
-        os.path.join(self.DataDir(), 'setcookie.html'))
+    file_url = self.GetFileURLForDataPath('setcookie.html')
     self.assertFalse(self.GetCookie(pyauto.GURL(file_url)))
 
     # Set the option to clear cookies when the browser session is closed.
@@ -112,8 +108,7 @@ class CookiesTest(pyauto.PyUITest):
   def testAllowCookiesUsingExceptions(self):
     """Verify that cookies can be allowed and set using exceptions for
     particular website(s) when all others are blocked."""
-    file_url = self.GetFileURLForPath(
-        os.path.join(self.DataDir(), 'setcookie.html'))
+    file_url = self.GetFileURLForDataPath('setcookie.html')
     self.assertFalse(self.GetCookie(pyauto.GURL(file_url)))
 
     # Set the preference to block all cookies.
@@ -134,8 +129,7 @@ class CookiesTest(pyauto.PyUITest):
   def testBlockCookiesUsingExceptions(self):
     """Verify that cookies can be blocked for a specific website
     using exceptions."""
-    file_url = self.GetFileURLForPath(
-        os.path.join(self.DataDir(), 'setcookie.html'))
+    file_url = self.GetFileURLForDataPath('setcookie.html')
     self.assertFalse(self.GetCookie(pyauto.GURL(file_url)))
 
     # Create an exception to block cookies from http://www.google.com
@@ -154,8 +148,7 @@ class CookiesTest(pyauto.PyUITest):
   def testAllowCookiesForASessionUsingExceptions(self):
     """Verify that cookies can be allowed and set using exceptions for
     particular website(s) only for a session when all others are blocked."""
-    file_url = self.GetFileURLForPath(
-        os.path.join(self.DataDir(), 'setcookie.html'))
+    file_url = self.GetFileURLForPath('setcookie.html')
     self.assertFalse(self.GetCookie(pyauto.GURL(file_url)))
 
     # Set the preference to block all cookies.

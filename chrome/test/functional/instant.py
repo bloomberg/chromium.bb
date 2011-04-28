@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -124,7 +124,7 @@ class InstantTest(pyauto.PyUITest):
 
   def testInstantOverlayNotStoredInHistory(self):
     """Test that instant overlay page is not stored in history."""
-    url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title2.html'))
+    url = self.GetFileURLForDataPath('title2.html')
     self.SetOmniboxText(url)
     self.assertTrue(self.WaitUntil(self._DoneLoading))
     history = self.GetHistoryInfo().History()
@@ -138,8 +138,8 @@ class InstantTest(pyauto.PyUITest):
 
   def testInstantDisablesPopupsOnPrefetch(self):
     """Test that instant disables popups when prefetching."""
-    file_url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), 'popup_blocker', 'popup-blocked-to-post-blank.html'))
+    file_url = self.GetFileURLForDataPath(
+        'popup_blocker', 'popup-blocked-to-post-blank.html')
     self.SetOmniboxText(file_url)
     self.assertTrue(self.WaitUntil(self._DoneLoading))
     location = self.GetInstantInfo()['location']

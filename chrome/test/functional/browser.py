@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -60,7 +60,7 @@ class BrowserTest(pyauto.PyUITest):
 
   def testBasics(self):
     """Verify basic browser info at startup."""
-    url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title2.html'))
+    url = self.GetFileURLForDataPath('title2.html')
     self.NavigateToURL(url)
     info = self.GetBrowserInfo()
     # Verify valid version string
@@ -77,7 +77,7 @@ class BrowserTest(pyauto.PyUITest):
 
   def testProcessesForMultipleWindowsAndTabs(self):
     """Verify processes for multiple windows and tabs"""
-    url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title2.html'))
+    url = self.GetFileURLForDataPath('title2.html')
     self.NavigateToURL(url)
     for _ in range(2):
       self.AppendTab(pyauto.GURL(url))
@@ -106,8 +106,7 @@ class BrowserTest(pyauto.PyUITest):
 
     We merely check that the flash process kicks in.
     """
-    flash_url = self.GetFileURLForPath(os.path.join(self.DataDir(),
-                                                    'plugin', 'flash.swf'))
+    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
     self.NavigateToURL(flash_url)
     child_processes = self.GetBrowserInfo()['child_processes']
     self.assertTrue([x for x in child_processes
@@ -120,8 +119,7 @@ class BrowserTest(pyauto.PyUITest):
 
   def testSingleFlashPluginProcess(self):
     """Verify there's only one flash plugin process shared across all uses."""
-    flash_url = self.GetFileURLForPath(os.path.join(self.DataDir(),
-                                                    'plugin', 'flash.swf'))
+    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
     self.NavigateToURL(flash_url)
     for _ in range(2):
       self.AppendTab(pyauto.GURL(flash_url))
@@ -136,8 +134,7 @@ class BrowserTest(pyauto.PyUITest):
 
   def testFlashLoadsAfterKill(self):
     """Verify that Flash process reloads after crashing (or being killed)."""
-    flash_url = self.GetFileURLForPath(os.path.join(self.DataDir(),
-                                                    'plugin', 'flash.swf'))
+    flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
     self.NavigateToURL(flash_url)
     flash_process_id1 = self._GetFlashProcessesInfo()[0]['pid']
     self.Kill(flash_process_id1)
@@ -176,8 +173,8 @@ class BrowserTest(pyauto.PyUITest):
 
   def testPopupSharesProcess(self):
     """Verify that parent tab and popup share a process."""
-    file_url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), 'popup_blocker', 'popup-window-open.html'))
+    file_url = self.GetFileURLForDataPath(
+        'popup_blocker', 'popup-window-open.html')
     self.NavigateToURL(file_url)
     blocked_popups = self.GetBlockedPopupsInfo()
     self.assertEqual(1, len(blocked_popups), msg='Popup not blocked')
@@ -193,8 +190,8 @@ class BrowserTest(pyauto.PyUITest):
     In this case we are killing a process shared by a parent and
     its popup process. Reloading both should share a process again.
     """
-    file_url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), 'popup_blocker', 'popup-window-open.html'))
+    file_url = self.GetFileURLForDataPath(
+        'popup_blocker', 'popup-window-open.html')
     self.NavigateToURL(file_url)
     blocked_popups = self.GetBlockedPopupsInfo()
     self.assertEqual(1, len(blocked_popups), msg='Popup not blocked')

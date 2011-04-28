@@ -280,12 +280,16 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         os.path.join(os.path.dirname(__file__), os.pardir, "data"))
 
   @staticmethod
-  def GetFileURLForPath(path):
+  def GetFileURLForPath(*path):
     """Get file:// url for the given path.
 
     Also quotes the url using urllib.quote().
+
+    Args:
+      path: Variable number of strings that can be joined.
     """
-    abs_path = os.path.abspath(path)
+    path_str = os.path.join(*path)
+    abs_path = os.path.abspath(path_str)
     if sys.platform == 'win32':
       # Don't quote the ':' in drive letter ( say, C: ) on win.
       # Also, replace '\' with '/' as expected in a file:/// url.
@@ -297,13 +301,15 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       return 'file://' + quoted_path
 
   @staticmethod
-  def GetFileURLForDataPath(relative_path):
+  def GetFileURLForDataPath(*relative_path):
     """Get file:// url for the given path relative to the chrome test data dir.
 
     Also quotes the url using urllib.quote().
+
+    Args:
+      relative_path: Variable number of strings that can be joined.
     """
-    return PyUITest.GetFileURLForPath(
-        os.path.join(PyUITest.DataDir(), relative_path))
+    return PyUITest.GetFileURLForPath(PyUITest.DataDir(), *relative_path)
 
   @staticmethod
   def GetHttpURLForDataPath(data_path):

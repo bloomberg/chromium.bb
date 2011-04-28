@@ -30,8 +30,7 @@ class ChromeosSecurity(pyauto.PyUITest):
     urls_and_titles = {
        'file:///': 'Index of /',
        'file:///etc/': 'Index of /etc/',
-       self.GetFileURLForPath(os.path.join(self.DataDir(), 'title2.html')):
-           'Title Of Awesomeness',
+       self.GetFileURLForDataPath('title2.html'): 'Title Of Awesomeness',
     }
     for url, title in urls_and_titles.iteritems():
       self.NavigateToURL(url)
