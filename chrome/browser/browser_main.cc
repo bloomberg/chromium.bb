@@ -806,8 +806,10 @@ MetricsService* InitializeMetrics(const CommandLine& parsed_command_line,
 // should not continue.
 Profile* CreateProfile(const MainFunctionParams& parameters,
                        const FilePath& user_data_dir) {
-  Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile(
-      user_data_dir);
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  Profile* profile = browser_command_line.HasSwitch(switches::kMultiProfiles) ?
+      g_browser_process->profile_manager()->GetLastUsedProfile(user_data_dir) :
+      g_browser_process->profile_manager()->GetDefaultProfile(user_data_dir);
   if (profile)
     return profile;
 

@@ -246,7 +246,7 @@ Profile* Profile::CreateProfile(const FilePath& path) {
 Profile* Profile::CreateProfileAsync(const FilePath&path,
                                      Profile::Delegate* delegate) {
   DCHECK(delegate);
-  // This is safe while all file opeartions are done on the FILE thread.
+  // This is safe while all file operations are done on the FILE thread.
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
                           NewRunnableFunction(&file_util::CreateDirectory,
@@ -311,6 +311,7 @@ void ProfileImpl::DoFinalInit() {
   pref_change_registrar_.Add(prefs::kEnableSpellCheck, this);
   pref_change_registrar_.Add(prefs::kEnableAutoSpellCorrect, this);
   pref_change_registrar_.Add(prefs::kClearSiteDataOnExit, this);
+  pref_change_registrar_.Add(prefs::kGoogleServicesUsername, this);
 
   // It would be nice to use PathService for fetching this directory, but
   // the cache directory depends on the profile directory, which isn't available
@@ -659,6 +660,10 @@ ProfileImpl::~ProfileImpl() {
 
   // This causes the Preferences file to be written to disk.
   MarkAsCleanShutdown();
+}
+
+std::string ProfileImpl::GetProfileName() {
+  return GetPrefs()->GetString(prefs::kGoogleServicesUsername);
 }
 
 ProfileId ProfileImpl::GetRuntimeId() {
@@ -1346,6 +1351,9 @@ void ProfileImpl::Observe(NotificationType type,
         appcache_service_->SetClearLocalStateOnExit(
             clear_local_state_on_exit_);
       }
+    } else if (*pref_name_in == prefs::kGoogleServicesUsername) {
+      ProfileManager* profile_manager = g_browser_process->profile_manager();
+      profile_manager->RegisterProfileName(this);
     }
   } else if (NotificationType::BOOKMARK_MODEL_LOADED == type) {
     GetProfileSyncService();  // Causes lazy-load if sync is enabled.

@@ -38,6 +38,10 @@ class ProfileMenuModel : public ui::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id);
 
  private:
+  enum {
+    COMMAND_CREATE_NEW_PROFILE,
+  };
+
   scoped_ptr<views::Menu2> menu_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuModel);

@@ -379,6 +379,10 @@ TestingPrefService* TestingProfile::GetTestingPrefService() {
   return testing_prefs_;
 }
 
+std::string TestingProfile::GetProfileName() {
+  return std::string("testing_profile");
+}
+
 ProfileId TestingProfile::GetRuntimeId() {
     return reinterpret_cast<ProfileId>(this);
   }

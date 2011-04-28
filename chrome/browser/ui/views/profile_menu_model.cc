@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/profile_menu_model.h"
 
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/accelerator.h"
@@ -14,7 +16,7 @@ namespace views {
 
 ProfileMenuModel::ProfileMenuModel()
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)) {
-  AddItem(0, l10n_util::GetStringUTF16(
+  AddItem(COMMAND_CREATE_NEW_PROFILE, l10n_util::GetStringUTF16(
       IDS_PROFILES_CREATE_NEW_PROFILE_OPTION));
   menu_.reset(new views::Menu2(this));
 }
@@ -31,7 +33,7 @@ bool ProfileMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool ProfileMenuModel::IsCommandIdEnabled(int command_id) const {
-  return false;
+  return true;
 }
 
 bool ProfileMenuModel::GetAcceleratorForCommandId(int command_id,
@@ -40,7 +42,14 @@ bool ProfileMenuModel::GetAcceleratorForCommandId(int command_id,
 }
 
 void ProfileMenuModel::ExecuteCommand(int command_id) {
-  NOTIMPLEMENTED();
+  switch (command_id) {
+    case COMMAND_CREATE_NEW_PROFILE:
+      ProfileManager::CreateMultiProfileAsync();
+      break;
+    default:
+      NOTIMPLEMENTED();
+      break;
+  }
 }
 
 }  // namespace views
