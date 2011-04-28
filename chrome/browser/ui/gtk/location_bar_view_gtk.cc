@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -45,7 +44,6 @@
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -1299,10 +1297,8 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromTabContents(
 
   int label_string_id =
       content_setting_image_model_->explanatory_string_id();
-  // Check if the animation is enabled and if the string for animation is
-  // available. If there's no string for the content type, we don't animate.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableBlockContentAnimation) || !label_string_id)
+  // If there's no string for the content type, we don't animate.
+  if (!label_string_id)
     return;
 
   gtk_label_set_text(GTK_LABEL(label_.get()),

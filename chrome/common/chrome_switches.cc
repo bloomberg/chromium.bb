@@ -184,11 +184,6 @@ const char kDisableBackgroundMode[] = "disable-background-mode";
 // in the measurements.
 const char kDisableBackgroundNetworking[] = "disable-background-networking";
 
-// Disables blocked content warning animation. Currently shows animation for
-// blocked pop-ups only.
-const char kDisableBlockContentAnimation[]  =
-    "disable-blocked-content-animation";
-
 // This switch is used to disable the client-side phishing detection feature.
 // Note that even if client-side phishing detection is enabled, it will only
 // be active if the user has opted in to UMA stats and SafeBrowsing is enabled

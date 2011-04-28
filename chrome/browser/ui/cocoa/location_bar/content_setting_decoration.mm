@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -17,7 +16,6 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "net/base/net_util.h"
@@ -190,10 +188,7 @@ bool ContentSettingDecoration::UpdateFromTabContents(
     // Check if there is an animation and start it if it hasn't yet started.
     bool has_animated_text =
         content_setting_image_model_->explanatory_string_id();
-    // Check if the animation is enabled.
-    bool animation_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableBlockContentAnimation);
-    if (has_animated_text && animation_enabled && !animation_) {
+    if (has_animated_text && !animation_) {
       // Start animation, its timer will drive reflow. Note the text is
       // cached so it is not allowed to change during the animation.
       animation_.reset(
