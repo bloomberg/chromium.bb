@@ -22,6 +22,8 @@ class BrowserAccessibilityMac : public BrowserAccessibility {
   virtual void NativeReleaseReference();
 
   // Overrides from BrowserAccessibility.
+  virtual void DetachTree(std::vector<BrowserAccessibility*>* nodes);
+
   // The BrowserAccessibilityCocoa associated with us.
   BrowserAccessibilityCocoa* native_view() const {
     return browser_accessibility_cocoa_;

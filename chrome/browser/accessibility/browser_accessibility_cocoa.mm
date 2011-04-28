@@ -305,6 +305,53 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
   return nil;
 }
 
+// Returns the accessibility value for the given attribute and parameter. If the
+// value isn't supported this will return nil.
+- (id)accessibilityAttributeValue:(NSString*)attribute
+                     forParameter:(id)parameter {
+  if ([attribute isEqualToString:
+      NSAccessibilityStringForRangeParameterizedAttribute]) {
+    NSRange range =[(NSValue*)parameter rangeValue];
+    return base::SysUTF16ToNSString(
+        browserAccessibility_->value().substr(range.location, range.length));
+  }
+
+  // TODO(dtseng): support the following attributes.
+  if ([attribute isEqualTo:NSAccessibilityLineForIndexParameterizedAttribute] ||
+      [attribute isEqualTo:NSAccessibilityRangeForLineParameterizedAttribute] ||
+      [attribute isEqualTo:
+          NSAccessibilityRangeForPositionParameterizedAttribute] ||
+      [attribute isEqualTo:
+          NSAccessibilityRangeForIndexParameterizedAttribute] ||
+      [attribute isEqualTo:
+          NSAccessibilityBoundsForRangeParameterizedAttribute] ||
+      [attribute isEqualTo:NSAccessibilityRTFForRangeParameterizedAttribute] ||
+      [attribute isEqualTo:
+          NSAccessibilityStyleRangeForIndexParameterizedAttribute]) {
+    return nil;
+  }
+  return nil;
+}
+
+// Returns an array of parameterized attributes names that this object will
+// respond to.
+- (NSArray*)accessibilityParameterizedAttributeNames {
+  if ([self role] == NSAccessibilityTextFieldRole) {
+    return [NSArray arrayWithObjects:
+        NSAccessibilityLineForIndexParameterizedAttribute,
+        NSAccessibilityRangeForLineParameterizedAttribute,
+        NSAccessibilityStringForRangeParameterizedAttribute,
+        NSAccessibilityRangeForPositionParameterizedAttribute,
+        NSAccessibilityRangeForIndexParameterizedAttribute,
+        NSAccessibilityBoundsForRangeParameterizedAttribute,
+        NSAccessibilityRTFForRangeParameterizedAttribute,
+        NSAccessibilityAttributedStringForRangeParameterizedAttribute,
+        NSAccessibilityStyleRangeForIndexParameterizedAttribute,
+        nil];
+  }
+  return nil;
+}
+
 // Returns an array of action names that this object will respond to.
 - (NSArray*)accessibilityActionNames {
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
