@@ -38,8 +38,10 @@ _expected_output_postamble = "#END"
 
 # HACK! This is required because we can only depend on python 2.4 and
 # the calling environment may not be setup to set the PYTHONPATH
-sys.path.append(os.path.normpath(_base_dir +
-                                   "/../../../../third_party"))
+# Insert at the front so that we pick up our simplejson even if there's a
+# system simplejson installed, for predictable escaping.
+sys.path.insert(0, os.path.normpath(_base_dir +
+                   "/../../../../third_party"))
 import simplejson as json
 from directory import Sample
 from directory import ApiManifest
