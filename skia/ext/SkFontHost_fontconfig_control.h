@@ -19,10 +19,14 @@
 #define FontConfigControl_DEFINED
 #pragma once
 
+#include "SkPreConfig.h"
+
+class FontConfigInterface;
+
 // Sets the Skia FontHost to use the direct (non-IPC, requires filesystem
 // access) FontConfig implementation. Any previously-set FontConfigInterface
 // will be freed.
-void SkiaFontConfigUseDirectImplementation();
+SK_API void SkiaFontConfigUseDirectImplementation();
 
 // Sets the Skia FontHost to use the given implementation of FontConfig. This
 // is normally used to configure the IPC-based implementation to get out of
@@ -30,6 +34,6 @@ void SkiaFontConfigUseDirectImplementation();
 //
 // Ownership of the given pointer is transferred, and any previously-set
 // FontConfigInterface will be freed.
-void SkiaFontConfigSetImplementation(FontConfigInterface* font_config);
+SK_API void SkiaFontConfigSetImplementation(FontConfigInterface* font_config);
 
 #endif  // FontConfigControl_DEFINED

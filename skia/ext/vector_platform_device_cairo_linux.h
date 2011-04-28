@@ -14,7 +14,7 @@
 
 namespace skia {
 
-class VectorPlatformDeviceCairoFactory : public SkDeviceFactory {
+class SK_API VectorPlatformDeviceCairoFactory : public SkDeviceFactory {
  public:
   static PlatformDevice* CreateDevice(cairo_t* context, int width, int height,
                                       bool isOpaque);
@@ -30,7 +30,7 @@ class VectorPlatformDeviceCairoFactory : public SkDeviceFactory {
 // cooresponding Cairo APIs and outputs to a Cairo surface. Please NOTE that
 // since it is completely vectorial, the bitmap content in it is thus
 // meaningless.
-class VectorPlatformDeviceCairo : public PlatformDevice {
+class SK_API VectorPlatformDeviceCairo : public PlatformDevice {
  public:
   virtual ~VectorPlatformDeviceCairo();
 

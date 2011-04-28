@@ -33,6 +33,7 @@
 
 #include "SkFontHost.h"
 #include "SkStream.h"
+#include "SkFontHost_fontconfig_control.h"
 #include "SkFontHost_fontconfig_impl.h"
 #include "SkFontHost_fontconfig_direct.h"
 

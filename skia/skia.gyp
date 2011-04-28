@@ -813,7 +813,7 @@
             ],
           },
         },],
-        ['OS=="win" and component=="shared_library"', {
+        ['component=="shared_library"', {
           'defines': [
             'GR_DLL=1',
             'GR_IMPLEMENTATION=1',

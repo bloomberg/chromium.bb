@@ -25,7 +25,7 @@
 #include "SkThread.h"
 #include "SkFontHost_fontconfig_impl.h"
 
-class FontConfigDirect : public FontConfigInterface {
+class SK_API FontConfigDirect : public FontConfigInterface {
  public:
   FontConfigDirect();
   virtual ~FontConfigDirect();
