@@ -47,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
   ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 // Flakily times out: http://crbug.com/78802
 #define MAYBE_NavigationRace DISABLED_NavigationRace
 #else
