@@ -16,6 +16,8 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/image.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
@@ -40,7 +42,7 @@ const int kIconVerticalOffset = -7;
 
 // The duration of the animation that resizes the bubble once the async
 // information is provided through the ModelChanged event.
-const int kPageInfoSlideDuration = 300;
+const int kPageInfoSlideDuration = 1450;
 
 // A section contains an image that shows a status (good or bad), a title, an
 // optional head-line (in bold) and a description.
@@ -53,14 +55,23 @@ class Section : public views::View,
           bool show_cert);
   virtual ~Section();
 
+  // Notify the section how far along in the animation we are. This is used
+  // to draw the section opaquely onto the canvas, to animate the section into
+  // view.
+  void SetAnimationStage(double animation_stage);
+
   // views::View methods:
   virtual int GetHeightForWidth(int w);
   virtual void Layout();
+  virtual void Paint(gfx::Canvas* canvas);
 
   // views::LinkListener methods:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
  private:
+  // Calculate the animation value to use for setting the opacity.
+  double OpacityAnimationValue();
+
   // Calculate the layout if |compute_bounds_only|, otherwise does Layout also.
   gfx::Size LayoutItems(bool compute_bounds_only, int width);
 
@@ -74,6 +85,9 @@ class Section : public views::View,
   views::Label* headline_label_;
   views::Label* description_label_;
   views::Link* link_;
+
+  // The level of animation we are currently at.
+  double animation_value_;
 
   DISALLOW_COPY_AND_ASSIGN(Section);
 };
@@ -115,6 +129,30 @@ void PageInfoBubbleView::ShowCertDialog() {
   ShowCertificateViewerByID(parent_window_, cert_id_);
 }
 
+gfx::Size PageInfoBubbleView::GetSeparatorSize() {
+  // Calculate how much space the separators take up (with padding).
+  views::Separator separator;
+  gfx::Size separator_size = separator.GetPreferredSize();
+  gfx::Size separator_plus_padding(0, separator_size.height() +
+                                      kPaddingAboveSeparator +
+                                      kPaddingBelowSeparator);
+  return separator_plus_padding;
+}
+
+double PageInfoBubbleView::HeightAnimationValue() {
+  // We use the first half of the animation to get to fully expanded mode.
+  // Towards the end, we also animate the section into view, as determined
+  // by OpacityAnimationValue().
+  return std::min(1.0, 2.0 * resize_animation_.GetCurrentValue());
+}
+
+double Section::OpacityAnimationValue() {
+  // We use the tail end of the animation to get to fully visible.
+  // The first half of the animation is devoted to expanding the size of the
+  // bubble, as determined by HeightAnimationValue().
+  return std::max(0.0, std::min(1.0, 1.7 * animation_value_ - 1.0));
+}
+
 void PageInfoBubbleView::LayoutSections() {
   // Remove all the existing sections.
   RemoveAllChildViews(true);
@@ -145,7 +183,23 @@ void PageInfoBubbleView::LayoutSections() {
     PageInfoModel::SectionInfo info = model_.GetSectionInfo(i);
     layout->StartRow(0, 0);
     const SkBitmap* icon = *model_.GetIconImage(info.icon_id);
-    layout->AddView(new Section(this, info, icon, cert_id_ > 0));
+    Section* section = new Section(this, info, icon, cert_id_ > 0);
+    if (info.type == PageInfoModel::SECTION_INFO_FIRST_VISIT) {
+      // This section is animated into view, so we need to set the height of it
+      // according to the animation stage, and let it know how transparent it
+      // should draw itself.
+      section->SetAnimationStage(resize_animation_.GetCurrentValue());
+      gfx::Size sz(views::Window::GetLocalizedContentsSize(
+          IDS_PAGEINFOBUBBLE_WIDTH_CHARS, IDS_PAGEINFOBUBBLE_HEIGHT_LINES));
+      layout->AddView(section,
+                      1, 1,  // Colspan & Rowspan.
+                      views::GridLayout::LEADING, views::GridLayout::LEADING,
+                      sz.width(),
+                      static_cast<int>(HeightAnimationValue() *
+                                       section->GetHeightForWidth(sz.width())));
+    } else {
+      layout->AddView(section);
+    }
 
     // Add separator after all sections.
     layout->AddPaddingRow(0, kPaddingAboveSeparator);
@@ -160,6 +214,8 @@ void PageInfoBubbleView::LayoutSections() {
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER_LINK)));
   help_center_link_->set_listener(this);
   layout->AddView(help_center_link_);
+
+  layout->Layout(this);
 }
 
 gfx::Size PageInfoBubbleView::GetPreferredSize() {
@@ -175,19 +231,14 @@ gfx::Size PageInfoBubbleView::GetPreferredSize() {
     size.Enlarge(0, section.GetHeightForWidth(size.width()));
   }
 
-  // Calculate how much space the separators take up (with padding).
-  views::Separator separator;
-  gfx::Size separator_size = separator.GetPreferredSize();
-  gfx::Size separator_plus_padding(0, separator_size.height() +
-                                      kPaddingAboveSeparator +
-                                      kPaddingBelowSeparator);
+  static int separator_plus_padding = GetSeparatorSize().height();
 
   // Account for the separators and padding within sections.
-  size.Enlarge(0, (count - 1) * separator_plus_padding.height());
+  size.Enlarge(0, (count - 1) * separator_plus_padding);
 
   // Account for the Help Center link and the separator above it.
   gfx::Size link_size = help_center_link_->GetPreferredSize();
-  size.Enlarge(0, separator_plus_padding.height() +
+  size.Enlarge(0, separator_plus_padding +
                   link_size.height());
 
   if (!resize_animation_.is_animating())
@@ -195,14 +246,16 @@ gfx::Size PageInfoBubbleView::GetPreferredSize() {
 
   // We are animating from animation_start_height_ to size.
   int target_height = animation_start_height_ + static_cast<int>(
-      (size.height() - animation_start_height_) *
-      resize_animation_.GetCurrentValue());
+      (size.height() - animation_start_height_) * HeightAnimationValue());
   size.set_height(target_height);
   return size;
 }
 
 void PageInfoBubbleView::ModelChanged() {
-  animation_start_height_ = bounds().height();
+  // The start height must take into account that when we start animating,
+  // a separator plus padding is immediately added before the view is animated
+  // into existence.
+  animation_start_height_ = bounds().height() + GetSeparatorSize().height();
   LayoutSections();
   resize_animation_.SetSlideDuration(kPageInfoSlideDuration);
   resize_animation_.Show();
@@ -233,10 +286,12 @@ void PageInfoBubbleView::LinkClicked(views::Link* source, int event_flags) {
 }
 
 void PageInfoBubbleView::AnimationEnded(const ui::Animation* animation) {
+  LayoutSections();
   bubble_->SizeToContents();
 }
 
 void PageInfoBubbleView::AnimationProgressed(const ui::Animation* animation) {
+  LayoutSections();
   bubble_->SizeToContents();
 }
 
@@ -260,10 +315,14 @@ Section::Section(PageInfoBubbleView* owner,
   headline_label_ = new views::Label(UTF16ToWideHack(info_.headline));
   headline_label_->SetFont(
       headline_label_->font().DeriveFont(0, gfx::Font::BOLD));
+  headline_label_->set_background(
+      views::Background::CreateSolidBackground(SK_ColorWHITE));
   headline_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(headline_label_);
 
   description_label_ = new views::Label(UTF16ToWideHack(info_.description));
+  description_label_->set_background(
+      views::Background::CreateSolidBackground(SK_ColorWHITE));
   description_label_->SetMultiLine(true);
   description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   // Allow linebreaking in the middle of words if necessary, so that extremely
@@ -282,12 +341,30 @@ Section::Section(PageInfoBubbleView* owner,
 Section::~Section() {
 }
 
+void Section::SetAnimationStage(double animation_stage) {
+  animation_value_ = animation_stage;
+  SchedulePaint();
+}
+
 int Section::GetHeightForWidth(int width) {
   return LayoutItems(true, width).height();
 }
 
 void Section::Layout() {
   LayoutItems(false, width());
+}
+
+void Section::Paint(gfx::Canvas* canvas) {
+  if (info_.type == PageInfoModel::SECTION_INFO_FIRST_VISIT) {
+    // This section needs to be animated into view.
+    canvas->SaveLayerAlpha(static_cast<int>(255.0 * OpacityAnimationValue()),
+                           bounds());
+  }
+
+  views::View::Paint(canvas);
+
+  if (info_.type == PageInfoModel::SECTION_INFO_FIRST_VISIT)
+    canvas->Restore();
 }
 
 void Section::LinkClicked(views::Link* source, int event_flags) {

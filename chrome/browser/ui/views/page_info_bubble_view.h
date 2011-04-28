@@ -55,6 +55,12 @@ class PageInfoBubbleView : public views::View,
   virtual void AnimationProgressed(const ui::Animation* animation);
 
  private:
+  // Gets the size of the separator, including padding.
+  gfx::Size GetSeparatorSize();
+
+  // Gets the animation value to use for setting the height.
+  double HeightAnimationValue();
+
   // Layout the sections within the bubble.
   void LayoutSections();
 
