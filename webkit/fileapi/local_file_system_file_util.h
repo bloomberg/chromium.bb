@@ -71,20 +71,19 @@ class LocalFileSystemFileUtil : public FileSystemFileUtil {
       bool exclusive,
       bool recursive);
 
-  virtual PlatformFileError Copy(
+  virtual PlatformFileError CopyOrMoveFile(
       FileSystemOperationContext* context,
       const FilePath& src_file_path,
-      const FilePath& dest_file_path);
+      const FilePath& dest_file_path,
+      bool copy);
 
-  virtual PlatformFileError Move(
+  virtual PlatformFileError DeleteFile(
       FileSystemOperationContext* context,
-      const FilePath& src_file_path,
-      const FilePath& dest_file_path);
+      const FilePath& file_path);
 
-  virtual PlatformFileError Delete(
+  virtual PlatformFileError DeleteSingleDirectory(
       FileSystemOperationContext* context,
-      const FilePath& file_path,
-      bool recursive);
+      const FilePath& file_path);
 
   virtual PlatformFileError Touch(
       FileSystemOperationContext* context,
@@ -97,8 +96,24 @@ class LocalFileSystemFileUtil : public FileSystemFileUtil {
       const FilePath& path,
       int64 length);
 
+  virtual bool PathExists(
+      FileSystemOperationContext* context,
+      const FilePath& file_path);
+
+  virtual bool DirectoryExists(
+      FileSystemOperationContext* context,
+      const FilePath& file_path);
+
+  virtual bool IsDirectoryEmpty(
+      FileSystemOperationContext* context,
+      const FilePath& file_path);
+
  protected:
   LocalFileSystemFileUtil() { }
+
+  virtual AbstractFileEnumerator* CreateFileEnumerator(
+      FileSystemOperationContext* context,
+      const FilePath& root_path);
 
   friend struct DefaultSingletonTraits<LocalFileSystemFileUtil>;
   DISALLOW_COPY_AND_ASSIGN(LocalFileSystemFileUtil);
@@ -111,7 +126,6 @@ class LocalFileSystemFileUtil : public FileSystemFileUtil {
       const GURL& origin_url,
       FileSystemType type,
       const FilePath& virtual_path);
-
 };
 
 }  // namespace fileapi

@@ -144,7 +144,7 @@ PlatformFileError FileSystemFileUtil::Copy(
   if (error_code != base::PLATFORM_FILE_OK)
     return error_code;
 
-  if (file_util::DirectoryExists(src_file_path))
+  if (DirectoryExists(context, src_file_path))
     return CopyOrMoveDirectory(context, src_file_path, dest_file_path,
                                true /* copy */);
   else
@@ -164,10 +164,10 @@ PlatformFileError FileSystemFileUtil::Move(
     return error_code;
 
   // TODO(dmikurube): ReplaceFile if in the same domain and filesystem type.
-  if (file_util::DirectoryExists(src_file_path)) {
+  if (DirectoryExists(context, src_file_path))
     return CopyOrMoveDirectory(context, src_file_path, dest_file_path,
                                false /* copy */);
-  } else
+  else
     return CopyOrMoveFile(context, src_file_path, dest_file_path,
                           false /* copy */);
 }
@@ -304,7 +304,7 @@ PlatformFileError FileSystemFileUtil::CopyOrMoveDirectory(
   }
 
   scoped_ptr<AbstractFileEnumerator> file_enum(
-      CreateFileEnumerator(src_file_path));
+      CreateFileEnumerator(context, src_file_path));
   FilePath src_file_path_each;
   while (!(src_file_path_each = file_enum->Next()).empty()) {
     FilePath dest_file_path_each(dest_file_path);
@@ -365,7 +365,8 @@ PlatformFileError FileSystemFileUtil::DeleteSingleDirectory(
 PlatformFileError FileSystemFileUtil::DeleteDirectoryRecursive(
     FileSystemOperationContext* context,
     const FilePath& file_path) {
-  scoped_ptr<AbstractFileEnumerator> file_enum(CreateFileEnumerator(file_path));
+  scoped_ptr<AbstractFileEnumerator> file_enum(
+      CreateFileEnumerator(context, file_path));
   FilePath file_path_each;
 
   std::stack<FilePath> directories;
@@ -440,7 +441,9 @@ bool FileSystemFileEnumerator::IsDirectory() {
 }
 
 FileSystemFileUtil::AbstractFileEnumerator*
-FileSystemFileUtil::CreateFileEnumerator(const FilePath& root_path) {
+FileSystemFileUtil::CreateFileEnumerator(
+    FileSystemOperationContext* unused,
+    const FilePath& root_path) {
   return new FileSystemFileEnumerator(
       root_path, true, static_cast<file_util::FileEnumerator::FILE_TYPE>(
       file_util::FileEnumerator::FILES |

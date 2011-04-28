@@ -381,6 +381,7 @@
         '../../fileapi/file_system_usage_cache_unittest.cc',
         '../../fileapi/file_system_usage_tracker_unittest.cc',
         '../../fileapi/file_system_util_unittest.cc',
+        '../../fileapi/local_file_system_file_util_unittest.cc',
         '../../fileapi/sandbox_mount_point_provider_unittest.cc',
         '../../fileapi/quota_file_util_unittest.cc',
         '../../fileapi/webfilewriter_base_unittest.cc',
