@@ -97,7 +97,7 @@
         'gfx/point.h',
         'gfx/rect.cc',
         'gfx/rect.h',
-        'gfx/scoped_cg_context_state_mac.h',
+        'gfx/scoped_cg_context_save_gstate_mac.h',
         'gfx/scoped_ns_graphics_context_save_gstate_mac.h',
         'gfx/scoped_ns_graphics_context_save_gstate_mac.mm',
         'gfx/scrollbar_size.cc',

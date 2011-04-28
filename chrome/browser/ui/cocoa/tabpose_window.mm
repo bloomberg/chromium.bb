@@ -38,7 +38,7 @@
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image.h"
-#include "ui/gfx/scoped_cg_context_state_mac.h"
+#include "ui/gfx/scoped_cg_context_save_gstate_mac.h"
 
 // Height of the bottom gradient, in pixels.
 const CGFloat kBottomGradientHeight = 50;
