@@ -711,7 +711,7 @@
         'GR_STATIC_RECT_VB=1',
         'GR_AGGRESSIVE_SHADER_OPTS=1',
         'SK_DISABLE_FAST_AA_STROKE_RECT',
-#        'SK_USE_SLOW_2POINT_RADIAL_GRADIENT',
+        'SK_IGNORE_CF_OPTIMIZATION',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',

@@ -15,7 +15,7 @@ vars = {
   "libjingle_revision": "55",
   "libvpx_revision": "81610",
   "ffmpeg_revision": "83236",
-  "skia_revision": "1144",
+  "skia_revision": "1206",
   "v8_revision": "7688",
 }
 
