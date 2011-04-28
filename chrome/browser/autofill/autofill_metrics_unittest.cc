@@ -71,12 +71,6 @@ class TestPersonalDataManager : public PersonalDataManager {
   // Overridden to avoid a trip to the database.
   virtual void LoadCreditCards() OVERRIDE {}
 
-  // Adds |profile| to |web_profiles_| and takes ownership of the profile's
-  // memory.
-  virtual void AddProfile(AutofillProfile* profile) {
-    web_profiles_.push_back(profile);
-  }
-
   const MockAutofillMetrics* metric_logger() const {
     return static_cast<const MockAutofillMetrics*>(
         PersonalDataManager::metric_logger());
