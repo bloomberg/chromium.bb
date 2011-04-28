@@ -32,7 +32,8 @@ const int kTextViewBorderWidth = 4;
 // NativeTextfieldGtk, public:
 
 NativeTextfieldGtk::NativeTextfieldGtk(Textfield* textfield)
-    : textfield_(textfield) {
+    : textfield_(textfield),
+      paste_clipboard_requested_(false) {
   if (textfield_->IsMultiLine() && textfield_->IsPassword())
     NOTIMPLEMENTED();  // We don't support multiline password yet.
   // Make |textfield| the focused view, so that when we get focused the focus
@@ -380,34 +381,10 @@ TextInputClient* NativeTextfieldGtk::GetTextInputClient() {
   return NULL;
 }
 
-// static
-gboolean NativeTextfieldGtk::OnKeyPressEventHandler(
-    GtkWidget* widget,
-    GdkEventKey* event,
-    NativeTextfieldGtk* textfield) {
-  return textfield->OnKeyPressEvent(event);
-}
-
-gboolean NativeTextfieldGtk::OnKeyPressEvent(GdkEventKey* event) {
-  TextfieldController* controller = textfield_->GetController();
-  if (controller) {
-    KeyEvent key_event(reinterpret_cast<GdkEvent*>(event));
-    return controller->HandleKeyEvent(textfield_, key_event);
-  }
-  return false;
-}
-
-// static
-gboolean NativeTextfieldGtk::OnActivateHandler(
-    GtkWidget* widget,
-    NativeTextfieldGtk* textfield) {
-  return textfield->OnActivate();
-}
-
-gboolean NativeTextfieldGtk::OnActivate() {
+void NativeTextfieldGtk::OnActivate(GtkWidget* native_widget) {
   GdkEvent* event = gtk_get_current_event();
   if (!event || event->type != GDK_KEY_PRESS)
-    return false;
+    return;
 
   KeyEvent views_key_event(event);
   gboolean handled = false;
@@ -420,51 +397,70 @@ gboolean NativeTextfieldGtk::OnActivate() {
   if (!handled && widget)
     handled = widget->HandleKeyboardEvent(views_key_event);
 
-  return handled;
+  // Stop signal emission if the key event is handled by us.
+  if (handled) {
+    // Only GtkEntry has "activate" signal.
+    static guint signal_id = g_signal_lookup("activate", GTK_TYPE_ENTRY);
+    g_signal_stop_emission(native_widget, signal_id, 0);
+  }
 }
 
-// static
-gboolean NativeTextfieldGtk::OnChangedHandler(
-    GtkWidget* widget,
-    NativeTextfieldGtk* textfield) {
-  return textfield->OnChanged();
-}
-
-gboolean NativeTextfieldGtk::OnChanged() {
+void NativeTextfieldGtk::OnChanged(GObject* object) {
+  // We need to call TextfieldController::ContentsChanged() explicitly if the
+  // paste action didn't change the content at all. See http://crbug.com/79002
+  const bool call_contents_changed =
+      paste_clipboard_requested_ && GetText() == textfield_->text();
   textfield_->SyncText();
   textfield_->GetWidget()->NotifyAccessibilityEvent(
       textfield_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
+  if (call_contents_changed) {
+    TextfieldController* controller = textfield_->GetController();
+    if (controller)
+      controller->ContentsChanged(textfield_, textfield_->text());
+  }
+  paste_clipboard_requested_ = false;
+}
+
+gboolean NativeTextfieldGtk::OnButtonPressEvent(GtkWidget* widget,
+                                                GdkEventButton* event) {
+  paste_clipboard_requested_ = false;
   return false;
 }
 
-// static
-gboolean NativeTextfieldGtk::OnMoveCursorHandler(
-    GtkWidget* widget,
-    GtkMovementStep step,
-    gint count,
-    gboolean extend_selection,
-    NativeTextfieldGtk* textfield) {
-  return textfield->OnMoveCursor();
-}
-
-gboolean NativeTextfieldGtk::OnMoveCursor() {
+gboolean NativeTextfieldGtk::OnButtonReleaseEventAfter(GtkWidget* widget,
+                                                       GdkEventButton* event) {
   textfield_->GetWidget()->NotifyAccessibilityEvent(
       textfield_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
   return false;
 }
 
-// static
-gboolean NativeTextfieldGtk::OnMouseUpHandler(
-    GtkWidget* widget,
-    GdkEvent* event,
-    NativeTextfieldGtk* textfield) {
-  return textfield->OnMouseUp();
+gboolean NativeTextfieldGtk::OnKeyPressEvent(GtkWidget* widget,
+                                             GdkEventKey* event) {
+  paste_clipboard_requested_ = false;
+  return false;
 }
 
-gboolean NativeTextfieldGtk::OnMouseUp() {
+gboolean NativeTextfieldGtk::OnKeyPressEventAfter(GtkWidget* widget,
+                                                  GdkEventKey* event) {
+  TextfieldController* controller = textfield_->GetController();
+  if (controller) {
+    KeyEvent key_event(reinterpret_cast<GdkEvent*>(event));
+    return controller->HandleKeyEvent(textfield_, key_event);
+  }
+  return false;
+}
+
+void NativeTextfieldGtk::OnMoveCursor(GtkWidget* widget,
+                                      GtkMovementStep step,
+                                      gint count,
+                                      gboolean extend_selection) {
   textfield_->GetWidget()->NotifyAccessibilityEvent(
       textfield_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
-  return false;
+}
+
+void NativeTextfieldGtk::OnPasteClipboard(GtkWidget* widget) {
+  if (!textfield_->read_only())
+    paste_clipboard_requested_ = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -493,21 +489,25 @@ void NativeTextfieldGtk::NativeControlCreated(GtkWidget* widget) {
   if (GTK_IS_TEXT_VIEW(widget)) {
     GtkTextBuffer* text_buffer = gtk_text_view_get_buffer(
         GTK_TEXT_VIEW(widget));
-    g_signal_connect(text_buffer, "changed",
-                     G_CALLBACK(OnChangedHandler), this);
+    g_signal_connect(text_buffer, "changed", G_CALLBACK(OnChangedThunk), this);
   } else {
-    g_signal_connect(widget, "changed",
-                     G_CALLBACK(OnChangedHandler), this);
+    g_signal_connect(widget, "changed", G_CALLBACK(OnChangedThunk), this);
+    // In order to properly trigger Accelerators bound to VKEY_RETURN, we need
+    // to send an event when the widget gets the activate signal.
+    g_signal_connect(widget, "activate", G_CALLBACK(OnActivateThunk), this);
   }
-  g_signal_connect_after(widget, "move-cursor",
-                         G_CALLBACK(OnMoveCursorHandler), this);
+  g_signal_connect(widget, "move-cursor", G_CALLBACK(OnMoveCursorThunk), this);
+  g_signal_connect(widget, "button-press-event",
+                   G_CALLBACK(OnButtonPressEventThunk), this);
+  g_signal_connect(widget, "key-press-event",
+                   G_CALLBACK(OnKeyPressEventThunk), this);
+  g_signal_connect(widget, "paste-clipboard",
+                   G_CALLBACK(OnPasteClipboardThunk), this);
+
   g_signal_connect_after(widget, "button-release-event",
-                         G_CALLBACK(OnMouseUpHandler), this);
+                         G_CALLBACK(OnButtonReleaseEventAfterThunk), this);
   g_signal_connect_after(widget, "key-press-event",
-                         G_CALLBACK(OnKeyPressEventHandler), this);
-  // In order to properly trigger Accelerators bound to VKEY_RETURN, we need to
-  // send an event when the widget gets the activate signal.
-  g_signal_connect(widget, "activate", G_CALLBACK(OnActivateHandler), this);
+                         G_CALLBACK(OnKeyPressEventAfterThunk), this);
 }
 
 bool NativeTextfieldGtk::IsPassword() {

@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 
 #include "base/string16.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "views/controls/native_control_gtk.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 
@@ -65,34 +66,27 @@ class NativeTextfieldGtk : public NativeControlGtk,
   bool IsPassword();
 
  private:
+  // Gtk signal callbacks.
+  CHROMEGTK_CALLBACK_0(NativeTextfieldGtk, void, OnActivate);
+  CHROMEGTK_CALLBACK_1(NativeTextfieldGtk, gboolean, OnButtonPressEvent,
+                       GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(NativeTextfieldGtk, gboolean, OnButtonReleaseEventAfter,
+                       GdkEventButton*);
+  CHROMEG_CALLBACK_0(NativeTextfieldGtk, void, OnChanged, GObject*);
+  CHROMEGTK_CALLBACK_1(NativeTextfieldGtk, gboolean, OnKeyPressEvent,
+                       GdkEventKey*);
+  CHROMEGTK_CALLBACK_1(NativeTextfieldGtk, gboolean, OnKeyPressEventAfter,
+                       GdkEventKey*);
+  CHROMEGTK_CALLBACK_3(NativeTextfieldGtk, void, OnMoveCursor,
+                       GtkMovementStep, gint, gboolean);
+  CHROMEGTK_CALLBACK_0(NativeTextfieldGtk, void, OnPasteClipboard);
+
   Textfield* textfield_;
 
-  // Callback when the entry text changes.
-  static gboolean OnKeyPressEventHandler(
-      GtkWidget* entry,
-      GdkEventKey* event,
-      NativeTextfieldGtk* textfield);
-  gboolean OnKeyPressEvent(GdkEventKey* event);
-  static gboolean OnActivateHandler(
-      GtkWidget* entry,
-      NativeTextfieldGtk* textfield);
-  gboolean OnActivate();
-  static gboolean OnChangedHandler(
-      GtkWidget* entry,
-      NativeTextfieldGtk* textfield);
-  gboolean OnChanged();
-  static gboolean OnMoveCursorHandler(
-      GtkWidget* entry,
-      GtkMovementStep step,
-      gint count,
-      gboolean extend_selection,
-      NativeTextfieldGtk* textfield);
-  gboolean OnMoveCursor();
-  static gboolean OnMouseUpHandler(
-      GtkWidget* entry,
-      GdkEvent* event,
-      NativeTextfieldGtk* textfield);
-  gboolean OnMouseUp();
+  // Indicates that user requested to paste clipboard.
+  // The actual paste clipboard action might be performed later if the
+  // clipboard is not empty.
+  bool paste_clipboard_requested_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTextfieldGtk);
 };

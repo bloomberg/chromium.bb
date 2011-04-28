@@ -230,6 +230,10 @@ class NativeTextfieldViews : public views::View,
   // Convenience method to call TextfieldController::OnAfterUserAction();
   void OnAfterUserAction();
 
+  // Calls |model_->Paste()| and calls TextfieldController::ContentsChanged()
+  // explicitly if paste succeeded.
+  bool Paste();
+
   // Checks if a char is ok to be inserted into the textfield. The |ch| is a
   // modified character, i.e., modifiers took effect when generating this char.
   static bool ShouldInsertChar(char16 ch, int flags);

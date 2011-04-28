@@ -907,8 +907,10 @@ void NativeTextfieldWin::OnPaste() {
     std::wstring collapsed(CollapseWhitespace(clipboard_str, false));
     if (textfield_->style() & Textfield::STYLE_LOWERCASE)
       collapsed = l10n_util::ToLower(collapsed);
-    // Force a Paste operation to trigger OnContentsChanged, even if identical
-    // contents are pasted into the text box.
+    // Force a Paste operation to trigger ContentsChanged, even if identical
+    // contents are pasted into the text box. See http://crbug.com/79002
+    ReplaceSel(L"", false);
+    textfield_->SyncText();
     text_before_change_.clear();
     ReplaceSel(collapsed.c_str(), true);
   }

@@ -8,6 +8,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
+#include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -15,9 +16,11 @@
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "net/test/test_server.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
+#include "views/views_delegate.h"
 
 namespace {
 
@@ -42,6 +45,12 @@ class FindInPageTest : public InProcessBrowserTest {
     FindBarTesting* find_bar =
         browser()->GetFindBarController()->find_bar()->GetFindBarTesting();
     return find_bar->GetFindText();
+  }
+
+  string16 GetFindBarSelectedText() {
+    FindBarTesting* find_bar =
+        browser()->GetFindBarController()->find_bar()->GetFindBarTesting();
+    return find_bar->GetFindSelectedText();
   }
 };
 
@@ -256,4 +265,67 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
   EXPECT_EQ(string16(), GetFindBarText());
 
   Checkpoint("Test done", start_time);
+}
+
+IN_PROC_BROWSER_TEST_F(FindInPageTest, PasteWithoutTextChange) {
+  ASSERT_TRUE(test_server()->Start());
+
+  // Make sure Chrome is in the foreground, otherwise sending input
+  // won't do anything and the test will hang.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  // First we navigate to any page.
+  GURL url = test_server()->GetURL(kSimplePage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Show the Find bar.
+  browser()->GetFindBarController()->Show();
+
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                           VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+
+  // Search for "a".
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_A, false, false, false, false));
+
+  // We should find "a" here.
+  EXPECT_EQ(ASCIIToUTF16("a"), GetFindBarText());
+
+  // Reload the page to clear the matching result.
+  browser()->Reload(CURRENT_TAB);
+
+  // Focus the Find bar again to make sure the text is selected.
+  browser()->GetFindBarController()->Show();
+
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                           VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+
+  // "a" should be selected.
+  EXPECT_EQ(ASCIIToUTF16("a"), GetFindBarSelectedText());
+
+  // Press Ctrl-C to copy the content.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_C, true, false, false, false));
+
+  string16 str;
+  views::ViewsDelegate::views_delegate->GetClipboard()->
+      ReadText(ui::Clipboard::BUFFER_STANDARD, &str);
+
+  // Make sure the text is copied successfully.
+  EXPECT_EQ(ASCIIToUTF16("a"), str);
+
+  // Press Ctrl-V to paste the content back, it should start finding even if the
+  // content is not changed.
+  Source<TabContents> notification_source(browser()->GetSelectedTabContents());
+  ui_test_utils::WindowedNotificationObserverWithDetails
+      <FindNotificationDetails> observer(
+          NotificationType::FIND_RESULT_AVAILABLE, notification_source);
+
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_V, true, false, false, false));
+
+  ASSERT_NO_FATAL_FAILURE(observer.Wait());
+  FindNotificationDetails details;
+  ASSERT_TRUE(observer.GetDetailsFor(notification_source.map_key(), &details));
+  EXPECT_TRUE(details.number_of_matches() > 0);
 }

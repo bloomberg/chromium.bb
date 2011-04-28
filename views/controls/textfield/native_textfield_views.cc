@@ -372,7 +372,7 @@ void NativeTextfieldViews::ExecuteCommand(int command_id) {
       break;
     case IDS_APP_PASTE:
       if (editable)
-        text_changed = model_->Paste();
+        text_changed = Paste();
       break;
     case IDS_APP_DELETE:
       if (editable)
@@ -735,7 +735,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         break;
       case ui::VKEY_V:
         if (control && editable)
-          cursor_changed = text_changed = model_->Paste();
+          cursor_changed = text_changed = Paste();
         break;
       case ui::VKEY_RIGHT:
         control ? model_->MoveCursorToNextWord(selection)
@@ -937,6 +937,19 @@ void NativeTextfieldViews::OnAfterUserAction() {
   TextfieldController* controller = textfield_->GetController();
   if (controller)
     controller->OnAfterUserAction(textfield_);
+}
+
+bool NativeTextfieldViews::Paste() {
+  const bool success = model_->Paste();
+
+  // Calls TextfieldController::ContentsChanged() explicitly if the paste action
+  // did not change the content at all. See http://crbug.com/79002
+  if (success && model_->text() == textfield_->text()) {
+    TextfieldController* controller = textfield_->GetController();
+    if (controller)
+      controller->ContentsChanged(textfield_, textfield_->text());
+  }
+  return success;
 }
 
 // static
