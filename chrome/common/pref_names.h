@@ -258,10 +258,6 @@ extern const char kMetricsReportingEnabled[];
 extern const char kMetricsInitialLogs[];
 extern const char kMetricsOngoingLogs[];
 
-extern const char kProfileLastUsed[];
-extern const char kProfileDirectoryMap[];
-extern const char kProfilesNumCreated[];
-
 extern const char kProfileMetrics[];
 extern const char kProfilePrefix[];
 

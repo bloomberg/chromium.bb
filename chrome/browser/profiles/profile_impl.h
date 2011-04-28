@@ -44,7 +44,6 @@ class ProfileImpl : public Profile,
   static void RegisterUserPrefs(PrefService* prefs);
 
   // Profile implementation.
-  virtual std::string GetProfileName();
   virtual ProfileId GetRuntimeId();
   virtual FilePath GetPath();
   virtual bool IsOffTheRecord();

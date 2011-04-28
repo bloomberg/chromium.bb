@@ -31,7 +31,6 @@ extern const wchar_t kMessageWindowClass[];
 extern const wchar_t kCrashReportLog[];
 extern const wchar_t kTestingInterfaceDLL[];
 extern const char    kNotSignedInProfile[];
-extern const char    kMultiProfileDirPrefix[];
 extern const char    kStatsFilename[];
 extern const wchar_t kBrowserResourcesDll[];
 extern const wchar_t kNaClAppName[];

@@ -704,16 +704,6 @@ const char kEnableReferrers[] = "enable_referrers";
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 
-// Directory of the last profile used.
-const char kProfileLastUsed[] = "profile.last_used";
-
-// Maps profile data directories to login names.
-const char kProfileDirectoryMap[] = "profile.directory_map";
-
-// Total number of profiles created for this Chrome build. Used to tag profile
-// directories.
-const char kProfilesNumCreated[] = "profile.profiles_created";
-
 // Prefs for SSLConfigServicePref.
 const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
 const char kSSL3Enabled[] = "ssl.ssl3.enabled";

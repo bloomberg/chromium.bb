@@ -134,7 +134,6 @@ class TestingProfile : public Profile {
 
   TestingPrefService* GetTestingPrefService();
 
-  virtual std::string GetProfileName();
   virtual ProfileId GetRuntimeId();
 
   virtual FilePath GetPath();

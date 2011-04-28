@@ -8,7 +8,6 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_MANAGER_H_
 #pragma once
 
-#include <list>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -19,29 +18,22 @@
 #include "base/message_loop.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/system_monitor/system_monitor.h"
 
 class FilePath;
-class NewProfileLauncher;
 
 class ProfileManager : public base::NonThreadSafe,
                        public ui::SystemMonitor::PowerObserver,
-                       public BrowserList::Observer,
                        public NotificationObserver,
                        public Profile::Delegate {
  public:
   class Observer {
    public:
-    // This method is called when profile is ready. If profile creation has
-    // failed, method is called with |profile| equal to NULL.
+    // This method is called when profile is ready. If profile creation has been
+    // failed, method is called with |profile| equals to NULL.
     virtual void OnProfileCreated(Profile* profile) = 0;
-
-    // If true, delete the observer after the profile has been created. Default
-    // is false.
-    virtual bool DeleteAfterCreation() { return false; }
   };
 
   ProfileManager();
@@ -86,13 +78,6 @@ class ProfileManager : public base::NonThreadSafe,
   // stored, relative to the user data directory currently in use..
   FilePath GetCurrentProfileDir();
 
-  // Get the Profile last used with this Chrome build. If no signed profile has
-  // been stored in Local State, hand back the Default profile.
-  Profile* GetLastUsedProfile(const FilePath& user_data_dir);
-
-  // Register the mapping of a directory to a profile name in Local State.
-  void RegisterProfileName(Profile* profile);
-
   // Returns created profiles. Note, profiles order is NOT guaranteed to be
   // related with the creation order.
   std::vector<Profile*> GetLoadedProfiles() const;
@@ -105,11 +90,6 @@ class ProfileManager : public base::NonThreadSafe,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
-
-  // BrowserList::Observer implementation.
-  virtual void OnBrowserAdded(const Browser* browser);
-  virtual void OnBrowserRemoved(const Browser* browser);
-  virtual void OnBrowserSetLastActive(const Browser* browser);
 
   // ------------------ static utility functions -------------------
 
@@ -127,20 +107,6 @@ class ProfileManager : public base::NonThreadSafe,
 
   // Profile::Delegate implementation:
   virtual void OnProfileCreated(Profile* profile, bool success);
-
-  // Add or remove a profile launcher to/from the list of launchers waiting for
-  // new profiles to be created from the multi-profile menu.
-  void AddProfileLauncher(NewProfileLauncher* profile_launcher);
-  void RemoveProfileLauncher(NewProfileLauncher* profile_launcher);
-
-  // Creates a new profile in the next available multiprofile directory.
-  // Directories are named "profile_1", "profile_2", etc., in sequence of
-  // creation. (Because directories can be removed, however, it may be the case
-  // that at some point the list of numbered profiles is not continuous.)
-  static void CreateMultiProfileAsync();
-
-  // Register multi-profile related preferences in Local State.
-  static void RegisterPrefs(PrefService* prefs);
 
  protected:
   // Does final initial actions.

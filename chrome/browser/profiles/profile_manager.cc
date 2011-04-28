@@ -7,22 +7,16 @@
 #include "chrome/browser/profiles/profile_manager.h"
 
 #include "base/command_line.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
@@ -69,23 +63,6 @@ void ResumeRequestContext(
 
 }  // namespace
 
-// The NewProfileLauncher class is created when to wait for a multi-profile
-// to be created asynchronously. Upon completion of profile creation, the
-// NPL takes care of launching a new browser window and signing the user
-// in to their Google account.
-class NewProfileLauncher : public ProfileManager::Observer {
- public:
-  virtual void OnProfileCreated(Profile* profile) {
-    Browser::NewWindowWithProfile(profile);
-    ProfileSyncService* service = profile->GetProfileSyncService();
-    DCHECK(service);
-    service->ShowLoginDialog(NULL);
-    ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_PROFILE_MENU);
-  }
-
-  virtual bool DeleteAfterCreation() OVERRIDE { return true; }
-};
-
 // static
 void ProfileManager::ShutdownSessionServices() {
   ProfileManager* pm = g_browser_process->profile_manager();
@@ -106,7 +83,6 @@ Profile* ProfileManager::GetDefaultProfile() {
 
 ProfileManager::ProfileManager() : logged_in_(false) {
   ui::SystemMonitor::Get()->AddObserver(this);
-  BrowserList::AddObserver(this);
 #if defined(OS_CHROMEOS)
   registrar_.Add(
       this,
@@ -119,7 +95,6 @@ ProfileManager::~ProfileManager() {
   ui::SystemMonitor* system_monitor = ui::SystemMonitor::Get();
   if (system_monitor)
     system_monitor->RemoveObserver(this);
-  BrowserList::RemoveObserver(this);
 }
 
 FilePath ProfileManager::GetDefaultProfileDir(
@@ -155,36 +130,9 @@ FilePath ProfileManager::GetCurrentProfileDir() {
     return relative_profile_dir;
   }
 #endif
-  // TODO(mirandac): should not automatically be default profile.
   relative_profile_dir =
       relative_profile_dir.AppendASCII(chrome::kNotSignedInProfile);
   return relative_profile_dir;
-}
-
-Profile* ProfileManager::GetLastUsedProfile(const FilePath& user_data_dir) {
-  FilePath last_used_profile_dir(user_data_dir);
-  std::string last_profile_used;
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-
-  if (local_state->HasPrefPath(prefs::kProfileLastUsed))
-    last_profile_used = local_state->GetString(prefs::kProfileLastUsed);
-  last_used_profile_dir = last_profile_used.empty() ?
-      last_used_profile_dir.AppendASCII(chrome::kNotSignedInProfile) :
-      last_used_profile_dir.AppendASCII(last_profile_used);
-  return GetProfile(last_used_profile_dir);
-}
-
-void ProfileManager::RegisterProfileName(Profile* profile) {
-  std::string profile_name = profile->GetProfileName();
-  std::string dir_base = profile->GetPath().BaseName().MaybeAsASCII();
-  DictionaryPrefUpdate update(g_browser_process->local_state(),
-                              prefs::kProfileDirectoryMap);
-  DictionaryValue* path_map = update.Get();
-  // We don't check for duplicates because we should be able to overwrite
-  // path->name mappings here, if the user syncs a local account to a
-  // different Google account.
-  path_map->SetString(dir_base, profile_name);
 }
 
 Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
@@ -302,7 +250,6 @@ void ProfileManager::CreateDefaultProfileAsync(Observer* observer) {
 
   FilePath default_profile_dir;
   PathService::Get(chrome::DIR_USER_DATA, &default_profile_dir);
-  // TODO(mirandac): current directory will not always be default in the future
   default_profile_dir = default_profile_dir.Append(
       profile_manager->GetCurrentProfileDir());
 
@@ -405,18 +352,6 @@ void ProfileManager::Observe(
 #endif
 }
 
-void ProfileManager::OnBrowserAdded(const Browser* browser) {}
-
-void ProfileManager::OnBrowserRemoved(const Browser* browser) {}
-
-void ProfileManager::OnBrowserSetLastActive(const Browser* browser) {
-  Profile* last_active = browser->GetProfile();
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-  local_state->SetString(prefs::kProfileLastUsed,
-      last_active->GetPath().BaseName().MaybeAsASCII());
-}
-
 void ProfileManager::DoFinalInit(Profile* profile) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool init_extensions = true;
@@ -459,46 +394,7 @@ void ProfileManager::OnProfileCreated(Profile* profile, bool success) {
     profiles_info_.erase(iter);
   }
 
-  std::vector<Observer*> observers_to_delete;
-
   for (size_t i = 0; i < observers.size(); ++i) {
     observers[i]->OnProfileCreated(profile);
-    if (observers[i]->DeleteAfterCreation())
-      observers_to_delete.push_back(observers[i]);
   }
-
-  observers_to_delete.clear();
-}
-
-// static
-void ProfileManager::CreateMultiProfileAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Create the next profile in the next available directory slot.
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-
-  int next_directory = local_state->GetInteger(prefs::kProfilesNumCreated);
-  std::string profile_name = chrome::kMultiProfileDirPrefix;
-  profile_name.append(base::IntToString(next_directory));
-  FilePath new_path;
-  PathService::Get(chrome::DIR_USER_DATA, &new_path);
-#if defined(OS_WIN)
-  new_path = new_path.Append(ASCIIToUTF16(profile_name));
-#else
-  new_path = new_path.Append(profile_name);
-#endif
-  local_state->SetInteger(prefs::kProfilesNumCreated, ++next_directory);
-
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  // The launcher is deleted by the manager when profile creation is finished.
-  NewProfileLauncher* launcher = new NewProfileLauncher();
-  profile_manager->CreateProfileAsync(new_path, launcher);
-}
-
-// static
-void ProfileManager::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterStringPref(prefs::kProfileLastUsed, "");
-  prefs->RegisterDictionaryPref(prefs::kProfileDirectoryMap);
-  prefs->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
 }
