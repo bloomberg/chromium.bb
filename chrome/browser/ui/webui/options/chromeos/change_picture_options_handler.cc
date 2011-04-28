@@ -125,15 +125,14 @@ void ChangePictureOptionsHandler::ChooseFile(const ListValue* args) {
       0,
       FILE_PATH_LITERAL(""),
       web_ui_->tab_contents(),
-      NULL,
+      GetBrowserWindow(),
       NULL);
 }
 
 void ChangePictureOptionsHandler::TakePhoto(const ListValue* args) {
   DCHECK(args && args->empty());
-  Browser* browser = BrowserList::FindBrowserWithProfile(web_ui_->GetProfile());
   views::Window* window = browser::CreateViewsWindow(
-      browser->window()->GetNativeHandle(),
+      GetBrowserWindow(),
       gfx::Rect(),
       new TakePhotoDialog());
   window->SetIsAlwaysOnTop(true);
@@ -174,6 +173,13 @@ void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
                                                int index,
                                                void* params) {
   UserManager::Get()->LoadLoggedInUserImage(path);
+}
+
+gfx::NativeWindow ChangePictureOptionsHandler::GetBrowserWindow() const {
+  Browser* browser = BrowserList::FindBrowserWithProfile(web_ui_->GetProfile());
+  if (!browser)
+    return NULL;
+  return browser->window()->GetNativeHandle();
 }
 
 }  // namespace chromeos

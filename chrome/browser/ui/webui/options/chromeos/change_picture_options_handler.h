@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "ui/gfx/native_widget_types.h"
 
 class DictionaryValue;
 class ListValue;
@@ -41,6 +42,9 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
 
   // SelectFileDialog::Delegate implementation.
   virtual void FileSelected(const FilePath& path, int index, void* params);
+
+  // Returns handle to browser window or NULL if it can't be found.
+  gfx::NativeWindow GetBrowserWindow() const;
 
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 
