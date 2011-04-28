@@ -5,22 +5,4 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-// Flakiness on the deps bots
-BUGDPRANKE WIN CPU DEBUG : editing/selection/select-line.html = PASS CRASH
-BUGDPRANKE WIN CPU DEBUG : fast/css/last-of-type-pseudo-class.html = PASS TEXT
-BUGDPRANKE WIN CPU DEBUG : fast/filesystem/file-writer-write-overlapped.html = TEXT PASS
-BUGDPRANKE WIN CPU DEBUG : http/tests/local/stylesheet-and-script-load-order-media-print.html = PASS CRASH
-BUGDPRANKE WIN CPU DEBUG : svg/text/select-textLength-spacingAndGlyphs-squeeze-3.svg = PASS CRASH
-BUGDPRANKE MAC CPU DEBUG : fast/block/float/overhanging-tall-block.html = PASS CRASH
-BUGDPRANKE MAC CPU DEBUG : fast/css/import_with_baseurl.html = PASS CRASH
 
-// Flakiness since 4/28 on deps
-BUGDPRANKE SNOWLEOPARD : svg/custom/foreign-object-skew.svg = IMAGE
-BUGDPRANKE SNOWLEOPARD : svg/hixie/rendering-model/003.xhtml = IMAGE+TEXT PASS
-BUGDPRANKE SNOWLEOPARD : svg/custom/font-face-name-without-name-attr.svg = CRASH
-BUGKBR SNOWLEOPARD DEBUG : fast/block/float/overhanging-after-height-decrease.html = PASS CRASH
-BUGCR80745 DEBUG : fast/borders/border-image-border-radius.html = PASS CRASH
-
-BUGWK59742 MAC LEOPARD SNOWLEOPARD : fast/speech/input-appearance-numberandspeech.html = IMAGE IMAGE+TEXT
-BUGWK59742 MAC LEOPARD SNOWLEOPARD : fast/speech/input-appearance-speechbutton.html = IMAGE IMAGE+TEXT
-BUGWK59750 : fast/harness/results.html = PASS TEXT
