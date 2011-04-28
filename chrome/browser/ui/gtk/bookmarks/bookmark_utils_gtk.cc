@@ -192,7 +192,7 @@ GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
     gtk_widget_set_size_request(window, kDragRepresentationWidth,
                                 base_font.GetHeight());
   } else {
-    if (!provider->UseGtkTheme()) {
+    if (!provider->UsingNativeTheme()) {
       GdkColor color = provider->GetGdkColor(
           ThemeService::COLOR_TOOLBAR);
       gtk_widget_modify_bg(window, GTK_STATE_NORMAL, &color);
@@ -215,7 +215,8 @@ GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
 GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
                                         BookmarkModel* model,
                                         GtkThemeService* provider) {
-  GdkPixbuf* pixbuf = GetPixbufForNode(node, model, provider->UseGtkTheme());
+  GdkPixbuf* pixbuf = GetPixbufForNode(
+      node, model, provider->UsingNativeTheme());
   GtkWidget* widget = GetDragRepresentation(pixbuf, node->GetTitle(), provider);
   g_object_unref(pixbuf);
   return widget;
@@ -223,8 +224,8 @@ GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
 
 void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
                             GtkWidget* button, GtkThemeService* provider) {
-  GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(node, model,
-                                                       provider->UseGtkTheme());
+  GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(
+      node, model, provider->UsingNativeTheme());
   PackButton(pixbuf, node->GetTitle(), node != model->other_node(), provider,
              button);
   g_object_unref(pixbuf);
@@ -250,7 +251,7 @@ const BookmarkNode* BookmarkNodeForWidget(GtkWidget* widget) {
 }
 
 void SetButtonTextColors(GtkWidget* label, GtkThemeService* provider) {
-  if (provider->UseGtkTheme()) {
+  if (provider->UsingNativeTheme()) {
     gtk_util::SetLabelColor(label, NULL);
   } else {
     GdkColor color = provider->GetGdkColor(

@@ -316,7 +316,7 @@ void BookmarkBarGtk::Show(bool animate) {
   // Hide out behind the findbar. This is rather fragile code, it could
   // probably be improved.
   if (floating_) {
-    if (theme_service_->UseGtkTheme()) {
+    if (theme_service_->UsingNativeTheme()) {
       if (GTK_WIDGET_REALIZED(event_box_->parent))
         gdk_window_lower(event_box_->parent->window);
       if (GTK_WIDGET_REALIZED(event_box_.get()))
@@ -577,7 +577,7 @@ void BookmarkBarGtk::SetOverflowButtonAppearance() {
   if (former_child)
     gtk_widget_destroy(former_child);
 
-  GtkWidget* new_child = theme_service_->UseGtkTheme() ?
+  GtkWidget* new_child = theme_service_->UsingNativeTheme() ?
       gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE) :
       gtk_image_new_from_pixbuf(ResourceBundle::GetSharedInstance().
           GetRTLEnabledPixbufNamed(IDR_BOOKMARK_BAR_CHEVRONS));
@@ -644,7 +644,7 @@ void BookmarkBarGtk::UpdateFloatingState() {
 #if !defined(OS_CHROMEOS)
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(paint_box_), TRUE);
 #endif
-    GdkColor stroke_color = theme_service_->UseGtkTheme() ?
+    GdkColor stroke_color = theme_service_->UsingNativeTheme() ?
         theme_service_->GetBorderColor() :
         theme_service_->GetGdkColor(ThemeService::COLOR_NTP_HEADER);
     gtk_util::ActAsRoundedWindow(paint_box_, stroke_color, kNTPRoundedness,
@@ -682,15 +682,15 @@ void BookmarkBarGtk::UpdateFloatingState() {
 }
 
 void BookmarkBarGtk::UpdateEventBoxPaintability() {
-  gtk_widget_set_app_paintable(event_box_.get(),
-                               !theme_service_->UseGtkTheme() || floating_);
+  gtk_widget_set_app_paintable(
+      event_box_.get(), !theme_service_->UsingNativeTheme() || floating_);
   // When using the GTK+ theme, we need to have the event box be visible so
   // buttons don't get a halo color from the background.  When using Chromium
   // themes, we want to let the background show through the toolbar.
 
 #if !defined(OS_CHROMEOS)
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()),
-                                   theme_service_->UseGtkTheme());
+                                   theme_service_->UsingNativeTheme());
 #endif
 }
 
@@ -850,7 +850,7 @@ void BookmarkBarGtk::Observe(NotificationType type,
     gtk_widget_modify_bg(paint_box_, GTK_STATE_NORMAL, &paint_box_color);
 
     if (floating_) {
-      GdkColor stroke_color = theme_service_->UseGtkTheme() ?
+      GdkColor stroke_color = theme_service_->UsingNativeTheme() ?
           theme_service_->GetBorderColor() :
           theme_service_->GetGdkColor(ThemeService::COLOR_NTP_HEADER);
       gtk_util::SetRoundedWindowBorderColor(paint_box_, stroke_color);
@@ -1349,7 +1349,7 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
 
   // We don't need to render the toolbar image in GTK mode, except when
   // detached.
-  if (theme_provider->UseGtkTheme() && !floating_)
+  if (theme_provider->UsingNativeTheme() && !floating_)
     return FALSE;
 
   if (!floating_) {

@@ -66,11 +66,11 @@ void BookmarkBarInstructionsGtk::OnButtonClick(GtkWidget* button) {
 void BookmarkBarInstructionsGtk::UpdateColors() {
   gtk_chrome_link_button_set_use_gtk_theme(
       GTK_CHROME_LINK_BUTTON(instructions_link_),
-      theme_service_->UseGtkTheme());
+      theme_service_->UsingNativeTheme());
 
   GdkColor bookmark_color = theme_service_->GetGdkColor(
       ThemeService::COLOR_BOOKMARK_TEXT);
-  if (theme_service_->UseGtkTheme()) {
+  if (theme_service_->UsingNativeTheme()) {
     gtk_util::SetLabelColor(instructions_label_, NULL);
     gtk_chrome_link_button_set_normal_color(
         GTK_CHROME_LINK_BUTTON(instructions_link_), NULL);
