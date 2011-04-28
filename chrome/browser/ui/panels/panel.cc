@@ -23,6 +23,13 @@ PanelManager* Panel::manager() const {
   return PanelManager::GetInstance();
 }
 
+void Panel::SetPanelBounds(const gfx::Rect& bounds) {
+  if (bounds_ == bounds)
+    return;
+  bounds_ = bounds;
+  browser_window_->SetBounds(bounds);
+}
+
 void Panel::Minimize() {
   NOTIMPLEMENTED();
 }
@@ -40,7 +47,8 @@ void Panel::ShowInactive() {
 }
 
 void Panel::SetBounds(const gfx::Rect& bounds) {
-  NOTIMPLEMENTED();
+  // Ignore any SetBounds requests since the bounds are completely controlled
+  // by panel manager.
 }
 
 void Panel::Close() {
@@ -106,13 +114,11 @@ void Panel::SetStarredState(bool is_starred) {
 }
 
 gfx::Rect Panel::GetRestoredBounds() const {
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  return bounds_;
 }
 
 gfx::Rect Panel::GetBounds() const {
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  return minimized_ ? minimized_bounds_ : bounds_;
 }
 
 bool Panel::IsMaximized() const {
@@ -125,7 +131,6 @@ void Panel::SetFullscreen(bool fullscreen) {
 }
 
 bool Panel::IsFullscreen() const {
-  NOTIMPLEMENTED();
   return false;
 }
 

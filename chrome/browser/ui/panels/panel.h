@@ -34,8 +34,6 @@ class Panel : public BrowserWindow {
 
   void Restore();
 
-  const gfx::Rect& bounds() const { return bounds_; }
-
   bool minimized() const { return minimized_; }
 
   // BrowserWindow overrides.
@@ -142,11 +140,21 @@ class Panel : public BrowserWindow {
   // Panel can only be created using PanelManager::CreatePanel().
   Panel(Browser* browser, const gfx::Rect& bounds);
 
+  // This is different from BrowserWindow::SetBounds():
+  // * SetPanelBounds() is only called by PanelManager to manage its position.
+  // * SetBounds() is called by the API to try to change the bounds, which is
+  //   not allowed for Panel.
+  void SetPanelBounds(const gfx::Rect& bounds);
+
   // Platform specifc BrowserWindow implementation for panels.  It'd be one of
   // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.
   scoped_ptr<BrowserWindow> browser_window_;
 
+  // The normal bounds when the panel is not minimized.
   gfx::Rect bounds_;
+
+  // The bounds when the panel is minimized.
+  gfx::Rect minimized_bounds_;
 
   // Is the panel minimized?
   bool minimized_;
