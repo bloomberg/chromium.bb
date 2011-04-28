@@ -132,8 +132,6 @@
   fun:ObserverListBase*
   ...
   fun:sync_api::SyncManager::SyncInternal::*
-  ...
-  fun:syncable::BaseTransaction::UnlockAndLog*
 }
 
 ############################
@@ -510,9 +508,4 @@
   fun:WebKit::WebWorkerBase::stopWorkerThread*
   fun:WebKit::WebWorkerImpl::terminateWorkerContext*
   fun:WebWorkerStub::OnTerminateWorkerContext*
-}
-{
-  bug_80776
-  ThreadSanitizer:Race
-  fun:ObserverListBase::Iterator::~Iterator
 }
