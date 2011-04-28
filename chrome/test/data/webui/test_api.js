@@ -54,10 +54,11 @@
     throw new Error(message);
   }
 
-  function runTest(currentTest) {
+  function runTest(currentTest, testArguments) {
     try {
+      currentTest = eval(currentTest);
       console.log('Running test ' + currentTest.name);
-      currentTest.call();
+      currentTest.apply(null, testArguments);
     } catch (e) {
       console.error(
           'Failed: ' + currentTest.name + '\nwith exception: ' + e.message);

@@ -12,6 +12,7 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "content/browser/webui/web_ui_test_handler.h"
 
+class Value;
 class WebUIMessageHandler;
 
 // The runner of WebUI javascript based tests.
@@ -22,6 +23,7 @@ class WebUIMessageHandler;
 // and the lone test within this class.
 class WebUIBrowserTest : public InProcessBrowserTest {
  public:
+  typedef std::vector<const Value*> ConstValueVector;
   virtual ~WebUIBrowserTest();
 
   // Add a custom helper JS library for your test.
@@ -30,9 +32,23 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   // Runs a javascript function in the context of all libraries.
   // Note that calls to functions in test_api.js are not supported.
   bool RunJavascriptFunction(const std::string& function_name);
+  bool RunJavascriptFunction(const std::string& function_name,
+                             const Value& arg);
+  bool RunJavascriptFunction(const std::string& function_name,
+                             const Value& arg1,
+                             const Value& arg2);
+  bool RunJavascriptFunction(const std::string& function_name,
+                             const ConstValueVector& function_arguments);
 
   // Runs a test that may include calls to functions in test_api.js.
   bool RunJavascriptTest(const std::string& test_name);
+  bool RunJavascriptTest(const std::string& test_name,
+                         const Value& arg);
+  bool RunJavascriptTest(const std::string& test_name,
+                         const Value& arg1,
+                         const Value& arg2);
+  bool RunJavascriptTest(const std::string& test_name,
+                         const ConstValueVector& test_arguments);
 
  protected:
   WebUIBrowserTest();
@@ -47,9 +63,16 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   // Builds a string containing all added javascript libraries.
   void BuildJavascriptLibraries(std::string* content);
 
+  // Builds a string with a call to the runTest JS function, passing the
+  // given test and its arguments.
+  string16 BuildRunTestJSCall(const std::string& test_name,
+                              const WebUIBrowserTest::ConstValueVector& args);
+
   // Calls the specified function with all libraries available. If |is_test|
   // is true, the framework listens for pass fail messages from javascript.
+  // The provided arguments vector is passed to |function_name|.
   bool RunJavascriptUsingHandler(const std::string& function_name,
+                                 const ConstValueVector& function_arguments,
                                  bool is_test);
 
   // Attaches mock and test handlers.

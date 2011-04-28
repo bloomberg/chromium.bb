@@ -1,18 +1,19 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #include "content/browser/webui/web_ui_browsertest.h"
 
 #include <string>
 #include <vector>
 
 #include "base/path_service.h"
+#include "base/values.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/webui/web_ui.h"
 #include "ui/base/resource/resource_bundle.h"
 
 static const FilePath::CharType* kWebUILibraryJS =
@@ -34,11 +35,55 @@ bool LogHandler(int severity,
 WebUIBrowserTest::~WebUIBrowserTest() {}
 
 bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name) {
-  return RunJavascriptUsingHandler(function_name, false);
+  return RunJavascriptFunction(function_name, ConstValueVector());
+}
+
+bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name,
+                                             const Value& arg) {
+  ConstValueVector args;
+  args.push_back(&arg);
+  return RunJavascriptFunction(function_name, args);
+}
+
+bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name,
+                                             const Value& arg1,
+                                             const Value& arg2) {
+  ConstValueVector args;
+  args.push_back(&arg1);
+  args.push_back(&arg2);
+  return RunJavascriptFunction(function_name, args);
+}
+
+bool WebUIBrowserTest::RunJavascriptFunction(
+    const std::string& function_name,
+    const ConstValueVector& function_arguments) {
+  return RunJavascriptUsingHandler(function_name, function_arguments, false);
 }
 
 bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name) {
-  return RunJavascriptUsingHandler(test_name, true);
+  return RunJavascriptTest(test_name, ConstValueVector());
+}
+
+bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name,
+                                         const Value& arg) {
+  ConstValueVector args;
+  args.push_back(&arg);
+  return RunJavascriptTest(test_name, args);
+}
+
+bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name,
+                                         const Value& arg1,
+                                         const Value& arg2) {
+  ConstValueVector args;
+  args.push_back(&arg1);
+  args.push_back(&arg2);
+  return RunJavascriptTest(test_name, args);
+}
+
+bool WebUIBrowserTest::RunJavascriptTest(
+    const std::string& test_name,
+    const ConstValueVector& test_arguments) {
+  return RunJavascriptUsingHandler(test_name, test_arguments, true);
 }
 
 WebUIBrowserTest::WebUIBrowserTest()
@@ -76,15 +121,39 @@ void WebUIBrowserTest::BuildJavascriptLibraries(std::string* content) {
   }
 }
 
+string16 WebUIBrowserTest::BuildRunTestJSCall(
+    const std::string& function_name,
+    const WebUIBrowserTest::ConstValueVector& test_func_args) {
+  WebUIBrowserTest::ConstValueVector arguments;
+  StringValue function_name_arg(function_name);
+  arguments.push_back(&function_name_arg);
+  ListValue baked_argument_list;
+  WebUIBrowserTest::ConstValueVector::const_iterator arguments_iterator;
+  for (arguments_iterator = test_func_args.begin();
+       arguments_iterator != test_func_args.end();
+       ++arguments_iterator) {
+    baked_argument_list.Append((Value *)*arguments_iterator);
+  }
+  arguments.push_back(&baked_argument_list);
+  return WebUI::GetJavascriptCall(std::string("runTest"), arguments);
+}
+
 bool WebUIBrowserTest::RunJavascriptUsingHandler(
-    const std::string& function_name, bool is_test) {
+    const std::string& function_name,
+    const ConstValueVector& function_arguments,
+    bool is_test) {
   std::string content;
   BuildJavascriptLibraries(&content);
 
   if (!function_name.empty()) {
-    std::string called_function = is_test ? "runTest(" + function_name + ");" :
-                                            function_name + "()";
-    content.append(called_function);
+    string16 called_function;
+    if (is_test) {
+      called_function = BuildRunTestJSCall(function_name, function_arguments);
+    } else {
+      called_function = WebUI::GetJavascriptCall(function_name,
+                                                 function_arguments);
+    }
+    content.append(UTF16ToUTF8(called_function));
   }
   SetupHandlers();
   logging::SetLogMessageHandler(&LogHandler);

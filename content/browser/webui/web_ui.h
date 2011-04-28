@@ -157,6 +157,11 @@ class WebUI : public IPC::Channel::Listener {
   // Web UI system.
   static const TypeID kNoWebUI;
 
+  // Returns JavaScript code that, when executed, calls the function specified
+  // by |function_name| with the arguments specified in |arg_list|.
+  static string16 GetJavascriptCall(const std::string& function_name,
+                                    const std::vector<const Value*>& arg_list);
+
  protected:
   void AddMessageHandler(WebUIMessageHandler* handler);
 
