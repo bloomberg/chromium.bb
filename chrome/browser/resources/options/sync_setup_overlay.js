@@ -72,7 +72,7 @@ cr.define('options', function() {
         self.closeOverlay_();
       };
       $('customize-link').onclick = function() {
-        self.showCustomizePage_();
+        self.showCustomizePage_(false);
       };
       $('confirm-everything-ok').onclick = function() {
         self.sendConfiguration_();
@@ -272,8 +272,6 @@ cr.define('options', function() {
 
       var datatypeSelect = document.getElementById('sync-select-datatypes');
       datatypeSelect.selectedIndex = args.keepEverythingSynced ? 0 : 1;
-      document.getElementById('chooseDataTypesBody').hidden =
-          args.keepEverythingSynced;
 
       $('bookmarksCheckbox').checked = args.syncBookmarks;
       $('preferencesCheckbox').checked = args.syncPreferences;
@@ -357,8 +355,6 @@ cr.define('options', function() {
       datatypeSelect.onchange = function() {
         var syncAll = this.selectedIndex == 0;
         self.setCheckboxesToKeepEverythingSynced_(syncAll);
-
-        document.getElementById('chooseDataTypesBody').hidden = syncAll;
       };
 
       if (args) {
@@ -372,7 +368,7 @@ cr.define('options', function() {
         var usePassphrase = args['usePassphrase'];
         if (syncEverything == false || syncAllDataTypes == false ||
             usePassphrase) {
-          this.showCustomizePage_();
+          this.showCustomizePage_(syncAllDataTypes);
         }
       }
 
@@ -380,24 +376,27 @@ cr.define('options', function() {
     },
 
     showSyncEverythingPage_: function() {
-      document.getElementById('confirm-sync-preferences').hidden = false;
-      document.getElementById('customize-sync-preferences').hidden = true;
+      $('confirm-sync-preferences').hidden = false;
+      $('customize-sync-preferences').hidden = true;
+
+      // Reset the selection to 'Sync everything'.
+      $('sync-select-datatypes').selectedIndex = 0;
 
       // The default state is to sync everything; the passphrase option is
       // unchanged.
       this.setCheckboxesToKeepEverythingSynced_(true);
     },
 
-    showCustomizePage_: function() {
+    showCustomizePage_: function(syncEverything) {
       document.getElementById('confirm-sync-preferences').hidden = true;
       document.getElementById('customize-sync-preferences').hidden = false;
 
-      // If the user is shown the 'Customize' page, it's likely he intends to
-      // change the data types.  Select the 'Choose data types' option in this
-      // case.
-      document.getElementById('sync-select-datatypes').selectedIndex = 1;
-      document.getElementById('chooseDataTypesBody').hidden = false;
-      this.setDataTypeCheckboxesEnabled_(true);
+      // If the user has selected the 'Customize' page on initial set up, it's
+      // likely he intends to change the data types.  Select the
+      // 'Choose data types' option in this case.
+      var index = syncEverything ? 0 : 1;
+      document.getElementById('sync-select-datatypes').selectedIndex = index;
+      this.setDataTypeCheckboxesEnabled_(!syncEverything);
     },
 
     showSyncSetupPage_: function(page, args) {
