@@ -23,7 +23,6 @@ class Rect;
 
 namespace views {
 class View;
-class WidgetGtk;
 }  // namespace views
 
 namespace chromeos {

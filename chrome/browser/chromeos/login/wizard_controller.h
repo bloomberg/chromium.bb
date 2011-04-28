@@ -42,7 +42,6 @@ class Rect;
 namespace views {
 class Views;
 class Widget;
-class WidgetGtk;
 }
 
 // Class that manages control flow between wizard screens. Wizard controller
