@@ -11,11 +11,6 @@
 
 namespace {
 
-// Install predicate used by AddFromDefaultAppList().
-bool IsApp(const Extension& extension) {
-  return extension.is_app();
-}
-
 // Install predicate used by AddFromExternalUpdateUrl().
 bool AlwaysInstall(const Extension& extension) {
   return true;
@@ -101,28 +96,6 @@ void PendingExtensionManager::AddFromExternalUpdateUrl(
                    location);
 }
 
-
-// TODO(akalin): Change DefaultAppList to DefaultExtensionList and
-// remove the IsApp() check.
-void PendingExtensionManager::AddFromDefaultAppList(
-    const std::string& id) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  const bool kIsFromSync = false;
-  const bool kInstallSilently = true;
-  const bool kEnableOnInstall = true;
-  const bool kEnableIncognitoOnInstall = true;
-
-  // This can legitimately happen if the user manually installed one of the
-  // default apps before this code ran.
-  if (service_.GetExtensionById(id, true))
-    return;
-
-  AddExtensionImpl(id, GURL(), &IsApp,
-                   kIsFromSync, kInstallSilently,
-                   kEnableOnInstall, kEnableIncognitoOnInstall,
-                   Extension::INTERNAL);
-}
 
 void PendingExtensionManager::AddFromExternalFile(
     const std::string& id,

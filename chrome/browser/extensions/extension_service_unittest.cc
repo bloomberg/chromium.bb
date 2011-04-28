@@ -3699,11 +3699,6 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
         kGoodInitialIncognitoEnabled);
   }
 
-  // Fake a request to install a default app.
-  void AddPendingDefaultAppInstall() {
-    service_->pending_extension_manager()->AddFromDefaultAppList(crx_id_);
-  }
-
   // Fake a policy install.
   void AddPendingPolicyInstall() {
     scoped_ptr<Version> version;
@@ -3793,28 +3788,6 @@ TEST_F(ExtensionSourcePriorityTest, PendingExternalUrlOverSync) {
   ASSERT_EQ(Extension::EXTERNAL_PREF_DOWNLOAD, GetPendingLocation());
   EXPECT_FALSE(GetPendingIsFromSync());
   ASSERT_FALSE(IsCrxInstalled());
-}
-
-// Test that an install of an external CRX overrides a request for a default
-// app.
-TEST_F(ExtensionSourcePriorityTest, PendingExternalFileOverDefaultApp) {
-  InitializeEmptyExtensionService();
-  ASSERT_FALSE(IsCrxInstalled());
-
-  AddPendingDefaultAppInstall();
-  ASSERT_EQ(Extension::INTERNAL, GetPendingLocation());
-  ASSERT_FALSE(IsCrxInstalled());
-
-  AddPendingExternalPrefFileInstall();
-  ASSERT_EQ(Extension::EXTERNAL_PREF, GetPendingLocation());
-  ASSERT_FALSE(IsCrxInstalled());
-
-  AddPendingDefaultAppInstall();
-  ASSERT_EQ(Extension::EXTERNAL_PREF, GetPendingLocation());
-  ASSERT_FALSE(IsCrxInstalled());
-
-  WaitForCrxInstall(crx_path_, true);
-  ASSERT_TRUE(IsCrxInstalled());
 }
 
 // Test that an external install request stops sync from installing

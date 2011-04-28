@@ -78,9 +78,6 @@ class PendingExtensionManager {
                                 const GURL& update_url,
                                 Extension::Location location);
 
-  // Add a default app, using the default update url.
-  void AddFromDefaultAppList(const std::string& id);
-
   // Add a pending extension record for an external CRX file.
   void AddFromExternalFile(
       const std::string& id,
