@@ -68,6 +68,8 @@ class ExtensionServiceInterface {
                                const GURL& download_url) = 0;
   virtual const Extension* GetExtensionById(const std::string& id,
                                             bool include_disabled) const = 0;
+  virtual const Extension* GetInstalledExtension(
+      const std::string& id) const = 0;
 
   virtual bool IsExtensionEnabled(const std::string& extension_id) const = 0;
   virtual bool IsExternalExtensionUninstalled(
@@ -235,13 +237,18 @@ class ExtensionService
   // Start up the extension event routers.
   void InitEventRouters();
 
-  // Look up an extension by ID.
+  // Look up an extension by ID.  Does not include terminated
+  // extensions.
   virtual const Extension* GetExtensionById(
       const std::string& id, bool include_disabled) const OVERRIDE;
 
-  // Looks up a terminated (crashed) extension by ID. GetExtensionById does
-  // not include terminated extensions.
-  virtual const Extension* GetTerminatedExtension(const std::string& id);
+  // Looks up a terminated (crashed) extension by ID.
+  const Extension* GetTerminatedExtension(const std::string& id) const;
+
+  // Looks up an extension by ID, regardless of whether it's enabled,
+  // disabled, or terminated.
+  virtual const Extension* GetInstalledExtension(
+      const std::string& id) const OVERRIDE;
 
   // Updates a currently-installed extension with the contents from
   // |extension_path|.
@@ -521,7 +528,8 @@ class ExtensionService
   // and disabled extensions.
   const Extension* GetExtensionByIdInternal(const std::string& id,
                                             bool include_enabled,
-                                            bool include_disabled) const;
+                                            bool include_disabled,
+                                            bool include_terminated) const;
 
 
   // Keep track of terminated extensions.

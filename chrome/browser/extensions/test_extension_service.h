@@ -26,6 +26,8 @@ class TestExtensionService : public ExtensionServiceInterface {
                                const GURL& download_url) OVERRIDE;
   virtual const Extension* GetExtensionById(
       const std::string& id, bool include_disabled) const OVERRIDE;
+  virtual const Extension* GetInstalledExtension(
+      const std::string& id) const OVERRIDE;
   virtual bool IsExtensionEnabled(
       const std::string& extension_id) const OVERRIDE;
   virtual bool IsExternalExtensionUninstalled(

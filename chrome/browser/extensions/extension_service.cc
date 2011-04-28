@@ -399,9 +399,7 @@ bool ExtensionService::UninstallExtensionHelper(
     const std::string& extension_id) {
 
   const Extension* extension =
-      extensions_service->GetExtensionById(extension_id, true);
-  if (!extension)
-    extension = extensions_service->GetTerminatedExtension(extension_id);
+      extensions_service->GetInstalledExtension(extension_id);
 
   // We can't call UninstallExtension with an invalid extension ID.
   if (!extension) {
@@ -549,7 +547,7 @@ void ExtensionService::InitEventRouters() {
 
 const Extension* ExtensionService::GetExtensionById(
     const std::string& id, bool include_disabled) const {
-  return GetExtensionByIdInternal(id, true, include_disabled);
+  return GetExtensionByIdInternal(id, true, include_disabled, false);
 }
 
 void ExtensionService::Init() {
@@ -581,7 +579,8 @@ void ExtensionService::UpdateExtension(const std::string& id,
   bool is_pending_extension = pending_extension_manager_.GetById(
       id, &pending_extension_info);
 
-  const Extension* extension = GetExtensionByIdInternal(id, true, true);
+  const Extension* extension =
+      GetExtensionByIdInternal(id, true, true, false);
   if (!is_pending_extension && !extension) {
     LOG(WARNING) << "Will not update extension " << id
                  << " because it is not installed or pending";
@@ -660,10 +659,7 @@ bool ExtensionService::UninstallExtension(const std::string& extension_id,
                                           std::string* error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const Extension* extension =
-      GetExtensionByIdInternal(extension_id, true, true);
-  if (!extension)
-    extension = GetTerminatedExtension(extension_id);
+  const Extension* extension = GetInstalledExtension(extension_id);
 
   // Callers should not send us nonexistent extensions.
   CHECK(extension);
@@ -756,7 +752,7 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const Extension* extension =
-      GetExtensionByIdInternal(extension_id, false, true);
+      GetExtensionByIdInternal(extension_id, false, true, false);
   if (!extension)
     return;
 
@@ -783,7 +779,7 @@ void ExtensionService::DisableExtension(const std::string& extension_id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const Extension* extension =
-      GetExtensionByIdInternal(extension_id, true, false);
+      GetExtensionByIdInternal(extension_id, true, false, false);
   // The extension may have been disabled already.
   if (!extension)
     return;
@@ -1336,7 +1332,8 @@ void ExtensionService::ProcessSyncData(
     return;
   }
 
-  const Extension* extension = GetExtensionByIdInternal(id, true, true);
+  const Extension* extension =
+      GetExtensionByIdInternal(id, true, true, false);
   // TODO(akalin): Figure out what to do with terminated extensions.
 
   // Handle already-installed extensions (just update settings).
@@ -1529,7 +1526,7 @@ void ExtensionService::UnloadExtension(
     UnloadedExtensionInfo::Reason reason) {
   // Make sure the extension gets deleted after we return from this function.
   scoped_refptr<const Extension> extension(
-      GetExtensionByIdInternal(extension_id, true, true));
+      GetExtensionByIdInternal(extension_id, true, true, false));
 
   // This method can be called via PostTask, so the extension may have been
   // unloaded by the time this runs.
@@ -1718,7 +1715,7 @@ void ExtensionService::DisableIfPrivilegeIncrease(const Extension* extension) {
   // extension once again includes "omnibox" in an upgrade, the extension
   // can upgrade without requiring this user's approval.
   const Extension* old = GetExtensionByIdInternal(extension->id(),
-                                                  true, true);
+                                                  true, true, false);
   bool granted_full_access;
   std::set<std::string> granted_apis;
   ExtensionExtent granted_extent;
@@ -1872,7 +1869,8 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
 }
 
 const Extension* ExtensionService::GetExtensionByIdInternal(
-    const std::string& id, bool include_enabled, bool include_disabled) const {
+    const std::string& id, bool include_enabled, bool include_disabled,
+    bool include_terminated) const {
   std::string lowercase_id = StringToLowerASCII(id);
   if (include_enabled) {
     for (ExtensionList::const_iterator iter = extensions_.begin();
@@ -1884,6 +1882,13 @@ const Extension* ExtensionService::GetExtensionByIdInternal(
   if (include_disabled) {
     for (ExtensionList::const_iterator iter = disabled_extensions_.begin();
         iter != disabled_extensions_.end(); ++iter) {
+      if ((*iter)->id() == lowercase_id)
+        return *iter;
+    }
+  }
+  if (include_terminated) {
+    for (ExtensionList::const_iterator iter = terminated_extensions_.begin();
+        iter != terminated_extensions_.end(); ++iter) {
       if ((*iter)->id() == lowercase_id)
         return *iter;
     }
@@ -1911,14 +1916,13 @@ void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
 }
 
 const Extension* ExtensionService::GetTerminatedExtension(
-    const std::string& id) {
-  std::string lowercase_id = StringToLowerASCII(id);
-  for (ExtensionList::const_iterator iter = terminated_extensions_.begin();
-       iter != terminated_extensions_.end(); ++iter) {
-    if ((*iter)->id() == lowercase_id)
-      return *iter;
-  }
-  return NULL;
+    const std::string& id) const {
+  return GetExtensionByIdInternal(id, false, false, true);
+}
+
+const Extension* ExtensionService::GetInstalledExtension(
+    const std::string& id) const {
+  return GetExtensionByIdInternal(id, true, true, true);
 }
 
 const Extension* ExtensionService::GetWebStoreApp() {

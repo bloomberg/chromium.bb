@@ -30,6 +30,12 @@ const Extension* TestExtensionService::GetExtensionById(
   return NULL;
 }
 
+const Extension* TestExtensionService::GetInstalledExtension(
+    const std::string& id) const {
+  ADD_FAILURE();
+  return NULL;
+}
+
 bool TestExtensionService::IsExtensionEnabled(
     const std::string& extension_id) const {
   ADD_FAILURE();

@@ -60,7 +60,7 @@ bool PendingExtensionManager::AddFromSync(
     bool enable_incognito_on_install) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (service_.GetExtensionById(id, true)) {
+  if (service_.GetInstalledExtension(id)) {
     LOG(ERROR) << "Trying to add pending extension " << id
                << " which already exists";
     return false;
@@ -89,7 +89,7 @@ void PendingExtensionManager::AddFromExternalUpdateUrl(
   if (service_.IsExternalExtensionUninstalled(id))
     return;
 
-  if (service_.GetExtensionById(id, true)) {
+  if (service_.GetInstalledExtension(id)) {
     LOG(DFATAL) << "Trying to add extension " << id
                 << " by external update, but it is already installed.";
     return;
