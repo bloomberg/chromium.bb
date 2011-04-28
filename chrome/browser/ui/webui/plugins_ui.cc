@@ -368,14 +368,6 @@ RefCountedMemory* PluginsUI::GetFaviconResourceBytes() {
 
 // static
 void PluginsUI::RegisterUserPrefs(PrefService* prefs) {
-  FilePath internal_dir;
-  PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir);
-  prefs->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
-                              internal_dir);
-
-  prefs->RegisterListPref(prefs::kPluginsDisabledPlugins);
-  prefs->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions);
-  prefs->RegisterListPref(prefs::kPluginsEnabledPlugins);
   prefs->RegisterListPref(prefs::kPluginsPluginsList);
   prefs->RegisterBooleanPref(prefs::kPluginsEnabledInternalPDF, false);
   prefs->RegisterBooleanPref(prefs::kPluginsShowDetails, false);

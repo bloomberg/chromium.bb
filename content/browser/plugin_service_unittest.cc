@@ -1,11 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/plugin_service.h"
 
-#include "base/auto_reset.h"
-#include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,12 +17,8 @@ class PluginServiceTest : public testing::Test {
         file_thread_(BrowserThread::FILE, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {}
 
-  virtual ~PluginServiceTest() {}
 
   virtual void SetUp() {
-    profile_.reset(new TestingProfile());
-
-    PluginService::InitGlobalInstance(profile_.get());
     plugin_service_ = PluginService::GetInstance();
     ASSERT_TRUE(plugin_service_);
   }
@@ -37,7 +31,6 @@ class PluginServiceTest : public testing::Test {
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
   BrowserThread io_thread_;
-  scoped_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginServiceTest);
 };

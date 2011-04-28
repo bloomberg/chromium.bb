@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/notification_observer.h"
 
 class DictionaryValue;
@@ -39,8 +40,12 @@ class PluginUpdater : public NotificationObserver {
   // Enable or disable a specific plugin file.
   void EnablePlugin(bool enable, const FilePath::StringType& file_path);
 
-  // Enable or disable plugin groups as defined by the user's preference file.
-  void UpdatePluginGroupsStateFromPrefs(Profile* profile);
+  // Associates the PluginUpdater with |profile|. This enables or disables
+  // plugin groups as defined by the user's preferences.
+  void SetProfile(Profile* profile);
+
+  // Called at shutdown before the profile is destroyed.
+  void Shutdown();
 
   // Write the enable/disable status to the user's preference file.
   void UpdatePreferences(Profile* profile, int delay_ms);
@@ -51,6 +56,8 @@ class PluginUpdater : public NotificationObserver {
                        const NotificationDetails& details);
 
   static PluginUpdater* GetInstance();
+
+  static void RegisterPrefs(PrefService* prefs);
 
  private:
   PluginUpdater();
@@ -88,6 +95,8 @@ class PluginUpdater : public NotificationObserver {
 
   // Needed to allow singleton instantiation using private constructor.
   friend struct DefaultSingletonTraits<PluginUpdater>;
+
+  PrefChangeRegistrar registrar_;
 
   bool notify_pending_;
 

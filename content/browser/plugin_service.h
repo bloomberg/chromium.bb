@@ -50,7 +50,6 @@ class Message;
 class MessageLoop;
 struct PepperPluginInfo;
 class PluginDirWatcherDelegate;
-class Profile;
 class ResourceDispatcherHost;
 
 namespace net {
@@ -69,10 +68,6 @@ class PluginService
     GURL url;
     webkit::npapi::WebPluginInfo plugin;
   };
-
-  // Initializes the global instance; should be called on startup from the main
-  // thread.
-  static void InitGlobalInstance(Profile* profile);
 
   // Returns the PluginService singleton.
   static PluginService* GetInstance();

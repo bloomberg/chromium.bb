@@ -127,7 +127,7 @@ void PluginUpdater::ListValueToStringSet(const ListValue* src,
   }
 }
 
-void PluginUpdater::UpdatePluginGroupsStateFromPrefs(Profile* profile) {
+void PluginUpdater::SetProfile(Profile* profile) {
   bool update_internal_dir = false;
   FilePath last_internal_dir =
   profile->GetPrefs()->GetFilePath(prefs::kPluginsLastInternalDirectory);
@@ -223,6 +223,12 @@ void PluginUpdater::UpdatePluginGroupsStateFromPrefs(Profile* profile) {
                                disabled_exception_plugins,
                                enabled_plugins);
 
+  registrar_.RemoveAll();
+  registrar_.Init(profile->GetPrefs());
+  registrar_.Add(prefs::kPluginsDisabledPlugins, this);
+  registrar_.Add(prefs::kPluginsDisabledPluginsExceptions, this);
+  registrar_.Add(prefs::kPluginsEnabledPlugins, this);
+
   if (force_enable_internal_pdf || internal_pdf_enabled) {
     // See http://crbug.com/50105 for background.
     EnablePluginGroup(false, ASCIIToUTF16(
@@ -235,6 +241,10 @@ void PluginUpdater::UpdatePluginGroupsStateFromPrefs(Profile* profile) {
     // plugins are loaded after 30s by the metrics service.
     UpdatePreferences(profile, kPluginUpdateDelayMs);
   }
+}
+
+void PluginUpdater::Shutdown() {
+  registrar_.RemoveAll();
 }
 
 void PluginUpdater::UpdatePreferences(Profile* profile, int delay_ms) {
@@ -322,4 +332,15 @@ void PluginUpdater::OnNotifyPluginStatusChanged() {
 /*static*/
 PluginUpdater* PluginUpdater::GetInstance() {
   return Singleton<PluginUpdater>::get();
+}
+
+/*static*/
+void PluginUpdater::RegisterPrefs(PrefService* prefs) {
+  FilePath internal_dir;
+  PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir);
+  prefs->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
+                              internal_dir);
+  prefs->RegisterListPref(prefs::kPluginsDisabledPlugins);
+  prefs->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions);
+  prefs->RegisterListPref(prefs::kPluginsEnabledPlugins);
 }

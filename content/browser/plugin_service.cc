@@ -15,8 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/plugin_updater.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/default_plugin.h"
@@ -70,15 +68,6 @@ class PluginDirWatcherDelegate : public FilePathWatcher::Delegate {
   }
 };
 #endif
-
-// static
-void PluginService::InitGlobalInstance(Profile* profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // We first group the plugins and then figure out which groups to
-  // enable or disable.
-  PluginUpdater::GetInstance()->UpdatePluginGroupsStateFromPrefs(profile);
-}
 
 // static
 PluginService* PluginService::GetInstance() {

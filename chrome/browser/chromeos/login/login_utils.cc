@@ -325,7 +325,7 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
   }
 
   // Enable/disable plugins based on user preferences.
-  PluginUpdater::GetInstance()->UpdatePluginGroupsStateFromPrefs(profile);
+  PluginUpdater::GetInstance()->SetProfile(profile);
   btl->AddLoginTimeMarker("PluginsStateUpdated", false);
 
   // We suck. This is a hack since we do not have the enterprise feature

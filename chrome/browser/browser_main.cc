@@ -56,6 +56,7 @@
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/net/websocket_experiment/websocket_experiment_runner.h"
+#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -86,7 +87,6 @@
 #include "chrome/common/profiling.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/child_process.h"
 #include "content/common/content_client.h"
@@ -1642,7 +1642,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   browser_process->intranet_redirect_detector();
 
   // Do initialize the plug-in service (and related preferences).
-  PluginService::InitGlobalInstance(profile);
+  PluginUpdater::GetInstance()->SetProfile(profile);
 
   // Prepare for memory caching of SDCH dictionaries.
   // Perform A/B test to measure global impact of SDCH support.

@@ -38,7 +38,6 @@
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugin_data_remover.h"
-#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -840,18 +839,6 @@ void BrowserProcessImpl::CreateLocalState() {
   browser::RegisterLocalState(local_state_.get());
 
   pref_change_registrar_.Init(local_state_.get());
-
-  // Make sure the the plugin updater gets notifications of changes
-  // in the plugin policy lists.
-  local_state_->RegisterListPref(prefs::kPluginsDisabledPlugins);
-  pref_change_registrar_.Add(prefs::kPluginsDisabledPlugins,
-                             PluginUpdater::GetInstance());
-  local_state_->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions);
-  pref_change_registrar_.Add(prefs::kPluginsDisabledPluginsExceptions,
-                             PluginUpdater::GetInstance());
-  local_state_->RegisterListPref(prefs::kPluginsEnabledPlugins);
-  pref_change_registrar_.Add(prefs::kPluginsEnabledPlugins,
-                             PluginUpdater::GetInstance());
 
   print_job_manager_->InitOnUIThread(local_state_.get());
 
