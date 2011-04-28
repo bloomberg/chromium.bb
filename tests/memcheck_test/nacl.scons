@@ -26,7 +26,24 @@ node = env.CommandSelLdrTestNacl(
       "( Conditional jump or move depends.+)|"
       "(VG_USERREQ__CLIENT_CALL.+)|"
       "( .*BACKTRACE:)|"
-      "(ERROR SUMMARY: [01-9]+ errors from [01-9]+ contexts)'"),
+      "(ERROR SUMMARY: [01-9]+ errors from [01-9]+ contexts)|"
+      "(strcmp: .*)'"),
     exit_status='1',
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_memcheck_test')
+
+
+# Leak checker sanity test.
+if env.Bit('with_leakcheck'):
+  env.ComponentProgram('leak_test.nexe', 'leak_test.c',
+                       EXTRA_LIBS=['pthread'])
+  node = env.CommandSelLdrTestNacl(
+      'leak_test.out',
+      command=[env.File('leak_test.nexe')],
+      stderr_golden=env.File('leak_test.stderr.golden'),
+      filter_group_only='true',
+      filter_regex=(
+          "'(7,931,147 bytes in 1 blocks are definitely lost).*'"),
+      exit_status='1',
+      )
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_leak_test')

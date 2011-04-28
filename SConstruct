@@ -763,6 +763,21 @@ if (pre_base_env.Bit('target_arm') and
 pre_base_env.AddMethod(lambda self: ARGUMENTS.get('running_on_valgrind'),
                        'IsRunningUnderValgrind')
 
+DeclareBit('with_leakcheck', 'Running under Valgrind leak checker')
+
+def RunningUnderLeakCheck():
+  run_under = ARGUMENTS.get('run_under')
+  if run_under:
+    extra_args = ARGUMENTS.get('run_under_extra_args')
+    if extra_args:
+      run_under += extra_args
+    if run_under.find('leak-check=full') > 0:
+      return True
+  return False
+
+if RunningUnderLeakCheck():
+  pre_base_env.SetBits('with_leakcheck')
+
 # This method indicates that the binaries we are building will validate code
 # for an architecture different than the one the binaries will run on.
 # NOTE Currently (2010/11/17) this is 'x86' vs. 'arm', and  x86-32 vs. x86-64
@@ -1367,7 +1382,6 @@ def AddToStringifiedList(lst, additions):
 def CommandSelLdrTestNacl(env, name, command,
                           log_verbosity=2,
                           sel_ldr_flags=None,
-                          leading_flags=None,
                           loader='sel_ldr',
                           size='medium',
                           # True for *.nexe statically linked with glibc

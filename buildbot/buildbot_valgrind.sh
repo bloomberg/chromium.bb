@@ -45,6 +45,11 @@ echo @@@BUILD_STEP memcheck@@@
     --mode=dbg-linux,nacl platform=x86-64 sdl=none buildbot=memcheck \
     memcheck_bot_tests
 
+echo @@@BUILD_STEP leakcheck@@@
+./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    --mode=dbg-linux,nacl platform=x86-64 sdl=none buildbot=memcheck \
+    run_under_extra_args=--leak-check=full run_leak_test
+
 echo "@@@BUILD_STEP tsan(untrusted)@@@"
 ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     --mode=dbg-linux,nacl platform=x86-64 sdl=none buildbot=tsan \
