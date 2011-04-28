@@ -7,11 +7,12 @@
     <META HTTP-EQUIV="Expires" CONTENT="-1" />
     <script type="text/javascript" src="nacltest.js"></script>
     <script type="application/x-javascript">
+      //<![CDATA[
 function setupTests(tester, plugin) {
   tester.addTest('smoke', function() {
-    halt_and_callback(2000, function() {
-        assertEqual(plugin.__moduleReady, 1);
-    });
+    halt_and_callback(2000, function() { });
+    // '' means there was no error.
+    assertEqual(plugin.lastError, '');
   })
 }
       //]]>

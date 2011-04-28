@@ -9,10 +9,9 @@
     <style type="text/css">
       canvas { border:solid }
     </style>
-    <script type='application/x-javascript'>
-      <!--
-var plugin;
-
+    <script type="application/x-javascript" src="nacltest.js">
+    <script type="application/x-javascript">
+      //<![CDATA[
 // A utility function to get the integer value of a user input field.
 var getValue = function(id) {
   var element = document.getElementById(id);
@@ -132,21 +131,18 @@ var getSharedMemorySize = function(canvas_width) {
 }
 
 // Compute the Native Client mandelbrot picture and render into canvas.
-var drawNativeClient = function(canvas_width,
-                                tile_width,
-                                context,
-                                plugin) {
+function drawNativeClient(canvas_width, tile_width, context, server) {
   // shm_size needs to be enough to keep 16 bytes per point.
   var shm_size = getSharedMemorySize(canvas_width);
-  var shm = plugin.__shmFactory(shm_size);
+  var shm = server.__shmFactory(shm_size);
   var tiles_per_row = canvas_width / tile_width;
   var call_time = 0;
   var canvas_time = 0;
-  plugin.setup(shm);
+  server.setup(shm);
   for (var x = 0; x < canvas_width; x += tile_width) {
     for (var y = 0; y < canvas_width; y += tile_width) {
       var before_call = new Date();
-      plugin.tiled(x, y, tile_width, tiles_per_row);
+      server.tiled(x, y, tile_width, tiles_per_row);
       var str = shm.read(0, tile_width * tile_width * 16);
       var after_call = new Date();
       var difftime = after_call.getTime() - before_call.getTime();
@@ -165,13 +161,13 @@ var drawNativeClient = function(canvas_width,
       canvas_time += difftime;
     }
   }
-  plugin.shutdown();
+  server.shutdown();
   return [call_time, canvas_time];
 }
 
 // Compute and display the entire Native Client mandelbrot picture, including
 // printing the gathered timings.
-var testNativeClient = function() {
+function testNativeClient(server) {
   // Set up the element where the time will be reported.
   var time_element = document.getElementById('nacl_time');
   time_element.innerHTML = '<b>Native Client';
@@ -186,13 +182,11 @@ var testNativeClient = function() {
   var context = canvas.getContext('2d');
   context.fillStyle = 'rgb(0,0,0)';
   context.fillRect(0, 0, canvas_width, canvas_width);
-  // Get the Native Client plugin element.
-  var plugin = document.getElementById('nacl');
   // Run the test.
   var test_time = drawNativeClient(canvas_width,
                                    tile_width,
                                    context,
-                                   plugin);
+                                   server);
   // Update the time element with compute and canvas manipulation times.
   time_element.innerHTML = '<b>Native Client<br>(' +
       tiles_per_row * tiles_per_row + ' square tiles ' +
@@ -204,34 +198,14 @@ var testNativeClient = function() {
 // Before running tests we need to ensure the Native Client module is loaded.
 var startupTimeout;
 
-var RunTestsAfterLoad = function() {
-  if (plugin.__moduleReady) {
-    clearTimeout(startupTimeout);
-    // Do the tests one time by default.
-    testJavaScript();
-    testNativeClient();
-  } else {
-    if (plugin.__moduleReady == undefined) {
-      alert('The Native Client plugin was unable to load');
-      return;
-    }
-    startupTimeout = setTimeout(RunTestsAfterLoad, 100);
-  }
+function enqueueTests(tester, server) {
+  tester.addTest('javascript_version', function() { testJavaScript(); });
+  tester.addTest('native_client_version', function() { testNativeClient(); });
 }
-
-// The page begins by loading the Native Client module by means of its manifest
-// file, mandel_tiled.nmf.
-var Init = function() {
-  // Record the Native Client module that was returned so that we can
-  // invoke methods on it quickly.
-  plugin = document.getElementById('nacl');
-  // After ensuring the Native Client module has loaded, run the tests.
-  RunTestsAfterLoad();
-}
-    -->
+      //]]>
     </script>
   </head>
-  <body onload="Init();">
+  <body>
     <h1> Mandelbrot: JavaScript versus Tiled Native Client </h1>
     NOTE: Set NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS=1 to run this test.
     <table cellpadding=5% summary="Control panel on left, images on right">
@@ -290,7 +264,16 @@ var Init = function() {
       may run very slowly.
     </b>
     <br/>
-    <embed type="application/x-nacl" id="nacl"
+    <embed type="application/x-nacl" id="nacl_server"
            nacl="mandel_tiled.nmf" hidden="true" />
+    <script type="text/javascript">
+      //<![CDATA[
+      var tester = new Tester();
+      var server = $("nacl_server");
+      enqueueTests(tester, server);
+      tester.waitFor(server);
+      tester.run();
+      //]]>
+    </script>
   </body>
 </html>

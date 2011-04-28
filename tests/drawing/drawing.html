@@ -4,40 +4,17 @@
 <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <META HTTP-EQUIV="Expires" CONTENT="-1">
 
-<script type="text/javascript">
-
-var nacl_elt;
-
-// Before scripting the loaded module, ensure the Native Client module is loaded.
-var startupTimeout;
-
-var PostLoadInit = function() {
-  if (nacl_elt.__moduleReady == 1) {
-    clearTimeout(startupTimeout);
-    nacl_elt.focus();
-  } else {
-    if (nacl_elt.__moduleReady == undefined) {
-      alert('The Native Client plugin was unable to load');
-      return;
-    }
-    startupTimeout = setTimeout(PostLoadInit, 100);
-  }
+<script type="text/javascript" src="nacltest.js"></script>
+<script type="application/x-javascript">
+  //<![CDATA[
+function setupTests(tester, plugin) {
+  tester.addTest('smoke', function() { plugin.focus(); })
 }
-
-// Init is called when the document has completed loading.  It downloads the
-// NativeClient modules.
-var Init = function() {
-  // service_url contains the location of the NativeClient module to be
-  // loaded as a service.
-  nacl_elt = document.getElementById('embed1');
-  PostLoadInit();
-}
-
-
+//]]>
 </script>
 
 </HEAD>
-<BODY id="bodyId" onload="Init();" >
+<BODY id="bodyId">
 
 <h1>Drawing Demo using Anti-Grain Geometry</h1>
  <p>
@@ -52,12 +29,18 @@ var Init = function() {
   <a href="http://www.antigrain.com/">http://www.antigrain.com/</a>
   for more information about Anti-Grain Geometry.
  </p>
- <embed id="embed1" src="drawing.nexe" type="application/x-nacl"
+ <embed id="embed1" name="naclModule"
+        src="drawing.nexe" type="application/x-nacl"
         width=512 height=512>
 <br>
 
 <script>
-var embed1 = document.getElementById('embed1');
+  //<![CDATA[
+  var tester = new Tester();
+  setupTests(tester, $('embed1'));
+  tester.waitFor($('embed1'));
+  tester.run();
+//]]>
 </script>
 
 
