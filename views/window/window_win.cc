@@ -684,7 +684,8 @@ LRESULT WindowWin::OnNCHitTest(const CPoint& point) {
 void WindowWin::OnNCPaint(HRGN rgn) {
   // When using a custom frame, we want to avoid calling DefWindowProc() since
   // that may render artifacts.
-  SetMsgHandled(is_in_size_move_ && !delegate_->IsUsingNativeFrame());
+  SetMsgHandled((!IsActive() || is_in_size_move_) &&
+                !delegate_->IsUsingNativeFrame());
 }
 
 LRESULT WindowWin::OnNCUAHDrawCaption(UINT msg, WPARAM w_param,
