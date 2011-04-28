@@ -120,7 +120,7 @@ void PrintWebViewHelper::PrintPageInternal(
   Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
 }
 
-void PrintWebViewHelper::CreatePreviewDocument(
+bool PrintWebViewHelper::CreatePreviewDocument(
     const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
     WebKit::WebNode* node) {
   int page_count = 0;
@@ -130,7 +130,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
                                               frame->view());
   page_count = prep_frame_view.GetExpectedPageCount();
   if (!page_count)
-    return;
+    return false;
 
   scoped_ptr<Metafile> metafile(new printing::PreviewMetafile);
   metafile->Init();
@@ -169,13 +169,13 @@ void PrintWebViewHelper::CreatePreviewDocument(
 
   if (!CopyMetafileDataToSharedMem(metafile.get(),
                                    &(preview_params.metafile_data_handle))) {
-    preview_params.data_size = 0;
-    preview_params.expected_pages_count = 0;
+    return false;
   }
   Send(new PrintHostMsg_DuplicateSection(routing_id(),
                                          preview_params.metafile_data_handle,
                                          &preview_params.metafile_data_handle));
   Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
+  return true;
 }
 
 void PrintWebViewHelper::RenderPage(

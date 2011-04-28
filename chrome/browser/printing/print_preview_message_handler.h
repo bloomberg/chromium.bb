@@ -33,7 +33,7 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
       const PrintHostMsg_DidPreviewDocument_Params& params);
   void OnPrintPreviewNodeUnderContextMenu();
   void OnScriptInitiatedPrintPreview();
-  void OnPrintPreviewFailed();
+  void OnPrintPreviewFailed(int document_cookie);
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewMessageHandler);
 };

@@ -215,4 +215,5 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_PagesReadyForPreview,
                     PrintHostMsg_DidPreviewDocument_Params /* params */)
 
 // Tell the browser print preview failed.
-IPC_MESSAGE_ROUTED0(PrintHostMsg_PrintPreviewFailed)
+IPC_MESSAGE_ROUTED1(PrintHostMsg_PrintPreviewFailed,
+                    int /* document cookie */)

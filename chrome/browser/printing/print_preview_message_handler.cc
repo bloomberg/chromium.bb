@@ -19,6 +19,23 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
+namespace {
+
+void StopWorker(int document_cookie) {
+  printing::PrintJobManager* print_job_manager =
+      g_browser_process->print_job_manager();
+  scoped_refptr<printing::PrinterQuery> printer_query;
+  print_job_manager->PopPrinterQuery(document_cookie, &printer_query);
+  if (printer_query.get()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(printer_query.get(),
+                          &printing::PrinterQuery::StopWorker));
+  }
+}
+
+}  // namespace
+
 namespace printing {
 
 PrintPreviewMessageHandler::PrintPreviewMessageHandler(
@@ -42,20 +59,12 @@ TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
 void PrintPreviewMessageHandler::OnPagesReadyForPreview(
     const PrintHostMsg_DidPreviewDocument_Params& params) {
   // Always need to stop the worker and send PrintMsg_PrintingDone.
-  PrintJobManager* print_job_manager = g_browser_process->print_job_manager();
-  scoped_refptr<printing::PrinterQuery> printer_query;
-  print_job_manager->PopPrinterQuery(params.document_cookie, &printer_query);
-  if (printer_query.get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(printer_query.get(),
-                          &printing::PrinterQuery::StopWorker));
-  }
+  StopWorker(params.document_cookie);
 
   RenderViewHost* rvh = tab_contents()->render_view_host();
   rvh->Send(new PrintMsg_PrintingDone(rvh->routing_id(),
-                                     params.document_cookie,
-                                     true));
+                                      params.document_cookie,
+                                      true));
 
   // Get the print preview tab.
   TabContents* print_preview_tab = GetPrintPreviewTab();
@@ -93,7 +102,11 @@ void PrintPreviewMessageHandler::OnScriptInitiatedPrintPreview() {
   PrintPreviewTabController::PrintPreview(tab_contents());
 }
 
-void PrintPreviewMessageHandler::OnPrintPreviewFailed() {
+void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
+  // Always need to stop the worker.
+  StopWorker(document_cookie);
+
+  // Inform the print preview tab of the failure.
   TabContents* print_preview_tab = GetPrintPreviewTab();
   // User might have closed it already.
   if (!print_preview_tab)

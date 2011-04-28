@@ -52,7 +52,7 @@ void PrintWebViewHelper::PrintPageInternal(
   Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
 }
 
-void PrintWebViewHelper::CreatePreviewDocument(
+bool PrintWebViewHelper::CreatePreviewDocument(
     const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
     WebKit::WebNode* node) {
   PrintMsg_Print_Params printParams = params.params;
@@ -63,11 +63,11 @@ void PrintWebViewHelper::CreatePreviewDocument(
   int page_count = prep_frame_view.GetExpectedPageCount();
 
   if (!page_count)
-    return;
+    return false;
 
   printing::PreviewMetafile metafile;
   if (!metafile.Init())
-    return;
+    return false;
 
   float scale_factor = frame->getPrintPageShrink(0);
   gfx::Point origin(printParams.margin_left, printParams.margin_top);
@@ -94,10 +94,10 @@ void PrintWebViewHelper::CreatePreviewDocument(
   // Ask the browser to create the shared memory for us.
   if (!CopyMetafileDataToSharedMem(&metafile,
                                    &(preview_params.metafile_data_handle))) {
-    preview_params.data_size = 0;
-    preview_params.expected_pages_count = 0;
+    return false;
   }
   Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
+  return true;
 }
 
 void PrintWebViewHelper::RenderPage(

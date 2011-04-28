@@ -23,16 +23,16 @@
 using WebKit::WebFrame;
 using WebKit::WebNode;
 
-void PrintWebViewHelper::CreatePreviewDocument(
+bool PrintWebViewHelper::CreatePreviewDocument(
     const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
     WebKit::WebNode* node) {
   int page_count = 0;
   printing::PreviewMetafile metafile;
   if (!metafile.Init())
-    return;
+    return false;
 
   if (!RenderPages(params, frame, node, false, &page_count, &metafile))
-    return;
+    return false;
 
   // Get the size of the resulting metafile.
   uint32 buf_size = metafile.GetDataSize();
@@ -45,13 +45,13 @@ void PrintWebViewHelper::CreatePreviewDocument(
 
   if (!CopyMetafileDataToSharedMem(&metafile,
                                    &(preview_params.metafile_data_handle))) {
-    preview_params.expected_pages_count = 0;
-    preview_params.data_size = 0;
+    return false;
   }
   Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
+  return true;
 }
 
-void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
+bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                     WebFrame* frame,
                                     WebNode* node) {
   int page_count = 0;
@@ -64,11 +64,11 @@ void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
 
   printing::NativeMetafile metafile;
   if (!metafile.Init())
-    return;
+    return false;
 
   if (!RenderPages(params, frame, node, send_expected_page_count, &page_count,
                    &metafile)) {
-    return;
+    return false;
   }
 
   // Get the size of the resulting metafile.
@@ -82,10 +82,11 @@ void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
   // Ask the browser to open a file for us.
   Send(new PrintHostMsg_AllocateTempFileForPrinting(&fd, &sequence_number));
   if (!metafile.SaveToFD(fd))
-    return;
+    return false;
 
   // Tell the browser we've finished writing the file.
   Send(new PrintHostMsg_TempFileForPrintingWritten(sequence_number));
+  return true;
 #else
   PrintHostMsg_DidPrintPage_Params printed_page_params;
   printed_page_params.data_size = 0;
@@ -96,14 +97,14 @@ void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                                   &shared_mem_handle));
   if (!base::SharedMemory::IsHandleValid(shared_mem_handle)) {
     NOTREACHED() << "AllocateSharedMemoryBuffer returned bad handle";
-    return;
+    return false;
   }
 
   {
     base::SharedMemory shared_buf(shared_mem_handle, false);
     if (!shared_buf.Map(buf_size)) {
       NOTREACHED() << "Map failed";
-      return;
+      return false;
     }
     metafile.GetData(shared_buf.memory(), buf_size);
     printed_page_params.data_size = buf_size;
@@ -134,6 +135,7 @@ void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
       Send(new PrintHostMsg_DidPrintPage(routing_id(), printed_page_params));
     }
   }
+  return true;
 #endif  // defined(OS_CHROMEOS)
 }
 

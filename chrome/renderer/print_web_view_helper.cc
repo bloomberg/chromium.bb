@@ -193,7 +193,8 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
   }
 
   // Render Pages for printing.
-  RenderPagesForPrint(pdf_frame, &pdf_element);
+  if (!RenderPagesForPrint(pdf_frame, &pdf_element))
+    DidFinishPrinting(FAIL_PRINT);
 }
 
 bool PrintWebViewHelper::GetPrintFrame(WebKit::WebFrame** frame) {
@@ -298,7 +299,8 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame, WebKit::WebNode* node) {
   }
 
   // Render Pages for printing.
-  RenderPagesForPrint(frame, node);
+  if (!RenderPagesForPrint(frame, node))
+    DidFinishPrinting(FAIL_PRINT);
   ResetScriptedPrintCount();
 }
 
@@ -318,7 +320,8 @@ void PrintWebViewHelper::PrintPreview(WebKit::WebFrame* frame,
   }
 
   // Render Pages for printing.
-  RenderPagesForPreview(frame, node);
+  if (!RenderPagesForPreview(frame, node))
+    DidFinishPrinting(FAIL_PREVIEW);
 }
 
 void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
@@ -331,7 +334,8 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
         web_view->mainFrame(),
         l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
   } else if (result == FAIL_PREVIEW) {
-    Send(new PrintHostMsg_PrintPreviewFailed(routing_id()));
+    int cookie = print_pages_params_->params.document_cookie;
+    Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
   }
 
   if (print_web_view_) {
@@ -368,7 +372,7 @@ bool PrintWebViewHelper::CopyAndPrint(WebKit::WebFrame* web_frame) {
 }
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
-void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
+bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                     WebFrame* frame,
                                     WebNode* node) {
   PrintMsg_Print_Params printParams = params.params;
@@ -384,7 +388,7 @@ void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                                 printParams.document_cookie,
                                                 page_count));
   if (!page_count)
-    return;
+    return false;
 
   const gfx::Size& canvas_size = prep_frame_view.GetPrintCanvasSize();
   PrintMsg_PrintPage_Params page_params;
@@ -402,6 +406,7 @@ void PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
       PrintPageInternal(page_params, canvas_size, frame);
     }
   }
+  return true;
 }
 #endif  // OS_MACOSX || OS_WIN
 
@@ -593,24 +598,24 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
   return (print_settings.params.dpi && print_settings.params.document_cookie);
 }
 
-void PrintWebViewHelper::RenderPagesForPrint(WebKit::WebFrame* frame,
+bool PrintWebViewHelper::RenderPagesForPrint(WebKit::WebFrame* frame,
                                              WebKit::WebNode* node) {
   PrintMsg_PrintPages_Params print_settings = *print_pages_params_;
   if (print_settings.params.selection_only) {
-    CopyAndPrint(frame);
+    return CopyAndPrint(frame);
   } else {
     // TODO: Always copy before printing.
-    PrintPages(print_settings, frame, node);
+    return PrintPages(print_settings, frame, node);
   }
 }
 
-void PrintWebViewHelper::RenderPagesForPreview(WebKit::WebFrame* frame,
+bool PrintWebViewHelper::RenderPagesForPreview(WebKit::WebFrame* frame,
                                                WebKit::WebNode* node) {
   PrintMsg_PrintPages_Params print_settings = *print_pages_params_;
   // PDF printer device supports alpha blending.
   print_settings.params.supports_alpha_blend = true;
   // TODO(kmadhusu): Handle print selection.
-  CreatePreviewDocument(print_settings, frame, node);
+  return CreatePreviewDocument(print_settings, frame, node);
 }
 
 #if defined(OS_POSIX)

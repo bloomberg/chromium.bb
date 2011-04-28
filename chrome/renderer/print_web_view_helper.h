@@ -149,7 +149,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
 
   // Prints all the pages listed in |params|.
   // It will implicitly revert the document to display CSS media type.
-  void PrintPages(const PrintMsg_PrintPages_Params& params,
+  bool PrintPages(const PrintMsg_PrintPages_Params& params,
                   WebKit::WebFrame* frame,
                   WebKit::WebNode* node);
 
@@ -167,15 +167,15 @@ class PrintWebViewHelper : public RenderViewObserver ,
 #endif
 
   // Render the frame for printing.
-  void RenderPagesForPrint(WebKit::WebFrame* frame, WebKit::WebNode* node);
+  bool RenderPagesForPrint(WebKit::WebFrame* frame, WebKit::WebNode* node);
 
   // Render the frame for preview.
-  void RenderPagesForPreview(WebKit::WebFrame* frame, WebKit::WebNode* node);
+  bool RenderPagesForPreview(WebKit::WebFrame* frame, WebKit::WebNode* node);
 
   // Renders all the pages listed in |params| for preview.
   // On success, Send PrintHostMsg_PagesReadyForPreview message with a
   // valid metafile data handle.
-  void CreatePreviewDocument(const PrintMsg_PrintPages_Params& params,
+  bool CreatePreviewDocument(const PrintMsg_PrintPages_Params& params,
                              WebKit::WebFrame* frame,
                              WebKit::WebNode* node);
 
