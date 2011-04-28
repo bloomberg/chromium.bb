@@ -105,9 +105,13 @@ void SetCurrentThemeFromThemeSpecifics(
       const bool kInstallSilently = true;
       const bool kEnableOnInstall = true;
       const bool kEnableIncognitoOnInstall = false;
-      extensions_service->pending_extension_manager()->AddFromSync(
-          id, update_url, &IsTheme,
-          kInstallSilently, kEnableOnInstall, kEnableIncognitoOnInstall);
+      if (!extensions_service->pending_extension_manager()->AddFromSync(
+              id, update_url, &IsTheme,
+              kInstallSilently, kEnableOnInstall,
+              kEnableIncognitoOnInstall)) {
+        LOG(WARNING) << "Could not add pending extension for " << id;
+        return;
+      }
       extensions_service->CheckForUpdatesSoon();
     }
   } else if (theme_specifics.use_system_theme_by_default()) {

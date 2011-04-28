@@ -1368,13 +1368,16 @@ void ExtensionService::ProcessSyncData(
   //
   // TODO(akalin): Replace silent update with a list of enabled
   // permissions.
-  pending_extension_manager()->AddFromSync(
-      id,
-      extension_sync_data.update_url,
-      filter,
-      true,  // install_silently
-      extension_sync_data.enabled,
-      extension_sync_data.incognito_enabled);
+  if (!pending_extension_manager()->AddFromSync(
+          id,
+          extension_sync_data.update_url,
+          filter,
+          true,  // install_silently
+          extension_sync_data.enabled,
+          extension_sync_data.incognito_enabled)) {
+    LOG(WARNING) << "Could not add pending extension for " << id;
+    return;
+  }
   CheckForUpdatesSoon();
 }
 
