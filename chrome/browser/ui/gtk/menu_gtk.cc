@@ -718,6 +718,7 @@ void MenuGtk::ExecuteCommand(ui::MenuModel* model, int id) {
 }
 
 void MenuGtk::OnMenuShow(GtkWidget* widget) {
+  model_->MenuWillShow();
   MessageLoop::current()->PostTask(FROM_HERE,
       factory_.NewRunnableMethod(&MenuGtk::UpdateMenu));
 }

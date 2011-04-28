@@ -26,7 +26,6 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
   void Popup(const gfx::Point& point);
 
   // Menu::Delegate implementation ---------------------------------------------
-  virtual void StoppedShowing();
   virtual bool AlwaysShowIconForCmd(int command_id) const;
 
  protected:

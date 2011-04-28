@@ -51,6 +51,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
@@ -1506,9 +1507,20 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
   }
 }
 
+void RenderViewContextMenu::MenuWillShow() {
+  RenderWidgetHostView* view = source_tab_contents_->GetRenderWidgetHostView();
+  if (view)
+    view->ShowingContextMenu(true);
+}
+
 void RenderViewContextMenu::MenuClosed() {
-  source_tab_contents_->render_view_host()->ContextMenuClosed(
-      params_.custom_context);
+  RenderWidgetHostView* view = source_tab_contents_->GetRenderWidgetHostView();
+  if (view)
+    view->ShowingContextMenu(false);
+  if (source_tab_contents_->render_view_host()) {
+    source_tab_contents_->render_view_host()->ContextMenuClosed(
+        params_.custom_context);
+  }
 }
 
 bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {

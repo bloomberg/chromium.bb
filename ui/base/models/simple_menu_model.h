@@ -49,6 +49,9 @@ class SimpleMenuModel : public MenuModel {
     // Performs the action associated with the specified command id.
     virtual void ExecuteCommand(int command_id) = 0;
 
+    // Notifies the delegate that the menu is about to show.
+    virtual void MenuWillShow();
+
     // Notifies the delegate that the menu has closed.
     virtual void MenuClosed();
 
@@ -102,25 +105,28 @@ class SimpleMenuModel : public MenuModel {
   int GetIndexOfCommandId(int command_id);
 
   // Overridden from MenuModel:
-  virtual bool HasIcons() const;
-  virtual int GetItemCount() const;
-  virtual ItemType GetTypeAt(int index) const;
-  virtual int GetCommandIdAt(int index) const;
-  virtual string16 GetLabelAt(int index) const;
-  virtual bool IsItemDynamicAt(int index) const;
+  virtual bool HasIcons() const OVERRIDE;
+  virtual int GetItemCount() const OVERRIDE;
+  virtual ItemType GetTypeAt(int index) const OVERRIDE;
+  virtual int GetCommandIdAt(int index) const OVERRIDE;
+  virtual string16 GetLabelAt(int index) const OVERRIDE;
+  virtual bool IsItemDynamicAt(int index) const OVERRIDE;
   virtual bool GetAcceleratorAt(int index,
-                                ui::Accelerator* accelerator) const;
-  virtual bool IsItemCheckedAt(int index) const;
-  virtual int GetGroupIdAt(int index) const;
-  virtual bool GetIconAt(int index, SkBitmap* icon);
-  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
-  virtual bool IsEnabledAt(int index) const;
-  virtual bool IsVisibleAt(int index) const;
-  virtual void HighlightChangedTo(int index);
-  virtual void ActivatedAt(int index);
-  virtual MenuModel* GetSubmenuModelAt(int index) const;
-  virtual void MenuClosed();
-  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* menu_model_delegate);
+                                ui::Accelerator* accelerator) const OVERRIDE;
+  virtual bool IsItemCheckedAt(int index) const OVERRIDE;
+  virtual int GetGroupIdAt(int index) const OVERRIDE;
+  virtual bool GetIconAt(int index, SkBitmap* icon) OVERRIDE;
+  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(
+      int index) const OVERRIDE;
+  virtual bool IsEnabledAt(int index) const OVERRIDE;
+  virtual bool IsVisibleAt(int index) const OVERRIDE;
+  virtual void HighlightChangedTo(int index) OVERRIDE;
+  virtual void ActivatedAt(int index) OVERRIDE;
+  virtual MenuModel* GetSubmenuModelAt(int index) const OVERRIDE;
+  virtual void MenuWillShow() OVERRIDE;
+  virtual void MenuClosed() OVERRIDE;
+  virtual void SetMenuModelDelegate(
+      ui::MenuModelDelegate* menu_model_delegate) OVERRIDE;
 
  protected:
   // Some variants of this model (SystemMenuModel) relies on items to be

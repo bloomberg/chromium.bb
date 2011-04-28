@@ -380,6 +380,7 @@ void NativeMenuWin::RunMenuAt(const gfx::Point& point, int alignment) {
   menu_to_select_factory_.RevokeAll();
   bool destroyed = false;
   destroyed_flag_ = &destroyed;
+  model_->MenuWillShow();
   TrackPopupMenu(menu_, flags, point.x(), point.y(), 0, host_window_->hwnd(),
                  NULL);
   UnhookWindowsHookEx(hhook);

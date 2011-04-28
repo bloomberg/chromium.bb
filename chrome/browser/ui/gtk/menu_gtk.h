@@ -27,7 +27,7 @@ class MenuGtk {
   // Delegate class that lets another class control the status of the menu.
   class Delegate {
    public:
-    virtual ~Delegate() { }
+    virtual ~Delegate() {}
 
     // Called before a command is executed. This exists for the case where a
     // model is handling the actual execution of commands, but the delegate
