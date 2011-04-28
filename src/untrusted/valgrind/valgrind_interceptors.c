@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* This file contains valgrind interceptors for NaCl's untrusted library
@@ -304,6 +304,18 @@ char* VG_NACL_FUNC(strchr)(char* s, int c) {
   }
   return ret;
 }
+
+/* strcmp() */
+int VG_NACL_FUNC(strcmp)(char* s1, char* s2) {
+  while (*s1 && *s1 == *s2)
+    ++s1, ++s2;
+  if (*s1 < *s2)
+    return -1;
+  if (*s1 > *s2)
+    return 1;
+  return 0;
+}
+
 
 /* nc_allocate_memory_block_mu() - a cached malloc for thread stack & tls. */
 size_t VG_NACL_FUNC(nc_allocate_memory_block_mu)(int type, size_t size) {

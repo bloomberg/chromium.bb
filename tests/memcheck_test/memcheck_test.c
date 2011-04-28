@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 /* For NaCl we have to use a special verion of valgrind.h */
 #include "native_client/src/third_party/valgrind/nacl_valgrind.h"
@@ -255,6 +256,25 @@ void many_args_wrapping_test() {
 }
 
 
+NOINLINE
+void strcmp_test() {
+  SHOW_ME;
+  const int SZ = 15;
+  char* s1 = malloc(SZ);
+  memset(s1, 'a', SZ);
+  s1[SZ - 1] = 0;
+  char* s2 = malloc(SZ);
+  memset(s2, 'a', SZ);
+  s2[SZ - 1] = 0;
+  fprintf(stderr, "strcmp: %d\n", strcmp(s1, s2));
+  s2[10] = 'b';
+  fprintf(stderr, "strcmp: %d\n", strcmp(s1, s2));
+  s2[8] = 0;
+  fprintf(stderr, "strcmp: %d\n", strcmp(s1, s2));
+  free(s1);
+  free(s2);
+}
+
 /* run all tests */
 int main() {
   if (!RUNNING_ON_VALGRIND) {
@@ -274,6 +294,7 @@ int main() {
   if (1) test_printf();
   if (1) function_wrapping_test();
   if (1) many_args_wrapping_test();
+  if (1) strcmp_test();
   SHOW_ME;
   return 0;
 }

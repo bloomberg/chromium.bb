@@ -57,4 +57,7 @@ VG_USERREQ__CLIENT_CALL1: func=0x0
  by zz_wrap_me0
  by many_args_wrapping_test
  by main
+strcmp: 0
+strcmp: -1
+strcmp: 1
 ERROR SUMMARY: 7 errors from 7 contexts
