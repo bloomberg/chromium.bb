@@ -293,23 +293,24 @@ class ManifestVersionedSyncStage(BuilderStage):
       branch = 'master'
       increment = 'branch'
 
-    next_version = manifest_version.GenerateWorkload(
+    manifest_manager = manifest_version.BuildSpecsManager(
        tmp_dir='/tmp/git.root',
        source_repo=self._build_config['git_url'],
        manifest_repo=self._build_config['manifest_version'],
        branch=branch,
-       version_file=os.path.join('src/third_party/chromiumos-overlay',
-                                 'chromeos/config/chromeos_version.sh'),
        build_name=self._build_config['board'],
        incr_type=increment,
        dry_run=self._options.debug)
 
+    version_file = os.path.join('src/third_party/chromiumos-overlay',
+                                 'chromeos/config/chromeos_version.sh')
+    next_version = manifest_manager.GetNextBuildSpec(version_file, latest=True)
     if not next_version:
       print 'AUTOREV: Nothing to build!'
       sys.exit(0);
 
     # Store off this value where the Completion stage can find it...
-    ManifestVersionedSyncStage.build_version = next_version
+    ManifestVersionedSyncStage.manifest_manager = manifest_manager
 
     commands.ManifestCheckout(self._build_root,
                               self._options.tracking_branch,
@@ -331,19 +332,10 @@ class ManifestVersionedSyncCompletionStage(BuilderStage):
 
   def _PerformStage(self):
 
-    if not ManifestVersionedSyncStage.build_version:
-      # Nothing to do if ManifestVersionedSyncStage (or an earlier stage)
-      # didn't complete. I don't want an additional error here to mask the
-      # original error.
-      return
+    if ManifestVersionedSyncStage.manifest_manager:
+      ManifestVersionedSyncStage.manifest_manager.UpdateStatus(
+         success=self.success)
 
-    manifest_version.UpdateStatus(
-       tmp_dir='/tmp/git.root',
-       manifest_repo=self._build_config['manifest_version'],
-       build_name=self._build_config['board'],
-       build_version=ManifestVersionedSyncStage.build_version,
-       success=self.success,
-       dry_run=self._options.debug)
 
 class BuildBoardStage(BuilderStage):
   """Stage that is responsible for building host pkgs and setting up a board."""
@@ -389,7 +381,7 @@ class BuildTargetStage(BuilderStage):
     BuilderStage.new_binhost = self._GetPortageEnvVar(_FULL_BINHOST)
     emptytree = (BuilderStage.old_binhost and
                  BuilderStage.old_binhost != BuilderStage.new_binhost)
-    env={}
+    env = {}
     if self._build_config.get('useflags'):
       env['USE'] = ' '.join(self._build_config['useflags'])
 

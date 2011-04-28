@@ -8,8 +8,10 @@
 
 import mox
 import os
+import shutil
 import StringIO
 import sys
+import tempfile
 import unittest
 
 import constants
@@ -241,30 +243,38 @@ class ManifestVersionedSyncStageTest(BuilderStageTest):
     mox.MoxTestBase.setUp(self)
     BuilderStageTest.setUp(self)
 
+    self.tmpdir = tempfile.mkdtemp()
+    self.source_repo = 'ssh://source/repo'
     self.manifest_version_url = 'fake manifest url'
-    self.build_config['manifest_version'] = self.manifest_version_url
+    self.version_file = 'version-file.sh'
+    self.branch = 'master'
+    self.build_name = 'x86-generic'
+    self.incr_type = 'patch'
 
+    self.build_config['manifest_version'] = self.manifest_version_url
     self.next_version = 'next_version'
+
+    self.manager = manifest_version.BuildSpecsManager(
+      self.tmpdir, self.source_repo, self.manifest_version_url, self.branch,
+      self.build_name, self.incr_type, dry_run=True)
+
+  def tearDown(self):
+    shutil.rmtree(self.tmpdir)
 
   def testManifestVersionedSyncOnePartBranch(self):
     """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
 
     self.options.tracking_branch = 'ooga_booga'
 
-    self.mox.StubOutWithMock(manifest_version, 'GenerateWorkload')
+    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
+                             'GetNextBuildSpec')
     self.mox.StubOutWithMock(commands, 'ManifestCheckout')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
-    manifest_version.GenerateWorkload(
-       tmp_dir='/tmp/git.root',
-       source_repo=self.url,
-       manifest_repo=self.manifest_version_url,
-       branch='master',
-       version_file='src/third_party/chromiumos-overlay/chromeos/config'
-                    '/chromeos_version.sh',
-       build_name=self.build_config['board'],
-       incr_type= 'branch',
-       dry_run=False).AndReturn(self.next_version)
+    self.manager.GetNextBuildSpec(
+        ('src/third_party/chromiumos-overlay/chromeos/config/'
+        'chromeos_version.sh'),
+        latest=True).AndReturn(self.next_version)
 
     commands.ManifestCheckout(self.build_root,
                               self.options.tracking_branch,
@@ -283,23 +293,17 @@ class ManifestVersionedSyncStageTest(BuilderStageTest):
 
   def testManifestVersionedSyncTwoPartBranch(self):
     """Tests basic ManifestVersionedSyncStage with branch ooga/booga"""
+    self.manager.branch = 'ooga/booga'
 
-    self.options.tracking_branch = 'ooga/booga'
-
-    self.mox.StubOutWithMock(manifest_version, 'GenerateWorkload')
+    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
+                             'GetNextBuildSpec')
     self.mox.StubOutWithMock(commands, 'ManifestCheckout')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
-    manifest_version.GenerateWorkload(
-       tmp_dir='/tmp/git.root',
-       source_repo=self.url,
-       manifest_repo=self.manifest_version_url,
-       branch='booga',
-       version_file='src/third_party/chromiumos-overlay/chromeos/config'
-                    '/chromeos_version.sh',
-       build_name=self.build_config['board'],
-       incr_type= 'patch',
-       dry_run=False).AndReturn(self.next_version)
+    self.manager.GetNextBuildSpec(
+        ('src/third_party/chromiumos-overlay/chromeos/config/'
+        'chromeos_version.sh'),
+        latest=True).AndReturn(self.next_version)
 
     commands.ManifestCheckout(self.build_root,
                               self.options.tracking_branch,
@@ -319,18 +323,12 @@ class ManifestVersionedSyncStageTest(BuilderStageTest):
   def testManifestVersionedSyncCompletedSuccess(self):
     """Tests basic ManifestVersionedSyncStageCompleted on success"""
 
-    stages.ManifestVersionedSyncStage.build_version = self.next_version
+    stages.ManifestVersionedSyncStage.manifest_manager = self.manager
 
-    self.mox.StubOutWithMock(manifest_version, 'UpdateStatus')
+    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager, 'UpdateStatus')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
-    manifest_version.UpdateStatus(
-       tmp_dir='/tmp/git.root',
-       manifest_repo=self.manifest_version_url,
-       build_name=self.build_config['board'],
-       build_version=self.next_version,
-       success=True,
-       dry_run=False)
+    self.manager.UpdateStatus(success=True)
 
     self.mox.ReplayAll()
     stage = stages.ManifestVersionedSyncCompletionStage(self.bot_id,
@@ -343,18 +341,13 @@ class ManifestVersionedSyncStageTest(BuilderStageTest):
   def testManifestVersionedSyncCompletedFailure(self):
     """Tests basic ManifestVersionedSyncStageCompleted on failure"""
 
-    stages.ManifestVersionedSyncStage.build_version = self.next_version
+    stages.ManifestVersionedSyncStage.manifest_manager = self.manager
 
-    self.mox.StubOutWithMock(manifest_version, 'UpdateStatus')
+    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager, 'UpdateStatus')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
-    manifest_version.UpdateStatus(
-       tmp_dir='/tmp/git.root',
-       manifest_repo=self.manifest_version_url,
-       build_name=self.build_config['board'],
-       build_version=self.next_version,
-       success=False,
-       dry_run=False)
+    self.manager.UpdateStatus(success=False)
+
 
     self.mox.ReplayAll()
     stage = stages.ManifestVersionedSyncCompletionStage(self.bot_id,
@@ -367,7 +360,7 @@ class ManifestVersionedSyncStageTest(BuilderStageTest):
   def testManifestVersionedSyncCompletedIncomplete(self):
     """Tests basic ManifestVersionedSyncStageCompleted on incomplete build."""
 
-    stages.ManifestVersionedSyncStage.build_version = None
+    stages.ManifestVersionedSyncStage.manifest_manager = None
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
 

@@ -6,99 +6,251 @@
 
 """Unittests for manifest_version. Needs to be run inside of chroot for mox."""
 
-import __builtin__
 import mox
 import os
 import shutil
 import sys
+import tempfile
 import unittest
+
+if __name__ == '__main__':
+  import constants
+  sys.path.append(constants.SOURCE_ROOT)
 
 import chromite.buildbot.manifest_version as manifest_version
 import chromite.lib.cros_build_lib as cros_lib
 
-class ManifestVersionTest(mox.MoxTestBase):
+FAKE_VERSION = """
+CHROMEOS_VERSION_MAJOR=1
+CHROMEOS_VERSION_MINOR=2
+CHROMEOS_VERSION_BRANCH=3
+CHROMEOS_VERSION_PATCH=4
+"""
+
+FAKE_VERSION_STRING = '1.2.3.4'
+FAKE_VERSION_STRING_NEXT = '1.2.3.5'
+
+# Dir to use to sync repo for git testing.
+GIT_DIR = '/tmp/repo_for_manifest_version_unittest'
+
+# Use the chromite repo to actually test git changes.
+GIT_TEST_PATH = 'chromite'
+
+def _TouchFile(file_path):
+  """Touches a file."""
+  if not os.path.exists(os.path.dirname(file_path)):
+    os.makedirs(os.path.dirname(file_path))
+
+  touch_file = open(file_path, 'w+')
+  touch_file.close()
+
+
+class HelperMethodsTest(unittest.TestCase):
+  """Test methods associated with methods not in a class."""
+
+  def setUp(self):
+    self.tmpdir = tempfile.mkdtemp()
+
+  def testCreateSymlink(self):
+    """Tests that we can create symlinks and remove a previous one."""
+    (unused_fd, srcfile) = tempfile.mkstemp(dir=self.tmpdir)
+    destfile1 = tempfile.mktemp(dir=os.path.join(self.tmpdir, 'other_dir1'))
+    destfile2 = tempfile.mktemp(dir=os.path.join(self.tmpdir, 'other_dir2'))
+
+    manifest_version._CreateSymlink(srcfile, destfile1, remove_file=None)
+    self.assertTrue(os.path.lexists(destfile1),
+                    'Unable to create symlink to %s' % destfile1)
+
+    manifest_version._CreateSymlink(srcfile, destfile2, remove_file=destfile1)
+    self.assertTrue(os.path.lexists(destfile2),
+                    'Unable to create symlink to %s' % destfile2)
+    self.assertFalse(os.path.lexists(destfile1),
+                    'Unable to remove symlink %s' % destfile1)
+
+  def testRemoveDirs(self):
+    """Tests if _RemoveDirs works with a recursive directory structure."""
+    otherdir1 = tempfile.mkdtemp(dir=self.tmpdir)
+    tempfile.mkdtemp(dir=otherdir1)
+    manifest_version._RemoveDirs(otherdir1)
+    self.assertFalse(os.path.exists(otherdir1), 'Failed to rmdirs.')
+
+  def testPushGitChanges(self):
+    """Tests if we can append to an authors file and push it using dryrun."""
+    if not os.path.exists(GIT_DIR): os.makedirs(GIT_DIR)
+    cros_lib.RunCommand(('repo init -u http://git.chromium.org/git/manifest '
+                        '-m minilayout.xml -q').split(), cwd=GIT_DIR,
+                        input='\n\ny\n')
+    cros_lib.RunCommand(('repo sync --jobs 16').split(), cwd=GIT_DIR)
+    git_dir = os.path.join(GIT_DIR, GIT_TEST_PATH)
+    cros_lib.RunCommand(
+        ('git config url.ssh://git@gitrw.chromium.org:9222.insteadof'
+         ' http://git.chromium.org/git').split(), cwd=git_dir)
+
+    # Change something.
+    cros_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
+                        input='TEST USER <test_user@chromium.org>')
+
+    # Push the change with dryrun.
+    manifest_version._PushGitChanges(git_dir, 'Test appending user.',
+                                     use_repo=True, dry_run=True)
+
+  def tearDown(self):
+    shutil.rmtree(self.tmpdir)
+
+
+class VersionInfoTest(mox.MoxTestBase):
+  """Test methods testing methods in VersionInfo class."""
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    self.tmpdir = tempfile.mkdtemp()
+
+  @classmethod
+  def CreateFakeVersionFile(cls, tmpdir):
+    """Helper method to create a version file from FAKE_VERSION."""
+    (version_file_fh, version_file) = tempfile.mkstemp(dir=tmpdir)
+    os.write(version_file_fh, FAKE_VERSION)
+    os.close(version_file_fh)
+    return version_file
+
+  def testLoadFromFile(self):
+    """Tests whether we can load from a version file."""
+    version_file = self.CreateFakeVersionFile(self.tmpdir)
+    info = manifest_version._VersionInfo(version_file=version_file)
+    self.assertEqual(info.VersionString(), FAKE_VERSION_STRING)
+
+  def testLoadFromString(self):
+    """Tests whether we can load from a string."""
+    info = manifest_version._VersionInfo(version_string=FAKE_VERSION_STRING)
+    self.assertEqual(info.VersionString(), FAKE_VERSION_STRING)
+
+  def testIncrementVersionPatch(self):
+    """Tests whether we can increment a version file."""
+    message = 'Incrementing cuz I sed so'
+    self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
+    version_file = self.CreateFakeVersionFile(self.tmpdir)
+
+    manifest_version._PushGitChanges(self.tmpdir, message, dry_run=False,
+                                     use_repo=True)
+
+    self.mox.ReplayAll()
+    info = manifest_version._VersionInfo(version_file=version_file,
+                                         incr_type='patch')
+    info.IncrementVersion(message, dry_run=False)
+    new_info = manifest_version._VersionInfo(version_file=version_file,
+                                             incr_type='patch')
+    self.assertEqual(new_info.VersionString(), FAKE_VERSION_STRING_NEXT)
+    self.mox.VerifyAll()
+
+  def tearDown(self):
+    shutil.rmtree(self.tmpdir)
+
+
+class BuildSpecsManagerTest(mox.MoxTestBase):
+  """Tests for the BuildSpecs manager."""
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
 
-    self.tmp_dir = '/foo'
+    self.tmpdir = tempfile.mkdtemp()
     self.source_repo = 'ssh://source/repo'
     self.manifest_repo = 'ssh://manifest/repo'
-    self.board = 'board-name'
-    self.build_version='build-version'
-    self.version_file='version-file.sh'
+    self.version_file = 'version-file.sh'
+    self.branch = 'master'
+    self.build_name = 'x86-generic'
+    self.incr_type = 'patch'
 
-    self.working_dir = os.path.join(self.tmp_dir, 'working')
-    self.ver_manifests = os.path.basename(self.manifest_repo)
-    self.ver_manifests_dir = os.path.join(self.working_dir, 'repo')
+    self.manager = manifest_version.BuildSpecsManager(
+      self.tmpdir, self.source_repo, self.manifest_repo, self.branch,
+      self.build_name, self.incr_type, dry_run=True)
 
-  def testUpdateStatusSuccess(self):
-    """Test if we can archive the latest results dir to Google Storage."""
-    #$TOOLS/mvp.py --build-name=$BOARD --status=pass \
-    #                               --build-version=$RELEASETAG
+  def testGetMatchingSpecs(self):
+    """Tests whether we can load specs correctly."""
+    self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
+    self.mox.StubOutWithMock(manifest_version, '_CloneGitRepo')
+    info = manifest_version._VersionInfo(version_string=FAKE_VERSION_STRING,
+                                         incr_type='patch')
+    dir_pfx = '1.2'
+    m1 = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx,
+                      '1.2.3.2.xml')
+    m2 = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx,
+                      '1.2.3.3.xml')
+    m3 = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx,
+                      '1.2.3.4.xml')
+    m4 = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx,
+                      '1.2.3.5.xml')
+    for_build = os.path.join(self.manager.manifests_dir, 'build-name',
+                             self.build_name)
 
+    # Create fake buildspecs.
+    _TouchFile(m1)
+    _TouchFile(m2)
+    _TouchFile(m3)
+    _TouchFile(m4)
 
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(manifest_version, 'SetStatus')
-
-    os.path.exists(self.ver_manifests_dir).AndReturn(True)
-
-    cros_lib.RunCommand(['git', 'checkout', 'master'],
-                        cwd=self.ver_manifests_dir)
-
-    manifest_version.SetStatus(self.build_version,
-                               'pass',
-                               self.working_dir,
-                               self.ver_manifests,
-                               self.board,
-                               True)
-
+    # Fail 1, pass 2, leave 3,4 unprocessed.
+    manifest_version._CreateSymlink(m1, os.path.join(for_build, 'fail', dir_pfx,
+                                                     os.path.basename(m1)))
+    manifest_version._CreateSymlink(m1, os.path.join(for_build, 'pass', dir_pfx,
+                                                     os.path.basename(m2)))
+    manifest_version._RemoveDirs(self.manager.manifests_dir)
+    manifest_version._CloneGitRepo(self.manager.manifests_dir,
+                                   self.manifest_repo)
     self.mox.ReplayAll()
-
-    manifest_version.UpdateStatus(tmp_dir=self.tmp_dir,
-                                  manifest_repo=self.manifest_repo,
-                                  build_name=self.board,
-                                  build_version=self.build_version,
-                                  success=True,
-                                  dry_run=True,
-                                  retries=0)
-
+    self.manager._LoadSpecs(info)
     self.mox.VerifyAll()
+    self.assertEqual(self.manager.latest_unprocessed, '1.2.3.5')
 
-  def testUpdateStatusFailure(self):
-    """Test if we can archive the latest results dir to Google Storage."""
-    #$TOOLS/mvp.py --build-name=$BOARD --status=pass \
-    #                               --build-version=$RELEASETAG
+  def testCreateNewBuildSpecNoCopy(self):
+    """Tests whether we can create a new build spec correctly.
 
-
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(manifest_version, 'SetStatus')
-
-    os.path.exists(self.ver_manifests_dir).AndReturn(True)
-
-    cros_lib.RunCommand(['git', 'checkout', 'master'],
-                        cwd=self.ver_manifests_dir)
-
-    manifest_version.SetStatus(self.build_version,
-                               'fail',
-                               self.working_dir,
-                               self.ver_manifests,
-                               self.board,
-                               True)
-
+    Tests without pre-existing version file in manifest dir.
+    """
+    self.mox.StubOutWithMock(manifest_version, '_ExportManifest')
+    info = manifest_version._VersionInfo(version_string=FAKE_VERSION_STRING,
+                                         incr_type='patch')
+    self.manager.all_specs_dir = os.path.join(self.manager.manifests_dir,
+                                              'buildspecs', '1.2')
+    manifest_version._ExportManifest(self.manager.source_dir, mox.IgnoreArg())
+    manifest_version._ExportManifest(self.manager.source_dir, mox.IgnoreArg())
     self.mox.ReplayAll()
-
-    manifest_version.UpdateStatus(tmp_dir=self.tmp_dir,
-                                  manifest_repo=self.manifest_repo,
-                                  build_name=self.board,
-                                  build_version=self.build_version,
-                                  success=False,
-                                  dry_run=True,
-                                  retries=0)
-
+    self.manager.all = []
+    version = self.manager._CreateNewBuildSpec(info)
     self.mox.VerifyAll()
+    self.assertEqual(FAKE_VERSION_STRING, version)
+
+  def testCreateNewBuildIncrement(self):
+    """Tests that we create a new version if a previous one exists."""
+    self.mox.StubOutWithMock(manifest_version, '_ExportManifest')
+    self.mox.StubOutWithMock(manifest_version._VersionInfo, 'IncrementVersion')
+    self.mox.StubOutWithMock(manifest_version._RepoRepository, 'Sync')
+
+    version_file = VersionInfoTest.CreateFakeVersionFile(self.tmpdir)
+    info = manifest_version._VersionInfo(version_file=version_file,
+                                         incr_type='patch')
+    self.manager.all_specs_dir = os.path.join(self.manager.manifests_dir,
+                                              'buildspecs', '1.2')
+    manifest_version._ExportManifest(self.manager.source_dir, mox.IgnoreArg())
+    info.IncrementVersion('Automatic: Updating the new version number %s' %
+                          FAKE_VERSION_STRING, dry_run=True).AndReturn(
+                              FAKE_VERSION_STRING_NEXT)
+    manifest_version._RepoRepository.Sync(branch='master')
+    manifest_version._ExportManifest(self.manager.source_dir, mox.IgnoreArg())
+    self.mox.ReplayAll()
+    # Add to existing so we are forced to increment.
+    self.manager.all = [FAKE_VERSION_STRING]
+    version = self.manager._CreateNewBuildSpec(info)
+    self.mox.VerifyAll()
+    self.assertEqual(FAKE_VERSION_STRING_NEXT, version)
+
+  def NotestGetNextBuildSpec(self):
+    """Meta test.  Re-enable if you want to use it to do a big test."""
+    print self.manager.GetNextBuildSpec(self.version_file, latest=True,
+                                        retries=0)
+    print self.manager.UpdateStatus('pass')
+
+  def tearDown(self):
+    shutil.rmtree(self.tmpdir)
 
 
 if __name__ == '__main__':
