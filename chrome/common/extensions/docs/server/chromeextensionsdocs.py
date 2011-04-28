@@ -21,7 +21,7 @@ class Channel():
   def __init__(self, name, tag):
     self.name = name
     self.tag = tag
-    
+
   # TODO(nickbaum): unit test this
   def matchPath(self, path):
     match = "/" + self.name + "/"
@@ -29,7 +29,7 @@ class Channel():
       return true
     else:
       return false
-    
+
 Channel.DEV = Channel("dev", "2.0-dev")
 Channel.BETA = Channel("beta", "1.1-beta")
 Channel.STABLE = Channel("stable", "")
@@ -87,10 +87,10 @@ class MainPage(webapp.RequestHandler):
     for key in result.headers:
       self.response.headers[key] = result.headers[key]
     self.response.out.write(result.content)
-  
+
   def head(self):
     self.get()
-   
+
   # get the src url corresponding to the request
   # returns a tuple of the url and the branch
   # this function is the only part that is unit tested
@@ -106,7 +106,7 @@ class MainPage(webapp.RequestHandler):
     if len(path) == 2:
       path.append("")
     if path[1] == "":
-      channel = Channel.DEFAULT 
+      channel = Channel.DEFAULT
       if(Channel.DEFAULT == Channel.TRUNK):
         url = url + "trunk/src/chrome/"
       else:
@@ -148,7 +148,7 @@ class MainPage(webapp.RequestHandler):
         path = "index.html"
       url = url + "common/extensions/docs/" + path
     return [url, channel]
-    
+
   # get the current version number for the channel requested (dev, beta or stable)
   # TODO(nickbaum): move to Channel object
   def getBranch(self, channel):
@@ -196,7 +196,7 @@ class MainPage(webapp.RequestHandler):
     self.check("/dev/index.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/index.html", Channel.DEV)
     self.check("/dev/getstarted.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/getstarted.html", Channel.DEV)
     self.check("/dev/images/toolstrip.png", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/images/toolstrip.png", Channel.DEV)
-    
+
     self.response.out.write("<br/>Testing BETA<br/>")
     self.check("/beta/", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/index.html", Channel.BETA)
     self.check("/beta/index.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/index.html", Channel.BETA)
@@ -208,25 +208,25 @@ class MainPage(webapp.RequestHandler):
     self.check("/stable/index.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/index.html", Channel.STABLE)
     self.check("/stable/getstarted.html", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/getstarted.html", Channel.STABLE)
     self.check("/stable/images/toolstrip.png", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/images/toolstrip.png", Channel.STABLE)
-    
+
     self.response.out.write("<br/>Testing jstemplate_compiled.js<br/>")
     self.check("/trunk/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.TRUNK)
     self.check("/dev/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.DEV)
     self.check("/beta/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.BETA)
     self.check("/stable/third_party/jstemplate/jstemplate_compiled.js", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/third_party/jstemplate/jstemplate_compiled.js", Channel.STABLE)
-   
-    self.response.out.write("<br/>Testing extension_api.json<br/>") 
+
+    self.response.out.write("<br/>Testing extension_api.json<br/>")
     self.check("/trunk/api/extension_api.json", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/api/extension_api.json", Channel.TRUNK)
     self.check("/dev/api/extension_api.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/extension_api.json", Channel.DEV)
     self.check("/beta/api/extension_api.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/extension_api.json", Channel.BETA)
     self.check("/stable/api/extension_api.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/extension_api.json", Channel.STABLE)
-    
-    self.response.out.write("<br/>Testing favicon.ico<br/>") 
+
+    self.response.out.write("<br/>Testing favicon.ico<br/>")
     self.check("/trunk/favicon.ico", "http://src.chromium.org/favicon.ico", Channel.TRUNK)
     self.check("/dev/favicon.ico", "http://src.chromium.org/favicon.ico", Channel.DEV)
     self.check("/beta/favicon.ico", "http://src.chromium.org/favicon.ico", Channel.BETA)
     self.check("/stable/favicon.ico", "http://src.chromium.org/favicon.ico", Channel.STABLE)
-    
+
     self.response.out.write("<br/>Testing DEFAULT<br/>")
     temp = Channel.DEFAULT
     Channel.DEFAULT = Channel.DEV
@@ -238,7 +238,7 @@ class MainPage(webapp.RequestHandler):
     self.check("/api/extension_api.json", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/api/extension_api.json", Channel.DEV)
     self.check("/css/ApiRefStyles.css", "http://src.chromium.org/viewvc/chrome/branches/%s/src/chrome/common/extensions/docs/css/ApiRefStyles.css", Channel.DEV)
     self.check("/favicon.ico", "http://src.chromium.org/favicon.ico", Channel.DEV)
-    
+
     self.response.out.write("<br/>Testing DEFAULT (trunk)<br/>")
     Channel.DEFAULT = Channel.TRUNK
     self.check("/", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/index.html", Channel.TRUNK)
@@ -250,7 +250,7 @@ class MainPage(webapp.RequestHandler):
     self.check("/css/ApiRefStyles.css", "http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/css/ApiRefStyles.css", Channel.TRUNK)
     self.check("/favicon.ico", "http://src.chromium.org/favicon.ico", Channel.TRUNK)
     Channel.DEFAULT = temp
-    
+
     return
 
   # utility function for my unit test
@@ -270,7 +270,7 @@ class MainPage(webapp.RequestHandler):
 application = webapp.WSGIApplication([
   ('/.*', MainPage),
 ], debug=False)
-  
+
 
 def main():
   run_wsgi_app(application)
