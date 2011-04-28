@@ -200,6 +200,11 @@ bool CloudPrintSetupFlow::ShouldShowDialogTitle() const {
   return true;
 }
 
+bool CloudPrintSetupFlow::HandleContextMenu(
+    const ContextMenuParams& params) {
+  return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // GaiaAuthConsumer implementation.
 void CloudPrintSetupFlow::OnClientLoginSuccess(

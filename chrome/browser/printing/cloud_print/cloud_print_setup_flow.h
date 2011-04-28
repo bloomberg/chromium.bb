@@ -75,6 +75,7 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   virtual std::wstring GetDialogTitle() const;
   virtual bool IsDialogModal() const;
   virtual bool ShouldShowDialogTitle() const;
+  virtual bool HandleContextMenu(const ContextMenuParams& params);
 
   // GaiaAuthConsumer implementation.
   virtual void OnClientLoginSuccess(
