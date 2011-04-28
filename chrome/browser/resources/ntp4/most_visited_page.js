@@ -30,6 +30,11 @@ cr.define('ntp4', function() {
       this.addEventListener('keydown', this.handleKeyDown_.bind(this));
     },
 
+    get index() {
+      assert(this.tile);
+      return this.tile.index;
+    },
+
     /**
      * Clears the DOM hierarchy for this node, setting it back to the default
      * for a blank thumbnail.
@@ -100,10 +105,7 @@ cr.define('ntp4', function() {
         this.blacklist_();
         e.preventDefault();
       } else {
-        var index = Array.prototype.indexOf.call(this.parentNode.children,
-                                                 this);
-        if (index != -1)
-          chrome.send('metrics', ['NTP_MostVisited' + index]);
+        chrome.send('metrics', ['NTP_MostVisited' + this.index]);
       }
     },
 
@@ -130,7 +132,7 @@ cr.define('ntp4', function() {
           data.faviconUrl || '',
           data.thumbnailUrl || '',
           // TODO(estade): should not need to convert index to string.
-          String(data.index)
+          String(this.index)
         ]);
       } else {
         chrome.send('removePinnedURL', [data.url]);
@@ -242,7 +244,6 @@ cr.define('ntp4', function() {
     updateTiles_: function() {
       for (var i = 0; i < THUMBNAIL_COUNT; i++) {
         var page = this.data_[i];
-        page.index = i;
         var tile = this.mostVisitedTiles_[i];
 
         if (i >= this.data_.length)

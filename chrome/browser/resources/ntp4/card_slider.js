@@ -137,16 +137,19 @@ var CardSlider = (function() {
       this.scrollClearTimeout_ = null;
       this.container_.addEventListener('mousewheel',
                                        this.onMouseWheel_.bind(this));
-      this.container_.addEventListener(TouchHandler.EventType.TOUCH_START,
-                                       this.onTouchStart_.bind(this));
-      this.container_.addEventListener(TouchHandler.EventType.DRAG_START,
-                                       this.onDragStart_.bind(this));
-      this.container_.addEventListener(TouchHandler.EventType.DRAG_MOVE,
-                                       this.onDragMove_.bind(this));
-      this.container_.addEventListener(TouchHandler.EventType.DRAG_END,
-                                       this.onDragEnd_.bind(this));
 
-      this.touchHandler_.enable(/* opt_capture */ false);
+      if (document.documentElement.getAttribute('touchui')) {
+        this.container_.addEventListener(TouchHandler.EventType.TOUCH_START,
+                                         this.onTouchStart_.bind(this));
+        this.container_.addEventListener(TouchHandler.EventType.DRAG_START,
+                                         this.onDragStart_.bind(this));
+        this.container_.addEventListener(TouchHandler.EventType.DRAG_MOVE,
+                                         this.onDragMove_.bind(this));
+        this.container_.addEventListener(TouchHandler.EventType.DRAG_END,
+                                         this.onDragEnd_.bind(this));
+
+        this.touchHandler_.enable(/* opt_capture */ false);
+      }
     },
 
     /**
@@ -243,91 +246,6 @@ var CardSlider = (function() {
     },
 
     /**
-     * Clear any transition that is in progress and enable dragging for the
-     * touch.
-     * @param {!TouchHandler.Event} e The TouchHandler event.
-     * @private
-     */
-    onTouchStart_: function(e) {
-      this.container_.style.WebkitTransition = '';
-      e.enableDrag = true;
-    },
-
-    /**
-     * Tell the TouchHandler that dragging is acceptable when the user begins by
-     * scrolling horizontally.
-     * @param {!TouchHandler.Event} e The TouchHandler event.
-     * @private
-     */
-    onDragStart_: function(e) {
-      e.enableDrag = Math.abs(e.dragDeltaX) > Math.abs(e.dragDeltaY);
-    },
-
-    /**
-     * On each drag move event reposition the container appropriately so the
-     * cards look like they are sliding.
-     * @param {!TouchHandler.Event} e The TouchHandler event.
-     * @private
-     */
-    onDragMove_: function(e) {
-      var deltaX = e.dragDeltaX;
-      // If dragging beyond the first or last card then apply a backoff so the
-      // dragging feels stickier than usual.
-      if (!this.currentCard && deltaX > 0 ||
-          this.currentCard == (this.cards_.length - 1) && deltaX < 0) {
-        deltaX /= 2;
-      }
-      this.translateTo_(this.currentLeft_ + deltaX);
-    },
-
-    /**
-     * Moves the view to the specified position.
-     * @param {number} x Horizontal position to move to.
-     * @private
-     */
-    translateTo_: function(x) {
-      // We use a webkitTransform to slide because this is GPU accelerated on
-      // Chrome and iOS.  Once Chrome does GPU acceleration on the position
-      // fixed-layout elements we could simply set the element's position to
-      // fixed and modify 'left' instead.
-      this.container_.style.WebkitTransform = 'translate3d(' + x + 'px, 0, 0)';
-    },
-
-    /**
-     * On drag end events we may want to transition to another card, depending
-     * on the ending position of the drag and the velocity of the drag.
-     * @param {!TouchHandler.Event} e The TouchHandler event.
-     * @private
-     */
-    onDragEnd_: function(e) {
-      var deltaX = e.dragDeltaX;
-      var velocity = this.touchHandler_.getEndVelocity().x;
-      var newX = this.currentLeft_ + deltaX;
-      var newCardIndex = Math.round(-newX / this.cardWidth_);
-
-      if (newCardIndex == this.currentCard && Math.abs(velocity) >
-          CardSlider.TRANSITION_VELOCITY_THRESHOLD_) {
-        // If the drag wasn't far enough to change cards but the velocity was
-        // high enough to transition anyways. If the velocity is to the left
-        // (negative) then the user wishes to go right (card +1).
-        newCardIndex += velocity > 0 ? -1 : 1;
-      }
-
-      this.selectCard(newCardIndex, /* animate */ true);
-    },
-
-    /**
-     * Cancel any current touch/slide as if we saw a touch end
-     */
-    cancelTouch: function() {
-      // Stop listening to any current touch
-      this.touchHandler_.cancelTouch();
-
-      // Ensure we're at a card bounary
-      this.transformToCurrentCard_(true);
-    },
-
-    /**
      * Selects a new card, ensuring that it is a valid index, transforming the
      * view and possibly calling the change card callback.
      * @param {number} newCardIndex Index of card to show.
@@ -374,7 +292,96 @@ var CardSlider = (function() {
       }
       this.container_.style.WebkitTransition = transition;
       this.translateTo_(this.currentLeft_);
-    }
+    },
+
+    /**
+     * Moves the view to the specified position.
+     * @param {number} x Horizontal position to move to.
+     * @private
+     */
+    translateTo_: function(x) {
+      // We use a webkitTransform to slide because this is GPU accelerated on
+      // Chrome and iOS.  Once Chrome does GPU acceleration on the position
+      // fixed-layout elements we could simply set the element's position to
+      // fixed and modify 'left' instead.
+      this.container_.style.WebkitTransform = 'translate3d(' + x + 'px, 0, 0)';
+    },
+
+    /* Touch ******************************************************************/
+
+    /**
+     * Clear any transition that is in progress and enable dragging for the
+     * touch.
+     * @param {!TouchHandler.Event} e The TouchHandler event.
+     * @private
+     */
+    onTouchStart_: function(e) {
+      this.container_.style.WebkitTransition = '';
+      e.enableDrag = true;
+    },
+
+    /**
+     * Tell the TouchHandler that dragging is acceptable when the user begins by
+     * scrolling horizontally.
+     * @param {!TouchHandler.Event} e The TouchHandler event.
+     * @private
+     */
+    onDragStart_: function(e) {
+      e.enableDrag = Math.abs(e.dragDeltaX) > Math.abs(e.dragDeltaY);
+    },
+
+    /**
+     * On each drag move event reposition the container appropriately so the
+     * cards look like they are sliding.
+     * @param {!TouchHandler.Event} e The TouchHandler event.
+     * @private
+     */
+    onDragMove_: function(e) {
+      var deltaX = e.dragDeltaX;
+      // If dragging beyond the first or last card then apply a backoff so the
+      // dragging feels stickier than usual.
+      if (!this.currentCard && deltaX > 0 ||
+          this.currentCard == (this.cards_.length - 1) && deltaX < 0) {
+        deltaX /= 2;
+      }
+      this.translateTo_(this.currentLeft_ + deltaX);
+    },
+
+    /**
+     * On drag end events we may want to transition to another card, depending
+     * on the ending position of the drag and the velocity of the drag.
+     * @param {!TouchHandler.Event} e The TouchHandler event.
+     * @private
+     */
+    onDragEnd_: function(e) {
+      var deltaX = e.dragDeltaX;
+      var velocity = this.touchHandler_.getEndVelocity().x;
+      var newX = this.currentLeft_ + deltaX;
+      var newCardIndex = Math.round(-newX / this.cardWidth_);
+
+      if (newCardIndex == this.currentCard && Math.abs(velocity) >
+          CardSlider.TRANSITION_VELOCITY_THRESHOLD_) {
+        // If the drag wasn't far enough to change cards but the velocity was
+        // high enough to transition anyways. If the velocity is to the left
+        // (negative) then the user wishes to go right (card +1).
+        newCardIndex += velocity > 0 ? -1 : 1;
+      }
+
+      this.selectCard(newCardIndex, /* animate */ true);
+    },
+
+    /**
+     * Cancel any current touch/slide as if we saw a touch end
+     */
+    cancelTouch: function() {
+      // Stop listening to any current touch
+      this.touchHandler_.cancelTouch();
+
+      // Ensure we're at a card bounary
+      this.transformToCurrentCard_(true);
+    },
+
+
   };
 
   return CardSlider;

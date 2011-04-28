@@ -6,6 +6,100 @@ cr.define('ntp4', function() {
   'use strict';
 
   /**
+   * Creates a new Tileobject. Tiles wrap content on a TilePage, providing
+   * some styling and drag functionality.
+   * @constructor
+   * @extends {HTMLDivElement}
+   */
+  function Tile(contents) {
+    var tile = cr.doc.createElement('div');
+    tile.__proto__ = Tile.prototype;
+    tile.initialize(contents);
+
+    return tile;
+  }
+
+  Tile.prototype = {
+    __proto__: HTMLDivElement.prototype,
+
+    initialize: function(contents) {
+      this.className = 'tile';
+      this.appendChild(contents);
+      contents.tile = this;
+
+      this.addEventListener('dragstart', this.onDragStart_);
+      this.addEventListener('drag', this.onDragMove_);
+      this.addEventListener('dragend', this.onDragEnd_);
+    },
+
+    get index() {
+      return Array.prototype.indexOf.call(this.parentNode.children, this);
+    },
+
+    /**
+     * Position the tile at |x, y|, and store this as the grid location, i.e.
+     * where the tile 'belongs' when it's not being dragged.
+     * @param {number} x The x coordinate, in pixels.
+     * @param {number} y The y coordinate, in pixels.
+     */
+    setGridPosition: function(x, y) {
+      this.gridX = x;
+      this.gridY = y;
+      this.moveTo(x, y);
+    },
+
+    /**
+     * Position the tile at |x, y|.
+     * @param {number} x The x coordinate, in pixels.
+     * @param {number} y The y coordinate, in pixels.
+     */
+    moveTo: function(x, y) {
+      this.style.left = x + 'px';
+      this.style.top = y + 'px';
+    },
+
+    /**
+     * The handler for dragstart events fired on |this|.
+     * @param {Event} e The event for the drag.
+     * @private
+     */
+    onDragStart_: function(e) {
+      TilePage.currentlyDraggingTile = this;
+
+      e.dataTransfer.effectAllowed = 'copyMove';
+      // TODO(estade): fill this in.
+      e.dataTransfer.setData('text/plain', 'foo');
+
+      this.startScreenX = e.screenX;
+      this.startScreenY = e.screenY;
+
+      this.classList.add('dragging');
+    },
+
+    /**
+     * The handler for drag events fired on |this|.
+     * @param {Event} e The event for the drag.
+     * @private
+     */
+    onDragMove_: function(e) {
+      var diffX = e.screenX - this.startScreenX;
+      var diffY = e.screenY - this.startScreenY;
+      this.moveTo(this.gridX + diffX, this.gridY + diffY);
+    },
+
+    /**
+     * The handler for dragend events fired on |this|.
+     * @param {Event} e The event for the drag.
+     * @private
+     */
+    onDragEnd_: function(e) {
+      TilePage.currentlyDraggingTile = null;
+      this.classList.remove('dragging');
+      this.tilePage.positionTile_(this.index);
+    },
+  };
+
+  /**
    * Gives the proportion of the row width that is devoted to a single icon.
    * @param {number} rowTileCount The number of tiles in a row.
    * @return {number} The ratio between icon width and row width.
@@ -85,6 +179,10 @@ cr.define('ntp4', function() {
                                             grid.maxColCount);
   },
 
+  // We can't pass the currently dragging tile via dataTransfer because of
+  // http://crbug.com/31037
+  TilePage.currentlyDraggingTile = null;
+
   TilePage.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -108,6 +206,13 @@ cr.define('ntp4', function() {
 
       this.eventTracker = new EventTracker();
       this.eventTracker.add(window, 'resize', this.onResize_.bind(this));
+
+      this.tileGrid_.addEventListener('dragenter',
+                                      this.onDragEnter_.bind(this));
+      this.tileGrid_.addEventListener('dragover', this.onDragOver_.bind(this));
+      this.tileGrid_.addEventListener('drop', this.onDrop_.bind(this));
+      this.tileGrid_.addEventListener('dragleave',
+                                      this.onDragLeave_.bind(this));
     },
 
     /**
@@ -122,59 +227,101 @@ cr.define('ntp4', function() {
      * @protected
      */
     appendTile: function(tileElement) {
-      var wrapperDiv = tileElement.ownerDocument.createElement('div');
-      wrapperDiv.appendChild(tileElement);
-      wrapperDiv.className = 'tile';
+      var wrapperDiv = new Tile(tileElement);
+      wrapperDiv.tilePage = this;
       this.tileGrid_.appendChild(wrapperDiv);
 
       this.positionTile_(this.tileElements_.length - 1);
-      this.classList.remove('resizing-tile-page');
+      this.classList.remove('animating-tile-page');
     },
 
     /**
-     * Calculates the x/y coordinates for an element and moves it there.
-     * @param {number} The index of the element to be positioned.
+     * Makes some calculations for tile layout. These calculations are shared
+     * by |positionTile_| and |getWouldBeIndexforPoint_|.
+     * @return {Object} Assorted layout pixel values.
      * @private
      */
-    positionTile_: function(index) {
+    calculateLayoutValues_: function() {
       var grid = this.gridValues_;
-
       var availableSpace = this.tileGrid_.clientWidth - 2 * MIN_WIDE_MARGIN;
       var wide = availableSpace >= grid.minWideWidth;
-      // Calculate the portion of the tile's position that should be animated.
-      var animatedTileValues = wide ?
-          grid.wideTileValues : grid.narrowTileValues;
-      // Animate the difference between three-wide and six-wide.
-      var animatedLeftMargin = wide ?
-          0 : (grid.minWideWidth - MIN_WIDE_MARGIN - grid.narrowWidth) / 2;
-
       var numRowTiles = wide ? grid.maxColCount : grid.minColCount;
-      var col = index % numRowTiles;
-      var row = Math.floor(index / numRowTiles);
-      var animatedX = col * animatedTileValues.offsetX + animatedLeftMargin;
-      var animatedY = row * (this.heightForWidth(animatedTileValues.tileWidth) +
-                             animatedTileValues.interTileSpacing);
 
-      // Calculate the final on-screen position for the tile.
       var effectiveGridWidth = wide ?
           Math.min(Math.max(availableSpace, grid.minWideWidth),
                    grid.maxWideWidth) :
           grid.narrowWidth;
       var realTileValues = tileValuesForGrid(effectiveGridWidth, numRowTiles);
+
       // leftMargin centers the grid within the avaiable space.
       var minMargin = wide ? MIN_WIDE_MARGIN : 0;
       var leftMargin =
           Math.max(minMargin,
                    (this.tileGrid_.clientWidth - effectiveGridWidth) / 2);
-      var realX = col * realTileValues.offsetX + leftMargin;
-      var realY = row * (this.heightForWidth(realTileValues.tileWidth) +
-                         realTileValues.interTileSpacing);
+      return {
+        numRowTiles: numRowTiles,
+        leftMargin: leftMargin,
+        colWidth: realTileValues.offsetX,
+        rowHeight: this.heightForWidth(realTileValues.tileWidth) +
+            realTileValues.interTileSpacing,
+        tileWidth: realTileValues.tileWidth,
+        wide: wide,
+      };
+    },
 
-      var tileWrapper = this.tileElements_[index];
-      tileWrapper.style.left = animatedX + 'px';
-      tileWrapper.style.top = animatedY + 'px';
-      tileWrapper.firstChild.setBounds(realTileValues.tileWidth,
-                                       realX - animatedX, realY - animatedY);
+    /**
+     * Calculates the x/y coordinates for an element and moves it there.
+     * @param {number} index The index of the element to be positioned.
+     * @param {number} indexOffset If provided, this is added to |index| when
+     *     positioning the tile. The effect is that the tile will be positioned
+     *     in a non-default location.
+     * @private
+     */
+    positionTile_: function(index, indexOffset) {
+      var grid = this.gridValues_;
+      var layout = this.calculateLayoutValues_();
+
+      indexOffset = typeof indexOffset != 'undefined' ? indexOffset : 0;
+      var col = (index + indexOffset) % layout.numRowTiles;
+      var row = Math.floor((index + indexOffset) / layout.numRowTiles);
+      // Calculate the final on-screen position for the tile.
+      var realX = col * layout.colWidth + layout.leftMargin;
+      var realY = row * layout.rowHeight;
+
+      // Calculate the portion of the tile's position that should be animated.
+      var animatedTileValues = layout.wide ?
+          grid.wideTileValues : grid.narrowTileValues;
+      // Animate the difference between three-wide and six-wide.
+      var animatedLeftMargin = layout.wide ?
+          0 : (grid.minWideWidth - MIN_WIDE_MARGIN - grid.narrowWidth) / 2;
+      var animatedX = col * animatedTileValues.offsetX + animatedLeftMargin;
+      var animatedY = row * (this.heightForWidth(animatedTileValues.tileWidth) +
+                             animatedTileValues.interTileSpacing);
+
+      var tile = this.tileElements_[index];
+      tile.setGridPosition(animatedX, animatedY);
+      tile.firstChild.setBounds(layout.tileWidth,
+                                realX - animatedX,
+                                realY - animatedY);
+    },
+
+    /**
+     * Gets the index of the tile that should occupy coordinate (x, y). Note
+     * that this function doesn't care where the tiles actually are, and will
+     * return an index even for the space between two tiles. This function is
+     * effectively the inverse of |positionTile_|.
+     * @param {number} x The x coordinate, in pixels, relative to the top left
+     *     of tileGrid_.
+     * @param {number} y The y coordinate.
+     * @private
+     */
+    getWouldBeIndexForPoint_: function(x, y) {
+      var grid = this.gridValues_;
+      var layout = this.calculateLayoutValues_();
+
+      var col = Math.floor((x - layout.leftMargin) / layout.colWidth);
+      var row = Math.floor((y - this.tileGrid_.offsetTop) / layout.rowHeight);
+      return row * layout.numRowTiles + col;
     },
 
     /**
@@ -187,7 +334,7 @@ cr.define('ntp4', function() {
         return;
 
       this.lastWidth_ = this.clientWidth;
-      this.classList.add('resizing-tile-page');
+      this.classList.add('animating-tile-page');
 
       for (var i = 0; i < this.tileElements_.length; i++) {
         this.positionTile_(i);
@@ -202,6 +349,107 @@ cr.define('ntp4', function() {
      */
     heightForWidth: function(width) {
       return width;
+    },
+
+    /** Dragging **/
+
+    /**
+     * The number of un-paired dragenter events that have fired on |this|. This
+     * is incremented by |onDragEnter_| and decremented by |onDragLeave_|. This
+     * is necessary because dragging over child widgets will fire additional
+     * enter and leave events on |this|.
+     * @type {number}
+     * @private
+     */
+    dragEnters_: 0,
+
+    /**
+     * Handler for dragenter events fired on |tileGrid_|.
+     * @param {Event} e A MouseEvent for the drag.
+     * @private
+     */
+    onDragEnter_: function(e) {
+      if (++this.dragEnters_ > 1)
+        return;
+
+      this.classList.add('animating-tile-page');
+      this.dragItemIndex_ = TilePage.currentlyDraggingTile.index;
+      this.currentDropIndex_ = this.dragItemIndex_;
+    },
+
+    /**
+     * Handler for dragover events fired on |tileGrid_|.
+     * @param {Event} e A MouseEvent for the drag.
+     * @private
+     */
+    onDragOver_: function(e) {
+      e.dataTransfer.dropEffect = 'move';
+      var draggedTile = TilePage.currentlyDraggingTile;
+      if (!draggedTile)
+        return;
+
+      e.preventDefault();
+
+      var newDragIndex = this.getWouldBeIndexForPoint_(e.clientX, e.clientY);
+      if (newDragIndex < 0 || newDragIndex >= this.tileElements_.length)
+        newDragIndex = this.dragItemIndex_;
+      this.updateDropIndicator_(newDragIndex);
+    },
+
+    /**
+     * Handler for drop events fired on |tileGrid_|.
+     * @param {Event} e A MouseEvent for the drag.
+     * @private
+     */
+    onDrop_: function(e) {
+      var index = this.currentDropIndex_;
+      if (index == this.dragItemIndex_)
+        return;
+
+      var adjustment = index > this.dragItemIndex_ ? 1 : 0;
+      this.tileGrid_.insertBefore(
+          TilePage.currentlyDraggingTile,
+          this.tileElements_[this.currentDropIndex_ + adjustment]);
+      e.stopPropagation();
+      this.dragEnters_ = 0;
+    },
+
+    /**
+     * Handler for dragleave events fired on |tileGrid_|.
+     * @param {Event} e A MouseEvent for the drag.
+     * @private
+     */
+    onDragLeave_: function(e) {
+      if (--this.dragEnters_ > 0)
+        return;
+
+      this.updateDropIndicator_(this.dragItemIndex_);
+    },
+
+    /**
+     * Updates the visual indicator for the drop location for the active drag.
+     * @param {Event} e A MouseEvent for the drag.
+     * @private
+     */
+    updateDropIndicator_: function(newDragIndex) {
+      var oldDragIndex = this.currentDropIndex_;
+      if (newDragIndex == oldDragIndex)
+        return;
+
+      var repositionStart = Math.min(newDragIndex, oldDragIndex);
+      var repositionEnd = Math.max(newDragIndex, oldDragIndex);
+
+      for (var i = repositionStart; i <= repositionEnd; i++) {
+        if (i == this.dragItemIndex_)
+          continue;
+        else if (i > this.dragItemIndex_)
+          var adjustment = i <= newDragIndex ? -1 : 0;
+        else
+          var adjustment = i >= newDragIndex ? 1 : 0;
+
+        this.positionTile_(i, adjustment);
+      }
+      this.currentDropIndex_ = newDragIndex;
     },
   };
 
