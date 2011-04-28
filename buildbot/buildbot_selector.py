@@ -47,13 +47,23 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8632',
     'pnacl-x8664':
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8664',
-    # Pnacl spec2k bots.
-    'lucid64-spec-arm':
-        'bash tests/spec2k/bot_spec.sh 1 ~/cpu2000-redhat64-ia32',
-    'lucid64-spec-x86':
+    # Pnacl spec2k bots (obsolete)
+    'lucid64-spec-arm': # obsolete
+        'bash buildbot/buildbot_pnacl2.sh mode-spec-pnacl-arm',
+    'lucid64-spec-x86': # obsolete
         'bash tests/spec2k/bot_spec.sh 2 ~/cpu2000-redhat64-ia32',
-    'lucid64-pnacl-translator':
+    'lucid64-pnacl-translator': # obsolete
         'bash tests/spec2k/bot_spec.sh 3 ~/cpu2000-redhat64-ia32',
+    # Pnacl spec2k bots (obsolete)
+    'spec-pnacl-arm':
+        'bash buildbot/buildbot_pnacl2.sh mode-spec-pnacl-arm',
+    'spec-pnacl-x8632':
+      'bash buildbot/buildbot_pnacl2.sh mode-spec-pnacl-x8632',
+    'spec-pnacl-x8664':
+      'bash buildbot/buildbot_pnacl2.sh mode-spec-pnacl-x8664',
+    # NaCl spec2k bot
+    'spec-nacl':
+      'bash buildbot/buildbot_pnacl2.sh mode-spec-nacl',
     # Valgrind bots.
     'karmic64-valgrind': 'bash buildbot/buildbot_valgrind.sh',
     # Coverage.
@@ -96,7 +106,8 @@ BOT_ASSIGNMENT = {
     'nacl-lucid64-pnacl1':
         'bash buildbot/buildbot_pnacl1.sh mode-trybot',
     # Pnacl spec2k trybots
-    'nacl-lucid64-pnacl2': 'bash buildbot/buildbot_pnacl2.sh',
+    'nacl-lucid64-pnacl2':
+        'bash buildbot/buildbot_pnacl2.sh mode-spec-pnacl-trybot',
 
     # Toolchain glibc.
     'lucid64-glibc': 'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
