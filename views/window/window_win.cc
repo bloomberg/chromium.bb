@@ -549,6 +549,17 @@ LRESULT WindowWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
   return 0;
 }
 
+namespace {
+BOOL CALLBACK EnumChildWindowsForRedraw(HWND hwnd, LPARAM lparam) {
+  DWORD process_id;
+  GetWindowThreadProcessId(hwnd, &process_id);
+  int flags = RDW_INVALIDATE | RDW_NOCHILDREN | RDW_FRAME;
+  if (process_id == GetCurrentProcessId())
+    flags |= RDW_UPDATENOW;
+  RedrawWindow(hwnd, NULL, NULL, flags);
+  return TRUE;
+}
+}  // namespace
 
 LRESULT WindowWin::OnNCActivate(BOOL active) {
   if (!delegate_->CanActivate())
@@ -562,6 +573,17 @@ LRESULT WindowWin::OnNCActivate(BOOL active) {
   // visible, no need to paint.
   if (IsVisible())
     GetWindow()->non_client_view()->SchedulePaint();
+
+  if (!ShouldUseNativeFrame()) {
+    // TODO(beng, et al): Hack to redraw this window and child windows
+    //     synchronously upon activation. Not all child windows are redrawing
+    //     themselves leading to issues like http://crbug.com/74604
+    //     We redraw out-of-process HWNDs asynchronously to avoid hanging the
+    //     whole app if a child HWND belonging to a hung plugin is encountered.
+    RedrawWindow(GetNativeView(), NULL, NULL,
+                 RDW_NOCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
+    EnumChildWindows(GetNativeView(), EnumChildWindowsForRedraw, NULL);
+  }
 
   // If we're active again, we should be allowed to render as inactive, so
   // tell the non-client view.
