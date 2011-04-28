@@ -40,7 +40,13 @@ SBOX_TESTS_COMMAND int SimpleOpenEvent(int argc, wchar_t **argv) {
   return event_open.Get() ? SBOX_TEST_SUCCEEDED : SBOX_TEST_FAILED;
 }
 
-TEST(UnloadDllTest, BaselineAvicapDll) {
+// Flaky on windows, see http://crbug.com/80569.
+#if defined(OS_WIN)
+#define MAYBE_BaselineAvicapDll FLAKY_BaselineAvicapDll
+#else
+#define MAYBE_BaselineAvicapDll BaselineAvicapDll
+#endif
+TEST(UnloadDllTest, MAYBE_BaselineAvicapDll) {
   TestRunner runner;
   runner.SetTestState(BEFORE_REVERT);
   runner.SetTimeout(2000);
