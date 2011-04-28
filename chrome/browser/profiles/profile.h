@@ -165,6 +165,10 @@ class Profile {
   // NOTIFY_DEFAULT_REQUEST_CONTEXT_AVAILABLE.
   static net::URLRequestContextGetter* GetDefaultRequestContext();
 
+  // Returns the name associated with this profile. This name is displayed in
+  // the browser frame.
+  virtual std::string GetProfileName() = 0;
+
   // Returns a unique Id that can be used to identify this profile at runtime.
   // This Id is not persistent and will not survive a restart of the browser.
   virtual ProfileId GetRuntimeId() = 0;

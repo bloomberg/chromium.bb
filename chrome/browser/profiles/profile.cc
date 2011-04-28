@@ -210,6 +210,11 @@ class OffTheRecordProfileImpl : public Profile,
     return reinterpret_cast<ProfileId>(this);
   }
 
+  virtual std::string GetProfileName() {
+    // Incognito profile should not return the profile name.
+    return std::string();
+  }
+
   virtual FilePath GetPath() { return profile_->GetPath(); }
 
   virtual bool IsOffTheRecord() {
