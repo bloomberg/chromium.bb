@@ -349,9 +349,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // Returns whether this render view is a popup (autocomplete window).
   bool IsPopup() const;
 
-  // Updates the display cursor to the current cursor if the cursor is over this
-  // render view.
-  void UpdateCursorIfOverSelf();
+  // Updates the display cursor if the current event is over the view's window.
+  void UpdateCursorIfNecessary();
 
   // Shuts down the render_widget_host_.  This is a separate function so we can
   // invoke it from the message loop.

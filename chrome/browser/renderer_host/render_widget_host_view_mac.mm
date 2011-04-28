@@ -824,10 +824,10 @@ gfx::Rect RenderWidgetHostViewMac::GetViewBounds() const {
 
 void RenderWidgetHostViewMac::UpdateCursor(const WebCursor& cursor) {
   current_cursor_ = cursor;
-  UpdateCursorIfOverSelf();
+  UpdateCursorIfNecessary();
 }
 
-void RenderWidgetHostViewMac::UpdateCursorIfOverSelf() {
+void RenderWidgetHostViewMac::UpdateCursorIfNecessary() {
   // Do something special (as Win Chromium does) for arrow cursor while loading
   // a page? TODO(avi): decide
   // Can we synchronize to the event stream? Switch to -[NSWindow
@@ -836,19 +836,14 @@ void RenderWidgetHostViewMac::UpdateCursorIfOverSelf() {
   if ([event window] != [cocoa_view_ window])
     return;
 
-  NSPoint event_location = [event locationInWindow];
-  NSPoint local_point = [cocoa_view_ convertPoint:event_location fromView:nil];
-
-  if (!NSPointInRect(local_point, [cocoa_view_ bounds]))
-    return;
-
   NSCursor* ns_cursor = current_cursor_.GetCursor();
   [ns_cursor set];
 }
 
 void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {
   is_loading_ = is_loading;
-  UpdateCursorIfOverSelf();
+  // If we ever decide to show the waiting cursor while the page is loading
+  // like Chrome does on Windows, call |UpdateCursorIfNecessary()| here.
 }
 
 void RenderWidgetHostViewMac::ImeUpdateTextInputState(
@@ -927,7 +922,6 @@ void RenderWidgetHostViewMac::DidUpdateBackingStore(
 void RenderWidgetHostViewMac::RenderViewGone(base::TerminationStatus status,
                                              int error_code) {
   // TODO(darin): keep this around, and draw sad-tab into it.
-  UpdateCursorIfOverSelf();
   Destroy();
 }
 
