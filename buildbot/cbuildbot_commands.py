@@ -190,12 +190,14 @@ def Build(buildroot, emptytree, build_autotest=True, usepkg=True,
     env = {}
   else:
     env = extra_env.copy()
+
   if not build_autotest: cmd.append('--nowithautotest')
   if not usepkg: cmd.append('--nousepkg')
   if emptytree:
     key = 'EXTRA_BOARD_FLAGS'
     prev = env.get(key)
-    env[key] =  (prev and prev + ' ' or '') + '--emptytree'
+    env[key] = (prev and prev + ' ' or '') + '--emptytree'
+
   cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=env)
 
 
@@ -322,6 +324,7 @@ def MarkChromeAsStable(buildroot, tracking_branch, chrome_rev, board):
   portage_atom_string = cros_lib.OldRunCommand(
       ['../../chromite/buildbot/cros_mark_chrome_as_stable',
        '--tracking_branch=%s' % tracking_branch,
+       '--board=%s' % board,
        chrome_rev],
       cwd=cwd, redirect_stdout=True, enter_chroot=True).rstrip()
   if not portage_atom_string:

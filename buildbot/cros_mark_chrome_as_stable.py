@@ -310,6 +310,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
 def main():
   usage = '%s OPTIONS [%s]' % (__file__, '|'.join(CHROME_REV))
   parser = optparse.OptionParser(usage)
+  parser.add_option('-b', '--board', default='x86-generic')
   parser.add_option('-s', '--srcroot', default=os.path.join(os.environ['HOME'],
                                                             'trunk', 'src'),
                     help='Path to the src directory')
@@ -360,6 +361,7 @@ def main():
       commit_to_use, overlay_dir, sticky_ebuild)
   # Explicit print to communicate to caller.
   if chrome_version_atom:
+    cros_mark_as_stable.CleanStalePackages(options.board, [chrome_version_atom])
     print 'CHROME_VERSION_ATOM=%s' % chrome_version_atom
 
 

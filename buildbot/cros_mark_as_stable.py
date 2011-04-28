@@ -58,20 +58,24 @@ def _Print(message):
   if VERBOSE: Info(message)
 
 
-def _CleanStalePackages(board, package_atoms):
-    """Cleans up stale package info from a previous build."""
-    if package_atoms:
-      Info('Cleaning up stale packages %s.' % package_atoms)
-      unmerge_board_cmd = ['emerge-%s' % board, '--unmerge']
-      unmerge_board_cmd.extend(package_atoms)
-      RunCommand(unmerge_board_cmd)
+def CleanStalePackages(board, package_atoms):
+  """Cleans up stale package info from a previous build.
+  Args:
+    board: Board to clean the packages from.
+    package_atoms: The actual package atom to unmerge.
+  """
+  if package_atoms:
+    Info('Cleaning up stale packages %s.' % package_atoms)
+    unmerge_board_cmd = ['emerge-%s' % board, '--unmerge']
+    unmerge_board_cmd.extend(package_atoms)
+    RunCommand(unmerge_board_cmd)
 
-      unmerge_host_cmd = ['sudo', 'emerge', '--unmerge']
-      unmerge_host_cmd.extend(package_atoms)
-      RunCommand(unmerge_host_cmd)
+    unmerge_host_cmd = ['sudo', 'emerge', '--unmerge']
+    unmerge_host_cmd.extend(package_atoms)
+    RunCommand(unmerge_host_cmd)
 
-    RunCommand(['eclean-%s' % board, '-d', 'packages'], redirect_stderr=True)
-    RunCommand(['sudo', 'eclean', '-d', 'packages'], redirect_stderr=True)
+  RunCommand(['eclean-%s' % board, '-d', 'packages'], redirect_stderr=True)
+  RunCommand(['sudo', 'eclean', '-d', 'packages'], redirect_stderr=True)
 
 
 def _FindUprevCandidates(files):
@@ -588,7 +592,7 @@ def main(argv):
                   'and reset the git repo yourself.' % overlay)
           raise
 
-      _CleanStalePackages(options.board, new_package_atoms)
+      CleanStalePackages(options.board, new_package_atoms)
       if options.drop_file:
         fh = open(options.drop_file, 'w')
         fh.write(' '.join(revved_packages))
