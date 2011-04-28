@@ -622,11 +622,6 @@ body > .scrollbar {
   display: none;
 }
 
-.disabled-label-text {
-  color: gray;
-}
-
-
 #dancing-dots {
   -webkit-transition: opacity 0.5s linear;
   background: -webkit-radial-gradient(#eaeaea, #b8b8b8);
@@ -677,4 +672,8 @@ body > .scrollbar {
 }
 #dancing-dots-text span span:nth-child(3) {
   -webkit-animation-delay: 300ms;
+}
+
+input[disabled] + label {
+  color: gray;
 }
