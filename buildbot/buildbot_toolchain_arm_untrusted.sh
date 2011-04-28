@@ -28,10 +28,11 @@ elif [[ ${BUILDBOT_BUILDERNAME} == "linux-pnacl-x86_64" ]]; then
   TOOLCHAIN_LABEL=pnacl_linux_x86_64
   RUN_TESTS="x86-32 x86-32-pic arm arm-pic x86-64 x86-64-pic"
 elif [[ ${BUILDBOT_BUILDERNAME} == "mac-pnacl-x86_32" ]]; then
+  # We don't test X86-32 because it is flaky.
   # We can't test ARM because we do not have QEMU for Mac.
   # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
   TOOLCHAIN_LABEL=pnacl_darwin_i386
-  RUN_TESTS="x86-32 x86-32-pic"
+  RUN_TESTS=""
 else
   echo "*** UNRECOGNIZED BUILDBOT ${BUILDBOT_BUILDERNAME} ***"
   exit 3
