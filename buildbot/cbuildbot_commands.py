@@ -331,7 +331,7 @@ def MarkChromeAsStable(buildroot, tracking_branch, chrome_rev, board):
     cros_lib.Info('Found nothing to rev.')
     return None
   else:
-    chrome_atom = portage_atom_string.split('=')[1]
+    chrome_atom = portage_atom_string.splitlines()[-1].split('=')[1]
     keywords_file = CHROME_KEYWORDS_FILE % {'board': board}
     cros_lib.OldRunCommand(
         ['sudo', 'mkdir', '-p', os.path.dirname(keywords_file)],
