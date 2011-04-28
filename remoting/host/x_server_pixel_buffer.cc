@@ -136,6 +136,15 @@ void XServerPixelBuffer::DestroyShmSegmentInfo() {
   }
 }
 
+void XServerPixelBuffer::Synchronize() {
+  if (shm_segment_info_ && !shm_pixmap_) {
+    // XShmGetImage can fail if the display is being reconfigured.
+    gdk_error_trap_push();
+    XShmGetImage(display_, root_window_, x_image_, 0, 0, AllPlanes);
+    gdk_error_trap_pop();
+  }
+}
+
 uint8* XServerPixelBuffer::CaptureRect(const gfx::Rect& rect) {
   if (shm_segment_info_) {
     if (shm_pixmap_) {
@@ -143,18 +152,11 @@ uint8* XServerPixelBuffer::CaptureRect(const gfx::Rect& rect) {
                 rect.x(), rect.y(), rect.width(), rect.height(),
                 rect.x(), rect.y());
       XSync(display_, False);
-    } else {
-      // XShmGetImage can fail if the display is being reconfigured.
-      gdk_error_trap_push();
-      XShmGetImage(display_, root_window_, x_image_, 0, 0, AllPlanes);
-      gdk_error_trap_pop();
     }
     return reinterpret_cast<uint8*>(x_image_->data) +
         rect.y() * x_image_->bytes_per_line +
         rect.x() * x_image_->bits_per_pixel / 8;
   } else {
-    // XGetSubImage would allow cleaner code here, (in particular,
-    // CaptureComplete could be removed) but XGetImage is faster.
     if (x_image_)
       XDestroyImage(x_image_);
     x_image_ = XGetImage(display_, root_window_, rect.x(), rect.y(),

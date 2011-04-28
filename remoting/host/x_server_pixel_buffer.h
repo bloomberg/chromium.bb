@@ -25,9 +25,18 @@ class XServerPixelBuffer {
 
   void Init(Display* display);
 
+  // If shared memory is being used without pixmaps, synchronize this pixel
+  // buffer with the root window contents (otherwise, this is a no-op).
+  // This is to avoid doing a full-screen capture for each individual
+  // rectangle in the capture list, when it only needs to be done once at the
+  // beginning.
+  void Synchronize();
+
   // Capture the specified rectangle and return a pointer to its top-left pixel
   // or NULL if capture fails. The returned pointer remains valid until the next
   // call to CaptureRect.
+  // In the case where the full-screen data is captured by Synchronize(), this
+  // simply returns the pointer without doing any more work.
   uint8* CaptureRect(const gfx::Rect& rect);
 
   // Return information about the most recent capture. This is only guaranteed

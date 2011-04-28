@@ -288,6 +288,7 @@ void CapturerLinux::CaptureRects(
     }
   }
 
+  x_server_pixel_buffer_.Synchronize();
   for (InvalidRects::const_iterator it = rects.begin();
        it != rects.end();
        ++it) {
