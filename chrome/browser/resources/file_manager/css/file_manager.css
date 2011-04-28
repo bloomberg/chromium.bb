@@ -36,6 +36,7 @@ body {
 /* Breadcrumbs and things under the title but above the list view. */
 .dialog-header {
   -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
   display: -webkit-box;
   margin: 15px;
   margin-bottom: 4px;
@@ -103,6 +104,13 @@ button.thumbnail-view {
   margin-left: 0;
 }
 
+
+button.detail-view > img,
+button.thumbnail-view > img {
+  position: relative;
+  top: 1px;
+}
+
 .list-container {
   -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
@@ -126,13 +134,21 @@ button.thumbnail-view {
   text-align: center;
 }
 
-.thumbnail-item > img {
-  padding-top: 8px;
-  max-width: 100px;
+.thumbnail-item > div.img-container {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  height: 91px;
+  margin: 2px;
+  width: 116px;
+}
+
+.thumbnail-item > div.img-container > img {
+  max-width: 110px;
   max-height: 85px;
 }
 
-.thumbnail-item > div {
+.thumbnail-item > div.text-container {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(rginda): Remove this and related code after zel's file scheme fix lands.
-const ENABLE_EXIF_READER = false;
+// WK Bug 55728 is fixed on the chrome 12 branch but not on the trunk.
+// TODO(rginda): Enable this everywhere once we have a trunk-worthy fix.
+const ENABLE_EXIF_READER = navigator.userAgent.match(/chrome\/12\.0/i);
 
-// TODO(rginda): Remove this when the thumbnail view is less janky.
-const ENABLE_THUMBNAIL_VIEW = false;
+// Thumbnail view is painful without the exif reader.
+const ENABLE_THUMBNAIL_VIEW = ENABLE_EXIF_READER;
 
 var g_slideshow_data = null;
 
@@ -451,6 +452,11 @@ FileManager.prototype = {
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, localStrings.templateData);
 
+    // Always sharing the data model between the detail/thumb views confuses
+    // them.  Instead we maintain this bogus data model, and hook it up to the
+    // view that is not in use.
+    this.emptyDataModel_ = new cr.ui.table.TableDataModel([]);
+
     this.dataModel_ = new cr.ui.table.TableDataModel([]);
     this.dataModel_.sort('name');
     this.dataModel_.addEventListener('sorted',
@@ -480,14 +486,18 @@ FileManager.prototype = {
       return;
 
     if (type == FileManager.ListType.DETAIL) {
+      this.table_.dataModel = this.dataModel_;
       this.table_.style.display = '';
       this.grid_.style.display = 'none';
+      this.grid_.dataModel = this.emptyDataModel_;
       this.currentList_ = this.table_;
       this.dialogDom_.querySelector('button.detail-view').disabled = true;
       this.dialogDom_.querySelector('button.thumbnail-view').disabled = false;
     } else if (type == FileManager.ListType.THUMBNAIL) {
+      this.grid_.dataModel = this.dataModel_;
       this.grid_.style.display = '';
       this.table_.style.display = 'none';
+      this.table_.dataModel = this.emptyDataModel_;
       this.currentList_ = this.grid_;
       this.dialogDom_.querySelector('button.thumbnail-view').disabled = true;
       this.dialogDom_.querySelector('button.detail-view').disabled = false;
@@ -497,7 +507,6 @@ FileManager.prototype = {
 
     this.listType_ = type;
     this.onResize_();
-    this.currentList_.redraw();
   };
 
   /**
@@ -506,13 +515,13 @@ FileManager.prototype = {
   FileManager.prototype.initGrid_ = function() {
     this.grid_ = this.dialogDom_.querySelector('.thumbnail-grid');
     cr.ui.Grid.decorate(this.grid_);
-    this.grid_.dataModel = this.dataModel_;
-    this.grid_.selectionModel = new this.selectionModelClass_();
 
     var self = this;
     this.grid_.itemConstructor = function(entry) {
       return self.renderThumbnail_(entry);
     };
+
+    this.grid_.selectionModel = new this.selectionModelClass_();
 
     this.grid_.addEventListener(
         'dblclick', this.onDetailDoubleClick_.bind(this));
@@ -541,7 +550,6 @@ FileManager.prototype = {
     this.table_ = this.dialogDom_.querySelector('.detail-table');
     cr.ui.Table.decorate(this.table_);
 
-    this.table_.dataModel = this.dataModel_;
     this.table_.selectionModel = new this.selectionModelClass_();
     this.table_.columnModel = new cr.ui.table.TableColumnModel(columns);
 
@@ -704,11 +712,16 @@ FileManager.prototype = {
     var li = this.document_.createElement('li');
     li.className = 'thumbnail-item';
 
+    var div = this.document_.createElement('div');
+    div.className = 'img-container';
+    li.appendChild(div);
+
     var img = this.document_.createElement('img');
     this.getThumbnailURL(entry, function(type, url) { img.src = url });
-    li.appendChild(img);
+    div.appendChild(img);
 
-    var div = this.document_.createElement('div');
+    div = this.document_.createElement('div');
+    div.className = 'text-container';
     div.textContent = entry.name;
     li.appendChild(div);
 

@@ -899,7 +899,7 @@ cr.define('cr.ui', function() {
         var list = this;
         window.setTimeout(function() {
           if (listItem.parentNode == list) {
-            this.measured_ = measureItem(list, listItem);
+            list.measured_ = measureItem(list, listItem);
           }
         });
       }
