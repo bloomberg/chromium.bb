@@ -982,7 +982,6 @@
    fun:_ZN20BrowserAccessibility10InitializeEP27BrowserAccessibilityManagerPS_iiRKN11webkit_glue16WebAccessibilityE
    fun:_ZN24BrowserAccessibilityTest5SetUpEv
 }
-
 {
    bug_51682a
    Memcheck:Leak
@@ -997,7 +996,6 @@
    fun:_ZN4base17SignatureVerifier11VerifyFinalEv
    fun:_ZN36SignatureVerifierTest_BasicTest_Test8TestBodyEv
 }
-
 {
    bug_51682b
    Memcheck:Leak
@@ -1537,7 +1535,6 @@
    fun:_pthread_start
    fun:thread_start
 }
-
 {
    bug_77388_d
    Memcheck:Cond
@@ -1668,18 +1665,22 @@
    fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
 }
 {
-   bug_44385
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN3net9HostCache3SetERKNS0_3KeyEiRKNS_11AddressListEN4base9TimeTicksE
-   fun:_ZN3net16HostResolverImpl13OnJobCompleteEPNS0_3JobEiiRKNS_11AddressListE
-   fun:_ZN3net16HostResolverImpl3Job16OnLookupCompleteEv
-   fun:_Z16DispatchToMethodIN3net16HostResolverImpl3JobEMS2_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN3net16HostResolverImpl3JobEMS2_FvvE6Tuple0E3RunEv
+   bug_80811
+   Memcheck:Addr4
+   fun:objc_msgSend
+   fun:_ZN6webkit5npapi9PluginLib17ReadWebPluginInfoERK8FilePathPNS0_13WebPluginInfoE
+   fun:_ZN6webkit5npapi10PluginList14ReadPluginInfoERK8FilePathPNS0_13WebPluginInfoEPPKNS0_17PluginEntryPointsE
+   fun:_ZN6webkit5npapi10PluginList10LoadPluginERK8FilePathP12ScopedVectorINS0_11PluginGroupEE
+   fun:_ZN6webkit5npapi10PluginList18LoadPluginsFromDirERK8FilePathP12ScopedVectorINS0_11PluginGroupEEPSt3setIS2_St4lessIS2_ESaIS2_EE
+   fun:_ZN6webkit5npapi10PluginList19LoadPluginsInternalEP12ScopedVectorINS0_11PluginGroupEE
+   fun:_ZN6webkit5npapi10PluginList11LoadPluginsEb
+   fun:_ZN6webkit5npapi10PluginList17GetEnabledPluginsEbPSt6vectorINS0_13WebPluginInfoESaIS3_EE
+   fun:_ZN19RenderMessageFilter12OnGetPluginsEbPSt6vectorIN6webkit5npapi13WebPluginInfoESaIS3_EE
+   fun:_Z16DispatchToMethodI19RenderMessageFilterMS0_FvbPSt6vectorIN6webkit5npapi13WebPluginInfoESaIS4_EEEbS6_EvPT_T0_RK6Tuple1IT1_EPSD_IT2_E
+   fun:_ZN3IPC16MessageWithReplyI6Tuple1IbES1_IRSt6vectorIN6webkit5npapi13WebPluginInfoESaIS6_EEEE8DispatchI19RenderMessageFilterSD_MSD_FvbPS8_EEEbPKNS_7MessageEPT_PT0_T1_
+   fun:_ZN19RenderMessageFilter17OnMessageReceivedERKN3IPC7MessageEPb
+   fun:_ZN20BrowserMessageFilter15DispatchMessageERKN3IPC7MessageE
+   fun:_Z16DispatchToMethodI20BrowserMessageFilterMS0_FbRKN3IPC7MessageEES2_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodI20BrowserMessageFilterMS0_FbRKN3IPC7MessageEE6Tuple1IS2_EE3RunEv
    fun:_ZN12_GLOBAL__N_118TaskClosureAdapter3RunEv
-   fun:_ZN4base8internal8Invoker1INS0_15InvokerStorage1IMN12_GLOBAL__N_118TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
-   fun:_ZNK4base8CallbackIFvvEE3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
-
