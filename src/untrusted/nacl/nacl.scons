@@ -69,8 +69,6 @@ sources_for_nacl_extensions = [
     'nacl_tls_init.c',
     'nameservice.c',
     'null.c',
-    'srpc_init.c',
-    'srpc_wait.c',
     'sysbrk.c',
     ]
 
