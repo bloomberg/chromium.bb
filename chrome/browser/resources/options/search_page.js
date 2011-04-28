@@ -35,15 +35,37 @@ cr.define('options', function() {
       this.intervalId = setInterval(this.updatePosition.bind(this), 250);
     },
 
+  /**
+   * Attach the bubble to the element.
+   */
+    attachTo: function(element) {
+      var parent = element.parentElement;
+      if (!parent)
+        return;
+      if (parent.tagName == 'TD') {
+        // To make absolute positioning work inside a table cell we need
+        // to wrap the bubble div into another div with position:relative.
+        // This only works properly if the element is the first child of the
+        // table cell which is true for all options pages.
+        this.wrapper = cr.doc.createElement('div');
+        this.wrapper.className = 'search-bubble-wrapper';
+        this.wrapper.appendChild(this);
+        parent.insertBefore(this.wrapper, element);
+      } else {
+        parent.insertBefore(this, element);
+      }
+    },
+
     /**
      * Clear the interval timer and remove the element from the page.
      */
     dispose: function() {
       clearInterval(this.intervalId);
 
-      var parent = this.parentNode;
+      var child = this.wrapper || this;
+      var parent = child.parentNode;
       if (parent)
-        parent.removeChild(this);
+        parent.removeChild(child);
     },
 
     /**
@@ -52,7 +74,7 @@ cr.define('options', function() {
      */
     updatePosition: function() {
       // This bubble is 'owned' by the next sibling.
-      var owner = this.nextSibling;
+      var owner = (this.wrapper || this).nextSibling;
 
       // If there isn't an offset parent, we have nothing to do.
       if (!owner.offsetParent)
@@ -425,15 +447,16 @@ cr.define('options', function() {
      * @private
      */
     createSearchBubble_: function(element, text) {
-      // avoid appending multiple ballons to a button.
+      // avoid appending multiple bubbles to a button.
       var sibling = element.previousElementSibling;
-      if (sibling && sibling.classList.contains('search-bubble'))
+      if (sibling && (sibling.classList.contains('search-bubble') ||
+                      sibling.classList.contains('search-bubble-wrapper')))
         return;
 
       var parent = element.parentElement;
       if (parent) {
         var bubble = new SearchBubble(text);
-        parent.insertBefore(bubble, element);
+        bubble.attachTo(element);
         bubble.updatePosition();
       }
     },
