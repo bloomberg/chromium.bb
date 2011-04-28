@@ -446,8 +446,6 @@
         'browser/chromeos/login/account_creation_view.h',
         'browser/chromeos/login/account_screen.cc',
         'browser/chromeos/login/account_screen.h',
-        'browser/chromeos/login/apply_services_customization.cc',
-        'browser/chromeos/login/apply_services_customization.h',
         'browser/chromeos/login/auth_attempt_state.cc',
         'browser/chromeos/login/auth_attempt_state.h',
         'browser/chromeos/login/auth_attempt_state_resolver.cc',

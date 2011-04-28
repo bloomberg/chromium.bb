@@ -59,7 +59,6 @@ class LoginDisplayHost {
   // One could specify start screen with |first_screen_name|.
   virtual void StartWizard(
       const std::string& first_screen_name,
-      const chromeos::StartupCustomizationDocument* manifest,
       const GURL& start_url) = 0;
 
   // Starts sign in screen.

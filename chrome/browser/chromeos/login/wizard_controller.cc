@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
-#include "chrome/browser/chromeos/login/apply_services_customization.h"
 #include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/eula_view.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -177,13 +176,6 @@ class ContentView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
 
-// Returns true if startup manifest defines valid registration URL.
-bool IsRegistrationScreenValid(
-    const chromeos::StartupCustomizationDocument* startup_manifest) {
-  return startup_manifest != NULL &&
-         GURL(startup_manifest->registration_url()).is_valid();
-}
-
 // Saves boolean "Local State" preference and forces its persistence to disk.
 void SaveBoolPreferenceForced(const char* pref_name, bool value) {
   PrefService* prefs = g_browser_process->local_state();
@@ -272,12 +264,6 @@ void WizardController::Init(const std::string& first_screen_name) {
   VLOG(1) << "Starting OOBE wizard with screen: " << first_screen_name;
   DCHECK(!contents_);
   first_screen_name_ = first_screen_name;
-
-  // When device is not registered yet we need to load startup manifest as well.
-  // In case of OOBE (network-EULA-update) manifest has been loaded in
-  // ShowLoginWizard().
-  if (IsOobeCompleted() && !IsDeviceRegistered())
-    SetCustomization(chromeos::LoadStartupManifest());
 
   contents_ = new ContentView();
 
@@ -414,7 +400,7 @@ void WizardController::ShowEulaScreen() {
 }
 
 void WizardController::ShowRegistrationScreen() {
-  if (!IsRegistrationScreenValid(GetCustomization())) {
+  if (!IsRegisterScreenDefined()) {
     VLOG(1) << "Skipping registration screen: manifest not defined or invalid "
                "URL.";
     OnRegistrationSkipped();
@@ -439,16 +425,6 @@ void WizardController::ShowEnterpriseEnrollmentScreen() {
   SetStatusAreaVisible(true);
   host_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
   SetCurrentScreen(GetEnterpriseEnrollmentScreen());
-}
-
-void WizardController::SetCustomization(
-    const chromeos::StartupCustomizationDocument* customization) {
-  customization_.reset(customization);
-}
-
-const chromeos::StartupCustomizationDocument*
-    WizardController::GetCustomization() const {
-  return customization_.get();
 }
 
 void WizardController::SkipRegistration() {
@@ -812,14 +788,10 @@ void WizardController::SetInitialLocale(const std::string& locale) {
 
 // static
 bool WizardController::IsRegisterScreenDefined() {
-  const chromeos::StartupCustomizationDocument* manifest = NULL;
-  // This method will be called from ExistingUserController too
-  // when Wizard instance doesn't exist.
-  if (default_controller())
-    manifest = default_controller()->GetCustomization();
-  else
-    manifest = chromeos::LoadStartupManifest();
-  return IsRegistrationScreenValid(manifest);
+  const chromeos::StartupCustomizationDocument* manifest =
+      chromeos::StartupCustomizationDocument::GetInstance();
+  return manifest->IsReady() &&
+         GURL(manifest->registration_url()).is_valid();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

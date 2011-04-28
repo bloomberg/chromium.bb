@@ -55,10 +55,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
     return current_controller_;
   }
 
-  void set_initial_start_page(const std::string& url) {
-    initial_start_page_ = url;
-  }
-
   // Creates and shows login UI for known users.
   void Init(const UserVector& users);
 
@@ -158,9 +154,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // URL to append to start Guest mode with.
   GURL guest_mode_url_;
-
-  // URL to open on first owner login from OEM customization manifest.
-  std::string initial_start_page_;
 
   // Used for user image changed notifications.
   NotificationRegistrar registrar_;

@@ -219,10 +219,11 @@ void RegisterPageHandler::RegisterMessages() {
 
 void RegisterPageHandler::HandleGetRegistrationUrl(const ListValue* args) {
 #if defined(OS_CHROMEOS)
+  chromeos::StartupCustomizationDocument* customization =
+    chromeos::StartupCustomizationDocument::GetInstance();
   if (WizardController::default_controller() &&
-      WizardController::default_controller()->GetCustomization()) {
-    const std::string& url = WizardController::default_controller()->
-        GetCustomization()->registration_url();
+      customization->IsReady()) {
+    const std::string& url = customization->registration_url();
     VLOG(1) << "Loading registration form with URL: " << url;
     GURL register_url(url);
     if (!register_url.is_valid()) {

@@ -71,7 +71,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/audio_mixer_alsa.h"
-#include "chrome/browser/chromeos/login/apply_services_customization.h"
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -117,7 +117,7 @@ void RegisterLocalState(PrefService* local_state) {
   chromeos::UserCrosSettingsProvider::RegisterPrefs(local_state);
   WizardController::RegisterPrefs(local_state);
   chromeos::InputMethodMenu::RegisterPrefs(local_state);
-  chromeos::ApplyServicesCustomization::RegisterPrefs(local_state);
+  chromeos::ServicesCustomizationDocument::RegisterPrefs(local_state);
   chromeos::SignedSettingsTempStorage::RegisterPrefs(local_state);
 #endif
 }

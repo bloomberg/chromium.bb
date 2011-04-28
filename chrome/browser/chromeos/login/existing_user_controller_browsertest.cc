@@ -65,8 +65,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD1(SetStatusAreaEnabled, void(bool));
   MOCK_METHOD1(SetStatusAreaVisible, void(bool));
   MOCK_METHOD0(ShowBackground, void(void));
-  MOCK_METHOD3(StartWizard, void(const std::string&,
-                                 const chromeos::StartupCustomizationDocument*,
+  MOCK_METHOD2(StartWizard, void(const std::string&,
                                  const GURL&));
   MOCK_METHOD0(StartSignInScreen, void(void));
 
@@ -186,7 +185,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, NewUserLogin) {
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kUserImageScreenName,
-                          NULL,
                           GURL()))
       .Times(1);
   EXPECT_CALL(*mock_login_display_, OnFadeOut())

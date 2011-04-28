@@ -320,8 +320,8 @@ static void SetUpGridLayout(views::GridLayout* layout) {
 // displayed using current locale and manifest. Returns empty URL otherwise.
 static GURL GetOemEulaPagePath() {
   const StartupCustomizationDocument* customization =
-      WizardController::default_controller()->GetCustomization();
-  if (customization) {
+      StartupCustomizationDocument::GetInstance();
+  if (customization->IsReady()) {
     std::string locale = customization->initial_locale();
     std::string eula_page = customization->GetEULAPage(locale);
     if (!eula_page.empty())

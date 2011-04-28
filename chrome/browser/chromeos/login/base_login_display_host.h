@@ -42,7 +42,6 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
   virtual void OnSessionStart();
   virtual void StartWizard(
       const std::string& first_screen_name,
-      const chromeos::StartupCustomizationDocument* manifest,
       const GURL& start_url);
   virtual void StartSignInScreen();
 

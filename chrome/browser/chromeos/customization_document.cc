@@ -4,12 +4,19 @@
 
 #include "chrome/browser/chromeos/customization_document.h"
 
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/system_access.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "content/browser/browser_thread.h"
 
 // Manifest attributes names.
 
@@ -34,11 +41,32 @@ const char kAcceptedManifestVersion[] = "1.0";
 
 const char kHwid[] = "hwid";
 
+// Path to OEM partner startup customization manifest.
+const char kStartupCustomizationManifestPath[] =
+    "/opt/oem/etc/startup_manifest.json";
+
+// URL where to fetch OEM services customization manifest from.
+const char kServicesCustomizationManifestUrl[] =
+    "file:///opt/oem/etc/services_manifest.json";
+
+// Name of local state option that tracks if services customization has been
+// applied.
+const char kServicesCustomizationAppliedPref[] = "ServicesCustomizationApplied";
+
+// Maximum number of retries to fetch file if network is not available.
+const int kMaxFetchRetries = 3;
+
+// Delay between file fetch retries if network is not available.
+const int kRetriesDelayInSec = 2;
+
 }  // anonymous namespace
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::ServicesCustomizationDocument);
 
 namespace chromeos {
 
-// CustomizationDocument implementation.
+// CustomizationDocument implementation. ---------------------------------------
+
 bool CustomizationDocument::LoadManifestFromFile(
     const FilePath& manifest_path) {
   std::string manifest;
@@ -72,7 +100,8 @@ std::string CustomizationDocument::GetLocaleSpecificString(
     const std::string& dictionary_name,
     const std::string& entry_name) const {
   DictionaryValue* dictionary_content = NULL;
-  if (!root_->GetDictionary(dictionary_name, &dictionary_content))
+  if (!root_.get() ||
+      !root_->GetDictionary(dictionary_name, &dictionary_content))
     return std::string();
 
   DictionaryValue* locale_dictionary = NULL;
@@ -92,19 +121,32 @@ std::string CustomizationDocument::GetLocaleSpecificString(
   return std::string();
 }
 
-// StartupCustomizationDocument implementation.
-StartupCustomizationDocument::StartupCustomizationDocument(
-    SystemAccess* system_access)
-    : system_access_(system_access) {
+// StartupCustomizationDocument implementation. --------------------------------
+
+StartupCustomizationDocument::StartupCustomizationDocument() {
+  {
+    // Loading manifest causes us to do blocking IO on UI thread.
+    // Temporarily allow it until we fix http://crosbug.com/11103
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    LoadManifestFromFile(FilePath(kStartupCustomizationManifestPath));
+  }
+  Init(SystemAccess::GetInstance());
 }
 
-bool StartupCustomizationDocument::LoadManifestFromString(
-    const std::string& manifest) {
-  DCHECK(system_access_);
+StartupCustomizationDocument::StartupCustomizationDocument(
+    SystemAccess* system_access, const std::string& manifest) {
+  LoadManifestFromString(manifest);
+  Init(system_access);
+}
 
-  if (!CustomizationDocument::LoadManifestFromString(manifest)) {
-    return false;
-  }
+StartupCustomizationDocument* StartupCustomizationDocument::GetInstance() {
+  return Singleton<StartupCustomizationDocument,
+      DefaultSingletonTraits<StartupCustomizationDocument> >::get();
+}
+
+void StartupCustomizationDocument::Init(SystemAccess* system_access) {
+  if (!IsReady())
+    return;
 
   root_->GetString(kInitialLocaleAttr, &initial_locale_);
   root_->GetString(kInitialTimezoneAttr, &initial_timezone_);
@@ -112,7 +154,7 @@ bool StartupCustomizationDocument::LoadManifestFromString(
   root_->GetString(kRegistrationUrlAttr, &registration_url_);
 
   std::string hwid;
-  if (system_access_->GetMachineStatistic(kHwid, &hwid)) {
+  if (system_access->GetMachineStatistic(kHwid, &hwid)) {
     ListValue* hwid_list = NULL;
     if (root_->GetList(kHwidMapAttr, &hwid_list)) {
       for (size_t i = 0; i < hwid_list->GetSize(); ++i) {
@@ -143,14 +185,9 @@ bool StartupCustomizationDocument::LoadManifestFromString(
     LOG(ERROR) << "HWID is missing in machine statistics";
   }
 
-  system_access_->GetMachineStatistic(kInitialLocaleAttr, &initial_locale_);
-  system_access_->GetMachineStatistic(kInitialTimezoneAttr, &initial_timezone_);
-  system_access_->GetMachineStatistic(kKeyboardLayoutAttr, &keyboard_layout_);
-
-  // system_access_ is no longer used.
-  system_access_ = NULL;
-
-  return true;
+  system_access->GetMachineStatistic(kInitialLocaleAttr, &initial_locale_);
+  system_access->GetMachineStatistic(kInitialTimezoneAttr, &initial_timezone_);
+  system_access->GetMachineStatistic(kKeyboardLayoutAttr, &keyboard_layout_);
 }
 
 std::string StartupCustomizationDocument::GetHelpPage(
@@ -163,7 +200,104 @@ std::string StartupCustomizationDocument::GetEULAPage(
   return GetLocaleSpecificString(locale, kSetupContentAttr, kEulaPageAttr);
 }
 
-// ServicesCustomizationDocument implementation.
+// ServicesCustomizationDocument implementation. -------------------------------
+
+ServicesCustomizationDocument::ServicesCustomizationDocument()
+  : url_(kServicesCustomizationManifestUrl) {
+}
+
+ServicesCustomizationDocument::ServicesCustomizationDocument(
+    const std::string& manifest) {
+  LoadManifestFromString(manifest);
+}
+
+// static
+ServicesCustomizationDocument* ServicesCustomizationDocument::GetInstance() {
+  return Singleton<ServicesCustomizationDocument,
+      DefaultSingletonTraits<ServicesCustomizationDocument> >::get();
+}
+
+// static
+void ServicesCustomizationDocument::RegisterPrefs(PrefService* local_state) {
+  local_state->RegisterBooleanPref(kServicesCustomizationAppliedPref, false);
+}
+
+// static
+bool ServicesCustomizationDocument::WasApplied() {
+  PrefService* prefs = g_browser_process->local_state();
+  return prefs->GetBoolean(kServicesCustomizationAppliedPref);
+}
+
+// static
+void ServicesCustomizationDocument::SetApplied(bool val) {
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(kServicesCustomizationAppliedPref, val);
+}
+
+void ServicesCustomizationDocument::StartFetching() {
+  if (url_.SchemeIsFile()) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(this,
+            &ServicesCustomizationDocument::ReadFileInBackground,
+            FilePath(url_.path())));
+  } else {
+    StartFileFetch();
+  }
+}
+
+void ServicesCustomizationDocument::ReadFileInBackground(const FilePath& file) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  std::string manifest;
+  if (file_util::ReadFileToString(file, &manifest)) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(
+            this,
+            &ServicesCustomizationDocument::LoadManifestFromString,
+            manifest));
+  } else {
+    VLOG(1) << "Failed to load services customization manifest from: "
+            << file.value();
+  }
+}
+
+void ServicesCustomizationDocument::StartFileFetch() {
+  DCHECK(url_.is_valid());
+  url_fetcher_.reset(new URLFetcher(url_, URLFetcher::GET, this));
+  url_fetcher_->set_request_context(
+      ProfileManager::GetDefaultProfile()->GetRequestContext());
+  url_fetcher_->Start();
+}
+
+void ServicesCustomizationDocument::OnURLFetchComplete(
+    const URLFetcher* source,
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
+    const std::string& data) {
+  if (response_code == 200) {
+    LoadManifestFromString(data);
+  } else {
+    NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
+    if (!network->Connected() && num_retries_ < kMaxFetchRetries) {
+      num_retries_++;
+      retry_timer_.Start(base::TimeDelta::FromSeconds(kRetriesDelayInSec),
+                         this, &ServicesCustomizationDocument::StartFileFetch);
+      return;
+    }
+    LOG(ERROR) << "URL fetch for services customization failed:"
+               << " response code = " << response_code
+               << " URL = " << url.spec();
+  }
+}
+
+bool ServicesCustomizationDocument::ApplyCustomization() {
+  // TODO(dpolukhin): apply customized apps, exts and support page.
+  SetApplied(true);
+  return true;
+}
+
 std::string ServicesCustomizationDocument::GetInitialStartPage(
     const std::string& locale) const {
   return GetLocaleSpecificString(

@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/views_login_display.h"
@@ -226,7 +227,7 @@ void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
     OwnershipService::Status status) {
   if (status == OwnershipService::OWNERSHIP_NONE) {
     host_->StartWizard(WizardController::kEnterpriseEnrollmentScreenName,
-                       NULL, GURL());
+                       GURL());
     login_display_->OnFadeOut();
   }
   ownership_checker_.reset();
@@ -334,10 +335,15 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
     CommandLine::ForCurrentProcess()->AppendArg(kGetStartedURL);
 #endif  // OFFICIAL_BUILD
 
-    if (!initial_start_page_.empty()) {
-      // If initial_start_page is not empty, add it as second tab.
-      // The tabs are opened in the same order as arguments in command line.
-      CommandLine::ForCurrentProcess()->AppendArg(initial_start_page_);
+    ServicesCustomizationDocument* customization =
+      ServicesCustomizationDocument::GetInstance();
+    if (customization->IsReady()) {
+      std::string locale = g_browser_process->GetApplicationLocale();
+      std::string initial_start_page =
+          customization->GetInitialStartPage(locale);
+      if (!initial_start_page.empty())
+        CommandLine::ForCurrentProcess()->AppendArg(initial_start_page);
+      customization->ApplyCustomization();
     }
 
     if (two_factor_credentials_) {
@@ -431,7 +437,7 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
   GURL start_url;
   if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
     start_url = guest_mode_url_;
-  host_->StartWizard(screen_name, NULL, start_url);
+  host_->StartWizard(screen_name, start_url);
   login_display_->OnFadeOut();
 }
 

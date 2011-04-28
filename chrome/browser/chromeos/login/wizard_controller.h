@@ -30,7 +30,6 @@ class HTMLPageScreen;
 class LoginDisplayHost;
 class NetworkScreen;
 class RegistrationScreen;
-class StartupCustomizationDocument;
 class UpdateScreen;
 class UserImageScreen;
 class WizardInProcessBrowserTest;
@@ -130,14 +129,6 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Set URL to open on browser launch.
   void set_start_url(const GURL& start_url) { start_url_ = start_url; }
-
-  // Sets partner startup customization. WizardController takes ownership
-  // of the document object.
-  void SetCustomization(
-      const chromeos::StartupCustomizationDocument* customization);
-
-  // Returns partner startup customization document owned by WizardController.
-  const chromeos::StartupCustomizationDocument* GetCustomization() const;
 
   // If being at register screen proceeds to the next one.
   void SkipRegistration();
@@ -273,9 +264,6 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Default WizardController.
   static WizardController* default_controller_;
-
-  // Partner startup customizations.
-  scoped_ptr<const chromeos::StartupCustomizationDocument> customization_;
 
   // URL to open on browser launch.
   GURL start_url_;

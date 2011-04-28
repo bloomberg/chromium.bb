@@ -11,9 +11,9 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/chromeos/login/apply_services_customization.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
@@ -104,13 +104,11 @@ void BaseLoginDisplayHost::OnSessionStart() {
 
 void BaseLoginDisplayHost::StartWizard(
     const std::string& first_screen_name,
-    const chromeos::StartupCustomizationDocument* manifest,
     const GURL& start_url) {
   DVLOG(1) << "Starting wizard, first_screen_name: " << first_screen_name;
   // Create and show the wizard.
   wizard_controller_.reset();  // Only one controller in a time.
   wizard_controller_.reset(new WizardController(this, background_bounds_));
-  wizard_controller_->SetCustomization(manifest);
   wizard_controller_->set_start_url(start_url);
   ShowBackground();
   if (!WizardController::IsDeviceRegistered())
@@ -138,8 +136,9 @@ void BaseLoginDisplayHost::StartSignInScreen() {
   SetShutdownButtonEnabled(true);
   sign_in_controller_->Init(users);
 
-  // Initiate services customization.
-  chromeos::ApplyServicesCustomization::StartIfNeeded();
+  // Initiate service customization manifest fetching.
+  if (!ServicesCustomizationDocument::WasApplied())
+    ServicesCustomizationDocument::GetInstance()->StartFetching();
 }
 
 // BaseLoginDisplayHost --------------------------------------------------------
@@ -215,10 +214,10 @@ void ShowLoginWizard(const std::string& first_screen_name,
 
   // Load startup manifest.
   const chromeos::StartupCustomizationDocument* startup_manifest =
-      chromeos::LoadStartupManifest();
+      chromeos::StartupCustomizationDocument::GetInstance();
 
   std::string locale;
-  if (startup_manifest) {
+  if (startup_manifest->IsReady()) {
     // Switch to initial locale if specified by customization
     // and has not been set yet. We cannot call
     // chromeos::LanguageSwitchMenu::SwitchLanguage here before
@@ -261,13 +260,13 @@ void ShowLoginWizard(const std::string& first_screen_name,
     }
   }
 
-  display_host->StartWizard(first_screen_name, startup_manifest, GURL());
+  display_host->StartWizard(first_screen_name, GURL());
 
   chromeos::LoginUtils::Get()->PrewarmAuthentication();
   if (chromeos::CrosLibrary::Get()->EnsureLoaded())
     chromeos::CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
 
-  if (startup_manifest) {
+  if (startup_manifest->IsReady()) {
     // Set initial timezone if specified by customization.
     const std::string timezone_name = startup_manifest->initial_timezone();
     VLOG(1) << "Initial time zone: " << timezone_name;

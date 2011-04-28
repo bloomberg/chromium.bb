@@ -85,8 +85,8 @@ TEST(StartupCustomizationDocumentTest, Basic) {
       GetMachineStatistic(std::string("hwid"), NotNull()))
           .WillOnce(DoAll(SetArgumentPointee<1>(std::string("Mario 12345")),
                           Return(true)));
-  StartupCustomizationDocument customization(&mock_system_access);
-  EXPECT_TRUE(customization.LoadManifestFromString(kGoodStartupManifest));
+  StartupCustomizationDocument customization(&mock_system_access,
+                                             kGoodStartupManifest);
   EXPECT_EQ(customization.initial_locale(), "ru-RU");
   EXPECT_EQ(customization.initial_timezone(), "Europe/Moscow");
   EXPECT_EQ(customization.keyboard_layout(), "xkb:ru::rus");
@@ -125,8 +125,9 @@ TEST(StartupCustomizationDocumentTest, VPD) {
       GetMachineStatistic(std::string("keyboard_layout"), NotNull()))
           .WillOnce(DoAll(SetArgumentPointee<1>(std::string("mozc-jp")),
                           Return(true)));
-  StartupCustomizationDocument customization(&mock_system_access);
-  EXPECT_TRUE(customization.LoadManifestFromString(kGoodStartupManifest));
+  StartupCustomizationDocument customization(&mock_system_access,
+                                             kGoodStartupManifest);
+  EXPECT_TRUE(customization.IsReady());
   EXPECT_EQ(customization.initial_locale(), "ja");
   EXPECT_EQ(customization.initial_timezone(), "Asia/Tokyo");
   EXPECT_EQ(customization.keyboard_layout(), "mozc-jp");
@@ -134,13 +135,13 @@ TEST(StartupCustomizationDocumentTest, VPD) {
 
 TEST(StartupCustomizationDocumentTest, BadManifest) {
   MockSystemAccess mock_system_access;
-  StartupCustomizationDocument customization(&mock_system_access);
-  EXPECT_FALSE(customization.LoadManifestFromString(kBadManifest));
+  StartupCustomizationDocument customization(&mock_system_access, kBadManifest);
+  EXPECT_FALSE(customization.IsReady());
 }
 
 TEST(ServicesCustomizationDocumentTest, Basic) {
-  chromeos::ServicesCustomizationDocument customization;
-  EXPECT_TRUE(customization.LoadManifestFromString(kGoodServicesManifest));
+  ServicesCustomizationDocument customization(kGoodServicesManifest);
+  EXPECT_TRUE(customization.IsReady());
 
   EXPECT_EQ(customization.GetInitialStartPage("en-US"),
             "http://mario/promo");
@@ -148,7 +149,6 @@ TEST(ServicesCustomizationDocumentTest, Basic) {
             "http://mario/ru/promo");
   EXPECT_EQ(customization.GetInitialStartPage("ja"),
             "http://mario/global/promo");
-
 
   EXPECT_EQ(customization.GetSupportPage("en-US"),
             "http://mario/us");
@@ -159,8 +159,8 @@ TEST(ServicesCustomizationDocumentTest, Basic) {
 }
 
 TEST(ServicesCustomizationDocumentTest, BadManifest) {
-  chromeos::ServicesCustomizationDocument customization;
-  EXPECT_FALSE(customization.LoadManifestFromString(kBadManifest));
+  ServicesCustomizationDocument customization(kBadManifest);
+  EXPECT_FALSE(customization.IsReady());
 }
 
 }  // namespace chromeos
