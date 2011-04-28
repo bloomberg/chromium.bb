@@ -5,12 +5,12 @@
 // Data structures for communication between the history service on the main
 // thread and the backend on the history thread.
 
-#ifndef CHROME_BROWSER_HISTORY_HISTORY_MARSHALING_H__
-#define CHROME_BROWSER_HISTORY_HISTORY_MARSHALING_H__
+#ifndef CHROME_BROWSER_HISTORY_HISTORY_MARSHALING_H_
+#define CHROME_BROWSER_HISTORY_HISTORY_MARSHALING_H_
 #pragma once
 
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "content/browser/cancelable_request.h"
@@ -91,4 +91,4 @@ typedef CancelableRequest1<HistoryService::HistoryDBTaskCallback,
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_HISTORY_MARSHALING_H__
+#endif  // CHROME_BROWSER_HISTORY_HISTORY_MARSHALING_H_

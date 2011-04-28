@@ -10,7 +10,7 @@
 #include "base/memory/singleton.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/browser/webui/web_ui_factory.h"
-#include "chrome/browser/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service.h"
 
 class WebUI;
 class GURL;

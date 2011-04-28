@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FAVICON_HELPER_H__
-#define CHROME_BROWSER_FAVICON_HELPER_H__
+#ifndef CHROME_BROWSER_FAVICON_FAVICON_TAB_HELPER_H_
+#define CHROME_BROWSER_FAVICON_FAVICON_TAB_HELPER_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chrome/browser/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/common/favicon_url.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "googleurl/src/gurl.h"
@@ -20,19 +20,19 @@ class RefCountedMemory;
 class SkBitmap;
 class TabContents;
 
-// FaviconHelper works with FaviconHandlers to fetch the favicons.
+// FaviconTabHelper works with FaviconHandlers to fetch the favicons.
 //
-// FetchFavicon fetchs the give page's icons. It requests the icons from history
-// backend. If the icon is not available or expired, the icon will be
-// downloaded and saved in history backend.
+// FetchFavicon fetches the given page's icons. It requests the icons from the
+// history backend. If the icon is not available or expired, the icon will be
+// downloaded and saved in the history backend.
 //
 // DownloadImage downloads the specified icon and returns it through the given
 // callback.
 //
-class FaviconHelper : public TabContentsObserver {
+class FaviconTabHelper : public TabContentsObserver {
  public:
-  explicit FaviconHelper(TabContents* tab_contents);
-  virtual ~FaviconHelper();
+  explicit FaviconTabHelper(TabContents* tab_contents);
+  virtual ~FaviconTabHelper();
 
   // Initiates loading the favicon for the specified url.
   void FetchFavicon(const GURL& url);
@@ -70,7 +70,7 @@ class FaviconHelper : public TabContentsObserver {
   // browser_defaults::kEnableTouchIcon is false.
   scoped_ptr<FaviconHandler> touch_icon_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(FaviconHelper);
+  DISALLOW_COPY_AND_ASSIGN(FaviconTabHelper);
 };
 
-#endif  // CHROME_BROWSER_FAVICON_HELPER_H__
+#endif  // CHROME_BROWSER_FAVICON_FAVICON_TAB_HELPER_H_

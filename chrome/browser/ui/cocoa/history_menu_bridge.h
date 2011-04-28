@@ -11,7 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_nsobject.h"
-#import "chrome/browser/favicon_service.h"
+#import "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/tab_restore_service.h"

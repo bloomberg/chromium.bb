@@ -15,7 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/favicon_helper.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/tab_contents/tab_specific_content_settings.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
@@ -163,9 +163,9 @@ class TabContents : public PageNavigator,
     return view_.get();
   }
 
-  // Returns the FaviconHelper of this TabContents.
-  FaviconHelper& favicon_helper() {
-    return *favicon_helper_.get();
+  // Returns the FaviconTabHelper of this TabContents.
+  FaviconTabHelper& favicon_helper() {
+    return *favicon_tab_helper_.get();
   }
 
   // Tab navigation state ------------------------------------------------------
@@ -915,7 +915,7 @@ class TabContents : public PageNavigator,
   BookmarkDrag* bookmark_drag_;
 
   // Handles downloading favicons.
-  scoped_ptr<FaviconHelper> favicon_helper_;
+  scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
 
   // RenderViewHost::ContentSettingsDelegate.
   scoped_ptr<TabSpecificContentSettings> content_settings_delegate_;

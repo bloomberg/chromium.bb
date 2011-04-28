@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FAVICON_HANDLER_H__
-#define CHROME_BROWSER_FAVICON_HANDLER_H__
+#ifndef CHROME_BROWSER_FAVICON_FAVICON_HANDLER_H_
+#define CHROME_BROWSER_FAVICON_FAVICON_HANDLER_H_
 #pragma once
 
 #include <map>
@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/favicon_helper.h"
-#include "chrome/browser/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/common/favicon_url.h"
 #include "chrome/common/ref_counted_util.h"
 #include "content/browser/cancelable_request.h"
@@ -25,7 +25,7 @@ class RefCountedMemory;
 class SkBitmap;
 class TabContents;
 
-// FaviconHandler works with FaviconHelper to fetch the specific type of
+// FaviconHandler works with FaviconTabHelper to fetch the specific type of
 // favicon.
 //
 // FetchFavicon requests the favicon from the favicon service which in turn
@@ -91,7 +91,7 @@ class FaviconHandler {
   int DownloadImage(const GURL& image_url,
                     int image_size,
                     history::IconType icon_type,
-                    FaviconHelper::ImageDownloadCallback* callback);
+                    FaviconTabHelper::ImageDownloadCallback* callback);
 
   // Message Handler.  Must be public, because also called from
   // PrerenderContents.
@@ -152,12 +152,12 @@ class FaviconHandler {
 
     DownloadRequest(const GURL& url,
                     const GURL& image_url,
-                    FaviconHelper::ImageDownloadCallback* callback,
+                    FaviconTabHelper::ImageDownloadCallback* callback,
                     history::IconType icon_type);
 
     GURL url;
     GURL image_url;
-    FaviconHelper::ImageDownloadCallback* callback;
+    FaviconTabHelper::ImageDownloadCallback* callback;
     history::IconType icon_type;
   };
 
@@ -182,7 +182,7 @@ class FaviconHandler {
                        const GURL& image_url,
                        int image_size,
                        history::IconType icon_type,
-                       FaviconHelper::ImageDownloadCallback* callback);
+                       FaviconTabHelper::ImageDownloadCallback* callback);
 
   // Sets the image data for the favicon. This is invoked asynchronously after
   // we request the TabContents to download the favicon.
@@ -258,4 +258,4 @@ class FaviconHandler {
   DISALLOW_COPY_AND_ASSIGN(FaviconHandler);
 };
 
-#endif  // CHROME_BROWSER_FAVICON_HANDLER_H__
+#endif  // CHROME_BROWSER_FAVICON_FAVICON_HANDLER_H_

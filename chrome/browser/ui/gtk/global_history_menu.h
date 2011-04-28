@@ -8,7 +8,7 @@
 #include <map>
 
 #include "content/browser/cancelable_request.h"
-#include "chrome/browser/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "content/common/notification_observer.h"

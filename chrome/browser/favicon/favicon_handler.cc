@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/favicon_handler.h"
+#include "chrome/browser/favicon/favicon_handler.h"
 
 #include "build/build_config.h"
 
@@ -57,7 +57,7 @@ FaviconHandler::DownloadRequest::DownloadRequest()
 FaviconHandler::DownloadRequest::DownloadRequest(
     const GURL& url,
     const GURL& image_url,
-    FaviconHelper::ImageDownloadCallback* callback,
+    FaviconTabHelper::ImageDownloadCallback* callback,
     history::IconType icon_type)
     : url(url),
       image_url(image_url),
@@ -108,7 +108,7 @@ int FaviconHandler::DownloadImage(
     const GURL& image_url,
     int image_size,
     history::IconType icon_type,
-    FaviconHelper::ImageDownloadCallback* callback) {
+    FaviconTabHelper::ImageDownloadCallback* callback) {
   DCHECK(callback);  // Must provide a callback.
   return ScheduleDownload(GURL(), image_url, image_size, icon_type, callback);
 }
@@ -423,7 +423,7 @@ int FaviconHandler::ScheduleDownload(
     const GURL& image_url,
     int image_size,
     history::IconType icon_type,
-    FaviconHelper::ImageDownloadCallback* callback) {
+    FaviconTabHelper::ImageDownloadCallback* callback) {
   const int download_id = DownloadFavicon(image_url, image_size);
   if (download_id) {
     // Download ids should be unique.

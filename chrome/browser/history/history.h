@@ -17,7 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/task.h"
-#include "chrome/browser/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/ref_counted_util.h"

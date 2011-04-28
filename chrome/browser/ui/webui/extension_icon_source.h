@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/extensions/extension.h"
 #include "third_party/skia/include/core/SkBitmap.h"

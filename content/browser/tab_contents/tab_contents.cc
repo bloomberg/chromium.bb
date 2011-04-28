@@ -25,7 +25,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/external_protocol_handler.h"
-#include "chrome/browser/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
@@ -357,7 +357,7 @@ TabContents::~TabContents() {
 }
 
 void TabContents::AddObservers() {
-  favicon_helper_.reset(new FaviconHelper(this));
+  favicon_tab_helper_.reset(new FaviconTabHelper(this));
   plugin_observer_.reset(new PluginObserver(this));
   safebrowsing_detection_host_.reset(new safe_browsing::ClientSideDetectionHost(
       this));
@@ -1429,7 +1429,7 @@ void TabContents::DidNavigateMainFramePostCommit(
   received_page_title_ = false;
 
   // Get the favicon, either from history or request it from the net.
-  favicon_helper_->FetchFavicon(details.entry->url());
+  favicon_tab_helper_->FetchFavicon(details.entry->url());
 
   // Clear all page actions, blocked content notifications and browser actions
   // for this tab, unless this is an in-page navigation.
