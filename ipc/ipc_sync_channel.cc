@@ -361,7 +361,7 @@ void SyncChannel::SyncContext::OnWaitableEventSignaled(WaitableEvent* event) {
     CancelPendingSends();
   } else {
     // We got the reply, timed out or the process shutdown.
-    DCHECK(event == GetSendDoneEvent());
+    DCHECK_EQ(GetSendDoneEvent(), event);
     MessageLoop::current()->QuitNow();
   }
 }

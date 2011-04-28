@@ -90,7 +90,7 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
     else if (!strcmp(signature_algorithm_id->pszObjId, szOID_RSA_MD5RSA))
       hash_alg_id = CALG_MD5;
     free(signature_algorithm_id);
-    DCHECK(hash_alg_id != CALG_MD4);
+    DCHECK_NE(static_cast<ALG_ID>(CALG_MD4), hash_alg_id);
     if (hash_alg_id == CALG_MD4)
       return false;  // Unsupported hash algorithm.
   } else if (GetLastError() == ERROR_FILE_NOT_FOUND) {

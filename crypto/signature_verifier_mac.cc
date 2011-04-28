@@ -74,7 +74,7 @@ void SignatureVerifier::VerifyUpdate(const uint8* data_part,
   data.Data = const_cast<uint8*>(data_part);
   data.Length = data_part_len;
   CSSM_RETURN crtn = CSSM_VerifyDataUpdate(sig_handle_, &data, 1);
-  DCHECK(crtn == CSSM_OK);
+  DCHECK_EQ(CSSM_OK, crtn);
 }
 
 bool SignatureVerifier::VerifyFinal() {
@@ -92,7 +92,7 @@ void SignatureVerifier::Reset() {
   CSSM_RETURN crtn;
   if (sig_handle_) {
     crtn = CSSM_DeleteContext(sig_handle_);
-    DCHECK(crtn == CSSM_OK);
+    DCHECK_EQ(CSSM_OK, crtn);
     sig_handle_ = 0;
   }
   signature_.clear();

@@ -177,7 +177,7 @@ const std::wstring Channel::ChannelImpl::PipeName(
 
 bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
                                       Mode mode) {
-  DCHECK(pipe_ == INVALID_HANDLE_VALUE);
+  DCHECK_EQ(INVALID_HANDLE_VALUE, pipe_);
   const std::wstring pipe_name = PipeName(channel_handle.name);
   if (mode & MODE_SERVER_FLAG) {
     SECURITY_ATTRIBUTES security_attributes = {0};

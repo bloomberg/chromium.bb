@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -215,7 +215,7 @@ IATPatchFunction::IATPatchFunction()
 IATPatchFunction::~IATPatchFunction() {
   if (NULL != intercept_function_) {
     DWORD error = Unpatch();
-    DCHECK(error == NO_ERROR);
+    DCHECK_EQ(static_cast<DWORD>(NO_ERROR), error);
   }
 }
 
@@ -256,7 +256,7 @@ DWORD IATPatchFunction::Unpatch() {
   DWORD error = RestoreImportedFunction(intercept_function_,
                                         original_function_,
                                         iat_thunk_);
-  DCHECK(NO_ERROR == error);
+  DCHECK_EQ(static_cast<DWORD>(NO_ERROR), error);
 
   // Hands off the intercept if we fail to unpatch.
   // If IATPatchFunction::Unpatch fails during RestoreImportedFunction
