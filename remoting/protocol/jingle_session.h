@@ -97,6 +97,15 @@ class JingleSession : public protocol::Session,
   bool HasSession(cricket::Session* cricket_session);
   cricket::Session* ReleaseSession();
 
+  // Initialize the session configuration from a received connection response
+  // stanza.
+  bool InitializeConfigFromDescription(
+    const cricket::SessionDescription* description);
+
+  // Initialize PseudoTCP + SSL on each of the video, control and input
+  // channels.  The channels must have been created before this is called.
+  bool InitializeChannels();
+
   // Helper method to create and initialize PseudoTCP + SSL socket on
   // top of the provided |channel|. The resultant SSL socket is
   // written to |ssl_socket|. Return true if successful.

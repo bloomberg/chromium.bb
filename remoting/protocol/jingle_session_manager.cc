@@ -436,20 +436,24 @@ bool JingleSessionManager::ParseContent(
     scoped_refptr<net::X509Certificate> certificate;
     child = element->FirstNamed(QName(kChromotingXmlNamespace,
                                       kAuthenticationTag));
-    if (child)
+    if (child) {
       child = child->FirstNamed(QName(kChromotingXmlNamespace,
                                       kCertificateTag));
-
+    }
     if (child) {
       std::string base64_cert = child->BodyText();
       std::string der_cert;
-      bool ret = base::Base64Decode(base64_cert, &der_cert);
-      if (!ret) {
+      if (!base::Base64Decode(base64_cert, &der_cert)) {
         LOG(ERROR) << "Failed to decode certificate received from the peer.";
         return false;
       }
+
       certificate = net::X509Certificate::CreateFromBytes(der_cert.data(),
                                                           der_cert.length());
+      if (!certificate) {
+        LOG(ERROR) << "Failed to create platform-specific certificate handle";
+        return false;
+      }
     }
 
     *content = new ContentDescription(config.release(), auth_token,

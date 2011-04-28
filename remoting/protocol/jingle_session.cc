@@ -405,49 +405,71 @@ bool JingleSession::EstablishSSLConnection(
   return true;
 }
 
+bool JingleSession::InitializeConfigFromDescription(
+    const cricket::SessionDescription* description) {
+  // We should only be called after ParseContent has succeeded, in which
+  // case there will always be a Chromoting session configuration.
+  const cricket::ContentInfo* content =
+    description->FirstContentByType(kChromotingXmlNamespace);
+  CHECK(content);
+  const protocol::ContentDescription* content_description =
+    static_cast<const protocol::ContentDescription*>(content->description);
+  CHECK(content_description);
+
+  server_cert_ = content_description->certificate();
+  if (!server_cert_) {
+    LOG(ERROR) << "Connection response does not specify certificate";
+    return false;
+  }
+
+  scoped_ptr<SessionConfig> config(
+    content_description->config()->GetFinalConfig());
+  if (!config.get()) {
+    LOG(ERROR) << "Connection response does not specify configuration";
+    return false;
+  }
+  if (!candidate_config()->IsSupported(config.get())) {
+    LOG(ERROR) << "Connection response specifies an invalid configuration";
+    return false;
+  }
+
+  set_config(config.release());
+  return true;
+}
+
+bool JingleSession::InitializeChannels() {
+  if (!EstablishSSLConnection(control_channel_.release(),
+                                    &control_ssl_socket_)) {
+    LOG(ERROR) << "Establish control channel failed";
+    return false;
+  }
+  if (!EstablishSSLConnection(event_channel_.release(),
+                                    &event_ssl_socket_)) {
+    LOG(ERROR) << "Establish event channel failed";
+    return false;
+  }
+  if (!EstablishSSLConnection(video_channel_.release(),
+                                    &video_ssl_socket_)) {
+    LOG(ERROR) << "Establish video channel failed";
+    return false;
+  }
+  return true;
+}
+
 void JingleSession::OnAccept() {
-  // TODO(hclam): Need to close the adapters on failuire otherwise it will
-  // crash in the destructor.
-
-  // Set the config if we are the one who initiated the session.
+  // If we initiated the session, store the candidate configuration that the
+  // host responded with, to refer to later.
   if (cricket_session_->initiator()) {
-    const cricket::ContentInfo* content =
-        cricket_session_->remote_description()->FirstContentByType(
-            kChromotingXmlNamespace);
-    CHECK(content);
-
-    const protocol::ContentDescription* content_description =
-        static_cast<const protocol::ContentDescription*>(content->description);
-    server_cert_ = content_description->certificate();
-    CHECK(server_cert_);
-
-    SessionConfig* config = content_description->config()->GetFinalConfig();
-
-    // Terminate the session if the config we received is invalid.
-    if (!config || !candidate_config()->IsSupported(config)) {
-      // TODO(sergeyu): Inform the user that the host is misbehaving?
-      LOG(ERROR) << "Terminating outgoing session after an "
-          "invalid session description has been received.";
-      cricket_session_->Terminate();
+    if (!InitializeConfigFromDescription(
+        cricket_session_->remote_description())) {
+      CloseInternal(net::ERR_CONNECTION_FAILED, true);
       return;
     }
-    set_config(config);
   }
 
-  bool ret = EstablishSSLConnection(control_channel_.release(),
-                                    &control_ssl_socket_);
-  if (ret) {
-    ret = EstablishSSLConnection(event_channel_.release(),
-                                 &event_ssl_socket_);
-  }
-  if (ret) {
-    ret = EstablishSSLConnection(video_channel_.release(),
-                                 &video_ssl_socket_);
-  }
-
-  if (!ret) {
-    LOG(ERROR) << "Failed to establish SSL connections";
-    cricket_session_->Terminate();
+  if (!InitializeChannels()) {
+    CloseInternal(net::ERR_CONNECTION_FAILED, true);
+    return;
   }
 }
 
