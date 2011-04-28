@@ -40,7 +40,6 @@ sources_for_standard_interfaces = [
     ]
 
 sources_for_nacl_extensions = [
-    'av_wait.c',
     'dyncode_copy.c',
     'gc_hooks.c',
     'imc_accept.c',
