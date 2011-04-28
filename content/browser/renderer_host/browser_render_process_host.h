@@ -173,7 +173,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   bool extension_process_;
 
   // Used to launch and terminate the process without blocking the UI thread.
-  scoped_ptr<ChildProcessLauncher> child_process_;
+  scoped_ptr<ChildProcessLauncher> child_process_launcher_;
 
   // Messages we queue while waiting for the process handle.  We queue them here
   // instead of in the channel so that we ensure they're sent after init related

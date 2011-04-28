@@ -335,7 +335,7 @@ bool BrowserRenderProcessHost::Init(
     // Spawn the child process asynchronously to avoid blocking the UI thread.
     // As long as there's no renderer prefix, we can use the zygote process
     // at this stage.
-    child_process_.reset(new ChildProcessLauncher(
+    child_process_launcher_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)
         FilePath(),
 #elif defined(OS_POSIX)
@@ -441,7 +441,7 @@ bool BrowserRenderProcessHost::WaitForUpdateMsg(
     IPC::Message* msg) {
   // The post task to this thread with the process id could be in queue, and we
   // don't want to dispatch a message before then since it will need the handle.
-  if (child_process_.get() && child_process_->IsStarting())
+  if (child_process_launcher_.get() && child_process_launcher_->IsStarting())
     return false;
 
   return widget_helper_->WaitForUpdateMsg(render_widget_id, max_delay, msg);
@@ -673,22 +673,24 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
 }
 
 base::ProcessHandle BrowserRenderProcessHost::GetHandle() {
-  // child_process_ is null either because we're in single process mode, we have
-  // done fast termination, or the process has crashed.
-  if (run_renderer_in_process() || !child_process_.get())
+  // child_process_launcher_ is null either because we're in single process
+  // mode, we have done fast termination, or the process has crashed.
+  if (run_renderer_in_process() || !child_process_launcher_.get())
     return base::Process::Current().handle();
 
-  if (child_process_->IsStarting())
+  if (child_process_launcher_->IsStarting())
     return base::kNullProcessHandle;
 
-  return child_process_->GetHandle();
+  return child_process_launcher_->GetHandle();
 }
 
 bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   if (run_renderer_in_process())
     return false;  // Single process mode can't do fast shutdown.
 
-  if (!child_process_.get() || child_process_->IsStarting() || !GetHandle())
+  if (!child_process_launcher_.get() ||
+      child_process_launcher_->IsStarting() ||
+      !GetHandle())
     return false;  // Render process hasn't started or is probably crashed.
 
   // Test if there's an unload listener.
@@ -717,7 +719,7 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
     iter.Advance();
   }
 
-  child_process_.reset();
+  child_process_launcher_.reset();
   fast_shutdown_started_ = true;
   return true;
 }
@@ -798,7 +800,7 @@ bool BrowserRenderProcessHost::Send(IPC::Message* msg) {
     return false;
   }
 
-  if (child_process_.get() && child_process_->IsStarting()) {
+  if (child_process_launcher_.get() && child_process_launcher_->IsStarting()) {
     queued_messages_.push(msg);
     return true;
   }
@@ -869,12 +871,12 @@ void BrowserRenderProcessHost::OnChannelError() {
   if (!channel_.get())
     return;
 
-  // child_process_ can be NULL in single process mode or if fast
+  // child_process_launcher_ can be NULL in single process mode or if fast
   // termination happened.
   int exit_code = 0;
   base::TerminationStatus status =
-      child_process_.get() ?
-      child_process_->GetChildTerminationStatus(&exit_code) :
+      child_process_launcher_.get() ?
+      child_process_launcher_->GetChildTerminationStatus(&exit_code) :
       base::TERMINATION_STATUS_NORMAL_TERMINATION;
 
   if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
@@ -895,7 +897,7 @@ void BrowserRenderProcessHost::OnChannelError() {
       Details<RendererClosedDetails>(&details));
 
   WebCacheManager::GetInstance()->Remove(id());
-  child_process_.reset();
+  child_process_launcher_.reset();
   channel_.reset();
 
   IDMap<IPC::Channel::Listener>::iterator iter(&listeners_);
@@ -927,7 +929,7 @@ void BrowserRenderProcessHost::SetBackgrounded(bool backgrounded) {
   // (and hence hasn't been created yet), we will set the process priority
   // later when we create the process.
   backgrounded_ = backgrounded;
-  if (!child_process_.get() || child_process_->IsStarting())
+  if (!child_process_launcher_.get() || child_process_launcher_->IsStarting())
     return;
 
 #if defined(OS_WIN)
@@ -941,7 +943,7 @@ void BrowserRenderProcessHost::SetBackgrounded(bool backgrounded) {
     return;
 #endif  // OS_WIN
 
-  child_process_->SetProcessBackgrounded(backgrounded);
+  child_process_launcher_->SetProcessBackgrounded(backgrounded);
 }
 
 void BrowserRenderProcessHost::Observe(NotificationType type,
@@ -972,11 +974,10 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
 }
 
 void BrowserRenderProcessHost::OnProcessLaunched() {
-  if (child_process_.get())
-    child_process_->SetProcessBackgrounded(backgrounded_);
+  if (child_process_launcher_.get())
+    child_process_launcher_->SetProcessBackgrounded(backgrounded_);
 
   Send(new ViewMsg_SetIsIncognitoProcess(profile()->IsOffTheRecord()));
-
 
   // We don't want to initialize the spellchecker unless SpellCheckHost has been
   // created. In InitSpellChecker(), we know if GetSpellCheckHost() is NULL
