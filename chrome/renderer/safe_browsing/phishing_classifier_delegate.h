@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "content/common/page_transition_types.h"
 #include "content/renderer/render_view_observer.h"
 #include "content/renderer/render_process_observer.h"
 #include "googleurl/src/gurl.h"
@@ -40,7 +41,7 @@ class PhishingClassifierDelegate : public RenderViewObserver {
   void SetPhishingScorer(const safe_browsing::Scorer* scorer);
 
   // Called by the RenderView once a page has finished loading.  Updates the
-  // last-loaded URL and page id, then starts classification if all other
+  // last-loaded URL and page text, then starts classification if all other
   // conditions are met (see MaybeStartClassification for details).
   // We ignore preliminary captures, since these happen before the page has
   // finished loading.
@@ -89,16 +90,20 @@ class PhishingClassifierDelegate : public RenderViewObserver {
   // with the ref stripped.
   GURL last_url_received_from_browser_;
 
-  // The last URL and page id that have finished loading in the RenderView.
-  // These correspond to the text in classifier_page_text_.
+  // The last top-level URL that has finished loading in the RenderView.
+  // This corresponds to the text in classifier_page_text_.
   GURL last_finished_load_url_;
-  int32 last_finished_load_id_;
 
-  // The URL and page id of the last load that we actually started
-  // classification on.  This is used to suppress phishing classification on
-  // subframe navigation and back and forward navigations in history.
+  // The transition type for the last load in the main frame.  We use this
+  // to exclude back/forward loads from classification.  Note that this is
+  // set in DidCommitProvisionalLoad(); the transition is reset after this
+  // call in the RenderView, so we need to save off the value.
+  PageTransition::Type last_main_frame_transition_;
+
+  // The URL of the last load that we actually started classification on.
+  // This is used to suppress phishing classification on subframe navigation
+  // and back and forward navigations in history.
   GURL last_url_sent_to_classifier_;
-  int32 last_page_id_sent_to_classifier_;
 
   // The page text that will be analyzed by the phishing classifier.  This is
   // set by OnNavigate and cleared when the classifier finishes.  Note that if
@@ -106,6 +111,11 @@ class PhishingClassifierDelegate : public RenderViewObserver {
   // instructed us to classify the page, the page text will be cached until
   // these conditions are met.
   string16 classifier_page_text_;
+
+  // Tracks whether we have stored anything in classifier_page_text_ for the
+  // most recent load.  We use this to distinguish empty text from cases where
+  // PageCaptured has not been called.
+  bool have_page_text_;
 
   DISALLOW_COPY_AND_ASSIGN(PhishingClassifierDelegate);
 };

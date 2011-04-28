@@ -94,8 +94,8 @@ PhishingClassifierDelegate::PhishingClassifierDelegate(
     RenderView* render_view,
     PhishingClassifier* classifier)
     : RenderViewObserver(render_view),
-      last_finished_load_id_(-1),
-      last_page_id_sent_to_classifier_(-1) {
+      last_main_frame_transition_(PageTransition::LINK),
+      have_page_text_(false) {
   g_delegates.Get().insert(this);
   if (!classifier) {
     classifier = new PhishingClassifier(render_view,
@@ -147,6 +147,9 @@ void PhishingClassifierDelegate::DidCommitProvisionalLoad(
     UMA_HISTOGRAM_COUNTS("SBClientPhishing.CanceledForInPageNavigation", 1);
   }
   CancelPendingClassification();
+  if (frame == render_view()->webview()->mainFrame()) {
+    last_main_frame_transition_ = state->transition_type();
+  }
 }
 
 void PhishingClassifierDelegate::PageCaptured(string16* page_text,
@@ -154,9 +157,9 @@ void PhishingClassifierDelegate::PageCaptured(string16* page_text,
   if (preliminary_capture) {
     return;
   }
-  last_finished_load_id_ = render_view()->page_id();
   last_finished_load_url_ = GetToplevelUrl();
   classifier_page_text_.swap(*page_text);
+  have_page_text_ = true;
   MaybeStartClassification();
 }
 
@@ -165,6 +168,7 @@ void PhishingClassifierDelegate::CancelPendingClassification() {
     classifier_->CancelPendingClassification();
   }
   classifier_page_text_.clear();
+  have_page_text_ = false;
 }
 
 bool PhishingClassifierDelegate::OnMessageReceived(
@@ -215,30 +219,30 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
     return;
   }
 
-  if (last_finished_load_id_ <= last_page_id_sent_to_classifier_) {
-    // Skip loads from session history navigation.
-    VLOG(2) << "Not starting classification, last finished load id is "
-            << last_finished_load_id_ << " but we have classified up to "
-            << "load id " << last_page_id_sent_to_classifier_;
+  if (last_main_frame_transition_ & PageTransition::FORWARD_BACK) {
+    // Skip loads from session history navigation.  However, update the
+    // last URL sent to the classifier, so that we'll properly detect
+    // in-page navigations.
+    VLOG(2) << "Not starting classification for back/forward navigation";
+    last_url_sent_to_classifier_ = last_finished_load_url_;
     classifier_page_text_.clear();  // we won't need this.
+    have_page_text_ = false;
     return;
   }
 
-  if (last_finished_load_id_ != render_view()->page_id()) {
-    VLOG(2) << "Render view page has changed, not starting classification";
-    classifier_page_text_.clear();  // we won't need this.
-    return;
-  }
-  // If the page id is unchanged, the toplevel URL should also be unchanged.
   GURL stripped_last_load_url(StripRef(last_finished_load_url_));
-  DCHECK_EQ(StripRef(GetToplevelUrl()), stripped_last_load_url);
-
   if (stripped_last_load_url == StripRef(last_url_sent_to_classifier_)) {
     // We've already classified this toplevel URL, so this was likely an
     // in-page navigation or a subframe navigation.  The browser should not
     // send a StartPhishingDetection IPC in this case.
     VLOG(2) << "Toplevel URL is unchanged, not starting classification.";
     classifier_page_text_.clear();  // we won't need this.
+    have_page_text_ = false;
+    return;
+  }
+
+  if (!have_page_text_) {
+    VLOG(2) << "Not starting classification, there is no page text ready.";
     return;
   }
 
@@ -257,7 +261,6 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
 
   VLOG(2) << "Starting classification for " << last_finished_load_url_;
   last_url_sent_to_classifier_ = last_finished_load_url_;
-  last_page_id_sent_to_classifier_ = last_finished_load_id_;
   classifier_->BeginClassification(
       &classifier_page_text_,
       NewCallback(this, &PhishingClassifierDelegate::ClassificationDone));

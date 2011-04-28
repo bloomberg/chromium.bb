@@ -63,6 +63,7 @@ struct ResourceHostMsg_Request;
 
 namespace WebKit {
 class WebFrame;
+class WebHistoryItem;
 }
 
 namespace safe_browsing {
@@ -97,6 +98,12 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
 
   // Navigates the main frame back in session history.
   void GoBack();
+
+  // Navigates the main frame forward in session history.  Note that for
+  // forward navigations, the caller needs to capture the WebHistoryItem
+  // for the page to go forward to (before going back) and pass it to
+  // this method.  The WebHistoryItem is available from the WebFrame.
+  void GoForward(const WebKit::WebHistoryItem& history_item);
 
   // Returns the main WebFrame for our RenderView.
   WebKit::WebFrame* GetMainFrame();
@@ -137,6 +144,9 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
   std::map<std::string, std::string> responses_;
 
  private:
+  // A helper for GoBack and GoForward.
+  void GoToOffset(int offset, const WebKit::WebHistoryItem& history_item);
+
   DISALLOW_COPY_AND_ASSIGN(RenderViewFakeResourcesTest);
 };
 

@@ -19,6 +19,7 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 
@@ -130,9 +131,9 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   page_text = ASCIIToUTF16("dummy");
   delegate->PageCaptured(&page_text, false);
 
-  // Navigating in a subframe will increment the page id, but not change
-  // the toplevel URL.  This should cancel pending classification since the
-  // page content is changing, and not begin a new classification.
+  // Navigating in a subframe will not change the toplevel URL.  However, this
+  // should cancel pending classification since the page content is changing.
+  // Currently, we do not start a new classification after subframe loads.
   EXPECT_CALL(*classifier, CancelPendingClassification());
   GetMainFrame()->firstChild()->loadRequest(
       WebKit::WebURLRequest(GURL("http://sub2.com/")));
@@ -142,11 +143,11 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   page_text = ASCIIToUTF16("dummy");
   delegate->PageCaptured(&page_text, false);
 
-  // Scrolling to an anchor will increment the page id, but should not
-  // not trigger a reclassification.  Currently, a pending classification will
-  // be canceled, but see the TODO in phishing_classifier_delegate.cc.
+  // Scrolling to an anchor works similarly to a subframe navigation, but
+  // see the TODO in PhishingClassifierDelegate::DidCommitProvisionalLoad.
   EXPECT_CALL(*classifier, CancelPendingClassification());
   LoadURL("http://host.com/#foo");
+  Mock::VerifyAndClearExpectations(classifier);
   OnStartPhishingDetection(delegate, GURL("http://host.com/#foo"));
   page_text = ASCIIToUTF16("dummy");
   delegate->PageCaptured(&page_text, false);
@@ -166,11 +167,35 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   // Note: in practice, the browser will not send a StartPhishingDetection IPC
   // in this case.  However, we want to make sure that the delegate behaves
   // correctly regardless.
+  WebKit::WebHistoryItem forward_item = GetMainFrame()->currentHistoryItem();
   EXPECT_CALL(*classifier, CancelPendingClassification());
   GoBack();
   Mock::VerifyAndClearExpectations(classifier);
   page_text = ASCIIToUTF16("dummy");
   OnStartPhishingDetection(delegate, GURL("http://host.com/#foo"));
+  delegate->PageCaptured(&page_text, false);
+
+  EXPECT_CALL(*classifier, CancelPendingClassification());
+  GoForward(forward_item);
+  Mock::VerifyAndClearExpectations(classifier);
+  page_text = ASCIIToUTF16("dummy2");
+  OnStartPhishingDetection(delegate, GURL("http://host2.com/"));
+  delegate->PageCaptured(&page_text, false);
+
+  // Now go back again and scroll to a different anchor.
+  // No classification should happen.
+  EXPECT_CALL(*classifier, CancelPendingClassification());
+  GoBack();
+  Mock::VerifyAndClearExpectations(classifier);
+  page_text = ASCIIToUTF16("dummy");
+  OnStartPhishingDetection(delegate, GURL("http://host.com/#foo"));
+  delegate->PageCaptured(&page_text, false);
+
+  EXPECT_CALL(*classifier, CancelPendingClassification());
+  LoadURL("http://host.com/#foo2");
+  Mock::VerifyAndClearExpectations(classifier);
+  OnStartPhishingDetection(delegate, GURL("http://host.com/#foo2"));
+  page_text = ASCIIToUTF16("dummy");
   delegate->PageCaptured(&page_text, false);
 
   // The delegate will cancel pending classification on destruction.
@@ -272,6 +297,7 @@ TEST_F(PhishingClassifierDelegateTest, NoStartPhishingDetection) {
   EXPECT_CALL(*classifier, CancelPendingClassification());
   responses_["http://host2.com/"] = "<html><body>phish</body></html>";
   LoadURL("http://host2.com/");
+  Mock::VerifyAndClearExpectations(classifier);
   page_text = ASCIIToUTF16("phish");
   delegate->PageCaptured(&page_text, false);
 
@@ -280,6 +306,27 @@ TEST_F(PhishingClassifierDelegateTest, NoStartPhishingDetection) {
   LoadURL("http://host3.com/");
   Mock::VerifyAndClearExpectations(classifier);
   OnStartPhishingDetection(delegate, GURL("http://host2.com/"));
+
+  // In this test, the original page is a redirect, which we do not get a
+  // StartPhishingDetection IPC for.  We use location.replace() to load a
+  // new page while reusing the original session history entry, and check that
+  // classification begins correctly for the landing page.
+  EXPECT_CALL(*classifier, CancelPendingClassification());
+  responses_["http://host4.com/"] = "<html><body>abc</body></html>";
+  LoadURL("http://host4.com/");
+  Mock::VerifyAndClearExpectations(classifier);
+  page_text = ASCIIToUTF16("abc");
+  delegate->PageCaptured(&page_text, false);
+  responses_["http://host4.com/redir"] = "<html><body>123</body></html>";
+  EXPECT_CALL(*classifier, CancelPendingClassification());
+  LoadURL("javascript:location.replace(\'redir\');");
+  Mock::VerifyAndClearExpectations(classifier);
+  OnStartPhishingDetection(delegate, GURL("http://host4.com/redir"));
+  page_text = ASCIIToUTF16("123");
+  EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _))
+      .WillOnce(DeleteArg<1>());
+  delegate->PageCaptured(&page_text, false);
+  Mock::VerifyAndClearExpectations(classifier);
 
   // The delegate will cancel pending classification on destruction.
   EXPECT_CALL(*classifier, CancelPendingClassification());

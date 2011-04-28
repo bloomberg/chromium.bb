@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
+#include "base/time.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/mock_render_process.h"
 #include "content/common/dom_storage_common.h"
@@ -17,6 +18,7 @@
 #include "content/common/resource_response.h"
 #include "content/common/sandbox_init_wrapper.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/navigation_state.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
@@ -29,6 +31,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace safe_browsing {
@@ -129,9 +132,12 @@ void RenderViewFakeResourcesTest::LoadURLWithPost(const std::string& url) {
 }
 
 void RenderViewFakeResourcesTest::GoBack() {
-  WebKit::WebFrame* frame = GetMainFrame();
-  frame->loadHistoryItem(frame->previousHistoryItem());
-  message_loop_.Run();
+  GoToOffset(-1, GetMainFrame()->previousHistoryItem());
+}
+
+void RenderViewFakeResourcesTest::GoForward(
+    const WebKit::WebHistoryItem& history_item) {
+  GoToOffset(1, history_item);
 }
 
 void RenderViewFakeResourcesTest::OnDidStopLoading() {
@@ -187,6 +193,28 @@ void RenderViewFakeResourcesTest::OnRenderViewReady() {
   RenderView::ForEach(this);
   ASSERT_TRUE(view_);
   message_loop_.Quit();
+}
+
+void RenderViewFakeResourcesTest::GoToOffset(
+    int offset,
+    const WebKit::WebHistoryItem& history_item) {
+  NavigationState* state = NavigationState::FromDataSource(
+      GetMainFrame()->dataSource());
+
+  ViewMsg_Navigate_Params params;
+  params.page_id = view_->page_id() + offset;
+  params.pending_history_list_offset =
+      state->pending_history_list_offset() + offset;
+  params.current_history_list_offset = state->pending_history_list_offset();
+  params.current_history_list_length = (view_->historyBackListCount() +
+                                        view_->historyForwardListCount() + 1);
+  params.url = GURL(history_item.urlString());
+  params.transition = PageTransition::FORWARD_BACK;
+  params.state = webkit_glue::HistoryItemToString(history_item);
+  params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
+  params.request_time = base::Time::Now();
+  channel_->Send(new ViewMsg_Navigate(view_->routing_id(), params));
+  message_loop_.Run();
 }
 
 }  // namespace safe_browsing
