@@ -50,6 +50,39 @@ if (tag != 'audio' && tag != 'video') {
   ok = false;
 }
 
+function translateCommand(command, arg) {
+  // Translate command in 'actions' query string into corresponding JavaScript
+  // code.
+  if (command == 'seek') {
+    return 'player.currentTime=' + arg + ';';
+  } else if (command == 'ratechange') {
+    return 'player.playbackRate=' + arg + ';';
+  } else if (command == 'play' || command == 'pause') {
+    return 'player.' + command + '();';
+  } else {
+    return 'ERROR - ' + command + ' is not a valid command.'
+  }
+}
+
+if (queryString('actions')) {
+  // Action query string is a list of actions. An action consists of a
+  // time, action, action_argument triple (delimited by '|').
+  // For example, '1000|seek|4000' means 'At second 1, seek to second 4.'
+  // Or '1000|pause|0|2000|play|0' means 'At second 1, pause the video.
+  // At second 2, play the video.'
+  var original_actions = queryString('actions').split('|');
+  if ((original_actions.length % 3) != 0) {
+    // The action list is a list of triples. Otherwise, it fails.
+    document.title = 'FAIL';
+    ok = false;
+  }
+  for (i = 0; i < original_actions.length / 3; i++) {
+    setTimeout(translateCommand(original_actions[3 * i + 1],
+                                original_actions[3 * i + 2]),
+               parseInt(original_actions[3 * i]));
+  }
+}
+
 var container = document.getElementById('player_container');
 container.innerHTML = '<' + tag + ' controls id="player"></' + tag + '>';
 player = document.getElementById('player');
@@ -60,5 +93,4 @@ InstallEventHandler('error',
 InstallEventHandler('playing', 'document.title = "PLAYING"');
 InstallEventHandler('ended', 'document.title = "END"');
 
-// Starts the player.
 player.src = media_url;

@@ -13,6 +13,7 @@ media_test_runner.py is used for generating these variables
 (PyAuto does not support direct parameters).
 """
 
+import csv
 import os
 import time
 
@@ -47,6 +48,7 @@ class MediaTestBase(pyauto.PyUITest):
   times = []
   media_filename = ''
   media_filename_nickname = ''
+  _test_scenarios = []
 
   def _GetMediaURLAndParameterString(self, media_filename):
     """Get media url and parameter string.
@@ -97,6 +99,23 @@ class MediaTestBase(pyauto.PyUITest):
                                         extra_nickname)
     return url, parameter_str
 
+  def ReadTestScenarioFiles(self, test_scenario_filename):
+    """Read a test scenario CSV file with actions such as 'play'.
+
+    In the CSV file, each row is a test scenario which consists of one
+    or more (time, action, action_argument) triples (time and action_argument
+    are in milliseconds). For example, the following CSV file contains 3 test
+    scenarios to be tested.
+    500,  pause, 0
+    1000, pause, 0, 2000, play,       0
+    1000, seek,  0, 2000, ratechange, 2
+    """
+    test_scenarios = []
+    rows = csv.reader(open(test_scenario_filename))
+    for row in rows:
+      test_scenarios.append('|'.join(row))
+    return test_scenarios
+
   def ExecuteTest(self):
     """Test HTML5 Media Tag."""
 
@@ -111,9 +130,23 @@ class MediaTestBase(pyauto.PyUITest):
       return self.GetDOMValue('document.title').strip() == 'END'
 
     self.PreAllRunsProcess()
+    test_scenario_filename = os.getenv(
+        MediaTestEnvNames.TEST_SCENARIO_FILE_ENV_NAME, '')
+    test_scenario = os.getenv(
+        MediaTestEnvNames.TEST_SCENARIO_ENV_NAME, '')
+    if test_scenario:
+      # Run test with the same action several times.
+      self._test_scenarios = [test_scenario] * self.number_of_runs
+    if test_scenario_filename:
+      self._test_scenarios = self.ReadTestScenarioFiles(test_scenario_filename)
+      # One run per test scenario.
+      self.number_of_runs = len(self._test_scenarios)
     for run_counter in range(self.number_of_runs):
       self.PreEachRunProcess(run_counter)
-      self.NavigateToURL(self.url)
+      url = self.url
+      if self._test_scenarios:
+        url += '&actions=' + self.test_scenarios[run_counter]
+      self.NavigateToURL(url)
       self.WaitUntil(lambda: _VideoEnded(),
                      self.TIMEOUT)
       self.PostEachRunProcess(run_counter)

@@ -98,15 +98,30 @@ def main():
                     default=True, # Currently default is True
                                   # since we want to test only 1 combination.
                     help='Run only one parameter combination')
+  parser.add_option(
+      '-w', '--test_scenario_input_filename',
+      dest='test_scenario_input_filename',
+      default='', help='Test scenario file (CSV form)', metavar='FILE')
+  parser.add_option(
+      '-c', '--test_scenario', dest='test_scenario',
+      default='', help='Test scenario (action triples delimited by \'|\')')
   parser.add_option('-s', '--suite', dest='suite',
                     help='Suite file')
+  parser.add_option('-e', '--media_file', dest='media_file',
+                    default='',
+                    help=('Media file to be played using player.html. ',
+                          'The relative path needs to be specified starting ',
+                          'from data/html/ directory.'))
+
   options, args = parser.parse_args()
   if args:
     parser.print_help()
     sys.exit(1)
 
   test_data_list = []
-  if options.input_matrix_filename is None:
+  if options.media_file:
+    test_data_list.append(['video', options.media_file, options.media_file])
+  elif options.input_matrix_filename is None:
     file = open(options.input_filename, 'rb')
     test_data_list = csv.reader(file)
     # First line contains headers that can be skipped.
@@ -151,6 +166,10 @@ def main():
                REMOVE_FIRST_RESULT,
              MediaTestEnvNames.MEASURE_INTERVAL_ENV_NAME:
                str(options.measure_intervals),
+             MediaTestEnvNames.TEST_SCENARIO_FILE_ENV_NAME:
+               options.test_scenario_input_filename,
+             MediaTestEnvNames.TEST_SCENARIO_ENV_NAME:
+               options.test_scenario,
            }
            envs.update(parent_envs)
            if options.suite is None and options.test_prog_name is not None:

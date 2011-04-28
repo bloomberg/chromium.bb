@@ -1,31 +1,39 @@
-<!--   
+<!--
 This HTML file contains a player div which is used for event testing
-(chrome/test/functional/media_event_*.py).  
+(chrome/test/functional/media_event_*.py).
 The query string should contain the following information:
-  tag (required): HTML video/audio tag.  
+  tag (required): HTML video/audio tag.
   video file (required): video file name.
-  t (optional): add the "t" parameter to disable the media cache. 
+  t (optional): add the "t" parameter to disable the media cache.
+  actions (optional): add a list of triples (time, action, action_argument)
+    delimited by '|'. For example, '3000|seek|5000' means 'at second 3, seek
+    to second 5'. Possible actions are 'play', 'pause', 'seek', or
+    'ratechange'. Time and action_arugment is in milliseconds. 'play' and
+    'pause' should have dummy action_argument, which is ignored.
 
-Example: "media_event.html?tag=video&media=foo.webm&t=t"
---> 
+Example: "media_event.html?tag=video&media=foo.webm&t=t&actions=3000|seek|5000"
+-->
 <html>
 <body>
 <div id='player_container'></div>
 <script type='text/javascript' src='player.js'></script>
 <script>
-var events = ['loadstart', 'ratechange', 'waiting', 'ratechange',
-              'durationchange', 'loadedmetadata', 'loadeddata',
-              'canplay', 'canplaythrough', 'play', 'timeupdate',
-              'pause', 'ended'];
+var events = ['abort', 'canplay', 'canplaythrough', 'durationchange', 'emptied',
+              'ended', 'error', 'load', 'loadeddata', 'loadedmetadata',
+              'loadstart',  'pause', 'play', 'playing', 'progress',
+              'ratechange', 'seeked', 'seeking', 'stalled', 'suspend',
+              'timeupdate', 'volumechange', 'waiting']
+
+var startTime = 0
 
 var table = document.createElement('table');
 table.id = 'event';
 document.body.appendChild(table);
 
-function incrementCounterForEvent(evt) {
-  // Convert the string to an integer.
-  var currentValue = document.getElementById(evt.type).innerHTML - 0;
-  document.getElementById(evt.type).innerHTML = currentValue + 1;
+function recordEventTime(evt) {
+  // Record the time when an event happens.
+  var time = new Date().getTime() - startTime
+  document.getElementById(evt.type).innerHTML += time + ' '
 }
 
 var player = document.getElementById('player');
@@ -35,17 +43,19 @@ for (var event in events) {
   var eventNameColumn = document.createElement('td');
   eventNameColumn.innerHTML = events[event];
   var eventValueColumn = document.createElement('td');
-  eventValueColumn.innerHTML = 0;
+  eventValueColumn.innerHTML = '';
   eventValueColumn.id = events[event];
   row.appendChild(eventNameColumn);
   row.appendChild(eventValueColumn);
   table.appendChild(row)
-  player.addEventListener(events[event], incrementCounterForEvent, false);
+  player.addEventListener(events[event], recordEventTime, false);
 }
 
 if (ok) {
+  startTime = new Date().getTime();
   player.play();
 }
 </script>
 </body>
 </html>
+

@@ -49,3 +49,9 @@ class MediaTestEnvNames:
 
   # Define the interval for the measurement.
   MEASURE_INTERVAL_ENV_NAME = 'MEASURE_INTERVALS'
+
+  # Define the test scenario file, which contains all operations during tests.
+  TEST_SCENARIO_FILE_ENV_NAME = 'TEST_SCENARIO_FILE'
+
+  # Define the test scenario, which contains operations during tests.
+  TEST_SCENARIO_ENV_NAME = 'TEST_SCENARIO'
