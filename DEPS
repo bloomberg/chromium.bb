@@ -7,6 +7,9 @@ vars = {
   "webkit_revision": "84939",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
+  # These hashes need to be updated when nacl_revision is changed.
+  "nacl_irt_hash_x86_32": "22aa515c504417708751f081f4b4325c0cebb1c7",
+  "nacl_irt_hash_x86_64": "3f345b96ba52220f404140d73f75d5443818774a",
   "nacl_revision": "5062",
   "nacl_tools_revision": "5025",
   "libjingle_revision": "55",
@@ -355,5 +358,14 @@ hooks = [
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     "pattern": ".",
     "action": ["python", "src/build/gyp_chromium"],
+  },
+  {
+    # This downloads binaries for Native Client's integrated runtime (IRT)
+    # library, which is built as NaCl untrusted code.
+    "pattern": ".",
+    "action": ["python", "src/build/download_nacl_irt.py",
+               "--nacl_revision", Var("nacl_revision"),
+               "--file_hash", "x86_32", Var("nacl_irt_hash_x86_32"),
+               "--file_hash", "x86_64", Var("nacl_irt_hash_x86_64")],
   },
 ]

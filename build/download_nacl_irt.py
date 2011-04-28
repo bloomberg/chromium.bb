@@ -163,7 +163,7 @@ def Main():
     dest_dir = os.path.join(nacl_dir, 'irt_binaries')
     if not os.path.exists(dest_dir):
       os.makedirs(dest_dir)
-    dest_path = os.path.join(dest_dir, 'irt_%s.nexe' % arch)
+    dest_path = os.path.join(dest_dir, 'nacl_irt_%s.nexe' % arch)
     DownloadFileWithRetry(dest_path, url)
     downloaded_hash = HashFile(dest_path)
     if downloaded_hash != expected_hash:
