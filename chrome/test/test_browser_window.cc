@@ -91,3 +91,8 @@ int TestBrowserWindow::GetExtraRenderViewHeight() const {
 gfx::Rect TestBrowserWindow::GetInstantBounds() {
   return gfx::Rect();
 }
+
+WindowOpenDisposition TestBrowserWindow::GetDispositionForPopupBounds(
+    const gfx::Rect& bounds) {
+  return NEW_POPUP;
+}

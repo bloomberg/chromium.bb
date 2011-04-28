@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension.h"
@@ -595,16 +596,19 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
     return;
 
   if (disposition == NEW_POPUP) {
-    // Create a new Browser window of type TYPE_APP_POPUP.
-    // (AddTabContents would otherwise create a window of type TYPE_POPUP).
-    Browser* browser = Browser::CreateForPopup(Browser::TYPE_APP_POPUP,
-                                               contents->profile(),
-                                               contents,
-                                               initial_pos);
-    if (user_gesture)
-      browser->window()->Show();
-    else
-      browser->window()->ShowInactive();
+    // Find a browser with a matching profile for creating a popup.
+    // (If none is found, NULL argument to NavigateParams is valid.)
+    Browser* browser = BrowserList::FindBrowserWithType(
+        contents->profile(),
+        Browser::TYPE_NORMAL,
+        false);  // Match incognito exactly.
+    TabContentsWrapper* wrapper = new TabContentsWrapper(contents);
+    browser::NavigateParams params(browser, wrapper);
+    params.disposition = NEW_POPUP;
+    params.window_bounds = initial_pos;
+    params.window_action = browser::NavigateParams::SHOW_WINDOW;
+    params.user_gesture = user_gesture;
+    browser::Navigate(&params);
     return;
   }
 

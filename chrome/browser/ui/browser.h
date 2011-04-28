@@ -137,12 +137,6 @@ class Browser : public TabHandlerDelegate,
   // window is created by this function call.
   static Browser* Create(Profile* profile);
 
-  // Like Create, but creates a browser of the specified (popup) type, with the
-  // specified contents, in a popup window of the specified size/position.
-  static Browser* CreateForPopup(Type type, Profile* profile,
-                                 TabContents* new_contents,
-                                 const gfx::Rect& initial_bounds);
-
   // Like Create, but creates a browser of the specified type.
   static Browser* CreateForType(Type type, Profile* profile);
 

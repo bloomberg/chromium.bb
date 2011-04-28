@@ -567,6 +567,11 @@ gfx::Rect BrowserWindowCocoa::GetInstantBounds() {
   return bounds;
 }
 
+WindowOpenDisposition BrowserWindowCocoa::GetDispositionForPopupBounds(
+    const gfx::Rect& bounds) {
+  return NEW_POPUP;
+}
+
 void BrowserWindowCocoa::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {

@@ -306,6 +306,8 @@ class BrowserView : public BrowserBubbleHost,
   virtual void ShowInstant(TabContentsWrapper* preview) OVERRIDE;
   virtual void HideInstant(bool instant_is_active) OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
+  virtual WindowOpenDisposition GetDispositionForPopupBounds(
+      const gfx::Rect& bounds) OVERRIDE;
 #if defined(OS_CHROMEOS)
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) OVERRIDE;
 #endif

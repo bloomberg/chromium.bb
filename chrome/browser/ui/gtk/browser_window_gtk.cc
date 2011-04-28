@@ -1120,6 +1120,11 @@ gfx::Rect BrowserWindowGtk::GetInstantBounds() {
   return gtk_util::GetWidgetScreenBounds(contents_container_->widget());
 }
 
+WindowOpenDisposition BrowserWindowGtk::GetDispositionForPopupBounds(
+    const gfx::Rect& bounds) {
+  return NEW_POPUP;
+}
+
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
   new DownloadInProgressDialogGtk(browser());
 }

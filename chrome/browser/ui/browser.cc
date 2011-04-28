@@ -187,13 +187,6 @@ const int kUIUpdateCoalescingTimeMS = 200;
 
 const char kHashMark[] = "#";
 
-#if defined(OS_CHROMEOS)
-// If a popup window is bigger than this fraction of the screen on chrome os,
-// turn it into a tab
-const float kPopupMaxWidthFactor = 0.5;
-const float kPopupMaxHeightFactor = 0.6;
-#endif
-
 }  // namespace
 
 extern bool g_log_bug53991;
@@ -344,20 +337,6 @@ Browser::~Browser() {
 Browser* Browser::Create(Profile* profile) {
   Browser* browser = new Browser(TYPE_NORMAL, profile);
   browser->InitBrowserWindow();
-  return browser;
-}
-
-// static
-Browser* Browser::CreateForPopup(Type type,
-                                 Profile* profile,
-                                 TabContents* new_contents,
-                                 const gfx::Rect& initial_bounds) {
-  DCHECK(type & TYPE_POPUP);
-  Browser* browser = new Browser(type, profile);
-  browser->set_override_bounds(initial_bounds);
-  browser->InitBrowserWindow();
-  TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
-  browser->tabstrip_model()->AppendTabContents(wrapper, true);
   return browser;
 }
 
@@ -1149,6 +1128,7 @@ browser::NavigateParams Browser::GetSingletonTabNavigateParams(
   browser::NavigateParams params(this, url, PageTransition::AUTO_BOOKMARK);
   params.disposition = SINGLETON_TAB;
   params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  params.user_gesture = true;
   return params;
 }
 
@@ -2885,6 +2865,7 @@ void Browser::OpenURLFromTab(TabContents* source,
   params.disposition = disposition;
   params.tabstrip_add_types = TabStripModel::ADD_NONE;
   params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  params.user_gesture = true;
   browser::Navigate(&params);
 }
 
@@ -2946,24 +2927,6 @@ void Browser::AddNewContents(TabContents* source,
     new_contents->DisassociateFromPopupCount();
   }
 
-  // TODO(beng): This belongs behind the platform-specific View interface.
-  //             That's why it's there. http://crbug.com/78853
-#if defined(OS_CHROMEOS)
-  if (disposition == NEW_POPUP) {
-    // If the popup is bigger than a given factor of the screen, then
-    // turn it into a foreground tab (on chrome os only)
-    // Also check for width or height == 0, which would otherwise indicate
-    // a tab sized popup window.
-    GdkScreen* screen = gdk_screen_get_default();
-    int max_width = gdk_screen_get_width(screen) * kPopupMaxWidthFactor;
-    int max_height = gdk_screen_get_height(screen) * kPopupMaxHeightFactor;
-    if (initial_pos.width() > max_width || initial_pos.width() == 0 ||
-        initial_pos.height() > max_height || initial_pos.height() == 0) {
-      disposition = NEW_FOREGROUND_TAB;
-    }
-  }
-#endif
-
   browser::NavigateParams params(this, new_wrapper);
   params.source_contents =
       source ? tabstrip_model()->GetTabContentsAt(
@@ -2971,12 +2934,8 @@ void Browser::AddNewContents(TabContents* source,
              : NULL;
   params.disposition = disposition;
   params.window_bounds = initial_pos;
-  // If we create a popup or panel from a non user-gesture, don't activate
-  // the new window / panel.
-  if (disposition == NEW_POPUP && !user_gesture)
-    params.window_action = browser::NavigateParams::SHOW_WINDOW_INACTIVE;
-  else
-    params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  params.user_gesture = user_gesture;
   browser::Navigate(&params);
 
   if (source) {

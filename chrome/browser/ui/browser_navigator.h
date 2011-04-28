@@ -130,6 +130,10 @@ struct NavigateParams {
   // NO_ACTION, |window_action| will be set to SHOW_WINDOW.
   WindowAction window_action;
 
+  // If false then the navigation was not initiated by a user gesture.
+  // Default is true.
+  bool user_gesture;
+
   // What to do with the path component of the URL for singleton navigations.
   enum PathBehavior {
     // Two URLs with differing paths are different.

@@ -1220,6 +1220,11 @@ gfx::Rect BrowserView::GetInstantBounds() {
   return contents_->GetPreviewBounds();
 }
 
+WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
+    const gfx::Rect& bounds) {
+  return NEW_POPUP;
+}
+
 #if defined(OS_CHROMEOS)
 void BrowserView::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
   KeyboardOverlayDialogView::ShowDialog(owning_window, this);

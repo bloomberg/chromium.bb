@@ -244,6 +244,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup) {
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_POPUP;
+  p.window_bounds = gfx::Rect(0, 0, 200, 200);
   browser::Navigate(&p);
   // Wait for new popup to to load and gain focus.
   ui_test_utils::WaitForNavigationInCurrentTab(p.browser);
@@ -269,10 +270,12 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupFromPopup) {
   // Open a popup.
   browser::NavigateParams p1(MakeNavigateParams());
   p1.disposition = NEW_POPUP;
+  p1.window_bounds = gfx::Rect(0, 0, 200, 200);
   browser::Navigate(&p1);
   // Open another popup.
   browser::NavigateParams p2(MakeNavigateParams(p1.browser));
   p2.disposition = NEW_POPUP;
+  p2.window_bounds = gfx::Rect(0, 0, 200, 200);
   browser::Navigate(&p2);
 
   // Navigate() should have opened a new normal popup window.
@@ -295,6 +298,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                                                    browser()->profile());
   browser::NavigateParams p(MakeNavigateParams(app_browser));
   p.disposition = NEW_POPUP;
+  p.window_bounds = gfx::Rect(0, 0, 200, 200);
   browser::Navigate(&p);
 
   // Navigate() should have opened a new popup app window.
@@ -319,10 +323,12 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // Open an app popup.
   browser::NavigateParams p1(MakeNavigateParams(app_browser));
   p1.disposition = NEW_POPUP;
+  p1.window_bounds = gfx::Rect(0, 0, 200, 200);
   browser::Navigate(&p1);
   // Now open another app popup.
   browser::NavigateParams p2(MakeNavigateParams(p1.browser));
   p2.disposition = NEW_POPUP;
+  p2.window_bounds = gfx::Rect(0, 0, 200, 200);
   browser::Navigate(&p2);
 
   // Navigate() should have opened a new popup app window.
@@ -351,6 +357,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupUnfocused) {
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_POPUP;
+  p.window_bounds = gfx::Rect(0, 0, 200, 200);
   p.window_action = browser::NavigateParams::SHOW_WINDOW_INACTIVE;
   browser::Navigate(&p);
   // Wait for new popup to load (and gain focus if the test fails).

@@ -346,6 +346,7 @@ NavigateParams::NavigateParams(
       tabstrip_index(-1),
       tabstrip_add_types(TabStripModel::ADD_ACTIVE),
       window_action(NO_ACTION),
+      user_gesture(true),
       path_behavior(RESPECT),
       browser(a_browser),
       profile(NULL) {
@@ -360,6 +361,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       tabstrip_index(-1),
       tabstrip_add_types(TabStripModel::ADD_ACTIVE),
       window_action(NO_ACTION),
+      user_gesture(true),
       path_behavior(RESPECT),
       browser(a_browser),
       profile(NULL) {
@@ -371,6 +373,14 @@ NavigateParams::~NavigateParams() {
 void Navigate(NavigateParams* params) {
   Browser* source_browser = params->browser;
   AdjustNavigateParamsForURL(params);
+
+  // Adjust disposition based on size of popup window.
+  if (params->disposition == NEW_POPUP &&
+      (source_browser && source_browser->window())) {
+    params->disposition =
+        source_browser->window()->GetDispositionForPopupBounds(
+            params->window_bounds);
+  }
 
   params->browser = GetBrowserForDisposition(params);
   if (!params->browser)
@@ -384,13 +394,6 @@ void Navigate(NavigateParams* params) {
     params->referrer = GURL();
   }
 
-  if (params->window_action == browser::NavigateParams::NO_ACTION &&
-      source_browser != params->browser &&
-      params->browser->tabstrip_model()->empty()) {
-    // A new window has been created. So it needs to be displayed.
-    params->window_action = browser::NavigateParams::SHOW_WINDOW;
-  }
-
   // Make sure the Browser is shown if params call for it.
   ScopedBrowserDisplayer displayer(params);
 
@@ -400,6 +403,20 @@ void Navigate(NavigateParams* params) {
 
   // Some dispositions need coercion to base types.
   NormalizeDisposition(params);
+
+  // If a new window has been created, it needs to be displayed.
+  if (params->window_action == browser::NavigateParams::NO_ACTION &&
+      source_browser != params->browser &&
+      params->browser->tabstrip_model()->empty()) {
+    params->window_action = browser::NavigateParams::SHOW_WINDOW;
+  }
+
+  // If we create a popup window from a non user-gesture, don't activate it.
+  if (params->window_action == browser::NavigateParams::SHOW_WINDOW &&
+      params->disposition == NEW_POPUP &&
+      params->user_gesture == false) {
+    params->window_action = browser::NavigateParams::SHOW_WINDOW_INACTIVE;
+  }
 
   // Determine if the navigation was user initiated. If it was, we need to
   // inform the target TabContents, and we may need to update the UI.

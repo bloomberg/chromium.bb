@@ -57,6 +57,8 @@ class BrowserView : public ::BrowserView,
   virtual void Cut();
   virtual void Copy();
   virtual void Paste();
+  virtual WindowOpenDisposition GetDispositionForPopupBounds(
+      const gfx::Rect& bounds);
 
   // views::ContextMenuController overrides.
   virtual void ShowContextMenuForView(views::View* source,

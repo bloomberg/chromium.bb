@@ -44,6 +44,7 @@ void HtmlDialogTabContentsDelegate::OpenURLFromTab(
     else
       params.disposition = disposition;
     params.window_action = browser::NavigateParams::SHOW_WINDOW;
+    params.user_gesture = true;
     browser::Navigate(&params);
   }
 }
@@ -71,6 +72,7 @@ void HtmlDialogTabContentsDelegate::AddNewContents(
     params.disposition = disposition;
     params.window_bounds = initial_pos;
     params.window_action = browser::NavigateParams::SHOW_WINDOW;
+    params.user_gesture = true;
     browser::Navigate(&params);
   }
 }

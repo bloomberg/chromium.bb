@@ -42,6 +42,9 @@ namespace {
 
 // Amount to offset the toolbar by when vertical tabs are enabled.
 const int kVerticalTabStripToolbarOffset = 2;
+// If a popup window is larger than this fraction of the screen, create a tab.
+const float kPopupMaxWidthFactor = 0.5;
+const float kPopupMaxHeightFactor = 0.6;
 
 }  // namespace
 
@@ -313,6 +316,23 @@ void BrowserView::Copy() {
 
 void BrowserView::Paste() {
   gtk_util::DoPaste(this);
+}
+
+WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
+    const gfx::Rect& bounds) {
+  // If a popup is larger than a given fraction of the screen, turn it into
+  // a foreground tab. Also check for width or height == 0, which would
+  // indicate a tab sized popup window.
+  GdkScreen* screen = gdk_screen_get_default();
+  int max_width = gdk_screen_get_width(screen) * kPopupMaxWidthFactor;
+  int max_height = gdk_screen_get_height(screen) * kPopupMaxHeightFactor;
+  if (bounds.width() > max_width ||
+      bounds.width() == 0 ||
+      bounds.height() > max_height ||
+      bounds.height() == 0) {
+    return NEW_FOREGROUND_TAB;
+  }
+  return NEW_POPUP;
 }
 
 // views::ContextMenuController overrides.

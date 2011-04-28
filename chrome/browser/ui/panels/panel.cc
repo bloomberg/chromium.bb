@@ -342,6 +342,12 @@ gfx::Rect Panel::GetInstantBounds() {
   return gfx::Rect();
 }
 
+WindowOpenDisposition Panel::GetDispositionForPopupBounds(
+    const gfx::Rect& bounds) {
+  NOTIMPLEMENTED();
+  return NEW_POPUP;
+}
+
 #if defined(OS_CHROMEOS)
 void Panel::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
   NOTIMPLEMENTED();

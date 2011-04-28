@@ -130,6 +130,8 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void ShowInstant(TabContentsWrapper* preview);
   virtual void HideInstant(bool instant_is_active);
   virtual gfx::Rect GetInstantBounds();
+  virtual WindowOpenDisposition GetDispositionForPopupBounds(
+      const gfx::Rect& bounds);
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
