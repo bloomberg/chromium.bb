@@ -454,6 +454,13 @@ function createPDFPlugin() {
 
   var pdfViewer = $('pdf-viewer');
   if (pdfViewer) {
+    // Older version of the PDF plugin may not have this method.
+    // TODO(thestig) Eventually remove this check.
+    if (pdfViewer.goToPage) {
+      // Need to call this before the reload(), where the plugin resets its
+      // internal page count.
+      pdfViewer.goToPage('0');
+    }
     pdfViewer.reload();
     pdfViewer.grayscale(!isColor());
     return;
@@ -477,7 +484,7 @@ function createPDFPlugin() {
   pdfPlugin.onload('onPDFLoad()');
 
   // Older version of the PDF plugin may not have this method.
-  // TODO(thestig) Eventually remove this.
+  // TODO(thestig) Eventually remove this check.
   if (pdfPlugin.removePrintButton) {
     pdfPlugin.removePrintButton();
   }
