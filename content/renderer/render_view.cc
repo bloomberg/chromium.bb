@@ -2127,11 +2127,12 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
       PasswordFormDomManager::CreatePasswordForm(form);
   navigation_state->set_password_form_data(password_form_data);
 
-  // If the password has been cleared, recover it from the form contents already
-  // stored by willSendSubmitEvent into the dataSource's NavigationState (as
-  // opposed to the provisionalDataSource's, which is what we're storing into
-  // now.)
-  if (password_form_data && password_form_data->password_value.empty()) {
+  // In order to save the password that the user actually typed and not one
+  // that may have gotten transformed by the site prior to submit, recover it
+  // from the form contents already stored by |willSendSubmitEvent| into the
+  // dataSource's NavigationState (as opposed to the provisionalDataSource's,
+  // which is what we're storing into now.)
+  if (password_form_data) {
     NavigationState* old_navigation_state =
         NavigationState::FromDataSource(frame->dataSource());
     if (old_navigation_state) {
