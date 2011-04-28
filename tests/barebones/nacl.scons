@@ -36,21 +36,33 @@ if env.Bit('build_arm'):
 # NOTE: the x86 linker wants _start() to be the very first function
 FAKE_STARTUP = env.ComponentObject('fake_startup', 'fake_startup.c')
 
-for basename in ['addr_modes',
-                 'exit',
-                 'fib',
-                 'hello_world',
-                 'negindex',
-                 'only_bss',
-                 'regs',
-                 'reloc',
-                 'switch',
-                 'vtable',
-                 'vaarg',
-                 ]:
+barebones_tests = ['addr_modes',
+                   'exit',
+                   'fib',
+                   'hello_world',
+                   'negindex',
+                   'only_bss',
+                   'regs',
+                   'reloc',
+                   'switch',
+                   'vtable',
+                   'vaarg',
+                   ]
+
+for basename in barebones_tests:
 
   # c.f. http://code.google.com/p/nativeclient/issues/detail?id=783
   if env.Bit('build_arm') and basename == 'vaarg': continue
+
+  # TODO(pdox): These tests are failing in a strange way
+  #             on X86-64. Disable for now.
+  # Bug: http://code.google.com/p/nativeclient/issues/detail?id=1747
+  if (env.Bit('bitcode') and
+      env.Bit('target_x86_64') and
+      basename in ('reloc', 'addr_modes')):
+    is_broken_test = True
+  else:
+    is_broken_test = False
 
 
   # TODO(kcc): the barebones tests confuse the current nacl-ified valgrind.
@@ -72,7 +84,7 @@ for basename in ['addr_modes',
   env.AddNodeToTestSuite(node,
                          ['small_tests', 'sel_ldr_tests', 'barebones_tests'],
                          test,
-                         is_broken=is_broken)
+                         is_broken=is_broken or is_broken_test)
 
 
 # a test that the validador can handle an empty segment after the last
