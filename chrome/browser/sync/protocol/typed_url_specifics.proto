@@ -16,13 +16,21 @@ package sync_pb;
 
 import "sync.proto";
 
-// Properties of typed_url sync objects.
+// Properties of typed_url sync objects - fields correspond to similarly named
+// fields in history::URLRow.
 message TypedUrlSpecifics {
+  // Actual URL that was typed.
   optional string url = 1;
+  // Title of the page corresponding to this URL.
   optional string title = 2;
+  // The number of times this URL was typed.
   optional int32 typed_count = 3;
+  // True if the URL should be used for auto-complete.
   optional bool hidden = 4;
+  // The number of visits (includes page reloads).
   repeated int64 visit = 5;
+  // The number of explicit navigations to this URL (excludes page reloads).
+  optional int32 visited_count = 6;
 }
 
 extend EntitySpecifics {

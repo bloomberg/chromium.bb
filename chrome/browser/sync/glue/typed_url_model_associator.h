@@ -104,14 +104,37 @@ class TypedUrlModelAssociator
                              const TypedUrlVisitVector* new_visits,
                              const history::VisitVector* deleted_visits);
 
+  // Bitfield returned from MergeUrls to specify the result of the merge.
   enum {
+    // No changes were noted.
     DIFF_NONE           = 0x0000,
+
+    // Data was modified in the sync node.
     DIFF_NODE_CHANGED   = 0x0001,
+
+    // The title changed in the local URLRow. DIFF_ROW_CHANGED will also be set
+    // if this is set.
     DIFF_TITLE_CHANGED  = 0x0002,
+
+    // The local URLRow has changed (typed_count, visit_count, title, etc).
     DIFF_ROW_CHANGED    = 0x0004,
+
+    // Visits need to be added to the local URLRow.
     DIFF_VISITS_ADDED   = 0x0008,
   };
 
+  // Merges the URL information in |typed_url| with the URL information from the
+  // history database in |url| and |visits|, and returns a bitmask with the
+  // results of the merge:
+  // DIFF_NODE_CHANGE - changes have been made to |new_url| and |visits| which
+  //   should be persisted to the sync node.
+  // DIFF_TITLE_CHANGED - The title has changed, so the title in |new_url|
+  //   should be persisted to the history DB.
+  // DIFF_ROW_CHANGED - The history data in |new_url| should be persisted to the
+  //   history DB.
+  // DIFF_VISITS_ADDED - |new_visits| contains a list of visits that should be
+  //   written to the history DB for this URL. Deletions are not written to the
+  //   DB - each client is left to age out visits on their own.
   static int MergeUrls(const sync_pb::TypedUrlSpecifics& typed_url,
                        const history::URLRow& url,
                        history::VisitVector* visits,
@@ -125,6 +148,10 @@ class TypedUrlModelAssociator
                          const sync_pb::TypedUrlSpecifics& new_url,
                          std::vector<base::Time>* new_visits,
                          history::VisitVector* removed_visits);
+
+  // Initializes the passed |url_row| based on the values in |specifics|.
+  static history::URLRow TypedUrlSpecificsToURLRow(
+      const sync_pb::TypedUrlSpecifics& specifics);
 
  private:
   typedef std::map<std::string, int64> TypedUrlToSyncIdMap;

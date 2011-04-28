@@ -289,6 +289,7 @@ DictionaryValue* TypedUrlSpecificsToValue(
   SET_INT32(typed_count);
   SET_BOOL(hidden);
   SET_INT64_REP(visit);
+  SET_INT32(visited_count);
   return value;
 }
 

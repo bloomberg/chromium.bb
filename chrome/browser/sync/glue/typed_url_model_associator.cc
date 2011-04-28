@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
 
+#include <algorithm>
 #include <set>
 
 #include "base/utf_string_conversions.h"
@@ -72,11 +73,6 @@ bool TypedUrlModelAssociator::AssociateModels() {
       std::string tag = ix->url().spec();
 
       history::VisitVector& visits = visit_vectors[ix->id()];
-      DCHECK(visits.size() == static_cast<size_t>(ix->visit_count()));
-      if (visits.size() != static_cast<size_t>(ix->visit_count())) {
-        LOG(ERROR) << "Visit count does not match.";
-        return false;
-      }
 
       sync_api::ReadNode node(&trans);
       if (node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
@@ -94,6 +90,23 @@ bool TypedUrlModelAssociator::AssociateModels() {
           if (!write_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
             LOG(ERROR) << "Failed to edit typed_url sync node.";
             return false;
+          }
+          // We don't want to resurrect old visits that have been aged out by
+          // other clients, so remove all visits that are older than the
+          // earliest existing visit in the sync node.
+          if (typed_url.visit_size() > 0) {
+            base::Time earliest_visit =
+                base::Time::FromInternalValue(typed_url.visit(0));
+            for (history::VisitVector::iterator it = visits.begin();
+                 it != visits.end() && it->visit_time < earliest_visit; ) {
+              it = visits.erase(it);
+            }
+            // Should never be possible to delete all the items, since the
+            // visit vector contains all the items in typed_url.visits.
+            DCHECK(visits.size() > 0);
+          } else {
+            NOTREACHED() << "Syncing typed URL with no visits: " <<
+                typed_url.url();
           }
           WriteToSyncNode(new_url, visits, &write_node);
         }
@@ -113,6 +126,7 @@ bool TypedUrlModelAssociator::AssociateModels() {
 
         Associate(&tag, node.GetId());
       } else {
+        // Sync has never seen this URL before.
         sync_api::WriteNode node(&trans);
         if (!node.InitUniqueByCreation(syncable::TYPED_URLS,
                                        typed_url_root, tag)) {
@@ -145,25 +159,13 @@ bool TypedUrlModelAssociator::AssociateModels() {
                 GURL(typed_url.url()),
                 std::vector<base::Time>()));
         std::vector<base::Time>& visits = new_visits.back().second;
-        history::URLRow new_url(GURL(typed_url.url()));
-
-        new_url.set_title(UTF8ToUTF16(typed_url.title()));
-
-        // When we add a new url, the last visit is always added, thus we set
-        // the initial visit count to one.  This value will be automatically
-        // incremented as visits are added.
-        new_url.set_visit_count(1);
-        new_url.set_typed_count(typed_url.typed_count());
-        new_url.set_hidden(typed_url.hidden());
+        history::URLRow new_url = TypedUrlSpecificsToURLRow(typed_url);
 
         // The latest visit gets added automatically, so skip it.
         for (int c = 0; c < typed_url.visit_size() - 1; ++c) {
           DCHECK(typed_url.visit(c) < typed_url.visit(c + 1));
           visits.push_back(base::Time::FromInternalValue(typed_url.visit(c)));
         }
-
-        new_url.set_last_visit(base::Time::FromInternalValue(
-            typed_url.visit(typed_url.visit_size() - 1)));
 
         Associate(&typed_url.url(), sync_child_node.GetId());
         new_urls.push_back(new_url);
@@ -184,6 +186,9 @@ bool TypedUrlModelAssociator::AssociateModels() {
 
 bool TypedUrlModelAssociator::DeleteAllNodes(
     sync_api::WriteTransaction* trans) {
+  // TODO(sync): Add code to make this an explicit "delete" command rather than
+  // a list of nodes to avoid having to store tombstones on the server
+  // (http://crbug.com/80179).
   DCHECK(expected_loop_ == MessageLoop::current());
   for (TypedUrlToSyncIdMap::iterator node_id = id_map_.begin();
        node_id != id_map_.end(); ++node_id) {
@@ -231,7 +236,7 @@ bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 }
 
 void TypedUrlModelAssociator::AbortAssociation() {
-  // TODO(zork): Implement this.
+  // TODO(atwilson): Implement this.
 }
 
 const std::string* TypedUrlModelAssociator::GetChromeNodeFromSyncId(
@@ -335,7 +340,7 @@ int TypedUrlModelAssociator::MergeUrls(
   DCHECK(!typed_url.url().compare(new_url->url().spec()));
   DCHECK(visits->size());
 
-  new_url->set_visit_count(visits->size());
+  int original_visit_count = visits->size();
 
   // Convert these values only once.
   string16 typed_title(UTF8ToUTF16(typed_url.title()));
@@ -343,7 +348,8 @@ int TypedUrlModelAssociator::MergeUrls(
       base::Time::FromInternalValue(
           typed_url.visit(typed_url.visit_size() - 1));
 
-  // This is a bitfield represting what we'll need to update with the output
+
+  // This is a bitfield representing what we'll need to update with the output
   // value.
   int different = DIFF_NONE;
 
@@ -371,7 +377,9 @@ int TypedUrlModelAssociator::MergeUrls(
     new_url->set_hidden(url.hidden());
   }
 
-  // For typed count, we just select the maximum value.
+  // For typed count, we just select the maximum value. This is not technically
+  // correct since it undercounts URLs that have been typed on multiple systems
+  // between syncs, but it's the best we can do.
   if (typed_url.typed_count() > url.typed_count()) {
     new_url->set_typed_count(typed_url.typed_count());
     different |= DIFF_ROW_CHANGED;
@@ -383,33 +391,42 @@ int TypedUrlModelAssociator::MergeUrls(
     new_url->set_typed_count(typed_url.typed_count());
   }
 
-  size_t left_visit_count = typed_url.visit_size();
-  size_t right_visit_count = visits->size();
+  size_t left_num_visits = typed_url.visit_size();
+  size_t right_num_visits = visits->size();
   size_t left = 0;
   size_t right = 0;
-  while (left < left_visit_count && right < right_visit_count) {
-    base::Time left_time = base::Time::FromInternalValue(typed_url.visit(left));
-    if (left_time < (*visits)[right].visit_time) {
+  // Walk through the two sets of visits and figure out if any new visits were
+  // added on either side (left = sync node, right = history db entry).
+  while (left < left_num_visits || right < right_num_visits) {
+    // Time objects are initialized to "earliest possible time".
+    base::Time left_time, right_time;
+    if (left < left_num_visits)
+      left_time = base::Time::FromInternalValue(typed_url.visit(left));
+    if (right < right_num_visits)
+      right_time = (*visits)[right].visit_time;
+    if (left >= left_num_visits ||
+        (right < right_num_visits && left_time > right_time)) {
+      // We found a visit in the history DB that doesn't exist in the sync DB,
+      // so mark the node as modified so the caller will update the sync node.
+      different |= DIFF_NODE_CHANGED;
+      ++right;
+    } else if (right >= right_num_visits || left_time < right_time) {
+      // Found a visit in the sync node that doesn't exist in the history DB, so
+      // add it to our list of new visits and set the appropriate flag so the
+      // caller will update the history DB.
       different |= DIFF_VISITS_ADDED;
       new_visits->push_back(left_time);
       // This visit is added to visits below.
       ++left;
-    } else if (left_time > (*visits)[right].visit_time) {
-      different |= DIFF_NODE_CHANGED;
-      ++right;
     } else {
+      // Same (already synced) entry found in both DBs - no need to do anything.
       ++left;
       ++right;
     }
   }
 
-  for ( ; left < left_visit_count; ++left) {
-    different |= DIFF_VISITS_ADDED;
-    base::Time left_time = base::Time::FromInternalValue(typed_url.visit(left));
-    new_visits->push_back(left_time);
-    // This visit is added to visits below.
-  }
   if (different & DIFF_VISITS_ADDED) {
+    // Insert new visits into the apropriate place in the visits vector.
     history::VisitVector::iterator visit_ix = visits->begin();
     for (std::vector<base::Time>::iterator new_visit = new_visits->begin();
          new_visit != new_visits->end(); ++new_visit) {
@@ -425,8 +442,27 @@ int TypedUrlModelAssociator::MergeUrls(
 
   new_url->set_last_visit(visits->back().visit_time);
 
-  DCHECK(static_cast<size_t>(new_url->visit_count()) ==
-         (visits->size() - new_visits->size()));
+  // visit_count is a value that is only loosely correlated with the visit
+  // array (for example, reloading a page does not increment the visit_count
+  // but does register a visit in the visit vector). To determine the merged
+  // visit_count, we'll calculate the largest diff between visit_count and the
+  // sizes of the visit arrays and then apply that to the final visit array.
+  // This is inexact, but the exact value isn't particularly important (it's
+  // just used to help prioritize between various autocomplete suggestions, so
+  // in general just the magnitude is important).
+  int typed_url_visit_delta =
+      typed_url.visit_size() - typed_url.visited_count();
+  int history_url_visit_delta =
+      original_visit_count - url.visit_count();
+  if (std::abs(typed_url_visit_delta) > std::abs(history_url_visit_delta))
+    new_url->set_visit_count(visits->size() - typed_url_visit_delta);
+  else
+    new_url->set_visit_count(visits->size() - history_url_visit_delta);
+
+  if (new_url->visit_count() != url.visit_count())
+    different |= DIFF_ROW_CHANGED;
+  if (new_url->visit_count() != typed_url.visited_count())
+    different |= DIFF_NODE_CHANGED;
 
   return different;
 }
@@ -445,6 +481,7 @@ void TypedUrlModelAssociator::WriteToSyncNode(
   typed_url.set_title(UTF16ToUTF8(url.title()));
   typed_url.set_typed_count(url.typed_count());
   typed_url.set_hidden(url.hidden());
+  typed_url.set_visited_count(url.visit_count());
 
   for (history::VisitVector::const_iterator visit = visits.begin();
        visit != visits.end(); ++visit) {
@@ -485,6 +522,21 @@ void TypedUrlModelAssociator::DiffVisits(
   for ( ; right < right_visit_count; ++right) {
     new_visits->push_back(base::Time::FromInternalValue(new_url.visit(right)));
   }
+}
+
+
+// static
+history::URLRow TypedUrlModelAssociator::TypedUrlSpecificsToURLRow(
+    const sync_pb::TypedUrlSpecifics& typed_url) {
+  DCHECK(typed_url.visit_size() > 0);
+  history::URLRow new_url(GURL(typed_url.url()));
+  new_url.set_title(UTF8ToUTF16(typed_url.title()));
+  new_url.set_visit_count(typed_url.visited_count());
+  new_url.set_typed_count(typed_url.typed_count());
+  new_url.set_hidden(typed_url.hidden());
+  new_url.set_last_visit(base::Time::FromInternalValue(
+      typed_url.visit(typed_url.visit_size() - 1)));
+  return new_url;
 }
 
 bool TypedUrlModelAssociator::CryptoReadyIfNecessary() {

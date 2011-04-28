@@ -97,13 +97,6 @@ void TypedUrlChangeProcessor::HandleURLsModified(
 
     DCHECK(!visits.empty());
 
-    DCHECK(static_cast<size_t>(url->visit_count()) == visits.size());
-    if (static_cast<size_t>(url->visit_count()) != visits.size()) {
-      error_handler()->OnUnrecoverableError(FROM_HERE,
-          "Visit count does not match.");
-      return;
-    }
-
     sync_api::WriteNode update_node(&trans);
     if (update_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
       model_associator_->WriteToSyncNode(*url, visits, &update_node);
@@ -165,8 +158,6 @@ void TypedUrlChangeProcessor::HandleURLsVisited(
         "Could not get the url's visits.");
     return;
   }
-
-  DCHECK(static_cast<size_t>(details->row.visit_count()) == visits.size());
 
   sync_api::WriteTransaction trans(share_handle());
   std::string tag = details->row.url().spec();
@@ -233,18 +224,8 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
         continue;
       }
 
-      history::URLRow new_url(url);
-      new_url.set_title(UTF8ToUTF16(typed_url.title()));
-
-      // When we add a new url, the last visit is always added, thus we set
-      // the initial visit count to one.  This value will be automatically
-      // incremented as visits are added.
-      new_url.set_visit_count(1);
-      new_url.set_typed_count(typed_url.typed_count());
-      new_url.set_hidden(typed_url.hidden());
-
-      new_url.set_last_visit(base::Time::FromInternalValue(
-          typed_url.visit(typed_url.visit_size() - 1)));
+      history::URLRow new_url =
+          TypedUrlModelAssociator::TypedUrlSpecificsToURLRow(typed_url);
 
       new_urls.push_back(new_url);
 
@@ -273,12 +254,8 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
         return;
       }
 
-      history::URLRow new_url(url);
-      new_url.set_title(UTF8ToUTF16(typed_url.title()));
-      new_url.set_visit_count(old_url.visit_count());
-      new_url.set_typed_count(typed_url.typed_count());
-      new_url.set_last_visit(old_url.last_visit());
-      new_url.set_hidden(typed_url.hidden());
+      history::URLRow new_url =
+          TypedUrlModelAssociator::TypedUrlSpecificsToURLRow(typed_url);
 
       updated_urls.push_back(
         std::pair<history::URLID, history::URLRow>(old_url.id(), new_url));

@@ -227,7 +227,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       new_url.set_title(UTF8ToUTF16(typed_url.title()));
       new_url.set_typed_count(typed_url.typed_count());
       DCHECK(typed_url.visit_size());
-      new_url.set_visit_count(typed_url.visit_size());
+      new_url.set_visit_count(typed_url.visited_count());
       new_url.set_last_visit(base::Time::FromInternalValue(
           typed_url.visit(typed_url.visit_size() - 1)));
       new_url.set_hidden(typed_url.hidden());

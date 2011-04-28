@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,6 +45,7 @@ class TypedUrlModelAssociatorTest : public testing::Test {
     typed_url.set_typed_count(typed_count);
     typed_url.set_hidden(hidden);
     typed_url.add_visit(last_visit);
+    typed_url.set_visited_count(typed_url.visit_size());
     return typed_url;
   }
 
@@ -111,13 +112,16 @@ TEST_F(TypedUrlModelAssociatorTest, MergeUrls) {
                                                           2, 3, true));
   history::VisitVector expected_visits4;
   history::URLRow expected4(MakeTypedUrlRow("http://pie.com/", "pie",
-                                            2, 3, false, &expected_visits4));
+                                            2, 4, false, &expected_visits4));
+  expected4.set_visit_count(2);
   history::URLRow new_row4(GURL("http://pie.com/"));
   std::vector<base::Time> new_visits4;
   EXPECT_EQ(TypedUrlModelAssociator::DIFF_NODE_CHANGED |
+            TypedUrlModelAssociator::DIFF_ROW_CHANGED |
             TypedUrlModelAssociator::DIFF_VISITS_ADDED,
             TypedUrlModelAssociator::MergeUrls(specs4, row4, &visits4,
                                                &new_row4, &new_visits4));
+  EXPECT_EQ(1U, new_visits4.size());
   EXPECT_TRUE(URLsEqual(new_row4, expected4));
 
   history::VisitVector visits5;
@@ -129,9 +133,11 @@ TEST_F(TypedUrlModelAssociatorTest, MergeUrls) {
   history::VisitVector expected_visits5;
   history::URLRow expected5(MakeTypedUrlRow("http://pie.com/", "pie",
                                             2, 3, false, &expected_visits5));
+  expected5.set_visit_count(2);
   history::URLRow new_row5(GURL("http://pie.com/"));
   std::vector<base::Time> new_visits5;
   EXPECT_EQ(TypedUrlModelAssociator::DIFF_ROW_CHANGED |
+            TypedUrlModelAssociator::DIFF_NODE_CHANGED |
             TypedUrlModelAssociator::DIFF_VISITS_ADDED,
             TypedUrlModelAssociator::MergeUrls(specs5, row5, &visits5,
                                                &new_row5, &new_visits5));
