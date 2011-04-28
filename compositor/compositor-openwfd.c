@@ -111,7 +111,7 @@ init_egl(struct wfd_compositor *ec)
 		EGL_NONE
 	};
 
-	fd = wfdDeviceGetDRMfd(ec->dev);
+	fd = wfdGetDeviceAttribi(ec->dev, WFD_DEVICE_ID);
 	if (fd < 0)
 		return -1;
 
