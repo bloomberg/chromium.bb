@@ -383,10 +383,9 @@ cr.define('options', function() {
       document.getElementById('confirm-sync-preferences').hidden = false;
       document.getElementById('customize-sync-preferences').hidden = true;
 
-      // The default state is to sync everything and to not use a custom
-      // passphrase.
+      // The default state is to sync everything; the passphrase option is
+      // unchanged.
       this.setCheckboxesToKeepEverythingSynced_(true);
-      $('google-option').checked = true;
     },
 
     showCustomizePage_: function() {
