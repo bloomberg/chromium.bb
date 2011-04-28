@@ -51,9 +51,11 @@ void P2PSocketClient::Send(const net::IPEndPoint& address,
   }
 
   // Can send data only when the socket is open.
-  DCHECK_EQ(state_, STATE_OPEN);
-  dispatcher_->SendP2PMessage(
-      new P2PHostMsg_Send(0, socket_id_, address, data));
+  DCHECK(state_ == STATE_OPEN || state_ == STATE_ERROR);
+  if (state_ == STATE_OPEN) {
+    dispatcher_->SendP2PMessage(
+        new P2PHostMsg_Send(0, socket_id_, address, data));
+  }
 }
 
 void P2PSocketClient::Close() {
