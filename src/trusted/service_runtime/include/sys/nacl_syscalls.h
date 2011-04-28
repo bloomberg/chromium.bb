@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -325,12 +325,6 @@ extern int imc_socketpair(int pair[2]);
 #ifndef __GLIBC__
 extern int sched_yield(void);
 #endif
-
-/**
- *  @nacl
- *  Deprecated.  Alias for nacl_dyncode_create.
- */
-extern int nacl_dyncode_copy(void *dest, const void *src, size_t size);
 
 /**
  *  @nacl

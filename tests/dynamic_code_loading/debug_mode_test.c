@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <assert.h>
@@ -32,7 +32,7 @@ int main() {
   assert(sizeof(buf) >= &invalid_code_end - &invalid_code);
   memcpy(buf, &invalid_code, &invalid_code_end - &invalid_code);
 
-  rc = nacl_dyncode_copy(dest, buf, sizeof(buf));
+  rc = nacl_dyncode_create(dest, buf, sizeof(buf));
   assert(rc == 0);
 
   return 0;

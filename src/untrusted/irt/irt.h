@@ -72,9 +72,6 @@ typedef void (*TYPE_irt_exit) (int status) __attribute__((noreturn));
 typedef void (*TYPE_irt_exit) (int status);
 #endif
 
-typedef int (*TYPE_irt_dyncode_copy) (void *dest, const void *src,
-                                       size_t size);
-
 typedef int (*TYPE_irt_dyncode_create) (void *dest, const void *src,
                                        size_t size);
 
@@ -109,7 +106,6 @@ struct nacl_core {
   TYPE_irt_stat nacl_core_stat;
   TYPE_irt_write nacl_core_write;
   /* NaCl-specific */
-  TYPE_irt_dyncode_copy nacl_core_dyncode_copy;
   TYPE_irt_dyncode_create nacl_core_dyncode_create;
   TYPE_irt_dyncode_delete nacl_core_dyncode_delete;
   TYPE_irt_dyncode_modify nacl_core_dyncode_modify;

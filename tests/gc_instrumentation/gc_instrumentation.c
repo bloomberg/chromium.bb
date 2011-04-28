@@ -105,10 +105,6 @@ void test_syscall_wrappers() {
   CHECK_SYSCALL_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  nacl_dyncode_copy(ptr, ptr, size);
-  CHECK_SYSCALL_WRAPPED();
-
-  CHECK_SYSCALL_PRE();
   nacl_dyncode_create(ptr, ptr, size);
   CHECK_SYSCALL_WRAPPED();
 

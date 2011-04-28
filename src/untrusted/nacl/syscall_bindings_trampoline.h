@@ -199,9 +199,6 @@ typedef int (*TYPE_nacl_second_tls_set) (void *new_value);
 
 typedef void *(*TYPE_nacl_second_tls_get) (void);
 
-typedef int (*TYPE_nacl_dyncode_copy) (void *dest, const void *src,
-                                       size_t size);
-
 typedef int (*TYPE_nacl_dyncode_create) (void *dest, const void *src,
                                        size_t size);
 

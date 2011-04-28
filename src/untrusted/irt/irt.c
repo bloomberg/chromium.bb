@@ -44,7 +44,6 @@ static const struct nacl_core NaClCore = {
   read,
   stat,
   write,
-  nacl_dyncode_copy,
   nacl_dyncode_create,
   nacl_dyncode_delete,
   nacl_dyncode_modify,

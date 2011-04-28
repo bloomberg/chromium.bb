@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <assert.h>
@@ -49,7 +49,7 @@
 
 
 int nacl_load_code(void *dest, void *src, int size) {
-  int rc = nacl_dyncode_copy(dest, src, size);
+  int rc = nacl_dyncode_create(dest, src, size);
   /* Undo the syscall wrapper's errno handling, because it's more
      convenient to test a single return value. */
   return rc == 0 ? 0 : -errno;

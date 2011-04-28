@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <assert.h>
@@ -22,7 +22,7 @@
 int main() {
   void *dest = (void *) DYNAMIC_CODE_SEGMENT_START;
   char buf[1];
-  int rc = nacl_dyncode_copy(dest, buf, 0);
+  int rc = nacl_dyncode_create(dest, buf, 0);
   assert(rc == -1);
   assert(errno == EINVAL);
   return 0;
