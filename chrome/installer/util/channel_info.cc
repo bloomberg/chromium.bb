@@ -134,7 +134,9 @@ bool SetModifier(ModifierIndex index, bool set, std::wstring* ap_value) {
 namespace installer {
 
 bool ChannelInfo::Initialize(const RegKey& key) {
-  return (key.ReadValue(google_update::kRegApField, &value_) == ERROR_SUCCESS);
+  LONG result = key.ReadValue(google_update::kRegApField, &value_);
+  return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND ||
+         result == ERROR_INVALID_HANDLE;
 }
 
 bool ChannelInfo::Write(RegKey* key) const {

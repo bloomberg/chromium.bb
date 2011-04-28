@@ -22,7 +22,10 @@ class ChannelInfo {
  public:
 
   // Initialize an instance from the "ap" value in a given registry key.
-  // Returns false if the value could not be read from the registry.
+  // Returns false if the value is present but could not be read from the
+  // registry. Returns true if the value was not present or could be read.
+  // Also returns true if the key is not valid.
+  // An absent "ap" value is treated identically to an empty "ap" value.
   bool Initialize(const base::win::RegKey& key);
 
   // Writes the info to the "ap" value in a given registry key.

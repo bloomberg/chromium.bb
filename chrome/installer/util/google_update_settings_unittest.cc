@@ -181,17 +181,17 @@ class GoogleUpdateSettingsTest: public testing::Test {
 
 }  // namespace
 
-// Verify that we return failure on no registration,
+// Verify that we return success on no registration (which means stable),
 // whether per-system or per-user install.
 TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelAbsent) {
   // Per-system first.
   std::wstring channel;
-  EXPECT_FALSE(GoogleUpdateSettings::GetChromeChannel(true, &channel));
-  EXPECT_STREQ(L"unknown", channel.c_str());
+  EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannel(true, &channel));
+  EXPECT_STREQ(L"", channel.c_str());
 
   // Then per-user.
-  EXPECT_FALSE(GoogleUpdateSettings::GetChromeChannel(false, &channel));
-  EXPECT_STREQ(L"unknown", channel.c_str());
+  EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannel(false, &channel));
+  EXPECT_STREQ(L"", channel.c_str());
 }
 
 // Test an empty Ap key for system and user.
@@ -201,15 +201,17 @@ TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelEmptySystem) {
   EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannel(true, &channel));
   EXPECT_STREQ(L"", channel.c_str());
 
-  // Per-user lookups should fail.
-  EXPECT_FALSE(GoogleUpdateSettings::GetChromeChannel(false, &channel));
+  // Per-user lookups still succeed and return empty string.
+  EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannel(false, &channel));
+  EXPECT_STREQ(L"", channel.c_str());
 }
 
 TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelEmptyUser) {
   SetApField(USER_INSTALL, L"");
-  // Per-system lookup should fail.
+  // Per-system lookups still succeed and return empty string.
   std::wstring channel;
-  EXPECT_FALSE(GoogleUpdateSettings::GetChromeChannel(true, &channel));
+  EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannel(true, &channel));
+  EXPECT_STREQ(L"", channel.c_str());
 
   // Per-user lookup should succeed.
   EXPECT_TRUE(GoogleUpdateSettings::GetChromeChannel(false, &channel));
