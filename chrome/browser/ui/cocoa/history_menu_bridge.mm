@@ -15,6 +15,7 @@
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #import "chrome/browser/ui/cocoa/history_menu_cocoa_controller.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_registrar.h"
@@ -84,7 +85,7 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
       Init();
     }
 
-    tab_restore_service_ = profile_->GetTabRestoreService();
+    tab_restore_service_ = TabRestoreServiceFactory::GetForProfile(profile_);
     if (tab_restore_service_) {
       tab_restore_service_->AddObserver(this);
       tab_restore_service_->LoadTabsFromLastSession();

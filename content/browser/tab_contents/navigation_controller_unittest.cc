@@ -11,6 +11,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/common/render_messages.h"
@@ -61,7 +62,7 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
 
     // Force the session service to be created.
     SessionService* service = new SessionService(profile());
-    profile()->set_session_service(service);
+    SessionServiceFactory::SetForTestProfile(profile(), service);
     service->SetWindowType(window_id, Browser::TYPE_NORMAL);
     service->SetWindowBounds(window_id, gfx::Rect(0, 1, 2, 3), false);
     service->SetTabIndexInWindow(window_id,
@@ -75,7 +76,7 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
     // Release profile's reference to the session service. Otherwise the file
     // will still be open and we won't be able to delete the directory below.
     session_helper_.ReleaseService(); // profile owns this
-    profile()->set_session_service(NULL);
+    SessionServiceFactory::SetForTestProfile(profile(), NULL);
 
     // Make sure we wait for history to shut down before continuing. The task
     // we add will cause our message loop to quit once it is destroyed.
@@ -97,17 +98,16 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
   // shuts down the history database and reopens it.
   void ReopenDatabase() {
     session_helper_.set_service(NULL);
-    profile()->set_session_service(NULL);
+    SessionServiceFactory::SetForTestProfile(profile(), NULL);
 
     SessionService* service = new SessionService(profile());
-    profile()->set_session_service(service);
+    SessionServiceFactory::SetForTestProfile(profile(), service);
     session_helper_.set_service(service);
   }
 
   void GetLastSession() {
-    profile()->GetSessionService()->TabClosed(controller().window_id(),
-                                              controller().session_id(),
-                                              false);
+    SessionServiceFactory::GetForProfile(profile())->TabClosed(
+        controller().window_id(), controller().session_id(), false);
 
     ReopenDatabase();
     Time close_time;

@@ -44,7 +44,6 @@ class HostContentSettingsMap;
 class PrefService;
 class ProfileDependencyManager;
 class ProfileSyncService;
-class SessionService;
 class TemplateURLModel;
 class TestingPrefService;
 class ThemeService;
@@ -223,10 +222,6 @@ class TestingProfile : public Profile {
   virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap();
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext();
   virtual HostZoomMap* GetHostZoomMap();
-  void set_session_service(SessionService* session_service);
-  virtual SessionService* GetSessionService();
-  virtual void ShutdownSessionService() {}
-  virtual bool HasSessionService() const;
   virtual bool HasProfileSyncService() const;
   virtual std::wstring GetName();
   virtual void SetName(const std::wstring& name) {}
@@ -243,9 +238,7 @@ class TestingProfile : public Profile {
   virtual BookmarkModel* GetBookmarkModel();
   virtual bool IsSameProfile(Profile *p);
   virtual base::Time GetStartTime() const;
-  virtual TabRestoreService* GetTabRestoreService();
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
-  virtual void ResetTabRestoreService() {}
   virtual SpellCheckHost* GetSpellCheckHost();
   virtual void ReinitializeSpellCheckHost(bool force) { }
   virtual WebKitContext* GetWebKitContext();
@@ -346,9 +339,6 @@ class TestingProfile : public Profile {
   scoped_ptr<TemplateURLModel> template_url_model_;
 
   scoped_ptr<NTPResourceCache> ntp_resource_cache_;
-
-  // The SessionService. Defaults to NULL, but can be set using the setter.
-  scoped_ptr<SessionService> session_service_;
 
   // Internally, this is a TestURLRequestContextGetter that creates a dummy
   // request context. Currently, only the CookieMonster is hooked up.

@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_constants.h"
@@ -93,7 +94,7 @@ void ProfileManager::ShutdownSessionServices() {
     return;
   std::vector<Profile*> profiles(pm->GetLoadedProfiles());
   for (size_t i = 0; i < profiles.size(); ++i)
-    profiles[i]->ShutdownSessionService();
+    SessionServiceFactory::ShutdownForProfile(profiles[i]);
 }
 
 // static

@@ -11,6 +11,8 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/gtk/global_menu_bar.h"
@@ -112,7 +114,7 @@ void GlobalHistoryMenu::Init(GtkWidget* history_menu) {
   default_favicon_ = GtkThemeService::GetDefaultFavicon(true);
 
   if (profile_) {
-    tab_restore_service_ = profile_->GetTabRestoreService();
+    tab_restore_service_ = TabRestoreServiceFactory::GetForProfile(profile_);
     if (tab_restore_service_) {
       tab_restore_service_->LoadTabsFromLastSession();
       tab_restore_service_->AddObserver(this);
@@ -450,7 +452,8 @@ void GlobalHistoryMenu::OnRecentlyClosedItemActivated(GtkWidget* sender) {
 
   // If this item can be restored using TabRestoreService, do so. Otherwise,
   // just load the URL.
-  TabRestoreService* service = browser_->profile()->GetTabRestoreService();
+  TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(browser_->profile());
   if (item->session_id && service) {
     service->RestoreEntryById(browser_->tab_restore_service_delegate(),
                               item->session_id, false);

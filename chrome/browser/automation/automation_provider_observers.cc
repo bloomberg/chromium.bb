@@ -42,6 +42,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -1894,7 +1895,8 @@ NTPInfoObserver::NTPInfoObserver(
         .SendError("Profile does not have service for querying the top sites.");
     return;
   }
-  TabRestoreService* service = automation_->profile()->GetTabRestoreService();
+  TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(automation_->profile());
   if (!service) {
     AutomationJSONReply(automation_, reply_message_.release())
         .SendError("No TabRestoreService.");

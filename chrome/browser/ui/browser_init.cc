@@ -40,6 +40,7 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
@@ -854,13 +855,15 @@ void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
     return;
   }
 
-  if (!process_startup &&
-      (profile_->GetSessionService() &&
-       profile_->GetSessionService()->RestoreIfNecessary(urls_to_open))) {
-    // We're already running and session restore wanted to run. This can happen
-    // at various points, such as if there is only an app window running and the
-    // user double clicked the chrome icon. Return so we don't open the urls.
-    return;
+  if (!process_startup) {
+    SessionService* service = SessionServiceFactory::GetForProfile(profile_);
+    if (service && service->RestoreIfNecessary(urls_to_open)) {
+      // We're already running and session restore wanted to run. This can
+      // happen at various points, such as if there is only an app window
+      // running and the user double clicked the chrome icon. Return so we don't
+      // open the urls.
+      return;
+    }
   }
 
   // Session restore didn't occur, open the urls.

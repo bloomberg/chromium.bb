@@ -58,8 +58,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/sessions/session_service.h"
-#include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/ssl/ssl_host_state.h"
 #include "chrome/browser/status_icons/status_tray.h"
@@ -280,7 +279,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
 #if defined(OS_WIN)
       checked_instant_promo_(false),
 #endif
-      shutdown_session_service_(false),
       delegate_(delegate) {
   DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
                             "profile files to the root directory!";
@@ -587,11 +585,10 @@ ProfileImpl::~ProfileImpl() {
       Source<Profile>(this),
       NotificationService::NoDetails());
 
+  StopCreateSessionServiceTimer();
+
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
-  tab_restore_service_.reset();
-
-  StopCreateSessionServiceTimer();
   // TemplateURLModel schedules a task on the WebDataService from its
   // destructor. Delete it first to ensure the task gets scheduled before we
   // shut down the database.
@@ -1178,30 +1175,6 @@ quota::QuotaManager* ProfileImpl::GetQuotaManager() {
   return quota_manager_.get();
 }
 
-SessionService* ProfileImpl::GetSessionService() {
-  if (!session_service_.get() && !shutdown_session_service_) {
-    session_service_.reset(new SessionService(this));
-    session_service_->ResetFromCurrentBrowsers();
-  }
-  return session_service_.get();
-}
-
-void ProfileImpl::ShutdownSessionService() {
-  if (shutdown_session_service_)
-    return;
-
-  // We're about to exit, force creation of the session service if it hasn't
-  // been created yet. We do this to ensure session state matches the point in
-  // time the user exited.
-  GetSessionService();
-  shutdown_session_service_ = true;
-  session_service_.reset();
-}
-
-bool ProfileImpl::HasSessionService() const {
-  return (session_service_.get() != NULL);
-}
-
 bool ProfileImpl::HasProfileSyncService() const {
   return (sync_service_.get() != NULL);
 }
@@ -1236,12 +1209,6 @@ Time ProfileImpl::GetStartTime() const {
   return start_time_;
 }
 
-TabRestoreService* ProfileImpl::GetTabRestoreService() {
-  if (!tab_restore_service_.get())
-    tab_restore_service_.reset(new TabRestoreService(this));
-  return tab_restore_service_.get();
-}
-
 history::TopSites* ProfileImpl::GetTopSites() {
   if (!top_sites_.get()) {
     top_sites_ = new history::TopSites(this);
@@ -1252,10 +1219,6 @@ history::TopSites* ProfileImpl::GetTopSites() {
 
 history::TopSites* ProfileImpl::GetTopSitesWithoutCreating() {
   return top_sites_;
-}
-
-void ProfileImpl::ResetTabRestoreService() {
-  tab_restore_service_.reset();
 }
 
 SpellCheckHost* ProfileImpl::GetSpellCheckHost() {
@@ -1364,6 +1327,10 @@ void ProfileImpl::Observe(NotificationType type,
 
 void ProfileImpl::StopCreateSessionServiceTimer() {
   create_session_service_timer_.Stop();
+}
+
+void ProfileImpl::EnsureSessionServiceCreated() {
+  SessionServiceFactory::GetForProfile(this);
 }
 
 TokenService* ProfileImpl::GetTokenService() {

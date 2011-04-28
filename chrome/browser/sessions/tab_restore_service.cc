@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
@@ -420,13 +421,14 @@ void TabRestoreService::LoadTabsFromLastSession() {
 
   load_state_ = LOADING;
 
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(profile());
   if (!profile()->restored_last_session() &&
       !profile()->DidLastSessionExitCleanly() &&
-      profile()->GetSessionService()) {
+      session_service) {
     // The previous session crashed and wasn't restored. Load the tabs/windows
     // that were open at the point of crash from the session service.
-    profile()->GetSessionService()->GetLastSession(
-        &load_consumer_,
+    session_service->GetLastSession(&load_consumer_,
         NewCallback(this, &TabRestoreService::OnGotPreviousSession));
   } else {
     load_state_ |= LOADED_LAST_SESSION;

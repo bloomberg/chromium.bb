@@ -62,6 +62,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -5576,7 +5577,7 @@ void TestingAutomationProvider::ShutdownSessionService(int handle,
                                                        bool* result) {
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
-    browser->profile()->ShutdownSessionService();
+    SessionServiceFactory::ShutdownForProfile(browser->profile());
     *result = true;
   } else {
     *result = false;

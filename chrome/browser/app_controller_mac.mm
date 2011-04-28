@@ -23,7 +23,9 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
@@ -329,7 +331,7 @@ void RecordLastRunAppBundlePath() {
     // proper shutdown. If we don't do this, Chrome won't shut down cleanly,
     // and may end up crashing when some thread tries to use the IO thread (or
     // another thread) that is no longer valid.
-    [self defaultProfile]->ResetTabRestoreService();
+    TabRestoreServiceFactory::ResetForProfile([self defaultProfile]);
   }
 }
 
@@ -636,7 +638,8 @@ void RecordLastRunAppBundlePath() {
 // Checks with the TabRestoreService to see if there's anything there to
 // restore and returns YES if so.
 - (BOOL)canRestoreTab {
-  TabRestoreService* service = [self defaultProfile]->GetTabRestoreService();
+  TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile([self defaultProfile]);
   return service && !service->entries().empty();
 }
 
@@ -925,7 +928,7 @@ void RecordLastRunAppBundlePath() {
         doneOnce = YES;
         if (base::mac::WasLaunchedAsHiddenLoginItem()) {
           SessionService* sessionService =
-              [self defaultProfile]->GetSessionService();
+              SessionServiceFactory::GetForProfile([self defaultProfile]);
           if (sessionService &&
               sessionService->RestoreIfNecessary(std::vector<GURL>()))
             return NO;

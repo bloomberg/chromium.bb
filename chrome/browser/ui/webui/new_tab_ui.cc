@@ -21,6 +21,7 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -131,10 +132,11 @@ void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
 void RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs(
     const ListValue* args) {
   if (!tab_restore_service_) {
-    tab_restore_service_ = web_ui_->GetProfile()->GetTabRestoreService();
+    tab_restore_service_ =
+        TabRestoreServiceFactory::GetForProfile(web_ui_->GetProfile());
 
-    // GetTabRestoreService() can return NULL (i.e., when in Off the
-    // Record mode)
+    // TabRestoreServiceFactory::GetForProfile() can return NULL (i.e., when in
+    // Off the Record mode)
     if (tab_restore_service_) {
       // This does nothing if the tabs have already been loaded or they
       // shouldn't be loaded.

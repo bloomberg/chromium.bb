@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "content/browser/cancelable_request.h"
 
@@ -27,7 +28,8 @@ class Thread;
 // session service. It contains commonality needed by both, in particular
 // it manages a set of SessionCommands that are periodically sent to a
 // SessionBackend.
-class BaseSessionService : public CancelableRequestProvider {
+class BaseSessionService : public CancelableRequestProvider,
+                           public ProfileKeyedService {
  public:
   // Identifies the type of session service this is. This is used by the
   // backend to determine the name of the files.

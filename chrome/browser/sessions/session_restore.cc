@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -422,7 +423,8 @@ class SessionRestoreImpl : public NotificationObserver {
   }
 
   Browser* Restore() {
-    SessionService* session_service = profile_->GetSessionService();
+    SessionService* session_service =
+        SessionServiceFactory::GetForProfile(profile_);
     DCHECK(session_service);
     SessionService::SessionCallback* callback =
         NewCallback(this, &SessionRestoreImpl::OnGotSession);
@@ -727,7 +729,8 @@ class SessionRestoreImpl : public NotificationObserver {
   // Invokes TabRestored on the SessionService for all tabs in browser after
   // initial_count.
   void NotifySessionServiceOfRestoredTabs(Browser* browser, int initial_count) {
-    SessionService* session_service = profile_->GetSessionService();
+    SessionService* session_service =
+        SessionServiceFactory::GetForProfile(profile_);
     for (int i = initial_count; i < browser->tab_count(); ++i)
       session_service->TabRestored(&browser->GetTabContentsAt(i)->controller(),
                                    browser->tabstrip_model()->IsTabPinned(i));
@@ -789,7 +792,7 @@ static Browser* Restore(Profile* profile,
   // Always restore from the original profile (incognito profiles have no
   // session service).
   profile = profile->GetOriginalProfile();
-  if (!profile->GetSessionService()) {
+  if (!SessionServiceFactory::GetForProfile(profile)) {
     NOTREACHED();
     return NULL;
   }

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -851,7 +852,8 @@ SessionService* SessionModelAssociator::GetSessionService() {
   DCHECK(sync_service_);
   Profile* profile = sync_service_->profile();
   DCHECK(profile);
-  SessionService* sessions_service = profile->GetSessionService();
+  SessionService* sessions_service =
+      SessionServiceFactory::GetForProfile(profile);
   DCHECK(sessions_service);
   return sessions_service;
 }

@@ -31,6 +31,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sidebar/sidebar_container.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -1368,7 +1369,8 @@ string16 BrowserView::GetLabelForCommandId(int command_id) const {
 
   int string_id = IDS_RESTORE_TAB;
   if (IsCommandIdEnabled(command_id)) {
-    TabRestoreService* trs = browser_->profile()->GetTabRestoreService();
+    TabRestoreService* trs =
+        TabRestoreServiceFactory::GetForProfile(browser_->profile());
     if (trs && trs->entries().front()->type == TabRestoreService::WINDOW)
       string_id = IDS_RESTORE_WINDOW;
   }

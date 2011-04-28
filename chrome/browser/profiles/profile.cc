@@ -492,20 +492,6 @@ class OffTheRecordProfileImpl : public Profile,
     return find_bar_state_.get();
   }
 
-  virtual SessionService* GetSessionService() {
-    // Don't save any sessions when incognito.
-    return NULL;
-  }
-
-  virtual void ShutdownSessionService() {
-    // We don't allow a session service, nothing to do.
-  }
-
-  virtual bool HasSessionService() const {
-    // We never have a session service.
-    return false;
-  }
-
   virtual bool HasProfileSyncService() const {
     // We never have a profile sync service.
     return false;
@@ -550,13 +536,6 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual Time GetStartTime() const {
     return start_time_;
-  }
-
-  virtual TabRestoreService* GetTabRestoreService() {
-    return NULL;
-  }
-
-  virtual void ResetTabRestoreService() {
   }
 
   virtual SpellCheckHost* GetSpellCheckHost() {

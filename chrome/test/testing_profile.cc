@@ -35,7 +35,8 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -187,6 +188,8 @@ TestingProfile::TestingProfile()
       &CreateTestDesktopNotificationService);
   DesktopNotificationServiceFactory::GetInstance()->ForceAssociationBetween(
       this, NULL);
+  SessionServiceFactory::GetInstance()->ForceAssociationBetween(this, NULL);
+  TabRestoreServiceFactory::GetInstance()->ForceAssociationBetween(this, NULL);
 }
 
 TestingProfile::~TestingProfile() {
@@ -645,14 +648,6 @@ HostZoomMap* TestingProfile::GetHostZoomMap() {
   return NULL;
 }
 
-SessionService* TestingProfile::GetSessionService() {
-  return session_service_.get();
-}
-
-bool TestingProfile::HasSessionService() const {
-  return (session_service_.get() != NULL);
-}
-
 bool TestingProfile::HasProfileSyncService() const {
   return (profile_sync_service_.get() != NULL);
 }
@@ -685,20 +680,12 @@ base::Time TestingProfile::GetStartTime() const {
   return start_time_;
 }
 
-TabRestoreService* TestingProfile::GetTabRestoreService() {
-  return NULL;
-}
-
 ProtocolHandlerRegistry* TestingProfile::GetProtocolHandlerRegistry() {
   return protocol_handler_registry_.get();
 }
 
 SpellCheckHost* TestingProfile::GetSpellCheckHost() {
   return NULL;
-}
-
-void TestingProfile::set_session_service(SessionService* session_service) {
-  session_service_.reset(session_service);
 }
 
 WebKitContext* TestingProfile::GetWebKitContext() {

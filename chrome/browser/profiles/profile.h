@@ -84,10 +84,8 @@ class ProtocolHandlerRegistry;
 class SQLitePersistentCookieStore;
 class SSLConfigServiceManager;
 class SSLHostState;
-class SessionService;
 class SpellCheckHost;
 class StatusTray;
-class TabRestoreService;
 class TemplateURLFetcher;
 class TemplateURLModel;
 class TokenService;
@@ -400,24 +398,6 @@ class Profile {
   // created the first time that this method is called.
   virtual FindBarState* GetFindBarState() = 0;
 
-  // Returns the session service for this profile. This may return NULL. If
-  // this profile supports a session service (it isn't incognito), and
-  // the session service hasn't yet been created, this forces creation of
-  // the session service.
-  //
-  // This returns NULL in two situations: the profile is incognito, or the
-  // session service has been explicitly shutdown (browser is exiting). Callers
-  // should always check the return value for NULL.
-  virtual SessionService* GetSessionService() = 0;
-
-  // If this profile has a session service, it is shut down. To properly record
-  // the current state this forces creation of the session service, then shuts
-  // it down.
-  virtual void ShutdownSessionService() = 0;
-
-  // Returns true if this profile has a session service.
-  virtual bool HasSessionService() const = 0;
-
   // Returns true if this profile has a profile sync service.
   virtual bool HasProfileSyncService() const = 0;
 
@@ -455,11 +435,6 @@ class Profile {
   // this profile. For the single profile case, this corresponds to the time
   // the user started chrome.
   virtual base::Time GetStartTime() const = 0;
-
-  // Returns the TabRestoreService. This returns NULL when incognito.
-  virtual TabRestoreService* GetTabRestoreService() = 0;
-
-  virtual void ResetTabRestoreService() = 0;
 
   // May return NULL.
   virtual SpellCheckHost* GetSpellCheckHost() = 0;

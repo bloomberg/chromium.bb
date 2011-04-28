@@ -100,17 +100,12 @@ class ProfileImpl : public Profile,
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext();
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher();
   virtual FindBarState* GetFindBarState();
-  virtual SessionService* GetSessionService();
-  virtual void ShutdownSessionService();
-  virtual bool HasSessionService() const;
   virtual bool HasProfileSyncService() const;
   virtual bool DidLastSessionExitCleanly();
   virtual BookmarkModel* GetBookmarkModel();
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
   virtual bool IsSameProfile(Profile* profile);
   virtual base::Time GetStartTime() const;
-  virtual TabRestoreService* GetTabRestoreService();
-  virtual void ResetTabRestoreService();
   virtual SpellCheckHost* GetSpellCheckHost();
   virtual void ReinitializeSpellCheckHost(bool force);
   virtual WebKitContext* GetWebKitContext();
@@ -177,9 +172,7 @@ class ProfileImpl : public Profile,
     GetRequestContext();
   }
 
-  void EnsureSessionServiceCreated() {
-    GetSessionService();
-  }
+  void EnsureSessionServiceCreated();
 
   void RegisterComponentExtensions();
 
@@ -246,7 +239,6 @@ class ProfileImpl : public Profile,
   scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;
   scoped_refptr<WebDataService> web_data_service_;
   scoped_refptr<PasswordStore> password_store_;
-  scoped_ptr<SessionService> session_service_;
   scoped_refptr<WebKitContext> webkit_context_;
   scoped_ptr<StatusTray> status_tray_;
   scoped_refptr<PersonalDataManager> personal_data_manager_;
@@ -269,8 +261,6 @@ class ProfileImpl : public Profile,
   // See GetStartTime for details.
   base::Time start_time_;
 
-  scoped_ptr<TabRestoreService> tab_restore_service_;
-
   scoped_refptr<SpellCheckHost> spellcheck_host_;
 
   // Indicates whether |spellcheck_host_| has told us initialization is
@@ -281,10 +271,6 @@ class ProfileImpl : public Profile,
   bool checked_instant_promo_;
   scoped_ptr<PromoCounter> instant_promo_counter_;
 #endif
-
-  // Set to true when ShutdownSessionService is invoked. If true
-  // GetSessionService won't recreate the SessionService.
-  bool shutdown_session_service_;
 
   // The AppCacheService for this profile, shared by all requests contexts
   // associated with this profile. Should only be used on the IO thread.

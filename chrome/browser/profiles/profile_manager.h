@@ -47,7 +47,7 @@ class ProfileManager : public base::NonThreadSafe,
   ProfileManager();
   virtual ~ProfileManager();
 
-  // Invokes ShutdownSessionService() on all profiles.
+  // Invokes SessionServiceFactory::ShutdownForProfile() for all profiles.
   static void ShutdownSessionServices();
 
   // Returns the default profile.  This adds the profile to the

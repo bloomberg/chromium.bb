@@ -11,6 +11,7 @@
 #include "base/stl_util-inl.h"
 #include "base/task.h"
 #include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -95,11 +96,11 @@ class ProfileSyncServiceSessionTest
   }
 
   virtual void TearDown() {
-    if (profile()->GetSessionService() == service())
+    if (SessionServiceFactory::GetForProfileIfExisting(profile()) == service())
       helper_.ReleaseService(); // we transferred ownership to profile
     else
       helper_.set_service(NULL);
-    profile()->set_session_service(NULL);
+    SessionServiceFactory::SetForTestProfile(profile(), NULL);
     sync_service_.reset();
     profile()->ResetRequestContext();
     // Pump messages posted by the sync core thread (which may end up
@@ -115,7 +116,7 @@ class ProfileSyncServiceSessionTest
       return false;
     sync_service_.reset(new TestProfileSyncService(
         &factory_, profile(), "test user", false, task));
-    profile()->set_session_service(helper_.service());
+    SessionServiceFactory::SetForTestProfile(profile(), helper_.service());
 
     // Register the session data type.
     model_associator_ =

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/test/ui_test_utils.h"
@@ -104,7 +105,7 @@ LiveSessionsSyncTest::LiveSessionsSyncTest(TestType test_type)
 LiveSessionsSyncTest::~LiveSessionsSyncTest() {}
 
 SessionService* LiveSessionsSyncTest::GetSessionService(int index) {
-  return GetProfile(index)->GetSessionService();
+  return SessionServiceFactory::GetForProfile(GetProfile(index));
 }
 
 TestSessionService* LiveSessionsSyncTest::GetHelper(int index) {

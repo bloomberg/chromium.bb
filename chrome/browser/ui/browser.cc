@@ -62,8 +62,10 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
@@ -264,7 +266,7 @@ Browser::Browser(Type type, Profile* profile)
   }
   UpdateTabStripModelInsertionPolicy();
 
-  tab_restore_service_ = profile->GetTabRestoreService();
+  tab_restore_service_ = TabRestoreServiceFactory::GetForProfile(profile);
   if (tab_restore_service_) {
     tab_restore_service_->AddObserver(this);
     TabRestoreServiceChanged(tab_restore_service_);
@@ -301,15 +303,17 @@ Browser::~Browser() {
     // This isn't a valid assumption for Mac OS, as it stays running after
     // the last browser has closed. The Mac equivalent is in its app
     // controller.
-    profile_->ResetTabRestoreService();
+    TabRestoreServiceFactory::ResetForProfile(profile_);
   }
 #endif
 
-  SessionService* session_service = profile_->GetSessionService();
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
     session_service->WindowClosed(session_id_);
 
-  TabRestoreService* tab_restore_service = profile()->GetTabRestoreService();
+  TabRestoreService* tab_restore_service =
+      TabRestoreServiceFactory::GetForProfile(profile());
   if (tab_restore_service)
     tab_restore_service->BrowserClosed(tab_restore_service_delegate());
 
@@ -499,7 +503,7 @@ void Browser::OpenEmptyWindow(Profile* profile) {
 
 // static
 void Browser::OpenWindowWithRestoredTabs(Profile* profile) {
-  TabRestoreService* service = profile->GetTabRestoreService();
+  TabRestoreService* service = TabRestoreServiceFactory::GetForProfile(profile);
   if (service)
     service->RestoreMostRecentEntry(NULL);
 }
@@ -756,7 +760,7 @@ void Browser::OpenExtensionsWindow(Profile* profile) {
 void Browser::NewWindowWithProfile(Profile* profile) {
   UserMetrics::RecordAction(UserMetricsAction("NewWindow"));
   SessionService* session_service =
-      profile->GetOriginalProfile()->GetSessionService();
+      SessionServiceFactory::GetForProfile(profile->GetOriginalProfile());
   if (!session_service ||
       !session_service->RestoreIfNecessary(std::vector<GURL>())) {
     Browser::OpenEmptyWindow(profile->GetOriginalProfile());
@@ -785,11 +789,10 @@ void Browser::SaveWindowPlacement(const gfx::Rect& bounds, bool maximized) {
   // Note that we don't want to be the ones who cause lazy initialization of
   // the session service. This function gets called during initial window
   // showing, and we don't want to bring in the session service this early.
-  if (profile()->HasSessionService()) {
-    SessionService* session_service = profile()->GetSessionService();
-    if (session_service)
-      session_service->SetWindowBounds(session_id_, bounds, maximized);
-  }
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfileIfExisting(profile());
+  if (session_service)
+    session_service->SetWindowBounds(session_id_, bounds, maximized);
 }
 
 gfx::Rect Browser::GetSavedWindowBounds() const {
@@ -922,13 +925,15 @@ void Browser::OnWindowClosing() {
     exiting = true;
   }
 
-  // Don't use HasSessionService here, we want to force creation of the
+  // Don't use GetForProfileIfExisting here, we want to force creation of the
   // session service so that user can restore what was open.
-  SessionService* session_service = profile()->GetSessionService();
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(profile());
   if (session_service)
     session_service->WindowClosing(session_id());
 
-  TabRestoreService* tab_restore_service = profile()->GetTabRestoreService();
+  TabRestoreService* tab_restore_service =
+      TabRestoreServiceFactory::GetForProfile(profile());
   if (tab_restore_service && type() == TYPE_NORMAL && tab_count())
     tab_restore_service->BrowserClosing(tab_restore_service_delegate());
 
@@ -1098,11 +1103,10 @@ TabContents* Browser::AddRestoredTab(
     new_tab->view()->SizeContents(window_->GetRestoredBounds().size());
     new_tab->HideContents();
   }
-  if (profile_->HasSessionService()) {
-    SessionService* session_service = profile_->GetSessionService();
-    if (session_service)
-      session_service->TabRestored(&new_tab->controller(), pin);
-  }
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfileIfExisting(profile_);
+  if (session_service)
+    session_service->TabRestored(&new_tab->controller(), pin);
   return new_tab;
 }
 
@@ -1396,7 +1400,7 @@ void Browser::NewWindow() {
   }
   UserMetrics::RecordAction(UserMetricsAction("NewWindow"));
   SessionService* session_service =
-      profile_->GetOriginalProfile()->GetSessionService();
+      SessionServiceFactory::GetForProfile(profile_->GetOriginalProfile());
   if (!session_service ||
       !session_service->RestoreIfNecessary(std::vector<GURL>())) {
     Browser::OpenEmptyWindow(profile_->GetOriginalProfile());
@@ -1494,7 +1498,8 @@ void Browser::DuplicateTab() {
 
 void Browser::RestoreTab() {
   UserMetrics::RecordAction(UserMetricsAction("RestoreTab"));
-  TabRestoreService* service = profile_->GetTabRestoreService();
+  TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(profile_);
   if (!service)
     return;
 
@@ -2594,11 +2599,10 @@ void Browser::DuplicateContentsAt(int index) {
     browser->AddTab(contents_dupe, PageTransition::LINK);
   }
 
-  if (profile_->HasSessionService()) {
-    SessionService* session_service = profile_->GetSessionService();
-    if (session_service)
-      session_service->TabRestored(&new_contents->controller(), pinned);
-  }
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfileIfExisting(profile_);
+  if (session_service)
+    session_service->TabRestored(&new_contents->controller(), pinned);
 }
 
 void Browser::CloseFrameAfterDragSession() {
@@ -2615,15 +2619,15 @@ void Browser::CloseFrameAfterDragSession() {
 void Browser::CreateHistoricalTab(TabContentsWrapper* contents) {
   // We don't create historical tabs for incognito windows or windows without
   // profiles.
-  if (!profile() || profile()->IsOffTheRecord() ||
-      !profile()->GetTabRestoreService()) {
+  if (!profile() || profile()->IsOffTheRecord())
     return;
-  }
+
+  TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(profile());
 
   // We only create historical tab entries for tabbed browser windows.
-  if (CanSupportWindowFeature(FEATURE_TABSTRIP)) {
-    profile()->GetTabRestoreService()->CreateHistoricalTab(
-        &contents->controller(),
+  if (service && CanSupportWindowFeature(FEATURE_TABSTRIP)) {
+    service->CreateHistoricalTab(&contents->controller(),
         tab_handler_->GetTabStripModel()->GetIndexOfTabContents(contents));
   }
 }
@@ -2794,12 +2798,11 @@ void Browser::TabSelectedAt(TabContentsWrapper* old_contents,
 
   // Update sessions. Don't force creation of sessions. If sessions doesn't
   // exist, the change will be picked up by sessions when created.
-  if (profile_->HasSessionService()) {
-    SessionService* session_service = profile_->GetSessionService();
-    if (session_service && !tab_handler_->GetTabStripModel()->closing_all()) {
-      session_service->SetSelectedTabInWindow(
-          session_id(), tab_handler_->GetTabStripModel()->active_index());
-    }
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfileIfExisting(profile_);
+  if (session_service && !tab_handler_->GetTabStripModel()->closing_all()) {
+    session_service->SetSelectedTabInWindow(
+        session_id(), tab_handler_->GetTabStripModel()->active_index());
   }
 }
 
@@ -2827,7 +2830,8 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
         entry_count - 1);
   }
 
-  SessionService* session_service = profile()->GetSessionService();
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(profile());
   if (session_service) {
     // The new_contents may end up with a different navigation stack. Force
     // the session service to update itself.
@@ -2842,9 +2846,8 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
 }
 
 void Browser::TabPinnedStateChanged(TabContentsWrapper* contents, int index) {
-  if (!profile()->HasSessionService())
-    return;
-  SessionService* session_service = profile()->GetSessionService();
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfileIfExisting(profile());
   if (session_service) {
     session_service->SetPinnedState(
         session_id(),
@@ -4013,9 +4016,8 @@ StatusBubble* Browser::GetStatusBubble() {
 // Browser, Session restore functions (private):
 
 void Browser::SyncHistoryWithTabs(int index) {
-  if (!profile()->HasSessionService())
-    return;
-  SessionService* session_service = profile()->GetSessionService();
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfileIfExisting(profile());
   if (session_service) {
     for (int i = index; i < tab_count(); ++i) {
       TabContents* contents = GetTabContentsAt(i);
@@ -4469,11 +4471,10 @@ void Browser::ViewSource(TabContentsWrapper* contents,
     browser->AddTab(view_source_contents, PageTransition::LINK);
   }
 
-  if (profile_->HasSessionService()) {
-    SessionService* session_service = profile_->GetSessionService();
-    if (session_service)
-      session_service->TabRestored(&view_source_contents->controller(), false);
-  }
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfileIfExisting(profile_);
+  if (session_service)
+    session_service->TabRestored(&view_source_contents->controller(), false);
 }
 
 int Browser::GetContentRestrictionsForSelectedTab() {

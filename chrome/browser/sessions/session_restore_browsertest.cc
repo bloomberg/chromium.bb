@@ -6,6 +6,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -126,7 +127,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   browser()->AddSelectedTabWithURL(url3, PageTransition::LINK);
   ui_test_utils::WaitForNavigationInCurrentTab(browser());
 
-  TabRestoreService* service = browser()->profile()->GetTabRestoreService();
+  TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(browser()->profile());
   service->ClearEntries();
 
   browser()->window()->Close();
@@ -165,7 +167,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
   // Add a single tab.
   ui_test_utils::NavigateToURL(browser(), url);
 
-  TabRestoreService* service = browser()->profile()->GetTabRestoreService();
+  TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(browser()->profile());
   service->ClearEntries();
   EXPECT_EQ(0U, service->entries().size());
 
