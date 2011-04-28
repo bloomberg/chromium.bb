@@ -30,13 +30,12 @@ namespace chromeos {
 // static
 const SkColor BubbleWindow::kBackgroundColor = SK_ColorWHITE;
 
-BubbleWindow::BubbleWindow(views::WindowDelegate* window_delegate)
-    : views::WindowGtk(window_delegate) {
+BubbleWindow::BubbleWindow() {
   MakeTransparent();
 }
 
-void BubbleWindow::InitWindow(GtkWindow* parent, const gfx::Rect& bounds) {
-  views::WindowGtk::InitWindow(parent, bounds);
+void BubbleWindow::InitNativeWidget(const views::Widget::InitParams& params) {
+  views::WindowGtk::InitNativeWidget(params);
 
   // Turn on double buffering so that the hosted GtkWidgets does not
   // flash as in http://crosbug.com/9065.
@@ -45,7 +44,7 @@ void BubbleWindow::InitWindow(GtkWindow* parent, const gfx::Rect& bounds) {
   GdkColor background_color = gfx::SkColorToGdkColor(kBackgroundColor);
   gtk_widget_modify_bg(GetNativeView(), GTK_STATE_NORMAL, &background_color);
 
-  // A work-around for http://crosbug.com/8538. All GdkWidnow of top-level
+  // A work-around for http://crosbug.com/8538. All GdkWindow of top-level
   // GtkWindow should participate _NET_WM_SYNC_REQUEST protocol and window
   // manager should only show the window after getting notified. And we
   // should only notify window manager after at least one paint is done.
@@ -114,9 +113,13 @@ views::Window* BubbleWindow::Create(
     const gfx::Rect& bounds,
     Style style,
     views::WindowDelegate* window_delegate) {
-  BubbleWindow* window = new BubbleWindow(window_delegate);
-  window->non_client_view()->SetFrameView(new BubbleFrameView(window, style));
-  window->InitWindow(parent, bounds);
+  views::Window* window = new BubbleWindow();
+  window->non_client_view()->SetFrameView(
+      new BubbleFrameView(window, window_delegate, style));
+  views::Window::InitParams params(window_delegate);
+  params.parent_window = parent;
+  params.widget_init_params.bounds = bounds;
+  window->InitWindow(params);
 
   if (style == STYLE_XSHAPE) {
     const int kMarginLeft = 14;
@@ -124,8 +127,9 @@ views::Window* BubbleWindow::Create(
     const int kMarginTop = 12;
     const int kMarginBottom = 16;
     const int kBorderRadius = 8;
-    window->TrimMargins(kMarginLeft, kMarginRight, kMarginTop, kMarginBottom,
-                        kBorderRadius);
+    static_cast<BubbleWindow*>(window->native_window())->
+        TrimMargins(kMarginLeft, kMarginRight, kMarginTop, kMarginBottom,
+                    kBorderRadius);
   }
 
   return window;

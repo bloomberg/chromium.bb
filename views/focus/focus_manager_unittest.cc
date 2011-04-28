@@ -1679,12 +1679,12 @@ class FocusManagerDtorTest : public FocusManagerTest {
    public:
     WindowGtkDtorTracked(WindowDelegate* window_delegate,
                          DtorTrackVector* dtor_tracker)
-        : WindowGtk(window_delegate),
-          dtor_tracker_(dtor_tracker) {
+        : dtor_tracker_(dtor_tracker) {
       tracked_focus_manager_ = new FocusManagerDtorTracked(this,
           dtor_tracker_);
-      non_client_view()->SetFrameView(CreateFrameViewForWindow());
-      InitWindow(NULL, gfx::Rect(0, 0, 100, 100));
+      Window::InitParams params(window_delegate);
+      params.widget_init_params.bounds = gfx::Rect(0, 0, 100, 100);
+      GetWindow()->InitWindow(params);
       ReplaceFocusManager(tracked_focus_manager_);
     }
 

@@ -42,13 +42,8 @@ class NativeConstrainedWindow {
   virtual ~NativeConstrainedWindow() {}
 
   // Creates a platform-specific implementation of NativeConstrainedWindow.
-  // TODO(beng): Remove WindowDelegate param once ConstrainedWindowViews is-a
-  //             views::Window.
   static NativeConstrainedWindow* CreateNativeConstrainedWindow(
-      NativeConstrainedWindowDelegate* delegate,
-      views::WindowDelegate* window_delegate);
-
-  virtual void InitNativeConstrainedWindow(gfx::NativeView parent) = 0;
+      NativeConstrainedWindowDelegate* delegate);
 
   virtual views::NativeWindow* AsNativeWindow() = 0;
 };

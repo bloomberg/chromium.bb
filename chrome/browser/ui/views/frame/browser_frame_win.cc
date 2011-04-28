@@ -36,8 +36,10 @@ static int explicit_show_state = -1;
 // static (Factory method.)
 BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
                                    Profile* profile) {
-  BrowserFrameWin* frame = new BrowserFrameWin(browser_view, profile);
-  frame->InitBrowserFrame();
+  BrowserFrame* frame = new BrowserFrameWin(browser_view, profile);
+
+  views::Window::InitParams params(browser_view);
+  frame->GetWindow()->InitWindow(params);
   return frame;
 }
 
@@ -45,8 +47,7 @@ BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
 // BrowserFrameWin, public:
 
 BrowserFrameWin::BrowserFrameWin(BrowserView* browser_view, Profile* profile)
-    : WindowWin(browser_view),
-      BrowserFrame(browser_view),
+    : BrowserFrame(browser_view),
       browser_view_(browser_view),
       ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)) {
   set_native_browser_frame(this);
@@ -57,10 +58,6 @@ BrowserFrameWin::BrowserFrameWin(BrowserView* browser_view, Profile* profile)
 }
 
 BrowserFrameWin::~BrowserFrameWin() {
-}
-
-void BrowserFrameWin::InitBrowserFrame() {
-  GetWidget()->Init(views::Widget::WindowInitParams());
 }
 
 // static

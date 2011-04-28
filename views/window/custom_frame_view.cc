@@ -64,8 +64,7 @@ const int kTitleCaptionSpacing = 5;
 // CustomFrameView, public:
 
 CustomFrameView::CustomFrameView(Window* frame)
-    : NonClientFrameView(),
-      ALLOW_THIS_IN_INITIALIZER_LIST(close_button_(new ImageButton(this))),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(close_button_(new ImageButton(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(restore_button_(new ImageButton(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(maximize_button_(new ImageButton(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(minimize_button_(new ImageButton(this))),

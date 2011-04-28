@@ -22,21 +22,37 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // Window, public:
 
-Window::Window(WindowDelegate* window_delegate)
+Window::InitParams::InitParams(WindowDelegate* window_delegate)
+    : window_delegate(window_delegate),
+      parent_window(NULL),
+      native_window(NULL),
+      widget_init_params(Widget::InitParams::TYPE_WINDOW) {
+}
+
+Window::Window()
     : native_window_(NULL),
-      window_delegate_(window_delegate),
+      window_delegate_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           non_client_view_(new NonClientView(this))),
       saved_maximized_state_(false),
       minimum_size_(100, 100),
       disable_inactive_rendering_(false),
       window_closed_(false) {
-  DCHECK(window_delegate_);
-  DCHECK(!window_delegate_->window_);
-  window_delegate_->window_ = this;
 }
 
 Window::~Window() {
+}
+
+// static
+Window* Window::CreateChromeWindow(gfx::NativeWindow parent,
+                                   const gfx::Rect& bounds,
+                                   WindowDelegate* window_delegate) {
+  Window* window = NativeWindow::CreateNativeWindow();
+  Window::InitParams params(window_delegate);
+  params.parent_window = parent;
+  params.widget_init_params.bounds = bounds;
+  window->InitWindow(params);
+  return window;
 }
 
 // static
@@ -73,6 +89,17 @@ void Window::CloseSecondaryWidget(Widget* widget) {
     // secondary.
     widget->Close();
   }
+}
+
+void Window::InitWindow(const InitParams& params) {
+  window_delegate_ = params.window_delegate;
+  AsWidget()->set_widget_delegate(window_delegate_);
+  DCHECK(window_delegate_);
+  DCHECK(!window_delegate_->window_);
+  window_delegate_->window_ = this;
+  non_client_view()->SetFrameView(CreateFrameViewForWindow());
+  AsWidget()->Init(params.widget_init_params);
+  OnNativeWindowCreated(params.widget_init_params.bounds);
 }
 
 gfx::Rect Window::GetBounds() const {
@@ -245,8 +272,6 @@ const Widget* Window::AsWidget() const {
 
 void Window::SetNativeWindow(NativeWindow* native_window) {
   native_window_ = native_window;
-  native_window->AsNativeWidget()->GetWidget()->set_widget_delegate(
-      window_delegate_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

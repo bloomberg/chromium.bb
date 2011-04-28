@@ -79,17 +79,15 @@ GdkCursorType HitTestCodeToGdkCursorType(int hittest_code) {
 
 namespace views {
 
-WindowGtk::~WindowGtk() {
+WindowGtk::WindowGtk()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
+      window_state_(GDK_WINDOW_STATE_WITHDRAWN),
+      window_closed_(false) {
+  SetNativeWindow(this);
+  is_window_ = true;
 }
 
-// static
-Window* Window::CreateChromeWindow(gfx::NativeWindow parent,
-                                   const gfx::Rect& bounds,
-                                   WindowDelegate* window_delegate) {
-  WindowGtk* window = new WindowGtk(window_delegate);
-  window->non_client_view()->SetFrameView(window->CreateFrameViewForWindow());
-  window->InitWindow(parent, bounds);
-  return window;
+WindowGtk::~WindowGtk() {
 }
 
 // static
@@ -222,6 +220,17 @@ void WindowGtk::IsActiveChanged() {
   delegate_->OnNativeWindowActivationChanged(IsActive());
 }
 
+void WindowGtk::InitNativeWidget(const Widget::InitParams& params) {
+  if (params.parent)
+    make_transient_to_parent();
+
+  WidgetGtk::InitNativeWidget(params);
+
+  g_signal_connect(G_OBJECT(GetNativeWindow()), "configure-event",
+                   G_CALLBACK(CallConfigureEvent), this);
+  g_signal_connect(G_OBJECT(GetNativeWindow()), "window-state-event",
+                   G_CALLBACK(CallWindowStateEvent), this);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowGtk, NativeWindow implementation:
@@ -405,33 +414,6 @@ void WindowGtk::FrameTypeChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowGtk, protected:
-
-WindowGtk::WindowGtk(WindowDelegate* window_delegate)
-    : Window(window_delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
-      window_state_(GDK_WINDOW_STATE_WITHDRAWN),
-      window_closed_(false) {
-  SetNativeWindow(this);
-  is_window_ = true;
-}
-
-void WindowGtk::InitWindow(GtkWindow* parent, const gfx::Rect& bounds) {
-  if (parent)
-    make_transient_to_parent();
-  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-  params.parent = GTK_WIDGET(parent);
-  params.bounds = bounds;
-  GetWidget()->Init(params);
-  delegate_->OnNativeWindowCreated(bounds);
-
-  g_signal_connect(G_OBJECT(GetNativeWindow()), "configure-event",
-                   G_CALLBACK(CallConfigureEvent), this);
-  g_signal_connect(G_OBJECT(GetNativeWindow()), "window-state-event",
-                   G_CALLBACK(CallWindowStateEvent), this);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // WindowGtk, private:
 
 // static
@@ -461,6 +443,14 @@ void WindowGtk::OnDestroy(GtkWidget* widget) {
   delegate_->OnNativeWindowDestroying();
   WidgetGtk::OnDestroy(widget);
   delegate_->OnNativeWindowDestroyed();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWindow, public:
+
+// static
+Window* NativeWindow::CreateNativeWindow() {
+  return new WindowGtk;
 }
 
 }  // namespace views

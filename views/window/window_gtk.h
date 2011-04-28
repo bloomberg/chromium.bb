@@ -27,6 +27,7 @@ class WindowDelegate;
 // Window implementation for GTK.
 class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
  public:
+  WindowGtk();
   virtual ~WindowGtk();
 
   virtual Window* AsWindow();
@@ -44,6 +45,8 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual void IsActiveChanged();
 
  protected:
+  virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
+
   // Overridden from NativeWindow:
   virtual NativeWidget* AsNativeWidget() OVERRIDE;
   virtual const NativeWidget* AsNativeWidget() const OVERRIDE;
@@ -86,12 +89,6 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
 
   // For  the constructor.
   friend class Window;
-
-  // Constructs the WindowGtk. |window_delegate| cannot be NULL.
-  explicit WindowGtk(WindowDelegate* window_delegate);
-
-  // Initializes the window to the passed in bounds.
-  virtual void InitWindow(GtkWindow* parent, const gfx::Rect& bounds);
 
   virtual void OnDestroy(GtkWidget* widget);
 

@@ -38,10 +38,11 @@ class BubbleWindow : public views::WindowGtk {
   static const SkColor kBackgroundColor;
 
  protected:
-  explicit BubbleWindow(views::WindowDelegate* window_delegate);
+  BubbleWindow();
 
   // Overidden from views::WindowGtk:
-  virtual void InitWindow(GtkWindow* parent, const gfx::Rect& bounds);
+  virtual void InitNativeWidget(
+      const views::Widget::InitParams& params) OVERRIDE;
 
   // Trims the window margins and rounds off the corners.
   void TrimMargins(int margin_left, int margin_right, int margin_top,

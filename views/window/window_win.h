@@ -44,6 +44,7 @@ class WindowWin : public WidgetWin,
                   public NativeWindow,
                   public Window {
  public:
+  WindowWin();
   virtual ~WindowWin();
 
   // Show the window with the specified show command.
@@ -68,9 +69,6 @@ class WindowWin : public WidgetWin,
 
  protected:
   friend Window;
-
-  // Constructs the WindowWin. |window_delegate| cannot be NULL.
-  explicit WindowWin(WindowDelegate* window_delegate);
 
   // Returns the insets of the client area relative to the non-client area of
   // the window. Override this function instead of OnNCCalcSize, which is

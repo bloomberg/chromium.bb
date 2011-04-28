@@ -86,7 +86,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
       browser_view_(browser_view),
       throbber_running_(false),
       throbber_frame_(0) {
-  if (frame_->GetWindow()->window_delegate()->ShouldShowWindowIcon())
+  if (browser_view_->ShouldShowWindowIcon())
     InitThrobberIcons();
   // If multi-profile is enabled set up profile button and login notifications.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();

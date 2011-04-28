@@ -35,19 +35,17 @@ const gfx::Font& BrowserFrame::GetTitleFont() {
 
 BrowserFrameGtk::BrowserFrameGtk(BrowserView* browser_view, Profile* profile)
     : BrowserFrame(browser_view),
-      WindowGtk(browser_view),
       ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
       browser_view_(browser_view) {
   set_native_browser_frame(this);
   browser_view_->set_frame(this);
-  non_client_view()->SetFrameView(CreateFrameViewForWindow());
 }
 
 BrowserFrameGtk::~BrowserFrameGtk() {
 }
 
 void BrowserFrameGtk::InitBrowserFrame() {
-  WindowGtk::InitWindow(NULL, gfx::Rect());
+  WindowGtk::GetWindow()->InitWindow(views::Window::InitParams(browser_view_));
   // Don't focus anything on creation, selecting a tab will set the focus.
 }
 

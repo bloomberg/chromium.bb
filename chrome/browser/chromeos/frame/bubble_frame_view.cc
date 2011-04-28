@@ -40,6 +40,7 @@ static const int kTitleFontSizeDelta = 1;
 namespace chromeos {
 
 BubbleFrameView::BubbleFrameView(views::Window* frame,
+                                 views::WindowDelegate* window_delegate,
                                  BubbleWindow::Style style)
     : frame_(frame),
       style_(style),
@@ -48,8 +49,8 @@ BubbleFrameView::BubbleFrameView(views::Window* frame,
       throbber_(NULL) {
   set_border(new BubbleBorder(BubbleBorder::NONE));
 
-  if (frame_->window_delegate()->ShouldShowWindowTitle()) {
-    title_ = new views::Label(frame_->window_delegate()->GetWindowTitle());
+  if (window_delegate->ShouldShowWindowTitle()) {
+    title_ = new views::Label(window_delegate->GetWindowTitle());
     title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     title_->SetFont(title_->font().DeriveFont(kFontSizeCorrectionDelta,
                                               gfx::Font::BOLD));

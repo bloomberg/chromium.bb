@@ -236,19 +236,6 @@ class WindowWin::ScopedRedrawLock {
 WindowWin::~WindowWin() {
 }
 
-// static
-Window* Window::CreateChromeWindow(gfx::NativeWindow parent,
-                                   const gfx::Rect& bounds,
-                                   WindowDelegate* window_delegate) {
-  Window* window = new WindowWin(window_delegate);
-  window->non_client_view()->SetFrameView(window->CreateFrameViewForWindow());
-  Widget::InitParams params(Widget::WindowInitParams());
-  params.parent = parent;
-  params.bounds = bounds;
-  window->AsWidget()->Init(params);
-  return window;
-}
-
 void WindowWin::Show(int show_state) {
   ShowWindow(show_state);
   // When launched from certain programs like bash and Windows Live Messenger,
@@ -296,10 +283,8 @@ gfx::Font WindowWin::GetWindowTitleFont() {
 ///////////////////////////////////////////////////////////////////////////////
 // WindowWin, protected:
 
-WindowWin::WindowWin(WindowDelegate* window_delegate)
-    : WidgetWin(),
-      Window(window_delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
+WindowWin::WindowWin()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
       focus_on_creation_(true),
       restored_enabled_(false),
       fullscreen_(false),
@@ -364,8 +349,6 @@ void WindowWin::InitNativeWidget(const Widget::InitParams& params) {
                      &last_monitor_rect_, &last_work_area_);
 
   WidgetWin::InitNativeWidget(params);
-
-  delegate_->OnNativeWindowCreated(params.bounds);
 }
 
 void WindowWin::OnActivateApp(BOOL active, DWORD thread_id) {
@@ -1373,6 +1356,14 @@ BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
 
 void Window::CloseAllSecondaryWindows() {
   EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc, 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWindow, public:
+
+// static
+Window* NativeWindow::CreateNativeWindow() {
+  return new WindowWin;
 }
 
 }  // namespace views

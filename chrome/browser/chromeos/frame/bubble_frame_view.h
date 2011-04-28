@@ -30,7 +30,9 @@ namespace chromeos {
 class BubbleFrameView : public views::NonClientFrameView,
                         public views::ButtonListener {
  public:
-  BubbleFrameView(views::Window* frame, BubbleWindow::Style style);
+  BubbleFrameView(views::Window* frame,
+                  views::WindowDelegate* window_delegate,
+                  BubbleWindow::Style style);
   virtual ~BubbleFrameView();
 
   // Overridden from views::NonClientFrameView:

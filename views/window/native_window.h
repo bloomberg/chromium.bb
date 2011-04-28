@@ -8,6 +8,7 @@
 
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/gfx/native_widget_types.h"
+#include "views/window/window.h"
 
 class SkBitmap;
 
@@ -35,6 +36,8 @@ class NativeWindow {
   };
 
   virtual ~NativeWindow() {}
+
+  static Window* CreateNativeWindow();
 
   virtual Window* GetWindow() = 0;
 

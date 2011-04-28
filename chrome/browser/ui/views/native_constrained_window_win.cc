@@ -15,10 +15,8 @@ bool IsNonClientHitTestCode(UINT hittest) {
 class NativeConstrainedWindowWin : public NativeConstrainedWindow,
                                    public views::WindowWin {
  public:
-  NativeConstrainedWindowWin(NativeConstrainedWindowDelegate* delegate,
-                             views::WindowDelegate* window_delegate)
-      : WindowWin(window_delegate),
-        delegate_(delegate) {
+  explicit NativeConstrainedWindowWin(NativeConstrainedWindowDelegate* delegate)
+      : delegate_(delegate) {
   }
 
   virtual ~NativeConstrainedWindowWin() {
@@ -26,13 +24,6 @@ class NativeConstrainedWindowWin : public NativeConstrainedWindow,
 
  private:
   // Overridden from NativeConstrainedWindow:
-  virtual void InitNativeConstrainedWindow(gfx::NativeView parent) OVERRIDE {
-    views::Widget::InitParams params(
-        views::Widget::InitParams::TYPE_WINDOW);
-    params.child = true;
-    params.parent = parent;
-    GetWidget()->Init(params);
-  }
   virtual views::NativeWindow* AsNativeWindow() OVERRIDE {
     return this;
   }
@@ -65,7 +56,6 @@ class NativeConstrainedWindowWin : public NativeConstrainedWindow,
 
 // static
 NativeConstrainedWindow* NativeConstrainedWindow::CreateNativeConstrainedWindow(
-    NativeConstrainedWindowDelegate* delegate,
-    views::WindowDelegate* window_delegate) {
-  return new NativeConstrainedWindowWin(delegate, window_delegate);
+    NativeConstrainedWindowDelegate* delegate) {
+  return new NativeConstrainedWindowWin(delegate);
 }

@@ -442,8 +442,11 @@ void WidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
 }
 
 void WidgetGtk::IsActiveChanged() {
-  if (widget_delegate())
-    widget_delegate()->OnWidgetActivated(IsActive());
+  WidgetDelegate* d = widget_delegate();
+  if (d) {
+    bool a = IsActive();
+    d->OnWidgetActivated(a);
+  }
 }
 
 void WidgetGtk::SetInitialFocus() {

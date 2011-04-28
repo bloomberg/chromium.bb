@@ -202,6 +202,8 @@ void Bubble::InitBubble(views::Widget* parent,
   views::Widget::InitParams params(type_);
   params.transparent = true;
   params.parent_widget = parent;
+  // TODO(beng): Figure out how to make this implicit or set via InitParams.
+  make_transient_to_parent();
   GetWidget()->Init(params);
 #if defined(OS_CHROMEOS)
   {

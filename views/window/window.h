@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ui/gfx/native_widget_types.h"
+#include "views/widget/widget.h"
 #include "views/window/client_view.h"
 #include "views/window/native_window_delegate.h"
 #include "views/window/non_client_view.h"
@@ -40,7 +41,17 @@ class WindowDelegate;
 //
 class Window : public internal::NativeWindowDelegate {
  public:
-  explicit Window(WindowDelegate* window_delegate);
+  struct InitParams {
+    // |window_delegate| cannot be NULL.
+    explicit InitParams(WindowDelegate* window_delegate);
+
+    WindowDelegate* window_delegate;
+    gfx::NativeWindow parent_window;
+    NativeWindow* native_window;
+    Widget::InitParams widget_init_params;
+  };
+
+  Window();
   virtual ~Window();
 
   // Creates an instance of an object implementing this interface.
@@ -69,6 +80,10 @@ class Window : public internal::NativeWindowDelegate {
   // window, the window is closed. If |widget| has no window, it is closed.
   // Does nothing if |widget| is null.
   static void CloseSecondaryWidget(Widget* widget);
+
+  // Initializes the window. Must be called before any post-configuration
+  // operations are performed.
+  void InitWindow(const InitParams& params);
 
   // Retrieves the window's bounds, including its frame.
   gfx::Rect GetBounds() const;
@@ -221,8 +236,6 @@ class Window : public internal::NativeWindowDelegate {
   virtual void OnNativeWindowBoundsChanged() OVERRIDE;
 
  private:
-  Window();
-
   // Sizes and positions the window just after it is created.
   void SetInitialBounds(const gfx::Rect& bounds);
 
