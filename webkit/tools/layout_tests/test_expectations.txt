@@ -18,3 +18,8 @@ BUGDPRANKE MAC CPU DEBUG : fast/css/import_with_baseurl.html = PASS CRASH
 BUGDPRANKE SNOWLEOPARD : svg/custom/foreign-object-skew.svg = IMAGE
 BUGDPRANKE SNOWLEOPARD : svg/hixie/rendering-model/003.xhtml = IMAGE+TEXT PASS
 BUGDPRANKE SNOWLEOPARD : svg/custom/font-face-name-without-name-attr.svg = CRASH
+BUGKBR SNOWLEOPARD DEBUG : fast/block/float/overhanging-after-height-decrease.html = PASS CRASH
+BUGCR80745 DEBUG : fast/borders/border-image-border-radius.html = PASS CRASH
+
+BUGWK59742 MAC LEOPARD SNOWLEOPARD : fast/speech/input-appearance-numberandspeech.html = IMAGE IMAGE+TEXT
+BUGWK59742 MAC LEOPARD SNOWLEOPARD : fast/speech/input-appearance-speechbutton.html = IMAGE IMAGE+TEXT
