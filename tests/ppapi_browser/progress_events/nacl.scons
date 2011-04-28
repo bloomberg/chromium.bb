@@ -13,32 +13,26 @@ progress_events_sources = env.ComponentObject('ppapi_progress_events.cc'),
 
 progress_events_target = ('ppapi_progress_events_%s.nexe' %
                           env.get('TARGET_FULLARCH'))
-progress_events_nexe = env.ComponentProgram(progress_events_target,
-                                            [progress_events_sources],
-                                            EXTRA_LIBS=['${PPAPI_LIBS}',
-                                                        'ppapi_test_lib',
-                                                        'pthread',
-                                                        'platform',
-                                                        'gio'])
-# Needed by other tests using progress events.
-env.Publish(progress_events_target, 'run', ['ppapi_progress_events.js'])
+env.ComponentProgram(progress_events_target,
+                     [progress_events_sources],
+                     EXTRA_LIBS=['${PPAPI_LIBS}',
+                                 'ppapi_test_lib',
+                                 'pthread',
+                                 'platform',
+                                 'gio'])
 
-# Note that the html and a .nmf manifest is required to run this program.
-dest_copy = env.Replicate('$STAGING_DIR',
-                          ['ppapi_progress_events.html',
-                           'ppapi_progress_events.js',
-                           'ppapi_progress_events.nmf',
-                           env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
-                                    'browserdata/nacltest.js')])
-env.Depends(progress_events_target, dest_copy)
+# Needed by other tests using progress events.
+env.Publish(progress_events_target, 'run', [
+    'ppapi_progress_events.html',
+    'ppapi_progress_events.js',
+    'ppapi_progress_events.nmf',
+    '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js',
+])
 
 node = env.PPAPIBrowserTester(
     'ppapi_progress_events_browser_test.out',
     url='ppapi_progress_events.html',
-    files=[progress_events_nexe,
-           env.File('ppapi_progress_events.html'),
-           env.File('ppapi_progress_events.js'),
-           env.File('ppapi_progress_events.nmf')],
+    files=env.ExtractPublishedFiles(progress_events_target),
     args=['--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node,

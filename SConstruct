@@ -994,6 +994,15 @@ def CommandValidatorTestNacl(env, name, image,
 pre_base_env.AddMethod(CommandValidatorTestNacl)
 
 
+def ExtractPublishedFiles(env, target_name):
+  run_files = ['$STAGING_DIR/' + os.path.basename(published_file.path)
+               for published_file in env.GetPublished(target_name, 'run')]
+  nexe = '$STAGING_DIR/' + target_name
+  return [env.File(file) for file in run_files + [nexe]]
+
+pre_base_env.AddMethod(ExtractPublishedFiles)
+
+
 # ----------------------------------------------------------
 EXTRA_ENV = ['XAUTHORITY', 'HOME', 'DISPLAY', 'SSH_TTY', 'KRB5CCNAME']
 
