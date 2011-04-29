@@ -17,7 +17,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <iostream>
-#include <nacl/nacl_av.h>
 #include <nacl/nacl_imc.h>
 #include <nacl/nacl_srpc.h>
 
