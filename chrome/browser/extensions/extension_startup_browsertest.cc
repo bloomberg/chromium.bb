@@ -199,7 +199,14 @@ class ExtensionsLoadTest : public ExtensionStartupTestBase {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionsLoadTest, Test) {
+// Fails inconsistently on Linux x64. http://crbug.com/80961
+#if defined(OS_LINUX) && defined(ARCH_CPU_64_BITS)
+#define Maybe_Test FLAKY_Test
+#else
+#define Maybe_Test Test
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionsLoadTest, Maybe_Test) {
   WaitForServicesToStart(1, true);
   TestInjection(true, true);
 }
