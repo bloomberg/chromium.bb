@@ -8,8 +8,17 @@ set -o errexit
 
 # Turn on/off debugging mode
 readonly UTMAN_DEBUG=${UTMAN_DEBUG:-false}
+
 # True if the scripts are running on the build bots.
 readonly UTMAN_BUILDBOT=${UTMAN_BUILDBOT:-false}
+
+# Mercurial Retry settings
+HG_MAX_RETRIES=${HG_MAX_RETRIES:-3}
+if ${UTMAN_BUILDBOT} ; then
+  HG_RETRY_DELAY_SEC=${HG_RETRY_DELAY_SEC:-60}
+else
+  HG_RETRY_DELAY_SEC=${HG_RETRY_DELAY_SEC:-1}
+fi
 
 readonly TC_LOG="$(pwd)/toolchain/hg-log"
 readonly TC_LOG_ALL="${TC_LOG}/ALL"
@@ -59,9 +68,47 @@ hg-pull() {
   assert-dir "$dir" \
     "Repository $(basename "${dir}") doesn't exist. First do 'hg-checkout'"
 
-  spushd "$dir"
-  RunWithLog "hg-pull" hg pull
+  RunWithRetry ${HG_MAX_RETRIES} ${HG_RETRY_DELAY_SEC} \
+    hg-pull-try "${dir}"
+}
+
+hg-pull-try() {
+  local dir="$1"
+  local retcode=0
+
+  spushd "${dir}"
+  RunWithLog "hg-pull" hg pull || retcode=$?
   spopd
+  return ${retcode}
+}
+
+#+ hg-revert <dir>
+hg-revert() {
+  local dir="$1"
+  hg revert "$(GetAbsolutePath "${dir}")"
+}
+
+#+ hg-clone <url> <dir>
+hg-clone() {
+  local url="$1"
+  local dir="$2"
+  RunWithRetry ${HG_MAX_RETRIES} ${HG_RETRY_DELAY_SEC} \
+    hg-clone-try "${url}" "${dir}"
+}
+
+hg-clone-try() {
+  local url="$1"
+  local dir="$2"
+  local retcode=0
+
+  rm -rf "${dir}"
+  hg clone "${url}" "${dir}" || retcode=$?
+
+  if [ ${retcode} -ne 0 ] ; then
+   # Clean up directory after failure
+   rm -rf "${dir}"
+  fi
+  return ${retcode}
 }
 
 hg-checkout() {
@@ -74,32 +121,34 @@ hg-checkout() {
     # Use a temporary directory just in case HG has problems
     # with long filenames during checkout.
     local TMPDIR="/tmp/hg-${rev}-$RANDOM"
-    hg clone "https://${repo}.googlecode.com/hg/" "${TMPDIR}"
-    spushd "${TMPDIR}"
-    hg update -C ${rev}
+    hg-clone "https://${repo}.googlecode.com/hg/" "${TMPDIR}"
+    hg-update "${TMPDIR}" -C ${rev}
     mv "${TMPDIR}" "${dest}"
-    spopd
   else
     StepBanner "HG-CHECKOUT" "Using existing source for ${repo} in ${dest}"
   fi
 }
 
-#+ hg-update <dir> [rev]
+#+ hg-update <dir> [extra_flags] [rev]
 hg-update() {
   local dir="$1"
+  shift 1
 
-  assert-dir "$dir" \
+  assert-dir "${dir}" \
     "HG repository $(basename "${dir}") doesn't exist. First do 'hg-checkout'"
 
-  spushd "${dir}"
-  if [ $# == 2 ]; then
-    local rev=$2
-    RunWithLog "hg-update" hg update ${rev}
-  else
-    RunWithLog "hg-update" hg update
-  fi
+  RunWithRetry ${HG_MAX_RETRIES} ${HG_RETRY_DELAY_SEC} \
+    hg-update-try "${dir}" "$@"
+}
 
+hg-update-try() {
+  local dir="$1"
+  shift 1
+  local retcode=0
+  spushd "${dir}"
+  RunWithLog "hg-update" hg update "$@" || retcode=$?
   spopd
+  return ${retcode}
 }
 
 #+ hg-push <dir>
@@ -167,13 +216,13 @@ hg-assert-branch() {
   spushd "${dir}"
   if hg branch | grep -q "^${branch}\$"; then
     spopd
-    return
+    return 0
   fi
   local CURBRANCH=$(hg branch)
   local REPONAME=$(basename $(pwd))
   spopd
   Banner "ERROR: ${REPONAME} is on branch ${CURBRANCH} instead of ${branch}."
-  exit -1
+  return 1
 }
 
 #+ hg-assert-no-changes <dir> - Assert an hg repo has no local changes
@@ -181,13 +230,21 @@ hg-assert-no-changes() {
   local dir=$1
   spushd "${dir}"
   local PLUS=$(hg identify | tr -d -c '+')
+  local STATUS=$(hg status)
   local REPONAME=$(basename $(pwd))
   spopd
 
   if [ "${PLUS}" != "" ]; then
     Banner "ERROR: Repository ${REPONAME} has local changes"
-    exit -1
+    return 1
   fi
+
+  if [ "${STATUS}" != "" ]; then
+    Banner "ERROR: Repository ${REPONAME} has untracked files"
+    return 2
+  fi
+
+  return 0
 }
 
 hg-assert-no-outgoing() {
@@ -344,8 +401,9 @@ RunWithLog() {
       cat "${log}"
       echo "END LOGFILE Contents."
     fi
-    exit -1
+    return 1
   fi
+  return 0
 }
 
 PrettyPrint() {
@@ -392,11 +450,14 @@ Usage2() {
 }
 
 Banner() {
-  echo "**********************************************************************"
-  echo "**********************************************************************"
-  echo " $@"
-  echo "**********************************************************************"
-  echo "**********************************************************************"
+  echo ""
+  echo " *********************************************************************"
+  echo " | "
+  for arg in "$@" ; do
+    echo " | ${arg}"
+  done
+  echo " | "
+  echo " *********************************************************************"
 }
 
 StepBanner() {
@@ -589,3 +650,29 @@ QueueEmpty() {
   [ "${CT_WAIT_QUEUE}" == "" ]
 }
 
+#+ RunWithRetry <max_retries> <delay_sec> cmd [args]
+RunWithRetry() {
+  local max_retries="$1"
+  local delay_sec="$2"
+  local cmdname=$(basename "$3")
+  shift 2
+
+  local retries=0
+  while true; do
+    if "$@" ; then
+      return 0
+    fi
+
+    StepBanner "RUN-WITH-RETRY" "Execution of '${cmdname}' failed."
+    retries=$[retries+1]
+    if [ ${retries} -lt ${max_retries} ]; then
+      StepBanner "RUN-WITH-RETRY" "Retrying in ${delay_sec} seconds."
+      sleep ${delay_sec}
+    else
+      StepBanner "RUN-WITH-RETRY" \
+        "'${cmdname}' failed ${max_retries} times. Aborting."
+      return 1
+    fi
+  done
+
+}

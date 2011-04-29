@@ -42,9 +42,9 @@ fi
 RETCODE=0
 
 echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
+rm -rf scons-out toolchain compiler ../xcodebuild ../sconsbuild ../out \
     src/third_party/nacl_sdk/arm-newlib
-rm -rf ../toolchain ../hg
+rm -rf ../toolchain
 
 echo @@@BUILD_STEP show-config@@@
 UTMAN_BUILDBOT=true tools/llvm/utman.sh show-config

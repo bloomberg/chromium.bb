@@ -321,7 +321,7 @@ hg-info-all() {
 
 #@ hg-freshness-check    - Make sure all repos are at the stable revision
 hg-freshness-check() {
-  StepBanner "HG-FRESHNESS-CHECK" "Checking for updates..."
+  StepBanner "HG-FRESHNESS-CHECK"
 
   # Leave this global and mutable
   FRESHNESS_ERROR=false
@@ -356,11 +356,7 @@ hg-freshness-check-common() {
     echo "*    ${defstr}_REV"
     echo "*  in tools/llvm/utman.sh to prevent this error message.          *"
     echo "*******************************************************************"
-    if ${UTMAN_BUILDBOT}; then
-      "hg-update-stable-${name}"
-    else
-      FRESHNESS_ERROR=true
-    fi
+    FRESHNESS_ERROR=true
   fi
 }
 
@@ -485,7 +481,7 @@ hg-checkout-newlib() {
     force_headers=true
   fi
   hg-checkout ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
-  if ${force_headers}; then
+  if ${force_headers} ; then
     newlib-nacl-headers-force
   else
     newlib-nacl-headers
@@ -574,6 +570,40 @@ rebuild-pnacl-libs() {
   organize-native-code
 }
 
+hg-force-fresh() {
+  if ! ${UTMAN_BUILDBOT} ; then
+    echo "hg-force-fresh may wipe local hg changes; it is meant for the bots."
+    return 1
+  fi
+  StepBanner "HG-FORCE-FRESH (BOTS ONLY)"
+
+  # Update everything
+  hg-update-stable
+
+  tidy-binutils
+  newlib-nacl-headers-clean
+
+  hg-force-fresh-common llvm "${TC_SRC_LLVM}"
+  hg-force-fresh-common llvm-gcc "${TC_SRC_LLVM_GCC}"
+  hg-force-fresh-common binutils "${TC_SRC_BINUTILS}"
+  hg-force-fresh-common newlib "${TC_SRC_NEWLIB}"
+
+  newlib-nacl-headers-force
+}
+
+hg-force-fresh-common() {
+  local name="$1"
+  local dir="$2"
+
+  if ! hg-assert-branch "${dir}" pnacl-sfi ||
+     ! hg-assert-no-changes "${dir}" pnacl-sfi ; then
+    Banner "ERROR: hg/${name} is in an illegal state." \
+           "       Wiping and trying again."
+    rm -rf "${dir}"
+    hg-checkout-${name}
+  fi
+}
+
 #@ everything            - Build and install untrusted SDK.
 everything() {
 
@@ -585,6 +615,11 @@ everything() {
   check-for-trusted
 
   hg-checkout-all
+
+  if ${UTMAN_BUILDBOT} ; then
+    hg-force-fresh
+  fi
+
   hg-freshness-check
 
   clean-install
@@ -691,9 +726,12 @@ fast-clean() {
 }
 
 tidy-binutils() {
-  # The binutils configure/build process leaves this residual file
+  # The binutils configure/make process leaves this residual file
   # in the source directory.
   rm -f "${TC_SRC_BINUTILS}"/binutils-2.20/opcodes/i386-tbl.h
+
+  # If we delete this, we must reconfigure.
+  binutils-arm-clean
 }
 
 #+ clean-scons           - Clean scons-out directory
@@ -2375,8 +2413,12 @@ newlib-nacl-headers-clean() {
   # Clean the include directory and revert it to its pure state
   if [ -d "${NEWLIB_INCLUDE_DIR}" ]; then
     rm -rf "${NEWLIB_INCLUDE_DIR}"
+    # If the script is interrupted right here,
+    # then NEWLIB_INCLUDE_DIR will not exist, and the repository
+    # will be in a bad state. This will be fixed during the next
+    # invocation by newlib-nacl-headers-force.
     RunWithLog "newlib-freshen" \
-      hg revert "${NEWLIB_INCLUDE_DIR}"
+      hg-revert "${NEWLIB_INCLUDE_DIR}"
   fi
 }
 
@@ -2384,7 +2426,7 @@ newlib-nacl-headers-clean() {
 newlib-nacl-headers-force() {
   StepBanner "newlib-nacl-headers" "Adding nacl headers to newlib"
 
-  assert-dir "${NEWLIB_INCLUDE_DIR}" "Newlib is not checked out"
+  assert-dir "${TC_SRC_NEWLIB}" "Newlib is not checked out"
 
   newlib-nacl-headers-clean
 
@@ -2400,6 +2442,15 @@ newlib-nacl-headers-force() {
 #+ newlib-nacl-headers-check - Make sure the newlib nacl headers haven't
 #+                             been modified since the last install.
 newlib-nacl-headers-check() {
+  # The condition where NEWLIB_INCLUDE_DIR does not exist may have been
+  # caused by an incomplete call to newlib-nacl-headers-clean().
+  # Let it pass this check so that the clean will be able to finish.
+  # See the comment in newlib-nacl-headers-clean()
+  if ! [ -d "${TC_SRC_NEWLIB}" ] ||
+     ! [ -d "${NEWLIB_INCLUDE_DIR}" ]; then
+    return 0
+  fi
+
   if ts-dir-changed "${NACL_SYS_TS}" "${NEWLIB_INCLUDE_DIR}"; then
     echo ""
     echo "*******************************************************************"
