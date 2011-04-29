@@ -16,7 +16,6 @@ include_rules = [
   # Other libraries.
   "+chrome/third_party/xdg_user_dirs",
   "+third_party/bzip2",
-  "+third_party/mozilla_security_manager",
   "+third_party/npapi",
   "+third_party/sqlite",
   "+third_party/zlib",
