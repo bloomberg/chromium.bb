@@ -104,11 +104,9 @@ void SetCurrentThemeFromThemeSpecifics(
       // auto-update cycle.
       const bool kInstallSilently = true;
       const bool kEnableOnInstall = true;
-      const bool kEnableIncognitoOnInstall = false;
       if (!extensions_service->pending_extension_manager()->AddFromSync(
               id, update_url, &IsTheme,
-              kInstallSilently, kEnableOnInstall,
-              kEnableIncognitoOnInstall)) {
+              kInstallSilently, kEnableOnInstall)) {
         LOG(WARNING) << "Could not add pending extension for " << id;
         return;
       }

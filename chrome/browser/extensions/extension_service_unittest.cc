@@ -2077,12 +2077,10 @@ TEST_F(ExtensionServiceTest, AddPendingExtensionFromSync) {
   const GURL kFakeUpdateURL("http:://fake.update/url");
   const bool kFakeInstallSilently(true);
   const Extension::State kFakeInitialState(Extension::ENABLED);
-  const bool kFakeInitialIncognitoEnabled(false);
 
   EXPECT_TRUE(service_->pending_extension_manager()->AddFromSync(
       kFakeId, kFakeUpdateURL, &IsExtension,
-      kFakeInstallSilently, kFakeInitialState,
-      kFakeInitialIncognitoEnabled));
+      kFakeInstallSilently, kFakeInitialState));
 
   PendingExtensionInfo pending_extension_info;
   ASSERT_TRUE(service_->pending_extension_manager()->GetById(
@@ -2098,7 +2096,6 @@ const char kGoodUpdateURL[] = "http://good.update/url";
 const bool kGoodIsFromSync = true;
 const bool kGoodInstallSilently = true;
 const Extension::State kGoodInitialState = Extension::DISABLED;
-const bool kGoodInitialIncognitoEnabled = true;
 }  // namespace
 
 // Test updating a pending extension.
@@ -2106,8 +2103,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtension) {
   InitializeEmptyExtensionService();
   EXPECT_TRUE(service_->pending_extension_manager()->AddFromSync(
       kGoodId, GURL(kGoodUpdateURL), &IsExtension,
-      kGoodInstallSilently, kGoodInitialState,
-      kGoodInitialIncognitoEnabled));
+      kGoodInstallSilently, kGoodInitialState));
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(kGoodId));
 
   FilePath path = data_dir_.AppendASCII("good.crx");
@@ -2122,8 +2118,6 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtension) {
   EXPECT_EQ(enabled, kGoodInitialState == Extension::ENABLED);
   EXPECT_EQ(kGoodInitialState,
             service_->extension_prefs()->GetExtensionState(extension->id()));
-  EXPECT_EQ(kGoodInitialIncognitoEnabled,
-            service_->IsIncognitoEnabled(extension->id()));
 }
 
 namespace {
@@ -2139,7 +2133,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingTheme) {
   InitializeEmptyExtensionService();
   EXPECT_TRUE(service_->pending_extension_manager()->AddFromSync(
       theme_crx, GURL(), &IsTheme,
-      false, Extension::ENABLED, false));
+      false, Extension::ENABLED));
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(theme_crx));
 
   FilePath path = data_dir_.AppendASCII("theme.crx");
@@ -2152,7 +2146,6 @@ TEST_F(ExtensionServiceTest, UpdatePendingTheme) {
 
   EXPECT_EQ(Extension::ENABLED,
             service_->extension_prefs()->GetExtensionState(extension->id()));
-  EXPECT_FALSE(service_->IsIncognitoEnabled(extension->id()));
 }
 
 #if defined(OS_CHROMEOS)
@@ -2193,8 +2186,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
   // Add a crx to be installed from the update mechanism.
   EXPECT_TRUE(service_->pending_extension_manager()->AddFromSync(
       kGoodId, GURL(kGoodUpdateURL), &IsExtension,
-      kGoodInstallSilently, kGoodInitialState,
-      kGoodInitialIncognitoEnabled));
+      kGoodInstallSilently, kGoodInitialState));
 
   // Check that there is a pending crx, with is_from_sync set to true.
   PendingExtensionInfo pending_extension_info;
@@ -2216,8 +2208,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
   // Add a crx to be installed from the update mechanism.
   EXPECT_FALSE(service_->pending_extension_manager()->AddFromSync(
       kGoodId, GURL(kGoodUpdateURL), &IsExtension,
-      kGoodInstallSilently, kGoodInitialState,
-      kGoodInitialIncognitoEnabled));
+      kGoodInstallSilently, kGoodInitialState));
 
   // Check that the external, non-sync update was not overridden.
   ASSERT_TRUE(service_->pending_extension_manager()->GetById(
@@ -2233,7 +2224,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingCrxThemeMismatch) {
   InitializeEmptyExtensionService();
   EXPECT_TRUE(service_->pending_extension_manager()->AddFromSync(
       theme_crx, GURL(), &IsExtension,
-      true, Extension::ENABLED, false));
+      true, Extension::ENABLED));
 
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(theme_crx));
 
@@ -2256,8 +2247,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionFailedShouldInstallTest) {
   // Add pending extension with a flipped is_theme.
   EXPECT_TRUE(service_->pending_extension_manager()->AddFromSync(
       kGoodId, GURL(kGoodUpdateURL), &IsTheme,
-      kGoodInstallSilently, kGoodInitialState,
-      kGoodInitialIncognitoEnabled));
+      kGoodInstallSilently, kGoodInitialState));
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(kGoodId));
 
   FilePath path = data_dir_.AppendASCII("good.crx");
@@ -2298,7 +2288,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionAlreadyInstalled) {
   service_->pending_extension_manager()->AddExtensionImpl(
       good->id(), good->update_url(), &IsExtension,
       kGoodIsFromSync, kGoodInstallSilently, kGoodInitialState,
-      kGoodInitialIncognitoEnabled, Extension::INTERNAL);
+      Extension::INTERNAL);
   UpdateExtension(good->id(), path, INSTALLED);
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(kGoodId));
@@ -3640,13 +3630,16 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   extension_sync_data.id = good_crx;
   extension_sync_data.update_url = GURL("http://www.google.com");
   extension_sync_data.enabled = true;
+  extension_sync_data.incognito_enabled = true;
   {
     scoped_ptr<Version> version(Version::GetVersionFromString("1.2.3.4"));
     extension_sync_data.version = *version;
   }
 
+  EXPECT_FALSE(service_->IsIncognitoEnabled(good_crx));
   service_->ProcessSyncData(extension_sync_data, &AllExtensions);
   EXPECT_TRUE(service_->updater()->WillCheckSoon());
+  EXPECT_TRUE(service_->IsIncognitoEnabled(good_crx));
 
   PendingExtensionInfo info;
   EXPECT_TRUE(
@@ -3655,8 +3648,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   EXPECT_TRUE(info.is_from_sync());
   EXPECT_TRUE(info.install_silently());
   EXPECT_EQ(extension_sync_data.enabled, info.enable_on_install());
-  EXPECT_EQ(extension_sync_data.incognito_enabled,
-            info.enable_incognito_on_install());
   EXPECT_EQ(Extension::INTERNAL, info.install_source());
   // TODO(akalin): Figure out a way to test |info.ShouldAllowInstall()|.
 }
@@ -3695,8 +3686,7 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
   bool AddPendingSyncInstall() {
     return service_->pending_extension_manager()->AddFromSync(
         crx_id_, GURL(kGoodUpdateURL), &IsExtension,
-        kGoodInstallSilently, kGoodInitialState,
-        kGoodInitialIncognitoEnabled);
+        kGoodInstallSilently, kGoodInitialState);
   }
 
   // Fake a policy install.

@@ -1352,22 +1352,21 @@ void ExtensionService::ProcessSyncData(
     return;
   }
 
+  SetIsIncognitoEnabled(id, extension_sync_data.incognito_enabled);
+
   const Extension* extension =
       GetExtensionByIdInternal(id, true, true, false);
   // TODO(akalin): Figure out what to do with terminated extensions.
 
-  // Handle already-installed extensions (just update settings).
-  //
-  // TODO(akalin): Ideally, we should be able to set prefs for an
-  // extension regardless of whether or not it's installed (and have
-  // it automatially apply on install).
+  // Handle already-installed extensions.
   if (extension) {
+    // TODO(akalin): Make it so we can enable/disable an extension
+    // even if it's not installed yet.
     if (extension_sync_data.enabled) {
       EnableExtension(id);
     } else {
       DisableExtension(id);
     }
-    SetIsIncognitoEnabled(id, extension_sync_data.incognito_enabled);
     int result = extension->version()->CompareTo(extension_sync_data.version);
     if (result < 0) {
       // Extension is outdated.
@@ -1390,8 +1389,7 @@ void ExtensionService::ProcessSyncData(
           extension_sync_data.update_url,
           filter,
           true,  // install_silently
-          extension_sync_data.enabled,
-          extension_sync_data.incognito_enabled)) {
+          extension_sync_data.enabled)) {
     LOG(WARNING) << "Could not add pending extension for " << id;
     return;
   }
@@ -1402,7 +1400,7 @@ bool ExtensionService::IsIncognitoEnabled(
     const std::string& extension_id) const {
   // If this is an existing component extension we always allow it to
   // work in incognito mode.
-  const Extension* extension = GetExtensionById(extension_id, true);
+  const Extension* extension = GetInstalledExtension(extension_id);
   if (extension && extension->location() == Extension::COMPONENT)
     return true;
 
@@ -1412,7 +1410,7 @@ bool ExtensionService::IsIncognitoEnabled(
 
 void ExtensionService::SetIsIncognitoEnabled(
     const std::string& extension_id, bool enabled) {
-  const Extension* extension = GetExtensionById(extension_id, false);
+  const Extension* extension = GetInstalledExtension(extension_id);
   if (extension && extension->location() == Extension::COMPONENT) {
     // This shouldn't be called for component extensions.
     NOTREACHED();
@@ -1427,9 +1425,13 @@ void ExtensionService::SetIsIncognitoEnabled(
     return;
 
   extension_prefs_->SetIsIncognitoEnabled(extension_id, enabled);
-  if (extension) {
-    NotifyExtensionUnloaded(extension, UnloadedExtensionInfo::DISABLE);
-    NotifyExtensionLoaded(extension);
+
+  // If the extension is enabled (and not terminated), unload and
+  // reload it to update UI.
+  const Extension* enabled_extension = GetExtensionById(extension_id, false);
+  if (enabled_extension) {
+    NotifyExtensionUnloaded(enabled_extension, UnloadedExtensionInfo::DISABLE);
+    NotifyExtensionLoaded(enabled_extension);
   }
 }
 
@@ -1797,7 +1799,6 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
   scoped_refptr<const Extension> scoped_extension(extension);
   const std::string& id = extension->id();
   bool initial_enable = false;
-  bool initial_enable_incognito = false;
 
   PendingExtensionInfo pending_extension_info;
   if (pending_extension_manager()->GetById(id, &pending_extension_info)) {
@@ -1828,12 +1829,8 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
     if (extension->is_theme()) {
       DCHECK(pending_extension_info.enable_on_install());
       initial_enable = true;
-      DCHECK(!pending_extension_info.enable_incognito_on_install());
-      initial_enable_incognito = false;
     } else {
       initial_enable = pending_extension_info.enable_on_install();
-      initial_enable_incognito =
-          pending_extension_info.enable_incognito_on_install();
     }
   } else {
     // We explicitly want to re-enable an uninstalled external
@@ -1841,7 +1838,6 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
     // installing the extension.
     initial_enable =
         IsExtensionEnabled(id) || IsExternalExtensionUninstalled(id);
-    initial_enable_incognito = IsIncognitoEnabled(id);
   }
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType",
@@ -1850,8 +1846,7 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
       extension, "Extensions.Permissions_Install");
   ShownSectionsHandler::OnExtensionInstalled(profile_->GetPrefs(), extension);
   extension_prefs_->OnExtensionInstalled(
-      extension, initial_enable ? Extension::ENABLED : Extension::DISABLED,
-      initial_enable_incognito);
+      extension, initial_enable ? Extension::ENABLED : Extension::DISABLED);
 
   // Unpacked extensions default to allowing file access, but if that has been
   // overridden, don't reset the value.

@@ -26,7 +26,6 @@ class PendingExtensionInfo {
       bool is_from_sync,
       bool install_silently,
       bool enable_on_install,
-      bool enable_incognito_on_install,
       Extension::Location install_source);
 
   // Required for STL container membership.  Should not be used directly.
@@ -46,9 +45,6 @@ class PendingExtensionInfo {
   bool is_from_sync() const { return is_from_sync_; }
   bool install_silently() const { return install_silently_; }
   bool enable_on_install() const { return enable_on_install_; }
-  bool enable_incognito_on_install() const {
-    return enable_incognito_on_install_;
-  }
   Extension::Location install_source() const { return install_source_; }
 
  private:
@@ -62,7 +58,6 @@ class PendingExtensionInfo {
   bool is_from_sync_;  // This update check was initiated from sync.
   bool install_silently_;
   bool enable_on_install_;
-  bool enable_incognito_on_install_;
   Extension::Location install_source_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, AddPendingExtensionFromSync);

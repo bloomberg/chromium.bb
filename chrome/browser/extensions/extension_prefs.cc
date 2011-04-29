@@ -858,16 +858,13 @@ void ExtensionPrefs::SetToolbarOrder(
 }
 
 void ExtensionPrefs::OnExtensionInstalled(
-    const Extension* extension, Extension::State initial_state,
-    bool initial_incognito_enabled) {
+    const Extension* extension, Extension::State initial_state) {
   const std::string& id = extension->id();
   CHECK(Extension::IdIsValid(id));
   ScopedExtensionPrefUpdate update(prefs_, id);
   DictionaryValue* extension_dict = update.Get();
   const base::Time install_time = GetCurrentTime();
   extension_dict->Set(kPrefState, Value::CreateIntegerValue(initial_state));
-  extension_dict->Set(kPrefIncognitoEnabled,
-                      Value::CreateBooleanValue(initial_incognito_enabled));
   extension_dict->Set(kPrefLocation,
                       Value::CreateIntegerValue(extension->location()));
   extension_dict->Set(kPrefInstallTime,

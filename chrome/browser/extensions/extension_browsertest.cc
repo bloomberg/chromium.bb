@@ -88,7 +88,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionImpl(
   // The call to OnExtensionInstalled ensures the other extension prefs
   // are set up with the defaults.
   service->extension_prefs()->OnExtensionInstalled(
-      extension, Extension::ENABLED, false);
+      extension, Extension::ENABLED);
   service->SetIsIncognitoEnabled(extension->id(), incognito_enabled);
   service->SetAllowFileAccess(extension, fileaccess_enabled);
 

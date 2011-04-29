@@ -94,8 +94,7 @@ class ExtensionPrefs {
 
   // Called when an extension is installed, so that prefs get created.
   void OnExtensionInstalled(const Extension* extension,
-                            Extension::State initial_state,
-                            bool initial_incognito_enabled);
+                            Extension::State initial_state);
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
   void OnExtensionUninstalled(const std::string& extension_id,

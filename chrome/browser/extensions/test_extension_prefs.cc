@@ -114,9 +114,7 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifest(
     return NULL;
 
   EXPECT_TRUE(Extension::IdIsValid(extension->id()));
-  const bool kInitialIncognitoEnabled = false;
-  prefs_->OnExtensionInstalled(extension, Extension::ENABLED,
-                               kInitialIncognitoEnabled);
+  prefs_->OnExtensionInstalled(extension, Extension::ENABLED);
   return extension;
 }
 
