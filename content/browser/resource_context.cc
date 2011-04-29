@@ -94,4 +94,52 @@ void ResourceContext::set_blob_storage_context(
   blob_storage_context_ = context;
 }
 
+HostZoomMap* ResourceContext::host_zoom_map() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return host_zoom_map_;
+}
+
+void ResourceContext::set_host_zoom_map(HostZoomMap* host_zoom_map) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  host_zoom_map_ = host_zoom_map;
+}
+
+HostContentSettingsMap* ResourceContext::host_content_settings_map() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return host_content_settings_map_;
+}
+
+void ResourceContext::set_host_content_settings_map(
+    HostContentSettingsMap* host_content_settings_map) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  host_content_settings_map_ = host_content_settings_map;
+}
+
+const ExtensionInfoMap* ResourceContext::extension_info_map() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return extension_info_map_;
+}
+
+void ResourceContext::set_extension_info_map(
+    ExtensionInfoMap* extension_info_map) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  extension_info_map_ = extension_info_map;
+}
+
+const base::WeakPtr<prerender::PrerenderManager>&
+ResourceContext::prerender_manager() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return prerender_manager_;
+}
+
+void ResourceContext::set_prerender_manager(
+    const base::WeakPtr<prerender::PrerenderManager>& prerender_manager) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  prerender_manager_ = prerender_manager;
+}
+
 }  // namespace content

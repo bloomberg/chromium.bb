@@ -10,6 +10,7 @@
 #include "base/memory/singleton.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/browser/worker_host/worker_process_host.h"
+#include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 namespace content {

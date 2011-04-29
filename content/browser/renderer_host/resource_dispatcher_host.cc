@@ -23,7 +23,6 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/external_protocol_handler.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,6 +35,7 @@
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/cert_store.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/chrome_blob_storage_context.h"
@@ -376,8 +376,6 @@ void ResourceDispatcherHost::BeginRequest(
   ChildProcessInfo::ProcessType process_type = filter_->process_type();
   int child_id = filter_->child_id();
 
-  ChromeURLRequestContext* context = filter_->GetURLRequestContext(
-      request_data.resource_type);
   const content::ResourceContext& resource_context =
       filter_->resource_context();
 
@@ -414,7 +412,7 @@ void ResourceDispatcherHost::BeginRequest(
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           NewRunnableFunction(prerender::HandlePrefetchTagOnUIThread,
-                              context->prerender_manager(),
+                              resource_context.prerender_manager(),
                               std::make_pair(child_id, route_id),
                               request_data.url,
                               referrer,
@@ -433,7 +431,10 @@ void ResourceDispatcherHost::BeginRequest(
         filter_, request_data.url, sync_result, this);
   } else {
     handler = new AsyncResourceHandler(
-        filter_, route_id, request_data.url, this);
+        filter_, route_id, request_data.url,
+        resource_context.host_zoom_map(),
+        resource_context.host_content_settings_map(),
+        this);
   }
 
   // The RedirectToFileResourceHandler depends on being next in the chain.
@@ -487,7 +488,8 @@ void ResourceDispatcherHost::BeginRequest(
   }
 
   request->set_load_flags(load_flags);
-  request->set_context(context);
+  request->set_context(
+      filter_->GetURLRequestContext(request_data.resource_type));
   request->set_priority(DetermineRequestPriority(request_data.resource_type,
                                                  load_flags));
 

@@ -375,12 +375,9 @@ void ChromeURLRequestContext::CopyFrom(ChromeURLRequestContext* other) {
   // Copy ChromeURLRequestContext parameters.
   set_user_script_dir_path(other->user_script_dir_path());
   set_appcache_service(other->appcache_service());
-  set_host_content_settings_map(other->host_content_settings_map());
-  set_host_zoom_map(other->host_zoom_map_);
   set_blob_storage_context(other->blob_storage_context());
   set_file_system_context(other->file_system_context());
   set_extension_info_map(other->extension_info_map_);
-  set_prerender_manager(other->prerender_manager());
   // ChromeURLDataManagerBackend is unique per context.
   set_is_incognito(other->is_incognito());
 }

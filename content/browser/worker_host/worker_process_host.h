@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/worker_host/worker_document_set.h"
 #include "googleurl/src/gurl.h"
@@ -175,8 +174,6 @@ class WorkerProcessHost : public BrowserChildProcessHost {
 
   // Updates the title shown in the task manager.
   void UpdateTitle();
-
-  ChromeURLRequestContext* GetChromeURLRequestContext();
 
   Instances instances_;
 

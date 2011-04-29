@@ -11,7 +11,6 @@
 
 #include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -19,7 +18,6 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/chrome_blob_storage_context.h"
-#include "content/browser/host_zoom_map.h"
 #include "net/base/cookie_policy.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -37,9 +35,6 @@ class WaitableEvent;
 namespace net {
 class DnsCertProvenanceChecker;
 class NetworkDelegate;
-}
-namespace prerender {
-class PrerenderManager;
 }
 
 // Subclass of net::URLRequestContext which can be used to store extra
@@ -81,18 +76,8 @@ class ChromeURLRequestContext : public net::URLRequestContext {
 
   virtual const std::string& GetUserAgent(const GURL& url) const;
 
-  HostContentSettingsMap* host_content_settings_map() {
-    return host_content_settings_map_;
-  }
-
-  const HostZoomMap* host_zoom_map() const { return host_zoom_map_; }
-
   const ExtensionInfoMap* extension_info_map() const {
     return extension_info_map_;
-  }
-
-  base::WeakPtr<prerender::PrerenderManager> prerender_manager() const {
-    return prerender_manager_;
   }
 
   ChromeURLDataManagerBackend* GetChromeURLDataManagerBackend();
@@ -103,13 +88,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   }
   void set_is_incognito(bool is_incognito) {
     is_incognito_ = is_incognito;
-  }
-  void set_host_content_settings_map(
-      HostContentSettingsMap* host_content_settings_map) {
-    host_content_settings_map_ = host_content_settings_map;
-  }
-  void set_host_zoom_map(HostZoomMap* host_zoom_map) {
-    host_zoom_map_ = host_zoom_map;
   }
   void set_appcache_service(ChromeAppCacheService* service) {
     appcache_service_ = service;
@@ -122,10 +100,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   }
   void set_extension_info_map(ExtensionInfoMap* map) {
     extension_info_map_ = map;
-  }
-  void set_prerender_manager(
-      const base::WeakPtr<prerender::PrerenderManager>& prerender_manager) {
-    prerender_manager_ = prerender_manager;
   }
 
   // Callback for when the accept language changes.
@@ -148,13 +122,10 @@ class ChromeURLRequestContext : public net::URLRequestContext {
 
   // TODO(willchan): Make these non-refcounted.
   scoped_refptr<ChromeAppCacheService> appcache_service_;
-  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-  scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   // TODO(aa): This should use chrome/common/extensions/extension_set.h.
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
-  base::WeakPtr<prerender::PrerenderManager> prerender_manager_;
   scoped_ptr<ChromeURLDataManagerBackend> chrome_url_data_manager_backend_;
 
   bool is_incognito_;

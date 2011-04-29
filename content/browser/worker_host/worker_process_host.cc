@@ -12,6 +12,8 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
@@ -37,6 +39,7 @@
 #include "net/base/mime_util.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/registry_controlled_domain.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/glue/resource_type.h"
@@ -184,7 +187,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
       // requests them.
       ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
           id(),
-          GetChromeURLRequestContext()->file_system_context()->
+          resource_context_->file_system_context()->
               path_manager()->sandbox_provider()->base_path(),
           base::PLATFORM_FILE_OPEN |
           base::PLATFORM_FILE_CREATE |
@@ -206,11 +209,12 @@ bool WorkerProcessHost::Init(int render_process_id) {
 
 void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
   DCHECK(resource_context_);
-  ChromeURLRequestContext* chrome_url_context = GetChromeURLRequestContext();
+  net::URLRequestContext* request_context =
+      resource_context_->request_context();
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       id(), WORKER_PROCESS, resource_context_,
-      new URLRequestContextSelector(chrome_url_context),
+      new URLRequestContextSelector(request_context),
       resource_dispatcher_host_);
   AddFilter(resource_message_filter);
 
@@ -223,18 +227,20 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
   AddFilter(worker_message_filter_);
   AddFilter(new AppCacheDispatcherHost(resource_context_, id()));
   AddFilter(new FileSystemDispatcherHost(
-      chrome_url_context, resource_context_->file_system_context()));
+      request_context,
+      resource_context_->host_content_settings_map(),
+      resource_context_->file_system_context()));
   AddFilter(new FileUtilitiesMessageFilter(id()));
   AddFilter(
       new BlobMessageFilter(id(), resource_context_->blob_storage_context()));
   AddFilter(new MimeRegistryMessageFilter());
   AddFilter(new DatabaseMessageFilter(
       resource_context_->database_tracker(),
-      chrome_url_context->host_content_settings_map()));
+      resource_context_->host_content_settings_map()));
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
       new SocketStreamDispatcherHost(
-          new URLRequestContextSelector(chrome_url_context));
+          new URLRequestContextSelector(request_context));
   AddFilter(socket_stream_dispatcher_host);
 }
 
@@ -339,7 +345,7 @@ void WorkerProcessHost::OnAllowDatabase(int worker_route_id,
                                         const string16& display_name,
                                         unsigned long estimated_size,
                                         bool* result) {
-  ContentSetting content_setting = GetChromeURLRequestContext()->
+  ContentSetting content_setting = resource_context_->
       host_content_settings_map()->GetContentSetting(
           url, CONTENT_SETTINGS_TYPE_COOKIES, "");
 
@@ -458,7 +464,7 @@ void WorkerProcessHost::UpdateTitle() {
 
     // Check if it's an extension-created worker, in which case we want to use
     // the name of the extension.
-    std::string extension_name = GetChromeURLRequestContext()->
+    std::string extension_name = resource_context_->
         extension_info_map()->GetNameForExtension(title);
     if (!extension_name.empty()) {
       titles.insert(extension_name);
@@ -480,11 +486,6 @@ void WorkerProcessHost::UpdateTitle() {
   }
 
   set_name(ASCIIToWide(display_title));
-}
-
-ChromeURLRequestContext* WorkerProcessHost::GetChromeURLRequestContext() {
-  return static_cast<ChromeURLRequestContext*>(
-      resource_context_->request_context());
 }
 
 void WorkerProcessHost::DocumentDetached(WorkerMessageFilter* filter,

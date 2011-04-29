@@ -12,7 +12,6 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/resource_context.h"
 #include "content/common/file_system_messages.h"
@@ -117,10 +116,11 @@ FileSystemDispatcherHost::FileSystemDispatcherHost(
 }
 
 FileSystemDispatcherHost::FileSystemDispatcherHost(
-    ChromeURLRequestContext* request_context,
+    net::URLRequestContext* request_context,
+    HostContentSettingsMap* host_content_settings_map,
     fileapi::FileSystemContext* file_system_context)
     : context_(file_system_context),
-      host_content_settings_map_(request_context->host_content_settings_map()),
+      host_content_settings_map_(host_content_settings_map),
       resource_context_(NULL),
       request_context_(request_context) {
   DCHECK(request_context_);

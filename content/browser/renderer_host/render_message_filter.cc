@@ -14,9 +14,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -44,6 +45,7 @@
 #include "content/common/view_messages.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/cookie_monster.h"
+#include "net/base/cookie_policy.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/base/io_buffer.h"
 #include "net/base/keygen_handler.h"
@@ -53,6 +55,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/webcookie.h"
@@ -275,6 +278,7 @@ RenderMessageFilter::RenderMessageFilter(
     : resource_dispatcher_host_(g_browser_process->resource_dispatcher_host()),
       plugin_service_(plugin_service),
       profile_(profile),
+      extension_info_map_(profile->GetExtensionInfoMap()),
       content_settings_(profile->GetHostContentSettingsMap()),
       request_context_(request_context),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
@@ -420,9 +424,7 @@ void RenderMessageFilter::OnMsgCreateWindow(
   // If the opener is trying to create a background window but doesn't have
   // the appropriate permission, fail the attempt.
   if (params.window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
-    ChromeURLRequestContext* context =
-        GetRequestContextForURL(params.opener_url);
-    if (!context->extension_info_map()->CheckURLAccessToExtensionPermission(
+    if (!extension_info_map_->CheckURLAccessToExtensionPermission(
             params.opener_url, Extension::kBackgroundPermission)) {
       *route_id = MSG_ROUTING_NONE;
       return;
@@ -452,7 +454,7 @@ void RenderMessageFilter::OnSetCookie(const IPC::Message& message,
                                       const GURL& url,
                                       const GURL& first_party_for_cookies,
                                       const std::string& cookie) {
-  ChromeURLRequestContext* context = GetRequestContextForURL(url);
+  net::URLRequestContext* context = GetRequestContextForURL(url);
 
   SetCookieCompletion* callback = new SetCookieCompletion(
       render_process_id_, message.routing_id(), url, cookie, context);
@@ -474,7 +476,7 @@ void RenderMessageFilter::OnSetCookie(const IPC::Message& message,
 void RenderMessageFilter::OnGetCookies(const GURL& url,
                                        const GURL& first_party_for_cookies,
                                        IPC::Message* reply_msg) {
-  ChromeURLRequestContext* context = GetRequestContextForURL(url);
+  net::URLRequestContext* context = GetRequestContextForURL(url);
 
   GetCookiesCompletion* callback = new GetCookiesCompletion(
       render_process_id_, reply_msg->routing_id(), url, reply_msg, this,
@@ -497,7 +499,7 @@ void RenderMessageFilter::OnGetRawCookies(
     const GURL& first_party_for_cookies,
     IPC::Message* reply_msg) {
 
-  ChromeURLRequestContext* context = GetRequestContextForURL(url);
+  net::URLRequestContext* context = GetRequestContextForURL(url);
 
   // Only return raw cookies to trusted renderers or if this request is
   // not targeted to an an external host like ChromeFrame.
@@ -673,8 +675,7 @@ void RenderMessageFilter::OnCheckNotificationPermission(
     const GURL& source_url, int* result) {
   *result = WebKit::WebNotificationPresenter::PermissionNotAllowed;
 
-  ChromeURLRequestContext* context = GetRequestContextForURL(source_url);
-  if (context->extension_info_map()->CheckURLAccessToExtensionPermission(
+  if (extension_info_map_->CheckURLAccessToExtensionPermission(
           source_url, Extension::kNotificationPermission)) {
     *result = WebKit::WebNotificationPresenter::PermissionAllowed;
     return;
@@ -731,14 +732,13 @@ void RenderMessageFilter::UpdateHostZoomLevelsOnUIThread(
   }
 }
 
-ChromeURLRequestContext* RenderMessageFilter::GetRequestContextForURL(
+net::URLRequestContext* RenderMessageFilter::GetRequestContextForURL(
     const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::URLRequestContextGetter* context_getter =
       url.SchemeIs(chrome::kExtensionScheme) ?
           extensions_request_context_ : request_context_;
-  return static_cast<ChromeURLRequestContext*>(
-      context_getter->GetURLRequestContext());
+  return context_getter->GetURLRequestContext();
 }
 
 #if defined(OS_MACOSX)
@@ -987,7 +987,7 @@ SetCookieCompletion::SetCookieCompletion(int render_process_id,
                                          int render_view_id,
                                          const GURL& url,
                                          const std::string& cookie_line,
-                                         ChromeURLRequestContext* context)
+                                         net::URLRequestContext* context)
     : render_process_id_(render_process_id),
       render_view_id_(render_view_id),
       url_(url),
@@ -1021,7 +1021,7 @@ GetCookiesCompletion::GetCookiesCompletion(int render_process_id,
                                            const GURL& url,
                                            IPC::Message* reply_msg,
                                            RenderMessageFilter* filter,
-                                           ChromeURLRequestContext* context,
+                                           net::URLRequestContext* context,
                                            bool raw_cookies)
     : url_(url),
       reply_msg_(reply_msg),

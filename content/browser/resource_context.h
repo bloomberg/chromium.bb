@@ -7,9 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
+class ExtensionInfoMap;
+class HostContentSettingsMap;
+class HostZoomMap;
 namespace fileapi {
 class FileSystemContext;
 }  // namespace fileapi
@@ -17,6 +21,9 @@ namespace net {
 class HostResolver;
 class URLRequestContext;
 }  // namespace net
+namespace prerender {
+class PrerenderManager;
+}  // namespace prerender
 namespace webkit_database {
 class DatabaseTracker;
 }  // namespace webkit_database
@@ -49,6 +56,26 @@ class ResourceContext {
   ChromeBlobStorageContext* blob_storage_context() const;
   void set_blob_storage_context(ChromeBlobStorageContext* context);
 
+  HostZoomMap* host_zoom_map() const;
+  void set_host_zoom_map(HostZoomMap* host_zoom_map);
+
+  // =======================================================================
+  // TODO(willchan): These don't belong in content/. Remove them eventually.
+
+  // TODO(jam): Kill this one.
+  HostContentSettingsMap* host_content_settings_map() const;
+  void set_host_content_settings_map(
+      HostContentSettingsMap* host_content_settings_map);
+
+  // TODO(mpcomplete): Kill this one.
+  const ExtensionInfoMap* extension_info_map() const;
+  void set_extension_info_map(ExtensionInfoMap* extension_info_map);
+
+  // TODO(cbentzel): Kill this one.
+  const base::WeakPtr<prerender::PrerenderManager>& prerender_manager() const;
+  void set_prerender_manager(
+      const base::WeakPtr<prerender::PrerenderManager>& prerender_manager);
+
  protected:
   ResourceContext();
 
@@ -61,6 +88,14 @@ class ResourceContext {
   webkit_database::DatabaseTracker* database_tracker_;
   fileapi::FileSystemContext* file_system_context_;
   ChromeBlobStorageContext* blob_storage_context_;
+  HostZoomMap* host_zoom_map_;
+
+  // =======================================================================
+  // TODO(willchan): These don't belong in content/. Remove them eventually.
+
+  HostContentSettingsMap* host_content_settings_map_;
+  ExtensionInfoMap* extension_info_map_;
+  base::WeakPtr<prerender::PrerenderManager> prerender_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceContext);
 };

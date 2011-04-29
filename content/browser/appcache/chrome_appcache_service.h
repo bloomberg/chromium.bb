@@ -14,7 +14,6 @@
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/quota/special_storage_policy.h"
 
-class ChromeURLRequestContext;
 class FilePath;
 
 // An AppCacheService subclass used by the chrome. There is an instance

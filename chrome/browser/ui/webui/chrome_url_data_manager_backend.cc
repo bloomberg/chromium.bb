@@ -260,6 +260,10 @@ void ChromeURLDataManagerBackend::DataAvailable(RequestID request_id,
 net::URLRequestJob* ChromeURLDataManagerBackend::Factory(
     net::URLRequest* request,
     const std::string& scheme) {
+  net::URLRequestContext* context = request->context();
+  ChromeURLRequestContext* chrome_request_context =
+      static_cast<ChromeURLRequestContext*>(context);
+
   if (DevToolsJobFactory::ShouldLoadFromDisk()) {
     // Try loading chrome-devtools:// files from disk.
     FilePath path;
@@ -273,7 +277,8 @@ net::URLRequestJob* ChromeURLDataManagerBackend::Factory(
 
   // Next check for chrome://appcache-internals/, which uses its own job type.
   if (ViewAppCacheInternalsJobFactory::IsSupportedURL(request->url()))
-    return ViewAppCacheInternalsJobFactory::CreateJobForRequest(request);
+    return ViewAppCacheInternalsJobFactory::CreateJobForRequest(
+        request, chrome_request_context->appcache_service());
 
   // Next check for chrome://blob-internals/, which uses its own job type.
   if (ViewBlobInternalsJobFactory::IsSupportedURL(request->url()))

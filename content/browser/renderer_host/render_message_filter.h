@@ -27,8 +27,8 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
 
-class ChromeURLRequestContext;
 struct FontDescriptor;
+class ExtensionInfoMap;
 class HostContentSettingsMap;
 class HostZoomMap;
 class NotificationsPrefsCache;
@@ -86,7 +86,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // Returns either the extension net::URLRequestContext or regular
   // net::URLRequestContext depending on whether |url| is an extension URL.
   // Only call on the IO thread.
-  ChromeURLRequestContext* GetRequestContextForURL(const GURL& url);
+  net::URLRequestContext* GetRequestContextForURL(const GURL& url);
 
  private:
   friend class BrowserThread;
@@ -229,6 +229,10 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // accessed on the UI thread!
   Profile* profile_;
 
+  // The extension info map. Stored separately from the profile so we can
+  // access it on other threads.
+  ExtensionInfoMap* extension_info_map_;
+
   // The host content settings map. Stored separately from the profile so we can
   // access it on other threads.
   HostContentSettingsMap* content_settings_;
@@ -269,7 +273,7 @@ class SetCookieCompletion : public net::CompletionCallback {
                       int render_view_id,
                       const GURL& url,
                       const std::string& cookie_line,
-                      ChromeURLRequestContext* context);
+                      net::URLRequestContext* context);
   virtual ~SetCookieCompletion();
 
   virtual void RunWithParams(const Tuple1<int>& params);
@@ -287,7 +291,7 @@ class SetCookieCompletion : public net::CompletionCallback {
   int render_view_id_;
   GURL url_;
   std::string cookie_line_;
-  scoped_refptr<ChromeURLRequestContext> context_;
+  scoped_refptr<net::URLRequestContext> context_;
 };
 
 class GetCookiesCompletion : public net::CompletionCallback {
@@ -296,7 +300,7 @@ class GetCookiesCompletion : public net::CompletionCallback {
                        int render_view_id,
                        const GURL& url, IPC::Message* reply_msg,
                        RenderMessageFilter* filter,
-                       ChromeURLRequestContext* context,
+                       net::URLRequestContext* context,
                        bool raw_cookies);
   virtual ~GetCookiesCompletion();
 
@@ -320,7 +324,7 @@ class GetCookiesCompletion : public net::CompletionCallback {
   GURL url_;
   IPC::Message* reply_msg_;
   scoped_refptr<RenderMessageFilter> filter_;
-  scoped_refptr<ChromeURLRequestContext> context_;
+  scoped_refptr<net::URLRequestContext> context_;
   int render_process_id_;
   int render_view_id_;
   bool raw_cookies_;

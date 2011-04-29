@@ -5,10 +5,9 @@
 #include "content/browser/appcache/view_appcache_internals_job_factory.h"
 
 #include "base/string_util.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/appcache/chrome_appcache_service.h"
 #include "net/url_request/url_request.h"
-#include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/view_appcache_internals_job.h"
 
 // static.
@@ -20,10 +19,7 @@ bool ViewAppCacheInternalsJobFactory::IsSupportedURL(const GURL& url) {
 
 // static.
 net::URLRequestJob* ViewAppCacheInternalsJobFactory::CreateJobForRequest(
-    net::URLRequest* request) {
-  net::URLRequestContext* context = request->context();
-  ChromeURLRequestContext* chrome_request_context =
-      reinterpret_cast<ChromeURLRequestContext*>(context);
+    net::URLRequest* request, ChromeAppCacheService* appcache_service) {
   return new appcache::ViewAppCacheInternalsJob(
-      request, chrome_request_context->appcache_service());
+      request, appcache_service);
 }

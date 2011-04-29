@@ -4,7 +4,6 @@
 
 #include "content/browser/worker_host/worker_message_filter.h"
 
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/worker_host/message_port_service.h"
 #include "content/browser/worker_host/worker_service.h"

@@ -8,6 +8,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"

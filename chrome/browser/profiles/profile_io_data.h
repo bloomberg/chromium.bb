@@ -221,6 +221,12 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   mutable scoped_refptr<ChromeAppCacheService> appcache_service_;
   mutable scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   mutable scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  mutable scoped_refptr<HostZoomMap> host_zoom_map_;
+
+  // TODO(willchan): Remove from ResourceContext.
+  mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+  mutable scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  mutable base::WeakPtr<prerender::PrerenderManager> prerender_manager_;
 
   mutable ResourceContext resource_context_;
 

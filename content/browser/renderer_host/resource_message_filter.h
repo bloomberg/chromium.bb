@@ -10,7 +10,6 @@
 #include "content/common/child_process_info.h"
 #include "webkit/glue/resource_type.h"
 
-class ChromeURLRequestContext;
 class ResourceDispatcherHost;
 
 namespace content {
@@ -57,7 +56,7 @@ class ResourceMessageFilter : public BrowserMessageFilter {
   }
 
   // Returns the net::URLRequestContext for the given request.
-  ChromeURLRequestContext* GetURLRequestContext(
+  net::URLRequestContext* GetURLRequestContext(
       ResourceType::Type request_type);
 
   int child_id() const { return child_id_; }

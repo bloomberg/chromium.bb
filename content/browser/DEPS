@@ -4,8 +4,6 @@ include_rules = [
   # Listing of the remaining #chrome includes in content\browser.  People are
   # actively working on reducing this to 0.  Do not add anymore!
 
-  "+chrome/browser/net/chrome_url_request_context.h",  # going away in http://codereview.chromium.org/6880263/
-
   # jam will move asap, this was forgotten
   "+chrome/browser/renderer_host/render_view_host_delegate.h",
 

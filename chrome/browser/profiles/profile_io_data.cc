@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/host_zoom_map.h"
 #include "content/browser/resource_context.h"
 #include "content/common/notification_service.h"
 #include "net/http/http_util.h"
@@ -314,6 +315,10 @@ void ProfileIOData::LazyInitialize() const {
   appcache_service_ = profile_params_->appcache_service;
   blob_storage_context_ = profile_params_->blob_storage_context;
   file_system_context_ = profile_params_->file_system_context;
+  host_zoom_map_ = profile_params_->host_zoom_map;
+  host_content_settings_map_ = profile_params_->host_content_settings_map;
+  extension_info_map_ = profile_params_->extension_info_map;
+  prerender_manager_ = profile_params_->prerender_manager;
 
   resource_context_.set_host_resolver(io_thread_globals->host_resolver.get());
   resource_context_.set_request_context(main_request_context_);
@@ -321,6 +326,10 @@ void ProfileIOData::LazyInitialize() const {
   resource_context_.set_appcache_service(appcache_service_);
   resource_context_.set_blob_storage_context(blob_storage_context_);
   resource_context_.set_file_system_context(file_system_context_);
+  resource_context_.set_host_zoom_map(host_zoom_map_);
+  resource_context_.set_host_content_settings_map(host_content_settings_map_);
+  resource_context_.set_extension_info_map(extension_info_map_);
+  resource_context_.set_prerender_manager(prerender_manager_);
 
   LazyInitializeInternal(profile_params_.get());
 
@@ -335,9 +344,6 @@ void ProfileIOData::ApplyProfileParamsToContext(
   context->set_accept_charset(profile_params_->accept_charset);
   context->set_referrer_charset(profile_params_->referrer_charset);
   context->set_user_script_dir_path(profile_params_->user_script_dir_path);
-  context->set_host_content_settings_map(
-      profile_params_->host_content_settings_map);
-  context->set_host_zoom_map(profile_params_->host_zoom_map);
   context->set_transport_security_state(
       profile_params_->transport_security_state);
   context->set_ssl_config_service(profile_params_->ssl_config_service);
@@ -345,7 +351,6 @@ void ProfileIOData::ApplyProfileParamsToContext(
   context->set_blob_storage_context(profile_params_->blob_storage_context);
   context->set_file_system_context(profile_params_->file_system_context);
   context->set_extension_info_map(profile_params_->extension_info_map);
-  context->set_prerender_manager(profile_params_->prerender_manager);
 }
 
 void ProfileIOData::ShutdownOnUIThread() {
