@@ -70,25 +70,54 @@ void CoalseAndSortMatchPositions(Snippet::MatchPositions* matches) {
 // A QueryNodeWord is a single word in the query.
 class QueryNodeWord : public QueryNode {
  public:
-  explicit QueryNodeWord(const string16& word)
-      : word_(word), literal_(false) {}
-  virtual ~QueryNodeWord() {}
-  virtual int AppendToSQLiteQuery(string16* query) const;
-  virtual bool IsWord() const { return true; }
+  explicit QueryNodeWord(const string16& word);
+  virtual ~QueryNodeWord();
 
   const string16& word() const { return word_; }
+
   void set_literal(bool literal) { literal_ = literal; }
 
-  virtual bool HasMatchIn(const std::vector<QueryWord>& words,
-                          Snippet::MatchPositions* match_positions) const;
-
-  virtual bool Matches(const string16& word, bool exact) const;
-  virtual void AppendWords(std::vector<string16>* words) const;
+  // QueryNode:
+  virtual int AppendToSQLiteQuery(string16* query) const OVERRIDE;
+  virtual bool IsWord() const OVERRIDE;
+  virtual bool Matches(const string16& word, bool exact) const OVERRIDE;
+  virtual bool HasMatchIn(
+      const std::vector<QueryWord>& words,
+      Snippet::MatchPositions* match_positions) const OVERRIDE;
+  virtual void AppendWords(std::vector<string16>* words) const OVERRIDE;
 
  private:
   string16 word_;
   bool literal_;
+
+  DISALLOW_COPY_AND_ASSIGN(QueryNodeWord);
 };
+
+QueryNodeWord::QueryNodeWord(const string16& word)
+    : word_(word),
+      literal_(false) {}
+
+QueryNodeWord::~QueryNodeWord() {}
+
+int QueryNodeWord::AppendToSQLiteQuery(string16* query) const {
+  query->append(word_);
+
+  // Use prefix search if we're not literal and long enough.
+  if (!literal_ && QueryParser::IsWordLongEnoughForPrefixSearch(word_))
+    *query += L'*';
+  return 1;
+}
+
+bool QueryNodeWord::IsWord() const {
+  return true;
+}
+
+bool QueryNodeWord::Matches(const string16& word, bool exact) const {
+  if (exact || !QueryParser::IsWordLongEnoughForPrefixSearch(word_))
+    return word == word_;
+  return word.size() >= word_.size() &&
+         (word_.compare(0, word_.size(), word, 0, word_.size()) == 0);
+}
 
 bool QueryNodeWord::HasMatchIn(const std::vector<QueryWord>& words,
                                Snippet::MatchPositions* match_positions) const {
@@ -104,24 +133,8 @@ bool QueryNodeWord::HasMatchIn(const std::vector<QueryWord>& words,
   return false;
 }
 
-bool QueryNodeWord::Matches(const string16& word, bool exact) const {
-  if (exact || !QueryParser::IsWordLongEnoughForPrefixSearch(word_))
-    return word == word_;
-  return word.size() >= word_.size() &&
-         (word_.compare(0, word_.size(), word, 0, word_.size()) == 0);
-}
-
 void QueryNodeWord::AppendWords(std::vector<string16>* words) const {
   words->push_back(word_);
-}
-
-int QueryNodeWord::AppendToSQLiteQuery(string16* query) const {
-  query->append(word_);
-
-  // Use prefix search if we're not literal and long enough.
-  if (!literal_ && QueryParser::IsWordLongEnoughForPrefixSearch(word_))
-    *query += L'*';
-  return 1;
 }
 
 // A QueryNodeList has a collection of QueryNodes which are deleted in the end.
