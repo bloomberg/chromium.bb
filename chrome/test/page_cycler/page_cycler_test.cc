@@ -335,6 +335,9 @@ class PageCyclerReferenceTest : public PageCyclerTest {
 
 class PageCyclerExtensionTest : public PageCyclerTest {
  public:
+  // Note: we delay the SetUp until RunTest is called so that we can set
+  // the user_data_dir based on the test name.
+  virtual void SetUp() {}
   void RunTest(const char* graph, const char* extension_profile,
                const char* output_suffix, const char* name, bool use_http) {
     // Set up the extension profile directory.
@@ -347,6 +350,7 @@ class PageCyclerExtensionTest : public PageCyclerTest {
     set_template_user_data(data_dir);
 
     // Now run the test.
+    PageCyclerTest::SetUp();
     PageCyclerTest::RunTestWithSuffix(graph, name, use_http, output_suffix);
   }
 };
