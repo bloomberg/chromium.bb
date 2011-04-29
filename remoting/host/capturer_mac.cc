@@ -17,6 +17,63 @@
 namespace remoting {
 
 namespace {
+
+class scoped_pixel_buffer_object {
+ public:
+  scoped_pixel_buffer_object();
+  ~scoped_pixel_buffer_object();
+
+  bool Init(CGLContextObj cgl_context, int size_in_bytes);
+  void Release();
+
+  GLuint get() const { return pixel_buffer_object_; }
+
+ private:
+  CGLContextObj cgl_context_;
+  GLuint pixel_buffer_object_;
+
+  DISALLOW_COPY_AND_ASSIGN(scoped_pixel_buffer_object);
+};
+
+scoped_pixel_buffer_object::scoped_pixel_buffer_object()
+    : cgl_context_(NULL),
+      pixel_buffer_object_(0) {
+}
+
+scoped_pixel_buffer_object::~scoped_pixel_buffer_object() {
+  Release();
+}
+
+bool scoped_pixel_buffer_object::Init(CGLContextObj cgl_context,
+                                      int size_in_bytes) {
+  cgl_context_ = cgl_context;
+  CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
+  glGenBuffersARB(1, &pixel_buffer_object_);
+  if (glGetError() == GL_NO_ERROR) {
+    glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_object_);
+    glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB, size_in_bytes, NULL,
+                    GL_STREAM_READ_ARB);
+    glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
+    if (glGetError() != GL_NO_ERROR) {
+      Release();
+    }
+  } else {
+    cgl_context_ = NULL;
+    pixel_buffer_object_ = 0;
+  }
+  return pixel_buffer_object_ != 0;
+}
+
+void scoped_pixel_buffer_object::Release() {
+  if (pixel_buffer_object_) {
+    CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
+    glDeleteBuffersARB(1, &pixel_buffer_object_);
+    cgl_context_ = NULL;
+    pixel_buffer_object_ = 0;
+  }
+}
+
+
 // A class to perform capturing for mac.
 class CapturerMac : public Capturer {
  public:
@@ -34,6 +91,8 @@ class CapturerMac : public Capturer {
   virtual const gfx::Size& size_most_recent() const OVERRIDE;
 
  private:
+  void FastBlit(uint8* buffer);
+  void SlowBlit(uint8* buffer);
   void CaptureRects(const InvalidRects& rects,
                     CaptureCompletedCallback* callback);
 
@@ -55,6 +114,7 @@ class CapturerMac : public Capturer {
   void ReleaseBuffers();
   CGLContextObj cgl_context_;
   static const int kNumBuffers = 2;
+  scoped_pixel_buffer_object pixel_buffer_object_;
   scoped_array<uint8> buffers_[kNumBuffers];
 
   // A thread-safe list of invalid rectangles, and the size of the most
@@ -109,6 +169,7 @@ CapturerMac::~CapturerMac() {
 
 void CapturerMac::ReleaseBuffers() {
   if (cgl_context_) {
+    pixel_buffer_object_.Release();
     CGLDestroyContext(cgl_context_);
     cgl_context_ = NULL;
   }
@@ -143,6 +204,8 @@ void CapturerMac::ScreenConfigurationChanged() {
   CGLDestroyPixelFormat(pixel_format);
   CGLSetFullScreen(cgl_context_);
   CGLSetCurrentContext(cgl_context_);
+
+  pixel_buffer_object_.Init(cgl_context_, buffer_size);
 }
 
 media::VideoFrame::Format CapturerMac::pixel_format() const {
@@ -168,24 +231,16 @@ void CapturerMac::InvalidateFullScreen() {
 void CapturerMac::CaptureInvalidRects(CaptureCompletedCallback* callback) {
   InvalidRects rects;
   helper_.SwapInvalidRects(rects);
-
-  CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
-  glReadBuffer(GL_FRONT);
-  glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
-
-  glPixelStorei(GL_PACK_ALIGNMENT, 4);  // Force 4-byte alignment.
-  glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-  glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-  glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-
-  // Read a block of pixels from the frame buffer.
   uint8* current_buffer = buffers_[current_buffer_].get();
-  glReadPixels(0, 0, width_, height_, GL_BGRA, GL_UNSIGNED_BYTE,
-               current_buffer);
-  glPopClientAttrib();
+
+  if (pixel_buffer_object_.get() != 0) {
+    FastBlit(current_buffer);
+  } else {
+    SlowBlit(current_buffer);
+  }
 
   DataPlanes planes;
-  planes.data[0] = buffers_[current_buffer_].get() + height_ * bytes_per_row_;
+  planes.data[0] = current_buffer + height_ * bytes_per_row_;
   planes.strides[0] = -bytes_per_row_;
 
   scoped_refptr<CaptureData> data(
@@ -197,6 +252,44 @@ void CapturerMac::CaptureInvalidRects(CaptureCompletedCallback* callback) {
 
   callback->Run(data);
   delete callback;
+}
+
+void CapturerMac::FastBlit(uint8* buffer) {
+  CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
+  glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_object_.get());
+  glReadPixels(0, 0, width_, height_, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+  GLubyte* ptr = static_cast<GLubyte*>(
+      glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB));
+  if (ptr == NULL) {
+    // If the buffer can't be mapped, assume that it's no longer valid, release
+    // it and fall back on SlowBlit for this (and subsequent) captures.
+    pixel_buffer_object_.Release();
+    SlowBlit(buffer);
+  } else {
+    memcpy(buffer, ptr, height_ * bytes_per_row_);
+  }
+  if (!glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB)) {
+    // If glUnmapBuffer returns false, then the contents of the data store are
+    // undefined. This might be because the screen mode has changed, in which
+    // case it will be recreated in ScreenConfigurationChanged, but releasing
+    // the object here is the best option. Capturing will fall back on SlowBlit
+    // until such time as the pixel buffer object is recreated.
+    pixel_buffer_object_.Release();
+  }
+  glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
+}
+
+void CapturerMac::SlowBlit(uint8* buffer) {
+  CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
+  glReadBuffer(GL_FRONT);
+  glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
+  glPixelStorei(GL_PACK_ALIGNMENT, 4);  // Force 4-byte alignment.
+  glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+  glPixelStorei(GL_PACK_SKIP_ROWS, 0);
+  glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
+  // Read a block of pixels from the frame buffer.
+  glReadPixels(0, 0, width_, height_, GL_BGRA, GL_UNSIGNED_BYTE, buffer);
+  glPopClientAttrib();
 }
 
 const gfx::Size& CapturerMac::size_most_recent() const {
