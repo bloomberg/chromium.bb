@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,6 +78,14 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
 #endif
 
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
+
+  // Note that we provide only minimal support for the shared timer, notably
+  // stopShareTimer does nothing.
+  virtual void setSharedTimerFiredFunction(
+      WebKit::WebKitClient::SharedTimerFunction timer_function);
+  virtual void setSharedTimerFireTime(double fire_time);
+  virtual void stopSharedTimer();
+
   virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D();
 
   WebURLLoaderMockFactory* url_loader_factory() {
@@ -89,6 +97,13 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   }
 
  private:
+  class FireTimerTask;
+  friend class FireTimerTask;
+
+  // This is called by the FireTimeTask to notify WebKit that their timer should
+  // fire.
+  void fireSharedTimer();
+
   TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
@@ -101,6 +116,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   ScopedTempDir file_system_root_;
   WebURLLoaderMockFactory url_loader_factory_;
   bool unit_test_mode_;
+  WebKit::WebKitClient::SharedTimerFunction timer_function_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   WebKit::WebThemeEngine* active_theme_engine_;
