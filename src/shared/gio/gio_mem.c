@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -65,8 +65,6 @@ ssize_t GioMemoryFileRead(struct Gio  *vself,
   newpos = self->curpos + count;
   /* self->curpos <= newpos && newpos <= self->len */
 
-  /* Tell valgrind that this memory is accessible and undefined */
-  NACL_MAKE_MEM_UNDEFINED(buf, count);
   memcpy(buf, self->buffer + self->curpos, count);
   self->curpos = newpos;
   return count;

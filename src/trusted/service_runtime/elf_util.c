@@ -542,6 +542,14 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
             php->p_filesz,
             php->p_filesz,
             paddr);
+
+    /*
+     * Tell valgrind that this memory is accessible and undefined. For more
+     * details see
+     * http://code.google.com/p/nativeclient/wiki/ValgrindMemcheck#Implementation_details
+     */
+    NACL_MAKE_MEM_UNDEFINED((void *) paddr, php->p_filesz);
+
     if ((Elf_Word) (*gp->vtbl->Read)(gp, (void *) paddr, php->p_filesz)
         != php->p_filesz) {
       NaClLog(LOG_ERROR, "load failure segment %d", segnum);
