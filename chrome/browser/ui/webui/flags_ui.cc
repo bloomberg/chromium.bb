@@ -26,6 +26,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 namespace {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -85,10 +90,23 @@ void FlagsUIHTMLSource::StartDataRequest(const std::string& path,
   localized_strings.SetString("enable",
       l10n_util::GetStringUTF16(IDS_FLAGS_ENABLE));
 
+  base::StringPiece html =
+      ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_FLAGS_HTML);
+#if defined (OS_CHROMEOS)
+  if (!chromeos::UserManager::Get()->current_user_is_owner()) {
+    html = ResourceBundle::GetSharedInstance().GetRawDataResource(
+        IDR_FLAGS_HTML_WARNING);
+
+    // Set the strings to show which user can actually change the flags
+    localized_strings.SetString("ownerOnly", l10n_util::GetStringUTF16(
+        IDS_OPTIONS_ACCOUNTS_OWNER_ONLY));
+    localized_strings.SetString("ownerUserId", UTF8ToUTF16(
+        chromeos::UserCrosSettingsProvider::cached_owner()));
+  }
+#endif
+  static const base::StringPiece flags_html(html);
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
 
-  static const base::StringPiece flags_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_FLAGS_HTML));
   std::string full_html(flags_html.data(), flags_html.size());
   jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html);
   jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html);

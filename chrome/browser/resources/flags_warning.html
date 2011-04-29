@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+<meta charset="utf-8">
+<style>
+body {
+  margin: 10px;
+  min-width: 47em;
+}
+
+#owner-only-warning {
+  font-size: 156%;
+  font-weight: bold;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  padding-bottom: 25px;
+  padding-top: 25px;
+  -webkit-margin-start: 10px;
+  -webkit-padding-start: 80px;
+  background-repeat: no-repeat;
+  background-image: url('shared/images/phishing_icon.png');
+}
+</style>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+  <div id="owner-only-warning">
+    <span i18n-content="ownerOnly"></span>
+    <span i18n-content="ownerUserId"></span>
+  </div>
+</body>
+</html>
