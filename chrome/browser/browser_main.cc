@@ -44,6 +44,7 @@
 #include "chrome/browser/first_run/first_run_browser_process.h"
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/jankometer.h"
+#include "chrome/browser/metrics/field_trial_synchronizer.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -1329,6 +1330,13 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Now the command line has been mutated based on about:flags, we can run some
   // field trials
   parts->SetupFieldTrials();
+
+  // Initialize FieldTrialSynchronizer system. This is a singleton and is used
+  // for posting tasks via NewRunnableMethod. Its deleted when it goes out of
+  // scope. Even though NewRunnableMethod does AddRef and Release, the object
+  // will not be deleted after the Task is executed.
+  scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer(
+      new FieldTrialSynchronizer());
 
   // Now that all preferences have been registered, set the install date
   // for the uninstall metrics if this is our first run. This only actually

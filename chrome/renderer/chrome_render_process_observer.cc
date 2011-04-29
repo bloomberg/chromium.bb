@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
@@ -390,6 +391,7 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
                         OnSetContentSettingsForCurrentURL)
     IPC_MESSAGE_HANDLER(ViewMsg_SetCacheCapacities, OnSetCacheCapacities)
     IPC_MESSAGE_HANDLER(ViewMsg_ClearCache, OnClearCache)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetFieldTrialGroup, OnSetFieldTrialGroup)
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ViewMsg_GetRendererTcmalloc, OnGetRendererTcmalloc)
 #endif
@@ -441,6 +443,12 @@ void ChromeRenderProcessObserver::OnGetRendererTcmalloc() {
 }
 #endif
 
+void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
+    const std::string& field_trial_name,
+    const std::string& group_name) {
+  base::FieldTrialList::CreateFieldTrial(field_trial_name, group_name);
+}
+
 void ChromeRenderProcessObserver::OnGetV8HeapStats() {
   v8::HeapStatistics heap_stats;
   v8::V8::GetHeapStatistics(&heap_stats);
@@ -476,3 +484,4 @@ void ChromeRenderProcessObserver::OnPurgeMemory() {
   MallocExtension::instance()->ReleaseFreeMemory();
 #endif
 }
+

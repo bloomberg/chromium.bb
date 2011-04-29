@@ -201,6 +201,12 @@ IPC_MESSAGE_CONTROL0(ViewMsg_GetCacheResourceStats)
 IPC_MESSAGE_CONTROL1(ViewMsg_GetRendererHistograms,
                      int /* sequence number of Renderer Histograms. */)
 
+// Tells the renderer to create a FieldTrial, and by using a 100% probability
+// for the FieldTrial, forces the FieldTrial to have assigned group name.
+IPC_MESSAGE_CONTROL2(ViewMsg_SetFieldTrialGroup,
+                     std::string /* field trial name */,
+                     std::string /* group name that was assigned. */)
+
 #if defined(USE_TCMALLOC)
 // Asks the renderer to send back tcmalloc stats.
 IPC_MESSAGE_CONTROL0(ViewMsg_GetRendererTcmalloc)

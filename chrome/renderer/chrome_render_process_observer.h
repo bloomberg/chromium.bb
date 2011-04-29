@@ -6,6 +6,8 @@
 #define CHROME_RENDERER_CHROME_RENDER_PROCESS_OBSERVER_H_
 #pragma once
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "content/renderer/render_process_observer.h"
 
@@ -35,6 +37,8 @@ class ChromeRenderProcessObserver : public RenderProcessObserver {
                             size_t capacity);
   void OnClearCache();
   void OnGetCacheResourceStats();
+  void OnSetFieldTrialGroup(const std::string& fiel_trial_name,
+                            const std::string& group_name);
   void OnGetRendererTcmalloc();
   void OnGetV8HeapStats();
   void OnPurgeMemory();
