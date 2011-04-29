@@ -52,6 +52,7 @@ function FileManager(dialogDom, rootEntries, params) {
   // DirectoryEntry representing the current directory of the dialog.
   this.currentDirEntry_ = null;
 
+  window.addEventListener('popstate', this.onPopState_.bind(this));
   this.addEventListener('directory-changed',
                         this.onDirectoryChanged_.bind(this));
   this.addEventListener('selection-summarized',
@@ -559,6 +560,16 @@ FileManager.prototype = {
         'change', this.onDetailSelectionChanged_.bind(this));
   };
 
+  /**
+   * Respond to the back button.
+   */
+  FileManager.prototype.onPopState_ = function(event) {
+    this.changeDirectory(event.state, false);
+  };
+
+  /**
+   * Resize details and thumb views to fit the new window size.
+   */
   FileManager.prototype.onResize_ = function() {
     this.table_.style.height = this.grid_.style.height =
       this.grid_.parentNode.clientHeight + 'px';
@@ -1154,9 +1165,17 @@ FileManager.prototype = {
    * changed.
    *
    * @param {string} path The absolute path to the new directory.
+   * @param {bool} opt_saveHistory Save this in the history stack (defaults
+   *     to true).
    */
-  FileManager.prototype.changeDirectory = function(path) {
+  FileManager.prototype.changeDirectory = function(path, opt_saveHistory) {
     var self = this;
+
+    if (arguments.length == 1) {
+      opt_saveHistory = true;
+    } else {
+      opt_saveHistory = !!opt_saveHistory;
+    }
 
     function onPathFound(dirEntry) {
       if (self.currentDirEntry_ &&
@@ -1168,6 +1187,7 @@ FileManager.prototype = {
       var e = new cr.Event('directory-changed');
       e.previousDirEntry = self.currentDirEntry_;
       e.newDirEntry = dirEntry;
+      e.saveHistory = opt_saveHistory;
       self.currentDirEntry_ = dirEntry;
       self.dispatchEvent(e);
     };
@@ -1309,6 +1329,12 @@ FileManager.prototype = {
    * @param {cr.Event} event The directory-changed event.
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
+    if (event.saveHistory) {
+      history.pushState(this.currentDirEntry_.fullPath,
+                        this.currentDirEntry_.fullPath,
+                        location.href);
+    }
+    this.document_.title = this.currentDirEntry_.fullPath;
     this.rescanDirectory_();
   };
 
