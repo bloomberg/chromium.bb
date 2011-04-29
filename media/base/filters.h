@@ -204,6 +204,8 @@ class VideoDecoder : public Filter {
   virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame) = 0;
 
   // Installs a permanent callback for passing decoded video output.
+  //
+  // A NULL frame represents a decoding error.
   typedef base::Callback<void(scoped_refptr<VideoFrame>)> ConsumeVideoFrameCB;
   void set_consume_video_frame_callback(const ConsumeVideoFrameCB& callback) {
     consume_video_frame_callback_ = callback;
