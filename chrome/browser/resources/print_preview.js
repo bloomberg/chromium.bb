@@ -29,6 +29,12 @@ var timerId;
 // Store the last selected printer index.
 var lastSelectedPrinterIndex = 0;
 
+// Indicates whether a preview has been requested but not received yet.
+var isPreviewStillLoading = false;
+
+// Currently selected printer capabilities.
+var printerCapabilities;
+
 /**
  * Window onload handler, sets up the page and starts print preview by getting
  * the printer list.
@@ -63,6 +69,7 @@ function onLoad() {
                                   function() { onCopiesButtonsClicked(1); });
   $('decrement').addEventListener('click',
                                   function() { onCopiesButtonsClicked(-1); });
+  $('controls').onsubmit = function() { return false; };
   chrome.send('getPrinters');
 }
 
@@ -82,7 +89,7 @@ function disablePreviewControls() {
                     'individual-pages'];
   var controlCount = controlIDs.length;
   for (var i = 0; i < controlCount; i++)
-    setControlAndLabelDisabled($(controlIDs[i]), true);
+    controlIDs[i].disabled = true;
 }
 
 /**
@@ -116,14 +123,19 @@ function updateControlsWithSelectedPrinterCapabilities() {
  * @param {Object} settingInfo printer setting information.
  */
 function updateWithPrinterCapabilities(settingInfo) {
+  printerCapabilities = settingInfo;
+
+  if (isPreviewStillLoading)
+    return;
+
   var disableColorOption = settingInfo.disableColorOption;
   var setColorAsDefault = settingInfo.setColorAsDefault;
   var colorOption = $('color');
   var bwOption = $('bw');
 
   if (disableColorOption != colorOption.disabled) {
-    setControlAndLabelDisabled(colorOption, disableColorOption);
-    setControlAndLabelDisabled(bwOption, disableColorOption);
+    colorOption.disabled = disableColorOption;
+    bwOption.disabled = disableColorOption;
   }
 
   if (colorOption.checked != setColorAsDefault) {
@@ -134,20 +146,16 @@ function updateWithPrinterCapabilities(settingInfo) {
 }
 
 /**
- * Disables the input control element and its associated label.
- * @param {HTMLElement} controlElm An input control element.
- * @param {boolean} disable set to true to disable element and label.
+ * Disables or enables all controls in the options pane except for the cancel
+ * button.
  */
-function setControlAndLabelDisabled(controlElm, disable) {
-  controlElm.disabled = disable;
-  var label = $(controlElm.getAttribute('label'));
-  if (label == undefined)
-    return;
-
-  if (disable)
-    label.classList.add('disabled-label-text');
-  else
-    label.classList.remove('disabled-label-text');
+function setControlsDisabled(disabled) {
+  var elementList = $('controls').elements;
+  for (var i = 0; i < elementList.length; ++i) {
+    if (elementList[i] == $('cancel-button'))
+      continue;
+    elementList[i].disabled = disabled;
+  }
 }
 
 /**
@@ -323,6 +331,8 @@ function printFile() {
  * Asks the browser to generate a preview PDF based on current print settings.
  */
 function requestPrintPreview() {
+  isPreviewStillLoading = true;
+  setControlsDisabled(true);
   $('dancing-dots').classList.remove('hidden');
   $('dancing-dots').classList.remove('invisible');
   chrome.send('getPreview', [getSettingsJSON()]);
@@ -389,6 +399,7 @@ function setColor(color) {
 function printPreviewFailed() {
   $('dancing-dots').classList.add('hidden');
   $('preview-failed').classList.remove('hidden');
+  setControlsDisabled(true);
 
   var pdfViewer = $('pdf-viewer');
   if (pdfViewer)
@@ -405,6 +416,8 @@ function onPDFLoad() {
     $('pdf-viewer').fitToHeight();
 
   $('dancing-dots').classList.add('invisible');
+  setControlsDisabled(false);
+  updateWithPrinterCapabilities(printerCapabilities);
 }
 
 /**
@@ -432,7 +445,7 @@ function updatePrintPreview(pageCount, jobTitle) {
   document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
 
   createPDFPlugin();
-
+  isPreviewStillLoading = false;
   updatePrintSummary();
 }
 
