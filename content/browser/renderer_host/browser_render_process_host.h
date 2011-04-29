@@ -17,8 +17,6 @@
 #include "base/timer.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "ui/gfx/surface/transport_dib.h"
 
@@ -45,7 +43,6 @@ class SharedMemory;
 // are correlated with IDs. This way, the Views and the corresponding ViewHosts
 // communicate through the two process objects.
 class BrowserRenderProcessHost : public RenderProcessHost,
-                                 public NotificationObserver,
                                  public ChildProcessLauncher::Client {
  public:
   explicit BrowserRenderProcessHost(Profile* profile);
@@ -76,11 +73,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
 
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
   // ChildProcessLauncher::Client implementation.
   virtual void OnProcessLaunched();
 
@@ -108,23 +100,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Callers can reduce the RenderProcess' priority.
   void SetBackgrounded(bool backgrounded);
 
-  // The renderer has requested that we initialize its spellchecker. This should
-  // generally only be called once per session, as after the first call, all
-  // future renderers will be passed the initialization information on startup
-  // (or when the dictionary changes in some way).
-  void OnSpellCheckerRequestDictionary();
-
-  // Tell the renderer of a new word that has been added to the custom
-  // dictionary.
-  void AddSpellCheckWord(const std::string& word);
-
-  // Pass the renderer some basic intialization information. Note that the
-  // renderer will not load Hunspell until it needs to.
-  void InitSpellChecker();
-
-  // Tell the renderer that auto spell correction has been enabled/disabled.
-  void EnableAutoSpellCorrect(bool enable);
-
   // Initializes client-side phishing detection.  Starts reading the phishing
   // model from the client-side detection service class.  Once the model is read
   // OpenPhishingModelDone() is invoked.
@@ -133,8 +108,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Called once the client-side detection service class is done with opening
   // the model file.
   void OpenPhishingModelDone(base::PlatformFile model_file);
-
-  NotificationRegistrar registrar_;
 
   // The count of currently visible widgets.  Since the host can be a container
   // for multiple widgets, it uses this count to determine when it should be

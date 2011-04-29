@@ -21,7 +21,8 @@ typedef InProcessBrowserTest SpellCheckMessageFilterBrowserTest;
 class TestingSpellCheckMessageFilter : public SpellCheckMessageFilter {
  public:
   explicit TestingSpellCheckMessageFilter(MessageLoopForUI* loop)
-      : loop_(loop) { }
+      : SpellCheckMessageFilter(0),
+        loop_(loop) { }
 
   ~TestingSpellCheckMessageFilter() {
     for (std::vector<IPC::Message*>::iterator i = sent_messages_.begin();

@@ -709,20 +709,6 @@ class NotificationType {
     // Profile, and the details aren't used.
     BOOKMARK_MODEL_LOADED,
 
-    // Sent when SpellCheckHost has been reloaded. The source is the profile,
-    // the details are NoDetails.
-    SPELLCHECK_HOST_REINITIALIZED,
-
-    // Sent when a new word has been added to the custom dictionary. The source
-    // is the SpellCheckHost, the details are NoDetails.
-    SPELLCHECK_WORD_ADDED,
-
-    // Sent by the profile when the automatic spell correction setting has been
-    // toggled. It exists as a notification rather than just letting interested
-    // parties listen for the pref change because some objects may outlive the
-    // profile. Source is profile, details is NoDetails.
-    SPELLCHECK_AUTOSPELL_TOGGLED,
-
     // Sent when the bookmark bubble is shown for a particular URL. The source
     // is the profile, the details the URL.
     BOOKMARK_BUBBLE_SHOWN,

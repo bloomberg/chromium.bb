@@ -35,14 +35,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
-#include "chrome/browser/spellcheck_host.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
-#include "chrome/common/spellcheck_messages.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/child_process_security_policy.h"
@@ -202,13 +200,6 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
       extension_process_(false),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   widget_helper_ = new RenderWidgetHelper();
-
-  registrar_.Add(this, NotificationType::SPELLCHECK_HOST_REINITIALIZED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::SPELLCHECK_WORD_ADDED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::SPELLCHECK_AUTOSPELL_TOGGLED,
-                 NotificationService::AllSources());
 
   WebCacheManager::GetInstance()->Add(id());
   ChildProcessSecurityPolicy::GetInstance()->Add(id());
@@ -824,8 +815,6 @@ bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
                           SuddenTerminationChanged)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                           OnUserMetricsRecordAction)
-      IPC_MESSAGE_HANDLER(SpellCheckHostMsg_RequestDictionary,
-                          OnSpellCheckerRequestDictionary)
       IPC_MESSAGE_UNHANDLED_ERROR()
     IPC_END_MESSAGE_MAP_EX()
 
@@ -945,45 +934,11 @@ void BrowserRenderProcessHost::SetBackgrounded(bool backgrounded) {
   child_process_launcher_->SetProcessBackgrounded(backgrounded);
 }
 
-void BrowserRenderProcessHost::Observe(NotificationType type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::SPELLCHECK_HOST_REINITIALIZED: {
-      InitSpellChecker();
-      break;
-    }
-    case NotificationType::SPELLCHECK_WORD_ADDED: {
-      AddSpellCheckWord(
-          reinterpret_cast<const Source<SpellCheckHost>*>(&source)->
-          ptr()->GetLastAddedFile());
-      break;
-    }
-    case NotificationType::SPELLCHECK_AUTOSPELL_TOGGLED: {
-      PrefService* prefs = profile()->GetPrefs();
-      EnableAutoSpellCorrect(
-          prefs->GetBoolean(prefs::kEnableAutoSpellCorrect));
-      break;
-    }
-    default: {
-      NOTREACHED();
-      break;
-    }
-  }
-}
-
 void BrowserRenderProcessHost::OnProcessLaunched() {
   if (child_process_launcher_.get())
     child_process_launcher_->SetProcessBackgrounded(backgrounded_);
 
   Send(new ViewMsg_SetIsIncognitoProcess(profile()->IsOffTheRecord()));
-
-  // We don't want to initialize the spellchecker unless SpellCheckHost has been
-  // created. In InitSpellChecker(), we know if GetSpellCheckHost() is NULL
-  // then the spellchecker has been turned off, but here, we don't know if
-  // it's been turned off or just not loaded yet.
-  if (profile()->GetSpellCheckHost())
-    InitSpellChecker();
 
   InitClientSidePhishingDetection();
 
@@ -1010,62 +965,6 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
 void BrowserRenderProcessHost::OnUserMetricsRecordAction(
     const std::string& action) {
   UserMetrics::RecordComputedAction(action);
-}
-
-void BrowserRenderProcessHost::OnSpellCheckerRequestDictionary() {
-  if (profile()->GetSpellCheckHost()) {
-    // The spellchecker initialization already started and finished; just send
-    // it to the renderer.
-    InitSpellChecker();
-  } else {
-    // We may have gotten multiple requests from different renderers. We don't
-    // want to initialize multiple times in this case, so we set |force| to
-    // false.
-    profile()->ReinitializeSpellCheckHost(false);
-  }
-}
-
-void BrowserRenderProcessHost::AddSpellCheckWord(const std::string& word) {
-  Send(new SpellCheckMsg_WordAdded(word));
-}
-
-void BrowserRenderProcessHost::InitSpellChecker() {
-  SpellCheckHost* spellcheck_host = profile()->GetSpellCheckHost();
-  if (spellcheck_host) {
-    PrefService* prefs = profile()->GetPrefs();
-    IPC::PlatformFileForTransit file;
-
-    if (spellcheck_host->GetDictionaryFile() !=
-        base::kInvalidPlatformFileValue) {
-#if defined(OS_POSIX)
-      file = base::FileDescriptor(spellcheck_host->GetDictionaryFile(), false);
-#elif defined(OS_WIN)
-      ::DuplicateHandle(::GetCurrentProcess(),
-                        spellcheck_host->GetDictionaryFile(),
-                        GetHandle(),
-                        &file,
-                        0,
-                        false,
-                        DUPLICATE_SAME_ACCESS);
-#endif
-    }
-
-    Send(new SpellCheckMsg_Init(
-        file,
-        spellcheck_host->GetCustomWords(),
-        spellcheck_host->GetLanguage(),
-        prefs->GetBoolean(prefs::kEnableAutoSpellCorrect)));
-  } else {
-    Send(new SpellCheckMsg_Init(
-        IPC::InvalidPlatformFileForTransit(),
-        std::vector<std::string>(),
-        std::string(),
-        false));
-  }
-}
-
-void BrowserRenderProcessHost::EnableAutoSpellCorrect(bool enable) {
-  Send(new SpellCheckMsg_EnableAutoSpellCorrect(enable));
 }
 
 void BrowserRenderProcessHost::InitClientSidePhishingDetection() {

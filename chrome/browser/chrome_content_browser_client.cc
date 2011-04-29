@@ -53,14 +53,14 @@ void ChromeContentBrowserClient::PreCreateRenderView(
 
 void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
     BrowserRenderProcessHost* host) {
+  int id = host->id();
+  Profile* profile = host->profile();
   host->channel()->AddFilter(new ChromeRenderMessageFilter(
-      host->id(),
-      host->profile(),
-      host->profile()->GetRequestContextForRenderProcess(host->id())));
+      id, profile, profile->GetRequestContextForRenderProcess(id)));
   host->channel()->AddFilter(new PrintingMessageFilter());
   host->channel()->AddFilter(
-      new SearchProviderInstallStateMessageFilter(host->id(), host->profile()));
-  host->channel()->AddFilter(new SpellCheckMessageFilter());
+      new SearchProviderInstallStateMessageFilter(id, profile));
+  host->channel()->AddFilter(new SpellCheckMessageFilter(id));
 }
 
 content::WebUIFactory* ChromeContentBrowserClient::GetWebUIFactory() {

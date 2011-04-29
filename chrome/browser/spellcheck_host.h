@@ -14,6 +14,7 @@
 #include "content/browser/browser_thread.h"
 
 class Profile;
+class RenderProcessHost;
 class SpellCheckHostObserver;
 
 namespace net {
@@ -56,6 +57,10 @@ class SpellCheckHost
   // Clears an observer which is set on creation.
   // Used to prevent calling back to a deleted object.
   virtual void UnsetObserver() = 0;
+
+  // Pass the renderer some basic intialization information. Note that the
+  // renderer will not load Hunspell until it needs to.
+  virtual void InitForRenderer(RenderProcessHost* process) = 0;
 
   // Adds the given word to the custom words list and inform renderer of the
   // update.

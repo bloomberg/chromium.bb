@@ -83,6 +83,7 @@
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/chrome_blob_storage_context.h"
@@ -1254,10 +1255,7 @@ void ProfileImpl::SpellCheckHostInitialized() {
   spellcheck_host_ready_ = spellcheck_host_ &&
       (spellcheck_host_->GetDictionaryFile() !=
        base::kInvalidPlatformFileValue ||
-       spellcheck_host_->IsUsingPlatformChecker());
-  NotificationService::current()->Notify(
-      NotificationType::SPELLCHECK_HOST_REINITIALIZED,
-          Source<Profile>(this), NotificationService::NoDetails());
+       spellcheck_host_->IsUsingPlatformChecker());;
 }
 
 ExtensionPrefValueMap* ProfileImpl::GetExtensionPrefValueMap() {
@@ -1297,9 +1295,12 @@ void ProfileImpl::Observe(NotificationType type,
         *pref_name_in == prefs::kEnableSpellCheck) {
       ReinitializeSpellCheckHost(true);
     } else if (*pref_name_in == prefs::kEnableAutoSpellCorrect) {
-      NotificationService::current()->Notify(
-          NotificationType::SPELLCHECK_AUTOSPELL_TOGGLED,
-              Source<Profile>(this), NotificationService::NoDetails());
+      bool enabled = prefs->GetBoolean(prefs::kEnableAutoSpellCorrect);
+      for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+           !i.IsAtEnd(); i.Advance()) {
+        RenderProcessHost* process = i.GetCurrentValue();
+        process->Send(new SpellCheckMsg_EnableAutoSpellCorrect(enabled));
+      }
     } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
       clear_local_state_on_exit_ =
           prefs->GetBoolean(prefs::kClearSiteDataOnExit);

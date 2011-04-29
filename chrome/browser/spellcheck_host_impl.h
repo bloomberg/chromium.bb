@@ -14,6 +14,8 @@
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/spellcheck_host_observer.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 // This class implements the SpellCheckHost interface to provide the
 // functionalities listed below:
@@ -36,7 +38,8 @@
 // Available languages for the checker, which we need to specify via Create(),
 // can be listed using SpellCheckHost::GetAvailableLanguages() static method.
 class SpellCheckHostImpl : public SpellCheckHost,
-                           public URLFetcher::Delegate {
+                           public URLFetcher::Delegate,
+                           public NotificationObserver {
  public:
   SpellCheckHostImpl(SpellCheckHostObserver* observer,
                      const std::string& language,
@@ -45,19 +48,13 @@ class SpellCheckHostImpl : public SpellCheckHost,
   void Initialize();
 
   // SpellCheckHost implementation
-
   virtual void UnsetObserver();
-
+  virtual void InitForRenderer(RenderProcessHost* process);
   virtual void AddWord(const std::string& word);
-
   virtual const base::PlatformFile& GetDictionaryFile() const;
-
   virtual const std::vector<std::string>& GetCustomWords() const;
-
   virtual const std::string& GetLastAddedFile() const;
-
   virtual const std::string& GetLanguage() const;
-
   virtual bool IsUsingPlatformChecker() const;
 
  private:
@@ -99,6 +96,11 @@ class SpellCheckHostImpl : public SpellCheckHost,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   // Saves |data_| to disk. Run on the file thread.
   void SaveDictionaryData();
 
@@ -136,6 +138,8 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   // Used for downloading the dictionary file.
   scoped_ptr<URLFetcher> fetcher_;
+
+  NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECK_HOST_IMPL_H_

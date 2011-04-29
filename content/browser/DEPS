@@ -109,9 +109,6 @@ include_rules = [
   "+chrome/browser/renderer_host/safe_browsing_resource_handler.h",
   "+chrome/common/safe_browsing/safebrowsing_messages.h",
 
-  "+chrome/browser/spellcheck_host.h",
-  "+chrome/common/spellcheck_messages.h",
-
   "+chrome/browser/sessions/session_id.h",
   "+chrome/browser/sessions/session_types.h",
 
@@ -146,8 +143,6 @@ include_rules = [
   "+chrome/common/logging_chrome.h",
   "+chrome/common/render_messages.h",
   "+chrome/common/url_constants.h",
-
-  "+chrome/common/icon_messages.h",
 
   # http://crbug.com/77091
   "+chrome/common/instant_types.h",
