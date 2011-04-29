@@ -83,6 +83,16 @@ class Session {
                           const ListValue* const args,
                           Value** value);
 
+  // Executes given |script| in the context of the given frame.
+  // The |script| should be in the form of a function body
+  // (e.g. "return arguments[0]"), where |args| is the list of arguments to
+  // pass to the function. The caller is responsible for the script result
+  // |value|.
+  ErrorCode ExecuteAsyncScript(const FrameId& frame_id,
+                               const std::string& script,
+                               const ListValue* const args,
+                               Value** value);
+
   // Send the given keys to the given element dictionary. This function takes
   // ownership of |element|.
   ErrorCode SendKeys(const WebElementId& element, const string16& keys);
@@ -214,7 +224,10 @@ class Session {
 
   const FrameId& current_target() const;
 
-  void set_implicit_wait(const int& timeout);
+  void set_async_script_timeout(int timeout_ms);
+  int async_script_timeout() const;
+
+  void set_implicit_wait(int timeout_ms);
   int implicit_wait() const;
 
   void set_speed(Speed speed);
@@ -235,6 +248,14 @@ class Session {
       base::WaitableEvent* done_event);
   void InitOnSessionThread(const FilePath& browser_dir, ErrorCode* code);
   void TerminateOnSessionThread();
+
+  // Executes the given |script| in the context of the given frame.
+  // Waits for script to finish and parses the response.
+  // The caller is responsible for the script result |value|.
+  ErrorCode ExecuteScriptAndParseResponse(const FrameId& frame_id,
+                                          const std::string& script,
+                                          Value** value);
+
   void SendKeysOnSessionThread(const string16& keys, bool* success);
   ErrorCode SwitchToFrameWithJavaScriptLocatedFrame(
       const std::string& script,
@@ -255,6 +276,9 @@ class Session {
 
   scoped_ptr<Automation> automation_;
   base::Thread thread_;
+
+  // Timeout (in ms) for asynchronous script execution.
+  int async_script_timeout_;
 
   // Time (in ms) of how long to wait while searching for a single element.
   int implicit_wait_;

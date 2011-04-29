@@ -59,6 +59,7 @@ Session::Session()
     : id_(GenerateRandomID()),
       current_target_(FrameId(0, FramePath())),
       thread_(id_.c_str()),
+      async_script_timeout_(0),
       implicit_wait_(0),
       screenshot_on_error_(false),
       use_native_events_(false) {
@@ -111,69 +112,38 @@ ErrorCode Session::ExecuteScript(const FrameId& frame_id,
       "[function(){%s\n},%s,true]));",
       atoms::EXECUTE_SCRIPT, script.c_str(), args_as_json.c_str());
 
-  // Should we also log the script that's being executed? It could be several KB
-  // in size and will add lots of noise to the logs.
-  VLOG(1) << "Executing script in frame: " << frame_id.frame_path.value();
-
-  std::string result;
-  bool success = false;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
-      &Automation::ExecuteScript,
-      frame_id.window_id,
-      frame_id.frame_path,
-      jscript,
-      &result,
-      &success));
-  if (!success) {
-    LOG(ERROR) << "Automation failed to execute script";
-    *value = Value::CreateStringValue(
-        "Unknown internal script execution failure");
-    return kUnknownError;
-  }
-
-  VLOG(1) << "...script result: " << result;
-  scoped_ptr<Value> r(base::JSONReader::ReadAndReturnError(
-      result, true, NULL, NULL));
-  if (!r.get()) {
-    LOG(ERROR) << "Failed to parse script result";
-    *value = Value::CreateStringValue(
-        "Internal script execution error: failed to parse script result");
-    return kUnknownError;
-  }
-
-  if (r->GetType() != Value::TYPE_DICTIONARY) {
-    LOG(ERROR) << "Execute script returned non-dictionary type";
-    std::ostringstream stream;
-    stream << "Internal script execution error: script result must be a "
-           << print_valuetype(Value::TYPE_DICTIONARY) << ", but was "
-           << print_valuetype(r->GetType()) << ": " << result;
-    *value = Value::CreateStringValue(stream.str());
-    return kUnknownError;
-  }
-
-  DictionaryValue* result_dict = static_cast<DictionaryValue*>(r.get());
-
-  Value* tmp;
-  if (result_dict->Get("value", &tmp)) {
-    // result_dict owns the returned value, so we need to make a copy.
-    *value = tmp->DeepCopy();
-  } else {
-    // "value" was not defined in the returned dictionary, set to null.
-    *value = Value::CreateNullValue();
-  }
-
-  int status;
-  if (!result_dict->GetInteger("status", &status)) {
-    NOTREACHED() << "...script did not return a status flag.";
-  }
-  return static_cast<ErrorCode>(status);
+  return ExecuteScriptAndParseResponse(frame_id, jscript, value);
 }
 
 ErrorCode Session::ExecuteScript(const std::string& script,
                                  const ListValue* const args,
                                  Value** value) {
   return ExecuteScript(current_target_, script, args, value);
+}
+
+ErrorCode Session::ExecuteAsyncScript(const FrameId& frame_id,
+                                      const std::string& script,
+                                      const ListValue* const args,
+                                      Value** value) {
+  std::string args_as_json;
+  base::JSONWriter::Write(static_cast<const Value* const>(args),
+                          /*pretty_print=*/false,
+                          &args_as_json);
+
+  int timeout_ms = async_script_timeout();
+
+  // Every injected script is fed through the executeScript atom. This atom
+  // will catch any errors that are thrown and convert them to the
+  // appropriate JSON structure.
+  std::string jscript = base::StringPrintf(
+      "(%s).apply(null, [function(){%s},%s,%d,%s,true]);",
+      atoms::EXECUTE_ASYNC_SCRIPT,
+      script.c_str(),
+      args_as_json.c_str(),
+      timeout_ms,
+      "function(result) {window.domAutomationController.send(result);}");
+
+  return ExecuteScriptAndParseResponse(frame_id, jscript, value);
 }
 
 ErrorCode Session::SendKeys(const WebElementId& element, const string16& keys) {
@@ -907,8 +877,16 @@ const FrameId& Session::current_target() const {
   return current_target_;
 }
 
-void Session::set_implicit_wait(const int& timeout) {
-  implicit_wait_ = timeout > 0 ? timeout : 0;
+void Session::set_async_script_timeout(int timeout_ms) {
+  async_script_timeout_ = timeout_ms;
+}
+
+int Session::async_script_timeout() const {
+  return async_script_timeout_;
+}
+
+void Session::set_implicit_wait(int timeout_ms) {
+  implicit_wait_ = timeout_ms;
 }
 
 int Session::implicit_wait() const {
@@ -983,6 +961,69 @@ void Session::TerminateOnSessionThread() {
   if (automation_.get())
     automation_->Terminate();
   automation_.reset();
+}
+
+ErrorCode Session::ExecuteScriptAndParseResponse(const FrameId& frame_id,
+                                                 const std::string& script,
+                                                 Value** value) {
+
+  // Should we also log the script that's being executed? It could be several KB
+  // in size and will add lots of noise to the logs.
+  VLOG(1) << "Executing script in frame: " << frame_id.frame_path.value();
+
+  std::string result;
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::ExecuteScript,
+      frame_id.window_id,
+      frame_id.frame_path,
+      script,
+      &result,
+      &success));
+  if (!success) {
+    LOG(ERROR) << "Automation failed to execute script";
+    *value = Value::CreateStringValue(
+        "Unknown internal script execution failure");
+    return kUnknownError;
+  }
+
+  VLOG(1) << "...script result: " << result;
+  scoped_ptr<Value> r(base::JSONReader::ReadAndReturnError(
+      result, true, NULL, NULL));
+  if (!r.get()) {
+    LOG(ERROR) << "Failed to parse script result";
+    *value = Value::CreateStringValue(
+        "Internal script execution error: failed to parse script result");
+    return kUnknownError;
+  }
+
+  if (r->GetType() != Value::TYPE_DICTIONARY) {
+    LOG(ERROR) << "Execute script returned non-dictionary type";
+    std::ostringstream stream;
+    stream << "Internal script execution error: script result must be a "
+           << print_valuetype(Value::TYPE_DICTIONARY) << ", but was "
+           << print_valuetype(r->GetType()) << ": " << result;
+    *value = Value::CreateStringValue(stream.str());
+    return kUnknownError;
+  }
+
+  DictionaryValue* result_dict = static_cast<DictionaryValue*>(r.get());
+
+  Value* tmp;
+  if (result_dict->Get("value", &tmp)) {
+    // result_dict owns the returned value, so we need to make a copy.
+    *value = tmp->DeepCopy();
+  } else {
+    // "value" was not defined in the returned dictionary; set to null.
+    *value = Value::CreateNullValue();
+  }
+
+  int status;
+  if (!result_dict->GetInteger("status", &status)) {
+    NOTREACHED() << "...script did not return a status flag.";
+  }
+  return static_cast<ErrorCode>(status);
 }
 
 void Session::SendKeysOnSessionThread(const string16& keys, bool* success) {

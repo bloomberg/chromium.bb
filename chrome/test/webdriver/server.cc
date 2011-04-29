@@ -33,13 +33,14 @@
 #include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/commands/cookie_commands.h"
 #include "chrome/test/webdriver/commands/create_session.h"
+#include "chrome/test/webdriver/commands/execute_async_script_command.h"
 #include "chrome/test/webdriver/commands/execute_command.h"
 #include "chrome/test/webdriver/commands/find_element_commands.h"
-#include "chrome/test/webdriver/commands/implicit_wait_command.h"
 #include "chrome/test/webdriver/commands/navigate_commands.h"
 #include "chrome/test/webdriver/commands/mouse_commands.h"
 #include "chrome/test/webdriver/commands/screenshot_command.h"
 #include "chrome/test/webdriver/commands/session_with_id.h"
+#include "chrome/test/webdriver/commands/set_timeout_commands.h"
 #include "chrome/test/webdriver/commands/source_command.h"
 #include "chrome/test/webdriver/commands/speed_command.h"
 #include "chrome/test/webdriver/commands/target_locator_commands.h"
@@ -127,6 +128,8 @@ void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
   // attribute of the element.
   dispatcher->Add<BackCommand>(         "/session/*/back");
   dispatcher->Add<ExecuteCommand>(      "/session/*/execute");
+  dispatcher->Add<ExecuteAsyncScriptCommand>(
+                                        "/session/*/execute_async");
   dispatcher->Add<ForwardCommand>(      "/session/*/forward");
   dispatcher->Add<SwitchFrameCommand>(  "/session/*/frame");
   dispatcher->Add<RefreshCommand>(      "/session/*/refresh");
@@ -137,16 +140,13 @@ void InitCallbacks(struct mg_context* ctx, Dispatcher* dispatcher,
   dispatcher->Add<WindowCommand>(       "/session/*/window");
   dispatcher->Add<WindowHandleCommand>( "/session/*/window_handle");
   dispatcher->Add<WindowHandlesCommand>("/session/*/window_handles");
+  dispatcher->Add<SetAsyncScriptTimeoutCommand>(
+                                        "/session/*/timeouts/async_script");
   dispatcher->Add<ImplicitWaitCommand>( "/session/*/timeouts/implicit_wait");
 
   // Cookie functions.
   dispatcher->Add<CookieCommand>(     "/session/*/cookie");
   dispatcher->Add<NamedCookieCommand>("/session/*/cookie/*");
-
-  // Commands that have not been implemented yet. We list these out explicitly
-  // so that tests that attempt to use them fail with a meaningful error.
-  dispatcher->SetNotImplemented("/session/*/execute_async");
-  dispatcher->SetNotImplemented("/session/*/timeouts/async_script");
 
   // Since the /session/* is a wild card that would match the above URIs, this
   // line MUST be after all other webdriver command callbacks.
