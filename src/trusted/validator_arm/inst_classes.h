@@ -1,8 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- * Copyright 2009, Google Inc.
+ * Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_INST_CLASSES_H
@@ -446,17 +445,6 @@ class Multiply : public ClassDecoder {
 class LongMultiply : public Multiply {
  public:
   virtual ~LongMultiply() {}
-
-  virtual RegisterList defs(Instruction i) const;
-};
-
-/*
- * Models a weird variation on double-word multiply instructions, where
- * the destination registers are identified in 15:12 and 11:8.
- */
-class LongMultiply15_8 : public Multiply {
- public:
-  virtual ~LongMultiply15_8() {}
 
   virtual RegisterList defs(Instruction i) const;
 };

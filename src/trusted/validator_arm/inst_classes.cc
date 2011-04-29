@@ -1,8 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- * Copyright 2009, Google Inc.
+ * Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/validator_arm/inst_classes.h"
@@ -102,11 +101,6 @@ RegisterList Multiply::defs(const Instruction i) const {
 
 RegisterList LongMultiply::defs(const Instruction i) const {
   return Multiply::defs(i) + i.reg(15, 12);
-}
-
-
-RegisterList LongMultiply15_8::defs(const Instruction i) const {
-  return kRegisterFlags + i.reg(15, 12) + i.reg(11, 8);
 }
 
 
