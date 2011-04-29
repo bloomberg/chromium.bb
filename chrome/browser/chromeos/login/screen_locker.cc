@@ -209,6 +209,13 @@ class LockWindow : public views::WidgetGtk {
     return false;
   }
 
+  virtual gboolean OnButtonPress(GtkWidget* widget,
+                                 GdkEventButton* event) OVERRIDE {
+    // Don't handle mouse event in the lock wnidow and
+    // nor propagate to child.
+    return true;
+  }
+
   virtual void OnDestroy(GtkWidget* object) OVERRIDE {
     VLOG(1) << "OnDestroy: LockWindow destroyed";
     views::WidgetGtk::OnDestroy(object);
@@ -863,9 +870,6 @@ void ScreenLocker::OnCaptchaEntered(const std::string& captcha) {
 }
 
 void ScreenLocker::Authenticate(const string16& password) {
-  if (password.empty())
-    return;
-
   authentication_start_time_ = base::Time::Now();
   screen_lock_view_->SetEnabled(false);
   screen_lock_view_->SetSignoutEnabled(false);
