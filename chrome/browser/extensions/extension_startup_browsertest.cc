@@ -28,13 +28,7 @@
 class ExtensionStartupTestBase : public InProcessBrowserTest {
  public:
   ExtensionStartupTestBase() : enable_extensions_(false) {
-#if defined(OS_CHROMEOS)
-    // Chromeos disallows extensions with NPAPI plug-ins, so it's count is one
-    // less
-    num_expected_extensions_ = 2;
-#else
     num_expected_extensions_ = 3;
-#endif
   }
 
  protected:

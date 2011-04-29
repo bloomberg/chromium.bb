@@ -1936,13 +1936,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       return false;
     }
 
-#if defined(OS_CHROMEOS)
-    if (list_value->GetSize() > 0) {
-      *error = errors::kIllegalPlugins;
-      return false;
-    }
-#endif
-
     for (size_t i = 0; i < list_value->GetSize(); ++i) {
       DictionaryValue* plugin_value = NULL;
       std::string path_str;
@@ -1969,9 +1962,14 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
         }
       }
 
+      // We don't allow extension plugins to run on Chrome OS. We still
+      // parse the manifest entry so that error messages are consistently
+      // displayed across platforms.
+#if !defined(OS_CHROMEOS)
       plugins_.push_back(PluginInfo());
       plugins_.back().path = path().AppendASCII(path_str);
       plugins_.back().is_public = is_public;
+#endif
     }
   }
 

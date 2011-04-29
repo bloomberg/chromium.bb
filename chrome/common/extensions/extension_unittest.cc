@@ -1215,6 +1215,21 @@ TEST(ExtensionTest, GetHostPermissionMessages_ManyHosts) {
             UTF16ToUTF8(warnings[0]));
 }
 
+TEST(ExtensionTest, GetPermissionMessages_Plugins) {
+  scoped_refptr<Extension> extension;
+  extension = LoadManifest("permissions", "plugins.json");
+  std::vector<string16> warnings = extension->GetPermissionMessageStrings();
+  // We don't parse the plugins key on Chrome OS, so it should not ask for any
+  // permissions.
+#if defined(OS_CHROMEOS)
+  ASSERT_EQ(0u, warnings.size());
+#else
+  ASSERT_EQ(1u, warnings.size());
+  EXPECT_EQ("All data on your computer and the websites you visit",
+            UTF16ToUTF8(warnings[0]));
+#endif
+}
+
 TEST(ExtensionTest, WantsFileAccess) {
   scoped_refptr<Extension> extension;
   GURL file_url("file:///etc/passwd");

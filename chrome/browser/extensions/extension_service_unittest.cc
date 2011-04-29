@@ -922,12 +922,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
 
   service_->Init();
 
-  // On Chrome OS, we disallow extensions with plugins.  "good1" has plugins,
-  // so we need to edit it out here.
   uint32 expected_num_extensions = 3u;
-#if defined(OS_CHROMEOS)
-  --expected_num_extensions;
-#endif
   ASSERT_EQ(expected_num_extensions, loaded_.size());
 
   EXPECT_EQ(std::string(good0), loaded_[0]->id());
@@ -985,22 +980,26 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_EQ("http://*.google.com/*", permissions[0].GetAsString());
   EXPECT_EQ("https://*.google.com/*", permissions[1].GetAsString());
 
-#if !defined(OS_CHROMEOS)
   EXPECT_EQ(std::string(good1), loaded_[1]->id());
   EXPECT_EQ(std::string("My extension 2"), loaded_[1]->name());
   EXPECT_EQ(std::string(""), loaded_[1]->description());
   EXPECT_EQ(loaded_[1]->GetResourceURL("background.html"),
             loaded_[1]->background_url());
   EXPECT_EQ(0u, loaded_[1]->content_scripts().size());
-  EXPECT_EQ(2u, loaded_[1]->plugins().size());
+  // We don't parse the plugins section on Chrome OS.
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ(0u, loaded_[1]->plugins().size());
+#else
+  ASSERT_EQ(2u, loaded_[1]->plugins().size());
   EXPECT_EQ(loaded_[1]->path().AppendASCII("content_plugin.dll").value(),
             loaded_[1]->plugins()[0].path.value());
   EXPECT_TRUE(loaded_[1]->plugins()[0].is_public);
   EXPECT_EQ(loaded_[1]->path().AppendASCII("extension_plugin.dll").value(),
             loaded_[1]->plugins()[1].path.value());
   EXPECT_FALSE(loaded_[1]->plugins()[1].is_public);
-  EXPECT_EQ(Extension::INTERNAL, loaded_[1]->location());
 #endif
+
+  EXPECT_EQ(Extension::INTERNAL, loaded_[1]->location());
 
   int index = expected_num_extensions - 1;
   EXPECT_EQ(std::string(good2), loaded_[index]->id());
@@ -2408,36 +2407,6 @@ TEST_F(ExtensionServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
   EXPECT_NE(std::string(good1), loaded_[0]->id());
   EXPECT_NE(std::string(good1), loaded_[1]->id());
 }
-
-#if defined(OS_CHROMEOS)
-// Test loading extensions from the profile directory, except
-// ones with a plugin.
-TEST_F(ExtensionServiceTest, WillNotLoadPluginExtensionsFromDirectory) {
-  // Initialize the test dir with a good Preferences/extensions.
-  FilePath source_install_dir = data_dir_
-      .AppendASCII("good")
-      .AppendASCII("Extensions");
-  FilePath pref_path = source_install_dir
-      .DirName()
-      .AppendASCII("Preferences");
-  InitializeInstalledExtensionService(pref_path, source_install_dir);
-
-  // good1 contains a plugin.
-  // Load extensions.
-  service_->Init();
-  loop_.RunAllPending();
-
-  std::vector<std::string> errors = GetErrors();
-  for (std::vector<std::string>::iterator err = errors.begin();
-    err != errors.end(); ++err) {
-    LOG(ERROR) << *err;
-  }
-  ASSERT_EQ(2u, loaded_.size());
-
-  EXPECT_NE(std::string(good1), loaded_[0]->id());
-  EXPECT_NE(std::string(good1), loaded_[1]->id());
-}
-#endif
 
 // Will not install extension blacklisted by policy.
 TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {

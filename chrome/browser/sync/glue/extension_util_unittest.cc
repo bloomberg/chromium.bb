@@ -74,12 +74,6 @@ scoped_refptr<Extension> MakeExtension(
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
       extension_path, location, source, Extension::STRICT_ERROR_CHECKS, &error);
-#if defined(OS_CHROMEOS)
-  if (num_plugins > 0) {  // plugins are illegal in extensions on chrome os.
-    EXPECT_FALSE(extension);
-    return NULL;
-  }
-#endif
   EXPECT_TRUE(extension);
   EXPECT_EQ("", error);
   return extension;
@@ -137,6 +131,9 @@ TEST_F(ExtensionUtilTest, IsExtensionValid) {
             Extension::INTERNAL, 0, file_path));
     EXPECT_FALSE(IsExtensionValid(*extension));
   }
+  // These last 2 tests don't make sense on Chrome OS, where extension plugins
+  // are not allowed.
+#if !defined(OS_CHROMEOS)
   {
     FilePath file_path(kExtensionFilePath);
     scoped_refptr<Extension> extension(
@@ -151,6 +148,7 @@ TEST_F(ExtensionUtilTest, IsExtensionValid) {
                       Extension::INTERNAL, 2, file_path));
     EXPECT_FALSE(extension && IsExtensionValid(*extension));
   }
+#endif
 }
 
 TEST_F(ExtensionUtilTest, SpecificsToSyncData) {
