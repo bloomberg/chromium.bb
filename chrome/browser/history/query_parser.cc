@@ -10,12 +10,10 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
-#include "base/memory/scoped_vector.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "unicode/uscript.h"
 
 namespace {
 
@@ -36,8 +34,7 @@ bool SnippetIntersects(const Snippet::MatchPosition& mp1,
 
 // Coalesces match positions in |matches| after index that intersect the match
 // position at |index|.
-void CoalesceMatchesFrom(size_t index,
-                         Snippet::MatchPositions* matches) {
+void CoalesceMatchesFrom(size_t index, Snippet::MatchPositions* matches) {
   Snippet::MatchPosition& mp = (*matches)[index];
   for (Snippet::MatchPositions::iterator i = matches->begin() + index + 1;
        i != matches->end(); ) {
@@ -58,6 +55,16 @@ void CoalseAndSortMatchPositions(Snippet::MatchPositions* matches) {
   // from matches.
   for (size_t i = 0; i < matches->size(); ++i)
     CoalesceMatchesFrom(i, matches);
+}
+
+// Returns true if the character is considered a quote.
+bool IsQueryQuote(wchar_t ch) {
+  return ch == '"' ||
+         ch == 0xab ||    // left pointing double angle bracket
+         ch == 0xbb ||    // right pointing double angle bracket
+         ch == 0x201c ||  // left double quotation mark
+         ch == 0x201d ||  // right double quotation mark
+         ch == 0x201e;    // double low-9 quotation mark
 }
 
 }  // namespace
@@ -290,18 +297,7 @@ bool QueryParser::IsWordLongEnoughForPrefixSearch(const string16& word) {
   return word.size() >= minimum_length;
 }
 
-// Returns true if the character is considered a quote.
-static bool IsQueryQuote(wchar_t ch) {
-  return ch == '"' ||
-         ch == 0xab ||    // left pointing double angle bracket
-         ch == 0xbb ||    // right pointing double angle bracket
-         ch == 0x201c ||  // left double quotation mark
-         ch == 0x201d ||  // right double quotation mark
-         ch == 0x201e;    // double low-9 quotation mark
-}
-
-int QueryParser::ParseQuery(const string16& query,
-                            string16* sqlite_query) {
+int QueryParser::ParseQuery(const string16& query, string16* sqlite_query) {
   QueryNodeList root;
   if (!ParseQueryImpl(query, &root))
     return 0;
@@ -355,8 +351,7 @@ bool QueryParser::DoesQueryMatch(const string16& text,
   return true;
 }
 
-bool QueryParser::ParseQueryImpl(const string16& query,
-                                QueryNodeList* root) {
+bool QueryParser::ParseQueryImpl(const string16& query, QueryNodeList* root) {
   base::BreakIterator iter(&query, base::BreakIterator::BREAK_WORD);
   // TODO(evanm): support a locale here
   if (!iter.Init())
