@@ -62,6 +62,7 @@
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
+#include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
@@ -94,6 +95,7 @@
 #include "webkit/plugins/ppapi/ppb_proxy_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 #include "webkit/plugins/ppapi/ppb_transport_impl.h"
+#include "webkit/plugins/ppapi/ppb_uma_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_response_info_impl.h"
@@ -299,6 +301,8 @@ const void* GetInterface(const char* name) {
     return PPB_Proxy_Impl::GetInterface();
   if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE) == 0)
     return PPB_Scrollbar_Impl::GetInterface();
+  if (strcmp(name, PPB_UMA_PRIVATE_INTERFACE) == 0)
+    return PPB_UMA_Private_Impl::GetInterface();
   if (strcmp(name, PPB_URLLOADER_INTERFACE) == 0)
     return PPB_URLLoader_Impl::GetInterface();
   if (strcmp(name, PPB_URLLOADERTRUSTED_INTERFACE) == 0)

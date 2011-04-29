@@ -224,6 +224,8 @@
         'tests/test_scrollbar.cc',
         'tests/test_scrollbar.h',
         'tests/test_struct_sizes.c',
+        'tests/test_uma.cc',
+        'tests/test_uma.h',
         'tests/test_url_loader.cc',
         'tests/test_url_loader.h',
         'tests/test_url_util.cc',

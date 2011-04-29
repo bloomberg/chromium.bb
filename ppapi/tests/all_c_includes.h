@@ -87,6 +87,7 @@
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppp_instance_private.h"
+#include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
