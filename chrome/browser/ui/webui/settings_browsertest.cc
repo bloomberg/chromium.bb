@@ -68,7 +68,7 @@ class SettingsWebUITest : public WebUIBrowserTest {
  protected:
   virtual void SetUpInProcessBrowserTestFixture() {
     WebUIBrowserTest::SetUpInProcessBrowserTestFixture();
-    AddLibrary(FILE_PATH_LITERAL("settings.js"));
+    AddLibrary(FilePath(FILE_PATH_LITERAL("settings.js")));
   }
 
   virtual void SetUpOnMainThread() {

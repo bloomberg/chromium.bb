@@ -27,7 +27,9 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   virtual ~WebUIBrowserTest();
 
   // Add a custom helper JS library for your test.
-  void AddLibrary(const FilePath::CharType* library_path);
+  // If a relative path is specified, it'll be read
+  // as relative to the test data dir.
+  void AddLibrary(const FilePath& library_path);
 
   // Runs a javascript function in the context of all libraries.
   // Note that calls to functions in test_api.js are not supported.

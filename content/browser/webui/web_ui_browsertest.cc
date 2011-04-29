@@ -102,7 +102,7 @@ void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
   PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
   ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
 
-  AddLibrary(kWebUILibraryJS);
+  AddLibrary(FilePath(kWebUILibraryJS));
 }
 
 WebUIMessageHandler* WebUIBrowserTest::GetMockMessageHandler() {
@@ -117,9 +117,14 @@ void WebUIBrowserTest::BuildJavascriptLibraries(std::string* content) {
   for (user_libraries_iterator = user_libraries.begin();
        user_libraries_iterator != user_libraries.end();
        ++user_libraries_iterator) {
-    ASSERT_TRUE(file_util::ReadFileToString(
-        test_data_directory_.Append(*user_libraries_iterator),
-            &library_content));
+    if (user_libraries_iterator->IsAbsolute()) {
+      ASSERT_TRUE(file_util::ReadFileToString(*user_libraries_iterator,
+                                              &library_content));
+    } else {
+      ASSERT_TRUE(file_util::ReadFileToString(
+          test_data_directory_.Append(*user_libraries_iterator),
+              &library_content));
+    }
     content->append(library_content);
     content->append(";\n");
   }
@@ -183,12 +188,12 @@ void WebUIBrowserTest::SetupHandlers() {
     GetMockMessageHandler()->Attach(web_ui_instance);
 }
 
-void WebUIBrowserTest::AddLibrary(const FilePath::CharType* library_path) {
-  user_libraries.push_back(FilePath(library_path));
+void WebUIBrowserTest::AddLibrary(const FilePath& library_path) {
+  user_libraries.push_back(library_path);
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBrowserTest, TestSamplePass) {
-  AddLibrary(FILE_PATH_LITERAL("sample_downloads.js"));
+  AddLibrary(FilePath(FILE_PATH_LITERAL("sample_downloads.js")));
 
   // Navigate to UI.
   // TODO(dtseng): make accessor for subclasses to return?

@@ -1,12 +1,13 @@
 #!/bin/bash
 #
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
 # A script to setup symbolic links needed for Chrome's automated UI tests.
 
-ln -f -s /opt/google/chrome/chrome $(dirname $0)/chrome
+# TODO(rkc): Figure out why does the sym linking break tests, eventually
+cp /opt/google/chrome/chrome $(dirname $0)/chrome
 ln -f -s /opt/google/chrome/chrome.pak $(dirname $0)/chrome.pak
 ln -f -s /opt/google/chrome/locales $(dirname $0)/locales
 ln -f -s /opt/google/chrome/resources $(dirname $0)/resources
