@@ -101,7 +101,10 @@ void ExtensionPrefValueMap::UnregisterExtension(const std::string& ext_id) {
 void ExtensionPrefValueMap::SetExtensionState(const std::string& ext_id,
                                               bool is_enabled) {
   ExtensionEntryMap::const_iterator i = entries_.find(ext_id);
-  CHECK(i != entries_.end());
+  // This may happen when sync sets the extension state for an
+  // extension that is not installed.
+  if (i == entries_.end())
+    return;
   if (i->second->enabled == is_enabled)
     return;
   std::set<std::string> keys;  // keys set by this extension

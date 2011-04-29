@@ -749,12 +749,17 @@ bool ExtensionService::IsExternalExtensionUninstalled(
 void ExtensionService::EnableExtension(const std::string& extension_id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const Extension* extension =
-      GetExtensionByIdInternal(extension_id, false, true, false);
-  if (!extension)
+  if (IsExtensionEnabled(extension_id))
     return;
 
   extension_prefs_->SetExtensionState(extension_id, Extension::ENABLED);
+
+  const Extension* extension =
+      GetExtensionByIdInternal(extension_id, false, true, false);
+  // This can happen if sync enables an extension that is not
+  // installed yet.
+  if (!extension)
+    return;
 
   // Move it over to the enabled list.
   extensions_.push_back(make_scoped_refptr(extension));
@@ -772,23 +777,35 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
 void ExtensionService::DisableExtension(const std::string& extension_id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const Extension* extension =
-      GetExtensionByIdInternal(extension_id, true, false, false);
   // The extension may have been disabled already.
-  if (!extension)
+  if (!IsExtensionEnabled(extension_id))
     return;
 
-  if (!Extension::UserMayDisable(extension->location()))
+  const Extension* extension = GetInstalledExtension(extension_id);
+  // |extension| can be NULL if sync disables an extension that is not
+  // installed yet.
+  if (extension && !Extension::UserMayDisable(extension->location()))
     return;
 
   extension_prefs_->SetExtensionState(extension_id, Extension::DISABLED);
+
+  extension = GetExtensionByIdInternal(extension_id, true, false, true);
+  if (!extension)
+    return;
 
   // Move it over to the disabled list.
   disabled_extensions_.push_back(make_scoped_refptr(extension));
   ExtensionList::iterator iter = std::find(extensions_.begin(),
                                            extensions_.end(),
                                            extension);
-  extensions_.erase(iter);
+  if (iter != extensions_.end()) {
+    extensions_.erase(iter);
+  } else {
+    iter = std::find(terminated_extensions_.begin(),
+                     terminated_extensions_.end(),
+                     extension);
+    terminated_extensions_.erase(iter);
+  }
 
   NotifyExtensionUnloaded(extension, UnloadedExtensionInfo::DISABLE);
 }
@@ -1352,21 +1369,17 @@ void ExtensionService::ProcessSyncData(
     return;
   }
 
+  // Set user settings.
+  if (extension_sync_data.enabled) {
+    EnableExtension(id);
+  } else {
+    DisableExtension(id);
+  }
   SetIsIncognitoEnabled(id, extension_sync_data.incognito_enabled);
 
-  const Extension* extension =
-      GetExtensionByIdInternal(id, true, true, false);
-  // TODO(akalin): Figure out what to do with terminated extensions.
-
-  // Handle already-installed extensions.
+  const Extension* extension = GetInstalledExtension(id);
   if (extension) {
-    // TODO(akalin): Make it so we can enable/disable an extension
-    // even if it's not installed yet.
-    if (extension_sync_data.enabled) {
-      EnableExtension(id);
-    } else {
-      DisableExtension(id);
-    }
+    // If the extension is already installed, check if it's outdated.
     int result = extension->version()->CompareTo(extension_sync_data.version);
     if (result < 0) {
       // Extension is outdated.
@@ -1378,22 +1391,22 @@ void ExtensionService::ProcessSyncData(
       // TODO(akalin): Move that code here.
     }
     return;
+  } else {
+    // TODO(akalin): Remove need to pass the enabled flag.
+    //
+    // TODO(akalin): Replace silent update with a list of enabled
+    // permissions.
+    if (!pending_extension_manager()->AddFromSync(
+            id,
+            extension_sync_data.update_url,
+            filter,
+            true,  // install_silently
+            extension_sync_data.enabled)) {
+      LOG(WARNING) << "Could not add pending extension for " << id;
+      return;
+    }
+    CheckForUpdatesSoon();
   }
-
-  // Handle not-yet-installed extensions.
-  //
-  // TODO(akalin): Replace silent update with a list of enabled
-  // permissions.
-  if (!pending_extension_manager()->AddFromSync(
-          id,
-          extension_sync_data.update_url,
-          filter,
-          true,  // install_silently
-          extension_sync_data.enabled)) {
-    LOG(WARNING) << "Could not add pending extension for " << id;
-    return;
-  }
-  CheckForUpdatesSoon();
 }
 
 bool ExtensionService::IsIncognitoEnabled(

@@ -3598,16 +3598,18 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   ExtensionSyncData extension_sync_data;
   extension_sync_data.id = good_crx;
   extension_sync_data.update_url = GURL("http://www.google.com");
-  extension_sync_data.enabled = true;
+  extension_sync_data.enabled = false;
   extension_sync_data.incognito_enabled = true;
   {
     scoped_ptr<Version> version(Version::GetVersionFromString("1.2.3.4"));
     extension_sync_data.version = *version;
   }
 
+  EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
   EXPECT_FALSE(service_->IsIncognitoEnabled(good_crx));
   service_->ProcessSyncData(extension_sync_data, &AllExtensions);
   EXPECT_TRUE(service_->updater()->WillCheckSoon());
+  EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
   EXPECT_TRUE(service_->IsIncognitoEnabled(good_crx));
 
   PendingExtensionInfo info;

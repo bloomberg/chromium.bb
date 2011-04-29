@@ -276,9 +276,12 @@ class ExtensionService
   virtual bool IsExternalExtensionUninstalled(
       const std::string& extension_id) const OVERRIDE;
 
-  // Enable or disable an extension. No action if the extension is already
-  // enabled/disabled.
+  // Enables the extension.  If the extension is already enabled, does
+  // nothing.
   virtual void EnableExtension(const std::string& extension_id);
+
+  // Disables the extension.  If the extension is already disabled, or
+  // cannot be disabled, does nothing.
   virtual void DisableExtension(const std::string& extension_id);
 
   // Updates the |extension|'s granted permissions lists to include all
