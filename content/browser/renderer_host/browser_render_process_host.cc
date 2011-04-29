@@ -550,7 +550,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
   static const char* const kSwitchNames[] = {
     switches::kAllowHTTPBackgroundPage,
     switches::kAllowScriptingGallery,
-    switches::kAlwaysAuthorizePlugins,
     switches::kAppsCheckoutURL,
     switches::kAppsGalleryURL,
     // We propagate the Chrome Frame command line here as well in case the

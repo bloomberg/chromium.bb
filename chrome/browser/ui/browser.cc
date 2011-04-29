@@ -2096,6 +2096,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   // line switches.
   prefs->RegisterBooleanPref(prefs::kDisable3DAPIs, false);
   prefs->RegisterBooleanPref(prefs::kPluginsAllowOutdated, false);
+  prefs->RegisterBooleanPref(prefs::kPluginsAlwaysAuthorize, false);
   prefs->RegisterBooleanPref(prefs::kEnableHyperlinkAuditing, true);
   prefs->RegisterBooleanPref(prefs::kEnableReferrers, true);
 }

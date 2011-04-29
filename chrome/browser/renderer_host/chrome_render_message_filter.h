@@ -79,7 +79,8 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
 #if defined(USE_TCMALLOC)
   void OnRendererTcmalloc(base::ProcessId pid, const std::string& output);
 #endif
-  void OnGetOutdatedPluginsPolicy(ContentSetting* policy);
+  void OnGetPluginPolicies(ContentSetting* outdated_policy,
+                           ContentSetting* authorize_policy);
 
   int render_process_id_;
 
@@ -89,6 +90,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   BooleanPrefMember allow_outdated_plugins_;
+  BooleanPrefMember always_authorize_plugins_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderMessageFilter);
 };

@@ -363,13 +363,21 @@ IPC_MESSAGE_CONTROL2(ViewHostMsg_V8HeapStats,
 IPC_MESSAGE_CONTROL1(ViewHostMsg_DnsPrefetch,
                      std::vector<std::string> /* hostnames */)
 
-// Requests the outdated plugins policy.
-// |policy| is one of ALLOW, BLOCK or ASK. Anything else is an error.
-// ALLOW means that outdated plugins are allowed, and BLOCK that they should
-// be blocked. The default is ASK, which blocks the plugin initially but allows
-// the user to start them manually.
-IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_GetOutdatedPluginsPolicy,
-                           ContentSetting   /* policy */)
+// Requests the plugin policies.
+//
+// |outdated_policy| determines what to do about outdated plugins.
+// |authorize_policy| determines what to do about plugins that require
+// authorization to run.
+//
+// Both values can be ALLOW or ASK. |outdated_policy| can also be BLOCK.
+// Anything else is an error.
+// ALLOW means that the plugin should just run, as a normal plugin.
+// BLOCK means that the plugin should not run nor be allowed to run at all.
+// ASK means that the plugin should be initially blocked and the user should
+// be asked whether he wants to run the plugin.
+IPC_SYNC_MESSAGE_ROUTED0_2(ViewHostMsg_GetPluginPolicies,
+                           ContentSetting   /* outdated_policy */,
+                           ContentSetting   /* authorize_policy */)
 
 // Notifies when a plugin couldn't be loaded because it's outdated.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_BlockedOutdatedPlugin,

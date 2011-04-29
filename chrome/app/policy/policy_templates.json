@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 85
+#   For your editing convenience: highest ID currently used: 86
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1449,6 +1449,20 @@
       If you disable this setting, outdated plugins will not be used and users will not be asked for permission to run them.
 
       If this setting is not set, users will be asked for permission to run outdated plugins.''',
+    },
+    {
+      'name': 'AlwaysAuthorizePlugins',
+      'type': 'main',
+      'supported_on': ['chrome.*:13-', 'chrome_os:0.13-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
+      'id': 86,
+      'caption': '''Always runs plugins that require authorization''',
+      'desc': '''Allows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to run plugins that require authorization.
+
+      If you enable this setting, plugins that are not outdated always run.
+
+      If this setting is disabled or not set, users will be asked for permission to run plugins that require authorization. These are plugins that can compromise security.''',
     },
     {
       'name': 'BookmarkBarEnabled',

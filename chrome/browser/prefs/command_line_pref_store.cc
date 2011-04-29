@@ -31,6 +31,8 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
       { switches::kEnableCloudPrintProxy, prefs::kCloudPrintProxyEnabled,
           true },
       { switches::kAllowOutdatedPlugins, prefs::kPluginsAllowOutdated, true },
+      { switches::kAlwaysAuthorizePlugins, prefs::kPluginsAlwaysAuthorize,
+          true },
       { switches::kNoPings, prefs::kEnableHyperlinkAuditing, false },
       { switches::kNoReferrers, prefs::kEnableReferrers, false },
 };

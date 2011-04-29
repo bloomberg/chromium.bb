@@ -571,6 +571,10 @@ const char kPluginsShowDetails[] = "plugins.show_details";
 // Boolean that indicates whether outdated plugins are allowed or not.
 const char kPluginsAllowOutdated[] = "plugins.allow_outdated";
 
+// Boolean that indicates whether plugins that require authorization should
+// be always allowed or not.
+const char kPluginsAlwaysAuthorize[] = "plugins.always_authorize";
+
 // Boolean that indicates whether we should check if we are the default browser
 // on start-up.
 const char kCheckDefaultBrowser[] = "browser.check_default_browser";

@@ -206,6 +206,7 @@ extern const char kPluginsEnabledInternalPDF[];
 extern const char kPluginsShowSetReaderDefaultInfobar[];
 extern const char kPluginsShowDetails[];
 extern const char kPluginsAllowOutdated[];
+extern const char kPluginsAlwaysAuthorize[];
 extern const char kCheckDefaultBrowser[];
 extern const char kDefaultBrowserSettingEnabled[];
 #if defined(OS_MACOSX)

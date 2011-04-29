@@ -487,6 +487,9 @@ INSTANTIATE_TEST_CASE_P(
             kPolicyAllowOutdatedPlugins,
             key::kAllowOutdatedPlugins),
         PolicyTestParams::ForBooleanPolicy(
+            kPolicyAlwaysAuthorizePlugins,
+            key::kAlwaysAuthorizePlugins),
+        PolicyTestParams::ForBooleanPolicy(
             kPolicyBookmarkBarEnabled,
             key::kBookmarkBarEnabled),
         PolicyTestParams::ForBooleanPolicy(

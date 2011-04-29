@@ -261,26 +261,28 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       webkit::npapi::PluginList::Singleton()->GetPluginGroup(info);
   DCHECK(group != NULL);
 
-  if (group->IsVulnerable()) {
-    // The outdated plugins policy isn't cached here because
-    // it's a dynamic policy that can be modified at runtime.
-    ContentSetting outdated_plugins_policy;
-    render_view->Send(new ViewHostMsg_GetOutdatedPluginsPolicy(
-        render_view->routing_id(), &outdated_plugins_policy));
+  ContentSetting outdated_policy = CONTENT_SETTING_ASK;
+  ContentSetting authorize_policy = CONTENT_SETTING_ASK;
+  if (group->IsVulnerable() || group->RequiresAuthorization()) {
+    // These policies are dynamic and can changed at runtime, so they aren't
+    // cached here.
+    render_view->Send(new ViewHostMsg_GetPluginPolicies(
+        render_view->routing_id(), &outdated_policy, &authorize_policy));
+  }
 
-    if (outdated_plugins_policy == CONTENT_SETTING_ASK ||
-        outdated_plugins_policy == CONTENT_SETTING_BLOCK) {
-      if (outdated_plugins_policy == CONTENT_SETTING_ASK) {
+  if (group->IsVulnerable()) {
+    if (outdated_policy == CONTENT_SETTING_ASK ||
+        outdated_policy == CONTENT_SETTING_BLOCK) {
+      if (outdated_policy == CONTENT_SETTING_ASK) {
         render_view->Send(new ViewHostMsg_BlockedOutdatedPlugin(
             render_view->routing_id(), group->GetGroupName(),
             GURL(group->GetUpdateURL())));
       }
       return CreatePluginPlaceholder(
           render_view, frame, params, *group, IDR_BLOCKED_PLUGIN_HTML,
-          IDS_PLUGIN_OUTDATED, false,
-          outdated_plugins_policy == CONTENT_SETTING_ASK);
+          IDS_PLUGIN_OUTDATED, false, outdated_policy == CONTENT_SETTING_ASK);
     } else {
-      DCHECK(outdated_plugins_policy == CONTENT_SETTING_ALLOW);
+      DCHECK(outdated_policy == CONTENT_SETTING_ALLOW);
     }
   }
 
@@ -289,7 +291,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
 
   if (group->RequiresAuthorization() &&
-      !cmd->HasSwitch(switches::kAlwaysAuthorizePlugins) &&
+      authorize_policy == CONTENT_SETTING_ASK &&
       (plugin_setting == CONTENT_SETTING_ALLOW ||
        plugin_setting == CONTENT_SETTING_ASK) &&
       host_setting == CONTENT_SETTING_DEFAULT) {

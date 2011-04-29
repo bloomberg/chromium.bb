@@ -210,6 +210,8 @@ INSTANTIATE_TEST_CASE_P(
                     prefs::kEnableTranslate),
         TypeAndName(kPolicyAllowOutdatedPlugins,
                     prefs::kPluginsAllowOutdated),
+        TypeAndName(kPolicyAlwaysAuthorizePlugins,
+                    prefs::kPluginsAlwaysAuthorize),
         TypeAndName(kPolicyBookmarkBarEnabled,
                     prefs::kEnableBookmarkBar),
         TypeAndName(kPolicyEditBookmarksEnabled,

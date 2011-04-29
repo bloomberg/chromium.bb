@@ -40,6 +40,9 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
   allow_outdated_plugins_.Init(prefs::kPluginsAllowOutdated,
                                profile_->GetPrefs(), NULL);
   allow_outdated_plugins_.MoveToThread(BrowserThread::IO);
+  always_authorize_plugins_.Init(prefs::kPluginsAlwaysAuthorize,
+                                 profile_->GetPrefs(), NULL);
+  always_authorize_plugins_.MoveToThread(BrowserThread::IO);
 }
 
 ChromeRenderMessageFilter::~ChromeRenderMessageFilter() {
@@ -66,8 +69,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
 #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetOutdatedPluginsPolicy,
-                        OnGetOutdatedPluginsPolicy)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginPolicies,
+                        OnGetPluginPolicies)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -277,13 +280,17 @@ void ChromeRenderMessageFilter::OnRendererTcmalloc(base::ProcessId pid,
 }
 #endif
 
-void ChromeRenderMessageFilter::OnGetOutdatedPluginsPolicy(
-    ContentSetting* policy) {
-  *policy = CONTENT_SETTING_ALLOW;
-  if (!allow_outdated_plugins_.GetValue()) {
-    // If this is false by policy, the plugin is blocked; otherwise, it is
-    // blocked initially but the user can load it manually.
-    *policy = allow_outdated_plugins_.IsManaged() ?
-        CONTENT_SETTING_BLOCK : CONTENT_SETTING_ASK;
+void ChromeRenderMessageFilter::OnGetPluginPolicies(
+    ContentSetting* outdated_policy,
+    ContentSetting* authorize_policy) {
+  if (allow_outdated_plugins_.GetValue()) {
+    *outdated_policy = CONTENT_SETTING_ALLOW;
+  } else if (allow_outdated_plugins_.IsManaged()) {
+    *outdated_policy = CONTENT_SETTING_BLOCK;
+  } else {
+    *outdated_policy = CONTENT_SETTING_ASK;
   }
+
+  *authorize_policy = always_authorize_plugins_.GetValue() ?
+      CONTENT_SETTING_ALLOW : CONTENT_SETTING_ASK;
 }
