@@ -26,13 +26,13 @@ void RadioButtonExample::CreateExampleView(views::View* container) {
   status_ = new views::TextButton(this, L"Show Status");
 
   int group = 1;
-  for (int i = 0; i < arraysize(radio_buttons_); ++i) {
+  for (size_t i = 0; i < arraysize(radio_buttons_); ++i) {
     radio_buttons_[i] = new views::RadioButton(
         base::StringPrintf( L"Radio %d in group %d", i + 1, group), group);
   }
 
   ++group;
-  for (int i = 0; i < arraysize(radio_buttons_nt_); ++i) {
+  for (size_t i = 0; i < arraysize(radio_buttons_nt_); ++i) {
     radio_buttons_nt_[i] = new views::RadioButtonNt(
         base::StringPrintf( L"Radio %d in group %d", i + 1, group), group);
     radio_buttons_nt_[i]->SetFocusable(true);
@@ -44,11 +44,11 @@ void RadioButtonExample::CreateExampleView(views::View* container) {
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         1.0f, views::GridLayout::USE_PREF, 0, 0);
-  for (int i = 0; i < arraysize(radio_buttons_); i++) {
+  for (size_t i = 0; i < arraysize(radio_buttons_); i++) {
     layout->StartRow(0, 0);
     layout->AddView(radio_buttons_[i]);
   }
-  for (int i = 0; i < arraysize(radio_buttons_nt_); i++) {
+  for (size_t i = 0; i < arraysize(radio_buttons_nt_); i++) {
     layout->StartRow(0, 0);
     layout->AddView(radio_buttons_nt_[i]);
   }
