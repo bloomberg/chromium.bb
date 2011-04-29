@@ -76,7 +76,7 @@ void BrowserMainPartsGtk::PreEarlyInitialization() {
 void BrowserMainPartsGtk::DetectRunningAsRoot() {
   if (geteuid() == 0) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (!parsed_command_line().HasSwitch(switches::kUserDataDir))
+    if (parsed_command_line().HasSwitch(switches::kUserDataDir))
       return;
 
     gfx::GtkInitFromCommandLine(command_line);
