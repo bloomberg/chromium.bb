@@ -37,6 +37,7 @@ void SockAddrClient(NaClSrpcRpc *rpc,
   static char buf[1024];
   size_t buf_size = sizeof(buf);
   int connected_socket;
+  int retval;
   int socket_address = in_args[0]->u.hval;
   static char cmp_msg[] = "Quidquid id est, timeo Danaos et dona ferentes";
 
@@ -76,9 +77,9 @@ void SockAddrClient(NaClSrpcRpc *rpc,
     ++errors_seen;
   }
   /* Shut down the SRPC server and close the client. */
-  if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeBySignature(&channel, "shutdown::")) {
-    printf("SockAddrClient: shutdown FAILED.\n");
+  retval = NaClSrpcInvokeBySignature(&channel, "shutdown::");
+  if (NACL_SRPC_RESULT_OK != retval && NACL_SRPC_RESULT_INTERNAL != retval) {
+    printf("SockAddrClient: shutdown FAILED, retval = %d.\n", retval);
     ++errors_seen;
   }
   printf("SockAddrClient: shutting down, errors_seen %d\n", errors_seen);
