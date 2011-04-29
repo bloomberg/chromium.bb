@@ -139,6 +139,28 @@ class PppAudioRpcClient {
   void operator=(const PppAudioRpcClient);
 };  // class PppAudioRpcClient
 
+class PppFindRpcClient {
+ public:
+  static NaClSrpcError PPP_Find_StartFind(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      nacl_abi_size_t text_bytes, char* text,
+      int32_t case_sensitive,
+      int32_t* supports_find);
+  static NaClSrpcError PPP_Find_SelectFindResult(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      int32_t forward);
+  static NaClSrpcError PPP_Find_StopFind(
+      NaClSrpcChannel* channel,
+      PP_Instance instance);
+
+ private:
+  PppFindRpcClient();
+  PppFindRpcClient(const PppFindRpcClient&);
+  void operator=(const PppFindRpcClient);
+};  // class PppFindRpcClient
+
 class PppInstanceRpcClient {
  public:
   static NaClSrpcError PPP_Instance_DidCreate(
@@ -180,6 +202,90 @@ class PppInstanceRpcClient {
   PppInstanceRpcClient(const PppInstanceRpcClient&);
   void operator=(const PppInstanceRpcClient);
 };  // class PppInstanceRpcClient
+
+class PppPrintingRpcClient {
+ public:
+  static NaClSrpcError PPP_Printing_QuerySupportedFormats(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      nacl_abi_size_t* formats_bytes, char* formats,
+      int32_t* format_count);
+  static NaClSrpcError PPP_Printing_Begin(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      nacl_abi_size_t print_settings_bytes, char* print_settings,
+      int32_t* pages_required);
+  static NaClSrpcError PPP_Printing_PrintPages(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      nacl_abi_size_t page_ranges_bytes, char* page_ranges,
+      int32_t page_range_count,
+      PP_Resource* image_data);
+  static NaClSrpcError PPP_Printing_End(
+      NaClSrpcChannel* channel,
+      PP_Instance instance);
+
+ private:
+  PppPrintingRpcClient();
+  PppPrintingRpcClient(const PppPrintingRpcClient&);
+  void operator=(const PppPrintingRpcClient);
+};  // class PppPrintingRpcClient
+
+class PppScrollbarRpcClient {
+ public:
+  static NaClSrpcError PPP_Scrollbar_ValueChanged(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      PP_Resource scrollbar,
+      int32_t value);
+
+ private:
+  PppScrollbarRpcClient();
+  PppScrollbarRpcClient(const PppScrollbarRpcClient&);
+  void operator=(const PppScrollbarRpcClient);
+};  // class PppScrollbarRpcClient
+
+class PppSelectionRpcClient {
+ public:
+  static NaClSrpcError PPP_Selection_GetSelectedText(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      int32_t html,
+      nacl_abi_size_t* selected_text_bytes, char* selected_text);
+
+ private:
+  PppSelectionRpcClient();
+  PppSelectionRpcClient(const PppSelectionRpcClient&);
+  void operator=(const PppSelectionRpcClient);
+};  // class PppSelectionRpcClient
+
+class PppWidgetRpcClient {
+ public:
+  static NaClSrpcError PPP_Widget_Invalidate(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      PP_Resource widget,
+      nacl_abi_size_t dirty_rect_bytes, char* dirty_rect);
+
+ private:
+  PppWidgetRpcClient();
+  PppWidgetRpcClient(const PppWidgetRpcClient&);
+  void operator=(const PppWidgetRpcClient);
+};  // class PppWidgetRpcClient
+
+class PppZoomRpcClient {
+ public:
+  static NaClSrpcError PPP_Zoom_Zoom(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      double factor,
+      int32_t text_only);
+
+ private:
+  PppZoomRpcClient();
+  PppZoomRpcClient(const PppZoomRpcClient&);
+  void operator=(const PppZoomRpcClient);
+};  // class PppZoomRpcClient
 
 
 

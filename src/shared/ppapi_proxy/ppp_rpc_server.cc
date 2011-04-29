@@ -254,6 +254,51 @@ static void PPP_Audio_StreamCreatedDispatcher(
   );
 }
 
+static void PPP_Find_StartFindDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PppFindRpcServer::PPP_Find_StartFind(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPP_Find_SelectFindResultDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PppFindRpcServer::PPP_Find_SelectFindResult(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival
+  );
+}
+
+static void PPP_Find_StopFindDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PppFindRpcServer::PPP_Find_StopFind(
+      rpc,
+      done,
+      inputs[0]->u.ival
+  );
+}
+
 static void PPP_Instance_DidCreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -360,6 +405,129 @@ static void PPP_Instance_GetInstanceObjectDispatcher(
   );
 }
 
+static void PPP_Printing_QuerySupportedFormatsDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PppPrintingRpcServer::PPP_Printing_QuerySupportedFormats(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPP_Printing_BeginDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PppPrintingRpcServer::PPP_Printing_Begin(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPP_Printing_PrintPagesDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PppPrintingRpcServer::PPP_Printing_PrintPages(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPP_Printing_EndDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PppPrintingRpcServer::PPP_Printing_End(
+      rpc,
+      done,
+      inputs[0]->u.ival
+  );
+}
+
+static void PPP_Scrollbar_ValueChangedDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PppScrollbarRpcServer::PPP_Scrollbar_ValueChanged(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival
+  );
+}
+
+static void PPP_Selection_GetSelectedTextDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PppSelectionRpcServer::PPP_Selection_GetSelectedText(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPP_Widget_InvalidateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PppWidgetRpcServer::PPP_Widget_Invalidate(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.count, inputs[2]->arrays.carr
+  );
+}
+
+static void PPP_Zoom_ZoomDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PppZoomRpcServer::PPP_Zoom_Zoom(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.dval,
+      inputs[2]->u.ival
+  );
+}
+
 }  // namespace
 
 NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
@@ -377,6 +545,9 @@ NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
   { "PPP_ShutdownModule::", PPP_ShutdownModuleDispatcher },
   { "PPP_GetInterface:s:i", PPP_GetInterfaceDispatcher },
   { "PPP_Audio_StreamCreated:ihih:", PPP_Audio_StreamCreatedDispatcher },
+  { "PPP_Find_StartFind:iCi:i", PPP_Find_StartFindDispatcher },
+  { "PPP_Find_SelectFindResult:ii:", PPP_Find_SelectFindResultDispatcher },
+  { "PPP_Find_StopFind:i:", PPP_Find_StopFindDispatcher },
   { "PPP_Instance_DidCreate:iiCC:i", PPP_Instance_DidCreateDispatcher },
   { "PPP_Instance_DidDestroy:i:", PPP_Instance_DidDestroyDispatcher },
   { "PPP_Instance_DidChangeView:iII:", PPP_Instance_DidChangeViewDispatcher },
@@ -384,6 +555,14 @@ NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
   { "PPP_Instance_HandleInputEvent:iC:i", PPP_Instance_HandleInputEventDispatcher },
   { "PPP_Instance_HandleDocumentLoad:ii:i", PPP_Instance_HandleDocumentLoadDispatcher },
   { "PPP_Instance_GetInstanceObject:i:C", PPP_Instance_GetInstanceObjectDispatcher },
+  { "PPP_Printing_QuerySupportedFormats:i:Ci", PPP_Printing_QuerySupportedFormatsDispatcher },
+  { "PPP_Printing_Begin:iC:i", PPP_Printing_BeginDispatcher },
+  { "PPP_Printing_PrintPages:iCi:i", PPP_Printing_PrintPagesDispatcher },
+  { "PPP_Printing_End:i:", PPP_Printing_EndDispatcher },
+  { "PPP_Scrollbar_ValueChanged:iii:", PPP_Scrollbar_ValueChangedDispatcher },
+  { "PPP_Selection_GetSelectedText:ii:C", PPP_Selection_GetSelectedTextDispatcher },
+  { "PPP_Widget_Invalidate:iiC:", PPP_Widget_InvalidateDispatcher },
+  { "PPP_Zoom_Zoom:idi:", PPP_Zoom_ZoomDispatcher },
   { NULL, NULL }
 };
 

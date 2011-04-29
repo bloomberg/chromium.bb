@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -28,7 +28,13 @@
         'browser_ppb_url_loader_rpc_server.cc',
         'browser_ppb_url_request_info_rpc_server.cc',
         'browser_ppb_url_response_info_rpc_server.cc',
+        'browser_ppp_find.cc',
         'browser_ppp_instance.cc',
+        'browser_ppp_printing.cc',
+        'browser_ppp_scrollbar.cc',
+        'browser_ppp_selection.cc',
+        'browser_ppp_widget.cc',
+        'browser_ppp_zoom.cc',
         'browser_ppp.cc',
         'browser_upcall.cc',
         'object.cc',

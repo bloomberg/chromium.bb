@@ -277,6 +277,50 @@ NaClSrpcError PppAudioRpcClient::PPP_Audio_StreamCreated(
   return retval;
 }
 
+NaClSrpcError PppFindRpcClient::PPP_Find_StartFind(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    nacl_abi_size_t text_bytes, char* text,
+    int32_t case_sensitive,
+    int32_t* supports_find)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Find_StartFind:iCi:i",
+      instance,
+      text_bytes, text,
+      case_sensitive,
+      supports_find
+  );
+  return retval;
+}
+
+NaClSrpcError PppFindRpcClient::PPP_Find_SelectFindResult(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t forward)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Find_SelectFindResult:ii:",
+      instance,
+      forward
+  );
+  return retval;
+}
+
+NaClSrpcError PppFindRpcClient::PPP_Find_StopFind(
+    NaClSrpcChannel* channel,
+    PP_Instance instance)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Find_StopFind:i:",
+      instance
+  );
+  return retval;
+}
+
 NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidCreate(
     NaClSrpcChannel* channel,
     PP_Instance instance,
@@ -381,6 +425,132 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_GetInstanceObject(
       "PPP_Instance_GetInstanceObject:i:C",
       instance,
       capability_bytes, capability
+  );
+  return retval;
+}
+
+NaClSrpcError PppPrintingRpcClient::PPP_Printing_QuerySupportedFormats(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    nacl_abi_size_t* formats_bytes, char* formats,
+    int32_t* format_count)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Printing_QuerySupportedFormats:i:Ci",
+      instance,
+      formats_bytes, formats,
+      format_count
+  );
+  return retval;
+}
+
+NaClSrpcError PppPrintingRpcClient::PPP_Printing_Begin(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    nacl_abi_size_t print_settings_bytes, char* print_settings,
+    int32_t* pages_required)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Printing_Begin:iC:i",
+      instance,
+      print_settings_bytes, print_settings,
+      pages_required
+  );
+  return retval;
+}
+
+NaClSrpcError PppPrintingRpcClient::PPP_Printing_PrintPages(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    nacl_abi_size_t page_ranges_bytes, char* page_ranges,
+    int32_t page_range_count,
+    PP_Resource* image_data)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Printing_PrintPages:iCi:i",
+      instance,
+      page_ranges_bytes, page_ranges,
+      page_range_count,
+      image_data
+  );
+  return retval;
+}
+
+NaClSrpcError PppPrintingRpcClient::PPP_Printing_End(
+    NaClSrpcChannel* channel,
+    PP_Instance instance)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Printing_End:i:",
+      instance
+  );
+  return retval;
+}
+
+NaClSrpcError PppScrollbarRpcClient::PPP_Scrollbar_ValueChanged(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    PP_Resource scrollbar,
+    int32_t value)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Scrollbar_ValueChanged:iii:",
+      instance,
+      scrollbar,
+      value
+  );
+  return retval;
+}
+
+NaClSrpcError PppSelectionRpcClient::PPP_Selection_GetSelectedText(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t html,
+    nacl_abi_size_t* selected_text_bytes, char* selected_text)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Selection_GetSelectedText:ii:C",
+      instance,
+      html,
+      selected_text_bytes, selected_text
+  );
+  return retval;
+}
+
+NaClSrpcError PppWidgetRpcClient::PPP_Widget_Invalidate(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    PP_Resource widget,
+    nacl_abi_size_t dirty_rect_bytes, char* dirty_rect)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Widget_Invalidate:iiC:",
+      instance,
+      widget,
+      dirty_rect_bytes, dirty_rect
+  );
+  return retval;
+}
+
+NaClSrpcError PppZoomRpcClient::PPP_Zoom_Zoom(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    double factor,
+    int32_t text_only)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Zoom_Zoom:idi:",
+      instance,
+      factor,
+      text_only
   );
   return retval;
 }

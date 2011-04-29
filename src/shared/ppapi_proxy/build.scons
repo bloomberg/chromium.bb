@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Copyright 2011 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -44,7 +44,13 @@ env.TrustedSrpc(is_client=True,
                             'completion_callback.srpc',
                             'ppp.srpc',
                             'ppp_audio.srpc',
+                            'ppp_find.srpc',
                             'ppp_instance.srpc',
+                            'ppp_printing.srpc',
+                            'ppp_scrollbar.srpc',
+                            'ppp_selection.srpc',
+                            'ppp_widget.srpc',
+                            'ppp_zoom.srpc',
                            ],
                 name='PppRpcs',
                 h_file='ppp_rpc.h',
@@ -102,7 +108,13 @@ env.DualLibrary('ppapi_browser',
                  'browser_ppb_url_loader_rpc_server.cc',
                  'browser_ppb_url_request_info_rpc_server.cc',
                  'browser_ppb_url_response_info_rpc_server.cc',
+                 'browser_ppp_find.cc',
                  'browser_ppp_instance.cc',
+                 'browser_ppp_printing.cc',
+                 'browser_ppp_scrollbar.cc',
+                 'browser_ppp_selection.cc',
+                 'browser_ppp_widget.cc',
+                 'browser_ppp_zoom.cc',
                  'browser_ppp.cc',
                  'browser_upcall.cc',
                  'object.cc',

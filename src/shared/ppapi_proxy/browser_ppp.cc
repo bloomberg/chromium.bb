@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,11 +10,23 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
+#include "native_client/src/shared/ppapi_proxy/browser_ppp_find.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_instance.h"
+#include "native_client/src/shared/ppapi_proxy/browser_ppp_printing.h"
+#include "native_client/src/shared/ppapi_proxy/browser_ppp_scrollbar.h"
+#include "native_client/src/shared/ppapi_proxy/browser_ppp_selection.h"
+#include "native_client/src/shared/ppapi_proxy/browser_ppp_widget.h"
+#include "native_client/src/shared/ppapi_proxy/browser_ppp_zoom.h"
 #include "native_client/src/shared/ppapi_proxy/browser_upcall.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
+#include "ppapi/c/dev/ppp_find_dev.h"
+#include "ppapi/c/dev/ppp_printing_dev.h"
+#include "ppapi/c/dev/ppp_scrollbar_dev.h"
+#include "ppapi/c/dev/ppp_selection_dev.h"
+#include "ppapi/c/dev/ppp_widget_dev.h"
+#include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp.h"
 #include "srpcgen/ppb_rpc.h"
@@ -103,6 +115,24 @@ const void* BrowserPpp::GetPluginInterface(const char* interface_name) {
   } else if (strcmp(interface_name, PPP_INSTANCE_INTERFACE) == 0) {
     ppp_interface =
        reinterpret_cast<const void*>(BrowserInstance::GetInterface());
+  } else if (strcmp(interface_name, PPP_FIND_DEV_INTERFACE) == 0) {
+    ppp_interface =
+       reinterpret_cast<const void*>(BrowserFind::GetInterface());
+  } else if (strcmp(interface_name, PPP_PRINTING_DEV_INTERFACE) == 0) {
+    ppp_interface =
+       reinterpret_cast<const void*>(BrowserPrinting::GetInterface());
+  } else if (strcmp(interface_name, PPP_SCROLLBAR_DEV_INTERFACE) == 0) {
+    ppp_interface =
+       reinterpret_cast<const void*>(BrowserScrollbar::GetInterface());
+  } else if (strcmp(interface_name, PPP_SELECTION_DEV_INTERFACE) == 0) {
+    ppp_interface =
+       reinterpret_cast<const void*>(BrowserSelection::GetInterface());
+  } else if (strcmp(interface_name, PPP_WIDGET_DEV_INTERFACE) == 0) {
+    ppp_interface =
+       reinterpret_cast<const void*>(BrowserWidget::GetInterface());
+  } else if (strcmp(interface_name, PPP_ZOOM_DEV_INTERFACE) == 0) {
+    ppp_interface =
+       reinterpret_cast<const void*>(BrowserZoom::GetInterface());
   }
   // TODO(sehr): other interfaces go here.
   DebugPrintf("PPP_GetInterface('%s'): %p\n", interface_name, ppp_interface);
