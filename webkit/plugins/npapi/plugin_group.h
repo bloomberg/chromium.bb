@@ -174,6 +174,9 @@ class PluginGroup {
   // Returns the update URL.
   std::string GetUpdateURL() const { return update_url_; }
 
+  // Returns true if this plugin group is whitelisted.
+  bool IsWhitelisted() const;
+
   // Returns true if the highest-priority plugin in this group has known
   // security problems.
   bool IsVulnerable() const;

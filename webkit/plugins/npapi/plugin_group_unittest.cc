@@ -357,6 +357,35 @@ TEST_F(PluginGroupTest, IsVulnerable) {
   EXPECT_TRUE(PluginGroup(*group).RequiresAuthorization());
 }
 
+TEST_F(PluginGroupTest, WhitelistedIsNotVulnerable) {
+  VersionRangeDefinition version_range[] = {
+      { "0", "6", "5.0", true }
+  };
+  PluginGroupDefinition plugin_def = {
+      "nativehtml5", "NativeHTML5", "NativeHTML5", version_range,
+      arraysize(version_range),
+      "http://bugzilla.mozilla.org/show_bug.cgi?id=649408" };
+  WebPluginInfo plugin(ASCIIToUTF16("NativeHTML5"),
+                       FilePath(FILE_PATH_LITERAL("/native.so")),
+                       ASCIIToUTF16("4.0"),
+                       ASCIIToUTF16("NativeHTML5"));
+  scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(plugin_def));
+  group->AddPlugin(plugin);
+
+  EXPECT_TRUE(group->IsVulnerable());
+  EXPECT_TRUE(group->RequiresAuthorization());
+
+  std::set<string16> enabled_plugins;
+  enabled_plugins.insert(ASCIIToUTF16("NativeHTML5"));
+  PluginGroup::SetPolicyEnforcedPluginPatterns(std::set<string16>(),
+                                               std::set<string16>(),
+                                               enabled_plugins);
+  group->EnforceGroupPolicy();
+
+  EXPECT_FALSE(group->IsVulnerable());
+  EXPECT_FALSE(group->RequiresAuthorization());
+}
+
 TEST_F(PluginGroupTest, MultipleVersions) {
   scoped_ptr<PluginGroup> group(
       PluginGroupTest::CreatePluginGroup(kPluginDef3));

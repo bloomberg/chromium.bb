@@ -471,8 +471,20 @@ bool PluginGroup::IsPluginOutdated(const Version& plugin_version,
   return false;
 }
 
+bool PluginGroup::IsWhitelisted() const {
+  for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
+    if (web_plugin_infos_[i].enabled & WebPluginInfo::POLICY_ENABLED)
+      return true;
+  }
+  return false;
+}
+
 // Returns true if the latest version of this plugin group is vulnerable.
 bool PluginGroup::IsVulnerable() const {
+  // A plugin isn't considered vulnerable if it's explicitly whitelisted.
+  if (IsWhitelisted())
+    return false;
+
   for (size_t i = 0; i < version_ranges_.size(); ++i) {
     if (IsPluginOutdated(*version_, version_ranges_[i]))
       return true;
@@ -481,6 +493,10 @@ bool PluginGroup::IsVulnerable() const {
 }
 
 bool PluginGroup::RequiresAuthorization() const {
+  // A plugin doesn't require authorization if it's explicitly whitelisted.
+  if (IsWhitelisted())
+    return false;
+
   for (size_t i = 0; i < version_ranges_.size(); ++i) {
     if (IsVersionInRange(*version_, version_ranges_[i]) &&
         version_ranges_[i].requires_authorization)
