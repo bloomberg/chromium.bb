@@ -435,10 +435,12 @@ void DownloadManager::OnPathExistenceAvailable(DownloadCreateInfo* info) {
     TabContents* contents = tab_util::GetTabContentsByID(info->child_id,
                                                          info->render_view_id);
     SelectFileDialog::FileTypeInfo file_type_info;
-    file_type_info.extensions.resize(1);
-    file_type_info.extensions[0].push_back(info->suggested_path.Extension());
-    if (!file_type_info.extensions[0][0].empty())
-      file_type_info.extensions[0][0].erase(0, 1);  // drop the .
+    FilePath::StringType extension = info->suggested_path.Extension();
+    if (!extension.empty()) {
+      extension.erase(extension.begin()); // drop the .
+      file_type_info.extensions.resize(1);
+      file_type_info.extensions[0].push_back(extension);
+    }
     file_type_info.include_all_files = true;
     gfx::NativeWindow owning_window =
         contents ? platform_util::GetTopLevel(contents->GetNativeView()) : NULL;
