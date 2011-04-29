@@ -30,7 +30,7 @@
 #include "printing/metafile_impl.h"
 #include "printing/print_job_constants.h"
 
-#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
+#if defined(USE_CUPS)
 #include <cups/cups.h>
 
 #include "base/file_util.h"
@@ -44,7 +44,7 @@ const bool kLandscapeDefaultValue = false;
 const char kDisableColorOption[] = "disableColorOption";
 const char kSetColorAsDefault[] = "setColorAsDefault";
 
-#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
+#if defined(USE_CUPS)
 const char kColorDevice[] = "ColorDevice";
 #elif defined(OS_WIN)
 const char kPskColor[] = "psk:Color";
@@ -127,7 +127,7 @@ class PrintSystemTaskProxy
       return;
     }
 
-  #if defined(OS_POSIX) && !defined(OS_CHROMEOS)
+#if defined(USE_CUPS)
     FilePath ppd_file_path;
     if (!file_util::CreateTemporaryFile(&ppd_file_path))
       return;
@@ -149,16 +149,16 @@ class PrintSystemTaskProxy
       ppdClose(ppd);
     }
     file_util::Delete(ppd_file_path, false);
-  #elif defined(OS_WIN)
+#elif defined(OS_WIN)
     // According to XPS 1.0 spec, only color printers have psk:Color.
     // Therefore we don't need to parse the whole XML file, we just need to
     // search the string.  The spec can be found at:
     // http://msdn.microsoft.com/en-us/windows/hardware/gg463431.
     supports_color = (printer_info.printer_capabilities.find(kPskColor) !=
                       std::string::npos);
-  #elif defined(OS_CHROMEOS)
-    NOTIMPLEMENTED();
-  #endif
+#else
+  NOTIMPLEMENTED();
+#endif
 
     DictionaryValue settings_info;
     settings_info.SetBoolean(kDisableColorOption, !supports_color);

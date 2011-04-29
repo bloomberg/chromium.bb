@@ -807,6 +807,9 @@
           ],
         }],
         ['use_cups==1', {
+          'dependencies': [
+            '../printing/printing.gyp:cups',
+          ],
           'defines': [
             # CP_PRINT_SYSTEM_AVAILABLE disables default dummy implementation
             # of cloud print system, and allows to use custom implementaiton.
@@ -814,22 +817,6 @@
           ],
           'sources': [
             'service/cloud_print/print_system_cups.cc',
-          ],
-          'conditions': [
-            ['OS=="mac"', {
-              'link_settings': {
-                'libraries': [
-                  '$(SDKROOT)/usr/lib/libcups.dylib',
-                ]
-              },
-            }, {
-              'link_settings': {
-                'libraries': [
-                  '-lcups',
-                  '-lgcrypt',
-                ],
-              },
-            }],
           ],
         }],
         ['remoting==1', {

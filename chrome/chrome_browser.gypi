@@ -3501,6 +3501,11 @@
             'browser/platform_util_linux.cc',
           ],
         }],
+        ['use_cups==1', {
+          'dependencies': [
+            '../printing/printing.gyp:cups',
+          ],
+        }],
         ['use_gconf==0', {
           'sources!': [
             'browser/ui/gtk/gconf_titlebar_listener.cc',
