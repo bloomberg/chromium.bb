@@ -259,7 +259,8 @@ void FakeExternalTab::Shutdown() {
 CFUrlRequestUnittestRunner::CFUrlRequestUnittestRunner(int argc, char** argv)
     : NetTestSuite(argc, argv),
       chrome_frame_html_("/chrome_frame", kChromeFrameHtml),
-      registrar_(chrome_frame_test::GetTestBedType()) {
+      registrar_(chrome_frame_test::GetTestBedType()),
+      test_result_(0) {
   // Register the main thread by instantiating it, but don't call any methods.
   main_thread_.reset(new BrowserThread(BrowserThread::UI,
                                        MessageLoop::current()));
@@ -372,7 +373,7 @@ DWORD CFUrlRequestUnittestRunner::RunAllUnittests(void* param) {
   NotificationService service;
   CFUrlRequestUnittestRunner* me =
       reinterpret_cast<CFUrlRequestUnittestRunner*>(param);
-  me->Run();
+  me->test_result_ = me->Run();
   me->fake_chrome_.ui_loop()->PostTask(FROM_HERE,
       NewRunnableFunction(TakeDownBrowser, me));
   return 0;
@@ -534,5 +535,5 @@ int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   FilterDisabledTests();
   test_suite.RunMainUIThread();
-  return 0;
+  return test_suite.test_result();
 }

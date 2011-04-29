@@ -77,6 +77,10 @@ class CFUrlRequestUnittestRunner
   // Borrowed from TestSuite::Initialize().
   static void InitializeLogging();
 
+  int test_result() const {
+    return test_result_;
+  }
+
  protected:
   // This is the thread that runs all the UrlRequest tests.
   // Within its context, the Initialize() and Shutdown() routines above
@@ -84,8 +88,6 @@ class CFUrlRequestUnittestRunner
   static DWORD WINAPI RunAllUnittests(void* param);
 
   static void TakeDownBrowser(CFUrlRequestUnittestRunner* me);
-
- protected:
 
  protected:
   base::win::ScopedHandle test_thread_;
@@ -100,6 +102,7 @@ class CFUrlRequestUnittestRunner
   scoped_ptr<ProcessSingletonSubclass> pss_subclass_;
   scoped_ptr<BrowserThread> main_thread_;
   ScopedChromeFrameRegistrar registrar_;
+  int test_result_;
 };
 
 #endif  // CHROME_FRAME_TEST_NET_FAKE_EXTERNAL_TAB_H_
