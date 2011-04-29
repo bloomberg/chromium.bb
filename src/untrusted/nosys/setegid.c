@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <errno.h>
 
-int seteuid(uid_t euid) {
+int setegid(uid_t euid) {
   errno = ENOSYS;
   return -1;
 }
