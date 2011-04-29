@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -270,13 +270,26 @@ message CommitMessage {
 message GetUpdatesCallerInfo {
   enum GetUpdatesSource {
     UNKNOWN = 0;  // The source was not set by the caller.
-    FIRST_UPDATE = 1;  // First update from an instance of Chrome.
+    FIRST_UPDATE = 1;  // First request after browser restart.  Not to
+                       // be confused with "NEW_CLIENT".
     LOCAL = 2;  // The source of the update was a local change.
     NOTIFICATION = 3;  // The source of the update was a p2p notification.
     PERIODIC = 4;  // The source of the update was periodic polling.
     SYNC_CYCLE_CONTINUATION = 5;  // The source of the update was a
                                   // continuation of a previous update.
     CLEAR_PRIVATE_DATA = 6;       // Source is a call to remove all private data
+    NEWLY_SUPPORTED_DATATYPE = 7;   // The client is in configuration mode
+                                    // because it's syncing all datatypes, and
+                                    // support for a new datatype was recently
+                                    // released via a software auto-update.
+    MIGRATION = 8;         // The client is in configuration mode because a
+                           // MIGRATION_DONE error previously returned by the
+                           // server necessitated resynchronization.
+    NEW_CLIENT = 9;        // The client is in configuration mode because the
+                           // user enabled sync for the first time.  Not to be
+                           // confused with FIRST_UPDATE.
+    RECONFIGURATION = 10;  // The client is in configuration mode because the
+                           // user opted to sync a different set of datatypes.
   }
 
   required GetUpdatesSource source = 1;
