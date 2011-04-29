@@ -6,9 +6,12 @@
 
 #include <algorithm>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -121,47 +124,47 @@ int QueryNodeWord::AppendToSQLiteQuery(string16* query) const {
   return 1;
 }
 
-// A QueryNodeList has a collection of child QueryNodes
-// which it cleans up after.
+// A QueryNodeList has a collection of QueryNodes which are deleted in the end.
 class QueryNodeList : public QueryNode {
  public:
+  typedef std::vector<QueryNode*> QueryNodeVector;
+
+  QueryNodeList();
   virtual ~QueryNodeList();
 
-  virtual int AppendToSQLiteQuery(string16* query) const {
-    return AppendChildrenToString(query);
-  }
-  virtual bool IsWord() const { return false; }
-
-  void AddChild(QueryNode* node) { children_.push_back(node); }
-
-  typedef std::vector<QueryNode*> QueryNodeVector;
   QueryNodeVector* children() { return &children_; }
+
+  void AddChild(QueryNode* node);
 
   // Remove empty subnodes left over from other parsing.
   void RemoveEmptySubnodes();
 
-  // QueryNodeList is never used with Matches or HasMatchIn.
-  virtual bool Matches(const string16& word, bool exact) const {
-    NOTREACHED();
-    return false;
-  }
-  virtual bool HasMatchIn(const std::vector<QueryWord>& words,
-                          Snippet::MatchPositions* match_positions) const {
-    NOTREACHED();
-    return false;
-  }
-  virtual void AppendWords(std::vector<string16>* words) const;
+  // QueryNode:
+  virtual int AppendToSQLiteQuery(string16* query) const OVERRIDE;
+  virtual bool IsWord() const OVERRIDE;
+  virtual bool Matches(const string16& word, bool exact) const OVERRIDE;
+  virtual bool HasMatchIn(
+      const std::vector<QueryWord>& words,
+      Snippet::MatchPositions* match_positions) const OVERRIDE;
+  virtual void AppendWords(std::vector<string16>* words) const OVERRIDE;
 
  protected:
   int AppendChildrenToString(string16* query) const;
 
   QueryNodeVector children_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QueryNodeList);
 };
 
+QueryNodeList::QueryNodeList() {}
+
 QueryNodeList::~QueryNodeList() {
-  for (QueryNodeVector::iterator node = children_.begin();
-       node != children_.end(); ++node)
-    delete *node;
+  STLDeleteElements(&children_);
+}
+
+void QueryNodeList::AddChild(QueryNode* node) {
+  children_.push_back(node);
 }
 
 void QueryNodeList::RemoveEmptySubnodes() {
@@ -177,6 +180,25 @@ void QueryNodeList::RemoveEmptySubnodes() {
       delete list_node;
     }
   }
+}
+
+int QueryNodeList::AppendToSQLiteQuery(string16* query) const {
+  return AppendChildrenToString(query);
+}
+
+bool QueryNodeList::IsWord() const {
+  return false;
+}
+
+bool QueryNodeList::Matches(const string16& word, bool exact) const {
+  NOTREACHED();
+  return false;
+}
+
+bool QueryNodeList::HasMatchIn(const std::vector<QueryWord>& words,
+                               Snippet::MatchPositions* match_positions) const {
+  NOTREACHED();
+  return false;
 }
 
 void QueryNodeList::AppendWords(std::vector<string16>* words) const {
