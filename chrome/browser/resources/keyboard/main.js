@@ -615,8 +615,9 @@ function sendKey(key) {
   keyEvent['type'] = 'keyup';
   chrome.experimental.input.sendKeyboardEvent(keyEvent);
 
-  if (currentMode == SHIFT_MODE)
+  if (currentMode == SHIFT_MODE) {
     transitionMode(SHIFT_MODE);
+  }
 }
 
 /**
