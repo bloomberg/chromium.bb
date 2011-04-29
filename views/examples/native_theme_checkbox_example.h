@@ -2,26 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_EXAMPLES_BUTTON_EXAMPLE_H_
-#define VIEWS_EXAMPLES_BUTTON_EXAMPLE_H_
+#ifndef VIEWS_EXAMPLES_NATIVE_THEME_CHECKBOX_EXAMPLE_H_
+#define VIEWS_EXAMPLES_NATIVE_THEME_CHECKBOX_EXAMPLE_H_
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "views/controls/button/text_button.h"
+#include "ui/gfx/native_theme.h"
+#include "views/controls/button/button.h"
 #include "views/examples/example_base.h"
 
 namespace views {
-class View;
+class CheckboxNt;
 }
 
 namespace examples {
 
-// ButtonExample simply counts the number of clicks.
-class ButtonExample : public ExampleBase, public views::ButtonListener {
+// NativeThemeCheckboxExample exercises a CheckboxNt control.
+class NativeThemeCheckboxExample : public ExampleBase,
+                                   public views::ButtonListener {
  public:
-  explicit ButtonExample(ExamplesMain* main);
-  virtual ~ButtonExample();
+  explicit NativeThemeCheckboxExample(ExamplesMain* main);
+  virtual ~NativeThemeCheckboxExample();
 
   // Overridden from ExampleBase:
   virtual std::wstring GetExampleTitle() OVERRIDE;
@@ -33,19 +34,13 @@ class ButtonExample : public ExampleBase, public views::ButtonListener {
                              const views::Event& event) OVERRIDE;
 
   // The only control in this test.
-  views::TextButton* button_;
+  views::CheckboxNt* button_;
 
-  // Values used to modify the look and feel of the button.
-  views::TextButton::TextAlignment alignment_;
-  bool use_native_theme_border_;
-  SkBitmap* icon_;
-
-  // The number of times the button is pressed.
   int count_;
 
-  DISALLOW_COPY_AND_ASSIGN(ButtonExample);
+  DISALLOW_COPY_AND_ASSIGN(NativeThemeCheckboxExample);
 };
 
 }  // namespace examples
 
-#endif  // VIEWS_EXAMPLES_BUTTON_EXAMPLE_H_
+#endif  // VIEWS_EXAMPLES_NATIVE_THEME_CHECKBOX_EXAMPLE_H_
