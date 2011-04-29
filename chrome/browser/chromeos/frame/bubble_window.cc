@@ -118,6 +118,7 @@ views::Window* BubbleWindow::Create(
       new BubbleFrameView(window, window_delegate, style));
   views::Window::InitParams params(window_delegate);
   params.parent_window = parent;
+  params.widget_init_params.parent = GTK_WIDGET(parent);
   params.widget_init_params.bounds = bounds;
   window->InitWindow(params);
 
