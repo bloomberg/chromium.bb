@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -32,6 +32,24 @@
  * the lowest address to the highest. For example, BGRA means the B component
  * is stored in the lowest address, no matter what endianness the platform is
  * using.
+ *
+ * The PREMUL suffix implies pre-multiplied alpha is used. In this mode, the
+ * red, green and blue color components of the pixel data supplied to an image
+ * data should be pre-multiplied by their alpha value. For example: starting
+ * with floating point color components, here is how to convert them to 8-bit
+ * premultiplied components for image data:
+ *    ...components of a pixel, floats ranging from 0 to 1...
+ *    float red = 1.0f;
+ *    float green = 0.50f;
+ *    float blue = 0.0f;
+ *    float alpha = 0.75f;
+ *    ...components for image data are 8-bit values ranging from 0 to 255...
+ *    uint8_t image_data_red_premul = (uint8_t)(red * alpha * 255.0f);
+ *    uint8_t image_data_green_premul = (uint8_t)(green * alpha * 255.0f);
+ *    uint8_t image_data_blue_premul = (uint8_t)(blue * alpha * 255.0f);
+ *    uint8_t image_data_alpha_premul = (uint8_t)(alpha * 255.0f);
+ * Note the resulting pre-multiplied red, green and blue components should not
+ * be greater than the alpha value.
  */
 typedef enum {
   PP_IMAGEDATAFORMAT_BGRA_PREMUL,
