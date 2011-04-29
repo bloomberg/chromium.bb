@@ -18,8 +18,8 @@
  * @file
  * This file defines the PPB_Audio interface, which provides realtime stereo
  * audio streaming capabilities. Please refer to the
- * <a href="/chrome/nativeclient/docs/audio.html">Pepper Audio API Code
- * Walkthrough</a> for information on using this interface.
+ * <a href="http://code.google.com/chrome/nativeclient/docs/audio.html">Pepper
+ * Audio API Code Walkthrough</a> for information on using this interface.
  */
 
 /**

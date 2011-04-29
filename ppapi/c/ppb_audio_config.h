@@ -18,8 +18,8 @@
  * @file
  * This file defines the PPB_AudioConfig interface for establishing an
  * audio configuration resource within the browser. Refer to the
- * <a href="/chrome/nativeclient/docs/audio.html">Pepper Audio API Code
- * Walkthrough</a> for information on using this interface.
+ * <a href="http://code.google.com/chrome/nativeclient/docs/audio.html">Pepper
+ * Audio API Code Walkthrough</a> for information on using this interface.
  */
 
 /**
