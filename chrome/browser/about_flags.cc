@@ -217,7 +217,13 @@ const Experiment kExperiments[] = {
     "webaudio",
     IDS_FLAGS_WEBAUDIO_NAME,
     IDS_FLAGS_WEBAUDIO_DESCRIPTION,
-    kOsMac,  // TODO(crogers): add windows and linux when FFT is ready.
+// This switch is currently not available in CrOS.
+// TODO(crogers): FFmpeg Windows DLLs need to be rebuilt for chromium.
+#if defined(GOOGLE_CHROME_BUILD)
+    kOsMac | kOsWin | kOsLinux,
+#else
+    kOsMac | kOsLinux,
+#endif
     SINGLE_VALUE_TYPE(switches::kEnableWebAudio)
   },
   {

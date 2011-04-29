@@ -101,9 +101,18 @@
         ],
         'use_threaded_compositing': 1,
       }],
-      ['OS=="mac"', {
+      # TODO(crogers): For the moment Windows is only enabled for
+      # Google-branded build, since the FFmpeg DLLs need to be re-built
+      # for chromium.
+      ['OS=="mac" or OS=="linux" or (OS=="win" and branding=="Chrome")', {
         'feature_defines': [
           'ENABLE_WEB_AUDIO=1',
+        ],
+      }],
+      # Mac OS X uses Accelerate.framework FFT by default instead of FFmpeg.
+      ['OS!="mac"', {
+        'feature_defines': [
+          'WTF_USE_WEBAUDIO_FFMPEG=1',
         ],
       }],
     ],
