@@ -353,9 +353,7 @@ void PrintViewManager::PrintingDone(bool success) {
   if (!print_job_.get() || !tab_contents())
     return;
   RenderViewHost* rvh = tab_contents()->render_view_host();
-  rvh->Send(new PrintMsg_PrintingDone(rvh->routing_id(),
-                                      print_job_->cookie(),
-                                      success));
+  rvh->Send(new PrintMsg_PrintingDone(rvh->routing_id(), success));
 }
 
 void PrintViewManager::TerminatePrintJob(bool cancel) {

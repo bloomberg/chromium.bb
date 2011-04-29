@@ -239,9 +239,7 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
   }
 }
 
-void PrintWebViewHelper::OnPrintingDone(int document_cookie, bool success) {
-  // Ignoring document cookie here since only one print job can be outstanding
-  // per renderer and document_cookie is 0 when printing is successful.
+void PrintWebViewHelper::OnPrintingDone(bool success) {
   DidFinishPrinting(success ? OK : FAIL_PRINT);
 }
 

@@ -137,8 +137,7 @@ IPC_MESSAGE_ROUTED1(PrintMsg_PrintForPrintPreview,
 IPC_MESSAGE_ROUTED0(PrintMsg_PrintPages)
 
 // Tells the render view that printing is done so it can clean up.
-IPC_MESSAGE_ROUTED2(PrintMsg_PrintingDone,
-                    int /* document_cookie */,
+IPC_MESSAGE_ROUTED1(PrintMsg_PrintingDone,
                     bool /* success */)
 
 // Tells the render view to switch the CSS to print media type, renders every

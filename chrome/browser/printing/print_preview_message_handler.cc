@@ -62,9 +62,7 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
   StopWorker(params.document_cookie);
 
   RenderViewHost* rvh = tab_contents()->render_view_host();
-  rvh->Send(new PrintMsg_PrintingDone(rvh->routing_id(),
-                                      params.document_cookie,
-                                      true));
+  rvh->Send(new PrintMsg_PrintingDone(rvh->routing_id(), true));
 
   // Get the print preview tab.
   TabContents* print_preview_tab = GetPrintPreviewTab();

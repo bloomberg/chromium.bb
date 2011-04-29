@@ -109,7 +109,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
   // for user settings. |job_settings| has new print job settings values.
   void OnPrintForPrintPreview(const DictionaryValue& job_settings);
 
-  void OnPrintingDone(int document_cookie, bool success);
+  void OnPrintingDone(bool success);
 
   // Main printing code -------------------------------------------------------
 
