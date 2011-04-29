@@ -1836,13 +1836,6 @@
    ...
    fun:_ZNK3net15X509Certificate8VerifyEVEv
    fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
-   fun:_ZN3net12CertVerifier7Request8DoVerifyEv
-   fun:_Z16DispatchToMethodIN3net12CertVerifier7RequestEMS2_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
-   ...
-   fun:_Z10ThreadFuncPv
-   fun:start_thread
-   fun:clone
 }
 {
    bug_32624_b
