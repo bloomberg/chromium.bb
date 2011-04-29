@@ -119,11 +119,6 @@ class PrintViewManager : public NotificationObserver,
   // Number of pages to print in the print job.
   int number_pages_;
 
-  // Waiting for print_job_ initialization to be completed to start printing.
-  // Specifically the DEFAULT_INIT_DONE notification. Set when PrintNow() is
-  // called.
-  bool waiting_to_print_;
-
   // Indication of success of the print job.
   bool printing_succeeded_;
 

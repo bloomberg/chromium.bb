@@ -42,7 +42,6 @@ namespace printing {
 PrintViewManager::PrintViewManager(TabContents* tab_contents)
     : TabContentsObserver(tab_contents),
       number_pages_(0),
-      waiting_to_print_(false),
       printing_succeeded_(false),
       inside_inner_message_loop_(false),
       is_title_overridden_(false) {
@@ -219,12 +218,9 @@ void PrintViewManager::OnNotifyPrintJobEvent(
     }
     case JobEventDetails::NEW_DOC:
     case JobEventDetails::NEW_PAGE:
-    case JobEventDetails::PAGE_DONE: {
-      // Don't care about the actual printing process.
-      break;
-    }
+    case JobEventDetails::PAGE_DONE:
     case JobEventDetails::DOC_DONE: {
-      waiting_to_print_ = false;
+      // Don't care about the actual printing process.
       break;
     }
     case JobEventDetails::JOB_DONE: {
@@ -243,22 +239,18 @@ void PrintViewManager::OnNotifyPrintJobEvent(
 }
 
 bool PrintViewManager::RenderAllMissingPagesNow() {
-  if (!print_job_.get() || !print_job_->is_job_pending()) {
-    DCHECK_EQ(waiting_to_print_, false);
+  if (!print_job_.get() || !print_job_->is_job_pending())
     return false;
-  }
 
   // We can't print if there is no renderer.
   if (!tab_contents() ||
       !tab_contents()->render_view_host() ||
       !tab_contents()->render_view_host()->IsRenderViewLive()) {
-    waiting_to_print_ = false;
     return false;
   }
 
   // Is the document already complete?
   if (print_job_->document() && print_job_->document()->IsComplete()) {
-    waiting_to_print_ = false;
     printing_succeeded_ = true;
     return true;
   }
@@ -292,17 +284,11 @@ void PrintViewManager::ShouldQuitFromInnerMessageLoop() {
     // it.
     MessageLoop::current()->Quit();
     inside_inner_message_loop_ = false;
-    waiting_to_print_ = false;
   }
 }
 
 bool PrintViewManager::CreateNewPrintJob(PrintJobWorkerOwner* job) {
   DCHECK(!inside_inner_message_loop_);
-  if (waiting_to_print_) {
-    // We can't help; we are waiting for a print job initialization. The user is
-    // button bashing. The only thing we could do is to batch up the requests.
-    return false;
-  }
 
   // Disconnect the current print_job_.
   DisconnectFromCurrentPrintJob();
@@ -363,12 +349,10 @@ void PrintViewManager::TerminatePrintJob(bool cancel) {
   if (cancel) {
     // We don't need the metafile data anymore because the printing is canceled.
     print_job_->Cancel();
-    waiting_to_print_ = false;
     inside_inner_message_loop_ = false;
   } else {
     DCHECK(!inside_inner_message_loop_);
-    DCHECK(!print_job_->document() || print_job_->document()->IsComplete() ||
-           !waiting_to_print_);
+    DCHECK(!print_job_->document() || print_job_->document()->IsComplete());
 
     // TabContents is either dying or navigating elsewhere. We need to render
     // all the pages in an hurry if a print job is still pending. This does the
@@ -379,7 +363,6 @@ void PrintViewManager::TerminatePrintJob(bool cancel) {
 }
 
 void PrintViewManager::ReleasePrintJob() {
-  DCHECK_EQ(waiting_to_print_, false);
   if (!print_job_.get())
     return;
 
