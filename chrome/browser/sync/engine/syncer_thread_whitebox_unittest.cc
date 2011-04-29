@@ -19,7 +19,7 @@ namespace browser_sync {
 using sessions::SyncSessionContext;
 using browser_sync::Syncer;
 
-class SyncerThread2WhiteboxTest : public testing::Test {
+class SyncerThreadWhiteboxTest : public testing::Test {
  public:
   virtual void SetUp() {
     syncdb_.SetUp();
@@ -95,7 +95,7 @@ class SyncerThread2WhiteboxTest : public testing::Test {
   MockDirectorySetterUpper syncdb_;
 };
 
-TEST_F(SyncerThread2WhiteboxTest, SaveNudge) {
+TEST_F(SyncerThreadWhiteboxTest, SaveNudge) {
   InitializeSyncerOnNormalMode();
 
   // Now set the mode to configure.
@@ -107,7 +107,7 @@ TEST_F(SyncerThread2WhiteboxTest, SaveNudge) {
   EXPECT_EQ(decision, SyncerThread::SAVE);
 }
 
-TEST_F(SyncerThread2WhiteboxTest, ContinueNudge) {
+TEST_F(SyncerThreadWhiteboxTest, ContinueNudge) {
   InitializeSyncerOnNormalMode();
 
   SyncerThread::JobProcessDecision decision = CreateAndDecideJob(
@@ -116,7 +116,7 @@ TEST_F(SyncerThread2WhiteboxTest, ContinueNudge) {
   EXPECT_EQ(decision, SyncerThread::CONTINUE);
 }
 
-TEST_F(SyncerThread2WhiteboxTest, DropPoll) {
+TEST_F(SyncerThreadWhiteboxTest, DropPoll) {
   InitializeSyncerOnNormalMode();
   SetMode(SyncerThread::CONFIGURATION_MODE);
 
@@ -126,7 +126,7 @@ TEST_F(SyncerThread2WhiteboxTest, DropPoll) {
   EXPECT_EQ(decision, SyncerThread::DROP);
 }
 
-TEST_F(SyncerThread2WhiteboxTest, ContinuePoll) {
+TEST_F(SyncerThreadWhiteboxTest, ContinuePoll) {
   InitializeSyncerOnNormalMode();
 
   SyncerThread::JobProcessDecision decision = CreateAndDecideJob(
@@ -135,7 +135,7 @@ TEST_F(SyncerThread2WhiteboxTest, ContinuePoll) {
   EXPECT_EQ(decision, SyncerThread::CONTINUE);
 }
 
-TEST_F(SyncerThread2WhiteboxTest, ContinueConfiguration) {
+TEST_F(SyncerThreadWhiteboxTest, ContinueConfiguration) {
   InitializeSyncerOnNormalMode();
   SetMode(SyncerThread::CONFIGURATION_MODE);
 
@@ -145,7 +145,7 @@ TEST_F(SyncerThread2WhiteboxTest, ContinueConfiguration) {
   EXPECT_EQ(decision, SyncerThread::CONTINUE);
 }
 
-TEST_F(SyncerThread2WhiteboxTest, SaveConfigurationWhileThrottled) {
+TEST_F(SyncerThreadWhiteboxTest, SaveConfigurationWhileThrottled) {
   InitializeSyncerOnNormalMode();
   SetMode(SyncerThread::CONFIGURATION_MODE);
 
@@ -157,7 +157,7 @@ TEST_F(SyncerThread2WhiteboxTest, SaveConfigurationWhileThrottled) {
   EXPECT_EQ(decision, SyncerThread::SAVE);
 }
 
-TEST_F(SyncerThread2WhiteboxTest, SaveNudgeWhileThrottled) {
+TEST_F(SyncerThreadWhiteboxTest, SaveNudgeWhileThrottled) {
   InitializeSyncerOnNormalMode();
   SetMode(SyncerThread::CONFIGURATION_MODE);
 
@@ -170,7 +170,7 @@ TEST_F(SyncerThread2WhiteboxTest, SaveNudgeWhileThrottled) {
 
 }
 
-TEST_F(SyncerThread2WhiteboxTest, ContinueClearUserDataUnderAllCircumstances) {
+TEST_F(SyncerThreadWhiteboxTest, ContinueClearUserDataUnderAllCircumstances) {
   InitializeSyncerOnNormalMode();
 
   SetMode(SyncerThread::CONFIGURATION_MODE);
@@ -186,7 +186,7 @@ TEST_F(SyncerThread2WhiteboxTest, ContinueClearUserDataUnderAllCircumstances) {
   EXPECT_EQ(decision, SyncerThread::CONTINUE);
 }
 
-TEST_F(SyncerThread2WhiteboxTest, ContinueNudgeWhileExponentialBackOff) {
+TEST_F(SyncerThreadWhiteboxTest, ContinueNudgeWhileExponentialBackOff) {
   InitializeSyncerOnNormalMode();
   SetMode(SyncerThread::NORMAL_MODE);
   SetWaitIntervalToExponentialBackoff();
@@ -197,7 +197,7 @@ TEST_F(SyncerThread2WhiteboxTest, ContinueNudgeWhileExponentialBackOff) {
   EXPECT_EQ(decision, SyncerThread::CONTINUE);
 }
 
-TEST_F(SyncerThread2WhiteboxTest, DropNudgeWhileExponentialBackOff) {
+TEST_F(SyncerThreadWhiteboxTest, DropNudgeWhileExponentialBackOff) {
   InitializeSyncerOnNormalMode();
   SetMode(SyncerThread::NORMAL_MODE);
   SetWaitIntervalToExponentialBackoff();
@@ -210,7 +210,7 @@ TEST_F(SyncerThread2WhiteboxTest, DropNudgeWhileExponentialBackOff) {
   EXPECT_EQ(decision, SyncerThread::DROP);
 }
 
-TEST_F(SyncerThread2WhiteboxTest, ContinueCanaryJobConfig) {
+TEST_F(SyncerThreadWhiteboxTest, ContinueCanaryJobConfig) {
   InitializeSyncerOnNormalMode();
   SetMode(SyncerThread::CONFIGURATION_MODE);
   SetWaitIntervalToExponentialBackoff();
@@ -228,4 +228,4 @@ TEST_F(SyncerThread2WhiteboxTest, ContinueCanaryJobConfig) {
 
 // SyncerThread won't outlive the test!
 DISABLE_RUNNABLE_METHOD_REFCOUNT(
-    browser_sync::SyncerThread2WhiteboxTest);
+    browser_sync::SyncerThreadWhiteboxTest);

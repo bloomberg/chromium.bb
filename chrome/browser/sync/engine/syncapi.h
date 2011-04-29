@@ -888,10 +888,8 @@ class SyncManager {
   // Called when the user disables or enables a sync type.
   void UpdateEnabledTypes();
 
-  // Start the SyncerThread.
-  // TODO(tim): With the new impl, this would mean starting "NORMAL" operation.
-  // Rename this when switched over or at least update comment.
-  void StartSyncing();
+  // Put the syncer in normal mode ready to perform nudges and polls.
+  void StartSyncingNormally();
 
   // Attempt to set the passphrase. If the passphrase is valid,
   // OnPassphraseAccepted will be fired to notify the ProfileSyncService and the

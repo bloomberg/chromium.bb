@@ -867,7 +867,7 @@ void SyncerThread::OnShouldStopSyncingPermanently() {
 }
 
 void SyncerThread::OnServerConnectionEvent(
-    const ServerConnectionEvent2& event) {
+    const ServerConnectionEvent& event) {
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
       &SyncerThread::CheckServerConnectionManagerStatus,
       event.connection_code));

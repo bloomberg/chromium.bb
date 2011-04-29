@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,35 +108,17 @@ inline bool IsGoodReplyFromServer(HttpResponse::ServerConnectionCode code) {
   return code >= HttpResponse::SERVER_CONNECTION_OK;
 }
 
-// TODO(tim): Deprecated.
 struct ServerConnectionEvent {
-  // Traits.
-  typedef ServerConnectionEvent EventType;
-  enum WhatHappened {
-    SHUTDOWN,
-    STATUS_CHANGED
-  };
-
-  static inline bool IsChannelShutdownEvent(const EventType& event) {
-    return SHUTDOWN == event.what_happened;
-  }
-
-  WhatHappened what_happened;
   HttpResponse::ServerConnectionCode connection_code;
   bool server_reachable;
-};
-
-struct ServerConnectionEvent2 {
-  HttpResponse::ServerConnectionCode connection_code;
-  bool server_reachable;
-  ServerConnectionEvent2(HttpResponse::ServerConnectionCode code,
+  ServerConnectionEvent(HttpResponse::ServerConnectionCode code,
                          bool server_reachable) :
       connection_code(code), server_reachable(server_reachable) {}
 };
 
 class ServerConnectionEventListener {
  public:
-  virtual void OnServerConnectionEvent(const ServerConnectionEvent2& event) = 0;
+  virtual void OnServerConnectionEvent(const ServerConnectionEvent& event) = 0;
  protected:
   virtual ~ServerConnectionEventListener() {}
 };
@@ -166,8 +148,6 @@ class ScopedServerStatusWatcher {
 //  one instance for every server that you need to talk to.
 class ServerConnectionManager {
  public:
-  typedef EventChannel<ServerConnectionEvent, base::Lock> Channel;
-
   // buffer_in - will be POSTed
   // buffer_out - string will be overwritten with response
   struct PostBufferParams {
@@ -254,8 +234,6 @@ class ServerConnectionManager {
 
   // Signal the shutdown event to notify listeners.
   virtual void kill();
-
-  inline Channel* channel() const { return channel_; }
 
   void AddListener(ServerConnectionEventListener* listener);
   void RemoveListener(ServerConnectionEventListener* listener);
@@ -363,9 +341,6 @@ class ServerConnectionManager {
 
   base::Lock error_count_mutex_;  // Protects error_count_
   int error_count_;  // Tracks the number of connection errors.
-
-  // TODO(tim): Deprecated.
-  Channel* const channel_;
 
   scoped_refptr<ObserverListThreadSafe<ServerConnectionEventListener> >
      listeners_;

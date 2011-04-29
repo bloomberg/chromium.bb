@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -16,7 +16,7 @@
 using browser_sync::HttpResponse;
 using browser_sync::ServerConnectionManager;
 using browser_sync::ServerConnectionEventListener;
-using browser_sync::ServerConnectionEvent2;
+using browser_sync::ServerConnectionEvent;
 using browser_sync::SyncerProtoUtil;
 using browser_sync::TestIdFactory;
 using std::map;
@@ -606,24 +606,15 @@ sync_pb::DataTypeProgressMarker const*
 void MockConnectionManager::SetServerReachable() {
   server_status_ = HttpResponse::SERVER_CONNECTION_OK;
   server_reachable_ = true;
-  browser_sync::ServerConnectionEvent event = {
-    browser_sync::ServerConnectionEvent::STATUS_CHANGED,
-    server_status_,
-    server_reachable_ };
 
-  channel_->NotifyListeners(event);
   listeners_->Notify(&ServerConnectionEventListener::OnServerConnectionEvent,
-      ServerConnectionEvent2(server_status_, server_reachable_));
+      ServerConnectionEvent(server_status_, server_reachable_));
 }
 
 void MockConnectionManager::SetServerNotReachable() {
   server_status_ = HttpResponse::CONNECTION_UNAVAILABLE;
   server_reachable_ = false;
-  browser_sync::ServerConnectionEvent event = {
-    browser_sync::ServerConnectionEvent::STATUS_CHANGED,
-    server_status_,
-    server_reachable_ };
-  channel_->NotifyListeners(event);
+
   listeners_->Notify(&ServerConnectionEventListener::OnServerConnectionEvent,
-      ServerConnectionEvent2(server_status_, server_reachable_));
+      ServerConnectionEvent(server_status_, server_reachable_));
 }

@@ -94,7 +94,7 @@ class SyncerThread : public sessions::SyncSession::Delegate,
 
   // ServerConnectionEventListener implementation.
   // TODO(tim): schedule a nudge when valid connection detected? in 1 minute?
-  virtual void OnServerConnectionEvent(const ServerConnectionEvent2& event);
+  virtual void OnServerConnectionEvent(const ServerConnectionEvent& event);
 
  private:
   enum JobProcessDecision {
@@ -138,25 +138,25 @@ class SyncerThread : public sessions::SyncSession::Delegate,
     // that came in.
     tracked_objects::Location nudge_location;
   };
-  friend class SyncerThread2Test;
-  friend class SyncerThread2WhiteboxTest;
+  friend class SyncerThreadTest;
+  friend class SyncerThreadWhiteboxTest;
 
-  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest,
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest,
       DropNudgeWhileExponentialBackOff);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest, SaveNudge);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest, ContinueNudge);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest, DropPoll);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest, ContinuePoll);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest, ContinueConfiguration);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest,
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest, SaveNudge);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest, ContinueNudge);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest, DropPoll);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest, ContinuePoll);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest, ContinueConfiguration);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest,
                            SaveConfigurationWhileThrottled);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest,
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest,
                            SaveNudgeWhileThrottled);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest,
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest,
                            ContinueClearUserDataUnderAllCircumstances);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest,
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest,
                            ContinueCanaryJobConfig);
-  FRIEND_TEST_ALL_PREFIXES(SyncerThread2WhiteboxTest,
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWhiteboxTest,
       ContinueNudgeWhileExponentialBackOff);
 
   // A component used to get time delays associated with exponential backoff.
@@ -330,7 +330,6 @@ class SyncerThread : public sessions::SyncSession::Delegate,
 
   DISALLOW_COPY_AND_ASSIGN(SyncerThread);
 };
-
 
 }  // namespace browser_sync
 

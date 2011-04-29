@@ -119,16 +119,14 @@ void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
 
 void AllStatus::HandleServerConnectionEvent(
     const ServerConnectionEvent& event) {
-  if (ServerConnectionEvent::STATUS_CHANGED == event.what_happened) {
-    ScopedStatusLock lock(this);
-    status_.server_up = IsGoodReplyFromServer(event.connection_code);
-    status_.server_reachable = event.server_reachable;
+  ScopedStatusLock lock(this);
+  status_.server_up = IsGoodReplyFromServer(event.connection_code);
+  status_.server_reachable = event.server_reachable;
 
-    if (event.connection_code == HttpResponse::SERVER_CONNECTION_OK) {
-      status_.authenticated = true;
-    } else {
-      status_.authenticated = false;
-    }
+  if (event.connection_code == HttpResponse::SERVER_CONNECTION_OK) {
+    status_.authenticated = true;
+  } else {
+    status_.authenticated = false;
   }
 }
 

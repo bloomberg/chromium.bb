@@ -35,10 +35,6 @@ static const char kSyncServerSyncPath[] = "/command/";
 // server time.
 static const char kSyncServerGetTimePath[] = "/time";
 
-static const ServerConnectionEvent shutdown_event =
-  { ServerConnectionEvent::SHUTDOWN, HttpResponse::CONNECTION_UNAVAILABLE,
-    false };
-
 bool ServerConnectionManager::Post::ReadBufferResponse(
     string* buffer_out,
     HttpResponse* response,
@@ -145,7 +141,6 @@ ServerConnectionManager::ServerConnectionManager(
       proto_sync_path_(kSyncServerSyncPath),
       get_time_path_(kSyncServerGetTimePath),
       error_count_(0),
-      channel_(new Channel(shutdown_event)),
       listeners_(new ObserverListThreadSafe<ServerConnectionEventListener>()),
       server_status_(HttpResponse::NONE),
       server_reachable_(false),
@@ -154,12 +149,11 @@ ServerConnectionManager::ServerConnectionManager(
 }
 
 ServerConnectionManager::~ServerConnectionManager() {
-  delete channel_;
 }
 
 void ServerConnectionManager::NotifyStatusChanged() {
   listeners_->Notify(&ServerConnectionEventListener::OnServerConnectionEvent,
-      ServerConnectionEvent2(server_status_, server_reachable_));
+      ServerConnectionEvent(server_status_, server_reachable_));
 }
 
 bool ServerConnectionManager::PostBufferWithCachedAuth(

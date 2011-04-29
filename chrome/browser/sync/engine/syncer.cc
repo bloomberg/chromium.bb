@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,23 +68,6 @@ bool Syncer::ExitRequested() {
 void Syncer::RequestEarlyExit() {
   base::AutoLock lock(early_exit_requested_lock_);
   early_exit_requested_ = true;
-}
-
-// TODO(tim): Deprecated.
-void Syncer::SyncShare(sessions::SyncSession* session) {
-  ScopedDirLookup dir(session->context()->directory_manager(),
-                      session->context()->account_name());
-  // The directory must be good here.
-  CHECK(dir.good());
-
-  const sessions::SyncSourceInfo& source(session->source());
-  if (sync_pb::GetUpdatesCallerInfo::CLEAR_PRIVATE_DATA ==
-      source.updates_source) {
-    SyncShare(session, CLEAR_PRIVATE_DATA, SYNCER_END);
-    return;
-  } else {
-    SyncShare(session, SYNCER_BEGIN, SYNCER_END);
-  }
 }
 
 void Syncer::SyncShare(sessions::SyncSession* session,

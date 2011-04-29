@@ -76,7 +76,6 @@ using browser_sync::ModelSafeRoutingInfo;
 using browser_sync::ModelSafeWorker;
 using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::ServerConnectionEvent;
-using browser_sync::ServerConnectionEvent2;
 using browser_sync::ServerConnectionEventListener;
 using browser_sync::SyncEngineEvent;
 using browser_sync::SyncEngineEventListener;
@@ -1220,7 +1219,7 @@ class SyncManager::SyncInternal
   void UpdateEnabledTypes();
 
   // Tell the sync engine to start the syncing process.
-  void StartSyncing();
+  void StartSyncingNormally();
 
   // Whether or not the Nigori node is encrypted using an explicit passphrase.
   bool IsUsingExplicitPassphrase();
@@ -1384,7 +1383,7 @@ class SyncManager::SyncInternal
   virtual void OnSyncEngineEvent(const SyncEngineEvent& event);
 
   // ServerConnectionEventListener implementation.
-  virtual void OnServerConnectionEvent(const ServerConnectionEvent2& event);
+  virtual void OnServerConnectionEvent(const ServerConnectionEvent& event);
 
   // browser_sync::JsBackend implementation.
   virtual void SetParentJsEventRouter(browser_sync::JsEventRouter* router);
@@ -1626,8 +1625,8 @@ bool SyncManager::InitialSyncEndedForAllEnabledTypes() {
   return data_->InitialSyncEndedForAllEnabledTypes();
 }
 
-void SyncManager::StartSyncing() {
-  data_->StartSyncing();
+void SyncManager::StartSyncingNormally() {
+  data_->StartSyncingNormally();
 }
 
 syncable::AutofillMigrationState
@@ -1804,11 +1803,11 @@ void SyncManager::SyncInternal::BootstrapEncryption(
   EncryptDataTypes(encrypted_types);
 }
 
-void SyncManager::SyncInternal::StartSyncing() {
-  // Start the syncer thread. This won't actually
-  // result in any syncing until at least the
-  // DirectoryManager broadcasts the OPENED event,
-  // and a valid server connection is detected.
+void SyncManager::SyncInternal::StartSyncingNormally() {
+   // Start the syncer thread. This won't actually
+   // result in any syncing until at least the
+   // DirectoryManager broadcasts the OPENED event,
+   // and a valid server connection is detected.
   if (syncer_thread())  // NULL during certain unittests.
     syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
 }
@@ -2250,29 +2249,18 @@ void SyncManager::SyncInternal::OnIPAddressChangedImpl() {
 }
 
 void SyncManager::SyncInternal::OnServerConnectionEvent(
-    const ServerConnectionEvent2& event) {
-  ServerConnectionEvent legacy;
-  legacy.what_happened = ServerConnectionEvent::STATUS_CHANGED;
-  legacy.connection_code = event.connection_code;
-  legacy.server_reachable = event.server_reachable;
-  HandleServerConnectionEvent(legacy);
-}
-
-void SyncManager::SyncInternal::HandleServerConnectionEvent(
     const ServerConnectionEvent& event) {
   allstatus_.HandleServerConnectionEvent(event);
-  if (event.what_happened == ServerConnectionEvent::STATUS_CHANGED) {
-    if (event.connection_code ==
-        browser_sync::HttpResponse::SERVER_CONNECTION_OK) {
-      FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                        OnAuthError(AuthError::None()));
-    }
+  if (event.connection_code ==
+      browser_sync::HttpResponse::SERVER_CONNECTION_OK) {
+    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                      OnAuthError(AuthError::None()));
+  }
 
-    if (event.connection_code == browser_sync::HttpResponse::SYNC_AUTH_ERROR) {
-      FOR_EACH_OBSERVER(
-          SyncManager::Observer, observers_,
-          OnAuthError(AuthError(AuthError::INVALID_GAIA_CREDENTIALS)));
-    }
+  if (event.connection_code == browser_sync::HttpResponse::SYNC_AUTH_ERROR) {
+    FOR_EACH_OBSERVER(
+        SyncManager::Observer, observers_,
+        OnAuthError(AuthError(AuthError::INVALID_GAIA_CREDENTIALS)));
   }
 }
 
