@@ -741,13 +741,16 @@ void PluginPpapi::UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
   url_downloaders_.erase(url_downloader);
   nacl::scoped_ptr<FileDownloader> scoped_url_downloader(url_downloader);
 
-  int32_t file_desc = scoped_url_downloader->GetPOSIXFileDescriptor();
-  int32_t file_desc_ok_to_close = DUP(file_desc);
-  if (pp_error != PP_OK || file_desc_ok_to_close == NACL_NO_FILE_DESC) {
+  if (pp_error != PP_OK) {
     js_callback.Call(pp::Var("onfail"), pp::Var("URL get failed"));
     return;
   }
-
+  int32_t file_desc = scoped_url_downloader->GetPOSIXFileDescriptor();
+  int32_t file_desc_ok_to_close = DUP(file_desc);
+  if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
+    js_callback.Call(pp::Var("onfail"), pp::Var("posix desc or dup failed"));
+    return;
+  }
   nacl::scoped_ptr<nacl::DescWrapper> scoped_desc_wrapper(
       wrapper_factory()->MakeFileDesc(
           file_desc_ok_to_close, NACL_ABI_O_RDONLY));

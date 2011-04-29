@@ -174,12 +174,12 @@ env.AddNodeToTestSuite(node,
                        is_broken=env.PPAPIBrowserTesterIsBroken())
 
 # TODO(sehr): fix this test on windows.
-#node = env.PPAPIBrowserTester(
-#    'srpc_url_as_nacl_desc_chrome_browser_test.out',
-#    url='srpc_url_as_nacl_desc.html',
-#    files=env.ExtractPublishedFiles(cat_nexe_name),
-#    args=['--enable_experimental_js', '--allow_404'])
-#env.AddNodeToTestSuite(node,
-#                       ['chrome_browser_tests'],
-#                       'run_srpc_url_as_nacl_desc_chrome_browser_test',
-#                       is_broken=env.PPAPIBrowserTesterIsBroken())
+node = env.PPAPIBrowserTester(
+    'srpc_url_as_nacl_desc_chrome_browser_test.out',
+    url='srpc_url_as_nacl_desc.html',
+    files=env.ExtractPublishedFiles(cat_nexe_name),
+    args=['--enable_experimental_js', '--allow_404'])
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_srpc_url_as_nacl_desc_chrome_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
