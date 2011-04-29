@@ -460,8 +460,7 @@ void WebKitClientImpl::cryptographicallyRandomValues(
   }
 }
 
-void WebKitClientImpl::setSharedTimerFiredFunction(
-    WebKit::WebKitClient::SharedTimerFunction func) {
+void WebKitClientImpl::setSharedTimerFiredFunction(void (*func)()) {
   shared_timer_func_ = func;
 }
 

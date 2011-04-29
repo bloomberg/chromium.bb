@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,8 +70,7 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual double currentTime();
   virtual void cryptographicallyRandomValues(
       unsigned char* buffer, size_t length);
-  virtual void setSharedTimerFiredFunction(
-      WebKit::WebKitClient::SharedTimerFunction timerFunction);
+  virtual void setSharedTimerFiredFunction(void (*func)());
   virtual void setSharedTimerFireTime(double fireTime);
   virtual void stopSharedTimer();
   virtual void callOnMainThread(void (*func)(void*), void* context);
@@ -90,7 +89,7 @@ class WebKitClientImpl : public WebKit::WebKitClient {
  private:
   MessageLoop* main_loop_;
   base::OneShotTimer<WebKitClientImpl> shared_timer_;
-  WebKit::WebKitClient::SharedTimerFunction shared_timer_func_;
+  void (*shared_timer_func_)();
   double shared_timer_fire_time_;
   int shared_timer_suspended_;  // counter
 

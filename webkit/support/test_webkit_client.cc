@@ -6,7 +6,6 @@
 
 #include "base/file_util.h"
 #include "base/memory/scoped_temp_dir.h"
-#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/metrics/stats_counters.h"
 #include "base/string_util.h"
@@ -41,7 +40,6 @@
 #include "webkit/glue/webkitclient_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/support/simple_database_system.h"
-#include "webkit/support/webkit_support.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
@@ -63,18 +61,8 @@
 
 using WebKit::WebScriptController;
 
-class TestWebKitClient::FireTimerTask : public Task {
- public:
-  virtual void Run() {
-    TestWebKitClient* client =
-        static_cast<TestWebKitClient*>(webkit_support::GetWebKitClient());
-    client->fireSharedTimer();
-  }
-};
-
 TestWebKitClient::TestWebKitClient(bool unit_test_mode)
-    : unit_test_mode_(unit_test_mode),
-      timer_function_(NULL) {
+      : unit_test_mode_(unit_test_mode) {
   v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
 
   WebKit::initialize(this);
@@ -364,33 +352,4 @@ WebKit::WebSharedWorkerRepository* TestWebKitClient::sharedWorkerRepository() {
 
 WebKit::WebGraphicsContext3D* TestWebKitClient::createGraphicsContext3D() {
   return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
-}
-
-void TestWebKitClient::setSharedTimerFiredFunction(
-    SharedTimerFunction timer_function) {
-  timer_function_ = timer_function;
-}
-
-void TestWebKitClient::setSharedTimerFireTime(double fire_time) {
-  if (!timer_function_)
-    return;
-
-  // Copied from webkitclient_impl.cc.
-  int64 interval = static_cast<int64>(
-      ceil((fire_time - currentTime()) * base::Time::kMicrosecondsPerSecond));
-  if (interval < 0)
-    interval = 0;
-
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, new FireTimerTask(), interval);
-}
-
-void TestWebKitClient::stopSharedTimer() {
-  // TODO(jcivelli): somehow use the code from webkitclient_impl so we can stop
-  //                 the shared timer.
-}
-
-void TestWebKitClient::fireSharedTimer() {
-  if (timer_function_)
-    (*timer_function_)();
 }
