@@ -180,7 +180,13 @@ ScopedChromeFrameRegistrar::~ScopedChromeFrameRegistrar() {
     RegisterChromeFrameAtPath(original_dll_path_);
   } else if (registration_type_ == PER_USER) {
     UnregisterAtPath(new_chrome_frame_dll_path_, registration_type_);
-    chrome_frame_test::KillProcesses(L"chrome_frame_helper.exe", 0, false);
+    HWND chrome_frame_helper_window =
+        FindWindow(L"ChromeFrameHelperWindowClass", NULL);
+    if (IsWindow(chrome_frame_helper_window)) {
+      PostMessage(chrome_frame_helper_window, WM_CLOSE, 0, 0);
+    } else {
+      chrome_frame_test::KillProcesses(L"chrome_frame_helper.exe", 0, false);
+    }
   }
 }
 

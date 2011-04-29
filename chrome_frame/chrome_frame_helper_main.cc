@@ -162,5 +162,6 @@ int APIENTRY wWinMain(HINSTANCE hinstance, HINSTANCE, wchar_t*, int show_cmd) {
     }
   }
 
+  UnregisterClass(kChromeFrameHelperWindowClassName, hinstance);
   return 0;
 }
