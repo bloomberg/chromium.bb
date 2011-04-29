@@ -150,7 +150,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
  public:
   PrerenderBrowserTest()
       : prerender_contents_factory_(NULL),
-        use_https_src_server_(false) {
+        use_https_src_server_(false),
+        call_javascript_(true) {
     EnableDOMAutomation();
   }
 
@@ -227,6 +228,10 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     use_https_src_server_ = use_https_src_server;
   }
 
+  void DisableJavascriptCalls() {
+    call_javascript_ = false;
+  }
+
   TaskManagerModel* model() const {
     return TaskManager::GetInstance()->model();
   }
@@ -293,13 +298,15 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       case FINAL_STATUS_USED: {
         ASSERT_TRUE(prerender_contents != NULL);
 
-        // Check if page behaves as expected while in prerendered state.
-        bool prerender_test_result = false;
-        ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-            prerender_contents->render_view_host(), L"",
-            L"window.domAutomationController.send(DidPrerenderPass())",
-            &prerender_test_result));
-        EXPECT_TRUE(prerender_test_result);
+        if (call_javascript_) {
+          // Check if page behaves as expected while in prerendered state.
+          bool prerender_test_result = false;
+          ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+              prerender_contents->render_view_host(), L"",
+              L"window.domAutomationController.send(DidPrerenderPass())",
+              &prerender_test_result));
+          EXPECT_TRUE(prerender_test_result);
+        }
         break;
       }
       default:
@@ -319,18 +326,21 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // Make sure the PrerenderContents found earlier was used or removed.
     EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) == NULL);
 
-    // Check if page behaved as expected when actually displayed.
-    bool display_test_result = false;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedTabContents()->render_view_host(), L"",
-        L"window.domAutomationController.send(DidDisplayPass())",
-        &display_test_result));
-    EXPECT_TRUE(display_test_result);
+    if (call_javascript_) {
+      // Check if page behaved as expected when actually displayed.
+      bool display_test_result = false;
+      ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+          browser()->GetSelectedTabContents()->render_view_host(), L"",
+          L"window.domAutomationController.send(DidDisplayPass())",
+          &display_test_result));
+      EXPECT_TRUE(display_test_result);
+    }
   }
 
   WaitForLoadPrerenderContentsFactory* prerender_contents_factory_;
   GURL dest_url_;
   bool use_https_src_server_;
+  bool call_javascript_;
 };
 
 // Checks that a page is correctly prerendered in the case of a
@@ -788,6 +798,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                    FINAL_STATUS_USED,
                    1);
   NavigateToURL("files/prerender/prerender_fragment_location_hash.html");
+}
+
+// Checks that prerendering a PNG works correctly.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderImagePng) {
+  DisableJavascriptCalls();
+  PrerenderTestURL("files/prerender/image.png", FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
+}
+
+// Checks that prerendering a PNG works correctly.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderImageJpeg) {
+  DisableJavascriptCalls();
+  PrerenderTestURL("files/prerender/image.jpeg", FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
 }
 
 }  // namespace prerender
