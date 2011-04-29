@@ -96,6 +96,12 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL));
   localized_strings->SetString(std::string("systemDialogOption"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION));
+  localized_strings->SetString(std::string("toBePrinted"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_TO_BE_PRINTED));
+  localized_strings->SetString(std::string("pageRangeInstruction"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION));
+  localized_strings->SetString(std::string("copiesInstruction"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_COPIES_INSTRUCTION));
   localized_strings->SetString(std::string("managePrinters"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_MANAGE_PRINTERS));
 }

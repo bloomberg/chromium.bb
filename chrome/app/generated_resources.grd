@@ -5604,6 +5604,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION" desc="Option allowing the user to use the native print system dialog instead of printing through the print preview mechanism.">
         Print using system dialog…
       </message>
+      <message name="IDS_PRINT_PREVIEW_TO_BE_PRINTED" desc="Label shown in front on the print summary.">
+        To be printed
+      </message>
+      <message name="IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION" desc="Instruction shown when the user enters an invalid page range.">
+        Use page ranges, e.g. 1-5, 8, 11-13.
+      </message>
+      <message name="IDS_PRINT_PREVIEW_COPIES_INSTRUCTION" desc="Instruction shown when the user enters an invalid number of copies.">
+        Use a number to indicate how many copies to print (1 or more).
+      </message>
 
       <!-- Load State -->
       <message name="IDS_LOAD_STATE_WAITING_FOR_CACHE">

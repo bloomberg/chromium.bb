@@ -34,15 +34,11 @@ var lastSelectedPrinterIndex = 0;
  * the printer list.
  */
 function onLoad() {
-  initializeAnimation();
-
   $('printer-list').disabled = true;
   $('print-button').disabled = true;
   $('print-button').addEventListener('click', printFile);
-  $('cancel-button').addEventListener('click', function(e) {
-    window.close();
-  });
-
+  $('cancel-button').addEventListener('click',
+                                      function(e) { window.close(); });
   $('all-pages').addEventListener('click', onPageSelectionMayHaveChanged);
   $('copies').addEventListener('input', copiesFieldChanged);
   $('copies').addEventListener('blur', handleCopiesFieldBlur);
@@ -63,7 +59,10 @@ function onLoad() {
   $('printer-list').addEventListener(
       'change', updateControlsWithSelectedPrinterCapabilities);
   $('system-dialog-link').addEventListener('click', showSystemDialog);
-
+  $('increment').addEventListener('click',
+                                  function() { onCopiesButtonsClicked(1); });
+  $('decrement').addEventListener('click',
+                                  function() { onCopiesButtonsClicked(-1); });
   chrome.send('getPrinters');
 }
 
@@ -192,7 +191,7 @@ function isNumberOfCopiesValid() {
 function checkAndSetCopiesField() {
   var copiesField = $('copies');
   var copies = parseInt(copiesField.value, 10);
-  if (isNaN(copies))
+  if (isNaN(copies) || copies <= 0)
     copies = 1;
   copiesField.value = copies;
   updatePrintSummary();
@@ -750,3 +749,9 @@ function areArraysEqual(array1, array2) {
       return false;
   return true;
 }
+
+function onCopiesButtonsClicked(sign) {
+  $('copies').value = getCopies() + sign * 1;
+  handleCopiesFieldBlur();
+}
+
