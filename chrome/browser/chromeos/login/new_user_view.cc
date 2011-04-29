@@ -446,8 +446,12 @@ void NewUserView::SetPassword(const std::string& password) {
 }
 
 void NewUserView::Login() {
-  if (login_in_process_ || username_field_->text().empty())
+  if (login_in_process_ ||
+      username_field_->text().empty() ||
+      password_field_->text().empty()) {
+    UpdateSignInButtonState();
     return;
+  }
 
   login_in_process_ = true;
   std::string username = UTF16ToUTF8(username_field_->text());
@@ -482,12 +486,14 @@ void NewUserView::ClearAndFocusControls() {
   SetUsername(std::string());
   SetPassword(std::string());
   username_field_->RequestFocus();
+  UpdateSignInButtonState();
 }
 
 void NewUserView::ClearAndFocusPassword() {
   login_in_process_ = false;
   SetPassword(std::string());
   password_field_->RequestFocus();
+  UpdateSignInButtonState();
 }
 
 gfx::Rect NewUserView::GetMainInputScreenBounds() const {
