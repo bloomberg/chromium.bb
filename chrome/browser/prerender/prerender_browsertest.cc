@@ -790,4 +790,162 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToURL("files/prerender/prerender_fragment_location_hash.html");
 }
 
+// Checks that ftp scheme is not supported for prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderBadSchemeFtp) {
+  PrerenderTestURL(GURL("ftp://ftp.example.com"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that ftp scheme is not supported for prerender when done as part of a
+// client redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderBadSchemeFtpClientRedirect) {
+  PrerenderTestURL(CreateClientRedirect("ftp://ftp.example.com"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that ftp scheme is not supported for prerender when done as part of a
+// server redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderBadSchemeFtpServerRedirect) {
+  PrerenderTestURL(CreateServerRedirect("ftp://ftp.example.com"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that gopher scheme is not supported for prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderBadSchemeGopher) {
+  PrerenderTestURL(GURL("gopher://gopher.example.com"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that gopher scheme is not supported for prerender when done as part of
+// a client redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderBadSchemeGopherClientRedirect) {
+  PrerenderTestURL(CreateClientRedirect("gopher://gopher.example.com"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that gopher scheme is not supported for prerender when done as part of
+// a server redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderBadSchemeGopherServerRedirect) {
+  PrerenderTestURL(CreateServerRedirect("gopher://gopher.example.com"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that news scheme is not supported for prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderBadSchemeNews) {
+  PrerenderTestURL(GURL("news:alt.religion.kibology"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that news scheme is not supported for prerender when done as part of
+// a client redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderBadSchemeNewsClientRedirect) {
+  PrerenderTestURL(CreateClientRedirect("news:alt.religion.kibology"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that news scheme is not supported for prerender when done as part of
+// a server redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderBadSchemeNewsServerRedirect) {
+  PrerenderTestURL(CreateServerRedirect("news:alt.religion.kibology"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that secure news scheme is not supported for prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderBadSchemeSnews) {
+  PrerenderTestURL(GURL("snews:alt.religion.kibology"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that snews scheme is not supported for prerender when done as part of
+// a client redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderBadSchemeSnewsClientRedirect) {
+  PrerenderTestURL(CreateClientRedirect("snews:alt.religion.kibology"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that snews scheme is not supported for prerender when done as part of
+// a server redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderBadSchemeSnewsServerRedirect) {
+  PrerenderTestURL(CreateServerRedirect("snews:alt.religion.kibology"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that chrome-extension scheme is not supported for prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderBadSchemeChromeExtension) {
+  PrerenderTestURL(GURL("chrome-extension://haoclkcoegjldmikeokmnfninfafegfm"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that chrome-extension scheme is not supported for prerender when done
+// as part of a client redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderBadSchemeChromeExtensionClientRedirect) {
+  PrerenderTestURL(
+      CreateClientRedirect(
+          "chrome-extension://haoclkcoegjldmikeokmnfninfafegfm"),
+      FINAL_STATUS_UNSUPPORTED_SCHEME,
+      1);
+}
+
+// Checks that chrome-extension scheme is not supported for prerender when done
+// as part of a server redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderBadSchemeChromeExtensionServerRedirect) {
+  PrerenderTestURL(
+      CreateServerRedirect(
+          "chrome-extension://haoclkcoegjldmikeokmnfninfafegfm"),
+      FINAL_STATUS_UNSUPPORTED_SCHEME,
+      1);
+}
+
+// Checks that unknown schemes are not supported for prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderBadSchemeUnknown) {
+  PrerenderTestURL(GURL("invalid://foo.bar.co.uk"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that unknown schemes are not supported for prerender when done as part
+// of a client redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderBadSchemeUnknownClientRedirect) {
+  PrerenderTestURL(CreateClientRedirect("invalid://foo.bar.co.uk"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// Checks that invalid schemes are not supported for prerender when done as part
+// of a server redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderBadSchemeUnknownServerRedirect) {
+  PrerenderTestURL(CreateServerRedirect("invalid://foo.bar.co.uk"),
+                   FINAL_STATUS_UNSUPPORTED_SCHEME,
+                   1);
+}
+
+// TODO(cbentzel): Add tests for file, chrome, and about schemes, which fail
+//                 at webkit resource load time.
+
 }  // namespace prerender
