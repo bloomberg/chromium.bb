@@ -97,7 +97,6 @@
 
 #email-readonly {
   display: none;
-  font-size: 10pt;
   font-weight: bold;
 }
 
@@ -149,17 +148,8 @@
   margin-bottom: 5px;
 }
 
-font.errormsg {
-  color: red;
-  font-size: smaller;
-}
-
 div.errormsgspacer {
   min-height: 1em;
-}
-
-font.errormsgspacer {
-  font-size: smaller;
 }
 
 #gaia-login-form {
@@ -196,7 +186,6 @@ font.errormsgspacer {
 }
 
 #top-blurb {
-  font-size: 11pt;
   line-height: 1.5em;
 }
 
@@ -204,7 +193,6 @@ font.errormsgspacer {
   background-color: #eeb939;
   border-radius: 4px;
   display: block;
-  font-size: 11pt;
   font-weight: bold;
   margin-bottom: 10px;
   margin-left: auto;
@@ -232,23 +220,6 @@ font.errormsgspacer {
 
 #access-code-label-row > td {
   padding-top: 6px;
-}
-
-.gaia-le-lbl,
-.gaia-le-val,
-.gaia-le-rem,
-.gaia-captchahtml-desc
-.gaia-captchahtml-cmt {
-  font-size: smaller;
-}
-
-.gaia-captchahtml-cmt {
-  font-style: italic;
-}
-
-.gaia-le-fpwd,
-.gaia-le-chusr {
-  font-size: 70%;
 }
 
 #error-custom {
@@ -279,7 +250,6 @@ font.errormsgspacer {
 #sync-setup-configure {
   line-height: 1.33em;
   background: #FFFFFF;
-  font-size: 11pt;
 }
 
 html[os='mac'] #sync-setup-configure {
@@ -290,17 +260,11 @@ html[os='mac'] #sync-setup-configure {
   -webkit-user-select: none;
 }
 
-.sync-header {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-.sync-select-customization {
-  margin-top: 10px;
-}
+
 #chooseDataTypesRadio {
   vertical-align: top;
 }
+
 #chooseDataTypes > div {
   display: inline-block;
 }
@@ -321,22 +285,28 @@ html[os='mac'] #sync-setup-configure {
 .sync-item-hide {
   display: none;
 }
+
 .sync-label-inactive {
-  color: #9B9B9B;
+  color: #9b9b9b;
 }
+
 .sync-label-active {
-  color: #000000;
+  color: #000;
 }
+
 .sync-data-types {
   margin-left: 5px;
 }
+
 .sync-errors {
   margin-top: 5px;
 }
+
 .sync-instructions-start-hidden {
   margin-top: 10px;
   display: none;
 }
+
 .sync-error-show {
   display: block;
   width: 80%;
@@ -348,20 +318,9 @@ html[os='mac'] #sync-setup-configure {
   border-radius: 4px;
   font-weight: bold;
 }
+
 .sync-error-hide {
   display: none;
-}
-.sync-footer {
-  position: fixed;
-  right: 0px;
-  bottom: 0px;
-  margin-right: 10px;
-  margin-bottom: 10px;
-}
-.sync-section {
-  background: #EEE;
-  margin: 5px 0px 5px 19px;
-  padding: 6px;
 }
 
 #learn-more-link {
