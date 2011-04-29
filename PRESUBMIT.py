@@ -19,7 +19,7 @@ _EXCLUDED_PATHS = (
 
 def _CheckNoInterfacesInBase(input_api, output_api):
   """Checks to make sure no files in libbase.a have |@interface|."""
-  pattern = input_api.re.compile(r'@interface')
+  pattern = input_api.re.compile(r'^\s*@interface', input_api.re.MULTILINE)
   files = []
   for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
     if (f.LocalPath().find('base/') != -1 and
