@@ -73,6 +73,8 @@ class SettingsWebUITest : public WebUIBrowserTest {
 
   virtual void SetUpOnMainThread() {
     mock_core_options_handler_.reset(new StrictMock<MockCoreOptionsHandler>());
+    ui_test_utils::NavigateToURL(
+        browser(), GURL(chrome::kChromeUISettingsURL));
   }
 
   virtual void CleanUpOnMainThread() {
@@ -103,7 +105,6 @@ IN_PROC_BROWSER_TEST_F(SettingsWebUITest, MAYBE_TestSetBooleanPrefTriggers) {
   true_list_value.Append(Value::CreateBooleanValue(true));
   true_list_value.Append(
       Value::CreateStringValue("Options_Homepage_HomeButton"));
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
   EXPECT_CALL(*mock_core_options_handler_,
       HandleSetBooleanPref(Eq_ListValue(&true_list_value)));
   ASSERT_TRUE(RunJavascriptTest("testSetBooleanPrefTriggers"));
@@ -118,7 +119,6 @@ IN_PROC_BROWSER_TEST_F(SettingsWebUITest, MAYBE_TestSetBooleanPrefTriggers) {
 #endif
 IN_PROC_BROWSER_TEST_F(SettingsWebUITest,
                        MAYBE_TestRefreshStaysOnCurrentPage) {
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
   ASSERT_TRUE(RunJavascriptFunction("openUnderTheHood"));
   ASSERT_TRUE(RunJavascriptFunction("refreshPage"));
   ASSERT_TRUE(RunJavascriptTest("testPageIsUnderTheHood"));
