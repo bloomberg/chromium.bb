@@ -24,6 +24,11 @@ int GetKeyStateFlags() {
   return flags;
 }
 
+bool IsButtonDown(NativeEvent native_event) {
+  return (native_event.wParam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON |
+                                 MK_XBUTTON1 | MK_XBUTTON2)) != 0;
+}
+
 // Convert windows message identifiers to Event types.
 ui::EventType EventTypeFromNative(NativeEvent native_event) {
   switch (native_event.message) {
@@ -56,7 +61,8 @@ ui::EventType EventTypeFromNative(NativeEvent native_event) {
       return ui::ET_MOUSE_RELEASED;
     case WM_MOUSEMOVE:
     case WM_NCMOUSEMOVE:
-      return ui::ET_MOUSE_MOVED;
+      return IsButtonDown(native_event) ? ui::ET_MOUSE_DRAGGED :
+                                          ui::ET_MOUSE_MOVED;
     case WM_MOUSEWHEEL:
       return ui::ET_MOUSEWHEEL;
     case WM_MOUSELEAVE:
