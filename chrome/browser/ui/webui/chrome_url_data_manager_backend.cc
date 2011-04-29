@@ -396,7 +396,8 @@ bool DevToolsJobFactory::ShouldLoadFromDisk() {
 #if defined(DEBUG_DEVTOOLS)
   return true;
 #else
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugDevTools);
+  return CommandLine::ForCurrentProcess()->
+             HasSwitch(switches::kDebugDevToolsFrontend);
 #endif
 }
 
@@ -431,7 +432,16 @@ bool DevToolsJobFactory::IsSupportedURL(const GURL& url, FilePath* path) {
     return false;
 
   FilePath inspector_dir;
+
+#if defined(DEBUG_DEVTOOLS)
   if (!PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir))
+    return false;
+#else
+  inspector_dir = CommandLine::ForCurrentProcess()->
+                      GetSwitchValuePath(switches::kDebugDevToolsFrontend);
+#endif
+
+  if (inspector_dir.empty())
     return false;
 
   *path = inspector_dir.AppendASCII(relative_path);

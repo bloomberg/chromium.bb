@@ -141,9 +141,9 @@ const char kConflictingModulesCheck[]       = "conflicting-modules-check";
 // string value, the 2 letter code from ISO 3166-1.
 const char kCountry[]                       = "country";
 
-// If enabled, tries to load inspector files from disk (allows reloading of
-// devtool files without having to restart the browser).
-const char kDebugDevTools[]                 = "debug-devtools";
+// Path to the inspector files on disk (allows reloading of devtool files
+// without having to restart the browser).
+const char kDebugDevToolsFrontend[]         = "debug-devtools-frontend";
 
 // Enables support to debug printing subsystem.
 const char kDebugPrint[]                    = "debug-print";
