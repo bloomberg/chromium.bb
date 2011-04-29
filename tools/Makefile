@@ -169,7 +169,7 @@ SRC:
 
 
 SRC/binutils: | SRC
-	git clone $(GIT_BASE_URL)/nacl-binutils SRC/binutils
+	git clone $(GIT_BASE_URL)/nacl-binutils.git SRC/binutils
 
 .PHONY: fetched-src-binutils
 fetched-src-binutils: | SRC/binutils
@@ -185,7 +185,7 @@ latest-src-binutils: fetched-src-binutils
 
 
 SRC/newlib: | SRC
-	git clone $(GIT_BASE_URL)/nacl-newlib SRC/newlib
+	git clone $(GIT_BASE_URL)/nacl-newlib.git SRC/newlib
 
 .PHONY: fetched-src-newlib
 fetched-src-newlib: | SRC/newlib
@@ -201,7 +201,7 @@ latest-src-newlib: fetched-src-newlib
 
 
 SRC/gcc: | SRC
-	git clone $(GIT_BASE_URL)/nacl-gcc SRC/gcc
+	git clone $(GIT_BASE_URL)/nacl-gcc.git SRC/gcc
 
 .PHONY: fetched-src-gcc
 fetched-src-gcc: | SRC/gcc
@@ -253,7 +253,7 @@ latest-src-linux-headers-for-nacl: fetched-src-linux-headers-for-nacl
 
 
 SRC/gdb: | SRC
-	git clone $(GIT_BASE_URL)/nacl-gdb SRC/gdb
+	git clone $(GIT_BASE_URL)/nacl-gdb.git SRC/gdb
 
 .PHONY: fetched-src-gdb
 fetched-src-gdb: | SRC/gdb
