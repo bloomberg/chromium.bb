@@ -30,6 +30,7 @@ MODE_TRANSITIONS[SYMBOL_MODE + NUMBER_MODE] = KEY_MODE;
  */
 function transitionMode(transition) {
   currentMode = MODE_TRANSITIONS[currentMode + transition];
+  setMode(currentMode);
 }
 
 /**
@@ -300,7 +301,6 @@ ShiftKey.prototype = {
 
     this.modeElements_[mode].onclick = function() {
       transitionMode(SHIFT_MODE);
-      setMode(currentMode);
     };
     return this.modeElements_[mode];
   },
@@ -340,7 +340,6 @@ SymbolKey.prototype = {
 
     this.modeElements_[mode].onclick = function() {
       transitionMode(NUMBER_MODE);
-      setMode(currentMode);
     };
 
     return this.modeElements_[mode];
@@ -616,7 +615,8 @@ function sendKey(key) {
   keyEvent['type'] = 'keyup';
   chrome.experimental.input.sendKeyboardEvent(keyEvent);
 
-  // TODO(bryeung): deactivate shift after a successful keypress
+  if (currentMode == SHIFT_MODE)
+    transitionMode(SHIFT_MODE);
 }
 
 /**
