@@ -206,10 +206,6 @@ void BookmarkBubbleView::Init() {
   parent_combobox_->set_listener(this);
   parent_combobox_->SetAccessibleName(
       WideToUTF16Hack(combobox_label->GetText()));
-#if defined(TOUCH_UI)
-  // TODO(saintlou): This is a short term workaround for touch
-  parent_combobox_->SetEnabled(false);
-#endif
 
   views::Label* title_label = new views::Label(
       UTF16ToWide(l10n_util::GetStringUTF16(
@@ -368,17 +364,10 @@ void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
 
 void BookmarkBubbleView::ShowEditor() {
 #if defined(TOUCH_UI)
-  // Close the Bubble
+  // TODO(saintlou): this brings up a modal window that can't be dismissed
+  // on touch and is tracked in chromium-os by crosbug.com/13899
+  bubble_->set_fade_away_on_close(true);
   Close();
-
-  // Open the Bookmark Manager
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  DCHECK(browser);
-  if (browser)
-    browser->OpenBookmarkManager();
-  else
-    NOTREACHED();
-
 #else
   const BookmarkNode* node =
       profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url_);

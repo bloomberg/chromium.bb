@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/combobox_model.h"
 #include "views/controls/combobox/combobox.h"
+#include "views/controls/combobox/native_combobox_views.h"
 #include "views/views_delegate.h"
 
 using ui::ComboboxModel;  // TODO(beng): remove
@@ -211,6 +212,8 @@ void NativeComboboxGtk::CallMenuMoveCurrent(
 // static
 NativeComboboxWrapper* NativeComboboxWrapper::CreateWrapper(
     Combobox* combobox) {
+  if (NativeComboboxViews::IsComboboxViewsEnabled())
+    return new NativeComboboxViews(combobox);
   return new NativeComboboxGtk(combobox);
 }
 

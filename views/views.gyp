@@ -111,6 +111,8 @@
         'controls/combobox/combobox.h',
         'controls/combobox/native_combobox_gtk.cc',
         'controls/combobox/native_combobox_gtk.h',
+        'controls/combobox/native_combobox_views.cc',
+        'controls/combobox/native_combobox_views.h',
         'controls/combobox/native_combobox_win.cc',
         'controls/combobox/native_combobox_win.h',
         'controls/combobox/native_combobox_wrapper.h',
