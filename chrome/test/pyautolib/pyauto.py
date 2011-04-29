@@ -1921,18 +1921,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Returns:
       a string that was sent back via the domAutomationController.send method
     """
-    # Convert the given arguments for evaluation in a javascript statement.
-    converted_args = []
-    for arg in args:
-      # If it is a string argument, we need to quote and escape it properly.
-      if type(arg) == type('string') or type(arg) == type(u'unicode'):
-        # We must convert all " in the string to \", so that we don't try
-        # to evaluate invalid javascript like ""arg"".
-        converted_arg = '"' + arg.replace('"', '\\"') + '"'
-      else:
-        # Convert it to a string so that we can use |join| later.
-        converted_arg = str(arg)
-      converted_args += [converted_arg]
+    converted_args = map(lambda arg: json.dumps(arg), args)
     js = '%s(%s)' % (function, ', '.join(converted_args))
     logging.debug('Executing javascript: %s', js)
     return self.ExecuteJavascript(js, windex, tab_index)

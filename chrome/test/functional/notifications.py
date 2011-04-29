@@ -14,7 +14,7 @@ class NotificationsTest(pyauto.PyUITest):
   """Test of HTML5 desktop notifications."""
   def __init__(self, methodName='runTest'):
     super(NotificationsTest, self).__init__(methodName)
-    self.NO_SUCH_URL = 'http://no_such_url_exists/'
+    self.EMPTY_PAGE_URL = self.GetHttpURLForDataPath('empty.html')
     # Content settings for default notification permission.
     self.ALLOW_ALL_SETTING = 1
     self.DENY_ALL_SETTING = 2
@@ -161,8 +161,8 @@ class NotificationsTest(pyauto.PyUITest):
                                    tab_index,
                                    windex);
 
-  def _CreateHTMLNotification(self, content_url, replace_id='', tab_index=0,
-                              windex=0):
+  def _CreateHTMLNotification(self, content_url, replace_id='',
+                              wait_for_display=True, tab_index=0, windex=0):
     """Creates an HTML notification.
 
     Returns the id of the notification, which can be used to cancel it later.
@@ -176,11 +176,12 @@ class NotificationsTest(pyauto.PyUITest):
       replace_id: id string to be used for this notification. If another
                   notification is shown with the same replace_id, the former
                   will be replaced.
+      wait_for_display: whether we should wait for the notification to display
       tab_index: index of the tab within the given window
       windex: index of the window
     """
     return self.CallJavascriptFunc('createHTMLNotification',
-                                   [content_url, replace_id],
+                                   [content_url, replace_id, wait_for_display],
                                    tab_index,
                                    windex)
 
@@ -234,10 +235,10 @@ class NotificationsTest(pyauto.PyUITest):
     """Creates an HTML notification using a fake url."""
     self._AllowAllOrigins()
     self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.assertEquals(1, len(self.GetActiveNotifications()))
     notification = self.GetActiveNotifications()[0]
-    self.assertEquals(self.NO_SUCH_URL, notification['content_url'])
+    self.assertEquals(self.EMPTY_PAGE_URL, notification['content_url'])
     self.assertEquals('', notification['display_source'])
     self.assertEquals('file:///', notification['origin_url'])
 
@@ -245,7 +246,7 @@ class NotificationsTest(pyauto.PyUITest):
     """Creates a notification and closes it."""
     self._AllowAllOrigins()
     self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.CloseNotification(0)
     self.assertFalse(self.GetActiveNotifications())
 
@@ -253,7 +254,7 @@ class NotificationsTest(pyauto.PyUITest):
     """Creates a notification and cancels it in the origin page."""
     self._AllowAllOrigins()
     self.NavigateToURL(self.TEST_PAGE_URL)
-    note_id = self._CreateHTMLNotification(self.NO_SUCH_URL)
+    note_id = self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.assertNotEquals(-1, note_id)
     self.WaitForNotificationCount(1)
     self._CancelNotification(note_id)
@@ -271,13 +272,13 @@ class NotificationsTest(pyauto.PyUITest):
     """Tries to create a notification and clicks allow on the infobar."""
     self.NavigateToURL(self.TEST_PAGE_URL)
     # This notification should not be shown because we do not have permission.
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.assertFalse(self.GetActiveNotifications())
 
     self._RequestPermission()
     self.assertTrue(self.WaitForInfobarCount(1))
     self.PerformActionOnInfobar('accept', 0)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.WaitForNotificationCount(1)
 
   def testOriginPreferencesBasic(self):
@@ -323,7 +324,7 @@ class NotificationsTest(pyauto.PyUITest):
     self._RequestPermission()
     self.assertTrue(self.WaitForInfobarCount(1))
     self.PerformActionOnInfobar('cancel', 0)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.assertFalse(self.GetActiveNotifications())
     self.assertEquals(['file:///'], self._GetDeniedOrigins())
 
@@ -334,7 +335,7 @@ class NotificationsTest(pyauto.PyUITest):
     self._RequestPermission()
     self.assertTrue(self.WaitForInfobarCount(1))
     self.PerformActionOnInfobar('dismiss', 0)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.assertFalse(self.GetActiveNotifications())
     self.assertFalse(self._GetDeniedOrigins())
 
@@ -352,7 +353,7 @@ class NotificationsTest(pyauto.PyUITest):
     """Verify that all domains can be allowed to show notifications."""
     self._SetDefaultPermissionSetting(self.ALLOW_ALL_SETTING)
     self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.assertEquals(1, len(self.GetActiveNotifications()))
     self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
 
@@ -360,7 +361,7 @@ class NotificationsTest(pyauto.PyUITest):
     """Verify that no domain can show notifications."""
     self._SetDefaultPermissionSetting(self.DENY_ALL_SETTING)
     self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.assertFalse(self.GetActiveNotifications())
 
   def testDenyDomainAndAllowAll(self):
@@ -369,7 +370,7 @@ class NotificationsTest(pyauto.PyUITest):
     self._DenyOrigin('file:///')
     self._SetDefaultPermissionSetting(self.ALLOW_ALL_SETTING)
     self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.assertFalse(self.GetActiveNotifications())
 
   def testAllowDomainAndDenyAll(self):
@@ -378,7 +379,7 @@ class NotificationsTest(pyauto.PyUITest):
     self._AllowOrigin('file:///')
     self._SetDefaultPermissionSetting(self.DENY_ALL_SETTING)
     self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.assertEquals(1, len(self.GetActiveNotifications()))
     self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
 
@@ -386,10 +387,10 @@ class NotificationsTest(pyauto.PyUITest):
     """Verify that denying and again allowing should show notifications."""
     self._DenyOrigin('file:///')
     self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.assertEquals(len(self.GetActiveNotifications()), 0)
     self._AllowOrigin('file:///')
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.assertEquals(1, len(self.GetActiveNotifications()))
     self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
 
@@ -397,7 +398,7 @@ class NotificationsTest(pyauto.PyUITest):
     """Verify able to create, deny, and close the notification."""
     self._AllowAllOrigins()
     self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.assertEquals(1, len(self.GetActiveNotifications()))
     origin = 'file:///'
     self._DenyOrigin(origin)
@@ -417,7 +418,7 @@ class NotificationsTest(pyauto.PyUITest):
     self._RequestPermission(windex=1)
     self.assertTrue(self.WaitForInfobarCount(1, windex=1))
     self.PerformActionOnInfobar('accept', 0, windex=1)
-    self._CreateHTMLNotification(self.NO_SUCH_URL, windex=1)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL, windex=1)
     self.assertEquals(1, len(self.GetActiveNotifications()))
 
     self.NavigateToURL(self.TEST_PAGE_URL, 1, 0)
@@ -435,20 +436,22 @@ class NotificationsTest(pyauto.PyUITest):
 
   def testCrashTabWithPermissionInfobar(self):
     """Test crashing the tab with permission infobar doesn't crash Chrome."""
-    self.AppendTab(pyauto.GURL(self.NO_SUCH_URL))
+    self.AppendTab(pyauto.GURL(self.EMPTY_PAGE_URL))
     self.assertTrue(self.ActivateTab(0))
     self.NavigateToURL(self.TEST_PAGE_URL)
     self._RequestPermission()
     self.assertTrue(self.WaitForInfobarCount(1))
-    self.Kill(self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid'])
+    self.KillRendererProcess(
+        self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid'])
     self.assertTrue(self.IsBrowserRunning())
 
   def testKillNotificationProcess(self):
     """Test killing a notification doesn't crash Chrome."""
     self._AllowAllOrigins()
     self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
-    self.Kill(self.GetActiveNotifications()[0]['pid'])
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
+    self.KillRendererProcess(
+        self.GetActiveNotifications()[0]['pid'])
     self.assertTrue(self.IsBrowserRunning())
     self.WaitForNotificationCount(0)
 
@@ -460,14 +463,15 @@ class NotificationsTest(pyauto.PyUITest):
     self._RequestPermission(windex=1)
     self.assertTrue(self.WaitForInfobarCount(1, windex=1))
     self.PerformActionOnInfobar('accept', infobar_index=0, windex=1)
-    self._CreateHTMLNotification(self.NO_SUCH_URL, windex=1)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL, windex=1)
     self.assertEquals(1, len(self.GetActiveNotifications()))
 
   def testSpecialURLNotification(self):
     """Test a page cannot create a notification to a chrome: url."""
     self._AllowAllOrigins()
     self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateHTMLNotification('chrome://extensions/')
+    self._CreateHTMLNotification('chrome://extensions/',
+                                 wait_for_display=False);
     self.assertFalse(self.GetActiveNotifications())
 
   def testCloseTabWithPermissionInfobar(self):
@@ -492,7 +496,7 @@ class NotificationsTest(pyauto.PyUITest):
     self._RequestPermission()
     self.assertTrue(self.WaitForInfobarCount(1))
     self.PerformActionOnInfobar('accept', 0)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.assertEquals(1, len(self.GetActiveNotifications()))
 
   def testCrashRendererNotificationRemain(self):
@@ -501,9 +505,10 @@ class NotificationsTest(pyauto.PyUITest):
     self.AppendTab(pyauto.GURL('about:blank'))
     self.ActivateTab(0)
     self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
     self.assertEquals(1, len(self.GetActiveNotifications()))
-    self.Kill(self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid'])
+    self.KillRendererProcess(
+        self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid'])
     self.assertTrue(self.IsBrowserRunning())
     self.assertEquals(1, len(self.GetActiveNotifications()))
 
@@ -532,10 +537,10 @@ class NotificationsTest(pyauto.PyUITest):
     self.WaitForNotificationCount(1)
     # Since this notification has the same replaceId, 'chat', it should replace
     # the first notification.
-    self._CreateHTMLNotification(self.NO_SUCH_URL, 'chat')
+    self._CreateHTMLNotification(self.EMPTY_PAGE_URL, 'chat')
     notifications = self.GetActiveNotifications()
     self.assertEquals(1, len(notifications))
-    self.assertEquals(self.NO_SUCH_URL, notifications[0]['content_url'])
+    self.assertEquals(self.EMPTY_PAGE_URL, notifications[0]['content_url'])
 
 
 if __name__ == '__main__':

@@ -23,7 +23,7 @@ function createNotification(iconUrl, title, text, replaceId) {
     sendResultToTest(-1);
     return;
   }
-  sendResultToTest(createNotificationHelper(note, replaceId));
+  createNotificationHelper(note, replaceId, true);
 }
 
 // Creates an HTML notification with a given content url.
@@ -31,14 +31,16 @@ function createNotification(iconUrl, title, text, replaceId) {
 // |cancelNotification|. If two notifications are created with the same
 // replaceId, the second one should replace the first. If the notification
 // cannot be created, this returns -1.
-function createHTMLNotification(contentUrl, replaceId) {
+// If |waitForDisplay| is true, a response will not be sent until the
+// notification is actually displayed.
+function createHTMLNotification(contentUrl, replaceId, waitForDisplay) {
   try {
     var note = webkitNotifications.createHTMLNotification(contentUrl);
   } catch (exception)  {
     sendResultToTest(-1);
     return;
   }
-  sendResultToTest(createNotificationHelper(note, replaceId));
+  createNotificationHelper(note, replaceId, waitForDisplay);
 }
 
 // Cancels a notification with the given id. The notification must be showing,
@@ -76,13 +78,25 @@ function onPermissionGranted() {
   g_permissionGranted = true;
 }
 
-// Helper function that shows the notification and adds it to
-// |g_notifications|.
-function createNotificationHelper(note, replaceId) {
+// Helper function that adds a notification to |g_notifications| and shows
+// it. The index of the notification is sent back to the test, or -1 is sent
+// back on error. If |waitForDisplay| is true, the response will not be sent
+// until the notification is actually displayed.
+function createNotificationHelper(note, replaceId, waitForDisplay) {
+  function sendNotificationIdToTest() {
+    sendResultToTest(g_notifications.length - 1);
+  }
+  g_notifications.push(note);
   note.replaceId = replaceId;
+  if (waitForDisplay)
+    note.ondisplay = sendNotificationIdToTest;
+  note.onerror = function() {
+    sendResultToTest(-1);
+  }
+
   note.show();
-  // |push| returns the length of the array after the add.
-  return g_notifications.push(note) - 1;
+  if (!waitForDisplay)
+    sendNotificationIdToTest();
 }
 
 // Sends a result back to the main test logic.
