@@ -5,7 +5,9 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/glue/app_change_processor.h"
 #include "chrome/browser/sync/glue/app_data_type_controller.h"
+#include "chrome/browser/sync/glue/app_model_associator.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
@@ -41,7 +43,9 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_switches.h"
 
+using browser_sync::AppChangeProcessor;
 using browser_sync::AppDataTypeController;
+using browser_sync::AppModelAssociator;
 using browser_sync::AutofillChangeProcessor;
 using browser_sync::AutofillProfileChangeProcessor;
 using browser_sync::AutofillDataTypeController;
@@ -168,17 +172,16 @@ ProfileSyncFactory::SyncComponents
 ProfileSyncFactoryImpl::CreateAppSyncComponents(
     ProfileSyncService* profile_sync_service,
     UnrecoverableErrorHandler* error_handler) {
-  browser_sync::ExtensionSyncTraits traits = browser_sync::GetAppSyncTraits();
   // For now we simply use extensions sync objects with the app sync
   // traits.  If apps become more than simply extensions, we may have
   // to write our own apps model associator and/or change processor.
   ExtensionServiceInterface* extension_service =
       profile_sync_service->profile()->GetExtensionService();
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
-  ExtensionModelAssociator* model_associator =
-      new ExtensionModelAssociator(traits, extension_service, user_share);
-  ExtensionChangeProcessor* change_processor =
-      new ExtensionChangeProcessor(traits, error_handler);
+  AppModelAssociator* model_associator =
+      new AppModelAssociator(extension_service, user_share);
+  AppChangeProcessor* change_processor =
+      new AppChangeProcessor(error_handler);
   return SyncComponents(model_associator, change_processor);
 }
 
@@ -241,15 +244,13 @@ ProfileSyncFactory::SyncComponents
 ProfileSyncFactoryImpl::CreateExtensionSyncComponents(
     ProfileSyncService* profile_sync_service,
     UnrecoverableErrorHandler* error_handler) {
-  browser_sync::ExtensionSyncTraits traits =
-      browser_sync::GetExtensionSyncTraits();
   ExtensionServiceInterface* extension_service =
       profile_sync_service->profile()->GetExtensionService();
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
   ExtensionModelAssociator* model_associator =
-      new ExtensionModelAssociator(traits, extension_service, user_share);
+      new ExtensionModelAssociator(extension_service, user_share);
   ExtensionChangeProcessor* change_processor =
-      new ExtensionChangeProcessor(traits, error_handler);
+      new ExtensionChangeProcessor(error_handler);
   return SyncComponents(model_associator, change_processor);
 }
 

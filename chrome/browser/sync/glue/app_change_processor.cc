@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/extension_change_processor.h"
+#include "chrome/browser/sync/glue/app_change_processor.h"
 
 #include <sstream>
 #include <string>
@@ -21,17 +21,17 @@
 
 namespace browser_sync {
 
-ExtensionChangeProcessor::ExtensionChangeProcessor(
+AppChangeProcessor::AppChangeProcessor(
     UnrecoverableErrorHandler* error_handler)
     : ChangeProcessor(error_handler),
-      traits_(GetExtensionSyncTraits()),
+      traits_(GetAppSyncTraits()),
       profile_(NULL),
       extension_service_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(error_handler);
 }
 
-ExtensionChangeProcessor::~ExtensionChangeProcessor() {
+AppChangeProcessor::~AppChangeProcessor() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -39,9 +39,9 @@ ExtensionChangeProcessor::~ExtensionChangeProcessor() {
 // the browser or the syncapi are done in order; this is tricky since
 // some events (e.g., extension installation) are done asynchronously.
 
-void ExtensionChangeProcessor::Observe(NotificationType type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
+void AppChangeProcessor::Observe(NotificationType type,
+                                 const NotificationSource& source,
+                                 const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(running());
   DCHECK(profile_);
@@ -86,7 +86,7 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
   }
 }
 
-void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
+void AppChangeProcessor::ApplyChangesFromSyncModel(
     const sync_api::BaseTransaction* trans,
     const sync_api::SyncManager::ChangeRecord* changes,
     int change_count) {
@@ -142,7 +142,7 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
   }
 }
 
-void ExtensionChangeProcessor::StartImpl(Profile* profile) {
+void AppChangeProcessor::StartImpl(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_ = profile;
   extension_service_ = profile_->GetExtensionService();
@@ -151,14 +151,14 @@ void ExtensionChangeProcessor::StartImpl(Profile* profile) {
   StartObserving();
 }
 
-void ExtensionChangeProcessor::StopImpl() {
+void AppChangeProcessor::StopImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   StopObserving();
   profile_ = NULL;
   extension_service_ = NULL;
 }
 
-void ExtensionChangeProcessor::StartObserving() {
+void AppChangeProcessor::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
 
@@ -176,7 +176,7 @@ void ExtensionChangeProcessor::StartObserving() {
       Source<Profile>(profile_));
 }
 
-void ExtensionChangeProcessor::StopObserving() {
+void AppChangeProcessor::StopObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
   VLOG(1) << "Unobserving all notifications";

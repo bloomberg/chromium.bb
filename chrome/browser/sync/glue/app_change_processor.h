@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_EXTENSION_CHANGE_PROCESSOR_H_
-#define CHROME_BROWSER_SYNC_GLUE_EXTENSION_CHANGE_PROCESSOR_H_
+#ifndef CHROME_BROWSER_SYNC_GLUE_APP_CHANGE_PROCESSOR_H_
+#define CHROME_BROWSER_SYNC_GLUE_APP_CHANGE_PROCESSOR_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -24,12 +24,12 @@ class UnrecoverableErrorHandler;
 // ExtensionService and applying them to the sync_api 'syncable'
 // model, and vice versa. All operations and use of this class are
 // from the UI thread.
-class ExtensionChangeProcessor : public ChangeProcessor,
-                                 public NotificationObserver {
+class AppChangeProcessor : public ChangeProcessor,
+                           public NotificationObserver {
  public:
   // Does not take ownership of |error_handler|.
-  explicit ExtensionChangeProcessor(UnrecoverableErrorHandler* error_handler);
-  virtual ~ExtensionChangeProcessor();
+  explicit AppChangeProcessor(UnrecoverableErrorHandler* error_handler);
+  virtual ~AppChangeProcessor();
 
   // NotificationObserver implementation.
   // BrowserExtensionProvider -> sync_api model change application.
@@ -60,9 +60,9 @@ class ExtensionChangeProcessor : public ChangeProcessor,
   Profile* profile_;
   ExtensionServiceInterface* extension_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionChangeProcessor);
+  DISALLOW_COPY_AND_ASSIGN(AppChangeProcessor);
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_EXTENSION_CHANGE_PROCESSOR_H_
+#endif  // CHROME_BROWSER_SYNC_GLUE_APP_CHANGE_PROCESSOR_H_

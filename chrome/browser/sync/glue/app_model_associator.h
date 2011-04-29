@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_EXTENSION_MODEL_ASSOCIATOR_H_
-#define CHROME_BROWSER_SYNC_GLUE_EXTENSION_MODEL_ASSOCIATOR_H_
+#ifndef CHROME_BROWSER_SYNC_GLUE_APP_MODEL_ASSOCIATOR_H_
+#define CHROME_BROWSER_SYNC_GLUE_APP_MODEL_ASSOCIATOR_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -19,17 +19,17 @@ struct UserShare;
 
 namespace browser_sync {
 
-// Contains all logic for associating the Chrome extensions model and
-// the sync extensions model.
-class ExtensionModelAssociator : public AssociatorInterface {
+// Contains all logic for associating the Chrome apps model and the
+// sync apps model.
+class AppModelAssociator : public AssociatorInterface {
  public:
   // Does not take ownership of |extension_service| or |user_share|.
-  ExtensionModelAssociator(ExtensionServiceInterface* extension_service,
-                           sync_api::UserShare* user_share);
-  virtual ~ExtensionModelAssociator();
+  AppModelAssociator(ExtensionServiceInterface* extension_service,
+                     sync_api::UserShare* user_share);
+  virtual ~AppModelAssociator();
 
   // Used by profile_sync_test_util.h.
-  static syncable::ModelType model_type() { return syncable::EXTENSIONS; }
+  static syncable::ModelType model_type() { return syncable::APPS; }
 
   // AssociatorInterface implementation.
   virtual bool AssociateModels();
@@ -42,9 +42,9 @@ class ExtensionModelAssociator : public AssociatorInterface {
   ExtensionServiceInterface* const extension_service_;
   sync_api::UserShare* const user_share_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionModelAssociator);
+  DISALLOW_COPY_AND_ASSIGN(AppModelAssociator);
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_EXTENSION_MODEL_ASSOCIATOR_H_
+#endif  // CHROME_BROWSER_SYNC_GLUE_APP_MODEL_ASSOCIATOR_H_

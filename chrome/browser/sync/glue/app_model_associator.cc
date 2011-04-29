@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/extension_model_associator.h"
+#include "chrome/browser/sync/glue/app_model_associator.h"
 
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
@@ -16,22 +16,21 @@
 
 namespace browser_sync {
 
-ExtensionModelAssociator::ExtensionModelAssociator(
+AppModelAssociator::AppModelAssociator(
     ExtensionServiceInterface* extension_service,
     sync_api::UserShare* user_share)
-    : traits_(GetExtensionSyncTraits()),
-      extension_service_(extension_service),
+    : traits_(GetAppSyncTraits()), extension_service_(extension_service),
       user_share_(user_share) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension_service_);
   DCHECK(user_share_);
 }
 
-ExtensionModelAssociator::~ExtensionModelAssociator() {
+AppModelAssociator::~AppModelAssociator() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-bool ExtensionModelAssociator::AssociateModels() {
+bool AppModelAssociator::AssociateModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ExtensionDataMap extension_data_map;
   if (!SlurpExtensionData(
@@ -46,23 +45,23 @@ bool ExtensionModelAssociator::AssociateModels() {
   return true;
 }
 
-bool ExtensionModelAssociator::DisassociateModels() {
+bool AppModelAssociator::DisassociateModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Nothing to do.
   return true;
 }
 
-bool ExtensionModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
+bool AppModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return RootNodeHasChildren(traits_.root_node_tag, user_share_, has_nodes);
 }
 
-void ExtensionModelAssociator::AbortAssociation() {
+void AppModelAssociator::AbortAssociation() {
   // No implementation needed, this associator runs on the main
   // thread.
 }
 
-bool ExtensionModelAssociator::CryptoReadyIfNecessary() {
+bool AppModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
   sync_api::ReadTransaction trans(user_share_);
   const syncable::ModelTypeSet& encrypted_types =
