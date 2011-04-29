@@ -37,7 +37,6 @@
 
 struct wl_event_loop {
 	int epoll_fd;
-	struct wl_list idle_list;
 	struct wl_list check_list;
 };
 
@@ -375,7 +374,6 @@ wl_event_loop_add_idle(struct wl_event_loop *loop,
 
 	source->func = func;
 	source->base.data = data;
-	wl_list_insert(loop->idle_list.prev, &source->base.link);
 	wl_event_source_check(&source->base);
 
 	return &source->base;
@@ -412,7 +410,6 @@ wl_event_loop_create(void)
 		free(loop);
 		return NULL;
 	}
-	wl_list_init(&loop->idle_list);
 	wl_list_init(&loop->check_list);
 
 	return loop;
