@@ -1054,7 +1054,7 @@ function historyResult(info, results) {
 function deleteComplete() {
   window.console.log('Delete complete');
   deleteInFlight = false;
-  if (deleteQueue.length > 1) {
+  if (deleteQueue.length > 2) {
     deleteQueue = deleteQueue.slice(2);
     deleteNextInQueue();
   } else {
