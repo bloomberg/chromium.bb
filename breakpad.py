@@ -15,16 +15,31 @@ It is only enabled when all these conditions are met:
 import atexit
 import getpass
 import os
-import urllib
-import traceback
 import socket
 import sys
+import time
+import traceback
+import urllib
+import urllib2
 
 
 # Configure these values.
-DEFAULT_URL = 'https://chromium-status.appspot.com/breakpad'
+DEFAULT_URL = 'https://chromium-status.appspot.com'
 
 _REGISTERED = False
+
+_TIME_STARTED = time.time()
+
+
+def post(url, params):
+  """HTTP POST with timeout when it's supported."""
+  kwargs = {}
+  if (sys.version_info[0] * 10 + sys.version_info[1]) >= 26:
+    kwargs['timeout'] = 4
+  request = urllib2.urlopen(url, urllib.urlencode(params), **kwargs)
+  out = request.read()
+  request.close()
+  return out
 
 
 def FormatException(e):
@@ -58,7 +73,7 @@ def FormatException(e):
 def SendStack(last_tb, stack, url=None, maxlen=50):
   """Sends the stack trace to the breakpad server."""
   if not url:
-    url = DEFAULT_URL
+    url = DEFAULT_URL + '/breakpad'
   print 'Sending crash report ...'
   try:
     params = {
@@ -73,20 +88,35 @@ def SendStack(last_tb, stack, url=None, maxlen=50):
     # pylint: disable=W0702
     print('\n'.join('  %s: %s' % (k, v[0:maxlen])
                     for k, v in params.iteritems()))
-    request = urllib.urlopen(url, urllib.urlencode(params))
-    print(request.read())
-    request.close()
+    print(post(url, params))
   except IOError:
     print('There was a failure while trying to send the stack trace. Too bad.')
+
+
+def SendProfiling(url=None):
+  try:
+    if not url:
+      url = DEFAULT_URL + '/profiling'
+    params = {
+        'argv': ' '.join(sys.argv),
+        'duration': time.time() - _TIME_STARTED,
+        'platform': sys.platform,
+    }
+    post(url, params)
+  except IOError:
+    pass
 
 
 def CheckForException():
   """Runs at exit. Look if there was an exception active."""
   last_value = getattr(sys, 'last_value', None)
-  if last_value and not isinstance(last_value, KeyboardInterrupt):
-    last_tb = getattr(sys, 'last_traceback', None)
-    if last_tb:
-      SendStack(last_value, ''.join(traceback.format_tb(last_tb)))
+  if last_value:
+    if not isinstance(last_value, KeyboardInterrupt):
+      last_tb = getattr(sys, 'last_traceback', None)
+      if last_tb:
+        SendStack(last_value, ''.join(traceback.format_tb(last_tb)))
+  else:
+    SendProfiling()
 
 
 def Register():
