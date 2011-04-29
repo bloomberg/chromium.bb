@@ -1401,14 +1401,10 @@
 {
    bug_79794
    Heapcheck:Leak
-   fun:__gnu_cxx::new_allocator::allocate
-   fun:std::string::_Rep::_S_create
-   fun:std::string::_Rep::_M_clone
-   fun:std::string::reserve
-   fun:std::string::append
-   fun:std::string::append
-   fun:std::operator+
-   fun:::LogTypeQualityMetric
+   ...
+   fun:FormStructure::LogQualityMetrics
+   fun:AutofillManager::OnFormSubmitted
+   fun:AutofillManagerTest::FormSubmitted
 }
 {
    bug_80196
