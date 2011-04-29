@@ -788,11 +788,6 @@ class NotificationType {
     // are all source and no details.
     SESSION_END,
 
-    // Personalization ---------------------------------------------------------
-
-    PERSONALIZATION,
-    PERSONALIZATION_CREATED,
-
     // User Scripts ------------------------------------------------------------
 
     // Sent when there are new user scripts available.  The details are a
