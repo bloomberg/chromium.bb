@@ -37,10 +37,6 @@
       <if expr="os == 'darwin'">
         <include name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder_mac.png" type="BINDATA" />
       </if>
-      <include name="IDR_CLOSE_BAR" file="close_bar.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_H" file="close_bar_h.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_MASK" file="close_bar_mask.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_P" file="close_bar_p.png" type="BINDATA" />
       <include name="IDR_CLOSE_BUTTON_MASK" file="close_button_mask.png" type="BINDATA" />
       <if expr="os.find('win') != -1">
         <include name="IDR_CONFLICT_BADGE" file="conflict_badge.png" type="BINDATA" />
@@ -140,23 +136,6 @@
         <include name="IDR_INCOMPATIBILITY_DOT_INACTIVE" file="incompatibility_dot_inactive.png" type="BINDATA" />
       </if>
       <include name="IDR_INFO" file="info_small.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_ALT_NAV_URL" file="infobar_didyoumean.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_AUTOFILL" file="infobar_autofill.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="infobar_multiple_downloads.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_PLUGIN_CRASHED" file="infobar_plugin_crashed.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_PLUGIN_INSTALL" file="infobar_plugin.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_QUESTION_MARK" file="infobar_questionmark.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_RESTORE_SESSION" file="infobar_restore.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_SAVE_PASSWORD" file="infobar_savepassword.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_SSL_WARNING" file="infobar_insecure.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_THEME" file="infobar_theme.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_COOKIE" file="infobar_cookie.png" type="BINDATA" />
-      <if expr="pp_ifdef('_google_chrome')">
-        <include name="IDR_INFOBAR_TRANSLATE" file="google_chrome/infobar_translate.png" type="BINDATA" />
-      </if>
-      <if expr="not pp_ifdef('_google_chrome')">
-        <include name="IDR_INFOBAR_TRANSLATE" file="chromium/infobar_translate.png" type="BINDATA" />
-      </if>
       <include name="IDR_INFO_BUBBLE_CLOSE" file="bubble_close.png" type="BINDATA" />
       <include name="IDR_INPUT_ALERT" file="input_alert.png" type="BINDATA" />
       <include name="IDR_KILLED_TAB" file="killtab.png" type="BINDATA" />

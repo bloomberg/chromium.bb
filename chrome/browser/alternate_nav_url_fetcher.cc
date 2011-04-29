@@ -12,7 +12,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -18,7 +18,7 @@
 #include "content/browser/user_metrics.h"
 #include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
@@ -367,4 +367,3 @@ void PluginObserver::OnBlockedOutdatedPlugin(const string16& name,
           tab_contents(), name)) :
       new OutdatedPluginInfoBarDelegate(tab_contents(), name, update_url));
 }
-

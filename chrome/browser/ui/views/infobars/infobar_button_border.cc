@@ -50,7 +50,11 @@ InfoBarButtonBorder::~InfoBarButtonBorder() {
 
 void InfoBarButtonBorder::GetInsets(gfx::Insets* insets) const {
   static const int kPreferredPaddingHorizontal = 6;
+#ifdef TOUCH_UI
+  static const int kPreferredPaddingVertical = 12;
+#else
   static const int kPreferredPaddingVertical = 5;
+#endif
   insets->Set(kPreferredPaddingVertical, kPreferredPaddingHorizontal,
               kPreferredPaddingVertical, kPreferredPaddingHorizontal);
 }
