@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -647,8 +647,9 @@ bool NativeBackendGnome::RawAddLogin(const PasswordForm& form) {
 bool NativeBackendGnome::AddLogin(const PasswordForm& form) {
   // Based on LoginDatabase::AddLogin(), we search for an existing match based
   // on origin_url, username_element, username_value, password_element, submit
-  // element, and signon_realm first, then add the new entry, and finally only
-  // delete the original (if any) on success.
+  // element, and signon_realm first, remove that, and then add the new entry.
+  // We'd add the new one first, and then delete the original, but then the
+  // delete might actually delete the newly-added entry!
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -663,15 +664,16 @@ bool NativeBackendGnome::AddLogin(const PasswordForm& form) {
                << gnome_keyring_result_to_message(result);
     return false;
   }
-  if (forms.size() > 1) {
-    LOG(WARNING) << "Adding login when there are " << forms.size() <<
-                 " matching logins already! Will replace only the first match.";
+  if (forms.size() > 0) {
+    if (forms.size() > 1) {
+      LOG(WARNING) << "Adding login when there are " << forms.size() <<
+                   " matching logins already! Will replace only the first.";
+    }
+    RemoveLogin(*forms[0]);
+    for (size_t i = 0; i < forms.size(); ++i)
+      delete forms[i];
   }
-  // Note that we count on short-circuit evaluation here.
-  bool ok = RawAddLogin(form) && (forms.size() < 1 || RemoveLogin(*forms[0]));
-  for (size_t i = 0; i < forms.size(); ++i)
-    delete forms[i];
-  return ok;
+  return RawAddLogin(form);
 }
 
 bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {
@@ -679,8 +681,9 @@ bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {
   // origin_url, username_element, username_value, password_element, and
   // signon_realm. We then compare the result to the updated form. If they
   // differ in any of the action, password_value, ssl_valid, or preferred
-  // fields, then we add a new login with those fields updated and only delete
-  // the original on success.
+  // fields, then we remove the original, and then add the new entry. We'd add
+  // the new one first, and then delete the original, but then the delete might
+  // actually delete the newly-added entry!
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -700,14 +703,19 @@ bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {
         forms[i]->password_value != form.password_value ||
         forms[i]->ssl_valid != form.ssl_valid ||
         forms[i]->preferred != form.preferred) {
-      PasswordForm updated = *forms[i];
-      updated.action = form.action;
-      updated.password_value = form.password_value;
-      updated.ssl_valid = form.ssl_valid;
-      updated.preferred = form.preferred;
-      if (AddLogin(updated))
-        RemoveLogin(*forms[i]);
-      else
+      RemoveLogin(*forms[i]);
+    }
+  }
+  for (size_t i = 0; i < forms.size(); ++i) {
+    if (forms[i]->action != form.action ||
+        forms[i]->password_value != form.password_value ||
+        forms[i]->ssl_valid != form.ssl_valid ||
+        forms[i]->preferred != form.preferred) {
+      forms[i]->action = form.action;
+      forms[i]->password_value = form.password_value;
+      forms[i]->ssl_valid = form.ssl_valid;
+      forms[i]->preferred = form.preferred;
+      if (!RawAddLogin(*forms[i]))
         ok = false;
     }
     delete forms[i];
