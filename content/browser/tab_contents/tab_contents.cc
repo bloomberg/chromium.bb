@@ -15,27 +15,21 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/character_encoding.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
 #include "chrome/browser/load_notification_details.h"
-#include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
-#include "chrome/browser/omnibox_search_hint.h"
-#include "chrome/browser/pdf_unsupported_feature.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -50,7 +44,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/content_restriction.h"
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -74,6 +67,7 @@
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/common/bindings_policy.h"
 #include "content/common/content_client.h"
+#include "content/common/content_restriction.h"
 #include "content/common/navigation_types.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
@@ -289,10 +283,6 @@ TabContents::TabContents(Profile* profile,
   registrar_.Add(this, NotificationType::GOOGLE_URL_UPDATED,
                  NotificationService::AllSources());
 
-  // Set-up the showing of the omnibox search infobar if applicable.
-  if (OmniboxSearchHint::IsEnabled(profile))
-    omnibox_search_hint_.reset(new OmniboxSearchHint(this));
-
   // Can only add observers after render_manager_.Init() is called, since that's
   // what sets up the render_view_host which TabContentObserver's constructor
   // uses to get the routing_id.
@@ -394,8 +384,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateContentRestrictions,
                         OnUpdateContentRestrictions)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PDFHasUnsupportedFeature,
-                        OnPDFHasUnsupportedFeature)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -1014,33 +1002,6 @@ void TabContents::WindowMoveOrResizeStarted() {
   render_view_host()->WindowMoveOrResizeStarted();
 }
 
-void TabContents::LogNewTabTime(const std::string& event_name) {
-  // Not all new tab pages get timed.  In those cases, we don't have a
-  // new_tab_start_time_.
-  if (new_tab_start_time_.is_null())
-    return;
-
-  base::TimeDelta duration = base::TimeTicks::Now() - new_tab_start_time_;
-  MetricEventDurationDetails details(event_name,
-      static_cast<int>(duration.InMilliseconds()));
-
-  if (event_name == "Tab.NewTabScriptStart") {
-    UMA_HISTOGRAM_TIMES("Tab.NewTabScriptStart", duration);
-  } else if (event_name == "Tab.NewTabDOMContentLoaded") {
-    UMA_HISTOGRAM_TIMES("Tab.NewTabDOMContentLoaded", duration);
-  } else if (event_name == "Tab.NewTabOnload") {
-    UMA_HISTOGRAM_TIMES("Tab.NewTabOnload", duration);
-    // The new tab page has finished loading; reset it.
-    new_tab_start_time_ = base::TimeTicks();
-  } else {
-    NOTREACHED();
-  }
-  NotificationService::current()->Notify(
-      NotificationType::METRIC_EVENT_DURATION,
-      Source<TabContents>(this),
-      Details<MetricEventDurationDetails>(&details));
-}
-
 void TabContents::OnCloseStarted() {
   if (tab_close_start_time_.is_null())
     tab_close_start_time_ = base::TimeTicks::Now();
@@ -1295,10 +1256,6 @@ void TabContents::OnDidFinishLoad(int64 frame_id) {
 
 void TabContents::OnUpdateContentRestrictions(int restrictions) {
   SetContentRestrictions(restrictions);
-}
-
-void TabContents::OnPDFHasUnsupportedFeature() {
-  PDFHasUnsupportedFeature(this);
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is
@@ -2076,19 +2033,7 @@ void TabContents::RunBeforeUnloadConfirm(const std::wstring& message,
 }
 
 GURL TabContents::GetAlternateErrorPageURL() const {
-  GURL url;
-  // Disable alternate error pages when in OffTheRecord/Incognito mode.
-  if (profile()->IsOffTheRecord())
-    return url;
-
-  PrefService* prefs = profile()->GetPrefs();
-  DCHECK(prefs);
-  if (prefs->GetBoolean(prefs::kAlternateErrorPagesEnabled)) {
-    url = google_util::AppendGoogleLocaleParam(
-        GURL(google_util::kLinkDoctorBaseURL));
-    url = google_util::AppendGoogleTLDParam(url);
-  }
-  return url;
+  return content::GetContentClient()->browser()->GetAlternateErrorPageURL(this);
 }
 
 WebPreferences TabContents::GetWebkitPrefs() {
@@ -2392,7 +2337,8 @@ ExtensionHost* TabContents::AsExtensionHost() {
 }
 
 void TabContents::set_encoding(const std::string& encoding) {
-  encoding_ = CharacterEncoding::GetCanonicalEncodingNameByAliasName(encoding);
+  encoding_ = content::GetContentClient()->browser()->
+      GetCanonicalEncodingNameByAliasName(encoding);
 }
 
 void TabContents::SwapInRenderViewHost(RenderViewHost* rvh) {

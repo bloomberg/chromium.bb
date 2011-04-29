@@ -6,12 +6,15 @@
 #define CONTENT_BROWSER_CONTENT_BROWSER_CLIENT_H_
 #pragma once
 
+#include <string>
+
 #include "content/common/content_client.h"
 
 class BrowserRenderProcessHost;
 class GURL;
 class Profile;
 class RenderViewHost;
+class TabContents;
 
 namespace content {
 
@@ -37,6 +40,13 @@ class ContentBrowserClient {
   // Get the effective URL for the given actual URL, to allow an embedder to
   // group different url schemes in the same SiteInstance.
   virtual GURL GetEffectiveURL(Profile* profile, const GURL& url);
+
+  // See RenderViewHostDelegate's comment.
+  virtual GURL GetAlternateErrorPageURL(const TabContents* tab);
+
+  // See CharacterEncoding's comment.
+  virtual std::string GetCanonicalEncodingNameByAliasName(
+      const std::string& alias_name);
 };
 
 }  // namespace content

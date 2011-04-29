@@ -7,6 +7,7 @@
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/common/render_messages.h"
 #include "content/common/notification_service.h"
+#include "content/common/view_messages.h"
 
 ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
     RenderViewHost* render_view_host)

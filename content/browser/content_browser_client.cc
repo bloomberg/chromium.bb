@@ -31,4 +31,13 @@ GURL ContentBrowserClient::GetEffectiveURL(Profile* profile, const GURL& url) {
   return url;
 }
 
+GURL ContentBrowserClient::GetAlternateErrorPageURL(const TabContents* tab) {
+  return GURL();
+}
+
+std::string ContentBrowserClient::GetCanonicalEncodingNameByAliasName(
+    const std::string& alias_name) {
+  return alias_name;
+}
+
 }  // namespace content

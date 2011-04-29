@@ -19,6 +19,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void BrowserRenderProcessHostCreated(BrowserRenderProcessHost* host);
   virtual content::WebUIFactory* GetWebUIFactory();
   virtual GURL GetEffectiveURL(Profile* profile, const GURL& url);
+  virtual GURL GetAlternateErrorPageURL(const TabContents* tab);
+  virtual std::string GetCanonicalEncodingNameByAliasName(
+      const std::string& alias_name);
 };
 
 }  // namespace chrome

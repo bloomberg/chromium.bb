@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/clipboard_dispatcher.h"
+#include "content/browser/clipboard_dispatcher.h"
+
 #include "base/logging.h"
 
 bool ClipboardDispatcher::ReadAvailableTypes(ui::Clipboard::Buffer buffer,
@@ -30,4 +31,3 @@ bool ClipboardDispatcher::ReadFilenames(ui::Clipboard::Buffer buffer,
   filenames->clear();
   return false;
 }
-

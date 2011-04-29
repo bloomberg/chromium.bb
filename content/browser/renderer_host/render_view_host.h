@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/render_view_commands.h"
-#include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/page_zoom.h"

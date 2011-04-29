@@ -37,7 +37,6 @@
           'common/child_process_logging_win.cc',
           'common/chrome_version_info.cc',
           'common/chrome_version_info.h',
-          'common/content_restriction.h',
           'common/content_settings.cc',
           'common/content_settings.h',
           'common/content_settings_helper.cc',

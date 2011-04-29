@@ -62,6 +62,7 @@
         'common/content_counters.h',
         'common/content_paths.cc',
         'common/content_paths.h',
+        'common/content_restriction.h',
         'common/content_switches.cc',
         'common/content_switches.h',
         'common/css_colors.h',

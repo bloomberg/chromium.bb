@@ -16,6 +16,7 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -206,7 +207,32 @@ void MetricsHandler::HandleMetrics(const ListValue* args) {
 
 void MetricsHandler::HandleLogEventTime(const ListValue* args) {
   std::string event_name = UTF16ToUTF8(ExtractStringValue(args));
-  web_ui_->tab_contents()->LogNewTabTime(event_name);
+  TabContents* tab = web_ui_->tab_contents();
+
+  // Not all new tab pages get timed.  In those cases, we don't have a
+  // new_tab_start_time_.
+  if (tab->new_tab_start_time().is_null())
+    return;
+
+  base::TimeDelta duration = base::TimeTicks::Now() - tab->new_tab_start_time();
+  MetricEventDurationDetails details(event_name,
+      static_cast<int>(duration.InMilliseconds()));
+
+  if (event_name == "Tab.NewTabScriptStart") {
+    UMA_HISTOGRAM_TIMES("Tab.NewTabScriptStart", duration);
+  } else if (event_name == "Tab.NewTabDOMContentLoaded") {
+    UMA_HISTOGRAM_TIMES("Tab.NewTabDOMContentLoaded", duration);
+  } else if (event_name == "Tab.NewTabOnload") {
+    UMA_HISTOGRAM_TIMES("Tab.NewTabOnload", duration);
+    // The new tab page has finished loading; reset it.
+    tab->set_new_tab_start_time(base::TimeTicks());
+  } else {
+    NOTREACHED();
+  }
+  NotificationService::current()->Notify(
+      NotificationType::METRIC_EVENT_DURATION,
+      Source<TabContents>(tab),
+      Details<MetricEventDurationDetails>(&details));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

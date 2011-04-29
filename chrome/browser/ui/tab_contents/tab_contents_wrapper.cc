@@ -17,8 +17,10 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager_delegate_impl.h"
+#include "chrome/browser/pdf_unsupported_feature.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_observer.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
@@ -93,6 +95,10 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
     thumbnail_generation_observer_.reset(new ThumbnailGenerator);
     thumbnail_generation_observer_->StartThumbnailing(tab_contents_.get());
   }
+
+  // Set-up the showing of the omnibox search infobar if applicable.
+  if (OmniboxSearchHint::IsEnabled(contents->profile()))
+    omnibox_search_hint_.reset(new OmniboxSearchHint(contents));
 }
 
 TabContentsWrapper::~TabContentsWrapper() {
@@ -244,6 +250,8 @@ bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
                         OnRegisterProtocolHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Thumbnail, OnThumbnail)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Snapshot, OnSnapshot)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PDFHasUnsupportedFeature,
+                        OnPDFHasUnsupportedFeature)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -340,6 +348,10 @@ void TabContentsWrapper::OnSnapshot(const SkBitmap& bitmap) {
       NotificationType::TAB_SNAPSHOT_TAKEN,
       Source<TabContentsWrapper>(this),
       Details<const SkBitmap>(&bitmap));
+}
+
+void TabContentsWrapper::OnPDFHasUnsupportedFeature() {
+  PDFHasUnsupportedFeature(tab_contents());
 }
 
 void TabContentsWrapper::UpdateStarredStateForCurrentURL() {

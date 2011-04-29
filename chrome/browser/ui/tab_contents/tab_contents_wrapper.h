@@ -35,6 +35,7 @@ class ExtensionWebNavigationTabObserver;
 class FileSelectObserver;
 class FindTabHelper;
 class NavigationController;
+class OmniboxSearchHint;
 class PasswordManager;
 class PasswordManagerDelegate;
 class SearchEngineTabHelper;
@@ -167,6 +168,7 @@ class TabContentsWrapper : public NotificationObserver,
                    const ThumbnailScore& score,
                    const SkBitmap& bitmap);
   void OnSnapshot(const SkBitmap& bitmap);
+  void OnPDFHasUnsupportedFeature();
 
   // Updates the starred state from the bookmark bar model. If the state has
   // changed, the delegate is notified.
@@ -184,6 +186,10 @@ class TabContentsWrapper : public NotificationObserver,
 
   // Whether the current URL is starred.
   bool is_starred_;
+
+  // Shows an info-bar to users when they search from a known search engine and
+  // have never used the monibox for search before.
+  scoped_ptr<OmniboxSearchHint> omnibox_search_hint_;
 
   // Tab Helpers ---------------------------------------------------------------
   // (These provide API for callers and have a getter function listed in the

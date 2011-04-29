@@ -4,9 +4,6 @@ include_rules = [
   # Listing of the remaining #chrome includes in content\browser.  People are
   # actively working on reducing this to 0.  Do not add anymore!
 
-  # jam will move asap, this was forgotten
-  "+chrome/browser/renderer_host/render_view_host_delegate.h",
-
   # http://crbug.com/77093
   "+chrome/app/breakpad_mac.h",
   "+chrome/browser/crash_handler_host_linux.h",
@@ -16,8 +13,6 @@ include_rules = [
   "+chrome/browser/automation/automation_resource_message_filter.h",
   "+chrome/browser/automation/automation_resource_routing_delegate.h",
 
-  "+chrome/browser/clipboard_dispatcher.h",
-
   "+chrome/browser/browser_about_handler.h",
 
   "+chrome/browser/browser_process.h",
@@ -25,8 +20,6 @@ include_rules = [
   "+chrome/browser/browser_shutdown.h",
 
   "+chrome/browser/browser_url_handler.h",
-
-  "+chrome/browser/character_encoding.h",
 
   # http://crbug.com/76793
   "+chrome/browser/content_settings/content_settings_details.h",
@@ -43,8 +36,6 @@ include_rules = [
   "+chrome/browser/debugger/devtools_netlog_observer.h",
 
   "+chrome/browser/defaults.h",
-
-  "+chrome/browser/dom_operation_notification_details.h",
 
   "+chrome/browser/download/download_file_manager.h",
   "+chrome/browser/download/download_item_model.h",
@@ -66,8 +57,6 @@ include_rules = [
   "+chrome/browser/favicon/favicon_tab_helper.h",
   "+chrome/browser/favicon/favicon_service.h",
 
-  "+chrome/browser/google/google_util.h",
-
   # http://crbug.com/76794
   "+chrome/browser/history/history.h",
   "+chrome/browser/history/history_types.h",
@@ -79,8 +68,6 @@ include_rules = [
 
   "+chrome/browser/mach_broker_mac.h",
 
-  "+chrome/browser/metrics/metric_event_duration_details.h",
-
   "+chrome/browser/net/load_timing_observer.h",
   "+chrome/browser/net/predictor_api.h",
   "+chrome/browser/net/resolve_proxy_msg_helper.h",
@@ -89,10 +76,6 @@ include_rules = [
   "+chrome/browser/notifications/desktop_notification_service.h",
   "+chrome/browser/notifications/desktop_notification_service_factory.h",
   "+chrome/browser/notifications/notifications_prefs_cache.h",
-
-  "+chrome/browser/omnibox_search_hint.h",
-
-  "+chrome/browser/pdf_unsupported_feature.h",
 
   "+chrome/browser/platform_util.h",
 
@@ -164,8 +147,6 @@ include_rules = [
   "+chrome/common/render_messages.h",
   "+chrome/common/url_constants.h",
 
-  "+chrome/common/content_restriction.h",
-
   "+chrome/common/icon_messages.h",
 
   # http://crbug.com/77091
@@ -179,16 +160,9 @@ include_rules = [
 
   "+chrome/common/security_style.h",
 
-  # http://crbug.com/77088
-  "+chrome/common/translate_errors.h",
-
   "+chrome/common/view_types.h",
 
-  "+chrome/common/window_container_type.h",
-
   "+chrome/common/net/x509_certificate_model.h",
-
-  "+chrome/installer/util/google_update_settings.h",
 
   # ONLY USED BY TESTS
   "+chrome/browser/chromeos/cros/mock_network_library.h",

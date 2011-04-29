@@ -60,7 +60,6 @@ class DownloadItem;
 class Extension;
 class InfoBarDelegate;
 class LoadNotificationDetails;
-class OmniboxSearchHint;
 class PluginObserver;
 class Profile;
 class RenderViewHost;
@@ -503,15 +502,12 @@ class TabContents : public PageNavigator,
     opener_web_ui_type_ = opener_web_ui_type;
   }
 
-  // We want to time how long it takes to create a new tab page.  This method
-  // gets called as parts of the new tab page have loaded.
-  void LogNewTabTime(const std::string& event_name);
-
   // Set the time when we started to create the new tab page.  This time is
   // from before we created this TabContents.
   void set_new_tab_start_time(const base::TimeTicks& time) {
     new_tab_start_time_ = time;
   }
+  base::TimeTicks new_tab_start_time() const { return new_tab_start_time_; }
 
   // Notification that tab closing has started.  This can be called multiple
   // times, subsequent calls are ignored.
@@ -667,7 +663,6 @@ class TabContents : public PageNavigator,
   void OnDocumentLoadedInFrame(int64 frame_id);
   void OnDidFinishLoad(int64 frame_id);
   void OnUpdateContentRestrictions(int restrictions);
-  void OnPDFHasUnsupportedFeature();
 
   void OnGoToEntryAtOffset(int offset);
 
@@ -1012,10 +1007,6 @@ class TabContents : public PageNavigator,
   // we've forced the throbber to start in Navigate, and we need to remember to
   // turn it off in OnJavaScriptMessageBoxClosed if the navigation is canceled.
   bool is_showing_before_unload_dialog_;
-
-  // Shows an info-bar to users when they search from a known search engine and
-  // have never used the monibox for search before.
-  scoped_ptr<OmniboxSearchHint> omnibox_search_hint_;
 
   // Settings that get passed to the renderer process.
   RendererPreferences renderer_preferences_;

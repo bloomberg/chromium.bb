@@ -4,10 +4,13 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
+#include "chrome/browser/character_encoding.h"
 #include "chrome/browser/debugger/devtools_handler.h"
 #include "chrome/browser/desktop_notification_handler.h"
 #include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/google/google_util.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
@@ -15,8 +18,10 @@
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 #include "chrome/browser/spellcheck_message_filter.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 namespace chrome {
 
@@ -79,6 +84,28 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(Profile* profile,
   // If the URL is part of an extension's web extent, convert it to an
   // extension URL.
   return extension->GetResourceURL(url.path());
+}
+
+GURL ChromeContentBrowserClient::GetAlternateErrorPageURL(
+    const TabContents* tab) {
+  GURL url;
+  // Disable alternate error pages when in OffTheRecord/Incognito mode.
+  if (tab->profile()->IsOffTheRecord())
+    return url;
+
+  PrefService* prefs = tab->profile()->GetPrefs();
+  DCHECK(prefs);
+  if (prefs->GetBoolean(prefs::kAlternateErrorPagesEnabled)) {
+    url = google_util::AppendGoogleLocaleParam(
+        GURL(google_util::kLinkDoctorBaseURL));
+    url = google_util::AppendGoogleTLDParam(url);
+  }
+  return url;
+}
+
+std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(
+    const std::string& alias_name) {
+  return CharacterEncoding::GetCanonicalEncodingNameByAliasName(alias_name);
 }
 
 }  // namespace chrome
