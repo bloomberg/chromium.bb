@@ -44,13 +44,11 @@ def SyncTgz(url, target, compress='gzip', maindir='sdk',
   else:
     verbosechar = ''
   if sys.platform == 'win32':
-    for dirname in ['etc', 'tmptar']:
-      os.makedirs(os.path.join(target, dirname))
+    os.makedirs(os.path.join(target, 'tmptar'))
     tarfiles = ['cyggcc_s-1.dll', 'cygiconv-2.dll', 'cygintl-8.dll',
                 'cyglzma-1.dll', 'cygncursesw-10.dll', 'cygreadline7.dll',
                 'cygwin1.dll', 'bash.exe', 'bzip2.exe', 'find.exe',
-                'gzip.exe', 'ln.exe', 'mkgroup.exe', 'mkpasswd.exe',
-                'readlink.exe', 'tar.exe', 'xz.exe']
+                'gzip.exe', 'ln.exe', 'readlink.exe', 'tar.exe', 'xz.exe']
     for filename in tarfiles:
       http_download.HttpDownload(
         'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/'
@@ -61,15 +59,9 @@ def SyncTgz(url, target, compress='gzip', maindir='sdk',
     env = os.environ.copy()
     env['LC_ALL'] = 'C'
     subprocess.check_call(
-        [os.path.join('tmptar', 'bash.exe'),
-         '-c', '/tmptar/mkgroup -l -c > /etc/group'], env=env)
-    subprocess.check_call(
-        [os.path.join('tmptar', 'bash.exe'),
-         '-c', '/tmptar/mkpasswd -l -c > /etc/passwd'], env=env)
-    subprocess.check_call(
         [os.path.join('tmptar', 'tar.exe'),
          '--use-compress-program', '/tmptar/' + compress,
-         '-xS' + verbosechar + 'pf', '../.tgz'], env=env)
+         '-xS' + verbosechar + 'opf', '../.tgz'], env=env)
     # Convert symlinks to hard links.
     subprocess.check_call(
         [os.path.join('tmptar', 'bash.exe'),
@@ -82,7 +74,7 @@ def SyncTgz(url, target, compress='gzip', maindir='sdk',
     os.chdir(saveddir)
     # Some antivirus software can prevent the removal - print message, but
     # don't stop.
-    for filename in tarfiles + ['..\etc\group', '..\etc\passwd'] :
+    for filename in tarfiles:
       count = 0
       while True:
         try:
@@ -93,12 +85,11 @@ def SyncTgz(url, target, compress='gzip', maindir='sdk',
             if verbose:
               print "Can not remove %s: %s" % (filename, e.strerror)
             break
-    for dirname in ['etc', 'tmptar']:
-      try:
-        os.rmdir(os.path.join(target, dirname))
-      except EnvironmentError, e:
-        if verbose:
-          print "Can not rmdir %s: %s" % (os.path.join(target, 'tmptar'),
+    try:
+      os.rmdir(os.path.join(target, 'tmptar'))
+    except EnvironmentError, e:
+      if verbose:
+        print "Can not rmdir %s: %s" % (os.path.join(target, 'tmptar'),
                                           e.strerror)
   elif sys.platform == 'linux2':
     subprocess.check_call(['tar', '-xS' + verbosechar + 'pf', tgz_filename,
