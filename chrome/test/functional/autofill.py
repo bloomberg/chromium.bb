@@ -589,15 +589,55 @@ class AutofillTest(pyauto.PyUITest):
                              'window.domAutomationController.send("done");',
                              0, 0)
 
-  def MergeDuplicateProfilesInAutofill(self):
+  def testMergeAggregatedProfilesWithSameAddress(self):
+    """Test that profiles merge for aggregated data with same address.
+
+    The criterion for when two profiles are expected to be merged is when their
+    'Address Line 1' and 'City' data match. When two profiles are merged, any
+    remaining address fields are expected to be overwritten. Any non-address
+    fields should accumulate multi-valued data.
+    """
+    self._AggregateProfilesIntoAutofillPrefs('dataset_2.txt')
+    # Expecting 4 profiles out of the original 14 within Autofill preferences.
+    self.assertEqual(4, len(self.GetAutofillProfile()['profiles']),
+                     msg='Aggregated profiles did not merge correctly.')
+
+  def testProfilesNotMergedWhenNoMinAddressData(self):
+    """Test profiles are not merged without mininum address values.
+
+    Mininum address values needed during aggregation are: address line 1, city,
+    state, and zip code.
+
+    Profiles are merged when data for address line 1 and city match.
+    """
+    self._AggregateProfilesIntoAutofillPrefs('dataset_no_address.txt')
+    self.assertFalse(self.GetAutofillProfile()['profiles'],
+                     msg='Profile with no min address data was merged.')
+
+  def MergeAggregatedDuplicatedProfiles(self):
     """Test Autofill ability to merge duplicate profiles and throw away junk."""
+    num_of_profiles = self._AggregateProfilesIntoAutofillPrefs('dataset.txt')
+    # Verify total number of inputted profiles is greater than the final number
+    # of profiles after merging.
+    self.assertTrue(
+        num_of_profiles > len(self.GetAutofillProfile()['profiles']))
+
+  def _AggregateProfilesIntoAutofillPrefs(self, data):
+    """Aggregate profiles from forms into Autofill preferences.
+
+    Args:
+      data: Name of the data set file.
+
+    Returns:
+      Number of profiles in the dictionary list.
+    """
     # HTML file needs to be run from a http:// url.
     url = self.GetHttpURLForDataPath(
         os.path.join('autofill', 'functional', 'duplicate_profiles_test.html'))
     # Run the parser script to generate the dictionary list needed for the
     # profiles.
     c = autofill_dataset_converter.DatasetConverter(
-        os.path.join(self.DataDir(), 'autofill', 'functional', 'dataset.txt'),
+        os.path.join(self.DataDir(), 'autofill', 'functional', data),
         logging_level=logging.INFO)  # Set verbosity to INFO, WARNING, ERROR.
     list_of_dict = c.Convert()
 
@@ -610,17 +650,7 @@ class AutofillTest(pyauto.PyUITest):
       self.ExecuteJavascript('document.getElementById("testform").submit();'
                              'window.domAutomationController.send("done");',
                              0, 0)
-    # Verify total number of inputted profiles is greater than the final number
-    # of profiles after merging.
-    self.assertTrue(
-        len(list_of_dict) > len(self.GetAutofillProfile()['profiles']))
-    # Write profile dictionary to a file.
-    merged_profile = os.path.join(self.DataDir(), 'autofill', 'functional',
-                                  'merged-profiles.txt')
-    profile_dict = self.GetAutofillProfile()['profiles']
-    output = open(merged_profile, 'wb')
-    pickle.dump(profile_dict, output)
-    output.close()
+    return len(list_of_dict)
 
 
 if __name__ == '__main__':
