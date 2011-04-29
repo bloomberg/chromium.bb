@@ -43,6 +43,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image.h"
 #include "ui/gfx/skbitmap_operations.h"
 
 namespace {
@@ -584,7 +585,7 @@ void BrowserTitlebar::UpdateThrobber(TabContents* tab_contents) {
       if (icon.empty()) {
         // Fallback to the Chromium icon if the page has no icon.
         gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_),
-            rb.GetPixbufNamed(IDR_PRODUCT_LOGO_16));
+            rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16));
       } else {
         GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
         gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_), icon_pixbuf);
@@ -592,7 +593,7 @@ void BrowserTitlebar::UpdateThrobber(TabContents* tab_contents) {
       }
     } else {
       gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_),
-          rb.GetPixbufNamed(IDR_PRODUCT_LOGO_16));
+          rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16));
     }
     throbber_.Reset();
   }
