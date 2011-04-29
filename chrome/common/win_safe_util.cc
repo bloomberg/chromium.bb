@@ -14,6 +14,43 @@
 #include "base/string_util.h"
 #include "base/win/scoped_comptr.h"
 
+namespace {
+
+// This GUID is associated with any 'don't ask me again' settings that the
+// user can select for different file types.
+// {2676A9A2-D919-4fee-9187-152100393AB2}
+static const GUID kClientID = { 0x2676a9a2, 0xd919, 0x4fee,
+  { 0x91, 0x87, 0x15, 0x21, 0x0, 0x39, 0x3a, 0xb2 } };
+
+// Directly writes the ZoneIdentifier stream, without using the
+// IAttachmentExecute service.
+bool SetInternetZoneIdentifierDirectly(const FilePath& full_path) {
+  const DWORD kShare = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+  std::wstring path = full_path.value() + L":Zone.Identifier";
+  HANDLE file = CreateFile(path.c_str(), GENERIC_WRITE, kShare, NULL,
+                           OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+  if (INVALID_HANDLE_VALUE == file)
+    return false;
+
+  static const char kIdentifier[] = "[ZoneTransfer]\r\nZoneId=3\r\n";
+  // Don't include trailing null in data written.
+  static const DWORD kIdentifierSize = arraysize(kIdentifier) - 1;
+  DWORD written = 0;
+  BOOL result = WriteFile(file, kIdentifier, kIdentifierSize, &written,
+                          NULL);
+  BOOL flush_result = FlushFileBuffers(file);
+  CloseHandle(file);
+
+  if (!result || !flush_result || written != kIdentifierSize) {
+    NOTREACHED();
+    return false;
+  }
+
+  return true;
+}
+
+}
+
 namespace win_util {
 
 // This function implementation is based on the attachment execution
@@ -35,12 +72,6 @@ bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
     }
     return app::win::OpenItemViaShell(full_path);
   }
-
-  // This GUID is associated with any 'don't ask me again' settings that the
-  // user can select for different file types.
-  // {2676A9A2-D919-4fee-9187-152100393AB2}
-  static const GUID kClientID = { 0x2676a9a2, 0xd919, 0x4fee,
-    { 0x91, 0x87, 0x15, 0x21, 0x0, 0x39, 0x3a, 0xb2 } };
 
   attachment_services->SetClientGuid(kClientID);
 
@@ -84,27 +115,39 @@ bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
   return app::win::OpenItemViaShellNoZoneCheck(full_path);
 }
 
-bool SetInternetZoneIdentifier(const FilePath& full_path) {
-  const DWORD kShare = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
-  std::wstring path = full_path.value() + L":Zone.Identifier";
-  HANDLE file = CreateFile(path.c_str(), GENERIC_WRITE, kShare, NULL,
-                           OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-  if (INVALID_HANDLE_VALUE == file)
-    return false;
+bool SetInternetZoneIdentifier(const FilePath& full_path,
+                               const std::wstring& source_url) {
+  base::win::ScopedComPtr<IAttachmentExecute> attachment_services;
+  HRESULT hr = attachment_services.CreateInstance(CLSID_AttachmentServices);
 
-  static const char kIdentifier[] = "[ZoneTransfer]\nZoneId=3";
-  // Don't include trailing null in data written.
-  static const DWORD kIdentifierSize = arraysize(kIdentifier) - 1;
-  DWORD written = 0;
-  BOOL result = WriteFile(file, kIdentifier, kIdentifierSize, &written,
-                          NULL);
-  BOOL flush_result = FlushFileBuffers(file);
-  CloseHandle(file);
+  if (FAILED(hr)) {
+    // We don't have Attachment Execution Services, it must be a pre-XP.SP2
+    // Windows installation, or the thread does not have COM initialized.
+    if (hr == CO_E_NOTINITIALIZED) {
+      NOTREACHED();
+      return false;
+    }
 
-  if (!result || !flush_result || written != kIdentifierSize) {
-    NOTREACHED();
-    return false;
+    // Write the ZoneIdentifier file directly.
+    return SetInternetZoneIdentifierDirectly(full_path);
   }
+
+  hr = attachment_services->SetClientGuid(kClientID);
+  if (FAILED(hr))
+    return false;
+
+  hr = attachment_services->SetLocalPath(full_path.value().c_str());
+  if (FAILED(hr))
+    return false;
+
+  // Source is necessary for files ending in ".tmp" to avoid error 0x800c000e.
+  hr = attachment_services->SetSource(source_url.c_str());
+  if (FAILED(hr))
+    return false;
+
+  hr = attachment_services->Save();
+  if (FAILED(hr))
+    return false;
 
   return true;
 }

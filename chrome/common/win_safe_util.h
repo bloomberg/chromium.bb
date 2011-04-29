@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_WIN_SAFE_UTIL_H__
-#define CHROME_COMMON_WIN_SAFE_UTIL_H__
+#ifndef CHROME_COMMON_WIN_SAFE_UTIL_H_
+#define CHROME_COMMON_WIN_SAFE_UTIL_H_
 #pragma once
 
 #include <string>
@@ -45,7 +45,11 @@ bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
 // function succeeds, false otherwise. A failure is expected on system where
 // the Zone Identifier is not supported, like a machine with a FAT32 filesystem.
 // It should not be considered fatal.
-bool SetInternetZoneIdentifier(const FilePath& full_path);
+//
+// |full_path| is the path to save the file to, and
+// |source_url| is the URL where the file was downloaded from.
+bool SetInternetZoneIdentifier(const FilePath& full_path,
+                               const std::wstring& source_url);
 
 }  // namespace win_util
 

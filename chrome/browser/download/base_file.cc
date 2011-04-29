@@ -8,6 +8,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "crypto/secure_hash.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
@@ -184,7 +185,8 @@ void BaseFile::AnnotateWithSourceInformation() {
 #if defined(OS_WIN)
   // Sets the Zone to tell Windows that this file comes from the internet.
   // We ignore the return value because a failure is not fatal.
-  win_util::SetInternetZoneIdentifier(full_path_);
+  win_util::SetInternetZoneIdentifier(full_path_,
+                                      UTF8ToWide(source_url_.spec()));
 #elif defined(OS_MACOSX)
   file_metadata::AddQuarantineMetadataToFile(full_path_, source_url_,
                                              referrer_url_);
