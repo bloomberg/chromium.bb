@@ -97,7 +97,9 @@ void Window::InitWindow(const InitParams& params) {
   DCHECK(window_delegate_);
   DCHECK(!window_delegate_->window_);
   window_delegate_->window_ = this;
-  non_client_view()->SetFrameView(CreateFrameViewForWindow());
+  // If frame_view was set already, don't replace it with default one.
+  if (!non_client_view()->frame_view())
+    non_client_view()->SetFrameView(CreateFrameViewForWindow());
   AsWidget()->Init(params.widget_init_params);
   OnNativeWindowCreated(params.widget_init_params.bounds);
 }

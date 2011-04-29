@@ -120,6 +120,7 @@ views::Window* BubbleWindow::Create(
   params.parent_window = parent;
   params.widget_init_params.parent = GTK_WIDGET(parent);
   params.widget_init_params.bounds = bounds;
+  params.widget_init_params.parent = GTK_WIDGET(parent);
   window->InitWindow(params);
 
   if (style == STYLE_XSHAPE) {
