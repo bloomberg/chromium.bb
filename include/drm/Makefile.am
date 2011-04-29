@@ -26,6 +26,7 @@ klibdrmincludedir = ${includedir}/libdrm
 klibdrminclude_HEADERS = \
 	drm.h \
 	drm_mode.h \
+	drm_fourcc.h \
 	drm_sarea.h \
 	i915_drm.h \
 	mga_drm.h \

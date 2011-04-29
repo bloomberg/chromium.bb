@@ -278,7 +278,25 @@ typedef struct _drmModeConnector {
 	uint32_t *encoders; /**< List of encoder ids */
 } drmModeConnector, *drmModeConnectorPtr;
 
+typedef struct _drmModePlane {
+	uint32_t count_formats;
+	uint32_t *formats;
+	uint32_t plane_id;
 
+	uint32_t crtc_id;
+	uint32_t fb_id;
+
+	uint32_t crtc_x, crtc_y;
+	uint32_t x, y;
+
+	uint32_t possible_crtcs;
+	uint32_t gamma_size;
+} drmModePlane, *drmModePlanePtr;
+
+typedef struct _drmModePlaneRes {
+	uint32_t count_planes;
+	uint32_t *planes;
+} drmModePlaneRes, *drmModePlaneResPtr;
 
 extern void drmModeFreeModeInfo( drmModeModeInfoPtr ptr );
 extern void drmModeFreeResources( drmModeResPtr ptr );
@@ -286,6 +304,7 @@ extern void drmModeFreeFB( drmModeFBPtr ptr );
 extern void drmModeFreeCrtc( drmModeCrtcPtr ptr );
 extern void drmModeFreeConnector( drmModeConnectorPtr ptr );
 extern void drmModeFreeEncoder( drmModeEncoderPtr ptr );
+extern void drmModeFreePlane( drmModePlanePtr ptr );
 
 /**
  * Retrives all of the resources associated with a card.
@@ -307,6 +326,11 @@ extern drmModeFBPtr drmModeGetFB(int fd, uint32_t bufferId);
 extern int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
 			uint8_t bpp, uint32_t pitch, uint32_t bo_handle,
 			uint32_t *buf_id);
+/* ...with a specific pixel format */
+extern int drmModeAddFB2(int fd, uint32_t width, uint32_t height,
+			 uint32_t pixel_format, uint32_t bo_handles[4],
+			 uint32_t pitches[4], uint32_t offsets[4],
+			 uint32_t *buf_id, uint32_t flags);
 /**
  * Destroies the given framebuffer.
  */
@@ -390,6 +414,15 @@ extern int drmModeCrtcGetGamma(int fd, uint32_t crtc_id, uint32_t size,
 			       uint16_t *red, uint16_t *green, uint16_t *blue);
 extern int drmModePageFlip(int fd, uint32_t crtc_id, uint32_t fb_id,
 			   uint32_t flags, void *user_data);
+
+extern drmModePlaneResPtr drmModeGetPlaneResources(int fd);
+extern drmModePlanePtr drmModeGetPlane(int fd, uint32_t plane_id);
+extern int drmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
+			   uint32_t fb_id, uint32_t flags,
+			   uint32_t crtc_x, uint32_t crtc_y,
+			   uint32_t crtc_w, uint32_t crtc_h,
+			   uint32_t src_x, uint32_t src_y,
+			   uint32_t src_w, uint32_t src_h);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

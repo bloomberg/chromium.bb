@@ -255,6 +255,29 @@ int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
 	return 0;
 }
 
+int drmModeAddFB2(int fd, uint32_t width, uint32_t height,
+		  uint32_t pixel_format, uint32_t bo_handles[4],
+		  uint32_t pitches[4], uint32_t offsets[4],
+		  uint32_t *buf_id, uint32_t flags)
+{
+	struct drm_mode_fb_cmd2 f;
+	int ret;
+
+	f.width  = width;
+	f.height = height;
+	f.pixel_format = pixel_format;
+	f.flags = flags;
+	memcpy(f.handles, bo_handles, sizeof(bo_handles));
+	memcpy(f.pitches, pitches, sizeof(pitches));
+	memcpy(f.offsets, offsets, sizeof(offsets));
+
+	if ((ret = DRM_IOCTL(fd, DRM_IOCTL_MODE_ADDFB2, &f)))
+		return ret;
+
+	*buf_id = f.fb_id;
+	return 0;
+}
+
 int drmModeRmFB(int fd, uint32_t bufferId)
 {
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_RMFB, &bufferId);
@@ -805,4 +828,134 @@ int drmModePageFlip(int fd, uint32_t crtc_id, uint32_t fb_id,
 	flip.reserved = 0;
 
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_PAGE_FLIP, &flip);
+}
+
+int drmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
+		    uint32_t fb_id, uint32_t flags,
+		    uint32_t crtc_x, uint32_t crtc_y,
+		    uint32_t crtc_w, uint32_t crtc_h,
+		    uint32_t src_x, uint32_t src_y,
+		    uint32_t src_w, uint32_t src_h)
+
+{
+	struct drm_mode_set_plane s;
+
+	s.plane_id = plane_id;
+	s.crtc_id = crtc_id;
+	s.fb_id = fb_id;
+	s.flags = flags;
+	s.crtc_x = crtc_x;
+	s.crtc_y = crtc_y;
+	s.crtc_w = crtc_w;
+	s.crtc_h = crtc_h;
+	s.src_x = src_x;
+	s.src_y = src_y;
+	s.src_w = src_w;
+	s.src_h = src_h;
+
+	return DRM_IOCTL(fd, DRM_IOCTL_MODE_SETPLANE, &s);
+}
+
+
+drmModePlanePtr drmModeGetPlane(int fd, uint32_t plane_id)
+{
+	struct drm_mode_get_plane ovr, counts;
+	drmModePlanePtr r = 0;
+
+retry:
+	memset(&ovr, 0, sizeof(struct drm_mode_get_plane));
+	ovr.plane_id = plane_id;
+	if (drmIoctl(fd, DRM_IOCTL_MODE_GETPLANE, &ovr))
+		return 0;
+
+	counts = ovr;
+
+	if (ovr.count_format_types) {
+		ovr.format_type_ptr = VOID2U64(drmMalloc(ovr.count_format_types *
+							 sizeof(uint32_t)));
+		if (!ovr.format_type_ptr)
+			goto err_allocs;
+	}
+
+	if (drmIoctl(fd, DRM_IOCTL_MODE_GETPLANE, &ovr))
+		goto err_allocs;
+
+	if (counts.count_format_types < ovr.count_format_types) {
+		drmFree(U642VOID(ovr.format_type_ptr));
+		goto retry;
+	}
+
+	if (!(r = drmMalloc(sizeof(*r))))
+		goto err_allocs;
+
+	r->count_formats = ovr.count_format_types;
+	r->plane_id = ovr.plane_id;
+	r->crtc_id = ovr.crtc_id;
+	r->fb_id = ovr.fb_id;
+	r->possible_crtcs = ovr.possible_crtcs;
+	r->gamma_size = ovr.gamma_size;
+	r->formats = drmAllocCpy(U642VOID(ovr.format_type_ptr),
+				 ovr.count_format_types, sizeof(uint32_t));
+	if (ovr.count_format_types && !r->formats) {
+		drmFree(r->formats);
+		r = 0;
+	}
+
+err_allocs:
+	drmFree(U642VOID(ovr.format_type_ptr));
+
+	return r;
+}
+
+void drmModeFreePlane(drmModePlanePtr ptr)
+{
+	if (!ptr)
+		return;
+
+	drmFree(ptr->formats);
+	drmFree(ptr);
+}
+
+drmModePlaneResPtr drmModeGetPlaneResources(int fd)
+{
+	struct drm_mode_get_plane_res res, counts;
+	drmModePlaneResPtr r = 0;
+
+retry:
+	memset(&res, 0, sizeof(struct drm_mode_get_plane_res));
+	if (drmIoctl(fd, DRM_IOCTL_MODE_GETPLANERESOURCES, &res))
+		return 0;
+
+	counts = res;
+
+	if (res.count_planes) {
+		res.plane_id_ptr = VOID2U64(drmMalloc(res.count_planes *
+							sizeof(uint32_t)));
+		if (!res.plane_id_ptr)
+			goto err_allocs;
+	}
+
+	if (drmIoctl(fd, DRM_IOCTL_MODE_GETPLANERESOURCES, &res))
+		goto err_allocs;
+
+	if (counts.count_planes < res.count_planes) {
+		drmFree(U642VOID(res.plane_id_ptr));
+		goto retry;
+	}
+
+	if (!(r = drmMalloc(sizeof(*r))))
+		goto err_allocs;
+
+	r->count_planes = res.count_planes;
+	r->planes = drmAllocCpy(U642VOID(res.plane_id_ptr),
+				  res.count_planes, sizeof(uint32_t));
+	if (res.count_planes && !r->planes) {
+		drmFree(r->planes);
+		r = 0;
+	}
+
+err_allocs:
+	drmFree(U642VOID(res.plane_id_ptr));
+
+	return r;
 }
