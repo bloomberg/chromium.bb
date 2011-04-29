@@ -38,7 +38,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
+#include "third_party/mozilla_security_manager/nsNSSCertHelper.h"
 
 #include <keyhi.h>
 #include <prprf.h>
