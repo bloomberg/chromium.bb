@@ -2878,12 +2878,14 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def SetReleaseTrack(self, track):
     """Sets the release track (channel) of the ChromeOS updater.
 
-    Valid values for the track parameter are 'beta-channel' and 'dev-channel'.
+    Valid values for the track parameter are:
+      'stable-channel', 'beta-channel', 'dev-channel'
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
-    assert track in ('beta-channel', 'dev-channel')
+    assert track in ('stable-channel', 'beta-channel', 'dev-channel'), \
+        'Attempt to set release track to unknown release track "%s".' % track
     cmd_dict = {
         'command': 'SetReleaseTrack',
         'track': track,
