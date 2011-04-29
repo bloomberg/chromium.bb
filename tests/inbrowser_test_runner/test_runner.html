@@ -33,34 +33,17 @@ function log(message) {
   log_text += message + '\n';
 }
 
-// Returns a unique identifier.
-// This is a workaround for the way the plugin only supports an onload
-// string, which is eval'd in the global environment.
-// TODO(mseaborn): Add a better interface for launching processes
-// programmatically to the plugin.
-// See http://code.google.com/p/nativeclient/issues/detail?id=746
-var next_id = 0;
-function generateId() {
-  next_id += 1;
-  return 'tmp' + next_id;
-}
-
 function startProcess(url, callback) {
-  var onload_id = generateId();
-  function onload() {
-    window[onload_id] = null;
-    callback(plugin);
-  }
-  window[onload_id] = onload;
-
   // Using createElement() + innerHTML is a very kludgy way of launching
   // a process.  TODO(mseaborn): Add a better interface for launching
   // processes to the plugin.
   // See http://code.google.com/p/nativeclient/issues/detail?id=746
   var node = document.createElement('div');
+  // Wait for the load event, which indicates successful loading.
   document.getElementById('scratch_space').appendChild(node);
+  node.addEventListener('load', (function(e) { callback(e.target) }) , true);
   node.innerHTML = '<embed name=foo width=0 height=0 ' +
-    'type="application/x-nacl" onload="'+onload_id+'()" />';
+    'type="application/x-nacl" />';
   var plugin = node.childNodes[0];
   // Assigning to "nacl" causes manifest and then nexe to be loaded.
   plugin.nacl = url;

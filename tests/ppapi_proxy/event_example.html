@@ -33,13 +33,18 @@
 </head>
 <body>
 <h1>InputEvent Handling Example</h1>
-  <embed name="nacl_module"
-         id="event_module"
-         width=400 height=400
-         nacl="event_example.nmf"
-         type="application/x-nacl"
-         style="background-color:gray"
-         onload="moduleDidLoad();" />
+  <div id="listener">
+    <script type="text/javascript">
+      $('listener').addEventListener('load', moduleDidLoad, true);
+    </script>
+
+    <embed name="nacl_module"
+           id="event_module"
+           width=400 height=400
+           nacl="event_example.nmf"
+           type="application/x-nacl"
+           style="background-color:gray" />
+ </div>
 <p>
 This example demonstrates input events in ppapi.  Each time an input event
 happens in the context of the gray box, the embedded NaCl module prints a

@@ -838,13 +838,6 @@ void PluginPpapi::ReportLoadSuccess() {
   // TODO(sehr,polina): Remove comment when experimental APIs are removed.
   DispatchProgressEvent("load", false, kUnknownBytes, kUnknownBytes);
   DispatchProgressEvent("loadend", false, kUnknownBytes, kUnknownBytes);
-  // TODO(sehr,polina): Remove eval of untrusted string below.
-  BrowserInterface* browser = browser_interface();
-  const char* onload_handler = LookupArgument("onload");
-  if (onload_handler == NULL) {
-    return;
-  }
-  browser->EvalString(instance_id(), onload_handler);
 }
 
 
