@@ -9782,6 +9782,105 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_IMAGEBURN_BURN_CANCELED_STATUS" desc="Progress message shown when burning image breaks">
         Image burning has been terminated
       </message>
+      <message name="IDS_IMAGEBURN_HEADER_TITLE" desc="Title that is displayed on image burning web page ">
+        Create OS Recovery Media
+      </message>
+      <message name="IDS_IMAGEBURN_HEADER_DESCRIPTION" desc="Text diplayed under image burning page title">
+        If you ever need to restore your computer's operating system you'll need a recovery SD card or USB memory stick.
+      </message>
+      <message name="IDS_IMAGEBURN_HEADER_LINK" desc="Link to more info on system recovery">
+        Learn more about system recovery
+      </message>
+      <message name="IDS_IMAGEBURN_NO_DEVICES_STATUS" desc="Message telling user to insert removable media image will be burnt to">
+        Insert an SD card or USB memory stick
+      </message>
+      <message name="IDS_IMAGEBURN_NO_DEVICES_WARNING" desc="Warning that device must be at least 4GB big">
+        The device must have capacity of 4GB or greater.
+      </message>
+      <message name="IDS_IMAGEBURN_MUL_DEVICES_STATUS" desc="Message telling user to select storage device to use for burning">
+        Select a removable storage device to use
+      </message>
+      <message name="IDS_IMAGEBURN_USB_DEVICE_STATUS" desc="Message telling user that an USB memory stick has been detected">
+        USB memory stick detected
+      </message>
+      <message name="IDS_IMAGEBURN_SD_DEVICE_STATUS" desc="Message telling user that a SD card has been detected">
+        SD card detected
+      </message>
+      <message name="IDS_IMAGEBURN_DEVICES_WARNING" desc="Warning that data on selected device will be erased">
+        All files on <ph name="DEVICE_NAME">$1<ex>Kingston DataTraveler</ex></ph> will be erased.
+      </message>
+      <message name="IDS_IMAGEBURN_NO_CONNECTION_STATUS" desc="Message telling user that the device is not connected to the Internet">
+        Internet not connected
+      </message>
+      <message name="IDS_IMAGEBURN_NO_CONNECTION_WARNING" desc="Message instructing user to connect to the Internet">
+        Please connect to the Internet to proceed.
+      </message>
+      <message name="IDS_IMAGEBURN_INSUFFICIENT_SPACE_STATUS" desc="Message telling user that removable device has insufficient space">
+        Insufficient space
+      </message>
+      <message name="IDS_IMAGEBURN_INSUFFICIENT_SPACE_WARNING" desc="Message instructing user to insert device with enough capacity">
+        The storage device has a capacity of <ph name="DEVICE_CAPACITY">$1<ex>1MB</ex></ph>. Please insert a SD card or USB memory stick with at least 4GB of capacity.
+      </message>
+      <message name="IDS_IMAGEBURN_DOWNLOADING_STATUS" desc="Message telling user that the image is being downloaded">
+        Downloading recovery image...
+      </message>
+      <message name="IDS_IMAGEBURN_DOWNLOAD_PROGRESS_TEXT" desc="Information on downloaded amount">
+        <ph name="DOWNLOADED_AMOUNT">$1<ex>40kB</ex></ph> of <ph name="TOTAL_SIZE">$2<ex>250kB</ex></ph> downloaded
+      </message>
+      <message name="IDS_IMAGEBURN_DOWNLOAD_TIME_REMAINING" desc="Expected remaining time of the download">
+        Time remaining: <ph name="TIME_REMAINING">$1<ex>5s</ex></ph>
+      </message>
+      <message name="IDS_IMAGEBURN_UNZIP_STATUS" desc="Message telling user that the image is being extracted">
+        Extracting recovery image...
+      </message>
+      <message name="IDS_IMAGEBURN_BURN_STATUS" desc="Message telling user that the image is being copied">
+        Copying recovery image...
+      </message>
+      <message name="IDS_IMAGEBURN_BURN_PROGRESS_TEXT" desc="Information on burned amount">
+        <ph name="BURNT_AMOUNT">$1<ex>40kB</ex></ph> of <ph name="TOTAL_SIZE">$2<ex>250kB</ex></ph> copied
+      </message>
+      <message name="IDS_IMAGEBURN_PROGRESS_TIME_UNKNOWN" desc="Message telling user that a tast could take few minutes">
+        This may take a few minutes
+      </message>
+      <message name="IDS_IMAGEBURN_ERROR_STATUS" desc="Message telling user that an error occured">
+        An error occurred
+      </message>
+      <message name="IDS_IMAGEBURN_DOWNLOAD_ERROR" desc="Message telling user that an error occured during download">
+        There was a problem during recovery image download.
+      </message>
+      <message name="IDS_IMAGEBURN_EXTRACTING_ERROR" desc="Message telling user that downloaded zip could not be extracted">
+        There was a problem extracting image to the machine.
+      </message>
+      <message name="IDS_IMAGEBURN_BURN_ERROR" desc="Message telling user that something went wrong while burning the image to the device">
+        There was a problem during copying recovery image to device.
+      </message>
+      <message name="IDS_IMAGEBURN_DEVICE_NOT_FOUND_ERROR" desc="Message telling user that targetd device could not be found">
+        There was a problem while creating OS recovery media. Used storage device could not be found.
+      </message>
+      <message name="IDS_IMAGEBURN_USER_ERROR" desc="Message shown when user cancels burn process">
+        OS Recovery Media creation has been cancelled.
+      </message>
+      <message name="IDS_IMAGEBURN_NETWORK_ERROR" desc="Message shown when we loose network connectivity during download">
+        There was a problem during recovery image download. Network connection has been lost.
+      </message>
+      <message name="IDS_IMAGEBURN_SUCCESS_STATUS" desc="Message telling user that image burning was successful">
+        Success
+      </message>
+      <message name="IDS_IMAGEBURN_SUCCESS_DESC" desc="Message teling user that recovery media is ready to be used">
+        Your recovery media is ready. You may remove it from your system.
+      </message>
+      <message name="IDS_IMAGEBURN_PAGE_TITLE" desc="Image-burn html page title">
+        Create a Recovery Media
+      </message>
+      <message name="IDS_IMAGEBURN_CONFIRM_BUTTON" desc="Text on the button that starts burn process">
+        OK
+      </message>
+      <message name="IDS_IMAGEBURN_CANCEL_BUTTON" desc="Text on the button that cancels download">
+        Cancel
+      </message>
+      <message name="IDS_IMAGEBURN_RETRY_BUTTON" desc="Text on the button that triggers burn restart">
+        Try again
+      </message>
     </if>
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">
