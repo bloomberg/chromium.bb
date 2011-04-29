@@ -702,14 +702,14 @@ drm_compositor_create(struct wl_display *display, int connector)
 	glGenFramebuffers(1, &ec->base.fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, ec->base.fbo);
 
-	/* Can't init base class until we have a current egl context */
-	if (wlsc_compositor_init(&ec->base, display) < 0)
-		return NULL;
-
 	ec->create_drm_image =
 		(void *) eglGetProcAddress("eglCreateDRMImageMESA");
 	ec->export_drm_image =
 		(void *) eglGetProcAddress("eglExportDRMImageMESA");
+
+	/* Can't init base class until we have a current egl context */
+	if (wlsc_compositor_init(&ec->base, display) < 0)
+		return NULL;
 
 	if (create_outputs(ec, connector) < 0) {
 		fprintf(stderr, "failed to create output for %s\n", path);
