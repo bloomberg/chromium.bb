@@ -4526,6 +4526,12 @@
    fun:_ZNK4base8CallbackIFvvEE3RunEv
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
+{
+   bug_80836
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4skia14PlatformCanvasC*
+}
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
@@ -4546,21 +4552,4 @@
    fun:call_init
    fun:_dl_init
 }
-# http://code.google.com/p/chromium/issues/detail?id=80836
-{
-   bug_80836a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4skia14PlatformCanvasC2Eiib
-   fun:_ZN3gfx10CanvasSkiaC1Eiib
-   fun:_ZN3gfx8internal19GdkPixbufToSkBitmapEP10_GdkPixbuf
-   fun:_ZN3gfx5Image17GetRepresentationENS0_18RepresentationTypeE
-}
-{
-   bug_80836b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4skia14PlatformCanvasC2Ev
-   fun:_ZN3gfx10CanvasSkiaC2Ev
-   fun:_ZN4skia12CanvasPaintTIN3gfx10CanvasSkiaEEC1EP15_GdkEventExposeb
-}
+
