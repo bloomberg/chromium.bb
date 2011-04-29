@@ -1,3 +1,5 @@
+target triple = "armv7-none-linux-gnueabi"
+
 define weak i8* @memset(i8* %s, i32 %c, i32 %n) nounwind {
 entry:
   %s_addr = alloca i8*, align 4

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -22,8 +22,15 @@
  *  tools/llvm/driver.py -S tools/llvm/llvm-intrinsics.c \
  *    -o tools/llvm/llvm-intrinsics.ll
  *
- * For now, avoid optimization, because the resulting bitcode may
+ * Avoid optimization, because the resulting bitcode may
  * become circular.
+ *
+ * And make sure llvm-intrinsics.ll begins with:
+ *   target triple = "armv7-none-linux-gnueabi"
+ * Otherwise, the triple won't match other bitcode files and
+ * the wrong target backend might be used during llc.
+ * For example, on MacOS, the target backend would default to Darwin,
+ * which would cause the wrong type of name mangling to be used.
  *
  */
 
