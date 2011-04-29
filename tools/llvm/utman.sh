@@ -404,16 +404,19 @@ hg-update-stable() {
 }
 
 hg-update-stable-llvm-gcc() {
+  StepBanner "HG-UPDATE" "Updating hg/llvm-gcc to ${LLVM_GCC_REV}"
   hg-pull-llvm-gcc
   hg-update "${TC_SRC_LLVM_GCC}" ${LLVM_GCC_REV}
 }
 
 hg-update-stable-llvm() {
+  StepBanner "HG-UPDATE" "Updating hg/llvm to ${LLVM_REV}"
   hg-pull-llvm
   hg-update "${TC_SRC_LLVM}" ${LLVM_REV}
 }
 
 hg-update-stable-newlib() {
+  StepBanner "HG-UPDATE" "Updating hg/newlib to ${NEWLIB_REV}"
   newlib-nacl-headers-check
   newlib-nacl-headers-clean
   hg-pull-newlib
@@ -422,6 +425,7 @@ hg-update-stable-newlib() {
 }
 
 hg-update-stable-binutils() {
+  StepBanner "HG-UPDATE" "Updating hg/binutils to ${BINUTILS_REV}"
   hg-pull-binutils
   hg-update "${TC_SRC_BINUTILS}"  ${BINUTILS_REV}
 }
@@ -577,9 +581,6 @@ hg-force-fresh() {
   fi
   StepBanner "HG-FORCE-FRESH (BOTS ONLY)"
 
-  # Update everything
-  hg-update-stable
-
   tidy-binutils
   newlib-nacl-headers-clean
 
@@ -589,6 +590,9 @@ hg-force-fresh() {
   hg-force-fresh-common newlib "${TC_SRC_NEWLIB}"
 
   newlib-nacl-headers-force
+
+  # Update everything
+  hg-update-stable
 }
 
 hg-force-fresh-common() {
