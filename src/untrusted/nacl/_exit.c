@@ -1,19 +1,15 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
+#include <stdlib.h>
+#include <unistd.h>
 
-/*
- * Stub routine for wait for newlib support.
- */
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/nacl_syscalls.h>
-
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 void _exit(int status) {
-  NACL_SYSCALL(exit)(status);
+  __libnacl_irt_basic.exit(status);
+  while (1) (*(void (*)(void)) 0)();  /* Crash.  */
 }

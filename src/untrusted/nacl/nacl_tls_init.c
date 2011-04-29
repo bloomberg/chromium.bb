@@ -4,9 +4,9 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int nacl_tls_init(void *tdb, size_t size) {
-  return -NACL_SYSCALL(tls_init)(tdb, size);
+  return __libnacl_irt_tls.tls_init(tdb, size);
 }

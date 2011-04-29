@@ -28,6 +28,7 @@ sources_for_standard_interfaces = [
     'mmap.c',
     'munmap.c',
     'nanosleep.c',
+    'nacl_read_tp.c',
     'open.c',
     'read.c',
     'sbrk.c',
@@ -38,6 +39,7 @@ sources_for_standard_interfaces = [
     'tls.c',
     'write.c',
     ]
+
 
 sources_for_nacl_extensions = [
     'dyncode.c',
@@ -54,6 +56,7 @@ sources_for_nacl_extensions = [
     'nacl_cond_broadcast.c',
     'nacl_cond_wait.c',
     'nacl_cond_timed_wait_abs.c',
+    'nacl_irt.c',
     'nacl_mutex_create.c',
     'nacl_mutex_lock.c',
     'nacl_mutex_trylock.c',
@@ -78,7 +81,23 @@ if env.Bit('nacl_glibc'):
 else:
   sources = sources_for_nacl_extensions + sources_for_standard_interfaces
 
-env.NaClSdkLibrary('libnacl', sources)
+# TODO(mcgrathr): These should eventually live in ../irt/ instead.
+# For now we need them as fallback definitions in libnacl when no
+# IRT is available.  To simplify build matters, we just include them
+# here and the IRT itself gets them from linking with libnacl.
+irt_interface_sources = ['irt_basic.c',
+                         'irt_file.c',
+                         'irt_memory.c',
+                         'irt_dyncode.c',
+                         'irt_thread.c',
+                         'irt_mutex.c',
+                         'irt_cond.c',
+                         'irt_sem.c',
+                         'irt_tls.c',
+                         'irt_blockhook.c',
+                         ]
+
+env.NaClSdkLibrary('libnacl', sources + irt_interface_sources)
 
 env.AddLibraryToSdk(['libnacl'])
 header_install = env.AddHeaderToSdk(['nacl_thread.h'])

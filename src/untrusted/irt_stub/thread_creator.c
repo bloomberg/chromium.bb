@@ -9,6 +9,7 @@
 #include <pthread.h>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/untrusted/irt/irt.h"
 
 
 static int thread_create(uintptr_t *tid,
@@ -45,10 +46,6 @@ const static struct PP_ThreadFunctions thread_funcs = {
  * If an application developer wants to avoid that cost, they can
  * override this function with an empty definition.
  */
-void __nacl_register_thread_creator(NaClGetInterfaceFunc query_func) {
-  PP_RegisterThreadFuncs register_func = (PP_RegisterThreadFuncs) (uintptr_t)
-    query_func("ppapi_register_thread_creator");
-  if (register_func != NULL) {
-    register_func(&thread_funcs);
-  }
+void __nacl_register_thread_creator(const struct nacl_irt_ppapihook *hooks) {
+  hooks->ppapi_register_thread_creator(&thread_funcs);
 }

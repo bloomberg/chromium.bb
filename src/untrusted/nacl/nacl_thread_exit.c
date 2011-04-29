@@ -6,11 +6,10 @@
 
 #include <stdlib.h>
 
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 void nacl_thread_exit(int32_t *stack_flag) {
-  (void) NACL_SYSCALL(thread_exit)(stack_flag);
-  /*NOTREACHED*/
-  abort();
+  (void) __libnacl_irt_thread.thread_exit(stack_flag);
+  while (1) (*(void (*)(void)) 0)();  /* Crash.  */
 }

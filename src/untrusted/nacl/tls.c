@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -10,9 +10,9 @@
 
 #include <stdint.h>
 #include <sys/unistd.h>
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
 #include "native_client/src/untrusted/nacl/tls.h"
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 /*
  * Symbols defined by the linker, we copy those sections using them
@@ -94,8 +94,18 @@ size_t __nacl_tls_combined_size(size_t tdb_size) {
 
 /* See tls.h. */
 int __pthread_initialize_minimal(size_t tdb_size) {
+  size_t combined_size;
+
+  /*
+   * TODO(mcgrathr): This ought to be called by the startup code before
+   * this.  But there are too many variants of that code that would
+   * all need to be changed.
+   * See http://code.google.com/p/nativeclient/issues/detail?id=651
+   */
+  __libnacl_irt_init();
+
   /* Use sbrk not malloc here since the library is not initialized yet. */
-  size_t combined_size = __nacl_tls_combined_size(tdb_size);
+  combined_size = __nacl_tls_combined_size(tdb_size);
   /* Adapt size for sbrk. */
   /* TODO(robertm): this is somewhat arbitrary - re-examine). */
   combined_size = (combined_size + 15) & ~15;

@@ -2291,7 +2291,6 @@ nacl_env.Append(
     'tests/imc_shm_mmap/nacl.scons',
     'tests/imc_sockets/nacl.scons',
     'tests/inbrowser_test_runner/nacl.scons',
-    'tests/irt_hw/nacl.scons',
     'tests/libc_free_hello_world/nacl.scons',
     'tests/longjmp/nacl.scons',
     'tests/loop/nacl.scons',

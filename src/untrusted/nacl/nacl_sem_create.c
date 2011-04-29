@@ -4,12 +4,9 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int nacl_sem_create(int *sem_handle, int32_t value) {
-  int rv = NACL_SYSCALL(sem_create)(value);
-  if (rv < 0) return -rv;
-  *sem_handle = rv;
-  return 0;
+  return __libnacl_irt_sem.sem_create(sem_handle, value);
 }

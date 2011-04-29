@@ -7,8 +7,9 @@
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_IRT_STUB_THREAD_CREATOR_H_
 #define NATIVE_CLIENT_SRC_UNTRUSTED_IRT_STUB_THREAD_CREATOR_H_ 1
 
+#include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_ppapi.h"
 
-void __nacl_register_thread_creator(NaClGetInterfaceFunc query_func);
+void __nacl_register_thread_creator(const struct nacl_irt_ppapihook *hooks);
 
 #endif

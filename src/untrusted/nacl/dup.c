@@ -1,7 +1,7 @@
 /*
- * Copyright 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -11,22 +11,23 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 
-int dup(int oldfd) {
-  int retval = NACL_SYSCALL(dup)(oldfd);
-  if (retval < 0) {
-    errno = -retval;
+int dup(int fd) {
+  int newfd;
+  int error = __libnacl_irt_file.dup(fd, &newfd);
+  if (error) {
+    errno = error;
     return -1;
   }
-  return retval;
+  return newfd;
 }
 
 int dup2(int oldfd, int newfd) {
-  int retval = NACL_SYSCALL(dup2)(oldfd, newfd);
-  if (retval < 0) {
-    errno = -retval;
+  int error = __libnacl_irt_file.dup2(oldfd, newfd);
+  if (error) {
+    errno = error;
     return -1;
   }
-  return retval;
+  return newfd;
 }

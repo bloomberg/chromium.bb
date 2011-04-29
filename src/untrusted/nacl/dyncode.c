@@ -7,35 +7,31 @@
 #include <errno.h>
 #include <sys/nacl_syscalls.h>
 
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
-
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 int nacl_dyncode_create(void *dest, const void *src, size_t size) {
-  int retval = NACL_GC_WRAP_SYSCALL(
-                 NACL_SYSCALL(dyncode_create)(dest, src, size));
-  if (retval < 0) {
-    errno = -retval;
+  int error = __libnacl_irt_dyncode.dyncode_create(dest, src, size);
+  if (error) {
+    errno = error;
     return -1;
   }
-  return retval;
+  return 0;
 }
 
 int nacl_dyncode_modify(void *dest, const void *src, size_t size) {
-  int retval = NACL_GC_WRAP_SYSCALL(
-                 NACL_SYSCALL(dyncode_modify)(dest, src, size));
-  if (retval < 0) {
-    errno = -retval;
+  int error = __libnacl_irt_dyncode.dyncode_modify(dest, src, size);
+  if (error) {
+    errno = error;
     return -1;
   }
-  return retval;
+  return 0;
 }
 
 int nacl_dyncode_delete(void *dest, size_t size) {
-  int retval = NACL_GC_WRAP_SYSCALL(
-                 NACL_SYSCALL(dyncode_delete)(dest, size));
-  if (retval < 0) {
-    errno = -retval;
+  int error = __libnacl_irt_dyncode.dyncode_delete(dest, size);
+  if (error) {
+    errno = error;
     return -1;
   }
-  return retval;
+  return 0;
 }

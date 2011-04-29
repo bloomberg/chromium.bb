@@ -4,9 +4,9 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int nacl_sem_wait(int sem_handle) {
-  return -NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(sem_wait)(sem_handle));
+  return __libnacl_irt_sem.sem_wait(sem_handle);
 }

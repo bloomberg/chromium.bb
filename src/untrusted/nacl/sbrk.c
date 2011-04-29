@@ -5,53 +5,40 @@
  */
 
 #include <errno.h>
-#include <stdint.h>
+#include <unistd.h>
 
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
-
-/*
- * NaCl low-level brk and sbrk implementation.
- * TODO(sehr,bsy): figure out threading issues and how to provide a thread-safe
- * version of this.
- */
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 /*
- * TODO(sehr): this should probably be static.
+ * NaCl low-level sbrk implementation.  We don't provide brk.
+ * This is not thread-safe in traditional Unix or modern Linux,
+ * so ours isn't either.
  */
-void *__nacl_break = 0;
 
-int __NaClBrk(void  *end_data_segment) {
-  void    *old_break;
-  void    *ret;
+static void *curbrk;
 
-  if (0 == __nacl_break) {
-    __nacl_break = NACL_SYSCALL(sysbrk)(0);
+void *sbrk(intptr_t increment) {
+  void *old_break;
+  void *new_break;
+  int error;
+
+  if (NULL == curbrk) {
+    error = __libnacl_irt_memory.sysbrk(&curbrk);
+    if (error) {
+      errno = error;
+      return (void *) -1L;
+    }
   }
 
-  if (end_data_segment == __nacl_break)
-    return 0;
-  old_break = __nacl_break;
-  ret = NACL_SYSCALL(sysbrk)(end_data_segment);
-  if (ret == old_break) return -1;
-  __nacl_break = ret;
-  return 0;
-}
+  old_break = curbrk;
+  new_break = (char *) old_break + increment;
 
-void  *sbrk(intptr_t increment) {
-  void  *old_break;
-  int   ret;
-
-  if (0 == __nacl_break) {
-    __nacl_break = NACL_SYSCALL(sysbrk)(0);
+  error = __libnacl_irt_memory.sysbrk(&new_break);
+  if (error) {
+    errno = error;
+    return (void *) -1L;
   }
 
-  old_break = __nacl_break;
-
-  ret = __NaClBrk((char*)__nacl_break + increment);
-  if (ret == -1) {
-    errno = ENOMEM;
-    return (void *) -1;
-  }
-
+  curbrk = new_break;
   return old_break;
 }

@@ -4,22 +4,9 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 void *nacl_tls_get(void) {
-  return NACL_SYSCALL(tls_get)();
-}
-
-/* 
- * The compiler generates calls to __nacl_read_tp() for TLS accesses.
- * This is primarily used for x86-64.  See src/untrusted/nacl/tls.h.
- *
- * __nacl_read_tp() is also used on x86-32 when compiling with
- * "-mtls-use-call".  This is for when TLS accesses need to be
- * virtualised -- specifically, for object files that might get linked
- * into the integrated runtime (IRT) library.
- */
-void *__nacl_read_tp(void) {
-  return NACL_SYSCALL(tls_get)();
+  return __libnacl_irt_tls.tls_get();
 }

@@ -15,9 +15,6 @@ if env.Bit('nacl_glibc'):
 if env.Bit('use_sandboxed_translator'):
   Return()
 
-env.ComponentLibrary('libirt', ['irt.c'])
-
-
 blob_env = env.Clone()
 blob_env.Append(CPPDEFINES=[
     ['NACL_BLOCK_SHIFT', '5'],
@@ -44,10 +41,12 @@ if asm_env.Bit('bitcode'):
 asm_helper = asm_env.ComponentObject(
     'elf_restart_%s.S' % env['TARGET_FULLARCH'].replace('-', '_'))
 
-files = ['irt_entry.c',
-         'irt_sbrk.c',
-         'irt_elf_utils.c',
-         asm_helper]
+files = [
+    'irt_entry.c',
+    'irt_sbrk.c',
+    'irt_elf_utils.c',
+    asm_helper,
+    ]
 
 # The bitcode build does not yet use -mtls-use-call and so it improperly
 # pollutes user TLS with IRT-private TLS.  But until that's fixed,
@@ -57,8 +56,16 @@ files = ['irt_entry.c',
 if not env.Bit('bitcode'):
   files.append('irt_tls.c')
 
+# TODO(mcgrathr): most of these live in ../nacl/irt_*.c now because
+# of the dismal kludge state of building everything.  Eventually
+# all that should move here.
+irt_interface_sources = [
+    'irt_interfaces.c',
+    'irt_ppapi.c',
+    ]
+
 irt_library = blob_env.ComponentProgram(
-    'irt.nexe', files,
+    'irt.nexe', files + irt_interface_sources,
     EXTRA_LIBS=['ppruntime',
                 'srpc',
                 'imc',
@@ -66,6 +73,10 @@ irt_library = blob_env.ComponentProgram(
                 'gio',
                 'pthread',
                 'm'])
+
+# TODO(mcgrathr): these should be installed, but scons is a mystery
+#env.AddHeaderToSdk(['irt.h'])
+#env.AddHeaderToSdk(['irt_ppapi.h'])
 
 if env.Bit('build_x86_32') and not env.Bit('bitcode'):
   # Make sure that the linked IRT nexe never uses TLS via %gs access.

@@ -7,6 +7,8 @@
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_IRT_IRT_PPAPI_H_
 #define NATIVE_CLIENT_SRC_UNTRUSTED_IRT_IRT_PPAPI_H_ 1
 
+#include <stddef.h>
+
 #include "ppapi/c/ppp.h"
 
 struct PP_StartFunctions {
@@ -31,7 +33,6 @@ struct PP_ThreadFunctions {
   int (*thread_join)(uintptr_t tid);
 };
 
-typedef void *(*NaClGetInterfaceFunc)(const char *interface_name);
 typedef void (*PP_StartFunc)(const struct PP_StartFunctions *funcs);
 typedef void (*PP_RegisterThreadFuncs)(const struct PP_ThreadFunctions *funcs);
 

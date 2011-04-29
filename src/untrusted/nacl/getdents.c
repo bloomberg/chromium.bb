@@ -1,26 +1,20 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
-
-/*
- * Wrapper for syscall.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <errno.h>
-#include <sys/types.h>
-#include <sys/nacl_syscalls.h>
+#include <unistd.h>
 
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 
-struct dirent;
-
-int getdents(int desc, struct dirent *dirp, size_t count) {
-  int retval = NACL_SYSCALL(getdents)(desc, dirp, count);
-  if (retval < 0) {
-    errno = -retval;
+int getdents(int desc, struct dirent *buf, size_t count) {
+  size_t nread;
+  int error = __libnacl_irt_file.getdents(desc, buf, count, &nread);
+  if (error) {
+    errno = error;
     return -1;
   }
-  return retval;
+  return nread;
 }

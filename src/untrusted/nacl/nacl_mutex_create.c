@@ -4,12 +4,9 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int nacl_mutex_create(int *mutex_handle) {
-  int rv = NACL_SYSCALL(mutex_create)();
-  if (rv < 0) return -rv;
-  *mutex_handle = rv;
-  return 0;
+  return __libnacl_irt_mutex.mutex_create(mutex_handle);
 }

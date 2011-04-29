@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #include "native_client/src/include/elf_auxv.h"
+#include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_elf_utils.h"
 #include "native_client/src/untrusted/irt/irt_ppapi.h"
 #include "native_client/src/untrusted/irt_stub/thread_creator.h"
@@ -33,12 +34,13 @@ int main(int argc, char **argv) {
     fatal_error("plugin_main_irt: No AT_SYSINFO item found in auxv, "
                 "so cannot start PPAPI.  Is the IRT library not present?\n");
   }
-  NaClGetInterfaceFunc query_func = (NaClGetInterfaceFunc) entry->a_val;
-  PP_StartFunc pp_start = (PP_StartFunc) (uintptr_t) query_func("ppapi_start");
-  if (pp_start == NULL) {
-    fatal_error("plugin_main_irt: ppapi_start function not found\n");
+  TYPE_nacl_irt_query query_func = (TYPE_nacl_irt_query) entry->a_val;
+  struct nacl_irt_ppapihook hooks;
+  if (sizeof(hooks) != query_func(NACL_IRT_PPAPIHOOK_v0_1,
+                                  &hooks, sizeof(hooks))) {
+    fatal_error("plugin_main_irt: ppapi hooks not found\n");
   }
-  __nacl_register_thread_creator(query_func);
-  pp_start(&funcs);
+  __nacl_register_thread_creator(&hooks);
+  hooks.ppapi_start(&funcs);
   return 1;
 }
