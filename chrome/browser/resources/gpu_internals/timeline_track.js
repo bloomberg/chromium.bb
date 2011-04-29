@@ -225,11 +225,26 @@ cr.define('gpu', function() {
       var vp = this.viewport_;
       var pixWidth = vp.xViewVectorToWorld(1);
       var viewLWorld = vp.xViewToWorld(0);
-      var viewRWorld = vp.xViewToWorld(this.width);
+      var viewRWorld = vp.xViewToWorld(canvasW);
 
       // begin rendering in world space
       ctx.save();
       vp.applyTransformToCanavs(ctx);
+
+      // grid
+      if (vp.gridEnabled) {
+        var x = vp.gridTimebase;
+        ctx.beginPath();
+        while (x < viewRWorld) {
+          if (x >= viewLWorld) {
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvasH);
+          }
+          x += vp.gridStep;
+        }
+        ctx.strokeStyle = 'rgba(255,0,0,0.25)';
+        ctx.stroke();
+      }
 
       // tracks
       var tr = new gpu.FastRectRenderer(ctx, viewLWorld, 2 * pixWidth,
@@ -314,8 +329,9 @@ cr.define('gpu', function() {
       if (a > b)
         return;
 
+      var that = this;
       function onPickHit(slice) {
-        onHitCallback('slice', this, slice);
+        onHitCallback('slice', that, slice);
       }
       gpu.iterateOverIntersectingIntervals(this.slices_,
           function(x) { return x.start; },
