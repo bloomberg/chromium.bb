@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,8 @@
 // and trust the the Right Thing will get done.
 
 #include <vector>
+
+#include "base/base_api.h"
 
 namespace base {
 
@@ -67,11 +69,11 @@ struct InjectionArc {
 
 typedef std::vector<InjectionArc> InjectiveMultimap;
 
-bool PerformInjectiveMultimap(const InjectiveMultimap& map,
-                              InjectionDelegate* delegate);
+BASE_API bool PerformInjectiveMultimap(const InjectiveMultimap& map,
+                                       InjectionDelegate* delegate);
 
-bool PerformInjectiveMultimapDestructive(InjectiveMultimap* map,
-                                         InjectionDelegate* delegate);
+BASE_API bool PerformInjectiveMultimapDestructive(InjectiveMultimap* map,
+                                                  InjectionDelegate* delegate);
 
 // This function will not call malloc but will mutate |map|
 static inline bool ShuffleFileDescriptors(InjectiveMultimap* map) {
