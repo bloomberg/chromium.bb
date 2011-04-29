@@ -91,7 +91,9 @@ TEST(ProxyFactoryTest, CreateDifferentProfiles) {
   f.ReleaseAutomationServer(i1, &d);
 }
 
-TEST(ProxyFactoryTest, FastCreateDestroy) {
+// This test has been disabled because it crashes randomly on the builders.
+// http://code.google.com/p/chromium/issues/detail?id=81039
+TEST(ProxyFactoryTest, DISABLED_FastCreateDestroy) {
   CrashMetricsReporter::GetInstance()->set_active(true);
   ProxyFactory f;
   LaunchDelegateMock* d1 = new LaunchDelegateMock();

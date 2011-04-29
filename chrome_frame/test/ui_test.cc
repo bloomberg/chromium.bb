@@ -548,7 +548,7 @@ TEST_F(ContextMenuTest, CFInspector) {
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIENavigateAndLoop(GetSimplePageUrl(),
-                          kChromeFrameLongNavigationTimeoutInSeconds * 2);
+                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
 }
 
 TEST_F(ContextMenuTest, CFSavePageAs) {
