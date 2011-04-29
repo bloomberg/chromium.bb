@@ -1504,10 +1504,10 @@ void AutomationProviderDownloadUpdatedObserver::OnDownloadUpdated(
     return;
 
   download->RemoveObserver(this);
-  scoped_ptr<DictionaryValue> return_value(
-      provider_->GetDictionaryFromDownloadItem(download));
 
   if (provider_) {
+    scoped_ptr<DictionaryValue> return_value(
+        provider_->GetDictionaryFromDownloadItem(download));
     AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(
         return_value.get());
   }
@@ -1517,10 +1517,10 @@ void AutomationProviderDownloadUpdatedObserver::OnDownloadUpdated(
 void AutomationProviderDownloadUpdatedObserver::OnDownloadOpened(
     DownloadItem* download) {
   download->RemoveObserver(this);
-  scoped_ptr<DictionaryValue> return_value(
-      provider_->GetDictionaryFromDownloadItem(download));
 
   if (provider_) {
+    scoped_ptr<DictionaryValue> return_value(
+        provider_->GetDictionaryFromDownloadItem(download));
     AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(
         return_value.get());
   }
@@ -1559,11 +1559,11 @@ AutomationProviderSearchEngineObserver::
     ~AutomationProviderSearchEngineObserver() {}
 
 void AutomationProviderSearchEngineObserver::OnTemplateURLModelChanged() {
-  TemplateURLModel* url_model = provider_->profile()->GetTemplateURLModel();
-  url_model->RemoveObserver(this);
-
-  if (provider_)
+  if (provider_) {
+    TemplateURLModel* url_model = provider_->profile()->GetTemplateURLModel();
+    url_model->RemoveObserver(this);
     AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(NULL);
+  }
   delete this;
 }
 
