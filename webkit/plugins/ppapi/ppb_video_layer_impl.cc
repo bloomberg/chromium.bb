@@ -16,10 +16,10 @@ namespace {
 PP_Resource Create(PP_Instance instance_id, PP_VideoLayerMode_Dev mode) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
-    return NULL;
+    return 0;
 
   if (mode != PP_VIDEOLAYERMODE_SOFTWARE)
-    return NULL;
+    return 0;
 
   scoped_refptr<PPB_VideoLayer_Impl> layer(
       new PPB_VideoLayer_Software(instance));

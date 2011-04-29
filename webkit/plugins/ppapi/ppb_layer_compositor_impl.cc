@@ -12,7 +12,7 @@ namespace ppapi {
 namespace {
 
 PP_Resource Create(PP_Instance instance) {
-  return NULL;
+  return 0;
 }
 
 PP_Bool IsLayerCompositor(PP_Resource resource) {
