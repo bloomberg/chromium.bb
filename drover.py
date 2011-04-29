@@ -118,10 +118,10 @@ def inCheckoutRoot(path):
 def getRevisionLog(url, revision):
   """Takes an svn url and gets the associated revision."""
   svn_log = subprocess2.check_output(
-      ['svn', 'log', url, '-r', str(revision)]).splitlines()
-  # Don't include the header lines and the trailing "---..." line and eliminate
-  # any '\r's.
-  return ''.join([l.replace('\r','') for l in svn_log[3:-1]])
+      ['svn', 'log', url, '-r', str(revision)],
+      universal_newlines=True).splitlines(True)
+  # Don't include the header lines and the trailing "---..." line.
+  return ''.join(svn_log[3:-1])
 
 def getSVNVersionInfo():
   """Extract version information from SVN"""
