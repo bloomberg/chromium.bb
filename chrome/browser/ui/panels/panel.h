@@ -131,6 +131,10 @@ class Panel : public BrowserWindow {
   // |browser|.
   static BrowserWindow* CreateNativePanel(Browser* browser, Panel* panel);
 
+#ifdef UNIT_TEST
+  BrowserWindow* browser_window() { return browser_window_.get(); }
+#endif
+
  protected:
   virtual void DestroyBrowser();
 

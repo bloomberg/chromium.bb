@@ -1755,6 +1755,7 @@
         'browser/ui/content_settings/content_setting_image_model_unittest.cc',
         'browser/ui/find_bar/find_backend_unittest.cc',
         'browser/ui/login/login_prompt_unittest.cc',
+        'browser/ui/panels/panel_browser_window_cocoa_unittest.mm',
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
         'browser/ui/shell_dialogs_unittest.cc',
         'browser/ui/tabs/dock_info_unittest.cc',

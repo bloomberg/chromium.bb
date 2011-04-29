@@ -231,6 +231,7 @@
                 'app/nibs/InstantOptIn.xib',
                 'app/nibs/MainMenu.xib',
                 'app/nibs/Notification.xib',
+                'app/nibs/Panel.xib',
                 'app/nibs/PreviewableContents.xib',
                 'app/nibs/ReportBug.xib',
                 'app/nibs/SaveAccessoryView.xib',
@@ -483,7 +484,7 @@
                     ['disable_nacl!=1', {
                       'files': [
                         '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.plugin',
-                      ],                    
+                      ],
                     }],
                   ],
                 },
@@ -587,7 +588,7 @@
             'app/chrome_main.cc',
             'app/chrome_main_win.cc',
             # Parsing is needed for the UserDataDir policy which is read much
-            # earlier than the initialization of the policy/pref system. 
+            # earlier than the initialization of the policy/pref system.
             'browser/policy/policy_path_parser_win.cc',
             'browser/renderer_host/render_process_host_dummy.cc',
             'common/googleurl_dummy.cc',
