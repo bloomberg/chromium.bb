@@ -49,11 +49,19 @@ body {
   border-left: 1px solid #424242;
 }
 
-.videocontrols {
+.playercontrolsbox {
   bottom: 0;
   left: 0;
-  z-index: 999;
   height: 30px;
+  right: 0;
+  position: absolute;
+}
+
+.videocontrols {
+  top: 0;
+  left: 0;
+  z-index: 999;
+  height: 100%;
   opacity: .9;
   right: 0;
   position: absolute;
@@ -94,10 +102,10 @@ body {
 }
 
 .audiocontrols {
-  bottom: 0;
+  top: 0;
   left: 0;
   z-index: 999;
-  height: 30px;
+  height: 100%;
   opacity: .9;
   right: 0;
   position: absolute;
@@ -506,13 +514,99 @@ function getPathAndFilenameForPath(path) {
   return path.match(/(.*)[\/\\]([^\/\\]+)\.\w+$/);
 }
 
+
+var hidingControlsAnimation = null;
+
+const INACTIVITY_TIMEOUT = 5000;
+const INACTIVITY_CHECK_INTERVAL = 1000;
+const ANIMATION_DURATION = 1500;
+const ANIMATION_STEP = 50;
+
+function HidingControlsAnimation() {
+  this.offsetPercent = 0;
+  this.recentActivity = Date.now();
+
+  this.inactivityInterval = setInterval(this.checkInactivity.bind(this),
+                                        INACTIVITY_CHECK_INTERVAL);
+
+  this.onActivityClosure = this.onActivity.bind(this);
+  document.body.addEventListener('mousemove', this.onActivityClosure);
+  document.body.addEventListener('mousedown', this.onActivityClosure);
+  document.body.addEventListener('keydown', this.onActivityClosure);
+}
+
+HidingControlsAnimation.prototype = {
+
+    cleanup: function () {
+      this.stopAnimation();
+      clearInterval(this.inactivityInterval);
+      document.body.removeEventListener('mousemove', this.onActivityClosure);
+      document.body.removeEventListener('mousedown', this.onActivityClosure);
+      document.body.removeEventListener('keydown', this.onActivityClosure);
+    },
+
+    onActivity: function() {
+      this.recentActivity = Date.now();
+      // If not fully visible, start sliding up (or reverse sliding down).
+      if (this.offsetPercent != 0)
+        this.startAnimation(-1);
+    },
+
+    checkInactivity: function() {
+      if ((Date.now() - this.recentActivity) > INACTIVITY_TIMEOUT) {
+      // If fully visible start sliding down.
+      if (this.offsetPercent == 0)
+          this.startAnimation(1);
+      }
+    },
+
+    startAnimation: function (direction) {
+      this.direction = direction;
+      this.startOffset = this.offsetPercent;
+      this.startTime = Date.now();
+      if (!this.animationInterval)
+        this.animationInterval = setInterval(this.doAnimation.bind(this),
+                                             ANIMATION_STEP);
+    },
+
+    doAnimation: function () {
+      var phase = (Date.now() - this.startTime) / ANIMATION_DURATION;
+
+      var newOffsetPercent = this.startOffset + this.direction * phase * 100;
+
+      if (newOffsetPercent <= 0) {
+        this.offsetPercent = 0;
+        this.stopAnimation();
+      } else if (newOffsetPercent >= 100){
+        this.offsetPercent = 100;
+        this.stopAnimation();
+      } else {
+        this.offsetPercent = Math.round(newOffsetPercent);
+      }
+
+      $('playercontrols').style.top = this.offsetPercent + '%';
+    },
+
+    stopAnimation: function () {
+      if (this.animationInterval) {
+        clearInterval(this.animationInterval);
+        this.animationInterval = null;
+      }
+    }
+};
+
 function setupPlaybackControls() {
   var element = $('playercontrols');
   playercontrols.innerHTML = ''; // clear out other
   var controlsclass = '';
+  if (hidingControlsAnimation) {
+    hidingControlsAnimation.cleanup();
+    hidingControlsAnimation = null;
+  }
   if (videoPlaybackElement != null) {
     controlsclass = 'video';
     element.className = 'videocontrols';
+    hidingControlsAnimation = new HidingControlsAnimation();
   } else if (audioPlaybackElement != null) {
     controlsclass = 'audio';
     element.className = 'audiocontrols';
@@ -790,7 +884,9 @@ function playMediaFile(url) {
 <div id='error' class='error'></div>
 <div id='title' class='audiotitle'></div>
 <div id='glow' class='glow'></div>
-<div id='playercontrols' class='playercontrols'>
+<div class='playercontrolsbox'>
+  <div id='playercontrols'>
+  </div>
 </div>
 </body>
 </html>
