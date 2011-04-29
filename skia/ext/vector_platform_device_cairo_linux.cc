@@ -129,7 +129,7 @@ VectorPlatformDeviceCairo::~VectorPlatformDeviceCairo() {
   cairo_destroy(context_);
 }
 
-SkDeviceFactory* VectorPlatformDeviceCairo::getDeviceFactory() {
+SkDeviceFactory* VectorPlatformDeviceCairo::onNewDeviceFactory() {
   return SkNEW(VectorPlatformDeviceCairoFactory);
 }
 

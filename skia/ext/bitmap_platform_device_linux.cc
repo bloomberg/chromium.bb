@@ -143,12 +143,12 @@ BitmapPlatformDevice::BitmapPlatformDevice(
 BitmapPlatformDevice::~BitmapPlatformDevice() {
 }
 
-SkDeviceFactory* BitmapPlatformDevice::getDeviceFactory() {
-  return SkNEW(BitmapPlatformDeviceFactory);
-}
-
 bool BitmapPlatformDevice::IsVectorial() {
   return false;
+}
+
+SkDeviceFactory* BitmapPlatformDevice::onNewDeviceFactory() {
+  return SkNEW(BitmapPlatformDeviceFactory);
 }
 
 cairo_t* BitmapPlatformDevice::BeginPlatformPaint() {

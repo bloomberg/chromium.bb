@@ -91,13 +91,16 @@ class BitmapPlatformDevice : public PlatformDevice {
   virtual void makeOpaque(int x, int y, int width, int height);
 
   // Overridden from SkDevice:
-  virtual SkDeviceFactory* getDeviceFactory();
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
                              const SkClipStack&);
 
   // Overridden from PlatformDevice:
   virtual bool IsVectorial();
   virtual cairo_t* BeginPlatformPaint();
+
+ protected:
+  // Override SkDevice.
+  virtual SkDeviceFactory* onNewDeviceFactory();
 
  private:
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,

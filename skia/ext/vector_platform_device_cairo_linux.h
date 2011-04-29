@@ -43,9 +43,6 @@ class SK_API VectorPlatformDeviceCairo : public PlatformDevice {
   // this class.
   static void ClearFontCache();
 
-  // Overridden from SkDevice (through PlatformDevice):
-  virtual SkDeviceFactory* getDeviceFactory();
-
   // Overridden from PlatformDevice:
   virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) OVERRIDE;
   virtual void drawPoints(const SkDraw& draw, SkCanvas::PointMode mode,
@@ -88,6 +85,9 @@ class SK_API VectorPlatformDeviceCairo : public PlatformDevice {
  protected:
   explicit VectorPlatformDeviceCairo(PlatformSurface context,
                                      const SkBitmap& bitmap);
+
+  // Override from SkDevice (through PlatformDevice).
+  virtual SkDeviceFactory* onNewDeviceFactory();
 
  private:
   // Apply paint's color in the context.

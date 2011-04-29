@@ -46,7 +46,6 @@ class VectorPlatformDeviceSkia : public PlatformDevice {
   virtual void EndPlatformPaint();
 
   // SkDevice methods.
-  virtual SkDeviceFactory* getDeviceFactory();
   virtual uint32_t getDeviceCapabilities();
 
   virtual int width() const;
@@ -87,6 +86,10 @@ class VectorPlatformDeviceSkia : public PlatformDevice {
 #if defined(OS_WIN)
   virtual void drawToHDC(HDC dc, int x, int y, const RECT* src_rect);
 #endif
+
+ protected:
+  // Override from SkDevice (through PlatformDevice).
+  virtual SkDeviceFactory* onNewDeviceFactory();
 
  private:
   SkRefPtr<SkPDFDevice> pdf_device_;

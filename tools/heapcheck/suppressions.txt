@@ -1520,8 +1520,3 @@
    fun:notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
    fun:void DispatchToMethod
 }
-{
-   bug_80836
-   Heapcheck:Leak
-   fun:PlatformCanvas
-}

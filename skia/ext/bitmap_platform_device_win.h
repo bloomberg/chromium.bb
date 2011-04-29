@@ -69,10 +69,6 @@ class SK_API BitmapPlatformDevice : public PlatformDevice {
   // See warning for copy constructor above.
   BitmapPlatformDevice& operator=(const BitmapPlatformDevice& other);
 
-  virtual SkDeviceFactory* getDeviceFactory() {
-    return SkNEW(BitmapPlatformDeviceFactory);
-  }
-
   // Retrieves the bitmap DC, which is the memory DC for our bitmap data. The
   // bitmap DC is lazy created.
   virtual PlatformSurface BeginPlatformPaint();
@@ -95,6 +91,9 @@ class SK_API BitmapPlatformDevice : public PlatformDevice {
   // directly by Skia. Overridden from SkDevice, this is called when Skia
   // starts accessing pixel data.
   virtual void onAccessBitmap(SkBitmap* bitmap);
+
+  // Override SkDevice.
+  virtual SkDeviceFactory* onNewDeviceFactory();
 
  private:
   // Reference counted data that can be shared between multiple devices. This

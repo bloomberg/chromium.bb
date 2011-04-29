@@ -115,6 +115,10 @@ VectorPlatformDeviceEmf::~VectorPlatformDeviceEmf() {
   SkASSERT(previous_pen_ == NULL);
 }
 
+SkDeviceFactory* VectorPlatformDeviceEmf::onNewDeviceFactory() {
+  return SkNEW(VectorPlatformDeviceEmfFactory);
+}
+
 HDC VectorPlatformDeviceEmf::BeginPlatformPaint() {
   return hdc_;
 }

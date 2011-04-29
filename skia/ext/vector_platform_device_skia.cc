@@ -91,10 +91,6 @@ void VectorPlatformDeviceSkia::EndPlatformPaint() {
   raster_surface_ = NULL;
 }
 
-SkDeviceFactory* VectorPlatformDeviceSkia::getDeviceFactory() {
-  return SkNEW(VectorPlatformDeviceSkiaFactory);
-}
-
 uint32_t VectorPlatformDeviceSkia::getDeviceCapabilities() {
   return kVector_Capability;
 }
@@ -225,5 +221,9 @@ void VectorPlatformDeviceSkia::drawToHDC(HDC dc,
   SkASSERT(false);
 }
 #endif
+
+SkDeviceFactory* VectorPlatformDeviceSkia::onNewDeviceFactory() {
+  return SkNEW(VectorPlatformDeviceSkiaFactory);
+}
 
 }  // namespace skia

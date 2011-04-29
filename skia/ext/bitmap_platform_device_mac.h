@@ -58,8 +58,6 @@ class BitmapPlatformDevice : public PlatformDevice {
   BitmapPlatformDevice(const BitmapPlatformDevice& other);
   virtual ~BitmapPlatformDevice();
 
-  virtual SkDeviceFactory* getDeviceFactory();
-
   // See warning for copy constructor above.
   BitmapPlatformDevice& operator=(const BitmapPlatformDevice& other);
 
@@ -89,6 +87,9 @@ class BitmapPlatformDevice : public PlatformDevice {
   // directly by Skia. Overridden from SkDevice, this is called when Skia
   // starts accessing pixel data.
   virtual void onAccessBitmap(SkBitmap*);
+
+  // Override SkDevice.
+  virtual SkDeviceFactory* onNewDeviceFactory();
 
   // Data associated with this device, guaranteed non-null. We hold a reference
   // to this object.

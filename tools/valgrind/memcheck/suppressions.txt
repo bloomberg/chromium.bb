@@ -4526,12 +4526,6 @@
    fun:_ZNK4base8CallbackIFvvEE3RunEv
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
-{
-   bug_80836
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4skia14PlatformCanvasC*
-}
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
@@ -4552,4 +4546,3 @@
    fun:call_init
    fun:_dl_init
 }
-

@@ -281,5 +281,9 @@ void BitmapPlatformDevice::onAccessBitmap(SkBitmap* bitmap) {
     GdiFlush();
 }
 
+SkDeviceFactory* BitmapPlatformDevice::onNewDeviceFactory() {
+  return SkNEW(BitmapPlatformDeviceFactory);
+}
+
 }  // namespace skia
 

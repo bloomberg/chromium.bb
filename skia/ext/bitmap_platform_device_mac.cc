@@ -208,10 +208,6 @@ BitmapPlatformDevice::~BitmapPlatformDevice() {
   data_->unref();
 }
 
-SkDeviceFactory* BitmapPlatformDevice::getDeviceFactory() {
-  return SkNEW(BitmapPlatformDeviceFactory);
-}
-
 BitmapPlatformDevice& BitmapPlatformDevice::operator=(
     const BitmapPlatformDevice& other) {
   data_ = other.data_;
@@ -275,6 +271,10 @@ SkColor BitmapPlatformDevice::getColorAt(int x, int y) {
 
 void BitmapPlatformDevice::onAccessBitmap(SkBitmap*) {
   // Not needed in CoreGraphics
+}
+
+SkDeviceFactory* BitmapPlatformDevice::onNewDeviceFactory() {
+  return SkNEW(BitmapPlatformDeviceFactory);
 }
 
 }  // namespace skia

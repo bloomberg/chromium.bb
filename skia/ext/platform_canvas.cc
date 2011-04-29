@@ -17,8 +17,8 @@ skia::PlatformDevice* GetTopPlatformDevice(const SkCanvas* canvas) {
 
 namespace skia {
 
-PlatformCanvas::PlatformCanvas()
-    : SkCanvas(SkNEW(BitmapPlatformDeviceFactory)) {
+PlatformCanvas::PlatformCanvas() {
+  setDeviceFactory(SkNEW(BitmapPlatformDeviceFactory))->unref();
 }
 
 PlatformCanvas::PlatformCanvas(SkDeviceFactory* factory) : SkCanvas(factory) {

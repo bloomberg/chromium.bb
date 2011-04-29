@@ -35,10 +35,6 @@ class VectorPlatformDeviceEmf : public PlatformDevice {
   VectorPlatformDeviceEmf(HDC dc, const SkBitmap& bitmap);
   virtual ~VectorPlatformDeviceEmf();
 
-  virtual SkDeviceFactory* getDeviceFactory() {
-    return SkNEW(VectorPlatformDeviceEmfFactory);
-  }
-
   virtual PlatformSurface BeginPlatformPaint();
 
   virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) OVERRIDE;
@@ -82,6 +78,10 @@ class VectorPlatformDeviceEmf : public PlatformDevice {
 
   void LoadClipRegion();
   bool alpha_blend_used() const { return alpha_blend_used_; }
+
+ protected:
+  // Override from SkDevice (through PlatformDevice).
+  virtual SkDeviceFactory* onNewDeviceFactory();
 
  private:
   // Applies the SkPaint's painting properties in the current GDI context, if
