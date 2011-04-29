@@ -6,10 +6,23 @@
 // until the changes can be landed upstream.
 
 BUGDPRANKE SNOWLEOPARD : fast/speech/input-appearance-numberandspeech.html = IMAGE+TEXT PASS
-BUGDPRANKE SNOWLEOPARD : fast/speech/input-appearance-speechbutton.html = IMAGE+TEXT PASS
+BUGWK59742 MAC LEOPARD SNOWLEOPARD : fast/speech/input-appearance-speechbutton.html = IMAGE+TEXT PASS
 BUGDPRANKE SNOWLEOPARD : svg/custom/foreign-object-skew.svg = IMAGE
 BUGDPRANKE WIN : fast/harness/results.html = TEXT
 BUGDPRANKE DEBUG : http/tests/local/link-stylesheet-preferred.html = CRASH PASS
 BUGDPRANKE DEBUG : fast/css/empty-pseudo-class.html = PASS TEXT
 BUGDPRANKE WIN RELEASE : http/tests/loading/redirect-methods.html = PASS TIMEOUT
 BUGDPRANKE WIN RELEASE : http/tests/inspector/network-preflight-options.html = PASS TIMEOUT
+
+BUGWK59782 WIN LINUX : fast/box-shadow/single-pixel-shadow.html = IMAGE
+BUGWK59782 WIN MAC LINUX : svg/dynamic-updates/SVGFEDropShadowElement-dom-shadow-color-attr.html = IMAGE
+BUGWK59782 WIN MAC LINUX : svg/dynamic-updates/SVGFEDropShadowElement-dom-shadow-opacity-attr.html = IMAGE
+BUGWK59782 WIN MAC LINUX : svg/dynamic-updates/SVGFEDropShadowElement-svgdom-shadow-color-prop.html = IMAGE
+BUGWK59782 WIN MAC LINUX : svg/dynamic-updates/SVGFEDropShadowElement-svgdom-shadow-opacity-prop.html = IMAGE
+BUGWK59782 WIN MAC LINUX : svg/filters/feDropShadow.svg = IMAGE
+
+BUGWK59833 : fast/table/prepend-in-anonymous-table.html = PASS TEXT
+BUGWK59833 : tables/mozilla_expected_failures/other/test4.html = PASS IMAGE TEXT
+BUGWK59833 LINUX : fast/table/dynamic-caption-add-before-child.xhtml = PASS IMAGE+TEXT
+BUGWK59833 LINUX : fast/table/dynamic-caption-add-remove-before-child.xhtml = PASS IMAGE+TEXT
+BUGWK59833 LINUX : fast/table/multiple-captions-display.xhtml = PASS IMAGE+TEXT
