@@ -576,10 +576,11 @@ bool GoogleChromeDistribution::GetExperimentDetails(
     DCHECK_GT(kExperimentFlavors[i].flavors, 0);
     // Make sure each experiment has valid headings.
     for (int f = 0; f < kMax; ++f) {
-      if (f < kExperimentFlavors[i].flavors)
+      if (f < kExperimentFlavors[i].flavors) {
         DCHECK_GT(kExperimentFlavors[i].headings[f], 0);
-      else
+      } else {
         DCHECK_EQ(kExperimentFlavors[i].headings[f], 0);
+      }
     }
     // Make sure we don't overflow on the second letter of the experiment code.
     DCHECK(kExperimentFlavors[i].prefix2 +
