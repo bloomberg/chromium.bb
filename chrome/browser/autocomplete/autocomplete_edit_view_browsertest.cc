@@ -1297,7 +1297,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest,
 }
 
 // http://crbug.com/12316
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, PasteReplacingAll) {
+// Flaky, http://crbug.com/80934.
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, FLAKY_PasteReplacingAll) {
   AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
   AutocompletePopupModel* popup_model = edit_view->model()->popup_model();
