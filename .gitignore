@@ -9,6 +9,7 @@
 *~
 .libs
 /aclocal.m4
+/wayland-scanner.m4
 /autom4te.cache
 /config.guess
 /config.h
