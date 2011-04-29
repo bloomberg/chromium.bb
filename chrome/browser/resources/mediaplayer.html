@@ -151,6 +151,12 @@ body {
   background-position: 6px 8px;
 }
 
+.fullscreenexiticon {
+  background: url('shared/images/mediaplayer_full_screen_exit.png');
+  background-repeat: no-repeat;
+  background-position: 6px 8px;
+}
+
 .volumeslider {
   -webkit-appearance: slider-vertical;
   position: absolute;
@@ -596,6 +602,7 @@ function setupPlaybackControls() {
   fullscreen.className = controlsclass + ' controlbutton fullscreen';
   fullscreen.onclick = toggleFullscreen;
   var fullscreenicon = document.createElement('div');
+  fullscreenicon.id = 'fullscreenicon';
   fullscreenicon.className = 'icon fullscreenicon';
   fullscreen.appendChild(fullscreenicon);
   element.appendChild(fullscreen);
@@ -665,6 +672,15 @@ function onkeydown(event) {
 
 function toggleFullscreen() {
   fullScreen = !fullScreen;
+  var fullscreenicon = $('fullscreenicon');
+  if (fullScreen) {
+    fullscreenicon.classList.remove('fullscreenicon');
+    fullscreenicon.classList.add('fullscreenexiticon');
+  }
+  else {
+    fullscreenicon.classList.remove('fullscreenexiticon');
+    fullscreenicon.classList.add('fullscreenicon');
+  }
   chrome.send('toggleFullscreen', ['']);
 }
 
