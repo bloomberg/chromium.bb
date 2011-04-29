@@ -11,6 +11,7 @@
 #include <set>
 #include <vector>
 
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/signin_manager.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 
 using browser_sync::sessions::SyncSessionSnapshot;
 
@@ -132,7 +134,12 @@ bool ProfileSyncServiceHarness::SetupSync() {
     synced_datatypes.insert(syncable::ModelTypeFromInt(i));
   }
   bool result = SetupSync(synced_datatypes);
-  VLOG(0) << "Client " << id_ << " PSH: Set up sync completed";
+  VLOG(0) << "Client " << id_ << ": Set up sync completed with result "
+          << result;
+  if (result == false) {
+    std::string pss_status = GetServiceStatus();
+    VLOG(0) << pss_status;
+  }
   return result;
 }
 
@@ -674,4 +681,12 @@ bool ProfileSyncServiceHarness::IsTypeEncrypted(syncable::ModelType type) {
     return false;
   }
   return true;
+}
+
+std::string ProfileSyncServiceHarness::GetServiceStatus() {
+  DictionaryValue value;
+  sync_ui_util::ConstructAboutInformation(service_, &value);
+  std::string service_status;
+  base::JSONWriter::Write(&value, true, &service_status);
+  return service_status;
 }

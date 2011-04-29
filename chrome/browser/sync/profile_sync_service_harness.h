@@ -212,6 +212,9 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // for a particular datatype.
   std::string GetUpdatedTimestamp(syncable::ModelType model_type);
 
+  // Gets the status from |service_| in pretty printable form.
+  std::string GetServiceStatus();
+
   // When in WAITING_FOR_ENCRYPTION state, we check to see if this type is now
   // encrypted to determine if we're done.
   syncable::ModelType waiting_for_encryption_type_;
