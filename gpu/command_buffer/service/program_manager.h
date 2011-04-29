@@ -76,12 +76,6 @@ class ProgramManager {
       return sampler_indices_;
     }
 
-    // Updates the program info after a successful link.
-    void Update();
-
-    // Updates the program log info.
-    void UpdateLogInfo();
-
     const AttribInfoVector& GetAttribInfos() const {
       return attrib_infos_;
     }
@@ -130,21 +124,19 @@ class ProgramManager {
       return valid_;
     }
 
-    void ClearLinkStatus() {
-      link_status_ = false;
-    }
-
     bool AttachShader(ShaderManager* manager, ShaderManager::ShaderInfo* info);
     bool DetachShader(ShaderManager* manager, ShaderManager::ShaderInfo* info);
 
     bool CanLink() const;
 
+    // Performs glLinkProgram and related activities.
+    void Link();
+
+    // Performs glValidateProgram and related activities.
+    void Validate();
+
     const std::string* log_info() const {
       return log_info_.get();
-    }
-
-    void set_log_info(const char* str) {
-      log_info_.reset(str ? new std::string(str) : NULL);
     }
 
     bool InUse() const {
@@ -172,6 +164,14 @@ class ProgramManager {
 
     ~ProgramInfo();
 
+    void set_log_info(const char* str) {
+      log_info_.reset(str ? new std::string(str) : NULL);
+    }
+
+    void ClearLinkStatus() {
+      link_status_ = false;
+    }
+
     void IncUseCount() {
       ++use_count_;
     }
@@ -188,6 +188,12 @@ class ProgramManager {
 
     // Resets the program.
     void Reset();
+
+    // Updates the program info after a successful link.
+    void Update();
+
+    // Updates the program log info from GL
+    void UpdateLogInfo();
 
     const UniformInfo* AddUniformInfo(
         GLsizei size, GLenum type, GLint location, const std::string& name);
@@ -242,7 +248,7 @@ class ProgramManager {
   void Destroy(bool have_context);
 
   // Creates a new program info.
-  void CreateProgramInfo(GLuint client_id, GLuint service_id);
+  ProgramInfo* CreateProgramInfo(GLuint client_id, GLuint service_id);
 
   // Gets a program info
   ProgramInfo* GetProgramInfo(GLuint client_id);

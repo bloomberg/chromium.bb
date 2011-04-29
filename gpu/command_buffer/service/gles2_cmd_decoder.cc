@@ -858,8 +858,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     const void * data);
 
   // Creates a ProgramInfo for the given program.
-  void CreateProgramInfo(GLuint client_id, GLuint service_id) {
-    program_manager()->CreateProgramInfo(client_id, service_id);
+  ProgramManager::ProgramInfo* CreateProgramInfo(
+      GLuint client_id, GLuint service_id) {
+    return program_manager()->CreateProgramInfo(client_id, service_id);
   }
 
   // Gets the program info for the given program. Returns NULL if none exists.
@@ -887,10 +888,12 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
 
   // Creates a ShaderInfo for the given shader.
-  void CreateShaderInfo(GLuint client_id,
-                        GLuint service_id,
-                        GLenum shader_type) {
-    shader_manager()->CreateShaderInfo(client_id, service_id, shader_type);
+  ShaderManager::ShaderInfo* CreateShaderInfo(
+      GLuint client_id,
+      GLuint service_id,
+      GLenum shader_type) {
+    return shader_manager()->CreateShaderInfo(
+        client_id, service_id, shader_type);
   }
 
   // Gets the shader info for the given shader. Returns NULL if none exists.
@@ -3709,17 +3712,7 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
     return;
   }
 
-  info->ClearLinkStatus();
-  if (!info->CanLink()) {
-    return;
-  }
-
-  glLinkProgram(info->service_id());
-  GLint success = 0;
-  glGetProgramiv(info->service_id(), GL_LINK_STATUS, &success);
-  if (success) {
-    info->Update();
-  }
+  info->Link();
 };
 
 void GLES2DecoderImpl::DoTexParameterf(
@@ -4625,12 +4618,7 @@ void GLES2DecoderImpl::DoValidateProgram(GLuint program_client_id) {
   if (!info) {
     return;
   }
-  if (!info->CanLink()) {
-    info->set_log_info("Missing Shader");
-    return;
-  }
-  glValidateProgram(info->service_id());
-  info->UpdateLogInfo();
+  info->Validate();
 }
 
 void GLES2DecoderImpl::DoGetVertexAttribfv(

@@ -308,6 +308,8 @@
         'command_buffer/service/gles2_cmd_decoder_unittest_1_autogen.h',
         'command_buffer/service/gles2_cmd_decoder_unittest_2.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_2_autogen.h',
+        'command_buffer/service/gles2_cmd_decoder_unittest_3.cc',
+        'command_buffer/service/gles2_cmd_decoder_unittest_3_autogen.h',
         'command_buffer/service/id_manager_unittest.cc',
         'command_buffer/service/mocks.cc',
         'command_buffer/service/mocks.h',

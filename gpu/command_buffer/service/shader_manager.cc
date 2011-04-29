@@ -78,13 +78,15 @@ void ShaderManager::Destroy(bool have_context) {
   }
 }
 
-void ShaderManager::CreateShaderInfo(GLuint client_id,
-                                     GLuint service_id,
-                                     GLenum shader_type) {
+ShaderManager::ShaderInfo* ShaderManager::CreateShaderInfo(
+    GLuint client_id,
+    GLuint service_id,
+    GLenum shader_type) {
   std::pair<ShaderInfoMap::iterator, bool> result =
       shader_infos_.insert(std::make_pair(
           client_id, ShaderInfo::Ref(new ShaderInfo(service_id, shader_type))));
   DCHECK(result.second);
+  return result.first->second;
 }
 
 ShaderManager::ShaderInfo* ShaderManager::GetShaderInfo(GLuint client_id) {

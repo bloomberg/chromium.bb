@@ -27,9 +27,10 @@ static int ShaderTypeToIndex(GLenum shader_type) {
   }
 }
 
-ProgramManager::ProgramInfo::UniformInfo::UniformInfo(GLsizei _size,
-                                                      GLenum _type,
-                                                      const std::string& _name)
+ProgramManager::ProgramInfo::UniformInfo::UniformInfo(
+    GLsizei _size,
+    GLenum _type,
+    const std::string& _name)
     : size(_size),
       type(_type),
       is_array(false),
@@ -63,7 +64,6 @@ void ProgramManager::ProgramInfo::Reset() {
   sampler_indices_.clear();
   attrib_location_to_index_map_.clear();
   location_infos_.clear();
-  UpdateLogInfo();
 }
 
 void ProgramManager::ProgramInfo::UpdateLogInfo() {
@@ -83,6 +83,7 @@ void ProgramManager::ProgramInfo::UpdateLogInfo() {
 
 void ProgramManager::ProgramInfo::Update() {
   Reset();
+  UpdateLogInfo();
   link_status_ = true;
   GLint num_attribs = 0;
   GLint max_len = 0;
@@ -169,6 +170,32 @@ void ProgramManager::ProgramInfo::Update() {
     }
   }
   valid_ = true;
+}
+
+void ProgramManager::ProgramInfo::Link() {
+  ClearLinkStatus();
+  if (!CanLink()) {
+    set_log_info("missing shaders");
+    return;
+  }
+
+  glLinkProgram(service_id());
+  GLint success = 0;
+  glGetProgramiv(service_id(), GL_LINK_STATUS, &success);
+  if (success) {
+    Update();
+  } else {
+    UpdateLogInfo();
+  }
+}
+
+void ProgramManager::ProgramInfo::Validate() {
+  if (!IsValid()) {
+    set_log_info("program not linked");
+    return;
+  }
+  glValidateProgram(service_id());
+  UpdateLogInfo();
 }
 
 GLint ProgramManager::ProgramInfo::GetUniformLocation(
@@ -354,7 +381,7 @@ void ProgramManager::ProgramInfo::GetProgramiv(GLenum pname, GLint* params) {
       *params = log_info_.get() ? (log_info_->size() + 1) : 0;
       break;
     case GL_VALIDATE_STATUS:
-      if (!CanLink()) {
+      if (!IsValid()) {
         *params = GL_FALSE;
       } else {
         glGetProgramiv(service_id_, pname, params);
@@ -432,12 +459,14 @@ void ProgramManager::Destroy(bool have_context) {
   }
 }
 
-void ProgramManager::CreateProgramInfo(GLuint client_id, GLuint service_id) {
+ProgramManager::ProgramInfo* ProgramManager::CreateProgramInfo(
+    GLuint client_id, GLuint service_id) {
   std::pair<ProgramInfoMap::iterator, bool> result =
       program_infos_.insert(
           std::make_pair(client_id,
                          ProgramInfo::Ref(new ProgramInfo(service_id))));
   DCHECK(result.second);
+  return result.first->second;
 }
 
 ProgramManager::ProgramInfo* ProgramManager::GetProgramInfo(GLuint client_id) {

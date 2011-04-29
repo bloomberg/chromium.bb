@@ -113,9 +113,10 @@ class ShaderManager {
   void Destroy(bool have_context);
 
   // Creates a shader info for the given shader ID.
-  void CreateShaderInfo(GLuint client_id,
-                        GLuint service_id,
-                        GLenum shader_type);
+  ShaderInfo* CreateShaderInfo(
+      GLuint client_id,
+      GLuint service_id,
+      GLenum shader_type);
 
   // Gets an existing shader info for the given shader ID. Returns NULL if none
   // exists.

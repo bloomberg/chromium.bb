@@ -46,10 +46,12 @@ TEST_F(ShaderManagerTest, Basic) {
   const GLenum kShader1Type = GL_VERTEX_SHADER;
   const GLuint kClient2Id = 2;
   // Check we can create shader.
-  manager_.CreateShaderInfo(kClient1Id, kService1Id, kShader1Type);
+  ShaderManager::ShaderInfo* info0 = manager_.CreateShaderInfo(
+      kClient1Id, kService1Id, kShader1Type);
   // Check shader got created.
+  ASSERT_TRUE(info0 != NULL);
   ShaderManager::ShaderInfo* info1 = manager_.GetShaderInfo(kClient1Id);
-  ASSERT_TRUE(info1 != NULL);
+  ASSERT_EQ(info0, info1);
   // Check we get nothing for a non-existent shader.
   EXPECT_TRUE(manager_.GetShaderInfo(kClient2Id) == NULL);
   // Check we can't get the shader after we remove it.
@@ -62,9 +64,9 @@ TEST_F(ShaderManagerTest, Destroy) {
   const GLuint kService1Id = 11;
   const GLenum kShader1Type = GL_VERTEX_SHADER;
   // Check we can create shader.
-  manager_.CreateShaderInfo(kClient1Id, kService1Id, kShader1Type);
+  ShaderManager::ShaderInfo* info1 = manager_.CreateShaderInfo(
+      kClient1Id, kService1Id, kShader1Type);
   // Check shader got created.
-  ShaderManager::ShaderInfo* info1 = manager_.GetShaderInfo(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_CALL(*gl_, DeleteShader(kService1Id))
       .Times(1)
@@ -82,12 +84,12 @@ TEST_F(ShaderManagerTest, DeleteBug) {
   const GLuint kService2Id = 12;
   const GLenum kShaderType = GL_VERTEX_SHADER;
   // Check we can create shader.
-  manager_.CreateShaderInfo(kClient1Id, kService1Id, kShaderType);
-  manager_.CreateShaderInfo(kClient2Id, kService2Id, kShaderType);
-  ShaderManager::ShaderInfo::Ref info1(manager_.GetShaderInfo(kClient1Id));
-  ShaderManager::ShaderInfo::Ref info2(manager_.GetShaderInfo(kClient2Id));
-  ASSERT_TRUE(info1.get() != NULL);
-  ASSERT_TRUE(info2.get() != NULL);
+  ShaderManager::ShaderInfo::Ref info1(
+      manager_.CreateShaderInfo(kClient1Id, kService1Id, kShaderType));
+  ShaderManager::ShaderInfo::Ref info2(
+      manager_.CreateShaderInfo(kClient2Id, kService2Id, kShaderType));
+  ASSERT_TRUE(info1);
+  ASSERT_TRUE(info2);
   manager_.UseShader(info1);
   manager_.MarkAsDeleted(info1);
   manager_.MarkAsDeleted(info2);
@@ -101,9 +103,9 @@ TEST_F(ShaderManagerTest, ShaderInfo) {
   const GLenum kShader1Type = GL_VERTEX_SHADER;
   const char* kClient1Source = "hello world";
   // Check we can create shader.
-  manager_.CreateShaderInfo(kClient1Id, kService1Id, kShader1Type);
+  ShaderManager::ShaderInfo* info1 = manager_.CreateShaderInfo(
+      kClient1Id, kService1Id, kShader1Type);
   // Check shader got created.
-  ShaderManager::ShaderInfo* info1 = manager_.GetShaderInfo(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_EQ(kService1Id, info1->service_id());
   // Check if the shader has correct type.
@@ -153,9 +155,10 @@ TEST_F(ShaderManagerTest, GetInfo) {
   EXPECT_CALL(shader_translator, uniform_map())
       .WillRepeatedly(ReturnRef(uniform_map));
   // Check we can create shader.
-  manager_.CreateShaderInfo(kClient1Id, kService1Id, kShader1Type);
+  ShaderManager::ShaderInfo* info1 = manager_.CreateShaderInfo(
+      kClient1Id, kService1Id, kShader1Type);
   // Check shader got created.
-  ShaderManager::ShaderInfo* info1 = manager_.GetShaderInfo(kClient1Id);
+  ASSERT_TRUE(info1 != NULL);
   // Set Status
   info1->SetStatus(true, "", &shader_translator);
   // Check attrib and uniform infos got copied.
@@ -197,9 +200,9 @@ TEST_F(ShaderManagerTest, ShaderInfoUseCount) {
   const GLuint kService1Id = 11;
   const GLenum kShader1Type = GL_VERTEX_SHADER;
   // Check we can create shader.
-  manager_.CreateShaderInfo(kClient1Id, kService1Id, kShader1Type);
+  ShaderManager::ShaderInfo* info1 = manager_.CreateShaderInfo(
+      kClient1Id, kService1Id, kShader1Type);
   // Check shader got created.
-  ShaderManager::ShaderInfo* info1 = manager_.GetShaderInfo(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_FALSE(info1->InUse());
   EXPECT_FALSE(info1->IsDeleted());
@@ -217,8 +220,7 @@ TEST_F(ShaderManagerTest, ShaderInfoUseCount) {
   info2 = manager_.GetShaderInfo(kClient1Id);
   EXPECT_TRUE(info2 == NULL);
 
-  manager_.CreateShaderInfo(kClient1Id, kService1Id, kShader1Type);
-  info1 = manager_.GetShaderInfo(kClient1Id);
+  info1 = manager_.CreateShaderInfo(kClient1Id, kService1Id, kShader1Type);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_FALSE(info1->InUse());
   manager_.UseShader(info1);

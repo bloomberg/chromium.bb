@@ -149,8 +149,67 @@ void GLES2DecoderTestBase::SpecializedSetup<GetRenderbufferParameteriv, 0>(
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<GetProgramInfoLog, 0>(
     bool /* valid */) {
+  const GLuint kClientVertexShaderId = 5001;
+  const GLuint kServiceVertexShaderId = 6001;
+  const GLuint kClientFragmentShaderId = 5002;
+  const GLuint kServiceFragmentShaderId = 6002;
+  const char* log = "hello";  // Matches auto-generated unit test.
+  DoCreateShader(
+      GL_VERTEX_SHADER, kClientVertexShaderId, kServiceVertexShaderId);
+  DoCreateShader(
+      GL_FRAGMENT_SHADER, kClientFragmentShaderId, kServiceFragmentShaderId);
+
+  GetShaderInfo(kClientVertexShaderId)->SetStatus(true, "", NULL);
+  GetShaderInfo(kClientFragmentShaderId)->SetStatus(true, "", NULL);
+
+  InSequence dummy;
+  EXPECT_CALL(*gl_,
+              AttachShader(kServiceProgramId, kServiceVertexShaderId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_,
+              AttachShader(kServiceProgramId, kServiceFragmentShaderId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, LinkProgram(kServiceProgramId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_LINK_STATUS, _))
+      .WillOnce(SetArgumentPointee<2>(1));
+  EXPECT_CALL(*gl_,
+      GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
+      .WillOnce(SetArgumentPointee<2>(strlen(log) + 1))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_,
+      GetProgramInfoLog(kServiceProgramId, strlen(log) + 1, _, _))
+      .WillOnce(DoAll(
+          SetArgumentPointee<2>(strlen(log)),
+          SetArrayArgument<3>(log, log + strlen(log) + 1)))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_ACTIVE_ATTRIBUTES, _))
+      .WillOnce(SetArgumentPointee<2>(0));
+  EXPECT_CALL(
+      *gl_,
+      GetProgramiv(kServiceProgramId, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, _))
+      .WillOnce(SetArgumentPointee<2>(0));
+  EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_ACTIVE_UNIFORMS, _))
+      .WillOnce(SetArgumentPointee<2>(0));
+  EXPECT_CALL(
+      *gl_,
+      GetProgramiv(kServiceProgramId, GL_ACTIVE_UNIFORM_MAX_LENGTH, _))
+      .WillOnce(SetArgumentPointee<2>(0));
+
   ProgramManager::ProgramInfo* info = GetProgramInfo(client_program_id_);
-  info->set_log_info("hello");
+  ASSERT_TRUE(info != NULL);
+
+  AttachShader attach_cmd;
+  attach_cmd.Init(client_program_id_, kClientVertexShaderId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(attach_cmd));
+
+  attach_cmd.Init(client_program_id_, kClientFragmentShaderId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(attach_cmd));
+
+  info->Link();
 };
 
 template <>
