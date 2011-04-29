@@ -26,3 +26,5 @@ BUGWK59833 : tables/mozilla_expected_failures/other/test4.html = PASS IMAGE TEXT
 BUGWK59833 LINUX : fast/table/dynamic-caption-add-before-child.xhtml = PASS IMAGE+TEXT
 BUGWK59833 LINUX : fast/table/dynamic-caption-add-remove-before-child.xhtml = PASS IMAGE+TEXT
 BUGWK59833 LINUX : fast/table/multiple-captions-display.xhtml = PASS IMAGE+TEXT
+
+BUGWK59839 : animations/3d/replace-filling-transform.html = PASS IMAGE
