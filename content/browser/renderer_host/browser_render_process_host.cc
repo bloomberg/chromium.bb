@@ -935,6 +935,13 @@ void BrowserRenderProcessHost::SetBackgrounded(bool backgrounded) {
 }
 
 void BrowserRenderProcessHost::OnProcessLaunched() {
+  // No point doing anything, since this object will be destructed soon.  We
+  // especially don't want to send the RENDERER_PROCESS_CREATED notification,
+  // since some clients might expect a RENDERER_PROCESS_TERMINATED afterwards to
+  // properly cleanup.
+  if (deleting_soon_)
+    return;
+
   if (child_process_launcher_.get())
     child_process_launcher_->SetProcessBackgrounded(backgrounded_);
 
