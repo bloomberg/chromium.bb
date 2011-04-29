@@ -22,6 +22,10 @@ class Browser;
 class CommandLine;
 class Profile;
 
+namespace content {
+class ContentRendererClient;
+}
+
 namespace net {
 class RuleBasedHostResolverProc;
 }
@@ -188,6 +192,9 @@ class InProcessBrowserTest : public testing::Test {
 
   // Testing server, started on demand.
   scoped_ptr<net::TestServer> test_server_;
+
+  // ContentRendererClient when running in single-process mode.
+  scoped_ptr<content::ContentRendererClient> single_process_renderer_client_;
 
   // Whether this test requires the browser windows to be shown (interactive
   // tests for example need the windows shown).
