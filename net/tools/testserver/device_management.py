@@ -512,7 +512,7 @@ class RequestHandler(object):
       the client. Otherwise the first element is the same structure that is
       returned by LookupToken().
     """
-    error = None
+    error = 500
     dmtoken = None
     request_device_id = self.GetUniqueParam('deviceid')
     match = re.match('GoogleDMToken token=(\\w+)',
@@ -520,22 +520,19 @@ class RequestHandler(object):
     if match:
       dmtoken = match.group(1)
     if not dmtoken:
-      error = dm.DeviceManagementResponse.DEVICE_MANAGEMENT_TOKEN_INVALID
+      error = 401
     else:
       token_info = self._server.LookupToken(dmtoken)
       if (not token_info or
           not request_device_id or
           token_info['device_id'] != request_device_id):
-        error = dm.DeviceManagementResponse.DEVICE_NOT_FOUND
+        error = 901
       else:
         return (token_info, None)
 
-    response = dm.DeviceManagementResponse()
-    response.error = error
+    logging.debug('Token check failed with error %d' % error)
 
-    self.DumpMessage('Response', response)
-
-    return (None, (200, response.SerializeToString()))
+    return (None, (error, 'Server error %d' % error))
 
   def DumpMessage(self, label, msg):
     """Helper for logging an ASCII dump of a protobuf message."""
