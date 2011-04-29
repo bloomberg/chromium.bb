@@ -110,34 +110,20 @@
                       <tr>
                         <td colspan="2">
                           <div id="captcha-div">
-                            <table cellpadding="1" cellspacing="0" border="0">
-                              <tbody>
-                                <tr>
-                                  <td colspan="2" align="center"
-                                      class="bottom-padded-cell">
-                                    <font size="-1">
-                                      <span i18n-content="captchainstructions">
-                                      </span>
-                                    </font>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td colspan="2" align="center"
-                                      class="bottom-padded-cell">
-                                    <span id="captcha-wrapper">
-                                      <div id="captcha-image"></div>
-                                    </span>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td colspan="2" align="center">
-                                    <input id="captcha-value" type="text"
-                                        name="captchaValue" size="18" value=""
-                                        class="gaia-le-val">
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
+                            <div id="captcha-instructions"
+                                i18n-content="captchainstructions"
+                                class="bottom-padded-cell">
+                            </div>
+                            <div class="bottom-padded-cell">
+                              <div id="captcha-wrapper">
+                                <div id="captcha-image"></div>
+                              </div>
+                            </div>
+                            <div>
+                              <input id="captcha-value" type="text"
+                                  name="captchaValue" size="18" value=""
+                                  class="gaia-le-val">
+                            </div>
                           </div>
                         </td>
                       </tr>

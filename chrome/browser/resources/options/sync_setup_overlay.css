@@ -171,7 +171,6 @@ font.errormsgspacer {
   background-color: #e8eefa;
   background-position: center;
   background-size: 200px 70px;
-  display: block;
 }
 
 #captcha-image {
@@ -258,6 +257,11 @@ font.errormsgspacer {
 
 #captcha-div {
   display: none;
+}
+
+#captcha-instructions {
+  margin-bottom: 5px;
+  white-space: normal;
 }
 
 #password-row {
