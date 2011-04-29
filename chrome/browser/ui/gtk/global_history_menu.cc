@@ -7,9 +7,10 @@
 #include <gtk/gtk.h>
 
 #include "base/stl_util-inl.h"
-#include "base/utf_string_conversions.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -28,6 +29,9 @@
 #include "ui/gfx/gtk_util.h"
 
 namespace {
+
+// The maximum number of most visited items to display.
+const unsigned int kMostVisitedCount = 12;
 
 // The number of recently closed items to get.
 const unsigned int kRecentlyClosedCount = 10;
@@ -95,6 +99,7 @@ class GlobalHistoryMenu::HistoryItem {
 GlobalHistoryMenu::GlobalHistoryMenu(Browser* browser)
     : browser_(browser),
       profile_(browser_->profile()),
+      top_sites_(NULL),
       default_favicon_(NULL),
       tab_restore_service_(NULL) {
 }
@@ -114,6 +119,16 @@ void GlobalHistoryMenu::Init(GtkWidget* history_menu) {
   default_favicon_ = GtkThemeService::GetDefaultFavicon(true);
 
   if (profile_) {
+    top_sites_ = profile_->GetTopSites();
+    if (top_sites_) {
+      GetTopSitesData();
+
+      // Register for notification when TopSites changes so that we can update
+      // ourself.
+      registrar_.Add(this, NotificationType::TOP_SITES_CHANGED,
+                     Source<history::TopSites>(top_sites_));
+    }
+
     tab_restore_service_ = TabRestoreServiceFactory::GetForProfile(profile_);
     if (tab_restore_service_) {
       tab_restore_service_->LoadTabsFromLastSession();
@@ -127,6 +142,42 @@ void GlobalHistoryMenu::Init(GtkWidget* history_menu) {
 
     registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                    Source<Profile>(profile_));
+  }
+}
+
+void GlobalHistoryMenu::GetTopSitesData() {
+  DCHECK(top_sites_);
+
+  top_sites_->GetMostVisitedURLs(
+      &top_sites_consumer_,
+      NewCallback(this, &GlobalHistoryMenu::OnTopSitesReceived));
+}
+
+void GlobalHistoryMenu::OnTopSitesReceived(
+    const history::MostVisitedURLList& visited_list) {
+  ClearMenuSection(history_menu_, GlobalMenuBar::TAG_MOST_VISITED);
+
+  int index = GetIndexOfMenuItemWithTag(
+      history_menu_,
+      GlobalMenuBar::TAG_MOST_VISITED_HEADER) + 1;
+
+  for (size_t i = 0; i < visited_list.size() && i < kMostVisitedCount; ++i) {
+    const history::MostVisitedURL& visited = visited_list[i];
+    if (visited.url.spec().empty())
+      break;  // This is the signal that there are no more real visited sites.
+
+    HistoryItem* item = new HistoryItem();
+    item->title = visited.title;
+    item->url = visited.url;
+
+    // The TopSites system doesn't give us icons; it gives us chrome:// urls to
+    // icons so fetch the icons normally.
+    GetFaviconForHistoryItem(item);
+
+    AddHistoryItemToMenu(item,
+                         history_menu_,
+                         GlobalMenuBar::TAG_MOST_VISITED,
+                         index++);
   }
 }
 
@@ -318,12 +369,16 @@ void GlobalHistoryMenu::ClearMenuCallback(GtkWidget* menu_item,
 void GlobalHistoryMenu::Observe(NotificationType type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
-  DCHECK(type.value == NotificationType::BROWSER_THEME_CHANGED);
-
-  // Keeping track of which menu items have the default icon is going an
-  // error-prone pain, so instead just store the new default favicon and
-  // we'll update on the next menu change event.
-  default_favicon_ = GtkThemeService::GetDefaultFavicon(true);
+  if (type.value == NotificationType::BROWSER_THEME_CHANGED) {
+    // Keeping track of which menu items have the default icon is going an
+    // error-prone pain, so instead just store the new default favicon and
+    // we'll update on the next menu change event.
+    default_favicon_ = GtkThemeService::GetDefaultFavicon(true);
+  } else if (type.value == NotificationType::TOP_SITES_CHANGED) {
+    GetTopSitesData();
+  } else {
+    NOTREACHED();
+  }
 }
 
 void GlobalHistoryMenu::TabRestoreServiceChanged(TabRestoreService* service) {

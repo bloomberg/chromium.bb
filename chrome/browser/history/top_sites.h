@@ -292,6 +292,8 @@ class TopSites
 
   void ResetThreadSafeImageCache();
 
+  void NotifyTopSitesChanged();
+
   // Stops and starts timer with a delay of |delta|.
   void RestartQueryForTopSitesTimer(base::TimeDelta delta);
 

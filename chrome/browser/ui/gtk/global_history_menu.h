@@ -7,15 +7,21 @@
 
 #include <map>
 
-#include "content/browser/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
+#include "content/browser/cancelable_request.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class Browser;
+
+namespace history {
+class TopSites;
+}
+
 typedef struct _GdkPixbuf GdkPixbuf;
 
 // Controls the History menu.
@@ -35,6 +41,12 @@ class GlobalHistoryMenu : public NotificationObserver,
   struct GetIndexClosure;
 
   typedef std::map<GtkWidget*, HistoryItem*> MenuItemToHistoryMap;
+
+  // Sends a message off to History for data.
+  void GetTopSitesData();
+
+  // Callback to receive data requested from GetTopSitesData().
+  void OnTopSitesReceived(const history::MostVisitedURLList& visited_list);
 
   // Returns the currently existing HistoryItem associated with
   // |menu_item|. Can return NULL.
@@ -90,6 +102,9 @@ class GlobalHistoryMenu : public NotificationObserver,
 
   Browser* browser_;
   Profile* profile_;
+
+  history::TopSites* top_sites_;
+  CancelableRequestConsumer top_sites_consumer_;
 
   NotificationRegistrar registrar_;
 

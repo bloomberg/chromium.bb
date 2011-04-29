@@ -370,6 +370,7 @@ void TopSites::AddBlacklistedURL(const GURL& url) {
   }
 
   ResetThreadSafeCache();
+  NotifyTopSitesChanged();
 }
 
 void TopSites::RemoveBlacklistedURL(const GURL& url) {
@@ -381,6 +382,7 @@ void TopSites::RemoveBlacklistedURL(const GURL& url) {
     blacklist->RemoveWithoutPathExpansion(GetURLHash(url), NULL);
   }
   ResetThreadSafeCache();
+  NotifyTopSitesChanged();
 }
 
 bool TopSites::IsBlacklisted(const GURL& url) {
@@ -397,6 +399,7 @@ void TopSites::ClearBlacklistedURLs() {
     blacklist->Clear();
   }
   ResetThreadSafeCache();
+  NotifyTopSitesChanged();
 }
 
 void TopSites::AddPinnedURL(const GURL& url, size_t pinned_index) {
@@ -419,6 +422,7 @@ void TopSites::AddPinnedURL(const GURL& url, size_t pinned_index) {
   }
 
   ResetThreadSafeCache();
+  NotifyTopSitesChanged();
 }
 
 bool TopSites::IsURLPinned(const GURL& url) {
@@ -437,6 +441,7 @@ void TopSites::RemovePinnedURL(const GURL& url) {
   }
 
   ResetThreadSafeCache();
+  NotifyTopSitesChanged();
 }
 
 bool TopSites::GetPinnedURLAtIndex(size_t index, GURL* url) {
@@ -832,11 +837,9 @@ void TopSites::SetTopSites(const MostVisitedURLList& new_top_sites) {
   MostVisitedURLList top_sites(new_top_sites);
   AddPrepopulatedPages(&top_sites);
 
-  bool changed = false;
   TopSitesDelta delta;
   DiffMostVisited(cache_->top_sites(), top_sites, &delta);
   if (!delta.deleted.empty() || !delta.added.empty() || !delta.moved.empty()) {
-    changed = true;
     backend_->UpdateTopSites(delta);
   }
 
@@ -860,7 +863,6 @@ void TopSites::SetTopSites(const MostVisitedURLList& new_top_sites) {
           SetPageThumbnailEncoded(mv.url,
                                   it->second.thumbnail,
                                   it->second.thumbnail_score);
-          changed = true;
           temp_images_.erase(it);
           break;
         }
@@ -873,13 +875,7 @@ void TopSites::SetTopSites(const MostVisitedURLList& new_top_sites) {
 
   ResetThreadSafeCache();
   ResetThreadSafeImageCache();
-
-  if (changed) {
-    NotificationService::current()->Notify(
-        NotificationType::TOP_SITES_CHANGED,
-        Source<TopSites>(this),
-        NotificationService::NoDetails());
-  }
+  NotifyTopSitesChanged();
 
   // Restart the timer that queries history for top sites. This is done to
   // ensure we stay in sync with history.
@@ -930,6 +926,13 @@ void TopSites::ResetThreadSafeImageCache() {
   base::AutoLock lock(lock_);
   thread_safe_cache_->SetThumbnails(cache_->images());
   thread_safe_cache_->RemoveUnreferencedThumbnails();
+}
+
+void TopSites::NotifyTopSitesChanged() {
+  NotificationService::current()->Notify(
+      NotificationType::TOP_SITES_CHANGED,
+      Source<TopSites>(this),
+      NotificationService::NoDetails());
 }
 
 void TopSites::RestartQueryForTopSitesTimer(base::TimeDelta delta) {
