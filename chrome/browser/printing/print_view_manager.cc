@@ -102,15 +102,7 @@ void PrintViewManager::OnDidGetPrintedPagesCount(int cookie, int number_pages) {
   DCHECK_GT(cookie, 0);
   DCHECK_GT(number_pages, 0);
   number_pages_ = number_pages;
-  if (!OpportunisticallyCreatePrintJob(cookie))
-    return;
-
-  PrintedDocument* document = print_job_->document();
-  if (!document || cookie != document->cookie()) {
-    // Out of sync. It may happens since we are completely asynchronous. Old
-    // spurious message can happen if one of the processes is overloaded.
-    return;
-  }
+  OpportunisticallyCreatePrintJob(cookie);
 }
 
 void PrintViewManager::OnDidPrintPage(
