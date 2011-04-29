@@ -393,10 +393,6 @@ GtkWidget* GtkThemeService::CreateToolbarSeparator() {
   return alignment;
 }
 
-bool GtkThemeService::UseGtkTheme() const {
-  return UsingNativeTheme();
-}
-
 GdkColor GtkThemeService::GetGdkColor(int id) const {
   return gfx::SkColorToGdkColor(GetColor(id));
 }
@@ -1104,7 +1100,7 @@ void GtkThemeService::OnDestroyChromeButton(GtkWidget* button) {
 
 gboolean GtkThemeService::OnSeparatorExpose(GtkWidget* widget,
                                             GdkEventExpose* event) {
-  if (UseGtkTheme())
+  if (UsingNativeTheme())
     return FALSE;
 
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));

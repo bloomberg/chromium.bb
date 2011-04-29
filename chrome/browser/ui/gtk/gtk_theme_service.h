@@ -72,12 +72,6 @@ class GtkThemeService : public ThemeService {
   // Creates a theme-aware vertical separator widget.
   GtkWidget* CreateToolbarSeparator();
 
-  // Whether we should use the GTK system theme.
-  //
-  // TODO(akalin): Make all callers use UsingNativeTheme() instead and
-  // remove this.
-  bool UseGtkTheme() const;
-
   // A wrapper around ui::ThemeProvider::GetColor, transforming the result to a
   // GdkColor.
   GdkColor GetGdkColor(int id) const;
