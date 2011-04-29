@@ -1,0 +1,9 @@
+{
+  "name": "Chrome Query",
+  "version": "1.0",
+  "description": "Extends the Developer Tools, adding a sidebar that displays the jQuery data associated with the selected DOM element.",
+  "devtools_page": "devtools.html",
+  "permissions":  [
+    "experimental"
+  ]
+}

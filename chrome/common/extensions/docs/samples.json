@@ -43,6 +43,11 @@
     "chrome.experimental.debugger.onDetach": "experimental.debugger.html#event-onDetach",
     "chrome.experimental.debugger.onEvent": "experimental.debugger.html#event-onEvent",
     "chrome.experimental.debugger.sendRequest": "experimental.debugger.html#method-sendRequest",
+    "chrome.experimental.devtools.audits.addCategory": "experimental.devtools.audits.html#method-addCategory",
+    "chrome.experimental.devtools.panels.create": "experimental.devtools.panels.html#method-create",
+    "chrome.experimental.devtools.resources.getHAR": "experimental.devtools.resources.html#method-getHAR",
+    "chrome.experimental.devtools.resources.onFinished": "experimental.devtools.resources.html#event-onFinished",
+    "chrome.experimental.devtools.resources.onNavigation": "experimental.devtools.resources.html#event-onNavigation",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
     "chrome.experimental.processes.getProcessIdForTab": "experimental.processes.html#method-getProcessIdForTab",
     "chrome.experimental.processes.onUpdated": "experimental.processes.html#event-onUpdated",
@@ -340,6 +345,59 @@
       ],
       "source_hash": "477acf6d15e3fa252e6307e156707538b61c86db",
       "zip_path": "examples\/api\/override\/blank_ntp.zip"
+    },
+    {
+      "api_calls": [
+        "chrome.experimental.devtools.audits.addCategory",
+        "chrome.extension.onRequest",
+        "chrome.extension.sendRequest",
+        "chrome.tabs.executeScript",
+        "chrome.tabs.sendRequest"
+      ],
+      "description": "Extends the Developer Tools, adding an audit category that finds broken links on the inspected page.",
+      "features": [
+        "background_page",
+        "devtools_page",
+        "experimental",
+        "tabs"
+      ],
+      "icon": null,
+      "id": "9004d1a1b975859d07bdff94ea0a4baa106c4fd1",
+      "name": "Broken Links",
+      "path": "examples\/api\/devtools\/audits\/broken-links\/",
+      "protocols": [
+        "http:\/\/",
+        "https:\/\/"
+      ],
+      "search_string": "BROKEN LINKS EXTENDS THE DEVELOPER TOOLS, ADDING AN AUDIT CATEGORY THAT FINDS BROKEN LINKS ON THE INSPECTED PAGE. BACKGROUND_PAGE DEVTOOLS_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DEVTOOLS.AUDITS.ADDCATEGORY CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT CHROME.TABS.SENDREQUEST",
+      "source_files": [
+        "background.html",
+        "content.js",
+        "devtools.html",
+        "manifest.json"
+      ],
+      "source_hash": "0070a33f3dd2268fefd3c799d499a95a6e17c689",
+      "zip_path": "examples\/api\/devtools\/audits\/broken-links.zip"
+    },
+    {
+      "api_calls": [],
+      "description": "Extends the Developer Tools, adding a sidebar that displays the jQuery data associated with the selected DOM element.",
+      "features": [
+        "devtools_page",
+        "experimental"
+      ],
+      "icon": null,
+      "id": "924f75a201bb0ec8d6c0b1c9c88c679ea211c93d",
+      "name": "Chrome Query",
+      "path": "examples\/api\/devtools\/panels\/chrome-query\/",
+      "protocols": [],
+      "search_string": "CHROME QUERY EXTENDS THE DEVELOPER TOOLS, ADDING A SIDEBAR THAT DISPLAYS THE JQUERY DATA ASSOCIATED WITH THE SELECTED DOM ELEMENT. DEVTOOLS_PAGE EXPERIMENTAL",
+      "source_files": [
+        "devtools.html",
+        "manifest.json"
+      ],
+      "source_hash": "c3e461cd3e269c1ac13e390b418e2d431eccaaa2",
+      "zip_path": "examples\/api\/devtools\/panels\/chrome-query.zip"
     },
     {
       "api_calls": [

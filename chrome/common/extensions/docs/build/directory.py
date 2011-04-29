@@ -62,13 +62,15 @@ class ApiManifest(object):
   _MODULE_DOC_KEYS = ['functions', 'events']
   """ Keys which may be passed to the _parseModuleDocLinksByKey method."""
 
-  def __init__(self, manifest_path):
+  def __init__(self, manifest_paths):
     """ Read the supplied manifest file and parse its contents.
 
     Args:
-      manifest_path: Path to extension_api.json
+      manifest_paths: Array of paths to API schemas (extension_api.json etc).
     """
-    self._manifest = parse_json_file(manifest_path)
+    self._manifest = [];
+    for path in manifest_paths:
+      self._manifest.extend(parse_json_file(path))
 
   def _getDocLink(self, method, hashprefix):
     """
@@ -296,7 +298,8 @@ class Sample(dict):
     'options_page',
     'plugins',
     'theme',
-    'chrome_url_overrides'
+    'chrome_url_overrides',
+    'devtools_page'
   )
   """ Attributes that will map to "features" if their corresponding key is
   present in the extension manifest. """
