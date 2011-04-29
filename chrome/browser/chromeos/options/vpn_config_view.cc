@@ -8,14 +8,16 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/common/net/x509_certificate_model.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "net/base/cert_database.h"
+#include "net/base/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "views/controls/button/image_button.h"
-#include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/layout/grid_layout.h"
@@ -46,31 +48,79 @@ string16 ProviderTypeToString(chromeos::VirtualNetwork::ProviderType type) {
 
 namespace chromeos {
 
-int VPNConfigView::ProviderTypeComboboxModel::GetItemCount() {
-  // TODO(stevenjb): Include OpenVPN option once enabled.
-  return VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT + 1;
-  // return VirtualNetwork::PROVIDER_TYPE_MAX;
-}
+class ProviderTypeComboboxModel : public ui::ComboboxModel {
+ public:
+  ProviderTypeComboboxModel() {}
+  virtual ~ProviderTypeComboboxModel() {}
+  virtual int GetItemCount() {
+    // TODO(stevenjb): Include OpenVPN option once enabled.
+    return VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT + 1;
+    // return VirtualNetwork::PROVIDER_TYPE_MAX;
+  }
+  virtual string16 GetItemAt(int index) {
+    VirtualNetwork::ProviderType type =
+        static_cast<VirtualNetwork::ProviderType>(index);
+    return ProviderTypeToString(type);
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProviderTypeComboboxModel);
+};
 
-string16 VPNConfigView::ProviderTypeComboboxModel::GetItemAt(int index) {
-  VirtualNetwork::ProviderType type =
-      static_cast<VirtualNetwork::ProviderType>(index);
-  return ProviderTypeToString(type);
-}
+class UserCertComboboxModel : public ui::ComboboxModel {
+ public:
+  UserCertComboboxModel() {
+    net::CertDatabase cert_db;
+    net::CertificateList cert_list;
+    cert_db.ListCerts(&cert_list);
+    // Find all the user certificates.  There shouldn't be many.
+    for (net::CertificateList::const_iterator it = cert_list.begin();
+        it != cert_list.end(); ++it) {
+      net::X509Certificate* cert = it->get();
+      net::X509Certificate::OSCertHandle cert_handle = cert->os_cert_handle();
+      net::CertType type = x509_certificate_model::GetType(cert_handle);
+      if (type == net::USER_CERT)
+        user_certs_.push_back(*it);
+    }
+  }
+  virtual ~UserCertComboboxModel() {}
 
-VPNConfigView::UserCertComboboxModel::UserCertComboboxModel() {
-  // TODO(jamescook): populate user_certs_. chromium-os:14111
-}
+  virtual int GetItemCount() {
+    if (user_certs_.empty())
+      return 1;  // "None installed" item
+    return static_cast<int>(user_certs_.size());
+  }
 
-int VPNConfigView::UserCertComboboxModel::GetItemCount() {
-  return static_cast<int>(user_certs_.size());
-}
+  virtual string16 GetItemAt(int index) {
+    if (user_certs_.empty()) {
+      // "None installed" item.
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_CERT_NONE_INSTALLED);
+    }
+    if (index >= 0 && index < static_cast<int>(user_certs_.size())) {
+      net::X509Certificate* cert = user_certs_[index].get();
+      std::string name =
+          x509_certificate_model::GetCertNameOrNickname(cert->os_cert_handle());
+      return UTF8ToUTF16(name);
+    }
+    return string16();
+  }
 
-string16 VPNConfigView::UserCertComboboxModel::GetItemAt(int index) {
-  if (index >= 0 && index < static_cast<int>(user_certs_.size()))
-    return ASCIIToUTF16(user_certs_[index]);
-  return string16();
-}
+  bool HaveCerts() {
+    return !user_certs_.empty();
+  }
+
+  std::string GetCertID(int index) {
+    if (0 <= index && index < static_cast<int>(user_certs_.size())) {
+      // TODO(jamescook): Return the proper ID for flimflam, perhaps PKCS#11?
+      return "/tmp/ca.pem";
+    }
+    return std::string();
+  }
+
+ private:
+  net::CertificateList user_certs_;
+  DISALLOW_COPY_AND_ASSIGN(UserCertComboboxModel);
+};
 
 VPNConfigView::VPNConfigView(NetworkConfigView* parent, VirtualNetwork* vpn)
     : ChildNetworkConfigView(parent, vpn) {
@@ -101,6 +151,8 @@ bool VPNConfigView::CanLogin() {
   if (provider_type_ == VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK &&
       psk_passphrase_textfield_->text().length() < kMinPassphraseLen)
     return false;
+  if (UserCertRequired() && GetUserCertID().empty())
+    return false;
   if (GetUsername().empty())
     return false;
   if (user_passphrase_textfield_->text().length() < kMinPassphraseLen)
@@ -110,6 +162,9 @@ bool VPNConfigView::CanLogin() {
 
 void VPNConfigView::UpdateErrorLabel() {
   std::string error_msg;
+  if (UserCertRequired() && GetUserCertID().empty())
+    error_msg = l10n_util::GetStringUTF8(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PLEASE_INSTALL_USER_CERT);
   if (!service_path_.empty()) {
     // TODO(kuan): differentiate between bad psk and user passphrases.
     NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
@@ -131,11 +186,16 @@ void VPNConfigView::UpdateErrorLabel() {
   }
 }
 
+bool VPNConfigView::UserCertRequired() const {
+  return provider_type_ == VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT
+      || provider_type_ == VirtualNetwork::PROVIDER_TYPE_OPEN_VPN;
+}
+
 void VPNConfigView::ContentsChanged(views::Textfield* sender,
                                     const string16& new_contents) {
   if (sender == server_textfield_ && !service_text_modified_) {
     // Set the service name to the server name up to '.', unless it has
-    // been explicityly set by the user.
+    // been explicitly set by the user.
     string16 server = server_textfield_->text();
     string16::size_type n = server.find_first_of(L'.');
     service_name_from_server_ = server.substr(0, n);
@@ -171,6 +231,7 @@ void VPNConfigView::ItemChanged(views::Combobox* combo_box,
   if (combo_box == provider_type_combobox_) {
     provider_type_ = static_cast<VirtualNetwork::ProviderType>(new_index);
     EnableControls();
+    UpdateErrorLabel();
   } else if (combo_box == user_cert_combobox_) {
     // Nothing to do for now.
   } else {
@@ -211,10 +272,10 @@ bool VPNConfigView::Login() {
         break;
       case VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
       case VirtualNetwork::PROVIDER_TYPE_OPEN_VPN: {
-        const std::string user_cert = UTF16ToUTF8(
-            user_cert_combobox_->model()->GetItemAt(
-                user_cert_combobox_->selected_item()));
-        vpn->SetUserCert(user_cert);
+        // TODO(jamescook): Figure out if flimflam consumes a cert path,
+        // PKCS#11 ID or other identifier.  Then do something like:
+        // vpn->SetUserCertID(GetUserCertID());
+        LOG(WARNING) << "VPN user certs not yet supported.";
         break;
       }
       case VirtualNetwork::PROVIDER_TYPE_MAX:
@@ -234,7 +295,17 @@ void VPNConfigView::Cancel() {
 }
 
 void VPNConfigView::InitFocus() {
-  // TODO(jamescook): Put focus in a more reasonable widget.
+  // Put focus in the first editable field.
+  if (server_textfield_)
+    server_textfield_->RequestFocus();
+  else if (service_textfield_)
+    service_textfield_->RequestFocus();
+  else if (provider_type_combobox_)
+    provider_type_combobox_->RequestFocus();
+  else if (psk_passphrase_textfield_ && psk_passphrase_textfield_->IsEnabled())
+    psk_passphrase_textfield_->RequestFocus();
+  else if (user_cert_combobox_ && user_cert_combobox_->IsEnabled())
+    user_cert_combobox_->RequestFocus();
 }
 
 const std::string VPNConfigView::GetTextFromField(
@@ -272,6 +343,13 @@ const std::string VPNConfigView::GetUsername() const {
 
 const std::string VPNConfigView::GetUserPassphrase() const {
   return GetTextFromField(user_passphrase_textfield_, false);
+}
+
+const std::string VPNConfigView::GetUserCertID() const {
+  int selected = user_cert_combobox_->selected_item();
+  UserCertComboboxModel* model = static_cast<UserCertComboboxModel*>(
+      user_cert_combobox_->model());
+  return model->GetCertID(selected);
 }
 
 void VPNConfigView::Init(VirtualNetwork* vpn) {
@@ -376,6 +454,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   if (vpn && !vpn->user_cert().empty()) {
     string16 user_cert = UTF8ToUTF16(vpn->user_cert());
     for (int i = 0; i < user_cert_combobox_->model()->GetItemCount(); ++i) {
+      // TODO(jamescook):  Select the proper certificate based on the
+      // appropriate property from flimflam, perhaps PKCS#11 ID.
       if (user_cert_combobox_->model()->GetItemAt(i) == user_cert) {
         user_cert_combobox_->SetSelectedItem(i);
         break;
@@ -433,12 +513,15 @@ void VPNConfigView::EnableControls() {
       user_cert_combobox_->SetEnabled(false);
       break;
     case VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
-    case VirtualNetwork::PROVIDER_TYPE_OPEN_VPN:
+    case VirtualNetwork::PROVIDER_TYPE_OPEN_VPN: {
       psk_passphrase_label_->SetEnabled(false);
       psk_passphrase_textfield_->SetEnabled(false);
       user_cert_label_->SetEnabled(true);
-      user_cert_combobox_->SetEnabled(true);
+      // Only enable the combobox if the user actually has a cert to select.
+      bool have_cert = !GetUserCertID().empty();
+      user_cert_combobox_->SetEnabled(have_cert);
       break;
+    }
     default:
       NOTREACHED();
   }
