@@ -283,13 +283,16 @@ union PP_PictureData_Dev {
   // Resource representing system memory from shared memory address space.
   // Use PPB_Buffer_Dev interface to handle this resource.
   PP_Resource sysmem;
+
   // Structure to define explicitly a GLES2 context.
   struct {
     // Context allocated using PPB_Context3D_Dev.
     PP_Resource context;
+
     // Texture ID in the given context where picture is stored.
     GLuint texture_id;
   } gles2_texture;
+
   // Client-specified id for the picture buffer. By using this value client can
   // keep track of the buffers it has assigned to the video decoder and how they
   // are passed back to it.

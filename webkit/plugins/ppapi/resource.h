@@ -32,6 +32,7 @@ namespace ppapi {
   F(PPB_Graphics2D_Impl) \
   F(PPB_Graphics3D_Impl) \
   F(PPB_ImageData_Impl) \
+  F(PPB_LayerCompositor_Impl) \
   F(PPB_Scrollbar_Impl) \
   F(PPB_Surface3D_Impl) \
   F(PPB_Transport_Impl) \
@@ -39,6 +40,7 @@ namespace ppapi {
   F(PPB_URLRequestInfo_Impl) \
   F(PPB_URLResponseInfo_Impl) \
   F(PPB_VideoDecoder_Impl) \
+  F(PPB_VideoLayer_Impl) \
   F(PPB_Widget_Impl) \
   F(PrivateFontFile)
 

@@ -28,6 +28,7 @@
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
+#include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
@@ -35,6 +36,7 @@
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
+#include "ppapi/c/dev/ppb_video_layer_dev.h"
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/pp_module.h"
@@ -86,6 +88,7 @@
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
+#include "webkit/plugins/ppapi/ppb_layer_compositor_impl.h"
 #include "webkit/plugins/ppapi/ppb_nacl_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_pdf_impl.h"
 #include "webkit/plugins/ppapi/ppb_proxy_impl.h"
@@ -96,6 +99,7 @@
 #include "webkit/plugins/ppapi/ppb_url_response_info_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_util_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
+#include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
 #include "webkit/plugins/ppapi/ppb_widget_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/var.h"
@@ -311,6 +315,8 @@ const void* GetInterface(const char* name) {
     return Var::GetInterface();
   if (strcmp(name, PPB_VIDEODECODER_DEV_INTERFACE) == 0)
     return PPB_VideoDecoder_Impl::GetInterface();
+  if (strcmp(name, PPB_VIDEOLAYER_DEV_INTERFACE) == 0)
+    return PPB_VideoLayer_Impl::GetInterface();
   if (strcmp(name, PPB_WIDGET_DEV_INTERFACE) == 0)
     return PPB_Widget_Impl::GetInterface();
   if (strcmp(name, PPB_ZOOM_DEV_INTERFACE) == 0)
@@ -331,6 +337,8 @@ const void* GetInterface(const char* name) {
       return PPB_OpenGLES_Impl::GetInterface();
     if (strcmp(name, PPB_SURFACE_3D_DEV_INTERFACE) == 0)
       return PPB_Surface3D_Impl::GetInterface();
+    if (strcmp(name, PPB_LAYER_COMPOSITOR_DEV_INTERFACE) == 0)
+      return PPB_LayerCompositor_Impl::GetInterface();
   }
 #endif  // ENABLE_GPU
 

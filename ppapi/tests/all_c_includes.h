@@ -31,6 +31,7 @@
 #include "ppapi/c/dev/ppb_font_list_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
+#include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
@@ -39,6 +40,7 @@
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
+#include "ppapi/c/dev/ppb_video_layer_dev.h"
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_class_deprecated.h"
@@ -90,4 +92,3 @@
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 
 #endif  /* PPAPI_TESTS_ALL_C_INCLUDES_H_ */
-
