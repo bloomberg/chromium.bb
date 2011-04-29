@@ -1396,12 +1396,12 @@ void ExtensionService::ProcessSyncData(
     //
     // TODO(akalin): Replace silent update with a list of enabled
     // permissions.
+    const bool kInstallSilently = true;
     if (!pending_extension_manager()->AddFromSync(
             id,
             extension_sync_data.update_url,
             filter,
-            true,  // install_silently
-            extension_sync_data.enabled)) {
+            kInstallSilently)) {
       LOG(WARNING) << "Could not add pending extension for " << id;
       return;
     }
@@ -1811,7 +1811,7 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
   // Ensure extension is deleted unless we transfer ownership.
   scoped_refptr<const Extension> scoped_extension(extension);
   const std::string& id = extension->id();
-  bool initial_enable = false;
+  bool initial_enable = IsExtensionEnabled(id);
 
   PendingExtensionInfo pending_extension_info;
   if (pending_extension_manager()->GetById(id, &pending_extension_info)) {
@@ -1838,19 +1838,13 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
         NOTREACHED();
       return;
     }
-
-    if (extension->is_theme()) {
-      DCHECK(pending_extension_info.enable_on_install());
-      initial_enable = true;
-    } else {
-      initial_enable = pending_extension_info.enable_on_install();
-    }
   } else {
     // We explicitly want to re-enable an uninstalled external
     // extension; if we're here, that means the user is manually
     // installing the extension.
-    initial_enable =
-        IsExtensionEnabled(id) || IsExternalExtensionUninstalled(id);
+    if (IsExternalExtensionUninstalled(id)) {
+      initial_enable = true;
+    }
   }
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType",

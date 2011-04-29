@@ -50,8 +50,7 @@ bool PendingExtensionManager::AddFromSync(
     const std::string& id,
     const GURL& update_url,
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
-    bool install_silently,
-    bool enable_on_install) {
+    bool install_silently) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (service_.GetInstalledExtension(id)) {
@@ -64,9 +63,7 @@ bool PendingExtensionManager::AddFromSync(
   const Extension::Location kSyncLocation = Extension::INTERNAL;
 
   return AddExtensionImpl(id, update_url, should_allow_install,
-                          kIsFromSync, install_silently,
-                          enable_on_install,
-                          kSyncLocation);
+                          kIsFromSync, install_silently, kSyncLocation);
 }
 
 void PendingExtensionManager::AddFromExternalUpdateUrl(
@@ -76,7 +73,6 @@ void PendingExtensionManager::AddFromExternalUpdateUrl(
 
   const bool kIsFromSync = false;
   const bool kInstallSilently = true;
-  const bool kEnableOnInstall = true;
 
   if (service_.IsExternalExtensionUninstalled(id))
     return;
@@ -89,7 +85,7 @@ void PendingExtensionManager::AddFromExternalUpdateUrl(
 
   AddExtensionImpl(id, update_url, &AlwaysInstall,
                    kIsFromSync, kInstallSilently,
-                   kEnableOnInstall, location);
+                   location);
 }
 
 
@@ -100,14 +96,12 @@ void PendingExtensionManager::AddFromExternalFile(
   GURL kUpdateUrl = GURL();
   bool kIsFromSync = false;
   bool kInstallSilently = true;
-  bool kEnableOnInstall = true;
 
   pending_extension_map_[id] =
       PendingExtensionInfo(kUpdateUrl,
                            &AlwaysInstall,
                            kIsFromSync,
                            kInstallSilently,
-                           kEnableOnInstall,
                            location);
 }
 
@@ -115,7 +109,7 @@ bool PendingExtensionManager::AddExtensionImpl(
     const std::string& id, const GURL& update_url,
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
     bool is_from_sync, bool install_silently,
-    bool enable_on_install, Extension::Location install_source) {
+    Extension::Location install_source) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Will add a pending extension record unless this variable is set to false.
@@ -151,7 +145,6 @@ bool PendingExtensionManager::AddExtensionImpl(
         should_allow_install,
         is_from_sync,
         install_silently,
-        enable_on_install,
         install_source);
     return true;
   }

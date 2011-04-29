@@ -103,10 +103,9 @@ void SetCurrentThemeFromThemeSpecifics(
       // so by adding it as a pending extension and then triggering an
       // auto-update cycle.
       const bool kInstallSilently = true;
-      const bool kEnableOnInstall = true;
       if (!extensions_service->pending_extension_manager()->AddFromSync(
               id, update_url, &IsTheme,
-              kInstallSilently, kEnableOnInstall)) {
+              kInstallSilently)) {
         LOG(WARNING) << "Could not add pending extension for " << id;
         return;
       }

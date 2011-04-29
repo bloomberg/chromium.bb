@@ -129,7 +129,6 @@ void SetupPendingExtensionManagerForTest(
         (i % 2 == 0) ? &ShouldInstallThemesOnly : &ShouldInstallExtensionsOnly;
     const bool kIsFromSync = true;
     const bool kInstallSilently = true;
-    const Extension::State kInitialState = Extension::ENABLED;
     std::string id = GenerateId(base::StringPrintf("extension%i", i));
 
     pending_extension_manager->AddForTesting(
@@ -138,7 +137,6 @@ void SetupPendingExtensionManagerForTest(
                              should_allow_install,
                              kIsFromSync,
                              kInstallSilently,
-                             kInitialState,
                              Extension::INTERNAL));
   }
 }
@@ -645,13 +643,12 @@ class ExtensionUpdaterTest : public testing::Test {
     if (pending) {
       const bool kIsFromSync = true;
       const bool kInstallSilently = true;
-      const Extension::State kInitialState = Extension::ENABLED;
       PendingExtensionManager* pending_extension_manager =
           service->pending_extension_manager();
       pending_extension_manager->AddForTesting(
           id,
           PendingExtensionInfo(test_url, &ShouldAlwaysInstall, kIsFromSync,
-                               kInstallSilently, kInitialState,
+                               kInstallSilently,
                                Extension::INTERNAL));
     }
 
@@ -1062,14 +1059,14 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   builder.AddPendingExtension(
       GenerateId("foo"), PendingExtensionInfo(GURL("http:google.com:foo"),
                                               &ShouldInstallExtensionsOnly,
-                                              false, false, true,
+                                              false, false,
                                               Extension::INTERNAL));
   EXPECT_TRUE(builder.GetFetches().empty());
 
   // Extensions with empty IDs should be rejected.
   builder.AddPendingExtension(
       "", PendingExtensionInfo(GURL(), &ShouldInstallExtensionsOnly,
-                               false, false, true,
+                               false, false,
                                Extension::INTERNAL));
   EXPECT_TRUE(builder.GetFetches().empty());
 
@@ -1081,7 +1078,7 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   builder.AddPendingExtension(
       GenerateId("foo"), PendingExtensionInfo(GURL(),
                                               &ShouldInstallExtensionsOnly,
-                                              false, false, true,
+                                              false, false,
                                               Extension::INTERNAL));
   std::vector<ManifestFetchData*> fetches = builder.GetFetches();
   ASSERT_EQ(1u, fetches.size());
