@@ -448,7 +448,7 @@ void LocationBarViewGtk::Update(const TabContents* contents) {
   UpdatePageActions();
   location_entry_->Update(contents);
   // The security level (background color) could have changed, etc.
-  if (theme_service_->UseGtkTheme()) {
+  if (theme_service_->UsingNativeTheme()) {
     // In GTK mode, we need our parent to redraw, as it draws the text entry
     // border.
     gtk_widget_queue_draw(widget()->parent);
@@ -762,7 +762,7 @@ void LocationBarViewGtk::Observe(NotificationType type,
 
   DCHECK_EQ(type.value, NotificationType::BROWSER_THEME_CHANGED);
 
-  if (theme_service_->UseGtkTheme()) {
+  if (theme_service_->UsingNativeTheme()) {
     gtk_widget_modify_bg(tab_to_search_box_, GTK_STATE_NORMAL, NULL);
 
     GdkColor border_color = theme_service_->GetGdkColor(
@@ -832,7 +832,7 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
   // If we're not using GTK theming, draw our own border over the edge pixels
   // of the background.
   if (!profile_ ||
-      !GtkThemeService::GetFrom(profile_)->UseGtkTheme()) {
+      !GtkThemeService::GetFrom(profile_)->UsingNativeTheme()) {
     int left, center, right;
     if (popup_window_mode_) {
       left = right = IDR_LOCATIONBG_POPUPMODE_EDGE;

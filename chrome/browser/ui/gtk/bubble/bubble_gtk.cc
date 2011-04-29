@@ -347,7 +347,7 @@ void BubbleGtk::Observe(NotificationType type,
                         const NotificationSource& source,
                         const NotificationDetails& details) {
   DCHECK_EQ(type.value, NotificationType::BROWSER_THEME_CHANGED);
-  if (theme_service_->UseGtkTheme() && match_system_theme_) {
+  if (theme_service_->UsingNativeTheme() && match_system_theme_) {
     gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, NULL);
   } else {
     // Set the background color, so we don't need to paint it manually.

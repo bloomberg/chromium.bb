@@ -468,7 +468,7 @@ void FindBarGtk::Observe(NotificationType type,
   container_width_ = -1;
   container_height_ = -1;
 
-  if (theme_service_->UseGtkTheme()) {
+  if (theme_service_->UsingNativeTheme()) {
     gtk_widget_modify_cursor(text_entry_, NULL, NULL);
     gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_text(text_entry_, GTK_STATE_NORMAL, NULL);
@@ -602,7 +602,7 @@ void FindBarGtk::FindEntryTextInContents(bool forward_search) {
 
 void FindBarGtk::UpdateMatchLabelAppearance(bool failure) {
   match_label_failure_ = failure;
-  bool use_gtk = theme_service_->UseGtkTheme();
+  bool use_gtk = theme_service_->UsingNativeTheme();
 
   if (use_gtk) {
     GtkStyle* style = gtk_rc_get_style(text_entry_);
@@ -812,7 +812,7 @@ void FindBarGtk::OnClicked(GtkWidget* button, FindBarGtk* find_bar) {
 gboolean FindBarGtk::OnContentEventBoxExpose(GtkWidget* widget,
                                              GdkEventExpose* event,
                                              FindBarGtk* bar) {
-  if (bar->theme_service_->UseGtkTheme()) {
+  if (bar->theme_service_->UsingNativeTheme()) {
     // Draw the text entry background around where we input stuff. Note the
     // decrement to |width|. We do this because some theme engines
     // (*cough*Clearlooks*cough*) don't do any blending and use thickness to
@@ -839,7 +839,7 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
   gtk_widget_size_request(widget, &req);
   gtk_widget_set_size_request(bar->widget(), req.width, -1);
 
-  if (bar->theme_service_->UseGtkTheme()) {
+  if (bar->theme_service_->UsingNativeTheme()) {
     if (bar->container_width_ != widget->allocation.width ||
         bar->container_height_ != widget->allocation.height) {
       std::vector<GdkPoint> mask_points = MakeFramePolygonPoints(

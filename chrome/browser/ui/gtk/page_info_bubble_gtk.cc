@@ -159,10 +159,10 @@ void PageInfoBubbleGtk::Observe(NotificationType type,
        it != links_.end(); ++it) {
     gtk_chrome_link_button_set_use_gtk_theme(
         GTK_CHROME_LINK_BUTTON(*it),
-        theme_service_->UseGtkTheme());
+        theme_service_->UsingNativeTheme());
   }
 
-  if (theme_service_->UseGtkTheme()) {
+  if (theme_service_->UsingNativeTheme()) {
     for (std::vector<GtkWidget*>::iterator it = labels_.begin();
          it != labels_.end(); ++it) {
       gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, NULL);

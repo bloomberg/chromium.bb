@@ -34,7 +34,7 @@ void OverflowButton::Observe(NotificationType type,
     gtk_widget_destroy(former_child);
 
   GtkWidget* new_child =
-      GtkThemeService::GetFrom(profile_)->UseGtkTheme() ?
+      GtkThemeService::GetFrom(profile_)->UsingNativeTheme() ?
       gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE) :
       gtk_image_new_from_pixbuf(ResourceBundle::GetSharedInstance().
           GetRTLEnabledPixbufNamed(IDR_BOOKMARK_BAR_CHEVRONS));

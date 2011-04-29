@@ -231,7 +231,8 @@ void DownloadShelfGtk::Observe(NotificationType type,
     gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &color);
 
     gtk_chrome_link_button_set_use_gtk_theme(
-        GTK_CHROME_LINK_BUTTON(link_button_), theme_service_->UseGtkTheme());
+        GTK_CHROME_LINK_BUTTON(link_button_),
+        theme_service_->UsingNativeTheme());
 
     // When using a non-standard, non-gtk theme, we make the link color match
     // the bookmark text color. Otherwise, standard link blue can look very

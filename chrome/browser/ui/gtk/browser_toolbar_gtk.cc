@@ -131,7 +131,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   event_box_ = gtk_event_box_new();
   // Make the event box transparent so themes can use transparent toolbar
   // backgrounds.
-  if (!theme_service_->UseGtkTheme())
+  if (!theme_service_->UsingNativeTheme())
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
 
   toolbar_ = gtk_hbox_new(FALSE, 0);
@@ -346,7 +346,7 @@ void BrowserToolbarGtk::Observe(NotificationType type,
     NotifyPrefChanged(Details<std::string>(details).ptr());
   } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
     // Update the spacing around the menu buttons
-    bool use_gtk = theme_service_->UseGtkTheme();
+    bool use_gtk = theme_service_->UsingNativeTheme();
     int border = use_gtk ? 0 : 2;
     gtk_container_set_border_width(
         GTK_CONTAINER(wrench_menu_button_->widget()), border);
@@ -429,7 +429,7 @@ bool BrowserToolbarGtk::UpdateRoundedness() {
   // We still round the corners if we are in chrome theme mode, but we do it by
   // drawing theme resources rather than changing the physical shape of the
   // widget.
-  bool should_be_rounded = theme_service_->UseGtkTheme() &&
+  bool should_be_rounded = theme_service_->UsingNativeTheme() &&
       window_->ShouldDrawContentDropShadow();
 
   if (should_be_rounded == gtk_util::IsActingAsRoundedWindow(alignment_))
@@ -454,7 +454,7 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
     return TRUE;
 
   // We don't need to render the toolbar image in GTK mode.
-  if (theme_service_->UseGtkTheme())
+  if (theme_service_->UsingNativeTheme())
     return FALSE;
 
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
@@ -555,7 +555,7 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
 
 gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
                                                  GdkEventExpose* e) {
-  if (theme_service_->UseGtkTheme()) {
+  if (theme_service_->UsingNativeTheme()) {
     gtk_util::DrawTextEntryBackground(offscreen_entry_.get(),
                                       location_hbox, &e->area,
                                       &location_hbox->allocation);

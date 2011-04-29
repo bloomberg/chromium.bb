@@ -2238,7 +2238,7 @@ bool BrowserWindowGtk::IsBookmarkBarSupported() const {
 bool BrowserWindowGtk::UsingCustomPopupFrame() const {
   GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       browser()->profile());
-  return !theme_provider->UseGtkTheme() &&
+  return !theme_provider->UsingNativeTheme() &&
       browser()->type() & Browser::TYPE_POPUP;
 }
 

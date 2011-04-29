@@ -460,7 +460,7 @@ void DownloadItemGtk::Observe(NotificationType type,
   if (type == NotificationType::BROWSER_THEME_CHANGED) {
     // Our GtkArrow is only visible in gtk mode. Otherwise, we let the custom
     // rendering code do whatever it wants.
-    if (theme_service_->UseGtkTheme()) {
+    if (theme_service_->UsingNativeTheme()) {
       if (!arrow_) {
         arrow_ = gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE);
         gtk_widget_set_size_request(arrow_,
@@ -560,8 +560,9 @@ void DownloadItemGtk::UpdateNameLabel() {
 
   GdkColor color = theme_service_->GetGdkColor(
       ThemeService::COLOR_BOOKMARK_TEXT);
-  gtk_util::SetLabelColor(name_label_, theme_service_->UseGtkTheme() ?
-                                       NULL : &color);
+  gtk_util::SetLabelColor(
+      name_label_,
+      theme_service_->UsingNativeTheme() ? NULL : &color);
   gtk_label_set_text(GTK_LABEL(name_label_),
                      UTF16ToUTF8(elided_filename).c_str());
 }
@@ -571,7 +572,7 @@ void DownloadItemGtk::UpdateStatusLabel(const std::string& status_text) {
     return;
 
   GdkColor text_color;
-  if (!theme_service_->UseGtkTheme()) {
+  if (!theme_service_->UsingNativeTheme()) {
     SkColor color = theme_service_->GetColor(
         ThemeService::COLOR_BOOKMARK_TEXT);
     if (color_utils::RelativeLuminance(color) > 0.5) {
@@ -591,8 +592,9 @@ void DownloadItemGtk::UpdateStatusLabel(const std::string& status_text) {
         color_utils::AlphaBlend(blend_color, color, 77));
   }
 
-  gtk_util::SetLabelColor(status_label_, theme_service_->UseGtkTheme() ?
-                                        NULL : &text_color);
+  gtk_util::SetLabelColor(
+      status_label_,
+      theme_service_->UsingNativeTheme() ? NULL : &text_color);
   gtk_label_set_text(GTK_LABEL(status_label_), status_text.c_str());
 }
 
@@ -624,7 +626,7 @@ void DownloadItemGtk::UpdateDangerWarning() {
       }
     }
 
-    if (theme_service_->UseGtkTheme()) {
+    if (theme_service_->UsingNativeTheme()) {
       gtk_util::SetLabelColor(dangerous_label_, NULL);
     } else {
       GdkColor color = theme_service_->GetGdkColor(
@@ -659,7 +661,7 @@ void DownloadItemGtk::UpdateDangerWarning() {
 }
 
 void DownloadItemGtk::UpdateDangerIcon() {
-  if (theme_service_->UseGtkTheme()) {
+  if (theme_service_->UsingNativeTheme()) {
     const char* stock =
         get_download()->danger_type() == DownloadItem::DANGEROUS_URL ?
         GTK_STOCK_DIALOG_ERROR : GTK_STOCK_DIALOG_WARNING;
@@ -742,7 +744,7 @@ void DownloadItemGtk::InitNineBoxes() {
 }
 
 gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
-  if (theme_service_->UseGtkTheme()) {
+  if (theme_service_->UsingNativeTheme()) {
     int border_width = GTK_CONTAINER(widget)->border_width;
     int x = widget->allocation.x + border_width;
     int y = widget->allocation.y + border_width;
@@ -811,7 +813,7 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
 }
 
 gboolean DownloadItemGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e) {
-  if (!theme_service_->UseGtkTheme()) {
+  if (!theme_service_->UsingNativeTheme()) {
     bool is_body = widget == body_.get();
 
     NineBox* nine_box = NULL;
@@ -917,7 +919,7 @@ void DownloadItemGtk::ShowPopupMenu(GtkWidget* button,
 
 gboolean DownloadItemGtk::OnDangerousPromptExpose(GtkWidget* widget,
                                                   GdkEventExpose* event) {
-  if (!theme_service_->UseGtkTheme()) {
+  if (!theme_service_->UsingNativeTheme()) {
     // The hbox renderer will take care of the border when in GTK mode.
     dangerous_nine_box_->RenderToWidget(widget);
   }

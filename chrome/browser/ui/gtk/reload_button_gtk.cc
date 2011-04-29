@@ -195,7 +195,7 @@ void ReloadButtonGtk::OnClicked(GtkWidget* /* sender */) {
 
 gboolean ReloadButtonGtk::OnExpose(GtkWidget* widget,
                                    GdkEventExpose* e) {
-  if (theme_service_ && theme_service_->UseGtkTheme())
+  if (theme_service_ && theme_service_->UsingNativeTheme())
     return FALSE;
   return ((visible_mode_ == MODE_RELOAD) ? reload_ : stop_).OnExpose(
       widget, e, hover_controller_.GetCurrentValue());
@@ -223,7 +223,7 @@ gboolean ReloadButtonGtk::OnQueryTooltip(GtkWidget* /* sender */,
 }
 
 void ReloadButtonGtk::UpdateThemeButtons() {
-  bool use_gtk = theme_service_ && theme_service_->UseGtkTheme();
+  bool use_gtk = theme_service_ && theme_service_->UsingNativeTheme();
 
   if (use_gtk) {
     gtk_widget_ensure_style(widget());

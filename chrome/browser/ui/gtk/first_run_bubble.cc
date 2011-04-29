@@ -53,7 +53,7 @@ void FirstRunBubble::Observe(NotificationType type,
                              const NotificationDetails& details) {
   DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
 
-  if (theme_service_->UseGtkTheme()) {
+  if (theme_service_->UsingNativeTheme()) {
     for (std::vector<GtkWidget*>::iterator it = labels_.begin();
          it != labels_.end(); ++it) {
       gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, NULL);

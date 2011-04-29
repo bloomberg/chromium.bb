@@ -394,7 +394,7 @@ void AutocompletePopupViewGtk::Observe(NotificationType type,
                                        const NotificationDetails& details) {
   DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
 
-  if (theme_service_->UseGtkTheme()) {
+  if (theme_service_->UsingNativeTheme()) {
     gtk_util::UndoForceFontSize(window_);
 
     border_color_ = theme_service_->GetBorderColor();

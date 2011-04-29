@@ -330,17 +330,17 @@ void PersonalOptionsHandler::OnLoginFailure(
 void PersonalOptionsHandler::ObserveThemeChanged() {
   Profile* profile = web_ui_->GetProfile();
 #if defined(TOOLKIT_GTK)
-  GtkThemeService* provider = GtkThemeService::GetFrom(profile);
-  bool is_gtk_theme = provider->UseGtkTheme();
+  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
+  bool is_gtk_theme = theme_service->UsingNativeTheme();
   FundamentalValue gtk_enabled(!is_gtk_theme);
   web_ui_->CallJavascriptFunction(
       "options.PersonalOptions.setGtkThemeButtonEnabled", gtk_enabled);
 #else
-  ThemeService* provider = ThemeServiceFactory::GetForProfile(profile);
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
   bool is_gtk_theme = false;
 #endif
 
-  bool is_classic_theme = !is_gtk_theme && provider->UsingDefaultTheme();
+  bool is_classic_theme = !is_gtk_theme && theme_service->UsingDefaultTheme();
   FundamentalValue enabled(!is_classic_theme);
   web_ui_->CallJavascriptFunction(
       "options.PersonalOptions.setThemesResetButtonEnabled", enabled);

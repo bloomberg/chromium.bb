@@ -941,7 +941,7 @@ void OmniboxViewGtk::SetBaseColor() {
 #if defined(TOOLKIT_VIEWS)
   bool use_gtk = false;
 #else
-  bool use_gtk = theme_service_->UseGtkTheme();
+  bool use_gtk = theme_service_->UsingNativeTheme();
 #endif
   if (use_gtk) {
     gtk_widget_modify_cursor(text_view_, NULL, NULL);
@@ -1019,7 +1019,7 @@ void OmniboxViewGtk::UpdateInstantViewColors() {
 #if defined(TOOLKIT_VIEWS)
   bool use_gtk = false;
 #else
-  bool use_gtk = theme_service_->UseGtkTheme();
+  bool use_gtk = theme_service_->UsingNativeTheme();
 #endif
 
   if (use_gtk) {
@@ -1788,7 +1788,7 @@ gfx::Font OmniboxViewGtk::GetFont() {
 #if defined(TOOLKIT_VIEWS)
   bool use_gtk = false;
 #else
-  bool use_gtk = theme_service_->UseGtkTheme();
+  bool use_gtk = theme_service_->UsingNativeTheme();
 #endif
 
   if (use_gtk) {

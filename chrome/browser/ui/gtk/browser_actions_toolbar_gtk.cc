@@ -478,7 +478,7 @@ void BrowserActionsToolbarGtk::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
   DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
-  if (theme_service_->UseGtkTheme())
+  if (theme_service_->UsingNativeTheme())
     gtk_widget_show(separator_);
   else
     gtk_widget_hide(separator_);

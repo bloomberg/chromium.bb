@@ -278,7 +278,7 @@ void StatusBubbleGtk::InitWidgets() {
 }
 
 void StatusBubbleGtk::UserChangedTheme() {
-  if (theme_service_->UseGtkTheme()) {
+  if (theme_service_->UsingNativeTheme()) {
     gtk_widget_modify_fg(label_.get(), GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_bg(container_.get(), GTK_STATE_NORMAL, NULL);
   } else {

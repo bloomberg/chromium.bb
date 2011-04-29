@@ -341,5 +341,5 @@ void CustomDrawButton::SetBrowserTheme() {
 }
 
 bool CustomDrawButton::UseGtkTheme() {
-  return theme_service_ && theme_service_->UseGtkTheme();
+  return theme_service_ && theme_service_->UsingNativeTheme();
 }

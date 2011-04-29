@@ -676,7 +676,7 @@ void BrowserTitlebar::UpdateTextColor() {
   if (!app_mode_title_)
     return;
 
-  if (theme_service_ && theme_service_->UseGtkTheme()) {
+  if (theme_service_ && theme_service_->UsingNativeTheme()) {
     // We don't really have any good options here.
     //
     // Colors from window manager themes aren't exposed in GTK; the window

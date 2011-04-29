@@ -841,7 +841,7 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
                             true);
     } else {
       if (!data_.favicon.isNull()) {
-        if (data_.is_default_favicon && theme_service_->UseGtkTheme()) {
+        if (data_.is_default_favicon && theme_service_->UsingNativeTheme()) {
           GdkPixbuf* favicon = GtkThemeService::GetDefaultFavicon(true);
           canvas->AsCanvasSkia()->DrawGdkPixbuf(
               favicon, favicon_bounds_.x(),
