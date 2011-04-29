@@ -63,12 +63,10 @@ cat_nexe_name = ('cat_%s.nexe' % env.get('TARGET_FULLARCH'))
 cat_nexe = env.ComponentProgram(
     cat_nexe_name, 'cat.c',
     EXTRA_LIBS=['srpc', 'platform', 'gio', 'm', 'pthread'])
-env.Publish(
-    cat_nexe_name, 'run',
+env.Publish(cat_nexe_name, 'run',
     ['srpc_url_as_nacl_desc.html',
      'srpc_url_as_nacl_desc_success.html',
-     'cat.nmf',
-     env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+     'cat.nmf'])
 
 
 srpc_bidir_nexe_name = ('srpc_bidir_%s.nexe' % env.get('TARGET_FULLARCH'))
@@ -173,4 +171,14 @@ node = env.PPAPIBrowserTester(
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_srpc_sockaddr_chrome_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
+
+node = env.PPAPIBrowserTester(
+    'srpc_url_as_nacl_desc_chrome_browser_test.out',
+    url='srpc_url_as_nacl_desc.html',
+    files=env.ExtractPublishedFiles(cat_nexe_name),
+    args=['--enable_experimental_js', '--allow_404'])
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_srpc_url_as_nacl_desc_chrome_browser_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken())

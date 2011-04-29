@@ -6,245 +6,109 @@
     <title>SRPC Open URL as NaCl Descriptor Test</title>
     <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
     <META HTTP-EQUIV="Expires" CONTENT="-1" />
-    <style type="text/css">
-      pre.notrun { background-color: skyblue }
-      pre.pass { background-color: lime }
-      pre.fail { background-color: red }
-      td.notrun { background-color: skyblue }
-      td.pass { background-color: lime }
-      td.fail { background-color: red }
-    </style>
+    <script type="text/javascript" src="nacltest.js"></script>
     <script type="application/x-javascript">
       //<![CDATA[
-var server = 0;
-var logElement = 0;
-var testTimeoutHandler = 0;
-var testPassed = false;
-var testErrorMsg = '';
-
-// testState normally assumes these state values in this order:
-// 'initializing'=>'loading valid file'=>'loading invalid file'=>'complete'
-var testState = '';
-
-// Puts text from 'str' into the logElement on the page.
-function generalLog(str) {
-  logElement.textContent += str + '\n';
-}
-
-// Clears the test watchdog timer.
-function clearTestTimeoutHandler() {
-  if (0 != testTimeoutHandler) {
-    clearTimeout(testTimeoutHandler);
-    testTimeoutHandler = 0;
-  }
-}
-
-// Sets all test status information and cleans up after testing.
-// 'msg' is the error message or '' for success.
-function allTestsComplete(msg) {
-  clearTestTimeoutHandler();
-  testState = 'complete';
-  testErrorMsg = msg;
-  if (testPassed) {
-    logElement.className = 'pass';
-  } else {
-    logElement.className = 'fail';
-  }
-}
-
-// Test Stage 6: Verifies that a cross-domain file cannot be loaded.
-function invalidFileLoadCallback() {
-  this.onload = function(nacl_desc) {
-    // Should not have been able to load a cross-domain file.
-    generalLog('ERROR: invalidFileLoadCallback onload invoked.');
-    generalLog('Loading from a nonexistent URL should have been an error.');
-    allTestsComplete('Load of nonexistent URL succeeded (incorrectly).');
-  }
-  this.onfail = function(object) {
-    // Correctly invoked the onfail handler for attempting to read a
-    // cross-domain file.  Everything is working as expected.
-    generalLog('invalidFileLoadCallback onfail correctly invoked: ' +
-               object);
-    testPassed = true;
-    allTestsComplete('');
-  }
-}
-
-// Test Stage 5: Starts a load of an invalid URL (which should not work).
-function startInvalidFileLoad() {
-  testState = 'loading cross-origin file';
-  var url = 'url_as_nacl_desc_nonexistent_url.html';
-  generalLog('Loading URL ' + url);
-  generalLog('Expecting to see url get failure.');
-  server.__urlAsNaClDesc(url, new invalidFileLoadCallback());
-}
-
-// Test Stage 4: Verifies that a cross-domain file cannot be loaded.
-function crossOriginFileLoadCallback() {
-  this.onload = function(nacl_desc) {
-    // Should not have been able to load a cross-domain file.
-    generalLog('ERROR: crossOriginFileLoadCallback onload invoked.');
-    generalLog('Loading from the wrong domain should have been an error.');
-    allTestsComplete('Load of cross-origin file succeeded (incorrectly).');
-  }
-  this.onfail = function(object) {
-    // Correctly invoked the onfail handler for attempting to read a
-    // cross-domain file.  Everything is working as expected.
-    generalLog('crossOriginFileLoadCallback onfail correctly invoked: ' +
-               object);
-    // TODO(sehr): selenium always returns a table of contents when
-    // an invalid url is specified.  Enable this next line and remove the
-    // setting of testPassed and call to allTestsComplete when that is fixed.
-    // startInvalidFileLoad();
-    testPassed = true;
-    allTestsComplete('');
-  }
-}
-
-// Test Stage 3: Starts a load of a cross-domain file (which should not work).
-function startCrossOriginFileLoad() {
-  testState = 'loading cross-origin file';
-  var url = 'http://www.google.com/robots.txt';
-  generalLog('Loading URL ' + url);
-  generalLog('Expecting to see same origin violation.');
-  server.__urlAsNaClDesc(url, new crossOriginFileLoadCallback());
-}
-
-// Test Stage 2: Verifies that an existing file can be loaded.
-function validFileLoadCallback() {
-  this.onload = function(nacl_desc) {
-    // Get the data that was loaded from the file.
-    generalLog('validFileLoadCallback onload correctly invoked.');
-    var msg = server.cat(nacl_desc, 4096);
-    generalLog('cat returned, converting to string.');
-    var str = '';
-    var len = msg.length;
-    var byte;
-    for (var i = 0; i < len && (byte = msg[i]) != 0; i++) {
-      str += String.fromCharCode(byte);
+function enqueueTests(tester, server) {
+  tester.addTest('nonexistent_file_load', function() {
+    var callbackDone = false;
+    var testPassed;
+    function InvalidCallback() {
+      this.onload = function(nacl_desc) {
+        testPassed = false;
+        callbackDone = true;
+      }
+      this.onfail = function(object) {
+        testPassed = true;
+        callbackDone = true;
+      }
     }
-    generalLog(str);
-
-    // Note that the Selenium framework returns a list of all files that
-    // *could* be opened if the requested file could not be opened.
-    // Check for getting the real data from the test file, not just the
-    // list of all existing files.
-    var expected_text = 'TEST PASSED';
-    if (str.indexOf(expected_text) >= 0) {
-      // Start a load from the wrong domain.
-      startCrossOriginFileLoad();
-    } else {
-      generalLog('ERROR: validFileLoadCallback did not find expected text: ' +
-                 expected_text);
-      allTestsComplete('File load test did not find text: ' + expected_text);
+    // Load of an invalid URL (which should not work).
+    var url = 'url_as_nacl_desc_nonexistent_url.html';
+    server.__urlAsNaClDesc(url, new InvalidCallback());
+    function wait() {
+      if (!callbackDone) {
+        halt_and_callback(1, wait);
+      } else {
+        assertEqual(testPassed, true);
+      }
     }
-  }
-  this.onfail = function(object) {
-    generalLog('ERROR: validFileLoadCallback onfail invoked: ' + object);
-    allTestsComplete('File load test failed: ' + object);
-  }
-}
+    wait();
+  });
 
-// Test Stage 1: Starts a load of a valid file.
-function startValidFileLoad() {
-  testState = 'loading valid file';
-  var url = 'srpc_url_as_nacl_desc_success.html';
-  generalLog('Loading URL ' + url);
-  server.__urlAsNaClDesc(url, new validFileLoadCallback());
-}
+  tester.addTest('cross_origin_load', function() {
+    var callbackDone = false;
+    var testPassed;
+    function CrossOriginCallback() {
+      this.onload = function(nacl_desc) {
+        testPassed = false;
+        callbackDone = true;
+      }
+      this.onfail = function(object) {
+        testPassed = true;
+        callbackDone = true;
+      }
+    }
+    // Load of a cross-origin file (which should not work).
+    var url = 'http://www.google.com/robots.txt';
+    server.__urlAsNaClDesc(url, new CrossOriginCallback());
+    function wait() {
+      if (!callbackDone) {
+        halt_and_callback(1, wait);
+      } else {
+        assertEqual(testPassed, true);
+      }
+    }
+    wait();
+  });
 
-// Test watchdog timer. Makes sure the test does not run too long if
-// something hangs.
-function handleTestTimeout() {
-  generalLog('The test did not finish in the allotted time.');
-  allTestsComplete('Test timed out, testState=' + testState);
+  tester.addTest('valid_file_load', function() {
+    var callbackDone = false;
+    var fileString = '';
+    function ValidCallback() {
+      this.onload = function(nacl_desc) {
+        // Get the data that was loaded from the file.
+        var msg = server.cat(nacl_desc, 4096);
+        var len = msg.length;
+        var byte;
+        for (var i = 0; i < len && (byte = msg[i]) != 0; i++) {
+          fileString += String.fromCharCode(byte);
+        }
+        callbackDone = true;
+      }
+      this.onfail = function(object) {
+        callbackDone = true;
+      }
+    }
+    // Load of a valid file.
+    var url = 'srpc_url_as_nacl_desc_success.html';
+    server.__urlAsNaClDesc(url, new ValidCallback());
+    function wait() {
+      if (!callbackDone) {
+        halt_and_callback(1, wait);
+      } else {
+        var expected_text = 'TEST PASSED';
+        assert(fileString.indexOf(expected_text) >= 0);
+      }
+    }
+    wait();
+  });
 }
       //]]>
     </script>
   </head>
-  <body onload="nacllib.waitForModulesAndRunTests();"
-        onunload="nacllib.cleanUp();" >
-
+  <body>
     <h1>SRPC Open URL as NaCl Descriptor Test</h1>
     NOTE: Set NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS=1 to run this test.
 
-    <h2> Output logs</h2>
-    <table border=5 cellpadding=5% summary="Test status table">
-      <tr>
-        <td><b>General test output</b></td>
-      </tr>
-      <tr>
-        <td valign=top><pre id="GeneralOutput"></pre></td>
-      </tr>
-    </table>
-
-    <table summary="The color codes used for identifying test outcomes">
-      <tr> <td align="center"> <em> Legend </em> </td> </tr>
-      <tr> <td align="center" class="notrun"> Test not run </td> </tr>
-      <tr> <td align="center" class="pass"> Test passed </td> </tr>
-      <tr> <td align="center" class="fail"> Test failed </td> </tr>
-    </table>
-
-    <p>
-    <b>
-      NOTE: Some versions of some WebKit-based browsers do not correctly report
-      JavaScript exceptions raised by NPAPI plugins.  This can cause some of
-      the above tests to spuriously report failure.
-    </b>
-    </p>
-
-    <div id="status">NO-STATUS</div>
-
-    <embed type="application/x-nacl" id="nacl_server" name="nacl_module"
+    <embed type="application/x-nacl" id="nacl_server" name="naclModule"
            width="0" height="0" nacl="cat.nmf" />
-
-    <script type="text/javascript" src="nacl_js_lib.js"></script>
-    <script type="text/javascript">
+    <script type="application/x-javascript">
       //<![CDATA[
-      var nacllib = new NaclLib('nacl_module', 'status', 500);
-
-      // Returns true ("wait") to the NaclLib test driver until all of the
-      // tests are complete.  I.e., either all of the file load callbacks have
-      // completed successfully or an error has occurred.
-      nacllib.wait = function() {
-        if ('' == testState) {
-          // The module has successfully loaded and this code is being
-          // called for the first time. Get set up and start testing.
-          testState = 'initializing';
-
-          server = document.getElementById('nacl_server');
-          logElement = document.getElementById('GeneralOutput');
-          generalLog('Module loaded.');
-
-          testTimeoutHandler = setTimeout('handleTestTimeout()', 10000);
-          startValidFileLoad();
-          return true;
-        } else if ('complete' != testState) {
-          // Continue to return true until all testing is complete. This tells
-          // the test driver to wait before calling the test() method.
-          return true;
-        } else {
-          // Testing is complete.  Allow the test driver to call test().
-          return false;
-        }
-      }
-
-      // Returns the test status to the NaclLib test driver.  This is called
-      // by the NaclLib test driver after the wait() method has returned false.
-      // I.e., this is called only after all tests are complete.
-      nacllib.test = function() {
-        // The actual testing is all finished by the time this method is
-        // called, so just return the test results.
-        if ('' == testState) {
-          return 'The module did not load.';
-        } else if (!testPassed && '' != testErrorMsg) {
-          return testErrorMsg;
-        } else if (!testPassed) {
-          return 'Generic test failure.';
-        } else {
-          return '';
-        }
-      }
+var tester = new Tester();
+enqueueTests(tester, $('nacl_server'));
+tester.waitFor($('nacl_server'));
+tester.run();
       //]]>
     </script>
   </body>

@@ -93,7 +93,7 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // with NaClDesc-wrapped file descriptor on success and js_callback.onfail
   // with an error string on failure.
   // This is used by JS-based __urlAsNaClDesc().
-  bool UrlAsNaClDesc(const nacl::string& url, pp::Var js_callback);
+  void UrlAsNaClDesc(const nacl::string& url, pp::Var js_callback);
   // Requests a URL asynchronously resulting in a call to pp_callback with
   // a PP_Error indicating status. On success an open file descriptor
   // corresponding to the url body is recorded for further lookup.

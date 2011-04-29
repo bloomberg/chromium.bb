@@ -74,8 +74,8 @@ bool UrlAsNaClDesc(void* obj, SrpcParams* params) {
       static_cast<PluginPpapi*>(reinterpret_cast<Plugin*>(obj));
   const char* url = ins[0]->arrays.str;
   // TODO(sehr,polina): Ensure that origin checks are performed here.
-  return plugin->UrlAsNaClDesc(
-      url, *reinterpret_cast<pp::Var*>(ins[1]->arrays.oval));
+  plugin->UrlAsNaClDesc(url, *reinterpret_cast<pp::Var*>(ins[1]->arrays.oval));
+  return true;
 }
 
 bool GetLastError(void* obj, SrpcParams* params) {
@@ -802,7 +802,7 @@ int32_t PluginPpapi::GetPOSIXFileDesc(const nacl::string& url) {
 
 // TODO(polina): reduce code duplication between UrlAsNaClDesc and StreamAsFile.
 
-bool PluginPpapi::UrlAsNaClDesc(const nacl::string& url, pp::Var js_callback) {
+void PluginPpapi::UrlAsNaClDesc(const nacl::string& url, pp::Var js_callback) {
   PLUGIN_PRINTF(("PluginPpapi::UrlAsNaClDesc (url='%s')\n", url.c_str()));
   FileDownloader* downloader = new FileDownloader();
   downloader->Initialize(this);
@@ -812,7 +812,7 @@ bool PluginPpapi::UrlAsNaClDesc(const nacl::string& url, pp::Var js_callback) {
                                     downloader,
                                     js_callback);
   // Will always call the callback on success or failure.
-  return downloader->Open(url, open_callback);
+  downloader->Open(url, open_callback);
 }
 
 
