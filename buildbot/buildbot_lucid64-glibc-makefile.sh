@@ -33,6 +33,12 @@ echo @@@BUILD_STEP compile_toolchain@@@
   fi
 )
 
+echo @@@BUILD_STEP glibc_tests64@@@
+(
+  cd tools
+  make glibc-check
+)
+
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
   mkdir -p "$TOOLCHAINLOC"
   rm -rf "$TOOLCHAINLOC/$TOOLCHAINNAME"

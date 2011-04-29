@@ -32,7 +32,7 @@ cat "$base"/glibc-tests/exclude_list.txt | egrep -v '^#|^[[:space:]]*$' | \
 # Set the pipe to return last failed exit code since by default 'tee' overwrites
 # the exit code.
 set -o pipefail
-make -k -j16 -C "$base"/SRC/glibc check \
+make -k -C "$base"/SRC/glibc check \
   LDFLAGS=-B"$proxy_bin" objdir="$bld" \
   run-program-prefix="$proxy_bin"/nacl_tester.sh 2>&1 |
     tee "$logfile"
