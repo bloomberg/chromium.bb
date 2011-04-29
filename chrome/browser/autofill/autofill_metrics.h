@@ -14,36 +14,25 @@
 
 class AutofillMetrics {
  public:
-  enum CreditCardInfoBarMetric {
-    CREDIT_CARD_INFOBAR_SHOWN = 0,  // We showed an infobar prompting to save
-                                    // credit card info.
-    CREDIT_CARD_INFOBAR_ACCEPTED,   // The user explicitly accepted the infobar.
-    CREDIT_CARD_INFOBAR_DENIED,     // The user explicitly denied the infobar.
-    CREDIT_CARD_INFOBAR_IGNORED,    // The user completely ignored the infobar
-                                    // (logged on tab close).
-    NUM_CREDIT_CARD_INFO_BAR_METRICS
+  enum InfoBarMetric {
+    INFOBAR_SHOWN = 0,  // We showed an infobar, e.g. prompting to save credit
+                        // card info.
+    INFOBAR_ACCEPTED,   // The user explicitly accepted the infobar.
+    INFOBAR_DENIED,     // The user explicitly denied the infobar.
+    INFOBAR_IGNORED,    // The user completely ignored the infobar (logged on
+                        // tab close).
+    NUM_INFO_BAR_METRICS
   };
 
-  // Metrics measuring how well we predict field types. Exactly one metric from
-  // each set is logged for each fillable field in a submitted form.
-  enum HeuristicTypeQualityMetric {
-    HEURISTIC_TYPE_UNKNOWN = 0,  // Our heuristics offered no prediction.
-    HEURISTIC_TYPE_MATCH,        // Our heuristics predicted correctly.
-    HEURISTIC_TYPE_MISMATCH,     // Our heuristics predicted incorrectly.
-    NUM_HEURISTIC_TYPE_QUALITY_METRICS
-  };
-  enum ServerTypeQualityMetric {
-    SERVER_TYPE_UNKNOWN = 0,  // The server offered no prediction.
-    SERVER_TYPE_MATCH,        // The server predicted correctly.
-    SERVER_TYPE_MISMATCH,     // The server predicted incorrectly.
-    NUM_SERVER_TYPE_QUALITY_METRICS
-  };
-  enum PredictedTypeQualityMetric {
-    PREDICTED_TYPE_UNKNOWN = 0,  // Neither server nor heuristics offered a
-                                 // prediction.
-    PREDICTED_TYPE_MATCH,        // Overall, predicted correctly.
-    PREDICTED_TYPE_MISMATCH,     // Overall, predicted incorrectly.
-    NUM_PREDICTED_TYPE_QUALITY_METRICS
+  // Metrics measuring how well we predict field types.  Exactly three such
+  // metrics are logged for each fillable field in a submitted form: for
+  // the heuristic prediction, for the crowd-sourced prediction, and for the
+  // overall prediction.
+  enum FieldTypeQualityMetric {
+    TYPE_UNKNOWN = 0,  // Offered no prediction.
+    TYPE_MATCH,        // Predicted correctly.
+    TYPE_MISMATCH,     // Predicted incorrectly.
+    NUM_FIELD_TYPE_QUALITY_METRICS
   };
 
   enum QualityMetric {
@@ -93,19 +82,25 @@ class AutofillMetrics {
   AutofillMetrics();
   virtual ~AutofillMetrics();
 
-  virtual void Log(CreditCardInfoBarMetric metric) const;
-  virtual void Log(HeuristicTypeQualityMetric metric,
-                   AutofillFieldType field_type,
-                   const std::string& experiment_id) const;
-  virtual void Log(PredictedTypeQualityMetric metric,
-                   AutofillFieldType field_type,
-                   const std::string& experiment_id) const;
-  virtual void Log(QualityMetric metric,
-                   const std::string& experiment_id) const;
-  virtual void Log(ServerQueryMetric metric) const;
-  virtual void Log(ServerTypeQualityMetric metric,
-                   AutofillFieldType field_type,
-                   const std::string& experiment_id) const;
+  virtual void LogCreditCardInfoBarMetric(InfoBarMetric metric) const;
+
+  virtual void LogHeuristicTypePrediction(
+      FieldTypeQualityMetric metric,
+      AutofillFieldType field_type,
+      const std::string& experiment_id) const;
+  virtual void LogOverallTypePrediction(
+      FieldTypeQualityMetric metric,
+      AutofillFieldType field_type,
+      const std::string& experiment_id) const;
+  virtual void LogServerTypePrediction(FieldTypeQualityMetric metric,
+                                       AutofillFieldType field_type,
+                                       const std::string& experiment_id) const;
+
+  virtual void LogQualityMetric(QualityMetric metric,
+                                const std::string& experiment_id) const;
+
+  virtual void LogServerQueryMetric(ServerQueryMetric metric) const;
+
 
   // This should be called each time a page containing forms is loaded.
   virtual void LogIsAutofillEnabledAtPageLoad(bool enabled) const;

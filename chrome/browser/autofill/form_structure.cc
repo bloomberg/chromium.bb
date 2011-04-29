@@ -199,7 +199,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
                                        const std::vector<FormStructure*>& forms,
                                        UploadRequired* upload_required,
                                        const AutofillMetrics& metric_logger) {
-  metric_logger.Log(AutofillMetrics::QUERY_RESPONSE_RECEIVED);
+  metric_logger.LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_RECEIVED);
 
   // Parse the field types from the server response to the query.
   std::vector<AutofillFieldType> field_types;
@@ -211,7 +211,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   if (!parse_handler.succeeded())
     return;
 
-  metric_logger.Log(AutofillMetrics::QUERY_RESPONSE_PARSED);
+  metric_logger.LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED);
 
   bool heuristics_detected_fillable_field = false;
   bool query_response_overrode_heuristics = false;
@@ -268,7 +268,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   } else {
     metric = AutofillMetrics::QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS;
   }
-  metric_logger.Log(metric);
+  metric_logger.LogServerQueryMetric(metric);
 }
 
 std::string FormStructure::FormSignature() const {
@@ -351,7 +351,8 @@ void FormStructure::LogQualityMetrics(
   std::string experiment_id = server_experiment_id();
   for (size_t i = 0; i < field_count(); ++i) {
     const AutofillField* field = this->field(i);
-    metric_logger.Log(AutofillMetrics::FIELD_SUBMITTED, experiment_id);
+    metric_logger.LogQualityMetric(AutofillMetrics::FIELD_SUBMITTED,
+                                   experiment_id);
 
     // No further logging for empty fields nor for fields where the entered data
     // does not appear to already exist in the user's stored Autofill data.
@@ -390,36 +391,36 @@ void FormStructure::LogQualityMetrics(
     // Log heuristic, server, and overall type quality metrics, independently of
     // whether the field was autofilled.
     if (heuristic_type == UNKNOWN_TYPE) {
-      metric_logger.Log(AutofillMetrics::HEURISTIC_TYPE_UNKNOWN,
-                        field_type, experiment_id);
+      metric_logger.LogHeuristicTypePrediction(AutofillMetrics::TYPE_UNKNOWN,
+                                               field_type, experiment_id);
     } else if (field_types.count(heuristic_type)) {
-      metric_logger.Log(AutofillMetrics::HEURISTIC_TYPE_MATCH,
-                        field_type, experiment_id);
+      metric_logger.LogHeuristicTypePrediction(AutofillMetrics::TYPE_MATCH,
+                                               field_type, experiment_id);
     } else {
-      metric_logger.Log(AutofillMetrics::HEURISTIC_TYPE_MISMATCH,
-                        field_type, experiment_id);
+      metric_logger.LogHeuristicTypePrediction(AutofillMetrics::TYPE_MISMATCH,
+                                               field_type, experiment_id);
     }
 
     if (server_type == NO_SERVER_DATA) {
-      metric_logger.Log(AutofillMetrics::SERVER_TYPE_UNKNOWN,
-                        field_type, experiment_id);
+      metric_logger.LogServerTypePrediction(AutofillMetrics::TYPE_UNKNOWN,
+                                            field_type, experiment_id);
     } else if (field_types.count(server_type)) {
-      metric_logger.Log(AutofillMetrics::SERVER_TYPE_MATCH,
-                        field_type, experiment_id);
+      metric_logger.LogServerTypePrediction(AutofillMetrics::TYPE_MATCH,
+                                            field_type, experiment_id);
     } else {
-      metric_logger.Log(AutofillMetrics::SERVER_TYPE_MISMATCH,
-                        field_type, experiment_id);
+      metric_logger.LogServerTypePrediction(AutofillMetrics::TYPE_MISMATCH,
+                                            field_type, experiment_id);
     }
 
     if (predicted_type == UNKNOWN_TYPE) {
-      metric_logger.Log(AutofillMetrics::PREDICTED_TYPE_UNKNOWN,
-                        field_type, experiment_id);
+      metric_logger.LogOverallTypePrediction(AutofillMetrics::TYPE_UNKNOWN,
+                                             field_type, experiment_id);
     } else if (field_types.count(predicted_type)) {
-      metric_logger.Log(AutofillMetrics::PREDICTED_TYPE_MATCH,
-                        field_type, experiment_id);
+      metric_logger.LogOverallTypePrediction(AutofillMetrics::TYPE_MATCH,
+                                             field_type, experiment_id);
     } else {
-      metric_logger.Log(AutofillMetrics::PREDICTED_TYPE_MISMATCH,
-                        field_type, experiment_id);
+      metric_logger.LogOverallTypePrediction(AutofillMetrics::TYPE_MISMATCH,
+                                             field_type, experiment_id);
     }
 
     // TODO(isherman): <select> fields don't support |is_autofilled()|, so we
@@ -428,33 +429,38 @@ void FormStructure::LogQualityMetrics(
       continue;
 
     if (field->is_autofilled) {
-      metric_logger.Log(AutofillMetrics::FIELD_AUTOFILLED, experiment_id);
+      metric_logger.LogQualityMetric(AutofillMetrics::FIELD_AUTOFILLED,
+                                     experiment_id);
     } else {
-      metric_logger.Log(AutofillMetrics::FIELD_NOT_AUTOFILLED,
-                        experiment_id);
+      metric_logger.LogQualityMetric(AutofillMetrics::FIELD_NOT_AUTOFILLED,
+                                     experiment_id);
 
       if (heuristic_type == UNKNOWN_TYPE) {
-        metric_logger.Log(
+        metric_logger.LogQualityMetric(
             AutofillMetrics::NOT_AUTOFILLED_HEURISTIC_TYPE_UNKNOWN,
             experiment_id);
       } else if (field_types.count(heuristic_type)) {
-        metric_logger.Log(AutofillMetrics::NOT_AUTOFILLED_HEURISTIC_TYPE_MATCH,
-                          experiment_id);
+        metric_logger.LogQualityMetric(
+            AutofillMetrics::NOT_AUTOFILLED_HEURISTIC_TYPE_MATCH,
+            experiment_id);
       } else {
-        metric_logger.Log(
+        metric_logger.LogQualityMetric(
             AutofillMetrics::NOT_AUTOFILLED_HEURISTIC_TYPE_MISMATCH,
             experiment_id);
       }
 
       if (server_type == NO_SERVER_DATA) {
-        metric_logger.Log(AutofillMetrics::NOT_AUTOFILLED_SERVER_TYPE_UNKNOWN,
-                          experiment_id);
+        metric_logger.LogQualityMetric(
+            AutofillMetrics::NOT_AUTOFILLED_SERVER_TYPE_UNKNOWN,
+            experiment_id);
       } else if (field_types.count(server_type)) {
-        metric_logger.Log(AutofillMetrics::NOT_AUTOFILLED_SERVER_TYPE_MATCH,
-                          experiment_id);
+        metric_logger.LogQualityMetric(
+            AutofillMetrics::NOT_AUTOFILLED_SERVER_TYPE_MATCH,
+            experiment_id);
       } else {
-        metric_logger.Log(AutofillMetrics::NOT_AUTOFILLED_SERVER_TYPE_MISMATCH,
-                          experiment_id);
+        metric_logger.LogQualityMetric(
+            AutofillMetrics::NOT_AUTOFILLED_SERVER_TYPE_MISMATCH,
+            experiment_id);
       }
     }
   }

@@ -24,17 +24,17 @@ AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(
       personal_data_(personal_data),
       metric_logger_(metric_logger),
       had_user_interaction_(false) {
-  metric_logger_->Log(AutofillMetrics::CREDIT_CARD_INFOBAR_SHOWN);
+  metric_logger_->LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN);
 }
 
 AutofillCCInfoBarDelegate::~AutofillCCInfoBarDelegate() {
 }
 
 void AutofillCCInfoBarDelegate::LogUserAction(
-    AutofillMetrics::CreditCardInfoBarMetric user_action) {
+    AutofillMetrics::InfoBarMetric user_action) {
   DCHECK(!had_user_interaction_);
 
-  metric_logger_->Log(user_action);
+  metric_logger_->LogCreditCardInfoBarMetric(user_action);
   had_user_interaction_ = true;
 }
 
@@ -48,13 +48,13 @@ bool AutofillCCInfoBarDelegate::ShouldExpire(
 
 void AutofillCCInfoBarDelegate::InfoBarClosed() {
   if (!had_user_interaction_)
-    LogUserAction(AutofillMetrics::CREDIT_CARD_INFOBAR_IGNORED);
+    LogUserAction(AutofillMetrics::INFOBAR_IGNORED);
 
   delete this;
 }
 
 void AutofillCCInfoBarDelegate::InfoBarDismissed() {
-  LogUserAction(AutofillMetrics::CREDIT_CARD_INFOBAR_DENIED);
+  LogUserAction(AutofillMetrics::INFOBAR_DENIED);
 }
 
 gfx::Image* AutofillCCInfoBarDelegate::GetIcon() const {
@@ -77,12 +77,12 @@ string16 AutofillCCInfoBarDelegate::GetButtonLabel(InfoBarButton button) const {
 
 bool AutofillCCInfoBarDelegate::Accept() {
   personal_data_->SaveImportedCreditCard(*credit_card_);
-  LogUserAction(AutofillMetrics::CREDIT_CARD_INFOBAR_ACCEPTED);
+  LogUserAction(AutofillMetrics::INFOBAR_ACCEPTED);
   return true;
 }
 
 bool AutofillCCInfoBarDelegate::Cancel() {
-  LogUserAction(AutofillMetrics::CREDIT_CARD_INFOBAR_DENIED);
+  LogUserAction(AutofillMetrics::INFOBAR_DENIED);
   return true;
 }
 

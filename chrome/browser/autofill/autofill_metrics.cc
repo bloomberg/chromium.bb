@@ -29,9 +29,25 @@ enum FieldTypeGroupForMetrics {
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
 
-// Translates |field_type| to the corresponding logical grouping for metrics,
-// and then interpolates this with the given |metric|, which should be in the
-// range [0, |num_possible_metrics|).  Returns the interpolated metric.
+// First, translates |field_type| to the corresponding logical |group| from
+// |FieldTypeGroupForMetrics|.  Then, interpolates this with the given |metric|,
+// which should be in the range [0, |num_possible_metrics|).
+// Returns the interpolated index.
+//
+// The interpolation maps the pair (|group|, |metric|) to a single index, so
+// that all the indicies for a given group are adjacent.  In particular, with
+// the groups {AMBIGUOUS, NAME, ...} combining with the metrics {UNKNOWN, MATCH,
+// MISMATCH}, we create this set of mapped indices:
+// {
+//   AMBIGUOUS+UNKNOWN,
+//   AMBIGUOUS+MATCH,
+//   AMBIGUOUS+MISMATCH,
+//   NAME+UNKNOWN,
+//   NAME+MATCH,
+//   NAME+MISMATCH,
+//   ...
+// }.
+//
 // Clients must ensure that |field_type| is one of the types Chrome supports
 // natively, e.g. |field_type| must not be a billng address.
 int GetFieldTypeGroupMetric(const AutofillFieldType field_type,
@@ -110,14 +126,7 @@ int GetFieldTypeGroupMetric(const AutofillFieldType field_type,
   }
 
   // Interpolate the |metric| with the |group|, so that all metrics for a given
-  // |group| are adjacent.  The resulting metrics will be arranged as:
-  // AMBIGUOUS_UNKNOWN
-  // AMBIGUOUS_MATCH
-  // AMBIGUOUS_MISMATCH
-  // NAME_UNKNOWN
-  // NAME_MATCH
-  // NAME_MISMATCH
-  // ...
+  // |group| are adjacent.
   return (group * num_possible_metrics) + metric;
 }
 
@@ -175,31 +184,42 @@ AutofillMetrics::AutofillMetrics() {
 AutofillMetrics::~AutofillMetrics() {
 }
 
-void AutofillMetrics::Log(CreditCardInfoBarMetric metric) const {
-  DCHECK(metric < NUM_CREDIT_CARD_INFO_BAR_METRICS);
+void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) const {
+  DCHECK(metric < NUM_INFO_BAR_METRICS);
 
   UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardInfoBar", metric,
-                            NUM_CREDIT_CARD_INFO_BAR_METRICS);
+                            NUM_INFO_BAR_METRICS);
 }
 
-void AutofillMetrics::Log(HeuristicTypeQualityMetric metric,
-                          AutofillFieldType field_type,
-                          const std::string& experiment_id) const {
+void AutofillMetrics::LogHeuristicTypePrediction(
+    FieldTypeQualityMetric metric,
+    AutofillFieldType field_type,
+    const std::string& experiment_id) const {
   LogTypeQualityMetric("Autofill.Quality.HeuristicType",
-                       metric, NUM_HEURISTIC_TYPE_QUALITY_METRICS,
+                       metric, NUM_FIELD_TYPE_QUALITY_METRICS,
                        field_type, experiment_id);
 }
 
-void AutofillMetrics::Log(PredictedTypeQualityMetric metric,
-                          AutofillFieldType field_type,
-                          const std::string& experiment_id) const {
+void AutofillMetrics::LogOverallTypePrediction(
+    FieldTypeQualityMetric metric,
+    AutofillFieldType field_type,
+    const std::string& experiment_id) const {
   LogTypeQualityMetric("Autofill.Quality.PredictedType",
-                       metric, NUM_PREDICTED_TYPE_QUALITY_METRICS,
+                       metric, NUM_FIELD_TYPE_QUALITY_METRICS,
                        field_type, experiment_id);
 }
 
-void AutofillMetrics::Log(QualityMetric metric,
-                          const std::string& experiment_id) const {
+void AutofillMetrics::LogServerTypePrediction(
+    FieldTypeQualityMetric metric,
+    AutofillFieldType field_type,
+    const std::string& experiment_id) const {
+  LogTypeQualityMetric("Autofill.Quality.ServerType",
+                       metric, NUM_FIELD_TYPE_QUALITY_METRICS,
+                       field_type, experiment_id);
+}
+
+void AutofillMetrics::LogQualityMetric(QualityMetric metric,
+                                       const std::string& experiment_id) const {
   DCHECK(metric < NUM_QUALITY_METRICS);
 
   std::string histogram_name = "Autofill.Quality";
@@ -209,19 +229,11 @@ void AutofillMetrics::Log(QualityMetric metric,
   LogUMAHistogramEnumeration(histogram_name, metric, NUM_QUALITY_METRICS);
 }
 
-void AutofillMetrics::Log(ServerQueryMetric metric) const {
+void AutofillMetrics::LogServerQueryMetric(ServerQueryMetric metric) const {
   DCHECK(metric < NUM_SERVER_QUERY_METRICS);
 
   UMA_HISTOGRAM_ENUMERATION("Autofill.ServerQueryResponse", metric,
                             NUM_SERVER_QUERY_METRICS);
-}
-
-void AutofillMetrics::Log(ServerTypeQualityMetric metric,
-                          AutofillFieldType field_type,
-                          const std::string& experiment_id) const {
-  LogTypeQualityMetric("Autofill.Quality.ServerType",
-                       metric, NUM_SERVER_TYPE_QUALITY_METRICS,
-                       field_type, experiment_id);
 }
 
 void AutofillMetrics::LogIsAutofillEnabledAtStartup(bool enabled) const {

@@ -32,7 +32,7 @@ class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   virtual ~AutofillCCInfoBarDelegate();
 
-  void LogUserAction(AutofillMetrics::CreditCardInfoBarMetric user_action);
+  void LogUserAction(AutofillMetrics::InfoBarMetric user_action);
 
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(

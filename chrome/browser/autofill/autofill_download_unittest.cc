@@ -30,7 +30,7 @@ namespace {
 class MockAutofillMetrics : public AutofillMetrics {
  public:
   MockAutofillMetrics() {}
-  MOCK_CONST_METHOD1(Log, void(ServerQueryMetric metric));
+  MOCK_CONST_METHOD1(LogServerQueryMetric, void(ServerQueryMetric metric));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
@@ -202,7 +202,8 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
 
   // Request with id 0.
   MockAutofillMetrics mock_metric_logger;
-  EXPECT_CALL(mock_metric_logger, Log(AutofillMetrics::QUERY_SENT)).Times(2);
+  EXPECT_CALL(mock_metric_logger,
+              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(2);
   // First one will fail because context is not set up.
   EXPECT_FALSE(helper.download_manager.StartQueryRequest(form_structures,
                                                          mock_metric_logger));
@@ -306,7 +307,8 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   form_structures.push_back(form_structure);
 
   // Request with id 3.
-  EXPECT_CALL(mock_metric_logger, Log(AutofillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_CALL(mock_metric_logger,
+              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
   EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures,
                                                         mock_metric_logger));
   fetcher = factory.GetFetcherByID(3);
@@ -325,7 +327,8 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   helper.responses_.pop_front();
 
   // Query requests should be ignored for the next 10 seconds.
-  EXPECT_CALL(mock_metric_logger, Log(AutofillMetrics::QUERY_SENT)).Times(0);
+  EXPECT_CALL(mock_metric_logger,
+              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(0);
   EXPECT_FALSE(helper.download_manager.StartQueryRequest(form_structures,
                                                          mock_metric_logger));
   fetcher = factory.GetFetcherByID(4);
@@ -439,7 +442,8 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
 
   // Request with id 0.
   MockAutofillMetrics mock_metric_logger;
-  EXPECT_CALL(mock_metric_logger, Log(AutofillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_CALL(mock_metric_logger,
+              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
   EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures0,
                                                         mock_metric_logger));
   // No responses yet
@@ -457,7 +461,8 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   helper.responses_.clear();
 
   // No actual request - should be a cache hit.
-  EXPECT_CALL(mock_metric_logger, Log(AutofillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_CALL(mock_metric_logger,
+              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
   EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures0,
                                                         mock_metric_logger));
   // Data is available immediately from cache - no over-the-wire trip.
@@ -466,7 +471,8 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   helper.responses_.clear();
 
   // Request with id 1.
-  EXPECT_CALL(mock_metric_logger, Log(AutofillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_CALL(mock_metric_logger,
+              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
   EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures1,
                                                         mock_metric_logger));
   // No responses yet
@@ -484,7 +490,8 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   helper.responses_.clear();
 
   // Request with id 2.
-  EXPECT_CALL(mock_metric_logger, Log(AutofillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_CALL(mock_metric_logger,
+              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
   EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures2,
                                                         mock_metric_logger));
 
@@ -500,11 +507,13 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   helper.responses_.clear();
 
   // No actual requests - should be a cache hit.
-  EXPECT_CALL(mock_metric_logger, Log(AutofillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_CALL(mock_metric_logger,
+              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
   EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures1,
                                                         mock_metric_logger));
 
-  EXPECT_CALL(mock_metric_logger, Log(AutofillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_CALL(mock_metric_logger,
+              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
   EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures2,
                                                         mock_metric_logger));
 
@@ -515,7 +524,8 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
 
   // The first structure should've expired.
   // Request with id 3.
-  EXPECT_CALL(mock_metric_logger, Log(AutofillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_CALL(mock_metric_logger,
+              LogServerQueryMetric(AutofillMetrics::QUERY_SENT)).Times(1);
   EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures0,
                                                         mock_metric_logger));
   // No responses yet

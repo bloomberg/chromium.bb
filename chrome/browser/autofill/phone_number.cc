@@ -203,14 +203,17 @@ void PhoneNumber::set_whole_number(const string16& whole_number) {
 bool PhoneNumber::IsNumber(const string16& text) const {
   // TODO(isherman): This will need to be updated once we add support for
   // international phone numbers.
-  const size_t kPhoneNumberPrefixLength = 3;
-  const size_t kPhoneNumberSuffixLength = 4;
-  return
-      (text == number_) ||
-      (text.length() == kPhoneNumberPrefixLength &&
-       StartsWith(number_, text, true)) ||
-      (text.length() == kPhoneNumberSuffixLength &&
-       EndsWith(number_, text, true));
+  const size_t kPrefixLength = 3;
+  const size_t kSuffixLength = 4;
+
+  if (text == number_)
+    return true;
+  if (text.length() == kPrefixLength && StartsWith(number_, text, true))
+    return true;
+  if (text.length() == kSuffixLength && EndsWith(number_, text, true))
+    return true;
+
+  return false;
 }
 
 bool PhoneNumber::IsCityCode(const string16& text) const {

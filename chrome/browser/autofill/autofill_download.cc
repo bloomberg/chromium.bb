@@ -86,7 +86,7 @@ bool AutofillDownloadManager::StartQueryRequest(
   }
 
   request_data.request_type = AutofillDownloadManager::REQUEST_QUERY;
-  metric_logger.Log(AutofillMetrics::QUERY_SENT);
+  metric_logger.LogServerQueryMetric(AutofillMetrics::QUERY_SENT);
 
   std::string query_data;
   if (CheckCacheForQueryRequest(request_data.form_signatures, &query_data)) {
