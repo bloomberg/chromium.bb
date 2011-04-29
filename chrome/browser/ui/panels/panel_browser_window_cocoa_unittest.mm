@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/debug/debugger.h"
+#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/panels/panel.h"
@@ -23,8 +24,8 @@ TEST_F(PanelBrowserWindowCocoaTest, CreateClose) {
   PanelManager* manager = PanelManager::GetInstance();
   EXPECT_EQ(0, manager->active_count());  // No panels initially.
 
-  Panel* panel = manager->CreatePanel(browser_helper_.browser());
-  EXPECT_TRUE(panel);
+  scoped_ptr<Panel> panel(manager->CreatePanel(browser_helper_.browser()));
+  EXPECT_TRUE(panel.get());
   EXPECT_TRUE(panel->browser_window());  // Native panel is created right away.
   PanelBrowserWindowCocoa* native_window =
       static_cast<PanelBrowserWindowCocoa*>(panel->browser_window());
