@@ -50,6 +50,11 @@ def _GetConfig(config_name, options):
 
 def RunBuildStages(bot_id, options, build_config):
   """Run the requested build stages."""
+
+  # TODO, Remove here and in config after bug chromium-os:14649 is fixed.
+  if build_config['chromeos_official']:
+    os.environ['CHROMEOS_OFFICIAL'] = '1'
+
   try:
     if options.sync:
       if build_config['manifest_version']:

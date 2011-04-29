@@ -31,10 +31,17 @@ class CBuildBotTest(mox.MoxTestBase):
     # Always stub RunCommmand out as we use it in every method.
     self.bot_id = 'x86-generic-pre-flight-queue'
     self.build_config = config.config[self.bot_id]
+    self.build_config['master'] = False
+    self.build_config['important'] = False
 
     self.options = self.mox.CreateMockAnything()
     self.options.buildroot = '.'
     self.options.resume = False
+    self.options.sync = False
+    self.options.build = False
+    self.options.uprev = False
+    self.options.tests = False
+    self.options.archive = False
 
   def testNoResultCodeReturned(self):
     """Test a non-error run."""
@@ -91,6 +98,56 @@ class CBuildBotTest(mox.MoxTestBase):
                                          self.build_config))
 
     self.mox.VerifyAll()
+
+  def testChromeosOfficialSet(self):
+    """Verify that CHROMEOS_OFFICIAL is set correctly."""
+
+    self.build_config['chromeos_official'] = True
+
+    # Clean up before
+    if 'CHROMEOS_OFFICIAL' in os.environ:
+      del os.environ['CHROMEOS_OFFICIAL']
+
+    self.mox.ReplayAll()
+
+    self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
+
+    cbuildbot.RunBuildStages(self.bot_id,
+                             self.options,
+                             self.build_config)
+
+    self.assertTrue('CHROMEOS_OFFICIAL' in os.environ)
+
+    self.mox.VerifyAll()
+
+    # Clean up after the test
+    if 'CHROMEOS_OFFICIAL' in os.environ:
+      del os.environ['CHROMEOS_OFFICIAL']
+
+  def testChromeosOfficialNotSet(self):
+    """Verify that CHROMEOS_OFFICIAL is not always set."""
+
+    self.build_config['chromeos_official'] = False
+
+    # Clean up before
+    if 'CHROMEOS_OFFICIAL' in os.environ:
+      del os.environ['CHROMEOS_OFFICIAL']
+
+    self.mox.ReplayAll()
+
+    self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
+
+    cbuildbot.RunBuildStages(self.bot_id,
+                             self.options,
+                             self.build_config)
+
+    self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
+
+    self.mox.VerifyAll()
+
+    # Clean up after the test
+    if 'CHROMEOS_OFFICIAL' in os.environ:
+      del os.environ['CHROMEOS_OFFICIAL']
 
 
 class AbstractStageTest(mox.MoxTestBase):

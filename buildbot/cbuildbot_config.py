@@ -19,6 +19,9 @@ hostname -- Needed for 'important' slaves.  The hostname of the bot.  Should
 
 useflags -- emerge use flags to use while setting up the board, building
             packages, making images, etc.
+chromeos_official -- Set the variable CRHOMEOS_OFFICIAL for the build.
+                     Known to affect parallel_emerge, cros_set_lsb_release,
+                     and chromeos_version.sh. See bug chromium-os:14649
 
 uprev -- Uprevs the local ebuilds to build new changes since last stable.
          build.  If master then also pushes these changes on success.
@@ -74,6 +77,7 @@ default = {
   # 'hostname' No default value
 
   'useflags' : None,
+  'chromeos_official' : False,
   'usepkg' : True,
   'chroot_replace' : False,
 
@@ -146,9 +150,10 @@ release = {
   'uprev' : True,
   'rev_overlays': 'both',
 
-  'chroot_replace' : True,
-
   'useflags' : 'chrome_internal chrome_pdf',
+  'chromeos_official' : True,
+
+  'chroot_replace' : True,
 
   'unittests' : True,
   'quick_unit' : False,
@@ -180,7 +185,8 @@ internal_full = {
   # master --official --chromeos --clean --upload-board-prebuilt
   #   --ctest --unittests --bvt
 
-  'use_flags' : 'chrome_internal chrome_pdf',
+  'useflags' : 'chrome_internal chrome_pdf',
+  'chromeos_official' : True,
 
   'usepkg' : False,
   'chroot_replace' : True,
