@@ -11,7 +11,10 @@ cr.define('options', function() {
   // rendered in the captcha state, which is basically identical except we
   // don't show the top error blurb "Error Signing in" or the "Create
   // account" link.
-  var captcha_challenge_active_ = false;
+  var captchaChallengeActive_ = false;
+
+  // True if the synced account uses a custom passphrase.
+  var usePassphrase_ = false;
 
   /**
    * SyncSetupOverlay class
@@ -135,6 +138,7 @@ cr.define('options', function() {
       return undefined;
     },
 
+    // TODO(jhawkins): Remove this method.
     switchToMode_: function(mode) {
       if (mode == "google")
         $('sync-custom-passphrase').hidden = true;
@@ -367,9 +371,9 @@ cr.define('options', function() {
         // TODO(jhawkins): Rename |keepEverythingSynced| to |syncAllDataTypes|.
         var syncEverything = args['syncEverything'];
         var syncAllDataTypes = args['keepEverythingSynced'];
-        var usePassphrase = args['usePassphrase'];
+        this.usePassphrase_ = args['usePassphrase'];
         if (syncEverything == false || syncAllDataTypes == false ||
-            usePassphrase) {
+            this.usePassphrase_) {
           this.showCustomizePage_(syncAllDataTypes);
         }
       }
@@ -382,9 +386,16 @@ cr.define('options', function() {
       // Reset the selection to 'Sync everything'.
       $('sync-select-datatypes').selectedIndex = 0;
 
-      // The default state is to sync everything; the passphrase option is
-      // unchanged.
+      // The default state is to sync everything.
       this.setCheckboxesToKeepEverythingSynced_(true);
+
+      // If the account is not synced with a custom passphrase, reset the
+      // passphrase radio when switching to the 'Sync everything' page.
+      if (!this.usePassphrase_) {
+        $('google-option').checked = true;
+        this.switchToMode_("google");
+      }
+
       $('confirm-everything-ok').focus();
     },
 
@@ -477,7 +488,7 @@ cr.define('options', function() {
     },
 
     showCaptcha_: function(args) {
-      this.captcha_challenge_active_ = true;
+      this.captchaChallengeActive_ = true;
 
       // The captcha takes up lots of space, so make room.
       this.setElementDisplay_("top-blurb", "none");
@@ -556,7 +567,7 @@ cr.define('options', function() {
     },
 
     setBlurbError_: function(error_message) {
-      if (this.captcha_challenge_active_)
+      if (this.captchaChallengeActive_)
         return;  // No blurb in captcha challenge mode.
 
       if (error_message) {
