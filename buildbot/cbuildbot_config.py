@@ -59,12 +59,11 @@ factory_install_mod -- Create a factory install image for archival.
 factory_test_mod -- Create a factory test image for archival.
 
 git_url -- git repository URL for our manifests.
-           External: http://git.chromium.org/git/manifest
-           Internal: ssh://git@gitrw.chromium.org:9222/manifest-internal
+           External: http://git.chromium.org/chromiumos/manifest.git
+           Internal:
+               ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal
 
 manifest_version -- URL to git repo to store per-build manifest.
-                    Usually None or
-                    ssh://git@gitrw.chromium.org:9222/manifest-versions
 """
 
 GS_PATH_DEFAULT = 'default'
@@ -103,7 +102,7 @@ default = {
   'factory_install_mod' : False,
   'factory_test_mod' : False,
 
-  'git_url' : 'http://git.chromium.org/git/manifest',
+  'git_url' : 'http://git.chromium.org/chromiumos/manifest.git',
   'manifest_version' : None,
 }
 
@@ -134,7 +133,7 @@ full = {
 }
 
 internal = {
-  'git_url' : 'ssh://git@git.chromium.org:9222/manifest-internal',
+  'git_url' : 'ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal',
 }
 
 #
@@ -202,7 +201,7 @@ internal_full = {
   'factory_install_mod' : True,
   'factory_test_mod' : True,
 
-  'git_url' : 'ssh://git@git.chromium.org:9222/manifest-internal',
+  'git_url' : 'ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal',
 
   # cbuild --official
 }
@@ -243,7 +242,7 @@ add_config('x86-generic-chrome-pre-flight-queue', [{
 }])
 
 
-add_config('x86-mario-pre-flight-queue', [{
+add_config('x86-mario-pre-flight-queue', [internal, {
   'board' : 'x86-mario',
   'master' : True,
 
@@ -253,7 +252,7 @@ add_config('x86-mario-pre-flight-queue', [{
   'gs_path': 'gs://chromeos-x86-mario/pre-flight-master'
 }])
 
-add_config('x86-alex-pre-flight-branch', [{
+add_config('x86-alex-pre-flight-branch', [internal, {
   'board' : 'x86-alex',
   'master' : False,
 
@@ -262,7 +261,7 @@ add_config('x86-alex-pre-flight-branch', [{
   'push_overlays': None,
 }])
 
-add_config('x86-mario-pre-flight-branch', [{
+add_config('x86-mario-pre-flight-branch', [internal, {
   'board' : 'x86-mario',
   'master' : True,
 
