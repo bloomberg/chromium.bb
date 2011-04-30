@@ -421,14 +421,14 @@ display_handle_global(struct wl_display *display, uint32_t id,
 {
 	struct wayland_compositor *c = data;
 
-	if (strcmp(interface, "compositor") == 0) {
+	if (strcmp(interface, "wl_compositor") == 0) {
 		c->parent.compositor = wl_compositor_create(display, id, 1);
-	} else if (strcmp(interface, "output") == 0) {
+	} else if (strcmp(interface, "wl_output") == 0) {
 		c->parent.output = wl_output_create(display, id, 1);
 		wl_output_add_listener(c->parent.output, &output_listener, c);
-	} else if (strcmp(interface, "input_device") == 0) {
+	} else if (strcmp(interface, "wl_input_device") == 0) {
 		display_add_input(c, id);
-	} else if (strcmp(interface, "shell") == 0) {
+	} else if (strcmp(interface, "wl_shell") == 0) {
 		c->parent.shell = wl_shell_create(display, id, 1);
 		wl_shell_add_listener(c->parent.shell, &shell_listener, c);
 	}
