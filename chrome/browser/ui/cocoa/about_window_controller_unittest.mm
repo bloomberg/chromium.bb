@@ -19,9 +19,8 @@ void PostAutoupdateStatusNotification(AutoupdateStatus status,
                                              NSString* version) {
   NSNumber* statusNumber = [NSNumber numberWithInt:status];
   NSMutableDictionary* dictionary =
-      [NSMutableDictionary dictionaryWithObjects:&statusNumber
-                                         forKeys:&kAutoupdateStatusStatus
-                                           count:1];
+      [NSMutableDictionary dictionaryWithObject:statusNumber
+                                         forKey:kAutoupdateStatusStatus];
   if (version) {
     [dictionary setObject:version forKey:kAutoupdateStatusVersion];
   }
