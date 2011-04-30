@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
@@ -28,6 +29,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/site_instance.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
 #include "ui/gfx/rect.h"
@@ -103,7 +105,7 @@ PrerenderContents::Factory* PrerenderContents::CreateFactory() {
   return new PrerenderContentsFactoryImpl();
 }
 
-void PrerenderContents::StartPrerendering(
+void PrerenderContents::StartPrerenderingOld(
     const RenderViewHost* source_render_view_host) {
   DCHECK(profile_ != NULL);
   DCHECK(!prerendering_has_started_);
@@ -188,8 +190,75 @@ void PrerenderContents::StartPrerendering(
   render_view_host_->Navigate(params);
 }
 
+void PrerenderContents::StartPrerendering(
+    const RenderViewHost* source_render_view_host) {
+  if (!UseTabContents()) {
+    LOG(INFO) << "Starting prerendering with LEGACY code\n";
+    StartPrerenderingOld(source_render_view_host);
+    return;
+  }
+  LOG(INFO) << "Starting prerendering with NEW code\n";
+  DCHECK(profile_ != NULL);
+  DCHECK(!prerendering_has_started_);
+  DCHECK(prerender_contents_.get() == NULL);
+  DCHECK(source_render_view_host != NULL);
+  DCHECK(source_render_view_host->view() != NULL);
+
+  prerendering_has_started_ = true;
+  TabContents* new_contents = new TabContents(profile_, NULL, MSG_ROUTING_NONE,
+                                              NULL, NULL);
+  prerender_contents_.reset(new TabContentsWrapper(new_contents));
+
+  TabContents* source_tc =
+      source_render_view_host->delegate()->GetAsTabContents();
+  if (source_tc) {
+    // So that history merging will work, get the max page ID
+    // of the old page, and add a safety margin of 10 to it (for things
+    // such as redirects).
+    int32 max_page_id = source_tc->GetMaxPageID();
+    if (max_page_id != -1) {
+      prerender_contents_->controller().set_max_restored_page_id(
+          max_page_id + 10);
+    }
+
+    // Set the size of the new TC to that of the old TC.
+    gfx::Rect tab_bounds;
+    source_tc->view()->GetContainerBounds(&tab_bounds);
+    prerender_contents_->view()->SizeContents(tab_bounds.size());
+  }
+
+  /*
+  int process_id = render_view_host_->process()->id();
+  int view_id = render_view_host_->routing_id();
+  std::pair<int, int> process_view_pair = std::make_pair(process_id, view_id);
+  NotificationService::current()->Notify(
+      NotificationType::PRERENDER_CONTENTS_STARTED,
+      Source<std::pair<int, int> >(&process_view_pair),
+      NotificationService::NoDetails());
+
+  // Register this with the ResourceDispatcherHost as a prerender
+  // RenderViewHost. This must be done before the Navigate message to catch all
+  // resource requests, but as it is on the same thread as the Navigate message
+  // (IO) there is no race condition.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(&AddChildRoutePair,
+                          g_browser_process->resource_dispatcher_host(),
+                          process_id, view_id));
+  */
+
+  DCHECK(load_start_time_.is_null());
+  load_start_time_ = base::TimeTicks::Now();
+  new_contents->controller().LoadURL(prerender_url_,
+                                     referrer_, PageTransition::LINK);
+}
+
 bool PrerenderContents::GetChildId(int* child_id) const {
   CHECK(child_id);
+  if (prerender_contents_.get()) {
+    *child_id = prerender_contents_->render_view_host()->process()->id();
+    return true;
+  }
   if (render_view_host_) {
     *child_id = render_view_host_->process()->id();
     return true;
@@ -199,6 +268,10 @@ bool PrerenderContents::GetChildId(int* child_id) const {
 
 bool PrerenderContents::GetRouteId(int* route_id) const {
   CHECK(route_id);
+  if (prerender_contents_.get()) {
+    *route_id = prerender_contents_->render_view_host()->routing_id();
+    return true;
+  }
   if (render_view_host_) {
     *route_id = render_view_host_->routing_id();
     return true;
@@ -593,6 +666,10 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
       Destroy(FINAL_STATUS_MEMORY_LIMIT_EXCEEDED);
     }
   }
+}
+
+TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
+  return prerender_contents_.release();
 }
 
 }  // namespace prerender

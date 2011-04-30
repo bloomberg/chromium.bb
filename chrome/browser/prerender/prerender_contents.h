@@ -22,6 +22,7 @@
 
 class RenderViewHost;
 class TabContents;
+class TabContentsWrapper;
 struct FaviconURL;
 struct ViewHostMsg_FrameNavigate_Params;
 struct WebPreferences;
@@ -75,6 +76,8 @@ class PrerenderContents : public RenderViewHostDelegate,
   // prerendering.  It must be non-NULL and have its own view.  It is used
   // solely to determine the window bounds while prerendering.
   virtual void StartPrerendering(const RenderViewHost* source_render_view_host);
+  virtual void StartPrerenderingOld(
+      const RenderViewHost* source_render_view_host);
 
   // Verifies that the prerendering is not using too many resources, and kills
   // it if not.
@@ -212,6 +215,23 @@ class PrerenderContents : public RenderViewHostDelegate,
   // remembered.
   bool AddAliasURL(const GURL& url);
 
+  // The preview TabContents (may be null).
+  TabContentsWrapper* prerender_contents() const {
+    return prerender_contents_.get();
+  }
+
+  TabContentsWrapper* ReleasePrerenderContents();
+
+  // Indicates whether to use the legacy code doing prerendering via
+  // a RenderViewHost (false), or whether the new TabContent based prerendering
+  // is to be used (true).
+  // Eventually, this will go away and only the new TabContents based code
+  // will be in operation.  In the meantime, people can change this to true
+  // for testing purposes until the new code is stable.
+  static bool UseTabContents() {
+    return false;
+  }
+
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,
                     Profile* profile,
@@ -292,6 +312,9 @@ class PrerenderContents : public RenderViewHostDelegate,
   // Process Metrics of the render process associated with the
   // RenderViewHost for this object.
   scoped_ptr<base::ProcessMetrics> process_metrics_;
+
+  // The prerendered TabContents; may be null.
+  scoped_ptr<TabContentsWrapper> prerender_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

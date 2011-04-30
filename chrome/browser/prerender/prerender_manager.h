@@ -83,6 +83,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // and substitutes the prerendered RVH into the TabContents.  Returns
   // whether or not a prerendered RVH could be used or not.
   bool MaybeUsePreloadedPage(TabContents* tab_contents, const GURL& url);
+  bool MaybeUsePreloadedPageOld(TabContents* tab_contents, const GURL& url);
 
   // Allows PrerenderContents to remove itself when prerendering should
   // be cancelled.
@@ -93,6 +94,13 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // PrerenderContents object and is responsible for freeing it.
   // Returns NULL if the specified URL has not been prerendered.
   PrerenderContents* GetEntry(const GURL& url);
+
+  // Identical to GetEntry, with one exception:
+  // The TabContents specified indicates the TC in which to swap the
+  // prerendering into.  If the TabContents specified is the one
+  // to doing the prerendered itself, will return NULL.
+  PrerenderContents* GetEntryButNotSpecifiedTC(const GURL& url,
+                                               TabContents* tc);
 
   // Records the perceived page load time for a page - effectively the time from
   // when the user navigates to a page to when it finishes loading. The actual

@@ -827,6 +827,9 @@ class Browser : public TabHandlerDelegate,
       TabContentsWrapper* source,
       const WebApplicationInfo& app_info) OVERRIDE;
 
+  virtual void SwapTabContents(TabContentsWrapper* old_tc,
+                               TabContentsWrapper* new_tc);
+
   // Overridden from SearchEngineTabHelperDelegate:
   virtual void ConfirmSetDefaultSearchProvider(
       TabContents* tab_contents,

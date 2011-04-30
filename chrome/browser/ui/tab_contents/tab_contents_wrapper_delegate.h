@@ -26,6 +26,9 @@ class TabContentsWrapperDelegate {
   virtual void OnInstallApplication(TabContentsWrapper* source,
                                     const WebApplicationInfo& app_info);
 
+  virtual void SwapTabContents(TabContentsWrapper* old_tc,
+                               TabContentsWrapper* new_tc) = 0;
+
  protected:
   virtual ~TabContentsWrapperDelegate();
 };

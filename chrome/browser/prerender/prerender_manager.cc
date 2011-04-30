@@ -12,7 +12,8 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -20,6 +21,7 @@
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
+#include "chrome/common/render_messages.h"
 #include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_util.h"
@@ -320,7 +322,9 @@ void PrerenderManager::DeleteOldEntries() {
     StopSchedulingPeriodicCleanups();
 }
 
-PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
+PrerenderContents* PrerenderManager::GetEntryButNotSpecifiedTC(
+    const GURL& url,
+    TabContents *tc) {
   DCHECK(CalledOnValidThread());
   DeleteOldEntries();
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
@@ -328,16 +332,24 @@ PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
        ++it) {
     PrerenderContents* prerender_contents = it->contents_;
     if (prerender_contents->MatchesURL(url)) {
-      prerender_list_.erase(it);
-      return prerender_contents;
+      if (!prerender_contents->prerender_contents() ||
+          !tc ||
+          prerender_contents->prerender_contents()->tab_contents() != tc) {
+        prerender_list_.erase(it);
+        return prerender_contents;
+      }
     }
   }
   // Entry not found.
   return NULL;
 }
 
-bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
-                                             const GURL& url) {
+PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
+  return GetEntryButNotSpecifiedTC(url, NULL);
+}
+
+bool PrerenderManager::MaybeUsePreloadedPageOld(TabContents* tab_contents,
+                                                const GURL& url) {
   DCHECK(CalledOnValidThread());
   scoped_ptr<PrerenderContents> prerender_contents(GetEntry(url));
   if (prerender_contents.get() == NULL)
@@ -418,6 +430,84 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
 
   if (prerender_contents->has_stopped_loading())
     render_view_host_delegate->DidStopLoading();
+
+  return true;
+}
+
+bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
+                                             const GURL& url) {
+  if (!PrerenderContents::UseTabContents()) {
+    LOG(INFO) << "Checking for prerender with LEGACY code\n";
+    return PrerenderManager::MaybeUsePreloadedPageOld(tab_contents, url);
+  }
+  LOG(INFO) << "Checking for prerender iwth NEW code\n";
+  DCHECK(CalledOnValidThread());
+  scoped_ptr<PrerenderContents> prerender_contents(
+      GetEntryButNotSpecifiedTC(url, tab_contents));
+  if (prerender_contents.get() == NULL)
+    return false;
+
+  // If we are just in the control group (which can be detected by noticing
+  // that prerendering hasn't even started yet), record that |tab_contents| now
+  // would be showing a prerendered contents, but otherwise, don't do anything.
+  if (!prerender_contents->prerendering_has_started()) {
+    MarkTabContentsAsWouldBePrerendered(tab_contents);
+    return false;
+  }
+
+  if (!prerender_contents->load_start_time().is_null())
+    RecordTimeUntilUsed(GetCurrentTimeTicks() -
+                        prerender_contents->load_start_time());
+
+  UMA_HISTOGRAM_COUNTS("Prerender.PrerendersPerSessionCount",
+                       ++prerenders_per_session_count_);
+  prerender_contents->set_final_status(FINAL_STATUS_USED);
+
+  int child_id;
+  int route_id;
+  CHECK(prerender_contents->GetChildId(&child_id));
+  CHECK(prerender_contents->GetRouteId(&route_id));
+
+  RenderViewHost* render_view_host =
+      prerender_contents->prerender_contents()->render_view_host();
+  DCHECK(render_view_host);
+  // TODO(tburkard): this crashes b/c the navigation type is not set
+  // correctly (yet).
+  /*
+  render_view_host->Send(
+      new ViewMsg_DisplayPrerenderedPage(render_view_host->routing_id()));
+  */
+  TabContentsWrapper* new_tc = prerender_contents->ReleasePrerenderContents();
+  TabContentsWrapper* old_tc =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  DCHECK(new_tc);
+  DCHECK(old_tc);
+
+  // Merge the browsing history.
+  new_tc->controller().CopyStateFromAndPrune(&old_tc->controller(), false);
+
+  old_tc->delegate()->SwapTabContents(old_tc, new_tc);
+
+  MarkTabContentsAsPrerendered(tab_contents);
+
+  // See if we have any pending prerender requests for this routing id and start
+  // the preload if we do.
+  std::pair<int, int> child_route_pair = std::make_pair(child_id, route_id);
+  PendingPrerenderList::iterator pending_it =
+      pending_prerender_list_.find(child_route_pair);
+  if (pending_it != pending_prerender_list_.end()) {
+    for (std::vector<PendingContentsData>::iterator content_it =
+            pending_it->second.begin();
+         content_it != pending_it->second.end(); ++content_it) {
+      AddPreload(pending_it->first, content_it->url_, content_it->referrer_);
+    }
+    pending_prerender_list_.erase(pending_it);
+  }
+
+  NotificationService::current()->Notify(
+      NotificationType::PRERENDER_CONTENTS_USED,
+      Source<std::pair<int, int> >(&child_route_pair),
+      NotificationService::NoDetails());
 
   return true;
 }
