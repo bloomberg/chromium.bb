@@ -609,27 +609,22 @@ TabContentsIterator::TabContentsIterator()
     : browser_iterator_(BrowserList::begin()),
       web_view_index_(-1),
       cur_(NULL) {
-    Advance();
-  }
+  Advance();
+}
 
 void TabContentsIterator::Advance() {
-  // Unless we're at the beginning (index = -1) or end (iterator = end()),
-  // then the current TabContents should be valid.
-  DCHECK(web_view_index_ || browser_iterator_ == BrowserList::end() || cur_)
+  // The current TabContents should be valid unless we are at the beginning.
+  DCHECK(cur_ || (web_view_index_ == -1 &&
+                  browser_iterator_ == BrowserList::begin()))
       << "Trying to advance past the end";
 
   // Update cur_ to the next TabContents in the list.
   while (browser_iterator_ != BrowserList::end()) {
-    web_view_index_++;
-
-    while (web_view_index_ >= (*browser_iterator_)->tab_count()) {
-      // advance browsers
+    if (++web_view_index_ >= (*browser_iterator_)->tab_count()) {
+      // Advance to the next Browser in the list.
       ++browser_iterator_;
-      web_view_index_ = 0;
-      if (browser_iterator_ == BrowserList::end()) {
-        cur_ = NULL;
-        return;
-      }
+      web_view_index_ = -1;
+      continue;
     }
 
     TabContentsWrapper* next_tab =
@@ -639,4 +634,6 @@ void TabContentsIterator::Advance() {
       return;
     }
   }
+  // Reached the end - no more TabContents.
+  cur_ = NULL;
 }
