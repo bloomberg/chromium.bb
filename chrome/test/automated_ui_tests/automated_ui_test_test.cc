@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -301,7 +301,14 @@ TEST_F(AutomatedUITestBase, Navigate) {
   ASSERT_EQ(url2, url);
 }
 
-TEST_F(AutomatedUITestBase, SelectTab) {
+// Flaky, see http://crbug.com/81050.
+#if defined(OS_MACOSX)
+#define MAYBE_SelectTab FLAKY_SelectTab
+#else
+#define MAYBE_SelectTab SelectTab
+#endif
+
+TEST_F(AutomatedUITestBase, MAYBE_SelectTab) {
   FilePath filename(test_data_directory_);
   filename = filename.AppendASCII("title2.html");
   GURL url = net::FilePathToFileURL(filename);
@@ -363,7 +370,14 @@ TEST_F(AutomatedUITestBase, ShowDownloads) {
   ASSERT_EQ(GURL(chrome::kChromeUIDownloadsURL), url);
 }
 
-TEST_F(AutomatedUITestBase, ShowHistory) {
+// Flaky, see http://crbug.com/81050.
+#if defined(OS_MACOSX)
+#define MAYBE_ShowHistory FLAKY_ShowHistory
+#else
+#define MAYBE_ShowHistory ShowHistory
+#endif
+
+TEST_F(AutomatedUITestBase, MAYBE_ShowHistory) {
   ASSERT_TRUE(ShowHistory());
   GURL url;
   ASSERT_TRUE(GetActiveTab()->GetCurrentURL(&url));
