@@ -8,11 +8,11 @@
 
 #include <set>
 
-typedef enum _AddressType {
+enum AddressType {
   kGenericAddress = 0,
   kBillingAddress,
   kShippingAddress
-} AddressType;
+};
 
 // NOTE: This list MUST not be modified.  The server aggregates and stores these
 // types over several versions, so we must remain fully compatible with the
@@ -20,7 +20,7 @@ typedef enum _AddressType {
 // up to date with the Autofill server list.
 //
 // This is the list of all valid field types.
-typedef enum _FieldType {
+enum AutofillFieldType {
   // Server indication that it has no data for the requested field.
   NO_SERVER_DATA = 0,
   // Client indication that the text entered did not match anything in the
@@ -85,7 +85,7 @@ typedef enum _FieldType {
   // No new types can be added.
 
   MAX_VALID_FIELD_TYPE = 61,
-} AutofillFieldType;
+};
 
 typedef std::set<AutofillFieldType> FieldTypeSet;
 
