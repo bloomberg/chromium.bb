@@ -1828,8 +1828,9 @@
    fun:PR_Malloc
    fun:PKIX_PL_Malloc
    fun:PKIX_PL_Object_Alloc
+   ...
    fun:PKIX_PL_OID_Create
-   fun:CERT_PKIXOIDFromNSSOid
+   ...
    fun:cert_PKIXMakeOIDList
    fun:cert_pkixSetParam
    fun:CERT_PKIXVerifyCert
