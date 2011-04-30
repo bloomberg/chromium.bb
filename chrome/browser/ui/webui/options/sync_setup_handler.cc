@@ -187,10 +187,6 @@ void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
       "encryptionhelpurl",
       google_util::StringAppendGoogleLocaleParam(kEncryptionHelpUrl));
   localized_strings->SetString(
-      "setupsummary",
-      GetStringFUTF16(IDS_SYNC_SETUP_ALL_DONE,
-                      GetStringUTF16(IDS_PRODUCT_NAME)));
-  localized_strings->SetString(
       "passphraseEncryptionMessage",
       GetStringFUTF16(IDS_SYNC_PASSPHRASE_ENCRYPTION_MESSAGE,
                       GetStringUTF16(IDS_PRODUCT_NAME)));
@@ -211,7 +207,6 @@ void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "cancel", IDS_CANCEL },
     { "settingup", IDS_SYNC_LOGIN_SETTING_UP },
     { "settingupsync", IDS_SYNC_LOGIN_SETTING_UP_SYNC },
-    { "loginSuccess", IDS_SYNC_SUCCESS },
     { "errorsigningin", IDS_SYNC_ERROR_SIGNING_IN },
     { "captchainstructions", IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS },
     { "invalidaccesscode", IDS_SYNC_INVALID_ACCESS_CODE_LABEL },

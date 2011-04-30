@@ -91,6 +91,12 @@
   text-align: end;
 }
 
+#sync-setup-overlay * .throbber {
+  margin: 4px 10px;
+  vertical-align: middle;
+  visibility: hidden;
+}
+
 #gaia-account-text {
   font-weight: bold;
 }
@@ -115,6 +121,7 @@
   margin-top: 20px;
   margin-bottom: 20px;
 }
+
 #incorrectPassphrase {
   margin-top: 5px;
 }
@@ -336,24 +343,4 @@ html[dir='rtl'] .sync-footer {
   left: 0px;
   bottom: 0px;
   margin-left: 20px;
-}
-
-#setting-up-throbber {
-  margin: -3px 10px;
-}
-
-#setting_up {
-  margin: 100px;
-  text-align: center;
-}
-
-#setting_up_label {
-  margin: 15px;
-  font-weight: bold;
-  font-size: 125%;
-}
-
-.sync-success-image {
-  text-align: center;
-  margin: 20px;
 }

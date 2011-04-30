@@ -9025,9 +9025,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- Success dialog strings -->
-      <message name="IDS_SYNC_SETUP_ALL_DONE" desc="The text shown on the confirmation dialog after setting up sync when there were already bookmarks in the cloud.">
-        Your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data will now be synchronized between all your computers where you have enabled syncing.
-      </message>
       <message name="IDS_SYNC_SETUP_FIRST_TIME_ALL_DONE" desc="The text shown on the confirmation dialog after setting up sync when no bookmarks exist in the cloud.">
         Your bookmarks are now synced to Google Docs! To merge and sync your bookmarks to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
         on another computer, just repeat the same setup process on that computer.

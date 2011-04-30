@@ -38,12 +38,6 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
-      var self = this;
-      $('sync-setup-cancel').onclick = $('setup-done-close').onclick =
-          function() {
-            self.closeOverlay_();
-          };
-
       var acct_text = $('gaia-account-text');
       var translated_text = acct_text.textContent;
       var posGoogle = translated_text.indexOf('Google');
@@ -59,6 +53,7 @@ cr.define('options', function() {
         acct_text.textContent = translated_text.replace('Google','');
       }
 
+      var self = this;
       $('gaia-login-form').onsubmit = function() {
         self.sendCredentialsAndClose_();
         return false;
@@ -70,7 +65,7 @@ cr.define('options', function() {
       $('google-option').onchange = $('explicit-option').onchange = function() {
         self.onRadioChange_();
       };
-      $('choose-datatypes-cancel').onclick = $('setting-up-cancel').onclick =
+      $('choose-datatypes-cancel').onclick = $('sync-setup-cancel').onclick =
           $('confirm-everything-cancel').onclick = function() {
         self.closeOverlay_();
       };
@@ -413,10 +408,17 @@ cr.define('options', function() {
     },
 
     showSyncSetupPage_: function(page, args) {
-      var overlay = $('sync-setup-overlay');
-      for (var i = 0; i < overlay.children.length; i++) {
-        overlay.children[i].classList.add('hidden');
+      if (page == 'settingUp') {
+        this.setThrobbersVisible_(true);
+        return;
+      } else {
+        this.setThrobbersVisible_(false);
       }
+
+      // Hide an existing visible overlay.
+      var overlay = $('sync-setup-overlay');
+      for (var i = 0; i < overlay.children.length; i++)
+        overlay.children[i].classList.add('hidden');
 
       if (page == 'login')
         this.showGaiaLogin_(args);
@@ -424,10 +426,14 @@ cr.define('options', function() {
         this.showConfigure_(args);
       else if (page == 'passphrase')
         this.showPassphrase_(args);
-      else if (page == 'settingUp')
-        this.showSettingUp_();
       else if (page == 'done')
-        this.showSetupDone_();
+        this.closeOverlay_();
+    },
+
+    setThrobbersVisible_: function(visible) {
+      var throbbers = document.getElementsByClassName("throbber");
+        for (var i = 0; i < throbbers.length; i++)
+          throbbers[i].style.visibility = visible ? "visible" : "hidden";
     },
 
     showPassphrase_: function(args) {
@@ -448,16 +454,6 @@ cr.define('options', function() {
       }
 
       $('passphrase-ok').focus();
-    },
-
-    showSettingUp_: function() {
-      $('sync-setup-setting-up').classList.remove('hidden');
-      $('setting-up-cancel').focus();
-    },
-
-    showSetupDone_: function() {
-      $('sync-setup-done').classList.remove('hidden');
-      $('setup-done-close').focus();
     },
 
     setElementDisplay_: function(id, display) {
@@ -508,7 +504,6 @@ cr.define('options', function() {
     showGaiaLogin_: function(args) {
       $('sync-setup-login').classList.remove('hidden');
 
-      document.getElementById('logging-in-throbber').style.display = "none";
       document.getElementById('gaia-email').disabled = false;
       document.getElementById('gaia-passwd').disabled = false;
 
@@ -612,12 +607,12 @@ cr.define('options', function() {
         return false;
       }
 
-      document.getElementById('gaia-email').disabled = true;
-      document.getElementById('gaia-passwd').disabled = true;
-      document.getElementById('captcha-value').disabled = true;
-      document.getElementById('access-code').disabled = true;
+      $('gaia-email').disabled = true;
+      $('gaia-passwd').disabled = true;
+      $('captcha-value').disabled = true;
+      $('access-code').disabled = true;
 
-      document.getElementById('logging-in-throbber').style.display = "block";
+      $('logging-in-throbber').style.visibility = "visible";
 
       var f = $('gaia-login-form');
       var email = $('gaia-email');

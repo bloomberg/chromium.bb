@@ -201,7 +201,8 @@
           <div class="action-area-link-container">
             <a id="customize-link" href="#" i18n-content="customizeLinkLabel">
             </a>
-          </div> 
+          </div>
+          <div id="confirm-everything-throbber" class="throbber"></div>
           <input id="confirm-everything-ok" type="button"
               i18n-values="value:syncEverything">
           <input id="confirm-everything-cancel" type="button"
@@ -225,8 +226,8 @@
                   <input id="appsCheckbox" type="checkbox"
                       name="dataTypeCheckbox">
                   <label id="appsCheckboxLabel" name="dataTypeLabel"
-                         for="appsCheckbox" i18n-content="apps"
-                         i18n-values="title:apps"></label>
+                      for="appsCheckbox" i18n-content="apps"
+                      i18n-values="title:apps"></label>
                 </div>
                 <!-- Autofill -->
                 <div class="sync-item-show" id="autofillItem">
@@ -346,6 +347,7 @@
             <a id="use-default-link" href="#" i18n-content="useDefaultSettings">
             </a>
           </div>
+          <div id="choose-datatypes-throbber" class="throbber"></div>
           <input id="choose-datatypes-ok" type="submit" i18n-values="value:ok">
           <input id="choose-datatypes-cancel" type="button"
               i18n-values="value:cancel">
@@ -376,7 +378,6 @@
         <span id="sync-passphrase-warning" i18n-content="passphraseRecover">
         </span> <a href="http://google.com/dashboard" target="_blank"
             i18n-content="cleardatalink"></a>
-      
         <div class="overlay-warning" id="cancel-warning-box">
           <div id="cancel-warning-header" i18n-content="cancelWarningHeader">
           </div>
@@ -387,33 +388,9 @@
       </form>
     </div>
     <div class="action-area">
+      <div id="passphrase-throbber" class="throbber"></div>
       <input id="passphrase-ok" type="submit" i18n-values="value:ok">
       <input id="passphrase-cancel" type="button" i18n-values="value:cancel">
-    </div>
-  </div>
-  <div id="sync-setup-setting-up" class="hidden">
-    <div class="content-area">
-      <form id="settingUpForm" onSubmit="return false;">
-        <div id="setting_up">
-          <div id="setting-up-throbber" class="throbber"></div>
-          <div id="setting_up_label" i18n-content="settingup"></div>
-        </div>
-      </form>
-    </div>
-    <div class="action-area">
-      <button id="setting-up-cancel" i18n-content="cancel"></button>
-    </div>
-  </div>
-  <div id="sync-setup-done" class="hidden">
-    <h1 i18n-content="loginSuccess"></h1>
-    <div class="content-area">
-      <div class="sync-success-image">
-        <img src="success-large.png">
-      </div>
-      <div i18n-content="setupsummary"></div>
-    </div>
-    <div class="action-area">
-      <input id="setup-done-close" type="submit" i18n-values="value:okay">
     </div>
   </div>
 </div>
