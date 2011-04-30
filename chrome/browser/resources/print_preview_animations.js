@@ -18,16 +18,7 @@ function addAnimation(code) {
   return name;
 }
 
-function getInvalidHintEl(el) {
-  var elements = el.getElementsByClassName('invalid-hint');
-  if (elements.length == 0)
-    return el;
-  else
-    return elements[0];
-}
-
 function showInvalidHint(el) {
-  var el = getInvalidHintEl(el);
   if (el.classList.contains('visible'))
     return;
   el.style.height = 'auto';
@@ -42,18 +33,11 @@ function showInvalidHint(el) {
 }
 
 function hideInvalidHint(el) {
-  var el = getInvalidHintEl(el);
   if (!el.classList.contains('visible'))
     return;
   el.style.webkitAnimationName = '';
-  el.classList.add('closing');
   el.classList.remove('visible');
-  window.setTimeout(function() { hideInvalidHintCleanup(el); }, 300);
-}
-
-function hideInvalidHintCleanup(el) {
   el.style.height = '';
-  el.classList.remove('closing');
 }
 
 function handleZippyClick(event) {

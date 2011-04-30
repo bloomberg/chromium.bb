@@ -55,7 +55,7 @@
           <div>
             <div>
               <input id="copies" type="text" name="copies" value="1" min=1"
-                  max="999" class="number small"/>
+                  max="999" class="number small" placeholder="1"/>
               <button id="increment">+</button>
               <button id="decrement">–</button>
               <span id="collate-option" hidden>
@@ -63,7 +63,8 @@
                 <label for="collate" i18n-content="optionCollate"></label>
               </span>
             </div>
-            <span class="invalid-hint" i18n-content="copiesInstruction"></span>
+            <span id="copies-hint" class="invalid-hint"
+                i18n-content="copiesInstruction"></span>
             <div id="two-sided-div">
               <input id="two-sided" name="two-sided" type="checkbox"/>
               <label for="two-sided" i18n-content="optionTwoSided"></label>

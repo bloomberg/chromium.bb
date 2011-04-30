@@ -47,7 +47,6 @@ function onLoad() {
                                       function(e) { window.close(); });
   $('all-pages').addEventListener('click', onPageSelectionMayHaveChanged);
   $('copies').addEventListener('input', copiesFieldChanged);
-  $('copies').addEventListener('blur', handleCopiesFieldBlur);
   $('print-pages').addEventListener('click', handleIndividualPagesCheckbox);
   $('individual-pages').addEventListener('blur', handlePageRangesFieldBlur);
   $('individual-pages').addEventListener('focus', addTimerToPageRangeField);
@@ -159,14 +158,6 @@ function setControlsDisabled(disabled) {
 }
 
 /**
- * Handles copies field blur event.
- */
-function handleCopiesFieldBlur() {
-  checkAndSetCopiesField();
-  copiesFieldChanged();
-}
-
-/**
  * Handles page ranges field blur event.
  */
 function handlePageRangesFieldBlur() {
@@ -188,21 +179,6 @@ function isNumberOfCopiesValid() {
 
   var numericExp = /^[0-9]+$/;
   return (numericExp.test(copiesFieldText) && Number(copiesFieldText) > 0);
-}
-
-/**
- * Checks the value of the copies field. If it is a valid number it does
- * nothing. If it can only parse the first part of the string it replaces the
- * string with the first part. Example: '123abcd' becomes '123'.
- * If the string can't be parsed at all it replaces with 1.
- */
-function checkAndSetCopiesField() {
-  var copiesField = $('copies');
-  var copies = parseInt(copiesField.value, 10);
-  if (isNaN(copies) || copies <= 0)
-    copies = 1;
-  copiesField.value = copies;
-  updatePrintSummary();
 }
 
 /**
@@ -417,6 +393,7 @@ function onPDFLoad() {
 
   $('dancing-dots').classList.add('invisible');
   setControlsDisabled(false);
+  updateCopiesButtonsState();
   updateWithPrinterCapabilities(printerCapabilities);
 }
 
@@ -522,9 +499,29 @@ window.addEventListener('DOMContentLoaded', onLoad);
  * field.
  */
 function copiesFieldChanged() {
+  updateCopiesButtonsState();
   updatePrintButtonState();
   $('collate-option').hidden = getCopies() <= 1;
   updatePrintSummary();
+}
+
+/**
+ * Updates the state of the increment/decrement buttons based on the current
+ * 'copies' value.
+ */
+function updateCopiesButtonsState() {
+  if (!isNumberOfCopiesValid()) {
+    $('copies').classList.add('invalid');
+    $('increment').disabled = true;
+    $('decrement').disabled = true;
+    showInvalidHint($('copies-hint'));
+  }
+  else {
+    $('copies').classList.remove('invalid');
+    $('increment').disabled = false;
+    $('decrement').disabled = false;
+    hideInvalidHint($('copies-hint'));
+  }
 }
 
 /**
@@ -763,8 +760,13 @@ function areArraysEqual(array1, array2) {
   return true;
 }
 
+/**
+ * Executed when the 'increment' or 'decrement' button is clicked.
+ */
 function onCopiesButtonsClicked(sign) {
+  if($('copies').value == 1 && (sign == -1))
+    return;
   $('copies').value = getCopies() + sign * 1;
-  handleCopiesFieldBlur();
+  copiesFieldChanged();
 }
 
