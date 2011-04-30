@@ -7,7 +7,7 @@
 Sends a notification when a process stops on an exception.
 
 It is only enabled when all these conditions are met:
-  1. hostname finishes with '.google.com'
+  1. hostname finishes with '.google.com' or 'chromium.org'
   2. main module name doesn't contain the word 'test'
   3. no NO_BREAKPAD environment variable is defined
 """
@@ -26,9 +26,12 @@ import urllib2
 # Configure these values.
 DEFAULT_URL = 'https://chromium-status.appspot.com'
 
+# Global variable to prevent double registration.
 _REGISTERED = False
 
 _TIME_STARTED = time.time()
+
+_HOST_NAME = socket.getfqdn()
 
 
 def post(url, params):
@@ -81,7 +84,7 @@ def SendStack(last_tb, stack, url=None, maxlen=50):
         'stack': stack[0:4096],
         'user': getpass.getuser(),
         'exception': FormatException(last_tb),
-        'host': socket.getfqdn(),
+        'host': _HOST_NAME,
         'cwd': os.getcwd(),
         'version': sys.version,
     }
@@ -99,6 +102,8 @@ def SendProfiling(url=None):
       url = DEFAULT_URL + '/profiling'
     params = {
         'argv': ' '.join(sys.argv),
+        # Strip the hostname.
+        'domain': _HOST_NAME.split('.', 1)[-1],
         'duration': time.time() - _TIME_STARTED,
         'platform': sys.platform,
     }
@@ -131,8 +136,8 @@ def Register():
 # Skip unit tests and we don't want anything from non-googler.
 if (not 'test' in sys.modules['__main__'].__file__ and
     not 'NO_BREAKPAD' in os.environ and
-    (socket.getfqdn().endswith('.google.com') or
-     socket.getfqdn().endswith('.chromium.org'))):
+    (_HOST_NAME.endswith('.google.com') or
+     _HOST_NAME.endswith('.chromium.org'))):
   Register()
 
 # Uncomment this line if you want to test it out.
