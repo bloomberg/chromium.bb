@@ -144,19 +144,23 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   toolbar_left_ = gtk_hbox_new(FALSE, kToolbarWidgetSpacing);
 
+  GtkSizeGroup* size_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
   back_.reset(new BackForwardButtonGtk(browser_, false));
   g_signal_connect(back_->widget(), "clicked",
                    G_CALLBACK(OnButtonClickThunk), this);
+  gtk_size_group_add_widget(size_group, back_->widget());
   gtk_box_pack_start(GTK_BOX(toolbar_left_), back_->widget(), FALSE,
                      FALSE, 0);
 
   forward_.reset(new BackForwardButtonGtk(browser_, true));
   g_signal_connect(forward_->widget(), "clicked",
                    G_CALLBACK(OnButtonClickThunk), this);
+  gtk_size_group_add_widget(size_group, forward_->widget());
   gtk_box_pack_start(GTK_BOX(toolbar_left_), forward_->widget(), FALSE,
                      FALSE, 0);
 
   reload_.reset(new ReloadButtonGtk(location_bar_.get(), browser_));
+  gtk_size_group_add_widget(size_group, reload_->widget());
   gtk_box_pack_start(GTK_BOX(toolbar_left_), reload_->widget(), FALSE, FALSE,
                      0);
 
@@ -167,12 +171,15 @@ void BrowserToolbarGtk::Init(Profile* profile,
       l10n_util::GetStringUTF8(IDS_TOOLTIP_HOME).c_str());
   g_signal_connect(home_->widget(), "clicked",
                    G_CALLBACK(OnButtonClickThunk), this);
+  gtk_size_group_add_widget(size_group, home_->widget());
   gtk_box_pack_start(GTK_BOX(toolbar_left_), home_->widget(), FALSE, FALSE,
                      kToolbarWidgetSpacing);
   gtk_util::SetButtonTriggersNavigation(home_->widget());
 
   gtk_box_pack_start(GTK_BOX(toolbar_), toolbar_left_, FALSE, FALSE,
                      kToolbarLeftAreaPadding);
+
+  g_object_unref(size_group);
 
   location_hbox_ = gtk_hbox_new(FALSE, 0);
   location_bar_->Init(ShouldOnlyShowLocation());
