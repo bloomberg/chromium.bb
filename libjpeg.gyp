@@ -97,6 +97,7 @@
               '.',
             ],
           },
+          'msvs_disabled_warnings': [4018, 4101],
           'conditions': [
             [ 'OS!="win"', {'product_name': 'jpeg_turbo'}],
             # Add target-specific source files.
