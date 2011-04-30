@@ -20,16 +20,16 @@ TEST(PdfMetafileCgTest, Pdf) {
   EXPECT_TRUE(pdf.Init());
   EXPECT_TRUE(pdf.context() != NULL);
 
-  // Render page 1 at origin (10.0, 10.0).
-  gfx::Point origin_1(10.0f, 10.0f);
+  // Render page 1.
+  gfx::Rect rect_1(10, 10, 520, 700);
   gfx::Size size_1(540, 720);
-  pdf.StartPage(size_1, origin_1, 1.25);
+  pdf.StartPage(size_1, rect_1, 1.25);
   pdf.FinishPage();
 
-  // Render page 2 at origin (10.0, 10.0).
-  gfx::Point origin_2(10.0f, 10.0f);
+  // Render page 2.
+  gfx::Rect rect_2(10, 10, 520, 700);
   gfx::Size size_2(720, 540);
-  pdf.StartPage(size_2, origin_2, 2.0);
+  pdf.StartPage(size_2, rect_2, 2.0);
   pdf.FinishPage();
 
   pdf.FinishDocument();

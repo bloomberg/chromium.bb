@@ -25,7 +25,11 @@ SkDevice* VectorPlatformDeviceSkiaFactory::newDevice(SkCanvas* noUsed,
     initialTransform.setTranslate(0, height);
     initialTransform.preScale(1, -1);
   }
-  return new VectorPlatformDeviceSkia(width, height, initialTransform);
+  SkISize size = SkISize::Make(width, height);
+  SkRefPtr<SkPDFDevice> pdf_device =
+      new SkPDFDevice(size, size, initialTransform);
+  pdf_device->unref();  // SkRefPtr and new both took a reference.
+  return new VectorPlatformDeviceSkia(pdf_device.get());
 }
 
 static inline SkBitmap makeABitmap(int width, int height) {
@@ -34,11 +38,9 @@ static inline SkBitmap makeABitmap(int width, int height) {
   return bitmap;
 }
 
-VectorPlatformDeviceSkia::VectorPlatformDeviceSkia(
-    int width, int height, const SkMatrix& initialTransform)
-    : PlatformDevice(makeABitmap(width, height)),
-      pdf_device_(new SkPDFDevice(width, height, initialTransform)) {
-  pdf_device_->unref();  // SkRefPtr and new both took a reference.
+VectorPlatformDeviceSkia::VectorPlatformDeviceSkia(SkPDFDevice* pdf_device)
+    : PlatformDevice(makeABitmap(pdf_device->width(), pdf_device->height())),
+      pdf_device_(pdf_device) {
 }
 
 VectorPlatformDeviceSkia::~VectorPlatformDeviceSkia() {

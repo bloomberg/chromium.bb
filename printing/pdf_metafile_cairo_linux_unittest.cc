@@ -13,8 +13,8 @@
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/point.h"
 
 typedef struct _cairo cairo_t;
 
@@ -32,12 +32,12 @@ TEST_F(PdfMetafileCairoTest, Pdf) {
   EXPECT_TRUE(pdf.Init());
 
   // Renders page 1.
-  EXPECT_TRUE(pdf.StartPage(gfx::Size(72, 73), gfx::Point(4, 5), 1));
+  EXPECT_TRUE(pdf.StartPage(gfx::Size(72, 73), gfx::Rect(4, 5, 64, 63), 1));
   // In theory, we should use Cairo to draw something on |context|.
   EXPECT_TRUE(pdf.FinishPage());
 
   // Renders page 2.
-  EXPECT_TRUE(pdf.StartPage(gfx::Size(72, 73), gfx::Point(4, 5), 1));
+  EXPECT_TRUE(pdf.StartPage(gfx::Size(72, 73), gfx::Rect(4, 5, 64, 63), 1));
   // In theory, we should use Cairo to draw something on |context|.
   EXPECT_TRUE(pdf.FinishPage());
 
@@ -70,7 +70,7 @@ TEST_F(PdfMetafileCairoTest, Pdf) {
   // Test overriding the metafile with raw data.
   printing::PdfMetafileCairo pdf3;
   EXPECT_TRUE(pdf3.Init());
-  EXPECT_TRUE(pdf3.StartPage(gfx::Size(72, 73), gfx::Point(4, 5), 1));
+  EXPECT_TRUE(pdf3.StartPage(gfx::Size(72, 73), gfx::Rect(4, 5, 64, 63), 1));
   std::string test_raw_data = "Dummy PDF";
   EXPECT_TRUE(pdf3.InitFromData(test_raw_data.c_str(), test_raw_data.size()));
   EXPECT_TRUE(pdf3.FinishPage());

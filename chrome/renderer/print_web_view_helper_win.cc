@@ -207,10 +207,12 @@ void PrintWebViewHelper::RenderPage(
   }
 
   gfx::Size page_size(width, height);
-  gfx::Point content_origin(static_cast<int>(margin_left_in_points),
-                            static_cast<int>(margin_top_in_points));
+  gfx::Rect content_area(static_cast<int>(margin_left_in_points),
+                         static_cast<int>(margin_top_in_points),
+                         static_cast<int>(content_width_in_points),
+                         static_cast<int>(content_height_in_points));
   skia::PlatformDevice* device = (*metafile)->StartPageForVectorCanvas(
-      page_size, content_origin, frame->getPrintPageShrink(page_number));
+      page_size, content_area, frame->getPrintPageShrink(page_number));
   DCHECK(device);
   skia::VectorCanvas canvas(device);
 

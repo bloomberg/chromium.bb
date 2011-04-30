@@ -27,9 +27,9 @@ void PrintWebViewHelper::PrintPageInternal(
   int page_number = params.page_number;
 
   // Render page for printing.
-  gfx::Point origin(0.0f, 0.0f);
-  RenderPage(params.params.printable_size, origin, scale_factor, page_number,
-      frame, &metafile);
+  gfx::Rect content_area(params.params.printable_size);
+  RenderPage(params.params.printable_size, content_area, scale_factor,
+      page_number, frame, &metafile);
   metafile.FinishDocument();
 
   PrintHostMsg_DidPrintPage_Params page_params;
@@ -70,17 +70,19 @@ bool PrintWebViewHelper::CreatePreviewDocument(
     return false;
 
   float scale_factor = frame->getPrintPageShrink(0);
-  gfx::Point origin(printParams.margin_left, printParams.margin_top);
+  gfx::Rect content_area(printParams.margin_left, printParams.margin_top,
+                         printParams.printable_size.width(),
+                         printParams.printable_size.height());
   if (params.pages.empty()) {
     for (int i = 0; i < page_count; ++i) {
-      RenderPage(printParams.page_size, origin, scale_factor, i, frame,
+      RenderPage(printParams.page_size, content_area, scale_factor, i, frame,
                  &metafile);
     }
   } else {
     for (size_t i = 0; i < params.pages.size(); ++i) {
       if (params.pages[i] >= page_count)
         break;
-      RenderPage(printParams.page_size, origin, scale_factor,
+      RenderPage(printParams.page_size, content_area, scale_factor,
                  static_cast<int>(params.pages[i]), frame, &metafile);
     }
   }
@@ -101,10 +103,10 @@ bool PrintWebViewHelper::CreatePreviewDocument(
 }
 
 void PrintWebViewHelper::RenderPage(
-    const gfx::Size& page_size, const gfx::Point& content_origin,
+    const gfx::Size& page_size, const gfx::Rect& content_area,
     const float& scale_factor, int page_number, WebFrame* frame,
     printing::Metafile* metafile) {
-  bool success = metafile->StartPage(page_size, content_origin, scale_factor);
+  bool success = metafile->StartPage(page_size, content_area, scale_factor);
   DCHECK(success);
 
   // printPage can create autoreleased references to |context|. PDF contexts

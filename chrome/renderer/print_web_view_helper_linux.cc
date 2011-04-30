@@ -217,10 +217,11 @@ void PrintWebViewHelper::PrintPageInternal(
           margin_left_in_points,
       content_height_in_points + margin_top_in_points +
           margin_bottom_in_points);
-  gfx::Point content_origin(margin_left_in_points, margin_top_in_points);
+  gfx::Rect content_area(margin_left_in_points, margin_top_in_points,
+                         content_width_in_points, content_height_in_points);
 
   skia::PlatformDevice* device = metafile->StartPageForVectorCanvas(
-      page_size, content_origin, 1.0f);
+      page_size, content_area, 1.0f);
   if (!device)
     return;
 

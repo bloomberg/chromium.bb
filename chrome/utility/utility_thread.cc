@@ -301,7 +301,7 @@ bool UtilityThread::RenderPDFToWinMetafile(
         break;
       // The underlying metafile is of type Emf and ignores the arguments passed
       // to StartPage.
-      metafile.StartPage(gfx::Size(), gfx::Point(), 1);
+      metafile.StartPage(gfx::Size(), gfx::Rect(), 1);
       if (render_proc(&buffer.front(), buffer.size(), page_number,
                       metafile.context(), render_dpi, render_dpi,
                       render_area.x(), render_area.y(), render_area.width(),

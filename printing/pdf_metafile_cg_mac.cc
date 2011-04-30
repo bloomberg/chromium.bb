@@ -64,14 +64,14 @@ bool PdfMetafileCg::InitFromData(const void* src_buffer,
 }
 
 skia::PlatformDevice* PdfMetafileCg::StartPageForVectorCanvas(
-    const gfx::Size& page_size, const gfx::Point& content_origin,
+    const gfx::Size& page_size, const gfx::Rect& content_area,
     const float& scale_factor) {
   NOTIMPLEMENTED();
   return NULL;
 }
 
 bool PdfMetafileCg::StartPage(const gfx::Size& page_size,
-                              const gfx::Point& content_origin,
+                              const gfx::Rect& content_area,
                               const float& scale_factor) {
   DCHECK(context_.get());
   DCHECK(!page_is_open_);
@@ -88,8 +88,8 @@ bool PdfMetafileCg::StartPage(const gfx::Size& page_size,
   CGContextTranslateCTM(context_, 0, height);
   CGContextScaleCTM(context_, scale_factor, -scale_factor);
 
-  // Move the context to origin.
-  CGContextTranslateCTM(context_, content_origin.x(), content_origin.y());
+  // Move to the context origin.
+  CGContextTranslateCTM(context_, content_area.x(), content_area.y());
 
   return context_.get() != NULL;
 }

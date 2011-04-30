@@ -37,26 +37,32 @@ bool PdfMetafileSkia::InitFromData(const void* src_buffer,
 }
 
 skia::PlatformDevice* PdfMetafileSkia::StartPageForVectorCanvas(
-    const gfx::Size& page_size, const gfx::Point& content_origin,
+    const gfx::Size& page_size, const gfx::Rect& content_area,
     const float& scale_factor) {
   DCHECK(data_->current_page_.get() == NULL);
 
   // Adjust for the margins and apply the scale factor.
   SkMatrix transform;
-  transform.setTranslate(SkIntToScalar(content_origin.x()),
-                         SkIntToScalar(content_origin.y()));
+  transform.setTranslate(SkIntToScalar(content_area.x()),
+                         SkIntToScalar(content_area.y()));
   transform.preScale(SkFloatToScalar(scale_factor),
                      SkFloatToScalar(scale_factor));
 
+  // TODO(ctguil): Refactor: don't create the PDF device explicitly here.
+  SkISize pdf_page_size = SkISize::Make(page_size.width(), page_size.height());
+  SkISize pdf_content_size =
+      SkISize::Make(content_area.width(), content_area.height());
+  SkRefPtr<SkPDFDevice> pdf_device =
+      new SkPDFDevice(pdf_page_size, pdf_content_size, transform);
+  pdf_device->unref();  // SkRefPtr and new both took a reference.
   skia::VectorPlatformDeviceSkia* device =
-      new skia::VectorPlatformDeviceSkia(page_size.width(), page_size.height(),
-                                         transform);
+      new skia::VectorPlatformDeviceSkia(pdf_device.get());
   data_->current_page_ = device->PdfDevice();
   return device;
 }
 
 bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
-                                const gfx::Point& content_origin,
+                                const gfx::Rect& content_area,
                                 const float& scale_factor) {
   NOTREACHED();
   return NULL;

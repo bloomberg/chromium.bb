@@ -31,9 +31,7 @@ class VectorPlatformDeviceSkiaFactory : public SkDeviceFactory {
 
 class VectorPlatformDeviceSkia : public PlatformDevice {
  public:
-  SK_API VectorPlatformDeviceSkia(int width,
-                                  int height,
-                                  const SkMatrix& initialTransform);
+  SK_API VectorPlatformDeviceSkia(SkPDFDevice* pdf_device);
   ~VectorPlatformDeviceSkia();
 
   SkPDFDevice* PdfDevice() { return pdf_device_.get(); }

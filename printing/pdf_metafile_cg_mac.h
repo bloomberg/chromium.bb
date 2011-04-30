@@ -35,10 +35,10 @@ class PdfMetafileCg : public Metafile {
 
   // Not implemented on mac.
   virtual skia::PlatformDevice* StartPageForVectorCanvas(
-      const gfx::Size& page_size, const gfx::Point& content_origin,
+      const gfx::Size& page_size, const gfx::Rect& content_area,
       const float& scale_factor);
   virtual bool StartPage(const gfx::Size& page_size,
-                         const gfx::Point& content_origin,
+                         const gfx::Rect& content_area,
                          const float& scale_factor);
   virtual bool FinishPage();
   virtual bool FinishDocument();

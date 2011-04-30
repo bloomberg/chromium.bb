@@ -119,9 +119,9 @@ bool PdfMetafileCairo::InitFromData(const void* src_buffer,
 }
 
 skia::PlatformDevice* PdfMetafileCairo::StartPageForVectorCanvas(
-    const gfx::Size& page_size, const gfx::Point& content_origin,
+    const gfx::Size& page_size, const gfx::Rect& content_area,
     const float& scale_factor) {
-  if (!StartPage(page_size, content_origin, scale_factor))
+  if (!StartPage(page_size, content_area, scale_factor))
     return NULL;
 
   return skia::VectorPlatformDeviceCairoFactory::CreateDevice(
@@ -129,7 +129,7 @@ skia::PlatformDevice* PdfMetafileCairo::StartPageForVectorCanvas(
 }
 
 bool PdfMetafileCairo::StartPage(const gfx::Size& page_size,
-                                 const gfx::Point& content_origin,
+                                 const gfx::Rect& content_area,
                                  const float& scale_factor) {
   DCHECK(IsSurfaceValid(surface_));
   DCHECK(IsContextValid(context_));
@@ -142,8 +142,8 @@ bool PdfMetafileCairo::StartPage(const gfx::Size& page_size,
 
   // Don't let WebKit draw over the margins.
   cairo_surface_set_device_offset(surface_,
-                                  content_origin.x(),
-                                  content_origin.y());
+                                  content_area.x(),
+                                  content_area.y());
 
   cairo_pdf_surface_set_size(surface_, page_size.width(), page_size.height());
   return context_ != NULL;
