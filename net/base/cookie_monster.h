@@ -539,6 +539,8 @@ class CookieMonster::CanonicalCookie {
                   const std::string& value,
                   const std::string& domain,
                   const std::string& path,
+                  const std::string& mac_key,
+                  const std::string& mac_algorithm,
                   const base::Time& creation,
                   const base::Time& expiration,
                   const base::Time& last_access,
@@ -563,6 +565,8 @@ class CookieMonster::CanonicalCookie {
                                  const std::string& value,
                                  const std::string& domain,
                                  const std::string& path,
+                                 const std::string& mac_key,
+                                 const std::string& mac_algorithm,
                                  const base::Time& creation,
                                  const base::Time& expiration,
                                  bool secure,
@@ -573,6 +577,8 @@ class CookieMonster::CanonicalCookie {
   const std::string& Value() const { return value_; }
   const std::string& Domain() const { return domain_; }
   const std::string& Path() const { return path_; }
+  const std::string& MACKey() const { return mac_key_; }
+  const std::string& MACAlgorithm() const { return mac_algorithm_; }
   const base::Time& CreationDate() const { return creation_date_; }
   const base::Time& LastAccessDate() const { return last_access_date_; }
   bool DoesExpire() const { return has_expires_; }
@@ -624,11 +630,14 @@ class CookieMonster::CanonicalCookie {
   // this field will be null.  CanonicalCookie consumers should not rely on
   // this field unless they guarantee that the creator of those
   // CanonicalCookies properly initialized the field.
+  // TODO(abarth): We might need to make this field persistent for MAC cookies.
   std::string source_;
   std::string name_;
   std::string value_;
   std::string domain_;
   std::string path_;
+  std::string mac_key_;  // TODO(abarth): Persist to disk.
+  std::string mac_algorithm_;  // TODO(abarth): Persist to disk.
   base::Time creation_date_;
   base::Time expiry_date_;
   base::Time last_access_date_;
@@ -699,6 +708,12 @@ class CookieMonster::ParsedCookie {
   const std::string& Path() const { return pairs_[path_index_].second; }
   bool HasDomain() const { return domain_index_ != 0; }
   const std::string& Domain() const { return pairs_[domain_index_].second; }
+  bool HasMACKey() const { return mac_key_index_ != 0; }
+  const std::string& MACKey() const { return pairs_[mac_key_index_].second; }
+  bool HasMACAlgorithm() const { return mac_algorithm_index_ != 0; }
+  const std::string& MACAlgorithm() const {
+    return pairs_[mac_algorithm_index_].second;
+  }
   bool HasExpires() const { return expires_index_ != 0; }
   const std::string& Expires() const { return pairs_[expires_index_].second; }
   bool HasMaxAge() const { return maxage_index_ != 0; }
@@ -759,6 +774,8 @@ class CookieMonster::ParsedCookie {
   // could fit these into 3 bits each if we're worried about size...
   size_t path_index_;
   size_t domain_index_;
+  size_t mac_key_index_;
+  size_t mac_algorithm_index_;
   size_t expires_index_;
   size_t maxage_index_;
   size_t secure_index_;

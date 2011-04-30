@@ -35,7 +35,8 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
     // Make sure the store gets written at least once.
     store_->AddCookie(
         net::CookieMonster::CanonicalCookie(GURL(), "A", "B", "http://foo.bar",
-                                            "/", base::Time::Now(),
+                                            "/", std::string(), std::string(),
+                                            base::Time::Now(),
                                             base::Time::Now(),
                                             base::Time::Now(),
                                             false, false, true));
@@ -129,7 +130,9 @@ TEST_F(SQLitePersistentCookieStoreTest, TestFlush) {
     std::string value(1000, c);
     store_->AddCookie(
         net::CookieMonster::CanonicalCookie(GURL(), name, value,
-                                            "http://foo.bar", "/", t, t, t,
+                                            "http://foo.bar", "/",
+                                            std::string(), std::string(),
+                                            t, t, t,
                                             false, false, true));
   }
 

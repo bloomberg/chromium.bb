@@ -95,6 +95,7 @@ void AddCookieToList(
   scoped_ptr<CookieMonster::CanonicalCookie> cookie(
       new CookieMonster::CanonicalCookie(
           GURL(), pc.Name(), pc.Value(), key, cookie_path,
+          pc.MACKey(), pc.MACAlgorithm(),
           creation_time, creation_time, cookie_expires,
           pc.IsSecure(), pc.IsHttpOnly(),
           !cookie_expires.is_null()));
@@ -163,10 +164,13 @@ CookieMonster* CreateMonsterFromStoreForGC(
         (i < num_old_cookies) ? current - base::TimeDelta::FromDays(days_old) :
                                 current;
 
+    std::string mac_key;
+    std::string mac_algorithm;
+
     CookieMonster::CanonicalCookie cc(
         GURL(), "a", "1", base::StringPrintf("h%05d.izzle", i), "/path",
-        creation_time, expiration_time, last_access_time,
-        false, false, true);
+        mac_key, mac_algorithm, creation_time, expiration_time,
+        last_access_time, false, false, true);
     store->AddCookie(cc);
   }
 

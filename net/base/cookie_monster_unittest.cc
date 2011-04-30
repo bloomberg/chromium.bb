@@ -253,6 +253,35 @@ TEST(ParsedCookieTest, MultipleEquals) {
   EXPECT_EQ(4U, pc.NumberOfAttributes());
 }
 
+TEST(ParsedCookieTest, MACKey) {
+  CookieMonster::ParsedCookie pc("foo=bar; MAC-Key=3900ac9anw9incvw9f");
+  EXPECT_TRUE(pc.IsValid());
+  EXPECT_EQ("foo", pc.Name());
+  EXPECT_EQ("bar", pc.Value());
+  EXPECT_EQ("3900ac9anw9incvw9f", pc.MACKey());
+  EXPECT_EQ(1U, pc.NumberOfAttributes());
+}
+
+TEST(ParsedCookieTest, MACAlgorithm) {
+  CookieMonster::ParsedCookie pc("foo=bar; MAC-Algorithm=hmac-sha-1");
+  EXPECT_TRUE(pc.IsValid());
+  EXPECT_EQ("foo", pc.Name());
+  EXPECT_EQ("bar", pc.Value());
+  EXPECT_EQ("hmac-sha-1", pc.MACAlgorithm());
+  EXPECT_EQ(1U, pc.NumberOfAttributes());
+}
+
+TEST(ParsedCookieTest, MACKeyAndMACAlgorithm) {
+  CookieMonster::ParsedCookie pc(
+        "foo=bar; MAC-Key=voiae-09fj0302nfqf; MAC-Algorithm=hmac-sha-256");
+  EXPECT_TRUE(pc.IsValid());
+  EXPECT_EQ("foo", pc.Name());
+  EXPECT_EQ("bar", pc.Value());
+  EXPECT_EQ("voiae-09fj0302nfqf", pc.MACKey());
+  EXPECT_EQ("hmac-sha-256", pc.MACAlgorithm());
+  EXPECT_EQ(2U, pc.NumberOfAttributes());
+}
+
 TEST(ParsedCookieTest, QuotedTrailingWhitespace) {
   CookieMonster::ParsedCookie pc("ANCUUID=\"zohNumRKgI0oxyhSsV3Z7D\"  ; "
                                       "expires=Sun, 18-Apr-2027 21:06:29 GMT ; "
