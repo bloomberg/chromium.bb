@@ -941,6 +941,9 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
         <message name="IDS_DEV_TOOLS_CONSOLE" desc="The text label of the JavaScript console menu item">
           &amp;JavaScript console
         </message>
+        <message name="IDS_FILE_MANAGER" desc="The text label of the File Manager menu item">
+          &amp;File manager
+        </message>
         <message name="IDS_TASK_MANAGER" desc="The text label of the Task Manager menu item">
           &amp;Task manager
         </message>
@@ -963,6 +966,9 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
         </message>
         <message name="IDS_DEV_TOOLS_CONSOLE" desc="In Title Case: The text label of the JavaScript console menu item">
           &amp;JavaScript Console
+        </message>
+        <message name="IDS_FILE_MANAGER" desc="The text label of the File Manager menu item">
+          &amp;File Manager
         </message>
         <message name="IDS_TASK_MANAGER" desc="In Title Case: The text label of the Task Manager menu item">
           &amp;Task Manager
@@ -4035,18 +4041,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_TABPOSE_DESCRIPTION" desc="Description of the 'Tab Overview' lab.">
         Swipe down with three fingers on your trackpad to see an overview of all your tabs. Click on a thumbnail to select it. Works great in fullscreen mode.
-      </message>
-      <message name="IDS_FLAGS_MEDIA_PLAYER_NAME" desc="Name of the 'Media Player' lab.">
-        Media Player
-      </message>
-      <message name="IDS_FLAGS_MEDIA_PLAYER_DESCRIPTION" desc="Description of the 'Media Player' lab.">
-        Enable Media Player.
-      </message>
-      <message name="IDS_FLAGS_ADVANCED_FS_NAME" desc="Name of the 'Advanced File System' lab.">
-        Advanced File System
-      </message>
-      <message name="IDS_FLAGS_ADVANCED_FS_DESCRIPTION" desc="Description of the 'Advanced File System' lab.">
-        Enable Advanced File System, including USB and SD card support.
       </message>
       <message name="IDS_FLAGS_SIDE_TABS_NAME" desc="Name of the 'Left Tabs' lab.">
         Side Tabs
@@ -9696,12 +9690,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </message>
     <message name="IDS_FILEBROWSER_OPEN" desc="Open Button text">
       Open
-    </message>
-    <message name="IDS_FILEBROWSER_UPLOAD_PICASAWEB" desc="Upload to picasaweb menu item">
-      Picasa Web
-    </message>
-    <message name="IDS_FILEBROWSER_UPLOAD_FLICKR" desc="Upload to Flickr menu item">
-      Flickr
     </message>
     <message name="IDS_FILEBROWSER_UPLOAD_EMAIL" desc="Upload to email menu item">
       Email

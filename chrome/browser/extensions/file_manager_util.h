@@ -15,6 +15,8 @@ class Profile;
 // Helper class for wiring file browser component extension with the rest of UI.
 class FileManagerUtil {
  public:
+  // Gets base file browser url.
+  static GURL GetFileBrowserUrl();
   // Converts |full_file_path| into external filesystem: url. Returns false
   // if |full_file_path| is not managed by the external filesystem provider.
   static bool ConvertFileToFileSystemUrl(Profile* profile,
@@ -32,13 +34,10 @@ class FileManagerUtil {
   // |default_path|.
   static void ShowFullTabUrl(Profile* profile,
                              const FilePath& default_path);
-
  private:
   FileManagerUtil() {}
   // Helper to convert numeric dialog type to a string.
   static std::string GetDialogTypeAsString(SelectFileDialog::Type dialog_type);
-  // Gets base file browser url.
-  static GURL GetFileBrowserUrl();
   // Help to convert potential dialog arguments into json.
   static std::string GetArgumentsJson(
       SelectFileDialog::Type type,

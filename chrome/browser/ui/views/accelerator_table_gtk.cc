@@ -111,6 +111,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_T,              true,  true,  false, IDC_RESTORE_TAB },
   { ui::VKEY_S,              false, true,  false, IDC_SAVE_PAGE },
 #if defined(OS_CHROMEOS)
+  { ui::VKEY_M,              false, true,  false, IDC_FILE_MANAGER },
   { ui::VKEY_LWIN,           false, false, false, IDC_SEARCH },
 #endif
   { ui::VKEY_9,              false, true,  false, IDC_SELECT_LAST_TAB },
