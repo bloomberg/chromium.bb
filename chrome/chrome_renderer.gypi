@@ -120,6 +120,8 @@
         'renderer/page_click_tracker.h',
         'renderer/page_load_histograms.cc',
         'renderer/page_load_histograms.h',
+        'renderer/prerender/prerender_helper.cc',
+        'renderer/prerender/prerender_helper.h',
         'renderer/print_web_view_helper.cc',
         'renderer/print_web_view_helper.h',
         'renderer/print_web_view_helper_linux.cc',

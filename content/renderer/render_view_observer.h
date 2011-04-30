@@ -15,6 +15,7 @@ namespace WebKit {
 class WebDataSource;
 class WebFrame;
 class WebFormElement;
+class WebMediaPlayerClient;
 class WebMouseEvent;
 class WebNode;
 class WebString;
@@ -75,6 +76,9 @@ class RenderViewObserver : public IPC::Channel::Listener,
 
   // These match the RenderView methods.
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}
+
+  virtual void WillCreateMediaPlayer(WebKit::WebFrame* frame,
+                                     WebKit::WebMediaPlayerClient* client) {}
 
  protected:
   explicit RenderViewObserver(RenderView* render_view);

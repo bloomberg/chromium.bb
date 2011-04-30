@@ -45,6 +45,7 @@
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/page_click_tracker.h"
 #include "chrome/renderer/page_load_histograms.h"
+#include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/safe_browsing/malware_dom_details.h"
@@ -306,7 +307,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       plugin_setting == CONTENT_SETTING_ALLOW ||
       host_setting == CONTENT_SETTING_ALLOW) {
     // Delay loading plugins if prerendering.
-    if (render_view->is_prerendering()) {
+    if (prerender::PrerenderHelper::IsPrerendering(render_view)) {
       return CreatePluginPlaceholder(
           render_view, frame, params, *group, IDR_CLICK_TO_PLAY_PLUGIN_HTML,
           IDS_PLUGIN_LOAD, true, true);

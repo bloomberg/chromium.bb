@@ -261,6 +261,12 @@ IPC_MESSAGE_ROUTED4(ViewMsg_TranslatePage,
 IPC_MESSAGE_ROUTED1(ViewMsg_RevertTranslation,
                     int /* page id */)
 
+// Tells a renderer if it's currently being prerendered.  Must only be set
+// to true before any navigation occurs, and only set to false at most once
+// after that.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetIsPrerendering,
+                    bool /* whether the RenderView is prerendering */)
+
 // Sent on process startup to indicate whether this process is running in
 // incognito mode.
 IPC_MESSAGE_CONTROL1(ViewMsg_SetIsIncognitoProcess,
@@ -419,6 +425,11 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_PageTranslated,
                     std::string           /* the original language */,
                     std::string           /* the translated language */,
                     TranslateErrors::Type /* the error type if available */)
+
+// Message sent from the renderer to the browser to notify it of events which
+// may lead to the cancellation of a prerender. The message is sent only when
+// the renderer is prerendering.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_MaybeCancelPrerenderForHTML5Media)
 
 // Suggest results -----------------------------------------------------------
 

@@ -54,6 +54,9 @@ class BlockedPlugin : public RenderViewObserver,
       const webkit_glue::CustomContextMenuContext& /* ignored */,
       unsigned id);
 
+  void OnLoadBlockedPlugins();
+  void OnSetIsPrerendering(bool is_prerendering);
+
   // Load the blocked plugin.
   void LoadPlugin();
 

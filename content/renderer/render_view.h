@@ -198,7 +198,6 @@ class RenderView : public RenderWidget,
   // May return NULL when the view is closing.
   WebKit::WebView* webview() const;
 
-  bool is_prerendering() const { return is_prerendering_; }
   int page_id() const { return page_id_; }
   PepperPluginDelegateImpl* pepper_delegate() { return &pepper_delegate_; }
 
@@ -773,7 +772,6 @@ class RenderView : public RenderWidget,
   void OnFindReplyAck();
   void OnEnableAccessibility();
   void OnInstallMissingPlugin();
-  void OnDisplayPrerenderedPage();
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const WebKit::WebMediaPlayerAction& action);
   void OnMoveOrResizeStarted();
@@ -963,9 +961,6 @@ class RenderView : public RenderWidget,
 
   // Timer used to delay the updating of nav state (see SyncNavigationState).
   base::OneShotTimer<RenderView> nav_state_sync_timer_;
-
-  // True if the RenderView is currently prerendering a page.
-  bool is_prerendering_;
 
   // Page IDs ------------------------------------------------------------------
   //

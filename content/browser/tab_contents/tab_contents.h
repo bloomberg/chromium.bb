@@ -47,10 +47,6 @@ namespace history {
 class HistoryAddPageArgs;
 }
 
-namespace prerender {
-class PrerenderManager;
-}
-
 namespace safe_browsing {
 class ClientSideDetectionHost;
 }
@@ -636,9 +632,6 @@ class TabContents : public PageNavigator,
 
   // Used to access the CreateHistoryAddPageArgs member function.
   friend class ExternalTabContainer;
-
-  // Used to access RVH Delegates.
-  friend class prerender::PrerenderManager;
 
   // Add all the TabContentObservers.
   void AddObservers();

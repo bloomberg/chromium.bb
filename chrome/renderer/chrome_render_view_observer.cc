@@ -15,6 +15,7 @@
 #include "chrome/renderer/about_handler.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/external_host_bindings.h"
+#include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/translate_helper.h"
 #include "content/common/bindings_policy.h"
@@ -150,6 +151,7 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   // Filter only.
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
     IPC_MESSAGE_HANDLER(ViewMsg_Navigate, OnNavigate)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetIsPrerendering, OnSetIsPrerendering);
   IPC_END_MESSAGE_MAP()
 
   return handled;
@@ -285,6 +287,15 @@ void ChromeRenderViewObserver::didSerializeDataForFrame(
 void ChromeRenderViewObserver::OnNavigate(
     const ViewMsg_Navigate_Params& params) {
   AboutHandler::MaybeHandle(params.url);
+}
+
+void ChromeRenderViewObserver::OnSetIsPrerendering(bool is_prerendering) {
+  if (is_prerendering) {
+    DCHECK(!prerender::PrerenderHelper::Get(render_view()));
+    // The PrerenderHelper will destroy itself either after recording histograms
+    // or on destruction of the RenderView.
+    new prerender::PrerenderHelper(render_view());
+  }
 }
 
 void ChromeRenderViewObserver::DidStopLoading() {

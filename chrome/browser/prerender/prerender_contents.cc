@@ -171,6 +171,9 @@ void PrerenderContents::StartPrerendering(
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
 
+  render_view_host_->Send(
+      new ViewMsg_SetIsPrerendering(render_view_host_->routing_id(), true));
+
   ViewMsg_Navigate_Params params;
   params.page_id = -1;
   params.pending_history_list_offset = -1;
@@ -178,8 +181,9 @@ void PrerenderContents::StartPrerendering(
   params.current_history_list_length = 0;
   params.url = prerender_url_;
   params.transition = PageTransition::LINK;
-  params.navigation_type = ViewMsg_Navigate_Type::PRERENDER;
+  params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
   params.referrer = referrer_;
+  params.request_time = base::Time::Now();
 
   render_view_host_->Navigate(params);
 }

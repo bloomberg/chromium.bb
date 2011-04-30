@@ -74,6 +74,7 @@ class ChromeRenderViewObserver : public RenderViewObserver,
   void OnDownloadFavicon(int id, const GURL& image_url, int image_size);
   void OnEnableViewSourceMode();
   void OnNavigate(const ViewMsg_Navigate_Params& params);
+  void OnSetIsPrerendering(bool is_prerendering);
 
   // Captures the thumbnail and text contents for indexing for the given load
   // ID. If the view's load ID is different than the parameter, this call is

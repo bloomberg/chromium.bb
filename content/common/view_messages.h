@@ -127,9 +127,6 @@ struct ViewMsg_Navigate_Type {
     // the page's cache policy is ignored and we load from the cache.
     RESTORE,
 
-    // Speculatively prerendering the page.
-    PRERENDER,
-
     // Navigation type not categorized by the other types.
     NORMAL
   };
@@ -1183,9 +1180,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_InstallMissingPlugin)
 // into a full window).
 IPC_MESSAGE_ROUTED0(ViewMsg_DisassociateFromPopupCount)
 
-// Tells the render view a prerendered page is about to be displayed.
-IPC_MESSAGE_ROUTED0(ViewMsg_DisplayPrerenderedPage)
-
 
 // Messages sent from the renderer to the browser.
 
@@ -1963,11 +1957,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_RegisterProtocolHandler,
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateInspectorSetting,
                     std::string,  /* key */
                     std::string /* value */)
-
-// Message sent from the renderer to the browser to notify it of events which
-// may lead to the cancellation of a prerender. The message is sent only when
-// the renderer is in prerender mode.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_MaybeCancelPrerenderForHTML5Media)
 
 // Send back a string to be recorded by UserMetrics.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,

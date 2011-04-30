@@ -150,11 +150,11 @@ bool BlockedPlugin::OnMessageReceived(const IPC::Message& message) {
       gLastActiveMenu == this) {
     ViewMsg_CustomContextMenuAction::Dispatch(
         &message, this, this, &BlockedPlugin::OnMenuItemSelected);
-  } else if (message.type() == ViewMsg_LoadBlockedPlugins::ID) {
-    LoadPlugin();
-  } else if (message.type() == ViewMsg_DisplayPrerenderedPage::ID) {
-    if (is_blocked_for_prerendering_)
-      LoadPlugin();
+  } else {
+    IPC_BEGIN_MESSAGE_MAP(BlockedPlugin, message)
+      IPC_MESSAGE_HANDLER(ViewMsg_LoadBlockedPlugins, OnLoadBlockedPlugins)
+      IPC_MESSAGE_HANDLER(ViewMsg_SetIsPrerendering, OnSetIsPrerendering)
+    IPC_END_MESSAGE_MAP()
   }
 
   return false;
@@ -168,6 +168,18 @@ void BlockedPlugin::OnMenuItemSelected(
   } else if (id == kMenuActionRemove) {
     HidePlugin();
   }
+}
+
+void BlockedPlugin::OnLoadBlockedPlugins() {
+  LoadPlugin();
+}
+
+void BlockedPlugin::OnSetIsPrerendering(bool is_prerendering) {
+  // Prerendering can only be enabled prior to a RenderView's first navigation,
+  // so no BlockedPlugin should see the notification that enables prerendering.
+  DCHECK(!is_prerendering);
+  if (!is_prerendering)
+    LoadPlugin();
 }
 
 void BlockedPlugin::LoadPlugin() {

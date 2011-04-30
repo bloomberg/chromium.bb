@@ -10,6 +10,7 @@
 #include "base/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/url_pattern.h"
+#include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/navigation_state.h"
@@ -32,60 +33,6 @@ static const size_t kPLTCount(100);
 
 #define PLT_HISTOGRAM(name, sample) \
     UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, kPLTMin, kPLTMax, kPLTCount);
-
-namespace {
-
-// Histograms to determine prerendering's impact on perceived PLT.
-void UpdatePrerenderHistograms(NavigationState* navigation_state,
-                               const Time& finish_all_loads,
-                               const TimeDelta& begin_to_finish_all_loads) {
-  // Load time for non-prerendered pages.
-  static bool use_prerender_histogram =
-      base::FieldTrialList::Find("Prefetch") &&
-      !base::FieldTrialList::Find("Prefetch")->group_name().empty();
-  if (!navigation_state->was_started_as_prerender()) {
-    if (use_prerender_histogram) {
-      PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.PerceivedLoadTime", "Prefetch"),
-          begin_to_finish_all_loads);
-    }
-    return;
-  }
-
-  // Do not record stats for redirected prerendered pages.
-  if (navigation_state->was_prerender_redirected())
-    return;
-
-  // Histogram for usage rate of prerendered pages.
-  Time prerendered_page_display =
-      navigation_state->prerendered_page_display_time();
-  UMA_HISTOGRAM_ENUMERATION("PLT.PageUsed_PrerenderLoad",
-                            prerendered_page_display.is_null() ? 0 : 1, 2);
-  if (prerendered_page_display.is_null())
-    return;
-
-  // Histograms for perceived load time of prerendered pages.
-  Time prerendered_page_start =
-      navigation_state->prerendered_page_start_time();
-  PLT_HISTOGRAM("PLT.TimeUntilDisplay_PrerenderLoad",
-                prerendered_page_display - prerendered_page_start);
-  TimeDelta perceived_load_time = finish_all_loads - prerendered_page_display;
-  if (perceived_load_time < TimeDelta::FromSeconds(0)) {
-    PLT_HISTOGRAM("PLT.PrerenderIdleTime_PrerenderLoad", -perceived_load_time);
-    perceived_load_time = TimeDelta::FromSeconds(0);
-  }
-  PLT_HISTOGRAM("PLT.PerceivedLoadTime_PrerenderLoad", perceived_load_time);
-  if (use_prerender_histogram) {
-    PLT_HISTOGRAM(base::FieldTrial::MakeName(
-                  "PLT.PerceivedLoadTime_PrerenderLoad", "Prefetch"),
-                  perceived_load_time);
-    PLT_HISTOGRAM(base::FieldTrial::MakeName(
-                  "PLT.PerceivedLoadTime", "Prefetch"),
-                  perceived_load_time);
-  }
-}
-
-}  // namespace
 
 // Returns the scheme type of the given URL if its type is one for which we
 // dump page load histograms. Otherwise returns NULL.
@@ -134,7 +81,8 @@ enum AbandonType {
 };
 
 PageLoadHistograms::PageLoadHistograms(
-    RenderView* render_view, RendererHistogramSnapshots* histogram_snapshots)
+    RenderView* render_view,
+    RendererHistogramSnapshots* histogram_snapshots)
     : RenderViewObserver(render_view),
       cross_origin_access_count_(0),
       same_origin_access_count_(0),
@@ -317,18 +265,9 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadCacheOnly",
                     begin_to_finish_all_loads);
       break;
-    case NavigationState::PRERENDER_LOAD:
-      PLT_HISTOGRAM("PLT.BeginToFinishDoc_PrerenderLoad",
-                    begin_to_finish_doc);
-      PLT_HISTOGRAM("PLT.BeginToFinish_PrerenderLoad",
-                    begin_to_finish_all_loads);
-      break;
     default:
       break;
   }
-
-  UpdatePrerenderHistograms(navigation_state, finish_all_loads,
-                            begin_to_finish_all_loads);
 
   // Histograms to determine if DNS prefetching has an impact on PLT.
   static bool use_dns_histogram(base::FieldTrialList::Find("DnsImpact") &&
@@ -839,6 +778,11 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
 
   // Log the PLT to the info log.
   LogPageLoadTime(navigation_state, frame->dataSource());
+
+  // Record prerendering histograms.
+  prerender::PrerenderHelper::RecordHistograms(render_view(),
+                                               finish_all_loads,
+                                               begin_to_finish_all_loads);
 
   // Since there are currently no guarantees that renderer histograms will be
   // sent to the browser, we initiate a PostTask here to be sure that we send

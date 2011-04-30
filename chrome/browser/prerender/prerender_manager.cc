@@ -12,6 +12,7 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -19,7 +20,6 @@
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "content/common/view_messages.h"
 #include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_util.h"
@@ -370,7 +370,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
   render_view_host->WasRestored();
   prerender_contents->set_render_view_host(NULL);
   render_view_host->Send(
-      new ViewMsg_DisplayPrerenderedPage(render_view_host->routing_id()));
+      new ViewMsg_SetIsPrerendering(render_view_host->routing_id(), false));
   tab_contents->SwapInRenderViewHost(render_view_host);
   MarkTabContentsAsPrerendered(tab_contents);
 
@@ -393,16 +393,18 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
       Source<std::pair<int, int> >(&child_route_pair),
       NotificationService::NoDetails());
 
+  RenderViewHostDelegate* render_view_host_delegate =
+      static_cast<RenderViewHostDelegate*>(tab_contents);
   ViewHostMsg_FrameNavigate_Params* params =
       prerender_contents->navigate_params();
   if (params != NULL)
-    tab_contents->DidNavigate(render_view_host, *params);
+    render_view_host_delegate->DidNavigate(render_view_host, *params);
 
   string16 title = prerender_contents->title();
   if (!title.empty()) {
-    tab_contents->UpdateTitle(render_view_host,
-                              prerender_contents->page_id(),
-                              UTF16ToWideHack(title));
+    render_view_host_delegate->UpdateTitle(render_view_host,
+                                           prerender_contents->page_id(),
+                                           UTF16ToWideHack(title));
   }
 
   GURL icon_url = prerender_contents->icon_url();
@@ -415,7 +417,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
   }
 
   if (prerender_contents->has_stopped_loading())
-    tab_contents->DidStopLoading();
+    render_view_host_delegate->DidStopLoading();
 
   return true;
 }

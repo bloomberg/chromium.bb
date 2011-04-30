@@ -332,7 +332,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       navigation_gesture_(NavigationGestureUnknown),
       opened_by_user_gesture_(true),
       opener_suppressed_(false),
-      is_prerendering_(false),
       page_id_(-1),
       last_page_id_sent_to_browser_(-1),
       history_list_offset_(-1),
@@ -629,8 +628,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAltErrorPageURL, OnSetAltErrorPageURL)
     IPC_MESSAGE_HANDLER(ViewMsg_InstallMissingPlugin, OnInstallMissingPlugin)
-    IPC_MESSAGE_HANDLER(ViewMsg_DisplayPrerenderedPage,
-                        OnDisplayPrerenderedPage)
     IPC_MESSAGE_HANDLER(ViewMsg_EnumerateDirectoryResponse,
                         OnEnumerateDirectoryResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_RunFileChooserResponse, OnFileChooserResponse)
@@ -780,14 +777,8 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
       }
     }
 
-    if (navigation_state) {
-      if (params.navigation_type != ViewMsg_Navigate_Type::PRERENDER) {
-        navigation_state->set_load_type(NavigationState::NORMAL_LOAD);
-      } else {
-        navigation_state->set_load_type(NavigationState::PRERENDER_LOAD);
-        is_prerendering_ = true;
-      }
-    }
+    if (navigation_state)
+      navigation_state->set_load_type(NavigationState::NORMAL_LOAD);
     main_frame->loadRequest(request);
   }
 
@@ -1849,10 +1840,8 @@ WebSharedWorker* RenderView::createSharedWorker(
 
 WebMediaPlayer* RenderView::createMediaPlayer(
     WebFrame* frame, WebMediaPlayerClient* client) {
-  // If this is a prerendering page, start the cancel of the prerender.
-  if (is_prerendering_) {
-    Send(new ViewHostMsg_MaybeCancelPrerenderForHTML5Media(routing_id_));
-  }
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
 
   scoped_ptr<media::MessageLoopFactory> message_loop_factory(
       new media::MessageLoopFactoryImpl());
@@ -2219,25 +2208,10 @@ void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
     }
   }
 
-  state->set_was_started_as_prerender(is_prerendering_);
-  if (is_prerendering_ && !frame->parent()) {
-    if (content_initiated) {
-      NavigationState* old_state =
-          NavigationState::FromDataSource(webview()->mainFrame()->dataSource());
-      state->set_prerendered_page_start_time(
-          old_state->prerendered_page_start_time());
-      old_state->set_was_prerender_redirected(true);
-    } else if (!state->request_time().is_null()) {
-      state->set_prerendered_page_start_time(state->request_time());
-    } else {
-      state->set_prerendered_page_start_time(state->start_load_time());
-    }
-  }
+  ds->setExtraData(state);
 
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidCreateDataSource(frame, ds));
-
-  ds->setExtraData(state);
 }
 
 void RenderView::didStartProvisionalLoad(WebFrame* frame) {
@@ -3461,28 +3435,6 @@ void RenderView::OnInstallMissingPlugin() {
   // This could happen when the first default plugin is deleted.
   if (first_default_plugin_)
     first_default_plugin_->InstallMissingPlugin();
-}
-
-void RenderView::OnDisplayPrerenderedPage() {
-  DCHECK(is_prerendering_);
-  is_prerendering_ = false;
-
-  // Update NavigationState for histograms.
-  WebDataSource* ds = webview()->mainFrame()->dataSource();
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
-  navigation_state->set_prerendered_page_display_time(Time::Now());
-
-  // If there is a provisional data source, update its NavigationState, too.
-  WebDataSource* provisional_ds =
-      webview()->mainFrame()->provisionalDataSource();
-  if (provisional_ds) {
-    NavigationState* provisional_navigation_state =
-        NavigationState::FromDataSource(provisional_ds);
-    if (provisional_navigation_state) {
-      provisional_navigation_state->set_prerendered_page_display_time(
-          Time::Now());
-    }
-  }
 }
 
 void RenderView::OnEnumerateDirectoryResponse(

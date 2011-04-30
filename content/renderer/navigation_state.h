@@ -36,8 +36,6 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     LINK_LOAD_RELOAD,          // JS/link directed reload.
     LINK_LOAD_CACHE_STALE_OK,  // back/forward or encoding change.
     LINK_LOAD_CACHE_ONLY,      // Allow stale data (avoid doing a re-post)
-    PRERENDER_LOAD,            // Navigation started as the speculative
-                               // prendering of a linked page.
     kLoadTypeMax               // Bounding value for this enum.
   };
 
@@ -150,17 +148,6 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     first_paint_after_load_time_ = value;
   }
 
-  // The time that prerendering started.  Note that this is preserved against
-  // HTML/Javascript redirects, until the page is displayed.
-  const base::Time& prerendered_page_start_time() const;
-  void set_prerendered_page_start_time(const base::Time& value);
-
-  // The time that a prerendered page was displayed.  Invalid for
-  // non-prerendered pages.  Can be either before or after
-  // |finish_document_load_time_|.
-  const base::Time& prerendered_page_display_time() const;
-  void set_prerendered_page_display_time(const base::Time& value);
-
   // True iff the histograms for the associated frame have been dumped.
   bool load_histograms_recorded() const { return load_histograms_recorded_; }
   void set_load_histograms_recorded(bool value) {
@@ -212,15 +199,6 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   void set_use_error_page(bool use_error_page) {
     use_error_page_ = use_error_page;
   }
-
-  // True if a page load started as a prerender.  Preserved across redirects.
-  bool was_started_as_prerender() const;
-  void set_was_started_as_prerender(bool was_started_as_prerender);
-
-  // True if there was an HTML/Javascript redirect while a page was still being
-  // prerendered.
-  bool was_prerender_redirected() const;
-  void set_was_prerender_redirected(bool was_prerender_redirected);
 
   int http_status_code() const { return http_status_code_; }
   void set_http_status_code(int http_status_code) {
@@ -299,8 +277,6 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   base::Time finish_load_time_;
   base::Time first_paint_time_;
   base::Time first_paint_after_load_time_;
-  base::Time prerendered_page_start_time_;
-  base::Time prerendered_page_display_time_;
   bool load_histograms_recorded_;
   bool web_timing_histograms_recorded_;
   bool request_committed_;
@@ -314,9 +290,6 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   std::string security_info_;
 
   bool use_error_page_;
-
-  bool was_started_as_prerender_;
-  bool was_prerender_redirected_;
 
   bool cache_policy_override_set_;
   WebKit::WebURLRequest::CachePolicy cache_policy_override_;
