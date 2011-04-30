@@ -206,7 +206,13 @@ void SafeBrowsingResourceHandler::OnBlockingPageComplete(bool proceed) {
 
   if (proceed) {
     safe_browsing_result_ = SafeBrowsingService::SAFE;
-    ResumeRequest();
+    net::URLRequest* request = rdh_->GetURLRequest(
+        GlobalRequestID(render_process_host_id_, deferred_request_id_));
+
+    // The request could be canceled by renderer at this stage.
+    // As a result, click proceed will do nothing (crbug.com/76460).
+    if (request)
+      ResumeRequest();
   } else {
     rdh_->CancelRequest(render_process_host_id_, deferred_request_id_, false);
   }

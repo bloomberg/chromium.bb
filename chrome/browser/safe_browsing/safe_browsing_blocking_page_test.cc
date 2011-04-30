@@ -303,6 +303,21 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
     ASSERT_FALSE(contents->showing_interstitial_page());
   }
 
+  bool YesInterstitial() {
+    TabContents* contents = browser()->GetSelectedTabContents();
+    InterstitialPage* interstitial_page = InterstitialPage::GetInterstitialPage(
+        contents);
+    return interstitial_page != NULL;
+  }
+
+  void WaitForInterstitial() {
+    TabContents* contents = browser()->GetSelectedTabContents();
+    if (!InterstitialPage::GetInterstitialPage(contents))
+      ui_test_utils::WaitForNotificationFrom(
+          NotificationType::INTERSTITIAL_ATTACHED,
+          Source<TabContents>(contents));
+  }
+
   void WaitForNavigation() {
     NavigationController* controller =
         &browser()->GetSelectedTabContents()->controller();
@@ -327,6 +342,8 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
     EXPECT_TRUE(report.complete());
   }
 
+  void MalwareRedirectCancelAndProceed(const std::string open_function);
+
  protected:
   TestMalwareDetailsFactory details_factory_;
 
@@ -337,11 +354,56 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageTest);
 };
 
+void SafeBrowsingBlockingPageTest::MalwareRedirectCancelAndProceed(
+    const std::string open_function) {
+  GURL load_url = test_server()->GetURL(
+      "files/safe_browsing/interstitial_cancel.html");
+  GURL malware_url("http://localhost/files/safe_browsing/malware.html");
+  AddURLResult(malware_url, SafeBrowsingService::URL_MALWARE);
+
+  // Load the test page.
+  ui_test_utils::NavigateToURL(browser(), load_url);
+  // Trigger the safe browsing interstitial page via a redirect in "openWin()".
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL("javascript:" + open_function + "()"),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  WaitForInterstitial();
+  // Cancel the redirect request while interstitial page is open.
+  browser()->ActivateTabAt(0, true);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL("javascript:stopWin()"),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  browser()->ActivateTabAt(1, true);
+  // Simulate the user clicking "proceed",  there should be no crash.
+  SendCommand("\"proceed\"");
+}
+
 namespace {
 
 const char kEmptyPage[] = "files/empty.html";
 const char kMalwarePage[] = "files/safe_browsing/malware.html";
 const char kMalwareIframe[] = "files/safe_browsing/malware_iframe.html";
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
+                       MalwareRedirectInIFrameCanceled) {
+  // 1. Test the case that redirect is a subresource.
+  MalwareRedirectCancelAndProceed("openWinIFrame");
+  // If the redirect was from subresource but canceled, "proceed" will continue
+  // with the rest of resources.
+  AssertNoInterstitial(true);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareRedirectCanceled) {
+  // 2. Test the case that redirect is the only resource.
+  MalwareRedirectCancelAndProceed("openWin");
+  // Clicking proceed won't do anything if the main request is cancelled
+  // already.  See crbug.com/76460.
+  EXPECT_TRUE(YesInterstitial());
+}
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareDontProceed) {
   GURL url = test_server()->GetURL(kEmptyPage);
@@ -360,7 +422,6 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareProceed) {
   AddURLResult(url, SafeBrowsingService::URL_MALWARE);
 
   ui_test_utils::NavigateToURL(browser(), url);
-
   SendCommand("\"proceed\"");    // Simulate the user clicking "proceed"
   WaitForNavigation();    // Wait until we finish the navigation.
   AssertNoInterstitial(true);    // Assert the interstitial is gone.
