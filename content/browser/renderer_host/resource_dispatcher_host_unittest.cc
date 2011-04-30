@@ -450,6 +450,10 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   MakeTestRequest(test_filter.get(), 0, 3,
                   net::URLRequestTestJob::test_url_3());
 
+  // Make sure all requests have finished stage one. test_url_1 will have
+  // finished.
+  MessageLoop::current()->RunAllPending();
+
   // TODO(mbelshe):
   // Now that the async IO path is in place, the IO always completes on the
   // initial call; so the requests have already completed.  This basically
@@ -457,7 +461,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   //EXPECT_EQ(3, host_.pending_requests());
 
   // Process each request for one level so one callback is called.
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 2; i++)
     EXPECT_TRUE(net::URLRequestTestJob::ProcessOnePendingMessage());
 
   // Cancel the requests to the test process.
