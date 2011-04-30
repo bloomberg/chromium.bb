@@ -30,11 +30,6 @@ class RenderProcessObserver : public IPC::Message::Sender {
   // Called right after the WebKit API is initialized.
   virtual void WebKitInitialized();
 
-  // See WebViewClient::allowScriptExtension
-  virtual bool AllowScriptExtension(const std::string& v8_extension_name,
-                                    const GURL& url,
-                                    int extension_group);
-
   virtual void IdleNotification();
 
  private:

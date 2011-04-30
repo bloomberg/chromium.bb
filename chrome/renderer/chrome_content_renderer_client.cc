@@ -184,7 +184,8 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
   }
 #endif
 
-  new ContentSettingsObserver(render_view);
+  ContentSettingsObserver* content_settings =
+      new ContentSettingsObserver(render_view);
   new DevToolsAgent(render_view);
   new ExtensionHelper(render_view, extension_dispatcher_.get());
   new PageLoadHistograms(render_view, histogram_snapshots_.get());
@@ -205,7 +206,9 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
   page_click_tracker->AddListener(autofill_agent);
 
   TranslateHelper* translate = new TranslateHelper(render_view, autofill_agent);
-  new ChromeRenderViewObserver(render_view, translate, phishing_classifier);
+  new ChromeRenderViewObserver(
+      render_view, content_settings, extension_dispatcher_.get(),
+      translate, phishing_classifier);
 
   // Used only for testing/automation.
   if (CommandLine::ForCurrentProcess()->HasSwitch(

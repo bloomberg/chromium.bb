@@ -6,6 +6,8 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/common/database_messages.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -18,6 +20,7 @@ using WebKit::WebDataSource;
 using WebKit::WebFrame;
 using WebKit::WebFrameClient;
 using WebKit::WebSecurityOrigin;
+using WebKit::WebString;
 using WebKit::WebURLRequest;
 using WebKit::WebView;
 
@@ -126,6 +129,27 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(
       SetContentSettings(observer->current_content_settings_);
     }
   }
+}
+
+bool ContentSettingsObserver::AllowDatabase(WebFrame* frame,
+                                            const WebString& name,
+                                            const WebString& display_name,
+                                            unsigned long estimated_size) {
+  WebSecurityOrigin origin = frame->securityOrigin();
+  if (origin.isEmpty())
+    return false;  // Uninitialized document?
+
+  bool result;
+  if (!Send(new DatabaseHostMsg_Allow(routing_id(),
+      origin.toString().utf8(), name, display_name, estimated_size, &result)))
+    return false;
+  Send(new ViewHostMsg_WebDatabaseAccessed(routing_id(),
+                                           GURL(origin.toString().utf8()),
+                                           name,
+                                           display_name,
+                                           estimated_size,
+                                           !result));
+  return result;
 }
 
 bool ContentSettingsObserver::AllowImages(WebFrame* frame,

@@ -213,13 +213,6 @@ class RenderThread : public RenderThreadBase,
   // on the renderer's main thread.
   scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
 
-  // This function is called for every registered V8 extension each time a new
-  // script context is created. Returns true if the given V8 extension is
-  // allowed to run on the given URL and extension group.
-  bool AllowScriptExtension(const std::string& v8_extension_name,
-                            const GURL& url,
-                            int extension_group);
-
   // Hack for http://crbug.com/71735.
   // TODO(jamesr): remove once http://crbug.com/72007 is fixed.
   RendererWebKitClientImpl* GetWebKitClientImpl() const {
@@ -234,6 +227,9 @@ class RenderThread : public RenderThreadBase,
 
   // Registers the given V8 extension with WebKit.
   void RegisterExtension(v8::Extension* extension);
+
+  // Returns true iff the extension is registered.
+  bool IsRegisteredExtension(const std::string& v8_extension_name) const;
 
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg);

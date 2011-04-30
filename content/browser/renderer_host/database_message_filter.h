@@ -67,7 +67,7 @@ class DatabaseMessageFilter
                        const string16& name,
                        const string16& display_name,
                        unsigned long estimated_size,
-                       IPC::Message* reply_msg);
+                       bool* result);
 
   // DatabaseTracker::Observer callbacks (file thread)
   virtual void OnDatabaseSizeChanged(const string16& origin_identifier,
@@ -81,10 +81,6 @@ class DatabaseMessageFilter
                           bool sync_dir,
                           IPC::Message* reply_msg,
                           int reschedule_count);
-
-  // CookiePromptModalDialog response handler (io thread)
-  void AllowDatabaseResponse(IPC::Message* reply_msg,
-                             ContentSetting content_setting);
 
   // The database tracker for the current profile.
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;

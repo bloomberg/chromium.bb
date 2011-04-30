@@ -36,16 +36,22 @@ class ContentSettingsObserver
   void DidBlockContentType(ContentSettingsType settings_type,
                            const std::string& resource_identifier);
 
+  // These correspond to WebKit::WebPermissionClient methods.
+  bool AllowDatabase(WebKit::WebFrame* frame,
+                     const WebKit::WebString& name,
+                     const WebKit::WebString& display_name,
+                     unsigned long estimated_size);
+  bool AllowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
+  bool AllowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
+  bool AllowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
+  void DidNotAllowPlugins(WebKit::WebFrame* frame);
+  void DidNotAllowScript(WebKit::WebFrame* frame);
+
  private:
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation);
-  virtual bool AllowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
-  virtual bool AllowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
-  virtual bool AllowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
-  virtual void DidNotAllowPlugins(WebKit::WebFrame* frame);
-  virtual void DidNotAllowScript(WebKit::WebFrame* frame);
 
   // Message handlers.
   void OnSetContentSettingsForLoadingURL(

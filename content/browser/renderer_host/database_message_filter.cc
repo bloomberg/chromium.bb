@@ -97,7 +97,7 @@ bool DatabaseMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Opened, OnDatabaseOpened)
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Modified, OnDatabaseModified)
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Closed, OnDatabaseClosed)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(DatabaseHostMsg_Allow, OnAllowDatabase)
+    IPC_MESSAGE_HANDLER(DatabaseHostMsg_Allow, OnAllowDatabase)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -284,22 +284,15 @@ void DatabaseMessageFilter::OnAllowDatabase(const std::string& origin_url,
                                             const string16& name,
                                             const string16& display_name,
                                             unsigned long estimated_size,
-                                            IPC::Message* reply_msg) {
+                                            bool* result) {
   GURL url = GURL(origin_url);
   ContentSetting content_setting =
       host_content_settings_map_->GetContentSetting(
           url, CONTENT_SETTINGS_TYPE_COOKIES, "");
-  AllowDatabaseResponse(reply_msg, content_setting);
-}
-
-void DatabaseMessageFilter::AllowDatabaseResponse(
-    IPC::Message* reply_msg, ContentSetting content_setting) {
   DCHECK((content_setting == CONTENT_SETTING_ALLOW) ||
          (content_setting == CONTENT_SETTING_BLOCK) ||
          (content_setting == CONTENT_SETTING_SESSION_ONLY));
-  DatabaseHostMsg_Allow::WriteReplyParams(
-      reply_msg, content_setting != CONTENT_SETTING_BLOCK);
-  Send(reply_msg);
+  *result = content_setting != CONTENT_SETTING_BLOCK;;
 }
 
 void DatabaseMessageFilter::OnDatabaseSizeChanged(

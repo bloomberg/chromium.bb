@@ -18,8 +18,11 @@
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/renderer/render_thread.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "v8/include/v8.h"
 
 namespace {
@@ -27,7 +30,10 @@ static const double kInitialExtensionIdleHandlerDelayS = 5.0 /* seconds */;
 static const int64 kMaxExtensionIdleHandlerDelayS = 5*60 /* seconds */;
 }
 
+using WebKit::WebDataSource;
+using WebKit::WebFrame;
 using WebKit::WebSecurityPolicy;
+using WebKit::WebString;
 
 ExtensionDispatcher::ExtensionDispatcher() {
   std::string type_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -83,24 +89,6 @@ void ExtensionDispatcher::WebKitInitialized() {
   RegisterExtension(EventBindings::Get(this), true);
   RegisterExtension(RendererExtensionBindings::Get(this), true);
   RegisterExtension(ExtensionApiTestV8Extension::Get(), true);
-}
-
-bool ExtensionDispatcher::AllowScriptExtension(
-    const std::string& v8_extension_name,
-    const GURL& url,
-    int extension_group) {
-  // If the V8 extension is not restricted, allow it to run anywhere.
-  if (!restricted_v8_extensions_.count(v8_extension_name))
-    return true;
-
-  // Extension-only bindings should be restricted to content scripts and
-  // extension-blessed URLs.
-  if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS ||
-      extensions_.ExtensionBindingsAllowed(url)) {
-    return true;
-  }
-
-  return false;
 }
 
 void ExtensionDispatcher::IdleNotification() {
@@ -177,6 +165,40 @@ bool ExtensionDispatcher::IsExtensionActive(const std::string& extension_id) {
       active_extension_ids_.end();
 }
 
+bool ExtensionDispatcher::AllowScriptExtension(
+    WebFrame* frame,
+    const std::string& v8_extension_name,
+    int extension_group) {
+  // NULL in unit tests.
+  if (!RenderThread::current())
+    return true;
+
+  // If we don't know about it, it was added by WebCore, so we should allow it.
+  if (!RenderThread::current()->IsRegisteredExtension(v8_extension_name))
+    return true;
+
+  // If the V8 extension is not restricted, allow it to run anywhere.
+  if (!restricted_v8_extensions_.count(v8_extension_name))
+    return true;
+
+  // Note: we prefer the provisional URL here instead of the document URL
+  // because we might be currently loading an URL into a blank page.
+  // See http://code.google.com/p/chromium/issues/detail?id=10924
+  WebDataSource* ds = frame->provisionalDataSource();
+  if (!ds)
+    ds = frame->dataSource();
+
+  // Extension-only bindings should be restricted to content scripts and
+  // extension-blessed URLs.
+  if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS ||
+      extensions_.ExtensionBindingsAllowed(ds->request().url())) {
+    return true;
+  }
+
+  return false;
+
+}
+
 void ExtensionDispatcher::OnActivateExtension(
     const std::string& extension_id) {
   active_extension_ids_.insert(extension_id);
@@ -195,8 +217,8 @@ void ExtensionDispatcher::OnActivateExtension(
   if (extension->HasApiPermission(Extension::kManagementPermission)) {
     WebSecurityPolicy::addOriginAccessWhitelistEntry(
         extension->url(),
-        WebKit::WebString::fromUTF8(chrome::kChromeUIScheme),
-        WebKit::WebString::fromUTF8(chrome::kChromeUIExtensionIconHost),
+        WebString::fromUTF8(chrome::kChromeUIScheme),
+        WebString::fromUTF8(chrome::kChromeUIExtensionIconHost),
         false);
   }
 
@@ -218,8 +240,8 @@ void ExtensionDispatcher::SetHostPermissions(
       if (permissions[i].MatchesScheme(schemes[j])) {
         WebSecurityPolicy::addOriginAccessWhitelistEntry(
             extension_url,
-            WebKit::WebString::fromUTF8(schemes[j]),
-            WebKit::WebString::fromUTF8(permissions[i].host()),
+            WebString::fromUTF8(schemes[j]),
+            WebString::fromUTF8(permissions[i].host()),
             permissions[i].match_subdomains());
       }
     }

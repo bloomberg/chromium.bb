@@ -53,15 +53,17 @@ class ExtensionDispatcher : public RenderProcessObserver {
 
   bool IsExtensionActive(const std::string& extension_id);
 
+  // See WebKit::WebPermissionClient::allowScriptExtension
+  bool AllowScriptExtension(WebKit::WebFrame* frame,
+                            const std::string& v8_extension_name,
+                            int extension_group);
+
  private:
   friend class RenderViewTest;
 
   // RenderProcessObserver implementation:
   virtual bool OnControlMessageReceived(const IPC::Message& message);
   virtual void WebKitInitialized();
-  virtual bool AllowScriptExtension(const std::string& v8_extension_name,
-                                    const GURL& url,
-                                    int extension_group);
   virtual void IdleNotification();
 
   void OnMessageInvoke(const std::string& extension_id,

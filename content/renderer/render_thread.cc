@@ -674,24 +674,12 @@ RenderThread::GetFileThreadMessageLoopProxy() {
   return file_thread_->message_loop_proxy();
 }
 
-bool RenderThread::AllowScriptExtension(const std::string& v8_extension_name,
-                                        const GURL& url,
-                                        int extension_group) {
-  // If we don't know about it, it was added by WebCore, so we should allow it.
-  if (v8_extensions_.find(v8_extension_name) == v8_extensions_.end())
-    return true;
-
-  ObserverListBase<RenderProcessObserver>::Iterator it(observers_);
-  RenderProcessObserver* observer;
-  while ((observer = it.GetNext()) != NULL) {
-    if (observer->AllowScriptExtension(v8_extension_name, url, extension_group))
-      return true;
-  }
-
-  return false;
-}
-
 void RenderThread::RegisterExtension(v8::Extension* extension) {
   WebScriptController::registerExtension(extension);
   v8_extensions_.insert(extension->name());
+}
+
+bool RenderThread::IsRegisteredExtension(
+    const std::string& v8_extension_name) const {
+  return v8_extensions_.find(v8_extension_name) != v8_extensions_.end();
 }

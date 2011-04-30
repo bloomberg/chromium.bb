@@ -2642,63 +2642,6 @@ void RenderView::didRunInsecureContent(
       target));
 }
 
-bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
-  ObserverListBase<RenderViewObserver>::Iterator it(observers_);
-  RenderViewObserver* observer;
-  while ((observer = it.GetNext()) != NULL)
-    if (!observer->AllowImages(frame, enabled_per_settings))
-      return false;
-
-  return true;
-}
-
-bool RenderView::allowPlugins(WebFrame* frame, bool enabled_per_settings) {
-  ObserverListBase<RenderViewObserver>::Iterator it(observers_);
-  RenderViewObserver* observer;
-  while ((observer = it.GetNext()) != NULL)
-    if (!observer->AllowPlugins(frame, enabled_per_settings))
-      return false;
-
-  return true;
-}
-
-bool RenderView::allowScript(WebFrame* frame, bool enabled_per_settings) {
-  ObserverListBase<RenderViewObserver>::Iterator it(observers_);
-  RenderViewObserver* observer;
-  while ((observer = it.GetNext()) != NULL)
-    if (!observer->AllowScript(frame, enabled_per_settings))
-      return false;
-
-  return true;
-}
-
-bool RenderView::allowDatabase(
-    WebFrame* frame, const WebString& name, const WebString& display_name,
-    unsigned long estimated_size) {
-  WebSecurityOrigin origin = frame->securityOrigin();
-  if (origin.isEmpty())
-    return false;  // Uninitialized document?
-
-  bool result;
-  if (!Send(new DatabaseHostMsg_Allow(routing_id_,
-      origin.toString().utf8(), name, display_name, estimated_size, &result)))
-    return false;
-  Send(new ViewHostMsg_WebDatabaseAccessed(routing_id_,
-                                           GURL(origin.toString().utf8()),
-                                           name,
-                                           display_name,
-                                           estimated_size,
-                                           !result));
-  return result;
-}
-void RenderView::didNotAllowScript(WebKit::WebFrame* frame) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidNotAllowScript(frame));
-}
-
-void RenderView::didNotAllowPlugins(WebKit::WebFrame* frame) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidNotAllowPlugins(frame));
-}
-
 void RenderView::didExhaustMemoryAvailableForScript(WebFrame* frame) {
   Send(new ViewHostMsg_JSOutOfMemory(routing_id_));
 }
@@ -2714,23 +2657,6 @@ void RenderView::didDestroyScriptContext(WebFrame* frame) {
 void RenderView::didCreateIsolatedScriptContext(WebFrame* frame) {
   content::GetContentClient()->renderer()->DidCreateIsolatedScriptContext(
       frame);
-}
-
-bool RenderView::allowScriptExtension(WebFrame* frame,
-                                      const WebString& extension_name,
-                                      int extension_group) {
-  // NULL in unit tests.
-  if (!RenderThread::current())
-    return true;
-
-  // Note: we prefer the provisional URL here instead of the document URL
-  // because we might be currently loading an URL into a blank page.
-  // See http://code.google.com/p/chromium/issues/detail?id=10924
-  WebDataSource* ds = frame->provisionalDataSource();
-  if (!ds)
-    ds = frame->dataSource();
-  return RenderThread::current()->AllowScriptExtension(
-      extension_name.utf8(), ds->request().url(), extension_group);
 }
 
 void RenderView::logCrossFramePropertyAccess(WebFrame* frame,

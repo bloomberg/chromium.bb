@@ -36,18 +36,3 @@ bool RenderViewObserver::Send(IPC::Message* message) {
   delete message;
   return false;
 }
-
-bool RenderViewObserver::AllowImages(WebFrame* frame,
-                                     bool enabled_per_settings) {
-  return true;
-}
-
-bool RenderViewObserver::AllowPlugins(WebFrame* frame,
-                                      bool enabled_per_settings) {
-  return true;
-}
-
-bool RenderViewObserver::AllowScript(WebFrame* frame,
-                                     bool enabled_per_settings) {
-  return true;
-}

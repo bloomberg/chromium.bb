@@ -13,7 +13,9 @@
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/about_handler.h"
+#include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
@@ -112,9 +114,13 @@ static double CalculateBoringScore(SkBitmap* bitmap) {
 
 ChromeRenderViewObserver::ChromeRenderViewObserver(
     RenderView* render_view,
+    ContentSettingsObserver* content_settings,
+    ExtensionDispatcher* extension_dispatcher,
     TranslateHelper* translate_helper,
     safe_browsing::PhishingClassifierDelegate* phishing_classifier)
     : RenderViewObserver(render_view),
+      content_settings_(content_settings),
+      extension_dispatcher_(extension_dispatcher),
       translate_helper_(translate_helper),
       phishing_classifier_(phishing_classifier),
       last_indexed_page_id_(-1),
@@ -125,6 +131,7 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
     render_view->set_enabled_bindings(
         old_bindings |= BindingsPolicy::DOM_AUTOMATION);
   }
+  render_view->webview()->setPermissionClient(this);
 }
 
 ChromeRenderViewObserver::~ChromeRenderViewObserver() {
@@ -282,6 +289,56 @@ void ChromeRenderViewObserver::didSerializeDataForFrame(
     frame_url,
     data.data(),
     static_cast<int32>(status)));
+}
+
+bool ChromeRenderViewObserver::allowDatabase(
+    WebFrame* frame,
+    const WebString& name,
+    const WebString& display_name,
+    unsigned long estimated_size) {
+  return content_settings_->AllowDatabase(
+      frame, name, display_name, estimated_size);
+}
+
+bool ChromeRenderViewObserver::allowImages(WebFrame* frame,
+                                          bool enabled_per_settings) {
+  return content_settings_->AllowImages(frame, enabled_per_settings);
+}
+
+bool ChromeRenderViewObserver::allowPlugins(WebFrame* frame,
+                                           bool enabled_per_settings) {
+  return content_settings_->AllowPlugins(frame, enabled_per_settings);
+}
+
+bool ChromeRenderViewObserver::allowScript(WebFrame* frame,
+                                          bool enabled_per_settings) {
+  return content_settings_->AllowScript(frame, enabled_per_settings);
+}
+
+bool ChromeRenderViewObserver::allowScriptExtension(
+    WebFrame* frame, const WebString& extension_name, int extension_group) {
+  return extension_dispatcher_->AllowScriptExtension(
+      frame, extension_name.utf8(), extension_group);
+}
+
+bool ChromeRenderViewObserver::allowReadFromClipboard(WebFrame* frame,
+                                                     bool default_value) {
+  // TODO(dcheng): implement me
+  return default_value;
+}
+
+bool ChromeRenderViewObserver::allowWriteToClipboard(WebFrame* frame,
+                                                    bool default_value) {
+  // TODO(dcheng): implement me
+  return default_value;
+}
+
+void ChromeRenderViewObserver::didNotAllowPlugins(WebFrame* frame) {
+  content_settings_->DidNotAllowPlugins(frame);
+}
+
+void ChromeRenderViewObserver::didNotAllowScript(WebFrame* frame) {
+  content_settings_->DidNotAllowScript(frame);
 }
 
 void ChromeRenderViewObserver::OnNavigate(

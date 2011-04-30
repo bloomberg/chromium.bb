@@ -524,23 +524,10 @@ class RenderView : public RenderWidget,
       WebKit::WebFrame* frame,
       const WebKit::WebSecurityOrigin& origin,
       const WebKit::WebURL& target);
-
-  virtual bool allowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
-  virtual bool allowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
-  virtual bool allowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
-  virtual bool allowDatabase(WebKit::WebFrame* frame,
-                             const WebKit::WebString& name,
-                             const WebKit::WebString& display_name,
-                             unsigned long estimated_size);
-  virtual void didNotAllowScript(WebKit::WebFrame* frame);
-  virtual void didNotAllowPlugins(WebKit::WebFrame* frame);
   virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame* frame);
   virtual void didCreateScriptContext(WebKit::WebFrame* frame);
   virtual void didDestroyScriptContext(WebKit::WebFrame* frame);
   virtual void didCreateIsolatedScriptContext(WebKit::WebFrame* frame);
-  virtual bool allowScriptExtension(WebKit::WebFrame*,
-                                    const WebKit::WebString& extension_name,
-                                    int extensionGroup);
   virtual void logCrossFramePropertyAccess(
       WebKit::WebFrame* frame,
       WebKit::WebFrame* target,
