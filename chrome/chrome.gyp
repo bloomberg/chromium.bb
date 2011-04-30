@@ -23,7 +23,6 @@
     'chromium_dependencies': [
       'common',
       'browser',
-      'debugger',
       'profile_import',
       'renderer',
       'syncapi',
