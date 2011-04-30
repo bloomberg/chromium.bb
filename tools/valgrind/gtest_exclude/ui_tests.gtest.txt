@@ -7,6 +7,7 @@ DownloadTest.UnknownSize
 # Flakily hang on Linux, see http://crbug.com/46643
 ErrorPageTest.DNSError_GoBack2AndForward
 ErrorPageTest.DNSError_GoBack2Forward2
+ErrorPageTest.DNSError_GoBack2
 
 # Flaky timeout on Linux; see http://crbug.com/46781
 UnloadTest.*
