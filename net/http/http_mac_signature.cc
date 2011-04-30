@@ -17,16 +17,7 @@ namespace {
 
 const char kSHA1Name[] = "hmac-sha-1";
 const char kSHA256Name[] = "hmac-sha-256";
-const int kNonceLength = 256 / 8;
-
-size_t LengthForHMACAlgorithm(crypto::HMAC::HashAlgorithm algorithm) {
-  if (algorithm == crypto::HMAC::SHA1)
-    return 20;
-  if (algorithm == crypto::HMAC::SHA256)
-    return 32;
-  NOTREACHED();
-  return 20;
-}
+const int kNonceLength = 64/8;
 
 bool IsPlainStringCharacter(char character) {
   return character == 0x20 || character == 0x21 ||
@@ -65,11 +56,12 @@ bool HttpMacSignature::AddStateInfo(const std::string& id,
                                     const std::string& issuer) {
   DCHECK(id_.empty());
 
-  if (!IsPlainString(id) || id.empty()
-    || mac_key.empty()
-    || mac_algorithm.empty()
-    || !IsPlainString(issuer) || issuer.empty())
+  if (!IsPlainString(id) || id.empty() ||
+      mac_key.empty() ||
+      mac_algorithm.empty() ||
+      !IsPlainString(issuer) || issuer.empty()) {
     return false;
+  }
 
   if (mac_algorithm == kSHA1Name)
     mac_algorithm_ = crypto::HMAC::SHA1;
@@ -90,12 +82,12 @@ bool HttpMacSignature::AddHttpInfo(const std::string& method,
                                    int port) {
   DCHECK(method_.empty());
 
-  if (!IsPlainString(method) || method.empty()
-    || !IsPlainString(request_uri) || request_uri.empty()
-    || !IsPlainString(host) || host.empty()
-    || port <= 0
-    || port > 65535)
+  if (!IsPlainString(method) || method.empty() ||
+      !IsPlainString(request_uri) || request_uri.empty() ||
+      !IsPlainString(host) || host.empty() ||
+      port <= 0 || port > 65535) {
     return false;
+  }
 
   method_ = StringToUpperASCII(method);
   request_uri_ = request_uri;
@@ -156,7 +148,7 @@ std::string HttpMacSignature::GenerateMAC(const std::string& timestamp,
   hmac.Init(mac_key_);
 
   std::string signature;
-  size_t length = LengthForHMACAlgorithm(mac_algorithm_);
+  size_t length = hmac.DigestLength();
   char* buffer = WriteInto(&signature, length);
   bool result = hmac.Sign(request,
                           reinterpret_cast<unsigned char*>(buffer),
