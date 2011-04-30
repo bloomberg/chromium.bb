@@ -16,7 +16,6 @@
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/history/query_parser.h"
 
 // The following table is used to store star (aka bookmark) information. This
 // class derives from URLDatabase, which has its own schema.
