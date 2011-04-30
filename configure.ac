@@ -53,7 +53,7 @@ AC_ARG_ENABLE(drm-compositor, [  --enable-drm-compositor],,
 AM_CONDITIONAL(ENABLE_DRM_COMPOSITOR, test x$enable_drm_compositor == xyes)
 if test x$enable_drm_compositor == xyes; then
   AC_DEFINE([BUILD_DRM_COMPOSITOR], [1], [Build the DRM compositor])
-  PKG_CHECK_MODULES(DRM_COMPOSITOR, [libudev >= 136 libdrm >= 2.4.23])
+  PKG_CHECK_MODULES(DRM_COMPOSITOR, [libudev >= 136 libdrm >= 2.4.23 gbm])
 fi
 
 
@@ -62,7 +62,7 @@ AC_ARG_ENABLE(openwfd-compositor, [  --enable-openwfd-compositor],,
 AM_CONDITIONAL(ENABLE_OPENWFD_COMPOSITOR, test x$enable_openwfd_compositor == xyes)
 if test x$enable_openwfd_compositor == xyes; then
   AC_DEFINE([BUILD_OPENWFD_COMPOSITOR], [1], [Build the OpenWF compositor])
-  PKG_CHECK_MODULES(OPENWFD_COMPOSITOR, [openwfd])
+  PKG_CHECK_MODULES(OPENWFD_COMPOSITOR, [openwfd gbm])
 fi
 
 

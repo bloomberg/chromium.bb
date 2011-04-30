@@ -27,12 +27,15 @@
 #include <WF/wfd.h>
 #include <WF/wfdext.h>
 
+#include <gbm.h>
+
 #include "compositor.h"
 
 struct wfd_compositor {
 	struct wlsc_compositor base;
 
 	struct udev *udev;
+	struct gbm_device *gbm;
 	WFDDevice dev;
 
 	WFDEvent event;
@@ -43,9 +46,6 @@ struct wfd_compositor {
 
 	uint32_t start_time;
 	uint32_t used_pipelines;
-
-	PFNEGLCREATEDRMIMAGEMESA create_drm_image;
-	PFNEGLEXPORTDRMIMAGEMESA export_drm_image;
 };
 
 struct wfd_output {
@@ -59,6 +59,7 @@ struct wfd_output {
 	WFDPortMode mode;
 	WFDSource source[2];
 
+	struct gbm_bo *bo[2];
 	EGLImageKHR image[2];
 	GLuint rbo[2];
 	uint32_t current;
@@ -121,7 +122,8 @@ init_egl(struct wfd_compositor *ec)
 
 	ec->wfd_fd = fd;
 	setenv("EGL_PLATFORM", "drm", 1);
-	ec->base.display = eglGetDisplay(FD_TO_EGL_NATIVE_DPY(ec->wfd_fd));
+	ec->gbm = gbm_create_device(ec->wfd_fd);
+	ec->base.display = eglGetDisplay(ec->gbm);
 	if (ec->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
@@ -180,13 +182,6 @@ create_output_for_port(struct wfd_compositor *ec,
 {
 	struct wfd_output *output;
 	int i;
-	EGLint attribs[] = {
-		EGL_WIDTH,		0,
-		EGL_HEIGHT,		0,
-		EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
-		EGL_DRM_BUFFER_USE_MESA,	EGL_DRM_BUFFER_USE_SCANOUT_MESA,
-		EGL_NONE
-	};
 	WFDint num_pipelines, *pipelines;
 	WFDint num_modes;
 	WFDint rect[4] = { 0, 0, 0, 0 };
@@ -271,18 +266,20 @@ create_output_for_port(struct wfd_compositor *ec,
 	for (i = 0; i < 2; i++) {
 		glBindRenderbuffer(GL_RENDERBUFFER, output->rbo[i]);
 
-		attribs[1] = output->base.current->width;
-		attribs[3] = output->base.current->height;
-		output->image[i] =
-			ec->create_drm_image(ec->base.display, attribs);
+		output->bo[i] =
+			gbm_bo_create(ec->gbm,
+				      output->base.current->width,
+				      output->base.current->height,
+				      GBM_BO_FORMAT_XRGB8888,
+				      GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+		output->image[i] = ec->base.create_image(ec->base.display,
+							 NULL,
+							 EGL_NATIVE_PIXMAP_KHR,
+							 output->bo[i], NULL);
 
 		printf("output->image[i]: %p\n", output->image[i]);
 		ec->base.image_target_renderbuffer_storage(GL_RENDERBUFFER,
 							   output->image[i]);
-		int handle;
-		ec->export_drm_image(ec->base.display, output->image[i],
-				     NULL, &handle, NULL);
-		printf("handle: %d\n", handle);
 		output->source[i] =
 			wfdCreateSourceFromImage(ec->dev, output->pipeline,
 						 output->image[i], NULL);
@@ -392,6 +389,7 @@ destroy_output(struct wfd_output *output)
 
 	for (i = 0; i < 2; i++) {
 		ec->base.destroy_image(ec->base.display, output->image[i]);
+		gbm_bo_destroy(output->bo[i]);
 		wfdDestroySource(ec->dev, output->source[i]);
 	}
 	
@@ -582,11 +580,6 @@ wfd_compositor_create(struct wl_display *display, int connector)
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&ec->base, display) < 0)
 		return NULL;
-
-	ec->create_drm_image =
-		(void *) eglGetProcAddress("eglCreateDRMImageMESA");
-	ec->export_drm_image =
-		(void *) eglGetProcAddress("eglExportDRMImageMESA");
 
 	if (create_outputs(ec, connector) < 0) {
 		fprintf(stderr, "failed to create outputs\n");

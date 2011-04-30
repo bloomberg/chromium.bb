@@ -27,6 +27,8 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
+#include <gbm.h>
+
 #include "compositor.h"
 
 struct drm_compositor {
@@ -41,12 +43,10 @@ struct drm_compositor {
 	struct {
 		int fd;
 	} drm;
+	struct gbm_device *gbm;
 	uint32_t crtc_allocator;
 	uint32_t connector_allocator;
 	struct tty *tty;
-
-	PFNEGLCREATEDRMIMAGEMESA create_drm_image;
-	PFNEGLEXPORTDRMIMAGEMESA export_drm_image;
 };
 
 struct drm_mode {
@@ -62,6 +62,7 @@ struct drm_output {
 	GLuint rbo[2];
 	uint32_t fb_id[2];
 	EGLImageKHR image[2];
+	struct gbm_bo *bo[2];
 	uint32_t current;	
 
 	struct wlsc_surface *scanout_surface;
@@ -147,6 +148,7 @@ drm_output_prepare_scanout_surface(struct wlsc_output *output_base,
 	EGLint handle, stride;
 	int ret;
 	uint32_t fb_id = 0;
+	struct gbm_bo *bo;
 
 	if (es->x != output->base.x ||
 	    es->y != output->base.y ||
@@ -155,8 +157,15 @@ drm_output_prepare_scanout_surface(struct wlsc_output *output_base,
 	    es->image == EGL_NO_IMAGE_KHR)
 		return -1;
 
-	c->export_drm_image(c->base.display,
-			    es->image, NULL, &handle, &stride);
+	bo = gbm_bo_create_from_egl_image(c->gbm,
+					  c->base.display, es->image,
+					  es->width, es->height,
+					  GBM_BO_USE_SCANOUT);
+
+	handle = gbm_bo_get_handle(bo).s32;
+	stride = gbm_bo_get_pitch(bo);
+
+	gbm_bo_destroy(bo);
 
 	if (handle == 0)
 		return -1;
@@ -185,6 +194,7 @@ drm_output_set_cursor(struct wlsc_output *output_base,
 	EGLint handle, stride;
 	int ret = -1;
 	pixman_region32_t cursor_region;
+	struct gbm_bo *bo;
 
 	if (eid == NULL) {
 		drmModeSetCursor(c->drm.fd, output->crtc_id, 0, 0, 0);
@@ -211,8 +221,15 @@ drm_output_set_cursor(struct wlsc_output *output_base,
 	if (eid->sprite->width > 64 || eid->sprite->height > 64)
 		goto out;
 	
-	c->export_drm_image(c->base.display, eid->sprite->image,
-			    NULL, &handle, &stride);
+	bo = gbm_bo_create_from_egl_image(c->gbm,
+					  c->base.display,
+					  eid->sprite->image, 64, 64,
+					  GBM_BO_USE_CURSOR_64X64);
+
+	handle = gbm_bo_get_handle(bo).s32;
+	stride = gbm_bo_get_pitch(bo);
+
+	gbm_bo_destroy(bo);
 
 	if (stride != 64 * 4) {
 		fprintf(stderr, "info: cursor stride is != 64\n");
@@ -277,7 +294,8 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 
 	setenv("EGL_PLATFORM", "drm", 1);
 	ec->drm.fd = fd;
-	ec->base.display = eglGetDisplay(FD_TO_EGL_NATIVE_DPY(ec->drm.fd));
+	ec->gbm = gbm_create_device(ec->drm.fd);
+	ec->base.display = eglGetDisplay(ec->gbm);
 	if (ec->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
@@ -375,13 +393,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	struct drm_mode *drm_mode;
 	drmModeEncoder *encoder;
 	int i, ret;
-	EGLint handle, stride, attribs[] = {
-		EGL_WIDTH,		0,
-		EGL_HEIGHT,		0,
-		EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
-		EGL_DRM_BUFFER_USE_MESA,	EGL_DRM_BUFFER_USE_SCANOUT_MESA,
-		EGL_NONE
-	};
+	unsigned handle, stride;
 
 	encoder = drmModeGetEncoder(ec->drm.fd, connector->encoders[0]);
 	if (encoder == NULL) {
@@ -439,14 +451,22 @@ create_output_for_connector(struct drm_compositor *ec,
 	for (i = 0; i < 2; i++) {
 		glBindRenderbuffer(GL_RENDERBUFFER, output->rbo[i]);
 
-		attribs[1] = output->base.current->width;
-		attribs[3] = output->base.current->height;
-		output->image[i] =
-			ec->create_drm_image(ec->base.display, attribs);
+		output->bo[i] =
+			gbm_bo_create(ec->gbm,
+				      output->base.current->width,
+				      output->base.current->height,
+				      GBM_BO_FORMAT_XRGB8888,
+				      GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+		output->image[i] = ec->base.create_image(ec->base.display,
+							 NULL,
+							 EGL_NATIVE_PIXMAP_KHR,
+							 output->bo[i], NULL);
+
+
 		ec->base.image_target_renderbuffer_storage(GL_RENDERBUFFER,
 							   output->image[i]);
-		ec->export_drm_image(ec->base.display, output->image[i],
-				     NULL, &handle, &stride);
+		stride = gbm_bo_get_pitch(output->bo[i]);
+		handle = gbm_bo_get_handle(output->bo[i]).u32;
 
 		ret = drmModeAddFB(ec->drm.fd,
 				   output->base.current->width,
@@ -663,19 +683,23 @@ static EGLImageKHR
 drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
 				   int32_t width, int32_t height)
 {
-	static const EGLint image_attribs[] = {
-		EGL_WIDTH, 64,
-		EGL_HEIGHT, 64,
-		EGL_DRM_BUFFER_FORMAT_MESA, EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
-		EGL_DRM_BUFFER_USE_MESA, EGL_DRM_BUFFER_USE_CURSOR_MESA,
-		EGL_NONE
-	};
 	struct drm_compositor *c = (struct drm_compositor *) ec;
+	struct gbm_bo *bo;
+	EGLImageKHR image;
 
 	if (width > 64 || height > 64)
 		return EGL_NO_IMAGE_KHR;
 
-	return c->create_drm_image(ec->display, image_attribs);
+	bo = gbm_bo_create(c->gbm,
+			   /* width, height, */ 64, 64,
+			   GBM_BO_FORMAT_ARGB8888,
+			   GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_RENDERING);
+
+	image = ec->create_image(c->base.display, NULL,
+				 EGL_NATIVE_PIXMAP_KHR, bo, NULL);
+	gbm_bo_destroy(bo);
+
+	return image;
 }
 
 static void
@@ -764,11 +788,6 @@ drm_compositor_create(struct wl_display *display, int connector)
 
 	glGenFramebuffers(1, &ec->base.fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, ec->base.fbo);
-
-	ec->create_drm_image =
-		(void *) eglGetProcAddress("eglCreateDRMImageMESA");
-	ec->export_drm_image =
-		(void *) eglGetProcAddress("eglExportDRMImageMESA");
 
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&ec->base, display) < 0)
