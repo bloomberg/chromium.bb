@@ -19,11 +19,10 @@ srpc_hw_undecorated = env.ComponentProgram('srpc_hw.nexe',
                                            EXTRA_LIBS=['srpc', 'imc','pthread'])
 
 env.Publish(srpc_hw_nexe_name, 'run',
-            ['srpc_hw.html', 'srpc_hw.nmf'])
-
-env.Publish(srpc_hw_nexe_name, 'run',
-            ['srpc_hw_fd.html',
+            ['srpc_hw.html',
              'srpc_hw.nmf',
+             'srpc_hw_data.html',
+             'srpc_hw_fd.html',
              srpc_hw_undecorated])
 
 env.AddPrebuiltBinaryToRepository(srpc_hw_nexe)
@@ -43,9 +42,7 @@ env.AddNodeToTestSuite(node,
 node = env.PPAPIBrowserTester(
     'srpc_hw_browser_test.out',
     url='srpc_hw.html',
-    files=[srpc_hw_nexe,
-           env.File('srpc_hw.nmf'),
-           env.File('srpc_hw.html')],
+    files=env.ExtractPublishedFiles(srpc_hw_nexe_name),
     args=['--debug', '--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node,
@@ -53,13 +50,23 @@ env.AddNodeToTestSuite(node,
                        'run_srpc_hw_chrome_browser_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken())
 
+# A test that manifests can be coded by data URIs.
+# TODO(sehr,elijahtaylor): enable this test when data URIs are supported.
+node = env.PPAPIBrowserTester(
+    'srpc_hw_data_browser_test.out',
+    url='srpc_hw_data.html',
+    files=env.ExtractPublishedFiles(srpc_hw_nexe_name),
+    args=['--debug', '--enable_experimental_js'])
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_srpc_hw_data_chrome_browser_test',
+                       is_broken=True)
+
 node = env.PPAPIBrowserTester(
     'srpc_hw_fd_browser_test.out',
     url='srpc_hw_fd.html',
-    files=[srpc_hw_nexe,
-           env.File('srpc_hw.nmf'),
-           srpc_hw_undecorated,
-           env.File('srpc_hw_fd.html')],
+    files=env.ExtractPublishedFiles(srpc_hw_nexe_name),
     args=['--debug', '--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node,
