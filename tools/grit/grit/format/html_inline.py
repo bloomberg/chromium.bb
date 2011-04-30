@@ -208,8 +208,8 @@ def DoInline(input_filename, grd_node, allow_external_script=False):
 
   def InlineCSSImages(text, filepath=input_filepath):
     """Helper function that inlines external images in CSS backgrounds."""
-    return re.sub('(?:content|background(?:-image)?):[ ]*url\((?:\'|\")' +
-                  '(?P<filename>[^"\'\)\(]*)(?:\'|\")',
+    return re.sub('(?:content|background(?:-image)|border-image?):[ ]*' +
+                  'url\((?:\'|\")(?P<filename>[^"\'\)\(]*)(?:\'|\")',
                   lambda m: SrcReplace(m, filepath),
                   text)
 

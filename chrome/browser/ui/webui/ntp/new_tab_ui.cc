@@ -614,7 +614,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
   } else if (!path.empty() && path[0] != '#') {
     // A path under new-tab was requested; it's likely a bad relative
     // URL from the new tab page, but in any case it's an error.
-    NOTREACHED();
+    NOTREACHED() << path << " should not have been requested on the NTP";
     return;
   }
 
