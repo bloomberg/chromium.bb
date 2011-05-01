@@ -64,7 +64,7 @@ TEST_F(NSImageCacheTest, LookupFoundAndClear) {
 
 TEST_F(NSImageCacheTest, AutoTemplating) {
   NSImage *templateImage =
-      app::mac::GetCachedImageWithName(@"product_logo_32.png");
+      app::mac::GetCachedImageWithName(@"find_next_Template.pdf");
   EXPECT_TRUE([templateImage isTemplate] == YES)
       << "Image ending in 'Template' should be marked as being a template";
   NSImage *nonTemplateImage =
