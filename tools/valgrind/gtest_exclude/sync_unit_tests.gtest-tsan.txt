@@ -1,2 +1,2 @@
 # Fails under TSan, see http://crbug.com/80164
-SyncerThread2Test.BackoffTriggers
+SyncerThreadTest.BackoffTriggers
