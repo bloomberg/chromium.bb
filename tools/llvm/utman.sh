@@ -166,7 +166,7 @@ SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
 # hg-update-stable  uses these
 readonly LLVM_REV=04b41cdd08e9
 readonly LLVM_GCC_REV=38c54bef2849
-readonly NEWLIB_REV=eb9c4bb9ccd7
+readonly NEWLIB_REV=bb325d885304
 readonly BINUTILS_REV=63e041d90309
 
 # Repositories
