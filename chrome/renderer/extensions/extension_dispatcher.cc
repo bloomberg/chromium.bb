@@ -62,7 +62,6 @@ bool ExtensionDispatcher::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(ExtensionMsg_Unloaded, OnUnloaded)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetScriptingWhitelist,
                         OnSetScriptingWhitelist)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePageActions, OnPageActionsUpdated)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ActivateExtension, OnActivateExtension)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateUserScripts, OnUpdateUserScripts)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -147,17 +146,6 @@ void ExtensionDispatcher::OnUnloaded(const std::string& id) {
 void ExtensionDispatcher::OnSetScriptingWhitelist(
     const Extension::ScriptingWhitelist& extension_ids) {
   Extension::SetScriptingWhitelist(extension_ids);
-}
-
-void ExtensionDispatcher::OnPageActionsUpdated(
-    const std::string& extension_id,
-    const std::vector<std::string>& page_actions) {
-  if (!page_actions.empty()) {
-    page_action_ids_[extension_id] = page_actions;
-  } else {
-    if (page_action_ids_.find(extension_id) != page_action_ids_.end())
-      page_action_ids_.erase(extension_id);
-  }
 }
 
 bool ExtensionDispatcher::IsExtensionActive(const std::string& extension_id) {
