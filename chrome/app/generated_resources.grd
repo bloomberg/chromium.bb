@@ -967,7 +967,7 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
         <message name="IDS_DEV_TOOLS_CONSOLE" desc="In Title Case: The text label of the JavaScript console menu item">
           &amp;JavaScript Console
         </message>
-        <message name="IDS_FILE_MANAGER" desc="The text label of the File Manager menu item">
+        <message name="IDS_FILE_MANAGER" desc="In Title Case: The text label of the File Manager menu item">
           &amp;File Manager
         </message>
         <message name="IDS_TASK_MANAGER" desc="In Title Case: The text label of the Task Manager menu item">
