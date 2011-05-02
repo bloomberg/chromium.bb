@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,10 +47,10 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
 
     switch (var_type) {
       case SH_ACTIVE_ATTRIBUTES:
-        ShGetActiveAttrib(compiler, i, NULL, &size, &type, name.get());
+        ShGetActiveAttrib(compiler, i, NULL, &size, &type, name.get(), NULL);
         break;
       case SH_ACTIVE_UNIFORMS:
-        ShGetActiveUniform(compiler, i, NULL, &size, &type, name.get());
+        ShGetActiveUniform(compiler, i, NULL, &size, &type, name.get(), NULL);
         break;
       default: NOTREACHED();
     }
