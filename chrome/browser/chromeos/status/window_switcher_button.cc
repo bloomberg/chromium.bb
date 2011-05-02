@@ -28,8 +28,7 @@ int GetNormalBrowserCount() {
 }
 
 WindowSwitcherButton::WindowSwitcherButton(StatusAreaHost* host)
-    : StatusAreaButton(this),
-      host_(host) {
+    : StatusAreaButton(host, this) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_WINDOW_SWITCHER));
   SetEnabled(true);

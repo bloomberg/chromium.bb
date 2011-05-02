@@ -48,6 +48,27 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual int GetReservedHeight() const;
   virtual gfx::Rect GetBoundsForReservedArea() const;
 
+  // Returns the height of the entire nonclient top border, including the window
+  // frame, any title area, and any connected client edge.  If |restored| is
+  // true, acts as if the window is restored regardless of the real mode.  If
+  // |ignore_vertical_tabs| is true, acts as if vertical tabs are off regardless
+  // of the real state.
+  int NonClientTopBorderHeight(bool restored, bool ignore_vertical_tabs) const;
+
+  // Allows a subclass to tweak the frame. Chromeos uses this to support
+  // drawing themes correctly. |theme_offset| is used to adjust the y offset
+  // of the theme frame bitmap, so they start at the right location.
+  // |left_corner| and |right_corner| will be used on the left and right of
+  // the tabstrip area as opposed to the theme frame.
+  virtual void ModifyMaximizedFramePainting(
+      int* theme_offset,
+      SkBitmap** left_corner,
+      SkBitmap** right_corner);
+
+  // Expose these to subclasses.
+  BrowserFrame* frame() { return frame_; }
+  BrowserView* browser_view() { return browser_view_; }
+
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
   virtual bool AlwaysUseNativeFrame() const OVERRIDE;
@@ -88,13 +109,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // Returns the thickness of the entire nonclient left, right, and bottom
   // borders, including both the window frame and any client edge.
   int NonClientBorderThickness() const;
-
-  // Returns the height of the entire nonclient top border, including the window
-  // frame, any title area, and any connected client edge.  If |restored| is
-  // true, acts as if the window is restored regardless of the real mode.  If
-  // |ignore_vertical_tabs| is true, acts as if vertical tabs are off regardless
-  // of the real state.
-  int NonClientTopBorderHeight(bool restored, bool ignore_vertical_tabs) const;
 
   // Returns the y-coordinate of the caption buttons.  If |restored| is true,
   // acts as if the window is restored regardless of the real mode.

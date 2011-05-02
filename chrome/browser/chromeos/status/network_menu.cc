@@ -810,6 +810,7 @@ const int NetworkMenu::kBarsImagesBlack[kNumBarsImages] = {
   IDR_STATUSBAR_NETWORK_BARS3_BLACK,
   IDR_STATUSBAR_NETWORK_BARS4_BLACK,
 };
+
 // static
 const int NetworkMenu::kBarsImagesOrange[kNumBarsImages] = {
   IDR_STATUSBAR_NETWORK_BARS1_ORANGE,

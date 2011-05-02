@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargedTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargingTest) {
-  const int NUM_TIMES = 16;
+  const int NUM_TIMES = 19;
   EXPECT_CALL(*mock_power_library_, battery_is_present())
       .Times(NUM_TIMES)
       .WillRepeatedly((Return(true)))
@@ -135,9 +135,12 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargingTest) {
     IDR_STATUSBAR_BATTERY_CHARGING_14,
     IDR_STATUSBAR_BATTERY_CHARGING_15,
     IDR_STATUSBAR_BATTERY_CHARGING_16,
+    IDR_STATUSBAR_BATTERY_CHARGING_17,
+    IDR_STATUSBAR_BATTERY_CHARGING_18,
+    IDR_STATUSBAR_BATTERY_CHARGING_19,
   };
   size_t id = 0;
-  for (float percent = 6.0; percent < 100.0; percent += 6.0) {
+  for (float percent = 5.0; percent < 100.0; percent += 5.0) {
     EXPECT_CALL(*mock_power_library_, battery_percentage())
         .WillOnce((Return(percent)))
         .RetiresOnSaturation();
@@ -148,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargingTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryDischargingTest) {
-  const int NUM_TIMES = 16;
+  const int NUM_TIMES = 19;
   EXPECT_CALL(*mock_power_library_, battery_is_present())
       .Times(NUM_TIMES)
       .WillRepeatedly((Return(true)))
@@ -190,9 +193,12 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryDischargingTest) {
     IDR_STATUSBAR_BATTERY_DISCHARGING_14,
     IDR_STATUSBAR_BATTERY_DISCHARGING_15,
     IDR_STATUSBAR_BATTERY_DISCHARGING_16,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_17,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_18,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_19,
   };
   size_t id = 0;
-  for (float percent = 6.0; percent < 100.0; percent += 6.0) {
+  for (float percent = 5.0; percent < 100.0; percent += 5.0) {
     EXPECT_CALL(*mock_power_library_, battery_percentage())
         .WillOnce((Return(percent)))
         .RetiresOnSaturation();

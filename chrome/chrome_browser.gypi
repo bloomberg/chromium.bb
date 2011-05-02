@@ -410,6 +410,8 @@
         'browser/chromeos/external_protocol_dialog.h',
         'browser/chromeos/frame/browser_frame_chromeos.cc',
         'browser/chromeos/frame/browser_frame_chromeos.h',
+        'browser/chromeos/frame/browser_frame_view_chromeos.cc',
+        'browser/chromeos/frame/browser_frame_view_chromeos.h',
         'browser/chromeos/frame/browser_non_client_frame_view_factory_chromeos.cc',
         'browser/chromeos/frame/browser_view.cc',
         'browser/chromeos/frame/browser_view.h',

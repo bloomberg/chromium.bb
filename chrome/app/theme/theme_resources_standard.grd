@@ -109,6 +109,10 @@
       <include name="IDR_STOP_P" file="stop_p.png" type="BINDATA" />
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_THEME_FRAME" file="theme_frame_default2.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_LEFT" file="theme_frame_default2_upper_left.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_RIGHT" file="theme_frame_default2_upper_right.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO_LEFT" file="theme_frame_default2_incognito_upper_left.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO_RIGHT" file="theme_frame_default2_incognito_upper_right.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('chromeos')">
         <include name="IDR_THEME_FRAME" file="theme_frame_default.png" type="BINDATA" />

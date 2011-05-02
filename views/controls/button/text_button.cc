@@ -265,6 +265,7 @@ TextButtonBase::TextButtonBase(ButtonListener* listener,
       active_text_shadow_color_(0),
       inactive_text_shadow_color_(0),
       has_shadow_(false),
+      shadow_offset_(gfx::Point(1, 1)),
       max_width_(0),
       normal_has_border_(false),
       show_multiple_icon_states_(true),
@@ -329,6 +330,10 @@ void TextButtonBase::SetTextShadowColors(SkColor active_color,
   has_shadow_ = true;
 }
 
+void TextButtonBase::SetTextShadowOffset(int x, int y) {
+  shadow_offset_.SetPoint(x, y);
+}
+
 void TextButtonBase::ClearMaxTextSize() {
   max_text_size_ = text_size_;
 }
@@ -339,6 +344,11 @@ void TextButtonBase::SetNormalHasBorder(bool normal_has_border) {
 
 void TextButtonBase::SetShowMultipleIconStates(bool show_multiple_icon_states) {
   show_multiple_icon_states_ = show_multiple_icon_states;
+}
+
+void TextButtonBase::ClearEmbellishing() {
+  has_shadow_ = false;
+  has_text_halo_ = false;
 }
 
 gfx::Size TextButtonBase::GetPreferredSize() {
@@ -476,8 +486,8 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
       canvas->DrawStringInt(text_,
                             font_,
                             shadow_color,
-                            text_bounds.x() + 1,
-                            text_bounds.y() + 1,
+                            text_bounds.x() + shadow_offset_.x(),
+                            text_bounds.y() + shadow_offset_.y(),
                             text_bounds.width(),
                             text_bounds.height(),
                             draw_string_flags);

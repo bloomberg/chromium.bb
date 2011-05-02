@@ -197,6 +197,27 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForReservedArea() const {
       GetReservedHeight());
 }
 
+int OpaqueBrowserFrameView::NonClientTopBorderHeight(
+    bool restored,
+    bool ignore_vertical_tabs) const {
+  views::Window* window = frame_->GetWindow();
+  views::WindowDelegate* delegate = window->window_delegate();
+  // |delegate| may be NULL if called from callback of InputMethodChanged while
+  // a window is being destroyed.
+  // See more discussion at http://crosbug.com/8958
+  if ((delegate && delegate->ShouldShowWindowTitle()) ||
+      (browser_view_->IsTabStripVisible() && !ignore_vertical_tabs &&
+       browser_view_->UseVerticalTabs())) {
+    return std::max(FrameBorderThickness(restored) + IconSize(),
+        CaptionButtonY(restored) + kCaptionButtonHeightWithPadding) +
+        TitlebarBottomThickness(restored);
+  }
+
+  return FrameBorderThickness(restored) -
+      ((browser_view_->IsTabStripVisible() && !restored &&
+      window->IsMaximized()) ? kTabstripTopShadowThickness : 0);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, BrowserNonClientFrameView implementation:
 
@@ -474,25 +495,8 @@ int OpaqueBrowserFrameView::NonClientBorderThickness() const {
        0 : kClientEdgeThickness);
 }
 
-int OpaqueBrowserFrameView::NonClientTopBorderHeight(
-    bool restored,
-    bool ignore_vertical_tabs) const {
-  views::Window* window = frame_->GetWindow();
-  views::WindowDelegate* delegate = window->window_delegate();
-  // |delegate| may be NULL if called from callback of InputMethodChanged while
-  // a window is being destroyed.
-  // See more discussion at http://crosbug.com/8958
-  if ((delegate && delegate->ShouldShowWindowTitle()) ||
-      (browser_view_->IsTabStripVisible() && !ignore_vertical_tabs &&
-       browser_view_->UseVerticalTabs())) {
-    return std::max(FrameBorderThickness(restored) + IconSize(),
-        CaptionButtonY(restored) + kCaptionButtonHeightWithPadding) +
-        TitlebarBottomThickness(restored);
-  }
-
-  return FrameBorderThickness(restored) -
-      ((browser_view_->IsTabStripVisible() && !restored &&
-      window->IsMaximized()) ? kTabstripTopShadowThickness : 0);
+void OpaqueBrowserFrameView::ModifyMaximizedFramePainting(
+    int* theme_offset, SkBitmap** left_corner, SkBitmap** right_corner) {
 }
 
 int OpaqueBrowserFrameView::CaptionButtonY(bool restored) const {
@@ -668,13 +672,19 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
       height() - top_left_height - bottom_left_corner->height());
 }
 
-
 void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   ui::ThemeProvider* tp = GetThemeProvider();
   views::Window* window = frame_->GetWindow();
 
   // Window frame mode and color
   SkBitmap* theme_frame;
+
+  // Allow customization of these attributes.
+  SkBitmap* left = NULL;
+  SkBitmap* right = NULL;
+  int top_offset = 0;
+  ModifyMaximizedFramePainting(&top_offset, &left, &right);
+
   // Never theme app and popup windows.
   if (!browser_view_->IsBrowserTypeNormal()) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -692,9 +702,22 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   // kTabstripTopShadowThickness px off the top of the screen.
   int theme_background_y = -(GetHorizontalTabStripVerticalOffset(true) +
       kTabstripTopShadowThickness);
-  canvas->TileImageInt(*theme_frame, 0, theme_background_y, width(),
-                       theme_frame->height());
+  int left_offset = 0, right_offset = 0;
 
+  if (left || right) {
+    // If we have either a left or right we should have both.
+    DCHECK(left && right);
+    left_offset = left->width();
+    right_offset = right->width();
+    canvas->DrawBitmapInt(*left, 0, 0);
+    canvas->DrawBitmapInt(*right, width() - right_offset, 0);
+  }
+
+  canvas->TileImageInt(*theme_frame,
+                       left_offset,
+                       top_offset,
+                       width() - (left_offset + right_offset),
+                       theme_frame->height());
   // Draw the theme frame overlay
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       browser_view_->IsBrowserTypeNormal()) {

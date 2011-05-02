@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -168,6 +168,11 @@ void NonClientView::ViewHierarchyChanged(bool is_add, View* parent,
   }
 }
 
+void NonClientView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_WINDOW;
+  state->name = accessible_name_;
+}
+
 views::View* NonClientView::GetEventHandlerForPoint(const gfx::Point& point) {
   // Because of the z-ordering of our child views (the client view is positioned
   // over the non-client frame view, if the client view ever overlaps the frame
@@ -182,11 +187,6 @@ views::View* NonClientView::GetEventHandlerForPoint(const gfx::Point& point) {
     return frame_view_->GetEventHandlerForPoint(point_in_child_coords);
 
   return View::GetEventHandlerForPoint(point);
-}
-
-void NonClientView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_WINDOW;
-  state->name = accessible_name_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

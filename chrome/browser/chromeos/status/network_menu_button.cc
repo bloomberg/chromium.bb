@@ -72,9 +72,8 @@ namespace chromeos {
 const int NetworkMenuButton::kThrobDuration = 1000;
 
 NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
-    : StatusAreaButton(this),
+    : StatusAreaButton(host, this),
       NetworkMenu(),
-      host_(host),
       icon_(NULL),
       right_badge_(NULL),
       left_badge_(NULL),

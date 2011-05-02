@@ -94,8 +94,6 @@ class ClockMenuButton : public StatusAreaButton,
   // constructor.
   scoped_ptr<views::Menu2> clock_menu_;
 
-  StatusAreaHost* host_;
-
   PrefChangeRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ClockMenuButton);

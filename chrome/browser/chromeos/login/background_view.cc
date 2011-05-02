@@ -309,6 +309,10 @@ StatusAreaHost::ScreenMode BackgroundView::GetScreenMode() const {
   return kLoginMode;
 }
 
+StatusAreaHost::TextStyle BackgroundView::GetTextStyle() const {
+  return kWhitePlain;
+}
+
 // Overridden from LoginHtmlDialog::Delegate:
 void BackgroundView::OnLocaleChanged() {
   // Proxy settings dialog contains localized strings.

@@ -38,8 +38,6 @@ class WindowSwitcherButton : public StatusAreaButton,
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
-  StatusAreaHost* host_;
-
   DISALLOW_COPY_AND_ASSIGN(WindowSwitcherButton);
 };
 

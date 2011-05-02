@@ -27,8 +27,10 @@
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
@@ -42,6 +44,9 @@ namespace {
 
 // Amount to offset the toolbar by when vertical tabs are enabled.
 const int kVerticalTabStripToolbarOffset = 2;
+// Amount to tweak the position of the status area to get it to look right.
+const int kStatusAreaVerticalAdjustment = -1;
+
 // If a popup window is larger than this fraction of the screen, create a tab.
 const float kPopupMaxWidthFactor = 0.5;
 const float kPopupMaxHeightFactor = 0.6;
@@ -197,8 +202,11 @@ class BrowserViewLayout : public ::BrowserViewLayout {
 
     // Layout status area after tab strip.
     gfx::Size status_size = status_area_->GetPreferredSize();
-    status_area_->SetBounds(bounds.right() - status_size.width(), bounds.y(),
-                            status_size.width(), status_size.height());
+    status_area_->SetBounds(
+        bounds.right() - status_size.width(),
+        bounds.y() + kStatusAreaVerticalAdjustment,
+        status_size.width(),
+        status_size.height());
     tabstrip_->SetBounds(bounds.x(), bounds.y(),
         std::max(0, status_area_->bounds().x() - bounds.x()),
         bounds.height());
@@ -385,6 +393,13 @@ void BrowserView::OpenButtonOptions(const views::View* button_view) {
 
 StatusAreaHost::ScreenMode BrowserView::GetScreenMode() const {
   return kBrowserMode;
+}
+
+StatusAreaHost::TextStyle BrowserView::GetTextStyle() const {
+  ui::ThemeProvider* tp = GetThemeProvider();
+  return tp->HasCustomImage(IDR_THEME_FRAME) ?
+      StatusAreaHost::kWhiteHaloed : (IsOffTheRecord() ?
+          StatusAreaHost::kWhitePlain : StatusAreaHost::kGrayEmbossed);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

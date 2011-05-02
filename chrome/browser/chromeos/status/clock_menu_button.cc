@@ -17,9 +17,9 @@
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "unicode/datefmt.h"
 
 namespace chromeos {
 
@@ -27,15 +27,8 @@ namespace chromeos {
 // when the timer goes off.
 const int kTimerSlopSeconds = 1;
 
-#if defined(CROS_FONTS_USING_BCI)
-const int kFontSizeDelta = 0;
-#else
-const int kFontSizeDelta = 1;
-#endif
-
 ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
-    : StatusAreaButton(this),
-      host_(host) {
+    : StatusAreaButton(host, this) {
   // Add as SystemAccess observer. We update the clock if timezone changes.
   SystemAccess::GetInstance()->AddObserver(this);
   CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
@@ -45,13 +38,6 @@ ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
     registrar_.Add(prefs::kUse24HourClock, this);
   }
 
-  set_border(NULL);
-  set_use_menu_button_paint(true);
-  SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).DeriveFont(kFontSizeDelta));
-  SetEnabledColor(0xB3FFFFFF);  // White with 70% Alpha
-  SetShowMultipleIconStates(false);
-  set_alignment(TextButton::ALIGN_CENTER);
   UpdateTextAndSetNextTimer();
 }
 
@@ -87,15 +73,32 @@ void ClockMenuButton::UpdateTextAndSetNextTimer() {
 void ClockMenuButton::UpdateText() {
   base::Time time(base::Time::Now());
   // If the profie is present, check the use 24-hour clock preference.
-  if (host_->GetProfile()) {  // This can be NULL in the login screen.
-    const bool use_24hour_clock =
-        host_->GetProfile()->GetPrefs()->GetBoolean(prefs::kUse24HourClock);
-    base::HourClockType clock_type = (use_24hour_clock ?
-                                      base::k24HourClock : base::k12HourClock);
+  const bool use_24hour_clock =
+      host_->GetProfile() &&
+      host_->GetProfile()->GetPrefs()->GetBoolean(prefs::kUse24HourClock);
+  if (use_24hour_clock) {
     SetText(UTF16ToWide(base::TimeFormatTimeOfDayWithHourClockType(
-        time, clock_type)));
+        time, base::k24HourClock)));
   } else {
-    SetText(UTF16ToWide(base::TimeFormatTimeOfDay(time)));
+    // Remove the am/pm field if it's present.
+    scoped_ptr<icu::DateFormat> formatter(
+        icu::DateFormat::createTimeInstance(icu::DateFormat::kShort));
+    icu::UnicodeString time_string;
+    icu::FieldPosition ampm_field(icu::DateFormat::kAmPmField);
+    formatter->format(
+        static_cast<UDate>(time.ToDoubleT() * 1000), time_string, ampm_field);
+    int ampm_length = ampm_field.getEndIndex() - ampm_field.getBeginIndex();
+    if (ampm_length) {
+      int begin = ampm_field.getBeginIndex();
+      // Doesn't include any spacing before the field.
+      if (begin)
+        begin--;
+      time_string.removeBetween(begin, ampm_field.getEndIndex());
+    }
+    string16 time_string16 =
+        string16(time_string.getBuffer(),
+                 static_cast<size_t>(time_string.length()));
+    SetText(UTF16ToWide(time_string16));
   }
   SetTooltipText(UTF16ToWide(base::TimeFormatShortDate(time)));
   SchedulePaint();

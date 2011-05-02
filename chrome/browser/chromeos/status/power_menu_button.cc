@@ -20,10 +20,10 @@ namespace chromeos {
 // PowerMenuButton
 
 // static
-const int PowerMenuButton::kNumPowerImages = 16;
+const int PowerMenuButton::kNumPowerImages = 19;
 
-PowerMenuButton::PowerMenuButton()
-    : StatusAreaButton(this),
+PowerMenuButton::PowerMenuButton(StatusAreaHost* host)
+    : StatusAreaButton(host, this),
       battery_is_present_(false),
       line_power_on_(false),
       battery_fully_charged_(false),
@@ -162,6 +162,9 @@ void PowerMenuButton::UpdateIconAndLabelInfo() {
       IDR_STATUSBAR_BATTERY_CHARGING_14,
       IDR_STATUSBAR_BATTERY_CHARGING_15,
       IDR_STATUSBAR_BATTERY_CHARGING_16,
+      IDR_STATUSBAR_BATTERY_CHARGING_17,
+      IDR_STATUSBAR_BATTERY_CHARGING_18,
+      IDR_STATUSBAR_BATTERY_CHARGING_19,
     };
     static const int kDischargingImages[kNumPowerImages] = {
       IDR_STATUSBAR_BATTERY_DISCHARGING_1,
@@ -180,6 +183,9 @@ void PowerMenuButton::UpdateIconAndLabelInfo() {
       IDR_STATUSBAR_BATTERY_DISCHARGING_14,
       IDR_STATUSBAR_BATTERY_DISCHARGING_15,
       IDR_STATUSBAR_BATTERY_DISCHARGING_16,
+      IDR_STATUSBAR_BATTERY_DISCHARGING_17,
+      IDR_STATUSBAR_BATTERY_DISCHARGING_18,
+      IDR_STATUSBAR_BATTERY_DISCHARGING_19,
     };
 
     int index = static_cast<int>(battery_percentage_ / 100.0 *

@@ -160,6 +160,7 @@ class TextButtonBase : public CustomButton, public NativeThemeDelegate {
   // inactive. Both possible colors are set in this method, and the
   // appropriate one is chosen during Paint.
   void SetTextShadowColors(SkColor active_color, SkColor inactive_color);
+  void SetTextShadowOffset(int x, int y);
 
   bool normal_has_border() const { return normal_has_border_; }
   void SetNormalHasBorder(bool normal_has_border);
@@ -168,6 +169,9 @@ class TextButtonBase : public CustomButton, public NativeThemeDelegate {
   // (if present) in addition to the normal state.  Defaults to true.
   bool show_multiple_icon_states() const { return show_multiple_icon_states_; }
   void SetShowMultipleIconStates(bool show_multiple_icon_states);
+
+  // Clears halo and shadow settings.
+  void ClearEmbellishing();
 
   // Paint the button into the specified canvas. If |mode| is |PB_FOR_DRAG|, the
   // function paints a drag image representation into the canvas.
@@ -247,6 +251,8 @@ class TextButtonBase : public CustomButton, public NativeThemeDelegate {
   SkColor active_text_shadow_color_;
   SkColor inactive_text_shadow_color_;
   bool has_shadow_;
+  // Space between text and shadow. Defaults to (1,1).
+  gfx::Point shadow_offset_;
 
   // The width of the button will never be larger than this value. A value <= 0
   // indicates the width is not constrained.

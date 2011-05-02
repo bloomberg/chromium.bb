@@ -47,35 +47,36 @@ class BrowserView : public ::BrowserView,
   virtual ~BrowserView();
 
   // BrowserView overrides.
-  virtual void Init();
-  virtual void Show();
-  virtual void ShowInactive();
-  virtual void FocusChromeOSStatus();
-  virtual views::LayoutManager* CreateLayoutManager() const;
-  virtual void ChildPreferredSizeChanged(View* child);
-  virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const;
-  virtual void Cut();
-  virtual void Copy();
-  virtual void Paste();
+  virtual void Init() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void ShowInactive() OVERRIDE;
+  virtual void FocusChromeOSStatus() OVERRIDE;
+  virtual views::LayoutManager* CreateLayoutManager() const OVERRIDE;
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+  virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const OVERRIDE;
+  virtual void Cut() OVERRIDE;
+  virtual void Copy() OVERRIDE;
+  virtual void Paste() OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
-      const gfx::Rect& bounds);
+      const gfx::Rect& bounds) OVERRIDE;
 
   // views::ContextMenuController overrides.
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& p,
-                                      bool is_mouse_gesture);
+                                      bool is_mouse_gesture) OVERRIDE;
 
   // views::MenuListener implementation.
-  virtual void OnMenuOpened();
+  virtual void OnMenuOpened() OVERRIDE;
 
   // StatusAreaHost overrides.
-  virtual Profile* GetProfile() const;
-  virtual gfx::NativeWindow GetNativeWindow() const;
+  virtual Profile* GetProfile() const OVERRIDE;
+  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual bool ShouldOpenButtonOptions(
-      const views::View* button_view) const;
-  virtual void ExecuteBrowserCommand(int id) const;
-  virtual void OpenButtonOptions(const views::View* button_view);
-  virtual ScreenMode GetScreenMode() const;
+      const views::View* button_view) const OVERRIDE;
+  virtual void ExecuteBrowserCommand(int id) const OVERRIDE;
+  virtual void OpenButtonOptions(const views::View* button_view) OVERRIDE;
+  virtual ScreenMode GetScreenMode() const OVERRIDE;
+  virtual TextStyle GetTextStyle() const OVERRIDE;
 
   gfx::NativeView saved_focused_widget() const {
     return saved_focused_widget_;
