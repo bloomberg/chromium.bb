@@ -134,13 +134,6 @@ class RootView : public View,
   friend class GestureManager;
 #endif
 
-  // Coordinate conversion -----------------------------------------------------
-
-  // Convert a point to our current mouse handler. Returns false if the
-  // mouse handler is not connected to a Widget. In that case, the
-  // conversion cannot take place and |p| is unchanged
-  bool ConvertPointToMouseHandler(const gfx::Point& l, gfx::Point* p);
-
   // Input ---------------------------------------------------------------------
 
   // Update the cursor given a mouse event. This is called by non mouse_move
@@ -174,7 +167,7 @@ class RootView : public View,
   // a double-click lands on the same view as its single-click part.
   View* last_click_handler_;
 
-  // true if mouse_handler_ has been explicitly set
+  // true if mouse_pressed_handler_ has been explicitly set
   bool explicit_mouse_handler_;
 
   // Last position/flag of a mouse press/drag. Used if capture stops and we need

@@ -137,6 +137,8 @@ ui::EventType EventTypeFromNative(NativeEvent2 native_event) {
     case GenericEvent: {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+      if (TouchFactory::GetInstance()->IsTouchDevice(xievent->sourceid))
+        return GetTouchEventType(native_event);
       switch (xievent->evtype) {
         case XI_ButtonPress:
           return (xievent->detail == 4 || xievent->detail == 5) ?
@@ -189,7 +191,7 @@ gfx::Point GetEventLocation(XEvent* xev) {
   return gfx::Point();
 }
 
-int GetLocatedEventFlags(XEvent* xev, bool touch) {
+int GetLocatedEventFlags(XEvent* xev) {
   switch (xev->type) {
     case ButtonPress:
     case ButtonRelease:
@@ -202,6 +204,8 @@ int GetLocatedEventFlags(XEvent* xev, bool touch) {
 #if defined(HAVE_XINPUT2)
     case GenericEvent: {
       XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+      bool touch =
+          TouchFactory::GetInstance()->IsTouchDevice(xievent->sourceid);
       switch (xievent->evtype) {
         case XI_ButtonPress:
         case XI_ButtonRelease:
@@ -298,7 +302,7 @@ LocatedEvent::LocatedEvent(NativeEvent2 native_event_2,
                            FromNativeEvent2 from_native)
     : Event(native_event_2,
             EventTypeFromNative(native_event_2),
-            GetLocatedEventFlags(native_event_2, false),
+            GetLocatedEventFlags(native_event_2),
             from_native),
       location_(GetEventLocation(native_event_2)) {
 }
@@ -368,9 +372,7 @@ MouseWheelEvent::MouseWheelEvent(NativeEvent2 native_event_2,
 #if defined(HAVE_XINPUT2)
 TouchEvent::TouchEvent(NativeEvent2 native_event_2,
                        FromNativeEvent2 from_native)
-    : LocatedEvent(GetTouchEventType(native_event_2),
-                   GetEventLocation(native_event_2),
-                   GetLocatedEventFlags(native_event_2, true)),
+    : LocatedEvent(native_event_2, from_native),
       touch_id_(GetTouchIDFromXEvent(native_event_2)),
       radius_(GetTouchRadiusFromXEvent(native_event_2)),
       angle_(GetTouchAngleFromXEvent(native_event_2)),

@@ -99,6 +99,7 @@ class Event {
 
   Event(const Event& model)
       : native_event_(model.native_event()),
+        native_event_2_(model.native_event_2()),
         type_(model.type()),
         time_stamp_(model.time_stamp()),
         flags_(model.flags()) {
@@ -176,16 +177,6 @@ class MouseEvent : public LocatedEvent {
       : LocatedEvent(type, gfx::Point(x, y), flags) {
   }
 
-  // TODO(msw): Kill this legacy constructor when we update uses.
-  // Create a new mouse event from a type and a point. If source / target views
-  // are provided, the point will be converted from |source| coordinate system
-  // to |target| coordinate system.
-  MouseEvent(ui::EventType type,
-             View* source,
-             View* target,
-             const gfx::Point &l,
-             int flags);
-
   // Conveniences to quickly test what button is down
   bool IsOnlyLeftMouseButton() const {
     return (flags() & ui::EF_LEFT_BUTTON_DOWN) &&
@@ -238,16 +229,6 @@ class MouseEvent : public LocatedEvent {
 class TouchEvent : public LocatedEvent {
  public:
   TouchEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native);
-
-  // Create a new touch event.
-  TouchEvent(ui::EventType type,
-             int x,
-             int y,
-             int flags,
-             int touch_id,
-             float radius,
-             float angle,
-             float ratio);
 
   // Create a new TouchEvent which is identical to the provided model.
   // If source / target views are provided, the model location will be converted

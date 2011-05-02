@@ -244,9 +244,7 @@ bool RootView::OnMouseDragged(const MouseEvent& event) {
   if (mouse_pressed_handler_) {
     SetMouseLocationAndFlags(e);
 
-    gfx::Point p;
-    ConvertPointToMouseHandler(e.location(), &p);
-    MouseEvent mouse_event(e.type(), p.x(), p.y(), e.flags());
+    MouseEvent mouse_event(e, this, mouse_pressed_handler_);
     return mouse_pressed_handler_->ProcessMouseDragged(mouse_event, &drag_info);
   }
   return false;
@@ -257,9 +255,7 @@ void RootView::OnMouseReleased(const MouseEvent& event) {
   UpdateCursor(e);
 
   if (mouse_pressed_handler_) {
-    gfx::Point p;
-    ConvertPointToMouseHandler(e.location(), &p);
-    MouseEvent mouse_released(e.type(), p.x(), p.y(), e.flags());
+    MouseEvent mouse_released(e, this, mouse_pressed_handler_);
     // We allow the view to delete us from ProcessMouseReleased. As such,
     // configure state such that we're done first, then call View.
     View* mouse_pressed_handler = mouse_pressed_handler_;
@@ -392,7 +388,7 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
 #endif
 
 void RootView::SetMouseHandler(View *new_mh) {
-  // If we're clearing the mouse handler, clear explicit_mouse_handler as well.
+  // If we're clearing the mouse handler, clear explicit_mouse_handler_ as well.
   explicit_mouse_handler_ = (new_mh != NULL);
   mouse_pressed_handler_ = new_mh;
 }
@@ -440,24 +436,6 @@ void RootView::OnPaint(gfx::Canvas* canvas) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, private:
-
-// Coordinate conversion -------------------------------------------------------
-
-bool RootView::ConvertPointToMouseHandler(const gfx::Point& l, gfx::Point* p) {
-  // If the mouse_handler was set explicitly, keep sending events even if it was
-  // re-parented in a different window. (a non explicit mouse handler is
-  // automatically cleared when the control is removed from the hierarchy)
-  *p = l;
-  if (explicit_mouse_handler_) {
-    // If the mouse_pressed_handler_ is not connected, we send the
-    // event in screen coordinate system
-    ConvertPointToScreen(this, p);
-    if (mouse_pressed_handler_->GetWidget())
-      ConvertPointToView(NULL, mouse_pressed_handler_, p);
-  } else
-    ConvertPointToView(this, mouse_pressed_handler_, p);
-  return true;
-}
 
 // Input -----------------------------------------------------------------------
 
