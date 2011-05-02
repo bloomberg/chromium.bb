@@ -19,14 +19,10 @@ div#header {
   min-height: 67px;
   overflow: hidden;
   padding-bottom: 20px;
-  padding-left: 0;
+  -webkit-padding-start: 0;
   padding-top: 20px;
   position: relative;
   box-sizing: border-box;
-}
-
-html[dir=rtl] #header {
-  padding-right: 0;
 }
 
 #header h1 {
@@ -34,14 +30,12 @@ html[dir=rtl] #header {
   display: inline;
   margin: 0;
   padding-bottom: 43px;
-  padding-left: 75px;
+  -webkit-padding-start: 75px;
   padding-top: 40px;
 }
 
 html[dir=rtl] #header h1 {
   background: url('../../app/theme/flags_section.png') right no-repeat;
-  padding-right: 95px;
-  padding-left: 0;
 }
 
 h1 {
@@ -71,14 +65,9 @@ div.content {
   border-top: 1px solid #b5c7de;
   font-size: 99%;
   padding-bottom: 2px;
-  padding-left: 5px;
+  -webkit-padding-start: 5px;
   padding-top: 3px;
   width: 100%;
-}
-
-html[dir=rtl] .section-header {
-  padding-right: 5px;
-  padding-left: 0;
 }
 
 .section-header > table tr td:first-child {
@@ -105,12 +94,7 @@ html[dir=rtl] .section-header {
 }
 
 #top {
-  padding-right: 5px;
-}
-
-html[dir=rtl] #top {
-  padding-left: 5px;
-  padding-right: 0;
+  -webkit-padding-end: 5px;
 }
 
 /* Disabled experiments display grey text on a grey background.  The title,
@@ -135,12 +119,7 @@ html[dir=rtl] #top {
 
 /* Indent the text related to each experiment. */
 .experiment-text {
-  padding-left: 5px;
-}
-
-html[dir=rtl] .experiment-text {
-  padding-right: 5px;
-  padding-left: 0;
+  -webkit-padding-start: 5px;
 }
 
 .experiment-name {
@@ -155,19 +134,14 @@ html[dir=rtl] .experiment-text {
 
 /* Match the indentation of .experiment-text. */
 .experiment-actions {
-  padding-left: 5px;
+  -webkit-padding-start: 5px;
   margin-top: 0.2em;
   margin-bottom: 0.2em;
 }
 
-html[dir=rtl] .experiment-actions {
-  padding-right: 5px;
-  padding-left: 0;
-}
-
 div.needs-restart {
   padding-top: 10px;
-  padding-left: 5px;
+  -webkit-padding-start: 5px;
 }
 
 button {
@@ -310,10 +284,10 @@ document.addEventListener('DOMContentLoaded', requestFlagsExperimentsData);
         <td valign="top">
           <div class="experiment-text">
             <div>
-              <span class="experiment-name" dir="ltr"
+              <span class="experiment-name"
                     jscontent="name">NAME</span>
               <div>
-                <span dir="ltr" jsvalues=".innerHTML:description">
+                <span jsvalues=".innerHTML:description">
               </div>
               <div jsdisplay="choices && choices.length > 0">
                 <select jsvalues=".internal_name:internal_name;.disabled:!enabled"
