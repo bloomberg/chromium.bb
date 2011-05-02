@@ -1428,7 +1428,7 @@ var mostVisited = new MostVisited(
     useSmallGrid(),
     shownSections & Section.THUMB);
 
-function mostVisitedPages(data, firstRun, hasBlacklistedUrls) {
+function setMostVisitedPages(data, firstRun, hasBlacklistedUrls) {
   logEvent('received most visited pages');
 
   mostVisited.updateSettingsLink(hasBlacklistedUrls);

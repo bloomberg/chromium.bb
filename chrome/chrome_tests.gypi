@@ -2366,6 +2366,7 @@
         'browser/ui/views/html_dialog_view_browsertest.cc',
         'browser/ui/webui/chrome_url_data_manager_browsertest.cc',
         'browser/ui/webui/mediaplayer_browsertest.cc',
+        'browser/ui/webui/ntp/most_visited_browsertest.cc',
         'browser/ui/webui/settings_browsertest.cc',
         'renderer/autofill/autofill_browsertest.cc',
         'renderer/autofill/form_autocomplete_browsertest.cc',

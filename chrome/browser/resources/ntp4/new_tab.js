@@ -706,6 +706,6 @@ var getAppsCallback = ntp4.getAppsCallback;
 var appsPrefChangeCallback = ntp4.appsPrefChangeCallback;
 var themeChanged = ntp4.themeChanged;
 var recentlyClosedTabs = ntp4.setRecentlyClosedTabs;
-var mostVisitedPages = ntp4.setMostVisitedPages;
+var setMostVisitedPages = ntp4.setMostVisitedPages;
 
 document.addEventListener('DOMContentLoaded', ntp4.initialize);

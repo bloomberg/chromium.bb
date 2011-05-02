@@ -84,7 +84,7 @@ WebUIMessageHandler* MostVisitedHandler::Attach(WebUI* web_ui) {
 }
 
 void MostVisitedHandler::RegisterMessages() {
-  // Register ourselves as the handler for the "mostvisited" message from
+  // Register ourselves as the handler for the "getMostSisited" message from
   // Javascript.
   web_ui_->RegisterMessageCallback("getMostVisited",
       NewCallback(this, &MostVisitedHandler::HandleGetMostVisited));
@@ -106,7 +106,7 @@ void MostVisitedHandler::RegisterMessages() {
 
 void MostVisitedHandler::HandleGetMostVisited(const ListValue* args) {
   if (!got_first_most_visited_request_) {
-    // If our intial data is already here, return it.
+    // If our initial data is already here, return it.
     SendPagesValue();
     got_first_most_visited_request_ = true;
   } else {
@@ -125,7 +125,7 @@ void MostVisitedHandler::SendPagesValue() {
       has_blacklisted_urls = ts->HasBlacklistedItems();
     FundamentalValue first_run(IsFirstRun());
     FundamentalValue has_blacklisted_urls_value(has_blacklisted_urls);
-    web_ui_->CallJavascriptFunction("mostVisitedPages",
+    web_ui_->CallJavascriptFunction("setMostVisitedPages",
                                     *(pages_value_.get()),
                                     first_run,
                                     has_blacklisted_urls_value);
