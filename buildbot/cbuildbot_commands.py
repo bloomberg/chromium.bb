@@ -462,6 +462,9 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
   if buildconfig.get('factory_install_mod', True):
     cmd.append('--factory_install_mod')
 
+  useflags = buildconfig.get('useflags')
+  if useflags: cmd.extend(['--useflags', ' '.join(useflags)])
+
   result = None
   try:
     result = cros_lib.RunCommand(cmd, cwd=cwd, redirect_stdout=True,
