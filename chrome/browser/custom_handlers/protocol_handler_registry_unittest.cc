@@ -103,21 +103,23 @@ TEST_F(ProtocolHandlerRegistryTest, DisableDeregistersProtocolHandlers) {
 
 TEST_F(ProtocolHandlerRegistryTest, IgnoreProtocolHandler) {
   registry()->OnIgnoreRegisterProtocolHandler(TestProtocolHandler());
-  ASSERT_TRUE(registry()->IsIgnored(TestProtocolHandler()));
-  registry()->RemoveIgnoredHandler(TestProtocolHandler());
-  ASSERT_FALSE(registry()->IsIgnored(TestProtocolHandler()));
+  scoped_ptr<ProtocolHandler> test_handler(TestProtocolHandler());
+  ASSERT_TRUE(registry()->IsIgnored(test_handler.get()));
+  registry()->RemoveIgnoredHandler(test_handler.get());
+  ASSERT_FALSE(registry()->IsIgnored(test_handler.get()));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, SaveAndLoad) {
   registry()->OnAcceptRegisterProtocolHandler(TestProtocolHandler());
   registry()->OnIgnoreRegisterProtocolHandler(MakeProtocolHandler("stuff"));
 
+  scoped_ptr<ProtocolHandler> stuff_handler(MakeProtocolHandler("stuff"));
   ASSERT_TRUE(registry()->IsHandledProtocol("test"));
-  ASSERT_TRUE(registry()->IsIgnored(MakeProtocolHandler("stuff")));
+  ASSERT_TRUE(registry()->IsIgnored(stuff_handler.get()));
   delegate()->Reset();
   ReloadProtocolHandlerRegistry();
   ASSERT_TRUE(registry()->IsHandledProtocol("test"));
-  ASSERT_TRUE(registry()->IsIgnored(MakeProtocolHandler("stuff")));
+  ASSERT_TRUE(registry()->IsIgnored(stuff_handler.get()));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestEnabledDisabled) {
