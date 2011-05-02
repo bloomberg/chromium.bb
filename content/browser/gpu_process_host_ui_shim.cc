@@ -280,7 +280,7 @@ void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
           size.width(),
           size.height(),
           SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER |
-              SWP_NOACTIVATE | SWP_DEFERERASE | SWP_SHOWWINDOW);
+              SWP_NOACTIVATE | SWP_DEFERERASE);
 #endif
     }
   }
