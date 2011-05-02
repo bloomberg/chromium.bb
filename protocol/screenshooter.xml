@@ -1,7 +1,10 @@
 <protocol name="screenshooter">
 
   <interface name="screenshooter" version="1">
-    <request name="shoot"/>
+    <request name="shoot">
+      <arg name="output" type="object" interface="wl_output"/>
+      <arg name="buffer" type="object" interface="wl_buffer"/>
+    </request>
   </interface>
 
 </protocol>

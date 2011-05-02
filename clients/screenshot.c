@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
 #include <glib.h>
 
 #include "wayland-client.h"
@@ -35,22 +37,108 @@
  * the compositor and serves as a test bed for implementing client
  * side marshalling outside libwayland.so */
 
+static struct wl_output *output;
+static struct wl_shm *shm;
+static struct wl_visual *visual;
+static struct screenshooter *screenshooter;
+static int output_width, output_height;
+
+static void
+display_handle_geometry(void *data,
+			struct wl_output *output,
+			int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	output_width = width;
+	output_height = height;
+}
+
+static const struct wl_output_listener output_listener = {
+	display_handle_geometry,
+};
+
 static void
 handle_global(struct wl_display *display, uint32_t id,
 	      const char *interface, uint32_t version, void *data)
 {
-	struct screenshooter **screenshooter = data;
+	static int visual_count;
 
-	if (strcmp(interface, "screenshooter") == 0)
-		*screenshooter = screenshooter_create(display, id, 1);
+	if (strcmp(interface, "wl_output") == 0) {
+		output = wl_output_create(display, id, 1);
+		wl_output_add_listener(output, &output_listener, NULL);
+	} else if (strcmp(interface, "wl_shm") == 0) {
+		shm = wl_shm_create(display, id, 1);
+	} else if (strcmp(interface, "wl_visual") == 0) {
+		if  (visual_count++ == 1)
+			visual = wl_visual_create(display, id, 1);
+	} else if (strcmp(interface, "screenshooter") == 0) {
+		screenshooter = screenshooter_create(display, id, 1);
+	}
+}
+
+static void
+sync_callback(void *data)
+{
+   int *done = data;
+
+   *done = 1;
+}
+
+static void
+roundtrip(struct wl_display *display)
+{
+	int done;
+
+	done = 0;
+	wl_display_sync_callback(display, sync_callback, &done);
+	wl_display_iterate(display, WL_DISPLAY_WRITABLE);
+	while (!done)
+		wl_display_iterate(display, WL_DISPLAY_READABLE);
+}
+
+static struct wl_buffer *
+create_shm_buffer(int width, int height, void **data_out)
+{
+	char filename[] = "/tmp/wayland-shm-XXXXXX";
+	struct wl_buffer *buffer;
+	int fd, size, stride;
+	void *data;
+
+	fd = mkstemp(filename);
+	if (fd < 0) {
+		fprintf(stderr, "open %s failed: %m\n", filename);
+		return NULL;
+	}
+	stride = width * 4;
+	size = stride * height;
+	if (ftruncate(fd, size) < 0) {
+		fprintf(stderr, "ftruncate failed: %m\n");
+		close(fd);
+		return NULL;
+	}
+
+	data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	unlink(filename);
+
+	if (data == MAP_FAILED) {
+		fprintf(stderr, "mmap failed: %m\n");
+		close(fd);
+		return NULL;
+	}
+
+	buffer = wl_shm_create_buffer(shm, fd, width, height, stride, visual);
+
+	close(fd);
+
+	*data_out = data;
+
+	return buffer;
 }
 
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
-	GMainLoop *loop;
-	GSource *source;
-	struct screenshooter *screenshooter;
+	struct wl_buffer *buffer;
+	void *data;
 
 	display = wl_display_connect(NULL);
 	if (display == NULL) {
@@ -58,22 +146,19 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	screenshooter = NULL;
 	wl_display_add_global_listener(display, handle_global, &screenshooter);
 	wl_display_iterate(display, WL_DISPLAY_READABLE);
+	roundtrip(display);
 	if (screenshooter == NULL) {
 		fprintf(stderr, "display doesn't support screenshooter\n");
 		return -1;
 	}
 
-	loop = g_main_loop_new(NULL, FALSE);
-	source = wl_glib_source_new(display);
-	g_source_attach(source, NULL);
+	buffer = create_shm_buffer(output_width, output_height, &data);
+	screenshooter_shoot(screenshooter, output, buffer);
+	roundtrip(display);
 
-	screenshooter_shoot(screenshooter);
-
-	g_idle_add((GSourceFunc) g_main_loop_quit, loop);
-	g_main_loop_run(loop);
+	/* FIXME: write png */
 
 	return 0;
 }

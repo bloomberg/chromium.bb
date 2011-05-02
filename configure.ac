@@ -35,7 +35,7 @@ AC_CHECK_FUNC([dlopen], [],
 AC_SUBST(DLOPEN_LIBS)
 
 PKG_CHECK_MODULES(COMPOSITOR,
-		  [wayland-server egl >= 7.10 glesv2 gdk-pixbuf-2.0 pixman-1])
+		  [wayland-server egl >= 7.10 glesv2 pixman-1 libpng12])
 
 AC_CHECK_PROG(RSVG_CONVERT, rsvg-convert, rsvg-convert)
 AM_CONDITIONAL(HAVE_RSVG_CONVERT, test -n "$RSVG_CONVERT")

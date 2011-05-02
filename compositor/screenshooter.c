@@ -17,8 +17,6 @@
  */
 
 #include <stdlib.h>
-#include <GLES2/gl2.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
 
 #include "compositor.h"
 #include "screenshooter-server-protocol.h"
@@ -29,40 +27,22 @@ struct screenshooter {
 };
 
 static void
-screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
+screenshooter_shoot(struct wl_client *client,
+		    struct screenshooter *shooter,
+		    struct wl_output *output_base, struct wl_buffer *buffer)
 {
-	struct wlsc_compositor *ec = shooter->ec;
-	struct wlsc_output *output;
-	char buffer[256];
-	GdkPixbuf *pixbuf;
-	GError *error = NULL;
-	unsigned char *data;
-	int i, j;
+	struct wlsc_output *output = (struct wlsc_output *) output_base;
 
-	i = 0;
-	wl_list_for_each(output, &ec->output_list, link) {
-		snprintf(buffer, sizeof buffer, "wayland-screenshot-%d.png", i++);
-		data = malloc(output->width * output->height * 4);
-		if (data == NULL) {
-			fprintf(stderr, "couldn't allocate image buffer\n");
-			continue;
-		}
+	if (!wl_buffer_is_shm(buffer))
+		return;
 
-		glPixelStorei(GL_PACK_ALIGNMENT, 1);
-		glReadPixels(0, 0, output->width, output->height,
-			     GL_RGBA, GL_UNSIGNED_BYTE, data);
+	if (buffer->width < output->width || buffer->height < output->height)
+		return;
 
-		/* FIXME: We should just use a RGB visual for the frontbuffer. */
-		for (j = 3; j < output->width * output->height * 4; j += 4)
-			data[j] = 0xff;
-
-		pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE,
-						  8, output->width, output->height, output->width * 4,
-						  NULL, NULL);
-		gdk_pixbuf_save(pixbuf, buffer, "png", &error, NULL);
-		g_object_unref(pixbuf);
-		free(data);
-	}
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glReadPixels(0, 0, output->width, output->height,
+		     GL_RGBA, GL_UNSIGNED_BYTE,
+		     wl_shm_buffer_get_data(buffer));
 }
 
 struct screenshooter_interface screenshooter_implementation = {

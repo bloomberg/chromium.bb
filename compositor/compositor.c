@@ -29,11 +29,11 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <math.h>
 #include <linux/input.h>
 #include <dlfcn.h>
 #include <getopt.h>
+#include <signal.h>
 
 #include "wayland-server.h"
 #include "compositor.h"
@@ -1882,8 +1882,6 @@ int main(int argc, char *argv[])
 		{ "shell", 1, NULL, 's' },
 		{ NULL, }
 	};
-
-	g_type_init(); /* GdkPixbuf needs this, it seems. */
 
 	width = 1024;
 	height = 640;
