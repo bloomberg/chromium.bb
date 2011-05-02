@@ -549,7 +549,7 @@ shell_init(struct wlsc_compositor *compositor)
 				    home_key_binding, shell);
 	wlsc_compositor_add_binding(compositor, KEY_RIGHTMETA, 0, 0,
 				    home_key_binding, shell);
- 	wlsc_compositor_add_binding(compositor, KEY_MENU, 0, 0,
+ 	wlsc_compositor_add_binding(compositor, KEY_COMPOSE, 0, 0,
 				    menu_key_binding, shell);
 
 	compositor->shell = &shell->shell;
