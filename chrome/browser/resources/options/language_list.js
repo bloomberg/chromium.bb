@@ -316,8 +316,14 @@ cr.define('options', function() {
      */
     handlePreferredLanguagesPrefChange_: function(e) {
       var languageCodesInCsv = e.value.value;
-      var languageCodes = this.filterBadLanguageCodes_(
-          languageCodesInCsv.split(','));
+      var languageCodes = languageCodesInCsv.split(',');
+
+      // Add the UI language to the initial list of languages.  This is to avoid
+      // a bug where the UI language would be removed from the preferred
+      // language list by sync on first login.
+      // See: crosbug.com/14283
+      languageCodes.push(navigator.language);
+      languageCodes = this.filterBadLanguageCodes_(languageCodes);
       this.load_(languageCodes);
     },
 
