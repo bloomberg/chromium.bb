@@ -88,7 +88,40 @@ EulaSearchResult HasEULASetting(HKEY root, const std::wstring& state_key,
       FOUND_SAME_SETTING : FOUND_OPPOSITE_SETTING;
 }
 
-}  // namespace.
+bool GetChromeChannelInternal(bool system_install,
+                              bool add_multi_modifier,
+                              std::wstring* channel) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (dist->GetChromeChannel(channel)) {
+    return true;
+  }
+
+  HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  std::wstring reg_path = dist->GetStateKey();
+  RegKey key(root_key, reg_path.c_str(), KEY_READ);
+
+  installer::ChannelInfo channel_info;
+  if (!channel_info.Initialize(key)) {
+    channel->assign(L"unknown");
+    return false;
+  }
+
+  if (!channel_info.GetChannelName(channel)) {
+    channel->assign(L"unknown");
+  }
+
+  // Tag the channel name if this is a multi-install.
+  if (add_multi_modifier && channel_info.IsMultiInstall()) {
+    if (!channel->empty()) {
+      channel->append(1, L'-');
+    }
+    channel->append(1, L'm');
+  }
+
+  return true;
+}
+
+}  // namespace
 
 bool GoogleUpdateSettings::GetCollectStatsConsent() {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
@@ -220,32 +253,15 @@ bool GoogleUpdateSettings::ClearReferral() {
   return ClearGoogleUpdateStrKey(google_update::kRegReferralField);
 }
 
-bool GoogleUpdateSettings::GetChromeChannel(bool system_install,
-    std::wstring* channel) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (dist->GetChromeChannel(channel))
-    return true;
+std::wstring GoogleUpdateSettings::GetChromeChannel(bool system_install) {
+  std::wstring channel;
+  GetChromeChannelInternal(system_install, false, &channel);
+  return channel;
+}
 
-  HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  std::wstring reg_path = dist->GetStateKey();
-  RegKey key(root_key, reg_path.c_str(), KEY_READ);
-  installer::ChannelInfo channel_info;
-  if (!channel_info.Initialize(key)) {
-    *channel = L"unknown";
-    return false;
-  }
-
-  if (!channel_info.GetChannelName(channel))
-    *channel = L"unknown";
-
-  // Tag the channel name if this is a multi-install product.
-  if (channel_info.IsMultiInstall()) {
-    if (!channel->empty())
-      channel->append(1, L'-');
-    channel->append(1, L'm');
-  }
-
-  return true;
+bool GoogleUpdateSettings::GetChromeChannelAndModifiers(bool system_install,
+                                                        std::wstring* channel) {
+  return GetChromeChannelInternal(system_install, true, channel);
 }
 
 void GoogleUpdateSettings::UpdateInstallStatus(bool system_install,

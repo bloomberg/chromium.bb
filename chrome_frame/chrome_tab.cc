@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -308,7 +308,7 @@ HRESULT SetupRunOnce() {
 
   std::wstring channel_name;
   if (base::win::GetVersion() < base::win::VERSION_VISTA &&
-      GoogleUpdateSettings::GetChromeChannel(true, &channel_name)) {
+      GoogleUpdateSettings::GetChromeChannelAndModifiers(true, &channel_name)) {
     std::transform(channel_name.begin(), channel_name.end(),
                    channel_name.begin(), tolower);
     // Use this only for the dev channel and CEEE channels.

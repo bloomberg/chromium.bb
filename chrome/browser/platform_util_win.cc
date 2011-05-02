@@ -204,7 +204,8 @@ std::string GetVersionStringModifier() {
     bool is_system_install =
         !InstallUtil::IsPerUserInstall(module.value().c_str());
 
-    GoogleUpdateSettings::GetChromeChannel(is_system_install, &channel);
+    GoogleUpdateSettings::GetChromeChannelAndModifiers(is_system_install,
+                                                       &channel);
   }
   return UTF16ToASCII(channel);
 #else
@@ -214,20 +215,22 @@ std::string GetVersionStringModifier() {
 
 Channel GetChannel() {
 #if defined(GOOGLE_CHROME_BUILD)
-  // Call GoogleUpdateSettings::GetChromeChannel with |false| as the first
-  // argument to avoid having it append "-m" to the channel name, or returning
-  // "m" for the stable channel.
-  string16 channel_16;
-  GoogleUpdateSettings::GetChromeChannel(false, &channel_16);
-  std::string channel = UTF16ToASCII(channel_16);
+  std::wstring channel(L"unknown");
+
+  FilePath module;
+  if (PathService::Get(base::FILE_MODULE, &module)) {
+    bool is_system_install =
+        !InstallUtil::IsPerUserInstall(module.value().c_str());
+    channel = GoogleUpdateSettings::GetChromeChannel(is_system_install);
+  }
 
   if (channel.empty()) {
     return CHANNEL_STABLE;
-  } else if (channel == "beta") {
+  } else if (channel == L"beta") {
     return CHANNEL_BETA;
-  } else if (channel == "dev") {
+  } else if (channel == L"dev") {
     return CHANNEL_DEV;
-  } else if (channel == "canary") {
+  } else if (channel == L"canary") {
     return CHANNEL_CANARY;
   }
 #endif

@@ -86,12 +86,18 @@ class GoogleUpdateSettings {
   // true if this operation succeeded.
   static bool ClearReferral();
 
+  // Returns only the channel name: "" (stable), "dev", "beta", "canary", or
+  // "unknown" if unknown. This value will not be modified by "-m" for a
+  // multi-install.
+  static std::wstring GetChromeChannel(bool system_install);
+
   // Return a human readable modifier for the version string, e.g.
   // the channel (dev, beta, stable). Returns true if this operation succeeded,
   // on success, channel contains one of "", "unknown", "dev" or "beta" (unless
   // it is a multi-install product, in which case it will return "m",
   // "unknown-m", "dev-m", or "beta-m").
-  static bool GetChromeChannel(bool system_install, std::wstring* channel);
+  static bool GetChromeChannelAndModifiers(bool system_install,
+                                           std::wstring* channel);
 
   // This method changes the Google Update "ap" value to move the installation
   // on to or off of one of the recovery channels.
