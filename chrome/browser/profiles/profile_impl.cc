@@ -396,7 +396,9 @@ void ProfileImpl::DoFinalInit() {
 
   // Initialize the ProfilePolicyConnector after |io_data_| since it requires
   // the URLRequestContextGetter to be initialized.
-  policy::ProfilePolicyConnectorFactory::GetForProfile(this);
+  policy::ProfilePolicyConnector* policy_connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(this);
+  policy_connector->Initialize();
 
   // Creation has been finished.
   if (delegate_)
