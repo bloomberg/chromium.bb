@@ -80,7 +80,7 @@ void RecordHistogram(ConfirmQuitMetric sample) {
 }
 
 - (void)setMessageText:(NSString*)text {
-  const CGFloat kHorizontalPadding = 30;
+  const CGFloat kHorizontalPadding = 30;  // In view coordinates.
 
   // Style the string.
   scoped_nsobject<NSMutableAttributedString> attrString(
@@ -98,15 +98,17 @@ void RecordHistogram(ConfirmQuitMetric sample) {
   // Fixup the frame of the string.
   [message_ sizeToFit];
   NSRect messageFrame = [message_ frame];
-  NSRect frame = [[self window] frame];
+  NSRect frameInViewSpace =
+      [message_ convertRect:[[self window] frame] fromView:nil];
 
-  if (NSWidth(messageFrame) > NSWidth(frame))
-    frame.size.width = NSWidth(messageFrame) + kHorizontalPadding;
+  if (NSWidth(messageFrame) > NSWidth(frameInViewSpace))
+    frameInViewSpace.size.width = NSWidth(messageFrame) + kHorizontalPadding;
 
-  messageFrame.origin.y = NSMidY(frame) - NSMidY(messageFrame);
-  messageFrame.origin.x = NSMidX(frame) - NSMidX(messageFrame);
+  messageFrame.origin.x = NSWidth(frameInViewSpace) / 2 - NSMidX(messageFrame);
+  messageFrame.origin.y = NSHeight(frameInViewSpace) / 2 - NSMidY(messageFrame);
 
-  [[self window] setFrame:frame display:YES];
+  [[self window] setFrame:[message_ convertRect:frameInViewSpace toView:nil]
+                  display:YES];
   [message_ setFrame:messageFrame];
 }
 
