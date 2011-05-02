@@ -54,7 +54,7 @@ void PrerenderHelper::RecordHistograms(
 
   // Load time for non-prerendered pages.
   if (!prerender_helper) {
-    RECORD_PLT("PerceivedLoadTime", begin_to_finish_all_loads);
+    RECORD_PLT("RendererPerceivedPLT", begin_to_finish_all_loads);
     return;
   }
 
@@ -90,16 +90,16 @@ void PrerenderHelper::RecordHistograms(
       prerender_helper->prerender_display_time_;
   base::Time prerender_start_time = prerender_helper->prerender_start_time_;
 
-  RECORD_PLT("TimeUntilDisplayed",
+  RECORD_PLT("RendererTimeUntilDisplayed",
              prerender_display_time - prerender_start_time);
   base::TimeDelta perceived_load_time = finish_all_loads -
                                         prerender_display_time;
   if (perceived_load_time < base::TimeDelta::FromSeconds(0)) {
-    RECORD_PLT("IdleTime", -perceived_load_time);
+    RECORD_PLT("RendererIdleTime", -perceived_load_time);
     perceived_load_time = base::TimeDelta::FromSeconds(0);
   }
-  RECORD_PLT("PerceivedPrerenderLoadTime", perceived_load_time);
-  RECORD_PLT("PerceivedLoadTime", perceived_load_time);
+  RECORD_PLT("RendererPerceivedPLT", perceived_load_time);
+  RECORD_PLT("RendererPerceivedPLTMatched", perceived_load_time);
 
   // Once a prerendered page is displayed and its histograms recorded, it no
   // longer needs a PrerenderHelper.
