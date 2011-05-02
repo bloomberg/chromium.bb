@@ -112,15 +112,17 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_mem_test')
 
-env.ComponentProgram('sysbrk_test.nexe',
-                     ['sysbrk_test.cc'],
-                     EXTRA_LIBS=['syscall_test_framework'])
+# TODO(robertm): re-enable this after pnacl TC update is complete
+if not env.Bit('bitcode'):
+  env.ComponentProgram('sysbrk_test.nexe',
+                       ['sysbrk_test.cc'],
+                       EXTRA_LIBS=['syscall_test_framework'])
 
-node = env.CommandSelLdrTestNacl('sysbrk_test.out',
-                                 command=[env.File('sysbrk_test.nexe')])
-env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'],
-                       'run_sysbrk_test')
+  node = env.CommandSelLdrTestNacl('sysbrk_test.out',
+                                   command=[env.File('sysbrk_test.nexe')])
+  env.AddNodeToTestSuite(node,
+                         ['small_tests', 'sel_ldr_tests'],
+                         'run_sysbrk_test')
 
 # additions to add syscall tests 40-42
 env.ComponentProgram('timefuncs_test.nexe',
