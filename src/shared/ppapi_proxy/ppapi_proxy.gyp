@@ -25,6 +25,7 @@
         'browser_ppb_instance_rpc_server.cc',
         'browser_ppb_rpc_server.cc',
         'browser_ppb_scrollbar_rpc_server.cc',
+        'browser_ppb_testing_rpc_server.cc',
         'browser_ppb_url_loader_rpc_server.cc',
         'browser_ppb_url_request_info_rpc_server.cc',
         'browser_ppb_url_response_info_rpc_server.cc',

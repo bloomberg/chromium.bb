@@ -225,4 +225,11 @@ const PPB_Surface3D_Dev* PPBSurface3DInterface() {
   return ppb;
 }
 
+const PPB_Testing_Dev* PPBTestingInterface() {
+  static const PPB_Testing_Dev* ppb =
+      reinterpret_cast<const PPB_Testing_Dev*>(
+          GetBrowserInterfaceSafe(PPB_TESTING_DEV_INTERFACE));
+  return ppb;
+}
+
 }  // namespace ppapi_proxy

@@ -18,6 +18,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_image_data.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_instance.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_scrollbar.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_testing.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_loader.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_request_info.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_response_info.h"
@@ -51,6 +52,7 @@ InterfaceMapElement interface_map[] = {
     true },
   { PPB_SCROLLBAR_DEV_INTERFACE, PluginScrollbar::GetInterface(), true },
   { PPB_SURFACE_3D_DEV_INTERFACE, PluginSurface3D::GetInterface(), true },
+  { PPB_TESTING_DEV_INTERFACE, PluginTesting::GetInterface(), true },
   { PPB_URLLOADER_INTERFACE, PluginURLLoader::GetInterface(), true },
   { PPB_URLREQUESTINFO_INTERFACE, PluginURLRequestInfo::GetInterface(), true },
   { PPB_URLRESPONSEINFO_INTERFACE, PluginURLResponseInfo::GetInterface(),

@@ -1187,6 +1187,62 @@ NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_ScrollBy(
   return retval;
 }
 
+NaClSrpcError PpbTestingRpcClient::PPB_Testing_ReadImageData(
+    NaClSrpcChannel* channel,
+    PP_Resource device_context_2d,
+    PP_Resource image,
+    nacl_abi_size_t top_left_bytes, char* top_left,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Testing_ReadImageData:iiC:i",
+      device_context_2d,
+      image,
+      top_left_bytes, top_left,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbTestingRpcClient::PPB_Testing_RunMessageLoop(
+    NaClSrpcChannel* channel,
+    PP_Instance instance)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Testing_RunMessageLoop:i:",
+      instance
+  );
+  return retval;
+}
+
+NaClSrpcError PpbTestingRpcClient::PPB_Testing_QuitMessageLoop(
+    NaClSrpcChannel* channel,
+    PP_Instance instance)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Testing_QuitMessageLoop:i:",
+      instance
+  );
+  return retval;
+}
+
+NaClSrpcError PpbTestingRpcClient::PPB_Testing_GetLiveObjectsForInstance(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t* live_object_count)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Testing_GetLiveObjectsForInstance:i:i",
+      instance,
+      live_object_count
+  );
+  return retval;
+}
+
 NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance,

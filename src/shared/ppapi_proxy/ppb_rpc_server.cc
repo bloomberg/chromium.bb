@@ -1136,6 +1136,64 @@ static void PPB_Scrollbar_ScrollByDispatcher(
   );
 }
 
+static void PPB_Testing_ReadImageDataDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTestingRpcServer::PPB_Testing_ReadImageData(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Testing_RunMessageLoopDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbTestingRpcServer::PPB_Testing_RunMessageLoop(
+      rpc,
+      done,
+      inputs[0]->u.ival
+  );
+}
+
+static void PPB_Testing_QuitMessageLoopDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbTestingRpcServer::PPB_Testing_QuitMessageLoop(
+      rpc,
+      done,
+      inputs[0]->u.ival
+  );
+}
+
+static void PPB_Testing_GetLiveObjectsForInstanceDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTestingRpcServer::PPB_Testing_GetLiveObjectsForInstance(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
 static void PPB_URLLoader_CreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -1483,6 +1541,10 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Scrollbar_SetDocumentSize:ii:", PPB_Scrollbar_SetDocumentSizeDispatcher },
   { "PPB_Scrollbar_SetTickMarks:iCi:", PPB_Scrollbar_SetTickMarksDispatcher },
   { "PPB_Scrollbar_ScrollBy:iii:", PPB_Scrollbar_ScrollByDispatcher },
+  { "PPB_Testing_ReadImageData:iiC:i", PPB_Testing_ReadImageDataDispatcher },
+  { "PPB_Testing_RunMessageLoop:i:", PPB_Testing_RunMessageLoopDispatcher },
+  { "PPB_Testing_QuitMessageLoop:i:", PPB_Testing_QuitMessageLoopDispatcher },
+  { "PPB_Testing_GetLiveObjectsForInstance:i:i", PPB_Testing_GetLiveObjectsForInstanceDispatcher },
   { "PPB_URLLoader_Create:i:i", PPB_URLLoader_CreateDispatcher },
   { "PPB_URLLoader_IsURLLoader:i:i", PPB_URLLoader_IsURLLoaderDispatcher },
   { "PPB_URLLoader_Open:iii:i", PPB_URLLoader_OpenDispatcher },

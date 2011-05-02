@@ -10,6 +10,7 @@
 #include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
+#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_instance.h"
@@ -80,6 +81,7 @@ const PPB_ImageDataTrusted* PPBImageDataTrustedInterface();
 const PPB_Instance* PPBInstanceInterface();
 const PPB_Scrollbar_Dev* PPBScrollbarInterface();
 const PPB_Surface3D_Dev* PPBSurface3DInterface();
+const PPB_Testing_Dev* PPBTestingInterface();
 const PPB_URLLoader* PPBURLLoaderInterface();
 const PPB_URLRequestInfo* PPBURLRequestInfoInterface();
 const PPB_URLResponseInfo* PPBURLResponseInfoInterface();

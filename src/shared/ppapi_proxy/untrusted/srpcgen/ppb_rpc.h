@@ -498,6 +498,31 @@ class PpbScrollbarRpcClient {
   void operator=(const PpbScrollbarRpcClient);
 };  // class PpbScrollbarRpcClient
 
+class PpbTestingRpcClient {
+ public:
+  static NaClSrpcError PPB_Testing_ReadImageData(
+      NaClSrpcChannel* channel,
+      PP_Resource device_context_2d,
+      PP_Resource image,
+      nacl_abi_size_t top_left_bytes, char* top_left,
+      int32_t* success);
+  static NaClSrpcError PPB_Testing_RunMessageLoop(
+      NaClSrpcChannel* channel,
+      PP_Instance instance);
+  static NaClSrpcError PPB_Testing_QuitMessageLoop(
+      NaClSrpcChannel* channel,
+      PP_Instance instance);
+  static NaClSrpcError PPB_Testing_GetLiveObjectsForInstance(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      int32_t* live_object_count);
+
+ private:
+  PpbTestingRpcClient();
+  PpbTestingRpcClient(const PpbTestingRpcClient&);
+  void operator=(const PpbTestingRpcClient);
+};  // class PpbTestingRpcClient
+
 class PpbURLLoaderRpcClient {
  public:
   static NaClSrpcError PPB_URLLoader_Create(
