@@ -76,7 +76,7 @@ wlsc_matrix_multiply(struct wlsc_matrix *m, const struct wlsc_matrix *n)
 	memcpy(m, &tmp, sizeof tmp);
 }
 
-static void
+WL_EXPORT void
 wlsc_matrix_translate(struct wlsc_matrix *matrix, GLfloat x, GLfloat y, GLfloat z)
 {
 	struct wlsc_matrix translate = {
@@ -86,7 +86,7 @@ wlsc_matrix_translate(struct wlsc_matrix *matrix, GLfloat x, GLfloat y, GLfloat 
 	wlsc_matrix_multiply(matrix, &translate);
 }
 
-static void
+WL_EXPORT void
 wlsc_matrix_scale(struct wlsc_matrix *matrix, GLfloat x, GLfloat y, GLfloat z)
 {
 	struct wlsc_matrix scale = {

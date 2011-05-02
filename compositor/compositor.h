@@ -37,6 +37,14 @@ struct wlsc_matrix {
 	GLfloat d[16];
 };
 
+void
+wlsc_matrix_init(struct wlsc_matrix *matrix);
+void
+wlsc_matrix_scale(struct wlsc_matrix *matrix, GLfloat x, GLfloat y, GLfloat z);
+void
+wlsc_matrix_translate(struct wlsc_matrix *matrix,
+		      GLfloat x, GLfloat y, GLfloat z);
+
 struct wlsc_surface;
 
 struct wlsc_output {
