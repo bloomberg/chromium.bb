@@ -7,19 +7,74 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
+#include "base/threading/thread_local.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
 using base::mac::ScopedCFTypeRef;
 
+namespace {
+
+// What is up with this ugly hack? <http://crbug.com/64641>, that's what.
+// The bug: Printing certain PDFs crashes. The cause: When printing, the
+// renderer process assembles pages one at a time, in PDF format, to send to the
+// browser process. When printing a PDF, the PDF plugin returns output in PDF
+// format. There is a bug in 10.5 and 10.6 (<rdar://9018916>,
+// <http://www.openradar.me/9018916>) where reference counting is broken when
+// drawing certain PDFs into PDF contexts. So at the high-level, a PdfMetafileCg
+// is used to hold the destination context, and then about five layers down on
+// the callstack, a PdfMetafileCg is used to hold the source PDF. If the source
+// PDF is drawn into the destination PDF context and then released, accessing
+// the destination PDF context will crash. So the outermost instantiation of
+// PdfMetafileCg creates a pool for deeper instantiations to dump their used
+// PDFs into rather than releasing them. When the top-level PDF is closed, then
+// it's safe to clear the pool. A thread local is used to allow this to work in
+// single-process mode. TODO(avi): This Apple bug appears fixed in 10.7; when
+// 10.7 is the minimum required version for Chromium, remove this hack.
+
+base::ThreadLocalPointer<struct __CFSet> thread_pdf_docs;
+
+bool PDFBugFixed() {
+  int32 major_version;
+  int32 minor_version;
+  int32 bugfix_version;
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version,
+                                               &minor_version,
+                                               &bugfix_version);
+  return
+      major_version > 10 || (major_version == 10 && minor_version >= 7);
+}
+
+}  // namespace
+
 namespace printing {
 
 PdfMetafileCg::PdfMetafileCg()
-    : page_is_open_(false) {
+    : page_is_open_(false),
+      thread_pdf_docs_owned_(false) {
+  static bool bug_fixed = PDFBugFixed();
+  if (!thread_pdf_docs.Get() && !bug_fixed) {
+    thread_pdf_docs_owned_ = true;
+    thread_pdf_docs.Set(CFSetCreateMutable(kCFAllocatorDefault,
+                                           0,
+                                           &kCFTypeSetCallBacks));
+  }
 }
 
-PdfMetafileCg::~PdfMetafileCg() {}
+PdfMetafileCg::~PdfMetafileCg() {
+  DCHECK(CalledOnValidThread());
+  if (pdf_doc_ && thread_pdf_docs.Get()) {
+    // Transfer ownership to the pool.
+    CFSetAddValue(thread_pdf_docs.Get(), pdf_doc_);
+  }
+
+  if (thread_pdf_docs_owned_) {
+    CFRelease(thread_pdf_docs.Get());
+    thread_pdf_docs.Set(NULL);
+  }
+}
 
 bool PdfMetafileCg::Init() {
   // Ensure that Init hasn't already been called.
