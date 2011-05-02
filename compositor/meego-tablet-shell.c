@@ -340,15 +340,15 @@ launch_switcher(struct meego_tablet_shell *shell)
 		return;
 	}
 
-	/* SOCK_CLOEXEC closes both ends, so we need to unset the flag
-	 * on the client fd. */
-	flags = fcntl(sv[1], F_GETFD);
-	if (flags != -1)
-		fcntl(sv[1], F_SETFD, flags & ~FD_CLOEXEC);
-
 	shell->pid = fork();
 	switch (shell->pid) {
 	case 0:
+		/* SOCK_CLOEXEC closes both ends, so we need to unset
+		 * the flag on the client fd. */
+		flags = fcntl(sv[1], F_GETFD);
+		if (flags != -1)
+			fcntl(sv[1], F_SETFD, flags & ~FD_CLOEXEC);
+
 		snprintf(s, sizeof s, "%d", sv[1]);
 		setenv("WAYLAND_SOCKET", s, 1);
 		setenv("EGL_PLATFORM", "wayland", 1);
