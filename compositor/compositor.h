@@ -211,8 +211,8 @@ struct wlsc_surface {
 	int32_t saved_x, saved_y;
 	struct wl_list link;
 	struct wl_list buffer_link;
-	struct wlsc_matrix matrix;
-	struct wlsc_matrix matrix_inv;
+	struct wlsc_matrix *transform;
+	struct wlsc_matrix *transform_inv;
 	struct wl_visual *visual;
 	struct wlsc_output *output;
 	enum wlsc_surface_map_type map_type;
@@ -228,9 +228,6 @@ void
 wlsc_tweener_update(struct wlsc_tweener *tweener, uint32_t msec);
 int
 wlsc_tweener_done(struct wlsc_tweener *tweener);
-
-void
-wlsc_surface_update_matrix(struct wlsc_surface *es);
 
 void
 wlsc_surface_activate(struct wlsc_surface *surface,

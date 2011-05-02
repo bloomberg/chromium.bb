@@ -107,7 +107,6 @@ tablet_shell_frame(struct wlsc_animation *animation,
 	es->height = scale * shell->height;
 	es->x = (output->width - es->width) / 2;
 	es->y = (output->height - es->height) / 2;
-	wlsc_surface_update_matrix(es);
 	wlsc_surface_damage(es);
 }
 
@@ -143,7 +142,6 @@ meego_tablet_shell_attach(struct wlsc_shell *base,
 	} else if (surface == shell->home_surface) {
 		surface->x = 0;
 		surface->y = 0;
-		wlsc_surface_update_matrix(surface);
 	} else {
 		/* FIXME: Fullscreen everything else. */
 		fprintf(stderr, "attach from surface %p, client %p\n",
@@ -187,7 +185,6 @@ tablet_shell_set_lockscreen(struct wl_client *client,
 	fprintf(stderr, "set lock screen\n");
 	es->x = 0;
 	es->y = 0;
-	wlsc_surface_update_matrix(es);
 	wlsc_surface_activate(es, device, wlsc_compositor_get_time());
 	shell->lockscreen_surface = es;
 
@@ -224,7 +221,6 @@ tablet_shell_set_switcher(struct wl_client *client,
 	shell->switcher_surface = es;
 	shell->switcher_surface->x = 0;
 	shell->switcher_surface->y = 0;
-	wlsc_surface_update_matrix(es);
 
 	wlsc_surface_activate(es, device, wlsc_compositor_get_time());
 
@@ -247,7 +243,6 @@ tablet_shell_set_homescreen(struct wl_client *client,
 	shell->home_surface = (struct wlsc_surface *) surface;
 	shell->home_surface->x = 0;
 	shell->home_surface->y = 0;
-	wlsc_surface_update_matrix(shell->home_surface);
 
 	wlsc_surface_activate(shell->home_surface, device,
 			      wlsc_compositor_get_time());

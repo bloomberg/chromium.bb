@@ -192,13 +192,9 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	surface->y = y;
 	surface->width = width;
 	surface->height = height;
-	wlsc_matrix_init(&surface->matrix);
-	wlsc_matrix_scale(&surface->matrix, width, height, 1);
-	wlsc_matrix_translate(&surface->matrix, x, y, 0);
 
-	wlsc_matrix_init(&surface->matrix_inv);
-	wlsc_matrix_translate(&surface->matrix_inv, -x, -y, 0);
-	wlsc_matrix_scale(&surface->matrix_inv, 1.0 / width, 1.0 / height, 1);
+	surface->transform = NULL;
+	surface->transform_inv = NULL;
 
 	return surface;
 }
@@ -432,38 +428,21 @@ background_create(struct wlsc_output *output, const char *filename)
 	return background;
 }
 
-static void
-wlsc_surface_draw(struct wlsc_surface *es,
-		  struct wlsc_output *output, pixman_region32_t *clip)
+static int
+texture_region(struct wlsc_surface *es, pixman_region32_t *region)
 {
 	struct wlsc_compositor *ec = es->compositor;
 	GLfloat *v, inv_width, inv_height;
-	unsigned int *p;
-	pixman_region32_t repaint;
 	pixman_box32_t *rectangles;
+	unsigned int *p;
 	int i, n;
 
-	pixman_region32_init_rect(&repaint,
-				  es->x, es->y, es->width, es->height);
-	pixman_region32_intersect(&repaint, &repaint, clip);
-	if (!pixman_region32_not_empty(&repaint))
-		return;
-
-	if (es->visual == &ec->compositor.argb_visual) {
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_BLEND);
-	} else if (es->visual == &ec->compositor.premultiplied_argb_visual) {
-		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_BLEND);
-	} else {
-		glDisable(GL_BLEND);
-	}
-
-	rectangles = pixman_region32_rectangles(&repaint, &n);
+	rectangles = pixman_region32_rectangles(region, &n);
 	v = wl_array_add(&ec->vertices, n * 16 * sizeof *v);
 	p = wl_array_add(&ec->indices, n * 6 * sizeof *p);
 	inv_width = 1.0 / es->pitch;
 	inv_height = 1.0 / es->height;
+
 	for (i = 0; i < n; i++, v += 16, p += 6) {
 		v[ 0] = rectangles[i].x1;
 		v[ 1] = rectangles[i].y1;
@@ -493,6 +472,84 @@ wlsc_surface_draw(struct wlsc_surface *es,
 		p[5] = i * 4 + 3;
 	}
 
+	return n;
+}
+
+static void
+transform_vertex(struct wlsc_surface *surface,
+		 GLfloat x, GLfloat y, GLfloat u, GLfloat v, GLfloat *r)
+{
+	struct wlsc_vector t;
+
+	t.f[0] = x;
+	t.f[1] = y;
+	t.f[2] = 0.0;
+	t.f[3] = 1.0;
+
+	wlsc_matrix_transform(surface->transform, &t);
+
+	r[ 0] = t.f[0];
+	r[ 1] = t.f[1];
+	r[ 2] = u;
+	r[ 3] = v;
+}
+
+static int
+texture_transformed_surface(struct wlsc_surface *es)
+{
+	struct wlsc_compositor *ec = es->compositor;
+	GLfloat *v;
+	unsigned int *p;
+
+	v = wl_array_add(&ec->vertices, 16 * sizeof *v);
+	p = wl_array_add(&ec->indices, 6 * sizeof *p);
+
+	transform_vertex(es, es->x, es->y, 0.0, 0.0, &v[0]);
+	transform_vertex(es, es->x, es->y + es->height, 0.0, 1.0, &v[4]);
+	transform_vertex(es, es->x + es->width, es->y, 1.0, 0.0, &v[8]);
+	transform_vertex(es, es->x + es->width, es->y + es->height,
+			 1.0, 1.0, &v[12]);
+
+	p[0] = 0;
+	p[1] = 1;
+	p[2] = 2;
+	p[3] = 2;
+	p[4] = 1;
+	p[5] = 3;
+
+	return 1;
+}
+
+static void
+wlsc_surface_draw(struct wlsc_surface *es,
+		  struct wlsc_output *output, pixman_region32_t *clip)
+{
+	struct wlsc_compositor *ec = es->compositor;
+	GLfloat *v;
+	pixman_region32_t repaint;
+	int n;
+
+	pixman_region32_init_rect(&repaint,
+				  es->x, es->y, es->width, es->height);
+	pixman_region32_intersect(&repaint, &repaint, clip);
+	if (!pixman_region32_not_empty(&repaint))
+		return;
+
+	if (es->visual == &ec->compositor.argb_visual) {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+	} else if (es->visual == &ec->compositor.premultiplied_argb_visual) {
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+	} else {
+		glDisable(GL_BLEND);
+	}
+
+	if (es->transform == NULL)
+		n = texture_region(es, &repaint);
+	else
+		n = texture_transformed_surface(es);
+
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 	v = ec->vertices.data;
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[0]);
@@ -513,19 +570,6 @@ wlsc_surface_raise(struct wlsc_surface *surface)
 
 	wl_list_remove(&surface->link);
 	wl_list_insert(&compositor->surface_list, &surface->link);
-}
-
-WL_EXPORT void
-wlsc_surface_update_matrix(struct wlsc_surface *es)
-{
-	wlsc_matrix_init(&es->matrix);
-	wlsc_matrix_scale(&es->matrix, es->width, es->height, 1);
-	wlsc_matrix_translate(&es->matrix, es->x, es->y, 0);
-
-	wlsc_matrix_init(&es->matrix_inv);
-	wlsc_matrix_translate(&es->matrix_inv, -es->x, -es->y, 0);
-	wlsc_matrix_scale(&es->matrix_inv,
-			  1.0 / es->width, 1.0 / es->height, 1);
 }
 
 WL_EXPORT void
@@ -610,6 +654,7 @@ fade_output(struct wlsc_output *output,
 	surface.width = output->width;
 	surface.height = output->height;
 	surface.texture = GL_NONE;
+	surface.transform = NULL;
 
 	if (tint <= 1.0)
 		surface.visual =
@@ -859,7 +904,6 @@ surface_attach(struct wl_client *client,
 	es->height = buffer->height;
 	if (x != 0 || y != 0)
 		wlsc_surface_assign_output(es);
-	wlsc_surface_update_matrix(es);
 
 	es->compositor->shell->attach(es->compositor->shell, es);
 }
@@ -875,7 +919,6 @@ surface_map_toplevel(struct wl_client *client,
 	case WLSC_SURFACE_MAP_UNMAPPED:
 		es->x = 10 + random() % 400;
 		es->y = 10 + random() % 400;
-		wlsc_surface_update_matrix(es);
 		/* assign to first output */
 		es->output = container_of(ec->output_list.next,
 					  struct wlsc_output, link);
@@ -887,7 +930,6 @@ surface_map_toplevel(struct wl_client *client,
 		es->fullscreen_output = NULL;
 		es->x = es->saved_x;
 		es->y = es->saved_y;
-		wlsc_surface_update_matrix(es);
 		break;
 	default:
 		break;
@@ -921,7 +963,6 @@ surface_map_transient(struct wl_client *client,
 	es->x = pes->x + x;
 	es->y = pes->y + y;
 
-	wlsc_surface_update_matrix(es);
 	wlsc_surface_damage(es);
 	es->map_type = WLSC_SURFACE_MAP_TRANSIENT;
 }
@@ -956,7 +997,6 @@ surface_map_fullscreen(struct wl_client *client, struct wl_surface *surface)
 	es->x = (output->width - es->width) / 2;
 	es->y = (output->height - es->height) / 2;
 	es->fullscreen_output = output;
-	wlsc_surface_update_matrix(es);
 	wlsc_surface_damage(es);
 	es->map_type = WLSC_SURFACE_MAP_FULLSCREEN;
 }
@@ -993,7 +1033,6 @@ wlsc_input_device_attach(struct wlsc_input_device *device,
 	device->sprite->y = device->input_device.y - device->hotspot_y;
 	device->sprite->width = width;
 	device->sprite->height = height;
-	wlsc_surface_update_matrix(device->sprite);
 
 	wlsc_surface_damage(device->sprite);
 }
@@ -1059,11 +1098,8 @@ static void
 wlsc_surface_transform(struct wlsc_surface *surface,
 		       int32_t x, int32_t y, int32_t *sx, int32_t *sy)
 {
-	struct wlsc_vector v = { { x, y, 0, 1 } };
-
-	wlsc_matrix_transform(&surface->matrix_inv, &v);
-	*sx = v.f[0] * surface->width;
-	*sy = v.f[1] * surface->height;
+	*sx = x - surface->x;
+	*sy = y - surface->y;
 }
 
 struct wlsc_surface *
@@ -1231,7 +1267,6 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 
 	wd->sprite->x = device->x - wd->hotspot_x;
 	wd->sprite->y = device->y - wd->hotspot_y;
-	wlsc_surface_update_matrix(wd->sprite);
 
 	wlsc_surface_damage(wd->sprite);
 }
@@ -1435,7 +1470,6 @@ notify_pointer_focus(struct wl_input_device *device,
 
 		wd->sprite->x = device->x - wd->hotspot_x;
 		wd->sprite->y = device->y - wd->hotspot_y;
-		wlsc_surface_update_matrix(wd->sprite);
 	} else {
 		wl_input_device_set_pointer_focus(device, NULL,
 						  time, 0, 0, 0, 0);
@@ -1684,7 +1718,6 @@ wlsc_output_move(struct wlsc_output *output, int x, int y)
 	if (output->background) {
 		output->background->x = x;
 		output->background->y = y;
-		wlsc_surface_update_matrix(output->background);
 	}
 
 	pixman_region32_init(&output->previous_damage_region);
