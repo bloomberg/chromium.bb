@@ -19,7 +19,6 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/tab_contents/tab_specific_content_settings.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
-#include "chrome/common/instant_types.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/tab_contents/constrained_window.h"
 #include "content/browser/tab_contents/navigation_controller.h"

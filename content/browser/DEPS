@@ -123,17 +123,12 @@ include_rules = [
   "+chrome/browser/ui/find_bar/find_bar_controller.h",
   "+chrome/browser/ui/login/login_prompt.h",
 
-  "+chrome/browser/ui/gtk/gtk_util.h",
-
   "+chrome/common/chrome_constants.h",
   "+chrome/common/chrome_switches.h",
   "+chrome/common/chrome_paths.h",
   "+chrome/common/logging_chrome.h",
   "+chrome/common/render_messages.h",
   "+chrome/common/url_constants.h",
-
-  # http://crbug.com/77091
-  "+chrome/common/instant_types.h",
 
   "+chrome/common/net/url_fetcher.h",
 

@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "chrome/common/content_settings_types.h"
-#include "chrome/common/instant_types.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/common/navigation_types.h"
 #include "content/common/page_transition_types.h"

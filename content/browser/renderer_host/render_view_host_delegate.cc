@@ -11,10 +11,6 @@
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webpreferences.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/gtk/gtk_util.h"
-#endif
-
 RenderViewHostDelegate::View* RenderViewHostDelegate::GetViewDelegate() {
   return NULL;
 }
