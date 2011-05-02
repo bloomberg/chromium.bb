@@ -197,7 +197,7 @@ bool ProtocolHandlerRegistry::IsIgnored(const ProtocolHandler* handler) const {
 
 bool ProtocolHandlerRegistry::IsHandledProtocol(
     const std::string& scheme) const {
-  return GetHandlerFor(scheme);
+  return GetHandlerFor(scheme) != NULL;
 }
 
 net::URLRequestJob* ProtocolHandlerRegistry::Factory(net::URLRequest* request,
