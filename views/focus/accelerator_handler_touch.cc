@@ -65,19 +65,32 @@ bool DispatchX2Event(Widget* widget, XEvent* xev) {
         return widget->OnMouseEvent(wheelev);
       }
 
-      MouseEvent mouseev(xev, from_native);
-      // TODO(sad): Determine if the captured event is a touch-event.
       // Is the event coming from a touch device?
       if (TouchFactory::GetInstance()->IsTouchDevice(xievent->sourceid)) {
         // Hide the cursor when a touch event comes in.
         TouchFactory::GetInstance()->SetCursorVisible(false, false);
+
+        // With XInput 2.0, XI_ButtonPress and XI_ButtonRelease events are
+        // ignored, as XI_Motion events contain enough data to detect finger
+        // press and release. See more notes in TouchFactory::TouchParam.
+        if (cookie->evtype == XI_ButtonPress ||
+            cookie->evtype == XI_ButtonRelease)
+          return false;
+
         // If the TouchEvent is processed by |root|, then return. Otherwise let
         // it fall through so it can be used as a MouseEvent, if desired.
         TouchEvent touch(xev, from_native);
         RootView* root = widget->GetRootView();
         if (root->OnTouchEvent(touch) != views::View::TOUCH_STATUS_UNKNOWN)
           return true;
+
+        // We do not want to generate a mouse event for an unprocessed touch
+        // event here. That is already done by the gesture manager in
+        // RootView::OnTouchEvent.
+        return false;
       } else {
+        MouseEvent mouseev(xev, from_native);
+
         // Show the cursor. Start a timer to hide the cursor after a delay on
         // move (not drag) events, or if the only button pressed is released.
         bool start_timer = mouseev.type() == ui::ET_MOUSE_MOVED;
@@ -86,8 +99,9 @@ bool DispatchX2Event(Widget* widget, XEvent* xev) {
                         mouseev.IsOnlyMiddleMouseButton() ||
                         mouseev.IsOnlyRightMouseButton());
         TouchFactory::GetInstance()->SetCursorVisible(true, start_timer);
+
+        return widget->OnMouseEvent(mouseev);
       }
-      return widget->OnMouseEvent(mouseev);
     }
   }
   return false;

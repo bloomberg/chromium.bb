@@ -84,30 +84,43 @@ int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
 
 ui::EventType GetTouchEventType(XEvent* xev) {
   XGenericEventCookie* cookie = &xev->xcookie;
-  switch (cookie->evtype) {
-    case XI_ButtonPress:
-      return ui::ET_TOUCH_PRESSED;
-    case XI_ButtonRelease:
-      return ui::ET_TOUCH_RELEASED;
-    case XI_Motion:
-      return ui::ET_TOUCH_MOVED;
+  DCHECK_EQ(cookie->evtype, ui::ET_TOUCH_MOVED);
 
-    // Note: We will not generate a _STATIONARY event here. It will be created,
-    // when necessary, by a RWHVV.
+  // Note: We will not generate a _STATIONARY event here. It will be created,
+  // when necessary, by a RWHVV.
+  // TODO(sad): When should _CANCELLED be generated?
 
-    // TODO(sad): When do we trigger a _CANCELLED event? Maybe that will also be
-    // done by a RWHVV, e.g. when it gets destroyed in the middle of a
-    // touch-sequence?
+  TouchFactory* factory = TouchFactory::GetInstance();
+  float slot;
+  if (!factory->ExtractTouchParam(*xev, TouchFactory::TP_SLOT_ID, &slot))
+    return ui::ET_UNKNOWN;
+
+  if (!factory->IsSlotUsed(slot)) {
+    // This is a new touch point.
+    factory->SetSlotUsed(slot, true);
+    return ui::ET_TOUCH_PRESSED;
   }
 
-  return ui::ET_UNKNOWN;
+  float tracking;
+  if (!factory->ExtractTouchParam(*xev, TouchFactory::TP_TRACKING_ID,
+        &tracking))
+    return ui::ET_UNKNOWN;
+
+  if (tracking == 0l) {
+    // The touch point has been released.
+    factory->SetSlotUsed(slot, false);
+    return ui::ET_TOUCH_RELEASED;
+  }
+
+  return ui::ET_TOUCH_MOVED;
 }
 
 int GetTouchIDFromXEvent(XEvent* xev) {
-  // TODO(sad): How we determine the touch-id from the event is as yet
-  // undecided.
-  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-  return xiev->sourceid;
+  float slot = 0;
+  if (!TouchFactory::GetInstance()->ExtractTouchParam(
+        *xev, TouchFactory::TP_SLOT_ID, &slot))
+    LOG(ERROR) << "Could not get the slot ID for the event. Using 0.";
+  return slot;
 }
 
 #endif  // HAVE_XINPUT2

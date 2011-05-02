@@ -28,6 +28,9 @@ char FindTPValuator(Display* display,
                     views::TouchFactory::TouchParam touch_param) {
   // Lookup table for mapping TouchParam to Atom string used in X.
   // A full set of Atom strings can be found at xserver-properties.h.
+  // For Slot ID, See this chromeos revision: http://git.chromium.org/gitweb/?
+  //        p=chromiumos/overlays/chromiumos-overlay.git;
+  //        a=commit;h=9164d0a75e48c4867e4ef4ab51f743ae231c059a
   static struct {
     views::TouchFactory::TouchParam tp;
     const char* atom;
@@ -35,6 +38,8 @@ char FindTPValuator(Display* display,
     { views::TouchFactory::TP_TOUCH_MAJOR, "Abs MT Touch Major" },
     { views::TouchFactory::TP_TOUCH_MINOR, "Abs MT Touch Minor" },
     { views::TouchFactory::TP_ORIENTATION, "Abs MT Orientation" },
+    { views::TouchFactory::TP_SLOT_ID,     "Abs MT Slot ID" },
+    { views::TouchFactory::TP_TRACKING_ID, "Abs MT Tracking ID" },
     { views::TouchFactory::TP_LAST_ENTRY, NULL },
   };
 
@@ -57,7 +62,6 @@ char FindTPValuator(Display* display,
         reinterpret_cast<XIValuatorClassInfo*>(info->classes[i]);
 
     const char* atom = XGetAtomName(display, v->label);
-
     if (atom && strcmp(atom, atom_tp) == 0)
       return v->number;
   }
@@ -120,7 +124,8 @@ TouchFactory::TouchFactory()
     : is_cursor_visible_(true),
       cursor_timer_(),
       pointer_device_lookup_(),
-      touch_device_list_() {
+      touch_device_list_(),
+      slots_used_() {
   char nodata[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
   XColor black;
   black.red = black.green = black.blue = 0;
@@ -263,6 +268,16 @@ void TouchFactory::SetTouchDeviceList(
 bool TouchFactory::IsTouchDevice(unsigned deviceid) const {
   return deviceid < touch_device_lookup_.size() ?
       touch_device_lookup_[deviceid] : false;
+}
+
+bool TouchFactory::IsSlotUsed(int slot) const {
+  CHECK_LT(slot, kMaxTouchPoints);
+  return slots_used_[slot];
+}
+
+void TouchFactory::SetSlotUsed(int slot, bool used) {
+  CHECK_LT(slot, kMaxTouchPoints);
+  slots_used_[slot] = used;
 }
 
 bool TouchFactory::GrabTouchDevices(Display* display, ::Window window) {
