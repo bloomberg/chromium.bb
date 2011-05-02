@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: OCMockObject.m 53 2009-08-14 07:37:55Z erik $
+//  $Id: OCMockObject.m 72 2011-01-28 18:45:19Z erik $
 //  Copyright (c) 2004-2009 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -19,8 +19,16 @@
 #pragma mark  -
 
 
-
 @implementation OCMockObject
+
+#pragma mark  Class initialisation
+
++ (void)initialize
+{
+	if([[NSInvocation class] instanceMethodSignatureForSelector:@selector(getArgumentAtIndexAsObject:)] == NULL)
+		[NSException raise:NSInternalInconsistencyException format:@"** Expected method not present; the method getArgumentAtIndexAsObject: is not implemented by NSInvocation. If you see this exception it is likely that you are using the static library version of OCMock and your project is not configured correctly to load categories from static libraries. Did you forget to add the -force_load linker flag?"];
+}
+
 
 #pragma mark  Factory methods
 
@@ -73,6 +81,7 @@
 	expectationOrderMatters = NO;
 	recorders = [[NSMutableArray alloc] init];
 	expectations = [[NSMutableArray alloc] init];
+	rejections = [[NSMutableArray alloc] init];
 	exceptions = [[NSMutableArray alloc] init];
 	return self;
 }
@@ -81,6 +90,7 @@
 {
 	[recorders release];
 	[expectations release];
+	[rejections	release];
 	[exceptions release];
 	[super dealloc];
 }
@@ -111,6 +121,14 @@
 {
 	OCMockRecorder *recorder = [self stub];
 	[expectations addObject:recorder];
+	return recorder;
+}
+
+
+- (id)reject
+{
+	OCMockRecorder *recorder = [self stub];
+	[rejections addObject:recorder];
 	return recorder;
 }
 
@@ -158,6 +176,15 @@
 	if(i == [recorders count])
 		return NO;
 	
+	if([rejections containsObject:recorder]) 
+	{
+		NSException *exception = [NSException exceptionWithName:NSInternalInconsistencyException reason:
+								  [NSString stringWithFormat:@"%@: explicitly disallowed method invoked: %@", [self description], 
+								   [anInvocation invocationDescription]] userInfo:nil];
+		[exceptions addObject:exception];
+		[exception raise];
+	}
+
 	if([expectations containsObject:recorder])
 	{
 		if(expectationOrderMatters && ([expectations objectAtIndex:0] != recorder))

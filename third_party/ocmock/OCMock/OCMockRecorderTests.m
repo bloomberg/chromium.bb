@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: OCMockRecorderTests.m 50 2009-07-16 06:48:19Z erik $
+//  $Id: OCMockRecorderTests.m 61 2010-07-21 02:38:57Z erik $
 //  Copyright (c) 2004-2009 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -60,7 +60,7 @@
 	[recorder andReturn:@"foo"];
 	handlerList = [recorder invocationHandlers];
 	
-	STAssertEquals(1u, [handlerList count], @"Should have added one handler.");
+	STAssertEquals((NSUInteger)1, [handlerList count], @"Should have added one handler.");
 	STAssertEqualObjects([OCMReturnValueProvider class], [[handlerList objectAtIndex:0] class], @"Should have added correct handler.");
 }
 
@@ -73,7 +73,7 @@
 	[recorder andThrow:[NSException exceptionWithName:@"TestException" reason:@"A reason" userInfo:nil]];
 	handlerList = [recorder invocationHandlers];
 
-	STAssertEquals(1u, [handlerList count], @"Should have added one handler.");
+	STAssertEquals((NSUInteger)1, [handlerList count], @"Should have added one handler.");
 	STAssertEqualObjects([OCMExceptionReturnValueProvider class], [[handlerList objectAtIndex:0] class], @"Should have added correct handler.");
 	
 }

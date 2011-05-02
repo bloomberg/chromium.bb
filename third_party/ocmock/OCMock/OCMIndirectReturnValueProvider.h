@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: OCMIndirectReturnValueProvider.h 54 2009-08-18 06:27:36Z erik $
+//  $Id: OCMIndirectReturnValueProvider.h 68 2010-08-20 13:20:52Z erik $
 //  Copyright (c) 2009 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -12,5 +12,7 @@
 }
 
 - (id)initWithProvider:(id)aProvider andSelector:(SEL)aSelector;
+
+- (void)handleInvocation:(NSInvocation *)anInvocation;
 
 @end

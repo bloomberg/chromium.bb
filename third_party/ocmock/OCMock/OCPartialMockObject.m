@@ -1,12 +1,19 @@
 //---------------------------------------------------------------------------------------
-//  $Id: $
+//  $Id: OCPartialMockObject.m 74 2011-02-15 12:59:47Z erik $
 //  Copyright (c) 2009 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
-#import <objc/objc-runtime.h>
+#import <objc/runtime.h>
 #import "OCPartialMockRecorder.h"
 #import "OCPartialMockObject.h"
 
+
+@interface OCPartialMockObject (Private)
+- (void)forwardInvocationForRealObject:(NSInvocation *)anInvocation;
+@end 
+
+
+NSString *OCMRealMethodAliasPrefix = @"ocmock_replaced_";
 
 @implementation OCPartialMockObject
 
@@ -54,9 +61,8 @@ static NSMutableDictionary *mockTable;
 
 - (void)dealloc
 {
-	object_setClass(realObject, [self mockedClass]);
-	[realObject release];
-	[[self class] forgetPartialMockForObject:realObject];
+	if(realObject != nil)
+		[self stop];
 	[super dealloc];
 }
 
@@ -70,6 +76,13 @@ static NSMutableDictionary *mockTable;
 	return realObject;
 }
 
+- (void)stop
+{
+	object_setClass(realObject, [self mockedClass]);
+	[realObject release];
+	[[self class] forgetPartialMockForObject:realObject];
+	realObject = nil;
+}
 
 
 #pragma mark  Subclass management
@@ -92,9 +105,14 @@ static NSMutableDictionary *mockTable;
 - (void)setupForwarderForSelector:(SEL)selector
 {
 	Class subclass = [[self realObject] class];
-	Method originalMethod = class_getInstanceMethod(subclass, selector);
+	Method originalMethod = class_getInstanceMethod([subclass superclass], selector);
+	IMP originalImp = method_getImplementation(originalMethod);
+
 	IMP forwarderImp = [subclass instanceMethodForSelector:@selector(aMethodThatMustNotExist)];
 	class_addMethod(subclass, method_getName(originalMethod), forwarderImp, method_getTypeEncoding(originalMethod)); 
+
+	SEL aliasSelector = NSSelectorFromString([OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(selector)]);
+	class_addMethod(subclass, aliasSelector, originalImp, method_getTypeEncoding(originalMethod));
 }
 
 - (void)forwardInvocationForRealObject:(NSInvocation *)anInvocation

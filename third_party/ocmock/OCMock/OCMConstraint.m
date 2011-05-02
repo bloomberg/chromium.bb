@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
-//  $Id: $
-//  Copyright (c) 2007-2008 by Mulle Kybernetik. See License file for details.
+//  $Id: OCMConstraint.m 57 2010-07-19 06:14:27Z erik $
+//  Copyright (c) 2007-2010 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
 #import <OCMock/OCMConstraint.h>
@@ -40,6 +40,7 @@
 	[constraint->invocation setArgument:&aValue atIndex:3];
 	return constraint;
 }
+
 
 @end
 
@@ -90,7 +91,7 @@
 
 - (BOOL)evaluate:(id)value
 {
-	return ![value isEqualTo:testValue];
+	return ![value isEqual:testValue];
 }
 
 @end
@@ -112,3 +113,24 @@
 
 @end
 
+#pragma mark  -
+
+#if NS_BLOCKS_AVAILABLE
+
+@implementation OCMBlockConstraint
+
+- (id)initWithConstraintBlock:(BOOL (^)(id))aBlock;
+{
+	[super init];
+	block = aBlock;
+	return self;
+}
+
+- (BOOL)evaluate:(id)value 
+{
+	return block(value);
+}
+
+@end
+
+#endif

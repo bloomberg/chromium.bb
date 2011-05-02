@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -27,6 +27,8 @@
             'OCMock/OCClassMockObject.m',			
             'OCMock/OCMArg.h',				
             'OCMock/OCMArg.m',				
+            'OCMock/OCMBlockCaller.h',
+            'OCMock/OCMBlockCaller.m',
             'OCMock/OCMBoxedReturnValueProvider.h',		
             'OCMock/OCMBoxedReturnValueProvider.m',		
             'OCMock/OCMConstraint.h',				
@@ -40,6 +42,8 @@
             'OCMock/OCMObserverRecorder.h',			
             'OCMock/OCMPassByRefSetter.h',
             'OCMock/OCMPassByRefSetter.m',
+            'OCMock/OCMRealObjectForwarder.h',
+            'OCMock/OCMRealObjectForwarder.m',
             'OCMock/OCMReturnValueProvider.h',
             'OCMock/OCMReturnValueProvider.m',
             'OCMock/OCMock.h',

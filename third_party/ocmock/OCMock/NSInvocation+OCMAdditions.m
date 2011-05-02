@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: NSInvocation+OCMAdditions.m 55 2009-10-16 06:42:18Z erik $
+//  $Id: NSInvocation+OCMAdditions.m 67 2010-08-02 03:25:16Z erik $
 //  Copyright (c) 2006-2009 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -16,7 +16,7 @@
 	while(strchr("rnNoORV", argType[0]) != NULL)
 		argType += 1;
 	
-	if((strlen(argType) > 1) && (strchr("{^", argType[0]) == NULL))
+	if((strlen(argType) > 1) && (strchr("{^", argType[0]) == NULL) && (strcmp("@?", argType) != 0))
 		[NSException raise:NSInvalidArgumentException format:@"Cannot handle argument type '%s'.", argType];
 	
 	switch (argType[0]) 

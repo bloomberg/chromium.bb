@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
-//  $Id: OCMockRecorder.m 55 2009-10-16 06:42:18Z erik $
-//  Copyright (c) 2004-2009 by Mulle Kybernetik. See License file for details.
+//  $Id: OCMockRecorder.m 68 2010-08-20 13:20:52Z erik $
+//  Copyright (c) 2004-2010 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
 #import <objc/runtime.h>
@@ -13,6 +13,7 @@
 #import "OCMExceptionReturnValueProvider.h"
 #import "OCMIndirectReturnValueProvider.h"
 #import "OCMNotificationPoster.h"
+#import "OCMBlockCaller.h"
 #import "NSInvocation+OCMAdditions.h"
 
 @interface NSObject(HCMatcherDummy)
@@ -83,6 +84,24 @@
 	[invocationHandlers addObject:[[[OCMIndirectReturnValueProvider alloc] initWithProvider:anObject andSelector:selector] autorelease]];
 	return self;
 }
+
+#if NS_BLOCKS_AVAILABLE
+
+- (id)andDo:(void (^)(NSInvocation *))aBlock 
+{
+	[invocationHandlers addObject:[[[OCMBlockCaller alloc] initWithCallBlock:aBlock] autorelease]];
+	return self;
+}
+
+#endif
+
+- (id)andForwardToRealObject
+{
+	[NSException raise:NSInternalInconsistencyException format:@"Method %@ can only be used with partial mocks.",
+	 NSStringFromSelector(_cmd)];
+	return self; // keep compiler happy
+}
+
 
 - (NSArray *)invocationHandlers
 {

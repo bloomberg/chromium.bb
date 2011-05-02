@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------
-//  $Id: OCMockObject.h 52 2009-08-14 07:21:10Z erik $
+//  $Id: OCMockObject.h 69 2010-08-20 16:05:58Z erik $
 //  Copyright (c) 2004-2008 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
@@ -11,6 +11,7 @@
 	BOOL			expectationOrderMatters;
 	NSMutableArray	*recorders;
 	NSMutableArray	*expectations;
+	NSMutableArray	*rejections;
 	NSMutableArray	*exceptions;
 }
 
@@ -29,6 +30,7 @@
 
 - (id)stub;
 - (id)expect;
+- (id)reject;
 
 - (void)verify;
 

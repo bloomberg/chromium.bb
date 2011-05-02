@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
-//  $Id: OCMockRecorder.h 50 2009-07-16 06:48:19Z erik $
-//  Copyright (c) 2004-2009 by Mulle Kybernetik. See License file for details.
+//  $Id: OCMockRecorder.h 68 2010-08-20 13:20:52Z erik $
+//  Copyright (c) 2004-2010 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
 #import <Foundation/Foundation.h>
@@ -22,6 +22,10 @@
 - (id)andThrow:(NSException *)anException;
 - (id)andPost:(NSNotification *)aNotification;
 - (id)andCall:(SEL)selector onObject:(id)anObject;
+#if NS_BLOCKS_AVAILABLE
+- (id)andDo:(void (^)(NSInvocation *))block; 
+#endif
+- (id)andForwardToRealObject;
 
 - (NSArray *)invocationHandlers;
 

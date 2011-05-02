@@ -1,9 +1,10 @@
 Name: ocmock
 URL: http://www.mulle-kybernetik.com/software/OCMock/
 Version: unknown
-Revision: 55
+Revision: 77
 License: BSD with advertising clause
 License File: OCMock/License.txt
+Security Critical: no
 
 Description:
 OCMock is an Objective-C implementation of mock objects. If you are unfamiliar

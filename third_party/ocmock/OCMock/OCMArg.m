@@ -1,11 +1,12 @@
 //---------------------------------------------------------------------------------------
-//  $Id: $
-//  Copyright (c) 2009 by Mulle Kybernetik. See License file for details.
+//  $Id: OCMArg.m 77 2011-03-17 21:33:59Z erik $
+//  Copyright (c) 2009-2010 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
 #import <OCMock/OCMArg.h>
 #import <OCMock/OCMConstraint.h>
 #import "OCMPassByRefSetter.h"
+#import "OCMConstraint.h"
 
 @implementation OCMArg
 
@@ -41,9 +42,18 @@
 	return [OCMConstraint constraintWithSelector:selector onObject:anObject];
 }
 
-+ (id *)setTo:(id)value;
+#if NS_BLOCKS_AVAILABLE
+
++ (id)checkWithBlock:(BOOL (^)(id))block 
 {
-	return (id *)[[OCMPassByRefSetter alloc] initWithValue:value];
+	return [[[OCMBlockConstraint alloc] initWithConstraintBlock:block] autorelease];
+}
+
+#endif
+
++ (id *)setTo:(id)value
+{
+	return (id *)[[[OCMPassByRefSetter alloc] initWithValue:value] autorelease];
 }
 
 + (id)resolveSpecialValues:(NSValue *)value
