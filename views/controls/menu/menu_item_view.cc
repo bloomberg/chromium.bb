@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -254,12 +254,13 @@ MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
                                                     int index,
                                                     int id) {
   SkBitmap icon;
+  bool has_icon = false;
   std::wstring label;
   MenuItemView::Type type;
   ui::MenuModel::ItemType menu_type = model->GetTypeAt(index);
   switch (menu_type) {
     case ui::MenuModel::TYPE_COMMAND:
-      model->GetIconAt(index, &icon);
+      has_icon = model->GetIconAt(index, &icon);
       type = MenuItemView::NORMAL;
       label = UTF16ToWide(model->GetLabelAt(index));
       break;
@@ -284,7 +285,7 @@ MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
       break;
   }
 
-  return AppendMenuItemImpl(id, label, icon, type);
+  return AppendMenuItemImpl(id, label, has_icon ? icon : SkBitmap(), type);
 }
 
 MenuItemView* MenuItemView::AppendMenuItemImpl(int item_id,
