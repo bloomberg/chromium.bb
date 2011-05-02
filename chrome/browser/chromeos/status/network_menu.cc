@@ -28,6 +28,21 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/window/window.h"
 
+namespace {
+
+// Replace '&' in a string with "&&" to allow it to be a menu item label.
+std::string EscapeAmpersands(const std::string& input) {
+  std::string str = input;
+  size_t found = str.find('&');
+  while (found != std::string::npos) {
+    str.replace(found, 1, "&&");
+    found = str.find('&', found + 2);
+  }
+  return str;
+}
+
+}  // namespace
+
 namespace chromeos {
 
 class MoreMenuModel : public NetworkMenuModel {
@@ -354,13 +369,16 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
     bool separator_added = false;
     // List Wifi networks.
     for (size_t i = 0; i < wifi_networks.size(); ++i) {
+      // Ampersand is a valid character in an SSID, but menu2 uses it to mark
+      // "mnemonics" for keyboard shortcuts.
+      std::string wifi_name = EscapeAmpersands(wifi_networks[i]->name());
       if (wifi_networks[i]->connecting()) {
         label = l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-            ASCIIToUTF16(wifi_networks[i]->name()),
+            ASCIIToUTF16(wifi_name),
             l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
       } else {
-        label = ASCIIToUTF16(wifi_networks[i]->name());
+        label = ASCIIToUTF16(wifi_name);
       }
 
       // First add a separator if necessary.
@@ -414,23 +432,26 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
       if (!is_browser_mode && activation_state != ACTIVATION_STATE_ACTIVATED)
         continue;
 
+      // Ampersand is a valid character in a network name, but menu2 uses it
+      // to mark "mnemonics" for keyboard shortcuts.  http://crosbug.com/14697
+      std::string network_name = EscapeAmpersands(cell_networks[i]->name());
       if (activation_state == ACTIVATION_STATE_NOT_ACTIVATED ||
           activation_state == ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
         label = l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATE,
-            ASCIIToUTF16(cell_networks[i]->name()));
+            ASCIIToUTF16(network_name));
       } else if (activation_state == ACTIVATION_STATE_ACTIVATING) {
         label = l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-            ASCIIToUTF16(cell_networks[i]->name()),
+            ASCIIToUTF16(network_name),
             l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATING));
       } else if (cell_networks[i]->connecting()) {
         label = l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-            ASCIIToUTF16(cell_networks[i]->name()),
+            ASCIIToUTF16(network_name),
             l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
       } else {
-        label = ASCIIToUTF16(cell_networks[i]->name());
+        label = ASCIIToUTF16(network_name);
       }
 
       // First add a separator if necessary.
