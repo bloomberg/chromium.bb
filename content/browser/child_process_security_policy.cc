@@ -157,12 +157,14 @@ ChildProcessSecurityPolicy* ChildProcessSecurityPolicy::GetInstance() {
 
 void ChildProcessSecurityPolicy::Add(int child_id) {
   base::AutoLock lock(lock_);
-  if (security_state_.count(child_id) != 0) {
-    NOTREACHED() << "Add child process at most once.";
-    return;
-  }
+  AddChild(child_id);
+}
 
-  security_state_[child_id] = new SecurityState();
+void ChildProcessSecurityPolicy::AddWorker(int child_id,
+                                           int main_render_process_id) {
+  base::AutoLock lock(lock_);
+  AddChild(child_id);
+  worker_map_[child_id] = main_render_process_id;
 }
 
 void ChildProcessSecurityPolicy::Remove(int child_id) {
@@ -172,6 +174,7 @@ void ChildProcessSecurityPolicy::Remove(int child_id) {
 
   delete security_state_[child_id];
   security_state_.erase(child_id);
+  worker_map_.erase(child_id);
 }
 
 void ChildProcessSecurityPolicy::RegisterWebSafeScheme(
@@ -405,12 +408,18 @@ bool ChildProcessSecurityPolicy::CanReadDirectory(int child_id,
 bool ChildProcessSecurityPolicy::HasPermissionsForFile(
     int child_id, const FilePath& file, int permissions) {
   base::AutoLock lock(lock_);
-
-  SecurityStateMap::iterator state = security_state_.find(child_id);
-  if (state == security_state_.end())
-    return false;
-
-  return state->second->HasPermissionsForFile(file, permissions);
+  bool result = ChildProcessHasPermissionsForFile(child_id, file, permissions);
+  if (!result) {
+    // If this is a worker thread that has no access to a given file,
+    // let's check that its renderer process has access to that file instead.
+    WorkerToMainProcessMap::iterator iter = worker_map_.find(child_id);
+    if (iter != worker_map_.end() && iter->second != 0) {
+      result = ChildProcessHasPermissionsForFile(iter->second,
+                                                 file,
+                                                 permissions);
+    }
+  }
+  return result;
 }
 
 bool ChildProcessSecurityPolicy::HasWebUIBindings(int child_id) {
@@ -441,4 +450,21 @@ bool ChildProcessSecurityPolicy::CanReadRawCookies(int child_id) {
     return false;
 
   return state->second->can_read_raw_cookies();
+}
+
+void ChildProcessSecurityPolicy::AddChild(int child_id) {
+  if (security_state_.count(child_id) != 0) {
+    NOTREACHED() << "Add child process at most once.";
+    return;
+  }
+
+  security_state_[child_id] = new SecurityState();
+}
+
+bool ChildProcessSecurityPolicy::ChildProcessHasPermissionsForFile(
+    int child_id, const FilePath& file, int permissions) {
+  SecurityStateMap::iterator state = security_state_.find(child_id);
+  if (state == security_state_.end())
+    return false;
+  return state->second->HasPermissionsForFile(file, permissions);
 }

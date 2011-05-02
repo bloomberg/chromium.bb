@@ -66,6 +66,12 @@ class ChildProcessSecurityPolicy {
   // this method exactly once.
   void Add(int child_id);
 
+  // Upon creation, worker thread child processes should register themselves by
+  // calling this this method exactly once. Workers that are not shared will
+  // inherit permissions from their parent renderer process identified with
+  // |main_render_process_id|.
+  void AddWorker(int worker_child_id, int main_render_process_id);
+
   // Upon destruction, child processess should unregister themselves by caling
   // this method exactly once.
   void Remove(int child_id);
@@ -151,12 +157,22 @@ class ChildProcessSecurityPolicy {
 
   typedef std::set<std::string> SchemeSet;
   typedef std::map<int, SecurityState*> SecurityStateMap;
+  typedef std::map<int, int> WorkerToMainProcessMap;
 
   // Obtain an instance of ChildProcessSecurityPolicy via GetInstance().
   ChildProcessSecurityPolicy();
   friend struct DefaultSingletonTraits<ChildProcessSecurityPolicy>;
 
-  // You must acquire this lock before reading or writing any members of this
+  // Adds child process during registration.
+  void AddChild(int child_id);
+
+  // Determines if certain permissions were granted for a file to given child
+  // process. |permissions| must be a bit-set of base::PlatformFileFlags.
+  bool ChildProcessHasPermissionsForFile(int child_id,
+                                         const FilePath& file,
+                                         int permissions);
+
+    // You must acquire this lock before reading or writing any members of this
   // class.  You must not block while holding this lock.
   base::Lock lock_;
 
@@ -179,6 +195,10 @@ class ChildProcessSecurityPolicy {
   // owned by this object and are protected by |lock_|.  References to them must
   // not escape this class.
   SecurityStateMap security_state_;
+
+  // This maps keeps the record of which js worker thread child process
+  // corresponds to which main js thread child process.
+  WorkerToMainProcessMap worker_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessSecurityPolicy);
 };

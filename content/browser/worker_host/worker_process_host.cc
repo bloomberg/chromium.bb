@@ -177,7 +177,8 @@ bool WorkerProcessHost::Init(int render_process_id) {
 #endif
       cmd_line);
 
-  ChildProcessSecurityPolicy::GetInstance()->Add(id());
+  ChildProcessSecurityPolicy::GetInstance()->AddWorker(
+      id(), render_process_id);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableFileSystem)) {
       // Grant most file permissions to this worker.

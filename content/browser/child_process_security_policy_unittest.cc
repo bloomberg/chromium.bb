@@ -27,6 +27,7 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
 };
 
 static int kRendererID = 42;
+static int kWorkerRendererID = kRendererID + 1;
 
 TEST_F(ChildProcessSecurityPolicyTest, IsWebSafeSchemeTest) {
   ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
@@ -349,6 +350,28 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
   EXPECT_FALSE(p->HasPermissionsForFile(kRendererID, file,
                                         base::PLATFORM_FILE_TEMPORARY));
   p->Remove(kRendererID);
+
+  // Grant file permissions for the file to main thread renderer process,
+  // make sure its worker thread renderer process inherits those.
+  p->Add(kRendererID);
+  p->GrantPermissionsForFile(kRendererID, file, base::PLATFORM_FILE_OPEN |
+                                                base::PLATFORM_FILE_READ);
+  EXPECT_TRUE(p->HasPermissionsForFile(kRendererID, file,
+                                       base::PLATFORM_FILE_OPEN |
+                                       base::PLATFORM_FILE_READ));
+  EXPECT_FALSE(p->HasPermissionsForFile(kRendererID, file,
+                                       base::PLATFORM_FILE_WRITE));
+  p->AddWorker(kWorkerRendererID, kRendererID);
+  EXPECT_TRUE(p->HasPermissionsForFile(kWorkerRendererID, file,
+                                       base::PLATFORM_FILE_OPEN |
+                                       base::PLATFORM_FILE_READ));
+  EXPECT_FALSE(p->HasPermissionsForFile(kWorkerRendererID, file,
+                                        base::PLATFORM_FILE_WRITE));
+  p->Remove(kRendererID);
+  EXPECT_FALSE(p->HasPermissionsForFile(kWorkerRendererID, file,
+                                        base::PLATFORM_FILE_OPEN |
+                                        base::PLATFORM_FILE_READ));
+  p->Remove(kWorkerRendererID);
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
