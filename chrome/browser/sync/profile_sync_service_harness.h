@@ -172,6 +172,9 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
     // full sync cycle is not expected to occur.
     WAITING_FOR_SYNC_CONFIGURATION,
 
+    // The sync client needs a passphrase in order to decrypt data.
+    SET_PASSPHRASE_FAILED,
+
     // The sync client cannot reach the server.
     SERVER_UNREACHABLE,
 
@@ -212,16 +215,21 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // for a particular datatype.
   std::string GetUpdatedTimestamp(syncable::ModelType model_type);
 
-  // Gets the status from |service_| in pretty printable form.
+  // Gets detailed status from |service_| in pretty-printable form.
   std::string GetServiceStatus();
 
   // When in WAITING_FOR_ENCRYPTION state, we check to see if this type is now
   // encrypted to determine if we're done.
   syncable::ModelType waiting_for_encryption_type_;
 
+  // The WaitState in which the sync client currently is. Helps determine what
+  // action to take when RunStateChangeMachine() is called.
   WaitState wait_state_;
 
+  // Sync profile associated with this sync client.
   Profile* profile_;
+
+  // ProfileSyncService object associated with |profile_|.
   ProfileSyncService* service_;
 
   // The harness of the client whose update progress marker we're expecting

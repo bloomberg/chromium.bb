@@ -75,9 +75,9 @@ cr.define('chrome.sync', function() {
                 });
     });
 
-    chrome.sync.onPassphraseRequired.addListener(function (forDecryption) {
+    chrome.sync.onPassphraseRequired.addListener(function (reason) {
       self.log_('manager', 'onPassphraseRequired', {
-                  forDecryption: forDecryption
+                  reason: reason
                 });
     });
 

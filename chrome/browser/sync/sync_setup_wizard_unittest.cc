@@ -11,6 +11,7 @@
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
@@ -78,8 +79,8 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     last_auth_error_ = error;
   }
 
-  void set_passphrase_required(bool required) {
-    observed_passphrase_required_ = required;
+  void SetPassphraseRequiredReason(sync_api::PassphraseRequiredReason reason) {
+    passphrase_required_reason_ = reason;
   }
 
   void ResetTestStats() {
@@ -337,7 +338,7 @@ TEST_F(SyncSetupWizardTest, DISABLED_EnterPassphraseRequired) {
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   wizard_->Step(SyncSetupWizard::CONFIGURE);
   wizard_->Step(SyncSetupWizard::SETTING_UP);
-  service_->set_passphrase_required(true);
+  service_->SetPassphraseRequiredReason(sync_api::REASON_ENCRYPTION);
   wizard_->Step(SyncSetupWizard::ENTER_PASSPHRASE);
   EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE,
             test_window_->flow()->current_state_);

@@ -180,8 +180,8 @@ function onUpdatedToken(token) {
   chrome.sync.onUpdatedToken.dispatch_(token);
 }
 
-function onPassphraseRequired(forDecryption) {
-  chrome.sync.onPassphraseRequired.dispatch_(forDecryption);
+function onPassphraseRequired(reason) {
+  chrome.sync.onPassphraseRequired.dispatch_(reason);
 }
 
 function onPassphraseAccepted(bootstrapToken) {

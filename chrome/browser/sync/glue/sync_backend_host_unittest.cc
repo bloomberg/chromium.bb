@@ -36,7 +36,7 @@ class MockSyncFrontend : public SyncFrontend {
   MOCK_METHOD0(OnStopSyncingPermanently, void());
   MOCK_METHOD0(OnClearServerDataSucceeded, void());
   MOCK_METHOD0(OnClearServerDataFailed, void());
-  MOCK_METHOD1(OnPassphraseRequired, void(bool));
+  MOCK_METHOD1(OnPassphraseRequired, void(sync_api::PassphraseRequiredReason));
   MOCK_METHOD0(OnPassphraseAccepted, void());
   MOCK_METHOD1(OnEncryptionComplete, void(const syncable::ModelTypeSet&));
   MOCK_METHOD1(OnMigrationNeededForTypes, void(const syncable::ModelTypeSet&));

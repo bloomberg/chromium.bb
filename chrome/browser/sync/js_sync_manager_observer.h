@@ -34,8 +34,7 @@ class JsSyncManagerObserver : public sync_api::SyncManager::Observer {
       const sessions::SyncSessionSnapshot* snapshot);
   virtual void OnAuthError(const GoogleServiceAuthError& auth_error);
   virtual void OnUpdatedToken(const std::string& token);
-  virtual void OnPassphraseRequired(bool for_decryption);
-  virtual void OnPassphraseFailed();
+  virtual void OnPassphraseRequired(sync_api::PassphraseRequiredReason reason);
   virtual void OnPassphraseAccepted(const std::string& bootstrap_token);
   virtual void OnEncryptionComplete(
       const syncable::ModelTypeSet& encrypted_types);

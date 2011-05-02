@@ -171,6 +171,24 @@ static void ServerNameToSyncAPIName(const std::string& server_name,
   }
 }
 
+// Helper function that converts a PassphraseRequiredReason value to a string.
+std::string PassphraseRequiredReasonToString(
+    PassphraseRequiredReason reason) {
+  switch (reason) {
+    case REASON_PASSPHRASE_NOT_REQUIRED:
+      return "REASON_PASSPHRASE_NOT_REQUIRED";
+    case REASON_ENCRYPTION:
+      return "REASON_ENCRYPTION";
+    case REASON_DECRYPTION:
+      return "REASON_DECRYPTION";
+    case REASON_SET_PASSPHRASE_FAILED:
+      return "REASON_SET_PASSPHRASE_FAILED";
+    default:
+      NOTREACHED();
+      return "INVALID_REASON";
+  }
+}
+
 UserShare::UserShare() {}
 
 UserShare::~UserShare() {}
@@ -1790,7 +1808,7 @@ void SyncManager::SyncInternal::BootstrapEncryption(
       } else {
         cryptographer->SetPendingKeys(nigori.encrypted());
         FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                          OnPassphraseRequired(true));
+                          OnPassphraseRequired(sync_api::REASON_DECRYPTION));
       }
     }
   }
@@ -1952,7 +1970,7 @@ void SyncManager::SyncInternal::SetPassphrase(
     if (!cryptographer->DecryptPendingKeys(params)) {
       VLOG(1) << "Passphrase failed to decrypt pending keys.";
       FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                        OnPassphraseFailed());
+          OnPassphraseRequired(sync_api::REASON_SET_PASSPHRASE_FAILED));
       return;
     }
 
@@ -2494,10 +2512,10 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
         // yet, prompt the user for a passphrase.
         if (cryptographer->has_pending_keys()) {
           FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                            OnPassphraseRequired(true));
+                            OnPassphraseRequired(sync_api::REASON_DECRYPTION));
         } else if (!cryptographer->is_ready()) {
           FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                            OnPassphraseRequired(false));
+                            OnPassphraseRequired(sync_api::REASON_ENCRYPTION));
         } else {
           FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                             OnEncryptionComplete(encrypted_types));

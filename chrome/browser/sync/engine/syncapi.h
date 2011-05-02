@@ -107,6 +107,25 @@ class HttpPostProviderFactory;
 class SyncManager;
 class WriteTransaction;
 
+// Reasons due to which browser_sync::Cryptographer might require a passphrase.
+enum PassphraseRequiredReason {
+  REASON_PASSPHRASE_NOT_REQUIRED = 0,  // Initial value.
+  REASON_ENCRYPTION = 1,               // The cryptographer requires a
+                                       // passphrase for its first attempt at
+                                       // encryption. Happens only during
+                                       // migration or upgrade.
+  REASON_DECRYPTION = 2,               // The cryptographer requires a
+                                       // passphrase for its first attempt at
+                                       // decryption.
+  REASON_SET_PASSPHRASE_FAILED = 3,    // The cryptographer requires a new
+                                       // passphrase because its attempt at
+                                       // decryption with the cached passphrase
+                                       // was unsuccessful.
+};
+
+// Returns the string representation of a PassphraseRequiredReason value.
+std::string PassphraseRequiredReasonToString(PassphraseRequiredReason reason);
+
 // A UserShare encapsulates the syncable pieces that represent an authenticated
 // user and their data (share).
 // This encompasses all pieces required to build transaction objects on the
@@ -779,18 +798,13 @@ class SyncManager {
     virtual void OnUpdatedToken(const std::string& token) = 0;
 
     // Called when user interaction is required to obtain a valid passphrase.
-    // If the passphrase is required to decrypt something that has
-    // already been encrypted (and thus has to match the existing key),
-    // |for_decryption| will be true.  If the passphrase is needed for
-    // encryption, |for_decryption| will be false.
-    virtual void OnPassphraseRequired(bool for_decryption) = 0;
-
-    // Called only by SyncInternal::SetPassphrase to indiciate that an attempted
-    // passphrase failed to decrypt pending keys. This is different from
-    // OnPassphraseRequired in that it denotes we finished an attempt to set
-    // a passphrase. OnPassphraseRequired means we have data we could not
-    // decrypt yet, and can come from numerous places.
-    virtual void OnPassphraseFailed() = 0;
+    // - If the passphrase is required for encryption, |reason| will be
+    //   REASON_ENCRYPTION.
+    // - If the passphrase is required for the decryption of data that has
+    //   already been encrypted, |reason| will be REASON_DECRYPTION.
+    // - If the passphrase is required because decryption failed, and a new
+    //   passphrase is required, |reason| will be REASON_SET_PASSPHRASE_FAILED.
+    virtual void OnPassphraseRequired(PassphraseRequiredReason reason) = 0;
 
     // Called when the passphrase provided by the user has been accepted and is
     // now used to encrypt sync data.  |bootstrap_token| is an opaque base64

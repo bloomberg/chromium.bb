@@ -600,8 +600,8 @@ class SyncManagerObserverMock : public SyncManager::Observer {
                void(const SyncSessionSnapshot*));  // NOLINT
   MOCK_METHOD0(OnInitializationComplete, void());  // NOLINT
   MOCK_METHOD1(OnAuthError, void(const GoogleServiceAuthError&));  // NOLINT
-  MOCK_METHOD1(OnPassphraseRequired, void(bool));  // NOLINT
-  MOCK_METHOD0(OnPassphraseFailed, void());  // NOLINT
+  MOCK_METHOD1(OnPassphraseRequired,
+               void(sync_api::PassphraseRequiredReason));  // NOLINT
   MOCK_METHOD1(OnPassphraseAccepted, void(const std::string&));  // NOLINT
   MOCK_METHOD0(OnStopSyncingPermanently, void());  // NOLINT
   MOCK_METHOD1(OnUpdatedToken, void(const std::string&));  // NOLINT

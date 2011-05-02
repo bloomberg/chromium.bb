@@ -37,10 +37,6 @@ TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
               RouteJsEvent("onInitializationComplete",
                            HasArgs(JsArgList()), NULL));
   EXPECT_CALL(mock_router_,
-              RouteJsEvent("onPassphraseFailed",
-                           HasArgs(JsArgList()), NULL));
-
-  EXPECT_CALL(mock_router_,
               RouteJsEvent("onStopSyncingPermanently",
                            HasArgs(JsArgList()), NULL));
   EXPECT_CALL(mock_router_,
@@ -51,7 +47,6 @@ TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
                            HasArgs(JsArgList()), NULL));
 
   sync_manager_observer_.OnInitializationComplete();
-  sync_manager_observer_.OnPassphraseFailed();
   sync_manager_observer_.OnStopSyncingPermanently();
   sync_manager_observer_.OnClearServerDataSucceeded();
   sync_manager_observer_.OnClearServerDataFailed();
@@ -116,19 +111,43 @@ TEST_F(JsSyncManagerObserverTest, OnAuthError) {
 TEST_F(JsSyncManagerObserverTest, OnPassphraseRequired) {
   InSequence dummy;
 
-  ListValue true_args, false_args;
-  true_args.Append(Value::CreateBooleanValue(true));
-  false_args.Append(Value::CreateBooleanValue(false));
+  ListValue reason_passphrase_not_required_args;
+  ListValue reason_encryption_args;
+  ListValue reason_decryption_args;
+  ListValue reason_set_passphrase_failed_args;
+
+  reason_passphrase_not_required_args.Append(Value::CreateStringValue(
+      sync_api::PassphraseRequiredReasonToString(
+          sync_api::REASON_PASSPHRASE_NOT_REQUIRED)));
+  reason_encryption_args.Append(Value::CreateStringValue(
+      sync_api::PassphraseRequiredReasonToString(sync_api::REASON_ENCRYPTION)));
+  reason_decryption_args.Append(Value::CreateStringValue(
+      sync_api::PassphraseRequiredReasonToString(sync_api::REASON_DECRYPTION)));
+  reason_set_passphrase_failed_args.Append(Value::CreateStringValue(
+      sync_api::PassphraseRequiredReasonToString(
+          sync_api::REASON_SET_PASSPHRASE_FAILED)));
 
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onPassphraseRequired",
-                           HasArgsAsList(false_args), NULL));
+                           HasArgsAsList(reason_passphrase_not_required_args),
+                           NULL));
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onPassphraseRequired",
-                           HasArgsAsList(true_args), NULL));
+                           HasArgsAsList(reason_encryption_args), NULL));
+  EXPECT_CALL(mock_router_,
+              RouteJsEvent("onPassphraseRequired",
+                           HasArgsAsList(reason_decryption_args), NULL));
+  EXPECT_CALL(mock_router_,
+              RouteJsEvent("onPassphraseRequired",
+                           HasArgsAsList(reason_set_passphrase_failed_args),
+                           NULL));
 
-  sync_manager_observer_.OnPassphraseRequired(false);
-  sync_manager_observer_.OnPassphraseRequired(true);
+  sync_manager_observer_.OnPassphraseRequired(
+      sync_api::REASON_PASSPHRASE_NOT_REQUIRED);
+  sync_manager_observer_.OnPassphraseRequired(sync_api::REASON_ENCRYPTION);
+  sync_manager_observer_.OnPassphraseRequired(sync_api::REASON_DECRYPTION);
+  sync_manager_observer_.OnPassphraseRequired(
+      sync_api::REASON_SET_PASSPHRASE_FAILED);
 }
 
 TEST_F(JsSyncManagerObserverTest, SensitiveNotifiations) {

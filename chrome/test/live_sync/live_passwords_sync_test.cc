@@ -15,7 +15,7 @@
 
 using webkit_glue::PasswordForm;
 
-const std::string kFakeSignonRealm = "http://fake-domain.google.com/";
+const std::string kFakeSignonRealm = "http://fake-signon-realm.google.com/";
 
 // We use a WaitableEvent to wait on AddLogin instead of running the UI message
 // loop because of a restriction that prevents a DB thread from initiating a

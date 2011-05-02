@@ -195,7 +195,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnClearServerDataFailed();
   virtual void OnClearServerDataTimeout();
   virtual void OnClearServerDataSucceeded();
-  virtual void OnPassphraseRequired(bool for_decryption);
+  virtual void OnPassphraseRequired(sync_api::PassphraseRequiredReason reason);
   virtual void OnPassphraseAccepted();
   virtual void OnEncryptionComplete(
       const syncable::ModelTypeSet& encrypted_types);
@@ -282,12 +282,14 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return is_auth_in_progress_;
   }
 
-  bool observed_passphrase_required() const {
-    return observed_passphrase_required_;
+  // Returns true if OnPassphraseRequired has been called for any reason.
+  bool ObservedPassphraseRequired() const {
+    return passphrase_required_reason_ !=
+        sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
   }
 
-  bool passphrase_required_for_decryption() const {
-    return passphrase_required_for_decryption_;
+  sync_api::PassphraseRequiredReason passphrase_required_reason() const {
+    return passphrase_required_reason_;
   }
 
   // Returns a user-friendly string form of last synced time (in minutes).
@@ -509,13 +511,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Cache of the last name the client attempted to authenticate.
   std::string last_attempted_user_email_;
 
-  // Whether we have seen a SYNC_PASSPHRASE_REQUIRED since initializing the
-  // backend, telling us that it is safe to send a passphrase down ASAP.
-  bool observed_passphrase_required_;
-
   // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
-  // was required for decryption?
-  bool passphrase_required_for_decryption_;
+  // was required for encryption, decryption with a cached passphrase, or
+  // because a new passphrase is required?
+  sync_api::PassphraseRequiredReason passphrase_required_reason_;
 
   // Is the user in a passphrase migration?
   bool passphrase_migration_in_progress_;

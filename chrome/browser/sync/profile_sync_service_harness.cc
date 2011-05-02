@@ -134,11 +134,12 @@ bool ProfileSyncServiceHarness::SetupSync() {
     synced_datatypes.insert(syncable::ModelTypeFromInt(i));
   }
   bool result = SetupSync(synced_datatypes);
-  VLOG(0) << "Client " << id_ << ": Set up sync completed with result "
-          << result;
   if (result == false) {
-    std::string pss_status = GetServiceStatus();
-    VLOG(0) << pss_status;
+    std::string status = GetServiceStatus();
+    LOG(ERROR) << "Client " << id_ << ": SetupSync failed. Syncer status:\n"
+               << status;
+  } else {
+    VLOG(1) << "Client " << id_ << ": SetupSync successful.";
   }
   return result;
 }
@@ -183,6 +184,12 @@ bool ProfileSyncServiceHarness::SetupSync(
     return false;
   }
 
+  if (wait_state_ == SET_PASSPHRASE_FAILED) {
+    // A passphrase is required for decryption. Sync cannot proceed until
+    // SetPassphrase is called.
+    return false;
+  }
+
   // Indicate to the browser that sync setup is complete.
   service()->SetSyncSetupCompleted();
 
@@ -215,21 +222,37 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
       if (IsSynced()) {
         // The first sync cycle is now complete. We can start running tests.
         SignalStateCompleteWithNextState(FULLY_SYNCED);
+        break;
+      }
+      if (service()->passphrase_required_reason() ==
+              sync_api::REASON_SET_PASSPHRASE_FAILED) {
+        // A passphrase is required for decryption and we don't have it. Do not
+        // wait any more.
+        SignalStateCompleteWithNextState(SET_PASSPHRASE_FAILED);
+        break;
       }
       break;
     }
     case WAITING_FOR_SYNC_TO_FINISH: {
       LogClientInfo("WAITING_FOR_SYNC_TO_FINISH");
-      if (!IsSynced()) {
-        // The client is not yet fully synced. Continue waiting.
-        if (!GetStatus().server_reachable) {
-          // The client cannot reach the sync server because the network is
-          // disabled. There is no need to wait anymore.
-          SignalStateCompleteWithNextState(SERVER_UNREACHABLE);
-        }
+      if (IsSynced()) {
+        // The sync cycle we were waiting for is complete.
+        SignalStateCompleteWithNextState(FULLY_SYNCED);
         break;
       }
-      SignalStateCompleteWithNextState(FULLY_SYNCED);
+      if (service()->passphrase_required_reason() ==
+              sync_api::REASON_SET_PASSPHRASE_FAILED) {
+        // A passphrase is required for decryption and we don't have it. Do not
+        // wait any more.
+        SignalStateCompleteWithNextState(SET_PASSPHRASE_FAILED);
+        break;
+      }
+      if (!GetStatus().server_reachable) {
+        // The client cannot reach the sync server because the network is
+        // disabled. There is no need to wait anymore.
+        SignalStateCompleteWithNextState(SERVER_UNREACHABLE);
+        break;
+      }
       break;
     }
     case WAITING_FOR_UPDATES: {
@@ -248,7 +271,7 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     case WAITING_FOR_PASSPHRASE_ACCEPTED: {
       LogClientInfo("WAITING_FOR_PASSPHRASE_ACCEPTED");
       if (service()->ShouldPushChanges() &&
-          !service()->observed_passphrase_required()) {
+          !service()->ObservedPassphraseRequired()) {
         // The passphrase has been accepted, and sync has been restarted.
         SignalStateCompleteWithNextState(FULLY_SYNCED);
       }
@@ -277,6 +300,12 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
         // back online. Wait for the pending sync cycle to complete.
         SignalStateCompleteWithNextState(WAITING_FOR_SYNC_TO_FINISH);
       }
+      break;
+    }
+    case SET_PASSPHRASE_FAILED: {
+      // A passphrase is required for decryption. There is nothing the sync
+      // client can do until SetPassphrase() is called.
+      LogClientInfo("SET_PASSPHRASE_FAILED");
       break;
     }
     case FULLY_SYNCED: {
@@ -308,10 +337,8 @@ bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
     return false;
   }
 
-  // TODO(atwilson): After ProfileSyncService::OnPassphraseAccepted() is
-  // fixed, add an extra check to make sure that the value of
-  // service()->observed_passphrase_required() is false.
-  if (service()->ShouldPushChanges()) {
+  if (service()->ShouldPushChanges() &&
+      !service()->ObservedPassphraseRequired()) {
     // Passphrase is already accepted; don't wait.
     return true;
   }
@@ -620,8 +647,7 @@ std::string ProfileSyncServiceHarness::GetUpdatedTimestamp(
 }
 
 void ProfileSyncServiceHarness::LogClientInfo(const std::string& message) {
-  // TODO(lipalani): Change VLOG(0) to VLOG(1)
-  // http://crbug.com/80706
+  // TODO(lipalani): Change VLOG(0) to VLOG(1) -- See http://crbug.com/80706.
   if (service()) {
     const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
     if (snap) {
@@ -634,7 +660,7 @@ void ProfileSyncServiceHarness::LogClientInfo(const std::string& message) {
               << ", has_unsynced_items: "
               << service()->HasUnsyncedItems()
               << ", observed_passphrase_required: "
-              << service()->observed_passphrase_required()
+              << service()->ObservedPassphraseRequired()
               << ", notifications_enabled: "
               << GetStatus().notifications_enabled
               << ", service_is_pushing_changes: " << ServiceIsPushingChanges()

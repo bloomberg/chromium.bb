@@ -71,15 +71,14 @@ void JsSyncManagerObserver::OnUpdatedToken(const std::string& token) {
                                JsArgList(return_args), NULL);
 }
 
-void JsSyncManagerObserver::OnPassphraseRequired(bool for_decryption) {
+void JsSyncManagerObserver::OnPassphraseRequired(
+    sync_api::PassphraseRequiredReason reason) {
   ListValue return_args;
-  return_args.Append(Value::CreateBooleanValue(for_decryption));
+
+  return_args.Append(Value::CreateStringValue(
+      sync_api::PassphraseRequiredReasonToString(reason)));
   parent_router_->RouteJsEvent("onPassphraseRequired",
                                JsArgList(return_args), NULL);
-}
-
-void JsSyncManagerObserver::OnPassphraseFailed() {
-  parent_router_->RouteJsEvent("onPassphraseFailed", JsArgList(), NULL);
 }
 
 void JsSyncManagerObserver::OnPassphraseAccepted(

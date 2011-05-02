@@ -103,7 +103,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
 
     // Either show auth error information with a link to re-login, auth in prog,
     // or note that everything is OK with the last synced time.
-    if (status.authenticated && !service->observed_passphrase_required()) {
+    if (status.authenticated && !service->ObservedPassphraseRequired()) {
       // Everything is peachy.
       if (status_label) {
         status_label->assign(GetSyncedStateStatusLabel(service));
@@ -115,8 +115,11 @@ MessageType GetStatusInfo(ProfileSyncService* service,
           l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
       }
       result_type = PRE_SYNCED;
-    } else if (service->observed_passphrase_required()) {
-      if (service->passphrase_required_for_decryption()) {
+    } else if (service->ObservedPassphraseRequired()) {
+      if (service->passphrase_required_reason() ==
+              sync_api::REASON_DECRYPTION ||
+          service->passphrase_required_reason() ==
+              sync_api::REASON_SET_PASSPHRASE_FAILED) {
         // NOT first machine.
         // Show a link ("needs attention"), but still indicate the
         // current synced status.  Return SYNC_PROMO so that
@@ -187,8 +190,8 @@ MessageType GetStatusInfoForNewTabPage(ProfileSyncService* service,
   DCHECK(link_label);
 
   if (service->HasSyncSetupCompleted() &&
-      service->observed_passphrase_required()) {
-    if (!service->passphrase_required_for_decryption()) {
+      service->ObservedPassphraseRequired()) {
+    if (service->passphrase_required_reason() == sync_api::REASON_ENCRYPTION) {
       // First machine migrating to passwords.  Show as a promotion.
       if (status_label && link_label) {
         status_label->assign(

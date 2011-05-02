@@ -528,30 +528,24 @@ bool SyncBackendHost::RequestClearServerData() {
 SyncBackendHost::Core::~Core() {
 }
 
-void SyncBackendHost::Core::NotifyPassphraseRequired(bool for_decryption) {
+void SyncBackendHost::Core::NotifyPassphraseRequired(
+    sync_api::PassphraseRequiredReason reason) {
   if (!host_ || !host_->frontend_)
     return;
 
   DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
+
+  // When setting a passphrase fails, unset our waiting flag.
+  if (reason == sync_api::REASON_SET_PASSPHRASE_FAILED)
+    processing_passphrase_ = false;
 
   if (processing_passphrase_) {
     VLOG(1) << "Core received OnPassphraseRequired while processing a "
             << "passphrase. Silently dropping.";
     return;
   }
-  host_->frontend_->OnPassphraseRequired(for_decryption);
-}
 
-void SyncBackendHost::Core::NotifyPassphraseFailed() {
-  if (!host_ || !host_->frontend_)
-    return;
-
-  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
-
-  // When a passphrase fails, we just unset our waiting flag and trigger a
-  // OnPassphraseRequired(true).
-  processing_passphrase_ = false;
-  host_->frontend_->OnPassphraseRequired(true);
+  host_->frontend_->OnPassphraseRequired(reason);
 }
 
 void SyncBackendHost::Core::NotifyPassphraseAccepted(
@@ -972,14 +966,10 @@ void SyncBackendHost::Core::OnAuthError(const AuthError& auth_error) {
       auth_error));
 }
 
-void SyncBackendHost::Core::OnPassphraseRequired(bool for_decryption) {
+void SyncBackendHost::Core::OnPassphraseRequired(
+    sync_api::PassphraseRequiredReason reason) {
   host_->frontend_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &Core::NotifyPassphraseRequired, for_decryption));
-}
-
-void SyncBackendHost::Core::OnPassphraseFailed() {
-  host_->frontend_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &Core::NotifyPassphraseFailed));
+      NewRunnableMethod(this, &Core::NotifyPassphraseRequired, reason));
 }
 
 void SyncBackendHost::Core::OnPassphraseAccepted(

@@ -227,7 +227,7 @@ void TestProfileSyncService::OnBackendInitialized() {
 
   ProfileSyncService::OnBackendInitialized();
   if (send_passphrase_required)
-    OnPassphraseRequired(true);
+    OnPassphraseRequired(sync_api::REASON_DECRYPTION);
 
   // TODO(akalin): Figure out a better way to do this.
   if (synchronous_backend_initialization_) {

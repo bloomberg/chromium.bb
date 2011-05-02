@@ -79,13 +79,12 @@ class SyncFrontend {
   virtual void OnClearServerDataSucceeded() = 0;
   virtual void OnClearServerDataFailed() = 0;
 
-  // The syncer requires a passphrase to decrypt sensitive
-  // updates. This is called when the first sensitive data type is
-  // setup by the user as well as anytime any the passphrase is
-  // changed in another synced client.  if
-  // |passphrase_required_for_decryption| is false, the passphrase is
-  // required only for encryption.
-  virtual void OnPassphraseRequired(bool for_decryption) = 0;
+  // The syncer requires a passphrase to decrypt sensitive updates. This is
+  // called when the first sensitive data type is setup by the user and anytime
+  // the passphrase is changed by another synced client. |reason| denotes why
+  // the passphrase was required.
+  virtual void OnPassphraseRequired(
+      sync_api::PassphraseRequiredReason reason) = 0;
 
   // Called when the passphrase provided by the user is
   // accepted. After this is called, updates to sensitive nodes are
@@ -277,8 +276,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         const sessions::SyncSessionSnapshot* snapshot);
     virtual void OnInitializationComplete();
     virtual void OnAuthError(const GoogleServiceAuthError& auth_error);
-    virtual void OnPassphraseRequired(bool for_decryption);
-    virtual void OnPassphraseFailed();
+    virtual void OnPassphraseRequired(
+        sync_api::PassphraseRequiredReason reason);
     virtual void OnPassphraseAccepted(const std::string& bootstrap_token);
     virtual void OnStopSyncingPermanently();
     virtual void OnUpdatedToken(const std::string& token);
@@ -356,7 +355,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void DoSetPassphrase(const std::string& passphrase, bool is_explicit);
 
     // Getter/setter for whether we are waiting on SetPassphrase to process a
-    // passphrase. Set by SetPassphrase, cleared by OnPassphraseFailed or
+    // passphrase. Set by SetPassphrase, cleared by OnPassphraseRequired or
     // OnPassphraseAccepted.
     bool processing_passphrase() const;
     void set_processing_passphrase();
@@ -450,14 +449,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         const GoogleServiceAuthError& new_auth_error);
 
     // Invoked when a passphrase is required to decrypt a set of Nigori keys,
-    // or for encrypting.  If the reason is decryption, |for_decryption| will
-    // be true.
-    void NotifyPassphraseRequired(bool for_decryption);
-
-    // Invoked when the syncer attempts to set a passphrase but fails to decrypt
-    // the cryptographer's pending keys. This tells the profile sync service
-    // that a new passphrase is required.
-    void NotifyPassphraseFailed();
+    // or for encrypting. |reason| denotes why the passhrase was required.
+    void NotifyPassphraseRequired(sync_api::PassphraseRequiredReason reason);
 
     // Invoked when the passphrase provided by the user has been accepted.
     void NotifyPassphraseAccepted(const std::string& bootstrap_token);
