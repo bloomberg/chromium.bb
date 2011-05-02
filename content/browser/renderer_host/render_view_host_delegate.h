@@ -23,8 +23,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "webkit/glue/window_open_disposition.h"
 
-
-class AutomationResourceRoutingDelegate;
 class BackgroundContents;
 struct BookmarkNodeData;
 class BookmarkNode;
@@ -376,11 +374,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
 
   virtual BookmarkDrag* GetBookmarkDragDelegate();
   virtual SSL* GetSSLDelegate();
-
-  // Return the delegate for registering RenderViewHosts for automation resource
-  // routing.
-  virtual AutomationResourceRoutingDelegate*
-      GetAutomationResourceRoutingDelegate();
 
   // IPC::Channel::Listener implementation.
   // This is used to give the delegate a chance to filter IPC messages.

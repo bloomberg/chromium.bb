@@ -749,8 +749,6 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::RendererManagement*
       GetRendererManagementDelegate();
   virtual RenderViewHostDelegate::SSL* GetSSLDelegate();
-  virtual AutomationResourceRoutingDelegate*
-      GetAutomationResourceRoutingDelegate();
   virtual TabContents* GetAsTabContents();
   virtual ViewType::Type GetRenderViewType() const;
   virtual int GetBrowserWindowID() const;

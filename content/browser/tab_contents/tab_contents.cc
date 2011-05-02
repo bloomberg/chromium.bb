@@ -1603,11 +1603,6 @@ RenderViewHostDelegate::SSL* TabContents::GetSSLDelegate() {
   return GetSSLHelper();
 }
 
-AutomationResourceRoutingDelegate*
-TabContents::GetAutomationResourceRoutingDelegate() {
-  return delegate();
-}
-
 RenderViewHostDelegate::BookmarkDrag* TabContents::GetBookmarkDragDelegate() {
   return bookmark_drag_;
 }

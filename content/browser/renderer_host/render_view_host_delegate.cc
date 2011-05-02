@@ -39,11 +39,6 @@ RenderViewHostDelegate::GetSSLDelegate() {
   return NULL;
 }
 
-AutomationResourceRoutingDelegate*
-RenderViewHostDelegate::GetAutomationResourceRoutingDelegate() {
-  return NULL;
-}
-
 bool RenderViewHostDelegate::OnMessageReceived(const IPC::Message& message) {
   return false;
 }

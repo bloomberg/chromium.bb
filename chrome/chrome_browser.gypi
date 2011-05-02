@@ -217,8 +217,6 @@
         'browser/automation/automation_provider_win.cc',
         'browser/automation/automation_resource_message_filter.cc',
         'browser/automation/automation_resource_message_filter.h',
-        'browser/automation/automation_resource_routing_delegate.cc',
-        'browser/automation/automation_resource_routing_delegate.h',
         'browser/automation/automation_resource_tracker.cc',
         'browser/automation/automation_resource_tracker.h',
         'browser/automation/automation_tab_helper.cc',
