@@ -151,8 +151,8 @@ class OmniboxViewGtk : public AutocompleteEditView,
 
   // A factory method to create an AutocompleteEditView instance initialized for
   // linux_views.  This currently returns an instance of OmniboxViewGtk only,
-  // but AutocompleteEditViewViews will be added as an option when
-  // TextfieldViews is enabled.
+  // but OmniboxViewViews will be added as an option when TextfieldViews is
+  // enabled.
   static AutocompleteEditView* Create(AutocompleteEditController* controller,
                                       ToolbarModel* toolbar_model,
                                       Profile* profile,

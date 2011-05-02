@@ -40,9 +40,9 @@
 #include "ui/gfx/skia_utils_gtk.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/autocomplete/autocomplete_edit_view_views.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/events/event.h"
 #else
@@ -885,33 +885,31 @@ AutocompleteEditView* OmniboxViewGtk::Create(
     bool popup_window_mode,
     views::View* location_bar) {
   if (views::NativeTextfieldViews::IsTextfieldViewsEnabled()) {
-    AutocompleteEditViewViews* autocomplete =
-        new AutocompleteEditViewViews(controller,
-                                      toolbar_model,
-                                      profile,
-                                      command_updater,
-                                      popup_window_mode,
-                                      location_bar);
-    autocomplete->Init();
-    return autocomplete;
+    OmniboxViewViews* omnibox_view = new OmniboxViewViews(controller,
+                                                          toolbar_model,
+                                                          profile,
+                                                          command_updater,
+                                                          popup_window_mode,
+                                                          location_bar);
+    omnibox_view->Init();
+    return omnibox_view;
   }
 
-  OmniboxViewGtk* autocomplete = new OmniboxViewGtk(controller,
+  OmniboxViewGtk* omnibox_view = new OmniboxViewGtk(controller,
                                                     toolbar_model,
                                                     profile,
                                                     command_updater,
                                                     popup_window_mode,
                                                     location_bar);
-  autocomplete->Init();
+  omnibox_view->Init();
 
   // Make all the children of the widget visible. NOTE: this won't display
   // anything, it just toggles the visible flag.
-  gtk_widget_show_all(autocomplete->GetNativeView());
-  // Hide the widget. NativeViewHostGtk will make it visible again as
-  // necessary.
-  gtk_widget_hide(autocomplete->GetNativeView());
+  gtk_widget_show_all(omnibox_view->GetNativeView());
+  // Hide the widget. NativeViewHostGtk will make it visible again as necessary.
+  gtk_widget_hide(omnibox_view->GetNativeView());
 
-  return autocomplete;
+  return omnibox_view;
 }
 #endif
 

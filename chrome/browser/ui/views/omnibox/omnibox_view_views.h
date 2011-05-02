@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_VIEWS_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEW_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEW_VIEWS_H_
 #pragma once
 
 #include <string>
@@ -36,18 +36,18 @@ class TabContents;
 // URL styles (strikestrough insecure scheme, emphasize host).
 // Custom context menu for omnibox.
 // Instant.
-class AutocompleteEditViewViews : public views::View,
-                                  public AutocompleteEditView,
-                                  public NotificationObserver,
-                                  public views::TextfieldController {
+class OmniboxViewViews : public views::View,
+                         public AutocompleteEditView,
+                         public NotificationObserver,
+                         public views::TextfieldController {
  public:
-  AutocompleteEditViewViews(AutocompleteEditController* controller,
-                            ToolbarModel* toolbar_model,
-                            Profile* profile,
-                            CommandUpdater* command_updater,
-                            bool popup_window_mode,
-                            const views::View* location_bar);
-  virtual ~AutocompleteEditViewViews();
+  OmniboxViewViews(AutocompleteEditController* controller,
+                   ToolbarModel* toolbar_model,
+                   Profile* profile,
+                   CommandUpdater* command_updater,
+                   bool popup_window_mode,
+                   const views::View* location_bar);
+  virtual ~OmniboxViewViews();
 
   // Initialize, create the underlying views, etc;
   void Init();
@@ -187,7 +187,7 @@ class AutocompleteEditViewViews : public views::View,
   // Was the delete key pressed with an empty selection at the end of the edit?
   bool delete_at_end_pressed_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewViews);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEW_VIEWS_H_

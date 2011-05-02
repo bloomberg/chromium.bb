@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/autocomplete_edit_view_views.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -32,36 +32,34 @@
 namespace {
 
 // Textfield for autocomplete that intercepts events that are necessary
-// for AutocompleteEditViewViews.
+// for OmniboxViewViews.
 class AutocompleteTextfield : public views::Textfield {
  public:
-  explicit AutocompleteTextfield(
-      AutocompleteEditViewViews* autocomplete_edit_view)
+  explicit AutocompleteTextfield(OmniboxViewViews* omnibox_view)
       : views::Textfield(views::Textfield::STYLE_DEFAULT),
-        autocomplete_edit_view_(autocomplete_edit_view) {
-    DCHECK(autocomplete_edit_view_);
+        omnibox_view_(omnibox_view) {
+    DCHECK(omnibox_view_);
     RemoveBorder();
   }
 
   // views::View implementation
   virtual void OnFocus() OVERRIDE {
     views::Textfield::OnFocus();
-    autocomplete_edit_view_->HandleFocusIn();
+    omnibox_view_->HandleFocusIn();
   }
 
   virtual void OnBlur() OVERRIDE {
     views::Textfield::OnBlur();
-    autocomplete_edit_view_->HandleFocusOut();
+    omnibox_view_->HandleFocusOut();
   }
 
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE {
     bool handled = views::Textfield::OnKeyPressed(event);
-    return autocomplete_edit_view_->HandleAfterKeyEvent(event, handled) ||
-        handled;
+    return omnibox_view_->HandleAfterKeyEvent(event, handled) || handled;
   }
 
   virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE {
-    return autocomplete_edit_view_->HandleKeyReleaseEvent(event);
+    return omnibox_view_->HandleKeyReleaseEvent(event);
   }
 
   virtual bool IsFocusable() const OVERRIDE {
@@ -71,7 +69,7 @@ class AutocompleteTextfield : public views::Textfield {
   }
 
  private:
-  AutocompleteEditViewViews* autocomplete_edit_view_;
+  OmniboxViewViews* omnibox_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteTextfield);
 };
@@ -108,13 +106,12 @@ const int kAutocompleteVerticalMargin = 4;
 
 }  // namespace
 
-AutocompleteEditViewViews::AutocompleteEditViewViews(
-    AutocompleteEditController* controller,
-    ToolbarModel* toolbar_model,
-    Profile* profile,
-    CommandUpdater* command_updater,
-    bool popup_window_mode,
-    const views::View* location_bar)
+OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
+                                   ToolbarModel* toolbar_model,
+                                   Profile* profile,
+                                   CommandUpdater* command_updater,
+                                   bool popup_window_mode,
+                                   const views::View* location_bar)
     : model_(new AutocompleteEditModel(this, controller, profile)),
       popup_view_(CreatePopupView(profile, location_bar)),
       controller_(controller),
@@ -128,10 +125,10 @@ AutocompleteEditViewViews::AutocompleteEditViewViews(
                                               kAutocompleteVerticalMargin, 0));
 }
 
-AutocompleteEditViewViews::~AutocompleteEditViewViews() {
+OmniboxViewViews::~OmniboxViewViews() {
   NotificationService::current()->Notify(
       NotificationType::AUTOCOMPLETE_EDIT_DESTROYED,
-      Source<AutocompleteEditViewViews>(this),
+      Source<OmniboxViewViews>(this),
       NotificationService::NoDetails());
   // Explicitly teardown members which have a reference to us.  Just to be safe
   // we want them to be destroyed before destroying any other internal state.
@@ -140,9 +137,9 @@ AutocompleteEditViewViews::~AutocompleteEditViewViews() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompleteEditViewViews public:
+// OmniboxViewViews public:
 
-void AutocompleteEditViewViews::Init() {
+void OmniboxViewViews::Init() {
   // The height of the text view is going to change based on the font used.  We
   // don't want to stretch the height, and we want it vertically centered.
   // TODO(oshima): make sure the above happens with views.
@@ -162,14 +159,13 @@ void AutocompleteEditViewViews::Init() {
   SetBaseColor();
 }
 
-void AutocompleteEditViewViews::SetBaseColor() {
+void OmniboxViewViews::SetBaseColor() {
   // TODO(oshima): Implment style change.
   NOTIMPLEMENTED();
 }
 
-bool AutocompleteEditViewViews::HandleAfterKeyEvent(
-    const views::KeyEvent& event,
-    bool handled) {
+bool OmniboxViewViews::HandleAfterKeyEvent(const views::KeyEvent& event,
+                                           bool handled) {
   if (event.key_code() == ui::VKEY_RETURN) {
     bool alt_held = event.IsAltDown();
     model_->AcceptInput(alt_held ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
@@ -223,8 +219,7 @@ bool AutocompleteEditViewViews::HandleAfterKeyEvent(
   return handled;
 }
 
-bool AutocompleteEditViewViews::HandleKeyReleaseEvent(
-    const views::KeyEvent& event) {
+bool OmniboxViewViews::HandleKeyReleaseEvent(const views::KeyEvent& event) {
   // Omnibox2 can switch its contents while pressing a control key. To switch
   // the contents of omnibox2, we notify the AutocompleteEditModel class when
   // the control-key state is changed.
@@ -237,14 +232,14 @@ bool AutocompleteEditViewViews::HandleKeyReleaseEvent(
   return false;
 }
 
-void AutocompleteEditViewViews::HandleFocusIn() {
+void OmniboxViewViews::HandleFocusIn() {
   // TODO(oshima): Get control key state.
   model_->OnSetFocus(false);
   // Don't call controller_->OnSetFocus as this view has already
   // acquired the focus.
 }
 
-void AutocompleteEditViewViews::HandleFocusOut() {
+void OmniboxViewViews::HandleFocusOut() {
   // TODO(oshima): we don't have native view. This requires
   // further refactoring.
   model_->OnWillKillFocus(NULL);
@@ -256,31 +251,30 @@ void AutocompleteEditViewViews::HandleFocusOut() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompleteEditViewViews, views::View implementation:
-void AutocompleteEditViewViews::Layout() {
+// OmniboxViewViews, views::View implementation:
+void OmniboxViewViews::Layout() {
   gfx::Insets insets = GetInsets();
   textfield_->SetBounds(insets.left(), insets.top(),
                         width() - insets.width(),
                         height() - insets.height());
 }
 
-void AutocompleteEditViewViews::GetAccessibleState(
-    ui::AccessibleViewState* state) {
+void OmniboxViewViews::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompleteEditViewViews, AutocopmleteEditView implementation:
+// OmniboxViewViews, AutocopmleteEditView implementation:
 
-AutocompleteEditModel* AutocompleteEditViewViews::model() {
+AutocompleteEditModel* OmniboxViewViews::model() {
   return model_.get();
 }
 
-const AutocompleteEditModel* AutocompleteEditViewViews::model() const {
+const AutocompleteEditModel* OmniboxViewViews::model() const {
   return model_.get();
 }
 
-void AutocompleteEditViewViews::SaveStateToTab(TabContents* tab) {
+void OmniboxViewViews::SaveStateToTab(TabContents* tab) {
   DCHECK(tab);
 
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
@@ -292,7 +286,7 @@ void AutocompleteEditViewViews::SaveStateToTab(TabContents* tab) {
       AutocompleteEditState(model_state, ViewState(selection)));
 }
 
-void AutocompleteEditViewViews::Update(const TabContents* contents) {
+void OmniboxViewViews::Update(const TabContents* contents) {
   // NOTE: We're getting the URL text here from the ToolbarModel.
   bool visibly_changed_permanent_text =
       model_->UpdatePermanentText(WideToUTF16Hack(toolbar_model_->GetText()));
@@ -323,12 +317,12 @@ void AutocompleteEditViewViews::Update(const TabContents* contents) {
   }
 }
 
-void AutocompleteEditViewViews::OpenURL(const GURL& url,
-                                        WindowOpenDisposition disposition,
-                                        PageTransition::Type transition,
-                                        const GURL& alternate_nav_url,
-                                        size_t selected_line,
-                                        const string16& keyword) {
+void OmniboxViewViews::OpenURL(const GURL& url,
+                               WindowOpenDisposition disposition,
+                               PageTransition::Type transition,
+                               const GURL& alternate_nav_url,
+                               size_t selected_line,
+                               const string16& keyword) {
   if (!url.is_valid())
     return;
 
@@ -336,28 +330,28 @@ void AutocompleteEditViewViews::OpenURL(const GURL& url,
                   selected_line, keyword);
 }
 
-string16 AutocompleteEditViewViews::GetText() const {
+string16 OmniboxViewViews::GetText() const {
   // TODO(oshima): IME support
   return textfield_->text();
 }
 
-bool AutocompleteEditViewViews::IsEditingOrEmpty() const {
+bool OmniboxViewViews::IsEditingOrEmpty() const {
   return model_->user_input_in_progress() || (GetTextLength() == 0);
 }
 
-int AutocompleteEditViewViews::GetIcon() const {
+int OmniboxViewViews::GetIcon() const {
   return IsEditingOrEmpty() ?
       AutocompleteMatch::TypeToIcon(model_->CurrentTextType()) :
       toolbar_model_->GetIcon();
 }
 
-void AutocompleteEditViewViews::SetUserText(const string16& text) {
+void OmniboxViewViews::SetUserText(const string16& text) {
   SetUserText(text, text, true);
 }
 
-void AutocompleteEditViewViews::SetUserText(const string16& text,
-                                            const string16& display_text,
-                                            bool update_popup) {
+void OmniboxViewViews::SetUserText(const string16& text,
+                                   const string16& display_text,
+                                   bool update_popup) {
   model_->SetUserText(text);
   SetWindowTextAndCaretPos(display_text, display_text.length());
   if (update_popup)
@@ -365,14 +359,13 @@ void AutocompleteEditViewViews::SetUserText(const string16& text,
   TextChanged();
 }
 
-void AutocompleteEditViewViews::SetWindowTextAndCaretPos(
-    const string16& text,
-    size_t caret_pos) {
+void OmniboxViewViews::SetWindowTextAndCaretPos(const string16& text,
+                                                size_t caret_pos) {
   const ui::Range range(caret_pos, caret_pos);
   SetTextAndSelectedRange(text, range);
 }
 
-void AutocompleteEditViewViews::SetForcedQuery() {
+void OmniboxViewViews::SetForcedQuery() {
   const string16 current_text(GetText());
   const size_t start = current_text.find_first_not_of(kWhitespaceUTF16);
   if (start == string16::npos || (current_text[start] != '?')) {
@@ -382,38 +375,37 @@ void AutocompleteEditViewViews::SetForcedQuery() {
   }
 }
 
-bool AutocompleteEditViewViews::IsSelectAll() {
+bool OmniboxViewViews::IsSelectAll() {
   // TODO(oshima): IME support.
   return textfield_->text() == textfield_->GetSelectedText();
 }
 
-bool AutocompleteEditViewViews::DeleteAtEndPressed() {
+bool OmniboxViewViews::DeleteAtEndPressed() {
   return delete_at_end_pressed_;
 }
 
-void AutocompleteEditViewViews::GetSelectionBounds(
-    string16::size_type* start,
-    string16::size_type* end) {
+void OmniboxViewViews::GetSelectionBounds(string16::size_type* start,
+                                          string16::size_type* end) {
   ui::Range range;
   textfield_->GetSelectedRange(&range);
   *start = static_cast<size_t>(range.end());
   *end = static_cast<size_t>(range.start());
 }
 
-void AutocompleteEditViewViews::SelectAll(bool reversed) {
+void OmniboxViewViews::SelectAll(bool reversed) {
   if (reversed)
     SelectRange(GetTextLength(), 0);
   else
     SelectRange(0, GetTextLength());
 }
 
-void AutocompleteEditViewViews::RevertAll() {
+void OmniboxViewViews::RevertAll() {
   ClosePopup();
   model_->Revert();
   TextChanged();
 }
 
-void AutocompleteEditViewViews::UpdatePopup() {
+void OmniboxViewViews::UpdatePopup() {
   model_->SetInputInProgress(true);
   if (!model_->has_focus())
     return;
@@ -428,17 +420,17 @@ void AutocompleteEditViewViews::UpdatePopup() {
   model_->StartAutocomplete(!sel.is_empty(), no_inline_autocomplete);
 }
 
-void AutocompleteEditViewViews::ClosePopup() {
+void OmniboxViewViews::ClosePopup() {
   model_->StopAutocomplete();
 }
 
-void AutocompleteEditViewViews::SetFocus() {
+void OmniboxViewViews::SetFocus() {
   // In views-implementation, the focus is on textfield rather than
   // AutocompleteEditView.
   textfield_->RequestFocus();
 }
 
-void AutocompleteEditViewViews::OnTemporaryTextMaybeChanged(
+void OmniboxViewViews::OnTemporaryTextMaybeChanged(
     const string16& display_text,
     bool save_original_selection) {
   if (save_original_selection)
@@ -448,7 +440,7 @@ void AutocompleteEditViewViews::OnTemporaryTextMaybeChanged(
   TextChanged();
 }
 
-bool AutocompleteEditViewViews::OnInlineAutocompleteTextMaybeChanged(
+bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
     const string16& display_text,
     size_t user_text_length) {
   if (display_text == GetText())
@@ -459,19 +451,19 @@ bool AutocompleteEditViewViews::OnInlineAutocompleteTextMaybeChanged(
   return true;
 }
 
-void AutocompleteEditViewViews::OnRevertTemporaryText() {
+void OmniboxViewViews::OnRevertTemporaryText() {
   textfield_->SelectRange(saved_temporary_selection_);
   TextChanged();
 }
 
-void AutocompleteEditViewViews::OnBeforePossibleChange() {
+void OmniboxViewViews::OnBeforePossibleChange() {
   // Record our state.
   text_before_change_ = GetText();
   textfield_->GetSelectedRange(&sel_before_change_);
   ime_composing_before_change_ = textfield_->IsIMEComposing();
 }
 
-bool AutocompleteEditViewViews::OnAfterPossibleChange() {
+bool OmniboxViewViews::OnAfterPossibleChange() {
   ui::Range new_sel;
   textfield_->GetSelectedRange(&new_sel);
 
@@ -510,65 +502,63 @@ bool AutocompleteEditViewViews::OnAfterPossibleChange() {
   return something_changed;
 }
 
-gfx::NativeView AutocompleteEditViewViews::GetNativeView() const {
+gfx::NativeView OmniboxViewViews::GetNativeView() const {
   return GetWidget()->GetNativeView();
 }
 
-CommandUpdater* AutocompleteEditViewViews::GetCommandUpdater() {
+CommandUpdater* OmniboxViewViews::GetCommandUpdater() {
   return command_updater_;
 }
 
-void AutocompleteEditViewViews::SetInstantSuggestion(const string16& input,
-                                                     bool animate_to_complete) {
+void OmniboxViewViews::SetInstantSuggestion(const string16& input,
+                                            bool animate_to_complete) {
   NOTIMPLEMENTED();
 }
 
-string16 AutocompleteEditViewViews::GetInstantSuggestion() const {
+string16 OmniboxViewViews::GetInstantSuggestion() const {
   NOTIMPLEMENTED();
   return string16();
 }
 
-int AutocompleteEditViewViews::TextWidth() const {
+int OmniboxViewViews::TextWidth() const {
   // TODO(oshima): add horizontal margin.
   return textfield_->font().GetStringWidth(textfield_->text());
 }
 
-bool AutocompleteEditViewViews::IsImeComposing() const {
+bool OmniboxViewViews::IsImeComposing() const {
   return false;
 }
 
-views::View* AutocompleteEditViewViews::AddToView(views::View* parent) {
+views::View* OmniboxViewViews::AddToView(views::View* parent) {
   parent->AddChildView(this);
   AddChildView(textfield_);
   return this;
 }
 
-int AutocompleteEditViewViews::OnPerformDrop(
-    const views::DropTargetEvent& event) {
+int OmniboxViewViews::OnPerformDrop(const views::DropTargetEvent& event) {
   NOTIMPLEMENTED();
   return ui::DragDropTypes::DRAG_NONE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompleteEditViewViews, NotificationObserver implementation:
+// OmniboxViewViews, NotificationObserver implementation:
 
-void AutocompleteEditViewViews::Observe(NotificationType type,
-                                      const NotificationSource& source,
-                                      const NotificationDetails& details) {
+void OmniboxViewViews::Observe(NotificationType type,
+                               const NotificationSource& source,
+                               const NotificationDetails& details) {
   DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
   SetBaseColor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompleteEditViewViews, views::TextfieldController implementation:
+// OmniboxViewViews, views::TextfieldController implementation:
 
-void AutocompleteEditViewViews::ContentsChanged(views::Textfield* sender,
-                                                const string16& new_contents) {
+void OmniboxViewViews::ContentsChanged(views::Textfield* sender,
+                                       const string16& new_contents) {
 }
 
-bool AutocompleteEditViewViews::HandleKeyEvent(
-    views::Textfield* textfield,
-    const views::KeyEvent& event) {
+bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
+                                      const views::KeyEvent& event) {
   delete_at_end_pressed_ = false;
 
   if (event.key_code() == ui::VKEY_BACK) {
@@ -594,51 +584,50 @@ bool AutocompleteEditViewViews::HandleKeyEvent(
   return false;
 }
 
-void AutocompleteEditViewViews::OnBeforeUserAction(views::Textfield* sender) {
+void OmniboxViewViews::OnBeforeUserAction(views::Textfield* sender) {
   OnBeforePossibleChange();
 }
 
-void AutocompleteEditViewViews::OnAfterUserAction(views::Textfield* sender) {
+void OmniboxViewViews::OnAfterUserAction(views::Textfield* sender) {
   OnAfterPossibleChange();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompleteEditViewViews, private:
+// OmniboxViewViews, private:
 
-size_t AutocompleteEditViewViews::GetTextLength() const {
+size_t OmniboxViewViews::GetTextLength() const {
   // TODO(oshima): Support instant, IME.
   return textfield_->text().length();
 }
 
-void AutocompleteEditViewViews::EmphasizeURLComponents() {
+void OmniboxViewViews::EmphasizeURLComponents() {
   // TODO(oshima): Update URL visual style
   NOTIMPLEMENTED();
 }
 
-void AutocompleteEditViewViews::TextChanged() {
+void OmniboxViewViews::TextChanged() {
   EmphasizeURLComponents();
   model_->OnChanged();
 }
 
-void AutocompleteEditViewViews::SetTextAndSelectedRange(
-    const string16& text,
-    const ui::Range& range) {
+void OmniboxViewViews::SetTextAndSelectedRange(const string16& text,
+                                               const ui::Range& range) {
   if (text != GetText())
     textfield_->SetText(text);
   textfield_->SelectRange(range);
 }
 
-string16 AutocompleteEditViewViews::GetSelectedText() const {
+string16 OmniboxViewViews::GetSelectedText() const {
   // TODO(oshima): Support instant, IME.
   return textfield_->GetSelectedText();
 }
 
-void AutocompleteEditViewViews::SelectRange(size_t caret, size_t end) {
+void OmniboxViewViews::SelectRange(size_t caret, size_t end) {
   const ui::Range range(caret, end);
   textfield_->SelectRange(range);
 }
 
-AutocompletePopupView* AutocompleteEditViewViews::CreatePopupView(
+AutocompletePopupView* OmniboxViewViews::CreatePopupView(
     Profile* profile,
     const View* location_bar) {
 #if defined(TOUCH_UI)

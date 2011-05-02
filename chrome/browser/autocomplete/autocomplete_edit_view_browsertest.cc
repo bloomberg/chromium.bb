@@ -1375,7 +1375,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest, DeleteItem) {
 }
 
 // TODO(suzhe): This test is broken because of broken ViewID support when
-// enabling AutocompleteEditViewViews.
+// enabling OmniboxViewViews.
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest,
                        DISABLED_TabMoveCursorToEnd) {
   TabMoveCursorToEndTest();
