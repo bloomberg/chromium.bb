@@ -26,6 +26,7 @@
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/text_elider.h"
 
 using webkit_glue::PasswordForm;
 
@@ -414,7 +415,12 @@ class LoginDialogTask : public Task {
     handler_->SetPasswordManager(password_manager);
 
     string16 host_and_port_hack16 = WideToUTF16Hack(auth_info_->host_and_port);
-    string16 realm_hack16 = WideToUTF16Hack(auth_info_->realm);
+
+    // The realm is controlled by the remote server, so there is no reason
+    // to believe it is of a reasonable length.
+    string16 realm_hack16;
+    ui::ElideString(WideToUTF16Hack(auth_info_->realm), 120, &realm_hack16);
+
     string16 explanation = realm_hack16.empty() ?
         l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
                                    host_and_port_hack16) :

@@ -3375,7 +3375,7 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
         Authentication Required
       </message>
       <message name="IDS_LOGIN_DIALOG_DESCRIPTION" desc="String to be displayed in the login prompt dialog to explain what the user needs to do">
-        The server <ph name="DOMAIN">$1<ex>google.com</ex></ph> at <ph name="REALM">$2<ex>site name</ex></ph> requires a username and password.
+        The server <ph name="DOMAIN">$1<ex>google.com</ex></ph> requires a username and password. The server says: <ph name="REALM">$2<ex>opaque string</ex></ph>.
       </message>
       <message name="IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM" desc="String to be displayed in the login prompt dialog to explain what the user needs to do">
         The server <ph name="DOMAIN">$1<ex>google.com</ex></ph> requires a username and password.
