@@ -160,6 +160,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       if not named_channel_id:
         named_channel_id = self.EnableChromeTestingOnChromeOS()
     if named_channel_id:
+      self._named_channel_id = named_channel_id
       self.UseNamedChannelID(named_channel_id)
     self.SetUp()     # Fire browser
 
@@ -2510,6 +2511,23 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = { 'command': 'GetLoginInfo' }
     return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
+  def ShowCreateAccountUI(self):
+    """Go to the account creation page.
+
+    This is the same as clicking the "Create Account" link on the
+    ChromeOS login screen. Does not actually create a new account.
+    Should be displaying the login screen to work.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'ShowCreateAccountUI' }
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    # See note below under LoginAsGuest(). ShowCreateAccountUI() essentially
+    # logs the user in as guest in order to access the account creation page.
+    os.unlink(self._named_channel_id)
+    self.SetUp()
+
   def LoginAsGuest(self):
     """Login to chromeos as a guest user.
 
@@ -2521,10 +2539,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     cmd_dict = { 'command': 'LoginAsGuest' }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
-    # Currently, logging in as guest causes session_manager to restart
-    # Chrome with new parameters, which will close the testing channel.
-    # We need to call EnableChromeTesting again.
-    self.EnableChromeTestingOnChromeOS()
+    # Currently, logging in as guest causes session_manager to
+    # restart Chrome, which will close the testing channel.
+    # We need to call SetUp() again to reconnect to the new channel.
+    os.unlink(self._named_channel_id)
     self.SetUp()
 
   def Login(self, username, password):

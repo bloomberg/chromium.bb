@@ -2191,6 +2191,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetChromeDriverAutomationVersion;
 #if defined(OS_CHROMEOS)
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
+  handler_map["ShowCreateAccountUI"] =
+      &TestingAutomationProvider::ShowCreateAccountUI;
   handler_map["LoginAsGuest"] = &TestingAutomationProvider::LoginAsGuest;
   handler_map["Login"] = &TestingAutomationProvider::Login;
 

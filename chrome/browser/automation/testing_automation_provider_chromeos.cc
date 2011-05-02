@@ -150,14 +150,24 @@ void TestingAutomationProvider::GetLoginInfo(DictionaryValue* args,
   reply.SendSuccess(return_value.get());
 }
 
+// See the note under LoginAsGuest(). CreateAccount() causes a login as guest.
+void TestingAutomationProvider::ShowCreateAccountUI(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  chromeos::ExistingUserController* controller =
+      chromeos::ExistingUserController::current_controller();
+  // Return immediately, since we're going to die before the login is finished.
+  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+  controller->CreateAccount();
+}
+
 // Logging in as guest will cause session_manager to restart Chrome with new
 // flags. If you used EnableChromeTesting, you will have to call it again.
 void TestingAutomationProvider::LoginAsGuest(DictionaryValue* args,
                                              IPC::Message* reply_message) {
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
-  // Set up an observer (it will delete itself).
-  new LoginManagerObserver(this, reply_message);
+  // Return immediately, since we're going to die before the login is finished.
+  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
   controller->LoginAsGuest();
 }
 

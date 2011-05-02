@@ -1078,6 +1078,8 @@ class TestingAutomationProvider : public AutomationProvider,
 #if defined(OS_CHROMEOS)
   void GetLoginInfo(DictionaryValue* args, IPC::Message* reply_message);
 
+  void ShowCreateAccountUI(DictionaryValue* args, IPC::Message* reply_message);
+
   void LoginAsGuest(DictionaryValue* args, IPC::Message* reply_message);
 
   void Login(DictionaryValue* args, IPC::Message* reply_message);
