@@ -364,17 +364,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 
   notification_provider_ = new NotificationProvider(this);
 
-  g_view_map.Get().insert(std::make_pair(webview(), this));
-  webkit_preferences_.Apply(webview());
-  webview()->initializeMainFrame(this);
-  if (!frame_name.empty())
-    webview()->mainFrame()->setName(frame_name);
-  webview()->settings()->setMinimumTimerInterval(
-      is_hidden() ? webkit_glue::kBackgroundTabTimerInterval :
-          webkit_glue::kForegroundTabTimerInterval);
-
-  OnSetRendererPrefs(renderer_prefs);
-
   render_thread_->AddRoute(routing_id_, this);
   // Take a reference on behalf of the RenderThread.  This will be balanced
   // when we receive ViewMsg_Close.
@@ -386,6 +375,17 @@ RenderView::RenderView(RenderThreadBase* render_thread,
     did_show_ = true;
     CompleteInit(parent_hwnd, compositing_surface);
   }
+
+  g_view_map.Get().insert(std::make_pair(webview(), this));
+  webkit_preferences_.Apply(webview());
+  webview()->initializeMainFrame(this);
+  if (!frame_name.empty())
+    webview()->mainFrame()->setName(frame_name);
+  webview()->settings()->setMinimumTimerInterval(
+      is_hidden() ? webkit_glue::kBackgroundTabTimerInterval :
+          webkit_glue::kForegroundTabTimerInterval);
+
+  OnSetRendererPrefs(renderer_prefs);
 
   host_window_ = parent_hwnd;
 
