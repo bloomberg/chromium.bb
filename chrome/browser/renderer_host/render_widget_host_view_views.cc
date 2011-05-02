@@ -355,7 +355,8 @@ void RenderWidgetHostViewViews::SetTooltipText(const std::wstring& tip) {
   // NOTIMPLEMENTED(); ... too annoying, it triggers for every mousemove
 }
 
-void RenderWidgetHostViewViews::SelectionChanged(const std::string& text) {
+void RenderWidgetHostViewViews::SelectionChanged(const std::string& text,
+                                                 const ui::Range& range) {
   // TODO(anicolao): deal with the clipboard without GTK
   NOTIMPLEMENTED();
 }

@@ -13,7 +13,12 @@ FontDescriptor::FontDescriptor(NSFont* font) {
   font_point_size = [font pointSize];
 }
 
-NSFont* FontDescriptor::nsFont() const {
+FontDescriptor::FontDescriptor(string16 name, float size) {
+  font_name = name;
+  font_point_size = size;
+}
+
+NSFont* FontDescriptor::ToNSFont() const {
   NSString* font_name_ns = base::SysUTF16ToNSString(font_name);
   NSFont* font = [NSFont fontWithName:font_name_ns size:font_point_size];
   return font;

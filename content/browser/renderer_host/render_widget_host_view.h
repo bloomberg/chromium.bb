@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
+#include "ui/base/range/range.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/surface/transport_dib.h"
@@ -139,6 +140,9 @@ class RenderWidgetHostView {
   // Cancel the ongoing composition of the input method attached to the view.
   virtual void ImeCancelComposition() = 0;
 
+  // Updates the range of the marked text in an IME composition.
+  virtual void ImeCompositionRangeChanged(const ui::Range& range) {}
+
   // Informs the view that a portion of the widget's backing store was scrolled
   // and/or painted.  The view should ensure this gets copied to the screen.
   //
@@ -176,7 +180,8 @@ class RenderWidgetHostView {
   virtual void SetTooltipText(const std::wstring& tooltip_text) = 0;
 
   // Notifies the View that the renderer text selection has changed.
-  virtual void SelectionChanged(const std::string& text) {}
+  virtual void SelectionChanged(const std::string& text,
+                                const ui::Range& range) {}
 
   // Tells the View whether the context menu is showing. This is used on Linux
   // to suppress updates to webkit focus for the duration of the show.

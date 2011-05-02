@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
+#include "chrome/browser/renderer_host/text_input_client_message_filter.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 #include "chrome/browser/spellcheck_message_filter.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
@@ -61,6 +62,9 @@ void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
   host->channel()->AddFilter(
       new SearchProviderInstallStateMessageFilter(id, profile));
   host->channel()->AddFilter(new SpellCheckMessageFilter(id));
+#if defined(OS_MACOSX)
+  host->channel()->AddFilter(new TextInputClientMessageFilter(host->id()));
+#endif
 }
 
 content::WebUIFactory* ChromeContentBrowserClient::GetWebUIFactory() {

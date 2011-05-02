@@ -1423,25 +1423,27 @@ void RenderView::didChangeSelection(bool is_empty_selection) {
 #if defined(OS_POSIX)
   if (!handling_input_event_)
       return;
-  // TODO(estade): investigate incremental updates to the selection so that we
-  // don't send the entire selection over IPC every time.
-  if (!is_empty_selection) {
+
+  if (is_empty_selection) {
+    last_selection_.clear();
+  } else {
     // Sometimes we get repeated didChangeSelection calls from webkit when
     // the selection hasn't actually changed. We don't want to report these
     // because it will cause us to continually claim the X clipboard.
-    const std::string& this_selection =
-        webview()->focusedFrame()->selectionAsText().utf8();
+    WebFrame* frame = webview()->focusedFrame();
+    const std::string& this_selection = frame->selectionAsText().utf8();
     if (this_selection == last_selection_)
       return;
-
-    Send(new ViewHostMsg_SelectionChanged(routing_id_,
-         this_selection));
     last_selection_ = this_selection;
-  } else {
-    last_selection_.clear();
-    Send(new ViewHostMsg_SelectionChanged(routing_id_,
-         last_selection_));
   }
+
+  ui::Range range(ui::Range::InvalidRange());
+  size_t location, length;
+  if (webview()->caretOrSelectionRange(&location, &length)) {
+    range.set_start(location);
+    range.set_end(location + length);
+  }
+  Send(new ViewHostMsg_SelectionChanged(routing_id_, last_selection_, range));
 #endif  // defined(OS_POSIX)
 }
 

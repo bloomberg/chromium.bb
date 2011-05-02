@@ -25,6 +25,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
+#include "ui/base/range/range.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/password_form.h"
@@ -1676,8 +1677,9 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,
                     WebKit::WebTextDirection /* text direction hint */)
 
 // Notification that the text selection has changed.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_SelectionChanged,
-                    std::string /* currently selected text */)
+IPC_MESSAGE_ROUTED2(ViewHostMsg_SelectionChanged,
+                    std::string /* currently selected text */,
+                    ui::Range /* selection range */)
 
 // Asks the browser to display the file chooser.  The result is returned in a
 // ViewHost_RunFileChooserResponse message.
@@ -1708,6 +1710,11 @@ IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetRootWindowRect,
 IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeUpdateTextInputState,
                     WebKit::WebTextInputType, /* text_input_type */
                     gfx::Rect /* caret_rect */)
+
+
+// Message sent when the IME text composition range changes.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_ImeCompositionRangeChanged,
+                    ui::Range /* composition range */)
 
 // Required for cancelling an ongoing input method composition.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_ImeCancelComposition)

@@ -830,7 +830,8 @@ void RenderWidgetHostViewGtk::SetTooltipText(const std::wstring& tooltip_text) {
   }
 }
 
-void RenderWidgetHostViewGtk::SelectionChanged(const std::string& text) {
+void RenderWidgetHostViewGtk::SelectionChanged(const std::string& text,
+                                               const ui::Range& range) {
   if (!text.empty()) {
     GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
     gtk_clipboard_set_text(x_clipboard, text.c_str(), text.length());

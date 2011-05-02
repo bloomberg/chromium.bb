@@ -38,6 +38,10 @@ class HostPortPair;
 class UploadData;
 }
 
+namespace ui {
+class Range;
+}
+
 namespace IPC {
 
 template <>
@@ -163,6 +167,14 @@ struct ParamTraits<gfx::NativeWindow> {
   static void Log(const param_type& p, std::string* l) {
     l->append("<gfx::NativeWindow>");
   }
+};
+
+template <>
+struct ParamTraits<ui::Range> {
+  typedef ui::Range param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
 #if defined(OS_WIN)

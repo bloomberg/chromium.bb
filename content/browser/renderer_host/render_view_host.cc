@@ -1080,9 +1080,10 @@ void RenderViewHost::OnMsgSetTooltipText(
     view()->SetTooltipText(UTF16ToWide(wrapped_tooltip_text));
 }
 
-void RenderViewHost::OnMsgSelectionChanged(const std::string& text) {
+void RenderViewHost::OnMsgSelectionChanged(const std::string& text,
+                                           const ui::Range& range) {
   if (view())
-    view()->SelectionChanged(text);
+    view()->SelectionChanged(text, range);
 }
 
 void RenderViewHost::OnMsgRunJavaScriptMessage(

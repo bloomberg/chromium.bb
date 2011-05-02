@@ -174,6 +174,8 @@ bool RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnMsgSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeUpdateTextInputState,
                         OnMsgImeUpdateTextInputState)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCompositionRangeChanged,
+                        OnMsgImeCompositionRangeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCancelComposition,
                         OnMsgImeCancelComposition)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidActivateAcceleratedCompositing,
@@ -1027,6 +1029,11 @@ void RenderWidgetHost::OnMsgImeUpdateTextInputState(
     const gfx::Rect& caret_rect) {
   if (view_)
     view_->ImeUpdateTextInputState(type, caret_rect);
+}
+
+void RenderWidgetHost::OnMsgImeCompositionRangeChanged(const ui::Range& range) {
+  if (view_)
+    view_->ImeCompositionRangeChanged(range);
 }
 
 void RenderWidgetHost::OnMsgImeCancelComposition() {

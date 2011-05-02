@@ -55,6 +55,7 @@
 #include "chrome/renderer/searchbox_extension.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
+#include "chrome/renderer/text_input_client_observer.h"
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "content/common/view_messages.h"
@@ -193,6 +194,10 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
   new SearchBox(render_view);
   new SpellCheckProvider(render_view, spellcheck_.get());
   new safe_browsing::MalwareDOMDetails(render_view);
+
+#if defined(OS_MACOSX)
+  new TextInputClientObserver(render_view);
+#endif  // defined(OS_MACOSX)
 
   PasswordAutofillManager* password_autofill_manager =
       new PasswordAutofillManager(render_view);

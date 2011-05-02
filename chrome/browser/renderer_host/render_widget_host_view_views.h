@@ -70,7 +70,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void Destroy() OVERRIDE;
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) OVERRIDE {}
   virtual void SetTooltipText(const std::wstring& tooltip_text) OVERRIDE;
-  virtual void SelectionChanged(const std::string& text) OVERRIDE;
+  virtual void SelectionChanged(const std::string& text,
+                                const ui::Range& range) OVERRIDE;
   virtual void ShowingContextMenu(bool showing) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;

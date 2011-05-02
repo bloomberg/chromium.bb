@@ -9,6 +9,7 @@
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/range/range.h"
 #include "ui/gfx/rect.h"
 
 namespace {
@@ -499,6 +500,24 @@ bool ParamTraits<gfx::Rect>::Read(const Message* m, void** iter, gfx::Rect* r) {
 void ParamTraits<gfx::Rect>::Log(const gfx::Rect& p, std::string* l) {
   l->append(base::StringPrintf("(%d, %d, %d, %d)", p.x(), p.y(),
                                p.width(), p.height()));
+}
+
+void ParamTraits<ui::Range>::Write(Message* m, const ui::Range& r) {
+  m->WriteSize(r.start());
+  m->WriteSize(r.end());
+}
+
+bool ParamTraits<ui::Range>::Read(const Message* m, void** iter, ui::Range* r) {
+  size_t start, end;
+  if (!m->ReadSize(iter, &start) || !m->ReadSize(iter, &end))
+    return false;
+  r->set_start(start);
+  r->set_end(end);
+  return true;
+}
+
+void ParamTraits<ui::Range>::Log(const ui::Range& r, std::string* l) {
+  l->append(base::StringPrintf("(%"PRIuS", %"PRIuS")", r.start(), r.end()));
 }
 
 void ParamTraits<SkBitmap>::Write(Message* m, const SkBitmap& p) {

@@ -558,7 +558,7 @@ void RenderMessageFilter::OnLoadFont(const FontDescriptor& font,
                                      base::SharedMemoryHandle* handle) {
   base::SharedMemory font_data;
   uint32 font_data_size = 0;
-  bool ok = FontLoader::LoadFontIntoBuffer(font.nsFont(), &font_data,
+  bool ok = FontLoader::LoadFontIntoBuffer(font.ToNSFont(), &font_data,
                 &font_data_size);
   if (!ok || font_data_size == 0) {
     LOG(ERROR) << "Couldn't load font data for " << font.font_name <<

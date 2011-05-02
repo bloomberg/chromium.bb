@@ -161,10 +161,6 @@ class PepperWidget : public WebWidget {
     return false;
   }
 
-  virtual bool selectionRange(size_t *location, size_t *length) {
-    return false;
-  }
-
   virtual bool caretOrSelectionRange(size_t* location, size_t* length) {
     return false;
   }

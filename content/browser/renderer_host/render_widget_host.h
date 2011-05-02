@@ -31,6 +31,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace ui {
+class Range;
+}
+
 namespace WebKit {
 class WebInputEvent;
 class WebMouseEvent;
@@ -475,6 +479,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgSetCursor(const WebCursor& cursor);
   void OnMsgImeUpdateTextInputState(WebKit::WebTextInputType type,
                                     const gfx::Rect& caret_rect);
+  void OnMsgImeCompositionRangeChanged(const ui::Range& range);
   void OnMsgImeCancelComposition();
 
   void OnMsgDidActivateAcceleratedCompositing(bool activated);

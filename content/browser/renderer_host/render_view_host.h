@@ -52,6 +52,10 @@ namespace gfx {
 class Point;
 }  // namespace gfx
 
+namespace ui {
+class Range;
+}  // namespace ui
+
 namespace webkit_glue {
 struct CustomContextMenuContext;
 struct WebAccessibility;
@@ -496,7 +500,7 @@ class RenderViewHost : public RenderWidgetHost {
                                          const std::string& target);
   void OnMsgSetTooltipText(const std::wstring& tooltip_text,
                            WebKit::WebTextDirection text_direction_hint);
-  void OnMsgSelectionChanged(const std::string& text);
+  void OnMsgSelectionChanged(const std::string& text, const ui::Range& range);
   void OnMsgPasteFromSelectionClipboard();
   void OnMsgRunJavaScriptMessage(const std::wstring& message,
                                  const std::wstring& default_prompt,

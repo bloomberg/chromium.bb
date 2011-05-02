@@ -22,6 +22,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenu.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenuInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRange.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
@@ -48,6 +49,7 @@ using WebKit::WebNavigationPolicy;
 using WebKit::WebPopupMenu;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebPopupType;
+using WebKit::WebRange;
 using WebKit::WebRect;
 using WebKit::WebScreenInfo;
 using WebKit::WebSize;
@@ -886,19 +888,51 @@ void RenderWidget::OnImeSetComposition(
     int selection_start, int selection_end) {
   if (!webwidget_)
     return;
-  if (!webwidget_->setComposition(
+  if (webwidget_->setComposition(
       text, WebVector<WebCompositionUnderline>(underlines),
       selection_start, selection_end)) {
+    // Setting the IME composition was successful. Send the new composition
+    // range to the browser.
+    ui::Range range(ui::Range::InvalidRange());
+    size_t location, length;
+    if (webwidget_->compositionRange(&location, &length)) {
+      range.set_start(location);
+      range.set_end(location + length);
+    }
+    // The IME was cancelled via the Esc key, so just send back the caret.
+    else if (webwidget_->caretOrSelectionRange(&location, &length)) {
+      range.set_start(location);
+      range.set_end(location + length);
+    }
+    Send(new ViewHostMsg_ImeCompositionRangeChanged(routing_id(), range));
+  } else {
     // If we failed to set the composition text, then we need to let the browser
     // process to cancel the input method's ongoing composition session, to make
     // sure we are in a consistent state.
     Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
+
+    // Send an updated IME range with just the caret range.
+    ui::Range range(ui::Range::InvalidRange());
+    size_t location, length;
+    if (webwidget_->caretOrSelectionRange(&location, &length)) {
+      range.set_start(location);
+      range.set_end(location + length);
+    }
+    Send(new ViewHostMsg_ImeCompositionRangeChanged(routing_id(), range));
   }
 }
 
 void RenderWidget::OnImeConfirmComposition(const string16& text) {
   if (webwidget_)
     webwidget_->confirmComposition(text);
+  // Send an updated IME range with just the caret range.
+  ui::Range range(ui::Range::InvalidRange());
+  size_t location, length;
+  if (webwidget_->caretOrSelectionRange(&location, &length)) {
+    range.set_start(location);
+    range.set_end(location + length);
+  }
+  Send(new ViewHostMsg_ImeCompositionRangeChanged(routing_id(), range));
 }
 
 // This message causes the renderer to render an image of the
@@ -1090,6 +1124,15 @@ void RenderWidget::resetInputMethod() {
     if (webwidget_->confirmComposition())
       Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
   }
+
+  // Send an updated IME range with the current caret rect.
+  ui::Range range(ui::Range::InvalidRange());
+  size_t location, length;
+  if (webwidget_->caretOrSelectionRange(&location, &length)) {
+    range.set_start(location);
+    range.set_end(location + length);
+  }
+  Send(new ViewHostMsg_ImeCompositionRangeChanged(routing_id(), range));
 }
 
 void RenderWidget::SchedulePluginMove(

@@ -18,6 +18,7 @@
 #import "chrome/browser/accessibility/browser_accessibility_cocoa.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/browser_trial.h"
+#import "chrome/browser/renderer_host/text_input_client_mac.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #import "chrome/browser/ui/cocoa/rwhvm_editcommand_helper.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
@@ -43,6 +44,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/gl/gl_switches.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
 #include "webkit/glue/webaccessibility.h"
@@ -62,10 +64,14 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
   return modifiers;
 }
 
-@interface RenderWidgetHostViewCocoa (Private)
+// Private methods:
+@interface RenderWidgetHostViewCocoa ()
+@property(nonatomic, assign) NSRange selectedRange;
+@property(nonatomic, assign) NSRange markedRange;
+
 + (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event;
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
-- (void)keyEvent:(NSEvent *)theEvent wasKeyEquivalent:(BOOL)equiv;
+- (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)cancelChildPopups;
 - (void)checkForPluginImeCancellation;
 @end
@@ -854,17 +860,17 @@ void RenderWidgetHostViewMac::ImeUpdateTextInputState(
     if (HasFocus())
       SetTextInputActive(true);
   }
-
-  // We need to convert the coordinate of the cursor rectangle sent from the
-  // renderer and save it. Our input method backend uses a coordinate system
-  // whose origin is the upper-left corner of this view. On the other hand,
-  // Cocoa uses a coordinate system whose origin is the lower-left corner of
-  // this view. So, we convert the cursor rectangle and save it.
-  [cocoa_view_ setCaretRect:[cocoa_view_ flipRectToNSRect:caret_rect]];
 }
 
 void RenderWidgetHostViewMac::ImeCancelComposition() {
   [cocoa_view_ cancelComposition];
+}
+
+void RenderWidgetHostViewMac::ImeCompositionRangeChanged(
+    const ui::Range& range) {
+  // The RangeChanged message is only sent with valid values. The current
+  // caret position (start == end) will be sent if there is no IME range.
+  [cocoa_view_ setMarkedRange:range.ToNSRange()];
 }
 
 void RenderWidgetHostViewMac::DidUpdateBackingStore(
@@ -983,8 +989,10 @@ void RenderWidgetHostViewMac::SetTooltipText(const std::wstring& tooltip_text) {
 // RenderWidgetHostViewCocoa uses the stored selection text,
 // which implements NSServicesRequests protocol.
 //
-void RenderWidgetHostViewMac::SelectionChanged(const std::string& text) {
+void RenderWidgetHostViewMac::SelectionChanged(const std::string& text,
+                                               const ui::Range& range) {
   selected_text_ = text;
+  [cocoa_view_ setSelectedRange:range.ToNSRange()];
 }
 
 bool RenderWidgetHostViewMac::IsPopup() const {
@@ -1386,7 +1394,8 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
 @implementation RenderWidgetHostViewCocoa
 
-@synthesize caretRect = caretRect_;
+@synthesize selectedRange = selectedRange_;
+@synthesize markedRange = markedRange_;
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r {
   self = [super initWithFrame:NSZeroRect];
@@ -2511,31 +2520,34 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)thePoint {
-  NOTIMPLEMENTED();
-  return NSNotFound;
+  DCHECK([self window]);
+  // |thePoint| is in screen coordinates, but needs to be converted to WebKit
+  // coordinates (upper left origin). Scroll offsets will be taken care of in
+  // the renderer.
+  thePoint = [[self window] convertScreenToBase:thePoint];
+  thePoint = [self convertPoint:thePoint fromView:nil];
+  thePoint.y = NSHeight([self frame]) - thePoint.y;
+
+  NSUInteger point =
+      TextInputClientMac::GetInstance()->GetCharacterIndexAtPoint(
+          renderWidgetHostView_->render_widget_host_,
+          gfx::Point(thePoint.x, thePoint.y));
+  return point;
 }
 
 - (NSRect)firstRectForCharacterRange:(NSRange)theRange {
-  // An input method requests a cursor rectangle to display its candidate
-  // window.
-  // Calculate the screen coordinate of the cursor rectangle saved in
-  // RenderWidgetHostViewMac::ImeUpdateTextInputState() and send it to the
-  // input method.
-  // Since this window may be moved since we receive the cursor rectangle last
-  // time we sent the cursor rectangle to the input method, so we should map
-  // from the view coordinate to the screen coordinate every time when an input
-  // method need it.
-  NSRect resultRect = [self convertRect:caretRect_ toView:nil];
-  NSWindow* window = [self window];
-  if (window)
-    resultRect.origin = [window convertBaseToScreen:resultRect.origin];
+  NSRect rect = TextInputClientMac::GetInstance()->GetFirstRectForRange(
+      renderWidgetHostView_->render_widget_host_, theRange);
 
-  return resultRect;
-}
-
-- (NSRange)selectedRange {
-  // Return the selected range saved in the setMarkedText method.
-  return hasMarkedText_ ? selectedRange_ : NSMakeRange(NSNotFound, 0);
+  // The returned rectangle is in WebKit coordinates (upper left origin), so
+  // flip the coordinate system and then convert it into screen coordinates for
+  // return.
+  NSRect viewFrame = [self frame];
+  rect.origin.y = NSHeight(viewFrame) - rect.origin.y;
+  rect.origin.y -= rect.size.height;
+  rect = [self convertRectToBase:rect];
+  rect.origin = [[self window] convertBaseToScreen:rect.origin];
+  return rect;
 }
 
 - (NSRange)markedRange {
@@ -2548,12 +2560,11 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   return hasMarkedText_ ? markedRange_ : NSMakeRange(NSNotFound, 0);
 }
 
-- (NSAttributedString *)attributedSubstringFromRange:(NSRange)range {
-  // TODO(hbono): Even though many input method works without implementing
-  // this method, we need to save a copy of the string in the setMarkedText
-  // method and create a NSAttributedString with the given range.
-  // http://crbug.com/37715
-  return nil;
+- (NSAttributedString*)attributedSubstringFromRange:(NSRange)range {
+  NSAttributedString* str =
+      TextInputClientMac::GetInstance()->GetAttributedSubstringFromRange(
+          renderWidgetHostView_->render_widget_host_, range);
+  return str;
 }
 
 - (NSInteger)conversationIdentifier {
@@ -2612,7 +2623,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   NSString* im_text = isAttributedString ? [string string] : string;
   int length = [im_text length];
 
-  markedRange_ = NSMakeRange(0, length);
+  // |markedRange_| will get set on a callback from ImeSetComposition().
   selectedRange_ = newSelRange;
   markedText_ = base::SysNSStringToUTF16(im_text);
   hasMarkedText_ = (length > 0);

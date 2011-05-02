@@ -72,7 +72,7 @@ NSFont* MakeNSFont(const std::string& font_name, float font_point_size) {
   FontDescriptor desc;
   desc.font_name = UTF8ToUTF16(font_name);
   desc.font_point_size = font_point_size;
-  return desc.nsFont();
+  return desc.ToNSFont();
 }
 
 // Verify that serialization and deserialization of fonts with various styles
@@ -81,12 +81,12 @@ TEST_F(FontSerializationTest, StyledFonts) {
   NSFont* plain_font = [NSFont systemFontOfSize:12.0];
   ASSERT_TRUE(plain_font != nil);
   FontDescriptor desc_plain(plain_font);
-  EXPECT_TRUE(CompareFonts(plain_font, desc_plain.nsFont()));
+  EXPECT_TRUE(CompareFonts(plain_font, desc_plain.ToNSFont()));
   
   NSFont* bold_font = [NSFont boldSystemFontOfSize:30.0];
   ASSERT_TRUE(bold_font != nil);
   FontDescriptor desc_bold(bold_font);
-  EXPECT_TRUE(CompareFonts(bold_font, desc_bold.nsFont()));
+  EXPECT_TRUE(CompareFonts(bold_font, desc_bold.ToNSFont()));
   
   NSFont* italic_bold_font =
       [[NSFontManager sharedFontManager]
@@ -96,7 +96,7 @@ TEST_F(FontSerializationTest, StyledFonts) {
                     size:18.0];
   ASSERT_TRUE(italic_bold_font != nil);
   FontDescriptor desc_italic_bold(italic_bold_font);
-  EXPECT_TRUE(CompareFonts(italic_bold_font, desc_italic_bold.nsFont()));
+  EXPECT_TRUE(CompareFonts(italic_bold_font, desc_italic_bold.ToNSFont()));
 }
 
 // Test that FontDescriptor doesn't crash when used with bad parameters.

@@ -84,7 +84,8 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   virtual void Destroy();
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) {}
   virtual void SetTooltipText(const std::wstring& tooltip_text);
-  virtual void SelectionChanged(const std::string& text);
+  virtual void SelectionChanged(const std::string& text,
+                                const ui::Range& range);
   virtual void ShowingContextMenu(bool showing);
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
   virtual void SetBackground(const SkBitmap& background);

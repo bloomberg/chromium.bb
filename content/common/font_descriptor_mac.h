@@ -17,11 +17,12 @@ class NSFont;
 // Container to allow serializing an NSFont over IPC.
 struct FontDescriptor {
   explicit FontDescriptor(NSFont* font);
+  FontDescriptor(string16 name, float size);
 
   FontDescriptor() : font_point_size(0) {}
 
   // Return an autoreleased NSFont corresponding to the font description.
-  NSFont* nsFont() const;
+  NSFont* ToNSFont() const;
 
   // Name of the font.
   string16 font_name;
