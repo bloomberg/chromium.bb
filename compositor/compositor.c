@@ -116,6 +116,7 @@ wlsc_tweener_init(struct wlsc_tweener *tweener,
 		  double k, double current, double target)
 {
 	tweener->k = k;
+	tweener->friction = 100.0;
 	tweener->current = current;
 	tweener->previous = current;
 	tweener->target = target;
@@ -124,22 +125,28 @@ wlsc_tweener_init(struct wlsc_tweener *tweener,
 WL_EXPORT void
 wlsc_tweener_update(struct wlsc_tweener *tweener, uint32_t msec)
 {
-	double force, current, step;
+	double force, v, current, step;
 
-	step = (msec - tweener->timestamp) / 100.0;
+	step = (msec - tweener->timestamp) / 500.0;
 	tweener->timestamp = msec;
 
 	current = tweener->current;
+	v = current - tweener->previous;
 	force = tweener->k * (tweener->target - current) / 10.0 +
-		(tweener->previous - current);
+		(tweener->previous - current) - v * tweener->friction;
 
 	tweener->current =
 		current + (current - tweener->previous) + force * step * step;
 	tweener->previous = current;
 
 	if (tweener->current >= 1.0) {
+#ifdef TWEENER_BOUNCE
+		tweener->current = 2.0 - tweener->current;
+		tweener->previous = 2.0 - tweener->previous;
+#else
 		tweener->current = 1.0;
 		tweener->previous = 1.0;
+#endif
 	}
 
 	if (tweener->current <= 0.0) {

@@ -525,6 +525,6 @@ shell_init(struct wlsc_compositor *compositor)
 
 	launch_switcher(shell);
 
-	wlsc_tweener_init(&compositor->fade.tweener, 0.8, 1.0, 1.0);
+	wlsc_tweener_init(&compositor->fade.tweener, 40.0, 1.0, 1.0);
 	shell->starting = 1;
 }

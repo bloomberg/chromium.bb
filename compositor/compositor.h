@@ -106,6 +106,7 @@ struct wlsc_animation {
 
 struct wlsc_tweener {
 	double k;
+	double friction;
 	double current;
 	double target;
 	double previous;
