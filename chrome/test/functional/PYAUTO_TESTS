@@ -66,11 +66,6 @@
       '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
       'navigation',
       'notifications',
-      # crbug.com/80063, simple notifications do not show
-      '-notifications.NotificationsTest.testCreateSimpleNotification',
-      '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
-      '-notifications.NotificationsTest.testNotificationReplacement',
-      '-notifications.NotificationsTest.testNotificationWithPropertyMissing',
       'ntp',
       'omnibox',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
