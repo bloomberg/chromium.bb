@@ -6,6 +6,8 @@
 #include <stdio.h>  // FIXME(brettw) erase me.
 #ifndef _WIN32
 #include <sys/time.h>
+#else
+#include <windows.h>
 #endif
 #include <time.h>
 
@@ -275,9 +277,31 @@ class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
     Paint();
   }
 
+#if defined(_WIN32)
+struct timeval {
+  long tv_sec;
+  long tv_usec;
+};
+
+struct timezone {
+  long x;
+  long y;
+};
+
+#define EPOCHFILETIME (116444736000000000i64)
+
+int gettimeofday(struct timeval *tv, struct timezone*) {
+  FILETIME ft;
+  ::GetSystemTimeAsFileTime(&ft);
+  LARGE_INTEGER li = {ft.dwLowDateTime, ft.dwHighDateTime};
+  __int64 t = li.QuadPart - EPOCHFILETIME;
+  tv->tv_sec  = static_cast<long>(t / 10000000);
+  tv->tv_usec = static_cast<long>(t % 10000000);
+  return 0;
+}
+#endif  // if defined(_WIN32)
+
   void UpdateFps() {
-// Time code doesn't currently compile on Windows, just skip FPS for now.
-#ifndef _WIN32
     pp::VarPrivate window = GetWindowObject();
     pp::VarPrivate doc = window.GetProperty("document");
     pp::VarPrivate fps = doc.Call("getElementById", "fps");
@@ -296,7 +320,6 @@ class MyInstance : public pp::InstancePrivate, public MyFetcherClient {
     }
 
     time_at_last_check_ = time_now;
-#endif
   }
 
   // Print interfaces.
