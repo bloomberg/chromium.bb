@@ -262,6 +262,18 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     return chromeos::GetKeyboardOverlayId(input_method_id);
   }
 
+  virtual void SendHandwritingStroke(const HandwritingStroke& stroke) {
+    if (!initialized_successfully_)
+      return;
+    chromeos::SendHandwritingStroke(input_method_status_connection_, stroke);
+  }
+
+  virtual void CancelHandwriting(int n_strokes) {
+    if (!initialized_successfully_)
+      return;
+    chromeos::CancelHandwriting(input_method_status_connection_, n_strokes);
+  }
+
  private:
   // Returns true if the given input method config value is a single
   // element string list that contains an input method ID of a keyboard
@@ -894,6 +906,9 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     return (iter != keyboard_overlay_map_->end()) ?
         iter->second : "";
   }
+
+  virtual void SendHandwritingStroke(const HandwritingStroke& stroke) {}
+  virtual void CancelHandwriting(int n_strokes) {}
 
  private:
   typedef std::map<std::string, std::string> KeyboardOverlayMap;
