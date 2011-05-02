@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "app/mac/nsimage_cache.h"
 #import "chrome/browser/ui/cocoa/animatable_image.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +15,7 @@ class AnimatableImageTest : public CocoaTest {
  public:
   AnimatableImageTest() {
     NSRect frame = NSMakeRect(0, 0, 500, 500);
-    NSImage* image = app::mac::GetCachedImageWithName(@"forward_Template.pdf");
+    NSImage* image = [NSImage imageNamed:NSImageNameComputer];
     animation_ = [[AnimatableImage alloc] initWithImage:image
                                          animationFrame:frame];
   }
@@ -24,8 +23,7 @@ class AnimatableImageTest : public CocoaTest {
   AnimatableImage* animation_;
 };
 
-// http://crbug.com/81219
-TEST_F(AnimatableImageTest, DISABLED_BasicAnimation) {
+TEST_F(AnimatableImageTest, BasicAnimation) {
   [animation_ setStartFrame:CGRectMake(0, 0, 10, 10)];
   [animation_ setEndFrame:CGRectMake(500, 500, 100, 100)];
   [animation_ setStartOpacity:0.1];
@@ -34,8 +32,7 @@ TEST_F(AnimatableImageTest, DISABLED_BasicAnimation) {
   [animation_ startAnimation];
 }
 
-// http://crbug.com/81219
-TEST_F(AnimatableImageTest, DISABLED_CancelAnimation) {
+TEST_F(AnimatableImageTest, CancelAnimation) {
   [animation_ setStartFrame:CGRectMake(0, 0, 10, 10)];
   [animation_ setEndFrame:CGRectMake(500, 500, 100, 100)];
   [animation_ setStartOpacity:0.1];
