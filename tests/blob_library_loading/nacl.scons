@@ -15,9 +15,12 @@ if env.Bit('use_sandboxed_translator'):
   Return()
 
 env.Append(LINKFLAGS='-Wl,--section-start,.rodata=${IRT_DATA_REGION_START}')
+# An explicit output name is specified so an object file is created in the
+# blob_library_loading output directory.
+hw_o = env.ComponentObject('hello_world.o', '../hello_world/hello_world.c')
 user_executable = env.ComponentProgram(
     'hello_world_with_segment_gap.nexe',
-    '${SCONSTRUCT_DIR}/tests/hello_world/hello_world.c')
+    hw_o)
 
 node = env.CommandSelLdrTestNacl(
     'blob_library_loading_test.out',
