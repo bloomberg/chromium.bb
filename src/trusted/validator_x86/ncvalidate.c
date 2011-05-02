@@ -555,9 +555,8 @@ static void ValidateIndirect5(const NCDecoderInst *dinst) {
   const uint8_t         kReg_ESP = 4;
   NCValidatorState* vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
 
-  struct NCDecoderInst *andinst = PreviousInst(dinst, -1);
-  assert(andinst != NULL);
-  if (andinst->inst.bytes.length == 0) {
+  struct NCDecoderInst *andinst = PreviousInst(dinst, 1);
+  if ((andinst == NULL) || (andinst->inst.bytes.length != 3)) {
     BadInstructionError(dinst, "Unsafe indirect jump");
     Stats_UnsafeIndirect(vstate);
     return;
@@ -787,10 +786,10 @@ void ValidateIndirect5Replacement(const struct NCDecoderInst *dinst_old,
                                   const struct NCDecoderInst *dinst_new) {
   do {
     /* check that the and-guard is 3 bytes and bit-for-bit identical */
-    NCDecoderInst *andinst_old = PreviousInst(dinst_old, -1);
-    NCDecoderInst *andinst_new = PreviousInst(dinst_new, -1);
-    if (andinst_old->inst.bytes.length != 3) break;
-    if (andinst_new->inst.bytes.length != 3) break;
+    NCDecoderInst *andinst_old = PreviousInst(dinst_old, 1);
+    NCDecoderInst *andinst_new = PreviousInst(dinst_new, 1);
+    if ((andinst_old == NULL) || (andinst_old->inst.bytes.length != 3)) break;
+    if ((andinst_new == NULL) || (andinst_new->inst.bytes.length != 3)) break;
     if (memcmp(andinst_old->inst.bytes.byte,
                andinst_new->inst.bytes.byte, 3) != 0) break;
 

@@ -359,14 +359,19 @@ typedef struct NCDecoderInst {
    * in the corresponding decoder state NCDecoderState.
    */
   size_t inst_index;
+  /* The number of instructions parsed so far (including this instrruction).
+   * Used to detect when one tries to get a previous instruction that doesn't
+   * exist.
+   */
+  size_t inst_count;
 } NCDecoderInst;
 
 /* Given a (decoded) instruction, return the instruction that appeared
- * n elements before it.
+ * n elements before it, or NULL if no such instruction exists.
  *
  * Parameters:
  *    dinst - The instruction to look up relative to.
- *    n - number of elements back to look (must be negative).
+ *    n - number of elements back to look.
  */
 extern NCDecoderInst *PreviousInst(const NCDecoderInst* dinst, int n);
 

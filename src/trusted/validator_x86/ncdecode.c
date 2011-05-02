@@ -398,14 +398,26 @@ void MaybeGet3ByteOpInfo(NCDecoderInst* dinst) {
   }
 }
 
-struct NCDecoderInst* PreviousInst(const NCDecoderInst* dinst,
-                                   int nindex) {
+/* Gets an instruction nindex away from the given instruction.
+ * WARNING: Does not do bounds checking, other than rolling the
+ * index as needed to stay within the (circular) instruction buffer.
+ */
+static NCDecoderInst* NCGetInstDiff(const NCDecoderInst* dinst,
+                                      int nindex) {
   /* Note: This code also handles increments, so that we can
    * use the same code for both.
    */
-  size_t index = (dinst->inst_index + nindex + dinst->dstate->inst_buffer_size)
-      & (dinst->dstate->inst_buffer_size - 1);
+  size_t index = (dinst->inst_index + nindex) % dinst->dstate->inst_buffer_size;
   return &dinst->dstate->inst_buffer[index];
+}
+
+struct NCDecoderInst* PreviousInst(const NCDecoderInst* dinst,
+                                   int nindex) {
+  if ((nindex > 0) && (((size_t) nindex) < dinst->inst_count)) {
+    return NCGetInstDiff(dinst, -nindex);
+  } else {
+    return NULL;
+  }
 }
 
 /* Initialize the decoder state fields, assuming constructor parameter
@@ -420,6 +432,7 @@ static void NCDecoderStateInitFields(NCDecoderState* this) {
   for (dbindex = 0; dbindex < this->inst_buffer_size; ++dbindex) {
     this->inst_buffer[dbindex].dstate       = this;
     this->inst_buffer[dbindex].inst_index   = dbindex;
+    this->inst_buffer[dbindex].inst_count   = 0;
     this->inst_buffer[dbindex].vpc          = 0;
     NCInstBytesInitMemory(&this->inst_buffer[dbindex].inst.bytes,
                           &this->memory);
@@ -485,9 +498,10 @@ static NCDecoderInst* IncrementInst(NCDecoderInst* inst) {
   /* giving PreviousInst a positive number will get NextInst
    * better to keep the buffer switching logic in one place
    */
-  NCDecoderInst* next_inst = PreviousInst(inst, 1);
+  NCDecoderInst* next_inst = NCGetInstDiff(inst, 1);
   next_inst->vpc = inst->vpc + inst->inst.bytes.length;
   next_inst->dstate->cur_inst_index = next_inst->inst_index;
+  next_inst->inst_count = inst->inst_count + 1;
   return next_inst;
 }
 
@@ -574,6 +588,7 @@ Bool NCDecoderStateDecode(NCDecoderState* this) {
                 "-%"NACL_PRIxNaClPcAddress"])\n",
                 (void*) this->memory.mpc, this->vbase, vlimit) );
   (this->new_segment_fn)(this);
+  dinst->inst_count = 1;
   while (dinst->vpc < vlimit) {
     ConsumeNextInstruction(dinst);
     if (this->memory.overflow_count) {
