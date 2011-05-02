@@ -814,4 +814,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderImageJpeg) {
   NavigateToDestURL();
 }
 
+// Checks that a prerender of a CRX will result in a cancellation due to
+// download.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCrx) {
+  PrerenderTestURL("files/prerender/extension.crx", FINAL_STATUS_DOWNLOAD, 1);
+}
+
 }  // namespace prerender
