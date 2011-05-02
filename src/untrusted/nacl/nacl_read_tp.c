@@ -6,6 +6,7 @@
 
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
+#include "native_client/src/untrusted/nacl/tls.h"
 
 /*
  * The compiler generates calls to __nacl_read_tp() for TLS accesses.

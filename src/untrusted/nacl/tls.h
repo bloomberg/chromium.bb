@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -131,6 +131,9 @@ void *__nacl_tls_tdb_start(void* combined_area);
 /* Initializes the TLS of a combined area by copying the TLS data area
  * from the template (ELF image .tdata) and zeroing the TLS BSS area. */
 void __nacl_tls_data_bss_initialize_from_template(void* combined_area);
+
+/* Read the per-thread pointer.  */
+void *__nacl_read_tp(void);
 
 /************************************************************************/
 /* Functions defined in libplatform.a (src/untrusted/stubs/tls.c):      */

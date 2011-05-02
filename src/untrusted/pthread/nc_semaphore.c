@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "native_client/src/untrusted/nacl/nacl_thread.h"
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 #include "native_client/src/untrusted/pthread/semaphore.h"
@@ -31,7 +31,7 @@ int sem_init(sem_t *sem, int pshared, unsigned int value) {
     errno = EINVAL;
     return -1;
   }
-  int err = nacl_sem_create(&sem->handle, value);
+  int err = __libnacl_irt_sem.sem_create(&sem->handle, value);
   if (0 != err) {
     errno = err;
     return -1;
@@ -58,7 +58,7 @@ int sem_wait(sem_t *sem) {
     errno = EINVAL;
     return -1;
   }
-  int err = nacl_sem_wait(sem->handle);
+  int err = __libnacl_irt_sem.sem_wait(sem->handle);
   if (0 != err) {
     errno = err;
     return -1;
@@ -71,7 +71,7 @@ int sem_post(sem_t *sem) {
     errno = EINVAL;
     return -1;
   }
-  int err = nacl_sem_post(sem->handle);
+  int err = __libnacl_irt_sem.sem_post(sem->handle);
   if (0 != err) {
     errno = err;
     return -1;

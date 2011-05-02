@@ -18,9 +18,8 @@
 
 #include "native_client/src/include/nacl_base.h"
 
-#include "native_client/src/untrusted/nacl/nacl_thread.h"
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/tls.h"
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 #include "native_client/src/untrusted/pthread/nc_hash.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
@@ -72,7 +71,12 @@ int __nc_memory_block_counter[2];
 /* Internal functions */
 
 static inline nc_thread_descriptor_t *nc_get_tdb(void) {
-  return nacl_tls_get();
+  /*
+   * Fetch the thread-specific data pointer.  This is usually just
+   * a wrapper around __libnacl_irt_tls.tls_get() but we don't use
+   * that here so that the IRT build can override the definition.
+   */
+  return __nacl_read_tp();
 }
 
 static int nc_allocate_thread_id_mu(nc_basic_thread_data_t *basic_data) {
@@ -505,10 +509,9 @@ int pthread_create(pthread_t *thread_id,
   memset(esp, 0, return_addr_size);  /* NULL/0x00 pun is not strictly legal. */
 
   /* start the thread */
-  retval = nacl_thread_create(FUN_TO_VOID_PTR(nc_thread_starter),
-                              esp,
-                              new_tdb,
-                              sizeof(nc_thread_descriptor_t));
+  retval = __libnacl_irt_thread.thread_create(
+      FUN_TO_VOID_PTR(nc_thread_starter), esp,
+      new_tdb, sizeof(nc_thread_descriptor_t));
   if (0 != retval) {
     pthread_mutex_lock(&__nc_thread_management_lock);
     /* TODO(gregoryd) : replace with atomic decrement? */
@@ -646,7 +649,8 @@ void pthread_exit (void* retval) {
   }
 
   pthread_mutex_unlock(&__nc_thread_management_lock);
-  nacl_thread_exit(is_used);
+  __libnacl_irt_thread.thread_exit(is_used);
+  while (1) (*(void (*)(void)) 0)();  /* Crash.  */
 }
 
 int pthread_join(pthread_t thread_id, void **thread_return) {
@@ -839,7 +843,7 @@ int pthread_setschedprio(pthread_t thread_id, int prio) {
      */
     return EPERM;
   }
-  return nacl_thread_nice(prio);
+  return __libnacl_irt_thread.thread_nice(prio);
 }
 
 int pthread_attr_init (pthread_attr_t *attr) {
