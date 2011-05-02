@@ -154,11 +154,20 @@ void PhishingClassifier::DOMExtractionFinished(bool success) {
 
 void PhishingClassifier::TermExtractionFinished(bool success) {
   if (success) {
+    WebKit::WebView* web_view = render_view_->webview();
+    if (!web_view) {
+      RunFailureCallback();
+    }
+    WebKit::WebFrame* main_frame = web_view->mainFrame();
+    if (!main_frame) {
+      RunFailureCallback();
+    }
+
     // Hash all of the features so that they match the model, then compute
     // the score.
     FeatureMap hashed_features;
     ClientPhishingRequest verdict;
-    verdict.set_url(render_view_->webview()->mainFrame()->url().spec());
+    verdict.set_url(main_frame->url().spec());
     for (base::hash_map<std::string, double>::const_iterator it =
              features_->features().begin();
          it != features_->features().end(); ++it) {
