@@ -317,12 +317,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       // The daemon has just been started. To select the initial input method
       // engine correctly, update |tentative_current_input_method_id_|.
       if (tentative_current_input_method_id_.empty()) {
-        tentative_current_input_method_id_ = current_input_method_.id;
-      }
-      if (std::find(value.string_list_value.begin(),
-                    value.string_list_value.end(),
-                    tentative_current_input_method_id_)
-          != value.string_list_value.end()) {
         // Since the |current_input_method_| is in the preloaded engine list,
         // switch to the engine. This is necessary ex. for the following case:
         // 1. "xkb:jp::jpn" is enabled. ibus-daemon is not running.
@@ -332,14 +326,18 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         //    on top of the preloaded engine list.
         // 4. Therefore, we have to change the current engine to "xkb:jp::jpn"
         //    explicitly to avoid unexpected engine switch.
-      } else {
-        // The |current_input_method_| is NOT in the preloaded engine list. In
-        // this case, we should switch to the first one in the list in order to
-        // workaround crosbug.com/12244.
-        // TODO(yusukes): When crosbug.com/13406, which is a feature request to
-        // ibus-daemon, is fixed, probably we should replace the line below to
-        // "tentative_current_input_method_id_.clear();"
-        tentative_current_input_method_id_ = value.string_list_value[0];
+        tentative_current_input_method_id_ = current_input_method_.id;
+      }
+
+      if (std::find(value.string_list_value.begin(),
+                    value.string_list_value.end(),
+                    tentative_current_input_method_id_)
+          == value.string_list_value.end()) {
+        // The |current_input_method_| is NOT in the preloaded engine list.
+        // In this case, ibus-daemon will automatically select the first engine
+        // in the list, |value.string_list_value[0]|, and send global engine
+        // changed signal to Chrome. See crosbug.com/13406.
+        tentative_current_input_method_id_.clear();
       }
     }
   }
