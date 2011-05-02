@@ -181,7 +181,6 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	surface->visual = NULL;
 	surface->image = EGL_NO_IMAGE_KHR;
 	surface->saved_texture = 0;
-	surface->buffer = NULL;
 	surface->x = x;
 	surface->y = y;
 	surface->width = width;
@@ -286,8 +285,7 @@ wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 
 		surfaces_attached_to = buffer->user_data;
 
-		if (es->buffer)
-			wl_list_remove(&es->buffer_link);
+		wl_list_remove(&es->buffer_link);
 		wl_list_insert(surfaces_attached_to, &es->buffer_link);
 	} else {
 		es->image = ec->create_image(ec->display, NULL,
@@ -840,7 +838,6 @@ surface_attach(struct wl_client *client,
 
 	wlsc_buffer_attach(buffer, surface);
 
-	es->buffer = buffer;
 	switch (es->map_type) {
 	case WLSC_SURFACE_MAP_FULLSCREEN:
 		es->x = (es->fullscreen_output->width - es->width) / 2;
@@ -1765,8 +1762,8 @@ shm_buffer_destroyed(struct wl_buffer *buffer)
 	struct wlsc_surface *es, *next;
 
 	wl_list_for_each_safe(es, next, surfaces_attached_to, buffer_link) {
-		es->buffer = NULL;
 		wl_list_remove(&es->buffer_link);
+		wl_list_init(&es->buffer_link);
 	}
 
 	free(surfaces_attached_to);

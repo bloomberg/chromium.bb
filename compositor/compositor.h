@@ -213,7 +213,6 @@ struct wlsc_surface {
 	struct wlsc_matrix matrix;
 	struct wlsc_matrix matrix_inv;
 	struct wl_visual *visual;
-	struct wl_buffer *buffer;
 	struct wlsc_output *output;
 	enum wlsc_surface_map_type map_type;
 	struct wlsc_output *fullscreen_output;
