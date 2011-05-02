@@ -5,6 +5,7 @@
 #include "webkit/plugins/ppapi/ppb_transport_impl.h"
 
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
@@ -16,10 +17,15 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/var.h"
 
+using webkit_glue::P2PTransport;
+
 namespace webkit {
 namespace ppapi {
 
 namespace {
+
+const char kUdpProtocolName[] = "udp";
+const char kTcpProtocolName[] = "tcp";
 
 PP_Resource CreateTransport(PP_Instance instance_id, const char* name,
                             const char* proto) {
@@ -137,7 +143,16 @@ PPB_Transport_Impl* PPB_Transport_Impl::AsPPB_Transport_Impl() {
 
 bool PPB_Transport_Impl::Init(const char* name, const char* proto) {
   name_ = name;
-  proto_ = proto;
+
+  if (base::strcasecmp(proto, kUdpProtocolName) == 0) {
+    use_tcp_ = false;
+  } else if (base::strcasecmp(proto, kTcpProtocolName) == 0) {
+    use_tcp_ = true;
+  } else {
+    LOG(WARNING) << "Unknown protocol: " << proto;
+    return false;
+  }
+
   p2p_transport_.reset(instance()->delegate()->CreateP2PTransport());
   return p2p_transport_.get() != NULL;
 }
@@ -153,13 +168,14 @@ int32_t PPB_Transport_Impl::Connect(PP_CompletionCallback callback) {
   if (!p2p_transport_.get())
     return PP_ERROR_FAILED;
 
-  // TODO(sergeyu): Use |proto_| here.
-
   // Connect() has already been called.
   if (started_)
     return PP_ERROR_INPROGRESS;
 
-  if (!p2p_transport_->Init(name_, "", this))
+  P2PTransport::Protocol protocol = use_tcp_ ?
+      P2PTransport::PROTOCOL_TCP : P2PTransport::PROTOCOL_UDP;
+
+  if (!p2p_transport_->Init(name_, protocol, "", this))
     return PP_ERROR_FAILED;
 
   started_ = true;
@@ -282,6 +298,15 @@ void PPB_Transport_Impl::OnStateChange(webkit_glue::P2PTransport::State state) {
     scoped_refptr<TrackedCompletionCallback> callback;
     callback.swap(connect_callback_);
     callback->Run(PP_OK);
+  }
+}
+
+void PPB_Transport_Impl::OnError(int error) {
+  writable_ = false;
+  if (connect_callback_.get() && !connect_callback_->completed()) {
+    scoped_refptr<TrackedCompletionCallback> callback;
+    callback.swap(connect_callback_);
+    callback->Run(PP_ERROR_FAILED);
   }
 }
 

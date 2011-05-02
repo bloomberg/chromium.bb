@@ -43,13 +43,14 @@ class PPB_Transport_Impl : public Resource,
   // webkit_glue::P2PTransport::EventHandler implementation.
   virtual void OnCandidateReady(const std::string& address) OVERRIDE;
   virtual void OnStateChange(webkit_glue::P2PTransport::State state) OVERRIDE;
+  virtual void OnError(int error) OVERRIDE;
 
  private:
   void OnRead(int result);
   void OnWritten(int result);
 
   std::string name_;
-  std::string proto_;
+  bool use_tcp_;
   bool started_;
   scoped_ptr<webkit_glue::P2PTransport> p2p_transport_;
   bool writable_;

@@ -25,14 +25,16 @@ class TestTransport : public TestCase {
   virtual void RunTest();
 
  private:
-  std::string InitTargets();
+  std::string InitTargets(const char* proto);
   std::string Connect();
   std::string Clean();
 
   std::string TestCreate();
   std::string TestConnect();
-  std::string TestSendData();
-  std::string TestConnectAndClose();
+  std::string TestSendDataTcp();
+  std::string TestSendDataUdp();
+  std::string TestConnectAndCloseTcp();
+  std::string TestConnectAndCloseUdp();
 
   // Used by the tests that access the C API directly.
   const PPB_Transport_Dev* transport_interface_;

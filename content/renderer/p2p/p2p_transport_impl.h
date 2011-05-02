@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "net/base/completion_callback.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "webkit/glue/p2p_transport.h"
 
@@ -22,6 +23,7 @@ class TransportChannelImpl;
 
 namespace jingle_glue {
 class TransportChannelSocketAdapter;
+class PseudoTcpAdapter;
 }  // namespace jingle_glue
 
 namespace talk_base {
@@ -46,7 +48,9 @@ class P2PTransportImpl : public webkit_glue::P2PTransport,
   virtual ~P2PTransportImpl();
 
   // webkit_glue::P2PTransport interface.
-  virtual bool Init(const std::string& name, const std::string& config,
+  virtual bool Init(const std::string& name,
+                    Protocol protocol,
+                    const std::string& config,
                     EventHandler* event_handler) OVERRIDE;
   virtual bool AddRemoteCandidate(const std::string& address) OVERRIDE;
   virtual net::Socket* GetChannel() OVERRIDE;
@@ -64,6 +68,8 @@ class P2PTransportImpl : public webkit_glue::P2PTransport,
   bool DeserializeCandidate(const std::string& address,
                             cricket::Candidate* candidate);
 
+  void OnTcpConnected(int result);
+
   std::string name_;
   EventHandler* event_handler_;
   State state_;
@@ -75,6 +81,9 @@ class P2PTransportImpl : public webkit_glue::P2PTransport,
   scoped_ptr<cricket::P2PTransportChannel> channel_;
 
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> channel_adapter_;
+  scoped_ptr<jingle_glue::PseudoTcpAdapter> pseudo_tcp_adapter_;
+
+  net::CompletionCallbackImpl<P2PTransportImpl> connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PTransportImpl);
 };

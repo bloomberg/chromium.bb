@@ -8,8 +8,15 @@
 #include "net/base/sys_byteorder.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 
+// TODO(sergeyu): Currently the NetworkManager interface is
+// syncronous, but it gets list of networks from the browser process
+// asyncrhonously, so EnumNetworks() may return an empty list if we
+// haven't received list of networks from the browser. Make
+// NetworkManager interface asynchronous to avoid this problem.
+
 IpcNetworkManager::IpcNetworkManager(P2PSocketDispatcher* socket_dispatcher)
     : socket_dispatcher_(socket_dispatcher) {
+  socket_dispatcher_->RequestNetworks();
 }
 
 IpcNetworkManager::~IpcNetworkManager() {
@@ -18,7 +25,8 @@ IpcNetworkManager::~IpcNetworkManager() {
 bool IpcNetworkManager::EnumNetworks(
     bool include_ignored, std::vector<talk_base::Network*>* networks) {
   socket_dispatcher_->RequestNetworks();
-  const net::NetworkInterfaceList& list = socket_dispatcher_->networks();
+  net::NetworkInterfaceList list;
+  socket_dispatcher_->GetNetworks(&list);
   for (net::NetworkInterfaceList::const_iterator it = list.begin();
        it != list.end(); it++) {
     uint32 address;

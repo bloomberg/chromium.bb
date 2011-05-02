@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/synchronization/lock.h"
 #include "content/common/p2p_sockets.h"
 #include "content/renderer/p2p/socket_client.h"
 #include "content/renderer/render_view_observer.h"
@@ -39,7 +40,7 @@ class P2PSocketDispatcher : public RenderViewObserver {
   virtual ~P2PSocketDispatcher();
 
   void RequestNetworks();
-  const net::NetworkInterfaceList& networks() const { return networks_; }
+  void GetNetworks(net::NetworkInterfaceList* networks);
 
   // RenderViewObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message);
@@ -66,6 +67,7 @@ class P2PSocketDispatcher : public RenderViewObserver {
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   IDMap<P2PSocketClient> clients_;
   net::NetworkInterfaceList networks_;
+  base::Lock networks_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcher);
 };

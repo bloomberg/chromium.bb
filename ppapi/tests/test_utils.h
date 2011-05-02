@@ -19,6 +19,11 @@ class TestCompletionCallback {
  public:
   TestCompletionCallback(PP_Instance instance);
 
+  // Waits for the callback to be called and returns the
+  // result. Returns immediately if the callback was previously called
+  // and the result wasn't returned (i.e. each result value received
+  // by the callback is returned by WaitForResult() once and only
+  // once).
   int32_t WaitForResult();
 
   operator pp::CompletionCallback() const;
@@ -31,6 +36,7 @@ class TestCompletionCallback {
  private:
   static void Handler(void* user_data, int32_t result);
 
+  bool have_result_;
   int32_t result_;
   bool post_quit_task_;
   unsigned run_count_;

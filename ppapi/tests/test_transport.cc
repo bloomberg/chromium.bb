@@ -22,7 +22,7 @@
 REGISTER_TEST_CASE(Transport);
 
 #define RUN_SUBTEST(function) { \
-    std::string result = function(); \
+    std::string result = function; \
     if (!result.empty()) \
       return result; \
   }
@@ -96,13 +96,15 @@ bool TestTransport::Init() {
 void TestTransport::RunTest() {
   RUN_TEST(Create);
   RUN_TEST(Connect);
-  RUN_TEST(SendData);
-  RUN_TEST(ConnectAndClose);
+  RUN_TEST(SendDataUdp);
+  RUN_TEST(SendDataTcp);
+  RUN_TEST(ConnectAndCloseUdp);
+  RUN_TEST(ConnectAndCloseTcp);
 }
 
-std::string TestTransport::InitTargets() {
-  transport1_.reset(new pp::Transport_Dev(instance_, kTestChannelName, ""));
-  transport2_.reset(new pp::Transport_Dev(instance_, kTestChannelName, ""));
+std::string TestTransport::InitTargets(const char* proto) {
+  transport1_.reset(new pp::Transport_Dev(instance_, kTestChannelName, proto));
+  transport2_.reset(new pp::Transport_Dev(instance_, kTestChannelName, proto));
 
   ASSERT_TRUE(transport1_.get() != NULL);
   ASSERT_TRUE(transport2_.get() != NULL);
@@ -149,7 +151,7 @@ std::string TestTransport::Clean() {
 }
 
 std::string TestTransport::TestCreate() {
-  RUN_SUBTEST(InitTargets);
+  RUN_SUBTEST(InitTargets("udp"));
 
   Clean();
 
@@ -157,17 +159,17 @@ std::string TestTransport::TestCreate() {
 }
 
 std::string TestTransport::TestConnect() {
-  RUN_SUBTEST(InitTargets);
-  RUN_SUBTEST(Connect);
+  RUN_SUBTEST(InitTargets("udp"));
+  RUN_SUBTEST(Connect());
 
   Clean();
 
   PASS();
 }
 
-std::string TestTransport::TestSendData() {
-  RUN_SUBTEST(InitTargets);
-  RUN_SUBTEST(Connect);
+std::string TestTransport::TestSendDataUdp() {
+  RUN_SUBTEST(InitTargets("udp"));
+  RUN_SUBTEST(Connect());
 
   StreamReader reader(transport1_.get());
 
@@ -206,9 +208,72 @@ std::string TestTransport::TestSendData() {
   PASS();
 }
 
-std::string TestTransport::TestConnectAndClose() {
-  RUN_SUBTEST(InitTargets);
-  RUN_SUBTEST(Connect);
+std::string TestTransport::TestSendDataTcp() {
+  RUN_SUBTEST(InitTargets("tcp"));
+  RUN_SUBTEST(Connect());
+
+  StreamReader reader(transport1_.get());
+
+  std::vector<char> sent_data;
+  for (int i = 0; i < kNumPackets; ++i) {
+    std::vector<char> send_buffer(kSendBufferSize);
+    for (size_t j = 0; j < send_buffer.size(); ++j) {
+      send_buffer[j] = rand() % 256;
+    }
+
+    TestCompletionCallback send_cb(instance_->pp_instance());
+    int result = transport2_->Send(&send_buffer[0], send_buffer.size(),
+                                   send_cb);
+    if (result == PP_OK_COMPLETIONPENDING)
+      result = send_cb.WaitForResult();
+    ASSERT_TRUE(result > 0);
+    sent_data.insert(sent_data.end(), send_buffer.begin(),
+                     send_buffer.begin() + result);
+  }
+
+  // Wait for 1 second.
+  TestCompletionCallback wait_cb(instance_->pp_instance());
+  pp::Module::Get()->core()->CallOnMainThread(1000, wait_cb);
+  ASSERT_EQ(wait_cb.WaitForResult(), PP_OK);
+
+  ASSERT_TRUE(reader.errors().size() == 0);
+
+  std::vector<char> received_data;
+  for (std::list<std::vector<char> >::const_iterator it =
+           reader.received().begin(); it != reader.received().end(); ++it) {
+    received_data.insert(received_data.end(), it->begin(), it->end());
+  }
+  ASSERT_EQ(sent_data, received_data);
+
+  Clean();
+
+  PASS();
+}
+
+std::string TestTransport::TestConnectAndCloseUdp() {
+  RUN_SUBTEST(InitTargets("udp"));
+  RUN_SUBTEST(Connect());
+
+  std::vector<char> recv_buffer(kReadBufferSize);
+  TestCompletionCallback recv_cb(instance_->pp_instance());
+  ASSERT_EQ(
+      transport1_->Recv(&recv_buffer[0], recv_buffer.size(), recv_cb),
+      PP_OK_COMPLETIONPENDING);
+
+  // Close the transport and verify that callback is aborted.
+  ASSERT_EQ(transport1_->Close(), PP_OK);
+
+  ASSERT_EQ(recv_cb.run_count(), 1);
+  ASSERT_EQ(recv_cb.result(), PP_ERROR_ABORTED);
+
+  Clean();
+
+  PASS();
+}
+
+std::string TestTransport::TestConnectAndCloseTcp() {
+  RUN_SUBTEST(InitTargets("tcp"));
+  RUN_SUBTEST(Connect());
 
   std::vector<char> recv_buffer(kReadBufferSize);
   TestCompletionCallback recv_cb(instance_->pp_instance());

@@ -27,16 +27,20 @@ std::string ReportError(const char* method, int32_t error) {
 }
 
 TestCompletionCallback::TestCompletionCallback(PP_Instance instance)
-    : result_(PP_OK_COMPLETIONPENDING),
+    : have_result_(false),
+      result_(PP_OK_COMPLETIONPENDING),
       post_quit_task_(false),
       run_count_(0),
       instance_(instance) {
 }
 
 int32_t TestCompletionCallback::WaitForResult() {
-  result_ = PP_OK_COMPLETIONPENDING;  // Reset
-  post_quit_task_ = true;
-  GetTestingInterface()->RunMessageLoop(instance_);
+  if (!have_result_) {
+    result_ = PP_OK_COMPLETIONPENDING;  // Reset
+    post_quit_task_ = true;
+    GetTestingInterface()->RunMessageLoop(instance_);
+  }
+  have_result_ = false;
   return result_;
 }
 
@@ -50,6 +54,7 @@ void TestCompletionCallback::Handler(void* user_data, int32_t result) {
   TestCompletionCallback* callback =
       static_cast<TestCompletionCallback*>(user_data);
   callback->result_ = result;
+  callback->have_result_ = true;
   callback->run_count_++;
   if (callback->post_quit_task_) {
     callback->post_quit_task_ = false;

@@ -10,7 +10,9 @@
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/render_view.h"
 #include "jingle/glue/channel_socket_adapter.h"
+#include "jingle/glue/pseudotcp_adapter.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "net/base/net_errors.h"
 #include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
 
@@ -20,18 +22,26 @@ P2PTransportImpl::P2PTransportImpl(
     : event_handler_(NULL),
       state_(STATE_NONE),
       network_manager_(network_manager),
-      socket_factory_(socket_factory) {
+      socket_factory_(socket_factory),
+      ALLOW_THIS_IN_INITIALIZER_LIST(connect_callback_(
+          this, &P2PTransportImpl::OnTcpConnected)) {
 }
 
 P2PTransportImpl::P2PTransportImpl(P2PSocketDispatcher* socket_dispatcher)
-    : network_manager_(new IpcNetworkManager(socket_dispatcher)),
-      socket_factory_(new IpcPacketSocketFactory(socket_dispatcher)) {
+    : event_handler_(NULL),
+      state_(STATE_NONE),
+      network_manager_(new IpcNetworkManager(socket_dispatcher)),
+      socket_factory_(new IpcPacketSocketFactory(socket_dispatcher)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(connect_callback_(
+          this, &P2PTransportImpl::OnTcpConnected)) {
 }
 
 P2PTransportImpl::~P2PTransportImpl() {
 }
 
-bool P2PTransportImpl::Init(const std::string& name, const std::string& config,
+bool P2PTransportImpl::Init(const std::string& name,
+                            Protocol protocol,
+                            const std::string& config,
                             EventHandler* event_handler) {
   DCHECK(event_handler);
 
@@ -52,17 +62,28 @@ bool P2PTransportImpl::Init(const std::string& name, const std::string& config,
       name, "", NULL, allocator_.get()));
   channel_->SignalRequestSignaling.connect(
       this, &P2PTransportImpl::OnRequestSignaling);
-  channel_->SignalWritableState.connect(
-      this, &P2PTransportImpl::OnReadableState);
-  channel_->SignalWritableState.connect(
-      this, &P2PTransportImpl::OnWriteableState);
   channel_->SignalCandidateReady.connect(
       this, &P2PTransportImpl::OnCandidateReady);
+
+  if (protocol == PROTOCOL_UDP) {
+    channel_->SignalWritableState.connect(
+        this, &P2PTransportImpl::OnReadableState);
+    channel_->SignalWritableState.connect(
+        this, &P2PTransportImpl::OnWriteableState);
+  }
 
   channel_adapter_.reset(new jingle_glue::TransportChannelSocketAdapter(
       channel_.get()));
 
   channel_->Connect();
+
+  if (protocol == PROTOCOL_TCP) {
+    pseudo_tcp_adapter_.reset(new jingle_glue::PseudoTcpAdapter(
+        channel_adapter_.release()));
+    int result = pseudo_tcp_adapter_->Connect(&connect_callback_);
+    if (result != net::ERR_IO_PENDING)
+      OnTcpConnected(result);
+  }
 
   return true;
 }
@@ -163,5 +184,20 @@ bool P2PTransportImpl::DeserializeCandidate(const std::string& address,
 }
 
 net::Socket* P2PTransportImpl::GetChannel() {
-  return channel_adapter_.get();
+  if (pseudo_tcp_adapter_.get()) {
+    DCHECK(!channel_adapter_.get());
+    return pseudo_tcp_adapter_.get();
+  } else {
+    DCHECK(channel_adapter_.get());
+    return channel_adapter_.get();
+  }
+}
+
+void P2PTransportImpl::OnTcpConnected(int result) {
+  if (result < 0) {
+    event_handler_->OnError(result);
+    return;
+  }
+  state_ = static_cast<State>(STATE_READABLE | STATE_WRITABLE);
+  event_handler_->OnStateChange(state_);
 }

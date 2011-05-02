@@ -22,6 +22,11 @@ class P2PTransport {
     STATE_READABLE = 2,
   };
 
+  enum Protocol {
+    PROTOCOL_UDP = 0,
+    PROTOCOL_TCP = 1,
+  };
+
   class EventHandler {
    public:
     virtual ~EventHandler() {}
@@ -31,6 +36,11 @@ class P2PTransport {
 
     // Called when readable of writable state of the stream changes.
     virtual void OnStateChange(State state) = 0;
+
+    // Called when an error occures (e.g. TCP handshake
+    // failed). P2PTransport object is not usable after that and
+    // should be destroyed.
+    virtual void OnError(int error) = 0;
   };
 
   virtual ~P2PTransport() {}
@@ -38,6 +48,7 @@ class P2PTransport {
   // Initialize transport using specified configuration. Returns true
   // if initialization succeeded.
   virtual bool Init(const std::string& name,
+                    Protocol protocol,
                     const std::string& config,
                     EventHandler* event_handler) = 0;
 
