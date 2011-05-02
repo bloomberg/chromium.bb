@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -17,9 +17,8 @@ struct PP_Var;
 
 /**
  * @file
- * This file defines the PPP_Instance structure - a series of points to methods
- * that you must implement in your model.
- *
+ * This file defines the PPP_Instance structure - a series of pointers to
+ * methods that you must implement in your module.
  */
 
 /** @addtogroup Interfaces
