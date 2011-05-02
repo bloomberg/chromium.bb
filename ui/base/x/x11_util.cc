@@ -231,7 +231,7 @@ bool GetWindowRect(XID window, gfx::Rect* rect) {
                     &width, &height, &border_width, &depth))
     return false;
 
-  if (!XTranslateCoordinates(GetSecondaryDisplay(), window, root,
+  if (!XTranslateCoordinates(GetXDisplay(), window, root,
                              0, 0, &x, &y, &child))
     return false;
 
