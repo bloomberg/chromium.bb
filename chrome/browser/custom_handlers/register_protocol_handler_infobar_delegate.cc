@@ -5,6 +5,7 @@
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
