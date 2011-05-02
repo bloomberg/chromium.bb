@@ -77,7 +77,7 @@ struct meego_tablet_client {
 struct meego_tablet_zoom {
 	struct wlsc_surface *surface;
 	struct wlsc_animation animation;
-	struct wlsc_tweener tweener;
+	struct wlsc_spring spring;
 	struct wlsc_transform transform;
 };
 
@@ -104,16 +104,16 @@ meego_tablet_zoom_frame(struct wlsc_animation *animation,
 	struct wlsc_surface *es = zoom->surface;
 	GLfloat scale;
 
-	wlsc_tweener_update(&zoom->tweener, msecs);
+	wlsc_spring_update(&zoom->spring, msecs);
 
-	if (wlsc_tweener_done(&zoom->tweener)) {
+	if (wlsc_spring_done(&zoom->spring)) {
 		wl_list_remove(&animation->link);
 		fprintf(stderr, "animation done\n");
 		es->transform = NULL;
 		free(zoom);
 	}
 
-	scale = zoom->tweener.current;
+	scale = zoom->spring.current;
 	wlsc_matrix_init(&zoom->transform.matrix);
 	wlsc_matrix_translate(&zoom->transform.matrix,
 			      -es->width / 2.0, -es->height / 2.0, 0);
@@ -121,7 +121,7 @@ meego_tablet_zoom_frame(struct wlsc_animation *animation,
 	wlsc_matrix_translate(&zoom->transform.matrix,
 			      es->width / 2.0, es->height / 2.0, 0);
 
-	scale = 1.0 / zoom->tweener.current;
+	scale = 1.0 / zoom->spring.current;
 	wlsc_matrix_init(&zoom->transform.inverse);
 	wlsc_matrix_scale(&zoom->transform.inverse, scale, scale, scale);
 
@@ -144,11 +144,11 @@ meego_tablet_zoom_run(struct meego_tablet_shell *shell,
 	zoom->surface = surface;
 	surface->transform = &zoom->transform;
 	scale = 0.3;
-	wlsc_tweener_init(&zoom->tweener, 100.0, scale, 1.0);
-	zoom->tweener.timestamp = wlsc_compositor_get_time();
+	wlsc_spring_init(&zoom->spring, 100.0, scale, 1.0);
+	zoom->spring.timestamp = wlsc_compositor_get_time();
 	zoom->animation.frame = meego_tablet_zoom_frame;
 	meego_tablet_zoom_frame(&zoom->animation, NULL,
-				zoom->tweener.timestamp);
+				zoom->spring.timestamp);
 
 	wl_list_insert(shell->compositor->animation_list.prev,
 		       &zoom->animation.link);
@@ -559,6 +559,6 @@ shell_init(struct wlsc_compositor *compositor)
 
 	launch_switcher(shell);
 
-	wlsc_tweener_init(&compositor->fade.tweener, 40.0, 1.0, 1.0);
+	wlsc_spring_init(&compositor->fade.spring, 40.0, 1.0, 1.0);
 	shell->starting = 1;
 }

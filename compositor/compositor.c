@@ -112,54 +112,54 @@ wlsc_matrix_transform(struct wlsc_matrix *matrix, struct wlsc_vector *v)
 }
 
 WL_EXPORT void
-wlsc_tweener_init(struct wlsc_tweener *tweener,
-		  double k, double current, double target)
+wlsc_spring_init(struct wlsc_spring *spring,
+		 double k, double current, double target)
 {
-	tweener->k = k;
-	tweener->friction = 100.0;
-	tweener->current = current;
-	tweener->previous = current;
-	tweener->target = target;
+	spring->k = k;
+	spring->friction = 100.0;
+	spring->current = current;
+	spring->previous = current;
+	spring->target = target;
 }
 
 WL_EXPORT void
-wlsc_tweener_update(struct wlsc_tweener *tweener, uint32_t msec)
+wlsc_spring_update(struct wlsc_spring *spring, uint32_t msec)
 {
 	double force, v, current, step;
 
-	step = (msec - tweener->timestamp) / 500.0;
-	tweener->timestamp = msec;
+	step = (msec - spring->timestamp) / 500.0;
+	spring->timestamp = msec;
 
-	current = tweener->current;
-	v = current - tweener->previous;
-	force = tweener->k * (tweener->target - current) / 10.0 +
-		(tweener->previous - current) - v * tweener->friction;
+	current = spring->current;
+	v = current - spring->previous;
+	force = spring->k * (spring->target - current) / 10.0 +
+		(spring->previous - current) - v * spring->friction;
 
-	tweener->current =
-		current + (current - tweener->previous) + force * step * step;
-	tweener->previous = current;
+	spring->current =
+		current + (current - spring->previous) + force * step * step;
+	spring->previous = current;
 
-	if (tweener->current >= 1.0) {
+	if (spring->current >= 1.0) {
 #ifdef TWEENER_BOUNCE
-		tweener->current = 2.0 - tweener->current;
-		tweener->previous = 2.0 - tweener->previous;
+		spring->current = 2.0 - spring->current;
+		spring->previous = 2.0 - spring->previous;
 #else
-		tweener->current = 1.0;
-		tweener->previous = 1.0;
+		spring->current = 1.0;
+		spring->previous = 1.0;
 #endif
 	}
 
-	if (tweener->current <= 0.0) {
-		tweener->current = 0.0;
-		tweener->previous = 0.0;
+	if (spring->current <= 0.0) {
+		spring->current = 0.0;
+		spring->previous = 0.0;
 	}
 }
 
 WL_EXPORT int
-wlsc_tweener_done(struct wlsc_tweener *tweener)
+wlsc_spring_done(struct wlsc_spring *spring)
 {
-	return fabs(tweener->previous - tweener->target) < 0.0002 &&
-		fabs(tweener->current - tweener->target) < 0.0002;
+	return fabs(spring->previous - spring->target) < 0.0002 &&
+		fabs(spring->current - spring->target) < 0.0002;
 }
 
 WL_EXPORT struct wlsc_surface *
@@ -624,14 +624,14 @@ fade_frame(struct wlsc_animation *animation,
 		container_of(animation,
 			     struct wlsc_compositor, fade.animation);
 
-	wlsc_tweener_update(&compositor->fade.tweener, msecs);
-	if (wlsc_tweener_done(&compositor->fade.tweener)) {
-		if (compositor->fade.tweener.current > 0.999) {
+	wlsc_spring_update(&compositor->fade.spring, msecs);
+	if (wlsc_spring_done(&compositor->fade.spring)) {
+		if (compositor->fade.spring.current > 0.999) {
 			compositor->state = WLSC_COMPOSITOR_SLEEPING;
 			compositor->shell->lock(compositor->shell);
 		}
-		compositor->fade.tweener.current =
-			compositor->fade.tweener.target;
+		compositor->fade.spring.current =
+			compositor->fade.spring.target;
 		wl_list_remove(&animation->link);
 		wl_list_init(&animation->link);
 	}
@@ -701,7 +701,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 	if (ec->focus)
 		if (output->set_hardware_cursor(output, ec->input_device) < 0)
 			using_hardware_cursor = 0;
-	if (ec->fade.tweener.current > 0.001)
+	if (ec->fade.spring.current > 0.001)
 		using_hardware_cursor = 0;
 
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
@@ -749,8 +749,8 @@ wlsc_output_repaint(struct wlsc_output *output)
 						  &total_damage);
 		}
 
-	if (ec->fade.tweener.current > 0.001)
-		fade_output(output, ec->fade.tweener.current, &total_damage);
+	if (ec->fade.spring.current > 0.001)
+		fade_output(output, ec->fade.spring.current, &total_damage);
 }
 
 static int
@@ -806,13 +806,13 @@ wlsc_compositor_fade(struct wlsc_compositor *compositor, float tint)
 {
 	int done;
 
-	done = wlsc_tweener_done(&compositor->fade.tweener);
-	compositor->fade.tweener.target = tint;
-	if (wlsc_tweener_done(&compositor->fade.tweener))
+	done = wlsc_spring_done(&compositor->fade.spring);
+	compositor->fade.spring.target = tint;
+	if (wlsc_spring_done(&compositor->fade.spring))
 		return;
 
 	if (done)
-		compositor->fade.tweener.timestamp =
+		compositor->fade.spring.timestamp =
 			wlsc_compositor_get_time();
 
 	wlsc_compositor_damage_all(compositor);
@@ -1836,7 +1836,7 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wl_list_init(&ec->output_list);
 	wl_list_init(&ec->binding_list);
 	wl_list_init(&ec->animation_list);
-	wlsc_tweener_init(&ec->fade.tweener, 0.8, 0.0, 0.0);
+	wlsc_spring_init(&ec->fade.spring, 0.8, 0.0, 0.0);
 	ec->fade.animation.frame = fade_frame;
 	wl_list_init(&ec->fade.animation.link);
 

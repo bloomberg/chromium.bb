@@ -117,7 +117,7 @@ struct wlsc_animation {
 	struct wl_list link;
 };
 
-struct wlsc_tweener {
+struct wlsc_spring {
 	double k;
 	double friction;
 	double current;
@@ -162,7 +162,7 @@ struct wlsc_compositor {
 	struct wl_list binding_list;
 	struct wl_list animation_list;
 	struct {
-		struct wlsc_tweener tweener;
+		struct wlsc_spring spring;
 		struct wlsc_animation animation;
 	} fade;
 
@@ -234,12 +234,12 @@ struct wlsc_surface {
 };
 
 void
-wlsc_tweener_init(struct wlsc_tweener *tweener,
-		  double k, double current, double target);
+wlsc_spring_init(struct wlsc_spring *spring,
+		 double k, double current, double target);
 void
-wlsc_tweener_update(struct wlsc_tweener *tweener, uint32_t msec);
+wlsc_spring_update(struct wlsc_spring *spring, uint32_t msec);
 int
-wlsc_tweener_done(struct wlsc_tweener *tweener);
+wlsc_spring_done(struct wlsc_spring *spring);
 
 void
 wlsc_surface_activate(struct wlsc_surface *surface,
