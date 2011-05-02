@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
+#include "base/command_line.h"
+#include "chrome/app/breakpad_mac.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/debugger/devtools_handler.h"
 #include "chrome/browser/desktop_notification_handler.h"
@@ -19,10 +22,17 @@
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 #include "chrome/browser/spellcheck_message_filter.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
+#include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+
+#if defined(OS_LINUX)
+#include "base/linux_util.h"
+#include "chrome/browser/crash_handler_host_linux.h"
+#endif  // OS_LINUX
 
 namespace chrome {
 
@@ -111,5 +121,75 @@ std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
   return CharacterEncoding::GetCanonicalEncodingNameByAliasName(alias_name);
 }
+
+void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
+    CommandLine* command_line, int child_process_id) {
+#if defined(USE_LINUX_BREAKPAD)
+  if (IsCrashReporterEnabled()) {
+    command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
+        child_process_logging::GetClientId() + "," + base::GetLinuxDistro());
+  }
+#elif defined(OS_MACOSX)
+  if (IsCrashReporterEnabled()) {
+    command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
+                                    child_process_logging::GetClientId());
+  }
+#endif  // OS_MACOSX
+
+  std::string process_type =
+      command_line->GetSwitchValueASCII(switches::kProcessType);
+  if (process_type == switches::kExtensionProcess ||
+      process_type == switches::kRendererProcess) {
+    const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+    FilePath user_data_dir =
+        browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
+    if (!user_data_dir.empty())
+      command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
+#if defined(OS_CHROMEOS)
+    const std::string& login_profile =
+        browser_command_line.GetSwitchValueASCII(switches::kLoginProfile);
+    if (!login_profile.empty())
+      command_line->AppendSwitchASCII(switches::kLoginProfile, login_profile);
+#endif
+
+    RenderProcessHost* process = RenderProcessHost::FromID(child_process_id);
+
+    PrefService* prefs = process->profile()->GetPrefs();
+    // Currently this pref is only registered if applied via a policy.
+    if (prefs->HasPrefPath(prefs::kDisable3DAPIs) &&
+        prefs->GetBoolean(prefs::kDisable3DAPIs)) {
+      // Turn this policy into a command line switch.
+      command_line->AppendSwitch(switches::kDisable3DAPIs);
+    }
+
+    // Disable client-side phishing detection in the renderer if it is disabled
+    // in the browser process.
+    if (!g_browser_process->safe_browsing_detection_service())
+      command_line->AppendSwitch(switches::kDisableClientSidePhishingDetection);
+  }
+}
+
+std::string ChromeContentBrowserClient::GetApplicationLocale() {
+  return g_browser_process->GetApplicationLocale();
+}
+
+#if defined(OS_LINUX)
+int ChromeContentBrowserClient::GetCrashSignalFD(
+    const std::string& process_type) {
+  if (process_type == switches::kRendererProcess)
+    return RendererCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
+
+  if (process_type == switches::kPluginProcess)
+    return PluginCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
+
+  if (process_type == switches::kPpapiPluginProcess)
+    return PpapiCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
+
+  if (process_type == switches::kGpuProcess)
+    return GpuCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
+
+  return -1;
+}
+#endif
 
 }  // namespace chrome

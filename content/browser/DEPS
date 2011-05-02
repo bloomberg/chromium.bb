@@ -4,10 +4,6 @@ include_rules = [
   # Listing of the remaining #chrome includes in content\browser.  People are
   # actively working on reducing this to 0.  Do not add anymore!
 
-  # http://crbug.com/77093
-  "+chrome/app/breakpad_mac.h",
-  "+chrome/browser/crash_handler_host_linux.h",
-
   "+chrome/browser/accessibility/browser_accessibility_state.h",
 
   "+chrome/browser/automation/automation_resource_message_filter.h",
@@ -103,11 +99,8 @@ include_rules = [
   "+chrome/browser/renderer_preferences_util.h",
 
   # http://crbug.com/77089
-  "+chrome/browser/safe_browsing/client_side_detection_host.h",
-  "+chrome/browser/safe_browsing/client_side_detection_service.h",
   "+chrome/browser/safe_browsing/safe_browsing_service.h",
   "+chrome/browser/renderer_host/safe_browsing_resource_handler.h",
-  "+chrome/common/safe_browsing/safebrowsing_messages.h",
 
   "+chrome/browser/sessions/session_id.h",
   "+chrome/browser/sessions/session_types.h",
@@ -135,11 +128,9 @@ include_rules = [
 
   "+chrome/browser/ui/gtk/gtk_util.h",
 
-  "+chrome/common/child_process_logging.h",
   "+chrome/common/chrome_constants.h",
   "+chrome/common/chrome_switches.h",
   "+chrome/common/chrome_paths.h",
-  "+chrome/common/chrome_paths_internal.h",
   "+chrome/common/logging_chrome.h",
   "+chrome/common/render_messages.h",
   "+chrome/common/url_constants.h",

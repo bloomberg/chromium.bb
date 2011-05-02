@@ -7,10 +7,9 @@
 // descriptor to the client-side phishing model and also to send a ping back to
 // Google to verify if a particular site is really phishing or not.
 //
-// This class is not thread-safe and expects all calls to GetModelFile() and
-// SendClientReportPhishingRequest() to be made on the UI thread.  We also
-// expect that the calling thread runs a message loop and that there is a FILE
-// thread running to execute asynchronous file operations.
+// This class is not thread-safe and expects all calls to be made on the UI
+// thread.  We also expect that the calling thread runs a message loop and that
+// there is a FILE thread running to execute asynchronous file operations.
 
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CLIENT_SIDE_DETECTION_SERVICE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CLIENT_SIDE_DETECTION_SERVICE_H_
@@ -34,8 +33,12 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+
+class RenderProcessHost;
 
 namespace net {
 class URLRequestContextGetter;
@@ -45,10 +48,9 @@ class URLRequestStatus;
 namespace safe_browsing {
 class ClientPhishingRequest;
 
-class ClientSideDetectionService : public URLFetcher::Delegate {
+class ClientSideDetectionService : public URLFetcher::Delegate,
+                                   public NotificationObserver {
  public:
-  typedef Callback1<base::PlatformFile>::Type OpenModelDoneCallback;
-
   typedef Callback2<GURL /* phishing URL */, bool /* is phishing */>::Type
       ClientReportPhishingRequestCallback;
 
@@ -69,13 +71,10 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
-  // Gets the model file descriptor once the model is ready and stored
-  // on disk.  If there was an error the callback is called and the
-  // platform file is set to kInvalidPlatformFileValue. The
-  // ClientSideDetectionService takes ownership of the |callback|.
-  // The callback is always called after GetModelFile() returns and on the
-  // same thread as GetModelFile() was called.
-  void GetModelFile(OpenModelDoneCallback* callback);
+  // NotificationObserver overrides:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Sends a request to the SafeBrowsing servers with the ClientPhishingRequest.
   // The URL scheme of the |url()| in the request should be HTTP.  This method
@@ -184,9 +183,6 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
       ClientPhishingRequest* verdict,
       ClientReportPhishingRequestCallback* callback);
 
-  // Starts getting the model file.
-  void StartGetModelFile(OpenModelDoneCallback* callback);
-
   // Called by OnURLFetchComplete to handle the response from fetching the
   // model.
   void HandleModelResponse(const URLFetcher* source,
@@ -215,12 +211,14 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
   // that we consider non-public IP addresses.  Returns true on success.
   bool InitializePrivateNetworks();
 
+  // Send the model to the given renderer.
+  void SendModelToProcess(RenderProcessHost* process);
+
   FilePath model_path_;
   ModelStatus model_status_;
   base::PlatformFile model_file_;
   scoped_ptr<URLFetcher> model_fetcher_;
   scoped_ptr<std::string> tmp_model_string_;
-  std::vector<OpenModelDoneCallback*> open_callbacks_;
 
   // Map of client report phishing request to the corresponding callback that
   // has to be invoked when the request is done.
@@ -240,7 +238,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
   // TODO(gcasto): Serialize this so that it doesn't reset on browser restart.
   std::queue<base::Time> phishing_report_times_;
 
-  // Used to asynchronously call the callbacks for GetModelFile and
+  // Used to asynchronously call the callbacks for
   // SendClientReportPhishingRequest.
   ScopedRunnableMethodFactory<ClientSideDetectionService> method_factory_;
 
@@ -255,6 +253,8 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
 
   // The network blocks that we consider private IP address ranges.
   std::vector<AddressRange> private_networks_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionService);
 };

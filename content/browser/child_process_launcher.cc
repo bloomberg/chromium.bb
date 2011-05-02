@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/content_browser_client.h"
 #include "content/common/chrome_descriptors.h"
 #include "content/common/process_watcher.h"
 #include "content/common/result_codes.h"
@@ -22,7 +23,6 @@
 #include "chrome/common/sandbox_policy.h"
 #elif defined(OS_LINUX)
 #include "base/memory/singleton.h"
-#include "chrome/browser/crash_handler_host_linux.h"
 #include "content/browser/zygote_host_linux.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #endif
@@ -114,25 +114,8 @@ class ChildProcessLauncher::Context
     // On Linux, we need to add some extra file descriptors for crash handling.
     std::string process_type =
         cmd_line->GetSwitchValueASCII(switches::kProcessType);
-    bool is_renderer = process_type == switches::kRendererProcess;
-    bool is_plugin = process_type == switches::kPluginProcess;
-    bool is_ppapi = process_type == switches::kPpapiPluginProcess;
-    bool is_gpu = process_type == switches::kGpuProcess;
-    int crash_signal_fd = -1;
-    if (is_renderer) {
-      crash_signal_fd =
-          RendererCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
-    } else if (is_plugin) {
-      crash_signal_fd =
-          PluginCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
-    } else if (is_ppapi) {
-      crash_signal_fd =
-          PpapiCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
-    } else if (is_gpu) {
-      crash_signal_fd =
-          GpuCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
-    }
-
+    int crash_signal_fd =
+        content::GetContentClient()->browser()->GetCrashSignalFD(process_type);
     if (use_zygote) {
       base::GlobalDescriptors::Mapping mapping;
       mapping.push_back(std::pair<uint32_t, int>(kPrimaryIPCChannel, ipcfd));
@@ -157,7 +140,7 @@ class ChildProcessLauncher::Context
             crash_signal_fd,
             kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor));
       }
-      if (is_renderer) {
+      if (process_type == switches::kRendererProcess) {
         const int sandbox_fd =
             RenderSandboxHostLinux::GetInstance()->GetRendererSocket();
         fds_to_map.push_back(std::make_pair(

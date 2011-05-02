@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "build/build_config.h"
 
 class GURL;
 struct GPUInfo;

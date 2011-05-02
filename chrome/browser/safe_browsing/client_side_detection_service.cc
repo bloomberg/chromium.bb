@@ -18,8 +18,12 @@
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/render_process_host.h"
+#include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_platform_file.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -57,14 +61,16 @@ ClientSideDetectionService::ClientSideDetectionService(
       model_file_(base::kInvalidPlatformFileValue),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
-      request_context_getter_(request_context_getter) {}
+      request_context_getter_(request_context_getter) {
+  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
+                 NotificationService::AllSources());
+}
 
 ClientSideDetectionService::~ClientSideDetectionService() {
   method_factory_.RevokeAll();
   STLDeleteContainerPairPointers(client_phishing_reports_.begin(),
                                  client_phishing_reports_.end());
   client_phishing_reports_.clear();
-  STLDeleteElements(&open_callbacks_);
   CloseModelFile();
 }
 
@@ -94,14 +100,6 @@ ClientSideDetectionService* ClientSideDetectionService::Create(
     return NULL;
   }
   return service.release();
-}
-
-void ClientSideDetectionService::GetModelFile(OpenModelDoneCallback* callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &ClientSideDetectionService::StartGetModelFile, callback));
 }
 
 void ClientSideDetectionService::SendClientReportPhishingRequest(
@@ -151,16 +149,41 @@ void ClientSideDetectionService::OnURLFetchComplete(
   }
 }
 
+void ClientSideDetectionService::Observe(NotificationType type,
+                                         const NotificationSource& source,
+                                         const NotificationDetails& details) {
+  DCHECK(type == NotificationType::RENDERER_PROCESS_CREATED);
+  if (model_status_ == UNKNOWN_STATUS) {
+    // The model isn't ready.  When it's known, we'll call all renderers.
+    return;
+  }
+
+  RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+  SendModelToProcess(process);
+}
+
+void ClientSideDetectionService::SendModelToProcess(
+    RenderProcessHost* process) {
+  if (model_file_ == base::kInvalidPlatformFileValue)
+    return;
+
+  IPC::PlatformFileForTransit file;
+#if defined(OS_POSIX)
+  file = base::FileDescriptor(model_file_, false);
+#elif defined(OS_WIN)
+  ::DuplicateHandle(::GetCurrentProcess(), model_file_, process->GetHandle(),
+                    &file, 0, false, DUPLICATE_SAME_ACCESS);
+#endif
+  process->Send(new SafeBrowsingMsg_SetPhishingModel(file));
+}
+
 void ClientSideDetectionService::SetModelStatus(ModelStatus status) {
   DCHECK_NE(READY_STATUS, model_status_);
   model_status_ = status;
-  if (READY_STATUS == status || ERROR_STATUS == status) {
-    for (size_t i = 0; i < open_callbacks_.size(); ++i) {
-      open_callbacks_[i]->Run(model_file_);
-    }
-    STLDeleteElements(&open_callbacks_);
-  } else {
-    NOTREACHED();
+
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    SendModelToProcess(i.GetCurrentValue());
   }
 }
 
@@ -235,21 +258,6 @@ void ClientSideDetectionService::CloseModelFile() {
         NULL);
   }
   model_file_ = base::kInvalidPlatformFileValue;
-}
-
-void ClientSideDetectionService::StartGetModelFile(
-    OpenModelDoneCallback* callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (UNKNOWN_STATUS == model_status_) {
-    // Store the callback which will be called once we know the status of the
-    // model file.
-    open_callbacks_.push_back(callback);
-  } else {
-    // The model is either in READY or ERROR state which means we can
-    // call the callback right away.
-    callback->Run(model_file_);
-    delete callback;
-  }
 }
 
 void ClientSideDetectionService::StartClientReportPhishingRequest(

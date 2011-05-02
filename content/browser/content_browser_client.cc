@@ -40,4 +40,18 @@ std::string ContentBrowserClient::GetCanonicalEncodingNameByAliasName(
   return alias_name;
 }
 
+void ContentBrowserClient::AppendExtraCommandLineSwitches(
+    CommandLine* command_line, int child_process_id) {
+}
+
+std::string ContentBrowserClient::GetApplicationLocale() {
+  return std::string();
+}
+
+#if defined(OS_LINUX)
+int ContentBrowserClient::GetCrashSignalFD(const std::string& process_type) {
+  return -1;
+}
+#endif
+
 }  // namespace content

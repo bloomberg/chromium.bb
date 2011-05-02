@@ -7,11 +7,11 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
-#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu_blacklist.h"
 #include "content/browser/gpu_process_host.h"
+#include "content/common/content_client.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "ui/gfx/gl/gl_implementation.h"
@@ -48,7 +48,8 @@ void GpuDataManager::UpdateGpuInfo(const GPUInfo& gpu_info) {
   base::AutoLock auto_lock(gpu_info_lock_);
   if (!gpu_info_.Merge(gpu_info))
     return;
-  child_process_logging::SetGpuInfo(gpu_info_);
+
+  content::GetContentClient()->SetGpuInfo(gpu_info_);
 }
 
 const GPUInfo& GpuDataManager::gpu_info() const {

@@ -36,7 +36,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
@@ -348,8 +347,6 @@ TabContents::~TabContents() {
 void TabContents::AddObservers() {
   favicon_tab_helper_.reset(new FaviconTabHelper(this));
   plugin_observer_.reset(new PluginObserver(this));
-  safebrowsing_detection_host_.reset(new safe_browsing::ClientSideDetectionHost(
-      this));
   net::NetworkChangeNotifier::AddOnlineStateObserver(this);
 }
 

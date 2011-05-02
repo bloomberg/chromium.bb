@@ -18,6 +18,8 @@
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_test_sink.h"
@@ -106,7 +108,7 @@ void QuitUIMessageLoop() {
                           new MessageLoop::QuitTask());
 }
 
-class ClientSideDetectionHostTest : public RenderViewHostTestHarness {
+class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
  public:
   virtual void SetUp() {
     // Set custom profile object so that we can mock calls to IsOffTheRecord.
@@ -115,7 +117,7 @@ class ClientSideDetectionHostTest : public RenderViewHostTestHarness {
     mock_profile_ = new NiceMock<MockTestingProfile>();
     profile_.reset(mock_profile_);
 
-    RenderViewHostTestHarness::SetUp();
+    TabContentsWrapperTestHarness::SetUp();
     ui_thread_.reset(new BrowserThread(BrowserThread::UI, &message_loop_));
     // Note: we're starting a real IO thread to make sure our DCHECKs that
     // verify which thread is running are actually tested.
@@ -130,7 +132,7 @@ class ClientSideDetectionHostTest : public RenderViewHostTestHarness {
     csd_service_.reset(new StrictMock<MockClientSideDetectionService>(
         model_path));
     sb_service_ = new StrictMock<MockSafeBrowsingService>();
-    csd_host_ = contents()->safebrowsing_detection_host();
+    csd_host_ = contents_wrapper()->safebrowsing_detection_host();
     csd_host_->set_client_side_detection_service(csd_service_.get());
     csd_host_->set_safe_browsing_service(sb_service_.get());
 
@@ -142,7 +144,7 @@ class ClientSideDetectionHostTest : public RenderViewHostTestHarness {
   virtual void TearDown() {
     io_thread_.reset();
     ui_thread_.reset();
-    RenderViewHostTestHarness::TearDown();
+    TabContentsWrapperTestHarness::TearDown();
     // Restore the command-line like it was before we ran the test.
     *CommandLine::ForCurrentProcess() = *original_cmd_line_;
   }

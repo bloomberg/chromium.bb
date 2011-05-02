@@ -141,8 +141,6 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
   std::string locale = g_browser_process->GetApplicationLocale();
   cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
-  SetCrashReporterCommandLine(cmd_line);
-
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
     cmd_line->AppendSwitch(switches::kChromeFrame);

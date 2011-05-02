@@ -485,8 +485,6 @@ bool GpuProcessHost::LaunchGpuProcess() {
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
 
-  SetCrashReporterCommandLine(cmd_line);
-
   // Propagate relevant command line switches.
   static const char* const kSwitchNames[] = {
     switches::kUseGL,

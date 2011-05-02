@@ -31,16 +31,12 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
-#include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/child_process_security_policy.h"
@@ -197,8 +193,7 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
             base::TimeDelta::FromSeconds(5),
             this, &BrowserRenderProcessHost::ClearTransportDIBCache)),
       accessibility_enabled_(false),
-      extension_process_(false),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      extension_process_(false) {
   widget_helper_ = new RenderWidgetHelper();
 
   WebCacheManager::GetInstance()->Add(id());
@@ -493,7 +488,8 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   PropagateBrowserCommandLineToRenderer(browser_command_line, command_line);
 
   // Pass on the browser locale.
-  const std::string locale = g_browser_process->GetApplicationLocale();
+  const std::string locale =
+      content::GetContentClient()->browser()->GetApplicationLocale();
   command_line->AppendSwitchASCII(switches::kLang, locale);
 
   // If we run base::FieldTrials, we want to pass to their state to the
@@ -506,26 +502,8 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
                                     field_trial_states);
   }
 
-  BrowserChildProcessHost::SetCrashReporterCommandLine(command_line);
-
-  FilePath user_data_dir =
-      browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
-  if (!user_data_dir.empty())
-    command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
-#if defined(OS_CHROMEOS)
-  const std::string& login_profile =
-      browser_command_line.GetSwitchValueASCII(switches::kLoginProfile);
-  if (!login_profile.empty())
-    command_line->AppendSwitchASCII(switches::kLoginProfile, login_profile);
-#endif
-
-  PrefService* prefs = profile()->GetPrefs();
-  // Currently this pref is only registered if applied via a policy.
-  if (prefs->HasPrefPath(prefs::kDisable3DAPIs) &&
-      prefs->GetBoolean(prefs::kDisable3DAPIs)) {
-    // Turn this policy into a command line switch.
-    command_line->AppendSwitch(switches::kDisable3DAPIs);
-  }
+  content::GetContentClient()->browser()->AppendExtraCommandLineSwitches(
+      command_line, id());
 
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
@@ -653,12 +631,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
   if (profile()->IsOffTheRecord() &&
       !browser_cmd.HasSwitch(switches::kDisableDatabases)) {
     renderer_cmd->AppendSwitch(switches::kDisableDatabases);
-  }
-
-  // Disable client-side phishing detection in the renderer if it is disabled
-  // in the browser process.
-  if (!g_browser_process->safe_browsing_detection_service()) {
-    renderer_cmd->AppendSwitch(switches::kDisableClientSidePhishingDetection);
   }
 }
 
@@ -947,8 +919,6 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
 
   Send(new ViewMsg_SetIsIncognitoProcess(profile()->IsOffTheRecord()));
 
-  InitClientSidePhishingDetection();
-
   if (max_page_id_ != -1)
     Send(new ViewMsg_SetNextPageID(max_page_id_ + 1));
 
@@ -972,30 +942,4 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
 void BrowserRenderProcessHost::OnUserMetricsRecordAction(
     const std::string& action) {
   UserMetrics::RecordComputedAction(action);
-}
-
-void BrowserRenderProcessHost::InitClientSidePhishingDetection() {
-  if (g_browser_process->safe_browsing_detection_service()) {
-    // The BrowserRenderProcessHost object might get deleted before the
-    // safe browsing client-side detection service class is done with opening
-    // the model file.  To avoid crashing we use the callback factory which will
-    // cancel the callback if |this| is destroyed.
-    g_browser_process->safe_browsing_detection_service()->GetModelFile(
-        callback_factory_.NewCallback(
-            &BrowserRenderProcessHost::OpenPhishingModelDone));
-  }
-}
-
-void BrowserRenderProcessHost::OpenPhishingModelDone(
-    base::PlatformFile model_file) {
-  if (model_file != base::kInvalidPlatformFileValue) {
-    IPC::PlatformFileForTransit file;
-#if defined(OS_POSIX)
-    file = base::FileDescriptor(model_file, false);
-#elif defined(OS_WIN)
-    ::DuplicateHandle(::GetCurrentProcess(), model_file, GetHandle(), &file, 0,
-                      false, DUPLICATE_SAME_ACCESS);
-#endif
-    Send(new SafeBrowsingMsg_SetPhishingModel(file));
-  }
 }

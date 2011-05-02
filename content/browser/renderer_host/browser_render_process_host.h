@@ -10,9 +10,7 @@
 #include <queue>
 #include <string>
 
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "base/process.h"
 #include "base/timer.h"
 #include "content/browser/child_process_launcher.h"
@@ -100,15 +98,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Callers can reduce the RenderProcess' priority.
   void SetBackgrounded(bool backgrounded);
 
-  // Initializes client-side phishing detection.  Starts reading the phishing
-  // model from the client-side detection service class.  Once the model is read
-  // OpenPhishingModelDone() is invoked.
-  void InitClientSidePhishingDetection();
-
-  // Called once the client-side detection service class is done with opening
-  // the model file.
-  void OpenPhishingModelDone(base::PlatformFile model_file);
-
   // The count of currently visible widgets.  Since the host can be a container
   // for multiple widgets, it uses this count to determine when it should be
   // backgrounded.
@@ -153,8 +142,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // messages that are sent once the process handle is available.  This is
   // because the queued messages may have dependencies on the init messages.
   std::queue<IPC::Message*> queued_messages_;
-
-  base::ScopedCallbackFactory<BrowserRenderProcessHost> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserRenderProcessHost);
 };

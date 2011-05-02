@@ -93,8 +93,6 @@ bool ProfileImportProcessHost::StartProcess() {
                               switches::kProfileImportProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
 
-  SetCrashReporterCommandLine(cmd_line);
-
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
     cmd_line->AppendSwitch(switches::kChromeFrame);

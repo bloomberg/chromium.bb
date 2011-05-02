@@ -214,8 +214,6 @@ bool PluginProcessHost::Init(const webkit::npapi::WebPluginInfo& info,
 
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
 
-  SetCrashReporterCommandLine(cmd_line);
-
 #if defined(OS_POSIX)
   base::environment_vector env;
 #if defined(OS_MACOSX) && !defined(__LP64__)

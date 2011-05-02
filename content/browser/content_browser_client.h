@@ -11,6 +11,7 @@
 #include "content/common/content_client.h"
 
 class BrowserRenderProcessHost;
+class CommandLine;
 class GURL;
 class Profile;
 class RenderViewHost;
@@ -47,6 +48,19 @@ class ContentBrowserClient {
   // See CharacterEncoding's comment.
   virtual std::string GetCanonicalEncodingNameByAliasName(
       const std::string& alias_name);
+
+  // Allows the embedder to pass extra command line flags.
+  // switches::kProcessType will already be set at this point.
+  virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,
+                                              int child_process_id);
+
+  // Returns the locale used by the application.
+  virtual std::string GetApplicationLocale();
+
+#if defined(OS_LINUX)
+  // Can return an optional fd for crash handling, otherwise returns -1.
+  virtual int GetCrashSignalFD(const std::string& process_type);
+#endif
 };
 
 }  // namespace content

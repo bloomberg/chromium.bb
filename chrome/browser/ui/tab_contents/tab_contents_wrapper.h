@@ -43,6 +43,10 @@ class TabContentsWrapperDelegate;
 class ThumbnailGenerator;
 class TranslateTabHelper;
 
+namespace safe_browsing {
+class ClientSideDetectionHost;
+}
+
 // Wraps TabContents and all of its supporting objects in order to control
 // their ownership and lifetime, while allowing TabContents to remain generic
 // and re-usable in other projects.
@@ -132,6 +136,10 @@ class TabContentsWrapper : public NotificationObserver,
     return print_view_manager_.get();
   }
 
+  safe_browsing::ClientSideDetectionHost* safebrowsing_detection_host() {
+    return safebrowsing_detection_host_.get();
+  }
+
   SearchEngineTabHelper* search_engine_tab_helper() {
     return search_engine_tab_helper_.get();
   }
@@ -210,6 +218,10 @@ class TabContentsWrapper : public NotificationObserver,
 
   // Handles print job for this contents.
   scoped_ptr<printing::PrintViewManager> print_view_manager_;
+
+  // Handles IPCs related to SafeBrowsing client-side phishing detection.
+  scoped_ptr<safe_browsing::ClientSideDetectionHost>
+      safebrowsing_detection_host_;
 
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
   scoped_ptr<TranslateTabHelper> translate_tab_helper_;

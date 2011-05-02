@@ -125,7 +125,6 @@ bool WorkerProcessHost::Init(int render_process_id) {
   CommandLine* cmd_line = new CommandLine(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kWorkerProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
-  SetCrashReporterCommandLine(cmd_line);
 
   static const char* const kSwitchNames[] = {
     switches::kWebWorkerShareProcesses,

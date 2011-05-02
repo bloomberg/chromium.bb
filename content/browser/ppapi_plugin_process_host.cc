@@ -45,8 +45,6 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
                               switches::kPpapiPluginProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
 
-  SetCrashReporterCommandLine(cmd_line);
-
   if (!plugin_launcher.empty())
     cmd_line->PrependWrapper(plugin_launcher);
 

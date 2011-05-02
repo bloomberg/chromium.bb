@@ -47,10 +47,6 @@ namespace history {
 class HistoryAddPageArgs;
 }
 
-namespace safe_browsing {
-class ClientSideDetectionHost;
-}
-
 class WebUI;
 class DownloadItem;
 class Extension;
@@ -576,10 +572,6 @@ class TabContents : public PageNavigator,
   int content_restrictions() const { return content_restrictions_; }
   void SetContentRestrictions(int restrictions);
 
-  safe_browsing::ClientSideDetectionHost* safebrowsing_detection_host() {
-    return safebrowsing_detection_host_.get();
-  }
-
   // Query the WebUIFactory for the TypeID for the current URL.
   WebUI::TypeID GetWebUITypeForCurrentState();
 
@@ -907,10 +899,6 @@ class TabContents : public PageNavigator,
 
   // RenderViewHost::ContentSettingsDelegate.
   scoped_ptr<TabSpecificContentSettings> content_settings_delegate_;
-
-  // Handles IPCs related to SafeBrowsing client-side phishing detection.
-  scoped_ptr<safe_browsing::ClientSideDetectionHost>
-      safebrowsing_detection_host_;
 
   // Data for loading state ----------------------------------------------------
 

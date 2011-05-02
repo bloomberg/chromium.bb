@@ -13,22 +13,16 @@
 #include "base/process_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "chrome/app/breakpad_mac.h"
-#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/trace_message_filter.h"
 #include "content/common/notification_service.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/process_watcher.h"
 #include "content/common/result_codes.h"
-
-#if defined(OS_LINUX)
-#include "base/linux_util.h"
-#endif  // OS_LINUX
 
 namespace {
 
@@ -72,22 +66,6 @@ BrowserChildProcessHost::~BrowserChildProcessHost() {
 }
 
 // static
-void BrowserChildProcessHost::SetCrashReporterCommandLine(
-    CommandLine* command_line) {
-#if defined(USE_LINUX_BREAKPAD)
-  if (IsCrashReporterEnabled()) {
-    command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
-        child_process_logging::GetClientId() + "," + base::GetLinuxDistro());
-  }
-#elif defined(OS_MACOSX)
-  if (IsCrashReporterEnabled()) {
-    command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
-                                    child_process_logging::GetClientId());
-  }
-#endif  // OS_MACOSX
-}
-
-// static
 void BrowserChildProcessHost::TerminateAll() {
   // Make a copy since the ChildProcessHost dtor mutates the original list.
   ChildProcessList copy = g_child_process_list.Get();
@@ -102,6 +80,10 @@ void BrowserChildProcessHost::Launch(
     const base::environment_vector& environ,
 #endif
     CommandLine* cmd_line) {
+
+  content::GetContentClient()->browser()->AppendExtraCommandLineSwitches(
+      cmd_line, id());
+
   child_process_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)
       exposed_dir,

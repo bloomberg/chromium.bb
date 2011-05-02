@@ -25,6 +25,7 @@
 #include "chrome/browser/prerender/prerender_observer.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -73,6 +74,8 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(contents));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
+  safebrowsing_detection_host_.reset(new safe_browsing::ClientSideDetectionHost(
+      contents));
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
   print_view_manager_.reset(new printing::PrintViewManager(contents));
