@@ -193,7 +193,7 @@ html[dir=rtl] .app.web-store-entry.loner {
   border-width: 6px 10px 12px 6px;
   -webkit-border-image: url('g-button-chocobo.png') 6 10 12 6;
   font-size: 1.3em;
-  color: #fff;
+  color: #fff !important;
   text-decoration: none;
   font-weight: bold;
   text-align: center;
