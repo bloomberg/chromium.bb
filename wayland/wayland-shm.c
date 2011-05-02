@@ -140,7 +140,8 @@ shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 		return;
 	}
 
-	data = mmap(NULL, stride * height, PROT_READ, MAP_SHARED, fd, 0);
+	data = mmap(NULL, stride * height,
+		    PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
 	close(fd);
 	if (data == MAP_FAILED) {
