@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
@@ -15,7 +16,7 @@ class MostVisitedWebUITest : public WebUIBrowserTest {
 
   virtual void SetUpInProcessBrowserTestFixture() {
     WebUIBrowserTest::SetUpInProcessBrowserTestFixture();
-    AddLibrary(FILE_PATH_LITERAL("most_visited_page_test.js"));
+    AddLibrary(FilePath(FILE_PATH_LITERAL("most_visited_page_test.js")));
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
