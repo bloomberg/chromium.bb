@@ -63,7 +63,8 @@ static const VersionRangeDefinition kQuicktimeVersionRange[] = {
     { "", "", "7.6.6", true }
 };
 static const VersionRangeDefinition kJavaVersionRange[] = {
-    { "13.0", "14.0", "13.3.0", true }  // Snow Leopard
+    { "0", "13.0", "12.8.0", true },  // Leopard
+    { "13.0", "14.0", "13.4.0", true }  // Snow Leopard
 };
 static const VersionRangeDefinition kFlip4MacVersionRange[] = {
     { "", "", "2.2.1", false }
