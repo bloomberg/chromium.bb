@@ -92,14 +92,16 @@ var chrome = chrome || {};
         // TODO(zelidrag|aa): Remove this hack from here once we enable event
         // JSON payload unpacking on C++ side.
         if (name == "fileBrowserHandler.onExecute") {
-          if (args.length != 2)
+          if (args.length < 2)
             return;
-          var fileList = args[1];
+          var fileList = args[1].entries;
+          if (!fileList)
+            return;
           // The second parameter for this event's payload is file definition
           // dictionary that we used to reconstruct File API's Entry instance
           // here.
           for (var i = 0; i < fileList.length; i++)
-            args[1][i] = GetExternalFileEntry(fileList[i]);
+            fileList[i] = GetExternalFileEntry(fileList[i]);
         }
       }
       return attachedNamedEvents[name].dispatch.apply(

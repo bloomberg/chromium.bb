@@ -18,7 +18,9 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -506,15 +508,17 @@ class ExecuteTasksFileSystemCallbackDispatcher
       return false;
     }
 
+    fileapi::ExternalFileSystemMountPointProvider* external_provider =
+        path_manager->external_provider();
+    if (!external_provider)
+      return false;
+
     // TODO(zelidrag): Let's just prevent all symlinks for now. We don't want a
     // USB drive content to point to something in the rest of the file system.
     // Ideally, we should permit symlinks within the boundary of the same
     // virtual mount point.
     if (file_info.is_symbolic_link)
       return false;
-
-    // TODO(zelidrag): Add explicit R/W + R/O permissions for non-component
-    // extensions.
 
     // Get task details.
     std::string target_extension_id;
@@ -523,6 +527,9 @@ class ExecuteTasksFileSystemCallbackDispatcher
                              &action_id)) {
       return false;
     }
+
+    // TODO(zelidrag): Add explicit R/W + R/O permissions for non-component
+    // extensions.
 
     // Get target extension's process.
     RenderProcessHost* target_host =
@@ -541,10 +548,6 @@ class ExecuteTasksFileSystemCallbackDispatcher
     // Grant access to this particular file to target extension. This will
     // ensure that the target extension can access only this FS entry and
     // prevent from traversing FS hierarchy upward.
-    fileapi::ExternalFileSystemMountPointProvider* external_provider =
-        path_manager->external_provider();
-    if (!external_provider)
-      return false;
     external_provider->GrantFileAccessToExtension(target_extension_id,
                                                   virtual_path);
 
@@ -663,9 +666,13 @@ void ExecuteTasksFileBrowserFunction::ExecuteFileActionsOnUIThread(
     return;
 
   scoped_ptr<ListValue> event_args(new ListValue());
-  ListValue* files_urls = new ListValue();
   event_args->Append(Value::CreateStringValue(action_id));
-  event_args->Append(files_urls);
+  DictionaryValue* details = new DictionaryValue();
+  event_args->Append(details);
+  // Get file definitions. These will be replaced with Entry instances by
+  // chromeHidden.Event.dispatchJSON() method from even_binding.js.
+  ListValue* files_urls = new ListValue();
+  details->Set("entries", files_urls);
   for (FileDefinitionList::const_iterator iter = file_list.begin();
        iter != file_list.end();
        ++iter) {
@@ -676,9 +683,16 @@ void ExecuteTasksFileBrowserFunction::ExecuteFileActionsOnUIThread(
     file_def->SetString("fileFullPath", iter->virtual_path.value());
     file_def->SetBoolean("fileIsDirectory", iter->is_directory);
   }
+  // Get tab id.
+  Browser* browser = GetCurrentBrowser();
+  if (browser) {
+    TabContents* contents = browser->GetSelectedTabContents();
+    if (contents)
+      details->SetInteger("tab_id", ExtensionTabUtil::GetTabId(contents));
+  }
+
   std::string json_args;
   base::JSONWriter::Write(event_args.get(), false, &json_args);
-  std::string event_name = "contextMenus";
   event_router->DispatchEventToExtension(
       handler_extension_id, std::string("fileBrowserHandler.onExecute"),
       json_args, profile_,
