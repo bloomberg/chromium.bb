@@ -2090,6 +2090,9 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kEnableTranslate, true);
   prefs->RegisterBooleanPref(prefs::kEnableBookmarkBar, true);
   prefs->RegisterBooleanPref(prefs::kRemotingHasSetupCompleted, false);
+  prefs->RegisterBooleanPref(prefs::kChromotingEnabled, false);
+  prefs->RegisterBooleanPref(prefs::kChromotingHostEnabled, false);
+  prefs->RegisterBooleanPref(prefs::kChromotingHostFirewallTraversal, false);
   prefs->RegisterStringPref(prefs::kCloudPrintEmail, std::string());
   prefs->RegisterBooleanPref(prefs::kCloudPrintProxyEnabled, true);
   prefs->RegisterBooleanPref(prefs::kDevToolsDisabled, false);

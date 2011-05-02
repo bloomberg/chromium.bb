@@ -318,6 +318,10 @@ extern const char kSaveFileType[];
 
 extern const char kAllowFileSelectionDialogs[];
 
+extern const char kChromotingEnabled[];
+extern const char kChromotingHostEnabled[];
+extern const char kChromotingHostFirewallTraversal[];
+
 extern const char kSelectFileLastDirectory[];
 
 extern const char kHungPluginDetectFrequency[];

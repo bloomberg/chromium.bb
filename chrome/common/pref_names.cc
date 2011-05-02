@@ -917,6 +917,17 @@ const char kSelectFileLastDirectory[] = "selectfile.last_directory";
 // Boolean that specifies if file selection dialogs are shown.
 const char kAllowFileSelectionDialogs[] = "select_file_dialogs.allowed";
 
+// Boolean that specifies if remote access features are allowed.
+const char kChromotingEnabled[] = "chromoting.enabled";
+
+// Boolean that specifies if machine is allowed to be shared for remote access.
+const char kChromotingHostEnabled[] = "chromoting.host_enabled";
+
+// Boolean that specifies if a machine that is shared for remote access is
+// is allowed to accept connections from across a firewall.
+const char kChromotingHostFirewallTraversal[] =
+    "chromoting.host_firewall_traversal";
+
 // Extensions which should be opened upon completion.
 const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";
 

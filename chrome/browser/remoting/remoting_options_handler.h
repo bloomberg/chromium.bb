@@ -29,7 +29,8 @@ class RemotingOptionsHandler : public ServiceProcessControl::MessageHandler {
       const remoting::ChromotingHostInfo& host_info);
 
  private:
-  void SetStatus(bool enabled, const std::string& login);
+  void SetStatus(bool enabled, bool host_enabled, bool host_configured,
+                 const std::string& login);
 
   WebUI* web_ui_;
   ServiceProcessControl* process_control_;

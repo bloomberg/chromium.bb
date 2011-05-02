@@ -35,34 +35,55 @@ void RemotingOptionsHandler::Init(WebUI* web_ui) {
           web_ui_->GetProfile());
   process_control_->AddMessageHandler(this);
 
+  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+
   if (!process_control_->RequestRemotingHostStatus()) {
     // Assume that host is not started if we can't request status.
-    SetStatus(false, "");
+    bool enabled = prefs->GetBoolean(prefs::kChromotingEnabled);
+    bool host_enabled = prefs->GetBoolean(prefs::kChromotingHostEnabled);
+    SetStatus(enabled, host_enabled, false, "");
   }
-  web_ui_->GetProfile()->GetPrefs()->SetBoolean(
-      prefs::kRemotingHasSetupCompleted, false);
+  prefs->SetBoolean(prefs::kRemotingHasSetupCompleted, false);
 }
 
 // ServiceProcessControl::MessageHandler interface
 void RemotingOptionsHandler::OnRemotingHostInfo(
     const remoting::ChromotingHostInfo& host_info) {
-  SetStatus(host_info.enabled, host_info.login);
+  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  bool enabled = prefs->GetBoolean(prefs::kChromotingEnabled);
+  bool host_enabled = prefs->GetBoolean(prefs::kChromotingHostEnabled);
+  DCHECK(enabled && host_enabled);
+
+  bool host_configured = host_info.enabled;
+  SetStatus(enabled, host_enabled, host_configured, host_info.login);
 }
 
 void RemotingOptionsHandler::SetStatus(
-    bool enabled, const std::string& login) {
+    bool enabled, bool host_enabled, bool host_configured,
+    const std::string& login) {
   string16 status;
   if (enabled) {
-    status = l10n_util::GetStringFUTF16(IDS_REMOTING_STATUS_ENABLED_TEXT,
-                                        UTF8ToUTF16(login));
+    if (host_enabled) {
+      if (host_configured) {
+        status = l10n_util::GetStringFUTF16(IDS_REMOTING_STATUS_CONFIGURED_TEXT,
+                                            UTF8ToUTF16(login));
+      } else {
+        status = l10n_util::GetStringUTF16(
+            IDS_REMOTING_STATUS_HOST_ENABLED_TEXT);
+      }
+    } else {
+      status = l10n_util::GetStringUTF16(IDS_REMOTING_STATUS_ENABLED_TEXT);
+    }
   } else {
     status = l10n_util::GetStringUTF16(IDS_REMOTING_STATUS_DISABLED_TEXT);
   }
 
   FundamentalValue enabled_value(enabled);
+  FundamentalValue configured_value(host_configured);
   StringValue status_value(status);
-  web_ui_->CallJavascriptFunction("options.AdvancedOptions.SetRemotingStatus",
-                                  enabled_value, status_value);
+  web_ui_->CallJavascriptFunction(
+      "options.AdvancedOptions.SetRemotingStatus",
+      enabled_value, configured_value, status_value);
 }
 
 }  // namespace remoting

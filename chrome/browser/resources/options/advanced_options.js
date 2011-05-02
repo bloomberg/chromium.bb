@@ -270,14 +270,22 @@ var OptionsPage = options.OptionsPage;
     }
   };
 
-  AdvancedOptions.SetRemotingStatus = function(enabled, status) {
-    if (enabled) {
+  AdvancedOptions.SetRemotingStatus = function(enabled, configured, status) {
+    if (configured) {
       $('remotingSetupButton').style.display = 'none';
       $('remotingStopButton').style.display = 'inline';
     } else {
       $('remotingSetupButton').style.display = 'inline';
       $('remotingStopButton').style.display = 'none';
     }
+
+    $('remotingSetupButton').disabled = !enabled;
+    $('remotingStopButton').disabled = !enabled;
+    if (!enabled) {
+      $('remotingSetupButton').style.display = 'none';
+      $('remotingStopButton').style.display = 'none';
+    }
+
     $('remotingStatus').textContent = status;
   };
 

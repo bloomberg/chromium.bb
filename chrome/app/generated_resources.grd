@@ -8570,13 +8570,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Remoting
       </message>
       <message name="IDS_OPTIONS_REMOTING_SETUP_BUTTON" desc="Title for the remoting setup button.">
-        Set up remote access...
+        Set up this computer for remote access...
       </message>
       <message name="IDS_OPTIONS_REMOTING_STOP_BUTTON" desc="Title for the remoting stop button.">
-        Disable remote access
+        Disable remote access to this computer
       </message>
       <message name="IDS_REMOTING_SETUP_DIALOG_TITLE" desc="Title of the remoting setup dialog.">
-        Set up remoting
+        Set up remote access
       </message>
       <message name="IDS_REMOTING_SETTING_UP_MESSAGE" desc="Message shown while remoting host is being started">
         Setting up remote access to this computer.
@@ -8599,11 +8599,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_REMOTING_RETRY_BUTTON_TEXT" desc="Text for retry button">
         Retry
       </message>
-      <message name="IDS_REMOTING_STATUS_DISABLED_TEXT" desc="Status string shown when remoting is disabled.">
-        Remote access to this computer is disabled.
+      <message name="IDS_REMOTING_STATUS_DISABLED_TEXT" desc="Status string shown when remoting is completely disabled.">
+        Remote access to or from this computer is disabled.
       </message>
-      <message name="IDS_REMOTING_STATUS_ENABLED_TEXT" desc="Status string shown when remoting is enabled.">
-        Remote access to this computer is enabled for <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>.
+      <message name="IDS_REMOTING_STATUS_ENABLED_TEXT" desc="Status string shown when a machine is enabled to be a remote access viewer (but not a host).">
+        Remote access to other computers is enabled.
+      </message>
+      <message name="IDS_REMOTING_STATUS_HOST_ENABLED_TEXT" desc="Status string shown when a machine is enabled to be a remote access host, but has not yet been configured.">
+        Remote access to this computer is not set up.
+      </message>
+      <message name="IDS_REMOTING_STATUS_CONFIGURED_TEXT" desc="Status string shown when a machine has been configured as a host for remote access.">
+        Remote access to this computer is set up for <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>.
       </message>
 
       <!-- Sync strings -->
