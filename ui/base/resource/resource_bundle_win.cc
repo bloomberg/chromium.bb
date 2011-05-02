@@ -172,4 +172,10 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   return string16(image->achString, image->nLength);
 }
 
+// Windows only uses SkBitmap for gfx::Image, so this is the same as
+// GetImageNamed.
+gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
+  return GetImageNamed(resource_id);
+}
+
 }  // namespace ui;

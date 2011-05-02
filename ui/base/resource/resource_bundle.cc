@@ -146,14 +146,6 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
   return *GetEmptyImage();
 }
 
-#if !defined(OS_MACOSX) && !defined(OS_LINUX)
-// Only Mac and Linux have non-Skia native image types. All other platforms use
-// Skia natively, so just use GetImageNamed().
-gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
-  return GetImageNamed(resource_id);
-}
-#endif
-
 RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
     int resource_id) const {
   RefCountedStaticMemory* bytes =
