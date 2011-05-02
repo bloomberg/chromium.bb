@@ -157,7 +157,7 @@ class MockURLRequestContext : public URLRequestContext {
                         CookiePolicy* cookie_policy) {
     set_cookie_store(cookie_store);
     set_cookie_policy(cookie_policy);
-    transport_security_state_ = new TransportSecurityState();
+    transport_security_state_ = new TransportSecurityState(std::string());
     set_transport_security_state(transport_security_state_.get());
     TransportSecurityState::DomainState state;
     state.expiry = base::Time::Now() + base::TimeDelta::FromSeconds(1000);

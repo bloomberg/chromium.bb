@@ -599,6 +599,13 @@ const char kHostResolverParallelism[]       = "host-resolver-parallelism";
 // These mappings only apply to the host resolver.
 const char kHostResolverRules[]             = "host-resolver-rules";
 
+// This switch will take the JSON-formatted HSTS specification and load it
+// as if it were a preloaded HSTS entry. It will take precedence over both
+// website-specified rules and built-in rules.
+// The JSON format is the same as that persisted in
+// <profile_dir>/Default/TransportSecurity
+const char kHstsHosts[]                     = "hsts-hosts";
+
 // Ignores GPU blacklist.
 const char kIgnoreGpuBlacklist[]            = "ignore-gpu-blacklist";
 

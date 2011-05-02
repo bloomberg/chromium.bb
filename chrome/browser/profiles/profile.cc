@@ -313,7 +313,9 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual net::TransportSecurityState* GetTransportSecurityState() {
     if (!transport_security_state_.get()) {
-      transport_security_state_ = new net::TransportSecurityState();
+      transport_security_state_ = new net::TransportSecurityState(
+          CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kHstsHosts));
       transport_security_loader_ =
           new TransportSecurityPersister(true /* readonly */);
       transport_security_loader_->Initialize(transport_security_state_.get(),
