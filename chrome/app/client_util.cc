@@ -257,8 +257,13 @@ HMODULE MainDllLoader::Load(std::wstring* out_version, std::wstring* out_file) {
     *out_file = dir;
     *out_version = version_string;
     out_file->append(*out_version).append(L"\\");
-    return LoadChromeWithDirectory(out_file);
+    dll = LoadChromeWithDirectory(out_file);
+    if (!dll) {
+      LOG(ERROR) << "Failed to load Chrome DLL from " << out_file;
+    }
+    return dll;
   } else {
+    LOG(ERROR) << "Could not get Chrome DLL version.";
     return NULL;
   }
 }
