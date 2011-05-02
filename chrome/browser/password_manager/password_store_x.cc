@@ -211,6 +211,22 @@ ssize_t PasswordStoreX::MigrateLogins() {
         break;
       }
     }
+    if (forms.empty()) {
+      // If there's nothing to migrate, then we try to insert a dummy login form
+      // just to force the native store to unlock if it was locked. We delete it
+      // right away if we are successful. If the first operation we try to do is
+      // a read, then in some cases this is just an error rather than an action
+      // that causes the native store to prompt the user to unlock.
+      // TODO(mdm): this means we no longer need the allow_fallback mechanism.
+      // Remove it once this preemptive unlock by write is baked for a while.
+      PasswordForm dummy;
+      dummy.origin = GURL("http://www.example.com/force-keyring-unlock");
+      dummy.signon_realm = "www.example.com";
+      if (backend_->AddLogin(dummy))
+        backend_->RemoveLogin(dummy);
+      else
+        ok = false;
+    }
     if (ok) {
       for (size_t i = 0; i < forms.size(); ++i) {
         // If even one of these calls to RemoveLoginImpl() succeeds, then we
