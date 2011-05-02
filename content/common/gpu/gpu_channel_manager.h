@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop_proxy.h"
 #include "base/time.h"
 #include "build/build_config.h"
 #include "content/common/child_thread.h"
@@ -44,7 +45,7 @@ class GpuChannelManager : public IPC::Channel::Listener,
  public:
   GpuChannelManager(IPC::Message::Sender* browser_channel,
                     GpuWatchdog* watchdog,
-                    MessageLoop* io_message_loop,
+                    base::MessageLoopProxy* io_message_loop,
                     base::WaitableEvent* shutdown_event);
   ~GpuChannelManager();
 
@@ -82,7 +83,7 @@ class GpuChannelManager : public IPC::Channel::Listener,
 
   void OnLoseAllContexts();
 
-  MessageLoop* io_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
   base::WaitableEvent* shutdown_event_;
 
   // Either an IPC channel to the browser or, if the GpuChannelManager is

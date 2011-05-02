@@ -68,7 +68,8 @@ void PluginChannelHost::SetListening(bool flag) {
 }
 
 PluginChannelHost* PluginChannelHost::GetPluginChannelHost(
-    const IPC::ChannelHandle& channel_handle, MessageLoop* ipc_message_loop) {
+    const IPC::ChannelHandle& channel_handle,
+    base::MessageLoopProxy* ipc_message_loop) {
   PluginChannelHost* result =
       static_cast<PluginChannelHost*>(PluginChannelBase::GetChannel(
           channel_handle,
@@ -85,7 +86,7 @@ PluginChannelHost::PluginChannelHost() : expecting_shutdown_(false) {
 PluginChannelHost::~PluginChannelHost() {
 }
 
-bool PluginChannelHost::Init(MessageLoop* ipc_message_loop,
+bool PluginChannelHost::Init(base::MessageLoopProxy* ipc_message_loop,
                              bool create_pipe_now) {
   bool ret = PluginChannelBase::Init(ipc_message_loop, create_pipe_now);
   is_listening_filter_ = new IsListeningFilter;

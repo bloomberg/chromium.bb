@@ -136,8 +136,8 @@ class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
   IPC::Channel* channel_;
 };
 
-PluginChannel* PluginChannel::GetPluginChannel(int renderer_id,
-                                               MessageLoop* ipc_message_loop) {
+PluginChannel* PluginChannel::GetPluginChannel(
+    int renderer_id, base::MessageLoopProxy* ipc_message_loop) {
   // Map renderer ID to a (single) channel to that process.
   std::string channel_key = StringPrintf(
       "%d.r%d", base::GetCurrentProcId(), renderer_id);
@@ -323,7 +323,8 @@ void PluginChannel::CleanUp() {
   plugin_stubs_.clear();
 }
 
-bool PluginChannel::Init(MessageLoop* ipc_message_loop, bool create_pipe_now) {
+bool PluginChannel::Init(base::MessageLoopProxy* ipc_message_loop,
+                         bool create_pipe_now) {
   if (!PluginChannelBase::Init(ipc_message_loop, create_pipe_now))
     return false;
 

@@ -121,7 +121,7 @@ bool PluginThread::OnControlMessageReceived(const IPC::Message& msg) {
 void PluginThread::OnCreateChannel(int renderer_id,
                                    bool incognito) {
   scoped_refptr<PluginChannel> channel(PluginChannel::GetPluginChannel(
-      renderer_id, ChildProcess::current()->io_message_loop()));
+      renderer_id, ChildProcess::current()->io_message_loop_proxy()));
   IPC::ChannelHandle channel_handle;
   if (channel.get()) {
     channel_handle.name = channel->channel_handle().name;

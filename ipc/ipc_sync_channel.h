@@ -66,7 +66,7 @@ class SyncChannel : public ChannelProxy,
   SyncChannel(const IPC::ChannelHandle& channel_handle,
               Channel::Mode mode,
               Channel::Listener* listener,
-              MessageLoop* ipc_message_loop,
+              base::MessageLoopProxy* ipc_message_loop,
               bool create_pipe_now,
               base::WaitableEvent* shutdown_event);
   virtual ~SyncChannel();
@@ -101,7 +101,7 @@ class SyncChannel : public ChannelProxy,
                       public base::WaitableEventWatcher::Delegate {
    public:
     SyncContext(Channel::Listener* listener,
-                MessageLoop* ipc_thread,
+                base::MessageLoopProxy* ipc_thread,
                 base::WaitableEvent* shutdown_event);
 
     // Adds information about an outgoing sync message to the context so that

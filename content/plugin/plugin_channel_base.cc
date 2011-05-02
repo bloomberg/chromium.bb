@@ -29,7 +29,7 @@ static int next_pipe_id = 0;
 
 PluginChannelBase* PluginChannelBase::GetChannel(
     const IPC::ChannelHandle& channel_handle, IPC::Channel::Mode mode,
-    PluginChannelFactory factory, MessageLoop* ipc_message_loop,
+    PluginChannelFactory factory, base::MessageLoopProxy* ipc_message_loop,
     bool create_pipe_now) {
   scoped_refptr<PluginChannelBase> channel;
   std::string channel_key = channel_handle.name;
@@ -112,7 +112,7 @@ NPObjectBase* PluginChannelBase::GetNPObjectListenerForRoute(int route_id) {
   return iter->second;
 }
 
-bool PluginChannelBase::Init(MessageLoop* ipc_message_loop,
+bool PluginChannelBase::Init(base::MessageLoopProxy* ipc_message_loop,
                              bool create_pipe_now) {
   channel_.reset(new IPC::SyncChannel(
       channel_handle_, mode_, this, ipc_message_loop, create_pipe_now,

@@ -11,7 +11,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/service_messages.h"
@@ -43,15 +42,13 @@ void ServiceProcessControl::ConnectInternal() {
 
   // Actually going to connect.
   VLOG(1) << "Connecting to Service Process IPC Server";
-  // Run the IPC channel on the shared IO thread.
-  base::Thread* io_thread = g_browser_process->io_thread();
 
   // TODO(hclam): Handle error connecting to channel.
   const IPC::ChannelHandle channel_id = GetServiceProcessChannel();
-  channel_.reset(
-      new IPC::SyncChannel(channel_id, IPC::Channel::MODE_NAMED_CLIENT, this,
-                           io_thread->message_loop(), true,
-                           g_browser_process->shutdown_event()));
+  channel_.reset(new IPC::SyncChannel(
+      channel_id, IPC::Channel::MODE_NAMED_CLIENT, this,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO), true,
+      g_browser_process->shutdown_event()));
 }
 
 void ServiceProcessControl::RunConnectDoneTasks() {

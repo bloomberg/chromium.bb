@@ -58,8 +58,8 @@ bool PpapiThread::OnMessageReceived(const IPC::Message& msg) {
   return true;
 }
 
-MessageLoop* PpapiThread::GetIPCMessageLoop() {
-  return ChildProcess::current()->io_message_loop();
+base::MessageLoopProxy* PpapiThread::GetIPCMessageLoop() {
+  return ChildProcess::current()->io_message_loop_proxy();
 }
 
 base::WaitableEvent* PpapiThread::GetShutdownEvent() {

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
@@ -111,10 +111,10 @@ class ModuleLocalThreadAdapter
 
   base::Lock lock_;
 
-  MessageLoop* main_thread_;
+  scoped_refptr<base::MessageLoopProxy> main_thread_;
 
   // Will be NULL before an instance routing is added.
-  MessageLoop* io_thread_;
+  scoped_refptr<base::MessageLoopProxy> io_thread_;
 
   typedef std::map<PP_Instance, Dispatcher*> InstanceToDispatcher;
   InstanceToDispatcher instance_to_dispatcher_;
@@ -188,8 +188,7 @@ bool ModuleLocalThreadAdapter::Filter::OnMessageReceived(
 }
 
 ModuleLocalThreadAdapter::ModuleLocalThreadAdapter()
-    : main_thread_(MessageLoop::current()),
-      io_thread_(NULL) {
+    : main_thread_(base::MessageLoopProxy::CreateForCurrentThread()) {
 }
 
 void ModuleLocalThreadAdapter::AddInstanceRouting(PP_Instance instance,
@@ -197,8 +196,8 @@ void ModuleLocalThreadAdapter::AddInstanceRouting(PP_Instance instance,
   base::AutoLock lock(lock_);
 
   // Now that we've had contact with a dispatcher, we can set up the IO thread.
-  DCHECK(MessageLoop::current() == main_thread_);
-  if (!io_thread_)
+  DCHECK(main_thread_->BelongsToCurrentThread());
+  if (!io_thread_.get())
     io_thread_ = dispatcher->GetIPCMessageLoop();
 
   // Set up the instance -> dispatcher routing.
@@ -275,7 +274,7 @@ bool ModuleLocalThreadAdapter::Send(PP_Instance instance, IPC::Message* msg) {
     dispatcher = found->second;
   }
 
-  if (MessageLoop::current() == main_thread_) {
+  if (main_thread_->BelongsToCurrentThread()) {
     // Easy case: We're on the same thread as the dispatcher, so we don't need
     // a lock to access it, and we can just use the normal sync channel stuff
     // to handle the message. Actually, we MUST use the normal sync channel

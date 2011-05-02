@@ -18,9 +18,11 @@ class NPObjectBase;
 class PluginChannelHost : public PluginChannelBase {
  public:
   static PluginChannelHost* GetPluginChannelHost(
-      const IPC::ChannelHandle& channel_handle, MessageLoop* ipc_message_loop);
+      const IPC::ChannelHandle& channel_handle,
+      base::MessageLoopProxy* ipc_message_loop);
 
-  virtual bool Init(MessageLoop* ipc_message_loop, bool create_pipe_now);
+  virtual bool Init(base::MessageLoopProxy* ipc_message_loop,
+                    bool create_pipe_now);
 
   virtual int GenerateRouteID();
 

@@ -166,7 +166,7 @@ class Worker : public Channel::Listener, public Message::Sender {
     // Link ipc_thread_, listener_thread_ and channel_ altogether.
     StartThread(&ipc_thread_, MessageLoop::TYPE_IO);
     channel_.reset(new SyncChannel(
-        channel_name_, mode_, this, ipc_thread_.message_loop(), true,
+        channel_name_, mode_, this, ipc_thread_.message_loop_proxy(), true,
         &shutdown_event_));
     channel_created_->Signal();
     Run();
@@ -1250,7 +1250,7 @@ class RestrictedDispatchClient : public Worker {
 
     scoped_ptr<SyncChannel> non_restricted_channel(new SyncChannel(
         "non_restricted_channel", Channel::MODE_CLIENT, this,
-        ipc_thread().message_loop(), true, shutdown_event()));
+        ipc_thread().message_loop_proxy(), true, shutdown_event()));
 
     server_->ListenerThread()->message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(server_, &RestrictedDispatchServer::OnDoPing, 2));

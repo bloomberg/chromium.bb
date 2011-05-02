@@ -30,6 +30,9 @@ class ChildProcess {
   void set_main_thread(ChildThread* thread);
 
   MessageLoop* io_message_loop() { return io_thread_.message_loop(); }
+  base::MessageLoopProxy* io_message_loop_proxy() {
+    return io_thread_.message_loop_proxy();
+  }
 
   // A global event object that is signalled when the main thread's message
   // loop exits.  This gives background threads a way to observe the main

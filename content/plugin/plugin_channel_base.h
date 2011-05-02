@@ -12,12 +12,15 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
 #include "content/common/message_router.h"
 #include "content/plugin/npobject_base.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ui/gfx/native_widget_types.h"
+
+namespace base {
+class MessageLoopProxy;
+}
 
 // Encapsulates an IPC channel between a renderer and a plugin process.
 class PluginChannelBase : public IPC::Channel::Listener,
@@ -77,7 +80,7 @@ class PluginChannelBase : public IPC::Channel::Listener,
   // on the channel and its ref count is 0, the object deletes itself.
   static PluginChannelBase* GetChannel(
       const IPC::ChannelHandle& channel_handle, IPC::Channel::Mode mode,
-      PluginChannelFactory factory, MessageLoop* ipc_message_loop,
+      PluginChannelFactory factory, base::MessageLoopProxy* ipc_message_loop,
       bool create_pipe_now);
 
   // Sends a message to all instances.
@@ -100,7 +103,8 @@ class PluginChannelBase : public IPC::Channel::Listener,
     send_unblocking_only_during_unblock_dispatch_ = true;
   }
 
-  virtual bool Init(MessageLoop* ipc_message_loop, bool create_pipe_now);
+  virtual bool Init(base::MessageLoopProxy* ipc_message_loop,
+                    bool create_pipe_now);
 
   scoped_ptr<IPC::SyncChannel> channel_;
 

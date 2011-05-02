@@ -303,7 +303,7 @@ void GpuChannel::OnCreateTransportTexture(int32 context_route_id,
  #endif
  }
 
-bool GpuChannel::Init(MessageLoop* io_message_loop,
+bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
                       base::WaitableEvent* shutdown_event) {
   // Check whether we're already initialized.
   if (channel_.get())

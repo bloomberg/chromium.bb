@@ -10,6 +10,7 @@
 
 #include "ipc/ipc_channel_proxy.h"
 
+class MessageLoop;
 struct DevToolsMessageData;
 
 // DevToolsAgentFilter is registered as an IPC filter in order to be able to

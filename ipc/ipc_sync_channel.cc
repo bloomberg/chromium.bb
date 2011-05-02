@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "base/threading/thread_local.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/waitable_event_watcher.h"
@@ -134,7 +133,9 @@ class SyncChannel::ReceivedSyncMsgQueue :
   }
 
   WaitableEvent* dispatch_event() { return &dispatch_event_; }
-  MessageLoop* listener_message_loop() { return listener_message_loop_; }
+  base::MessageLoopProxy* listener_message_loop() {
+    return listener_message_loop_;
+  }
 
   // Holds a pointer to the per-thread ReceivedSyncMsgQueue object.
   static base::LazyInstance<base::ThreadLocalPointer<ReceivedSyncMsgQueue> >
@@ -168,7 +169,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
   // as manual reset.
   ReceivedSyncMsgQueue() :
       dispatch_event_(true, false),
-      listener_message_loop_(MessageLoop::current()),
+      listener_message_loop_(base::MessageLoopProxy::CreateForCurrentThread()),
       task_pending_(false),
       listener_count_(0),
       top_send_done_watcher_(NULL) {
@@ -192,7 +193,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
   // sender needs its reply before it can reply to our original synchronous
   // message.
   WaitableEvent dispatch_event_;
-  MessageLoop* listener_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> listener_message_loop_;
   base::Lock message_lock_;
   bool task_pending_;
   int listener_count_;
@@ -208,7 +209,7 @@ base::LazyInstance<base::ThreadLocalPointer<SyncChannel::ReceivedSyncMsgQueue> >
 
 SyncChannel::SyncContext::SyncContext(
     Channel::Listener* listener,
-    MessageLoop* ipc_thread,
+    base::MessageLoopProxy* ipc_thread,
     WaitableEvent* shutdown_event)
     : ChannelProxy::Context(listener, ipc_thread),
       received_sync_msgs_(ReceivedSyncMsgQueue::AddContext()),
@@ -371,7 +372,7 @@ SyncChannel::SyncChannel(
     const IPC::ChannelHandle& channel_handle,
     Channel::Mode mode,
     Channel::Listener* listener,
-    MessageLoop* ipc_message_loop,
+    base::MessageLoopProxy* ipc_message_loop,
     bool create_pipe_now,
     WaitableEvent* shutdown_event)
     : ChannelProxy(

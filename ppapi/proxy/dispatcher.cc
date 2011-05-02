@@ -250,7 +250,7 @@ const void* Dispatcher::GetLocalInterface(const char* interface_name) {
   return local_get_interface_(interface_name);
 }
 
-MessageLoop* Dispatcher::GetIPCMessageLoop() {
+base::MessageLoopProxy* Dispatcher::GetIPCMessageLoop() {
   return delegate()->GetIPCMessageLoop();
 }
 

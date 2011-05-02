@@ -23,10 +23,10 @@
 class GpuChannelManager;
 struct GPUCreateCommandBufferConfig;
 class GpuWatchdog;
-class MessageLoop;
 class TransportTexture;
 	 
 namespace base {
+class MessageLoopProxy;
 class WaitableEvent;
 }
 
@@ -42,7 +42,8 @@ class GpuChannel : public IPC::Channel::Listener,
              int renderer_id);
   virtual ~GpuChannel();
 
-  bool Init(MessageLoop* io_message_loop, base::WaitableEvent* shutdown_event);
+  bool Init(base::MessageLoopProxy* io_message_loop,
+            base::WaitableEvent* shutdown_event);
 
   // Get the GpuChannelManager that owns this channel.
   GpuChannelManager* gpu_channel_manager() const {

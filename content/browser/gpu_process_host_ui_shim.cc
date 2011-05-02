@@ -8,7 +8,6 @@
 #include "base/id_map.h"
 #include "base/process_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/io_thread.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu_data_manager.h"
 #include "content/browser/gpu_process_host.h"
@@ -117,7 +116,7 @@ GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id)
     gpu_channel_manager_ = new GpuChannelManager(
         ui_thread_sender_,
         NULL,
-        g_browser_process->io_thread()->message_loop(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
         g_browser_process->shutdown_event());
   }
 }

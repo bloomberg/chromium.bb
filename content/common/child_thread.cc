@@ -45,7 +45,7 @@ void ChildThread::Init() {
 
   channel_.reset(new IPC::SyncChannel(channel_name_,
       IPC::Channel::MODE_CLIENT, this,
-      ChildProcess::current()->io_message_loop(), true,
+      ChildProcess::current()->io_message_loop_proxy(), true,
       ChildProcess::current()->GetShutDownEvent()));
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging::GetInstance()->SetIPCSender(this);

@@ -97,7 +97,7 @@ class PepperPluginRegistry
   PepperPluginRegistry();
 
   // Dispatcher::Delegate implementation.
-  virtual MessageLoop* GetIPCMessageLoop();
+  virtual base::MessageLoopProxy* GetIPCMessageLoop();
   virtual base::WaitableEvent* GetShutdownEvent();
   virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet();
 

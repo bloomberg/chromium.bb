@@ -19,7 +19,7 @@
 
 GpuChannelManager::GpuChannelManager(IPC::Message::Sender* browser_channel,
                                      GpuWatchdog* watchdog,
-                                     MessageLoop* io_message_loop,
+                                     base::MessageLoopProxy* io_message_loop,
                                      base::WaitableEvent* shutdown_event)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       io_message_loop_(io_message_loop),

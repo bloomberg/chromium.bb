@@ -193,7 +193,7 @@ void GpuChildThread::OnInitialize() {
   gpu_channel_manager_.reset(new GpuChannelManager(
       this,
       watchdog_thread_,
-      ChildProcess::current()->io_message_loop(),
+      ChildProcess::current()->io_message_loop_proxy(),
       ChildProcess::current()->GetShutDownEvent()));
 
   // Ensure the browser process receives the GPU info before a reply to any

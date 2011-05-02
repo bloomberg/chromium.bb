@@ -28,7 +28,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -253,9 +252,6 @@ bool BrowserRenderProcessHost::Init(
   // content, e.g. if an extension calls window.open.
   extension_process_ = extension_process_ || is_extensions_process;
 
-  // run the IPC channel on the shared IO thread.
-  base::Thread* io_thread = g_browser_process->io_thread();
-
   CommandLine::StringType renderer_prefix;
 #if defined(OS_POSIX)
   // A command prefix is something prepended to the command line of the spawned
@@ -275,10 +271,10 @@ bool BrowserRenderProcessHost::Init(
   // Setup the IPC channel.
   const std::string channel_id =
       ChildProcessInfo::GenerateRandomChannelID(this);
-  channel_.reset(
-      new IPC::SyncChannel(channel_id, IPC::Channel::MODE_SERVER, this,
-                           io_thread->message_loop(), true,
-                           g_browser_process->shutdown_event()));
+  channel_.reset(new IPC::SyncChannel(
+      channel_id, IPC::Channel::MODE_SERVER, this,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO), true,
+      g_browser_process->shutdown_event()));
   // As a preventive mesure, we DCHECK if someone sends a synchronous message
   // with no time-out, which in the context of the browser process we should not
   // be doing.

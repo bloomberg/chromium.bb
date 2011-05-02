@@ -11,9 +11,8 @@
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_sync_channel.h"
 
-class MessageLoop;
-
 namespace base {
+class MessageLoopProxy;
 class WaitableEvent;
 }
 
@@ -34,7 +33,7 @@ class ProxyChannel : public IPC::Channel::Listener,
   class Delegate {
    public:
     // Returns the dedicated message loop for processing IPC requests.
-    virtual MessageLoop* GetIPCMessageLoop() = 0;
+    virtual base::MessageLoopProxy* GetIPCMessageLoop() = 0;
 
     // Returns the event object that becomes signalled when the main thread's
     // message loop exits.

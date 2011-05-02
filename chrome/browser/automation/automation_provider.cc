@@ -55,7 +55,6 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/user_script_master.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -166,7 +165,7 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
       use_named_interface ? IPC::Channel::MODE_NAMED_SERVER
                           : IPC::Channel::MODE_CLIENT,
       this,
-      g_browser_process->io_thread()->message_loop(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
       true, g_browser_process->shutdown_event()));
   channel_->AddFilter(automation_resource_message_filter_);
 

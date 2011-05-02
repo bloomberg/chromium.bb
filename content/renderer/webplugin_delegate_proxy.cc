@@ -298,7 +298,7 @@ bool WebPluginDelegateProxy::Initialize(
 
   scoped_refptr<PluginChannelHost> channel_host(
       PluginChannelHost::GetPluginChannelHost(
-          channel_handle, ChildProcess::current()->io_message_loop()));
+          channel_handle, ChildProcess::current()->io_message_loop_proxy()));
   if (!channel_host.get())
     return false;
 

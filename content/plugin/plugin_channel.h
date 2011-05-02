@@ -25,8 +25,8 @@ class PluginChannel : public PluginChannelBase {
   // Get a new PluginChannel object for the current process to talk to the
   // given renderer process. The renderer ID is an opaque unique ID generated
   // by the browser.
-  static PluginChannel* GetPluginChannel(int renderer_id,
-                                         MessageLoop* ipc_message_loop);
+  static PluginChannel* GetPluginChannel(
+      int renderer_id, base::MessageLoopProxy* ipc_message_loop);
 
   // Send a message to all renderers that the process is going to shutdown.
   static void NotifyRenderersOfPendingShutdown();
@@ -62,7 +62,8 @@ class PluginChannel : public PluginChannelBase {
   virtual void CleanUp();
 
   // Overrides PluginChannelBase::Init.
-  virtual bool Init(MessageLoop* ipc_message_loop, bool create_pipe_now);
+  virtual bool Init(base::MessageLoopProxy* ipc_message_loop,
+                   bool create_pipe_now);
 
  private:
   class MessageFilter;

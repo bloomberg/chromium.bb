@@ -27,7 +27,7 @@ void GpuChannelHost::Connect(
   // Open a channel to the GPU process.
   channel_.reset(new IPC::SyncChannel(
       channel_handle, IPC::Channel::MODE_CLIENT, this,
-      ChildProcess::current()->io_message_loop(), true,
+      ChildProcess::current()->io_message_loop_proxy(), true,
       ChildProcess::current()->GetShutDownEvent()));
 
   // It is safe to send IPC messages before the channel completes the connection
