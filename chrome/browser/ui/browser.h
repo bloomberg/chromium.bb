@@ -21,6 +21,7 @@
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/instant/instant_delegate.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
@@ -883,6 +884,12 @@ class Browser : public TabHandlerDelegate,
   // Updates the printing command state.
   void UpdatePrintingState(int content_restrictions);
 
+  // Updates the save-page-as command state.
+  void UpdateSaveAsState(int content_restrictions);
+
+  // Updates the open-file state (Mac Only).
+  void UpdateOpenFileState();
+
   // Ask the Reload/Stop button to change its icon, and update the Stop command
   // state.  |is_loading| is true if the current TabContents is loading.
   // |force| is true if the button should change its icon immediately.
@@ -1052,6 +1059,10 @@ class Browser : public TabHandlerDelegate,
 
   NotificationRegistrar registrar_;
 
+  PrefChangeRegistrar profile_pref_registrar_;
+
+  PrefChangeRegistrar local_pref_registrar_;
+
   // This Browser's type.
   const Type type_;
 
@@ -1141,21 +1152,6 @@ class Browser : public TabHandlerDelegate,
 
   // Keep track of the encoding auto detect pref.
   BooleanPrefMember encoding_auto_detect_;
-
-  // Keep track of the printing enabled pref.
-  BooleanPrefMember printing_enabled_;
-
-  // Keep track of the development tools disabled pref.
-  BooleanPrefMember dev_tools_disabled_;
-
-  // Keep track of when instant enabled changes.
-  BooleanPrefMember instant_enabled_;
-
-  // Tracks the preference that controls whether incognito mode is allowed.
-  BooleanPrefMember incognito_mode_allowed_;
-
-  // Tracks whether bookmarks can be modified.
-  BooleanPrefMember edit_bookmarks_enabled_;
 
   // Indicates if command execution is blocked.
   bool block_command_execution_;

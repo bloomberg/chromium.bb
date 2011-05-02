@@ -239,6 +239,8 @@ WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {
   default_download_location_.Init(prefs::kDownloadDefaultDirectory,
                                   prefs, this);
   ask_for_save_location_.Init(prefs::kPromptForDownload, prefs, this);
+  allow_file_selection_dialogs_.Init(prefs::kAllowFileSelectionDialogs,
+                                     g_browser_process->local_state(), this);
   auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
   default_font_size_.Init(prefs::kWebKitDefaultFontSize, prefs, this);
   proxy_prefs_.reset(
@@ -313,7 +315,8 @@ void AdvancedOptionsHandler::Observe(NotificationType type,
   if (type == NotificationType::PREF_CHANGED) {
     std::string* pref_name = Details<std::string>(details).ptr();
     if ((*pref_name == prefs::kDownloadDefaultDirectory) ||
-        (*pref_name == prefs::kPromptForDownload)) {
+        (*pref_name == prefs::kPromptForDownload) ||
+        (*pref_name == prefs::kAllowFileSelectionDialogs)) {
       SetupDownloadLocationPath();
       SetupPromptForDownload();
     } else if (*pref_name == prefs::kDownloadExtensionsToOpen) {
@@ -562,7 +565,11 @@ void AdvancedOptionsHandler::SetupFontSizeLabel() {
 
 void AdvancedOptionsHandler::SetupDownloadLocationPath() {
   StringValue value(default_download_location_.GetValue().value());
-  FundamentalValue disabled(default_download_location_.IsManaged());
+  // In case allow_file_selection_dialogs_ is false, we will not display any
+  // file-selection dialogs but show an InfoBar. That is why we can disable
+  // the DownloadLocationPath-Chooser right-away.
+  FundamentalValue disabled(default_download_location_.IsManaged() ||
+                            !allow_file_selection_dialogs_.GetValue());
   web_ui_->CallJavascriptFunction(
       "options.AdvancedOptions.SetDownloadLocationPath", value, disabled);
 }

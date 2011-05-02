@@ -234,25 +234,27 @@ Browser::Browser(Type type, Profile* profile)
   registrar_.Add(this, NotificationType::EXTENSION_READY_FOR_INSTALL,
                  NotificationService::AllSources());
 
-  // NOTE: These prefs all need to be explicitly destroyed in the destructor
-  // or you'll get a nasty surprise when you run the incognito tests.
   PrefService* local_state = g_browser_process->local_state();
-  if (local_state)
-    printing_enabled_.Init(prefs::kPrintingEnabled, local_state, this);
-  dev_tools_disabled_.Init(prefs::kDevToolsDisabled,
-                           profile_->GetPrefs(), this);
-  incognito_mode_allowed_.Init(prefs::kIncognitoEnabled,
-                               profile_->GetPrefs(), this);
-  edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
-                               profile_->GetPrefs(), this);
+  if (local_state) {
+    local_pref_registrar_.Init(local_state);
+    local_pref_registrar_.Add(prefs::kPrintingEnabled, this);
+    local_pref_registrar_.Add(prefs::kAllowFileSelectionDialogs, this);
+  }
+
+  profile_pref_registrar_.Init(profile_->GetPrefs());
+  profile_pref_registrar_.Add(prefs::kDevToolsDisabled, this);
+  profile_pref_registrar_.Add(prefs::kEditBookmarksEnabled, this);
+  profile_pref_registrar_.Add(prefs::kInstantEnabled, this);
 
   InitCommandState();
   BrowserList::AddBrowser(this);
 
+  // NOTE: These prefs all need to be explicitly destroyed in the destructor
+  // or you'll get a nasty surprise when you run the incognito tests.
   encoding_auto_detect_.Init(prefs::kWebKitUsesUniversalDetector,
                              profile_->GetPrefs(), NULL);
   use_vertical_tabs_.Init(prefs::kUseVerticalTabs, profile_->GetPrefs(), this);
-  instant_enabled_.Init(prefs::kInstantEnabled, profile_->GetPrefs(), this);
+
   if (!TabMenuModel::AreVerticalTabsEnabled()) {
     // If vertical tabs aren't enabled, explicitly turn them off. Otherwise we
     // might show vertical tabs but not show an option to turn them off.
@@ -311,13 +313,11 @@ Browser::~Browser() {
   if (tab_restore_service)
     tab_restore_service->BrowserClosed(tab_restore_service_delegate());
 
+  profile_pref_registrar_.RemoveAll();
+  local_pref_registrar_.RemoveAll();
+
   encoding_auto_detect_.Destroy();
-  printing_enabled_.Destroy();
-  dev_tools_disabled_.Destroy();
-  incognito_mode_allowed_.Destroy();
-  instant_enabled_.Destroy();
   use_vertical_tabs_.Destroy();
-  edit_bookmarks_enabled_.Destroy();
 
   if (profile_->IsOffTheRecord() &&
       !BrowserList::IsOffTheRecordSessionActive()) {
@@ -1375,7 +1375,7 @@ void Browser::Stop() {
 void Browser::NewWindow() {
   if (browser_defaults::kAlwaysOpenIncognitoWindow &&
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kIncognito) &&
-      incognito_mode_allowed_.GetValue()) {
+      profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
     NewIncognitoWindow();
     return;
   }
@@ -1389,7 +1389,7 @@ void Browser::NewWindow() {
 }
 
 void Browser::NewIncognitoWindow() {
-  if (!incognito_mode_allowed_.GetValue()) {
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
     NewWindow();
     return;
   }
@@ -2653,7 +2653,7 @@ bool Browser::CanBookmarkAllTabs() const {
   BookmarkModel* model = profile()->GetBookmarkModel();
   return (model && model->IsLoaded()) &&
          tab_count() > 1 &&
-         edit_bookmarks_enabled_.GetValue();
+         profile()->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled);
 }
 
 void Browser::BookmarkAllTabs() {
@@ -3478,12 +3478,13 @@ void Browser::Observe(NotificationType type,
         }
       } else if (pref_name == prefs::kDevToolsDisabled) {
         UpdateCommandsForDevTools();
-        if (dev_tools_disabled_.GetValue())
+        if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
           g_browser_process->devtools_manager()->CloseAllClientHosts();
-      } else if (pref_name == prefs::kIncognitoEnabled) {
-        break;  // No further action is required.
       } else if (pref_name == prefs::kEditBookmarksEnabled) {
         UpdateCommandsForBookmarkEditing();
+      } else if (pref_name == prefs::kAllowFileSelectionDialogs) {
+        UpdateSaveAsState(GetContentRestrictionsForSelectedTab());
+        UpdateOpenFileState();
       } else {
         NOTREACHED();
       }
@@ -3592,8 +3593,9 @@ void Browser::InitCommandState() {
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW, true);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_INCOGNITO_WINDOW,
-                                        incognito_mode_allowed_.GetValue());
+  command_updater_.UpdateCommandEnabled(
+      IDC_NEW_INCOGNITO_WINDOW,
+      profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled));
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_WINDOW, true);
   command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, true);
@@ -3650,7 +3652,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_MINUS, true);
 
   // Show various bits of UI
-  command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, true);
+  UpdateOpenFileState();
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS, false);
   UpdateCommandsForDevTools();
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, true);
@@ -3796,8 +3798,7 @@ void Browser::UpdateCommandsForContentRestrictionState() {
       IDC_CUT, !(restrictions & CONTENT_RESTRICTION_CUT));
   command_updater_.UpdateCommandEnabled(
       IDC_PASTE, !(restrictions & CONTENT_RESTRICTION_PASTE));
-  command_updater_.UpdateCommandEnabled(
-      IDC_SAVE_PAGE, !(restrictions & CONTENT_RESTRICTION_SAVE));
+  UpdateSaveAsState(restrictions);
   UpdatePrintingState(restrictions);
 }
 
@@ -3806,7 +3807,8 @@ void Browser::UpdatePrintingState(int content_restrictions) {
   if (content_restrictions & CONTENT_RESTRICTION_PRINT) {
     enabled = false;
   } else if (g_browser_process->local_state()) {
-    enabled = printing_enabled_.GetValue();
+    enabled = g_browser_process->local_state()->
+        GetBoolean(prefs::kPrintingEnabled);
   }
   command_updater_.UpdateCommandEnabled(IDC_PRINT, enabled);
 }
@@ -3817,7 +3819,8 @@ void Browser::UpdateReloadStopState(bool is_loading, bool force) {
 }
 
 void Browser::UpdateCommandsForDevTools() {
-  bool dev_tools_enabled = !dev_tools_disabled_.GetValue();
+  bool dev_tools_enabled =
+      profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled);
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS,
                                         dev_tools_enabled);
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_CONSOLE,
@@ -3827,13 +3830,32 @@ void Browser::UpdateCommandsForDevTools() {
 }
 
 void Browser::UpdateCommandsForBookmarkEditing() {
-  bool enabled = edit_bookmarks_enabled_.GetValue() &&
-                 browser_defaults::bookmarks_enabled;
+  bool enabled =
+      profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled) &&
+      browser_defaults::bookmarks_enabled;
 
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE,
       enabled && type() == TYPE_NORMAL);
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
       enabled && CanBookmarkAllTabs());
+}
+
+void Browser::UpdateSaveAsState(int content_restrictions) {
+  bool enabled = !(content_restrictions & CONTENT_RESTRICTION_SAVE);
+  PrefService* state = g_browser_process->local_state();
+  if (state)
+    enabled = enabled && state->GetBoolean(prefs::kAllowFileSelectionDialogs);
+
+  command_updater_.UpdateCommandEnabled(IDC_SAVE_PAGE, enabled);
+}
+
+void Browser::UpdateOpenFileState() {
+  bool enabled = true;
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state)
+    enabled = local_state->GetBoolean(prefs::kAllowFileSelectionDialogs);
+
+  command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, enabled);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

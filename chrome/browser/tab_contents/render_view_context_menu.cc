@@ -938,13 +938,27 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_COPYLINKLOCATION:
       return params_.unfiltered_link_url.is_valid();
 
-    case IDC_CONTENT_CONTEXT_SAVELINKAS:
+    case IDC_CONTENT_CONTEXT_SAVELINKAS: {
+      PrefService* local_state = g_browser_process->local_state();
+      DCHECK(local_state);
+      // Test if file-selection dialogs are forbidden by policy.
+      if (!local_state->GetBoolean(prefs::kAllowFileSelectionDialogs))
+        return false;
+
       return params_.link_url.is_valid() &&
              net::URLRequest::IsHandledURL(params_.link_url);
+    }
 
-    case IDC_CONTENT_CONTEXT_SAVEIMAGEAS:
+    case IDC_CONTENT_CONTEXT_SAVEIMAGEAS: {
+      PrefService* local_state = g_browser_process->local_state();
+      DCHECK(local_state);
+      // Test if file-selection dialogs are forbidden by policy.
+      if (!local_state->GetBoolean(prefs::kAllowFileSelectionDialogs))
+        return false;
+
       return params_.src_url.is_valid() &&
              net::URLRequest::IsHandledURL(params_.src_url);
+    }
 
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
       // The images shown in the most visited thumbnails do not currently open
@@ -984,16 +998,29 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_COPYIMAGELOCATION:
       return params_.src_url.is_valid();
 
-    case IDC_CONTENT_CONTEXT_SAVEAVAS:
+    case IDC_CONTENT_CONTEXT_SAVEAVAS: {
+      PrefService* local_state = g_browser_process->local_state();
+      DCHECK(local_state);
+      // Test if file-selection dialogs are forbidden by policy.
+      if (!local_state->GetBoolean(prefs::kAllowFileSelectionDialogs))
+        return false;
+
       return (params_.media_flags &
               WebContextMenuData::MediaCanSave) &&
              params_.src_url.is_valid() &&
              net::URLRequest::IsHandledURL(params_.src_url);
+    }
 
     case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:
       return true;
 
     case IDC_SAVE_PAGE: {
+      PrefService* local_state = g_browser_process->local_state();
+      DCHECK(local_state);
+      // Test if file-selection dialogs are forbidden by policy.
+      if (!local_state->GetBoolean(prefs::kAllowFileSelectionDialogs))
+        return false;
+
       // Instead of using GetURL here, we use url() (which is the "real" url of
       // the page) from the NavigationEntry because its reflects their origin
       // rather than the display one (returned by GetURL) which may be

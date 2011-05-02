@@ -172,6 +172,7 @@ class AdvancedOptionsHandler
 
   FilePathPrefMember default_download_location_;
   BooleanPrefMember ask_for_save_location_;
+  BooleanPrefMember allow_file_selection_dialogs_;
   StringPrefMember auto_open_files_;
   IntegerPrefMember default_font_size_;
   scoped_ptr<PrefSetObserver> proxy_prefs_;
