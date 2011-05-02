@@ -314,10 +314,10 @@ INITIAL_ENV = {
   'STDLIB_NATIVE_SUFFIX': '${ROOT_%arch%}/libcrt_platform.a ' +
                           '-L${ROOT_%arch%} -lgcc_eh -lgcc ',
 
-
   'STDLIB_BC_PREFIX': '${ROOT_BC}/nacl_startup.bc',
 
-  'STDLIB_BC_SUFFIX': '-L${ROOT_BC} -lc -lnacl ${LIBSTDCPP} -lc -lnosys',
+  'STDLIB_BC_SUFFIX':  '-L${ROOT_BC} -lc -lnacl ${LIBSTDCPP}',
+
   'LIBSTDCPP'       : '-lstdc++',
 
   # Build actual command lines below
@@ -345,11 +345,16 @@ INITIAL_ENV = {
   'LD_INPUTS' : '${STDLIB_NATIVE_PREFIX} ${inputs} ${STDLIB_NATIVE_SUFFIX}',
   'RUN_LD' : '${LD} ${LD_FLAGS} ${LD_INPUTS} -o "${output}"',
 
-  'RUN_BCLD': '${BCLD} ${BCLD_FLAGS} ' +
-              '${STDLIB_NATIVE_PREFIX} ${STDLIB_BC_PREFIX} ${inputs} ' +
-              '${STDLIB_BC_SUFFIX} ${STDLIB_NATIVE_SUFFIX} ' +
-              '${BASE}/llvm-intrinsics.bc ' +
-              '-o "${output}"',
+  'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} '
+               '${STDLIB_NATIVE_PREFIX} ${STDLIB_BC_PREFIX} '
+               '${obj_inputs} '
+               '--start-group '
+               '${lib_inputs} '
+               '${STDLIB_BC_SUFFIX} '
+               '--end-group '
+               '${STDLIB_NATIVE_SUFFIX} '
+               '${BASE}/llvm-intrinsics.bc '
+               '-o "${output}"'),
 
   'RUN_PEXECHECK': '${LLVM_LD} --nacl-abi-check ' +
                    '--nacl-legal-undefs ${PEXE_ALLOWED_UNDEFS} ${inputs}',
@@ -1191,10 +1196,20 @@ def LinkBC(inputs, output = None):
   if not arch:
     arch = 'X8632'
 
+  # separate library input from non-library inputs
+  obj_inputs = []
+  lib_inputs = []
+  for i in inputs:
+    if i.startswith('-l'):
+      lib_inputs.append(i)
+    else:
+      obj_inputs.append(i)
   # Produce combined bitcode file
-  RunWithEnv('RUN_BCLD', arch = arch,
-             inputs = shell.join(inputs),
-             output = bcld_output)
+  RunWithEnv('RUN_BCLD',
+             arch=arch,
+             obj_inputs=shell.join(obj_inputs),
+             lib_inputs=shell.join(lib_inputs),
+             output=bcld_output)
 
   #### Manually apply symbol wrap to unoptimized bitcode
   symbols = shell.split(env.get('LD_WRAP_SYMBOLS'))
