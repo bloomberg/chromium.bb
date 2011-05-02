@@ -183,7 +183,9 @@ void ClientSideDetectionService::SetModelStatus(ModelStatus status) {
 
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    SendModelToProcess(i.GetCurrentValue());
+    RenderProcessHost* process = i.GetCurrentValue();
+    if (process->GetHandle())
+      SendModelToProcess(process);
   }
 }
 

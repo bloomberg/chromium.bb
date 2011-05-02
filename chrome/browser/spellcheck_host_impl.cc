@@ -252,7 +252,9 @@ void SpellCheckHostImpl::InformObserverOfInitialization() {
 
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    InitForRenderer(i.GetCurrentValue());
+    RenderProcessHost* process = i.GetCurrentValue();
+    if (process)
+      InitForRenderer(process);
   }
 }
 
