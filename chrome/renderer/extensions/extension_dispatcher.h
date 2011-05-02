@@ -34,11 +34,17 @@ class Extension;
 // renderer extension related state.
 class ExtensionDispatcher : public RenderProcessObserver {
  public:
+  typedef std::map< std::string, std::vector<std::string> > PageActionIdMap;
+
   ExtensionDispatcher();
   virtual ~ExtensionDispatcher();
 
   const std::set<std::string>& function_names() const {
     return function_names_;
+  }
+
+  const PageActionIdMap& page_action_map() const {
+    return page_action_ids_;
   }
 
   bool is_extension_process() const { return is_extension_process_; }
@@ -104,6 +110,9 @@ class ExtensionDispatcher : public RenderProcessObserver {
 
   // All declared function names from extension_api.json.
   std::set<std::string> function_names_;
+
+  // A map of extension ID to vector of page action ids.
+  PageActionIdMap page_action_ids_;
 
   // The extensions that are active in this process.
   std::set<std::string> active_extension_ids_;

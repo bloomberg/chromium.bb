@@ -15,7 +15,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -305,16 +304,23 @@ class ExtensionImpl : public ExtensionBase {
       const v8::Arguments& args) {
     ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
     std::string extension_id = *v8::String::Utf8Value(args[0]->ToString());
-    const ::Extension* extension =
-        v8_extension->extension_dispatcher_->extensions()->GetByID(
-            extension_id);
-    CHECK(extension);
+    const ExtensionDispatcher::PageActionIdMap& page_action_map =
+        v8_extension->extension_dispatcher_->page_action_map();
+    ExtensionDispatcher::PageActionIdMap::const_iterator it =
+        page_action_map.find(extension_id);
 
-    v8::Local<v8::Array> page_action_vector = v8::Array::New();
-    if (extension->page_action()) {
-      std::string id = extension->page_action()->id();
-      page_action_vector->Set(v8::Integer::New(0),
-                              v8::String::New(id.c_str(), id.size()));
+    std::vector<std::string> page_actions;
+    size_t size  = 0;
+    if (it != page_action_map.end()) {
+      page_actions = it->second;
+      size = page_actions.size();
+    }
+
+    v8::Local<v8::Array> page_action_vector = v8::Array::New(size);
+    for (size_t i = 0; i < size; ++i) {
+      std::string page_action_id = page_actions[i];
+      page_action_vector->Set(v8::Integer::New(i),
+                              v8::String::New(page_action_id.c_str()));
     }
 
     return page_action_vector;
