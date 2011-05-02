@@ -110,7 +110,7 @@ class SCMWrapper(object):
     if file_list is None:
       file_list = []
 
-    commands = ['cleanup', 'export', 'update', 'updatesingle', 'revert',
+    commands = ['cleanup', 'update', 'updatesingle', 'revert',
                 'revinfo', 'status', 'diff', 'pack', 'runhooks']
 
     if not command in commands:
@@ -143,19 +143,6 @@ class GitWrapper(SCMWrapper):
   def diff(self, options, args, file_list):
     merge_base = self._Capture(['merge-base', 'HEAD', 'origin'])
     self._Run(['diff', merge_base], options)
-
-  def export(self, options, args, file_list):
-    """Export a clean directory tree into the given path.
-
-    Exports into the specified directory, creating the path if it does
-    already exist.
-    """
-    assert len(args) == 1
-    export_path = os.path.abspath(os.path.join(args[0], self.relpath))
-    if not os.path.exists(export_path):
-      os.makedirs(export_path)
-    self._Run(['checkout-index', '-a', '--prefix=%s/' % export_path],
-              options)
 
   def pack(self, options, args, file_list):
     """Generates a patch file which can be applied to the root of the
@@ -700,17 +687,6 @@ class SVNWrapper(SCMWrapper):
       raise gclient_utils.Error('Directory %s is not present.' %
           self.checkout_path)
     self._Run(['diff'] + args, options)
-
-  def export(self, options, args, file_list):
-    """Export a clean directory tree into the given path."""
-    assert len(args) == 1
-    export_path = os.path.abspath(os.path.join(args[0], self.relpath))
-    try:
-      os.makedirs(export_path)
-    except OSError:
-      pass
-    assert os.path.exists(export_path)
-    self._Run(['export', '--force', '.', export_path], options)
 
   def pack(self, options, args, file_list):
     """Generates a patch file which can be applied to the root of the

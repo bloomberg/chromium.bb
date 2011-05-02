@@ -49,7 +49,7 @@ Hooks
     ]
 """
 
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 
 import copy
 import logging
@@ -988,27 +988,6 @@ URL.
     client.SetDefaultConfig(name, base_url, safesync_url)
   client.SaveConfig()
   return 0
-
-
-def CMDexport(parser, args):
-  """Wrapper for svn export for all managed directories."""
-  parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
-                    help='override deps for the specified (comma-separated) '
-                         'platform(s); \'all\' will process all deps_os '
-                         'references')
-  (options, args) = parser.parse_args(args)
-  if len(args) != 1:
-    raise gclient_utils.Error('Need directory name')
-  client = GClient.LoadCurrentConfig(options)
-
-  if not client:
-    raise gclient_utils.Error('client not configured; see \'gclient config\'')
-
-  if options.verbose:
-    # Print out the .gclient file.  This is longer than if we just printed the
-    # client dict, but more legible, and it might contain helpful comments.
-    print(client.config_content)
-  return client.RunOnDeps('export', args)
 
 
 @attr('epilog', """Example:
