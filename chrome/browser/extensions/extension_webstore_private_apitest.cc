@@ -66,15 +66,18 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
   }
 };
 
-// Tests several basic install cases.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, Install) {
-  // Test cases where the user accepts the install confirmation dialog.
+// Test cases where the user accepts the install confirmation dialog.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
   ASSERT_TRUE(RunInstallTest("accepted.html"));
+}
 
-  // Now test the case where the user cancels the confirmation dialog.
+// Now test the case where the user cancels the confirmation dialog.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallCancelled) {
   BeginInstallWithManifestFunction::SetAutoConfirmForTests(false);
   ASSERT_TRUE(RunInstallTest("cancelled.html"));
+}
 
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallNoGesture) {
   BeginInstallFunction::SetIgnoreUserGestureForTests(false);
   ASSERT_TRUE(RunInstallTest("no_user_gesture.html"));
 }
