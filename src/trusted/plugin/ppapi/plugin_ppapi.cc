@@ -50,10 +50,11 @@ namespace plugin {
 namespace {
 
 const char* const kTypeAttribute = "type";
-// The "nacl" attribute of the <embed> tag.  The value is expected to be either
+// The "src" attribute of the <embed> tag.  The value is expected to be either
 // a URL or URI pointing to the manifest file (which is expected to contain
 // JSON matching ISAs with .nexe URLs).
-const char* const kNaclManifestAttribute = "nacl";
+// TODO(sehr,elijahtaylor): implement data URI support.
+const char* const kSrcManifestAttribute = "src";
 // This is a pretty arbitrary limit on the byte size of the NaCl manfest file.
 // Note that the resulting string object has to have at least one byte extra
 // for the null termination character.
@@ -371,14 +372,15 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       std::transform(mime_type_.begin(), mime_type_.end(), mime_type_.begin(),
                      tolower);
     }
-    const char* nacl_attr = LookupArgument(kNaclManifestAttribute);
-    PLUGIN_PRINTF(("PluginPpapi::Init (nacl_attr=%s)\n", nacl_attr));
-    if (nacl_attr != NULL) {
-      // Issue a GET for the "nacl" attribute.  The value of the attribute
+    const char* src_attr = LookupArgument(kSrcManifestAttribute);
+    PLUGIN_PRINTF(("PluginPpapi::Init (src_attr=%s)\n", src_attr));
+    if (src_attr != NULL) {
+      // Issue a GET for the "src" attribute.  The value of the attribute
       // can be a URI or a URL pointing to the manifest file. The manifest
       // file will be parsed to determine the nexe URL.
-      // Sets nacl property to full manifest URL.
-      RequestNaClManifest(nacl_attr);
+      // TODO(sehr,elijahtaylor): implement data URI support.
+      // Sets src property to full manifest URL.
+      RequestNaClManifest(src_attr);
     }
   }
 
@@ -615,7 +617,7 @@ void PluginPpapi::ShutdownProxy() {
 void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (pp_error=%"
                  NACL_PRId32")\n", pp_error));
-  // The manifest file was successfully opened.  Set the __nacl property on the
+  // The manifest file was successfully opened.  Set the src property on the
   // plugin now, so that the full url is available to error handlers.
   set_nacl_manifest_url(nexe_downloader_.url());
   int32_t file_desc = nexe_downloader_.GetPOSIXFileDescriptor();

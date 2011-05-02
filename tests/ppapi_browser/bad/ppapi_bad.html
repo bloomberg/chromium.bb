@@ -96,33 +96,33 @@ setListeners($('body'));
     <embed id="cross_manifest"
       class="naclModule"
       width=100 height=20
-      nacl="http://www.google.com/crossorigin.manifest"
+      src="http://www.google.com/crossorigin.manifest"
       style="background-color:gray"
       type="application/x-nacl" />
     <embed id="cross_manifest_pdf"
       width=100 height=20
-      nacl="http://www.google.com/crossorigin.manifest"
+      src="http://www.google.com/crossorigin.manifest"
       style="background-color:gray"
       type="application/pdf" />
 
     <embed id="nonexist_manifest"
       class="naclModule"
       width=100 height=20
-      nacl="doesnotexist.manifest"
+      src="doesnotexist.manifest"
       style="background-color:gray"
       type="application/x-nacl" />
 
     <embed id="bad_manifest"
       class="naclModule"
       width=100 height=20
-      nacl="ppapi_bad.html"
+      src="ppapi_bad.html"
       style="background-color:gray"
       type="application/x-nacl" />
 
     <embed id="cross_origin"
       class="naclModule"
       width=100 height=20
-      nacl="ppapi_bad_crossorigin.nmf"
+      src="ppapi_bad_crossorigin.nmf"
       style="background-color:gray"
       type="application/x-nacl" />
     <!-- This load would have succeeded if the NEXE was from a chrome-extension
@@ -130,28 +130,28 @@ setListeners($('body'));
          the nacl_modules attribute in a Chrome extension manifest. -->
     <embed id="cross_origin_pdf"
       width=100 height=20
-      nacl="ppapi_bad_crossorigin.nmf"
+      src="ppapi_bad_crossorigin.nmf"
       style="background-color:gray"
       type="application/pdf" />
 
     <embed id="nonexist_nexe"
       class="naclModule"
       width=100 height=20
-      nacl="ppapi_bad_doesnotexist.nmf"
+      src="ppapi_bad_doesnotexist.nmf"
       style="background-color:gray"
       type="application/x-nacl" />
 
     <embed id="bad_magic"
       class="naclModule"
       width=100 height=20
-      nacl="ppapi_bad_magic.nmf"
+      src="ppapi_bad_magic.nmf"
       style="background-color:gray"
       type="application/x-nacl" />
 
     <embed id="bad_nexe"
       class="naclModule"
       width=100 height=20
-      nacl="ppapi_bad_nexe.nmf"
+      src="ppapi_bad_nexe.nmf"
       style="background-color:gray"
       type="application/x-nacl" />
   <script type="text/javascript">

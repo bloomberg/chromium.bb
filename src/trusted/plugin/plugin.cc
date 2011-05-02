@@ -111,23 +111,23 @@ bool SetModuleReadyProperty(void* obj, SrpcParams* params) {
   return false;
 }
 
-bool GetNaClProperty(void* obj, SrpcParams* params) {
+bool GetSrcProperty(void* obj, SrpcParams* params) {
   Plugin* plugin = reinterpret_cast<Plugin*>(obj);
-  const char* url = plugin->nacl_module_url().c_str();
-  PLUGIN_PRINTF(("GetNaClProperty ('nacl'='%s')\n", url));
-  if (NACL_NO_URL != plugin->nacl_module_url()) {
+  const char* url = plugin->nacl_manifest_url().c_str();
+  PLUGIN_PRINTF(("GetSrcProperty ('src'='%s')\n", url));
+  if (NACL_NO_URL != plugin->nacl_manifest_url()) {
     params->outs()[0]->arrays.str = strdup(url);
     return true;
   } else {
-    // No url to set 'nacl' to.
+    // No url set for 'src'.
     return false;
   }
 }
 
-bool SetNaClProperty(void* obj, SrpcParams* params) {
-  PLUGIN_PRINTF(("SetNaClProperty ()\n"));
+bool SetSrcProperty(void* obj, SrpcParams* params) {
+  PLUGIN_PRINTF(("SetSrcProperty ()\n"));
   reinterpret_cast<Plugin*>(obj)->
-      SetNaClPropertyImpl(params->ins()[0]->arrays.str);
+      SetSrcPropertyImpl(params->ins()[0]->arrays.str);
   return true;
 }
 
@@ -252,8 +252,8 @@ void Plugin::LoadMethods() {
   AddPropertyGet(GetModuleReadyProperty, "__moduleReady", "i");
   AddPropertySet(SetModuleReadyProperty, "__moduleReady", "i");
 
-  AddPropertyGet(GetNaClProperty, "nacl", "s");
-  AddPropertySet(SetNaClProperty, "nacl", "s");
+  AddPropertyGet(GetSrcProperty, "src", "s");
+  AddPropertySet(SetSrcProperty, "src", "s");
   if (!ExperimentalJavaScriptApisAreEnabled()) {
     return;
   }
@@ -312,8 +312,8 @@ bool Plugin::InitParamsEx(uintptr_t method_id,
   return socket_->handle()->InitParams(method_id, call_type, params);
 }
 
-void Plugin::SetNaClPropertyImpl(const nacl::string& url) {
-  PLUGIN_PRINTF(("Plugin::SetNaClPropertyImpl (unloading previous)\n"));
+void Plugin::SetSrcPropertyImpl(const nacl::string& url) {
+  PLUGIN_PRINTF(("Plugin::SetSrcPropertyImpl (unloading previous)\n"));
   // We do not actually need to shut down the process here when
   // initiating the (asynchronous) download.  It is more important to
   // shut down the old process when the download completes and a new

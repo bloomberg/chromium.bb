@@ -68,9 +68,7 @@ function injectAnEmbed(pnaclDiv, nacl_url, id) {
 
   embed.width = 0;
   embed.height = 0;
-  // Have to use embed.setAttribute(nacl, X) instead of embed.nacl = X.
-  // This may be because 'nacl' is a non-standard attribute for embeds.
-  embed.setAttribute('nacl', nacl_url);
+  embed.src = nacl_url;
   embed.type = 'application/x-nacl';
   embed.id = id; // mostly for debugging...
 

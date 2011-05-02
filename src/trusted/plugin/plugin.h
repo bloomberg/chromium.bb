@@ -129,7 +129,7 @@ class Plugin : public PortableHandle {
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
 
   // Complex method to set member data.
-  void SetNaClPropertyImpl(const nacl::string &url);
+  void SetSrcPropertyImpl(const nacl::string &url);
 
   // Requesting a nacl manifest from a specified url.
   virtual void RequestNaClManifest(const nacl::string& url) = 0;

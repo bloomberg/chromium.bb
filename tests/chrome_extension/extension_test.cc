@@ -164,7 +164,7 @@ pp::Var HelloWorldScriptableObject::GetProperty(const pp::Var& property,
 // a new Instance for each occurrence of the <embed> tag that has these
 // attributes:
 //     type="application/x-nacl"
-//     nacl="hello_world.nmf"
+//     src="hello_world.nmf"
 // The Instance can return a ScriptableObject representing itself.  When the
 // browser encounters JavaScript that wants to access the Instance, it calls
 // the GetInstanceObject() method.  All the scripting work is done through
@@ -214,4 +214,3 @@ Module* CreateModule() {
   return new hello_world::HelloWorldModule();
 }
 }  // namespace pp
-

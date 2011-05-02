@@ -46,7 +46,7 @@ function startProcess(url, callback) {
     'type="application/x-nacl" />';
   var plugin = node.childNodes[0];
   // Assigning to "nacl" causes manifest and then nexe to be loaded.
-  plugin.nacl = url;
+  plugin.src = url;
 }
 
 function runTest(url, callback) {
