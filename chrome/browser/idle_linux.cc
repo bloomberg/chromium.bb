@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/sync/engine/idle_query_linux.h"
+#include "chrome/browser/idle_query_linux.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/base/x/x11_util.h"
 
@@ -72,7 +72,7 @@ IdleState CalculateIdleState(unsigned int idle_threshold) {
   if (result && !got_error)
     return IDLE_STATE_LOCKED;
 
-  browser_sync::IdleQueryLinux idle_query;
+  browser::IdleQueryLinux idle_query;
   unsigned int idle_time = idle_query.IdleTime();
   if (idle_time >= idle_threshold)
     return IDLE_STATE_IDLE;

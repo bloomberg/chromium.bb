@@ -1165,6 +1165,8 @@
         'browser/icon_manager_win.cc',
         'browser/idle_linux.cc',
         'browser/idle_mac.mm',
+        'browser/idle_query_linux.cc',
+        'browser/idle_query_linux.h',
         'browser/idle_win.cc',
         'browser/importer/external_process_importer_bridge.cc',
         'browser/importer/external_process_importer_bridge.h',
