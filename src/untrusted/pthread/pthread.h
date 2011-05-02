@@ -653,6 +653,17 @@ typedef struct {
 extern int pthread_once(pthread_once_t *__once_control,
                         void (*__init_routine)(void));
 
+/** @nqPosix
+* Sets the scheduling priority of a thread.
+*
+* @linkPthread
+*
+* @param thread_id Identifies the thread to operate on.
+* @param prio Scheduling priority to apply to that thread.
+*
+* @return 0 on success, non-zero error code otherwise.
+*/
+extern int pthread_setschedprio(pthread_t thread_id, int prio);
 
 /*
  * NOTE: this is only declared here to shut up

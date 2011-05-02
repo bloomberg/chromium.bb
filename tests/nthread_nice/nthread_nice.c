@@ -32,7 +32,6 @@
  */
 
 #define HAVE_THREADS
-#include <nacl/nacl_thread.h>
 #include <pthread.h>
 #include <stdio.h>
 
@@ -58,12 +57,16 @@ static void DoNothing() {
   gDoNotOptimize += 1;
 }
 
+static void niceme(int nice) {
+  pthread_setschedprio(pthread_self(), nice);
+}
+
 /* Entry point for worker thread. */
 void* wWorkerThreadEntry(void *args) {
   struct thread_closure *tc = (struct thread_closure *)args;
   int i;
 
-  nacl_thread_nice(tc->nice);
+  niceme(tc->nice);
   pthread_mutex_lock(&gTheBigLock);
   printf("thread %d starting.\n", tc->tid);
   pthread_mutex_unlock(&gTheBigLock);
@@ -116,7 +119,7 @@ void RunDemo() {
 
   pthread_mutex_lock(&gTheBigLock);
   if (CreateWorkerThreads()) {
-    nacl_thread_nice(NICE_BACKGROUND);
+    niceme(NICE_BACKGROUND);
     while (gDone == 0) pthread_cond_wait(&gDoneCond, &gTheBigLock);
   }
   pthread_mutex_unlock(&gTheBigLock);

@@ -832,6 +832,16 @@ void *pthread_getspecific (pthread_key_t key) {
   return tdb->thread_specific_data[key].ptr;
 }
 
+int pthread_setschedprio(pthread_t thread_id, int prio) {
+  if (thread_id != pthread_self()) {
+    /*
+     * We can only support changing our own priority.
+     */
+    return EPERM;
+  }
+  return nacl_thread_nice(prio);
+}
+
 int pthread_attr_init (pthread_attr_t *attr) {
   if (NULL == attr) {
     return EINVAL;
