@@ -76,7 +76,8 @@ SyncerThread::SyncerThread(sessions::SyncSessionContext* context,
       server_connection_ok_(false),
       delay_provider_(new DelayProvider()),
       syncer_(syncer),
-      session_context_(context) {
+      session_context_(context),
+      created_on_loop_(MessageLoop::current()) {
 }
 
 SyncerThread::~SyncerThread() {
@@ -85,6 +86,8 @@ SyncerThread::~SyncerThread() {
 
 void SyncerThread::CheckServerConnectionManagerStatus(
     HttpResponse::ServerConnectionCode code) {
+
+  DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
 
   VLOG(1) << "SyncerThread(" << this << ")" << " Server connection changed."
           << "Old mode: " << server_connection_ok_ << " Code: " << code;
@@ -110,6 +113,7 @@ void SyncerThread::CheckServerConnectionManagerStatus(
 void SyncerThread::Start(Mode mode, ModeChangeCallback* callback) {
   VLOG(1) << "SyncerThread(" << this << ")" << "  Start called from thread "
           << MessageLoop::current()->thread_name();
+  DCHECK_EQ(MessageLoop::current(), created_on_loop_);
   if (!thread_.IsRunning()) {
     VLOG(1) << "SyncerThread(" << this << ")" << " Starting thread with mode "
             << mode;
@@ -142,7 +146,9 @@ void SyncerThread::SendInitialSnapshot() {
 
 void SyncerThread::WatchConnectionManager() {
   ServerConnectionManager* scm = session_context_->connection_manager();
-  CheckServerConnectionManagerStatus(scm->server_status());
+  thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &SyncerThread::CheckServerConnectionManagerStatus,
+      scm->server_status()));
   scm->AddListener(this);
 }
 
@@ -270,6 +276,7 @@ bool SyncerThread::ShouldRunJob(const SyncSessionJob& job) {
 }
 
 void SyncerThread::SaveJob(const SyncSessionJob& job) {
+  DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
   DCHECK(job.purpose != SyncSessionJob::CLEAR_USER_DATA);
   if (job.purpose == SyncSessionJob::NUDGE) {
     VLOG(1) << "SyncerThread(" << this << ")" << " Saving a nudge job";
@@ -298,6 +305,7 @@ struct ModelSafeWorkerGroupIs {
 };
 
 void SyncerThread::ScheduleClearUserData() {
+  DCHECK_EQ(MessageLoop::current(), created_on_loop_);
   if (!thread_.IsRunning()) {
     NOTREACHED();
     return;
@@ -309,6 +317,7 @@ void SyncerThread::ScheduleClearUserData() {
 void SyncerThread::ScheduleNudge(const TimeDelta& delay,
     NudgeSource source, const ModelTypeBitSet& types,
     const tracked_objects::Location& nudge_location) {
+  DCHECK_EQ(MessageLoop::current(), created_on_loop_);
   if (!thread_.IsRunning()) {
     NOTREACHED();
     return;
@@ -327,6 +336,7 @@ void SyncerThread::ScheduleNudge(const TimeDelta& delay,
 void SyncerThread::ScheduleNudgeWithPayloads(const TimeDelta& delay,
     NudgeSource source, const ModelTypePayloadMap& types_with_payloads,
     const tracked_objects::Location& nudge_location) {
+  DCHECK_EQ(MessageLoop::current(), created_on_loop_);
   if (!thread_.IsRunning()) {
     NOTREACHED();
     return;
@@ -445,6 +455,7 @@ void GetModelSafeParamsForTypes(const ModelTypeBitSet& types,
 }
 
 void SyncerThread::ScheduleConfig(const ModelTypeBitSet& types) {
+  DCHECK_EQ(MessageLoop::current(), created_on_loop_);
   if (!thread_.IsRunning()) {
     NOTREACHED();
     return;
@@ -672,7 +683,6 @@ void SyncerThread::ScheduleNextSync(const SyncSessionJob& old_job) {
 void SyncerThread::AdjustPolling(const SyncSessionJob* old_job) {
   DCHECK(thread_.IsRunning());
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
-
   TimeDelta poll  = (!session_context_->notifications_enabled()) ?
       syncer_short_poll_interval_seconds_ :
       syncer_long_poll_interval_seconds_;

@@ -328,6 +328,11 @@ class SyncerThread : public sessions::SyncSession::Delegate,
 
   scoped_ptr<sessions::SyncSessionContext> session_context_;
 
+  // A cache of the thread message loop that created this object. This is used
+  // to perform a DCHECK to ensure the public APIs are called from only from the
+  // same single thread.
+  MessageLoop* const created_on_loop_;
+
   DISALLOW_COPY_AND_ASSIGN(SyncerThread);
 };
 
