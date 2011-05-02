@@ -240,21 +240,28 @@ int QueryNodeList::AppendChildrenToString(string16* query) const {
 // A QueryNodePhrase is a phrase query ("quoted").
 class QueryNodePhrase : public QueryNodeList {
  public:
-  virtual int AppendToSQLiteQuery(string16* query) const {
-    query->push_back(L'"');
-    int num_words = AppendChildrenToString(query);
-    query->push_back(L'"');
-    return num_words;
-  }
+  QueryNodePhrase();
+  virtual ~QueryNodePhrase();
 
-  virtual bool Matches(const string16& word, bool exact) const;
-  virtual bool HasMatchIn(const std::vector<QueryWord>& words,
-                          Snippet::MatchPositions* match_positions) const;
+  // QueryNodeList:
+  virtual int AppendToSQLiteQuery(string16* query) const OVERRIDE;
+  virtual bool HasMatchIn(
+      const std::vector<QueryWord>& words,
+      Snippet::MatchPositions* match_positions) const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QueryNodePhrase);
 };
 
-bool QueryNodePhrase::Matches(const string16& word, bool exact) const {
-  NOTREACHED();
-  return false;
+QueryNodePhrase::QueryNodePhrase() {}
+
+QueryNodePhrase::~QueryNodePhrase() {}
+
+int QueryNodePhrase::AppendToSQLiteQuery(string16* query) const {
+  query->push_back(L'"');
+  int num_words = AppendChildrenToString(query);
+  query->push_back(L'"');
+  return num_words;
 }
 
 bool QueryNodePhrase::HasMatchIn(
@@ -282,8 +289,7 @@ bool QueryNodePhrase::HasMatchIn(
   return false;
 }
 
-QueryParser::QueryParser() {
-}
+QueryParser::QueryParser() {}
 
 // static
 bool QueryParser::IsWordLongEnoughForPrefixSearch(const string16& word) {
