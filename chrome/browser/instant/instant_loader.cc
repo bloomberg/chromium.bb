@@ -55,7 +55,7 @@ const int kUpdateBoundsDelayMS = 1000;
 const int kHostBlacklistStatusCode = 403;
 
 // Header and value set for all loads.
-const char kPreviewHeader[] = "X-Purpose:";
+const char kPreviewHeader[] = "X-Purpose";
 const char kPreviewHeaderValue[] = "preview";
 
 }  // namespace
