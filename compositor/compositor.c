@@ -33,6 +33,7 @@
 #include <math.h>
 #include <linux/input.h>
 #include <dlfcn.h>
+#include <getopt.h>
 
 #include "wayland-server.h"
 #include "compositor.h"
@@ -42,28 +43,11 @@
  */
 static const char *option_socket_name = NULL;
 static const char *option_background = "background.jpg";
-static const char *option_geometry = "1024x640";
 static const char *option_shell = NULL;
-static int option_idle_time = 5;
+static int option_idle_time = 300;
 static int option_connector = 0;
 
-static const GOptionEntry option_entries[] = {
-	{ "background", 'b', 0, G_OPTION_ARG_STRING,
-	  &option_background, "Background image" },
-	{ "connector", 'c', 0, G_OPTION_ARG_INT,
-	  &option_connector, "KMS connector" },
-	{ "geometry", 'g', 0, G_OPTION_ARG_STRING,
-	  &option_geometry, "Geometry" },
-	{ "socket", 0, 0, G_OPTION_ARG_STRING,
-	  &option_socket_name, "Socket Name" },
-	{ "idle-time", 'i', 0, G_OPTION_ARG_INT,
-	  &option_idle_time, "Screensaver idle time" },
-	{ "shell", 's', 0, G_OPTION_ARG_STRING,
-	  &option_shell, "Shell module" },
-	{ NULL }
-};
-
-static void
+WL_EXPORT void
 wlsc_matrix_init(struct wlsc_matrix *matrix)
 {
 	static const struct wlsc_matrix identity = {
@@ -1952,24 +1936,65 @@ int main(int argc, char *argv[])
 	struct wl_display *display;
 	struct wlsc_compositor *ec;
 	struct wl_event_loop *loop;
-	GError *error = NULL;
-	GOptionContext *context;
-	int width, height;
+	int width, height, o;
 	void *shell_module;
 	int (*shell_init)(struct wlsc_compositor *ec);
+	char *p;
+
+	static const char opts[] = "b:c:g:S:i:s:";
+	static const struct option longopts[ ] = {
+		{ "background", 1, NULL, 'b' },
+		{ "connector", 1, NULL, 'c' },
+		{ "geometry", 1, NULL, 'g' },
+		{ "socket", 1, NULL, 'S' },
+		{ "idle-time", 1, NULL, 'i' },
+		{ "shell", 1, NULL, 's' },
+		{ NULL, }
+	};
 
 	g_type_init(); /* GdkPixbuf needs this, it seems. */
 
-	context = g_option_context_new(NULL);
-	g_option_context_add_main_entries(context, option_entries, "Wayland");
-	if (!g_option_context_parse(context, &argc, &argv, &error)) {
-		fprintf(stderr, "option parsing failed: %s\n", error->message);
-		exit(EXIT_FAILURE);
-	}
-	if (sscanf(option_geometry, "%dx%d", &width, &height) != 2) {
-		fprintf(stderr, "invalid geometry option: %s \n",
-			option_geometry);
-		exit(EXIT_FAILURE);
+	width = 1024;
+	height = 640;
+
+	while (o = getopt_long(argc, argv, opts, longopts, &o), o > 0) {
+		switch (o) {
+		case 'b':
+			option_background = optarg;
+			break;
+		case 'c':
+			option_connector = strtol(optarg, &p, 0);
+			if (*p != '\0') {
+				fprintf(stderr,
+					"invalid connection option: %s\n",
+					optarg);
+				exit(EXIT_FAILURE);
+			}
+			break;
+		case 'g':
+			if (sscanf(optarg, "%dx%d", &width, &height) != 2) {
+				fprintf(stderr,
+					"invalid geometry option: %s\n",
+					optarg);
+				exit(EXIT_FAILURE);
+			}
+			break;
+		case 'S':
+			option_socket_name = optarg;
+			break;
+		case 'i':
+			option_idle_time = strtol(optarg, &p, 0);
+			if (*p != '\0') {
+				fprintf(stderr,
+					"invalid idle time option: %s\n",
+					optarg);
+				exit(EXIT_FAILURE);
+			}
+			break;
+		case 's':
+			option_shell = optarg;
+			break;
+		}
 	}
 
 	display = wl_display_create();
