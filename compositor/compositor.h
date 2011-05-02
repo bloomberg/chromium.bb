@@ -45,6 +45,11 @@ void
 wlsc_matrix_translate(struct wlsc_matrix *matrix,
 		      GLfloat x, GLfloat y, GLfloat z);
 
+struct wlsc_transform {
+	struct wlsc_matrix matrix;
+	struct wlsc_matrix inverse;
+};
+
 struct wlsc_surface;
 
 struct wlsc_output {
@@ -219,8 +224,7 @@ struct wlsc_surface {
 	int32_t saved_x, saved_y;
 	struct wl_list link;
 	struct wl_list buffer_link;
-	struct wlsc_matrix *transform;
-	struct wlsc_matrix *transform_inv;
+	struct wlsc_transform *transform;
 	struct wl_visual *visual;
 	struct wlsc_output *output;
 	enum wlsc_surface_map_type map_type;

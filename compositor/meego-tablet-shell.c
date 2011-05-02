@@ -78,8 +78,7 @@ struct meego_tablet_zoom {
 	struct wlsc_surface *surface;
 	struct wlsc_animation animation;
 	struct wlsc_tweener tweener;
-	struct wlsc_matrix transform;
-	struct wlsc_matrix transform_inv;
+	struct wlsc_transform transform;
 };
 
 static int
@@ -111,21 +110,20 @@ meego_tablet_zoom_frame(struct wlsc_animation *animation,
 		wl_list_remove(&animation->link);
 		fprintf(stderr, "animation done\n");
 		es->transform = NULL;
-		es->transform_inv = NULL;
 		free(zoom);
 	}
 
 	scale = zoom->tweener.current;
-	wlsc_matrix_init(&zoom->transform);
-	wlsc_matrix_translate(&zoom->transform,
+	wlsc_matrix_init(&zoom->transform.matrix);
+	wlsc_matrix_translate(&zoom->transform.matrix,
 			      -es->width / 2.0, -es->height / 2.0, 0);
-	wlsc_matrix_scale(&zoom->transform, scale, scale, scale);
-	wlsc_matrix_translate(&zoom->transform,
+	wlsc_matrix_scale(&zoom->transform.matrix, scale, scale, scale);
+	wlsc_matrix_translate(&zoom->transform.matrix,
 			      es->width / 2.0, es->height / 2.0, 0);
 
 	scale = 1.0 / zoom->tweener.current;
-	wlsc_matrix_init(&zoom->transform_inv);
-	wlsc_matrix_scale(&zoom->transform_inv, scale, scale, scale);
+	wlsc_matrix_init(&zoom->transform.inverse);
+	wlsc_matrix_scale(&zoom->transform.inverse, scale, scale, scale);
 
 	wlsc_surface_damage(es);
 }
@@ -145,23 +143,15 @@ meego_tablet_zoom_run(struct meego_tablet_shell *shell,
 
 	zoom->surface = surface;
 	surface->transform = &zoom->transform;
-	surface->transform_inv = &zoom->transform_inv;
 	scale = 0.3;
 	wlsc_tweener_init(&zoom->tweener, 100.0, scale, 1.0);
 	zoom->tweener.timestamp = wlsc_compositor_get_time();
 	zoom->animation.frame = meego_tablet_zoom_frame;
+	meego_tablet_zoom_frame(&zoom->animation, NULL,
+				zoom->tweener.timestamp);
+
 	wl_list_insert(shell->compositor->animation_list.prev,
 		       &zoom->animation.link);
-
-	wlsc_matrix_init(&zoom->transform);
-	wlsc_matrix_translate(&zoom->transform,
-			      -surface->width / 2.0,
-			      -surface->height / 2.0, 0);
-	wlsc_matrix_scale(&zoom->transform, scale, scale, scale);
-
-	scale = 1.0 / scale;
-	wlsc_matrix_init(&zoom->transform_inv);
-	wlsc_matrix_scale(&zoom->transform_inv, scale, scale, scale);
 }
 
 static const char *

@@ -194,7 +194,6 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	surface->height = height;
 
 	surface->transform = NULL;
-	surface->transform_inv = NULL;
 
 	return surface;
 }
@@ -486,7 +485,7 @@ transform_vertex(struct wlsc_surface *surface,
 	t.f[2] = 0.0;
 	t.f[3] = 1.0;
 
-	wlsc_matrix_transform(surface->transform, &t);
+	wlsc_matrix_transform(&surface->transform->matrix, &t);
 
 	r[ 0] = t.f[0];
 	r[ 1] = t.f[1];
