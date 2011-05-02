@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,17 +13,18 @@ it will ask you whether it is good or bad before continuing the search.
 """
 
 # Base URL to download snapshots from.
-BUILD_BASE_URL = 'http://build.chromium.org/f/chromium/snapshots/'
+BUILD_BASE_URL = 'http://build.chromium.org/f/chromium/continuous/'
+
+# The index file that lists all the builds. This lives in BUILD_BASE_URL.
+BUILD_INDEX_FILE = 'all_builds.txt'
 
 # The type (platform) of the build archive. This is what's passed in to the
 # '-a/--archive' option.
 BUILD_ARCHIVE_TYPE = ''
 
-# The selected archive to bisect.
-BUILD_ARCHIVE_DIR = ''
-
-# The location of the builds.
-BUILD_ARCHIVE_URL = '/%d/'
+# The location of the builds. Format this with a (date, revision) tuple, which
+# can be obtained through ParseIndexLine().
+BUILD_ARCHIVE_URL = '/%s/%d/'
 
 # Name of the build archive.
 BUILD_ZIP_NAME = ''
@@ -88,16 +89,14 @@ def UnzipFilenameToDir(filename, dir):
 def SetArchiveVars(archive):
   """Set a bunch of global variables appropriate for the specified archive."""
   global BUILD_ARCHIVE_TYPE
-  global BUILD_ARCHIVE_DIR
   global BUILD_ZIP_NAME
   global BUILD_DIR_NAME
   global BUILD_EXE_NAME
   global BUILD_BASE_URL
 
   BUILD_ARCHIVE_TYPE = archive
-  BUILD_ARCHIVE_DIR = 'chromium-rel-' + BUILD_ARCHIVE_TYPE
 
-  if BUILD_ARCHIVE_TYPE in ('linux', 'linux-64', 'linux-chromiumos'):
+  if BUILD_ARCHIVE_TYPE in ('linux', 'linux64', 'linux-chromiumos'):
     BUILD_ZIP_NAME = 'chrome-linux.zip'
     BUILD_DIR_NAME = 'chrome-linux'
     BUILD_EXE_NAME = 'chrome'
@@ -110,35 +109,67 @@ def SetArchiveVars(archive):
     BUILD_DIR_NAME = 'chrome-win32'
     BUILD_EXE_NAME = 'chrome.exe'
 
-  BUILD_BASE_URL += BUILD_ARCHIVE_DIR
 
 def ParseDirectoryIndex(url):
-  """Parses the HTML directory listing into a list of revision numbers."""
+  """Parses the all_builds.txt index file. The format of this file is:
+    mac/2011-02-16/75130
+    mac/2011-02-16/75218
+    mac/2011-02-16/75226
+    mac/2011-02-16/75234
+    mac/2011-02-16/75184
+  This function will return a list of DATE/REVISION strings for the platform
+  specified by BUILD_ARCHIVE_TYPE.
+  """
   handle = urllib.urlopen(url)
-  dirindex = handle.read()
+  dirindex = handle.readlines()
   handle.close()
-  return re.findall(r'<a href="([0-9]*)/">\1/</a>', dirindex)
+
+  # Only return values for the specified platform. Include the trailing slash to
+  # not confuse linux and linux64.
+  archtype = BUILD_ARCHIVE_TYPE + '/'
+  dirindex = filter(lambda l: l.startswith(archtype), dirindex)
+
+  # Remove the newline separator and the platform token.
+  dirindex = map(lambda l: l[len(archtype):].strip(), dirindex)
+  dirindex.sort()
+  return dirindex
+
+
+def ParseIndexLine(iline):
+  """Takes an index line returned by ParseDirectoryIndex() and returns a
+  2-tuple of (date, revision). |date| is a string and |revision| is an int."""
+  split = iline.split('/')
+  assert(len(split) == 2)
+  return (split[0], int(split[1]))
+
+
+def GetRevision(iline):
+    """Takes an index line, parses it, and returns the revision."""
+    return ParseIndexLine(iline)[1]
+
 
 def GetRevList(good, bad):
   """Gets the list of revision numbers between |good| and |bad|."""
   # Download the main revlist.
-  revlist = ParseDirectoryIndex(BUILD_BASE_URL)
-  revlist = map(int, revlist)
-  revlist = filter(lambda r: range(good, bad).__contains__(int(r)), revlist)
+  revlist = ParseDirectoryIndex(BUILD_BASE_URL + BUILD_INDEX_FILE)
+  revrange = range(good, bad)
+  revlist = filter(lambda r: GetRevision(r) in revrange, revlist)
   revlist.sort()
   return revlist
 
-def TryRevision(rev, profile, args):
-  """Downloads revision |rev|, unzips it, and opens it for the user to test.
-  |profile| is the profile to use."""
+
+def TryRevision(iline, profile, args):
+  """Downloads revision from |iline|, unzips it, and opens it for the user to
+  test. |profile| is the profile to use."""
   # Do this in a temp dir so we don't collide with user files.
   cwd = os.getcwd()
   tempdir = tempfile.mkdtemp(prefix='bisect_tmp')
   os.chdir(tempdir)
 
   # Download the file.
-  download_url = BUILD_BASE_URL + (BUILD_ARCHIVE_URL % rev) + BUILD_ZIP_NAME
-  def _Reporthook(blocknum, blocksize, totalsize):
+  download_url = BUILD_BASE_URL + BUILD_ARCHIVE_TYPE + \
+      (BUILD_ARCHIVE_URL % ParseIndexLine(iline)) + BUILD_ZIP_NAME
+  def _ReportHook(blocknum, blocksize, totalsize):
     size = blocknum * blocksize
     if totalsize == -1:  # Total size not known.
       progress = "Received %d bytes" % size
@@ -151,7 +182,7 @@ def TryRevision(rev, profile, args):
     sys.stdout.flush()
   try:
     print 'Fetching ' + download_url
-    urllib.urlretrieve(download_url, BUILD_ZIP_NAME, _Reporthook)
+    urllib.urlretrieve(download_url, BUILD_ZIP_NAME, _ReportHook)
     print
   except Exception, e:
     print('Could not retrieve the download. Sorry.')
@@ -177,11 +208,11 @@ def TryRevision(rev, profile, args):
     pass
 
 
-def AskIsGoodBuild(rev):
-  """Ask the user whether build |rev| is good or bad."""
+def AskIsGoodBuild(iline):
+  """Ask the user whether build from index line |iline| is good or bad."""
   # Loop until we get a response that we can parse.
   while True:
-    response = raw_input('\nBuild %d is [(g)ood/(b)ad]: ' % int(rev))
+    response = raw_input('\nBuild %d is [(g)ood/(b)ad]: ' % GetRevision(iline))
     if response and response in ('g', 'b'):
       return response == 'g'
 
@@ -192,7 +223,8 @@ def main():
            'Tip: add "-- --no-first-run" to bypass the first run prompts.')
   parser = optparse.OptionParser(usage=usage)
   # Strangely, the default help output doesn't include the choice list.
-  choices = ['mac', 'xp', 'linux', 'linux-64', 'linux-chromiumos']
+  choices = ['mac', 'xp', 'linux', 'linux64']
+            # linux-chromiumos lacks a continuous archive http://crbug.com/78158
   parser.add_option('-a', '--archive',
                     choices = choices,
                     help = 'The buildbot archive to bisect [%s].' %
@@ -227,7 +259,7 @@ def main():
     bad_rev = 0
     try:
       # Location of the latest build revision number
-      BUILD_LATEST_URL = '%s/LATEST' % (BUILD_BASE_URL)
+      BUILD_LATEST_URL = '%s/LATEST/REVISION' % (BUILD_BASE_URL)
       nh = urllib.urlopen(BUILD_LATEST_URL)
       latest = int(nh.read())
       nh.close()
@@ -272,7 +304,7 @@ def main():
       print('%d candidates. %d tries left.' %
           (num_poss, round(math.log(num_poss, 2))))
     else:
-      print('Candidates: %s' % revlist[good:bad])
+      print('Candidates: %s' % map(GetRevision, revlist[good:bad]))
 
     # Cut the problem in half...
     test = int((bad - good) / 2) + good
@@ -290,11 +322,12 @@ def main():
       bad = test
 
   # We're done. Let the user know the results in an official manner.
-  print('You are probably looking for build %d.' % revlist[bad])
+  bad_revision = GetRevision(revlist[bad])
+  print('You are probably looking for build %d.' % bad_revision)
   print('CHANGELOG URL:')
-  print(CHANGELOG_URL % (last_known_good_rev, revlist[bad]))
+  print(CHANGELOG_URL % (GetRevision(last_known_good_rev), bad_revision))
   print('Built at revision:')
-  print(BUILD_VIEWVC_URL % revlist[bad])
+  print(BUILD_VIEWVC_URL % bad_revision)
 
 if __name__ == '__main__':
   sys.exit(main())
