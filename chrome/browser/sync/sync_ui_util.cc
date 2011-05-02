@@ -326,7 +326,7 @@ std::string MakeSyncAuthErrorText(
 void ConstructAboutInformation(ProfileSyncService* service,
                                DictionaryValue* strings) {
   CHECK(strings);
-  if (!service) {
+  if (!service || !service->HasSyncSetupCompleted()) {
     strings->SetString("summary", "SYNC DISABLED");
   } else {
     sync_api::SyncManager::Status full_status(
@@ -347,8 +347,6 @@ void ConstructAboutInformation(ProfileSyncService* service,
 
     ListValue* details = new ListValue();
     strings->Set("details", details);
-    sync_ui_util::AddBoolSyncDetail(details, "Sync Setup Has Completed",
-                                    service->HasSyncSetupCompleted());
     sync_ui_util::AddBoolSyncDetail(details,
                                     "Server Up",
                                     full_status.server_up);
