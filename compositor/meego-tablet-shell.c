@@ -48,9 +48,6 @@ struct meego_tablet_shell {
 	pid_t pid;
 	struct wlsc_input_device *device;
 	struct wl_client *client;
-	struct wlsc_animation animation;
-	struct wlsc_tweener scale;
-	int width, height;
 
 	struct wlsc_surface *surface;
 
@@ -70,6 +67,21 @@ struct meego_tablet_shell {
 	struct wl_event_source *long_press_source;
 };
 
+struct meego_tablet_client {
+	struct wl_resource resource;
+	struct meego_tablet_shell *shell;
+	struct wl_client *client;
+	char *name;
+};
+
+struct meego_tablet_zoom {
+	struct wlsc_surface *surface;
+	struct wlsc_animation animation;
+	struct wlsc_tweener tweener;
+	struct wlsc_matrix transform;
+	struct wlsc_matrix transform_inv;
+};
+
 static int
 sigchld_handler(int signal_number, void *data)
 {
@@ -85,30 +97,90 @@ sigchld_handler(int signal_number, void *data)
 }
 
 static void
-tablet_shell_frame(struct wlsc_animation *animation,
-		   struct wlsc_output *output, uint32_t msecs)
+meego_tablet_zoom_frame(struct wlsc_animation *animation,
+			struct wlsc_output *output, uint32_t msecs)
 {
-	struct meego_tablet_shell *shell =
-		container_of(animation,
-			     struct meego_tablet_shell, animation);
-	struct wlsc_surface *es = shell->surface;
-	float scale;
+	struct meego_tablet_zoom *zoom =
+		container_of(animation, struct meego_tablet_zoom, animation);
+	struct wlsc_surface *es = zoom->surface;
+	GLfloat scale;
 
-	scale = shell->scale.current;
-	wlsc_tweener_update(&shell->scale, msecs);
+	wlsc_tweener_update(&zoom->tweener, msecs);
 
-	if (wlsc_tweener_done(&shell->scale)) {
+	if (wlsc_tweener_done(&zoom->tweener)) {
 		wl_list_remove(&animation->link);
-		shell->surface = NULL;
 		fprintf(stderr, "animation done\n");
+		es->transform = NULL;
+		es->transform_inv = NULL;
+		free(zoom);
 	}
 
-	es->width = scale * shell->width;
-	es->height = scale * shell->height;
-	es->x = (output->width - es->width) / 2;
-	es->y = (output->height - es->height) / 2;
+	scale = zoom->tweener.current;
+	wlsc_matrix_init(&zoom->transform);
+	wlsc_matrix_translate(&zoom->transform,
+			      -es->width / 2.0, -es->height / 2.0, 0);
+	wlsc_matrix_scale(&zoom->transform, scale, scale, scale);
+	wlsc_matrix_translate(&zoom->transform,
+			      es->width / 2.0, es->height / 2.0, 0);
+
+	scale = 1.0 / zoom->tweener.current;
+	wlsc_matrix_init(&zoom->transform_inv);
+	wlsc_matrix_scale(&zoom->transform_inv, scale, scale, scale);
+
 	wlsc_surface_damage(es);
 }
+
+static void
+meego_tablet_zoom_run(struct meego_tablet_shell *shell,
+		      struct wlsc_surface *surface)
+{
+	struct meego_tablet_zoom *zoom;
+	GLfloat scale;
+
+	fprintf(stderr, "starting animation for surface %p\n", surface);
+
+	zoom = malloc(sizeof *zoom);
+	if (!zoom)
+		return;
+
+	zoom->surface = surface;
+	surface->transform = &zoom->transform;
+	surface->transform_inv = &zoom->transform_inv;
+	scale = 0.3;
+	wlsc_tweener_init(&zoom->tweener, 100.0, scale, 1.0);
+	zoom->tweener.timestamp = wlsc_compositor_get_time();
+	zoom->animation.frame = meego_tablet_zoom_frame;
+	wl_list_insert(shell->compositor->animation_list.prev,
+		       &zoom->animation.link);
+
+	wlsc_matrix_init(&zoom->transform);
+	wlsc_matrix_translate(&zoom->transform,
+			      -surface->width / 2.0,
+			      -surface->height / 2.0, 0);
+	wlsc_matrix_scale(&zoom->transform, scale, scale, scale);
+
+	scale = 1.0 / scale;
+	wlsc_matrix_init(&zoom->transform_inv);
+	wlsc_matrix_scale(&zoom->transform_inv, scale, scale, scale);
+}
+
+static const char *
+surface_visual(struct wlsc_surface *surface)
+{
+	struct wl_compositor *c = &surface->compositor->compositor;
+
+	if (surface->visual == &c->argb_visual) {
+		return "argb";
+	} else if (surface->visual == &c->premultiplied_argb_visual) {
+		return "premultiplied argb";
+	} else {
+		return "rgb";
+	}
+}
+
+/* FIXME: We should be handling map, not attach...  Map is when the
+ * surface becomes visible, which is what we want to catch.  Attach
+ * will happen whenever the surface changes. */
 
 static void
 meego_tablet_shell_attach(struct wlsc_shell *base,
@@ -116,8 +188,6 @@ meego_tablet_shell_attach(struct wlsc_shell *base,
 {
 	struct meego_tablet_shell *shell =
 		container_of(base, struct meego_tablet_shell, shell);
-	struct wlsc_compositor *ec = shell->compositor;
-	const char *visual;
 
 	if (surface == shell->lockscreen_surface) {
 		if (shell->starting) {
@@ -127,37 +197,21 @@ meego_tablet_shell_attach(struct wlsc_shell *base,
 			shell->starting = 0;
 		}
 	} else if (surface == shell->switcher_surface) {
-
-		if (surface->visual == &ec->compositor.argb_visual) {
-			visual = "argb";
-		} else if (surface->visual == &ec->compositor.premultiplied_argb_visual) {
-			visual = "premultiplied argb";
-		} else {
-			visual = "rgb";
-		}
-
 		fprintf(stderr, "switcher attach, size %dx%d, visual %s\n",
 			shell->switcher_surface->width,
-			shell->switcher_surface->height, visual);
+			shell->switcher_surface->height,
+			surface_visual(surface));
 	} else if (surface == shell->home_surface) {
 		surface->x = 0;
 		surface->y = 0;
-	} else {
+	} else if (shell->surface != surface) {
 		/* FIXME: Fullscreen everything else. */
 		fprintf(stderr, "attach from surface %p, client %p\n",
 			surface, surface->surface.client);
-		if (shell->surface == NULL) {
-			fprintf(stderr, "starting animation for surface %p\n",
-				surface);
-
-			shell->width = surface->width;
-			shell->height = surface->height;
-			wlsc_tweener_init(&shell->scale, 3.0, 0.3, 1.0);
-			shell->animation.frame = tablet_shell_frame;
-			wl_list_insert(ec->animation_list.prev,
-				       &shell->animation.link);
-			shell->surface = surface;
-		}
+		shell->surface = surface;
+		surface->x = 0;
+		surface->y = 0;
+		meego_tablet_zoom_run(shell, surface);
 	}
 }
 
@@ -248,13 +302,6 @@ tablet_shell_set_homescreen(struct wl_client *client,
 			      wlsc_compositor_get_time());
 	fprintf(stderr, "set home screen\n");
 }
-
-struct meego_tablet_client {
-	struct wl_resource resource;
-	struct meego_tablet_shell *shell;
-	struct wl_client *client;
-	char *name;
-};
 
 static void
 destroy_tablet_client(struct wl_resource *resource, struct wl_client *client)
