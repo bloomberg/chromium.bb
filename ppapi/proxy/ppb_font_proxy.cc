@@ -146,10 +146,12 @@ int32_t MeasureText(PP_Resource font_id, const PP_TextRun_Dev* text) {
 
   Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
   int32_t result = 0;
-  dispatcher->Send(new PpapiHostMsg_PPBFont_MeasureText(
-      INTERFACE_ID_PPB_FONT, object->host_resource(),
-      SerializedVarSendInput(dispatcher, text->text),
-      text->rtl, text->override_direction, &result));
+  if (dispatcher) {
+    dispatcher->Send(new PpapiHostMsg_PPBFont_MeasureText(
+        INTERFACE_ID_PPB_FONT, object->host_resource(),
+        SerializedVarSendInput(dispatcher, text->text),
+        text->rtl, text->override_direction, &result));
+  }
   return result;
 }
 
@@ -162,10 +164,12 @@ uint32_t CharacterOffsetForPixel(PP_Resource font_id,
 
   Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
   uint32_t result = 0;
-  dispatcher->Send(new PpapiHostMsg_PPBFont_CharacterOffsetForPixel(
-      INTERFACE_ID_PPB_FONT, object->host_resource(),
-      SerializedVarSendInput(dispatcher, text->text),
-      text->rtl, text->override_direction, pixel_position, &result));
+  if (dispatcher) {
+    dispatcher->Send(new PpapiHostMsg_PPBFont_CharacterOffsetForPixel(
+        INTERFACE_ID_PPB_FONT, object->host_resource(),
+        SerializedVarSendInput(dispatcher, text->text),
+        text->rtl, text->override_direction, pixel_position, &result));
+  }
   return result;
 }
 
@@ -178,10 +182,12 @@ int32_t PixelOffsetForCharacter(PP_Resource font_id,
 
   Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
   int32_t result = 0;
-  dispatcher->Send(new PpapiHostMsg_PPBFont_PixelOffsetForCharacter(
-      INTERFACE_ID_PPB_FONT, object->host_resource(),
-      SerializedVarSendInput(dispatcher, text->text),
-      text->rtl, text->override_direction, char_offset, &result));
+  if (dispatcher) {
+    dispatcher->Send(new PpapiHostMsg_PPBFont_PixelOffsetForCharacter(
+          INTERFACE_ID_PPB_FONT, object->host_resource(),
+          SerializedVarSendInput(dispatcher, text->text),
+          text->rtl, text->override_direction, char_offset, &result));
+  }
   return result;
 }
 
