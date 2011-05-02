@@ -42,7 +42,8 @@ const std::vector<unsigned char> IndexedFavicon(int i) {
   return LiveBookmarksSyncTest::CreateFavicon(i);
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, Sanity) {
+// http://crbug.com/81256
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, FLAKY_Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
@@ -227,8 +228,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 }
 
 // Test Scribe ID - 370639 - Add bookmarks with different name and same URL.
+// http://crbug.com/81256
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-                       SC_DuplicateBookmarksWithSameURL) {
+                       FLAKY_SC_DuplicateBookmarksWithSameURL) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
