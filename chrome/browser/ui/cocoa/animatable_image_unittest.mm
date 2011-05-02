@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,8 @@ class AnimatableImageTest : public CocoaTest {
   AnimatableImage* animation_;
 };
 
-TEST_F(AnimatableImageTest, BasicAnimation) {
+// http://crbug.com/81219
+TEST_F(AnimatableImageTest, DISABLED_BasicAnimation) {
   [animation_ setStartFrame:CGRectMake(0, 0, 10, 10)];
   [animation_ setEndFrame:CGRectMake(500, 500, 100, 100)];
   [animation_ setStartOpacity:0.1];
@@ -33,7 +34,8 @@ TEST_F(AnimatableImageTest, BasicAnimation) {
   [animation_ startAnimation];
 }
 
-TEST_F(AnimatableImageTest, CancelAnimation) {
+// http://crbug.com/81219
+TEST_F(AnimatableImageTest, DISABLED_CancelAnimation) {
   [animation_ setStartFrame:CGRectMake(0, 0, 10, 10)];
   [animation_ setEndFrame:CGRectMake(500, 500, 100, 100)];
   [animation_ setStartOpacity:0.1];
