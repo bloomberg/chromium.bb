@@ -135,14 +135,6 @@ WINSPOOL.DRV!*
 
 # http://code.google.com/p/drmemory/issues/detail?id=45
 UNINITIALIZED READ
-drmemorylib.dll!replace_strlen
-*!*length
-*!*assign
-
-UNINITIALIZED READ
-drmemorylib.dll!replace_strcmp
-
-UNINITIALIZED READ
 ...
 *!*len
 ...
