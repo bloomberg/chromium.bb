@@ -601,7 +601,6 @@ def PrepareFlags():
     env.clear('STDLIB_BC_SUFFIX')
     env.clear('STDLIB_NATIVE_PREFIX')
     env.clear('STDLIB_NATIVE_SUFFIX')
-    env.set('RUN_BCLD', '${RUN_LLVM_LINK}')
   else:
     # TODO(pdox): Figure out why this is needed.
     if env.getbool('GOLD_FIX'):
@@ -1200,16 +1199,22 @@ def LinkBC(inputs, output = None):
   obj_inputs = []
   lib_inputs = []
   for i in inputs:
-    if i.startswith('-l'):
+    if FileType(i) in ('bclib','nlib'):
       lib_inputs.append(i)
     else:
       obj_inputs.append(i)
+
   # Produce combined bitcode file
-  RunWithEnv('RUN_BCLD',
-             arch=arch,
-             obj_inputs=shell.join(obj_inputs),
-             lib_inputs=shell.join(lib_inputs),
-             output=bcld_output)
+  if env.getbool('SHARED'):
+    RunWithEnv('RUN_LLVM_LINK',
+               inputs=shell.join(obj_inputs),
+               output=bcld_output)
+  else:
+    RunWithEnv('RUN_BCLD',
+               arch=arch,
+               obj_inputs=shell.join(obj_inputs),
+               lib_inputs=shell.join(lib_inputs),
+               output=bcld_output)
 
   #### Manually apply symbol wrap to unoptimized bitcode
   symbols = shell.split(env.get('LD_WRAP_SYMBOLS'))
