@@ -39,6 +39,24 @@ ExternalProcessImporterClient::~ExternalProcessImporterClient() {
   bridge_->Release();
 }
 
+void ExternalProcessImporterClient::CancelImportProcessOnIOThread() {
+  profile_import_process_host_->CancelProfileImportProcess();
+}
+
+void ExternalProcessImporterClient::NotifyItemFinishedOnIOThread(
+    importer::ImportItem import_item) {
+  profile_import_process_host_->ReportImportItemFinished(import_item);
+}
+
+void ExternalProcessImporterClient::Cleanup() {
+  if (cancelled_)
+    return;
+
+  if (process_importer_host_)
+    process_importer_host_->NotifyImportEnded();
+  Release();
+}
+
 void ExternalProcessImporterClient::Start() {
   AddRef();  // balanced in Cleanup.
   BrowserThread::ID thread_id;
@@ -47,8 +65,16 @@ void ExternalProcessImporterClient::Start() {
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this,
-          &ExternalProcessImporterClient::StartImportProcessOnIOThread,
+          &ExternalProcessImporterClient::StartProcessOnIOThread,
           thread_id));
+}
+
+void ExternalProcessImporterClient::StartProcessOnIOThread(
+    BrowserThread::ID thread_id) {
+  profile_import_process_host_ =
+      new ProfileImportProcessHost(this, thread_id);
+  profile_import_process_host_->StartProfileImportProcess(
+      source_profile_, items_, import_to_bookmark_bar_);
 }
 
 void ExternalProcessImporterClient::Cancel() {
@@ -63,32 +89,6 @@ void ExternalProcessImporterClient::Cancel() {
             &ExternalProcessImporterClient::CancelImportProcessOnIOThread));
   }
   Release();
-}
-
-void ExternalProcessImporterClient::Cleanup() {
-  if (cancelled_)
-    return;
-
-  if (process_importer_host_)
-    process_importer_host_->NotifyImportEnded();
-  Release();
-}
-
-void ExternalProcessImporterClient::StartImportProcessOnIOThread(
-    BrowserThread::ID thread_id) {
-  profile_import_process_host_ =
-      new ProfileImportProcessHost(this, thread_id);
-  profile_import_process_host_->StartProfileImportProcess(
-      source_profile_, items_, import_to_bookmark_bar_);
-}
-
-void ExternalProcessImporterClient::CancelImportProcessOnIOThread() {
-  profile_import_process_host_->CancelProfileImportProcess();
-}
-
-void ExternalProcessImporterClient::NotifyItemFinishedOnIOThread(
-    importer::ImportItem import_item) {
-  profile_import_process_host_->ReportImportItemFinished(import_item);
 }
 
 void ExternalProcessImporterClient::OnProcessCrashed(int exit_code) {

@@ -33,20 +33,18 @@ class Toolbar5Importer : public URLFetcher::Delegate, public Importer {
  public:
   Toolbar5Importer();
 
-  // Begin Importer implementation:
-
-  // This method is called to begin the import process. |items| should only
-  // either be NONE or FAVORITES, since as of right now these are the only
+  // Importer:
+  // The importer view calls this method to begin the process. |items| should
+  // only either be NONE or FAVORITES, since as of right now these are the only
   // items this importer supports.
   virtual void StartImport(const importer::SourceProfile& source_profile,
                            uint16 items,
                            ImporterBridge* bridge) OVERRIDE;
 
-  // This method is called when the user clicks the cancel button on the UI
-  // dialog. We need to post a message to our loop to cancel network retrieval.
-  virtual void Cancel() OVERRIDE;
-
-  // End Importer implementation.
+  // Importer view call this method when the user clicks the cancel button
+  // in the tabbed options UI.  We need to post a message to our loop
+  // to cancel network retrieval.
+  virtual void Cancel();
 
   // URLFetcher::Delegate method called back from the URLFetcher object.
   virtual void OnURLFetchComplete(const URLFetcher* source,

@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_IMPORTER_IMPORTER_H_
 #pragma once
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+
+#include <vector>
 
 class ImporterBridge;
 
