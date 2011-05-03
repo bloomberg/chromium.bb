@@ -259,6 +259,7 @@ extern const char kTestingChannelID[];
 extern const char kTrustedPlugins[];
 extern const char kTryChromeAgain[];
 extern const char kUninstall[];
+extern const char kUsePureViews[];
 extern const char kUseSpdy[];
 extern const char kIgnoreCertificateErrors[];
 extern const char kMaxSpdySessionsPerDomain[];

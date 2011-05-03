@@ -200,7 +200,7 @@
 #include "ui/gfx/gtk_util.h"
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(TOUCH_UI) || defined(TOOLKIT_VIEWS)
 #include "views/widget/root_view.h"
 #endif
 
@@ -1694,6 +1694,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(TOUCH_UI)
   views::RootView::SetKeepMouseCursor(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kKeepMouseCursor));
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+  views::RootView::SetPureViews(
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePureViews));
 #endif
 
   HandleTestParameters(parsed_command_line);

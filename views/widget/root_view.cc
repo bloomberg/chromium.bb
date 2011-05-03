@@ -397,8 +397,10 @@ void RootView::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 #if defined(TOUCH_UI)
+namespace {
 // Always show the mouse cursor, useful when debugging touch builds
-static bool keep_mouse_cursor;
+bool keep_mouse_cursor;
+}
 
 void RootView::SetKeepMouseCursor(bool keep) {
   keep_mouse_cursor = keep;
@@ -409,6 +411,19 @@ bool RootView::GetKeepMouseCursor() {
 }
 
 #endif
+
+namespace {
+// Set to true if a pure Views implementation is preferred
+bool use_pure_views;
+}
+
+void RootView::SetPureViews(bool pure) {
+  use_pure_views = pure;
+}
+
+bool RootView::IsPureViews() {
+  return use_pure_views;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, protected:

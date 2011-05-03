@@ -936,6 +936,10 @@ const char kTryChromeAgain[]                = "try-chrome-again";
 // Runs un-installation steps that were done by chrome first-run.
 const char kUninstall[]                     = "uninstall";
 
+// Use a pure Views implementation when available (rather rather than platform
+// native implementation such as GTK).
+const char kUsePureViews[]                  = "use-pure-views";
+
 // Use Spdy for the transport protocol instead of HTTP.
 // This is a temporary testing flag.
 const char kUseSpdy[]                       = "use-spdy";

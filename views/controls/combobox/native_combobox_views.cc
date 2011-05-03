@@ -18,6 +18,7 @@
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/focusable_border.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/widget/root_view.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_util.h"
@@ -48,8 +49,6 @@ const int kComboboxArrowMargin = 12;
 const SkColor kDefaultBorderColor = SK_ColorGRAY;
 const SkColor kTextColor = SK_ColorBLACK;
 
-// A switch to enable NativeTextfieldViews;
-const char kEnableComboboxViewsSwitch[] = "enable-combobox-views";
 }  // namespace
 
 namespace views {
@@ -208,9 +207,7 @@ bool NativeComboboxViews::IsComboboxViewsEnabled() {
 #if defined(TOUCH_UI)
   return true;
 #else
-  return combobox_view_enabled ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          kEnableComboboxViewsSwitch);
+  return combobox_view_enabled || RootView::IsPureViews();
 #endif
 }
 

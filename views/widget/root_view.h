@@ -118,6 +118,11 @@ class RootView : public View,
   static bool GetKeepMouseCursor();
 #endif
 
+  // SetPureViews and IsPureViews update and return the state of a global
+  // setting that tracks whether to use available pure Views implementations
+  static void SetPureViews(bool pure);
+  static bool IsPureViews();
+
  protected:
   // Overridden from View:
   virtual void ViewHierarchyChanged(bool is_add, View* parent,

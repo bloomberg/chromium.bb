@@ -27,6 +27,7 @@
 #include "views/ime/input_method.h"
 #include "views/metrics.h"
 #include "views/views_delegate.h"
+#include "views/widget/root_view.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_util.h"
@@ -50,8 +51,6 @@ const SkColor kCursorColor = SK_ColorBLACK;
 const int kCursorVisibleTimeMs = 800;
 const int kCursorInvisibleTimeMs = 500;
 
-// A switch to enable NativeTextfieldViews;
-const char kEnableViewsBasedTextfieldSwitch[] = "enable-textfield-views";
 }  // namespace
 
 namespace views {
@@ -393,9 +392,7 @@ bool NativeTextfieldViews::IsTextfieldViewsEnabled() {
 #if defined(TOUCH_UI)
   return true;
 #else
-  return textfield_view_enabled ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          kEnableViewsBasedTextfieldSwitch);
+  return textfield_view_enabled || RootView::IsPureViews();
 #endif
 }
 
