@@ -1174,6 +1174,7 @@
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libxml/libxml.gyp:libxml',
         '../ui/gfx/gl/gl.gyp:gl',
+        '../v8/tools/gyp/v8.gyp:v8',
         'chrome_resources',
         'chrome_strings',
       ],
