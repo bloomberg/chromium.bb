@@ -601,7 +601,7 @@ BrowserBridge.prototype.loadedLogFile = function(logFileContents) {
   if (numInvalidEntries > 0 || numInvalidLines > 0) {
     window.alert(
       numInvalidLines.toString() +
-      ' could not be parsed as JSON strings, and ' +
+      ' entries could not be parsed as JSON strings, and ' +
       numInvalidEntries.toString() +
       ' entries don\'t have valid data.\n\n' +
       'Unparseable lines may indicate log file corruption.\n' +

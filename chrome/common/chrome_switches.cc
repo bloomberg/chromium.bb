@@ -348,9 +348,6 @@ const char kDomAutomationController[]       = "dom-automation";
 // scripts.
 const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 
-// Enable displaying net log events on the command line.
-extern const char kLogNetLog[]              = "log-net-log";
-
 // Enable gpu-accelerated 2d canvas.
 const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
 
@@ -637,6 +634,10 @@ const char kLoadExtension[]                 = "load-extension";
 // http://crosbug.com/12295 and http://crosbug.com/12304
 const char kLoadOpencryptoki[]              = "load-opencryptoki";
 
+// Enable displaying net log events on the command line, or writing the events
+// to a separate file if a file name is given.
+const char kLogNetLog[]                     = "log-net-log";
+
 // Uninstall an extension with the specified extension id.
 const char kUninstallExtension[]            = "uninstall-extension";
 
@@ -680,6 +681,10 @@ const char kNaClBrokerProcess[]             = "nacl-broker";
 
 // Causes the Native Client process to display a dialog on launch.
 const char kNaClStartupDialog[]             = "nacl-startup-dialog";
+
+// Sets the base logging level for the net log.  Log 0 logs the most data.
+// Intended primarily for use with --log-net-log.
+const char kNetLogLevel[]                   = "net-log-level";
 
 // Use the latest incarnation of the new tab page.
 const char kNewTabPage4[]                   = "new-tab-page-4";

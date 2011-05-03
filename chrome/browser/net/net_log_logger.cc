@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,9 +26,9 @@ void NetLogLogger::OnAddEntry(net::NetLog::EventType type,
                               const net::NetLog::Source& source,
                               net::NetLog::EventPhase phase,
                               net::NetLog::EventParameters* params) {
-  scoped_ptr<Value> value(net::NetLog::EntryToDictionaryValue(type, time,
-                                                              source, phase,
-                                                              params, true));
+  scoped_ptr<Value> value(
+      net::NetLog::EntryToDictionaryValue(
+          type, time, source, phase, params, true));
   // Don't pretty print, so each JSON value occupies a single line, with no
   // breaks (Line breaks in any text field will be escaped).  Using strings
   // instead of integer identifiers allows logs from older versions to be
@@ -41,4 +41,3 @@ void NetLogLogger::OnAddEntry(net::NetLog::EventType type,
     fprintf(file_.get(), "%s\n", json.c_str());
   }
 }
-

@@ -138,7 +138,7 @@ class ChromeNetLog : public net::NetLog {
 
   // Called whenever an observer is added or removed, or changes its log level.
   // Must have acquired |lock_| prior to calling.
-  void UpdateLogLevel_();
+  void UpdateLogLevel();
 
   // |lock_| protects access to |observers_| and, indirectly, to
   // |passive_collector_|.  Should not be acquired by observers.
@@ -147,7 +147,12 @@ class ChromeNetLog : public net::NetLog {
   // Last assigned source ID.  Incremented to get the next one.
   base::subtle::Atomic32 last_id_;
 
-  base::subtle::Atomic32 log_level_;
+  // The lowest allowed log level, regardless of any ChromeNetLogObservers.
+  // Normally defaults to LOG_BASIC, but can be changed with command line flags.
+  LogLevel base_log_level_;
+
+  // The current log level.
+  base::subtle::Atomic32 effective_log_level_;
 
   // Not thread safe.  Must only be used when |lock_| is acquired.
   scoped_ptr<PassiveLogCollector> passive_collector_;

@@ -30,7 +30,7 @@ class NetLogLogger : public ChromeNetLog::ThreadSafeObserver {
                           const base::TimeTicks& time,
                           const net::NetLog::Source& source,
                           net::NetLog::EventPhase phase,
-                          net::NetLog::EventParameters* params);
+                          net::NetLog::EventParameters* params) OVERRIDE;
 
  private:
   ScopedStdioHandle file_;

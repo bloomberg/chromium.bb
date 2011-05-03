@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/net/load_timing_observer.h"
@@ -38,7 +39,7 @@ void ChromeNetLog::ThreadSafeObserver::SetLogLevel(
   DCHECK(net_log_);
   base::AutoLock lock(net_log_->lock_);
   log_level_ = log_level;
-  net_log_->UpdateLogLevel_();
+  net_log_->UpdateLogLevel();
 }
 
 ChromeNetLog::Entry::Entry(uint32 order,
@@ -59,16 +60,31 @@ ChromeNetLog::Entry::~Entry() {}
 
 ChromeNetLog::ChromeNetLog()
     : last_id_(0),
-      log_level_(LOG_BASIC),
+      base_log_level_(LOG_BASIC),
+      effective_log_level_(LOG_BASIC),
       passive_collector_(new PassiveLogCollector),
       load_timing_observer_(new LoadTimingObserver) {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  // Adjust base log level based on command line switch, if present.
+  // This is done before adding any observers so the call to UpdateLogLevel when
+  // an observers is added will set |effective_log_level_| correctly.
+  if (command_line->HasSwitch(switches::kNetLogLevel)) {
+    std::string log_level_string =
+        command_line->GetSwitchValueASCII(switches::kNetLogLevel);
+    int command_line_log_level;
+    if (base::StringToInt(log_level_string, &command_line_log_level) &&
+        command_line_log_level >= LOG_ALL &&
+        command_line_log_level <= LOG_BASIC) {
+      base_log_level_ = static_cast<LogLevel>(command_line_log_level);
+    }
+  }
+
   AddObserver(passive_collector_.get());
   AddObserver(load_timing_observer_.get());
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kLogNetLog)) {
+  if (command_line->HasSwitch(switches::kLogNetLog)) {
     net_log_logger_.reset(new NetLogLogger(
-            command_line.GetSwitchValuePath(switches::kLogNetLog)));
+            command_line->GetSwitchValuePath(switches::kLogNetLog)));
     AddObserver(net_log_logger_.get());
   }
 }
@@ -98,7 +114,8 @@ uint32 ChromeNetLog::NextID() {
 }
 
 net::NetLog::LogLevel ChromeNetLog::GetLogLevel() const {
-  base::subtle::Atomic32 log_level = base::subtle::NoBarrier_Load(&log_level_);
+  base::subtle::Atomic32 log_level =
+      base::subtle::NoBarrier_Load(&effective_log_level_);
   return static_cast<net::NetLog::LogLevel>(log_level);
 }
 
@@ -112,7 +129,7 @@ void ChromeNetLog::RemoveObserver(ThreadSafeObserver* observer) {
   DCHECK_EQ(observer->net_log_, this);
   observer->net_log_ = NULL;
   observers_.RemoveObserver(observer);
-  UpdateLogLevel_();
+  UpdateLogLevel();
 }
 
 void ChromeNetLog::AddObserverAndGetAllPassivelyCapturedEvents(
@@ -132,23 +149,25 @@ void ChromeNetLog::ClearAllPassivelyCapturedEvents() {
   passive_collector_->Clear();
 }
 
-void ChromeNetLog::UpdateLogLevel_() {
+void ChromeNetLog::UpdateLogLevel() {
   lock_.AssertAcquired();
 
   // Look through all the observers and find the finest granularity
   // log level (higher values of the enum imply *lower* log levels).
-  LogLevel new_log_level = LOG_BASIC;
+  LogLevel new_effective_log_level = base_log_level_;
   ObserverListBase<ThreadSafeObserver>::Iterator it(observers_);
   ThreadSafeObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
-    new_log_level = std::min(new_log_level, observer->log_level());
+    new_effective_log_level =
+        std::min(new_effective_log_level, observer->log_level());
   }
-  base::subtle::NoBarrier_Store(&log_level_, new_log_level);
+  base::subtle::NoBarrier_Store(&effective_log_level_,
+                                new_effective_log_level);
 }
 
 void ChromeNetLog::AddObserverWhileLockHeld(ThreadSafeObserver* observer) {
   DCHECK(!observer->net_log_);
   observer->net_log_ = this;
   observers_.AddObserver(observer);
-  UpdateLogLevel_();
+  UpdateLogLevel();
 }
