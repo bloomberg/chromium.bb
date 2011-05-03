@@ -237,6 +237,8 @@
 
     'win': [
       'enterprise',
+      # crbug.com/81440
+      '-enterprise.EnterpriseTest.testDisableDevTools',
     ],
 
     'mac': [
