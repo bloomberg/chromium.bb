@@ -55,6 +55,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   virtual void OnHttpTransactionDestroyed(uint64 request_id);
   virtual net::URLRequestJob* OnMaybeCreateURLRequestJob(
       net::URLRequest* request);
+  virtual void OnPACScriptError(int line_number, const string16& error);
 
   scoped_refptr<ExtensionEventRouterForwarder> event_router_;
   const ProfileId profile_id_;

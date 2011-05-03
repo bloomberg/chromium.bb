@@ -89,7 +89,8 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
         num_pac_threads,
         new net::ProxyScriptFetcherImpl(context),
         context->host_resolver(),
-        net_log);
+        net_log,
+        context->network_delegate());
   } else {
     proxy_service = net::ProxyService::CreateUsingSystemProxyResolver(
         proxy_config_service,

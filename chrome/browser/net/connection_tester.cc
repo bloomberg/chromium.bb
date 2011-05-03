@@ -187,6 +187,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
         0u,
         new net::ProxyScriptFetcherImpl(proxy_request_context_),
         host_resolver(),
+        NULL,
         NULL));
 
     return net::OK;

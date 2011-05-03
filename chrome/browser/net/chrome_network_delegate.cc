@@ -132,3 +132,7 @@ net::URLRequestJob* ChromeNetworkDelegate::OnMaybeCreateURLRequestJob(
     return NULL;
   return protocol_handler_registry_->MaybeCreateJob(request);
 }
+
+void ChromeNetworkDelegate::OnPACScriptError(int line_number,
+                                             const string16& error) {
+}
