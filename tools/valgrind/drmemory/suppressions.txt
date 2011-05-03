@@ -520,5 +520,10 @@ LEAK
 *!operator new
 *!disk_cache::BackendImpl::NewEntry
 
+# http://crbug.com/75020
+LEAK
+*!operator new
+*!remoting::ChromotingHostTest::SetUp
+
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
