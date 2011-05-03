@@ -150,7 +150,7 @@ release = {
   'uprev' : True,
   'rev_overlays': 'both',
 
-  'useflags' : 'chrome_internal chrome_pdf',
+  'useflags' : ['chrome_internal', 'chrome_pdf'],
   'chromeos_official' : True,
 
   'chroot_replace' : True,
@@ -185,7 +185,7 @@ internal_full = {
   # master --official --chromeos --clean --upload-board-prebuilt
   #   --ctest --unittests --bvt
 
-  'useflags' : 'chrome_internal chrome_pdf',
+  'useflags' : ['chrome_internal', 'chrome_pdf'],
   'chromeos_official' : True,
 
   'usepkg' : False,
