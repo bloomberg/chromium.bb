@@ -19,10 +19,9 @@ ChromeWorkerMessageFilter::ChromeWorkerMessageFilter(WorkerProcessHost* process)
 ChromeWorkerMessageFilter::~ChromeWorkerMessageFilter() {
 }
 
-bool ChromeWorkerMessageFilter::OnMessageReceived(
-    const IPC::Message& message, bool* message_was_ok) {
+bool ChromeWorkerMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(ChromeWorkerMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(ChromeWorkerMessageFilter, message)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

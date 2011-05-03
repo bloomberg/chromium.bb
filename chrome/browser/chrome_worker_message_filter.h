@@ -21,8 +21,7 @@ class ChromeWorkerMessageFilter : public IPC::ChannelProxy::MessageFilter,
   explicit ChromeWorkerMessageFilter(WorkerProcessHost* process);
 
   // BrowserMessageFilter methods:
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // IPC::Message::Sender methods:
   virtual bool Send(IPC::Message* message);
