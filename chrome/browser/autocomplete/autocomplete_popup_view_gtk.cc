@@ -16,7 +16,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/defaults.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "content/common/notification_service.h"
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_windowing.h"
@@ -268,12 +268,12 @@ void AutocompletePopupViewGtk::SetupLayoutForMatch(
 
 AutocompletePopupViewGtk::AutocompletePopupViewGtk(
     const gfx::Font& font,
-    AutocompleteEditView* edit_view,
+    OmniboxView* omnibox_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
     GtkWidget* location_bar)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
-      edit_view_(edit_view),
+      omnibox_view_(omnibox_view),
       location_bar_(location_bar),
       window_(gtk_window_new(GTK_WINDOW_POPUP)),
       layout_(NULL),
@@ -458,9 +458,9 @@ void AutocompletePopupViewGtk::Hide() {
 }
 
 void AutocompletePopupViewGtk::StackWindow() {
-  gfx::NativeView edit_view = edit_view_->GetNativeView();
-  DCHECK(GTK_IS_WIDGET(edit_view));
-  GtkWidget* toplevel = gtk_widget_get_toplevel(edit_view);
+  gfx::NativeView omnibox_view = omnibox_view_->GetNativeView();
+  DCHECK(GTK_IS_WIDGET(omnibox_view));
+  GtkWidget* toplevel = gtk_widget_get_toplevel(omnibox_view);
   DCHECK(GTK_WIDGET_TOPLEVEL(toplevel));
   ui::StackPopupWindow(window_, toplevel);
 }
@@ -479,7 +479,7 @@ void AutocompletePopupViewGtk::AcceptLine(size_t line,
   const GURL url(match.destination_url);
   string16 keyword;
   const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
-  edit_view_->OpenURL(url, disposition, match.transition, GURL(), line,
+  omnibox_view_->OpenURL(url, disposition, match.transition, GURL(), line,
                       is_keyword_hint ? string16() : keyword);
 }
 

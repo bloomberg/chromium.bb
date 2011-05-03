@@ -23,11 +23,11 @@ PageTransition::Type TestLocationBar::GetPageTransition() const {
   return transition_;
 }
 
-const AutocompleteEditView* TestLocationBar::location_entry() const {
+const OmniboxView* TestLocationBar::location_entry() const {
   return NULL;
 }
 
-AutocompleteEditView* TestLocationBar::location_entry() {
+OmniboxView* TestLocationBar::location_entry() {
   return NULL;
 }
 

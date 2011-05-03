@@ -20,10 +20,10 @@
 #include "content/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class AutocompleteEditView;
 class ExtensionAction;
 class InstantController;
 class LocationBarTesting;
+class OmniboxView;
 class TabContents;
 class TabContentsWrapper;
 
@@ -76,8 +76,8 @@ class LocationBar {
   virtual void Revert() = 0;
 
   // Returns a pointer to the text entry view.
-  virtual const AutocompleteEditView* location_entry() const = 0;
-  virtual AutocompleteEditView* location_entry() = 0;
+  virtual const OmniboxView* location_entry() const = 0;
+  virtual OmniboxView* location_entry() = 0;
 
   // Returns a pointer to the testing interface.
   virtual LocationBarTesting* GetLocationBarForTesting() = 0;

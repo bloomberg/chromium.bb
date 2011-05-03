@@ -210,7 +210,7 @@ void LocationBarViewMac::Update(const TabContents* contents,
   star_decoration_->SetVisible(star_enabled);
   RefreshPageActionDecorations();
   RefreshContentSettingsDecorations();
-  // AutocompleteEditView restores state if the tab is non-NULL.
+  // OmniboxView restores state if the tab is non-NULL.
   omnibox_view_->Update(should_restore_state ? contents : NULL);
   OnChanged();
 }
@@ -298,11 +298,11 @@ void LocationBarViewMac::Revert() {
   omnibox_view_->RevertAll();
 }
 
-const AutocompleteEditView* LocationBarViewMac::location_entry() const {
+const OmniboxView* LocationBarViewMac::location_entry() const {
     return omnibox_view_.get();
   }
 
-AutocompleteEditView* LocationBarViewMac::location_entry() {
+OmniboxView* LocationBarViewMac::location_entry() {
     return omnibox_view_.get();
   }
 

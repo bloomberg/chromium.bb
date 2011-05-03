@@ -699,11 +699,11 @@ void LocationBarViewGtk::Revert() {
   location_entry_->RevertAll();
 }
 
-const AutocompleteEditView* LocationBarViewGtk::location_entry() const {
+const OmniboxView* LocationBarViewGtk::location_entry() const {
   return location_entry_.get();
 }
 
-AutocompleteEditView* LocationBarViewGtk::location_entry() {
+OmniboxView* LocationBarViewGtk::location_entry() {
   return location_entry_.get();
 }
 

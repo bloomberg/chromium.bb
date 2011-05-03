@@ -19,10 +19,10 @@
 class AutocompleteController;
 class AutocompleteEditController;
 class AutocompleteEditModel;
-class AutocompleteEditView;
 class AutocompletePopupModel;
 class AutocompleteResult;
 class InstantController;
+class OmniboxView;
 class Profile;
 class SkBitmap;
 class TabContentsWrapper;
@@ -55,7 +55,7 @@ class AutocompleteEditController {
   // status of any keyword- or hint-related state.
   virtual void OnChanged() = 0;
 
-  // Called when the selection of the AutocompleteEditView changes.
+  // Called when the selection of the OmniboxView changes.
   virtual void OnSelectionBoundsChanged() = 0;
 
   // Called whenever the user starts or stops an input session (typing,
@@ -100,7 +100,7 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
     const bool is_keyword_hint;
   };
 
-  AutocompleteEditModel(AutocompleteEditView* view,
+  AutocompleteEditModel(OmniboxView* view,
                         AutocompleteEditController* controller,
                         Profile* profile);
   ~AutocompleteEditModel();
@@ -318,9 +318,9 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
       const string16& keyword,
       bool is_keyword_hint);
 
-  // Called by the AutocompleteEditView after something changes, with details
-  // about what state changes occured.  Updates internal state, updates the
-  // popup if necessary, and returns true if any significant changes occurred.
+  // Called by the OmniboxView after something changes, with details about what
+  // state changes occured.  Updates internal state, updates the popup if
+  // necessary, and returns true if any significant changes occurred.
   // If |allow_keyword_ui_change| is false then the change should not affect
   // keyword ui state, even if the text matches a keyword exactly. This value
   // may be false when the user is composing a text with an IME.
@@ -439,7 +439,7 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
 
   scoped_ptr<AutocompleteController> autocomplete_controller_;
 
-  AutocompleteEditView* view_;
+  OmniboxView* view_;
 
   AutocompletePopupModel* popup_;
 

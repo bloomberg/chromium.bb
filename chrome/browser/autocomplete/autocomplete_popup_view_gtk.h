@@ -20,9 +20,9 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditModel;
-class AutocompleteEditView;
 class AutocompletePopupModel;
 class GtkThemeService;
+class OmniboxView;
 class Profile;
 class SkBitmap;
 
@@ -30,7 +30,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
                                  public NotificationObserver {
  public:
   AutocompletePopupViewGtk(const gfx::Font& font,
-                           AutocompleteEditView* edit_view,
+                           OmniboxView* omnibox_view,
                            AutocompleteEditModel* edit_model,
                            Profile* profile,
                            GtkWidget* location_bar);
@@ -106,7 +106,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
   gboolean HandleButtonRelease(GtkWidget* widget, GdkEventButton* event);
 
   scoped_ptr<AutocompletePopupModel> model_;
-  AutocompleteEditView* edit_view_;
+  OmniboxView* omnibox_view_;
   GtkWidget* location_bar_;
 
   // Our popup window, which is the only widget used, and we paint it on our

@@ -4,17 +4,17 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_profile.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
 
-class TestingAutocompleteEditView : public AutocompleteEditView {
+class TestingOmniboxView : public OmniboxView {
  public:
-  TestingAutocompleteEditView() {}
+  TestingOmniboxView() {}
 
   virtual AutocompleteEditModel* model() { return NULL; }
   virtual const AutocompleteEditModel* model() const { return NULL; }
@@ -68,7 +68,7 @@ class TestingAutocompleteEditView : public AutocompleteEditView {
 #endif
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestingAutocompleteEditView);
+  DISALLOW_COPY_AND_ASSIGN(TestingOmniboxView);
 };
 
 class TestingAutocompleteEditController : public AutocompleteEditController {
@@ -138,7 +138,7 @@ TEST(AutocompleteEditTest, AdjustTextForCopy) {
     { "a.b/", 0, false, "http://a.b/", "http://a.b/", true, "http://a.b/" },
   };
   ScopedTestingBrowserProcess browser_process;
-  TestingAutocompleteEditView view;
+  TestingOmniboxView view;
   TestingAutocompleteEditController controller;
   TestingProfile profile;
   AutocompleteEditModel model(&view, &controller, &profile);

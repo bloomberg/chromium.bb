@@ -425,8 +425,7 @@ void OmniboxViewViews::ClosePopup() {
 }
 
 void OmniboxViewViews::SetFocus() {
-  // In views-implementation, the focus is on textfield rather than
-  // AutocompleteEditView.
+  // In views-implementation, the focus is on textfield rather than OmniboxView.
   textfield_->RequestFocus();
 }
 

@@ -10,7 +10,6 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 
-class AutocompleteEditView;
 class AutocompletePopupView;
 class Profile;
 class SkBitmap;

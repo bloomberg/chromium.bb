@@ -9,20 +9,18 @@
 
 AutomationAutocompleteEditTracker::AutomationAutocompleteEditTracker(
     IPC::Message::Sender* automation)
-    : AutomationResourceTracker<AutocompleteEditView*>(automation) {
+    : AutomationResourceTracker<OmniboxView*>(automation) {
 }
 
 AutomationAutocompleteEditTracker::~AutomationAutocompleteEditTracker() {
 }
 
-void AutomationAutocompleteEditTracker::AddObserver(
-    AutocompleteEditView* resource) {
+void AutomationAutocompleteEditTracker::AddObserver(OmniboxView* resource) {
   registrar_.Add(this, NotificationType::AUTOCOMPLETE_EDIT_DESTROYED,
-                 Source<AutocompleteEditView>(resource));
+                 Source<OmniboxView>(resource));
 }
 
-void AutomationAutocompleteEditTracker::RemoveObserver(
-    AutocompleteEditView* resource) {
+void AutomationAutocompleteEditTracker::RemoveObserver(OmniboxView* resource) {
   registrar_.Remove(this, NotificationType::AUTOCOMPLETE_EDIT_DESTROYED,
-                    Source<AutocompleteEditView>(resource));
+                    Source<OmniboxView>(resource));
 }

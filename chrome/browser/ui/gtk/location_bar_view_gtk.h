@@ -123,8 +123,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual void InvalidatePageActions();
   virtual void SaveStateToContents(TabContents* contents);
   virtual void Revert();
-  virtual const AutocompleteEditView* location_entry() const;
-  virtual AutocompleteEditView* location_entry();
+  virtual const OmniboxView* location_entry() const;
+  virtual OmniboxView* location_entry();
   virtual LocationBarTesting* GetLocationBarForTesting();
 
   // Implement the LocationBarTesting interface.

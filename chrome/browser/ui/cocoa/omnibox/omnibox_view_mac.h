@@ -10,8 +10,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 
 class AutocompleteEditController;
 class AutocompletePopupViewMac;
@@ -22,9 +22,9 @@ namespace ui {
 class Clipboard;
 }
 
-// Implements AutocompleteEditView on an AutocompleteTextField.
+// Implements OmniboxView on an AutocompleteTextField.
 
-class OmniboxViewMac : public AutocompleteEditView,
+class OmniboxViewMac : public OmniboxView,
                        public AutocompleteTextFieldObserver {
  public:
   OmniboxViewMac(AutocompleteEditController* controller,
@@ -34,7 +34,7 @@ class OmniboxViewMac : public AutocompleteEditView,
                  AutocompleteTextField* field);
   virtual ~OmniboxViewMac();
 
-  // Implement the AutocompleteEditView interface.
+  // OmniboxView:
   virtual AutocompleteEditModel* model();
   virtual const AutocompleteEditModel* model() const;
 

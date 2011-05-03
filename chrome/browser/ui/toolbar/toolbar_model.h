@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ class ToolbarModel {
 
   // Returns the resource_id of the icon to show to the left of the address,
   // based on the current URL.  This doesn't cover specialized icons while the
-  // user is editing; see AutocompleteEditView::GetIcon().
+  // user is editing; see OmniboxView::GetIcon().
   int GetIcon() const;
 
   // Returns the name of the EV cert holder.  Only call this when the security

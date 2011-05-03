@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "content/common/notification_observer.h"
 #include "content/common/page_transition_types.h"
@@ -25,8 +25,8 @@ class AutocompletePopupView;
 class Profile;
 class TabContents;
 
-// Views-implementation of AutocompleteEditView. This is based on
-// gtk implementation. The following features are not yet supported.
+// Views-implementation of OmniboxView. This is based on gtk implementation.
+// The following features are not yet supported.
 //
 // IME support.
 // LTR support.
@@ -37,7 +37,7 @@ class TabContents;
 // Custom context menu for omnibox.
 // Instant.
 class OmniboxViewViews : public views::View,
-                         public AutocompleteEditView,
+                         public OmniboxView,
                          public NotificationObserver,
                          public views::TextfieldController {
  public:
@@ -69,7 +69,7 @@ class OmniboxViewViews : public views::View,
   virtual void Layout() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // Implement the AutocompleteEditView interface.
+  // OmniboxView:
   virtual AutocompleteEditModel* model() OVERRIDE;
   virtual const AutocompleteEditModel* model() const OVERRIDE;
 

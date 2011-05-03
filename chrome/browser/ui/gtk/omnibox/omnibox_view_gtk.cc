@@ -877,13 +877,12 @@ int OmniboxViewGtk::OnPerformDrop(
 }
 
 // static
-AutocompleteEditView* OmniboxViewGtk::Create(
-    AutocompleteEditController* controller,
-    ToolbarModel* toolbar_model,
-    Profile* profile,
-    CommandUpdater* command_updater,
-    bool popup_window_mode,
-    views::View* location_bar) {
+OmniboxView* OmniboxViewGtk::Create(AutocompleteEditController* controller,
+                                    ToolbarModel* toolbar_model,
+                                    Profile* profile,
+                                    CommandUpdater* command_updater,
+                                    bool popup_window_mode,
+                                    views::View* location_bar) {
   if (views::NativeTextfieldViews::IsTextfieldViewsEnabled()) {
     OmniboxViewViews* omnibox_view = new OmniboxViewViews(controller,
                                                           toolbar_model,

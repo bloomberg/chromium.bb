@@ -240,8 +240,8 @@ class LocationBarView : public LocationBar,
   virtual void InvalidatePageActions() OVERRIDE;
   virtual void SaveStateToContents(TabContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;
-  virtual const AutocompleteEditView* location_entry() const OVERRIDE;
-  virtual AutocompleteEditView* location_entry() OVERRIDE;
+  virtual const OmniboxView* location_entry() const OVERRIDE;
+  virtual OmniboxView* location_entry() OVERRIDE;
   virtual LocationBarTesting* GetLocationBarForTesting() OVERRIDE;
 
   // Overridden from LocationBarTesting:
@@ -330,7 +330,7 @@ class LocationBarView : public LocationBar,
 #if defined(OS_WIN)
   scoped_ptr<OmniboxViewWin> location_entry_;
 #else
-  scoped_ptr<AutocompleteEditView> location_entry_;
+  scoped_ptr<OmniboxView> location_entry_;
 #endif
 
   // The CommandUpdater for the Browser object that corresponds to this View.

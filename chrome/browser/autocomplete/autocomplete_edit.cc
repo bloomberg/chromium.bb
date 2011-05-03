@@ -12,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
@@ -28,6 +27,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/user_metrics.h"
@@ -62,7 +62,7 @@ AutocompleteEditModel::State::~State() {
 // AutocompleteEditModel
 
 AutocompleteEditModel::AutocompleteEditModel(
-    AutocompleteEditView* view,
+    OmniboxView* view,
     AutocompleteEditController* controller,
     Profile* profile)
     : ALLOW_THIS_IN_INITIALIZER_LIST(

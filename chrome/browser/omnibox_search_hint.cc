@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -208,14 +208,14 @@ void OmniboxSearchHint::ShowInfoBar() {
 void OmniboxSearchHint::ShowEnteringQuery() {
   LocationBar* location_bar = BrowserList::GetLastActive()->window()->
       GetLocationBar();
-  AutocompleteEditView*  edit_view = location_bar->location_entry();
+  OmniboxView* omnibox_view = location_bar->location_entry();
   location_bar->FocusLocation(true);
-  edit_view->SetUserText(
+  omnibox_view->SetUserText(
       l10n_util::GetStringUTF16(IDS_OMNIBOX_SEARCH_HINT_OMNIBOX_TEXT));
-  edit_view->SelectAll(false);
-  // Entering text in the autocomplete edit view triggers the suggestion popup
-  // that we don't want to show in this case.
-  edit_view->ClosePopup();
+  omnibox_view->SelectAll(false);
+  // Entering text in the omnibox view triggers the suggestion popup that we
+  // don't want to show in this case.
+  omnibox_view->ClosePopup();
 }
 
 void OmniboxSearchHint::DisableHint() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,16 +6,16 @@
 #define CHROME_BROWSER_AUTOMATION_AUTOMATION_AUTOCOMPLETE_EDIT_TRACKER_H_
 #pragma once
 
-#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/automation/automation_resource_tracker.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 
 class AutomationAutocompleteEditTracker
-    : public AutomationResourceTracker<AutocompleteEditView*> {
+    : public AutomationResourceTracker<OmniboxView*> {
  public:
   explicit AutomationAutocompleteEditTracker(IPC::Message::Sender* automation);
   virtual ~AutomationAutocompleteEditTracker();
-  virtual void AddObserver(AutocompleteEditView* resource);
-  virtual void RemoveObserver(AutocompleteEditView* resource);
+  virtual void AddObserver(OmniboxView* resource);
+  virtual void RemoveObserver(OmniboxView* resource);
 };
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_AUTOCOMPLETE_EDIT_TRACKER_H_

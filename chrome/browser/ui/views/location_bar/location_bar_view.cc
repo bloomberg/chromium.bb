@@ -1121,11 +1121,11 @@ void LocationBarView::Revert() {
   location_entry_->RevertAll();
 }
 
-const AutocompleteEditView* LocationBarView::location_entry() const {
+const OmniboxView* LocationBarView::location_entry() const {
   return location_entry_.get();
 }
 
-AutocompleteEditView* LocationBarView::location_entry() {
+OmniboxView* LocationBarView::location_entry() {
   return location_entry_.get();
 }
 

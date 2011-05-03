@@ -1255,9 +1255,9 @@ void TestingAutomationProvider::GetAutocompleteEditForBrowser(
   if (browser_tracker_->ContainsHandle(browser_handle)) {
     Browser* browser = browser_tracker_->GetResource(browser_handle);
     LocationBar* loc_bar = browser->window()->GetLocationBar();
-    AutocompleteEditView* edit_view = loc_bar->location_entry();
+    OmniboxView* omnibox_view = loc_bar->location_entry();
     // Add() returns the existing handle for the resource if any.
-    *autocomplete_edit_handle = autocomplete_edit_tracker_->Add(edit_view);
+    *autocomplete_edit_handle = autocomplete_edit_tracker_->Add(omnibox_view);
     *success = true;
   }
 }
@@ -3124,8 +3124,8 @@ void TestingAutomationProvider::GetOmniboxInfo(Browser* browser,
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
 
   LocationBar* loc_bar = browser->window()->GetLocationBar();
-  AutocompleteEditView* edit_view = loc_bar->location_entry();
-  AutocompleteEditModel* model = edit_view->model();
+  OmniboxView* omnibox_view = loc_bar->location_entry();
+  AutocompleteEditModel* model = omnibox_view->model();
 
   // Fill up matches.
   ListValue* matches = new ListValue;
@@ -3149,7 +3149,7 @@ void TestingAutomationProvider::GetOmniboxInfo(Browser* browser,
   properties->SetBoolean("query_in_progress",
                          !model->autocomplete_controller()->done());
   properties->SetString("keyword", model->keyword());
-  properties->SetString("text", edit_view->GetText());
+  properties->SetString("text", omnibox_view->GetText());
   return_value->Set("properties", properties);
 
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
@@ -3168,9 +3168,9 @@ void TestingAutomationProvider::SetOmniboxText(Browser* browser,
   }
   browser->FocusLocationBar();
   LocationBar* loc_bar = browser->window()->GetLocationBar();
-  AutocompleteEditView* edit_view = loc_bar->location_entry();
-  edit_view->model()->OnSetFocus(false);
-  edit_view->SetUserText(text);
+  OmniboxView* omnibox_view = loc_bar->location_entry();
+  omnibox_view->model()->OnSetFocus(false);
+  omnibox_view->SetUserText(text);
   reply.SendSuccess(NULL);
 }
 

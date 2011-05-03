@@ -1,15 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file defines the interface class AutocompleteEditView.  Each toolkit
-// will implement the edit view differently, so that code is inherently
-// platform specific.  However, the AutocompleteEditModel needs to do some
-// communication with the view.  Since the model is shared between platforms,
-// we need to define an interface that all view implementations will share.
+// This file defines the interface class OmniboxView.  Each toolkit will
+// implement the edit view differently, so that code is inherently platform
+// specific.  However, the AutocompleteEditModel needs to do some communication
+// with the view.  Since the model is shared between platforms, we need to
+// define an interface that all view implementations will share.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_H_
+#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_H_
+#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_H_
 #pragma once
 
 #include <string>
@@ -31,7 +31,7 @@ class View;
 }  // namespace views
 #endif
 
-class AutocompleteEditView {
+class OmniboxView {
  public:
   // Used by the automation system for getting at the model from the view.
   virtual AutocompleteEditModel* model() = 0;
@@ -183,7 +183,7 @@ class AutocompleteEditView {
   virtual int OnPerformDrop(const views::DropTargetEvent& event) = 0;
 #endif
 
-  virtual ~AutocompleteEditView() {}
+  virtual ~OmniboxView() {}
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_H_
+#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_H_

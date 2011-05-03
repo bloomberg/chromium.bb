@@ -6,11 +6,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/promo_counter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_result_view.h"
 #include "chrome/browser/ui/views/bubble/bubble_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -202,13 +202,13 @@ class AutocompletePopupContentsView::InstantOptInView
 
 AutocompletePopupContentsView::AutocompletePopupContentsView(
     const gfx::Font& font,
-    AutocompleteEditView* edit_view,
+    OmniboxView* omnibox_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
     const views::View* location_bar)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
       opt_in_view_(NULL),
-      edit_view_(edit_view),
+      omnibox_view_(omnibox_view),
       location_bar_(location_bar),
       result_font_(font.DeriveFont(kEditFontAdjust)),
       result_bold_font_(result_font_.DeriveFont(0, gfx::Font::BOLD)),
@@ -337,7 +337,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     popup_->GetWidget()->Init(params);
     popup_->SetContentsView(this);
     popup_->MoveAbove(popup_->GetRelativeWindowForPopup(
-        edit_view_->GetNativeView()));
+        omnibox_view_->GetNativeView()));
     popup_->Show();
   } else {
     // Animate the popup shrinking, but don't animate growing larger since that
@@ -627,8 +627,8 @@ void AutocompletePopupContentsView::OpenIndex(
   const GURL url(match.destination_url);
   string16 keyword;
   const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
-  edit_view_->OpenURL(url, disposition, match.transition, GURL(), index,
-                      is_keyword_hint ? string16() : keyword);
+  omnibox_view_->OpenURL(url, disposition, match.transition, GURL(), index,
+                         is_keyword_hint ? string16() : keyword);
 }
 
 size_t AutocompletePopupContentsView::GetIndexForPoint(

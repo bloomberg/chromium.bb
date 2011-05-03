@@ -14,8 +14,8 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -48,7 +48,7 @@ class View;
 class GtkThemeService;
 #endif
 
-class OmniboxViewGtk : public AutocompleteEditView,
+class OmniboxViewGtk : public OmniboxView,
                        public NotificationObserver,
                        public ui::AnimationDelegate {
  public:
@@ -88,7 +88,7 @@ class OmniboxViewGtk : public AutocompleteEditView,
   // LocationBarView::Layout as to why this uses -1.
   int WidthOfTextAfterCursor();
 
-  // Implement the AutocompleteEditView interface.
+  // OmniboxView:
   virtual AutocompleteEditModel* model();
   virtual const AutocompleteEditModel* model() const;
 
@@ -149,16 +149,16 @@ class OmniboxViewGtk : public AutocompleteEditView,
   virtual views::View* AddToView(views::View* parent);
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
 
-  // A factory method to create an AutocompleteEditView instance initialized for
+  // A factory method to create an OmniboxView instance initialized for
   // linux_views.  This currently returns an instance of OmniboxViewGtk only,
   // but OmniboxViewViews will be added as an option when TextfieldViews is
   // enabled.
-  static AutocompleteEditView* Create(AutocompleteEditController* controller,
-                                      ToolbarModel* toolbar_model,
-                                      Profile* profile,
-                                      CommandUpdater* command_updater,
-                                      bool popup_window_mode,
-                                      views::View* location_bar);
+  static OmniboxView* Create(AutocompleteEditController* controller,
+                             ToolbarModel* toolbar_model,
+                             Profile* profile,
+                             CommandUpdater* command_updater,
+                             bool popup_window_mode,
+                             views::View* location_bar);
 #endif
 
   // Overridden from NotificationObserver:

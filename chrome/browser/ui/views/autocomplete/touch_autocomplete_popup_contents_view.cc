@@ -4,15 +4,15 @@
 
 #include "touch_autocomplete_popup_contents_view.h"
 
-#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "views/view.h"
 
 
@@ -53,11 +53,11 @@ int TouchAutocompleteResultView::GetFontHeight() const {
 
 TouchAutocompletePopupContentsView::TouchAutocompletePopupContentsView(
     const gfx::Font& font,
-    AutocompleteEditView* edit_view,
+    OmniboxView* omnibox_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
     const views::View* location_bar)
-    : AutocompletePopupContentsView(font, edit_view, edit_model, profile,
+    : AutocompletePopupContentsView(font, omnibox_view, edit_model, profile,
                                     location_bar) {
 }
 

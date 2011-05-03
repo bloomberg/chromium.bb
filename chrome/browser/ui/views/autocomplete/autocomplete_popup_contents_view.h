@@ -40,7 +40,7 @@ class AutocompletePopupContentsView : public views::View,
                                       public ui::AnimationDelegate {
  public:
   AutocompletePopupContentsView(const gfx::Font& font,
-                                AutocompleteEditView* edit_view,
+                                OmniboxView* omnibox_view,
                                 AutocompleteEditModel* edit_model,
                                 Profile* profile,
                                 const views::View* location_bar);
@@ -151,7 +151,7 @@ class AutocompletePopupContentsView : public views::View,
   base::WeakPtr<AutocompletePopupClass> popup_;
 
   // The edit view that invokes us.
-  AutocompleteEditView* edit_view_;
+  OmniboxView* omnibox_view_;
 
   // An object that the popup positions itself against.
   const views::View* location_bar_;

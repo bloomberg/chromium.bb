@@ -16,7 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "content/common/page_transition_types.h"
@@ -25,17 +25,16 @@
 #include "views/controls/menu/menu_2.h"
 #include "webkit/glue/window_open_disposition.h"
 
+class AutocompleteEditController;
+class AutocompleteEditModel;
+class AutocompletePopupView;
+class LocationBarView;
 class Profile;
 class TabContents;
+
 namespace views {
 class View;
 }
-
-class AutocompleteEditController;
-class AutocompleteEditModel;
-class AutocompleteEditView;
-class AutocompletePopupView;
-class LocationBarView;
 
 // Provides the implementation of an edit control with a drop-down
 // autocomplete box. The box itself is implemented in autocomplete_popup.cc
@@ -47,7 +46,7 @@ class OmniboxViewWin
                                     ES_NOHIDESEL> >,
       public CRichEditCommands<OmniboxViewWin>,
       public ui::SimpleMenuModel::Delegate,
-      public AutocompleteEditView {
+      public OmniboxView {
  public:
   struct State {
     State(const CHARRANGE& selection,
@@ -83,7 +82,7 @@ class OmniboxViewWin
   // Returns the font.
   gfx::Font GetFont();
 
-  // Implement the AutocompleteEditView interface.
+  // OmniboxView:
   virtual AutocompleteEditModel* model() { return model_.get(); }
   virtual const AutocompleteEditModel* model() const { return model_.get(); }
 
