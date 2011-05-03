@@ -12,7 +12,7 @@ import time
 
 from chromeos.power_strip import PowerStrip
 import pyauto
-
+import pyauto_errors
 
 class WifiPowerStrip(PowerStrip):
   """Manages the power state of wifi routers connected to a power strip.
