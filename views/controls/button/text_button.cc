@@ -405,30 +405,36 @@ void TextButtonBase::GetExtraParams(
   params->button.background_color = kEnabledColor;
 }
 
-gfx::Rect TextButtonBase::GetTextBounds() const {
+gfx::Rect TextButtonBase::GetContentBounds(int extra_width) const {
   gfx::Insets insets = GetInsets();
   int available_width = width() - insets.width();
-  int content_width = text_size_.width();
-  int text_x = 0;
+  int content_width = text_size_.width() + extra_width;
+  int content_x = 0;
   switch(alignment_) {
     case ALIGN_LEFT:
-      text_x = insets.left();
+      content_x = insets.left();
       break;
     case ALIGN_RIGHT:
-      text_x = width() - insets.right() - content_width;
+      content_x = width() - insets.right() - content_width;
+      if (content_x < insets.left())
+        content_x = insets.left();
       break;
     case ALIGN_CENTER:
-      text_x = insets.left() + std::max(0,
-                                        (available_width - content_width) / 2);
+      content_x = insets.left() + std::max(0,
+          (available_width - content_width) / 2);
       break;
   }
-  const int text_width = std::min(text_size_.width(),
-                                  width() - insets.right() - text_x);
+  content_width = std::min(content_width,
+                           width() - insets.right() - content_x);
   int available_height = height() - insets.height();
-  int text_y = (available_height - text_size_.height()) / 2 + insets.top();
+  int content_y = (available_height - text_size_.height()) / 2 + insets.top();
 
-  gfx::Rect bounds(text_x, text_y, text_width, text_size_.height());
+  gfx::Rect bounds(content_x, content_y, content_width, text_size_.height());
   return bounds;
+}
+
+gfx::Rect TextButtonBase::GetTextBounds() const {
+  return GetContentBounds(0);
 }
 
 void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
@@ -672,7 +678,7 @@ void TextButton::GetExtraParams(gfx::NativeTheme::ExtraParams* params) const {
 }
 
 gfx::Rect TextButton::GetTextBounds() const {
-  gfx::Rect bounds(TextButtonBase::GetTextBounds());
+  int extra_width = 0;
 
   SkBitmap icon = icon_;
   if (show_multiple_icon_states_) {
@@ -682,49 +688,17 @@ gfx::Rect TextButton::GetTextBounds() const {
       icon = icon_pushed_;
   }
 
-  if (icon.width() > 0) {
-    gfx::Insets insets = GetInsets();
-    int available_width = width() - insets.width();
-    int icon_width = icon.width() + (text_.empty() ? 0 : icon_text_spacing_);
-    int new_content_width = bounds.width() + icon_width;
+  if (icon.width() > 0)
+    extra_width = icon.width() + (text_.empty() ? 0 : icon_text_spacing_);
 
-    if (new_content_width < available_width) {
-      switch(alignment_) {
-        case ALIGN_LEFT:
-          if (icon_placement_ == ICON_ON_LEFT)
-            bounds.Offset(icon_width, 0);
-          break;
-        case ALIGN_RIGHT:
-          if (icon_placement_ == ICON_ON_RIGHT)
-            bounds.Offset(-icon_width, 0);
-          break;
-        case ALIGN_CENTER:
-          if (icon_placement_ == ICON_ON_LEFT) {
-            bounds.Offset(icon_width / 2, 0);
-          } else {
-            bounds.Offset(-icon_width / 2, 0);
-          }
-          break;
-      }
+  gfx::Rect bounds(GetContentBounds(extra_width));
+
+  if (extra_width > 0) {
+    // Make sure the icon is always fully visible.
+    if (icon_placement_ == ICON_ON_LEFT) {
+      bounds.Inset(extra_width, 0, 0, 0);
     } else {
-      // Make sure the icon is always fully visible.
-      switch(alignment_) {
-        case ALIGN_LEFT:
-        case ALIGN_CENTER:
-          if (icon_placement_ == ICON_ON_LEFT) {
-            bounds.Offset(icon_width, 0);
-          } else {
-            bounds.set_width(available_width - icon_width);
-          }
-          break;
-        case ALIGN_RIGHT:
-          if (icon_placement_ == ICON_ON_RIGHT) {
-            bounds.Offset(-icon_width, 0);
-          } else {
-            bounds.set_x(icon_width + insets.left());
-          }
-          break;
-      }
+      bounds.Inset(0, 0, extra_width, 0);
     }
   }
 

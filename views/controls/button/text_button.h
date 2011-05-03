@@ -218,6 +218,10 @@ class TextButtonBase : public CustomButton, public NativeThemeDelegate {
 
   virtual gfx::Rect GetTextBounds() const;
 
+  // Calculate the bounds of the content of this button, including any extra
+  // width needed on top of the text width.
+  gfx::Rect GetContentBounds(int extra_width) const;
+
   // The text string that is displayed in the button.
   string16 text_;
 
