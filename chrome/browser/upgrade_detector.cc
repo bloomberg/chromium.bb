@@ -225,36 +225,49 @@ void UpgradeDetector::UpgradeDetected() {
 void UpgradeDetector::NotifyOnUpgrade() {
   base::TimeDelta delta = base::Time::Now() - upgrade_detected_time_;
   std::string interval = CmdLineInterval();
+
   // A command line interval implies testing, which we'll make more convenient
-  // by switching to minutes of waiting instead of hours between flipping
-  // severity.
+  // by switching to minutes of waiting instead of days between flipping
+  // severity. This works in conjunction with the similar interval.empty()
+  // check below.
   int time_passed = interval.empty() ? delta.InHours() : delta.InMinutes();
-  const int kSevereThreshold = 14 * (interval.empty() ? 24 : 1);
-  const int kHighThreshold = 7 * (interval.empty() ? 24 : 1);
-  const int kElevatedThreshold = 4  * (interval.empty() ? 24 : 1);
-  // Unstable channels are fixed at lowest severity after 1 hour. For other
-  // channels it is after 2 hours. And, as before, if a command line is passed
-  // in we drastically reduce the wait time.
-  const int multiplier = is_unstable_channel_ ? 1 : 2;
-  const int kLowThreshold = multiplier * (interval.empty() ? 24 : 1);
 
-  // These if statements (except for the first one) must be sorted (highest
-  // interval first).
-  if (time_passed >= kSevereThreshold)
-    upgrade_notification_stage_ = UPGRADE_ANNOYANCE_SEVERE;
-  else if (time_passed >= kHighThreshold)
-    upgrade_notification_stage_ = UPGRADE_ANNOYANCE_HIGH;
-  else if (time_passed >= kElevatedThreshold)
-    upgrade_notification_stage_ = UPGRADE_ANNOYANCE_ELEVATED;
-  else if (time_passed >= kLowThreshold)
-    upgrade_notification_stage_ = UPGRADE_ANNOYANCE_LOW;
-  else
-    return;  // Not ready to recommend upgrade.
+  if (is_unstable_channel_) {
+    // There's only one threat level for unstable channels like dev and
+    // canary, and it hits after one hour. During testing, it hits after one
+    // minute.
+    const int kUnstableThreshold = 1;
 
-  if (is_unstable_channel_ ||
-      upgrade_notification_stage_ == UPGRADE_ANNOYANCE_SEVERE) {
-    // We can't get any higher, baby.
-    upgrade_notification_timer_.Stop();
+    if (time_passed >= kUnstableThreshold) {
+      upgrade_notification_stage_ = UPGRADE_ANNOYANCE_LOW;
+
+      // That's as high as it goes.
+      upgrade_notification_timer_.Stop();
+    } else {
+      return;  // Not ready to recommend upgrade.
+    }
+  } else {
+    const int kMultiplier = interval.empty() ? 24 : 1;
+    const int kSevereThreshold = 14 * kMultiplier;
+    const int kHighThreshold = 7 * kMultiplier;
+    const int kElevatedThreshold = 4 * kMultiplier;
+    const int kLowThreshold = 2 * kMultiplier;
+
+    // These if statements must be sorted (highest interval first).
+    if (time_passed >= kSevereThreshold) {
+      upgrade_notification_stage_ = UPGRADE_ANNOYANCE_SEVERE;
+
+      // We can't get any higher, baby.
+      upgrade_notification_timer_.Stop();
+    } else if (time_passed >= kHighThreshold) {
+      upgrade_notification_stage_ = UPGRADE_ANNOYANCE_HIGH;
+    } else if (time_passed >= kElevatedThreshold) {
+      upgrade_notification_stage_ = UPGRADE_ANNOYANCE_ELEVATED;
+    } else if (time_passed >= kLowThreshold) {
+      upgrade_notification_stage_ = UPGRADE_ANNOYANCE_LOW;
+    } else {
+      return;  // Not ready to recommend upgrade.
+    }
   }
 
   notify_upgrade_ = true;
