@@ -144,6 +144,12 @@ drmemorylib.dll!replace_strcmp
 
 UNINITIALIZED READ
 ...
+*!*len
+...
+*!*lipboard*
+
+UNINITIALIZED READ
+...
 *!*cmp
 ...
 *!*lipboard*
@@ -153,8 +159,7 @@ UNADDRESSABLE ACCESS
 *!*lipboard*
 
 UNINITIALIZED READ
-KERNEL32.dll!WideCharToMultiByte
-KERNEL32.dll!WideCharToMultiByte
+...
 USER32.dll!DeregisterShellHookWindow
 *!*lipboard*
 
