@@ -287,14 +287,20 @@ void PanelController::TitleMouseCaptureLost() {
 
   mouse_down_ = false;
   if (!dragging_) {
-    // Always activate the panel here, even if we are about to minimize it.
-    // This lets panels like GTalk know that they have been acknowledged,
-    // so they don't change the title again (which would trigger SetUrgent).
-    // Activating the panel also clears the urgent state.
-    delegate_->ActivatePanel();
-    // Set State after activating.
-    SetState(expanded_ ?
-             PanelController::MINIMIZED : PanelController::EXPANDED);
+    if (expanded_) {
+      // Always activate the panel here, even if we are about to minimize it.
+      // This lets panels like GTalk know that they have been acknowledged, so
+      // they don't change the title again (which would trigger SetUrgent).
+      // Activating the panel also clears the urgent state.
+      delegate_->ActivatePanel();
+      SetState(PanelController::MINIMIZED);
+    } else {
+      // If we're expanding the panel, do so before focusing it.  This lets the
+      // window manager know that the panel is being expanded in response to a
+      // user action; see http://crosbug.com/14735.
+      SetState(PanelController::EXPANDED);
+      delegate_->ActivatePanel();
+    }
   } else {
     WmIpc::Message msg(WM_IPC_MESSAGE_WM_NOTIFY_PANEL_DRAG_COMPLETE);
     msg.set_param(0, panel_xid_);
