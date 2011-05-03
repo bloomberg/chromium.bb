@@ -12,8 +12,10 @@
 
 #include "base/command_line.h"
 #include "base/metrics/nacl_histogram.h"
+#include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/nacl_cmd_line.h"
@@ -53,7 +55,8 @@ NaClProcessHost::NaClProcessHost(const std::wstring& url)
     : BrowserChildProcessHost(NACL_LOADER_PROCESS),
       reply_msg_(NULL),
       internal_(new NaClInternal()),
-      running_on_wow64_(false) {
+      running_on_wow64_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
   set_name(url);
 #if defined(OS_WIN)
   running_on_wow64_ = (base::win::OSInfo::GetInstance()->wow64_status() ==
@@ -183,9 +186,55 @@ void NaClProcessHost::OnChildDied() {
   BrowserChildProcessHost::OnChildDied();
 }
 
+FilePath::StringType NaClProcessHost::GetIrtLibraryFilename() {
+  bool on_x86_64 = running_on_wow64_;
+#if defined(__x86_64__)
+  on_x86_64 = true;
+#endif
+  if (on_x86_64) {
+    return FILE_PATH_LITERAL("nacl_irt_x86_64.nexe");
+  } else {
+    return FILE_PATH_LITERAL("nacl_irt_x86_32.nexe");
+  }
+}
+
 void NaClProcessHost::OnProcessLaunched() {
+  // TODO(mseaborn): Opening the IRT file every time a NaCl process is
+  // launched probably does not work with auto-update on Linux.  We
+  // might need to open the file on startup.  If so, we would need to
+  // ensure that NaCl's ELF loader does not use lseek() on the shared
+  // IRT file descriptor, otherwise there would be a race condition.
+  FilePath plugin_dir;
+  if (!PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &plugin_dir)) {
+    LOG(ERROR) << "Failed to locate the plugins directory";
+    delete this;
+    return;
+  }
+  FilePath irt_path = plugin_dir.Append(GetIrtLibraryFilename());
+  base::FileUtilProxy::CreateOrOpenCallback* callback =
+      callback_factory_.NewCallback(&NaClProcessHost::OpenIrtFileDone);
+  if (!base::FileUtilProxy::CreateOrOpen(
+           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+           irt_path,
+           base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+           callback)) {
+    delete callback;
+    delete this;
+  }
+}
+
+void NaClProcessHost::OpenIrtFileDone(base::PlatformFileError error_code,
+                                      base::PassPlatformFile file,
+                                      bool created) {
   std::vector<nacl::FileDescriptor> handles_for_renderer;
   base::ProcessHandle nacl_process_handle;
+  bool have_irt_file = false;
+  if (base::PLATFORM_FILE_OK == error_code) {
+    internal_->sockets_for_sel_ldr.push_back(file.ReleaseValue());
+    have_irt_file = true;
+  } else {
+    LOG(ERROR) << "Failed to open the NaCl IRT library file";
+  }
 
   for (size_t i = 0; i < internal_->sockets_for_renderer.size(); i++) {
 #if defined(OS_WIN)
@@ -196,9 +245,9 @@ void NaClProcessHost::OnProcessLaunched() {
                         internal_->sockets_for_renderer[i]),
                     chrome_render_message_filter_->peer_handle(),
                     &handle_in_renderer,
-                    GENERIC_READ | GENERIC_WRITE,
+                    0,  // Unused given DUPLICATE_SAME_ACCESS.
                     FALSE,
-                    DUPLICATE_CLOSE_SOURCE);
+                    DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS);
     handles_for_renderer.push_back(
         reinterpret_cast<nacl::FileDescriptor>(handle_in_renderer));
 #else
@@ -235,10 +284,6 @@ void NaClProcessHost::OnProcessLaunched() {
   reply_msg_ = NULL;
   internal_->sockets_for_renderer.clear();
 
-  SendStartMessage();
-}
-
-void NaClProcessHost::SendStartMessage() {
   std::vector<nacl::FileDescriptor> handles_for_sel_ldr;
   for (size_t i = 0; i < internal_->sockets_for_sel_ldr.size(); i++) {
 #if defined(OS_WIN)
@@ -248,8 +293,9 @@ void NaClProcessHost::SendStartMessage() {
                              internal_->sockets_for_sel_ldr[i]),
                          handle(),
                          &channel,
-                         GENERIC_READ | GENERIC_WRITE,
-                         FALSE, DUPLICATE_CLOSE_SOURCE)) {
+                         0,  // Unused given DUPLICATE_SAME_ACCESS.
+                         FALSE,
+                         DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
       return;
     }
     handles_for_sel_ldr.push_back(
@@ -286,7 +332,7 @@ void NaClProcessHost::SendStartMessage() {
   handles_for_sel_ldr.push_back(memory_fd);
 #endif
 
-  Send(new NaClProcessMsg_Start(handles_for_sel_ldr));
+  Send(new NaClProcessMsg_Start(handles_for_sel_ldr, have_irt_file));
   internal_->sockets_for_sel_ldr.clear();
 }
 

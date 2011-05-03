@@ -148,6 +148,15 @@
         'chrome_exe_target': 1,
         'use_system_xdg_utils%': 0,
       },
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)',
+          'files': [
+            '../native_client/irt_binaries/nacl_irt_x86_32.nexe',
+            '../native_client/irt_binaries/nacl_irt_x86_64.nexe',
+          ],
+        },
+      ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'actions': [

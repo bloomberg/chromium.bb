@@ -15,6 +15,11 @@
 #include "content/renderer/renderer_sandbox_support_linux.h"
 #endif
 
+#if defined(OS_WIN)
+#include <fcntl.h>
+#include <io.h>
+#endif
+
 #if defined(OS_MACOSX)
 namespace {
 
@@ -65,6 +70,7 @@ typedef int NaClHandle;
 // LOG_FATAL (from base/logging.h).
 extern "C" int NaClMainForChromium(int handle_count, const NaClHandle* handles,
                                    int debug);
+extern "C" void NaClSetIrtFileDesc(int fd);
 
 NaClLauncherThread::NaClLauncherThread(bool debug) {
   debug_enabled_ = debug ? 1 : 0;
@@ -87,7 +93,8 @@ bool NaClLauncherThread::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void NaClLauncherThread::OnStartSelLdr(
-    std::vector<nacl::FileDescriptor> handles) {
+    std::vector<nacl::FileDescriptor> handles,
+    bool have_irt_file) {
 #if defined(OS_LINUX)
   nacl::SetCreateMemoryObjectFunc(
       renderer_sandbox_support::MakeSharedMemorySegmentViaIPC);
@@ -97,6 +104,24 @@ void NaClLauncherThread::OnStartSelLdr(
   g_shm_fd = nacl::ToNativeHandle(handles[handles.size() - 1]);
   handles.pop_back();
 #endif
+
+  if (have_irt_file) {
+    CHECK(handles.size() >= 1);
+    NaClHandle irt_handle = nacl::ToNativeHandle(handles[handles.size() - 1]);
+    handles.pop_back();
+#if defined(OS_WIN)
+    int irt_desc = _open_osfhandle(reinterpret_cast<intptr_t>(irt_handle),
+                                   _O_RDWR | _O_BINARY);
+    if (irt_desc < 0) {
+      LOG(ERROR) << "_open_osfhandle() failed";
+      return;
+    }
+#else
+    int irt_desc = irt_handle;
+#endif
+    NaClSetIrtFileDesc(irt_desc);
+  }
+
   scoped_array<NaClHandle> array(new NaClHandle[handles.size()]);
   for (size_t i = 0; i < handles.size(); i++) {
     array[i] = nacl::ToNativeHandle(handles[i]);

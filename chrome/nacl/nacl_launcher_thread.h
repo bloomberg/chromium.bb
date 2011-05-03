@@ -21,7 +21,8 @@ class NaClLauncherThread : public ChildThread {
 
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
-  void OnStartSelLdr(std::vector<nacl::FileDescriptor> handles);
+  void OnStartSelLdr(std::vector<nacl::FileDescriptor> handles,
+                     bool have_irt_file);
 
   int debug_enabled_;
 
