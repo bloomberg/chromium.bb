@@ -16,7 +16,6 @@
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/accessibility/browser_accessibility_cocoa.h"
-#include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/browser_trial.h"
 #import "chrome/browser/renderer_host/text_input_client_mac.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
@@ -641,12 +640,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
                   initWithRenderWidgetHostViewMac:this] autorelease];
   render_widget_host_->set_view(this);
-
-  // Turn on accessibility only if VoiceOver is running.
-  if (IsVoiceOverRunning()) {
-    BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
-    render_widget_host_->EnableRendererAccessibility();
-  }
 
   if (render_widget_host_->IsRenderView()) {
     new SpellCheckRenderViewObserver(
@@ -1344,12 +1337,6 @@ void RenderWidgetHostViewMac::ShutdownHost() {
   shutdown_factory_.RevokeAll();
   render_widget_host_->Shutdown();
   // Do not touch any members at this point, |this| has been deleted.
-}
-
-bool RenderWidgetHostViewMac::IsVoiceOverRunning() {
-  NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
-  [user_defaults addSuiteNamed:@"com.apple.universalaccess"];
-  return 1 == [user_defaults integerForKey:@"voiceOverOnOffKey"];
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetViewCocoaBounds() const {
