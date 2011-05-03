@@ -608,6 +608,11 @@ class MakefileWriter:
     if self.type in ('static_library', 'shared_library'):
       target_link_deps[qualified_target] = [self.output]
 
+    # Currently any versions have the same effect, but in future the behavior
+    # could be different.
+    if self.generator_flags.get('android_ndk_version', None):
+      self.WriteAndroidNdkModuleRule(self.target, all_sources, link_deps)
+
     self.fp.close()
 
 
