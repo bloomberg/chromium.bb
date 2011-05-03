@@ -143,7 +143,6 @@ void PrerenderContents::StartPrerenderingOld(
                           g_browser_process->resource_dispatcher_host(),
                           process_id, view_id));
 
-
   // Close ourselves when the application is shutting down.
   registrar_.Add(this, NotificationType::APP_TERMINATING,
                  NotificationService::AllSources());
@@ -168,7 +167,7 @@ void PrerenderContents::StartPrerenderingOld(
 
   // Register for redirect notifications sourced from |this|.
   registrar_.Add(this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
-                 Source<RenderViewHostDelegate>(this));
+                 Source<RenderViewHostDelegate>(GetRVHDelegate()));
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
@@ -227,9 +226,11 @@ void PrerenderContents::StartPrerendering(
     prerender_contents_->view()->SizeContents(tab_bounds.size());
   }
 
-  /*
-  int process_id = render_view_host_->process()->id();
-  int view_id = render_view_host_->routing_id();
+  int process_id;
+  int view_id;
+  CHECK(GetChildId(&process_id));
+  CHECK(GetRouteId(&view_id));
+
   std::pair<int, int> process_view_pair = std::make_pair(process_id, view_id);
   NotificationService::current()->Notify(
       NotificationType::PRERENDER_CONTENTS_STARTED,
@@ -245,10 +246,40 @@ void PrerenderContents::StartPrerendering(
       NewRunnableFunction(&AddChildRoutePair,
                           g_browser_process->resource_dispatcher_host(),
                           process_id, view_id));
-  */
+
+  // Close ourselves when the application is shutting down.
+  registrar_.Add(this, NotificationType::APP_TERMINATING,
+                 NotificationService::AllSources());
+
+  // Register for our parent profile to shutdown, so we can shut ourselves down
+  // as well (should only be called for OTR profiles, as we should receive
+  // APP_TERMINATING before non-OTR profiles are destroyed).
+  // TODO(tburkard): figure out if this is needed.
+  registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+                 Source<Profile>(profile_));
+
+  // Register to cancel if Authentication is required.
+  registrar_.Add(this, NotificationType::AUTH_NEEDED,
+                 NotificationService::AllSources());
+
+  registrar_.Add(this, NotificationType::AUTH_CANCELLED,
+                 NotificationService::AllSources());
+
+  // Register all responses to see if we should cancel.
+  registrar_.Add(this, NotificationType::DOWNLOAD_INITIATED,
+                 NotificationService::AllSources());
+
+  // Register for redirect notifications sourced from |this|.
+  registrar_.Add(this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
+                 Source<RenderViewHostDelegate>(GetRVHDelegate()));
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
+
+  RenderViewHost* rvh = prerender_contents_->render_view_host();
+  CHECK(rvh);
+  rvh->Send(new ViewMsg_SetIsPrerendering(rvh->routing_id(), true));
+
   new_contents->controller().LoadURL(prerender_url_,
                                      referrer_, PageTransition::LINK);
 }
@@ -421,7 +452,7 @@ void PrerenderContents::Observe(NotificationType type,
       LoginHandler* handler = details_ptr->handler();
       DCHECK(handler != NULL);
       RenderViewHostDelegate* delegate = handler->GetRenderViewHostDelegate();
-      if (controller == NULL && delegate == this) {
+      if (controller == NULL && delegate == GetRVHDelegate()) {
         Destroy(FINAL_STATUS_AUTH_NEEDED);
         return;
       }
@@ -436,7 +467,7 @@ void PrerenderContents::Observe(NotificationType type,
       DCHECK(NotificationService::NoDetails() == details);
       RenderViewHost* render_view_host = Source<RenderViewHost>(source).ptr();
       CHECK(render_view_host != NULL);
-      if (render_view_host->delegate() == this) {
+      if (render_view_host->delegate() == GetRVHDelegate()) {
         Destroy(FINAL_STATUS_DOWNLOAD);
         return;
       }
@@ -449,7 +480,7 @@ void PrerenderContents::Observe(NotificationType type,
       // to be remembered for future matching, and if it redirects to
       // an https resource, it needs to be canceled. If a subresource
       // is redirected, nothing changes.
-      DCHECK(Source<RenderViewHostDelegate>(source).ptr() == this);
+      DCHECK(Source<RenderViewHostDelegate>(source).ptr() == GetRVHDelegate());
       ResourceRedirectDetails* resource_redirect_details =
           Details<ResourceRedirectDetails>(details).ptr();
       CHECK(resource_redirect_details);
@@ -670,6 +701,16 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
 
 TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
   return prerender_contents_.release();
+}
+
+RenderViewHostDelegate* PrerenderContents::GetRVHDelegate() {
+  if (UseTabContents()) {
+    if (!prerender_contents_.get())
+      return NULL;
+    return prerender_contents_->tab_contents();
+  } else {
+    return this;
+  }
 }
 
 }  // namespace prerender
