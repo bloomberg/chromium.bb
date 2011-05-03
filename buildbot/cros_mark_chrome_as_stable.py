@@ -352,9 +352,10 @@ def main():
   else:
     Info('No stable candidate found.')
 
+  tracking_branch = 'remotes/m/%s' % os.path.basename(options.tracking_branch)
   os.chdir(overlay_dir)
   work_branch = cros_mark_as_stable.GitBranch(
-      cros_mark_as_stable.STABLE_BRANCH_NAME, options.tracking_branch)
+      cros_mark_as_stable.STABLE_BRANCH_NAME, tracking_branch)
   work_branch.CreateBranch()
   chrome_version_atom = MarkChromeEBuildAsStable(
       stable_candidate, unstable_ebuild, chrome_rev, version_to_uprev,

@@ -61,8 +61,8 @@ def _RepoSync(buildroot, retries=_DEFAULT_RETRIES):
            '-c',
            'git',
            'config',
-           'url.ssh://git@gitrw.chromium.org:9222.insteadof',
-           'http://git.chromium.org/git'
+           'url.ssh://gerrit.chromium.org:29418.insteadof',
+           'http://git.chromium.org'
           ], cwd=buildroot)
       retries = 0
     except:
