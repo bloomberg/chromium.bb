@@ -84,6 +84,11 @@ UNINITIALIZED READ
 ...
 *!CreateWindow*
 
+POSSIBLE LEAK
+GDI32.dll!GetBitmapBits
+GDI32.dll!CreateFontIndirectExW
+GDI32.dll!CreateFontIndirectW
+
 # http://code.google.com/p/drmemory/issues/detail?id=18
 UNINITIALIZED READ
 ...
@@ -310,11 +315,6 @@ GDI32.dll!CreateICW
 # http://code.google.com/p/drmemory/issues/detail?id=362
 UNINITIALIZED READ
 USER32.dll!UnregisterClass*
-...
-ntdll.dll!RtlDestroyEnvironment
-KERNEL32.dll!IsValidLocale
-...
-*!__crtExitProcess
 
 ############################
 # TODO(timurrrr): investigate these
@@ -466,6 +466,11 @@ UNADDRESSABLE ACCESS
 base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
 ############################
+# Benign issues in Chromium
+LEAK
+*!operator new
+*!base::*Histogram::FactoryGet
+
 # Real issues in Chromium
 
 # http://crbug.com/57266 (1)
