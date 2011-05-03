@@ -4097,7 +4097,6 @@ void TestingAutomationProvider::FillAutofillProfile(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
   ListValue* profiles = NULL;
   ListValue* cards = NULL;
 
@@ -4118,14 +4117,15 @@ void TestingAutomationProvider::FillAutofillProfile(
     credit_cards = GetCreditCardsFromList(*cards, &error_mesg);
   }
   if (!error_mesg.empty()) {
-    reply.SendError(error_mesg);
+    AutomationJSONReply(this, reply_message).SendError(error_mesg);
     return;
   }
 
   // Save the AutofillProfiles.
   int tab_index = 0;
   if (!args->GetInteger("tab_index", &tab_index)) {
-    reply.SendError("Invalid or missing tab_index integer");
+    AutomationJSONReply(this, reply_message).SendError(
+        "Invalid or missing tab_index integer");
     return;
   }
 
@@ -4135,19 +4135,29 @@ void TestingAutomationProvider::FillAutofillProfile(
     PersonalDataManager* pdm = tab_contents->profile()
         ->GetPersonalDataManager();
     if (pdm) {
-      if (profiles)
-        pdm->SetProfiles(&autofill_profiles);
-      if (cards)
-        pdm->SetCreditCards(&credit_cards);
+      if (profiles || cards) {
+        // This observer will delete itself.
+        AutofillChangedObserver* observer = new AutofillChangedObserver(
+            this, reply_message, autofill_profiles.size(), credit_cards.size());
+        observer->Init();
+
+        if (profiles)
+          pdm->SetProfiles(&autofill_profiles);
+        if (cards)
+          pdm->SetCreditCards(&credit_cards);
+
+        return;
+      }
     } else {
-      reply.SendError("No PersonalDataManager.");
+      AutomationJSONReply(this, reply_message).SendError(
+          "No PersonalDataManager.");
       return;
     }
   } else {
-    reply.SendError("No tab at that index.");
+    AutomationJSONReply(this, reply_message).SendError("No tab at that index.");
     return;
   }
-  reply.SendSuccess(NULL);
+  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
 // Sample json output: { "success": true }
@@ -4850,8 +4860,9 @@ void TestingAutomationProvider::SendWebkitKeyEvent(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   NativeWebKeyboardEvent event;
-  // BuildWebKeyEventFromArgs handles telling what when wrong and sending
-  // the reply message, if it failed we just have to stop here.
+  // In the event of an error, BuildWebKeyEventFromArgs handles telling what
+  // went wrong and sending the reply message; if it fails, we just have to
+  // stop here.
   std::string error;
   if (!BuildWebKeyEventFromArgs(args, &error, &event)) {
     AutomationJSONReply(this, reply_message).SendError(error);

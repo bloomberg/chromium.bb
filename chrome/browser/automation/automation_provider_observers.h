@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
@@ -1163,7 +1164,7 @@ class AppLaunchObserver : public NotificationObserver {
 };
 
 // Allows automation provider to wait until the autocomplete edit
-// has received focus
+// has received focus.
 class AutocompleteEditFocusedObserver : public NotificationObserver {
  public:
   AutocompleteEditFocusedObserver(AutomationProvider* automation,
@@ -1182,6 +1183,54 @@ class AutocompleteEditFocusedObserver : public NotificationObserver {
   AutocompleteEditModel* autocomplete_edit_model_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditFocusedObserver);
+};
+
+// Observes when a specified number of autofill profiles and credit cards have
+// been changed in the WebDataService.  The notifications are sent on
+// BrowserThread::DB, the thread that interacts with the database.
+class AutofillChangedObserver
+    : public base::RefCountedThreadSafe<
+          AutofillChangedObserver,
+          BrowserThread::DeleteOnUIThread>,
+      public NotificationObserver {
+ public:
+  AutofillChangedObserver(AutomationProvider* automation,
+                          IPC::Message* reply_message,
+                          int num_profiles,
+                          int num_credit_cards);
+  virtual ~AutofillChangedObserver();
+
+  // Schedules a task on the BrowserThread::DB thread to register the
+  // appropriate observers.
+  virtual void Init();
+
+  // NotificationObserver interface.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class DeleteTask<AutofillChangedObserver>;
+
+  // Registers the appropriate observers.  Called on thread BrowserThread::DB.
+  void RegisterObserversTask();
+
+  // Sends the |reply_message_| to |automation_| indicating we're done.  Called
+  // on thread BrowserThread::UI (the main browser UI thread).
+  void IndicateDone();
+
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  NotificationRegistrar registrar_;
+  int num_profiles_;
+  int num_credit_cards_;
+
+  // Used to ensure that thread BrowserThread::UI waits for thread
+  // BrowserThread::DB to finish registering observers before proceeding.
+  base::WaitableEvent done_event_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillChangedObserver);
 };
 
 // Allows the automation provider to wait until all the notification

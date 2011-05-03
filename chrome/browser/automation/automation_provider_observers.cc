@@ -2087,6 +2087,77 @@ void AutocompleteEditFocusedObserver::Observe(
   delete this;
 }
 
+AutofillChangedObserver::AutofillChangedObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    int num_profiles,
+    int num_credit_cards)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message),
+      num_profiles_(num_profiles),
+      num_credit_cards_(num_credit_cards),
+      done_event_(false, false) {
+  DCHECK(num_profiles_ >= 0 && num_credit_cards_ >= 0);
+  AddRef();
+}
+
+AutofillChangedObserver::~AutofillChangedObserver() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+void AutofillChangedObserver::Init() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::DB,
+      FROM_HERE,
+      NewRunnableMethod(this, &AutofillChangedObserver::RegisterObserversTask));
+  done_event_.Wait();
+}
+
+void AutofillChangedObserver::RegisterObserversTask() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  registrar_.Add(this, NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::AUTOFILL_PROFILE_CHANGED,
+                 NotificationService::AllSources());
+  done_event_.Signal();
+}
+
+void AutofillChangedObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+
+  if (type.value == NotificationType::AUTOFILL_CREDIT_CARD_CHANGED) {
+    num_credit_cards_--;
+  } else if (type.value == NotificationType::AUTOFILL_PROFILE_CHANGED) {
+    num_profiles_--;
+  } else {
+    NOTREACHED();
+  }
+
+  if (num_profiles_ == 0 && num_credit_cards_ == 0) {
+    registrar_.RemoveAll();  // Must be done from thread BrowserThread::DB.
+
+    // Notify thread BrowserThread::UI that we're done listening for all
+    // relevant autofill notifications.
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        NewRunnableMethod(this, &AutofillChangedObserver::IndicateDone));
+  }
+}
+
+void AutofillChangedObserver::IndicateDone() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (automation_) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendSuccess(NULL);
+  }
+  Release();
+}
+
 namespace {
 
 // Returns whether the notification's host has a non-null process handle.
@@ -2222,15 +2293,17 @@ void InputEventAckNotificationObserver::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   Details<int> request_details(details);
-  // If the event type matches for "count" times, replies with a JSON message.
-  if (event_type_ == *request_details.ptr() && --count_ == 0) {
-    if (automation_) {
+  // If the event type matches for |count_| times, replies with a JSON message.
+  if (event_type_ == *request_details.ptr()) {
+    if (--count_ == 0 && automation_) {
       AutomationJSONReply(automation_,
                           reply_message_.release()).SendSuccess(NULL);
+      delete this;
     }
-    delete this;
   } else {
-    LOG(WARNING) << "Ignoring unexpected event types.";
+    LOG(WARNING) << "Ignoring unexpected event type: "
+                 << *request_details.ptr() << " (expected: " << event_type_
+                 << ")";
   }
 }
 
