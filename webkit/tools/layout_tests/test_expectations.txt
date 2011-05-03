@@ -18,3 +18,6 @@ BUGWK59782 WIN MAC LINUX DEBUG CPU : svg/filters/feDropShadow.svg = IMAGE TIMEOU
 // The following tests only fail in Windows.
 BUG_HCLAM WIN : svg/text/text-fonts-01-t.svg = IMAGE
 BUG_HCLAM WIN : svg/text/text-intro-05-t.svg = IMAGE
+
+// Failure introduced by Chromium r83848.
+BUG_HCLAM : fast/url/ipv6.html = TEXT
