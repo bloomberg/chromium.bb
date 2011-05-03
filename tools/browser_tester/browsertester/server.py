@@ -145,21 +145,19 @@ class Server(BaseHTTPServer.HTTPServer):
 
   def TestingBegun(self, timeout):
     self.test_in_progress = True
+    # self.timeout does not affect Python 2.5.
     self.timeout = timeout
     self.ResetTimeout()
 
   def ResetTimeout(self):
-    self.timeout_count = 0
+    self.last_activity = time.time()
 
   def TestingEnded(self):
     self.test_in_progress = False
 
-  def handle_timeout(self):
-    self.timeout_count += 1
-
   def TimedOut(self, total_time):
     return (total_time >= 0.0 and
-            self.timeout_count * self.timeout >= total_time)
+            (time.time() - self.last_activity) >= total_time)
 
 
 def Create(host, port):

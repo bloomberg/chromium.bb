@@ -6,6 +6,8 @@
 import optparse
 import os.path
 import sys
+import thread
+import time
 
 # Allow the import of third party modules
 script_dir = os.path.dirname(__file__)
@@ -107,6 +109,13 @@ def Run(url, options):
   browser.Run('http://%s:%d/%s' % (host, port, url))
   server.TestingBegun(0.125)
 
+  # In Python 2.5, server.handle_request may block indefinitely.  Serving pages
+  # is done in its own thread so the main thread can time out as needed.
+  def serve():
+    while server.test_in_progress or options.interactive:
+      server.handle_request()
+  thread.start_new_thread(serve, ())
+
   try:
     while server.test_in_progress or options.interactive:
       if not browser.IsRunning():
@@ -117,7 +126,8 @@ def Run(url, options):
                              options.timeout)
         break
       else:
-        server.handle_request()
+        # If Python 2.5 support is dropped, stick server.handle_request() here.
+        time.sleep(0.125)
   finally:
     browser.Cleanup()
     server.server_close()
