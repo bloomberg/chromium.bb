@@ -172,15 +172,6 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_SetFunctionNames,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_ActivateExtension,
                      std::string /* extension_id */)
 
-// TODO(aa): UpdatePageActions might be replaced with just sending additional
-// data in ExtensionLoaded. See: crbug.com/70516.
-
-// Tell the renderer process all known page action ids for a particular
-// extension.
-IPC_MESSAGE_CONTROL2(ExtensionMsg_UpdatePageActions,
-                     std::string /* extension_id */,
-                     std::vector<std::string> /* page_action_ids */)
-
 // Notifies the renderer that an extension was loaded in the browser.
 IPC_MESSAGE_CONTROL1(ExtensionMsg_Loaded,
                      ExtensionMsg_Loaded_Params)

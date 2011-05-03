@@ -14,10 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
@@ -231,18 +228,6 @@ void ExtensionProcessManager::RegisterExtensionProcess(
   // reused from a dead renderer.
   DCHECK(it == process_ids_.end());
   process_ids_[extension_id] = process_id;
-
-  ExtensionService* extension_service =
-      browsing_instance_->profile()->GetExtensionService();
-
-  std::vector<std::string> page_action_ids;
-  const Extension* extension =
-      extension_service->GetExtensionById(extension_id, false);
-  if (extension->page_action())
-    page_action_ids.push_back(extension->page_action()->id());
-
-  RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
-  rph->Send(new ExtensionMsg_UpdatePageActions(extension_id, page_action_ids));
 }
 
 void ExtensionProcessManager::UnregisterExtensionProcess(int process_id) {

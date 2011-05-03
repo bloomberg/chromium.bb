@@ -35,6 +35,8 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
     extension_manifest_keys::kName,
     extension_manifest_keys::kVersion,
     extension_manifest_keys::kIcons,
+    extension_manifest_keys::kPageAction,
+    extension_manifest_keys::kPageActions,
     extension_manifest_keys::kPermissions,
     extension_manifest_keys::kApp
   };
