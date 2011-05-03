@@ -111,9 +111,10 @@ cr.define('options', function() {
     },
 
     showCancelWarning_: function() {
-      $('cancel-warning-box').style.display = "block";
+      $('cancel-warning-box').hidden = false;
       $('passphrase-ok').disabled = true;
       $('passphrase-cancel').disabled = true;
+      $('cancel-no-button').focus();
     },
 
     sendPassphraseAndClose_: function() {
@@ -205,14 +206,14 @@ cr.define('options', function() {
       if (this.getRadioCheckedValue_() != "explicit" || f.option[0].disabled)
         return true;
 
-      if (f.passphrase.value.length == 0) {
+      var customPassphrase = $('customPassphrase');
+      if (customPassphrase.value.length == 0) {
         emptyError.style.display = "block";
         return false;
       }
 
       var confirmPassphrase = $('confirm-passphrase');
-      var passphrase = $('passphrase');
-      if (confirmPassphrase.value != passphrase.value) {
+      if (confirmPassphrase.value != customPassphrase.value) {
         mismatchError.style.display = "block";
         return false;
       }
@@ -221,7 +222,7 @@ cr.define('options', function() {
     },
 
     hideCancelWarning_: function() {
-      $('cancel-warning-box').style.display = "none";
+      $('cancel-warning-box').hidden = true;
       $('passphrase-ok').disabled = false;
       $('passphrase-cancel').disabled = false;
     },
@@ -242,6 +243,7 @@ cr.define('options', function() {
 
       var syncAll =
         document.getElementById('sync-select-datatypes').selectedIndex == 0;
+      var customPassphrase = $('custom-passphrase');
 
       // These values need to be kept in sync with where they are read in
       // SyncSetupFlow::GetDataTypeChoiceData().
@@ -257,7 +259,7 @@ cr.define('options', function() {
           "syncApps": syncAll || f.appsCheckbox.checked,
           "syncSessions": syncAll || f.sessionsCheckbox.checked,
           "usePassphrase": (this.getRadioCheckedValue_() == 'explicit'),
-          "passphrase": f.passphrase.value
+          "passphrase": customPassphrase.value
       });
       chrome.send("Configure", [result]);
     },
@@ -370,6 +372,8 @@ cr.define('options', function() {
         if (syncEverything == false || syncAllDataTypes == false ||
             this.usePassphrase_) {
           this.showCustomizePage_(syncAllDataTypes);
+        } else {
+          this.showSyncEverythingPage_();
         }
       }
     },
@@ -453,7 +457,7 @@ cr.define('options', function() {
         $('incorrectPassphrase').style.display = "block";
       }
 
-      $('passphrase-ok').focus();
+      $('passphrase').focus();
     },
 
     setElementDisplay_: function(id, display) {
@@ -632,6 +636,21 @@ cr.define('options', function() {
 
     showSuccessAndSettingUp_: function() {
       $('sign-in').value = localStrings.getString('settingup');
+    },
+
+    /** @inheritDoc */
+    shouldClose: function() {
+      if (!$('cancel-warning-box').hidden) {
+        chrome.send('PassphraseCancel', ['']);
+        return true;
+      } else if (!$('sync-setup-passphrase').classList.contains('hidden')) {
+        // The Passphrase page is showing, and the use has pressed escape.
+        // Activate the cancel logic in this case.
+        this.showCancelWarning_();
+        return false;
+      }
+
+      return true;
     },
   };
 

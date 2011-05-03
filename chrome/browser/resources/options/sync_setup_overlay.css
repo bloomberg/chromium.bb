@@ -132,7 +132,6 @@
 
 .overlay-warning {
   position: absolute;
-  display: none;
   left: 25px;
   right: 25px;
   top: 100px;

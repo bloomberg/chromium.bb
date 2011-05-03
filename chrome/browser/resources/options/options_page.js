@@ -220,6 +220,15 @@ cr.define('options', function() {
   };
 
   /**
+   * @return {boolean} True if the visible overlay should be closed.
+   * @private
+   */
+  OptionsPage.shouldCloseOverlay_ = function() {
+    var overlay = this.getVisibleOverlay_();
+    return overlay && overlay.shouldClose();
+  };
+
+  /**
    * Returns the currently visible overlay, or null if no page is visible.
    * @return {OptionPage} The visible overlay.
    */
@@ -711,10 +720,12 @@ cr.define('options', function() {
   OptionsPage.keyDownEventHandler_ = function(event) {
     // Close the top overlay or sub-page on esc.
     if (event.keyCode == 27) {  // Esc
-      if (this.isOverlayVisible_())
-        this.closeOverlay();
-      else
+      if (this.isOverlayVisible_()) {
+        if (this.shouldCloseOverlay_())
+          this.closeOverlay();
+      } else {
         this.closeTopSubPage_();
+      }
     }
   };
 
@@ -965,6 +976,15 @@ cr.define('options', function() {
      * @return {boolean} True if the page should be shown
      */
     canShowPage: function() {
+      return true;
+    },
+
+    /**
+     * Whether an overlay should be closed. Used by overlay implementation to
+     * handle special closing behaviors.
+     * @return {boolean} True if the overlay should be closed.
+     */
+    shouldClose: function() {
       return true;
     },
   };

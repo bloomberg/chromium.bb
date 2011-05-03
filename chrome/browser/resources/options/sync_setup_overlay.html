@@ -328,7 +328,7 @@
                 <span>.</span>
               </div>
               <div class="sync-custom-passphrase-input">
-                <input id="passphrase" type="password"
+                <input id="custom-passphrase" type="password"
                     i18n-values="placeholder:passphraseLabel">
               </div>
               <div class="sync-custom-passphrase-input">
@@ -378,12 +378,12 @@
         <span id="sync-passphrase-warning" i18n-content="passphraseRecover">
         </span> <a href="http://google.com/dashboard" target="_blank"
             i18n-content="cleardatalink"></a>
-        <div class="overlay-warning" id="cancel-warning-box">
+        <div class="overlay-warning" id="cancel-warning-box" hidden>
           <div id="cancel-warning-header" i18n-content="cancelWarningHeader">
           </div>
           <div id="cancel-warning" i18n-content="cancelWarning"></div>
-          <input id="cancel-no-button" type="submit" i18n-values="value:no">
           <input id="cancel-yes-button" type="submit" i18n-values="value:yes">
+          <input id="cancel-no-button" type="submit" i18n-values="value:no">
         </div>
       </form>
     </div>
