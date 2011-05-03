@@ -450,6 +450,17 @@ class ArchiveStage(BuilderStage):
         self._options.buildnumber, BuilderStage.test_tarball,
         self._options.debug)
 
+    if self._build_config['push_image']:
+      # XXX pushimage --board=$BOARD --branch=$SHA1 \
+      #        $lnolatest $ARCHIVE_DIR/$FINALARCHIVE
+      pass
+
+    if self._build_config['upload_symbols']:
+      # XXX UploadSymbols
+      #  ./enter_chroot.sh -- ./upload_symbols --board=$BOARD
+      #     --yes $DASH_OFFICIAL --verbose
+      pass
+
 
 class PushChangesStage(BuilderStage):
   """Pushes pfq and prebuilt url changes to git."""

@@ -58,6 +58,9 @@ test_mod -- Create a test mod image for archival.
 factory_install_mod -- Create a factory install image for archival.
 factory_test_mod -- Create a factory test image for archival.
 
+push_image -- Do we push a final release image to chromeos-images.
+upload_symbols -- Do we upload debug symbols.
+
 git_url -- git repository URL for our manifests.
            External: http://git.chromium.org/chromiumos/manifest.git
            Internal:
@@ -101,6 +104,9 @@ default = {
   'test_mod' : False,
   'factory_install_mod' : False,
   'factory_test_mod' : False,
+
+  'push_image' : False,
+  'upload_symbols' : False,
 
   'git_url' : 'http://git.chromium.org/chromiumos/manifest.git',
   'manifest_version' : None,
@@ -171,6 +177,9 @@ release = {
   'factory_install_mod' : True,
   'factory_test_mod' : True,
 
+  'push_image' : True,
+  'upload_symbols' : True,
+
   'gs_path' : None,
 
 
@@ -202,6 +211,8 @@ internal_full = {
   'factory_test_mod' : True,
 
   'git_url' : 'ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal',
+
+  'gs_path' : None,
 
   # cbuild --official
 }
