@@ -132,8 +132,6 @@ include_rules = [
 
   "+chrome/common/net/url_fetcher.h",
 
-  "+chrome/common/render_view_commands.h",
-
   "+chrome/common/sandbox_policy.h",
 
   "+chrome/common/security_style.h",

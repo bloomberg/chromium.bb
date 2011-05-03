@@ -296,6 +296,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
                               int gpu_host_id,
                               uint64 swap_buffers_count);
 
+  void ToggleSpellCheck(bool enabled, bool checked);
+
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
 
@@ -336,6 +338,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   // Helper class for managing instances of accelerated plug-ins.
   AcceleratedSurfaceContainerManagerMac plugin_container_manager_;
+
+  // Used for continuous spell checking.
+  bool spellcheck_enabled_;
+  bool spellcheck_checked_;
 
  private:
   // Returns whether this render view is a popup (autocomplete window).

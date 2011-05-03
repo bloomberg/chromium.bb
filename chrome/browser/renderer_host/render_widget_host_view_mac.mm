@@ -32,6 +32,7 @@
 #include "content/browser/renderer_host/backing_store_mac.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/edit_command.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -177,6 +178,35 @@ NSWindow* ApparentWindowForView(NSView* view) {
 
   return enclosing_window;
 }
+
+// Filters the message sent to RenderViewHost to know if spellchecking is
+// enabled or not for the currently focused element.
+class SpellCheckRenderViewObserver : public RenderViewHostObserver {
+ public:
+  SpellCheckRenderViewObserver(RenderViewHost* host,
+                               RenderWidgetHostViewMac* view)
+    : RenderViewHostObserver(host),
+      view_(view) {
+  }
+
+ private:
+  // RenderViewHostObserver implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(SpellCheckRenderViewObserver, message)
+      IPC_MESSAGE_HANDLER(SpellCheckHostMsg_ToggleSpellCheck,
+                          OnToggleSpellCheck)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+
+  void OnToggleSpellCheck(bool enabled, bool checked) {
+    view_->ToggleSpellCheck(enabled, checked);
+  }
+
+  RenderWidgetHostViewMac* view_;
+};
 
 }  // namespace
 
@@ -598,6 +628,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       about_to_validate_and_paint_(false),
       call_set_needs_display_in_rect_pending_(false),
       text_input_type_(WebKit::WebTextInputTypeNone),
+      spellcheck_enabled_(false),
+      spellcheck_checked_(false),
       is_loading_(false),
       is_hidden_(false),
       shutdown_factory_(this),
@@ -614,6 +646,11 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   if (IsVoiceOverRunning()) {
     BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
     render_widget_host_->EnableRendererAccessibility();
+  }
+
+  if (render_widget_host_->IsRenderView()) {
+    new SpellCheckRenderViewObserver(
+        static_cast<RenderViewHost*>(widget), this);
   }
 }
 
@@ -1252,6 +1289,11 @@ void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
         new GpuMsg_AcceleratedSurfaceBuffersSwappedACK(
             renderer_id, route_id, swap_buffers_count));
   }
+}
+
+void RenderWidgetHostViewMac::ToggleSpellCheck(bool enabled, bool checked) {
+  spellcheck_enabled_ = enabled;
+  spellcheck_checked_ = checked;
 }
 
 void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {
@@ -2049,31 +2091,13 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   }
 
   if (action == @selector(toggleContinuousSpellChecking:)) {
-    RenderViewHost::CommandState state;
-    state.is_enabled = false;
-    state.checked_state = RENDER_VIEW_COMMAND_CHECKED_STATE_UNCHECKED;
-    if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-      state = static_cast<RenderViewHost*>(
-          renderWidgetHostView_->render_widget_host_)->
-              GetStateForCommand(RENDER_VIEW_COMMAND_TOGGLE_SPELL_CHECK);
-    }
     if ([(id)item respondsToSelector:@selector(setState:)]) {
       NSCellStateValue checked_state =
-          RENDER_VIEW_COMMAND_CHECKED_STATE_UNCHECKED;
-      switch (state.checked_state) {
-        case RENDER_VIEW_COMMAND_CHECKED_STATE_UNCHECKED:
-          checked_state = NSOffState;
-          break;
-        case RENDER_VIEW_COMMAND_CHECKED_STATE_CHECKED:
-          checked_state = NSOnState;
-          break;
-        case RENDER_VIEW_COMMAND_CHECKED_STATE_MIXED:
-          checked_state = NSMixedState;
-          break;
-      }
+          renderWidgetHostView_->spellcheck_checked_ ?
+              NSOnState : NSOffState;
       [(id)item setState:checked_state];
     }
-    return state.is_enabled;
+    return renderWidgetHostView_->spellcheck_enabled_;
   }
 
   return editCommand_helper_->IsMenuItemEnabled(action, self);

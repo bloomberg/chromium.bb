@@ -405,14 +405,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SendSerializedHtmlData,
 IPC_MESSAGE_CONTROL1(ViewHostMsg_ResourceTypeStats,
                      WebKit::WebCache::ResourceTypeStats)
 
-// Message sent from renderer to the browser to update the state of a command.
-// The |command| parameter is a RenderViewCommand. The |checked_state| parameter
-// is a CommandCheckedState.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_CommandStateChanged,
-                    int /* command */,
-                    bool /* is_enabled */,
-                    int /* checked_state */)
-
 
 // Notifies the browser of the language (ISO 639_1 code language, such as fr,
 // en, zh...) of the current page.

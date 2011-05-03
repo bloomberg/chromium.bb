@@ -358,22 +358,6 @@ int RenderViewHost::GetPendingRequestId() {
   return pending_request_id_;
 }
 
-RenderViewHost::CommandState RenderViewHost::GetStateForCommand(
-    RenderViewCommand command) const {
-  if (command != RENDER_VIEW_COMMAND_TOGGLE_SPELL_CHECK)
-    LOG(DFATAL) << "Unknown command " << command;
-
-  std::map<RenderViewCommand, CommandState>::const_iterator it =
-      command_states_.find(command);
-  if (it == command_states_.end()) {
-    CommandState state;
-    state.is_enabled = false;
-    state.checked_state = RENDER_VIEW_COMMAND_CHECKED_STATE_UNCHECKED;
-    return state;
-  }
-  return it->second;
-}
-
 void RenderViewHost::Stop() {
   Send(new ViewMsg_Stop(routing_id()));
 }
@@ -757,8 +741,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
 #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CommandStateChanged,
-                        OnCommandStateChanged)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
@@ -1440,25 +1422,3 @@ void RenderViewHost::OnMsgShowPopup(
   }
 }
 #endif
-
-void RenderViewHost::OnCommandStateChanged(int command,
-                                           bool is_enabled,
-                                           int checked_state) {
-  if (command != RENDER_VIEW_COMMAND_TOGGLE_SPELL_CHECK) {
-    LOG(DFATAL) << "Unknown command " << command;
-    return;
-  }
-
-  if (checked_state != RENDER_VIEW_COMMAND_CHECKED_STATE_UNCHECKED &&
-      checked_state != RENDER_VIEW_COMMAND_CHECKED_STATE_CHECKED &&
-      checked_state != RENDER_VIEW_COMMAND_CHECKED_STATE_MIXED) {
-    LOG(DFATAL) << "Invalid checked state " << checked_state;
-    return;
-  }
-
-  CommandState state;
-  state.is_enabled = is_enabled;
-  state.checked_state =
-      static_cast<RenderViewCommandCheckedState>(checked_state);
-  command_states_[static_cast<RenderViewCommand>(command)] = state;
-}

@@ -14,7 +14,6 @@
 #include "base/process_util.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/common/content_settings_types.h"
-#include "chrome/common/render_view_commands.h"
 #include "chrome/common/view_types.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/page_zoom.h"
@@ -201,12 +200,6 @@ class RenderViewHost : public RenderWidgetHost {
   // This is just needed in case the unload of the current page
   // hangs, in which case we need to swap to the pending RenderViewHost.
   int GetPendingRequestId();
-
-  struct CommandState {
-    bool is_enabled;
-    RenderViewCommandCheckedState checked_state;
-  };
-  CommandState GetStateForCommand(RenderViewCommand command) const;
 
   // Stops the current load.
   void Stop();
@@ -539,9 +532,6 @@ class RenderViewHost : public RenderWidgetHost {
                           int maximum_percent,
                           bool remember);
   void OnScriptEvalResponse(int id, const ListValue& result);
-  void OnCommandStateChanged(int command,
-                             bool is_enabled,
-                             int checked_state);
 
 #if defined(OS_MACOSX)
   void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);
@@ -626,9 +616,6 @@ class RenderViewHost : public RenderWidgetHost {
 
   // The termination status of the last render view that terminated.
   base::TerminationStatus render_view_termination_status_;
-
-  // The enabled/disabled states of various commands.
-  std::map<RenderViewCommand, CommandState> command_states_;
 
   // A list of observers that filter messages.  Weak references.
   ObserverList<RenderViewHostObserver> observers_;
