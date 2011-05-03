@@ -7,9 +7,12 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/timer.h"
 #include "remoting/host/host_key_pair.h"
+#include "remoting/host/host_status_observer.h"
 #include "remoting/jingle_glue/iq_request.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
@@ -17,8 +20,6 @@ namespace remoting {
 
 class IqRequest;
 class HostKeyPair;
-class JingleClient;
-class JingleThread;
 class MutableHostConfig;
 
 // HeartbeatSender periodically sends heartbeat stanzas to the Chromoting Bot.
@@ -55,10 +56,9 @@ class MutableHostConfig;
 // server.
 //
 // TODO(sergeyu): Is it enough to sign JID and nothing else?
-class HeartbeatSender : public base::RefCountedThreadSafe<HeartbeatSender> {
+class HeartbeatSender : public HostStatusObserver {
  public:
   HeartbeatSender(MessageLoop* main_loop,
-                  JingleClient* jingle_client,
                   MutableHostConfig* config);
   virtual ~HeartbeatSender();
 
@@ -66,15 +66,11 @@ class HeartbeatSender : public base::RefCountedThreadSafe<HeartbeatSender> {
   // false if the config is invalid (e.g. private key cannot be parsed).
   bool Init();
 
-  // Starts heart-beating. Must be called after init.
-  void Start();
-
-  // Stops heart-beating. Must be called before corresponding JingleClient
-  // is destroyed. This object will not be deleted until Stop() is called,
-  // and it may (and will) crash after JingleClient is destroyed. Heartbeating
-  // cannot be restarted after it has been stopped, A new sender must be created
-  // instead.
-  void Stop();
+  // HostStatusObserver implementation.
+  virtual void OnSignallingConnected(SignalStrategy* signal_strategy,
+                                     const std::string& full_jid) OVERRIDE;
+  virtual void OnSignallingDisconnected() OVERRIDE;
+  virtual void OnShutdown() OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, DoSendStanza);
@@ -89,22 +85,23 @@ class HeartbeatSender : public base::RefCountedThreadSafe<HeartbeatSender> {
   };
 
   void DoSendStanza();
+  void ProcessResponse(const buzz::XmlElement* response);
+  void SetInterval(int interval);
 
   // Helper methods used by DoSendStanza() to generate heartbeat stanzas.
   // Caller owns the result.
   buzz::XmlElement* CreateHeartbeatMessage();
   buzz::XmlElement* CreateSignature();
 
-  void ProcessResponse(const buzz::XmlElement* response);
-
   State state_;
   MessageLoop* message_loop_;
-  JingleClient* jingle_client_;
   scoped_refptr<MutableHostConfig> config_;
-  scoped_ptr<IqRequest> request_;
   std::string host_id_;
   HostKeyPair key_pair_;
+  std::string full_jid_;
+  scoped_ptr<IqRequest> request_;
   int interval_ms_;
+  base::RepeatingTimer<HeartbeatSender> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(HeartbeatSender);
 };

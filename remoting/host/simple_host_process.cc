@@ -36,6 +36,7 @@
 #include "remoting/host/curtain.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
+#include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/proto/video.pb.h"
 
@@ -171,6 +172,13 @@ int main(int argc, char** argv) {
 #if defined(OS_MACOSX)
   mock_cr_app::RegisterMockCrApp();
 #endif  // OS_MACOSX
+
+  // Initialize HeartbeatSender.
+  scoped_refptr<remoting::HeartbeatSender> heartbeat_sender =
+      new remoting::HeartbeatSender(context.network_message_loop(), config);
+  if (!heartbeat_sender->Init())
+    return 1;
+  host->AddStatusObserver(heartbeat_sender);
 
   // Let the chromoting host run until the shutdown task is executed.
   host->Start(NewRunnableFunction(&ShutdownTask, &message_loop));

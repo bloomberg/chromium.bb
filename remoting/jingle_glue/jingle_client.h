@@ -177,7 +177,6 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   MessageLoop* message_loop();
 
  private:
-  friend class HeartbeatSenderTest;
   friend class JingleClientTest;
 
   void DoInitialize();

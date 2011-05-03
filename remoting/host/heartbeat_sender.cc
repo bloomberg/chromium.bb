@@ -34,15 +34,12 @@ const int64 kDefaultHeartbeatIntervalMs = 5 * 60 * 1000;  // 5 minutes.
 }
 
 HeartbeatSender::HeartbeatSender(MessageLoop* message_loop,
-                                 JingleClient* jingle_client,
                                  MutableHostConfig* config)
 
     : state_(CREATED),
       message_loop_(message_loop),
-      jingle_client_(jingle_client),
       config_(config),
       interval_ms_(kDefaultHeartbeatIntervalMs) {
-  DCHECK(jingle_client_);
   DCHECK(config_);
 }
 
@@ -67,56 +64,42 @@ bool HeartbeatSender::Init() {
   return true;
 }
 
-void HeartbeatSender::Start() {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &HeartbeatSender::Start));
-    return;
-  }
-
-  DCHECK_EQ(INITIALIZED, state_);
+void HeartbeatSender::OnSignallingConnected(SignalStrategy* signal_strategy,
+                                            const std::string& full_jid) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(state_ == INITIALIZED || state_ == STOPPED);
   state_ = STARTED;
 
-  request_.reset(jingle_client_->CreateIqRequest());
+  full_jid_ = full_jid;
+  request_.reset(signal_strategy->CreateIqRequest());
   request_->set_callback(NewCallback(this, &HeartbeatSender::ProcessResponse));
 
-  message_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &HeartbeatSender::DoSendStanza));
+  DoSendStanza();
+  timer_.Start(base::TimeDelta::FromMilliseconds(interval_ms_), this,
+               &HeartbeatSender::DoSendStanza);
 }
 
-void HeartbeatSender::Stop() {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &HeartbeatSender::Stop));
-    return;
-  }
-
-  // We may call Stop() even if we have not started.
-  if (state_ != STARTED)
-    return;
+void HeartbeatSender::OnSignallingDisconnected() {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(state_, STARTED);
   state_ = STOPPED;
   request_.reset(NULL);
 }
 
+void HeartbeatSender::OnShutdown() {
+}
+
 void HeartbeatSender::DoSendStanza() {
-  if (state_ == STARTED) {
-    // |jingle_client_| may be already destroyed if |state_| is set to
-    // |STOPPED|, so don't touch it here unless we are in |STARTED| state.
-    DCHECK(MessageLoop::current() == message_loop_);
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(state_, STARTED);
 
-    VLOG(1) << "Sending heartbeat stanza to " << kChromotingBotJid;
-
-    request_->SendIq(buzz::STR_SET, kChromotingBotJid,
-                     CreateHeartbeatMessage());
-
-    // Schedule next heartbeat.
-    message_loop_->PostDelayedTask(
-        FROM_HERE, NewRunnableMethod(this, &HeartbeatSender::DoSendStanza),
-        interval_ms_);
-  }
+  VLOG(1) << "Sending heartbeat stanza to " << kChromotingBotJid;
+  request_->SendIq(buzz::STR_SET, kChromotingBotJid, CreateHeartbeatMessage());
 }
 
 void HeartbeatSender::ProcessResponse(const XmlElement* response) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+
   std::string type = response->Attr(buzz::QN_TYPE);
   if (type == buzz::STR_ERROR) {
     LOG(ERROR) << "Received error in response to heartbeat: "
@@ -140,8 +123,21 @@ void HeartbeatSender::ProcessResponse(const XmlElement* response) {
         LOG(ERROR) << "Received invalid set-interval: "
                    << set_interval_element->Str();
       } else {
-        interval_ms_ = interval * base::Time::kMillisecondsPerSecond;
+        SetInterval(interval * base::Time::kMillisecondsPerSecond);
       }
+    }
+  }
+}
+
+void HeartbeatSender::SetInterval(int interval) {
+  if (interval != interval_ms_) {
+    interval_ms_ = interval;
+
+    // Restart the timer with the new interval.
+    if (state_ == STARTED) {
+      timer_.Stop();
+      timer_.Start(base::TimeDelta::FromMilliseconds(interval_ms_), this,
+                   &HeartbeatSender::DoSendStanza);
     }
   }
 }
@@ -163,7 +159,7 @@ XmlElement* HeartbeatSender::CreateSignature() {
   signature_tag->AddAttr(
       QName(kChromotingXmlNamespace, kSignatureTimeAttr), time_str);
 
-  std::string message = jingle_client_->GetFullJid() + ' ' + time_str;
+  std::string message = full_jid_ + ' ' + time_str;
   std::string signature(key_pair_.GetSignature(message));
   signature_tag->AddText(signature);
 

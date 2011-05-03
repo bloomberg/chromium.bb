@@ -107,14 +107,6 @@ void ChromotingHost::Start(Task* shutdown_task) {
                                     NULL,
                                     this);
   jingle_client_->Init();
-
-  heartbeat_sender_ =
-      new HeartbeatSender(context_->jingle_thread()->message_loop(),
-                          jingle_client_.get(), config_);
-  if (!heartbeat_sender_->Init()) {
-    LOG(ERROR) << "Failed to initialize HeartbeatSender.";
-    return;
-  }
 }
 
 // This method is called when we need to destroy the host process.
@@ -147,9 +139,10 @@ void ChromotingHost::Shutdown() {
   }
   clients_.clear();
 
-  // Stop the heartbeat sender.
-  if (heartbeat_sender_) {
-    heartbeat_sender_->Stop();
+  // Notify observers.
+  for (StatusObserverList::iterator it = status_observers_.begin();
+       it != status_observers_.end(); ++it) {
+    (*it)->OnShutdown();
   }
 
   // Stop chromotocol session manager.
@@ -169,6 +162,12 @@ void ChromotingHost::Shutdown() {
     shutdown_task_->Run();
     shutdown_task_.reset();
   }
+}
+
+void ChromotingHost::AddStatusObserver(
+    const scoped_refptr<HostStatusObserver>& observer) {
+  DCHECK_EQ(state_, kInitial);
+  status_observers_.push_back(observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -203,35 +202,39 @@ void ChromotingHost::OnConnectionFailed(ConnectionToClient* connection) {
 void ChromotingHost::OnStateChange(JingleClient* jingle_client,
                                    JingleClient::State state) {
   if (state == JingleClient::CONNECTED) {
+    std::string jid = jingle_client->GetFullJid();
+
     DCHECK_EQ(jingle_client_.get(), jingle_client);
-    VLOG(1) << "Host connected as " << jingle_client->GetFullJid();
+    VLOG(1) << "Host connected as " << jid;
 
     // Create and start session manager.
     protocol::JingleSessionManager* server =
         new protocol::JingleSessionManager(context_->jingle_thread());
+    // TODO(ajwong): Make this a command switch when we're more stable.
+    server->set_allow_local_ips(true);
 
     // Assign key and certificate to server.
     HostKeyPair key_pair;
     CHECK(key_pair.Load(config_))
         << "Failed to load server authentication data";
 
-    // TODO(ajwong): Make this a command switch when we're more stable.
-    server->set_allow_local_ips(true);
-    server->Init(jingle_client->GetFullJid(),
-                 jingle_client->session_manager(),
+    server->Init(jid, jingle_client->session_manager(),
                  NewCallback(this, &ChromotingHost::OnNewClientSession),
-                 key_pair.CopyPrivateKey(),
-                 key_pair.GenerateCertificate());
+                 key_pair.CopyPrivateKey(), key_pair.GenerateCertificate());
 
     session_manager_ = server;
-    // Start heartbeating.
-    heartbeat_sender_->Start();
+
+    for (StatusObserverList::iterator it = status_observers_.begin();
+         it != status_observers_.end(); ++it) {
+      (*it)->OnSignallingConnected(signal_strategy_.get(), jid);
+    }
   } else if (state == JingleClient::CLOSED) {
     VLOG(1) << "Host disconnected from talk network.";
 
-    // Stop heartbeating.
-    heartbeat_sender_->Stop();
-
+    for (StatusObserverList::iterator it = status_observers_.begin();
+         it != status_observers_.end(); ++it) {
+      (*it)->OnSignallingDisconnected();
+    }
     // TODO(sergeyu): We should try reconnecting here instead of terminating
     // the host.
     Shutdown();
@@ -310,8 +313,9 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
   // Find the client session corresponding to the given connection.
-  std::vector<scoped_refptr<ClientSession> >::iterator client;
-  for (client = clients_.begin(); client != clients_.end(); ++client) {
+  ClientList::iterator client;
+  for (client = clients_.begin(); client != clients_.end();
+       ++client) {
     if (client->get()->connection() == connection)
       break;
   }
@@ -366,8 +370,8 @@ std::string ChromotingHost::GenerateHostAuthToken(
 }
 
 bool ChromotingHost::HasAuthenticatedClients() const {
-  std::vector<scoped_refptr<ClientSession> >::const_iterator it;
-  for (it = clients_.begin(); it != clients_.end(); ++it) {
+  for (ClientList::const_iterator it = clients_.begin(); it != clients_.end();
+       ++it) {
     if (it->get()->authenticated())
       return true;
   }
@@ -402,9 +406,9 @@ void ChromotingHost::LocalLoginSucceeded(
   // Disconnect all other clients.
   // Iterate over a copy of the list of clients, to avoid mutating the list
   // while iterating over it.
-  std::vector<scoped_refptr<ClientSession> > clients_copy(clients_);
-  std::vector<scoped_refptr<ClientSession> >::const_iterator client;
-  for (client = clients_copy.begin(); client != clients_copy.end(); client++) {
+  ClientList clients_copy(clients_);
+  for (ClientList::const_iterator client = clients_copy.begin();
+       client != clients_copy.end(); client++) {
     ConnectionToClient* connection_other = client->get()->connection();
     if (connection_other != connection) {
       OnClientDisconnected(connection_other);

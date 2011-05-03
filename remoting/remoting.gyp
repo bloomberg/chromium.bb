@@ -228,6 +228,7 @@
         'host/host_config.h',
         'host/host_key_pair.cc',
         'host/host_key_pair.h',
+        'host/host_status_observer.h',
         'host/in_memory_host_config.cc',
         'host/in_memory_host_config.h',
         'host/json_host_config.cc',

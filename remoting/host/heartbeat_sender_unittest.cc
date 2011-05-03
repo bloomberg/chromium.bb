@@ -75,18 +75,9 @@ class HeartbeatSenderTest : public testing::Test {
     config_ = new InMemoryHostConfig();
     config_->SetString(kHostIdConfigPath, kHostId);
     config_->SetString(kPrivateKeyConfigPath, kTestHostKeyPair);
-
-    jingle_thread_.message_loop_ = &message_loop_;
-
-    signal_strategy_.reset(new MockSignalStrategy());
-    jingle_client_ =
-        new JingleClient(&jingle_thread_, signal_strategy_.get(), NULL, NULL);
-    jingle_client_->full_jid_ = kTestJid;
   }
 
-  JingleThread jingle_thread_;
-  scoped_ptr<MockSignalStrategy> signal_strategy_;
-  scoped_refptr<JingleClient> jingle_client_;
+  MockSignalStrategy signal_strategy_;
   MessageLoop message_loop_;
   scoped_refptr<InMemoryHostConfig> config_;
 };
@@ -101,32 +92,32 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
   EXPECT_CALL(*iq_request, set_callback(_)).Times(1);
 
   scoped_refptr<HeartbeatSender> heartbeat_sender(
-      new HeartbeatSender(&message_loop_, jingle_client_.get(), config_));
+      new HeartbeatSender(&message_loop_, config_));
   ASSERT_TRUE(heartbeat_sender->Init());
 
-  EXPECT_CALL(*signal_strategy_, CreateIqRequest())
+  EXPECT_CALL(signal_strategy_, CreateIqRequest())
       .WillOnce(Return(iq_request));
 
   EXPECT_CALL(*iq_request, SendIq(buzz::STR_SET, kChromotingBotJid, NotNull()))
       .WillOnce(DoAll(DeleteArg<2>(), Return()));
 
-  heartbeat_sender->Start();
+  heartbeat_sender->OnSignallingConnected(&signal_strategy_, kTestJid);
   message_loop_.RunAllPending();
 
-  heartbeat_sender->Stop();
+  heartbeat_sender->OnSignallingDisconnected();
   message_loop_.RunAllPending();
 }
 
 // Validate format of the heartbeat stanza.
 TEST_F(HeartbeatSenderTest, CreateHeartbeatMessage) {
   scoped_refptr<HeartbeatSender> heartbeat_sender(
-      new HeartbeatSender(&message_loop_, jingle_client_.get(), config_));
+      new HeartbeatSender(&message_loop_, config_));
   ASSERT_TRUE(heartbeat_sender->Init());
 
   int64 start_time = static_cast<int64>(base::Time::Now().ToDoubleT());
 
-  scoped_ptr<XmlElement> stanza(
-      heartbeat_sender->CreateHeartbeatMessage());
+  heartbeat_sender->full_jid_ = kTestJid;
+  scoped_ptr<XmlElement> stanza(heartbeat_sender->CreateHeartbeatMessage());
   ASSERT_TRUE(stanza.get() != NULL);
 
   EXPECT_TRUE(QName(kChromotingXmlNamespace, "heartbeat") ==
@@ -171,7 +162,7 @@ TEST_F(HeartbeatSenderTest, ProcessResponse) {
   set_interval->AddText(base::IntToString(kTestInterval));
 
   scoped_refptr<HeartbeatSender> heartbeat_sender(
-      new HeartbeatSender(&message_loop_, jingle_client_.get(), config_));
+      new HeartbeatSender(&message_loop_, config_));
   heartbeat_sender->ProcessResponse(response.get());
 
   EXPECT_EQ(kTestInterval * 1000, heartbeat_sender->interval_ms_);

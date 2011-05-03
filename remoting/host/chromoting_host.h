@@ -14,7 +14,7 @@
 #include "remoting/host/capturer.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
-#include "remoting/host/heartbeat_sender.h"
+#include "remoting/host/host_status_observer.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/protocol/session_manager.h"
@@ -89,6 +89,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Asynchronously shutdown the host process.
   void Shutdown();
 
+  void AddStatusObserver(const scoped_refptr<HostStatusObserver>& observer);
+
   ////////////////////////////////////////////////////////////////////////////
   // protocol::ConnectionToClient::EventHandler implementations
   virtual void OnConnectionOpened(protocol::ConnectionToClient* client);
@@ -118,6 +120,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
  private:
   friend class base::RefCountedThreadSafe<ChromotingHost>;
   friend class ChromotingHostTest;
+
+  typedef std::vector<scoped_refptr<HostStatusObserver> > StatusObserverList;
+  typedef std::vector<scoped_refptr<ClientSession> > ClientList;
 
   ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config,
                  DesktopEnvironment* environment);
@@ -159,13 +164,12 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   scoped_refptr<protocol::SessionManager> session_manager_;
 
-  // Objects that takes care of sending heartbeats to the chromoting bot.
-  scoped_refptr<HeartbeatSender> heartbeat_sender_;
+  StatusObserverList status_observers_;
 
   AccessVerifier access_verifier_;
 
   // The connections to remote clients.
-  std::vector<scoped_refptr<ClientSession> > clients_;
+  ClientList clients_;
 
   // Session manager for the host process.
   scoped_refptr<ScreenRecorder> recorder_;

@@ -11,6 +11,8 @@
 #include "net/base/net_util.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/heartbeat_sender.h"
+#include "remoting/host/host_key_pair.h"
 #include "remoting/host/json_host_config.h"
 
 namespace remoting {
@@ -178,6 +180,15 @@ void ChromotingHostManager::Start() {
   // Create a chromoting host object.
   chromoting_host_ = remoting::ChromotingHost::Create(chromoting_context_.get(),
                                                       chromoting_config_);
+
+  // Initialize HeartbeatSender.
+  scoped_refptr<remoting::HeartbeatSender> heartbeat_sender =
+      new remoting::HeartbeatSender(chromoting_context_->network_message_loop(),
+                                    chromoting_config_);
+  if (!heartbeat_sender->Init())
+    LOG(ERROR) << "Failed to initialize heartbeat sender.";
+  chromoting_host_->AddStatusObserver(heartbeat_sender);
+
 
   // Then start the chromoting host.
   // When ChromotingHost is shutdown because of failure or a request that
