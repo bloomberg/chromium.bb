@@ -72,7 +72,8 @@ class IdentityPrefTransformer : public PrefTransformerInterface {
   virtual ~IdentityPrefTransformer() { }
 
   virtual Value* ExtensionToBrowserPref(const Value* extension_pref,
-                                        std::string* error) {
+                                        std::string* error,
+                                        bool* bad_message) {
     return extension_pref->DeepCopy();
   }
 
@@ -370,9 +371,12 @@ bool SetPreferenceFunction::RunImpl() {
   PrefTransformerInterface* transformer =
       PrefMapping::GetInstance()->FindTransformerForBrowserPref(browser_pref);
   std::string error;
-  Value* browserPrefValue = transformer->ExtensionToBrowserPref(value, &error);
+  bool bad_message = false;
+  Value* browserPrefValue =
+      transformer->ExtensionToBrowserPref(value, &error, &bad_message);
   if (!browserPrefValue) {
     error_ = error;
+    bad_message_ = bad_message;
     return false;
   }
   prefs->SetExtensionControlledPref(extension_id(),

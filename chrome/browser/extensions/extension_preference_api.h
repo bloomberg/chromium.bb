@@ -48,12 +48,12 @@ class PrefTransformerInterface {
   // Converts the representation of a preference as seen by the extension
   // into a representation that is used in the pref stores of the browser.
   // Returns the pref store representation in case of success or sets
-  // |error| and returns NULL otherwise.
+  // |error| and returns NULL otherwise. |bad_message| is passed to simulate
+  // the behavior of EXTENSION_FUNCTION_VALIDATE. It is never NULL.
   // The ownership of the returned value is passed to the caller.
-  // TODO(battre): add bool* bad_message to allow terminating the entire
-  // extension in order to simulate the behavior of EXTENSION_FUNCTION_VALIDATE.
   virtual Value* ExtensionToBrowserPref(const Value* extension_pref,
-                                        std::string* error) = 0;
+                                        std::string* error,
+                                        bool* bad_message) = 0;
 
   // Converts the representation of the preference as stored in the browser
   // into a representation that is used by the extension.

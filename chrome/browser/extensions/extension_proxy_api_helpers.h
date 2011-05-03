@@ -43,24 +43,33 @@ bool CreatePACScriptFromDataURL(
 //   and return true.
 // - If there are entries that could not be parsed, the functions set |error|
 //   and return false.
+//
+// The parameter |bad_message| is passed to simulate the behavior of
+// EXTENSION_FUNCTION_VALIDATE. It is never NULL.
 bool GetProxyModeFromExtensionPref(const DictionaryValue* proxy_config,
                                    ProxyPrefs::ProxyMode* out,
-                                   std::string* error);
+                                   std::string* error,
+                                   bool* bad_message);
 bool GetPacMandatoryFromExtensionPref(const DictionaryValue* proxy_config,
                                       bool* out,
-                                      std::string* error);
+                                      std::string* error,
+                                      bool* bad_message);
 bool GetPacUrlFromExtensionPref(const DictionaryValue* proxy_config,
                                 std::string* out,
-                                std::string* error);
+                                std::string* error,
+                                bool* bad_message);
 bool GetPacDataFromExtensionPref(const DictionaryValue* proxy_config,
                                  std::string* out,
-                                 std::string* error);
+                                 std::string* error,
+                                 bool* bad_message);
 bool GetProxyRulesStringFromExtensionPref(const DictionaryValue* proxy_config,
                                           std::string* out,
-                                          std::string* error);
+                                          std::string* error,
+                                          bool* bad_message);
 bool GetBypassListFromExtensionPref(const DictionaryValue* proxy_config,
                                     std::string* out,
-                                    std::string* error);
+                                    std::string* error,
+                                    bool* bad_message);
 
 // Creates and returns a ProxyConfig dictionary (as defined in the extension
 // API) from the given parameters. Ownership is passed to the caller.
@@ -81,14 +90,16 @@ DictionaryValue* CreateProxyConfigDict(ProxyPrefs::ProxyMode mode_enum,
 bool GetProxyServer(const DictionaryValue* proxy_server,
                     net::ProxyServer::Scheme default_scheme,
                     net::ProxyServer* out,
-                    std::string* error);
+                    std::string* error,
+                    bool* bad_message);
 
 // Joins a list of URLs (stored as StringValues) in |list| with |joiner|
 // to |out|. Returns true if successful and sets |error| otherwise.
 bool JoinUrlList(ListValue* list,
                  const std::string& joiner,
                  std::string* out,
-                 std::string* error);
+                 std::string* error,
+                 bool* bad_message);
 
 
 // Helper functions for browser->extension pref transformation:

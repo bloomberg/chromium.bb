@@ -28,7 +28,8 @@ class ProxyPrefTransformer : public PrefTransformerInterface {
 
   // Implementation of PrefTransformerInterface.
   virtual Value* ExtensionToBrowserPref(const Value* extension_pref,
-                                        std::string* error) OVERRIDE;
+                                        std::string* error,
+                                        bool* bad_message) OVERRIDE;
   virtual Value* BrowserToExtensionPref(const Value* browser_pref) OVERRIDE;
 
  private:

@@ -59,7 +59,8 @@ ProxyPrefTransformer::~ProxyPrefTransformer() {
 }
 
 Value* ProxyPrefTransformer::ExtensionToBrowserPref(const Value* extension_pref,
-                                                    std::string* error) {
+                                                    std::string* error,
+                                                    bool* bad_message) {
   // When ExtensionToBrowserPref is called, the format of |extension_pref|
   // has been verified already by the extension API to match the schema
   // defined in chrome/common/extensions/api/extension_api.json.
@@ -78,14 +79,18 @@ Value* ProxyPrefTransformer::ExtensionToBrowserPref(const Value* extension_pref,
   std::string pac_data;
   std::string proxy_rules_string;
   std::string bypass_list;
-  if (!helpers::GetProxyModeFromExtensionPref(config, &mode_enum, error) ||
-      !helpers::GetPacMandatoryFromExtensionPref(config, &pac_mandatory,
-                                                 error) ||
-      !helpers::GetPacUrlFromExtensionPref(config, &pac_url, error) ||
-      !helpers::GetPacDataFromExtensionPref(config, &pac_data, error) ||
+  if (!helpers::GetProxyModeFromExtensionPref(
+          config, &mode_enum, error, bad_message) ||
+      !helpers::GetPacMandatoryFromExtensionPref(
+          config, &pac_mandatory, error, bad_message) ||
+      !helpers::GetPacUrlFromExtensionPref(
+          config, &pac_url, error, bad_message) ||
+      !helpers::GetPacDataFromExtensionPref(
+          config, &pac_data, error, bad_message) ||
       !helpers::GetProxyRulesStringFromExtensionPref(
-          config, &proxy_rules_string, error) ||
-      !helpers::GetBypassListFromExtensionPref(config, &bypass_list, error)) {
+          config, &proxy_rules_string, error, bad_message) ||
+      !helpers::GetBypassListFromExtensionPref(
+          config, &bypass_list, error, bad_message)) {
     return NULL;
   }
 

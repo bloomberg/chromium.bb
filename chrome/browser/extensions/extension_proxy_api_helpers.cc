@@ -59,7 +59,8 @@ bool CreatePACScriptFromDataURL(
 
 bool GetProxyModeFromExtensionPref(const DictionaryValue* proxy_config,
                                    ProxyPrefs::ProxyMode* out,
-                                   std::string* error) {
+                                   std::string* error,
+                                   bool* bad_message) {
   std::string proxy_mode;
 
   // We can safely assume that this is ASCII due to the allowed enumeration
@@ -67,6 +68,7 @@ bool GetProxyModeFromExtensionPref(const DictionaryValue* proxy_config,
   proxy_config->GetStringASCII(keys::kProxyConfigMode, &proxy_mode);
   if (!ProxyPrefs::StringToProxyMode(proxy_mode, out)) {
     LOG(ERROR) << "Invalid mode for proxy settings: " << proxy_mode;
+    *bad_message = true;
     return false;
   }
   return true;
@@ -74,7 +76,8 @@ bool GetProxyModeFromExtensionPref(const DictionaryValue* proxy_config,
 
 bool GetPacMandatoryFromExtensionPref(const DictionaryValue* proxy_config,
                                       bool* out,
-                                      std::string* error){
+                                      std::string* error,
+                                      bool* bad_message){
   DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigPacScript, &pac_dict);
   if (!pac_dict)
@@ -85,6 +88,7 @@ bool GetPacMandatoryFromExtensionPref(const DictionaryValue* proxy_config,
       !pac_dict->GetBoolean(keys::kProxyConfigPacScriptMandatory,
                             &mandatory_pac)) {
     LOG(ERROR) << "'pacScript.mandatory' could not be parsed.";
+    *bad_message = true;
     return false;
   }
   *out = mandatory_pac;
@@ -93,7 +97,8 @@ bool GetPacMandatoryFromExtensionPref(const DictionaryValue* proxy_config,
 
 bool GetPacUrlFromExtensionPref(const DictionaryValue* proxy_config,
                                 std::string* out,
-                                std::string* error) {
+                                std::string* error,
+                                bool* bad_message) {
   DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigPacScript, &pac_dict);
   if (!pac_dict)
@@ -104,6 +109,7 @@ bool GetPacUrlFromExtensionPref(const DictionaryValue* proxy_config,
   if (pac_dict->HasKey(keys::kProxyConfigPacScriptUrl) &&
       !pac_dict->GetString(keys::kProxyConfigPacScriptUrl, &pac_url16)) {
     LOG(ERROR) << "'pacScript.url' could not be parsed.";
+    *bad_message = true;
     return false;
   }
   if (!IsStringASCII(pac_url16)) {
@@ -117,7 +123,8 @@ bool GetPacUrlFromExtensionPref(const DictionaryValue* proxy_config,
 
 bool GetPacDataFromExtensionPref(const DictionaryValue* proxy_config,
                                  std::string* out,
-                                 std::string* error) {
+                                 std::string* error,
+                                 bool* bad_message) {
   DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigPacScript, &pac_dict);
   if (!pac_dict)
@@ -127,6 +134,7 @@ bool GetPacDataFromExtensionPref(const DictionaryValue* proxy_config,
   if (pac_dict->HasKey(keys::kProxyConfigPacScriptData) &&
       !pac_dict->GetString(keys::kProxyConfigPacScriptData, &pac_data16)) {
     LOG(ERROR) << "'pacScript.data' could not be parsed.";
+    *bad_message = true;
     return false;
   }
   if (!IsStringASCII(pac_data16)) {
@@ -141,7 +149,8 @@ bool GetPacDataFromExtensionPref(const DictionaryValue* proxy_config,
 bool GetProxyServer(const DictionaryValue* proxy_server,
                     net::ProxyServer::Scheme default_scheme,
                     net::ProxyServer* out,
-                    std::string* error) {
+                    std::string* error,
+                    bool* bad_message) {
   std::string scheme_string;  // optional.
 
   // We can safely assume that this is ASCII due to the allowed enumeration
@@ -157,6 +166,7 @@ bool GetProxyServer(const DictionaryValue* proxy_server,
   string16 host16;
   if (!proxy_server->GetString(keys::kProxyConfigRuleHost, &host16)) {
     LOG(ERROR) << "Could not parse a 'rules.*.host' entry.";
+    *bad_message = true;
     return false;
   }
   if (!IsStringASCII(host16)) {
@@ -179,7 +189,8 @@ bool GetProxyServer(const DictionaryValue* proxy_server,
 
 bool GetProxyRulesStringFromExtensionPref(const DictionaryValue* proxy_config,
                                           std::string* out,
-                                          std::string* error) {
+                                          std::string* error,
+                                          bool* bad_message) {
   DictionaryValue* proxy_rules = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigRules, &proxy_rules);
   if (!proxy_rules)
@@ -201,7 +212,7 @@ bool GetProxyRulesStringFromExtensionPref(const DictionaryValue* proxy_config,
     if (has_proxy[i]) {
       net::ProxyServer::Scheme default_scheme = net::ProxyServer::SCHEME_HTTP;
       if (!GetProxyServer(proxy_dict, default_scheme,
-                          &proxy_server[i], error)) {
+                          &proxy_server[i], error, bad_message)) {
         // Don't set |error| here, as GetProxyServer takes care of that.
         return false;
       }
@@ -246,7 +257,8 @@ bool GetProxyRulesStringFromExtensionPref(const DictionaryValue* proxy_config,
 bool JoinUrlList(ListValue* list,
                  const std::string& joiner,
                  std::string* out,
-                 std::string* error) {
+                 std::string* error,
+                 bool* bad_message) {
   std::string result;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     if (!result.empty())
@@ -256,6 +268,7 @@ bool JoinUrlList(ListValue* list,
     string16 entry;
     if (!list->GetString(i, &entry)) {
       LOG(ERROR) << "'rules.bypassList' could not be parsed.";
+      *bad_message = true;
       return false;
     }
     if (!IsStringASCII(entry)) {
@@ -271,7 +284,8 @@ bool JoinUrlList(ListValue* list,
 
 bool GetBypassListFromExtensionPref(const DictionaryValue* proxy_config,
                                     std::string *out,
-                                    std::string* error) {
+                                    std::string* error,
+                                    bool* bad_message) {
   DictionaryValue* proxy_rules = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigRules, &proxy_rules);
   if (!proxy_rules)
@@ -283,11 +297,12 @@ bool GetBypassListFromExtensionPref(const DictionaryValue* proxy_config,
   }
   ListValue* bypass_list = NULL;
   if (!proxy_rules->GetList(keys::kProxyConfigBypassList, &bypass_list)) {
-    LOG(ERROR) << "'rules.bypassList' not be parsed.";
+    LOG(ERROR) << "'rules.bypassList' could not be parsed.";
+    *bad_message = true;
     return false;
   }
 
-  return JoinUrlList(bypass_list, ",", out, error);
+  return JoinUrlList(bypass_list, ",", out, error, bad_message);
 }
 
 DictionaryValue* CreateProxyConfigDict(ProxyPrefs::ProxyMode mode_enum,
