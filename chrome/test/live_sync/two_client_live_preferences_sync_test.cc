@@ -76,22 +76,31 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
             GetPrefs(1)->GetBoolean(prefs::kKeepEverythingSynced));
 }
 
-// TestScribe ID - 426093.
-IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kSyncPreferences) {
+// TCM ID - 3661290.
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, DisablePreferences) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kSyncPreferences),
             GetPrefs(1)->GetBoolean(prefs::kSyncPreferences));
   ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kPasswordManagerEnabled),
             GetPrefs(1)->GetBoolean(prefs::kPasswordManagerEnabled));
 
-  GetClient(0)->DisableSyncForDatatype(syncable::PREFERENCES);
-
-  GetPrefs(0)->SetBoolean(prefs::kPasswordManagerEnabled, 1);
-  GetPrefs(1)->SetBoolean(prefs::kPasswordManagerEnabled, 0);
+  GetClient(1)->DisableSyncForDatatype(syncable::PREFERENCES);
+  bool new_kPasswordManagerEnabled = !GetPrefs(0)->GetBoolean(
+      prefs::kPasswordManagerEnabled);
+  GetVerifierPrefs()->SetBoolean(prefs::kPasswordManagerEnabled,
+      new_kPasswordManagerEnabled);
+  GetPrefs(0)->SetBoolean(prefs::kPasswordManagerEnabled,
+      new_kPasswordManagerEnabled);
   ASSERT_TRUE(AwaitQuiescence());
-
   ASSERT_NE(GetPrefs(0)->GetBoolean(prefs::kPasswordManagerEnabled),
             GetPrefs(1)->GetBoolean(prefs::kPasswordManagerEnabled));
+
+  GetClient(1)->EnableSyncForDatatype(syncable::PREFERENCES);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kPasswordManagerEnabled),
+            GetPrefs(1)->GetBoolean(prefs::kPasswordManagerEnabled));
+  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kPasswordManagerEnabled),
+            GetVerifierPrefs()->GetBoolean(prefs::kPasswordManagerEnabled));
 }
 
 // TestScribe ID - 425647.

@@ -1482,3 +1482,18 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     ASSERT_TRUE(CountBookmarksWithTitlesMatching(1, IndexedURLTitle(i)) == i);
   }
 }
+
+// TCM ID - 6593872.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, DisableBookmarks) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  GetClient(1)->DisableSyncForDatatype(syncable::BOOKMARKS);
+  ASSERT_TRUE(AddFolder(1, kGenericFolderName) != NULL);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_FALSE(AllModelsMatch());
+
+  GetClient(1)->EnableSyncForDatatype(syncable::BOOKMARKS);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllModelsMatch());
+}
