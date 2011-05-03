@@ -208,11 +208,13 @@ quiet_cmd_link = LINK($(TOOLSET)) $@
 cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
 
 # Shared-object link (for generating .so).
-# Set SONAME to the library filename so our binaries don't reference the local,
-# absolute paths used on the link command-line.
-# TODO: perhaps this can share with the LINK command above?
+# - Set SONAME to the library filename so our binaries don't reference
+# the local, absolute paths used on the link command-line.
+# - Use --whole-archive so that the .a files we combine end up in the public
+# API of the shared object.  (Note that --whole-archive is incompatible with
+# the --start-group used in normal linking.)
 quiet_cmd_solink = SOLINK($(TOOLSET)) $@
-cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--whole-archive $(filter-out FORCE_DO_CMD, $^) -Wl,--no-whole-archive $(LIBS)
 """
 r"""
 # Define an escape_quotes function to escape single quotes.
@@ -495,9 +497,10 @@ def Sourceify(path):
 
 # Map from qualified target to path to output.
 target_outputs = {}
-# Map from qualified target to a list of all linker dependencies,
-# transitively expanded.
-# Used in building shared-library-based executables.
+# Map from qualified target to a list of linkable outputs.  A subset
+# of target_outputs.  E.g. when mybinary depends on liba, we want to
+# include liba in the linker line; when otherbinary depends on
+# mybinary, we just want to build mybinary first.
 target_link_deps = {}
 
 
@@ -601,12 +604,8 @@ class MakefileWriter:
     target_outputs[qualified_target] = install_path
 
     # Update global list of link dependencies.
-    if self.type == 'static_library':
+    if self.type in ('static_library', 'shared_library'):
       target_link_deps[qualified_target] = [self.output]
-    elif self.type == 'shared_library':
-      # Anyone that uses us transitively depend on all of our link
-      # dependencies.
-      target_link_deps[qualified_target] = [self.output] + link_deps
 
     self.fp.close()
 
