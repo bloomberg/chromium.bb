@@ -26,6 +26,8 @@ BOT_ASSIGNMENT = {
     'win7atom64-m64-n64-test-opt': 'buildbot\\buildbot_win_atom.bat opt 64',
     'mac10.5-m32-n32-opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',
     'mac10.6-m32-n32-opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',
+    'mac10.5-glibc-opt': 'bash buildbot/buildbot_mac.sh opt 32 glibc',
+    'mac10.6-glibc-opt': 'bash buildbot/buildbot_mac.sh opt 32 glibc',
     'hardy32-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
     'hardy64-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
     'hardy64-m64-n64-opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
