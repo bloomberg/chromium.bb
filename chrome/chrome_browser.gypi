@@ -42,6 +42,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libjingle/libjingle.gyp:libjingle',
+        '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
