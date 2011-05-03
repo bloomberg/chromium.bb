@@ -111,8 +111,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
   ASSERT_TRUE(GetClient(1)->AwaitSyncCycleCompletion("Initial sync."));
 }
 
+// http://crbug.com/81341
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       SetPassphraseTwice) {
+                       FLAKY_SetPassphraseTwice) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetPassphrase(0, kValidPassphrase, true);
