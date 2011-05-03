@@ -25,6 +25,7 @@
 
 using ::testing::_;
 using ::testing::DeleteArg;
+using ::testing::InSequence;
 using ::testing::Mock;
 using ::testing::Pointee;
 using ::testing::StrictMock;
@@ -115,10 +116,14 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   Mock::VerifyAndClearExpectations(classifier);
   OnStartPhishingDetection(delegate, GURL("http://host.com/"));
   string16 page_text = ASCIIToUTF16("dummy");
-  EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _)).
-      WillOnce(DeleteArg<1>());
-  delegate->PageCaptured(&page_text, false);
-  Mock::VerifyAndClearExpectations(classifier);
+  {
+    InSequence s;
+    EXPECT_CALL(*classifier, CancelPendingClassification());
+    EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _)).
+        WillOnce(DeleteArg<1>());
+    delegate->PageCaptured(&page_text, false);
+    Mock::VerifyAndClearExpectations(classifier);
+  }
 
   // Reloading the same page should not trigger a reclassification.
   // However, it will cancel any pending classification since the
@@ -129,7 +134,9 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   Mock::VerifyAndClearExpectations(classifier);
   OnStartPhishingDetection(delegate, GURL("http://host.com/"));
   page_text = ASCIIToUTF16("dummy");
+  EXPECT_CALL(*classifier, CancelPendingClassification());
   delegate->PageCaptured(&page_text, false);
+  Mock::VerifyAndClearExpectations(classifier);
 
   // Navigating in a subframe will not change the toplevel URL.  However, this
   // should cancel pending classification since the page content is changing.
@@ -141,7 +148,9 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   Mock::VerifyAndClearExpectations(classifier);
   OnStartPhishingDetection(delegate, GURL("http://host.com/"));
   page_text = ASCIIToUTF16("dummy");
+  EXPECT_CALL(*classifier, CancelPendingClassification());
   delegate->PageCaptured(&page_text, false);
+  Mock::VerifyAndClearExpectations(classifier);
 
   // Scrolling to an anchor works similarly to a subframe navigation, but
   // see the TODO in PhishingClassifierDelegate::DidCommitProvisionalLoad.
@@ -150,18 +159,24 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   Mock::VerifyAndClearExpectations(classifier);
   OnStartPhishingDetection(delegate, GURL("http://host.com/#foo"));
   page_text = ASCIIToUTF16("dummy");
+  EXPECT_CALL(*classifier, CancelPendingClassification());
   delegate->PageCaptured(&page_text, false);
+  Mock::VerifyAndClearExpectations(classifier);
 
   // Now load a new toplevel page, which should trigger another classification.
   EXPECT_CALL(*classifier, CancelPendingClassification());
   LoadURL("http://host2.com/");
   Mock::VerifyAndClearExpectations(classifier);
   page_text = ASCIIToUTF16("dummy2");
-  EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _)).
-      WillOnce(DeleteArg<1>());
   OnStartPhishingDetection(delegate, GURL("http://host2.com/"));
-  delegate->PageCaptured(&page_text, false);
-  Mock::VerifyAndClearExpectations(classifier);
+  {
+    InSequence s;
+    EXPECT_CALL(*classifier, CancelPendingClassification());
+    EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _)).
+        WillOnce(DeleteArg<1>());
+    delegate->PageCaptured(&page_text, false);
+    Mock::VerifyAndClearExpectations(classifier);
+  }
 
   // No classification should happen on back/forward navigation.
   // Note: in practice, the browser will not send a StartPhishingDetection IPC
@@ -173,14 +188,18 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   Mock::VerifyAndClearExpectations(classifier);
   page_text = ASCIIToUTF16("dummy");
   OnStartPhishingDetection(delegate, GURL("http://host.com/#foo"));
+  EXPECT_CALL(*classifier, CancelPendingClassification());
   delegate->PageCaptured(&page_text, false);
+  Mock::VerifyAndClearExpectations(classifier);
 
   EXPECT_CALL(*classifier, CancelPendingClassification());
   GoForward(forward_item);
   Mock::VerifyAndClearExpectations(classifier);
   page_text = ASCIIToUTF16("dummy2");
   OnStartPhishingDetection(delegate, GURL("http://host2.com/"));
+  EXPECT_CALL(*classifier, CancelPendingClassification());
   delegate->PageCaptured(&page_text, false);
+  Mock::VerifyAndClearExpectations(classifier);
 
   // Now go back again and scroll to a different anchor.
   // No classification should happen.
@@ -189,14 +208,18 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   Mock::VerifyAndClearExpectations(classifier);
   page_text = ASCIIToUTF16("dummy");
   OnStartPhishingDetection(delegate, GURL("http://host.com/#foo"));
+  EXPECT_CALL(*classifier, CancelPendingClassification());
   delegate->PageCaptured(&page_text, false);
+  Mock::VerifyAndClearExpectations(classifier);
 
   EXPECT_CALL(*classifier, CancelPendingClassification());
   LoadURL("http://host.com/#foo2");
   Mock::VerifyAndClearExpectations(classifier);
   OnStartPhishingDetection(delegate, GURL("http://host.com/#foo2"));
   page_text = ASCIIToUTF16("dummy");
+  EXPECT_CALL(*classifier, CancelPendingClassification());
   delegate->PageCaptured(&page_text, false);
+  Mock::VerifyAndClearExpectations(classifier);
 
   // The delegate will cancel pending classification on destruction.
   EXPECT_CALL(*classifier, CancelPendingClassification());
@@ -283,7 +306,9 @@ TEST_F(PhishingClassifierDelegateTest, NoStartPhishingDetection) {
   LoadURL("http://host.com/");
   Mock::VerifyAndClearExpectations(classifier);
   string16 page_text = ASCIIToUTF16("phish");
+  EXPECT_CALL(*classifier, CancelPendingClassification());
   delegate->PageCaptured(&page_text, false);
+  Mock::VerifyAndClearExpectations(classifier);
   // Now simulate the StartPhishingDetection IPC.  We expect classification
   // to begin.
   page_text = ASCIIToUTF16("phish");
@@ -299,7 +324,9 @@ TEST_F(PhishingClassifierDelegateTest, NoStartPhishingDetection) {
   LoadURL("http://host2.com/");
   Mock::VerifyAndClearExpectations(classifier);
   page_text = ASCIIToUTF16("phish");
+  EXPECT_CALL(*classifier, CancelPendingClassification());
   delegate->PageCaptured(&page_text, false);
+  Mock::VerifyAndClearExpectations(classifier);
 
   EXPECT_CALL(*classifier, CancelPendingClassification());
   responses_["http://host3.com/"] = "<html><body>phish</body></html>";
@@ -316,17 +343,23 @@ TEST_F(PhishingClassifierDelegateTest, NoStartPhishingDetection) {
   LoadURL("http://host4.com/");
   Mock::VerifyAndClearExpectations(classifier);
   page_text = ASCIIToUTF16("abc");
+  EXPECT_CALL(*classifier, CancelPendingClassification());
   delegate->PageCaptured(&page_text, false);
+  Mock::VerifyAndClearExpectations(classifier);
   responses_["http://host4.com/redir"] = "<html><body>123</body></html>";
   EXPECT_CALL(*classifier, CancelPendingClassification());
   LoadURL("javascript:location.replace(\'redir\');");
   Mock::VerifyAndClearExpectations(classifier);
   OnStartPhishingDetection(delegate, GURL("http://host4.com/redir"));
   page_text = ASCIIToUTF16("123");
-  EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _))
-      .WillOnce(DeleteArg<1>());
-  delegate->PageCaptured(&page_text, false);
-  Mock::VerifyAndClearExpectations(classifier);
+  {
+    InSequence s;
+    EXPECT_CALL(*classifier, CancelPendingClassification());
+    EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _))
+        .WillOnce(DeleteArg<1>());
+    delegate->PageCaptured(&page_text, false);
+    Mock::VerifyAndClearExpectations(classifier);
+  }
 
   // The delegate will cancel pending classification on destruction.
   EXPECT_CALL(*classifier, CancelPendingClassification());
@@ -352,8 +385,47 @@ TEST_F(PhishingClassifierDelegateTest, IgnorePreliminaryCapture) {
 
   // Once the non-preliminary capture happens, classification should begin.
   page_text = ASCIIToUTF16("phish");
-  EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _)).
-      WillOnce(DeleteArg<1>());
+  {
+    InSequence s;
+    EXPECT_CALL(*classifier, CancelPendingClassification());
+    EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _)).
+        WillOnce(DeleteArg<1>());
+    delegate->PageCaptured(&page_text, false);
+    Mock::VerifyAndClearExpectations(classifier);
+  }
+
+  // The delegate will cancel pending classification on destruction.
+  EXPECT_CALL(*classifier, CancelPendingClassification());
+}
+
+TEST_F(PhishingClassifierDelegateTest, DuplicatePageCapture) {
+  // Tests that a second PageCaptured notification causes classification to
+  // be cancelled.
+  MockPhishingClassifier* classifier =
+      new StrictMock<MockPhishingClassifier>(view_);
+  PhishingClassifierDelegate* delegate =
+      new PhishingClassifierDelegate(view_, classifier);
+  MockScorer scorer;
+  delegate->SetPhishingScorer(&scorer);
+  ASSERT_TRUE(classifier->is_ready());
+
+  EXPECT_CALL(*classifier, CancelPendingClassification());
+  responses_["http://host.com/"] = "<html><body>phish</body></html>";
+  LoadURL("http://host.com/");
+  Mock::VerifyAndClearExpectations(classifier);
+  OnStartPhishingDetection(delegate, GURL("http://host.com/"));
+  string16 page_text = ASCIIToUTF16("phish");
+  {
+    InSequence s;
+    EXPECT_CALL(*classifier, CancelPendingClassification());
+    EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _)).
+        WillOnce(DeleteArg<1>());
+    delegate->PageCaptured(&page_text, false);
+    Mock::VerifyAndClearExpectations(classifier);
+  }
+
+  page_text = ASCIIToUTF16("phish");
+  EXPECT_CALL(*classifier, CancelPendingClassification());
   delegate->PageCaptured(&page_text, false);
   Mock::VerifyAndClearExpectations(classifier);
 
@@ -378,11 +450,15 @@ TEST_F(PhishingClassifierDelegateTest, DetectedPhishingSite) {
   LoadURL("http://host.com/#a");
   Mock::VerifyAndClearExpectations(classifier);
   string16 page_text = ASCIIToUTF16("phish");
-  EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _)).
-      WillOnce(DeleteArg<1>());
   OnStartPhishingDetection(delegate, GURL("http://host.com/#a"));
-  delegate->PageCaptured(&page_text, false);
-  Mock::VerifyAndClearExpectations(classifier);
+  {
+    InSequence s;
+    EXPECT_CALL(*classifier, CancelPendingClassification());
+    EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _)).
+        WillOnce(DeleteArg<1>());
+    delegate->PageCaptured(&page_text, false);
+    Mock::VerifyAndClearExpectations(classifier);
+  }
 
   // Now run the callback to simulate the classifier finishing.
   ClientPhishingRequest verdict;

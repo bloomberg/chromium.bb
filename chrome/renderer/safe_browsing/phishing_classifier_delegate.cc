@@ -157,6 +157,12 @@ void PhishingClassifierDelegate::PageCaptured(string16* page_text,
   if (preliminary_capture) {
     return;
   }
+  // Make sure there's no classification in progress.  We don't want to swap
+  // out the page text string from underneath the term feature extractor.
+  //
+  // Note: Currently, if the url hasn't changed, we won't restart
+  // classification in this case.  We may want to adjust this.
+  CancelPendingClassification();
   last_finished_load_url_ = GetToplevelUrl();
   classifier_page_text_.swap(*page_text);
   have_page_text_ = true;
