@@ -144,6 +144,13 @@ bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
   bool was_successful = plugin->LoadNaClModule(wrapper.get(), &error_string);
   // Set the __moduleReady attribute to indicate ready to start.
   plugin->set_nacl_module_ready(was_successful);
+  if (!was_successful) {
+    // For reasons unknown, the message is garbled on windows.
+    // TODO(sehr): know the reasons, and fix this.
+    nacl::string fdprefix("__launchExecutableFromFd failed: ");
+    plugin->browser_interface()->AddToConsole(plugin->instance_id(),
+                                              fdprefix + error_string);
+  }
   return was_successful;
 }
 
