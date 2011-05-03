@@ -67,7 +67,11 @@ int SocketPair(Handle pair[2]) {
   // The read operation for a SOCK_SEQPACKET socket returns zero when the
   // remote peer closed the connection unlike a SOCK_DGRAM socket. Note
   // SOCK_SEQPACKET was introduced with Linux 2.6.4.
-  return socketpair(AF_UNIX, SOCK_SEQPACKET, 0, pair);
+  int rv = socketpair(AF_UNIX, SOCK_SEQPACKET, 0, pair);
+  if (rv != 0) {
+    NaClLog(LOG_ERROR, "SocketPair: socketpair failed, errno %d\n", errno);
+  }
+  return rv;
 }
 
 int Close(Handle handle) {

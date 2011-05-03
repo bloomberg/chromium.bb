@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -98,13 +98,11 @@ struct ControlBlock {
   // true if this descriptor has been transferred.
   bool transferred;
 };
-#endif  // !OSX_BLEMISH_HEURISTIC
 
 // The maximum number of I/O descriptors to manage with the IMC library;
 // Note the typical sysconf(_SC_OPEN_MAX) value is 256 on OS X.
 const int kMaxHandles = 2048;
 
-#if !OSX_BLEMISH_HEURISTIC
 // The global ControlBlock table indexed by the I/O descriptor number.
 ControlBlock control_table[kMaxHandles];
 #endif  // !OSX_BLEMISH_HEURISTIC
@@ -197,12 +195,14 @@ int SendDatagramTo(const MessageHeader* message, int flags,
 int SocketPair(Handle pair[2]) {
   int result = socketpair(AF_UNIX, SOCK_STREAM, 0, pair);
   if (result == 0) {
+#if !OSX_BLEMISH_HEURISTIC
     if (kMaxHandles <= pair[0] || kMaxHandles <= pair[1]) {
       close(pair[0]);
       close(pair[1]);
       errno = EMFILE;
       return -1;
     }
+#endif
 #if SIGPIPE_ALT_FIX
     if (!IgnoreSIGPIPE()) {
       close(pair[0]);
