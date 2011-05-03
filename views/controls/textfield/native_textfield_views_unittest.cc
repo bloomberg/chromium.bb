@@ -189,10 +189,6 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     return textfield_view_->context_menu_menu_.get();
   }
 
-  NativeTextfieldViews::ClickState GetClickState() {
-    return textfield_view_->click_state_;
-  }
-
  protected:
   void SendKeyEvent(ui::KeyboardCode key_code,
                     bool shift,
@@ -538,26 +534,23 @@ TEST_F(NativeTextfieldViewsTest, ContextMenuDisplayTest) {
 TEST_F(NativeTextfieldViewsTest, DoubleAndTripleClickTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
-  MouseEvent me(ui::ET_MOUSE_PRESSED, 0, 0, ui::EF_LEFT_BUTTON_DOWN);
-  EXPECT_EQ(NativeTextfieldViews::NONE, GetClickState());
+  MouseEvent click(ui::ET_MOUSE_PRESSED, 0, 0, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent double_click(ui::ET_MOUSE_PRESSED, 0, 0,
+                          ui::EF_LEFT_BUTTON_DOWN | ui::EF_IS_DOUBLE_CLICK);
 
   // Test for double click.
-  textfield_view_->OnMousePressed(me);
+  textfield_view_->OnMousePressed(click);
   EXPECT_STR_EQ("", textfield_->GetSelectedText());
-  EXPECT_EQ(NativeTextfieldViews::TRACKING_DOUBLE_CLICK, GetClickState());
-  textfield_view_->OnMousePressed(me);
+  textfield_view_->OnMousePressed(double_click);
   EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
-  EXPECT_EQ(NativeTextfieldViews::TRACKING_TRIPLE_CLICK, GetClickState());
 
   // Test for triple click.
-  textfield_view_->OnMousePressed(me);
+  textfield_view_->OnMousePressed(click);
   EXPECT_STR_EQ("hello world", textfield_->GetSelectedText());
-  EXPECT_EQ(NativeTextfieldViews::NONE, GetClickState());
 
   // Another click should reset back to single click.
-  textfield_view_->OnMousePressed(me);
+  textfield_view_->OnMousePressed(click);
   EXPECT_STR_EQ("", textfield_->GetSelectedText());
-  EXPECT_EQ(NativeTextfieldViews::TRACKING_DOUBLE_CLICK, GetClickState());
 }
 
 TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {

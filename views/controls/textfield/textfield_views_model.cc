@@ -301,32 +301,21 @@ void TextfieldViewsModel::MoveCursorToNextWord(bool select) {
 }
 
 void TextfieldViewsModel::MoveCursorToHome(bool select) {
-  if (HasCompositionText())
-    ConfirmCompositionText();
-  cursor_pos_ = 0;
-  if (!select)
-    ClearSelection();
+  MoveCursorTo(0, select);
 }
 
 void TextfieldViewsModel::MoveCursorToEnd(bool select) {
-  if (HasCompositionText())
-    ConfirmCompositionText();
-  cursor_pos_ = text_.length();
-  if (!select)
-    ClearSelection();
+  MoveCursorTo(text_.length(), select);
 }
 
 bool TextfieldViewsModel::MoveCursorTo(size_t pos, bool select) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  bool cursor_changed = false;
-  if (cursor_pos_ != pos) {
-    cursor_pos_ = pos;
-    cursor_changed = true;
-  }
+  bool changed = cursor_pos_ != pos || select != HasSelection();
+  cursor_pos_ = pos;
   if (!select)
     ClearSelection();
-  return cursor_changed;
+  return changed;
 }
 
 gfx::Rect TextfieldViewsModel::GetCursorBounds(const gfx::Font& font) const {

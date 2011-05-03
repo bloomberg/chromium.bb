@@ -66,9 +66,7 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
       insert_(true),
       is_cursor_visible_(false),
       skip_input_method_cancel_composition_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(cursor_timer_(this)),
-      last_mouse_press_time_(base::Time::FromInternalValue(0)),
-      click_state_(NONE) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(cursor_timer_(this)) {
   set_border(text_border_);
 
   // Multiline is not supported.
@@ -87,19 +85,50 @@ NativeTextfieldViews::~NativeTextfieldViews() {
 
 bool NativeTextfieldViews::OnMousePressed(const MouseEvent& event) {
   OnBeforeUserAction();
-  if (HandleMousePressed(event))
+  RequestFocus();
+
+  if (event.IsOnlyLeftMouseButton()) {
+    static size_t aggregated_clicks = 0;
+    static base::Time last_click_time = base::Time::FromInternalValue(0);
+    static gfx::Point last_click_location;
+    static View* last_click_view = NULL;
+    base::TimeDelta time_delta = event.time_stamp() - last_click_time;
+    gfx::Point location_delta = event.location().Subtract(last_click_location);
+    if (time_delta.InMilliseconds() <= GetDoubleClickInterval() &&
+        !ExceededDragThreshold(location_delta.x(), location_delta.y()) &&
+        last_click_view == this) {
+      aggregated_clicks = (aggregated_clicks + 1) % 3;
+    } else {
+      aggregated_clicks = 0;
+    }
+    last_click_time = event.time_stamp();
+    last_click_location = event.location();
+    last_click_view = this;
+
+    switch(aggregated_clicks) {
+      case 0:
+        MoveCursorTo(event.location(), event.IsShiftDown());
+        break;
+      case 1:
+        model_->SelectWord();
+        break;
+      case 2:
+        model_->SelectAll();
+        break;
+      default:
+        NOTREACHED();
+    }
     SchedulePaint();
+  }
+
   OnAfterUserAction();
   return true;
 }
 
 bool NativeTextfieldViews::OnMouseDragged(const MouseEvent& event) {
   OnBeforeUserAction();
-  size_t pos = FindCursorPosition(event.location());
-  if (model_->MoveCursorTo(pos, true)) {
-    UpdateCursorBoundsAndTextOffset();
+  if (MoveCursorTo(event.location(), true))
     SchedulePaint();
-  }
   OnAfterUserAction();
   return true;
 }
@@ -838,45 +867,20 @@ size_t NativeTextfieldViews::FindCursorPosition(const gfx::Point& point) const {
   return left_pos;
 }
 
-bool NativeTextfieldViews::HandleMousePressed(const views::MouseEvent& e) {
-  textfield_->RequestFocus();
-  base::TimeDelta time_delta = e.time_stamp() - last_mouse_press_time_;
-  gfx::Point location_delta = e.location().Subtract(last_mouse_press_location_);
-  last_mouse_press_time_ = e.time_stamp();
-  last_mouse_press_location_ = e.location();
-  if (e.IsLeftMouseButton()) {
-    if (!ExceededDragThreshold(location_delta.x(), location_delta.y())
-      && time_delta.InMilliseconds() <= GetDoubleClickInterval()) {
-      // Multiple mouse press detected. Check for double or triple.
-      switch (click_state_) {
-        case TRACKING_DOUBLE_CLICK:
-          click_state_ = TRACKING_TRIPLE_CLICK;
-          model_->SelectWord();
-          return true;
-        case TRACKING_TRIPLE_CLICK:
-          click_state_ = NONE;
-          model_->SelectAll();
-          return true;
-        case NONE:
-          click_state_ = TRACKING_DOUBLE_CLICK;
-          SetCursorForMouseClick(e);
-          return true;
-      }
-    } else {
-      // Single mouse press.
-      click_state_ = TRACKING_DOUBLE_CLICK;
-      SetCursorForMouseClick(e);
-      return true;
-    }
-  }
-  return false;
+bool NativeTextfieldViews::IsPointInSelection(const gfx::Point& point) const {
+  ui::Range range;
+  GetSelectedRange(&range);
+  size_t pos = FindCursorPosition(point);
+  return (pos >= range.GetMin() && pos < range.GetMax());
 }
 
-void NativeTextfieldViews::SetCursorForMouseClick(const views::MouseEvent& e) {
-  size_t pos = FindCursorPosition(e.location());
-  if (model_->MoveCursorTo(pos, false)) {
+bool NativeTextfieldViews::MoveCursorTo(const gfx::Point& point, bool select) {
+  size_t pos = FindCursorPosition(point);
+  if (model_->MoveCursorTo(pos, select)) {
     UpdateCursorBoundsAndTextOffset();
+    return true;
   }
+  return false;
 }
 
 void NativeTextfieldViews::PropagateTextChange() {

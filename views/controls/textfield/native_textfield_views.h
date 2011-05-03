@@ -38,7 +38,6 @@ class Menu2;
 // * X selection (only if we want to support).
 // * STYLE_MULTILINE, STYLE_LOWERCASE text. (These are not used in
 //   chromeos, so we may not need them)
-// * Double click to select word, and triple click to select all.
 // * Undo/Redo
 class NativeTextfieldViews : public View,
                              public ContextMenuController,
@@ -114,12 +113,6 @@ class NativeTextfieldViews : public View,
   // Enable/Disable TextfieldViews implementation for Textfield.
   static void SetEnableTextfieldViews(bool enabled);
 
-  enum ClickState {
-    TRACKING_DOUBLE_CLICK,
-    TRACKING_TRIPLE_CLICK,
-    NONE,
-  };
-
  protected:
   // View override.
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
@@ -176,12 +169,11 @@ class NativeTextfieldViews : public View,
   // Find a cusor position for given |point| in this views coordinates.
   size_t FindCursorPosition(const gfx::Point& point) const;
 
-  // Mouse event handler. Returns true if textfield needs to be repainted.
-  bool HandleMousePressed(const MouseEvent& e);
+  // Returns true if the local point is over the selected range of text.
+  bool IsPointInSelection(const gfx::Point& point) const;
 
-  // Helper function that sets the cursor position at the location of mouse
-  // event.
-  void SetCursorForMouseClick(const views::MouseEvent& e);
+  // Helper function to call MoveCursorTo on the TextfieldViewsModel.
+  bool MoveCursorTo(const gfx::Point& point, bool select);
 
   // Utility function to inform the parent textfield (and its controller if any)
   // that the text in the textfield has changed.
@@ -240,15 +232,6 @@ class NativeTextfieldViews : public View,
 
   // A runnable method factory for callback to update the cursor.
   ScopedRunnableMethodFactory<NativeTextfieldViews> cursor_timer_;
-
-  // Time of last LEFT mouse press. Used for tracking double/triple click.
-  base::Time last_mouse_press_time_;
-
-  // Position of last LEFT mouse press. Used for tracking double/triple click.
-  gfx::Point last_mouse_press_location_;
-
-  // State variable to track double and triple clicks.
-  ClickState click_state_;
 
   // Context menu and its content list for the textfield.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
