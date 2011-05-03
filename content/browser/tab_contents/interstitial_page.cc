@@ -357,6 +357,11 @@ void InterstitialPage::DidNavigate(
   render_view_host_->view()->Show();
   tab_->set_interstitial_page(this);
 
+  // Hide the bookmark bar. Note that this has to happen after the interstitial
+  // page was registered with |tab_|, since there will be a callback to |tab_|
+  // testing if an interstitial page is showing before hiding the bookmark bar.
+  tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_BOOKMARK_BAR);
+
   NotificationService::current()->Notify(
       NotificationType::INTERSTITIAL_ATTACHED,
       Source<TabContents>(tab_),
