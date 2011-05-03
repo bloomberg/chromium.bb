@@ -2871,9 +2871,9 @@
    fun:_ZN22InternetOptionsHandler18GetLocalizedValuesEP15DictionaryValue
    fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEP15DictionaryValueP20OptionsPageUIHandler
    fun:_ZN9OptionsUIC1EP11TabContents
-   fun:_Z8NewDOMUII9OptionsUIEP5DOMUIP11TabContentsRK4GURL
-   fun:_ZN12DOMUIFactory17CreateDOMUIForURLEP11TabContentsRK4GURL
-   fun:_ZN11TabContents27CreateDOMUIForRenderManagerERK4GURL
+   fun:*NewWebUII9OptionsUIEEP5WebUIP11TabContentsRK4GURL
+   fun:_ZNK18ChromeWebUIFactory17CreateWebUIForURLEP11TabContentsRK4GURL
+   fun:_ZN11TabContents27CreateWebUIForRenderManagerERK4GURL
 }
 {
    bug_58321
