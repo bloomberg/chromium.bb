@@ -6,7 +6,8 @@
 
 Import('env')
 
-if 'TRUSTED_ENV' in env and env['TRUSTED_ENV'].Bit('windows'):
+if 'TRUSTED_ENV' in env and (env['TRUSTED_ENV'].Bit('windows') or
+                             env['TRUSTED_ENV'].Bit('mac')):
   env.Append(CPPDEFINES=[
       # Number of milliseconds by which a thread is allowed to wake up
       # early, after invoking nanosleep (on Windows, implemnted via
