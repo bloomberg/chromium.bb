@@ -56,14 +56,14 @@ function navigateAndWait(url, callback) {
 //     relative order of "a" and "d" does not matter.
 // filter: filter dictionary passed on to the event subscription of the
 //     webRequest API.
-// blocking: whether request shall be blocking
-function expect(data, order, filter, blocking) {
+// extraInfoSpec: the union of all desired extraInfoSpecs for the events.
+function expect(data, order, filter, extraInfoSpec) {
   expectedEventData = data;
   capturedEventData = [];
   expectedEventOrder = order;
   eventsCaptured = chrome.test.callbackAdded();
   removeListeners();
-  initListeners(filter, blocking);
+  initListeners(filter || {}, extraInfoSpec || []);
 }
 
 function checkExpectations() {
@@ -151,15 +151,21 @@ function captureEvent(name, details) {
   return retval;
 }
 
-function initListeners(filter, blocking) {
+// Simple array intersection. We use this to filter extraInfoSpec so
+// that only the allowed specs are sent to each listener.
+function intersect(array1, array2) {
+  return array1.filter(function(x) { return array2.indexOf(x) != -1; });
+}
+
+function initListeners(filter, extraInfoSpec) {
   chrome.experimental.webRequest.onBeforeRequest.addListener(
       function(details) {
     return captureEvent("onBeforeRequest", details);
-  }, filter, blocking ? ["blocking"] : []);
+  }, filter, intersect(extraInfoSpec, ["blocking"]));
   chrome.experimental.webRequest.onBeforeSendHeaders.addListener(
       function(details) {
     return captureEvent("onBeforeSendHeaders", details);
-  }, filter, blocking ? ["blocking"] : []);
+  }, filter, intersect(extraInfoSpec, ["blocking", "requestHeaders"]));
   chrome.experimental.webRequest.onRequestSent.addListener(
       function(details) {
     return captureEvent("onRequestSent", details);
@@ -240,7 +246,7 @@ runTests([
   function simpleLoadHttp() {
     expect(
       [  // events
-        { label: "onBeforeRequest",
+        { label: "onBeforeRequest-1",
           event: "onBeforeRequest",
           details: {
             method: "GET",
@@ -269,6 +275,15 @@ runTests([
             url: URL_HTTP_SIMPLE_LOAD_REDIRECT,
             redirectUrl: URL_HTTP_SIMPLE_LOAD,
             statusCode: 301
+          }
+        },
+        { label: "onBeforeRequest-2",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            tabId: tabId,
+            type: "main_frame",
+            url: URL_HTTP_SIMPLE_LOAD
           }
         },
         { label: "onBeforeSendHeaders-2",
@@ -301,9 +316,12 @@ runTests([
         }
       ],
       [  // event order
-        ["onBeforeRequest", "onBeforeSendHeaders-1", "onRequestSent-1",
-         "onBeforeRedirect", "onBeforeSendHeaders-2", "onRequestSent-2",
-         "onResponseStarted", "onCompleted"] ]);
+        ["onBeforeRequest-1", "onBeforeSendHeaders-1", "onRequestSent-1",
+         "onBeforeRedirect",
+         "onBeforeRequest-2", "onBeforeSendHeaders-2", "onRequestSent-2",
+         "onResponseStarted", "onCompleted"] ],
+      {},
+      ["requestHeaders"]);
     navigateAndWait(URL_HTTP_SIMPLE_LOAD_REDIRECT);
   },
 
@@ -423,13 +441,15 @@ runTests([
         ["onBeforeRequest"]
       ],
       {},  // filter
-      true  // blocking
-      );
+      ["blocking"]);
     navigateAndWait(getURL("complexLoad/a.html"));
   },
 
   // Navigates to a page with a blocking handler that redirects to a different
   // page.
+  // TODO(mpcomplete): We should see an onBeforeRedirect as well, but our
+  // process switching logic cancels the original redirect request and
+  // starts a new one instead. See http://crbug.com/79520.
   function complexLoadRedirected() {
     expect(
       [  // events
@@ -443,10 +463,6 @@ runTests([
           },
           retval: {redirectUrl: getURL("simpleLoad/a.html")}
         },
-        // TODO(mpcomplete): This second event should not fire in general. Our
-        // process switching logic cancels the original redirect request and
-        // starts this new one. This should be an onBeforeRedirect instead. See
-        // http://crbug.com/79520.
         { label: "onBeforeRequest-2",
           event: "onBeforeRequest",
           details: {
@@ -476,8 +492,7 @@ runTests([
          "onCompleted"]
       ],
       {}, // filter
-      true  // blocking
-      );
+      ["blocking"]);
     navigateAndWait(getURL("complexLoad/a.html"));
   },
 
@@ -542,9 +557,7 @@ runTests([
         urls: [getURL("complexLoad/*")],
         types: ["main_frame", "image"],
         tabId: tabId
-      },
-      false  // blocking
-      );
+      });
     chrome.tabs.create({ url: getURL("simpleLoad/a.html") },
         function(newTab) {
       chrome.tabs.remove(newTab.id);
@@ -597,9 +610,9 @@ runTests([
           event: "onBeforeSendHeaders",
           details: {
             url: URL_ECHO_USER_AGENT,
-            requestHeadersExist: true,
+            // Note: no requestHeaders because we don't ask for them.
           },
-          retval: {requestHeaders: "User-Agent: FoobarUA"}
+          retval: {requestHeaders: [{name: "User-Agent", value: "FoobarUA"}]}
         },
         { label: "onRequestSent",
           event: "onRequestSent",
@@ -627,7 +640,7 @@ runTests([
         ["onBeforeRequest", "onBeforeSendHeaders", "onRequestSent",
          "onResponseStarted", "onCompleted"]
       ],
-      {}, true);
+      {}, ["blocking"]);
     // Check the page content for our modified User-Agent string.
     navigateAndWait(URL_ECHO_USER_AGENT, function() {
       chrome.test.listenOnce(chrome.extension.onRequest, function(request) {

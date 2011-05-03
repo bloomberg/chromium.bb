@@ -153,20 +153,23 @@ class ExtensionWebRequestEventRouter {
       const ListValue& args);
 
   // Returns a list of event listeners that care about the given event, based
-  // on their filter parameters.
+  // on their filter parameters. |extra_info_spec| will contain the combined
+  // set of extra_info_spec flags that every matching listener asked for.
   std::vector<const EventListener*> GetMatchingListeners(
       ProfileId profile_id,
       const std::string& event_name,
       const GURL& url,
       int tab_id,
       int window_id,
-      ResourceType::Type resource_type);
+      ResourceType::Type resource_type,
+      int* extra_info_spec);
 
   // Same as above, but retrieves the filter parameters from the request.
   std::vector<const EventListener*> GetMatchingListeners(
       ProfileId profile_id,
       const std::string& event_name,
-      net::URLRequest* request);
+      net::URLRequest* request,
+      int* extra_info_spec);
 
   // Decrements the count of event handlers blocking the given request. When the
   // count reaches 0 (or immediately if the request is being cancelled or

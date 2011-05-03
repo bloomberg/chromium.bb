@@ -3541,6 +3541,18 @@
         }
       },
       {
+        "id": "HttpHeaders",
+        "type": "array",
+        "description": "An array of HTTP headers, in the form of name/value pairs.",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string"},
+            "value": {"type": "string"}
+          }
+        }
+      },
+      {
         "id": "BlockingResponse",
         "type": "object",
         "description": "Return value for event handlers that have the 'blocking' extraInfoSpec applied. Allows the event handler to modify network requests.",
@@ -3556,7 +3568,7 @@
             "description": "Only used as a response to the onBeforeRequest event. If set, the original request is prevented from being sent and is instead redirected to the given URL."
           },
           "requestHeaders": {
-            "type": "string",
+            "$ref": "HttpHeaders",
             "optional": true,
             "description": "Only used as a response to the onBeforeSendHeaders event. If set, the request is made with these request headers instead. The headers should be delimited by literal \"\\r\\n\" substrings."
           }
@@ -3584,7 +3596,7 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["requestLine", "requestHeaders", "statusLine", "responseHeaders", "redirectRequestLine", "redirectRequestHeaders", "blocking"]
+              "enum": ["requestLine", "requestHeaders", "statusLine", "responseHeaders", "blocking"]
             }
           },
           {"type": "string", "name": "eventName"},
@@ -3663,7 +3675,7 @@
               "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
               "url": {"type": "string"},
               "timeStamp": {"type": "number", "description": "The time when the browser was about to send headers, in milliseconds since the epoch."},
-              "requestHeaders": {"type": "string", "description": "The HTTP request headers that are going to be sent out with this request."}
+              "requestHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP request headers that are going to be sent out with this request."}
             }
           }
         ],
@@ -3792,7 +3804,7 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["statusLine", "responseHeaders", "redirectRequestLine", "redirectRequestHeaders"]
+              "enum": ["statusLine", "responseHeaders"]
             }
           }
         ]

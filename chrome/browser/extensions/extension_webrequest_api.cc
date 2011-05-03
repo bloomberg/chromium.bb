@@ -163,9 +163,7 @@ struct ExtensionWebRequestEventRouter::ExtraInfoSpec {
     REQUEST_HEADERS = 1<<1,
     STATUS_LINE = 1<<2,
     RESPONSE_HEADERS = 1<<3,
-    REDIRECT_REQUEST_LINE = 1<<4,
-    REDIRECT_REQUEST_HEADERS = 1<<5,
-    BLOCKING = 1<<6,
+    BLOCKING = 1<<4,
   };
 
   static bool InitFromValue(const ListValue& value, int* extra_info_spec);
@@ -277,7 +275,6 @@ bool ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
     if (!value.GetString(i, &str))
       return false;
 
-    // TODO(mpcomplete): not all of these are valid for every event.
     if (str == "requestLine")
       *extra_info_spec |= REQUEST_LINE;
     else if (str == "requestHeaders")
@@ -286,10 +283,6 @@ bool ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
       *extra_info_spec |= STATUS_LINE;
     else if (str == "responseHeaders")
       *extra_info_spec |= RESPONSE_HEADERS;
-    else if (str == "redirectRequestLine")
-      *extra_info_spec |= REDIRECT_REQUEST_LINE;
-    else if (str == "redirectRequestHeaders")
-      *extra_info_spec |= REDIRECT_REQUEST_HEADERS;
     else if (str == "blocking")
       *extra_info_spec |= BLOCKING;
     else
@@ -334,9 +327,10 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   ResourceType::Type resource_type = ResourceType::LAST_TYPE;
   ExtractRequestInfo(request, &tab_id, &window_id, &resource_type);
 
+  int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile_id, keys::kOnBeforeRequest, request->url(),
-                           tab_id, window_id, resource_type);
+                           tab_id, window_id, resource_type, &extra_info_spec);
   if (listeners.empty())
     return net::OK;
 
@@ -351,8 +345,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   dict->SetString(keys::kMethodKey, request->method());
   dict->SetInteger(keys::kTabIdKey, tab_id);
   dict->SetString(keys::kTypeKey, ResourceTypeToString(resource_type));
-  dict->SetDouble(keys::kTimeStampKey,
-                  request->request_time().ToDoubleT() * 1000);
+  dict->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
   args.Append(dict);
 
   if (DispatchEvent(profile_id, event_router, request, listeners, args)) {
@@ -383,8 +376,10 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   if (GetAndSetSignaled(request->identifier(), kOnBeforeSendHeaders))
     return net::OK;
 
+  int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
-      GetMatchingListeners(profile_id, keys::kOnBeforeSendHeaders, request);
+      GetMatchingListeners(profile_id, keys::kOnBeforeSendHeaders, request,
+                           &extra_info_spec);
   if (listeners.empty())
     return net::OK;
 
@@ -394,8 +389,18 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
                   base::Uint64ToString(request->identifier()));
   dict->SetString(keys::kUrlKey, request->url().spec());
   dict->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
-  // TODO(mpcomplete): better format for headers?
-  dict->SetString(keys::kRequestHeadersKey, headers->ToString());
+
+  if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS) {
+    ListValue* headers_value = new ListValue();
+    for (net::HttpRequestHeaders::Iterator it(*headers); it.GetNext(); ) {
+      DictionaryValue* header = new DictionaryValue();
+      header->SetString(keys::kHeaderNameKey, it.name());
+      header->SetString(keys::kHeaderValueKey, it.name());
+      headers_value->Append(header);
+    }
+    dict->Set(keys::kRequestHeadersKey, headers_value);
+  }
+
   args.Append(dict);
 
   if (DispatchEvent(profile_id, event_router, request, listeners, args)) {
@@ -427,8 +432,10 @@ void ExtensionWebRequestEventRouter::OnRequestSent(
 
   ClearSignaled(request->identifier(), kOnBeforeRedirect);
 
+  int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
-      GetMatchingListeners(profile_id, keys::kOnRequestSent, request);
+      GetMatchingListeners(profile_id, keys::kOnRequestSent, request,
+                           &extra_info_spec);
   if (listeners.empty())
     return;
 
@@ -457,11 +464,14 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   if (GetAndSetSignaled(request->identifier(), kOnBeforeRedirect))
     return;
 
+  ClearSignaled(request->identifier(), kOnBeforeRequest);
   ClearSignaled(request->identifier(), kOnBeforeSendHeaders);
   ClearSignaled(request->identifier(), kOnRequestSent);
 
+  int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
-      GetMatchingListeners(profile_id, keys::kOnBeforeRedirect, request);
+      GetMatchingListeners(profile_id, keys::kOnBeforeRedirect, request,
+                           &extra_info_spec);
   if (listeners.empty())
     return;
 
@@ -475,8 +485,7 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   dict->SetString(keys::kRedirectUrlKey, new_location.spec());
   dict->SetInteger(keys::kStatusCodeKey, http_status_code);
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
-  // TODO(battre): support "statusLine", "responseHeaders",
-  //     "redirectRequestLine" and "redirectRequestHeaders".
+  // TODO(battre): support "statusLine", "responseHeaders"
   args.Append(dict);
 
   DispatchEvent(profile_id, event_router, request, listeners, args);
@@ -495,8 +504,10 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
 
   base::Time time(base::Time::Now());
 
+  int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
-      GetMatchingListeners(profile_id, keys::kOnResponseStarted, request);
+      GetMatchingListeners(profile_id, keys::kOnResponseStarted, request,
+                           &extra_info_spec);
   if (listeners.empty())
     return;
 
@@ -531,8 +542,10 @@ void ExtensionWebRequestEventRouter::OnCompleted(
 
   base::Time time(base::Time::Now());
 
+  int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
-      GetMatchingListeners(profile_id, keys::kOnCompleted, request);
+      GetMatchingListeners(profile_id, keys::kOnCompleted, request,
+                           &extra_info_spec);
   if (listeners.empty())
     return;
 
@@ -567,8 +580,10 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
 
   base::Time time(base::Time::Now());
 
+  int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
-      GetMatchingListeners(profile_id, keys::kOnErrorOccurred, request);
+      GetMatchingListeners(profile_id, keys::kOnErrorOccurred, request,
+                           &extra_info_spec);
   if (listeners.empty())
     return;
 
@@ -612,13 +627,20 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     const std::vector<const EventListener*>& listeners,
     const ListValue& args) {
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
 
   // TODO(mpcomplete): Consider consolidating common (extension_id,json_args)
   // pairs into a single message sent to a list of sub_event_names.
   int num_handlers_blocking = 0;
   for (std::vector<const EventListener*>::const_iterator it = listeners.begin();
        it != listeners.end(); ++it) {
+    // Filter out the optional keys that this listener didn't request.
+    scoped_ptr<ListValue> args_filtered(args.DeepCopy());
+    DictionaryValue* dict = NULL;
+    CHECK(args_filtered->GetDictionary(0, &dict) && dict);
+    if (!((*it)->extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS))
+      dict->Remove(keys::kRequestHeadersKey, NULL);
+
+    base::JSONWriter::Write(args_filtered.get(), false, &json_args);
     event_router->DispatchEventToExtension(
         (*it)->extension_id, (*it)->sub_event_name, json_args,
         profile_id, true, GURL());
@@ -726,9 +748,12 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
     const GURL& url,
     int tab_id,
     int window_id,
-    ResourceType::Type resource_type) {
+    ResourceType::Type resource_type,
+    int* extra_info_spec) {
   // TODO(mpcomplete): handle profile_id == invalid (should collect all
   // listeners).
+  *extra_info_spec = 0;
+
   std::vector<const EventListener*> matching_listeners;
   std::set<EventListener>& listeners = listeners_[profile_id][event_name];
   for (std::set<EventListener>::iterator it = listeners.begin();
@@ -745,6 +770,7 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
       continue;
 
     matching_listeners.push_back(&(*it));
+    *extra_info_spec |= it->extra_info_spec;
   }
   return matching_listeners;
 }
@@ -753,14 +779,16 @@ std::vector<const ExtensionWebRequestEventRouter::EventListener*>
 ExtensionWebRequestEventRouter::GetMatchingListeners(
     ProfileId profile_id,
     const std::string& event_name,
-    net::URLRequest* request) {
+    net::URLRequest* request,
+    int* extra_info_spec) {
   int tab_id = -1;
   int window_id = -1;
   ResourceType::Type resource_type = ResourceType::LAST_TYPE;
   ExtractRequestInfo(request, &tab_id, &window_id, &resource_type);
 
   return GetMatchingListeners(
-      profile_id, event_name, request->url(), tab_id, window_id, resource_type);
+      profile_id, event_name, request->url(), tab_id, window_id, resource_type,
+      extra_info_spec);
 }
 
 void ExtensionWebRequestEventRouter::DecrementBlockCount(
@@ -911,11 +939,23 @@ bool WebRequestEventHandled::RunImpl() {
     }
 
     if (value->HasKey("requestHeaders")) {
-      std::string request_headers_str;
+      ListValue* request_headers_value = NULL;
       request_headers.reset(new net::HttpRequestHeaders());
-      EXTENSION_FUNCTION_VALIDATE(value->GetString("requestHeaders",
-                                                   &request_headers_str));
-      request_headers->AddHeadersFromString(request_headers_str);
+      EXTENSION_FUNCTION_VALIDATE(value->GetList(keys::kRequestHeadersKey,
+                                                 &request_headers_value));
+      for (size_t i = 0; i < request_headers_value->GetSize(); ++i) {
+        DictionaryValue* header_value = NULL;
+        std::string name;
+        std::string value;
+        EXTENSION_FUNCTION_VALIDATE(
+            request_headers_value->GetDictionary(i, &header_value));
+        EXTENSION_FUNCTION_VALIDATE(
+            header_value->GetString(keys::kHeaderNameKey, &name));
+        EXTENSION_FUNCTION_VALIDATE(
+            header_value->GetString(keys::kHeaderValueKey, &value));
+
+        request_headers->SetHeader(name, value);
+      }
     }
   }
 

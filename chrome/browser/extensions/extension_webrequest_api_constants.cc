@@ -17,6 +17,8 @@ const char kTimeStampKey[] = "timeStamp";
 const char kTypeKey[] = "type";
 const char kUrlKey[] = "url";
 const char kRequestHeadersKey[] = "requestHeaders";
+const char kHeaderNameKey[] = "name";
+const char kHeaderValueKey[] = "value";
 
 const char kOnBeforeRedirect[] = "experimental.webRequest.onBeforeRedirect";
 const char kOnBeforeRequest[] = "experimental.webRequest.onBeforeRequest";

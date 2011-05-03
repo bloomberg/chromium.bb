@@ -22,6 +22,9 @@ extern const char kTimeStampKey[];
 extern const char kTypeKey[];
 extern const char kUrlKey[];
 extern const char kRequestHeadersKey[];
+extern const char kHeadersKey[];
+extern const char kHeaderNameKey[];
+extern const char kHeaderValueKey[];
 
 // Events.
 extern const char kOnBeforeRedirect[];
