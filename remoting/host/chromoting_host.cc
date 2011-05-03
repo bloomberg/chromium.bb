@@ -171,56 +171,11 @@ void ChromotingHost::Shutdown() {
   }
 }
 
-// This method is called when a client connects.
-void ChromotingHost::OnClientConnected(ConnectionToClient* connection) {
-  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
-}
-
-void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
-  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
-
-  // Find the client session corresponding to the given connection.
-  std::vector<scoped_refptr<ClientSession> >::iterator client;
-  for (client = clients_.begin(); client != clients_.end(); ++client) {
-    if (client->get()->connection() == connection)
-      break;
-  }
-  if (client == clients_.end())
-    return;
-
-  // Remove the connection from the session manager and stop the session.
-  // TODO(hclam): Stop only if the last connection disconnected.
-  if (recorder_.get()) {
-    recorder_->RemoveConnection(connection);
-    // The recorder only exists to serve the unique authenticated client.
-    // If that client has disconnected, then we can kill the recorder.
-    if (client->get()->authenticated()) {
-      recorder_->Stop(NULL);
-      recorder_ = NULL;
-    }
-  }
-
-  // Close the connection to connection just to be safe.
-  connection->Disconnect();
-
-  // Also remove reference to ConnectionToClient from this object.
-  clients_.erase(client);
-
-  if (!HasAuthenticatedClients())
-    EnableCurtainMode(false);
-}
-
 ////////////////////////////////////////////////////////////////////////////
 // protocol::ConnectionToClient::EventHandler implementations
 void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
   DCHECK_EQ(context_->network_message_loop(), MessageLoop::current());
-
-  // Completes the connection to the client.
   VLOG(1) << "Connection to client established.";
-  context_->main_message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &ChromotingHost::OnClientConnected,
-                        make_scoped_refptr(connection)));
 }
 
 void ChromotingHost::OnConnectionClosed(ConnectionToClient* connection) {
@@ -347,12 +302,42 @@ void ChromotingHost::set_protocol_config(
   protocol_config_.reset(config);
 }
 
-void ChromotingHost::AddClient(ClientSession* client) {
-  clients_.push_back(client);
-}
-
 void ChromotingHost::OnServerClosed() {
   // Don't need to do anything here.
+}
+
+void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
+  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
+
+  // Find the client session corresponding to the given connection.
+  std::vector<scoped_refptr<ClientSession> >::iterator client;
+  for (client = clients_.begin(); client != clients_.end(); ++client) {
+    if (client->get()->connection() == connection)
+      break;
+  }
+  if (client == clients_.end())
+    return;
+
+  // Remove the connection from the session manager and stop the session.
+  // TODO(hclam): Stop only if the last connection disconnected.
+  if (recorder_.get()) {
+    recorder_->RemoveConnection(connection);
+    // The recorder only exists to serve the unique authenticated client.
+    // If that client has disconnected, then we can kill the recorder.
+    if (client->get()->authenticated()) {
+      recorder_->Stop(NULL);
+      recorder_ = NULL;
+    }
+  }
+
+  // Close the connection to connection just to be safe.
+  connection->Disconnect();
+
+  // Also remove reference to ConnectionToClient from this object.
+  clients_.erase(client);
+
+  if (!HasAuthenticatedClients())
+    EnableCurtainMode(false);
 }
 
 // TODO(sergeyu): Move this to SessionManager?

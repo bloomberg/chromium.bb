@@ -89,12 +89,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Asynchronously shutdown the host process.
   void Shutdown();
 
-  // This method is called if a client is connected to this object.
-  void OnClientConnected(protocol::ConnectionToClient* client);
-
-  // This method is called if a client is disconnected from the host.
-  void OnClientDisconnected(protocol::ConnectionToClient* client);
-
   ////////////////////////////////////////////////////////////////////////////
   // protocol::ConnectionToClient::EventHandler implementations
   virtual void OnConnectionOpened(protocol::ConnectionToClient* client);
@@ -121,11 +115,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // |config| is transferred to the object. Must be called before Start().
   void set_protocol_config(protocol::CandidateSessionConfig* config);
 
-  // This setter is only used in unit test to simulate client connection.
-  void AddClient(ClientSession* client);
-
  private:
   friend class base::RefCountedThreadSafe<ChromotingHost>;
+  friend class ChromotingHostTest;
 
   ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config,
                  DesktopEnvironment* environment);
@@ -139,6 +131,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // Callback for protocol::SessionManager::Close().
   void OnServerClosed();
+
+  // This method is called if a client is disconnected from the host.
+  void OnClientDisconnected(protocol::ConnectionToClient* client);
 
   // Creates encoder for the specified configuration.
   Encoder* CreateEncoder(const protocol::SessionConfig* config);

@@ -160,14 +160,8 @@ class ChromotingHostTest : public testing::Test {
 
     context_.network_message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(host_.get(),
-                          &ChromotingHost::AddClient,
-                          client));
-    context_.network_message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(host_.get(),
-                          &ChromotingHost::OnClientConnected,
-                          connection));
+        NewRunnableFunction(&ChromotingHostTest::AddClientToHost,
+                            host_, client));
     context_.network_message_loop()->PostTask(
         FROM_HERE,
         NewRunnableMethod(client.get(),
@@ -183,6 +177,11 @@ class ChromotingHostTest : public testing::Test {
         NewRunnableMethod(host_.get(),
                           &ChromotingHost::OnClientDisconnected,
                           connection_));
+  }
+
+  static void AddClientToHost(scoped_refptr<ChromotingHost> host,
+                              scoped_refptr<ClientSession> session) {
+    host->clients_.push_back(session);
   }
 
  protected:
