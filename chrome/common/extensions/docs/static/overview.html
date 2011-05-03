@@ -245,10 +245,30 @@ For details, see
 <h2 id="arch">Architecture</h2>
 
 <p>
-Most extensions have a
-<a href="background_pages.html">background page</a>,
+Many extensions have a <em>background page</em>,
 an invisible page
 that holds the main logic of the extension.
+An extension can also contain other pages
+that present the extension's UI.
+If an extension needs to interact with web pages that the user loads
+(as opposed to pages that are included in the extension),
+then the extension must use a content script.
+</p>
+
+
+<h3 id="background_page">The background page</h3>
+
+<p>
+The following figure shows a browser
+that has at least two extensions installed:
+a browser action (yellow icon)
+and a page action (blue icon).
+Both the browser action and the page action
+have background pages defined by HTML files.
+This figure shows the browser action's background page,
+which is defined by <code>background.html</code>
+and has JavaScript code that controls
+the behavior of the browser action in both windows.
 </p>
 
 <img src="images/overview/arch-1.gif"
@@ -256,29 +276,60 @@ that holds the main logic of the extension.
  alt="Two windows and a box representing a background page (background.html). One window has a yellow icon; the other has both a yellow icon and a blue icon. The yellow icons are connected to the background page." />
 
 <p>
-The preceding figure shows a browser
-that has at least two extensions installed:
-a browser action (yellow icon)
-and a page action (blue icon).
-The browser action's background page,
-which is defined by an HTML file
-(<code>background.html</code>),
-has JavaScript code that controls
-the behavior of the browser action in both windows.
+Although background pages can be useful,
+don't use one if you don't need it.
+Background pages are always open,
+so when a user installs many extensions that have background pages,
+Chrome's performance can suffer.
 </p>
 
-
-<h3 id="pages">Pages</h3>
+<!-- PENDING: Perhaps show a picture of many background page processes.
+  This could build on a figure that shows the process architecture,
+  and perhaps the differences between packaged apps and extensions. -->
 
 <p>
-The background page isn't the only HTML page
-that an extension can have.
+Here are some examples of extensions that usually
+<b>do not need</b> a background page:
+</p>
+
+<ul>
+  <li> An extension with a browser action that
+    presents its UI solely through a popup
+    (and perhaps an options page).
+  </li>
+  <li> 
+    An extension that provides an <em>override page</em>&mdash;a
+    page that replaces a standard Chrome page.
+  </li>
+  <li>
+    An extension with a content script
+    that doesn't use cross-origin XMLHttpRequests or localStorage,
+    and that doesn't need to use
+    <a href="api_index.html">extension APIs</a>.
+  </li>
+  <li>
+    An extension that has no UI except for an options page.
+  </li>
+</ul>
+
+<p>
+See <a href="background_pages.html">Background Pages</a>
+for more details.
+</p>
+
+<h3 id="pages">UI pages</h3>
+
+<p>
+Extensions can contain ordinary HTML pages that display the extension's UI.
 For example, a browser action can have a popup,
 which is implemented by an HTML file.
-Extensions can also
-use <a href="tabs.html#Method-create"><code>chrome.tabs.create()</code></a>
+Any extension can have an options page,
+which lets users customize how the extension works.
+Another type of special page is the override page.
+And finally, you can
+use <a href="tabs.html#method-create"><code>chrome.tabs.create()</code></a>
 or <code>window.open()</code>
-to display HTML files that are in the extension.
+to display any other HTML files that are in the extension.
 </p>
 
 <p>
@@ -287,15 +338,20 @@ have complete access to each other's DOMs,
 and they can invoke functions on each other.
 </p>
 
+<!-- PENDING: Change the following example and figure
+to use something that's not a popup?
+(It might lead people to think that popups need background pages.) -->
+
 <p>
 The following figure shows the architecture
 of a browser action's popup.
 The popup's contents are a web page
 defined by an HTML file
 (<code>popup.html</code>).
+This extension also happens to have a background page
+(<code>background.html</code>).
 The popup doesn't need to duplicate code
 that's in the background page
-(<code>background.html</code>)
 because the popup can invoke functions on the background page.
 </p>
 
@@ -304,8 +360,10 @@ because the popup can invoke functions on the background page.
  alt="A browser window containing a browser action that's displaying a popup. The popup's HTML file (popup.html) can communicate with the extension's background page (background.html)." />
 
 <p>
-See the <a href="browserAction.html">Browser Actions</a> page and
-the <a href="#pageComm">Communication between pages</a> section
+See <a href="browserAction.html">Browser Actions</a>,
+<a href="options.html">Options</a>,
+<a href="override.html">Override Pages</a>,
+and the <a href="#pageComm">Communication between pages</a> section
 for more details.
 </p>
 

@@ -2,6 +2,13 @@ This directory contains files that we've used to create images. If you
 need to change images, edit these files instead of the gif/png files
 that are derived from them.
 
+Most of the images in this directory are either OmniGraffle files or
+full-size images that we reduced or combined to produce the images
+that we display in the doc.
+
+NOTE: No page should point to images/intermediate/<any file>
+
+
 overview-arch.graffle
 -----
 An OmniGraffle file used to create the arch-* figures in overview.html.

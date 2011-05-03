@@ -1,3 +1,6 @@
+<div id="pageData-name" class="pageData">Override Pages</div>
+<div id="pageData-showTOC" class="pageData">true</div>
+
 <style>
 #pics {
   margin:2em 1em 1.5em;
@@ -17,9 +20,6 @@
   border:none;
 }
 </style>
-
-<div id="pageData-title" class="pageData">Override Pages</div>
-<div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
 Override pages are a way to substitute an HTML file from your extension
@@ -60,19 +60,23 @@ An extension can replace any one of the following pages:
 <p class="note">
 <b>Note:</b>
 A single extension can override
-only one page.
+<b>only one page</b>.
+For example, an extension can't override both
+the Bookmark Manager and History pages.
 </p>
 
-<p class="note">
-<b>Note:</b>
-If you want to override the page in incognito windows as well, make sure to
-specify "spanning" mode for the <a href="manifest.html#incognito">incognito</a>
-manifest property.
-</p>
-
-<p class="note">
-<b>Note:</b>
-You cannot override the New Tab page in incognito windows.
+<p>
+Incognito windows are treated specially.
+New Tab pages cannot be overridden in incognito windows.
+Other override pages work in incognito windows
+as long as the
+<a href="manifest.html#incognito">incognito</a>
+manifest property is set to "spanning"
+(which is the default value for extensions
+but not for packaged apps).
+See <a href="overview.html#incognito">Saving data and incognito mode</a>
+in the Overview for more details on how you should treat
+incognito windows.
 </p>
 
 <p>
@@ -178,12 +182,6 @@ For an effective override page, follow these guidelines:
 <h2 id="examples"> Examples </h2>
 
 <p>
-You can find simple examples of defining override pages in the
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/override/">examples/api/override</a>
-directory.
-For other examples and for help in viewing the source code, see
-<a href="samples.html">Samples</a>.
+See the
+<a href="samples.html#chrome_url_overrides">override samples</a>.
 </p>
-
-
-<!-- [PENDING: Maybe have a gallery of NTPs?] -->
