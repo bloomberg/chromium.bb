@@ -84,8 +84,6 @@ header {
 }
 
 body header {
- margin-bottom: -153px;
- min-height: 152px;
  position: absolute;
 }
 
@@ -116,6 +114,17 @@ body header > h1 {
   margin-bottom: 10px;
   max-width: 616px;
   position: relative;
+}
+
+#print-header {
+  -webkit-padding-end: 16px;
+  font-size: 13px;
+  line-height: 22px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  max-width: 616px;
+  position: relative;
+  text-align: center;
 }
 
 p {
@@ -210,8 +219,6 @@ button.default {
   border-color: #808080;
   border-width: 2px;
   font-weight: 600;
-  padding-bottom: 7px;
-  padding-top: 7px;
 }
 
 button.default:disabled {
@@ -265,12 +272,6 @@ button.active {
   border-color: #808080;
   position: relative;
   text-shadow: 0 1px 0 rgba(255, 255, 255, .25);
-}
-
-button.default:not(:disabled):not(.disabled):active,
-button.default.active {
-  padding-bottom: 6px;
-  padding-top: 8px;
 }
 
 input[type='text'] + button {
@@ -500,6 +501,7 @@ select {
   padding-bottom: 3px;
   padding-top: 3px;
   text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+  width: 100%;
 }
 
 html[dir='rtl'] select {
@@ -604,17 +606,16 @@ input[type='radio']:focus {
 }
 
 body #main:before {
- height: 152px;
+ height: 120px;
 }
 
 body #individual-pages {
  width: 75%;
 }
 
-body #print-summary {
+#print-summary {
   display: block;
-  height: 40px;
-  margin-bottom: 20px;
+  height: 30px;
 }
 
 #collate-option {
