@@ -132,10 +132,10 @@ function updateWithPrinterCapabilities(settingInfo) {
   var colorOption = $('color');
   var bwOption = $('bw');
 
-  if (disableColorOption != colorOption.disabled) {
-    colorOption.disabled = disableColorOption;
-    bwOption.disabled = disableColorOption;
-  }
+  if (disableColorOption)
+    $('color-options').classList.add("hidden");
+  else
+    $('color-options').classList.remove("hidden");
 
   if (colorOption.checked != setColorAsDefault) {
     colorOption.checked = setColorAsDefault;

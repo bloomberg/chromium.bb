@@ -169,6 +169,10 @@ hr.invisible {
   visibility: hidden;
 }
 
+.hidden + hr {
+  display: none;
+}
+
 a {
   -webkit-transition: text-shadow 150ms;
   color: #4080fa;
