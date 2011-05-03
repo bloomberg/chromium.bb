@@ -2567,6 +2567,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     gives no indication of success or failure.
     Should be logged in to work.
     """
+    assert self.GetLoginInfo()['is_logged_in'], \
+        'Trying to log out when already logged out.'
     self.ApplyAccelerator(IDC_EXIT)
 
   def LockScreen(self):
