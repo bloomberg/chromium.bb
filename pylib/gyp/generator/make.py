@@ -510,7 +510,8 @@ class MakefileWriter:
   Its only real entry point is Write(), and is mostly used for namespacing.
   """
 
-  def __init__(self):
+  def __init__(self, generator_flags):
+    self.generator_flags = generator_flags
     # Keep track of the total number of outputs for this makefile.
     self._num_outputs = 0
 
@@ -1149,6 +1150,84 @@ class MakefileWriter:
     self.WriteLn()
 
 
+  def WriteAndroidNdkModuleRule(self, module_name, all_sources, link_deps):
+    """Write a set of LOCAL_XXX definitions for Android NDK.
+
+    These variable definitions will be used by Android NDK but do nothing for
+    non-Android applications.
+
+    Arguments:
+      module_name: Android NDK module name, which must be unique among all
+          module names.
+      all_sources: A list of source files (will be filtered by Compilable).
+      link_deps: A list of link dependencies, which must be sorted in
+          the order from dependencies to dependents.
+    """
+    if self.type not in ('executable', 'shared_library', 'static_library'):
+      return
+
+    self.WriteLn('# Variable definitions for Android applications')
+    self.WriteLn('include $(CLEAR_VARS)')
+    self.WriteLn('LOCAL_MODULE := ' + module_name)
+    self.WriteLn('LOCAL_CFLAGS := $(CFLAGS_$(BUILDTYPE)) '
+                 '$(DEFS_$(BUILDTYPE)) '
+                 # LOCAL_CFLAGS is applied to both of C and C++.  There is
+                 # no way to specify $(CFLAGS_C_$(BUILDTYPE)) only for C
+                 # sources.
+                 '$(CFLAGS_C_$(BUILDTYPE)) '
+                 # $(INCS_$(BUILDTYPE)) includes the prefix '-I' while
+                 # LOCAL_C_INCLUDES does not expect it.  So put it in
+                 # LOCAL_CFLAGS.
+                 '$(INCS_$(BUILDTYPE))')
+    # LOCAL_CXXFLAGS is obsolete and LOCAL_CPPFLAGS is preferred.
+    self.WriteLn('LOCAL_CPPFLAGS := $(CFLAGS_CC_$(BUILDTYPE))')
+    self.WriteLn('LOCAL_C_INCLUDES :=')
+    self.WriteLn('LOCAL_LDLIBS := $(LDFLAGS_$(BUILDTYPE)) $(LIBS)')
+
+    # Detect the C++ extension.
+    cpp_ext = {'.cc': 0, '.cpp': 0, '.cxx': 0}
+    default_cpp_ext = '.cpp'
+    for filename in all_sources:
+      ext = os.path.splitext(filename)[1]
+      if ext in cpp_ext:
+        cpp_ext[ext] += 1
+        if cpp_ext[ext] > cpp_ext[default_cpp_ext]:
+          default_cpp_ext = ext
+    self.WriteLn('LOCAL_CPP_EXTENSION := ' + default_cpp_ext)
+
+    self.WriteList(map(self.Absolutify, filter(Compilable, all_sources)),
+                   'LOCAL_SRC_FILES')
+
+    # Filter out those which do not match prefix and suffix and produce
+    # the resulting list without prefix and suffix.
+    def DepsToModules(deps, prefix, suffix):
+      modules = []
+      for filepath in deps:
+        filename = os.path.basename(filepath)
+        if filename.startswith(prefix) and filename.endswith(suffix):
+          modules.append(filename[len(prefix):-len(suffix)])
+      return modules
+
+    self.WriteList(
+        DepsToModules(link_deps,
+                      generator_default_variables['SHARED_LIB_PREFIX'],
+                      generator_default_variables['SHARED_LIB_SUFFIX']),
+        'LOCAL_SHARED_LIBRARIES')
+    self.WriteList(
+        DepsToModules(link_deps,
+                      generator_default_variables['STATIC_LIB_PREFIX'],
+                      generator_default_variables['STATIC_LIB_SUFFIX']),
+        'LOCAL_STATIC_LIBRARIES')
+
+    if self.type == 'executable':
+      self.WriteLn('include $(BUILD_EXECUTABLE)')
+    elif self.type == 'shared_library':
+      self.WriteLn('include $(BUILD_SHARED_LIBRARY)')
+    elif self.type == 'static_library':
+      self.WriteLn('include $(BUILD_STATIC_LIBRARY)')
+    self.WriteLn()
+
+
   def WriteLn(self, text=''):
     self.fp.write(text + '\n')
 
@@ -1159,6 +1238,7 @@ class MakefileWriter:
       path = path.replace('$(obj)/', '$(obj).%s/$(TARGET)/' % self.toolset)
       return path
     return '$(obj).%s/$(TARGET)/%s' % (self.toolset, path)
+
 
   def Absolutify(self, path):
     """Convert a subdirectory-relative path into a base-relative path.
@@ -1273,6 +1353,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
   generator_flags = params.get('generator_flags', {})
   builddir_name = generator_flags.get('output_dir', 'out')
+  android_ndk_version = generator_flags.get('android_ndk_version', None)
 
   def CalculateMakefilePath(build_file, base_name):
     """Determine where to write a Makefile for a given gyp file."""
@@ -1322,6 +1403,13 @@ def GenerateOutput(target_list, target_dicts, data, params):
   ensure_directory_exists(makefile_path)
   root_makefile = open(makefile_path, 'w')
   root_makefile.write(SHARED_HEADER % header_params)
+  # Currently any versions have the same effect, but in future the behavior
+  # could be different.
+  if android_ndk_version:
+    root_makefile.write(
+        '# Define LOCAL_PATH for build of Android applications.\n'
+        'LOCAL_PATH := $(call my-dir)\n'
+        '\n')
   for toolset in toolsets:
     root_makefile.write('TOOLSET := %s\n' % toolset)
     root_makefile.write(ROOT_HEADER_SUFFIX_RULES)
@@ -1362,7 +1450,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     spec = target_dicts[qualified_target]
     configs = spec['configurations']
 
-    writer = MakefileWriter()
+    writer = MakefileWriter(generator_flags)
     writer.Write(qualified_target, base_path, output_file, spec, configs,
                  part_of_all=qualified_target in needed_targets)
     num_outputs += writer.NumOutputs()
