@@ -31,6 +31,8 @@ class TestingAutomationProvider : public AutomationProvider,
  public:
   explicit TestingAutomationProvider(Profile* profile);
 
+  virtual IPC::Channel::Mode GetChannelMode(bool use_named_interface);
+
   // IPC::Channel::Listener:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;

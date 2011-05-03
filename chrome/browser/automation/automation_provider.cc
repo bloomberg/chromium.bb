@@ -162,8 +162,7 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
 
   channel_.reset(new IPC::SyncChannel(
       effective_channel_id,
-      use_named_interface ? IPC::Channel::MODE_NAMED_SERVER
-                          : IPC::Channel::MODE_CLIENT,
+      GetChannelMode(use_named_interface),
       this,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
       true, g_browser_process->shutdown_event()));
@@ -181,6 +180,14 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
   TRACE_EVENT_END("AutomationProvider::InitializeChannel", 0, "");
 
   return true;
+}
+
+IPC::Channel::Mode AutomationProvider::GetChannelMode(
+    bool use_named_interface) {
+  if (use_named_interface)
+    return IPC::Channel::MODE_NAMED_SERVER;
+  else
+    return IPC::Channel::MODE_CLIENT;
 }
 
 std::string AutomationProvider::GetProtocolVersion() {

@@ -97,6 +97,8 @@ class AutomationProvider
   // for more information about kPrimaryIPCChannel.
   bool InitializeChannel(const std::string& channel_id) WARN_UNUSED_RESULT;
 
+  virtual IPC::Channel::Mode GetChannelMode(bool use_named_interface);
+
   // Sets the number of tabs that we expect; when this number of tabs has
   // loaded, an AutomationMsg_InitialLoadsComplete message is sent.
   void SetExpectedTabCount(size_t expected_tabs);
