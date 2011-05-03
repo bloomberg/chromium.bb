@@ -172,17 +172,6 @@ PP_Var TestIsMainThreadFromNonMainThread() {
   return TEST_PASSED;
 }
 
-// Tests PPB_Core::MemAlloc() and PPB_Core::MemFree().
-PP_Var TestMemAllocAndMemFree() {
-  void* mem = NULL;
-  mem = PPBCore()->MemAlloc(100);  // No signficance to using 100
-  EXPECT(mem != NULL);
-  memset(mem, '-', 5);
-  EXPECT(memcmp(mem, "-----", 5) == 0);
-  PPBCore()->MemFree(mem);
-
-  return TEST_PASSED;
-}
 
 // Tests PPB_Core::AddRefResource() and PPB_Core::ReleaseResource() with
 // a valid resource.
@@ -224,8 +213,6 @@ void SetupScriptableTests() {
                          TestIsMainThreadFromMainThread);
   RegisterScriptableTest("testIsMainThread_FromNonMainThread",
                          TestIsMainThreadFromNonMainThread);
-  RegisterScriptableTest("testMemAllocAndMemFree",
-                         TestMemAllocAndMemFree);
   RegisterScriptableTest("testAddRefAndReleaseResource",
                          TestAddRefAndReleaseResource);
   RegisterScriptableTest("testAddRefAndReleaseInvalidResource",

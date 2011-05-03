@@ -26,10 +26,6 @@ function setupTests(tester, plugin) {
       assert(plugin.testIsMainThread_FromNonMainThread());
     });
 
-    tester.addTest('PPB_Core::MemAlloc+MemFree', function() {
-      assert(plugin.testMemAllocAndMemFree());
-    });
-
     tester.addTest('PPB_Core::AddRefResource+ReleaseResource', function() {
       assert(plugin.testAddRefAndReleaseResource());
     });
