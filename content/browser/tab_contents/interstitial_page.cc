@@ -410,12 +410,6 @@ void InterstitialPage::UpdateTitle(RenderViewHost* render_view_host,
   tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
 }
 
-void InterstitialPage::DomOperationResponse(const std::string& json_string,
-                                            int automation_id) {
-  if (enabled_)
-    CommandReceived(json_string);
-}
-
 RendererPreferences InterstitialPage::GetRendererPrefs(Profile* profile) const {
   return renderer_preferences_;
 }

@@ -123,9 +123,9 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     SafeBrowsingService* sb_service,
     TabContents* tab_contents,
     const UnsafeResourceList& unsafe_resources)
-    : InterstitialPage(tab_contents,
-                       IsMainPage(unsafe_resources),
-                       unsafe_resources[0].url),
+    : ChromeInterstitialPage(tab_contents,
+                             IsMainPage(unsafe_resources),
+                             unsafe_resources[0].url),
       sb_service_(sb_service),
       is_main_frame_(IsMainPage(unsafe_resources)),
       unsafe_resources_(unsafe_resources) {

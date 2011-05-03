@@ -66,7 +66,7 @@ void OfflineLoadPage::Show(int process_host_id, int render_view_id,
 OfflineLoadPage::OfflineLoadPage(TabContents* tab_contents,
                                  const GURL& url,
                                  Delegate* delegate)
-    : InterstitialPage(tab_contents, true, url),
+    : ChromeInterstitialPage(tab_contents, true, url),
       delegate_(delegate),
       proceeded_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
@@ -211,7 +211,7 @@ void OfflineLoadPage::Observe(NotificationType type,
       Proceed();
     }
   } else {
-    InterstitialPage::Observe(type, source, details);
+    ChromeInterstitialPage::Observe(type, source, details);
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -33,7 +33,7 @@
 #include <vector>
 
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "content/browser/tab_contents/interstitial_page.h"
+#include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 #include "googleurl/src/gurl.h"
 
 class DictionaryValue;
@@ -42,7 +42,7 @@ class SafeBrowsingBlockingPageFactory;
 class MalwareDetails;
 class TabContents;
 
-class SafeBrowsingBlockingPage : public InterstitialPage {
+class SafeBrowsingBlockingPage : public ChromeInterstitialPage {
  public:
   typedef std::vector<SafeBrowsingService::UnsafeResource> UnsafeResourceList;
   typedef std::map<TabContents*, UnsafeResourceList> UnsafeResourceMap;
@@ -64,7 +64,7 @@ class SafeBrowsingBlockingPage : public InterstitialPage {
     factory_ = factory;
   }
 
-  // InterstitialPage method:
+  // ChromeInterstitialPage method:
   virtual std::string GetHTMLContents();
   virtual void SetReportingPreference(bool report);
   virtual void Proceed();
@@ -73,7 +73,7 @@ class SafeBrowsingBlockingPage : public InterstitialPage {
  protected:
   friend class SafeBrowsingBlockingPageTest;
 
-  // InterstitialPage method:
+  // ChromeInterstitialPage method:
   virtual void CommandReceived(const std::string& command);
 
   // Don't instanciate this class directly, use ShowBlockingPage instead.

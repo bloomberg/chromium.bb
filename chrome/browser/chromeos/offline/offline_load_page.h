@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 
 #include "base/task.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
-#include "content/browser/tab_contents/interstitial_page.h"
+#include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 
 class DictionaryValue;
 class Extension;
@@ -22,7 +22,7 @@ namespace chromeos {
 // when no network is available and hides when some network (either
 // one of wifi, 3g or ethernet) becomes available.
 // It deletes itself when the interstitial page is closed.
-class OfflineLoadPage : public InterstitialPage {
+class OfflineLoadPage : public ChromeInterstitialPage {
  public:
   // A delegate class that is called when the interstitinal page
   // is closed.
@@ -40,7 +40,7 @@ class OfflineLoadPage : public InterstitialPage {
   static void Show(int process_host_id, int render_view_id,
                    const GURL& url, Delegate* delegate);
   // Import show here so that overloading works.
-  using InterstitialPage::Show;
+  using ChromeInterstitialPage::Show;
 
  protected:
   // Create a offline load page for the |tab_contents|.
@@ -54,13 +54,13 @@ class OfflineLoadPage : public InterstitialPage {
   }
 
  private:
-  // InterstitialPage implementation.
+  // ChromeInterstitialPage implementation.
   virtual std::string GetHTMLContents();
   virtual void CommandReceived(const std::string& command);
   virtual void Proceed();
   virtual void DontProceed();
 
-  // Overrides InterstitialPage's Observe.
+  // Overrides ChromeInterstitialPage's Observe.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);

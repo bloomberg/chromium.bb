@@ -45,7 +45,9 @@ void RecordSSLBlockingPageStats(SSLBlockingPageEvent event) {
 SSLBlockingPage::SSLBlockingPage(SSLCertErrorHandler* handler,
                                  Delegate* delegate,
                                  ErrorLevel error_level)
-    : InterstitialPage(handler->GetTabContents(), true, handler->request_url()),
+    : ChromeInterstitialPage(handler->GetTabContents(),
+                             true,
+                             handler->request_url()),
       handler_(handler),
       delegate_(delegate),
       delegate_has_been_notified_(false),

@@ -9,6 +9,7 @@
 #include "base/version.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -16,7 +17,6 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "grit/browser_resources.h"
@@ -159,18 +159,18 @@ void OpenUsingReader(TabContents* tab,
 
 // An interstitial to be used when the user chooses to open a PDF using Adobe
 // Reader, but it is out of date.
-class PDFUnsupportedFeatureInterstitial : public InterstitialPage {
+class PDFUnsupportedFeatureInterstitial : public ChromeInterstitialPage {
  public:
   PDFUnsupportedFeatureInterstitial(
       TabContents* tab,
       const WebPluginInfo& reader_webplugininfo)
-      : InterstitialPage(tab, false, tab->GetURL()),
+      : ChromeInterstitialPage(tab, false, tab->GetURL()),
         reader_webplugininfo_(reader_webplugininfo) {
     UserMetrics::RecordAction(UserMetricsAction("PDF_ReaderInterstitialShown"));
   }
 
  protected:
-  // InterstitialPage implementation.
+  // ChromeInterstitialPage implementation.
   virtual std::string GetHTMLContents() {
     DictionaryValue strings;
     strings.SetString(

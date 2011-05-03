@@ -6,8 +6,10 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -20,11 +22,12 @@
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/constrained_window.h"
-#include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/bindings_policy.h"
+#include "content/common/notification_service.h"
+#include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,7 +55,7 @@ static void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
   params->content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
 }
 
-class TestInterstitialPage : public InterstitialPage {
+class TestInterstitialPage : public ChromeInterstitialPage {
  public:
   enum InterstitialState {
     UNDECIDED = 0, // No decision taken yet.
@@ -83,7 +86,7 @@ class TestInterstitialPage : public InterstitialPage {
                        const GURL& url,
                        InterstitialState* state,
                        bool* deleted)
-      : InterstitialPage(tab, new_navigation, url),
+      : ChromeInterstitialPage(tab, new_navigation, url),
         state_(state),
         deleted_(deleted),
         command_received_count_(0),
@@ -115,7 +118,10 @@ class TestInterstitialPage : public InterstitialPage {
   }
 
   void TestDomOperationResponse(const std::string& json_string) {
-    DomOperationResponse(json_string, 1);
+    DomOperationNotificationDetails details(json_string, 1);
+    Observe(NotificationType::DOM_OPERATION_RESPONSE,
+            Source<RenderViewHost>(render_view_host()),
+            Details<DomOperationNotificationDetails>(&details));
   }
 
   void TestDidNavigate(int page_id, const GURL& url) {

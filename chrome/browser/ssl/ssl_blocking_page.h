@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
-#include "content/browser/tab_contents/interstitial_page.h"
+#include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 
 class DictionaryValue;
 class SSLCertErrorHandler;
@@ -19,7 +19,7 @@ class SSLCertErrorHandler;
 // This class is responsible for showing/hiding the interstitial page that is
 // shown when a certificate error happens.
 // It deletes itself when the interstitial page is closed.
-class SSLBlockingPage : public InterstitialPage {
+class SSLBlockingPage : public ChromeInterstitialPage {
  public:
   // An interface that classes that want to interact with the SSLBlockingPage
   // should implement.
@@ -58,7 +58,7 @@ class SSLBlockingPage : public InterstitialPage {
                            const std::vector<string16>& extra_info);
 
  protected:
-  // InterstitialPage implementation.
+  // ChromeInterstitialPage implementation.
   virtual std::string GetHTMLContents();
   virtual void CommandReceived(const std::string& command);
   virtual void UpdateEntry(NavigationEntry* entry);
