@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/sidebar/sidebar_container.h"
@@ -173,6 +174,7 @@ private:
 - (void)updateCommonTitlePrefix;
 - (BOOL)shouldShowProfileMenuButton;
 - (void)updateProfileMenuButton;
+- (void)createNewProfile:(id)sender;
 @end
 
 // A simple view class that prevents the Window Server from dragging the area
@@ -2184,9 +2186,15 @@ class NotificationBridge : public NotificationObserver {
 
   NSString* menuTitle =
       l10n_util::GetNSStringWithFixup(IDS_PROFILES_CREATE_NEW_PROFILE_OPTION);
-  [menu addItemWithTitle:menuTitle
-                  action:NULL
-           keyEquivalent:@""];
+  NSMenuItem* menuItem = [menu addItemWithTitle:menuTitle
+                                         action:@selector(createNewProfile:)
+                                  keyEquivalent:@""];
+  [menuItem setState:NSOffState];
+  [menuItem setTarget:self];
+}
+
+- (void)createNewProfile:(id)sender {
+  ProfileManager::CreateMultiProfileAsync();
 }
 
 @end
