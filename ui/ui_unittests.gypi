@@ -94,7 +94,6 @@
           'dependencies': [
             '../app/app.gyp:app_base',
             '../build/linux/system.gyp:gtk',
-            '../chrome/chrome.gyp:packed_resources',
           ],
           'conditions': [
             ['linux_use_tcmalloc==1', {
