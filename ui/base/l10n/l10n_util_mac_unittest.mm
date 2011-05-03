@@ -42,7 +42,7 @@ TEST_F(L10nUtilMacTest, FixUpWindowsStyleLabel) {
     NSString* result = l10n_util::FixUpWindowsStyleLabel(input16);
     EXPECT_TRUE(result != nil) << "Fixup Failed, idx = " << idx;
 
-    EXPECT_TRUE([data[idx].output isEqualTo:result])
+    EXPECT_TRUE([data[idx].output isEqual:result])
         << "For idx " << idx << ", expected '" << [data[idx].output UTF8String]
         << "', got '" << [result UTF8String] << "'";
   }
