@@ -3823,7 +3823,7 @@ void Browser::UpdateReloadStopState(bool is_loading, bool force) {
 
 void Browser::UpdateCommandsForDevTools() {
   bool dev_tools_enabled =
-      profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled);
+      !profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled);
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS,
                                         dev_tools_enabled);
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_CONSOLE,
