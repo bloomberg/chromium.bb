@@ -104,6 +104,9 @@ typedef enum {
 // Needed by an owning control's dealloc routine.
 - (void)safelyStopPulsing;
 
+// Actually fetches current mouse position and does a hit test.
+- (BOOL)isMouseReallyInside;
+
 @property(assign, nonatomic) CGFloat hoverAlpha;
 
 // An image that will be drawn after the normal content of the button cell,

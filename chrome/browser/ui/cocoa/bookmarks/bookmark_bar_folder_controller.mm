@@ -210,12 +210,6 @@ struct LayoutMetrics {
 // otherwise only border the button when the mouse is inside the button.
 - (void)forceButtonBorderToStayOnAlways:(BOOL)forceOn;
 
-// On 10.6 event dispatch for an NSButtonCell's
-// showsBorderOnlyWhileMouseInside seems broken if scrolling the
-// view that contains the button.  It appears that a mouseExited:
-// gets lost, so the button stays highlit forever.  We accomodate
-// here.
-- (void)toggleButtonBorderingWhileMouseInside;
 @end
 
 @implementation BookmarkButton (BookmarkBarFolderMenuHighlighting)
@@ -223,12 +217,6 @@ struct LayoutMetrics {
 - (void)forceButtonBorderToStayOnAlways:(BOOL)forceOn {
   [self setShowsBorderOnlyWhileMouseInside:!forceOn];
   [self setNeedsDisplay];
-}
-
-- (void)toggleButtonBorderingWhileMouseInside {
-  BOOL toggle = [self showsBorderOnlyWhileMouseInside];
-  [self setShowsBorderOnlyWhileMouseInside:!toggle];
-  [self setShowsBorderOnlyWhileMouseInside:toggle];
 }
 
 @end
@@ -865,19 +853,74 @@ struct LayoutMetrics {
   }
 }
 
+- (int)indexOfButton:(BookmarkButton*)button {
+  if (button == nil)
+    return -1;
+  int index = [buttons_ indexOfObject:button];
+  return (index == NSNotFound) ? -1 : index;
+}
+
+- (BookmarkButton*)buttonAtIndex:(int)which {
+  if (which < 0 || which >= [self buttonCount])
+    return nil;
+  return [buttons_ objectAtIndex:which];
+}
+
+// Private, called by performOneScroll only.
+// If the button at index contains the mouse it will select it and return YES.
+// Otherwise returns NO.
+- (BOOL)selectButtonIfHoveredAtIndex:(int)index {
+  BookmarkButton *btn = [self buttonAtIndex:index];
+  if ([[btn cell] isMouseReallyInside]) {
+    buttonThatMouseIsIn_ = btn;
+    [self setSelectedButtonByIndex:index];
+    return YES;
+  }
+  return NO;
+}
+
 // Perform a single scroll of the specified amount.
 - (void)performOneScroll:(CGFloat)delta {
   if (delta == 0.0)
     return;
   CGFloat finalDelta = [self determineFinalScrollDelta:delta];
-  if (finalDelta > 0.0 || finalDelta < 0.0) {
-    if (buttonThatMouseIsIn_)
-      [buttonThatMouseIsIn_ toggleButtonBorderingWhileMouseInside];
-    NSRect windowFrame = [[self window] frame];
-    NSSize newSize = NSMakeSize(NSWidth(windowFrame), 0.0);
-    [self adjustWindowLeft:windowFrame.origin.x
-                      size:newSize
-               scrollingBy:finalDelta];
+  if (finalDelta == 0.0)
+    return;
+  int index = [self indexOfButton:buttonThatMouseIsIn_];
+  // Check for a current mouse-initiated selection.
+  BOOL maintainHoverSelection =
+      (buttonThatMouseIsIn_ &&
+      [[buttonThatMouseIsIn_ cell] isMouseReallyInside] &&
+      selectedIndex_ != -1 &&
+      index == selectedIndex_);
+  NSRect windowFrame = [[self window] frame];
+  NSSize newSize = NSMakeSize(NSWidth(windowFrame), 0.0);
+  [self adjustWindowLeft:windowFrame.origin.x
+                    size:newSize
+             scrollingBy:finalDelta];
+  // We have now scrolled.
+  if (!maintainHoverSelection)
+    return;
+  // Is mouse still in the same hovered button?
+  if ([[buttonThatMouseIsIn_ cell] isMouseReallyInside])
+    return;
+  // The finalDelta scroll direction will tell us us whether to search up or
+  // down the buttons array for the newly hovered button.
+  if (finalDelta < 0.0) { // Scrolled up, so search backwards for new hover.
+    index--;
+    while (index >= 0) {
+      if ([self selectButtonIfHoveredAtIndex:index])
+        return;
+      index--;
+    }
+  } else { // Scrolled down, so search forward for new hovered button.
+    index++;
+    int btnMax = [self buttonCount];
+    while (index < btnMax) {
+      if ([self selectButtonIfHoveredAtIndex:index])
+        return;
+      index++;
+    }
   }
 }
 
@@ -1268,17 +1311,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self autorelease];
 }
 
-- (int)indexOfButton:(BookmarkButton*)button {
-  int index = [buttons_ indexOfObject:button];
-  return (index == NSNotFound) ? -1 : index;
-}
-
-- (BookmarkButton*)buttonAtIndex:(int)which {
-  if (which < 0 || which >= [self buttonCount])
-    return nil;
-  return [buttons_ objectAtIndex:which];
-}
-
 #pragma mark BookmarkButtonDelegate Protocol
 
 - (void)fillPasteboard:(NSPasteboard*)pboard
@@ -1315,6 +1347,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (void)mouseExitedButton:(id)sender event:(NSEvent*)event {
   if (buttonThatMouseIsIn_ == sender)
     buttonThatMouseIsIn_ = nil;
+    [self setSelectedButtonByIndex:-1];
 
   // Stop any timer about opening a new hover-open folder.
 
@@ -1506,10 +1539,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // greater than range values too.
 - (void)setStateOfButtonByIndex:(int)index
                           state:(bool)state {
- if (index < 0 || index > ([self buttonCount] -1))
-   return;
-
-  [[buttons_ objectAtIndex:index] highlight:state];
+  if (index >= 0 && index < [self buttonCount])
+    [[buttons_ objectAtIndex:index] highlight:state];
 }
 
 // Selects the required button and deselects the previously selected one.

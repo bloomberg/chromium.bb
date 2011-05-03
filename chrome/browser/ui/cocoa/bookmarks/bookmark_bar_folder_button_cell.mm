@@ -23,4 +23,7 @@
   return YES;
 }
 
+- (void)setMouseInside:(BOOL)flag animate:(BOOL)animated {
+}
+
 @end
