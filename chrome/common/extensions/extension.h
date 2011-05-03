@@ -277,6 +277,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Extension::kPermissions.
   static const char kBackgroundPermission[];
   static const char kBookmarkPermission[];
+  static const char kClipboardReadPermission[];
+  static const char kClipboardWritePermission[];
   static const char kContentSettingsPermission[];
   static const char kContextMenusPermission[];
   static const char kCookiePermission[];

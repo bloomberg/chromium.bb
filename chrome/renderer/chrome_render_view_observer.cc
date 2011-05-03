@@ -323,14 +323,18 @@ bool ChromeRenderViewObserver::allowScriptExtension(
 
 bool ChromeRenderViewObserver::allowReadFromClipboard(WebFrame* frame,
                                                      bool default_value) {
-  // TODO(dcheng): implement me
-  return default_value;
+  bool allowed = false;
+  Send(new ViewHostMsg_CanTriggerClipboardRead(
+      routing_id(), frame->url(), &allowed));
+  return allowed;
 }
 
 bool ChromeRenderViewObserver::allowWriteToClipboard(WebFrame* frame,
                                                     bool default_value) {
-  // TODO(dcheng): implement me
-  return default_value;
+  bool allowed = false;
+  Send(new ViewHostMsg_CanTriggerClipboardWrite(
+      routing_id(), frame->url(), &allowed));
+  return allowed;
 }
 
 void ChromeRenderViewObserver::didNotAllowPlugins(WebFrame* frame) {

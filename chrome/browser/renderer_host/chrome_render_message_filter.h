@@ -12,6 +12,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class FilePath;
+class GURL;
 class HostContentSettingsMap;
 class Profile;
 
@@ -87,6 +88,8 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                        const string16& display_name,
                        unsigned long estimated_size,
                        bool* result);
+  void OnCanTriggerClipboardRead(const GURL& url, bool* allowed);
+  void OnCanTriggerClipboardWrite(const GURL& url, bool* allowed);
 
   int render_process_id_;
 

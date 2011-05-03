@@ -65,6 +65,10 @@ chrome.test.getConfig(function(config) {
       );
       setupWindow();
     },
+    function domCopy() {
+      document.body.addEventListener('copy', chrome.test.callbackPass());
+      document.execCommand('copy');
+    },
     function domPaste() {
       document.body.addEventListener('paste', chrome.test.callbackPass());
       document.execCommand('paste');

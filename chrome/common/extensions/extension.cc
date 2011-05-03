@@ -263,6 +263,8 @@ const int Extension::kSidebarIconMaxSize = 16;
 // Explicit permissions -- permission declaration required.
 const char Extension::kBackgroundPermission[] = "background";
 const char Extension::kBookmarkPermission[] = "bookmarks";
+const char Extension::kClipboardReadPermission[] = "clipboardRead";
+const char Extension::kClipboardWritePermission[] = "clipboardWrite";
 const char Extension::kContextMenusPermission[] = "contextMenus";
 const char Extension::kContentSettingsPermission[] = "contentSettings";
 const char Extension::kCookiePermission[] = "cookies";
@@ -288,6 +290,8 @@ const Extension::Permission Extension::kPermissions[] = {
   { kBackgroundPermission,           PermissionMessage::ID_NONE },
   { kBookmarkPermission,             PermissionMessage::ID_BOOKMARKS },
   { kChromeosInfoPrivatePermissions, PermissionMessage::ID_NONE },
+  { kClipboardReadPermission,        PermissionMessage::ID_NONE },
+  { kClipboardWritePermission,       PermissionMessage::ID_NONE },
   { kContentSettingsPermission,      PermissionMessage::ID_NONE },
   { kContextMenusPermission,         PermissionMessage::ID_NONE },
   { kCookiePermission,               PermissionMessage::ID_NONE },

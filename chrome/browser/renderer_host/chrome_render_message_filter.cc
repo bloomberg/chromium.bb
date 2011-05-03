@@ -24,6 +24,8 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 
 #if defined(USE_TCMALLOC)
 #include "chrome/browser/browser_about_handler.h"
@@ -74,6 +76,10 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginPolicies,
                         OnGetPluginPolicies)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllowDatabase, OnAllowDatabase)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CanTriggerClipboardRead,
+                        OnCanTriggerClipboardRead)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CanTriggerClipboardWrite,
+                        OnCanTriggerClipboardWrite)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -311,4 +317,23 @@ void ChromeRenderMessageFilter::OnAllowDatabase(const std::string& origin_url,
          (content_setting == CONTENT_SETTING_BLOCK) ||
          (content_setting == CONTENT_SETTING_SESSION_ONLY));
   *result = content_setting != CONTENT_SETTING_BLOCK;
+}
+
+void ChromeRenderMessageFilter::OnCanTriggerClipboardRead(const GURL& url,
+                                                          bool* allowed) {
+  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
+      request_context_->GetURLRequestContext());
+  *allowed = context->extension_info_map()->CheckURLAccessToExtensionPermission(
+      url, Extension::kClipboardReadPermission);
+}
+
+void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(const GURL& url,
+                                                           bool* allowed) {
+  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
+      request_context_->GetURLRequestContext());
+  // Since all extensions could historically write to the clipboard, preserve it
+  // for compatibility.
+  *allowed = url.SchemeIs(chrome::kExtensionScheme) ||
+      context->extension_info_map()->CheckURLAccessToExtensionPermission(
+          url, Extension::kClipboardWritePermission);
 }

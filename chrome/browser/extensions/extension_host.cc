@@ -538,12 +538,6 @@ WebPreferences ExtensionHost::GetWebkitPrefs() {
     webkit_prefs.accelerated_2d_canvas_enabled = false;
   }
 
-  // TODO(dcheng): incorporate this setting into kClipboardPermission check.
-  webkit_prefs.javascript_can_access_clipboard = true;
-
-  // TODO(dcheng): check kClipboardPermission instead once it's implemented.
-  if (extension_->HasApiPermission(Extension::kExperimentalPermission))
-    webkit_prefs.dom_paste_enabled = true;
   return webkit_prefs;
 }
 

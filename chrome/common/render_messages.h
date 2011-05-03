@@ -441,6 +441,15 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_PageTranslated,
 // the renderer is prerendering.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_MaybeCancelPrerenderForHTML5Media)
 
+// Sent by the renderer to check if a URL has permission to trigger a clipboard
+// read/write operation from the DOM.
+IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_CanTriggerClipboardRead,
+                           GURL /* url */,
+                           bool /* allowed */)
+IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_CanTriggerClipboardWrite,
+                           GURL /* url */,
+                           bool /* allowed */)
+
 // Suggest results -----------------------------------------------------------
 
 IPC_MESSAGE_ROUTED3(ViewHostMsg_SetSuggestions,
