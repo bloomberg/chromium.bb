@@ -366,9 +366,8 @@ LRESULT WindowWin::OnAppCommand(HWND window, short app_command, WORD device,
                                 int keystate) {
   // We treat APPCOMMAND ids as an extension of our command namespace, and just
   // let the delegate figure out what to do...
-  if (!GetWindow()->window_delegate()->ExecuteWindowsCommand(app_command))
-    return WidgetWin::OnAppCommand(window, app_command, device, keystate);
-  return 0;
+  return GetWindow()->window_delegate()->ExecuteWindowsCommand(app_command) ||
+      WidgetWin::OnAppCommand(window, app_command, device, keystate);
 }
 
 void WindowWin::OnClose() {
