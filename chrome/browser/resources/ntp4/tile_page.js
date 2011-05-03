@@ -23,13 +23,16 @@ cr.define('ntp4', function() {
     __proto__: HTMLDivElement.prototype,
 
     initialize: function(contents) {
-      this.className = 'tile';
+      // 'real' as opposed to doppleganger.
+      this.className = 'tile real';
       this.appendChild(contents);
       contents.tile = this;
 
       this.addEventListener('dragstart', this.onDragStart_);
       this.addEventListener('drag', this.onDragMove_);
       this.addEventListener('dragend', this.onDragEnd_);
+
+      this.addEventListener('webkitTransitionEnd', this.onTransitionEnd_);
     },
 
     get index() {
@@ -95,8 +98,57 @@ cr.define('ntp4', function() {
     onDragEnd_: function(e) {
       TilePage.currentlyDraggingTile = null;
       this.classList.remove('dragging');
+      // This class is required for the tile to animate to its final position.
+      this.classList.add('placing');
       this.tilePage.positionTile_(this.index);
     },
+
+    /**
+     * Creates a clone of this node offset by the coordinates. Used for the
+     * dragging effect where a tile appears to float off one side of the grid
+     * and re-appear on the other.
+     * @param {number} x x-axis offset, in pixels.
+     * @param {number} y y-axis offset, in pixels.
+     */
+    showDoppleganger: function(x, y) {
+      // We always have to clear the previous doppleganger to make sure we get
+      // style updates for the contents of this tile.
+      this.clearDoppleganger();
+
+      var clone = this.cloneNode(true);
+      clone.classList.remove('real');
+      clone.classList.add('doppleganger');
+      var clonelets = clone.querySelectorAll('.real');
+      for (var i = 0; i < clonelets.length; i++) {
+        clonelets[i].classList.remove('real');
+      }
+
+      this.appendChild(clone);
+      this.doppleganger_ = clone;
+
+      this.doppleganger_.style.WebkitTransform = 'translate(' + x + 'px, ' +
+                                                                y + 'px)';
+    },
+
+    /**
+     * Destroys the current doppleganger.
+     */
+    clearDoppleganger: function() {
+      if (this.doppleganger_) {
+        this.removeChild(this.doppleganger_);
+        this.doppleganger_ = null;
+      }
+    },
+
+    /**
+     * When a positioning transition ends, remove the 'placing' class so further
+     * positioning won't necessarily be animated.
+     * @param {Event} e The transition end event.
+     */
+    onTransitionEnd_: function(e) {
+      if (e.propertyName == 'top' || e.propertyName == 'left')
+        this.classList.remove('placing');
+    }
   };
 
   /**
@@ -200,9 +252,9 @@ cr.define('ntp4', function() {
       this.appendChild(this.tileGrid_);
 
       // Ordered list of our tiles.
-      this.tileElements_ = this.tileGrid_.getElementsByClassName('tile');
+      this.tileElements_ = this.tileGrid_.getElementsByClassName('tile real');
 
-      this.lastWidth_ = this.clientWidth;
+      this.maskWidth_ = this.clientWidth;
 
       this.eventTracker = new EventTracker();
       this.eventTracker.add(window, 'resize', this.onResize_.bind(this));
@@ -233,6 +285,10 @@ cr.define('ntp4', function() {
 
       this.positionTile_(this.tileElements_.length - 1);
       this.classList.remove('animating-tile-page');
+
+      // This would be in initialize(), but at that point we don't yet know our
+      // width. This won't do any work if it doesn't need to update the mask.
+      this.updateMask_();
     },
 
     /**
@@ -282,8 +338,10 @@ cr.define('ntp4', function() {
       var layout = this.calculateLayoutValues_();
 
       indexOffset = typeof indexOffset != 'undefined' ? indexOffset : 0;
-      var col = (index + indexOffset) % layout.numRowTiles;
-      var row = Math.floor((index + indexOffset) / layout.numRowTiles);
+      // Add the offset _after_ the modulus division. We might want to show the
+      // tile off the side of the grid.
+      var col = index % layout.numRowTiles + indexOffset;
+      var row = Math.floor(index / layout.numRowTiles);
       // Calculate the final on-screen position for the tile.
       var realX = col * layout.colWidth + layout.leftMargin;
       var realY = row * layout.rowHeight;
@@ -303,6 +361,18 @@ cr.define('ntp4', function() {
       tile.firstChild.setBounds(layout.tileWidth,
                                 realX - animatedX,
                                 realY - animatedY);
+
+      // This code calculates whether the tile needs to show a clone of itself
+      // wrapped around the other side of the tile grid.
+      var offTheRight = col - indexOffset == layout.numRowTiles - 1;
+      var offTheLeft = col - indexOffset == 0;
+      if (this.dragEnters_ > 0 && (offTheRight || offTheLeft)) {
+        var sign = offTheRight ? 1 : -1;
+        tile.showDoppleganger(-layout.numRowTiles * layout.colWidth * sign,
+                              layout.rowHeight * sign);
+      } else {
+        tile.clearDoppleganger();
+      }
     },
 
     /**
@@ -320,6 +390,9 @@ cr.define('ntp4', function() {
       var layout = this.calculateLayoutValues_();
 
       var col = Math.floor((x - layout.leftMargin) / layout.colWidth);
+      if (col < 0 || col >= layout.numRowTiles)
+        return -1;
+
       var row = Math.floor((y - this.tileGrid_.offsetTop) / layout.rowHeight);
       return row * layout.numRowTiles + col;
     },
@@ -330,15 +403,38 @@ cr.define('ntp4', function() {
      */
     onResize_: function(e) {
       // Do nothing if the width didn't change.
-      if (this.lastWidth_ == this.clientWidth)
+      if (this.maskWidth_ == this.clientWidth)
         return;
 
-      this.lastWidth_ = this.clientWidth;
+      this.updateMask_();
       this.classList.add('animating-tile-page');
 
       for (var i = 0; i < this.tileElements_.length; i++) {
         this.positionTile_(i);
       }
+    },
+
+    /**
+     * The tile grid has an image mask which fades at the edges. This is only
+     * noticeable when doppleganger tiles are entering or exiting the grid.
+     */
+    updateMask_: function() {
+      if (this.clientWidth == this.maskWidth_)
+        return;
+      this.maskWidth_ = this.clientWidth;
+
+      var leftMargin = this.calculateLayoutValues_().leftMargin;
+      var fadeDistance = 20;
+      var gradient =
+          '-webkit-linear-gradient(left,' +
+              'transparent, ' +
+              'transparent ' + (leftMargin - fadeDistance) + 'px, ' +
+              'black ' + leftMargin + 'px, ' +
+              'black ' + (this.clientWidth - leftMargin) + 'px, ' +
+              'transparent ' + (this.clientWidth - leftMargin + fadeDistance) +
+                  'px, ' +
+              'transparent)';
+      this.style.WebkitMaskBoxImage = gradient;
     },
 
     /**
@@ -402,6 +498,9 @@ cr.define('ntp4', function() {
      * @private
      */
     onDrop_: function(e) {
+      this.dragEnters_ = 0;
+      e.stopPropagation();
+
       var index = this.currentDropIndex_;
       if (index == this.dragItemIndex_)
         return;
@@ -410,8 +509,7 @@ cr.define('ntp4', function() {
       this.tileGrid_.insertBefore(
           TilePage.currentlyDraggingTile,
           this.tileElements_[this.currentDropIndex_ + adjustment]);
-      e.stopPropagation();
-      this.dragEnters_ = 0;
+      this.cleanUpDrag_();
     },
 
     /**
@@ -423,7 +521,21 @@ cr.define('ntp4', function() {
       if (--this.dragEnters_ > 0)
         return;
 
-      this.updateDropIndicator_(this.dragItemIndex_);
+      this.cleanUpDrag_();
+    },
+
+    /**
+     * Makes sure all the tiles are in the right place after a drag is over.
+     * @private
+     */
+    cleanUpDrag_: function() {
+      for (var i = 0; i < this.tileElements_.length; i++) {
+        // The current drag tile will be positioned in its dragend handler.
+        if (this.tileElements_[i] == this.currentlyDraggingTile)
+          continue;
+        this.positionTile_(i);
+      }
+      this.classList.remove('animating-tile-page');
     },
 
     /**

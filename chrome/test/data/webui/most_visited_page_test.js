@@ -11,6 +11,9 @@ function pageObjectArrayEquals(a, b) {
     return false;
 
   for (var i = 0; i < a.length; i++) {
+    if (!a && !b)
+      continue;
+
     if (!pageObjectEquals(a[i], b[i]))
       return false;
   }
@@ -56,5 +59,12 @@ function refreshDataPinning() {
     {url: 'foo', title: 'foo (2)'}];
 
   var mergedData = ntp4.refreshData(oldData, newData);
+  assertTrue(pageObjectArrayEquals(mergedData, newData));
+
+  // Tests we don't choke on empty data before a pinned entry.
+  oldData = [{url: 'foo', title: 'foo (1)'}];
+  newData = [{}, {url: 'foo', title: 'foo (2)', pinned: true}];
+
+  mergedData = ntp4.refreshData(oldData, newData);
   assertTrue(pageObjectArrayEquals(mergedData, newData));
 }

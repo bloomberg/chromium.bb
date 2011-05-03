@@ -32,6 +32,11 @@
   -webkit-user-drag: element;
 }
 
+.doppleganger {
+  left: 0 !important;
+  top: 0 !important;
+}
+
 .tile.dragging {
   z-index: 10;
   -webkit-transition-duration: 0 !important;
@@ -41,6 +46,7 @@
   background-color: green;
 }
 
-.animating-tile-page .tile {
+.animating-tile-page .tile,
+.tile.placing {
   -webkit-transition: left 200ms, top 200ms;
 }

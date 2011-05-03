@@ -40,7 +40,7 @@ cr.define('ntp4', function() {
      * for a blank thumbnail.
      */
     reset: function() {
-      this.className = 'most-visited filler';
+      this.className = 'most-visited filler real';
       // TODO(estade): why do we need edit-mode-border?
       this.innerHTML =
           '<div class="edit-mode-border fills-parent">' +
@@ -225,7 +225,7 @@ cr.define('ntp4', function() {
       this.classList.add('most-visited-page');
 
       this.data_ = null;
-      this.mostVisitedTiles_ = this.getElementsByClassName('most-visited');
+      this.mostVisitedTiles_ = this.getElementsByClassName('most-visited real');
     },
 
     /**
@@ -339,8 +339,10 @@ cr.define('ntp4', function() {
     }
 
     // Clear 'updated' flags so this function will work next time it's called.
-    for (var i = 0; i < oldData.length; i++)
-      oldData[i].updated = false;
+    for (var i = 0; i < THUMBNAIL_COUNT; i++) {
+      if (oldData[i])
+        oldData[i].updated = false;
+    }
 
     return oldData;
   };
