@@ -1060,9 +1060,6 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
     switches::kSingleProcess,
     switches::kNoSandbox,
     switches::kInProcessWebGL,
-    // These are scary features for developers that shouldn't be turned on
-    // persistently.
-    switches::kEnableNaCl,
     NULL
   };
 
