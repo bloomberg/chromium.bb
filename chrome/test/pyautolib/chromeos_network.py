@@ -196,12 +196,12 @@ class PyNetworkUITest(pyauto.PyUITest):
         return [wifi for wifi in
                 self.NetworkScan().get('wifi_networks', {}).values()
                 if wifi.get('name') == ssid]
-      except pyauto.pyauto_errors.JSONInterfaceError:
+      except pyauto_errors.JSONInterfaceError:
         # Temporary fix until crosbug.com/14174 is fixed.
         # NetworkScan is only used in updating the list of networks so errors
         # thrown by it are not critical to the results of wifi tests that use
         # this method.
-        return True
+        return False
 
     return self.WaitUntil(_GotWifiNetwork, timeout=timeout, retry_sleep=1)
 
