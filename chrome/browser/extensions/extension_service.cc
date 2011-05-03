@@ -1325,8 +1325,7 @@ bool ExtensionService::GetSyncData(
     ExtensionFilter filter,
     ExtensionSyncData* extension_sync_data) const {
   DCHECK(Extension::IdIsValid(id));
-  // TODO(akalin): Figure out what to do with terminated extensions.
-  const Extension* extension = GetExtensionById(id, true);
+  const Extension* extension = GetInstalledExtension(id);
   if (!extension || !(*filter)(*extension)) {
     return false;
   }
@@ -1352,7 +1351,7 @@ std::vector<ExtensionSyncData> ExtensionService::GetSyncDataList(
   std::vector<ExtensionSyncData> sync_data_list;
   GetSyncDataListHelper(extensions_, filter, &sync_data_list);
   GetSyncDataListHelper(disabled_extensions_, filter, &sync_data_list);
-  // TODO(akalin): Figure out what to do with terminated extensions.
+  GetSyncDataListHelper(terminated_extensions_, filter, &sync_data_list);
   return sync_data_list;
 }
 
@@ -1392,10 +1391,7 @@ void ExtensionService::ProcessSyncData(
       //
       // TODO(akalin): Move that code here.
     }
-    return;
   } else {
-    // TODO(akalin): Remove need to pass the enabled flag.
-    //
     // TODO(akalin): Replace silent update with a list of enabled
     // permissions.
     const bool kInstallSilently = true;

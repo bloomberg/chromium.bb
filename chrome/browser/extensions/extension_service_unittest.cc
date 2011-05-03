@@ -3422,7 +3422,7 @@ TEST_F(ExtensionServiceTest, GetSyncData) {
 
   ExtensionSyncData data;
   EXPECT_TRUE(service_->GetSyncData(good_crx, &AllExtensions, &data));
-  const Extension* extension = service_->GetExtensionById(good_crx, true);
+  const Extension* extension = service_->GetInstalledExtension(good_crx);
   ASSERT_TRUE(extension);
   EXPECT_EQ(extension->id(), data.id);
   EXPECT_FALSE(data.uninstalled);
@@ -3431,6 +3431,14 @@ TEST_F(ExtensionServiceTest, GetSyncData) {
   EXPECT_TRUE(data.version.Equals(*extension->version()));
   EXPECT_EQ(extension->update_url(), data.update_url);
   EXPECT_EQ(extension->name(), data.name);
+}
+
+TEST_F(ExtensionServiceTest, GetSyncDataTerminated) {
+  InitializeEmptyExtensionService();
+  InstallCrx(data_dir_.AppendASCII("good.crx"), true);
+  TerminateExtension(good_crx);
+  ExtensionSyncData data;
+  EXPECT_TRUE(service_->GetSyncData(good_crx, &AllExtensions, &data));
 }
 
 TEST_F(ExtensionServiceTest, GetSyncDataFilter) {
@@ -3490,7 +3498,7 @@ TEST_F(ExtensionServiceTest, GetSyncDataList) {
   InstallCrx(data_dir_.AppendASCII("theme2.crx"), true);
 
   service_->DisableExtension(page_action);
-  service_->DisableExtension(theme2_crx);
+  TerminateExtension(theme2_crx);
 
   EXPECT_EQ(4u, service_->GetSyncDataList(&AllExtensions).size());
   EXPECT_EQ(0u, service_->GetSyncDataList(&NoExtensions).size());
