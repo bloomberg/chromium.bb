@@ -54,17 +54,6 @@ for basename in barebones_tests:
   # c.f. http://code.google.com/p/nativeclient/issues/detail?id=783
   if env.Bit('build_arm') and basename == 'vaarg': continue
 
-  # TODO(pdox): These tests are failing in a strange way
-  #             on X86-64. Disable for now.
-  # Bug: http://code.google.com/p/nativeclient/issues/detail?id=1747
-  if (env.Bit('bitcode') and
-      env.Bit('target_x86_64') and
-      basename in ('reloc', 'addr_modes')):
-    is_broken_test = True
-  else:
-    is_broken_test = False
-
-
   # TODO(kcc): the barebones tests confuse the current nacl-ified valgrind.
   if env.IsRunningUnderValgrind(): continue
 
@@ -84,7 +73,7 @@ for basename in barebones_tests:
   env.AddNodeToTestSuite(node,
                          ['small_tests', 'sel_ldr_tests', 'barebones_tests'],
                          test,
-                         is_broken=is_broken or is_broken_test)
+                         is_broken=is_broken)
 
 
 # a test that the validador can handle an empty segment after the last
