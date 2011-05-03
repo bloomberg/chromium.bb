@@ -30,7 +30,7 @@ class desktopui_PyAutoFunctionalTests(chrome_test.ChromeTestBase):
             open(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE, 'w').close()
 
         # Setup suid python binary which can enable chrome testing interface
-        suid_python = os.path.join(self.test_binary_dir, 'python')
+        suid_python = os.path.join(self.test_binary_dir, 'suid-python')
         py_path = subprocess.Popen(['which', 'python'],
                                    stdout=subprocess.PIPE).communicate()[0]
         py_path = py_path.strip()

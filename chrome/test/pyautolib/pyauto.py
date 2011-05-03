@@ -183,7 +183,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     def _IsRootSuid(path):
       return os.path.isfile(path) and (os.stat(path).st_mode & stat.S_ISUID)
     suid_python = os.path.normpath(os.path.join(
-        os.path.dirname(pyautolib.__file__), 'python'))
+        os.path.dirname(pyautolib.__file__), 'suid-python'))
     assert _IsRootSuid(suid_python), \
         'Did not find suid-root python at %s' % suid_python
     file_path = os.path.join(os.path.dirname(__file__), 'chromeos',
@@ -193,8 +193,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     for flag in self.ExtraChromeFlagsOnChromeOS():
       args.append('--extra-chrome-flags=%s' % flag)
     proc = subprocess.Popen(args, stdout=subprocess.PIPE)
-    automation_channel_path = proc.communicate()[0]
-    automation_channel_path = automation_channel_path.strip()
+    automation_channel_path = proc.communicate()[0].strip()
     assert len(automation_channel_path), 'Could not enable testing interface'
     return automation_channel_path
 
