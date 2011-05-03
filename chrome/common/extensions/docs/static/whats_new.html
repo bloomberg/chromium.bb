@@ -7,6 +7,7 @@ made in recent releases.
 </p>
 
 <ul>
+  <li> <a href="#11">Google Chrome 11</a> </li>
   <li> <a href="#10">Google Chrome 10</a> </li>
   <li> <a href="#9">Google Chrome 9</a> </li>
   <li> <a href="#8">Google Chrome 8</a> </li>
@@ -14,6 +15,28 @@ made in recent releases.
   <li> <a href="#6">Google Chrome 6</a> </li>
 </ul>
 
+
+<h2 id="11"> Google Chrome 11 </h2>
+
+<h4> Additions to existing APIs </h4>
+  <ul>
+    <li>
+      The management API's
+      <a href="management.html#type-ExtensionInfo">ExtensionInfo</a> object
+      now has a <code>homepageUrl</code> property.
+    </li>
+    <li> The management API now lets you get the icons of
+      disabled apps and extensions.
+      Also, you can now modify the regular icon's URL
+      to get its disabled equivalent.
+      See <a href="management.html#type-IconInfo">IconInfo</a> for details.
+    </li>
+    <li> The cookies API
+      <a href="cookies.html#method-set">set()</a>
+      and <a href="cookies.html#method-remove">remove()</a> methods
+      can now take callbacks.
+    </li>
+  </ul>
 
 <h2 id="10"> Google Chrome 10 </h2>
 
@@ -34,7 +57,7 @@ made in recent releases.
       <p class="note">
       <b>Note:</b>
       This change was incorrectly attributed to Chrome 9
-      in previous versions of this page.
+      in previous release notes.
     </li>
   </ul>
 
@@ -86,10 +109,10 @@ No API or manifest changes worth noting.
   <ul>
     <li> All users can now install
       <a href="http://code.google.com/chrome/apps/index.html">apps</a>;
-      packaged apps can use extension APIs
+      packaged apps can use extension APIs.
       </li>
     <li> The <a href="management.html">management API</a>
-      lets you work with installed apps and extensions
+      lets you work with installed apps and extensions.
       </li>
   </ul>
 
@@ -97,12 +120,12 @@ No API or manifest changes worth noting.
   <ul>
     <li> Introduced <a href="manifest.html#incognito">split incognito</a>
       mode as the default for installable web apps
-      (also available to extensions)
+      (also available to extensions).
       </li>
     <li> The <a href="tabs.html">tabs API</a>
       <code>create()</code> and <code>update()</code> methods
       no longer require the "tabs" permission, removing one common cause of
-      <a href="permission_warnings.html">scary dialogs</a>
+      <a href="permission_warnings.html">scary dialogs</a>.
       </li>
   </ul>
 
@@ -124,42 +147,42 @@ No API or manifest changes worth noting.
 <h4> New APIs </h4>
   <ul>
     <li>The <a href="contextMenus.html">context menus API</a> allows you to
-      add context menus to pages or specific objects on a page </li>
+      add context menus to pages or specific objects on a page. </li>
     <li>The <a href="cookies.html">cookies API</a> allows you to manage the
-      browser's cookie system  </li>
+      browser's cookie system.  </li>
     <li>The <a href="idle.html">idle API</a> allows you to detect when the
-      machine's idle state changes </li>
+      machine's idle state changes. </li>
   </ul>
 
 <h4> New experimental APIs </h4>
   <ul>
     <li>The <a href="experimental.omnibox.html">omnibox API</a> allows you to
-      add functionality to the browser's address bar </li>
+      add functionality to the browser's address bar. </li>
     <li>The <a href="experimental.infobars.html">infobars API</a> allows you
-      to add a UI panel across the top of a tab </li>
+      to add a UI panel across the top of a tab. </li>
   </ul>
 
 <h4> Additions to existing APIs </h4>
   <ul>
     <li>The <a
       href="extension.html#method-getViews">chrome.extension.getViews()</a>
-      method can now return popup views </li>
+      method can now return popup views. </li>
     <li>A new <a
       href="windows.html#property-WINDOW_ID_NONE">WINDOW_ID_NONE</a> constant
-      identifies when focus shifts away from the browser </li>
+      identifies when focus shifts away from the browser. </li>
     <li>The new <a
       href="tabs.html#method-getCurrent">chrome.tabs.getCurrent()</a> method
-      returns the tab associated with the currently executing script </li>
+      returns the tab associated with the currently executing script. </li>
   </ul>
 
 <h4> Manifest changes </h4>
   <ul>
     <li>The <a href="manifest.html#geolocation">geolocation</a> permission
-      gives an extension access to the user's physical location </li>
+      gives an extension access to the user's physical location. </li>
     <li><a href="match_patterns.html">Match patterns</a> can now select all
-      schemes or all URLs </li>
+      schemes or all URLs. </li>
     <li>Access to file:/// URLs no longer triggers the "access to your machine"
       security warning, but now requires user opt-in from the extensions
-      management page </li>
+      management page. </li>
   </ul>
 
