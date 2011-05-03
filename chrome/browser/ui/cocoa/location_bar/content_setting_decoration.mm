@@ -267,13 +267,6 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   if (content_settings_type == CONTENT_SETTINGS_TYPE_PRERENDER)
     return true;
 
-  GURL url = tabContents->tab_contents()->GetURL();
-  std::wstring displayHost;
-  net::AppendFormattedHost(
-      url,
-      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
-      &displayHost, NULL, NULL);
-
   // Find point for bubble's arrow in screen coordinates.
   // TODO(shess): |owner_| is only being used to fetch |field|.
   // Consider passing in |control_view|.  Or refactoring to be

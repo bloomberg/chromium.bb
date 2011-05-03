@@ -345,7 +345,7 @@ bool ExtensionService::IsDownloadFromGallery(const GURL& download_url,
     if (!download_valid) {
       std::string download_tld =
           net::RegistryControlledDomainService::GetDomainAndRegistry(
-              GURL(download_url));
+              download_url);
 
       // Otherwise, the TLD must match the TLD of the command-line url.
       download_valid = (download_tld == store_tld);

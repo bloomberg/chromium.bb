@@ -556,7 +556,8 @@ static bool RcdBetterThan(const std::string& a, const std::string& b) {
 
 // static
 std::vector<std::string> Extension::GetDistinctHosts(
-    const URLPatternList& host_patterns, bool include_rcd) {
+    const URLPatternList& host_patterns,
+    bool include_rcd) {
   // Use a vector to preserve order (also faster than a map on small sets).
   // Each item is a host split into two parts: host without RCDs and
   // current best RCD.

@@ -155,7 +155,6 @@ class RegistryControlledDomainService {
   // Like the GURL version, but takes a host (which is canonicalized internally)
   // instead of a full GURL.
   static std::string GetDomainAndRegistry(const std::string& host);
-  static std::string GetDomainAndRegistry(const std::wstring& host);
 
   // This convenience function returns true if the two GURLs both have hosts
   // and one of the following is true:
@@ -194,8 +193,6 @@ class RegistryControlledDomainService {
   // Like the GURL version, but takes a host (which is canonicalized internally)
   // instead of a full GURL.
   static size_t GetRegistryLength(const std::string& host,
-                                  bool allow_unknown_registries);
-  static size_t GetRegistryLength(const std::wstring& host,
                                   bool allow_unknown_registries);
 
   // Returns the singleton instance, after attempting to initialize it.

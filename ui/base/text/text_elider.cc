@@ -391,10 +391,8 @@ string16 ElideText(const string16& text,
 
 SortedDisplayURL::SortedDisplayURL(const GURL& url,
                                    const std::string& languages) {
-  std::wstring host;
-  net::AppendFormattedHost(url, UTF8ToWide(languages), &host, NULL, NULL);
-  sort_host_ = WideToUTF16Hack(host);
-  string16 host_minus_www = net::StripWWW(WideToUTF16Hack(host));
+  net::AppendFormattedHost(url, languages, &sort_host_);
+  string16 host_minus_www = net::StripWWW(sort_host_);
   url_parse::Parsed parsed;
   display_url_ = net::FormatUrl(url, languages,
       net::kFormatUrlOmitAll, UnescapeRule::SPACES, &parsed, &prefix_end_,

@@ -42,6 +42,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_parse.h"
 #include "net/base/net_module.h"
@@ -74,16 +75,6 @@ std::string RegistryControlledDomainService::GetDomainAndRegistry(
 // static
 std::string RegistryControlledDomainService::GetDomainAndRegistry(
     const std::string& host) {
-  url_canon::CanonHostInfo host_info;
-  const std::string canon_host(CanonicalizeHost(host, &host_info));
-  if (canon_host.empty() || host_info.IsIPAddress())
-    return std::string();
-  return GetDomainAndRegistryImpl(canon_host);
-}
-
-// static
-std::string RegistryControlledDomainService::GetDomainAndRegistry(
-    const std::wstring& host) {
   url_canon::CanonHostInfo host_info;
   const std::string canon_host(CanonicalizeHost(host, &host_info));
   if (canon_host.empty() || host_info.IsIPAddress())
@@ -131,20 +122,6 @@ size_t RegistryControlledDomainService::GetRegistryLength(
 // static
 size_t RegistryControlledDomainService::GetRegistryLength(
     const std::string& host,
-    bool allow_unknown_registries) {
-  url_canon::CanonHostInfo host_info;
-  const std::string canon_host(CanonicalizeHost(host, &host_info));
-  if (canon_host.empty())
-    return std::string::npos;
-  if (host_info.IsIPAddress())
-    return 0;
-  return GetInstance()->GetRegistryLengthImpl(canon_host,
-                                              allow_unknown_registries);
-}
-
-// static
-size_t RegistryControlledDomainService::GetRegistryLength(
-    const std::wstring& host,
     bool allow_unknown_registries) {
   url_canon::CanonHostInfo host_info;
   const std::string canon_host(CanonicalizeHost(host, &host_info));

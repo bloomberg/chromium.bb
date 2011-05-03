@@ -207,11 +207,11 @@ class ContentSettingSingleRadioGroup
   // content type and setting the default value based on the content setting.
   void SetRadioGroup() {
     GURL url = tab_contents()->tab_contents()->GetURL();
-    std::wstring display_host_wide;
+    string16 display_host_utf16;
     net::AppendFormattedHost(url,
-        UTF8ToWide(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages)),
-        &display_host_wide, NULL, NULL);
-    std::string display_host(WideToUTF8(display_host_wide));
+        profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
+        &display_host_utf16);
+    std::string display_host(UTF16ToUTF8(display_host_utf16));
 
     if (display_host.empty())
       display_host = url.spec();
