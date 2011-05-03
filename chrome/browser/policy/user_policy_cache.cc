@@ -7,6 +7,7 @@
 #include <limits>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/task.h"
@@ -27,61 +28,64 @@ namespace policy {
 void DecodePolicy(const em::CloudPolicySettings& policy,
                   PolicyMap* mandatory, PolicyMap* recommended);
 
-// Saves policy information to a file.
-class PersistPolicyTask : public Task {
+// Handles the on-disk cache file used by UserPolicyCache. This class handles
+// the necessary thread switching and may outlive the associated UserPolicyCache
+// instance.
+class UserPolicyCache::DiskCache
+    : public base::RefCountedThreadSafe<UserPolicyCache::DiskCache> {
  public:
-  PersistPolicyTask(const FilePath& path,
-                    const em::PolicyFetchResponse* cloud_policy_response,
-                    const bool is_unmanaged)
-      : path_(path),
-        cloud_policy_response_(cloud_policy_response),
-        is_unmanaged_(is_unmanaged) {}
+  DiskCache(const base::WeakPtr<UserPolicyCache>& cache,
+            const FilePath& backing_file_path);
+
+  // Starts reading the policy cache from disk. Passes the read policy
+  // information back to the hosting UserPolicyCache after a successful cache
+  // load through UserPolicyCache::OnDiskCacheLoaded().
+  void Load();
+
+  // Triggers a write operation to the disk cache on the FILE thread.
+  void Store(const em::CachedCloudPolicyResponse& policy);
 
  private:
-  // Task override.
-  virtual void Run();
+  // Tries to load the cache file on the FILE thread.
+  void LoadOnFileThread();
 
-  const FilePath path_;
-  scoped_ptr<const em::PolicyFetchResponse> cloud_policy_response_;
-  const bool is_unmanaged_;
+  // Passes back the successfully read policy to the cache on the UI thread.
+  void FinishLoadOnUIThread(const em::CachedCloudPolicyResponse& policy);
+
+  // Saves a policy blob on the FILE thread.
+  void StoreOnFileThread(const em::CachedCloudPolicyResponse& policy);
+
+  base::WeakPtr<UserPolicyCache> cache_;
+  const FilePath backing_file_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(DiskCache);
 };
 
-void PersistPolicyTask::Run() {
+UserPolicyCache::DiskCache::DiskCache(
+    const base::WeakPtr<UserPolicyCache>& cache,
+    const FilePath& backing_file_path)
+    : cache_(cache),
+      backing_file_path_(backing_file_path) {}
+
+void UserPolicyCache::DiskCache::Load() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(this, &DiskCache::LoadOnFileThread));
+}
+
+void UserPolicyCache::DiskCache::Store(
+    const em::CachedCloudPolicyResponse& policy) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(this, &DiskCache::StoreOnFileThread, policy));
+}
+
+void UserPolicyCache::DiskCache::LoadOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  std::string data;
-  em::CachedCloudPolicyResponse cached_policy;
-  if (cloud_policy_response_.get()) {
-    cached_policy.mutable_cloud_policy()->CopyFrom(*cloud_policy_response_);
-  }
-  if (is_unmanaged_) {
-    cached_policy.set_unmanaged(true);
-    cached_policy.set_timestamp(base::Time::NowFromSystemTime().ToTimeT());
-  }
-  if (!cached_policy.SerializeToString(&data)) {
-    LOG(WARNING) << "Failed to serialize policy data";
+  if (!file_util::PathExists(backing_file_path_))
     return;
-  }
-
-  int size = data.size();
-  if (file_util::WriteFile(path_, data.c_str(), size) != size) {
-    LOG(WARNING) << "Failed to write " << path_.value();
-    return;
-  }
-}
-
-UserPolicyCache::UserPolicyCache(const FilePath& backing_file_path)
-    : backing_file_path_(backing_file_path) {
-}
-
-UserPolicyCache::~UserPolicyCache() {
-}
-
-void UserPolicyCache::Load() {
-  // TODO(jkummerow): This method is doing file IO during browser startup. In
-  // the long run it would be better to delay this until the FILE thread exists.
-  if (!file_util::PathExists(backing_file_path_) || initialization_complete()) {
-    return;
-  }
 
   // Read the protobuf from the file.
   std::string data;
@@ -91,6 +95,7 @@ void UserPolicyCache::Load() {
     return;
   }
 
+  // Decode it.
   em::CachedCloudPolicyResponse cached_response;
   if (!cached_response.ParseFromArray(data.c_str(), data.size())) {
     LOG(WARNING) << "Failed to parse policy data read from "
@@ -98,45 +103,96 @@ void UserPolicyCache::Load() {
     return;
   }
 
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+                        &DiskCache::FinishLoadOnUIThread,
+                        cached_response));
+}
+
+void UserPolicyCache::DiskCache::FinishLoadOnUIThread(
+    const em::CachedCloudPolicyResponse& policy) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (cache_.get())
+    cache_->OnDiskCacheLoaded(policy);
+}
+
+
+void UserPolicyCache::DiskCache::StoreOnFileThread(
+    const em::CachedCloudPolicyResponse& policy) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  std::string data;
+  if (!policy.SerializeToString(&data)) {
+    LOG(WARNING) << "Failed to serialize policy data";
+    return;
+  }
+
+  if (!file_util::CreateDirectory(backing_file_path_.DirName())) {
+    LOG(WARNING) << "Failed to create directory "
+                 << backing_file_path_.DirName().value();
+    return;
+  }
+
+  int size = data.size();
+  if (file_util::WriteFile(backing_file_path_, data.c_str(), size) != size) {
+    LOG(WARNING) << "Failed to write " << backing_file_path_.value();
+    return;
+  }
+}
+
+UserPolicyCache::UserPolicyCache(const FilePath& backing_file_path)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  disk_cache_ = new DiskCache(weak_ptr_factory_.GetWeakPtr(),
+                              backing_file_path);
+}
+
+UserPolicyCache::~UserPolicyCache() {
+}
+
+void UserPolicyCache::Load() {
+  disk_cache_->Load();
+}
+
+void UserPolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
+  base::Time now = base::Time::NowFromSystemTime();
+  set_last_policy_refresh_time(now);
+  base::Time timestamp;
+  if (!SetPolicyInternal(policy, &timestamp, false))
+    return;
+
+  if (timestamp > base::Time::NowFromSystemTime() +
+                  base::TimeDelta::FromMinutes(1)) {
+    LOG(WARNING) << "Server returned policy with timestamp from the future, "
+                    "not persisting to disk.";
+    return;
+  }
+
+  em::CachedCloudPolicyResponse cached_policy;
+  cached_policy.mutable_cloud_policy()->CopyFrom(policy);
+  disk_cache_->Store(cached_policy);
+}
+
+void UserPolicyCache::SetUnmanaged() {
+  DCHECK(CalledOnValidThread());
+  SetUnmanagedInternal(base::Time::NowFromSystemTime());
+
+  em::CachedCloudPolicyResponse cached_policy;
+  cached_policy.set_unmanaged(true);
+  cached_policy.set_timestamp(base::Time::NowFromSystemTime().ToTimeT());
+  disk_cache_->Store(cached_policy);
+}
+
+void UserPolicyCache::OnDiskCacheLoaded(
+    const em::CachedCloudPolicyResponse& cached_response) {
+  if (initialization_complete())
+    return;
+
   if (cached_response.unmanaged()) {
     SetUnmanagedInternal(base::Time::FromTimeT(cached_response.timestamp()));
   } else if (cached_response.has_cloud_policy()) {
     base::Time timestamp;
     if (SetPolicyInternal(cached_response.cloud_policy(), &timestamp, true))
       set_last_policy_refresh_time(timestamp);
-  }
-}
-
-void UserPolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
-  base::Time now = base::Time::NowFromSystemTime();
-  set_last_policy_refresh_time(now);
-  bool ok = SetPolicyInternal(policy, NULL, false);
-  if (ok)
-    PersistPolicy(policy, now);
-}
-
-void UserPolicyCache::SetUnmanaged() {
-  DCHECK(CalledOnValidThread());
-  SetUnmanagedInternal(base::Time::NowFromSystemTime());
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      new PersistPolicyTask(backing_file_path_, NULL, true));
-}
-
-void UserPolicyCache::PersistPolicy(const em::PolicyFetchResponse& policy,
-                                    const base::Time& timestamp) {
-  if (timestamp > base::Time::NowFromSystemTime() +
-                  base::TimeDelta::FromMinutes(1)) {
-    LOG(WARNING) << "Server returned policy with timestamp from the future, "
-                    "not persisting to disk.";
-  } else {
-    em::PolicyFetchResponse* policy_copy = new em::PolicyFetchResponse;
-    policy_copy->CopyFrom(policy);
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        new PersistPolicyTask(backing_file_path_, policy_copy, false));
   }
 }
 

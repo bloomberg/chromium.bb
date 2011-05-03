@@ -127,6 +127,12 @@ void UserPolicyIdentityStrategy::TokenCache::StoreOnFileThread(
     return;
   }
 
+  if (!file_util::CreateDirectory(cache_file_.DirName())) {
+    LOG(WARNING) << "Failed to create directory "
+                 << cache_file_.DirName().value();
+    return;
+  }
+
   file_util::WriteFile(cache_file_, data.c_str(), data.length());
 }
 

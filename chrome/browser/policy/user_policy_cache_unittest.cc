@@ -202,6 +202,7 @@ TEST_F(UserPolicyCacheTest, Empty) {
 TEST_F(UserPolicyCacheTest, LoadNoFile) {
   UserPolicyCache cache(test_file());
   cache.Load();
+  loop_.RunAllPending();
   PolicyMap empty;
   EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
   EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
@@ -215,6 +216,7 @@ TEST_F(UserPolicyCacheTest, RejectFuture) {
   WritePolicy(*policy_response);
   UserPolicyCache cache(test_file());
   cache.Load();
+  loop_.RunAllPending();
   PolicyMap empty;
   EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
   EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
@@ -227,6 +229,7 @@ TEST_F(UserPolicyCacheTest, LoadWithFile) {
   WritePolicy(*policy_response);
   UserPolicyCache cache(test_file());
   cache.Load();
+  loop_.RunAllPending();
   PolicyMap empty;
   EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
   EXPECT_NE(base::Time(), cache.last_policy_refresh_time());
@@ -241,6 +244,7 @@ TEST_F(UserPolicyCacheTest, LoadWithData) {
   WritePolicy(*policy);
   UserPolicyCache cache(test_file());
   cache.Load();
+  loop_.RunAllPending();
   PolicyMap expected;
   expected.Set(kPolicyHomepageLocation,
                Value::CreateStringValue("http://www.example.com"));
@@ -309,6 +313,7 @@ TEST_F(UserPolicyCacheTest, PersistPolicy) {
   EXPECT_TRUE(file_util::PathExists(test_file()));
   UserPolicyCache cache(test_file());
   cache.Load();
+  loop_.RunAllPending();
   PolicyMap expected;
   expected.Set(kPolicyHomepageLocation,
                Value::CreateStringValue("http://www.example.com"));
@@ -330,6 +335,7 @@ TEST_F(UserPolicyCacheTest, FreshPolicyOverride) {
   SetPolicy(&cache, updated_policy, true);
 
   cache.Load();
+  loop_.RunAllPending();
   PolicyMap expected;
   expected.Set(kPolicyHomepageLocation,
                Value::CreateStringValue("http://www.chromium.org"));

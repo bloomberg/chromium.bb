@@ -9,13 +9,16 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 
-// <Old-style policy support> (see comment below)
 namespace enterprise_management {
+class CachedCloudPolicyResponse;
+// <Old-style policy support> (see comment below)
 class GenericValue;
-}  // namespace enterprise_management
 // </Old-style policy support>
+}  // namespace enterprise_management
 
 namespace policy {
 
@@ -32,8 +35,10 @@ class UserPolicyCache : public CloudPolicyCacheBase {
   virtual void SetUnmanaged() OVERRIDE;
 
  private:
-  void PersistPolicy(const em::PolicyFetchResponse& policy,
-                     const base::Time& timestamp);
+  class DiskCache;
+
+  // Invoked by DiskCache after the file cache has been read successfully.
+  void OnDiskCacheLoaded(const em::CachedCloudPolicyResponse& cached_response);
 
   // CloudPolicyCacheBase implementation:
   virtual bool DecodePolicyData(const em::PolicyData& policy_data,
@@ -57,8 +62,11 @@ class UserPolicyCache : public CloudPolicyCacheBase {
 
   // </Old-style policy support>
 
-  // The file in which we store a cached version of the policy information.
-  const FilePath backing_file_path_;
+  // Manages the cache file.
+  scoped_refptr<DiskCache> disk_cache_;
+
+  // Used for constructing the weak ptr passed to |disk_cache_|.
+  base::WeakPtrFactory<UserPolicyCache> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicyCache);
 };
