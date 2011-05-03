@@ -10,7 +10,7 @@ def main():
   """
 
   COLUMNS = ['First name', 'Middle name', 'Last name', 'Email', 'Company name',
-             'Address line 1', 'Address line 2', 'City', 'State', 'Zipcode',
+             'Address line 1', 'Address line 2', 'City', 'State', 'ZIP code',
              'Country', 'Phone', 'Fax']
 
   if len(sys.argv) != 2:
@@ -20,6 +20,7 @@ def main():
   profiles = [COLUMNS]
   with open(sys.argv[1], 'r') as serialized_profiles:
     profile = []
+    previous_field_type = ''
     for line in serialized_profiles:
       # Trim the newline if present.
       if line[-1] == '\n':
@@ -33,8 +34,15 @@ def main():
           profile = []
       else:
         # Append the current field's value to the current profile.
-        field_value = line.split(': ', 1)[1]
-        profile.append("'%s'" % field_value)
+        line_parts = line.split(': ', 1)
+        field_type = line_parts[0]
+        field_value = line_parts[1]
+        if field_type != previous_field_type:
+          profile.append("'%s'" % field_value)
+        else:
+          # This is a non-primary value for a multi-valued field.
+          profile[-1] += ", '%s'" % field_value
+        previous_field_type = field_type
 
     if len(profile):
       profiles.append(profile)
