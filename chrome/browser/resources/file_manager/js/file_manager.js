@@ -102,33 +102,22 @@ FileManager.prototype = {
    * defined, so don't depend on it.
    */
   const iconTypes = {
-    'image': /\.(png|gif|jpe?g)$/i,
-    // TODO(rginda): Uncomment these rules when we get the graphic assets.
-    // 'document' : /\.(txt|doc|docx|wpd|odt|ps)$/i,
-    // 'pdf' : /\.(pdf)$/i,
-    // 'drawing': /\.(svg)$/i,
-    // 'spreadsheet': /\.(xls|xlsx)$/i,
-    // 'presentation': /\.(ppt|pptx)$/i
+    'audio': /\.(aac|aiff|atrac|cda|flac|mp3|pcm|ogg|raw|wav)$/i,
+    'doc' : /\.(doc|docx|odt|ps|rtf|txt|wpd)$/i,
+    'html': /\.(html?)$/i,
+    'image': /\.(bmp|gif|jpe?g|ico|png|webp)$/i,
+    'pdf' : /\.(pdf)$/i,
+    'presentation': /\.(odp|ppt|pptx)$/i,
+    'spreadsheet': /\.(ods|xls|xlsx)$/i,
+    'text': /\.(pod|rst|txt)$/i,
+    'video':
+    /\.(3gp|asf|avi|di?vx|f4v|fbr|mp4|mpe?g4?|ogm|ogv|ogx|webm|wmv?|xvid)$/i
   };
 
-  /**
-   * Canned preview images for non-image files.
-   *
-   * When we're built as a component extension we won't be able to access urls
-   * that haven't been explicitly packed into the resource bundle.  It's
-   * simpler to pack them here as data: urls than it is to maintain code that
-   * maps urls into the resource bundle.  Please make sure to check any new
-   * source images, and refer to the file in the comment here.
-   *
-   * Pro Tip: On *nix, the base64 command line tool can be used to base64
-   * encode arbitrary files.
-   */
-  const previewArt = {
-    // ../images/preview-unknown.png
-    'unknown': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGEAAABxCAYAAADF0M04AAAAAXNSR0IArs4c6QAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sDFgMHCist9V8AAAEQSURBVHja7drLCUJBEETRGjEIEcxZNERBzOK5VkFwMZafc0PoM70Y6JH5LdHTBoDfRrgBOJ0vpn3XbrtJkqxsQL/VTID94WjCBQQAZQQAZQQAZQQAZQQAZQQAZQQAZQQAX/BZ02QEW1BGAFBGAFBGAFBGAFBGAFBGAFBGAFBGAFBGAFBGAFBs5E2XEU5eHpt98qIXWnupn/9jFgQIggBBECAIAgRBgCAIEAQBgiAIAgRBgCAIEAQBgiBAEAQIggBBECAIAgRBgCAIEAQBgiBAEAQIggBBECAIAgRBgCAIEAQBgiBAEAQIggBBECAIAgRBgCAIEAQBgiBAEAQIggBBECAIgiBAUJJkJFmMwSb8fVcLi0WbrZFumAAAAABJRU5ErkJggg==',
 
-    // ../images/preview-folder.png
-    'folder': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHUAAABjCAYAAACli086AAAAAXNSR0IArs4c6QAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sDFgMHGa+TtIEAAAVTSURBVHja7Z07bxxlGIWfcYzBkIvjm2JjGwjYOAm2Q8LFEIxASAgakCiQUrCioUCIkgoqRLcFFQUlUPAP+AEkXARKiAk2jiEhiYNt1t7EN3y3l2JnkhT27s7uK94xnCOtvq2mOI9mvjPffHMmwE45pESoShb891RtfcCTH5ySq0768qMBnam6/EqCKgmqJKiSoP7PFACfASlZ4a/+V97ngd6XTG5pvpadyVDm6qDJcaqB78L/Q+99njsia/99DX3zBV99miJ77RezOXUk/N8te3105MQbAMxlr5pB3QQuAbvSqeCgLPbRPXWt5HKbLNwYN0u/P4TjE7LXRw2thwDIjv9qBjUKS8/KXh81d/SZhaUI6rfh+LTs9VFjew8A09fOm0EdDsfDstdHPQNv5sPS1GUzqGvAGFCTTgXtsthHd+9tZnNzncW5jAlUgB/D8XHZ66P6lu4wLI2YQVVY8g5L9x0FYOrqOTOoCkveYantkTzUCleWbocaxa4e2eujvufeAmA2c9EM6jIwAdSmU0GLLPbRXbsb2FhfZWkhawIV4Ew4Hpe9TmHpwMMAXJ+4YAY12t85IHt91NTRG4aln82gng7HZ2SvE9T2EOqYHdToSL2y10ePvvA2ADOZ382gLgDTwJ7F+ekPZbGPamr3sb66xMrirAlUgLMAn7zTdFr2OoWllq58WJocNYOqsOQ+r/aFYWnQDKrC0g4PS1tB/Smas2Wvj46/+C4ANyZ/M4M6C8wAdbLXT3fcuZu1lQVWlxdMoN48W9Op4HnZ66P9BzrLPlu3g6p5dQfPq9tBVQL2hhpuRJsaGzSDejYcj8leHx3sfTl/rzoxagY1C8wDjbLXRw2t3VTX1LK6NMva6qIJVAjXgdOp4IQs9lFd80MAzPx10QyqwtIODUuFoCosuYel8p6tFoKqXRDOqm8Jd0FMXjCDOgksAdqv5KTOY6+yq7qG5YUsG+srJlAh3GGYTgV6G85J+5ofzIelzCUzqNoL7D2vhnuBp2PsBS4GVbv23cNSftd+5so5M6h6vyYBixAA1ydGzKBeA1YBvQnnpK7HXqOqqprFuQybG+smUCF8dzWdCo7KYh/tbbofgNnpy2ZQFZac1dgWvmU+dt4MqsKSs+L2QZQCVc0t7mEpXnNLKVD/ADYAdSw5qfvJ1wmCKv6eGSeX2zSBCmErWjoVqObOKyw1dAAwN33FDGrUX/iU7HW6BN9cWRoyg6qwlJiwdM4M6vfh2C97vW5r8jNf9s9hM6jR5tNO2eujQ/0nAZi/PmYGFWAUCNKpoEsW+2hPfXtJYONA1SXYOyzde7iksBQHqsKSe1gKH8MVWVmKA1W3NUkJS0UemMeBqlp2Z5Vayx4HqmrZE6BSatnjfmxIi/veYamExf24UBWW3MNS8cdwcaHqgbl3WCqhlj0uVNWyO6uUWva4UFXLngAVq2Uv56uM2jbqrGK17OVAVVjyDktFatnLgaqw5B2WitSylwNVtezOKlbLXg5U1bInQIVq2cv9fLVeSPYOSwVq2cuFquoAZxWqDigXqko+vKEWKPkoF6pq2Z1VqJa9XKiqZU+Atqtlr6rgmKpl9w5L29SyVwJVYcl9Xt26lr0SqApLCQ1LlUBVLbuztqtlrwSqatkToK1q2asqPKZq2Z21VS17pVA1ryZwXq0UqhKwN9QtatkrhapadmdtVcteKVTVsjvr9lp2K6hwq5ZdDjspqmW3hKplwoSEJUuop2Srd1iyh3pGtvoqqmW3hBrVsktOimrZLaHCrVp2OeykqJbdUh8DOf2S8bM6tcaANp0vyZDl9XJYdrqrBdj/D94xFInAmNPFAAAAAElFTkSuQmCC',
+  const previewArt = {
+    'unknown': 'images/filetype_large_generic.png',
+    'folder': 'images/filetype_large_folder.png'
   };
 
   /**
@@ -1096,9 +1085,9 @@ FileManager.prototype = {
       }
 
       if (url) {
+        self.previewImage_.src = url;
         if (iconType == 'image')
           self.previewImage_.classList.add('transparent-background');
-        self.previewImage_.src = url;
       } else {
         self.previewImage_.src = previewArt['unknown'];
       }
@@ -1139,6 +1128,9 @@ FileManager.prototype = {
     var iconType = getIconType(entry);
     if (iconType != 'image') {
       // Not an image, display a canned clip-art graphic.
+      if (!(iconType in previewArt))
+        iconType = 'unknown';
+
       setTimeout(function() { callback(iconType, previewArt[iconType]) });
       return;
     }
