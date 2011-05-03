@@ -26,6 +26,7 @@ class Canvas;
 
 namespace views {
 
+class FocusableBorder;
 class KeyEvent;
 class Menu2;
 
@@ -127,30 +128,6 @@ class NativeTextfieldViews : public views::View,
  private:
   friend class NativeTextfieldViewsTest;
 
-  // A Border class to draw focus border for the text field.
-  class TextfieldBorder : public Border {
-   public:
-    TextfieldBorder();
-
-    // Border implementation.
-    virtual void Paint(const View& view, gfx::Canvas* canvas) const;
-    virtual void GetInsets(gfx::Insets* insets) const;
-
-    // Sets the insets of the border.
-    void SetInsets(int top, int left, int bottom, int right);
-
-    // Sets the focus state.
-    void set_has_focus(bool has_focus) {
-      has_focus_ = has_focus;
-    }
-
-   private:
-    bool has_focus_;
-    gfx::Insets insets_;
-
-    DISALLOW_COPY_AND_ASSIGN(TextfieldBorder);
-  };
-
   // Overridden from TextInputClient:
   virtual void SetCompositionText(
       const ui::CompositionText& composition) OVERRIDE;
@@ -245,7 +222,7 @@ class NativeTextfieldViews : public views::View,
   scoped_ptr<TextfieldViewsModel> model_;
 
   // The reference to the border class. The object is owned by View::border_.
-  TextfieldBorder* text_border_;
+  FocusableBorder* text_border_;
 
   // The x offset for the text to be drawn, without insets;
   int text_offset_;

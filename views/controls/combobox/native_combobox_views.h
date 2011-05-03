@@ -19,6 +19,7 @@ namespace views {
 
 class KeyEvent;
 class Menu2;
+class FocusableBorder;
 
 // A views/skia only implementation of NativeComboboxWrapper.
 // No platform specific code is used.
@@ -69,32 +70,6 @@ class NativeComboboxViews : public views::View,
   static void SetEnableComboboxViews(bool enabled);
 
  private:
-
-  // A Border class to draw focus border for the text field.
-  // TODO(saintlou): refactor with NativeTextfieldViews
-  class ComboboxBorder : public Border {
-   public:
-    ComboboxBorder();
-
-    // Border implementation.
-    virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE;
-    virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
-
-    // Sets the insets of the border.
-    void SetInsets(int top, int left, int bottom, int right);
-
-    // Sets the focus state.
-    void set_has_focus(bool has_focus) {
-      has_focus_ = has_focus;
-    }
-
-   private:
-    bool has_focus_;
-    gfx::Insets insets_;
-
-    DISALLOW_COPY_AND_ASSIGN(ComboboxBorder);
-  };
-
   // Returns the Combobox's font.
   const gfx::Font& GetFont() const;
 
@@ -112,7 +87,7 @@ class NativeComboboxViews : public views::View,
   Combobox* combobox_;
 
   // The reference to the border class. The object is owned by View::border_.
-  ComboboxBorder* text_border_;
+  FocusableBorder* text_border_;
 
   // Context menu and its content list for the combobox.
   scoped_ptr<ui::SimpleMenuModel> dropdown_list_model_;

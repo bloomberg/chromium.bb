@@ -116,6 +116,8 @@
         'controls/combobox/native_combobox_win.cc',
         'controls/combobox/native_combobox_win.h',
         'controls/combobox/native_combobox_wrapper.h',
+        'controls/focusable_border.cc',
+        'controls/focusable_border.h',
         'controls/image_view.cc',
         'controls/image_view.h',
         'controls/label.cc',

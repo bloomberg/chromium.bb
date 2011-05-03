@@ -18,6 +18,7 @@
 #include "ui/gfx/insets.h"
 #include "views/background.h"
 #include "views/border.h"
+#include "views/controls/focusable_border.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
@@ -36,15 +37,13 @@ namespace {
 // A global flag to switch the Textfield wrapper to TextfieldViews.
 bool textfield_view_enabled = false;
 
-// Color setttings for text, border, backgrounds and cursor.
+// Color setttings for text, backgrounds and cursor.
 // These are tentative, and should be derived from theme, system
 // settings and current settings.
 const SkColor kSelectedTextColor = SK_ColorWHITE;
 const SkColor kReadonlyTextColor = SK_ColorDKGRAY;
 const SkColor kFocusedSelectionColor = SK_ColorBLUE;
 const SkColor kUnfocusedSelectionColor = SK_ColorLTGRAY;
-const SkColor kFocusedBorderColor = SK_ColorCYAN;
-const SkColor kDefaultBorderColor = SK_ColorGRAY;
 const SkColor kCursorColor = SK_ColorBLACK;
 
 // Parameters to control cursor blinking.
@@ -63,7 +62,7 @@ const char NativeTextfieldViews::kViewClassName[] =
 NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
     : textfield_(parent),
       ALLOW_THIS_IN_INITIALIZER_LIST(model_(new TextfieldViewsModel(this))),
-      text_border_(new TextfieldBorder()),
+      text_border_(new FocusableBorder()),
       text_offset_(0),
       insert_(true),
       is_cursor_visible_(false),
@@ -963,60 +962,6 @@ bool NativeTextfieldViews::ShouldInsertChar(char16 ch, int flags) {
   // flag that we don't care about.
   return ((ch >= 0x20 && ch < 0x7F) || ch > 0x9F) &&
       (flags & ~(ui::EF_SHIFT_DOWN | ui::EF_CAPS_LOCK_DOWN)) != ui::EF_ALT_DOWN;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// TextifieldBorder
-//
-///////////////////////////////////////////////////////////////////////////////
-
-NativeTextfieldViews::TextfieldBorder::TextfieldBorder()
-    : has_focus_(false),
-      insets_(4, 4, 4, 4) {
-}
-
-void NativeTextfieldViews::TextfieldBorder::Paint(
-    const View& view, gfx::Canvas* canvas) const {
-  SkRect rect;
-  rect.set(SkIntToScalar(0), SkIntToScalar(0),
-           SkIntToScalar(view.width()), SkIntToScalar(view.height()));
-  SkScalar corners[8] = {
-    // top-left
-    SkIntToScalar(insets_.left()),
-    SkIntToScalar(insets_.top()),
-    // top-right
-    SkIntToScalar(insets_.right()),
-    SkIntToScalar(insets_.top()),
-    // bottom-right
-    SkIntToScalar(insets_.right()),
-    SkIntToScalar(insets_.bottom()),
-    // bottom-left
-    SkIntToScalar(insets_.left()),
-    SkIntToScalar(insets_.bottom()),
-  };
-  SkPath path;
-  path.addRoundRect(rect, corners);
-  SkPaint paint;
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
-  // TODO(oshima): Copy what WebKit does for focused border.
-  paint.setColor(has_focus_ ? kFocusedBorderColor : kDefaultBorderColor);
-  paint.setStrokeWidth(SkIntToScalar(has_focus_ ? 2 : 1));
-
-  canvas->AsCanvasSkia()->drawPath(path, paint);
-}
-
-void NativeTextfieldViews::TextfieldBorder::GetInsets(gfx::Insets* insets) const
-{
-  *insets = insets_;
-}
-
-void NativeTextfieldViews::TextfieldBorder::SetInsets(int top,
-                                                      int left,
-                                                      int bottom,
-                                                      int right) {
-  insets_.Set(top, left, bottom, right);
 }
 
 }  // namespace views

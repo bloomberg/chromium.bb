@@ -15,8 +15,9 @@
 #include "ui/gfx/path.h"
 #include "views/background.h"
 #include "views/border.h"
-#include "views/controls/menu/menu_2.h"
 #include "views/controls/combobox/combobox.h"
+#include "views/controls/focusable_border.h"
+#include "views/controls/menu/menu_2.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_util.h"
@@ -41,16 +42,11 @@ const int kComboboxArrowSize = 9;
 const int kComboboxArrowOffset = 7;
 const int kComboboxArrowMargin = 12;
 
-// Color settings for text, border, backgrounds and cursor.
+// Color settings for text and border.
 // These are tentative, and should be derived from theme, system
 // settings and current settings.
-const SkColor kSelectedTextColor = SK_ColorWHITE;
-const SkColor kReadonlyTextColor = SK_ColorDKGRAY;
-const SkColor kFocusedSelectionColor = SK_ColorBLUE;
-const SkColor kUnfocusedSelectionColor = SK_ColorLTGRAY;
-const SkColor kFocusedBorderColor = SK_ColorCYAN;
 const SkColor kDefaultBorderColor = SK_ColorGRAY;
-const SkColor kCursorColor = SK_ColorBLACK;
+const SkColor kTextColor = SK_ColorBLACK;
 
 // A switch to enable NativeTextfieldViews;
 const char kEnableComboboxViewsSwitch[] = "enable-combobox-views";
@@ -63,7 +59,7 @@ const char NativeComboboxViews::kViewClassName[] =
 
 NativeComboboxViews::NativeComboboxViews(Combobox* parent)
     : combobox_(parent),
-      text_border_(new ComboboxBorder()),
+      text_border_(new FocusableBorder()),
       dropdown_open_(false),
       selected_item_(-1),
       content_width_(0),
@@ -247,7 +243,7 @@ void NativeComboboxViews::DrawArrow(gfx::Canvas* canvas,
                                      int shift_y) const {
   SkPaint paint;
   paint.setStyle(SkPaint::kStrokeAndFill_Style);
-  paint.setColor(kCursorColor);
+  paint.setColor(kTextColor);
   paint.setAntiAlias(true);
   gfx::Path path;
   path.incReserve(4);
@@ -269,7 +265,7 @@ void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
   int x = insets.left();
   int y = insets.top();
   int text_height = height() - insets.height();
-  SkColor text_color = kCursorColor;
+  SkColor text_color = kTextColor;
 
   int index = GetSelectedItem();
   if (index < 0 || index > combobox_->model()->GetItemCount())
@@ -332,57 +328,6 @@ void NativeComboboxViews::ShowDropDownMenu() {
     // the first click to other parts of the UI is eaten.
     SetMouseHandler(NULL);
   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// ComboboxBorder
-//
-///////////////////////////////////////////////////////////////////////////////
-
-NativeComboboxViews::ComboboxBorder::ComboboxBorder()
-    : has_focus_(false),
-      insets_(kTopInsetSize, kLeftInsetSize, kBottomInsetSize, kRightInsetSize)
-{
-}
-
-void NativeComboboxViews::ComboboxBorder::Paint(
-    const View& view, gfx::Canvas* canvas) const {
-  SkRect rect;
-  rect.set(SkIntToScalar(0), SkIntToScalar(0),
-           SkIntToScalar(view.width()), SkIntToScalar(view.height()));
-  SkScalar corners[8] = {
-    // top-left
-    SkIntToScalar(insets_.left()),
-    SkIntToScalar(insets_.top()),
-    // top-right
-    SkIntToScalar(insets_.right()),
-    SkIntToScalar(insets_.top()),
-    // bottom-right
-    SkIntToScalar(insets_.right()),
-    SkIntToScalar(insets_.bottom()),
-    // bottom-left
-    SkIntToScalar(insets_.left()),
-    SkIntToScalar(insets_.bottom()),
-  };
-  SkPath path;
-  path.addRoundRect(rect, corners);
-  SkPaint paint;
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
-  paint.setColor(has_focus_ ? kFocusedBorderColor : kDefaultBorderColor);
-  paint.setStrokeWidth(SkIntToScalar(has_focus_ ? 2 : 1));
-  canvas->AsCanvasSkia()->drawPath(path, paint);
-}
-
-void NativeComboboxViews::ComboboxBorder::GetInsets(gfx::Insets* insets) const
-{
-  *insets = insets_;
-}
-
-void NativeComboboxViews::ComboboxBorder::SetInsets(int top, int left,
-    int bottom, int right) {
-  insets_.Set(top, left, bottom, right);
 }
 
 }  // namespace views
