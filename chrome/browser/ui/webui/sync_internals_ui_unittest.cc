@@ -194,18 +194,7 @@ const char kAboutInfoCall[] =
     "onGetAboutInfoFinished({\"summary\":\"SYNC DISABLED\"});";
 }  // namespace
 
-TEST_F(SyncInternalsUITest, OnWebUISendGetAboutInfo) {
-  ExpectSetupTeardownCalls();
-
-  ConstructTestSyncInternalsUI();
-
-  EXPECT_CALL(*GetTestSyncInternalsUI(),
-              ExecuteJavascript(ASCIIToUTF16(kAboutInfoCall)));
-
-  ListValue args;
-  GetTestSyncInternalsUI()->OnWebUISend(GURL(), "getAboutInfo", args);
-}
-
+// TODO(lipalani) - add a test case to test about:sync with a non null service.
 TEST_F(SyncInternalsUITest, OnWebUISendGetAboutInfoNullService) {
   ExpectSetupTeardownCallsNullService();
 
