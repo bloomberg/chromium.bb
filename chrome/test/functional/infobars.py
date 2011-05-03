@@ -11,6 +11,7 @@ import pyauto_functional  # Must be imported before pyauto
 import pyauto
 import test_utils
 
+
 class InfobarTest(pyauto.PyUITest):
   """TestCase for Infobars."""
 
@@ -31,6 +32,13 @@ class InfobarTest(pyauto.PyUITest):
           print 'Window', window['index'], 'tab', tab['index']
           pp.pprint(tab['infobars'])
 
+  def setUp(self):
+    pyauto.PyUITest.setUp(self)
+    self._flash_plugin_type = 'Plug-in'
+    if (self.IsChromeOS() and
+        self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome'):
+      self._flash_plugin_type = 'Pepper Plugin'
+
   def _GetTabInfo(self, windex=0, tab_index=0):
     """Helper to return info for the given tab in the given window.
 
@@ -45,7 +53,8 @@ class InfobarTest(pyauto.PyUITest):
     self.NavigateToURL(flash_url)
     child_processes = self.GetBrowserInfo()['child_processes']
     flash = [x for x in child_processes if
-             x['type'] == 'Plug-in' and x['name'] == 'Shockwave Flash'][0]
+             x['type'] == self._flash_plugin_type and
+             x['name'] == 'Shockwave Flash'][0]
     self.assertTrue(flash)
     logging.info('Killing flash plugin. pid %d' % flash['pid'])
     self.Kill(flash['pid'])
@@ -136,8 +145,7 @@ class InfobarTest(pyauto.PyUITest):
     test_utils.RemoveDownloadedTestFile(self, zip_file)
 
   def testPluginCrashForMultiTabs(self):
-    """Verify that plugin crash infobar only shows up on the tabs using the
-       plugin"""
+    """Verify plugin crash infobar shows up only on the tabs using plugin."""
     non_flash_url = self.GetFileURLForDataPath('english_page.html')
     flash_url = self.GetFileURLForDataPath('plugin', 'FlashSpin.swf')
     # False = Non flash url, True = Flash url
@@ -149,22 +157,30 @@ class InfobarTest(pyauto.PyUITest):
     # Killing flash process
     child_processes = self.GetBrowserInfo()['child_processes']
     flash = [x for x in child_processes if
-             x['type'] == 'Plug-in' and x['name'] == 'Shockwave Flash'][0]
+             x['type'] == self._flash_plugin_type and
+             x['name'] == 'Shockwave Flash'][0]
     self.assertTrue(flash)
     self.Kill(flash['pid'])
     # Crash plugin infobar should show up in the second tab of this window
     # so passing window and tab argument in the wait for an infobar.
     self.assertTrue(self.WaitForInfobarCount(1, windex=0, tab_index=1))
-    info = self.GetBrowserInfo()
     for i in range(len(urls_type)):
-      infobar = info['windows'][0]['tabs'][i]['infobars']
       # Verify that if page doesn't have flash plugin,
       # it should not have infobar popped-up
+      self.ActivateTab(i)
       if not urls_type[i]:
-        self.assertFalse(infobar)
+        info = self.GetBrowserInfo()
+        self.assertFalse(
+            info['windows'][0]['tabs'][i]['infobars'],
+            msg='Did not expect crash infobar in tab at index %d' % i)
       elif urls_type[i]:
+        self.assertTrue(
+            self.WaitForInfobarCount(1, windex=0, tab_index=i),
+            msg='Expected crash infobar in tab at index %d' % i)
+        infobar = self.GetBrowserInfo()['windows'][0]['tabs'][i]['infobars']
         self.assertEqual(infobar[0]['type'], 'confirm_infobar')
         self.assertEqual(len(infobar), 1)
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()

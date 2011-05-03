@@ -179,7 +179,6 @@
       '-browser.BrowserTest.testCanLoadFlash',
       '-browser.BrowserTest.testFlashLoadsAfterKill',
       '-browser.BrowserTest.testSingleFlashPluginProcess',
-      '-infobars.InfobarTest.testPluginCrashInfobar',
       '-plugins.PluginsTest.testAllowPluginException',
       '-plugins.PluginsTest.testBlockAllPlugins',
       '-plugins.PluginsTest.testBlockPluginException',
