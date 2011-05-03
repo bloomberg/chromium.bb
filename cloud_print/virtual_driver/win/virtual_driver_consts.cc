@@ -9,5 +9,13 @@
 namespace cloud_print {
 const wchar_t kPortMonitorDllName64[] = L"gcp_portmon64.dll";
 const wchar_t kPortMonitorDllName32[] = L"gcp_portmon.dll";
+const wchar_t kPortName[] = L"GCP:";
+const size_t kPortNameSize = sizeof(kPortName);
+
+// The driver name is user visible so it SHOULD be localized, BUT
+// the name is used as a key to find both the driver and printer.
+// We'll need to be careful.  If the name changes for the
+// driver it could create bugs.
+const wchar_t kVirtualDriverName[] = L"Google Cloud Print Virtual Printer";
 }
 

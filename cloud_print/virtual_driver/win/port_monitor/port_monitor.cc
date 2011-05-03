@@ -65,8 +65,6 @@ const wchar_t *kPortMonitorDllName = kPortMonitorDllName64;
 const wchar_t *kPortMonitorDllName = kPortMonitorDllName32;
 #endif
 
-const wchar_t kPortName[] = L"GCP:";
-
 const wchar_t kXpsMimeType[] = L"application/vnd.ms-xpsdocument";
 
 const size_t kMaxCommandLineLen = 0x7FFF;
@@ -117,29 +115,10 @@ MONITOR2 g_monitor_2 = {
   Monitor2Shutdown
 };
 
-// Gets the standard install path for "version 3" print drivers.
-HRESULT GetPrinterDriverPath(FilePath* path) {
-  BYTE driver_dir_buffer[MAX_PATH * sizeof(wchar_t)];
-  DWORD needed = 0;
-  if (!GetPrinterDriverDirectory(NULL,
-                                 NULL,
-                                 1,
-                                 driver_dir_buffer,
-                                 MAX_PATH * sizeof(wchar_t),
-                                 &needed)) {
-    // We could try to allocate a larger buffer if needed > MAX_PATH
-    // but that really shouldn't happen.
-    return cloud_print::GetLastHResult();
-  }
-  *path = FilePath(reinterpret_cast<wchar_t*>(driver_dir_buffer));
-  *path = path->Append(L"3");
-  return S_OK;
-}
-
 // Returns true if Xps support is installed.
 bool XpsIsInstalled() {
   FilePath xps_path;
-  if (!SUCCEEDED(GetPrinterDriverPath(&xps_path))) {
+  if (!SUCCEEDED(GetPrinterDriverDir(&xps_path))) {
     return false;
   }
   xps_path = xps_path.Append(L"mxdwdrv.dll");
@@ -334,7 +313,7 @@ BOOL WINAPI Monitor2EnumPorts(HANDLE,
     SetLastError(ERROR_INVALID_LEVEL);
     return FALSE;
   }
-  *needed_bytes +=  sizeof(kPortName);
+  *needed_bytes += static_cast<DWORD>(kPortNameSize);
   if (ports_size < *needed_bytes) {
     LOG(WARNING) << *needed_bytes << " bytes are required.  Only "
                  << ports_size << " were allocated.";
@@ -358,15 +337,15 @@ BOOL WINAPI Monitor2EnumPorts(HANDLE,
   // EnumPorts to fail until the spooler is restarted.
   // This is NOT mentioned in the documentation.
   wchar_t* string_target =
-      reinterpret_cast<wchar_t*>(ports + ports_size - sizeof(kPortName));
+      reinterpret_cast<wchar_t*>(ports + ports_size - kPortNameSize);
   if (level == 1) {
     PORT_INFO_1* port_info = reinterpret_cast<PORT_INFO_1*>(ports);
     port_info->pName = string_target;
-    StringCbCopy(port_info->pName, sizeof(kPortName), kPortName);
+    StringCbCopy(port_info->pName, kPortNameSize, kPortName);
   } else {
     PORT_INFO_2* port_info = reinterpret_cast<PORT_INFO_2*>(ports);
     port_info->pPortName = string_target;
-    StringCbCopy(port_info->pPortName, sizeof(kPortName), kPortName);
+    StringCbCopy(port_info->pPortName, kPortNameSize, kPortName);
     port_info->pMonitorName = NULL;
     port_info->pDescription = NULL;
     port_info->fPortType = PORT_TYPE_WRITE;

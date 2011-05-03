@@ -9,6 +9,9 @@
 namespace cloud_print {
 extern const wchar_t kPortMonitorDllName64[];
 extern const wchar_t kPortMonitorDllName32[];
+extern const wchar_t kPortName[];
+extern const size_t kPortNameSize;
+extern const wchar_t kVirtualDriverName[];
 }
 
 #endif  // CLOUD_PRINT_VIRTUAL_DRIVER_WIN_VIRTUAL_DRIVER_CONSTS_H_
