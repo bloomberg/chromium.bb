@@ -2581,16 +2581,19 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = { 'command': 'LockScreen' }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
-  def UnlockScreen(self):
-    """Unlocks the screen on chromeos.
+  def UnlockScreen(self, password):
+    """Unlocks the screen on chromeos, authenticating the user's password first.
 
     Waits until screen is unlocked.
-    Screen locker should be displayed to work.
+    Screen locker should be active for this to work.
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
-    cmd_dict = { 'command': 'UnlockScreen' }
+    cmd_dict = {
+        'command': 'UnlockScreen',
+        'password': password,
+    }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   def SignoutInScreenLocker(self):

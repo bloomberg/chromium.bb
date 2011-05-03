@@ -83,7 +83,7 @@ class LoginTest(pyauto.PyUITest):
   def testLockAndUnlockScreenAfterLogin(self):
     """Test locking and unlocking the screen after logging in."""
     self.testLockScreenAfterLogin()
-    self.UnlockScreen()
+    self.UnlockScreen(self._ValidCredentials()['password'])
     login_info = self.GetLoginInfo()
     self.assertFalse(login_info['is_screen_locked'], 'Screen is locked, but it '
                      'should have been unlocked.')

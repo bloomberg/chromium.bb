@@ -157,7 +157,6 @@
       'chromeos_security',
       'chromeos_update',
       'chromeos_wifi',
-      '-chromeos_basic.ChromeosBasic.testScreenLocker',
 
       # you cannot resize browser window on chromeos
       '-browser.BrowserTest.testWindowResize',

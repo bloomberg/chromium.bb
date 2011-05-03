@@ -26,14 +26,6 @@ class ChromeosBasic(pyauto.PyUITest):
     self.RestartBrowser(clear_profile=False)
     self.assertEqual(1, len(self.GetHistoryInfo().History()))
 
-  def testScreenLocker(self):
-    """Sanity check for screen locker functions."""
-    self.assertFalse(self.GetLoginInfo()['is_screen_locked'])
-    self.LockScreen()
-    self.assertTrue(self.GetLoginInfo()['is_screen_locked'])
-    self.UnlockScreen()
-    self.assertFalse(self.GetLoginInfo()['is_screen_locked'])
-
   def testSetDownloadShelfVisible(self):
     self.assertFalse(self.IsDownloadShelfVisible())
     self.SetDownloadShelfVisible(True)
