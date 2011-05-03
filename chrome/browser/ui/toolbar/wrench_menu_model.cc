@@ -271,28 +271,15 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
 
 bool WrenchMenuModel::GetIconForCommandId(int command_id,
                                           SkBitmap* icon) const {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   switch (command_id) {
     case IDC_UPGRADE_DIALOG: {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      int resource_id;
-      UpgradeDetector::UpgradeNotificationAnnoyanceLevel stage =
-          UpgradeDetector::GetInstance()->upgrade_notification_stage();
-      switch (stage) {
-        case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
-          resource_id = IDR_UPDATE_MENU4;
-          break;
-        case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
-          resource_id = IDR_UPDATE_MENU3;
-          break;
-        case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
-          resource_id = IDR_UPDATE_MENU2;
-          break;
-        default:
-          resource_id = IDR_UPDATE_MENU;
-          break;
+      if (UpgradeDetector::GetInstance()->notify_upgrade()) {
+        *icon = rb.GetNativeImageNamed(
+            UpgradeDetector::GetInstance()->GetIconResourceID(
+                UpgradeDetector::UPGRADE_ICON_TYPE_MENU_ICON));
+        return true;
       }
-      *icon = *rb.GetBitmapNamed(resource_id);
-      break;
     }
     default:
       break;

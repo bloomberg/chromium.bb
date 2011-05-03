@@ -23,6 +23,8 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
+#include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/install_util.h"
@@ -44,7 +46,7 @@ const int kCheckForUpgradeMs = 2 * 60 * 60 * 1000;  // 2 hours.
 const int kNotifyCycleTimeMs = 20 * 60 * 1000;  // 20 minutes.
 
 // Same as kNotifyCycleTimeMs but only used during testing.
-const int kNotifyCycleTimeForTestingMs = 5000;  // 5 seconds.
+const int kNotifyCycleTimeForTestingMs = 500;  // Half a second.
 
 std::string CmdLineInterval() {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
@@ -155,6 +157,22 @@ void UpgradeDetector::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kRestartLastSessionOnShutdown, false);
 }
 
+int UpgradeDetector::GetIconResourceID(UpgradeNotificationIconType type) {
+  bool badge = type == UPGRADE_ICON_TYPE_BADGE;
+  switch (upgrade_notification_stage_) {
+    case UPGRADE_ANNOYANCE_SEVERE:
+      return badge ? IDR_UPDATE_BADGE4 : IDR_UPDATE_MENU4;
+    case UPGRADE_ANNOYANCE_HIGH:
+      return badge ? IDR_UPDATE_BADGE3 : IDR_UPDATE_MENU3;
+    case UPGRADE_ANNOYANCE_ELEVATED:
+      return badge ? IDR_UPDATE_BADGE2 : IDR_UPDATE_MENU2;
+    case UPGRADE_ANNOYANCE_LOW:
+      return badge ? IDR_UPDATE_BADGE : IDR_UPDATE_MENU;
+    default:
+      return 0;
+  }
+}
+
 UpgradeDetector::UpgradeDetector()
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       is_unstable_channel_(false),
@@ -227,10 +245,10 @@ void UpgradeDetector::NotifyOnUpgrade() {
   std::string interval = CmdLineInterval();
 
   // A command line interval implies testing, which we'll make more convenient
-  // by switching to minutes of waiting instead of days between flipping
+  // by switching to seconds of waiting instead of days between flipping
   // severity. This works in conjunction with the similar interval.empty()
   // check below.
-  int time_passed = interval.empty() ? delta.InHours() : delta.InMinutes();
+  int64 time_passed = interval.empty() ? delta.InHours() : delta.InSeconds();
 
   if (is_unstable_channel_) {
     // There's only one threat level for unstable channels like dev and
@@ -248,6 +266,7 @@ void UpgradeDetector::NotifyOnUpgrade() {
     }
   } else {
     const int kMultiplier = interval.empty() ? 24 : 1;
+    // 14 days when not testing, otherwise 14 seconds.
     const int kSevereThreshold = 14 * kMultiplier;
     const int kHighThreshold = 7 * kMultiplier;
     const int kElevatedThreshold = 4 * kMultiplier;

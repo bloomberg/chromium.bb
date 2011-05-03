@@ -637,7 +637,9 @@ gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,
                                                      GdkEventExpose* expose) {
   const SkBitmap* badge = NULL;
   if (UpgradeDetector::GetInstance()->notify_upgrade()) {
-    badge = theme_service_->GetBitmapNamed(IDR_UPDATE_BADGE);
+    badge = theme_service_->GetBitmapNamed(
+        UpgradeDetector::GetInstance()->GetIconResourceID(
+            UpgradeDetector::UPGRADE_ICON_TYPE_BADGE));
   } else {
     return FALSE;
   }

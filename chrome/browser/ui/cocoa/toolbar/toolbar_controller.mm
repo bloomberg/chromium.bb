@@ -555,10 +555,13 @@ class NotificationBridge : public NotificationObserver {
 }
 
 - (void)badgeWrenchMenuIfNeeded {
-  if (UpgradeDetector::GetInstance()->notify_upgrade())
-    [[wrenchButton_ cell] setOverlayImageID:IDR_UPDATE_BADGE];
-  else
+  if (UpgradeDetector::GetInstance()->notify_upgrade()) {
+    [[wrenchButton_ cell]
+        setOverlayImageID:UpgradeDetector::GetInstance()->GetIconResourceID(
+            UpgradeDetector::UPGRADE_ICON_TYPE_BADGE)];
+  } else {
     [[wrenchButton_ cell] setOverlayImageID:0];
+  }
 }
 
 - (void)prefChanged:(std::string*)prefName {

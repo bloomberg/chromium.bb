@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_VIEW_H_
 #pragma once
 
+#include <set>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -143,9 +144,6 @@ class ToolbarView : public AccessiblePaneView,
  private:
   // Returns true if we should show the upgrade recommended dot.
   bool IsUpgradeRecommended();
-
-  // Retrieve which badge we should show when recommending an upgrade.
-  int GetUpgradeRecommendedBadge() const;
 
   // Returns true if we should show the background page badge.
   bool ShouldShowBackgroundPageBadge();

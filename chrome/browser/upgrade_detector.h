@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/timer.h"
+#include "ui/gfx/image.h"
 
 template <typename T> struct DefaultSingletonTraits;
 class PrefService;
@@ -32,6 +33,12 @@ class UpgradeDetector {
     UPGRADE_ANNOYANCE_SEVERE,    // Orange.
   };
 
+  // The two types of icons we know about.
+  enum UpgradeNotificationIconType {
+    UPGRADE_ICON_TYPE_BADGE = 0,  // For overlay badging of the wrench menu.
+    UPGRADE_ICON_TYPE_MENU_ICON,  // For showing in the wrench menu.
+  };
+
   // Returns the singleton instance.
   static UpgradeDetector* GetInstance();
 
@@ -41,9 +48,12 @@ class UpgradeDetector {
 
   bool notify_upgrade() { return notify_upgrade_; }
 
-  UpgradeNotificationAnnoyanceLevel upgrade_notification_stage() const {
-    return upgrade_notification_stage_;
-  }
+  // Retrieves the right icon ID based on the degree of severity (see
+  // UpgradeNotificationAnnoyanceLevel, each level has an an accompanying icon
+  // to go with it). |type| determines which class of icons the caller wants,
+  // either an icon appropriate for badging the wrench menu or one to display
+  // within the wrench menu.
+  int GetIconResourceID(UpgradeNotificationIconType type);
 
  private:
   friend struct DefaultSingletonTraits<UpgradeDetector>;
