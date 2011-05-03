@@ -101,7 +101,7 @@ AutomatedUITestBase.ShowDownloads
 AutomationProxyTest.AcceleratorDownloads
 AutomationProxyTest.AcceleratorExtensions
 AutomationProxyTest.ActivateTab
-AutomationProxyTest.FLAKY_BlockedPopupTest
+AutomationProxyTest.BlockedPopupTest
 AutomationProxyTest.GetActiveTabIndex
 AutomationProxyTest.GetCurrentURL
 AutomationProxyTest2.GetActiveTabIndex
@@ -115,7 +115,7 @@ LoginPromptTest.SupplyRedundantAuths
 LoginPromptTest.TestCancelAuth
 MetricsServiceTest.CrashRenderers
 PPAPITest.Buffer
-PPAPITest.FLAKY_PaintAggregator
+PPAPITest.PaintAggregator
 PPAPITest.FileIO
 PreferenceServiceTest.PreservedWindowPlacementIsLoaded
 PrintPreviewUITest.LoadPrintPreviewByURL
@@ -123,10 +123,10 @@ RedirectTest.ServerReference
 RepostFormWarningTest.TestDoubleReload
 ResourceDispatcherTest.ContentDispositionEmpty
 ResourceDispatcherTest.ContentDispositionInline
-ResourceDispatcherTest.FLAKY_SyncXMLHttpRequest
+ResourceDispatcherTest.SyncXMLHttpRequest
 ResourceDispatcherTest.SniffNoContentTypeNoData
 SessionHistoryTest.LocationChangeInSubframe
-ShowModalDialogTest.FLAKY_BasicTest
+ShowModalDialogTest.BasicTest
 V8BenchmarkTest.Perf
 ViewSourceTest.DoesBrowserConsumeViewSourcePrefix
 WorkerFileSystemTest.FileEntryToURISync
@@ -157,8 +157,8 @@ DomStorageEmptyDatabaseTest.EmptyDirAfterGet
 SearchProviderTest.TestIsSearchProviderInstalled
 
 # Following tests crash with LOG(FATAL) on valgrind mac; See http://crbug.com/60036
-OptionsUITest.FLAKY_TwoCommandsOneTab
-OptionsUITest.FLAKY_CommandAgainGoesBackToOptionsTab
+OptionsUITest.TwoCommandsOneTab
+OptionsUITest.CommandAgainGoesBackToOptionsTab
 
 # Times out, see http://crbug.com/50297
 DOMStorageTest.RootLayoutTests
