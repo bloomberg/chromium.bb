@@ -734,7 +734,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_OnCSSInserted, OnCSSInserted)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContentBlocked, OnContentBlocked)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_WebDatabaseAccessed, OnWebDatabaseAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
@@ -1374,18 +1373,6 @@ void RenderViewHost::OnAppCacheAccessed(const GURL& manifest_url,
   if (content_settings_delegate)
     content_settings_delegate->OnAppCacheAccessed(manifest_url,
                                                   blocked_by_policy);
-}
-
-void RenderViewHost::OnWebDatabaseAccessed(const GURL& url,
-                                           const string16& name,
-                                           const string16& display_name,
-                                           unsigned long estimated_size,
-                                           bool blocked_by_policy) {
-  RenderViewHostDelegate::ContentSettings* content_settings_delegate =
-      delegate_->GetContentSettingsDelegate();
-  if (content_settings_delegate)
-    content_settings_delegate->OnWebDatabaseAccessed(
-        url, name, display_name, estimated_size, blocked_by_policy);
 }
 
 void RenderViewHost::OnUpdateZoomLimits(int minimum_percent,

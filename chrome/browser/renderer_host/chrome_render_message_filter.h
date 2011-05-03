@@ -12,6 +12,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class FilePath;
+class HostContentSettingsMap;
 class Profile;
 
 namespace net {
@@ -81,6 +82,11 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
 #endif
   void OnGetPluginPolicies(ContentSetting* outdated_policy,
                            ContentSetting* authorize_policy);
+  void OnAllowDatabase(const std::string& origin_url,
+                       const string16& name,
+                       const string16& display_name,
+                       unsigned long estimated_size,
+                       bool* result);
 
   int render_process_id_;
 
@@ -88,6 +94,8 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   // accessed on the UI thread!
   Profile* profile_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+  // Used to look up permissions at database creation time.
+  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   BooleanPrefMember allow_outdated_plugins_;
   BooleanPrefMember always_authorize_plugins_;

@@ -340,6 +340,8 @@
         'browser/chrome_browser_application_mac.mm',
         'browser/chrome_content_browser_client.cc',
         'browser/chrome_content_browser_client.h',
+        'browser/chrome_worker_message_filter.cc',
+        'browser/chrome_worker_message_filter.h',
         'browser/chromeos/audio_handler.cc',
         'browser/chromeos/audio_handler.h',
         'browser/chromeos/audio_mixer.h',

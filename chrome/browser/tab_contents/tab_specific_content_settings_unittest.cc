@@ -3,43 +3,22 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/tab_contents/tab_specific_content_settings.h"
-
 #include "chrome/test/testing_profile.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
+#include "content/browser/tab_contents/test_tab_contents.h"
 #include "net/base/cookie_monster.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-class TestContentSettingsDelegate
-    : public TabSpecificContentSettings::Delegate {
+class TabSpecificContentSettingsTest : public RenderViewHostTestHarness {
  public:
-  TestContentSettingsDelegate()
-      : settings_changed_(false), content_blocked_(false) {}
-  virtual ~TestContentSettingsDelegate() {}
-
-  void Reset() { settings_changed_ = content_blocked_ = false; }
-
-  bool SettingsChanged() { return settings_changed_; }
-
-  bool ContentBlocked() { return content_blocked_; }
-
-  // TabSpecificContentSettings::Delegate implementation.
-  virtual void OnContentSettingsAccessed(bool content_was_blocked) {
-    settings_changed_ = true;
-    content_blocked_ = content_was_blocked;
-  }
+  TabSpecificContentSettingsTest() : RenderViewHostTestHarness() {}
 
  private:
-  bool settings_changed_;
-  bool content_blocked_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestContentSettingsDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TabSpecificContentSettingsTest);
 };
-}  // namespace
 
-TEST(TabSpecificContentSettingsTest, BlockedContent) {
-  TestContentSettingsDelegate test_delegate;
-  TestingProfile profile;
-  TabSpecificContentSettings content_settings(&test_delegate, &profile);
+TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
+  TabSpecificContentSettings content_settings(contents());
   net::CookieOptions options;
 
   // Check that after initializing, nothing is blocked.
@@ -55,18 +34,9 @@ TEST(TabSpecificContentSettingsTest, BlockedContent) {
   // Set a cookie, block access to images, block a popup.
   content_settings.OnCookieChanged(
       GURL("http://google.com"), "A=B", options, false);
-  EXPECT_TRUE(test_delegate.SettingsChanged());
-  EXPECT_FALSE(test_delegate.ContentBlocked());
-  test_delegate.Reset();
   content_settings.OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES,
                                     std::string());
-  EXPECT_TRUE(test_delegate.SettingsChanged());
-  EXPECT_TRUE(test_delegate.ContentBlocked());
-  test_delegate.Reset();
   content_settings.SetPopupsBlocked(true);
-  EXPECT_TRUE(test_delegate.SettingsChanged());
-  EXPECT_TRUE(test_delegate.ContentBlocked());
-  test_delegate.Reset();
 
   // Check that only the respective content types are affected.
   EXPECT_TRUE(content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
@@ -88,8 +58,6 @@ TEST(TabSpecificContentSettingsTest, BlockedContent) {
 
   // Reset blocked content settings.
   content_settings.ClearBlockedContentSettingsExceptForCookies();
-  EXPECT_TRUE(test_delegate.SettingsChanged());
-  EXPECT_FALSE(test_delegate.ContentBlocked());
   EXPECT_FALSE(content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
   EXPECT_FALSE(
       content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
@@ -100,8 +68,6 @@ TEST(TabSpecificContentSettingsTest, BlockedContent) {
   EXPECT_FALSE(content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
 
   content_settings.ClearCookieSpecificContentSettings();
-  EXPECT_TRUE(test_delegate.SettingsChanged());
-  EXPECT_FALSE(test_delegate.ContentBlocked());
   EXPECT_FALSE(content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
   EXPECT_FALSE(
       content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
@@ -112,10 +78,8 @@ TEST(TabSpecificContentSettingsTest, BlockedContent) {
   EXPECT_FALSE(content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
 }
 
-TEST(TabSpecificContentSettingsTest, AllowedContent) {
-  TestContentSettingsDelegate test_delegate;
-  TestingProfile profile;
-  TabSpecificContentSettings content_settings(&test_delegate, &profile);
+TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
+  TabSpecificContentSettings content_settings(contents());
   net::CookieOptions options;
 
   ASSERT_FALSE(
@@ -138,10 +102,8 @@ TEST(TabSpecificContentSettingsTest, AllowedContent) {
       content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
-TEST(TabSpecificContentSettingsTest, EmptyCookieList) {
-  TestContentSettingsDelegate test_delegate;
-  TestingProfile profile;
-  TabSpecificContentSettings content_settings(&test_delegate, &profile);
+TEST_F(TabSpecificContentSettingsTest, EmptyCookieList) {
+  TabSpecificContentSettings content_settings(contents());
 
   ASSERT_FALSE(
       content_settings.IsContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES));

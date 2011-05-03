@@ -12,11 +12,11 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/file_system/file_system_dispatcher_host.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/renderer_host/blob_message_filter.h"
@@ -24,7 +24,6 @@
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/user_metrics.h"
@@ -204,6 +203,8 @@ bool WorkerProcessHost::Init(int render_process_id) {
 
   CreateMessageFilters(render_process_id);
 
+  content::GetContentClient()->browser()->WorkerProcessHostCreated(this);
+
   return true;
 }
 
@@ -235,8 +236,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       new BlobMessageFilter(id(), resource_context_->blob_storage_context()));
   AddFilter(new MimeRegistryMessageFilter());
   AddFilter(new DatabaseMessageFilter(
-      resource_context_->database_tracker(),
-      resource_context_->host_content_settings_map()));
+      resource_context_->database_tracker()));
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
       new SocketStreamDispatcherHost(
@@ -293,7 +293,6 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP_EX(WorkerProcessHost, message, msg_is_ok)
     IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerContextClosed,
                         OnWorkerContextClosed)
-    IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP_EX()
 
@@ -336,35 +335,6 @@ void WorkerProcessHost::OnWorkerContextClosed(int worker_route_id) {
       i->set_closed(true);
       break;
     }
-  }
-}
-
-void WorkerProcessHost::OnAllowDatabase(int worker_route_id,
-                                        const GURL& url,
-                                        const string16& name,
-                                        const string16& display_name,
-                                        unsigned long estimated_size,
-                                        bool* result) {
-  ContentSetting content_setting = resource_context_->
-      host_content_settings_map()->GetContentSetting(
-          url, CONTENT_SETTINGS_TYPE_COOKIES, "");
-
-  *result = content_setting != CONTENT_SETTING_BLOCK;
-
-  // Find the worker instance and forward the message to all attached documents.
-  for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
-    if (i->worker_route_id() != worker_route_id)
-      continue;
-    const WorkerDocumentSet::DocumentInfoSet& documents =
-        i->worker_document_set()->documents();
-    for (WorkerDocumentSet::DocumentInfoSet::const_iterator doc =
-         documents.begin(); doc != documents.end(); ++doc) {
-      CallRenderViewHostContentSettingsDelegate(
-          doc->render_process_id(), doc->render_view_id(),
-          &RenderViewHostDelegate::ContentSettings::OnWebDatabaseAccessed,
-          url, name, display_name, estimated_size, !*result);
-    }
-    break;
   }
 }
 

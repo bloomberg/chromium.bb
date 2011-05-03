@@ -138,11 +138,16 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   void DocumentDetached(WorkerMessageFilter* filter,
                         unsigned long long document_id);
 
+  typedef std::list<WorkerInstance> Instances;
+  const Instances& instances() const { return instances_; }
+
+  const content::ResourceContext* resource_context() const {
+    return resource_context_;
+  }
+
  protected:
   friend class WorkerService;
 
-  typedef std::list<WorkerInstance> Instances;
-  const Instances& instances() const { return instances_; }
   Instances& mutable_instances() { return instances_; }
 
  private:
@@ -157,12 +162,6 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   void OnWorkerContextClosed(int worker_route_id);
-  void OnAllowDatabase(int worker_route_id,
-                       const GURL& url,
-                       const string16& name,
-                       const string16& display_name,
-                       unsigned long estimated_size,
-                       bool* result);
 
   // Relays a message to the given endpoint.  Takes care of parsing the message
   // if it contains a message port and sending it a valid route id.

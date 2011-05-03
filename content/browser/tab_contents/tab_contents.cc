@@ -245,9 +245,6 @@ TabContents::TabContents(Profile* profile,
   renderer_preferences_util::UpdateFromSystemSettings(
       &renderer_preferences_, profile);
 
-  content_settings_delegate_.reset(
-      new TabSpecificContentSettings(this, profile));
-
   render_manager_.Init(profile, site_instance, routing_id);
 
   // We have the initial size of the view be based on the size of the passed in
@@ -345,6 +342,7 @@ TabContents::~TabContents() {
 }
 
 void TabContents::AddObservers() {
+  content_settings_delegate_.reset(new TabSpecificContentSettings(this));
   favicon_tab_helper_.reset(new FaviconTabHelper(this));
   plugin_observer_.reset(new PluginObserver(this));
   net::NetworkChangeNotifier::AddOnlineStateObserver(this);
@@ -1105,13 +1103,6 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                     validated_url, is_error_page));
 
   if (is_main_frame) {
-    // If we're displaying a network error page do not reset the content
-    // settings delegate's cookies so the user has a chance to modify cookie
-    // settings.
-    if (!is_error_page)
-      content_settings_delegate_->ClearCookieSpecificContentSettings();
-    content_settings_delegate_->ClearGeolocationContentSettings();
-
     // Notify observers about the provisional change in the main frame URL.
     FOR_EACH_OBSERVER(TabContentsObserver, observers_,
                       ProvisionalChangeToMainFrameUrl(url));
@@ -1384,13 +1375,7 @@ void TabContents::DidNavigateMainFramePostCommit(
   // Get the favicon, either from history or request it from the net.
   favicon_tab_helper_->FetchFavicon(details.entry->url());
 
-  // Clear all page actions, blocked content notifications and browser actions
-  // for this tab, unless this is an in-page navigation.
   if (!details.is_in_page) {
-    // Clear "blocked" flags.
-    content_settings_delegate_->ClearBlockedContentSettingsExceptForCookies();
-    content_settings_delegate_->GeolocationDidNavigate(details);
-
     // Once the main frame is navigated, we're no longer considered to have
     // displayed insecure content.
     displayed_insecure_content_ = false;
@@ -1578,11 +1563,6 @@ void TabContents::OnGoToEntryAtOffset(int offset) {
                                PageTransition::FORWARD_BACK);
     NavigateToEntry(*entry, NavigationController::NO_RELOAD);
   }
-}
-
-void TabContents::OnContentSettingsAccessed(bool content_was_blocked) {
-  if (delegate_)
-    delegate_->OnContentSettingsChange(this);
 }
 
 RenderViewHostDelegate::View* TabContents::GetViewDelegate() {

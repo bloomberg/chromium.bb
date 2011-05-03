@@ -22,6 +22,10 @@ void ContentBrowserClient::PreCreateRenderView(RenderViewHost* render_view_host,
 void ContentBrowserClient::BrowserRenderProcessHostCreated(
     BrowserRenderProcessHost* host) {
 }
+
+void ContentBrowserClient::WorkerProcessHostCreated(WorkerProcessHost* host) {
+}
+
 WebUIFactory* ContentBrowserClient::GetWebUIFactory() {
   // Return an empty factory so callsites don't have to check for NULL.
   return EmptyWebUIFactory::Get();

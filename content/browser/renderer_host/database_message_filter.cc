@@ -8,7 +8,6 @@
 
 #include "base/string_util.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/database_messages.h"
 #include "content/common/result_codes.h"
@@ -31,11 +30,9 @@ const int kNumDeleteRetries = 2;
 const int kDelayDeleteRetryMs = 100;
 
 DatabaseMessageFilter::DatabaseMessageFilter(
-    webkit_database::DatabaseTracker* db_tracker,
-    HostContentSettingsMap *host_content_settings_map)
+    webkit_database::DatabaseTracker* db_tracker)
     : db_tracker_(db_tracker),
-      observer_added_(false),
-      host_content_settings_map_(host_content_settings_map) {
+      observer_added_(false) {
   DCHECK(db_tracker_);
 }
 
@@ -68,10 +65,8 @@ void DatabaseMessageFilter::RemoveObserver() {
 void DatabaseMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
-  if (IPC_MESSAGE_CLASS(message) == DatabaseMsgStart &&
-      message.type() != DatabaseHostMsg_Allow::ID) {
+  if (IPC_MESSAGE_CLASS(message) == DatabaseMsgStart)
     *thread = BrowserThread::FILE;
-  }
 
   if (message.type() == DatabaseHostMsg_OpenFile::ID && !observer_added_) {
     observer_added_ = true;
@@ -97,7 +92,6 @@ bool DatabaseMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Opened, OnDatabaseOpened)
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Modified, OnDatabaseModified)
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Closed, OnDatabaseClosed)
-    IPC_MESSAGE_HANDLER(DatabaseHostMsg_Allow, OnAllowDatabase)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -278,21 +272,6 @@ void DatabaseMessageFilter::OnDatabaseClosed(const string16& origin_identifier,
 
   db_tracker_->DatabaseClosed(origin_identifier, database_name);
   database_connections_.RemoveConnection(origin_identifier, database_name);
-}
-
-void DatabaseMessageFilter::OnAllowDatabase(const std::string& origin_url,
-                                            const string16& name,
-                                            const string16& display_name,
-                                            unsigned long estimated_size,
-                                            bool* result) {
-  GURL url = GURL(origin_url);
-  ContentSetting content_setting =
-      host_content_settings_map_->GetContentSetting(
-          url, CONTENT_SETTINGS_TYPE_COOKIES, "");
-  DCHECK((content_setting == CONTENT_SETTING_ALLOW) ||
-         (content_setting == CONTENT_SETTING_BLOCK) ||
-         (content_setting == CONTENT_SETTING_SESSION_ONLY));
-  *result = content_setting != CONTENT_SETTING_BLOCK;;
 }
 
 void DatabaseMessageFilter::OnDatabaseSizeChanged(

@@ -75,7 +75,6 @@ class TabContents : public PageNavigator,
                     public RenderViewHostDelegate,
                     public RenderViewHostManager::Delegate,
                     public JavaScriptAppModalDialogDelegate,
-                    public TabSpecificContentSettings::Delegate,
                     public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
   // Flags passed to the TabContentsDelegate.NavigationStateChanged to tell it
@@ -737,9 +736,6 @@ class TabContents : public PageNavigator,
   void NotifySwapped();
   void NotifyConnected();
   void NotifyDisconnected();
-
-  // TabSpecificContentSettings::Delegate implementation.
-  virtual void OnContentSettingsAccessed(bool content_was_blocked);
 
   // RenderViewHostDelegate ----------------------------------------------------
 

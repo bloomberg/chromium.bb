@@ -140,7 +140,7 @@ bool ContentSettingsObserver::AllowDatabase(WebFrame* frame,
     return false;  // Uninitialized document?
 
   bool result;
-  if (!Send(new DatabaseHostMsg_Allow(routing_id(),
+  if (!Send(new ViewHostMsg_AllowDatabase(routing_id(),
       origin.toString().utf8(), name, display_name, estimated_size, &result)))
     return false;
   Send(new ViewHostMsg_WebDatabaseAccessed(routing_id(),

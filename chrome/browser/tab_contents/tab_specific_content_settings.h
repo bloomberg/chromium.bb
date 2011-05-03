@@ -12,12 +12,14 @@
 #include "chrome/common/content_settings_types.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 
 class CannedBrowsingDataAppCacheHelper;
 class CannedBrowsingDataDatabaseHelper;
 class CannedBrowsingDataIndexedDBHelper;
 class CannedBrowsingDataLocalStorageHelper;
 class CookiesTreeModel;
+class TabContents;
 class Profile;
 
 namespace net {
@@ -25,21 +27,10 @@ class CookieMonster;
 }
 
 class TabSpecificContentSettings
-    : public RenderViewHostDelegate::ContentSettings {
+    : public RenderViewHostDelegate::ContentSettings,
+      public TabContentsObserver {
  public:
-  class Delegate {
-   public:
-    // Invoked when content settings for resources in the tab contents
-    // associated with this TabSpecificContentSettings object were accessed.
-    // |content_was_blocked| is true, if a content settings type was blocked
-    // (as opposed to just accessed). Currently, this parameter is checked in
-    // unit tests only.
-    virtual void OnContentSettingsAccessed(bool content_was_blocked) = 0;
-
-    virtual ~Delegate() {}
-  };
-
-  TabSpecificContentSettings(Delegate* delegate, Profile* profile);
+  TabSpecificContentSettings(TabContents* tab);
 
   virtual ~TabSpecificContentSettings() {}
 
@@ -119,6 +110,16 @@ class TabSpecificContentSettings
   virtual void OnGeolocationPermissionSet(const GURL& requesting_frame,
                                           bool allowed);
 
+  // TabContentsObserver overrides.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidNavigateMainFramePostCommit(
+      const NavigationController::LoadCommittedDetails& details,
+      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+  virtual void DidStartProvisionalLoadForFrame(int64 frame_id,
+                                               bool is_main_frame,
+                                               const GURL& validated_url,
+                                               bool is_error_page) OVERRIDE;
+
  private:
   class LocalSharedObjectsContainer {
    public:
@@ -188,8 +189,6 @@ class TabSpecificContentSettings
 
   // Stores whether the user can load blocked plugins on this page.
   bool load_plugins_link_enabled_;
-
-  Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TabSpecificContentSettings);
 };

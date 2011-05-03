@@ -17,6 +17,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                    Profile* profile,
                                    const GURL& url);
   virtual void BrowserRenderProcessHostCreated(BrowserRenderProcessHost* host);
+  virtual void WorkerProcessHostCreated(WorkerProcessHost* host);
   virtual content::WebUIFactory* GetWebUIFactory();
   virtual GURL GetEffectiveURL(Profile* profile, const GURL& url);
   virtual GURL GetAlternateErrorPageURL(const TabContents* tab);

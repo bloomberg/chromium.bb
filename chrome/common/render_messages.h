@@ -296,6 +296,24 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ContentBlocked,
                     ContentSettingsType, /* type of blocked content */
                     std::string /* resource identifier */)
 
+// Sent by the renderer process to check whether access to web databases is
+// granted by content settings. This may block and trigger a cookie prompt.
+IPC_SYNC_MESSAGE_ROUTED4_1(ViewHostMsg_AllowDatabase,
+                           std::string /* origin_url */,
+                           string16 /* database name */,
+                           string16 /* database display name */,
+                           unsigned long /* estimated size */,
+                           bool /* result */)
+
+// Tells the browser that a specific Web database in the current page was
+// accessed.
+IPC_MESSAGE_ROUTED5(ViewHostMsg_WebDatabaseAccessed,
+                    GURL /* origin url */,
+                    string16 /* database name */,
+                    string16 /* database display name */,
+                    unsigned long /* estimated size */,
+                    bool /* blocked by policy */)
+
 // Specifies the URL as the first parameter (a wstring) and thumbnail as
 // binary data as the second parameter.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_Thumbnail,

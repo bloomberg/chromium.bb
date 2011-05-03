@@ -13,15 +13,11 @@
 #include "webkit/database/database_connections.h"
 #include "webkit/database/database_tracker.h"
 
-class HostContentSettingsMap;
-
 class DatabaseMessageFilter
     : public BrowserMessageFilter,
       public webkit_database::DatabaseTracker::Observer {
  public:
-  DatabaseMessageFilter(
-      webkit_database::DatabaseTracker* db_tracker,
-      HostContentSettingsMap *host_content_settings_map);
+  explicit DatabaseMessageFilter(webkit_database::DatabaseTracker* db_tracker);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing();
@@ -63,11 +59,6 @@ class DatabaseMessageFilter
                           const string16& database_name);
   void OnDatabaseClosed(const string16& origin_identifier,
                         const string16& database_name);
-  void OnAllowDatabase(const std::string& origin_url,
-                       const string16& name,
-                       const string16& display_name,
-                       unsigned long estimated_size,
-                       bool* result);
 
   // DatabaseTracker::Observer callbacks (file thread)
   virtual void OnDatabaseSizeChanged(const string16& origin_identifier,
@@ -91,9 +82,6 @@ class DatabaseMessageFilter
 
   // Keeps track of all DB connections opened by this renderer
   webkit_database::DatabaseConnections database_connections_;
-
-  // Used to look up permissions at database creation time.
-  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_DATABASE_MESSAGE_FILTER_H_

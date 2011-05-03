@@ -523,11 +523,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnContentBlocked(ContentSettingsType type,
                         const std::string& resource_identifier);
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
-  void OnWebDatabaseAccessed(const GURL& url,
-                             const string16& name,
-                             const string16& display_name,
-                             unsigned long estimated_size,
-                             bool blocked_by_policy);
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent,
                           bool remember);

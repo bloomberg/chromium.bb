@@ -60,11 +60,11 @@ class ChildProcessHost : public IPC::Channel::Listener,
   // IPC::Message::Sender implementation.
   virtual bool Send(IPC::Message* message);
 
- protected:
-  ChildProcessHost();
-
   // Adds an IPC message filter.  A reference will be kept to the filter.
   void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
+
+ protected:
+  ChildProcessHost();
 
   // Derived classes return true if it's ok to shut down the child process.
   virtual bool CanShutdown() = 0;

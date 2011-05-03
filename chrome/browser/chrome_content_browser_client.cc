@@ -8,6 +8,7 @@
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/chrome_worker_message_filter.h"
 #include "chrome/browser/debugger/devtools_handler.h"
 #include "chrome/browser/desktop_notification_handler.h"
 #include "chrome/browser/extensions/extension_message_handler.h"
@@ -28,6 +29,7 @@
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/worker_host/worker_process_host.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
@@ -75,6 +77,11 @@ void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
 #if defined(OS_MACOSX)
   host->channel()->AddFilter(new TextInputClientMessageFilter(host->id()));
 #endif
+}
+
+void ChromeContentBrowserClient::WorkerProcessHostCreated(
+    WorkerProcessHost* host) {
+  host->AddFilter(new ChromeWorkerMessageFilter(host));
 }
 
 content::WebUIFactory* ChromeContentBrowserClient::GetWebUIFactory() {

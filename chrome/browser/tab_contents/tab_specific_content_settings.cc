@@ -10,6 +10,9 @@
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/cookies_tree_model.h"
+#include "chrome/common/render_messages.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "net/base/cookie_monster.h"
 
 bool TabSpecificContentSettings::LocalSharedObjectsContainer::empty() const {
@@ -88,8 +91,9 @@ void TabSpecificContentSettings::OnContentBlocked(
     AddBlockedResource(type, resource_identifier);
   if (!content_blocked_[type]) {
     content_blocked_[type] = true;
-    if (delegate_)
-      delegate_->OnContentSettingsAccessed(true);
+    // TODO: it would be nice to have a way of mocking this in tests.
+    if (tab_contents()->delegate())
+      tab_contents()->delegate()->OnContentSettingsChange(tab_contents());
   }
 }
 
@@ -98,8 +102,8 @@ void TabSpecificContentSettings::OnContentAccessed(ContentSettingsType type) {
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   if (!content_accessed_[type]) {
     content_accessed_[type] = true;
-    if (delegate_)
-      delegate_->OnContentSettingsAccessed(false);
+    if (tab_contents()->delegate())
+      tab_contents()->delegate()->OnContentSettingsChange(tab_contents());
   }
 }
 
@@ -210,20 +214,18 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
     bool allowed) {
   geolocation_settings_state_.OnGeolocationPermissionSet(requesting_origin,
                                                          allowed);
-  if (delegate_)
-    delegate_->OnContentSettingsAccessed(!allowed);
+  if (tab_contents()->delegate())
+    tab_contents()->delegate()->OnContentSettingsChange(tab_contents());
 }
 
-TabSpecificContentSettings::TabSpecificContentSettings(
-    Delegate* delegate, Profile* profile)
-    : allowed_local_shared_objects_(profile),
-      blocked_local_shared_objects_(profile),
-      geolocation_settings_state_(profile),
-      load_plugins_link_enabled_(true),
-      delegate_(NULL) {
+TabSpecificContentSettings::TabSpecificContentSettings(TabContents* tab)
+    : TabContentsObserver(tab),
+      allowed_local_shared_objects_(tab->profile()),
+      blocked_local_shared_objects_(tab->profile()),
+      geolocation_settings_state_(tab->profile()),
+      load_plugins_link_enabled_(true) {
   ClearBlockedContentSettingsExceptForCookies();
   ClearCookieSpecificContentSettings();
-  delegate_ = delegate;
 }
 
 void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
@@ -236,8 +238,8 @@ void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
     content_blockage_indicated_to_user_[i] = false;
   }
   load_plugins_link_enabled_ = true;
-  if (delegate_)
-    delegate_->OnContentSettingsAccessed(false);
+  if (tab_contents()->delegate())
+    tab_contents()->delegate()->OnContentSettingsChange(tab_contents());
 }
 
 void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
@@ -246,15 +248,15 @@ void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
   content_blocked_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   content_accessed_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
-  if (delegate_)
-    delegate_->OnContentSettingsAccessed(false);
+  if (tab_contents()->delegate())
+    tab_contents()->delegate()->OnContentSettingsChange(tab_contents());
 }
 
 void TabSpecificContentSettings::SetPopupsBlocked(bool blocked) {
   content_blocked_[CONTENT_SETTINGS_TYPE_POPUPS] = blocked;
   content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_POPUPS] = false;
-  if (delegate_)
-    delegate_->OnContentSettingsAccessed(blocked);
+  if (tab_contents()->delegate())
+    tab_contents()->delegate()->OnContentSettingsChange(tab_contents());
 }
 
 void TabSpecificContentSettings::GeolocationDidNavigate(
@@ -272,6 +274,43 @@ CookiesTreeModel* TabSpecificContentSettings::GetAllowedCookiesTreeModel() {
 
 CookiesTreeModel* TabSpecificContentSettings::GetBlockedCookiesTreeModel() {
   return blocked_local_shared_objects_.GetCookiesTreeModel();
+}
+
+bool TabSpecificContentSettings::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(TabSpecificContentSettings, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_WebDatabaseAccessed, OnWebDatabaseAccessed)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  return handled;
+}
+
+void TabSpecificContentSettings::DidNavigateMainFramePostCommit(
+    const NavigationController::LoadCommittedDetails& details,
+    const ViewHostMsg_FrameNavigate_Params& params) {
+  if (!details.is_in_page) {
+    // Clear "blocked" flags.
+    ClearBlockedContentSettingsExceptForCookies();
+    GeolocationDidNavigate(details);
+  }
+}
+
+void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& validated_url,
+    bool is_error_page) {
+  if (!is_main_frame)
+    return;
+
+  // If we're displaying a network error page do not reset the content
+  // settings delegate's cookies so the user has a chance to modify cookie
+  // settings.
+  if (!is_error_page)
+    ClearCookieSpecificContentSettings();
+  ClearGeolocationContentSettings();
 }
 
 TabSpecificContentSettings::LocalSharedObjectsContainer::

@@ -379,7 +379,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(new FileUtilitiesMessageFilter(id()));
   channel_->AddFilter(new MimeRegistryMessageFilter());
   channel_->AddFilter(new DatabaseMessageFilter(
-      profile()->GetDatabaseTracker(), profile()->GetHostContentSettingsMap()));
+      profile()->GetDatabaseTracker()));
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
       new SocketStreamDispatcherHost(

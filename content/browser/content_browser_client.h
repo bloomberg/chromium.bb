@@ -16,6 +16,7 @@ class GURL;
 class Profile;
 class RenderViewHost;
 class TabContents;
+class WorkerProcessHost;
 
 namespace content {
 
@@ -34,6 +35,9 @@ class ContentBrowserClient {
 
   // Notifies that a BrowserRenderProcessHost has been created.
   virtual void BrowserRenderProcessHostCreated(BrowserRenderProcessHost* host);
+
+  // Notifies that a WorkerProcessHost has been created.
+  virtual void WorkerProcessHostCreated(WorkerProcessHost* host);
 
   // Gets the WebUIFactory which will be responsible for generating WebUIs.
   virtual WebUIFactory* GetWebUIFactory();

@@ -26,15 +26,6 @@ IPC_MESSAGE_CONTROL2(DatabaseMsg_CloseImmediately,
 
 // Database messages sent from the renderer to the browser.
 
-// Sent by the renderer process to check whether access to web databases is
-// granted by content settings. This may block and trigger a cookie prompt.
-IPC_SYNC_MESSAGE_ROUTED4_1(DatabaseHostMsg_Allow,
-                           std::string /* origin_url */,
-                           string16 /* database name */,
-                           string16 /* database display name */,
-                           unsigned long /* estimated size */,
-                           bool /* result */)
-
 // Asks the browser process to open a DB file with the given name.
 IPC_SYNC_MESSAGE_CONTROL2_1(DatabaseHostMsg_OpenFile,
                             string16 /* vfs file name */,

@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
@@ -43,6 +44,7 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
   always_authorize_plugins_.Init(prefs::kPluginsAlwaysAuthorize,
                                  profile_->GetPrefs(), NULL);
   always_authorize_plugins_.MoveToThread(BrowserThread::IO);
+  host_content_settings_map_ = profile->GetHostContentSettingsMap();
 }
 
 ChromeRenderMessageFilter::~ChromeRenderMessageFilter() {
@@ -71,6 +73,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginPolicies,
                         OnGetPluginPolicies)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -293,4 +296,19 @@ void ChromeRenderMessageFilter::OnGetPluginPolicies(
 
   *authorize_policy = always_authorize_plugins_.GetValue() ?
       CONTENT_SETTING_ALLOW : CONTENT_SETTING_ASK;
+}
+
+void ChromeRenderMessageFilter::OnAllowDatabase(const std::string& origin_url,
+                                                const string16& name,
+                                                const string16& display_name,
+                                                unsigned long estimated_size,
+                                                bool* result) {
+  GURL url(origin_url);
+  ContentSetting content_setting =
+      host_content_settings_map_->GetContentSetting(
+          url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+  DCHECK((content_setting == CONTENT_SETTING_ALLOW) ||
+         (content_setting == CONTENT_SETTING_BLOCK) ||
+         (content_setting == CONTENT_SETTING_SESSION_ONLY));
+  *result = content_setting != CONTENT_SETTING_BLOCK;
 }
