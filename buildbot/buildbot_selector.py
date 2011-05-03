@@ -13,8 +13,11 @@ BOT_ASSIGNMENT = {
     # Buildbots.
     ######################################################################
     'xp-m32-n32-opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
+    'xp-glibc-opt': 'buildbot\\buildbot_win.bat opt 32 glibc',
     'vista64-m64-n64-dbg': 'buildbot\\buildbot_win.bat dbg 64 newlib',
     'vista64-m64-n64-opt': 'buildbot\\buildbot_win.bat opt 64 newlib',
+    'win64-glibc-dbg': 'buildbot\\buildbot_win.bat dbg 64 glibc',
+    'win64-glibc-opt': 'buildbot\\buildbot_win.bat opt 64 glibc',
     'xp-bare-m32-n32-opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
     'win7-bare-m32-n32-opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
     'win7-bare-m64-n64-dbg': 'buildbot\\buildbot_win.bat dbg 64 newlib',
@@ -28,9 +31,13 @@ BOT_ASSIGNMENT = {
     'hardy64-m64-n64-opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
     'lucid32-m32-n32-dbg': 'bash buildbot/buildbot_linux.sh dbg 32 newlib',
     'lucid32-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
+    'lucid32-glibc-dbg': 'bash buildbot/buildbot_linux.sh dbg 32 glibc',
+    'lucid32-glibc-opt': 'bash buildbot/buildbot_linux.sh opt 32 glibc',
     'lucid64-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
     'lucid64-m64-n64-dbg': 'bash buildbot/buildbot_linux.sh dbg 64 newlib',
     'lucid64-m64-n64-opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
+    'lucid64-glibc-dbg': 'bash buildbot/buildbot_linux.sh dbg 64 glibc',
+    'lucid64-glibc-opt': 'bash buildbot/buildbot_linux.sh opt 64 glibc',
     'lucid32-bare-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
     'lucid64-bare-m64-n64-opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
      # pnacl bots.
