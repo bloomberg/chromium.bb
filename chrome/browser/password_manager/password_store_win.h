@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_WIN_H_
 #pragma once
 
-#include <map>
-
+#include "base/scoped_ptr.h"
 #include "chrome/browser/password_manager/password_store_default.h"
 
 class LoginDatabase;
@@ -28,38 +27,25 @@ class PasswordStoreWin : public PasswordStoreDefault {
                    WebDataService* web_data_service);
 
  private:
+  class DBHandler;
+
   virtual ~PasswordStoreWin();
+
+  // Invoked from Shutdown, but run on the DB thread.
+  void ShutdownOnDBThread();
 
   virtual GetLoginsRequest* NewGetLoginsRequest(
       GetLoginsCallback* callback) OVERRIDE;
 
   // See PasswordStoreDefault.
+  virtual void Shutdown() OVERRIDE;
   virtual void ForwardLoginsResult(GetLoginsRequest* request) OVERRIDE;
-  virtual void OnWebDataServiceRequestDone(
-      WebDataService::Handle h, const WDTypedResult* result) OVERRIDE;
 
   // Overridden so that we can save the form for later use.
   virtual void GetLoginsImpl(GetLoginsRequest* request,
                              const webkit_glue::PasswordForm& form) OVERRIDE;
 
-  // Takes ownership of |request| and tracks it under |handle|.
-  void TrackRequest(WebDataService::Handle handle, GetLoginsRequest* request);
-
-  // Finds the GetLoginsRequest associated with the in-flight WebDataService
-  // request identified by |handle|, removes it from the tracking list, and
-  // returns it. Ownership of the GetLoginsRequest passes to the caller.
-  // Returns NULL if the request has been cancelled.
-  GetLoginsRequest* TakeRequestWithHandle(WebDataService::Handle handle);
-
-  // Gets logins from IE7 if no others are found. Also copies them into
-  // Chrome's WebDatabase so we don't need to look next time.
-  webkit_glue::PasswordForm* GetIE7Result(
-      const WDTypedResult* result,
-      const webkit_glue::PasswordForm& form);
-
-  // Holds requests associated with in-flight GetLogin queries.
-  typedef std::map<WebDataService::Handle, GetLoginsRequest*> PendingRequestMap;
-  PendingRequestMap pending_requests_;
+  scoped_ptr<DBHandler> db_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreWin);
 };

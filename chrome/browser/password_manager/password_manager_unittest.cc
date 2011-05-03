@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,11 +38,14 @@ class TestingProfileWithPasswordStore : public TestingProfile {
  public:
   explicit TestingProfileWithPasswordStore(PasswordStore* store)
       : store_(store) {}
+  virtual ~TestingProfileWithPasswordStore() {
+    store_->Shutdown();
+  }
   virtual PasswordStore* GetPasswordStore(ServiceAccessType access) {
     return store_;
   }
  private:
-  PasswordStore* store_;
+  scoped_refptr<PasswordStore> store_;
 };
 
 class MockPasswordStore : public PasswordStore {

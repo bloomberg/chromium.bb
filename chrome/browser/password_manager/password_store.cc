@@ -34,6 +34,9 @@ bool PasswordStore::Init() {
   return true;
 }
 
+void PasswordStore::Shutdown() {
+}
+
 void PasswordStore::AddLogin(const PasswordForm& form) {
   Task* task = NewRunnableMethod(this, &PasswordStore::AddLoginImpl, form);
   ScheduleTask(
@@ -98,6 +101,7 @@ PasswordStore::GetLoginsRequest* PasswordStore::NewGetLoginsRequest(
 void PasswordStore::ScheduleTask(Task* task) {
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, task);
 }
+
 void PasswordStore::ForwardLoginsResult(GetLoginsRequest* request) {
   request->ForwardResult(GetLoginsRequest::TupleType(request->handle(),
                                                      request->value));

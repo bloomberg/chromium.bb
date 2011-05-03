@@ -436,6 +436,8 @@ TEST_P(PasswordStoreXTest, WDSMigration) {
 
   STLDeleteElements(&expected_autofillable);
   STLDeleteElements(&expected_blacklisted);
+
+  store->Shutdown();
 }
 
 TEST_P(PasswordStoreXTest, WDSMigrationAlreadyDone) {
@@ -499,6 +501,8 @@ TEST_P(PasswordStoreXTest, WDSMigrationAlreadyDone) {
   MessageLoop::current()->Run();
 
   STLDeleteElements(&unexpected_autofillable);
+
+  store->Shutdown();
 }
 
 TEST_P(PasswordStoreXTest, Notifications) {
@@ -591,6 +595,8 @@ TEST_P(PasswordStoreXTest, Notifications) {
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       new SignalingTask(&done));
   done.Wait();
+
+  store->Shutdown();
 }
 
 TEST_P(PasswordStoreXTest, NativeMigration) {
@@ -730,6 +736,8 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   STLDeleteElements(&expected_autofillable);
   STLDeleteElements(&expected_blacklisted);
+
+  store->Shutdown();
 }
 
 INSTANTIATE_TEST_CASE_P(NoBackend,

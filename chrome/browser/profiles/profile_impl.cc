@@ -615,6 +615,10 @@ ProfileImpl::~ProfileImpl() {
   // The sync service needs to be deleted before the services it calls.
   sync_service_.reset();
 
+  // Password store uses WebDB, shut it down before the WebDB has been shutdown.
+  if (password_store_.get())
+    password_store_->Shutdown();
+
   // Both HistoryService and WebDataService maintain threads for background
   // processing. Its possible each thread still has tasks on it that have
   // increased the ref count of the service. In such a situation, when we

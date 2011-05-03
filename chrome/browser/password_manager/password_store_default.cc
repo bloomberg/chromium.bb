@@ -4,7 +4,7 @@
 
 #include "chrome/browser/password_manager/password_store_default.h"
 
-#include <vector>
+#include <set>
 
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
@@ -19,6 +19,85 @@
 
 using webkit_glue::PasswordForm;
 
+// MigrateHelper handles migration from WebDB to PasswordStore. It runs
+// entirely on the UI thread and is owned by PasswordStoreDefault.
+class PasswordStoreDefault::MigrateHelper : public WebDataServiceConsumer {
+ public:
+  MigrateHelper(Profile* profile,
+                WebDataService* web_data_service,
+                PasswordStore* password_store)
+      : profile_(profile),
+        web_data_service_(web_data_service),
+        password_store_(password_store) {
+  }
+  ~MigrateHelper();
+
+  void Init();
+
+  // WebDataServiceConsumer:
+  virtual void OnWebDataServiceRequestDone(
+      WebDataService::Handle handle,
+      const WDTypedResult *result) OVERRIDE;
+
+ private:
+  typedef std::set<WebDataService::Handle> Handles;
+
+  Profile* profile_;
+
+  scoped_refptr<WebDataService> web_data_service_;
+
+  // This creates a cycle between us and PasswordStore. The cycle is broken
+  // from PasswordStoreDefault::Shutdown, which deletes us.
+  scoped_refptr<PasswordStore> password_store_;
+
+  // Set of handles from requesting data from the WebDB.
+  Handles handles_;
+
+  DISALLOW_COPY_AND_ASSIGN(MigrateHelper);
+};
+
+PasswordStoreDefault::MigrateHelper::~MigrateHelper() {
+  for (Handles::const_iterator i = handles_.begin(); i != handles_.end(); ++i)
+    web_data_service_->CancelRequest(*i);
+  handles_.clear();
+}
+
+void PasswordStoreDefault::MigrateHelper::Init() {
+  handles_.insert(web_data_service_->GetAutofillableLogins(this));
+  handles_.insert(web_data_service_->GetBlacklistLogins(this));
+}
+
+void PasswordStoreDefault::MigrateHelper::OnWebDataServiceRequestDone(
+    WebDataService::Handle handle,
+    const WDTypedResult* result) {
+  typedef std::vector<const PasswordForm*> PasswordForms;
+
+  DCHECK(handles_.end() != handles_.find(handle));
+  DCHECK(password_store_);
+
+  handles_.erase(handle);
+  if (!result)
+    return;
+
+  if (PASSWORD_RESULT != result->GetType()) {
+    NOTREACHED();
+    return;
+  }
+
+  const PasswordForms& forms =
+      static_cast<const WDResult<PasswordForms>*>(result)->GetValue();
+  for (PasswordForms::const_iterator it = forms.begin();
+       it != forms.end(); ++it) {
+    password_store_->AddLogin(**it);
+    web_data_service_->RemoveLogin(**it);
+    delete *it;
+  }
+  if (handles_.empty()) {
+    profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
+                                              true);
+  }
+}
+
 PasswordStoreDefault::PasswordStoreDefault(LoginDatabase* login_db,
                                            Profile* profile,
                                            WebDataService* web_data_service)
@@ -31,6 +110,13 @@ PasswordStoreDefault::PasswordStoreDefault(LoginDatabase* login_db,
 }
 
 PasswordStoreDefault::~PasswordStoreDefault() {
+  // MigrateHelper should always be NULL as Shutdown should be invoked before
+  // the destructor.
+  DCHECK(!migrate_helper_.get());
+}
+
+void PasswordStoreDefault::Shutdown() {
+  migrate_helper_.reset();
 }
 
 void PasswordStoreDefault::ReportMetricsImpl() {
@@ -125,36 +211,7 @@ void PasswordStoreDefault::MigrateIfNecessary() {
   PrefService* prefs = profile_->GetPrefs();
   if (prefs->FindPreference(prefs::kLoginDatabaseMigrated))
     return;
-  handles_.insert(web_data_service_->GetAutofillableLogins(this));
-  handles_.insert(web_data_service_->GetBlacklistLogins(this));
-}
-
-typedef std::vector<const PasswordForm*> PasswordForms;
-
-void PasswordStoreDefault::OnWebDataServiceRequestDone(
-    WebDataService::Handle handle,
-    const WDTypedResult* result) {
-  DCHECK(handles_.end() != handles_.find(handle));
-
-  handles_.erase(handle);
-  if (!result)
-    return;
-
-  if (PASSWORD_RESULT != result->GetType()) {
-    NOTREACHED();
-    return;
-  }
-
-  const PasswordForms& forms =
-      static_cast<const WDResult<PasswordForms>*>(result)->GetValue();
-  for (PasswordForms::const_iterator it = forms.begin();
-       it != forms.end(); ++it) {
-    AddLogin(**it);
-    web_data_service_->RemoveLogin(**it);
-    delete *it;
-  }
-  if (handles_.empty()) {
-    profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
-                                              true);
-  }
+  DCHECK(!migrate_helper_.get());
+  migrate_helper_.reset(new MigrateHelper(profile_, web_data_service_, this));
+  migrate_helper_->Init();
 }

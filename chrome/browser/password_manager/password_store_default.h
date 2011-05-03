@@ -6,21 +6,19 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_DEFAULT_H_
 #pragma once
 
-#include <set>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store.h"
-#include "chrome/browser/webdata/web_data_service.h"
 
 class Profile;
+class WebDataService;
 
 // Simple password store implementation that delegates everything to
 // the LoginDatabase.
-class PasswordStoreDefault : public PasswordStore,
-                             public WebDataServiceConsumer {
+class PasswordStoreDefault : public PasswordStore {
  public:
   // Takes ownership of |login_db|.
   PasswordStoreDefault(LoginDatabase* login_db,
@@ -31,6 +29,7 @@ class PasswordStoreDefault : public PasswordStore,
   virtual ~PasswordStoreDefault();
 
   // Implements PasswordStore interface.
+  virtual void Shutdown();
   virtual void ReportMetricsImpl();
   virtual void AddLoginImpl(const webkit_glue::PasswordForm& form);
   virtual void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
@@ -48,23 +47,21 @@ class PasswordStoreDefault : public PasswordStore,
 
   scoped_refptr<WebDataService> web_data_service_;
 
-  // Implements the WebDataService consumer interface.
-  virtual void OnWebDataServiceRequestDone(WebDataService::Handle handle,
-                                           const WDTypedResult *result);
-
  protected:
   inline bool DeleteAndRecreateDatabaseFile() {
     return login_db_->DeleteAndRecreateDatabaseFile();
   }
 
  private:
+  class MigrateHelper;
+
   // Migrates logins from the WDS to the LoginDatabase.
   void MigrateIfNecessary();
 
   scoped_ptr<LoginDatabase> login_db_;
   Profile* profile_;
 
-  std::set<WebDataService::Handle> handles_;
+  scoped_ptr<MigrateHelper> migrate_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreDefault);
 };

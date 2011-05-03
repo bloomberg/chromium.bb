@@ -285,7 +285,7 @@ TEST_F(PasswordStoreDefaultTest, Migration) {
   done.Wait();
 
   // Initializing the PasswordStore should trigger a migration.
-  scoped_refptr<PasswordStoreDefault> store(
+  scoped_refptr<PasswordStore> store(
       new PasswordStoreDefault(login_db_.release(),
           profile_.get(), wds_.get()));
   store->Init();
@@ -364,6 +364,8 @@ TEST_F(PasswordStoreDefaultTest, Migration) {
 
   STLDeleteElements(&expected_autofillable);
   STLDeleteElements(&expected_blacklisted);
+
+  store->Shutdown();
 }
 
 TEST_F(PasswordStoreDefaultTest, MigrationAlreadyDone) {
@@ -400,7 +402,7 @@ TEST_F(PasswordStoreDefaultTest, MigrationAlreadyDone) {
                                             true);
 
   // Initializing the PasswordStore shouldn't trigger a migration.
-  scoped_refptr<PasswordStoreDefault> store(
+  scoped_refptr<PasswordStore> store(
       new PasswordStoreDefault(login_db_.release(), profile_.get(),
                                wds_.get()));
   store->Init();
@@ -421,6 +423,8 @@ TEST_F(PasswordStoreDefaultTest, MigrationAlreadyDone) {
   MessageLoop::current()->Run();
 
   STLDeleteElements(&unexpected_autofillable);
+
+  store->Shutdown();
 }
 
 TEST_F(PasswordStoreDefaultTest, Notifications) {
@@ -429,7 +433,7 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
                                             true);
 
   // Initializing the PasswordStore shouldn't trigger a migration.
-  scoped_refptr<PasswordStoreDefault> store(
+  scoped_refptr<PasswordStore> store(
       new PasswordStoreDefault(login_db_.release(), profile_.get(),
                                wds_.get()));
   store->Init();
@@ -511,4 +515,6 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       new SignalingTask(&done));
   done.Wait();
+
+  store->Shutdown();
 }

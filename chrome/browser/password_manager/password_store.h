@@ -74,6 +74,9 @@ class PasswordStore
   // Reimplement this to add custom initialization. Always call this too.
   virtual bool Init();
 
+  // Invoked from the profiles destructor to shutdown the PasswordStore.
+  virtual void Shutdown();
+
   // Adds the given PasswordForm to the secure password store asynchronously.
   virtual void AddLogin(const webkit_glue::PasswordForm& form);
 
