@@ -55,7 +55,8 @@ def BestEBuild(ebuilds):
 
 def _Print(message):
   """Verbose print function."""
-  if VERBOSE: Info(message)
+  if VERBOSE:
+    Info(message)
 
 
 def CleanStalePackages(board, package_atoms):
@@ -360,6 +361,7 @@ class EBuild(object):
       dir = 'platform'
     else:
       dir = 'third_party'
+
     srcdir = os.path.join(srcroot, dir, subdir)
 
     if not os.path.isdir(srcdir):
@@ -370,7 +372,7 @@ class EBuild(object):
     # check.
     # TODO(davidjames): Fix the project name in the chromeos-kernel ebuild.
     cmd = 'cd %s && git config --get remote.cros.projectname' % srcdir
-    actual_project = os.path.basename(_SimpleRunCommand(cmd).rstrip())
+    actual_project = _SimpleRunCommand(cmd).rstrip()
     if project not in (actual_project, 'chromeos-kernel'):
       Die('Project name mismatch for %s (%s != %s)' % (unstable_ebuild, project,
           actual_project))
@@ -518,7 +520,7 @@ def main(argv):
   parser.add_option('-r', '--srcroot',
                     default='%s/trunk/src' % os.environ['HOME'],
                     help='Path to root src directory.')
-  parser.add_option('-t', '--tracking_branch', default='cros/master',
+  parser.add_option('-t', '--tracking_branch', default='master',
                      help='Used with commit to specify branch to track.')
   parser.add_option('--verbose', action='store_true',
                     help='Prints out debug info.')
@@ -561,13 +563,14 @@ def main(argv):
     # the cwd being set to the overlay directory. We should instead pass in
     # this parameter so that we don't need to modify the cwd globally.
     os.chdir(overlay)
+    tracking_branch = 'remotes/m/%s' % os.path.basename(options.tracking_branch)
 
     if command == 'clean':
-      Clean(options.tracking_branch)
+      Clean(tracking_branch)
     elif command == 'push':
-      PushChange(STABLE_BRANCH_NAME, options.tracking_branch, options.dryrun)
+      PushChange(STABLE_BRANCH_NAME, tracking_branch, options.dryrun)
     elif command == 'commit' and ebuilds:
-      work_branch = GitBranch(STABLE_BRANCH_NAME, options.tracking_branch)
+      work_branch = GitBranch(STABLE_BRANCH_NAME, tracking_branch)
       work_branch.CreateBranch()
       if not work_branch.Exists():
         Die('Unable to create stabilizing branch in %s' % overlay)
