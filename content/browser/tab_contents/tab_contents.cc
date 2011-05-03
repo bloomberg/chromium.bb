@@ -23,7 +23,6 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/external_protocol_handler.h"
-#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
@@ -343,7 +342,6 @@ TabContents::~TabContents() {
 
 void TabContents::AddObservers() {
   content_settings_delegate_.reset(new TabSpecificContentSettings(this));
-  favicon_tab_helper_.reset(new FaviconTabHelper(this));
   plugin_observer_.reset(new PluginObserver(this));
   net::NetworkChangeNotifier::AddOnlineStateObserver(this);
 }
@@ -479,42 +477,6 @@ bool TabContents::ShouldDisplayURL() {
   WebUI* web_ui = GetWebUIForCurrentState();
   if (web_ui)
     return !web_ui->should_hide_url();
-  return true;
-}
-
-SkBitmap TabContents::GetFavicon() const {
-  // Like GetTitle(), we also want to use the favicon for the last committed
-  // entry rather than a pending navigation entry.
-  NavigationEntry* entry = controller_.GetTransientEntry();
-  if (entry)
-    return entry->favicon().bitmap();
-
-  entry = controller_.GetLastCommittedEntry();
-  if (entry)
-    return entry->favicon().bitmap();
-  return SkBitmap();
-}
-
-bool TabContents::FaviconIsValid() const {
-  NavigationEntry* entry = controller_.GetTransientEntry();
-  if (entry)
-    return entry->favicon().is_valid();
-
-  entry = controller_.GetLastCommittedEntry();
-  if (entry)
-    return entry->favicon().is_valid();
-
-  return false;
-}
-
-bool TabContents::ShouldDisplayFavicon() {
-  // Always display a throbber during pending loads.
-  if (controller_.GetLastCommittedEntry() && controller_.pending_entry())
-    return true;
-
-  WebUI* web_ui = GetWebUIForCurrentState();
-  if (web_ui)
-    return !web_ui->hide_favicon();
   return true;
 }
 
@@ -673,15 +635,9 @@ bool TabContents::NavigateToEntry(
   }
 
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_, NavigateToPendingEntry());
-
-  if (reload_type != NavigationController::NO_RELOAD &&
-      !profile()->IsOffTheRecord()) {
-    FaviconService* favicon_service =
-        profile()->GetFaviconService(Profile::IMPLICIT_ACCESS);
-    if (favicon_service)
-      favicon_service->SetFaviconOutOfDateForPage(entry.url());
-  }
+  FOR_EACH_OBSERVER(TabContentsObserver,
+                    observers_,
+                    NavigateToPendingEntry(entry.url(), reload_type));
 
   return true;
 }
@@ -713,34 +669,6 @@ void TabContents::ShowPageInfo(const GURL& url,
     return;
 
   delegate_->ShowPageInfo(profile(), url, ssl, show_history);
-}
-
-void TabContents::SaveFavicon() {
-  NavigationEntry* entry = controller_.GetActiveEntry();
-  if (!entry || entry->url().is_empty())
-    return;
-
-  // Make sure the page is in history, otherwise adding the favicon does
-  // nothing.
-  HistoryService* history = profile()->GetOriginalProfile()->GetHistoryService(
-      Profile::IMPLICIT_ACCESS);
-  if (!history)
-    return;
-  history->AddPageNoVisitForBookmark(entry->url());
-
-  FaviconService* service = profile()->GetOriginalProfile()->GetFaviconService(
-      Profile::IMPLICIT_ACCESS);
-  if (!service)
-    return;
-  const NavigationEntry::FaviconStatus& favicon(entry->favicon());
-  if (!favicon.is_valid() || favicon.url().is_empty() ||
-      favicon.bitmap().empty()) {
-    return;
-  }
-  std::vector<unsigned char> image_data;
-  gfx::PNGCodec::EncodeBGRASkBitmap(favicon.bitmap(), false, &image_data);
-  service->SetFavicon(
-      entry->url(), favicon.url(), image_data, history::FAVICON);
 }
 
 ConstrainedWindow* TabContents::CreateConstrainedDialog(
@@ -1371,9 +1299,6 @@ void TabContents::DidNavigateMainFramePostCommit(
 
   // Allow the new page to set the title again.
   received_page_title_ = false;
-
-  // Get the favicon, either from history or request it from the net.
-  favicon_tab_helper_->FetchFavicon(details.entry->url());
 
   if (!details.is_in_page) {
     // Once the main frame is navigated, we're no longer considered to have

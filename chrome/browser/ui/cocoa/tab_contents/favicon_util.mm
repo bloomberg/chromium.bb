@@ -8,20 +8,20 @@
 
 #include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
-#include "content/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace mac {
 
-NSImage* FaviconForTabContents(TabContents* contents) {
+NSImage* FaviconForTabContents(TabContentsWrapper* contents) {
   // TabContents returns IDR_DEFAULT_FAVICON, which is a rasterized version of
   // the Mac PDF. Use the PDF so the icon in the Omnibox matches the default
   // favicon.
-  if (contents && contents->FaviconIsValid()) {
+  if (contents && contents->favicon_tab_helper()->FaviconIsValid()) {
     CGColorSpaceRef color_space = base::mac::GetSystemColorSpace();
-    NSImage* image =
-        gfx::SkBitmapToNSImageWithColorSpace(contents->GetFavicon(),
-                                             color_space);
+    NSImage* image = gfx::SkBitmapToNSImageWithColorSpace(
+        contents->favicon_tab_helper()->GetFavicon(), color_space);
     // The |image| could be nil if the bitmap is null. In that case, fallback
     // to the default image.
     if (image) {

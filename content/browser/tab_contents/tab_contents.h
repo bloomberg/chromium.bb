@@ -15,7 +15,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/tab_contents/tab_specific_content_settings.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
@@ -152,11 +151,6 @@ class TabContents : public PageNavigator,
     return view_.get();
   }
 
-  // Returns the FaviconTabHelper of this TabContents.
-  FaviconTabHelper& favicon_helper() {
-    return *favicon_tab_helper_.get();
-  }
-
   // Tab navigation state ------------------------------------------------------
 
   // Returns the current navigation properties, which if a navigation is
@@ -184,19 +178,6 @@ class TabContents : public PageNavigator,
   // for the new tab page and related pages so that the URL bar is empty and
   // the user is invited to type into it.
   virtual bool ShouldDisplayURL();
-
-  // Returns the favicon for this tab, or IDR_DEFAULT_FAVICON if the tab does
-  // not have a favicon. The default implementation uses the current navigation
-  // entry. This will return an isNull bitmap if there are no navigation
-  // entries, which should rarely happen.
-  SkBitmap GetFavicon() const;
-
-  // Returns true if we are not using the default favicon.
-  bool FaviconIsValid() const;
-
-  // Returns whether the favicon should be displayed. If this returns false, no
-  // space is provided for the favicon, and the favicon is never displayed.
-  virtual bool ShouldDisplayFavicon();
 
   // Return whether this tab contents is loading a resource.
   bool is_loading() const { return is_loading_; }
@@ -321,9 +302,6 @@ class TabContents : public PageNavigator,
   void ShowPageInfo(const GURL& url,
                     const NavigationEntry::SSLStatus& ssl,
                     bool show_history);
-
-  // Saves the favicon for the current page.
-  void SaveFavicon();
 
   // Window management ---------------------------------------------------------
 
@@ -573,6 +551,10 @@ class TabContents : public PageNavigator,
   // Query the WebUIFactory for the TypeID for the current URL.
   WebUI::TypeID GetWebUITypeForCurrentState();
 
+  // Returns the WebUI for the current state of the tab. This will either be
+  // the pending WebUI, the committed WebUI, or NULL.
+  WebUI* GetWebUIForCurrentState();
+
   // From RenderViewHostDelegate.
   virtual RenderViewHostDelegate::ContentSettings* GetContentSettingsDelegate();
 
@@ -667,10 +649,6 @@ class TabContents : public PageNavigator,
   // user navigated to another page).
   void ExpireInfoBars(
       const NavigationController::LoadCommittedDetails& details);
-
-  // Returns the WebUI for the current state of the tab. This will either be
-  // the pending WebUI, the committed WebUI, or NULL.
-  WebUI* GetWebUIForCurrentState();
 
   // Navigation helpers --------------------------------------------------------
   //
@@ -887,9 +865,6 @@ class TabContents : public PageNavigator,
   // Handles drag and drop event forwarding to extensions.
   BookmarkDrag* bookmark_drag_;
 
-  // Handles downloading favicons.
-  scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
-
   // RenderViewHost::ContentSettingsDelegate.
   scoped_ptr<TabSpecificContentSettings> content_settings_delegate_;
 
@@ -958,10 +933,6 @@ class TabContents : public PageNavigator,
   // happen if a connection notification has happened and that they happen only
   // once.
   bool notify_disconnection_;
-
-  // Maps from handle to page_id.
-  typedef std::map<FaviconService::Handle, int32> HistoryRequestMap;
-  HistoryRequestMap history_requests_;
 
 #if defined(OS_WIN)
   // Handle to an event that's set when the page is showing a message box (or

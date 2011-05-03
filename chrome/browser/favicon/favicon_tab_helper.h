@@ -15,7 +15,6 @@
 
 class FaviconHandler;
 class NavigationEntry;
-class Profile;
 class RefCountedMemory;
 class SkBitmap;
 class TabContents;
@@ -37,6 +36,22 @@ class FaviconTabHelper : public TabContentsObserver {
   // Initiates loading the favicon for the specified url.
   void FetchFavicon(const GURL& url);
 
+  // Returns the favicon for this tab, or IDR_DEFAULT_FAVICON if the tab does
+  // not have a favicon. The default implementation uses the current navigation
+  // entry. This will return an isNull bitmap if there are no navigation
+  // entries, which should rarely happen.
+  SkBitmap GetFavicon() const;
+
+  // Returns true if we are not using the default favicon.
+  bool FaviconIsValid() const;
+
+  // Returns whether the favicon should be displayed. If this returns false, no
+  // space is provided for the favicon, and the favicon is never displayed.
+  virtual bool ShouldDisplayFavicon();
+
+  // Saves the favicon for the current page.
+  void SaveFavicon();
+
   // Initiates loading an image from given |image_url|. Returns a download id
   // for caller to track the request. When download completes, |callback| is
   // called with the three params: the download_id, a boolean flag to indicate
@@ -57,6 +72,12 @@ class FaviconTabHelper : public TabContentsObserver {
 
  private:
   // TabContentsObserver overrides.
+  virtual void NavigateToPendingEntry(
+      const GURL& url,
+      NavigationController::ReloadType reload_type) OVERRIDE;
+  virtual void DidNavigateMainFramePostCommit(
+      const NavigationController::LoadCommittedDetails& details,
+      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnDidDownloadFavicon(int id,

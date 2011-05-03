@@ -32,6 +32,7 @@ class DownloadTabHelper;
 class Extension;
 class ExtensionTabHelper;
 class ExtensionWebNavigationTabObserver;
+class FaviconTabHelper;
 class FileSelectObserver;
 class FindTabHelper;
 class NavigationController;
@@ -130,6 +131,8 @@ class TabContentsWrapper : public NotificationObserver,
 
   FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
 
+  FaviconTabHelper* favicon_tab_helper() { return favicon_tab_helper_.get(); }
+
   PasswordManager* password_manager() { return password_manager_.get(); }
 
   printing::PrintViewManager* print_view_manager() {
@@ -196,7 +199,7 @@ class TabContentsWrapper : public NotificationObserver,
   bool is_starred_;
 
   // Shows an info-bar to users when they search from a known search engine and
-  // have never used the monibox for search before.
+  // have never used the omnibox for search before.
   scoped_ptr<OmniboxSearchHint> omnibox_search_hint_;
 
   // Tab Helpers ---------------------------------------------------------------
@@ -209,6 +212,7 @@ class TabContentsWrapper : public NotificationObserver,
   scoped_ptr<BlockedContentTabHelper> blocked_content_tab_helper_;
   scoped_ptr<DownloadTabHelper> download_tab_helper_;
   scoped_ptr<ExtensionTabHelper> extension_tab_helper_;
+  scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;
 
   // PasswordManager and its delegate. The delegate must outlive the manager,

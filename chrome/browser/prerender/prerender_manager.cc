@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/profiles/profile.h"
@@ -486,7 +487,10 @@ bool PrerenderManager::MaybeUsePreloadedPageOld(TabContents* tab_contents,
   if (!icon_url.is_empty()) {
     std::vector<FaviconURL> urls;
     urls.push_back(FaviconURL(icon_url, FaviconURL::FAVICON));
-    tab_contents->favicon_helper().OnUpdateFaviconURL(
+    // TODO(avi): move prerendering to use TCWs; remove this.
+    TabContentsWrapper* wrapper =
+        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+    wrapper->favicon_tab_helper()->OnUpdateFaviconURL(
         prerender_contents->page_id(),
         urls);
   }

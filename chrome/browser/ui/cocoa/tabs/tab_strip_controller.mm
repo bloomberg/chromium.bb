@@ -17,19 +17,19 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/debugger/devtools_window.h"
-#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/sidebar/sidebar_container.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
@@ -44,9 +44,10 @@
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
-#include "chrome/browser/ui/title_prefix_matcher.h"
+#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
+#include "chrome/browser/ui/title_prefix_matcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_controller.h"
@@ -155,7 +156,7 @@ private:
 - (void)addSubviewToPermanentList:(NSView*)aView;
 - (void)regenerateSubviewList;
 - (NSInteger)indexForContentsView:(NSView*)view;
-- (void)updateFaviconForContents:(TabContents*)contents
+- (void)updateFaviconForContents:(TabContentsWrapper*)contents
                          atIndex:(NSInteger)modelIndex;
 - (void)layoutTabsWithAnimation:(BOOL)animate
              regenerateSubviews:(BOOL)doUpdate;
@@ -1192,7 +1193,7 @@ class NotificationBridge : public NotificationObserver {
   // dragging a tab out into a new window, we have to put the tab's favicon
   // into the right state up front as we won't be told to do it from anywhere
   // else.
-  [self updateFaviconForContents:contents->tab_contents() atIndex:modelIndex];
+  [self updateFaviconForContents:contents atIndex:modelIndex];
 
   [self updateCommonTitlePrefix];
 
@@ -1407,16 +1408,14 @@ class NotificationBridge : public NotificationObserver {
 
 // A helper routine for creating an NSImageView to hold the favicon or app icon
 // for |contents|.
-- (NSImageView*)iconImageViewForContents:(TabContents*)contents {
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(contents);
-  BOOL isApp = wrapper->extension_tab_helper()->is_app();
+- (NSImageView*)iconImageViewForContents:(TabContentsWrapper*)contents {
+  BOOL isApp = contents->extension_tab_helper()->is_app();
   NSImage* image = nil;
   // Favicons come from the renderer, and the renderer draws everything in the
   // system color space.
   CGColorSpaceRef colorSpace = base::mac::GetSystemColorSpace();
   if (isApp) {
-    SkBitmap* icon = wrapper->extension_tab_helper()->GetExtensionAppIcon();
+    SkBitmap* icon = contents->extension_tab_helper()->GetExtensionAppIcon();
     if (icon)
       image = gfx::SkBitmapToNSImageWithColorSpace(*icon, colorSpace);
   } else {
@@ -1435,7 +1434,7 @@ class NotificationBridge : public NotificationObserver {
 
 // Updates the current loading state, replacing the icon view with a favicon,
 // a throbber, the default icon, or nothing at all.
-- (void)updateFaviconForContents:(TabContents*)contents
+- (void)updateFaviconForContents:(TabContentsWrapper*)contents
                          atIndex:(NSInteger)modelIndex {
   if (!contents)
     return;
@@ -1455,19 +1454,19 @@ class NotificationBridge : public NotificationObserver {
   TabController* tabController = [tabArray_ objectAtIndex:index];
 
   bool oldHasIcon = [tabController iconView] != nil;
-  bool newHasIcon = contents->ShouldDisplayFavicon() ||
+  bool newHasIcon = contents->favicon_tab_helper()->ShouldDisplayFavicon() ||
       tabStripModel_->IsMiniTab(modelIndex);  // Always show icon if mini.
 
   TabLoadingState oldState = [tabController loadingState];
   TabLoadingState newState = kTabDone;
   NSImage* throbberImage = nil;
-  if (contents->is_crashed()) {
+  if (contents->tab_contents()->is_crashed()) {
     newState = kTabCrashed;
     newHasIcon = true;
-  } else if (contents->waiting_for_response()) {
+  } else if (contents->tab_contents()->waiting_for_response()) {
     newState = kTabWaiting;
     throbberImage = throbberWaitingImage;
-  } else if (contents->is_loading()) {
+  } else if (contents->tab_contents()->is_loading()) {
     newState = kTabLoading;
     throbberImage = throbberLoadingImage;
   }
@@ -1527,7 +1526,7 @@ class NotificationBridge : public NotificationObserver {
   if (change != TabStripModelObserver::LOADING_ONLY)
     [self setTabTitle:tabController withContents:contents->tab_contents()];
 
-  [self updateFaviconForContents:contents->tab_contents() atIndex:modelIndex];
+  [self updateFaviconForContents:contents atIndex:modelIndex];
 
   TabContentsController* updatedController =
       [tabContentsArray_ objectAtIndex:index];
@@ -1584,7 +1583,7 @@ class NotificationBridge : public NotificationObserver {
   [tabController setPinned:tabStripModel_->IsTabPinned(modelIndex)];
   [tabController setApp:tabStripModel_->IsAppTab(modelIndex)];
   [tabController setUrl:contents->tab_contents()->GetURL()];
-  [self updateFaviconForContents:contents->tab_contents() atIndex:modelIndex];
+  [self updateFaviconForContents:contents atIndex:modelIndex];
   // If the tab is being restored and it's pinned, the mini state is set after
   // the tab has already been rendered, so re-layout the tabstrip. In all other
   // cases, the state is set before the tab is rendered so this isn't needed.

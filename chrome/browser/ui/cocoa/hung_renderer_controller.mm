@@ -147,7 +147,7 @@ HungRendererController* g_instance = NULL;
       if (title.empty())
         title = TabContentsWrapper::GetDefaultTitle();
       [titles addObject:base::SysUTF16ToNSString(title)];
-      [favicons addObject:mac::FaviconForTabContents(it->tab_contents())];
+      [favicons addObject:mac::FaviconForTabContents(*it)];
     }
   }
   hungTitles_.reset([titles copy]);

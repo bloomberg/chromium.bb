@@ -2,7 +2,7 @@ include_rules = [
   "+content/gpu",  # For gpu_info_collector.h.  Needs to move to common\gpu.
 
   # Listing of the remaining #chrome includes in content\browser.  People are
-  # actively working on reducing this to 0.  Do not add anymore!
+  # actively working on reducing this to 0.  Do not add any more!
 
   "+chrome/browser/accessibility/browser_accessibility_state.h",
 
@@ -48,9 +48,6 @@ include_rules = [
   "+chrome/common/extensions/user_script.h",
 
   "+chrome/browser/external_protocol_handler.h",
-
-  "+chrome/browser/favicon/favicon_tab_helper.h",
-  "+chrome/browser/favicon/favicon_service.h",
 
   # http://crbug.com/76794
   "+chrome/browser/history/history.h",

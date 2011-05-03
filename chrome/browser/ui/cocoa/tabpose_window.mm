@@ -505,7 +505,7 @@ NSImage* Tile::favicon() const {
     if (bitmap)
       return gfx::SkBitmapToNSImage(*bitmap);
   }
-  return mac::FaviconForTabContents(contents_->tab_contents());
+  return mac::FaviconForTabContents(contents_);
 }
 
 NSRect Tile::GetTitleStartRectRelativeTo(const Tile& tile) const {

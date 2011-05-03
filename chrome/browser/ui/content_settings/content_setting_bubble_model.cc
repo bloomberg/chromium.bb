@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -395,7 +396,7 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
         title = l10n_util::GetStringUTF8(IDS_TAB_LOADING_TITLE);
       PopupItem popup_item;
       popup_item.title = title;
-      popup_item.bitmap = (*i)->tab_contents()->GetFavicon();
+      popup_item.bitmap = (*i)->favicon_tab_helper()->GetFavicon();
       popup_item.tab_contents = (*i);
       add_popup(popup_item);
     }

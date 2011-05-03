@@ -15,6 +15,7 @@
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/top_sites.h"
@@ -71,6 +72,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
   download_tab_helper_.reset(new DownloadTabHelper(contents));
   extension_tab_helper_.reset(new ExtensionTabHelper(this));
+  favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(contents));
   password_manager_.reset(

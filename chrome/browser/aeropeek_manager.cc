@@ -17,6 +17,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/app_icon_win.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -1069,7 +1070,7 @@ void AeroPeekManager::CreateAeroPeekWindowIfNecessary(TabContentsWrapper* tab,
                          GetTabID(tab->tab_contents()),
                          foreground,
                          tab->tab_contents()->GetTitle(),
-                         tab->tab_contents()->GetFavicon());
+                         tab->favicon_tab_helper()->GetFavicon());
   tab_list_.push_back(window);
 }
 
@@ -1174,7 +1175,7 @@ void AeroPeekManager::TabChangedAt(TabContentsWrapper* contents,
   // hurting the rendering performance. (These functions just save the
   // information needed for handling update requests from Windows.)
   window->SetTitle(contents->tab_contents()->GetTitle());
-  window->SetFavicon(contents->tab_contents()->GetFavicon());
+  window->SetFavicon(contents->favicon_tab_helper()->GetFavicon());
   window->Update(contents->tab_contents()->is_loading());
 }
 
