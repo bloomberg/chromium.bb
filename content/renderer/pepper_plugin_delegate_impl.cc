@@ -8,6 +8,7 @@
 #include <queue>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,6 +19,7 @@
 #include "content/common/audio_messages.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"
+#include "content/common/content_switches.h"
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/pepper_file_messages.h"
 #include "content/common/pepper_plugin_registry.h"
@@ -1289,4 +1291,9 @@ double PepperPluginDelegateImpl::GetLocalTimeZoneOffset(base::Time t) {
   render_view_->Send(new PepperMsg_GetLocalTimeZoneOffset(
       t, &result));
   return result;
+}
+
+std::string PepperPluginDelegateImpl::GetFlashCommandLineArgs() {
+  return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kPpapiFlashArgs);
 }

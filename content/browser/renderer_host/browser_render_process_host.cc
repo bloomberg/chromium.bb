@@ -591,6 +591,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kNoReferrers,
     switches::kNoSandbox,
     switches::kPlaybackMode,
+    switches::kPpapiFlashArgs,
     switches::kPpapiFlashInProcess,
     switches::kPpapiFlashPath,
     switches::kPpapiFlashVersion,

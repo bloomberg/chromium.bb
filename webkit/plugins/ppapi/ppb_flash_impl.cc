@@ -12,6 +12,7 @@
 #include "ppapi/c/private/ppb_flash.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
@@ -92,6 +93,19 @@ double GetLocalTimeZoneOffset(PP_Instance pp_instance, PP_Time t) {
       base::Time::FromDoubleT(t));
 }
 
+PP_Var GetCommandLineArgs(PP_Module pp_module) {
+  PluginModule* module = ResourceTracker::Get()->GetModule(pp_module);
+  if (!module)
+    return PP_MakeUndefined();
+
+  PluginInstance* instance = module->GetSomeInstance();
+  if (!instance)
+    return PP_MakeUndefined();
+
+  std::string args = instance->delegate()->GetFlashCommandLineArgs();
+  return StringVar::StringToPPVar(module, args);
+}
+
 const PPB_Flash ppb_flash = {
   &SetInstanceAlwaysOnTop,
   &PPB_Flash_Impl::DrawGlyphs,
@@ -99,7 +113,8 @@ const PPB_Flash ppb_flash = {
   &Navigate,
   &RunMessageLoop,
   &QuitMessageLoop,
-  &GetLocalTimeZoneOffset
+  &GetLocalTimeZoneOffset,
+  &GetCommandLineArgs
 };
 
 }  // namespace

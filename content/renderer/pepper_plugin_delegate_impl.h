@@ -271,6 +271,7 @@ class PepperPluginDelegateImpl
   virtual P2PSocketDispatcher* GetP2PSocketDispatcher();
   virtual webkit_glue::P2PTransport* CreateP2PTransport();
   virtual double GetLocalTimeZoneOffset(base::Time t);
+  virtual std::string GetFlashCommandLineArgs();
 
  private:
   // Asynchronously attempts to create a PPAPI broker for the given plugin.

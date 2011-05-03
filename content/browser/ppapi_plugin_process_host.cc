@@ -45,6 +45,12 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
                               switches::kPpapiPluginProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
 
+  static const char* kForwardSwitches[] = {
+    switches::kPpapiFlashArgs,
+  };
+  cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
+                             arraysize(kForwardSwitches));
+
   if (!plugin_launcher.empty())
     cmd_line->PrependWrapper(plugin_launcher);
 

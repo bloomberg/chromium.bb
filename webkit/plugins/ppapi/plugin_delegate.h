@@ -390,6 +390,10 @@ class PluginDelegate {
   virtual webkit_glue::P2PTransport* CreateP2PTransport() = 0;
 
   virtual double GetLocalTimeZoneOffset(base::Time t) = 0;
+
+  // TODO(viettrungluu): Generalize this for use with other plugins if it proves
+  // necessary.
+  virtual std::string GetFlashCommandLineArgs() = 0;
 };
 
 }  // namespace ppapi

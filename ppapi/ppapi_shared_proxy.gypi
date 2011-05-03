@@ -161,6 +161,8 @@
         'proxy/ppp_instance_proxy.h',
         'proxy/proxy_channel.cc',
         'proxy/proxy_channel.h',
+        'proxy/proxy_module.cc',
+        'proxy/proxy_module.h',
         'proxy/serialized_flash_menu.cc',
         'proxy/serialized_flash_menu.h',
         'proxy/serialized_structs.cc',

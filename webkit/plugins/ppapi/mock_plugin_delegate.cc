@@ -239,5 +239,9 @@ double MockPluginDelegate::GetLocalTimeZoneOffset(base::Time t) {
   return 0.0;
 }
 
+std::string MockPluginDelegate::GetFlashCommandLineArgs() {
+  return std::string();
+}
+
 }  // namespace ppapi
 }  // namespace webkit

@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_flash.h"
@@ -15,6 +16,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/proxy_module.h"
 #include "ppapi/proxy/serialized_var.h"
 
 namespace pp {
@@ -145,6 +147,16 @@ double GetLocalTimeZoneOffset(PP_Instance instance, PP_Time t) {
   return result;
 }
 
+PP_Var GetCommandLineArgs(PP_Module pp_module) {
+  const PPB_Var_Deprecated* var_deprecated =
+      static_cast<const PPB_Var_Deprecated*>(
+          PluginDispatcher::GetInterfaceFromDispatcher(
+              PPB_VAR_DEPRECATED_INTERFACE));
+  std::string args =
+      pp::proxy::ProxyModule::GetInstance()->GetFlashCommandLineArgs();
+  return var_deprecated->VarFromUtf8(pp_module, args.data(), args.length());
+}
+
 const PPB_Flash flash_interface = {
   &SetInstanceAlwaysOnTop,
   &DrawGlyphs,
@@ -152,7 +164,8 @@ const PPB_Flash flash_interface = {
   &Navigate,
   &RunMessageLoop,
   &QuitMessageLoop,
-  &GetLocalTimeZoneOffset
+  &GetLocalTimeZoneOffset,
+  &GetCommandLineArgs
 };
 
 InterfaceProxy* CreateFlashProxy(Dispatcher* dispatcher,
