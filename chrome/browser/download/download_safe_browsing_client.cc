@@ -51,7 +51,6 @@ void DownloadSBClient::CheckDownloadUrl(DownloadCreateInfo* info,
       NewRunnableMethod(this,
                         &DownloadSBClient::CheckDownloadUrlOnIOThread,
                         info->url_chain));
-  UpdateDownloadCheckStats(DOWNLOAD_URL_CHECKS_TOTAL);
 }
 
 void DownloadSBClient::CheckDownloadHash(const std::string& hash,
@@ -68,7 +67,6 @@ void DownloadSBClient::CheckDownloadHash(const std::string& hash,
       NewRunnableMethod(this,
                         &DownloadSBClient::CheckDownloadHashOnIOThread,
                         hash));
-  UpdateDownloadCheckStats(DOWNLOAD_HASH_CHECKS_TOTAL);
 }
 
 void DownloadSBClient::CheckDownloadUrlOnIOThread(
@@ -128,11 +126,14 @@ void DownloadSBClient::SafeBrowsingCheckUrlDone(
   bool is_dangerous = result != SafeBrowsingService::SAFE;
   url_done_callback_->Run(info_, is_dangerous);
 
-  UMA_HISTOGRAM_TIMES("SB2.DownloadUrlCheckDuration",
-                      base::TimeTicks::Now() - start_time_);
-  if (is_dangerous) {
-    UpdateDownloadCheckStats(DOWNLOAD_URL_CHECKS_MALWARE);
-    ReportMalware(result);
+  if (sb_service_.get() && sb_service_->download_protection_enabled()) {
+    UMA_HISTOGRAM_TIMES("SB2.DownloadUrlCheckDuration",
+                        base::TimeTicks::Now() - start_time_);
+    UpdateDownloadCheckStats(DOWNLOAD_URL_CHECKS_TOTAL);
+    if (is_dangerous) {
+      UpdateDownloadCheckStats(DOWNLOAD_URL_CHECKS_MALWARE);
+      ReportMalware(result);
+    }
   }
 }
 
@@ -143,11 +144,15 @@ void DownloadSBClient::SafeBrowsingCheckHashDone(
 
   bool is_dangerous = result != SafeBrowsingService::SAFE;
   hash_done_callback_->Run(download_id_, is_dangerous);
-  UMA_HISTOGRAM_TIMES("SB2.DownloadHashCheckDuration",
-                      base::TimeTicks::Now() - start_time_);
-  if (is_dangerous) {
-    UpdateDownloadCheckStats(DOWNLOAD_HASH_CHECKS_MALWARE);
-    ReportMalware(result);
+
+  if (sb_service_.get() && sb_service_->download_protection_enabled()) {
+    UMA_HISTOGRAM_TIMES("SB2.DownloadHashCheckDuration",
+                        base::TimeTicks::Now() - start_time_);
+    UpdateDownloadCheckStats(DOWNLOAD_HASH_CHECKS_TOTAL);
+    if (is_dangerous) {
+      UpdateDownloadCheckStats(DOWNLOAD_HASH_CHECKS_MALWARE);
+      ReportMalware(result);
+    }
   }
 }
 

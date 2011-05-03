@@ -219,6 +219,10 @@ class SafeBrowsingService
 
   bool enabled() const { return enabled_; }
 
+  bool download_protection_enabled() const {
+    return enabled_ && enable_download_protection_;
+  }
+
   // Preference handling.
   static void RegisterPrefs(PrefService* prefs);
 
