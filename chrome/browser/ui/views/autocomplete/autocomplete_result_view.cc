@@ -24,7 +24,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/gfx/skia_utils_gtk.h"
 #endif
@@ -140,7 +140,7 @@ SkColor AutocompleteResultView::GetColor(ResultViewState state,
     colors[SELECTED][BACKGROUND] = color_utils::GetSysSkColor(COLOR_HIGHLIGHT);
     colors[NORMAL][TEXT] = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
     colors[SELECTED][TEXT] = color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
     GdkColor bg_color, selected_bg_color, text_color, selected_text_color;
     gtk_util::GetTextColors(
         &bg_color, &selected_bg_color, &text_color, &selected_text_color);

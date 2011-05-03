@@ -20,7 +20,7 @@
 #if defined(OS_WIN)
 #include "ui/base/l10n/l10n_util_win.h"
 #include "views/widget/widget_win.h"
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 #include "views/widget/widget_gtk.h"
 #endif
 

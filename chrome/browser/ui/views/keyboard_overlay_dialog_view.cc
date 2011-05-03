@@ -20,7 +20,7 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include "views/window/window_gtk.h"
 #endif
 

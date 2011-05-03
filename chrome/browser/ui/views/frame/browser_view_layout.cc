@@ -23,7 +23,7 @@
 #include "views/controls/single_split_view.h"
 #include "views/window/window.h"
 
-#if defined(OS_LINUX)
+#if !defined(OS_WIN)
 #include "views/window/hit_test.h"
 #endif
 

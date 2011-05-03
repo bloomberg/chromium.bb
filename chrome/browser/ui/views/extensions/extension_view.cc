@@ -14,7 +14,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 #elif defined(TOUCH_UI)
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #endif
 
@@ -97,7 +97,7 @@ void ExtensionView::CreateWidgetHostView() {
       static_cast<RenderWidgetHostViewViews*>(view);
   view_views->InitAsChild();
   AttachToView(view_views);
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   RenderWidgetHostViewGtk* view_gtk =
       static_cast<RenderWidgetHostViewGtk*>(view);
   view_gtk->InitAsChild();

@@ -8,7 +8,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-#if defined(OS_LINUX)
+#if !defined(OS_WIN)
 #include "views/window/hit_test.h"
 #endif
 

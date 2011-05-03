@@ -18,7 +18,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_win.h"
-#else
+#elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_gtk.h"
 #endif
 
@@ -107,7 +107,7 @@ class AutocompletePopupContentsView : public views::View,
  private:
 #if defined(OS_WIN)
   typedef AutocompletePopupWin AutocompletePopupClass;
-#else
+#elif defined(TOOLKIT_USES_GTK)
   typedef AutocompletePopupGtk AutocompletePopupClass;
 #endif
   class InstantOptInView;

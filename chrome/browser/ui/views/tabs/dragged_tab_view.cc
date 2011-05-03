@@ -12,7 +12,7 @@
 
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 #include "views/widget/widget_gtk.h"
 #endif
 

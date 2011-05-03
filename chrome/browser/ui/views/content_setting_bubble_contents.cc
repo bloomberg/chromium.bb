@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>
 #endif
 
@@ -30,7 +30,7 @@
 #include "views/layout/layout_constants.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"
 #endif
 
@@ -91,7 +91,7 @@ gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursorForPoint(
 #if defined(OS_WIN)
   static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   return gfx::GetCursor(GDK_HAND2);
 #endif
 }

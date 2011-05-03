@@ -385,7 +385,7 @@ void BookmarkBubbleView::ShowEditor() {
   // status changes. That way, when the editor closes, activation is properly
   // restored to the browser.
   ShowWindow(GetWidget()->GetNativeView(), SW_HIDE);
-#else
+#elif defined(TOOLKIT_USES_GTK)
   gfx::NativeWindow parent = GTK_WINDOW(
       static_cast<views::WidgetGtk*>(GetWidget())->GetTransientParent());
 #endif

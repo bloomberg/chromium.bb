@@ -43,7 +43,7 @@
 #include "views/widget/widget_win.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>  // NOLINT
 #include <gdk/gdkkeysyms.h>  // NOLINT
 #endif
@@ -539,7 +539,7 @@ void DraggedTabController::DidProcessMessage(const MSG& msg) {
   if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE)
     EndDrag(true);
 }
-#else
+#elif defined(TOOLKIT_USES_GTK)
 void DraggedTabController::WillProcessEvent(GdkEvent* event) {
 }
 
@@ -1357,7 +1357,7 @@ gfx::Point DraggedTabController::GetCursorScreenPoint() const {
 #if defined(OS_WIN)
   DWORD pos = GetMessagePos();
   return gfx::Point(pos);
-#else
+#elif defined(TOOLKIT_USES_GTK)
   gint x, y;
   gdk_display_get_pointer(gdk_display_get_default(), NULL, &x, &y, NULL);
   return gfx::Point(x, y);

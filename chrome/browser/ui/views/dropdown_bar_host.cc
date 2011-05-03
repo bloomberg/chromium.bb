@@ -19,7 +19,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 #include "ui/base/gtk/scoped_handle_gtk.h"
 #endif
 
@@ -27,7 +27,7 @@ namespace {
 
 #if defined(OS_WIN)
 typedef base::win::ScopedRegion ScopedPlatformRegion;
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 typedef ui::ScopedRegion ScopedPlatformRegion;
 #endif
 

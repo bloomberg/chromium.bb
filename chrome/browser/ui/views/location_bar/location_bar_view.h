@@ -25,7 +25,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/gtk/omnibox/omnibox_view_gtk.h"
 #endif
 

@@ -266,7 +266,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
 
     // Extract the file extension (if any).
     FilePath filename(download->target_name());
-#if defined(OS_LINUX)
+#if defined(OS_POSIX)
     string16 extension = WideToUTF16(base::SysNativeMBToWide(
         filename.Extension()));
 #else
@@ -276,7 +276,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     // Remove leading '.'
     if (extension.length() > 0)
       extension = extension.substr(1);
-#if defined(OS_LINUX)
+#if defined(OS_POSIX)
     string16 rootname = WideToUTF16(base::SysNativeMBToWide(
         filename.RemoveExtension().value()));
 #else

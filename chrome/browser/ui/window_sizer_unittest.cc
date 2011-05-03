@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -725,7 +725,7 @@ TEST(WindowSizerTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
   }
 
   // Linux does not tile windows, so tile adjustment tests don't make sense.
-#if !defined(OS_LINUX)
+#if !defined(OS_POSIX) || defined(OS_MACOSX)
   { // offset would put the new window offscreen at the bottom but the minimum
     // visibility condition is barely satisfied without relocation.
     gfx::Rect window_bounds;
@@ -784,7 +784,7 @@ TEST(WindowSizerTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
     EXPECT_EQ(gfx::Rect(994 /* not 995 */, 738 /* not 739 */, 500, 400),
               window_bounds);
   }
-#endif  // !defined(OS_LINUX)
+#endif  // !defined(OS_POSIX) || defined(OS_MACOSX)
 }
 
 TEST(WindowSizerTest, PersistedWindowOffscreenWithNonAggressiveRepositioning) {

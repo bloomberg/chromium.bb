@@ -259,7 +259,7 @@ void CreateApplicationShortcutView::InitControls() {
         UTF16ToWide(l10n_util::GetStringUTF16(
             IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX)),
       profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInQuickLaunchBar));
-#elif defined(OS_LINUX)
+#elif defined(OS_POSIX)
   menu_check_box_ = AddCheckbox(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_MENU_CHKBOX)),
       profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));

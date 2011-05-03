@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
 #endif
 
@@ -98,7 +98,7 @@
 #include "ui/base/message_box_win.h"
 #include "ui/base/view_prop.h"
 #include "views/window/window_win.h"
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/views/accelerator_table_gtk.h"
 #include "views/window/hit_test.h"
 #include "views/window/window_gtk.h"
@@ -1080,7 +1080,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   views::FocusManager* focus_manager = GetFocusManager();
   DCHECK(focus_manager);
 
-#if defined(OS_LINUX) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
   // Views and WebKit use different tables for GdkEventKey -> views::KeyEvent
   // conversion. We need to use View's conversion table here to keep consistent
   // behavior with views::FocusManager::OnKeyEvent() method.
@@ -1127,7 +1127,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
     return false;
 
   // Executing the command may cause |this| object to be destroyed.
-#if defined(OS_LINUX) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
   if (browser_->IsReservedCommandOrKey(id, event) &&
       !event.match_edit_command) {
 #else
@@ -1145,7 +1145,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 
 void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   // TODO(ben): figure out why are these two code paths so different
-#if defined(OS_LINUX) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
   HandleWebKeyboardEvent(GetWidget(), event);
 #else
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
@@ -2139,7 +2139,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
 #endif  // No need to invoke SetFullscreen for linux as this code is executed
         // once we're already fullscreen on linux.
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   // Updating of commands for fullscreen mode is called from SetFullScreen on
   // Wndows (see just above), but for ChromeOS, this method (ProcessFullScreen)
   // is called after full screen has happened successfully (via GTK's

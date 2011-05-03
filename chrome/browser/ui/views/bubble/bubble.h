@@ -13,7 +13,7 @@
 
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 #include "views/widget/widget_gtk.h"
 #endif
 
@@ -72,7 +72,7 @@ class BubbleDelegate {
 class Bubble
 #if defined(OS_WIN)
     : public views::WidgetWin,
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
     : public views::WidgetGtk,
 #endif
       public views::AcceleratorTarget,
@@ -154,7 +154,7 @@ class Bubble
 #if defined(OS_WIN)
   // Overridden from WidgetWin:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window);
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   // Overridden from WidgetGtk:
   virtual void IsActiveChanged();
 #endif
@@ -162,7 +162,7 @@ class Bubble
 #if defined(OS_WIN)
   // The window used to render the padding, border and arrow.
   BorderWidgetWin* border_;
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   // The view displaying the border.
   BorderContents* border_contents_;
 #endif

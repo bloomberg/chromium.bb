@@ -121,7 +121,7 @@ void Bubble::AnimationProgressed(const ui::Animation* animation) {
 
 Bubble::Bubble()
     :
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
       border_contents_(NULL),
 #elif defined(OS_WIN)
       border_(NULL),
@@ -198,7 +198,7 @@ void Bubble::InitBubble(views::Widget* parent,
   GetWidget()->Init(params);
 
   SetWindowText(GetNativeView(), delegate_->accessible_name().c_str());
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   views::Widget::InitParams params(type_);
   params.transparent = true;
   params.parent_widget = parent;
@@ -279,7 +279,7 @@ void Bubble::InitBubble(views::Widget* parent,
   ShowWindow(SW_SHOW);
   if (fade_in)
     FadeIn();
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   views::WidgetGtk::Show();
 #endif
 }
@@ -320,7 +320,7 @@ void Bubble::OnActivate(UINT action, BOOL minimized, HWND window) {
     GetRootView()->GetChildViewAt(0)->RequestFocus();
   }
 }
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
 void Bubble::IsActiveChanged() {
   if (!IsActive())
     Close();
@@ -339,7 +339,7 @@ void Bubble::DoClose(bool closed_by_escape) {
 #if defined(OS_WIN)
   border_->Close();
   WidgetWin::Close();
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   WidgetGtk::Close();
 #endif
 }

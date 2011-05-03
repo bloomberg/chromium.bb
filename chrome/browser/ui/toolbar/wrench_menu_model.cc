@@ -38,7 +38,7 @@
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #endif
@@ -396,7 +396,7 @@ void WrenchMenuModel::Build() {
 #endif
 
   AddSeparator();
-#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(TOOLKIT_VIEWS))
+#if defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
   // layout for this menu item in Toolbar.xib. It does, however, use the
   // command_id value from AddButtonItem() to identify this special item.
@@ -411,7 +411,7 @@ void WrenchMenuModel::Build() {
 #endif
 
   AddSeparator();
-#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(TOOLKIT_VIEWS))
+#if defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
   // WARNING: See above comment.
   zoom_menu_item_model_.reset(
       new ui::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
@@ -449,7 +449,7 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
 #elif defined(OS_MACOSX)
   AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES);
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   string16 preferences = gtk_util::GetStockPreferencesMenuLabel();
   if (!preferences.empty())
     AddItem(IDC_OPTIONS, preferences);

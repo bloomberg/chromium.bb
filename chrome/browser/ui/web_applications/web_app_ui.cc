@@ -17,14 +17,14 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_registrar.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/environment.h"
-#endif  // defined(OS_LINUX)
+#endif
 
 #if defined(OS_WIN)
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#endif  // defined(OS_WIN)
+#endif
 
 namespace {
 

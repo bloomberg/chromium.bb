@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
 #endif
 

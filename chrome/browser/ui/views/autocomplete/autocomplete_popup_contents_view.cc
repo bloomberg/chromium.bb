@@ -42,7 +42,7 @@
 #include "views/widget/widget_win.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/skia_utils_gtk.h"
 #endif
 

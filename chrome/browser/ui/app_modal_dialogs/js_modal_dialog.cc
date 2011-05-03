@@ -17,7 +17,7 @@
 namespace {
 
 // Control maximum sizes of various texts passed to us from javascript.
-#ifdef OS_LINUX
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 // Two-dimensional eliding.  Reformat the text of the message dialog
 // inserting line breaks because otherwise a single long line can overflow
 // the message dialog (and crash/hang the GTK, depending on the version).

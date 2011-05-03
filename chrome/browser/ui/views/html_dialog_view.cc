@@ -16,7 +16,7 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include "views/window/window_gtk.h"
 #endif
 
@@ -184,7 +184,7 @@ void HtmlDialogView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   // This allows stuff like F10, etc to work correctly.
   DefWindowProc(event.os_event.hwnd, event.os_event.message,
                   event.os_event.wParam, event.os_event.lParam);
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   views::WindowGtk* window_gtk = static_cast<views::WindowGtk*>(window());
   if (event.os_event && !event.skip_in_browser) {
     views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
