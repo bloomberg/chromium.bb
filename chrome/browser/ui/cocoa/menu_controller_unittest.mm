@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
@@ -21,7 +22,13 @@ class MenuControllerTest : public CocoaTest {
 // to make sure things are hooked up properly.
 class Delegate : public ui::SimpleMenuModel::Delegate {
  public:
-  Delegate() : execute_count_(0), enable_count_(0) { }
+  Delegate()
+      : execute_count_(0),
+        enable_count_(0),
+        menu_to_close_(nil),
+        did_show_(false),
+        did_close_(false) {
+  }
 
   virtual bool IsCommandIdChecked(int command_id) const { return false; }
   virtual bool IsCommandIdEnabled(int command_id) const {
@@ -33,8 +40,32 @@ class Delegate : public ui::SimpleMenuModel::Delegate {
       ui::Accelerator* accelerator) { return false; }
   virtual void ExecuteCommand(int command_id) { ++execute_count_; }
 
+  virtual void MenuWillShow() {
+    EXPECT_FALSE(did_show_);
+    EXPECT_FALSE(did_close_);
+    did_show_ = true;
+    NSArray* modes = [NSArray arrayWithObjects:NSEventTrackingRunLoopMode,
+                                               NSDefaultRunLoopMode,
+                                               nil];
+    [menu_to_close_ performSelector:@selector(cancelTracking)
+                         withObject:nil
+                         afterDelay:0.1
+                            inModes:modes];
+  }
+
+  virtual void MenuClosed() {
+    EXPECT_TRUE(did_show_);
+    EXPECT_FALSE(did_close_);
+    did_close_ = true;
+  }
+
   int execute_count_;
   mutable int enable_count_;
+  // The menu on which to call |-cancelTracking| after a short delay in
+  // MenuWillShow.
+  NSMenu* menu_to_close_;
+  bool did_show_;
+  bool did_close_;
 };
 
 // Just like Delegate, except the items are treated as "dynamic" so updates to
@@ -259,4 +290,42 @@ TEST_F(MenuControllerTest, Dynamic) {
   Validate(menu.get(), [menu menu]);
   EXPECT_EQ(second, base::SysNSStringToUTF16([item title]));
   EXPECT_EQ(nil, [item image]);
+}
+
+TEST_F(MenuControllerTest, OpenClose) {
+  // ui::SimpleMenuModel posts a task that calls Delegate::MenuClosed. Create
+  // a MessageLoop for that purpose.
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
+
+  // Create the model.
+  Delegate delegate;
+  ui::SimpleMenuModel model(&delegate);
+  model.AddItem(1, ASCIIToUTF16("allays"));
+  model.AddItem(2, ASCIIToUTF16("i"));
+  model.AddItem(3, ASCIIToUTF16("bf"));
+
+  // Create the controller.
+  scoped_nsobject<MenuController> menu(
+      [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
+  delegate.menu_to_close_ = [menu menu];
+
+  // Pop open the menu, which will spin an event-tracking run loop.
+  [NSMenu popUpContextMenu:[menu menu]
+                 withEvent:nil
+                   forView:[test_window() contentView]];
+
+  // When control returns back to here, the menu will have finished running its
+  // loop and will have closed itself (see Delegate::MenuWillShow).
+  EXPECT_TRUE(delegate.did_show_);
+
+  // When the menu tells the Model it closed, the Model posts a task to notify
+  // the delegate. But since this is a test and there's no running MessageLoop,
+  // |did_close_| will remain false until we pump the task manually.
+  EXPECT_FALSE(delegate.did_close_);
+
+  // Pump the task that notifies the delegate.
+  message_loop.RunAllPending();
+
+  // Expect that the delegate got notified properly.
+  EXPECT_TRUE(delegate.did_close_);
 }

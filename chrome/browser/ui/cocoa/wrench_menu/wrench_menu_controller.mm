@@ -103,15 +103,9 @@ class ZoomLevelObserver : public NotificationObserver {
   [menu insertItem:customItem.get() atIndex:index];
 }
 
-- (NSMenu*)menu {
-  NSMenu* menu = [super menu];
-  if (![menu delegate]) {
-    [menu setDelegate:self];
-  }
-  return menu;
-}
-
 - (void)menuWillOpen:(NSMenu*)menu {
+  [super menuWillOpen:menu];
+
   NSString* title = base::SysUTF16ToNSString(
       [self wrenchMenuModel]->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY));
   [[zoomItem_ viewWithTag:IDC_ZOOM_PERCENT_DISPLAY] setTitle:title];
