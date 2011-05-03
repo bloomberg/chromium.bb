@@ -616,16 +616,12 @@ void ProfileSyncService::OnPassphraseRequired(
   // We will skip the passphrase prompt and suppress the warning if the
   // passphrase is needed for decryption but the user is not syncing an
   // encrypted data type on this machine. Otherwise we prompt.
-  if (!IsEncryptedDatatypeEnabled() &&
-      (reason == sync_api::REASON_DECRYPTION ||
-       reason == sync_api::REASON_SET_PASSPHRASE_FAILED)) {
+  if (!IsEncryptedDatatypeEnabled() && IsPassphraseRequiredForDecryption()) {
     OnPassphraseAccepted();
     return;
   }
 
-  if (WizardIsVisible() &&
-      (reason == sync_api::REASON_DECRYPTION ||
-       reason == sync_api::REASON_SET_PASSPHRASE_FAILED)) {
+  if (WizardIsVisible() && IsPassphraseRequiredForDecryption()) {
     wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
   }
 
@@ -689,7 +685,7 @@ void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
 }
 
 void ProfileSyncService::ShowErrorUI(gfx::NativeWindow parent_window) {
-  if (ObservedPassphraseRequired()) {
+  if (IsPassphraseRequired()) {
     if (IsUsingSecondaryPassphrase())
       PromptForExistingPassphrase(parent_window);
     else
@@ -945,7 +941,7 @@ void ProfileSyncService::GetRegisteredDataTypes(
 bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
   return backend_.get() && (backend_->IsUsingExplicitPassphrase() ||
       (tried_implicit_gaia_remove_when_bug_62103_fixed_ &&
-       ObservedPassphraseRequired()));
+       IsPassphraseRequired()));
 }
 
 bool ProfileSyncService::IsCryptographerReady(
@@ -986,8 +982,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   encrypted_types_.clear();
   if (types.count(syncable::PASSWORDS) > 0)
     encrypted_types_.insert(syncable::PASSWORDS);
-  if (passphrase_required_reason_ == sync_api::REASON_DECRYPTION ||
-      passphrase_required_reason_ == sync_api::REASON_SET_PASSPHRASE_FAILED) {
+  if (IsPassphraseRequiredForDecryption()) {
     if (IsEncryptedDatatypeEnabled()) {
       // We need a passphrase still. Prompt the user for a passphrase, and
       // DataTypeManager::Configure() will get called once the passphrase is
@@ -1105,7 +1100,7 @@ void ProfileSyncService::DeactivateDataType(
 void ProfileSyncService::SetPassphrase(const std::string& passphrase,
                                        bool is_explicit,
                                        bool is_creation) {
-  if (ShouldPushChanges() || ObservedPassphraseRequired()) {
+  if (ShouldPushChanges() || IsPassphraseRequired()) {
     backend_->SetPassphrase(passphrase, is_explicit);
   } else {
     cached_passphrase_.value = passphrase;
@@ -1160,11 +1155,9 @@ void ProfileSyncService::Observe(NotificationType type,
       }
 
       // We should never get in a state where we have no encrypted datatypes
-      // enabled, and yet we still think we require a passphrase.
-      DCHECK(passphrase_required_reason_ ==
-                 sync_api::REASON_PASSPHRASE_NOT_REQUIRED ||
-             passphrase_required_reason_ == sync_api::REASON_ENCRYPTION ||
-             IsEncryptedDatatypeEnabled());
+      // enabled, and yet we still think we require a passphrase for decryption.
+      DCHECK(!(IsPassphraseRequiredForDecryption() &&
+               !IsEncryptedDatatypeEnabled()));
 
       // TODO(sync): Less wizard, more toast.
       wizard_.Step(SyncSetupWizard::DONE);
@@ -1210,9 +1203,7 @@ void ProfileSyncService::Observe(NotificationType type,
       // If this signin was to initiate a passphrase migration (on the
       // first computer, thus not for decryption), continue the migration.
       if (passphrase_migration_in_progress_ &&
-          passphrase_required_reason_ != sync_api::REASON_DECRYPTION &&
-          passphrase_required_reason_ !=
-              sync_api::REASON_SET_PASSPHRASE_FAILED) {
+          !IsPassphraseRequiredForDecryption()) {
         wizard_.Step(SyncSetupWizard::PASSPHRASE_MIGRATION);
         passphrase_migration_in_progress_ = false;
       }

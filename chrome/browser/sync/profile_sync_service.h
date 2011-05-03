@@ -283,9 +283,15 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   }
 
   // Returns true if OnPassphraseRequired has been called for any reason.
-  bool ObservedPassphraseRequired() const {
+  bool IsPassphraseRequired() const {
     return passphrase_required_reason_ !=
         sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
+  }
+
+  // Returns true if OnPassphraseRequired has been called for decryption.
+  bool IsPassphraseRequiredForDecryption() const {
+    return (passphrase_required_reason_ == sync_api::REASON_DECRYPTION ||
+        passphrase_required_reason_ == sync_api::REASON_SET_PASSPHRASE_FAILED);
   }
 
   sync_api::PassphraseRequiredReason passphrase_required_reason() const {

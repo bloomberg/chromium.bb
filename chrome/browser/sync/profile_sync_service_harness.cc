@@ -271,7 +271,7 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     case WAITING_FOR_PASSPHRASE_ACCEPTED: {
       LogClientInfo("WAITING_FOR_PASSPHRASE_ACCEPTED");
       if (service()->ShouldPushChanges() &&
-          !service()->ObservedPassphraseRequired()) {
+          !service()->IsPassphraseRequired()) {
         // The passphrase has been accepted, and sync has been restarted.
         SignalStateCompleteWithNextState(FULLY_SYNCED);
       }
@@ -338,7 +338,7 @@ bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
   }
 
   if (service()->ShouldPushChanges() &&
-      !service()->ObservedPassphraseRequired()) {
+      !service()->IsPassphraseRequired()) {
     // Passphrase is already accepted; don't wait.
     return true;
   }
@@ -524,7 +524,9 @@ bool ProfileSyncServiceHarness::IsSynced() {
           !service()->HasUnsyncedItems() &&
           !snap->has_more_to_sync &&
           snap->unsynced_count == 0 &&
-          !service()->HasPendingBackendMigration());
+          !service()->HasPendingBackendMigration() &&
+          service()->passphrase_required_reason() !=
+              sync_api::REASON_SET_PASSPHRASE_FAILED);
 }
 
 bool ProfileSyncServiceHarness::MatchesOtherClient(
@@ -659,8 +661,9 @@ void ProfileSyncServiceHarness::LogClientInfo(const std::string& message) {
               << ", num_conflicting_updates: " << snap->num_conflicting_updates
               << ", has_unsynced_items: "
               << service()->HasUnsyncedItems()
-              << ", observed_passphrase_required: "
-              << service()->ObservedPassphraseRequired()
+              << ", passphrase_required_reason: "
+              << sync_api::PassphraseRequiredReasonToString(
+                    service()->passphrase_required_reason())
               << ", notifications_enabled: "
               << GetStatus().notifications_enabled
               << ", service_is_pushing_changes: " << ServiceIsPushingChanges()

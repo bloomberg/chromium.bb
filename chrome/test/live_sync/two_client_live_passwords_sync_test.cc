@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
   ASSERT_EQ(1U, forms1.size());
 }
 
-// TODO(rsimha): Marked as flaky due to crbug.com/81341.
+// TODO(rsimha): Flaky due to http://crbug.com/80180.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
                        FLAKY_SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
   ASSERT_TRUE(GetClient(1)->AwaitSyncCycleCompletion("Initial sync."));
 }
 
-// http://crbug.com/81341
+// TODO(rsimha): Flaky due to http://crbug.com/80180.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
                        FLAKY_SetPassphraseTwice) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
