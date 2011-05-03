@@ -25,10 +25,10 @@
 #include "chrome_frame/find_dialog.h"
 #include "chrome_frame/html_private_window_impl.h"
 #include "chrome_frame/html_window_impl.h"
-#include "chrome_frame/in_place_menu.h"
-#include "chrome_frame/ole_document_impl.h"
 #include "chrome_frame/resource.h"
 #include "chrome_frame/utils.h"
+#include "third_party/active_doc/in_place_menu.h"
+#include "third_party/active_doc/ole_document_impl.h"
 
 class Thread;
 class TabProxy;

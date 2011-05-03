@@ -1,10 +1,3 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-#ifndef CHROME_FRAME_IN_PLACE_MENU_H_
-#define CHROME_FRAME_IN_PLACE_MENU_H_
-
 // in_place_menu.h : menu merging implementation
 //
 // This file is a modified version of the menu.h file, which is
@@ -20,6 +13,9 @@
 // electronic documentation provided with the library.
 // See these sources for detailed information regarding the
 // Active Template Library product.
+
+#ifndef CHROME_FRAME_IN_PLACE_MENU_H_
+#define CHROME_FRAME_IN_PLACE_MENU_H_
 
 #include "base/logging.h"
 #include "base/win/scoped_comptr.h"

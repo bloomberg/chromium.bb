@@ -1,0 +1,9 @@
+Name: MSDN sample code
+Short Name: unknown
+URL: http://msdn.microsoft.com/en-us/library/dssbex6h.aspx
+Version: unknown
+Security Critical: no
+
+Local changes:
+* in_place_menu.h: Modified from Menu.h.
+* ole_document_impl.h: Modified from OleDocument.h

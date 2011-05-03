@@ -1,10 +1,3 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// TODO(slightlyoff): Add any required LICENSE block changes for MSFT code
-// inclusion.
-
 // ole_document_impl.h : IOleDocument implementation
 //
 // This file is a modified version of the OleDocument.h file, which is
