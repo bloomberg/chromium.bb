@@ -286,7 +286,13 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
   }
 };
 
+// http://crbug.com/81451
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_NormalKeyEvents) {
+#else
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
+#endif
+
   static const KeyEventTestData kTestNoInput[] = {
     // a
     { ui::VKEY_A, false, false, false, false,
@@ -459,7 +465,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCtrlEnter));
 }
 #elif defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
+// http://crbug.com/81451
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_CommandKeyEvents) {
   static const KeyEventTestData kTestCmdF = {
     ui::VKEY_F, false, false, false, true,
     false, false, false, false, 2,
@@ -501,7 +508,12 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
 }
 #endif
 
+// http://crbug.com/81451
+#if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
+#else
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_AccessKeys) {
+#endif
 #if defined(OS_MACOSX)
   // On Mac, access keys use ctrl+alt modifiers.
   static const KeyEventTestData kTestAccessA = {
