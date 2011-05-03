@@ -11,6 +11,7 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <cstddef>
 
 namespace mkvparser
 {
