@@ -1495,9 +1495,8 @@ enum {
 }
 
 - (void)onReplaceTabWithContents:(TabContents*)contents {
-  // This is only called when instant results are committed.  Simply remove the
-  // preview view; the tab strip controller will reinstall the view as the
-  // active view.
+  // Simply remove the preview view if it exists; the tab strip
+  // controller will reinstall the view as the active view.
   [previewableContentsController_ hidePreview];
   [self updateBookmarkBarVisibilityWithAnimation:NO];
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,9 @@
 }
 
 - (void)hidePreview {
-  DCHECK(previewContents_);
+  // There may be no previewContents_ in the prerender case.
+  if (!previewContents_)
+    return;
 
   // Remove the preview contents and reshow the active container.
   [previewContents_->GetNativeView() removeFromSuperview];
