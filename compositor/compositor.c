@@ -43,9 +43,7 @@
  */
 static const char *option_socket_name = NULL;
 static const char *option_background = "background.jpg";
-static const char *option_shell = NULL;
 static int option_idle_time = 300;
-static int option_connector = 0;
 
 WL_EXPORT void
 wlsc_matrix_init(struct wlsc_matrix *matrix)
@@ -1032,7 +1030,7 @@ wlsc_input_device_attach_sprite(struct wlsc_input_device *device,
 	wlsc_input_device_attach(device, x, y, sprite->width, sprite->height);
 }
 
-void
+WL_EXPORT void
 wlsc_input_device_set_pointer_image(struct wlsc_input_device *device,
 				    enum wlsc_pointer_type type)
 {
@@ -1081,7 +1079,7 @@ wlsc_surface_transform(struct wlsc_surface *surface,
 	*sy = y - surface->y;
 }
 
-struct wlsc_surface *
+WL_EXPORT struct wlsc_surface *
 pick_surface(struct wl_input_device *device, int32_t *sx, int32_t *sy)
 {
 	struct wlsc_compositor *ec =
@@ -1177,7 +1175,7 @@ idle_handler(void *data)
 	return 1;
 }
 
-void
+WL_EXPORT void
 notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 {
 	struct wlsc_surface *es;
@@ -1254,10 +1252,13 @@ WL_EXPORT void
 wlsc_surface_activate(struct wlsc_surface *surface,
 		      struct wlsc_input_device *device, uint32_t time)
 {
+	struct wlsc_shell *shell = surface->compositor->shell;
+
 	wlsc_surface_raise(surface);
 	if (device->selection)
-		wlsc_selection_set_focus(device->selection,
-					 &surface->surface, time);
+		shell->set_selection_focus(shell,
+					   device->selection,
+					   &surface->surface, time);
 
 	wl_input_device_set_keyboard_focus(&device->input_device,
 					   &surface->surface,
@@ -1273,7 +1274,7 @@ struct wlsc_binding {
 	struct wl_list link;
 };
 
-void
+WL_EXPORT void
 notify_button(struct wl_input_device *device,
 	      uint32_t time, int32_t button, int32_t state)
 {
@@ -1384,7 +1385,7 @@ update_modifier_state(struct wlsc_input_device *device,
 		device->modifier_state &= ~modifier;
 }
 
-void
+WL_EXPORT void
 notify_key(struct wl_input_device *device,
 	   uint32_t time, uint32_t key, uint32_t state)
 {
@@ -1426,7 +1427,7 @@ notify_key(struct wl_input_device *device,
 				     WL_INPUT_DEVICE_KEY, time, key, state);
 }
 
-void
+WL_EXPORT void
 notify_pointer_focus(struct wl_input_device *device,
 		     uint32_t time, struct wlsc_output *output,
 		     int32_t x, int32_t y)
@@ -1458,7 +1459,7 @@ notify_pointer_focus(struct wl_input_device *device,
 	wlsc_surface_damage(wd->sprite);
 }
 
-void
+WL_EXPORT void
 notify_keyboard_focus(struct wl_input_device *device,
 		      uint32_t time, struct wlsc_output *output,
 		      struct wl_array *keys)
@@ -1528,7 +1529,7 @@ const static struct wl_input_device_interface input_device_interface = {
 	input_device_attach,
 };
 
-void
+WL_EXPORT void
 wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec)
 {
@@ -1679,13 +1680,13 @@ init_solid_shader(struct wlsc_shader *shader,
 	return 0;
 }
 
-void
+WL_EXPORT void
 wlsc_output_destroy(struct wlsc_output *output)
 {
 	destroy_surface(&output->background->surface.resource, NULL);
 }
 
-void
+WL_EXPORT void
 wlsc_output_move(struct wlsc_output *output, int x, int y)
 {
 	struct wlsc_compositor *c = output->compositor;
@@ -1716,7 +1717,7 @@ wlsc_output_move(struct wlsc_output *output, int x, int y)
 				   x, y, output->width, output->height);
 }
 
-void
+WL_EXPORT void
 wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 		 int x, int y, int width, int height, uint32_t flags)
 {
@@ -1794,7 +1795,7 @@ const static struct wl_shm_callbacks shm_callbacks = {
 	shm_buffer_destroyed
 };
 
-int
+WL_EXPORT int
 wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 {
 	struct wl_event_loop *loop;
@@ -1878,51 +1879,70 @@ static int on_term_signal(int signal_number, void *data)
 	return 1;
 }
 
+static void *
+load_module(const char *name, const char *entrypoint, void **handle)
+{
+	char path[PATH_MAX];
+	void *module, *init;
+
+	if (name[0] != '/')
+		snprintf(path, sizeof path, MODULEDIR "/%s", name);
+	else
+		snprintf(path, sizeof path, name);
+
+	module = dlopen(path, RTLD_LAZY);
+	if (!module) {
+		fprintf(stderr,
+			"failed to load module: %s\n", dlerror());
+		return NULL;
+	}
+
+	init = dlsym(module, entrypoint);
+	if (!init) {
+		fprintf(stderr,
+			"failed to lookup init function: %s\n", dlerror());
+		return NULL;
+	}
+
+	return init;
+}
+
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
 	struct wlsc_compositor *ec;
 	struct wl_event_loop *loop;
-	int width, height, o;
-	void *shell_module;
+	int o;
+	void *shell_module, *backend_module;
 	int (*shell_init)(struct wlsc_compositor *ec);
+	struct wlsc_compositor
+		*(*backend_init)(struct wl_display *display, char *options);
+	char *backend = NULL;
+	char *backend_options = "";
+	char *shell = NULL;
 	char *p;
 
-	static const char opts[] = "b:c:g:S:i:s:";
+	static const char opts[] = "B:b:o:S:i:s:";
 	static const struct option longopts[ ] = {
+		{ "backend", 1, NULL, 'B' },
+		{ "backend-options", 1, NULL, 'o' },
 		{ "background", 1, NULL, 'b' },
-		{ "connector", 1, NULL, 'c' },
-		{ "geometry", 1, NULL, 'g' },
 		{ "socket", 1, NULL, 'S' },
 		{ "idle-time", 1, NULL, 'i' },
 		{ "shell", 1, NULL, 's' },
 		{ NULL, }
 	};
 
-	width = 1024;
-	height = 640;
-
 	while (o = getopt_long(argc, argv, opts, longopts, &o), o > 0) {
 		switch (o) {
 		case 'b':
 			option_background = optarg;
 			break;
-		case 'c':
-			option_connector = strtol(optarg, &p, 0);
-			if (*p != '\0') {
-				fprintf(stderr,
-					"invalid connection option: %s\n",
-					optarg);
-				exit(EXIT_FAILURE);
-			}
+		case 'B':
+			backend = optarg;
 			break;
-		case 'g':
-			if (sscanf(optarg, "%dx%d", &width, &height) != 2) {
-				fprintf(stderr,
-					"invalid geometry option: %s\n",
-					optarg);
-				exit(EXIT_FAILURE);
-			}
+		case 'o':
+			backend_options = optarg;
 			break;
 		case 'S':
 			option_socket_name = optarg;
@@ -1937,7 +1957,7 @@ int main(int argc, char *argv[])
 			}
 			break;
 		case 's':
-			option_shell = optarg;
+			shell = optarg;
 			break;
 		}
 	}
@@ -1946,41 +1966,29 @@ int main(int argc, char *argv[])
 
 	ec = NULL;
 
-	shell_init = desktop_shell_init;
-	if (option_shell) {
-		shell_module = dlopen(option_shell, RTLD_LAZY);
-		if (!shell_module) {
-			fprintf(stderr, "failed to load shell module: %m\n");
-			exit(EXIT_FAILURE);
-		}
-		shell_init = dlsym(shell_module, "shell_init");
-		if (!shell_init) {
-			fprintf(stderr,
-				"failed to lookup shell init function: %m\n");
-			exit(EXIT_FAILURE);
-		}
+	if (!backend) {
+		if (getenv("WAYLAND_DISPLAY"))
+			backend = "wayland-backend.so";
+		else if (getenv("DISPLAY"))
+			backend = "x11-backend.so";
+		else if (getenv("OPENWFD"))
+			backend = "openwfd-backend.so";
+		else
+			backend = "drm-backend.so";
 	}
 
-#if BUILD_WAYLAND_COMPOSITOR
-	if (getenv("WAYLAND_DISPLAY"))
-		ec = wayland_compositor_create(display, width, height);
-#endif
+	if (!shell)
+		shell = "desktop-shell.so";
 
-#if BUILD_X11_COMPOSITOR
-	if (ec == NULL && getenv("DISPLAY"))
-		ec = x11_compositor_create(display, width, height);
-#endif
+	backend_init = load_module(backend, "backend_init", &backend_module);
+	if (!backend_init)
+		exit(EXIT_FAILURE);
 
-#if BUILD_OPENWFD_COMPOSITOR
-	if (ec == NULL && getenv("OPENWFD"))
-		ec = wfd_compositor_create(display, option_connector);
-#endif
+	shell_init = load_module(shell, "shell_init", &shell_module);
+	if (!shell_init)
+		exit(EXIT_FAILURE);
 
-#if BUILD_DRM_COMPOSITOR
-	if (ec == NULL)
-		ec = drm_compositor_create(display, option_connector);
-#endif
-
+	ec = backend_init(display, backend_options);
 	if (ec == NULL) {
 		fprintf(stderr, "failed to create compositor\n");
 		exit(EXIT_FAILURE);

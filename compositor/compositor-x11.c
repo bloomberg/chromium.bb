@@ -681,3 +681,26 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 
 	return &c->base;
 }
+
+struct wlsc_compositor *
+backend_init(struct wl_display *display, char *options)
+{
+	int width = 1024, height = 640, i;
+	char *p, *value;
+
+	static char * const tokens[] = { "width", "height", NULL };
+	
+	p = options;
+	while (i = getsubopt(&p, tokens, &value), i != -1) {
+		switch (i) {
+		case 0:
+			width = strtol(value, NULL, 0);
+			break;
+		case 1:
+			height = strtol(value, NULL, 0);
+			break;
+		}
+	}
+
+	return x11_compositor_create(display, width, height);
+}

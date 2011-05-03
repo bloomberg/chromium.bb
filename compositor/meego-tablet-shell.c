@@ -511,6 +511,14 @@ tablet_shell_bind(struct wl_client *client,
 			     MEEGO_TABLET_SHELL_SHOW_LOCKSCREEN);
 }
 
+static void
+meego_tablet_shell_set_selection_focus(struct wlsc_shell *shell,
+				       struct wl_selection *selection,
+				       struct wl_surface *surface,
+				       uint32_t time)
+{
+}
+
 void
 shell_init(struct wlsc_compositor *compositor);
 
@@ -556,7 +564,8 @@ shell_init(struct wlsc_compositor *compositor)
 
 	shell->shell.lock = meego_tablet_shell_lock;
 	shell->shell.attach = meego_tablet_shell_attach;
-
+	shell->shell.set_selection_focus =
+		meego_tablet_shell_set_selection_focus;
 	launch_switcher(shell);
 
 	wlsc_spring_init(&compositor->fade.spring, 40.0, 1.0, 1.0);

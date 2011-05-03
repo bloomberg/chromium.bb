@@ -76,7 +76,7 @@ read_func(png_structp png, png_bytep data, png_size_t size)
 		png_error(png, NULL);
 }
 
-uint32_t *
+WL_EXPORT uint32_t *
 wlsc_load_image(const char *filename,
 		int32_t *width_arg, int32_t *height_arg, uint32_t *stride_arg)
 {

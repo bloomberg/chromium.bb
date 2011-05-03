@@ -129,6 +129,9 @@ struct wlsc_spring {
 struct wlsc_shell {
 	void (*lock)(struct wlsc_shell *shell);
 	void (*attach)(struct wlsc_shell *shell, struct wlsc_surface *surface);
+	void (*set_selection_focus)(struct wlsc_shell *shell,
+				    struct wl_selection *selection,
+				    struct wl_surface *surface, uint32_t time);
 };
 
 enum {
@@ -314,10 +317,6 @@ wlsc_input_device_set_pointer_image(struct wlsc_input_device *device,
 struct wlsc_surface *
 pick_surface(struct wl_input_device *device, int32_t *sx, int32_t *sy);
 
-void
-wlsc_selection_set_focus(struct wl_selection *selection,
-			 struct wl_surface *surface, uint32_t time);
-
 uint32_t
 wlsc_compositor_get_time(void);
 
@@ -335,23 +334,8 @@ void
 wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec);
 
-int
-desktop_shell_init(struct wlsc_compositor *ec);
-
 void
 wlsc_switcher_init(struct wlsc_compositor *compositor);
-
-struct wlsc_compositor *
-x11_compositor_create(struct wl_display *display, int width, int height);
-
-struct wlsc_compositor *
-drm_compositor_create(struct wl_display *display, int connector);
-
-struct wlsc_compositor *
-wfd_compositor_create(struct wl_display *display, int connector);
-
-struct wlsc_compositor *
-wayland_compositor_create(struct wl_display *display, int width, int height);
 
 void
 evdev_input_add_devices(struct wlsc_compositor *c, struct udev *udev);

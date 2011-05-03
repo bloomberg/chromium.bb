@@ -13,11 +13,10 @@ AM_SILENT_RULES([yes])
 
 # Check for programs
 AC_PROG_CC
-AC_PROG_RANLIB
 
 # Initialize libtool
 LT_PREREQ([2.2])
-LT_INIT
+LT_INIT([disable-static])
 
 PKG_PROG_PKG_CONFIG()
 
@@ -96,6 +95,13 @@ if test x$enable_clients == xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
+
+AM_CONDITIONAL(ENABLE_DESKTOP_SHELL, true)
+
+AC_ARG_ENABLE(meego-tablet-shell, [  --enable-meego-tablet-shell],,
+	      enable_meego_tablet_shell=yes)
+AM_CONDITIONAL(ENABLE_MEEGO_TABLET_SHELL,
+	       test x$enable_meego_tablet_shell == xyes)
 
 if test "x$GCC" = "xyes"; then
 	GCC_CFLAGS="-Wall -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"

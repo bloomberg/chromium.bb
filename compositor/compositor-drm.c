@@ -742,3 +742,23 @@ drm_compositor_create(struct wl_display *display, int connector)
 
 	return &ec->base;
 }
+
+struct wlsc_compositor *
+backend_init(struct wl_display *display, char *options)
+{
+	int connector, i;
+	char *p, *value;
+
+	static char * const tokens[] = { "connector", NULL };
+	
+	p = options;
+	while (i = getsubopt(&p, tokens, &value), i != -1) {
+		switch (i) {
+		case 0:
+			connector = strol(value, NULL, 0);
+			break;
+		}
+	}
+
+	return drm_compositor_create(display, connector);
+}

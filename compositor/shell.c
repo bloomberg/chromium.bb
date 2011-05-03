@@ -496,8 +496,9 @@ shell_create_drag(struct wl_client *client,
 	wl_client_add_resource(client, &drag->resource);
 }
 
-void
-wlsc_selection_set_focus(struct wl_selection *selection,
+static void
+wlsc_selection_set_focus(struct wlsc_shell *shell,
+			 struct wl_selection *selection,
 			 struct wl_surface *surface, uint32_t time)
 {
 	char **p, **end;
@@ -577,6 +578,8 @@ selection_activate(struct wl_client *client,
 {
 	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
 	struct wl_display *display = wl_client_get_display (client);
+	struct wlsc_compositor *compositor =
+		(struct wlsc_compositor *) device->compositor;
 
 	selection->input_device = device;
 
@@ -594,7 +597,8 @@ selection_activate(struct wl_client *client,
 	}
 	wd->selection = selection;
 
-	wlsc_selection_set_focus(selection, device->keyboard_focus, time);
+	wlsc_selection_set_focus(compositor->shell,
+				 selection, device->keyboard_focus, time);
 }
 
 static void
@@ -616,10 +620,13 @@ destroy_selection(struct wl_resource *resource, struct wl_client *client)
 		container_of(resource, struct wl_selection, resource);
 	struct wlsc_input_device *wd =
 		(struct wlsc_input_device *) selection->input_device;
+	struct wlsc_compositor *compositor =
+		(struct wlsc_compositor *) wd->input_device.compositor;
 
 	if (wd && wd->selection == selection) {
 		wd->selection = NULL;
-		wlsc_selection_set_focus(selection, NULL,
+		wlsc_selection_set_focus(compositor->shell, 
+					 selection, NULL,
 					 wlsc_compositor_get_time());
 	}
 
@@ -726,8 +733,8 @@ attach(struct wlsc_shell *shell, struct wlsc_surface *surface)
 {
 }
 
-int
-desktop_shell_init(struct wlsc_compositor *ec)
+WL_EXPORT int
+shell_init(struct wlsc_compositor *ec)
 {
 	struct wl_shell *shell;
 
@@ -737,6 +744,7 @@ desktop_shell_init(struct wlsc_compositor *ec)
 
 	shell->shell.lock = lock;
 	shell->shell.attach = attach;
+	shell->shell.set_selection_focus = wlsc_selection_set_focus;
 
 	shell->object.interface = &wl_shell_interface;
 	shell->object.implementation = (void (**)(void)) &shell_interface;
