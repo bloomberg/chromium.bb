@@ -245,7 +245,7 @@ $(IT).preopt.bc: $(SRC:%.c=%.o.bc) $(CPPSRC:%.cc=%.o.bc)
 
 # llvm bit code pre-linked
 $(IT).preopt.pexe: $(IT).preopt.bc
-	$(BC_PRELINK) $^ -lm -o $@
+	$(BC_PRELINK) $^ -lm -lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # llvm bit code pre-linked and stripped
@@ -260,7 +260,7 @@ $(IT).opt.bc: $(IT).preopt.bc
 
 # doubly-optimized llvm bit code pre-linked
 $(IT).opt.pexe: $(IT).opt.bc
-	$(BC_PRELINK) $^ -lm -o $@
+	$(BC_PRELINK) $^ -lm  -lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # doubly-optimized llvm bit code pre-linked and stripped
