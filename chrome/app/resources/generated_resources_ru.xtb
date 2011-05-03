@@ -190,7 +190,7 @@
 <translation id="1165039591588034296">Ошибка</translation>
 <translation id="2064942105849061141">Использовать тему GTK+</translation>
 <translation id="2278562042389100163">Открыть окно браузера</translation>
-<translation id="5246282308050205996">Произошел сбой приложения <ph name="APP_NAME"/>. Нажмите на это сообщение, чтобы перезапустить приложение.</translation>
+<translation id="5246282308050205996">Произошел сбой приложения <ph name="APP_NAME"/>. Нажмите на это сообщение, чтобы перезапустить его.</translation>
 <translation id="9218430445555521422">Сделать браузером по умолчанию</translation>
 <translation id="5027550639139316293">Сертификат электронной почты</translation>
 <translation id="938582441709398163">Накладка на клавиатуру</translation>
@@ -388,7 +388,7 @@
 <translation id="4973698491777102067">Удалить указанные ниже элементы:</translation>
 <translation id="6074963268421707432">Блокировать оповещения на всех сайтах</translation>
 <translation id="8508050303181238566">Нажмите <ph name="HOTKEY_NAME"/>, чтобы переключиться между методами ввода.</translation>
-<translation id="6273404661268779365">Добавить новый факс</translation>
+<translation id="6273404661268779365">Добавить факс</translation>
 <translation id="1995173078718234136">Сканирование содержания...</translation>
 <translation id="4735819417216076266">Стиль ввода пробелов</translation>
 <translation id="2977095037388048586">Вы попытались открыть <ph name="DOMAIN"/>, однако фактически были направлены на сервер <ph name="DOMAIN2"/>. Переадресации подобного рода происходят либо из-за ошибок конфигурации сервера, либо если кто-то пытается намеренно заставить вас посетить фальсифицированную копию страницы <ph name="DOMAIN3"/>. Возможно, страница на которую вы перейдете, содержит вирусное или вредоносное ПО. Мы рекомендуем воздержаться от перехода.</translation>
@@ -408,7 +408,7 @@
 <translation id="7966826846893205925">Настройки автозаполнения...</translation>
 <translation id="8556732995053816225">Сопоставить &amp;регистр</translation>
 <translation id="3314070176311241517">Разрешить всем сайтам использовать JavaScript (рекомендуется)</translation>
-<translation id="2406911946387278693">Управление устройствами из облака</translation>
+<translation id="2406911946387278693">Управление устройствами через Интернет</translation>
 <translation id="7419631653042041064">Каталанская раскладка</translation>
 <translation id="5710740561465385694">Сообщать, когда сайт сохраняет данные</translation>
 <translation id="3897092660631435901">Меню</translation>
@@ -615,7 +615,7 @@
 <translation id="3885155851504623709">Округ</translation>
 <translation id="4910171858422458941">Нельзя активировать подключаемые модули, запрещенные корпоративной политикой</translation>
 <translation id="4495419450179050807">Не показывать на этой странице</translation>
-<translation id="4745800796303246012">Experimental Wi-Fi EAP methods</translation>
+<translation id="4745800796303246012">Экспериментальные методы аутентификации Wi-Fi EAP</translation>
 <translation id="939736085109172342">Новая папка</translation>
 <translation id="4933484234309072027">встроен в <ph name="URL"/></translation>
 <translation id="5554720593229208774">Центр сертификации электронной почты</translation>
@@ -623,7 +623,7 @@
 <translation id="2832519330402637498">Слева вверху</translation>
 <translation id="6749695674681934117">Введите название новой папки</translation>
 <translation id="6204994989617056362">Расширение повторного согласования SSL отсутствовало при подтверждении защищенной связи. Для некоторых сайтов, поддерживающих расширение повторного согласования, браузер Chrome требует более безопасного подтверждения для предотвращения ряда известных атак. Исключение этого расширения может означать, что подключение было перехвачено и изменено третьей стороной.</translation>
-<translation id="6679492495854441399">К сожалению, при регистрации устройства произошла ошибка. Проверьте сетевое соединение и повторите попытку.</translation>
+<translation id="6679492495854441399">При регистрации устройства произошла ошибка. Проверьте подключение к сети и повторите попытку.</translation>
 <translation id="7789962463072032349">Пауза</translation>
 <translation id="121827551500866099">Все загрузки...</translation>
 <translation id="1562633988311880769">Войти в <ph name="CLOUD_PRINT_NAME"/></translation>
@@ -669,7 +669,7 @@
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6802031077390104172"><ph name="USAGE"/> (<ph name="OID"/>)</translation>
 <translation id="4052120076834320548">Мелкий</translation>
-<translation id="6623138136890659562">Отображать частные сети в меню &quot;Сети&quot;, чтобы обеспечить подключение к VPN.</translation>
+<translation id="6623138136890659562">Отображать частные сети в меню &quot;Сети&quot; (необходимо для подключения к VPN).</translation>
 <translation id="8969837897925075737">Проверка обновления системы</translation>
 <translation id="3393716657345709557">Запрошенный объект отсутствует в кэше.</translation>
 <translation id="7241389281993241388">Войдите в <ph name="TOKEN_NAME"/>, чтобы импортировать сертификат клиента.</translation>
@@ -777,7 +777,7 @@
 <translation id="3494768541638400973">японская раскладка Google (для японской клавиатуры)</translation>
 <translation id="5844183150118566785">Вы используете самую последнюю версию <ph name="PRODUCT_NAME"/> (<ph name="VERSION"/>).</translation>
 <translation id="3118046075435288765">Сервер неожиданно разорвал соединение.</translation>
-<translation id="8041140688818013446">Возможно, сервер, на котором размещена данная веб-страница, перегружен или на нем возникла ошибка. Чтобы избежать слишком большой нагрузки и ухудшения ситуации, <ph name="PRODUCT_NAME"/> временно заблокировал запросы к серверу.<ph name="LINE_BREAK"/>Если вы считаете, что это нежелательно, например если вы отлаживаете собственный веб-сайт, посетите эту страницу: <ph name="NET_INTERNALS_PAGE"/>. Там вы сможете отключить эту функцию и ознакомиться с дополнительной информацией.</translation>
+<translation id="8041140688818013446">Возможно, сервер, на котором размещена данная веб-страница, перегружен или на нем произошла ошибка. Чтобы не допустить перегрузки и ухудшения ситуации, <ph name="PRODUCT_NAME"/> временно заблокировал запросы к серверу.<ph name="LINE_BREAK"/>Если это мешает вашей работе (например, вы отлаживаете собственный веб-сайт), посетите эту страницу: <ph name="NET_INTERNALS_PAGE"/>. На ней вы сможете отключить эту функцию и ознакомиться с дополнительной информацией.</translation>
 <translation id="4254921211241441775">Больше не синхронизировать этот аккаунт</translation>
 <translation id="7791543448312431591">Добавить</translation>
 <translation id="8569764466147087991">Выберите файл</translation>
@@ -851,7 +851,7 @@
 <translation id="3371861036502301517">Ошибка установки расширения</translation>
 <translation id="644038709730536388">Подробнее о том, как защититься от вредоносного ПО, распространяемого в Интернете.</translation>
 <translation id="2155931291251286316">Всегда показывать всплывающие окна с сайта <ph name="HOST"/></translation>
-<translation id="3445830502289589282">2-й этап аутентификации:</translation>
+<translation id="3445830502289589282">Двухэтапная аутентификация:</translation>
 <translation id="5650551054760837876">Нет найденных результатов поиска.</translation>
 <translation id="5494362494988149300">Открыть по завершении</translation>
 <translation id="2956763290572484660">Файлов cookie: <ph name="COOKIES"/></translation>
@@ -1192,7 +1192,7 @@
 <translation id="208047771235602537">Закрыть <ph name="PRODUCT_NAME"/> несмотря на то, что идет загрузка?</translation>
 <translation id="4060383410180771901">Веб-сайт не может обработать запрос <ph name="URL"/>.</translation>
 <translation id="6710213216561001401">Назад</translation>
-<translation id="1108600514891325577">Остановить</translation>
+<translation id="1108600514891325577">&amp;Остановить</translation>
 <translation id="6035087343161522833">Параметр, блокирующий установку сторонних файлов cookie, блокирует также их чтение.</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
 <translation id="1567993339577891801">Консоль JavaScript</translation>
@@ -1293,7 +1293,7 @@
 <translation id="8487693399751278191">Импортировать закладки...</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
 <translation id="7484580869648358686">Внимание! Обнаружена проблема!</translation>
-<translation id="2074739700630368799">ОС Chrome для предприятий позволяет подключить ваше устройство к Google Apps. Вы сможете управлять своим устройством через панель управления Google Apps.</translation>
+<translation id="2074739700630368799">Система Chrome OS для предприятий позволяет подключать ваше устройство к Google Apps и управлять им через панель управления Google Apps.</translation>
 <translation id="4474155171896946103">Закладки для всех вкладок...</translation>
 <translation id="5895187275912066135">Дата выдачи</translation>
 <translation id="1190844492833803334">При закрытии браузера</translation>
@@ -1302,7 +1302,7 @@
 <translation id="2607101320794533334">Информация об открытом ключе субъекта</translation>
 <translation id="7071586181848220801">Неизвестный плагин</translation>
 <translation id="3354601307791487577">Выполняется вход в гостевой режим.</translation>
-<translation id="4419409365248380979">Всегда разрешать <ph name="HOST"/> устанавливать файлы cookie</translation>
+<translation id="4419409365248380979">Разрешить хосту <ph name="HOST"/> устанавливать файлы cookie</translation>
 <translation id="2956070106555335453">Сводка</translation>
 <translation id="917450738466192189">Сертификат сервера недействителен</translation>
 <translation id="2649045351178520408">ASCII с кодировкой Base64, цепочка сертификатов</translation>
@@ -1920,7 +1920,7 @@
 <translation id="7070804685954057874">Прямой ввод</translation>
 <translation id="3265459715026181080">Закрыть окно</translation>
 <translation id="6074871234879228294">японская раскладка (для японской клавиатуры)</translation>
-<translation id="7855296476260297092">Регистрация выполнена успешно</translation>
+<translation id="7855296476260297092">Регистрация выполнена</translation>
 <translation id="907841381057066561">Не удалось создать временный zip-файл во время упаковки.</translation>
 <translation id="1294298200424241932">Изменить настройки доверия:</translation>
 <translation id="1384617406392001144">Данные о посещенных вами страницах</translation>
@@ -2196,8 +2196,8 @@
 <translation id="7229570126336867161">Необходимо наличие EV-DO</translation>
 <translation id="7582844466922312471">Мобильный модем</translation>
 <translation id="945522503751344254">Отправить отзыв</translation>
-<translation id="4539401194496451708">Используется профиль Chrome пользователя <ph name="USER_EMAIL_ADDRESS"/>. Последняя синхронизация: <ph name="LAST_SYNC_TIME"/>.</translation>
-<translation id="7369847606959702983">Кредитная карта (прочие)</translation>
+<translation id="4539401194496451708">Используемый профиль: <ph name="USER_EMAIL_ADDRESS"/>. Последняя синхронизация: <ph name="LAST_SYNC_TIME"/>.</translation>
+<translation id="7369847606959702983">Кредитная карта (другой тип)</translation>
 <translation id="6867459744367338172">Языки и ввод</translation>
 <translation id="7671130400130574146">Использовать системные рамки и строку заголовка</translation>
 <translation id="9170848237812810038">&amp;Отменить</translation>
@@ -2509,7 +2509,7 @@
 <translation id="5637380810526272785">Раскладка клавиатуры</translation>
 <translation id="404928562651467259">Внимание!</translation>
 <translation id="7172053773111046550">Эстонская раскладка</translation>
-<translation id="497490572025913070">Composited render layer borders</translation>
+<translation id="497490572025913070">Поэтапная обработка границ слоев</translation>
 <translation id="9002707937526687073">П&amp;ечать...</translation>
 <translation id="5953934840931207585">Настройки автозаполнения в <ph name="PRODUCT_NAME_SHORT"/></translation>
 <translation id="5556459405103347317">Перезагрузить</translation>
@@ -2528,7 +2528,7 @@
 <translation id="158849752021629804">Необходима домашняя сеть</translation>
 <translation id="7339763383339757376">PKCS #7, единый сертификат</translation>
 <translation id="7587108133605326224">Балтийская</translation>
-<translation id="3991936620356087075">Вы ввели неверный ключ разблокировки PIN-кода слишком много раз. Ваша SIM-карта заблокирована навсегда.</translation>
+<translation id="3991936620356087075">Вы ввели неверный ключ разблокировки PIN-кода слишком много раз. Ваша SIM-карта заблокирована.</translation>
 <translation id="936801553271523408">Диагностические данные системы</translation>
 <translation id="6389701355360299052">Веб-страница, только HTML</translation>
 <translation id="8067791725177197206">Продолжить »</translation>
@@ -2712,7 +2712,7 @@
 <translation id="5332624210073556029">Часовой пояс:</translation>
 <translation id="4799797264838369263">Этот параметр определяется корпоративной политикой. За дополнительными сведениями обратитесь к своему системному администратору.</translation>
 <translation id="4492190037599258964">Результаты поиска по запросу &quot;<ph name="SEARCH_STRING"/>&quot;</translation>
-<translation id="3573179567135747900">Вернуться к раскладке &quot;<ph name="FROM_LOCALE"/>&quot; (потребуется перезагрузка)</translation>
+<translation id="3573179567135747900">Вернуться к языку: &quot;<ph name="FROM_LOCALE"/>&quot; (потребуется перезагрузка)</translation>
 <translation id="2238123906478057869"><ph name="PRODUCT_NAME"/> выполнит следующие действия:</translation>
 <translation id="4042471398575101546">Добавление страницы</translation>
 <translation id="8848709220963126773">Переключение режима с помощью клавиши Shift</translation>
@@ -2745,7 +2745,7 @@
         <ph name="PRODUCT_NAME"/>
         как постороннюю программу на вашем компьютере и блокируют ее доступ в Интернет.</translation>
 <translation id="878069093594050299">Этот сертификат был проверен на возможность использования в следующих целях:</translation>
-<translation id="5852112051279473187">К сожалению, при регистрации устройства произошла ошибка. Повторите попытку или обратитесь в службу поддержки.</translation>
+<translation id="5852112051279473187">При регистрации устройства произошла ошибка. Повторите попытку или обратитесь в службу поддержки.</translation>
 <translation id="1664314758578115406">Добавить страницу...</translation>
 <translation id="7088418943933034707">Управление сертификатами...</translation>
 <translation id="8482183012530311851">Сканирование устройства...</translation>
@@ -2946,7 +2946,7 @@
 <translation id="2766006623206032690">Вс&amp;тавить из буфера и перейти</translation>
 <translation id="4394049700291259645">Отключить</translation>
 <translation id="969892804517981540">Официальная сборка</translation>
-<translation id="445923051607553918">Подключиться к сети Wi-Fi</translation>
+<translation id="445923051607553918">Подключение к сети Wi-Fi</translation>
 <translation id="9087725134750123268">Удалить cookie и другие данные сайтов</translation>
 <translation id="5050255233730056751">Введенные URL</translation>
 <translation id="3349155901412833452">Клавиши &quot;,&quot; и &quot;.&quot; позволяют пролистывать список вариантов</translation>

@@ -258,7 +258,7 @@
 <translation id="1880905663253319515">مجوز &quot;<ph name="CERTIFICATE_NAME"/>&quot; حذف شود؟</translation>
 <translation id="8546306075665861288">حافظه پنهان تصویر</translation>
 <translation id="5904093760909470684">پیکربندی پراکسی</translation>
-<translation id="2874027208508018603">Chrome از داده 3G استفاده می کند هنگامی که اتصال WiFi ارائه شده است.</translation>
+<translation id="2874027208508018603">هنگامی که اتصال WiFi ارائه نشده است، Chrome از داده 3G استفاده می کند.</translation>
 <translation id="4558734465070698159">برای انتخاب روش ورودی قبلی، <ph name="HOTKEY_NAME"/> را فشار دهید.</translation>
 <translation id="3391060940042023865">این افزونه خراب شده است: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4237016987259239829">خطای اتصال شبکه</translation>
@@ -1393,7 +1393,7 @@
 <translation id="3024374909719388945">استفاده از ساعت 24 ساعته</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME"/> آماده تکمیل نصب است</translation>
 <translation id="5316814419223884568">جستجو از راست در اینجا</translation>
-<translation id="8142732521333266922">اوکی، همه را همگام سازی کنید</translation>
+<translation id="8142732521333266922">بسیار خوب، همه را همگام سازی کنید</translation>
 <translation id="965674096648379287">این صفحه وب به داده هایی نیاز دارد که شما قبلاً وارد کردید تا درست نمایش داده شود. شما می توانید این داده ها را دوباره ارسال کنید، اما با انجام این کار، هر اقدامی را که این صفحه قبلاً انجام داده است تکرار می کنید. برای ارسال مجدد آن داده ها، تازه سازی را فشار دهید تا این صفحه نمایش داده شود.</translation>
 <translation id="43742617823094120">در این مورد، گواهی ارائه شده به مرورگر شما توسط صادر کننده آن باطل شده است. این معمولا به این معنا است که این گواهی در معرض خطر کشف رمز بوده، و دیگر نباید به آن اعتماد کرد. شما به هیچ وجه نباید بدون درنظر گرفتن این نکته ادامه دهید.</translation>
 <translation id="9019654278847959325">صفحه کلید اسلواکی</translation>
@@ -2386,7 +2386,7 @@
 <translation id="5970231080121144965">رشته فرعی و انطباق چند بخشی را در URL ها از سابقه فعال می کند.</translation>
 <translation id="4665674675433053715">صفحه برگه جدید تجربی</translation>
 <translation id="3726527440140411893">وقتی این صفحه را مشاهده کردید، کوکی های زیر تنظیم شدند:</translation>
-<translation id="3320859581025497771">حامل شما</translation>
+<translation id="3320859581025497771">شرکت مخابراتی شما</translation>
 <translation id="8828781037212165374">فعال کردن این ویژگی ها...</translation>
 <translation id="8562413501751825163">بستن Firefox قبل از وارد کردن</translation>
 <translation id="3435541101098866721">افزودن تلفن جدید</translation>
@@ -2799,7 +2799,7 @@
 <translation id="8482183012530311851">درحال اسکن دستگاه...</translation>
 <translation id="3127589841327267804">PYJJ</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="1732215134274276513">عدم پین کردن برگه ها</translation>
+<translation id="1732215134274276513">برداشتن پین برگه ها</translation>
 <translation id="4084682180776658562">نشانک</translation>
 <translation id="8859057652521303089">انتخاب زبان:</translation>
 <translation id="3030138564564344289">سعی مجدد برای دانلود</translation>

@@ -395,7 +395,7 @@
 <translation id="5710740561465385694">Запитувати, якщо сайт намагається зберегти дані</translation>
 <translation id="3897092660631435901">Меню</translation>
 <translation id="8553075262323480129">Помилка перекладу. Неможливо визначити мову сторінки.</translation>
-<translation id="5910680277043747137">Якщо ви хочете дозволити різним особам використовувати та налаштовувати Chrome, можна створити додаткові профілі.</translation>
+<translation id="5910680277043747137">Якщо ви хочете дозволити різним людям використовувати та налаштовувати Chrome, можна створити додаткові профілі.</translation>
 <translation id="4381849418013903196">Двокрапка</translation>
 <translation id="1103523840287552314">Завжди перекладати з такої мови: <ph name="LANGUAGE"/></translation>
 <translation id="2263497240924215535">(Вимкнено)</translation>
@@ -514,7 +514,7 @@
 <translation id="8026684114486203427">Щоб користуватися Chrome Web Store, потрібно ввійти, використовуючи дані облікового запису Google.</translation>
 <translation id="8417276187983054885">Налаштувати <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="3056462238804545033">На жаль, під час спроби автентифікації сталася помилка. Ретельно перевірте свої облікові дані для входу та повторіть спробу.</translation>
-<translation id="5298420986276701358">Увійшовши з використанням облікового запису Google Apps, ви зможете віддалено керувати конфігурацією цього пристрою з <ph name="PRODUCT_NAME"/> за допомогою технології &quot;хмари&quot;.</translation>
+<translation id="5298420986276701358">Увійшовши з використанням даних облікового запису Google Apps, ви зможете віддалено керувати конфігурацією цього пристрою з <ph name="PRODUCT_NAME"/> за допомогою технології &quot;хмари&quot;.</translation>
 <translation id="2678063897982469759">Знову ввімкнути</translation>
 <translation id="1779766957982586368">Закрити вікно</translation>
 <translation id="4850886885716139402">Перегляд</translation>
@@ -686,7 +686,7 @@
 <translation id="2688477613306174402">Конфігурація</translation>
 <translation id="1195447618553298278">Невідома помилка.</translation>
 <translation id="3353284378027041011"><ph name="NUMBER_FEW"/> дн. тому</translation>
-<translation id="8811462119186190367">Після синхронізації налаштувань мову Chrome змінено з &quot;<ph name="FROM_LOCALE"/>&quot; на &quot;<ph name="TO_LOCALE"/>&quot;.</translation>
+<translation id="8811462119186190367">Після синхронізації налаштувань мову Chrome змінено. Попередня: <ph name="FROM_LOCALE"/>, нова: <ph name="TO_LOCALE"/>.</translation>
 <translation id="1087119889335281750">&amp;Немає запропонованих варіантів написання</translation>
 <translation id="5228309736894624122">Помилка протоколу SSL.</translation>
 <translation id="8216170236829567922">Метод введення для тайської мови (клавіатура Паташот)</translation>
@@ -963,7 +963,7 @@
 <translation id="6025294537656405544">Мінімальний розмір шрифту</translation>
 <translation id="1201402288615127009">Далі</translation>
 <translation id="1335588927966684346">Утиліта:</translation>
-<translation id="7857823885309308051">Це може тривати якийсь час...</translation>
+<translation id="7857823885309308051">Це може зайняти якийсь час...</translation>
 <translation id="662870454757950142">Неправильний формат пароля.</translation>
 <translation id="370665806235115550">Завантаження...</translation>
 <translation id="1808792122276977615">Додати сторінку...</translation>
@@ -1314,7 +1314,7 @@
 <translation id="1974043046396539880">Точки розповсюдження списку відкликаних сертифікатів (CRL)</translation>
 <translation id="7049357003967926684">Пов'язування</translation>
 <translation id="8641392906089904981">Натисніть сполучення клавіш Shift-Alt, щоб змінити розкладку клавіатури</translation>
-<translation id="3024374909719388945">Використовувати 24-годинну систему</translation>
+<translation id="3024374909719388945">Використовувати 24-годинний формат</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME"/> готовий виконати інсталяцію</translation>
 <translation id="5316814419223884568">Почніть пошук звідси</translation>
 <translation id="8142732521333266922">ОК, синхронізувати все</translation>
@@ -1636,7 +1636,7 @@
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT"/> із <ph name="TOTAL_SIZE"/></translation>
 <translation id="6644512095122093795">Пропонувати зберігати паролі</translation>
 <translation id="4724450788351008910">Зміна приналежності</translation>
-<translation id="2249605167705922988">напр., 1-5, 8, 11-13</translation>
+<translation id="2249605167705922988">напр., 1–5, 8, 11–13</translation>
 <translation id="8691686986795184760">(Увімкнено згідно політики підприємства)</translation>
 <translation id="1911483096198679472">Що це таке?</translation>
 <translation id="1976323404609382849">Файли cookie з багатьох сайтів блоковано.</translation>

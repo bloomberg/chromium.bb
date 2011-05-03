@@ -31,7 +31,7 @@
 <translation id="2501173422421700905">Certificat retingut</translation>
 <translation id="2313634973119803790">Tecnologia de xarxa:</translation>
 <translation id="2382901536325590843">El certificat del servidor no s'inclou al DNS.</translation>
-<translation id="2833791489321462313">Sol·licita contrasenya per sortir de la suspensió</translation>
+<translation id="2833791489321462313">Cal contrasenya per activar aquesta opció</translation>
 <translation id="3850258314292525915">Desactiva la sincronització</translation>
 <translation id="2721561274224027017">Base de dades indexada</translation>
 <translation id="8208216423136871611">No desis</translation>
@@ -227,7 +227,7 @@
 <translation id="4497369307931735818">Comunicació remota</translation>
 <translation id="3855676282923585394">Importa les adreces d'interès i la configuració...</translation>
 <translation id="1116694919640316211">Quant a</translation>
-<translation id="4422347585044846479">Edita l'adreça d'interès d'aquesta pàgina</translation>
+<translation id="4422347585044846479">Editeu l'adreça d'interès d'aquesta pàgina</translation>
 <translation id="1684638090259711957">Afegeix un patró d'excepció nou</translation>
 <translation id="4925481733100738363">Configura l'accés remot...</translation>
 <translation id="1880905663253319515">Voleu suprimir el certificat &quot;<ph name="CERTIFICATE_NAME"/>&quot;?</translation>
@@ -254,7 +254,7 @@
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="406070391919917862">Aplicacions de fons</translation>
 <translation id="8820817407110198400">Adreces d'interès</translation>
-<translation id="3214837514330816581">Elimina les dades sincronitzades a Google Dashboard</translation>
+<translation id="3214837514330816581">Elimina les dades sincronitzades del tauler de control de Google</translation>
 <translation id="2580170710466019930">Espereu-vos mentre <ph name="PRODUCT_NAME"/> instal·la les últimes actualitzacions del sistema.</translation>
 <translation id="7428061718435085649">Utilitzeu les tecles Majús dreta i esquerra per seleccionar el 2n i el 3r candidats.</translation>
 <translation id="1070066693520972135">WEP</translation>
@@ -357,7 +357,7 @@
 <translation id="498765271601821113">Afegeix una targeta de crèdit</translation>
 <translation id="7694379099184430148"><ph name="FILENAME"/>: tipus de fitxer desconegut.</translation>
 <translation id="1992397118740194946">No establerta</translation>
-<translation id="7966826846893205925">Gestiona la configuració de l'Emplenament automàtic...</translation>
+<translation id="7966826846893205925">Gestiona la configuració de l'emplenament automàtic...</translation>
 <translation id="8556732995053816225">&amp;Fes coincidir les majúscules i minúscules</translation>
 <translation id="3314070176311241517">Permet que tots els llocs executin JavaScript (opció recomanada)</translation>
 <translation id="5710740561465385694">Pregunta'm quan un lloc intenti establir dades</translation>
@@ -714,7 +714,7 @@
 <translation id="3369624026883419694">Resolent l'amfitrió...</translation>
 <translation id="8870413625673593573">Tancats recentment</translation>
 <translation id="9145357542626308749">El certificat de seguretat del lloc està signat mitjançant un algoritme de signatura dèbil.</translation>
-<translation id="4064488613268730704">Gestiona la configuració de l'Emplenament automàtic...</translation>
+<translation id="4064488613268730704">Gestiona la configuració de l'emplenament automàtic...</translation>
 <translation id="6830600606572693159">En aquests moments, la pàgina web de <ph name="URL"/> no està disponible. Pot ser que estigui sobrecarregada o bé que s'hi estiguin realitzant tasques de manteniment.</translation>
 <translation id="7886793013438592140">No es pot iniciar el procés del servei.</translation>
 <translation id="8417944620073548444">Queden <ph name="MEGABYTES"/> MB</translation>
@@ -823,7 +823,7 @@
 <translation id="2743322561779022895">Activació:</translation>
 <translation id="4181898366589410653">No s'ha trobat cap mecanisme de revocació al certificat del servidor.</translation>
 <translation id="8705331520020532516">Número de sèrie</translation>
-<translation id="1665770420914915777">Utilitzeu la pàgina &quot;Pestanya nova&quot;.</translation>
+<translation id="1665770420914915777">Utilitzeu la pàgina Pestanya nova.</translation>
 <translation id="2629089419211541119">Fa <ph name="NUMBER_ONE"/> hora</translation>
 <translation id="1691063574428301566">El vostre equip es reiniciarà quan s'hagi completat l'actualització.</translation>
 <translation id="131364520783682672">Bloq Maj</translation>
@@ -1365,7 +1365,7 @@
 <translation id="5750053751252005701">Dades fora de <ph name="NETWORK"/></translation>
 <translation id="8858939932848080433">Indiqueu on teniu problemes abans d'enviar els comentaris.</translation>
 <translation id="1720318856472900922">Autenticació de servidor WWW de TLS</translation>
-<translation id="3355823806454867987">Canvia config. de servidor intermediari...</translation>
+<translation id="3355823806454867987">Canvia la configuració de proxy...</translation>
 <translation id="4780374166989101364">Activa les API d'extensions experimentals. Tingueu en compte que la galeria d'extensions no permet penjar extensions que utilitzin API experimentals.</translation>
 <translation id="7227780179130368205">S'ha detectat programari maliciós!</translation>
 <translation id="435243347905038008">Dades de <ph name="NETWORK"/> baixes</translation>
@@ -2593,7 +2593,7 @@
 <translation id="8000066093800657092">No hi ha xarxa</translation>
 <translation id="4481249487722541506">Carrega l'extensió en desenvolupament...</translation>
 <translation id="8321738493186308836">Activa la interfície d'usuari i el codi de còpia del procés del servei remot, a més del connector del client. Advertiment: actualment aquesta opció només està destinada a proves de desenvolupadors. Tret que formeu part de l'equip de desenvolupadors i estigueu a la llista blanca, no funcionarà res de la interfície d'usuari activada.</translation>
-<translation id="2149973817440762519">Edita les adreces d'interès</translation>
+<translation id="2149973817440762519">Editeu les adreces d'interès</translation>
 <translation id="5431318178759467895">Color</translation>
 <translation id="2784407158394623927">S'està activant el servei de dades mòbils</translation>
 <translation id="3679848754951088761"><ph name="SOURCE_ORIGIN"/></translation>
@@ -2639,7 +2639,7 @@
 <translation id="122082903575839559">Algoritme de signatura del certificat</translation>
 <translation id="2181257377760181418">Activa la visualització prèvia en pestanya d'una impressió.</translation>
 <translation id="7240120331469437312">Nom alternatiu del subjecte del certificat</translation>
-<translation id="6900113680982781280">Activa l'Emplenament automàtic per emplenar els formularis web amb un sol clic</translation>
+<translation id="6900113680982781280">Activa l'emplenament automàtic per emplenar els formularis web amb un sol clic</translation>
 <translation id="1131850611586448366">El lloc web de <ph name="HOST_NAME"/> ha estat identificat com a lloc de &quot;pesca&quot; (suplantació d'identitat). Els llocs de pesca enganyen els usuaris perquè proporcionin informació personal o financera i sovint fingeixen que són institucions de confiança, com ara entitats bancàries.</translation>
 <translation id="5413218268059792983">Cerca amb <ph name="SEARCH_ENGINE"/> des d'aquí</translation>
 <translation id="1161575384898972166">Inicieu la sessió a <ph name="TOKEN_NAME"/> per exportar el certificat de client.</translation>

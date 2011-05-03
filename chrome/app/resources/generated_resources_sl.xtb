@@ -445,7 +445,7 @@
 <translation id="5510687173983454382">Nadzorujte, kateri uporabniki se lahko prijavijo v napravo, in določite, ali so seje brskanja gosta dovoljene.</translation>
 <translation id="3241680850019875542">Izberite korenski imenik razširitve, ki jo želite zapakirati. Če želite posodobiti razširitev, izberite tudi datoteko z zasebnim ključem, ki jo želite znova uporabiti.</translation>
 <translation id="7500424997253660722">Omejena skupina:</translation>
-<translation id="657402800789773160">Zno&amp;va naloži to stran</translation>
+<translation id="657402800789773160">Znov&amp;a naloži to stran</translation>
 <translation id="6163363155248589649">&amp;Navadno</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 s šifriranjem RSA</translation>
 <translation id="3020990233660977256">Serijska številka: <ph name="SERIAL_NUMBER"/></translation>
@@ -817,7 +817,7 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="4240069395079660403">Vmesnika <ph name="PRODUCT_NAME"/> ni mogoče prikazati v tem jeziku</translation>
 <translation id="747114903913869239">Napaka: Razširitve ni bilo mogoče dekodirati</translation>
-<translation id="5412637665001827670">Bulgarska tipkovnica</translation>
+<translation id="5412637665001827670">Bolgarska tipkovnica</translation>
 <translation id="2113921862428609753">Dostop do informacij urada</translation>
 <translation id="5227536357203429560">Dodaj zasebno omrežje ...</translation>
 <translation id="732677191631732447">K&amp;opiraj URL zvočnega posnetka</translation>
@@ -1156,7 +1156,7 @@
 <translation id="6295228342562451544">Ko se povežete na varno spletno mesto, strežnik, ki gosti spletno mesto, vašemu brskalniku izda t.i. »potrdilo«, da preveri njegovo identiteto. To potrdilo vsebuje podatke o identiteti, kot je naslov spletnega mesta, ki ga potrdi tretja stran, ki ji vaš računalnik zaupa. Če se naslov na potrdilu ujema z naslovom spletnega mesta, je mogoče potrditi, da varno komunicirate z želenim spletnim mestom in ne s tretjo osebo (npr. z napadalcem vašega omrežja).</translation>
 <translation id="6342069812937806050">Pravkar</translation>
 <translation id="5605716740717446121">Kartica SIM bo trajno onemogočena, če ne boste vnesli pravilne kode PUK za odklepanje kode PIN. Poskusov na voljo: <ph name="TRIES_COUNT"/></translation>
-<translation id="8836712291807476944"><ph name="SAVED_BYTES"/> / <ph name="TOTAL_BYTES"/> bajtov, prekinjeno</translation>
+<translation id="8836712291807476944"><ph name="SAVED_BYTES"/>/<ph name="TOTAL_BYTES"/> bajtov, prekinjeno</translation>
 <translation id="5502500733115278303">Uvoženo iz brskalnika Firefox</translation>
 <translation id="569109051430110155">Samodejno zaznavanje</translation>
 <translation id="4408599188496843485">&amp;Pomoč</translation>
@@ -2694,7 +2694,7 @@
 <translation id="5999940714422617743">Razširitev <ph name="EXTENSION_NAME"/> je zdaj nameščena.</translation>
 <translation id="1122198203221319518">&amp;Orodja</translation>
 <translation id="5757539081890243754">Domača stran</translation>
-<translation id="2760009672169282879">Bulgarska fonetična tipkovnica</translation>
+<translation id="2760009672169282879">Bolgarska fonetična tipkovnica</translation>
 <translation id="6608140561353073361">Vsi piškotki in podatki spletnih mest ...</translation>
 <translation id="8007030362289124303">Akumulator je skoraj prazen</translation>
 <translation id="4513946894732546136">Povratne informacije</translation>

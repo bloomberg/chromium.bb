@@ -110,7 +110,7 @@
 <translation id="5727728807527375859">Estensioni, applicazioni e temi possono danneggiare il tuo computer. Continuare?</translation>
 <translation id="3857272004253733895">Schema Double Pinyin</translation>
 <translation id="1636842079139032947">Disconnetti questo account...</translation>
-<translation id="6721972322305477112">&amp;Archivio</translation>
+<translation id="6721972322305477112">&amp;File</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="9056810968620647706">Nessuna corrispondenza trovata.</translation>
 <translation id="1901494098092085382">Stato di invio del feedback</translation>
@@ -298,7 +298,7 @@
 <translation id="5585645215698205895">&amp;Giù</translation>
 <translation id="8366757838691703947">? Tutti i dati sul dispositivo andranno persi.</translation>
 <translation id="6596816719288285829">Indirizzo IP</translation>
-<translation id="7747704580171477003">Abilita una ristrutturazione in sviluppo della pagina Nuova scheda.</translation>
+<translation id="7747704580171477003">Abilita un nuovo design in via di sviluppo della pagina Nuova scheda.</translation>
 <translation id="4508265954913339219">Attivazione non riuscita</translation>
 <translation id="8656768832129462377">Non verificare</translation>
 <translation id="715487527529576698">La modalità cinese iniziale è il cinese semplificato</translation>
@@ -334,7 +334,7 @@
 <translation id="2422426094670600218">&lt;senza nome&gt;</translation>
 <translation id="2012766523151663935">Revisione firmware:</translation>
 <translation id="4120898696391891645">La pagina non viene caricata</translation>
-<translation id="6060685159320643512">Attento, questi esperimenti possono mordere</translation>
+<translation id="6060685159320643512">Attenzione, prova questi esperimenti a tuo rischio e pericolo</translation>
 <translation id="5829990587040054282">Blocca schermo allo spegnimento</translation>
 <translation id="7800304661137206267">La connessione è stata crittografata utilizzando <ph name="CIPHER"/>, con <ph name="MAC"/> per l'autenticazione dei messaggi e <ph name="KX"/> come meccanismo principale di scambio delle chiavi.</translation>
 <translation id="7706319470528945664">Tastiera portoghese</translation>
@@ -1139,7 +1139,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, scadenza: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="6584811624537923135">Conferma disinstallazione</translation>
 <translation id="7429235532957570505">Non è possibile disattivare i plug-in che sono attivati in base a una norma aziendale</translation>
-<translation id="7866522434127619318">Attiva l'opzione &quot;Click per riprodurre&quot; nelle impostazioni dei contenuti di plug-in.</translation>
+<translation id="7866522434127619318">Attiva l'opzione &quot;Click to play&quot; nelle impostazioni dei contenuti di plug-in.</translation>
 <translation id="8860923508273563464">Attendi completamento download</translation>
 <translation id="6406506848690869874">Sincronizzazione</translation>
 <translation id="5288678174502918605">Riapri sch&amp;eda chiusa</translation>
@@ -1757,7 +1757,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="4910673011243110136">Reti private</translation>
 <translation id="2527167509808613699">Qualsiasi tipo di connessione</translation>
 <translation id="9095710730982563314">Eccezioni notifiche</translation>
-<translation id="8072988827236813198">Blocco delle schede</translation>
+<translation id="8072988827236813198">Blocca le schede</translation>
 <translation id="1234466194727942574">Tabstrip</translation>
 <translation id="7974087985088771286">Attiva scheda sei</translation>
 <translation id="4035758313003622889">&amp;Task Manager</translation>
@@ -1777,7 +1777,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="4322394346347055525">Chiudi le altre schede</translation>
 <translation id="4411770745820968260">Archivio</translation>
 <translation id="881799181680267069">Nascondi altre</translation>
-<translation id="1812631533912615985">Sblocco delle schede</translation>
+<translation id="1812631533912615985">Sblocca le schede</translation>
 <translation id="6042308850641462728">Più</translation>
 <translation id="8318945219881683434">Verifica della revoca non riuscita.</translation>
 <translation id="1650709179466243265">Aggiungi www. e .com e apri l'indirizzo</translation>
@@ -1787,7 +1787,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="1703490097606704369">Impossibile trovare il server all'indirizzo <ph name="HOST_NAME"/>
         perché la ricerca DNS non è riuscita. Il DNS è il servizio web
         che traduce il nome di un sito web nel suo indirizzo Internet. Questo errore è
-        causato più spesso dall'assenza di una connessione a Internet o da una
+        causato di solito dall'assenza di connessione a Internet o da una
         rete configurata male. Può anche essere causato da un server DNS che non
         risponde o da un firewall che impedisce a
         <ph name="PRODUCT_NAME"/>
@@ -2234,7 +2234,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="7229570126336867161">Occorre EVDO</translation>
 <translation id="7582844466922312471">Dati cellulare</translation>
 <translation id="945522503751344254">Invia feedback</translation>
-<translation id="4539401194496451708">È in uso il profilo Google Chrome <ph name="USER_EMAIL_ADDRESS"/>. Ultima sincronizzazione: <ph name="LAST_SYNC_TIME"/></translation>
+<translation id="4539401194496451708">Profilo Google Chrome in uso: <ph name="USER_EMAIL_ADDRESS"/>. Ultima sincronizzazione: <ph name="LAST_SYNC_TIME"/></translation>
 <translation id="7369847606959702983">Carta di credito (altra)</translation>
 <translation id="6867459744367338172">Lingue e immissione</translation>
 <translation id="7671130400130574146">Usa barra del titolo di sistema e bordi</translation>
@@ -2311,7 +2311,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="5546865291508181392">Trova</translation>
 <translation id="1999115740519098545">All'avvio</translation>
 <translation id="2983818520079887040">Impostazioni...</translation>
-<translation id="1465619815762735808">Clic per riprodurre</translation>
+<translation id="1465619815762735808">Click to play</translation>
 <translation id="6941937518557314510">Accedi a <ph name="TOKEN_NAME"/> per autenticarti su <ph name="HOST_NAME"/> con il tuo certificato.</translation>
 <translation id="2783600004153937501">Alcune opzioni sono state disabilitate dall'amministratore IT.</translation>
 <translation id="2099686503067610784">Eliminare il certificato del server &quot;<ph name="CERTIFICATE_NAME"/>&quot;?</translation>
@@ -2365,7 +2365,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES"/> MB disponibili</translation>
 <translation id="7088615885725309056">Meno recente</translation>
 <translation id="461656879692943278"><ph name="HOST_NAME"/> presenta contenuti da  <ph name="ELEMENTS_HOST_NAME"/>, un sito noto per distribuire malware. Il computer potrebbe prendere un virus se visiti questo sito.</translation>
-<translation id="1387022316521171484">Queste funzioni sperimentali Potrebbero cambiare, essere abbandonate o scomparire in qualsiasi momento. Non diamo alcuna garanzia in merito alle conseguenze dell'attivazione di queste funzioni sperimentali e il browser potrebbe subire una combustione spontanea. scherzi a parte, il browser potrebbe eliminare tutti i tuoi dati oppure la sicurezza e la privacy potrebbero venire compromesse in modo imprevisto. Procedi con prudenza.</translation>
+<translation id="1387022316521171484">Queste funzioni sperimentali potrebbero cambiare, essere abbandonate o scomparire in qualsiasi momento. Non diamo alcuna garanzia in merito alle conseguenze dell'attivazione di questi esperimenti, e magari il browser potrebbe persino incenerirsi. Scherzi a parte, il browser potrebbe eliminare tutti i tuoi dati oppure la sicurezza e la privacy potrebbero venire compromesse in modo imprevisto. Procedi con prudenza.</translation>
 <translation id="2143778271340628265">Configurazione manuale del proxy</translation>
 <translation id="5294529402252479912">Aggiorna Adobe Reader adesso</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> giorni fa</translation>
@@ -2509,7 +2509,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="5116628073786783676">Sal&amp;va audio come...</translation>
 <translation id="2557899542277210112">Per un accesso rapido, inserisci i preferiti nella barra.</translation>
 <translation id="2749881179542288782">Controllo ortografia e grammatica</translation>
-<translation id="5105855035535475848">Blocco delle schede</translation>
+<translation id="5105855035535475848">Blocca le schede</translation>
 <translation id="6892450194319317066">Seleziona per opener</translation>
 <translation id="3549436232897695316">fascicola</translation>
 <translation id="5414121716219514204"><ph name="ENGINE_HOST_NAME"/> desidera essere il tuo motore di ricerca.</translation>
@@ -2784,13 +2784,13 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
         <ph name="PRODUCT_NAME"/>
         come un intruso sul computer e blocca la sua connessione a Internet.</translation>
 <translation id="878069093594050299">Questo certificato è stato verificato per i seguenti utilizzi:</translation>
-<translation id="5852112051279473187">Spiacenti. Si è verificato un grave problema durante la registrazione di questo dispositivo. Riprova o contatta il tuo rappresentante dell'assistenza.</translation>
+<translation id="5852112051279473187">Spiacenti. Si è verificato un grave problema durante la registrazione di questo dispositivo. Riprova o contatta un rappresentante dell'assistenza.</translation>
 <translation id="1664314758578115406">Aggiungi pagina...</translation>
 <translation id="7088418943933034707">Gestisci certificati...</translation>
 <translation id="8482183012530311851">Scansione dispositivo in corso...</translation>
 <translation id="3127589841327267804">PYJJ</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="1732215134274276513">Sblocco delle schede</translation>
+<translation id="1732215134274276513">Sblocca le schede</translation>
 <translation id="4084682180776658562">Aggiungi ai Preferiti</translation>
 <translation id="8859057652521303089">Seleziona la tua lingua:</translation>
 <translation id="3030138564564344289">Riprova a scaricare</translation>

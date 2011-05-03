@@ -223,7 +223,7 @@
 <translation id="4950138595962845479">Seçenekler...</translation>
 <translation id="5516565854418269276">Y&amp;er imleri çubuğunu her zaman göster</translation>
 <translation id="6426222199977479699">SSL Hatası</translation>
-<translation id="7104784605502674932">Senkronizasyon Tercihlerini Onaylayın</translation>
+<translation id="7104784605502674932">Senkronizasyon Tercihlerini Onayla</translation>
 <translation id="1788636309517085411">Varsayılanı kullan</translation>
 <translation id="1661867754829461514">PIN eksik</translation>
 <translation id="7406714851119047430">Bu bilgisayara uzaktan erişim devre dışı.</translation>
@@ -532,7 +532,7 @@
 <translation id="1464570622807304272">Bunu deneyin; &quot;orkideler&quot; yazın ve Enter tuşuna basın.</translation>
 <translation id="8026684114486203427">Chrome Web Mağazası'nı kullanmak için bir Google Hesabı'nda oturum açmalısınız.</translation>
 <translation id="8417276187983054885"><ph name="CLOUD_PRINT_NAME"/> Kurulumu</translation>
-<translation id="3056462238804545033">Hata! Kimliğiniz doğrulanırken bir sorun oluştu.  Lütfen giriş kimlik bilgilerinizi tekrar kontrol edin ve yeniden deneyin.</translation>
+<translation id="3056462238804545033">Hata! Kimliğiniz doğrulanırken bir sorun oluştu. Lütfen giriş kimlik bilgilerinizi tekrar kontrol edin ve yeniden deneyin.</translation>
 <translation id="5298420986276701358">Alan adınız için Google Apps hesabınızla oturum açarak, buluttan (cloud) bu <ph name="PRODUCT_NAME"/> cihazının yapılandırmasını uzaktan yönetebilirsiniz.</translation>
 <translation id="2678063897982469759">Tekrar etkinleştir</translation>
 <translation id="1779766957982586368">Pencereyi kapat</translation>
@@ -574,7 +574,7 @@
 <translation id="2738771556149464852">Şundan Sonra Değil:</translation>
 <translation id="5774515636230743468">Bildirim:</translation>
 <translation id="719464814642662924">Visa</translation>
-<translation id="7474889694310679759">İngilizce (Kanada) klavye </translation>
+<translation id="7474889694310679759">İngilizce (Kanada) klavye</translation>
 <translation id="1817871734039893258">Microsoft Dosya Kurtarma</translation>
 <translation id="2423578206845792524">Res&amp;mi farklı kaydet...</translation>
 <translation id="6839929833149231406">Bölge</translation>
@@ -702,7 +702,7 @@
 <translation id="6263541650532042179">senkronizasyonu sıfırla</translation>
 <translation id="6055392876709372977">PKCS #1 RSA Şifrelemeli SHA-256</translation>
 <translation id="7903984238293908205">Katakana</translation>
-<translation id="3781488789734864345">Mobil Ağ seç</translation>
+<translation id="3781488789734864345">Mobil Ağ Seç</translation>
 <translation id="268053382412112343">Geç&amp;miş</translation>
 <translation id="2723893843198727027">Geliştirici modu:</translation>
 <translation id="1722567105086139392">Bağlantı</translation>
@@ -1388,7 +1388,7 @@
 <translation id="7175353351958621980">Yükleme kaynağı:</translation>
 <translation id="4590074117005971373">Grafik İşlemci Birimi (GPU) donanımıyla görüntüleme yaparak 2D içeriğe sahip, daha yüksek performanslı tuval etiketleri sağlar.</translation>
 <translation id="7186367841673660872">Bu sayfa,<ph name="ORIGINAL_LANGUAGE"/>dilinden<ph name="LANGUAGE_LANGUAGE"/>diline çevrilmiştir</translation>
-<translation id="8448695406146523553">Şifrelenmiş verileriniz yalnızca parolanıza bir kişi tarafından okunabilir. Parola Google tarafından gönderilmez veya saklanmaz. Parolanızı unutursanız şunu yapmanız gerekir:</translation>
+<translation id="8448695406146523553">Şifrelenmiş verileriniz yalnızca parolanıza sahip bir kişi tarafından okunabilir. Parola Google tarafından gönderilmez veya saklanmaz. Parolanızı unutursanız şunu yapmanız gerekir:</translation>
 <translation id="6052976518993719690">SSL Sertifika Yetkilisi</translation>
 <translation id="1636959874332483835"><ph name="HOST_NAME"/> kötü amaçlı yazılım içeriyor. Bu siteyi ziyaret ederseniz bilgisayarınıza virüs bulaşabilir.</translation>
 <translation id="8050783156231782848">Mevcut veri yok</translation>
@@ -1624,7 +1624,7 @@
 <translation id="3981760180856053153">Geçersiz kayıt türü girildi.</translation>
 <translation id="8464591670878858520"><ph name="NETWORK"/> verilerinin kullanım süresi doldu</translation>
 <translation id="4568660204877256194">Yer İşaretlerini Dışa Aktar...</translation>
-<translation id="3116361045094675131">İngiliz klavye</translation>
+<translation id="3116361045094675131">İngilizce klavye</translation>
 <translation id="4577070033074325641">Yer İşaretlerini İçe Aktar...</translation>
 <translation id="1641504961675316934"><ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="1715941336038158809">Geçersiz kullanıcı adı veya şifre.</translation>
@@ -1783,7 +1783,7 @@
 <translation id="8877448029301136595">[üst dizin]</translation>
 <translation id="7301360164412453905">Hsu klavye seçim tuşları</translation>
 <translation id="1963227389609234879">Tümünü Kaldır</translation>
-<translation id="7779140087128114262">Şifrelenmiş verileriniz yalnızca parolanıza bir kişi tarafından okunabilir. Parola Google tarafından gönderilmez veya saklanmaz. Parolanızı unutursanız, senkronizasyonu sıfırlamanız gerekir.</translation>
+<translation id="7779140087128114262">Şifrelenmiş verileriniz yalnızca parolanıza sahip bir kişi tarafından okunabilir. Parola Google tarafından gönderilmez veya saklanmaz. Parolanızı unutursanız, senkronizasyonu sıfırlamanız gerekir.</translation>
 <translation id="8027581147000338959">Yeni Pencerede Aç</translation>
 <translation id="6030946405726632495">&quot;$1&quot; klasörü oluşturulamıyor: $2</translation>
 <translation id="8019305344918958688">Maalesef hiçbir uzantı yüklenmemiş :-(</translation>
@@ -1819,7 +1819,7 @@
 <translation id="4756388243121344051">&amp;Geçmiş</translation>
 <translation id="3789841737615482174">Yükle</translation>
 <translation id="4320697033624943677">Kullanıcı ekle</translation>
-<translation id="9153934054460603056">Kimlik ve şifreyi kaydet</translation>
+<translation id="9153934054460603056">Kimliği ve şifreyi kaydet</translation>
 <translation id="1455548678241328678">Norveççe klavye</translation>
 <translation id="2520481907516975884">Çince/İngilizce arasında geçiş yap</translation>
 <translation id="8571890674111243710">Sayfa <ph name="LANGUAGE"/> diline çevriliyor...</translation>
@@ -2443,7 +2443,7 @@
 <translation id="8112223930265703044">Her şey</translation>
 <translation id="3968739731834770921">Kana</translation>
 <translation id="3729920814805072072">Kaydedilen şifreleri yönet...</translation>
-<translation id="7387829944233909572">&quot;Gözatma verilerini temizle&quot; iletişim kutusu </translation>
+<translation id="7387829944233909572">&quot;Gözatma verilerini temizle&quot; iletişim kutusu</translation>
 <translation id="8023801379949507775">Uzantıları şimdi güncelle</translation>
 <translation id="6549677549082720666">Yeni arka plan uygulaması yüklendi</translation>
 <translation id="1983108933174595844">Geçerli sayfanın ekran görüntüsünü gönder</translation>

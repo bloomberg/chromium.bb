@@ -443,7 +443,7 @@
 <translation id="2154710561487035718">Kopírovat adresu URL</translation>
 <translation id="8163672774605900272">Pokud myslíte, že byste neměli používat server proxy, proveďte následující kroky:
         <ph name="PLATFORM_TEXT"/></translation>
-<translation id="5510687173983454382">Ovládejte, kteří uživatelé se mohou do zařízení přihlásit, a nakonfigurujte, zda budou povoleny relace prohlížení pro hosty.</translation>
+<translation id="5510687173983454382">Mějte pod kontrolou, kteří uživatelé se mohou do zařízení přihlásit, a nakonfigurujte, zda budou povoleny relace prohlížení pro hosty.</translation>
 <translation id="3241680850019875542">Vyberte kořenový adresář rozšíření , které chcete zabalit. Chcete-li rozšíření aktualizovat, vyberte také soubor soukromého klíče, který chcete znovu použít.</translation>
 <translation id="7500424997253660722">Omezená skupina:</translation>
 <translation id="657402800789773160">&amp;Načíst tuto stránku znovu</translation>
@@ -792,7 +792,7 @@
 <translation id="8041140688818013446">Server hostující webovou stránku je pravděpodobně přetížený nebo na něm došlo k chybě. Prohlížeč <ph name="PRODUCT_NAME"/> dočasně přestal
          povolovat požadavky na tento server, aby zabránil jeho dalšímu zatěžování, které by mohlo situaci ještě zhoršit.
         <ph name="LINE_BREAK"/>
-        Pokud si myslíte, že takovéto chování je nežádoucí (například v případě, že ladíte své vlastní webové stránky)
+        Pokud si myslíte, že takovéto chování je nežádoucí (například v případě, že ladíte své vlastní webové stránky),
         navštivte prosím stránku <ph name="NET_INTERNALS_PAGE"/>,
         kde naleznete další informace o vypnutí této funkce.</translation>
 <translation id="4254921211241441775">Zastavit synchronizaci tohoto účtu</translation>
@@ -2230,7 +2230,7 @@
 <translation id="7229570126336867161">Je zapotřebí technologie EVDO.</translation>
 <translation id="7582844466922312471">Mobilní data</translation>
 <translation id="945522503751344254">Odeslat názor</translation>
-<translation id="4539401194496451708">Použitý profil Chrome <ph name="USER_EMAIL_ADDRESS"/>. Poslední synchronizace: <ph name="LAST_SYNC_TIME"/></translation>
+<translation id="4539401194496451708">Použitý profil Chrome: <ph name="USER_EMAIL_ADDRESS"/>. Poslední synchronizace: <ph name="LAST_SYNC_TIME"/></translation>
 <translation id="7369847606959702983">Platební karta (další)</translation>
 <translation id="6867459744367338172">Jazyky a zadávání</translation>
 <translation id="7671130400130574146">Použít systémové záhlaví a okraje okna</translation>
@@ -2754,7 +2754,7 @@
 <translation id="8828933418460119530">Název DNS</translation>
 <translation id="988159990683914416">Vývojářské sestavení</translation>
 <translation id="8026354464835030469"><ph name="BURNT_AMOUNT"/> (Celková velikost není známa.)</translation>
-<translation id="4114470632216071239">Zamknout kartu SIM (k použití mobilní dat vyžadovat kód PIN)</translation>
+<translation id="4114470632216071239">Zamknout kartu SIM (k použití mobilních dat vyžadovat kód PIN)</translation>
 <translation id="2183426022964444701">Vyberte kořenový adresář rozšíření.</translation>
 <translation id="2517143724531502372">Soubory cookie z webu <ph name="DOMAIN"/> byly povoleny pouze pro relaci.</translation>
 <translation id="9018524897810991865">Potvrdit nastavení synchronizace</translation>

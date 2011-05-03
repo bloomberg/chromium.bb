@@ -42,7 +42,7 @@
 <translation id="5048179823246820836">Noord-Europees</translation>
 <translation id="1763046204212875858">Toepassingssnelkoppelingen maken</translation>
 <translation id="2105006017282194539">Nog niet geladen</translation>
-<translation id="524759338601046922">Nieuwe PIN-code nogmaals invoeren:</translation>
+<translation id="524759338601046922">Nieuwe pincode nogmaals invoeren:</translation>
 <translation id="688547603556380205">L2TP/IPSec + gebruikerscertificaat</translation>
 <translation id="777702478322588152">Prefectuur</translation>
 <translation id="561349411957324076">Voltooid</translation>
@@ -165,7 +165,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="762917759028004464">De standaardbrowser is momenteel <ph name="BROWSER_NAME"/>.</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> seconden resterend</translation>
 <translation id="300544934591011246">Vorig wachtwoord</translation>
-<translation id="5078796286268621944">Onjuiste PIN-code</translation>
+<translation id="5078796286268621944">Onjuiste pincode</translation>
 <translation id="989988560359834682">Adres bewerken</translation>
 <translation id="8487678622945914333">Groter</translation>
 <translation id="735327918767574393">Er is iets misgegaan tijdens het weergeven van deze webpagina. Laad de pagina opnieuw of ga naar een andere pagina om door te gaan.</translation>
@@ -238,7 +238,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="6066742401428748382">Toegang tot de webpagina is geweigerd</translation>
 <translation id="5111692334209731439">&amp;Bladwijzermanager</translation>
 <translation id="8295070100601117548">Serverfout</translation>
-<translation id="5661272705528507004">Deze SIM-kaart is uitgeschakeld en kan niet worden gebruikt. Neem contact op met uw serviceprovider voor een vervangend exemplaar.</translation>
+<translation id="5661272705528507004">Deze simkaart is uitgeschakeld en kan niet worden gebruikt. Neem contact op met uw serviceprovider voor een vervangend exemplaar.</translation>
 <translation id="443008484043213881">Extra</translation>
 <translation id="2529657954821696995">Nederlands toetsenbord</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
@@ -503,7 +503,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="1541725072327856736">Katakana op halve breedte</translation>
 <translation id="7456847797759667638">Open locatie...</translation>
 <translation id="1388866984373351434">Browsegegevens</translation>
-<translation id="3754634516926225076">Onjuiste PIN-code. Probeer het opnieuw.</translation>
+<translation id="3754634516926225076">Onjuiste pincode. Probeer het opnieuw.</translation>
 <translation id="7378627244592794276">Nee</translation>
 <translation id="2800537048826676660">Deze taal voor spellingcontrole gebruiken</translation>
 <translation id="68541483639528434">Andere tabbladen sluiten</translation>
@@ -538,7 +538,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="2678063897982469759">Opnieuw inschakelen</translation>
 <translation id="1779766957982586368">Venster sluiten</translation>
 <translation id="4850886885716139402">Weergave</translation>
-<translation id="89217462949994770">U heeft te vaak een onjuiste PIN-code opgegeven. Neem contact op met <ph name="CARRIER_ID"/> om een nieuwe achtcijferige PIN-ontgrendelingscode aan te vragen.</translation>
+<translation id="89217462949994770">U heeft te vaak een onjuiste pincode opgegeven. Neem contact op met <ph name="CARRIER_ID"/> om een nieuwe achtcijferige ontgrendelingscode voor uw pin aan te vragen.</translation>
 <translation id="5920618722884262402">Aanstootgevende woorden blokkeren</translation>
 <translation id="5120247199412907247">Geavanceerde configuratie</translation>
 <translation id="5922220455727404691">SSL 3.0 gebruiken</translation>
@@ -644,7 +644,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="1426410128494586442">Ja</translation>
 <translation id="6468252175335241103">%b %-d, %Y</translation>
 <translation id="6725970970008349185">Aantal kandidaten dat per pagina wordt weergegeven</translation>
-<translation id="6198252989419008588">PIN-code wijzigen</translation>
+<translation id="6198252989419008588">Pincode wijzigen</translation>
 <translation id="3520476450377425184"><ph name="NUMBER_MANY"/> dagen resterend</translation>
 <translation id="7643817847124207232">De internetverbinding is verbroken.</translation>
 <translation id="932327136139879170">Home</translation>
@@ -878,7 +878,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="7309459761865060639">Controleer uw afdruktaken en printerstatus online.</translation>
 <translation id="4803909571878637176">Verwijderen</translation>
 <translation id="5209518306177824490">SHA-1-vingerafdruk</translation>
-<translation id="3300768886937313568">PIN-code van SIM-kaart wijzigen</translation>
+<translation id="3300768886937313568">Pincode van simkaart wijzigen</translation>
 <translation id="7447657194129453603">Netwerkstatus:</translation>
 <translation id="1553538517812678578">onbeperkt</translation>
 <translation id="7947315300197525319">(Een andere schermafbeelding selecteren)</translation>
@@ -897,7 +897,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="7025190659207909717">Beheer van mobiele gegevensservice</translation>
 <translation id="8265096285667890932">Tabbladzijbalk gebruiken</translation>
 <translation id="4250680216510889253">Nee</translation>
-<translation id="3949593566929137881">PIN-code van SIM-kaart invoeren</translation>
+<translation id="3949593566929137881">Pincode van simkaart invoeren</translation>
 <translation id="6291953229176937411">&amp;Toon in Finder</translation>
 <translation id="2476990193835943955">Houd Ctrl, Alt of Shift ingedrukt voor sneltoetsen&lt;br&gt;met die functietoetsen.</translation>
 <translation id="9187827965378254003">Het lijkt erop dat er momenteel geen experimenten beschikbaar zijn.</translation>
@@ -905,7 +905,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="3041612393474885105">Certificaatgegevens</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="4611079913162790275">De wachtwoordsynchronisatie vereist uw aandacht.</translation>
-<translation id="6562758426028728553">Geef de nieuwe en de oude PIN-code op.</translation>
+<translation id="6562758426028728553">Geef de nieuwe en de oude pincode op.</translation>
 <translation id="614161640521680948">Taal:</translation>
 <translation id="3665650519256633768">Zoekresultaten</translation>
 <translation id="3733127536501031542">SSL-server met step-up</translation>
@@ -1153,12 +1153,12 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="2320435940785160168">Voor deze server is een certificaat voor verificatie nodig. Het certificaat dat door de browser is verzonden is niet geaccepteerd. Uw certificaat is verlopen, of de server vertrouwt de uitgever niet. U kunt het nogmaals proberen met een ander certificaat (als u hierover beschikt), of u haalt ergens anders een geldig certificaat op.</translation>
 <translation id="6295228342562451544">Wanneer u verbinding maakt met een beveiligde website, retourneert de server die deze site host een zogenaamd certificaat aan uw browser, om zijn identiteit te verifiëren. Dit certificaat bevat identiteitsgegevens zoals het adres van de website, die worden geverifieerd door een derde partij die uw computer vertrouwt. Door het adres in het certificaat te vergelijken met het adres van de website, kan worden geverifieerd dat u veilig communiceert met de website die u bedoelde en niet met iemand anders (zoals een hacker op uw netwerk).</translation>
 <translation id="6342069812937806050">Zojuist</translation>
-<translation id="5605716740717446121">Uw SIM-kaart wordt permanent uitgeschakeld als u geen correcte PIN-ontgrendelingscode kunt invoeren. Resterende pogingen: <ph name="TRIES_COUNT"/></translation>
+<translation id="5605716740717446121">Uw simkaart wordt permanent uitgeschakeld als u geen correcte ontgrendelingscode voor uw pin kunt invoeren. Resterende pogingen: <ph name="TRIES_COUNT"/></translation>
 <translation id="8836712291807476944"><ph name="SAVED_BYTES"/>/<ph name="TOTAL_BYTES"/> bytes, onderbroken</translation>
 <translation id="5502500733115278303">Geïmporteerd uit Firefox</translation>
 <translation id="569109051430110155">Automatisch detecteren</translation>
 <translation id="4408599188496843485">H&amp;elp</translation>
-<translation id="5399158067281117682">PIN-codes komen niet overeen!</translation>
+<translation id="5399158067281117682">Pincodes komen niet overeen!</translation>
 <translation id="8494234776635784157">Webinhoud</translation>
 <translation id="2681441671465314329">Het cachegeheugen leegmaken</translation>
 <translation id="3646789916214779970">Standaardthema herstellen</translation>
@@ -1211,7 +1211,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="5880867612172997051">Netwerktoegang opgeschort</translation>
 <translation id="7842346819602959665">De nieuwste versie van de extensie '<ph name="EXTENSION_NAME"/>' vereist meer rechten. Daarom is deze extensie uitgeschakeld.</translation>
 <translation id="3776667127601582921">In dit geval is het servercertificaat of een tussenliggend CA-certificaat dat aan uw browser wordt gepresenteerd, ongeldig. Dit kan betekenen dat het certificaatbestand corrupt is, ongeldige velden bevat of niet wordt ondersteund.</translation>
-<translation id="2412835451908901523">Geef een achtcijferige PIN-ontgrendelingscode op die door <ph name="CARRIER_ID"/> is geleverd.</translation>
+<translation id="2412835451908901523">Geef de achtcijferige ontgrendelingscode voor uw pin op die door <ph name="CARRIER_ID"/> is geleverd.</translation>
 <translation id="6979448128170032817">Uitzonderingen...</translation>
 <translation id="7584802760054545466">Verbinding maken met <ph name="NETWORK_ID"/></translation>
 <translation id="208047771235602537">Wilt u <ph name="PRODUCT_NAME"/> sluiten terwijl er een download wordt uitgevoerd?</translation>
@@ -1271,7 +1271,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="4710257996998566163">Laatst bijgewerkt:</translation>
 <translation id="1383876407941801731">Zoeken</translation>
 <translation id="8398877366907290961">Toch doorgaan</translation>
-<translation id="5063180925553000800">Nieuwe PIN-code:</translation>
+<translation id="5063180925553000800">Nieuwe pincode:</translation>
 <translation id="6974053822202609517">Rechts naar links</translation>
 <translation id="2370882663124746154">Double-pinyinmethode inschakelen</translation>
 <translation id="5463856536939868464">Menu met verborgen bladwijzers</translation>
@@ -1546,7 +1546,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="8477384620836102176">&amp;Algemeen</translation>
 <translation id="1074663319790387896">Synchronisatie configureren</translation>
 <translation id="4302315780171881488">Verbindingsstatus:</translation>
-<translation id="3391392691301057522">Oude PIN-code:</translation>
+<translation id="3391392691301057522">Oude pincode:</translation>
 <translation id="1344519653668879001">Disable hyperlink auditing</translation>
 <translation id="6463795194797719782">B&amp;ewerken</translation>
 <translation id="4262113024799883061">Chinees</translation>
@@ -2278,7 +2278,7 @@ en de URL die aan uw feedback is gekoppeld.
 <translation id="8200772114523450471">Hervatten</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> seconden geleden</translation>
 <translation id="5423849171846380976">Geactiveerd</translation>
-<translation id="6748105842970712833">SIM-kaart uitgeschakeld</translation>
+<translation id="6748105842970712833">Simkaart uitgeschakeld</translation>
 <translation id="7323391064335160098">VPN-ondersteuning</translation>
 <translation id="3929673387302322681">Dev - Instabiel</translation>
 <translation id="4251486191409116828">Kan applicatiesnelkoppeling niet maken</translation>
@@ -2399,7 +2399,7 @@ en de URL die aan uw feedback is gekoppeld.
 <translation id="2137808486242513288">Een gebruiker toevoegen</translation>
 <translation id="6193618946302416945">Aanbieden om pagina’s te vertalen die in een voor mij onbekende taal zijn</translation>
 <translation id="129553762522093515">Recent gesloten</translation>
-<translation id="4287167099933143704">PIN-ontgrendelingscode invoeren</translation>
+<translation id="4287167099933143704">Ontgrendelingscode voor pin invoeren</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> dagen</translation>
 <translation id="3129140854689651517">Tekst vinden</translation>
 <translation id="7221585318879598658">Sans-Serif</translation>
@@ -2559,13 +2559,13 @@ en de URL die aan uw feedback is gekoppeld.
 <translation id="2604243255129603442"><ph name="NAME_OF_EXTENSION"/> is uitgeschakeld. Als u het synchroniseren van bladwijzers uitschakelt, kunt u deze extensie weer inschakelen op de pagina 'Extensies', beschikbaar via het menu 'Gereedschap'.</translation>
 <translation id="2024621544377454980">Pagina's worden niet geladen</translation>
 <translation id="7136694880210472378">Instellen als standaard</translation>
-<translation id="7681202901521675750">De SIM-kaart is vergrendeld, geef een PIN-code op. Resterende pogingen: <ph name="TRIES_COUNT"/></translation>
+<translation id="7681202901521675750">De simkaart is vergrendeld, geef een pincode op. Resterende pogingen: <ph name="TRIES_COUNT"/></translation>
 <translation id="7420789336015002755">Ongeldig teken in mapnaam: $1</translation>
 <translation id="1731346223650886555">Puntkomma</translation>
 <translation id="158849752021629804">Thuisnetwerk vereist</translation>
 <translation id="7339763383339757376">PKCS nr. 7, één certificaat</translation>
 <translation id="7587108133605326224">Baltisch</translation>
-<translation id="3991936620356087075">U heeft te vaak een onjuiste PIN-ontgrendelingscode opgegeven. Uw SIM-kaart is permanent uitgeschakeld.</translation>
+<translation id="3991936620356087075">U heeft te vaak een onjuiste ontgrendelingscode voor uw pin opgegeven. Uw simkaart is permanent uitgeschakeld.</translation>
 <translation id="936801553271523408">Diagnostische systeemgegevens</translation>
 <translation id="6389701355360299052">Webpagina, alleen HTML</translation>
 <translation id="8067791725177197206">Doorgaan »</translation>
@@ -2678,7 +2678,7 @@ en de URL die aan uw feedback is gekoppeld.
 <translation id="8959027566438633317"><ph name="EXTENSION_NAME"/> installeren?</translation>
 <translation id="8155798677707647270">Nieuwe versie installeren...</translation>
 <translation id="6886871292305414135">Link openen in nieuw &amp;tabblad</translation>
-<translation id="1639192739400715787">PIN-code van de SIM-kaart invoeren voor toegang tot de beveiligingsinstellingen</translation>
+<translation id="1639192739400715787">Pincode van de simkaart invoeren voor toegang tot de beveiligingsinstellingen</translation>
 <translation id="7961015016161918242">Nooit</translation>
 <translation id="3950924596163729246">Geen toegang tot het netwerk.</translation>
 <translation id="2835170189407361413">Formulier leegmaken</translation>
@@ -2757,7 +2757,7 @@ en de URL die aan uw feedback is gekoppeld.
 <translation id="8828933418460119530">DNS-naam</translation>
 <translation id="988159990683914416">Ontwikkelaarsbuild</translation>
 <translation id="8026354464835030469"><ph name="BURNT_AMOUNT"/> van onbekend totaal</translation>
-<translation id="4114470632216071239">SIM-kaart vergrendelen (PIN-code is vereist voor het gebruik van mobiele gegevens)</translation>
+<translation id="4114470632216071239">Simkaart vergrendelen (pincode is vereist voor het gebruik van mobiele gegevens)</translation>
 <translation id="2183426022964444701">Selecteer de hoofddirectory van de extensie.</translation>
 <translation id="2517143724531502372">Cookies van <ph name="DOMAIN"/> alleen gedurende sessie toegestaan.</translation>
 <translation id="9018524897810991865">Synchronisatievoorkeuren bevestigen</translation>
@@ -2782,7 +2782,7 @@ en de URL die aan uw feedback is gekoppeld.
         <ph name="PRODUCT_NAME"/>
         niet op uw computer thuishoort en daarom de internetverbinding blokkeert.</translation>
 <translation id="878069093594050299">Dit certificaat is geverifieerd voor de volgende certificaatdoeleinden:</translation>
-<translation id="5852112051279473187">Oeps! Er is iets volledig misgegaan bij de aanmelding van dit apparaat. Probeer het opnieuw of neem contact op met een medewerker van het ondersteuningteam.</translation>
+<translation id="5852112051279473187">Oeps! Er is iets misgegaan bij de aanmelding van dit apparaat. Probeer het opnieuw of neem contact op met een medewerker van het ondersteuningteam.</translation>
 <translation id="1664314758578115406">Pagina toevoegen...</translation>
 <translation id="7088418943933034707">Certificaten beheren...</translation>
 <translation id="8482183012530311851">Apparaat scannen...</translation>
@@ -2806,7 +2806,7 @@ en de URL die aan uw feedback is gekoppeld.
 <translation id="839072384475670817">&amp;Snelkoppelingen maken...</translation>
 <translation id="1478632774608054702">PPAPI-versie van Flash uitvoeren in het rendererproces</translation>
 <translation id="6756161853376828318"><ph name="PRODUCT_NAME"/> instellen als mijn standaardbrowser</translation>
-<translation id="9112614144067920641">Selecteer een nieuwe PIN-code.</translation>
+<translation id="9112614144067920641">Selecteer een nieuwe pincode.</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="7138678301420049075">Anders</translation>
 <translation id="9147392381910171771">&amp;Opties</translation>
@@ -2901,7 +2901,7 @@ opmerkingen
 <translation id="5801568494490449797">Voorkeuren</translation>
 <translation id="1038842779957582377">onbekende naam</translation>
 <translation id="5327248766486351172">Naam</translation>
-<translation id="5553784454066145694">Nieuwe PIN-code kiezen</translation>
+<translation id="5553784454066145694">Nieuwe pincode kiezen</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION"/> [<ph name="COUNTRY"/>]</translation>
 <translation id="4664482161435122549">Fout bij exporteren van PKCS #12</translation>
 <translation id="2445081178310039857">Hoofddirectory van extensie is vereist.</translation>
@@ -3016,7 +3016,7 @@ Bewaar uw sleutelbestand op een veilige plaats. U heeft het bestand nodig om nie
 <translation id="4886690096315032939">Bestaand tabblad op voorgrond bij openen</translation>
 <translation id="5729712731028706266">&amp;Weergave</translation>
 <translation id="774576312655125744">Uw gegevens op <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> en <ph name="NUMBER_OF_OTHER_WEBSITES"/> andere websites</translation>
-<translation id="6359806961507272919">SMS van <ph name="PHONE_NUMBER"/></translation>
+<translation id="6359806961507272919">Sms van <ph name="PHONE_NUMBER"/></translation>
 <translation id="4508765956121923607">Br&amp;on weergeven</translation>
 <translation id="5975083100439434680">Uitzoomen</translation>
 <translation id="8080048886850452639">Audi&amp;o-URL kopiëren</translation>
@@ -3026,7 +3026,7 @@ Bewaar uw sleutelbestand op een veilige plaats. U heeft het bestand nodig om nie
 <translation id="5849869942539715694">Extensie inpakken...</translation>
 <translation id="7339785458027436441">Controleer spelling tijdens typen</translation>
 <translation id="8308427013383895095">De vertaling is mislukt omdat er een probleem is opgetreden met de netwerkverbinding.</translation>
-<translation id="1801298019027379214">Onjuiste PIN-code, probeer het opnieuw. Resterende pogingen: <ph name="TRIES_COUNT"/></translation>
+<translation id="1801298019027379214">Onjuiste pincode, probeer het opnieuw. Resterende pogingen: <ph name="TRIES_COUNT"/></translation>
 <translation id="1384721974622518101">Wist u dat u rechtstreeks kunt zoeken via het bovenstaande vak?</translation>
 <translation id="992543612453727859">Woordgroepen vooraan toevoegen</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>

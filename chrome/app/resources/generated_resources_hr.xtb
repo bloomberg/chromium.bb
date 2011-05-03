@@ -5,7 +5,7 @@
 <translation id="6879617193011158416">Prebaci traku oznake</translation>
 <translation id="8130276680150879341">Odspoji privatnu mrežu</translation>
 <translation id="1058418043520174283"><ph name="INDEX"/> od <ph name="COUNT"/></translation>
-<translation id="4480627574828695486">Odspoji ovaj račun...</translation>
+<translation id="4480627574828695486">Odvoji ovaj račun...</translation>
 <translation id="7040807039050164757">&amp;Provjeri pravopis u ovom polju</translation>
 <translation id="778579833039460630">Nema primljenih podataka</translation>
 <translation id="1852799913675865625">Došlo je do pogreške pri pokušaju čitanja datoteke: <ph name="ERROR_TEXT"/>.</translation>
@@ -60,7 +60,7 @@
 <translation id="816055135686411707">Pogreška u postavljanju pouzdanosti certifikata</translation>
 <translation id="4714531393479055912"><ph name="PRODUCT_NAME"/> sada može sinkronizirati vaše zaporke.</translation>
 <translation id="5704565838965461712">Odaberite certifikat koji će predstavljati identifikaciju:</translation>
-<translation id="2025632980034333559">Aplikacija <ph name="APP_NAME"/> se srušila. Kliknite ovaj balon za ponovno učitavanje ekstenzije.</translation>
+<translation id="2025632980034333559">Aplikacija <ph name="APP_NAME"/> srušila se. Kliknite ovaj balon za ponovno učitavanje ekstenzije.</translation>
 <translation id="4059593000330943833">Eksperimentalna podrška za dodatne načine proširivog protokola autentifikacije za Wi-Fi, kao što su EAP-TLS i LEAP.</translation>
 <translation id="6322279351188361895">Čitanje osobnog ključa nije uspjelo.</translation>
 <translation id="3781072658385678636">Na ovoj su stranici blokirani sljedeći dodaci:</translation>
@@ -186,7 +186,7 @@
 <translation id="1165039591588034296">Pogreška</translation>
 <translation id="2064942105849061141">Upotrijebi GTK+ temu</translation>
 <translation id="2278562042389100163">Otvori prozor preglednika</translation>
-<translation id="5246282308050205996">Aplikacija <ph name="APP_NAME"/> se srušila. Kliknite ovaj balon za ponovno pokretanje aplikacije.</translation>
+<translation id="5246282308050205996">Aplikacija <ph name="APP_NAME"/> srušila se. Kliknite ovaj balon za ponovno pokretanje aplikacije.</translation>
 <translation id="9218430445555521422">Postavi kao zadano</translation>
 <translation id="5027550639139316293">Certifikat e-pošte</translation>
 <translation id="938582441709398163">Preklapanje tipkovnice</translation>
@@ -233,7 +233,7 @@
 <translation id="6066742401428748382">Pristup web-stranici nije dopušten</translation>
 <translation id="5111692334209731439">&amp;Upravitelj oznaka</translation>
 <translation id="8295070100601117548">Pogreška poslužitelja</translation>
-<translation id="5661272705528507004">SIM kartica je onemogućena i ne može se koristiti. Kontaktirajte svog davatelja usluge radi zamjene.</translation>
+<translation id="5661272705528507004">SIM kartica je onemogućena i ne može se upotrebljavati. Kontaktirajte sa svojim davateljem usluge radi zamjene.</translation>
 <translation id="443008484043213881">Alati</translation>
 <translation id="2529657954821696995">Nizozemska tipkovnica</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
@@ -243,7 +243,7 @@
 <translation id="2279770628980885996">Neočekivano stanje pojavilo se dok je poslužitelj pokušavao ispuniti zahtjev.</translation>
 <translation id="8079135502601738761">Dijelovi ovog PDF dokumenta ne mogu se prikazati. Otvoriti u Adobe Readeru?</translation>
 <translation id="9123413579398459698">FTP proxy</translation>
-<translation id="3887875461425980041">Ako se koristi PPAPI verzija Flasha, pokrenite svaki proces ponovnog iscrtavanja umjesto namjenskog plugin procesa.</translation>
+<translation id="3887875461425980041">Ako se upotrebljava verzija Flasha PPAPI, pokrenite svaki proces ponovnog iscrtavanja umjesto namjenskog plugin procesa.</translation>
 <translation id="8534801226027872331">U ovom slučaju potvrda prikazana Vašem pregledniku sadrži pogreške i nije je moguće razumjeti. To može značiti da ne možemo shvatiti podatke o identitetu unutar potvrde ili neke druge podatke u potvrdi korištenoj za osiguravanje veze. Ne biste trebali nastaviti.</translation>
 <translation id="3608527593787258723">Aktiviranje kartice 1</translation>
 <translation id="4497369307931735818">Daljinski rad</translation>
@@ -255,7 +255,7 @@
 <translation id="1880905663253319515">Izbrisati certifikat &quot;<ph name="CERTIFICATE_NAME"/>&quot;?</translation>
 <translation id="8546306075665861288">Predmemorija slike</translation>
 <translation id="5904093760909470684">Konfiguracija proxyja</translation>
-<translation id="2874027208508018603">Chrome će koristiti 3G podatke kada WiFi veza nije prisutna.</translation>
+<translation id="2874027208508018603">Chrome će upotrebljavati 3G podatke kada WiFi veza nije prisutna.</translation>
 <translation id="4558734465070698159">Pritisnite <ph name="HOTKEY_NAME"/> za odabir prethodne metode unosa.</translation>
 <translation id="3391060940042023865">Ovaj se dodatak srušio: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4237016987259239829">Pogreška mrežne veze</translation>
@@ -525,11 +525,11 @@
 <translation id="8026684114486203427">Da biste koristili Chrome Web Store, morate se prijaviti putem Google Računa.</translation>
 <translation id="8417276187983054885">Postavi <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="3056462238804545033">Ups!  Nešto nije u redu s provjerom vaše autentičnosti.  Još jedanput provjerite svoje vjerodajnice za prijavu i pokušajte ponovo.</translation>
-<translation id="5298420986276701358">Prijavljivanjem na vaš Google Apps račun za vašu Domenu možete daljinskim putem upravljati konfiguracijom ovog <ph name="PRODUCT_NAME"/> uređaja iz oblaka.</translation>
+<translation id="5298420986276701358">Prijavom na račun za Google Apps za svoju domenu možete daljinskim putem upravljati konfiguracijom ovog <ph name="PRODUCT_NAME"/> uređaja iz oblaka.</translation>
 <translation id="2678063897982469759">Ponovo omogući</translation>
 <translation id="1779766957982586368">Zatvori prozor</translation>
 <translation id="4850886885716139402">Prikaz</translation>
-<translation id="89217462949994770">Unijeli ste netočan PIN previše puta. Kontaktirajte <ph name="CARRIER_ID"/> kako biste dobili novi 8-znamenkasti ključ za otključavanje PIN-a.</translation>
+<translation id="89217462949994770">Unijeli ste netočan PIN previše puta. Kontaktirajte s <ph name="CARRIER_ID"/> kako biste dobili novi 8-znamenkasti ključ za otključavanje PIN-a.</translation>
 <translation id="5920618722884262402">Blokiraj uvredljive riječi</translation>
 <translation id="5120247199412907247">Napredna konfiguracija</translation>
 <translation id="5922220455727404691">Koristi SSL 3.0</translation>
@@ -1306,7 +1306,7 @@
 <translation id="8487693399751278191">Odmah uvezi oznake...</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
 <translation id="7484580869648358686">Upozorenje: Nešto nije u redu!</translation>
-<translation id="2074739700630368799">Chrome OS za poduzeća omogućuje vam povezivanje vašeg uređaja na Google Apps za Vašu domenu, omogućujući vam pronalaženje i upravljanje uređajem s vaše upravljačke ploče usluge Google Apps za Vašu domenu.</translation>
+<translation id="2074739700630368799">OS Chrome za tvrtke omogućuje vam povezivanje vašeg uređaja na Google Apps za vašu domenu, omogućujući vam pronalaženje i upravljanje uređajem s vaše upravljačke ploče usluge Google Apps za Vašu domenu.</translation>
 <translation id="4474155171896946103">Označi sve kartice...</translation>
 <translation id="5895187275912066135">Izdano</translation>
 <translation id="1190844492833803334">Kad zatvorim preglednik</translation>
@@ -1631,7 +1631,7 @@
 <translation id="7988355189918024273">Omogući značajke dostupnosti</translation>
 <translation id="5438653034651341183">Uključi trenutačnu snimku zaslona:</translation>
 <translation id="1899708097738826574"><ph name="OPTIONS_TITLE"/> - <ph name="SUBPAGE_TITLE"/></translation>
-<translation id="1765313842989969521">(ovo je upravljana ekstenzija te se ne može deinstalirati ni onemogućiti)</translation>
+<translation id="1765313842989969521">(ovo je upravljana ekstenzija te se ne može deinstalirati niti onemogućiti)</translation>
 <translation id="6983783921975806247">Registrirani OID</translation>
 <translation id="394984172568887996">Uvezeno iz IE</translation>
 <translation id="5311260548612583999">Datoteka s os.klj. (neobav.)</translation>
@@ -1655,7 +1655,7 @@
 <translation id="5681833099441553262">Aktiviraj prethodnu karticu</translation>
 <translation id="4792057643643237295">Onemogući udaljeni pristup</translation>
 <translation id="1681614449735360921">Prikaži nekompatibilnosti</translation>
-<translation id="19094784437781028">Solo debitna kartica</translation>
+<translation id="19094784437781028">Debitna kartica Solo</translation>
 <translation id="2657327428424666237"><ph name="BEGIN_LINK"/>Ponovo učitaj<ph name="END_LINK"/> ovu web-stranicu kasnije.</translation>
 <translation id="7347751611463936647">Da biste upotrijebili to proširenje, upišite &quot;<ph name="EXTENSION_KEYWORD"/>&quot;, zatim pritisnite TAB, a zatim svoju naredbu ili pretraživanje.</translation>
 <translation id="659432221160402784"><ph name="PRODUCT_NAME"/> sinkronizirat će sve aplikacije koje instalirate pa ćete im moći pristupiti s bilo kojeg <ph name="PRODUCT_NAME"/> preglednika na koji se prijavite.</translation>
@@ -2202,7 +2202,7 @@
 <translation id="7229570126336867161">Potreban je EVDO</translation>
 <translation id="7582844466922312471">Mobilni podaci</translation>
 <translation id="945522503751344254">Pošalji povratne informacije</translation>
-<translation id="4539401194496451708">Upotreba Chrome profila<ph name="USER_EMAIL_ADDRESS"/>. Posljednja sinkronizacija: <ph name="LAST_SYNC_TIME"/></translation>
+<translation id="4539401194496451708">Upotreba profila za Chrome<ph name="USER_EMAIL_ADDRESS"/>. Posljednja sinkronizacija: <ph name="LAST_SYNC_TIME"/></translation>
 <translation id="7369847606959702983">Kreditna kartica (druga)</translation>
 <translation id="6867459744367338172">Jezici i unos</translation>
 <translation id="7671130400130574146">Koristi naslovnu traku sustava i obrube</translation>

@@ -60,7 +60,7 @@
 <translation id="816055135686411707">设置证书信任时出错</translation>
 <translation id="4714531393479055912">“<ph name="PRODUCT_NAME"/>”现在可同步您的密码。</translation>
 <translation id="5704565838965461712">选择要作为身份证明出示的证书：</translation>
-<translation id="2025632980034333559">“<ph name="APP_NAME"/>”崩溃了。点击此气泡框，以重新载入该扩展程序。</translation>
+<translation id="2025632980034333559">“<ph name="APP_NAME"/>”崩溃了。点击此信息框，以重新载入该扩展程序。</translation>
 <translation id="4059593000330943833">针对其他 Wi-Fi 可扩展身份验证协议方法（如 EAP-TLS 和 LEAP）的实验性支持。</translation>
 <translation id="6322279351188361895">无法读取私有密钥。</translation>
 <translation id="3781072658385678636">已在该网页上拦截了以下插件：</translation>
@@ -99,7 +99,7 @@
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> 小时前</translation>
 <translation id="4422428420715047158">域：</translation>
 <translation id="3602290021589620013">预览</translation>
-<translation id="7516602544578411747">将各个浏览器窗口与个人资料关联，并在右上角添加个人资料切换器。每份个人资料都拥有各自的书签、扩展程序和应用程序等内容。</translation>
+<translation id="7516602544578411747">将各个浏览器窗口与个人资料关联，并在右上角添加个人资料切换器。每份个人资料都拥有各自的书签、扩展程序和应用程序等。</translation>
 <translation id="7082055294850503883">默认情况下，忽略大写锁定状态并输入小写字母</translation>
 <translation id="1800124151523561876">听不到语音。</translation>
 <translation id="7814266509351532385">更改默认搜索引擎</translation>
@@ -189,7 +189,7 @@
 <translation id="1165039591588034296">错误</translation>
 <translation id="2064942105849061141">使用 GTK+ 主题</translation>
 <translation id="2278562042389100163">打开浏览器窗口</translation>
-<translation id="5246282308050205996">“<ph name="APP_NAME"/>”崩溃了。点击此气泡框，以重启该应用程序。</translation>
+<translation id="5246282308050205996">“<ph name="APP_NAME"/>”崩溃了。点击此信息框，以重启该应用程序。</translation>
 <translation id="9218430445555521422">设为默认浏览器</translation>
 <translation id="5027550639139316293">电子邮件证书</translation>
 <translation id="938582441709398163">Overlay 键盘</translation>
@@ -247,7 +247,7 @@
 <translation id="2279770628980885996">服务器尝试执行请求时遇到了意外情况。</translation>
 <translation id="8079135502601738761">此 PDF 文档有部分无法显示。要在 Adobe Reader 中打开吗？</translation>
 <translation id="9123413579398459698">FTP 代理</translation>
-<translation id="3887875461425980041">如果使用的是 PPAPI 版 Flash，则会在单独的渲染器进程（而不是专用的插件进程）运行它。</translation>
+<translation id="3887875461425980041">如果使用的是 PPAPI 版 Flash，则会在单独的渲染器进程（而不是专用的插件进程）中运行它。</translation>
 <translation id="8534801226027872331">在这种情况下，向您浏览器出示的证书有误，您无法了解实情。这可能表明我们无法了解证书中的身份信息或者用来保护连接安全的某些其他信息。您应该停止操作。</translation>
 <translation id="3608527593787258723">激活标签页 1</translation>
 <translation id="4497369307931735818">远程</translation>
@@ -539,7 +539,7 @@
 <translation id="2678063897982469759">重新启用</translation>
 <translation id="1779766957982586368">关闭窗口</translation>
 <translation id="4850886885716139402">视图</translation>
-<translation id="89217462949994770">PIN 输入错误次数过多。请与<ph name="CARRIER_ID"/>联系，以获取新的 PIN 解锁密钥（共 8 位数）。</translation>
+<translation id="89217462949994770">PIN 输入错误次数过多。请与<ph name="CARRIER_ID"/>联系，以获取新的 PIN 解锁密钥（8 位数）。</translation>
 <translation id="5920618722884262402">屏蔽低俗字词</translation>
 <translation id="5120247199412907247">高级配置</translation>
 <translation id="5922220455727404691">使用 SSL 3.0</translation>
@@ -920,7 +920,7 @@
 <translation id="8371806639176876412">系统可能会记录您在多功能框中输入的内容</translation>
 <translation id="4216499942524365685">您的帐户登录详细信息已过期。请点击此按钮重新输入您的密码。</translation>
 <translation id="8899388739470541164">越南文</translation>
-<translation id="4091434297613116013">纸张数：</translation>
+<translation id="4091434297613116013">纸张数</translation>
 <translation id="7475671414023905704">Netscape 忘了密码网址</translation>
 <translation id="3335947283844343239">重新打开关闭的标签页</translation>
 <translation id="4089663545127310568">清除已保存的密码</translation>
@@ -1170,7 +1170,7 @@
         从其他来源获取有效的证书。</translation>
 <translation id="6295228342562451544">连接安全网站时，网站所在的服务器会向您的浏览器出示所谓的“证书”，用于验证其身份。这种证书包含网站地址等身份信息，已经过您计算机信任的第三方验证。通过核实证书中的地址是否与网站地址相符，可以证实自己正与所要访问的网站进行安全通信，而不是正与第三方（如您网络中的攻击者）进行通信。</translation>
 <translation id="6342069812937806050">刚刚</translation>
-<translation id="5605716740717446121">如果您未输入正确的 PIN 解锁密钥，则此 SIM 卡将会遭到永久停用。剩余尝试次数：<ph name="TRIES_COUNT"/></translation>
+<translation id="5605716740717446121">如果您无法输入正确的 PIN 解锁密钥，则此 SIM 卡将遭到永久停用。剩余尝试次数：<ph name="TRIES_COUNT"/></translation>
 <translation id="8836712291807476944">已保存：<ph name="SAVED_BYTES"/> 字节，总大小：<ph name="TOTAL_BYTES"/> 字节；保存已中断</translation>
 <translation id="5502500733115278303">从 Firefox 导入</translation>
 <translation id="569109051430110155">自动检测</translation>
@@ -1231,7 +1231,7 @@
 <translation id="5880867612172997051">网络访问已暂停</translation>
 <translation id="7842346819602959665">最新版的扩展程序“<ph name="EXTENSION_NAME"/>”需要更多的权限，因此已将其禁用。</translation>
 <translation id="3776667127601582921">在这种情况下，提交给您的浏览器的服务器证书或中间 CA 证书无效。这可能意味着该证书格式错误、包含无效字段或不受支持。</translation>
-<translation id="2412835451908901523">请输入<ph name="CARRIER_ID"/>提供的 PIN 解锁密钥（共 8 位数）。</translation>
+<translation id="2412835451908901523">请输入<ph name="CARRIER_ID"/>提供的 PIN 解锁密钥（8 位数）。</translation>
 <translation id="6979448128170032817">例外情况…</translation>
 <translation id="7584802760054545466">正在连接至<ph name="NETWORK_ID"/></translation>
 <translation id="208047771235602537">您正在进行一项下载，确定要退出<ph name="PRODUCT_NAME"/> 吗？</translation>
@@ -1552,7 +1552,7 @@
 <translation id="1198271701881992799">让我们开始吧</translation>
 <translation id="782590969421016895">使用当前网页</translation>
 <translation id="6521850982405273806">报告错误</translation>
-<translation id="736515969993332243">正在扫描查找网络。</translation>
+<translation id="736515969993332243">正在扫描以查找网络。</translation>
 <translation id="8026334261755873520">清除浏览数据</translation>
 <translation id="1769104665586091481">在新窗口中打开链接(&amp;W)</translation>
 <translation id="8503813439785031346">用户名</translation>

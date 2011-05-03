@@ -60,8 +60,8 @@
 <translation id="816055135686411707">憑證信任設定錯誤</translation>
 <translation id="4714531393479055912"><ph name="PRODUCT_NAME"/> 現在提供了密碼同步功能。</translation>
 <translation id="5704565838965461712">選擇憑證以作為身份識別使用：</translation>
-<translation id="2025632980034333559"><ph name="APP_NAME"/> 已當機，請按一下這個提示框來重新載入擴充功能。</translation>
-<translation id="4059593000330943833">實驗性支援其他 Wi-Fi 加強式驗證通訊協定方法，例如 EAP-TLS 與 LEAP。</translation>
+<translation id="2025632980034333559"><ph name="APP_NAME"/> 當機了，請按一下這個提示框來重新載入擴充功能。</translation>
+<translation id="4059593000330943833">針對其他 Wi-Fi 加強式驗證通訊協定方法 (如 EAP-TLS 與 LEAP) 的實驗性支援。</translation>
 <translation id="6322279351188361895">讀取私密金鑰失敗。</translation>
 <translation id="3781072658385678636">系統已封鎖這個網頁的下列外掛程式：</translation>
 <translation id="4428782877951507641">正在設定同步化</translation>
@@ -162,7 +162,7 @@
 <translation id="762917759028004464">預設瀏覽器目前是 <ph name="BROWSER_NAME"/>。</translation>
 <translation id="9213479837033539041">剩下 <ph name="NUMBER_MANY"/> 秒</translation>
 <translation id="300544934591011246">舊密碼</translation>
-<translation id="5078796286268621944">不正確的 PIN</translation>
+<translation id="5078796286268621944">PIN 不正確</translation>
 <translation id="989988560359834682">編輯地址</translation>
 <translation id="8487678622945914333">放大</translation>
 <translation id="735327918767574393">顯示此網頁時發生問題，如要繼續執行，請重新載入或前往其他網頁。</translation>
@@ -188,7 +188,7 @@
 <translation id="1165039591588034296">錯誤</translation>
 <translation id="2064942105849061141">使用 GTK+ 主題</translation>
 <translation id="2278562042389100163">開啟瀏覽器視窗</translation>
-<translation id="5246282308050205996"><ph name="APP_NAME"/> 已當機，請按一下這個提示框來重新啟動應用程式。</translation>
+<translation id="5246282308050205996"><ph name="APP_NAME"/> 當機了，請按一下這個提示框來重新啟動應用程式。</translation>
 <translation id="9218430445555521422">設定為預設瀏覽器</translation>
 <translation id="5027550639139316293">電子郵件憑證</translation>
 <translation id="938582441709398163">鍵盤自訂快速鍵</translation>
@@ -495,7 +495,7 @@
 <translation id="1541725072327856736">半形片假名</translation>
 <translation id="7456847797759667638">開啟位置...</translation>
 <translation id="1388866984373351434">瀏覽資料</translation>
-<translation id="3754634516926225076">不正確的 PIN，請再試一次。</translation>
+<translation id="3754634516926225076">PIN 不正確，請再試一次。</translation>
 <translation id="7378627244592794276">不需要</translation>
 <translation id="2800537048826676660">使用這個語言進行拼字檢查</translation>
 <translation id="68541483639528434">關閉其他分頁</translation>
@@ -531,7 +531,7 @@
 <translation id="1779766957982586368">關閉視窗</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="89217462949994770">您已輸入太多次不正確的 PIN。請與 <ph name="CARRIER_ID"/> 聯絡，取得新的 8 位數 PIN 解鎖金鑰。</translation>
-<translation id="5920618722884262402">封鎖冒性字詞</translation>
+<translation id="5920618722884262402">封鎖粗俗字眼</translation>
 <translation id="5120247199412907247">進階設定</translation>
 <translation id="5922220455727404691">使用 SSL 3.0</translation>
 <translation id="1368352873613152012">安全瀏覽隱私權政策</translation>
@@ -632,7 +632,7 @@
 <translation id="6771079623344431310">無法連線至 Proxy 伺服器</translation>
 <translation id="2200129049109201305">略過加密資料的同步處理？</translation>
 <translation id="1426410128494586442">是</translation>
-<translation id="6468252175335241103">%b %-d, %Y</translation>
+<translation id="6468252175335241103">%Y/%b/%d</translation>
 <translation id="6725970970008349185">每頁顯示的候選字個數</translation>
 <translation id="6198252989419008588">變更 PIN</translation>
 <translation id="3520476450377425184">剩下 <ph name="NUMBER_MANY"/> 天</translation>
@@ -735,7 +735,7 @@
 <translation id="3753317529742723206">您之後要使用 <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) 處理 <ph name="PROTOCOL"/>:// 連結，而不使用 <ph name="REPLACED_HANDLER_TITLE"/> 嗎？</translation>
 <translation id="6216679966696797604">開啟訪客工作階段</translation>
 <translation id="5456397824015721611">預先編輯緩衝區的中文字元上限 (包含輸入注音符號)</translation>
-<translation id="2055443983279698110">實驗性 GNOME 選單列支援。</translation>
+<translation id="2055443983279698110">GNOME 選單列的實驗性支援。</translation>
 <translation id="2342959293776168129">清除下載記錄</translation>
 <translation id="2503522102815150840">瀏覽器沒反應...昏倒了</translation>
 <translation id="7201354769043018523">右括弧</translation>
@@ -1313,7 +1313,7 @@
 <translation id="2607101320794533334">主體公開金鑰資訊</translation>
 <translation id="7071586181848220801">不明的外掛程式</translation>
 <translation id="3354601307791487577">正在以訪客模式登入。</translation>
-<translation id="4419409365248380979">永遠允許 <ph name="HOST"/> 設定 Coockie</translation>
+<translation id="4419409365248380979">一律允許 <ph name="HOST"/> 設定 Coockie</translation>
 <translation id="2956070106555335453">摘要</translation>
 <translation id="917450738466192189">伺服器憑證無效。</translation>
 <translation id="2649045351178520408">Base64 編碼 ASCII，憑證鏈結</translation>
@@ -1646,7 +1646,7 @@
 <translation id="5681833099441553262">啟用上一個分頁</translation>
 <translation id="4792057643643237295">停用遠端存取功能</translation>
 <translation id="1681614449735360921">查看相容性問題</translation>
-<translation id="19094784437781028">純金融卡</translation>
+<translation id="19094784437781028">Solo 金融卡</translation>
 <translation id="2657327428424666237">稍後<ph name="BEGIN_LINK"/>重新載入<ph name="END_LINK"/>此網頁。</translation>
 <translation id="7347751611463936647">如要使用這個擴充功能，請輸入「<ph name="EXTENSION_KEYWORD"/>」，然後按 TAB 鍵，接著再輸入您的指令或搜尋項目。</translation>
 <translation id="659432221160402784">「<ph name="PRODUCT_NAME"/>」會同步處理您所安裝的任何應用程式，因此無論從何處登入「<ph name="PRODUCT_NAME"/>」，您都可以存取這些應用程式。</translation>
@@ -1839,7 +1839,7 @@
 <translation id="5818003990515275822">韓文</translation>
 <translation id="4182252350869425879">警告: 出現疑似釣魚網站!</translation>
 <translation id="5458214261780477893">Dvorak</translation>
-<translation id="5353719617589986386">無效的頁面範圍</translation>
+<translation id="5353719617589986386">頁面範圍無效</translation>
 <translation id="1164369517022005061">剩下 <ph name="NUMBER_DEFAULT"/> 小時</translation>
 <translation id="5943260032016910017">Cookie 和網站資料例外</translation>
 <translation id="2214283295778284209"><ph name="SITE"/> 無法使用</translation>
@@ -1901,7 +1901,7 @@
 <translation id="8289811203643526145">管理憑證...</translation>
 <translation id="2788575669734834343">選取憑證檔案</translation>
 <translation id="8404409224170843728">製造商：</translation>
-<translation id="8267453826113867474">封鎖冒性字詞</translation>
+<translation id="8267453826113867474">封鎖粗俗字眼</translation>
 <translation id="7959074893852789871">檔案含有多個憑證，但某些無法匯入：</translation>
 <translation id="1213999834285861200">圖片例外</translation>
 <translation id="2805707493867224476">允許所有網站顯示彈出式視窗</translation>
@@ -2048,7 +2048,7 @@
 <translation id="9073247318500677671">較新版本的 Unity 與 GNOME (包含即將發佈的 Ubuntu Natty Narwhal) 會在螢幕頂端顯示 OSX 樣式的選單列。</translation>
 <translation id="3869917919960562512">錯誤的索引。</translation>
 <translation id="7031962166228839643">正在準備 TPM，請稍候 (這可能需要幾分鐘的時間)...</translation>
-<translation id="4250377793615429299">無效的份數</translation>
+<translation id="4250377793615429299">份數無效</translation>
 <translation id="7180865173735832675">自訂</translation>
 <translation id="5737306429639033676">預測網路動作，藉此增進網頁載入效能</translation>
 <translation id="8123426182923614874">剩餘的數據傳輸量：</translation>
@@ -2062,7 +2062,7 @@
 <translation id="1307041843857566458">確認重新啟用</translation>
 <translation id="8314308967132194952">新增街道地址...</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 (使用 RSA 加密)</translation>
-<translation id="853265131227167869">星期日^星期一^星期二^星期三^星期四^星期五^星期六</translation>
+<translation id="853265131227167869">週日^週一^週二^週三^週四^週五^週六</translation>
 <translation id="3323447499041942178">文字框</translation>
 <translation id="580571955903695899">按標題重新排序</translation>
 <translation id="5230516054153933099">視窗</translation>
@@ -2097,7 +2097,7 @@
 <translation id="1368832886055348810">由左至右</translation>
 <translation id="3031433885594348982">您到 <ph name="DOMAIN"/> 的連線使用低度加密。</translation>
 <translation id="4047345532928475040">不適用</translation>
-<translation id="5604324414379907186">永遠顯示書籤列</translation>
+<translation id="5604324414379907186">一律顯示書籤列</translation>
 <translation id="3220630151624181591">啟用分頁 2</translation>
 <translation id="8898139864468905752">分頁總覽</translation>
 <translation id="2799223571221894425">重新啟動</translation>
@@ -2519,7 +2519,7 @@
 <translation id="2604243255129603442"><ph name="NAME_OF_EXTENSION"/> 已停用。如果日後您想要同步處理書籤資料，可以前往 [工具] 選單中的擴充功能頁面，重新啟用這項功能。</translation>
 <translation id="2024621544377454980">網頁未載入</translation>
 <translation id="7136694880210472378">設定為預設</translation>
-<translation id="7681202901521675750">SIM 卡已鎖定，請輸入 PIN。您剩下 <ph name="TRIES_COUNT"/> 次嘗試的機會</translation>
+<translation id="7681202901521675750">SIM 卡已鎖，請輸入 PIN。您剩下 <ph name="TRIES_COUNT"/> 次嘗試的機會</translation>
 <translation id="7420789336015002755">資料夾名稱含有無效的字元：$1</translation>
 <translation id="1731346223650886555">分號</translation>
 <translation id="158849752021629804">需要家用網路</translation>
@@ -2696,7 +2696,7 @@
 <translation id="8689341121182997459">逾期：</translation>
 <translation id="899403249577094719">Netscape 憑證基底網址</translation>
 <translation id="2737363922397526254">收合...</translation>
-<translation id="7276791571832936163">您擁有 <ph name="DATE"/> 免費數據傳輸，由 <ph name="DATE"/> 提供</translation>
+<translation id="7276791571832936163">您可免費使用 <ph name="DATE"/> 的數據傳輸 (由 <ph name="DATE"/> 提供)</translation>
 <translation id="4880827082731008257">搜尋記錄</translation>
 <translation id="8661290697478713397">在無痕式視窗中開啟連結(&amp;G)</translation>
 <translation id="4197700912384709145"><ph name="NUMBER_ZERO"/> 秒</translation>
@@ -2709,7 +2709,7 @@
 <translation id="5332624210073556029">時區：</translation>
 <translation id="4799797264838369263">這個選項受到公司政策管控。請聯絡您的管理員，以取得更多資訊。</translation>
 <translation id="4492190037599258964">「<ph name="SEARCH_STRING"/>」的搜尋結果</translation>
-<translation id="3573179567135747900">變更回「<ph name="FROM_LOCALE"/>」(需要重新啟動)</translation>
+<translation id="3573179567135747900">改回「<ph name="FROM_LOCALE"/>」(需要重新啟動)</translation>
 <translation id="2238123906478057869">「<ph name="PRODUCT_NAME"/>」將執行以下工作：</translation>
 <translation id="4042471398575101546">新增網頁</translation>
 <translation id="8848709220963126773">Shift 鍵模式切換</translation>
@@ -2975,7 +2975,7 @@
 <translation id="5849869942539715694">封裝擴充功能...</translation>
 <translation id="7339785458027436441">輸入時檢查拼字</translation>
 <translation id="8308427013383895095">網路連線發生問題，翻譯作業失敗。</translation>
-<translation id="1801298019027379214">不正確的 PIN，請再試一次。您剩下 <ph name="TRIES_COUNT"/> 次嘗試的機會</translation>
+<translation id="1801298019027379214">PIN 不正確，請再試一次。您剩下 <ph name="TRIES_COUNT"/> 次嘗試的機會</translation>
 <translation id="1384721974622518101">您知道可以透過上方的網址列直接進行搜尋嗎？</translation>
 <translation id="992543612453727859">在前面新增詞組</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>

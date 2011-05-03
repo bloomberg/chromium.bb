@@ -1038,14 +1038,16 @@
 <translation id="1036561994998035917">Dalej używaj wyszukiwarki <ph name="ENGINE_NAME"/></translation>
 <translation id="8730621377337864115">Gotowe</translation>
 <translation id="665757950158579497">Spróbuj wyłączyć przewidywanie działań sieciowych, wykonując następujące kroki:
-        Wybierz kolejno opcje        <ph name="BEGIN_BOLD"/>
+        Wybierz kolejno opcje
+        <ph name="BEGIN_BOLD"/>
         menu klucza &gt;
         <ph name="SETTINGS_TITLE"/>
         &gt;
         <ph name="ADVANCED_TITLE"/>
         <ph name="END_BOLD"/>
         i anuluj zaznaczenie opcji „<ph name="NO_PREFETCH_DESCRIPTION"/>”.
-        Jeśli to nie rozwiąże problemu, zalecamy ponowne włączenie tej opcji dla zwiększenia wydajności.</translation>
+        Jeśli to nie rozwiąże problemu, zalecamy ponowne włączenie tej opcji dla
+        zwiększenia wydajności.</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="6267166720438879315">Wybierz certyfikat, aby uwierzytelnić się na serwerze <ph name="HOST_NAME"/></translation>
 <translation id="2422927186524098759">Pasek boczny</translation>
@@ -1368,7 +1370,7 @@
 <translation id="3738924763801731196"><ph name="OID"/>:</translation>
 <translation id="6550769511678490130">Otwórz wszystkie zakładki</translation>
 <translation id="1847961471583915783">Usuń pliki cookie oraz inne dane witryn i wtyczek w momencie zamknięcia przeglądarki</translation>
-<translation id="8870318296973696995">Strona startowa</translation>
+<translation id="8870318296973696995">Strona główna</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6575134580692778371">Nie skonfigurowano</translation>
 <translation id="4624768044135598934">Zakończono pomyślnie!</translation>

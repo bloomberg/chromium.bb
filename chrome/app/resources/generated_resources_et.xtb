@@ -5,7 +5,7 @@
 <translation id="6879617193011158416">Lülitage järjehoidjariba ümber</translation>
 <translation id="8130276680150879341">Katkesta ühendus privaatse võrguga</translation>
 <translation id="1058418043520174283"><ph name="INDEX"/>/<ph name="COUNT"/></translation>
-<translation id="4480627574828695486">Ühenda konto lahti ...</translation>
+<translation id="4480627574828695486">Eemalda konto ...</translation>
 <translation id="7040807039050164757">&amp;Kontrolli selle välja õigekirja</translation>
 <translation id="778579833039460630">Andmeid ei ole vastu võetud</translation>
 <translation id="1852799913675865625">Ilmnes viga, kui proovisite lugeda faili: <ph name="ERROR_TEXT"/></translation>
@@ -61,7 +61,7 @@
 <translation id="4714531393479055912"><ph name="PRODUCT_NAME"/> saab nüüd teie paroole sünkroonida.</translation>
 <translation id="5704565838965461712">Valige tuvastamiseks esitatav sertifikaat:</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME"/> läks krahhi. Laienduse uuesti laadimiseks klõpsake sellel jutumullil.</translation>
-<translation id="4059593000330943833">Katseline täiendavate WiFi laiendatavate autentimisprotokollide, näiteks EAP-TLS-i ja LEAP tugi.</translation>
+<translation id="4059593000330943833">Katseline täiendavate WiFi laiendatavate autentimisprotokollide, näiteks EAP-TLS-i ja LEAP-i tugi.</translation>
 <translation id="6322279351188361895">Privaatvõtme lugemine ei õnnestunud.</translation>
 <translation id="3781072658385678636">Sellel lehel blokeeriti järgmised pistikprogrammid:</translation>
 <translation id="4428782877951507641">Sünkroonimise seadistamine</translation>
@@ -109,7 +109,7 @@
 <translation id="1383861834909034572">Avaneb pärast lõpetamist</translation>
 <translation id="5727728807527375859">Laiendid, rakendused ja teemad võivad teie arvutit kahjustada. Kas soovite kindlasti jätkata?</translation>
 <translation id="3857272004253733895">Topelt-Pinyini skeem</translation>
-<translation id="1636842079139032947">Ühenda konto lahti ...</translation>
+<translation id="1636842079139032947">Eemalda konto ...</translation>
 <translation id="6721972322305477112">&amp;Fail</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="9056810968620647706">Vasteid ei leitud.</translation>
@@ -539,7 +539,7 @@
 <translation id="2678063897982469759">Luba uuesti</translation>
 <translation id="1779766957982586368">Sulgeb akna</translation>
 <translation id="4850886885716139402">Kuva</translation>
-<translation id="89217462949994770">Sisestasite liiga mitu korda vale PIN-koodi. Uue kaheksakohalise PIN-koodi hankimiseks võtke ühendust teenusepakkujaga <ph name="CARRIER_ID"/>.</translation>
+<translation id="89217462949994770">Sisestasite liiga palju kordi vale PIN-koodi. Uue kaheksakohalise PIN-koodi hankimiseks võtke ühendust teenusepakkujaga <ph name="CARRIER_ID"/>.</translation>
 <translation id="5920618722884262402">Blokeeri solvavad sõnad</translation>
 <translation id="5120247199412907247">Täpsem konfigureerimine</translation>
 <translation id="5922220455727404691">Kasuta SSL versiooni 3.0</translation>
@@ -1784,7 +1784,7 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
         ei ole võimalik leida, kuna DNS-i leidmine ebaõnnestus. DNS on veebiteenus,
         mis teisendab veebisaidi nime Interneti-aadressiks. Sagedaim vea põhjus on
         Interneti-ühenduse puudumine või valesti konfigureeritud võrk.
-        Samuti võib seda põhjustada mittereageeriv DNS-server või tulemüür
+        Samuti võib seda põhjustada mittereageeriv DNS-server või tulemüür,
         mis takistab tootel
         <ph name="PRODUCT_NAME"/>
         võrguga ühenduse loomist.</translation>
@@ -2373,7 +2373,7 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="7199540622786492483"><ph name="PRODUCT_NAME"/> on aegunud, kuna seda ei ole tükk aega taaskäivitatud. Saadaval on värskendus, mis rakendatakse taaskäivitamisel.</translation>
 <translation id="8652722422052983852">Oi-oi. See vajab parandamist.</translation>
 <translation id="5970231080121144965">Lubab alamstringi ja mitme fragmendi vastendamise ajaloo URL-ides.</translation>
-<translation id="4665674675433053715">Katseline uus vaheleht</translation>
+<translation id="4665674675433053715">Uus katseline vaheleht</translation>
 <translation id="3726527440140411893">Lehe vaatamisel seati järgmised küpsised.</translation>
 <translation id="3320859581025497771">teie operaator</translation>
 <translation id="8828781037212165374">Luba need funktsioonid ...</translation>
@@ -2564,7 +2564,7 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="158849752021629804">Vajalik koduvõrk</translation>
 <translation id="7339763383339757376">PKCS 7, üks sertifikaat</translation>
 <translation id="7587108133605326224">Balti</translation>
-<translation id="3991936620356087075">Sisestasite liiga mitu korda vale PIN-koodi. Teie SIM-kaart on jäädavalt keelatud.</translation>
+<translation id="3991936620356087075">Sisestasite liiga palju kordi vale PIN-koodi. Teie SIM-kaart on jäädavalt keelatud.</translation>
 <translation id="936801553271523408">Süsteemidiagnostika andmed</translation>
 <translation id="6389701355360299052">Veebileht, ainult HTML</translation>
 <translation id="8067791725177197206">Jätka »</translation>
@@ -2677,7 +2677,7 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="8959027566438633317">Installida <ph name="EXTENSION_NAME"/>?</translation>
 <translation id="8155798677707647270">Uue versiooni installimine...</translation>
 <translation id="6886871292305414135">Ava link uuel &amp;vahelehel</translation>
-<translation id="1639192739400715787">Turbeseadete juurde pääsemiseks sisestage SIM-kaardi PIN-kood.</translation>
+<translation id="1639192739400715787">Turbeseadetele juurdepääsemiseks sisestage SIM-kaardi PIN-kood.</translation>
 <translation id="7961015016161918242">Mitte kunagi</translation>
 <translation id="3950924596163729246">Ei saa võrgule juurdepääsu.</translation>
 <translation id="2835170189407361413">Tühjenda vorm</translation>

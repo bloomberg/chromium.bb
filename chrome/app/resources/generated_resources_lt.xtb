@@ -61,7 +61,7 @@
 <translation id="4714531393479055912">„<ph name="PRODUCT_NAME"/>“ dabar gali sinchronizuoti slaptažodžius.</translation>
 <translation id="5704565838965461712">Pasirinkite sertifikatą, kuris bus naudojamas norint identifikuoti:</translation>
 <translation id="2025632980034333559">„<ph name="APP_NAME"/>“ užstrigo. Jei norite iš naujo įkelti plėtinį, spustelėkite šį debesėlį.</translation>
-<translation id="4059593000330943833">Eksperimentinis papildomų „WI-Fi“ išplečiamo tapatybės nustatymo protokolo metodų, pvz., EAP-TLS ir LEAP, palaikymas.</translation>
+<translation id="4059593000330943833">Eksperimentinis papildomų „Wi-Fi“ išplečiamo tapatybės nustatymo protokolo metodų, pvz., EAP-TLS ir LEAP, palaikymas.</translation>
 <translation id="6322279351188361895">Nepavyko nuskaityti privačiojo rakto.</translation>
 <translation id="3781072658385678636">Šiame puslapyje buvo užblokuoti šie papildiniai:</translation>
 <translation id="4428782877951507641">Nustatomas sinchronizavimas</translation>
@@ -260,7 +260,7 @@
 <translation id="1880905663253319515">Ištrinti „<ph name="CERTIFICATE_NAME"/>“ sertifikatą?</translation>
 <translation id="8546306075665861288">Vaizdo talpykla</translation>
 <translation id="5904093760909470684">Tarpinio serverio konfigūracija</translation>
-<translation id="2874027208508018603">Kai nebus „WI-Fi“ ryšio, „Chrome“ bus naudojami 3G duomenys.</translation>
+<translation id="2874027208508018603">Kai nebus „Wi-Fi“ ryšio, „Chrome“ bus naudojami 3G duomenys.</translation>
 <translation id="4558734465070698159">Jei norite pasirinkti ankstesnį įvesties metodą, paspauskite „<ph name="HOTKEY_NAME"/>“.</translation>
 <translation id="3391060940042023865">Šis papildinys sugadintas: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4237016987259239829">Tinklo ryšio klaida</translation>
@@ -626,7 +626,7 @@
 <translation id="3885155851504623709">Apylinkė</translation>
 <translation id="4910171858422458941">Negalima įgalinti pagal įmonės politiką neleidžiamų papildinių</translation>
 <translation id="4495419450179050807">Nerodyti šiame puslapyje</translation>
-<translation id="4745800796303246012">Eksperimentiniai „WI-Fi“ EAP metodai</translation>
+<translation id="4745800796303246012">Eksperimentiniai „Wi-Fi“ EAP metodai</translation>
 <translation id="939736085109172342">Naujas aplankas</translation>
 <translation id="4933484234309072027">įdėtas į <ph name="URL"/></translation>
 <translation id="5554720593229208774">El. pašto sertifikavimo institucija</translation>
@@ -1908,7 +1908,7 @@
 <translation id="3927932062596804919">Uždrausti</translation>
 <translation id="3524915994314972210">Laukiama, kol prasidės atsisiuntimas</translation>
 <translation id="6484929352454160200">Yra nauja „<ph name="PRODUCT_NAME"/>“ versija</translation>
-<translation id="3187212781151025377">Hebrajietiška klaviatūra</translation>
+<translation id="3187212781151025377">Hebrajiška klaviatūra</translation>
 <translation id="351152300840026870">Fiksuoto pločio šriftas</translation>
 <translation id="5827266244928330802">„Safari“</translation>
 <translation id="778881183694837592">Būtinų laukų negalima palikti tuščių</translation>
@@ -2387,7 +2387,7 @@
 <translation id="4928569512886388887">Baigiamas sistemos atnaujinimas...</translation>
 <translation id="8258002508340330928">Ar esate tikri?</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/> KB (<ph name="NUM_KILOBYTES_LIVE"/> KB tiesiogiai)</translation>
-<translation id="5554573843028719904">Kitas „WI-Fi“ tinklas...</translation>
+<translation id="5554573843028719904">Kitas „Wi-Fi“ tinklas...</translation>
 <translation id="5034259512732355072">Pasirinkti kitą aplanką...</translation>
 <translation id="8885905466771744233">Privatusis nurodyto plėtinio raktas jau yra. Naudokite šį raktą iš naujo arba pirmiausia jį ištrinkite.</translation>
 <translation id="7831504847856284956">Pridėti adresą</translation>
@@ -2953,7 +2953,7 @@
 <translation id="7427348830195639090">Foninis puslapis: <ph name="BACKGROUND_PAGE_URL"/></translation>
 <translation id="5898154795085152510">Serveris pateikė neteisingą kliento sertifikatą. <ph name="ERROR_NUMBER"/> klaida (<ph name="ERROR_NAME"/>).</translation>
 <translation id="2704184184447774363">„Microsoft“ dokumentų pasirašymas</translation>
-<translation id="5677928146339483299">Blokuojama</translation>
+<translation id="5677928146339483299">Užblokuota</translation>
 <translation id="1474842329983231719">Valdyti spausdinimo nustatymus...</translation>
 <translation id="2455981314101692989">Šiame tinklalapyje neleidžiamas automatinis šios formos pildymas.</translation>
 <translation id="1646136617204068573">Vengriška klaviatūra</translation>
@@ -2987,7 +2987,7 @@
 <translation id="2766006623206032690">Įklij&amp;uoti ir eiti</translation>
 <translation id="4394049700291259645">Neleisti</translation>
 <translation id="969892804517981540">Oficialiai pagaminta</translation>
-<translation id="445923051607553918">Prisijungti prie „WI-Fi“ tinklo</translation>
+<translation id="445923051607553918">Prisijungti prie „Wi-Fi“ tinklo</translation>
 <translation id="9087725134750123268">Ištrinti slapukus ir kitus svetainės duomenis</translation>
 <translation id="5050255233730056751">Įvesti URL</translation>
 <translation id="3349155901412833452">Naudokite klavišus „ , “·ir „ . “, jei norite peržiūrėti kandidatų sąrašą</translation>

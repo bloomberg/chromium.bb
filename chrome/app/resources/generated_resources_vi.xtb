@@ -60,7 +60,7 @@
 <translation id="816055135686411707">Lỗi khi cài đặt độ tin cậy của chứng chỉ</translation>
 <translation id="4714531393479055912"><ph name="PRODUCT_NAME"/> hiện có thể đồng bộ hóa mật khẩu của bạn.</translation>
 <translation id="5704565838965461712">Chọn một chứng chỉ làm chi tiết nhận dạng:</translation>
-<translation id="2025632980034333559"><ph name="APP_NAME"/> đã xảy ra lỗi. Nhấp vào bong bóng này để tải lại phần mở rộng.</translation>
+<translation id="2025632980034333559"><ph name="APP_NAME"/> đã xảy ra lỗi. Nhấp vào bong bóng này để tải lại tiện ích mở rộng.</translation>
 <translation id="4059593000330943833">Hỗ trợ thử nghiệm cho phương pháp Giao thức xác thực mở rộng bổ sung Wi-Fi, ví dụ như EAP-TLS và LEAP.</translation>
 <translation id="6322279351188361895">Không thể đọc khoá cá nhân.</translation>
 <translation id="3781072658385678636">Các plugin sau đã bị chặn trên trang này:</translation>
@@ -99,7 +99,7 @@
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> hours ago</translation>
 <translation id="4422428420715047158">Tên miền:</translation>
 <translation id="3602290021589620013">Xem trước</translation>
-<translation id="7516602544578411747">Liên kết mọi cửa sổ trình duyệt với một tiểu sử và thêm trình chuyển tiểu sử trong góc trên bên phải. Mọi tiểu sử đều có dấu trang, phần mở rộng, ứng dụng, v.v của riêng tiểu sử đó.</translation>
+<translation id="7516602544578411747">Liên kết mọi cửa sổ trình duyệt với một cấu hình và thêm trình chuyển cấu hình ở góc trên bên phải. Mọi cấu hình đều có dấu trang, tiện ích mở rộng, ứng dụng riêng, v.v.</translation>
 <translation id="7082055294850503883">Bỏ qua trạng thái Chữ viết hoa và nhập chữ thường theo mặc định</translation>
 <translation id="1800124151523561876">Không nghe thấy lời nói.</translation>
 <translation id="7814266509351532385">Thay đổi công cụ tìm kiếm mặc định</translation>
@@ -362,7 +362,7 @@
 <translation id="5098629044894065541">Hebrew</translation>
 <translation id="7751559664766943798">Luôn hiển thị thanh dấu trang</translation>
 <translation id="5098647635849512368">Không thể tìm thấy đường dẫn tuyệt đối tới thư mục để chèn.</translation>
-<translation id="780617032715125782">Tạo tiểu sử mới</translation>
+<translation id="780617032715125782">Tạo cấu hình mới</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="6380224340023442078">Cài đặt nội dung...</translation>
 <translation id="950108145290971791">Bật chế độ Instant để tìm kiếm và duyệt nhanh hơn?</translation>
@@ -415,7 +415,7 @@
 <translation id="5710740561465385694">Hỏi tôi khi một trang web cố gắng thiết lập dữ liệu</translation>
 <translation id="3897092660631435901">Trình đơn</translation>
 <translation id="8553075262323480129">Dịch thất bại do ngôn ngữ của trang không được xác định.</translation>
-<translation id="5910680277043747137">Nếu bạn muốn cho phép nhiều người sử dụng và tùy chỉnh Chrome, bạn có thể tạo tiểu sử bổ sung.</translation>
+<translation id="5910680277043747137">Nếu bạn muốn cho phép nhiều người sử dụng và tùy chỉnh Chrome, bạn có thể tạo cấu hình bổ sung.</translation>
 <translation id="4381849418013903196">Dấu hai chấm</translation>
 <translation id="1103523840287552314">Luôn dịch <ph name="LANGUAGE"/></translation>
 <translation id="2263497240924215535">(Đã tắt)</translation>
@@ -559,7 +559,7 @@
 <translation id="661719348160586794">Mật khẩu đã lưu của bạn sẽ xuất hiện tại đây.</translation>
 <translation id="6686490380836145850">Đóng tab phía bên phải</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> giờ</translation>
-<translation id="8844709414456935411"><ph name="PRODUCT_NAME"/> đã phát hiện rằng sản phẩm ESET đang chặn kết nối an toàn. Thông thường, đây không phải là vấn đề bảo mật vì phần mềm ESET thường chạy trên cùng máy tính. Tuy nhiên, do không chấp nhận các đặc điểm cụ thể của kết nối an toàn của ￼<ph name="PRODUCT_NAME"/>, sản phẩm ESET phải được định cấu hình để không thực hiện việc chặn này. Nhấp vào kết nối &quot;Tìm hiểu thêm&quot; để được hướng dẫn.</translation>
+<translation id="8844709414456935411"><ph name="PRODUCT_NAME"/> đã phát hiện thấy sản phẩm ESET đang chặn kết nối an toàn. Thông thường, đây không phải là vấn đề bảo mật vì phần mềm ESET thường chạy trên cùng máy tính. Tuy nhiên, do không chấp nhận các đặc điểm cụ thể của kết nối an toàn của ￼<ph name="PRODUCT_NAME"/>, sản phẩm ESET phải được định cấu hình để không thực hiện việc chặn này. Nhấp vào kết nối &quot;Tìm hiểu thêm&quot; để được hướng dẫn.</translation>
 <translation id="3936877246852975078">Yêu cầu đến máy chủ tạm thời bị chặn.</translation>
 <translation id="2600306978737826651">Tải xuống hình ảnh không thành công, quá trình ghi bị huỷ!</translation>
 <translation id="609978099044725181">Bật/Tắt chế độ Hanja</translation>
@@ -1307,7 +1307,7 @@ phải do
           để kiểm tra kết nối của bạn.</translation>
 <translation id="8664389313780386848">X&amp;em nguồn trang</translation>
 <translation id="8970407809569722516">Chương trình cơ sở:</translation>
-<translation id="1180549724812639004">Tạo tiểu sử mới</translation>
+<translation id="1180549724812639004">Tạo cấu hình mới</translation>
 <translation id="57646104491463491">Ngày Sửa đổi</translation>
 <translation id="5992752872167177798">Hộp cát Seccomp</translation>
 <translation id="6362853299801475928">&amp;Báo cáo sự cố...</translation>
@@ -1350,7 +1350,7 @@ phải do
 <translation id="4585473702689066695">Kết nối với mạng '<ph name="NAME"/>' thất bại.</translation>
 <translation id="4647175434312795566">Chấp nhận thỏa thuận</translation>
 <translation id="1084824384139382525">S&amp;ao chép địa chỉ liên kết</translation>
-<translation id="1221462285898798023">Vui lòng khởi động <ph name="PRODUCT_NAME"/> với tư cách người dùng bình thường. Để chạy với tư cách gốc, bạn phải chỉ định thư mục dữ liệu người dùng thay thế để lưu thông tin tiểu sử.</translation>
+<translation id="1221462285898798023">Vui lòng khởi động <ph name="PRODUCT_NAME"/> với tư cách người dùng bình thường. Để chạy với tư cách gốc, bạn phải chỉ định thư mục dữ liệu người dùng thay thế để lưu thông tin cấu hình.</translation>
 <translation id="3220586366024592812">Quy trình của trình kết nối <ph name="CLOUD_PRINT_NAME"/> đã xảy ra lỗi. Khởi động lại?</translation>
 <translation id="5042992464904238023">Nội dung Web</translation>
 <translation id="6254503684448816922">Lộ Khoá</translation>
@@ -1647,7 +1647,7 @@ phải do
 <translation id="7988355189918024273">Bật các tính năng hỗ trợ truy cập</translation>
 <translation id="5438653034651341183">Bao gồm ảnh chụp màn hình hiện tại:</translation>
 <translation id="1899708097738826574"><ph name="OPTIONS_TITLE"/> - <ph name="SUBPAGE_TITLE"/></translation>
-<translation id="1765313842989969521">(phần mở rộng này đã được quản lý và không thể bị gỡ cài đặt hay vô hiệu hóa)</translation>
+<translation id="1765313842989969521">(tiện ích mở rộng này đã được quản lý và không thể bị gỡ cài đặt hay vô hiệu hóa)</translation>
 <translation id="6983783921975806247">OID đã Đăng ký</translation>
 <translation id="394984172568887996">Được Nhập từ IE</translation>
 <translation id="5311260548612583999">Tệp khoá cá nhân (tuỳ chọn):</translation>
@@ -1659,7 +1659,7 @@ phải do
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> hiện tại không phải là trình duyệt mặc định của bạn.</translation>
 <translation id="823241703361685511">Gói</translation>
 <translation id="4068506536726151626">Trang này chứa các yếu tố từ các trang web đang theo dõi vị trí của bạn sau đây:</translation>
-<translation id="4721475475128190282">Nhiều tiểu sử</translation>
+<translation id="4721475475128190282">Nhiều cấu hình</translation>
 <translation id="4220128509585149162">Sự cố</translation>
 <translation id="8798099450830957504">Mặc định</translation>
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> ngày</translation>
@@ -1778,7 +1778,7 @@ phải do
 <translation id="3524079319150349823">Để kiểm tra một cửa sổ bật lên, hãy nhấp chuột phải vào trang hoặc biểu tượng tác vụ của trình duyệt và chọn Kiểm tra cửa sổ bật lên.</translation>
 <translation id="994289308992179865">&amp;Vòng lặp</translation>
 <translation id="7793343764764530903">Bạn đã bật thành công <ph name="CLOUD_PRINT_NAME"/>!  <ph name="PRODUCT_NAME"/> đã đăng ký máy in trên máy này bằng &lt;b&gt;<ph name="EMAIL_ADDRESSES"/>&lt;/b&gt;.  Hiện tại, bạn có thể in đến máy in của mình từ bất kỳ ứng dụng web hoặc ứng dụng di động có hỗ trợ <ph name="CLOUD_PRINT_NAME"/>!</translation>
-<translation id="1703490097606704369">Không tìm thấy máy chủ tại <ph name="HOST_NAME"/> vì tìm kiếm DNS không thành công. DNS là dịch vụ web có vai trò dịch tên của trang web sang địa chỉ Internet của trang web đó. Lý do thường dẫn đến lỗi này nhất là do không có kết nối với Internet hoặc mạng bị định cấu hình sai. Cũng có thể do máy chủ DNS không phản hồi hoặc tường lửa chặn <ph name="PRODUCT_NAME"/> truy cập vào mạng.</translation>
+<translation id="1703490097606704369">Không tìm thấy máy chủ tại <ph name="HOST_NAME"/> vì tra cứu DNS không thành công. DNS là dịch vụ web có vai trò dịch tên của trang web sang địa chỉ Internet của trang web đó. Lý do thường dẫn đến lỗi này nhất là do không có kết nối với Internet hoặc mạng bị định cấu hình sai. Cũng có thể do máy chủ DNS không phản hồi hoặc tường lửa chặn <ph name="PRODUCT_NAME"/> truy cập vào mạng.</translation>
 <translation id="8887090188469175989">ZGPY</translation>
 <translation id="3302709122321372472">Không thể tải css '<ph name="RELATIVE_PATH"/>' cho tập lệnh nội dung.</translation>
 <translation id="305803244554250778">Tạo phím tắt cho ứng dụng ở những vị trí sau:</translation>
@@ -2222,7 +2222,7 @@ phải do
 <translation id="7229570126336867161">Cần có EVDO</translation>
 <translation id="7582844466922312471">Dữ liệu di động</translation>
 <translation id="945522503751344254">Gửi phản hồi</translation>
-<translation id="4539401194496451708">Sử dụng tiểu sử Chrome <ph name="USER_EMAIL_ADDRESS"/>. Được đồng bộ hóa lần cuối: <ph name="LAST_SYNC_TIME"/></translation>
+<translation id="4539401194496451708">Sử dụng cấu hình Chrome <ph name="USER_EMAIL_ADDRESS"/>. Đồng bộ hóa lần cuối: <ph name="LAST_SYNC_TIME"/></translation>
 <translation id="7369847606959702983">Thẻ tín dụng (khác)</translation>
 <translation id="6867459744367338172">Ngôn ngữ và Dữ liệu nhập</translation>
 <translation id="7671130400130574146">Sử dụng thanh tiêu đề và đường viền của hệ thống</translation>
