@@ -88,6 +88,7 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       referrer_(referrer),
       profile_(profile),
       page_id_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(tab_contents_observer_registrar_(this)),
       has_stopped_loading_(false),
       final_status_(FINAL_STATUS_MAX),
       prerendering_has_started_(false) {
@@ -144,30 +145,31 @@ void PrerenderContents::StartPrerenderingOld(
                           process_id, view_id));
 
   // Close ourselves when the application is shutting down.
-  registrar_.Add(this, NotificationType::APP_TERMINATING,
-                 NotificationService::AllSources());
+  notification_registrar_.Add(this, NotificationType::APP_TERMINATING,
+                              NotificationService::AllSources());
 
   // Register for our parent profile to shutdown, so we can shut ourselves down
   // as well (should only be called for OTR profiles, as we should receive
   // APP_TERMINATING before non-OTR profiles are destroyed).
   // TODO(tburkard): figure out if this is needed.
-  registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
-                 Source<Profile>(profile_));
+  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+                              Source<Profile>(profile_));
 
   // Register to cancel if Authentication is required.
-  registrar_.Add(this, NotificationType::AUTH_NEEDED,
-                 NotificationService::AllSources());
+  notification_registrar_.Add(this, NotificationType::AUTH_NEEDED,
+                              NotificationService::AllSources());
 
-  registrar_.Add(this, NotificationType::AUTH_CANCELLED,
+  notification_registrar_.Add(this, NotificationType::AUTH_CANCELLED,
                  NotificationService::AllSources());
 
   // Register all responses to see if we should cancel.
-  registrar_.Add(this, NotificationType::DOWNLOAD_INITIATED,
-                 NotificationService::AllSources());
+  notification_registrar_.Add(this, NotificationType::DOWNLOAD_INITIATED,
+                              NotificationService::AllSources());
 
   // Register for redirect notifications sourced from |this|.
-  registrar_.Add(this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
-                 Source<RenderViewHostDelegate>(GetRVHDelegate()));
+  notification_registrar_.Add(
+      this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
+      Source<RenderViewHostDelegate>(GetRVHDelegate()));
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
@@ -207,6 +209,7 @@ void PrerenderContents::StartPrerendering(
   TabContents* new_contents = new TabContents(profile_, NULL, MSG_ROUTING_NONE,
                                               NULL, NULL);
   prerender_contents_.reset(new TabContentsWrapper(new_contents));
+  tab_contents_observer_registrar_.Observe(new_contents);
 
   TabContents* source_tc =
       source_render_view_host->delegate()->GetAsTabContents();
@@ -248,30 +251,31 @@ void PrerenderContents::StartPrerendering(
                           process_id, view_id));
 
   // Close ourselves when the application is shutting down.
-  registrar_.Add(this, NotificationType::APP_TERMINATING,
-                 NotificationService::AllSources());
+  notification_registrar_.Add(this, NotificationType::APP_TERMINATING,
+                              NotificationService::AllSources());
 
   // Register for our parent profile to shutdown, so we can shut ourselves down
   // as well (should only be called for OTR profiles, as we should receive
   // APP_TERMINATING before non-OTR profiles are destroyed).
   // TODO(tburkard): figure out if this is needed.
-  registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                  Source<Profile>(profile_));
 
   // Register to cancel if Authentication is required.
-  registrar_.Add(this, NotificationType::AUTH_NEEDED,
-                 NotificationService::AllSources());
+  notification_registrar_.Add(this, NotificationType::AUTH_NEEDED,
+                              NotificationService::AllSources());
 
-  registrar_.Add(this, NotificationType::AUTH_CANCELLED,
-                 NotificationService::AllSources());
+  notification_registrar_.Add(this, NotificationType::AUTH_CANCELLED,
+                              NotificationService::AllSources());
 
   // Register all responses to see if we should cancel.
-  registrar_.Add(this, NotificationType::DOWNLOAD_INITIATED,
-                 NotificationService::AllSources());
+  notification_registrar_.Add(this, NotificationType::DOWNLOAD_INITIATED,
+                              NotificationService::AllSources());
 
   // Register for redirect notifications sourced from |this|.
-  registrar_.Add(this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
-                 Source<RenderViewHostDelegate>(GetRVHDelegate()));
+  notification_registrar_.Add(
+      this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
+      Source<RenderViewHostDelegate>(GetRVHDelegate()));
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
@@ -648,6 +652,10 @@ void PrerenderContents::DidStopLoading() {
   has_stopped_loading_ = true;
 }
 
+void PrerenderContents::RenderViewGone() {
+  // TODO(mmenke): Cancel the prerender if the RenderView crashes.
+}
+
 void PrerenderContents::Destroy(FinalStatus final_status) {
   prerender_manager_->RemoveEntry(this);
   set_final_status(final_status);
@@ -711,6 +719,17 @@ RenderViewHostDelegate* PrerenderContents::GetRVHDelegate() {
   } else {
     return this;
   }
+}
+
+RenderViewHost* PrerenderContents::render_view_host() {
+  // TODO(mmenke): Replace with simple accessor once TabContents is always
+  //               used.
+  if (UseTabContents()) {
+    DCHECK(!render_view_host_);
+    return prerender_contents_->render_view_host();
+  }
+  DCHECK(!prerender_contents_.get());
+  return render_view_host_;
 }
 
 }  // namespace prerender

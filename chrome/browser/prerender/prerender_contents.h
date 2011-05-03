@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/common/view_types.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/window_container_type.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -47,6 +48,7 @@ class PrerenderManager;
 class PrerenderContents : public RenderViewHostDelegate,
                           public RenderViewHostDelegate::View,
                           public NotificationObserver,
+                          public TabContentsObserver,
                           public JavaScriptAppModalDialogDelegate {
  public:
   // PrerenderContents::Create uses the currently registered Factory to create
@@ -83,7 +85,8 @@ class PrerenderContents : public RenderViewHostDelegate,
   // it if not.
   void DestroyWhenUsingTooManyResources();
 
-  RenderViewHost* render_view_host() { return render_view_host_; }
+  RenderViewHost* render_view_host();
+
   // Allows replacing of the RenderViewHost owned by this class, including
   // replacing with a NULL value.  When a caller uses this, the caller will
   // own (and is responsible for freeing) the old RVH.
@@ -141,8 +144,11 @@ class PrerenderContents : public RenderViewHostDelegate,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) OVERRIDE;
   virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const OVERRIDE;
+
+  // TabContentsObserver implementation.
+  virtual void DidStopLoading() OVERRIDE;
+  virtual void RenderViewGone() OVERRIDE;
 
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(
@@ -294,7 +300,8 @@ class PrerenderContents : public RenderViewHostDelegate,
   int32 page_id_;
   GURL url_;
   GURL icon_url_;
-  NotificationRegistrar registrar_;
+  NotificationRegistrar notification_registrar_;
+  TabContentsObserver::Registrar tab_contents_observer_registrar_;
 
   // A vector of URLs that this prerendered page matches against.
   // This array can contain more than element as a result of redirects,

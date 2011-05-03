@@ -13,6 +13,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -72,6 +73,7 @@ class TestPrerenderContents : public PrerenderContents {
     MessageLoopForUI::current()->Quit();
   }
 
+  // TODO(mmenke):  Remove once the old PrerenderContents code is deleted.
   virtual void RenderViewGone(RenderViewHost* render_view_host,
                               base::TerminationStatus status,
                               int error_code) OVERRIDE {
@@ -83,6 +85,17 @@ class TestPrerenderContents : public PrerenderContents {
       expected_final_status_ = FINAL_STATUS_RENDERER_CRASHED;
 
     PrerenderContents::RenderViewGone(render_view_host, status, error_code);
+  }
+
+  virtual void RenderViewGone() OVERRIDE {
+    // On quit, it's possible to end up here when render processes are closed
+    // before the PrerenderManager is destroyed.  As a result, it's possible to
+    // get either FINAL_STATUS_APP_TERMINATING or FINAL_STATUS_RENDERER_CRASHED
+    // on quit.
+    if (expected_final_status_ == FINAL_STATUS_APP_TERMINATING)
+      expected_final_status_ = FINAL_STATUS_RENDERER_CRASHED;
+
+    PrerenderContents::RenderViewGone();
   }
 
   virtual void DidStopLoading() OVERRIDE {

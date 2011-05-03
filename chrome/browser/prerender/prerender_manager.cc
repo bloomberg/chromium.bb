@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
+#include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -21,7 +22,6 @@
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "chrome/common/render_messages.h"
 #include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_util.h"
@@ -440,7 +440,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
     LOG(INFO) << "Checking for prerender with LEGACY code\n";
     return PrerenderManager::MaybeUsePreloadedPageOld(tab_contents, url);
   }
-  LOG(INFO) << "Checking for prerender iwth NEW code\n";
+  LOG(INFO) << "Checking for prerender with NEW code\n";
   DCHECK(CalledOnValidThread());
   scoped_ptr<PrerenderContents> prerender_contents(
       GetEntryButNotSpecifiedTC(url, tab_contents));
