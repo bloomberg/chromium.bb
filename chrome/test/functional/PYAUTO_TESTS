@@ -66,6 +66,7 @@
       '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
       'navigation',
       'notifications',
+      '-notifications.NotificationsTest.testKillNotificationProcess',  # crbug.com/80510
       'ntp',
       'omnibox',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
