@@ -56,8 +56,6 @@ button span {
  * border-image on #footer once WebKit supports border-image-slice.
  * See https://bugs.webkit.org/show_bug.cgi?id=20127 */
 #footer-border {
-  background: -webkit-gradient(linear, left top, right top,
-                               from(#eee), color-stop(0.5, #ccc), to(#eee));
   height: 1px;
 }
 
@@ -69,11 +67,6 @@ button span {
 
 #footer-content > * {
   margin: 0 9px;
-}
-
-/* TODO(estade): theme this color. */
-#footer-content span {
-  color: #888;
 }
 
 /* TODO(estade): handle overflow better? I tried overflow-x: hidden and
@@ -93,8 +86,7 @@ button span {
 
 /* TODO(estade): improve focus indicator. */
 .dot {
-  border-top: 5px solid rgba(0, 0, 0, .1);
-  color: rgba(0, 0, 0, 0.2);
+  border-top: 5px solid;
   cursor: pointer;
   font-size: 9pt;
   height: 100%;
@@ -106,15 +98,6 @@ button span {
   -webkit-padding-start: 5px;
   -webkit-transition: -webkit-transform 500ms,
                       background-color 250ms;
-}
-
-.dot.selected {
-  border-top: 5px solid rgba(0, 0, 0, .4);
-  color: rgba(0, 0, 0, 0.4);
-}
-
-.dot:hover {
-  background-color: rgba(0, 0, 0, .05);
 }
 
 .dot.new {
@@ -148,4 +131,11 @@ button span {
 
 #footer.rearrange-mode #trash {
   -webkit-transform: translate(0, 0);
+}
+
+.disclosure-triangle {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  -webkit-mask-image: url('./ntp4_disclosure_triangle_mask.png');
 }

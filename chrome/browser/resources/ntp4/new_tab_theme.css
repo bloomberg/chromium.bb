@@ -99,6 +99,37 @@ body {
   color: $$$3; /* COLOR_NTP_TEXT_LIGHT */
 }
 
+/* Footer *********************************************************************/
+
+#footer-border {
+  background: -webkit-linear-gradient(left,
+      rgba(255, 255, 255, 0),
+      $$2 5%, /* COLOR_NTP_SECTION_BORDER */
+      $$2 95%, /* COLOR_NTP_SECTION_BORDER */
+      rgba(255, 255, 255, 0));
+}
+
+.dot {
+  border-color: $$2; /* COLOR_NTP_SECTION_BORDER */
+}
+
+.dot.selected {
+  border-color: $6; /* COLOR_NTP_HEADER */
+}
+
+.dot:hover {
+  background-color: $$2; /* COLOR_NTP_SECTION_BORDER */
+}
+
+.tile-page-title,
+#footer-content span {
+  color: $$$3; /* COLOR_NTP_TEXT_LIGHT */
+}
+
+.disclosure-triangle {
+  background-color: $8 /* COLOR_NTP_TEXT */
+}
+
 /* Most Visited ***************************************************************/
 
 .most-visited,
@@ -119,7 +150,7 @@ body {
 
 .thumbnail-wrapper {
   /* This shows through at the (rounded) thumbnail's corners. */
-  background-color: $$2; /* COLOR_NTP_SECTION */
+  background-color: $$2; /* COLOR_NTP_SECTION_BORDER */
 }
 
 .filler .thumbnail {

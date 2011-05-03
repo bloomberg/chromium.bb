@@ -115,11 +115,11 @@
 }
 
 .pinned .edit-bar > .pin:hover {
-  background-image: url(../ntp/ntp_pin_on_h.png');
+  background-image: url('../ntp/ntp_pin_on_h.png');
 }
 
 .pinned .edit-bar > .pin:active {
-  background-image: url(../ntp/ntp_pin_on_p.png');
+  background-image: url('../ntp/ntp_pin_on_p.png');
 }
 
 .edit-bar > .remove {
