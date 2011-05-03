@@ -264,8 +264,8 @@ class PrerenderContents : public RenderViewHostDelegate,
   // delete |this|.
   void Destroy(FinalStatus reason);
 
-  // Returns the RVH delegate for this prerender.
-  RenderViewHostDelegate* GetRVHDelegate();
+  // Returns the RenderViewHost Delegate for this prerender.
+  RenderViewHostDelegate* GetRenderViewHostDelegate();
 
   // Returns the ProcessMetrics for the render process, if it exists.
   base::ProcessMetrics* MaybeGetProcessMetrics();

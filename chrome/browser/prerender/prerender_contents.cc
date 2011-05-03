@@ -169,7 +169,7 @@ void PrerenderContents::StartPrerenderingOld(
   // Register for redirect notifications sourced from |this|.
   notification_registrar_.Add(
       this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
-      Source<RenderViewHostDelegate>(GetRVHDelegate()));
+      Source<RenderViewHostDelegate>(GetRenderViewHostDelegate()));
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
@@ -275,7 +275,7 @@ void PrerenderContents::StartPrerendering(
   // Register for redirect notifications sourced from |this|.
   notification_registrar_.Add(
       this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
-      Source<RenderViewHostDelegate>(GetRVHDelegate()));
+      Source<RenderViewHostDelegate>(GetRenderViewHostDelegate()));
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
@@ -456,7 +456,7 @@ void PrerenderContents::Observe(NotificationType type,
       LoginHandler* handler = details_ptr->handler();
       DCHECK(handler != NULL);
       RenderViewHostDelegate* delegate = handler->GetRenderViewHostDelegate();
-      if (controller == NULL && delegate == GetRVHDelegate()) {
+      if (controller == NULL && delegate == GetRenderViewHostDelegate()) {
         Destroy(FINAL_STATUS_AUTH_NEEDED);
         return;
       }
@@ -471,7 +471,7 @@ void PrerenderContents::Observe(NotificationType type,
       DCHECK(NotificationService::NoDetails() == details);
       RenderViewHost* render_view_host = Source<RenderViewHost>(source).ptr();
       CHECK(render_view_host != NULL);
-      if (render_view_host->delegate() == GetRVHDelegate()) {
+      if (render_view_host->delegate() == GetRenderViewHostDelegate()) {
         Destroy(FINAL_STATUS_DOWNLOAD);
         return;
       }
@@ -484,7 +484,8 @@ void PrerenderContents::Observe(NotificationType type,
       // to be remembered for future matching, and if it redirects to
       // an https resource, it needs to be canceled. If a subresource
       // is redirected, nothing changes.
-      DCHECK(Source<RenderViewHostDelegate>(source).ptr() == GetRVHDelegate());
+      DCHECK(Source<RenderViewHostDelegate>(source).ptr() ==
+             GetRenderViewHostDelegate());
       ResourceRedirectDetails* resource_redirect_details =
           Details<ResourceRedirectDetails>(details).ptr();
       CHECK(resource_redirect_details);
@@ -676,9 +677,9 @@ void PrerenderContents::RendererUnresponsive(RenderViewHost* render_view_host,
 base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
   if (process_metrics_.get() == NULL) {
     // If a PrenderContents hasn't started prerending, don't be fully formed.
-    if (!render_view_host_ || !render_view_host_->process())
+    if (!render_view_host() || !render_view_host()->process())
       return NULL;
-    base::ProcessHandle handle = render_view_host_->process()->GetHandle();
+    base::ProcessHandle handle = render_view_host()->process()->GetHandle();
     if (handle == base::kNullProcessHandle)
       return NULL;
 #if !defined(OS_MACOSX)
@@ -711,7 +712,7 @@ TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
   return prerender_contents_.release();
 }
 
-RenderViewHostDelegate* PrerenderContents::GetRVHDelegate() {
+RenderViewHostDelegate* PrerenderContents::GetRenderViewHostDelegate() {
   if (UseTabContents()) {
     if (!prerender_contents_.get())
       return NULL;
@@ -725,10 +726,10 @@ RenderViewHost* PrerenderContents::render_view_host() {
   // TODO(mmenke): Replace with simple accessor once TabContents is always
   //               used.
   if (UseTabContents()) {
-    DCHECK(!render_view_host_);
+    if (!prerender_contents_.get())
+      return NULL;
     return prerender_contents_->render_view_host();
   }
-  DCHECK(!prerender_contents_.get());
   return render_view_host_;
 }
 
