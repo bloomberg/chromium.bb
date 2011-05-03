@@ -550,6 +550,10 @@ class SetProxyConfigTask : public Task {
     if (dict.GetString(automation::kJSONProxyPacUrl, &pac_url)) {
       pc->set_pac_url(GURL(pac_url));
     }
+    bool pac_mandatory;
+    if (dict.GetBoolean(automation::kJSONProxyPacMandatory, &pac_mandatory)) {
+      pc->set_pac_mandatory(pac_mandatory);
+    }
     std::string proxy_bypass_list;
     if (dict.GetString(automation::kJSONProxyBypassList, &proxy_bypass_list)) {
       pc->proxy_rules().bypass_rules.ParseFromString(proxy_bypass_list);

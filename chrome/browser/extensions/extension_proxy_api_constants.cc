@@ -12,6 +12,7 @@ namespace extension_proxy_api_constants {
 
 const char kProxyConfigMode[] = "mode";
 const char kProxyConfigPacScript[] = "pacScript";
+const char kProxyConfigPacScriptMandatory[] = "mandatory";
 const char kProxyConfigPacScriptUrl[] = "url";
 const char kProxyConfigPacScriptData[] = "data";
 const char kProxyConfigRules[] = "rules";

@@ -11,6 +11,7 @@ namespace automation {
 const char kJSONProxyAutoconfig[] = "proxy.autoconfig";
 const char kJSONProxyNoProxy[] = "proxy.no_proxy";
 const char kJSONProxyPacUrl[] = "proxy.pac_url";
+const char kJSONProxyPacMandatory[] = "proxy.pac_mandatory";
 const char kJSONProxyBypassList[] = "proxy.bypass_list";
 const char kJSONProxyServer[] = "proxy.server";
 

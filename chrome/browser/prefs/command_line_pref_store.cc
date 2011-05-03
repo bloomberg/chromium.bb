@@ -86,7 +86,7 @@ void CommandLinePrefStore::ApplyProxyMode() {
     std::string pac_script_url =
         command_line_->GetSwitchValueASCII(switches::kProxyPacUrl);
     SetValue(prefs::kProxy,
-             ProxyConfigDictionary::CreatePacScript(pac_script_url));
+             ProxyConfigDictionary::CreatePacScript(pac_script_url, false));
   } else if (command_line_->HasSwitch(switches::kProxyAutoDetect)) {
     SetValue(prefs::kProxy,
              ProxyConfigDictionary::CreateAutoDetect());

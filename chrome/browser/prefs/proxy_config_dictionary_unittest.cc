@@ -43,7 +43,7 @@ TEST(ProxyConfigDictionaryTest, CreateAutoDetect) {
 
 TEST(ProxyConfigDictionaryTest, CreatePacScript) {
   scoped_ptr<DictionaryValue> dict_value(
-      ProxyConfigDictionary::CreatePacScript("pac"));
+      ProxyConfigDictionary::CreatePacScript("pac", false));
   ProxyConfigDictionary dict(dict_value.get());
   ProxyConfigHolder h;
 

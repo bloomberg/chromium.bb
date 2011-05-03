@@ -31,13 +31,15 @@ class ProxyConfigDictionary {
 
   bool GetMode(ProxyPrefs::ProxyMode* out) const;
   bool GetPacUrl(std::string* out) const;
+  bool GetPacMandatory(bool* out) const;
   bool GetProxyServer(std::string* out) const;
   bool GetBypassList(std::string* out) const;
   bool HasBypassList() const;
 
   static DictionaryValue* CreateDirect();
   static DictionaryValue* CreateAutoDetect();
-  static DictionaryValue* CreatePacScript(const std::string& pac_url);
+  static DictionaryValue* CreatePacScript(const std::string& pac_url,
+                                          bool pac_mandatory);
   static DictionaryValue* CreateFixedServers(
       const std::string& proxy_server,
       const std::string& bypass_list);
@@ -45,6 +47,7 @@ class ProxyConfigDictionary {
  private:
   static DictionaryValue* CreateDictionary(ProxyPrefs::ProxyMode mode,
                                            const std::string& pac_url,
+                                           bool pac_mandatory,
                                            const std::string& proxy_server,
                                            const std::string& bypass_list);
 

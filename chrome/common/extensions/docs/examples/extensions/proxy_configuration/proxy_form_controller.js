@@ -590,9 +590,11 @@ ProxyFormController.prototype = {
         var pacScriptURL = this.pacURL;
         var pacManual = this.manualPac;
         if (pacScriptURL)
-          return {mode: 'pac_script', pacScript: {url: pacScriptURL}};
+          return {mode: 'pac_script',
+                  pacScript: {url: pacScriptURL, mandatory: true}};
         else if (pacManual)
-          return {mode: 'pac_script', pacScript: {data: pacManual}};
+          return {mode: 'pac_script',
+                  pacScript: {data: pacManual, mandatory: true}};
         else
           return {mode: 'auto_detect'};
       case ProxyFormController.ProxyTypes.FIXED:

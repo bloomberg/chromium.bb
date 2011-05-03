@@ -692,7 +692,7 @@ void ConfigurationPolicyPrefKeeper::ApplyProxySettings() {
       std::string pac_url;
       proxy_policies_[kPolicyProxyPacUrl]->GetAsString(&pac_url);
       prefs_.SetValue(prefs::kProxy,
-                      ProxyConfigDictionary::CreatePacScript(pac_url));
+                      ProxyConfigDictionary::CreatePacScript(pac_url, false));
       break;
     }
     case ProxyPrefs::MODE_FIXED_SERVERS: {

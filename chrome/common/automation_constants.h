@@ -14,6 +14,7 @@ namespace automation {
 extern const char kJSONProxyAutoconfig[];
 extern const char kJSONProxyNoProxy[];
 extern const char kJSONProxyPacUrl[];
+extern const char kJSONProxyPacMandatory[];
 extern const char kJSONProxyBypassList[];
 extern const char kJSONProxyServer[];
 

@@ -46,6 +46,9 @@ bool CreatePACScriptFromDataURL(
 bool GetProxyModeFromExtensionPref(const DictionaryValue* proxy_config,
                                    ProxyPrefs::ProxyMode* out,
                                    std::string* error);
+bool GetPacMandatoryFromExtensionPref(const DictionaryValue* proxy_config,
+                                      bool* out,
+                                      std::string* error);
 bool GetPacUrlFromExtensionPref(const DictionaryValue* proxy_config,
                                 std::string* out,
                                 std::string* error);
@@ -63,6 +66,7 @@ bool GetBypassListFromExtensionPref(const DictionaryValue* proxy_config,
 // API) from the given parameters. Ownership is passed to the caller.
 // Depending on the value of |mode_enum|, several of the strings may be empty.
 DictionaryValue* CreateProxyConfigDict(ProxyPrefs::ProxyMode mode_enum,
+                                       bool pac_mandatory,
                                        const std::string& pac_url,
                                        const std::string& pac_data,
                                        const std::string& proxy_rules_string,

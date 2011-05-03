@@ -73,11 +73,14 @@ Value* ProxyPrefTransformer::ExtensionToBrowserPref(const Value* extension_pref,
   // If a values has been passed to set but could not be parsed, we bail
   // out and return NULL.
   ProxyPrefs::ProxyMode mode_enum;
+  bool pac_mandatory;
   std::string pac_url;
   std::string pac_data;
   std::string proxy_rules_string;
   std::string bypass_list;
   if (!helpers::GetProxyModeFromExtensionPref(config, &mode_enum, error) ||
+      !helpers::GetPacMandatoryFromExtensionPref(config, &pac_mandatory,
+                                                 error) ||
       !helpers::GetPacUrlFromExtensionPref(config, &pac_url, error) ||
       !helpers::GetPacDataFromExtensionPref(config, &pac_data, error) ||
       !helpers::GetProxyRulesStringFromExtensionPref(
@@ -87,7 +90,8 @@ Value* ProxyPrefTransformer::ExtensionToBrowserPref(const Value* extension_pref,
   }
 
   return helpers::CreateProxyConfigDict(
-      mode_enum, pac_url, pac_data, proxy_rules_string, bypass_list, error);
+      mode_enum, pac_mandatory, pac_url, pac_data, proxy_rules_string,
+      bypass_list, error);
 }
 
 Value* ProxyPrefTransformer::BrowserToExtensionPref(const Value* browser_pref) {

@@ -13,6 +13,7 @@ namespace extension_proxy_api_constants {
 // String literals in dictionaries used to communicate with extension.
 extern const char kProxyConfigMode[];
 extern const char kProxyConfigPacScript[];
+extern const char kProxyConfigPacScriptMandatory[];
 extern const char kProxyConfigPacScriptUrl[];
 extern const char kProxyConfigPacScriptData[];
 extern const char kProxyConfigRules[];

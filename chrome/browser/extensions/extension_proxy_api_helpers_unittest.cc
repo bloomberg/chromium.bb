@@ -189,40 +189,42 @@ TEST(ExtensionProxyApiHelpers, CreateProxyConfigDict) {
   std::string error;
   scoped_ptr<DictionaryValue> exp_direct(ProxyConfigDictionary::CreateDirect());
   scoped_ptr<DictionaryValue> out_direct(
-      CreateProxyConfigDict(ProxyPrefs::MODE_DIRECT, "", "", "", "", &error));
+      CreateProxyConfigDict(ProxyPrefs::MODE_DIRECT, false, "", "", "", "",
+                            &error));
   EXPECT_TRUE(Value::Equals(exp_direct.get(), out_direct.get()));
 
   scoped_ptr<DictionaryValue> exp_auto(
       ProxyConfigDictionary::CreateAutoDetect());
   scoped_ptr<DictionaryValue> out_auto(
-      CreateProxyConfigDict(ProxyPrefs::MODE_AUTO_DETECT, "", "", "", "",
+      CreateProxyConfigDict(ProxyPrefs::MODE_AUTO_DETECT, false, "", "", "", "",
                             &error));
   EXPECT_TRUE(Value::Equals(exp_auto.get(), out_auto.get()));
 
   scoped_ptr<DictionaryValue> exp_pac_url(
-      ProxyConfigDictionary::CreatePacScript(kSamplePacScriptUrl));
+      ProxyConfigDictionary::CreatePacScript(kSamplePacScriptUrl, false));
   scoped_ptr<DictionaryValue> out_pac_url(
-        CreateProxyConfigDict(ProxyPrefs::MODE_PAC_SCRIPT, kSamplePacScriptUrl,
-                              "", "", "", &error));
+        CreateProxyConfigDict(ProxyPrefs::MODE_PAC_SCRIPT, false,
+                              kSamplePacScriptUrl, "", "", "", &error));
   EXPECT_TRUE(Value::Equals(exp_pac_url.get(), out_pac_url.get()));
 
   scoped_ptr<DictionaryValue> exp_pac_data(
-      ProxyConfigDictionary::CreatePacScript(kSamplePacScriptAsDataUrl));
+      ProxyConfigDictionary::CreatePacScript(kSamplePacScriptAsDataUrl, false));
   scoped_ptr<DictionaryValue> out_pac_data(
-          CreateProxyConfigDict(ProxyPrefs::MODE_PAC_SCRIPT, "",
+          CreateProxyConfigDict(ProxyPrefs::MODE_PAC_SCRIPT, false, "",
                                 kSamplePacScript, "", "", &error));
   EXPECT_TRUE(Value::Equals(exp_pac_data.get(), out_pac_data.get()));
 
   scoped_ptr<DictionaryValue> exp_fixed(
       ProxyConfigDictionary::CreateFixedServers("foo:80", "localhost"));
   scoped_ptr<DictionaryValue> out_fixed(
-          CreateProxyConfigDict(ProxyPrefs::MODE_FIXED_SERVERS, "", "",
+          CreateProxyConfigDict(ProxyPrefs::MODE_FIXED_SERVERS, false, "", "",
                                 "foo:80", "localhost", &error));
   EXPECT_TRUE(Value::Equals(exp_fixed.get(), out_fixed.get()));
 
   scoped_ptr<DictionaryValue> exp_system(ProxyConfigDictionary::CreateSystem());
   scoped_ptr<DictionaryValue> out_system(
-      CreateProxyConfigDict(ProxyPrefs::MODE_SYSTEM, "", "", "", "", &error));
+      CreateProxyConfigDict(ProxyPrefs::MODE_SYSTEM, false, "", "", "", "",
+                            &error));
   EXPECT_TRUE(Value::Equals(exp_system.get(), out_system.get()));
 
   // Neither of them should have set an error.
@@ -291,13 +293,14 @@ TEST(ExtensionProxyApiHelpers, CreateProxyRulesDict) {
 // Test if a PAC script URL is specified.
 TEST(ExtensionProxyApiHelpers, CreatePacScriptDictWithUrl) {
   scoped_ptr<DictionaryValue> browser_pref(
-      ProxyConfigDictionary::CreatePacScript(kSamplePacScriptUrl));
+      ProxyConfigDictionary::CreatePacScript(kSamplePacScriptUrl, false));
   ProxyConfigDictionary config(browser_pref.get());
   scoped_ptr<DictionaryValue> extension_pref(CreatePacScriptDict(config));
   ASSERT_TRUE(extension_pref.get());
 
   scoped_ptr<DictionaryValue> expected(new DictionaryValue);
   expected->SetString(keys::kProxyConfigPacScriptUrl, kSamplePacScriptUrl);
+  expected->SetBoolean(keys::kProxyConfigPacScriptMandatory, false);
 
   EXPECT_TRUE(Value::Equals(expected.get(), extension_pref.get()));
 }
@@ -305,13 +308,14 @@ TEST(ExtensionProxyApiHelpers, CreatePacScriptDictWithUrl) {
 // Test if a PAC script is encoded in a data URL.
 TEST(ExtensionProxyApiHelpers, CreatePacScriptDictWidthData) {
   scoped_ptr<DictionaryValue> browser_pref(
-      ProxyConfigDictionary::CreatePacScript(kSamplePacScriptAsDataUrl));
+      ProxyConfigDictionary::CreatePacScript(kSamplePacScriptAsDataUrl, false));
   ProxyConfigDictionary config(browser_pref.get());
   scoped_ptr<DictionaryValue> extension_pref(CreatePacScriptDict(config));
   ASSERT_TRUE(extension_pref.get());
 
   scoped_ptr<DictionaryValue> expected(new DictionaryValue);
   expected->SetString(keys::kProxyConfigPacScriptData, kSamplePacScript);
+  expected->SetBoolean(keys::kProxyConfigPacScriptMandatory, false);
 
   EXPECT_TRUE(Value::Equals(expected.get(), extension_pref.get()));
 }

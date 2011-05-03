@@ -4000,7 +4000,8 @@
         "description": "An object holding proxy auto-config information. Exactly one of the fields should be non-empty.",
         "properties": {
           "url": {"type": "string", "optional": true, "description": "URL of the PAC file to be used."},
-          "data": {"type": "string", "optional": true, "description": "A PAC script."}
+          "data": {"type": "string", "optional": true, "description": "A PAC script."},
+          "mandatory": {"type": "boolean", "optional": true, "description": "If true, an invalid PAC script will prevent the network stack from falling back to direct connections. Defaults to false."}
         }
       },
       {

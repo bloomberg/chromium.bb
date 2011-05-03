@@ -137,6 +137,9 @@ bool PrefProxyConfigTracker::PrefConfigToNetConfig(
         return true;
       }
       config->set_pac_url(proxy_pac_url);
+      bool pac_mandatory = false;
+      proxy_dict.GetPacMandatory(&pac_mandatory);
+      config->set_pac_mandatory(pac_mandatory);
       return true;
     }
     case ProxyPrefs::MODE_FIXED_SERVERS: {

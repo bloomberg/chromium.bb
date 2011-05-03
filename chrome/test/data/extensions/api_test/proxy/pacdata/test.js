@@ -18,7 +18,8 @@ chrome.test.runTests([
             "  if (host == 'foobar.com')\n" +
             "    return 'PROXY blackhole:80';\n" +
             "  return 'DIRECT';\n" +
-            "}"
+            "}",
+      mandatory: false
     };
     var config = {
       mode: "pac_script",

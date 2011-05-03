@@ -177,7 +177,7 @@ TEST_F(PrefProxyConfigServiceTest, Observers) {
                                              CONFIG_VALID)).Times(1);
   pref_service_->SetManagedPref(
       prefs::kProxy,
-      ProxyConfigDictionary::CreatePacScript(kFixedPacUrl));
+      ProxyConfigDictionary::CreatePacScript(kFixedPacUrl, false));
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer);
 
@@ -242,7 +242,7 @@ TEST_F(PrefProxyConfigServiceTest, Fallback) {
                                    CONFIG_VALID)).Times(1);
   pref_service_->SetManagedPref(
       prefs::kProxy,
-      ProxyConfigDictionary::CreatePacScript(kFixedPacUrl));
+      ProxyConfigDictionary::CreatePacScript(kFixedPacUrl, false));
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer);
   EXPECT_EQ(CONFIG_VALID,

@@ -72,6 +72,25 @@ bool GetProxyModeFromExtensionPref(const DictionaryValue* proxy_config,
   return true;
 }
 
+bool GetPacMandatoryFromExtensionPref(const DictionaryValue* proxy_config,
+                                      bool* out,
+                                      std::string* error){
+  DictionaryValue* pac_dict = NULL;
+  proxy_config->GetDictionary(keys::kProxyConfigPacScript, &pac_dict);
+  if (!pac_dict)
+    return true;
+
+  bool mandatory_pac = false;
+  if (pac_dict->HasKey(keys::kProxyConfigPacScriptMandatory) &&
+      !pac_dict->GetBoolean(keys::kProxyConfigPacScriptMandatory,
+                            &mandatory_pac)) {
+    LOG(ERROR) << "'pacScript.mandatory' could not be parsed.";
+    return false;
+  }
+  *out = mandatory_pac;
+  return true;
+}
+
 bool GetPacUrlFromExtensionPref(const DictionaryValue* proxy_config,
                                 std::string* out,
                                 std::string* error) {
@@ -272,6 +291,7 @@ bool GetBypassListFromExtensionPref(const DictionaryValue* proxy_config,
 }
 
 DictionaryValue* CreateProxyConfigDict(ProxyPrefs::ProxyMode mode_enum,
+                                       bool pac_mandatory,
                                        const std::string& pac_url,
                                        const std::string& pac_data,
                                        const std::string& proxy_rules_string,
@@ -299,7 +319,8 @@ DictionaryValue* CreateProxyConfigDict(ProxyPrefs::ProxyMode mode_enum,
                  "either a 'url' field or a 'data' field.";
         return NULL;
       }
-      result_proxy_config = ProxyConfigDictionary::CreatePacScript(url);
+      result_proxy_config =
+          ProxyConfigDictionary::CreatePacScript(url, pac_mandatory);
       break;
     }
     case ProxyPrefs::MODE_FIXED_SERVERS: {
@@ -419,6 +440,11 @@ DictionaryValue* CreatePacScriptDict(
     LOG(ERROR) << "Invalid proxy configuration. Missing PAC URL.";
     return NULL;
   }
+  bool pac_mandatory = false;
+  if (!proxy_config.GetPacMandatory(&pac_mandatory)) {
+    LOG(ERROR) << "Invalid proxy configuration. Missing PAC mandatory field.";
+    return NULL;
+  }
 
   if (pac_url.find("data") == 0) {
     std::string pac_data;
@@ -430,6 +456,8 @@ DictionaryValue* CreatePacScriptDict(
   } else {
     pac_script_dict->SetString(keys::kProxyConfigPacScriptUrl, pac_url);
   }
+  pac_script_dict->SetBoolean(keys::kProxyConfigPacScriptMandatory,
+                              pac_mandatory);
   return pac_script_dict.release();
 }
 
