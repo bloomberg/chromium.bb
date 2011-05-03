@@ -305,7 +305,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
     const PageRanges& ranges) {
   DCHECK(!in_print_job_);
 
-  bool is_landscape, is_collate, is_color;
+  bool is_landscape, is_collate, is_color, is_printToPDF;
   string16 printer_name;
   int copies, duplex_mode;
   if (!job_settings.GetBoolean(kSettingLandscape, &is_landscape) ||
@@ -313,8 +313,16 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
       !job_settings.GetInteger(kSettingCopies, &copies) ||
       !job_settings.GetBoolean(kSettingCollate, &is_collate) ||
       !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
-      !job_settings.GetBoolean(kSettingColor, &is_color)) {
+      !job_settings.GetBoolean(kSettingColor, &is_color) ||
+      !job_settings.GetBoolean(kSettingPrintToPDF, &is_printToPDF)) {
     return OnError();
+  }
+
+  if (is_printToPDF) {
+    // Pseudo printer: handle orientation and ranges only.
+    settings_.SetOrientation(is_landscape);
+    settings_.ranges = ranges;
+    return OK;
   }
 
   // Underlying |settings_| do not have these attributes, so we need to
@@ -323,16 +331,27 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
   ResetSettings();
 
   HANDLE printer;
-  if (!OpenPrinter(const_cast<wchar_t*>(printer_name.c_str()),
-                   &printer, NULL)) {
+  LPWSTR printer_name_wide = const_cast<wchar_t*>(printer_name.c_str());
+  if (!OpenPrinter(printer_name_wide, &printer, NULL))
     return OnError();
-  }
 
+  // Make printer changes local to Chrome.
+  // See MSDN documentation regarding DocumentProperties.
   scoped_array<uint8> buffer;
-  int level;
   DEVMODE* dev_mode = NULL;
-  if (!GetPrinterInfo(printer, printer_name, &level, &buffer, &dev_mode) ||
-      dev_mode == NULL) {
+  LONG buffer_size = DocumentProperties(NULL, printer, printer_name_wide,
+                                        NULL, NULL, 0);
+  if (buffer_size) {
+    buffer.reset(new uint8[buffer_size]);
+    memset(buffer.get(), 0, buffer_size);
+    if (DocumentProperties(NULL, printer, printer_name_wide,
+                           reinterpret_cast<PDEVMODE>(buffer.get()), NULL,
+                           DM_OUT_BUFFER) == IDOK) {
+      dev_mode = reinterpret_cast<PDEVMODE>(buffer.get());
+    }
+  }
+  if (dev_mode == NULL) {
+    buffer.reset();
     ClosePrinter(printer);
     return OnError();
   }
@@ -355,9 +374,15 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
   dev_mode->dmOrientation = is_landscape ? DMORIENT_LANDSCAPE :
                                            DMORIENT_PORTRAIT;
 
+  // Update data using DocumentProperties.
+  if (DocumentProperties(NULL, printer, printer_name_wide, dev_mode, dev_mode,
+                         DM_IN_BUFFER | DM_OUT_BUFFER) != IDOK) {
+    ClosePrinter(printer);
+    return OnError();
+  }
+
   // Set printer then refresh printer settings.
-  if (!SetPrinter(printer, level, buffer.get(), 0) ||
-      !AllocateContext(printer_name, dev_mode, &context_)) {
+  if (!AllocateContext(printer_name, dev_mode, &context_)) {
     ClosePrinter(printer);
     return OnError();
   }
