@@ -230,6 +230,16 @@ class TouchEvent : public LocatedEvent {
  public:
   TouchEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native);
 
+  // Create a new touch event.
+  TouchEvent(ui::EventType type,
+             int x,
+             int y,
+             int flags,
+             int touch_id,
+             float radius,
+             float angle,
+             float ratio);
+
   // Create a new TouchEvent which is identical to the provided model.
   // If source / target views are provided, the model location will be converted
   // from |source| coordinate system to |target| coordinate system.
