@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -153,13 +153,10 @@ int main() {
   if (~0 != i) Error("bad close value\n");
   CheckErrno(EBADF);
 
-#if 0
   myprint("\nclock()\n");
   i = clock();
   PrintInt(i);
   if (0 > i) Error("bad clock value\n");
-  CheckErrno(0);
-#endif
 
   myprint("before _exit()\n");
   _exit(kExitOk);
