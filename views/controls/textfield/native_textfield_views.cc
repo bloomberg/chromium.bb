@@ -918,13 +918,15 @@ void NativeTextfieldViews::InitContextMenuIfRequired() {
 }
 
 void NativeTextfieldViews::OnTextInputTypeChanged() {
-  DCHECK(textfield_->GetInputMethod());
-  textfield_->GetInputMethod()->OnTextInputTypeChanged(textfield_);
+  // TODO(suzhe): changed from DCHECK. See http://crbug.com/81320.
+  if (textfield_->GetInputMethod())
+    textfield_->GetInputMethod()->OnTextInputTypeChanged(textfield_);
 }
 
 void NativeTextfieldViews::OnCaretBoundsChanged() {
-  DCHECK(textfield_->GetInputMethod());
-  textfield_->GetInputMethod()->OnCaretBoundsChanged(textfield_);
+  // TODO(suzhe): changed from DCHECK. See http://crbug.com/81320.
+  if (textfield_->GetInputMethod())
+    textfield_->GetInputMethod()->OnCaretBoundsChanged(textfield_);
 }
 
 void NativeTextfieldViews::OnBeforeUserAction() {
