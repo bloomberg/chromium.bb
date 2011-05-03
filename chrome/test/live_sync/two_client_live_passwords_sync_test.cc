@@ -95,8 +95,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
   ASSERT_EQ(1U, forms1.size());
 }
 
+// TODO(rsimha): Marked as flaky due to crbug.com/81341.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       SetPassphraseAndThenSetupSync) {
+                       FLAKY_SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
