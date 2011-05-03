@@ -48,8 +48,7 @@ class SingleSplitView : public views::View {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Overriden to return a resize cursor when over the divider.
-  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
-                                              const gfx::Point& p) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const MouseEvent& event) OVERRIDE;
 
   Orientation orientation() const {
     return is_horizontal_ ? HORIZONTAL_SPLIT : VERTICAL_SPLIT;

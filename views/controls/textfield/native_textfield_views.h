@@ -40,8 +40,8 @@ class Menu2;
 //   chromeos, so we may not need them)
 // * Double click to select word, and triple click to select all.
 // * Undo/Redo
-class NativeTextfieldViews : public views::View,
-                             public views::ContextMenuController,
+class NativeTextfieldViews : public View,
+                             public ContextMenuController,
                              public NativeTextfieldWrapper,
                              public ui::SimpleMenuModel::Delegate,
                              public TextInputClient,
@@ -50,18 +50,17 @@ class NativeTextfieldViews : public views::View,
   explicit NativeTextfieldViews(Textfield* parent);
   ~NativeTextfieldViews();
 
-  // views::View overrides:
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
-  virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
+  // View overrides:
+  virtual gfx::NativeCursor GetCursor(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyReleased(const KeyEvent& event) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
-  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
-                                              const gfx::Point& p) OVERRIDE;
 
-  // views::ContextMenuController overrides:
+  // ContextMenuController overrides:
   virtual void ShowContextMenuForView(View* source,
                                       const gfx::Point& p,
                                       bool is_mouse_gesture) OVERRIDE;
@@ -90,8 +89,8 @@ class NativeTextfieldViews : public views::View,
   virtual void GetSelectedRange(ui::Range* range) const OVERRIDE;
   virtual void SelectRange(const ui::Range& range) OVERRIDE;
   virtual size_t GetCursorPosition() const OVERRIDE;
-  virtual bool HandleKeyPressed(const views::KeyEvent& e) OVERRIDE;
-  virtual bool HandleKeyReleased(const views::KeyEvent& e) OVERRIDE;
+  virtual bool HandleKeyPressed(const KeyEvent& e) OVERRIDE;
+  virtual bool HandleKeyReleased(const KeyEvent& e) OVERRIDE;
   virtual void HandleFocus() OVERRIDE;
   virtual void HandleBlur() OVERRIDE;
   virtual TextInputClient* GetTextInputClient() OVERRIDE;
@@ -178,7 +177,7 @@ class NativeTextfieldViews : public views::View,
   size_t FindCursorPosition(const gfx::Point& point) const;
 
   // Mouse event handler. Returns true if textfield needs to be repainted.
-  bool HandleMousePressed(const views::MouseEvent& e);
+  bool HandleMousePressed(const MouseEvent& e);
 
   // Helper function that sets the cursor position at the location of mouse
   // event.

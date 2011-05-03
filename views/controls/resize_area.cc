@@ -31,8 +31,7 @@ std::string ResizeArea::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::NativeCursor ResizeArea::GetCursorForPoint(ui::EventType event_type,
-                                                const gfx::Point& p) {
+gfx::NativeCursor ResizeArea::GetCursor(const MouseEvent& event) {
   if (!enabled_)
     return NULL;
 #if defined(OS_WIN)

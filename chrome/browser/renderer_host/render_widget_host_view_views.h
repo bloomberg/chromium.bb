@@ -90,8 +90,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 
   // Overridden from views::View.
   virtual std::string GetClassName() const OVERRIDE;
-  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType type,
-                                              const gfx::Point& point) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;

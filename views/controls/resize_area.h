@@ -42,8 +42,7 @@ class ResizeArea : public View {
 
   // Overridden from views::View:
   virtual std::string GetClassName() const OVERRIDE;
-  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
-                                              const gfx::Point& p) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;

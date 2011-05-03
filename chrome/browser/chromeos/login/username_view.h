@@ -45,8 +45,7 @@ class UsernameView : public views::Label {
 
  private:
   // Overriden from View.
-  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
-                                              const gfx::Point& p) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const views::MouseEvent& event) OVERRIDE;
   virtual void OnLocaleChanged() OVERRIDE;
 
   // Paints username to the bitmap with the bounds given.

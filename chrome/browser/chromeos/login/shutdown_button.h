@@ -24,9 +24,8 @@ class ShutdownButton : public views::TextButton,
 
  private:
   // views::View overrides.
+  virtual gfx::NativeCursor GetCursor(const views::MouseEvent& event) OVERRIDE;
   virtual void OnLocaleChanged() OVERRIDE;
-  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
-                                              const gfx::Point& p) OVERRIDE;
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,

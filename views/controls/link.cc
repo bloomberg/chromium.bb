@@ -88,6 +88,29 @@ void Link::Init() {
 Link::~Link() {
 }
 
+void Link::SetEnabled(bool flag) {
+  if (flag != enabled_) {
+    enabled_ = flag;
+    ValidateStyle();
+    SchedulePaint();
+  }
+}
+
+std::string Link::GetClassName() const {
+  return kViewClassName;
+}
+
+gfx::NativeCursor Link::GetCursor(const MouseEvent& event) {
+  if (!enabled_)
+    return NULL;
+#if defined(OS_WIN)
+  static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
+  return g_hand_cursor;
+#elif defined(OS_LINUX)
+  return gfx::GetCursor(GDK_HAND2);
+#endif
+}
+
 bool Link::OnMousePressed(const MouseEvent& event) {
   if (!enabled_ || (!event.IsLeftMouseButton() && !event.IsMiddleMouseButton()))
     return false;
@@ -151,30 +174,6 @@ void Link::GetAccessibleState(ui::AccessibleViewState* state) {
 void Link::SetFont(const gfx::Font& font) {
   Label::SetFont(font);
   ValidateStyle();
-}
-
-void Link::SetEnabled(bool flag) {
-  if (flag != enabled_) {
-    enabled_ = flag;
-    ValidateStyle();
-    SchedulePaint();
-  }
-}
-
-gfx::NativeCursor Link::GetCursorForPoint(ui::EventType event_type,
-                                          const gfx::Point& p) {
-  if (!enabled_)
-    return NULL;
-#if defined(OS_WIN)
-  static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
-  return g_hand_cursor;
-#elif defined(OS_LINUX)
-  return gfx::GetCursor(GDK_HAND2);
-#endif
-}
-
-std::string Link::GetClassName() const {
-  return kViewClassName;
 }
 
 void Link::SetHighlightedColor(const SkColor& color) {

@@ -85,21 +85,17 @@ gfx::Size SingleSplitView::GetPreferredSize() {
   return gfx::Size(width, height);
 }
 
-gfx::NativeCursor SingleSplitView::GetCursorForPoint(
-    ui::EventType event_type,
-    const gfx::Point& p) {
-  if (IsPointInDivider(p)) {
+gfx::NativeCursor SingleSplitView::GetCursor(const MouseEvent& event) {
+  if (!IsPointInDivider(event.location()))
+    return NULL;
 #if defined(OS_WIN)
-    static HCURSOR we_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
-    static HCURSOR ns_resize_cursor = LoadCursor(NULL, IDC_SIZENS);
-    return is_horizontal_ ? we_resize_cursor : ns_resize_cursor;
+  static HCURSOR we_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
+  static HCURSOR ns_resize_cursor = LoadCursor(NULL, IDC_SIZENS);
+  return is_horizontal_ ? we_resize_cursor : ns_resize_cursor;
 #elif defined(OS_LINUX)
-    return gfx::GetCursor(is_horizontal_ ?
-                              GDK_SB_H_DOUBLE_ARROW :
-                              GDK_SB_V_DOUBLE_ARROW);
+  return gfx::GetCursor(is_horizontal_ ? GDK_SB_H_DOUBLE_ARROW :
+                                         GDK_SB_V_DOUBLE_ARROW);
 #endif
-  }
-  return NULL;
 }
 
 void SingleSplitView::CalculateChildrenBounds(

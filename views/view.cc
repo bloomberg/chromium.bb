@@ -767,8 +767,7 @@ View* View::GetEventHandlerForPoint(const gfx::Point& point) {
   return this;
 }
 
-gfx::NativeCursor View::GetCursorForPoint(ui::EventType event_type,
-                                          const gfx::Point& p) {
+gfx::NativeCursor View::GetCursor(const MouseEvent& event) {
 #if defined(OS_WIN)
   static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);
   return arrow;

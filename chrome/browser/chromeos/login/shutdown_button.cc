@@ -106,17 +106,16 @@ void ShutdownButton::LayoutIn(views::View* parent) {
       button_size.height());
 }
 
+gfx::NativeCursor ShutdownButton::GetCursor(const views::MouseEvent& event) {
+  return IsEnabled() ? gfx::GetCursor(GDK_HAND2) : NULL;
+}
+
 void ShutdownButton::OnLocaleChanged() {
   SetText(UTF8ToWide(l10n_util::GetStringUTF8(IDS_SHUTDOWN_BUTTON)));
   if (parent()) {
     parent()->Layout();
     parent()->SchedulePaint();
   }
-}
-
-gfx::NativeCursor ShutdownButton::GetCursorForPoint(ui::EventType event_type,
-                                                    const gfx::Point& p) {
-  return IsEnabled() ? gfx::GetCursor(GDK_HAND2) : NULL;
 }
 
 void ShutdownButton::ButtonPressed(views::Button* sender,

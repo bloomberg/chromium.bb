@@ -584,12 +584,11 @@ class View : public AcceleratorTarget {
   virtual View* GetEventHandlerForPoint(const gfx::Point& point);
 
   // Return the cursor that should be used for this view or the default cursor.
-  // The provided point is in the receiver's coordinate system. The caller is
+  // The event location is in the receiver's coordinate system. The caller is
   // responsible for managing the lifetime of the returned object, though that
   // lifetime may vary from platform to platform. On Windows, the cursor is a
   // shared resource, but Gtk destroys the returned cursor after setting it.
-  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
-                                              const gfx::Point& p);
+  virtual gfx::NativeCursor GetCursor(const MouseEvent& event);
 
   // Convenience to test whether a point is within this view's bounds
   virtual bool HitTest(const gfx::Point& l) const;

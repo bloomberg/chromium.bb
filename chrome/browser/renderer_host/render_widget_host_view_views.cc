@@ -439,8 +439,8 @@ std::string RenderWidgetHostViewViews::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::NativeCursor RenderWidgetHostViewViews::GetCursorForPoint(
-    ui::EventType type, const gfx::Point& point) {
+gfx::NativeCursor RenderWidgetHostViewViews::GetCursor(
+    const views::MouseEvent& event) {
   return native_cursor_;
 }
 

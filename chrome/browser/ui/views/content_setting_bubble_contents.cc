@@ -53,8 +53,7 @@ class ContentSettingBubbleContents::Favicon : public views::ImageView {
   // views::View overrides:
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
-  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
-                                              const gfx::Point& p) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const views::MouseEvent& event) OVERRIDE;
 
   ContentSettingBubbleContents* parent_;
   views::Link* link_;
@@ -85,9 +84,8 @@ void ContentSettingBubbleContents::Favicon::OnMouseReleased(
   }
 }
 
-gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursorForPoint(
-    ui::EventType event_type,
-    const gfx::Point& p) {
+gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursor(
+    const views::MouseEvent& event) {
 #if defined(OS_WIN)
   static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;

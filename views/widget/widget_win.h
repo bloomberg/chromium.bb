@@ -510,6 +510,10 @@ class WidgetWin : public ui::WindowImpl,
   // we always mod this value with the max view events above .
   int accessibility_view_events_index_;
 
+  // The last cursor that was active before the current one was selected. Saved
+  // so that we can restore it.
+  gfx::NativeCursor previous_cursor_;
+
   ViewProps props_;
 
   scoped_ptr<InputMethod> input_method_;

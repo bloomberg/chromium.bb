@@ -145,6 +145,7 @@ WidgetWin::WidgetWin()
       restore_focus_when_enabled_(false),
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents),
+      previous_cursor_(NULL),
       is_input_method_win_(false) {
   set_native_widget(this);
 }
@@ -438,7 +439,12 @@ void WidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void WidgetWin::SetCursor(gfx::NativeCursor cursor) {
-  ::SetCursor(cursor);
+  if(cursor) {
+    previous_cursor_ = ::SetCursor(cursor);
+  } else if (previous_cursor_) {
+    ::SetCursor(previous_cursor_);
+    previous_cursor_ = NULL;
+  }
 }
 
 void WidgetWin::NotifyAccessibilityEvent(

@@ -227,17 +227,16 @@ class PodImageView : public views::ImageView {
 
  protected:
   // Overridden from View:
+  gfx::NativeCursor GetCursor(const views::MouseEvent& event) OVERRIDE {
+    return delegate_->IsUserSelected() ? NULL : gfx::GetCursor(GDK_HAND2);
+  }
+
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
     views::ImageView::SetImage(image_hot_);
   }
 
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
     views::ImageView::SetImage(image_);
-  }
-
-  gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
-                                      const gfx::Point& p) OVERRIDE {
-    return (delegate_->IsUserSelected()) ? NULL : gfx::GetCursor(GDK_HAND2);
   }
 
  private:

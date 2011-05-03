@@ -32,6 +32,9 @@ class Link : public Label {
   void set_listener(LinkListener* listener) { listener_ = listener; }
 
   // Overridden from View:
+  virtual void SetEnabled(bool flag) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const MouseEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
@@ -42,14 +45,6 @@ class Link : public Label {
 
   // Overridden from Label:
   virtual void SetFont(const gfx::Font& font) OVERRIDE;
-
-  // Set whether the link is enabled.
-  virtual void SetEnabled(bool flag) OVERRIDE;
-
-  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
-                                              const gfx::Point& p) OVERRIDE;
-
-  virtual std::string GetClassName() const OVERRIDE;
 
   void SetHighlightedColor(const SkColor& color);
   void SetDisabledColor(const SkColor& color);

@@ -86,7 +86,7 @@ NativeTextfieldViews::~NativeTextfieldViews() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldViews, View overrides:
 
-bool NativeTextfieldViews::OnMousePressed(const views::MouseEvent& event) {
+bool NativeTextfieldViews::OnMousePressed(const MouseEvent& event) {
   OnBeforeUserAction();
   if (HandleMousePressed(event))
     SchedulePaint();
@@ -94,7 +94,7 @@ bool NativeTextfieldViews::OnMousePressed(const views::MouseEvent& event) {
   return true;
 }
 
-bool NativeTextfieldViews::OnMouseDragged(const views::MouseEvent& event) {
+bool NativeTextfieldViews::OnMouseDragged(const MouseEvent& event) {
   OnBeforeUserAction();
   size_t pos = FindCursorPosition(event.location());
   if (model_->MoveCursorTo(pos, true)) {
@@ -105,14 +105,14 @@ bool NativeTextfieldViews::OnMouseDragged(const views::MouseEvent& event) {
   return true;
 }
 
-bool NativeTextfieldViews::OnKeyPressed(const views::KeyEvent& event) {
+bool NativeTextfieldViews::OnKeyPressed(const KeyEvent& event) {
   // OnKeyPressed/OnKeyReleased/OnFocus/OnBlur will never be invoked on
   // NativeTextfieldViews as it will never gain focus.
   NOTREACHED();
   return false;
 }
 
-bool NativeTextfieldViews::OnKeyReleased(const views::KeyEvent& event) {
+bool NativeTextfieldViews::OnKeyReleased(const KeyEvent& event) {
   NOTREACHED();
   return false;
 }
@@ -133,9 +133,7 @@ void NativeTextfieldViews::OnBlur() {
   NOTREACHED();
 }
 
-gfx::NativeCursor NativeTextfieldViews::GetCursorForPoint(
-    ui::EventType event_type,
-    const gfx::Point& p) {
+gfx::NativeCursor NativeTextfieldViews::GetCursor(const MouseEvent& event) {
 #if defined(OS_WIN)
   static HCURSOR ibeam = LoadCursor(NULL, IDC_IBEAM);
   return ibeam;
@@ -145,7 +143,7 @@ gfx::NativeCursor NativeTextfieldViews::GetCursorForPoint(
 }
 
 /////////////////////////////////////////////////////////////////
-// NativeTextfieldViews, views::ContextMenuController overrides:
+// NativeTextfieldViews, ContextMenuController overrides:
 void NativeTextfieldViews::ShowContextMenuForView(View* source,
                                                   const gfx::Point& p,
                                                   bool is_mouse_gesture) {
@@ -287,7 +285,7 @@ size_t NativeTextfieldViews::GetCursorPosition() const {
   return model_->cursor_pos();
 }
 
-bool NativeTextfieldViews::HandleKeyPressed(const views::KeyEvent& e) {
+bool NativeTextfieldViews::HandleKeyPressed(const KeyEvent& e) {
   TextfieldController* controller = textfield_->GetController();
   bool handled = false;
   if (controller)
@@ -295,7 +293,7 @@ bool NativeTextfieldViews::HandleKeyPressed(const views::KeyEvent& e) {
   return handled || HandleKeyEvent(e);
 }
 
-bool NativeTextfieldViews::HandleKeyReleased(const views::KeyEvent& e) {
+bool NativeTextfieldViews::HandleKeyReleased(const KeyEvent& e) {
   return true;
 }
 
@@ -339,7 +337,7 @@ bool NativeTextfieldViews::IsCommandIdEnabled(int command_id) const {
     case IDS_APP_COPY:
       return model_->HasSelection();
     case IDS_APP_PASTE:
-      views::ViewsDelegate::views_delegate->GetClipboard()
+      ViewsDelegate::views_delegate->GetClipboard()
           ->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
       return editable && !result.empty();
     case IDS_APP_DELETE:

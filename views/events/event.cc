@@ -49,7 +49,7 @@ LocatedEvent::LocatedEvent(const LocatedEvent& model, View* source,
                            View* target)
     : Event(model),
       location_(model.location_) {
-  if (target)
+  if (target && target != source)
     View::ConvertPointToView(source, target, &location_);
 }
 
