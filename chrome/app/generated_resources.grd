@@ -4396,9 +4396,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
 
         <!-- 3G data Notifications -->
-        <message name="IDS_3G_FREE_DATA_NOTIFICATION_TITLE" desc="Title of 3G data notification telling user that she has x free data.">
-          You have <ph name="DATE">$1<ex>3GB</ex></ph> of free data, courtesy of <ph name="DATE">$1<ex>Vodafone</ex></ph>
-        </message>
         <message name="IDS_3G_NOTIFICATION_MESSAGE" desc="Text of the 3G data notification telling that 3G data is enabled.">
           Chrome will use 3G data when no WiFi connection is present.
         </message>
@@ -11318,6 +11315,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DISCONNECT_VPN" desc="In the network status menu, the text in Private networks submenu to disconnect from a private network.">
         Disconnect private network
+      </message>
+      <message name="IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT" desc="In the network status menu, the text of the top-up URL link.">
+        View Account
       </message>
       <message name="IDS_STATUSBAR_NO_NETWORKS_MESSAGE" desc="No networks are available">
         No networks are available
