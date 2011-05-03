@@ -183,7 +183,8 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
             extra);
     if (-1 == munmap((void *) orig_addr, extra)) {
       perror("munmap (front)");
-      NaClExit(2);
+      NaClLog(LOG_FATAL,
+              "NaClAllocatePow2AlignedMemory: munmap front failed\n");
     }
   }
 
@@ -197,7 +198,8 @@ void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
     if (-1 == munmap((void *) (rounded_addr + mem_sz),
          extra)) {
       perror("munmap (end)");
-      NaClExit(3);
+      NaClLog(LOG_FATAL,
+              "NaClAllocatePow2AlignedMemory: munmap tail failed\n");
     }
   }
   NaClLog(4,

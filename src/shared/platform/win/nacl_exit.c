@@ -23,11 +23,12 @@ void NaClExit(int err_code) {
 #else
   /* If the process is scheduled for termination, wait for it.*/
   if (TerminateProcess(GetCurrentProcess(), err_code)) {
-    while(1);
+    while (1) {
+      (void) SwitchToThread();
+    }
   }
 
   /* Otherwise use the standard C process exit to bybass destructors. */
   ExitProcess(err_code);
 #endif
 }
-
