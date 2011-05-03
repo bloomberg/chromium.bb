@@ -483,6 +483,12 @@ class ExtensionService
   // |client| can be NULL for a silent install.
   scoped_refptr<CrxInstaller> MakeCrxInstaller(ExtensionInstallUI* client);
 
+#if defined(UNIT_TEST)
+  void TrackTerminatedExtensionForTest(const Extension* extension) {
+    TrackTerminatedExtension(extension);
+  }
+#endif
+
  private:
   // Contains Extension data that can change during the life of the process,
   // but does not persist across restarts.
@@ -531,8 +537,12 @@ class ExtensionService
                                             bool include_terminated) const;
 
 
-  // Keep track of terminated extensions.
+  // Adds the given extension to the list of terminated extensions if
+  // it is not already there and unloads it.
   void TrackTerminatedExtension(const Extension* extension);
+
+  // Removes the extension with the given id from the list of
+  // terminated extensions if it is there.
   void UntrackTerminatedExtension(const std::string& id);
 
   // Handles sending notification that |extension| was loaded.

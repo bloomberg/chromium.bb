@@ -693,11 +693,64 @@ class ExtensionServiceTest
     EXPECT_FALSE(file_util::PathExists(path));
   }
 
-  void ValidatePrefKeyCount(size_t count) {
+  void TerminateExtension(const std::string& id) {
+    const Extension* extension = service_->GetInstalledExtension(id);
+    if (!extension) {
+      ADD_FAILURE();
+      return;
+    }
+    service_->TrackTerminatedExtensionForTest(extension);
+  }
+
+  size_t GetPrefKeyCount() {
     const DictionaryValue* dict =
         profile_->GetPrefs()->GetDictionary("extensions.settings");
-    ASSERT_TRUE(dict != NULL);
-    EXPECT_EQ(count, dict->size());
+    if (!dict) {
+      ADD_FAILURE();
+      return 0;
+    }
+    return dict->size();
+  }
+
+  void UninstallExtension(const std::string& id, bool use_helper) {
+    // Verify that the extension is installed.
+    FilePath extension_path = extensions_install_dir_.AppendASCII(id);
+    EXPECT_TRUE(file_util::PathExists(extension_path));
+    size_t pref_key_count = GetPrefKeyCount();
+    EXPECT_GT(pref_key_count, 0u);
+    ValidateIntegerPref(id, "state", Extension::ENABLED);
+
+    // Uninstall it.
+    if (use_helper) {
+      EXPECT_TRUE(ExtensionService::UninstallExtensionHelper(service_, id));
+    } else {
+      EXPECT_TRUE(service_->UninstallExtension(id, false, NULL));
+    }
+    total_successes_ = 0;
+
+    // We should get an unload notification.
+    EXPECT_FALSE(unloaded_id_.empty());
+    EXPECT_EQ(id, unloaded_id_);
+
+    // Verify uninstalled state.
+    size_t new_pref_key_count = GetPrefKeyCount();
+    if (new_pref_key_count == pref_key_count) {
+      ValidateIntegerPref(id, "location",
+                          Extension::EXTERNAL_EXTENSION_UNINSTALLED);
+    } else {
+      EXPECT_EQ(new_pref_key_count, pref_key_count - 1);
+    }
+
+    // The extension should not be in the service anymore.
+    EXPECT_FALSE(service_->GetInstalledExtension(id));
+    loop_.RunAllPending();
+
+    // The directory should be gone.
+    EXPECT_FALSE(file_util::PathExists(extension_path));
+  }
+
+  void ValidatePrefKeyCount(size_t count) {
+    EXPECT_EQ(count, GetPrefKeyCount());
   }
 
   void ValidateBooleanPref(const std::string& extension_id,
@@ -1156,8 +1209,7 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
   ASSERT_TRUE(service_->GetExtensionById(good_crx, false));
 
   // Uninstall it and check that its killbit gets set.
-  service_->UninstallExtension(good_crx, false, NULL);
-  loop_.RunAllPending();
+  UninstallExtension(good_crx, false);
   ValidateIntegerPref(good_crx, "location",
                       Extension::EXTERNAL_EXTENSION_UNINSTALLED);
 
@@ -1775,16 +1827,14 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
 
   // Uninstall one of them, unlimited storage should still be granted
   // to the origin.
-  service_->UninstallExtension(id1, false, NULL);
-  loop_.RunAllPending();
+  UninstallExtension(id1, false);
   EXPECT_EQ(1u, service_->extensions()->size());
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageUnlimited(origin1));
 
 
   // Uninstall the other, unlimited storage should be revoked.
-  service_->UninstallExtension(id2, false, NULL);
-  loop_.RunAllPending();
+  UninstallExtension(id2, false);
   EXPECT_EQ(0u, service_->extensions()->size());
   EXPECT_FALSE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageUnlimited(origin2));
@@ -1817,12 +1867,10 @@ TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageProtected(origin2));
 
-  service_->UninstallExtension(id1, false, NULL);
-  loop_.RunAllPending();
+  UninstallExtension(id1, false);
   EXPECT_EQ(1u, service_->extensions()->size());
 
-  service_->UninstallExtension(id2, false, NULL);
-  loop_.RunAllPending();
+  UninstallExtension(id2, false);
 
   EXPECT_TRUE(service_->extensions()->empty());
   EXPECT_FALSE(profile_->GetExtensionSpecialStoragePolicy()->
@@ -2460,22 +2508,33 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
 TEST_F(ExtensionServiceTest, DisableExtension) {
   InitializeEmptyExtensionService();
 
-  // A simple extension that should install without error.
-  FilePath path = data_dir_.AppendASCII("good.crx");
-  InstallCrx(path, true);
-
-  const char* extension_id = good_crx;
+  InstallCrx(data_dir_.AppendASCII("good.crx"), true);
   EXPECT_FALSE(service_->extensions()->empty());
-  EXPECT_TRUE(service_->GetExtensionById(extension_id, true) != NULL);
-  EXPECT_TRUE(service_->GetExtensionById(extension_id, false) != NULL);
+  EXPECT_TRUE(service_->GetExtensionById(good_crx, true) != NULL);
+  EXPECT_TRUE(service_->GetExtensionById(good_crx, false) != NULL);
   EXPECT_TRUE(service_->disabled_extensions()->empty());
 
   // Disable it.
-  service_->DisableExtension(extension_id);
+  service_->DisableExtension(good_crx);
 
   EXPECT_TRUE(service_->extensions()->empty());
-  EXPECT_TRUE(service_->GetExtensionById(extension_id, true) != NULL);
-  EXPECT_FALSE(service_->GetExtensionById(extension_id, false) != NULL);
+  EXPECT_TRUE(service_->GetExtensionById(good_crx, true) != NULL);
+  EXPECT_FALSE(service_->GetExtensionById(good_crx, false) != NULL);
+  EXPECT_FALSE(service_->disabled_extensions()->empty());
+}
+
+TEST_F(ExtensionServiceTest, DisableTerminatedExtension) {
+  InitializeEmptyExtensionService();
+
+  InstallCrx(data_dir_.AppendASCII("good.crx"), true);
+  TerminateExtension(good_crx);
+  EXPECT_TRUE(service_->GetTerminatedExtension(good_crx));
+
+  // Disable it.
+  service_->DisableExtension(good_crx);
+
+  EXPECT_FALSE(service_->GetTerminatedExtension(good_crx));
+  EXPECT_TRUE(service_->GetExtensionById(good_crx, true) != NULL);
   EXPECT_FALSE(service_->disabled_extensions()->empty());
 }
 
@@ -2552,74 +2611,29 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
 // Tests uninstalling normal extensions
 TEST_F(ExtensionServiceTest, UninstallExtension) {
   InitializeEmptyExtensionService();
+  InstallCrx(data_dir_.AppendASCII("good.crx"), true);
+  UninstallExtension(good_crx, false);
+}
 
-  // A simple extension that should install without error.
-  FilePath path = data_dir_.AppendASCII("good.crx");
-  InstallCrx(path, true);
-
-  // The directory should be there now.
-  const char* extension_id = good_crx;
-  FilePath extension_path = extensions_install_dir_.AppendASCII(extension_id);
-  EXPECT_TRUE(file_util::PathExists(extension_path));
-
-  ValidatePrefKeyCount(1);
-  ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
-  ValidateIntegerPref(good_crx, "location", Extension::INTERNAL);
-
-  // Uninstall it.
-  service_->UninstallExtension(extension_id, false, NULL);
-  total_successes_ = 0;
-
-  // We should get an unload notification.
-  ASSERT_TRUE(unloaded_id_.length());
-  EXPECT_EQ(extension_id, unloaded_id_);
-
-  ValidatePrefKeyCount(0);
-
-  // The extension should not be in the service anymore.
-  ASSERT_FALSE(service_->GetExtensionById(extension_id, false));
-  loop_.RunAllPending();
-
-  // The directory should be gone.
-  EXPECT_FALSE(file_util::PathExists(extension_path));
+TEST_F(ExtensionServiceTest, UninstallTerminatedExtension) {
+  InitializeEmptyExtensionService();
+  InstallCrx(data_dir_.AppendASCII("good.crx"), true);
+  TerminateExtension(good_crx);
+  UninstallExtension(good_crx, false);
 }
 
 // Tests the uninstaller helper.
 TEST_F(ExtensionServiceTest, UninstallExtensionHelper) {
   InitializeEmptyExtensionService();
+  InstallCrx(data_dir_.AppendASCII("good.crx"), true);
+  UninstallExtension(good_crx, true);
+}
 
-  // A simple extension that should install without error.
-  FilePath path = data_dir_.AppendASCII("good.crx");
-  InstallCrx(path, true);
-
-  // The directory should be there now.
-  const char* extension_id = good_crx;
-  FilePath extension_path = extensions_install_dir_.AppendASCII(extension_id);
-  EXPECT_TRUE(file_util::PathExists(extension_path));
-
-  bool result = ExtensionService::UninstallExtensionHelper(service_,
-                                                           extension_id);
-  total_successes_ = 0;
-
-  EXPECT_TRUE(result);
-
-  // We should get an unload notification.
-  ASSERT_TRUE(unloaded_id_.length());
-  EXPECT_EQ(extension_id, unloaded_id_);
-
-  ValidatePrefKeyCount(0);
-
-  // The extension should not be in the service anymore.
-  ASSERT_FALSE(service_->GetExtensionById(extension_id, false));
-  loop_.RunAllPending();
-
-  // The directory should be gone.
-  EXPECT_FALSE(file_util::PathExists(extension_path));
-
-  // Attempt to uninstall again. This should fail as we just removed the
-  // extension.
-  result = ExtensionService::UninstallExtensionHelper(service_, extension_id);
-  EXPECT_FALSE(result);
+TEST_F(ExtensionServiceTest, UninstallExtensionHelperTerminated) {
+  InitializeEmptyExtensionService();
+  InstallCrx(data_dir_.AppendASCII("good.crx"), true);
+  TerminateExtension(good_crx);
+  UninstallExtension(good_crx, true);
 }
 
 // Verifies extension state is removed upon uninstall
@@ -3512,15 +3526,14 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataUninstall) {
 TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
   InitializeEmptyExtensionService();
 
-  FilePath extension_path = data_dir_.AppendASCII("good.crx");
-  InstallCrx(extension_path, true);
+  InstallCrx(data_dir_.AppendASCII("good.crx"), true);
   EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
   EXPECT_FALSE(service_->IsIncognitoEnabled(good_crx));
 
   ExtensionSyncData extension_sync_data;
   extension_sync_data.id = good_crx;
   extension_sync_data.version =
-      *(service_->GetExtensionById(good_crx, true)->version());
+      *(service_->GetInstalledExtension(good_crx)->version());
 
   extension_sync_data.enabled = false;
   service_->ProcessSyncData(extension_sync_data, &AllExtensions);
@@ -3542,12 +3555,31 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(good_crx));
 }
 
+TEST_F(ExtensionServiceTest, ProcessSyncDataTerminatedExtension) {
+  InitializeExtensionServiceWithUpdater();
+
+  InstallCrx(data_dir_.AppendASCII("good.crx"), true);
+  TerminateExtension(good_crx);
+  EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
+  EXPECT_FALSE(service_->IsIncognitoEnabled(good_crx));
+
+  ExtensionSyncData extension_sync_data;
+  extension_sync_data.id = good_crx;
+  extension_sync_data.version =
+      *(service_->GetInstalledExtension(good_crx)->version());
+  extension_sync_data.enabled = false;
+  extension_sync_data.incognito_enabled = true;
+  service_->ProcessSyncData(extension_sync_data, &AllExtensions);
+  EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
+  EXPECT_TRUE(service_->IsIncognitoEnabled(good_crx));
+
+  EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(good_crx));
+}
+
 TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
   InitializeExtensionServiceWithUpdater();
 
-  // Install the extension.
-  FilePath extension_path = data_dir_.AppendASCII("good.crx");
-  InstallCrx(extension_path, true);
+  InstallCrx(data_dir_.AppendASCII("good.crx"), true);
   EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
   EXPECT_FALSE(service_->IsIncognitoEnabled(good_crx));
 
@@ -3555,7 +3587,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
   extension_sync_data.id = good_crx;
   extension_sync_data.enabled = true;
   extension_sync_data.version =
-      *(service_->GetExtensionById(good_crx, true)->version());
+      *(service_->GetInstalledExtension(good_crx)->version());
 
   // Should do nothing if extension version == sync version.
   service_->ProcessSyncData(extension_sync_data, &AllExtensions);

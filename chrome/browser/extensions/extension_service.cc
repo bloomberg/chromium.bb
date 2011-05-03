@@ -656,10 +656,16 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
   }
 }
 
-bool ExtensionService::UninstallExtension(const std::string& extension_id,
-                                          bool external_uninstall,
-                                          std::string* error) {
+bool ExtensionService::UninstallExtension(
+    const std::string& extension_id_unsafe,
+    bool external_uninstall,
+    std::string* error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Copy the extension identifier since the reference might have been
+  // obtained via Extension::id() and the extension may be deleted in
+  // this function.
+  std::string extension_id(extension_id_unsafe);
 
   const Extension* extension = GetInstalledExtension(extension_id);
 
@@ -692,10 +698,6 @@ bool ExtensionService::UninstallExtension(const std::string& extension_id,
   RecordPermissionMessagesHistogram(
       extension, "Extensions.Permissions_Uninstall");
 
-  // Also copy the extension identifier since the reference might have been
-  // obtained via Extension::id().
-  std::string extension_id_copy(extension_id);
-
   if (profile_->GetTemplateURLModel())
     profile_->GetTemplateURLModel()->UnregisterExtensionKeyword(extension);
 
@@ -703,7 +705,7 @@ bool ExtensionService::UninstallExtension(const std::string& extension_id,
   // any of these resources.
   UnloadExtension(extension_id, UnloadedExtensionInfo::UNINSTALL);
 
-  extension_prefs_->OnExtensionUninstalled(extension_id_copy, location,
+  extension_prefs_->OnExtensionUninstalled(extension_id, location,
                                            external_uninstall);
 
   // Tell the backend to start deleting installed extensions on the file thread.
@@ -713,7 +715,7 @@ bool ExtensionService::UninstallExtension(const std::string& extension_id,
             NewRunnableFunction(
                 &extension_file_util::UninstallExtension,
                 install_directory_,
-                extension_id_copy)))
+                extension_id)))
       NOTREACHED();
   }
 
@@ -1902,13 +1904,15 @@ const Extension* ExtensionService::GetExtensionByIdInternal(
 void ExtensionService::TrackTerminatedExtension(const Extension* extension) {
   if (terminated_extension_ids_.insert(extension->id()).second)
     terminated_extensions_.push_back(make_scoped_refptr(extension));
+
+  UnloadExtension(extension->id(), UnloadedExtensionInfo::DISABLE);
 }
 
 void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
-  if (terminated_extension_ids_.erase(id) <= 0)
+  std::string lowercase_id = StringToLowerASCII(id);
+  if (terminated_extension_ids_.erase(lowercase_id) <= 0)
     return;
 
-  std::string lowercase_id = StringToLowerASCII(id);
   for (ExtensionList::iterator iter = terminated_extensions_.begin();
        iter != terminated_extensions_.end(); ++iter) {
     if ((*iter)->id() == lowercase_id) {
@@ -2046,26 +2050,25 @@ void ExtensionService::DidCreateRenderViewForBackgroundPage(
 }
 
 void ExtensionService::Observe(NotificationType type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+                               const NotificationSource& source,
+                               const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSION_PROCESS_TERMINATED: {
       if (profile_ != Source<Profile>(source).ptr()->GetOriginalProfile())
         break;
 
       ExtensionHost* host = Details<ExtensionHost>(details).ptr();
-      TrackTerminatedExtension(host->extension());
 
-      // Unload the entire extension. We want it to be in a consistent state:
-      // either fully working or not loaded at all, but never half-crashed.
-      // We do it in a PostTask so that other handlers of this notification will
-      // still have access to the Extension and ExtensionHost.
+      // Mark the extension as terminated and Unload it. We want it to
+      // be in a consistent state: either fully working or not loaded
+      // at all, but never half-crashed.  We do it in a PostTask so
+      // that other handlers of this notification will still have
+      // access to the Extension and ExtensionHost.
       MessageLoop::current()->PostTask(
           FROM_HERE,
           method_factory_.NewRunnableMethod(
-              &ExtensionService::UnloadExtension,
-              host->extension()->id(),
-              UnloadedExtensionInfo::DISABLE));
+              &ExtensionService::TrackTerminatedExtension,
+              host->extension()));
       break;
     }
     case NotificationType::RENDERER_PROCESS_CREATED: {
