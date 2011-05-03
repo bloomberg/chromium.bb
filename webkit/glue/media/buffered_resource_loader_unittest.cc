@@ -131,23 +131,49 @@ class BufferedResourceLoaderTest : public testing::Test {
 
   void PartialResponse(int64 first_position, int64 last_position,
                        int64 instance_size) {
+    PartialResponse(first_position, last_position, instance_size, false, true);
+  }
+
+  void PartialResponse(int64 first_position, int64 last_position,
+                       int64 instance_size, bool chunked, bool accept_ranges) {
     EXPECT_CALL(*this, StartCallback(net::OK));
-    int64 content_length = last_position - first_position + 1;
 
     WebURLResponse response(gurl_);
-    response.setHTTPHeaderField(WebString::fromUTF8("Accept-Ranges"),
-                                WebString::fromUTF8("bytes"));
     response.setHTTPHeaderField(WebString::fromUTF8("Content-Range"),
                                 WebString::fromUTF8(base::StringPrintf("bytes "
                                             "%" PRId64 "-%" PRId64 "/%" PRId64,
                                             first_position,
                                             last_position,
                                             instance_size)));
+
+    // HTTP 1.1 doesn't permit Content-Length with Transfer-Encoding: chunked.
+    int64 content_length = -1;
+    if (chunked) {
+      response.setHTTPHeaderField(WebString::fromUTF8("Transfer-Encoding"),
+                                  WebString::fromUTF8("chunked"));
+    } else {
+      content_length = last_position - first_position + 1;
+    }
     response.setExpectedContentLength(content_length);
+
+    // A server isn't required to return Accept-Ranges even though it might.
+    if (accept_ranges) {
+      response.setHTTPHeaderField(WebString::fromUTF8("Accept-Ranges"),
+                                  WebString::fromUTF8("bytes"));
+    }
+
     response.setHTTPStatusCode(kHttpPartialContent);
     loader_->didReceiveResponse(url_loader_, response);
+
+    // XXX: what's the difference between these two? For example in the chunked
+    // range request case, Content-Length is unspecified (because it's chunked)
+    // but Content-Range: a-b/c can be returned, where c == Content-Length
+    //
+    // Can we eliminate one?
     EXPECT_EQ(content_length, loader_->content_length());
     EXPECT_EQ(instance_size, loader_->instance_size());
+
+    // A valid partial response should always result in this being true.
     EXPECT_TRUE(loader_->range_supported());
   }
 
@@ -254,6 +280,27 @@ TEST_F(BufferedResourceLoaderTest, PartialResponse) {
   Initialize(kHttpUrl, 100, 200);
   Start();
   PartialResponse(100, 200, 1024);
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, PartialResponse_Chunked) {
+  Initialize(kHttpUrl, 100, 200);
+  Start();
+  PartialResponse(100, 200, 1024, true, true);
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, PartialResponse_NoAcceptRanges) {
+  Initialize(kHttpUrl, 100, 200);
+  Start();
+  PartialResponse(100, 200, 1024, false, false);
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, PartialResponse_ChunkedNoAcceptRanges) {
+  Initialize(kHttpUrl, 100, 200);
+  Start();
+  PartialResponse(100, 200, 1024, true, false);
   StopWhenLoad();
 }
 

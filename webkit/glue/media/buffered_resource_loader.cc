@@ -103,7 +103,7 @@ void BufferedResourceLoader::Start(net::CompletionCallback* start_callback,
   WebURLRequest request(url_);
   request.setTargetType(WebURLRequest::TargetIsMedia);
 
-  if (!IsWholeFileRange()) {
+  if (IsRangeRequest()) {
     range_requested_ = true;
     request.setHTTPHeaderField(WebString::fromUTF8("Range"),
                                WebString::fromUTF8(GenerateHeaders(
@@ -295,8 +295,11 @@ void BufferedResourceLoader::didReceiveResponse(
 
     if (range_requested_) {
       // If we have verified the partial response and it is correct, we will
-      // return net::OK.
-      if (!partial_response || !VerifyPartialResponse(response))
+      // return net::OK. It's also possible for a server to support range
+      // requests without advertising Accept-Ranges: bytes.
+      if (partial_response && VerifyPartialResponse(response))
+        range_supported_ = true;
+      else
         error = net::ERR_INVALID_RESPONSE;
     } else if (response.httpStatusCode() != kHttpOK) {
       // We didn't request a range but server didn't reply with "200 OK".
@@ -643,10 +646,8 @@ void BufferedResourceLoader::NotifyNetworkEvent() {
     event_callback_->Run();
 }
 
-bool BufferedResourceLoader::IsWholeFileRange() const {
-  return ((first_byte_position_ == kPositionNotSpecified ||
-           first_byte_position_ == 0) &&
-          last_byte_position_ == kPositionNotSpecified);
+bool BufferedResourceLoader::IsRangeRequest() const {
+  return first_byte_position_ != kPositionNotSpecified;
 }
 
 }  // namespace webkit_glue

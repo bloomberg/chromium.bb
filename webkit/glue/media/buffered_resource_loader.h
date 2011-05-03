@@ -207,9 +207,8 @@ class BufferedResourceLoader :
 
   bool HasPendingRead() { return read_callback_.get() != NULL; }
 
-  // Helper function that returns true if a range is not provided
-  // or a 0- range is specified.
-  bool IsWholeFileRange() const;
+  // Helper function that returns true if a range request was specified.
+  bool IsRangeRequest() const;
 
   // A sliding window of buffer.
   scoped_ptr<media::SeekableBuffer> buffer_;
