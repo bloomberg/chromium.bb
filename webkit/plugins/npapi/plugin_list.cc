@@ -28,17 +28,9 @@ FilePath::CharType kDefaultPluginLibraryName[] =
 
 // Some version ranges can be shared across operating systems. This should be
 // done where possible to avoid duplication.
-// This is uptodate with
-// http://www.adobe.com/support/security/bulletins/apsb11-07.html
 static const VersionRangeDefinition kFlashVersionRange[] = {
-    // Chrome Flash is .154 and always uptodate due to being built-in.
-    { "0", "10.2.155", "10.2.154", false },
-    // External Flash (Linux x86_64) needs .159, and never had a .154 series
-    // release (which is why this split-range works nicely and simply).
-    { "10.2.155", "10.3", "10.2.159", false }
+    { "", "", "10.2.153", false }
 };
-// This is uptodate with
-// http://www.adobe.com/support/security/bulletins/apsb11-01.html
 static const VersionRangeDefinition kShockwaveVersionRange[] = {
     { "",  "", "11.5.9.620", true }
 };
@@ -103,11 +95,9 @@ static const VersionRangeDefinition kQuicktimeVersionRange[] = {
 static const VersionRangeDefinition kJavaVersionRange[] = {
     { "0", "7", "6.0.240", true }  // "240" is not a typo.
 };
-// This is uptodate with
-// http://www.adobe.com/support/security/bulletins/apsb11-08.html
 static const VersionRangeDefinition kAdobeReaderVersionRange[] = {
     { "10", "11", "10.0.1", false },
-    { "9", "10", "9.4.4", false },
+    { "9", "10", "9.4.3", false },
     { "0", "9", "8.2.6", false }
 };
 static const VersionRangeDefinition kDivXVersionRange[] = {
