@@ -37,6 +37,19 @@ Display* GetXDisplayHelper() {
   return display;
 }
 
+bool IsCompositingWindowManagerActive(Display* display) {
+  // The X macro "None" has been undefined by gl_bindings.h.
+  const int kNone = 0;
+  static Atom net_wm_cm_s0 = kNone;
+  if (net_wm_cm_s0 == kNone) {
+    net_wm_cm_s0 = XInternAtom(display, "_NET_WM_CM_S0", True);
+  }
+  if (net_wm_cm_s0 == kNone) {
+    return false;
+  }
+  return XGetSelectionOwner(display, net_wm_cm_s0) != kNone;
+}
+
 }  // namespace
 
 namespace gfx {
@@ -335,7 +348,13 @@ void ViewGLContext::SetSwapInterval(int interval) {
   DCHECK(IsCurrent());
   if (HasExtension("GLX_EXT_swap_control") && glXSwapIntervalEXT) {
     Display* display = GetXDisplayHelper();
-    glXSwapIntervalEXT(display, window_, interval);
+    // Only enable vsync if we aren't using a compositing window
+    // manager. At the moment, compositing window managers don't
+    // respect this setting anyway (tearing still occurs) and it
+    // dramatically increases latency.
+    if (!IsCompositingWindowManagerActive(display)) {
+      glXSwapIntervalEXT(display, window_, interval);
+    }
   }
 }
 
