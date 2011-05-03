@@ -57,6 +57,7 @@ TabContentsViewViews::~TabContentsViewViews() {
 }
 
 void TabContentsViewViews::Unparent() {
+  CHECK(native_tab_contents_view_.get());
   native_tab_contents_view_->Unparent();
 }
 
