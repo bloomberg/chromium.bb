@@ -79,6 +79,7 @@ struct meego_tablet_zoom {
 	struct wlsc_animation animation;
 	struct wlsc_spring spring;
 	struct wlsc_transform transform;
+	struct wl_listener listener;
 };
 
 static int
@@ -93,6 +94,18 @@ sigchld_handler(int signal_number, void *data)
 	fprintf(stderr, "meego-ux-daemon crashed, exit code %d\n", status);
 
 	return 1;
+}
+
+static void
+handle_zoom_surface_destroy(struct wl_listener *listener,
+			    struct wl_surface *surface, uint32_t time)
+{
+	struct meego_tablet_zoom *zoom =
+		container_of(listener, struct meego_tablet_zoom, listener);
+
+	wl_list_remove(&zoom->animation.link);
+	fprintf(stderr, "animation surface gone\n");
+	free(zoom);
 }
 
 static void
@@ -149,6 +162,10 @@ meego_tablet_zoom_run(struct meego_tablet_shell *shell,
 	zoom->animation.frame = meego_tablet_zoom_frame;
 	meego_tablet_zoom_frame(&zoom->animation, NULL,
 				zoom->spring.timestamp);
+
+	zoom->listener.func = handle_zoom_surface_destroy;
+	wl_list_insert(surface->surface.destroy_listener_list.prev,
+		       &zoom->listener.link);
 
 	wl_list_insert(shell->compositor->animation_list.prev,
 		       &zoom->animation.link);
