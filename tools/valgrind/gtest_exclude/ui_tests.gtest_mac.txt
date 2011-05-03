@@ -28,10 +28,6 @@ ErrorPageTest.IFrameDNSError_GoBackAndForward
 BrowserEncodingTest.TestEncodingAutoDetect
 # See http://crbug.com/29598.
 DOMStorageTest.LocalStorageLayoutTests
-ErrorPageTest.DNSError_GoBack1
-ErrorPageTest.DNSError_GoBack2
-ErrorPageTest.DNSError_GoBack2AndForward
-ErrorPageTest.DNSError_GoBack2Forward2
 # See http://crbug.com/30367.
 NewTabUITest.NTPHasThumbnails
 NewTabUITest.UpdateUserPrefsVersion
