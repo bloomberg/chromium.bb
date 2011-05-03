@@ -820,7 +820,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderImagePng) {
   NavigateToDestURL();
 }
 
-// Checks that prerendering a PNG works correctly.
+// Checks that prerendering a JPG works correctly.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderImageJpeg) {
   DisableJavascriptCalls();
   PrerenderTestURL("files/prerender/image.jpeg", FINAL_STATUS_USED, 1);
@@ -831,6 +831,59 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderImageJpeg) {
 // download.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCrx) {
   PrerenderTestURL("files/prerender/extension.crx", FINAL_STATUS_DOWNLOAD, 1);
+}
+
+// Checks that xhr GET requests allow prerenders.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrGet) {
+  PrerenderTestURL("files/prerender/prerender_xhr_get.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+}
+
+// Checks that xhr HEAD requests allow prerenders.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrHead) {
+  PrerenderTestURL("files/prerender/prerender_xhr_head.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+}
+
+// Checks that xhr OPTIONS requests allow prerenders.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrOptions) {
+  PrerenderTestURL("files/prerender/prerender_xhr_options.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+}
+
+// Checks that xhr TRACE requests allow prerenders.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrTrace) {
+  PrerenderTestURL("files/prerender/prerender_xhr_trace.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+}
+
+// Checks that xhr POST cancels prerenders.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrPost) {
+  PrerenderTestURL("files/prerender/prerender_xhr_post.html",
+                   FINAL_STATUS_INVALID_HTTP_METHOD,
+                   1);
+}
+
+// Checks that xhr PUT cancels prerenders.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrPut) {
+  PrerenderTestURL("files/prerender/prerender_xhr_put.html",
+                   FINAL_STATUS_INVALID_HTTP_METHOD,
+                   1);
+}
+
+// Checks that xhr DELETE cancels prerenders.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrDelete) {
+  PrerenderTestURL("files/prerender/prerender_xhr_delete.html",
+                   FINAL_STATUS_INVALID_HTTP_METHOD,
+                   1);
 }
 
 }  // namespace prerender

@@ -411,9 +411,10 @@ void ResourceDispatcherHost::BeginRequest(
     if (prerender::PrerenderManager::IsPrerenderingPossible()) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(prerender::HandlePrefetchTagOnUIThread,
+          NewRunnableFunction(prerender::HandlePrefetchTag,
                               resource_context.prerender_manager(),
-                              std::make_pair(child_id, route_id),
+                              child_id,
+                              route_id,
                               request_data.url,
                               referrer,
                               is_prerendering));
@@ -423,6 +424,20 @@ void ResourceDispatcherHost::BeginRequest(
     // Otherwise, treat like a normal request, and fall-through.
   }
 
+  // Abort any prerenders that spawn requests that use invalid HTTP methods.
+  if (is_prerendering &&
+      !prerender::PrerenderManager::IsValidHttpMethod(request_data.method)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableFunction(
+            prerender::DestroyPreloadForRenderView,
+            resource_context.prerender_manager(),
+            child_id,
+            route_id,
+            prerender::FINAL_STATUS_INVALID_HTTP_METHOD));
+    AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
+    return;
+  }
 
   // Construct the event handler.
   scoped_refptr<ResourceHandler> handler;

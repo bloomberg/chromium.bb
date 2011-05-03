@@ -37,12 +37,24 @@ struct hash<TabContents*> {
 
 namespace prerender {
 
-void HandlePrefetchTagOnUIThread(
+// Adds either a preload or a pending preload to the PrerenderManager.
+// Must be called on the UI thread.
+void HandlePrefetchTag(
     const base::WeakPtr<PrerenderManager>& prerender_manager,
-    const std::pair<int, int>& child_route_id_pair,
+    int render_process_id,
+    int render_view_id,
     const GURL& url,
     const GURL& referrer,
     bool make_pending);
+
+// Given a renderer process id and view id, this will destroy any preloads and
+// pending preloads than are using or originated in the given render view.
+// Must be called on the UI thread.
+void DestroyPreloadForRenderView(
+    const base::WeakPtr<PrerenderManager>& prerender_manager_weak_ptr,
+    int render_process_id,
+    int render_view_id,
+    FinalStatus final_status);
 
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of webpages. All methods must be called on the UI thread unless
@@ -77,6 +89,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void AddPendingPreload(const std::pair<int, int>& child_route_id_pair,
                          const GURL& url,
                          const GURL& referrer);
+
+  // Destroy all preloads for the given child route id pair and assign a final
+  // status to them.
+  void DestroyPreloadForChildRouteIdPair(
+      const std::pair<int, int>& child_route_id_pair,
+      FinalStatus final_status);
 
   // For a given TabContents that wants to navigate to the URL supplied,
   // determines whether a preloaded version of the URL can be used,
@@ -153,6 +171,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   static bool MaybeGetQueryStringBasedAliasURL(const GURL& url,
                                                GURL* alias_url);
 
+  // Returns true if the method given is invalid for prerendering.
+  static bool IsValidHttpMethod(const std::string& method);
+
  protected:
   struct PendingContentsData;
 
@@ -191,6 +212,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Returns NULL otherwise.  Unlike GetEntry, the PrerenderManager maintains
   // ownership of the PrerenderContents.
   PrerenderContents* FindEntry(const GURL& url);
+
+  // Returns the iterator to the PrerenderContentsData entry that is being
+  // prerendered from the given child route id pair.
+  std::list<PrerenderContentsData>::iterator
+      FindPrerenderContentsForChildRouteIdPair(
+          const std::pair<int, int>& child_route_id_pair);
 
   // Returns whether the PrerenderManager is currently within the prerender
   // window - effectively, up to 30 seconds after a prefetch tag has been
