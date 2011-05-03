@@ -84,7 +84,7 @@ header {
 }
 
 body header {
- position: absolute;
+ position: relative;
 }
 
 header > h1 {
@@ -605,17 +605,13 @@ input[type='radio']:focus {
   visibility: visible;
 }
 
-body #main:before {
- height: 120px;
-}
-
 body #individual-pages {
  width: 75%;
 }
 
 #print-summary {
   display: block;
-  height: 30px;
+  min-height: 30px;
 }
 
 #collate-option {
