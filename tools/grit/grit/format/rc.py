@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -425,11 +425,7 @@ class RcInclude(interface.ItemFormatter):
     # if needed (e.g. if it is an HTML file include).
     filename = os.path.abspath(item.FileForLanguage(lang, output_dir))
     if self.flatten_html:
-      # TODO(akalin): Flatten to a subdirectory of output_dir, lest we
-      # run into bugs like http://crbug.com/69633.
-      item.Flatten(output_dir)
-      # The flattened file is in the output dir.
-      filename = os.path.basename(filename)
+      filename = item.Flatten(output_dir)
     elif self.filenameWithoutPath:
       filename = os.path.basename(filename)
     elif self.relative_path_:

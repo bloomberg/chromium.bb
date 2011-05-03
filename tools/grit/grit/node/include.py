@@ -93,8 +93,11 @@ class IncludeNode(base.Node):
     return id, data
 
   def Flatten(self, output_dir):
+    '''Rewrite file references to be base64 encoded data URLs.  The new file
+    will be written to output_dir and the name of the new file is returned.'''
     filename = self.FilenameToOpen()
-    flat_filename = os.path.join(output_dir, os.path.split(filename)[1])
+    flat_filename = os.path.join(output_dir,
+        self.attrs['name'] + '_' + os.path.basename(filename))
 
     if self._last_flat_filename == flat_filename:
       return
@@ -104,6 +107,7 @@ class IncludeNode(base.Node):
     outfile.close()
 
     self._last_flat_filename = flat_filename
+    return os.path.basename(flat_filename)
 
 
   def GetHtmlResourceFilenames(self):
