@@ -9,9 +9,29 @@
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/string_piece.h"
 #include "chrome/renderer/safe_browsing/client_model.pb.h"
 #include "chrome/renderer/safe_browsing/features.h"
+
+namespace {
+// Enum used to keep stats about the status of the Scorer creation.
+enum ScorerCreationStatus {
+  SCORER_SUCCESS,
+  SCORER_FAIL_MODEL_OPEN_FAIL,
+  SCORER_FAIL_MODEL_FILE_EMPTY,
+  SCORER_FAIL_MODEL_FILE_TOO_LARGE,
+  SCORER_FAIL_MODEL_PARSE_ERROR,
+  SCORER_FAIL_MODEL_MISSING_FIELDS,
+  SCORER_STATUS_MAX  // Always add new values before this one.
+};
+
+void RecordScorerCreationStatus(ScorerCreationStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.ScorerCreationStatus",
+                            status,
+                            SCORER_STATUS_MAX);
+}
+}  // namespace
 
 namespace safe_browsing {
 
@@ -67,10 +87,13 @@ class ScorerLoader {
     Scorer* scorer = NULL;
     if (error_code != base::PLATFORM_FILE_OK) {
       DLOG(ERROR) << "Error reading phishing model file: " << error_code;
+      RecordScorerCreationStatus(SCORER_FAIL_MODEL_OPEN_FAIL);
     } else if (bytes_read <= 0) {
       DLOG(ERROR) << "Empty phishing model file";
+      RecordScorerCreationStatus(SCORER_FAIL_MODEL_FILE_EMPTY);
     } else if (bytes_read == Scorer::kMaxPhishingModelSizeBytes) {
       DLOG(ERROR) << "Phishing model is too large, ignoring";
+      RecordScorerCreationStatus(SCORER_FAIL_MODEL_FILE_TOO_LARGE);
     } else {
       memcpy(buffer_, data, bytes_read);
       scorer = Scorer::Create(base::StringPiece(buffer_, bytes_read));
@@ -101,12 +124,19 @@ Scorer::~Scorer() {}
 Scorer* Scorer::Create(const base::StringPiece& model_str) {
   scoped_ptr<Scorer> scorer(new Scorer());
   ClientSideModel& model = scorer->model_;
-  if (!model.ParseFromArray(model_str.data(), model_str.size()) ||
-      !model.IsInitialized()) {
+  if (!model.ParseFromArray(model_str.data(), model_str.size())) {
     DLOG(ERROR) << "Unable to parse phishing model.  This Scorer object is "
                 << "invalid.";
+    RecordScorerCreationStatus(SCORER_FAIL_MODEL_PARSE_ERROR);
     return NULL;
   }
+  if (!model.IsInitialized()) {
+    DLOG(ERROR) << "Unable to parse phishing model.  The model is missing "
+                << "some required fields.  Maybe the .proto file changed?";
+    RecordScorerCreationStatus(SCORER_FAIL_MODEL_MISSING_FIELDS);
+    return NULL;
+  }
+  RecordScorerCreationStatus(SCORER_SUCCESS);
   for (int i = 0; i < model.page_term_size(); ++i) {
     scorer->page_terms_.insert(model.hashes(model.page_term(i)));
   }
