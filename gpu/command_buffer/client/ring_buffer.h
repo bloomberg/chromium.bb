@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,18 +61,23 @@ class RingBuffer {
   }
 
  private:
+  enum State {
+    IN_USE,
+    PADDING,
+    FREE_PENDING_TOKEN
+  };
   // Book-keeping sturcture that describes a block of memory.
   struct Block {
-    Block(Offset _offset, unsigned int _size)
+    Block(Offset _offset, unsigned int _size, State _state)
         : offset(_offset),
           size(_size),
           token(0),
-          valid(false) {
+          state(_state) {
     }
     Offset offset;
     unsigned int size;
     unsigned int token;  // token to wait for.
-    bool valid;  // whether or not token has been set.
+    State state;
   };
 
   typedef std::deque<Block> Container;
