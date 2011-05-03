@@ -395,6 +395,7 @@
         '../third_party/skia/src/core/SkTSort.h',
         '../third_party/skia/src/core/SkTemplatesPriv.h',
         '../third_party/skia/src/core/SkTypeface.cpp',
+        '../third_party/skia/src/core/SkTypefaceCache.cpp',
         '../third_party/skia/src/core/SkUnPreMultiply.cpp',
         '../third_party/skia/src/core/SkUtils.cpp',
         '../third_party/skia/src/core/SkWriter32.cpp',
