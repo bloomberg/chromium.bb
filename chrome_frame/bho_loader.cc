@@ -81,7 +81,8 @@ void BHOLoader::OnHookEvent(DWORD event, HWND window) {
         HRESULT hr = browser->GetProperty(bho_clsid_as_string_bstr,
                                           &existing_bho);
 
-        if (existing_bho.vt != VT_DISPATCH || existing_bho.pdispVal == NULL) {
+        if (V_VT(&existing_bho) != VT_DISPATCH &&
+            V_VT(&existing_bho) != VT_UNKNOWN) {
           // Step 4:
           // We have the IWebBrowser2 interface. Now create the BHO instance
           CComPtr<IObjectWithSite> bho_object;
