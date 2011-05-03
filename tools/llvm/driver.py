@@ -438,6 +438,7 @@ GCCPatterns = [
   ( '-Wl,(.*)',           "env.append('LD_FLAGS', *($0.split(',')))\n"
                           "env.append('BCLD_FLAGS', *($0.split(',')))"),
 
+  ( '(-g)',            "env.append('CC_FLAGS', $0)"),
   ( '(-W.*)',          "env.append('CC_FLAGS', $0)"),
   ( '(-std=.*)',       "env.append('CC_FLAGS', $0)"),
   ( '(-B.*)',          "env.append('CC_FLAGS', $0)"),
