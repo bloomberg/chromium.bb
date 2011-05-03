@@ -123,6 +123,12 @@ var chrome = chrome || {};
   };
 
   chrome.test.checkDeepEq = function(expected, actual) {
+    var expected_defined = typeof(expected) != 'undefined';
+    var actual_defined = typeof(actual) != 'undefined';
+    if (!expected_defined && !actual_defined)
+      return true;
+    if (expected_defined != actual_defined)
+      return false;
     for (var p in expected) {
       var eq = true;
       switch (typeof(expected[p])) {
