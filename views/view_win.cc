@@ -24,8 +24,8 @@ namespace views {
 
 NativeViewAccessibilityWin* View::GetNativeViewAccessibilityWin() {
   if (!native_view_accessibility_win_.get())
-    native_view_accessibility_win_.swap(
-        NativeViewAccessibilityWin::Create(this));
+    native_view_accessibility_win_ =
+        NativeViewAccessibilityWin::Create(this);
   return native_view_accessibility_win_.get();
 }
 

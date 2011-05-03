@@ -118,10 +118,10 @@ class SeleniumTest : public UITest {
 
     std::string cookie;
     ASSERT_TRUE(tab->GetCookieByName(test_url, "__num_tests_total", &cookie));
-    total->swap(UTF8ToWide(cookie));
+    *total = UTF8ToWide(cookie);
     ASSERT_FALSE(total->empty());
     ASSERT_TRUE(tab->GetCookieByName(test_url, "__tests_failed", &cookie));
-    failed->swap(UTF8ToWide(cookie));
+    *failed = UTF8ToWide(cookie);
     // The __tests_failed cookie will be empty if all the tests pass.
 #endif
   }

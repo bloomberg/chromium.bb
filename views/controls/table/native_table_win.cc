@@ -586,7 +586,7 @@ void NativeTableWin::UpdateListViewCache(int start, int length, bool add) {
     item.mask |= LVIF_IMAGE;
 
   for (size_t j = start_column; j < table_->GetVisibleColumnCount(); ++j) {
-    TableColumn& col = table_->GetVisibleColumnAt(j);
+    TableColumn col = table_->GetVisibleColumnAt(j);
     int max_text_width = ListView_GetStringWidth(native_view(),
                                                  col.title.c_str());
     for (int i = start; i < max_row; ++i) {

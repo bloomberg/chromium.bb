@@ -49,14 +49,11 @@ static bool IsMouseUpEvent(NPEvent* np_event) {
 #endif
 }
 
+#if defined(OS_MACOSX)
 static bool IsWindowActivationEvent(NPEvent* np_event) {
-#if defined(OS_WIN)
-  NOTIMPLEMENTED();
-  return false;
-#elif defined(OS_MACOSX)
   return np_event->what == activateEvt;
-#endif
 }
+#endif
 
 bool WindowlessPluginTest::IsWindowless() const {
   return true;
@@ -101,7 +98,7 @@ int16 WindowlessPluginTest::HandleEvent(void* event) {
     } else if (test_name() == "multiple_instances_sync_calls") {
       MultipleInstanceSyncCalls(browser);
     }
-#if OS_MACOSX
+#if defined(OS_MACOSX)
   } else if (IsWindowActivationEvent(np_event) &&
              test_name() == "convert_point") {
       ConvertPoint(browser);
