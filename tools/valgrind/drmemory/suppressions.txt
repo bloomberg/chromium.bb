@@ -464,10 +464,13 @@ base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
 ############################
 # Benign issues in Chromium
+
+# We deliberately leak different kinds of Histograms to avoid data races.
 LEAK
 *!operator new
 *!base::*Histogram::FactoryGet
 
+############################
 # Real issues in Chromium
 
 # http://crbug.com/57266 (1)
@@ -521,6 +524,14 @@ LEAK
 LEAK
 *!operator new
 *!remoting::ChromotingHostTest::SetUp
+
+# http://crbug.com/81522
+LEAK
+*!operator new
+*!base::MessageLoopProxy::CreateForCurrentThread
+*!IPC::ChannelProxy::Context::Context
+*!IPC::ChannelProxy::ChannelProxy
+*!IPCChannelTest_ChannelProxyTest_Test::TestBody
 
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
