@@ -40,16 +40,11 @@
   margin-bottom: 30px;
 }
 
-#chooseDataTypesRadio {
-  vertical-align: top;
-}
-#chooseDataTypes > div {
-  display: inline-block;
-}
-#chooseDataTypesBody {
+#choose-data-types-body {
   margin: 10px 0;
 }
-#chooseDataTypesBody > div {
+
+#choose-data-types-body > div {
   -webkit-column-count: 3;
 }
 
@@ -122,7 +117,7 @@
   margin-bottom: 20px;
 }
 
-#incorrectPassphrase {
+#incorrect-passphrase {
   margin-top: 5px;
 }
 
@@ -141,20 +136,23 @@
   padding: 15px;
   box-shadow: 0.2em 0.2em 0.5em #888;
 }
+
 #cancel-warning-header {
   font-weight: bold;
   margin-bottom: 8px;
 }
+
 .overlay-warning input {
   margin-top: 12px;
   float: right;
   margin-left: 5px;
 }
+
 #sync-passphrase-warning {
   margin-bottom: 5px;
 }
 
-div.errormsgspacer {
+div.error-msg-spacer {
   min-height: 1em;
 }
 
@@ -262,10 +260,9 @@ html[os='mac'] #sync-setup-configure {
   line-height: 1.5em;
 }
 
-#chooseDataTypesForm {
+#choose-data-types-form {
   -webkit-user-select: none;
 }
-
 
 #chooseDataTypesRadio {
   vertical-align: top;
@@ -335,11 +332,4 @@ html[os='mac'] #sync-setup-configure {
 
 html[dir='rtl'] #learn-more-link {
   float: left;
-}
-
-html[dir='rtl'] .sync-footer {
-  text-align: left;
-  left: 0px;
-  bottom: 0px;
-  margin-left: 20px;
 }

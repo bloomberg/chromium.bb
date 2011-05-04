@@ -58,7 +58,7 @@ cr.define('options', function() {
         self.sendCredentialsAndClose_();
         return false;
       };
-      $('chooseDataTypesForm').onsubmit = function() {
+      $('choose-data-types-form').onsubmit = function() {
         self.sendConfiguration_();
         return false;
       };
@@ -86,7 +86,7 @@ cr.define('options', function() {
         chrome.send('PassphraseCancel', ['']);
         return false;
       };
-      $('passphraseForm').onsubmit = $('passphrase-ok').onclick = function() {
+      $('passphrase-form').onsubmit = $('passphrase-ok').onclick = function() {
         self.sendPassphraseAndClose_();
         return false;
       };
@@ -118,13 +118,13 @@ cr.define('options', function() {
     },
 
     sendPassphraseAndClose_: function() {
-      var f = $('passphraseForm');
+      var f = $('passphrase-form');
       var result = JSON.stringify({"passphrase": f.passphrase.value});
       chrome.send("Passphrase", [result]);
     },
 
     getRadioCheckedValue_: function() {
-      var f = $('chooseDataTypesForm');
+      var f = $('choose-data-types-form');
       for (var i = 0; i < f.option.length; ++i) {
         if (f.option[i].checked) {
           return f.option[i].value;
@@ -197,16 +197,16 @@ cr.define('options', function() {
     },
 
     checkPassphraseMatch_: function() {
-      var emptyError = $('emptyerror');
-      var mismatchError = $('mismatcherror');
+      var emptyError = $('empty-error');
+      var mismatchError = $('mismatch-error');
       emptyError.style.display = "none";
       mismatchError.style.display = "none";
 
-      var f = $('chooseDataTypesForm');
+      var f = $('choose-data-types-form');
       if (this.getRadioCheckedValue_() != "explicit" || f.option[0].disabled)
         return true;
 
-      var customPassphrase = $('customPassphrase');
+      var customPassphrase = $('custom-passphrase');
       if (customPassphrase.value.length == 0) {
         emptyError.style.display = "block";
         return false;
@@ -237,29 +237,28 @@ cr.define('options', function() {
         return;
       }
 
-      var f = $('chooseDataTypesForm');
+      var f = $('choose-data-types-form');
       if (!this.checkPassphraseMatch_())
         return;
 
       var syncAll =
         document.getElementById('sync-select-datatypes').selectedIndex == 0;
-      var customPassphrase = $('custom-passphrase');
 
       // These values need to be kept in sync with where they are read in
       // SyncSetupFlow::GetDataTypeChoiceData().
       var result = JSON.stringify({
           "keepEverythingSynced": syncAll,
-          "syncBookmarks": syncAll || f.bookmarksCheckbox.checked,
-          "syncPreferences": syncAll || f.preferencesCheckbox.checked,
-          "syncThemes": syncAll || f.themesCheckbox.checked,
-          "syncPasswords": syncAll || f.passwordsCheckbox.checked,
-          "syncAutofill": syncAll || f.autofillCheckbox.checked,
-          "syncExtensions": syncAll || f.extensionsCheckbox.checked,
-          "syncTypedUrls": syncAll || f.typedUrlsCheckbox.checked,
-          "syncApps": syncAll || f.appsCheckbox.checked,
-          "syncSessions": syncAll || f.sessionsCheckbox.checked,
+          "syncBookmarks": syncAll || $('bookmarks-checkbox').checked,
+          "syncPreferences": syncAll || $('preferences-checkbox').checked,
+          "syncThemes": syncAll || $('themes-checkbox').checked,
+          "syncPasswords": syncAll || $('passwords-checkbox').checked,
+          "syncAutofill": syncAll || $('autofill-checkbox').checked,
+          "syncExtensions": syncAll || $('extensions-checkbox').checked,
+          "syncTypedUrls": syncAll || $('typed-urls-checkbox').checked,
+          "syncApps": syncAll || $('apps-checkbox').checked,
+          "syncSessions": syncAll || $('sessions-checkbox').checked,
           "usePassphrase": (this.getRadioCheckedValue_() == 'explicit'),
-          "passphrase": customPassphrase.value
+          "passphrase": $('custom-passphrase').value
       });
       chrome.send("Configure", [result]);
     },
@@ -274,47 +273,47 @@ cr.define('options', function() {
       var datatypeSelect = document.getElementById('sync-select-datatypes');
       datatypeSelect.selectedIndex = args.keepEverythingSynced ? 0 : 1;
 
-      $('bookmarksCheckbox').checked = args.syncBookmarks;
-      $('preferencesCheckbox').checked = args.syncPreferences;
-      $('themesCheckbox').checked = args.syncThemes;
+      $('bookmarks-checkbox').checked = args.syncBookmarks;
+      $('preferences-checkbox').checked = args.syncPreferences;
+      $('themes-checkbox').checked = args.syncThemes;
 
       if (args.passwordsRegistered) {
-        $('passwordsCheckbox').checked = args.syncPasswords;
-        $('passwordsItem').className = "sync-item-show";
+        $('passwords-checkbox').checked = args.syncPasswords;
+        $('passwords-item').className = "sync-item-show";
       } else {
-        $('passwordsItem').className = "sync-item-hide";
+        $('passwords-item').className = "sync-item-hide";
       }
       if (args.autofillRegistered) {
-        $('autofillCheckbox').checked = args.syncAutofill;
-        $('autofillItem').className = "sync-item-show";
+        $('autofill-checkbox').checked = args.syncAutofill;
+        $('autofill-item').className = "sync-item-show";
       } else {
-        $('autofillItem').className = "sync-item-hide";
+        $('autofill-item').className = "sync-item-hide";
       }
       if (args.extensionsRegistered) {
-        $('extensionsCheckbox').checked = args.syncExtensions;
-        $('extensionsItem').className = "sync-item-show";
+        $('extensions-checkbox').checked = args.syncExtensions;
+        $('extensions-item').className = "sync-item-show";
       } else {
-        $('extensionsItem').className = "sync-item-hide";
+        $('extensions-item').className = "sync-item-hide";
       }
       if (args.typedUrlsRegistered) {
-        $('typedUrlsCheckbox').checked = args.syncTypedUrls;
-        $('omniboxItem').className = "sync-item-show";
+        $('typedUrls-checkbox').checked = args.syncTypedUrls;
+        $('omnibox-item').className = "sync-item-show";
       } else {
-        $('omniboxItem').className = "sync-item-hide";
+        $('omnibox-item').className = "sync-item-hide";
       }
       if (args.appsRegistered) {
-        $('appsCheckbox').checked = args.syncApps;
-        $('appsItem').className = "sync-item-show";
+        $('apps-checkbox').checked = args.syncApps;
+        $('apps-item').className = "sync-item-show";
       } else {
-        $('appsItem').className = "sync-item-hide";
+        $('apps-item').className = "sync-item-hide";
       }
 
       this.setCheckboxesToKeepEverythingSynced_(args.keepEverythingSynced);
       if (args.sessionsRegistered) {
-        $('sessionsCheckbox').checked = args.syncSessions;
-        $('sessionsItem').className = "sync-item-show";
+        $('sessions-checkbox').checked = args.syncSessions;
+        $('sessions-item').className = "sync-item-show";
       } else {
-        $('sessionsItem').className = "sync-item-hide";
+        $('sessions-item').className = "sync-item-hide";
       }
     },
 
@@ -339,8 +338,6 @@ cr.define('options', function() {
 
       $('aborted-text').className = "sync-error-show";
       $('choose-datatypes-ok').disabled = true;
-      $('keepEverythingSyncedRadio').disabled = true;
-      $('chooseDataTypesRadio').disabled = true;
     },
 
     setCheckboxesAndErrors_: function(args) {
@@ -443,18 +440,18 @@ cr.define('options', function() {
     showPassphrase_: function(args) {
       $('sync-setup-passphrase').classList.remove('hidden');
 
-      $('passphraseRejectedBody').style.display = "none";
-      $('normalBody').style.display = "none";
-      $('incorrectPassphrase').style.display = "none";
+      $('passphrase-rejected-body').style.display = "none";
+      $('normal-body').style.display = "none";
+      $('incorrect-passphrase').style.display = "none";
 
       if (args["passphrase_creation_rejected"]) {
-        $('passphraseRejectedBody').style.display = "block";
+        $('passphrase-rejected-body').style.display = "block";
       } else {
-        $('normalBody').style.display = "block";
+        $('normal-body').style.display = "block";
       }
 
       if (args["passphrase_setting_rejected"]) {
-        $('incorrectPassphrase').style.display = "block";
+        $('incorrect-passphrase').style.display = "block";
       }
 
       $('passphrase').focus();

@@ -89,7 +89,7 @@
                       <tr>
                         <td></td>
                         <td>
-                          <div class="errormsgspacer">
+                          <div class="error-msg-spacer">
                             <div id="errormsg-0-password" class="errormsg"
                                 i18n-content="cannotbeblank">
                             </div>
@@ -212,95 +212,82 @@
     </div>
     <div id="customize-sync-preferences" hidden>
       <h1 i18n-content="syncSetupConfigureTitle"></h1>
-      <form id="chooseDataTypesForm">
+      <form id="choose-data-types-form">
         <div id="sync-configure-content" class="content-area">
           <div id="sync-select-container">
             <select id="sync-select-datatypes">
               <option i18n-content="keepeverythingsynced" selected></option>
               <option i18n-content="choosedatatypes"></option>
             </select>
-            <div id="chooseDataTypesBody">
+            <div id="choose-data-types-body">
               <div>
-                <!-- Apps -->
-                <div class="sync-item-show" id="appsItem">
-                  <input id="appsCheckbox" type="checkbox"
+                <div id="apps-item" class="sync-item-show">
+                  <input id="apps-checkbox" type="checkbox"
                       name="dataTypeCheckbox">
-                  <label id="appsCheckboxLabel" name="dataTypeLabel"
-                      for="appsCheckbox" i18n-content="apps"
-                      i18n-values="title:apps"></label>
+                  <label for="apps-checkbox" i18n-content="apps"
+                      i18n-values="title:apps" name="dataTypeLabel"></label>
                 </div>
-                <!-- Autofill -->
-                <div class="sync-item-show" id="autofillItem">
-                  <input id="autofillCheckbox" type="checkbox"
+                <div id="autofill-item" class="sync-item-show">
+                  <input id="autofill-checkbox" type="checkbox"
                       name="dataTypeCheckbox">
-                  <label id="autofillCheckboxLabel" name="dataTypeLabel"
-                         for="autofillCheckbox" i18n-content="autofill"
-                         i18n-values="title:autofill"></label>
+                  <label for="autofill-checkbox" i18n-content="autofill"
+                      i18n-values="title:autofill" name="dataTypeLabel"></label>
                 </div>
-                <!-- Bookmarks -->
-                <div class="sync-item-show" id="bookmarksItem">
-                  <input id="bookmarksCheckbox" type="checkbox"
+                <div class="sync-item-show">
+                  <input id="bookmarks-checkbox" type="checkbox"
                       name="dataTypeCheckbox">
-                  <label id="bookmarksCheckboxLabel" name="dataTypeLabel"
-                         for="bookmarksCheckbox" i18n-content="bookmarks"
-                         i18n-values="title:bookmarks"></label>
+                  <label for="bookmarks-checkbox" i18n-content="bookmarks"
+                      i18n-values="title:bookmarks" name="dataTypeLabel">
+                  </label>
                 </div>
-                <!-- Extensions -->
-                <div class="sync-item-show" id="extensionsItem">
-                  <input id="extensionsCheckbox" type="checkbox"
+                <div id="extensions-item" class="sync-item-show">
+                  <input id="extensions-checkbox" type="checkbox"
                       name="dataTypeCheckbox">
-                  <label id="extensionsCheckboxLabel" name="dataTypeLabel"
-                         for="extensionsCheckbox" i18n-content="extensions"
-                         i18n-values="title:extensions"></label>
+                  <label for="extensions-checkbox" i18n-content="extensions"
+                      i18n-values="title:extensions" name="dataTypeLabel">
+                  </label>
                 </div>
-                <!-- Omnibox -->
-                <div class="sync-item-show" id="omniboxItem">
-                  <input id="typedUrlsCheckbox" type="checkbox"
+                <div id="omnibox-item" class="sync-item-show">
+                  <input id="typed-urls-checkbox" type="checkbox"
                       name="dataTypeCheckbox">
-                  <label id="typedUrlsCheckboxLabel" name="dataTypeLabel"
-                         for="typedUrlsCheckbox" i18n-content="typedurls"
-                         i18n-values="title:typedurls"></label>
+                  <label for="typed-urls-checkbox" i18n-content="typedurls"
+                      i18n-values="title:typedurls" name="dataTypeLabel">
+                  </label>
                 </div>
-                <!-- Passwords -->
-                <div class="sync-item-show" id="passwordsItem">
-                  <input id="passwordsCheckbox" type="checkbox"
+                <div id="passwords-item" class="sync-item-show">
+                  <input id="passwords-checkbox" type="checkbox"
                       name="dataTypeCheckbox">
-                  <label id="passwordsCheckboxLabel" name="dataTypeLabel"
-                         for="passwordsCheckbox" i18n-content="passwords"
-                         i18n-values="title:passwords"></label>
+                  <label for="passwords-checkbox" i18n-content="passwords"
+                      i18n-values="title:passwords" name="dataTypeLabel">
+                  </label>
                 </div>
-                <!-- Preferences -->
-                <div class="sync-item-show" id="preferencesItem">
-                  <input id="preferencesCheckbox" type="checkbox"
+                <div class="sync-item-show">
+                  <input id="preferences-checkbox" type="checkbox"
                       name="dataTypeCheckbox">
-                  <label id="preferencesCheckboxLabel" name="dataTypeLabel"
-                         for="preferencesCheckbox" i18n-content="preferences"
-                         i18n-values="title:preferences"></label>
+                  <label for="preferences-checkbox" i18n-content="preferences"
+                      i18n-values="title:preferences" name="dataTypeLabel">
+                  </label>
                 </div>
-                <!-- Themes -->
-                <div class="sync-item-show" id="themesItem">
-                  <input id="themesCheckbox" type="checkbox"
+                <div class="sync-item-show">
+                  <input id="themes-checkbox" type="checkbox"
                       name="dataTypeCheckbox">
-                  <label id="themesCheckboxLabel" name="dataTypeLabel"
-                      for="themesCheckbox" i18n-content="themes"
-                      i18n-values="title:themes"></label>
+                  <label for="themes-checkbox" i18n-content="themes"
+                      i18n-values="title:themes" name="dataTypeLabel"></label>
                 </div>
-                <!-- Sessions -->
-                <div class="sync-item-show" id="sessionsItem">
-                  <input id="sessionsCheckbox" type="checkbox"
+                <div id="sessions-item" class="sync-item-show">
+                  <input id="sessions-checkbox" type="checkbox"
                       name="dataTypeCheckbox">
-                  <label id="sessionsCheckboxLabel" name="dataTypeLabel"
-                         for="sessionsCheckbox" i18n-content="foreignsessions"
-                         il8n-values="title:sessions"></label>
+                  <label for="sessions-checkbox" i18n-content="foreignsessions"
+                      il8n-values="title:sessions" name="dataTypeLabel"></label>
                 </div>
               </div>
             </div>
           </div>
           <div class="sync-errors">
             <span id="error-text" i18n-content="synczerodatatypeserror"
-                  class="sync-error-hide"></span>
+                class="sync-error-hide"></span>
             <span id="aborted-text" i18n-content="abortederror"
-                  class="sync-error-hide"></span>
+                class="sync-error-hide"></span>
           </div>
           <hr>
           <h4 i18n-content="passphraseSectionTitle"></h4>
@@ -336,9 +323,9 @@
                     i18n-values="placeholder:confirmLabel">
               </div>
               <div class="error" style="display:none"
-                  id="emptyerror" i18n-content="emptyErrorMessage"></div>
+                  id="empty-error" i18n-content="emptyErrorMessage"></div>
               <div class="error" style="display:none"
-                  id="mismatcherror" i18n-content="mismatchErrorMessage"></div>
+                  id="mismatch-error" i18n-content="mismatchErrorMessage"></div>
             </div>
           </div>
         </div>
@@ -358,27 +345,27 @@
   <div id="sync-setup-passphrase" class="hidden">
     <h1 i18n-content="enterPassphraseTitle"></h1>
     <div class="content-area">
-      <form id="passphraseForm">
+      <form id="passphrase-form">
         <div id="enter-passphrase">
-          <div id="normalBody" class="sync-instructions-start-hidden"
-               i18n-content="enterPassphraseBody"></div>
-          <div id="passphraseRejectedBody"
+          <div id="normal-body" class="sync-instructions-start-hidden"
+              i18n-content="enterPassphraseBody">
+          </div>
+          <div id="passphrase-rejected-body"
               class="sync-instructions-start-hidden"
-              i18n-content="enterOtherPassphraseBody"></div>
+              i18n-content="enterOtherPassphraseBody">
+          </div>
         </div>
         <div id="passphrase-input">
-          <label id="passphraseLabel" name="passphraseLabel"
-                 for="passphrase" i18n-content="passphraseLabel">
-          </label>
+          <label for="passphrase" i18n-content="passphraseLabel"></label>
           <input id="passphrase" name="passphrase" type="password">
-          <div class="error" id="incorrectPassphrase"
+          <div id="incorrect-passphrase" class="error"
                i18n-content="incorrectPassphrase">
           </div>
         </div>
         <span id="sync-passphrase-warning" i18n-content="passphraseRecover">
         </span> <a href="http://google.com/dashboard" target="_blank"
             i18n-content="cleardatalink"></a>
-        <div class="overlay-warning" id="cancel-warning-box" hidden>
+        <div id="cancel-warning-box" class="overlay-warning" hidden>
           <div id="cancel-warning-header" i18n-content="cancelWarningHeader">
           </div>
           <div id="cancel-warning" i18n-content="cancelWarning"></div>
