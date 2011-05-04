@@ -3115,7 +3115,10 @@ void Browser::ConvertContentsToApplication(TabContents* contents) {
   DetachContents(contents);
   Browser* app_browser = Browser::CreateForApp(
       app_name, gfx::Size(), profile_, false);
-  TabContentsWrapper* wrapper = new TabContentsWrapper(contents);
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(contents);
+  if (!wrapper)
+    wrapper = new TabContentsWrapper(contents);
   app_browser->tabstrip_model()->AppendTabContents(wrapper, true);
 
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
