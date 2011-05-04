@@ -23,8 +23,15 @@ class Scorer;
 
 class PhishingClassifierFilter : public RenderProcessObserver {
  public:
+  PhishingClassifierFilter();
+  virtual ~PhishingClassifierFilter();
+
   virtual bool OnControlMessageReceived(const IPC::Message& message);
+
+ private:
   void OnSetPhishingModel(IPC::PlatformFileForTransit model_file);
+
+  DISALLOW_COPY_AND_ASSIGN(PhishingClassifierFilter);
 };
 
 class PhishingClassifierDelegate : public RenderViewObserver {
@@ -34,7 +41,7 @@ class PhishingClassifierDelegate : public RenderViewObserver {
   // will be used.
   PhishingClassifierDelegate(RenderView* render_view,
                              PhishingClassifier* classifier);
-  ~PhishingClassifierDelegate();
+  virtual ~PhishingClassifierDelegate();
 
   // Called by the RenderView once there is a phishing scorer available.
   // The scorer is passed on to the classifier.
@@ -56,12 +63,19 @@ class PhishingClassifierDelegate : public RenderViewObserver {
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation);
 
-  // Cancels any pending classification and frees the page text.  Called by
-  // the RenderView when the RenderView is going away.
-  void CancelPendingClassification();
-
  private:
   friend class PhishingClassifierDelegateTest;
+
+  enum CancelClassificationReason {
+    NAVIGATE_AWAY,
+    NAVIGATE_WITHIN_PAGE,
+    PAGE_RECAPTURED,
+    SHUTDOWN,
+    CANCEL_CLASSIFICATION_MAX  // Always add new values before this one.
+  };
+
+  // Cancels any pending classification and frees the page text.
+  void CancelPendingClassification(CancelClassificationReason reason);
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
@@ -116,6 +130,9 @@ class PhishingClassifierDelegate : public RenderViewObserver {
   // most recent load.  We use this to distinguish empty text from cases where
   // PageCaptured has not been called.
   bool have_page_text_;
+
+  // Set to true if the classifier is currently running.
+  bool is_classifying_;
 
   DISALLOW_COPY_AND_ASSIGN(PhishingClassifierDelegate);
 };

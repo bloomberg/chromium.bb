@@ -72,6 +72,11 @@ class ScorerCallback {
   scoped_ptr<base::ScopedCallbackFactory<ScorerCallback> > callback_factory_;
 };
 
+PhishingClassifierFilter::PhishingClassifierFilter()
+    : RenderProcessObserver() {}
+
+PhishingClassifierFilter::~PhishingClassifierFilter() {}
+
 bool PhishingClassifierFilter::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
@@ -95,7 +100,8 @@ PhishingClassifierDelegate::PhishingClassifierDelegate(
     PhishingClassifier* classifier)
     : RenderViewObserver(render_view),
       last_main_frame_transition_(PageTransition::LINK),
-      have_page_text_(false) {
+      have_page_text_(false),
+      is_classifying_(false) {
   g_delegates.Get().insert(this);
   if (!classifier) {
     classifier = new PhishingClassifier(render_view,
@@ -109,7 +115,7 @@ PhishingClassifierDelegate::PhishingClassifierDelegate(
 }
 
 PhishingClassifierDelegate::~PhishingClassifierDelegate() {
-  CancelPendingClassification();
+  CancelPendingClassification(SHUTDOWN);
   g_delegates.Get().erase(this);
 }
 
@@ -143,10 +149,8 @@ void PhishingClassifierDelegate::DidCommitProvisionalLoad(
   // swap out the page text while the term feature extractor is still running.
   NavigationState* state = NavigationState::FromDataSource(
       frame->dataSource());
-  if (state->was_within_same_page()) {
-    UMA_HISTOGRAM_COUNTS("SBClientPhishing.CanceledForInPageNavigation", 1);
-  }
-  CancelPendingClassification();
+  CancelPendingClassification(state->was_within_same_page() ?
+                              NAVIGATE_WITHIN_PAGE : NAVIGATE_AWAY);
   if (frame == render_view()->webview()->mainFrame()) {
     last_main_frame_transition_ = state->transition_type();
   }
@@ -162,14 +166,21 @@ void PhishingClassifierDelegate::PageCaptured(string16* page_text,
   //
   // Note: Currently, if the url hasn't changed, we won't restart
   // classification in this case.  We may want to adjust this.
-  CancelPendingClassification();
+  CancelPendingClassification(PAGE_RECAPTURED);
   last_finished_load_url_ = GetToplevelUrl();
   classifier_page_text_.swap(*page_text);
   have_page_text_ = true;
   MaybeStartClassification();
 }
 
-void PhishingClassifierDelegate::CancelPendingClassification() {
+void PhishingClassifierDelegate::CancelPendingClassification(
+    CancelClassificationReason reason) {
+  if (is_classifying_) {
+    UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.CancelClassificationReason",
+                              reason,
+                              CANCEL_CLASSIFICATION_MAX);
+    is_classifying_ = false;
+  }
   if (classifier_->is_ready()) {
     classifier_->CancelPendingClassification();
   }
@@ -267,6 +278,7 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
 
   VLOG(2) << "Starting classification for " << last_finished_load_url_;
   last_url_sent_to_classifier_ = last_finished_load_url_;
+  is_classifying_ = true;
   classifier_->BeginClassification(
       &classifier_page_text_,
       NewCallback(this, &PhishingClassifierDelegate::ClassificationDone));
