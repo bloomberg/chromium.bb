@@ -31,100 +31,101 @@ class Panel : public BrowserWindow {
   PanelManager* manager() const;
 
   void Minimize();
-
   void Restore();
-
   bool minimized() const { return minimized_; }
 
   // BrowserWindow overrides.
-  virtual void Show();
-  virtual void ShowInactive();
-  virtual void SetBounds(const gfx::Rect& bounds);
-  virtual void Close();
-  virtual void Activate();
-  virtual void Deactivate();
-  virtual bool IsActive() const;
-  virtual void FlashFrame();
-  virtual gfx::NativeWindow GetNativeHandle();
-  virtual BrowserWindowTesting* GetBrowserWindowTesting();
-  virtual StatusBubble* GetStatusBubble();
-  virtual void ToolbarSizeChanged(bool is_animating);
-  virtual void UpdateTitleBar();
-  virtual void ShelfVisibilityChanged();
-  virtual void UpdateDevTools();
-  virtual void UpdateLoadingAnimations(bool should_animate);
-  virtual void SetStarredState(bool is_starred);
-  virtual gfx::Rect GetRestoredBounds() const;
-  virtual gfx::Rect GetBounds() const;
-  virtual bool IsMaximized() const;
-  virtual void SetFullscreen(bool fullscreen);
-  virtual bool IsFullscreen() const;
-  virtual bool IsFullscreenBubbleVisible() const;
-  virtual LocationBar* GetLocationBar() const;
-  virtual void SetFocusToLocationBar(bool select_all);
-  virtual void UpdateReloadStopState(bool is_loading, bool force);
+  virtual void Show() OVERRIDE;
+  virtual void ShowInactive() OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual void Activate() OVERRIDE;
+  virtual void Deactivate() OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
+  virtual void FlashFrame() OVERRIDE;
+  virtual gfx::NativeWindow GetNativeHandle() OVERRIDE;
+  virtual BrowserWindowTesting* GetBrowserWindowTesting() OVERRIDE;
+  virtual StatusBubble* GetStatusBubble() OVERRIDE;
+  virtual void ToolbarSizeChanged(bool is_animating) OVERRIDE;
+  virtual void UpdateTitleBar() OVERRIDE;
+  virtual void ShelfVisibilityChanged() OVERRIDE;
+  virtual void UpdateDevTools() OVERRIDE;
+  virtual void UpdateLoadingAnimations(bool should_animate) OVERRIDE;
+  virtual void SetStarredState(bool is_starred) OVERRIDE;
+  virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
+  virtual gfx::Rect GetBounds() const OVERRIDE;
+  virtual bool IsMaximized() const OVERRIDE;
+  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
+  virtual bool IsFullscreen() const OVERRIDE;
+  virtual bool IsFullscreenBubbleVisible() const OVERRIDE;
+  virtual LocationBar* GetLocationBar() const OVERRIDE;
+  virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
+  virtual void UpdateReloadStopState(bool is_loading, bool force) OVERRIDE;
   virtual void UpdateToolbar(TabContentsWrapper* contents,
-                             bool should_restore_state);
-  virtual void FocusToolbar();
-  virtual void FocusAppMenu();
-  virtual void FocusBookmarksToolbar();
-  virtual void FocusChromeOSStatus();
-  virtual void RotatePaneFocus(bool forwards);
-  virtual bool IsBookmarkBarVisible() const;
-  virtual bool IsBookmarkBarAnimating() const;
-  virtual bool IsTabStripEditable() const;
-  virtual bool IsToolbarVisible() const;
-  virtual void DisableInactiveFrame();
+                             bool should_restore_state) OVERRIDE;
+  virtual void FocusToolbar() OVERRIDE;
+  virtual void FocusAppMenu() OVERRIDE;
+  virtual void FocusBookmarksToolbar() OVERRIDE;
+  virtual void FocusChromeOSStatus() OVERRIDE;
+  virtual void RotatePaneFocus(bool forwards) OVERRIDE;
+  virtual bool IsBookmarkBarVisible() const OVERRIDE;
+  virtual bool IsBookmarkBarAnimating() const OVERRIDE;
+  virtual bool IsTabStripEditable() const OVERRIDE;
+  virtual bool IsToolbarVisible() const OVERRIDE;
+  virtual void DisableInactiveFrame() OVERRIDE;
   virtual void ConfirmSetDefaultSearchProvider(
       TabContents* tab_contents,
       TemplateURL* template_url,
-      TemplateURLModel* template_url_model);
+      TemplateURLModel* template_url_model) OVERRIDE;
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
-                                        Profile* profile);
-  virtual void ToggleBookmarkBar();
-  virtual void ShowAboutChromeDialog();
-  virtual void ShowUpdateChromeDialog();
-  virtual void ShowTaskManager();
-  virtual void ShowBackgroundPages();
-  virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked);
-  virtual bool IsDownloadShelfVisible() const;
-  virtual DownloadShelf* GetDownloadShelf();
-  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
-  virtual void ShowCollectedCookiesDialog(TabContents* tab_contents);
-  virtual void ShowThemeInstallBubble();
-  virtual void ConfirmBrowserCloseWithPendingDownloads();
+                                        Profile* profile) OVERRIDE;
+  virtual void ToggleBookmarkBar() OVERRIDE;
+  virtual void ShowAboutChromeDialog() OVERRIDE;
+  virtual void ShowUpdateChromeDialog() OVERRIDE;
+  virtual void ShowTaskManager() OVERRIDE;
+  virtual void ShowBackgroundPages() OVERRIDE;
+  virtual void ShowBookmarkBubble(
+      const GURL& url, bool already_bookmarked) OVERRIDE;
+  virtual bool IsDownloadShelfVisible() const OVERRIDE;
+  virtual DownloadShelf* GetDownloadShelf() OVERRIDE;
+  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) OVERRIDE;
+  virtual void ShowCollectedCookiesDialog(TabContents* tab_contents) OVERRIDE;
+  virtual void ShowThemeInstallBubble() OVERRIDE;
+  virtual void ConfirmBrowserCloseWithPendingDownloads() OVERRIDE;
   virtual void ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
-                              gfx::NativeWindow parent_window);
-  virtual void UserChangedTheme();
-  virtual int GetExtraRenderViewHeight() const;
-  virtual void TabContentsFocused(TabContents* tab_contents);
+                              gfx::NativeWindow parent_window) OVERRIDE;
+  virtual void UserChangedTheme() OVERRIDE;
+  virtual int GetExtraRenderViewHeight() const OVERRIDE;
+  virtual void TabContentsFocused(TabContents* tab_contents) OVERRIDE;
   virtual void ShowPageInfo(Profile* profile,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
-                            bool show_history);
-  virtual void ShowAppMenu();
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut);
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+                            bool show_history) OVERRIDE;
+  virtual void ShowAppMenu() OVERRIDE;
+  virtual bool PreHandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event,
+      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void ShowCreateWebAppShortcutsDialog(
-      TabContentsWrapper* tab_contents);
-  virtual void ShowCreateChromeAppShortcutsDialog(Profile* profile,
-                                                  const Extension* app);
-  virtual void Cut();
-  virtual void Copy();
-  virtual void Paste();
-  virtual void ToggleTabStripMode();
+      TabContentsWrapper* tab_contents) OVERRIDE;
+  virtual void ShowCreateChromeAppShortcutsDialog(
+      Profile* profile, const Extension* app) OVERRIDE;
+  virtual void Cut() OVERRIDE;
+  virtual void Copy() OVERRIDE;
+  virtual void Paste() OVERRIDE;
+  virtual void ToggleTabStripMode() OVERRIDE;
 #if defined(OS_MACOSX)
-  virtual void OpenTabpose();
+  virtual void OpenTabpose() OVERRIDE;
 #endif
-  virtual void PrepareForInstant();
-  virtual void ShowInstant(TabContentsWrapper* preview);
-  virtual void HideInstant(bool instant_is_active);
-  virtual gfx::Rect GetInstantBounds();
+  virtual void PrepareForInstant() OVERRIDE;
+  virtual void ShowInstant(TabContentsWrapper* preview) OVERRIDE;
+  virtual void HideInstant(bool instant_is_active) OVERRIDE;
+  virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
-      const gfx::Rect& bounds);
+      const gfx::Rect& bounds) OVERRIDE;
 #if defined(OS_CHROMEOS)
-  virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window);
+  virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) OVERRIDE;
 #endif
 
   // Construct a native panel BrowserWindow implementation for the specified
@@ -136,7 +137,7 @@ class Panel : public BrowserWindow {
 #endif
 
  protected:
-  virtual void DestroyBrowser();
+  virtual void DestroyBrowser() OVERRIDE;
 
  private:
   friend class PanelManager;

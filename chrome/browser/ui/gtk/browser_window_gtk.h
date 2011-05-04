@@ -51,6 +51,8 @@ class BrowserWindowGtk : public BrowserWindow,
   explicit BrowserWindowGtk(Browser* browser);
   virtual ~BrowserWindowGtk();
 
+  // Separating initialization from constructor allows invocation of virtual
+  // functions during initialization.
   virtual void Init();
 
   // Overridden from BrowserWindow
@@ -225,6 +227,15 @@ class BrowserWindowGtk : public BrowserWindow,
 
  protected:
   virtual void DestroyBrowser();
+
+  virtual bool HandleTitleBarLeftMousePress(GdkEventButton* event,
+                                            guint32 last_click_time,
+                                            gfx::Point last_click_position);
+
+  // Sets the default size for the window and the the way the user is allowed to
+  // resize it.
+  virtual void SetGeometryHints();
+
   // Top level window.
   GtkWindow* window_;
   // GtkAlignment that holds the interior components of the chromium window.
@@ -257,10 +268,6 @@ class BrowserWindowGtk : public BrowserWindow,
 
   // Show or hide the bookmark bar.
   void MaybeShowBookmarkBar(bool animate);
-
-  // Sets the default size for the window and the the way the user is allowed to
-  // resize it.
-  void SetGeometryHints();
 
   // Connect to signals on |window_|.
   void ConnectHandlersToSignals();

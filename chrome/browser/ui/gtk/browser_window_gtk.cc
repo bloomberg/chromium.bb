@@ -2104,41 +2104,8 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
         gdk_window_raise(GTK_WIDGET(window_)->window);
 
       if (has_hit_titlebar) {
-        // We want to start a move when the user single clicks, but not start a
-        // move when the user double clicks.  However, a double click sends the
-        // following GDK events: GDK_BUTTON_PRESS, GDK_BUTTON_RELEASE,
-        // GDK_BUTTON_PRESS, GDK_2BUTTON_PRESS, GDK_BUTTON_RELEASE.  If we
-        // start a gtk_window_begin_move_drag on the second GDK_BUTTON_PRESS,
-        // the call to gtk_window_maximize fails.  To work around this, we
-        // keep track of the last click and if it's going to be a double click,
-        // we don't call gtk_window_begin_move_drag.
-        static GtkSettings* settings = gtk_settings_get_default();
-        gint double_click_time = 250;
-        gint double_click_distance = 5;
-        g_object_get(G_OBJECT(settings),
-                     "gtk-double-click-time", &double_click_time,
-                     "gtk-double-click-distance", &double_click_distance,
-                     NULL);
-
-        guint32 click_time = event->time - last_click_time;
-        int click_move_x = abs(event->x - last_click_position.x());
-        int click_move_y = abs(event->y - last_click_position.y());
-
-        if (click_time > static_cast<guint32>(double_click_time) ||
-            click_move_x > double_click_distance ||
-            click_move_y > double_click_distance) {
-          // Ignore drag requests if the window is the size of the screen.
-          // We do this to avoid triggering fullscreen mode in metacity
-          // (without the --no-force-fullscreen flag) and in compiz (with
-          // Legacy Fullscreen Mode enabled).
-          if (!BoundsMatchMonitorSize()) {
-            gtk_window_begin_move_drag(window_, event->button,
-                                       static_cast<gint>(event->x_root),
-                                       static_cast<gint>(event->y_root),
-                                       event->time);
-          }
-          return TRUE;
-        }
+        return HandleTitleBarLeftMousePress(
+            event, last_click_time, last_click_position);
       } else if (has_hit_edge) {
         gtk_window_begin_resize_drag(window_, edge, event->button,
                                      static_cast<gint>(event->x_root),
@@ -2170,6 +2137,48 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
   }
 
   return FALSE;  // Continue to propagate the event.
+}
+
+bool BrowserWindowGtk::HandleTitleBarLeftMousePress(
+    GdkEventButton* event,
+    guint32 last_click_time,
+    gfx::Point last_click_position) {
+  // We want to start a move when the user single clicks, but not start a
+  // move when the user double clicks.  However, a double click sends the
+  // following GDK events: GDK_BUTTON_PRESS, GDK_BUTTON_RELEASE,
+  // GDK_BUTTON_PRESS, GDK_2BUTTON_PRESS, GDK_BUTTON_RELEASE.  If we
+  // start a gtk_window_begin_move_drag on the second GDK_BUTTON_PRESS,
+  // the call to gtk_window_maximize fails.  To work around this, we
+  // keep track of the last click and if it's going to be a double click,
+  // we don't call gtk_window_begin_move_drag.
+  static GtkSettings* settings = gtk_settings_get_default();
+  gint double_click_time = 250;
+  gint double_click_distance = 5;
+  g_object_get(G_OBJECT(settings),
+               "gtk-double-click-time", &double_click_time,
+               "gtk-double-click-distance", &double_click_distance,
+               NULL);
+
+  guint32 click_time = event->time - last_click_time;
+  int click_move_x = abs(event->x - last_click_position.x());
+  int click_move_y = abs(event->y - last_click_position.y());
+
+  if (click_time > static_cast<guint32>(double_click_time) ||
+      click_move_x > double_click_distance ||
+      click_move_y > double_click_distance) {
+    // Ignore drag requests if the window is the size of the screen.
+    // We do this to avoid triggering fullscreen mode in metacity
+    // (without the --no-force-fullscreen flag) and in compiz (with
+    // Legacy Fullscreen Mode enabled).
+    if (!BoundsMatchMonitorSize()) {
+      gtk_window_begin_move_drag(window_, event->button,
+                                 static_cast<gint>(event->x_root),
+                                 static_cast<gint>(event->y_root),
+                                 event->time);
+    }
+    return TRUE;
+  }
+  return FALSE;
 }
 
 // static
@@ -2246,6 +2255,13 @@ bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
   if (!UseCustomFrame())
     return false;
 
+  // Since panels are not resizable or movable by the user, we should not
+  // detect the window edge for behavioral purposes.  The edge if any is present
+  // only for visual aspects.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels) &&
+      browser_->type() == Browser::TYPE_APP_PANEL)
+    return false;
+
   if (IsMaximized() || IsFullscreen())
     return false;
 
@@ -2300,6 +2316,11 @@ bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
 }
 
 bool BrowserWindowGtk::UseCustomFrame() {
+  // We always use custom frame for panels.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels) &&
+      browser_->type() == Browser::TYPE_APP_PANEL)
+    return true;
+
   // We don't use the custom frame for app mode windows or app window popups.
   return use_custom_frame_pref_.GetValue() &&
       browser_->type() != Browser::TYPE_APP &&
