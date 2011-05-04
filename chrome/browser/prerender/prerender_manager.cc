@@ -208,6 +208,7 @@ PrerenderManager::PrerenderManager(Profile* profile)
 }
 
 PrerenderManager::~PrerenderManager() {
+  DeleteOldTabContents();
   while (!prerender_list_.empty()) {
     PrerenderContentsData data = prerender_list_.front();
     prerender_list_.pop_front();
@@ -382,8 +383,7 @@ void PrerenderManager::DeleteOldEntries() {
     data.contents_->set_final_status(FINAL_STATUS_TIMED_OUT);
     delete data.contents_;
   }
-  if (prerender_list_.empty())
-    StopSchedulingPeriodicCleanups();
+  MaybeStopSchedulingPeriodicCleanups();
 }
 
 PrerenderContents* PrerenderManager::GetEntryButNotSpecifiedTC(
@@ -544,16 +544,20 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
   render_view_host->Send(
       new ViewMsg_DisplayPrerenderedPage(render_view_host->routing_id()));
   */
-  TabContentsWrapper* new_tc = prerender_contents->ReleasePrerenderContents();
-  TabContentsWrapper* old_tc =
+  TabContentsWrapper* new_tab_contents =
+      prerender_contents->ReleasePrerenderContents();
+  TabContentsWrapper* old_tab_contents =
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
-  DCHECK(new_tc);
-  DCHECK(old_tc);
+  DCHECK(new_tab_contents);
+  DCHECK(old_tab_contents);
 
   // Merge the browsing history.
-  new_tc->controller().CopyStateFromAndPrune(&old_tc->controller(), false);
+  new_tab_contents->controller().CopyStateFromAndPrune(
+      &old_tab_contents->controller(),
+      false);
 
-  old_tc->delegate()->SwapTabContents(old_tc, new_tc);
+  old_tab_contents->delegate()->SwapTabContents(old_tab_contents,
+                                                new_tab_contents);
 
   MarkTabContentsAsPrerendered(tab_contents);
 
@@ -576,6 +580,8 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
       Source<std::pair<int, int> >(&child_route_pair),
       NotificationService::NoDetails());
 
+  old_tab_contents_list_.push_back(old_tab_contents);
+  StartSchedulingPeriodicCleanups();
   return true;
 }
 
@@ -789,14 +795,28 @@ void PrerenderManager::StartSchedulingPeriodicCleanups() {
       &PrerenderManager::PeriodicCleanup);
 }
 
-void PrerenderManager::StopSchedulingPeriodicCleanups() {
+void PrerenderManager::MaybeStopSchedulingPeriodicCleanups() {
+  if (!old_tab_contents_list_.empty() || !prerender_list_.empty())
+    return;
+
   DCHECK(CalledOnValidThread());
   repeating_timer_.Stop();
 }
 
+void PrerenderManager::DeleteOldTabContents() {
+  while (!old_tab_contents_list_.empty()) {
+    TabContentsWrapper* tab_contents = old_tab_contents_list_.front();
+    old_tab_contents_list_.pop_front();
+    delete tab_contents;
+  }
+  MaybeStopSchedulingPeriodicCleanups();
+}
+
 void PrerenderManager::PeriodicCleanup() {
   DCHECK(CalledOnValidThread());
+  DeleteOldTabContents();
   DeleteOldEntries();
+
   // Grab a copy of the current PrerenderContents pointers, so that we
   // will not interfere with potential deletions of the list.
   std::vector<PrerenderContents*> prerender_contents;

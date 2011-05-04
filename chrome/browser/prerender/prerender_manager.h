@@ -191,9 +191,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   struct PrerenderContentsData;
 
-  // Starts and stops scheduling periodic cleanups, respectively.
+  // Starts scheduling periodic cleanups.
   void StartSchedulingPeriodicCleanups();
-  void StopSchedulingPeriodicCleanups();
+  // Stops scheduling periodic cleanups if they're no longer needed.
+  void MaybeStopSchedulingPeriodicCleanups();
 
   // Deletes stale prerendered PrerenderContents.
   // Also identifies and kills PrerenderContents that use too much
@@ -229,6 +230,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void RemovePendingPreload(PrerenderContents* entry);
 
   bool DoesRateLimitAllowPrerender() const;
+
+  // Deletes old TabContents that have been replaced by prerendered ones.  This
+  // is needed because they're replaced in a callback from the old TabContents,
+  // so cannot immediately be deleted.
+  void DeleteOldTabContents();
 
   // Specifies whether prerendering is currently enabled for this
   // manager. The value can change dynamically during the lifetime
@@ -277,6 +283,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Track time of last prerender to limit prerender spam.
   base::TimeTicks last_prerender_start_time_;
+
+  std::list<TabContentsWrapper*> old_tab_contents_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

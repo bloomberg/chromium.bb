@@ -3553,14 +3553,15 @@ void Browser::CommitInstant(TabContentsWrapper* preview_contents) {
   }
 }
 
-void Browser::SwapTabContents(TabContentsWrapper* old_tc,
-                              TabContentsWrapper* new_tc) {
-  int index = tab_handler_->GetTabStripModel()->GetIndexOfTabContents(old_tc);
+void Browser::SwapTabContents(TabContentsWrapper* old_tab_contents,
+                              TabContentsWrapper* new_tab_contents) {
+  int index =
+      tab_handler_->GetTabStripModel()->GetIndexOfTabContents(old_tab_contents);
   DCHECK_NE(TabStripModel::kNoTab, index);
-  tab_handler_->GetTabStripModel()->ReplaceTabContentsAt(index, new_tc);
+  tab_handler_->GetTabStripModel()->ReplaceTabContentsAt(index,
+                                                         new_tab_contents);
   // TODO(tburkard): Run unload handlers like Instant does in
   // InstantUnloadHandler::RunUnloadListenersOrDestroy
-  delete old_tc;
 }
 
 void Browser::SetSuggestedText(const string16& text,
