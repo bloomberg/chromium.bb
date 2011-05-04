@@ -1,5 +1,5 @@
-#!/usr/bin/python2.4
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -185,7 +185,7 @@ END'''.strip()
 
   def testRcIncludeFlattenedHtmlFile(self):
     input_file = util.PathFromRoot('grit/test/data/include_test.html')
-    output_file = '%s/include_test.html' % tempfile.gettempdir()
+    output_file = '%s/HTML_FILE1_include_test.html' % tempfile.gettempdir()
     root = grd_reader.Parse(StringIO.StringIO('''
       <includes>
         <include name="HTML_FILE1" flattenhtml="true" file="%s" type="BINDATA" />
@@ -197,7 +197,7 @@ END'''.strip()
                                 buf)
     output = buf.getvalue()
 
-    expected = u'HTML_FILE1         BINDATA            "include_test.html"'
+    expected = u'HTML_FILE1         BINDATA            "HTML_FILE1_include_test.html"'
     # hackety hack to work on win32&lin
     output = re.sub('"[c-zC-Z]:', '"', output)
     self.failUnless(output.strip() == expected)

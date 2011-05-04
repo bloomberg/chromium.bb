@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -25,7 +25,7 @@ class PolicyJsonUnittest(unittest.TestCase):
     return expected
 
   def testEmpty(self):
-    original = "{'policy_definitions': [], 'placeholders': [], 'messages': {}}"
+    original = "{'policy_definitions': [], 'messages': {}}"
     gatherer = policy_json.PolicyJson(original)
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 0)
@@ -46,7 +46,6 @@ class PolicyJsonUnittest(unittest.TestCase):
         "      'label': 'nothing special 3',"
         "    },"
         "  ],"
-        "  'placeholders': [],"
         "  'messages': {"
         "    'msg_identifier': {"
         "      'text': 'nothing special 3',"
@@ -74,7 +73,6 @@ class PolicyJsonUnittest(unittest.TestCase):
         "      ]"
         "    },"
         "  ],"
-        "  'placeholders': [],"
         "  'messages': {}"
         "}")
     gatherer = policy_json.PolicyJson(original)
@@ -96,7 +94,6 @@ class PolicyJsonUnittest(unittest.TestCase):
         "      ]"
         "    },"
         "  ],"
-        "  'placeholders': [],"
         "  'messages': {}"
         "}")
     gatherer = policy_json.PolicyJson(original)
@@ -108,7 +105,6 @@ class PolicyJsonUnittest(unittest.TestCase):
   def testEscapingAndLineBreaks(self):
     original = """{
         'policy_definitions': [],
-        'placeholders': [],
         'messages': {
           'msg1': {
             # The following line will contain two backslash characters when it
@@ -158,7 +154,6 @@ with a newline?''',
                 <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
           },
         ],
-        'placeholders': [],
         'messages': {}
 }"""
     gatherer = policy_json.PolicyJson(original)

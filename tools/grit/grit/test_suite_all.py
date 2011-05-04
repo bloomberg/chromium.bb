@@ -1,5 +1,5 @@
-#!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -85,4 +85,5 @@ class TestSuiteAll(unittest.TestSuite):
 
 
 if __name__ == '__main__':
-  unittest.TextTestRunner(verbosity=2).run(TestSuiteAll())
+  test_result = unittest.TextTestRunner(verbosity=2).run(TestSuiteAll())
+  sys.exit(len(test_result.errors) + len(test_result.failures))
