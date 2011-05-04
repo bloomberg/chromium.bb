@@ -164,13 +164,6 @@
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
 
-      # Local http server not working on chromeos.  crosbug.com/12641
-      '-plugins.PluginsTest.testBlockPluginException',
-      '-popups.PopupsTest.testMultiplePopups',
-      '-popups.PopupsTest.testPopupBlockedEverySec',
-      '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
-      '-test_basic.SimpleTest.testHTTP',
-
       # Deal with i18n chars.  crosbug.com/12639
       '-downloads.DownloadsTest.testCrazyFilenames',
       '-omnibox.OmniboxTest.testCrazyFilenames',
