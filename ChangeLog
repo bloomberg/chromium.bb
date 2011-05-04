@@ -1,5 +1,13 @@
 === xdg-utils 1.1.x ===
 
+2011-05-04 Rex Dieter <rdieter@fedoraproject.org>
+   * xdg-utils-common.in : move a couple of utility functions here (from
+   xdg-settings), needed for xdg-email
+   * xdg-utils-common.in : binary_to_desktop_file, handle vendor dirs
+
+2011-04-20 Rex Dieter <rdieter@fedoraproject.org>
+   * xdg-desktop-icon does not work when user desktop dir has spaces (BR36417)
+
 2011-04-14 Rex Dieter <rdieter@fedoraproject.org>
    * xdg-open does not detect xfce (BR25941)
    * xdg-open's list of fallback browsers excludes seamonkey (BR33699)

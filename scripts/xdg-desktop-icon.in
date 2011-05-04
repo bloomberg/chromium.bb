@@ -117,7 +117,7 @@ if [ -n "$desktop_dir_kde" ]; then
         umask $save_umask
     fi
     # Is the KDE desktop dir != $HOME/Desktop ?
-    if [ x`readlink -f "$desktop_dir"` != x`readlink -f "$desktop_dir_kde"` ]; then
+    if [ "x`readlink -f "$desktop_dir"`" != "x`readlink -f "$desktop_dir_kde"`" ]; then
         # If so, don't create $HOME/Desktop if it doesn't exist
         [ -w "$desktop_dir" ] || desktop_dir=
     else

@@ -145,9 +145,9 @@ make_default_kde()
     DEBUG 2 "make_default_kde $vendor $mimetype"
     DEBUG 1 "Updating $default_file"
     mkdir -p "$default_dir"
-    [ -f $default_file ] || touch $default_file
+    [ -f "$default_file" ] || touch "$default_file"
     if [ x"$KDE_SESSION_VERSION" = x"4" ]; then
-        [ -f $default_file ] || touch $default_file
+        [ -f "$default_file" ] || touch "$default_file"
         awk -v application="$vendor" -v mimetype="$mimetype" '
     BEGIN {
         prefix=mimetype "="
@@ -204,7 +204,7 @@ make_default_kde()
             blanks--
         }
     }
-' $default_file > ${default_file}.new && mv ${default_file}.new $default_file
+' "$default_file" > "${default_file}.new" && mv "${default_file}.new" "$default_file"
         eval 'kbuildsycoca4'$xdg_redirect_output
     else
         awk -v application="$vendor" -v mimetype="$mimetype" '
@@ -231,7 +231,7 @@ make_default_kde()
         print "Preference=1"
         print "ServiceType=" mimetype
     }
-' $default_file > ${default_file}.new && mv ${default_file}.new $default_file
+' "$default_file" > "${default_file}.new" && mv "${default_file}.new" "$default_file"
     fi
 }
 
@@ -245,6 +245,7 @@ make_default_generic()
     default_file="$xdg_user_dir/applications/mimeapps.list"
     DEBUG 2 "make_default_generic $1 $2"
     DEBUG 1 "Updating $default_file"
+    [ -f "$default_file" ] || touch "$default_file"
     awk -v mimetype="$2" -v application="$1" '
     BEGIN {
         prefix=mimetype "="
@@ -292,7 +293,7 @@ make_default_generic()
             blanks--
         }
     }
-' $default_file > ${default_file}.new && mv ${default_file}.new $default_file
+' "$default_file" > "${default_file}.new" && mv "${default_file}.new" "$default_file"
 }
 
 defapp_generic()

@@ -244,6 +244,64 @@ DEBUG()
   echo "$@" >&2
 }
 
+# This handles backslashes but not quote marks.
+first_word()
+{
+    read first rest
+    echo "$first"
+}
+
+#-------------------------------------------------------------
+# map a binary to a .desktop file
+binary_to_desktop_file()
+{
+    search="${XDG_DATA_HOME:-$HOME/.local/share}:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+    binary="`which "$1"`"
+    binary="`readlink -f "$binary"`"
+    base="`basename "$binary"`"
+    IFS=:
+    for dir in $search; do
+        unset IFS
+        [ "$dir" ] || continue
+        [ -d "$dir/applications" -o -d "$dir/applnk" ] || continue
+        for file in "$dir"/applications/*.desktop "$dir"/applications/*/*.desktop "$dir"/applnk/*.desktop "$dir"/applnk/*/*.desktop; do
+            [ -r "$file" ] || continue
+            # Check to make sure it's worth the processing.
+            grep -q "^Exec.*$base" "$file" || continue
+            # Make sure it's a visible desktop file (e.g. not "preferred-web-browser.desktop").
+            grep -Eq "^(NoDisplay|Hidden)=true" "$file" && continue
+            command="`grep -E "^Exec(\[[^]=]*])?=" "$file" | cut -d= -f 2- | first_word`"
+            command="`which "$command"`"
+            if [ x"`readlink -f "$command"`" = x"$binary" ]; then
+                # Fix any double slashes that got added path composition
+                echo "$file" | sed -e 's,//*,/,g'
+                return
+            fi
+        done
+    done
+}
+
+#-------------------------------------------------------------
+# map a .desktop file to a binary
+## FIXME: handle vendor dir case
+desktop_file_to_binary()
+{
+    search="${XDG_DATA_HOME:-$HOME/.local/share}:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+    desktop="`basename "$1"`"
+    IFS=:
+    for dir in $search; do
+        unset IFS
+        [ "$dir" -a -d "$dir/applications" ] || continue
+        file="$dir/applications/$desktop"
+        [ -r "$file" ] || continue
+        # Remove any arguments (%F, %f, %U, %u, etc.).
+        command="`grep -E "^Exec(\[[^]=]*])?=" "$file" | cut -d= -f 2- | first_word`"
+        command="`which "$command"`"
+        readlink -f "$command"
+        return
+    done
+}
+
 #-------------------------------------------------------------
 # Exit script on successfully completing the desired operation
 
@@ -599,9 +657,9 @@ make_default_kde()
     DEBUG 2 "make_default_kde $vendor $mimetype"
     DEBUG 1 "Updating $default_file"
     mkdir -p "$default_dir"
-    [ -f $default_file ] || touch $default_file
+    [ -f "$default_file" ] || touch "$default_file"
     if [ x"$KDE_SESSION_VERSION" = x"4" ]; then
-        [ -f $default_file ] || touch $default_file
+        [ -f "$default_file" ] || touch "$default_file"
         awk -v application="$vendor" -v mimetype="$mimetype" '
     BEGIN {
         prefix=mimetype "="
@@ -658,7 +716,7 @@ make_default_kde()
             blanks--
         }
     }
-' $default_file > ${default_file}.new && mv ${default_file}.new $default_file
+' "$default_file" > "${default_file}.new" && mv "${default_file}.new" "$default_file"
         eval 'kbuildsycoca4'$xdg_redirect_output
     else
         awk -v application="$vendor" -v mimetype="$mimetype" '
@@ -685,7 +743,7 @@ make_default_kde()
         print "Preference=1"
         print "ServiceType=" mimetype
     }
-' $default_file > ${default_file}.new && mv ${default_file}.new $default_file
+' "$default_file" > "${default_file}.new" && mv "${default_file}.new" "$default_file"
     fi
 }
 
@@ -699,6 +757,7 @@ make_default_generic()
     default_file="$xdg_user_dir/applications/mimeapps.list"
     DEBUG 2 "make_default_generic $1 $2"
     DEBUG 1 "Updating $default_file"
+    [ -f "$default_file" ] || touch "$default_file"
     awk -v mimetype="$2" -v application="$1" '
     BEGIN {
         prefix=mimetype "="
@@ -746,7 +805,7 @@ make_default_generic()
             blanks--
         }
     }
-' $default_file > ${default_file}.new && mv ${default_file}.new $default_file
+' "$default_file" > "${default_file}.new" && mv "${default_file}.new" "$default_file"
 }
 
 defapp_generic()

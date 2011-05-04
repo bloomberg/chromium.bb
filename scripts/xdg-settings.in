@@ -44,59 +44,6 @@ check_desktop_filename()
 # {{{ default browser
 # {{{ utility functions
 
-# This handles backslashes but not quote marks.
-first_word()
-{
-    read first rest
-    echo "$first"
-}
-
-binary_to_desktop_file()
-{
-    search="${XDG_DATA_HOME:-$HOME/.local/share}:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
-    binary="`which "$1"`"
-    binary="`readlink -f "$binary"`"
-    base="`basename "$binary"`"
-    IFS=:
-    for dir in $search; do
-        unset IFS
-        [ "$dir" ] || continue
-        [ -d "$dir/applications" -o -d "$dir/applnk" ] || continue
-        for file in "$dir"/applications/*.desktop "$dir"/applnk/*.desktop; do
-            [ -r "$file" ] || continue
-            # Check to make sure it's worth the processing.
-            grep -q "^Exec.*$base" "$file" || continue
-            # Make sure it's a visible desktop file (e.g. not "preferred-web-browser.desktop").
-            grep -Eq "^(NoDisplay|Hidden)=true" "$file" && continue
-            command="`grep -E "^Exec(\[[^]=]*])?=" "$file" | cut -d= -f 2- | first_word`"
-            command="`which "$command"`"
-            if [ x"`readlink -f "$command"`" = x"$binary" ]; then
-                # Fix any double slashes that got added path composition
-                echo "$file" | sed -e 's,//*,/,g'
-                return
-            fi
-        done
-    done
-}
-
-desktop_file_to_binary()
-{
-    search="${XDG_DATA_HOME:-$HOME/.local/share}:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
-    desktop="`basename "$1"`"
-    IFS=:
-    for dir in $search; do
-        unset IFS
-        [ "$dir" -a -d "$dir/applications" ] || continue
-        file="$dir/applications/$desktop"
-        [ -r "$file" ] || continue
-        # Remove any arguments (%F, %f, %U, %u, etc.).
-        command="`grep -E "^Exec(\[[^]=]*])?=" "$file" | cut -d= -f 2- | first_word`"
-        command="`which "$command"`"
-        readlink -f "$command"
-        return
-    done
-}
-
 # In order to remove an application from the automatically-generated list of
 # applications for handling a given MIME type, the desktop environment may copy
 # the global .desktop file into the user's .local directory, and remove that
