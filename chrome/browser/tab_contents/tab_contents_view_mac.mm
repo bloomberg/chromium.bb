@@ -444,7 +444,13 @@ void TabContentsViewMac::Observe(NotificationType type,
 // Returns what kind of drag operations are available. This is a required
 // method for NSDraggingSource.
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
-  return [dragSource_ draggingSourceOperationMaskForLocal:isLocal];
+  if (dragSource_.get())
+    return [dragSource_ draggingSourceOperationMaskForLocal:isLocal];
+  // No web drag source - this is the case for dragging a file from the
+  // downloads manager. Default to copy operation. Note: It is desirable to
+  // allow the user to either move or copy, but this requires additional
+  // plumbing to update the download item's path once its moved.
+  return NSDragOperationCopy;
 }
 
 // Called when a drag initiated in our view ends.
