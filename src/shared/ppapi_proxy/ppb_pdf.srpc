@@ -1,0 +1,95 @@
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# RPC methods used to implement the PPB_PDF interface.
+# See ppapi/c/private/ppb_pdf.h for interface details.
+{
+ 'name': 'PpbPdfRpc',
+ 'rpcs': [
+          {'name': 'PPB_PDF_GetLocalizedString',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['string_id', 'int32_t'],     # PP_ResourceString
+                     ],
+           'outputs': [['string', 'char[]'],        # PP_Var
+                      ]
+          },
+          {'name': 'PPB_PDF_GetResourceImage',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['image_id', 'int32_t'],      # PP_ResourceImage
+                     ],
+           'outputs': [['image', 'PP_Resource'],
+                      ]
+          },
+          {'name': 'PPB_PDF_GetFontFileWithFallback',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['description', 'char[]'],    # PP_FontDescription_Dev
+                      ['face', 'char[]'],           # PP_Var, description->face
+                      ['charset', 'int32_t'],       # PP_PrivateFontCharset
+                     ],
+           'outputs': [['font', 'PP_Resource'],
+                      ]
+          },
+          {'name': 'PPB_PDF_GetFontTableForPrivateFontFile',
+           'inputs': [['font_file', 'PP_Resource'],
+                      ['table', 'int32_t'],         # uint32_t
+                     ],
+           'outputs': [['output', 'char[]'],        # void*, uint32_t*
+                       ['success', 'int32_t'],      # PP_Bool
+                      ]
+          },
+          {'name': 'PPB_PDF_SearchString',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['string', 'char[]'],         # const unsigned short*
+                      ['term', 'char[]'],           # const unsigned short*
+                      ['case_sensitive', 'int32_t'],  # bool
+                     ],
+           'outputs': [['results', 'char[]'],       # PP_PrivateFindResult**
+                       ['count', 'int32_t'],        # int*
+                      ]
+          },
+          {'name': 'PPB_PDF_DidStartLoading',
+           'inputs': [['instance', 'PP_Instance'],
+                     ],
+           'outputs': [
+                      ]
+          },
+          {'name': 'PPB_PDF_DidStopLoading',
+           'inputs': [['instance', 'PP_Instance'],
+                     ],
+           'outputs': [
+                      ]
+          },
+          {'name': 'PPB_PDF_SetContentRestriction',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['restrictions', 'int32_t'],  # int
+                     ],
+           'outputs': [
+                      ]
+          },
+          {'name': 'PPB_PDF_HistogramPDFPageCount',
+           'inputs': [['count', 'int32_t'],
+                     ],
+           'outputs': [
+                      ]
+          },
+          {'name': 'PPB_PDF_UserMetricsRecordAction',
+           'inputs': [['action', 'char[]'],        # PP_Var
+                     ],
+           'outputs': [
+                      ]
+          },
+          {'name': 'PPB_PDF_HasUnsupportedFeature',
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
+                     ],
+           'outputs': [
+                      ]
+          },
+          {'name': 'PPB_PDF_SaveAs',
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
+                     ],
+           'outputs': [
+                      ]
+          },
+         ]
+}

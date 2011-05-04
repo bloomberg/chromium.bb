@@ -469,6 +469,82 @@ NaClSrpcError PpbCoreRpcClient::PPB_Core_CallOnMainThread(
   return retval;
 }
 
+NaClSrpcError PpbCursorControlRpcClient::PPB_CursorControl_SetCursor(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t type,
+    PP_Resource custom_image,
+    nacl_abi_size_t hot_spot_bytes, char* hot_spot,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_CursorControl_SetCursor:iiiC:i",
+      instance,
+      type,
+      custom_image,
+      hot_spot_bytes, hot_spot,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbCursorControlRpcClient::PPB_CursorControl_LockCursor(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_CursorControl_LockCursor:i:i",
+      instance,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbCursorControlRpcClient::PPB_CursorControl_UnlockCursor(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_CursorControl_UnlockCursor:i:i",
+      instance,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbCursorControlRpcClient::PPB_CursorControl_HasCursorLock(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_CursorControl_HasCursorLock:i:i",
+      instance,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbCursorControlRpcClient::PPB_CursorControl_CanLockCursor(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_CursorControl_CanLockCursor:i:i",
+      instance,
+      success
+  );
+  return retval;
+}
+
 NaClSrpcError PpbFileIODevRpcClient::PPB_FileIO_Dev_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance,
@@ -597,6 +673,174 @@ NaClSrpcError PpbFileSystemDevRpcClient::PPB_FileSystem_Dev_GetType(
       "PPB_FileSystem_Dev_GetType:i:i",
       file_system,
       type
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFindRpcClient::PPB_Find_NumberOfFindResultsChanged(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t total,
+    int32_t final_result)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Find_NumberOfFindResultsChanged:iii:",
+      instance,
+      total,
+      final_result
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFindRpcClient::PPB_Find_SelectedFindResultChanged(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t index)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Find_SelectedFindResultChanged:ii:",
+      instance,
+      index
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFontRpcClient::PPB_Font_Create(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    nacl_abi_size_t description_bytes, char* description,
+    nacl_abi_size_t face_bytes, char* face,
+    PP_Resource* font)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Font_Create:iCC:i",
+      instance,
+      description_bytes, description,
+      face_bytes, face,
+      font
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFontRpcClient::PPB_Font_IsFont(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t* is_font)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Font_IsFont:i:i",
+      resource,
+      is_font
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFontRpcClient::PPB_Font_Describe(
+    NaClSrpcChannel* channel,
+    PP_Resource font,
+    nacl_abi_size_t* description_bytes, char* description,
+    nacl_abi_size_t* face_bytes, char* face,
+    nacl_abi_size_t* metrics_bytes, char* metrics,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Font_Describe:i:CCCi",
+      font,
+      description_bytes, description,
+      face_bytes, face,
+      metrics_bytes, metrics,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFontRpcClient::PPB_Font_DrawTextAt(
+    NaClSrpcChannel* channel,
+    PP_Resource font,
+    PP_Resource image_data,
+    nacl_abi_size_t text_run_bytes, char* text_run,
+    nacl_abi_size_t text_bytes, char* text,
+    nacl_abi_size_t position_bytes, char* position,
+    int32_t color,
+    nacl_abi_size_t clip_bytes, char* clip,
+    int32_t image_data_is_opaque,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Font_DrawTextAt:iiCCCiCi:i",
+      font,
+      image_data,
+      text_run_bytes, text_run,
+      text_bytes, text,
+      position_bytes, position,
+      color,
+      clip_bytes, clip,
+      image_data_is_opaque,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFontRpcClient::PPB_Font_MeasureText(
+    NaClSrpcChannel* channel,
+    PP_Resource font,
+    nacl_abi_size_t text_run_bytes, char* text_run,
+    nacl_abi_size_t text_bytes, char* text,
+    int32_t* width)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Font_MeasureText:iCC:i",
+      font,
+      text_run_bytes, text_run,
+      text_bytes, text,
+      width
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFontRpcClient::PPB_Font_CharacterOffsetForPixel(
+    NaClSrpcChannel* channel,
+    PP_Resource font,
+    nacl_abi_size_t text_run_bytes, char* text_run,
+    nacl_abi_size_t text_bytes, char* text,
+    int32_t pixel_position,
+    int32_t* offset)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Font_CharacterOffsetForPixel:iCCi:i",
+      font,
+      text_run_bytes, text_run,
+      text_bytes, text,
+      pixel_position,
+      offset
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFontRpcClient::PPB_Font_PixelOffsetForCharacter(
+    NaClSrpcChannel* channel,
+    PP_Resource font,
+    nacl_abi_size_t text_run_bytes, char* text_run,
+    nacl_abi_size_t text_bytes, char* text,
+    int32_t char_offset,
+    int32_t* offset)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Font_PixelOffsetForCharacter:iCCi:i",
+      font,
+      text_run_bytes, text_run,
+      text_bytes, text,
+      char_offset,
+      offset
   );
   return retval;
 }
@@ -1071,6 +1315,184 @@ NaClSrpcError PpbInstanceRpcClient::PPB_Instance_ExecuteScript(
   return retval;
 }
 
+NaClSrpcError PpbPdfRpcClient::PPB_PDF_GetLocalizedString(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t string_id,
+    nacl_abi_size_t* string_bytes, char* string)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_PDF_GetLocalizedString:ii:C",
+      instance,
+      string_id,
+      string_bytes, string
+  );
+  return retval;
+}
+
+NaClSrpcError PpbPdfRpcClient::PPB_PDF_GetResourceImage(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t image_id,
+    PP_Resource* image)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_PDF_GetResourceImage:ii:i",
+      instance,
+      image_id,
+      image
+  );
+  return retval;
+}
+
+NaClSrpcError PpbPdfRpcClient::PPB_PDF_GetFontFileWithFallback(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    nacl_abi_size_t description_bytes, char* description,
+    nacl_abi_size_t face_bytes, char* face,
+    int32_t charset,
+    PP_Resource* font)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_PDF_GetFontFileWithFallback:iCCi:i",
+      instance,
+      description_bytes, description,
+      face_bytes, face,
+      charset,
+      font
+  );
+  return retval;
+}
+
+NaClSrpcError PpbPdfRpcClient::PPB_PDF_GetFontTableForPrivateFontFile(
+    NaClSrpcChannel* channel,
+    PP_Resource font_file,
+    int32_t table,
+    nacl_abi_size_t* output_bytes, char* output,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_PDF_GetFontTableForPrivateFontFile:ii:Ci",
+      font_file,
+      table,
+      output_bytes, output,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbPdfRpcClient::PPB_PDF_SearchString(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    nacl_abi_size_t string_bytes, char* string,
+    nacl_abi_size_t term_bytes, char* term,
+    int32_t case_sensitive,
+    nacl_abi_size_t* results_bytes, char* results,
+    int32_t* count)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_PDF_SearchString:iCCi:Ci",
+      instance,
+      string_bytes, string,
+      term_bytes, term,
+      case_sensitive,
+      results_bytes, results,
+      count
+  );
+  return retval;
+}
+
+NaClSrpcError PpbPdfRpcClient::PPB_PDF_DidStartLoading(
+    NaClSrpcChannel* channel,
+    PP_Instance instance)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_PDF_DidStartLoading:i:",
+      instance
+  );
+  return retval;
+}
+
+NaClSrpcError PpbPdfRpcClient::PPB_PDF_DidStopLoading(
+    NaClSrpcChannel* channel,
+    PP_Instance instance)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_PDF_DidStopLoading:i:",
+      instance
+  );
+  return retval;
+}
+
+NaClSrpcError PpbPdfRpcClient::PPB_PDF_SetContentRestriction(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t restrictions)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_PDF_SetContentRestriction:ii:",
+      instance,
+      restrictions
+  );
+  return retval;
+}
+
+NaClSrpcError PpbPdfRpcClient::PPB_PDF_HistogramPDFPageCount(
+    NaClSrpcChannel* channel,
+    int32_t count)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_PDF_HistogramPDFPageCount:i:",
+      count
+  );
+  return retval;
+}
+
+NaClSrpcError PpbPdfRpcClient::PPB_PDF_UserMetricsRecordAction(
+    NaClSrpcChannel* channel,
+    nacl_abi_size_t action_bytes, char* action)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_PDF_UserMetricsRecordAction:C:",
+      action_bytes, action
+  );
+  return retval;
+}
+
+NaClSrpcError PpbPdfRpcClient::PPB_PDF_HasUnsupportedFeature(
+    NaClSrpcChannel* channel,
+    PP_Instance instance)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_PDF_HasUnsupportedFeature:i:",
+      instance
+  );
+  return retval;
+}
+
+NaClSrpcError PpbPdfRpcClient::PPB_PDF_SaveAs(
+    NaClSrpcChannel* channel,
+    PP_Instance instance)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_PDF_SaveAs:i:",
+      instance
+  );
+  return retval;
+}
+
 NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance,
@@ -1527,6 +1949,114 @@ NaClSrpcError PpbURLResponseInfoRpcClient::PPB_URLResponseInfo_GetBodyAsFileRef(
       "PPB_URLResponseInfo_GetBodyAsFileRef:i:i",
       response,
       file_ref
+  );
+  return retval;
+}
+
+NaClSrpcError PpbWidgetRpcClient::PPB_Widget_IsWidget(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t* is_widget)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Widget_IsWidget:i:i",
+      resource,
+      is_widget
+  );
+  return retval;
+}
+
+NaClSrpcError PpbWidgetRpcClient::PPB_Widget_Paint(
+    NaClSrpcChannel* channel,
+    PP_Resource widget,
+    nacl_abi_size_t rect_bytes, char* rect,
+    PP_Resource image,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Widget_Paint:iCi:i",
+      widget,
+      rect_bytes, rect,
+      image,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbWidgetRpcClient::PPB_Widget_HandleEvent(
+    NaClSrpcChannel* channel,
+    PP_Resource widget,
+    nacl_abi_size_t event_bytes, char* event,
+    int32_t* handled)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Widget_HandleEvent:iC:i",
+      widget,
+      event_bytes, event,
+      handled
+  );
+  return retval;
+}
+
+NaClSrpcError PpbWidgetRpcClient::PPB_Widget_GetLocation(
+    NaClSrpcChannel* channel,
+    PP_Resource widget,
+    nacl_abi_size_t* location_bytes, char* location,
+    int32_t* visible)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Widget_GetLocation:i:Ci",
+      widget,
+      location_bytes, location,
+      visible
+  );
+  return retval;
+}
+
+NaClSrpcError PpbWidgetRpcClient::PPB_Widget_SetLocation(
+    NaClSrpcChannel* channel,
+    PP_Resource widget,
+    nacl_abi_size_t location_bytes, char* location)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Widget_SetLocation:iC:",
+      widget,
+      location_bytes, location
+  );
+  return retval;
+}
+
+NaClSrpcError PpbZoomRpcClient::PPB_Zoom_ZoomChanged(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    double factor)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Zoom_ZoomChanged:id:",
+      instance,
+      factor
+  );
+  return retval;
+}
+
+NaClSrpcError PpbZoomRpcClient::PPB_Zoom_ZoomLimitsChanged(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    double minimum_factor,
+    double maximum_factor)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Zoom_ZoomLimitsChanged:idd:",
+      instance,
+      minimum_factor,
+      maximum_factor
   );
   return retval;
 }

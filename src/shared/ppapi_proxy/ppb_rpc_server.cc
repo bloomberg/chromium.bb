@@ -451,6 +451,79 @@ static void PPB_Core_CallOnMainThreadDispatcher(
   );
 }
 
+static void PPB_CursorControl_SetCursorDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbCursorControlRpcServer::PPB_CursorControl_SetCursor(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival,
+      inputs[3]->u.count, inputs[3]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_CursorControl_LockCursorDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbCursorControlRpcServer::PPB_CursorControl_LockCursor(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_CursorControl_UnlockCursorDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbCursorControlRpcServer::PPB_CursorControl_UnlockCursor(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_CursorControl_HasCursorLockDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbCursorControlRpcServer::PPB_CursorControl_HasCursorLock(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_CursorControl_CanLockCursorDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbCursorControlRpcServer::PPB_CursorControl_CanLockCursor(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
 static void PPB_FileIO_Dev_CreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -569,6 +642,155 @@ static void PPB_FileSystem_Dev_GetTypeDispatcher(
       rpc,
       done,
       inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Find_NumberOfFindResultsChangedDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbFindRpcServer::PPB_Find_NumberOfFindResultsChanged(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival
+  );
+}
+
+static void PPB_Find_SelectedFindResultChangedDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbFindRpcServer::PPB_Find_SelectedFindResultChanged(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival
+  );
+}
+
+static void PPB_Font_CreateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFontRpcServer::PPB_Font_Create(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Font_IsFontDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFontRpcServer::PPB_Font_IsFont(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Font_DescribeDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFontRpcServer::PPB_Font_Describe(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.count), outputs[1]->arrays.carr,
+      &(outputs[2]->u.count), outputs[2]->arrays.carr,
+      &(outputs[3]->u.ival)
+  );
+}
+
+static void PPB_Font_DrawTextAtDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFontRpcServer::PPB_Font_DrawTextAt(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      inputs[3]->u.count, inputs[3]->arrays.carr,
+      inputs[4]->u.count, inputs[4]->arrays.carr,
+      inputs[5]->u.ival,
+      inputs[6]->u.count, inputs[6]->arrays.carr,
+      inputs[7]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Font_MeasureTextDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFontRpcServer::PPB_Font_MeasureText(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Font_CharacterOffsetForPixelDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFontRpcServer::PPB_Font_CharacterOffsetForPixel(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      inputs[3]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Font_PixelOffsetForCharacterDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFontRpcServer::PPB_Font_PixelOffsetForCharacter(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      inputs[3]->u.ival,
       &(outputs[0]->u.ival)
   );
 }
@@ -1014,6 +1236,186 @@ static void PPB_Instance_ExecuteScriptDispatcher(
       inputs[2]->u.count, inputs[2]->arrays.carr,
       &(outputs[0]->u.count), outputs[0]->arrays.carr,
       &(outputs[1]->u.count), outputs[1]->arrays.carr
+  );
+}
+
+static void PPB_PDF_GetLocalizedStringDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbPdfRpcServer::PPB_PDF_GetLocalizedString(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPB_PDF_GetResourceImageDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbPdfRpcServer::PPB_PDF_GetResourceImage(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_PDF_GetFontFileWithFallbackDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbPdfRpcServer::PPB_PDF_GetFontFileWithFallback(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      inputs[3]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_PDF_GetFontTableForPrivateFontFileDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbPdfRpcServer::PPB_PDF_GetFontTableForPrivateFontFile(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_PDF_SearchStringDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbPdfRpcServer::PPB_PDF_SearchString(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      inputs[3]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_PDF_DidStartLoadingDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbPdfRpcServer::PPB_PDF_DidStartLoading(
+      rpc,
+      done,
+      inputs[0]->u.ival
+  );
+}
+
+static void PPB_PDF_DidStopLoadingDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbPdfRpcServer::PPB_PDF_DidStopLoading(
+      rpc,
+      done,
+      inputs[0]->u.ival
+  );
+}
+
+static void PPB_PDF_SetContentRestrictionDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbPdfRpcServer::PPB_PDF_SetContentRestriction(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival
+  );
+}
+
+static void PPB_PDF_HistogramPDFPageCountDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbPdfRpcServer::PPB_PDF_HistogramPDFPageCount(
+      rpc,
+      done,
+      inputs[0]->u.ival
+  );
+}
+
+static void PPB_PDF_UserMetricsRecordActionDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbPdfRpcServer::PPB_PDF_UserMetricsRecordAction(
+      rpc,
+      done,
+      inputs[0]->u.count, inputs[0]->arrays.carr
+  );
+}
+
+static void PPB_PDF_HasUnsupportedFeatureDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbPdfRpcServer::PPB_PDF_HasUnsupportedFeature(
+      rpc,
+      done,
+      inputs[0]->u.ival
+  );
+}
+
+static void PPB_PDF_SaveAsDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbPdfRpcServer::PPB_PDF_SaveAs(
+      rpc,
+      done,
+      inputs[0]->u.ival
   );
 }
 
@@ -1465,6 +1867,112 @@ static void PPB_URLResponseInfo_GetBodyAsFileRefDispatcher(
   );
 }
 
+static void PPB_Widget_IsWidgetDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWidgetRpcServer::PPB_Widget_IsWidget(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Widget_PaintDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWidgetRpcServer::PPB_Widget_Paint(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Widget_HandleEventDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWidgetRpcServer::PPB_Widget_HandleEvent(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Widget_GetLocationDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbWidgetRpcServer::PPB_Widget_GetLocation(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_Widget_SetLocationDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbWidgetRpcServer::PPB_Widget_SetLocation(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr
+  );
+}
+
+static void PPB_Zoom_ZoomChangedDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbZoomRpcServer::PPB_Zoom_ZoomChanged(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.dval
+  );
+}
+
+static void PPB_Zoom_ZoomLimitsChangedDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbZoomRpcServer::PPB_Zoom_ZoomLimitsChanged(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.dval,
+      inputs[2]->u.dval
+  );
+}
+
 }  // namespace
 
 NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
@@ -1496,6 +2004,11 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Core_GetTime::d", PPB_Core_GetTimeDispatcher },
   { "PPB_Core_GetTimeTicks::d", PPB_Core_GetTimeTicksDispatcher },
   { "PPB_Core_CallOnMainThread:iii:", PPB_Core_CallOnMainThreadDispatcher },
+  { "PPB_CursorControl_SetCursor:iiiC:i", PPB_CursorControl_SetCursorDispatcher },
+  { "PPB_CursorControl_LockCursor:i:i", PPB_CursorControl_LockCursorDispatcher },
+  { "PPB_CursorControl_UnlockCursor:i:i", PPB_CursorControl_UnlockCursorDispatcher },
+  { "PPB_CursorControl_HasCursorLock:i:i", PPB_CursorControl_HasCursorLockDispatcher },
+  { "PPB_CursorControl_CanLockCursor:i:i", PPB_CursorControl_CanLockCursorDispatcher },
   { "PPB_FileIO_Dev_Create:i:i", PPB_FileIO_Dev_CreateDispatcher },
   { "PPB_FileIO_Dev_IsFileIO:i:i", PPB_FileIO_Dev_IsFileIODispatcher },
   { "PPB_FileIO_Dev_Open:iiii:i", PPB_FileIO_Dev_OpenDispatcher },
@@ -1504,6 +2017,15 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_FileSystem_Dev_IsFileSystem:i:i", PPB_FileSystem_Dev_IsFileSystemDispatcher },
   { "PPB_FileSystem_Dev_Open:ili:i", PPB_FileSystem_Dev_OpenDispatcher },
   { "PPB_FileSystem_Dev_GetType:i:i", PPB_FileSystem_Dev_GetTypeDispatcher },
+  { "PPB_Find_NumberOfFindResultsChanged:iii:", PPB_Find_NumberOfFindResultsChangedDispatcher },
+  { "PPB_Find_SelectedFindResultChanged:ii:", PPB_Find_SelectedFindResultChangedDispatcher },
+  { "PPB_Font_Create:iCC:i", PPB_Font_CreateDispatcher },
+  { "PPB_Font_IsFont:i:i", PPB_Font_IsFontDispatcher },
+  { "PPB_Font_Describe:i:CCCi", PPB_Font_DescribeDispatcher },
+  { "PPB_Font_DrawTextAt:iiCCCiCi:i", PPB_Font_DrawTextAtDispatcher },
+  { "PPB_Font_MeasureText:iCC:i", PPB_Font_MeasureTextDispatcher },
+  { "PPB_Font_CharacterOffsetForPixel:iCCi:i", PPB_Font_CharacterOffsetForPixelDispatcher },
+  { "PPB_Font_PixelOffsetForCharacter:iCCi:i", PPB_Font_PixelOffsetForCharacterDispatcher },
   { "PPB_Graphics2D_Create:iCi:i", PPB_Graphics2D_CreateDispatcher },
   { "PPB_Graphics2D_IsGraphics2D:i:i", PPB_Graphics2D_IsGraphics2DDispatcher },
   { "PPB_Graphics2D_Describe:i:Cii", PPB_Graphics2D_DescribeDispatcher },
@@ -1533,6 +2055,18 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Instance_BindGraphics:ii:i", PPB_Instance_BindGraphicsDispatcher },
   { "PPB_Instance_IsFullFrame:i:i", PPB_Instance_IsFullFrameDispatcher },
   { "PPB_Instance_ExecuteScript:iCC:CC", PPB_Instance_ExecuteScriptDispatcher },
+  { "PPB_PDF_GetLocalizedString:ii:C", PPB_PDF_GetLocalizedStringDispatcher },
+  { "PPB_PDF_GetResourceImage:ii:i", PPB_PDF_GetResourceImageDispatcher },
+  { "PPB_PDF_GetFontFileWithFallback:iCCi:i", PPB_PDF_GetFontFileWithFallbackDispatcher },
+  { "PPB_PDF_GetFontTableForPrivateFontFile:ii:Ci", PPB_PDF_GetFontTableForPrivateFontFileDispatcher },
+  { "PPB_PDF_SearchString:iCCi:Ci", PPB_PDF_SearchStringDispatcher },
+  { "PPB_PDF_DidStartLoading:i:", PPB_PDF_DidStartLoadingDispatcher },
+  { "PPB_PDF_DidStopLoading:i:", PPB_PDF_DidStopLoadingDispatcher },
+  { "PPB_PDF_SetContentRestriction:ii:", PPB_PDF_SetContentRestrictionDispatcher },
+  { "PPB_PDF_HistogramPDFPageCount:i:", PPB_PDF_HistogramPDFPageCountDispatcher },
+  { "PPB_PDF_UserMetricsRecordAction:C:", PPB_PDF_UserMetricsRecordActionDispatcher },
+  { "PPB_PDF_HasUnsupportedFeature:i:", PPB_PDF_HasUnsupportedFeatureDispatcher },
+  { "PPB_PDF_SaveAs:i:", PPB_PDF_SaveAsDispatcher },
   { "PPB_Scrollbar_Create:ii:i", PPB_Scrollbar_CreateDispatcher },
   { "PPB_Scrollbar_IsScrollbar:i:i", PPB_Scrollbar_IsScrollbarDispatcher },
   { "PPB_Scrollbar_GetThickness::i", PPB_Scrollbar_GetThicknessDispatcher },
@@ -1563,6 +2097,13 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_URLResponseInfo_IsURLResponseInfo:i:i", PPB_URLResponseInfo_IsURLResponseInfoDispatcher },
   { "PPB_URLResponseInfo_GetProperty:ii:C", PPB_URLResponseInfo_GetPropertyDispatcher },
   { "PPB_URLResponseInfo_GetBodyAsFileRef:i:i", PPB_URLResponseInfo_GetBodyAsFileRefDispatcher },
+  { "PPB_Widget_IsWidget:i:i", PPB_Widget_IsWidgetDispatcher },
+  { "PPB_Widget_Paint:iCi:i", PPB_Widget_PaintDispatcher },
+  { "PPB_Widget_HandleEvent:iC:i", PPB_Widget_HandleEventDispatcher },
+  { "PPB_Widget_GetLocation:i:Ci", PPB_Widget_GetLocationDispatcher },
+  { "PPB_Widget_SetLocation:iC:", PPB_Widget_SetLocationDispatcher },
+  { "PPB_Zoom_ZoomChanged:id:", PPB_Zoom_ZoomChangedDispatcher },
+  { "PPB_Zoom_ZoomLimitsChanged:idd:", PPB_Zoom_ZoomLimitsChangedDispatcher },
   { NULL, NULL }
 };
 

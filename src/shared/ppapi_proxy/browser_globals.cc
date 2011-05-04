@@ -197,6 +197,13 @@ const PPB_Var_Deprecated* PPBVarInterface() {
 }
 
 // Dev interfaces.
+const PPB_CursorControl_Dev* PPBCursorControlInterface() {
+  static const PPB_CursorControl_Dev* ppb =
+      reinterpret_cast<const PPB_CursorControl_Dev*>(
+          GetBrowserInterfaceSafe(PPB_CURSOR_CONTROL_DEV_INTERFACE));
+  return ppb;
+}
+
 const PPB_FileIO_Dev* PPBFileIOInterface() {
   static const PPB_FileIO_Dev* ppb =
       reinterpret_cast<const PPB_FileIO_Dev*>(
@@ -208,6 +215,20 @@ const PPB_FileSystem_Dev* PPBFileSystemInterface() {
   static const PPB_FileSystem_Dev* ppb =
       reinterpret_cast<const PPB_FileSystem_Dev*>(
         GetBrowserInterfaceSafe(PPB_FILESYSTEM_DEV_INTERFACE));
+  return ppb;
+}
+
+const PPB_Find_Dev* PPBFindInterface() {
+  static const PPB_Find_Dev* ppb =
+      reinterpret_cast<const PPB_Find_Dev*>(
+        GetBrowserInterfaceSafe(PPB_FIND_DEV_INTERFACE));
+  return ppb;
+}
+
+const PPB_Font_Dev* PPBFontInterface() {
+  static const PPB_Font_Dev* ppb =
+      reinterpret_cast<const PPB_Font_Dev*>(
+        GetBrowserInterfaceSafe(PPB_FONT_DEV_INTERFACE));
   return ppb;
 }
 
@@ -229,6 +250,28 @@ const PPB_Testing_Dev* PPBTestingInterface() {
   static const PPB_Testing_Dev* ppb =
       reinterpret_cast<const PPB_Testing_Dev*>(
           GetBrowserInterfaceSafe(PPB_TESTING_DEV_INTERFACE));
+  return ppb;
+}
+
+const PPB_Widget_Dev* PPBWidgetInterface() {
+  static const PPB_Widget_Dev* ppb =
+      reinterpret_cast<const PPB_Widget_Dev*>(
+          GetBrowserInterfaceSafe(PPB_WIDGET_DEV_INTERFACE));
+  return ppb;
+}
+
+const PPB_Zoom_Dev* PPBZoomInterface() {
+  static const PPB_Zoom_Dev* ppb =
+      reinterpret_cast<const PPB_Zoom_Dev*>(
+          GetBrowserInterfaceSafe(PPB_ZOOM_DEV_INTERFACE));
+  return ppb;
+}
+
+// Private interfaces.
+const PPB_PDF* PPBPDFInterface() {
+  static const PPB_PDF* ppb =
+      reinterpret_cast<const PPB_PDF*>(
+          GetBrowserInterfaceSafe(PPB_PDF_INTERFACE));
   return ppb;
 }
 

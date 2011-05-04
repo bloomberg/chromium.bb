@@ -239,6 +239,43 @@ class PpbCoreRpcServer {
   void operator=(const PpbCoreRpcServer);
 };  // class PpbCoreRpcServer
 
+class PpbCursorControlRpcServer {
+ public:
+  static void PPB_CursorControl_SetCursor(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t type,
+      PP_Resource custom_image,
+      nacl_abi_size_t hot_spot_bytes, char* hot_spot,
+      int32_t* success);
+  static void PPB_CursorControl_LockCursor(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t* success);
+  static void PPB_CursorControl_UnlockCursor(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t* success);
+  static void PPB_CursorControl_HasCursorLock(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t* success);
+  static void PPB_CursorControl_CanLockCursor(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t* success);
+
+ private:
+  PpbCursorControlRpcServer();
+  PpbCursorControlRpcServer(const PpbCursorControlRpcServer&);
+  void operator=(const PpbCursorControlRpcServer);
+};  // class PpbCursorControlRpcServer
+
 class PpbFileIODevRpcServer {
  public:
   static void PPB_FileIO_Dev_Create(
@@ -306,6 +343,90 @@ class PpbFileSystemDevRpcServer {
   PpbFileSystemDevRpcServer(const PpbFileSystemDevRpcServer&);
   void operator=(const PpbFileSystemDevRpcServer);
 };  // class PpbFileSystemDevRpcServer
+
+class PpbFindRpcServer {
+ public:
+  static void PPB_Find_NumberOfFindResultsChanged(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t total,
+      int32_t final_result);
+  static void PPB_Find_SelectedFindResultChanged(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t index);
+
+ private:
+  PpbFindRpcServer();
+  PpbFindRpcServer(const PpbFindRpcServer&);
+  void operator=(const PpbFindRpcServer);
+};  // class PpbFindRpcServer
+
+class PpbFontRpcServer {
+ public:
+  static void PPB_Font_Create(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      nacl_abi_size_t description_bytes, char* description,
+      nacl_abi_size_t face_bytes, char* face,
+      PP_Resource* font);
+  static void PPB_Font_IsFont(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t* is_font);
+  static void PPB_Font_Describe(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource font,
+      nacl_abi_size_t* description_bytes, char* description,
+      nacl_abi_size_t* face_bytes, char* face,
+      nacl_abi_size_t* metrics_bytes, char* metrics,
+      int32_t* success);
+  static void PPB_Font_DrawTextAt(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource font,
+      PP_Resource image_data,
+      nacl_abi_size_t text_run_bytes, char* text_run,
+      nacl_abi_size_t text_bytes, char* text,
+      nacl_abi_size_t position_bytes, char* position,
+      int32_t color,
+      nacl_abi_size_t clip_bytes, char* clip,
+      int32_t image_data_is_opaque,
+      int32_t* success);
+  static void PPB_Font_MeasureText(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource font,
+      nacl_abi_size_t text_run_bytes, char* text_run,
+      nacl_abi_size_t text_bytes, char* text,
+      int32_t* width);
+  static void PPB_Font_CharacterOffsetForPixel(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource font,
+      nacl_abi_size_t text_run_bytes, char* text_run,
+      nacl_abi_size_t text_bytes, char* text,
+      int32_t pixel_position,
+      int32_t* offset);
+  static void PPB_Font_PixelOffsetForCharacter(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource font,
+      nacl_abi_size_t text_run_bytes, char* text_run,
+      nacl_abi_size_t text_bytes, char* text,
+      int32_t char_offset,
+      int32_t* offset);
+
+ private:
+  PpbFontRpcServer();
+  PpbFontRpcServer(const PpbFontRpcServer&);
+  void operator=(const PpbFontRpcServer);
+};  // class PpbFontRpcServer
 
 class PpbGraphics2DRpcServer {
  public:
@@ -519,6 +640,80 @@ class PpbInstanceRpcServer {
   PpbInstanceRpcServer(const PpbInstanceRpcServer&);
   void operator=(const PpbInstanceRpcServer);
 };  // class PpbInstanceRpcServer
+
+class PpbPdfRpcServer {
+ public:
+  static void PPB_PDF_GetLocalizedString(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t string_id,
+      nacl_abi_size_t* string_bytes, char* string);
+  static void PPB_PDF_GetResourceImage(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t image_id,
+      PP_Resource* image);
+  static void PPB_PDF_GetFontFileWithFallback(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      nacl_abi_size_t description_bytes, char* description,
+      nacl_abi_size_t face_bytes, char* face,
+      int32_t charset,
+      PP_Resource* font);
+  static void PPB_PDF_GetFontTableForPrivateFontFile(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource font_file,
+      int32_t table,
+      nacl_abi_size_t* output_bytes, char* output,
+      int32_t* success);
+  static void PPB_PDF_SearchString(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      nacl_abi_size_t string_bytes, char* string,
+      nacl_abi_size_t term_bytes, char* term,
+      int32_t case_sensitive,
+      nacl_abi_size_t* results_bytes, char* results,
+      int32_t* count);
+  static void PPB_PDF_DidStartLoading(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance);
+  static void PPB_PDF_DidStopLoading(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance);
+  static void PPB_PDF_SetContentRestriction(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t restrictions);
+  static void PPB_PDF_HistogramPDFPageCount(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int32_t count);
+  static void PPB_PDF_UserMetricsRecordAction(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      nacl_abi_size_t action_bytes, char* action);
+  static void PPB_PDF_HasUnsupportedFeature(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance);
+  static void PPB_PDF_SaveAs(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance);
+
+ private:
+  PpbPdfRpcServer();
+  PpbPdfRpcServer(const PpbPdfRpcServer&);
+  void operator=(const PpbPdfRpcServer);
+};  // class PpbPdfRpcServer
 
 class PpbScrollbarRpcServer {
  public:
@@ -734,6 +929,64 @@ class PpbURLResponseInfoRpcServer {
   PpbURLResponseInfoRpcServer(const PpbURLResponseInfoRpcServer&);
   void operator=(const PpbURLResponseInfoRpcServer);
 };  // class PpbURLResponseInfoRpcServer
+
+class PpbWidgetRpcServer {
+ public:
+  static void PPB_Widget_IsWidget(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t* is_widget);
+  static void PPB_Widget_Paint(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource widget,
+      nacl_abi_size_t rect_bytes, char* rect,
+      PP_Resource image,
+      int32_t* success);
+  static void PPB_Widget_HandleEvent(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource widget,
+      nacl_abi_size_t event_bytes, char* event,
+      int32_t* handled);
+  static void PPB_Widget_GetLocation(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource widget,
+      nacl_abi_size_t* location_bytes, char* location,
+      int32_t* visible);
+  static void PPB_Widget_SetLocation(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource widget,
+      nacl_abi_size_t location_bytes, char* location);
+
+ private:
+  PpbWidgetRpcServer();
+  PpbWidgetRpcServer(const PpbWidgetRpcServer&);
+  void operator=(const PpbWidgetRpcServer);
+};  // class PpbWidgetRpcServer
+
+class PpbZoomRpcServer {
+ public:
+  static void PPB_Zoom_ZoomChanged(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      double factor);
+  static void PPB_Zoom_ZoomLimitsChanged(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      double minimum_factor,
+      double maximum_factor);
+
+ private:
+  PpbZoomRpcServer();
+  PpbZoomRpcServer(const PpbZoomRpcServer&);
+  void operator=(const PpbZoomRpcServer);
+};  // class PpbZoomRpcServer
 
 class PpbRpcs {
  public:

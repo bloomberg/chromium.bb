@@ -12,17 +12,23 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_audio_config.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_buffer.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_core.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_cursor_control.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_io.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_system.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_find.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_font.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_2d.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_image_data.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_instance.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_pdf.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_scrollbar.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_testing.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_loader.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_request_info.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_response_info.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_widget.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_zoom.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_surface_3d.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "srpcgen/ppb_rpc.h"
@@ -42,14 +48,19 @@ InterfaceMapElement interface_map[] = {
   { PPB_AUDIO_INTERFACE, PluginAudio::GetInterface(), true },
   { PPB_AUDIO_CONFIG_INTERFACE, PluginAudioConfig::GetInterface(), true },
   { PPB_CORE_INTERFACE, PluginCore::GetInterface(), true },
+  { PPB_CURSOR_CONTROL_DEV_INTERFACE, PluginCursorControl::GetInterface(),
+    true },
   { PPB_CONTEXT_3D_DEV_INTERFACE, PluginContext3D::GetInterface(), true },
   { PPB_FILEIO_DEV_INTERFACE, PluginFileIO::GetInterface(), true },
   { PPB_FILESYSTEM_DEV_INTERFACE, PluginFileSystem::GetInterface(), true },
+  { PPB_FIND_DEV_INTERFACE, PluginFind::GetInterface(), true },
+  { PPB_FONT_DEV_INTERFACE, PluginFont::GetInterface(), true },
   { PPB_GRAPHICS_2D_INTERFACE, PluginGraphics2D::GetInterface(), true },
   { PPB_IMAGEDATA_INTERFACE, PluginImageData::GetInterface(), true },
   { PPB_INSTANCE_INTERFACE, PluginInstance::GetInterface(), true },
   { PPB_OPENGLES2_DEV_INTERFACE, PluginContext3D::GetOpenGLESInterface(),
     true },
+  { PPB_PDF_INTERFACE, PluginPDF::GetInterface(), true },
   { PPB_SCROLLBAR_DEV_INTERFACE, PluginScrollbar::GetInterface(), true },
   { PPB_SURFACE_3D_DEV_INTERFACE, PluginSurface3D::GetInterface(), true },
   { PPB_TESTING_DEV_INTERFACE, PluginTesting::GetInterface(), true },
@@ -58,6 +69,8 @@ InterfaceMapElement interface_map[] = {
   { PPB_URLRESPONSEINFO_INTERFACE, PluginURLResponseInfo::GetInterface(),
     true },
   { PPB_VAR_DEPRECATED_INTERFACE, PluginVar::GetInterface(), true },
+  { PPB_WIDGET_DEV_INTERFACE, PluginWidget::GetInterface(), true },
+  { PPB_ZOOM_DEV_INTERFACE, PluginZoom::GetInterface(), true },
 };
 
 }  // namespace
