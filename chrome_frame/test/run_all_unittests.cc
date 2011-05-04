@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     ScopedChromeFrameRegistrar ia2_registrar(
         chrome_frame_test::GetIAccessible2ProxyStubPath().value(),
         ScopedChromeFrameRegistrar::SYSTEM_LEVEL);
-    test_suite.Run();
+    ret = test_suite.Run();
   }
 
   DeleteConfigValue(kChromeFrameHeadlessMode);
@@ -69,4 +69,5 @@ int main(int argc, char **argv) {
 
   if (crash_service)
     base::KillProcess(crash_service, 0, false);
+  return ret;
 }
