@@ -28,9 +28,6 @@ BOT_ASSIGNMENT = {
     'mac10.6-m32-n32-opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',
     'mac10.5-glibc-opt': 'bash buildbot/buildbot_mac.sh opt 32 glibc',
     'mac10.6-glibc-opt': 'bash buildbot/buildbot_mac.sh opt 32 glibc',
-    'hardy32-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
-    'hardy64-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
-    'hardy64-m64-n64-opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
     'lucid32-m32-n32-dbg': 'bash buildbot/buildbot_linux.sh dbg 32 newlib',
     'lucid32-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
     'lucid32-glibc-dbg': 'bash buildbot/buildbot_linux.sh dbg 32 glibc',
@@ -77,9 +74,9 @@ BOT_ASSIGNMENT = {
     'karmic64-valgrind': 'bash buildbot/buildbot_valgrind.sh',
     # Coverage.
     'mac-m32-n32-coverage': 'bash buildbot/buildbot_coverage_mac.sh',
-    'hardy64-m32-n32-coverage': 'bash buildbot/buildbot_coverage_linux.sh 32',
-    'hardy64-m64-n64-coverage': 'bash buildbot/buildbot_coverage_linux.sh 64',
-    'hardy64-marm-narm-coverage': 'bash buildbot/buildbot_coverage_arm.sh',
+    'lucid64-m32-n32-coverage': 'bash buildbot/buildbot_coverage_linux.sh 32',
+    'lucid64-m64-n64-coverage': 'bash buildbot/buildbot_coverage_linux.sh 64',
+    'lucid64-marm-narm-coverage': 'bash buildbot/buildbot_coverage_arm.sh',
     'xp-m32-n32-coverage': 'buildbot\\buildbot_coverage_win.bat',
     # PPAPI Integration.
     'lucid64-m32-n32-opt-ppapi':
