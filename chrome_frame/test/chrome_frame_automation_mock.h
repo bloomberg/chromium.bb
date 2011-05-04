@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/chrome_frame_plugin.h"
 #include "chrome_frame/navigation_constraints.h"
@@ -32,6 +33,11 @@ class AutomationMockDelegate
         navigation_result_(false),
         mock_server_(1337, L"127.0.0.1",
             chrome_frame_test::GetTestDataFolder()) {
+
+    // Endeavour to only kill off Chrome Frame derived Chrome processes.
+    KillAllNamedProcessesWithArgument(
+        UTF8ToWide(chrome_frame_test::kChromeImageName),
+        UTF8ToWide(switches::kChromeFrame));
 
     mock_server_.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
 
