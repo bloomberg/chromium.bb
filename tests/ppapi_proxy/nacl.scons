@@ -30,7 +30,8 @@ user_main_target = 'ppapi_user_main_%s.nexe' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_user_main.nexe', ['$STAGING_DIR/%s' % user_main_target])
 user_main_nexe = env.ComponentProgram(user_main_target,
                                       [basic_obj_sources, 'user_main.cc',],
-                                      EXTRA_LIBS=['ppruntime',
+                                      EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}',
+                                                  'ppruntime',
                                                   'imc',
                                                   'platform',
                                                   'gio',

@@ -2230,7 +2230,14 @@ if nacl_env.Bit('irt'):
   nacl_env.Append(LINKFLAGS='-Wl,--section-start,.rodata='
                   '${IRT_DATA_REGION_START}')
   nacl_env.Replace(PPAPI_LIBS=['ppapi_stub', 'pthread'])
+  # Even non-PPAPI nexes need this for IRT-compatible linking.
+  # We don't just make them link with ${PPAPI_LIBS} because in
+  # the non-IRT case under dynamic linking, that tries to link
+  # in libppruntime.so with its undefined symbols and fails
+  # for nexes that aren't actually PPAPI users.
+  nacl_env.Replace(NON_PPAPI_BROWSER_LIBS=nacl_env['PPAPI_LIBS'])
 else:
+  nacl_env.Replace(NON_PPAPI_BROWSER_LIBS=[])
   # TODO(mseaborn): This will go away when we only support using PPAPI
   # via the IRT library, so users of this dependency should not rely
   # on individual libraries like 'platform' being included by default.

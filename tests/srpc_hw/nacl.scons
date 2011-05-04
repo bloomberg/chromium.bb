@@ -9,14 +9,17 @@ srpc_hw_obj = env.ComponentObject('srpc_hw.o', 'srpc_hw.c')
 srpc_hw_nexe_name = 'srpc_hw_%s.nexe' % env.get('TARGET_FULLARCH')
 srpc_hw_nexe = env.ComponentProgram(srpc_hw_nexe_name,
                                     srpc_hw_obj,
-                                    EXTRA_LIBS=['srpc', 'imc','pthread'])
+                                    EXTRA_LIBS=['srpc', 'imc','pthread',
+                                                '${NON_PPAPI_BROWSER_LIBS}'])
 # srpc_hw_undecorated is necessary because srpc_hw_fd.html makes use of
 # __urlAsNaClDesc with a nexe name.
 # TODO(sehr): We can get rid of this hack if we make that API take a manifest
 # file, but it is currently planned for obsoletion also.
 srpc_hw_undecorated = env.ComponentProgram('srpc_hw.nexe',
                                            srpc_hw_obj,
-                                           EXTRA_LIBS=['srpc', 'imc','pthread'])
+                                           EXTRA_LIBS=[
+                                               'srpc', 'imc','pthread',
+                                               '${NON_PPAPI_BROWSER_LIBS}'])
 
 env.Publish(srpc_hw_nexe_name, 'run',
             ['srpc_hw.html',
@@ -74,4 +77,3 @@ env.AddNodeToTestSuite(node,
                        'run_srpc_hw_fd_chrome_browser_test',
                        is_flaky=True, # Don't subject Chrome to our problems.
                        is_broken=env.PPAPIBrowserTesterIsBroken())
-

@@ -15,7 +15,7 @@ Import('env')
 srpc_test_nexe_name = 'srpc_test_%s.nexe' % env.get('TARGET_FULLARCH')
 srpc_test_nexe = env.ComponentProgram(
     srpc_test_nexe_name, 'srpc_test.c',
-    EXTRA_LIBS=['srpc', 'm', 'pthread'])
+    EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}', 'srpc', 'm', 'pthread'])
 env.Publish(srpc_test_nexe_name, 'run',
     ['srpc_basic.html',
      'srpc_perf.html',
@@ -28,7 +28,8 @@ env.AddPrebuiltBinaryToRepository(srpc_test_nexe)
 srpc_shm_nexe_name = 'srpc_shm_%s.nexe' % env.get('TARGET_FULLARCH')
 srpc_shm_nexe = env.ComponentProgram(
     srpc_shm_nexe_name, 'srpc_shm.c',
-    EXTRA_LIBS=['srpc', 'platform', 'gio', 'm', 'pthread'])
+    EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}',
+                'srpc', 'platform', 'gio', 'm', 'pthread'])
 env.Publish(srpc_shm_nexe_name, 'run',
     ['srpc_shm.html',
      'srpc_shm.nmf'])
@@ -39,7 +40,7 @@ srpc_nrd_server_nexe_name = ('srpc_nrd_server_%s.nexe' %
                              env.get('TARGET_FULLARCH'))
 srpc_nrd_server_nexe = env.ComponentProgram(
     srpc_nrd_server_nexe_name, 'srpc_nrd_server.c',
-    EXTRA_LIBS=['srpc', 'm', 'pthread'])
+    EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}', 'srpc', 'm', 'pthread'])
 env.Publish(srpc_nrd_server_nexe_name, 'run',
     ['srpc_sockaddr.html',
      'srpc_nrd_server.nmf'])
@@ -50,7 +51,7 @@ srpc_nrd_client_nexe_name = ('srpc_nrd_client_%s.nexe' %
                              env.get('TARGET_FULLARCH'))
 srpc_nrd_client_nexe = env.ComponentProgram(
     srpc_nrd_client_nexe_name, 'srpc_nrd_client.c',
-    EXTRA_LIBS=['srpc', 'm', 'pthread'])
+    EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}', 'srpc', 'm', 'pthread'])
 env.Publish(srpc_nrd_client_nexe_name, 'run',
     ['srpc_nrd_xfer.html',
      'srpc_nrd_client.nmf',
@@ -62,7 +63,8 @@ env.AddPrebuiltBinaryToRepository(srpc_nrd_client_nexe)
 cat_nexe_name = ('cat_%s.nexe' % env.get('TARGET_FULLARCH'))
 cat_nexe = env.ComponentProgram(
     cat_nexe_name, 'cat.c',
-    EXTRA_LIBS=['srpc', 'platform', 'gio', 'm', 'pthread'])
+    EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}',
+                'srpc', 'platform', 'gio', 'pthread'])
 env.Publish(cat_nexe_name, 'run',
     ['srpc_url_as_nacl_desc.html',
      'srpc_url_as_nacl_desc_success.html',
