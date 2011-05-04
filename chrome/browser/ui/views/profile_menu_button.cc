@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/profile_menu_button.h"
 
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/color_utils.h"
 #include "views/controls/button/button.h"
@@ -11,10 +13,13 @@
 
 namespace {
 
-// ActiveTextShadow is a darkened version of hsl_active_shift.
-const SkColor kActiveTextShadow = 0xFF708DB3;
-// InactiveTextShadow is slightly darker than grey-white inactive background.
-const SkColor kInactiveTextShadow = SK_ColorLTGRAY;
+// DefaultActiveTextShadow is a darkened blue color that works with Windows
+// default theme background coloring.
+const SkColor kDefaultActiveTextShadow = 0xFF708DB3;
+// InactiveTextShadow is a light gray for inactive default themed buttons.
+const SkColor kDefaultInactiveTextShadow = SK_ColorLTGRAY;
+// DarkTextShadow is used to shadow names on themed browser frames.
+const SkColor kDarkTextShadow = SK_ColorDKGRAY;
 // TextHover is slightly darker than enabled color, for a subtle hover shift.
 const SkColor kTextHover = 0xFFDDDDDD;
 const SkColor kTextEnabled = SK_ColorWHITE;
@@ -28,17 +33,23 @@ const int kProfileButtonBorderSpacing = 10;
 const int kMaxTextWidth = 200;
 }
 
-namespace views {
-
-ProfileMenuButton::ProfileMenuButton(ButtonListener* listener,
+ProfileMenuButton::ProfileMenuButton(views::ButtonListener* listener,
                                      const std::wstring& text,
-                                     ViewMenuDelegate* menu_delegate) :
-    MenuButton(listener, text, menu_delegate, true) {
+                                     views::ViewMenuDelegate* menu_delegate,
+                                     Profile* profile)
+    : MenuButton(listener, text, menu_delegate, true) {
   // Turn off hover highlighting and position button in the center of the
   // underlying profile tag image.
   set_border(views::Border::CreateEmptyBorder(
       0, kProfileButtonBorderSpacing, 0, kProfileButtonBorderSpacing));
-  SetTextShadowColors(kActiveTextShadow, kInactiveTextShadow);
+
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
+  if (theme_service->UsingDefaultTheme() ||
+      theme_service->UsingNativeTheme()) {
+    SetTextShadowColors(kDefaultActiveTextShadow, kDefaultInactiveTextShadow);
+  } else {
+    SetTextShadowColors(kDarkTextShadow, kDarkTextShadow);
+  }
   SetHoverColor(kTextHover);
   SetEnabledColor(kTextEnabled);
   SetHighlightColor(kTextHighlighted);
@@ -47,8 +58,7 @@ ProfileMenuButton::ProfileMenuButton(ButtonListener* listener,
 ProfileMenuButton::~ProfileMenuButton() {}
 
 void ProfileMenuButton::SetText(const std::wstring& text) {
-  MenuButton::SetText(ui::ElideText(text, font(), kMaxTextWidth, false));
+  MenuButton::SetText(UTF16ToWideHack(ui::ElideText(WideToUTF16Hack(text),
+                      font(), kMaxTextWidth, false)));
 }
-
-}  // namespace views
 

@@ -93,11 +93,10 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
   if (browser_command_line.HasSwitch(switches::kMultiProfiles) &&
       !browser_view->ShouldShowOffTheRecordAvatar()) {
     RegisterLoginNotifications();
-    profile_button_.reset(new views::ProfileMenuButton(NULL, std::wstring(),
-                                                       this));
+    profile_button_.reset(new ProfileMenuButton(NULL, std::wstring(),
+        this, browser_view_->browser()->profile()));
     profile_button_->SetVisible(false);
-    profile_tag_.reset(new views::ProfileTagView(frame_,
-                                                 profile_button_.get()));
+    profile_tag_.reset(new ProfileTagView(frame_, profile_button_.get()));
     profile_tag_->SetVisible(false);
     AddChildView(profile_tag_.get());
     AddChildView(profile_button_.get());
@@ -138,7 +137,7 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
       kNewTabCaptionMaximizedSpacing +
       (show_profile_button() && profile_button_->IsVisible() ?
           profile_button_->GetPreferredSize().width() +
-              views::ProfileMenuButton::kProfileTagHorizontalSpacing : 0);
+              ProfileMenuButton::kProfileTagHorizontalSpacing : 0);
   int tabstrip_width = minimize_button_offset - tabstrip_x -
       (frame_->GetWindow()->IsMaximized() ?
           maximized_spacing : kNewTabCaptionRestoredSpacing);
@@ -237,7 +236,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 // GlassBrowserFrameView, views::ViewMenuDelegate implementation:
 void GlassBrowserFrameView::RunMenu(views::View *source, const gfx::Point &pt) {
   if (profile_menu_model_ == NULL)
-    profile_menu_model_.reset(new views::ProfileMenuModel);
+    profile_menu_model_.reset(new ProfileMenuModel);
   gfx::Point menu_point(pt.x(),
                         pt.y() + kMenuDisplayOffset);
   profile_menu_model_->RunMenuAt(menu_point);
@@ -521,24 +520,22 @@ void GlassBrowserFrameView::LayoutProfileTag() {
         // The x position of minimize button in the frame
         frame_->GetMinimizeButtonOffset() -
             // - the space between the minimize button and the profile button
-            views::ProfileMenuButton::kProfileTagHorizontalSpacing -
+            ProfileMenuButton::kProfileTagHorizontalSpacing -
             // - the width of the profile button
             profile_button_->GetPreferredSize().width();
+    int y_maximized_offset = frame_->GetWindow()->IsMaximized() ?
+        kProfileElementMaximizedYOffset : 0;
     profile_button_->SetBounds(
         x_tag,
-        kProfileButtonYPosition +
-            (frame_->GetWindow()->IsMaximized() ?
-                kProfileElementMaximizedYOffset : 0),
+        kProfileButtonYPosition + y_maximized_offset,
         profile_button_->GetPreferredSize().width(),
         profile_button_->GetPreferredSize().height());
     profile_tag_->SetVisible(true);
     profile_tag_->SetBounds(
         x_tag,
-        kProfileTagYPosition +
-            (frame_->GetWindow()->IsMaximized() ?
-                kProfileElementMaximizedYOffset : 0),
+        kProfileTagYPosition + y_maximized_offset,
         profile_button_->GetPreferredSize().width(),
-        views::ProfileTagView::kProfileTagHeight);
+        ProfileTagView::kProfileTagHeight);
   } else {
     profile_button_->SetVisible(false);
     profile_tag_->SetVisible(false);

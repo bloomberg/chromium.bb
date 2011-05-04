@@ -15,13 +15,10 @@
 #include "views/window/non_client_view.h"
 
 class BrowserView;
-class SkBitmap;
-
-namespace views {
 class ProfileMenuButton;
 class ProfileMenuModel;
 class ProfileTagView;
-}
+class SkBitmap;
 
 class GlassBrowserFrameView : public BrowserNonClientFrameView,
                               public NotificationObserver,
@@ -117,13 +114,13 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   gfx::Rect client_view_bounds_;
 
   // Menu button that displays user's name and multi-profile menu.
-  scoped_ptr<views::ProfileMenuButton> profile_button_;
+  scoped_ptr<ProfileMenuButton> profile_button_;
 
   // Image tag displayed on frame beneath profile_button_.
-  scoped_ptr<views::ProfileTagView> profile_tag_;
+  scoped_ptr<ProfileTagView> profile_tag_;
 
   // Multi-profile menu for profile_button_.
-  scoped_ptr<views::ProfileMenuModel> profile_menu_model_;
+  scoped_ptr<ProfileMenuModel> profile_menu_model_;
 
   // Whether or not the window throbber is currently animating.
   bool throbber_running_;

@@ -12,8 +12,6 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "views/controls/menu/menu_2.h"
 
-namespace views {
-
 ProfileMenuModel::ProfileMenuModel()
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)) {
   AddItem(COMMAND_CREATE_NEW_PROFILE, l10n_util::GetStringUTF16(
@@ -51,5 +49,3 @@ void ProfileMenuModel::ExecuteCommand(int command_id) {
       break;
   }
 }
-
-}  // namespace views

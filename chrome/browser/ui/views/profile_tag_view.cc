@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/profile_tag_view.h"
 
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/profile_menu_button.h"
 #include "grit/theme_resources.h"
@@ -18,10 +19,8 @@ namespace {
 color_utils::HSL hsl_active_shift = { 0.594, 0.5, 0.5 };
 }
 
-namespace views {
-
 ProfileTagView::ProfileTagView(BrowserFrame* frame,
-                               views::ProfileMenuButton* profile_menu_button)
+                               ProfileMenuButton* profile_menu_button)
     : profile_tag_bitmaps_created_(false),
       frame_(frame),
       profile_menu_button_(profile_menu_button) {
@@ -36,8 +35,6 @@ void ProfileTagView::OnPaint(gfx::Canvas* canvas) {
   int tag_width = profile_menu_button_->GetPreferredSize().width();
   int center_tag_width = tag_width - active_profile_tag_left_.width() -
       active_profile_tag_right_.width();
-  int tag_x = frame_->GetMinimizeButtonOffset() - tag_width -
-      views::ProfileMenuButton::kProfileTagHorizontalSpacing;
 
   bool is_active = GetWidget()->IsActive();
   SkBitmap* profile_tag_left = is_active ? &active_profile_tag_left_ :
@@ -46,6 +43,18 @@ void ProfileTagView::OnPaint(gfx::Canvas* canvas) {
                                              &inactive_profile_tag_center_;
   SkBitmap* profile_tag_right = is_active ? &active_profile_tag_right_ :
                                             &inactive_profile_tag_right_;
+
+  if (!active_profile_tag_left_background_.empty()) {
+    canvas->DrawBitmapInt(active_profile_tag_left_background_, 0, 0);
+    canvas->DrawBitmapInt(active_profile_tag_center_background_, 0, 0,
+                          profile_tag_center->width(),
+                          profile_tag_center->height(),
+                          profile_tag_left->width(), 0,
+                          center_tag_width,
+                          profile_tag_center->height(), true);
+    canvas->DrawBitmapInt(active_profile_tag_right_background_,
+        profile_tag_left->width() + center_tag_width, 0);
+  }
 
   canvas->DrawBitmapInt(*profile_tag_left, 0, 0);
   canvas->DrawBitmapInt(*profile_tag_center, 0, 0,
@@ -66,27 +75,67 @@ void ProfileTagView::CreateProfileTagBitmaps() {
   profile_tag_bitmaps_created_ = true;
 
   ui::ThemeProvider* theme_provider = frame_->GetThemeProviderForFrame();
-  SkBitmap* profile_tag_center = theme_provider->GetBitmapNamed(
-      IDR_PROFILE_TAG_CENTER);
-  SkBitmap* profile_tag_left = theme_provider->GetBitmapNamed(
-      IDR_PROFILE_TAG_LEFT);
-  SkBitmap* profile_tag_right = theme_provider->GetBitmapNamed(
-      IDR_PROFILE_TAG_RIGHT);
-  inactive_profile_tag_center_ = *theme_provider->GetBitmapNamed(
-      IDR_PROFILE_TAG_INACTIVE_CENTER);
-  inactive_profile_tag_left_ = *theme_provider->GetBitmapNamed(
-      IDR_PROFILE_TAG_INACTIVE_LEFT);
-  inactive_profile_tag_right_ = *theme_provider->GetBitmapNamed(
-      IDR_PROFILE_TAG_INACTIVE_RIGHT);
+  bool aero = theme_provider->ShouldUseNativeFrame();
+  SkBitmap* profile_tag_center = aero ?
+      theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_CENTER_AERO) :
+      theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_CENTER_THEMED);
+  SkBitmap* profile_tag_left = aero ?
+      theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_LEFT_AERO) :
+      theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_LEFT_THEMED);
+  SkBitmap* profile_tag_right = aero ?
+      theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_RIGHT_AERO) :
+      theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_RIGHT_THEMED);
+  inactive_profile_tag_center_ = aero ?
+      *theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_INACTIVE_CENTER_AERO) :
+      *theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_CENTER_THEMED);
+  inactive_profile_tag_left_ = aero ?
+      *theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_INACTIVE_LEFT_AERO) :
+      *theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_LEFT_THEMED);
+  inactive_profile_tag_right_ = aero ?
+      *theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_INACTIVE_RIGHT_AERO) :
+      *theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_RIGHT_THEMED);
 
-  // Color active bitmap according to profile. TODO(mirandac): add theming
-  // and multi-profile color schemes.
-  active_profile_tag_center_ = SkBitmapOperations::CreateHSLShiftedBitmap(
-      *profile_tag_center, hsl_active_shift);
-  active_profile_tag_left_ = SkBitmapOperations::CreateHSLShiftedBitmap(
-      *profile_tag_left, hsl_active_shift);
-  active_profile_tag_right_ = SkBitmapOperations::CreateHSLShiftedBitmap(
-      *profile_tag_right, hsl_active_shift);
+  // Color if we're using the Aero theme; otherwise the tag will be given by
+  // the window controls background from the theme.
+  if (theme_provider->ShouldUseNativeFrame()) {
+    active_profile_tag_center_ = SkBitmapOperations::CreateHSLShiftedBitmap(
+        *profile_tag_center, hsl_active_shift);
+    active_profile_tag_left_ = SkBitmapOperations::CreateHSLShiftedBitmap(
+        *profile_tag_left, hsl_active_shift);
+    active_profile_tag_right_ = SkBitmapOperations::CreateHSLShiftedBitmap(
+        *profile_tag_right, hsl_active_shift);
+
+    // No backgrounds used in Aero theme.
+    active_profile_tag_center_background_.reset();
+    active_profile_tag_left_background_.reset();
+    active_profile_tag_center_background_.reset();
+  } else {
+    active_profile_tag_center_ = *profile_tag_center;
+    active_profile_tag_left_ = *profile_tag_left;
+    active_profile_tag_right_ = *profile_tag_right;
+
+    SkBitmap* background = theme_provider->GetBitmapNamed(
+        IDR_THEME_WINDOW_CONTROL_BACKGROUND);
+    if (!background) {
+      active_profile_tag_center_background_.reset();
+      active_profile_tag_left_background_.reset();
+      active_profile_tag_center_background_.reset();
+    } else {
+      active_profile_tag_center_background_ =
+          SkBitmapOperations::CreateButtonBackground(
+              theme_provider->GetColor(ThemeService::COLOR_BUTTON_BACKGROUND),
+              *background,
+              *(theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_CENTER_MASK)));
+      active_profile_tag_left_background_ =
+          SkBitmapOperations::CreateButtonBackground(
+              theme_provider->GetColor(ThemeService::COLOR_BUTTON_BACKGROUND),
+              *background,
+              *(theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_LEFT_MASK)));
+      active_profile_tag_right_background_ =
+          SkBitmapOperations::CreateButtonBackground(
+              theme_provider->GetColor(ThemeService::COLOR_BUTTON_BACKGROUND),
+              *background,
+              *(theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_RIGHT_MASK)));
+    }
+  }
 }
-
-}  // namespace views

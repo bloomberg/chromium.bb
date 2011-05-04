@@ -15,6 +15,7 @@ class Accelerator;
 
 namespace views {
 class Menu2;
+}
 
 // ProfileMenuModel
 //
@@ -46,8 +47,6 @@ class ProfileMenuModel : public ui::SimpleMenuModel,
 
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuModel);
 };
-
-}  // namespace views
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PROFILE_MENU_MODEL_H_
 

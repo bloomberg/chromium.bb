@@ -6,16 +6,22 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_H_
 #pragma once
 
+#include "base/scoped_ptr.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "views/controls/button/button.h"
+#include "views/controls/menu/view_menu_delegate.h"
 #include "views/window/non_client_view.h"
 
 class BrowserView;
 namespace gfx {
 class Font;
 }
+class ProfileMenuButton;
+class ProfileMenuModel;
+class ProfileTagView;
 class TabContents;
 namespace views {
 class ImageButton;
@@ -23,7 +29,9 @@ class ImageView;
 }
 
 class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
+                               public NotificationObserver,
                                public views::ButtonListener,
+                               public views::ViewMenuDelegate,
                                public TabIconView::TabIconViewModel {
  public:
   // Constructs a non-client view for an BrowserFrame.
@@ -81,6 +89,9 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void EnableClose(bool enable) OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
+
+  // Overridden from views::ViewMenuDelegate:
+  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -141,9 +152,21 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void LayoutWindowControls();
   void LayoutTitleBar();
   void LayoutOTRAvatar();
+  void LayoutProfileTag();
 
   // Returns the bounds of the client area for the specified view size.
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;
+
+  // NotificationObserver implementation:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
+  // Receive notifications when the user's Google services user name changes.
+  void RegisterLoginNotifications();
+
+  // Returns true if the ProfileButton has been created.
+  bool show_profile_button() const { return profile_button_.get() != NULL; }
 
   // The layout rect of the title, if visible.
   gfx::Rect title_bounds_;
@@ -168,6 +191,18 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // The bounds of the ClientView.
   gfx::Rect client_view_bounds_;
+
+  // Menu button that displays user's name and multi-profile menu.
+  scoped_ptr<ProfileMenuButton> profile_button_;
+
+  // Image tag displayed on frame beneath profile_button_.
+  scoped_ptr<ProfileTagView> profile_tag_;
+
+  // Multi-profile menu for profile_button_.
+  scoped_ptr<ProfileMenuModel> profile_menu_model_;
+
+  // The Google services user name associated with this BrowserView's profile.
+  StringPrefMember username_pref_;
 
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameView);
 };

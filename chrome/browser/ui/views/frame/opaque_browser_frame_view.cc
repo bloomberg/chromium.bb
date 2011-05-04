@@ -4,14 +4,23 @@
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/profile_menu_button.h"
+#include "chrome/browser/ui/views/profile_menu_model.h"
+#include "chrome/browser/ui/views/profile_tag_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_service.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -90,6 +99,13 @@ const int kTabStripIndent = 1;
 // Inset from the top of the toolbar/tabstrip to the shadow. Used only for
 // vertical tabs.
 const int kVerticalTabBorderInset = 3;
+// Menu should display below the profile button tag image on the frame. This
+// offset size depends on whether the frame is in glass or opaque mode.
+const int kMenuDisplayOffset = 7;
+// Y position for profile tag inside the frame.
+const int kProfileTagYPosition = 1;
+// Offset y position of profile button and tag by this amount when maximized.
+const int kProfileElementMaximizedYOffset = 6;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -176,6 +192,20 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
     AddChildView(window_icon_);
     window_icon_->Update();
   }
+
+  // If multi-profile is enabled set up profile button and login notifications.
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  if (browser_command_line.HasSwitch(switches::kMultiProfiles) &&
+      !browser_view_->ShouldShowOffTheRecordAvatar()) {
+    RegisterLoginNotifications();
+    profile_button_.reset(new ProfileMenuButton(NULL, std::wstring(),
+        this, browser_view_->browser()->profile()));
+    profile_button_->SetVisible(false);
+    profile_tag_.reset(new ProfileTagView(frame_, profile_button_.get()));
+    profile_tag_->SetVisible(false);
+    AddChildView(profile_tag_.get());
+    AddChildView(profile_button_.get());
+  }
 }
 
 OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {
@@ -238,9 +268,14 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
       (otr_avatar_bounds_.right() + kOTRSideSpacing) :
       NonClientBorderThickness() + kTabStripIndent;
 
+  int maximized_spacing =
+      kNewTabCaptionMaximizedSpacing +
+      (show_profile_button() && profile_button_->IsVisible() ?
+          profile_button_->GetPreferredSize().width() +
+              ProfileMenuButton::kProfileTagHorizontalSpacing : 0);
   int tabstrip_width = minimize_button_->x() - tabstrip_x -
       (frame_->GetWindow()->IsMaximized() ?
-      kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
+          maximized_spacing : kNewTabCaptionRestoredSpacing);
   int tabstrip_height = 0;
   if (tabstrip)
     tabstrip_height = tabstrip->GetPreferredSize().height();
@@ -342,6 +377,11 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
       minimize_button_->GetMirroredBounds().Contains(point))
     return HTMINBUTTON;
 
+  // See if the point is within the profile menu button.
+  if (show_profile_button() && profile_button_->IsVisible() &&
+      profile_button_->GetMirroredBounds().Contains(point))
+    return HTCLIENT;
+
   views::WindowDelegate* delegate = frame_->GetWindow()->window_delegate();
   if (!delegate) {
     LOG(WARNING) << "delegate is NULL, returning safe default.";
@@ -380,6 +420,17 @@ void OpaqueBrowserFrameView::UpdateWindowIcon() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// OpaqueBrowserFrameView, views::ViewMenuDelegate overrides:
+void OpaqueBrowserFrameView::RunMenu(views::View* source,
+                                     const gfx::Point &pt) {
+  if (profile_menu_model_ == NULL)
+    profile_menu_model_.reset(new ProfileMenuModel);
+  gfx::Point menu_point(pt.x(),
+                        pt.y() + kMenuDisplayOffset);
+  profile_menu_model_->RunMenuAt(menu_point);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::View overrides:
 
 void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
@@ -404,6 +455,7 @@ void OpaqueBrowserFrameView::Layout() {
   LayoutWindowControls();
   LayoutTitleBar();
   LayoutOTRAvatar();
+  LayoutProfileTag();
   client_view_bounds_ = CalculateClientAreaBounds(width(), height());
 }
 
@@ -1095,6 +1147,44 @@ void OpaqueBrowserFrameView::LayoutOTRAvatar() {
       browser_view_->ShouldShowOffTheRecordAvatar() ? (otr_bottom - otr_y) : 0);
 }
 
+void OpaqueBrowserFrameView::LayoutProfileTag() {
+  if (!show_profile_button())
+    return;
+
+  string16 profile_name = UTF8ToUTF16(browser_view_->browser()->profile()->
+      GetPrefs()->GetString(prefs::kGoogleServicesUsername));
+  if (!profile_name.empty()) {
+    profile_button_->SetText(UTF16ToWideHack(profile_name));
+    profile_button_->ClearMaxTextSize();
+    profile_button_->SetVisible(true);
+    int x_tag =
+        // The x position of minimize button in the frame
+        minimize_button_->x() -
+            // - the space between the minimize button and the profile button
+            ProfileMenuButton::kProfileTagHorizontalSpacing -
+            // - the width of the profile button
+            profile_button_->GetPreferredSize().width();
+    // Adjust for different default font sizes on different Windows platforms.
+    int y_tag = profile_button_->font().GetHeight() < 14 ? 2 : 0;
+    int y_maximized_offset = frame_->GetWindow()->IsMaximized() ?
+        kProfileElementMaximizedYOffset : 0;
+    profile_button_->SetBounds(
+        x_tag,
+        y_tag + y_maximized_offset,
+        profile_button_->GetPreferredSize().width(),
+        profile_button_->GetPreferredSize().height());
+    profile_tag_->SetVisible(true);
+    profile_tag_->SetBounds(
+        x_tag,
+        kProfileTagYPosition + y_maximized_offset,
+        profile_button_->GetPreferredSize().width(),
+        ProfileTagView::kProfileTagHeight);
+  } else {
+    profile_button_->SetVisible(false);
+    profile_tag_->SetVisible(false);
+  }
+}
+
 gfx::Rect OpaqueBrowserFrameView::CalculateClientAreaBounds(int width,
                                                             int height) const {
   int top_height = NonClientTopBorderHeight(false, false);
@@ -1103,4 +1193,19 @@ gfx::Rect OpaqueBrowserFrameView::CalculateClientAreaBounds(int width,
                    std::max(0, width - (2 * border_thickness)),
                    std::max(0, height - GetReservedHeight() -
                        top_height - border_thickness));
+}
+
+void OpaqueBrowserFrameView::Observe(NotificationType type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
+  DCHECK_EQ(NotificationType::PREF_CHANGED, type.value);
+  std::string* name = Details<std::string>(details).ptr();
+  if (prefs::kGoogleServicesUsername == *name)
+    LayoutProfileTag();
+}
+
+void OpaqueBrowserFrameView::RegisterLoginNotifications() {
+  PrefService* pref_service = browser_view_->browser()->profile()->GetPrefs();
+  DCHECK(pref_service);
+  username_pref_.Init(prefs::kGoogleServicesUsername, pref_service, this);
 }

@@ -10,25 +10,26 @@
 
 #include "views/controls/button/menu_button.h"
 
+class Profile;
+
 namespace gfx {
 class Canvas;
 }
-
-namespace views {
 
 // ProfileMenuButton
 //
 // Shows the button for the multiprofile menu with an image layered
 // underneath that displays the profile tag.
 
-class ProfileMenuButton : public MenuButton {
+class ProfileMenuButton : public views::MenuButton {
  public:
   // Space between window controls and end of profile tag.
   static const int kProfileTagHorizontalSpacing = 5;
 
-  ProfileMenuButton(ButtonListener* listener,
+  ProfileMenuButton(views::ButtonListener* listener,
                     const std::wstring& text,
-                    ViewMenuDelegate* menu_delegate);
+                    views::ViewMenuDelegate* menu_delegate,
+                    Profile* profile);
 
   virtual ~ProfileMenuButton();
 
@@ -38,8 +39,6 @@ class ProfileMenuButton : public MenuButton {
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuButton);
 };
-
-}  // namespace views
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PROFILE_MENU_BUTTON_H_
 
