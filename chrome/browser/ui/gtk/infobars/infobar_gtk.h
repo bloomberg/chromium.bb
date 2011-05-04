@@ -38,11 +38,9 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
   // InfoBar is added to the view hierarchy.
   void set_container(InfoBarContainerGtk* container) { container_ = container; }
 
-  // Starts animating the InfoBar open.
-  void AnimateOpen();
-
-  // Opens the InfoBar immediately.
-  void Open();
+  // Makes the infobar visible. If |animate| is true, the infobar is then
+  // animated to full size.
+  void Show(bool animate);
 
   // Starts animating the InfoBar closed. It will not be closed until the
   // animation has completed, when |Close| will be called.

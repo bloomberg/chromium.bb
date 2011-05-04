@@ -95,16 +95,11 @@ GtkWidget* InfoBar::widget() {
   return slide_widget_->widget();
 }
 
-void InfoBar::AnimateOpen() {
-  slide_widget_->Open();
-
-  gtk_widget_show_all(bg_box_);
-  if (bg_box_->window)
-    gdk_window_lower(bg_box_->window);
-}
-
-void InfoBar::Open() {
-  slide_widget_->OpenWithoutAnimation();
+void InfoBar::Show(bool animate) {
+  if (animate)
+    slide_widget_->Open();
+  else
+    slide_widget_->OpenWithoutAnimation();
 
   gtk_widget_show_all(bg_box_);
   if (bg_box_->window)

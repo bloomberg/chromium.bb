@@ -182,11 +182,7 @@ void InfoBarContainerGtk::AddInfoBar(InfoBarDelegate* delegate, bool animate) {
   gtk_box_pack_start(GTK_BOX(widget()), infobar->widget(),
                      FALSE, FALSE, 0);
 
-  if (animate)
-    infobar->AnimateOpen();
-  else
-    infobar->Open();
-
+  infobar->Show(animate);
   ShowArrowForDelegate(delegate, animate);
 }
 
