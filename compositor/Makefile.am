@@ -61,7 +61,7 @@ openwfd_backend = openwfd-backend.la
 openwfd_backend_la_LDFLAGS = -module -avoid-version
 openwfd_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(OPENWFD_COMPOSITOR_LIBS)
 openwfd_backend_la_CFLAGS = $(OPENWFD_COMPOSITOR_CFLAGS)
-openwfd_backend_SOURCES = compositor-openwfd.c
+openwfd_backend_la_SOURCES = compositor-openwfd.c tty.c evdev.c
 endif
 
 if ENABLE_DESKTOP_SHELL

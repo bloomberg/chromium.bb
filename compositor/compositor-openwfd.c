@@ -578,3 +578,23 @@ wfd_compositor_create(struct wl_display *display, int connector)
 
 	return &ec->base;
 }
+
+struct wlsc_compositor *
+backend_init(struct wl_display *display, char *options)
+{
+	int connector = 0, i;
+	char *p, *value;
+
+	static char * const tokens[] = { "connector", NULL };
+	
+	p = options;
+	while (i = getsubopt(&p, tokens, &value), i != -1) {
+		switch (i) {
+		case 0:
+			connector = strtol(value, NULL, 0);
+			break;
+		}
+	}
+
+	return wfd_compositor_create(display, connector);
+}
