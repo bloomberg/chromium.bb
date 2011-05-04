@@ -746,7 +746,7 @@ drm_compositor_create(struct wl_display *display, int connector)
 struct wlsc_compositor *
 backend_init(struct wl_display *display, char *options)
 {
-	int connector, i;
+	int connector = 0, i;
 	char *p, *value;
 
 	static char * const tokens[] = { "connector", NULL };
@@ -755,7 +755,7 @@ backend_init(struct wl_display *display, char *options)
 	while (i = getsubopt(&p, tokens, &value), i != -1) {
 		switch (i) {
 		case 0:
-			connector = strol(value, NULL, 0);
+			connector = strtol(value, NULL, 0);
 			break;
 		}
 	}
