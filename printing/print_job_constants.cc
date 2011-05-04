@@ -15,6 +15,9 @@ const char kSettingColor[] = "color";
 // Number of copies.
 const char kSettingCopies[] = "copies";
 
+// Device name: Unique printer identifier.
+const char kSettingDeviceName[] = "deviceName";
+
 // Print job duplex mode.
 const char kSettingDuplexMode[] = "duplex";
 

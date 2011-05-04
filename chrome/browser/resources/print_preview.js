@@ -292,7 +292,10 @@ function getSettingsJSON() {
   var printAll = $('all-pages').checked;
   var printToPDF = (printerName == localStrings.getString('printToPDF'));
 
+  // TODO(kmadhusu): Fix the printer device name (http://crbug.com/81488).
+
   return JSON.stringify({'printerName': printerName,
+                         'deviceName': printerName,
                          'pageRange': getSelectedPageRanges(),
                          'printAll': printAll,
                          'duplex': getDuplexMode(),

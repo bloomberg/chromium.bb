@@ -10,6 +10,7 @@ namespace printing {
 extern const char kSettingCollate[];
 extern const char kSettingColor[];
 extern const char kSettingCopies[];
+extern const char kSettingDeviceName[];
 extern const char kSettingDuplexMode[];
 extern const char kSettingLandscape[];
 extern const char kSettingPageRange[];

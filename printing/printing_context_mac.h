@@ -50,7 +50,7 @@ class PrintingContextMac : public PrintingContext {
 
   // Updates |print_info_| to use the given printer.
   // Returns true if the printer was set else returns false.
-  bool SetPrinter(const std::string& printer_name);
+  bool SetPrinter(const std::string& device_name);
 
   // Sets |copies| in PMPrintSettings.
   // Returns true if the number of copies is set.

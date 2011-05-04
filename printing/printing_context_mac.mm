@@ -92,13 +92,13 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
   print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
 
   bool landscape;
-  std::string printer_name;
+  std::string device_name;
   int copies;
   bool collate;
   int duplex_mode;
   bool color;
   if (!job_settings.GetBoolean(kSettingLandscape, &landscape) ||
-      !job_settings.GetString(kSettingPrinterName, &printer_name) ||
+      !job_settings.GetString(kSettingDeviceName, &device_name) ||
       !job_settings.GetInteger(kSettingCopies, &copies) ||
       !job_settings.GetBoolean(kSettingCollate, &collate) ||
       !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
@@ -106,7 +106,7 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
     return OnError();
   }
 
-  if (!SetPrinter(printer_name))
+  if (!SetPrinter(device_name))
     return OnError();
 
   if (!SetCopiesInPrintSettings(copies))
@@ -142,19 +142,36 @@ void PrintingContextMac::InitPrintSettingsFromPrintInfo(
       printer, page_format, ranges, false, &settings_);
 }
 
-bool PrintingContextMac::SetPrinter(const std::string& printer_name) {
-  NSString* new_printer_name = base::SysUTF8ToNSString(printer_name);
-  if (!new_printer_name)
+bool PrintingContextMac::SetPrinter(const std::string& device_name) {
+  DCHECK(print_info_.get());
+  PMPrintSession print_session =
+      static_cast<PMPrintSession>([print_info_.get() PMPrintSession]);
+
+  PMPrinter current_printer;
+  if (PMSessionGetCurrentPrinter(print_session, &current_printer) != noErr)
     return false;
 
-  if (![[[print_info_.get() printer] name] isEqualToString:new_printer_name]) {
-    NSPrinter* new_printer = [NSPrinter printerWithName:new_printer_name];
-    if (new_printer == nil)
-      return false;
+  CFStringRef current_printer_id = PMPrinterGetID(current_printer);
+  if (!current_printer_id)
+    return false;
 
-    [print_info_.get() setPrinter:new_printer];
+  base::mac::ScopedCFTypeRef<CFStringRef> new_printer_id(
+      base::SysUTF8ToCFStringRef(device_name));
+  if (!new_printer_id.get())
+    return false;
+
+  if (CFStringCompare(new_printer_id.get(), current_printer_id, 0) ==
+          kCFCompareEqualTo) {
+    return true;
   }
-  return true;
+
+  PMPrinter new_printer = PMPrinterCreateFromPrinterID(new_printer_id.get());
+  if (new_printer == NULL)
+    return false;
+
+  OSStatus status = PMSessionSetCurrentPMPrinter(print_session, new_printer);
+  PMRelease(new_printer);
+  return status == noErr;
 }
 
 bool PrintingContextMac::SetCopiesInPrintSettings(int copies) {
