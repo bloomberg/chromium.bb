@@ -21,10 +21,6 @@ const int kDropIndicatorHeight = 2;
 // Color of the drop indicator.
 const SkColor kDropIndicatorColor = SK_ColorBLACK;
 
-// TODO(msw): Resolve crasher crbug.com/78792.
-const int kMagicInitialized = 0x346292;
-const int kMagicDestroyed = 0x9932CD;
-
 }  // namespace
 
 namespace views {
@@ -41,23 +37,18 @@ SubmenuView::SubmenuView(MenuItemView* parent)
       drop_item_(NULL),
       drop_position_(MenuDelegate::DROP_NONE),
       scroll_view_container_(NULL),
-      max_accelerator_width_(0),
-      magic_token_(kMagicInitialized) {
+      max_accelerator_width_(0) {
   DCHECK(parent);
   // We'll delete ourselves, otherwise the ScrollView would delete us on close.
   set_parent_owned(false);
 }
 
 SubmenuView::~SubmenuView() {
-  CHECK_EQ(magic_token_, kMagicInitialized);
-
   // The menu may not have been closed yet (it will be hidden, but not
   // necessarily closed).
   Close();
 
   delete scroll_view_container_;
-
-  magic_token_ = kMagicDestroyed;
 }
 
 int SubmenuView::GetMenuItemCount() {
@@ -297,7 +288,6 @@ bool SubmenuView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
 }
 
 MenuItemView* SubmenuView::GetMenuItem() const {
-  CHECK_EQ(magic_token_, kMagicInitialized);
   return parent_menu_item_;
 }
 
@@ -321,7 +311,6 @@ bool SubmenuView::GetShowSelection(MenuItemView* item) {
 }
 
 MenuScrollViewContainer* SubmenuView::GetScrollViewContainer() {
-  CHECK_EQ(magic_token_, kMagicInitialized);
   if (!scroll_view_container_) {
     scroll_view_container_ = new MenuScrollViewContainer(this);
     // Otherwise MenuHost would delete us.

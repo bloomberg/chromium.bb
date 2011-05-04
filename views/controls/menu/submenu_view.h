@@ -176,9 +176,6 @@ class SubmenuView : public View {
   // See description above getter.
   int max_accelerator_width_;
 
-  // TODO(msw): Resolve crasher crbug.com/78792.
-  int magic_token_;
-
   DISALLOW_COPY_AND_ASSIGN(SubmenuView);
 };
 
