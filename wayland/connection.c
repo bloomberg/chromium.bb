@@ -20,6 +20,8 @@
  * OF THIS SOFTWARE.
  */
 
+#define _GNU_SOURCE
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
