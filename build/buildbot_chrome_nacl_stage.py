@@ -158,7 +158,7 @@ def MakeCommandLineParser():
   parser = optparse.OptionParser()
   parser.add_option('-m', '--mode', dest='mode', default='Debug',
                     help='Debug/Release mode')
-  parser.add_option('--partial_sdk', dest='partial_sdk', default=False,
+  parser.add_option('--partial_sdk', dest='partial_sdk', default=True,
                     action='store_true', help='Build partial SDK')
   parser.add_option('-j', dest='jobs', default=1, type='int',
                     help='Number of parallel jobs')
