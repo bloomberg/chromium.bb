@@ -9,6 +9,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/browser/browser_message_filter.h"
+#include "content/common/dom_storage_common.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class FilePath;
@@ -88,6 +89,10 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                        const string16& display_name,
                        unsigned long estimated_size,
                        bool* result);
+  void OnAllowDOMStorage(int render_view_id,
+                         const GURL& url,
+                         DOMStorageType type,
+                         bool* result);
   void OnCanTriggerClipboardRead(const GURL& url, bool* allowed);
   void OnCanTriggerClipboardWrite(const GURL& url, bool* allowed);
 

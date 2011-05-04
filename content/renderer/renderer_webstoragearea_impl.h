@@ -7,13 +7,15 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "content/common/dom_storage_common.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 class RendererWebStorageAreaImpl : public WebKit::WebStorageArea {
  public:
   RendererWebStorageAreaImpl(int64 namespace_id,
-                             const WebKit::WebString& origin);
+                             const WebKit::WebString& origin,
+                             DOMStorageType storage_type);
   virtual ~RendererWebStorageAreaImpl();
 
   // See WebStorageArea.h for documentation on these functions.
@@ -32,6 +34,8 @@ class RendererWebStorageAreaImpl : public WebKit::WebStorageArea {
  private:
   // The ID we use for all IPC.
   int64 storage_area_id_;
+
+  const DOMStorageType storage_type_;
 };
 
 #endif  // CONTENT_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_

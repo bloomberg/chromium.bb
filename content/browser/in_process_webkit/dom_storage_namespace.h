@@ -15,7 +15,6 @@
 class DOMStorageArea;
 class DOMStorageContext;
 class FilePath;
-class HostContentSettingsMap;
 
 namespace WebKit {
 class WebStorageArea;
@@ -32,8 +31,7 @@ class DOMStorageNamespace {
 
   ~DOMStorageNamespace();
 
-  DOMStorageArea* GetStorageArea(const string16& origin,
-                                 HostContentSettingsMap* map);
+  DOMStorageArea* GetStorageArea(const string16& origin);
   DOMStorageNamespace* Copy(int64 clone_namespace_id);
 
   void PurgeMemory();

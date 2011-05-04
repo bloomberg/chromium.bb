@@ -321,6 +321,10 @@ bool ChromeRenderViewObserver::allowScriptExtension(
       frame, extension_name.utf8(), extension_group);
 }
 
+bool ChromeRenderViewObserver::allowStorage(WebFrame* frame, bool local) {
+  return content_settings_->AllowStorage(frame, local);
+}
+
 bool ChromeRenderViewObserver::allowReadFromClipboard(WebFrame* frame,
                                                      bool default_value) {
   bool allowed = false;

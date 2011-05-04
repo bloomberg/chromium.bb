@@ -357,8 +357,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       new AppCacheDispatcherHost(&profile()->GetResourceContext(), id()));
   channel_->AddFilter(new ClipboardMessageFilter());
   channel_->AddFilter(
-      new DOMStorageMessageFilter(id(), profile()->GetWebKitContext(),
-                                  profile()->GetHostContentSettingsMap()));
+      new DOMStorageMessageFilter(id(), profile()->GetWebKitContext()));
   channel_->AddFilter(
       new IndexedDBDispatcherHost(id(), profile()->GetWebKitContext(),
                                   profile()->GetHostContentSettingsMap()));

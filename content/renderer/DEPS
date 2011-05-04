@@ -1,5 +1,6 @@
 include_rules = [
   "-chrome",
+  "+chrome/renderer/content_settings_observer.h",  # TODO(jam): remove after merge!
   "+chrome/test",
   "+content/plugin",  # For shared npruntime proxying code.
   "+third_party/mach_override",

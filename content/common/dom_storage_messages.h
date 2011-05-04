@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Multiply-included message file, no traditional include guard.
-#include "content/common/dom_storage_common.h"
+#include "content/common/common_param_traits.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
@@ -32,7 +32,6 @@ IPC_STRUCT_BEGIN(DOMStorageMsg_Event_Params)
   IPC_STRUCT_MEMBER(DOMStorageType, storage_type)
 IPC_STRUCT_END()
 
-IPC_ENUM_TRAITS(DOMStorageType)
 IPC_ENUM_TRAITS(WebKit::WebStorageArea::Result)
 
 // DOM Storage messages sent from the browser to the renderer.

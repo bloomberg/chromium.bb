@@ -276,7 +276,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     // These policies are dynamic and can changed at runtime, so they aren't
     // cached here.
     render_view->Send(new ViewHostMsg_GetPluginPolicies(
-        render_view->routing_id(), &outdated_policy, &authorize_policy));
+        &outdated_policy, &authorize_policy));
   }
 
   if (group->IsVulnerable()) {

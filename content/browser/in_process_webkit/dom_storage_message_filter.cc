@@ -9,7 +9,6 @@
 #include "content/browser/in_process_webkit/dom_storage_area.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/dom_storage_namespace.h"
-#include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/common/dom_storage_messages.h"
 #include "googleurl/src/gurl.h"
 
@@ -41,11 +40,9 @@ ScopedStorageEventContext::~ScopedStorageEventContext() {
 }
 
 DOMStorageMessageFilter::DOMStorageMessageFilter(
-    int process_id, WebKitContext* webkit_context,
-    HostContentSettingsMap* host_content_settings_map)
+    int process_id, WebKitContext* webkit_context)
     : webkit_context_(webkit_context),
-      process_id_(process_id),
-      host_content_settings_map_(host_content_settings_map) {
+      process_id_(process_id) {
 }
 
 DOMStorageMessageFilter::~DOMStorageMessageFilter() {
@@ -121,8 +118,7 @@ void DOMStorageMessageFilter::OnStorageAreaId(int64 namespace_id,
     *storage_area_id = DOMStorageContext::kInvalidStorageId;
     return;
   }
-  DOMStorageArea* storage_area = storage_namespace->GetStorageArea(
-      origin, host_content_settings_map_);
+  DOMStorageArea* storage_area = storage_namespace->GetStorageArea(origin);
   *storage_area_id = storage_area->id();
 }
 
@@ -174,17 +170,6 @@ void DOMStorageMessageFilter::OnSetItem(
 
   ScopedStorageEventContext scope(this, &url);
   *old_value = storage_area->SetItem(key, value, result);
-
-  // If content was blocked, tell the UI to display the blocked content icon.
-  if (render_view_id == MSG_ROUTING_CONTROL) {
-    DLOG(WARNING) << "setItem was not given a proper routing id";
-  } else {
-    CallRenderViewHostContentSettingsDelegate(
-        process_id_, render_view_id,
-        &RenderViewHostDelegate::ContentSettings::OnLocalStorageAccessed,
-        url, storage_area->owner()->dom_storage_type(),
-        *result == WebStorageArea::ResultBlockedByPolicy);
-  }
 }
 
 void DOMStorageMessageFilter::OnRemoveItem(

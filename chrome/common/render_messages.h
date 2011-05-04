@@ -297,13 +297,21 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ContentBlocked,
                     std::string /* resource identifier */)
 
 // Sent by the renderer process to check whether access to web databases is
-// granted by content settings. This may block and trigger a cookie prompt.
-IPC_SYNC_MESSAGE_ROUTED4_1(ViewHostMsg_AllowDatabase,
-                           std::string /* origin_url */,
-                           string16 /* database name */,
-                           string16 /* database display name */,
-                           unsigned long /* estimated size */,
-                           bool /* result */)
+// granted by content settings.
+IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_AllowDatabase,
+                            std::string /* origin_url */,
+                            string16 /* database name */,
+                            string16 /* database display name */,
+                            unsigned long /* estimated size */,
+                            bool /* result */)
+
+// Sent by the renderer process to check whether access to DOM Storage is
+// granted by content settings.
+IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_AllowDOMStorage,
+                            int /* render_view_id */,
+                            GURL /* origin_url */,
+                            DOMStorageType /* type */,
+                            bool /* result */)
 
 // Tells the browser that a specific Web database in the current page was
 // accessed.
@@ -399,9 +407,9 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_DnsPrefetch,
 // BLOCK means that the plugin should not run nor be allowed to run at all.
 // ASK means that the plugin should be initially blocked and the user should
 // be asked whether he wants to run the plugin.
-IPC_SYNC_MESSAGE_ROUTED0_2(ViewHostMsg_GetPluginPolicies,
-                           ContentSetting   /* outdated_policy */,
-                           ContentSetting   /* authorize_policy */)
+IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_GetPluginPolicies,
+                            ContentSetting   /* outdated_policy */,
+                            ContentSetting   /* authorize_policy */)
 
 // Notifies when a plugin couldn't be loaded because it's outdated.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_BlockedOutdatedPlugin,

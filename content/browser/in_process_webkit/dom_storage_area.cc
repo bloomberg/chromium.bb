@@ -5,7 +5,6 @@
 #include "content/browser/in_process_webkit/dom_storage_area.h"
 
 #include "base/task.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/dom_storage_namespace.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -22,15 +21,12 @@ using WebKit::WebURL;
 DOMStorageArea::DOMStorageArea(
     const string16& origin,
     int64 id,
-    DOMStorageNamespace* owner,
-    HostContentSettingsMap* host_content_settings_map)
+    DOMStorageNamespace* owner)
     : origin_(origin),
       origin_url_(origin),
       id_(id),
-      owner_(owner),
-      host_content_settings_map_(host_content_settings_map) {
+      owner_(owner) {
   DCHECK(owner_);
-  DCHECK(host_content_settings_map_);
 }
 
 DOMStorageArea::~DOMStorageArea() {
@@ -54,11 +50,6 @@ NullableString16 DOMStorageArea::GetItem(const string16& key) {
 NullableString16 DOMStorageArea::SetItem(
     const string16& key, const string16& value,
     WebStorageArea::Result* result) {
-  if (!CheckContentSetting(key, value)) {
-    *result = WebStorageArea::ResultBlockedByPolicy;
-    return NullableString16(true);  // Ignored if the content was blocked.
-  }
-
   CreateWebStorageAreaIfNecessary();
   WebString old_value;
   storage_area_->setItem(key, value, WebURL(), *result, old_value);
@@ -86,12 +77,4 @@ void DOMStorageArea::PurgeMemory() {
 void DOMStorageArea::CreateWebStorageAreaIfNecessary() {
   if (!storage_area_.get())
     storage_area_.reset(owner_->CreateWebStorageArea(origin_));
-}
-
-bool DOMStorageArea::CheckContentSetting(
-    const string16& key, const string16& value) {
-  ContentSetting content_setting =
-      host_content_settings_map_->GetContentSetting(
-          origin_url_, CONTENT_SETTINGS_TYPE_COOKIES, "");
-  return (content_setting != CONTENT_SETTING_BLOCK);
 }

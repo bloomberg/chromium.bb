@@ -44,6 +44,7 @@ class ContentSettingsObserver
   bool AllowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
   bool AllowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
   bool AllowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
+  bool AllowStorage(WebKit::WebFrame* frame, bool local);
   void DidNotAllowPlugins(WebKit::WebFrame* frame);
   void DidNotAllowScript(WebKit::WebFrame* frame);
 

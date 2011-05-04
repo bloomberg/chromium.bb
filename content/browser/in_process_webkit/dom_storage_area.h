@@ -16,16 +16,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
 
 class DOMStorageNamespace;
-class HostContentSettingsMap;
-
 // Only use on the WebKit thread.  DOMStorageNamespace manages our registration
 // with DOMStorageContext.
 class DOMStorageArea {
  public:
   DOMStorageArea(const string16& origin,
                  int64 id,
-                 DOMStorageNamespace* owner,
-                 HostContentSettingsMap* host_content_settings_map);
+                 DOMStorageNamespace* owner);
   ~DOMStorageArea();
 
   unsigned Length();
@@ -46,9 +43,6 @@ class DOMStorageArea {
   // Creates the underlying WebStorageArea on demand.
   void CreateWebStorageAreaIfNecessary();
 
-  // Used to see if setItem has permission to do its thing.
-  bool CheckContentSetting(const string16& key, const string16& value);
-
   // The origin this storage area represents.
   string16 origin_;
   GURL origin_url_;
@@ -61,8 +55,6 @@ class DOMStorageArea {
 
   // The DOMStorageNamespace that owns us.
   DOMStorageNamespace* owner_;
-
-  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageArea);
 };

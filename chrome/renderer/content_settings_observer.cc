@@ -140,7 +140,7 @@ bool ContentSettingsObserver::AllowDatabase(WebFrame* frame,
     return false;  // Uninitialized document?
 
   bool result;
-  if (!Send(new ViewHostMsg_AllowDatabase(routing_id(),
+  if (!Send(new ViewHostMsg_AllowDatabase(
       origin.toString().utf8(), name, display_name, estimated_size, &result)))
     return false;
   Send(new ViewHostMsg_WebDatabaseAccessed(routing_id(),
@@ -168,8 +168,7 @@ bool ContentSettingsObserver::AllowImages(WebFrame* frame,
 
 bool ContentSettingsObserver::AllowPlugins(WebFrame* frame,
                                            bool enabled_per_settings) {
-  return render_view()->WebFrameClient::allowPlugins(
-      frame, enabled_per_settings);
+  return enabled_per_settings;
 }
 
 bool ContentSettingsObserver::AllowScript(WebFrame* frame,
@@ -183,6 +182,15 @@ bool ContentSettingsObserver::AllowScript(WebFrame* frame,
     return true;
 
   return false;  // Other protocols fall through here.
+}
+
+bool ContentSettingsObserver::AllowStorage(WebFrame* frame, bool local) {
+  bool result = false;
+  Send(new ViewHostMsg_AllowDOMStorage(
+      routing_id(), frame->url(),
+      local ? DOM_STORAGE_LOCAL : DOM_STORAGE_SESSION,
+      &result));
+  return result;
 }
 
 void ContentSettingsObserver::DidNotAllowPlugins(WebFrame* frame) {
@@ -203,7 +211,7 @@ bool ContentSettingsObserver::AllowContentType(
     ContentSettingsType settings_type) {
   // CONTENT_SETTING_ASK is only valid for cookies.
   return current_content_settings_.settings[settings_type] !=
-    CONTENT_SETTING_BLOCK;
+      CONTENT_SETTING_BLOCK;
 }
 
 void ContentSettingsObserver::ClearBlockedContentSettings() {

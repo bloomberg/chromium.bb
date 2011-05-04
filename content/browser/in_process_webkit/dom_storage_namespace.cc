@@ -54,9 +54,7 @@ DOMStorageNamespace::~DOMStorageNamespace() {
   }
 }
 
-DOMStorageArea* DOMStorageNamespace::GetStorageArea(
-    const string16& origin,
-    HostContentSettingsMap* host_content_settings_map) {
+DOMStorageArea* DOMStorageNamespace::GetStorageArea(const string16& origin) {
   // We may have already created it for another dispatcher host.
   OriginToStorageAreaMap::iterator iter = origin_to_storage_area_.find(origin);
   if (iter != origin_to_storage_area_.end())
@@ -65,8 +63,7 @@ DOMStorageArea* DOMStorageNamespace::GetStorageArea(
   // We need to create a new one.
   int64 id = dom_storage_context_->AllocateStorageAreaId();
   DCHECK(!dom_storage_context_->GetStorageArea(id));
-  DOMStorageArea* storage_area = new DOMStorageArea(origin, id, this,
-                                                    host_content_settings_map);
+  DOMStorageArea* storage_area = new DOMStorageArea(origin, id, this);
   origin_to_storage_area_[origin] = storage_area;
   dom_storage_context_->RegisterStorageArea(storage_area);
   return storage_area;

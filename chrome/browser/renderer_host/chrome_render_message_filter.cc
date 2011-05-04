@@ -23,6 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -73,9 +74,9 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
 #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginPolicies,
-                        OnGetPluginPolicies)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginPolicies, OnGetPluginPolicies)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllowDatabase, OnAllowDatabase)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CanTriggerClipboardRead,
                         OnCanTriggerClipboardRead)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CanTriggerClipboardWrite,
@@ -310,13 +311,26 @@ void ChromeRenderMessageFilter::OnAllowDatabase(const std::string& origin_url,
                                                 unsigned long estimated_size,
                                                 bool* result) {
   GURL url(origin_url);
-  ContentSetting content_setting =
-      host_content_settings_map_->GetContentSetting(
-          url, CONTENT_SETTINGS_TYPE_COOKIES, "");
-  DCHECK((content_setting == CONTENT_SETTING_ALLOW) ||
-         (content_setting == CONTENT_SETTING_BLOCK) ||
-         (content_setting == CONTENT_SETTING_SESSION_ONLY));
-  *result = content_setting != CONTENT_SETTING_BLOCK;
+  ContentSetting setting = host_content_settings_map_->GetContentSetting(
+      url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+  DCHECK((setting == CONTENT_SETTING_ALLOW) ||
+         (setting == CONTENT_SETTING_BLOCK) ||
+         (setting == CONTENT_SETTING_SESSION_ONLY));
+  *result = setting != CONTENT_SETTING_BLOCK;
+}
+
+void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_view_id,
+                                                  const GURL& url,
+                                                  DOMStorageType type,
+                                                  bool* result) {
+  ContentSetting setting = host_content_settings_map_->GetContentSetting(
+      url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+  *result = setting != CONTENT_SETTING_BLOCK;
+  // If content was blocked, tell the UI to display the blocked content icon.
+  CallRenderViewHostContentSettingsDelegate(
+      render_process_id_, render_view_id,
+      &RenderViewHostDelegate::ContentSettings::OnLocalStorageAccessed,
+      url, type, *result);
 }
 
 void ChromeRenderMessageFilter::OnCanTriggerClipboardRead(const GURL& url,

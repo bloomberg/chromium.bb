@@ -82,6 +82,8 @@ class ChromeRenderViewObserver : public RenderViewObserver,
   virtual bool allowScriptExtension(WebKit::WebFrame* frame,
                                     const WebKit::WebString& extension_name,
                                     int extension_group) OVERRIDE;
+  // TODO(jam): add OVERRIDE once WebKit is rolled.
+  virtual bool allowStorage(WebKit::WebFrame* frame, bool local);
   virtual bool allowReadFromClipboard(WebKit::WebFrame* frame,
                                       bool default_value) OVERRIDE;
   virtual bool allowWriteToClipboard(WebKit::WebFrame* frame,

@@ -16,6 +16,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
+#include "content/common/dom_storage_common.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/ip_endpoint.h"
@@ -106,11 +107,6 @@ struct ParamTraits<base::PlatformFileInfo> {
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct SimilarTypeTraits<base::PlatformFileError> {
-  typedef int Type;
 };
 
 template <>
@@ -227,6 +223,16 @@ struct ParamTraits<SkBitmap> {
   static bool Read(const Message* m, void** iter, param_type* r);
 
   static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct SimilarTypeTraits<base::PlatformFileError> {
+  typedef int Type;
+};
+
+template <>
+struct SimilarTypeTraits<DOMStorageType> {
+  typedef int Type;
 };
 
 }  // namespace IPC
