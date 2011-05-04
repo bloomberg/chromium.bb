@@ -8730,9 +8730,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_PASSPHRASE_MSG_CANCEL" desc="Message when not syncing passwords is selected.">
         You have chosen not to sync passwords; you can always change your mind later by changing your sync settings.
       </message>
-      <message name="IDS_SYNC_CLEAR_DATA_FOR_PASSPHRASE" desc="Text on a button which clears data if the user wants to clear out their passphrase.">
-        Reset sync
-      </message>
       <message name="IDS_SYNC_LOGIN_INFO_OUT_OF_DATE" desc="The login information for the user is out of date - for example, the user changed their password and therefore signing in again is required.">
         Account sign-in details are out of date.
       </message>
@@ -8826,9 +8823,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Choose data types dialog strings -->
       <message name="IDS_CUSTOMIZE_SYNC_DESCRIPTION" desc="The first line of the Customize Sync dialog, explaining what this box does.">
         Sync the following items automatically:
-      </message>
-      <message name="IDS_SYNC_CHOOSE_DATATYPES_HEADER" desc="Title of the 'Choose Datatypes' dialog.">
-        Configure sync
       </message>
       <message name="IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS" desc="Text explaining the 'Choose Datatypes' dialog.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> securely syncs your data with your Google account. Keep everything synced or customize synced data types and encryption options.
@@ -9019,10 +9013,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- Success dialog strings -->
-      <message name="IDS_SYNC_SETUP_FIRST_TIME_ALL_DONE" desc="The text shown on the confirmation dialog after setting up sync when no bookmarks exist in the cloud.">
-        Your bookmarks are now synced to Google Docs! To merge and sync your bookmarks to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
-        on another computer, just repeat the same setup process on that computer.
-      </message>
       <message name="IDS_SYNC_SETUP_OK_BUTTON_LABEL" desc="The button label on the 'OK' button displayed at the end of sync setup.">
         OK
       </message>

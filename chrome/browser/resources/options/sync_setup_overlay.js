@@ -632,7 +632,7 @@ cr.define('options', function() {
     },
 
     showSuccessAndSettingUp_: function() {
-      $('sign-in').value = localStrings.getString('settingup');
+      $('sign-in').value = localStrings.getString('settingUp');
     },
 
     /** @inheritDoc */

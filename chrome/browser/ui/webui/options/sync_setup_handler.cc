@@ -163,20 +163,20 @@ void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   localized_strings->SetString(
-      "invalidpasswordhelpurl",
+      "invalidPasswordHelpURL",
       google_util::StringAppendGoogleLocaleParam(kInvalidPasswordHelpUrl));
   localized_strings->SetString(
-      "cannotaccessaccounturl",
+      "cannotAccessAccountURL",
       google_util::StringAppendGoogleLocaleParam(kCanNotAccessAccountUrl));
   localized_strings->SetString(
-      "createnewaccounturl",
+      "createNewAccountURL",
       google_util::StringAppendGoogleLocaleParam(kCreateNewAccountUrl));
   localized_strings->SetString(
       "introduction",
       GetStringFUTF16(IDS_SYNC_LOGIN_INTRODUCTION,
                       GetStringUTF16(IDS_PRODUCT_NAME)));
   localized_strings->SetString(
-      "choosedatatypesinstructions",
+      "chooseDataTypesInstructions",
       GetStringFUTF16(IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS,
                       GetStringUTF16(IDS_PRODUCT_NAME)));
   localized_strings->SetString(
@@ -184,7 +184,7 @@ void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
       GetStringFUTF16(IDS_SYNC_ENCRYPTION_INSTRUCTIONS,
                       GetStringUTF16(IDS_PRODUCT_NAME)));
   localized_strings->SetString(
-      "encryptionhelpurl",
+      "encryptionHelpURL",
       google_util::StringAppendGoogleLocaleParam(kEncryptionHelpUrl));
   localized_strings->SetString(
       "passphraseEncryptionMessage",
@@ -194,41 +194,39 @@ void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   static OptionsStringResource resources[] = {
     { "syncSetupOverlayTitle", IDS_SYNC_SETUP_TITLE },
     { "syncSetupConfigureTitle", IDS_SYNC_SETUP_CONFIGURE_TITLE },
-    { "signinprefix", IDS_SYNC_LOGIN_SIGNIN_PREFIX },
-    { "signinsuffix", IDS_SYNC_LOGIN_SIGNIN_SUFFIX },
-    { "cannotbeblank", IDS_SYNC_CANNOT_BE_BLANK },
-    { "emaillabel", IDS_SYNC_LOGIN_EMAIL },
-    { "passwordlabel", IDS_SYNC_LOGIN_PASSWORD },
-    { "invalidcredentials", IDS_SYNC_INVALID_USER_CREDENTIALS },
+    { "signinPrefix", IDS_SYNC_LOGIN_SIGNIN_PREFIX },
+    { "signinSuffix", IDS_SYNC_LOGIN_SIGNIN_SUFFIX },
+    { "cannotBeBlank", IDS_SYNC_CANNOT_BE_BLANK },
+    { "emailLabel", IDS_SYNC_LOGIN_EMAIL },
+    { "passwordLabel", IDS_SYNC_LOGIN_PASSWORD },
+    { "invalidCredentials", IDS_SYNC_INVALID_USER_CREDENTIALS },
     { "signin", IDS_SYNC_SIGNIN },
-    { "couldnotconnect", IDS_SYNC_LOGIN_COULD_NOT_CONNECT },
-    { "cannotaccessaccount", IDS_SYNC_CANNOT_ACCESS_ACCOUNT },
-    { "createaccount", IDS_SYNC_CREATE_ACCOUNT },
+    { "couldNotConnect", IDS_SYNC_LOGIN_COULD_NOT_CONNECT },
+    { "cannotAccessAccount", IDS_SYNC_CANNOT_ACCESS_ACCOUNT },
+    { "createAccount", IDS_SYNC_CREATE_ACCOUNT },
     { "cancel", IDS_CANCEL },
-    { "settingup", IDS_SYNC_LOGIN_SETTING_UP },
-    { "settingupsync", IDS_SYNC_LOGIN_SETTING_UP_SYNC },
-    { "errorsigningin", IDS_SYNC_ERROR_SIGNING_IN },
-    { "captchainstructions", IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS },
-    { "invalidaccesscode", IDS_SYNC_INVALID_ACCESS_CODE_LABEL },
-    { "enteraccesscode", IDS_SYNC_ENTER_ACCESS_CODE_LABEL },
-    { "getaccesscodehelp", IDS_SYNC_ACCESS_CODE_HELP_LABEL },
-    { "getaccesscodeurl", IDS_SYNC_GET_ACCESS_CODE_URL },
+    { "settingUp", IDS_SYNC_LOGIN_SETTING_UP },
+    { "errorSigningIn", IDS_SYNC_ERROR_SIGNING_IN },
+    { "captchaInstructions", IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS },
+    { "invalidAccessCode", IDS_SYNC_INVALID_ACCESS_CODE_LABEL },
+    { "enterAccessCode", IDS_SYNC_ENTER_ACCESS_CODE_LABEL },
+    { "getAccessCodeHelp", IDS_SYNC_ACCESS_CODE_HELP_LABEL },
+    { "getAccessCodeURL", IDS_SYNC_GET_ACCESS_CODE_URL },
     { "dataTypes", IDS_SYNC_DATA_TYPES_TAB_NAME },
     { "encryption", IDS_SYNC_ENCRYPTION_TAB_NAME },
-    { "choosedatatypesheader", IDS_SYNC_CHOOSE_DATATYPES_HEADER },
-    { "keepeverythingsynced", IDS_SYNC_EVERYTHING },
-    { "choosedatatypes", IDS_SYNC_CHOOSE_DATATYPES },
+    { "keepEverythingSynced", IDS_SYNC_EVERYTHING },
+    { "chooseDataTypes", IDS_SYNC_CHOOSE_DATATYPES },
     { "bookmarks", IDS_SYNC_DATATYPE_BOOKMARKS },
     { "preferences", IDS_SYNC_DATATYPE_PREFERENCES },
     { "autofill", IDS_SYNC_DATATYPE_AUTOFILL },
     { "themes", IDS_SYNC_DATATYPE_THEMES },
     { "passwords", IDS_SYNC_DATATYPE_PASSWORDS },
     { "extensions", IDS_SYNC_DATATYPE_EXTENSIONS },
-    { "typedurls", IDS_SYNC_DATATYPE_TYPED_URLS },
+    { "typedURLs", IDS_SYNC_DATATYPE_TYPED_URLS },
     { "apps", IDS_SYNC_DATATYPE_APPS },
-    { "foreignsessions", IDS_SYNC_DATATYPE_SESSIONS },
-    { "synczerodatatypeserror", IDS_SYNC_ZERO_DATA_TYPES_ERROR },
-    { "abortederror", IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR },
+    { "foreignSessions", IDS_SYNC_DATATYPE_SESSIONS },
+    { "syncZeroDataTypesError", IDS_SYNC_ZERO_DATA_TYPES_ERROR },
+    { "abortedError", IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR },
     { "encryptAllLabel", IDS_SYNC_ENCRYPT_ALL_LABEL },
     { "googleOption", IDS_SYNC_PASSPHRASE_OPT_GOOGLE },
     { "explicitOption", IDS_SYNC_PASSPHRASE_OPT_EXPLICIT },
@@ -239,12 +237,7 @@ void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "emptyErrorMessage", IDS_SYNC_EMPTY_PASSPHRASE_ERROR },
     { "mismatchErrorMessage", IDS_SYNC_PASSPHRASE_MISMATCH_ERROR },
     { "passphraseWarning", IDS_SYNC_PASSPHRASE_WARNING },
-    { "cleardata", IDS_SYNC_CLEAR_DATA_FOR_PASSPHRASE },
-    { "cleardatalink", IDS_SYNC_CLEAR_DATA_LINK },
-    { "settingup", IDS_SYNC_LOGIN_SETTING_UP },
-    { "success", IDS_SYNC_SUCCESS },
-    { "firsttimesummary", IDS_SYNC_SETUP_FIRST_TIME_ALL_DONE },
-    { "okay", IDS_SYNC_SETUP_OK_BUTTON_LABEL },
+    { "clearDataLink", IDS_SYNC_CLEAR_DATA_LINK },
     { "enterPassphraseTitle", IDS_SYNC_ENTER_PASSPHRASE_TITLE },
     { "firstPassphraseTitle", IDS_SYNC_FIRST_PASSPHRASE_TITLE },
     { "customizeLinkLabel", IDS_SYNC_CUSTOMIZE_LINK_LABEL },
@@ -260,7 +253,6 @@ void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "incorrectPassphrase", IDS_SYNC_INCORRECT_PASSPHRASE },
     { "passphraseRecover", IDS_SYNC_PASSPHRASE_RECOVER },
     { "passphraseWarning", IDS_SYNC_PASSPHRASE_WARNING },
-    { "cleardatalink", IDS_SYNC_CLEAR_DATA_LINK },
     { "cancelWarningHeader", IDS_SYNC_PASSPHRASE_CANCEL_WARNING_HEADER },
     { "cancelWarning", IDS_SYNC_PASSPHRASE_CANCEL_WARNING },
     { "yes", IDS_SYNC_PASSPHRASE_CANCEL_YES },
@@ -295,7 +287,6 @@ void SyncSetupHandler::RegisterMessages() {
       NewCallback(this, &SyncSetupHandler::HandleGoToDashboard));
 }
 
-// Called by SyncSetupFlow::Advance.
 void SyncSetupHandler::ShowGaiaLogin(const DictionaryValue& args) {
   StringValue page("login");
   web_ui_->CallJavascriptFunction(
@@ -310,7 +301,6 @@ void SyncSetupHandler::ShowGaiaSuccessAndSettingUp() {
   web_ui_->CallJavascriptFunction("SyncSetupOverlay.showSuccessAndSettingUp");
 }
 
-// Called by SyncSetupFlow::Advance.
 void SyncSetupHandler::ShowConfigure(const DictionaryValue& args) {
   StringValue page("configure");
   web_ui_->CallJavascriptFunction(
