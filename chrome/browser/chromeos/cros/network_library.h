@@ -219,6 +219,7 @@ class NetworkDevice {
   const CellularNetworkList& found_cellular_networks() const {
     return found_cellular_networks_;
   }
+  bool data_roaming_allowed() const { return data_roaming_allowed_; }
 
  private:
   bool ParseValue(int index, const Value* value);
@@ -249,6 +250,7 @@ class NetworkDevice {
   int PRL_version_;
   std::string selected_cellular_network_;
   CellularNetworkList found_cellular_networks_;
+  bool data_roaming_allowed_;
 
   friend class NetworkLibraryImpl;
   DISALLOW_COPY_AND_ASSIGN(NetworkDevice);
@@ -1058,6 +1060,9 @@ class NetworkLibrary {
 
   // Request a register in cellular network with |network_id|.
   virtual void RequestCellularRegister(const std::string& network_id) = 0;
+
+  // Change data roaming restriction for current cellular device.
+  virtual void SetCellularDataRoamingAllowed(bool new_value) = 0;
 
   // Request a scan for new wifi networks.
   virtual void RequestNetworkScan() = 0;

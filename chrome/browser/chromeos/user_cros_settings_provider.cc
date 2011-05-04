@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
@@ -220,6 +221,7 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
     if (IsControlledBooleanSetting(path)) {
       bool bool_value = false;
       if (in_value->GetAsBoolean(&bool_value)) {
+        OnBooleanPropertyChange(path, bool_value);
         std::string value = bool_value ? kTrueIncantation : kFalseIncantation;
         SignedSettingsHelper::Get()->StartStorePropertyOp(path, value, this);
         UpdateCacheBool(path, bool_value, USE_VALUE_SUPPLIED);
@@ -253,6 +255,36 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
         CrosLibrary::Get()->EnsureLoaded()) {
       // Cancels all pending callbacks from us.
       SignedSettingsHelper::Get()->CancelCallback(this);
+    }
+  }
+
+  // Called right before boolean property is changed.
+  void OnBooleanPropertyChange(const std::string& path, bool new_value) {
+    if (path == kSignedDataRoamingEnabled) {
+      if (!CrosLibrary::Get()->EnsureLoaded())
+        return;
+
+      NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+      cros->SetCellularDataRoamingAllowed(new_value);
+    }
+  }
+
+  // Called right after signed value was checked.
+  void OnBooleanPropertyRetrieve(const std::string& path,
+                                 bool value,
+                                 UseValue use_value) {
+    if (path == kSignedDataRoamingEnabled) {
+      if (!CrosLibrary::Get()->EnsureLoaded())
+        return;
+
+      NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+      const NetworkDevice* cellular = cros->FindCellularDevice();
+      if (cellular) {
+        bool device_value = cellular->data_roaming_allowed();
+        bool new_value = (use_value == USE_VALUE_SUPPLIED) ? value : false;
+        if (device_value != new_value)
+          cros->SetCellularDataRoamingAllowed(new_value);
+      }
     }
   }
 
@@ -293,6 +325,8 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
         else
           VLOG(1) << "Retrieved cros setting " << name << "=" << value;
         if (IsControlledBooleanSetting(name)) {
+          OnBooleanPropertyRetrieve(name, (value == kTrueIncantation),
+              fallback_to_default ? USE_VALUE_DEFAULT : USE_VALUE_SUPPLIED);
           UpdateCacheBool(name, (value == kTrueIncantation),
               fallback_to_default ? USE_VALUE_DEFAULT : USE_VALUE_SUPPLIED);
         } else if (IsControlledStringSetting(name)) {
@@ -316,6 +350,7 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
         if (IsControlledBooleanSetting(name)) {
           // For boolean settings we can just set safe (false) values
           // and continue as trusted.
+          OnBooleanPropertyRetrieve(name, false, USE_VALUE_SUPPLIED);
           UpdateCacheBool(name, false, USE_VALUE_SUPPLIED);
         } else {
           prefs->ClearPref((name + kTrustedSuffix).c_str());

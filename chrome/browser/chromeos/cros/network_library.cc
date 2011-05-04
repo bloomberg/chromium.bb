@@ -14,9 +14,10 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/network_login_observer.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/network_login_observer.h"
+#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/common/time_format.h"
 #include "content/browser/browser_thread.h"
 #include "grit/generated_resources.h"
@@ -134,6 +135,7 @@ const char* kPaymentURLProperty = "Cellular.OlpUrl";
 const char* kUsageURLProperty = "Cellular.UsageUrl";
 const char* kCellularApnProperty = "Cellular.APN";
 const char* kCellularLastGoodApnProperty = "Cellular.LastGoodAPN";
+const char* kCellularAllowRoamingProperty = "Cellular.AllowRoaming";
 const char* kFavoriteProperty = "Favorite";
 const char* kConnectableProperty = "Connectable";
 const char* kAutoConnectProperty = "AutoConnect";
@@ -412,6 +414,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_AUTO_CONNECT,
   PROPERTY_INDEX_AVAILABLE_TECHNOLOGIES,
   PROPERTY_INDEX_CARRIER,
+  PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING,
   PROPERTY_INDEX_CELLULAR_APN,
   PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN,
   PROPERTY_INDEX_CERT_PATH,
@@ -495,6 +498,7 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kActiveProfileProperty, PROPERTY_INDEX_ACTIVE_PROFILE },
   { kAutoConnectProperty, PROPERTY_INDEX_AUTO_CONNECT },
   { kAvailableTechnologiesProperty, PROPERTY_INDEX_AVAILABLE_TECHNOLOGIES },
+  { kCellularAllowRoamingProperty, PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING },
   { kCellularApnProperty, PROPERTY_INDEX_CELLULAR_APN },
   { kCellularLastGoodApnProperty, PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN },
   { kCarrierProperty, PROPERTY_INDEX_CARRIER },
@@ -845,7 +849,8 @@ NetworkDevice::NetworkDevice(const std::string& device_path)
       sim_lock_state_(SIM_UNKNOWN),
       sim_retries_left_(kDefaultSimUnlockRetriesCount),
       sim_pin_required_(SIM_PIN_REQUIRE_UNKNOWN),
-      PRL_version_(0) {
+      PRL_version_(0),
+      data_roaming_allowed_(false) {
 }
 
 bool NetworkDevice::ParseValue(int index, const Value* value) {
@@ -918,6 +923,8 @@ bool NetworkDevice::ParseValue(int index, const Value* value) {
       return value->GetAsInteger(&PRL_version_);
     case PROPERTY_INDEX_SELECTED_NETWORK:
       return value->GetAsString(&selected_cellular_network_);
+    case PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING:
+      return value->GetAsBoolean(&data_roaming_allowed_);
     default:
       break;
   }
@@ -2424,6 +2431,19 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     // but not UI doesn't assume such notification so just ignore result.
   }
 
+  virtual void SetCellularDataRoamingAllowed(bool new_value) {
+    const NetworkDevice* cellular = FindCellularDevice();
+    if (!cellular) {
+      NOTREACHED() << "Calling SetCellularDataRoamingAllowed method "
+                      "w/o cellular device.";
+      return;
+    }
+    scoped_ptr<Value> value(Value::CreateBooleanValue(new_value));
+    chromeos::SetNetworkDeviceProperty(cellular->device_path().c_str(),
+                                       kCellularAllowRoamingProperty,
+                                       value.get());
+  }
+
   /////////////////////////////////////////////////////////////////////////////
 
   virtual void RequestNetworkScan() {
@@ -3760,6 +3780,14 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       if (!device->ParseValue(index, value)) {
         LOG(WARNING) << "UpdateNetworkDeviceStatus: Error parsing: "
                      << path << "." << key;
+      } else if (path == kCellularAllowRoamingProperty) {
+        bool settings_value =
+            UserCrosSettingsProvider::cached_data_roaming_enabled();
+        if (device->data_roaming_allowed() != settings_value) {
+          // Switch back to signed settings value.
+          SetCellularDataRoamingAllowed(settings_value);
+          return;
+        }
       }
       // Notify only observers on device property change.
       NotifyNetworkDeviceChanged(device);
@@ -4248,6 +4276,7 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual void UnblockPin(const std::string& puk, const std::string& new_pin) {}
   virtual void RequestCellularScan() {}
   virtual void RequestCellularRegister(const std::string& network_id) {}
+  virtual void SetCellularDataRoamingAllowed(bool new_value) {}
 
   virtual void RequestNetworkScan() {}
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) {
