@@ -234,34 +234,34 @@ Image& Image::operator=(const Image& other) {
 Image::~Image() {
 }
 
-Image::operator const SkBitmap*() {
+Image::operator const SkBitmap*() const {
   internal::ImageRep* rep = GetRepresentation(Image::kSkBitmapRep);
   return rep->AsSkBitmapRep()->bitmap();
 }
 
-Image::operator const SkBitmap&() {
+Image::operator const SkBitmap&() const {
   return *(this->operator const SkBitmap*());
 }
 
 #if defined(OS_LINUX)
-Image::operator GdkPixbuf*() {
+Image::operator GdkPixbuf*() const {
   internal::ImageRep* rep = GetRepresentation(Image::kGdkPixbufRep);
   return rep->AsGdkPixbufRep()->pixbuf();
 }
 #endif
 
 #if defined(OS_MACOSX)
-Image::operator NSImage*() {
+Image::operator NSImage*() const {
   internal::ImageRep* rep = GetRepresentation(Image::kNSImageRep);
   return rep->AsNSImageRep()->image();
 }
 #endif
 
-bool Image::HasRepresentation(RepresentationType type) {
+bool Image::HasRepresentation(RepresentationType type) const {
   return storage_->representations().count(type) != 0;
 }
 
-size_t Image::RepresentationCount() {
+size_t Image::RepresentationCount() const {
   return storage_->representations().size();
 }
 
@@ -269,7 +269,7 @@ void Image::SwapRepresentations(gfx::Image* other) {
   storage_.swap(other->storage_);
 }
 
-internal::ImageRep* Image::DefaultRepresentation() {
+internal::ImageRep* Image::DefaultRepresentation() const {
   RepresentationMap& representations = storage_->representations();
   RepresentationMap::iterator it =
       representations.find(storage_->default_representation_type());
@@ -277,7 +277,8 @@ internal::ImageRep* Image::DefaultRepresentation() {
   return it->second;
 }
 
-internal::ImageRep* Image::GetRepresentation(RepresentationType rep_type) {
+internal::ImageRep* Image::GetRepresentation(
+    RepresentationType rep_type) const {
   // If the requested rep is the default, return it.
   internal::ImageRep* default_rep = DefaultRepresentation();
   if (rep_type == storage_->default_representation_type())
@@ -338,16 +339,16 @@ internal::ImageRep* Image::GetRepresentation(RepresentationType rep_type) {
   return NULL;
 }
 
-void Image::AddRepresentation(internal::ImageRep* rep) {
+void Image::AddRepresentation(internal::ImageRep* rep) const {
   storage_->representations().insert(std::make_pair(rep->type(), rep));
 }
 
-size_t Image::GetNumberOfSkBitmaps() {
+size_t Image::GetNumberOfSkBitmaps() const  {
   return GetRepresentation(Image::kSkBitmapRep)->AsSkBitmapRep()->
       bitmaps().size();
 }
 
-const SkBitmap* Image::GetSkBitmapAtIndex(size_t index) {
+const SkBitmap* Image::GetSkBitmapAtIndex(size_t index) const {
   return GetRepresentation(Image::kSkBitmapRep)->AsSkBitmapRep()->
       bitmaps()[index];
 }

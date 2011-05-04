@@ -79,43 +79,43 @@ class Image {
   ~Image();
 
   // Conversion handlers.
-  operator const SkBitmap*();
-  operator const SkBitmap&();
+  operator const SkBitmap*() const ;
+  operator const SkBitmap&() const;
 #if defined(OS_LINUX)
-  operator GdkPixbuf*();
+  operator GdkPixbuf*() const;
 #elif defined(OS_MACOSX)
-  operator NSImage*();
+  operator NSImage*() const;
 #endif
 
   // Gets the number of bitmaps in this image. This may cause a conversion
   // to a bitmap representation. Note, this function and GetSkBitmapAtIndex()
   // are primarily meant to be used by the theme provider.
-  size_t GetNumberOfSkBitmaps();
+  size_t GetNumberOfSkBitmaps() const;
 
   // Gets the bitmap at the given index. This may cause a conversion
   // to a bitmap representation. Note, the internal ordering of bitmaps is not
   // guaranteed.
-  const SkBitmap* GetSkBitmapAtIndex(size_t index);
+  const SkBitmap* GetSkBitmapAtIndex(size_t index) const;
 
   // Inspects the representations map to see if the given type exists.
-  bool HasRepresentation(RepresentationType type);
+  bool HasRepresentation(RepresentationType type) const;
 
   // Returns the number of representations.
-  size_t RepresentationCount();
+  size_t RepresentationCount() const;
 
   // Swaps this image's internal representations with |other|.
   void SwapRepresentations(gfx::Image* other);
 
  private:
   // Returns the ImageRep for the default representation.
-  internal::ImageRep* DefaultRepresentation();
+  internal::ImageRep* DefaultRepresentation() const;
 
   // Returns a ImageRep for the given representation type, converting and
   // caching if necessary.
-  internal::ImageRep* GetRepresentation(RepresentationType rep);
+  internal::ImageRep* GetRepresentation(RepresentationType rep) const;
 
   // Stores a representation into the map.
-  void AddRepresentation(internal::ImageRep* rep);
+  void AddRepresentation(internal::ImageRep* rep) const;
 
   // Internal class that holds all the representations. This allows the Image to
   // be cheaply copied.

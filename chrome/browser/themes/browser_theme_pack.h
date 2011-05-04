@@ -22,6 +22,9 @@ class RefCountedMemory;
 namespace ui {
 class DataPack;
 }
+namespace gfx {
+class Image;
+}
 
 // An optimized representation of a theme, backed by a mmapped DataPack.
 //
@@ -75,6 +78,9 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // for making layout decisions in the interface.
   SkBitmap* GetBitmapNamed(int id) const;
 
+  // Returns an image if we have a custom image for |id|, otherwise NULL.
+  const gfx::Image* GetImageNamed(int id) const;
+
   // Returns the raw PNG encoded data for IDR_THEME_NTP_*. This method is only
   // supposed to work for the NTP attribution and background resources.
   RefCountedMemory* GetRawData(int id) const;
@@ -90,7 +96,7 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // Cached images. We cache all retrieved and generated bitmaps and keep
   // track of the pointers. We own these and will delete them when we're done
   // using them.
-  typedef std::map<int, SkBitmap*> ImageCache;
+  typedef std::map<int, const gfx::Image*> ImageCache;
 
   // The raw PNG memory associated with a certain id.
   typedef std::map<int, scoped_refptr<RefCountedMemory> > RawImages;

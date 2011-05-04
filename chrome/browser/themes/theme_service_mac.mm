@@ -43,14 +43,14 @@ NSImage* ThemeService::GetNSImageNamed(int id, bool allow_default) const {
     return nsimage_iter->second;
 
   // Why don't we load the file directly into the image instead of the whole
-  // SkBitmap > native conversion?
+  // gfx::Image > native conversion?
   // - For consistency with other platforms.
   // - To get the generated tinted images.
   NSImage* nsimage = nil;
   if (theme_pack_.get()) {
-    SkBitmap* bitmap = theme_pack_->GetBitmapNamed(id);
-    if (bitmap)
-      nsimage = gfx::SkBitmapToNSImage(*bitmap);
+    const gfx::Image* image = theme_pack_->GetImageNamed(id);
+    if (image)
+      nsimage = *image;
   }
 
   // If the theme didn't override this image then load it from the resource

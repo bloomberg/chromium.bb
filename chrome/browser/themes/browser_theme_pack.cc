@@ -20,6 +20,7 @@
 #include "ui/base/resource/data_pack.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image.h"
 #include "ui/gfx/skbitmap_operations.h"
 
 namespace {
@@ -312,6 +313,19 @@ bool ValidDoubleValue(ListValue* tint_list, int index, double* out) {
   return false;
 }
 
+// Shifts a bitmap's HSL values. The caller is responsible for deleting
+// the returned image.
+gfx::Image* CreateHSLShiftedImage(const gfx::Image& image,
+                                  const color_utils::HSL& hsl_shift) {
+  std::vector<const SkBitmap*> bitmaps;
+  for (size_t i = 0; i < image.GetNumberOfSkBitmaps(); ++i) {
+    const SkBitmap* bitmap = image.GetSkBitmapAtIndex(i);
+    bitmaps.push_back(new SkBitmap(SkBitmapOperations::CreateHSLShiftedBitmap(
+        *bitmap, hsl_shift)));
+  }
+  return new gfx::Image(bitmaps);
+}
+
 }  // namespace
 
 BrowserThemePack::~BrowserThemePack() {
@@ -352,13 +366,9 @@ BrowserThemePack* BrowserThemePack::BuildFromExtension(
 
   pack->GenerateFrameImages(&pack->prepared_images_);
 
-#if !defined(OS_MACOSX)
-  // OSX uses its own special buttons that are PDFs that do odd sorts of vector
-  // graphics tricks. Other platforms use bitmaps and we must pre-tint them.
   pack->GenerateTintedButtons(
       pack->GetTintInternal(ThemeService::TINT_BUTTONS),
       &pack->prepared_images_);
-#endif
 
   pack->GenerateTabBackgroundImages(&pack->prepared_images_);
 
@@ -497,6 +507,19 @@ bool BrowserThemePack::GetDisplayProperty(int id, int* result) const {
 }
 
 SkBitmap* BrowserThemePack::GetBitmapNamed(int idr_id) const {
+  const gfx::Image* image = GetImageNamed(idr_id);
+  if (!image)
+    return NULL;
+
+  const SkBitmap* bitmap = *image;
+
+  // TODO(sail): This cast should be removed. Currently we use this const_cast
+  // to avoid changing the BrowserThemePack::GetBitmapNamed API. Once we
+  // switch to using gfx::Image everywhere this can be removed.
+  return const_cast<SkBitmap*>(bitmap);
+}
+
+const gfx::Image* BrowserThemePack::GetImageNamed(int idr_id) const {
   int prs_id = GetPersistentIDByIDR(idr_id);
   if (prs_id == -1)
     return NULL;
@@ -531,7 +554,7 @@ SkBitmap* BrowserThemePack::GetBitmapNamed(int idr_id) const {
       return NULL;
     }
 
-    SkBitmap* ret = new SkBitmap(bitmap);
+    gfx::Image* ret = new gfx::Image(new SkBitmap(bitmap));
     loaded_images_[prs_id] = ret;
 
     return ret;
@@ -878,7 +901,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
       SkBitmap bitmap;
       if (gfx::PNGCodec::Decode(raw_data->front(), raw_data->size(),
                                 &bitmap)) {
-        (*raw_bitmaps)[it->first] = new SkBitmap(bitmap);
+        (*raw_bitmaps)[it->first] = new gfx::Image(new SkBitmap(bitmap));
       } else {
         NOTREACHED() << "Unable to decode theme image resource " << it->first;
       }
@@ -897,7 +920,7 @@ void BrowserThemePack::GenerateFrameImages(ImageCache* bitmaps) const {
 
   for (size_t i = 0; i < arraysize(kFrameTintMap); ++i) {
     int prs_id = kFrameTintMap[i].key;
-    scoped_ptr<SkBitmap> frame;
+    const gfx::Image* frame = NULL;
     // If there's no frame image provided for the specified id, then load
     // the default provided frame. If that's not provided, skip this whole
     // thing and just use the default images.
@@ -918,25 +941,24 @@ void BrowserThemePack::GenerateFrameImages(ImageCache* bitmaps) const {
     }
 
     if (bitmaps->count(prs_id)) {
-      frame.reset(new SkBitmap(*(*bitmaps)[prs_id]));
+      frame = (*bitmaps)[prs_id];
     } else if (prs_base_id != prs_id && bitmaps->count(prs_base_id)) {
-      frame.reset(new SkBitmap(*(*bitmaps)[prs_base_id]));
+      frame = (*bitmaps)[prs_base_id];
     } else if (prs_base_id == PRS_THEME_FRAME_OVERLAY &&
                bitmaps->count(PRS_THEME_FRAME)) {
       // If there is no theme overlay, don't tint the default frame,
       // because it will overwrite the custom frame image when we cache and
       // reload from disk.
-      frame.reset(NULL);
+      frame = NULL;
     } else {
       // If the theme doesn't specify an image, then apply the tint to
       // the default frame.
-      frame.reset(new SkBitmap(*rb.GetBitmapNamed(IDR_THEME_FRAME)));
+      frame = &rb.GetImageNamed(IDR_THEME_FRAME);
     }
 
-    if (frame.get()) {
-      temp_output[prs_id] = new SkBitmap(
-          SkBitmapOperations::CreateHSLShiftedBitmap(
-              *frame, GetTintInternal(kFrameTintMap[i].value)));
+    if (frame) {
+      temp_output[prs_id] = CreateHSLShiftedImage(
+          *frame, GetTintInternal(kFrameTintMap[i].value));
     }
   }
 
@@ -956,11 +978,11 @@ void BrowserThemePack::GenerateTintedButtons(
       DCHECK(prs_id > 0);
 
       // Fetch the image by IDR...
-      scoped_ptr<SkBitmap> button(new SkBitmap(*rb.GetBitmapNamed(*it)));
+      gfx::Image& button = rb.GetImageNamed(*it);
 
       // but save a version with the persistent ID.
-      (*processed_bitmaps)[prs_id] = new SkBitmap(
-          SkBitmapOperations::CreateHSLShiftedBitmap(*button, button_tint));
+      (*processed_bitmaps)[prs_id] =
+          CreateHSLShiftedImage(button, button_tint);
     }
   }
 }
@@ -975,24 +997,30 @@ void BrowserThemePack::GenerateTabBackgroundImages(ImageCache* bitmaps) const {
     // with a PRS_THEME_FRAME.
     ImageCache::const_iterator it = bitmaps->find(prs_base_id);
     if (it != bitmaps->end()) {
-      SkBitmap bg_tint = SkBitmapOperations::CreateHSLShiftedBitmap(
-          *(it->second), GetTintInternal(
-              ThemeService::TINT_BACKGROUND_TAB));
-      int vertical_offset = bitmaps->count(prs_id)
-                            ? kRestoredTabVerticalOffset : 0;
-      SkBitmap* bg_tab = new SkBitmap(SkBitmapOperations::CreateTiledBitmap(
-          bg_tint, 0, vertical_offset, bg_tint.width(), bg_tint.height()));
+      const gfx::Image& image_to_tint = *(it->second);
+      std::vector<const SkBitmap*> tinted_bitmaps;
+      for (size_t j = 0; j < image_to_tint.GetNumberOfSkBitmaps(); ++j) {
+        SkBitmap bg_tint = SkBitmapOperations::CreateHSLShiftedBitmap(
+            *image_to_tint.GetSkBitmapAtIndex(j), GetTintInternal(
+                ThemeService::TINT_BACKGROUND_TAB));
+        int vertical_offset = bitmaps->count(prs_id)
+                              ? kRestoredTabVerticalOffset : 0;
+        SkBitmap* bg_tab = new SkBitmap(SkBitmapOperations::CreateTiledBitmap(
+            bg_tint, 0, vertical_offset, bg_tint.width(), bg_tint.height()));
 
-      // If they've provided a custom image, overlay it.
-      ImageCache::const_iterator overlay_it = bitmaps->find(prs_id);
-      if (overlay_it != bitmaps->end()) {
-        SkBitmap* overlay = overlay_it->second;
-        SkCanvas canvas(*bg_tab);
-        for (int x = 0; x < bg_tab->width(); x += overlay->width())
-          canvas.drawBitmap(*overlay, static_cast<SkScalar>(x), 0, NULL);
+        // If they've provided a custom image, overlay it.
+        ImageCache::const_iterator overlay_it = bitmaps->find(prs_id);
+        if (overlay_it != bitmaps->end()) {
+          const SkBitmap* overlay = *(overlay_it->second);
+          SkCanvas canvas(*bg_tab);
+          for (int x = 0; x < bg_tab->width(); x += overlay->width())
+            canvas.drawBitmap(*overlay, static_cast<SkScalar>(x), 0, NULL);
+        }
+        tinted_bitmaps.push_back(bg_tab);
       }
 
-      temp_output[prs_id] = bg_tab;
+      gfx::Image* tinted_image = new gfx::Image(tinted_bitmaps);
+      temp_output[prs_id] = tinted_image;
     }
   }
 
@@ -1016,7 +1044,6 @@ void BrowserThemePack::RepackImages(const ImageCache& images,
 
 void BrowserThemePack::MergeImageCaches(
     const ImageCache& source, ImageCache* destination) const {
-
   for (ImageCache::const_iterator it = source.begin(); it != source.end();
        ++it) {
     ImageCache::const_iterator bitmap_it = destination->find(it->first);
