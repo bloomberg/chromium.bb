@@ -217,6 +217,9 @@ start_element(void *data, const char *element_name, const char **atts)
 		else
 			message->destructor = 0;
 
+		if (strcmp(name, "destroy") == 0 && !message->destructor)
+			fail(ctx, "destroy request should be destructor type");
+
 		ctx->message = message;
 	} else if (strcmp(element_name, "arg") == 0) {
 		arg = malloc(sizeof *arg);
