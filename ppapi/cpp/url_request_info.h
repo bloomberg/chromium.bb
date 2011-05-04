@@ -70,6 +70,14 @@ class URLRequestInfo : public Resource {
     return SetProperty(PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING,
                        content_transfer_encoding);
   }
+  bool SetPrefetchBufferUpperThreshold(int32_t size) {
+    return SetProperty(PP_URLREQUESTPROPERTY_PREFETCHBUFFERUPPERTHRESHOLD,
+                       size);
+  }
+  bool SetPrefetchBufferLowerThreshold(int32_t size) {
+    return SetProperty(PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERTHRESHOLD,
+                       size);
+  }
 };
 
 }  // namespace pp

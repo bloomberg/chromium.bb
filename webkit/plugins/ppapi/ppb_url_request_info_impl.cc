@@ -34,6 +34,9 @@ namespace ppapi {
 
 namespace {
 
+const int32_t kDefaultPrefetchBufferUpperThreshold = 100 * 1000 * 1000;
+const int32_t kDefaultPrefetchBufferLowerThreshold = 50 * 1000 * 1000;
+
 // A header string containing any of the following fields will cause
 // an error. The list comes from the XMLHttpRequest standard.
 // http://www.w3.org/TR/XMLHttpRequest/#the-setrequestheader-method
@@ -112,6 +115,10 @@ PP_Bool SetProperty(PP_Resource request_id,
       result = BoolToPPBool(
           request->SetBooleanProperty(property,
                                       PPBoolToBool(var.value.as_bool)));
+      break;
+    case PP_VARTYPE_INT32:
+      result = BoolToPPBool(
+          request->SetIntegerProperty(property, var.value.as_int));
       break;
     case PP_VARTYPE_STRING: {
       scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
@@ -203,7 +210,9 @@ PPB_URLRequestInfo_Impl::PPB_URLRequestInfo_Impl(PluginInstance* instance)
       has_custom_referrer_url_(false),
       allow_cross_origin_requests_(false),
       allow_credentials_(false),
-      has_custom_content_transfer_encoding_(false) {
+      has_custom_content_transfer_encoding_(false),
+      prefetch_buffer_upper_threshold_(kDefaultPrefetchBufferUpperThreshold),
+      prefetch_buffer_lower_threshold_(kDefaultPrefetchBufferLowerThreshold) {
 }
 
 PPB_URLRequestInfo_Impl::~PPB_URLRequestInfo_Impl() {
@@ -254,6 +263,20 @@ bool PPB_URLRequestInfo_Impl::SetBooleanProperty(PP_URLRequestProperty property,
       return true;
     case PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS:
       allow_credentials_ = value;
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool PPB_URLRequestInfo_Impl::SetIntegerProperty(PP_URLRequestProperty property,
+                                                 int32_t value) {
+  switch (property) {
+    case PP_URLREQUESTPROPERTY_PREFETCHBUFFERUPPERTHRESHOLD:
+      prefetch_buffer_upper_threshold_ = value;
+      return true;
+    case PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERTHRESHOLD:
+      prefetch_buffer_lower_threshold_ = value;
       return true;
     default:
       return false;

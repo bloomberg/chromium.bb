@@ -208,6 +208,8 @@ PPB_URLLoader_Impl::PPB_URLLoader_Impl(PluginInstance* instance,
       user_buffer_(NULL),
       user_buffer_size_(0),
       done_status_(PP_OK_COMPLETIONPENDING),
+      is_streaming_to_file_(false),
+      is_asynchronous_load_suspended_(false),
       has_universal_access_(false),
       status_callback_(NULL) {
 }
@@ -268,6 +270,7 @@ int32_t PPB_URLLoader_Impl::Open(PPB_URLRequestInfo_Impl* request,
     options.allowCredentials = request->allow_credentials();
   }
 
+  is_asynchronous_load_suspended_ = false;
   loader_.reset(frame->createAssociatedURLLoader(options));
   if (!loader_.get())
     return PP_ERROR_FAILED;
@@ -365,6 +368,12 @@ int32_t PPB_URLLoader_Impl::FinishStreamingToFile(
   if (done_status_ != PP_OK_COMPLETIONPENDING)
     return done_status_;
 
+  is_streaming_to_file_ = true;
+  if (is_asynchronous_load_suspended_) {
+    loader_->setDefersLoading(false);
+    is_asynchronous_load_suspended_ = false;
+  }
+
   // Wait for didFinishLoading / didFail.
   RegisterCallback(callback);
   return PP_OK_COMPLETIONPENDING;
@@ -440,6 +449,20 @@ void PPB_URLLoader_Impl::didReceiveData(WebURLLoader* loader,
   } else {
     DCHECK(!pending_callback_.get() || pending_callback_->completed());
   }
+
+  // To avoid letting the network stack download an entire stream all at once,
+  // defer loading when we have enough buffer.
+  // Check the buffer size after potentially moving some to the user buffer.
+  DCHECK(request_info_->prefetch_buffer_lower_threshold() <
+         request_info_->prefetch_buffer_upper_threshold());
+  if (!is_streaming_to_file_ &&
+      !is_asynchronous_load_suspended_ &&
+      buffer_.size() >= static_cast<size_t>(
+          request_info_->prefetch_buffer_upper_threshold())) {
+    DVLOG(1) << "Suspending async load - buffer size: " << buffer_.size();
+    loader->setDefersLoading(true);
+    is_asynchronous_load_suspended_ = true;
+  }
 }
 
 void PPB_URLLoader_Impl::didFinishLoading(WebURLLoader* loader,
@@ -497,6 +520,15 @@ size_t PPB_URLLoader_Impl::FillUserBuffer() {
   size_t bytes_to_copy = std::min(buffer_.size(), user_buffer_size_);
   std::copy(buffer_.begin(), buffer_.begin() + bytes_to_copy, user_buffer_);
   buffer_.erase(buffer_.begin(), buffer_.begin() + bytes_to_copy);
+
+  // If the buffer is getting too empty, resume asynchronous loading.
+  if (is_asynchronous_load_suspended_ &&
+      buffer_.size() <= static_cast<size_t>(
+          request_info_->prefetch_buffer_lower_threshold())) {
+    DVLOG(1) << "Resuming async load - buffer size: " << buffer_.size();
+    loader_->setDefersLoading(false);
+    is_asynchronous_load_suspended_ = false;
+  }
 
   // Reset for next time.
   user_buffer_ = NULL;

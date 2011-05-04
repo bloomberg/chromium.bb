@@ -117,7 +117,34 @@ typedef enum {
    * custom content transfer encoding; if given to a loader without universal
    * access, PP_ERROR_BADARGUMENT will result.
    */
-  PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING
+  PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING,
+
+  /**
+   * This corresponds to an integer (PP_VARTYPE_INT32); default is not defined
+   * and is set by the browser, possibly depending on system capabilities.
+   * Set it to an integer to set an upper threshold for the prefetched buffer
+   * of an asynchronous load. When exceeded, the browser will defer loading
+   * until PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERERTHRESHOLD is hit, at which
+   * time it will begin prefetching again.
+   * When setting this property,
+   * PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERERTHRESHOLD must also be set.
+   * Behavior is undefined if the former is <= the latter.
+   */
+  PP_URLREQUESTPROPERTY_PREFETCHBUFFERUPPERTHRESHOLD,
+
+  /**
+   * This corresponds to an integer (PP_VARTYPE_INT32); default is not defined
+   * and is set by the browser to a value appropriate for the default
+   * PP_URLREQUESTPROPERTY_PREFETCHBUFFERUPPERTHRESHOLD.
+   * Set it to an integer to set a lower threshold for the prefetched buffer
+   * of an asynchronous load. When reached, the browser will resume loading if
+   * If PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERERTHRESHOLD had previously been
+   * reached.
+   * When setting this property,
+   * PP_URLREQUESTPROPERTY_PREFETCHBUFFERUPPERTHRESHOLD must also be set.
+   * Behavior is undefined if the former is >= the latter.
+   */
+  PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERTHRESHOLD
 } PP_URLRequestProperty;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLRequestProperty, 4);
 /**

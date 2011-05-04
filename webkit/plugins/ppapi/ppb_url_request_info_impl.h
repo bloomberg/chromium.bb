@@ -37,6 +37,7 @@ class PPB_URLRequestInfo_Impl : public Resource {
   // PPB_URLRequestInfo implementation.
   bool SetUndefinedProperty(PP_URLRequestProperty property);
   bool SetBooleanProperty(PP_URLRequestProperty property, bool value);
+  bool SetIntegerProperty(PP_URLRequestProperty property, int32_t value);
   bool SetStringProperty(PP_URLRequestProperty property,
                          const std::string& value);
   bool AppendDataToBody(const std::string& data);
@@ -59,6 +60,13 @@ class PPB_URLRequestInfo_Impl : public Resource {
     return allow_cross_origin_requests_;
   }
   bool allow_credentials() const { return allow_credentials_; }
+
+  int32_t prefetch_buffer_upper_threshold() const {
+      return prefetch_buffer_upper_threshold_;
+  }
+  int32_t prefetch_buffer_lower_threshold() const {
+      return prefetch_buffer_lower_threshold_;
+  }
 
  private:
   struct BodyItem;
@@ -88,6 +96,10 @@ class PPB_URLRequestInfo_Impl : public Resource {
   // encoding.
   bool has_custom_content_transfer_encoding_;
   std::string custom_content_transfer_encoding_;
+
+  // Specify permitted range for the size of the buffer unconsumed by plugin.
+  int32_t prefetch_buffer_upper_threshold_;
+  int32_t prefetch_buffer_lower_threshold_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_URLRequestInfo_Impl);
 };

@@ -137,6 +137,8 @@ class PPB_URLLoader_Impl : public Resource, public WebKit::WebURLLoaderClient {
   char* user_buffer_;
   size_t user_buffer_size_;
   int32_t done_status_;
+  bool is_streaming_to_file_;
+  bool is_asynchronous_load_suspended_;
 
   bool has_universal_access_;
 
