@@ -1,6 +1,6 @@
-// Copyright 2011 The Native Client SDK Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 // This example demonstrates loading, running and scripting a very simple NaCl
 // module.  To load the NaCl module, the browser first looks for the
@@ -42,14 +42,6 @@ const char* const kExceptionPropertyNotAString =
     "Property name is not a string";
 const char* const kExceptionNoPropertyName = "No property named ";
 
-// __moduleReady is normally exposed by non-Pepper NaCl modules via the SRPC
-// interface.  Since this is a Pepper module, expose this property so that
-// unit testing code can discover it.
-// TODO(dspringer): This property is used by the nacltest.js code in the
-// testing harness.  nacltest.js should be rewritten to use the onload
-// and onfail events (and there should be separate tests for those!).
-const char* const kModuleReadyPropertyId = "__moduleReady";
-const int32_t kModuleReady = 1;
 }  // namespace
 
 namespace hello_world {
@@ -121,8 +113,7 @@ bool HelloWorldScriptableObject::HasProperty(const pp::Var& property,
     return false;
   }
   const std::string property_name = property.AsString();
-  return property_name == kModuleReadyPropertyId ||
-      property_name == kFortyTwoPropertyId;
+  return property_name == kFortyTwoPropertyId;
 }
 
 pp::Var HelloWorldScriptableObject::Call(const pp::Var& method,
@@ -149,9 +140,7 @@ pp::Var HelloWorldScriptableObject::GetProperty(const pp::Var& property,
     return pp::Var();
   }
   std::string property_name = property.AsString();
-  if (property_name == kModuleReadyPropertyId) {
-    return pp::Var(kModuleReady);
-  } else if (property_name == kFortyTwoPropertyId) {
+  if (property_name == kFortyTwoPropertyId) {
     return pp::Var(kFortyTwo);
   }
   SetExceptionString(exception,

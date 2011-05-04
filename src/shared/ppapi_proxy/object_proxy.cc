@@ -1,16 +1,18 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/shared/ppapi_proxy/object_proxy.h"
 
+#include <string.h>
 #include <map>
 #include <string>
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability_process.h"
 #ifdef __native_client__
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
@@ -31,11 +33,33 @@ namespace {
 
 std::map<ObjectCapability, PP_Var*>* capability_proxy_map = NULL;
 
+const char* kDispatchEventName = "dispatchEvent";
+const char* kModuleReadyName = "__moduleReady";
+
+bool NameMatches(PP_Var name, const char* name_to_match) {
+  if (name.type != PP_VARTYPE_STRING) {
+    return false;
+  }
+  uint32_t string_length;
+  const char* name_string =
+      PPBVarInterface()->VarToUtf8(name, &string_length);
+  return (strncmp(name_string, name_to_match, string_length) == 0);
+}
+
 }  // namespace
 
 bool ObjectProxy::HasProperty(PP_Var name,
                               PP_Var* exception) {
   DebugPrintf("ObjectProxy::HasProperty\n");
+  if (is_instance_object_) {
+    if (NameMatches(name, kModuleReadyName)) {
+      // If the proxy is already running, then __moduleReady is defined.
+      return true;
+    } else if (NameMatches(name, kDispatchEventName)) {
+      // Defer handling of dispatchEvent to the embed tag's DOM element.
+      return false;
+    }
+  }
   uint32_t name_length = kMaxVarSize;
   nacl::scoped_array<char> name_chars(Serialize(&name, 1, &name_length));
   if (name_chars == NULL) {
@@ -74,6 +98,15 @@ bool ObjectProxy::HasProperty(PP_Var name,
 bool ObjectProxy::HasMethod(PP_Var name,
                             PP_Var* exception) {
   DebugPrintf("ObjectProxy::HasMethod\n");
+  if (is_instance_object_) {
+    if (NameMatches(name, kModuleReadyName)) {
+      // __moduleReady cannot be a method implemented by plugins.
+      return false;
+    } else if (NameMatches(name, kDispatchEventName)) {
+      // Defer handling of dispatchEvent to the embed tag's DOM element.
+      return false;
+    }
+  }
   uint32_t name_length = kMaxVarSize;
   nacl::scoped_array<char> name_chars(Serialize(&name, 1, &name_length));
   if (name_chars == NULL) {
@@ -112,6 +145,15 @@ bool ObjectProxy::HasMethod(PP_Var name,
 PP_Var ObjectProxy::GetProperty(PP_Var name,
                                 PP_Var* exception) {
   DebugPrintf("ObjectProxy::GetProperty\n");
+  if (is_instance_object_) {
+    if (NameMatches(name, kModuleReadyName)) {
+      // The proxy is running, so __moduleReady is 1.
+      return PP_MakeInt32(1);
+    } else if (NameMatches(name, kDispatchEventName)) {
+      // HasProperty returned false.  We should not be able to get here.
+      NACL_NOTREACHED();
+    }
+  }
   PP_Var value = PP_MakeUndefined();
   uint32_t name_length = kMaxVarSize;
   nacl::scoped_array<char> name_chars(Serialize(&name, 1, &name_length));
@@ -168,6 +210,24 @@ void ObjectProxy::SetProperty(PP_Var name,
                               PP_Var value,
                               PP_Var* exception) {
   DebugPrintf("ObjectProxy::SetProperty\n");
+  if (is_instance_object_) {
+    if (NameMatches(name, kModuleReadyName) ||
+        NameMatches(name, kDispatchEventName)) {
+      if (exception != NULL) {
+        uint32_t string_length;
+        const char* name_string =
+            PPBVarInterface()->VarToUtf8(name, &string_length);
+        nacl::string error_string =
+            nacl::string("cannot set the ") + name_string + " property.";
+        *exception =
+            PPBVarInterface()->VarFromUtf8(
+                LookupModuleIdForSrpcChannel(channel_),
+                error_string.c_str(),
+                sizeof(error_string.size()));
+      }
+      return;
+    }
+  }
   uint32_t name_length = kMaxVarSize;
   nacl::scoped_array<char> name_chars(Serialize(&name, 1, &name_length));
   if (name_chars == NULL) {
@@ -210,6 +270,13 @@ void ObjectProxy::SetProperty(PP_Var name,
 void ObjectProxy::RemoveProperty(PP_Var name,
                                  PP_Var* exception) {
   DebugPrintf("ObjectProxy::RemoveProperty\n");
+  if (is_instance_object_) {
+    if (NameMatches(name, kModuleReadyName) ||
+        NameMatches(name, kDispatchEventName)) {
+      // HasProperty returned false.  We should not be able to get here.
+      NACL_NOTREACHED();
+    }
+  }
   uint32_t name_length = kMaxVarSize;
   nacl::scoped_array<char> name_chars(Serialize(&name, 1, &name_length));
   if (name_chars == NULL) {
@@ -247,6 +314,13 @@ PP_Var ObjectProxy::Call(PP_Var method_name,
                          PP_Var* argv,
                          PP_Var* exception) {
   DebugPrintf("ObjectProxy::Call\n");
+  if (is_instance_object_) {
+    if (NameMatches(method_name, kModuleReadyName) ||
+        NameMatches(method_name, kDispatchEventName)) {
+      // HasMethod returned false.  We should not be able to get here.
+      NACL_NOTREACHED();
+    }
+  }
   PP_Var ret = PP_MakeUndefined();
   uint32_t name_length = kMaxVarSize;
   nacl::scoped_array<char> name_chars(Serialize(&method_name, 1, &name_length));
@@ -349,7 +423,8 @@ void ObjectProxy::Deallocate() {
 
 
 PP_Var ObjectProxy::New(const ObjectCapability& capability,
-                        NaClSrpcChannel* channel) {
+                        NaClSrpcChannel* channel,
+                        bool is_instance_object) {
   DebugPrintf("ObjectProxy::New\n");
   if (capability_proxy_map == NULL) {
     capability_proxy_map = new std::map<ObjectCapability, PP_Var*>;
@@ -367,7 +442,10 @@ PP_Var ObjectProxy::New(const ObjectCapability& capability,
     // TODO(sehr): increment the ref count of the object in var here.
     return var;
   }
-  Object* proxy = static_cast<Object*>(new ObjectProxy(capability, channel));
+  Object* proxy =
+      static_cast<Object*>(new ObjectProxy(capability,
+                                           channel,
+                                           is_instance_object));
   PP_Var* var = new PP_Var;
   *var = PPBVarInterface()->CreateObjectWithModuleDeprecated(
       LookupModuleIdForSrpcChannel(channel),

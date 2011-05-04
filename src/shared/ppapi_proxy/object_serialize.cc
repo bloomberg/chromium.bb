@@ -402,7 +402,9 @@ bool DeserializePpVar(NaClSrpcChannel* channel,
         DebugPrintf("Deserializing object.\n");
         SerializedObject* so = reinterpret_cast<SerializedObject*>(p);
         ObjectCapability capability = so->capability;
-        vars[i] = ObjectProxy::New(capability, channel);
+        vars[i] = ObjectProxy::New(capability,
+                                   channel,
+                                   false /* is_instance_object */);
         DebugPrintf("DONE deserializing object.\n");
         break;
       }

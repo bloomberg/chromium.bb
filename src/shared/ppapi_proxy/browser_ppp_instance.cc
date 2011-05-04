@@ -1,6 +1,6 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_instance.h"
 
@@ -192,7 +192,9 @@ PP_Var GetInstanceObject(PP_Instance instance) {
   if (srpc_result != NACL_SRPC_RESULT_OK) {
     return PP_MakeUndefined();
   }
-  return ObjectProxy::New(capability, main_channel);
+  return ObjectProxy::New(capability,
+                          main_channel,
+                          true /* is_instance_object */);
 }
 
 }  // namespace

@@ -1,6 +1,6 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/tests/ppapi_geturl/scriptable_object.h"
 
@@ -29,9 +29,9 @@ const PPP_Class_Deprecated* ScriptableObject::ppp_class() const {
 }
 
 bool ScriptableObject::HasProperty(void* /*object*/,
-                                   PP_Var name,
+                                   PP_Var /*name*/,
                                    PP_Var* /*exception*/) {
-  return (Module::VarToStr(name) == "__moduleReady");
+  return false;
 }
 
 bool ScriptableObject::HasMethod(void* /*object*/,
@@ -41,13 +41,9 @@ bool ScriptableObject::HasMethod(void* /*object*/,
 }
 
 PP_Var ScriptableObject::GetProperty(void* /*object*/,
-                                     PP_Var name,
+                                     PP_Var /*name*/,
                                      PP_Var* /*exception*/) {
-  std::string str = Module::VarToStr(name);
-  PP_Var var = PP_MakeUndefined();
-  if (str == "__moduleReady")
-    var = PP_MakeInt32(1);
-  return var;
+  return PP_MakeUndefined();
 }
 
 void ScriptableObject::GetAllPropertyNames(void* object,

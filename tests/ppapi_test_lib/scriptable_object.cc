@@ -32,12 +32,10 @@
 
 namespace {
 
-// __moduleReady is used by our test harness to determine if user module has
-// loaded and is ready for testing.
-bool HasProperty(void* object, PP_Var name, PP_Var* exception) {
-  uint32_t len = 0;
-  const char* property_name = PPBVarDeprecated()->VarToUtf8(name, &len);
-  return (0 == strncmp(property_name, "__moduleReady", len));
+bool HasProperty(void* /*object*/,
+                 PP_Var /*name*/,
+                 PP_Var* /*exception*/) {
+  return false;
 }
 
 bool HasMethod(void* object, PP_Var name, PP_Var* /*exception*/) {
@@ -47,11 +45,9 @@ bool HasMethod(void* object, PP_Var name, PP_Var* /*exception*/) {
   return HasScriptableTest(method_name);
 }
 
-PP_Var GetProperty(void* object, PP_Var name, PP_Var* exception) {
-  uint32_t len = 0;
-  const char* property_name = PPBVarDeprecated()->VarToUtf8(name, &len);
-  if (0 == strncmp(property_name, "__moduleReady", len))
-    return PP_MakeInt32(1);
+PP_Var GetProperty(void* /*object*/,
+                   PP_Var /*name*/,
+                   PP_Var* /*exception*/) {
   return PP_MakeUndefined();
 }
 

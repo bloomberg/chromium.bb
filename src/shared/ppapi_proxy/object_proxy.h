@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_OBJECT_PROXY_H_
@@ -23,8 +23,12 @@ namespace ppapi_proxy {
 // the interface in ppapi/c/dev/ppp_class_deprecated.h.
 class ObjectProxy : public Object {
  public:
-  ObjectProxy(const ObjectCapability& capability, NaClSrpcChannel* channel)
-      : capability_(capability), channel_(channel) {}
+  ObjectProxy(const ObjectCapability& capability,
+              NaClSrpcChannel* channel,
+              bool is_instance_object)
+      : capability_(capability),
+        channel_(channel),
+        is_instance_object_(is_instance_object) {}
   virtual ~ObjectProxy() {}
 
   // The bindings for the methods invoked by the PPAPI interface.
@@ -52,12 +56,14 @@ class ObjectProxy : public Object {
   virtual void Deallocate();
 
   static PP_Var New(const ObjectCapability& capability,
-                    NaClSrpcChannel* channel);
+                    NaClSrpcChannel* channel,
+                    bool is_instance_object);
 
  private:
   ObjectCapability capability_;
   // TODO(sehr): this should be a scoped_refptr.
   NaClSrpcChannel* channel_;
+  bool is_instance_object_;
   NACL_DISALLOW_COPY_AND_ASSIGN(ObjectProxy);
 };
 

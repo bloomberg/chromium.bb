@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,15 +33,6 @@ const PPB_Var_Deprecated* g_var_interface = NULL;
 const PP_Var kGetFailed = PP_MakeNull();
 const PP_Var kSetFailed = PP_MakeBool(PP_FALSE);
 const PP_Var kCallFailed = PP_MakeBool(PP_FALSE);
-
-// __moduleReady is required for tests that use the nacl_js_lib.js harness.
-// This property really should go in the ppruntime somehow.  It used to be
-// a "builtin" in the NPAPI runtime, but such builtins do not seem to be
-// supported in the Pepper version.
-// TODO(dspringer): This property is used by the nacl_js_lib.js code in the
-// testing harness.  nacl_js_lib.js should be rewritten to use the onload
-// and onfail events (and there should be separate tests for those!).
-const char* const kPropModuleReady = "__moduleReady";
 
 const char* const kPropUndefined = "propUndefined";
 const char* const kPropNull = "propNull";
@@ -228,11 +219,6 @@ TestObject::TestObject()
     return;
   }
   // Property map initialization.
-  // |kPropModuleReady| is used by the nacl_js_lib.js script, and is polled to
-  // decide when the NaCl module is loaded.  See TODO at the top of this file.
-  property_map[kPropModuleReady]=
-      Property(&TestObject::module_ready, &TestObject::set_module_ready);
-
   property_map[kPropUndefined] =
       Property(&TestObject::prop_undefined, &TestObject::set_prop_undefined);
   property_map[kPropNull] =

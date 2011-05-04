@@ -55,14 +55,11 @@ const size_t kNumFileSystemTypes =
 static bool HasProperty(void* object,
                         struct PP_Var name,
                         struct PP_Var* exception) {
-  uint32_t len = 0;
-  struct PPB_Var_Deprecated* ppb_var_interface = GetPPB_Var();
-  const char* property_name = ppb_var_interface->VarToUtf8(name, &len);
-
   UNREFERENCED_PARAMETER(object);
+  UNREFERENCED_PARAMETER(name);
   UNREFERENCED_PARAMETER(exception);
 
-  return (0 == strncmp(property_name, "__moduleReady", len));
+  return false;
 }
 
 static bool HasMethod(void* object,
@@ -88,18 +85,11 @@ static bool HasMethod(void* object,
 static struct PP_Var GetProperty(void* object,
                                  struct PP_Var name,
                                  struct PP_Var* exception) {
-  struct PP_Var var = PP_MakeUndefined();
-  uint32_t len = 0;
-  struct PPB_Var_Deprecated* ppb_var_interface = GetPPB_Var();
-  const char* property_name = ppb_var_interface->VarToUtf8(name, &len);
-
   UNREFERENCED_PARAMETER(object);
+  UNREFERENCED_PARAMETER(name);
   UNREFERENCED_PARAMETER(exception);
 
-  if (0 == strncmp(property_name, "__moduleReady", len)) {
-    var = PP_MakeInt32(1);
-  }
-  return var;
+  return PP_MakeUndefined();
 }
 
 static void GetAllPropertyNames(void* object,
