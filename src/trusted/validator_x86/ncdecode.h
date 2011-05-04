@@ -16,6 +16,8 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_x86/ncinstbuffer.h"
 
+EXTERN_C_BEGIN
+
 struct NCDecoderInst;
 struct NCDecoderState;
 
@@ -524,5 +526,7 @@ extern void NCDecodeSegmentPairUsing(
     NCDecoderStateMethod newsegment,
     NCDecoderStateMethod segmentationerror,
     NCDecoderStateMethod internalerror);
+
+EXTERN_C_END
 
 #endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_H_ */

@@ -152,7 +152,8 @@ ncdecode_tablegen = env_decode_table.ComponentProgram(
 env.Requires(ncdecode_tablegen, crt)
 
 # Segment register validator library
-NCVALIDATE_SOURCES = ['nacl_cpuid.c',
+NCVALIDATE_SOURCES = ['halt_trim.c',
+                      'nacl_cpuid.c',
                       'ncdecode.c',
                       'ncinstbuffer.c',
                       'nc_segment.c',
@@ -576,7 +577,8 @@ gtest_env.FilterOut(
 gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
 
 # List of (unit) test file prefixes to run unit tests on.
-gtest_sources = ['nc_remaining_memory',
+gtest_sources = ['halt_trim',
+                 'nc_remaining_memory',
                  'nc_inst_bytes',
                  'nc_inst_state']
 

@@ -21,6 +21,7 @@
           '<(SHARED_INTERMEDIATE_DIR)',
         ],
         'sources': [
+          'halt_trim.c',
           'nacl_cpuid.c',
           'ncdecode.c',
           'ncinstbuffer.c',

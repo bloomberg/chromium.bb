@@ -16,6 +16,7 @@
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/validator_x86/halt_trim.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator_x86/nc_jumps.h"
@@ -370,7 +371,6 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
   if (state != NULL) {
     return_value = state;
     state->vbase = vbase;
-    state->sz = sz;
     state->alignment = alignment;
     state->vlimit = vlimit;
     state->alignment_mask = alignment - 1;
@@ -493,6 +493,7 @@ void NaClValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
   NaClSegment segment;
   NaClInstIter *iter;
   if (NaClValidatorStateInitializeValidators(state)) {
+    NCHaltTrimSegment(mbase, vbase, state->alignment, &size, &state->vlimit);
     NaClSegmentInitialize(mbase, vbase, size, &segment);
     for (iter = NaClInstIterCreateWithLookback(&segment, kLookbackSize);
          NaClInstIterHasNext(iter);

@@ -94,7 +94,8 @@ void NCValidatorStateSetCPUFeatures(struct NCValidatorState* vstate,
  * interpreted as an indication that the module in question is
  * invalid.
  */
-void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, size_t sz,
+void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
+                       NaClMemorySize sz,
                        struct NCValidatorState *vstate);
 
 /* Validate a segment for dynamic code replacement */

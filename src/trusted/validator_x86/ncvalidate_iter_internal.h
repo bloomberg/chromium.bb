@@ -44,8 +44,6 @@ typedef struct NaClValidatorDefinition {
 struct NaClValidatorState {
   /* Holds the vbase value passed to NaClValidatorStateCreate. */
   NaClPcAddress vbase;
-  /* Holds the sz value passed to NaClValidatorStateCreate. */
-  NaClMemorySize sz;
   /* Holds the alignment value passed to NaClValidatorStateCreate. */
   uint8_t alignment;
   /* Holds the upper limit of all possible addresses */
