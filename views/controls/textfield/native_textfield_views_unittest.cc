@@ -502,6 +502,13 @@ TEST_F(NativeTextfieldViewsTest, FocusTraversalTest) {
   // Request focus should still work.
   textfield_->RequestFocus();
   EXPECT_EQ(1, GetFocusedView()->GetID());
+
+  // Test if clicking on textfield view sets the focus to textfield_.
+  widget_->GetFocusManager()->AdvanceFocus(true);
+  EXPECT_EQ(3, GetFocusedView()->GetID());
+  MouseEvent click(ui::ET_MOUSE_PRESSED, 0, 0, ui::EF_LEFT_BUTTON_DOWN);
+  textfield_view_->OnMousePressed(click);
+  EXPECT_EQ(1, GetFocusedView()->GetID());
 }
 
 void VerifyTextfieldContextMenuContents(bool textfield_has_selection,

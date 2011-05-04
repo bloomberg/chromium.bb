@@ -66,7 +66,10 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
       insert_(true),
       is_cursor_visible_(false),
       skip_input_method_cancel_composition_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(cursor_timer_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(cursor_timer_(this)),
+      aggregated_clicks_(0),
+      last_click_time_(base::Time::FromInternalValue(0)),
+      last_click_location_(0, 0) {
   set_border(text_border_);
 
   // Multiline is not supported.
@@ -85,27 +88,21 @@ NativeTextfieldViews::~NativeTextfieldViews() {
 
 bool NativeTextfieldViews::OnMousePressed(const MouseEvent& event) {
   OnBeforeUserAction();
-  RequestFocus();
+  textfield_->RequestFocus();
 
   if (event.IsOnlyLeftMouseButton()) {
-    static size_t aggregated_clicks = 0;
-    static base::Time last_click_time = base::Time::FromInternalValue(0);
-    static gfx::Point last_click_location;
-    static View* last_click_view = NULL;
-    base::TimeDelta time_delta = event.time_stamp() - last_click_time;
-    gfx::Point location_delta = event.location().Subtract(last_click_location);
+    base::TimeDelta time_delta = event.time_stamp() - last_click_time_;
+    gfx::Point location_delta = event.location().Subtract(last_click_location_);
     if (time_delta.InMilliseconds() <= GetDoubleClickInterval() &&
-        !ExceededDragThreshold(location_delta.x(), location_delta.y()) &&
-        last_click_view == this) {
-      aggregated_clicks = (aggregated_clicks + 1) % 3;
+        !ExceededDragThreshold(location_delta.x(), location_delta.y())) {
+      aggregated_clicks_ = (aggregated_clicks_ + 1) % 3;
     } else {
-      aggregated_clicks = 0;
+      aggregated_clicks_ = 0;
     }
-    last_click_time = event.time_stamp();
-    last_click_location = event.location();
-    last_click_view = this;
+    last_click_time_ = event.time_stamp();
+    last_click_location_ = event.location();
 
-    switch(aggregated_clicks) {
+    switch(aggregated_clicks_) {
       case 0:
         MoveCursorTo(event.location(), event.IsShiftDown());
         break;

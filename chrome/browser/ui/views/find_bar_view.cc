@@ -528,6 +528,8 @@ FindBarView::SearchTextfieldView::~SearchTextfieldView() {
 }
 
 void FindBarView::SearchTextfieldView::RequestFocus() {
+  if (HasFocus())
+    return;
   views::View::RequestFocus();
   SelectAll();
 }

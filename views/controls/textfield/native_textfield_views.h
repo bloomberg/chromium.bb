@@ -233,6 +233,11 @@ class NativeTextfieldViews : public View,
   // A runnable method factory for callback to update the cursor.
   ScopedRunnableMethodFactory<NativeTextfieldViews> cursor_timer_;
 
+  // State variables used to track double and triple clicks.
+  size_t aggregated_clicks_;
+  base::Time last_click_time_;
+  gfx::Point last_click_location_;
+
   // Context menu and its content list for the textfield.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
   scoped_ptr<Menu2> context_menu_menu_;
