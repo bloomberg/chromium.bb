@@ -20,6 +20,7 @@ set -u
 
 
 echo @@@BUILD_STEP gclient_runhooks@@@
+export GYP_DEFINES=target_arch=x64
 gclient runhooks --force
 
 echo @@@BUILD_STEP clobber@@@
@@ -34,7 +35,7 @@ echo @@@BUILD_STEP gyp_compile@@@
 make -C .. -k -j12 V=1 BUILDTYPE=Debug
 
 echo @@@BUILD_STEP gyp_tests@@@
-python trusted_test.py --config Debug
+python trusted_test.py --config Debug --bits 64
 
 echo @@@BUILD_STEP scons_compile@@@
 ./scons -j 8 DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
