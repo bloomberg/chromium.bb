@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,9 +17,7 @@ StatusTray::~StatusTray() {
 }
 
 void StatusTray::RemoveAllIcons() {
-  // Walk any active status icons and delete them.
-  STLDeleteContainerPointers(status_icons_.begin(), status_icons_.end());
-  status_icons_.clear();
+  STLDeleteElements(&status_icons_);
 }
 
 StatusIcon* StatusTray::CreateStatusIcon() {
