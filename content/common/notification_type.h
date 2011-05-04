@@ -758,11 +758,11 @@ class NotificationType {
     // is the profile.
     OMNIBOX_OPENED_URL,
 
-    // Sent by the autocomplete edit when it is destroyed.
-    AUTOCOMPLETE_EDIT_DESTROYED,
+    // Sent by the omnibox when it is destroyed.
+    OMNIBOX_DESTROYED,
 
-    // Sent by the autocomplete edit when it is focused.
-    AUTOCOMPLETE_EDIT_FOCUSED,
+    // Sent by the omnibox when it is focused.
+    OMNIBOX_FOCUSED,
 
     // Sent when the main Google URL has been updated.  Some services cache
     // this value and need to update themselves when it changes.  See

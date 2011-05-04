@@ -47,9 +47,9 @@ class ChannelProxy;
 }
 
 class AutofillProfile;
-class AutomationAutocompleteEditTracker;
 class AutomationBrowserTracker;
 class AutomationExtensionTracker;
+class AutomationOmniboxTracker;
 class AutomationResourceMessageFilter;
 class AutomationTabTracker;
 class AutomationWindowTracker;
@@ -177,7 +177,7 @@ class AutomationProvider
   // and closes the IPC channel.
   void OnMessageDeserializationFailure();
 
-  scoped_ptr<AutomationAutocompleteEditTracker> autocomplete_edit_tracker_;
+  scoped_ptr<AutomationOmniboxTracker> automation_omnibox_tracker_;
   scoped_ptr<AutomationBrowserTracker> browser_tracker_;
   scoped_ptr<InitialLoadObserver> initial_load_observer_;
   scoped_ptr<MetricEventDurationObserver> metric_event_duration_observer_;

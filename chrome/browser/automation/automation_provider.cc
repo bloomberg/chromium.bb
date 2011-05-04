@@ -26,9 +26,9 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/automation/automation_autocomplete_edit_tracker.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_extension_tracker.h"
+#include "chrome/browser/automation/automation_omnibox_tracker.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
@@ -119,8 +119,7 @@ AutomationProvider::AutomationProvider(Profile* profile)
   extension_tracker_.reset(new AutomationExtensionTracker(this));
   tab_tracker_.reset(new AutomationTabTracker(this));
   window_tracker_.reset(new AutomationWindowTracker(this));
-  autocomplete_edit_tracker_.reset(
-      new AutomationAutocompleteEditTracker(this));
+  automation_omnibox_tracker_.reset(new AutomationOmniboxTracker(this));
   new_tab_ui_load_observer_.reset(new NewTabUILoadObserver(this));
   metric_event_duration_observer_.reset(new MetricEventDurationObserver());
   extension_test_result_observer_.reset(

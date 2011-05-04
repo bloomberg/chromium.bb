@@ -2069,7 +2069,7 @@ AutocompleteEditFocusedObserver::AutocompleteEditFocusedObserver(
       reply_message_(reply_message),
       autocomplete_edit_model_(autocomplete_edit) {
   Source<AutocompleteEditModel> source(autocomplete_edit);
-  registrar_.Add(this, NotificationType::AUTOCOMPLETE_EDIT_FOCUSED, source);
+  registrar_.Add(this, NotificationType::OMNIBOX_FOCUSED, source);
 }
 
 AutocompleteEditFocusedObserver::~AutocompleteEditFocusedObserver() {}
@@ -2078,7 +2078,7 @@ void AutocompleteEditFocusedObserver::Observe(
     NotificationType type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  DCHECK(type == NotificationType::AUTOCOMPLETE_EDIT_FOCUSED);
+  DCHECK(type == NotificationType::OMNIBOX_FOCUSED);
   if (automation_) {
     AutomationMsg_WaitForAutocompleteEditFocus::WriteReplyParams(
         reply_message_.get(), true);

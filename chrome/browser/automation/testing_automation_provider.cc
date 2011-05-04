@@ -28,8 +28,8 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/automation/automation_autocomplete_edit_tracker.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
+#include "chrome/browser/automation/automation_omnibox_tracker.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
@@ -1199,8 +1199,8 @@ void TestingAutomationProvider::GetAutocompleteEditText(
     bool* success,
     string16* text) {
   *success = false;
-  if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
-    *text = autocomplete_edit_tracker_->GetResource(autocomplete_edit_handle)->
+  if (automation_omnibox_tracker_->ContainsHandle(autocomplete_edit_handle)) {
+    *text = automation_omnibox_tracker_->GetResource(autocomplete_edit_handle)->
         GetText();
     *success = true;
   }
@@ -1211,8 +1211,8 @@ void TestingAutomationProvider::SetAutocompleteEditText(
     const string16& text,
     bool* success) {
   *success = false;
-  if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
-    autocomplete_edit_tracker_->GetResource(autocomplete_edit_handle)->
+  if (automation_omnibox_tracker_->ContainsHandle(autocomplete_edit_handle)) {
+    automation_omnibox_tracker_->GetResource(autocomplete_edit_handle)->
         SetUserText(text);
     *success = true;
   }
@@ -1223,8 +1223,8 @@ void TestingAutomationProvider::AutocompleteEditGetMatches(
     bool* success,
     std::vector<AutocompleteMatchData>* matches) {
   *success = false;
-  if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
-    const AutocompleteResult& result = autocomplete_edit_tracker_->
+  if (automation_omnibox_tracker_->ContainsHandle(autocomplete_edit_handle)) {
+    const AutocompleteResult& result = automation_omnibox_tracker_->
         GetResource(autocomplete_edit_handle)->model()->result();
     for (AutocompleteResult::const_iterator i = result.begin();
         i != result.end(); ++i)
@@ -1237,14 +1237,14 @@ void TestingAutomationProvider::AutocompleteEditGetMatches(
 void  TestingAutomationProvider::WaitForAutocompleteEditFocus(
     int autocomplete_edit_handle,
     IPC::Message* reply_message) {
-  if (!autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
+  if (!automation_omnibox_tracker_->ContainsHandle(autocomplete_edit_handle)) {
     AutomationMsg_WaitForAutocompleteEditFocus::WriteReplyParams(
         reply_message_, false);
     Send(reply_message);
     return;
   }
 
-  AutocompleteEditModel* model = autocomplete_edit_tracker_->
+  AutocompleteEditModel* model = automation_omnibox_tracker_->
       GetResource(autocomplete_edit_handle)-> model();
   if (model->has_focus()) {
     AutomationMsg_WaitForAutocompleteEditFocus::WriteReplyParams(
@@ -1269,7 +1269,7 @@ void TestingAutomationProvider::GetAutocompleteEditForBrowser(
     LocationBar* loc_bar = browser->window()->GetLocationBar();
     OmniboxView* omnibox_view = loc_bar->location_entry();
     // Add() returns the existing handle for the resource if any.
-    *autocomplete_edit_handle = autocomplete_edit_tracker_->Add(omnibox_view);
+    *autocomplete_edit_handle = automation_omnibox_tracker_->Add(omnibox_view);
     *success = true;
   }
 }
@@ -1280,8 +1280,8 @@ void TestingAutomationProvider::AutocompleteEditIsQueryInProgress(
     bool* query_in_progress) {
   *success = false;
   *query_in_progress = false;
-  if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
-    *query_in_progress = !autocomplete_edit_tracker_->
+  if (automation_omnibox_tracker_->ContainsHandle(autocomplete_edit_handle)) {
+    *query_in_progress = !automation_omnibox_tracker_->
         GetResource(autocomplete_edit_handle)->model()->
         autocomplete_controller()->done();
     *success = true;

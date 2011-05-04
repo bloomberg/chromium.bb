@@ -579,10 +579,9 @@ const AutocompleteResult& AutocompleteEditModel::result() const {
 void AutocompleteEditModel::OnSetFocus(bool control_down) {
   has_focus_ = true;
   control_key_state_ = control_down ? DOWN_WITHOUT_CHANGE : UP;
-  NotificationService::current()->Notify(
-      NotificationType::AUTOCOMPLETE_EDIT_FOCUSED,
-      Source<AutocompleteEditModel>(this),
-      NotificationService::NoDetails());
+  NotificationService::current()->Notify(NotificationType::OMNIBOX_FOCUSED,
+                                         Source<AutocompleteEditModel>(this),
+                                         NotificationService::NoDetails());
 }
 
 void AutocompleteEditModel::OnWillKillFocus(
