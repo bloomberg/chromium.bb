@@ -186,9 +186,9 @@ INLINE static size_t handle_free_before(size_t ptr) {
   uint64_t base;
   size_t size, old_ptr;
   size_t orig_ptr = ptr;
+  start_ignore_all_accesses_and_sync();
   if (!ptr)
     return 0;
-  start_ignore_all_accesses_and_sync();
   /* Get the size of allocated region, check sanity. */
   ptr -= kRedZoneSize;
   base = VALGRIND_SANDBOX_PTR(ptr);
