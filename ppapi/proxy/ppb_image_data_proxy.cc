@@ -26,6 +26,8 @@
 #elif defined(OS_MACOSX)
 #include <sys/stat.h>
 #include <sys/mman.h>
+#elif defined(OS_WIN)
+#include <windows.h>
 #endif
 
 namespace pp {
@@ -78,8 +80,9 @@ ImageData* ImageData::AsImageData() {
 
 void* ImageData::Map() {
 #if defined(OS_WIN)
-  NOTIMPLEMENTED();
-  return NULL;
+  mapped_data_ = ::MapViewOfFile(handle_, FILE_MAP_READ | FILE_MAP_WRITE,
+                                 0, 0, 0);
+  return mapped_data_;
 #elif defined(OS_MACOSX)
   struct stat st;
   if (fstat(handle_.fd, &st) != 0)
@@ -104,7 +107,8 @@ void* ImageData::Map() {
 
 void ImageData::Unmap() {
 #if defined(OS_WIN)
-  NOTIMPLEMENTED();
+  if (mapped_data_)
+    ::UnmapViewOfFile(mapped_data_);
 #elif defined(OS_MACOSX)
   if (mapped_data_) {
     struct stat st;
@@ -270,8 +274,15 @@ void PPB_ImageData_Proxy::OnMsgCreate(PP_Instance instance,
     uint32_t byte_count = 0;
     if (trusted) {
       int32_t handle;
-      if (trusted->GetSharedMemory(resource, &handle, &byte_count) == PP_OK)
-          *result_image_handle = ImageData::HandleFromInt(handle);
+      if (trusted->GetSharedMemory(resource, &handle, &byte_count) == PP_OK) {
+#if defined(OS_WIN)
+        pp::proxy::ImageHandle ih = ImageData::HandleFromInt(handle);
+        *result_image_handle = dispatcher()->ShareHandleWithRemote(ih, false);
+#else
+        // TODO: This memory sharing is probaly broken on Mac.
+        *result_image_handle = ImageData::HandleFromInt(handle);
+#endif
+      }
     }
 
     result->SetHostResource(instance, resource);
