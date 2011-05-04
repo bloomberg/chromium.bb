@@ -176,9 +176,6 @@ are exported to translation interchange files (e.g. XMB files), etc.
 
     base_dir = util.dirname(output_node.GetOutputFilename())
 
-    if node.name == 'if' and not node.IsConditionSatisfied():
-      return
-
     try:
       formatter = node.ItemFormatter(output_node.GetType())
       if formatter:
