@@ -269,6 +269,7 @@
         <include name="IDR_SEARCH_ENGINE_LOGO_CENTRUM" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_DAUM" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_DELFI" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_DIRI" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_GOO" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_GOOGLE" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_IN" file="notused.png" type="BINDATA" />
