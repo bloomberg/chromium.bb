@@ -67,7 +67,7 @@ TEST_P(FullTabUITest, KeyboardInput) {
 }
 
 // Tests keyboard shortcuts for back and forward.
-TEST_P(FullTabUITest, KeyboardBackForward) {
+TEST_P(FullTabUITest, FLAKY_KeyboardBackForward) {
   if (IsWorkstationLocked()) {
     LOG(ERROR) << "This test cannot be run in a locked workstation.";
     return;
