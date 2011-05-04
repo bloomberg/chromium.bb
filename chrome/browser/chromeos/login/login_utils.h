@@ -23,6 +23,7 @@ namespace chromeos {
 
 class Authenticator;
 class BackgroundView;
+class LoginDisplayHost;
 class LoginStatusConsumer;
 
 class LoginUtils {
@@ -41,8 +42,10 @@ class LoginUtils {
   static void Set(LoginUtils* ptr);
 
   // Thin wrapper around BrowserInit::LaunchBrowser().  Meant to be used in a
-  // Task posted to the UI thread.
-  static void DoBrowserLaunch(Profile* profile);
+  // Task posted to the UI thread.  Once the browser is launched the login
+  // host is deleted.
+  static void DoBrowserLaunch(Profile* profile,
+                              LoginDisplayHost* login_host);
 
   virtual ~LoginUtils() {}
 

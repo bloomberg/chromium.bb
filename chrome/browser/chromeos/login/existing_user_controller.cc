@@ -357,9 +357,8 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
         WizardController::kUserImageScreenName :
         WizardController::kRegistrationScreenName);
   } else {
-    LoginUtils::DoBrowserLaunch(profile);
-    // Delay deletion as we're on the stack.
-    host_->OnSessionStart();
+    LoginUtils::DoBrowserLaunch(profile, host_);
+    host_ = NULL;
   }
 }
 

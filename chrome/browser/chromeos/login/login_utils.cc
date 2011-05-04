@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
+#include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/parallel_authenticator.h"
 #include "chrome/browser/chromeos/login/user_image_downloader.h"
@@ -578,7 +579,8 @@ void LoginUtils::Set(LoginUtils* mock) {
   LoginUtilsWrapper::GetInstance()->reset(mock);
 }
 
-void LoginUtils::DoBrowserLaunch(Profile* profile) {
+void LoginUtils::DoBrowserLaunch(Profile* profile,
+                                 LoginDisplayHost* login_host) {
   BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
 
   // Update command line in case loose values were added.
@@ -593,6 +595,14 @@ void LoginUtils::DoBrowserLaunch(Profile* profile) {
                              FilePath(),
                              true,
                              &return_code);
+
+  // Mark login host for deletion after browser starts.  This
+  // guarantees that the message loop will be referenced by the
+  // browser before it is dereferenced by the login host.
+  if (login_host) {
+    login_host->OnSessionStart();
+    login_host = NULL;
+  }
 }
 
 }  // namespace chromeos

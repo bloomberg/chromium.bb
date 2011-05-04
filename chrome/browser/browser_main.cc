@@ -1013,7 +1013,7 @@ class StubLogin : public chromeos::LoginStatusConsumer,
 
   // LoginUtils::Delegate implementation:
   virtual void OnProfilePrepared(Profile* profile) {
-    chromeos::LoginUtils::DoBrowserLaunch(profile);
+    chromeos::LoginUtils::DoBrowserLaunch(profile, NULL);
     delete this;
   }
 

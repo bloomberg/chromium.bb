@@ -522,15 +522,14 @@ void WizardController::OnUpdateErrorUpdating() {
 }
 
 void WizardController::OnUserImageSelected() {
-  // Notify host that we're about to launch browser session.
-  // Host will mark itself (and all controllers/windows) for deletion.
-  host_->OnSessionStart();
-  // Launch browser after controller is deleted and its windows are closed.
+  // Launch browser and delete login host controller.
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       NewRunnableFunction(&chromeos::LoginUtils::DoBrowserLaunch,
-                          ProfileManager::GetDefaultProfile()));
+                          ProfileManager::GetDefaultProfile(),
+                          host_));
+  host_ = NULL;
   // TODO(avayvod): Sync image with Google Sync.
 }
 
