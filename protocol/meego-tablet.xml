@@ -13,6 +13,14 @@
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
 
+    <request name="show_grid">
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+
+    <request name="show_panels">
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+
     <request name="create_client">
       <arg name="id" type="new_id" interface="meego_tablet_client"/>
       <arg name="name" type="string"/>

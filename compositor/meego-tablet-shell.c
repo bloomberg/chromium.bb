@@ -317,6 +317,22 @@ tablet_shell_set_homescreen(struct wl_client *client,
 }
 
 static void
+tablet_shell_show_grid(struct wl_client *client,
+		       struct meego_tablet_shell *shell,
+		       struct wl_surface *surface)
+{
+	fprintf(stderr, "tablet_shell_show_grid\n");
+}
+
+static void
+tablet_shell_show_panels(struct wl_client *client,
+			 struct meego_tablet_shell *shell,
+			 struct wl_surface *surface)
+{
+	fprintf(stderr, "tablet_shell_show_panels\n");
+}
+
+static void
 destroy_tablet_client(struct wl_resource *resource, struct wl_client *client)
 {
 	struct meego_tablet_client *tablet_client =
@@ -386,6 +402,8 @@ static const struct meego_tablet_shell_interface tablet_shell_interface = {
 	tablet_shell_set_lockscreen,
 	tablet_shell_set_switcher,
 	tablet_shell_set_homescreen,
+	tablet_shell_show_grid,
+	tablet_shell_show_panels,
 	tablet_shell_create_client
 };
 
