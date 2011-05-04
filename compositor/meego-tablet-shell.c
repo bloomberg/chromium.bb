@@ -343,26 +343,39 @@ destroy_tablet_client(struct wl_resource *resource, struct wl_client *client)
 }
 
 static void
-tablet_client_poke(struct wl_client *client,
-		   struct meego_tablet_client *tablet_client)
+tablet_client_destroy(struct wl_client *client,
+		      struct meego_tablet_client *tablet_client)
+{
+}
+
+static void
+tablet_client_activate(struct wl_client *client,
+		       struct meego_tablet_client *tablet_client)
 {
 	struct wlsc_compositor *compositor = tablet_client->shell->compositor;
 	struct meego_tablet_shell *shell = tablet_client->shell;
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) compositor->input_device;
 
-	fprintf(stderr, "poke client %s\n", tablet_client->name);
+	fprintf(stderr, "activate client %s\n", tablet_client->name);
 	shell->current_client = tablet_client;
-	if (tablet_client->surface) {
-		wlsc_surface_activate(tablet_client->surface, device,
-				      wlsc_compositor_get_time());
-		meego_tablet_shell_set_state(tablet_client->shell,
-					     STATE_TASK);
-	}
+	if (!tablet_client->surface)
+		return;
+
+	wlsc_surface_activate(tablet_client->surface, device,
+			      wlsc_compositor_get_time());
+
+	if (shell->state == STATE_SWITCHER) {
+		wl_list_remove(&shell->switcher_listener.link);
+		shell->switcher_surface = NULL;
+	};
+
+	meego_tablet_shell_set_state(tablet_client->shell, STATE_TASK);
 }
 
 static const struct meego_tablet_client_interface tablet_client_interface = {
-	tablet_client_poke
+	tablet_client_destroy,
+	tablet_client_activate
 };
 
 static void
