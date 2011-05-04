@@ -85,6 +85,13 @@
       'sync',
       'test_basic',
       'themes',
+      # crbug.com/81434 - Internal Flash broken.
+      '-browser.BrowserTest.testFlashLoadsAfterKill',
+      '-infobars.InfobarTest.testPluginCrashForMultiTabs',
+      '-infobars.InfobarTest.testPluginCrashInfobar',
+      '-browser.BrowserTest.testCanLoadFlash',
+      '-browser.BrowserTest.testSingleFlashPluginProcess',
+      '-plugins'
     ],
 
     'win': [
