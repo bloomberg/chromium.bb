@@ -527,6 +527,18 @@ SkBitmap OpaqueBrowserFrameView::GetFaviconForTabIconView() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// OpaqueBrowserFrameView, protected:
+
+void OpaqueBrowserFrameView::Observe(NotificationType type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
+  DCHECK_EQ(NotificationType::PREF_CHANGED, type.value);
+  std::string* name = Details<std::string>(details).ptr();
+  if (prefs::kGoogleServicesUsername == *name)
+    LayoutProfileTag();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, private:
 
 int OpaqueBrowserFrameView::FrameBorderThickness(bool restored) const {
@@ -1193,15 +1205,6 @@ gfx::Rect OpaqueBrowserFrameView::CalculateClientAreaBounds(int width,
                    std::max(0, width - (2 * border_thickness)),
                    std::max(0, height - GetReservedHeight() -
                        top_height - border_thickness));
-}
-
-void OpaqueBrowserFrameView::Observe(NotificationType type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
-  DCHECK_EQ(NotificationType::PREF_CHANGED, type.value);
-  std::string* name = Details<std::string>(details).ptr();
-  if (prefs::kGoogleServicesUsername == *name)
-    LayoutProfileTag();
 }
 
 void OpaqueBrowserFrameView::RegisterLoginNotifications() {

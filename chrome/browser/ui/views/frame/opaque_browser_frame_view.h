@@ -107,6 +107,12 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
   virtual SkBitmap GetFaviconForTabIconView() OVERRIDE;
 
+ protected:
+  // NotificationObserver implementation:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
  private:
   // Returns the thickness of the border that makes up the window frame edges.
   // This does not include any client edge.  If |restored| is true, acts as if
@@ -156,11 +162,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Returns the bounds of the client area for the specified view size.
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;
-
-  // NotificationObserver implementation:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
 
   // Receive notifications when the user's Google services user name changes.
   void RegisterLoginNotifications();

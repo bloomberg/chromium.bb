@@ -249,6 +249,8 @@ void TouchBrowserFrameView::Observe(NotificationType type,
   } else if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
     GetFocusedStateAccessor()->DeleteProperty(
         Source<TabContents>(source).ptr()->property_bag());
+  } else if (type == NotificationType::PREF_CHANGED) {
+    OpaqueBrowserFrameView::Observe(type, source, details);
   }
 }
 

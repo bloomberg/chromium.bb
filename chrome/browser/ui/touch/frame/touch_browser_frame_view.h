@@ -26,8 +26,7 @@ class SlideAnimation;
 class TouchBrowserFrameView : public OpaqueBrowserFrameView,
                               public views::FocusChangeListener,
                               public TabStripModelObserver,
-                              public ui::AnimationDelegate,
-                              public NotificationObserver {
+                              public ui::AnimationDelegate {
  public:
   enum VirtualKeyboardType {
     NONE,
