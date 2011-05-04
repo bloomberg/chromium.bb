@@ -272,10 +272,6 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
 // should cause the browser to redraw the compositor's contents.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                      GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
-#elif defined(OS_WIN)
-IPC_MESSAGE_CONTROL2(GpuHostMsg_ScheduleComposite,
-                     int32, /* renderer_id */
-                     int32 /* render_view_id */)
 #endif
 
 //------------------------------------------------------------------------------

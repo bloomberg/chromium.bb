@@ -106,9 +106,6 @@ class GpuProcessHostUIShim
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
 #endif
-#if defined(OS_WIN)
-  void OnScheduleComposite(int32 renderer_id, int32 render_view_id);
-#endif
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;

@@ -230,8 +230,6 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnAcceleratedSurfaceSetIOSurface)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
-#elif defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_ScheduleComposite, OnScheduleComposite);
 #endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
@@ -326,20 +324,6 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
       params.route_id,
       host_id_,
       params.swap_buffers_count);
-}
-
-#endif
-
-#if defined(OS_WIN)
-
-void GpuProcessHostUIShim::OnScheduleComposite(int renderer_id,
-    int render_view_id) {
-  RenderViewHost* host = RenderViewHost::FromID(renderer_id,
-                                                render_view_id);
-  if (!host) {
-    return;
-  }
-  host->ScheduleComposite();
 }
 
 #endif
