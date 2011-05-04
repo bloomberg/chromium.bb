@@ -45,21 +45,26 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   TestingProfile* profile() const { return profile_.get(); }
   PrefService* pref_service() const { return profile_->GetPrefs(); }
   ProtocolHandlerRegistry* registry() const { return registry_.get(); }
+  const ProtocolHandler& test_protocol_handler() const {
+    return test_protocol_handler_;
+  }
 
-  ProtocolHandler* CreateProtocolHandler(const std::string& protocol,
-                                         const GURL& url,
-                                         const std::string& title) {
+  ProtocolHandler CreateProtocolHandler(const std::string& protocol,
+                                        const GURL& url,
+                                        const std::string& title) {
   return ProtocolHandler::CreateProtocolHandler(protocol, url,
       UTF8ToUTF16(title));
   }
 
-  ProtocolHandler* MakeProtocolHandler(const std::string& protocol) {
-    return CreateProtocolHandler(protocol, GURL("http://blah.com/%s"),
-        protocol);
+  ProtocolHandler CreateProtocolHandler(const std::string& protocol,
+      const std::string& name) {
+    return CreateProtocolHandler(protocol, GURL("http://" + name + "/%s"),
+        name);
   }
 
-  ProtocolHandler* TestProtocolHandler() {
-    return CreateProtocolHandler("test", GURL("http://test.com/%s"), "Test");
+  ProtocolHandler MakeProtocolHandler(const std::string& protocol) {
+    return CreateProtocolHandler(protocol, GURL("http://blah.com/%s"),
+        protocol);
   }
 
   void ReloadProtocolHandlerRegistry() {
@@ -75,6 +80,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
     delegate_ = new FakeDelegate();
     registry_ = new ProtocolHandlerRegistry(profile(), delegate());
     registry_->Load();
+    test_protocol_handler_ = CreateProtocolHandler("test", GURL("http://test.com/%s"), "Test");
 
     ProtocolHandlerRegistry::RegisterPrefs(pref_service());
   }
@@ -82,17 +88,18 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   FakeDelegate* delegate_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<ProtocolHandlerRegistry> registry_;
+  ProtocolHandler test_protocol_handler_;
 };
 
 TEST_F(ProtocolHandlerRegistryTest, AcceptProtocolHandlerHandlesProtocol) {
   ASSERT_FALSE(registry()->IsHandledProtocol("test"));
-  registry()->OnAcceptRegisterProtocolHandler(TestProtocolHandler());
+  registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
   ASSERT_TRUE(registry()->IsHandledProtocol("test"));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, DisableDeregistersProtocolHandlers) {
   ASSERT_FALSE(delegate()->IsExternalHandlerRegistered("test"));
-  registry()->OnAcceptRegisterProtocolHandler(TestProtocolHandler());
+  registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
   ASSERT_TRUE(delegate()->IsExternalHandlerRegistered("test"));
 
   registry()->Disable();
@@ -102,24 +109,23 @@ TEST_F(ProtocolHandlerRegistryTest, DisableDeregistersProtocolHandlers) {
 }
 
 TEST_F(ProtocolHandlerRegistryTest, IgnoreProtocolHandler) {
-  registry()->OnIgnoreRegisterProtocolHandler(TestProtocolHandler());
-  scoped_ptr<ProtocolHandler> test_handler(TestProtocolHandler());
-  ASSERT_TRUE(registry()->IsIgnored(test_handler.get()));
-  registry()->RemoveIgnoredHandler(test_handler.get());
-  ASSERT_FALSE(registry()->IsIgnored(test_handler.get()));
+  registry()->OnIgnoreRegisterProtocolHandler(test_protocol_handler());
+  ASSERT_TRUE(registry()->IsIgnored(test_protocol_handler()));
+  registry()->RemoveIgnoredHandler(test_protocol_handler());
+  ASSERT_FALSE(registry()->IsIgnored(test_protocol_handler()));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, SaveAndLoad) {
-  registry()->OnAcceptRegisterProtocolHandler(TestProtocolHandler());
-  registry()->OnIgnoreRegisterProtocolHandler(MakeProtocolHandler("stuff"));
+  ProtocolHandler stuff_protocol_handler(MakeProtocolHandler("stuff"));
+  registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
+  registry()->OnIgnoreRegisterProtocolHandler(stuff_protocol_handler);
 
-  scoped_ptr<ProtocolHandler> stuff_handler(MakeProtocolHandler("stuff"));
   ASSERT_TRUE(registry()->IsHandledProtocol("test"));
-  ASSERT_TRUE(registry()->IsIgnored(stuff_handler.get()));
+  ASSERT_TRUE(registry()->IsIgnored(stuff_protocol_handler));
   delegate()->Reset();
   ReloadProtocolHandlerRegistry();
   ASSERT_TRUE(registry()->IsHandledProtocol("test"));
-  ASSERT_TRUE(registry()->IsIgnored(stuff_handler.get()));
+  ASSERT_TRUE(registry()->IsIgnored(stuff_protocol_handler));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestEnabledDisabled) {
@@ -134,3 +140,4 @@ TEST_F(ProtocolHandlerRegistryTest,
   delegate()->RegisterExternalHandler("test");
   ASSERT_FALSE(registry()->CanSchemeBeOverridden("test"));
 }
+

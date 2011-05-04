@@ -5,6 +5,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler.h"
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
 
 ProtocolHandler::ProtocolHandler(const std::string& protocol,
@@ -15,17 +16,30 @@ ProtocolHandler::ProtocolHandler(const std::string& protocol,
     title_(title) {
 }
 
-ProtocolHandler* ProtocolHandler::CreateProtocolHandler(
+ProtocolHandler ProtocolHandler::CreateProtocolHandler(
     const std::string& protocol,
     const GURL& url,
     const string16& title) {
   std::string lower_protocol(protocol);
   lower_protocol = StringToLowerASCII(protocol);
-  return new ProtocolHandler(lower_protocol, url, title);
+  return ProtocolHandler(lower_protocol, url, title);
 }
 
-ProtocolHandler* ProtocolHandler::CreateProtocolHandler(
+ProtocolHandler::ProtocolHandler() {
+}
+
+const ProtocolHandler ProtocolHandler::kEmpty;
+
+bool ProtocolHandler::IsValidDict(const DictionaryValue* value) {
+  return value->HasKey("protocol") && value->HasKey("url") &&
+    value->HasKey("title");
+}
+
+ProtocolHandler ProtocolHandler::CreateProtocolHandler(
     const DictionaryValue* value) {
+  if (!IsValidDict(value)) {
+    return kEmpty;
+  }
   std::string protocol, url;
   string16 title;
   value->GetString("protocol", &protocol);

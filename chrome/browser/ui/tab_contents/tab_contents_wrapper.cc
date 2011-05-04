@@ -326,15 +326,15 @@ void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
   if (!registry->enabled()) {
     return;
   }
-  ProtocolHandler* handler =
+  ProtocolHandler handler =
       ProtocolHandler::CreateProtocolHandler(protocol, url, title);
-  if ((handler != NULL) &&
-      registry->CanSchemeBeOverridden(handler->protocol())) {
+  if (!handler.IsEmpty() &&
+      registry->CanSchemeBeOverridden(handler.protocol())) {
     tab_contents()->AddInfoBar(registry->IsRegistered(handler) ?
       static_cast<InfoBarDelegate*>(new SimpleAlertInfoBarDelegate(
           tab_contents(), NULL, l10n_util::GetStringFUTF16(
               IDS_REGISTER_PROTOCOL_HANDLER_ALREADY_REGISTERED,
-              handler->title(), UTF8ToUTF16(handler->protocol())), true)) :
+              handler.title(), UTF8ToUTF16(handler.protocol())), true)) :
       new RegisterProtocolHandlerInfoBarDelegate(tab_contents(), registry,
                                                  handler));
   }

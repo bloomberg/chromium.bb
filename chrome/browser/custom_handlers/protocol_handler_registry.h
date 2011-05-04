@@ -19,8 +19,8 @@
 
 class ProtocolHandler;
 
-typedef std::map<std::string, ProtocolHandler*> ProtocolHandlerMap;
-typedef std::vector<ProtocolHandler*> ProtocolHandlerList;
+typedef std::map<std::string, ProtocolHandler> ProtocolHandlerMap;
+typedef std::vector<ProtocolHandler> ProtocolHandlerList;
 
 // This is where handlers for protocols registered with
 // navigator.registerProtocolHandler() are registered. Each Profile owns an
@@ -37,14 +37,14 @@ class ProtocolHandlerRegistry
   ~ProtocolHandlerRegistry();
 
   // Called when the user accepts the registration of a given protocol handler.
-  void OnAcceptRegisterProtocolHandler(ProtocolHandler* handler);
+  void OnAcceptRegisterProtocolHandler(const ProtocolHandler& handler);
 
   // Called when the user denies the registration of a given protocol handler.
-  void OnDenyRegisterProtocolHandler(ProtocolHandler* handler);
+  void OnDenyRegisterProtocolHandler(const ProtocolHandler& handler);
 
   // Called when the user indicates that they don't want to be asked about the
   // given protocol handler again.
-  void OnIgnoreRegisterProtocolHandler(ProtocolHandler* handler);
+  void OnIgnoreRegisterProtocolHandler(const ProtocolHandler& handler);
 
   // Loads a user's registered protocol handlers.
   void Load();
@@ -52,21 +52,24 @@ class ProtocolHandlerRegistry
   // Saves a user's registered protocol handlers.
   void Save();
 
+  // Returns true if there is a handler registered for the given protocol.
+  bool HandlerExistsFor(const std::string& scheme) const;
+
   // Returns the handler for this protocol.
-  ProtocolHandler* GetHandlerFor(const std::string& scheme) const;
+  ProtocolHandler GetHandlerFor(const std::string& scheme) const;
 
   // Yields a list of the protocols handled by this registry.
-  void GetHandledProtocols(std::vector<std::string>* output);
+  void GetHandledProtocols(std::vector<std::string>* output) const;
 
   // Returns true if we allow websites to register handlers for the given
   // scheme.
   bool CanSchemeBeOverridden(const std::string& scheme) const;
 
   // Returns true if an identical protocol handler has already been registered.
-  bool IsRegistered(const ProtocolHandler* handler) const;
+  bool IsRegistered(const ProtocolHandler& handler) const;
 
   // Returns true if the protocol handler is being ignored.
-  bool IsIgnored(const ProtocolHandler* handler) const;
+  bool IsIgnored(const ProtocolHandler& handler) const;
 
   // Returns true if the protocol has a registered protocol handler.
   bool IsHandledProtocol(const std::string& scheme) const;
@@ -75,7 +78,7 @@ class ProtocolHandlerRegistry
   void RemoveHandlerFor(const std::string& scheme);
 
   // Causes the given protocol handler to not be ignored anymore.
-  void RemoveIgnoredHandler(ProtocolHandler* handler);
+  void RemoveIgnoredHandler(const ProtocolHandler& handler);
 
   // URLRequestFactory for use with URLRequest::RegisterProtocolFactory().
   // Redirects any URLRequests for which there is a matching protocol handler.
@@ -120,14 +123,14 @@ class ProtocolHandlerRegistry
   Value* EncodeIgnoredHandlers();
 
   // Registers a new protocol handler.
-  void RegisterProtocolHandler(ProtocolHandler* handler);
+  void RegisterProtocolHandler(const ProtocolHandler& handler);
 
   // Get the ProtocolHandlers stored under the given pref name. The caller owns
   // the returned ProtocolHandlers and is responsible for deleting them.
   ProtocolHandlerList GetHandlersFromPref(const char* pref_name);
 
   // Ignores future requests to register the given protocol handler.
-  void IgnoreProtocolHandler(ProtocolHandler* handler);
+  void IgnoreProtocolHandler(const ProtocolHandler& handler);
 
   // Registers a new protocol handler from a JSON dictionary.
   void RegisterHandlerFromValue(const DictionaryValue* value);

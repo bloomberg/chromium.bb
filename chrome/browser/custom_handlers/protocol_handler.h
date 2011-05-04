@@ -16,10 +16,22 @@
 
 class ProtocolHandler {
  public:
-  static ProtocolHandler* CreateProtocolHandler(const std::string& protocol,
-                                                const GURL& url,
-                                                const string16& title);
-  static ProtocolHandler* CreateProtocolHandler(const DictionaryValue* value);
+  static ProtocolHandler CreateProtocolHandler(const std::string& protocol,
+                                               const GURL& url,
+                                               const string16& title);
+
+  // Creates a ProtocolHandler with fields from the dictionary. Returns an
+  // empty ProtocolHandler if the input is invalid.
+  static ProtocolHandler CreateProtocolHandler(const DictionaryValue* value);
+
+  // Returns true if the dictionary value has all the necessary fields to
+  // define a ProtocolHandler.
+  static bool IsValidDict(const DictionaryValue* value);
+
+  // Canonical empty ProtocolHandler.
+  static const ProtocolHandler kEmpty;
+
+  explicit ProtocolHandler();
 
   // Interpolates the given URL into the URL template of this handler.
   GURL TranslateUrl(const GURL& url);
@@ -32,15 +44,19 @@ class ProtocolHandler {
   GURL url() const { return url_;}
   string16 title() const { return title_; }
 
+  bool IsEmpty() const {
+    return protocol_ == "";
+  }
+
   bool operator==(const ProtocolHandler &other) const;
 
  private:
   ProtocolHandler(const std::string& protocol,
                   const GURL& url,
                   const string16& title);
-  const std::string protocol_;
-  const GURL url_;
-  const string16 title_;
+  std::string protocol_;
+  GURL url_;
+  string16 title_;
 };
 
 #endif  // CHROME_BROWSER_CUSTOM_HANDLERS_PROTOCOL_HANDLER_H_
