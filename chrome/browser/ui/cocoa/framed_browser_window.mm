@@ -108,6 +108,15 @@ const CGFloat kWindowGradientHeight = 24.0;
     hasTabStrip_ = NO;
   }
 
+  // Force re-layout of the window buttons by wiggling the size of the frame
+  // view.
+  NSView* frameView = [[self contentView] superview];
+  BOOL frameViewDidAutoresizeSubviews = [frameView autoresizesSubviews];
+  [frameView setAutoresizesSubviews:NO];
+  NSRect oldFrame = [frameView frame];
+  [frameView setFrame:NSZeroRect];
+  [frameView setFrame:oldFrame];
+  [frameView setAutoresizesSubviews:frameViewDidAutoresizeSubviews];
 }
 
 - (void)adjustCloseButton:(NSNotification*)notification {

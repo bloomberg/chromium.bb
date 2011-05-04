@@ -100,13 +100,6 @@ TEST_F(FramedBrowserWindowTest, DoesHideTitle) {
 
 // Test to make sure that our window widgets are in the right place.
 TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
-  // The window widgets only reposition themselves when the window is resized.
-  // Wiggle the frame view to force that.
-  NSView* frameView = [[window_ contentView] superview];
-  NSRect oldFrameViewFrame = [frameView frame];
-  [frameView setFrame:NSZeroRect];
-  [frameView setFrame:oldFrameViewFrame];
-
   // First without tabstrip.
   NSView* closeBoxControl = [window_ standardWindowButton:NSWindowCloseButton];
   EXPECT_TRUE(closeBoxControl);
@@ -140,13 +133,6 @@ TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
   [[[controller expect] andReturnValue:OCMOCK_VALUE(no)] hasTitleBar];
   [[[controller expect] andReturnValue:OCMOCK_VALUE(yes)] isNormalWindow];
   [window_ setWindowController:controller];
-
-  // The widgets have different positions with a tabstrip. Wiggle the frame
-  // view to force a relayout.
-  frameView = [[window_ contentView] superview];
-  oldFrameViewFrame = [frameView frame];
-  [frameView setFrame:NSZeroRect];
-  [frameView setFrame:oldFrameViewFrame];
 
   closeBoxControl = [window_ standardWindowButton:NSWindowCloseButton];
   EXPECT_TRUE(closeBoxControl);
