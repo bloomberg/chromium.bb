@@ -393,6 +393,8 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
       // Children of a deleted node should not be deleted; they may be
       // reparented by a later change record.  Move them to a temporary place.
       DCHECK(dst) << "Could not find node to be deleted";
+      if (!dst) // Can't do anything if we can't find the chrome node.
+        continue;
       const BookmarkNode* parent = dst->parent();
       if (dst->child_count()) {
         if (!foster_parent) {
