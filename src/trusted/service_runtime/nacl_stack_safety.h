@@ -13,12 +13,12 @@ EXTERN_C_BEGIN
 
 /*
  * NB: Relying code should open-code -- not use a function call -- in
- * assembly the necessary code to access the TLS or TSD flag
- * nacl_thread_on_safe_stack.  See
- * native_client/src/trusted/service_runtime/arch/x86_64/nacl_syscall_64.S
- * for an example.
+ * assembly the necessary code to perform the
+ * TlsGetValue(nacl_thread_on_safe_stack_index).
  */
 
+void NaClStackSafetyInit(void);
+void NaClStackSafetyFini(void);
 void NaClStackSafetyNowOnUntrustedStack(void);
 void NaClStackSafetyNowOnTrustedStack(void);
 

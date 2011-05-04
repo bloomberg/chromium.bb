@@ -8,21 +8,52 @@
 
 #if NACL_WINDOWS
 
+#include <windows.h>
+
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 
-/* paranoia default */
-THREAD int32_t nacl_thread_on_safe_stack = 0;
+int32_t nacl_thread_on_safe_stack_tls_index;
+
+void NaClStackSafetyInit(void) {
+  if (TLS_OUT_OF_INDEXES ==
+      (nacl_thread_on_safe_stack_tls_index = TlsAlloc())) {
+    NaClLog(LOG_FATAL,
+            "NaClStackSafetyInit failed: out of TLS indices so early?!?\n");
+  }
+  TlsSetValue(nacl_thread_on_safe_stack_tls_index, (void *) 0);
+}
+
+void NaClStackSafetyFini(void) {
+  ;
+  /*
+   * we could invoke
+   *
+   * (void) TlsFree(nacl_thread_on_safe_stack_tls_index);
+   *
+   * here, and may wish to do so later for e.g. fuzzing where we will
+   * need to spin up many NaCl modules w/o creating may sel_ldr
+   * processes.
+   */
+}
 
 void NaClStackSafetyNowOnUntrustedStack(void) {
-  nacl_thread_on_safe_stack = 0;
+  TlsSetValue(nacl_thread_on_safe_stack_tls_index, (void *) 0);
 }
 
 void NaClStackSafetyNowOnTrustedStack(void) {
-  nacl_thread_on_safe_stack = 1;
+  TlsSetValue(nacl_thread_on_safe_stack_tls_index, (void *) 1);
 }
 
 #elif NACL_OSX || NACL_LINUX
+
+void NaClStackSafetyInit(void) {
+  ;
+}
+
+void NaClStackSafetyFini(void) {
+  ;
+}
 
 void NaClStackSafetyNowOnUntrustedStack(void) {
   return;
