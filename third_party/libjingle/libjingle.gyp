@@ -31,7 +31,7 @@
     'dependencies': [
       '../expat/expat.gyp:expat',
       '../../base/base.gyp:base',
-      '../../net/net.gyp:net_base',
+      '../../net/net.gyp:net',
     ],
     'direct_dependent_settings': {
       'include_dirs': [
