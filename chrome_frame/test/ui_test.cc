@@ -103,7 +103,7 @@ TEST_P(FullTabUITest, KeyboardBackForward) {
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIENavigateAndLoop(page1,
-                          kChromeFrameLongNavigationTimeoutInSeconds * 2);
+                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
 }
 
 // Tests new window behavior with ctrl+N.

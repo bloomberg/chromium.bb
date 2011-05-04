@@ -1266,7 +1266,7 @@ TEST_F(FullTabNavigationTest, JavascriptWindowOpenNoReferrerOpensInHost) {
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIENavigateAndLoop(initial_url,
-                          kChromeFrameLongNavigationTimeoutInSeconds);
+                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
 }
 
 }  // namespace chrome_frame_test
