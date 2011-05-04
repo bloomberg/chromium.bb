@@ -8,7 +8,6 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/background_mode_manager.h"
-#include "chrome/browser/background_page_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -107,7 +106,6 @@ void RegisterLocalState(PrefService* local_state) {
   geolocation::RegisterPrefs(local_state);
   AutofillManager::RegisterBrowserPrefs(local_state);
   BackgroundModeManager::RegisterPrefs(local_state);
-  BackgroundPageTracker::RegisterPrefs(local_state);
   NotificationUIManager::RegisterPrefs(local_state);
   PrefProxyConfigService::RegisterPrefs(local_state);
   policy::CloudPolicySubsystem::RegisterPrefs(local_state);

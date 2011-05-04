@@ -12,7 +12,11 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/background_contents_service.h"
+#include "chrome/browser/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -1001,4 +1005,53 @@ bool TaskManagerModel::GetAndCacheMemoryMetrics(
 
   memory_usage_map_.insert(std::make_pair(handle, *usage));
   return true;
+}
+
+namespace {
+
+// Counts the number of extension background pages associated with this profile.
+int CountExtensionBackgroundPagesForProfile(Profile* profile) {
+  int count = 0;
+  ExtensionProcessManager* manager = profile->GetExtensionProcessManager();
+  if (!manager)
+    return count;
+  for (ExtensionProcessManager::const_iterator iter = manager->begin();
+       iter != manager->end();
+       ++iter) {
+    if ((*iter)->GetRenderViewType() == ViewType::EXTENSION_BACKGROUND_PAGE)
+      count++;
+  }
+  return count;
+}
+
+}  // namespace
+
+// static
+int TaskManager::GetBackgroundPageCount() {
+  int count = 0;
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager)  // Null when running unit tests.
+    return count;
+  std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
+  for (std::vector<Profile*>::const_iterator iter = profiles.begin();
+       iter != profiles.end();
+       ++iter) {
+    Profile* profile = *iter;
+    // Count the number of Background Contents (background pages for hosted
+    // apps). Incognito windows do not support hosted apps, so just check the
+    // main profile.
+    BackgroundContentsService* background_contents_service =
+        BackgroundContentsServiceFactory::GetForProfile(profile);
+    if (background_contents_service)
+      count += background_contents_service->GetBackgroundContents().size();
+
+    // Count the number of extensions with background pages (including
+    // incognito).
+    count += CountExtensionBackgroundPagesForProfile(profile);
+    if (profile->HasOffTheRecordProfile()) {
+      count += CountExtensionBackgroundPagesForProfile(
+          profile->GetOffTheRecordProfile());
+    }
+  }
+  return count;
 }

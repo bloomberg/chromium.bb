@@ -169,6 +169,11 @@ class TaskManager {
 
   void OpenAboutMemory();
 
+  // Returns the number of background pages that will be displayed in the
+  // TaskManager. Used by the wrench menu code to display a count of background
+  // pages in the "View Background Pages" menu item.
+  static int GetBackgroundPageCount();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(TaskManagerTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(TaskManagerTest, Resources);

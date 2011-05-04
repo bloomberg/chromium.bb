@@ -253,8 +253,6 @@
         'browser/background_mode_manager_linux.cc',
         'browser/background_mode_manager_mac.mm',
         'browser/background_mode_manager_win.cc',
-        'browser/background_page_tracker.cc',
-        'browser/background_page_tracker.h',
         'browser/bookmarks/base_bookmark_model_observer.cc',
         'browser/bookmarks/base_bookmark_model_observer.h',
         'browser/bookmarks/bookmark_codec.cc',

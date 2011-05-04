@@ -147,6 +147,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeBGContentsChanges) {
   EXPECT_EQ(0, model()->ResourceCount());
+  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
 
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
@@ -167,14 +168,17 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeBGContentsChanges) {
                                   ASCIIToUTF16("background_page"),
                                   application_id);
   WaitForResourceChange(3);
+  EXPECT_EQ(1, TaskManager::GetBackgroundPageCount());
 
   // Close the background contents and verify that we notice.
   service->ShutdownAssociatedBackgroundContents(application_id);
   WaitForResourceChange(2);
+  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillBGContents) {
   EXPECT_EQ(0, model()->ResourceCount());
+  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
 
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
@@ -197,6 +201,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillBGContents) {
   // Wait for the background contents process to finish loading.
   WaitForBackgroundContents();
   EXPECT_EQ(3, model()->ResourceCount());
+  EXPECT_EQ(1, TaskManager::GetBackgroundPageCount());
 
   // Kill the background contents process and verify that it disappears from the
   // model.
@@ -210,10 +215,12 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillBGContents) {
   }
   ASSERT_TRUE(found);
   WaitForResourceChange(2);
+  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
   EXPECT_EQ(0, model()->ResourceCount());
+  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
 
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
@@ -227,10 +234,12 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
   WaitForResourceChange(3);
+  EXPECT_EQ(1, TaskManager::GetBackgroundPageCount());
 
   // Unload extension to avoid crash on Windows (see http://crbug.com/31663).
   UnloadExtension(last_loaded_extension_id_);
   WaitForResourceChange(2);
+  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabs) {
@@ -339,6 +348,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeNotificationChanges) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillExtension) {
+  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
   browser()->window()->ShowTaskManager();
@@ -349,6 +359,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillExtension) {
   // Wait until we see the loaded extension in the task manager (the three
   // resources are: the browser process, New Tab Page, and the extension).
   WaitForResourceChange(3);
+  EXPECT_EQ(1, TaskManager::GetBackgroundPageCount());
 
   EXPECT_TRUE(model()->GetResourceExtension(0) == NULL);
   EXPECT_TRUE(model()->GetResourceExtension(1) == NULL);
@@ -357,6 +368,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillExtension) {
   // Kill the extension process and make sure we notice it.
   TaskManager::GetInstance()->KillProcess(2);
   WaitForResourceChange(2);
+  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
 }
 
 // Disabled, http://crbug.com/66957.

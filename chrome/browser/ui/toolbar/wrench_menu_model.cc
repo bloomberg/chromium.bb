@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/background_page_tracker.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -249,7 +249,7 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
 #endif
     case IDC_VIEW_BACKGROUND_PAGES: {
       string16 num_background_pages = base::FormatNumber(
-          BackgroundPageTracker::GetInstance()->GetBackgroundPageCount());
+          TaskManager::GetBackgroundPageCount());
       return l10n_util::GetStringFUTF16(IDS_VIEW_BACKGROUND_PAGES,
                                         num_background_pages);
     }
@@ -329,8 +329,7 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
     return false;
 #endif
   } else if (command_id == IDC_VIEW_BACKGROUND_PAGES) {
-    BackgroundPageTracker* tracker = BackgroundPageTracker::GetInstance();
-    return tracker->GetBackgroundPageCount() > 0;
+    return TaskManager::GetBackgroundPageCount() > 0;
   }
   return true;
 }
@@ -466,7 +465,7 @@ void WrenchMenuModel::Build() {
 #endif
   AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(IDS_ABOUT, product_name));
   string16 num_background_pages = base::FormatNumber(
-      BackgroundPageTracker::GetInstance()->GetBackgroundPageCount());
+      TaskManager::GetBackgroundPageCount());
   AddItem(IDC_VIEW_BACKGROUND_PAGES, l10n_util::GetStringFUTF16(
       IDS_VIEW_BACKGROUND_PAGES, num_background_pages));
   AddItem(IDC_UPGRADE_DIALOG, l10n_util::GetStringFUTF16(
