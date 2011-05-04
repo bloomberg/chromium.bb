@@ -64,7 +64,7 @@ class MediaPerformanceTest(MediaTestBase):
           measured_data_name_list=self.FPS_NAME_LIST,
           measured_data_unit_list=self.FPS_UNIT_LIST,
           remove_first_result=True, parameter_string=self.parameter_str,
-          title=self.media_filename_nickname)
+          title=self.current_trace_type)
 
   def PostEachRunProcess(self, run_counter):
     """A method to execute after each run.

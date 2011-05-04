@@ -40,7 +40,7 @@ class MediaPerformanceTest(MediaTestBase):
   # except for 'measure-time' which represents the timestamp at the start
   # of program execution.
   CHROME_PROCESS_INFO_NAMES = ['measure-time',
-                               'pct-cpu',
+                               'cpu-util',
   # pct-cpu: a float representing the current system-wide CPU utilization
   # as a percentage. When interval is > 0.0 compares system CPU times
   # elapsed before and after the interval (blocking).
@@ -53,7 +53,7 @@ class MediaPerformanceTest(MediaTestBase):
                                'memory-vms',
   # memory-rss, memory-vms: values representing RSS (Resident Set Size) and
   # VMS (Virtual Memory Size) in bytes.
-                               'pct-process-memory']
+                               'memory-util']
   # pct-process-memory: compare physical system memory to process resident
   # memory and calculate process memory utilization as a percentage.
   CHROME_PROCESS_INFO_UNITS = ['sec',
@@ -88,7 +88,7 @@ class MediaPerformanceTest(MediaTestBase):
         measured_data_unit_list=self.CHROME_PROCESS_INFO_UNITS,
         remove_first_result=self.remove_first_result,
         parameter_string=self.parameter_str,
-        title=self.media_filename_nickname)
+        title=self.current_trace_type)
 
   def PreEachRunProcess(self, run_counter):
     """A method to execute before each run.

@@ -78,16 +78,14 @@ def Main():
     chrome_renderer_process_infos.append(
         perf_thread.chrome_renderer_process_info)
 
-  chrome_process_info_names = ['measure-time', 'pct-cpu', 'cpu-user',
+  chrome_process_info_names = ['measure-time', 'cpu-util', 'cpu-user',
                                'cpu-system', 'memory-rss', 'memory-vms',
-                               'pct-process-memory']
+                               'memory-util']
   chrome_process_info_units = ['sec', 'percent', 'load',
                                'load', 'MB', 'MB', 'percent']
   print UIPerfTestUtils.PrintMeasuredData(
-         chrome_renderer_process_infos,
-         chrome_process_info_names,
-         chrome_process_info_units,
-         False, 'p', 'title')
+      chrome_renderer_process_infos, chrome_process_info_names,
+      chrome_process_info_units, True, 'p', 'title')
 
 
 if __name__ == "__main__":

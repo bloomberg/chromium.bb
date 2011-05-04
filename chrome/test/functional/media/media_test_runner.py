@@ -35,7 +35,7 @@ def main():
   # Disable/enable media_cache.
   CHROME_FLAGS = ['--chrome-flags=\'--media-cache-size=1\'', '']
   # The 't' parameter is passed to player.html to disable/enable the media
-  # cache.
+  # cache (refer to data/media/html/player.js).
   ADD_T_PARAMETERS = ['Y', 'N']
   # Player.html should contain all the HTML and Javascript that is
   # necessary to run these tests.
@@ -45,7 +45,7 @@ def main():
   # specified by the environment variable.
   DEFAULT_PLAYER_HTML_URL_NICKNAME = 'local'
   PRINT_ONLY_TIME = 'Y'
-  REMOVE_FIRST_RESULT = 'N'
+  REMOVE_FIRST_RESULT = 'Y'
   # The number of runs for each test. This is used to compute average values
   # from among all runs.
   DEFAULT_NUMBER_OF_RUNS = 3
@@ -143,54 +143,66 @@ def main():
           all_data_list, options.input_matrix_testcase_name)
       if media_info is not None:
         test_data_list.append(media_info)
+  # This is a loop for iterating through all videos defined above (list
+  # or matrix). Each video has associated tag and nickname for display
+  # purpose.
   for tag, filename, nickname in test_data_list:
+      # This inner loop iterates twice. The first iteration of the loop
+      # disables the media cache, and the second iteration enables the media
+      # cache.  Other parameters remain the same on both loop iterations.
+      # There are two ways to disable the media cache: setting Chrome option
+      # to --media-cache-size=1 or adding t parameter in query parameter of
+      # URL in which player.js (data/media/html/player.js) disables the
+      # media cache). We are doing both here. Please note the length of
+      # CHROME_FLAGS and ADD_T_PARAMETERS should be the same.
       for j in range(len(CHROME_FLAGS)):
-        for k in range(len(ADD_T_PARAMETERS)):
-           parent_envs = copy.deepcopy(os.environ)
-           if options.input_matrix_filename is None:
-             filename = os.path.join(os.pardir, filename)
-           envs = {
-             MediaTestEnvNames.MEDIA_TAG_ENV_NAME: tag,
-             MediaTestEnvNames.MEDIA_FILENAME_ENV_NAME: filename,
-             MediaTestEnvNames.MEDIA_FILENAME_NICKNAME_ENV_NAME: nickname,
-             MediaTestEnvNames.PLAYER_HTML_URL_ENV_NAME:
-               options.player_html_url,
-             MediaTestEnvNames.PLAYER_HTML_URL_NICKNAME_ENV_NAME:
-               options.player_html_url_nickname,
-             MediaTestEnvNames.EXTRA_NICKNAME_ENV_NAME:
-               EXTRA_NICKNAMES[j],
-             MediaTestEnvNames.ADD_T_PARAMETER_ENV_NAME: ADD_T_PARAMETERS[k],
-             MediaTestEnvNames.PRINT_ONLY_TIME_ENV_NAME: PRINT_ONLY_TIME,
-             MediaTestEnvNames.N_RUNS_ENV_NAME: str(options.number_of_runs),
-             MediaTestEnvNames.REMOVE_FIRST_RESULT_ENV_NAME:
-               REMOVE_FIRST_RESULT,
-             MediaTestEnvNames.MEASURE_INTERVAL_ENV_NAME:
-               str(options.measure_intervals),
-             MediaTestEnvNames.TEST_SCENARIO_FILE_ENV_NAME:
-               options.test_scenario_input_filename,
-             MediaTestEnvNames.TEST_SCENARIO_ENV_NAME:
-               options.test_scenario,
-           }
-           envs.update(parent_envs)
-           if options.suite is None and options.test_prog_name is not None:
-             # Suite is not used - run test program directly.
-             test_prog_name = options.test_prog_name
-             suite_string = ''
-           else:
-             # Suite is used.
-             # The test script names are in the PYAUTO_TEST file.
-             test_prog_name = pyauto_functional_script_name
-             if options.suite is None:
-               suite_name = DEFAULT_SUITE_NAME
-             else:
-               suite_name = options.suite
-             suite_string = ' --suite=%s' % suite_name
-           test_prog_name = sys.executable + ' ' + test_prog_name
-           cmd = test_prog_name + suite_string + ' ' + CHROME_FLAGS[j]
-           proc = Popen(cmd, env=envs, shell=True)
-           proc.communicate()
-           if options.one_combination:
-             sys.exit(0)
+        parent_envs = copy.deepcopy(os.environ)
+        if options.input_matrix_filename is None:
+          filename = os.path.join(os.pardir, filename)
+        envs = {
+          MediaTestEnvNames.MEDIA_TAG_ENV_NAME: tag,
+          MediaTestEnvNames.MEDIA_FILENAME_ENV_NAME: filename,
+          MediaTestEnvNames.MEDIA_FILENAME_NICKNAME_ENV_NAME: nickname,
+          MediaTestEnvNames.PLAYER_HTML_URL_ENV_NAME:
+            options.player_html_url,
+          MediaTestEnvNames.PLAYER_HTML_URL_NICKNAME_ENV_NAME:
+            options.player_html_url_nickname,
+          MediaTestEnvNames.EXTRA_NICKNAME_ENV_NAME:
+            EXTRA_NICKNAMES[j],
+          # Enables or disables the media cache.
+          # (refer to data/media/html/player.js)
+          MediaTestEnvNames.ADD_T_PARAMETER_ENV_NAME: ADD_T_PARAMETERS[j],
+          MediaTestEnvNames.PRINT_ONLY_TIME_ENV_NAME: PRINT_ONLY_TIME,
+          MediaTestEnvNames.N_RUNS_ENV_NAME: str(options.number_of_runs),
+          MediaTestEnvNames.REMOVE_FIRST_RESULT_ENV_NAME:
+            REMOVE_FIRST_RESULT,
+          MediaTestEnvNames.MEASURE_INTERVAL_ENV_NAME:
+            str(options.measure_intervals),
+          MediaTestEnvNames.TEST_SCENARIO_FILE_ENV_NAME:
+            options.test_scenario_input_filename,
+          MediaTestEnvNames.TEST_SCENARIO_ENV_NAME:
+            options.test_scenario,
+        }
+        envs.update(parent_envs)
+        if options.suite is None and options.test_prog_name is not None:
+          # Suite is not used - run test program directly.
+          test_prog_name = options.test_prog_name
+          suite_string = ''
+        else:
+          # Suite is used.
+          # The test script names are in the PYAUTO_TEST file.
+          test_prog_name = pyauto_functional_script_name
+          if options.suite is None:
+            suite_name = DEFAULT_SUITE_NAME
+          else:
+            suite_name = options.suite
+          suite_string = ' --suite=%s' % suite_name
+        test_prog_name = sys.executable + ' ' + test_prog_name
+        cmd = test_prog_name + suite_string + ' ' + CHROME_FLAGS[j]
+        proc = Popen(cmd, env=envs, shell=True)
+        proc.communicate()
+        if options.one_combination:
+          sys.exit(0)
 
 
 if __name__ == '__main__':

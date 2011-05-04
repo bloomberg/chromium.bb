@@ -49,6 +49,9 @@ class MediaTestBase(pyauto.PyUITest):
   media_filename = ''
   media_filename_nickname = ''
   _test_scenarios = []
+  # Used for tracing performance results on PerfBot: can be 't' (tests with
+  # normal build) or 't_ref' (tests with reference build).
+  current_trace_type = 't'
 
   def _GetMediaURLAndParameterString(self, media_filename):
     """Get media url and parameter string.
@@ -94,9 +97,9 @@ class MediaTestBase(pyauto.PyUITest):
       url = file_url + '?' + query_str
     else:
       url = player_html_url + '?' + query_str
-    parameter_str = 'tpara_%s-%s-%s' % (str(add_t_parameter),
-                                        player_html_url_nickname,
-                                        extra_nickname)
+    parameter_str = '%s_%s_%s' % (
+        extra_nickname, player_html_url_nickname,
+        os.getenv(MediaTestEnvNames.MEDIA_FILENAME_NICKNAME_ENV_NAME))
     return url, parameter_str
 
   def ReadTestScenarioFiles(self, test_scenario_filename):
@@ -177,16 +180,9 @@ class MediaTestBase(pyauto.PyUITest):
   def PostAllRunsProcess(self):
     """A method to execute after all runs.
 
-    The default behavior is to print out the playback time data.
+    The default behavior is to do nothing
     """
-    self.media_filename_nickname = os.getenv(
-        MediaTestEnvNames.MEDIA_FILENAME_NICKNAME_ENV_NAME,
-        self.media_filename)
-    # Print out playback time for each run.
-    print UIPerfTestUtils.GetResultStringForPerfBot(
-        measurement='playback-' + self.parameter_str, modifier='',
-        trace=self.media_filename_nickname, values=self.times[1:],
-        units='sec')
+    pass
 
   def PreEachRunProcess(self, run_counter):
     """A method to execute before each run.
@@ -201,13 +197,12 @@ class MediaTestBase(pyauto.PyUITest):
   def PostEachRunProcess(self, run_counter):
     """A method to execute after each run.
 
-    The default behavior is to calculate and store playback time for each run.
+    The default behavior is to do nothing.
 
     Args:
       run_counter: counter for each run.
     """
-    if not self.remove_first_result or run_counter > 0:
-      self.times.append(time.time() - self.start)
+    pass
 
   def GetPlayerHTMLFileName(self):
     """A method to get the player HTML file name."""

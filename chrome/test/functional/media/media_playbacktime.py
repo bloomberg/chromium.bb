@@ -13,9 +13,13 @@ passed in the form of environment variables (such as the number of runs).
 media_perf_runner.py is used for generating these variables
 (PyAuto does not support direct parameters).
 """
+import os
+import time
 
-import pyauto_media
 from media_test_base import MediaTestBase
+from media_test_env_names import MediaTestEnvNames
+import pyauto_media
+from ui_perf_test_utils import UIPerfTestUtils
 
 
 class MediaPlaybackTimeTest(MediaTestBase):
@@ -25,6 +29,31 @@ class MediaPlaybackTimeTest(MediaTestBase):
     """Test the HTML5 media tag."""
     MediaTestBase.ExecuteTest(self)
 
+  def PostAllRunsProcess(self):
+    """A method to execute after all runs.
+
+    This is to print out the playback time data.
+    """
+    self.media_filename_nickname = os.getenv(
+        MediaTestEnvNames.MEDIA_FILENAME_NICKNAME_ENV_NAME,
+        self.media_filename)
+    # Print out playback time for each run.
+    print UIPerfTestUtils.GetResultStringForPerfBot(
+        measurement=self.parameter_str + '-playback', modifier='',
+        trace=self.current_trace_type, values=self.times[1:],
+        units='sec')
+
+  def PostEachRunProcess(self, unused_run_counter):
+    """A method to execute after each run.
+
+    This is an overridden method to calculate and store playback time for each
+    run.
+
+    Args:
+      unused_run_counter: counter for each run.
+    """
+    if hasattr(self, 'start'):
+      self.times.append(time.time() - self.start)
 
 if __name__ == '__main__':
   pyauto_media.Main()
