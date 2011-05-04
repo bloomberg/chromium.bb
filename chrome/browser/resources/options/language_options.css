@@ -64,6 +64,16 @@
   -webkit-margin-start: 20px;
 }
 
+#language-options-ui-language-button {
+  width: 95%;
+  -webkit-margin-start: 10px;
+}
+
+#language-options-spell-check-language-button {
+  width: 95%;
+  -webkit-margin-start: 10px;
+}
+
 #language-options-input-method-list label {
   margin: 4px 0;
 }
