@@ -637,7 +637,7 @@ emit_messages(struct wl_list *message_list,
 				break;
 			}
 		}
-		printf("\" },\n");
+		printf("\", NULL },\n");
 	}
 
 	printf("};\n\n");
