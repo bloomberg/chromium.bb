@@ -42,6 +42,8 @@ class ChildThread : public IPC::Channel::Listener,
 
   IPC::Channel::Listener* ResolveRoute(int32 routing_id);
 
+  IPC::SyncChannel* channel() { return channel_.get(); }
+
   // Creates a ResourceLoaderBridge.
   // Tests can override this method if they want a custom loading behavior.
   virtual webkit_glue::ResourceLoaderBridge* CreateBridge(
@@ -83,8 +85,6 @@ class ChildThread : public IPC::Channel::Listener,
 #ifdef IPC_MESSAGE_LOG_ENABLED
   virtual void OnSetIPCLoggingEnabled(bool enable);
 #endif
-
-  IPC::SyncChannel* channel() { return channel_.get(); }
 
   void set_on_channel_error_called(bool on_channel_error_called) {
     on_channel_error_called_ = on_channel_error_called;

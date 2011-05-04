@@ -45,6 +45,8 @@
           'common/content_settings_helper.h',
           'common/content_settings_types.h',
           'common/devtools_messages.h',
+          'common/external_ipc_fuzzer.h',
+          'common/external_ipc_fuzzer.cc',
           'common/guid.cc',
           'common/guid.h',
           'common/guid_posix.cc',

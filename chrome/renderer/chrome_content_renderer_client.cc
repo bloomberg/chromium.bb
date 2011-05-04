@@ -15,6 +15,7 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/external_ipc_fuzzer.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -164,6 +165,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     thread->RegisterExtension(DomAutomationV8Extension::Get());
   }
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableIPCFuzzing)) {
+    thread->channel()->set_outgoing_message_filter(LoadExternalIPCFuzzer());
+  }
   // chrome: pages should not be accessible by normal content, and should
   // also be unable to script anything but themselves (to help limit the damage
   // that a corrupt chrome: page could cause).

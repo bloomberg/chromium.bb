@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,36 +75,57 @@ static bool check_msgtable() {
   return result;
 }
 
-static void dump_msgtable(bool show_args, bool show_ids) {
+static void dump_msgtable(bool show_args, bool show_ids,
+                          bool show_comma, const char *prefix) {
+  bool first = true;
   for (size_t i = 0; i < MSGTABLE_SIZE; ++i) {
-    if (show_ids) {
-      std::cout << "{" << IPC_MESSAGE_ID_CLASS(msgtable[i].id) << ", " <<
-          IPC_MESSAGE_ID_LINE(msgtable[i].id) << "}: ";
+    if ((!prefix) || strstr(msgtable[i].name, prefix) == msgtable[i].name) {
+      if (show_comma) {
+        if (!first)
+          std::cout << ",";
+        first = false;
+        std::cout << msgtable[i].id;
+      } else {
+        if (show_ids)
+          std::cout << msgtable[i].id << " " <<
+              IPC_MESSAGE_ID_CLASS(msgtable[i].id) << "," <<
+              IPC_MESSAGE_ID_LINE(msgtable[i].id) << " ";
+        std::cout << msgtable[i].name;
+        if (show_args) {
+          std::cout << "(" << msgtable[i].in_count << " IN, "  <<
+              msgtable[i].out_count << " OUT)";
+        }
+        std::cout << "\n";
+      }
     }
-    std::cout << msgtable[i].name;
-    if (show_args) {
-      std::cout << "(" << msgtable[i].in_count << " IN, "  <<
-          msgtable[i].out_count << " OUT)";
-    }
-    std::cout << "\n";
   }
+  if (show_comma)
+    std::cout << "\n";
 }
 
 int main(int argc, char **argv) {
   bool show_args = false;
   bool show_ids  = false;
   bool skip_check = false;
+  bool show_comma = false;
+  const char *filter = NULL;
 
   while (--argc > 0) {
     ++argv;
     if (std::string("--args") == *argv) {
       show_args = true;
+    } else if (std::string("--comma") == *argv) {
+      show_comma = true;
+    } else if (std::string("--filter") == *argv) {
+      filter = *(++argv); --argc;
     } else if (std::string("--ids") == *argv) {
       show_ids = true;
     } else if (std::string("--no-check") == *argv) {
       skip_check = true;
     } else {
-      std::cout << "usage: ipclist [--args] [--ids] [--no-check]\n";
+      std::cout <<
+          "usage: ipclist [--args] [--ids] [--no-check] [--filter prefix] "
+          "[--comma]\n";
       return 1;
     }
   }
@@ -114,7 +135,7 @@ int main(int argc, char **argv) {
   if (!skip_check && check_msgtable() == false)
     return 1;
 
-  dump_msgtable(show_args, show_ids);
+  dump_msgtable(show_args, show_ids, show_comma, filter);
   return 0;
 }
 

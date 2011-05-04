@@ -835,15 +835,8 @@
       'target_name': 'ipclist',
       'type': 'executable',
       'dependencies': [
-         'chrome',
-         'chrome_resources',
-         'chrome_strings',
-         'test_support_common',
-         'test_support_ui',
-         '../skia/skia.gyp:skia',
-         '../testing/gtest.gyp:gtest',
-         '../third_party/libxslt/libxslt.gyp:libxslt',
-         '../third_party/npapi/npapi.gyp:npapi',
+        'test_support_common',
+        '../skia/skia.gyp:skia',
       ],
       'include_dirs': [
          '..',
@@ -1259,7 +1252,22 @@
               ],
             }],
           ],
-        }
+        },
+        {
+          'target_name': 'ipcfuzz',
+          'type': 'loadable_module',
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+            'test_support_common',
+            '../skia/skia.gyp:skia',
+          ],
+          'sources': [
+            'tools/ipclist/all_messages.h',
+            'tools/ipclist/ipcfuzz.cc',
+          ],
+        },
       ],
     },],  # OS=="linux"
     ['OS=="win"',

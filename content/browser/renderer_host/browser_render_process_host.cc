@@ -552,6 +552,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableDCHECK,
     switches::kEnableExperimentalExtensionApis,
     switches::kEnableInBrowserThumbnailing,
+    switches::kEnableIPCFuzzing,
     switches::kEnableLogging,
     switches::kEnableNaCl,
     switches::kEnableOpenMax,

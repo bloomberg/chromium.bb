@@ -283,7 +283,8 @@ ChannelProxy::ChannelProxy(const IPC::ChannelHandle& channel_handle,
                            Channel::Mode mode,
                            Channel::Listener* listener,
                            base::MessageLoopProxy* ipc_thread)
-    : context_(new Context(listener, ipc_thread)) {
+    : context_(new Context(listener, ipc_thread)),
+      outgoing_message_filter_(NULL) {
   Init(channel_handle, mode, ipc_thread, true);
 }
 
@@ -292,7 +293,8 @@ ChannelProxy::ChannelProxy(const IPC::ChannelHandle& channel_handle,
                            base::MessageLoopProxy* ipc_thread,
                            Context* context,
                            bool create_pipe_now)
-    : context_(context) {
+    : context_(context),
+      outgoing_message_filter_(NULL) {
   Init(channel_handle, mode, ipc_thread, create_pipe_now);
 }
 
@@ -343,6 +345,9 @@ void ChannelProxy::Close() {
 }
 
 bool ChannelProxy::Send(Message* message) {
+  if (outgoing_message_filter())
+    message = outgoing_message_filter()->Rewrite(message);
+
 #ifdef IPC_MESSAGE_LOG_ENABLED
   Logging::GetInstance()->OnSendMessage(message, context_->channel_id());
 #endif

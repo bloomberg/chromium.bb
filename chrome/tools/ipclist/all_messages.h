@@ -11,4 +11,5 @@
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/nacl_messages.h"
 #include "content/common/content_message_generator.h"
+#include "content/common/pepper_messages.h"
 #include "ppapi/proxy/ppapi_messages.h"

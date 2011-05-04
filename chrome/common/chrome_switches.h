@@ -131,6 +131,7 @@ extern const char kEnableFullScreen[];
 extern const char kEnableHistoryQuickProvider[];
 extern const char kEnableInBrowserThumbnailing[];
 extern const char kEnableIPv6[];
+extern const char kEnableIPCFuzzing[];
 extern const char kEnableIPPooling[];
 extern const char kEnableMemoryInfo[];
 extern const char kEnableNaCl[];
