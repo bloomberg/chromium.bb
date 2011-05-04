@@ -329,21 +329,85 @@ GLvoid StubGLTexSubImage2D(GLenum target, GLint level, GLint xoffset,
                   pixels);
 }
 
+GLvoid StubGLUniform1f(GLint location, GLfloat v) {
+  glUniform1i(location, v);
+}
+
+GLvoid StubGLUniform1i(GLint location, GLint v) {
+  glUniform1i(location, v);
+}
+
 GLvoid StubGLUniform1fv(GLint location, GLsizei count, const GLfloat* v) {
   glUniform1fv(location, count, v);
 }
 
-GLvoid StubGLUniform1i(GLint location, GLint x) {
-  glUniform1i(location, x);
+GLvoid StubGLUniform1iv(GLint location, GLsizei count, const GLint* v) {
+  glUniform1iv(location, count, v);
+}
+
+GLvoid StubGLUniform2f(GLint location, GLfloat v0, GLfloat v1) {
+  glUniform2i(location, v0, v1);
+}
+
+GLvoid StubGLUniform2i(GLint location, GLint v0, GLint v1) {
+  glUniform2i(location, v0, v1);
+}
+
+GLvoid StubGLUniform2fv(GLint location, GLsizei count, const GLfloat* v) {
+  glUniform2fv(location, count, v);
+}
+
+GLvoid StubGLUniform2iv(GLint location, GLsizei count, const GLint* v) {
+  glUniform2iv(location, count, v);
+}
+
+GLvoid StubGLUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2) {
+  glUniform3i(location, v0, v1, v2);
+}
+
+GLvoid StubGLUniform3i(GLint location, GLint v0, GLint v1, GLint v2) {
+  glUniform3i(location, v0, v1, v2);
+}
+
+GLvoid StubGLUniform3fv(GLint location, GLsizei count, const GLfloat* v) {
+  glUniform3fv(location, count, v);
+}
+
+GLvoid StubGLUniform3iv(GLint location, GLsizei count, const GLint* v) {
+  glUniform3iv(location, count, v);
+}
+
+GLvoid StubGLUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2,
+                       GLfloat v3) {
+  glUniform4i(location, v0, v1, v2, v3);
+}
+
+GLvoid StubGLUniform4i(GLint location, GLint v0, GLint v1, GLint v2,
+                       GLint v3) {
+  glUniform4i(location, v0, v1, v2, v3);
 }
 
 GLvoid StubGLUniform4fv(GLint location, GLsizei count, const GLfloat* v) {
   glUniform4fv(location, count, v);
 }
 
+GLvoid StubGLUniform4iv(GLint location, GLsizei count, const GLint* v) {
+  glUniform4iv(location, count, v);
+}
+
+GLvoid StubGLUniformMatrix2fv(GLint location, GLsizei count,
+                              GLboolean transpose, const GLfloat* value) {
+  glUniformMatrix2fv(location, count, transpose, value);
+}
+
 GLvoid StubGLUniformMatrix3fv(GLint location, GLsizei count,
                               GLboolean transpose, const GLfloat* value) {
   glUniformMatrix3fv(location, count, transpose, value);
+}
+
+GLvoid StubGLUniformMatrix4fv(GLint location, GLsizei count,
+                              GLboolean transpose, const GLfloat* value) {
+  glUniformMatrix4fv(location, count, transpose, value);
 }
 
 GLboolean StubGLUnmapBuffer(GLenum target) {
@@ -368,135 +432,144 @@ GLvoid StubGLViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
   glViewport(x, y, width, height);
 }
 }  // extern "C"
-
-// Populate |gl_interface| with pointers to the GL implementation used by
-// Chrome.
-void InitializeGrGLInterface(GrGLInterface* gl_interface) {
-  // Propagate the type of GL bindings exported back to skia.
-  switch (gfx::GetGLImplementation()) {
-    case gfx::kGLImplementationNone:
-      NOTREACHED();
-      break;
-    case gfx::kGLImplementationDesktopGL:
-      gl_interface->fBindingsExported = kDesktop_GrGLBinding;
-      break;
-    case gfx::kGLImplementationOSMesaGL:
-      gl_interface->fBindingsExported = kDesktop_GrGLBinding;
-      break;
-    case gfx::kGLImplementationEGLGLES2:
-      gl_interface->fBindingsExported = kES2_GrGLBinding;
-      break;
-    case gfx::kGLImplementationMockGL:
-      NOTREACHED();
-      break;
-  }
-
-  gl_interface->fClientActiveTexture = NULL;
-  gl_interface->fColor4ub = NULL;
-  gl_interface->fColorPointer = NULL;
-  gl_interface->fDisableClientState = NULL;
-  gl_interface->fEnableClientState = NULL;
-  gl_interface->fLoadMatrixf = NULL;
-  gl_interface->fMatrixMode = NULL;
-  gl_interface->fPointSize = NULL;
-  gl_interface->fShadeModel = NULL;
-  gl_interface->fTexCoordPointer = NULL;
-  gl_interface->fTexEnvi = NULL;
-  gl_interface->fVertexPointer = NULL;
-
-  gl_interface->fResolveMultisampleFramebuffer = NULL;
-  gl_interface->fActiveTexture = StubGLActiveTexture;
-  gl_interface->fAttachShader = StubGLAttachShader;
-  gl_interface->fBindAttribLocation = StubGLBindAttribLocation;
-  gl_interface->fBindBuffer = StubGLBindBuffer;
-  gl_interface->fBindTexture = StubGLBindTexture;
-  gl_interface->fBlendColor = StubGLBlendColor;
-  gl_interface->fBlendFunc = StubGLBlendFunc;
-  gl_interface->fBufferData = StubGLBufferData;
-  gl_interface->fBufferSubData = StubGLBufferSubData;
-  gl_interface->fClear = StubGLClear;
-  gl_interface->fClearColor = StubGLClearColor;
-  gl_interface->fClearStencil = StubGLClearStencil;
-  gl_interface->fColorMask = StubGLColorMask;
-  gl_interface->fCompileShader = StubGLCompileShader;
-  gl_interface->fCompressedTexImage2D = StubGLCompressedTexImage2D;
-  gl_interface->fCreateProgram = StubGLCreateProgram;
-  gl_interface->fCreateShader = StubGLCreateShader;
-  gl_interface->fCullFace = StubGLCullFace;
-  gl_interface->fDeleteBuffers = StubGLDeleteBuffers;
-  gl_interface->fDeleteProgram = StubGLDeleteProgram;
-  gl_interface->fDeleteShader = StubGLDeleteShader;
-  gl_interface->fDeleteTextures = StubGLDeleteTextures;
-  gl_interface->fDepthMask = StubGLDepthMask;
-  gl_interface->fDisable = StubGLDisable;
-  gl_interface->fDisableVertexAttribArray = StubGLDisableVertexAttribArray;
-  gl_interface->fDrawArrays = StubGLDrawArrays;
-  gl_interface->fDrawElements = StubGLDrawElements;
-  gl_interface->fEnable = StubGLEnable;
-  gl_interface->fEnableVertexAttribArray = StubGLEnableVertexAttribArray;
-  gl_interface->fFrontFace = StubGLFrontFace;
-  gl_interface->fGenBuffers = StubGLGenBuffers;
-  gl_interface->fGenTextures = StubGLGenTextures;
-  gl_interface->fGetBufferParameteriv = StubGLGetBufferParameteriv;
-  gl_interface->fGetError = StubGLGetError;
-  gl_interface->fGetIntegerv = StubGLGetIntegerv;
-  gl_interface->fGetProgramInfoLog = StubGLGetProgramInfoLog;
-  gl_interface->fGetProgramiv = StubGLGetProgramiv;
-  gl_interface->fGetShaderInfoLog = StubGLGetShaderInfoLog;
-  gl_interface->fGetShaderiv = StubGLGetShaderiv;
-  gl_interface->fGetString = StubGLGetString;
-  gl_interface->fGetUniformLocation = StubGLGetUniformLocation;
-  gl_interface->fLineWidth = StubGLLineWidth;
-  gl_interface->fLinkProgram = StubGLLinkProgram;
-  gl_interface->fPixelStorei = StubGLPixelStorei;
-  gl_interface->fReadPixels = StubGLReadPixels;
-  gl_interface->fScissor = StubGLScissor;
-  gl_interface->fShaderSource = StubGLShaderSource;
-  gl_interface->fStencilFunc = StubGLStencilFunc;
-  gl_interface->fStencilFuncSeparate = StubGLStencilFuncSeparate;
-  gl_interface->fStencilMask = StubGLStencilMask;
-  gl_interface->fStencilMaskSeparate = StubGLStencilMaskSeparate;
-  gl_interface->fStencilOp = StubGLStencilOp;
-  gl_interface->fStencilOpSeparate = StubGLStencilOpSeparate;
-  gl_interface->fTexImage2D = StubGLTexImage2D;
-  gl_interface->fTexParameteri = StubGLTexParameteri;
-  gl_interface->fTexSubImage2D = StubGLTexSubImage2D;
-  gl_interface->fUniform1fv = StubGLUniform1fv;
-  gl_interface->fUniform1i = StubGLUniform1i;
-  gl_interface->fUniform4fv = StubGLUniform4fv;
-  gl_interface->fUniformMatrix3fv = StubGLUniformMatrix3fv;
-  gl_interface->fUseProgram = StubGLUseProgram;
-  gl_interface->fVertexAttrib4fv = StubGLVertexAttrib4fv;
-  gl_interface->fVertexAttribPointer = StubGLVertexAttribPointer;
-  gl_interface->fViewport = StubGLViewport;
-  gl_interface->fBindFramebuffer = StubGLBindFramebuffer;
-  gl_interface->fBindRenderbuffer = StubGLBindRenderbuffer;
-  gl_interface->fCheckFramebufferStatus = StubGLCheckFramebufferStatus;
-  gl_interface->fDeleteFramebuffers = StubGLDeleteFramebuffers;
-  gl_interface->fDeleteRenderbuffers = StubGLDeleteRenderbuffers;
-  gl_interface->fFramebufferRenderbuffer = StubGLFramebufferRenderbuffer;
-  gl_interface->fFramebufferTexture2D = StubGLFramebufferTexture2D;
-  gl_interface->fGenFramebuffers = StubGLGenFramebuffers;
-  gl_interface->fGenRenderbuffers = StubGLGenRenderbuffers;
-  gl_interface->fRenderbufferStorage = StubGLRenderBufferStorage;
-  gl_interface->fRenderbufferStorageMultisample =
-     StubGLRenderbufferStorageMultisample;
-  gl_interface->fBlitFramebuffer = StubGLBlitFramebuffer;
-  gl_interface->fMapBuffer = StubGLMapBuffer;
-  gl_interface->fUnmapBuffer = StubGLUnmapBuffer;
-}
-
 }  // namespace
 
 namespace gfx {
 
 void BindSkiaToInProcessGL() {
-  static GrGLInterface host_gl_interface;
-  static bool host_StubGL_initialized = false;
-  if (!host_StubGL_initialized) {
-    InitializeGrGLInterface(&host_gl_interface);
+  static bool host_StubGL_installed = false;
+  if (!host_StubGL_installed) {
+    GrGLBinding binding;
+    switch (gfx::GetGLImplementation()) {
+      case gfx::kGLImplementationNone:
+        NOTREACHED();
+        break;
+      case gfx::kGLImplementationDesktopGL:
+        binding = kDesktop_GrGLBinding;
+        break;
+      case gfx::kGLImplementationOSMesaGL:
+        binding = kDesktop_GrGLBinding;
+        break;
+      case gfx::kGLImplementationEGLGLES2:
+        binding = kES2_GrGLBinding;
+        break;
+      case gfx::kGLImplementationMockGL:
+        NOTREACHED();
+        break;
+    }
+
+    static GrGLInterface host_gl_interface = {
+      binding,
+      StubGLActiveTexture,
+      StubGLAttachShader,
+      StubGLBindAttribLocation,
+      StubGLBindBuffer,
+      StubGLBindTexture,
+      StubGLBlendColor,
+      StubGLBlendFunc,
+      StubGLBufferData,
+      StubGLBufferSubData,
+      StubGLClear,
+      StubGLClearColor,
+      StubGLClearStencil,
+      NULL,  // glClientActiveTexture
+      StubGLColorMask,
+      NULL,  // glColor4ub
+      NULL,  // glColorPointer
+      StubGLCompileShader,
+      StubGLCompressedTexImage2D,
+      StubGLCreateProgram,
+      StubGLCreateShader,
+      StubGLCullFace,
+      StubGLDeleteBuffers,
+      StubGLDeleteProgram,
+      StubGLDeleteShader,
+      StubGLDeleteTextures,
+      StubGLDepthMask,
+      StubGLDisable,
+      NULL,  // glDisableClientState
+      StubGLDisableVertexAttribArray,
+      StubGLDrawArrays,
+      StubGLDrawElements,
+      StubGLEnable,
+      NULL,  // glEnableClientState
+      StubGLEnableVertexAttribArray,
+      StubGLFrontFace,
+      StubGLGenBuffers,
+      StubGLGenTextures,
+      StubGLGetBufferParameteriv,
+      StubGLGetError,
+      StubGLGetIntegerv,
+      StubGLGetProgramInfoLog,
+      StubGLGetProgramiv,
+      StubGLGetShaderInfoLog,
+      StubGLGetShaderiv,
+      StubGLGetString,
+      StubGLGetUniformLocation,
+      StubGLLineWidth,
+      StubGLLinkProgram,
+      NULL,  // glLoadMatrixf
+      NULL,  // glMatrixMode
+      StubGLPixelStorei,
+      NULL,  // glPointSize
+      StubGLReadPixels,
+      StubGLScissor,
+      NULL,  // glShadeModel
+      StubGLShaderSource,
+      StubGLStencilFunc,
+      StubGLStencilFuncSeparate,
+      StubGLStencilMask,
+      StubGLStencilMaskSeparate,
+      StubGLStencilOp,
+      StubGLStencilOpSeparate,
+      NULL,  // glTexCoordPointer
+      NULL,  // glTexEnvi
+      StubGLTexImage2D,
+      StubGLTexParameteri,
+      StubGLTexSubImage2D,
+      StubGLUniform1f,
+      StubGLUniform1i,
+      StubGLUniform1fv,
+      StubGLUniform1iv,
+      StubGLUniform2f,
+      StubGLUniform2i,
+      StubGLUniform2fv,
+      StubGLUniform2iv,
+      StubGLUniform3f,
+      StubGLUniform3i,
+      StubGLUniform3fv,
+      StubGLUniform3iv,
+      StubGLUniform4f,
+      StubGLUniform4i,
+      StubGLUniform4fv,
+      StubGLUniform4iv,
+      StubGLUniformMatrix2fv,
+      StubGLUniformMatrix3fv,
+      StubGLUniformMatrix4fv,
+      StubGLUseProgram,
+      StubGLVertexAttrib4fv,
+      StubGLVertexAttribPointer,
+      NULL,  // glVertexPointer
+      StubGLViewport,
+      StubGLBindFramebuffer,
+      StubGLBindRenderbuffer,
+      StubGLCheckFramebufferStatus,
+      StubGLDeleteFramebuffers,
+      StubGLDeleteRenderbuffers,
+      StubGLFramebufferRenderbuffer,
+      StubGLFramebufferTexture2D,
+      StubGLGenFramebuffers,
+      StubGLGenRenderbuffers,
+      StubGLRenderBufferStorage,
+      StubGLRenderbufferStorageMultisample,
+      StubGLBlitFramebuffer,
+      NULL,  // glResolveMultisampleFramebuffer
+      StubGLMapBuffer,
+      StubGLUnmapBuffer,
+      GrGLInterface::kStaticInitEndGuard,
+    };
     GrGLSetGLInterface(&host_gl_interface);
-    host_StubGL_initialized = true;
+    host_StubGL_installed = true;
   }
 }
 
