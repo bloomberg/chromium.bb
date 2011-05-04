@@ -91,6 +91,8 @@ ACCEPTABLE_ARGUMENTS = set([
     'chrome_binaries_dir',
     # used for browser_tests: path to the browser
     'chrome_browser_path',
+    # used for browser_tests: path to a pre-built browser plugin.
+    'force_ppapi_plugin',
     # used for browser_tests: which plugin to use (npapi,ppapi,internal)
     'chrome_plugin_type',
     # where should we store extrasdk libraries
@@ -975,10 +977,17 @@ def GetValidator(env, validator):
                     validator)
 
 
+# Perform os.path.abspath rooted at the directory SConstruct resides in.
+def SConstructAbsPath(env, path):
+  return os.path.normpath(os.path.join(env['MAIN_DIR'], path))
+
+pre_base_env.AddMethod(SConstructAbsPath)
+
+
 def GetSelLdr(env, loader='sel_ldr'):
   sel_ldr = ARGUMENTS.get('force_sel_ldr')
   if sel_ldr:
-    return sel_ldr
+    return env.SConstructAbsPath(sel_ldr)
 
   # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
   if 'TRUSTED_ENV' not in env:
@@ -1137,6 +1146,8 @@ pre_base_env.AddMethod(DownloadedChromeBinary)
 
 
 def GetPPAPIPluginPath(env, redirect_windows=True):
+  if 'force_ppapi_plugin' in ARGUMENTS:
+    return env.SConstructAbsPath(ARGUMENTS['force_ppapi_plugin'])
   if env.Bit('mac'):
     return env.File('${STAGING_DIR}/ppNaClPlugin')
   else:
@@ -1253,8 +1264,10 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
 
   if not env.Bit('disable_dynamic_plugin_loading'):
     # Add explicit dependencies on sel_ldr and the PPAPI plugin.
-    env.Depends(node, GetSelLdr(env))
-    env.Depends(node, GetPPAPIPluginPath(env['TRUSTED_ENV']))
+    if 'force_sel_ldr' not in ARGUMENTS:
+     env.Depends(node, GetSelLdr(env))
+    if 'force_ppapi_plugin' not in ARGUMENTS:
+      env.Depends(node, GetPPAPIPluginPath(env['TRUSTED_ENV']))
 
   # Add an explicit dependency on the files used by pyauto tests.
   env.Depends(node, files)

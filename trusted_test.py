@@ -52,6 +52,7 @@ TEST_TIME_THRESHOLD = {
 # arguments or in the code.
 GlobalSettings = {
     'config': 'Debug',
+    'bits': 32,
     'platform': None,
     'exe_suffix': '',
     'out_suffix': '.out',
@@ -65,7 +66,8 @@ def AddNcdisTests():
   name = 'ncdis'
   native_client_dir = GetLocalPath()
   testdata_dir = os.path.join(native_client_dir, 'src', 'trusted',
-                            'validator_x86', 'testdata', '32')
+                              'validator_x86', 'testdata',
+                              str(GlobalSettings['bits']))
   stdin_path = os.path.join(testdata_dir, 'ncdis_test.input')
   stdout_path = os.path.join(testdata_dir, 'ncdis_test.input')
   options = ['--stdin=%s' % stdin_path,
@@ -141,7 +143,8 @@ def AddServiceRuntimeTests():
                  [], 'medium'])
 
 def AddTests():
-  AddNcdisTests()
+  if GlobalSettings['bits'] == 32:
+    AddNcdisTests()
   # TODO(gregoryd): disabling these tests to make sure the script
   # runs successfully on the bots
   #AddServiceRuntimeTests()

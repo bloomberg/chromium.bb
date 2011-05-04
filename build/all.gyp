@@ -31,14 +31,13 @@
         '../src/trusted/service_runtime/service_runtime_tests.gyp:*',
       ],
       'conditions': [
-        ['target_arch=="ia32"', {
-          'dependencies': [
-            '../src/trusted/validator_x86/validator_x86.gyp:*',
-          ],
-        }],
         ['target_arch=="arm"', {
           'dependencies': [
             '../src/trusted/validator_arm/validator_arm.gyp:*',
+          ],
+        }, {
+          'dependencies': [
+            '../src/trusted/validator_x86/validator_x86.gyp:*',
           ],
         }],
         ['OS=="win" and nacl_standalone==0', {

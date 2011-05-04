@@ -76,12 +76,12 @@
       # Compute the architecture that we're building for. Default to the
       # architecture that we're building on.
       'conditions': [
-        ['OS=="linux" and nacl_standalone==0', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           # This handles the Linux platforms we generally deal with. Anything
           # else gets passed through, which probably won't work very well; such
           # hosts should pass an explicit target_arch to gyp.
           'target_arch%':
-            '<!(uname -m | sed -e "s/i.86/ia32/;s/x86_64/x64/;s/arm.*/arm/")'
+            '<!(uname -m | sed -e "s/i.86/ia32/;s/x86_64/x64/;s/amd64/x64/;s/arm.*/arm/")'
         }, {  # OS!="linux"
           'target_arch%': 'ia32',
         }],
@@ -378,6 +378,9 @@
           '-Wall', # TODO(bradnelson): why does this disappear?!?
         ],
         'conditions': [
+          ['nacl_standalone==1 and OS=="linux" and target_arch=="x64"', {
+            'cflags': ['-fPIC'],
+          }],
           ['nacl_standalone==1 and nacl_strict_warnings==1', {
             # TODO(gregoryd): remove the condition when the issues in
             # Chrome code are fixed.
@@ -398,9 +401,9 @@
                 '-mtune=cortex-a8',
                 '-mfpu=neon',
                 '-mfloat-abi=softfp',
-                '-fPIC',
                 '-fno-exceptions',
                 '-Wall',
+                '-fPIC',
               ],
               'cflags_cc': [
                 '--sysroot=<(sysroot)',
@@ -439,6 +442,7 @@
         ],
         'ldflags': [
           '-pthread',
+          '-Wl,-z,noexecstack',
         ],
         'defines': [
           'NACL_BLOCK_SHIFT=5',

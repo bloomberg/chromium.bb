@@ -33,6 +33,13 @@ else
   GYPMODE=Release
 fi
 
+if [[ $BITS == 32 ]]; then
+  GYPARCH=ia32
+else
+  GYPARCH=x64
+fi
+export GYP_DEFINES=target_arch=${GYPARCH}
+
 if [[ $TOOLCHAIN = glibc ]]; then
   GLIBCOPTS="--nacl_glibc"
 else
@@ -66,7 +73,7 @@ echo @@@BUILD_STEP gyp_compile@@@
 make -C .. -k -j12 V=1 BUILDTYPE=${GYPMODE}
 
 echo @@@BUILD_STEP gyp_tests@@@
-python trusted_test.py --config ${GYPMODE}
+python trusted_test.py --config ${GYPMODE} --bits ${BITS}
 
 echo @@@BUILD_STEP scons_compile${BITS}@@@
 ./scons -j 8 DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
@@ -104,6 +111,15 @@ XVFB_PREFIX="xvfb-run --auto-servernum"
 $XVFB_PREFIX \
     ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
     ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
+    chrome_browser_tests ||
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+
+echo @@@BUILD_STEP chrome_browser_tests using GYP@@@
+$XVFB_PREFIX \
+    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
+    force_ppapi_plugin=../out/${GYPMODE}/lib.target/libppGoogleNaClPlugin.so \
+    force_sel_ldr=../out/${GYPMODE}/sel_ldr \
     chrome_browser_tests ||
     { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 

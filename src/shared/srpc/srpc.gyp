@@ -28,6 +28,12 @@
           '-fno-strict-aliasing',
           '-Wno-missing-field-initializers'
         ],
+        # nacl_srpc_message.c contains an overflow check that produces an error
+        # on 64-bit compiles when -Wextra is used:
+        # 'comparison is always false due to limited range of data type'
+        'cflags!': [
+          '-Wextra'
+        ],
       }],
     ],
   },
