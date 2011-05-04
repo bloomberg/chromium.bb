@@ -40,9 +40,9 @@ for library_name in libraries:
   file_mapping.append(('lib/%s' % library_name, node))
 
 
-test_prog = env.File('${STAGING_DIR}/ppapi_core_%s.nexe'
-                     % env.get('TARGET_FULLARCH'))
-file_mapping.append(('ppapi_core.nexe', test_prog))
+test_prog_fname = 'ppapi_core_' + env.get('TARGET_FULLARCH') + ".nexe"
+test_prog = env.File('${STAGING_DIR}/' + test_prog_fname)
+file_mapping.append((test_prog_fname, test_prog))
 
 
 node = env.PPAPIBrowserTester(

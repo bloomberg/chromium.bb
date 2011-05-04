@@ -1,6 +1,6 @@
-// Copyright 2011 The Native Client Authors.  All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 
 // This is a helper library for launching dynamically-linked programs
@@ -49,8 +49,9 @@ var encodeHex = function(data) {
 };
 
 
-var handlePluginInstance = function(plugin, log, args, onload_callback) {
-  var argv = [args[0], '--library-path', 'lib'].concat(args);
+var handlePluginInstance = function(plugin, libdir, log, args,
+                                    onload_callback) {
+  var argv = [args[0], '--library-path', libdir].concat(args);
   var envv = ['NACL_FILE_RPC=1', 'NACL_LD_ACCEPTS_PLUGIN_CONNECTION=1'];
   var startup_message = packArgs(argv, envv);
   /* As a workaround for a limitation in the NaCl plugin, hex-encode the
@@ -103,12 +104,27 @@ var handlePluginInstance = function(plugin, log, args, onload_callback) {
   plugin.__setAsyncCallback(handleRequest);
 };
 
-var startPluginInstance = function(plugin, log, args, onload_callback) {
-  var dynamic_linker_url = 'lib/runnable-ld.so';
+var startPluginInstance = function(plugin, libdir, log, args,
+                                   onload_callback) {
+  var dynamic_linker_url = libdir + '/runnable-ld.so';
+  log('startPluginInstance');
   plugin.__urlAsNaClDesc(dynamic_linker_url, {
     onload: function(fd) {
-      plugin.__launchExecutableFromFd(fd);
-      handlePluginInstance(plugin, log, args, onload_callback);
+      try {
+        plugin.__launchExecutableFromFd(fd);
+      } catch (err) {
+        log(err);
+        log("Loading " + dynamic_linker_url + " failed.");
+        return;
+      }
+      try {
+        var my_isa = plugin.__getSandboxISA();
+        handlePluginInstance(plugin, libdir, log, args[my_isa],
+                             onload_callback);
+      } catch (err) {
+        log(err);
+        log("handlePluginInstance() failed.");
+      }
     },
     onfail: function(error) {
       log('Failed to fetch dynamic linker, ' +
