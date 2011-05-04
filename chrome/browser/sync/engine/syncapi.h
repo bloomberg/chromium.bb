@@ -1011,6 +1011,9 @@ class SyncManager {
   // any remaining unsynced items.
   bool HasUnsyncedItems() const;
 
+  // Logs the list of unsynced meta handles.
+  void LogUnsyncedItems(int level) const;
+
   // Functions used for testing.
 
   void TriggerOnNotificationStateChangeForTest(

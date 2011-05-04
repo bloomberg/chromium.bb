@@ -310,6 +310,7 @@ void SyncerThread::ScheduleNudge(const TimeDelta& delay,
     NudgeSource source, const ModelTypeBitSet& types,
     const tracked_objects::Location& nudge_location) {
   if (!thread_.IsRunning()) {
+    VLOG(0) << "Dropping nudge because thread is not running.";
     NOTREACHED();
     return;
   }
@@ -446,6 +447,7 @@ void GetModelSafeParamsForTypes(const ModelTypeBitSet& types,
 
 void SyncerThread::ScheduleConfig(const ModelTypeBitSet& types) {
   if (!thread_.IsRunning()) {
+    VLOG(0) << "ScheduleConfig failed because thread is not running.";
     NOTREACHED();
     return;
   }

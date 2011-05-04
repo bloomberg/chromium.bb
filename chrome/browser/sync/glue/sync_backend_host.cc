@@ -212,6 +212,7 @@ void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
 }
 
 void SyncBackendHost::StartSyncingWithServer() {
+  VLOG(0) << "SyncBackendHost::StartSyncingWithServer called.";
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoStartSyncing));
 }
@@ -661,6 +662,11 @@ void SyncBackendHost::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
 bool SyncBackendHost::HasUnsyncedItems() const {
   DCHECK(syncapi_initialized_);
   return core_->syncapi()->HasUnsyncedItems();
+}
+
+void SyncBackendHost::LogUnsyncedItems(int level) const {
+  DCHECK(syncapi_initialized_);
+  return core_->syncapi()->LogUnsyncedItems(level);
 }
 
 SyncBackendHost::Core::Core(SyncBackendHost* backend)

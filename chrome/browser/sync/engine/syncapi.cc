@@ -14,6 +14,7 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -1781,6 +1782,7 @@ void SyncManager::SyncInternal::BootstrapEncryption(
     const std::string& restored_key_for_bootstrapping) {
   syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
   if (!lookup.good()) {
+    VLOG(0) << "BootstrapEncryption: lookup not good so bailing out";
     NOTREACHED();
     return;
   }
@@ -2471,8 +2473,10 @@ void SyncManager::SyncInternal::RequestNudgeWithDataTypes(
 
 void SyncManager::SyncInternal::OnSyncEngineEvent(
     const SyncEngineEvent& event) {
-  if (observers_.size() <= 0)
+  if (observers_.size() <= 0) {
+    VLOG(0) << "OnSyncEngineEvent returning because observers_.size() is zero";
     return;
+  }
 
   // Only send an event if this is due to a cycle ending and this cycle
   // concludes a canonical "sync" process; that is, based on what is known
@@ -2511,9 +2515,12 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
         // If we've completed a sync cycle and the cryptographer isn't ready
         // yet, prompt the user for a passphrase.
         if (cryptographer->has_pending_keys()) {
+          VLOG(0) << "OnPassPhraseRequired Sent";
           FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                             OnPassphraseRequired(sync_api::REASON_DECRYPTION));
         } else if (!cryptographer->is_ready()) {
+          VLOG(0) << "OnPassphraseRequired sent because cryptographer is not "
+                  << "ready";
           FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                             OnPassphraseRequired(sync_api::REASON_ENCRYPTION));
         } else {
@@ -2523,10 +2530,14 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       }
     }
 
-    if (!initialized())
+    if (!initialized()) {
+      VLOG(0) << "OnSyncCycleCompleted not sent because sync api is not "
+              << "initialized";
       return;
+    }
 
     if (!event.snapshot->has_more_to_sync) {
+      VLOG(1) << "OnSyncCycleCompleted sent";
       FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                         OnSyncCycleCompleted(event.snapshot));
     }
@@ -2829,6 +2840,24 @@ UserShare* SyncManager::GetUserShare() const {
 bool SyncManager::HasUnsyncedItems() const {
   sync_api::ReadTransaction trans(GetUserShare());
   return (trans.GetWrappedTrans()->directory()->unsynced_entity_count() != 0);
+}
+
+void SyncManager::LogUnsyncedItems(int level) const {
+  std::vector<int64> unsynced_handles;
+  sync_api::ReadTransaction trans(GetUserShare());
+  trans.GetWrappedTrans()->directory()->GetUnsyncedMetaHandles(
+      trans.GetWrappedTrans(), &unsynced_handles);
+
+  for (std::vector<int64>::const_iterator it = unsynced_handles.begin();
+       it != unsynced_handles.end(); ++it) {
+    ReadNode node(&trans);
+    if (node.InitByIdLookup(*it)) {
+      scoped_ptr<DictionaryValue> value(node.ToValue());
+      std::string info;
+      base::JSONWriter::Write(value.get(), true, &info);
+      VLOG(level) << info;
+    }
+  }
 }
 
 void SyncManager::TriggerOnNotificationStateChangeForTest(

@@ -109,7 +109,7 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
   last_requested_types_ = desired_types;
   // Only proceed if we're in a steady state or blocked.
   if (state_ != STOPPED && state_ != CONFIGURED && state_ != BLOCKED) {
-    VLOG(1) << "Received configure request while configuration in flight. "
+    VLOG(0) << "Received configure request while configuration in flight. "
             << "Postponing until current configuration complete.";
     needs_reconfigure_ = true;
     return;
@@ -203,7 +203,7 @@ void DataTypeManagerImpl::StartNextType() {
     // because we may need to stop datatypes.
     SetBlockedAndNotify();
     needs_reconfigure_ = false;
-    VLOG(1) << "Reconfiguring due to previous configure attempt occuring while"
+    VLOG(0) << "Reconfiguring due to previous configure attempt occuring while"
             << " busy.";
 
     // Unwind the stack before executing configure. The method configure and its
@@ -218,6 +218,7 @@ void DataTypeManagerImpl::StartNextType() {
   // things like encryption, which may still need to be sorted out before we
   // can announce we're "Done" configuration entirely.
   if (GetControllersNeedingStart(NULL)) {
+    VLOG(0) << "GetControllersNeedingStart returned true. DTM blocked";
     SetBlockedAndNotify();
     return;
   }
@@ -270,7 +271,7 @@ void DataTypeManagerImpl::TypeStartCallback(
   // Any other result is a fatal error.  Shut down any types we've
   // managed to start up to this point and pass the result to the
   // callback.
-  VLOG(1) << "Failed " << started_dtc->name();
+  VLOG(0) << "Failed " << started_dtc->name();
   ConfigureResult configure_result = DataTypeManager::ABORTED;
   switch (result) {
     case DataTypeController::ABORTED:
@@ -356,6 +357,7 @@ void DataTypeManagerImpl::NotifyDone(ConfigureResult result,
     const tracked_objects::Location& location) {
   ConfigureResultWithErrorLocation result_with_location(result, location,
                                                         last_requested_types_);
+  VLOG(0) << "NotifyDone called with result: " << result;
   NotificationService::current()->Notify(
       NotificationType::SYNC_CONFIGURE_DONE,
       Source<DataTypeManager>(this),

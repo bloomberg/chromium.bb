@@ -867,6 +867,7 @@ void ProfileSyncService::OnUserCancelledDialog() {
 void ProfileSyncService::ChangePreferredDataTypes(
     const syncable::ModelTypeSet& preferred_types) {
 
+  VLOG(0) << "ChangePreferredDataTypes invoked";
   // Filter out any datatypes which aren't registered, or for which
   // the preference can't be set.
   syncable::ModelTypeSet registered_types;
@@ -888,8 +889,12 @@ void ProfileSyncService::ChangePreferredDataTypes(
 
   // If we haven't initialized yet, don't configure the DTM as it could cause
   // association to start before a Directory has even been created.
-  if (backend_initialized_)
+  if (backend_initialized_) {
     ConfigureDataTypeManager();
+  } else {
+    VLOG(0) << "ConfigureDataTypeManager not invoked because backend is not "
+            << "initialized";
+  }
 }
 
 void ProfileSyncService::GetPreferredDataTypes(
@@ -1025,6 +1030,14 @@ bool ProfileSyncService::HasUnsyncedItems() const {
   return false;
 }
 
+void ProfileSyncService::LogUnsyncedItems(int level) const {
+  if (backend_.get() && backend_initialized_) {
+    return backend_->LogUnsyncedItems(level);
+  }
+  VLOG(level) << "Unsynced items not printed because backend is not "
+              << "initialized";
+}
+
 bool ProfileSyncService::HasPendingBackendMigration() const {
   return migrator_.get() &&
       migrator_->state() != browser_sync::BackendMigrator::IDLE;
@@ -1134,6 +1147,7 @@ void ProfileSyncService::Observe(NotificationType type,
               details).ptr();
 
       DataTypeManager::ConfigureResult result = result_with_location->result;
+      VLOG(0) << "PSS SYNC_CONFIGURE_DONE called with result: " << result;
       if (result == DataTypeManager::ABORTED &&
           expect_sync_configuration_aborted_) {
         expect_sync_configuration_aborted_ = false;

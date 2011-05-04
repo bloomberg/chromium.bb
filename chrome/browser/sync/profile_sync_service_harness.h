@@ -209,7 +209,8 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   bool MatchesOtherClient(ProfileSyncServiceHarness* partner);
 
   // Logs message with relevant info about client's sync state (if available).
-  void LogClientInfo(const std::string& message);
+  // |log_level| denotes the VLOG level.
+  void LogClientInfo(const std::string& message, int log_level);
 
   // Gets the current progress indicator of the current sync session
   // for a particular datatype.

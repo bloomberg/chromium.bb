@@ -234,6 +234,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // ONLY CALL THIS IF OnInitializationComplete was called!
   bool HasUnsyncedItems() const;
 
+  // Logs the unsynced items.
+  void LogUnsyncedItems(int level) const;
+
   // Whether or not we are syncing encryption keys.
   bool IsNigoriEnabled() const;
 
