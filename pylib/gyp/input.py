@@ -1042,10 +1042,14 @@ def QualifyDependencies(targets):
   similar dict.
   """
 
+  all_dependency_sections = [dep + op
+                             for dep in dependency_sections
+                             for op in ('', '!', '/')]
+
   for target, target_dict in targets.iteritems():
     target_build_file = gyp.common.BuildFile(target)
     toolset = target_dict['toolset']
-    for dependency_key in dependency_sections:
+    for dependency_key in all_dependency_sections:
       dependencies = target_dict.get(dependency_key, [])
       for index in xrange(0, len(dependencies)):
         dep_file, dep_target, dep_toolset = gyp.common.ResolveTarget(
@@ -1818,7 +1822,7 @@ def ProcessListFiltersInDict(name, the_dict):
   Regular expression (regex) filters are contained in dict keys named with a
   trailing "/", such as "sources/" to operate on the "sources" list.  Regex
   filters in a dict take the form:
-    'sources/': [ ['exclude', '_(linux|mac|win)\\.cc$'] ],
+    'sources/': [ ['exclude', '_(linux|mac|win)\\.cc$'],
                   ['include', '_mac\\.cc$'] ],
   The first filter says to exclude all files ending in _linux.cc, _mac.cc, and
   _win.cc.  The second filter then includes all files ending in _mac.cc that
@@ -2185,6 +2189,20 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
   # Expand dependencies specified as build_file:*.
   ExpandWildcardDependencies(targets, data)
 
+  # Apply exclude (!) and regex (/) list filters only for dependency_sections.
+  for target_name, target_dict in targets.iteritems():
+    tmp_dict = {}
+    for key_base in dependency_sections:
+      for op in ('', '!', '/'):
+        key = key_base + op
+        if key in target_dict:
+          tmp_dict[key] = target_dict[key]
+          del target_dict[key]
+    ProcessListFiltersInDict(target_name, tmp_dict)
+    # Write the results back to |target_dict|.
+    for key in tmp_dict:
+      target_dict[key] = tmp_dict[key]
+
   if circular_check:
     # Make sure that any targets in a.gyp don't contain dependencies in other
     # .gyp files that further depend on a.gyp.
@@ -2194,7 +2212,6 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
 
   # Check that no two targets in the same directory have the same name.
   VerifyNoCollidingTargets(flat_list)
-  
 
   # Handle dependent settings of various types.
   for settings_type in ['all_dependent_settings',
