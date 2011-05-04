@@ -286,9 +286,9 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
   }
 };
 
-// http://crbug.com/81451
 #if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_NormalKeyEvents) {
+// http://crbug.com/81451
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_NormalKeyEvents) {
 #else
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
 #endif
