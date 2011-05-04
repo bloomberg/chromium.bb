@@ -77,7 +77,8 @@ void CommandBufferNacl::Flush(int32 put_offset) {
       channel, context_3d_, put_offset);
 }
 
-gpu::CommandBuffer::State CommandBufferNacl::FlushSync(int32 put_offset) {
+gpu::CommandBuffer::State CommandBufferNacl::FlushSync(int32 put_offset,
+                                                       int32 last_known_get) {
   DebugPrintf("CommandBufferNacl::FlushSync\n");
   PP_Context3DTrustedState state;
   nacl_abi_size_t state_size = static_cast<nacl_abi_size_t>(sizeof(state));

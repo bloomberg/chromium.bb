@@ -29,7 +29,7 @@ class CommandBufferNacl : public gpu::CommandBuffer {
   virtual gpu::Buffer GetRingBuffer();
   virtual State GetState();
   virtual void Flush(int32 put_offset);
-  virtual State FlushSync(int32 put_offset);
+  virtual State FlushSync(int32 put_offset, int32 last_known_get);
   virtual void SetGetOffset(int32 get_offset);
   virtual int32 CreateTransferBuffer(size_t size, int32 id_request);
   virtual int32 RegisterTransferBuffer(base::SharedMemory* buffer,
