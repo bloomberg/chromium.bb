@@ -26,6 +26,7 @@ extern const char kAboutCreditsURL[];
 extern const char kAboutDNSURL[];
 extern const char kAboutFlagsURL[];
 extern const char kAboutGpuURL[];
+extern const char kAboutGpuCleanURL[];
 extern const char kAboutGpuCrashURL[];
 extern const char kAboutGpuHangURL[];
 extern const char kAboutHangURL[];

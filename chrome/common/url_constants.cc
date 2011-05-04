@@ -33,6 +33,7 @@ const char kAboutCreditsURL[] = "about:credits";
 const char kAboutDNSURL[] = "about:dns";
 const char kAboutFlagsURL[] = "about:flags";
 const char kAboutGpuURL[] = "about:gpu";
+const char kAboutGpuCleanURL[] = "about:gpuclean";
 const char kAboutGpuCrashURL[] = "about:gpucrash";
 const char kAboutGpuHangURL[] = "about:gpuhang";
 const char kAboutHangURL[] = "about:hang";

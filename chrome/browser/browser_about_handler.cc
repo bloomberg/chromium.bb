@@ -354,7 +354,7 @@ std::string AboutAbout() {
     html += *i + "/'>about:" + *i + "</a></li>\n";
   }
   const char *debug[] = { "crash", "kill", "hang", "shorthang",
-                          "gpucrash", "gpuhang" };
+                          "gpuclean", "gpucrash", "gpuhang" };
   html += "</ul>\n<h2>For Debug</h2>\n"
       "<p>The following pages are for debugging purposes only. Because they "
       "crash or hang the renderer, they're not linked directly; you can type "
@@ -1327,6 +1327,10 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   }
 
   // Handle URLs to wreck the gpu process.
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuCleanURL)) {
+    GpuProcessHost::SendOnIO(
+        0, content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH, new GpuMsg_Clean());
+  }
   if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuCrashURL)) {
     GpuProcessHost::SendOnIO(
         0, content::CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUCRASH, new GpuMsg_Crash());

@@ -186,6 +186,9 @@ IPC_MESSAGE_CONTROL2(GpuMsg_DestroyCommandBuffer,
                      int32 /* render_view_id */)
 #endif
 
+// Tells the GPU process to remove all contexts.
+IPC_MESSAGE_CONTROL0(GpuMsg_Clean)
+
 // Tells the GPU process to crash.
 IPC_MESSAGE_CONTROL0(GpuMsg_Crash)
 

@@ -102,6 +102,7 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP_EX(GpuChildThread, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(GpuMsg_Initialize, OnInitialize)
     IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo, OnCollectGraphicsInfo)
+    IPC_MESSAGE_HANDLER(GpuMsg_Clean, OnClean)
     IPC_MESSAGE_HANDLER(GpuMsg_Crash, OnCrash)
     IPC_MESSAGE_HANDLER(GpuMsg_Hang, OnHang)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -230,6 +231,12 @@ void GpuChildThread::OnCollectGraphicsInfo() {
   }
 #endif
   Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
+}
+
+void GpuChildThread::OnClean() {
+  LOG(INFO) << "GPU: Removing all contexts";
+  if (gpu_channel_manager_.get())
+    gpu_channel_manager_->LoseAllContexts();
 }
 
 void GpuChildThread::OnCrash() {
