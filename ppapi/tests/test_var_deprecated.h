@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/tests/test_case.h"
 
-struct PPB_Testing_Dev;
 struct PPB_Var_Deprecated;
 
 class TestVarDeprecated : public TestCase {
@@ -40,7 +39,6 @@ class TestVarDeprecated : public TestCase {
 
   // Used by the tests that access the C API directly.
   const PPB_Var_Deprecated* var_interface_;
-  const PPB_Testing_Dev* testing_interface_;
 
   // Saves the var from when a value is set on the test from the page.
   pp::Var var_from_page_;

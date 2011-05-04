@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,7 +82,6 @@ class TestGraphics2D : public TestCase {
   // Used by the tests that access the C API directly.
   const PPB_Graphics2D* graphics_2d_interface_;
   const PPB_ImageData* image_data_interface_;
-  const PPB_Testing_Dev* testing_interface_;
 };
 
 #endif  // PAPPI_TESTS_TEST_GRAPHICS_2D_H_

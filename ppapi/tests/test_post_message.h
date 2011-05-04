@@ -10,12 +10,9 @@
 
 #include "ppapi/tests/test_case.h"
 
-struct PPB_Testing_Dev;
-
 class TestPostMessage : public TestCase {
  public:
-  explicit TestPostMessage(TestingInstance* instance)
-      : TestCase(instance), testing_interface_(NULL) {}
+  explicit TestPostMessage(TestingInstance* instance) : TestCase(instance) {}
 
  private:
   // TestCase implementation.
@@ -41,8 +38,6 @@ class TestPostMessage : public TestCase {
 
   // Test sending a message when no handler exists, make sure nothing happens.
   std::string TestNoHandler();
-
-  const PPB_Testing_Dev* testing_interface_;
 
   // This is used to store pp::Var objects we receive via a call to
   // HandleMessage.

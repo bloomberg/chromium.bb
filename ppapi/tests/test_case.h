@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "ppapi/cpp/dev/scrollbar_dev.h"
 #include "ppapi/cpp/var.h"
 
+struct PPB_Testing_Dev;
 class TestingInstance;
 
 namespace pp {
@@ -24,8 +25,8 @@ class ScriptableObject;
 // Individual classes of tests derive from this generic test case.
 class TestCase {
  public:
-  explicit TestCase(TestingInstance* instance) : instance_(instance) {}
-  virtual ~TestCase() {}
+  explicit TestCase(TestingInstance* instance);
+  virtual ~TestCase();
 
   // Optionally override to do testcase specific initialization.
   virtual bool Init() { return true; }
@@ -64,6 +65,9 @@ class TestCase {
 
   // Pointer to the instance that owns us.
   TestingInstance* instance_;
+
+  // NULL unless InitTestingInterface is called.
+  const PPB_Testing_Dev* testing_interface_;
 
  private:
   // Holds the test object, if any was retrieved from CreateTestObject.

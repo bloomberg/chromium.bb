@@ -222,7 +222,7 @@ std::string TestURLLoader::TestStreamToFile() {
     return ReportError("URLLoader::FinishStreamingToFile", rv);
 
 
-  pp::FileIO_Dev reader;
+  pp::FileIO_Dev reader(instance_);
   rv = reader.Open(body, PP_FILEOPENFLAG_READ, callback);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
