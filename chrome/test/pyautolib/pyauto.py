@@ -3267,7 +3267,8 @@ class Main(object):
     """
     if not args:  # Load tests ourselves
       if self._HasTestCases('__main__'):    # we are running a test script
-        args.append('__main__')   # run the test cases found in it
+        module_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
+        args.append(module_name)   # run the test cases found in it
       else:  # run tests from the test description file
         pyauto_tests_file = os.path.join(self.TestsDir(), self._tests_filename)
         logging.debug("Reading %s", pyauto_tests_file)
