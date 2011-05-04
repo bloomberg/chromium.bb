@@ -80,6 +80,13 @@ def ResetGlobalSettings():
       'arch': None,
       'subarch': None,
 
+      # An environment description that should include all factors that may
+      # affect tracked performance. Used to compare different environments.
+      'perf_env_description': None,
+
+      # Track total time taken for the command: '0' or '1'.
+      'track_cmdtime': '0',
+
       'name': None,
       'report': None,
 
@@ -101,20 +108,22 @@ def ResetGlobalSettings():
   }
 
 
-# NOTE: The failure/success messages are parsed by Chrome's perf graph
-# generator.
-def FailureMessage(total_time):
-  return 'RESULT %s: FAILED= %f secs' % (
-      os.path.basename(GlobalSettings['name']),
-      total_time
-      )
+def FailureMessage():
+  return '%s: FAILED' % os.path.basename(GlobalSettings['name'])
 
+def SuccessMessage():
+  return '%s: PASSED' % os.path.basename(GlobalSettings['name'])
 
-def SuccessMessage(total_time):
-  return 'RESULT %s: PASSED= %f secs' % (
-      os.path.basename(GlobalSettings['name']),
-      total_time
-      )
+def PrintTotalTime(total_time):
+  if int(GlobalSettings['track_cmdtime']):
+    # NOTE: This RESULT message is parsed by Chrome's perf graph generator.
+    Print('RESULT %s: TOTAL_%s= %f secs' %
+          (os.path.basename(GlobalSettings['name']),
+           GlobalSettings['perf_env_description'],
+           total_time
+           ))
+  else:
+    Print('Test %s took %f secs' % (GlobalSettings['name'], total_time))
 
 
 # Mac OS X returns SIGBUS in most of the cases where Linux returns
@@ -398,6 +407,8 @@ def main(argv):
    failed, stdout, stderr) = test_lib.RunTestWithInputOutput(
       command, stdin_data)
 
+  PrintTotalTime(total_time)
+
   req_status = GlobalSettings['exit_status']
   req_status = MassageExitStatus(req_status)
   exitOk = ExitStatusIsOK(req_status, exit_status, stderr)
@@ -414,7 +425,7 @@ def main(argv):
     Print(stdout)
     Banner('Stderr')
     Print(stderr)
-    Print(FailureMessage(total_time))
+    Print(FailureMessage())
     return -1
 
   for (stream, getter) in [
@@ -432,15 +443,14 @@ def main(argv):
                                             GlobalSettings['filter_group_only'],
                                             actual)
       if DifferentFromGolden(actual, golden_data, stream,
-                             FailureMessage(total_time)):
+                             FailureMessage()):
         return -1
 
-  Print('Test %s took %f secs' % (GlobalSettings['name'], total_time))
   if GlobalSettings['time_error']:
     if total_time > GlobalSettings['time_error']:
       Print('ERROR: should have taken less than %f secs' %
             (GlobalSettings['time_error']))
-      Print(FailureMessage(total_time))
+      Print(FailureMessage())
       return -1
 
   if GlobalSettings['time_warning']:
@@ -448,8 +458,7 @@ def main(argv):
       Print('WARNING: should have taken less than %f secs' %
             (GlobalSettings['time_warning']))
 
-
-  Print(SuccessMessage(total_time))
+  Print(SuccessMessage())
   return 0
 
 

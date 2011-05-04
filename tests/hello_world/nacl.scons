@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 import os
@@ -11,9 +11,10 @@ node = env.CommandSelLdrTestNacl(
     'hello_world_test.out',
     command=[env.File('hello_world.nexe')],
     stdout_golden=env.File('hello_world.stdout'),
+    track_cmdtime='1',
     )
 env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'],
+                       ['small_tests', 'sel_ldr_tests', 'performance_tests'],
                        'run_hello_world_test')
 
 

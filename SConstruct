@@ -493,6 +493,7 @@ ACCEPTABLE_TEST_SUITES = set([
   'tsan_bot_tests',
   'toolchain_tests',
   'pnacl_abi_tests',
+  'performance_tests',
   ])
 
 # The major test suites are also acceptable names.  Suite names are checked
@@ -1461,7 +1462,7 @@ pre_base_env.AddMethod(CommandSelLdrTestNacl)
 TEST_EXTRA_ARGS = ['stdin', 'logout',
                    'stdout_golden', 'stderr_golden', 'log_golden',
                    'filter_regex', 'filter_inverse', 'filter_group_only',
-                   'osenv', 'arch', 'subarch', 'exit_status']
+                   'osenv', 'arch', 'subarch', 'exit_status', 'track_cmdtime']
 
 TEST_TIME_THRESHOLD = {
     'small':   2,
@@ -1481,6 +1482,26 @@ UNSUPPORTED_VALGRIND_EXIT_STATUS = ['sigill' ,
                                     'trusted_segfault',
                                     'trusted_sigsegv_or_equivalent'];
 
+
+def GetPerfEnvDescription(env):
+  ''' Return a string describing architecture, library, etc. options that may
+      affect performance. '''
+  description_list = [env['TARGET_FULLARCH']]
+  # Using a list to keep the order consistent.
+  bit_to_description = [ ('bitcode', ('pnacl', 'nnacl')),
+                         ('nacl_glibc', ('glibc', 'newlib')),
+                         ('nacl_static_link', ('static', 'dynamic')),
+                         ('irt', ('irt', '')) ]
+  for (bit, (descr_yes, descr_no)) in bit_to_description:
+    if env.Bit(bit):
+      additional = descr_yes
+    else:
+      additional = descr_no
+    if additional:
+      description_list.append(additional)
+  return '_'.join(description_list)
+
+pre_base_env.AddMethod(GetPerfEnvDescription)
 
 def CommandTest(env, name, command, size='small', direct_emulation=True,
                 extra_deps=[], posix_path=False, **extra):
@@ -1522,6 +1543,9 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
       extra_env = 'EMULATOR=%s' %  env['EMULATOR'].replace(' ', r'\ ')
       extra['osenv'] = AddToStringifiedList(extra.get('osenv'),
                                             extra_env)
+
+  script_flags.append('--perf_env_description')
+  script_flags.append(env.GetPerfEnvDescription())
 
   for flag_name, flag_value in extra.iteritems():
     assert flag_name in TEST_EXTRA_ARGS
