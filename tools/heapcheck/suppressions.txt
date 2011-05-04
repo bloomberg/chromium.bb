@@ -1520,3 +1520,10 @@
    fun:notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
    fun:void DispatchToMethod
 }
+{
+   bug_81575
+   Heapcheck:Leak
+   ...
+   fun:Options
+   fun:fileapi::FileSystemOriginDatabase::Init
+}
