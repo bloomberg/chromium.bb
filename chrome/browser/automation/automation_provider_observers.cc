@@ -2080,7 +2080,7 @@ void AutocompleteEditFocusedObserver::Observe(
     const NotificationDetails& details) {
   DCHECK(type == NotificationType::OMNIBOX_FOCUSED);
   if (automation_) {
-    AutomationMsg_WaitForOmniboxFocus::WriteReplyParams(
+    AutomationMsg_WaitForAutocompleteEditFocus::WriteReplyParams(
         reply_message_.get(), true);
     automation_->Send(reply_message_.release());
   }

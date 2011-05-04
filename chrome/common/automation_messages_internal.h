@@ -344,7 +344,7 @@ IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_WindowForBrowser,
 // This message requests the AutocompleteEdit associated with the specified
 // browser handle.
 // The return value contains a success flag and the handle of the omnibox.
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_OmniboxForBrowser,
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_AutocompleteEditForBrowser,
                             int /* browser handle */,
                             bool /* success flag */,
                             int /* AutocompleteEdit handle */)
@@ -650,8 +650,8 @@ IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_SavePage,
 // This message requests the text currently being displayed in the
 // AutocompleteEdit.  The parameter is the handle to the AutocompleteEdit.
 // The return value is a string indicating the text in the AutocompleteEdit.
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_OmniboxGetText,
-                            int /* omnibox handle */,
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_AutocompleteEditGetText,
+                            int /* autocomplete edit handle */,
                             bool /* the requested autocomplete edit exists */,
                             string16 /* omnibox text */)
 
@@ -660,27 +660,29 @@ IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_OmniboxGetText,
 // the text to be displayed in the AutocompleteEdit.
 // The return value has no parameters and is returned when the operation has
 // completed.
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_OmniboxVisibleSetText,
-                            int /* omnibox handle */,
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_AutocompleteEditSetText,
+                            int /* autocomplete edit handle */,
                             string16 /* text to set */,
                             bool /* the requested autocomplete edit exists */)
 
 // This message requests if a query to a autocomplete provider is still in
-// progress.  The first parameter in the request is the handle to the omnibox.
+// progress.  The first parameter in the request is the handle to the
+// autocomplete edit.
 // The first return value indicates if the request succeeded.
 // The second return value indicates if a query is still in progress.
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_OmniboxIsQueryInProgress,
-                            int /* omnibox handle*/,
-                            bool /* the requested autocomplete edit exists */,
-                            bool /* indicates if a query is in progress */)
+IPC_SYNC_MESSAGE_CONTROL1_2( \
+    AutomationMsg_AutocompleteEditIsQueryInProgress,
+    int /* autocomplete edit handle*/,
+    bool /* the requested autocomplete edit exists */,
+    bool /* indicates if a query is in progress */)
 
 // This message requests a list of the autocomplete messages currently being
 // displayed by the popup.  The parameter in the request is a handle to the
-// omnibox.
+// autocomplete edit.
 // The first return value indicates if the request was successful, while
 // while the second is the actual list of matches.
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_OmniboxGetMatches,
-                            int /* omnibox handle*/,
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_AutocompleteEditGetMatches,
+                            int /* autocomplete edit handle*/,
                             bool /* the requested autocomplete edit exists */,
                             std::vector<AutocompleteMatchData> /* matches */)
 
@@ -1415,9 +1417,9 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_WaitForInfoBarCount,
                             size_t /* target count */,
                             bool /* success */)
 
-// Waits for the omnibox to receive focus.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_WaitForOmniboxFocus,
-                            int /* omnibox handle */,
+// Waits for the autocomplete edit to receive focus.
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_WaitForAutocompleteEditFocus,
+                            int /* autocomplete edit handle */,
                             bool /* success */)
 
 // Loads all blocked plug-ins on the page.

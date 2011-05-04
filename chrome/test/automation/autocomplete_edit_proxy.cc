@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,8 @@ bool AutocompleteEditProxy::GetText(string16* text) const {
     return false;
   }
   bool result = false;
-  sender_->Send(new AutomationMsg_OmniboxGetText(handle_, &result, text));
+  sender_->Send(new AutomationMsg_AutocompleteEditGetText(
+      handle_, &result, text));
   return result;
 }
 
@@ -30,7 +31,8 @@ bool AutocompleteEditProxy::WaitForFocus() const {
   if (!is_valid())
     return false;
   bool edit_exists = false;
-  sender_->Send(new AutomationMsg_WaitForOmniboxFocus(handle_, &edit_exists));
+  sender_->Send(new AutomationMsg_WaitForAutocompleteEditFocus(
+      handle_, &edit_exists));
   return edit_exists;
 }
 
@@ -38,8 +40,8 @@ bool AutocompleteEditProxy::SetText(const string16& text) {
   if (!is_valid())
     return false;
   bool result = false;
-  sender_->Send(new AutomationMsg_OmniboxVisibleSetText(handle_, text,
-      &result));
+  sender_->Send(new AutomationMsg_AutocompleteEditSetText(
+      handle_, text, &result));
   return result;
 }
 
@@ -51,8 +53,8 @@ bool AutocompleteEditProxy::IsQueryInProgress(bool* query_in_progress) const {
     return false;
   }
   bool edit_exists = false;
-  sender_->Send(new AutomationMsg_OmniboxIsQueryInProgress(handle_,
-      &edit_exists, query_in_progress));
+  sender_->Send(new AutomationMsg_AutocompleteEditIsQueryInProgress(
+      handle_, &edit_exists, query_in_progress));
   return edit_exists;
 }
 
@@ -79,7 +81,7 @@ bool AutocompleteEditProxy::GetAutocompleteMatches(Matches* matches) const {
     return false;
   }
   bool edit_exists = false;
-  sender_->Send(new AutomationMsg_OmniboxGetMatches(handle_, &edit_exists,
-      matches));
+  sender_->Send(new AutomationMsg_AutocompleteEditGetMatches(
+      handle_, &edit_exists, matches));
   return edit_exists;
 }
