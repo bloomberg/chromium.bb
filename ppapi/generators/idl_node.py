@@ -34,6 +34,10 @@ class IDLAttribute(object):
     self.name = name
     self.value = value
 
+# Set of object IDLNode types which have a name and belong in the namespace.
+NamedSet = set(['Enum', 'EnumItem', 'Function', 'Interface', 'Member', 'Param',
+               'Struct', 'Type', 'Typedef'])
+
 #
 # IDLNode
 #
@@ -47,11 +51,21 @@ class IDLNode(object):
     self.name = name
     self.lineno = lineno
     self.pos = pos
+    self.filename = filename
+
+    # Dictionary of type to in order child list
     self.children = {}
+
+    # Dictionary of child name to child object
+    self.namespace = {}
+
+    # Dictionary of properties (ExtAttributes)
     self.properties = { 'NAME' : name }
+
     self.hash = None
     self.typeref = None
     self.parent = None
+
     if children:
       for child in children:
         #
@@ -75,12 +89,12 @@ class IDLNode(object):
   # Log an error for this object
   def Error(self, msg):
     ErrOut.LogLine(self.filename, self.lineno, 0, " %s %s" %
-                   (self.FullName(), msg))
+                   (str(self), msg))
 
   # Log a warning for this object
   def Warning(self, msg):
     WarnOut.LogLine(self.filename, self.lineno, 0, " %s %s" %
-                    (self.FullName(), msg))
+                    (str(self), msg))
 
   # Get a list of objects for this key
   def GetListOf(self, key):
@@ -124,5 +138,84 @@ class IDLNode(object):
 
       out.write("%s  %ss\n" % (tab, cls))
       for c in self.children[cls]:
-        c.Dump(depth + 1, comments = comments, out=out)
+        c.Dump(depth + 1, comments=comments, out=out)
+
+  # Link the parents and add the object to the parent's namespace
+  def BuildTree(self, parent):
+    self.parent = parent
+    for child in self.Children():
+      child.BuildTree(self)
+      name = child.name
+
+      # Add this child to the local namespace if it's a 'named' type
+      if child.cls in NamedSet:
+        if name in self.namespace:
+          other = self.namespace[name]
+          child.Error('Attempting to add % to namespace of %s when already '
+                      'declared in %s' % (name, str(self), str(other)))
+        self.namespace[name] = child
+
+  def Resolve(self):
+    errs = 0
+    typename = self.properties.get('TYPEREF', None)
+
+    if typename:
+      if typename in self.namespace:
+        self.Error('Type collision in local namespace')
+        errs += 1
+
+      typeinfo = self.parent.Find(typename)
+      if not typeinfo:
+        self.Error('Unable to resolve typename %s.' % typename)
+        errs += 1
+        sys.exit(-1)
+
+    for child in self.Children():
+      errs += child.Resolve()
+
+    return errs
+
+  def Find(self, name):
+    if name in self.namespace: return self.namespace[name]
+    if self.parent: return self.parent.Find(name)
+    return None
+
+  def Hash(self):
+    hash = hashlib.sha1()
+    for key, val in self.properties.iteritems():
+      hash.update('%s=%s' % (key, str(val)))
+    for child in self.Children():
+      hash.update(child.Hash())
+    if self.typeref: hash.update(self.typeref.hash)
+    self.hash = hash.hexdigest()
+    return self.hash
+
+#
+# IDL Predefined types
+#
+BuiltIn = set(['int8_t', 'int16_t', 'int32_t', 'int64_t', 'uint8_t', 'uint16_t',
+              'uint32_t', 'uint64_t', 'double_t', 'float_t', 'handle_t',
+              'mem_t', 'str_t', 'void', 'enum', 'struct', 'struct_by_value'])
+
+#
+# IDLAst
+#
+# A specialized version of the IDLNode for containing the whole of the
+# AST.  The specialized BuildTree function pulls the per file namespaces
+# into the global AST namespace and checks for collisions.
+#
+class IDLAst(IDLNode):
+  def __init__(self, children):
+    objs = [IDLNode('Type', name, 'BuiltIn', 1, 0, None) for name in BuiltIn]
+    IDLNode.__init__(self, 'AST', 'PPAPI', 'BuiltIn', 1, 0, objs + children)
+
+  def BuildTree(self, parent):
+    IDLNode.BuildTree(self, parent)
+    for fileobj in self.GetListOf('File'):
+      for name, val in fileobj.namespace.iteritems():
+        if name in self.namespace:
+          other = self.namespace[name]
+          val.Error('Attempting to add %s to namespace of %s when already '
+                    'declared in %s' % (name, str(self), str(other)))
+        self.namespace[name] = val
 

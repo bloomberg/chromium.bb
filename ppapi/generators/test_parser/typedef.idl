@@ -16,7 +16,7 @@ typedef int32_t[] T3;
 /* OK Typedef(T4) */
 typedef int32_t[][4] T4;
 
-/* FAIL Empty argument list. */
+/* OK Typedef(T5) */
 typedef int32_t[][4] T5();
 
 /* OK Typedef(T6) */

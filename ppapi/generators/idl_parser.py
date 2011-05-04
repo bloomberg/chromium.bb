@@ -24,14 +24,14 @@
 
 
 import getopt
-import hashlib
+import glob
 import os.path
 import re
 import sys
 
 from idl_log import ErrOut, InfoOut, WarnOut
 from idl_lexer import IDLLexer
-from idl_node import IDLNode, IDLAttribute
+from idl_node import IDLAttribute, IDLAst, IDLNode
 
 from ply import lex
 from ply import yacc
@@ -114,6 +114,17 @@ def TokenTypeName(t):
   if t.type == 'COMMENT' : return 'comment "%s"' % t.value[:2]
   if t.type == t.value: return '"%s"' % t.value
   return 'keyword "%s"' % t.value
+
+
+# StageResult
+#
+# The result object stores the result of parsing stage.
+#
+class StageResult(object):
+  def __init__(self, name, out, errs):
+    self.name = name
+    self.out = out
+    self.errs = errs
 
 
 #
@@ -381,19 +392,27 @@ class IDLParser(IDLLexer):
 # Parameter List
 #
 # A parameter list is a collection of arguments which are passed to a
-# function.  In the case of a PPAPI, it is illegal to have a function
-# which passes no parameters.
+# function.
 #
-# NOTE:-We currently do not support functions which take no arguments in PPAPI.
   def p_param_list(self, p):
-    """param_list : modifiers typeref SYMBOL param_cont"""
+    """param_list : param_item param_cont
+                  | """
+    func = self.BuildExtAttribute('FUNCTION', 'True')
+    if len(p) > 1:
+      p[0] = ListFromConcat(p[1], p[2], func)
+    else:
+      p[0] = [func]
+    if self.parse_debug: DumpReduction('param_list', p)
+
+  def p_param_item(self, p):
+    """param_item : modifiers typeref SYMBOL param_cont"""
     children = ListFromConcat(p[1], p[2])
     param = self.BuildProduction('Param', p, 3, children)
     p[0] = ListFromConcat(param, p[4])
-    if self.parse_debug: DumpReduction('param_list', p)
+    if self.parse_debug: DumpReduction('param_item', p)
 
   def p_param_cont(self, p):
-    """param_cont : ',' param_list
+    """param_cont : ',' param_item param_cont
                   | """
     if len(p) > 1:
       p[0] = p[2]
@@ -632,6 +651,7 @@ class IDLParser(IDLLexer):
 #
   def ParseData(self):
     try:
+      self.parse_errors = 0
       return self.yaccobj.parse(lexer=self)
 
     except lex.LexError as le:
@@ -650,13 +670,13 @@ class IDLParser(IDLLexer):
       InfoOut.Log("Parsing %s" % filename)
     try:
       out = self.ParseData()
-      return out
+      return StageResult(filename, out, self.parse_errors)
 
     except Exception as e:
       ErrOut.LogLine(filename, self.last.lineno, self.last.lexpos,
                      'Internal parsing error - %s.' % str(e))
       raise
-      return []
+      return StageResult(filename, [], self.parse_errors)
 
 
 
@@ -680,7 +700,7 @@ def FlattenTree(node):
   return out
 
 
-def Test(filename, ast):
+def TestErrors(filename, nodelist):
   lexer = IDLLexer()
   data = open(filename).read()
   lexer.SetData(filename, data)
@@ -698,7 +718,7 @@ def Test(filename, ast):
         if args[1] == 'FAIL':
           fail_comments.append((tok.lineno, ' '.join(args[2:-1])))
   obj_list = []
-  for node in ast.Children():
+  for node in nodelist:
     obj_list.extend(FlattenTree(node))
 
   errors = 0
@@ -751,12 +771,82 @@ def Test(filename, ast):
   return errors
 
 
+def TestFile(parser, filename):
+  # Capture errors instead of reporting them so we can compare them
+  # with the expected errors.
+  ErrOut.SetConsole(False)
+  ErrOut.SetCapture(True)
 
-def ParseFile(parser, filename, options):
-  InfoOut.Log('Parsing %s.' % filename)
-  children = parser.ParseFile(filename)
-  node = IDLNode('File', filename, filename, 1, 0, children)
-  return node
+  result = parser.ParseFile(filename)
+
+  # Renable output
+  ErrOut.SetConsole(True)
+  ErrOut.SetCapture(False)
+
+  # Compare captured errors
+  return TestErrors(filename, result.out)
+
+
+def TestErrorFiles(options):
+  idldir = os.path.split(sys.argv[0])[0]
+  idldir = os.path.join(idldir, 'test_parser', '*.idl')
+  filenames = glob.glob(idldir)
+  parser = IDLParser(options)
+  total_errs = 0
+  for filename in filenames:
+    errs = TestFile(parser, filename)
+    if errs:
+      ErrOut.Log("%s test failed with %d error(s)." % (filename, errs))
+      total_errs += errs
+
+  if total_errs:
+    ErrOut.Log("Failed parsing test.")
+  else:
+    InfoOut.Log("Passed parsing test.")
+  return total_errs
+
+def TestNamespaceFiles(options):
+  idldir = os.path.split(sys.argv[0])[0]
+  idldir = os.path.join(idldir, 'test_namespace', '*.idl')
+  filenames = glob.glob(idldir)
+
+  InfoOut.SetConsole(False)
+  result = ParseFiles(filenames, options)
+  InfoOut.SetConsole(True)
+
+  if result.errs:
+    ErrOut.Log("Failed namespace test.")
+  else:
+    InfoOut.Log("Passed namespace test.")
+  return result.errs
+
+
+def ParseFiles(filenames, options):
+  parser = IDLParser(options)
+  filenodes = []
+  errors = 0
+
+  for filename in filenames:
+    result = parser.ParseFile(filename)
+    if result.errs:
+      ErrOut.Log("%d error(s) parsing %s." % (result.errs, filename))
+      errors += result.errs
+    else:
+      InfoOut.Log("Parsed %s." % filename)
+    filenode = IDLNode('File', filename, filename, 1, 0, result.out)
+    filenodes.append(filenode)
+
+  ast = IDLAst(filenodes)
+
+  # Build the links
+  ast.BuildTree(None)
+
+  # Resolve type references
+  errors += ast.Resolve()
+
+  ast.Resolve()
+  return StageResult('Parsing', ast, errors)
+
 
 def Main(args):
   global PARSER_OPTIONS
@@ -773,36 +863,22 @@ def Main(args):
   for opt, val in opts:
     PARSER_OPTIONS[opt[2:]] = True
 
-  parser = IDLParser(PARSER_OPTIONS)
-  total_errs = 0
-  for filename in filenames:
-    if PARSER_OPTIONS['test']:
-      ErrOut.SetConsole(False)
-      ErrOut.SetCapture(True)
+  if PARSER_OPTIONS['test']:
+    errs = TestErrorFiles(PARSER_OPTIONS)
+    errs = TestNamespaceFiles(PARSER_OPTIONS)
+    if errs:
+      ErrOut.Log("Parser failed with %d errors." % errs)
+      return  -1
 
-      ast = ParseFile(parser, filename, PARSER_OPTIONS)
+  result = ParseFiles(filenames, PARSER_OPTIONS)
+  if PARSER_OPTIONS['output']:
+    result.out.Dump(0)
 
-      ErrOut.SetConsole(True)
-      ErrOut.SetCapture(False)
+  if result.errs:
+    ErrOut.Log('Found %d error(s).' % result.errors);
 
-      errs = Test(filename, ast)
-      total_errs += errs
-      if errs:
-        ErrOut.Log("%s test failed with %d error(s)." % (filename, errs))
-    else:
-      ErrOut.SetConsole(True)
-      ast = ParseFile(parser, filename, PARSER_OPTIONS)
-
-    if PARSER_OPTIONS['output']:
-      ast.Dump(0, False)
-
-  if not PARSER_OPTIONS['test']:
-    total_errs = parser.parse_errors
-
-  InfoOut.Log("Parsed %d file(s) with %d error(s)." %
-      (len(filenames), total_errs))
-  return total_errs
-
+  InfoOut.Log("%d files processed." % len(filenames))
+  return result.errs
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv[1:]))
