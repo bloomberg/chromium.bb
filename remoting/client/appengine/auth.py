@@ -289,17 +289,6 @@ class SetupOAuthHandler(webapp.RequestHandler):
     # If there is an existing key, only allow updating if you know the old
     # key. This is a simple safeguard against random users hitting this page.
     config = GetOAuthConfig(throws=False)
-    httpxmppproxy = self.request.get('httpxmppproxy')
-    # TODO(ajwong): THIS IS A TOTAL HACK! FIX WITH OWN PAGE.
-    # Currently, this form has one submit button, and 3 pieces of input:
-    # consumer_key, oauth_secret, and the httpxmppproxy address.  The first
-    # two only get committed if the secret + key match.  The third always
-    # get committed via this hack.  Really, it should just be a separate
-    # field/page to set this up.
-    if httpxmppproxy:
-      config.httpxmppproxy = httpxmppproxy
-      config.put()
-    config.consumer_key = self.request.get('consumer_key')
     if config:
       if config.consumer_secret != old_consumer_secret:
         self.response.set_status(400)
@@ -307,6 +296,14 @@ class SetupOAuthHandler(webapp.RequestHandler):
         return
     else:
       config = OAuthConfig(key_name = OAuthConfigKey().id_or_name())
+
+    # TODO(ajwong): THIS IS A TOTAL HACK! FIX WITH OWN PAGE.
+    # Currently, this form has one submit button, and 3 pieces of input:
+    # consumer_key, oauth_secret, and the httpxmppproxy address.  The
+    # HTTP/XMPP proxy should really have its own configuration page.
+    httpxmppproxy = self.request.get('httpxmppproxy')
+    if httpxmppproxy:
+      config.httpxmppproxy = httpxmppproxy
 
     config.consumer_key = self.request.get('consumer_key')
     config.consumer_secret = self.request.get('new_consumer_secret')
