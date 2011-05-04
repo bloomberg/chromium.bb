@@ -1693,6 +1693,8 @@
         'browser/remoting/setup_flow_start_host_step.cc',
         'browser/remoting/setup_flow_start_host_step.h',
         'browser/remove_rows_table_model.h',
+        'browser/renderer_host/accelerated_plugin_view_mac.h',
+        'browser/renderer_host/accelerated_plugin_view_mac.mm',
         'browser/renderer_host/chrome_render_message_filter.cc',
         'browser/renderer_host/chrome_render_message_filter.h',
         'browser/renderer_host/chrome_render_view_host_observer.cc',
