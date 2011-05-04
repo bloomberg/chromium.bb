@@ -1326,17 +1326,25 @@ void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
   if (index != browser_->tabstrip_model()->active_index())
     return;
 
-  // Swap the 'active' and 'preview' and delete what was the active.
-  contents_->MakePreviewContentsActiveContents();
-  TabContentsContainer* old_container = contents_container_;
-  contents_container_ = preview_container_;
-  old_container->ChangeTabContents(NULL);
-  delete old_container;
-  preview_container_ = NULL;
+  if (contents_->preview_tab_contents() == new_contents->tab_contents()) {
+    // If 'preview' is becoming active, swap the 'active' and 'preview' and
+    // delete what was the active.
+    contents_->MakePreviewContentsActiveContents();
+    TabContentsContainer* old_container = contents_container_;
+    contents_container_ = preview_container_;
+    old_container->ChangeTabContents(NULL);
+    delete old_container;
+    preview_container_ = NULL;
 
-  // Update the UI for what was the preview contents and is now active. Pass in
-  // false to ProcessTabSelected as new_contents is already parented correctly.
-  ProcessTabSelected(new_contents, false);
+    // Update the UI for what was the preview contents and is now active. Pass
+    // in false to ProcessTabSelected as new_contents is already parented
+    // correctly.
+    ProcessTabSelected(new_contents, false);
+  } else {
+    // Update the UI for the new contents. Pass in true to ProcessTabSelected as
+    // new_contents is not parented correctly.
+    ProcessTabSelected(new_contents, true);
+  }
 }
 
 void BrowserView::TabStripEmpty() {
