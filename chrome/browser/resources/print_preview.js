@@ -89,7 +89,7 @@ function showSystemDialog() {
  */
 function disablePreviewControls() {
   var controlIDs = ['landscape', 'portrait', 'all-pages', 'print-pages',
-                    'individual-pages'];
+                    'individual-pages', 'printer-list'];
   var controlCount = controlIDs.length;
   for (var i = 0; i < controlCount; i++)
     $(controlIDs[i]).disabled = true;
@@ -119,6 +119,9 @@ function updateControlsWithSelectedPrinterCapabilities() {
   }
 
   lastSelectedPrinterIndex = selectedPrinter;
+
+  // Regenerate the preview data based on selected printer settings.
+  setDefaultValuesAndRegeneratePreview();
 }
 
 /**
@@ -338,9 +341,6 @@ function setPrinters(printers, defaultPrinterIndex) {
   printerList.disabled = false;
 
   updateControlsWithSelectedPrinterCapabilities();
-
-  // Once the printer list is populated, generate the initial preview.
-  requestPrintPreview();
 }
 
 /**
@@ -629,6 +629,13 @@ function onLayoutModeToggle() {
     return;
 
   previouslySelectedLayout = currentlySelectedLayout;
+  setDefaultValuesAndRegeneratePreview();
+}
+
+/**
+ * Sets the default values and sends a request to regenerate preview data.
+ */
+function setDefaultValuesAndRegeneratePreview() {
   $('individual-pages').value = '';
   $('all-pages').checked = true;
   totalPageCount = -1;
