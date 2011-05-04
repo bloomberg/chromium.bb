@@ -87,11 +87,9 @@ def CheckChangeOnCommit(input_api, output_api):
 
 def GetPreferredTrySlaves():
   return [
-      'nacl-hardy32_newlib_opt',
       'nacl-lucid32_newlib_dbg',
       'nacl-lucid32_newlib_opt',
       'nacl-lucid32_glibc_opt',
-      'nacl-hardy64_newlib_opt',
       'nacl-lucid64_newlib_dbg',
       'nacl-lucid64_newlib_opt',
       'nacl-lucid64_glibc_opt',
