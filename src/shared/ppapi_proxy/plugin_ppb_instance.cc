@@ -1,6 +1,6 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_instance.h"
 
@@ -86,7 +86,6 @@ PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
 PP_Bool IsFullFrame(PP_Instance instance) {
   DebugPrintf("PPB_Instance::IsFullFrame: instance=%"NACL_PRIu32"\n",
               instance);
-  NACL_UNTESTED();
   int32_t is_full_frame = 0;
 
   NaClSrpcError srpc_result =

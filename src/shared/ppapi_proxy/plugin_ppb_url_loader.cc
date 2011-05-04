@@ -1,6 +1,6 @@
-// Copyright 2011 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_loader.h"
 
@@ -211,7 +211,6 @@ int32_t FinishStreamingToFile(PP_Resource loader,
 
 void Close(PP_Resource loader) {
   DebugPrintf("PPB_URLLoader::Close: loader=%"NACL_PRIu32"\n", loader);
-  NACL_UNTESTED();
 
   NaClSrpcError srpc_result =
       PpbURLLoaderRpcClient::PPB_URLLoader_Close(
