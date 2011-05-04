@@ -48,7 +48,9 @@ class Plugin : public PortableHandle {
   char* LookupArgument(const char* key);
 
   // Report successful loading of a module.
-  virtual void ReportLoadSuccess() = 0;
+  virtual void ReportLoadSuccess(bool length_computable,
+                                 uint64_t loaded_bytes,
+                                 uint64_t total_bytes) = 0;
   // Report an error that was encountered while loading a module.
   // TODO(sehr,polina): make this an error code rather than a string.
   virtual void ReportLoadError(const nacl::string& error) = 0;

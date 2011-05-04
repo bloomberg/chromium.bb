@@ -81,7 +81,9 @@ class PluginPpapi : public pp::Instance, public Plugin {
   ppapi_proxy::BrowserPpp* ppapi_proxy() const { return ppapi_proxy_; }
 
   // Report successful loading of a module.
-  virtual void ReportLoadSuccess();
+  virtual void ReportLoadSuccess(bool length_computable,
+                                 uint64_t loaded_bytes,
+                                 uint64_t total_bytes);
   // Report an error encountered while loading a module.
   virtual void ReportLoadError(const nacl::string& error);
   // Report loading a module was aborted, typically due to user action.
@@ -150,28 +152,24 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Callback used when getting the URL for the NaCl manifest file.
   void NaClManifestFileDidOpen(int32_t pp_error);
 
-  // Parses the JSON pointed at by |nexe_manifest_json| and determines the URL
-  // of the nexe module appropriate for the NaCl sandbox implemented by the
-  // installed sel_ldr.  The URL is determined from the JSON in
-  // |nexe_manifest_json|, see issue:
-  //   http://code.google.com/p/nativeclient/issues/detail?id=1040
-  // for more details.  The JSON for a .nexe with base name 'hello' that has
-  // builds for x86-32, x86-64 and ARM (for example) is expected to look like
-  // this:
-  // {
-  //   "nexes": {
-  //     "x86-64": "hello-x86-64.nexe",
-  //     "x86-32": "hello-x86-32.nexe",
-  //     "ARM": "hello-arm.nexe"
-  //   }
-  // }
-  // On success, |true| is returned and |*result| is updated with the URL from
-  // the JSON.  On failure, |false| is returned, and |*result| is unchanged.
-  // TODO(dspringer): Note that this routine uses the 'eval' routine on the
-  // browser's window object, and can potentially expose security issues.  See
-  // bug http://code.google.com/p/nativeclient/issues/detail?id=1038.
-  bool SelectNexeURLFromManifest(const nacl::string& nexe_manifest_json,
-                                 nacl::string* result);
+  // Parses the JSON in |manifest_json| and retains a scriptable object in
+  // |manifest_object_| for use by subsequent resource lookups.
+  // On success, |true| is returned and |manifest_object_| is updated to
+  // contain a scriptable object that is used by SelectNexeURLFromManifest.
+  // On failure, |false| is returned, and |manifest_object_| is unchanged.
+  bool SetManifestObject(const nacl::string& manifest_json,
+                         nacl::string* error_string);
+
+  // Determines the URL of the nexe module appropriate for the NaCl sandbox
+  // implemented by the installed sel_ldr.  The URL is determined from the
+  // scriptable object in |manifest_object_|.  On success, |true| is returned
+  // and |result| is set to the URL to use for the nexe.  On failure, |false|
+  // is returned.
+  bool SelectNexeURLFromManifest(nacl::string* result,
+                                 nacl::string* error_string);
+
+  // Determines the appropriate nexe for the sandbox and requests a load.
+  void RequestNexeLoad();
 
   // Callback used when loading a URL for JS-based __urlAsNaClDesc().
   void UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
@@ -196,6 +194,9 @@ class PluginPpapi : public pp::Instance, public Plugin {
                              bool length_computable,
                              uint64_t loaded_bytes,
                              uint64_t total_bytes);
+
+  // The manifest dictionary.  Used for looking up resources to be loaded.
+  pp::Var manifest_object_;
 
   // A string containing the text description of the last error produced by
   // this plugin.

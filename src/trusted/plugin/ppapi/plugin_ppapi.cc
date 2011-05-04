@@ -6,8 +6,9 @@
 
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 
-#include <algorithm>
 #include <stdio.h>
+#include <algorithm>
+#include <vector>
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -58,11 +59,14 @@ const char* const kSrcManifestAttribute = "src";
 // This is a pretty arbitrary limit on the byte size of the NaCl manfest file.
 // Note that the resulting string object has to have at least one byte extra
 // for the null termination character.
-const ssize_t kNaclManifestMaxFileBytesPlusNull = 1024;
-const ssize_t kNaclManifestMaxFileBytesNoNull =
-    kNaclManifestMaxFileBytesPlusNull - 1;
+const size_t kNaClManifestMaxFileBytes = 1024 * 1024;
+
 // The key used to find the dictionary nexe URLs in the manifest file.
 const char* const kNexesKey = "nexes";
+// The top level dictionary entries valid in the manifest file.
+const char* kManifestTopLevelProperties[] = { kNexesKey };
+// The dictionary entries valid under the kNexesKey entry of the manifest.
+const char* kManifestNexesISAProperties[] = { "x86-32", "x86-64", "arm" };
 
 bool UrlAsNaClDesc(void* obj, SrpcParams* params) {
   // TODO(sehr,polina): this API should take a selector specify which of
@@ -284,6 +288,82 @@ class ZoomAdapter : public pp::Zoom_Dev {
 
   NACL_DISALLOW_COPY_AND_ASSIGN(ZoomAdapter);
 };
+
+bool FindMatchingProperty(nacl::string property_name,
+                          const char** valid_names,
+                          size_t valid_name_count) {
+  for (size_t i = 0; i < valid_name_count; ++i) {
+    if (property_name == valid_names[i]) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// TODO(sehr,polina): Replace this by the Chrome JSON schema validator.
+bool ValidateManifestObject(pp::Var manifest_candidate,
+                            nacl::string* error_string) {
+  pp::Var exception;
+  if (error_string == NULL) {
+    return false;
+  }
+  // Check that there are no unrecognized top-level elements of the manifest.
+  // TODO(sehr,polina): replace this when the manifest spec is extended.
+  std::vector<pp::Var> top_level_properties;
+  manifest_candidate.GetAllPropertyNames(&top_level_properties, &exception);
+  if (!exception.is_undefined()) {
+      *error_string = "manifest properties could not be read.";
+      return false;
+  }
+  for (size_t i = 0; i < top_level_properties.size(); ++i) {
+    if (!top_level_properties[i].is_string()) {
+      *error_string = "manifest has a non-string top-level property.";
+      return false;
+    }
+    nacl::string property_name = top_level_properties[i].AsString();
+    if (!FindMatchingProperty(property_name,
+                              kManifestTopLevelProperties,
+                              NACL_ARRAY_SIZE(kManifestTopLevelProperties))) {
+      *error_string =
+          nacl::string("manifest has unrecognized top-level property \"") +
+          property_name + "\".";
+      return false;
+    }
+  }
+  // Check that the manifest file has the "nexes" property, and that property
+  // is itself an object.
+  pp::Var nexes_dict = manifest_candidate.GetProperty(kNexesKey, &exception);
+  if (!exception.is_undefined() || !nexes_dict.is_object()) {
+    *error_string =
+        nacl::string("manifest did not have a \"") + kNexesKey +"\" property";
+    return false;
+  }
+  // Check that nexes_dict only contains sandbox ISAs that will be recognized.
+  std::vector<pp::Var> nexe_properties;
+  nexes_dict.GetAllPropertyNames(&nexe_properties, &exception);
+  if (!exception.is_undefined()) {
+      *error_string =
+          nacl::string("could not read manifest \"") + kNexesKey +"\" property";
+      return false;
+  }
+  for (size_t i = 0; i < nexe_properties.size(); ++i) {
+    if (!nexe_properties[i].is_string()) {
+      *error_string = "manifest sandbox ISA property name was not a string.";
+      return false;
+    }
+    nacl::string property_name = nexe_properties[i].AsString();
+    if (!FindMatchingProperty(property_name,
+                              kManifestNexesISAProperties,
+                              NACL_ARRAY_SIZE(kManifestNexesISAProperties))) {
+      *error_string =
+          nacl::string("manifest has unrecognized sandbox ISA property \"") +
+          property_name + "\".";
+      return false;
+    }
+  }
+  // TODO(sehr,polina): Add other manifest schema checks here.
+  return true;
+}
 
 }  // namespace
 
@@ -523,13 +603,23 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
     ReportLoadError("could not duplicate loaded file handle.");
     return;
   }
+  struct stat stat_buf;
+  if (0 != fstat(file_desc_ok_to_close, &stat_buf)) {
+    CLOSE(file_desc_ok_to_close);
+    ReportLoadError("could not stat nexe file.");
+    return;
+  }
+  size_t nexe_bytes_read = static_cast<size_t>(stat_buf.st_size);
   // Inform JavaScript that we successfully loaded the manifest file.
-  DispatchProgressEvent("progress", false, kUnknownBytes, kUnknownBytes);
+  DispatchProgressEvent("progress",
+                        true,  // length_computable
+                        nexe_bytes_read,
+                        nexe_bytes_read);
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(wrapper_factory()->MakeFileDesc(file_desc_ok_to_close, O_RDONLY));
   bool was_successful = LoadNaClModule(wrapper.get(), &error_string);
   if (was_successful) {
-    ReportLoadSuccess();
+    ReportLoadSuccess(true, nexe_bytes_read, nexe_bytes_read);
     // Set the __moduleReady attribute to indicate ready to start.
     set_nacl_module_ready(true);
   } else {
@@ -635,6 +725,18 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   // that can later be closed without closing the original descriptor.  The
   // browser will take care of the original descriptor.
   int dup_file_desc = DUP(file_desc);
+  struct stat stat_buf;
+  if (0 != fstat(dup_file_desc, &stat_buf)) {
+    CLOSE(dup_file_desc);
+    ReportLoadError("could not stat manifest file.");
+    return;
+  }
+  size_t bytes_to_read = static_cast<size_t>(stat_buf.st_size);
+  if (bytes_to_read > kNaClManifestMaxFileBytes) {
+    CLOSE(dup_file_desc);
+    ReportLoadError("manifest file too large.");
+    return;
+  }
   FILE* json_file = fdopen(dup_file_desc, "rb");
   PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen "
                  "(dup_file_desc=%"NACL_PRId32", json_file=%p)\n",
@@ -644,39 +746,50 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
     ReportLoadError("could not open manifest file.");
     return;
   }
-  nacl::scoped_array<char> json_buffer(
-      new char[kNaclManifestMaxFileBytesPlusNull]);
+  nacl::scoped_array<char> json_buffer(new char[bytes_to_read + 1]);
   if (json_buffer == NULL) {
     fclose(json_file);
     ReportLoadError("could not allocate manifest memory.");
     return;
   }
-  size_t read_byte_count = fread(json_buffer.get(),
-                                 sizeof(char),
-                                 kNaclManifestMaxFileBytesNoNull,
-                                 json_file);
-  bool read_error = (ferror(json_file) != 0);
-  bool file_too_large = (feof(json_file) == 0);
+  // json_buffer could hold a large enough buffer that the system might need
+  // multiple reads to fill it, so iterate through reads.
+  size_t total_bytes_read = 0;
+  while (0 < bytes_to_read) {
+    size_t bytes_this_read = fread(&json_buffer[total_bytes_read],
+                                   sizeof(char),
+                                   bytes_to_read,
+                                   json_file);
+    if (bytes_this_read < bytes_to_read &&
+        (feof(json_file) || ferror(json_file))) {
+      PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen failed: "
+                     "total_bytes_read=%"NACL_PRIuS" "
+                     "bytes_to_read=%"NACL_PRIuS"\n",
+                     total_bytes_read, bytes_to_read));
+      fclose(json_file);
+      ReportLoadError("could not read manifest file.");
+      return;
+    }
+    total_bytes_read += bytes_this_read;
+    bytes_to_read -= bytes_this_read;
+  }
   // Once the bytes are read, the FILE is no longer needed, so close it.  This
   // allows for early returns without leaking the |json_file| FILE object.
   fclose(json_file);
-  if (read_error || file_too_large) {
-    // No need to close |file_desc|, that is handled by |nexe_downloader_|.
-    PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen failed: "
-                   "read_error=%d file_too_large=%d "
-                   "read_byte_count=%"NACL_PRIuS"\n",
-                   read_error, file_too_large,
-                   read_byte_count));
-    ReportLoadError("could not read manifest file.");
+  // No need to close |file_desc|, that is handled by |nexe_downloader_|.
+  json_buffer[total_bytes_read] = '\0';  // Force null termination.
+  nacl::string nexe_url;
+  nacl::string error_string;
+  if (!SetManifestObject(json_buffer.get(), &error_string)) {
+    ReportLoadError(error_string);
     return;
   }
-  json_buffer[read_byte_count] = '\0';  // Force null termination.
-  nacl::string nexe_url;
-  if (SelectNexeURLFromManifest(json_buffer.get(), &nexe_url)) {
-    PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (nexe_url=%s)\n",
-                   nexe_url.c_str()));
+  if (SelectNexeURLFromManifest(&nexe_url, &error_string)) {
     // Inform JavaScript that we found a nexe URL to load.
-    DispatchProgressEvent("progress", false, kUnknownBytes, kUnknownBytes);
+    DispatchProgressEvent("progress",
+                          false,  // length_computable
+                          kUnknownBytes,
+                          kUnknownBytes);
     pp::CompletionCallback open_callback =
         callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
     // Will always call the callback on success or failure.
@@ -690,7 +803,10 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
 void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
   PLUGIN_PRINTF(("PluginPpapi::RequestNaClManifest (url='%s')\n", url.c_str()));
   // Inform JavaScript that a load is starting.
-  DispatchProgressEvent("loadstart", false, kUnknownBytes, kUnknownBytes);
+  DispatchProgressEvent("loadstart",
+                        false,  // length_computable
+                        kUnknownBytes,
+                        kUnknownBytes);
   pp::CompletionCallback open_callback =
       callback_factory_.NewCallback(&PluginPpapi::NaClManifestFileDidOpen);
   // Will always call the callback on success or failure.
@@ -698,35 +814,52 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
 }
 
 
-bool PluginPpapi::SelectNexeURLFromManifest(
-    const nacl::string& nexe_manifest_json, nacl::string* result) {
-  const nacl::string sandbox_isa(GetSandboxISA());
-  PLUGIN_PRINTF(
-      ("GetNexeURLFromManifest(): sandbox='%s' nexe_manifest_json='%s'.\n",
-       sandbox_isa.c_str(), nexe_manifest_json.c_str()));
-  if (result == NULL)
+bool PluginPpapi::SetManifestObject(const nacl::string& manifest_json,
+                                    nacl::string* error_string) {
+  PLUGIN_PRINTF(("PluginPpapi::SetManifestObject(): manifest_json='%s'.\n",
+       manifest_json.c_str()));
+  if (error_string == NULL) {
     return false;
+  }
   // Parse the JSON via the browser.
   pp::Var exception;
   pp::Var json_parser = GetWindowObject().GetProperty("JSON", &exception);
   if (!exception.is_undefined()) {
+    *error_string = "could not get window.JSON object";
     return false;
   }
-  pp::Var manifest_root =
-      json_parser.Call("parse", nexe_manifest_json, &exception);
+  pp::Var manifest_candidate =
+      json_parser.Call("parse", manifest_json, &exception);
   if (!exception.is_undefined()) {
+    *error_string = "manifest JSON parsing failed";
     return false;
   }
-  if (!manifest_root.HasProperty(kNexesKey)) {
+  // Parse has ensured the string was valid JSON.  Check also that it has
+  // the "nexes" property.
+  if (!ValidateManifestObject(manifest_candidate, error_string)) {
     return false;
   }
-  pp::Var nexes_dict = manifest_root.GetProperty(kNexesKey);
+  manifest_object_ = manifest_candidate;
+  return true;
+}
+
+bool PluginPpapi::SelectNexeURLFromManifest(nacl::string* result,
+                                            nacl::string* error_string) {
+  const nacl::string sandbox_isa(GetSandboxISA());
+  PLUGIN_PRINTF(("PluginPpapi::SelectNexeURLFromManifest(): sandbox='%s'.\n",
+       sandbox_isa.c_str()));
+  if (result == NULL || error_string == NULL)
+    return false;
+  pp::Var exception;
+  pp::Var nexes_dict = manifest_object_.GetProperty(kNexesKey, &exception);
   // Look for a key with the same name as the ISA string.
-  if (!nexes_dict.HasProperty(sandbox_isa)) {
+  if (!exception.is_undefined() || !nexes_dict.HasProperty(sandbox_isa)) {
+    *error_string = "could not find isa \"" + sandbox_isa + "\" in manifest.";
     return false;
   }
   pp::Var nexe_url = nexes_dict.GetProperty(sandbox_isa);
   if (!nexe_url.is_string()) {
+    *error_string = "isa \"" + sandbox_isa + "\" in manifest is not a string.";
     return false;
   }
   *result = nexe_url.AsString();
@@ -836,13 +969,18 @@ bool PluginPpapi::StreamAsFile(const nacl::string& url,
 }
 
 
-void PluginPpapi::ReportLoadSuccess() {
+void PluginPpapi::ReportLoadSuccess(bool length_computable,
+                                    uint64_t loaded_bytes,
+                                    uint64_t total_bytes) {
   // Inform JavaScript that loading was successful and is complete.
   // Note that these events will be dispatched, as will failure events, when
   // this code is reached from __launchExecutableFromFd also.
   // TODO(sehr,polina): Remove comment when experimental APIs are removed.
-  DispatchProgressEvent("load", false, kUnknownBytes, kUnknownBytes);
-  DispatchProgressEvent("loadend", false, kUnknownBytes, kUnknownBytes);
+  DispatchProgressEvent("load", length_computable, loaded_bytes, total_bytes);
+  DispatchProgressEvent("loadend",
+                        length_computable,
+                        loaded_bytes,
+                        total_bytes);
 }
 
 
@@ -854,8 +992,14 @@ void PluginPpapi::ReportLoadError(const nacl::string& error) {
   browser_interface()->AddToConsole(instance_id(), prefix + error);
   ShutdownProxy();
   // Inform JavaScript that loading encountered an error and is complete.
-  DispatchProgressEvent("error", false, kUnknownBytes, kUnknownBytes);
-  DispatchProgressEvent("loadend", false, kUnknownBytes, kUnknownBytes);
+  DispatchProgressEvent("error",
+                        false,  // length_computable
+                        kUnknownBytes,
+                        kUnknownBytes);
+  DispatchProgressEvent("loadend",
+                        false,  // length_computable
+                        kUnknownBytes,
+                        kUnknownBytes);
 }
 
 
@@ -866,8 +1010,14 @@ void PluginPpapi::ReportLoadAbort() {
   browser_interface()->AddToConsole(instance_id(), error_string);
   ShutdownProxy();
   // Inform JavaScript that loading was aborted and is complete.
-  DispatchProgressEvent("abort", false, kUnknownBytes, kUnknownBytes);
-  DispatchProgressEvent("loadend", false, kUnknownBytes, kUnknownBytes);
+  DispatchProgressEvent("abort",
+                        false,  // length_computable
+                        kUnknownBytes,
+                        kUnknownBytes);
+  DispatchProgressEvent("loadend",
+                        false,  // length_computable
+                        kUnknownBytes,
+                        kUnknownBytes);
 }
 
 

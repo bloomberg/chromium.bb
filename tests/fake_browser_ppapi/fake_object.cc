@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <string.h>
@@ -88,7 +88,7 @@ void Object::GetAllPropertyNames(uint32_t* property_count,
   }
   // Fill out the vector.
   *properties =
-      reinterpret_cast<PP_Var*>(malloc(*property_count * sizeof(*properties)));
+      reinterpret_cast<PP_Var*>(malloc(*property_count * sizeof(**properties)));
   uint32_t i = 0;
   for (prop = browser_obj->properties()->begin();
        prop != browser_obj->properties()->end(); ++prop) {
