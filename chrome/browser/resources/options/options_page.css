@@ -729,6 +729,11 @@ html[os=mac] label > input[type=radio] {
   margin-top: 2px;
 }
 
+html[os=chromeos] label > input[type=checkbox],
+html[os=chromeos] label > input[type=radio] {
+  top: 2px;
+}
+
 /* This will 'disable' the label associated with any input whose next sibling is
  * the span containing the label (usually a checkbox or radio).
  */
