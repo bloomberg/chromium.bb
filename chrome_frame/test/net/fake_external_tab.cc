@@ -19,6 +19,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
@@ -386,6 +387,9 @@ void CFUrlRequestUnittestRunner::TakeDownBrowser(
     MessageBoxA(NULL, "click ok to exit", "", MB_OK);
 
   me->ShutDownHostBrowser();
+  me->fake_chrome_.ui_loop()->PostDelayedTask(FROM_HERE,
+                                              new MessageLoop::QuitTask,
+                                              TestTimeouts::tiny_timeout_ms());
 }
 
 void CFUrlRequestUnittestRunner::InitializeLogging() {
