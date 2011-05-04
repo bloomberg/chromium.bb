@@ -35,6 +35,10 @@ var isPreviewStillLoading = false;
 // Currently selected printer capabilities.
 var printerCapabilities;
 
+// Mime type of the initiator page. Used to disable some printing options
+// when the mime type is application/pdf.
+var previewDataMimeType = null;
+
 /**
  * Window onload handler, sets up the page and starts print preview by getting
  * the printer list.
@@ -88,7 +92,7 @@ function disablePreviewControls() {
                     'individual-pages'];
   var controlCount = controlIDs.length;
   for (var i = 0; i < controlCount; i++)
-    controlIDs[i].disabled = true;
+    $(controlIDs[i]).disabled = true;
 }
 
 /**
@@ -393,6 +397,12 @@ function onPDFLoad() {
 
   $('dancing-dots').classList.add('invisible');
   setControlsDisabled(false);
+
+  if (previewDataMimeType == "application/pdf") {
+    $('landscape').disabled = true;
+    $('portrait').disabled = true;
+  }
+
   updateCopiesButtonsState();
   updateWithPrinterCapabilities(printerCapabilities);
 }
@@ -405,7 +415,9 @@ function onPDFLoad() {
  * @param {string} jobTitle The print job title.
  *
  */
-function updatePrintPreview(pageCount, jobTitle) {
+function updatePrintPreview(pageCount, jobTitle, mimeType) {
+  previewDataMimeType = mimeType;
+
   if (totalPageCount == -1)
     totalPageCount = pageCount;
 
@@ -415,8 +427,6 @@ function updatePrintPreview(pageCount, jobTitle) {
 
   if (previouslySelectedLayout == null)
     previouslySelectedLayout = $('portrait');
-
-  regeneratePreview = false;
 
   // Update the current tab title.
   document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);

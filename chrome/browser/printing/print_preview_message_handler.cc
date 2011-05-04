@@ -89,7 +89,8 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
       std::make_pair(shared_buf, params.data_size));
   print_preview_ui->PreviewDataIsAvailable(
       params.expected_pages_count,
-      wrapper->print_view_manager()->RenderSourceName());
+      wrapper->print_view_manager()->RenderSourceName(),
+      tab_contents()->contents_mime_type());
 }
 
 void PrintPreviewMessageHandler::OnPrintPreviewNodeUnderContextMenu() {

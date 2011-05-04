@@ -22,7 +22,8 @@ class PrintPreviewUI : public WebUI {
   // |expected_pages_count| specifies the total number of pages.
   // |job_title| is the title of the page being previewed.
   void PreviewDataIsAvailable(int expected_pages_count,
-                              const string16& job_title);
+                              const string16& job_title,
+                              const std::string& mime_type);
 
   // Notify the Web UI that initiator tab is closed, so we can disable all
   // the controls that needs initiator tab for generating the preview data.
