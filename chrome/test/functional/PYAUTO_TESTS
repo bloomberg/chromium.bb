@@ -164,9 +164,6 @@
       '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
       # no codesign verification on chromeos
       '-codesign',
-      # Downloads panel stays even after declining a download.
-      # crosbug.com/14728
-      '-downloads.DownloadsTest.testDeclineDangerousDownload',
       # Need internal data dirs in autotest package. crosbug.com/6855
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # Importer tests are invalid on chromeos since chrome is the only browser
@@ -177,16 +174,8 @@
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
 
-      # Needs internal data files.  crosbug.com/6855
-      '-browser.BrowserTest.testCanLoadFlash',
-      '-browser.BrowserTest.testFlashLoadsAfterKill',
-      '-browser.BrowserTest.testSingleFlashPluginProcess',
-      '-plugins.PluginsTest.testAllowPluginException',
-      '-plugins.PluginsTest.testBlockAllPlugins',
-      '-plugins.PluginsTest.testBlockPluginException',
-      '-plugins.PluginsTest.testKillAndReloadAllPlugins',
-
       # Local http server not working on chromeos.  crosbug.com/12641
+      '-plugins.PluginsTest.testBlockPluginException',
       '-popups.PopupsTest.testMultiplePopups',
       '-popups.PopupsTest.testPopupBlockedEverySec',
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',

@@ -26,6 +26,13 @@ class BrowserTest(pyauto.PyUITest):
       info = self.GetBrowserInfo()
       pp.pprint(info)
 
+  def setUp(self):
+    pyauto.PyUITest.setUp(self)
+    self._flash_plugin_type = 'Plug-in'
+    if (self.IsChromeOS() and
+        self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome'):
+      self._flash_plugin_type = 'Pepper Plugin'
+
   def _GetUniqProcesses(self, total_tabs, renderer_processes):
     """ Returns a count of uniq processes of opened tabs
 
@@ -110,12 +117,14 @@ class BrowserTest(pyauto.PyUITest):
     self.NavigateToURL(flash_url)
     child_processes = self.GetBrowserInfo()['child_processes']
     self.assertTrue([x for x in child_processes
-        if x['type'] == 'Plug-in' and x['name'] == 'Shockwave Flash'])
+        if x['type'] == self._flash_plugin_type and
+        x['name'] == 'Shockwave Flash'])
 
   def _GetFlashProcessesInfo(self):
     """Get info about flash processes, if any."""
     return [x for x in self.GetBrowserInfo()['child_processes']
-            if x['type'] == 'Plug-in' and x['name'] == 'Shockwave Flash']
+            if x['type'] == self._flash_plugin_type and
+            x['name'] == 'Shockwave Flash']
 
   def testSingleFlashPluginProcess(self):
     """Verify there's only one flash plugin process shared across all uses."""

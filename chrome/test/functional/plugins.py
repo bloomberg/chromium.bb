@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,6 +25,13 @@ class PluginsTest(pyauto.PyUITest):
     while True:
       raw_input('Interact with the browser and hit <enter> to list plugins...')
       pp.pprint(self.GetPluginsInfo().Plugins())
+
+  def setUp(self):
+    pyauto.PyUITest.setUp(self)
+    self._flash_plugin_type = 'Plug-in'
+    if (self.IsChromeOS() and
+        self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome'):
+      self._flash_plugin_type = 'Pepper Plugin'
 
   def _ObtainPluginsList(self):
     """Obtain a list of plugins for each platform.
@@ -64,9 +71,12 @@ class PluginsTest(pyauto.PyUITest):
   def _GetPluginPID(self, plugin_name):
     """Fetch the pid of the plugin process with name |plugin_name|."""
     child_processes = self.GetBrowserInfo()['child_processes']
+    plugin_type = 'Plug-in'
+    if plugin_name == 'Shockwave Flash':
+      plugin_type = self._flash_plugin_type
     for x in child_processes:
-       if x['type'] == 'Plug-in' and re.search(plugin_name, x['name']):
-         return x['pid']
+      if x['type'] == plugin_type and re.search(plugin_name, x['name']):
+        return x['pid']
     return None
 
   def _TogglePlugin(self, plugin_name):
@@ -129,9 +139,7 @@ class PluginsTest(pyauto.PyUITest):
       url = self.GetFileURLForPath(
           os.path.join(self.DataDir(), 'plugin', fname))
       self.NavigateToURL(url)
-      self.assertFalse([x for x in self.GetBrowserInfo()['child_processes']
-                        if x['type'] == 'Plug-in' and
-                        re.search(plugin_name, x['name'])])
+      self.assertFalse(self._GetPluginPID(plugin_name=plugin_name))
       if plugin_name == 'Shockwave Flash':
         continue  # cannot reload file:// flash URL - crbug.com/47249
       if plugin_name == 'Java':
@@ -139,9 +147,7 @@ class PluginsTest(pyauto.PyUITest):
       # Enable
       self._TogglePlugin(plugin_name)
       self.GetBrowserWindow(0).GetTab(0).Reload()
-      self.assertTrue([x for x in self.GetBrowserInfo()['child_processes']
-                       if x['type'] == 'Plug-in' and
-                       re.search(plugin_name, x['name'])])
+      self.assertTrue(self._GetPluginPID(plugin_name=plugin_name))
       self.assertTrue(self._IsEnabled(plugin_name), plugin_name)
 
   def testBlockAllPlugins(self):
