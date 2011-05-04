@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,6 +12,7 @@
         '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/net/net.gyp:net',
+        '<(DEPTH)/third_party/leveldb/leveldb.gyp:leveldb',
       ],
       'sources': [
         'file_system_callback_dispatcher.cc',
@@ -29,6 +30,8 @@
         'file_system_operation.h',
         'file_system_operation_context.cc',
         'file_system_operation_context.h',
+        'file_system_origin_database.cc',
+        'file_system_origin_database.h',
         'file_system_path_manager.cc',
         'file_system_path_manager.h',
         'file_system_types.h',

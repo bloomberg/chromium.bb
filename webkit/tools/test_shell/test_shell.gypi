@@ -346,6 +346,7 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
+        '<(DEPTH)/third_party/leveldb/leveldb.gyp:leveldb',
       ],
       'sources': [
         '../../../skia/ext/convolver_unittest.cc',
@@ -377,6 +378,7 @@
         '../../database/quota_table_unittest.cc',
         '../../fileapi/file_system_context_unittest.cc',
         '../../fileapi/file_system_operation_unittest.cc',
+        '../../fileapi/file_system_origin_database_unittest.cc',
         '../../fileapi/file_system_path_manager_unittest.cc',
         '../../fileapi/file_system_usage_cache_unittest.cc',
         '../../fileapi/file_system_usage_tracker_unittest.cc',
