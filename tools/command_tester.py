@@ -97,6 +97,11 @@ def ResetGlobalSettings():
       'stderr_golden': None,
       'log_golden': None,
 
+      # This option must be '1' for the output to be captured, for checking
+      # against golden files, special exit_status signals, etc.
+      # When this option is '0', stdout and stderr will be streamed out.
+      'capture_output': '1',
+
       'filter_regex': None,
       'filter_inverse': False,
       'filter_group_only': False,
@@ -324,7 +329,6 @@ def ExitStatusInfo(stderr):
         break
   return sigNum, sigType
 
-
 # On linux return codes are 8 bit. So -n = 256 + (-n) (eg: 243 = -11)
 # python does not understand this 8 bit wraparound.
 # Thus, we convert the desired val and returned val if negative to postive
@@ -342,7 +346,10 @@ def ExitStatusIsOK(expected, actual, stderr):
     if sigType not in expected:
       return False
     expected = expected[sigType]
+  return ExitStatusIsOKNoSignals(expected, actual)
 
+# Version that skips checking signals.
+def ExitStatusIsOKNoSignals(expected, actual):
   # If the expected value is a list
   if isinstance(expected, list):
     for e in expected:
@@ -361,6 +368,77 @@ def ExitStatusIsOK(expected, actual, stderr):
     val = expected == actual
     return val
 
+def CheckExitStatusWithSignals(failed,
+                               req_status,
+                               exit_status,
+                               stdout,
+                               stderr):
+  exitOk = ExitStatusIsOK(req_status, exit_status, stderr)
+  if exitOk and not failed:
+    return True
+  if failed:
+    Print('Command failed')
+  else:
+    sigNum, sigType = ExitStatusInfo(stderr)
+    Print('\nERROR: Command returned %s %s, expecting %s %s for %s' %
+          (sigType, str(exit_status),
+           str(GlobalSigType), str(req_status), GlobalPlatform))
+    Banner('Stdout')
+    Print(stdout)
+    Banner('Stderr')
+    Print(stderr)
+    Print(FailureMessage())
+  return False
+
+def CheckExitStatusNoSignals(failed,
+                             req_status,
+                             exit_status):
+  exitOk = ExitStatusIsOKNoSignals(req_status, exit_status)
+  if exitOk and not failed:
+    return True
+  if failed:
+    Print('Command failed')
+  else:
+    Print('\nERROR: Command returned %s, expecting %s for %s' %
+          (str(exit_status),
+           str(req_status),
+           GlobalPlatform))
+    Print(FailureMessage())
+  return False
+
+def CheckTimeBounds(total_time):
+  if GlobalSettings['time_error']:
+    if total_time > GlobalSettings['time_error']:
+      Print('ERROR: should have taken less than %f secs' %
+            (GlobalSettings['time_error']))
+      Print(FailureMessage())
+      return False
+
+  if GlobalSettings['time_warning']:
+    if total_time > GlobalSettings['time_warning']:
+      Print('WARNING: should have taken less than %f secs' %
+            (GlobalSettings['time_warning']))
+  return True
+
+def CheckGoldenOutput(stdout, stderr):
+  for (stream, getter) in [
+      ('stdout', lambda: stdout),
+      ('stderr', lambda: stderr),
+      ('log', lambda: open(GlobalSettings['logout']).read()),
+      ]:
+    golden = stream + '_golden'
+    if GlobalSettings[golden]:
+      golden_data = open(GlobalSettings[golden]).read()
+      actual = getter()
+      if GlobalSettings['filter_regex']:
+        actual = test_lib.RegexpFilterLines(GlobalSettings['filter_regex'],
+                                            GlobalSettings['filter_inverse'],
+                                            GlobalSettings['filter_group_only'],
+                                            actual)
+      if DifferentFromGolden(actual, golden_data, stream,
+                             FailureMessage()):
+        return False
+  return True
 
 def main(argv):
   global GlobalSigType
@@ -386,15 +464,15 @@ def main(argv):
     Print('[%s] = [%s]' % (key, val))
     os.putenv(key, val)
 
+  stdin_data = ''
+  if GlobalSettings['stdin']:
+    stdin_data = open(GlobalSettings['stdin'])
+
   if GlobalSettings['logout']:
     try:
       os.unlink(GlobalSettings['logout'])  # might not pre-exist
     except OSError:
       pass
-
-  stdin_data = ''
-  if GlobalSettings['stdin']:
-    stdin_data = open(GlobalSettings['stdin'])
 
   run_under = GlobalSettings['run_under']
   if run_under:
@@ -403,60 +481,44 @@ def main(argv):
   Banner('running %s' % str(command))
   # print the command in copy-and-pastable fashion
   print " ".join(env_vars + command)
-  (total_time, exit_status,
-   failed, stdout, stderr) = test_lib.RunTestWithInputOutput(
-      command, stdin_data)
 
-  PrintTotalTime(total_time)
-
-  req_status = GlobalSettings['exit_status']
-  req_status = MassageExitStatus(req_status)
-  exitOk = ExitStatusIsOK(req_status, exit_status, stderr)
-  if not exitOk or failed:
-    if failed:
-      Print('Command failed')
-    else:
-      sigNum, sigType = ExitStatusInfo(stderr)
-      val = MassageExitStatus(GlobalSettings['exit_status'])
-      Print('\nERROR: Command returned %s %s, expecting %s %s for %s' %
-         (sigType, str(exit_status),
-          str(GlobalSigType), str(val), GlobalPlatform))
-    Banner('Stdout')
-    Print(stdout)
-    Banner('Stderr')
-    Print(stderr)
-    Print(FailureMessage())
-    return -1
-
-  for (stream, getter) in [
-      ('stdout', lambda: stdout),
-      ('stderr', lambda: stderr),
-      ('log', lambda: open(GlobalSettings['logout']).read()),
-      ]:
-    golden = stream + '_golden'
-    if GlobalSettings[golden]:
-      golden_data = open(GlobalSettings[golden]).read()
-      actual = getter()
-      if GlobalSettings['filter_regex']:
-        actual = test_lib.RegexpFilterLines(GlobalSettings['filter_regex'],
-                                            GlobalSettings['filter_inverse'],
-                                            GlobalSettings['filter_group_only'],
-                                            actual)
-      if DifferentFromGolden(actual, golden_data, stream,
-                             FailureMessage()):
-        return -1
-
-  if GlobalSettings['time_error']:
-    if total_time > GlobalSettings['time_error']:
-      Print('ERROR: should have taken less than %f secs' %
-            (GlobalSettings['time_error']))
-      Print(FailureMessage())
+  if not int(GlobalSettings['capture_output']):
+    # We are only blurting out the stdout and stderr, not capturing it
+    # for comparison, etc.
+    assert (not GlobalSettings['stdout_golden']
+            and not GlobalSettings['stderr_golden']
+            and not GlobalSettings['log_golden']
+            and not GlobalSettings['filter_regex']
+            and not GlobalSettings['filter_inverse']
+            and not GlobalSettings['filter_group_only']
+            )
+    # If python ever changes popen.stdout.read() to not risk deadlock,
+    # we could stream and capture, and use RunTestWithInputOutput instead.
+    (total_time, exit_status, failed) = test_lib.RunTestWithInput(command,
+                                                                  stdin_data)
+    PrintTotalTime(total_time)
+    req_status = MassageExitStatus(GlobalSettings['exit_status'])
+    if not CheckExitStatusNoSignals(failed,
+                                    req_status,
+                                    exit_status):
+      return -1
+  else:
+    (total_time, exit_status,
+     failed, stdout, stderr) = test_lib.RunTestWithInputOutput(
+         command, stdin_data)
+    PrintTotalTime(total_time)
+    req_status = MassageExitStatus(GlobalSettings['exit_status'])
+    if not CheckExitStatusWithSignals(failed,
+                                       req_status,
+                                       exit_status,
+                                       stdout,
+                                       stderr):
+      return -1
+    if not CheckGoldenOutput(stdout, stderr):
       return -1
 
-  if GlobalSettings['time_warning']:
-    if total_time > GlobalSettings['time_warning']:
-      Print('WARNING: should have taken less than %f secs' %
-            (GlobalSettings['time_warning']))
+  if not CheckTimeBounds(total_time):
+    return -1
 
   Print(SuccessMessage())
   return 0

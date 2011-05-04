@@ -1199,7 +1199,12 @@ def PPAPIBrowserTester(env,
   for dest_path, dep_file in map_files:
     command.extend(['--map_file', dest_path, dep_file])
   command.extend(args)
-  return env.AutoDepsCommand(target, command)
+  return env.CommandTest(target,
+                         command,
+                         # Set to 'huge' so that the browser tester's timeout
+                         # takes precedence over the default of the test_suite.
+                         size='huge',
+                         capture_output=False)
 
 pre_base_env.AddMethod(PPAPIBrowserTester)
 
@@ -1261,7 +1266,12 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2, args=[]):
               '--chrome-flags="%s"' % chrome_flags])
   command.extend(args)
 
-  node = env.AutoDepsCommand(target, command)
+  node = env.CommandTest(target,
+                         command,
+                         # Set to 'huge' so that the browser tester's timeout
+                         # takes precedence over the default of the test_suite.
+                         size='huge',
+                         capture_output=False)
 
   if not env.Bit('disable_dynamic_plugin_loading'):
     # Add explicit dependencies on sel_ldr and the PPAPI plugin.
@@ -1504,9 +1514,10 @@ def GetPerfEnvDescription(env):
 pre_base_env.AddMethod(GetPerfEnvDescription)
 
 def CommandTest(env, name, command, size='small', direct_emulation=True,
-                extra_deps=[], posix_path=False, **extra):
+                extra_deps=[], posix_path=False, capture_output=True,
+                **extra):
   if not  name.endswith('.out') or name.startswith('$'):
-    print "ERROR: bad  test filename for test output ", name
+    print "ERROR: bad test filename for test output ", name
     assert 0
 
   if (env.IsRunningUnderValgrind() and
@@ -1543,6 +1554,8 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
       extra_env = 'EMULATOR=%s' %  env['EMULATOR'].replace(' ', r'\ ')
       extra['osenv'] = AddToStringifiedList(extra.get('osenv'),
                                             extra_env)
+  if not capture_output:
+    script_flags.append('--capture_output 0')
 
   script_flags.append('--perf_env_description')
   script_flags.append(env.GetPerfEnvDescription())
