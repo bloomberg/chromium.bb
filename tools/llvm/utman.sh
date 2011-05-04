@@ -193,100 +193,46 @@ CC=${CC:-}
 CXX=${CXX:-g++}
 
 readonly CROSS_TARGET_AR=${INSTALL_DIR}/bin/${BINUTILS_TARGET}-ar
-readonly CROSS_TARGET_AS=${INSTALL_DIR}/bin/${BINUTILS_TARGET}-as
-readonly CROSS_TARGET_LD=${INSTALL_DIR}/bin/${BINUTILS_TARGET}-ld
-readonly CROSS_TARGET_NM=${INSTALL_DIR}/bin/${BINUTILS_TARGET}-nm
 readonly CROSS_TARGET_RANLIB=${INSTALL_DIR}/bin/${BINUTILS_TARGET}-ranlib
 readonly ILLEGAL_TOOL=${INSTALL_DIR}/pnacl-illegal
 
-setup-tools-common() {
-  AR_FOR_SFI_TARGET="${CROSS_TARGET_AR}"
-  NM_FOR_SFI_TARGET="${CROSS_TARGET_NM}"
-  RANLIB_FOR_SFI_TARGET="${CROSS_TARGET_RANLIB}"
+# NOTE: we do not expect the assembler or linker to be used for libs
+#       hence the use of ILLEGAL_TOOL.
+STD_ENV_FOR_LIBSTDCPP=(
+  CC="${PNACL_GCC}"
+  CXX="${PNACL_GPP}"
+  RAW_CXX_FOR_TARGET="${PNACL_GPP}"
+  LD="${ILLEGAL_TOOL}"
+  CFLAGS="--pnacl-arm-bias"
+  CPPFLAGS="--pnacl-arm-bias"
+  CXXFLAGS="--pnacl-arm-bias"
+  CFLAGS_FOR_TARGET="--pnacl-arm-bias"
+  CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
+  CC_FOR_TARGET="${PNACL_GCC}"
+  GCC_FOR_TARGET="${PNACL_GCC}"
+  CXX_FOR_TARGET="${PNACL_GPP}"
+  AR="${PNACL_AR}"
+  AR_FOR_TARGET="${PNACL_AR}"
+  NM_FOR_TARGET="${PNACL_NM}"
+  RANLIB="${PNACL_RANLIB}"
+  RANLIB_FOR_TARGET="${PNACL_RANLIB}"
+  AS_FOR_TARGET="${ILLEGAL_TOOL}"
+  LD_FOR_TARGET="${ILLEGAL_TOOL}"
+  OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" )
 
-  # Preprocessor flags
-  CPPFLAGS_FOR_SFI_TARGET="-DMISSING_SYSCALL_NAMES=1"
-  # C flags
-  CFLAGS_FOR_SFI_TARGET="${CPPFLAGS_FOR_SFI_TARGET} \
-                         -march=${ARM_ARCH} \
-                         -ffixed-r9"
-
-  # C++ flags
-  CXXFLAGS_FOR_SFI_TARGET=${CFLAGS_FOR_SFI_TARGET}
-
-  # NOTE: this seems to be no longer  used
-  STD_ENV_FOR_GCC_ETC=(
-    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}"
-    CPPFLAGS_FOR_TARGET="${CPPFLAGS_FOR_SFI_TARGET}"
-    CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
-    GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
-    CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
-    AS_FOR_TARGET="${CROSS_TARGET_AS}"
-    LD_FOR_TARGET="${ILLEGAL_TOOL}"
-    AR_FOR_TARGET="${CROSS_TARGET_AR}"
-    NM_FOR_TARGET="${CROSS_TARGET_NM}"
-    OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}"
-    RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}"
-    STRIP_FOR_TARGET="${ILLEGAL_TOOL}")
-
-
-  STD_ENV_FOR_LIBSTDCPP=(
-    CC="${CC_FOR_SFI_TARGET}"
-    CXX="${CXX_FOR_SFI_TARGET}"
-    RAW_CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
-    LD="${LD_FOR_SFI_TARGET}"
-    CFLAGS="${CFLAGS_FOR_SFI_TARGET} --pnacl-arm-bias"
-    CPPFLAGS="${CPPFLAGS_FOR_SFI_TARGET} --pnacl-arm-bias"
-    CXXFLAGS="${CXXFLAGS_FOR_SFI_TARGET} --pnacl-arm-bias"
-    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET} --pnacl-arm-bias"
-    CPPFLAGS_FOR_TARGET="${CPPFLAGS_FOR_SFI_TARGET} --pnacl-arm-bias"
-    CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
-    GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
-    CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
-    AR="${AR_FOR_SFI_TARGET}"
-    AR_FOR_TARGET="${AR_FOR_SFI_TARGET}"
-    NM_FOR_TARGET="${NM_FOR_SFI_TARGET}"
-    RANLIB="${RANLIB_FOR_SFI_TARGET}"
-    RANLIB_FOR_TARGET="${RANLIB_FOR_SFI_TARGET}"
-    AS_FOR_TARGET="${ILLEGAL_TOOL}"
-    LD_FOR_TARGET="${ILLEGAL_TOOL}"
-    OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" )
-
-  # NOTE: we do not expect the assembler or linker to be used to build newlib.a
-  #       hence the use of ILLEGAL_TOOL.
-  STD_ENV_FOR_NEWLIB=(
-    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET} --pnacl-arm-bias"
-    CPPFLAGS_FOR_TARGET="${CPPFLAGS_FOR_SFI_TARGET} --pnacl-arm-bias"
-    CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
-    GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
-    CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
-    AR_FOR_TARGET="${AR_FOR_SFI_TARGET}"
-    NM_FOR_TARGET="${NM_FOR_SFI_TARGET}"
-    RANLIB_FOR_TARGET="${RANLIB_FOR_SFI_TARGET}"
-    OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}"
-    AS_FOR_TARGET="${ILLEGAL_TOOL}"
-    LD_FOR_TARGET="${ILLEGAL_TOOL}"
-    STRIP_FOR_TARGET="${ILLEGAL_TOOL}")
-}
-
-
-# NOTE: we need to rethink the setup mechanism when we want to
-#       produce libgcc for other archs
-setup-tools-arm() {
-  CC_FOR_SFI_TARGET="${PNACL_GCC} -arch arm"
-  CXX_FOR_SFI_TARGET="${PNACL_GPP} -arch arm"
-  # NOTE: this should not be needed, since we do not really fully link anything
-  LD_FOR_SFI_TARGET="${ILLEGAL_TOOL}"
-  setup-tools-common
-}
-
-setup-tools-bitcode() {
-  CC_FOR_SFI_TARGET="${PNACL_GCC}"
-  CXX_FOR_SFI_TARGET="${PNACL_GPP}"
-  # NOTE: this should not be needed, since we do not really fully link anything
-  LD_FOR_SFI_TARGET="${ILLEGAL_TOOL}"
-  setup-tools-common
-}
+STD_ENV_FOR_NEWLIB=(
+  CFLAGS_FOR_TARGET="--pnacl-arm-bias"
+  CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
+  CC_FOR_TARGET="${PNACL_GCC}"
+  GCC_FOR_TARGET="${PNACL_GCC}"
+  CXX_FOR_TARGET="${PNACL_GPP}"
+  AR_FOR_TARGET="${PNACL_AR}"
+  NM_FOR_TARGET="${PNACL_NM}"
+  RANLIB_FOR_TARGET="${PNACL_RANLIB}"
+  OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}"
+  AS_FOR_TARGET="${ILLEGAL_TOOL}"
+  LD_FOR_TARGET="${ILLEGAL_TOOL}"
+  STRIP_FOR_TARGET="${ILLEGAL_TOOL}" )
 
 
 # The gold plugin that we use is documented at
@@ -1194,7 +1140,7 @@ XGCC_NAME=\$(basename \$0)
 XGCC_REAL=\${XGCC_ABSPATH}/\${XGCC_NAME}-real
 ${PNACL_GCC} \\
 --driver="\${XGCC_REAL}" \\
---pnacl-bias=${arch} -arch ${arch} ${CPPFLAGS_FOR_SFI_TARGET} "\$@"
+--pnacl-bias=${arch} -arch ${arch} "\$@"
 EOF
 
   chmod 755 "${XGCC}"
@@ -1305,9 +1251,7 @@ libstdcpp-bitcode-needs-configure() {
 #+ libstdcpp-bitcode-configure - configure libstdcpp for bitcode
 libstdcpp-bitcode-configure() {
   StepBanner "LIBSTDCPP-BITCODE" "Configure"
-  setup-tools-bitcode
   libstdcpp-configure-common "${TC_BUILD_LIBSTDCPP_BITCODE}"
-  setup-tools-arm
 }
 
 libstdcpp-configure-common() {
@@ -1346,9 +1290,7 @@ libstdcpp-bitcode-needs-make() {
 #+ libstdcpp-bitcode-make - Make libstdcpp in bitcode
 libstdcpp-bitcode-make() {
   StepBanner "LIBSTDCPP-BITCODE" "Make"
-  setup-tools-bitcode
   libstdcpp-make-common "${TC_BUILD_LIBSTDCPP_BITCODE}"
-  setup-tools-arm
 }
 
 libstdcpp-make-common() {
@@ -2182,9 +2124,7 @@ newlib-bitcode-needs-configure() {
 #+ newlib-bitcode-configure - Configure bitcode Newlib
 newlib-bitcode-configure() {
   StepBanner "NEWLIB-BITCODE" "Configure"
-  setup-tools-bitcode
   newlib-configure-common "${TC_BUILD_NEWLIB_BITCODE}"
-  setup-tools-arm
 }
 
 newlib-configure-common() {
@@ -2219,10 +2159,7 @@ newlib-bitcode-needs-make() {
 #+ newlib-bitcode-make   - Make bitcode Newlib
 newlib-bitcode-make() {
   StepBanner "NEWLIB-BITCODE" "Make"
-
-  setup-tools-bitcode
   newlib-make-common "${TC_BUILD_NEWLIB_BITCODE}"
-  setup-tools-arm
 }
 
 newlib-make-common() {
@@ -3263,7 +3200,6 @@ ts-newer-than() {
 
 mkdir -p "${INSTALL_ROOT}"
 PackageCheck
-setup-tools-arm
 
 [ $# = 0 ] && set -- help  # Avoid reference to undefined $1.
 if [ "$(type -t $1)" != "function" ]; then
