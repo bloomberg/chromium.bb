@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "googleurl/src/gurl.h"
 
@@ -32,13 +33,17 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   void AddExtension(const Extension* extension);
 
   // Callback for when an extension is unloaded.
-  void RemoveExtension(const std::string& id);
+  void RemoveExtension(const std::string& id,
+                       const UnloadedExtensionInfo::Reason reason);
 
   // Gets the name for the specified extension.
   std::string GetNameForExtension(const std::string& id) const;
 
   // Gets the path to the directory for the specified extension.
   FilePath GetPathForExtension(const std::string& id) const;
+
+  // Gets the path to the directory for the specified disabled extension.
+  FilePath GetPathForDisabledExtension(const std::string& id) const;
 
   std::string GetContentSecurityPolicyForExtension(
       const std::string& id) const;
@@ -71,6 +76,7 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   typedef std::map<std::string, scoped_refptr<const Extension> > Map;
 
   Map extension_info_;
+  Map disabled_extension_info_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INFO_MAP_H_

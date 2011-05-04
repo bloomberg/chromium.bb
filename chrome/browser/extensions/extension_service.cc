@@ -1195,7 +1195,7 @@ void ExtensionService::NotifyExtensionUnloaded(
     }
   }
 
-  profile_->UnregisterExtensionWithRequestContexts(extension);
+  profile_->UnregisterExtensionWithRequestContexts(extension->id(), reason);
   profile_->GetExtensionSpecialStoragePolicy()->
       RevokeRightsForExtension(extension);
 
@@ -1563,8 +1563,12 @@ void ExtensionService::UnloadExtension(
 
   // This method can be called via PostTask, so the extension may have been
   // unloaded by the time this runs.
-  if (!extension)
+  if (!extension) {
+    // In case the extension may have crashed/uninstalled. Allow the profile to
+    // clean up its RequestContexts.
+    profile_->UnregisterExtensionWithRequestContexts(extension_id, reason);
     return;
+  }
 
   // Keep information about the extension so that we can reload it later
   // even if it's not permanently installed.
@@ -1587,6 +1591,10 @@ void ExtensionService::UnloadExtension(
         NotificationType::EXTENSION_UNLOADED,
         Source<Profile>(profile_),
         Details<UnloadedExtensionInfo>(&details));
+    // Make sure the profile cleans up its RequestContexts when an already
+    // disabled extension is unloaded (since they are also tracking the disabled
+    // extensions).
+    profile_->UnregisterExtensionWithRequestContexts(extension_id, reason);
     return;
   }
 

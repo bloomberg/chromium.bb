@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,13 +25,23 @@ ExtensionInfoMap::~ExtensionInfoMap() {
 void ExtensionInfoMap::AddExtension(const Extension* extension) {
   CheckOnValidThread();
   extension_info_[extension->id()] = extension;
+  Map::iterator iter = disabled_extension_info_.find(extension->id());
+  if (iter != disabled_extension_info_.end())
+    disabled_extension_info_.erase(iter);
 }
 
-void ExtensionInfoMap::RemoveExtension(const std::string& id) {
+void ExtensionInfoMap::RemoveExtension(const std::string& id,
+    const UnloadedExtensionInfo::Reason reason) {
   CheckOnValidThread();
   Map::iterator iter = extension_info_.find(id);
   if (iter != extension_info_.end()) {
+    if (reason == UnloadedExtensionInfo::DISABLE)
+      disabled_extension_info_[id] = (*iter).second;
     extension_info_.erase(iter);
+  } else if (reason != UnloadedExtensionInfo::DISABLE) {
+    // If the extension was uninstalled, make sure it's removed from the map of
+    // disabled extensions.
+    disabled_extension_info_.erase(id);
   } else {
     // NOTE: This can currently happen if we receive multiple unload
     // notifications, e.g. setting incognito-enabled state for a
@@ -53,6 +63,15 @@ std::string ExtensionInfoMap::GetNameForExtension(const std::string& id) const {
 FilePath ExtensionInfoMap::GetPathForExtension(const std::string& id) const {
   Map::const_iterator iter = extension_info_.find(id);
   if (iter != extension_info_.end())
+    return iter->second->path();
+  else
+    return FilePath();
+}
+
+FilePath ExtensionInfoMap::GetPathForDisabledExtension(
+    const std::string& id) const {
+  Map::const_iterator iter = disabled_extension_info_.find(id);
+  if (iter != disabled_extension_info_.end())
     return iter->second->path();
   else
     return FilePath();
@@ -127,8 +146,11 @@ bool ExtensionInfoMap::URLIsForExtensionIcon(const GURL& url) const {
   DCHECK(url.SchemeIs(chrome::kExtensionScheme));
 
   Map::const_iterator iter = extension_info_.find(url.host());
-  if (iter == extension_info_.end())
-    return false;
+  if (iter == extension_info_.end()) {
+    iter = disabled_extension_info_.find(url.host());
+    if (iter == disabled_extension_info_.end())
+      return false;
+  }
 
   std::string path = url.path();
   DCHECK(path.length() > 0 && path[0] == '/');

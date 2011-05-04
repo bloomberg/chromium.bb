@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "chrome/common/extensions/extension.h"
 
 namespace base {
 class Time;
@@ -374,7 +375,8 @@ class Profile {
   // profile clean up its RequestContexts once all the listeners to the
   // EXTENSION_UNLOADED notification have finished running.
   virtual void UnregisterExtensionWithRequestContexts(
-      const Extension* extension) {}
+      const std::string& extension_id,
+      const UnloadedExtensionInfo::Reason) {}
 
   // Returns the SSLConfigService for this profile.
   virtual net::SSLConfigService* GetSSLConfigService() = 0;

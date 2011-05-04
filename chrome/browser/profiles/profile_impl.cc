@@ -933,12 +933,14 @@ void ProfileImpl::RegisterExtensionWithRequestContexts(
 }
 
 void ProfileImpl::UnregisterExtensionWithRequestContexts(
-    const Extension* extension) {
+    const std::string& extension_id,
+    const UnloadedExtensionInfo::Reason reason) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(extension_info_map_.get(),
                         &ExtensionInfoMap::RemoveExtension,
-                        extension->id()));
+                        extension_id,
+                        reason));
 }
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
