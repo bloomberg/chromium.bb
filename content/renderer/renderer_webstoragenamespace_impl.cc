@@ -34,7 +34,7 @@ WebStorageArea* RendererWebStorageNamespaceImpl::createStorageArea(
   // this doesn't seem practical because there's no good way to ref-count these
   // objects, and it'd be unclear who owned them.  So, instead, we'll pay the
   // price in terms of wasted memory.
-  return new RendererWebStorageAreaImpl(namespace_id_, origin, storage_type_);
+  return new RendererWebStorageAreaImpl(namespace_id_, origin);
 }
 
 WebStorageNamespace* RendererWebStorageNamespaceImpl::copy() {
