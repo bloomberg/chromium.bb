@@ -1671,13 +1671,12 @@ FileManager.prototype = {
   };
 
   /**
-   * Handle a click of the cancel button.
+   * Handle a click of the cancel button.  Closes the window.
    *
    * @param {Event} event The click event.
    */
   FileManager.prototype.onCancel_ = function(event) {
     chrome.fileBrowserPrivate.cancelDialog();
-    window.close();
   };
 
   /**
@@ -1703,7 +1702,7 @@ FileManager.prototype = {
 
       chrome.fileBrowserPrivate.selectFile(currentDirUrl + encodeURI(filename),
                                            0);
-      window.close();
+      // Window closed by above call.
       return;
     }
 
@@ -1729,13 +1728,14 @@ FileManager.prototype = {
     // Multi-file selection has no other restrictions.
     if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
       chrome.fileBrowserPrivate.selectFiles(ary);
-      window.close();
+      // Window closed by above call.
       return;
     }
 
     // In full screen mode, open all files for vieweing.
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
       chrome.fileBrowserPrivate.viewFiles(ary);
+      // Window stays open.
       return;
     }
 
@@ -1752,7 +1752,7 @@ FileManager.prototype = {
     }
 
     chrome.fileBrowserPrivate.selectFile(ary[0], 0);
-    window.close();
+    // Window closed by above call.
   };
 
 })();

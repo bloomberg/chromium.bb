@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/html_dialog_view.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -707,7 +708,7 @@ FileDialogFunction::~FileDialogFunction() {
 
 // static
 FileDialogFunction::Callback
-FileDialogFunction::Callback::null_(Callback(NULL, NULL));
+FileDialogFunction::Callback::null_(NULL, NULL, NULL);
 
 // static
 FileDialogFunction::Callback::Map FileDialogFunction::Callback::map_;
@@ -715,9 +716,10 @@ FileDialogFunction::Callback::Map FileDialogFunction::Callback::map_;
 // static
 void FileDialogFunction::Callback::Add(int32 tab_id,
                                      SelectFileDialog::Listener* listener,
+                                     HtmlDialogView* dialog,
                                      void* params) {
   if (map_.find(tab_id) == map_.end()) {
-    map_.insert(std::make_pair(tab_id, Callback(listener, params)));
+    map_.insert(std::make_pair(tab_id, Callback(listener, dialog, params)));
   } else {
     DLOG_ASSERT("FileDialogFunction::AddCallback tab_id already present");
   }
@@ -743,6 +745,13 @@ int32 FileDialogFunction::GetTabId() const {
 
 const FileDialogFunction::Callback& FileDialogFunction::GetCallback() const {
   return Callback::Find(GetTabId());
+}
+
+void FileDialogFunction::CloseDialog(HtmlDialogView* dialog) {
+  DCHECK(dialog);
+  TabContents* contents = dispatcher()->delegate()->associated_tab_contents();
+  if (contents)
+    dialog->CloseContents(contents);
 }
 
 // GetFileSystemRootPathOnFileThread can only be called from the file thread,
@@ -826,6 +835,9 @@ void SelectFileFunction::GetLocalPathsResponseOnUIThread(
   const Callback& callback = GetCallback();
   DCHECK(!callback.IsNull());
   if (!callback.IsNull()) {
+    // Must do this before callback, as the callback may delete listeners
+    // waiting for window close.
+    CloseDialog(callback.dialog());
     callback.listener()->FileSelected(files[0],
                                       index,
                                       callback.params());
@@ -916,6 +928,9 @@ void SelectFilesFunction::GetLocalPathsResponseOnUIThread(
   const Callback& callback = GetCallback();
   DCHECK(!callback.IsNull());
   if (!callback.IsNull()) {
+    // Must do this before callback, as the callback may delete listeners
+    // waiting for window close.
+    CloseDialog(callback.dialog());
     callback.listener()->MultiFilesSelected(files, callback.params());
   }
 }
@@ -924,9 +939,11 @@ bool CancelFileDialogFunction::RunImpl() {
   const Callback& callback = GetCallback();
   DCHECK(!callback.IsNull());
   if (!callback.IsNull()) {
+    // Must do this before callback, as the callback may delete listeners
+    // waiting for window close.
+    CloseDialog(callback.dialog());
     callback.listener()->FileSelectionCanceled(callback.params());
   }
-
   return true;
 }
 

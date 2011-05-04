@@ -35,7 +35,7 @@ class FileManagerDialog
     tab_id_ = html_view->tab_contents()->controller().session_id().id();
 
     // Register our callback and associate it with our tab.
-    FileDialogFunction::Callback::Add(tab_id_, listener_, params);
+    FileDialogFunction::Callback::Add(tab_id_, listener_, html_view, params);
   }
 
   // BaseShellDialog implementation.
