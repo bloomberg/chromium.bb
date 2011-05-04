@@ -31,6 +31,7 @@ class Upgrader(object):
     if not self._upstream_repo:
       self._upstream_repo = os.path.join(self._options.srcroot,
                                          'third_party', 'portage')
+    self._csv_file = None
 
   @staticmethod
   def _GetPreOrderDepGraphPackage(deps_graph, package, pkglist, visited):
@@ -62,10 +63,16 @@ class Upgrader(object):
           return re.search(r'[ "]x86[ "]', line)
     return False
 
+  @staticmethod
+  def _CmpCpv(cpv1, cpv2):
+    """Returns standard cmp result between |cpv1| and |cpv2|."""
+    return portage.versions.pkgcmp(portage.versions.pkgsplit(cpv1),
+                                   portage.versions.pkgsplit(cpv2))
+
   def _RunGit(self, repo, command):
     """Runs |command| in the git |repo|."""
     cros_lib.RunCommand(['/bin/sh', '-c', 'cd %s && git %s' % (repo, command)],
-                        print_cmd=self._options.verbose);
+                        print_cmd=self._options.verbose)
 
   def _SplitEBuildPath(self, ebuild_path):
     """Split a full ebuild path into (overlay, cat, pn, pv)."""
@@ -77,33 +84,30 @@ class Upgrader(object):
     return (overlay, cat, pn, pv)
 
   def _FindLatestVersion(self, cpv):
-    """Returns the latest cpv in |_upstream_repo| if it's newer than |cpv|."""
-    latest_cpv = cpv
+    """Returns latest cpv in |_upstream_repo| with same cat/pkg as |cpv|."""
+    latest_cpv = None
     (cat, pn, version, rev) = portage.versions.catpkgsplit(cpv)
     pkgpath = os.path.join(self._upstream_repo, cat, pn)
     for ebuild_path in glob.glob(os.path.join(pkgpath, '%s*.ebuild' % pn)):
       if not Upgrader._IsStableEBuild(ebuild_path): continue
+
       (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
       upstream_cpv = os.path.join(cat, pv)
-      if portage.versions.pkgcmp(portage.versions.pkgsplit(upstream_cpv),
-                                 portage.versions.pkgsplit(latest_cpv)) > 0:
+      if (not latest_cpv) or Upgrader._CmpCpv(upstream_cpv, latest_cpv) > 0:
         latest_cpv = upstream_cpv
-    if latest_cpv != cpv: return latest_cpv
-    return None
+
+    return latest_cpv
 
   def _CopyUpstreamPackage(self, info):
     """Upgrades package described by |info| by copying from usptream.
-
-    The copy is performed only if it's possible to upgrade the package and
-    --upgrade is specified.
 
     Returns:
       True if the packages was upgraded, False otherwise.
     """
     latest_cpv = info['latest_cpv']
-    if (not latest_cpv or not self._options.upgrade or
-        not info['overlay'].startswith('portage')):
+    if not latest_cpv:
       return False
+
     (cat, pkgname, version, rev) = portage.versions.catpkgsplit(latest_cpv)
     catpkgname = os.path.join(cat, pkgname)
     pkgdir = os.path.join(self._stable_repo, catpkgname)
@@ -120,21 +124,76 @@ class Upgrader(object):
     return True
 
   def _UpgradePackage(self, info):
-    """Updates |info| with latest_cpv and performs an upgrade if necessary."""
+    """Updates |info| with latest_cpv, performs upgrade if applicable.
+
+    The upgrade is performed only if the package is outdated and --upgrade
+    is specified.
+    """
     cpv = info['cpv']
     info['latest_cpv'] = self._FindLatestVersion(cpv)
-    info['upgraded'] = self._CopyUpstreamPackage(info)
-    upgrade = ''
-    if info['latest_cpv']: upgrade = ' -> %s' % info['latest_cpv']
+
+    cpv_cmp_upstream = None
+    info['upgraded'] = False
+    if info['latest_cpv']:
+      # cpv_cmp_upstream values: 0 = current, >0 = outdated, <0 = futuristic!
+      cpv_cmp_upstream = Upgrader._CmpCpv(info['latest_cpv'], cpv)
+
+      if (self._options.upgrade and info['overlay'].startswith('portage') and
+          cpv_cmp_upstream > 0):
+        info['upgraded'] = self._CopyUpstreamPackage(info)
+
+    # Print details for this package
+    if cpv_cmp_upstream is None:
+      upgrade = ' no stable package found upstream!'
+      csv_state = 'unknown'
+    elif cpv_cmp_upstream > 0:
+      # Upstream upgrade available.  Note that it is possible that the local
+      # package has also been patched.
+      # TODO(mtennant): A check for when package is locally patched and
+      # uprev'ed upstream.
+      upgrade = ' -> %s' % info['latest_cpv']
+      csv_state = 'needs upgrade'
+    elif cpv_cmp_upstream < 0:
+      # Local package is patched from upstream package
+      upgrade = ' <- %s' % info['latest_cpv']
+      csv_state = "patched locally"
+    else:
+      upgrade = ' (current)'
+      csv_state = 'current'
+
     upgraded = ''
     if info['upgraded']: upgraded = ' (UPGRADED)'
     print '[%s] %s%s%s' % (info['overlay'], info['cpv'], upgrade, upgraded)
+
+    if self._csv_file:
+      # Translate to csv column values:
+      overlay = info['overlay']
+      current_package = info['cpv']
+      upstream_package = info['latest_cpv'] if info['latest_cpv'] else 'N/A'
+      state = csv_state
+      action_taken = 'upgraded' if upgraded else ''
+      self._csv_file.write('%s,%s,%s,%s,%s\n' %
+                           (overlay, current_package, upstream_package,
+                            state, action_taken))
 
   def _UpgradePackages(self, infolist):
     """Given a list of cpv info maps, adds the latest_cpv to the infos."""
     dash_q = ''
     if not self._options.verbose: dash_q = '-q'
     try:
+      try:
+        if self._options.csv_file:
+          self._csv_file = open(self._options.csv_file, 'w')
+          # Column headers
+          self._csv_file.write('%s,%s,%s,%s,%s\n' %
+                               ('Overlay', 'Current Package',
+                                'Stable Upstream Package',
+                                'State', 'Action Taken'))
+      except IOError as ex:
+        print("Unable to open %s for write: %s" %
+              (self._options.csv_file, str(ex)))
+        self._csv_file = None
+
       # TODO(petkov): Currently portage's master branch is stale so we need to
       # checkout latest upstream. At some point portage's master branch will be
       # upstream so there will be no need to chdir/checkout. At that point we
@@ -156,6 +215,9 @@ class Upgrader(object):
     finally:
       if not self._options.upstream:
         self._RunGit(self._upstream_repo, 'checkout %s cros/master' % dash_q)
+      if self._csv_file:
+        self._csv_file.close()
+        self._csv_file = None
 
   def _GetCurrentVersions(self):
     """Returns a list of cpvs of the current package dependencies."""
@@ -209,6 +271,8 @@ def main():
   parser.add_option('--srcroot', dest='srcroot', type='string', action='store',
                     default='%s/trunk/src' % os.environ['HOME'],
                     help="Path to root src directory [default: '%default']")
+  parser.add_option('--to_csv', dest='csv_file', type='string', action='store',
+                    default=None, help="File to write csv-formatted results to")
   parser.add_option('--upgrade', dest='upgrade', action='store_true',
                     default=False,
                     help="Perform package upgrade")
@@ -230,6 +294,11 @@ def main():
   if not args:
     parser.print_help()
     cros_lib.Die('no packages provided')
+
+  # If upstream portage is provided, verify that it is a valid directory.
+  if options.upstream and not os.path.isdir(options.upstream):
+    parser.print_help()
+    cros_lib.Die('argument to --upstream must be a valid directory')
 
   upgrader = Upgrader(options, args)
   upgrader.Run()
