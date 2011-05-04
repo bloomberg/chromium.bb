@@ -50,10 +50,6 @@ input 0:  i(5555)
 input 1:  C(8,\x90\x01\x00\x00\x90\x01\x00\x00)
 input 2:  i(0)
 output 0:  i(8)
-replaying PPB_Core_AddRefResource:i::
-input 0:  i(8)
-replaying PPB_Core_ReleaseResource:i::
-input 0:  i(8)
 replaying PPB_GetInterface:s:i:
 input 0:  s("PPB_Instance;0.4")
 output 0:  i(1)

@@ -40,6 +40,8 @@
 #ifndef NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_TEST_INTERFACE_H
 #define NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_TEST_INTERFACE_H
 
+#include <limits>
+
 #include "native_client/src/include/nacl_string.h"
 
 #include "ppapi/c/pp_completion_callback.h"
@@ -79,7 +81,10 @@ PP_CompletionCallback MakeTestableCompletionCallback(
 // Use this macro to test the result of a test. If the test passed the test
 // function will continue. Otherwise, failure will be returned.
 #define EXPECT(expr) do { \
-  if (!(expr)) return PP_MakeBool(PP_FALSE); \
+  if (!(expr)) { \
+    fprintf(stderr, "ERROR: test failure at %s:%d\n", __FILE__, __LINE__); \
+    return PP_MakeBool(PP_FALSE); \
+  } \
 } while (0)
 
 // Use this macro to return from a TestFunction after all tests passed.
@@ -92,6 +97,12 @@ const int kManyResources = 1000;
 const PP_Instance kInvalidInstance = 0;
 const PP_Module kInvalidModule = 0;
 const PP_Resource kInvalidResource = 0;
+
+// These should not exist.
+// Chrome uses the bottom 2 bits to differentiate between different id types.
+// 00 - module, 01 - instance, 10 - resource, 11 - var.
+const PP_Instance kNotAnInstance = 0xFFFFF0;
+const PP_Resource kNotAResource = 0xAAAAA0;
 
 // Interface pointers and ids corresponding to this plugin;
 // set at initialization/creation.

@@ -2318,6 +2318,7 @@ nacl_env.Append(
     'tests/pnacl_abi/nacl.scons',
     'tests/pnacl_client_translator/nacl.scons',
     'tests/ppapi_browser/bad/nacl.scons',
+    'tests/ppapi_browser/ppb_graphics2d/nacl.scons',
     'tests/ppapi_browser/progress_events/nacl.scons',
     'tests/ppapi_core/nacl.scons',
     'tests/ppapi_example_2d/nacl.scons',

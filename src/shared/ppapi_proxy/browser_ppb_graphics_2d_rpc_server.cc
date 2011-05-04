@@ -97,14 +97,13 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_PaintImageData(
     char* src_rect) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  if (top_left_bytes != sizeof(struct PP_Point)) {
+  if (top_left_bytes != sizeof(struct PP_Point)) {  // NULL top_left is invalid.
     return;
   }
   const struct PP_Rect* rect = kEntireImage;
   if (src_rect_bytes == sizeof(struct PP_Rect)) {
-      rect = const_cast<const struct PP_Rect*>(
-                 reinterpret_cast<struct PP_Rect*>(src_rect));
-
+    rect = const_cast<const struct PP_Rect*>(
+        reinterpret_cast<struct PP_Rect*>(src_rect));
   } else if (src_rect_bytes != 0) {
     return;
   }
@@ -128,15 +127,13 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Scroll(
     char* amount) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  if (clip_rect_bytes != sizeof(struct PP_Rect) ||
-      amount_bytes != sizeof(struct PP_Point)) {
+  if (amount_bytes != sizeof(struct PP_Point)) {  // NULL amount is invalid.
     return;
   }
   const struct PP_Rect* rect = kEntireImage;
   if (clip_rect_bytes == sizeof(struct PP_Rect)) {
     rect = const_cast<const struct PP_Rect*>(
-               reinterpret_cast<struct PP_Rect*>(clip_rect));
-
+        reinterpret_cast<struct PP_Rect*>(clip_rect));
   } else if (clip_rect_bytes != 0) {
     return;
   }

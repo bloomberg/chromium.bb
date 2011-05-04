@@ -48,8 +48,9 @@ example_nexes = [
     'earth_c.nexe',                # earth_c.html
     'earth_cc.nexe',               # earth_cc.html
     # PPAPI Proxy Tests
-    'ppapi_core.nexe',           # ppapi_core.html
-    'ppapi_file_system.nexe',    # ppapi_file_system.thml
+    'ppapi_core.nexe',            # ppapi_core.html
+    'ppapi_ppb_graphics2d.nexe',  # ppapi_ppb_graphics2d.html
+    'ppapi_file_system.nexe',     # ppapi_file_system.thml
     ]
 
 env.Depends(html_examples, [ env.Alias(nexe) for nexe in example_nexes ])
