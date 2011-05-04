@@ -442,7 +442,7 @@ inline CancelableTask* NewRunnableMethod(T* object, Method method,
 // RunnableFunction and NewRunnableFunction implementation ---------------------
 
 template <class Function, class Params>
-class RunnableFunction : public Task {
+class RunnableFunction : public CancelableTask {
  public:
   RunnableFunction(Function function, const Params& params)
       : function_(function), params_(params) {
@@ -459,45 +459,53 @@ class RunnableFunction : public Task {
       DispatchToFunction(function_, params_);
   }
 
+  virtual void Cancel() {
+  }
+
  private:
   Function function_;
   Params params_;
 };
 
 template <class Function>
-inline Task* NewRunnableFunction(Function function) {
+inline CancelableTask* NewRunnableFunction(Function function) {
   return new RunnableFunction<Function, Tuple0>(function, MakeTuple());
 }
 
 template <class Function, class A>
-inline Task* NewRunnableFunction(Function function, const A& a) {
+inline CancelableTask* NewRunnableFunction(Function function, const A& a) {
   return new RunnableFunction<Function, Tuple1<A> >(function, MakeTuple(a));
 }
 
 template <class Function, class A, class B>
-inline Task* NewRunnableFunction(Function function, const A& a, const B& b) {
+inline CancelableTask* NewRunnableFunction(Function function,
+                                           const A& a, const B& b) {
   return new RunnableFunction<Function, Tuple2<A, B> >(function,
                                                        MakeTuple(a, b));
 }
 
 template <class Function, class A, class B, class C>
-inline Task* NewRunnableFunction(Function function, const A& a, const B& b,
-                                 const C& c) {
+inline CancelableTask* NewRunnableFunction(Function function,
+                                           const A& a, const B& b,
+                                           const C& c) {
   return new RunnableFunction<Function, Tuple3<A, B, C> >(function,
                                                           MakeTuple(a, b, c));
 }
 
 template <class Function, class A, class B, class C, class D>
-inline Task* NewRunnableFunction(Function function, const A& a, const B& b,
-                                 const C& c, const D& d) {
+inline CancelableTask* NewRunnableFunction(Function function,
+                                           const A& a, const B& b,
+                                           const C& c, const D& d) {
   return new RunnableFunction<Function, Tuple4<A, B, C, D> >(function,
                                                              MakeTuple(a, b,
                                                                        c, d));
 }
 
 template <class Function, class A, class B, class C, class D, class E>
-inline Task* NewRunnableFunction(Function function, const A& a, const B& b,
-                                 const C& c, const D& d, const E& e) {
+inline CancelableTask* NewRunnableFunction(Function function,
+                                           const A& a, const B& b,
+                                           const C& c, const D& d,
+                                           const E& e) {
   return new RunnableFunction<Function, Tuple5<A, B, C, D, E> >(function,
                                                                 MakeTuple(a, b,
                                                                           c, d,
@@ -506,27 +514,32 @@ inline Task* NewRunnableFunction(Function function, const A& a, const B& b,
 
 template <class Function, class A, class B, class C, class D, class E,
           class F>
-inline Task* NewRunnableFunction(Function function, const A& a, const B& b,
-                                 const C& c, const D& d, const E& e,
-                                 const F& f) {
+inline CancelableTask* NewRunnableFunction(Function function,
+                                           const A& a, const B& b,
+                                           const C& c, const D& d,
+                                           const E& e, const F& f) {
   return new RunnableFunction<Function, Tuple6<A, B, C, D, E, F> >(function,
       MakeTuple(a, b, c, d, e, f));
 }
 
 template <class Function, class A, class B, class C, class D, class E,
           class F, class G>
-inline Task* NewRunnableFunction(Function function, const A& a, const B& b,
-                                 const C& c, const D& d, const E& e, const F& f,
-                                 const G& g) {
+inline CancelableTask* NewRunnableFunction(Function function,
+                                           const A& a, const B& b,
+                                           const C& c, const D& d,
+                                           const E& e, const F& f,
+                                           const G& g) {
   return new RunnableFunction<Function, Tuple7<A, B, C, D, E, F, G> >(function,
       MakeTuple(a, b, c, d, e, f, g));
 }
 
 template <class Function, class A, class B, class C, class D, class E,
           class F, class G, class H>
-inline Task* NewRunnableFunction(Function function, const A& a, const B& b,
-                                 const C& c, const D& d, const E& e, const F& f,
-                                 const G& g, const H& h) {
+inline CancelableTask* NewRunnableFunction(Function function,
+                                           const A& a, const B& b,
+                                           const C& c, const D& d,
+                                           const E& e, const F& f,
+                                           const G& g, const H& h) {
   return new RunnableFunction<Function, Tuple8<A, B, C, D, E, F, G, H> >(
       function, MakeTuple(a, b, c, d, e, f, g, h));
 }
