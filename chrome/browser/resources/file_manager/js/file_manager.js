@@ -43,6 +43,9 @@ function FileManager(dialogDom, rootEntries, params) {
 
   this.exifCache_ = {};
 
+  // True if we should filter out files that start with a dot.
+  this.filterFiles_ = true;
+
   this.document_ = dialogDom.ownerDocument;
   this.dialogType_ =
     this.params_.type || FileManager.DialogType.FULL_PAGE;
@@ -405,6 +408,14 @@ FileManager.prototype = {
     this.cancelButton_ = this.dialogDom_.querySelector('.cancel');
     this.newFolderButton_ = this.dialogDom_.querySelector('.new-folder');
 
+    this.renameInput_ = this.document_.createElement('input');
+    this.renameInput_.className = 'rename';
+
+    this.renameInput_.addEventListener(
+        'keydown', this.onRenameInputKeyDown_.bind(this));
+    this.renameInput_.addEventListener(
+        'blur', this.onRenameInputBlur_.bind(this));
+
     this.filenameInput_.addEventListener(
         'keyup', this.onFilenameInputKeyUp_.bind(this));
     this.filenameInput_.addEventListener(
@@ -571,7 +582,10 @@ FileManager.prototype = {
 
     if (this.listType_ == FileManager.ListType.THUMBNAIL) {
       var self = this;
-      setTimeout(function () { self.grid_.columns = 0 }, 0);
+      setTimeout(function () {
+          self.grid_.columns = 0;
+          self.grid_.redraw();
+      }, 0);
     } else {
       this.currentList_.redraw();
     }
@@ -723,6 +737,9 @@ FileManager.prototype = {
     div = this.document_.createElement('div');
     div.className = 'text-container';
     div.textContent = entry.name;
+    div.addEventListener('click', this.onThumbnailLabelClick_.bind(this));
+    div.entry = entry;
+
     li.appendChild(div);
 
     cr.defineProperty(li, 'lead', cr.PropertyKind.BOOL_ATTR);
@@ -770,6 +787,9 @@ FileManager.prototype = {
    */
   FileManager.prototype.renderName_ = function(entry, columnId, table) {
     var label = this.document_.createElement('div');
+    label.entry = entry;
+    label.addEventListener('mousedown',
+                           this.onDetailLabelMouseDown_.bind(this));
     label.className = 'detail-name';
     if (this.currentDirEntry_.name == '') {
       label.textContent = this.getLabelForRootPath_(entry.name);
@@ -1367,9 +1387,11 @@ FileManager.prototype = {
       // Hide files that start with a dot ('.').
       // TODO(rginda): User should be able to override this.  Support for other
       // commonly hidden patterns might be nice too.
-      spliceArgs = spliceArgs.filter(function(e) {
-        return e.name.substr(0, 1) != '.';
-      });
+      if (self.filterFiles_) {
+        spliceArgs = spliceArgs.filter(function(e) {
+            return e.name.substr(0, 1) != '.';
+          });
+      }
 
       spliceArgs.unshift(0, 0);  // index, deleteCount
       self.dataModel_.splice.apply(self.dataModel_, spliceArgs);
@@ -1377,6 +1399,8 @@ FileManager.prototype = {
       // Keep reading until entries.length is 0.
       reader.readEntries(onReadSome);
     };
+
+    this.lastLabelClick_ = null;
 
     // Clear the table first.
     this.dataModel_.splice(0, this.dataModel_.length);
@@ -1400,6 +1424,132 @@ FileManager.prototype = {
 
     if (opt_callback)
       opt_callback();
+  };
+
+  FileManager.prototype.onThumbnailLabelClick_ = function(event) {
+    var label = event.srcElement;
+    var row = event.srcElement.parentNode;
+
+    if (!this.allowRenameClick_(label, row))
+      return;
+
+    this.initiateRename_(label);
+    event.preventDefault();
+  };
+
+  FileManager.prototype.onDetailLabelMouseDown_ = function(event) {
+    var label = event.srcElement;
+    var row = event.srcElement.parentNode.parentNode;
+
+    if (!this.allowRenameClick_(label, row))
+      return;
+
+    this.initiateRename_(label);
+    event.preventDefault();
+  };
+
+  FileManager.prototype.allowRenameClick_ = function(label, row) {
+    if (this.dialogType_ != FileManager.DialogType.FULL_PAGE ||
+        this.currentDirEntry_.name == '') {
+      // Renaming only enabled for full-page mode, outside of the root
+      // directory.
+      return false;
+    }
+
+    var now = new Date();
+
+    this.lastLabelClick_ = this.lastLabelClick_ || now;
+    if (!row.selected || now - this.lastLabelClick_ < 300)
+      return false;
+
+    this.lastLabelClick_ = now;
+    return true;
+  };
+
+  FileManager.prototype.initiateRename_= function(label) {
+    var input = this.renameInput_;
+
+    window.label = label;
+
+    input.value = label.textContent;
+    input.style.top = label.offsetTop + 'px';
+    input.style.left = label.offsetLeft + 'px';
+    input.style.width = label.clientWidth + 'px';
+    label.parentNode.appendChild(input);
+    input.focus();
+    var selectionEnd = input.value.lastIndexOf('.');
+    if (selectionEnd == -1) {
+      input.select();
+    } else {
+      input.selectionStart = 0;
+      input.selectionEnd = selectionEnd;
+    }
+
+    // This has to be set late in the process so we don't handle spurious
+    // blur events.
+    input.currentEntry = label.entry;
+  };
+
+  FileManager.prototype.onRenameInputKeyDown_ = function(event) {
+    if (!this.renameInput_.currentEntry)
+      return;
+
+    switch (event.keyCode) {
+      case 27:  // Escape
+        this.cancelRename_();
+        event.preventDefault();
+        break;
+
+      case 13:  // Enter
+        this.commitRename_();
+        event.preventDefault();
+        break;
+    }
+  };
+
+  FileManager.prototype.onRenameInputBlur_ = function(event) {
+    if (this.renameInput_.currentEntry)
+      this.cancelRename_();
+  };
+
+  FileManager.prototype.commitRename_ = function() {
+    var entry = this.renameInput_.currentEntry;
+    var newName = this.renameInput_.value;
+
+    this.renameInput_.currentEntry = null;
+    this.lastLabelClick_ = null;
+
+    if (this.renameInput_.parentNode)
+      this.renameInput_.parentNode.removeChild(this.renameInput_);
+
+    var self = this;
+    function onSuccess() {
+      self.rescanDirectory_(function () {
+        for (var i = 0; i < self.dataModel_.length; i++) {
+          if (self.dataModel_.item(i).name == newName) {
+            self.currentList_.selectionModel.selectedIndex = i;
+            self.currentList_.scrollIndexIntoView(i);
+            self.currentList_.focus();
+            return;
+          }
+        }
+      });
+    }
+
+    function onError(err) {
+      window.alert(strf('IDS_FILE_BROWSER_ERROR_RENAMING', entry.name,
+                        util.getFileErrorMnemonic(err.code)));
+    }
+
+    entry.moveTo(this.currentDirEntry_, newName, onSuccess, onError);
+  };
+
+  FileManager.prototype.cancelRename_ = function(event) {
+    this.renameInput_.currentEntry = null;
+    this.lastLabelClick_ = null;
+
+    if (this.renameInput_.parentNode)
+      this.renameInput_.parentNode.removeChild(this.renameInput_);
   };
 
   FileManager.prototype.onFilenameInputKeyUp_ = function(event) {
@@ -1451,7 +1601,7 @@ FileManager.prototype = {
             self.currentList_.focus();
             return;
           }
-        };
+        }
       });
     }
 
@@ -1473,7 +1623,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onKeyDown_ = function(event) {
-    if (event.srcElement == this.filenameInput_)
+    if (event.srcElement.tagName == 'INPUT')
       return;
 
     switch (event.keyCode) {
@@ -1500,6 +1650,13 @@ FileManager.prototype = {
         if (this.newFolderButton_.style.display != 'none' && event.ctrlKey) {
           event.preventDefault();
           this.onNewFolderButtonClick_();
+        }
+        break;
+
+      case 190:  // Ctrl-. => Toggle filter files.
+        if (event.ctrlKey) {
+          this.filterFiles_ = !this.filterFiles_;
+          this.rescanDirectory_();
         }
         break;
 

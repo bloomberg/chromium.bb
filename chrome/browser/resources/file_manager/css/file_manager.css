@@ -104,7 +104,6 @@ button.thumbnail-view {
   margin-left: 0;
 }
 
-
 button.detail-view > img,
 button.thumbnail-view > img {
   position: relative;
@@ -124,11 +123,13 @@ button.thumbnail-view > img {
   top: 0;
   left: 0;
   border: 0;
+  overflow-y: scroll;
 }
 
 /* An item in the thumbnail view. */
 .thumbnail-item {
-  margin: 10px;
+  margin-top: 10px;
+  margin-left: 10px;
   width: 120px;
   height: 120px;
   text-align: center;
@@ -152,6 +153,19 @@ button.thumbnail-view > img {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Text box used for renaming in the detail list. */
+.detail-table input.rename {
+  -webkit-margin-start: -5px;
+  margin-top: 1px;
+  position: absolute;
+}
+
+/* Text box used for renaming in the thumbnail list. */
+.thumbnail-grid input.rename {
+  -webkit-margin-start: -2px;
+  position: absolute;
 }
 
 /* The cr.ui.Table representing the detailed file list. */
