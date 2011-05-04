@@ -29,13 +29,13 @@ PrintPreviewUIHTMLSource* PrintPreviewUI::html_source() {
   return html_source_.get();
 }
 
-void PrintPreviewUI::DisablePrintPreviewSettings() {
-  CallJavascriptFunction("disablePreviewControls");
+void PrintPreviewUI::OnInitiatorTabClosed() {
+  CallJavascriptFunction("onInitiatorTabClosed");
 }
 
-void PrintPreviewUI::PreviewDataIsAvailable(int expected_pages_count,
-                                            const string16& job_title,
-                                            const std::string& mime_type) {
+void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
+                                              const string16& job_title,
+                                              const std::string& mime_type) {
   FundamentalValue pages_count(expected_pages_count);
   StringValue title(job_title);
   StringValue mime(mime_type);

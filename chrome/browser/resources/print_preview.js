@@ -87,7 +87,10 @@ function showSystemDialog() {
  * Disables the controls which need the initiator tab to generate preview
  * data. This function is called when the initiator tab is closed.
  */
-function disablePreviewControls() {
+function onInitiatorTabClosed() {
+  if (isPreviewStillLoading)
+    printPreviewFailed();
+
   var controlIDs = ['landscape', 'portrait', 'all-pages', 'print-pages',
                     'individual-pages', 'printer-list'];
   var controlCount = controlIDs.length;
@@ -380,6 +383,7 @@ function setColor(color) {
  * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
  */
 function printPreviewFailed() {
+  isPreviewStillLoading = false;
   $('dancing-dots').classList.add('hidden');
   $('preview-failed').classList.remove('hidden');
   setControlsDisabled(true);
