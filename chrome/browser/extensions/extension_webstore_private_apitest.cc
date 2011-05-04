@@ -66,8 +66,9 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
   }
 };
 
+// TODO(asargent) - flaky; see crbug.com/80606.
 // Test cases where the user accepts the install confirmation dialog.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, FLAKY_InstallAccepted) {
   ASSERT_TRUE(RunInstallTest("accepted.html"));
 }
 
