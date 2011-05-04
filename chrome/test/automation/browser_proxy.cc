@@ -500,19 +500,19 @@ scoped_refptr<AutocompleteEditProxy> BrowserProxy::GetAutocompleteEdit() {
     return NULL;
 
   bool handle_ok = false;
-  int autocomplete_edit_handle = 0;
+  int omnibox_handle = 0;
 
-  sender_->Send(new AutomationMsg_AutocompleteEditForBrowser(
-      handle_, &handle_ok, &autocomplete_edit_handle));
+  sender_->Send(new AutomationMsg_OmniboxForBrowser(
+      handle_, &handle_ok, &omnibox_handle));
 
   if (!handle_ok)
     return NULL;
 
   AutocompleteEditProxy* p = static_cast<AutocompleteEditProxy*>(
-        tracker_->GetResource(autocomplete_edit_handle));
+        tracker_->GetResource(omnibox_handle));
 
   if (!p) {
-    p = new AutocompleteEditProxy(sender_, tracker_, autocomplete_edit_handle);
+    p = new AutocompleteEditProxy(sender_, tracker_, omnibox_handle);
     p->AddRef();
   }
 
