@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -384,6 +384,12 @@ static ssize_t RecvRequest(struct NaClSrpcMessageChannel* channel,
   if (!rpc->is_request ||
       rpc->template_len > NACL_SRPC_MAX_ARGS ||
       rpc->value_len > NACL_SRPC_MAX_ARGS) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvRequest: rpc header invalid: is_request %"NACL_PRIu32", "
+                "template_len %"NACL_PRIu32", value_len %"NACL_PRIu32"\n",
+                rpc->is_request,
+                rpc->template_len,
+                rpc->value_len);
     retval = -NACL_ABI_EINVAL;
     goto done;
   }
@@ -394,6 +400,8 @@ static ssize_t RecvRequest(struct NaClSrpcMessageChannel* channel,
    */
   if (!AllocateArgs(results, rpc->template_len) ||
       !AllocateArgs(inputs, rpc->value_len)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvRequest: AllocateArgs failed\n");
     retval = -NACL_ABI_EINVAL;
     goto done;
   }
@@ -416,6 +424,12 @@ static ssize_t RecvRequest(struct NaClSrpcMessageChannel* channel,
   header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH = 0;
   retval = NaClSrpcMessageChannelPeek(channel, &header);
   if (retval < (ssize_t) expected_bytes) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvRequest:"
+                "NaClSrpcMessageChannelPeek incomplete: expected %"
+                NACL_PRIdS", got %"NACL_PRIdS"\n",
+                expected_bytes,
+                retval);
     retval = ErrnoFromImcRet(retval);
     goto done;
   }
@@ -434,11 +448,15 @@ static ssize_t RecvRequest(struct NaClSrpcMessageChannel* channel,
   AddFixed(inputs, rpc->value_len, kMaxIovLen, iov, &iov_len, &expected_bytes);
   if (!AddNonfixedForRead(results, rpc->template_len, kMaxIovLen,
                           1, 0, iov, &iov_len, &expected_bytes)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvRequest: AllocateArgs failed for results\n");
     retval = -NACL_ABI_EIO;
     goto done;
   }
   if (!AddNonfixedForRead(inputs, rpc->value_len, kMaxIovLen,
                           1, 1, iov, &iov_len, &expected_bytes)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvRequest: AllocateArgs failed for inputs\n");
     retval = -NACL_ABI_EIO;
     goto done;
   }
@@ -447,9 +465,13 @@ static ssize_t RecvRequest(struct NaClSrpcMessageChannel* channel,
   header.NACL_SRPC_MESSAGE_HEADER_DESCV = descs;
   header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH = NACL_ARRAY_SIZE(descs);
   retval = NaClSrpcMessageChannelReceive(channel, &header);
-  dprintf(("RecvRequest: recv: expected to receive %d, receive returned %d\n",
-           (int) expected_bytes, (int) retval));
   if (retval < (ssize_t) expected_bytes) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvRequest:"
+                " NaClSrpcMessageChannelReceive incomplete: expected %"
+                NACL_PRIdS", got %"NACL_PRIdS"\n",
+                expected_bytes,
+                retval);
     retval = ErrnoFromImcRet(retval);
     goto done;
   }
@@ -460,8 +482,10 @@ static ssize_t RecvRequest(struct NaClSrpcMessageChannel* channel,
    */
   if (!GetHandles(inputs, rpc->value_len,
                   descs, header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH)) {
-     retval = -NACL_ABI_EIO;
-     goto done;
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvRequest: GetHandles failed\n");
+    retval = -NACL_ABI_EIO;
+    goto done;
   }
   /*
    * Success, the caller has taken ownership of the memory we allocated
@@ -543,8 +567,9 @@ static ssize_t RecvResponse(struct NaClSrpcMessageChannel* channel,
   ssize_t retval;
   size_t i;
 
-  dprintf(("RecvResponse\n"));
   if (results == NULL) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvResponse: results should not be NULL\n");
     retval = -NACL_ABI_EINVAL;
     goto done;
   }
@@ -556,6 +581,12 @@ static ssize_t RecvResponse(struct NaClSrpcMessageChannel* channel,
       rpc->template_len > 0 ||
       rpc->value_len > NACL_SRPC_MAX_ARGS ||
       rpc->value_len != VectorLen(results)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvResponse: rpc header invalid: is_request %"NACL_PRIu32", "
+                "template_len %"NACL_PRIu32", value_len %"NACL_PRIu32"\n",
+                rpc->is_request,
+                rpc->template_len,
+                rpc->value_len);
     return -NACL_ABI_EINVAL;
   }
 
@@ -568,6 +599,8 @@ static ssize_t RecvResponse(struct NaClSrpcMessageChannel* channel,
    * into a copy.
    */
   if (!AllocateArgs(result_copy, rpc->value_len)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvResponse: AllocateArgs failed\n");
     retval = -NACL_ABI_EINVAL;
     goto done;
   }
@@ -584,6 +617,11 @@ static ssize_t RecvResponse(struct NaClSrpcMessageChannel* channel,
   header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH = 0;
   retval = NaClSrpcMessageChannelPeek(channel, &header);
   if (retval < (ssize_t) expected_bytes) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvResponse: NaClSrpcMessageChannelPeek incomplete: "
+                "expected %"NACL_PRIdS", got %"NACL_PRIdS"\n",
+                expected_bytes,
+                retval);
     retval = ErrnoFromImcRet(retval);
     goto done;
   }
@@ -595,6 +633,8 @@ static ssize_t RecvResponse(struct NaClSrpcMessageChannel* channel,
    * actual sizes to the caller's vector.
    */
   if (!CheckMatchAndCopyCounts(rpc->value_len, results, result_copy)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvResponse: CheckMatchAndCopyCounts failed\n");
     retval = -NACL_ABI_EIO;
     goto done;
   }
@@ -610,6 +650,8 @@ static ssize_t RecvResponse(struct NaClSrpcMessageChannel* channel,
   AddFixed(results, rpc->value_len, kMaxIovLen, iov, &iov_len, &expected_bytes);
   if (!AddNonfixedForRead(results, rpc->value_len, kMaxIovLen,
                           0, 1, iov, &iov_len, &expected_bytes)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvResponse: AddNonfixedForRead failed\n");
     retval = -NACL_ABI_EIO;
     goto done;
   }
@@ -618,9 +660,12 @@ static ssize_t RecvResponse(struct NaClSrpcMessageChannel* channel,
   header.NACL_SRPC_MESSAGE_HEADER_DESCV = descs;
   header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH = NACL_ARRAY_SIZE(descs);
   retval = NaClSrpcMessageChannelReceive(channel, &header);
-  dprintf(("RecvResponse: recv: expected to receive %d, receive returned %d\n",
-           (int) expected_bytes, (int) retval));
   if (retval < (ssize_t) expected_bytes) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvResponse: NaClSrpcMessageChannelReceive incomplete: "
+                "expected %"NACL_PRIdS", got %"NACL_PRIdS"\n",
+                expected_bytes,
+                retval);
     retval = ErrnoFromImcRet(retval);
     goto done;
   }
@@ -631,6 +676,8 @@ static ssize_t RecvResponse(struct NaClSrpcMessageChannel* channel,
    */
   if (!GetHandles(results, rpc->value_len,
                   descs, header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RecvResponse: GetHandles failed\n");
     retval = -NACL_ABI_EIO;
   }
 
@@ -715,10 +762,6 @@ static ssize_t SrpcSendMessage(NaClSrpcRpc* rpc,
   ssize_t retval;
   size_t expected_bytes;
 
-  dprintf(("SrpcSendMessage: (%s), values %d templates %d\n",
-           (rpc->is_request ? "request" : "response"),
-           (int) rpc->value_len, (int) rpc->template_len));
-
   /*
    * The message will be sent in three portions:
    * 1) the header (rpc)
@@ -757,6 +800,8 @@ static ssize_t SrpcSendMessage(NaClSrpcRpc* rpc,
    * Pass the fixed and nonfixed portions.
    */
   if (values == NULL) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "SrpcSendMessage: values should not be NULL\n");
     return -NACL_ABI_EINVAL;
   }
   rpc->value_len = VectorLen(values);
@@ -766,6 +811,8 @@ static ssize_t SrpcSendMessage(NaClSrpcRpc* rpc,
                            iov, &iov_len,
                            descs, &desc_len,
                            &expected_bytes)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "SrpcSendMessage: AddNonfixedForWrite failed\n");
     return -NACL_ABI_EIO;
   }
   header.iov = iov;
@@ -773,9 +820,12 @@ static ssize_t SrpcSendMessage(NaClSrpcRpc* rpc,
   header.NACL_SRPC_MESSAGE_HEADER_DESCV = descs;
   header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH = (nacl_abi_size_t) desc_len;
   retval = NaClSrpcMessageChannelSend(channel, &header);
-  dprintf(("SrpcSendMessage: expected to send %d, send returned %d\n",
-           (int) expected_bytes, (int) retval));
   if (retval >= 0  && retval < (ssize_t) expected_bytes) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "SrpcSendMessage: NaClSrpcMessageChannelSend incomplete: "
+                "expected %"NACL_PRIdS", got %"NACL_PRIdS"\n",
+                expected_bytes,
+                retval);
     return -NACL_ABI_EIO;
   }
   return retval;
@@ -800,24 +850,50 @@ static void RpcCheckingClosureRun(NaClSrpcClosure* self) {
   NaClSrpcRpc* rpc = vself->rpc;
   ssize_t retval;
 
-  dprintf((SIDE "SRPC: RpcCheckingClosureRun: done (result = %d)\n",
-           rpc->result));
+  do {
+    const char* rpc_name;
+    const char* arg_types;
+    const char* ret_types;
+    int i;
+    NaClSrpcServiceMethodNameAndTypes(rpc->channel->server,
+                                      rpc->rpc_number,
+                                      &rpc_name,
+                                      &arg_types,
+                                      &ret_types);
+    NaClSrpcLog(1,
+                "RpcCheckingClosureRun: response(channel=%p,"
+                " rpc_number=%d, rpc_name=\"%s\", result=%d, string=\"%s\")\n",
+                rpc->channel,
+                rpc->rpc_number,
+                rpc_name,
+                rpc->result,
+                NaClSrpcErrorString(rpc->result));
+    for (i = 0; rpc->rets[i] != NULL; i++ ) {
+      char buffer[256];
+      NaClSrpcFormatArg(2, rpc->rets[i], buffer, NACL_ARRAY_SIZE(buffer));
+      NaClSrpcLog(2,
+                  "RpcCheckingClosureRun: response(channel=%p, rets[%d]=%s)\n",
+                  rpc->channel,
+                  i,
+                  buffer);
+    }
+  } while(0);
   /* Send the RPC response to the caller. */
   rpc->is_request = 0;
   rpc->dispatch_loop_should_continue = 1;
   if (NACL_SRPC_RESULT_BREAK == rpc->result) {
-    dprintf((SIDE "SRPC: RpcCheckingClosureRun: server requested break\n"));
+    NaClSrpcLog(2,
+                "RpcCheckingClosureRun: server requested break\n");
     rpc->result = NACL_SRPC_RESULT_OK;
     rpc->dispatch_loop_should_continue = 0;
   }
   retval = SrpcSendMessage(rpc, NULL, rpc->rets, rpc->channel->message_channel);
-  dprintf((SIDE "SRPC: RpcCheckingClosureRun: response sent\n"));
   if (retval < 0) {
     /* If the response write failed, drop request and continue. */
-    dprintf((SIDE "SRPC: RpcCheckingClosureRun: response write failed\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "RpcCheckingClosureRun: response write failed\n");
   }
   free(self);
-  dprintf((SIDE "SRPC: RpcCheckingClosureRun: done\n"));
 }
 
 static BoolValue RpcCheckingClosureCtor(RpcCheckingClosure* self,
@@ -905,21 +981,26 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
   /* DISPATCH_EOF is the closest we have to an error return. */
   DispatchReturn dispatch_return = DISPATCH_EOF;
 
-  dprintf((SIDE "SRPC: ReceiveAndDispatch: %p\n", (void*) rpc_stack_top));
   closure = (RpcCheckingClosure*) malloc(sizeof *closure);
   if (NULL == closure) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcReceiveAndDispatch(channel=%p):"
+                "closure malloc failed\n",
+                (void*) channel);
     dispatch_return = DISPATCH_EOF;
     goto done;
   }
   if (!NaClSrpcRpcCtor(&rpc, channel) ||
       !RpcCheckingClosureCtor(closure, &rpc)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcReceiveAndDispatch(channel=%p): constructor failed\n",
+                (void*) channel);
     goto done;
   }
   rpc.rets = rets;
   /* Read a message from the channel. */
   bytes_read = SrpcPeekMessage(channel->message_channel, &rpc);
   if (bytes_read < 0) {
-    dprintf((SIDE "SRPC: ReceiveAndDispatch: buffer read failed\n"));
     goto done;
   }
   if (rpc.is_request) {
@@ -931,7 +1012,10 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
         goto done;
       } else {
         /* Inform the pending invoke that a failure happened. */
-        dprintf((SIDE "ReceiveAndDispatch: out of order request\n"));
+        NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                    "NaClSrpcReceiveAndDispatch(channel=%p):"
+                    "out of order request\n",
+                    (void*) channel);
         rpc_stack_top->result = NACL_SRPC_RESULT_INTERNAL;
         dispatch_return = DISPATCH_BREAK;
         goto done;
@@ -941,7 +1025,10 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
   } else {
     /* This is a response to a pending request. */
     if (NULL == rpc_stack_top) {
-      dprintf((SIDE "ReceiveAndDispatch: response, no pending request\n"));
+      NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                  "NaClSrpcReceiveAndDispatch(channel=%p):"
+                  "response, no pending request\n",
+                  (void*) channel);
       /* There is no pending request. Abort. */
       dispatch_return = DISPATCH_BREAK;
       goto done;
@@ -953,7 +1040,10 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
         goto done;
       } else {
         /* Received an out-of-order response.  Abort. */
-        dprintf((SIDE "ReceiveAndDispatch: response for wrong request\n"));
+        NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                    "NaClSrpcReceiveAndDispatch(channel=%p):"
+                    " response for wrong request\n",
+                    (void*) channel);
         dispatch_return = DISPATCH_BREAK;
         goto done;
       }
@@ -961,22 +1051,58 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
   }
   bytes_read = RecvRequest(channel->message_channel, &rpc, args, rets);
   if (bytes_read < 0) {
-    dprintf((SIDE "SRPC: ReceiveAndDispatch: RecvRequest failed\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcReceiveAndDispatch(channel=%p):"
+                "RecvRequest failed, bytes=%"NACL_PRIdS"\n",
+                (void*) channel,
+                bytes_read);
     dispatch_return = DISPATCH_EOF;
   }
   if (!RequestVectorTypesConform(channel, &rpc, args, rets)) {
-    dprintf((SIDE "SRPC: ReceiveAndDispatch: arg/ret type mismatch\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_WARNING,
+                "NaClSrpcReceiveAndDispatch(channel=%p):"
+                " arg/ret type mismatch (recoverable error)\n",
+                (void*) channel);
     dispatch_return = DISPATCH_CONTINUE;
     goto done;
   }
   /* Then we invoke the method, which computes a return code. */
   method = NaClSrpcServiceMethod(channel->server, rpc.rpc_number);
   if (NULL == method) {
-    dprintf((SIDE "SRPC: ReceiveAndDispatch: bad rpc number %"NACL_PRIu32"\n",
-             rpc.rpc_number));
+    NaClSrpcLog(NACL_SRPC_LOG_WARNING,
+                "NaClSrpcReceiveAndDispatch(channel=%p):"
+                " bad rpc_number %"NACL_PRIu32" (recoverable error)\n",
+                (void*) channel,
+                rpc.rpc_number);
     dispatch_return = DISPATCH_CONTINUE;
     goto done;
   }
+  do {
+    const char* rpc_name;
+    const char* arg_types;
+    const char* ret_types;
+    int i;
+    NaClSrpcServiceMethodNameAndTypes(channel->server,
+                                      rpc.rpc_number,
+                                      &rpc_name,
+                                      &arg_types,
+                                      &ret_types);
+    NaClSrpcLog(1, "NaClSrpcReceiveAndDispatch:"
+                " request(channel=%p, rpc_number=%d, rpc_name=\"%s\")\n",
+                (void*) channel,
+                rpc.rpc_number,
+                rpc_name);
+    for (i = 0; args[i] != NULL; i++ ) {
+      char buffer[256];
+      NaClSrpcFormatArg(2, args[i], buffer, NACL_ARRAY_SIZE(buffer));
+      NaClSrpcLog(2,
+                  "NaClSrpcReceiveAndDispatch:"
+                  " request(channel=%p, args[%d]=%s)\n",
+                  (void*) channel,
+                  i,
+                  buffer);
+    }
+  } while(0);
   (*method)(&rpc, args, rets, (NaClSrpcClosure*) closure);
   FreeArgs(args);
   FreeArgs(rets);
@@ -1019,24 +1145,35 @@ void NaClSrpcRpcWait(NaClSrpcChannel* channel,
     retval = NaClSrpcReceiveAndDispatch(channel, rpc);
   } while (DISPATCH_CONTINUE == retval);
   /* Process responses */
-  dprintf((SIDE "SRPC: NaClSrpcRpcWait: loop done: %p, %d\n",
-           (void*) rpc, retval));
+  NaClSrpcLog(2,
+              "NaClSrpcRpcWait(channel=%p): loop done: %p, %d\n",
+              (void*) channel,
+              (void*) rpc,
+              retval);
   if (NULL == rpc) {
-    dprintf((SIDE "SRPC: NaClSrpcRpcWait: rpc is NULL\n"));
+    NaClSrpcLog(2,
+                "NaClSrpcRpcWait(channel=%p):"
+                " rpc is NULL (this is not an error)\n",
+                (void*) channel);
     return;
   }
   if (DISPATCH_RESPONSE == retval) {
     ssize_t recv_ret = RecvResponse(channel->message_channel, rpc, rpc->rets);
     if (recv_ret < 0) {
-      dprintf((SIDE "SRPC: NaClSrpcRpcWait: rpc receive failed (%d)\n",
-               (int) recv_ret));
+      NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                  "NaClSrpcRpcWait(channel=%p): rpc receive failed (%"
+                  NACL_PRIdS")\n",
+                  (void*) channel,
+                  recv_ret);
       rpc->result = NACL_SRPC_RESULT_INTERNAL;
       return;
     }
   } else if (DISPATCH_EOF == retval) {
-    dprintf((SIDE "SRPC: EOF is received instead of response. "
-             "Probably, the other side "
-             "(usually, nacl module or browser plugin) crashed."));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcRpcWait(channel=%p):"
+                " EOF is received instead of response. Probably, the other"
+                " side (usually, nacl module or browser plugin) crashed.",
+                (void*) channel);
     rpc->result = NACL_SRPC_RESULT_INTERNAL;
   }
 }
@@ -1046,14 +1183,15 @@ int NaClSrpcRequestWrite(NaClSrpcChannel* channel,
                          NaClSrpcArg** args,
                          NaClSrpcArg** rets) {
   ssize_t retval;
-  dprintf((SIDE "SRPC: NaClSrpcRequestWrite(%"NACL_PRIu32")\n",
-           rpc->rpc_number));
   rpc->is_request = 1;
   retval = SrpcSendMessage(rpc, args, rets, channel->message_channel);
   if (retval < 0) {
     /* Requests with bad handles could fail.  Report to the caller. */
-    dprintf((SIDE "SRPC: NaClSrpcRequestWrite(%"NACL_PRIu32") failed\n",
-             rpc->rpc_number));
+    NaClSrpcLog(1,
+                "NaClSrpcRequestWrite(channel=%p, retval=%"NACL_PRIu32
+                ") failed\n",
+                (void*) channel,
+                rpc->rpc_number);
     return 0;
   }
   return 1;

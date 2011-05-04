@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -20,16 +20,24 @@ static int ServerLoop(NaClSrpcService* service,
   NaClSrpcChannel* channel = NULL;
   int retval = 0;
 
+  NaClSrpcLog(2, "ServerLoop(service=%p, socket_desc=%p, instance_data=%p)\n",
+              (void*) service,
+              (void*) socket_desc,
+              (void*) instance_data);
   /*
    * SrpcChannel objects can be large due to the buffers they contain.
    * Hence they should not be allocated on a thread stack.
    */
   channel = (NaClSrpcChannel*) malloc(sizeof(*channel));
   if (NULL == channel) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "ServerLoop: channel malloc failed\n");
     goto cleanup;
   }
   /* Create an SRPC server listening on the new file descriptor. */
   if (!NaClSrpcServerCtor(channel, socket_desc, service, instance_data)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "ServerLoop: NaClSrpcServerCtor failed\n");
     goto cleanup;
   }
   /*
@@ -39,6 +47,11 @@ static int ServerLoop(NaClSrpcService* service,
    */
   NaClSrpcRpcWait(channel, NULL);
   retval = 1;
+  NaClSrpcLog(2,
+              "ServerLoop(service=%p, socket_desc=%p, instance_data=%p) done\n",
+              (void*) service,
+              (void*) socket_desc,
+              (void*) instance_data);
 
  cleanup:
   NaClSrpcDtor(channel);
@@ -52,22 +65,22 @@ int NaClSrpcServerLoop(NaClSrpcImcDescType imc_socket_desc,
   NaClSrpcService* service;
 
   /* Ensure we are passed a valid socket descriptor. */
-#ifdef __native_client__
-  if (imc_socket_desc <= 0) {
+  if (NACL_INVALID_DESCRIPTOR == imc_socket_desc) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcServerLoop: bad imc_socket_desc\n");
     return 0;
   }
-#else
-  if (NULL == imc_socket_desc) {
-    return 0;
-  }
-#endif
   /* Allocate the service structure. */
   service = (struct NaClSrpcService*) malloc(sizeof(*service));
   if (NULL == service) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcServerLoop: service malloc failed\n");
     return 0;
   }
   /* Build the service descriptor. */
   if (!NaClSrpcServiceHandlerCtor(service, methods)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcServerLoop: NaClSrpcServiceHandlerCtor failed\n");
     free(service);
     return 0;
   }

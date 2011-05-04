@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "native_client/src/include/nacl_macros.h"
 #ifdef __native_client__
 #include <inttypes.h>
 #include <nacl/nacl_inttypes.h>
@@ -65,78 +66,6 @@ static int TypeCheckArgs(const char* arg_types, NaClSrpcArg** alist) {
   return 1;
 }
 
-
-static void DumpArg(const NaClSrpcArg* arg) {
-  uint32_t count;
-  uint32_t i;
-
-  switch (arg->tag) {
-    case NACL_SRPC_ARG_TYPE_INVALID:
-     dprintf(("X()"));
-      break;
-    case NACL_SRPC_ARG_TYPE_BOOL:
-     dprintf(("b(%d)", arg->u.bval));
-      break;
-    case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-      count = arg->u.count;
-      dprintf(("C(%"NACL_PRIu32",", count));
-      /*  this should really perform some escaping. */
-      for (i = 0; i < arg->u.count; ++i)
-        dprintf(("%c", arg->arrays.carr[i]));
-      dprintf((")"));
-      break;
-    case NACL_SRPC_ARG_TYPE_DOUBLE:
-     dprintf(("d(%f)",arg->u.dval));
-      break;
-    case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-      count = arg->u.count;
-      dprintf(("D(%"NACL_PRIu32"", count));
-      for (i = 0; i < count; ++i) {
-        dprintf((",%f", arg->arrays.darr[i]));
-      }
-      dprintf((")"));
-      break;
-    case NACL_SRPC_ARG_TYPE_HANDLE:
-      dprintf(("h(%p)", (void*)arg->u.hval));
-      break;
-    case NACL_SRPC_ARG_TYPE_INT:
-     dprintf(("i(%"NACL_PRId32")", arg->u.ival));
-      break;
-    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-      count = arg->u.count;
-      dprintf(("I(%"NACL_PRIu32"", count));
-      for (i = 0; i < count; ++i)
-        dprintf((",%"NACL_PRId32, arg->arrays.iarr[i]));
-      dprintf((")"));
-      break;
-    case NACL_SRPC_ARG_TYPE_LONG:
-      dprintf(("l(%"NACL_PRId64")", arg->u.lval));
-      break;
-    case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
-      count = arg->u.count;
-      dprintf(("L(%"NACL_PRIu32"", count));
-      for (i = 0; i < count; ++i)
-        dprintf((",%"NACL_PRId64, arg->arrays.larr[i]));
-      dprintf((")"));
-      break;
-    case NACL_SRPC_ARG_TYPE_STRING:
-      /* this should really perform some escaping. */
-      dprintf(("s(\"%s\")", arg->arrays.str));
-      break;
-      /*
-       * The two cases below are added to avoid warnings, they are only used
-       * in the plugin code
-       */
-    case NACL_SRPC_ARG_TYPE_OBJECT:
-      /* this is a pointer that NaCl module can do nothing with */
-      dprintf(("o(%p)", arg->arrays.oval));
-      break;
-    case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-      break;
-    default:
-      break;
-  }
-}
 /*
  * Methods for invoking RPCs.
  */
@@ -151,10 +80,6 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
   const char*        arg_types;
   const char*        ret_types;
 
-  dprintf((SIDE "SRPC: InvokeV(channel %p, rpc number %"NACL_PRIu32")\n",
-           (void*) channel,
-           rpc_number));
-
   if (NaClSrpcServiceMethodNameAndTypes(channel->client,
                                         rpc_number,
                                         &rpc_name,
@@ -162,25 +87,39 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
                                         &ret_types)) {
     /* Check input parameters for type conformance */
     if (!TypeCheckArgs(arg_types, args)) {
-      dprintf((SIDE "SRPC: InvokeV: in arg mismatch\n"));
+      NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                  "NaClSrpcInvokeV(channel=%p): input arg mismatch\n",
+                  (void*) channel);
       return NACL_SRPC_RESULT_IN_ARG_TYPE_MISMATCH;
     }
     /* Check return values for type conformance */
     if (!TypeCheckArgs(ret_types, rets)) {
-      dprintf((SIDE "SRPC: InvokeV: out arg mismatch\n"));
+      NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                  "NaClSrpcInvokeV(channel=%p): output arg mismatch\n",
+                  (void*) channel);
       return NACL_SRPC_RESULT_OUT_ARG_TYPE_MISMATCH;
     }
   } else {
-    dprintf((SIDE "SRPC: InvokeV: bad rpc number\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcInvokeV(channel=%p): bad rpc number\n",
+                (void*) channel);
     return NACL_SRPC_RESULT_BAD_RPC_NUMBER;
   }
-  dprintf((SIDE "SRPC: InvokeV(channel %p, rpc %"NACL_PRIu32" '%s')\n",
-           (void*) channel, rpc_number, rpc_name));
+  NaClSrpcLog(1,
+              "NaClSrpcInvokeV: request(channel=%p, rpc_number=%"NACL_PRIu32
+              ", rpc_name=\"%s\")\n",
+              (void*) channel,
+              rpc_number,
+              rpc_name);
 
   for (i = 0; args[i] != NULL; i++ ) {
-    dprintf((SIDE  "SRPC: args %d: ", i));
-    DumpArg(args[i]);
-    dprintf(("\n"));
+    char buffer[256];
+    NaClSrpcFormatArg(2, args[i], buffer, NACL_ARRAY_SIZE(buffer));
+    NaClSrpcLog(2,
+                "NaClSrpcInvokeV: request(channel=%p, args[%d]=%s)\n",
+                (void*) channel,
+                i,
+                buffer);
   }
 
   /*
@@ -195,25 +134,31 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
   rpc.ret_types = ret_types;
   retval = NaClSrpcRequestWrite(channel, &rpc, args, rets);
   if (!retval) {
-    dprintf((SIDE "SRPC: InvokeV: rpc request send failed\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcInvokeV(channel=%p): rpc request send failed\n",
+                (void*) channel);
     return NACL_SRPC_RESULT_INTERNAL;
   }
 
-  dprintf((SIDE "SRPC: InvokeV(channel %p, rpc %"NACL_PRIu32
-           " '%s') waiting for response...\n",
-           (void*) channel,
-           rpc_number,
-           rpc_name));
   /* Then we wait for the response. */
   NaClSrpcRpcWait(channel, &rpc);
-  dprintf((SIDE "SRPC: InvokeV: received response (%d, %s)\n",
-           rpc.result,
-           NaClSrpcErrorString(rpc.result)));
+  NaClSrpcLog(1,
+              "NaClSrpcInvokeV: response(channel=%p, rpc_number=%"NACL_PRIu32
+              ", rpc_name=\"%s\", result=%d, string=\"%s\")\n",
+              (void*) channel,
+              rpc_number,
+              rpc_name,
+              rpc.result,
+              NaClSrpcErrorString(rpc.result));
 
   for (i = 0; rets[i] != NULL; i++ ) {
-    dprintf((SIDE  "SRPC: rets %d: ", i));
-    DumpArg(rets[i]);
-    dprintf(("\n"));
+    char buffer[256];
+    NaClSrpcFormatArg(2, rets[i], buffer, NACL_ARRAY_SIZE(buffer));
+    NaClSrpcLog(2,
+                "NaClSrpcInvokeV: response(channel=%p, rets[%d]=%s)\n",
+                (void*) channel,
+                i,
+                buffer);
   }
 
   return rpc.result;
@@ -468,8 +413,11 @@ NaClSrpcError NaClSrpcInvokeBySignature(NaClSrpcChannel  *channel,
      * kNaClSrpcInvalidMethodIndex is returned when rpc_name does not match
      * any method in the client service.  Explicitly check and return an error.
      */
-    dprintf((SIDE "SRPC: InvokeBySignature: missing signature [%s]\n",
-             rpc_signature));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcInvokeBySignature(channel=%p):"
+                "missing signature [%s]\n",
+                (void*) channel,
+                rpc_signature);
     return NACL_SRPC_RESULT_APP_ERROR;
   }
 

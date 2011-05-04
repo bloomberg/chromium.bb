@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -211,7 +211,8 @@ static uint32_t MessageChannelBufferFirstFragment(
   NaClSrpcMessageHeader buffer_header;
   struct NaClImcMsgIoVec iovec[1];
 
-  dprintf((SIDE "MessageChannelBufferFirstFragment: waiting for message.\n"));
+  NaClSrpcLog(3,
+              "MessageChannelBufferFirstFragment: waiting for message.\n");
   /* Read the entire first fragment into channel's buffer. */
   buffer_header.iov = iovec;
   buffer_header.iov_length = NACL_ARRAY_SIZE(iovec);
@@ -227,14 +228,17 @@ static uint32_t MessageChannelBufferFirstFragment(
    */
   imc_ret = ImcRecvmsg(channel->desc.raw_desc, &buffer_header, 0);
   if ((2 * FRAGMENT_OVERHEAD > imc_ret) || (buffer_header.flags != 0)) {
-    dprintf((SIDE "MessageChannelBufferFirstFragment: read failed (%d).\n",
-             (int) imc_ret));
+    NaClSrpcLog(3,
+                "MessageChannelBufferFirstFragment: read failed (%"
+                NACL_PRIdS").\n",
+                imc_ret);
     return 0;
   }
-  dprintf((SIDE "MessageChannelBufferFirstFragment: buffered message: "
-           "bytes %d, descs %d.\n",
-           (int) imc_ret,
-           (int) buffer_header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH));
+  NaClSrpcLog(3,
+              "MessageChannelBufferFirstFragment: buffered message: "
+              "bytes %"NACL_PRIdS", descs %"NACL_PRIdS".\n",
+              imc_ret,
+              buffer_header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH);
   channel->byte_count = imc_ret;
   channel->desc_count = buffer_header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH;
   return 1;
@@ -262,31 +266,39 @@ static ssize_t MessageChannelBufferRead(struct NaClSrpcMessageChannel* channel,
     }
     /* Peeking needs to read the first fragment into the buffer. */
     if (!MessageChannelBufferFirstFragment(channel)) {
-      dprintf((SIDE "MessageChannelBufferRead: couldn't buffer.\n"));
+      NaClSrpcLog(3,
+                  "MessageChannelBufferRead: couldn't buffer.\n");
       return -1;
     }
   }
   header->flags = 0;
-  dprintf((SIDE "MessageChannelBufferRead: channel->byte_count %d.\n",
-           (int) channel->byte_count));
+  NaClSrpcLog(3,
+              "MessageChannelBufferRead: channel->byte_count=%"NACL_PRIdS".\n",
+              channel->byte_count);
   for (i = 0; i < header->iov_length; ++i) {
-    dprintf((SIDE "MessageChannelBufferRead: bytes %d chan %d.\n",
-             (int) byte_count, (int) channel->byte_count));
+    NaClSrpcLog(3,
+                "MessageChannelBufferRead: bytes %"NACL_PRIdS" chan %"
+                NACL_PRIdS".\n",
+                byte_count,
+                channel->byte_count);
     if (channel->byte_count < byte_count) {
-      dprintf((SIDE "MessageChannelBufferRead: overflow.\n"));
+      NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                  "MessageChannelBufferRead: overflow.\n");
       return -1;
     }
     iov_read_size =
         size_min(channel->byte_count - byte_count, header->iov[i].length);
     if (SIZE_T_MAX - byte_count < iov_read_size) {
-      dprintf((SIDE "MessageChannelBufferRead: overflow.\n"));
+      NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                  "MessageChannelBufferRead: overflow.\n");
       return -1;
     }
     memcpy(header->iov[i].base, channel->bytes + byte_count, iov_read_size);
     byte_count += iov_read_size;
     if (byte_count == channel->byte_count) {
-      /* We have exhausted the buffer. */
-      dprintf((SIDE "MessageChannelBufferRead: break\n"));
+      /* We have read the entire contents of the buffer. */
+      NaClSrpcLog(3,
+                  "MessageChannelBufferRead: break\n");
       break;
     }
   }
@@ -345,10 +357,13 @@ static int ComputeFragmentSizes(const NaClSrpcMessageHeader* header,
                                 LengthHeader* fragment_size) {
   size_t byte_count = (size_t) HeaderTotalBytes(header, entries_to_skip);
   if (-1 == (ssize_t) byte_count) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "ComputeFragmentSizes: byte_count was incorrect.\n");
     return 0;
   }
   if (0 == kNaClSrpcMaxImcSendmsgSize) {
-    dprintf((SIDE "NaClSrpcModuleInit was not called.\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "ComputeFragmentSizes: NaClSrpcModuleInit not called.\n");
     return 0;
   }
   /* kNaClSrpcMaxImcSendmsgSize <= NACL_ABI_SIZE_T_MAX, so cast is safe. */
@@ -373,16 +388,22 @@ static struct NaClImcMsgIoVec* CopyAndAddIovs(const struct NaClImcMsgIoVec* iov,
   /* Check for arithmetic overflows. */
   if (SIZE_T_MAX - iov_length < extra_entries ||
       SIZE_T_MAX / sizeof *iov < iov_length + extra_entries) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "CopyAndAddIovs: overflows.\n");
     return NULL;
   }
   /* Check for total bytes exceeding NACL_ABI_SSIZE_T_MAX. */
   if (-1 == IovTotalBytes(iov, iov_length, extra_entries)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "CopyAndAddIovs: total bytes overflows.\n");
     return NULL;
   }
   /* Copy the iov, adding extra_entries elements. */
   copy = (struct NaClImcMsgIoVec*) malloc((iov_length + extra_entries) *
                                           sizeof *iov);
   if (NULL == copy) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "CopyAndAddIovs: copy malloc failed.\n");
     return NULL;
   }
   memcpy(copy + extra_entries, iov, iov_length * sizeof *iov);
@@ -398,16 +419,22 @@ static int BuildFragmentHeader(NaClSrpcMessageHeader* header,
   const size_t kMaxIovEntries = SIZE_T_MAX / sizeof *frag_hdr->iov;
 
   if (NACL_ABI_SIZE_T_MAX < header->iov_length) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "BuildFragmentHeader: iov_length too large.\n");
     return 0;
   }
   /* Copy the entire iovec, even though only part may be used. */
   frag_hdr->iov_length = header->iov_length;
   if (kMaxIovEntries < header->iov_length) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "BuildFragmentHeader: iov_length > kMaxIovEntries.\n");
     return 0;
   }
   frag_hdr->iov = (struct NaClImcMsgIoVec*)
       malloc(header->iov_length * sizeof *frag_hdr->iov);
   if (frag_hdr->iov == NULL) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "BuildFragmentHeader: iov malloc failed.\n");
     return 0;
   }
   memcpy(frag_hdr->iov,
@@ -425,6 +452,8 @@ static int BuildFragmentHeader(NaClSrpcMessageHeader* header,
     frag_hdr->iov[i].length = bytes_this_iov;
     /* Ensure that total_bytes increment doesn't overflow. */
     if (SIZE_T_MAX - bytes_this_iov < total_bytes) {
+      NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                  "BuildFragmentHeader: total bytes overflows.\n");
       return 0;
     }
     total_bytes += bytes_this_iov;
@@ -492,11 +521,14 @@ static int32_t FragmentLengthIsSane(LengthHeader* fragment_size,
    */
   if (fragment_size->byte_count < bytes_received - FRAGMENT_OVERHEAD ||
       fragment_size->desc_count < descs_received) {
-    dprintf((SIDE "Descriptor mismatch, bytes %d < %d or descs %d < %d.\n",
-          (int) fragment_size->byte_count,
-          (int) (bytes_received - FRAGMENT_OVERHEAD),
-          (int) fragment_size->desc_count,
-          (int) descs_received));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "FragmentLengthIsSane: Descriptor mismatch:"
+                " bytes %"NACL_PRIdS" < %"NACL_PRIdS" or descs %"
+                NACL_PRIdS" < %"NACL_PRIdS".\n",
+                fragment_size->byte_count,
+                (bytes_received - FRAGMENT_OVERHEAD),
+                fragment_size->desc_count,
+                descs_received);
     return 0;
   }
   /*
@@ -506,7 +538,8 @@ static int32_t FragmentLengthIsSane(LengthHeader* fragment_size,
    */
   if (fragment_size->byte_count == FRAGMENT_OVERHEAD &&
       fragment_size->desc_count == 0) {
-    dprintf((SIDE "FragmentLengthIsSane: empty fragment.  Terminating.\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "FragmentLengthIsSane: empty fragment. Terminating.\n");
     return 0;
   }
   return 1;
@@ -520,9 +553,11 @@ static int32_t MessageLengthsAreSane(LengthHeader* total_size,
    * Empty messages are not allowed.
    */
   if (total_size->byte_count == 0 && total_size->desc_count == 0) {
-    dprintf((SIDE "Descriptor mismatch,  bytes %d == 0 or descs %d == 0.\n",
-          (int) fragment_size->byte_count,
-          (int) fragment_size->desc_count));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "MessageLengthsAreSane: Descriptor mismatch:"
+                " bytes %"NACL_PRIdS" == 0 or descs %"NACL_PRIdS" == 0.\n",
+                fragment_size->byte_count,
+                fragment_size->desc_count);
     return 0;
   }
   /*
@@ -531,9 +566,14 @@ static int32_t MessageLengthsAreSane(LengthHeader* total_size,
    */
   if (fragment_size->byte_count > total_size->byte_count ||
       fragment_size->desc_count > total_size->desc_count) {
-    dprintf((SIDE "Descriptor mismatch,  bytes %d > %d or descs %d > %d.\n",
-          (int) fragment_size->byte_count, (int) total_size->byte_count,
-          (int) fragment_size->desc_count, (int) total_size->desc_count));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "MessageLengthsAreSane: Descriptor mismatch:"
+                " bytes %"NACL_PRIdS" > %"NACL_PRIdS" or descs %"
+                NACL_PRIdS" > %"NACL_PRIdS".\n",
+                fragment_size->byte_count,
+                total_size->byte_count,
+                fragment_size->desc_count,
+                total_size->desc_count);
     return 0;
   }
   /*
@@ -572,7 +612,8 @@ ssize_t NaClSrpcMessageChannelPeek(struct NaClSrpcMessageChannel* channel,
   /* Append the fragment headers to the iov. */
   iovec = CopyAndAddIovs(header->iov, header->iov_length, 2);
   if (NULL == iovec) {
-    dprintf((SIDE "Peek: CopyAndAddIovs failed.\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcMessageChannelPeek: CopyAndAddIovs failed.\n");
     return -1;
   }
   header_copy.iov = iovec;
@@ -588,27 +629,36 @@ ssize_t NaClSrpcMessageChannelPeek(struct NaClSrpcMessageChannel* channel,
   header_copy.iov[1].length = sizeof fragment_size;
   header_copy.flags = 0;
   if (-1 == HeaderTotalBytes(&header_copy, 0)) {
-    dprintf((SIDE "Peek: header size overflow.\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcMessageChannelPeek: header size overflow.\n");
     goto done;
   }
-  dprintf((SIDE "Peek: read message bytes %d, descs %d.\n",
-          (int) channel->byte_count, (int) channel->desc_count));
+  NaClSrpcLog(3,
+              "NaClSrpcMessageChannelPeek: read message bytes %"
+              NACL_PRIdS", descs %"NACL_PRIdS".\n",
+              channel->byte_count,
+              channel->desc_count);
   imc_ret = MessageChannelBufferRead(channel, &header_copy, 1);
   if (2 * FRAGMENT_OVERHEAD > imc_ret) {
-    dprintf((SIDE "Peek: read failed (%d).\n", (int) imc_ret));
+    NaClSrpcLog(3,
+                "NaClSrpcMessageChannelPeek: read failed (%"NACL_PRIdS").\n",
+                imc_ret);
     retval = ErrnoFromImcRet(imc_ret);
     goto done;
   }
   header->flags = header_copy.flags;
   header->NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH =
       header_copy.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH;
-  dprintf((SIDE "Peek: flags %x.\n", header->flags));
+  NaClSrpcLog(3,
+              "NaClSrpcMessageChannelPeek: flags %x.\n",
+              header->flags);
   if (!MessageLengthsAreSane(
            &total_size,
            &fragment_size,
            (size_t) imc_ret,
            header_copy.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH)) {
-    dprintf((SIDE "Peek: message length mismatch.\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcMessageChannelPeek: message length mismatch.\n");
     retval = -NACL_ABI_EIO;
     goto done;
   }
@@ -639,14 +689,16 @@ ssize_t NaClSrpcMessageChannelReceive(struct NaClSrpcMessageChannel* channel,
   size_t descs_received;
   ssize_t retval = -NACL_ABI_EINVAL;
 
-  dprintf((SIDE "Receive: waiting for message.\n"));
+  NaClSrpcLog(3,
+              "NaClSrpcMessageChannelReceive: waiting for message.\n");
   /*
    * The first fragment consists of two LengthHeaders and a fraction of the
    * bytes (starting at 0) and the fraction of descs (starting at 0).
    */
   iovec = CopyAndAddIovs(header->iov, header->iov_length, 2);
   if (NULL == iovec) {
-    dprintf((SIDE "Receive: CopyAndAddIovs failed.\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcMessageChannelReceive: CopyAndAddIovs failed.\n");
     goto done;
   }
   header_copy.iov = iovec;
@@ -662,7 +714,8 @@ ssize_t NaClSrpcMessageChannelReceive(struct NaClSrpcMessageChannel* channel,
   header_copy.iov[1].length = sizeof fragment_size;
   header_copy.flags = 0;
   if (-1 == HeaderTotalBytes(&header_copy, 0)) {
-    dprintf((SIDE "Receive: header size overflow.\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcMessageChannelReceive: header size overflow.\n");
     goto done;
   }
   /*
@@ -671,7 +724,9 @@ ssize_t NaClSrpcMessageChannelReceive(struct NaClSrpcMessageChannel* channel,
    */
   imc_ret = MessageChannelBufferRead(channel, &header_copy, 0);
   if (2 * FRAGMENT_OVERHEAD > imc_ret) {
-    dprintf((SIDE "Receive: read failed (%d).\n", (int) imc_ret));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcMessageChannelReceive: read failed (%"NACL_PRIdS").\n",
+                imc_ret);
     retval = ErrnoFromImcRet(imc_ret);
     goto done;
   }
@@ -682,15 +737,22 @@ ssize_t NaClSrpcMessageChannelReceive(struct NaClSrpcMessageChannel* channel,
           &fragment_size,
           (size_t) imc_ret,
           header_copy.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH)) {
-    dprintf((SIDE "Receive: first fragment descriptor check failed.\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcMessageChannelReceive:"
+                " first fragment descriptor check failed.\n");
     retval = -NACL_ABI_EIO;
     goto done;
   }
-  dprintf((SIDE "Receive: new message, bytes %d, descs %d.\n",
-          (int) total_size.byte_count, (int) total_size.desc_count));
-  dprintf((SIDE "Receive: first fragment, bytes %d, descs %d.\n",
-          (int) fragment_size.byte_count,
-          (int) fragment_size.desc_count));
+  NaClSrpcLog(3,
+              "NaClSrpcMessageChannelReceive:"
+              " new message, bytes %"NACL_PRIdS", descs %"NACL_PRIdS".\n",
+              total_size.byte_count,
+              total_size.desc_count);
+  NaClSrpcLog(3,
+              "NaClSrpcMessageChannelReceive:"
+              " first fragment, bytes %"NACL_PRIdS", descs %"NACL_PRIdS".\n",
+              fragment_size.byte_count,
+              fragment_size.desc_count);
   processed_size = fragment_size;
   ConsumeFragment(&header_copy, &fragment_size, 2);
   /*
@@ -716,7 +778,8 @@ ssize_t NaClSrpcMessageChannelReceive(struct NaClSrpcMessageChannel* channel,
                  (header->NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH -
                   descs_received));
     if (-1 == HeaderTotalBytes(&header_copy, 0)) {
-      dprintf((SIDE "Receive: header size overflow.\n"));
+      NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                  "NaClSrpcMessageChannelReceive: header size overflow.\n");
       goto done;
     }
     /*
@@ -726,7 +789,10 @@ ssize_t NaClSrpcMessageChannelReceive(struct NaClSrpcMessageChannel* channel,
      */
     imc_ret = ImcRecvmsg(channel->desc.raw_desc, &header_copy, 0);
     if (imc_ret < FRAGMENT_OVERHEAD) {
-      dprintf((SIDE "Receive: read failed (%d).\n", (int) imc_ret));
+      NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                  "NaClSrpcMessageChannelReceive: read failed (%"
+                  NACL_PRIdS").\n",
+                  imc_ret);
       retval = ErrnoFromImcRet(imc_ret);
       goto done;
     }
@@ -736,19 +802,26 @@ ssize_t NaClSrpcMessageChannelReceive(struct NaClSrpcMessageChannel* channel,
             &fragment_size,
             (size_t) imc_ret,
             header_copy.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH)) {
-      dprintf((SIDE "Receive: other fragment descriptor check failed.\n"));
+      NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                  "NaClSrpcMessageChannelReceive:"
+                  " other fragment descriptor check failed.\n");
       retval = -NACL_ABI_EIO;
       goto done;
     }
-    dprintf((SIDE "Receive: next fragment, bytes %d, descs %d.\n",
-            (int) fragment_size.byte_count,
-            (int) fragment_size.desc_count));
+    NaClSrpcLog(3,
+                "NaClSrpcMessageChannelReceive:"
+                " next fragment, bytes %"NACL_PRIdS", descs %"NACL_PRIdS".\n",
+                fragment_size.byte_count,
+                fragment_size.desc_count);
     processed_size.byte_count += fragment_size.byte_count;
     processed_size.desc_count += fragment_size.desc_count;
     ConsumeFragment(&header_copy, &fragment_size, 1);
   }
-  dprintf((SIDE "Receive: succeeded, read %d bytes and %d descs.\n",
-           (int) bytes_received, (int) processed_size.desc_count));
+  NaClSrpcLog(3,
+              "NaClSrpcMessageChannelReceive:"
+              " succeeded, read %"NACL_PRIdS" bytes and %"NACL_PRIdS" descs.\n",
+              bytes_received,
+              processed_size.desc_count);
   retval = (ssize_t) bytes_received;
   header->NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH =
       (nacl_abi_size_t) descs_received;
@@ -775,7 +848,8 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
 
   iovec = CopyAndAddIovs(header->iov, header->iov_length, 2);
   if (NULL == iovec) {
-    dprintf((SIDE "Send: CopyAndAddIovs failed.\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcMessageChannelSend: CopyAndAddIovs failed.\n");
     goto done;
   }
   remaining.iov = iovec;
@@ -789,7 +863,8 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
   remaining.iov[1].base = &fragment_size;
   remaining.iov[1].length = sizeof fragment_size;
   if (-1 == HeaderTotalBytes(&remaining, 0)) {
-    dprintf((SIDE "Send: header size overflow.\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcMessageChannelSend: header size overflow.\n");
     goto done;
   }
   /*
@@ -799,7 +874,8 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
    */
   total_size.byte_count = (nacl_abi_size_t) HeaderTotalBytes(&remaining, 2);
   if (-1 == (nacl_abi_ssize_t) total_size.byte_count) {
-    dprintf((SIDE "Send: HeaderTotalBytes failed.\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcMessageChannelSend: HeaderTotalBytes failed.\n");
     goto done;
   }
   total_size.desc_count = header->NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH;
@@ -809,17 +885,26 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
    * amounts.
    */
   if (!ComputeFragmentSizes(&remaining, 2, &fragment_size)) {
-    dprintf((SIDE "Send: first ComputeFragmentSize failed.\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcMessageChannelSend:"
+                " first ComputeFragmentSize failed.\n");
     goto done;
   }
-  dprintf((SIDE "Send: new message, bytes %d, descs %d.\n",
-           (int) total_size.byte_count, (int) total_size.desc_count));
-  dprintf((SIDE "Send: first fragment, bytes %d, descs %d.\n",
-           (int) fragment_size.byte_count,
-           (int) fragment_size.desc_count));
+  NaClSrpcLog(3,
+              "NaClSrpcMessageChannelSend: new message, bytes %"
+              NACL_PRIdS", descs %"NACL_PRIdS".\n",
+              total_size.byte_count,
+              total_size.desc_count);
+  NaClSrpcLog(3,
+              "NaClSrpcMessageChannelSend: first fragment, bytes %"
+              NACL_PRIdS", descs %"NACL_PRIdS".\n",
+              fragment_size.byte_count,
+              fragment_size.desc_count);
   expected_bytes_sent = fragment_size.byte_count + 2 * FRAGMENT_OVERHEAD;
   if (!BuildFragmentHeader(&remaining, &fragment_size, 2, &frag_hdr)) {
-    dprintf((SIDE "Send: could not build fragment header.\n"));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcMessageChannelSend:"
+                " could not build fragment header.\n");
     goto done;
   }
   /*
@@ -830,14 +915,17 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
   imc_ret = ImcSendmsg(channel->desc.raw_desc, &frag_hdr, 0);
   free(frag_hdr.iov);
   if ((size_t) imc_ret != expected_bytes_sent) {
-    dprintf((SIDE "Send: first send failed, %d != %d.\n",
-             (int) expected_bytes_sent,
-             (int) imc_ret));
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcMessageChannelSend: first send failed, %"
+                NACL_PRIdS" != %"NACL_PRIdS".\n",
+                expected_bytes_sent,
+                imc_ret);
     retval = ErrnoFromImcRet(imc_ret);
     goto done;
   }
   ConsumeFragment(&remaining, &fragment_size, 2);
-  dprintf((SIDE "Send: first send succeeded.\n"));
+  NaClSrpcLog(3,
+              "NaClSrpcMessageChannelSend: first send succeeded.\n");
   /*
    * Each subsequent fragment contains the bytes starting at next_byte and
    * the descs starting at next_desc.
@@ -857,22 +945,29 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
     remaining.iov[0].base = &fragment_size;
     remaining.iov[0].length = sizeof fragment_size;
     if (-1 == HeaderTotalBytes(&remaining, 0)) {
-      dprintf((SIDE "Send: header size overflow.\n"));
+      NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                  "NaClSrpcMessageChannelSend: header size overflow.\n");
       goto done;
     }
     /*
      * The fragment sizes are again limited.
      */
     if (!ComputeFragmentSizes(&remaining, 1, &fragment_size)) {
-      dprintf((SIDE "Send: other ComputeFragmentSize failed.\n"));
+      NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                  "NaClSrpcMessageChannelSend:"
+                  " other ComputeFragmentSize failed.\n");
       retval = -NACL_ABI_EIO;
       goto done;
     }
-    dprintf((SIDE "Send: next fragment, bytes %d, descs %d.\n",
-             (int) fragment_size.byte_count,
-             (int) fragment_size.desc_count));
+    NaClSrpcLog(3,
+                "NaClSrpcMessageChannelSend: next fragment, bytes %"
+                NACL_PRIdS", descs %"NACL_PRIdS".\n",
+                fragment_size.byte_count,
+                fragment_size.desc_count);
     if (!BuildFragmentHeader(&remaining, &fragment_size, 1, &frag_hdr)) {
-      dprintf((SIDE "Send: could not build fragment header.\n"));
+      NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                  "NaClSrpcMessageChannelSend:"
+                  " could not build fragment header.\n");
       retval = -NACL_ABI_EIO;
       goto done;
     }
@@ -883,14 +978,18 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
     imc_ret = ImcSendmsg(channel->desc.raw_desc, &frag_hdr, 0);
     free(frag_hdr.iov);
     if ((size_t) imc_ret != expected_bytes_sent) {
-      dprintf((SIDE "Send: send error.\n"));
+      NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                  "NaClSrpcMessageChannelSend: send error.\n");
       retval = ErrnoFromImcRet(imc_ret);
       goto done;
     }
     ConsumeFragment(&remaining, &fragment_size, 1);
   }
-  dprintf((SIDE "Send: complete send, sent %d bytes and %d descs.\n",
-           (int) total_size.byte_count, (int) total_size.desc_count));
+  NaClSrpcLog(3,
+              "NaClSrpcMessageChannelSend: complete send, sent %"
+              NACL_PRIdS" bytes and %"NACL_PRIdS" descs.\n",
+              total_size.byte_count,
+              total_size.desc_count);
   retval = (ssize_t) total_size.byte_count;
 
  done:

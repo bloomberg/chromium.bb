@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -41,9 +41,17 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
   /* Set up the basic service descriptor to make the service discovery call. */
   tmp_service = (NaClSrpcService*) malloc(sizeof(*tmp_service));
   if (NULL == tmp_service) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "BuildInterfaceDesc(channel=%p):"
+                " temporary service malloc failed\n",
+                (void*) channel);
     goto cleanup;
   }
   if (!NaClSrpcServiceHandlerCtor(tmp_service, basic_services)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "BuildInterfaceDesc(channel=%p):"
+                " NaClSrpcServiceHandlerCtor failed\n",
+                (void*) channel);
     goto cleanup;
   }
   /* Channel takes ownership of tmp_service. */
@@ -57,10 +65,18 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
   out_carray.u.count = NACL_SRPC_MAX_SERVICE_DISCOVERY_CHARS;
   out_carray.arrays.carr = calloc(NACL_SRPC_MAX_SERVICE_DISCOVERY_CHARS, 1);
   if (NULL == out_carray.arrays.carr) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "BuildInterfaceDesc(channel=%p):"
+                " service discovery malloc failed\n",
+                (void*) channel);
     goto cleanup;
   }
   /* Invoke service discovery, getting description string */
   if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeV(channel, 0, ins, outs)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "BuildInterfaceDesc(channel=%p):"
+                " service discovery invoke failed\n",
+                (void*) channel);
     goto cleanup;
   }
   /* Clean up the temporary service. */
@@ -70,10 +86,18 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
   /* Allocate the real service. */
   service = (NaClSrpcService*) malloc(sizeof(*service));
   if (NULL == service) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "BuildInterfaceDesc(channel=%p):"
+                " service discovery malloc failed\n",
+                (void*) channel);
     goto cleanup;
   }
   /* Build the real service from the resulting string. */
   if (!NaClSrpcServiceStringCtor(service, out_carray.arrays.carr)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "BuildInterfaceDesc(channel=%p):"
+                " NaClSrpcServiceStringCtor failed\n",
+                (void*) channel);
     goto cleanup;
   }
   channel->client = service;
@@ -98,8 +122,16 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
  * Set up the buffering structures for a channel.
  */
 int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
+  NaClSrpcLog(1,
+              "NaClSrpcServerCtor(channel=%p, handle=%p)\n",
+              (void*) channel,
+              (void*) handle);
   channel->message_channel = NaClSrpcMessageChannelNew(handle);
   if (NULL == channel->message_channel) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcClientCtor(channel=%p):"
+                " NaClSrpcMessageChannelNew failed\n",
+                (void*) channel);
     return 0;
   }
   /* Initialize the server information. */
@@ -107,6 +139,10 @@ int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
   channel->next_outgoing_request_id = 0;
   /* Do service discovery to speed method invocation. */
   if (!BuildInterfaceDesc(channel)) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcClientCtor(channel=%p):"
+                " BuildInterfaceDesc failed\n",
+                (void*) channel);
     NaClSrpcMessageChannelDelete(channel->message_channel);
     channel->message_channel = NULL;
     return 0;
@@ -119,8 +155,19 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
                        NaClSrpcImcDescType handle,
                        NaClSrpcService* service,
                        void* server_instance_data) {
+  NaClSrpcLog(1,
+              "NaClSrpcServerCtor(channel=%p, handle=%p,"
+              " service=%p, server_instance_data=%p)\n",
+              (void*) channel,
+              (void*) handle,
+              (void*) service,
+              (void*) server_instance_data);
   channel->message_channel = NaClSrpcMessageChannelNew(handle);
   if (NULL == channel->message_channel) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcServerCtor(channel=%p):"
+                " NaClSrpcMessageChannelNew failed\n",
+                (void*) channel);
     return 0;
   }
   /* Initialize the client information. */
@@ -134,6 +181,9 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
 }
 
 void NaClSrpcDtor(NaClSrpcChannel* channel) {
+  NaClSrpcLog(1,
+              "NaClSrpcDtor(channel=%p)\n",
+              (void*) channel);
   if (NULL == channel) {
     return;
   }
