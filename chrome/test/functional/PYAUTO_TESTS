@@ -164,6 +164,9 @@
       '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
       # no codesign verification on chromeos
       '-codesign',
+      # Downloads panel stays even after declining a download.
+      # crosbug.com/14728
+      '-downloads.DownloadsTest.testDeclineDangerousDownload',
       # Need internal data dirs in autotest package. crosbug.com/6855
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # Importer tests are invalid on chromeos since chrome is the only browser
