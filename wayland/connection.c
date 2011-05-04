@@ -300,7 +300,7 @@ wl_connection_data(struct wl_connection *connection, uint32_t mask)
 		msg.msg_flags = 0;
 
 		do {
-			len = recvmsg(connection->fd, &msg, 0);
+			len = recvmsg(connection->fd, &msg, MSG_CMSG_CLOEXEC);
 		} while (len < 0 && errno == EINTR);
 
 		if (len < 0) {
@@ -459,7 +459,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 			extra += sizeof *fd_ptr;
 
 			fd = va_arg(ap, int);
-			dup_fd = dup(fd);
+			dup_fd = fcntl(fd, F_DUPFD_CLOEXEC, 0);
 			if (dup_fd < 0) {
 				fprintf(stderr, "dup failed: %m");
 				abort();
