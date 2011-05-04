@@ -593,13 +593,7 @@
    fun:malloc
    ...
    fun:gtk_text_buffer_select_range
-   fun:_ZN23OmniboxViewGtk16SetSelectedRangeERKNS_9CharRangeE
-   fun:_ZN23OmniboxViewGtk23SetTextAndSelectedRangeERKSbItN4base20string16_char_traitsESaItEERKNS_9CharRangeE
-   fun:_ZN23OmniboxViewGtk24SetWindowTextAndCaretPosERKSbItN4base20string16_char_traitsESaItEEj
-   fun:_ZN21AutocompleteEditModel6RevertEv
-   fun:*OmniboxViewGtk9RevertAllEv
-   fun:*OmniboxViewGtk6UpdateEPK11TabContents
-   fun:_ZN15LocationBarView6UpdateEPK11TabContents
+   fun:*OmniboxViewGtk16SetSelectedRange*
 }
 {
    bug_66941
