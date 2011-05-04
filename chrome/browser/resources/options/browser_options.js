@@ -88,8 +88,9 @@ cr.define('options', function() {
           this.handleHomepageUseNTPButtonChange_.bind(this);
       $('homepageUseURLButton').onchange =
           this.handleHomepageUseURLButtonChange_.bind(this);
-      homepageField.onchange = this.handleHomepageURLChange_.bind(this);
-      homepageField.oninput = this.handleHomepageURLChange_.bind(this);
+      var homepageChangeHandler = this.handleHomepageURLChange_.bind(this);
+      homepageField.addEventListener('change', homepageChangeHandler);
+      homepageField.addEventListener('input', homepageChangeHandler);
       homepageField.addEventListener('focus', function(event) {
         self.autocompleteList_.attachToInput(homepageField);
       });
@@ -147,11 +148,6 @@ cr.define('options', function() {
 
       var suggestionList = new options.AutocompleteList();
       suggestionList.autoExpands = true;
-      suggestionList.addEventListener('change', function(e) {
-        if (!suggestionList.targetInput || !suggestionList.selectedItem)
-          return;
-        suggestionList.targetInput.value = suggestionList.selectedItem['url'];
-      });
       suggestionList.suggestionUpdateRequestCallback =
           this.requestAutocompleteSuggestions_.bind(this);
       $('main-content').appendChild(suggestionList);

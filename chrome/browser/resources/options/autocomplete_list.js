@@ -105,6 +105,17 @@ cr.define('options', function() {
         if (self.suggestionUpdateRequestCallback_)
           self.suggestionUpdateRequestCallback_(self.targetInput_.value);
       };
+      this.addEventListener('change', function(e) {
+        var input = self.targetInput;
+        if (!input || !self.selectedItem)
+          return;
+        input.value = self.selectedItem['url'];
+        // Programatically change the value won't trigger a change event, but
+        // clients are likely to want to know when changes happen, so fire one.
+        var changeEvent = document.createEvent('Event');
+        changeEvent.initEvent('change', true, true);
+        input.dispatchEvent(changeEvent);
+      });
       // Start hidden; adding suggestions will unhide.
       this.hidden = true;
     },
