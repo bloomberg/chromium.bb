@@ -89,10 +89,6 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 #endif
 
-#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
-#include "chrome/browser/extensions/extension_input_ui_api.h"
-#endif
-
 using base::Time;
 
 namespace errors = extension_manifest_errors;
@@ -544,16 +540,10 @@ void ExtensionService::InitEventRouters() {
   ExtensionManagementEventRouter::GetInstance()->Init();
   ExtensionProcessesEventRouter::GetInstance()->ObserveProfile(profile_);
   ExtensionWebNavigationEventRouter::GetInstance()->Init();
-
 #if defined(OS_CHROMEOS)
   ExtensionFileBrowserEventRouter::GetInstance()->ObserveFileSystemEvents(
       profile_);
 #endif
-
-#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
-  ExtensionInputUiEventRouter::GetInstance()->Init();
-#endif
-
   event_routers_initialized_ = true;
 }
 
