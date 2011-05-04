@@ -95,9 +95,11 @@ static const VersionRangeDefinition kQuicktimeVersionRange[] = {
 static const VersionRangeDefinition kJavaVersionRange[] = {
     { "0", "7", "6.0.240", true }  // "240" is not a typo.
 };
+// This is up to date with
+// http://www.adobe.com/support/security/bulletins/apsb11-08.html
 static const VersionRangeDefinition kAdobeReaderVersionRange[] = {
     { "10", "11", "10.0.1", false },
-    { "9", "10", "9.4.3", false },
+    { "9", "10", "9.4.4", false },
     { "0", "9", "8.2.6", false }
 };
 static const VersionRangeDefinition kDivXVersionRange[] = {
