@@ -27,7 +27,7 @@ class ProfileTagView : public views::View {
 
   ProfileTagView(BrowserFrame* frame,
                  ProfileMenuButton* profile_menu_button);
-  ~ProfileTagView() {}
+  ~ProfileTagView();
 
   // Paint the profile tag background image on the given canvas.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;

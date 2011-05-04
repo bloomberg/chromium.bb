@@ -26,6 +26,9 @@ ProfileTagView::ProfileTagView(BrowserFrame* frame,
       profile_menu_button_(profile_menu_button) {
 }
 
+ProfileTagView::~ProfileTagView() {
+}
+
 void ProfileTagView::OnPaint(gfx::Canvas* canvas) {
   CreateProfileTagBitmaps();
 
