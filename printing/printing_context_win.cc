@@ -6,6 +6,8 @@
 
 #include <winspool.h>
 
+#include <algorithm>
+
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
@@ -305,22 +307,27 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
     const PageRanges& ranges) {
   DCHECK(!in_print_job_);
 
-  bool is_landscape, is_collate, is_color, is_printToPDF;
+  bool collate;
+  bool color;
+  bool landscape;
+  bool print_to_pdf;
+  int copies;
+  int duplex_mode;
   string16 printer_name;
-  int copies, duplex_mode;
-  if (!job_settings.GetBoolean(kSettingLandscape, &is_landscape) ||
-      !job_settings.GetString(kSettingPrinterName, &printer_name) ||
-      !job_settings.GetInteger(kSettingCopies, &copies) ||
-      !job_settings.GetBoolean(kSettingCollate, &is_collate) ||
+
+  if (!job_settings.GetBoolean(kSettingLandscape, &landscape) ||
+      !job_settings.GetBoolean(kSettingCollate, &collate) ||
+      !job_settings.GetBoolean(kSettingColor, &color) ||
+      !job_settings.GetBoolean(kSettingPrintToPDF, &print_to_pdf) ||
       !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
-      !job_settings.GetBoolean(kSettingColor, &is_color) ||
-      !job_settings.GetBoolean(kSettingPrintToPDF, &is_printToPDF)) {
+      !job_settings.GetInteger(kSettingCopies, &copies) ||
+      !job_settings.GetString(kSettingPrinterName, &printer_name)) {
     return OnError();
   }
 
-  if (is_printToPDF) {
+  if (print_to_pdf) {
     // Pseudo printer: handle orientation and ranges only.
-    settings_.SetOrientation(is_landscape);
+    settings_.SetOrientation(landscape);
     settings_.ranges = ranges;
     return OK;
   }
@@ -356,10 +363,10 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
     return OnError();
   }
 
-  dev_mode->dmColor = is_color ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;
+  dev_mode->dmColor = color ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;
   dev_mode->dmCopies = std::max(copies, 1);
   if (dev_mode->dmCopies > 1)  // do not change collate unless multiple copies
-    dev_mode->dmCollate = is_collate ? DMCOLLATE_TRUE : DMCOLLATE_FALSE;
+    dev_mode->dmCollate = collate ? DMCOLLATE_TRUE : DMCOLLATE_FALSE;
   switch (duplex_mode) {
     case LONG_EDGE:
       dev_mode->dmDuplex = DMDUP_VERTICAL;
@@ -371,8 +378,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
       dev_mode->dmDuplex = DMDUP_SIMPLEX;
       break;
   }
-  dev_mode->dmOrientation = is_landscape ? DMORIENT_LANDSCAPE :
-                                           DMORIENT_PORTRAIT;
+  dev_mode->dmOrientation = landscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;
 
   // Update data using DocumentProperties.
   if (DocumentProperties(NULL, printer, printer_name_wide, dev_mode, dev_mode,

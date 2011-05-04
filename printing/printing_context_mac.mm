@@ -91,18 +91,21 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
   ResetSettings();
   print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
 
-  bool landscape;
-  std::string device_name;
-  int copies;
   bool collate;
-  int duplex_mode;
   bool color;
+  bool landscape;
+  bool print_to_pdf;
+  int copies;
+  int duplex_mode;
+  std::string device_name;
+
   if (!job_settings.GetBoolean(kSettingLandscape, &landscape) ||
-      !job_settings.GetString(kSettingDeviceName, &device_name) ||
-      !job_settings.GetInteger(kSettingCopies, &copies) ||
       !job_settings.GetBoolean(kSettingCollate, &collate) ||
+      !job_settings.GetBoolean(kSettingColor, &color) ||
+      !job_settings.GetBoolean(kSettingPrintToPDF, &print_to_pdf) ||
       !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
-      !job_settings.GetBoolean(kSettingColor, &color)) {
+      !job_settings.GetInteger(kSettingCopies, &copies) ||
+      !job_settings.GetString(kSettingDeviceName, &device_name)) {
     return OnError();
   }
 
