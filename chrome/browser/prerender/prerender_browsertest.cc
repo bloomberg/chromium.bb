@@ -130,8 +130,8 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
     std::copy(expected_final_status_queue.begin(),
               expected_final_status_queue.end(),
               expected_final_status_queue_.begin());
-    LOG(INFO) << "Factory created with queue length " <<
-                 expected_final_status_queue_.size();
+    VLOG(1) << "Factory created with queue length " <<
+               expected_final_status_queue_.size();
   }
 
   virtual PrerenderContents* CreatePrerenderContents(
@@ -144,9 +144,9 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
           " with no expected final status";
     FinalStatus expected_final_status = expected_final_status_queue_.front();
     expected_final_status_queue_.pop_front();
-    LOG(INFO) << "Creating prerender contents for " << url.path() <<
-                 " with expected final status " << expected_final_status;
-    LOG(INFO) << expected_final_status_queue_.size() << " left in the queue.";
+    VLOG(1) << "Creating prerender contents for " << url.path() <<
+               " with expected final status " << expected_final_status;
+    VLOG(1) << expected_final_status_queue_.size() << " left in the queue.";
     return new TestPrerenderContents(prerender_manager, profile, url,
                                      referrer, number_of_loads_,
                                      expected_final_status);

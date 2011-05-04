@@ -5,6 +5,7 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/process_util.h"
 #include "base/task.h"
@@ -19,9 +20,9 @@
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
 #include "content/browser/browsing_instance.h"
@@ -194,11 +195,11 @@ void PrerenderContents::StartPrerenderingOld(
 void PrerenderContents::StartPrerendering(
     const RenderViewHost* source_render_view_host) {
   if (!UseTabContents()) {
-    LOG(INFO) << "Starting prerendering with LEGACY code\n";
+    VLOG(1) << "Starting prerendering with LEGACY code\n";
     StartPrerenderingOld(source_render_view_host);
     return;
   }
-  LOG(INFO) << "Starting prerendering with NEW code\n";
+  VLOG(1) << "Starting prerendering with NEW code\n";
   DCHECK(profile_ != NULL);
   DCHECK(!prerendering_has_started_);
   DCHECK(prerender_contents_.get() == NULL);
@@ -616,12 +617,12 @@ void PrerenderContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
 void PrerenderContents::OnUpdateFaviconURL(
     int32 page_id,
     const std::vector<FaviconURL>& urls) {
-  LOG(INFO) << "PrerenderContents::OnUpdateFaviconURL" << icon_url_;
+  VLOG(1) << "PrerenderContents::OnUpdateFaviconURL" << icon_url_;
   for (std::vector<FaviconURL>::const_iterator it = urls.begin();
        it != urls.end(); ++it) {
     if (it->icon_type == FaviconURL::FAVICON) {
       icon_url_ = it->icon_url;
-      LOG(INFO) << icon_url_;
+      VLOG(1) << icon_url_;
       return;
     }
   }

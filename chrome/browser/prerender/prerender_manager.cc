@@ -4,6 +4,8 @@
 
 #include "chrome/browser/prerender/prerender_manager.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -23,8 +25,8 @@
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_canon.h"
+#include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_util.h"
 
 namespace prerender {
@@ -504,10 +506,10 @@ bool PrerenderManager::MaybeUsePreloadedPageOld(TabContents* tab_contents,
 bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
                                              const GURL& url) {
   if (!PrerenderContents::UseTabContents()) {
-    LOG(INFO) << "Checking for prerender with LEGACY code\n";
+    VLOG(1) << "Checking for prerender with LEGACY code\n";
     return PrerenderManager::MaybeUsePreloadedPageOld(tab_contents, url);
   }
-  LOG(INFO) << "Checking for prerender with NEW code\n";
+  VLOG(1) << "Checking for prerender with NEW code\n";
   DCHECK(CalledOnValidThread());
   scoped_ptr<PrerenderContents> prerender_contents(
       GetEntryButNotSpecifiedTC(url, tab_contents));
