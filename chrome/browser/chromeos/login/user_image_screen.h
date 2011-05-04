@@ -33,8 +33,10 @@ class UserImageScreen: public ViewScreen<UserImageView>,
   virtual void OnCaptureFailure();
 
   // UserImageView::Delegate implementation:
-  virtual void OnOK(const SkBitmap& image);
-  virtual void OnSkip();
+  virtual void StartCamera();
+  virtual void StopCamera();
+  virtual void OnPhotoTaken(const SkBitmap& image);
+  virtual void OnDefaultImageSelected(int index);
 
   // NotificationObserver implementation:
   virtual void Observe(NotificationType type,
@@ -42,10 +44,6 @@ class UserImageScreen: public ViewScreen<UserImageView>,
                        const NotificationDetails& details);
 
  private:
-  // Starts initializing the camera and shows the appropriate status on the
-  // screen.
-  void InitCamera();
-
   CameraController camera_controller_;
 
   NotificationRegistrar registrar_;

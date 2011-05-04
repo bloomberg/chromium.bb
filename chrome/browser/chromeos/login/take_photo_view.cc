@@ -139,7 +139,8 @@ TakePhotoView::TakePhotoView(Delegate* delegate)
     : title_label_(NULL),
       snapshot_button_(NULL),
       user_image_(NULL),
-      is_capturing_(true),
+      is_capturing_(false),
+      show_title_(true),
       delegate_(delegate) {
 }
 
@@ -147,11 +148,13 @@ TakePhotoView::~TakePhotoView() {
 }
 
 void TakePhotoView::Init() {
-  title_label_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_USER_IMAGE_SCREEN_TITLE)));
-  title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  title_label_->SetMultiLine(true);
-  CorrectLabelFontSize(title_label_);
+  if (show_title_) {
+    title_label_ = new views::Label(
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_USER_IMAGE_SCREEN_TITLE)));
+    title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    title_label_->SetMultiLine(true);
+    CorrectLabelFontSize(title_label_);
+  }
 
   user_image_ = new CameraImageView();
   user_image_->SetImageSize(
@@ -172,7 +175,6 @@ void TakePhotoView::Init() {
   InitLayout();
   // Request focus only after the button is added to views hierarchy.
   snapshot_button_->RequestFocus();
-  user_image_->SetInitializingState();
 }
 
 void TakePhotoView::InitLayout() {
@@ -181,22 +183,26 @@ void TakePhotoView::InitLayout() {
   SetLayoutManager(layout);
 
   // The title is left-top aligned.
-  views::ColumnSet* column_set = layout->AddColumnSet(kTitleRow);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::LEADING,
-                        1,
-                        views::GridLayout::USE_PREF, 0, 0);
+  if (show_title_) {
+    views::ColumnSet* column_set = layout->AddColumnSet(kTitleRow);
+    column_set->AddColumn(views::GridLayout::FILL,
+                          views::GridLayout::LEADING,
+                          1,
+                          views::GridLayout::USE_PREF, 0, 0);
+  }
 
   // User image and snapshot button are centered horizontally.
-  column_set = layout->AddColumnSet(kImageRow);
+  views::ColumnSet* column_set = layout->AddColumnSet(kImageRow);
   column_set->AddColumn(views::GridLayout::CENTER,
                         views::GridLayout::LEADING,
                         1,
                         views::GridLayout::USE_PREF, 0, 0);
 
   // Fill the layout with rows and views now.
-  layout->StartRow(0, kTitleRow);
-  layout->AddView(title_label_);
+  if (show_title_) {
+    layout->StartRow(0, kTitleRow);
+    layout->AddView(title_label_);
+  }
   layout->StartRowWithPadding(0, kImageRow, 0, kVerticalPadding);
   layout->AddView(user_image_);
   layout->StartRowWithPadding(1, kImageRow, 0, kVerticalPadding);
@@ -223,8 +229,11 @@ void TakePhotoView::UpdateVideoFrame(const SkBitmap& frame) {
 }
 
 void TakePhotoView::ShowCameraInitializing() {
-  if (!is_capturing_)
-    return;
+  is_capturing_ = true;
+  snapshot_button_->SetImage(views::CustomButton::BS_NORMAL,
+                             ResourceBundle::GetSharedInstance().GetBitmapNamed(
+                                 IDR_USER_IMAGE_CAPTURE));
+  snapshot_button_->SetVisible(true);
   snapshot_button_->SetEnabled(false);
   user_image_->SetInitializingState();
 }
@@ -238,6 +247,13 @@ void TakePhotoView::ShowCameraError() {
 
 const SkBitmap& TakePhotoView::GetImage() const {
   return user_image_->GetImage();
+}
+
+void TakePhotoView::SetImage(SkBitmap* image) {
+  is_capturing_ = false;
+  snapshot_button_->SetVisible(false);
+  user_image_->SetNormalState();
+  user_image_->SetImage(image);
 }
 
 gfx::Size TakePhotoView::GetPreferredSize() {

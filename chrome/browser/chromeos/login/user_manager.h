@@ -108,6 +108,10 @@ class UserManager : public UserImageLoader::Delegate,
   void SaveUserImagePath(const std::string& username,
                          const std::string& image_path);
 
+  // Returns the index of user's default image or -1 if the image is not
+  // default.
+  int GetUserDefaultImageIndex(const std::string& username);
+
   // chromeos::UserImageLoader::Delegate implementation.
   virtual void OnImageLoaded(const std::string& username,
                              const SkBitmap& image,

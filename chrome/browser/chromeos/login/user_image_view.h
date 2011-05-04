@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_VIEW_H_
 #pragma once
 
+#include "chrome/browser/chromeos/login/default_images_view.h"
 #include "chrome/browser/chromeos/login/take_photo_view.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
@@ -13,6 +14,7 @@
 class SkBitmap;
 
 namespace views {
+class Label;
 class NativeButton;
 }  // namespace views
 
@@ -21,19 +23,27 @@ namespace chromeos {
 // View used for selecting user image on OOBE screen.
 class UserImageView : public views::View,
                       public views::ButtonListener,
-                      public TakePhotoView::Delegate {
+                      public TakePhotoView::Delegate,
+                      public DefaultImagesView::Delegate {
  public:
   // Delegate class to get notifications from the view.
   class Delegate {
   public:
     virtual ~Delegate() {}
 
-    // Called if user accepts the selected image. The image is passed as a
-    // parameter.
-    virtual void OnOK(const SkBitmap& image) = 0;
+    // Initializes camera if needed and starts capturing.
+    virtual void StartCamera() = 0;
 
-    // Called if user decides to skip image selection screen.
-    virtual void OnSkip() = 0;
+    // Stops capturing from camera.
+    virtual void StopCamera() = 0;
+
+    // Called if user accepts the taken photo. The image is passed as a
+    // parameter.
+    virtual void OnPhotoTaken(const SkBitmap& image) = 0;
+
+    // Called if user accepts the chosen default image. The image index is
+    // passed as a parameter.
+    virtual void OnDefaultImageSelected(int index) = 0;
   };
 
   explicit UserImageView(Delegate* delegate);
@@ -54,6 +64,9 @@ class UserImageView : public views::View,
   // frame and disables snapshot button until new frame is received.
   void ShowCameraError();
 
+  // Returns true if video capture is the current state of the view.
+  bool IsCapturing() const;
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
 
@@ -64,13 +77,19 @@ class UserImageView : public views::View,
   virtual void OnCapturingStarted();
   virtual void OnCapturingStopped();
 
+  // Overridden from DefaultImagesView::Delegate.
+  virtual void OnCaptureButtonClicked();
+  virtual void OnImageSelected(int image_index);
+
  private:
   // Initializes layout manager for this view.
   void InitLayout();
 
+  views::Label* title_label_;
+  DefaultImagesView* default_images_view_;
   TakePhotoView* take_photo_view_;
+  views::View* splitter_;
   views::NativeButton* ok_button_;
-  views::NativeButton* skip_button_;
 
   // Notifications receiver.
   Delegate* delegate_;

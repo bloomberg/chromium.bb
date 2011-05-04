@@ -165,8 +165,9 @@ void ChangePictureOptionsHandler::SelectImage(const ListValue* args) {
           kDefaultImageResources[user_image_index]);
   UserManager* user_manager = UserManager::Get();
   user_manager->SetLoggedInUserImage(*image);
-  user_manager->SaveUserImagePath(user_manager->logged_in_user().email(),
-                                  kDefaultImageNames[user_image_index]);
+  user_manager->SaveUserImagePath(
+      user_manager->logged_in_user().email(),
+      GetDefaultImagePath(static_cast<size_t>(user_image_index)));
 }
 
 void ChangePictureOptionsHandler::FileSelected(const FilePath& path,

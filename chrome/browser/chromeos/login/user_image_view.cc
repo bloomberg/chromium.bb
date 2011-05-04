@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/login/user_image_view.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/default_images_view.h"
+#include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "grit/generated_resources.h"
@@ -12,7 +14,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "views/background.h"
 #include "views/controls/button/native_button.h"
+#include "views/controls/label.h"
 #include "views/layout/grid_layout.h"
 
 namespace {
@@ -25,21 +29,35 @@ const int kVerticalMargin = 10;
 const int kHorizontalPadding = 10;
 // Padding between vertically neighboring elements.
 const int kVerticalPadding = 10;
+// Color for splitter separating contents from OK button.
+const SkColor kSplitterColor = SkColorSetRGB(187, 195, 200);
+// Height for the splitter.
+const int kSplitterHeight = 1;
 
 // IDs of column sets for grid layout manager.
 enum ColumnSets {
-  kTakePhotoRow, // Column set for image from camera and snapshot button.
-  kButtonsRow,   // Column set for Skip and OK buttons.
+  kTitleRow,     // Column set for screen title.
+  kImagesRow,    // Column set for image from camera and snapshot button.
+  kSplitterRow, // Place for the splitter.
+  kButtonsRow,   // Column set for OK button.
 };
+
+views::View* CreateSplitter(const SkColor& color) {
+  views::View* splitter = new views::View();
+  splitter->set_background(views::Background::CreateSolidBackground(color));
+  return splitter;
+}
 
 }  // namespace
 
 namespace chromeos {
 
 UserImageView::UserImageView(Delegate* delegate)
-    : take_photo_view_(NULL),
+    : title_label_(NULL),
+      default_images_view_(NULL),
+      take_photo_view_(NULL),
+      splitter_(NULL),
       ok_button_(NULL),
-      skip_button_(NULL),
       delegate_(delegate) {
 }
 
@@ -53,18 +71,25 @@ void UserImageView::Init() {
       &BorderDefinition::kScreenBorder);
   set_background(views::Background::CreateBackgroundPainter(true, painter));
 
+  title_label_ = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT)));
+  title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  title_label_->SetMultiLine(true);
+  CorrectLabelFontSize(title_label_);
+
+  default_images_view_ = new DefaultImagesView(this);
   take_photo_view_ = new TakePhotoView(this);
+  take_photo_view_->set_show_title(false);
+
+  splitter_ = CreateSplitter(kSplitterColor);
 
   ok_button_ = new login::WideButton(
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK)));
   ok_button_->SetEnabled(false);
 
-  skip_button_ = new login::WideButton(
-      this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_SKIP)));
-  skip_button_->SetEnabled(true);
-
   InitLayout();
 
+  default_images_view_->Init();
   take_photo_view_->Init();
 }
 
@@ -73,8 +98,8 @@ void UserImageView::InitLayout() {
   layout->SetInsets(GetInsets());
   SetLayoutManager(layout);
 
-  // The view with image from camera and label.
-  views::ColumnSet* column_set = layout->AddColumnSet(kTakePhotoRow);
+  // The title, left-top aligned.
+  views::ColumnSet* column_set = layout->AddColumnSet(kTitleRow);
   column_set->AddPaddingColumn(0, kHorizontalMargin);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::LEADING,
@@ -82,27 +107,52 @@ void UserImageView::InitLayout() {
                         views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kHorizontalMargin);
 
-  // OK and Skip buttons are in the right bottom corner of the view.
-  column_set = layout->AddColumnSet(kButtonsRow);
+  // The view with default images and the one with image from camera and label.
+  column_set = layout->AddColumnSet(kImagesRow);
   column_set->AddPaddingColumn(0, kHorizontalMargin);
-  // This column takes the empty space to the left of the buttons.
-  column_set->AddPaddingColumn(1, 1);
-  column_set->AddColumn(views::GridLayout::TRAILING,
-                        views::GridLayout::TRAILING,
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
                         0,
                         views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kHorizontalPadding);
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::LEADING,
+                        1,
+                        views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kHorizontalMargin);
+
+  // Splitter.
+  column_set = layout->AddColumnSet(kSplitterRow);
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::TRAILING,
+                        1,
+                        views::GridLayout::USE_PREF, 0, 0);
+
+  // OK button is in the right bottom corner of the view.
+  column_set = layout->AddColumnSet(kButtonsRow);
+  column_set->AddPaddingColumn(0, kHorizontalMargin);
   column_set->AddColumn(views::GridLayout::TRAILING,
                         views::GridLayout::TRAILING,
-                        0,
+                        1,
                         views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kHorizontalMargin);
 
   // Fill the layout with rows and views now.
-  layout->StartRowWithPadding(0, kTakePhotoRow, 0, kVerticalMargin);
+  layout->StartRowWithPadding(0, kTitleRow, 0, kVerticalMargin);
+  layout->AddView(title_label_);
+  layout->StartRowWithPadding(0, kImagesRow, 0, kVerticalPadding);
+  layout->AddView(default_images_view_);
   layout->AddView(take_photo_view_);
+  layout->StartRowWithPadding(1, kSplitterRow, 0, kVerticalPadding);
+  // Set height for splitter view explicitly otherwise it's set to 0
+  // by default.
+  layout->AddView(splitter_,
+                  1, 1,
+                  views::GridLayout::FILL,
+                  views::GridLayout::TRAILING,
+                  0,
+                  kSplitterHeight);
   layout->StartRowWithPadding(0, kButtonsRow, 0, kVerticalPadding);
-  layout->AddView(skip_button_);
   layout->AddView(ok_button_);
   layout->AddPaddingRow(0, kVerticalMargin);
 }
@@ -122,6 +172,13 @@ void UserImageView::ShowCameraError() {
   take_photo_view_->ShowCameraError();
 }
 
+bool UserImageView::IsCapturing() const {
+  DCHECK(default_images_view_);
+  DCHECK(take_photo_view_);
+  return default_images_view_->GetDefaultImageIndex() == -1 &&
+         take_photo_view_->is_capturing();
+}
+
 gfx::Size UserImageView::GetPreferredSize() {
   return gfx::Size(width(), height());
 }
@@ -130,21 +187,45 @@ void UserImageView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   DCHECK(delegate_);
   if (sender == ok_button_) {
-    delegate_->OnOK(take_photo_view_->GetImage());
-  } else if (sender == skip_button_) {
-    delegate_->OnSkip();
+    if (default_images_view_->GetDefaultImageIndex() == -1) {
+      delegate_->OnPhotoTaken(take_photo_view_->GetImage());
+    } else {
+      delegate_->OnDefaultImageSelected(
+          default_images_view_->GetDefaultImageIndex());
+    }
   } else {
     NOTREACHED();
   }
 }
 
 void UserImageView::OnCapturingStarted() {
+  delegate_->StartCamera();
+  default_images_view_->ClearSelection();
   ok_button_->SetEnabled(false);
+  ShowCameraInitializing();
 }
 
 void UserImageView::OnCapturingStopped() {
+  delegate_->StopCamera();
+  default_images_view_->ClearSelection();
   ok_button_->SetEnabled(true);
   ok_button_->RequestFocus();
+}
+
+void UserImageView::OnCaptureButtonClicked() {
+  OnCapturingStarted();
+}
+
+void UserImageView::OnImageSelected(int image_index) {
+  // Can happen when user is not known, i.e. in tests.
+  if (image_index < 0 || image_index >= kDefaultImagesCount)
+    return;
+  delegate_->StopCamera();
+  ok_button_->SetEnabled(true);
+  ok_button_->RequestFocus();
+  take_photo_view_->SetImage(
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(
+            kDefaultImageResources[image_index]));
 }
 
 }  // namespace chromeos

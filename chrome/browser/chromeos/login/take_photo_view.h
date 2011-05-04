@@ -53,8 +53,11 @@ class TakePhotoView : public views::View,
   // frame and disables snapshot button until new frame is received.
   void ShowCameraError();
 
-  // Returns the currentily selected image.
+  // Returns the currently selected image.
   const SkBitmap& GetImage() const;
+
+  // Sets the image indicating that the view is used only for image preview.
+  void SetImage(SkBitmap* image);
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
@@ -63,6 +66,8 @@ class TakePhotoView : public views::View,
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   bool is_capturing() const { return is_capturing_; }
+
+  void set_show_title(bool show) { show_title_ = show; }
 
  private:
   // Initializes layout manager for this view.
@@ -75,6 +80,9 @@ class TakePhotoView : public views::View,
   // Indicates that we're in capturing mode. When |false|, new video frames
   // are not shown to user if received.
   bool is_capturing_;
+
+  // Whether title label is present or not.
+  bool show_title_;
 
   Delegate* delegate_;
 

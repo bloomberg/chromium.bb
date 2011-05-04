@@ -98,20 +98,6 @@ void DeleteUserImage(const FilePath& image_path) {
   }
 }
 
-// Checks if given path is one of the default ones. If it is, returns true
-// and its index in kDefaultImageNames through |image_id|. If not, returns
-// false.
-bool IsDefaultImagePath(const std::string& path, size_t* image_id) {
-  DCHECK(image_id);
-  for (size_t i = 0; i < arraysize(kDefaultImageNames); ++i) {
-    if (path == kDefaultImageNames[i]) {
-      *image_id = i;
-      return true;
-    }
-  }
-  return false;
-}
-
 // Updates current user ownership on UI thread.
 void UpdateOwnership(bool is_owner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -276,9 +262,9 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
         if (image_it == user_images_.end()) {
           if (prefs_images &&
               prefs_images->GetStringWithoutPathExpansion(email, &image_path)) {
-            size_t default_image_id = arraysize(kDefaultImageNames);
+            int default_image_id = kDefaultImagesCount;
             if (IsDefaultImagePath(image_path, &default_image_id)) {
-              DCHECK(default_image_id < arraysize(kDefaultImageNames));
+              DCHECK(default_image_id < kDefaultImagesCount);
               int resource_id = kDefaultImageResources[default_image_id];
               user.set_image(
                   *ResourceBundle::GetSharedInstance().GetBitmapNamed(
@@ -398,7 +384,7 @@ void UserManager::RemoveUserFromList(const std::string& email) {
 
   prefs->SavePersistentPrefs();
 
-  size_t default_image_id;
+  int default_image_id = kDefaultImagesCount;
   if (!IsDefaultImagePath(image_path_string, &default_image_id)) {
     FilePath image_path(image_path_string);
     BrowserThread::PostTask(
@@ -471,17 +457,17 @@ void UserManager::SetDefaultUserImage(const std::string& username) {
   // there're more users with red image, we won't add red one for sure.
   // Thus we count how many default images of each color are used and choose
   // the first color with minimal usage.
-  std::vector<int> colors_count(arraysize(kDefaultImageNames), 0);
+  std::vector<int> colors_count(kDefaultImagesCount, 0);
   for (ListValue::const_iterator it = prefs_users->begin();
        it != prefs_users->end();
        ++it) {
     std::string email;
     if ((*it)->GetAsString(&email)) {
       std::string image_path;
-      size_t default_image_id = arraysize(kDefaultImageNames);
+      int default_image_id = kDefaultImagesCount;
       if (prefs_images->GetStringWithoutPathExpansion(email, &image_path) &&
           IsDefaultImagePath(image_path, &default_image_id)) {
-        DCHECK(default_image_id < arraysize(kDefaultImageNames));
+        DCHECK(default_image_id < kDefaultImagesCount);
         ++colors_count[default_image_id];
       }
     }
@@ -489,13 +475,34 @@ void UserManager::SetDefaultUserImage(const std::string& username) {
   std::vector<int>::const_iterator min_it =
       std::min_element(colors_count.begin(), colors_count.end());
   int selected_id = min_it - colors_count.begin();
-  std::string user_image_path = kDefaultImageNames[selected_id];
+  std::string user_image_path =
+      GetDefaultImagePath(selected_id);
   int resource_id = kDefaultImageResources[selected_id];
   SkBitmap user_image = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
       resource_id);
 
   SavePathToLocalState(username, user_image_path);
   SetLoggedInUserImage(user_image);
+}
+
+int UserManager::GetUserDefaultImageIndex(const std::string& username) {
+  if (!g_browser_process)
+    return -1;
+
+  PrefService* local_state = g_browser_process->local_state();
+  const DictionaryValue* prefs_images = local_state->GetDictionary(kUserImages);
+
+  if (!prefs_images)
+    return -1;
+
+  std::string image_path;
+  if (!prefs_images->GetStringWithoutPathExpansion(username, &image_path))
+    return -1;
+
+  int image_id = kDefaultImagesCount;
+  if (!IsDefaultImagePath(image_path, &image_id))
+    return -1;
+  return image_id;
 }
 
 void UserManager::OnImageLoaded(const std::string& username,

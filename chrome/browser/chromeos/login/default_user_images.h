@@ -6,31 +6,24 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_DEFAULT_USER_IMAGES_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_DEFAULT_USER_IMAGES_H_
 
-#include "grit/theme_resources.h"
+#include <cstddef>  // for size_t
+#include <string>
 
 namespace chromeos {
 
-namespace {
+// Returns path to default user image with specified index.
+// The path is used in Local State to distinguish default images.
+std::string GetDefaultImagePath(int index);
 
-// Special pathes to default user images used in Local State file.
-const char* kDefaultImageNames[] = {
-  "default:gray",
-  "default:green",
-  "default:blue",
-  "default:yellow",
-  "default:red",
-};
+// Checks if given path is one of the default ones. If it is, returns true
+// and its index through |image_id|. If not, returns false.
+bool IsDefaultImagePath(const std::string& path, int* image_id);
 
 // Resource IDs of default user images.
-const int kDefaultImageResources[] = {
-  IDR_LOGIN_DEFAULT_USER,
-  IDR_LOGIN_DEFAULT_USER_1,
-  IDR_LOGIN_DEFAULT_USER_2,
-  IDR_LOGIN_DEFAULT_USER_3,
-  IDR_LOGIN_DEFAULT_USER_4
-};
+extern const int kDefaultImageResources[];
 
-}  // namespace
+// Number of default images.
+extern const int kDefaultImagesCount;
 
 }  // namespace chromeos
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_image_view.h"
@@ -39,7 +40,11 @@ UserImageScreen::~UserImageScreen() {
 }
 
 void UserImageScreen::Refresh() {
-  InitCamera();
+  DCHECK(view());
+  UserManager* user_manager = UserManager::Get();
+  std::string logged_in_user = user_manager->logged_in_user().email();
+  view()->OnImageSelected(
+      user_manager->GetUserDefaultImageIndex(logged_in_user));
 }
 
 void UserImageScreen::Hide() {
@@ -51,21 +56,30 @@ UserImageView* UserImageScreen::AllocateView() {
   return new UserImageView(this);
 }
 
+void UserImageScreen::StartCamera() {
+  DCHECK(view());
+  view()->ShowCameraInitializing();
+  camera_controller_.Start();
+}
+
+void UserImageScreen::StopCamera() {
+  camera_controller_.Stop();
+}
+
 void UserImageScreen::OnCaptureSuccess() {
-  if (view()) {
-    SkBitmap frame;
-    camera_controller_.GetFrame(&frame);
-    if (!frame.isNull())
-      view()->UpdateVideoFrame(frame);
-  }
+  DCHECK(view());
+  SkBitmap frame;
+  camera_controller_.GetFrame(&frame);
+  if (!frame.isNull())
+    view()->UpdateVideoFrame(frame);
 }
 
 void UserImageScreen::OnCaptureFailure() {
-  if (view())
-    view()->ShowCameraError();
+  DCHECK(view());
+  view()->ShowCameraError();
 }
 
-void UserImageScreen::OnOK(const SkBitmap& image) {
+void UserImageScreen::OnPhotoTaken(const SkBitmap& image) {
   camera_controller_.Stop();
 
   UserManager* user_manager = UserManager::Get();
@@ -80,10 +94,23 @@ void UserImageScreen::OnOK(const SkBitmap& image) {
     delegate()->GetObserver(this)->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 }
 
-void UserImageScreen::OnSkip() {
+void UserImageScreen::OnDefaultImageSelected(int index) {
   camera_controller_.Stop();
+
+  UserManager* user_manager = UserManager::Get();
+  DCHECK(user_manager);
+
+  const UserManager::User& user = user_manager->logged_in_user();
+  DCHECK(!user.email().empty());
+
+  const SkBitmap* image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      kDefaultImageResources[index]);
+  user_manager->SetLoggedInUserImage(*image);
+  user_manager->SaveUserImagePath(
+      user.email(),
+      GetDefaultImagePath(static_cast<size_t>(index)));
   if (delegate())
-    delegate()->GetObserver(this)->OnExit(ScreenObserver::USER_IMAGE_SKIPPED);
+    delegate()->GetObserver(this)->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 }
 
 void UserImageScreen::Observe(NotificationType type,
@@ -94,15 +121,9 @@ void UserImageScreen::Observe(NotificationType type,
 
   bool is_screen_locked = *Details<bool>(details).ptr();
   if (is_screen_locked)
-    camera_controller_.Stop();
-  else
-    InitCamera();
-}
-
-void UserImageScreen::InitCamera() {
-  if (view())
-    view()->ShowCameraInitializing();
-  camera_controller_.Start();
+    StopCamera();
+  else if (view()->IsCapturing())
+    StartCamera();
 }
 
 }  // namespace chromeos
