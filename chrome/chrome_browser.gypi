@@ -908,6 +908,8 @@
         'browser/extensions/extension_infobar_module_constants.h',
         'browser/extensions/extension_input_api.cc',
         'browser/extensions/extension_input_api.h',
+        'browser/extensions/extension_input_ui_api.cc',
+        'browser/extensions/extension_input_ui_api.h',
         'browser/extensions/extension_install_dialog.h',
         'browser/extensions/extension_install_ui.cc',
         'browser/extensions/extension_install_ui.h',
@@ -3468,6 +3470,8 @@
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
+            ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
+            ['exclude', '^browser/extensions/extension_input_ui_api.h'],
             ['exclude', '^browser/ui/webui/chromeos'],
             ['exclude', '^browser/ui/webui/options/chromeos'],
             ['exclude', 'browser/extensions/extension_tts_api_chromeos.cc'],
@@ -3531,6 +3535,8 @@
           'sources/': [
             ['exclude', '^browser/chromeos/frame/dom_*'],
             ['exclude', '^browser/chromeos/login/dom_*'],
+            ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
+            ['exclude', '^browser/extensions/extension_input_ui_api.h'],
             ['exclude', '^browser/webui/keyboard_ui.*'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views.*'],
             ['exclude', '^browser/ui/touch/*'],
