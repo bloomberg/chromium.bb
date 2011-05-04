@@ -73,21 +73,21 @@ def GetSources(dest_dir):
                 FindFile("mpfr-2.4.1.tar.bz2",
                          sha1="1f965793526cafefb30cda64cebf3712cb75b488")))
   AddGitSource("binutils",
-               "http://git.chromium.org/git/nacl-binutils.git",
+               "http://git.chromium.org/native_client/nacl-binutils.git",
                commit_id=revisions["NACL_BINUTILS_COMMIT"])
   AddGitSource("gcc",
-               "http://git.chromium.org/git/nacl-gcc.git",
+               "http://git.chromium.org/native_client/nacl-gcc.git",
                commit_id=revisions["NACL_GCC_COMMIT"])
   AddGitSource("newlib",
-               "http://git.chromium.org/git/nacl-newlib.git",
+               "http://git.chromium.org/native_client/nacl-newlib.git",
                commit_id=revisions["NACL_NEWLIB_COMMIT"])
   # For a discussion of why nacl-glibc uses these headers, see
   # http://code.google.com/p/nativeclient/issues/detail?id=671
   AddGitSource("linux_headers",
-               "http://git.chromium.org/git/linux-headers-for-nacl.git",
+               "http://git.chromium.org/native_client/linux-headers-for-nacl.git",
                commit_id=revisions["LINUX_HEADERS_FOR_NACL_COMMIT"])
   AddGitSource("glibc",
-               "http://git.chromium.org/git/nacl-glibc.git",
+               "http://git.chromium.org/native_client/nacl-glibc.git",
                commit_id=revisions["NACL_GLIBC_COMMIT"])
   return src
 

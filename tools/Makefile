@@ -34,16 +34,16 @@ THISMAKEFILE := $(lastword $(MAKEFILE_LIST))
 SHELL=/bin/bash
 
 # By default, checkout from read-only repository:
-#   http://git.chromium.org/git
+#   http://git.chromium.org/native_client
 # Maintainers can either override this with read-write repository:
-#   ssh://git.chromium.org
+#   ssh://gerrit.chromium.org/native_client
 # or add to git config:
-#   [url "ssh://git.chromium.org"]
-#     pushinsteadof = http://git.chromium.org/git
+#   [url "ssh://gerrit.chromium.org"]
+#     pushinsteadof = http://git.chromium.org
 # or add to git-cl codereview.settings:
-#   PUSH_URL_CONFIG: url.ssh://git.chromium.org.pushinsteadof
-#   ORIGIN_URL_CONFIG: http://git.chromium.org/git
-GIT_BASE_URL=http://git.chromium.org/git
+#   PUSH_URL_CONFIG: url.ssh://gerrit.chromium.org.pushinsteadof
+#   ORIGIN_URL_CONFIG: http://git.chromium.org
+GIT_BASE_URL=http://git.chromium.org/native_client
 
 CROSSARCH=nacl64
 TOOLCHAINLOC?=out
