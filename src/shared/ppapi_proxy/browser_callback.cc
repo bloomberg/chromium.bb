@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,10 +51,8 @@ void RunRemoteCallback(void* user_data, int32_t result) {
 
   nacl::scoped_array<char> read_buffer(remote_callback->read_buffer);
   nacl_abi_size_t read_buffer_size = 0;
-  if (result > 0)  {  // Positive number indicates bytes read.
-    CHECK(remote_callback->read_buffer != NULL);
+  if (result > 0 && remote_callback->read_buffer != NULL)
     read_buffer_size = static_cast<nacl_abi_size_t>(result);
-  }
 
   CompletionCallbackRpcClient::RunCompletionCallback(
       remote_callback->srpc_channel,

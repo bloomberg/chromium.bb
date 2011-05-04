@@ -16,7 +16,11 @@
 
 namespace {
 
-void EmptyCompletionCallback(void* /*data*/, int32_t /*result*/) {
+const int32_t kNotPPError = 12345;
+const int kStressChecksum = 0x12345678;
+
+void EmptyCompletionCallback(void* data, int32_t /*result*/) {
+  CHECK(data == NULL);
 }
 
 // Calls PPB_Core::CallOnMainThread(). To be invoked off the main thread.
@@ -29,8 +33,6 @@ void* InvokeCallOnMainThread(void* thread_argument) {
   ppb_core->CallOnMainThread(0 /*delay*/, callback, PP_OK);
   return NULL;
 }
-
-const int kStressChecksum = 0x12345678;
 
 struct StressData {
   const PPB_Core* ppb_core_;
@@ -120,7 +122,7 @@ PP_Var TestCallOnMainThreadFromMainThread() {
       "CallOnMainThreadCallback_FromMainThread",
       EmptyCompletionCallback,
       NULL /*user_data*/);
-  PPBCore()->CallOnMainThread(0 /*delay*/, callback, PP_OK);
+  PPBCore()->CallOnMainThread(0 /*delay*/, callback, kNotPPError);
 
   return TEST_PASSED;
 }
