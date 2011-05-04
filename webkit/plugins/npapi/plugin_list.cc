@@ -135,7 +135,12 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
     NULL, 0, "" },
 };
 
-#else
+#elif defined(OS_CHROMEOS)
+// ChromeOS generally has (autoupdated) system plug-ins and no user-installable
+// plug-ins.
+static const PluginGroupDefinition kGroupDefinitions[] = { };
+
+#else  // Most importantly, covers desktop Linux.
 static const VersionRangeDefinition kJavaVersionRange[] = {
     { "0", "1.7", "1.6.0.24", true }
 };
