@@ -42,7 +42,6 @@ sources_for_standard_interfaces = [
 
 
 sources_for_nacl_extensions = [
-    'dyncode.c',
     'gc_hooks.c',
     'imc_accept.c',
     'imc_connect.c',
@@ -87,3 +86,6 @@ env.NaClSdkLibrary('libnacl', sources + irt_interface_sources)
 env.AddLibraryToSdk(['libnacl'])
 header_install = env.AddHeaderToSdk(['nacl_thread.h'])
 env.Requires('libnacl', header_install)
+
+env.NaClSdkLibrary('libnacl_dyncode', ['dyncode.c'])
+env.AddLibraryToSdk(['libnacl_dyncode'])

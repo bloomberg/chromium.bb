@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -46,7 +46,7 @@ dynamic_load_test_nexe = prog_env.ComponentProgram(
     dynamic_load_test_nexe_name,
     ['dynamic_load_test.c',
     template_obj],
-    EXTRA_LIBS=['testrunner', 'srpc', 'pthread'])
+    EXTRA_LIBS=['testrunner', 'nacl_dyncode', 'srpc', 'pthread'])
 env.Publish(dynamic_load_test_nexe_name, 'run', ['dynamic_load_test.nmf'])
 
 dynamic_modify_test_nexe_name = ('dynamic_modify_test_%s.nexe' %
@@ -55,18 +55,20 @@ dynamic_modify_test_nexe = prog_env.ComponentProgram(
     dynamic_modify_test_nexe_name,
     ['dynamic_modify_test.c',
     template_obj],
-    EXTRA_LIBS=['testrunner', 'srpc', 'pthread'])
+    EXTRA_LIBS=['testrunner', 'nacl_dyncode', 'srpc', 'pthread'])
 env.Publish(dynamic_modify_test_nexe_name, 'run', ['dynamic_modify_test.nmf'])
 
 prog_env.ComponentProgram('write_to_dyncode.nexe',
                           ['write_to_dyncode.c'])
 
 prog_env.ComponentProgram('dyncode_disabled_test.nexe',
-                          ['dyncode_disabled_test.c'])
+                          ['dyncode_disabled_test.c'],
+                          EXTRA_LIBS=['nacl_dyncode'])
 
 prog_env.ComponentProgram('debug_mode_test.nexe',
                           ['debug_mode_test.c',
-                           template_obj])
+                           template_obj],
+                          EXTRA_LIBS=['nacl_dyncode'])
 
 tests = [
     prog_env.CommandSelLdrTestNacl(

@@ -14,7 +14,6 @@ extern TYPE_nacl_irt_query __nacl_irt_query;
 extern struct nacl_irt_basic __libnacl_irt_basic;
 extern struct nacl_irt_file __libnacl_irt_file;
 extern struct nacl_irt_memory __libnacl_irt_memory;
-extern struct nacl_irt_dyncode __libnacl_irt_dyncode;
 extern struct nacl_irt_thread __libnacl_irt_thread;
 extern struct nacl_irt_mutex __libnacl_irt_mutex;
 extern struct nacl_irt_cond __libnacl_irt_cond;
