@@ -79,9 +79,6 @@
       'prefs',
       'search_engines',
       'shortcuts',
-      # crbug.com/81440
-      '-shortcuts.ShortcutsTest.testDeveloperToolsShortcut',
-      '-shortcuts.ShortcutsTest.testJavaScriptConsoleShortcut',
       'special_tabs',
       # Flaky: crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
@@ -228,8 +225,6 @@
 
     'win': [
       'enterprise',
-      # crbug.com/81440
-      '-enterprise.EnterpriseTest.testDisableDevTools',
     ],
 
     'mac': [
