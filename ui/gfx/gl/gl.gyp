@@ -135,6 +135,10 @@
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'sources': [
+            'gl_context_glx.cc',
+            'gl_context_glx.h',
+            'gl_surface_glx.cc',
+            'gl_surface_glx.h',
             '<(gl_binding_output_dir)/gl_bindings_autogen_glx.cc',
             '<(gl_binding_output_dir)/gl_bindings_autogen_glx.h',
           ],

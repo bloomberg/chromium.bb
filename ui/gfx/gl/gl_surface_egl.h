@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ui/gfx/gl/gl_surface.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
 typedef void* EGLConfig;
@@ -32,13 +33,11 @@ class GLSurfaceEGL : public GLSurface {
 // Encapsulates an EGL surface bound to a view.
 class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
  public:
-  explicit NativeViewGLSurfaceEGL(void* window);
+  explicit NativeViewGLSurfaceEGL(gfx::PluginWindowHandle window);
   virtual ~NativeViewGLSurfaceEGL();
 
-  // Initialize an EGL surface.
-  bool Initialize();
-
   // Implement GLSurface.
+  virtual bool Initialize();
   virtual void Destroy();
   virtual bool IsOffscreen();
   virtual bool SwapBuffers();
@@ -46,7 +45,7 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual EGLSurface GetHandle();
 
  private:
-  void* window_;
+  gfx::PluginWindowHandle window_;
   EGLSurface surface_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceEGL);
@@ -58,10 +57,8 @@ class PbufferGLSurfaceEGL : public GLSurfaceEGL {
   explicit PbufferGLSurfaceEGL(const gfx::Size& size);
   virtual ~PbufferGLSurfaceEGL();
 
-  // Initialize an EGL surface.
-  bool Initialize();
-
   // Implement GLSurface.
+  virtual bool Initialize();
   virtual void Destroy();
   virtual bool IsOffscreen();
   virtual bool SwapBuffers();

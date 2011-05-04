@@ -423,6 +423,8 @@ GLX_FUNCTIONS = [
     'Display* dpy, GLXDrawable drawable, unsigned long* mask'],
 ['void', ['glXSwapIntervalEXT'],
     'Display* dpy, GLXDrawable drawable, int interval'],
+['GLXFBConfig', ['glXGetFBConfigFromVisualSGIX'],
+    'Display* dpy, XVisualInfo* visualInfo'],
 ]
 
 FUNCTION_SETS = [

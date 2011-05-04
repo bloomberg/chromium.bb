@@ -36,6 +36,10 @@ void GLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
   size_ = new_size;
 }
 
+bool GLSurfaceOSMesa::Initialize() {
+  return true;
+}
+
 void GLSurfaceOSMesa::Destroy() {
   buffer_.reset();
   size_ = gfx::Size();

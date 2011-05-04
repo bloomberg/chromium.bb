@@ -63,11 +63,7 @@ bool GLSurfaceEGL::InitializeOneOff() {
     EGL_DEPTH_SIZE, 16,
     EGL_STENCIL_SIZE, 8,
     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-#ifdef EGL_HAS_PBUFFERS
     EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
-#else
-    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-#endif
     EGL_NONE
   };
 
@@ -112,7 +108,7 @@ EGLConfig GLSurfaceEGL::GetConfig() {
   return g_config;
 }
 
-NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(void* window)
+NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(gfx::PluginWindowHandle window)
     : window_(window),
       surface_(NULL)
 {
@@ -126,11 +122,9 @@ bool NativeViewGLSurfaceEGL::Initialize() {
   DCHECK(!surface_);
 
   // Create a surface for the native window.
-  EGLNativeWindowType native_window =
-      reinterpret_cast<EGLNativeWindowType>(window_);
   surface_ = eglCreateWindowSurface(g_display,
                                     g_config,
-                                    native_window,
+                                    window_,
                                     NULL);
 
   if (!surface_) {

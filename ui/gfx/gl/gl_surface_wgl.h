@@ -27,10 +27,8 @@ class NativeViewGLSurfaceWGL : public GLSurfaceWGL {
   explicit NativeViewGLSurfaceWGL(gfx::PluginWindowHandle window);
   virtual ~NativeViewGLSurfaceWGL();
 
-  // Initializes the GL context.
-  bool Initialize();
-
   // Implement GLSurface.
+  virtual bool Initialize();
   virtual void Destroy();
   virtual bool IsOffscreen();
   virtual bool SwapBuffers();
@@ -51,10 +49,8 @@ class PbufferGLSurfaceWGL : public GLSurfaceWGL {
   explicit PbufferGLSurfaceWGL(const gfx::Size& size);
   virtual ~PbufferGLSurfaceWGL();
 
-  // Initializes the GL context.
-  bool Initialize();
-
   // Implement GLSurface.
+  virtual bool Initialize();
   virtual void Destroy();
   virtual bool IsOffscreen();
   virtual bool SwapBuffers();

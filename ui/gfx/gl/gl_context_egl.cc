@@ -19,7 +19,6 @@
 extern "C" {
 #include <X11/Xlib.h>
 }
-#define EGL_HAS_PBUFFERS 1
 #endif
 
 namespace gfx {

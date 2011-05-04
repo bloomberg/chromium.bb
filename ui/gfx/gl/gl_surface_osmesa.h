@@ -25,6 +25,7 @@ class GLSurfaceOSMesa : public GLSurface {
   void Resize(const gfx::Size& new_size);
 
   // Implement GLSurface.
+  virtual bool Initialize();
   virtual void Destroy();
   virtual bool IsOffscreen();
   virtual bool SwapBuffers();

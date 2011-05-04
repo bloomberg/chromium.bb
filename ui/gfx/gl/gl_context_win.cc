@@ -4,14 +4,13 @@
 
 // This file implements the NativeViewGLContext and PbufferGLContext classes.
 
-#include "ui/gfx/gl/gl_context.h"
-
-#include <GL/osmesa.h>
-
 #include <algorithm>
+
+#include "ui/gfx/gl/gl_context.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "third_party/mesa/MesaLib/include/GL/osmesa.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_context_egl.h"
 #include "ui/gfx/gl/gl_context_osmesa.h"
@@ -71,8 +70,10 @@ bool GLContext::InitializeOneOff() {
 
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
-      if (!GLSurfaceWGL::InitializeOneOff())
+      if (!GLSurfaceWGL::InitializeOneOff()) {
+        LOG(ERROR) << "GLSurfaceWGL::InitializeOneOff failed.";
         return false;
+      }
       break;
     case kGLImplementationEGLGLES2:
       if (!GLSurfaceEGL::InitializeOneOff()) {
