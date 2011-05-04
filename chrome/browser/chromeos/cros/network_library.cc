@@ -3780,7 +3780,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       if (!device->ParseValue(index, value)) {
         LOG(WARNING) << "UpdateNetworkDeviceStatus: Error parsing: "
                      << path << "." << key;
-      } else if (path == kCellularAllowRoamingProperty) {
+      } else if (strcmp(key, kCellularAllowRoamingProperty) == 0) {
         bool settings_value =
             UserCrosSettingsProvider::cached_data_roaming_enabled();
         if (device->data_roaming_allowed() != settings_value) {
