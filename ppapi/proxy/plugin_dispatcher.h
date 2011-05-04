@@ -26,7 +26,9 @@ namespace proxy {
 
 // Used to keep track of per-instance data.
 struct InstanceData {
+  InstanceData() : fullscreen(PP_FALSE) {}
   PP_Rect position;
+  PP_Bool fullscreen;
 };
 
 class PluginDispatcher : public Dispatcher {

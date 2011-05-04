@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,11 +17,10 @@ PP_Bool IsFullscreen(PP_Instance instance) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return PP_FALSE;
-
-  PP_Bool result = PP_FALSE;
-  dispatcher->Send(new PpapiHostMsg_PPBFullscreen_IsFullscreen(
-      INTERFACE_ID_PPB_FULLSCREEN, instance, &result));
-  return result;
+  InstanceData* data = dispatcher->GetInstanceData(instance);
+  if (!data)
+    return PP_FALSE;
+  return data->fullscreen;
 }
 
 PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) {
@@ -82,8 +81,6 @@ const InterfaceProxy::Info* PPB_Fullscreen_Proxy::GetInfo() {
 bool PPB_Fullscreen_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Fullscreen_Proxy, msg)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFullscreen_IsFullscreen,
-                        OnMsgIsFullscreen)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFullscreen_SetFullscreen,
                         OnMsgSetFullscreen)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFullscreen_GetScreenSize,
@@ -92,11 +89,6 @@ bool PPB_Fullscreen_Proxy::OnMessageReceived(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
   // TODO(brettw): handle bad messages!
   return handled;
-}
-
-void PPB_Fullscreen_Proxy::OnMsgIsFullscreen(PP_Instance instance,
-                                             PP_Bool* result) {
-  *result = ppb_fullscreen_target()->IsFullscreen(instance);
 }
 
 void PPB_Fullscreen_Proxy::OnMsgSetFullscreen(PP_Instance instance,

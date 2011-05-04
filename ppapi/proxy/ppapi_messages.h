@@ -209,10 +209,11 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiMsg_PPPInstance_DidCreate,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_0(PpapiMsg_PPPInstance_DidDestroy,
                            PP_Instance /* instance */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPInstance_DidChangeView,
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPPInstance_DidChangeView,
                     PP_Instance /* instance */,
                     PP_Rect /* position */,
-                    PP_Rect /* clip */)
+                    PP_Rect /* clip */,
+                    PP_Bool /* fullscreen */)
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPInstance_DidChangeFocus,
                     PP_Instance /* instance */,
                     PP_Bool /* has_focus */)
@@ -562,9 +563,6 @@ IPC_SYNC_MESSAGE_ROUTED5_1(PpapiHostMsg_PPBFont_PixelOffsetForCharacter,
                            int32_t /* result */)
 
 // PPB_Fullscreen.
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFullscreen_IsFullscreen,
-                           PP_Instance /* instance */,
-                           PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFullscreen_SetFullscreen,
                            PP_Instance /* instance */,
                            PP_Bool /* fullscreen */,

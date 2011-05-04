@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppp_instance.h"
@@ -46,9 +47,16 @@ void DidDestroy(PP_Instance instance) {
 void DidChangeView(PP_Instance instance,
                    const PP_Rect* position,
                    const PP_Rect* clip) {
-  HostDispatcher::GetForInstance(instance)->Send(
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  const PPB_Fullscreen_Dev* fullscreen_interface =
+      static_cast<const PPB_Fullscreen_Dev*>(
+          dispatcher->GetLocalInterface(PPB_FULLSCREEN_DEV_INTERFACE));
+  DCHECK(fullscreen_interface);
+  PP_Bool fullscreen = fullscreen_interface->IsFullscreen(instance);
+  dispatcher->Send(
       new PpapiMsg_PPPInstance_DidChangeView(INTERFACE_ID_PPP_INSTANCE,
-                                             instance, *position, *clip));
+                                             instance, *position, *clip,
+                                             fullscreen));
 }
 
 void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
@@ -211,7 +219,8 @@ void PPP_Instance_Proxy::OnMsgDidDestroy(PP_Instance instance) {
 
 void PPP_Instance_Proxy::OnMsgDidChangeView(PP_Instance instance,
                                             const PP_Rect& position,
-                                            const PP_Rect& clip) {
+                                            const PP_Rect& clip,
+                                            PP_Bool fullscreen) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return;
@@ -219,6 +228,7 @@ void PPP_Instance_Proxy::OnMsgDidChangeView(PP_Instance instance,
   if (!data)
     return;
   data->position = position;
+  data->fullscreen = fullscreen;
   ppp_instance_target()->DidChangeView(instance, &position, &clip);
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,8 @@ class PPP_Instance_Proxy : public InterfaceProxy {
   void OnMsgDidDestroy(PP_Instance instance);
   void OnMsgDidChangeView(PP_Instance instance,
                           const PP_Rect& position,
-                          const PP_Rect& clip);
+                          const PP_Rect& clip,
+                          PP_Bool fullscreen);
   void OnMsgDidChangeFocus(PP_Instance instance, PP_Bool has_focus);
   void OnMsgHandleInputEvent(PP_Instance instance,
                              const PP_InputEvent& event,
