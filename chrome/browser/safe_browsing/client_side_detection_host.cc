@@ -63,7 +63,9 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
 
   void Start() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
     // We start by doing some simple checks that can run on the UI thread.
+    UMA_HISTOGRAM_COUNTS("SBClientPhishing.ClassificationStart", 1);
 
     // Only classify [X]HTML documents.
     if (params_.contents_mime_type != "text/html" &&
