@@ -135,6 +135,7 @@ AutomationProxyTest3.FrameDocumentCanBeAccessed
 DromaeoTest.DOMCorePerf
 LoginPromptTest.CancelRedundantAuths
 MetricsServiceTest.CloseRenderersNormally
+ResourceDispatcherTest.DoNotSniffHTMLFromImageGIF
 SunSpiderTest.Perf
 
 # Valgrind dies on arena assertion, see http://crbug.com/58146
