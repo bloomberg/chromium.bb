@@ -274,6 +274,26 @@ void PrinterJobHandler::OnReceivePrinterCaps(
 }
 
 // CloudPrintURLFetcher::Delegate implementation.
+CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleRawResponse(
+    const URLFetcher* source,
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
+    const std::string& data) {
+  // 415 (Unsupported media type) error while fetching data from the server
+  // means data conversion error. Stop fetching process and mark job as error.
+  if (next_data_handler_ == (&PrinterJobHandler::HandlePrintDataResponse) &&
+      response_code == RC_UNSUPPORTED_MEDIA_TYPE) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &PrinterJobHandler::JobFailed,
+                          JOB_DOWNLOAD_FAILED));
+    return CloudPrintURLFetcher::STOP_PROCESSING;
+  }
+  return CloudPrintURLFetcher::CONTINUE_PROCESSING;
+}
+
 CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleRawData(
     const URLFetcher* source,
     const GURL& url,
@@ -296,9 +316,14 @@ CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleJSONData(
 }
 
 void PrinterJobHandler::OnRequestGiveUp() {
+  // The only time we call CloudPrintURLFetcher::StartGetRequest() with a
+  // specified number of retries, is when we are trying to fetch print job
+  // data. So, this function will be reached only if we failed to get job data.
+  // In that case, we should make job as error and should not try it later.
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &PrinterJobHandler::Stop));
+      NewRunnableMethod(this, &PrinterJobHandler::JobFailed,
+                        JOB_DOWNLOAD_FAILED));
 }
 
 void PrinterJobHandler::OnRequestAuthError() {

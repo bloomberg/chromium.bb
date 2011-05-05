@@ -127,6 +127,13 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   // Begin Delegate implementations
 
   // CloudPrintURLFetcher::Delegate implementation.
+  virtual CloudPrintURLFetcher::ResponseAction HandleRawResponse(
+      const URLFetcher* source,
+      const GURL& url,
+      const net::URLRequestStatus& status,
+      int response_code,
+      const ResponseCookies& cookies,
+      const std::string& data);
   virtual CloudPrintURLFetcher::ResponseAction HandleRawData(
       const URLFetcher* source,
       const GURL& url,
