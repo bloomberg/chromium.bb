@@ -84,6 +84,5 @@ class desktopui_PyAutoFunctionalTests(chrome_test.ChromeTestBase):
         # Run pyauto tests in the "FULL" suite
         functional_cmd = cros_ui.xcommand_as(
             '%s/chrome_test/test_src/chrome/test/functional/' \
-            'pyauto_functional.py --suite=FULL ' \
-            '-v --no-http-server' % deps_dir)
+            'pyauto_functional.py --suite=FULL -v' % deps_dir)
         utils.system(functional_cmd)
