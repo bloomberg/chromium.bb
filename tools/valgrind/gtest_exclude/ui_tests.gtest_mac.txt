@@ -113,6 +113,7 @@ MetricsServiceTest.CrashRenderers
 PPAPITest.Buffer
 PPAPITest.PaintAggregator
 PPAPITest.FileIO
+PPAPITest.FileRef
 PreferenceServiceTest.PreservedWindowPlacementIsLoaded
 PrintPreviewUITest.LoadPrintPreviewByURL
 RedirectTest.ServerReference
