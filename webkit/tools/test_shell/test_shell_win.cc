@@ -479,7 +479,7 @@ void TestShell::LoadURLForFrame(const GURL& url,
   if (!url.is_valid())
     return;
 
-  TRACE_EVENT_BEGIN("url.load", this, url.spec());
+  TRACE_EVENT_BEGIN_ETW("url.load", this, url.spec());
 
   if (IsSVGTestURL(url)) {
     SizeToSVG();

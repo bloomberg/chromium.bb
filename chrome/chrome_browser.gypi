@@ -31,7 +31,6 @@
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../content/content.gyp:content_browser',
         '../crypto/crypto.gyp:crypto',
-        '../gpu/gpu.gyp:gpu_common',
         '../media/media.gyp:media',
         '../ppapi/ppapi.gyp:ppapi_proxy',  # For PpapiMsg_LoadPlugin
         '../printing/printing.gyp:printing',

@@ -82,7 +82,8 @@ void TraceMessageFilter::OnEndTracingAck() {
 }
 
 void TraceMessageFilter::OnTraceDataCollected(const std::string& data) {
-  TraceController::GetInstance()->OnTraceDataCollected(data);
+  TraceController::GetInstance()->OnTraceDataCollected(
+      make_scoped_refptr(new base::debug::TraceLog::RefCountedString(data)));
 }
 
 void TraceMessageFilter::OnTraceBufferFull() {
