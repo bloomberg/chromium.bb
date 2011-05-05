@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This ClientSocket implementation wraps a ClientSocketHandle that is created
+// This StreamSocket implementation wraps a ClientSocketHandle that is created
 // from the client socket pool after resolving proxies.
 
 #ifndef JINGLE_NOTIFIER_BASE_PROXY_RESOLVING_CLIENT_SOCKET_H_
@@ -18,7 +18,7 @@
 #include "net/base/ssl_config_service.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
-#include "net/socket/client_socket.h"
+#include "net/socket/stream_socket.h"
 
 namespace net {
 class ClientSocketHandle;
@@ -29,7 +29,7 @@ class URLRequestContextGetter;
 // TODO(sanjeevr): Move this to net/
 namespace notifier {
 
-class ProxyResolvingClientSocket : public net::ClientSocket {
+class ProxyResolvingClientSocket : public net::StreamSocket {
  public:
   ProxyResolvingClientSocket(
     const scoped_refptr<net::URLRequestContextGetter>&
@@ -39,7 +39,7 @@ class ProxyResolvingClientSocket : public net::ClientSocket {
     net::NetLog* net_log);
   virtual ~ProxyResolvingClientSocket();
 
-  // net::ClientSocket implementation.
+  // net::StreamSocket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    net::CompletionCallback* callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,

@@ -15,7 +15,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/sys_byteorder.h"
-#include "net/socket/client_socket.h"
+#include "net/socket/stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,7 +44,7 @@ class MockIPCSender : public IPC::Message::Sender {
 MockIPCSender::MockIPCSender() { }
 MockIPCSender::~MockIPCSender() { }
 
-class FakeSocket : public net::ClientSocket {
+class FakeSocket : public net::StreamSocket {
  public:
   FakeSocket(std::string* written_data);
   virtual ~FakeSocket();

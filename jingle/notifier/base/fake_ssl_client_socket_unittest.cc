@@ -15,8 +15,8 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_log.h"
 #include "net/base/test_completion_callback.h"
-#include "net/socket/client_socket.h"
 #include "net/socket/socket_test_util.h"
+#include "net/socket/stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,7 +43,7 @@ enum {
 };
 
 // Used by PassThroughMethods test.
-class MockClientSocket : public net::ClientSocket {
+class MockClientSocket : public net::StreamSocket {
  public:
   virtual ~MockClientSocket() {}
 
@@ -87,7 +87,7 @@ class FakeSSLClientSocketTest : public testing::Test {
 
   virtual ~FakeSSLClientSocketTest() {}
 
-  net::ClientSocket* MakeClientSocket() {
+  net::StreamSocket* MakeClientSocket() {
     return mock_client_socket_factory_.CreateTransportClientSocket(
         net::AddressList(), &capturing_net_log_, net::NetLog::Source());
   }

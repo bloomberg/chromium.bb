@@ -15,9 +15,9 @@
 #include "net/base/ip_endpoint.h"
 
 namespace net {
-class ClientSocket;
 class DrainableIOBuffer;
 class GrowableIOBuffer;
+class StreamSocket;
 }  // namespace net
 
 class P2PSocketHostTcp : public P2PSocketHost {
@@ -27,7 +27,7 @@ class P2PSocketHostTcp : public P2PSocketHost {
   virtual ~P2PSocketHostTcp();
 
   bool InitAccepted(const net::IPEndPoint& remote_address,
-                    net::ClientSocket* socket);
+                    net::StreamSocket* socket);
 
   // P2PSocketHost overrides.
   virtual bool Init(const net::IPEndPoint& local_address,
@@ -56,7 +56,7 @@ class P2PSocketHostTcp : public P2PSocketHost {
 
   net::IPEndPoint remote_address_;
 
-  scoped_ptr<net::ClientSocket> socket_;
+  scoped_ptr<net::StreamSocket> socket_;
   scoped_refptr<net::GrowableIOBuffer> read_buffer_;
   scoped_refptr<net::DrainableIOBuffer> write_buffer_;
 

@@ -20,9 +20,9 @@ class TransportChannelSocketAdapter;
 
 namespace net {
 class CertVerifier;
-class ClientSocket;
 class ClientSocketFactory;
 class Socket;
+class StreamSocket;
 class X509Certificate;
 }  // namespace net
 

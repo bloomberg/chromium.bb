@@ -11,7 +11,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/sys_addrinfo.h"
-#include "net/socket/client_socket.h"
+#include "net/socket/stream_socket.h"
 
 namespace {
 const int kListenBacklog = 5;
@@ -126,7 +126,7 @@ P2PSocketHost* P2PSocketHostTcpServer::AcceptIncomingTcpConnection(
   if (it == accepted_sockets_.end())
     return NULL;
 
-  net::ClientSocket* socket = it->second;
+  net::StreamSocket* socket = it->second;
   accepted_sockets_.erase(it);
   scoped_ptr<P2PSocketHostTcp> result(
       new P2PSocketHostTcp(message_sender_, routing_id_, id));

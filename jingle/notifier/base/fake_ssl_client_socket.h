@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This ClientSocket implementation is to be used with servers that
+// This StreamSocket implementation is to be used with servers that
 // accept connections on port 443 but don't really use SSL.  For
 // example, the Google Talk servers do this to bypass proxies.  (The
 // connection is upgraded to TLS as part of the XMPP negotiation, so
@@ -10,7 +10,7 @@
 // after connection to fool proxies into thinking that this is a real
 // SSL connection.
 //
-// NOTE: This ClientSocket implementation does *not* do a real SSL
+// NOTE: This StreamSocket implementation does *not* do a real SSL
 // handshake nor does it do any encryption!
 
 #ifndef JINGLE_NOTIFIER_BASE_FAKE_SSL_CLIENT_SOCKET_H_
@@ -25,7 +25,7 @@
 #include "base/string_piece.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
-#include "net/socket/client_socket.h"
+#include "net/socket/stream_socket.h"
 
 namespace net {
 class DrainableIOBuffer;
@@ -33,10 +33,10 @@ class DrainableIOBuffer;
 
 namespace notifier {
 
-class FakeSSLClientSocket : public net::ClientSocket {
+class FakeSSLClientSocket : public net::StreamSocket {
  public:
   // Takes ownership of |transport_socket|.
-  explicit FakeSSLClientSocket(net::ClientSocket* transport_socket);
+  explicit FakeSSLClientSocket(net::StreamSocket* transport_socket);
 
   virtual ~FakeSSLClientSocket();
 
@@ -44,7 +44,7 @@ class FakeSSLClientSocket : public net::ClientSocket {
   static base::StringPiece GetSslClientHello();
   static base::StringPiece GetSslServerHello();
 
-  // net::ClientSocket implementation.
+  // net::StreamSocket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    net::CompletionCallback* callback);
   virtual int Write(net::IOBuffer* buf, int buf_len,
@@ -94,7 +94,7 @@ class FakeSSLClientSocket : public net::ClientSocket {
   net::CompletionCallbackImpl<FakeSSLClientSocket>
       verify_server_hello_callback_;
 
-  scoped_ptr<net::ClientSocket> transport_socket_;
+  scoped_ptr<net::StreamSocket> transport_socket_;
 
   // During the handshake process, holds a value from HandshakeState.
   // STATE_NONE otherwise.

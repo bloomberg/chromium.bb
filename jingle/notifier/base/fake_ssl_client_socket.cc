@@ -77,7 +77,7 @@ base::StringPiece FakeSSLClientSocket::GetSslServerHello() {
 }
 
 FakeSSLClientSocket::FakeSSLClientSocket(
-    net::ClientSocket* transport_socket)
+    net::StreamSocket* transport_socket)
     : connect_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                         &FakeSSLClientSocket::OnConnectDone),
       send_client_hello_callback_(

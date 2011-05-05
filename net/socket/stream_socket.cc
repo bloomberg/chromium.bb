@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/socket/client_socket.h"
+#include "net/socket/stream_socket.h"
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -47,18 +47,18 @@ Value* NetLogBytesTransferredParameter::ToValue() const {
 
 }  // namespace
 
-ClientSocket::UseHistory::UseHistory()
+StreamSocket::UseHistory::UseHistory()
     : was_ever_connected_(false),
       was_used_to_convey_data_(false),
       omnibox_speculation_(false),
       subresource_speculation_(false) {
 }
 
-ClientSocket::UseHistory::~UseHistory() {
+StreamSocket::UseHistory::~UseHistory() {
   EmitPreconnectionHistograms();
 }
 
-void ClientSocket::UseHistory::Reset() {
+void StreamSocket::UseHistory::Reset() {
   EmitPreconnectionHistograms();
   was_ever_connected_ = false;
   was_used_to_convey_data_ = false;
@@ -66,18 +66,18 @@ void ClientSocket::UseHistory::Reset() {
   // are intentionally preserved.
 }
 
-void ClientSocket::UseHistory::set_was_ever_connected() {
+void StreamSocket::UseHistory::set_was_ever_connected() {
   DCHECK(!was_used_to_convey_data_);
   was_ever_connected_ = true;
 }
 
-void ClientSocket::UseHistory::set_was_used_to_convey_data() {
+void StreamSocket::UseHistory::set_was_used_to_convey_data() {
   DCHECK(was_ever_connected_);
   was_used_to_convey_data_ = true;
 }
 
 
-void ClientSocket::UseHistory::set_subresource_speculation() {
+void StreamSocket::UseHistory::set_subresource_speculation() {
   DCHECK(was_ever_connected_);
   // TODO(jar): We should transition to marking a socket (or stream) at
   // construction time as being created for speculative reasons.  This current
@@ -96,19 +96,19 @@ void ClientSocket::UseHistory::set_subresource_speculation() {
   subresource_speculation_ = true;
 }
 
-void ClientSocket::UseHistory::set_omnibox_speculation() {
+void StreamSocket::UseHistory::set_omnibox_speculation() {
   DCHECK(was_ever_connected_);
   if (was_used_to_convey_data_)
     return;
   omnibox_speculation_ = true;
 }
 
-bool ClientSocket::UseHistory::was_used_to_convey_data() const {
+bool StreamSocket::UseHistory::was_used_to_convey_data() const {
   DCHECK(!was_used_to_convey_data_ || was_ever_connected_);
   return was_used_to_convey_data_;
 }
 
-void ClientSocket::UseHistory::EmitPreconnectionHistograms() const {
+void StreamSocket::UseHistory::EmitPreconnectionHistograms() const {
   DCHECK(!subresource_speculation_ || !omnibox_speculation_);
   // 0 ==> non-speculative, never connected.
   // 1 ==> non-speculative never used (but connected).
@@ -144,7 +144,7 @@ void ClientSocket::UseHistory::EmitPreconnectionHistograms() const {
   }
 }
 
-void ClientSocket::LogByteTransfer(const BoundNetLog& net_log,
+void StreamSocket::LogByteTransfer(const BoundNetLog& net_log,
                                    NetLog::EventType event_type,
                                    int byte_count,
                                    char* bytes) const {

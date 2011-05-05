@@ -38,7 +38,7 @@ P2PSocketHostTcp::~P2PSocketHostTcp() {
 }
 
 bool P2PSocketHostTcp::InitAccepted(const net::IPEndPoint& remote_address,
-                                    net::ClientSocket* socket) {
+                                    net::StreamSocket* socket) {
   DCHECK(socket);
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
 

@@ -28,7 +28,7 @@ class FakeServerSocket : public net::ServerSocket {
 
   bool listening() { return listening_; }
 
-  void AddIncoming(net::ClientSocket* socket) {
+  void AddIncoming(net::StreamSocket* socket) {
     if (accept_callback_) {
       DCHECK(incoming_sockets_.empty());
       accept_socket_->reset(socket);
@@ -53,7 +53,7 @@ class FakeServerSocket : public net::ServerSocket {
     return net::OK;
   }
 
-  virtual int Accept(scoped_ptr<net::ClientSocket>* socket,
+  virtual int Accept(scoped_ptr<net::StreamSocket>* socket,
                      net::CompletionCallback* callback) OVERRIDE {
     DCHECK(socket);
     if (!incoming_sockets_.empty()) {
@@ -72,10 +72,10 @@ class FakeServerSocket : public net::ServerSocket {
 
   net::IPEndPoint local_address_;
 
-  scoped_ptr<net::ClientSocket>* accept_socket_;
+  scoped_ptr<net::StreamSocket>* accept_socket_;
   net::CompletionCallback* accept_callback_;
 
-  std::list<net::ClientSocket*> incoming_sockets_;
+  std::list<net::StreamSocket*> incoming_sockets_;
 };
 
 }  // namespace
@@ -98,7 +98,7 @@ class P2PSocketHostTcpServerTest : public testing::Test {
 
   // Needed by the chilt classes because only this class is a friend
   // of P2PSocketHostTcp.
-  net::ClientSocket* GetSocketFormTcpSocketHost(P2PSocketHostTcp* host) {
+  net::StreamSocket* GetSocketFormTcpSocketHost(P2PSocketHostTcp* host) {
     return host->socket_.get();
   }
 

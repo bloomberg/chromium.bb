@@ -27,9 +27,9 @@ XmppClientSocketFactory::XmppClientSocketFactory(
 
 XmppClientSocketFactory::~XmppClientSocketFactory() {}
 
-net::ClientSocket* XmppClientSocketFactory::CreateTransportClientSocket(
+net::StreamSocket* XmppClientSocketFactory::CreateTransportClientSocket(
     const net::HostPortPair& host_and_port, net::NetLog* net_log) {
-  net::ClientSocket* transport_socket = new ProxyResolvingClientSocket(
+  net::StreamSocket* transport_socket = new ProxyResolvingClientSocket(
       request_context_getter_,
       ssl_config_,
       host_and_port,

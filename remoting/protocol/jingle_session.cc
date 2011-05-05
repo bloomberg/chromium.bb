@@ -41,7 +41,7 @@ const char kVideoRtcpChannelName[] = "videortcp";
 
 // Helper method to create a SSL client socket.
 net::SSLClientSocket* CreateSSLClientSocket(
-    net::ClientSocket* socket, scoped_refptr<net::X509Certificate> cert,
+    net::StreamSocket* socket, scoped_refptr<net::X509Certificate> cert,
     net::CertVerifier* cert_verifier) {
   net::SSLConfig ssl_config;
   ssl_config.false_start_enabled = false;

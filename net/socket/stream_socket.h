@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SOCKET_CLIENT_SOCKET_H_
-#define NET_SOCKET_CLIENT_SOCKET_H_
+#ifndef NET_SOCKET_STREAM_SOCKET_H_
+#define NET_SOCKET_STREAM_SOCKET_H_
 #pragma once
 
 #include "net/base/net_log.h"
@@ -14,9 +14,9 @@ namespace net {
 class AddressList;
 class IPEndPoint;
 
-class ClientSocket : public Socket {
+class StreamSocket : public Socket {
  public:
-  virtual ~ClientSocket() {}
+  virtual ~StreamSocket() {}
 
   // Called to establish a connection.  Returns OK if the connection could be
   // established synchronously.  Otherwise, ERR_IO_PENDING is returned and the
@@ -71,7 +71,7 @@ class ClientSocket : public Socket {
   virtual void SetOmniboxSpeculation() = 0;
 
   // Returns true if the underlying transport socket ever had any reads or
-  // writes.  ClientSockets layered on top of transport sockets should forward
+  // writes.  StreamSockets layered on top of transport sockets should forward
   // this call to the transport socket.
   virtual bool WasEverUsed() const = 0;
 
@@ -83,7 +83,7 @@ class ClientSocket : public Socket {
   // The following class is only used to gather statistics about the history of
   // a socket.  It is only instantiated and used in basic sockets, such as
   // TCPClientSocket* instances.  Other classes that are derived from
-  // ClientSocket should forward any potential settings to their underlying
+  // StreamSocket should forward any potential settings to their underlying
   // transport sockets.
   class UseHistory {
    public:
@@ -130,4 +130,4 @@ class ClientSocket : public Socket {
 
 }  // namespace net
 
-#endif  // NET_SOCKET_CLIENT_SOCKET_H_
+#endif  // NET_SOCKET_STREAM_SOCKET_H_

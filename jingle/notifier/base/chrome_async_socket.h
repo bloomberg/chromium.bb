@@ -24,8 +24,8 @@
 #include "talk/xmpp/asyncsocket.h"
 
 namespace net {
-class ClientSocket;
 class IOBufferWithSize;
+class StreamSocket;
 }  // namespace net
 
 namespace notifier {
@@ -199,7 +199,7 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   // NULL iff state() == STATE_CLOSED.
   //
   // TODO(akalin): Use ClientSocketPool.
-  scoped_ptr<net::ClientSocket> transport_socket_;
+  scoped_ptr<net::StreamSocket> transport_socket_;
 
   // State for the read loop.  |read_start_| <= |read_end_| <=
   // |read_buf_->size()|.  There's a read in flight (i.e.,

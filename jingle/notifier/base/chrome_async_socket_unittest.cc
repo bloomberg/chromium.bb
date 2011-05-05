@@ -130,7 +130,7 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
   }
 
   // ResolvingClientSocketFactory implementation.
-  virtual net::ClientSocket* CreateTransportClientSocket(
+  virtual net::StreamSocket* CreateTransportClientSocket(
       const net::HostPortPair& host_and_port, net::NetLog* net_log) {
     return mock_client_socket_factory_->CreateTransportClientSocket(
         address_list_, net_log, net::NetLog::Source());

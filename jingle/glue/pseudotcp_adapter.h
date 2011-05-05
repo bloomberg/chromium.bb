@@ -12,12 +12,12 @@
 #include "base/timer.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/net_log.h"
-#include "net/socket/client_socket.h"
+#include "net/socket/stream_socket.h"
 #include "third_party/libjingle/source/talk/p2p/base/pseudotcp.h"
 
 namespace jingle_glue {
 
-class PseudoTcpAdapter : public net::ClientSocket,
+class PseudoTcpAdapter : public net::StreamSocket,
                          public cricket::IPseudoTcpNotify,
                          public base::NonThreadSafe {
  public:
@@ -34,7 +34,7 @@ class PseudoTcpAdapter : public net::ClientSocket,
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
-  // net::ClientSocket implementation.
+  // net::StreamSocket implementation.
   virtual int Connect(net::CompletionCallback* callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
