@@ -4,29 +4,26 @@
 
 #include "content/common/child_trace_message_filter.h"
 
-#include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "content/common/child_process.h"
 #include "content/common/child_process_messages.h"
+#include "gpu/common/gpu_trace_event.h"
 
 
 ChildTraceMessageFilter::ChildTraceMessageFilter() : channel_(NULL) {
 }
 
 ChildTraceMessageFilter::~ChildTraceMessageFilter() {
-  base::debug::TraceLog::GetInstance()->SetOutputCallback(
-      base::debug::TraceLog::OutputCallback());
-  base::debug::TraceLog::GetInstance()->SetBufferFullCallback(
-      base::debug::TraceLog::BufferFullCallback());
+  gpu::TraceLog::GetInstance()->SetOutputCallback(NULL);
+  gpu::TraceLog::GetInstance()->SetBufferFullCallback(NULL);
 }
 
 void ChildTraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   channel_ = channel;
-  base::debug::TraceLog::GetInstance()->SetOutputCallback(
-      base::Bind(&ChildTraceMessageFilter::OnTraceDataCollected, this));
-  base::debug::TraceLog::GetInstance()->SetBufferFullCallback(
-      base::Bind(&ChildTraceMessageFilter::OnTraceBufferFull, this));
+  gpu::TraceLog::GetInstance()->SetOutputCallback(
+      NewCallback(this, &ChildTraceMessageFilter::OnTraceDataCollected));
+  gpu::TraceLog::GetInstance()->SetBufferFullCallback(
+      NewCallback(this, &ChildTraceMessageFilter::OnTraceBufferFull));
 }
 
 bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -42,7 +39,7 @@ bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ChildTraceMessageFilter::OnBeginTracing() {
-  base::debug::TraceLog::GetInstance()->SetEnabled(true);
+  gpu::TraceLog::GetInstance()->SetEnabled(true);
 }
 
 void ChildTraceMessageFilter::OnEndTracing() {
@@ -51,29 +48,26 @@ void ChildTraceMessageFilter::OnEndTracing() {
   // EndTracingAck below.
   // We are already on the IO thread, so it is guaranteed that
   // OnTraceDataCollected is not deferred.
-  base::debug::TraceLog::GetInstance()->SetEnabled(false);
+  gpu::TraceLog::GetInstance()->SetEnabled(false);
 
   channel_->Send(new ChildProcessHostMsg_EndTracingAck);
 }
 
 void ChildTraceMessageFilter::OnGetTraceBufferPercentFull() {
-  float bpf = base::debug::TraceLog::GetInstance()->GetBufferPercentFull();
+  float bpf = gpu::TraceLog::GetInstance()->GetBufferPercentFull();
 
   channel_->Send(new ChildProcessHostMsg_TraceBufferPercentFullReply(bpf));
 }
 
-void ChildTraceMessageFilter::OnTraceDataCollected(
-    const scoped_refptr<base::debug::TraceLog::RefCountedString>&
-        json_events_str_ptr) {
+void ChildTraceMessageFilter::OnTraceDataCollected(const std::string& data) {
   if (MessageLoop::current() != ChildProcess::current()->io_message_loop()) {
     ChildProcess::current()->io_message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(this, &ChildTraceMessageFilter::OnTraceDataCollected,
-                          json_events_str_ptr));
+                          data));
     return;
   }
 
-  channel_->Send(new ChildProcessHostMsg_TraceDataCollected(
-    json_events_str_ptr->data));
+  channel_->Send(new ChildProcessHostMsg_TraceDataCollected(data));
 }
 
 void ChildTraceMessageFilter::OnTraceBufferFull() {

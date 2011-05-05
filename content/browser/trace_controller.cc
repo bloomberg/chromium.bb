@@ -4,12 +4,11 @@
 
 #include "content/browser/trace_controller.h"
 
-#include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/task.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/trace_message_filter.h"
 #include "content/common/child_process_messages.h"
+#include "gpu/common/gpu_trace_event.h"
 
 
 TraceController::TraceController() :
@@ -18,14 +17,12 @@ TraceController::TraceController() :
     pending_bpf_ack_count_(0),
     maximum_bpf_(0.0f),
     is_tracing_(false) {
-  base::debug::TraceLog::GetInstance()->SetOutputCallback(
-      base::Bind(&TraceController::OnTraceDataCollected,
-                 base::Unretained(this)));
+  gpu::TraceLog::GetInstance()->SetOutputCallback(
+      NewCallback(this, &TraceController::OnTraceDataCollected));
 }
 
 TraceController::~TraceController() {
-  base::debug::TraceLog::GetInstance()->SetOutputCallback(
-      base::debug::TraceLog::OutputCallback());
+  gpu::TraceLog::GetInstance()->SetOutputCallback(NULL);
 }
 
 //static
@@ -44,7 +41,7 @@ bool TraceController::BeginTracing(TraceSubscriber* subscriber) {
 
   // Enable tracing
   is_tracing_ = true;
-  base::debug::TraceLog::GetInstance()->SetEnabled(true);
+  gpu::TraceLog::GetInstance()->SetEnabled(true);
 
   // Notify all child processes.
   for (FilterMap::iterator it = filters_.begin(); it != filters_.end(); ++it) {
@@ -95,7 +92,7 @@ bool TraceController::GetTraceBufferPercentFullAsync(
   // Handle special case of zero child processes.
   if (pending_bpf_ack_count_ == 1) {
     // Ack asynchronously now, because we don't have any children to wait for.
-    float bpf = base::debug::TraceLog::GetInstance()->GetBufferPercentFull();
+    float bpf = gpu::TraceLog::GetInstance()->GetBufferPercentFull();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &TraceController::OnTraceBufferPercentFullReply,
@@ -164,7 +161,7 @@ void TraceController::OnEndTracingAck() {
     // called with the last of the local trace data. Since we are on the UI
     // thread, the call to OnTraceDataCollected will be synchronous, so we can
     // immediately call OnEndTracingComplete below.
-    base::debug::TraceLog::GetInstance()->SetEnabled(false);
+    gpu::TraceLog::GetInstance()->SetEnabled(false);
 
     // Trigger callback if one is set.
     if (subscriber_) {
@@ -182,21 +179,17 @@ void TraceController::OnEndTracingAck() {
   }
 }
 
-void TraceController::OnTraceDataCollected(
-    const scoped_refptr<base::debug::TraceLog::RefCountedString>&
-        json_events_str_ptr) {
+void TraceController::OnTraceDataCollected(const std::string& data) {
   // OnTraceDataCollected may be called from any browser thread, either by the
   // local event trace system or from child processes via TraceMessageFilter.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &TraceController::OnTraceDataCollected,
-                          json_events_str_ptr));
+        NewRunnableMethod(this, &TraceController::OnTraceDataCollected, data));
     return;
   }
 
   if (subscriber_)
-    subscriber_->OnTraceDataCollected(json_events_str_ptr->data);
+    subscriber_->OnTraceDataCollected(data);
 }
 
 void TraceController::OnTraceBufferFull() {
@@ -236,7 +229,7 @@ void TraceController::OnTraceBufferPercentFullReply(float percent_full) {
   if (pending_bpf_ack_count_ == 1) {
     // The last ack represents local trace, so we need to ack it now. Note that
     // this code only executes if there were child processes.
-    float bpf = base::debug::TraceLog::GetInstance()->GetBufferPercentFull();
+    float bpf = gpu::TraceLog::GetInstance()->GetBufferPercentFull();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &TraceController::OnTraceBufferPercentFullReply,

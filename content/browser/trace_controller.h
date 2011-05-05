@@ -8,7 +8,6 @@
 #include <set>
 #include <string>
 
-#include "base/debug/trace_event.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/task.h"
@@ -111,9 +110,7 @@ class TraceController {
   void AddFilter(TraceMessageFilter* filter);
   void RemoveFilter(TraceMessageFilter* filter);
   void OnEndTracingAck();
-  void OnTraceDataCollected(
-      const scoped_refptr<base::debug::TraceLog::RefCountedString>&
-          json_events_str_ptr);
+  void OnTraceDataCollected(const std::string& data);
   void OnTraceBufferFull();
   void OnTraceBufferPercentFullReply(float percent_full);
 
