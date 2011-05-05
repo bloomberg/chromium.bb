@@ -509,13 +509,15 @@ TEST_F(WebSocketJobTest, HSTSUpgrade) {
   GURL url("ws://upgrademe.com/");
   MockSocketStreamDelegate delegate;
   scoped_refptr<SocketStreamJob> job = SocketStreamJob::CreateSocketStreamJob(
-      url, &delegate, *context_.get());
+      url, &delegate, context_->transport_security_state(),
+      context_->ssl_config_service());
   EXPECT_TRUE(GetSocket(job.get())->is_secure());
   job->DetachDelegate();
 
   url = GURL("ws://donotupgrademe.com/");
   job = SocketStreamJob::CreateSocketStreamJob(
-      url, &delegate, *context_.get());
+      url, &delegate, context_->transport_security_state(),
+      context_->ssl_config_service());
   EXPECT_FALSE(GetSocket(job.get())->is_secure());
   job->DetachDelegate();
 }
