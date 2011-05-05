@@ -1,8 +1,7 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -10,6 +9,7 @@ env.ComponentProgram('simple_srpc_test.nexe',
                      ['simple_srpc_test.c'],
                      EXTRA_LIBS=['srpc',
                                  'imc',
+                                 'imc_syscalls',
                                  'platform',
                                  'gio',
                                  'pthread'])
@@ -24,6 +24,7 @@ env.ComponentProgram('types_srpc_test.nexe',
                      ['types_srpc_test.c'],
                      EXTRA_LIBS=['srpc',
                                  'imc',
+                                 'imc_syscalls',
                                  'platform',
                                  'gio',
                                  'pthread'])
@@ -33,4 +34,3 @@ node = env.CommandSelLdrTestNacl(
     exit_status='0',
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_types_srpc_test_nexe')
-

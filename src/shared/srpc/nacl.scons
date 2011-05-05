@@ -37,7 +37,7 @@ untrusted_only = [
 
 env.NaClSdkLibrary('libsrpc',
                    trusted_untrusted_shared + untrusted_only,
-                   LIBS=['nacl', 'pthread'])
+                   LIBS=['imc_syscalls', 'pthread'])
 
 
 env.AddLibraryToSdk(['libsrpc'])

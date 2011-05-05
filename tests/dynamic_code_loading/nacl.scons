@@ -50,6 +50,7 @@ dynamic_load_test_nexe = prog_env.ComponentProgram(
         'testrunner',
         'nacl_dyncode',
         'srpc',
+        'imc_syscalls',
         'platform',
         'gio',
         'pthread'])
@@ -65,6 +66,7 @@ dynamic_modify_test_nexe = prog_env.ComponentProgram(
         'testrunner',
         'nacl_dyncode',
         'srpc',
+        'imc_syscalls',
         'platform',
         'gio',
         'pthread'])

@@ -139,6 +139,7 @@ pnacl_srpc_hello_world_pexe = bitcode_env.ComponentProgram('pnacl_srpc_hw.pexe',
                 'platform',
                 'gio',
                 'imc',
+                'imc_syscalls',
                 'pthread'])
 
 # Page independent support assets.

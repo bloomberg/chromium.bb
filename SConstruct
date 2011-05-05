@@ -2254,8 +2254,8 @@ else:
   # TODO(mseaborn): This will go away when we only support using PPAPI
   # via the IRT library, so users of this dependency should not rely
   # on individual libraries like 'platform' being included by default.
-  nacl_env.Replace(PPAPI_LIBS=['ppruntime', 'srpc', 'imc', 'platform', 'gio',
-                               'pthread', 'm'])
+  nacl_env.Replace(PPAPI_LIBS=['ppruntime', 'srpc', 'imc', 'imc_syscalls',
+                               'platform', 'gio', 'pthread', 'm'])
 
 # TODO(mseaborn): Make nacl-glibc-based static linking work with just
 # "-static", without specifying a linker script.

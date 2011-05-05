@@ -12,7 +12,7 @@ if env.Bit('bitcode'):
 if not env.Bit('build_x86_32'):
   Return()
 
-srpc_libs = ['srpc', 'platform', 'gio', 'pthread', 'imc']
+srpc_libs = ['srpc', 'platform', 'gio', 'pthread', 'imc', 'imc_syscalls']
 env.Replace(
     # Ensure that these compilations use only SDK include files.
     CPPPATH=[],

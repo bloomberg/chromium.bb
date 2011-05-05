@@ -43,17 +43,9 @@ sources_for_standard_interfaces = [
 
 sources_for_nacl_extensions = [
     'gc_hooks.c',
-    'imc_accept.c',
-    'imc_connect.c',
-    'imc_makeboundsock.c',
-    'imc_mem_obj_create.c',
-    'imc_recvmsg.c',
-    'imc_sendmsg.c',
-    'imc_socketpair.c',
     'nacl_irt.c',
     'nacl_tls_get.c',
     'nacl_tls_init.c',
-    'nameservice.c',
     'null.c',
     'sysbrk.c',
     ]
@@ -89,3 +81,17 @@ env.Requires('libnacl', header_install)
 
 env.NaClSdkLibrary('libnacl_dyncode', ['dyncode.c'])
 env.AddLibraryToSdk(['libnacl_dyncode'])
+
+imc_syscalls = [
+    'imc_accept.c',
+    'imc_connect.c',
+    'imc_makeboundsock.c',
+    'imc_mem_obj_create.c',
+    'imc_recvmsg.c',
+    'imc_sendmsg.c',
+    'imc_socketpair.c',
+    'nameservice.c',
+    ]
+
+env.NaClSdkLibrary('libimc_syscalls', imc_syscalls)
+env.AddLibraryToSdk(['libimc_syscalls'])

@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -11,6 +11,7 @@ mandel_tiled_nexe = env.ComponentProgram(mandel_tiled_nexe_name,
                                          'mandel_tiled.c',
                                          EXTRA_LIBS=[
                                              'srpc',
+                                             'imc_syscalls',
                                              'platform',
                                              'gio',
                                              'imc',
@@ -24,6 +25,7 @@ mandel_nexe_name = 'mandel_%s.nexe' % env.get('TARGET_FULLARCH')
 mandel_nexe = env.ComponentProgram(mandel_nexe_name, 'mandel.c',
                                    EXTRA_LIBS=[
                                        'srpc',
+                                       'imc_syscalls',
                                        'platform',
                                        'gio',
                                        'imc',

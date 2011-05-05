@@ -18,6 +18,7 @@ srpc_test_nexe = env.ComponentProgram(
     EXTRA_LIBS=[
         '${NON_PPAPI_BROWSER_LIBS}',
         'srpc',
+        'imc_syscalls',
         'platform',
         'gio',
         'm',
@@ -35,7 +36,7 @@ srpc_shm_nexe_name = 'srpc_shm_%s.nexe' % env.get('TARGET_FULLARCH')
 srpc_shm_nexe = env.ComponentProgram(
     srpc_shm_nexe_name, 'srpc_shm.c',
     EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}',
-                'srpc', 'platform', 'gio', 'm', 'pthread'])
+                'srpc', 'imc_syscalls', 'platform', 'gio', 'm', 'pthread'])
 env.Publish(srpc_shm_nexe_name, 'run',
     ['srpc_shm.html',
      'srpc_shm.nmf'])
@@ -49,6 +50,7 @@ srpc_nrd_server_nexe = env.ComponentProgram(
     EXTRA_LIBS=[
         '${NON_PPAPI_BROWSER_LIBS}',
         'srpc',
+        'imc_syscalls',
         'platform',
         'gio',
         'm',
@@ -66,6 +68,7 @@ srpc_nrd_client_nexe = env.ComponentProgram(
     EXTRA_LIBS=[
         '${NON_PPAPI_BROWSER_LIBS}',
         'srpc',
+        'imc_syscalls',
         'platform',
         'gio',
         'm',
@@ -82,7 +85,7 @@ cat_nexe_name = ('cat_%s.nexe' % env.get('TARGET_FULLARCH'))
 cat_nexe = env.ComponentProgram(
     cat_nexe_name, 'cat.c',
     EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}',
-                'srpc', 'platform', 'gio', 'pthread'])
+                'srpc', 'imc_syscalls', 'platform', 'gio', 'pthread'])
 env.Publish(cat_nexe_name, 'run',
     ['srpc_url_as_nacl_desc.html',
      'srpc_url_as_nacl_desc_success.html',
@@ -92,7 +95,7 @@ env.Publish(cat_nexe_name, 'run',
 srpc_bidir_nexe_name = ('srpc_bidir_%s.nexe' % env.get('TARGET_FULLARCH'))
 srpc_bidir_nexe = env.ComponentProgram(
     srpc_bidir_nexe_name, 'srpc_bidir.c',
-    EXTRA_LIBS=['srpc', 'platform', 'gio', 'm', 'pthread'])
+    EXTRA_LIBS=['srpc', 'imc_syscalls', 'platform', 'gio', 'm', 'pthread'])
 env.Publish(srpc_bidir_nexe_name, 'run', [])
 
 
@@ -102,7 +105,7 @@ srpc_bad_service_nexe_name = ('srpc_bad_service_%s.nexe' %
                               env.get('TARGET_FULLARCH'))
 srpc_bad_service_nexe = env.ComponentProgram(
     srpc_bad_service_nexe_name, 'srpc_bad_service.c',
-    EXTRA_LIBS=['m', 'pthread'])
+    EXTRA_LIBS=['imc_syscalls', 'm', 'pthread'])
 env.Publish(srpc_bad_service_nexe_name, 'run', [])
 
 ######################################################################
