@@ -1167,32 +1167,40 @@ void OpaqueBrowserFrameView::LayoutProfileTag() {
       GetPrefs()->GetString(prefs::kGoogleServicesUsername));
   if (!profile_name.empty()) {
     profile_button_->SetText(UTF16ToWideHack(profile_name));
-    profile_button_->ClearMaxTextSize();
-    profile_button_->SetVisible(true);
-    int x_tag =
-        // The x position of minimize button in the frame
-        minimize_button_->x() -
-            // - the space between the minimize button and the profile button
-            ProfileMenuButton::kProfileTagHorizontalSpacing -
-            // - the width of the profile button
-            profile_button_->GetPreferredSize().width();
-    // Adjust for different default font sizes on different Windows platforms.
-    int y_tag = profile_button_->font().GetHeight() < 14 ? 2 : 0;
-    int y_maximized_offset = frame_->GetWindow()->IsMaximized() ?
-        kProfileElementMaximizedYOffset : 0;
-    profile_button_->SetBounds(
-        x_tag,
-        y_tag + y_maximized_offset,
-        profile_button_->GetPreferredSize().width(),
-        profile_button_->GetPreferredSize().height());
+  } else {
+    profile_button_->SetText(UTF16ToWideHack(l10n_util::GetStringUTF16(
+        IDS_PROFILES_NOT_SIGNED_IN_MENU)));
+  }
+  profile_button_->SetTextShadowColors(ProfileMenuButton::kDarkTextShadow,
+                                       ProfileMenuButton::kDarkTextShadow);
+  profile_button_->ClearMaxTextSize();
+  profile_button_->SetVisible(true);
+  int x_tag =
+      // The x position of minimize button in the frame
+      minimize_button_->x() -
+          // - the space between the minimize button and the profile button
+          ProfileMenuButton::kProfileTagHorizontalSpacing -
+          // - the width of the profile button
+          profile_button_->GetPreferredSize().width();
+  // Adjust for different default font sizes on different Windows platforms.
+  int y_tag = profile_button_->font().GetHeight() < 14 ? 2 : 0;
+  int y_maximized_offset = frame_->GetWindow()->IsMaximized() ?
+      kProfileElementMaximizedYOffset : 0;
+  profile_button_->SetBounds(
+      x_tag,
+      y_tag + y_maximized_offset,
+      profile_button_->GetPreferredSize().width(),
+      profile_button_->GetPreferredSize().height());
+
+  if (!profile_name.empty()) {
     profile_tag_->SetVisible(true);
     profile_tag_->SetBounds(
         x_tag,
         kProfileTagYPosition + y_maximized_offset,
         profile_button_->GetPreferredSize().width(),
         ProfileTagView::kProfileTagHeight);
+    profile_tag_->SetVisible(true);
   } else {
-    profile_button_->SetVisible(false);
     profile_tag_->SetVisible(false);
   }
 }

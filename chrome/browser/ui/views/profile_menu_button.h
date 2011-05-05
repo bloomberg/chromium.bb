@@ -23,6 +23,13 @@ class Canvas;
 
 class ProfileMenuButton : public views::MenuButton {
  public:
+  // DefaultActiveTextShadow is a darkened blue color that works with Windows
+  // default theme background coloring.
+  static const SkColor kDefaultActiveTextShadow = 0xFF708DB3;
+  // InactiveTextShadow is a light gray for inactive default themed buttons.
+  static const SkColor kDefaultInactiveTextShadow = SK_ColorLTGRAY;
+  // DarkTextShadow is used to shadow names on themed browser frames.
+  static const SkColor kDarkTextShadow = SK_ColorGRAY;
   // Space between window controls and end of profile tag.
   static const int kProfileTagHorizontalSpacing = 5;
 

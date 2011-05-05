@@ -39,13 +39,13 @@ void ProfileTagView::OnPaint(gfx::Canvas* canvas) {
   int center_tag_width = tag_width - active_profile_tag_left_.width() -
       active_profile_tag_right_.width();
 
-  bool is_active = GetWidget()->IsActive();
-  SkBitmap* profile_tag_left = is_active ? &active_profile_tag_left_ :
-                                           &inactive_profile_tag_left_;
-  SkBitmap* profile_tag_center = is_active ? &active_profile_tag_center_ :
-                                             &inactive_profile_tag_center_;
-  SkBitmap* profile_tag_right = is_active ? &active_profile_tag_right_ :
-                                            &inactive_profile_tag_right_;
+  bool use_active = GetWidget()->IsActive() && is_signed_in_;
+  SkBitmap* profile_tag_left = use_active ? &active_profile_tag_left_ :
+                                            &inactive_profile_tag_left_;
+  SkBitmap* profile_tag_center = use_active ? &active_profile_tag_center_ :
+                                              &inactive_profile_tag_center_;
+  SkBitmap* profile_tag_right = use_active ? &active_profile_tag_right_ :
+                                             &inactive_profile_tag_right_;
 
   if (!active_profile_tag_left_background_.empty()) {
     canvas->DrawBitmapInt(active_profile_tag_left_background_, 0, 0);

@@ -32,6 +32,8 @@ class ProfileTagView : public views::View {
   // Paint the profile tag background image on the given canvas.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
+  void set_is_signed_in(bool is_signed_in) { is_signed_in_ = is_signed_in; }
+
  private:
   // Create the bitmaps to be displayed on the frame behind the profile button.
   void CreateProfileTagBitmaps();
@@ -50,6 +52,9 @@ class ProfileTagView : public views::View {
   SkBitmap active_profile_tag_center_background_;
   SkBitmap active_profile_tag_left_background_;
   SkBitmap active_profile_tag_right_background_;
+
+  // True if the user is signed in to a personalized Chrome profile.
+  bool is_signed_in_;
 
   // The frame that hosts this view.
   BrowserFrame* frame_;

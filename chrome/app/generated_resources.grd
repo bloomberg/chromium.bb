@@ -7927,6 +7927,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Customize Sync Settings...
         </message>
       </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_NOT_SIGNED_IN_MENU" desc="The text to display on the browser frame when the user is not using a personalized profile.">
+          Not Signed In
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_NOT_SIGNED_IN_MENU" desc="The text to display on the browser frame when the user is not using a personalized profile.">
+          not signed in
+        </message>
+      </if>
       <message name="IDS_SYNC_CUSTOMIZE_LINK_LABEL" desc="The text to display on the link to customize the sync preferences.">
         Customize
       </message>

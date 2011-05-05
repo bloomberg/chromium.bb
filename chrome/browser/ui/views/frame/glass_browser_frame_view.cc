@@ -22,8 +22,10 @@
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
 #include "grit/app_resources.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas_skia.h"
@@ -510,36 +512,45 @@ void GlassBrowserFrameView::LayoutProfileTag() {
   if (!show_profile_button())
     return;
 
-  string16 profile_name = ASCIIToUTF16(browser_view_->browser()->profile()->
+  string16 profile_name = UTF8ToUTF16(browser_view_->browser()->profile()->
       GetPrefs()->GetString(prefs::kGoogleServicesUsername));
   if (!profile_name.empty()) {
     profile_button_->SetText(profile_name);
-    profile_button_->ClearMaxTextSize();
-    profile_button_->SetVisible(true);
-    int x_tag =
-        // The x position of minimize button in the frame
-        frame_->GetMinimizeButtonOffset() -
-            // - the space between the minimize button and the profile button
-            ProfileMenuButton::kProfileTagHorizontalSpacing -
-            // - the width of the profile button
-            profile_button_->GetPreferredSize().width();
-    int y_maximized_offset = frame_->GetWindow()->IsMaximized() ?
-        kProfileElementMaximizedYOffset : 0;
-    profile_button_->SetBounds(
-        x_tag,
-        kProfileButtonYPosition + y_maximized_offset,
-        profile_button_->GetPreferredSize().width(),
-        profile_button_->GetPreferredSize().height());
-    profile_tag_->SetVisible(true);
-    profile_tag_->SetBounds(
-        x_tag,
-        kProfileTagYPosition + y_maximized_offset,
-        profile_button_->GetPreferredSize().width(),
-        ProfileTagView::kProfileTagHeight);
+    profile_button_->SetTextShadowColors(
+        ProfileMenuButton::kDefaultActiveTextShadow,
+        ProfileMenuButton::kDefaultInactiveTextShadow);
   } else {
-    profile_button_->SetVisible(false);
-    profile_tag_->SetVisible(false);
+    profile_button_->SetText(l10n_util::GetStringUTF16(
+        IDS_PROFILES_NOT_SIGNED_IN_MENU));
+    profile_button_->SetTextShadowColors(
+        ProfileMenuButton::kDarkTextShadow,
+        ProfileMenuButton::kDefaultInactiveTextShadow);
   }
+
+  profile_button_->ClearMaxTextSize();
+  profile_button_->SetVisible(true);
+  int x_tag =
+      // The x position of minimize button in the frame
+      frame_->GetMinimizeButtonOffset() -
+          // - the space between the minimize button and the profile button
+          ProfileMenuButton::kProfileTagHorizontalSpacing -
+          // - the width of the profile button
+          profile_button_->GetPreferredSize().width();
+  int y_maximized_offset = frame_->GetWindow()->IsMaximized() ?
+      kProfileElementMaximizedYOffset : 0;
+  profile_button_->SetBounds(
+      x_tag,
+      kProfileButtonYPosition + y_maximized_offset,
+      profile_button_->GetPreferredSize().width(),
+      profile_button_->GetPreferredSize().height());
+
+  profile_tag_->SetVisible(true);
+  profile_tag_->set_is_signed_in(!profile_name.empty());
+  profile_tag_->SetBounds(
+      x_tag,
+      kProfileTagYPosition + y_maximized_offset,
+      profile_button_->GetPreferredSize().width(),
+      ProfileTagView::kProfileTagHeight);
 }
 
 gfx::Rect GlassBrowserFrameView::CalculateClientAreaBounds(int width,
