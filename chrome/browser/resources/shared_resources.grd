@@ -30,12 +30,22 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/css/tree.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_TREE_JS"
                file="shared/css/tree.css.js" type="BINDATA" />
-      <include name="IDR_SHARED_IMAGES_THROBBER"
-               file="shared/images/throbber.svg" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_ACTIVE_DOWNLOADS_MENU"
+               file="shared/images/active_downloads_menu.png" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_ICON_FILE"
+               file="shared/images/icon_file.png" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_ICON_FOLDER"
+               file="shared/images/icon_folder.png" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_ICON_MEDIA"
+               file="shared/images/icon_media.png" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_ICON_PHOTO"
+               file="shared/images/icon_photo.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_MEDIAPLAYER_PREV"
                file="shared/images/mediaplayer_prev.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_MEDIAPLAYER_NEXT"
                file="shared/images/mediaplayer_next.png" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_THROBBER"
+               file="shared/images/throbber.svg" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR"
                file="shared/js/cr.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_COMMAND_LINE"

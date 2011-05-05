@@ -3203,7 +3203,7 @@ void Browser::OnStartDownload(DownloadItem* download, TabContents* tab) {
     }
   }
   // Open the Active Downloads ui for chromeos.
-  ActiveDownloadsUI::OpenPopup(profile_, download);
+  ActiveDownloadsUI::OpenPopup(profile_);
 #else
   // GetDownloadShelf creates the download shelf if it was not yet created.
   window()->GetDownloadShelf()->AddDownload(new DownloadItemModel(download));

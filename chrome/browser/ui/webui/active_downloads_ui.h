@@ -15,21 +15,15 @@
 
 class Browser;
 class Profile;
-class DownloadItem;
-class ActiveDownloadsHandler;
 
 class ActiveDownloadsUI : public HtmlDialogUI {
  public:
   explicit ActiveDownloadsUI(TabContents* contents);
 
-  static Browser* OpenPopup(Profile* profile, DownloadItem* download_item);
-  static Browser* OpenPopup(Profile* profile, const std::string& path);
-  static Browser* GetPopupForPath(const std::string& path, Profile* profile);
+  static Browser* OpenPopup(Profile* profile);
+  static Browser* GetPopup(Profile* profile);
 
  private:
-  ActiveDownloadsHandler* handler_;
-  // TODO(achuith): Fix this.
-  static DownloadItem* first_download_item_;
   DISALLOW_COPY_AND_ASSIGN(ActiveDownloadsUI);
 };
 

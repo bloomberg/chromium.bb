@@ -1165,7 +1165,7 @@ void TestingAutomationProvider::GetShelfVisibility(int handle, bool* visible) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
 #if defined(OS_CHROMEOS)
-      *visible = ActiveDownloadsUI::GetPopupForPath("", browser->profile());
+      *visible = ActiveDownloadsUI::GetPopup(browser->profile());
 #else
       *visible = browser->window()->IsDownloadShelfVisible();
 #endif
@@ -2088,9 +2088,9 @@ void TestingAutomationProvider::SetShelfVisibility(int handle, bool visible) {
     if (browser) {
 #if defined(OS_CHROMEOS)
       Browser* popup_browser =
-          ActiveDownloadsUI::GetPopupForPath("", browser->profile());
+          ActiveDownloadsUI::GetPopup(browser->profile());
       if (!popup_browser && visible)
-        ActiveDownloadsUI::OpenPopup(browser->profile(), "");
+        ActiveDownloadsUI::OpenPopup(browser->profile());
       if (popup_browser && !visible)
         popup_browser->CloseWindow();
 #else
