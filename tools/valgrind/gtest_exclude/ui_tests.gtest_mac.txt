@@ -193,3 +193,6 @@ RepostFormWarningTest.TestLoginAfterRepost
 WorkerFileSystemTest.SyncOperations
 WorkerFileSystemTest.FileWriterSyncWriteOverlapped
 WorkerFileSystemTest.AsyncOperations
+
+# Fails, see http://crbug.com/81657
+AutomationProxyVisibleTest.AppendTab
