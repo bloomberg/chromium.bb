@@ -2524,6 +2524,7 @@ organize-native-code() {
 ######################################################################
 
 readonly LLVM_DIS=${INSTALL_DIR}/bin/llvm-dis
+readonly LLVM_BCANALYZER=${INSTALL_DIR}/bin/llvm-bcanalyzer
 readonly LLVM_OPT=${INSTALL_DIR}/bin/opt
 readonly LLVM_AR=${CROSS_TARGET_AR}
 
@@ -2568,7 +2569,7 @@ VerifyArchive() {
 #
 #   Verifies that a given .o file is bitcode and free of ASMSs
 verify-object-llvm() {
-  t=$(${LLVM_DIS} $1 -o -)
+  local t=$(${LLVM_DIS} $1 -o -)
 
   if grep asm <<<$t ; then
     echo
@@ -2632,9 +2633,16 @@ verify-object-x86-64() {
 # Verifies that a given archive is bitcode and free of ASMSs
 #
 verify-archive-llvm() {
-  # Currently all the files are .o in the llvm archives.
-  # Eventually more and more should be .bc.
-  VerifyArchive verify-object-llvm '*.bc *.o' "$@"
+  if ${LLVM_BCANALYZER} "$1" 2> /dev/null ; then
+    # This fires only when we build in single-bitcode-lib mode
+    echo -n "verify $(basename "$1"): "
+    verify-object-llvm "$1"
+    echo "PASS (single-bitcode)"
+  else
+    # Currently all the files are .o in the llvm archives.
+    # Eventually more and more should be .bc.
+    VerifyArchive verify-object-llvm '*.bc *.o' "$@"
+  fi
 }
 
 #

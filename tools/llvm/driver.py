@@ -30,6 +30,7 @@
 
 import os
 import re
+import shutil
 import subprocess
 import sys
 import signal
@@ -49,6 +50,7 @@ INITIAL_ENV = {
                           # Currently enabled for debugging.
                           # TODO(pdox): Disable for SDK version
   'USE_MC_ASM'  : '1',    # Use llvm-mc instead of nacl-as
+  'SINGLE_BC_LIBS': '0',  # 'archive' bitcode libs as single bitcode file
   'MC_DIRECT'   : '1',    # Use MC direct object emission instead of
                           # producing an intermediate .s file
   'WHICH_LD'    : 'BFD',  # Which ld to use for native linking: GOLD or BFD
@@ -909,11 +911,62 @@ def Incarnation_nm(argv):
   RunWithLog(shell.split(env.get('NM')) + argv, errexit = False)
   return 0
 
+# The ar/ranlib hacks is are an attempt to iron out problems with shared
+# libraries e.g. duplicate symbols in different libraries, before we have
+# fully functional shared libs in pnacl.
+def ExperimentalArHack(argv):
+  mode = argv[0]
+  output = argv[1]
+  inputs = argv[2:]
+  # NOTE: The checks below are a little on the paranoid side
+  #       in most cases exceptions can be tolerated.
+  #       It is probably still worth having a look at them first
+  #       so we assert on everything unusual for now.
+  if mode in ['x']:
+    # This is used by by newlib to repackage a bunch of given archives
+    # into a new archive. It assumes all the objectfiles can be found
+    # via the glob, *.o
+    assert len(inputs) == 0
+    shutil.copyfile(output, output.replace('..','').replace('/','_') + '.o')
+    return 0
+  elif mode in ['cru']:
+    # NOTE: we treat cru just like rc which just so happens to work
+    #       with newlib but does not work in the general case.
+    #       However, due to some idiosyncrasiers in newlib we need to prune
+    #       duplicates.
+    inputs = list(set(inputs))
+  elif mode not in ['rc']:
+    Log.Fatal('Unexpected "ar" mode %s', mode)
+  if not output.endswith('.a'):
+    Log.Fatal('Unexpected "ar" lib %s', output)
+  not_bitcode = [f for f in inputs if 'bc' != FileType(f)]
+  # NOTE: end of paranoid checks
+  for f in not_bitcode:
+    # This is for the last remaining native lib build via scons: libcrt_platform
+    if not f.endswith('tls.o') and not f.endswith('setjmp.o'):
+      Log.Fatal('Unexpected "ar" arg %s', f)
+  if not_bitcode:
+    RunWithLog(shell.split(env.get('AR')) + argv, errexit = False)
+  else:
+    RunWithEnv('RUN_LLVM_LINK', inputs=shell.join(inputs), output=output)
+  return 0
+
+def ExperimentalRanlibHack(argv):
+  assert len(argv) > 0 and not argv[-1].startswith('-')
+  if IsBitcode(argv[-1]):
+    Log.Info('SKIPPING ranlib for bitcode file: %s', argv[-1])
+  else:
+    RunWithLog(shell.split(env.get('RANLIB')) + argv, errexit = False)
+  return 0
+
 def Incarnation_ar(argv):
+  if env.getbool('SINGLE_BC_LIBS'): return ExperimentalArHack(argv)
+
   RunWithLog(shell.split(env.get('AR')) + argv, errexit = False)
   return 0
 
 def Incarnation_ranlib(argv):
+  if env.getbool('SINGLE_BC_LIBS'): return ExperimentalRanlibHack(argv)
   RunWithLog(shell.split(env.get('RANLIB')) + argv, errexit = False)
   return 0
 
@@ -1204,6 +1257,11 @@ def LinkBC(inputs, output = None):
       lib_inputs.append(i)
     else:
       obj_inputs.append(i)
+
+  # this transformation of eliminating duplicates should be harmless in general
+  # but leads to perturbed command lines so we do not enable it by default
+  if env.getbool('SINGLE_BC_LIBS'):
+    lib_inputs = list(set(lib_inputs))
 
   # Produce combined bitcode file
   if env.getbool('SHARED'):
