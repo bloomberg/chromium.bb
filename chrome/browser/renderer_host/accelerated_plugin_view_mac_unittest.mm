@@ -87,3 +87,78 @@ TEST_F(AcceleratedPluginViewTest, MoveBetweenWindows) {
   EXPECT_EQ(0, [window1 underlayCount]);
   EXPECT_EQ(1, [window2 underlayCount]);
 }
+
+TEST_F(AcceleratedPluginViewTest, HiddenWhenAdding) {
+  AcceleratedPluginView* view = StubAcceleratedPluginView();
+  [view setHidden:YES];
+
+  UnderlayCountingWindow* window = StubUnderlayWindow();
+  EXPECT_EQ(0, [window underlayCount]);
+
+  [[window contentView] addSubview:view];
+  EXPECT_EQ(0, [window underlayCount]);
+
+  [view setHidden:NO];
+  EXPECT_EQ(1, [window underlayCount]);
+
+  [view setHidden:YES];
+  EXPECT_EQ(0, [window underlayCount]);
+
+  [view removeFromSuperview];
+  EXPECT_EQ(0, [window underlayCount]);
+}
+
+TEST_F(AcceleratedPluginViewTest, HiddenAfterAdding) {
+  AcceleratedPluginView* view = StubAcceleratedPluginView();
+
+  UnderlayCountingWindow* window = StubUnderlayWindow();
+  EXPECT_EQ(0, [window underlayCount]);
+
+  [[window contentView] addSubview:view];
+  EXPECT_EQ(1, [window underlayCount]);
+
+  [view setHidden:YES];
+  EXPECT_EQ(0, [window underlayCount]);
+
+  [view setHidden:NO];
+  EXPECT_EQ(1, [window underlayCount]);
+
+  [view removeFromSuperview];
+  EXPECT_EQ(0, [window underlayCount]);
+}
+
+TEST_F(AcceleratedPluginViewTest, MoveBetweenWindowsWithHiding) {
+  AcceleratedPluginView* view = StubAcceleratedPluginView();
+  [view setHidden:YES];
+
+  UnderlayCountingWindow* window1 = StubUnderlayWindow();
+  UnderlayCountingWindow* window2 = StubUnderlayWindow();
+  EXPECT_EQ(0, [window1 underlayCount]);
+  EXPECT_EQ(0, [window2 underlayCount]);
+
+  [[window1 contentView] addSubview:view];
+  EXPECT_EQ(0, [window1 underlayCount]);
+  EXPECT_EQ(0, [window2 underlayCount]);
+
+  [view setHidden:NO];
+  EXPECT_EQ(1, [window1 underlayCount]);
+  EXPECT_EQ(0, [window2 underlayCount]);
+
+  // Move view while it's visible.
+  [[window2 contentView] addSubview:view];
+  EXPECT_EQ(0, [window1 underlayCount]);
+  EXPECT_EQ(1, [window2 underlayCount]);
+
+  [view setHidden:YES];
+  EXPECT_EQ(0, [window1 underlayCount]);
+  EXPECT_EQ(0, [window2 underlayCount]);
+
+  // Move view while it's hidden.
+  [[window1 contentView] addSubview:view];
+  EXPECT_EQ(0, [window1 underlayCount]);
+  EXPECT_EQ(0, [window2 underlayCount]);
+
+  [view setHidden:NO];
+  EXPECT_EQ(1, [window1 underlayCount]);
+  EXPECT_EQ(0, [window2 underlayCount]);
+}
