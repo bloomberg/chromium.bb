@@ -159,6 +159,12 @@
           ],
         }],
         ['OS=="mac"', {
+          'sources': [
+            'gl_context_cgl.cc',
+            'gl_context_cgl.h',
+            'gl_surface_cgl.cc',
+            'gl_surface_cgl.h',
+          ],
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
