@@ -5,8 +5,9 @@
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 
 #include "base/logging.h"
+#import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
-#include "ui/base/resource/resource_bundle.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 #include "ui/gfx/image.h"
 
 namespace {
@@ -24,7 +25,8 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 @interface ImageButtonCell (Private)
 - (void)sharedInit;
 - (image_button_cell::ButtonState)currentButtonState;
-- (NSImage*)imageForID:(NSInteger)imageID;
+- (NSImage*)imageForID:(NSInteger)imageID
+           controlView:(NSView*)controlView;
 @end
 
 @implementation ImageButtonCell
@@ -61,7 +63,8 @@ const CGFloat kImageNoFocusAlpha = 0.65;
                         [[controlView window] isKeyWindow];
   CGFloat alpha = windowHasFocus ? 1.0 : kImageNoFocusAlpha;
 
-  NSImage* image = [self imageForID:imageID_[[self currentButtonState]]];
+  NSImage* image = [self imageForID:imageID_[[self currentButtonState]]
+                        controlView:controlView];
   NSRect imageRect;
   imageRect.size = [image size];
   imageRect.origin.x = cellFrame.origin.x +
@@ -76,7 +79,8 @@ const CGFloat kImageNoFocusAlpha = 0.65;
        neverFlipped:YES];
 
   if (overlayImageID_) {
-    NSImage* overlayImage = [self imageForID:overlayImageID_];
+    NSImage* overlayImage = [self imageForID:overlayImageID_
+                                 controlView:controlView];
     NSRect overlayRect;
     overlayRect.size = [overlayImage size];
     overlayRect.origin.x = NSMaxX(imageRect) - overlayRect.size.width +
@@ -119,12 +123,16 @@ const CGFloat kImageNoFocusAlpha = 0.65;
     return image_button_cell::kDefaultState;
 }
 
-- (NSImage*)imageForID:(NSInteger)imageID {
+- (NSImage*)imageForID:(NSInteger)imageID
+           controlView:(NSView*)controlView {
   if (!imageID)
     return nil;
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(imageID);
+  ui::ThemeProvider* themeProvider = [[controlView window] themeProvider];
+  if (!themeProvider)
+    return nil;
+
+  return themeProvider->GetNSImageNamed(imageID, true);
 }
 
 - (void)setIsMouseInside:(BOOL)isMouseInside {
