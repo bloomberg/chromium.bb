@@ -16,6 +16,7 @@ class AutofillField;
 class AutofillScanner {
  public:
   explicit AutofillScanner(const std::vector<AutofillField*>& fields);
+  ~AutofillScanner();
 
   // Advances the cursor by one step, if possible.
   void Advance();

@@ -12,6 +12,9 @@ AutofillScanner::AutofillScanner(const std::vector<AutofillField*>& fields)
       end_(fields.end()) {
 }
 
+AutofillScanner::~AutofillScanner() {
+}
+
 void AutofillScanner::Advance() {
   DCHECK(!IsEnd());
   ++cursor_;
