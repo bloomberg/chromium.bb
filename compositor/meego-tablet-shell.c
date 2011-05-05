@@ -369,6 +369,7 @@ static void
 tablet_client_destroy(struct wl_client *client,
 		      struct meego_tablet_client *tablet_client)
 {
+	wl_resource_destroy(&tablet_client->resource, client);
 }
 
 static void
