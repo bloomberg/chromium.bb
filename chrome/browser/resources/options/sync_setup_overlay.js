@@ -134,16 +134,9 @@ cr.define('options', function() {
       return undefined;
     },
 
-    // TODO(jhawkins): Remove this method.
-    switchToMode_: function(mode) {
-      if (mode == "google")
-        $('sync-custom-passphrase').hidden = true;
-      else if (mode =="explicit")
-        $('sync-custom-passphrase').hidden = false;
-    },
-
     onRadioChange_: function() {
-      this.switchToMode_(this.getRadioCheckedValue_());
+      var visible = this.getRadioCheckedValue_() == "explicit";
+      $('sync-custom-passphrase').hidden = !visible;
     },
 
     checkAllDataTypeCheckboxes_: function() {
@@ -328,8 +321,6 @@ cr.define('options', function() {
       } else {
         $('google-option').checked = true;
       }
-
-      this.switchToMode_("");
     },
 
     setErrorState_: function(args) {
@@ -360,15 +351,14 @@ cr.define('options', function() {
       if (args) {
         this.setCheckboxesAndErrors_(args);
 
-        // Whether to display the 'Sync everything' confirmation screen or the
-        // customize data types screen.
-        // TODO(jhawkins): Rename |keepEverythingSynced| to |syncAllDataTypes|.
-        var syncEverything = args['syncEverything'];
-        var syncAllDataTypes = args['keepEverythingSynced'];
+        // Whether to display the 'Sync everything' confirmation page or the
+        // customize data types page.
+        var showSyncEverythingPage = args['showSyncEverythingPage'];
+        var keepEverythingSynced = args['keepEverythingSynced'];
         this.usePassphrase_ = args['usePassphrase'];
-        if (syncEverything == false || syncAllDataTypes == false ||
-            this.usePassphrase_) {
-          this.showCustomizePage_(syncAllDataTypes);
+        if (showSyncEverythingPage == false ||
+            keepEverythingSynced == false || this.usePassphrase_) {
+          this.showCustomizePage_(keepEverythingSynced);
         } else {
           this.showSyncEverythingPage_();
         }
@@ -389,7 +379,7 @@ cr.define('options', function() {
       // passphrase radio when switching to the 'Sync everything' page.
       if (!this.usePassphrase_) {
         $('google-option').checked = true;
-        this.switchToMode_("google");
+        $('sync-custom-passphrase').hidden = true;
       }
 
       $('confirm-everything-ok').focus();

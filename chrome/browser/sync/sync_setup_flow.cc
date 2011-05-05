@@ -81,7 +81,6 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
 // static
 void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
                                         DictionaryValue* args) {
-  args->SetString("iframeToShow", "login");
   const GoogleServiceAuthError& error = service->GetAuthError();
   if (!service->last_attempted_user_email().empty()) {
     args->SetString("user", service->last_attempted_user_email());
@@ -104,10 +103,8 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
 // static
 void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
                                         DictionaryValue* args) {
-  args->SetString("iframeToShow", "configure");
-
   // The SYNC_EVERYTHING case will set this to true.
-  args->SetBoolean("syncEverything", false);
+  args->SetBoolean("showSyncEverythingPage", false);
 
   args->SetBoolean("keepEverythingSynced",
       service->profile()->GetPrefs()->GetBoolean(prefs::kKeepEverythingSynced));
@@ -156,7 +153,6 @@ void SyncSetupFlow::GetArgsForEnterPassphrase(
     bool tried_creating_explicit_passphrase,
     bool tried_setting_explicit_passphrase,
     DictionaryValue* args) {
-  args->SetString("iframeToShow", "passphrase");
   args->SetBoolean("passphrase_creation_rejected",
                    tried_creating_explicit_passphrase);
   args->SetBoolean("passphrase_setting_rejected",
@@ -347,7 +343,7 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
     case SyncSetupWizard::SYNC_EVERYTHING: {
       DictionaryValue args;
       SyncSetupFlow::GetArgsForConfigure(service_, &args);
-      args.SetBoolean("syncEverything", true);
+      args.SetBoolean("showSyncEverythingPage", true);
       flow_handler_->ShowConfigure(args);
       break;
     }
@@ -368,7 +364,6 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
     }
     case SyncSetupWizard::PASSPHRASE_MIGRATION: {
       DictionaryValue args;
-      args.SetString("iframeToShow", "firstpassphrase");
       flow_handler_->ShowFirstPassphrase(args);
       break;
     }
