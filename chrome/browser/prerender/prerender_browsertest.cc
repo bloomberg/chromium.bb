@@ -68,6 +68,11 @@ class TestPrerenderContents : public PrerenderContents {
   virtual ~TestPrerenderContents() {
     EXPECT_EQ(expected_final_status_, final_status()) <<
         " when testing URL " << prerender_url().path();
+    // A used PrerenderContents will only be destroyed when we swap out
+    // TabContents, at the end of a navigation caused by a call to
+    // NavigateToURLImpl().
+    if (final_status() == FINAL_STATUS_USED)
+      MessageLoopForUI::current()->Quit();
   }
 
   virtual void OnRenderViewGone(int status, int exit_code) OVERRIDE {
@@ -285,7 +290,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
     // ui_test_utils::NavigateToURL uses its own observer and message loop.
     // Since the test needs to wait until the prerendered page has stopped
-    // loading, rathather than the page directly navigated to, need to
+    // loading, rather than the page directly navigated to, need to
     // handle browser navigation directly.
     browser()->OpenURL(src_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
 
@@ -323,7 +328,16 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // Make sure in navigating we have a URL to use in the PrerenderManager.
     EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) != NULL);
 
-    ui_test_utils::NavigateToURL(browser(), dest_url);
+    // ui_test_utils::NavigateToURL waits until DidStopLoading is called on
+    // the current tab.  As that tab is going to end up deleted, and may never
+    // finish loading before that happens, exit the message loop on the deletion
+    // of the used prerender contents instead.
+    //
+    // As PrerenderTestURL waits until the prerendered page has completely
+    // loaded, there is no race between loading |dest_url| and swapping the
+    // prerendered TabContents into the tab.
+    browser()->OpenURL(dest_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    ui_test_utils::RunMessageLoop();
 
     // Make sure the PrerenderContents found earlier was used or removed.
     EXPECT_TRUE(prerender_manager()->FindEntry(dest_url_) == NULL);
