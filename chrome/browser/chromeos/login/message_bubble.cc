@@ -114,7 +114,7 @@ MessageBubble* MessageBubble::Show(views::Widget* parent,
                                    MessageBubbleDelegate* delegate) {
   // The bubble will be destroyed when it is closed.
   MessageBubble* bubble = new MessageBubble(
-      views::Widget::InitParams::TYPE_WINDOW, parent, image, text, help,
+      views::Widget::InitParams::TYPE_POPUP, parent, image, text, help,
       true, delegate);
   bubble->InitBubble(parent, position_relative_to, arrow_location,
                      bubble->text_->parent(), delegate);
