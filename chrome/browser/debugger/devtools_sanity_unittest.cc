@@ -49,7 +49,6 @@ class BrowserClosedObserver : public NotificationObserver {
 const int kActionDelayMs = 500;
 
 const char kDebuggerTestPage[] = "files/devtools/debugger_test_page.html";
-const char kHeapProfilerPage[] = "files/devtools/heap_profiler.html";
 const char kPauseWhenLoadingDevTools[] =
     "files/devtools/pause_when_loading_devtools.html";
 const char kPauseWhenScriptIsRunning[] =
@@ -245,11 +244,6 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
 
   FilePath test_extensions_dir_;
 };
-
-// Tests heap profiler.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FAILS_TestHeapProfiler) {
-  RunTest("testHeapProfiler", kHeapProfilerPage);
-}
 
 // Tests scripts panel showing.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
