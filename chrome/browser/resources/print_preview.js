@@ -30,7 +30,7 @@ var timerId;
 var lastSelectedPrinterIndex = 0;
 
 // Indicates whether a preview has been requested but not received yet.
-var isPreviewStillLoading = false;
+var isPreviewStillLoading = true;
 
 // Currently selected printer capabilities.
 var printerCapabilities;
@@ -345,7 +345,6 @@ function setPrinters(printers, defaultPrinterIndex) {
   addDestinationListOption(localStrings.getString('managePrinters'), false);
 
   printerList.disabled = false;
-
   updateControlsWithSelectedPrinterCapabilities();
 }
 
