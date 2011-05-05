@@ -10,7 +10,6 @@
 #include "app/mac/nsimage_cache.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -720,19 +719,12 @@ class ExtensionServiceObserverBridge : public NotificationObserver,
     NOTREACHED() << "No current tab.";
     return;
   }
+  // If an extension popup is already open, it will get closed when it
+  // loses focus.
 
   ExtensionAction* action = [button extension]->browser_action();
   if (action->HasPopup(tabId)) {
     GURL popupUrl = action->GetPopupUrl(tabId);
-    // If a popup is already showing, check if the popup URL is the same. If so,
-    // then close the popup.
-    ExtensionPopupController* popup = [ExtensionPopupController popup];
-    if (popup &&
-        [[popup window] isVisible] &&
-        [popup extensionHost]->GetURL() == popupUrl) {
-      [popup close];
-      return;
-    }
     NSPoint arrowPoint = [self popupPointForBrowserAction:[button extension]];
     [ExtensionPopupController showURL:popupUrl
                             inBrowser:browser_
