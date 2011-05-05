@@ -425,15 +425,11 @@
             'packaging_files_binaries': [
               '<(PRODUCT_DIR)/libgcflashplayer.so',
               '<(PRODUCT_DIR)/plugin.vch',
-              '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
             ],
           }],
           ['target_arch=="x64"', {
             'deb_arch': 'amd64',
             'rpm_arch': 'x86_64',
-            'packaging_files_binaries': [
-              '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
-            ],
           }],
           ['target_arch=="arm"', {
             'deb_arch': 'arm',
