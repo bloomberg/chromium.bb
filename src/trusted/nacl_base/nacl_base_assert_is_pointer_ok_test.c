@@ -20,7 +20,7 @@
 int main(void) {
   char *bufptr = NULL;
 
-  NACL_ASSERT_IS_ARRAY(bufptr);
+  NACL_ASSERT_IS_POINTER(bufptr);
 
   return 0;
 }

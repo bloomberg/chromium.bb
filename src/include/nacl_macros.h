@@ -99,11 +99,12 @@ char (&NaClArraySizeHelper(const T (&array)[N]))[N];
  * difference is not a top-level qualifier difference as mentioned in
  * the gcc info node; that would apply to T * versus T const *.)  In
  * the assertion statement version (NACL_ASSERT_IS_ARRAY), we use this
- * to allocate an array, and ISO C forbids a zero-sized array.  In the
- * expression version (ARRAY_SIZE), we assign to a global void * --
- * assigning a zero is fine, but assigning a 1 results in a warning
- * that making a pointer from an integer is verboten.  When ARRAY_SIZE
- * is used in a loop control context, e.g.,
+ * to allocate an array, and ISO C forbids a zero-sized (or
+ * negative-sized) array.  In the expression version (ARRAY_SIZE), we
+ * assign to a global void * -- assigning a zero is fine, but
+ * assigning a 1 results in a warning that making a pointer from an
+ * integer is verboten.  When ARRAY_SIZE is used in a loop control
+ * context, e.g.,
  *
  * for (ix = 0; ix < ARRAY_SIZE(arr); ++ix) { ... }
  *
@@ -113,7 +114,7 @@ char (&NaClArraySizeHelper(const T (&array)[N]))[N];
 # if __GNUC__
 #  define NACL_ASSERT_IS_ARRAY(arr)                           \
   do {                                                        \
-    char __is_array__[!__builtin_types_compatible_p(          \
+    char __is_array__[1-2*__builtin_types_compatible_p(       \
         __typeof__(&arr[0]),                                  \
         __typeof__(arr))];                                    \
     /* dead code, but gets rid of unused-variable warnings */ \

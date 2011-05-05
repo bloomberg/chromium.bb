@@ -18,9 +18,9 @@
  */
 
 int main(void) {
-  char *bufptr = NULL;
+  char buffer[4096];
 
-  NACL_ASSERT_IS_ARRAY(bufptr);
+  printf("#buffer = %"NACL_PRIuS"\n", NACL_ARRAY_SIZE(buffer));
 
   return 0;
 }

@@ -18,9 +18,9 @@
  */
 
 int main(void) {
-  char *bufptr = NULL;
+  char buffer[4096];
 
-  NACL_ASSERT_IS_ARRAY(bufptr);
+  NACL_ASSERT_IS_POINTER(buffer);
 
   return 0;
 }
