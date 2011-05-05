@@ -7,6 +7,17 @@
 set -o nounset
 set -o errexit
 
+# The script is located in "native_client/tests/spec2k"
+# Set pwd to spec2k/
+cd "$(dirname "$0")"
+if [[ $(basename "$(pwd)") != "spec2k" ]] ; then
+  echo "ERROR: cannot find the spec2k/ directory"
+  exit -1
+fi
+source ../../tools/llvm/common-tools.sh
+readonly NACL_ROOT="$(GetAbsolutePath "../../")"
+SetScriptPath "$(pwd)/run_all.sh"
+SetLogDirectory "."
 
 ######################################################################
 # CONFIGURATION
@@ -37,15 +48,14 @@ export PERF_LOGGER="$(pwd)/emit_perf_log.sh"
 # Helper
 ######################################################################
 
-source ../../tools/llvm/common-tools.sh
+readonly SCONS_OUT="${NACL_ROOT}/scons-out"
+readonly TC_ROOT="${NACL_ROOT}/toolchain"
 
-readonly TOOLCHAIN_DIR="$(GetAbsolutePath "../../toolchain")"
-
-readonly ARM_TRUSTED_TC="${TOOLCHAIN_DIR}/linux_arm-trusted"
+readonly ARM_TRUSTED_TC="${TC_ROOT}/linux_arm-trusted"
 readonly QEMU_TOOL="${ARM_TRUSTED_TC}/qemu_tool.sh"
 
-readonly PNACL_TC="${TOOLCHAIN_DIR}/pnacl_${BUILD_PLATFORM}_${BUILD_ARCH}"
-readonly NNACL_TC="${TOOLCHAIN_DIR}/${SCONS_BUILD_PLATFORM}_x86"
+readonly PNACL_TC="${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${BUILD_ARCH}"
+readonly NNACL_TC="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_x86"
 readonly RUNNABLE_LD_X8632="${NNACL_TC}/nacl/lib/runnable-ld.so"
 readonly RUNNABLE_LD_X8664="${NNACL_TC}/nacl64/lib/runnable-ld.so"
 
@@ -423,9 +433,9 @@ GetInputSize() {
 #+
 #+   Check that a dependency is actually built.
 CheckFileBuilt() {
-  local depname=$1
-  local filename=$2
-  if [[ ! -x ${filename} ]] ; then
+  local depname="$1"
+  local filename="$2"
+  if [[ ! -x "${filename}" ]] ; then
     echo "You have not built ${depname} yet (${filename})!" 1>&2
     exit -1
   fi
@@ -437,17 +447,16 @@ CheckFileBuilt() {
 #+   Get sel_ldr for the given arch.
 GetSelLdr() {
   local arch=$1
-  SEL_LDR=../../scons-out/opt-${SCONS_BUILD_PLATFORM}-${arch}/staging/sel_ldr
-  CheckFileBuilt "sel_ldr" ${SEL_LDR}
-  SEL_LDR=$(GetAbsolutePath ${SEL_LDR})
+  SEL_LDR="${SCONS_OUT}/opt-${SCONS_BUILD_PLATFORM}-${arch}/staging/sel_ldr"
+  CheckFileBuilt "sel_ldr" "${SEL_LDR}"
   echo "${SEL_LDR}"
 }
 
 CheckSelUniversal() {
   local arch=$1
-  SEL_UNIV=../../scons-out/opt-${SCONS_BUILD_PLATFORM}-${arch}/staging/\
-sel_universal
-  CheckFileBuilt "sel_universal" ${SEL_UNIV}
+  SEL_UNIV="${SCONS_OUT}/opt-${SCONS_BUILD_PLATFORM}-${arch}/staging/\
+sel_universal"
+  CheckFileBuilt "sel_universal" "${SEL_UNIV}"
 }
 
 #@

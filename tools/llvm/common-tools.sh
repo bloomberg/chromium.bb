@@ -20,10 +20,16 @@ else
   HG_RETRY_DELAY_SEC=${HG_RETRY_DELAY_SEC:-1}
 fi
 
-readonly TC_LOG="$(pwd)/toolchain/hg-log"
-readonly TC_LOG_ALL="${TC_LOG}/ALL"
-
 readonly TIME_AT_STARTUP=$(date '+%s')
+
+SetScriptPath() {
+  SCRIPT_PATH="$1"
+}
+
+SetLogDirectory() {
+  TC_LOG="$1"
+  TC_LOG_ALL="${TC_LOG}/ALL"
+}
 
 ######################################################################
 # Detect system type
@@ -442,11 +448,11 @@ assert-file() {
 }
 
 Usage() {
-  egrep "^#@" $0 | cut -b 3-
+  egrep "^#@" "${SCRIPT_PATH}" | cut -b 3-
 }
 
 Usage2() {
-  egrep "^#(@|\+)" $0 | cut -b 3-
+  egrep "^#(@|\+)" "${SCRIPT_PATH}" | cut -b 3-
 }
 
 Banner() {

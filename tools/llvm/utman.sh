@@ -27,13 +27,19 @@
 set -o nounset
 set -o errexit
 
-# Make sure this script is run from the right place
-if [[ $(basename $(pwd)) != "native_client" ]] ; then
-  echo "ERROR: run this script from the native_client/ dir"
+# The script is located in "native_client/tools/llvm".
+# Set pwd to native_client/
+cd "$(dirname "$0")"/../..
+if [[ $(basename "$(pwd)") != "native_client" ]] ; then
+  echo "ERROR: cannot find native_client/ directory"
   exit -1
 fi
+readonly NACL_ROOT="$(pwd)"
 
 source tools/llvm/common-tools.sh
+
+SetScriptPath "${NACL_ROOT}/tools/llvm/utman.sh"
+SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
 
 # NOTE: gcc and llvm have to be synchronized
 #       we have chosen toolchains which both are based on gcc-4.2.1
@@ -54,7 +60,8 @@ readonly CROSS_TARGET_X86_64=x86_64-none-linux-gnu
 readonly BINUTILS_TARGET=arm-pc-nacl
 readonly REAL_CROSS_TARGET=pnacl
 
-readonly INSTALL_ROOT="$(pwd)/toolchain/pnacl_${BUILD_PLATFORM}_${BUILD_ARCH}"
+readonly TC_ROOT="${NACL_ROOT}/toolchain"
+readonly INSTALL_ROOT="${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${BUILD_ARCH}"
 readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
 readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp
@@ -65,11 +72,9 @@ readonly GCC_VER="4.2.1"
 # NOTE: NEWLIB_INSTALL_DIR also server as a SYSROOT
 readonly NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/arm-newlib"
 
-readonly NACL_TOOLCHAIN=$(pwd)/toolchain/${SCONS_BUILD_PLATFORM}_x86_newlib
+readonly NNACL_ROOT="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_x86_newlib"
 
-readonly PATCH_DIR=$(pwd)/tools/patches
-
-readonly BFD_PLUGIN_DIR=${INSTALL_DIR}/lib/bfd-plugins
+readonly BFD_PLUGIN_DIR="${INSTALL_DIR}/lib/bfd-plugins"
 
 readonly MAKE_OPTS="-j${UTMAN_CONCURRENCY} VERBOSE=1"
 
@@ -80,8 +85,8 @@ SPECULATIVE_REBUILD_SET=""
 # The directory in which we we keep src dirs (from hg repos)
 # and objdirs. These should be ABSOLUTE paths.
 
-readonly TC_SRC="$(pwd)/hg"
-readonly TC_BUILD="$(pwd)/toolchain/hg-build"
+readonly TC_SRC="${NACL_ROOT}/hg"
+readonly TC_BUILD="${TC_ROOT}/hg-build"
 
 # The location of sources (absolute)
 readonly TC_SRC_LLVM="${TC_SRC}/llvm"
@@ -90,8 +95,9 @@ readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_NEWLIB="${TC_SRC}/newlib"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/llvm-gcc-4.2/libstdc++-v3"
 
-readonly EXPORT_HEADER_SCRIPT="$(pwd)/src/trusted/service_runtime/export_header.py"
-readonly NACL_SYS_HEADERS="$(pwd)/src/trusted/service_runtime/include"
+readonly SERVICE_RUNTIME_SRC="${NACL_ROOT}/src/trusted/service_runtime"
+readonly EXPORT_HEADER_SCRIPT="${SERVICE_RUNTIME_SRC}/export_header.py"
+readonly NACL_SYS_HEADERS="${SERVICE_RUNTIME_SRC}/include"
 readonly NACL_SYS_TS="${TC_SRC}/nacl.sys.timestamp"
 readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib-trunk/newlib/libc/include"
 
@@ -495,16 +501,6 @@ download-trusted() {
 #@ download-toolchains   - Download and Install all SDKs (arm,x86-32,x86-64)
 
 download-toolchains() {
-  TRUSTED_TOOLCHAIN=native_client/toolchain/linux_arm-trusted/arm-2009q3
-  export AR=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-ar
-  export AS=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-as
-  export CC=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-gcc
-  export CXX=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-g++
-  export GYP_DEFINES="target_arch=arm sysroot=${TRUSTED_TOOLCHAIN}/arm-none-linux-gnueabi/libc linux_use_tcmalloc=0 armv7=1 arm_thumb=1"
-  export GYP_GENERATORS=make
-  export LD=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-ld
-  export RANLIB=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-ranlib
-  # This downloads both toolchains and regenerates gyp.
   gclient runhooks --force
 }
 
@@ -659,7 +655,7 @@ clean() {
 #@ fast-clean            - Clean everything except LLVM.
 fast-clean() {
   local did_backup=false
-  local backup_dir="$(pwd)/llvm-build-backup"
+  local backup_dir="${NACL_ROOT}/llvm-build-backup"
 
   if [ -d "${TC_BUILD_LLVM}" ]; then
     rm -rf "${backup_dir}"
@@ -748,7 +744,7 @@ prune() {
   rm -rf "${INSTALL_DIR}"/bin/x86_64-none-linux-gnu-*
 
   echo "stripping binaries"
-  strip "${INSTALL_DIR}"/libexec/gcc/arm-none-linux-gnueabi/4.2.1/c*
+  strip "${INSTALL_DIR}"/libexec/gcc/arm-none-linux-gnueabi/${GCC_VER}/c*
   if ! strip "${INSTALL_DIR}"/bin/* ; then
     echo "NOTE: some failures during stripping are expected"
   fi
@@ -1848,7 +1844,7 @@ binutils-sb() {
   check-sb-arch ${arch}
   check-sb-mode ${mode}
 
-  if [ ! -d ${NACL_TOOLCHAIN} ] ; then
+  if [ ! -d "${NNACL_ROOT}" ] ; then
     echo "ERROR: Install Native Client toolchain"
     exit -1
   fi
@@ -1914,13 +1910,13 @@ binutils-sb-configure() {
       binutils.${arch}.${mode}.sandboxed.configure \
       env -i \
       PATH="/usr/bin:/bin" \
-      AR="${NACL_TOOLCHAIN}/bin/${nacl}-ar" \
-      AS="${NACL_TOOLCHAIN}/bin/${nacl}-as" \
-      CC="${NACL_TOOLCHAIN}/bin/${nacl}-gcc" \
-      CXX="${NACL_TOOLCHAIN}/bin/${nacl}-g++" \
-      LD="${NACL_TOOLCHAIN}/bin/${nacl}-ld" \
-      RANLIB="${NACL_TOOLCHAIN}/bin/${nacl}-ranlib" \
-      CFLAGS="-m${bitsize} -O3 ${flags} -I${NACL_TOOLCHAIN}/${nacl}/include" \
+      AR="${NNACL_ROOT}/bin/${nacl}-ar" \
+      AS="${NNACL_ROOT}/bin/${nacl}-as" \
+      CC="${NNACL_ROOT}/bin/${nacl}-gcc" \
+      CXX="${NNACL_ROOT}/bin/${nacl}-g++" \
+      LD="${NNACL_ROOT}/bin/${nacl}-ld" \
+      RANLIB="${NNACL_ROOT}/bin/${nacl}-ranlib" \
+      CFLAGS="-m${bitsize} -O3 ${flags} -I${NNACL_ROOT}/${nacl}/include" \
       LDFLAGS="-s" \
       LDFLAGS_FOR_BUILD="-L../liberty_tmp" \
       ${srcdir}/binutils-2.20/configure \
@@ -3008,7 +3004,7 @@ timed-test-spec() {
     echo "timed-test-spec {result-file} {spec2krefdir} {setupfunc}" \
          "[ref|train] [benchmark]*"
     exit 1
-  fi;
+  fi
   result_file=$1
   official=$(GetAbsolutePath $2)
   setup=$3
@@ -3113,6 +3109,14 @@ DebugRun() {
     "$@"
   fi
 }
+
+######################################################################
+######################################################################
+#
+#                           < TIME STAMPING >
+#
+######################################################################
+######################################################################
 
 ts-dir-changed() {
   local tsfile="$1"
