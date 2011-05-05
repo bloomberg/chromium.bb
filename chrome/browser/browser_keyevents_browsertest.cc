@@ -510,9 +510,9 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_CommandKeyEvents) {
 
 // http://crbug.com/81451
 #if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_AccessKeys) {
 #else
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_AccessKeys) {
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
 #endif
 #if defined(OS_MACOSX)
   // On Mac, access keys use ctrl+alt modifiers.
