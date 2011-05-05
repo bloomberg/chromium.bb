@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,7 @@ void FileStream::AsyncContext::IOCompletionIsPending(
 
 void FileStream::AsyncContext::OnIOCompleted(
     MessageLoopForIO::IOContext* context, DWORD bytes_read, DWORD error) {
-  DCHECK(&context_ == context);
+  DCHECK_EQ(&context_, context);
   DCHECK(callback_);
 
   if (is_closing_) {
