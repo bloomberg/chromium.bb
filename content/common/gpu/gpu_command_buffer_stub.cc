@@ -296,6 +296,8 @@ void GpuCommandBufferStub::SwapBuffersCallback() {
   params.swap_buffers_count = scheduler_->swap_buffers_count();
   gpu_channel_manager->Send(
       new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
+
+  scheduler_->SetScheduled(false);
 }
 
 void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
@@ -303,7 +305,7 @@ void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
   scheduler_->set_acknowledged_swap_buffers_count(swap_buffers_count);
 
   // Wake up the GpuScheduler to start doing work again.
-  scheduler_->ScheduleProcessCommands();
+  scheduler_->SetScheduled(true);
 }
 #endif  // defined(OS_MACOSX)
 

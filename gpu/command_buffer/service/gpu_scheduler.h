@@ -127,10 +127,6 @@ class GpuScheduler : public CommandBufferEngine {
   // Get the GLES2Decoder associated with this scheduler.
   gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
 
-  // Helper which causes a call to ProcessCommands to be scheduled later.
-  // TODO(apatrick): figure out a way to make this private again.
-  void ScheduleProcessCommands();
-
  protected:
   // Perform common initialization. Takes ownership of GLContext.
   bool InitializeCommon(
@@ -144,6 +140,9 @@ class GpuScheduler : public CommandBufferEngine {
 
 
  private:
+  // Helper which causes a call to ProcessCommands to be scheduled later.
+  void ScheduleProcessCommands();
+
   // Called via a callback just before we are supposed to call the
   // user's swap buffers callback.
   void WillSwapBuffers();

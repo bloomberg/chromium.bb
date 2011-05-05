@@ -691,11 +691,7 @@ void GLES2Implementation::SwapBuffers() {
   }
   helper_->SwapBuffers();
   swap_buffers_tokens_.push(helper_->InsertToken());
-#if !defined(OS_MACOSX)
-  // TODO(kbr): restructure the swap buffers path on Mac OS X and
-  // remove this conditional.
   helper_->YieldScheduler();
-#endif
   Flush();
 }
 

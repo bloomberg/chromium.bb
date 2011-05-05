@@ -87,6 +87,9 @@ void AcceleratedSurface::SwapBuffers() {
                           0, 0,
                           surface_size_.width(), surface_size_.height());
       glBindTexture(target, current_texture);
+      // This flush is absolutely essential -- it guarantees that the
+      // rendering results are seen by the other process.
+      glFlush();
     }
   } else if (transport_dib_.get() != NULL) {
     // Pre-Mac OS X 10.6, fetch the rendered image from the current frame
