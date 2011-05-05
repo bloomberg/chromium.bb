@@ -534,10 +534,12 @@ class AutofillTest(unittest.TestCase):
         query_year).select()
     driver.find_element_by_id(
         'autofill-edit-credit-card-apply-button').click()
-    list_entry = driver.find_element_by_class_name(
-        'autofill-list-item')
+    # Refresh the page to ensure the UI is up-to-date.
+    driver.refresh()
+    list_entry = driver.find_element_by_class_name('autofill-list-item')
     self.assertTrue(list_entry.is_displayed)
-    self.assertEqual(list_entry.text, creditcard_data['CREDIT_CARD_NAME'],
+    self.assertEqual(list_entry.text,
+                     creditcard_data['CREDIT_CARD_NAME'],
                      'Saved CC line item not same as what was entered.')
 
 
