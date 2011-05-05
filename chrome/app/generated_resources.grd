@@ -4240,6 +4240,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_MULTI_PROFILES_DESCRIPTION" desc="Description for the flag to enable multiprofile support">
         Associates every browser window with a profile, and adds a profile switcher in the upper right corner. Every profile has its own bookmarks, extensions, apps, etc.
       </message>
+      <message name="IDS_FLAGS_RESTRICT_INSTANT_TO_SEARCH_NAME" desc="Title for the flag to restrict Instant to search">
+        Restrict Instant To Search
+      </message>
+      <message name="IDS_FLAGS_RESTRICT_INSTANT_TO_SEARCH_DESCRIPTION" desc="Description for the flag to restrict Instant to search">
+        Restrict Instant to loading only search pages.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

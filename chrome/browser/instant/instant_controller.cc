@@ -645,6 +645,14 @@ bool InstantController::ShouldShowPreviewFor(const AutocompleteMatch& match,
   if (host_blacklist_ && host_blacklist_->count(match.destination_url.host()))
     return false;
 
+  const CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kRestrictInstantToSearch) &&
+      match.type != AutocompleteMatch::SEARCH_WHAT_YOU_TYPED &&
+      match.type != AutocompleteMatch::SEARCH_HISTORY &&
+      match.type != AutocompleteMatch::SEARCH_SUGGEST) {
+    return false;
+  }
+
   return true;
 }
 

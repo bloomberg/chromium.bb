@@ -312,6 +312,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableHistoryQuickProvider)
   },
+  {
+    "restrict-instant-to-search",
+    IDS_FLAGS_RESTRICT_INSTANT_TO_SEARCH_NAME,
+    IDS_FLAGS_RESTRICT_INSTANT_TO_SEARCH_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kRestrictInstantToSearch)
+  },
 };
 
 const Experiment* experiments = kExperiments;
