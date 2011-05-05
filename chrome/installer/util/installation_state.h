@@ -65,6 +65,12 @@ class ProductState {
   // awaiting update; may be empty.
   const std::wstring& rename_cmd() const { return rename_cmd_; }
 
+  // Returns true and populates |usagestats| if the product has such a value;
+  // otherwise, returns false and does not modify |usagestats|.  Expected values
+  // are 0 (false) and 1 (true), although |usagestats| is given whatever is
+  // found.
+  bool GetUsageStats(DWORD* usagestats) const;
+
   // True if the "msi" value in the ClientState key is present and non-zero.
   bool is_msi() const { return msi_; }
 
@@ -94,8 +100,10 @@ class ProductState {
   std::wstring rename_cmd_;
   CommandLine uninstall_command_;
   AppCommands commands_;
+  DWORD usagestats_;
   bool msi_;
   bool multi_install_;
+  bool has_usagestats_;
 
  private:
   friend class InstallationState;

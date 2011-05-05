@@ -28,15 +28,21 @@ class InstallerState;
 class Package;
 class Product;
 
-// Adds work items that make registry adjustments for Google Update.  When a
-// product is installed (including overinstall), Google Update will write the
-// channel ("ap") value into either Chrome or Chrome Frame's ClientState key.
-// In the multi-install case, this value is used as the basis upon which the
-// package's channel value is built (by adding the ordered list of installed
-// products and their options).
+// Adds work items that make registry adjustments for Google Update; namely,
+// copy a brand value and move a usagestats value.
 void AddGoogleUpdateWorkItems(const InstallationState& original_state,
                               const InstallerState& installer_state,
                               WorkItemList* install_list);
+
+// Adds work items that make registry adjustments for stats and crash
+// collection.  When a product is installed, Google Update may write a
+// "usagestats" value to Chrome or Chrome Frame's ClientState key.  In the
+// multi-install case, both products will consult/modify stats for the binaries'
+// app guid.  Consequently, during install and update we will move a
+// product-specific value into the binaries' ClientState key.
+void AddUsageStatsWorkItems(const InstallationState& original_state,
+                            const InstallerState& installer_state,
+                            WorkItemList* install_list);
 
 // After a successful copying of all the files, this function is called to
 // do a few post install tasks:

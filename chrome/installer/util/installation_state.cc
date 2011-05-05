@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,10 @@ namespace installer {
 
 ProductState::ProductState()
     : uninstall_command_(CommandLine::NO_PROGRAM),
+      usagestats_(0),
       msi_(false),
-      multi_install_(false) {
+      multi_install_(false),
+      has_usagestats_(false) {
 }
 
 bool ProductState::Initialize(bool system_install,
@@ -90,6 +92,11 @@ bool ProductState::Initialize(bool system_install,
     InstallUtil::MakeUninstallCommand(setup_path, uninstall_arguments,
                                       &uninstall_command_);
 
+    // "usagestats" may be absent, 0 (false), or 1 (true).  On the chance that
+    // different values are permitted in the future, we'll simply hold whatever
+    // we find.
+    has_usagestats_ = (key.ReadValueDW(google_update::kRegUsageStatsField,
+                                       &usagestats_) == ERROR_SUCCESS);
     // "msi" may be absent, 0 or 1
     DWORD dw_value = 0;
     msi_ = (key.ReadValueDW(google_update::kRegMSIField,
@@ -99,6 +106,20 @@ bool ProductState::Initialize(bool system_install,
       multi_install_ = true;
     else
       multi_install_ = uninstall_command_.HasSwitch(switches::kMultiInstall);
+  }
+
+  // Read from the ClientStateMedium key.
+  if (system_install &&
+      key.Open(root_key, distribution->GetStateMediumKey().c_str(),
+               KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+    DWORD usagestats = 0;
+
+    // A usagestats value in ClientStateMedium overrides that in ClientState.
+    if (key.ReadValueDW(google_update::kRegUsageStatsField,
+                        &usagestats) == ERROR_SUCCESS) {
+      has_usagestats_ = true;
+      usagestats_ = usagestats;
+    }
   }
 
   return version_.get() != NULL;
@@ -122,8 +143,10 @@ ProductState& ProductState::CopyFrom(const ProductState& other) {
   rename_cmd_ = other.rename_cmd_;
   uninstall_command_ = other.uninstall_command_;
   commands_.CopyFrom(other.commands_);
+  usagestats_ = other.usagestats_;
   msi_ = other.msi_;
   multi_install_ = other.multi_install_;
+  has_usagestats_ = other.has_usagestats_;
 
   return *this;
 }
@@ -136,8 +159,18 @@ void ProductState::Clear() {
   rename_cmd_.clear();
   uninstall_command_ = CommandLine(CommandLine::NO_PROGRAM);
   commands_.Clear();
+  usagestats_ = 0;
   msi_ = false;
   multi_install_ = false;
+  has_usagestats_ = false;
+}
+
+bool ProductState::GetUsageStats(DWORD* usagestats) const {
+  DCHECK(usagestats);
+  if (!has_usagestats_)
+    return false;
+  *usagestats = usagestats_;
+  return true;
 }
 
 InstallationState::InstallationState() {

@@ -50,10 +50,9 @@ class MockWorkItemList : public WorkItemList {
   MOCK_METHOD1(AddCreateDirWorkItem, WorkItem* (const FilePath&));
   MOCK_METHOD2(AddCreateRegKeyWorkItem, WorkItem* (HKEY, const std::wstring&));
   MOCK_METHOD2(AddDeleteRegKeyWorkItem, WorkItem* (HKEY, const std::wstring&));
-  MOCK_METHOD4(AddDeleteRegValueWorkItem, WorkItem* (HKEY,
+  MOCK_METHOD3(AddDeleteRegValueWorkItem, WorkItem* (HKEY,
                                                      const std::wstring&,
-                                                     const std::wstring&,
-                                                     bool));
+                                                     const std::wstring&));
   MOCK_METHOD2(AddDeleteTreeWorkItem, WorkItem* (const FilePath&,
                                                  const std::vector<FilePath>&));
   MOCK_METHOD1(AddDeleteTreeWorkItem, WorkItem* (const FilePath&));
@@ -94,6 +93,11 @@ class MockProductState : public ProductState {
   void set_version(Version* version) { version_.reset(version); }
   void set_multi_install(bool multi) { multi_install_ = multi; }
   void set_brand(const std::wstring& brand) { brand_ = brand; }
+  void set_usagestats(DWORD usagestats) {
+    has_usagestats_ = true;
+    usagestats_ = usagestats;
+  }
+  void clear_usagestats() { has_usagestats_ = false; }
   void SetUninstallProgram(const FilePath& setup_exe) {
     uninstall_command_ = CommandLine(setup_exe);
   }
@@ -265,7 +269,8 @@ class InstallWorkerTest : public testing::Test {
     const ProductState* chrome =
         machine_state.GetProductState(installer_state->system_install(),
                                       BrowserDistribution::CHROME_BROWSER);
-    if (chrome != NULL) {
+    if (chrome != NULL &&
+        chrome->is_multi_install() == installer_state->is_multi_install()) {
       installer_state->AddProductFromState(BrowserDistribution::CHROME_BROWSER,
                                            *chrome);
     } else {
@@ -560,6 +565,71 @@ TEST_F(InstallWorkerTest, GoogleUpdateWorkItemsTest) {
                            *installer_state.get(),
                            &work_item_list);
 }
+
+// Test that usagestats values are migrated properly.
+TEST_F(InstallWorkerTest, AddUsageStatsWorkItems) {
+  const bool system_level = true;
+  const bool multi_install = true;
+  MockWorkItemList work_item_list;
+
+  scoped_ptr<MockInstallationState> installation_state(
+      BuildChromeInstallationState(system_level, multi_install));
+
+  MockProductState chrome_state;
+  chrome_state.set_version(current_version_->Clone());
+  chrome_state.set_multi_install(false);
+  chrome_state.set_usagestats(1);
+
+  installation_state->SetProductState(system_level,
+      BrowserDistribution::CHROME_BROWSER, chrome_state);
+
+  scoped_ptr<MockInstallerState> installer_state(
+      BuildChromeInstallerState(system_level, multi_install,
+                                *installation_state,
+                                InstallerState::MULTI_INSTALL));
+
+  // Expect the multi Client State key to be created.
+  BrowserDistribution* multi_dist =
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BINARIES);
+  std::wstring multi_app_guid(multi_dist->GetAppGuid());
+  EXPECT_CALL(work_item_list,
+              AddCreateRegKeyWorkItem(_, HasSubstr(multi_app_guid))).Times(1);
+
+  // Expect to see a set value for the usagestats in the multi Client State key.
+  EXPECT_CALL(work_item_list,
+              AddSetRegDwordValueWorkItem(
+                  _,
+                  HasSubstr(multi_app_guid),
+                  StrEq(google_update::kRegUsageStatsField),
+                  Eq(static_cast<DWORD>(1)),
+                  _)).Times(1);
+
+  // Expect to see some values cleaned up from Chrome's keys.
+  BrowserDistribution* chrome_dist =
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BROWSER);
+  if (system_level) {
+    EXPECT_CALL(work_item_list,
+                AddDeleteRegValueWorkItem(
+                    _,
+                    StrEq(chrome_dist->GetStateMediumKey()),
+                    StrEq(google_update::kRegUsageStatsField))).Times(1);
+    EXPECT_CALL(work_item_list,
+                AddDeleteRegValueWorkItem(
+                    Eq(HKEY_CURRENT_USER),
+                    StrEq(chrome_dist->GetStateKey()),
+                    StrEq(google_update::kRegUsageStatsField))).Times(1);
+  }
+  EXPECT_CALL(work_item_list,
+              AddDeleteRegValueWorkItem(
+                  Eq(installer_state->root_key()),
+                  StrEq(chrome_dist->GetStateKey()),
+                  StrEq(google_update::kRegUsageStatsField))).Times(1);
+
+  AddUsageStatsWorkItems(*installation_state.get(),
+                         *installer_state.get(),
+                         &work_item_list);}
 
 // The Quick Enable tests only make sense for the Google Chrome build as it
 // interacts with registry values that are specific to Google Update.

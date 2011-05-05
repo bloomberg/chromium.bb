@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -123,31 +124,90 @@ bool GetChromeChannelInternal(bool system_install,
 
 }  // namespace
 
+// Older versions of Chrome unconditionally read from HKCU\...\ClientState\...
+// and then HKLM\...\ClientState\....  This means that system-level Chrome
+// never checked ClientStateMedium (which has priority according to Google
+// Update) and gave preference to a value in HKCU (which was never checked by
+// Google Update).  From now on, Chrome follows Google Update's policy.
 bool GoogleUpdateSettings::GetCollectStatsConsent() {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  std::wstring reg_path = dist->GetStateKey();
-  RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ);
-  DWORD value = 0;
-  if (key.ReadValueDW(google_update::kRegUsageStatsField, &value) !=
-      ERROR_SUCCESS) {
-    key.Open(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ);
-    key.ReadValueDW(google_update::kRegUsageStatsField, &value);
+  // Determine whether this is a system-level or a user-level install.
+  bool system_install = false;
+  FilePath module_dir;
+  if (!PathService::Get(base::DIR_MODULE, &module_dir)) {
+    LOG(WARNING)
+        << "Failed to get directory of module; assuming per-user install.";
+  } else {
+    system_install = !InstallUtil::IsPerUserInstall(module_dir.value().c_str());
   }
-  return (1 == value);
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+
+  // Consent applies to all products in a multi-install package.
+  if (InstallUtil::IsMultiInstall(dist, system_install)) {
+    dist = BrowserDistribution::GetSpecificDistribution(
+        BrowserDistribution::CHROME_BINARIES);
+  }
+
+  RegKey key;
+  DWORD value = 0;
+  bool have_value = false;
+
+  // For system-level installs, try ClientStateMedium first.
+  have_value =
+      system_install &&
+      key.Open(HKEY_LOCAL_MACHINE, dist->GetStateMediumKey().c_str(),
+               KEY_QUERY_VALUE) == ERROR_SUCCESS &&
+      key.ReadValueDW(google_update::kRegUsageStatsField,
+                      &value) == ERROR_SUCCESS;
+
+  // Otherwise, try ClientState.
+  have_value =
+      !have_value &&
+      key.Open(system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,
+               dist->GetStateKey().c_str(), KEY_QUERY_VALUE) == ERROR_SUCCESS &&
+      key.ReadValueDW(google_update::kRegUsageStatsField,
+                      &value) == ERROR_SUCCESS;
+
+  // Google Update specifically checks that the value is 1, so we do the same.
+  return have_value && value == 1;
 }
 
 bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
-  DWORD value = consented? 1 : 0;
-  // Writing to HKLM is only a best effort deal.
+  // Google Update writes and expects 1 for true, 0 for false.
+  DWORD value = consented ? 1 : 0;
+
+  // Determine whether this is a system-level or a user-level install.
+  bool system_install = false;
+  FilePath module_dir;
+  if (!PathService::Get(base::DIR_MODULE, &module_dir)) {
+    LOG(WARNING)
+        << "Failed to get directory of module; assuming per-user install.";
+  } else {
+    system_install = !InstallUtil::IsPerUserInstall(module_dir.value().c_str());
+  }
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  std::wstring reg_path = dist->GetStateMediumKey();
-  RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ | KEY_WRITE);
-  key.WriteValue(google_update::kRegUsageStatsField, value);
-  // Writing to HKCU is used both by chrome and by the crash reporter.
-  reg_path = dist->GetStateKey();
-  key.Create(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ | KEY_WRITE);
-  return (key.WriteValue(google_update::kRegUsageStatsField, value) ==
-      ERROR_SUCCESS);
+
+  // Consent applies to all products in a multi-install package.
+  if (InstallUtil::IsMultiInstall(dist, system_install)) {
+    dist = BrowserDistribution::GetSpecificDistribution(
+        BrowserDistribution::CHROME_BINARIES);
+  }
+
+  // Write to ClientStateMedium for system-level; ClientState otherwise.
+  HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  std::wstring reg_path =
+      system_install ? dist->GetStateMediumKey() : dist->GetStateKey();
+  RegKey key;
+  LONG result = key.Create(root_key, reg_path.c_str(), KEY_SET_VALUE);
+  if (result != ERROR_SUCCESS) {
+    LOG(ERROR) << "Failed opening key " << reg_path << " to set "
+               << google_update::kRegUsageStatsField << "; result: " << result;
+  } else {
+    result = key.WriteValue(google_update::kRegUsageStatsField, value);
+    LOG_IF(ERROR, result != ERROR_SUCCESS) << "Failed setting "
+        << google_update::kRegUsageStatsField << " in key " << reg_path
+        << "; result: " << result;
+  }
+  return (result == ERROR_SUCCESS);
 }
 
 bool GoogleUpdateSettings::GetMetricsId(std::wstring* metrics_id) {
