@@ -106,6 +106,7 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
   NaClErrorCode errcode;
   int ret_code = 1;
   struct NaClEnvCleanser env_cleanser;
+  int skip_qualification;
 
 #if NACL_OSX
   /* Mac dynamic libraries cannot access the environ variable directly. */
@@ -159,15 +160,21 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
    * We enable the signal handler to verify properties of the platform such
    * as the ability to trap a page on execute.
    */
-  NaClSignalHandlerInit();
-  errcode = NaClRunSelQualificationTests();
-  if (LOAD_OK != errcode) {
-    nap->module_load_status = errcode;
-    fprintf(stderr, "Error while loading in SelMain: %s\n",
-            NaClErrorString(errcode));
+  skip_qualification = getenv("NACL_DANGEROUS_SKIP_QUALIFICATION_TEST") != NULL;
+  if (skip_qualification) {
+    fprintf(stderr, "PLATFORM QUALIFICATION DISABLED - "
+        "Native Client's sandbox will be unreliable!\n");
+  } else {
+    NaClSignalHandlerInit();
+    errcode = NaClRunSelQualificationTests();
+    if (LOAD_OK != errcode) {
+      nap->module_load_status = errcode;
+      fprintf(stderr, "Error while loading in SelMain: %s\n",
+              NaClErrorString(errcode));
+    }
+    /* Remove the handler that was used for platform qualification tests. */
+    NaClSignalHandlerFini();
   }
-  /* Remove the handler that was used for platform qualification tests. */
-  NaClSignalHandlerFini();
 
   /*
    * Check that Chrome did not register any signal handlers, because
