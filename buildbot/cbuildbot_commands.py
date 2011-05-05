@@ -479,11 +479,47 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
     raise
 
   archive_url = None
-  key_re = re.compile('^%s=(.*)$' % _CROS_ARCHIVE_URL)
+  archive_dir = None
+  url_re = re.compile('^%s=(.*)$' % _CROS_ARCHIVE_URL)
+  dir_re = re.compile('^archive to dir\:(.*)$')
   for line in result.output.splitlines():
-    line_match = key_re.match(line)
-    if line_match:
-      archive_url = line_match.group(1)
+    url_match = url_re.match(line)
+    if url_match:
+      archive_url = url_match.group(1).strip()
 
-  assert archive_url, 'Archive Build Failed to Provide Archive URL'
-  return archive_url
+    dir_match = dir_re.match(line)
+    if dir_match:
+      archive_dir = dir_match.group(1).strip()
+
+  # assert archive_url, 'Archive Build Failed to Provide Archive URL'
+  assert archive_dir, 'Archive Build Failed to Provide Archive Directory'
+  return archive_url, archive_dir
+
+
+def UploadSymbols(buildroot, board, official):
+  """Upload debug symbols for this build."""
+  cmd =['./upload_symbols',
+        '--board=%s' % board,
+        '--yes',
+        '--verbose']
+
+  if official:
+    cmd += ['--official_build']
+
+  cwd = os.path.join(buildroot, 'src', 'scripts')
+
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
+
+
+def PushImages(buildroot, board, branch_name, archive_dir):
+  """Push the generated image to http://chromeos_images."""
+  cmd =['./pushimage',
+        '--board=%s' % board,
+        '--branch=%s' % branch_name,
+        archive_dir]
+
+  cwd = os.path.join(buildroot, 'src', 'scripts')
+
+  # It may be necessary to set "--nolatest" for some builds in the
+  # future.
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)

@@ -445,21 +445,23 @@ class TestStage(BuilderStage):
 class ArchiveStage(BuilderStage):
   """Archives build and test artifacts for developer consumption."""
   def _PerformStage(self):
-    BuilderStage.archive_url = commands.LegacyArchiveBuild(
+    BuilderStage.archive_url, archive_dir = commands.LegacyArchiveBuild(
         self._build_root, self._bot_id, self._build_config,
         self._options.buildnumber, BuilderStage.test_tarball,
         self._options.debug)
 
-    if self._build_config['push_image']:
-      # XXX pushimage --board=$BOARD --branch=$SHA1 \
-      #        $lnolatest $ARCHIVE_DIR/$FINALARCHIVE
-      pass
-
     if self._build_config['upload_symbols']:
-      # XXX UploadSymbols
-      #  ./enter_chroot.sh -- ./upload_symbols --board=$BOARD
-      #     --yes $DASH_OFFICIAL --verbose
-      pass
+      commands.UploadSymbols(self._build_root,
+                             board=self._build_config['board'],
+                             official=self._build_config['chromeos_official'])
+
+    # TODO: When we support branches fully, the friendly name of the branch
+    # needs to be used with PushImages
+    if self._build_config['push_image']:
+      commands.PushImages(self._build_root,
+                          board=self._build_config['board'],
+                          branch_name='master',
+                          archive_dir=archive_dir)
 
 
 class PushChangesStage(BuilderStage):

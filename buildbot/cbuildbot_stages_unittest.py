@@ -727,17 +727,34 @@ class ArchiveStageTest(AbstractStageTest):
     AbstractStageTest.setUp(self)
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
 
+    self._build_config = self.build_config.copy()
+    self._build_config['upload_symbols'] = True
+    self._build_config['push_image'] = True
+
   def ConstructStage(self):
-     return stages.ArchiveStage(self.bot_id, self.options, self.build_config)
+    return stages.ArchiveStage(self.bot_id, self.options, self._build_config)
 
   def testArchive(self):
     """Simple did-it-run test."""
     self.mox.StubOutWithMock(commands, 'LegacyArchiveBuild')
+    self.mox.StubOutWithMock(commands, 'UploadSymbols')
+    self.mox.StubOutWithMock(commands, 'PushImages')
+
+
 
     commands.LegacyArchiveBuild(
-        self.build_root, self.bot_id, self.build_config,
+        self.build_root, self.bot_id, self._build_config,
         self.options.buildnumber, None,
-        self.options.debug).AndReturn('')
+        self.options.debug).AndReturn((None, '/archive/dir'))
+
+    commands.UploadSymbols(self.build_root,
+                           board=self._build_config['board'],
+                           official=self._build_config['chromeos_official'])
+
+    commands.PushImages(self.build_root,
+                        board=self._build_config['board'],
+                        branch_name='master',
+                        archive_dir='/archive/dir')
 
     self.mox.ReplayAll()
     self.RunStage()

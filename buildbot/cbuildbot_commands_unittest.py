@@ -198,6 +198,142 @@ class CBuildBotTest(mox.MoxTestBase):
     commands.Build(buildroot, True, extra_env=extra)
     self.mox.VerifyAll()
 
+  def testLegacyArchiveBuildMinimal(self):
+    """Test Legacy Archive Command, with minimal values."""
+    buildroot='/bob'
+    buildnumber=4
+    test_tarball=None
+
+    buildconfig = {}
+    buildconfig['board'] = 'config_board'
+    buildconfig['gs_path'] = None
+    buildconfig['factory_test_mod'] = False
+    buildconfig['test_mod'] = False
+    buildconfig['factory_install_mod'] = False
+    buildconfig['useflags'] = None
+    buildconfig['archive_build_debug'] = False
+
+    output_obj = cros_lib.CommandResult()
+    output_obj.output = ('archive to dir: archive/dir \n'
+                         'CROS_ARCHIVE_URL=http://archive/url \n'
+                         )
+
+    cros_lib.RunCommand(['./archive_build.sh',
+                         '--build_number', '4',
+                         '--to', '/var/www/archive/bot_id',
+                         '--keep_max', '3',
+                         '--board', buildconfig['board'],
+                         '--noarchive_debug',
+                         '--notest_mod'],
+                        combine_stdout_stderr=True,
+                        cwd='/bob/src/scripts',
+                        redirect_stderr=True,
+                        redirect_stdout=True).AndReturn(output_obj)
+
+    self.mox.ReplayAll()
+    result = commands.LegacyArchiveBuild(buildroot,
+                                         'bot_id',
+                                         buildconfig,
+                                         buildnumber,
+                                         test_tarball,
+                                         debug=False)
+    self.mox.VerifyAll()
+
+    self.assertTrue(result == ('http://archive/url', 'archive/dir'), result)
+
+  def testLegacyArchiveBuildMaximum(self):
+    """Test Legacy Archive Command, with all values."""
+    buildroot='/bob'
+    buildnumber=4
+    test_tarball='/path/test.tar.gz'
+
+    buildconfig = {}
+    buildconfig['board'] = 'config_board'
+    buildconfig['gs_path'] = 'gs://gs/path'
+    buildconfig['factory_test_mod'] = True
+    buildconfig['test_mod'] = True
+    buildconfig['factory_install_mod'] = True
+    buildconfig['useflags'] = ['use_a', 'use_b']
+    buildconfig['archive_build_debug'] = True
+
+    output_obj = cros_lib.CommandResult()
+    output_obj.output = ('archive to dir: archive/dir \n'
+                         'CROS_ARCHIVE_URL=http://archive/url \n'
+                         )
+
+    cros_lib.RunCommand(['./archive_build.sh',
+                         '--build_number', '4',
+                         '--to', '/var/www/archive/bot_id',
+                         '--keep_max', '3',
+                         '--board', 'config_board',
+                         '--gsutil_archive', 'gs://gs/path',
+                         '--acl', '/home/chrome-bot/slave_archive_acl',
+                         '--gsd_gen_index',
+                         '/b/scripts/gsd_generate_index/gsd_generate_index.py',
+                         '--gsutil', '/b/scripts/slave/gsutil',
+                         '--factory_test_mod',
+                         '--test_tarball', test_tarball,
+                         '--debug',
+                         '--factory_install_mod',
+                         '--useflags', 'use_a use_b'],
+                        combine_stdout_stderr=True,
+                        cwd='/bob/src/scripts',
+                        redirect_stderr=True,
+                        redirect_stdout=True).AndReturn(output_obj)
+
+    self.mox.ReplayAll()
+    result = commands.LegacyArchiveBuild(buildroot,
+                                         'bot_id',
+                                         buildconfig,
+                                         buildnumber,
+                                         test_tarball,
+                                         debug=True)
+    self.mox.VerifyAll()
+
+    self.assertTrue(result == ('http://archive/url', 'archive/dir'), result)
+
+  def testUploadSymbols(self):
+    """Test UploadSymbols Command."""
+    buildroot='/bob'
+    board = 'board_name'
+
+    cros_lib.RunCommand(['./upload_symbols',
+                         '--board=board_name',
+                         '--yes',
+                         '--verbose',
+                         '--official_build'],
+                        cwd='/bob/src/scripts',
+                        enter_chroot=True)
+
+    cros_lib.RunCommand(['./upload_symbols',
+                         '--board=board_name',
+                         '--yes',
+                         '--verbose'],
+                        cwd='/bob/src/scripts',
+                        enter_chroot=True)
+
+    self.mox.ReplayAll()
+    commands.UploadSymbols(buildroot, board, official=True)
+    commands.UploadSymbols(buildroot, board, official=False)
+    self.mox.VerifyAll()
+
+  def testPushImages(self):
+    """Test UploadSymbols Command."""
+    buildroot='/bob'
+    board = 'board_name'
+    branch_name = 'branch_name'
+    archive_dir = '/archive/dir'
+
+    cros_lib.RunCommand(['./pushimage',
+                         '--board=board_name',
+                         '--branch=branch_name',
+                         '/archive/dir'],
+                        cwd='/bob/src/scripts',
+                        enter_chroot=True)
+
+    self.mox.ReplayAll()
+    commands.PushImages(buildroot, board, branch_name, archive_dir)
+    self.mox.VerifyAll()
 
 
 if __name__ == '__main__':
