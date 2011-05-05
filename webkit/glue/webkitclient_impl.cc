@@ -451,13 +451,7 @@ double WebKitClientImpl::currentTime() {
 
 void WebKitClientImpl::cryptographicallyRandomValues(
     unsigned char* buffer, size_t length) {
-  uint64 bytes = 0;
-  for (size_t i = 0; i < length; ++i) {
-    size_t offset = i % sizeof(bytes);
-    if (!offset)
-      bytes = base::RandUint64();
-    buffer[i] = reinterpret_cast<unsigned char*>(&bytes)[offset];
-  }
+  base::RandBytes(buffer, length);
 }
 
 void WebKitClientImpl::setSharedTimerFiredFunction(void (*func)()) {

@@ -7,7 +7,7 @@
 #import <Security/Security.h>
 
 #include "chrome/browser/keychain_mac.h"
-#include "chrome/browser/sync/util/crypto_helpers.h"
+#include "chrome/common/random.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -18,7 +18,7 @@ namespace {
 std::string AddRandomPasswordToKeychain(const MacKeychain& keychain,
                                         const std::string& service_name,
                                         const std::string& account_name) {
-  std::string password = Generate128BitRandomHexString();
+  std::string password = Generate128BitRandomBase64String();
   void* password_data =
       const_cast<void*>(static_cast<const void*>(password.data()));
 

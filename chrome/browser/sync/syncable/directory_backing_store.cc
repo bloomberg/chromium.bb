@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable_columns.h"
-#include "chrome/browser/sync/util/crypto_helpers.h"
+#include "chrome/common/random.h"
 #include "chrome/common/sqlite_utils.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -61,7 +61,7 @@ int ExecQuery(sqlite3* dbhandle, const char* query) {
 }
 
 string GenerateCacheGUID() {
-  return Generate128BitRandomHexString();
+  return Generate128BitRandomBase64String();
 }
 
 }  // namespace

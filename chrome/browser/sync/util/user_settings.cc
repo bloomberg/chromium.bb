@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -18,10 +18,12 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/md5.h"
+#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"  // For migration.
-#include "chrome/browser/sync/util/crypto_helpers.h"
 #include "chrome/browser/sync/util/data_encryption.h"
+#include "chrome/common/random.h"
 #include "chrome/common/sqlite_utils.h"
 
 using std::numeric_limits;
@@ -166,7 +168,7 @@ static void MakeClientIDTable(sqlite3* const dbhandle) {
     SQLStatement statement;
     statement.prepare(dbhandle,
                       "INSERT INTO client_id values ( ? )");
-    statement.bind_string(0, Generate128BitRandomHexString());
+    statement.bind_string(0, Generate128BitRandomBase64String());
     if (SQLITE_DONE != statement.step()) {
       LOG(FATAL) << "INSERT INTO client_id\n" << sqlite3_errmsg(dbhandle);
     }
@@ -270,13 +272,12 @@ const int32 kInvalidHash = 0xFFFFFFFF;
 // We use 10 bits of data from the MD5 digest as the hash.
 const int32 kHashMask = 0x3FF;
 
-int32 GetHashFromDigest(const vector<uint8>& digest) {
+int32 GetHashFromDigest(MD5Digest& digest) {
   int32 hash = 0;
   int32 mask = kHashMask;
-  for (vector<uint8>::const_iterator i = digest.begin(); i != digest.end();
-       ++i) {
+  for (size_t i = 0; i < sizeof(digest.a); ++i) {
     hash = hash << 8;
-    hash = hash | (*i & kHashMask);
+    hash = hash | (digest.a[i] & kHashMask);
     mask = mask >> 8;
     if (0 == mask)
       break;
@@ -351,12 +352,16 @@ void UserSettings::StoreHashedPassword(const string& email,
                                        const string& password) {
   // Save one-way hashed password:
   char binary_salt[kSaltSize];
-  GetRandomBytes(binary_salt, sizeof(binary_salt));
+  base::RandBytes(binary_salt, sizeof(binary_salt));
 
   const string salt = APEncode(string(binary_salt, sizeof(binary_salt)));
-  MD5Calculator md5;
-  md5.AddData(salt.data(), salt.size());
-  md5.AddData(password.data(), password.size());
+  MD5Context md5_context;
+  MD5Init(&md5_context);
+  MD5Update(&md5_context, salt.data(), salt.size());
+  MD5Update(&md5_context, password.data(), password.size());
+  MD5Digest md5_digest;
+  MD5Final(&md5_digest, &md5_context);
+
   ScopedDBHandle dbhandle(this);
   SQLTransaction transaction(dbhandle.get());
   transaction.BeginExclusive();
@@ -367,7 +372,7 @@ void UserSettings::StoreHashedPassword(const string& email,
                       " values ( ?, ?, ? )");
     statement.bind_string(0, email);
     statement.bind_string(1, PASSWORD_HASH);
-    statement.bind_int(2, GetHashFromDigest(md5.GetDigest()));
+    statement.bind_int(2, GetHashFromDigest(md5_digest));
     if (SQLITE_DONE != statement.step()) {
       LOG(FATAL) << sqlite3_errmsg(dbhandle.get());
     }
@@ -413,10 +418,13 @@ bool UserSettings::VerifyAgainstStoredHash(const string& email,
   CHECK(SQLITE_DONE == query_result);
   if (salt.empty() || hash == kInvalidHash)
     return false;
-  MD5Calculator md5;
-  md5.AddData(salt.data(), salt.size());
-  md5.AddData(password.data(), password.size());
-  return hash == GetHashFromDigest(md5.GetDigest());
+  MD5Context md5_context;
+  MD5Init(&md5_context);
+  MD5Update(&md5_context, salt.data(), salt.size());
+  MD5Update(&md5_context, password.data(), password.size());
+  MD5Digest md5_digest;
+  MD5Final(&md5_digest, &md5_context);
+  return hash == GetHashFromDigest(md5_digest);
 }
 
 void UserSettings::SwitchUser(const string& username) {

@@ -626,8 +626,6 @@
         'browser/sync/syncable/syncable_id.h',
         'browser/sync/syncable/syncable_enum_conversions.cc',
         'browser/sync/syncable/syncable_enum_conversions.h',
-        'browser/sync/util/crypto_helpers.cc',
-        'browser/sync/util/crypto_helpers.h',
         'browser/sync/util/cryptographer.cc',
         'browser/sync/util/cryptographer.h',
         'browser/sync/util/dbgq.h',
