@@ -10,13 +10,8 @@
 
 #include <sys/nacl_syscalls.h>
 
+#include "native_client/tests/dynamic_code_loading/dynamic_segment.h"
 #include "native_client/tests/dynamic_code_loading/templates.h"
-
-
-/* TODO(mseaborn): Add a symbol to the linker script for finding the
-   end of the static code segment more accurately.  The value below is
-   an approximation. */
-#define DYNAMIC_CODE_SEGMENT_START 0x80000
 
 
 /* This test checks that the validator check is disabled in debug mode. */

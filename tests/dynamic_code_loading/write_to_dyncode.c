@@ -1,24 +1,19 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdint.h>
 #include <stdio.h>
-
-
-/* TODO(mseaborn): Add a symbol to the linker script for finding the
-   end of the static code segment more accurately.  The value below is
-   an approximation. */
-#define DYNAMIC_CODE_SEGMENT_START 0x80000
+#include "native_client/tests/dynamic_code_loading/dynamic_segment.h"
 
 
 /* Test that we can't write to the dynamic code area. */
 
 int main() {
   void (*func)();
-  uintptr_t code_ptr = DYNAMIC_CODE_SEGMENT_START;
+  uintptr_t code_ptr = (uintptr_t) DYNAMIC_CODE_SEGMENT_START;
 
   fprintf(stdout, "This should fault...\n");
   fflush(stdout);

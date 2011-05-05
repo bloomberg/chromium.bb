@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <assert.h>
@@ -14,6 +14,7 @@
 
 #include <sys/nacl_syscalls.h>
 
+#include "native_client/tests/dynamic_code_loading/dynamic_segment.h"
 #include "native_client/tests/dynamic_code_loading/templates.h"
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
@@ -29,11 +30,6 @@
  * team to provide this value.
  */
 #define NUM_BUNDLES_FOR_HLT 3
-
-/* TODO(mseaborn): Add a symbol to the linker script for finding the
-   end of the static code segment more accurately.  The value below is
-   an approximation. */
-#define DYNAMIC_CODE_SEGMENT_START 0x80000
 
 struct code_section {
   char *name;
@@ -59,10 +55,14 @@ struct code_section illegal_code_sections[] = {
     &template_func_illegal_constant_replacement_end },
 };
 
-uint8_t *next_addr = (uint8_t *) DYNAMIC_CODE_SEGMENT_START;
+uint8_t *next_addr = NULL;
 
 uint8_t *allocate_code_space(int pages) {
-  uint8_t *addr = next_addr;
+  uint8_t *addr;
+  if (next_addr == NULL) {
+    next_addr = (uint8_t *) DYNAMIC_CODE_SEGMENT_START;
+  }
+  addr = next_addr;
   next_addr += 0x10000 * pages;
   assert(next_addr < (uint8_t *) DYNAMIC_CODE_SEGMENT_END);
   return addr;
@@ -341,4 +341,3 @@ int TestMain() {
 int main() {
   return RunTests(TestMain);
 }
-

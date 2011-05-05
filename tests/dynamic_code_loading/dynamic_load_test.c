@@ -14,6 +14,7 @@
 
 #include <sys/nacl_syscalls.h>
 
+#include "native_client/tests/dynamic_code_loading/dynamic_segment.h"
 #include "native_client/tests/dynamic_code_loading/templates.h"
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
@@ -40,14 +41,6 @@
  */
 #define NUM_BUNDLES_FOR_HLT 3
 
-/*
- * This is an address that is well into the dynamic code region and page
- * aligned.  There is a test below specifically for installing a function
- * at the very beginning of the dynamic code region.
- */
-#define DYNAMIC_CODE_SEGMENT_START 0x80000
-
-
 int nacl_load_code(void *dest, void *src, int size) {
   int rc = nacl_dyncode_create(dest, src, size);
   /* Undo the syscall wrapper's errno handling, because it's more
@@ -55,11 +48,14 @@ int nacl_load_code(void *dest, void *src, int size) {
   return rc == 0 ? 0 : -errno;
 }
 
-
-char *next_addr = (char *) DYNAMIC_CODE_SEGMENT_START;
+char *next_addr = NULL;
 
 char *allocate_code_space(int pages) {
-  char *addr = next_addr;
+  char *addr;
+  if (next_addr == NULL) {
+    next_addr = (char *) DYNAMIC_CODE_SEGMENT_START;
+  }
+  addr = next_addr;
   next_addr += 0x10000 * pages;
   assert(next_addr < (char *) DYNAMIC_CODE_SEGMENT_END);
   return addr;
