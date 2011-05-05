@@ -196,3 +196,6 @@ WorkerFileSystemTest.AsyncOperations
 
 # Fails, see http://crbug.com/81657
 AutomationProxyVisibleTest.AppendTab
+
+# NavigateToURL fails, see http://crbug.com/81658
+LoginPromptTest.TestDigestAuth
