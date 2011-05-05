@@ -117,9 +117,7 @@ TEST_F(PPAPITest, Graphics2D) {
   RunTest("Graphics2D");
 }
 
-// TODO(brettw) bug 51344: this is flaky on bots. Seems to timeout navigating.
-// Possibly all the image allocations slow things down on a loaded bot too much.
-TEST_F(PPAPITest, FLAKY_ImageData) {
+TEST_F(PPAPITest, ImageData) {
   RunTest("ImageData");
 }
 
@@ -132,13 +130,11 @@ TEST_F(PPAPITest, FLAKY_URLLoader) {
   RunTestViaHTTP("URLLoader");
 }
 
-// Flaky, http://crbug.com/51012
-TEST_F(PPAPITest, FLAKY_PaintAggregator) {
+TEST_F(PPAPITest,PaintAggregator) {
   RunTestViaHTTP("PaintAggregator");
 }
 
-// Flaky, http://crbug.com/48544.
-TEST_F(PPAPITest, FLAKY_Scrollbar) {
+TEST_F(PPAPITest, Scrollbar) {
   RunTest("Scrollbar");
 }
 
