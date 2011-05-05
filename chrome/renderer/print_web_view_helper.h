@@ -87,6 +87,10 @@ class PrintWebViewHelper : public RenderViewObserver ,
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, OnPrintPages);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest, OnPrintPreview);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest, OnPrintPreviewFail);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
+                           OnPrintForPrintPreview);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
+                           OnPrintForPrintPreviewFail);
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, PrintLayoutTest);
@@ -246,9 +250,15 @@ class PrintWebViewHelper : public RenderViewObserver ,
   scoped_ptr<WebKit::WebNode> context_menu_preview_node_;
 
   scoped_ptr<PrintMsg_PrintPages_Params> print_pages_params_;
+  bool is_preview_;
+
+  // Used for scripted initiated printing blocking.
   base::Time last_cancelled_script_print_;
   int user_cancelled_scripted_print_count_;
-  bool is_preview_;
+
+  // Let the browser process know of a printing failure. Only set to false when
+  // the failure came from the browser in the first place.
+  bool notify_browser_of_print_failure_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelper);
 };
