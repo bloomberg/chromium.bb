@@ -137,8 +137,14 @@ bool NaClProcessHost::LaunchSelLdr() {
   if (!CreateChannel())
     return false;
 
+  CommandLine::StringType nacl_loader_prefix;
+#if defined(OS_POSIX)
+  nacl_loader_prefix = CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+      switches::kNaClLoaderCmdPrefix);
+#endif  // defined(OS_POSIX)
+
   // Build command line for nacl.
-  FilePath exe_path = GetChildPath(true);
+  FilePath exe_path = GetChildPath(nacl_loader_prefix.empty());
   if (exe_path.empty())
     return false;
 
@@ -150,6 +156,9 @@ bool NaClProcessHost::LaunchSelLdr() {
 
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
 
+  if (!nacl_loader_prefix.empty())
+    cmd_line->PrependWrapper(nacl_loader_prefix);
+
   // On Windows we might need to start the broker process to launch a new loader
 #if defined(OS_WIN)
   if (running_on_wow64_) {
@@ -159,7 +168,7 @@ bool NaClProcessHost::LaunchSelLdr() {
     BrowserChildProcessHost::Launch(FilePath(), cmd_line);
   }
 #elif defined(OS_POSIX)
-  BrowserChildProcessHost::Launch(true,  // use_zygote
+  BrowserChildProcessHost::Launch(nacl_loader_prefix.empty(),  // use_zygote
                                   base::environment_vector(),
                                   cmd_line);
 #endif
