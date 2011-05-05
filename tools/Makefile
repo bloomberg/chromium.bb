@@ -606,7 +606,7 @@ SCONS_DESTINATIONS_NOLIB=\
  naclsdk_mode=custom:$(SDKLOC_NATIVE) \
  extra_sdk_include_destination=$(ARCH_DEST_INC_NATIVE) \
 
-BUILD_EXTRA_SDK=BUILD/build-extra_sdk-$(CROSSARCH)
+BUILD_EXTRA_SDK=BUILD/opt-$(PLATFORM)-x86-$(LIB_BITS)
 
 .PHONY: scons-libs-glibc
 scons-libs-glibc: glibc-adhoc-files
@@ -620,7 +620,7 @@ scons-libs-glibc: glibc-adhoc-files
 	    extra_sdk_update_header extra_sdk_update \
 	    targetplatform=x86-$(LIB_BITS) --verbose )
 
-NCVAL_STUBOUT=$(abspath $(BUILD_EXTRA_SDK)/opt-$(PLATFORM)-x86-$(LIB_BITS)/staging/ncval_stubout)
+NCVAL_STUBOUT=$(abspath $(BUILD_EXTRA_SDK)/staging/ncval_stubout)
 .PHONY: stubout
 stubout:
 	cd .. && ./$(SCONS) --mode=opt-$(PLATFORM) platform=x86-$(LIB_BITS) \
