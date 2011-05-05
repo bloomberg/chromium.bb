@@ -24,6 +24,7 @@ libraries = (
     'libimc.so',
     'libplatform.so',
     'libsrpc.so',
+    'libimc_syscalls.so',
     'libgio.so',
     'libnacl.so',
     )
