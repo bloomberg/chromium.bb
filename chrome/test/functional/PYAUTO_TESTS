@@ -55,6 +55,7 @@
       'find_in_page',
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
+      '-find_in_page.FindMatchTests.testSearchInPDF',  # crbug.com/81685
       'execute_javascript',
       'history',
       'https',
@@ -72,7 +73,7 @@
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
       # crbug.com/73078
       '-passwords',
-      'pdf',
+      '-pdf',  # crbug.com/81685
       'plugins',
       'plugins_check',
       'popups',
