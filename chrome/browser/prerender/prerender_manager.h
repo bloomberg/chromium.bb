@@ -103,9 +103,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   bool MaybeUsePreloadedPage(TabContents* tab_contents, const GURL& url);
   bool MaybeUsePreloadedPageOld(TabContents* tab_contents, const GURL& url);
 
-  // Allows PrerenderContents to remove itself when prerendering should
-  // be cancelled.
-  void RemoveEntry(PrerenderContents* entry);
+  // Moves a PrerenderContents to the pending delete list from the list of
+  // active prerenders when prerendering should be cancelled.
+  void MoveEntryToPendingDelete(PrerenderContents* entry);
+
+  // Checks if the PrerenderContents has been added to the pending delete list.
+  bool IsPendingDelete(PrerenderContents* entry) const;
 
   // Retrieves the PrerenderContents object for the specified URL, if it
   // has been prerendered.  The caller will then have ownership of the
@@ -209,6 +212,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       const GURL& url,
       const GURL& referrer);
 
+  // Deletes any PrerenderContents that have been added to the pending delete
+  // list.
+  void DeletePendingDeleteEntries();
+
   // Finds the specified PrerenderContents and returns it, if it exists.
   // Returns NULL otherwise.  Unlike GetEntry, the PrerenderManager maintains
   // ownership of the PrerenderContents.
@@ -251,6 +258,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // List of prerendered elements.
   std::list<PrerenderContentsData> prerender_list_;
+
+  // List of prerender elements to be deleted
+  std::list<PrerenderContentsData> pending_delete_list_;
 
   // Set of TabContents which are currently displaying a prerendered page.
   base::hash_set<TabContents*> prerendered_tab_contents_set_;

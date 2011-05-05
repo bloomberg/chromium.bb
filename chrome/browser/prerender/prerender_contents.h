@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
+#include "chrome/browser/prerender/prerender_render_view_host_observer.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/common/view_types.h"
@@ -45,6 +46,8 @@ class PrerenderManager;
 // NavigationController because is has no facility for navigating (other than
 // programatically view window.location.href) or RenderViewHostManager because
 // it is never allowed to navigate across a SiteInstance boundary.
+// TODO(dominich): Remove RenderViewHostDelegate inheritance when UseTabContents
+// returns true by default.
 class PrerenderContents : public RenderViewHostDelegate,
                           public RenderViewHostDelegate::View,
                           public NotificationObserver,
@@ -85,7 +88,8 @@ class PrerenderContents : public RenderViewHostDelegate,
   // it if not.
   void DestroyWhenUsingTooManyResources();
 
-  RenderViewHost* render_view_host();
+  RenderViewHost* render_view_host_mutable();
+  const RenderViewHost* render_view_host() const;
 
   // Allows replacing of the RenderViewHost owned by this class, including
   // replacing with a NULL value.  When a caller uses this, the caller will
@@ -122,14 +126,23 @@ class PrerenderContents : public RenderViewHostDelegate,
   // URL, i.e. whether there is a match.
   bool MatchesURL(const GURL& url) const;
 
+  void OnJSOutOfMemory();
+  void OnRunJavaScriptMessage(const std::wstring& message,
+                              const std::wstring& default_prompt,
+                              const GURL& frame_url,
+                              const int flags,
+                              bool* did_suppress_message,
+                              std::wstring* prompt_field);
+  virtual void OnRenderViewGone(int status, int exit_code);
+
+
   // RenderViewHostDelegate implementation.
+  // TODO(dominich): Remove when RenderViewHostDelegate is removed as a base
+  // class.
   virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
   virtual ViewType::Type GetRenderViewType() const OVERRIDE;
   virtual int GetBrowserWindowID() const OVERRIDE;
-  virtual void RenderViewGone(RenderViewHost* render_view_host,
-                              base::TerminationStatus status,
-                              int error_code) OVERRIDE;
   virtual void DidNavigate(
       RenderViewHost* render_view_host,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
@@ -137,18 +150,11 @@ class PrerenderContents : public RenderViewHostDelegate,
                            int32 page_id,
                            const std::wstring& title);
   virtual WebPreferences GetWebkitPrefs() OVERRIDE;
-  virtual void RunJavaScriptMessage(const std::wstring& message,
-                                    const std::wstring& default_prompt,
-                                    const GURL& frame_url,
-                                    const int flags,
-                                    IPC::Message* reply_msg,
-                                    bool* did_suppress_message) OVERRIDE;
   virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const OVERRIDE;
 
   // TabContentsObserver implementation.
   virtual void DidStopLoading() OVERRIDE;
-  virtual void RenderViewGone() OVERRIDE;
 
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(
@@ -213,8 +219,6 @@ class PrerenderContents : public RenderViewHostDelegate,
   virtual void RendererUnresponsive(RenderViewHost* render_view_host,
                                     bool is_during_unload) OVERRIDE;
 
-  void OnJSOutOfMemory();
-
   // Adds an alias URL, for one of the many redirections. If the URL can not
   // be prerendered - for example, it's an ftp URL - |this| will be destroyed
   // and false is returned. Otherwise, true is returned and the alias is
@@ -227,6 +231,10 @@ class PrerenderContents : public RenderViewHostDelegate,
   }
 
   TabContentsWrapper* ReleasePrerenderContents();
+
+  // Called when we add the PrerenderContents to the pending delete list. Allows
+  // derived classes to clean up.
+  virtual void OnDestroy() {}
 
   // Indicates whether to use the legacy code doing prerendering via
   // a RenderViewHost (false), or whether the new TabContent based prerendering
@@ -244,14 +252,13 @@ class PrerenderContents : public RenderViewHostDelegate,
                     const GURL& url,
                     const GURL& referrer);
 
-  // from RenderViewHostDelegate.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
   const GURL& prerender_url() const { return prerender_url_; }
 
  private:
   // Needs to be able to call the constructor.
   friend class PrerenderContentsFactoryImpl;
+
+  friend class PrerenderRenderViewHostObserver;
 
   // Message handlers.
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
@@ -325,6 +332,8 @@ class PrerenderContents : public RenderViewHostDelegate,
 
   // The prerendered TabContents; may be null.
   scoped_ptr<TabContentsWrapper> prerender_contents_;
+
+  scoped_ptr<PrerenderRenderViewHostObserver> render_view_host_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

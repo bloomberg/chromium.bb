@@ -1616,6 +1616,8 @@
         'browser/prerender/prerender_manager.h',
         'browser/prerender/prerender_observer.cc',
         'browser/prerender/prerender_observer.h',
+        'browser/prerender/prerender_render_view_host_observer.cc',
+        'browser/prerender/prerender_render_view_host_observer.h',
         'browser/prerender/prerender_render_widget_host_view.cc',
         'browser/prerender/prerender_render_widget_host_view.h',
         'browser/printing/cloud_print/cloud_print_proxy_service.cc',

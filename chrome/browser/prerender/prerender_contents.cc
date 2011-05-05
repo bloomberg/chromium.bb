@@ -41,6 +41,8 @@
 
 namespace prerender {
 
+namespace {
+
 // Compares URLs ignoring any ref for the purposes of matching URLs when
 // prerendering.
 struct PrerenderUrlPredicate {
@@ -69,6 +71,8 @@ void RemoveChildRoutePair(ResourceDispatcherHost* resource_dispatcher_host,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   resource_dispatcher_host->RemovePrerenderChildRoutePair(child_id, route_id);
 }
+
+}  // end namespace
 
 class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
@@ -117,6 +121,10 @@ void PrerenderContents::StartPrerenderingOld(
   SiteInstance* site_instance = SiteInstance::CreateSiteInstance(profile_);
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
                                          NULL);
+
+  // Register as an observer of the RenderViewHost so we get messages.
+  render_view_host_observer_.reset(
+      new PrerenderRenderViewHostObserver(this, render_view_host_mutable()));
 
   int process_id = render_view_host_->process()->id();
   int view_id = render_view_host_->routing_id();
@@ -195,11 +203,11 @@ void PrerenderContents::StartPrerenderingOld(
 void PrerenderContents::StartPrerendering(
     const RenderViewHost* source_render_view_host) {
   if (!UseTabContents()) {
-    VLOG(1) << "Starting prerendering with LEGACY code\n";
+    VLOG(1) << "Starting prerendering with LEGACY code";
     StartPrerenderingOld(source_render_view_host);
     return;
   }
-  VLOG(1) << "Starting prerendering with NEW code\n";
+  VLOG(1) << "Starting prerendering with NEW code";
   DCHECK(profile_ != NULL);
   DCHECK(!prerendering_has_started_);
   DCHECK(prerender_contents_.get() == NULL);
@@ -229,6 +237,10 @@ void PrerenderContents::StartPrerendering(
     source_tc->view()->GetContainerBounds(&tab_bounds);
     prerender_contents_->view()->SizeContents(tab_bounds.size());
   }
+
+  // Register as an observer of the RenderViewHost so we get messages.
+  render_view_host_observer_.reset(
+      new PrerenderRenderViewHostObserver(this, render_view_host_mutable()));
 
   int process_id;
   int view_id;
@@ -291,12 +303,9 @@ void PrerenderContents::StartPrerendering(
 
 bool PrerenderContents::GetChildId(int* child_id) const {
   CHECK(child_id);
-  if (prerender_contents_.get()) {
-    *child_id = prerender_contents_->render_view_host()->process()->id();
-    return true;
-  }
-  if (render_view_host_) {
-    *child_id = render_view_host_->process()->id();
+  const RenderViewHost* prerender_render_view_host = render_view_host();
+  if (prerender_render_view_host) {
+    *child_id = prerender_render_view_host->process()->id();
     return true;
   }
   return false;
@@ -304,12 +313,9 @@ bool PrerenderContents::GetChildId(int* child_id) const {
 
 bool PrerenderContents::GetRouteId(int* route_id) const {
   CHECK(route_id);
-  if (prerender_contents_.get()) {
-    *route_id = prerender_contents_->render_view_host()->routing_id();
-    return true;
-  }
-  if (render_view_host_) {
-    *route_id = render_view_host_->routing_id();
+  const RenderViewHost* prerender_render_view_host = render_view_host();
+  if (prerender_render_view_host) {
+    *route_id = prerender_render_view_host->routing_id();
     return true;
   }
   return false;
@@ -340,23 +346,27 @@ PrerenderContents::~PrerenderContents() {
   if (prerendering_has_started())
     RecordFinalStatus(final_status_);
 
-  if (!render_view_host_)   // Will be null for unit tests.
-    return;
+  if (render_view_host_ || prerender_contents_.get()) {
+    RenderViewHost* prerender_render_view_host = render_view_host_mutable();
 
-  int process_id = render_view_host_->process()->id();
-  int view_id = render_view_host_->routing_id();
-  std::pair<int, int> process_view_pair = std::make_pair(process_id, view_id);
-  NotificationService::current()->Notify(
-      NotificationType::PRERENDER_CONTENTS_DESTROYED,
-      Source<std::pair<int, int> >(&process_view_pair),
-      NotificationService::NoDetails());
+    int process_id = prerender_render_view_host->process()->id();
+    int view_id = prerender_render_view_host->routing_id();
+    std::pair<int, int> process_view_pair = std::make_pair(process_id, view_id);
+    NotificationService::current()->Notify(
+        NotificationType::PRERENDER_CONTENTS_DESTROYED,
+        Source<std::pair<int, int> >(&process_view_pair),
+        NotificationService::NoDetails());
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&RemoveChildRoutePair,
-                          g_browser_process->resource_dispatcher_host(),
-                          process_id, view_id));
-  render_view_host_->Shutdown();  // deletes render_view_host
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableFunction(&RemoveChildRoutePair,
+                            g_browser_process->resource_dispatcher_host(),
+                            process_id, view_id));
+
+    // Only delete the RenderViewHost if we own it.
+    if (render_view_host_)
+      render_view_host_->Shutdown();
+  }
 }
 
 RenderViewHostDelegate::View* PrerenderContents::GetViewDelegate() {
@@ -373,14 +383,6 @@ ViewType::Type PrerenderContents::GetRenderViewType() const {
 
 int PrerenderContents::GetBrowserWindowID() const {
   return extension_misc::kUnknownWindowId;
-}
-
-void PrerenderContents::RenderViewGone(RenderViewHost* render_view_host,
-                                       base::TerminationStatus status,
-                                       int error_code) {
-  DCHECK_EQ(render_view_host_, render_view_host);
-  // Cancel the prerender if the RenderView crashes.
-  Destroy(FINAL_STATUS_RENDERER_CRASHED);
 }
 
 void PrerenderContents::DidNavigate(
@@ -413,21 +415,6 @@ void PrerenderContents::UpdateTitle(RenderViewHost* render_view_host,
   page_id_ = page_id;
 }
 
-void PrerenderContents::RunJavaScriptMessage(
-    const std::wstring& message,
-    const std::wstring& default_prompt,
-    const GURL& frame_url,
-    const int flags,
-    IPC::Message* reply_msg,
-    bool* did_suppress_message) {
-  // Always suppress JavaScript messages if they're triggered by a page being
-  // prerendered.
-  *did_suppress_message = true;
-  // We still want to show the user the message when they navigate to this
-  // page, so cancel this prerender.
-  Destroy(FINAL_STATUS_JAVASCRIPT_ALERT);
-}
-
 bool PrerenderContents::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {
@@ -449,7 +436,7 @@ void PrerenderContents::Observe(NotificationType type,
     case NotificationType::AUTH_NEEDED:
     case NotificationType::AUTH_CANCELLED: {
       // Prerendered pages have a NULL controller and the login handler should
-      // be referencing us as the render view host delegate.
+      // be referencing us as the RenderViewHost delegate.
       NavigationController* controller =
           Source<NavigationController>(source).ptr();
       LoginNotificationDetails* details_ptr =
@@ -582,22 +569,6 @@ void PrerenderContents::ShowCreatedFullscreenWidget(int route_id) {
   NOTIMPLEMENTED();
 }
 
-bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  bool message_is_ok = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(PrerenderContents, message, message_is_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
-                        OnDidStartProvisionalLoadForFrame)
-    IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MaybeCancelPrerenderForHTML5Media,
-                        OnMaybeCancelPrerenderForHTML5Media)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
-
-  return handled;
-}
-
 void PrerenderContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                           bool is_main_frame,
                                                           const GURL& url) {
@@ -650,22 +621,46 @@ bool PrerenderContents::MatchesURL(const GURL& url) const {
                       PrerenderUrlPredicate(url)) != alias_urls_.end();
 }
 
+void PrerenderContents::OnJSOutOfMemory() {
+  Destroy(FINAL_STATUS_JS_OUT_OF_MEMORY);
+}
+
+void PrerenderContents::OnRunJavaScriptMessage(
+    const std::wstring& message,
+    const std::wstring& default_prompt,
+    const GURL& frame_url,
+    const int flags,
+    bool* did_suppress_message,
+    std::wstring* prompt_field) {
+  // Always suppress JavaScript messages if they're triggered by a page being
+  // prerendered.
+  *did_suppress_message = true;
+  // We still want to show the user the message when they navigate to this
+  // page, so cancel this prerender.
+  Destroy(FINAL_STATUS_JAVASCRIPT_ALERT);
+}
+
+void PrerenderContents::OnRenderViewGone(int status, int exit_code) {
+  Destroy(FINAL_STATUS_RENDERER_CRASHED);
+}
+
 void PrerenderContents::DidStopLoading() {
   has_stopped_loading_ = true;
 }
 
-void PrerenderContents::RenderViewGone() {
-  // TODO(mmenke): Cancel the prerender if the RenderView crashes.
-}
-
 void PrerenderContents::Destroy(FinalStatus final_status) {
-  prerender_manager_->RemoveEntry(this);
-  set_final_status(final_status);
-  delete this;
-}
+  if (prerender_manager_->IsPendingDelete(this))
+    return;
 
-void PrerenderContents::OnJSOutOfMemory() {
-  Destroy(FINAL_STATUS_JS_OUT_OF_MEMORY);
+  OnDestroy();
+
+  prerender_manager_->MoveEntryToPendingDelete(this);
+  set_final_status(final_status);
+  // We may destroy the PrerenderContents before we have initialized the
+  // RenderViewHost. Otherwise set the Observer's PrerenderContents to NULL to
+  // avoid any more messages being sent.
+  if (render_view_host_observer_.get())
+    render_view_host_observer_->set_prerender_contents(NULL);
 }
 
 void PrerenderContents::RendererUnresponsive(RenderViewHost* render_view_host,
@@ -673,7 +668,6 @@ void PrerenderContents::RendererUnresponsive(RenderViewHost* render_view_host,
   DCHECK_EQ(render_view_host_, render_view_host);
   Destroy(FINAL_STATUS_RENDERER_UNRESPONSIVE);
 }
-
 
 base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
   if (process_metrics_.get() == NULL) {
@@ -710,6 +704,7 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
 }
 
 TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
+  render_view_host_observer_.reset();
   return prerender_contents_.release();
 }
 
@@ -723,7 +718,11 @@ RenderViewHostDelegate* PrerenderContents::GetRenderViewHostDelegate() {
   }
 }
 
-RenderViewHost* PrerenderContents::render_view_host() {
+RenderViewHost* PrerenderContents::render_view_host_mutable() {
+  return const_cast<RenderViewHost*>(render_view_host());
+}
+
+const RenderViewHost* PrerenderContents::render_view_host() const {
   // TODO(mmenke): Replace with simple accessor once TabContents is always
   //               used.
   if (UseTabContents()) {

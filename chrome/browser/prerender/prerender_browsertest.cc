@@ -68,15 +68,9 @@ class TestPrerenderContents : public PrerenderContents {
   virtual ~TestPrerenderContents() {
     EXPECT_EQ(expected_final_status_, final_status()) <<
         " when testing URL " << prerender_url().path();
-    // In the event we are destroyed, say if the prerender was canceled, quit
-    // the UI message loop.
-    MessageLoopForUI::current()->Quit();
   }
 
-  // TODO(mmenke):  Remove once the old PrerenderContents code is deleted.
-  virtual void RenderViewGone(RenderViewHost* render_view_host,
-                              base::TerminationStatus status,
-                              int error_code) OVERRIDE {
+  virtual void OnRenderViewGone(int status, int exit_code) OVERRIDE {
     // On quit, it's possible to end up here when render processes are closed
     // before the PrerenderManager is destroyed.  As a result, it's possible to
     // get either FINAL_STATUS_APP_TERMINATING or FINAL_STATUS_RENDERER_CRASHED
@@ -84,18 +78,7 @@ class TestPrerenderContents : public PrerenderContents {
     if (expected_final_status_ == FINAL_STATUS_APP_TERMINATING)
       expected_final_status_ = FINAL_STATUS_RENDERER_CRASHED;
 
-    PrerenderContents::RenderViewGone(render_view_host, status, error_code);
-  }
-
-  virtual void RenderViewGone() OVERRIDE {
-    // On quit, it's possible to end up here when render processes are closed
-    // before the PrerenderManager is destroyed.  As a result, it's possible to
-    // get either FINAL_STATUS_APP_TERMINATING or FINAL_STATUS_RENDERER_CRASHED
-    // on quit.
-    if (expected_final_status_ == FINAL_STATUS_APP_TERMINATING)
-      expected_final_status_ = FINAL_STATUS_RENDERER_CRASHED;
-
-    PrerenderContents::RenderViewGone();
+    PrerenderContents::OnRenderViewGone(status, exit_code);
   }
 
   virtual void DidStopLoading() OVERRIDE {
@@ -109,8 +92,14 @@ class TestPrerenderContents : public PrerenderContents {
       // a prerender navigating to about:crash is cancelled with
       // "FINAL_STATUS_HTTPS".  Even if this were worked around,
       // about:crash can't be navigated to by a normal webpage.
-      render_view_host()->NavigateToURL(GURL("about:crash"));
+      render_view_host_mutable()->NavigateToURL(GURL("about:crash"));
     }
+  }
+
+  virtual void OnDestroy() OVERRIDE {
+    // In the event we are destroyed, say if the prerender was canceled, quit
+    // the UI message loop.
+    MessageLoopForUI::current()->Quit();
   }
 
  private:
@@ -315,7 +304,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
           // Check if page behaves as expected while in prerendered state.
           bool prerender_test_result = false;
           ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-              prerender_contents->render_view_host(), L"",
+              prerender_contents->render_view_host_mutable(), L"",
               L"window.domAutomationController.send(DidPrerenderPass())",
               &prerender_test_result));
           EXPECT_TRUE(prerender_test_result);
@@ -635,6 +624,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExcessiveMemory) {
 }
 
 // Checks that we don't prerender in an infinite loop.
+// TODO(dominich): fix test to work with TabContents.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
   const char* const kHtmlFileA = "files/prerender/prerender_infinite_a.html";
   const char* const kHtmlFileB = "files/prerender/prerender_infinite_b.html";
@@ -660,6 +650,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
 // Checks that we don't prerender in an infinite loop and multiple links are
 // handled correctly.
 // Flaky, http://crbug.com/77323.
+// TODO(dominich): fix test to work with TabContents.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        FLAKY_PrerenderInfiniteLoopMultiple) {
   const char* const kHtmlFileA =

@@ -217,6 +217,7 @@ PrerenderManager::~PrerenderManager() {
     data.contents_->set_final_status(FINAL_STATUS_MANAGER_SHUTDOWN);
     delete data.contents_;
   }
+  DeletePendingDeleteEntries();
 }
 
 void PrerenderManager::SetPrerenderContentsFactory(
@@ -231,6 +232,7 @@ bool PrerenderManager::AddPreload(
     const GURL& referrer) {
   DCHECK(CalledOnValidThread());
   DeleteOldEntries();
+  DeletePendingDeleteEntries();
 
   GURL url = url_arg;
   GURL alias_url;
@@ -368,10 +370,8 @@ void PrerenderManager::DestroyPreloadForChildRouteIdPair(
   if (it != prerender_list_.end()) {
     PrerenderContents* prerender_contents = it->contents_;
     prerender_contents->set_final_status(final_status);
-    RemovePendingPreload(prerender_contents);
-
-    delete prerender_contents;
-    prerender_list_.erase(it);
+    prerender_contents->OnDestroy();
+    MoveEntryToPendingDelete(prerender_contents);
   }
 }
 
@@ -393,6 +393,7 @@ PrerenderContents* PrerenderManager::GetEntryButNotSpecifiedTC(
     TabContents *tc) {
   DCHECK(CalledOnValidThread());
   DeleteOldEntries();
+  DeletePendingDeleteEntries();
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
        it != prerender_list_.end();
        ++it) {
@@ -442,7 +443,8 @@ bool PrerenderManager::MaybeUsePreloadedPageOld(TabContents* tab_contents,
   CHECK(prerender_contents->GetChildId(&child_id));
   CHECK(prerender_contents->GetRouteId(&route_id));
 
-  RenderViewHost* render_view_host = prerender_contents->render_view_host();
+  RenderViewHost* render_view_host =
+      prerender_contents->render_view_host_mutable();
   // RenderViewHosts in PrerenderContents start out hidden.
   // Since we are actually using it now, restore it.
   render_view_host->WasRestored();
@@ -506,10 +508,10 @@ bool PrerenderManager::MaybeUsePreloadedPageOld(TabContents* tab_contents,
 bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
                                              const GURL& url) {
   if (!PrerenderContents::UseTabContents()) {
-    VLOG(1) << "Checking for prerender with LEGACY code\n";
+    VLOG(1) << "Checking for prerender with LEGACY code";
     return PrerenderManager::MaybeUsePreloadedPageOld(tab_contents, url);
   }
-  VLOG(1) << "Checking for prerender with NEW code\n";
+  VLOG(1) << "Checking for prerender with NEW code";
   DCHECK(CalledOnValidThread());
   scoped_ptr<PrerenderContents> prerender_contents(
       GetEntryButNotSpecifiedTC(url, tab_contents));
@@ -587,18 +589,34 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
   return true;
 }
 
-void PrerenderManager::RemoveEntry(PrerenderContents* entry) {
+void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!IsPendingDelete(entry));
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
        it != prerender_list_.end();
        ++it) {
     if (it->contents_ == entry) {
+      pending_delete_list_.push_back(*it);
       RemovePendingPreload(entry);
       prerender_list_.erase(it);
       break;
     }
   }
   DeleteOldEntries();
+  StartSchedulingPeriodicCleanups();
+}
+
+bool PrerenderManager::IsPendingDelete(PrerenderContents* entry) const {
+  DCHECK(CalledOnValidThread());
+  for (std::list<PrerenderContentsData>::const_iterator it =
+          pending_delete_list_.begin();
+       it != pending_delete_list_.end();
+       ++it) {
+    if (it->contents_ == entry)
+      return true;
+  }
+
+  return false;
 }
 
 base::Time PrerenderManager::GetCurrentTime() const {
@@ -621,6 +639,14 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
   DCHECK(CalledOnValidThread());
   return prerender_contents_factory_->CreatePrerenderContents(
       this, profile_, url, referrer);
+}
+
+void PrerenderManager::DeletePendingDeleteEntries() {
+  while (!pending_delete_list_.empty()) {
+    PrerenderContentsData data = pending_delete_list_.front();
+    pending_delete_list_.pop_front();
+    delete data.contents_;
+  }
 }
 
 // Helper macro for histograms.
@@ -798,7 +824,9 @@ void PrerenderManager::StartSchedulingPeriodicCleanups() {
 }
 
 void PrerenderManager::MaybeStopSchedulingPeriodicCleanups() {
-  if (!old_tab_contents_list_.empty() || !prerender_list_.empty())
+  if (!old_tab_contents_list_.empty() ||
+      !prerender_list_.empty() ||
+      !pending_delete_list_.empty())
     return;
 
   DCHECK(CalledOnValidThread());
@@ -818,6 +846,7 @@ void PrerenderManager::PeriodicCleanup() {
   DCHECK(CalledOnValidThread());
   DeleteOldTabContents();
   DeleteOldEntries();
+  DeletePendingDeleteEntries();
 
   // Grab a copy of the current PrerenderContents pointers, so that we
   // will not interfere with potential deletions of the list.
