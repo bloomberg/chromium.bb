@@ -20,7 +20,7 @@ int GetNormalBrowserCount() {
   int count = 0;
   BrowserList::const_iterator iter;
   for (iter = BrowserList::begin(); iter != BrowserList::end(); ++iter) {
-    if ((*iter)->type() == Browser::TYPE_NORMAL)
+    if ((*iter)->is_type_tabbed())
       count++;
   }
   return count;

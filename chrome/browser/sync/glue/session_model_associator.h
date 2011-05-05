@@ -301,7 +301,7 @@ class SessionModelAssociator
   void DeleteForeignSessions();
 
   // Determine if a window is of a type we're interested in syncing.
-  static bool ShouldSyncWindowType(const Browser::Type& type);
+  static bool ShouldSyncWindow(const Browser* browser);
 
   // Build a sync tag from tab_node_id.
   static inline std::string TabIdToTag(

@@ -167,6 +167,21 @@ bool BrowserProxy::GetType(Browser::Type* type) const {
   return true;
 }
 
+bool BrowserProxy::IsApplication(bool* is_application) {
+  DCHECK(is_application);
+
+  if (!is_valid())
+    return false;
+
+  bool success = false;
+  if (!sender_->Send(new AutomationMsg_IsBrowserInApplicationMode(
+          handle_, is_application, &success))) {
+    return false;
+  }
+
+  return success;
+}
+
 bool BrowserProxy::ApplyAccelerator(int id) {
   return RunCommandAsync(id);
 }

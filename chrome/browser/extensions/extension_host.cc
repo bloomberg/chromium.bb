@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/popup_menu_helper_mac.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -592,9 +593,8 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
   if (disposition == NEW_POPUP) {
     // Find a browser with a matching profile for creating a popup.
     // (If none is found, NULL argument to NavigateParams is valid.)
-    Browser* browser = BrowserList::FindBrowserWithType(
+    Browser* browser = BrowserList::FindTabbedBrowser(
         contents->profile(),
-        Browser::TYPE_NORMAL,
         false);  // Match incognito exactly.
     TabContentsWrapper* wrapper = new TabContentsWrapper(contents);
     browser::NavigateParams params(browser, wrapper);
@@ -627,9 +627,8 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
   // If there's no associated tab contents, or it doesn't have a matching
   // profile, try finding an open window. Again, we must make sure to find a
   // window with the correct profile.
-  Browser* browser = BrowserList::FindBrowserWithType(
+  Browser* browser = BrowserList::FindTabbedBrowser(
         contents->profile(),
-        Browser::TYPE_NORMAL,
         false);  // Match incognito exactly.
 
   // If there's no Browser open with the right profile, create a new one.

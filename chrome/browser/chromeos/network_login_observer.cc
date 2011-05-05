@@ -28,10 +28,8 @@ NetworkLoginObserver::~NetworkLoginObserver() {
 
 void NetworkLoginObserver::CreateModalPopup(views::WindowDelegate* view) {
   Browser* browser = BrowserList::GetLastActive();
-  if (browser && browser->type() != Browser::TYPE_NORMAL) {
-    browser = BrowserList::FindBrowserWithType(browser->profile(),
-                                               Browser::TYPE_NORMAL,
-                                               true);
+  if (browser && !browser->is_type_tabbed()) {
+    browser = BrowserList::FindTabbedBrowser(browser->profile(), true);
   }
   if (browser) {
     views::Window* window = browser::CreateViewsWindow(

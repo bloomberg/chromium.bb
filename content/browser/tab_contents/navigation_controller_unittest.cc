@@ -63,7 +63,7 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
     // Force the session service to be created.
     SessionService* service = new SessionService(profile());
     SessionServiceFactory::SetForTestProfile(profile(), service);
-    service->SetWindowType(window_id, Browser::TYPE_NORMAL);
+    service->SetWindowType(window_id, Browser::TYPE_TABBED);
     service->SetWindowBounds(window_id, gfx::Rect(0, 1, 2, 3), false);
     service->SetTabIndexInWindow(window_id,
                                  controller().session_id(), 0);

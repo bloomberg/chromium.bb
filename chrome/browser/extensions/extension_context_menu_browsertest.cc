@@ -413,9 +413,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, IncognitoSplit) {
   GURL page_url("http://www.google.com");
 
   // Create and build our test context menu.
-  Browser* browser_incognito = BrowserList::FindBrowserWithType(
-      browser()->profile()->GetOffTheRecordProfile(),
-      Browser::TYPE_NORMAL, false);
+  Browser* browser_incognito = BrowserList::FindTabbedBrowser(
+      browser()->profile()->GetOffTheRecordProfile(), false);
   ASSERT_TRUE(browser_incognito);
   scoped_ptr<TestRenderViewContextMenu> menu(
       CreateMenu(browser(), page_url, GURL(), GURL()));

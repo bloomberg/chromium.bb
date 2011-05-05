@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -166,7 +166,7 @@ struct SessionWindow {
   int selected_tab_index;
 
   // Type of the browser. Currently we only store browsers of type
-  // TYPE_NORMAL and TYPE_POPUP.
+  // TYPE_TABBED and TYPE_POPUP.
   // This would be Browser::Type, but that would cause a circular dependency.
   int type;
 

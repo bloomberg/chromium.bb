@@ -33,7 +33,7 @@ class BookmarkBarGtkUnittest : public ::testing::Test {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
     profile_->BlockUntilBookmarkModelLoaded();
-    browser_.reset(new Browser(Browser::TYPE_NORMAL, profile_.get()));
+    browser_.reset(new Browser(Browser::TYPE_TABBED, profile_.get()));
 
     origin_provider_.reset(new EmptyTabstripOriginProvider);
     bookmark_bar_.reset(new BookmarkBarGtk(NULL, profile_.get(), browser_.get(),

@@ -1028,10 +1028,8 @@ void GetTextColors(GdkColor* normal_base,
 
 GtkWindow* GetLastActiveBrowserWindow() {
   if (Browser* b = BrowserList::GetLastActive()) {
-    if (b->type() != Browser::TYPE_NORMAL) {
-      b = BrowserList::FindBrowserWithType(b->profile(),
-                                           Browser::TYPE_NORMAL,
-                                           true);
+    if (!b->is_type_tabbed()) {
+      b = BrowserList::FindTabbedBrowser(b->profile(), true);
     }
 
     if (b)

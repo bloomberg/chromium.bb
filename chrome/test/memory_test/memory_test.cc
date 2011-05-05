@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -188,7 +188,7 @@ class MemoryTest : public UIPerfTest {
 
         int window_count;
         EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
-        EXPECT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL,
+        EXPECT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_TABBED,
                                                        show_window_));
         int expected_window_count = window_count + 1;
         EXPECT_TRUE(automation()->WaitForWindowCountToBecome(

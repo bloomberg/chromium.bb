@@ -41,8 +41,8 @@ void WaitForTabsAndPopups(Browser* browser, int num_tabs, int num_popups) {
       if (*iter == browser)
         continue;
 
-      // Check for TYPE_POPUP or TYPE_APP_POPUP/PANEL.
-      ASSERT_TRUE((*iter)->type() & Browser::TYPE_POPUP);
+      // Check for TYPE_POPUP or TYPE_PANEL.
+      ASSERT_TRUE((*iter)->is_type_popup() || (*iter)->is_type_panel());
     }
 
     break;
@@ -104,9 +104,11 @@ class WindowOpenPanelTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+    command_line->AppendSwitch(switches::kEnablePanels);
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, WindowOpenPanel) {
+// TODO(jianli): Enable it when Panel::CreateNativePanel is implemented.
+IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, DISABLED_WindowOpenPanel) {
   ASSERT_TRUE(RunExtensionTest("window_open/panel")) << message_;
 }

@@ -17,7 +17,7 @@ void TabContentsDelegate::LoadProgressChanged(double progress) {
 void TabContentsDelegate::DetachContents(TabContents* source) {
 }
 
-bool TabContentsDelegate::IsPopup(const TabContents* source) const {
+bool TabContentsDelegate::IsPopupOrPanel(const TabContents* source) const {
   return false;
 }
 

@@ -73,7 +73,7 @@ class ExtensionPopupControllerTest : public CocoaTest {
     CocoaTest::SetUp();
     profile_.reset(new ExtensionTestingProfile());
     profile_->InitExtensionProfile();
-    browser_.reset(new Browser(Browser::TYPE_NORMAL, profile_.get()));
+    browser_.reset(new Browser(Browser::TYPE_TABBED, profile_.get()));
     [ExtensionPopupController showURL:GURL("http://google.com")
                             inBrowser:browser_.get()
                            anchoredAt:NSZeroPoint

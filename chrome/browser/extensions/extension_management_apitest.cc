@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   // Find the app's browser.  Check that it is a panel.
   ASSERT_EQ(2u, BrowserList::GetBrowserCount(browser()->profile()));
   Browser* app_browser = FindOtherBrowser(browser());
-  ASSERT_EQ(Browser::TYPE_APP_POPUP, app_browser->type());
+#if defined(OS_CHROMEOS)
+  ASSERT_TRUE(app_browser->is_type_panel());
+#else
+  ASSERT_TRUE(app_browser->is_type_popup());
+#endif
+  ASSERT_TRUE(app_browser->is_app());
 
   // Close the app panel.
   app_browser->CloseWindow();
@@ -117,7 +122,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   // prefs, so we should still see the launch in a panel.
   ASSERT_EQ(2u, BrowserList::GetBrowserCount(browser()->profile()));
   app_browser = FindOtherBrowser(browser());
-  ASSERT_EQ(Browser::TYPE_APP_POPUP, app_browser->type());
+#if defined(OS_CHROMEOS)
+  ASSERT_TRUE(app_browser->is_type_panel());
+#else
+  ASSERT_TRUE(app_browser->is_type_popup());
+#endif
+  ASSERT_TRUE(app_browser->is_app());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchTabApp) {
@@ -170,6 +180,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchTabApp) {
   // a new browser.
   ASSERT_EQ(2u, BrowserList::GetBrowserCount(browser()->profile()));
   Browser* app_browser = FindOtherBrowser(browser());
-  ASSERT_EQ(Browser::TYPE_APP, app_browser->type());
+  ASSERT_TRUE(app_browser->is_app());
+  ASSERT_FALSE(app_browser->is_type_panel());
 #endif
 }

@@ -122,7 +122,7 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
     // for us to get a handle to a browser that is about to be removed. If
     // the tab count is 0 or the window is NULL, the browser is about to be
     // deleted, so we ignore it.
-    if (ShouldSyncWindowType((*i)->type()) && (*i)->tab_count() &&
+    if (ShouldSyncWindow(*i) && (*i)->tab_count() &&
         (*i)->window()) {
       sync_pb::SessionWindow window_s;
       SessionID::id_type window_id = (*i)->session_id().id();
@@ -130,10 +130,9 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
           (*i)->tab_count() << " tabs.";
       window_s.set_window_id(window_id);
       window_s.set_selected_tab_index((*i)->active_index());
-      if ((*i)->type() ==
-          Browser::TYPE_NORMAL) {
+      if ((*i)->is_type_tabbed()) {
         window_s.set_browser_type(
-            sync_pb::SessionWindow_BrowserType_TYPE_NORMAL);
+            sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
       } else {
         window_s.set_browser_type(
             sync_pb::SessionWindow_BrowserType_TYPE_POPUP);
@@ -170,22 +169,10 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
 }
 
 // Static.
-bool SessionModelAssociator::ShouldSyncWindowType(const Browser::Type& type) {
-  switch (type) {
-    case Browser::TYPE_POPUP:
-      return true;
-    case Browser::TYPE_APP:
-      return false;
-    case Browser::TYPE_APP_POPUP:
-      return false;
-    case Browser::TYPE_DEVTOOLS:
-      return false;
-    case Browser::TYPE_APP_PANEL:
-      return false;
-    case Browser::TYPE_NORMAL:
-    default:
-      return true;
-  }
+bool SessionModelAssociator::ShouldSyncWindow(const Browser* browser) {
+  if (browser->is_app())
+    return false;
+  return browser->is_type_tabbed() || browser->is_type_popup();
 }
 
 void SessionModelAssociator::ReassociateTabs(
@@ -582,7 +569,7 @@ void SessionModelAssociator::PopulateSessionWindowFromSpecifics(
     session_window->selected_tab_index = specifics.selected_tab_index();
   if (specifics.has_browser_type()) {
     if (specifics.browser_type() ==
-        sync_pb::SessionWindow_BrowserType_TYPE_NORMAL) {
+        sync_pb::SessionWindow_BrowserType_TYPE_TABBED) {
       session_window->type = 1;
     } else {
       session_window->type = 2;
@@ -910,9 +897,9 @@ void SessionModelAssociator::PopulateSessionSpecificsWindow(
   DCHECK(CalledOnValidThread());
   session_window->set_window_id(window.window_id.id());
   session_window->set_selected_tab_index(window.selected_tab_index);
-  if (window.type == Browser::TYPE_NORMAL) {
+  if (window.type == Browser::TYPE_TABBED) {
     session_window->set_browser_type(
-      sync_pb::SessionWindow_BrowserType_TYPE_NORMAL);
+      sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
   } else if (window.type == Browser::TYPE_POPUP) {
     session_window->set_browser_type(
       sync_pb::SessionWindow_BrowserType_TYPE_POPUP);

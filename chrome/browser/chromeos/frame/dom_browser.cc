@@ -12,7 +12,7 @@ namespace chromeos {
 // DOMBrowser: public ----------------------------------------------------------
 
 DOMBrowser::DOMBrowser(Profile* profile)
-    : Browser(Browser::TYPE_NORMAL, profile) {
+    : Browser(Browser::TYPE_TABBED, profile) {
 }
 
 DOMBrowser::~DOMBrowser() {

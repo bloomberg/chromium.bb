@@ -268,8 +268,8 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_LastActiveBrowserWindow,
                         GetLastActiveBrowserWindow)
     IPC_MESSAGE_HANDLER(AutomationMsg_ActiveWindow, GetActiveWindow)
-    IPC_MESSAGE_HANDLER(AutomationMsg_FindNormalBrowserWindow,
-                        FindNormalBrowserWindow)
+    IPC_MESSAGE_HANDLER(AutomationMsg_FindTabbedBrowserWindow,
+                        FindTabbedBrowserWindow)
     IPC_MESSAGE_HANDLER(AutomationMsg_IsWindowActive, IsWindowActive)
     IPC_MESSAGE_HANDLER(AutomationMsg_ActivateWindow, ActivateWindow)
     IPC_MESSAGE_HANDLER(AutomationMsg_IsWindowMaximized, IsWindowMaximized)
@@ -287,6 +287,8 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowKeyPress, WindowSimulateKeyPress)
     IPC_MESSAGE_HANDLER(AutomationMsg_TabCount, GetTabCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_Type, GetType)
+    IPC_MESSAGE_HANDLER(AutomationMsg_IsBrowserInApplicationMode,
+                        IsBrowserInApplicationMode)
     IPC_MESSAGE_HANDLER(AutomationMsg_Tab, GetTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_TabProcessID, GetTabProcessID)
     IPC_MESSAGE_HANDLER(AutomationMsg_TabTitle, GetTabTitle)
@@ -730,7 +732,7 @@ void TestingAutomationProvider::GetBrowserWindowCount(int* window_count) {
 
 void TestingAutomationProvider::GetNormalBrowserWindowCount(int* window_count) {
   *window_count = static_cast<int>(
-      BrowserList::GetBrowserCountForType(profile_, Browser::TYPE_NORMAL));
+      BrowserList::GetBrowserCountForType(profile_, true));
 }
 
 void TestingAutomationProvider::GetBrowserWindow(int index, int* handle) {
@@ -740,11 +742,9 @@ void TestingAutomationProvider::GetBrowserWindow(int index, int* handle) {
     *handle = browser_tracker_->Add(browser);
 }
 
-void TestingAutomationProvider::FindNormalBrowserWindow(int* handle) {
+void TestingAutomationProvider::FindTabbedBrowserWindow(int* handle) {
   *handle = 0;
-  Browser* browser = BrowserList::FindBrowserWithType(profile_,
-                                                      Browser::TYPE_NORMAL,
-                                                      false);
+  Browser* browser = BrowserList::FindTabbedBrowser(profile_, false);
   if (browser)
     *handle = browser_tracker_->Add(browser);
 }
@@ -1091,6 +1091,21 @@ void TestingAutomationProvider::GetType(int handle, int* type_as_int) {
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     *type_as_int = static_cast<int>(browser->type());
+  }
+}
+
+void TestingAutomationProvider::IsBrowserInApplicationMode(int handle,
+                                                           bool* is_application,
+                                                           bool* success) {
+  *is_application = false;
+  *success = false;
+
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser) {
+      *success = true;
+      *is_application = browser->is_app();
+    }
   }
 }
 

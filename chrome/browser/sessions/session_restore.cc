@@ -581,14 +581,14 @@ class SessionRestoreImpl : public NotificationObserver {
     for (std::vector<SessionWindow*>::iterator i = windows->begin();
          i != windows->end(); ++i) {
       Browser* browser = NULL;
-      if (!has_tabbed_browser && (*i)->type == Browser::TYPE_NORMAL)
+      if (!has_tabbed_browser && (*i)->type == Browser::TYPE_TABBED)
         has_tabbed_browser = true;
-      if (i == windows->begin() && (*i)->type == Browser::TYPE_NORMAL &&
+      if (i == windows->begin() && (*i)->type == Browser::TYPE_TABBED &&
           !clobber_existing_window_) {
         // If there is an open tabbed browser window, use it. Otherwise fall
         // through and create a new one.
         browser = current_browser;
-        if (browser && (browser->type() != Browser::TYPE_NORMAL ||
+        if (browser && (!browser->is_type_tabbed() ||
                         browser->profile()->IsOffTheRecord())) {
           browser = NULL;
         }
@@ -599,7 +599,7 @@ class SessionRestoreImpl : public NotificationObserver {
             (*i)->bounds,
             (*i)->is_maximized);
       }
-      if ((*i)->type == Browser::TYPE_NORMAL)
+      if ((*i)->type == Browser::TYPE_TABBED)
         last_browser = browser;
       const int initial_tab_count = browser->tab_count();
       int selected_tab_index = (*i)->selected_tab_index;
@@ -614,7 +614,7 @@ class SessionRestoreImpl : public NotificationObserver {
     // included at least one tabbed browser, then close the browser window
     // that was opened when the user clicked to restore the session.
     if (clobber_existing_window_ && current_browser && has_tabbed_browser &&
-        current_browser->type() == Browser::TYPE_NORMAL) {
+        current_browser->is_type_tabbed()) {
       current_browser->CloseAllTabs();
     }
     if (last_browser && !urls_to_open_.empty())

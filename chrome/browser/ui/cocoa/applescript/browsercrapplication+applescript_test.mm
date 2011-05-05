@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,10 +21,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest, Creation) {
   // Create additional |Browser*| objects of different type.
   Profile* profile = browser()->profile();
   Browser* b1 = Browser::CreateForType(Browser::TYPE_POPUP, profile);
-  Browser* b2 = Browser::CreateForApp("", gfx::Size(), profile, true);
-  Browser* b3 = Browser::CreateForApp("", gfx::Size(), profile, false);
+  Browser* b2 = Browser::CreateForApp(Browser::TYPE_PANEL, "Test",
+                                      gfx::Size(), profile);
 
-  EXPECT_EQ(4U, [[NSApp appleScriptWindows] count]);
+  EXPECT_EQ(3U, [[NSApp appleScriptWindows] count]);
   for (WindowAppleScript* window in [NSApp appleScriptWindows]) {
     EXPECT_NSEQ(AppleScript::kWindowsProperty,
                 [window containerProperty]);
@@ -34,7 +34,6 @@ IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest, Creation) {
   // Close the additional browsers.
   b1->CloseAllTabs();
   b2->CloseAllTabs();
-  b3->CloseAllTabs();
 }
 
 // Insert a new window.

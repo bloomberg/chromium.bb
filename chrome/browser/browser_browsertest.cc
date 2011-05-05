@@ -752,7 +752,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   ASSERT_TRUE(new_browser);
   ASSERT_TRUE(new_browser != browser());
 
-  EXPECT_EQ(Browser::TYPE_APP, new_browser->type());
+  EXPECT_TRUE(new_browser->is_app());
 
   // The browser's app name should include the extension's id.
   std::string app_name = new_browser->app_name_;

@@ -22,9 +22,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserWindowGtkTest, CreatePanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   EXPECT_EQ(0, panel_manager->active_count()); // No panels initially.
 
-  Browser* panel_browser = Browser::CreateForType(Browser::TYPE_APP_PANEL,
-                                                  browser()->profile());
-  EXPECT_EQ(Browser::TYPE_APP_PANEL, panel_browser->type());
+  Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
+                                                 "PanelTest",
+                                                 gfx::Size(),
+                                                 browser()->profile());
+  EXPECT_TRUE(panel_browser->is_type_panel());
   EXPECT_EQ(1, panel_manager->active_count());
 
   gfx::Rect bounds = panel_browser->window()->GetBounds();

@@ -83,7 +83,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
       BrowserList::const_reverse_iterator end = BrowserList::end_last_active();
       for (; (it != end); ++it) {
         Browser* last_active = *it;
-        if (last_active && last_active->type() == Browser::TYPE_NORMAL) {
+        if (last_active && last_active->is_type_tabbed()) {
           window = last_active->window();
           DCHECK(window);
           break;

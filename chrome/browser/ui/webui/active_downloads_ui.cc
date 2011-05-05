@@ -61,6 +61,7 @@ static const int kPopupHeight = 36 * 2 + 29;
 static const char kPropertyPath[] = "path";
 static const char kPropertyTitle[] = "title";
 static const char kPropertyDirectory[] = "isDirectory";
+static const char kActiveDownloadAppName[] = "active-downloads";
 
 class ActiveDownloadsUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
@@ -282,7 +283,8 @@ void ActiveDownloadsHandler::OpenNewPopupWindow(const ListValue* args) {
 void ActiveDownloadsHandler::OpenNewWindow(const ListValue* args, bool popup) {
   std::string url = UTF16ToUTF8(ExtractStringValue(args));
   Browser* browser = popup ?
-      Browser::CreateForType(Browser::TYPE_APP_PANEL, profile_) :
+      Browser::CreateForApp(Browser::TYPE_PANEL, kActiveDownloadAppName,
+                            gfx::Size(), profile_) :
       BrowserList::GetLastActive();
   browser::NavigateParams params(browser, GURL(url), PageTransition::LINK);
   params.disposition = NEW_FOREGROUND_TAB;
@@ -386,7 +388,8 @@ Browser* ActiveDownloadsUI::OpenPopup(Profile* profile) {
 
   // Create new browser if no matching pop up is found.
   if (browser == NULL) {
-    browser = Browser::CreateForType(Browser::TYPE_APP_PANEL, profile);
+    browser = Browser::CreateForApp(Browser::TYPE_PANEL, kActiveDownloadAppName,
+                                    gfx::Size(), profile);
 
     browser::NavigateParams params(
         browser,
@@ -412,7 +415,7 @@ Browser* ActiveDownloadsUI::GetPopup(Profile* profile) {
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end();
        ++it) {
-    if (((*it)->type() == Browser::TYPE_APP_PANEL)) {
+    if ((*it)->is_type_panel() && (*it)->is_app()) {
       TabContents* tab_contents = (*it)->GetSelectedTabContents();
       DCHECK(tab_contents);
       if (!tab_contents)

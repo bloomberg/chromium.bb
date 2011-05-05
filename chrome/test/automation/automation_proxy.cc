@@ -416,9 +416,9 @@ bool AutomationProxy::GetBrowserLocale(string16* locale) {
   return !locale->empty();
 }
 
-scoped_refptr<BrowserProxy> AutomationProxy::FindNormalBrowserWindow() {
+scoped_refptr<BrowserProxy> AutomationProxy::FindTabbedBrowserWindow() {
   int handle = 0;
-  if (!Send(new AutomationMsg_FindNormalBrowserWindow(&handle)))
+  if (!Send(new AutomationMsg_FindTabbedBrowserWindow(&handle)))
     return NULL;
 
   return ProxyObjectFromHandle<BrowserProxy>(handle);

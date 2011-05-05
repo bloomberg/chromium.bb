@@ -32,7 +32,7 @@ class StatusAreaView;
 class StatusAreaButton;
 
 // chromeos::BrowserView adds ChromeOS specific controls and menus to a
-// BrowserView created with Browser::TYPE_NORMAL. This extender adds controls
+// BrowserView created with Browser::TYPE_TABBED. This extender adds controls
 // to the title bar as follows:
 //       ____  __ __
 //      /    \   \  \     [StatusArea]

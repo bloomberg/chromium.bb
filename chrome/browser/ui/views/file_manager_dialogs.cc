@@ -176,7 +176,7 @@ void FileManagerDialog::SelectFileImpl(
   if (browser_mode_) {
     Browser* browser = BrowserList::GetLastActive();
     if (browser) {
-      DCHECK_EQ(browser->type(), Browser::TYPE_NORMAL);
+      DCHECK_EQ(browser->type(), Browser::TYPE_TABBED);
       CreateHtmlDialogView(browser->profile(), params);
       return;
     }

@@ -58,7 +58,7 @@ class BalloonControllerTest : public RenderViewHostTestHarness {
     CocoaTest::BootstrapCocoa();
     profile_.reset(new TestingProfile());
     profile_->CreateRequestContext();
-    browser_.reset(new Browser(Browser::TYPE_NORMAL, profile_.get()));
+    browser_.reset(new Browser(Browser::TYPE_TABBED, profile_.get()));
     collection_.reset(new MockBalloonCollection());
   }
 

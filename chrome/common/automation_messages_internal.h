@@ -876,9 +876,9 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_TabIndex,
                             int)
 
 // This message requests the handle (int64 app-unique identifier) of
-// a valid normal browser window, i.e. normal type and non-incognito mode.
+// a valid tabbed browser window, i.e. normal type and non-incognito mode.
 // On error, the returned handle value is 0.
-IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_FindNormalBrowserWindow,
+IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_FindTabbedBrowserWindow,
                             int)
 
 // This message requests the number of normal browser windows, i.e. normal
@@ -1469,6 +1469,12 @@ IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_GetParentBrowserOfTab,
 //   None expected
 IPC_MESSAGE_ROUTED1(AutomationMsg_MoveWindow,
                     gfx::Rect /* window position and dimentions */)
+
+// Is the browser in application mode?
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_IsBrowserInApplicationMode,
+                            int /* browser_handle */,
+                            bool /* is_application */,
+                            bool /* success */)
 
 // Renderer -> browser messages.
 

@@ -39,6 +39,14 @@ Browser* BrowserNavigatorTest::CreateEmptyBrowserForType(Browser::Type type,
   return browser;
 }
 
+Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Browser::Type type,
+                                                        Profile* profile) {
+  Browser* browser = Browser::CreateForApp(Browser::TYPE_POPUP, "Test",
+                                           gfx::Size(), profile);
+  browser->AddBlankTab(true);
+  return browser;
+}
+
 TabContentsWrapper* BrowserNavigatorTest::CreateTabContents() {
   return Browser::TabContentsFactory(
       browser()->profile(),
@@ -215,7 +223,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // need a different profile, and creating a popup window with an incognito
   // profile is a quick and dirty way of achieving this.
   Browser* popup = CreateEmptyBrowserForType(
-      Browser::TYPE_POPUP, browser()->profile()->GetOffTheRecordProfile());
+      Browser::TYPE_POPUP,
+      browser()->profile()->GetOffTheRecordProfile());
   browser::NavigateParams p(MakeNavigateParams(popup));
   p.disposition = NEW_FOREGROUND_TAB;
   browser::Navigate(&p);
@@ -236,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(1, popup->tab_count());
   EXPECT_EQ(1, p.browser->tab_count());
-  EXPECT_EQ(Browser::TYPE_NORMAL, p.browser->type());
+  EXPECT_TRUE(p.browser->is_type_tabbed());
 }
 
 // This test verifies that navigating with WindowOpenDisposition = NEW_POPUP
@@ -255,7 +264,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup) {
   // TODO(stevenjb): Enable this test. See: crbug.com/79493
   EXPECT_TRUE(p.browser->window()->IsActive());
 #endif
-  EXPECT_EQ(Browser::TYPE_POPUP, p.browser->type());
+  EXPECT_TRUE(p.browser->is_type_popup());
+  EXPECT_FALSE(p.browser->is_app());
 
   // We should have two windows, the browser() provided by the framework and the
   // new popup window.
@@ -280,7 +290,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupFromPopup) {
 
   // Navigate() should have opened a new normal popup window.
   EXPECT_NE(p1.browser, p2.browser);
-  EXPECT_EQ(Browser::TYPE_POPUP, p2.browser->type());
+  EXPECT_TRUE(p2.browser->is_type_popup());
+  EXPECT_FALSE(p2.browser->is_app());
 
   // We should have three windows, the browser() provided by the framework,
   // the first popup window, and the second popup window.
@@ -294,8 +305,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupFromPopup) {
 // from an app frame results in a new Browser with TYPE_APP_POPUP.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_NewPopupFromAppWindow) {
-  Browser* app_browser = CreateEmptyBrowserForType(Browser::TYPE_APP,
-                                                   browser()->profile());
+  Browser* app_browser = CreateEmptyBrowserForApp(Browser::TYPE_TABBED,
+                                                  browser()->profile());
   browser::NavigateParams p(MakeNavigateParams(app_browser));
   p.disposition = NEW_POPUP;
   p.window_bounds = gfx::Rect(0, 0, 200, 200);
@@ -304,7 +315,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // Navigate() should have opened a new popup app window.
   EXPECT_NE(app_browser, p.browser);
   EXPECT_NE(browser(), p.browser);
-  EXPECT_EQ(Browser::TYPE_APP_POPUP, p.browser->type());
+  EXPECT_TRUE(p.browser->is_type_popup());
+  EXPECT_TRUE(p.browser->is_app());
 
   // We should now have three windows, the app window, the app popup it created,
   // and the original browser() provided by the framework.
@@ -318,8 +330,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // from an app popup results in a new Browser also of TYPE_APP_POPUP.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_NewPopupFromAppPopup) {
-  Browser* app_browser = CreateEmptyBrowserForType(Browser::TYPE_APP,
-                                                   browser()->profile());
+  Browser* app_browser = CreateEmptyBrowserForApp(Browser::TYPE_TABBED,
+                                                  browser()->profile());
   // Open an app popup.
   browser::NavigateParams p1(MakeNavigateParams(app_browser));
   p1.disposition = NEW_POPUP;
@@ -334,7 +346,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // Navigate() should have opened a new popup app window.
   EXPECT_NE(browser(), p1.browser);
   EXPECT_NE(p1.browser, p2.browser);
-  EXPECT_EQ(Browser::TYPE_APP_POPUP, p2.browser->type());
+  EXPECT_TRUE(p2.browser->is_type_popup());
+  EXPECT_TRUE(p2.browser->is_app());
 
   // We should now have four windows, the app window, the first app popup,
   // the second app popup, and the original browser() provided by the framework.
@@ -381,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewWindow) {
 
   // Navigate() should have opened a new toplevel window.
   EXPECT_NE(browser(), p.browser);
-  EXPECT_EQ(Browser::TYPE_NORMAL, p.browser->type());
+  EXPECT_TRUE(p.browser->is_type_tabbed());
 
   // We should now have two windows, the browser() provided by the framework and
   // the new normal window.
@@ -417,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_Incognito) {
 // reuses an existing incognito window when possible.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_IncognitoRefocus) {
   Browser* incognito_browser =
-      CreateEmptyBrowserForType(Browser::TYPE_NORMAL,
+      CreateEmptyBrowserForType(Browser::TYPE_TABBED,
                                 browser()->profile()->GetOffTheRecordProfile());
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = OFF_THE_RECORD;
@@ -480,7 +493,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
 
   // Navigate() should have opened a new popup window.
   EXPECT_NE(browser(), p.browser);
-  EXPECT_EQ(Browser::TYPE_POPUP, p.browser->type());
+  EXPECT_TRUE(p.browser->is_type_popup());
+  EXPECT_FALSE(p.browser->is_app());
 
   // The web platform is weird. The window bounds specified in
   // |p.window_bounds| are used as follows:
@@ -576,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_NewWindow) {
 
   // Navigate() should have created a new browser.
   EXPECT_NE(browser(), p.browser);
-  EXPECT_EQ(Browser::TYPE_NORMAL, p.browser->type());
+  EXPECT_TRUE( p.browser->is_type_tabbed());
 
   // We should now have two windows, the browser() provided by the framework and
   // the new normal window.

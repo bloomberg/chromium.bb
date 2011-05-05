@@ -139,7 +139,7 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
     Browser* inspected_browser;
     int inspected_tab_index;
     // Tell inspected browser to update splitter and switch to inspected panel.
-    if (!IsInspectedBrowserPopup() &&
+    if (!IsInspectedBrowserPopupOrPanel() &&
         FindInspectedBrowserAndTabIndex(&inspected_browser,
                                         &inspected_tab_index)) {
       BrowserWindow* inspected_window = inspected_browser->window();
@@ -188,7 +188,8 @@ void DevToolsWindow::Activate() {
 void DevToolsWindow::SetDocked(bool docked) {
   if (docked_ == docked)
     return;
-  if (docked && (!GetInspectedBrowserWindow() || IsInspectedBrowserPopup())) {
+  if (docked && (!GetInspectedBrowserWindow() ||
+                 IsInspectedBrowserPopupOrPanel())) {
     // Cannot dock, avoid window flashing due to close-reopen cycle.
     return;
   }
@@ -267,13 +268,13 @@ BrowserWindow* DevToolsWindow::GetInspectedBrowserWindow() {
       browser->window() : NULL;
 }
 
-bool DevToolsWindow::IsInspectedBrowserPopup() {
+bool DevToolsWindow::IsInspectedBrowserPopupOrPanel() {
   Browser* browser = NULL;
   int tab;
   if (!FindInspectedBrowserAndTabIndex(&browser, &tab))
     return false;
 
-  return (browser->type() & Browser::TYPE_POPUP) != 0;
+  return browser->is_type_popup() || browser->is_type_panel();
 }
 
 void DevToolsWindow::UpdateFrontendAttachedState() {

@@ -284,7 +284,7 @@
     // drop handler when the type of window is known.
     BrowserWindowController* windowController =
         [BrowserWindowController browserWindowControllerForView:self];
-    if ([windowController isNormalWindow])
+    if ([windowController isTabbedWindow])
       dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
   }
 }

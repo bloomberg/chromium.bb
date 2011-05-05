@@ -55,6 +55,7 @@ static const char kPropertyError[] = "error";
 
 static const char* kMediaplayerURL = "chrome://mediaplayer";
 static const char* kMediaplayerPlaylistURL = "chrome://mediaplayer#playlist";
+static const char* kMediaPlayerAppName = "mediaplayer";
 static const int kPopupLeft = 0;
 static const int kPopupTop = 0;
 static const int kPopupWidth = 350;
@@ -504,8 +505,10 @@ void MediaPlayer::RemoveHandler(MediaplayerHandler* handler) {
 
 void MediaPlayer::PopupPlaylist(Browser* creator) {
   Profile* profile = BrowserList::GetLastActive()->profile();
-  playlist_browser_ = Browser::CreateForType(Browser::TYPE_APP_PANEL,
-                                             profile);
+  playlist_browser_ = Browser::CreateForApp(Browser::TYPE_PANEL,
+                                            kMediaPlayerAppName,
+                                            gfx::Size(),
+                                            profile);
   playlist_browser_->AddSelectedTabWithURL(GURL(kMediaplayerPlaylistURL),
                                            PageTransition::LINK);
   playlist_browser_->window()->SetBounds(gfx::Rect(kPopupLeft,
@@ -524,8 +527,10 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
     return;
   }
   Profile* profile = BrowserList::GetLastActive()->profile();
-  mediaplayer_browser_ = Browser::CreateForType(Browser::TYPE_APP_PANEL,
-                                                profile);
+  mediaplayer_browser_ = Browser::CreateForApp(Browser::TYPE_PANEL,
+                                               kMediaPlayerAppName,
+                                               gfx::Size(),
+                                               profile);
 #if defined(OS_CHROMEOS)
   // Since we are on chromeos, popups should be a PanelBrowserView,
   // so we can just cast it.

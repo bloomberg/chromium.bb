@@ -56,7 +56,8 @@ IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenSmall) {
   }
 
   ASSERT_TRUE(new_browser);
-  EXPECT_EQ(Browser::TYPE_POPUP, new_browser->type());
+  EXPECT_TRUE(new_browser->is_type_popup());
+  EXPECT_FALSE(new_browser->is_app());
   // This window type tells the cros window manager to treat the window
   // as a panel.
   EXPECT_EQ(

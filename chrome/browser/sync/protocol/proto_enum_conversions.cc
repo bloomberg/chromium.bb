@@ -23,9 +23,9 @@ namespace browser_sync {
 const char* GetBrowserTypeString(
     sync_pb::SessionWindow::BrowserType browser_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::SessionWindow, BrowserType,
-                     TYPE_NORMAL, TYPE_POPUP);
+                     TYPE_TABBED, TYPE_POPUP);
   switch (browser_type) {
-    ENUM_CASE(sync_pb::SessionWindow, TYPE_NORMAL);
+    ENUM_CASE(sync_pb::SessionWindow, TYPE_TABBED);
     ENUM_CASE(sync_pb::SessionWindow, TYPE_POPUP);
   }
   NOTREACHED();

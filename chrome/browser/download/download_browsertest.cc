@@ -634,14 +634,15 @@ class DownloadTest : public InProcessBrowserTest {
   // Figure out if the appropriate download visibility was done.  A
   // utility function to support ChromeOS variations.  On ChromeOS
   // a webui panel is used instead of the download shelf; the
-  // test for TYPE_APP_PANEL detects this type of panel.
+  // test for is_type_panel and is_app detects this type of panel.
+  // TODO(stevenjb): The download panel may not be the only app panel.
+  // We need a better way to check for this.
   static bool IsDownloadUIVisible(Browser* browser) {
 #if defined(OS_CHROMEOS)
     for (BrowserList::const_iterator it = BrowserList::begin();
          it != BrowserList::end(); ++it) {
-      if ((*it)->type() == Browser::TYPE_APP_PANEL) {
+      if ((*it)->is_type_panel() && (*it)->is_app() )
         return true;
-      }
     }
     return false;
 #else

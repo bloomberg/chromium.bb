@@ -276,8 +276,8 @@ enum {
 
     // When we are given x/y coordinates of 0 on a created popup window, assume
     // none were given by the window.open() command.
-    if (browser_->type() & Browser::TYPE_POPUP &&
-        windowRect.x() == 0 && windowRect.y() == 0) {
+    if ((browser_->is_type_popup() || browser_->is_type_panel()) &&
+         windowRect.x() == 0 && windowRect.y() == 0) {
       gfx::Size size = windowRect.size();
       windowRect.set_origin(WindowSizer::GetDefaultPopupOrigin(size));
     }
@@ -373,7 +373,7 @@ enum {
     // out, measure the current content area size and grow if needed.  The
     // window has not been placed onscreen yet, so this extra resize will not
     // cause visible jank.
-    if (browser_->type() & Browser::TYPE_POPUP) {
+    if (browser_->is_type_popup() || browser_->is_type_panel()) {
       CGFloat deltaH = desiredContentRect.height() -
                        NSHeight([[self tabContentArea] frame]);
       // Do not shrink the window, as that may break minimum size invariants.
@@ -1536,11 +1536,10 @@ enum {
   if (browser_->profile()->IsOffTheRecord())
     style |= THEMED_INCOGNITO;
 
-  Browser::Type type = browser_->type();
-  if (type == Browser::TYPE_POPUP)
-    style |= THEMED_POPUP;
-  else if (type == Browser::TYPE_DEVTOOLS)
+  if (browser_->is_devtools())
     style |= THEMED_DEVTOOLS;
+  if (browser_->is_type_popup())
+    style |= THEMED_POPUP;
 
   return style;
 }
@@ -2187,8 +2186,8 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   return [self supportsWindowFeature:Browser::FEATURE_BOOKMARKBAR];
 }
 
-- (BOOL)isNormalWindow {
-  return browser_->type() == Browser::TYPE_NORMAL;
+- (BOOL)isTabbedWindow {
+  return browser_->is_type_tabbed();
 }
 
 @end  // @implementation BrowserWindowController(WindowType)

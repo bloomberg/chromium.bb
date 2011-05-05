@@ -326,11 +326,11 @@ TEST_F(SessionRestoreUITest, NormalAndPopup) {
 
   // The order of whether the normal window or popup is first depends upon
   // activation order, which is not necessarily consistant across runs.
-  if (type1 == Browser::TYPE_NORMAL) {
+  if (type1 == Browser::TYPE_TABBED) {
     EXPECT_EQ(type2, Browser::TYPE_POPUP);
   } else {
     EXPECT_EQ(type1, Browser::TYPE_POPUP);
-    EXPECT_EQ(type2, Browser::TYPE_NORMAL);
+    EXPECT_EQ(type2, Browser::TYPE_TABBED);
   }
 }
 
@@ -381,7 +381,7 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
   ASSERT_EQ(1, window_count);
 
   // Open a second window.
-  ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL,
+  ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_TABBED,
                                                  true));
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   ASSERT_EQ(2, window_count);

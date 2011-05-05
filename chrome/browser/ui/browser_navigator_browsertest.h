@@ -31,6 +31,7 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
   browser::NavigateParams MakeNavigateParams(Browser* browser) const;
 
   Browser* CreateEmptyBrowserForType(Browser::Type type, Profile* profile);
+  Browser* CreateEmptyBrowserForApp(Browser::Type type, Profile* profile);
 
   TabContentsWrapper* CreateTabContents();
 

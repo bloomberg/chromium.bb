@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
 
   Browser* popup = Browser::CreateForType(Browser::TYPE_POPUP,
                                           browser()->profile());
-  ASSERT_EQ(popup->type(), Browser::TYPE_POPUP);
+  ASSERT_TRUE(popup->is_type_popup());
   ASSERT_EQ(popup, observer.added_browser_);
 
   CommandLine dummy(CommandLine::NO_PROGRAM);
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutNoPref) {
   ASSERT_FALSE(HasFatalFailure());
 
   // Expect an app window.
-  EXPECT_EQ(Browser::TYPE_APP, new_browser->type());
+  EXPECT_TRUE(new_browser->is_app());
 
   // The browser's app_name should include the app's ID.
   EXPECT_NE(
@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutWindowPref) {
   ASSERT_FALSE(HasFatalFailure());
 
   // Expect an app window.
-  EXPECT_EQ(Browser::TYPE_APP, new_browser->type());
+  EXPECT_TRUE(new_browser->is_app());
 
   // The browser's app_name should include the app's ID.
   EXPECT_NE(
@@ -181,8 +181,8 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutTabPref) {
   FindOneOtherBrowser(&new_browser);
   ASSERT_FALSE(HasFatalFailure());
 
-  // The tab should be in a normal window.
-  EXPECT_EQ(Browser::TYPE_NORMAL, new_browser->type());
+  // The tab should be in a tabbed window.
+  EXPECT_TRUE(new_browser->is_type_tabbed());
 
   // The browser's app_name should not include the app's ID: It is in a
   // normal browser.
@@ -208,7 +208,11 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutPanel) {
   ASSERT_FALSE(HasFatalFailure());
 
   // Expect an app panel.
-  EXPECT_EQ(Browser::TYPE_APP_POPUP, new_browser->type());
+#if defined(OS_CHROMEOS)
+  EXPECT_TRUE(new_browser->is_type_panel() && new_browser->is_app());
+#else
+  EXPECT_TRUE(new_browser->is_type_popup() && new_browser->is_app());
+#endif
 
   // The new browser's app_name should include the app's ID.
   EXPECT_NE(

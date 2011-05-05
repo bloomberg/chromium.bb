@@ -131,7 +131,7 @@ TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
    isKindOfClass:[BrowserWindowController class]];
   [[[controller expect] andReturnValue:OCMOCK_VALUE(yes)] hasTabStrip];
   [[[controller expect] andReturnValue:OCMOCK_VALUE(no)] hasTitleBar];
-  [[[controller expect] andReturnValue:OCMOCK_VALUE(yes)] isNormalWindow];
+  [[[controller expect] andReturnValue:OCMOCK_VALUE(yes)] isTabbedWindow];
   [window_ setWindowController:controller];
 
   closeBoxControl = [window_ standardWindowButton:NSWindowCloseButton];

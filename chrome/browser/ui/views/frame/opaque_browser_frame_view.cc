@@ -1069,7 +1069,7 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
     restore_button_->SetVisible(false);
     maximize_button_->SetVisible(false);
 
-    if (browser_view_->browser()->type() == Browser::TYPE_DEVTOOLS) {
+    if (browser_view_->browser()->is_devtools()) {
       close_button_->SetVisible(true);
       minimize_button_->SetBounds(close_button_->bounds().x(), 0, 0, 0);
     } else {

@@ -183,7 +183,7 @@ FilePath PyUITestBase::GetDownloadDirectory() {
 }
 
 bool PyUITestBase::OpenNewBrowserWindow(bool show) {
-  return automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL, show);
+  return automation()->OpenNewBrowserWindow(Browser::TYPE_TABBED, show);
 }
 
 bool PyUITestBase::CloseBrowserWindow(int window_index) {

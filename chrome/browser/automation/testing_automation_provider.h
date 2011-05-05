@@ -98,10 +98,10 @@ class TestingAutomationProvider : public AutomationProvider,
                         IPC::Message* reply_message);
   void GetBrowserWindowCount(int* window_count);
   void GetNormalBrowserWindowCount(int* window_count);
-  // Be aware that the browser window returned might be of non TYPE_NORMAL
+  // Be aware that the browser window returned might be of non TYPE_TABBED
   // or in incognito mode.
   void GetBrowserWindow(int index, int* handle);
-  void FindNormalBrowserWindow(int* handle);
+  void FindTabbedBrowserWindow(int* handle);
   void GetLastActiveBrowserWindow(int* handle);
   void GetActiveWindow(int* handle);
   void ExecuteBrowserCommandAsync(int handle, int command, bool* success);
@@ -130,6 +130,9 @@ class TestingAutomationProvider : public AutomationProvider,
                               int flags);
   void GetTabCount(int handle, int* tab_count);
   void GetType(int handle, int* type_as_int);
+  void IsBrowserInApplicationMode(int handle,
+                                  bool* is_application,
+                                  bool* success);
   void GetTab(int win_handle, int tab_index, int* tab_handle);
   void GetTabProcessID(int handle, int* process_id);
   void GetTabTitle(int handle, int* title_string_size, std::wstring* title);

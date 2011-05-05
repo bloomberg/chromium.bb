@@ -63,28 +63,31 @@ class BrowserList {
   // Identical in behavior to GetLastActive(), except that the most recently
   // open browser owned by |profile| is returned. If none exist, returns NULL.
   // WARNING: see warnings in GetLastActive().
-  static Browser* GetLastActiveWithProfile(Profile *profile);
+  static Browser* GetLastActiveWithProfile(Profile* profile);
 
-  // Find an existing browser window with the provided type. Searches in the
+  // Find an existing browser window with tabbed type. Searches in the
   // order of last activation. Only browsers that have been active can be
   // returned. If |match_incognito| is true, will match a browser with either
   // a regular or incognito profile that matches the given one. Returns NULL if
   // no such browser currently exists.
-  static Browser* FindBrowserWithType(Profile* p, Browser::Type t,
-                                      bool match_incognito);
+  static Browser* FindTabbedBrowser(Profile* profile, bool match_incognito);
+
+  // Find an existing browser window with any type. See comment above for
+  // additional information.
+  static Browser* FindAnyBrowser(Profile* profile, bool match_incognito);
 
   // Find an existing browser window that can provide the specified type (this
   // uses Browser::CanSupportsWindowFeature, not
   // Browser::SupportsWindowFeature). This searches in the order of last
   // activation. Only browsers that have been active can be returned. Returns
   // NULL if no such browser currently exists.
-  static Browser* FindBrowserWithFeature(Profile* p,
+  static Browser* FindBrowserWithFeature(Profile* profile,
                                          Browser::WindowFeature feature);
 
   // Find an existing browser window with the provided profile. Searches in the
   // order of last activation. Only browsers that have been active can be
   // returned. Returns NULL if no such browser currently exists.
-  static Browser* FindBrowserWithProfile(Profile* p);
+  static Browser* FindBrowserWithProfile(Profile* profile);
 
   // Find an existing browser with the provided ID. Returns NULL if no such
   // browser currently exists.
@@ -152,11 +155,11 @@ class BrowserList {
 
   // Return the number of browsers with the following profile which are
   // currently open.
-  static size_t GetBrowserCount(Profile* p);
+  static size_t GetBrowserCount(Profile* profile);
 
   // Return the number of browsers with the following profile and type which are
   // currently open.
-  static size_t GetBrowserCountForType(Profile* p, Browser::Type type);
+  static size_t GetBrowserCountForType(Profile* profile, bool match_tabbed);
 
   // Returns true if at least one incognito session is active.
   static bool IsOffTheRecordSessionActive();

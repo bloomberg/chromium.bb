@@ -64,6 +64,10 @@ class BrowserProxy : public AutomationResourceProxy {
   // successful.
   bool GetType(Browser::Type* type) const WARN_UNUSED_RESULT;
 
+  // Sets |is_application| to whether the browser is currently in application
+  // mode.
+  bool IsApplication(bool* is_application) WARN_UNUSED_RESULT;
+
   // Returns the TabProxy for the tab at the given index, transferring
   // ownership of the pointer to the caller. On failure, returns NULL.
   //

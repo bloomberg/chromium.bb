@@ -24,9 +24,9 @@ class PanelBrowserTest : public InProcessBrowserTest {
 // Panel is now only supported on windows.
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
-  Browser* panel = Browser::CreateForApp("", gfx::Size(),
-                                         browser()->profile(), true);
-  EXPECT_EQ(Browser::TYPE_APP_PANEL, panel->type());
+  Browser* panel = Browser::CreateForApp(Browser::TYPE_PANEL, "PanelTest",
+                                         gfx::Size(), browser()->profile());
+  EXPECT_EQ(Browser::TYPE_PANEL, panel->type());
   panel->window()->Show();
   panel->window()->Close();
 }

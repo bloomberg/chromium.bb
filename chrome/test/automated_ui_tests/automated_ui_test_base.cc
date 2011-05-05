@@ -68,7 +68,7 @@ bool AutomatedUITestBase::CloseActiveWindow() {
     LogErrorMessage("Application closed unexpectedly.");
     return false;
   }
-  scoped_refptr<BrowserProxy> browser(automation()->FindNormalBrowserWindow());
+  scoped_refptr<BrowserProxy> browser(automation()->FindTabbedBrowserWindow());
   if (!browser.get()) {
     LogErrorMessage("Can't find browser window.");
     return false;
@@ -242,7 +242,7 @@ bool AutomatedUITestBase::Home() {
 
 bool AutomatedUITestBase::OpenAndActivateNewBrowserWindow(
     scoped_refptr<BrowserProxy>* previous_browser) {
-  if (!automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL,
+  if (!automation()->OpenNewBrowserWindow(Browser::TYPE_TABBED,
                                           true /* SW_SHOWNORMAL */)) {
     LogWarningMessage("failed_to_open_new_browser_window");
     return false;

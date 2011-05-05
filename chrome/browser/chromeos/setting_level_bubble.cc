@@ -51,9 +51,8 @@ static views::Widget* GetToplevelWidget() {
   // We just use the default profile here -- this gets overridden as needed
   // in Chrome OS depending on whether the user is logged in or not.
   Browser* browser =
-      BrowserList::FindBrowserWithType(
+      BrowserList::FindTabbedBrowser(
           ProfileManager::GetDefaultProfile(),
-          Browser::TYPE_NORMAL,
           true);  // match_incognito
   if (browser) {
     window = GTK_WINDOW(browser->window()->GetNativeHandle());

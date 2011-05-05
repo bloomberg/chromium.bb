@@ -225,10 +225,8 @@ void ExtensionInstallUI::ShowThemeInfoBar(const std::string& previous_theme_id,
   if (!new_theme->is_theme())
     return;
 
-  // Get last active normal browser of profile.
-  Browser* browser = BrowserList::FindBrowserWithType(profile,
-                                                      Browser::TYPE_NORMAL,
-                                                      true);
+  // Get last active tabbed browser of profile.
+  Browser* browser = BrowserList::FindTabbedBrowser(profile, true);
   if (!browser)
     return;
 

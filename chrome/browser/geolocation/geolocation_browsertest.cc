@@ -239,9 +239,8 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     LOG(WARNING) << "before navigate";
     if (options == INITIALIZATION_OFFTHERECORD) {
       ui_test_utils::OpenURLOffTheRecord(browser()->profile(), current_url_);
-      current_browser_ = BrowserList::FindBrowserWithType(
-          browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL,
-          false);
+      current_browser_ = BrowserList::FindTabbedBrowser(
+          browser()->profile()->GetOffTheRecordProfile(), false);
     } else if (options == INITIALIZATION_NEWTAB) {
       current_browser_ = browser();
       current_browser_->NewTab();

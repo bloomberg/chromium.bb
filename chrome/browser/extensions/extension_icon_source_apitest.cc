@@ -58,9 +58,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoadedIncognito) {
   ui_test_utils::OpenURLOffTheRecord(
       browser()->profile(),
       GURL("chrome-extension://gbmgkahjioeacddebbnengilkgbkhodg/index.html"));
-  Browser* otr_browser = BrowserList::FindBrowserWithType(
-      browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL,
-      false);
+  Browser* otr_browser = BrowserList::FindTabbedBrowser(
+      browser()->profile()->GetOffTheRecordProfile(), false);
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
       otr_browser->GetSelectedTabContents()->render_view_host(), L"",
       L"window.domAutomationController.send(document.title)",

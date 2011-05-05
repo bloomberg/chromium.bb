@@ -76,7 +76,7 @@ class ProfileSyncServiceSessionTest
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     SessionService* session_service = new SessionService(temp_dir_.path());
     helper_.set_service(session_service);
-    service()->SetWindowType(window_id_, Browser::TYPE_NORMAL);
+    service()->SetWindowType(window_id_, Browser::TYPE_TABBED);
     service()->SetWindowBounds(window_id_, window_bounds_, false);
     registrar_.Add(this, NotificationType::FOREIGN_SESSION_UPDATED,
         NotificationService::AllSources());
@@ -280,7 +280,7 @@ TEST_F(ProfileSyncServiceSessionTest, WriteForeignSessionToNode) {
   sync_pb::SessionHeader* header_s = meta_specifics.mutable_header();
   sync_pb::SessionWindow* window_s = header_s->add_window();
   window_s->add_tab(0);
-  window_s->set_browser_type(sync_pb::SessionWindow_BrowserType_TYPE_NORMAL);
+  window_s->set_browser_type(sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
   window_s->set_selected_tab_index(1);
 
   sync_pb::SessionSpecifics tab_specifics;

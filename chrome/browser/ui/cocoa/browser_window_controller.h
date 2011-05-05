@@ -309,11 +309,11 @@ class TabContents;
 // does, NO otherwise). (E.g., normal browser windows may, pop-ups may not.)
 - (BOOL)supportsBookmarkBar;
 
-// Called to check if this controller's window is a normal window (e.g., not a
+// Called to check if this controller's window is a tabbed window (e.g., not a
 // pop-up window). Returns YES if it is, NO otherwise.
 // Note: The |-has...| methods are usually preferred, so this method is largely
 // deprecated.
-- (BOOL)isNormalWindow;
+- (BOOL)isTabbedWindow;
 
 @end  // @interface BrowserWindowController(WindowType)
 

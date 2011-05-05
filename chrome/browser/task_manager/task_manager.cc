@@ -982,9 +982,7 @@ void TaskManager::OpenAboutMemory() {
     // non-tabbed window, the call to OpenURL above will have opened a
     // TabContents in a tabbed browser, so we need to grab it with GetLastActive
     // before the call to show().
-    if (browser->type() & (Browser::TYPE_APP |
-                           Browser::TYPE_DEVTOOLS |
-                           Browser::TYPE_POPUP)) {
+    if (!browser->is_type_tabbed()) {
       browser = BrowserList::GetLastActive();
       DCHECK(browser);
     }

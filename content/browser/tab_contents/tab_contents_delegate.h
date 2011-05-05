@@ -103,8 +103,9 @@ class TabContentsDelegate {
   // caller, and it is safe to call "source->set_delegate(someone_else);".
   virtual void DetachContents(TabContents* source);
 
-  // Called to determine if the TabContents is contained in a popup window.
-  virtual bool IsPopup(const TabContents* source) const;
+  // Called to determine if the TabContents is contained in a popup window
+  // or a panel window.
+  virtual bool IsPopupOrPanel(const TabContents* source) const;
 
   // If |source| is constrained, returns the tab containing it.  Otherwise
   // returns |source|. TODO(avi): Remove in favor of GetConstrainingContents on

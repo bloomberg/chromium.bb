@@ -143,10 +143,10 @@ const char BrowserView::kViewClassName[] = "browser/ui/views/BrowserView";
 // normal browser.
 static gfx::NativeWindow GetNormalBrowserWindowForBrowser(Browser* browser,
                                                           Profile* profile) {
-  if (browser->type() != Browser::TYPE_NORMAL) {
-    Browser* normal_browser = BrowserList::FindBrowserWithType(
+  if (!browser->is_type_tabbed()) {
+    Browser* normal_browser = BrowserList::FindTabbedBrowser(
         profile ? profile : browser->profile(),
-        Browser::TYPE_NORMAL, true);
+        true);
     if (normal_browser && normal_browser->window())
       return normal_browser->window()->GetNativeHandle();
   }
@@ -1440,7 +1440,7 @@ bool BrowserView::ShouldShowWindowTitle() const {
 }
 
 SkBitmap BrowserView::GetWindowAppIcon() {
-  if (browser_->type() & Browser::TYPE_APP) {
+  if (browser_->is_app()) {
     TabContentsWrapper* contents = browser_->GetSelectedTabContentsWrapper();
     if (contents && contents->extension_tab_helper()->GetExtensionAppIcon())
       return *contents->extension_tab_helper()->GetExtensionAppIcon();
@@ -1450,7 +1450,7 @@ SkBitmap BrowserView::GetWindowAppIcon() {
 }
 
 SkBitmap BrowserView::GetWindowIcon() {
-  if (browser_->type() & Browser::TYPE_APP)
+  if (browser_->is_app())
     return browser_->GetCurrentPageIcon();
   return SkBitmap();
 }
@@ -1488,7 +1488,7 @@ void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
 
 bool BrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
   *bounds = browser_->GetSavedWindowBounds();
-  if (browser_->type() & Browser::TYPE_POPUP) {
+  if (browser_->is_type_popup() || browser_->is_type_panel()) {
     // We are a popup window. The value passed in |bounds| represents two
     // pieces of information:
     // - the position of the window, in screen coordinates (outer position).
@@ -1854,7 +1854,7 @@ void BrowserView::LoadingAnimationCallback() {
         now - last_animation_time_);
   }
   last_animation_time_ = now;
-  if (browser_->type() == Browser::TYPE_NORMAL) {
+  if (browser_->is_type_tabbed()) {
     // Loading animations are shown in the tab for tabbed windows.  We check the
     // browser type instead of calling IsTabStripVisible() because the latter
     // will return false for fullscreen windows, but we still need to update
@@ -1881,7 +1881,7 @@ void BrowserView::InitSystemMenu() {
   if (IsBrowserTypeNormal())
     BuildSystemMenuForBrowserWindow();
   else
-    BuildSystemMenuForAppOrPopupWindow(browser_->type() == Browser::TYPE_APP);
+    BuildSystemMenuForAppOrPopupWindow();
   system_menu_.reset(
       new views::NativeMenuWin(system_menu_contents_.get(),
                                frame_->GetWindow()->GetNativeWindow()));
@@ -2247,8 +2247,8 @@ void BrowserView::BuildSystemMenuForBrowserWindow() {
   // since it already has menus (Page, Chrome).
 }
 
-void BrowserView::BuildSystemMenuForAppOrPopupWindow(bool is_app) {
-  if (is_app) {
+void BrowserView::BuildSystemMenuForAppOrPopupWindow() {
+  if (browser_->is_app()) {
     system_menu_contents_->AddSeparator();
     system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
                                                IDS_TASK_MANAGER);
@@ -2268,7 +2268,7 @@ void BrowserView::BuildSystemMenuForAppOrPopupWindow(bool is_app) {
   system_menu_contents_->AddItemWithStringId(IDC_COPY, IDS_COPY);
   system_menu_contents_->AddItemWithStringId(IDC_CUT, IDS_CUT);
   system_menu_contents_->AddSeparator();
-  if (is_app) {
+  if (browser_->is_app()) {
     system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB,
                                                IDS_APP_MENU_NEW_WEB_PAGE);
   } else {

@@ -77,25 +77,9 @@ class Browser : public TabHandlerDelegate,
   // enum, look at SessionService::WindowType to see if it needs to be
   // updated.
   enum Type {
-    TYPE_NORMAL = 1,
+    TYPE_TABBED = 1,
     TYPE_POPUP = 2,
-    // The old-style app created via "Create application shortcuts".
-    // Shortcuts to a URL and shortcuts to an installed application
-    // both have this type.
-    TYPE_APP = 4,
-    TYPE_APP_POPUP = TYPE_APP | TYPE_POPUP,
-    TYPE_DEVTOOLS = TYPE_APP | 8,
-
-    // TODO(skerner): crbug/56776: Until the panel UI is complete on all
-    // platforms, apps that set app.launch.container = "panel" have type
-    // APP_POPUP. (see Browser::CreateForApp)
-    // NOTE: TYPE_APP_PANEL is a superset of TYPE_APP_POPUP.
-    TYPE_APP_PANEL = TYPE_APP | TYPE_POPUP | 16,
-    TYPE_ANY = TYPE_NORMAL |
-               TYPE_POPUP |
-               TYPE_APP |
-               TYPE_DEVTOOLS |
-               TYPE_APP_PANEL
+    TYPE_PANEL = 3,
   };
 
   // Possible elements of the Browser window.
@@ -124,6 +108,25 @@ class Browser : public TabHandlerDelegate,
     MAXIMIZED_STATE_UNMAXIMIZED
   };
 
+  struct CreateParams {
+    CreateParams(Type type, Profile* profile);
+
+    // The browser type.
+    Type type;
+
+    // The associated profile.
+    Profile* profile;
+
+    // The application name that is also the name of the window to the shell.
+    // This name should be set when:
+    // 1) we launch an application via an application shortcut or extension API.
+    // 2) we launch an undocked devtool window.
+    std::string app_name;
+
+    // The bounds of the window to open.
+    gfx::Rect initial_bounds;
+  };
+
   // Constructors, Creation, Showing //////////////////////////////////////////
 
   // Creates a new browser of the given |type| and for the given |profile|. The
@@ -138,17 +141,20 @@ class Browser : public TabHandlerDelegate,
   // window is created by this function call.
   static Browser* Create(Profile* profile);
 
+  // Like Create, but creates a browser of the specified parameters.
+  static Browser* CreateWithParams(const CreateParams& params);
+
   // Like Create, but creates a browser of the specified type.
   static Browser* CreateForType(Type type, Profile* profile);
 
   // Like Create, but creates a toolbar-less "app" window for the specified
   // app. |app_name| is required and is used to identify the window to the
-  // shell.  If |extension| is set, it is used to determine the size of the
+  // shell.  If |window_size| is set, it is used to determine the size of the
   // window to open.
-  static Browser* CreateForApp(const std::string& app_name,
+  static Browser* CreateForApp(Type type,
+                               const std::string& app_name,
                                const gfx::Size& window_size,
-                               Profile* profile,
-                               bool is_panel);
+                               Profile* profile);
 
   // Like Create, but creates a tabstrip-less and toolbar-less
   // DevTools "app" window.
@@ -731,12 +737,20 @@ class Browser : public TabHandlerDelegate,
   // Figure out if there are tabs that have beforeunload handlers.
   bool TabsNeedBeforeUnloadFired();
 
+  bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
+  bool is_type_popup() const { return type_ == TYPE_POPUP; }
+  bool is_type_panel() const { return type_ == TYPE_PANEL; }
+
+  bool is_app() const;
+  bool is_devtools() const;
+
  protected:
   // Wrapper for the factory method in BrowserWindow. This allows subclasses to
   // set their own window.
   virtual BrowserWindow* CreateBrowserWindow();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AppModeTest, EnableAppModeTest);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, NoTabsInPopups);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, ConvertTabToAppShortcut);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, OpenAppWindowLikeNtp);
@@ -778,7 +792,7 @@ class Browser : public TabHandlerDelegate,
   virtual void CloseContents(TabContents* source);
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
   virtual void DetachContents(TabContents* source);
-  virtual bool IsPopup(const TabContents* source) const;
+  virtual bool IsPopupOrPanel(const TabContents* source) const;
   virtual bool CanReloadContents(TabContents* source) const;
   virtual void UpdateTargetURL(TabContents* source, const GURL& url);
   virtual void ContentsMouseEvent(
@@ -925,6 +939,7 @@ class Browser : public TabHandlerDelegate,
   // TODO(beng): remove, and provide AutomationProvider a better way to access
   //             the LocationBarView's edit.
   friend class AutomationProvider;
+  friend class BrowserProxy;
   friend class TestingAutomationProvider;
 
   // Returns the StatusBubble from the current toolbar. It is possible for
@@ -1079,8 +1094,10 @@ class Browser : public TabHandlerDelegate,
   // The CommandUpdater that manages the browser window commands.
   CommandUpdater command_updater_;
 
-  // An optional application name which is used to retrieve and save window
-  // positions.
+  // The application name that is also the name of the window to the shell.
+  // This name should be set when:
+  // 1) we launch an application via an application shortcut or extension API.
+  // 2) we launch an undocked devtool window.
   std::string app_name_;
 
   // Unique identifier of this browser for session restore. This id is only

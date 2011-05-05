@@ -112,7 +112,7 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   [controller_ updateBookmarkBarVisibilityWithAnimation:NO];
 
   // Make sure a normal BrowserWindowController is, uh, normal.
-  EXPECT_TRUE([controller_ isNormalWindow]);
+  EXPECT_TRUE([controller_ isTabbedWindow]);
   EXPECT_TRUE([controller_ hasTabStrip]);
   EXPECT_FALSE([controller_ hasTitleBar]);
   EXPECT_TRUE([controller_ isBookmarkBarVisible]);
@@ -125,7 +125,7 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   BrowserWindowController* controller =
       static_cast<BrowserWindowController*>([cocoaWindow windowController]);
   ASSERT_TRUE([controller isKindOfClass:[BrowserWindowController class]]);
-  EXPECT_FALSE([controller isNormalWindow]);
+  EXPECT_FALSE([controller isTabbedWindow]);
   EXPECT_FALSE([controller hasTabStrip]);
   EXPECT_TRUE([controller hasTitleBar]);
   EXPECT_FALSE([controller isBookmarkBarVisible]);
@@ -154,7 +154,7 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarControllerIndirection) {
 TEST_F(BrowserWindowControllerTest, TestIncognitoWidthSpace) {
   scoped_ptr<TestingProfile> incognito_profile(new TestingProfile());
   incognito_profile->set_off_the_record(true);
-  scoped_ptr<Browser> browser(new Browser(Browser::TYPE_NORMAL,
+  scoped_ptr<Browser> browser(new Browser(Browser::TYPE_TABBED,
                                           incognito_profile.get()));
   controller_.reset([[BrowserWindowController alloc]
                               initWithBrowser:browser.get()

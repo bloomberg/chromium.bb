@@ -54,7 +54,7 @@ TEST_F(SessionModelAssociatorTest, IsValidSessionTab) {
 TEST_F(SessionModelAssociatorTest, PopulateSessionWindow) {
   sync_pb::SessionWindow window_s;
   window_s.add_tab(0);
-  window_s.set_browser_type(sync_pb::SessionWindow_BrowserType_TYPE_NORMAL);
+  window_s.set_browser_type(sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
   window_s.set_selected_tab_index(1);
 
   std::string tag = "tag";

@@ -29,9 +29,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoNoScript) {
       browser()->profile(),
       test_server()->GetURL("files/extensions/test_file.html"));
 
-  Browser* otr_browser = BrowserList::FindBrowserWithType(
-      browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL,
-      false);
+  Browser* otr_browser = BrowserList::FindTabbedBrowser(
+      browser()->profile()->GetOffTheRecordProfile(), false);
   TabContents* tab = otr_browser->GetSelectedTabContents();
 
   // Verify the script didn't run.
@@ -67,9 +66,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoYesScript) {
       browser()->profile(),
       test_server()->GetURL("files/extensions/test_file.html"));
 
-  Browser* otr_browser = BrowserList::FindBrowserWithType(
-      browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL,
-      false);
+  Browser* otr_browser = BrowserList::FindTabbedBrowser(
+      browser()->profile()->GetOffTheRecordProfile(), false);
   TabContents* tab = otr_browser->GetSelectedTabContents();
 
   // Verify the script ran.
@@ -178,9 +176,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoPopup) {
       browser()->profile(),
       test_server()->GetURL("files/extensions/test_file.html"));
 
-  Browser* incognito_browser = BrowserList::FindBrowserWithType(
-      browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL,
-      false);
+  Browser* incognito_browser = BrowserList::FindTabbedBrowser(
+      browser()->profile()->GetOffTheRecordProfile(), false);
 
   // Simulate the incognito's browser action being clicked.
   BrowserActionTestUtil(incognito_browser).Press(0);

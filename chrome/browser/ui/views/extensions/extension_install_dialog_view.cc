@@ -319,10 +319,8 @@ void ShowExtensionInstallDialog(
     const std::vector<string16>& permissions,
     ExtensionInstallUI::PromptType type) {
 #if defined(OS_CHROMEOS)
-  // Use a normal browser window as parent on ChromeOS.
-  Browser* browser = BrowserList::FindBrowserWithType(profile,
-                                                      Browser::TYPE_NORMAL,
-                                                      true);
+  // Use a tabbed browser window as parent on ChromeOS.
+  Browser* browser = BrowserList::FindTabbedBrowser(profile, true);
 #else
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
 #endif

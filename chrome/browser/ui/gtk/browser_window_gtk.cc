@@ -322,7 +322,7 @@ void BrowserWindowGtk::Init() {
   gtk_window_group_add_window(gtk_window_group_new(), window_);
   g_object_unref(gtk_window_get_group(window_));
 
-  if (browser_->type() & Browser::TYPE_APP) {
+  if (browser_->is_app()) {
     std::string app_name = browser_->app_name();
     if (app_name != DevToolsWindow::kDevToolsApp) {
       std::string wmclassname = web_app::GetWMClassFromAppName(app_name);
@@ -353,7 +353,7 @@ void BrowserWindowGtk::Init() {
   // popups need the widgets inited before they can set the window size
   // properly. For other windows, we set the geometry first to prevent resize
   // flicker.
-  if (browser_->type() & Browser::TYPE_POPUP) {
+  if (browser_->is_type_popup() || browser_->is_type_panel()) {
     InitWidgets();
     SetGeometryHints();
   } else {
@@ -763,7 +763,7 @@ void BrowserWindowGtk::UpdateLoadingAnimations(bool should_animate) {
 }
 
 void BrowserWindowGtk::LoadingAnimationCallback() {
-  if (browser_->type() == Browser::TYPE_NORMAL) {
+  if (browser_->is_type_tabbed()) {
     // Loading animations are shown in the tab for tabbed windows.  We check the
     // browser type instead of calling IsTabStripVisible() because the latter
     // will return false for fullscreen windows, but we still need to update
@@ -1554,11 +1554,12 @@ void BrowserWindowGtk::SetGeometryHints() {
   //
   // For popup windows, we assume that if x == y == 0, the opening page
   // did not specify a position.  Let the WM position the popup instead.
-  bool is_popup = browser_->type() & Browser::TYPE_POPUP;
-  bool popup_without_position = is_popup &&
+  bool is_popup_or_panel = browser_->is_type_popup() ||
+                           browser_->is_type_panel();
+  bool popup_without_position = is_popup_or_panel &&
       bounds.x() == 0 && bounds.y() == 0;
   bool move = browser_->bounds_overridden() && !popup_without_position;
-  SetBoundsImpl(bounds, !is_popup, move);
+  SetBoundsImpl(bounds, !is_popup_or_panel, move);
 }
 
 void BrowserWindowGtk::ConnectHandlersToSignals() {
@@ -2248,7 +2249,7 @@ bool BrowserWindowGtk::UsingCustomPopupFrame() const {
   GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       browser()->profile());
   return !theme_provider->UsingNativeTheme() &&
-      browser()->type() & Browser::TYPE_POPUP;
+         (browser()->is_type_popup() || browser()->is_type_panel());
 }
 
 bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
@@ -2259,7 +2260,7 @@ bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
   // detect the window edge for behavioral purposes.  The edge if any is present
   // only for visual aspects.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels) &&
-      browser_->type() == Browser::TYPE_APP_PANEL)
+      browser_->is_type_panel())
     return false;
 
   if (IsMaximized() || IsFullscreen())
@@ -2318,13 +2319,11 @@ bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
 bool BrowserWindowGtk::UseCustomFrame() {
   // We always use custom frame for panels.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels) &&
-      browser_->type() == Browser::TYPE_APP_PANEL)
+      browser_->is_type_panel())
     return true;
 
   // We don't use the custom frame for app mode windows or app window popups.
-  return use_custom_frame_pref_.GetValue() &&
-      browser_->type() != Browser::TYPE_APP &&
-      browser_->type() != Browser::TYPE_APP_POPUP;
+  return use_custom_frame_pref_.GetValue() && !browser_->is_app();
 }
 
 bool BrowserWindowGtk::BoundsMatchMonitorSize() {

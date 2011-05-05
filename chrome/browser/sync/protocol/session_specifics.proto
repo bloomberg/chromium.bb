@@ -33,12 +33,12 @@ message SessionWindow {
   // Index of the selected tab in tabs; -1 if no tab is selected.
   optional int32 selected_tab_index = 2 [default = -1];
   // Type of the browser. Currently we only store browsers of type
-  // TYPE_NORMAL and TYPE_POPUP.
+  // TYPE_TABBED and TYPE_POPUP.
   enum BrowserType {
-    TYPE_NORMAL = 1;
+    TYPE_TABBED = 1;
     TYPE_POPUP = 2;
   }
-  optional BrowserType browser_type = 3 [default = TYPE_NORMAL];
+  optional BrowserType browser_type = 3 [default = TYPE_TABBED];
   // The tabs that compose a window (correspond to tab id's).
   repeated int32 tab = 4;
 }

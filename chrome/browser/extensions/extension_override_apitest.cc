@@ -86,9 +86,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, MAYBE_OverrideNewtabIncognito) {
   // new tab page because we can't load chrome-extension URLs in incognito.
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
                                      GURL("chrome://newtab/"));
-  Browser* otr_browser = BrowserList::FindBrowserWithType(
-      browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL,
-      false);
+  Browser* otr_browser = BrowserList::FindTabbedBrowser(
+      browser()->profile()->GetOffTheRecordProfile(), false);
   TabContents* tab = otr_browser->GetSelectedTabContents();
   ASSERT_TRUE(tab->controller().GetActiveEntry());
   EXPECT_FALSE(tab->controller().GetActiveEntry()->url().

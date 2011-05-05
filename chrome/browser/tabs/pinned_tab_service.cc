@@ -14,7 +14,7 @@
 static bool IsLastNormalBrowser(Browser* browser) {
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
-    if (*i != browser && (*i)->type() == Browser::TYPE_NORMAL &&
+    if (*i != browser && (*i)->is_type_tabbed() &&
         (*i)->profile() == browser->profile()) {
       return false;
     }
@@ -43,7 +43,7 @@ void PinnedTabService::Observe(NotificationType type,
   switch (type.value) {
     case NotificationType::BROWSER_OPENED: {
       Browser* browser = Source<Browser>(source).ptr();
-      if (!has_normal_browser_ && browser->type() == Browser::TYPE_NORMAL &&
+      if (!has_normal_browser_ && browser->is_type_tabbed() &&
           browser->profile() == profile_) {
         has_normal_browser_ = true;
       }

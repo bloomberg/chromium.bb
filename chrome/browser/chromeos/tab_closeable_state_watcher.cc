@@ -81,14 +81,14 @@ TabCloseableStateWatcher::~TabCloseableStateWatcher() {
 }
 
 bool TabCloseableStateWatcher::CanCloseTab(const Browser* browser) const {
-  return browser->type() != Browser::TYPE_NORMAL ? true :
-      (can_close_tab_ || waiting_for_browser_);
+  return browser->is_type_tabbed() ?
+      (can_close_tab_ || waiting_for_browser_) : true;
 }
 
 bool TabCloseableStateWatcher::CanCloseTabs(const Browser* browser,
     std::vector<int>* indices) const {
   if (signing_off_ || waiting_for_browser_ || tabstrip_watchers_.size() > 1 ||
-      browser->type() != Browser::TYPE_NORMAL ||
+      !browser->is_type_tabbed() ||
       (browser->profile()->IsOffTheRecord() && !guest_session_))
     return true;
 
@@ -155,8 +155,8 @@ void TabCloseableStateWatcher::OnWindowCloseCanceled(Browser* browser) {
 void TabCloseableStateWatcher::OnBrowserAdded(const Browser* browser) {
   waiting_for_browser_ = false;
 
-  // Only normal browsers may affect closeable state.
-  if (browser->type() != Browser::TYPE_NORMAL)
+  // Only tabbed browsers may affect closeable state.
+  if (!browser->is_type_tabbed())
     return;
 
   // Create TabStripWatcher to observe tabstrip of new browser.
@@ -167,8 +167,8 @@ void TabCloseableStateWatcher::OnBrowserAdded(const Browser* browser) {
 }
 
 void TabCloseableStateWatcher::OnBrowserRemoved(const Browser* browser) {
-  // Only normal browsers may affect closeable state.
-  if (browser->type() != Browser::TYPE_NORMAL)
+  // Only tabbed browsers may affect closeable state.
+  if (!browser->is_type_tabbed())
     return;
 
   // Remove TabStripWatcher for browser that is being removed.
@@ -225,7 +225,7 @@ void TabCloseableStateWatcher::OnTabStripChanged(const Browser* browser,
 void TabCloseableStateWatcher::CheckAndUpdateState(
     const Browser* browser_to_check) {
   if (waiting_for_browser_ || signing_off_ || tabstrip_watchers_.empty() ||
-      (browser_to_check && browser_to_check->type() != Browser::TYPE_NORMAL))
+      (browser_to_check && !browser_to_check->is_type_tabbed()))
     return;
 
   bool new_can_close;
@@ -278,8 +278,8 @@ bool TabCloseableStateWatcher::CanCloseBrowserImpl(
   if (signing_off_)
     return true;
 
-  // Non-normal browsers are always closeable.
-  if (browser->type() != Browser::TYPE_NORMAL)
+  // Non-tabbed browsers are always closeable.
+  if (!browser->is_type_tabbed())
     return true;
 
   // If this is not the last normal browser, it's always closeable.

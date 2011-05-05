@@ -33,7 +33,7 @@ TestSessionService::TestSessionService(SessionService* service,
 void TestSessionService::SetUp() {
   ASSERT_TRUE(service()) << "SetUp() called without setting SessionService";
   ASSERT_TRUE(profile_);
-  service()->SetWindowType(window_id_, Browser::TYPE_NORMAL);
+  service()->SetWindowType(window_id_, Browser::TYPE_TABBED);
   service()->SetWindowBounds(window_id_, window_bounds_, false);
 }
 

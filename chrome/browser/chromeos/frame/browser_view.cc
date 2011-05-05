@@ -431,7 +431,7 @@ void BrowserView::InitSystemMenu() {
 BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   // Create a browser view for chromeos.
   BrowserView* view;
-  if (browser->type() & Browser::TYPE_POPUP)
+  if (browser->is_type_popup() || browser->is_type_panel())
     view = new chromeos::PanelBrowserView(browser);
   else
     view = new chromeos::BrowserView(browser);

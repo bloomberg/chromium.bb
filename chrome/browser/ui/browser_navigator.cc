@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -60,9 +61,7 @@ bool WindowCanOpenTabs(Browser* browser) {
 // Finds an existing Browser compatible with |profile|, making a new one if no
 // such Browser is located.
 Browser* GetOrCreateBrowser(Profile* profile) {
-  Browser* browser = BrowserList::FindBrowserWithType(profile,
-                                                      Browser::TYPE_NORMAL,
-                                                      false);
+  Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
   return browser ? browser : Browser::Create(profile);
 }
 
@@ -178,26 +177,32 @@ Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
         return GetOrCreateBrowser(profile);
       return NULL;
     case NEW_POPUP: {
-      // Make a new popup window. Coerce app-style if |params->browser| or the
-      // |source| represents an app.
-      Browser::Type type = Browser::TYPE_POPUP;
-      if ((params->browser && (params->browser->type() & Browser::TYPE_APP)) ||
-          (params->source_contents &&
-           params->source_contents->extension_tab_helper()->is_app())) {
-        type = Browser::TYPE_APP_POPUP;
-      }
+      // Make a new popup window.
       if (profile) {
-        Browser* browser = new Browser(type, profile);
-        browser->set_override_bounds(params->window_bounds);
-        browser->InitBrowserWindow();
-        return browser;
+        // Coerce app-style if |params->browser| or |source| represents an app.
+        std::string app_name;
+        if (params->browser && !params->browser->app_name().empty()) {
+          app_name = params->browser->app_name();
+        } else if (params->source_contents &&
+                   params->source_contents->extension_tab_helper()->is_app()) {
+          app_name = params->source_contents->extension_tab_helper()->
+              extension_app()->id();
+        }
+        if (app_name.empty()) {
+          Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile);
+          browser_params.initial_bounds = params->window_bounds;
+          return Browser::CreateWithParams(browser_params);
+        } else {
+          return Browser::CreateForApp(Browser::TYPE_POPUP, app_name,
+                                       params->window_bounds.size(), profile);
+        }
       }
       return NULL;
     }
     case NEW_WINDOW:
       // Make a new normal browser window.
       if (profile) {
-        Browser* browser = new Browser(Browser::TYPE_NORMAL, profile);
+        Browser* browser = new Browser(Browser::TYPE_TABBED, profile);
         browser->InitBrowserWindow();
         return browser;
       }

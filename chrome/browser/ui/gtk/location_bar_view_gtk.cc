@@ -1154,7 +1154,7 @@ void LocationBarViewGtk::UpdateStarIcon() {
 }
 
 bool LocationBarViewGtk::ShouldOnlyShowLocation() {
-  return browser_->type() != Browser::TYPE_NORMAL;
+  return !browser_->is_type_tabbed();
 }
 
 void LocationBarViewGtk::AdjustChildrenVisibility() {

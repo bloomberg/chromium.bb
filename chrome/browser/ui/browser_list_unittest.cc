@@ -26,9 +26,9 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyCount) {
   EXPECT_EQ(0U, CountAllTabs());
 
   // Create more browsers/windows.
-  scoped_ptr<Browser> browser2(new Browser(Browser::TYPE_NORMAL, profile()));
-  scoped_ptr<Browser> browser3(new Browser(Browser::TYPE_NORMAL, profile()));
-  scoped_ptr<Browser> browser4(new Browser(Browser::TYPE_NORMAL, profile()));
+  scoped_ptr<Browser> browser2(new Browser(Browser::TYPE_TABBED, profile()));
+  scoped_ptr<Browser> browser3(new Browser(Browser::TYPE_TABBED, profile()));
+  scoped_ptr<Browser> browser4(new Browser(Browser::TYPE_TABBED, profile()));
 
   scoped_ptr<TestBrowserWindow> window2(new TestBrowserWindow(browser2.get()));
   scoped_ptr<TestBrowserWindow> window3(new TestBrowserWindow(browser3.get()));
@@ -74,8 +74,8 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
   EXPECT_EQ(1U, BrowserList::size());
 
   // Create more browsers/windows.
-  scoped_ptr<Browser> browser2(new Browser(Browser::TYPE_NORMAL, profile()));
-  scoped_ptr<Browser> browser3(new Browser(Browser::TYPE_NORMAL, profile()));
+  scoped_ptr<Browser> browser2(new Browser(Browser::TYPE_TABBED, profile()));
+  scoped_ptr<Browser> browser3(new Browser(Browser::TYPE_TABBED, profile()));
 
   scoped_ptr<TestBrowserWindow> window2(new TestBrowserWindow(browser2.get()));
   scoped_ptr<TestBrowserWindow> window3(new TestBrowserWindow(browser3.get()));

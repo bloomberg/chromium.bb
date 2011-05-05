@@ -173,7 +173,7 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
     profile()->CreateBookmarkModel(false);
     // Wait for the bookmarks model to load.
     profile()->BlockUntilBookmarkModelLoaded();
-    set_browser(new Browser(Browser::TYPE_NORMAL, profile()));
+    set_browser(new Browser(Browser::TYPE_TABBED, profile()));
     test_window_ = new TestBrowserWindowForWizardTest(browser());
     set_window(test_window_);
     browser()->set_window(window());

@@ -102,7 +102,7 @@ void PinnedTabCodec::WritePinnedTabs(Profile* profile) {
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
     Browser* browser = *i;
-    if (browser->type() == Browser::TYPE_NORMAL &&
+    if (browser->is_type_tabbed() &&
         browser->profile() == profile && HasPinnedTabs(browser)) {
       EncodePinnedTabs(browser, &values);
     }

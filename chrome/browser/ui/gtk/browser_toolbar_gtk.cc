@@ -630,7 +630,7 @@ void BrowserToolbarGtk::NotifyPrefChanged(const std::string* pref) {
 
 bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
   // If we're a popup window, only show the location bar (omnibox).
-  return browser_->type() != Browser::TYPE_NORMAL;
+  return !browser_->is_type_tabbed();
 }
 
 gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,

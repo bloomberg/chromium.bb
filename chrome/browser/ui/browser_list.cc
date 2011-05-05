@@ -99,14 +99,13 @@ class BrowserActivityObserver : public NotificationObserver {
 
 BrowserActivityObserver* activity_observer = NULL;
 
-// Type used to indicate only the type should be matched.
-const int kMatchNothing                 = 0;
+// Type used to indicate to match anything.
+const int kMatchAny                     = 0;
 
 // See BrowserMatches for details.
 const int kMatchOriginalProfile         = 1 << 0;
-
-// See BrowserMatches for details.
 const int kMatchCanSupportWindowFeature = 1 << 1;
+const int kMatchTabbed                  = 1 << 2;
 
 // Returns true if the specified |browser| matches the specified arguments.
 // |match_types| is a bitmask dictating what parameters to match:
@@ -115,9 +114,9 @@ const int kMatchCanSupportWindowFeature = 1 << 1;
 //   incognito windows.
 // . If it contains kMatchCanSupportWindowFeature
 //   |CanSupportWindowFeature(window_feature)| must return true.
+// . If it contains kMatchTabbed, the browser must be a tabbed browser.
 bool BrowserMatches(Browser* browser,
                     Profile* profile,
-                    Browser::Type type,
                     Browser::WindowFeature window_feature,
                     uint32 match_types) {
   if (match_types & kMatchCanSupportWindowFeature &&
@@ -133,8 +132,8 @@ bool BrowserMatches(Browser* browser,
     return false;
   }
 
-  if (type != Browser::TYPE_ANY && browser->type() != type)
-    return false;
+  if (match_types & kMatchTabbed)
+    return browser->is_type_tabbed();
 
   return true;
 }
@@ -146,14 +145,30 @@ template <class T>
 Browser* FindBrowserMatching(const T& begin,
                              const T& end,
                              Profile* profile,
-                             Browser::Type type,
                              Browser::WindowFeature window_feature,
                              uint32 match_types) {
   for (T i = begin; i != end; ++i) {
-    if (BrowserMatches(*i, profile, type, window_feature, match_types))
+    if (BrowserMatches(*i, profile, window_feature, match_types))
       return *i;
   }
   return NULL;
+}
+
+Browser* FindBrowserWithTabbedOrAnyType(Profile* profile,
+                                        bool match_tabbed,
+                                        bool match_incognito) {
+  uint32 match_types = kMatchAny;
+  if (match_tabbed)
+    match_types |= kMatchTabbed;
+  if (match_incognito)
+    match_types |= kMatchOriginalProfile;
+  Browser* browser = FindBrowserMatching(
+      BrowserList::begin_last_active(), BrowserList::end_last_active(),
+      profile, Browser::FEATURE_NONE, match_types);
+  // Fall back to a forward scan of all Browsers if no active one was found.
+  return browser ? browser :
+      FindBrowserMatching(BrowserList::begin(), BrowserList::end(), profile,
+                          Browser::FEATURE_NONE, match_types);
 }
 
 }  // namespace
@@ -455,9 +470,9 @@ void BrowserList::SessionEnding() {
 bool BrowserList::HasBrowserWithProfile(Profile* profile) {
   return FindBrowserMatching(BrowserList::begin(),
                              BrowserList::end(),
-                             profile, Browser::TYPE_ANY,
+                             profile,
                              Browser::FEATURE_NONE,
-                             kMatchNothing) != NULL;
+                             kMatchAny) != NULL;
 }
 
 // static
@@ -513,43 +528,40 @@ Browser* BrowserList::GetLastActive() {
 }
 
 // static
-Browser* BrowserList::GetLastActiveWithProfile(Profile* p) {
+Browser* BrowserList::GetLastActiveWithProfile(Profile* profile) {
   // We are only interested in last active browsers, so we don't fall back to
   // all browsers like FindBrowserWith* do.
   return FindBrowserMatching(
-      BrowserList::begin_last_active(), BrowserList::end_last_active(), p,
-      Browser::TYPE_ANY, Browser::FEATURE_NONE, kMatchNothing);
+      BrowserList::begin_last_active(), BrowserList::end_last_active(), profile,
+      Browser::FEATURE_NONE, kMatchAny);
 }
 
 // static
-Browser* BrowserList::FindBrowserWithType(Profile* p, Browser::Type t,
-                                          bool match_incognito) {
-  uint32 match_types = match_incognito ? kMatchOriginalProfile : kMatchNothing;
-  Browser* browser = FindBrowserMatching(
-      BrowserList::begin_last_active(), BrowserList::end_last_active(),
-      p, t, Browser::FEATURE_NONE, match_types);
-  // Fall back to a forward scan of all Browsers if no active one was found.
-  return browser ? browser :
-      FindBrowserMatching(BrowserList::begin(), BrowserList::end(), p, t,
-                          Browser::FEATURE_NONE, match_types);
+Browser* BrowserList::FindTabbedBrowser(Profile* profile,
+                                        bool match_incognito) {
+  return FindBrowserWithTabbedOrAnyType(profile, true, match_incognito);
 }
 
 // static
-Browser* BrowserList::FindBrowserWithFeature(Profile* p,
+Browser* BrowserList::FindAnyBrowser(Profile* profile, bool match_incognito) {
+  return FindBrowserWithTabbedOrAnyType(profile, false, match_incognito);
+}
+
+// static
+Browser* BrowserList::FindBrowserWithFeature(Profile* profile,
                                              Browser::WindowFeature feature) {
   Browser* browser = FindBrowserMatching(
       BrowserList::begin_last_active(), BrowserList::end_last_active(),
-      p, Browser::TYPE_ANY, feature, kMatchCanSupportWindowFeature);
+      profile, feature, kMatchCanSupportWindowFeature);
   // Fall back to a forward scan of all Browsers if no active one was found.
   return browser ? browser :
-      FindBrowserMatching(BrowserList::begin(), BrowserList::end(), p,
-                          Browser::TYPE_ANY, feature,
-                          kMatchCanSupportWindowFeature);
+      FindBrowserMatching(BrowserList::begin(), BrowserList::end(), profile,
+                          feature, kMatchCanSupportWindowFeature);
 }
 
 // static
-Browser* BrowserList::FindBrowserWithProfile(Profile* p) {
-  return FindBrowserWithType(p, Browser::TYPE_ANY, false);
+Browser* BrowserList::FindBrowserWithProfile(Profile* profile) {
+  return FindAnyBrowser(profile, false);
 }
 
 // static
@@ -563,23 +575,24 @@ Browser* BrowserList::FindBrowserWithID(SessionID::id_type desired_id) {
 }
 
 // static
-size_t BrowserList::GetBrowserCountForType(Profile* p, Browser::Type type) {
+size_t BrowserList::GetBrowserCountForType(Profile* profile,
+                                           bool match_tabbed) {
   size_t result = 0;
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
-    if (BrowserMatches(*i, p, type, Browser::FEATURE_NONE, kMatchNothing))
+    if (BrowserMatches(*i, profile, Browser::FEATURE_NONE,
+                       match_tabbed ? kMatchTabbed : kMatchAny))
       ++result;
   }
   return result;
 }
 
 // static
-size_t BrowserList::GetBrowserCount(Profile* p) {
+size_t BrowserList::GetBrowserCount(Profile* profile) {
   size_t result = 0;
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
-    if (BrowserMatches(*i, p, Browser::TYPE_ANY, Browser::FEATURE_NONE,
-                       kMatchNothing)) {
+    if (BrowserMatches(*i, profile, Browser::FEATURE_NONE, kMatchAny)) {
       result++;
     }
   }

@@ -967,7 +967,7 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
   if (!profile_ && browser)
     profile_ = browser->profile();
 
-  if (!browser || browser->type() != Browser::TYPE_NORMAL) {
+  if (!browser || !browser->is_type_tabbed()) {
     browser = Browser::Create(profile_);
   } else {
 #if defined(TOOLKIT_GTK)

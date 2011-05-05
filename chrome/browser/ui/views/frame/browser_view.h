@@ -185,21 +185,27 @@ class BrowserView : public BrowserBubbleHost,
 #endif
 
   // Returns true if the Browser object associated with this BrowserView is a
-  // normal-type window (i.e. a browser window, not an app or popup).
+  // tabbed-type window (i.e. a browser window, not an app or popup).
   bool IsBrowserTypeNormal() const {
-    return browser_->type() == Browser::TYPE_NORMAL;
+    return browser_->is_type_tabbed();
   }
 
   // Returns true if the Browser object associated with this BrowserView is a
-  // app panel window.
+  // panel window.
   bool IsBrowserTypePanel() const {
-    return browser_->type() == Browser::TYPE_APP_PANEL;
+    return browser_->is_type_panel();
   }
 
   // Returns true if the Browser object associated with this BrowserView is a
   // popup window.
   bool IsBrowserTypePopup() const {
-    return (browser_->type() & Browser::TYPE_POPUP) != 0;
+    return browser_->is_type_popup();
+  }
+
+  // Returns true if the Browser object associated with this BrowserView
+  // represents an app.
+  bool IsBrowserTypeApp() const {
+    return browser_->is_app();
   }
 
   // Register preferences specific to this view.
@@ -492,7 +498,7 @@ class BrowserView : public BrowserBubbleHost,
 #if defined(OS_WIN)
   // Builds the correct menu for when we have minimal chrome.
   void BuildSystemMenuForBrowserWindow();
-  void BuildSystemMenuForAppOrPopupWindow(bool is_app);
+  void BuildSystemMenuForAppOrPopupWindow();
 #endif
 
   // Retrieves the command id for the specified Windows app command.

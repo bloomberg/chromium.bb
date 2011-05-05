@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
   EXPECT_EQ(tab_count, browser()->tab_count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
-  // Create a new TYPE_NORMAL tab.  It should be in its own process.
+  // Create a new TYPE_TABBED tab.  It should be in its own process.
   GURL page1("data:text/html,hello world1");
   browser()->ShowSingletonTab(page1);
   if (browser()->tab_count() == tab_count)
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
   EXPECT_EQ(tab_count, browser()->tab_count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
-  // Create another TYPE_NORMAL tab.  It should share the previous process.
+  // Create another TYPE_TABBED tab.  It should share the previous process.
   GURL page2("data:text/html,hello world2");
   browser()->ShowSingletonTab(page2);
   if (browser()->tab_count() == tab_count)
@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
   EXPECT_EQ(tab1->GetURL(), newtab);
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
-  // Create a new TYPE_NORMAL tab.  It should be in its own process.
+  // Create a new TYPE_TABBED tab.  It should be in its own process.
   GURL page1("data:text/html,hello world1");
   browser()->ShowSingletonTab(page1);
   if (browser()->tab_count() == tab_count)
@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
   EXPECT_EQ(host_count, RenderProcessHostCount());
   EXPECT_NE(rph1, rph2);
 
-  // Create another TYPE_NORMAL tab.  It should share the previous process.
+  // Create another TYPE_TABBED tab.  It should share the previous process.
   GURL page2("data:text/html,hello world2");
   browser()->ShowSingletonTab(page2);
   if (browser()->tab_count() == tab_count)
@@ -231,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
   EXPECT_EQ(tab2->GetRenderProcessHost(), rph2);
 
   // Create another TYPE_WEBUI tab.  It should share the process with newtab.
-  // Note: intentionally create this tab after the TYPE_NORMAL tabs to exercise
+  // Note: intentionally create this tab after the TYPE_TABBED tabs to exercise
   // bug 43448 where extension and WebUI tabs could get combined into normal
   // renderers.
   GURL history(chrome::kChromeUIHistoryURL);

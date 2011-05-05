@@ -159,7 +159,7 @@ bool TabFinder::TabMatchesURL(TabContents* tab_contents, const GURL& url) {
 }
 
 TabContents* TabFinder::FindTabInBrowser(Browser* browser, const GURL& url) {
-  if (browser->type() != Browser::TYPE_NORMAL)
+  if (!browser->is_type_tabbed())
     return NULL;
 
   for (int i = 0; i < browser->tab_count(); ++i) {

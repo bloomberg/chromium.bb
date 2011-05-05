@@ -193,6 +193,14 @@ const char kHashMark[] = "#";
 
 extern bool g_log_bug53991;
 
+////////////////////////////////////////////////////////////////////////////////
+// Browser, CreateParams:
+
+Browser::CreateParams::CreateParams(Type type, Profile* profile)
+    : type(type),
+      profile(profile) {
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Constructors, Creation, Showing:
 
@@ -337,54 +345,59 @@ Browser::~Browser() {
 
 // static
 Browser* Browser::Create(Profile* profile) {
-  Browser* browser = new Browser(TYPE_NORMAL, profile);
+  Browser* browser = new Browser(TYPE_TABBED, profile);
+  browser->InitBrowserWindow();
+  return browser;
+}
+
+// static
+Browser* Browser::CreateWithParams(const CreateParams& params) {
+  Browser* browser = new Browser(params.type, params.profile);
+  browser->app_name_ = params.app_name;
+  if (!params.initial_bounds.IsEmpty())
+    browser->set_override_bounds(params.initial_bounds);
   browser->InitBrowserWindow();
   return browser;
 }
 
 // static
 Browser* Browser::CreateForType(Type type, Profile* profile) {
-  Browser* browser = new Browser(type, profile);
-  browser->InitBrowserWindow();
-  return browser;
+  CreateParams params(type, profile);
+  return CreateWithParams(params);
 }
 
 // static
-Browser* Browser::CreateForApp(const std::string& app_name,
+Browser* Browser::CreateForApp(Type type,
+                               const std::string& app_name,
                                const gfx::Size& window_size,
-                               Profile* profile,
-                               bool is_panel) {
-  Browser::Type type = TYPE_APP;
+                               Profile* profile) {
+  DCHECK(type != TYPE_TABBED);
+  DCHECK(!app_name.empty());
 
-  if (is_panel) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels)) {
-      type = TYPE_APP_PANEL;
-    } else {
-      // TYPE_APP_PANEL is the logical choice.  However, the panel UI
-      // is not fully implemented.  See crbug/55943.
-      type = TYPE_APP_POPUP;
-    }
+  RegisterAppPrefs(app_name, profile);
+
+#if !defined(OS_CHROMEOS)
+  if (type == TYPE_PANEL &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels)) {
+    // The panel UI is not fully implemented, so we default to TYPE_POPUP when
+    // the panel switch is not enabled.  See crbug/55943.
+    type = TYPE_POPUP;
   }
+#endif
 
-  Browser* browser = new Browser(type, profile);
-  browser->app_name_ = app_name;
+  CreateParams params(type, profile);
+  params.app_name = app_name;
+  if (!window_size.IsEmpty())
+    params.initial_bounds.set_size(window_size);
 
-  if (!window_size.IsEmpty()) {
-    gfx::Rect initial_pos(window_size);
-    browser->set_override_bounds(initial_pos);
-  }
-
-  browser->InitBrowserWindow();
-
-  return browser;
+  return CreateWithParams(params);
 }
 
 // static
 Browser* Browser::CreateForDevTools(Profile* profile) {
-  Browser* browser = new Browser(TYPE_DEVTOOLS, profile);
-  browser->app_name_ = DevToolsWindow::kDevToolsApp;
-  browser->InitBrowserWindow();
-  return browser;
+  CreateParams params(TYPE_POPUP, profile);
+  params.app_name = DevToolsWindow::kDevToolsApp;
+  return CreateWithParams(params);
 }
 
 void Browser::InitBrowserWindow() {
@@ -401,7 +414,7 @@ void Browser::InitBrowserWindow() {
     // Set the app user model id for this application to that of the application
     // name.  See http://crbug.com/7028.
     app::win::SetAppIdForWindow(
-        type_ & TYPE_APP ?
+        is_app() ?
         ShellIntegration::GetAppId(UTF8ToWide(app_name_), profile_->GetPath()) :
         ShellIntegration::GetChromiumAppId(profile_->GetPath()),
         window()->GetNativeHandle());
@@ -470,6 +483,14 @@ FindBarController* Browser::GetFindBarController() {
 
 bool Browser::HasFindBarController() const {
   return find_bar_controller_.get() != NULL;
+}
+
+bool Browser::is_app() const {
+  return !app_name_.empty();
+}
+
+bool Browser::is_devtools() const {
+  return app_name_ == DevToolsWindow::kDevToolsApp;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -550,17 +571,16 @@ TabContents* Browser::OpenApplicationWindow(
   else
     app_name = web_app::GenerateApplicationNameFromURL(url);
 
-  RegisterAppPrefs(app_name, profile);
-
-  bool as_panel = extension && (container == extension_misc::LAUNCH_PANEL);
+  Type type = extension && (container == extension_misc::LAUNCH_PANEL) ?
+      TYPE_PANEL : TYPE_POPUP;
 
   gfx::Size window_size;
   if (extension)
     window_size.SetSize(extension->launch_width(),
                         extension->launch_height());
 
-  Browser* browser = Browser::CreateForApp(app_name, window_size, profile,
-                                           as_panel);
+  Browser* browser = Browser::CreateForApp(type, app_name, window_size,
+                                           profile);
 
   if (app_browser)
     *app_browser = browser;
@@ -608,8 +628,7 @@ TabContents* Browser::OpenAppShortcutWindow(Profile* profile,
 TabContents* Browser::OpenApplicationTab(Profile* profile,
                                          const Extension* extension,
                                          TabContents* existing_tab) {
-  Browser* browser =
-      BrowserList::FindBrowserWithType(profile, Browser::TYPE_NORMAL, false);
+  Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
   TabContents* contents = NULL;
   if (!browser)
     return contents;
@@ -761,8 +780,18 @@ std::string Browser::GetWindowPlacementKey() const {
 }
 
 bool Browser::ShouldSaveWindowPlacement() const {
-  // Only save the window placement of popups if they are restored.
-  return (type() & TYPE_POPUP) == 0 || browser_defaults::kRestorePopups;
+  switch (type_) {
+    case TYPE_TABBED:
+      return true;
+    case TYPE_POPUP:
+      // Only save the window placement of popups if they are restored.
+      return browser_defaults::kRestorePopups;
+    case TYPE_PANEL:
+      // Do not save the window placement of panels.
+      return false;
+    default:
+      return false;
+  }
 }
 
 void Browser::SaveWindowPlacement(const gfx::Rect& bounds, bool maximized) {
@@ -842,7 +871,7 @@ string16 Browser::GetWindowTitleForCurrentTab() const {
 #else
   int string_id = IDS_BROWSER_WINDOW_TITLE_FORMAT;
   // Don't append the app name to window titles on app frames and app popups
-  if (type_ & TYPE_APP)
+  if (is_app())
     string_id = IDS_BROWSER_WINDOW_TITLE_FORMAT_NO_LOGO;
   return l10n_util::GetStringFUTF16(string_id, title);
 #endif
@@ -915,7 +944,7 @@ void Browser::OnWindowClosing() {
 
   TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile());
-  if (tab_restore_service && type() == TYPE_NORMAL && tab_count())
+  if (tab_restore_service && is_type_tabbed() && tab_count())
     tab_restore_service->BrowserClosing(tab_restore_service_delegate());
 
   // TODO(sky): convert session/tab restore to use notification.
@@ -1142,35 +1171,34 @@ void Browser::ShowSingletonTab(const GURL& url) {
 
 void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
 #if !defined(OS_MACOSX)
-  const bool show_main_ui = (type() == TYPE_NORMAL) && !is_fullscreen;
+  const bool show_main_ui = is_type_tabbed() && !is_fullscreen;
 #else
-  const bool show_main_ui = (type() == TYPE_NORMAL);
+  const bool show_main_ui = is_type_tabbed();
 #endif
 
-  bool main_not_fullscreen_or_popup =
-      show_main_ui && !is_fullscreen && (type() & TYPE_POPUP) == 0;
+  bool main_not_fullscreen = show_main_ui && !is_fullscreen;
 
   // Navigation commands
   command_updater_.UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, show_main_ui);
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_SHOW_AS_TAB,
-      (type() & TYPE_POPUP) && !is_fullscreen);
+      type_ != TYPE_TABBED && !is_fullscreen);
 
   // Focus various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_LOCATION, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_SEARCH, show_main_ui);
   command_updater_.UpdateCommandEnabled(
-      IDC_FOCUS_MENU_BAR, main_not_fullscreen_or_popup);
+      IDC_FOCUS_MENU_BAR, main_not_fullscreen);
   command_updater_.UpdateCommandEnabled(
-      IDC_FOCUS_NEXT_PANE, main_not_fullscreen_or_popup);
+      IDC_FOCUS_NEXT_PANE, main_not_fullscreen);
   command_updater_.UpdateCommandEnabled(
-      IDC_FOCUS_PREVIOUS_PANE, main_not_fullscreen_or_popup);
+      IDC_FOCUS_PREVIOUS_PANE, main_not_fullscreen);
   command_updater_.UpdateCommandEnabled(
-      IDC_FOCUS_BOOKMARKS, main_not_fullscreen_or_popup);
+      IDC_FOCUS_BOOKMARKS, main_not_fullscreen);
   command_updater_.UpdateCommandEnabled(
-      IDC_FOCUS_CHROMEOS_STATUS, main_not_fullscreen_or_popup);
+      IDC_FOCUS_CHROMEOS_STATUS, main_not_fullscreen);
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
@@ -1242,21 +1270,20 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
   features |= FEATURE_DOWNLOADSHELF;
 #endif  // !defined(OS_CHROMEOS)
 
-  if (type() == TYPE_NORMAL) {
+  if (is_type_tabbed())
     features |= FEATURE_BOOKMARKBAR;
-  }
 
   if (!hide_ui_for_fullscreen) {
-    if (type() != TYPE_NORMAL)
+    if (!is_type_tabbed())
       features |= FEATURE_TITLEBAR;
 
-    if (type() == TYPE_NORMAL)
+    if (is_type_tabbed())
       features |= FEATURE_TABSTRIP;
 
-    if (type() == TYPE_NORMAL)
+    if (is_type_tabbed())
       features |= FEATURE_TOOLBAR;
 
-    if ((type() & Browser::TYPE_APP) == 0)
+    if (!is_app())
       features |= FEATURE_LOCATIONBAR;
   }
   return !!(features & feature);
@@ -1408,7 +1435,7 @@ void Browser::CloseWindow() {
 void Browser::NewTab() {
   UserMetrics::RecordAction(UserMetricsAction("NewTab"));
 
-  if (type() == TYPE_NORMAL) {
+  if (is_type_tabbed()) {
     AddBlankTab(true);
     GetSelectedTabContentsWrapper()->view()->RestoreFocus();
   } else {
@@ -2513,7 +2540,7 @@ Browser* Browser::CreateNewStripWithContents(
     dock_info.AdjustOtherWindowBounds();
 
   // Create an empty new browser window the same size as the old one.
-  Browser* browser = new Browser(TYPE_NORMAL, profile_);
+  Browser* browser = new Browser(TYPE_TABBED, profile_);
   browser->set_override_bounds(new_window_bounds);
   browser->set_maximized_state(
       maximize ? MAXIMIZED_STATE_MAXIMIZED : MAXIMIZED_STATE_UNMAXIMIZED);
@@ -2572,12 +2599,12 @@ void Browser::DuplicateContentsAt(int index) {
                                                           add_types);
   } else {
     Browser* browser = NULL;
-    if (type_ & TYPE_APP) {
-      CHECK_EQ((type_ & TYPE_POPUP), 0);
-      CHECK_NE(type_, TYPE_APP_PANEL);
-      browser = Browser::CreateForApp(app_name_, gfx::Size(), profile_,
-                                      false);
-    } else if (type_ == TYPE_POPUP) {
+    if (is_app()) {
+      CHECK(!is_type_popup());
+      CHECK(!is_type_panel());
+      browser = Browser::CreateForApp(TYPE_POPUP, app_name_, gfx::Size(),
+                                      profile_);
+    } else if (is_type_popup()) {
       browser = Browser::CreateForType(TYPE_POPUP, profile_);
     }
 
@@ -2633,7 +2660,7 @@ bool Browser::RunUnloadListenerBeforeClosing(TabContentsWrapper* contents) {
 }
 
 bool Browser::CanReloadContents(TabContents* source) const {
-  return type() != TYPE_DEVTOOLS;
+  return !is_devtools();
 }
 
 bool Browser::CanCloseContents(std::vector<int>* indices) {
@@ -3023,7 +3050,7 @@ void Browser::CloseContents(TabContents* source) {
 }
 
 void Browser::MoveContents(TabContents* source, const gfx::Rect& pos) {
-  if ((type() & TYPE_POPUP) == 0) {
+  if (!IsPopupOrPanel(source)) {
     NOTREACHED() << "moving invalid browser type";
     return;
   }
@@ -3036,9 +3063,9 @@ void Browser::DetachContents(TabContents* source) {
     tab_handler_->GetTabStripModel()->DetachTabContentsAt(index);
 }
 
-bool Browser::IsPopup(const TabContents* source) const {
+bool Browser::IsPopupOrPanel(const TabContents* source) const {
   // A non-tabbed BROWSER is an unconstrained popup.
-  return !!(type() & TYPE_POPUP);
+  return is_type_popup() || is_type_panel();
 }
 
 void Browser::ContentsMouseEvent(
@@ -3107,17 +3134,16 @@ bool Browser::TakeFocus(bool reverse) {
 }
 
 bool Browser::IsApplication() const {
-  return (type_ & TYPE_APP) != 0;
+  return is_app();
 }
 
 void Browser::ConvertContentsToApplication(TabContents* contents) {
   const GURL& url = contents->controller().GetActiveEntry()->url();
   std::string app_name = web_app::GenerateApplicationNameFromURL(url);
-  RegisterAppPrefs(app_name, contents->profile());
 
   DetachContents(contents);
   Browser* app_browser = Browser::CreateForApp(
-      app_name, gfx::Size(), profile_, false);
+      TYPE_POPUP, app_name, gfx::Size(), profile_);
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(contents);
   if (!wrapper)
@@ -3455,10 +3481,8 @@ void Browser::Observe(NotificationType type,
       break;
 
     case NotificationType::EXTENSION_READY_FOR_INSTALL: {
-      // Handle EXTENSION_READY_FOR_INSTALL for last active normal browser.
-      if (BrowserList::FindBrowserWithType(profile(),
-                                           Browser::TYPE_NORMAL,
-                                           true) != this)
+      // Handle EXTENSION_READY_FOR_INSTALL for last active tabbed browser.
+      if (BrowserList::FindTabbedBrowser(profile(), true) != this)
         break;
 
       // We only want to show the loading dialog for themes, but we don't want
@@ -3514,9 +3538,9 @@ void Browser::OnStateChanged() {
   DCHECK(profile_->GetProfileSyncService());
 
 #if !defined(OS_MACOSX)
-  const bool show_main_ui = (type() == TYPE_NORMAL) && !window_->IsFullscreen();
+  const bool show_main_ui = is_type_tabbed() && !window_->IsFullscreen();
 #else
-  const bool show_main_ui = (type() == TYPE_NORMAL);
+  const bool show_main_ui = is_type_tabbed();
 #endif
 
   command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
@@ -3583,7 +3607,7 @@ gfx::Rect Browser::GetInstantBounds() {
 // Browser, protected:
 
 BrowserWindow* Browser::CreateBrowserWindow() {
-  if (type() == Browser::TYPE_APP_PANEL &&
+  if (type_ == TYPE_PANEL &&
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels))
     return PanelManager::GetInstance()->CreatePanel(this);
 
@@ -3690,15 +3714,14 @@ void Browser::InitCommandState() {
                                         enable_extensions);
 
   // Initialize other commands based on the window type.
-  bool normal_window = type() == TYPE_NORMAL;
-  bool non_devtools_window = type() != TYPE_DEVTOOLS;
+  bool normal_window = is_type_tabbed();
 
   // Navigation commands
   command_updater_.UpdateCommandEnabled(IDC_HOME, normal_window);
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN,
-      type() != TYPE_APP_PANEL);
+      !(is_type_panel() && is_app()));
   command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_PREVIOUS_TAB,
                                         normal_window);
@@ -3718,16 +3741,15 @@ void Browser::InitCommandState() {
 #endif
 
   // Clipboard commands
-  command_updater_.UpdateCommandEnabled(IDC_COPY_URL, non_devtools_window);
+  command_updater_.UpdateCommandEnabled(IDC_COPY_URL, !is_devtools());
 
   // Find-in-page
-  command_updater_.UpdateCommandEnabled(IDC_FIND, non_devtools_window);
-  command_updater_.UpdateCommandEnabled(IDC_FIND_NEXT, non_devtools_window);
-  command_updater_.UpdateCommandEnabled(IDC_FIND_PREVIOUS, non_devtools_window);
+  command_updater_.UpdateCommandEnabled(IDC_FIND, !is_devtools());
+  command_updater_.UpdateCommandEnabled(IDC_FIND_NEXT, !is_devtools());
+  command_updater_.UpdateCommandEnabled(IDC_FIND_PREVIOUS, !is_devtools());
 
   // Autofill
-  command_updater_.UpdateCommandEnabled(IDC_AUTOFILL_DEFAULT,
-                                        non_devtools_window);
+  command_updater_.UpdateCommandEnabled(IDC_AUTOFILL_DEFAULT, !is_devtools());
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, normal_window);
@@ -3766,9 +3788,8 @@ void Browser::UpdateCommandsForTabState() {
                                         CanReloadContents(current_tab));
 
   // Window management commands
-  bool non_app_window = !(type() & TYPE_APP);
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB,
-      non_app_window && CanDuplicateContentsAt(active_index()));
+      !is_app() && CanDuplicateContentsAt(active_index()));
 
   // Page-related commands
   window_->SetStarredState(current_tab_wrapper->is_starred());
@@ -3847,7 +3868,7 @@ void Browser::UpdateCommandsForBookmarkEditing() {
       browser_defaults::bookmarks_enabled;
 
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE,
-      enabled && type() == TYPE_NORMAL);
+      enabled && is_type_tabbed());
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
       enabled && CanBookmarkAllTabs());
 }
@@ -4212,11 +4233,11 @@ bool Browser::CanCloseWithInProgressDownloads() {
   for (BrowserList::const_iterator iter = BrowserList::begin();
        iter != BrowserList::end(); ++iter) {
     // Don't count this browser window or any other in the process of closing.
-    // Only consider normal browser windows, not popups.
+    // Only consider tabbed browser windows, not popups.
     Browser* const browser = *iter;
     if (browser == this
         || browser->is_attempting_to_close_browser_
-        || browser->type() != Browser::TYPE_NORMAL)
+        || !browser->is_type_tabbed())
       continue;
 
     // Verify that this is not the last non-incognito or incognito browser,
@@ -4252,8 +4273,7 @@ bool Browser::CanCloseWithInProgressDownloads() {
 
 // static
 Browser* Browser::GetTabbedBrowser(Profile* profile, bool match_incognito) {
-  return BrowserList::FindBrowserWithType(profile, TYPE_NORMAL,
-                                          match_incognito);
+  return BrowserList::FindTabbedBrowser(profile, match_incognito);
 }
 
 // static
@@ -4332,22 +4352,13 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
 
 // static
 void Browser::RegisterAppPrefs(const std::string& app_name, Profile* profile) {
-  // A set of apps that we've already started.
-  static std::set<std::string>* g_app_names = NULL;
-
-  if (!g_app_names)
-    g_app_names = new std::set<std::string>;
-
-  // Only register once for each app name.
-  if (g_app_names->find(app_name) != g_app_names->end())
-    return;
-  g_app_names->insert(app_name);
-
   // We need to register the window position pref.
   std::string window_pref(prefs::kBrowserWindowPlacement);
   window_pref.append("_");
   window_pref.append(app_name);
-  profile->GetPrefs()->RegisterDictionaryPref(window_pref.c_str());
+  PrefService* prefs = profile->GetPrefs();
+  if (!prefs->FindPreference(window_pref.c_str()))
+    prefs->RegisterDictionaryPref(window_pref.c_str());
 }
 
 void Browser::TabRestoreServiceChanged(TabRestoreService* service) {
@@ -4414,7 +4425,7 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
 }
 
 void Browser::CreateInstantIfNecessary() {
-  if (type() == TYPE_NORMAL && InstantController::IsEnabled(profile()) &&
+  if (is_type_tabbed() && InstantController::IsEnabled(profile()) &&
       !profile()->IsOffTheRecord()) {
     instant_.reset(new InstantController(profile_, this));
     instant_unload_handler_.reset(new InstantUnloadHandler(this));
@@ -4467,7 +4478,7 @@ void Browser::ViewSource(TabContentsWrapper* contents,
                                                           view_source_contents,
                                                           add_types);
   } else {
-    Browser* browser = Browser::CreateForType(TYPE_NORMAL, profile_);
+    Browser* browser = Browser::CreateForType(TYPE_TABBED, profile_);
 
     // Preserve the size of the original window. The new window has already
     // been given an offset by the OS, so we shouldn't copy the old bounds.

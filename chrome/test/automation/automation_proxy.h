@@ -154,10 +154,10 @@ class AutomationProxy : public IPC::Channel::Listener,
   scoped_refptr<BrowserProxy> GetBrowserWindow(int window_index);
 
   // Finds the first browser window that is not incognito mode and of type
-  // TYPE_NORMAL, and returns its corresponding BrowserProxy, transferring
+  // TYPE_TABBED, and returns its corresponding BrowserProxy, transferring
   // ownership of the pointer to the caller.
   // On failure, returns NULL.
-  scoped_refptr<BrowserProxy> FindNormalBrowserWindow();
+  scoped_refptr<BrowserProxy> FindTabbedBrowserWindow();
 
   // Returns the BrowserProxy for the browser window which was last active,
   // transferring ownership of the pointer to the caller.

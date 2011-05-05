@@ -20,7 +20,7 @@ BrowserTestHelper::BrowserTestHelper()
   profile_->CreateAutocompleteClassifier();
   profile_->CreateTemplateURLModel();
 
-  browser_.reset(new Browser(Browser::TYPE_NORMAL, profile_.get()));
+  browser_.reset(new Browser(Browser::TYPE_TABBED, profile_.get()));
 }
 
 BrowserTestHelper::~BrowserTestHelper() {

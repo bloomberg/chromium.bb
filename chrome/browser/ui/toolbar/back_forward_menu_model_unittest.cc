@@ -497,7 +497,7 @@ TEST_F(BackFwdMenuModelTest, EscapeLabel) {
 TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
   profile()->CreateHistoryService(true, false);
   profile()->CreateFaviconService();
-  Browser browser(Browser::TYPE_NORMAL, profile());
+  Browser browser(Browser::TYPE_TABBED, profile());
   FaviconDelegate favicon_delegate;
 
   BackForwardMenuModel back_model(

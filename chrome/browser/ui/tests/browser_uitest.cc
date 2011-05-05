@@ -306,31 +306,6 @@ TEST_F(LaunchBrowserWithNonAsciiUserDatadir, TestNonAsciiUserDataDir) {
 }
 #endif  // defined(OS_WIN)
 
-class AppModeTest : public UITest {
- public:
-  AppModeTest() {
-    // Load a local file.
-    FilePath test_file(test_data_directory_);
-    test_file = test_file.AppendASCII("title1.html");
-    GURL test_file_url(net::FilePathToFileURL(test_file));
-
-    launch_arguments_.AppendSwitchASCII(switches::kApp, test_file_url.spec());
-  }
-};
-
-TEST_F(AppModeTest, EnableAppModeTest) {
-  // Test that an application browser window loads correctly.
-
-  // Verify that the window is present.
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
-
-  // Verify the browser is an application.
-  Browser::Type type;
-  ASSERT_TRUE(browser->GetType(&type));
-  EXPECT_EQ(Browser::TYPE_APP, type);
-}
-
 // Tests to ensure that the browser continues running in the background after
 // the last window closes.
 class RunInBackgroundTest : public UITest {
@@ -352,7 +327,7 @@ TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   EXPECT_EQ(0, window_count);
   ASSERT_TRUE(IsBrowserRunning());
-  ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL, true));
+  ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_TABBED, true));
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   EXPECT_EQ(1, window_count);
 }
@@ -375,9 +350,36 @@ TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
 
   // Starting a browser window should work just fine.
   ASSERT_TRUE(IsBrowserRunning());
-  ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL, true));
+  ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_TABBED, true));
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
   EXPECT_EQ(1, window_count);
 }
 
 }  // namespace
+
+// This test needs to be placed outside the anonymouse namespace because we
+// need to access private type of Browser.
+class AppModeTest : public UITest {
+ public:
+  AppModeTest() {
+    // Load a local file.
+    FilePath test_file(test_data_directory_);
+    test_file = test_file.AppendASCII("title1.html");
+    GURL test_file_url(net::FilePathToFileURL(test_file));
+
+    launch_arguments_.AppendSwitchASCII(switches::kApp, test_file_url.spec());
+  }
+};
+
+TEST_F(AppModeTest, EnableAppModeTest) {
+  // Test that an application browser window loads correctly.
+
+  // Verify that the window is present.
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+
+  // Verify the browser is in application mode.
+  bool is_application;
+  ASSERT_TRUE(browser->IsApplication(&is_application));
+  EXPECT_TRUE(is_application);
+}

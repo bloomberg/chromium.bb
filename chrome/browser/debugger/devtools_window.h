@@ -55,7 +55,7 @@ class DevToolsWindow
   void CreateDevToolsBrowser();
   bool FindInspectedBrowserAndTabIndex(Browser**, int* tab);
   BrowserWindow* GetInspectedBrowserWindow();
-  bool IsInspectedBrowserPopup();
+  bool IsInspectedBrowserPopupOrPanel();
   void UpdateFrontendAttachedState();
 
   // Overridden from NotificationObserver.
