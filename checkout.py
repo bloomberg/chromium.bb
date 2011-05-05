@@ -62,11 +62,13 @@ class CheckoutBase(object):
   def __init__(self, root_dir, project_name):
     self.root_dir = root_dir
     self.project_name = project_name
-    self.project_path = os.path.join(self.root_dir, self.project_name)
+    if self.project_name is None:
+      self.project_path = self.root_dir
+    else:
+      self.project_path = os.path.join(self.root_dir, self.project_name)
     # Only used for logging purposes.
     self._last_seen_revision = None
     assert self.root_dir
-    assert self.project_name
     assert self.project_path
 
   def get_settings(self, key):
@@ -229,10 +231,10 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
     self.commit_pwd = commit_pwd
     self.svn_url = svn_url
     assert bool(self.commit_user) >= bool(self.commit_pwd)
-    assert self.svn_url
 
   def prepare(self):
     # Will checkout if the directory is not present.
+    assert self.svn_url
     if not os.path.isdir(self.project_path):
       logging.info('Checking out %s in %s' %
           (self.project_name, self.project_path))
@@ -346,13 +348,13 @@ class GitCheckoutBase(CheckoutBase):
     self.remote = 'origin'
     self.remote_branch = remote_branch
     self.working_branch = 'working_branch'
-    assert self.remote_branch
 
   def prepare(self):
     """Resets the git repository in a clean state.
 
     Checks it out if not present and deletes the working branch.
     """
+    assert self.remote_branch
     assert os.path.isdir(self.project_path)
     self._check_call_git(['reset', '--hard', '--quiet'])
     branches, active = self._branches()
@@ -372,9 +374,10 @@ class GitCheckoutBase(CheckoutBase):
     post_processor = post_processor or []
     # It this throws, the checkout is corrupted. Maybe worth deleting it and
     # trying again?
-    self._check_call_git(
-        ['checkout', '-b', self.working_branch,
-          '%s/%s' % (self.remote, self.remote_branch), '--quiet'])
+    if self.remote_branch:
+      self._check_call_git(
+          ['checkout', '-b', self.working_branch,
+            '%s/%s' % (self.remote, self.remote_branch), '--quiet'])
     for p in patches:
       try:
         stdout = ''

@@ -8,11 +8,15 @@
 
 import logging
 import optparse
+import os
 import sys
 
 import breakpad  # pylint: disable=W0611
+
+import checkout
 import fix_encoding
 import rietveld
+import scm
 
 
 def main():
@@ -26,12 +30,11 @@ def main():
   parser.add_option(
       '-r',
       '--root_dir',
-      action='store',
+      default=os.getcwd(),
       help='Root directory to apply the patch')
   parser.add_option(
       '-s',
       '--server',
-      action='store',
       default='http://codereview.chromium.org',
       help='Rietveld server')
   options, args = parser.parse_args()
@@ -53,7 +56,21 @@ def main():
     options.patchset = obj.get_issue_properties(
         options.issue, False)['patchsets'][-1]
     logging.info('Using patchset %d' % options.patchset)
-  obj.get_patch(options.issue, options.patchset)
+  # Download the patch.
+  patchset = obj.get_patch(options.issue, options.patchset)
+
+  scm_type = scm.determine_scm(options.root_dir)
+  if scm_type == 'svn':
+    scm_obj = checkout.SvnCheckout(options.root_dir, None, None, None, None)
+  elif scm_type == 'git':
+    scm_obj = checkout.GitCheckoutBase(options.root_dir, None, None)
+  elif scm_type == None:
+    scm_obj = checkout.RawCheckout(options.root_dir, None)
+  else:
+    parser.error('Couldn\'t determine the scm')
+
+  # Apply the patch.
+  scm_obj.apply_patch(patchset)
   return 0
 
 
