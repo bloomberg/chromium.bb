@@ -186,10 +186,14 @@
       # crosbug.com/14924
       '-popups.PopupsTest.testPopupsLaunchWhenTabIsClosed',
 
+      # Failing notifications tests  crbug.com/81624
+      '-notifications.NotificationsTest.testCloseNotification',
+      '-notifications.NotificationsTest.testCreateDenyCloseNotifications',
+      '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
+
       # Exclusions that have not been narrowed to other categories yet.
       # crosbug.com/12653
       '-autofill',
-      '-notifications',
       '-sync',
     ],
   },
