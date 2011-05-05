@@ -1183,7 +1183,8 @@ def SendUpstream(parser, args, cmd):
       logging.debug(output)
     else:
       # dcommit the merge branch.
-      retcode, output = RunGitWithCode(['svn', 'dcommit', '--no-rebase'])
+      retcode, output = RunGitWithCode(['svn', 'dcommit',
+                                        '--no-rebase', '--rmdir'])
   finally:
     # And then swap back to the original branch and clean up.
     RunGit(['checkout', '-q', cl.GetBranch()])
