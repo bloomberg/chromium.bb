@@ -199,7 +199,7 @@ class BaseTest(fake_repos.FakeReposTestBase):
     # Verify that the patch is applied even for read only checkout.
     self.assertTree(self.get_trunk(True), root)
     fake_author = self.FAKE_REPOS.USERS[1][0]
-    revision = co.commit('msg', fake_author)
+    revision = co.commit(u'msg', fake_author)
     # Nothing changed.
     self.assertTree(self.get_trunk(True), root)
 
@@ -498,11 +498,11 @@ class RawCheckout(SvnBaseTest):
     # Verify that the patch is applied even for read only checkout.
     self.assertTree(self.get_trunk(True), root)
     if read_only:
-      revision = co.commit('msg', self.FAKE_REPOS.USERS[1][0])
+      revision = co.commit(u'msg', self.FAKE_REPOS.USERS[1][0])
       self.assertEquals('FAKE', revision)
     else:
       try:
-        co.commit('msg', self.FAKE_REPOS.USERS[1][0])
+        co.commit(u'msg', self.FAKE_REPOS.USERS[1][0])
         self.fail()
       except NotImplementedError:
         pass

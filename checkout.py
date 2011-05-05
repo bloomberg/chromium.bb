@@ -295,9 +295,12 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
   def commit(self, commit_message, user):
     logging.info('Committing patch for %s' % user)
     assert self.commit_user
+    assert isinstance(commit_message, unicode)
     handle, commit_filename = tempfile.mkstemp(text=True)
     try:
-      os.write(handle, commit_message)
+      # Shouldn't assume default encoding is UTF-8. But really, if you are using
+      # anything else, you are living in another world.
+      os.write(handle, commit_message.encode('utf-8'))
       os.close(handle)
       # When committing, svn won't update the Revision metadata of the checkout,
       # so if svn commit returns "Committed revision 3.", svn info will still
@@ -427,6 +430,7 @@ class GitCheckoutBase(CheckoutBase):
 
     Subclass needs to dcommit or push.
     """
+    assert isinstance(commit_message, unicode)
     self._check_call_git(['commit', '--amend', '-m', commit_message])
     return self._check_output_git(['rev-parse', 'HEAD']).strip()
 
