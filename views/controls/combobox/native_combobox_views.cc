@@ -17,8 +17,8 @@
 #include "views/border.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/focusable_border.h"
-#include "views/controls/menu/menu_2.h"
 #include "views/widget/root_view.h"
+#include "views/window/window.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_util.h"
@@ -29,7 +29,7 @@ namespace {
 // A global flag to switch the Combobox wrapper to NativeComboboxViews.
 bool combobox_view_enabled = false;
 
-// Define the size of the insets
+// Define the size of the insets.
 const int kTopInsetSize = 4;
 const int kLeftInsetSize = 4;
 const int kBottomInsetSize = 4;
@@ -38,7 +38,7 @@ const int kRightInsetSize = 4;
 // Limit how small a combobox can be.
 const int kMinComboboxWidth = 148;
 
-// Size of the combobox arrow
+// Size of the combobox arrow.
 const int kComboboxArrowSize = 9;
 const int kComboboxArrowOffset = 7;
 const int kComboboxArrowMargin = 12;
@@ -48,6 +48,9 @@ const int kComboboxArrowMargin = 12;
 // settings and current settings.
 const SkColor kDefaultBorderColor = SK_ColorGRAY;
 const SkColor kTextColor = SK_ColorBLACK;
+
+// Define the id of the first item in the menu (since it needs to be > 0)
+const int kFirstMenuItemId = 1000;
 
 }  // namespace
 
@@ -120,17 +123,21 @@ void NativeComboboxViews::UpdateFromModel() {
   int max_width = 0;
   const gfx::Font &font = GetFont();
 
-  // retrieve the items from the model and add them to our own menu
-  dropdown_list_model_.reset(new ui::SimpleMenuModel(this));
+  dropdown_list_menu_.reset(new MenuItemView(this));
+
   int num_items = combobox_->model()->GetItemCount();
   for (int i = 0; i < num_items; ++i) {
-    // TODO(saintlou): figure out RTL issues
     string16 text = combobox_->model()->GetItemAt(i);
-    dropdown_list_model_->AddItem(i, text);
-    max_width = std::max(max_width, font.GetStringWidth(text));
-  }
 
-  dropdown_list_menu_.reset(new Menu2(dropdown_list_model_.get()));
+    // Inserting the Unicode formatting characters if necessary so that the
+    // text is displayed correctly in right-to-left UIs.
+    base::i18n::AdjustStringForLocaleDirection(&text);
+
+    dropdown_list_menu_->AppendMenuItem(i + kFirstMenuItemId, UTF16ToWide(text),
+         MenuItemView::NORMAL);
+     max_width = std::max(max_width, font.GetStringWidth(text));
+   }
+
   content_width_ = max_width;
   content_height_ = font.GetFontSize();
 }
@@ -177,30 +184,29 @@ gfx::NativeView NativeComboboxViews::GetTestingHandle() const {
 }
 
 /////////////////////////////////////////////////////////////////
-// NativeComboboxViews, ui::SimpleMenuModel::Delegate overrides:
+// NativeComboboxViews, views::MenuDelegate overrides:
+// (note that the id received is offset by kFirstMenuItemId)
 
-bool NativeComboboxViews::IsCommandIdChecked(int command_id) const {
-  return true;
-}
-
-bool NativeComboboxViews::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-bool NativeComboboxViews::GetAcceleratorForCommandId(int command_id,
-    ui::Accelerator* accelerator) {
+bool NativeComboboxViews::IsItemChecked(int id) const {
   return false;
 }
 
-void NativeComboboxViews::ExecuteCommand(int command_id) {
-  if (command_id >= 0 && command_id < combobox_->model()->GetItemCount()) {
-    selected_item_ = command_id;
-    combobox_->SelectionChanged();
-  }
-  else
-    NOTREACHED() << "unknown command: " << command_id;
+bool NativeComboboxViews::IsCommandEnabled(int id) const {
+  return true;
 }
 
+void NativeComboboxViews::ExecuteCommand(int id) {
+  // revert menu offset to map back to combobox model
+  id -= kFirstMenuItemId;
+  DCHECK_LT(id, combobox_->model()->GetItemCount());
+  selected_item_ = id;
+  combobox_->SelectionChanged();
+  SchedulePaint();
+}
+
+bool NativeComboboxViews::GetAccelerator(int id, views::Accelerator* accel) {
+  return false;
+}
 
 // static
 bool NativeComboboxViews::IsComboboxViewsEnabled() {
@@ -298,33 +304,27 @@ void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
 }
 
 void NativeComboboxViews::ShowDropDownMenu() {
-  if (dropdown_list_model_.get()) {
-    gfx::Rect lb = GetLocalBounds();
 
-    // Both the menu position and the menu anchor type change if the UI layout
-    // is right-to-left.
-    gfx::Point menu_position(lb.origin());
+  if (!dropdown_list_menu_.get())
+    UpdateFromModel();
 
-    if (base::i18n::IsRTL())
-      menu_position.Offset(lb.width() - 1, 0);
-
-    View::ConvertPointToScreen(this, &menu_position);
-
-    if (menu_position.x() < 0)
+  gfx::Rect lb = GetLocalBounds();
+  gfx::Point menu_position(lb.origin());
+  View::ConvertPointToScreen(this, &menu_position);
+  if (menu_position.x() < 0)
       menu_position.set_x(0);
 
-    // Open the menu
-    dropdown_list_menu_.reset(new Menu2(dropdown_list_model_.get()));
-    dropdown_list_menu_->SetMinimumWidth(lb.width());
-    dropdown_open_ = true;
-    dropdown_list_menu_->RunMenuAt(menu_position, Menu2::ALIGN_TOPLEFT);
-    dropdown_open_ = false;
+  gfx::Rect bounds(menu_position, lb.size());
 
-    // Need to explicitly clear mouse handler so that events get sent
-    // properly after the menu finishes running. If we don't do this, then
-    // the first click to other parts of the UI is eaten.
-    SetMouseHandler(NULL);
-  }
+  dropdown_open_ = true;
+  dropdown_list_menu_->RunMenuAt(NULL, NULL, bounds, MenuItemView::TOPLEFT,
+                                 true);
+  dropdown_open_ = false;
+
+  // Need to explicitly clear mouse handler so that events get sent
+  // properly after the menu finishes running. If we don't do this, then
+  // the first click to other parts of the UI is eaten.
+  SetMouseHandler(NULL);
 }
 
 }  // namespace views

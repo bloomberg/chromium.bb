@@ -6,8 +6,8 @@
 #define VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_VIEWS_H_
 #pragma once
 
-#include "ui/base/models/simple_menu_model.h"
 #include "views/controls/combobox/native_combobox_wrapper.h"
+#include "views/controls/menu/menu_delegate.h"
 #include "views/view.h"
 
 namespace gfx {
@@ -25,7 +25,7 @@ class FocusableBorder;
 // No platform specific code is used.
 class NativeComboboxViews : public views::View,
                             public NativeComboboxWrapper,
-                            public ui::SimpleMenuModel::Delegate {
+                            public views::MenuDelegate {
  public:
   explicit NativeComboboxViews(Combobox* parent);
   virtual ~NativeComboboxViews();
@@ -50,13 +50,11 @@ class NativeComboboxViews : public views::View,
   virtual void SetFocus() OVERRIDE;
   virtual gfx::NativeView GetTestingHandle() const OVERRIDE;
 
-  // ui::SimpleMenuModel::Delegate overrides
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  // MenuDelegate overrides:
+  virtual bool IsItemChecked(int id) const OVERRIDE;
+  virtual bool IsCommandEnabled(int id) const OVERRIDE;
+  virtual void ExecuteCommand(int id) OVERRIDE;
+  virtual bool GetAccelerator(int id, views::Accelerator* accelerator) OVERRIDE;
 
   // class name of internal
   static const char kViewClassName[];
@@ -64,7 +62,7 @@ class NativeComboboxViews : public views::View,
   // Returns true when
   // 1) built with GYP_DEFINES="touchui=1"
   // 2) enabled by SetEnableComboboxViews(true)
-  // 3) enabled by the command line flag "--enable-combobox-view")
+  // 3) enabled by the command line flag "--use-pure-views")
   static bool IsComboboxViewsEnabled();
   // Enable/Disable NativeComboboxViews implementation for Combobox.
   static void SetEnableComboboxViews(bool enabled);
@@ -90,8 +88,7 @@ class NativeComboboxViews : public views::View,
   FocusableBorder* text_border_;
 
   // Context menu and its content list for the combobox.
-  scoped_ptr<ui::SimpleMenuModel> dropdown_list_model_;
-  scoped_ptr<Menu2> dropdown_list_menu_;
+  scoped_ptr<views::MenuItemView> dropdown_list_menu_;
 
   // Is the drop down list showing
   bool dropdown_open_;
