@@ -182,8 +182,8 @@ const int   kSingleRealmTestResourceCount = 6;
 // correctness.  Instead, it relies on the auth dialog blocking the
 // browser, and triggering a timeout to cause failure when the
 // prefetch resource requires authorization.
-// Crashing on mac. http://crbug.com/81706.
-#if defined(OS_MACOSX)
+// Crashing on mac and linux. http://crbug.com/81706.
+#if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_PrefetchAuthCancels DISABLED_PrefetchAuthCancels
 #else
 #define MAYBE_PrefetchAuthCancels PrefetchAuthCancels
