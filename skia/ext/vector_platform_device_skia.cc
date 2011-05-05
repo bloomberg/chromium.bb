@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,9 +74,6 @@ PlatformDevice::PlatformSurface VectorPlatformDeviceSkia::BeginPlatformPaint() {
   raster_surface_->unref();  // SkRefPtr and create both took a reference.
 
   SkCanvas canvas(raster_surface_.get());
-  SkPaint black;
-  black.setColor(SK_ColorBLACK);
-  canvas.drawPaint(black);
   return raster_surface_->BeginPlatformPaint();
 }
 
