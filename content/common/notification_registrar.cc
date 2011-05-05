@@ -38,6 +38,12 @@ bool NotificationRegistrar::Record::operator==(const Record& other) const {
 }
 
 NotificationRegistrar::NotificationRegistrar() {
+  // Force the NotificationService to be constructed (if it isn't already).
+  // This ensures the NotificationService will be registered on the
+  // AtExitManager before any objects which access it via NotificationRegistrar.
+  // This in turn means it will be destroyed after these objects, so they will
+  // never try to access the NotificationService after it's been destroyed.
+  NotificationService::current();
 }
 
 NotificationRegistrar::~NotificationRegistrar() {
