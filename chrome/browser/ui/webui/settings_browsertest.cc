@@ -111,7 +111,8 @@ IN_PROC_BROWSER_TEST_F(SettingsWebUITest, MAYBE_TestSetBooleanPrefTriggers) {
 }
 
 // Not meant to run on ChromeOS at this time.
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+// Not finishing in windows. http://crbug.com/81723
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined (OS_WIN)
 #define MAYBE_TestRefreshStaysOnCurrentPage\
     DISABLED_TestRefreshStaysOnCurrentPage
 #else
