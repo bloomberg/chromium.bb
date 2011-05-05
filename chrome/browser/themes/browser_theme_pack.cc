@@ -298,21 +298,6 @@ RefCountedMemory* ReadFileData(const FilePath& path) {
   return NULL;
 }
 
-// Does error checking for invalid incoming data while trying to read an
-// floating point value.
-bool ValidDoubleValue(ListValue* tint_list, int index, double* out) {
-  if (tint_list->GetDouble(index, out))
-    return true;
-
-  int value = 0;
-  if (tint_list->GetInteger(index, &value)) {
-    *out = value;
-    return true;
-  }
-
-  return false;
-}
-
 // Shifts a bitmap's HSL values. The caller is responsible for deleting
 // the returned image.
 gfx::Image* CreateHSLShiftedImage(const gfx::Image& image,
@@ -646,9 +631,9 @@ void BrowserThemePack::BuildTintsFromJSON(DictionaryValue* tints_value) {
         (tint_list->GetSize() == 3)) {
       color_utils::HSL hsl = { -1, -1, -1 };
 
-      if (ValidDoubleValue(tint_list, 0, &hsl.h) &&
-          ValidDoubleValue(tint_list, 1, &hsl.s) &&
-          ValidDoubleValue(tint_list, 2, &hsl.l)) {
+      if (tint_list->GetDouble(0, &hsl.h) &&
+          tint_list->GetDouble(1, &hsl.s) &&
+          tint_list->GetDouble(2, &hsl.l)) {
         int id = GetIntForString(*iter, kTintTable);
         if (id != -1) {
           temp_tints[id] = hsl;

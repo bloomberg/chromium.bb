@@ -99,18 +99,6 @@
 
 namespace internal_cloud_print_helpers {
 
-bool GetDoubleOrInt(const DictionaryValue& dictionary,
-                    const std::string& path,
-                    double* out_value) {
-  if (!dictionary.GetDouble(path, out_value)) {
-    int int_value = 0;
-    if (!dictionary.GetInteger(path, &int_value))
-      return false;
-    *out_value = int_value;
-  }
-  return true;
-}
-
 // From the JSON parsed value, get the entries for the page setup
 // parameters.
 bool GetPageSetupParameters(const std::string& json,
@@ -124,9 +112,9 @@ bool GetPageSetupParameters(const std::string& json,
 
   bool result = true;
   DictionaryValue* params = static_cast<DictionaryValue*>(parsed_value.get());
-  result &= GetDoubleOrInt(*params, "dpi", &parameters.dpi);
-  result &= GetDoubleOrInt(*params, "min_shrink", &parameters.min_shrink);
-  result &= GetDoubleOrInt(*params, "max_shrink", &parameters.max_shrink);
+  result &= params->GetDouble("dpi", &parameters.dpi);
+  result &= params->GetDouble("min_shrink", &parameters.min_shrink);
+  result &= params->GetDouble("max_shrink", &parameters.max_shrink);
   result &= params->GetBoolean("selection_only", &parameters.selection_only);
   return result;
 }

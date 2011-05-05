@@ -303,10 +303,7 @@ void SetCookieJSON(AutomationProvider* provider,
     return;
   }
   if (cookie_dict->HasKey("expiry")) {
-    int expiry_int;
-    if (cookie_dict->GetInteger("expiry", &expiry_int)) {
-      expiry = expiry_int;
-    } else if (!cookie_dict->GetDouble("expiry", &expiry)) {
+    if (!cookie_dict->GetDouble("expiry", &expiry)) {
       reply.SendError("optional 'expiry' invalid");
       return;
     }

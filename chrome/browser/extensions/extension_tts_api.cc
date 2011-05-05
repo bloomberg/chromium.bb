@@ -79,17 +79,17 @@ Utterance::Utterance(Profile* profile,
   if (options->HasKey(util::kGenderKey))
     options->GetString(util::kGenderKey, &gender_);
 
-  if (util::ReadNumberByKey(options, util::kRateKey, &rate_)) {
+  if (options->GetDouble(util::kRateKey, &rate_)) {
     if (!base::IsFinite(rate_) || rate_ < 0.0 || rate_ > 1.0)
       rate_ = -1.0;
   }
 
-  if (util::ReadNumberByKey(options, util::kPitchKey, &pitch_)) {
+  if (options->GetDouble(util::kPitchKey, &pitch_)) {
     if (!base::IsFinite(pitch_) || pitch_ < 0.0 || pitch_ > 1.0)
       pitch_ = -1.0;
   }
 
-  if (util::ReadNumberByKey(options, util::kVolumeKey, &volume_)) {
+  if (options->GetDouble(util::kVolumeKey, &volume_)) {
     if (!base::IsFinite(volume_) || volume_ < 0.0 || volume_ > 1.0)
       volume_ = -1.0;
   }

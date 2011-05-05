@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,30 +16,9 @@ namespace {
 
 double GetNumberValue(Value* value) {
   double result = 0;
-  if (value->GetAsDouble(&result))
-    return result;
-
-  int int_result = 0;
-  if (value->GetAsInteger(&int_result)) {
-    return int_result;
-  }
-
-  CHECK(false) << "Unexpected value type: " << value->GetType();
-  return 0;
-}
-
-bool GetNumberFromDictionary(DictionaryValue* value, const std::string& key,
-                             double* number) {
-  if (value->GetDouble(key, number))
-    return true;
-
-  int int_value = 0;
-  if (value->GetInteger(key, &int_value)) {
-    *number = int_value;
-    return true;
-  }
-
-  return false;
+  CHECK(value->GetAsDouble(&result))
+      << "Unexpected value type: " << value->GetType();
+  return result;
 }
 
 }  // namespace
@@ -459,14 +438,14 @@ void JSONSchemaValidator::ValidateNumber(Value* instance,
   // but isnan and isinf aren't defined on Windows.
 
   double minimum = 0;
-  if (GetNumberFromDictionary(schema, "minimum", &minimum)) {
+  if (schema->GetDouble("minimum", &minimum)) {
     if (value < minimum)
       errors_.push_back(Error(path, FormatErrorMessage(
           kNumberMinimum, base::DoubleToString(minimum))));
   }
 
   double maximum = 0;
-  if (GetNumberFromDictionary(schema, "maximum", &maximum)) {
+  if (schema->GetDouble("maximum", &maximum)) {
     if (value > maximum)
       errors_.push_back(Error(path, FormatErrorMessage(
           kNumberMaximum, base::DoubleToString(maximum))));

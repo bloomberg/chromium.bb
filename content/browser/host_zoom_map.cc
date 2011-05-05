@@ -64,24 +64,6 @@ void HostZoomMap::Load() {
 
       bool success = host_zoom_dictionary->GetDoubleWithoutPathExpansion(
           host, &zoom_level);
-      if (!success) {
-        // The data used to be stored as ints, so try that.
-        int int_zoom_level;
-        success = host_zoom_dictionary->GetIntegerWithoutPathExpansion(
-            host, &int_zoom_level);
-        if (success) {
-          zoom_level = static_cast<double>(int_zoom_level);
-          // Since the values were once stored as non-clamped, clamp now.
-          double zoom_factor = WebView::zoomLevelToZoomFactor(zoom_level);
-          if (zoom_factor < WebView::minTextSizeMultiplier) {
-            zoom_level =
-                WebView::zoomFactorToZoomLevel(WebView::minTextSizeMultiplier);
-          } else if (zoom_factor > WebView::maxTextSizeMultiplier) {
-            zoom_level =
-                WebView::zoomFactorToZoomLevel(WebView::maxTextSizeMultiplier);
-          }
-        }
-      }
       DCHECK(success);
       host_zoom_levels_[host] = zoom_level;
     }

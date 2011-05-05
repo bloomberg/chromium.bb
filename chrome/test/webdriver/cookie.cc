@@ -72,10 +72,7 @@ Cookie::Cookie(const DictionaryValue& dict) {
     // it could be either a floating point or integer number.
     double expiry;
     if (!dict.GetDouble("expiry", &expiry)) {
-      int tmp;
-      if (!dict.GetInteger("expiry", &tmp))
-        return;  // Expiry is not a number, so the cookie is invalid.
-      expiry = static_cast<double>(tmp);
+      return;  // Expiry is not a number, so the cookie is invalid.
     }
 
     expiration_ = base::Time::FromDoubleT(expiry);

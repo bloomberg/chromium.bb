@@ -1882,16 +1882,15 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
            iter != colors_value->end_keys(); ++iter) {
         ListValue* color_list = NULL;
         double alpha = 0.0;
-        int alpha_int = 0;
         int color = 0;
         // The color must be a list
         if (!colors_value->GetListWithoutPathExpansion(*iter, &color_list) ||
             // And either 3 items (RGB) or 4 (RGBA)
             ((color_list->GetSize() != 3) &&
              ((color_list->GetSize() != 4) ||
-              // For RGBA, the fourth item must be a real or int alpha value
-              (!color_list->GetDouble(3, &alpha) &&
-               !color_list->GetInteger(3, &alpha_int)))) ||
+              // For RGBA, the fourth item must be a real or int alpha value.
+              // Note that GetDouble() can get an integer value.
+              !color_list->GetDouble(3, &alpha))) ||
             // For both RGB and RGBA, the first three items must be ints (R,G,B)
             !color_list->GetInteger(0, &color) ||
             !color_list->GetInteger(1, &color) ||
@@ -1910,12 +1909,11 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
            iter != tints_value->end_keys(); ++iter) {
         ListValue* tint_list = NULL;
         double v = 0.0;
-        int vi = 0;
         if (!tints_value->GetListWithoutPathExpansion(*iter, &tint_list) ||
             tint_list->GetSize() != 3 ||
-            !(tint_list->GetDouble(0, &v) || tint_list->GetInteger(0, &vi)) ||
-            !(tint_list->GetDouble(1, &v) || tint_list->GetInteger(1, &vi)) ||
-            !(tint_list->GetDouble(2, &v) || tint_list->GetInteger(2, &vi))) {
+            !tint_list->GetDouble(0, &v) ||
+            !tint_list->GetDouble(1, &v) ||
+            !tint_list->GetDouble(2, &v)) {
           *error = errors::kInvalidThemeTints;
           return false;
         }
