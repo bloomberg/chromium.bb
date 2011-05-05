@@ -34,6 +34,7 @@
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image.h"
 #include "ui/gfx/point.h"
 
 namespace {
@@ -1676,7 +1677,7 @@ bool TabStripGtk::CompleteDrop(guchar* data, bool is_plain_text) {
 
 // static
 GdkPixbuf* TabStripGtk::GetDropArrowImage(bool is_down) {
-  return ResourceBundle::GetSharedInstance().GetPixbufNamed(
+  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       is_down ? IDR_TAB_DROP_DOWN : IDR_TAB_DROP_UP);
 }
 
