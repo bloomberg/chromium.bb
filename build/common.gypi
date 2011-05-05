@@ -80,8 +80,15 @@
           # This handles the Linux platforms we generally deal with. Anything
           # else gets passed through, which probably won't work very well; such
           # hosts should pass an explicit target_arch to gyp.
+          #
+          # NOTE: currently only nacl is generating gyp files on an arm board.
+          #     The arm.* -> arm substitution in chrome's common.gypi isn't
+          #     appropriate in that context as we actually use target_arch==arm
+          #     to me x86 -> arm cross compile. When actually running on an arm
+          #     board, we'll generate ia32 for now, so that the generation
+          #     succeeds.
           'target_arch%':
-            '<!(uname -m | sed -e "s/i.86/ia32/;s/x86_64/x64/;s/amd64/x64/;s/arm.*/arm/")'
+            '<!(uname -m | sed -e "s/i.86/ia32/;s/x86_64/x64/;s/amd64/x64/;s/arm.*/ia32/")'
         }, {  # OS!="linux"
           'target_arch%': 'ia32',
         }],
