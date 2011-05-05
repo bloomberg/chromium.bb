@@ -213,7 +213,8 @@ void UserImageView::OnCapturingStopped() {
 }
 
 void UserImageView::OnCaptureButtonClicked() {
-  OnCapturingStarted();
+  if (!IsCapturing())
+    OnCapturingStarted();
 }
 
 void UserImageView::OnImageSelected(int image_index) {
