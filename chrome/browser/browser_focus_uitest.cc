@@ -727,6 +727,12 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
 }
 
 // Make sure Find box can request focus, even when it is already open.
+// Flaky on mac and valgrind. http://crbug.com/67301.
+#if defined(OS_MACOSX)
+#define MAYBE_FindFocusTest FLAKY_FindFocusTest
+#else
+#define MAYBE_FindFocusTest FindFocusTest
+#endif
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(test_server()->Start());
