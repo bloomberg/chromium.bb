@@ -15,6 +15,7 @@
 #include "content/common/view_messages.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_message.h"
+#include "printing/print_job_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 MockRenderThread::MockRenderThread()
@@ -103,6 +104,8 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
                         OnGetDefaultPrintSettings)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ScriptedPrint,
                         OnScriptedPrint)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_UpdatePrintSettings,
+                        OnUpdatePrintSettings)
 #if defined(OS_WIN) || defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPrintedPagesCount,
                         OnDidGetPrintedPagesCount)
@@ -206,6 +209,28 @@ void MockRenderThread::OnDidPrintPage(
     const PrintHostMsg_DidPrintPage_Params& params) {
   if (printer_.get())
     printer_->PrintPage(params);
+}
+
+void MockRenderThread::OnUpdatePrintSettings(
+    int document_cookie,
+    const DictionaryValue& job_settings,
+    PrintMsg_PrintPages_Params* params) {
+  // Check and make sure the required settings are all there.
+  // We don't actually care about the values.
+  std::string dummy_string;
+  if (!job_settings.GetBoolean(printing::kSettingLandscape, NULL) ||
+      !job_settings.GetBoolean(printing::kSettingCollate, NULL) ||
+      !job_settings.GetBoolean(printing::kSettingColor, NULL) ||
+      !job_settings.GetBoolean(printing::kSettingPrintToPDF, NULL) ||
+      !job_settings.GetString(printing::kSettingDeviceName, &dummy_string) ||
+      !job_settings.GetInteger(printing::kSettingDuplexMode, NULL) ||
+      !job_settings.GetInteger(printing::kSettingCopies, NULL)) {
+    return;
+  }
+
+  // Just return the default settings.
+  if (printer_.get())
+    printer_->UpdateSettings(document_cookie, params);
 }
 
 void MockRenderThread::set_print_dialog_user_response(bool response) {

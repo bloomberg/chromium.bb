@@ -112,15 +112,20 @@ class MockRenderThread : public RenderThreadBase {
   void OnTempFileForPrintingWritten(int browser_fd);
 #endif
 
-  // The RenderView expects default print settings.
+  // PrintWebViewHelper expects default print settings.
   void OnGetDefaultPrintSettings(PrintMsg_Print_Params* setting);
 
-  // The RenderView expects final print settings from the user.
+  // PrintWebViewHelper expects final print settings from the user.
   void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& params,
                        PrintMsg_PrintPages_Params* settings);
 
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
+
+  // For print preview, PrintWebViewHelper will update settings.
+  void OnUpdatePrintSettings(int document_cookie,
+                             const DictionaryValue& job_settings,
+                             PrintMsg_PrintPages_Params* params);
 
   IPC::TestSink sink_;
 

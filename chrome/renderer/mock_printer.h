@@ -75,6 +75,7 @@ class MockPrinter {
                      int expected_pages_count,
                      bool has_selection,
                      PrintMsg_PrintPages_Params* settings);
+  void UpdateSettings(int cookie, PrintMsg_PrintPages_Params* params);
   void SetPrintedPagesCount(int cookie, int number_pages);
   void PrintPage(const PrintHostMsg_DidPrintPage_Params& params);
 
@@ -96,9 +97,11 @@ class MockPrinter {
 
  protected:
   int CreateDocumentCookie();
-  bool GetChecksum(const void* data, uint32 size, std::string* checksum) const;
 
  private:
+  // Helper function to fill the fields in |params|.
+  void SetPrintParams(PrintMsg_Print_Params* params);
+
   // In pixels according to dpi_x and dpi_y.
   gfx::Size page_size_;
   gfx::Size printable_size_;

@@ -82,12 +82,15 @@ class PrintWebViewHelper : public RenderViewObserver ,
   virtual void didStopLoading();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, BlockScriptInitiatedPrinting);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnPrintPages);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest,
+                           BlockScriptInitiatedPrinting);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, OnPrintPages);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest, OnPrintPreview);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest, OnPrintPreviewFail);
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, PrintLayoutTest);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, PrintWithIframe);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, PrintLayoutTest);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, PrintWithIframe);
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   // RenderViewObserver implementation.

@@ -75,13 +75,6 @@ class RenderViewTest : public testing::Test {
   // Sends one native key event over IPC.
   void SendNativeKeyEvent(const NativeWebKeyboardEvent& key_event);
 
-  // The renderer should be done calculating the number of rendered pages
-  // according to the specified settings defined in the mock render thread.
-  // Verify the page count is correct.
-  void VerifyPageCount(int count);
-  // Verifies whether the pages printed or not.
-  void VerifyPagesPrinted(bool printed);
-
   // Returns the bounds (coordinates and size) of the element with id
   // |element_id|.  Returns an empty rect if such an element was not found.
   gfx::Rect GetElementBounds(const std::string& element_id);
