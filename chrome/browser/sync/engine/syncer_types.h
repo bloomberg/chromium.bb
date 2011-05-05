@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/observer_list.h"
@@ -33,6 +34,12 @@ enum UpdateAttemptResponse {
   // Conflicts with the local data representation. This can also mean that the
   // entry doesn't currently make sense if we applied it.
   CONFLICT,
+
+  // We were unable to decrypt/encrypt this server data. As such, we can't make
+  // forward progress on this node, but because the passphrase may not arrive
+  // until later we don't want to get the syncer stuck. See UpdateApplicator
+  // for how this is handled.
+  CONFLICT_ENCRYPTION
 };
 
 enum ServerUpdateProcessingResult {

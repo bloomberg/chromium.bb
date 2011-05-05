@@ -404,7 +404,7 @@ message ClearUserDataResponse {
 
 message ClientToServerMessage {
   required string share = 1;
-  optional int32 protocol_version = 2 [default = 26];
+  optional int32 protocol_version = 2 [default = 27];
   enum Contents {
     COMMIT = 1;
     GET_UPDATES = 2;

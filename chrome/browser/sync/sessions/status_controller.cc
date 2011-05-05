@@ -1,8 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/sessions/status_controller.h"
+
+#include <vector>
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -139,6 +141,14 @@ void StatusController::increment_num_successful_commits() {
   shared_.syncer_status.mutate()->num_successful_commits++;
 }
 
+void StatusController::increment_num_local_overwrites() {
+  shared_.syncer_status.mutate()->num_local_overwrites++;
+}
+
+void StatusController::increment_num_server_overwrites() {
+  shared_.syncer_status.mutate()->num_server_overwrites++;
+}
+
 void StatusController::set_commit_set(const OrderedCommitSet& commit_set) {
   DCHECK(!group_restriction_in_effect_);
   shared_.commit_set = commit_set;
@@ -185,6 +195,18 @@ bool StatusController::HasConflictingUpdates() const {
   return false;
 }
 
+int StatusController::TotalNumBlockingConflictingItems() const {
+  DCHECK(!group_restriction_in_effect_)
+      << "TotalNumBlockingConflictingItems applies to all ModelSafeGroups";
+  std::map<ModelSafeGroup, PerModelSafeGroupState*>::const_iterator it =
+      per_model_group_.begin();
+  int sum = 0;
+  for (; it != per_model_group_.end(); ++it) {
+    sum += it->second->conflict_progress.ConflictingItemsSize();
+  }
+  return sum;
+}
+
 int StatusController::TotalNumConflictingItems() const {
   DCHECK(!group_restriction_in_effect_)
       << "TotalNumConflictingItems applies to all ModelSafeGroups";
@@ -193,6 +215,7 @@ int StatusController::TotalNumConflictingItems() const {
   int sum = 0;
   for (; it != per_model_group_.end(); ++it) {
     sum += it->second->conflict_progress.ConflictingItemsSize();
+    sum += it->second->conflict_progress.NonblockingConflictingItemsSize();
   }
   return sum;
 }

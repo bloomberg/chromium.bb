@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -56,6 +56,28 @@ class UpdateApplicator {
       sessions::UpdateProgress* update_progress);
 
  private:
+  // Track the status of all applications.
+  // We treat encryption conflicts as nonblocking conflict items when we save
+  // progress.
+  class ResultTracker {
+   public:
+     explicit ResultTracker(size_t num_results);
+     void AddConflict(syncable::Id);
+     void AddEncryptionConflict(syncable::Id);
+     void AddSuccess(syncable::Id);
+     void SaveProgress(sessions::ConflictProgress* conflict_progress,
+                       sessions::UpdateProgress* update_progress);
+     void ClearConflicts();
+
+     // Returns true iff conflicting_ids_ is empty. Does not check
+     // encryption_conflict_ids_.
+     bool no_conflicts() const;
+   private:
+    std::vector<syncable::Id> conflicting_ids_;
+    std::vector<syncable::Id> successful_ids_;
+    std::vector<syncable::Id> encryption_conflict_ids_;
+  };
+
   // If true, AttemptOneApplication will skip over |entry| and return true.
   bool SkipUpdate(const syncable::Entry& entry);
 
@@ -76,9 +98,8 @@ class UpdateApplicator {
 
   const ModelSafeRoutingInfo routing_info_;
 
-  // Track the result of the various items.
-  std::vector<syncable::Id> conflicting_ids_;
-  std::vector<syncable::Id> successful_ids_;
+  // Track the result of the attempts to update applications.
+  ResultTracker application_results_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateApplicator);
 };

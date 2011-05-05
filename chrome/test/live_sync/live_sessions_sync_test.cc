@@ -137,8 +137,7 @@ bool LiveSessionsSyncTest::SetupClients() {
 }
 
 TabContents* LiveSessionsSyncTest::OpenTab(int index, GURL url) {
-  TabContents* tab =
-      GetBrowser(index)->
+  TabContents* tab = GetBrowser(index)->
       AddSelectedTabWithURL(url, PageTransition::START_PAGE)->tab_contents();
 
   // Wait for the page to finish loading.
@@ -220,7 +219,7 @@ void LiveSessionsSyncTest::SortSessionWindows(
             LiveSessionsSyncTest::CompareSessionWindows);
 }
 
-//static
+// static
 bool LiveSessionsSyncTest::CompareForeignSessions(
     const ForeignSession* lhs,
     const ForeignSession* rhs) {

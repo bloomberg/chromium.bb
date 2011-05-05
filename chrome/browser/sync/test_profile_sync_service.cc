@@ -64,7 +64,7 @@ void SyncBackendHostForProfileSyncTest::
   }
   core_->HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
       SyncerStatus(), ErrorCounters(), 0, false,
-      sync_ended, download_progress_markers, false, false, 0, 0, false,
+      sync_ended, download_progress_markers, false, false, 0, 0, 0, false,
       SyncSourceInfo()));
 }
 

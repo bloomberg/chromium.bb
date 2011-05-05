@@ -316,9 +316,11 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
       // the new passphrase is entered we should be able to encrypt properly.
       // And, because this update will not be applied yet, next time around
       // we will properly encrypt all appropriate unsynced data.
+      // Note: we return CONFLICT_ENCRYPTION instead of CONFLICT. See
+      // explanation below.
       VLOG(1) << "Marking nigori node update as conflicting due to being unable"
               << " to encrypt all necessary unsynced changes.";
-      return CONFLICT;
+      return CONFLICT_ENCRYPTION;
     }
 
     // Note that we don't bother to encrypt any synced data that now requires
@@ -329,20 +331,28 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     // data should be updated as necessary.
   }
 
-  // Only apply updates that we can decrypt. Updates that can't be decrypted yet
-  // will stay in conflict until the user provides a passphrase that lets the
-  // Cryptographer decrypt them.
+  // Only apply updates that we can decrypt. If we can't decrypt the update, it
+  // is likely because the passphrase has not arrived yet. Because the
+  // passphrase may not arrive within this GetUpdates, we can't just return
+  // conflict, else the syncer gets stuck. As such, we return
+  // CONFLICT_ENCRYPTION, which is treated as a non-blocking conflict. See the
+  // description in syncer_types.h.
   if (!entry->Get(SERVER_IS_DIR)) {
     if (specifics.has_encrypted() &&
         !cryptographer->CanDecrypt(specifics.encrypted())) {
       // We can't decrypt this node yet.
-      return CONFLICT;
+      VLOG(1) << "Received an undecryptable "
+              << syncable::ModelTypeToString(entry->GetServerModelType())
+              << " update, returning encryption_conflict.";
+      return CONFLICT_ENCRYPTION;
     } else if (specifics.HasExtension(sync_pb::password)) {
       // Passwords use their own legacy encryption scheme.
       const sync_pb::PasswordSpecifics& password =
           specifics.GetExtension(sync_pb::password);
       if (!cryptographer->CanDecrypt(password.encrypted())) {
-        return CONFLICT;
+        VLOG(1) << "Received an undecryptable password update, returning "
+                << "encryption_conflict.";
+        return CONFLICT_ENCRYPTION;
       }
     }
   }

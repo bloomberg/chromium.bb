@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,11 +29,11 @@ UpdateApplicator::UpdateApplicator(ConflictResolver* resolver,
       pointer_(begin),
       group_filter_(group_filter),
       progress_(false),
-      routing_info_(routes) {
-    size_t item_count = end - begin;
-    VLOG(1) << "UpdateApplicator created for " << item_count << " items.";
-    successful_ids_.reserve(item_count);
-  }
+      routing_info_(routes),
+      application_results_(end - begin) {
+  size_t item_count = end - begin;
+  VLOG(1) << "UpdateApplicator created for " << item_count << " items.";
+}
 
 UpdateApplicator::~UpdateApplicator() {
 }
@@ -53,7 +53,7 @@ bool UpdateApplicator::AttemptOneApplication(
     progress_ = false;
 
     // Clear the tracked failures to avoid double-counting.
-    conflicting_ids_.clear();
+    application_results_.ClearConflicts();
   }
 
   syncable::Entry read_only(trans, syncable::GET_BY_HANDLE, *pointer_);
@@ -69,11 +69,15 @@ bool UpdateApplicator::AttemptOneApplication(
     case SUCCESS:
       Advance();
       progress_ = true;
-      successful_ids_.push_back(entry.Get(syncable::ID));
+      application_results_.AddSuccess(entry.Get(syncable::ID));
       break;
     case CONFLICT:
       pointer_++;
-      conflicting_ids_.push_back(entry.Get(syncable::ID));
+      application_results_.AddConflict(entry.Get(syncable::ID));
+      break;
+    case CONFLICT_ENCRYPTION:
+      pointer_++;
+      application_results_.AddEncryptionConflict(entry.Get(syncable::ID));
       break;
     default:
       NOTREACHED();
@@ -110,7 +114,7 @@ bool UpdateApplicator::SkipUpdate(const syncable::Entry& entry) {
 }
 
 bool UpdateApplicator::AllUpdatesApplied() const {
-  return conflicting_ids_.empty() && begin_ == end_;
+  return application_results_.no_conflicts() && begin_ == end_;
 }
 
 void UpdateApplicator::SaveProgressIntoSessionState(
@@ -119,15 +123,54 @@ void UpdateApplicator::SaveProgressIntoSessionState(
   DCHECK(begin_ == end_ || ((pointer_ == end_) && !progress_))
       << "SaveProgress called before updates exhausted.";
 
+  application_results_.SaveProgress(conflict_progress, update_progress);
+}
+
+UpdateApplicator::ResultTracker::ResultTracker(size_t num_results) {
+  successful_ids_.reserve(num_results);
+}
+
+void UpdateApplicator::ResultTracker::AddConflict(syncable::Id id) {
+  conflicting_ids_.push_back(id);
+}
+
+void UpdateApplicator::ResultTracker::AddEncryptionConflict(syncable::Id id) {
+  encryption_conflict_ids_.push_back(id);
+}
+
+void UpdateApplicator::ResultTracker::AddSuccess(syncable::Id id) {
+  successful_ids_.push_back(id);
+}
+
+void UpdateApplicator::ResultTracker::SaveProgress(
+    sessions::ConflictProgress* conflict_progress,
+    sessions::UpdateProgress* update_progress) {
   vector<syncable::Id>::const_iterator i;
   for (i = conflicting_ids_.begin(); i != conflicting_ids_.end(); ++i) {
     conflict_progress->AddConflictingItemById(*i);
+    update_progress->AddAppliedUpdate(CONFLICT, *i);
+  }
+  for (i = encryption_conflict_ids_.begin();
+       i != encryption_conflict_ids_.end(); ++i) {
+    // Encryption conflicts should not put the syncer into a stuck state. We
+    // mark as conflict, so that we reattempt to apply updates, but add it to
+    // the list of nonblocking conflicts instead of normal conflicts.
+    conflict_progress->AddNonblockingConflictingItemById(*i);
     update_progress->AddAppliedUpdate(CONFLICT, *i);
   }
   for (i = successful_ids_.begin(); i != successful_ids_.end(); ++i) {
     conflict_progress->EraseConflictingItemById(*i);
     update_progress->AddAppliedUpdate(SUCCESS, *i);
   }
+}
+
+void UpdateApplicator::ResultTracker::ClearConflicts() {
+  conflicting_ids_.clear();
+  encryption_conflict_ids_.clear();
+}
+
+bool UpdateApplicator::ResultTracker::no_conflicts() const {
+  return conflicting_ids_.empty();
 }
 
 }  // namespace browser_sync

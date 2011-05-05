@@ -131,12 +131,17 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
       GetLastSessionSnapshot() const;
 
   // Encrypt the datatype |type|. This method will block while the sync backend
-  // host performs the encryption or a timeout is reached. Returns false if
-  // encryption failed, else true.
-  // Note: this method does not currently support tracking encryption status
-  // while other sync activities are being performed. Sync should be fully
-  // synced when this is called.
+  // host performs the encryption or a timeout is reached.
+  // PostCondition:
+  //   returns: True if |type| was encrypted and we are fully synced.
+  //            False if we timed out.
   bool EnableEncryptionForType(syncable::ModelType type);
+
+  // Wait until |type| is encrypted or we time out.
+  // PostCondition:
+  //   returns: True if |type| is currently encrypted and we are fully synced.
+  //            False if we timed out.
+  bool WaitForTypeEncryption(syncable::ModelType type);
 
   // Check if |type| is encrypted.
   bool IsTypeEncrypted(syncable::ModelType type);

@@ -225,6 +225,9 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         status->reset_conflicts_resolved();
         ResolveConflictsCommand resolve_conflicts_command;
         resolve_conflicts_command.Execute(session);
+
+        // Has ConflictingUpdates includes both blocking and non-blocking
+        // conflicts. If we have either, we want to attempt to reapply.
         if (status->HasConflictingUpdates())
           next_step = APPLY_UPDATES_TO_RESOLVE_CONFLICTS;
         else
@@ -235,11 +238,17 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         StatusController* status = session->status_controller();
         VLOG(1) << "Applying updates to resolve conflicts";
         ApplyUpdatesCommand apply_updates;
-        int before_conflicting_updates = status->TotalNumConflictingItems();
+
+        // We only care to resolve conflicts again if we made progress on the
+        // blocking conflicts. Whether or not we made progress on the
+        // non-blocking doesn't matter.
+        int before_blocking_conflicting_updates =
+            status->TotalNumBlockingConflictingItems();
         apply_updates.Execute(session);
-        int after_conflicting_updates = status->TotalNumConflictingItems();
-        status->update_conflicts_resolved(before_conflicting_updates >
-                                          after_conflicting_updates);
+        int after_blocking_conflicting_updates =
+            status->TotalNumBlockingConflictingItems();
+        status->update_conflicts_resolved(before_blocking_conflicting_updates >
+                                          after_blocking_conflicting_updates);
         if (status->conflicts_resolved())
           next_step = RESOLVE_CONFLICTS;
         else

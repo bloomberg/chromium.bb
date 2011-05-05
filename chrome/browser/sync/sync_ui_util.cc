@@ -370,6 +370,12 @@ void ConstructAboutInformation(ProfileSyncService* service,
     sync_ui_util::AddIntSyncDetail(details,
                                    "Conflicting Count",
                                    full_status.conflicting_count);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Local Overwrites",
+                                   full_status.num_local_overwrites_total);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Server Overwrites",
+                                   full_status.num_server_overwrites_total);
     sync_ui_util::AddBoolSyncDetail(details, "Syncing", full_status.syncing);
     sync_ui_util::AddBoolSyncDetail(details,
                                     "Initial Sync Ended",

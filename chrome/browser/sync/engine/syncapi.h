@@ -731,6 +731,10 @@ class SyncManager {
     // Of updates_received, how many were tombstones.
     int tombstone_updates_received;
     bool disk_full;
+
+    // Total number of overwrites due to conflict resolver since browser start.
+    int num_local_overwrites_total;
+    int num_server_overwrites_total;
   };
 
   // An interface the embedding application implements to receive notifications

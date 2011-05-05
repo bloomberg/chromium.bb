@@ -50,9 +50,11 @@ TEST_F(SessionStateTest, SyncerStatusToValue) {
   status.num_successful_bookmark_commits = 10;
   status.num_updates_downloaded_total = 100;
   status.num_tombstone_updates_downloaded_total = 200;
+  status.num_local_overwrites = 15;
+  status.num_server_overwrites = 18;
 
   scoped_ptr<DictionaryValue> value(status.ToValue());
-  EXPECT_EQ(7u, value->size());
+  EXPECT_EQ(9u, value->size());
   ExpectDictBooleanValue(status.invalid_store, *value, "invalidStore");
   ExpectDictBooleanValue(status.syncer_stuck, *value, "syncerStuck");
   ExpectDictBooleanValue(status.syncing, *value, "syncing");
@@ -64,6 +66,10 @@ TEST_F(SessionStateTest, SyncerStatusToValue) {
                          *value, "numUpdatesDownloadedTotal");
   ExpectDictIntegerValue(status.num_tombstone_updates_downloaded_total,
                          *value, "numTombstoneUpdatesDownloadedTotal");
+  ExpectDictIntegerValue(status.num_local_overwrites,
+                         *value, "numLocalOverwrites");
+  ExpectDictIntegerValue(status.num_server_overwrites,
+                         *value, "numServerOverwrites");
 }
 
 TEST_F(SessionStateTest, ErrorCountersToValue) {
@@ -134,6 +140,7 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
   const bool kHasMoreToSync = false;
   const bool kIsSilenced = true;
   const int kUnsyncedCount = 1053;
+  const int kNumBlockingConflictingUpdates = 1054;
   const int kNumConflictingUpdates = 1055;
   const bool kDidCommitItems = true;
 
@@ -149,11 +156,12 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
                                kHasMoreToSync,
                                kIsSilenced,
                                kUnsyncedCount,
+                               kNumBlockingConflictingUpdates,
                                kNumConflictingUpdates,
                                kDidCommitItems,
                                source);
   scoped_ptr<DictionaryValue> value(snapshot.ToValue());
-  EXPECT_EQ(12u, value->size());
+  EXPECT_EQ(13u, value->size());
   ExpectDictDictionaryValue(*expected_syncer_status_value, *value,
                             "syncerStatus");
   ExpectDictDictionaryValue(*expected_errors_value, *value, "errors");
@@ -167,6 +175,8 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
   ExpectDictBooleanValue(kHasMoreToSync, *value, "hasMoreToSync");
   ExpectDictBooleanValue(kIsSilenced, *value, "isSilenced");
   ExpectDictIntegerValue(kUnsyncedCount, *value, "unsyncedCount");
+  ExpectDictIntegerValue(kNumBlockingConflictingUpdates, *value,
+                         "numBlockingConflictingUpdates");
   ExpectDictIntegerValue(kNumConflictingUpdates, *value,
                          "numConflictingUpdates");
   ExpectDictBooleanValue(kDidCommitItems, *value,

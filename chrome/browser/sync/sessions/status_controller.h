@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,7 @@
 #define CHROME_BROWSER_SYNC_SESSIONS_STATUS_CONTROLLER_H_
 #pragma once
 
+#include <vector>
 #include <map>
 
 #include "base/stl_util-inl.h"
@@ -150,10 +151,17 @@ class StatusController {
 
   // If a GetUpdates for any data type resulted in downloading an update that
   // is in conflict, this method returns true.
+  // Note: this includes non-blocking conflicts.
   bool HasConflictingUpdates() const;
 
   // Aggregate sum of ConflictingItemSize() over all ConflictProgress objects
   // (one for each ModelSafeGroup currently in-use).
+  // Note: this does not include non-blocking conflicts.
+  int TotalNumBlockingConflictingItems() const;
+
+  // Aggregate sum of ConflictingItemSize() and NonblockingConflictingItemsSize
+  // over all ConflictProgress objects (one for each ModelSafeGroup currently
+  // in-use).
   int TotalNumConflictingItems() const;
 
   // Returns the number of updates received from the sync server.
@@ -214,6 +222,8 @@ class StatusController {
   void increment_num_tombstone_updates_downloaded_by(int value);
   void set_types_needing_local_migration(const syncable::ModelTypeSet& types);
   void set_unsynced_handles(const std::vector<int64>& unsynced_handles);
+  void increment_num_local_overwrites();
+  void increment_num_server_overwrites();
 
   void set_commit_set(const OrderedCommitSet& commit_set);
   void update_conflict_sets_built(bool built);

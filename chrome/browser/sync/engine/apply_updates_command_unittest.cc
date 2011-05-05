@@ -258,13 +258,22 @@ TEST_F(ApplyUpdatesCommandTest, UndecryptablePassword) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
-  EXPECT_EQ(1, status->update_progress().AppliedUpdatesSize())
-      << "All updates should have been attempted";
-  EXPECT_EQ(1, status->conflict_progress().ConflictingItemsSize())
-      << "The updates that can't be decrypted should be in conflict";
-  EXPECT_EQ(0, status->update_progress().SuccessfullyAppliedUpdateCount())
-      << "No update that can't be decrypted should be applied";
+  EXPECT_TRUE(status->HasConflictingUpdates())
+    << "Updates that can't be decrypted should trigger the syncer to have "
+    << "conflicting updates.";
+  {
+    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
+    EXPECT_EQ(1, status->update_progress().AppliedUpdatesSize())
+        << "All updates should have been attempted";
+    EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
+        << "The updates that can't be decrypted should not be in regular "
+        << "conflict";
+    EXPECT_EQ(1, status->conflict_progress().NonblockingConflictingItemsSize())
+        << "The updates that can't be decrypted should be in nonblocking "
+        << "conflict";
+    EXPECT_EQ(0, status->update_progress().SuccessfullyAppliedUpdateCount())
+        << "No update that can't be decrypted should be applied";
+  }
 }
 
 TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
@@ -306,13 +315,22 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
-  EXPECT_EQ(2, status->update_progress().AppliedUpdatesSize())
-      << "All updates should have been attempted";
-  EXPECT_EQ(1, status->conflict_progress().ConflictingItemsSize())
-      << "The decryptable password update should be applied";
-  EXPECT_EQ(1, status->update_progress().SuccessfullyAppliedUpdateCount())
-      << "The undecryptable password update shouldn't be applied";
+  EXPECT_TRUE(status->HasConflictingUpdates())
+    << "Updates that can't be decrypted should trigger the syncer to have "
+    << "conflicting updates.";
+  {
+    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
+    EXPECT_EQ(2, status->update_progress().AppliedUpdatesSize())
+        << "All updates should have been attempted";
+    EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
+        << "The updates that can't be decrypted should not be in regular "
+        << "conflict";
+    EXPECT_EQ(1, status->conflict_progress().NonblockingConflictingItemsSize())
+        << "The updates that can't be decrypted should be in nonblocking "
+        << "conflict";
+    EXPECT_EQ(1, status->update_progress().SuccessfullyAppliedUpdateCount())
+        << "The undecryptable password update shouldn't be applied";
+  }
 }
 
 TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
@@ -432,7 +450,9 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   EXPECT_EQ(1, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
   EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
-      << "The nigori update shouldn't be in conflict";
+      << "No updates should be in conflict";
+  EXPECT_EQ(0, status->conflict_progress().NonblockingConflictingItemsSize())
+      << "No updates should be in conflict";
   EXPECT_EQ(1, status->update_progress().SuccessfullyAppliedUpdateCount())
       << "The nigori update should be applied";
   EXPECT_FALSE(cryptographer->has_pending_keys());
@@ -526,8 +546,12 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
   EXPECT_EQ(1, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
-  EXPECT_EQ(1, status->conflict_progress().ConflictingItemsSize())
-      << "The unsynced chnages trigger a conflict with the nigori update.";
+  EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
+      << "The unsynced changes don't trigger a blocking conflict with the "
+      << "nigori update.";
+  EXPECT_EQ(1, status->conflict_progress().NonblockingConflictingItemsSize())
+      << "The unsynced changes trigger a non-blocking conflict with the "
+      << "nigori update.";
   EXPECT_EQ(0, status->update_progress().SuccessfullyAppliedUpdateCount())
       << "The nigori update should not be applied";
   EXPECT_FALSE(cryptographer->is_ready());

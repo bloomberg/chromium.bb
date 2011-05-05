@@ -80,6 +80,10 @@ struct SyncerStatus {
   // If the syncer encountered a MIGRATION_DONE code, these are the types that
   // the client must now "migrate", by purging and re-downloading all updates.
   syncable::ModelTypeSet types_needing_local_migration;
+
+  // Overwrites due to conflict resolution counters.
+  int num_local_overwrites;
+  int num_server_overwrites;
 };
 
 // Counters for various errors that can occur repeatedly during a sync session.
@@ -120,6 +124,7 @@ struct SyncSessionSnapshot {
       bool more_to_sync,
       bool is_silenced,
       int64 unsynced_count,
+      int num_blocking_conflicting_updates,
       int num_conflicting_updates,
       bool did_commit_items,
       const SyncSourceInfo& source);
@@ -137,6 +142,7 @@ struct SyncSessionSnapshot {
   const bool has_more_to_sync;
   const bool is_silenced;
   const int64 unsynced_count;
+  const int num_blocking_conflicting_updates;
   const int num_conflicting_updates;
   const bool did_commit_items;
   const SyncSourceInfo source;
@@ -166,6 +172,13 @@ class ConflictProgress {
   std::set<syncable::Id>::const_iterator ConflictingItemsBeginConst() const;
   std::set<syncable::Id>::const_iterator ConflictingItemsEnd() const;
 
+  // Mutators for nonblocking conflicting items (see description below).
+  void AddNonblockingConflictingItemById(const syncable::Id& the_id);
+  void EraseNonblockingConflictingItemById(const syncable::Id& the_id);
+  int NonblockingConflictingItemsSize() const {
+    return nonblocking_conflicting_item_ids_.size();
+  }
+
   void MergeSets(const syncable::Id& set1, const syncable::Id& set2);
   void CleanupSets();
 
@@ -174,6 +187,19 @@ class ConflictProgress {
   std::set<syncable::Id> conflicting_item_ids_;
   std::map<syncable::Id, ConflictSet*> id_to_conflict_set_;
   std::set<ConflictSet*> conflict_sets_;
+
+  // Nonblocking conflicts are those which should not block forward progress
+  // (they will not result in the syncer being stuck). This currently only
+  // includes entries we cannot yet decrypt because the passphrase has not
+  // arrived.
+  // With nonblocking conflicts, we want to go to the syncer's
+  // APPLY_UPDATES_TO_RESOLVE_CONFLICTS step, but we want to ignore them after.
+  // Because they are not passed to the conflict resolver, they do not trigger
+  // syncer_stuck.
+  // TODO(zea): at some point we may have nonblocking conflicts that should be
+  // resolved in the conflict resolver. We'll need to change this then.
+  // See http://crbug.com/76596.
+  std::set<syncable::Id> nonblocking_conflicting_item_ids_;
 
   // Whether a conflicting item was added or removed since
   // the last call to reset_progress_changed(), if any. In practice this

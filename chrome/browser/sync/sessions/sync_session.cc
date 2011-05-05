@@ -112,6 +112,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       HasMoreToSync(),
       delegate_->IsSyncingCurrentlySilenced(),
       status_controller_->unsynced_handles().size(),
+      status_controller_->TotalNumBlockingConflictingItems(),
       status_controller_->TotalNumConflictingItems(),
       status_controller_->did_commit_items(),
       source_);

@@ -278,11 +278,14 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
       break;
     }
     case WAITING_FOR_ENCRYPTION: {
+      // If the type whose encryption we are waiting for is now complete, there
+      // is nothing to do. Encryption can take multiple sync cycles, but we only
+      // exit out if we are fully synced or can't connect to the server.
       LogClientInfo("WAITING_FOR_ENCRYPTION", 1);
-      if (IsTypeEncrypted(waiting_for_encryption_type_)) {
-        // Encryption is complete for the type we are waiting on.
+      if (IsSynced() && IsTypeEncrypted(waiting_for_encryption_type_))
         SignalStateCompleteWithNextState(FULLY_SYNCED);
-      }
+      else if (!GetStatus().server_reachable)
+        SignalStateCompleteWithNextState(SERVER_UNREACHABLE);
       break;
     }
     case WAITING_FOR_SYNC_CONFIGURATION: {
@@ -518,7 +521,7 @@ bool ProfileSyncServiceHarness::IsSynced() {
   // TODO(rsimha): Remove additional checks of snap->has_more_to_sync and
   // snap->unsynced_count once http://crbug.com/48989 is fixed.
   return (snap &&
-          snap->num_conflicting_updates == 0 &&  // We can decrypt everything.
+          snap->num_blocking_conflicting_updates == 0 &&
           ServiceIsPushingChanges() &&
           GetStatus().notifications_enabled &&
           !service()->HasUnsyncedItems() &&
@@ -658,6 +661,8 @@ void ProfileSyncServiceHarness::LogClientInfo(const std::string& message,
                       << snap->syncer_status.num_updates_downloaded_total
                       << ", has_more_to_sync: " << snap->has_more_to_sync
                       << ", unsynced_count: " << snap->unsynced_count
+                      << ", num_blocking_conflicting_updates: "
+                      << snap->num_blocking_conflicting_updates
                       << ", num_conflicting_updates: "
                       << snap->num_conflicting_updates
                       << ", has_unsynced_items: "
@@ -695,8 +700,13 @@ bool ProfileSyncServiceHarness::EnableEncryptionForType(
   service_->EncryptDataTypes(encrypted_types);
 
   // Wait some time to let the enryption finish.
+  return WaitForTypeEncryption(type);
+}
+
+bool ProfileSyncServiceHarness::WaitForTypeEncryption(
+    syncable::ModelType type) {
+  // Wait some time to let the enryption finish.
   std::string reason = "Waiting for encryption.";
-  DCHECK_EQ(FULLY_SYNCED, wait_state_);
   wait_state_ = WAITING_FOR_ENCRYPTION;
   waiting_for_encryption_type_ = type;
   if (!AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason)) {
@@ -705,7 +715,6 @@ bool ProfileSyncServiceHarness::EnableEncryptionForType(
                << " seconds.";
     return false;
   }
-
   return IsTypeEncrypted(type);
 }
 
