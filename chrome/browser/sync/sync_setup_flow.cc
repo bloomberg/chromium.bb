@@ -186,8 +186,7 @@ void SyncSetupFlow::Focus() {
 void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
   DCHECK(json_retval.empty());
   container_->set_flow(NULL);  // Sever ties from the wizard.
-  if (current_state_ == SyncSetupWizard::DONE ||
-      current_state_ == SyncSetupWizard::DONE_FIRST_TIME) {
+  if (current_state_ == SyncSetupWizard::DONE) {
     service_->SetSyncSetupCompleted();
   }
 
@@ -209,7 +208,6 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
       ProfileSyncService::SyncEvent(
           ProfileSyncService::CANCEL_DURING_CONFIGURE);
       break;
-    case SyncSetupWizard::DONE_FIRST_TIME:
     case SyncSetupWizard::DONE:
       // TODO(sync): rename this histogram; it's tracking authorization AND
       // initial sync download time.
@@ -322,7 +320,6 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
              current_state_ == SyncSetupWizard::PASSPHRASE_MIGRATION;
     case SyncSetupWizard::FATAL_ERROR:
       return true;  // You can always hit the panic button.
-    case SyncSetupWizard::DONE_FIRST_TIME:
     case SyncSetupWizard::DONE:
       return current_state_ == SyncSetupWizard::SETTING_UP ||
              current_state_ == SyncSetupWizard::ENTER_PASSPHRASE;
@@ -395,10 +392,6 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
       flow_handler_->ShowGaiaLogin(args);
       break;
     }
-    case SyncSetupWizard::DONE_FIRST_TIME:
-      flow_handler_->ShowFirstTimeDone(
-          UTF16ToWide(service_->GetAuthenticatedUsername()));
-      break;
     case SyncSetupWizard::DONE:
       flow_handler_->ShowSetupDone(
           UTF16ToWide(service_->GetAuthenticatedUsername()));

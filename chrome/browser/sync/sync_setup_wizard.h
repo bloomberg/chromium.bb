@@ -45,11 +45,6 @@ class SyncSetupWizard {
     SETUP_ABORTED_BY_PENDING_CLEAR,
     // Loading screen with spinny throbber.
     SETTING_UP,
-    // A final state for when setup completes and it is possible it is the
-    // user's first time (globally speaking) as the cloud doesn't have any
-    // bookmarks.  We show additional info in this case to explain setting up
-    // more computers.
-    DONE_FIRST_TIME,
     // A catch-all done case for any setup process.
     DONE
   };

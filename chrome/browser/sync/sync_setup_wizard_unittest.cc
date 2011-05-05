@@ -402,15 +402,9 @@ TEST_F(SyncSetupWizardTest, DISABLED_InvalidTransitions) {
   EXPECT_FALSE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
 
-  wizard_->Step(SyncSetupWizard::DONE_FIRST_TIME);
-  EXPECT_FALSE(wizard_->IsVisible());
-  EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
 
   wizard_->Step(SyncSetupWizard::DONE);
-  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
-  wizard_->Step(SyncSetupWizard::DONE_FIRST_TIME);
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
 
   wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
@@ -431,18 +425,6 @@ TEST_F(SyncSetupWizardTest, DISABLED_FullSuccessfulRunSetsPref) {
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   wizard_->Step(SyncSetupWizard::SETTING_UP);
   wizard_->Step(SyncSetupWizard::DONE);
-  test_window_->CloseDialog();
-  EXPECT_FALSE(wizard_->IsVisible());
-  EXPECT_TRUE(service_->profile()->GetPrefs()->GetBoolean(
-      prefs::kSyncHasSetupCompleted));
-}
-
-TEST_F(SyncSetupWizardTest, DISABLED_FirstFullSuccessfulRunSetsPref) {
-  SKIP_TEST_ON_MACOSX();
-  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
-  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
-  wizard_->Step(SyncSetupWizard::SETTING_UP);
-  wizard_->Step(SyncSetupWizard::DONE_FIRST_TIME);
   test_window_->CloseDialog();
   EXPECT_FALSE(wizard_->IsVisible());
   EXPECT_TRUE(service_->profile()->GetPrefs()->GetBoolean(

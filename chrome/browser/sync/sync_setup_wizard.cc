@@ -45,7 +45,6 @@ void SyncSetupWizard::Step(State advance_state) {
 bool SyncSetupWizard::IsTerminalState(State advance_state) {
   return advance_state == GAIA_SUCCESS ||
          advance_state == DONE ||
-         advance_state == DONE_FIRST_TIME ||
          advance_state == FATAL_ERROR ||
          advance_state == SETUP_ABORTED_BY_PENDING_CLEAR;
 }

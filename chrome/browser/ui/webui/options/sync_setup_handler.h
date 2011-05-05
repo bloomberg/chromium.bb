@@ -30,7 +30,6 @@ class SyncSetupHandler : public OptionsPageUIHandler,
   virtual void ShowFirstPassphrase(const DictionaryValue& args);
   virtual void ShowSettingUp();
   virtual void ShowSetupDone(const std::wstring& user);
-  virtual void ShowFirstTimeDone(const std::wstring& user);
 
   virtual void SetFlow(SyncSetupFlow* flow);
 
@@ -43,7 +42,6 @@ class SyncSetupHandler : public OptionsPageUIHandler,
   void HandlePassphraseEntry(const ListValue* args);
   void HandlePassphraseCancel(const ListValue* args);
   void HandleFirstPassphrase(const ListValue* args);
-  void HandleGoToDashboard(const ListValue* args);
 
   // Weak reference.
   SyncSetupFlow* flow_;

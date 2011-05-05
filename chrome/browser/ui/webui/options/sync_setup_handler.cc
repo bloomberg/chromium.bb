@@ -283,8 +283,6 @@ void SyncSetupHandler::RegisterMessages() {
       NewCallback(this, &SyncSetupHandler::HandlePassphraseCancel));
   web_ui_->RegisterMessageCallback("FirstPassphrase",
       NewCallback(this, &SyncSetupHandler::HandleFirstPassphrase));
-  web_ui_->RegisterMessageCallback("GoToDashboard",
-      NewCallback(this, &SyncSetupHandler::HandleGoToDashboard));
 }
 
 void SyncSetupHandler::ShowGaiaLogin(const DictionaryValue& args) {
@@ -329,11 +327,6 @@ void SyncSetupHandler::ShowSetupDone(const std::wstring& user) {
   StringValue page("done");
   web_ui_->CallJavascriptFunction(
       "SyncSetupOverlay.showSyncSetupPage", page);
-}
-
-void SyncSetupHandler::ShowFirstTimeDone(const std::wstring& user) {
-  // TODO(jhawkins): Remove this from Sync since it's not called anymore.
-  NOTREACHED();
 }
 
 void SyncSetupHandler::SetFlow(SyncSetupFlow* flow) {
@@ -446,9 +439,4 @@ void SyncSetupHandler::HandleFirstPassphrase(const ListValue* args) {
 
   DCHECK(flow_);
   flow_->OnFirstPassphraseEntry(option, passphrase);
-}
-
-void SyncSetupHandler::HandleGoToDashboard(const ListValue* args) {
-  DCHECK(flow_);
-  flow_->OnGoToDashboard();
 }
