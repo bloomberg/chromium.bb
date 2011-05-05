@@ -15,7 +15,13 @@ Import('env')
 srpc_test_nexe_name = 'srpc_test_%s.nexe' % env.get('TARGET_FULLARCH')
 srpc_test_nexe = env.ComponentProgram(
     srpc_test_nexe_name, 'srpc_test.c',
-    EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}', 'srpc', 'm', 'pthread'])
+    EXTRA_LIBS=[
+        '${NON_PPAPI_BROWSER_LIBS}',
+        'srpc',
+        'platform',
+        'gio',
+        'm',
+        'pthread'])
 env.Publish(srpc_test_nexe_name, 'run',
     ['srpc_basic.html',
      'srpc_perf.html',
@@ -40,7 +46,13 @@ srpc_nrd_server_nexe_name = ('srpc_nrd_server_%s.nexe' %
                              env.get('TARGET_FULLARCH'))
 srpc_nrd_server_nexe = env.ComponentProgram(
     srpc_nrd_server_nexe_name, 'srpc_nrd_server.c',
-    EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}', 'srpc', 'm', 'pthread'])
+    EXTRA_LIBS=[
+        '${NON_PPAPI_BROWSER_LIBS}',
+        'srpc',
+        'platform',
+        'gio',
+        'm',
+        'pthread'])
 env.Publish(srpc_nrd_server_nexe_name, 'run',
     ['srpc_sockaddr.html',
      'srpc_nrd_server.nmf'])
@@ -51,7 +63,13 @@ srpc_nrd_client_nexe_name = ('srpc_nrd_client_%s.nexe' %
                              env.get('TARGET_FULLARCH'))
 srpc_nrd_client_nexe = env.ComponentProgram(
     srpc_nrd_client_nexe_name, 'srpc_nrd_client.c',
-    EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}', 'srpc', 'm', 'pthread'])
+    EXTRA_LIBS=[
+        '${NON_PPAPI_BROWSER_LIBS}',
+        'srpc',
+        'platform',
+        'gio',
+        'm',
+        'pthread'])
 env.Publish(srpc_nrd_client_nexe_name, 'run',
     ['srpc_nrd_xfer.html',
      'srpc_nrd_client.nmf',
@@ -74,7 +92,7 @@ env.Publish(cat_nexe_name, 'run',
 srpc_bidir_nexe_name = ('srpc_bidir_%s.nexe' % env.get('TARGET_FULLARCH'))
 srpc_bidir_nexe = env.ComponentProgram(
     srpc_bidir_nexe_name, 'srpc_bidir.c',
-    EXTRA_LIBS=['srpc', 'm', 'pthread'])
+    EXTRA_LIBS=['srpc', 'platform', 'gio', 'm', 'pthread'])
 env.Publish(srpc_bidir_nexe_name, 'run', [])
 
 

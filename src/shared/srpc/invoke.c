@@ -12,12 +12,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_macros.h"
 #ifdef __native_client__
 #include <inttypes.h>
-#include <nacl/nacl_inttypes.h>
 #else
-#include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #endif  /* __native_client__ */
 #include "native_client/src/shared/srpc/nacl_srpc.h"

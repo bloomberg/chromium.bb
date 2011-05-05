@@ -9,6 +9,7 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 /*
@@ -33,14 +34,13 @@
  * Note: nacl/nacl_inttypes.h must be included last...
  * after all other types headers.
  */
-#include <inttypes.h>
-# include <nacl/nacl_inttypes.h>
+#include <machine/_types.h>
 # define NACL_ABI_RECVMSG_DATA_TRUNCATED RECVMSG_DATA_TRUNCATED
 # define NACL_ABI_RECVMSG_DESC_TRUNCATED RECVMSG_DESC_TRUNCATED
 # define NACL_ABI_EIO EIO
 # define NACL_ABI_EINVAL EINVAL
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #else
-# include "native_client/src/include/portability.h"
 # include "native_client/src/trusted/desc/nrd_xfer_effector.h"
 # include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #endif
@@ -236,9 +236,9 @@ static uint32_t MessageChannelBufferFirstFragment(
   }
   NaClSrpcLog(3,
               "MessageChannelBufferFirstFragment: buffered message: "
-              "bytes %"NACL_PRIdS", descs %"NACL_PRIdS".\n",
+              "bytes %"NACL_PRIdS", descs %"NACL_PRIuS".\n",
               imc_ret,
-              buffer_header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH);
+              (size_t) buffer_header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH);
   channel->byte_count = imc_ret;
   channel->desc_count = buffer_header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH;
   return 1;
@@ -523,8 +523,8 @@ static int32_t FragmentLengthIsSane(LengthHeader* fragment_size,
       fragment_size->desc_count < descs_received) {
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "FragmentLengthIsSane: Descriptor mismatch:"
-                " bytes %"NACL_PRIdS" < %"NACL_PRIdS" or descs %"
-                NACL_PRIdS" < %"NACL_PRIdS".\n",
+                " bytes %"NACL_PRIuNACL_SIZE" < %"NACL_PRIuS
+                " or descs %"NACL_PRIuNACL_SIZE" < %"NACL_PRIuS".\n",
                 fragment_size->byte_count,
                 (bytes_received - FRAGMENT_OVERHEAD),
                 fragment_size->desc_count,
@@ -555,7 +555,8 @@ static int32_t MessageLengthsAreSane(LengthHeader* total_size,
   if (total_size->byte_count == 0 && total_size->desc_count == 0) {
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "MessageLengthsAreSane: Descriptor mismatch:"
-                " bytes %"NACL_PRIdS" == 0 or descs %"NACL_PRIdS" == 0.\n",
+                " bytes %"NACL_PRIdNACL_SIZE" == 0 or descs %"
+                NACL_PRIdNACL_SIZE" == 0.\n",
                 fragment_size->byte_count,
                 fragment_size->desc_count);
     return 0;
@@ -568,8 +569,8 @@ static int32_t MessageLengthsAreSane(LengthHeader* total_size,
       fragment_size->desc_count > total_size->desc_count) {
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "MessageLengthsAreSane: Descriptor mismatch:"
-                " bytes %"NACL_PRIdS" > %"NACL_PRIdS" or descs %"
-                NACL_PRIdS" > %"NACL_PRIdS".\n",
+                " bytes %"NACL_PRIdNACL_SIZE" > %"NACL_PRIdNACL_SIZE
+                " or descs %"NACL_PRIdNACL_SIZE" > %"NACL_PRIdNACL_SIZE".\n",
                 fragment_size->byte_count,
                 total_size->byte_count,
                 fragment_size->desc_count,
@@ -745,12 +746,14 @@ ssize_t NaClSrpcMessageChannelReceive(struct NaClSrpcMessageChannel* channel,
   }
   NaClSrpcLog(3,
               "NaClSrpcMessageChannelReceive:"
-              " new message, bytes %"NACL_PRIdS", descs %"NACL_PRIdS".\n",
+              " new message, bytes %"NACL_PRIdNACL_SIZE
+              ", descs %"NACL_PRIdNACL_SIZE".\n",
               total_size.byte_count,
               total_size.desc_count);
   NaClSrpcLog(3,
               "NaClSrpcMessageChannelReceive:"
-              " first fragment, bytes %"NACL_PRIdS", descs %"NACL_PRIdS".\n",
+              " first fragment, bytes %"NACL_PRIdNACL_SIZE
+              ", descs %"NACL_PRIdNACL_SIZE".\n",
               fragment_size.byte_count,
               fragment_size.desc_count);
   processed_size = fragment_size;
@@ -810,7 +813,8 @@ ssize_t NaClSrpcMessageChannelReceive(struct NaClSrpcMessageChannel* channel,
     }
     NaClSrpcLog(3,
                 "NaClSrpcMessageChannelReceive:"
-                " next fragment, bytes %"NACL_PRIdS", descs %"NACL_PRIdS".\n",
+                " next fragment, bytes %"NACL_PRIdNACL_SIZE
+                ", descs %"NACL_PRIdNACL_SIZE".\n",
                 fragment_size.byte_count,
                 fragment_size.desc_count);
     processed_size.byte_count += fragment_size.byte_count;
@@ -819,7 +823,8 @@ ssize_t NaClSrpcMessageChannelReceive(struct NaClSrpcMessageChannel* channel,
   }
   NaClSrpcLog(3,
               "NaClSrpcMessageChannelReceive:"
-              " succeeded, read %"NACL_PRIdS" bytes and %"NACL_PRIdS" descs.\n",
+              " succeeded, read %"NACL_PRIdS" bytes and %"
+              NACL_PRIdNACL_SIZE" descs.\n",
               bytes_received,
               processed_size.desc_count);
   retval = (ssize_t) bytes_received;
@@ -892,12 +897,12 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
   }
   NaClSrpcLog(3,
               "NaClSrpcMessageChannelSend: new message, bytes %"
-              NACL_PRIdS", descs %"NACL_PRIdS".\n",
+              NACL_PRIdNACL_SIZE", descs %"NACL_PRIdNACL_SIZE".\n",
               total_size.byte_count,
               total_size.desc_count);
   NaClSrpcLog(3,
               "NaClSrpcMessageChannelSend: first fragment, bytes %"
-              NACL_PRIdS", descs %"NACL_PRIdS".\n",
+              NACL_PRIdNACL_SIZE", descs %"NACL_PRIdNACL_SIZE".\n",
               fragment_size.byte_count,
               fragment_size.desc_count);
   expected_bytes_sent = fragment_size.byte_count + 2 * FRAGMENT_OVERHEAD;
@@ -961,7 +966,7 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
     }
     NaClSrpcLog(3,
                 "NaClSrpcMessageChannelSend: next fragment, bytes %"
-                NACL_PRIdS", descs %"NACL_PRIdS".\n",
+                NACL_PRIdNACL_SIZE", descs %"NACL_PRIdNACL_SIZE".\n",
                 fragment_size.byte_count,
                 fragment_size.desc_count);
     if (!BuildFragmentHeader(&remaining, &fragment_size, 1, &frag_hdr)) {
@@ -987,7 +992,7 @@ ssize_t NaClSrpcMessageChannelSend(struct NaClSrpcMessageChannel* channel,
   }
   NaClSrpcLog(3,
               "NaClSrpcMessageChannelSend: complete send, sent %"
-              NACL_PRIdS" bytes and %"NACL_PRIdS" descs.\n",
+              NACL_PRIdNACL_SIZE" bytes and %"NACL_PRIdNACL_SIZE" descs.\n",
               total_size.byte_count,
               total_size.desc_count);
   retval = (ssize_t) total_size.byte_count;

@@ -136,6 +136,8 @@ pnacl_srpc_hello_world_obj = bitcode_env.ComponentObject('pnacl_srpc_hw',
 pnacl_srpc_hello_world_pexe = bitcode_env.ComponentProgram('pnacl_srpc_hw.pexe',
     [ pnacl_srpc_hello_world_obj ],
     EXTRA_LIBS=['srpc',
+                'platform',
+                'gio',
                 'imc',
                 'pthread'])
 

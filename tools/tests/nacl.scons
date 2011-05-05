@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -12,6 +12,7 @@ if env.Bit('bitcode'):
 if not env.Bit('build_x86_32'):
   Return()
 
+srpc_libs = ['srpc', 'platform', 'gio', 'pthread', 'imc']
 env.Replace(
     # Ensure that these compilations use only SDK include files.
     CPPPATH=[],
@@ -26,13 +27,7 @@ env.ComponentProgram('libs_present_test.nexe',
                       'libs_present_stub.cc'],
                      # This list should include all the libraries published
                      # into the SDK.
-                     LIBS=['c',
-                           'm',
-                           'nacl',
-                           'pthread',
-                           'srpc',
-                           'imc',
-                           'nosys'])
+                     LIBS=srpc_libs + ['c', 'm', 'nacl', 'nosys'])
 
 # Check that GDB can print backtrace.
 env.ComponentProgram('hello_world_gdb.nexe',

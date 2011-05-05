@@ -9,7 +9,12 @@ Import('env')
 # Simple RPC message fragmentation tests
 ######################################################################
 srpc_message_nexe = env.ComponentProgram('srpc_message.nexe', 'srpc_message.c',
-                                         EXTRA_LIBS=['srpc', 'm', 'pthread'])
+                                         EXTRA_LIBS=[
+                                             'srpc',
+                                             'platform',
+                                             'gio',
+                                             'm',
+                                             'pthread'])
 
 node = env.CommandSelLdrTestNacl(
     'srpc_message_test.out',

@@ -6,7 +6,7 @@
 Import('env')
 
 env.ComponentProgram('autoloader_default.nexe', 'autoloader_default.c',
-                     EXTRA_LIBS=['srpc', 'imc','pthread'])
+                     EXTRA_LIBS=['srpc', 'platform', 'gio', 'imc','pthread'])
 
 # Note that the html is required to run this program.
 node = env.Publish('autoloader_default.nexe',

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -24,9 +24,7 @@
  * inclusion.
  */
 #ifdef __native_client__
-#  include <stdint.h>
-#  include <sys/types.h>
-#  include <sys/nacl_imc_api.h>
+#  include <machine/_types.h>
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 /*
@@ -48,11 +46,7 @@ typedef int NaClSrpcImcDescType;
 #define kNaClSrpcInvalidImcDesc -1
 #else
 #  include "native_client/src/include/portability.h"
-#  include "native_client/src/include/nacl_base.h"
-#  include "native_client/src/shared/platform/nacl_log.h"
-#  include "native_client/src/trusted/desc/nrd_all_modules.h"
-#  include "native_client/src/trusted/desc/nrd_xfer.h"
-#  include "native_client/src/trusted/desc/nrd_xfer_effector.h"
+#  include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 /*
  * In trusted code we use a NaClDesc to describe the IMC channel.
  * It is this difference between trusted and untrusted code that motivated

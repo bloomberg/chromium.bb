@@ -862,8 +862,9 @@ static void RpcCheckingClosureRun(NaClSrpcClosure* self) {
                                       &ret_types);
     NaClSrpcLog(1,
                 "RpcCheckingClosureRun: response(channel=%p,"
-                " rpc_number=%d, rpc_name=\"%s\", result=%d, string=\"%s\")\n",
-                rpc->channel,
+                " rpc_number=%"NACL_PRIu32
+                ", rpc_name=\"%s\", result=%d, string=\"%s\")\n",
+                (void*) rpc->channel,
                 rpc->rpc_number,
                 rpc_name,
                 rpc->result,
@@ -873,7 +874,7 @@ static void RpcCheckingClosureRun(NaClSrpcClosure* self) {
       NaClSrpcFormatArg(2, rpc->rets[i], buffer, NACL_ARRAY_SIZE(buffer));
       NaClSrpcLog(2,
                   "RpcCheckingClosureRun: response(channel=%p, rets[%d]=%s)\n",
-                  rpc->channel,
+                  (void*) rpc->channel,
                   i,
                   buffer);
     }
@@ -1088,7 +1089,8 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
                                       &arg_types,
                                       &ret_types);
     NaClSrpcLog(1, "NaClSrpcReceiveAndDispatch:"
-                " request(channel=%p, rpc_number=%d, rpc_name=\"%s\")\n",
+                " request(channel=%p, rpc_number=%"NACL_PRIu32
+                ", rpc_name=\"%s\")\n",
                 (void*) channel,
                 rpc.rpc_number,
                 rpc_name);

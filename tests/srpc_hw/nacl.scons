@@ -9,8 +9,13 @@ srpc_hw_obj = env.ComponentObject('srpc_hw.o', 'srpc_hw.c')
 srpc_hw_nexe_name = 'srpc_hw_%s.nexe' % env.get('TARGET_FULLARCH')
 srpc_hw_nexe = env.ComponentProgram(srpc_hw_nexe_name,
                                     srpc_hw_obj,
-                                    EXTRA_LIBS=['srpc', 'imc','pthread',
-                                                '${NON_PPAPI_BROWSER_LIBS}'])
+                                    EXTRA_LIBS=[
+                                        'srpc',
+                                        'platform',
+                                        'gio',
+                                        'imc',
+                                        'pthread',
+                                        '${NON_PPAPI_BROWSER_LIBS}'])
 # srpc_hw_undecorated is necessary because srpc_hw_fd.html makes use of
 # __urlAsNaClDesc with a nexe name.
 # TODO(sehr): We can get rid of this hack if we make that API take a manifest
@@ -18,7 +23,11 @@ srpc_hw_nexe = env.ComponentProgram(srpc_hw_nexe_name,
 srpc_hw_undecorated = env.ComponentProgram('srpc_hw.nexe',
                                            srpc_hw_obj,
                                            EXTRA_LIBS=[
-                                               'srpc', 'imc','pthread',
+                                               'srpc',
+                                               'platform',
+                                               'gio',
+                                               'imc',
+                                               'pthread',
                                                '${NON_PPAPI_BROWSER_LIBS}'])
 
 env.Publish(srpc_hw_nexe_name, 'run',

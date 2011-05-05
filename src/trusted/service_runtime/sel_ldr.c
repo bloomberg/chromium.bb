@@ -26,6 +26,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/desc/nrd_xfer.h"
 
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
 

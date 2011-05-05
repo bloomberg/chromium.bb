@@ -23,25 +23,30 @@
 EXTERN_C_BEGIN
 
 #include <stdarg.h>
+#include "native_client/src/include/portability.h"
 #ifdef __native_client__
-#include <sys/nacl_imc_api.h>
-#include <sys/nacl_syscalls.h>
 typedef int SRPC_IMC_DESC_TYPE;
 #define NACL_INVALID_DESCRIPTOR (-1)
 #define SRPC_DESC_MAX    IMC_USER_DESC_MAX
 #else
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
-#include "native_client/src/trusted/desc/nacl_desc_imc.h"
 typedef struct NaClDesc* SRPC_IMC_DESC_TYPE;
 #define NACL_INVALID_DESCRIPTOR NULL
 #define SRPC_DESC_MAX    NACL_ABI_IMC_USER_DESC_MAX
 #endif
 
+/* Initialize the logging facility. Returns 1 on success, 0 on failure. */
+int NaClSrpcLogInit();
+
+/* Shut down the logging facility. */
+void NaClSrpcLogFini();
+
 /*
  * NaClSrpcLog prints log messages if the detail_level is less than
  * the level set by the user in the environment variable NACL_SRPC_DEBUG.
  */
-void NaClSrpcLog(int detail_level, const char* fmt, ...);
+void NaClSrpcLog(int detail_level,
+                 const char* fmt,
+                 ...)  ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
 #define NACL_SRPC_LOG_INFO    (-1)
 #define NACL_SRPC_LOG_WARNING (-2)

@@ -7,7 +7,7 @@ Import('env')
 
 env.ComponentProgram('nameservice_test.nexe',
                      'nameservice_test.c',
-                     EXTRA_LIBS=['srpc', 'pthread'])
+                     EXTRA_LIBS=['srpc', 'platform', 'gio', 'pthread'])
 node = env.CommandSelLdrTestNacl(
     'nameservice_test.out',
     command=[env.File('nameservice_test.nexe')])

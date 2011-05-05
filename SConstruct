@@ -2254,7 +2254,7 @@ else:
   # TODO(mseaborn): This will go away when we only support using PPAPI
   # via the IRT library, so users of this dependency should not rely
   # on individual libraries like 'platform' being included by default.
-  nacl_env.Replace(PPAPI_LIBS=['ppruntime', 'imc', 'platform', 'gio', 'srpc',
+  nacl_env.Replace(PPAPI_LIBS=['ppruntime', 'srpc', 'imc', 'platform', 'gio',
                                'pthread', 'm'])
 
 # TODO(mseaborn): Make nacl-glibc-based static linking work with just
@@ -2355,11 +2355,6 @@ nacl_env.Append(
     'tests/math/nacl.scons',
     'tests/memcheck_test/nacl.scons',
     'tests/mmap/nacl.scons',
-    # multiarch is disabled for now, as it doesn't test what it purports to.
-    # It was already disabled on Windows, irt, and ARM, and referred to the
-    # now obsolete prebuilt infrastructure.
-    # TODO(sehr): reenable multiarch or move to something similar.
-    #'tests/multiarch/nacl.scons',
     'tests/multiple_sandboxes/nacl.scons',
     'tests/nacl.scons',
     'tests/nacl_log/nacl.scons',
@@ -2398,7 +2393,6 @@ nacl_env.Append(
     'tests/srpc/nacl.scons',
     'tests/srpc_hw/nacl.scons',
     'tests/srpc_message/nacl.scons',
-    'tests/srpc_without_pthread/nacl.scons',
     'tests/stack_alignment/nacl.scons',
     'tests/startup_message/nacl.scons',
     'tests/stubout_mode/nacl.scons',

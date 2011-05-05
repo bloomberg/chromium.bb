@@ -4,7 +4,6 @@
  * found in the LICENSE file.
  */
 
-
 /*
  * This file should be at the top of the #include group, followed by
  * standard system #include files, then by native client specific
@@ -142,7 +141,7 @@ struct timezone {
 #elif NACL_OSX
 # define  NACL___PRIS_PREFIX "l" /* -pedantic C++ programs w/ xcode */
 #elif defined(__native_client__)
-# define NACL___PRIS_PREFIX
+# define NACL___PRIS_PREFIX "z"
 #elif __WORDSIZE == 64
 # define NACL___PRIS_PREFIX "l"
 #else
@@ -171,55 +170,7 @@ struct timezone {
 /*
  * printf macros for intptr_t and uintptr_t, int{8,16,32,64}
  */
-#if !NACL_WINDOWS
-#ifndef __STDC_FORMAT_MACROS
-# define __STDC_FORMAT_MACROS  /* C++ */
-#endif
-# include <inttypes.h>
-
-#define NACL_PRIxPTR PRIxPTR
-#define NACL_PRIXPTR PRIXPTR
-#define NACL_PRIdPTR PRIdPTR
-
-#define NACL_PRId64 PRId64
-#define NACL_PRIu64 PRIu64
-#define NACL_PRIx64 PRIx64
-#define NACL_PRIX64 PRIX64
-
-#define NACL_PRIx32 PRIx32
-#define NACL_PRIX32 PRIX32
-#define NACL_PRId32 PRId32
-#define NACL_PRIu32 PRIu32
-
-#define NACL_PRId16 PRId16
-#define NACL_PRIu16 PRIu16
-#define NACL_PRIx16 PRIx16
-
-#define NACL_PRId8 PRId8
-#define NACL_PRIu8 PRIu8
-#define NACL_PRIx8 PRIx8
-
-
-# if NACL_OSX
-/*
- * OSX defines "hh" prefix for int8_t etc, but that's not standards
- * compliant -- --std=c++98 -Wall -Werror rejects it.
- */
-#  undef NACL_PRId8
-#  undef NACL_PRIi8
-#  undef NACL_PRIo8
-#  undef NACL_PRIu8
-#  undef NACL_PRIx8
-#  undef NACL_PRIX8
-#  define NACL_PRId8  "d"
-#  define NACL_PRIi8  "i"
-#  define NACL_PRIo8  "o"
-#  define NACL_PRIu8  "u"
-#  define NACL_PRIx8  "x"
-#  define NACL_PRIX8  "X"
-# endif
-#else
-/* NACL_WINDOWS */
+#if NACL_WINDOWS
 # if defined(_WIN64)
 #  define NACL___PRIPTR_PREFIX "I64"
 # else
@@ -276,7 +227,88 @@ struct timezone {
 # define NACL_PRIX64 NACL___PRI64_PREFIX "X"
 #endif
 
+#else  /* NACL_LINUX, NACL_OSX, __native_client__ */
+
+#ifndef __STDC_FORMAT_MACROS
+# define __STDC_FORMAT_MACROS  /* C++ */
 #endif
+
+#if defined(__native_client__) && !defined(__GLIBC__)
+/*
+ * This works around a bug in nacl-newlib.  Newlib's stdint.h defines
+ * uint32_t as unsigned long int for NaCl, while newlib's inttypes.h
+ * seems to think that uint32_t is unsigned int.  This means that
+ * using newlib's PRIu32 causes a -Wformat warning from gcc.
+ */
+
+# define NACL_PRId32 "ld"
+# define NACL_PRIi32 "li"
+# define NACL_PRIo32 "lo"
+# define NACL_PRIu32 "lu"
+# define NACL_PRIx32 "lx"
+# define NACL_PRIX32 "lX"
+
+# define NACL_PRId64 "lld"
+# define NACL_PRIu64 "llu"
+# define NACL_PRIx64 "llx"
+# define NACL_PRIX64 "llX"
+
+# define NACL_PRId16 "d"
+# define NACL_PRIu16 "u"
+# define NACL_PRIx16 "x"
+
+# define NACL_PRId8 "d"
+# define NACL_PRIu8 "u"
+# define NACL_PRIx8 "x"
+
+#else  /* NACL_LINUX, NACL_OSX, (__native_client && __GLIBC__) */
+
+# include <inttypes.h>
+
+#define NACL_PRIxPTR PRIxPTR
+#define NACL_PRIXPTR PRIXPTR
+#define NACL_PRIdPTR PRIdPTR
+
+#define NACL_PRId64 PRId64
+#define NACL_PRIu64 PRIu64
+#define NACL_PRIx64 PRIx64
+#define NACL_PRIX64 PRIX64
+
+#define NACL_PRIx32 PRIx32
+#define NACL_PRIX32 PRIX32
+#define NACL_PRId32 PRId32
+#define NACL_PRIu32 PRIu32
+
+#define NACL_PRId16 PRId16
+#define NACL_PRIu16 PRIu16
+#define NACL_PRIx16 PRIx16
+
+#define NACL_PRId8 PRId8
+#define NACL_PRIu8 PRIu8
+#define NACL_PRIx8 PRIx8
+
+#endif  /* NACL_LINUX, NACL_OSX, (__native_client && __GLIBC__) */
+
+# if NACL_OSX
+/*
+ * OSX defines "hh" prefix for int8_t etc, but that's not standards
+ * compliant -- --std=c++98 -Wall -Werror rejects it.
+ */
+#  undef NACL_PRId8
+#  undef NACL_PRIi8
+#  undef NACL_PRIo8
+#  undef NACL_PRIu8
+#  undef NACL_PRIx8
+#  undef NACL_PRIX8
+#  define NACL_PRId8  "d"
+#  define NACL_PRIi8  "i"
+#  define NACL_PRIo8  "o"
+#  define NACL_PRIu8  "u"
+#  define NACL_PRIx8  "x"
+#  define NACL_PRIX8  "X"
+# endif  /* NACL_OSX */
+
+#endif  /* NACL_LINUX, NACL_OSX, __native_client__ */
 
 /*
  * macros for run-time error detectors (such as Valgrind/Memcheck).

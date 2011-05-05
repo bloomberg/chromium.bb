@@ -16,4 +16,4 @@ spin_prog = env.ComponentProgram(spin_nexe_name, 'spin.c')
 deferred_nexe_name = 'deferred_srpc_init_%s.nexe' % env.get('TARGET_FULLARCH')
 deferred_srpc_init_prog = env.ComponentProgram(
     deferred_nexe_name, 'deferred_srpc_init.c',
-    EXTRA_LIBS=['srpc', 'pthread'])
+    EXTRA_LIBS=['srpc', 'platform', 'gio', 'pthread'])

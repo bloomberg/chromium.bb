@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -17,8 +17,9 @@ int NaClSrpcModuleInit() {
   /* TODO(sehr): add call to trusted API. */
   kNaClSrpcMaxImcSendmsgSize = 1 << 16;
 #endif  /* __native_client__ */
-  return 1;
+  return NaClSrpcLogInit();
 }
 
 void NaClSrpcModuleFini() {
+  NaClSrpcLogFini();
 }
