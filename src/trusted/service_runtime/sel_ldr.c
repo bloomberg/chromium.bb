@@ -987,7 +987,7 @@ NaClErrorCode NaClWaitForLoadModuleStatus(struct NaClApp *nap) {
 
   NaClXMutexLock(&nap->mu);
   while (LOAD_STATUS_UNKNOWN == (status = nap->module_load_status)) {
-    NaClCondVarWait(&nap->cv, &nap->mu);
+    NaClXCondVarWait(&nap->cv, &nap->mu);
   }
   NaClXMutexUnlock(&nap->mu);
   return status;

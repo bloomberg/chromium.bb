@@ -12,6 +12,7 @@
 #include "native_client/src/shared/platform/nacl_semaphore.h"
 
 #include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/platform/platform_init.h"
@@ -54,10 +55,10 @@ void WINAPI ThreadMain(void *personality) {
       break;
     }
     if (0 == sleep_count) {
-      NaClMutexLock(&gMu);
+      NaClXMutexLock(&gMu);
       ++gNumThreadsTried;
-      NaClMutexUnlock(&gMu);
-      NaClCondVarSignal(&gCv);
+      NaClXCondVarSignal(&gCv);
+      NaClXMutexUnlock(&gMu);
     }
     PauseSpinningThread();
   }
@@ -84,11 +85,11 @@ void WINAPI ThreadMain(void *personality) {
     printf("OK -- thread %d\n", thread_num);
   }
 
-  NaClMutexLock(&gMu);
+  NaClXMutexLock(&gMu);
   gFailure += failed;
   ++gNumThreadsDone;
-  NaClCondVarSignal(&gCv);
-  NaClMutexUnlock(&gMu);
+  NaClXCondVarSignal(&gCv);
+  NaClXMutexUnlock(&gMu);
 }
 
 int main(int ac, char **av) {
@@ -140,22 +141,22 @@ int main(int ac, char **av) {
     }
   }
 
-  NaClMutexLock(&gMu);
+  NaClXMutexLock(&gMu);
   while (gNumThreadsTried != num_threads) {
-    NaClCondVarWait(&gCv, &gMu);
+    NaClXCondVarWait(&gCv, &gMu);
   }
-  NaClMutexUnlock(&gMu);
+  NaClXMutexUnlock(&gMu);
 
   for (n = 0; n < num_threads; ++n) {
     NaClSemPost(&gSem);  /* let a thread go */
   }
 
-  NaClMutexLock(&gMu);
+  NaClXMutexLock(&gMu);
   while (gNumThreadsDone != num_threads) {
-    NaClCondVarWait(&gCv, &gMu);
+    NaClXCondVarWait(&gCv, &gMu);
   }
   exit_status = gFailure;
-  NaClMutexUnlock(&gMu);
+  NaClXMutexUnlock(&gMu);
 
   if (0 == exit_status) {
     printf("SUCCESS\n");

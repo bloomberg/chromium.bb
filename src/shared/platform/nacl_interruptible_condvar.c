@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -86,7 +86,7 @@ void NaClIntrCondVarIntr(struct NaClIntrCondVar *cp) {
    * fail to regain ownership of the mutex once the wait for cp->cv is
    * completed (see NaClIntrCondVarWait above)
    */
-  NaClCondVarBroadcast(&cp->cv);
+  NaClXCondVarBroadcast(&cp->cv);
 }
 
 void NaClIntrCondVarReset(struct NaClIntrCondVar *cp) {

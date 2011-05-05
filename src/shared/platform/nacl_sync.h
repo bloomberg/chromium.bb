@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -11,6 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_SYNC_H_
 #define NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_SYNC_H_
 
+#include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
@@ -41,37 +42,37 @@ typedef enum NaClSyncStatus {
   NACL_SYNC_SEM_RANGE_ERROR
 } NaClSyncStatus;
 
-int NaClMutexCtor(struct NaClMutex *mp);  /* bool success/fail */
+int NaClMutexCtor(struct NaClMutex *mp) NACL_WUR;  /* bool success/fail */
 
 void NaClMutexDtor(struct NaClMutex *mp);
 
-NaClSyncStatus NaClMutexLock(struct NaClMutex *mp);
+NaClSyncStatus NaClMutexLock(struct NaClMutex *mp) NACL_WUR;
 
-NaClSyncStatus NaClMutexTryLock(struct NaClMutex *mp);
+NaClSyncStatus NaClMutexTryLock(struct NaClMutex *mp) NACL_WUR;
 
-NaClSyncStatus NaClMutexUnlock(struct NaClMutex *mp);
+NaClSyncStatus NaClMutexUnlock(struct NaClMutex *mp) NACL_WUR;
 
 
-int NaClCondVarCtor(struct NaClCondVar *cvp);
+int NaClCondVarCtor(struct NaClCondVar *cvp) NACL_WUR;
 
 void NaClCondVarDtor(struct NaClCondVar *cvp);
 
-NaClSyncStatus NaClCondVarSignal(struct NaClCondVar *cvp);
+NaClSyncStatus NaClCondVarSignal(struct NaClCondVar *cvp) NACL_WUR;
 
-NaClSyncStatus NaClCondVarBroadcast(struct NaClCondVar *cvp);
+NaClSyncStatus NaClCondVarBroadcast(struct NaClCondVar *cvp) NACL_WUR;
 
 NaClSyncStatus NaClCondVarWait(struct NaClCondVar *cvp,
-                               struct NaClMutex   *mp);
+                               struct NaClMutex   *mp) NACL_WUR;
 
 NaClSyncStatus NaClCondVarTimedWaitRelative(
     struct NaClCondVar              *cvp,
     struct NaClMutex                *mp,
-    struct nacl_abi_timespec const  *reltime);
+    struct nacl_abi_timespec const  *reltime) NACL_WUR;
 
 NaClSyncStatus NaClCondVarTimedWaitAbsolute(
     struct NaClCondVar              *cvp,
     struct NaClMutex                *mp,
-    struct nacl_abi_timespec const  *abstime);
+    struct nacl_abi_timespec const  *abstime) NACL_WUR;
 
 
 

@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 // Test that SIGPIPE is not raised when using nacl::SendDatagram or
@@ -24,6 +24,7 @@
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 
 
@@ -139,8 +140,8 @@ TestState::TestState(std::vector<int> *seqp, bool nso, int reps,
       cur_test(-1) {
   pair[0] = nacl::kInvalidHandle;
   pair[1] = nacl::kInvalidHandle;
-  (void) NaClMutexCtor(&mu);
-  (void) NaClCondVarCtor(&cv);
+  NaClXMutexCtor(&mu);
+  NaClXCondVarCtor(&cv);
 }
 
 int TestState::Init() {
@@ -638,23 +639,23 @@ void WINAPI PeerThread(void *state) {
       }
 
       printf("PeerThread: Locking for test %d to start\n", test);
-      NaClMutexLock(&tsp->mu);
+      NaClXMutexLock(&tsp->mu);
       while (tsp->cur_test != test) {
         printf("PeerThread: waiting for test %d to start\n", test);
         printf("tsp->cur_test %d\n", tsp->cur_test);
-        NaClCondVarWait(&tsp->cv, &tsp->mu);
+        NaClXCondVarWait(&tsp->cv, &tsp->mu);
       }
-      NaClMutexUnlock(&tsp->mu);
+      NaClXMutexUnlock(&tsp->mu);
 
       printf("PeerThread: START test %d, %s\n", test, test_fn[test].name);
       errors += test_fn[test].sender(tsp, test_fn[test].mode);
       printf("PeerThread: END test %d, %s\n", test, test_fn[test].name);
 
       printf("PeerThread: Locking for test %d to end\n", test);
-      NaClMutexLock(&tsp->mu);
+      NaClXMutexLock(&tsp->mu);
       tsp->cur_test = -1;
-      NaClCondVarSignal(&tsp->cv);
-      NaClMutexUnlock(&tsp->mu);
+      NaClXCondVarSignal(&tsp->cv);
+      NaClXMutexUnlock(&tsp->mu);
     }
   }
   if (-1 == tsp->outer_rep)
@@ -665,13 +666,13 @@ void WINAPI PeerThread(void *state) {
 
   printf("%sPEER THREAD EXITING, LOCKING\n",
          (-1 == tsp->outer_rep) ? "" : "INDEPENDENT ");
-  (void) NaClMutexLock(&tsp->mu);
+  NaClXMutexLock(&tsp->mu);
   tsp->errors = errors;
   printf("%sPEER THREAD EXITING, SIGNALING\n",
          (-1 == tsp->outer_rep) ? "" : "INDEPENDENT ");
   fflush(NULL);
-  (void) NaClCondVarSignal(&tsp->cv);
-  (void) NaClMutexUnlock(&tsp->mu);
+  NaClXCondVarSignal(&tsp->cv);
+  NaClXMutexUnlock(&tsp->mu);
 }
 
 
@@ -712,22 +713,22 @@ int TestNaClSocket(int rep_count) {
 
       if (!test_fn[test].new_socks) {
         printf("Locking to start test %d\n", test);
-        NaClMutexLock(&tstate.mu);
+        NaClXMutexLock(&tstate.mu);
         tstate.cur_test = test;
-        NaClCondVarSignal(&tstate.cv);
-        NaClMutexUnlock(&tstate.mu);
+        NaClXCondVarSignal(&tstate.cv);
+        NaClXMutexUnlock(&tstate.mu);
         printf("Signaled test %d start\n", test);
 
         errors += test_fn[test].receiver(&tstate, test_fn[test].mode);
 
         printf("Locking to wait for test %d end\n", test);
-        NaClMutexLock(&tstate.mu);
+        NaClXMutexLock(&tstate.mu);
         while (-1 != tstate.cur_test) {
           printf("Waiting for test %d to be finished\n", test);
           printf("tstate.cur_test %d\n", tstate.cur_test);
-          NaClCondVarWait(&tstate.cv, &tstate.mu);
+          NaClXCondVarWait(&tstate.cv, &tstate.mu);
         }
-        NaClMutexUnlock(&tstate.mu);
+        NaClXMutexUnlock(&tstate.mu);
       } else {
         printf("test %d requests independent socket/thread\n", test);
         std::vector<int> seq;
@@ -744,29 +745,29 @@ int TestNaClSocket(int rep_count) {
                               static_cast<void *>(&private_sock), 128*1024);
 
         printf("Locking to start test %d\n", test);
-        NaClMutexLock(&private_sock.mu);
+        NaClXMutexLock(&private_sock.mu);
         private_sock.cur_test = test;
-        NaClCondVarSignal(&private_sock.cv);
-        NaClMutexUnlock(&private_sock.mu);
+        NaClXCondVarSignal(&private_sock.cv);
+        NaClXMutexUnlock(&private_sock.mu);
         printf("Signaled test %d start\n", test);
 
         errors += test_fn[test].receiver(&private_sock, test_fn[test].mode);
 
         printf("Locking to wait for test %d end\n", test);
-        NaClMutexLock(&private_sock.mu);
+        NaClXMutexLock(&private_sock.mu);
         while (-1 != private_sock.cur_test) {
           printf("Waiting for test %d to be finished\n", test);
           printf("private_sock %d\n", private_sock.cur_test);
-          NaClCondVarWait(&private_sock.cv, &private_sock.mu);
+          NaClXCondVarWait(&private_sock.cv, &private_sock.mu);
         }
-        NaClMutexUnlock(&private_sock.mu);
+        NaClXMutexUnlock(&private_sock.mu);
 
         fflush(NULL);
-        (void) NaClMutexLock(&private_sock.mu);
+        NaClXMutexLock(&private_sock.mu);
         while (-1 == private_sock.errors) {
-          (void) NaClCondVarWait(&private_sock.cv, &private_sock.mu);
+          NaClXCondVarWait(&private_sock.cv, &private_sock.mu);
         }
-        (void) NaClMutexUnlock(&private_sock.mu);
+        NaClXMutexUnlock(&private_sock.mu);
         errors += private_sock.errors;
         if (private_sock.outer_rep != rep) {
           printf("Threads out of sync!?!\n");
@@ -779,11 +780,11 @@ int TestNaClSocket(int rep_count) {
 
   printf("MainThread: Waiting for receiver thread to exit.\n");
   fflush(NULL);
-  (void) NaClMutexLock(&tstate.mu);
+  NaClXMutexLock(&tstate.mu);
   while (-1 == tstate.errors) {
-    (void) NaClCondVarWait(&tstate.cv, &tstate.mu);
+    NaClXCondVarWait(&tstate.cv, &tstate.mu);
   }
-  (void) NaClMutexUnlock(&tstate.mu);
+  NaClXMutexUnlock(&tstate.mu);
   NaClThreadDtor(&thr);
   errors += tstate.errors;
 

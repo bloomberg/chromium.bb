@@ -31,6 +31,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_log_intern.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_timestamp.h"
 
@@ -171,7 +172,7 @@ struct Gio *NaClLogDefaultLogGio() {
 void NaClLogModuleInitExtended(int        initial_verbosity,
                                struct Gio *log_gio) {
 
-  NaClMutexCtor(&log_mu);
+  NaClXMutexCtor(&log_mu);
   NaClLogSetVerbosity(initial_verbosity);
   NaClLogSetGio(log_gio);
 }
@@ -190,7 +191,7 @@ void NaClLogTagNext_mu(void) {
 }
 
 void NaClLogLock(void) {
-  NaClMutexLock(&log_mu);
+  NaClXMutexLock(&log_mu);
   NaClLogTagNext_mu();
 }
 
@@ -206,7 +207,7 @@ void NaClLogUnlock(void) {
     (*gNaClLogAbortBehavior)();
 #endif
   }
-  NaClMutexUnlock(&log_mu);
+  NaClXMutexUnlock(&log_mu);
 }
 
 static INLINE struct Gio *NaClLogGetGio_mu() {

@@ -290,7 +290,7 @@ int32_t NaClSetBreak(struct NaClAppThread *natp,
 
 
 cleanup:
-  (void) NaClMutexUnlock(&nap->mu);
+  NaClXMutexUnlock(&nap->mu);
 cleanup_no_lock:
   NaClSysCommonThreadSyscallLeave(natp);
 
@@ -398,7 +398,7 @@ int32_t NaClCommonSysExit(struct NaClAppThread  *natp,
   NaClXMutexLock(&nap->mu);
   nap->exit_status = status;
   nap->running = 0;
-  NaClCondVarSignal(&nap->cv);
+  NaClXCondVarSignal(&nap->cv);
   NaClXMutexUnlock(&nap->mu);
 
   NaClSysCommonThreadSuicide(natp);
@@ -491,10 +491,10 @@ int32_t NaClCommonSysNameService(struct NaClAppThread *natp,
       goto done;
     }
     /* write */
-    NaClMutexLock(&natp->nap->mu);
+    NaClXMutexLock(&natp->nap->mu);
     NaClDescUnref(natp->nap->name_service_conn_cap);
     natp->nap->name_service_conn_cap = desc_obj_ptr;
-    NaClMutexUnlock(&natp->nap->mu);
+    NaClXMutexUnlock(&natp->nap->mu);
     retval = 0;
   }
 

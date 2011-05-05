@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -731,7 +731,7 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap) {
   NaClXMutexLock(&nap->mu);
   NaClLog(3, " waiting for exit status\n");
   while (nap->running) {
-    NaClCondVarWait(&nap->cv, &nap->mu);
+    NaClXCondVarWait(&nap->cv, &nap->mu);
     NaClLog(3, " wakeup, nap->running %d, nap->exit_status %d\n",
             nap->running, nap->exit_status);
   }

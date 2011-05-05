@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -94,7 +94,7 @@ void NaClIntrMutexIntr(struct NaClIntrMutex *mp) {
   if (NACL_INTR_LOCK_HELD == mp->lock_state) {
     /* potentially there are threads waiting for this thread */
     mp->lock_state = NACL_INTR_LOCK_INTERRUPTED;
-    NaClCondVarBroadcast(&mp->cv);
+    NaClXCondVarBroadcast(&mp->cv);
   } else {
     mp->lock_state = NACL_INTR_LOCK_INTERRUPTED;
   }

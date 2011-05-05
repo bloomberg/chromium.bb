@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -12,6 +12,7 @@
 #include <stdio.h>
 
 #include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 
 
@@ -94,7 +95,7 @@ uint16_t NaClLdtAllocateSelector(int32_t entry_number,
   struct user_desc ud;
   int retval;
 
-  NaClMutexLock(&nacl_ldt_mutex);
+  NaClXMutexLock(&nacl_ldt_mutex);
 
   if (-1 == entry_number) {
     /* -1 means caller did not specify -- allocate */
@@ -153,14 +154,14 @@ uint16_t NaClLdtAllocateSelector(int32_t entry_number,
   /*
    * Return an LDT selector with a requested privilege level of 3.
    */
-  NaClMutexUnlock(&nacl_ldt_mutex);
+  NaClXMutexUnlock(&nacl_ldt_mutex);
   return (ud.entry_number << 3) | 0x7;
 
   /*
    * All error returns go through this epilog.
    */
  alloc_error:
-  NaClMutexUnlock(&nacl_ldt_mutex);
+  NaClXMutexUnlock(&nacl_ldt_mutex);
   return 0;
 }
 
@@ -278,7 +279,7 @@ void NaClLdtDeleteSelector(uint16_t selector) {
   ud.seg_32bit = 0;
   ud.useable = 0;
   ud.contents = MODIFY_LDT_CONTENTS_DATA;
-  NaClMutexLock(&nacl_ldt_mutex);
+  NaClXMutexLock(&nacl_ldt_mutex);
   modify_ldt(1, &ud, sizeof ud);
-  NaClMutexUnlock(&nacl_ldt_mutex);
+  NaClXMutexUnlock(&nacl_ldt_mutex);
 }

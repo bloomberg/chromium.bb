@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -243,7 +243,7 @@ uint8_t const *NaClObjProxyFindNameByObj(struct NaClObjProxy *self,
   struct NaClContainerHashTblIter iter;
   uint8_t const                   *rv = NULL;
 
-  NaClMutexLock(&self->mu);
+  NaClXMutexLock(&self->mu);
   self->key->obj = obj;
   (*self->obj_to_name->vtbl->Find)(self->obj_to_name,
                                    self->key,
@@ -253,7 +253,7 @@ uint8_t const *NaClObjProxyFindNameByObj(struct NaClObjProxy *self,
              (*iter.base.vtbl->Star)((struct NaClContainerIter *) &iter));
     rv = found->name;
   }
-  NaClMutexUnlock(&self->mu);
+  NaClXMutexUnlock(&self->mu);
 
   return rv;
 }
@@ -266,7 +266,7 @@ int NaClObjProxyFindObjByName(struct NaClObjProxy *self,
   struct NaClContainerHashTblIter iter;
   int                             rv = 0;
 
-  NaClMutexLock(&self->mu);
+  NaClXMutexLock(&self->mu);
   memcpy(self->key->name, name, self->name_bytes);
   (*self->name_to_obj->vtbl->Find)(self->name_to_obj,
                                    self->key,
@@ -281,7 +281,7 @@ int NaClObjProxyFindObjByName(struct NaClObjProxy *self,
 #endif
     rv = 1;
   }
-  NaClMutexUnlock(&self->mu);
+  NaClXMutexUnlock(&self->mu);
   return rv;
 }
 
@@ -324,10 +324,10 @@ uint8_t const *NaClObjProxyInsert(struct NaClObjProxy *self, void *obj) {
            entry2->name[0], entry2->name[1], entry2->name[2]);
 #endif
 
-  NaClMutexLock(&self->mu);
+  NaClXMutexLock(&self->mu);
   (*self->obj_to_name->vtbl->Insert)(self->obj_to_name, entry);
   (*self->name_to_obj->vtbl->Insert)(self->name_to_obj, entry2);
-  NaClMutexUnlock(&self->mu);
+  NaClXMutexUnlock(&self->mu);
 
   rv = entry->name;
 cleanup:

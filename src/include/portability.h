@@ -1,32 +1,7 @@
 /*
- * Copyright 2008, Google Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -51,6 +26,8 @@
 #include "native_client/src/trusted/service_runtime/include/bits/wordsize.h"
 #endif
 
+#include "native_client/src/include/nacl_compiler_annotations.h"
+
 #if NACL_WINDOWS
 /* disable warnings for deprecated functions like getenv, etc. */
 #pragma warning(disable : 4996)
@@ -63,55 +40,6 @@
 # include <unistd.h>
 # include <sys/time.h>
 #endif  /*NACL_WINDOWS*/
-
-/* MSVC supports "inline" only in C++ */
-#if NACL_WINDOWS
-# define INLINE __forceinline
-#else
-# define INLINE __inline__
-#endif
-
-#if NACL_WINDOWS
-# define DLLEXPORT __declspec(dllexport)
-#elif defined(NACL_LINUX) || defined(NACL_OSX)
-# define DLLEXPORT __attribute__ ((visibility("default")))
-#elif defined(__native_client__)
-/* do nothing */
-#else
-# error "what platform?"
-#endif
-
-#if NACL_WINDOWS
-# define ATTRIBUTE_FORMAT_PRINTF(m, n)
-#else
-# define ATTRIBUTE_FORMAT_PRINTF(m, n) __attribute__((format(printf, m, n)))
-#endif
-
-#if NACL_WINDOWS
-# define UNREFERENCED_PARAMETER(P) (P)
-#else
-# define UNREFERENCED_PARAMETER(P) do { (void) P; } while (0)
-#endif
-
-#if NACL_WINDOWS
-# define NORETURN __declspec(noreturn)
-#else
-# define NORETURN __attribute__((noreturn))  /* assumes gcc */
-# define _cdecl /* empty */
-#endif
-
-#if NACL_WINDOWS
-# define THREAD __declspec(thread)
-#else
-# define THREAD __thread
-# define WINAPI
-#endif
-
-#if NACL_WINDOWS
-# define NACL_WUR
-#else
-# define NACL_WUR __attribute__((__warn_unused_result__))
-#endif
 
 /*
  * Per C99 7.8.14, define __STDC_CONSTANT_MACROS before including <stdint.h>

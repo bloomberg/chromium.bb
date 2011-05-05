@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <string.h>
@@ -10,6 +10,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector.h"
@@ -384,25 +386,25 @@ void NaClSetThreadGeneration(struct NaClAppThread *natp, int generation) {
    * since threads only set their own generation it is safe
    */
   if (natp->dynamic_delete_generation != generation)  {
-    NaClMutexLock(&natp->mu);
+    NaClXMutexLock(&natp->mu);
     CHECK(natp->dynamic_delete_generation <= generation);
     natp->dynamic_delete_generation = generation;
-    NaClMutexUnlock(&natp->mu);
+    NaClXMutexUnlock(&natp->mu);
   }
 }
 
 int NaClMinimumThreadGeneration(struct NaClApp *nap) {
   int i, rv = 0;
-  NaClMutexLock(&nap->threads_mu);
+  NaClXMutexLock(&nap->threads_mu);
   for (i = 0; i < nap->num_threads; ++i) {
     struct NaClAppThread *thread = NaClGetThreadMu(nap, i);
-    NaClMutexLock(&thread->mu);
+    NaClXMutexLock(&thread->mu);
     if (i == 0 || rv > thread->dynamic_delete_generation) {
       rv = thread->dynamic_delete_generation;
     }
-    NaClMutexUnlock(&thread->mu);
+    NaClXMutexUnlock(&thread->mu);
   }
-  NaClMutexUnlock(&nap->threads_mu);
+  NaClXMutexUnlock(&nap->threads_mu);
   return rv;
 }
 
@@ -677,7 +679,7 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
     return 0;
   }
 
-  NaClMutexLock(&nap->dynamic_load_mutex);
+  NaClXMutexLock(&nap->dynamic_load_mutex);
 
   if (NaClDynamicRegionCreate(nap, dest_addr, size) == 1) {
     /* target memory region is free */
@@ -714,7 +716,7 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
   NaclTextMapClearCacheIfNeeded(nap, dest, size);
 
  cleanup_unlock:
-  NaClMutexUnlock(&nap->dynamic_load_mutex);
+  NaClXMutexUnlock(&nap->dynamic_load_mutex);
 
   return retval;
 }
@@ -784,7 +786,7 @@ int32_t NaClTextSysDyncode_Modify(struct NaClAppThread *natp,
     return -NACL_ABI_EFAULT;
   }
 
-  NaClMutexLock(&nap->dynamic_load_mutex);
+  NaClXMutexLock(&nap->dynamic_load_mutex);
 
   region = NaClDynamicRegionFind(nap, dest_addr, size);
   if (NULL == region || region->start > dest_addr
@@ -864,7 +866,7 @@ int32_t NaClTextSysDyncode_Modify(struct NaClAppThread *natp,
   NaclTextMapClearCacheIfNeeded(nap, dest, size);
 
  cleanup_unlock:
-  NaClMutexUnlock(&nap->dynamic_load_mutex);
+  NaClXMutexUnlock(&nap->dynamic_load_mutex);
 
   if (code_copy != code_copy_buf) {
     free(code_copy);
@@ -897,15 +899,15 @@ int32_t NaClTextSysDyncode_Delete(struct NaClAppThread *natp,
     /* Nothing to delete.  Just update our generation. */
     int gen;
     /* fetch current generation */
-    NaClMutexLock(&nap->dynamic_load_mutex);
+    NaClXMutexLock(&nap->dynamic_load_mutex);
     gen = nap->dynamic_delete_generation;
-    NaClMutexUnlock(&nap->dynamic_load_mutex);
+    NaClXMutexUnlock(&nap->dynamic_load_mutex);
     /* set our generation */
     NaClSetThreadGeneration(natp, gen);
     return 0;
   }
 
-  NaClMutexLock(&nap->dynamic_load_mutex);
+  NaClXMutexLock(&nap->dynamic_load_mutex);
 
   /*
    * this check ensures the to-be-deleted region is identical to a
@@ -964,6 +966,6 @@ int32_t NaClTextSysDyncode_Delete(struct NaClAppThread *natp,
   }
 
  cleanup_unlock:
-  NaClMutexUnlock(&nap->dynamic_load_mutex);
+  NaClXMutexUnlock(&nap->dynamic_load_mutex);
   return retval;
 }

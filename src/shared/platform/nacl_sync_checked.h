@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -25,10 +25,12 @@ EXTERN_C_BEGIN
  * abort on any unexpected return value.
  */
 
+void NaClXMutexCtor(struct NaClMutex *mp);
 void NaClXMutexLock(struct NaClMutex *mp);
 NaClSyncStatus NaClXMutexTryLock(struct NaClMutex *mp);
 void NaClXMutexUnlock(struct NaClMutex *mp);
 
+void NaClXCondVarCtor(struct NaClCondVar *cvp);
 void NaClXCondVarSignal(struct NaClCondVar *cvp);
 void NaClXCondVarBroadcast(struct NaClCondVar *cvp);
 void NaClXCondVarWait(struct NaClCondVar *cvp,

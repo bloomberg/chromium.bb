@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -105,7 +105,7 @@ void *NaClSyncQueueDequeue(struct NaClSyncQueue *nsqp) {
   NaClXMutexLock(&nsqp->mu);
   while (NaClSyncQueueEmptyMu(nsqp) && !nsqp->quit) {
     NaClLog(3, "NaClSyncQueueDequeue: waiting\n");
-    NaClCondVarWait(&nsqp->cv, &nsqp->mu);
+    NaClXCondVarWait(&nsqp->cv, &nsqp->mu);
   }
 
   if (nsqp->quit) {

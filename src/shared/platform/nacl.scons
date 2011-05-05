@@ -24,6 +24,7 @@ platform_inputs = [
     'linux/nacl_timestamp.c',
     'linux/time_linux.cc',
     'nacl_sync.cc',
+    'nacl_sync_checked.c',
     'time.cc',
     ]
 

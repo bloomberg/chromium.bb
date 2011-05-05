@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -20,7 +20,7 @@ static struct NaClSecureRng      nacl_global_rng;
 static struct NaClSecureRng      *nacl_grngp = &nacl_global_rng;
 
 void NaClGlobalSecureRngInit(void) {
-  NaClMutexCtor(&nacl_global_rng_mu);
+  NaClXMutexCtor(&nacl_global_rng_mu);
   if (!NaClSecureRngCtor(nacl_grngp)) {
     NaClLog(LOG_FATAL,
             "Could not construct global random number generator.\n");
@@ -33,9 +33,9 @@ void NaClGlobalSecureRngFini(void) {
 }
 
 void NaClGlobalSecureRngSwitchRngForTesting(struct NaClSecureRng  *rng) {
-  NaClMutexLock(&nacl_global_rng_mu);
+  NaClXMutexLock(&nacl_global_rng_mu);
   nacl_grngp = rng;
-  NaClMutexUnlock(&nacl_global_rng_mu);
+  NaClXMutexUnlock(&nacl_global_rng_mu);
 }
 
 int32_t NaClGlobalSecureRngUniform(int32_t range_max) {

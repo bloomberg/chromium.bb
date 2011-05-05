@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -14,6 +14,7 @@
 #include <string.h>
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 /* for LDT_ENTRIES */
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
@@ -95,7 +96,7 @@ uint16_t NaClLdtAllocateSelector(int32_t entry_number,
 
   memset(&ldt, 0, sizeof(ldt));
 
-  NaClMutexLock(&nacl_ldt_mutex);
+  NaClXMutexLock(&nacl_ldt_mutex);
 
   switch (type) {
     case NACL_LDT_DESCRIPTOR_DATA:
@@ -155,7 +156,7 @@ uint16_t NaClLdtAllocateSelector(int32_t entry_number,
     goto alloc_error;
   }
 
-  NaClMutexUnlock(&nacl_ldt_mutex);
+  NaClXMutexUnlock(&nacl_ldt_mutex);
 
   return BuildSelector(sel_index);
 
@@ -163,7 +164,7 @@ uint16_t NaClLdtAllocateSelector(int32_t entry_number,
    * All error returns go through this epilog.
    */
  alloc_error:
-  NaClMutexUnlock(&nacl_ldt_mutex);
+  NaClXMutexUnlock(&nacl_ldt_mutex);
   return 0;
 }
 
@@ -277,9 +278,9 @@ void NaClLdtPrintSelector(uint16_t selector) {
  */
 void NaClLdtDeleteSelector(uint16_t selector) {
 
-  NaClMutexLock(&nacl_ldt_mutex);
+  NaClXMutexLock(&nacl_ldt_mutex);
   if (-1 == i386_set_ldt(selector >> 3, NULL, 1)) {
     perror("NaClLdtDeleteSelector: i386_set_ldt()");
   }
-  NaClMutexUnlock(&nacl_ldt_mutex);
+  NaClXMutexUnlock(&nacl_ldt_mutex);
 }

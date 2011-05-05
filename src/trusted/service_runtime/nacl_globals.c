@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -10,6 +10,8 @@
 
 #include "native_client/src/shared/platform/nacl_interruptible_mutex.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
@@ -29,7 +31,7 @@ struct NaClAppThread        *nacl_thread[NACL_THREAD_MAX] = {NULL};
 uintptr_t                   nacl_global_xlate_base;
 
 void NaClGlobalModuleInit(void) {
-  NaClMutexCtor(&nacl_thread_mu);
+  NaClXMutexCtor(&nacl_thread_mu);
   NaClInitGlobals();
 }
 

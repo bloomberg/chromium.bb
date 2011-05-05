@@ -90,7 +90,7 @@ struct AlarmerState {
 void AlarmerStateCtor(struct AlarmerState *sp,
                       uint64_t            sleep_usec,
                       uint64_t            cond_timeout_usec) {
-  NaClMutexCtor(&sp->mu);
+  NaClXMutexCtor(&sp->mu);
   sp->abort_on_wake = 1;
   sp->sleep_usec = sleep_usec;
   sp->cond_timeout_usec = cond_timeout_usec;
@@ -101,9 +101,9 @@ void AlarmerStateDtor(struct AlarmerState *sp) {
 }
 
 void AlarmerDisable(struct AlarmerState *sp) {
-  NaClMutexLock(&sp->mu);
+  NaClXMutexLock(&sp->mu);
   sp->abort_on_wake = 0;
-  NaClMutexUnlock(&sp->mu);
+  NaClXMutexUnlock(&sp->mu);
 }
 
 static void PrintFailureSuggestions() {
@@ -140,10 +140,10 @@ void WINAPI Alarmer(void *state) {
   if (gVerbosity) {
     printf("Alarmer %p: woke up\n", (void *) sp);
   }
-  NaClMutexLock(&sp->mu);
+  NaClXMutexLock(&sp->mu);
   should_abort = sp->abort_on_wake;
   cond_timeout_usec = sp->cond_timeout_usec;
-  NaClMutexUnlock(&sp->mu);
+  NaClXMutexUnlock(&sp->mu);
   if (should_abort) {
     printf("Alarmer %p: woke up after %"NACL_PRId64".%06"NACL_PRId64" seconds"
            " without condition\n",
@@ -255,8 +255,8 @@ struct NaClMutex        gMu;
 struct NaClCondVar      gCv;
 
 void TestInit() {
-  (void) NaClMutexCtor(&gMu);
-  (void) NaClCondVarCtor(&gCv);
+  NaClXMutexCtor(&gMu);
+  NaClXCondVarCtor(&gCv);
 }
 
 void TestFini() {
@@ -282,7 +282,7 @@ void TestRelWait(void *arg) {
   if (gVerbosity > 1) {
     printf("TestRelWait: waiting\n");
   }
-  NaClCondVarTimedWaitRelative(&gCv, &gMu, &t);
+  NaClXCondVarTimedWaitRelative(&gCv, &gMu, &t);
   if (gVerbosity > 1) {
     printf("TestRelWait: unlocking\n");
   }
@@ -310,7 +310,7 @@ void TestAbsWait(void *arg) {
   if (gVerbosity > 1) {
     printf("TestAbsWait: waiting\n");
   }
-  NaClCondVarTimedWaitAbsolute(&gCv, &gMu, &t);
+  NaClXCondVarTimedWaitAbsolute(&gCv, &gMu, &t);
   if (gVerbosity > 1) {
     printf("TestAbsWait: unlocking\n");
   }
