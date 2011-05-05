@@ -867,7 +867,7 @@ void ProfileSyncService::OnUserCancelledDialog() {
 void ProfileSyncService::ChangePreferredDataTypes(
     const syncable::ModelTypeSet& preferred_types) {
 
-  VLOG(0) << "ChangePreferredDataTypes invoked";
+  VLOG(1) << "ChangePreferredDataTypes invoked";
   // Filter out any datatypes which aren't registered, or for which
   // the preference can't be set.
   syncable::ModelTypeSet registered_types;
@@ -992,6 +992,8 @@ void ProfileSyncService::ConfigureDataTypeManager() {
       // We need a passphrase still. Prompt the user for a passphrase, and
       // DataTypeManager::Configure() will get called once the passphrase is
       // accepted.
+      VLOG(0) << "ProfileSyncService::ConfigureDataTypeManager bailing out "
+              << "because a passphrase required";
       OnPassphraseRequired(passphrase_required_reason_);
       return;
     } else {
@@ -1147,13 +1149,15 @@ void ProfileSyncService::Observe(NotificationType type,
               details).ptr();
 
       DataTypeManager::ConfigureResult result = result_with_location->result;
-      VLOG(0) << "PSS SYNC_CONFIGURE_DONE called with result: " << result;
+      VLOG(1) << "PSS SYNC_CONFIGURE_DONE called with result: " << result;
       if (result == DataTypeManager::ABORTED &&
           expect_sync_configuration_aborted_) {
+        VLOG(0) << "ProfileSyncService::Observe Sync Configure aborted";
         expect_sync_configuration_aborted_ = false;
         return;
       }
       if (result != DataTypeManager::OK) {
+        VLOG(0) << "ProfileSyncService::Observe: Unrecoverable error detected";
         std::string message = StringPrintf("Sync Configuration failed with %d",
                                             result);
         OnUnrecoverableError(*(result_with_location->location), message);

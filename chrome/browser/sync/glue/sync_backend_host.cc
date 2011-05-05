@@ -212,7 +212,7 @@ void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
 }
 
 void SyncBackendHost::StartSyncingWithServer() {
-  VLOG(0) << "SyncBackendHost::StartSyncingWithServer called.";
+  VLOG(1) << "SyncBackendHost::StartSyncingWithServer called.";
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoStartSyncing));
 }

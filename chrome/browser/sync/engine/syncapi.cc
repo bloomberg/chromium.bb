@@ -1693,15 +1693,22 @@ void SyncManager::RequestClearServerData() {
 }
 
 void SyncManager::RequestConfig(const syncable::ModelTypeBitSet& types) {
-  if (!data_->syncer_thread())
+  if (!data_->syncer_thread()) {
+    VLOG(0) << "SyncManager::RequestConfig: bailing out because syncer thread "
+            << "null";
     return;
+  }
   StartConfigurationMode(NULL);
   data_->syncer_thread()->ScheduleConfig(types);
 }
 
 void SyncManager::StartConfigurationMode(ModeChangeCallback* callback) {
-  if (!data_->syncer_thread())
+  if (!data_->syncer_thread()) {
+    VLOG(0) << "SyncManager::StartConfigurationMode: could not start "
+            << "configuration mode because because syncer thread is not "
+            << "created";
     return;
+  }
   data_->syncer_thread()->Start(
       browser_sync::SyncerThread::CONFIGURATION_MODE, callback);
 }
@@ -2515,11 +2522,11 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
         // If we've completed a sync cycle and the cryptographer isn't ready
         // yet, prompt the user for a passphrase.
         if (cryptographer->has_pending_keys()) {
-          VLOG(0) << "OnPassPhraseRequired Sent";
+          VLOG(1) << "OnPassPhraseRequired Sent";
           FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                             OnPassphraseRequired(sync_api::REASON_DECRYPTION));
         } else if (!cryptographer->is_ready()) {
-          VLOG(0) << "OnPassphraseRequired sent because cryptographer is not "
+          VLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
                   << "ready";
           FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                             OnPassphraseRequired(sync_api::REASON_ENCRYPTION));

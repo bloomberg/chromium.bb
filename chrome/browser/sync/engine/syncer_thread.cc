@@ -551,7 +551,7 @@ void SyncerThread::DoSyncSessionJob(const SyncSessionJob& job) {
 
   bool has_more_to_sync = true;
   while (ShouldRunJob(job) && has_more_to_sync) {
-    VLOG(1) << "SyncerThread(" << this << ")"
+    VLOG(0) << "SyncerThread(" << this << ")"
             << " SyncerThread: Calling SyncShare.";
     // Synchronously perform the sync session from this thread.
     syncer_->SyncShare(job.session.get(), begin, end);

@@ -109,7 +109,7 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
   last_requested_types_ = desired_types;
   // Only proceed if we're in a steady state or blocked.
   if (state_ != STOPPED && state_ != CONFIGURED && state_ != BLOCKED) {
-    VLOG(0) << "Received configure request while configuration in flight. "
+    VLOG(1) << "Received configure request while configuration in flight. "
             << "Postponing until current configuration complete.";
     needs_reconfigure_ = true;
     return;
@@ -203,7 +203,7 @@ void DataTypeManagerImpl::StartNextType() {
     // because we may need to stop datatypes.
     SetBlockedAndNotify();
     needs_reconfigure_ = false;
-    VLOG(0) << "Reconfiguring due to previous configure attempt occuring while"
+    VLOG(1) << "Reconfiguring due to previous configure attempt occuring while"
             << " busy.";
 
     // Unwind the stack before executing configure. The method configure and its
@@ -218,7 +218,7 @@ void DataTypeManagerImpl::StartNextType() {
   // things like encryption, which may still need to be sorted out before we
   // can announce we're "Done" configuration entirely.
   if (GetControllersNeedingStart(NULL)) {
-    VLOG(0) << "GetControllersNeedingStart returned true. DTM blocked";
+    VLOG(1) << "GetControllersNeedingStart returned true. DTM blocked";
     SetBlockedAndNotify();
     return;
   }
