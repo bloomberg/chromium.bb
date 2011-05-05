@@ -4568,8 +4568,7 @@
    ...
    fun:*base16MessageLoopProxy22CreateForCurrentThread*
    ...
-   fun:*AutomationProvider17InitializeChannel*
-   fun:*BrowserInit24CreateAutomationProvider*TestingAutomationProvider*
+   fun:*BrowserInit*
 }
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
