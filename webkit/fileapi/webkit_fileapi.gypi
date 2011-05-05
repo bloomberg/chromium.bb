@@ -21,8 +21,6 @@
         'file_system_context.h',
         'file_system_dir_url_request_job.cc',
         'file_system_dir_url_request_job.h',
-        'file_system_directory_database.cc',
-        'file_system_directory_database.h',
         'file_system_file_util.cc',
         'file_system_file_util.h',
         'file_system_file_util_proxy.cc',
