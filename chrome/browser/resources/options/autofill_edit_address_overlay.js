@@ -59,11 +59,11 @@ cr.define('options', function() {
       list.autoExpands = true;
 
       list = $('phone-list');
-      options.autofillOptions.AutofillPhoneValuesList.decorate(list);
+      options.autofillOptions.AutofillValuesList.decorate(list);
       list.autoExpands = true;
 
       list = $('fax-list');
-      options.autofillOptions.AutofillFaxValuesList.decorate(list);
+      options.autofillOptions.AutofillValuesList.decorate(list);
       list.autoExpands = true;
 
       list = $('email-list');
@@ -297,16 +297,6 @@ cr.define('options', function() {
 
   AutofillEditAddressOverlay.setTitle = function(title) {
     $('autofill-address-title').textContent = title;
-  };
-
-  AutofillEditAddressOverlay.setValidatedPhoneNumbers = function(numbers) {
-    AutofillEditAddressOverlay.getInstance().setMultiValueList_('phone-list',
-                                                                numbers);
-  };
-
-  AutofillEditAddressOverlay.setValidatedFaxNumbers = function(numbers) {
-    AutofillEditAddressOverlay.getInstance().setMultiValueList_('fax-list',
-                                                                numbers);
   };
 
   // Export

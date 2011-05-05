@@ -14,7 +14,6 @@
 #include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
-#include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/guid.h"
@@ -116,64 +115,6 @@ void SetValueList(const ListValue* list,
   profile->SetMultiInfo(type, values);
 }
 
-// Pulls the phone number |index|, |list_value|, and |country_code| from the
-// |args| input.
-void ExtractPhoneNumberInformation(const ListValue* args,
-                                   size_t* index,
-                                   ListValue** list_value,
-                                   std::string* country_code) {
-  double number = 0.0;
-  if (!args->GetDouble(0, &number)) {
-    NOTREACHED();
-    return;
-  }
-  *index = number;
-
-  if (!args->GetList(1, list_value)) {
-    NOTREACHED();
-    return;
-  }
-
-  if (!args->GetString(2, country_code)) {
-    NOTREACHED();
-    return;
-  }
-}
-
-// Searches the |list| for the value at |index|.  If this value is present
-// in any of the rest of the list, then the item (at |index|) is removed.
-// The comparison of phone number values is done on normalized versions of the
-// phone number values.
-void RemoveDuplicatePhoneNumberAtIndex(size_t index,
-                                       const std::string& country_code,
-                                       ListValue* list) {
-  string16 new_value;
-  list->GetString(index, &new_value);
-
-  bool is_duplicate = false;
-  for (size_t i = 0; i < list->GetSize() && !is_duplicate; ++i) {
-    if (i == index)
-      continue;
-
-    string16 existing_value;
-    list->GetString(i, &existing_value);
-    is_duplicate = autofill_i18n::PhoneNumbersMatch(new_value,
-                                                    existing_value,
-                                                    country_code);
-  }
-
-  if (is_duplicate)
-    list->Remove(index, NULL);
-}
-
-void ValidatePhoneArguments(const ListValue* args, ListValue** list) {
-  size_t index = 0;
-  std::string country_code;
-  ExtractPhoneNumberInformation(args, &index, list, &country_code);
-
-  RemoveDuplicatePhoneNumberAtIndex(index, country_code, *list);
-}
-
 }  // namespace
 
 AutofillOptionsHandler::AutofillOptionsHandler()
@@ -240,12 +181,6 @@ void AutofillOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "setCreditCard",
       NewCallback(this, &AutofillOptionsHandler::SetCreditCard));
-  web_ui_->RegisterMessageCallback(
-      "validatePhoneNumbers",
-      NewCallback(this, &AutofillOptionsHandler::ValidatePhoneNumbers));
-  web_ui_->RegisterMessageCallback(
-      "validateFaxNumbers",
-      NewCallback(this, &AutofillOptionsHandler::ValidateFaxNumbers));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -516,26 +451,4 @@ void AutofillOptionsHandler::SetCreditCard(const ListValue* args) {
   } else {
     personal_data_->UpdateCreditCard(credit_card);
   }
-}
-
-void AutofillOptionsHandler::ValidatePhoneNumbers(const ListValue* args) {
-  if (!personal_data_->IsDataLoaded())
-    return;
-
-  ListValue* list_value = NULL;
-  ValidatePhoneArguments(args, &list_value);
-
-  web_ui_->CallJavascriptFunction(
-    "AutofillEditAddressOverlay.setValidatedPhoneNumbers", *list_value);
-}
-
-void AutofillOptionsHandler::ValidateFaxNumbers(const ListValue* args) {
-  if (!personal_data_->IsDataLoaded())
-    return;
-
-  ListValue* list_value = NULL;
-  ValidatePhoneArguments(args, &list_value);
-
-  web_ui_->CallJavascriptFunction(
-      "AutofillEditAddressOverlay.setValidatedFaxNumbers", *list_value);
 }

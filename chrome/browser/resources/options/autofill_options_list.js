@@ -125,7 +125,7 @@ cr.define('options.autofillOptions', function() {
       if (this.input.value &&
           this.list.dataModel.indexOf(this.input.value) == -1) {
         // Update with new value.
-        this.list.validateAndSave(i, 1, this.input.value);
+        this.list.dataModel.splice(i, 1, this.input.value);
       } else {
         // Reject empty values and duplicates.
         this.list.dataModel.splice(i, 1);
@@ -174,7 +174,7 @@ cr.define('options.autofillOptions', function() {
 
       if (this.input.value &&
           this.list.dataModel.indexOf(this.input.value) == -1) {
-        this.list.validateAndSave(i, 0, this.input.value);
+        this.list.dataModel.splice(i, 0, this.input.value);
       } else {
         this.input.value = '';
         this.list.dataModel.updateIndex(i);
@@ -303,69 +303,6 @@ cr.define('options.autofillOptions', function() {
     deleteItemAtIndex: function(index) {
       this.dataModel.splice(index, 1);
     },
-
-    /**
-     * Called when a new list item should be validated; subclasses are
-     * responsible for implementing if validation is required.
-     * @param {number} index The index of the item that was inserted or changed.
-     * @param {number} remove The number items to remove.
-     * @param {string} value The value of the item to insert.
-     */
-    validateAndSave: function(index, remove, value) {
-      this.dataModel.splice(index, remove, value);
-    },
-  };
-
-  /**
-   * Create a new value list for phone number validation.
-   * @constructor
-   * @extends {options.AutofillValuesList}
-   */
-  var AutofillPhoneValuesList = cr.ui.define('list');
-
-  AutofillPhoneValuesList.prototype = {
-    __proto__: AutofillValuesList.prototype,
-
-    decorate: function() {
-      AutofillValuesList.prototype.decorate.call(this);
-    },
-
-    /** @inheritDoc */
-    validateAndSave: function(index, remove, value) {
-      var numbers = this.dataModel.slice(0, this.dataModel.length - 1);
-      numbers.splice(index, remove, value);
-      var info = new Array();
-      info[0] = index;
-      info[1] = numbers;
-      info[2] = $('country').value;
-      chrome.send('validatePhoneNumbers', info);
-    },
-  };
-
-  /**
-   * Create a new value list for fax number validation.
-   * @constructor
-   * @extends {options.AutofillValuesList}
-   */
-  var AutofillFaxValuesList = cr.ui.define('list');
-
-  AutofillFaxValuesList.prototype = {
-    __proto__: AutofillValuesList.prototype,
-
-    decorate: function() {
-      AutofillValuesList.prototype.decorate.call(this);
-    },
-
-    /** @inheritDoc */
-    validateAndSave: function(index, remove, value) {
-      var numbers = this.dataModel.slice(0, this.dataModel.length - 1);
-      numbers.splice(index, remove, value);
-      var info = new Array();
-      info[0] = index;
-      info[1] = numbers;
-      info[2] = $('country').value;
-      chrome.send('validateFaxNumbers', info);
-    },
   };
 
   return {
@@ -376,7 +313,5 @@ cr.define('options.autofillOptions', function() {
     AutofillAddressList: AutofillAddressList,
     AutofillCreditCardList: AutofillCreditCardList,
     AutofillValuesList: AutofillValuesList,
-    AutofillPhoneValuesList: AutofillPhoneValuesList,
-    AutofillFaxValuesList: AutofillFaxValuesList,
   };
 });

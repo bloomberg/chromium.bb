@@ -68,13 +68,6 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
   // credit card data.
   void SetCreditCard(const ListValue* args);
 
-  // Validates a list of phone/fax numbers.  The resulting validated list of
-  // numbers is then sent back to the WebUI.
-  // |args| - an array containing the index of the modified or added number, the
-  // array of numbers, and the country code string set on the profile.
-  void ValidatePhoneNumbers(const ListValue* args);
-  void ValidateFaxNumbers(const ListValue* args);
-
   // The personal data manager, used to load Autofill profiles and credit cards.
   // Unowned pointer, may not be NULL.
   PersonalDataManager* personal_data_;
