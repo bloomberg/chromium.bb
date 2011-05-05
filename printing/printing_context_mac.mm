@@ -109,22 +109,26 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
     return OnError();
   }
 
-  if (!SetPrinter(device_name))
-    return OnError();
+  if (!print_to_pdf) {
+    if (!SetPrinter(device_name))
+      return OnError();
 
-  if (!SetCopiesInPrintSettings(copies))
-    return OnError();
+    if (!SetCopiesInPrintSettings(copies))
+      return OnError();
 
-  if (!SetCollateInPrintSettings(collate))
-    return OnError();
+    if (!SetCollateInPrintSettings(collate))
+      return OnError();
+
+    if (!SetDuplexModeInPrintSettings(
+            static_cast<DuplexMode>(duplex_mode))) {
+      return OnError();
+    }
+
+    if (!SetOutputIsColor(color))
+      return OnError();
+  }
 
   if (!SetOrientationIsLandscape(landscape))
-    return OnError();
-
-  if (!SetDuplexModeInPrintSettings(static_cast<DuplexMode>(duplex_mode)))
-    return OnError();
-
-  if (!SetOutputIsColor(color))
     return OnError();
 
   [print_info_.get() updateFromPMPrintSettings];
