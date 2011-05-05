@@ -191,8 +191,10 @@ int RendererMain(const MainFunctionParams& parameters) {
     statistics.reset(new base::StatisticsRecorder());
   }
 
-  // Initialize statistical testing infrastructure.
-  base::FieldTrialList field_trial;
+  // Initialize statistical testing infrastructure.  We set client_id to the
+  // empty string to disallow the renderer process from creating its own
+  // one-time randomized trials; they should be created in the browser process.
+  base::FieldTrialList field_trial(EmptyString());
   // Ensure any field trials in browser are reflected into renderer.
   if (parsed_command_line.HasSwitch(switches::kForceFieldTestNameAndValue)) {
     std::string persistent = parsed_command_line.GetSwitchValueASCII(
