@@ -34,7 +34,7 @@ class DataTypeManagerMock : public DataTypeManager {
   DataTypeManagerMock();
   virtual ~DataTypeManagerMock();
 
-  MOCK_METHOD1(Configure, void(const TypeSet&));
+  MOCK_METHOD2(Configure, void(const TypeSet&, sync_api::ConfigureReason));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(controllers, const DataTypeController::TypeMap&());
   MOCK_METHOD0(state, State());

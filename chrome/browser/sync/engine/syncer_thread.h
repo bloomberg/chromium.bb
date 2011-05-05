@@ -15,8 +15,10 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/engine/nudge_source.h"
 #include "chrome/browser/sync/engine/polling_constants.h"
+#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
@@ -72,7 +74,8 @@ class SyncerThread : public sessions::SyncSession::Delegate,
       const base::TimeDelta& delay, NudgeSource source,
       const syncable::ModelTypePayloadMap& types_with_payloads,
       const tracked_objects::Location& nudge_location);
-  void ScheduleConfig(const syncable::ModelTypeBitSet& types);
+  void ScheduleConfig(const syncable::ModelTypeBitSet& types,
+      sync_api::ConfigureReason reason);
   void ScheduleClearUserData();
 
   // Change status of notifications in the SyncSessionContext.

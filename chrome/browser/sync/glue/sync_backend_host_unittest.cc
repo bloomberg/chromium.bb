@@ -107,7 +107,8 @@ TEST_F(SyncBackendHostTest, MakePendingConfigModeState) {
 
     scoped_ptr<SyncBackendHost::PendingConfigureDataTypesState>
         state(SyncBackendHost::MakePendingConfigModeState(
-            data_type_controllers, types, NULL, &routing_info));
+            data_type_controllers, types, NULL, &routing_info,
+            sync_api::CONFIGURE_REASON_RECONFIGURATION));
     EXPECT_TRUE(routing_info.empty());
     EXPECT_FALSE(state->ready_task.get());
     EXPECT_EQ(types, state->initial_types);
@@ -124,7 +125,8 @@ TEST_F(SyncBackendHostTest, MakePendingConfigModeState) {
 
     scoped_ptr<SyncBackendHost::PendingConfigureDataTypesState>
         state(SyncBackendHost::MakePendingConfigModeState(
-            data_type_controllers, types, NULL, &routing_info));
+              data_type_controllers, types, NULL,
+              &routing_info, sync_api::CONFIGURE_REASON_RECONFIGURATION));
     EXPECT_TRUE(routing_info.empty());
     EXPECT_FALSE(state->ready_task.get());
     EXPECT_EQ(types, state->initial_types);
@@ -142,7 +144,8 @@ TEST_F(SyncBackendHostTest, MakePendingConfigModeState) {
 
     scoped_ptr<SyncBackendHost::PendingConfigureDataTypesState>
         state(SyncBackendHost::MakePendingConfigModeState(
-            data_type_controllers, types, NULL, &routing_info));
+            data_type_controllers, types, NULL, &routing_info,
+            sync_api::CONFIGURE_REASON_RECONFIGURATION));
 
     ModelSafeRoutingInfo expected_routing_info;
     expected_routing_info[syncable::BOOKMARKS] = GROUP_PASSIVE;
@@ -168,7 +171,8 @@ TEST_F(SyncBackendHostTest, MakePendingConfigModeState) {
 
     scoped_ptr<SyncBackendHost::PendingConfigureDataTypesState>
         state(SyncBackendHost::MakePendingConfigModeState(
-            data_type_controllers, types, NULL, &routing_info));
+            data_type_controllers, types, NULL, &routing_info,
+            sync_api::CONFIGURE_REASON_RECONFIGURATION));
 
     EXPECT_EQ(expected_routing_info, routing_info);
     EXPECT_FALSE(state->ready_task.get());
@@ -187,7 +191,8 @@ TEST_F(SyncBackendHostTest, MakePendingConfigModeState) {
 
     scoped_ptr<SyncBackendHost::PendingConfigureDataTypesState>
         state(SyncBackendHost::MakePendingConfigModeState(
-            data_type_controllers, types, NULL, &routing_info));
+            data_type_controllers, types, NULL, &routing_info,
+            sync_api::CONFIGURE_REASON_RECONFIGURATION));
 
     ModelSafeRoutingInfo expected_routing_info;
     EXPECT_EQ(expected_routing_info, routing_info);

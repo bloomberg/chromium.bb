@@ -64,6 +64,7 @@ DataTypeManagerImpl::DataTypeManagerImpl(SyncBackendHost* backend,
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
       needs_reconfigure_(false),
+      last_configure_reason_(sync_api::CONFIGURE_REASON_UNKNOWN),
       method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(backend_);
   // Ensure all data type controllers are stopped.
@@ -98,7 +99,8 @@ bool DataTypeManagerImpl::GetControllersNeedingStart(
   return found_any;
 }
 
-void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
+void DataTypeManagerImpl::Configure(const TypeSet& desired_types,
+                                    sync_api::ConfigureReason reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (state_ == STOPPING) {
     // You can not set a configuration while stopping.
@@ -112,6 +114,7 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
     VLOG(1) << "Received configure request while configuration in flight. "
             << "Postponing until current configuration complete.";
     needs_reconfigure_ = true;
+    last_configure_reason_ = reason;
     return;
   }
 
@@ -146,10 +149,10 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
   // types to start/stop, because it could be that some types haven't
   // started due to crypto errors but the backend host needs to know that we're
   // disabling them anyway).
-  Restart();
+  Restart(reason);
 }
 
-void DataTypeManagerImpl::Restart() {
+void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason) {
   VLOG(1) << "Restarting...";
 
   DCHECK(state_ == STOPPED || state_ == CONFIGURED || state_ == BLOCKED);
@@ -172,6 +175,7 @@ void DataTypeManagerImpl::Restart() {
   backend_->ConfigureDataTypes(
       controllers_,
       last_requested_types_,
+      reason,
       method_factory_.NewRunnableMethod(&DataTypeManagerImpl::DownloadReady));
 }
 
@@ -202,7 +206,6 @@ void DataTypeManagerImpl::StartNextType() {
     // Note: we do this whether or not GetControllersNeedingStart is true,
     // because we may need to stop datatypes.
     SetBlockedAndNotify();
-    needs_reconfigure_ = false;
     VLOG(1) << "Reconfiguring due to previous configure attempt occuring while"
             << " busy.";
 
@@ -210,7 +213,10 @@ void DataTypeManagerImpl::StartNextType() {
     // callees are not re-entrant.
     MessageLoop::current()->PostTask(FROM_HERE,
         method_factory_.NewRunnableMethod(&DataTypeManagerImpl::Configure,
-            last_requested_types_));
+            last_requested_types_, last_configure_reason_));
+
+    needs_reconfigure_ = false;
+    last_configure_reason_ = sync_api::CONFIGURE_REASON_UNKNOWN;
     return;
   }
 

@@ -1692,14 +1692,15 @@ void SyncManager::RequestClearServerData() {
     data_->syncer_thread()->ScheduleClearUserData();
 }
 
-void SyncManager::RequestConfig(const syncable::ModelTypeBitSet& types) {
+void SyncManager::RequestConfig(const syncable::ModelTypeBitSet& types,
+    ConfigureReason reason) {
   if (!data_->syncer_thread()) {
     VLOG(0) << "SyncManager::RequestConfig: bailing out because syncer thread "
             << "null";
     return;
   }
   StartConfigurationMode(NULL);
-  data_->syncer_thread()->ScheduleConfig(types);
+  data_->syncer_thread()->ScheduleConfig(types, reason);
 }
 
 void SyncManager::StartConfigurationMode(ModeChangeCallback* callback) {

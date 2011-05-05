@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
@@ -84,7 +85,8 @@ class DataTypeManager {
   // Note that you may call Configure() while configuration is in
   // progress.  Configuration will be complete only when the
   // desired_types supplied in the last call to Configure is achieved.
-  virtual void Configure(const TypeSet& desired_types) = 0;
+  virtual void Configure(const TypeSet& desired_types,
+                         sync_api::ConfigureReason reason) = 0;
 
   // Synchronously stops all registered data types.  If called after
   // Configure() is called but before it finishes, it will abort the

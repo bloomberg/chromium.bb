@@ -48,6 +48,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/tracked.h"
 #include "build/build_config.h"
+#include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -935,8 +936,9 @@ class SyncManager {
 
   // For the new SyncerThread impl, this switches the mode of operation to
   // CONFIGURATION_MODE and schedules a config task to fetch updates for
-  // |types|. It is an error to call this with legacy SyncerThread in use.
-  void RequestConfig(const syncable::ModelTypeBitSet& types);
+  // |types|.
+  void RequestConfig(const syncable::ModelTypeBitSet& types,
+     sync_api::ConfigureReason reason);
 
   // Request a nudge of the syncer, which will cause the syncer thread
   // to run at the next available opportunity.

@@ -45,6 +45,7 @@ class SyncBackendHostForProfileSyncTest
   virtual void ConfigureDataTypes(
       const DataTypeController::TypeMap& data_type_controllers,
       const syncable::ModelTypeSet& types,
+      sync_api::ConfigureReason reason,
       CancelableTask* ready_task);
 
   // Called when a nudge comes in.

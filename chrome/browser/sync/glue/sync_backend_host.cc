@@ -347,7 +347,8 @@ void SyncBackendHost::ConfigureAutofillMigration() {
 }
 
 SyncBackendHost::PendingConfigureDataTypesState::
-PendingConfigureDataTypesState() : deleted_type(false) {}
+PendingConfigureDataTypesState() : deleted_type(false),
+    reason(sync_api::CONFIGURE_REASON_UNKNOWN) {}
 
 SyncBackendHost::PendingConfigureDataTypesState::
 ~PendingConfigureDataTypesState() {}
@@ -358,7 +359,8 @@ SyncBackendHost::PendingConfigureDataTypesState*
         const DataTypeController::TypeMap& data_type_controllers,
         const syncable::ModelTypeSet& types,
         CancelableTask* ready_task,
-        ModelSafeRoutingInfo* routing_info) {
+        ModelSafeRoutingInfo* routing_info,
+        sync_api::ConfigureReason reason) {
   PendingConfigureDataTypesState* state = new PendingConfigureDataTypesState();
   for (DataTypeController::TypeMap::const_iterator it =
            data_type_controllers.begin();
@@ -380,12 +382,14 @@ SyncBackendHost::PendingConfigureDataTypesState*
 
   state->ready_task.reset(ready_task);
   state->initial_types = types;
+  state->reason = reason;
   return state;
 }
 
 void SyncBackendHost::ConfigureDataTypes(
     const DataTypeController::TypeMap& data_type_controllers,
     const syncable::ModelTypeSet& types,
+    sync_api::ConfigureReason reason,
     CancelableTask* ready_task) {
   // Only one configure is allowed at a time.
   DCHECK(!pending_config_mode_state_.get());
@@ -400,7 +404,7 @@ void SyncBackendHost::ConfigureDataTypes(
     base::AutoLock lock(registrar_lock_);
     pending_config_mode_state_.reset(
         MakePendingConfigModeState(data_type_controllers, types, ready_task,
-                                   &registrar_.routing_info));
+                                   &registrar_.routing_info, reason));
   }
 
   StartConfiguration(NewCallback(core_.get(),
@@ -463,7 +467,8 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
     core_thread_.message_loop()->PostTask(FROM_HERE,
          NewRunnableMethod(core_.get(),
                            &SyncBackendHost::Core::DoRequestConfig,
-                           types_copy));
+                           types_copy,
+                           pending_download_state_->reason));
   }
 
   pending_config_mode_state_.reset();
@@ -782,8 +787,9 @@ void SyncBackendHost::Core::DoEncryptDataTypes(
 }
 
 void SyncBackendHost::Core::DoRequestConfig(
-    const syncable::ModelTypeBitSet& added_types) {
-  syncapi_->RequestConfig(added_types);
+    const syncable::ModelTypeBitSet& added_types,
+    sync_api::ConfigureReason reason) {
+  syncapi_->RequestConfig(added_types, reason);
 }
 
 void SyncBackendHost::Core::DoStartConfiguration(Callback0::Type* callback) {

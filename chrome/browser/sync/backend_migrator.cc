@@ -8,6 +8,7 @@
 
 #include "base/string_number_conversions.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "content/browser/browser_thread.h"
@@ -68,7 +69,7 @@ void BackendMigrator::MigrateTypes(const syncable::ModelTypeSet& types) {
                       to_migrate_.begin(), to_migrate_.end(),
                       std::inserter(difference, difference.end()));
   VLOG(1) << "BackendMigrator disabling types; calling Configure.";
-  manager_->Configure(difference);
+  manager_->Configure(difference, sync_api::CONFIGURE_REASON_MIGRATION);
 }
 
 void BackendMigrator::OnStateChanged() {
@@ -100,7 +101,7 @@ void BackendMigrator::OnStateChanged() {
   VLOG(1) << "BackendMigrator re-enabling types.";
   // Don't use |to_migrate_| for the re-enabling because the user may have
   // chosen to disable types during the migration.
-  manager_->Configure(full_set);
+  manager_->Configure(full_set, sync_api::CONFIGURE_REASON_MIGRATION);
 }
 
 void BackendMigrator::Observe(NotificationType type,

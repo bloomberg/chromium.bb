@@ -5,6 +5,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/sync/engine/mock_model_safe_workers.h"
+#include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/sessions/test_util.h"
@@ -244,13 +245,14 @@ TEST_F(SyncerThreadTest, Config) {
 
   syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
 
-  syncer_thread()->ScheduleConfig(model_types);
+  syncer_thread()->ScheduleConfig(model_types,
+      sync_api::CONFIGURE_REASON_RECONFIGURATION);
   done.TimedWait(timeout());
 
   EXPECT_EQ(1U, records.snapshots.size());
   EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types,
       records.snapshots[0]->source.types));
-  EXPECT_EQ(GetUpdatesCallerInfo::FIRST_UPDATE,
+  EXPECT_EQ(GetUpdatesCallerInfo::RECONFIGURATION,
             records.snapshots[0]->source.updates_source);
 }
 
@@ -273,7 +275,8 @@ TEST_F(SyncerThreadTest, ConfigWithBackingOff) {
 
   syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
 
-  syncer_thread()->ScheduleConfig(model_types);
+  syncer_thread()->ScheduleConfig(model_types,
+      sync_api::CONFIGURE_REASON_RECONFIGURATION);
   done.TimedWait(timeout());
 
   EXPECT_EQ(2U, records.snapshots.size());
@@ -307,17 +310,19 @@ TEST_F(SyncerThreadTest, MultipleConfigWithBackingOff) {
 
   syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
 
-  syncer_thread()->ScheduleConfig(model_types1);
+  syncer_thread()->ScheduleConfig(model_types1,
+      sync_api::CONFIGURE_REASON_RECONFIGURATION);
 
   // done1 indicates the first config failed.
   done1.TimedWait(timeout());
-  syncer_thread()->ScheduleConfig(model_types2);
+  syncer_thread()->ScheduleConfig(model_types2,
+      sync_api::CONFIGURE_REASON_RECONFIGURATION);
   done.TimedWait(timeout());
 
   EXPECT_EQ(3U, records.snapshots.size());
   EXPECT_TRUE(CompareModelTypeBitSetToModelTypePayloadMap(model_types2,
       records.snapshots[2]->source.types));
-  EXPECT_EQ(GetUpdatesCallerInfo::FIRST_UPDATE,
+  EXPECT_EQ(GetUpdatesCallerInfo::RECONFIGURATION,
             records.snapshots[2]->source.updates_source);
 }
 
@@ -347,7 +352,8 @@ TEST_F(SyncerThreadTest, NudgeWithConfigWithBackingOff) {
 
   syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
 
-  syncer_thread()->ScheduleConfig(model_types);
+  syncer_thread()->ScheduleConfig(model_types,
+      sync_api::CONFIGURE_REASON_RECONFIGURATION);
   done1.TimedWait(timeout());
   syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, model_types,
                                  FROM_HERE);
@@ -584,7 +590,8 @@ TEST_F(SyncerThreadTest, ThrottlingDoesThrottle) {
   FlushLastTask(&done);
 
   syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
-  syncer_thread()->ScheduleConfig(types);
+  syncer_thread()->ScheduleConfig(types,
+      sync_api::CONFIGURE_REASON_RECONFIGURATION);
   FlushLastTask(&done);
 }
 
@@ -633,7 +640,8 @@ TEST_F(SyncerThreadTest, ConfigurationMode) {
   syncable::ModelTypeBitSet config_types;
   config_types[syncable::BOOKMARKS] = true;
 
-  syncer_thread()->ScheduleConfig(config_types);
+  syncer_thread()->ScheduleConfig(config_types,
+      sync_api::CONFIGURE_REASON_RECONFIGURATION);
   FlushLastTask(&done);
   syncer_thread()->Stop();
 
@@ -731,7 +739,8 @@ TEST_F(SyncerThreadTest, BackoffDropsJobs) {
   EXPECT_CALL(*delay(), GetDelay(_)).Times(0);
 
   syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
-  syncer_thread()->ScheduleConfig(types);
+  syncer_thread()->ScheduleConfig(types,
+      sync_api::CONFIGURE_REASON_RECONFIGURATION);
   FlushLastTask(&done);
 
   syncer_thread()->Start(SyncerThread::NORMAL_MODE, NULL);
@@ -853,7 +862,8 @@ TEST_F(SyncerThreadTest, SyncerSteps) {
   // Configuration.
   EXPECT_CALL(*syncer(), SyncShare(_, DOWNLOAD_UPDATES, APPLY_UPDATES));
   syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE, NULL);
-  syncer_thread()->ScheduleConfig(ModelTypeBitSet());
+  syncer_thread()->ScheduleConfig(ModelTypeBitSet(),
+      sync_api::CONFIGURE_REASON_RECONFIGURATION);
   FlushLastTask(&done);
   syncer_thread()->Stop();
   Mock::VerifyAndClearExpectations(syncer());

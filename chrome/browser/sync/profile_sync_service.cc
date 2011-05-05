@@ -26,6 +26,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/backend_migrator.h"
+#include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
@@ -639,7 +640,8 @@ void ProfileSyncService::OnPassphraseAccepted() {
   passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
 
   if (data_type_manager_.get())
-    data_type_manager_->Configure(types);
+    data_type_manager_->Configure(types,
+                                  sync_api::CONFIGURE_REASON_RECONFIGURATION);
 
   NotifyObservers();
 
@@ -1004,7 +1006,8 @@ void ProfileSyncService::ConfigureDataTypeManager() {
       passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
     }
   }
-  data_type_manager_->Configure(types);
+  data_type_manager_->Configure(
+      types, sync_api::CONFIGURE_REASON_RECONFIGURATION);
 }
 
 sync_api::UserShare* ProfileSyncService::GetUserShare() const {

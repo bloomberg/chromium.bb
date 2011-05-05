@@ -19,6 +19,7 @@
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/js_backend.h"
 #include "chrome/browser/sync/js_sync_manager_observer.h"
@@ -165,6 +166,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   virtual void ConfigureDataTypes(
       const DataTypeController::TypeMap& data_type_controllers,
       const syncable::ModelTypeSet& types,
+      sync_api::ConfigureReason reason,
       CancelableTask* ready_task);
 
   // Makes an asynchronous call to syncer to switch to config mode. When done
@@ -379,7 +381,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void DoShutdown(bool stopping_sync);
 
     // Posts a config request on the core thread.
-    virtual void DoRequestConfig(const syncable::ModelTypeBitSet& added_types);
+    virtual void DoRequestConfig(const syncable::ModelTypeBitSet& added_types,
+        sync_api::ConfigureReason reason);
 
     // Start the configuration mode.
     virtual void DoStartConfiguration(Callback0::Type* callback);
@@ -570,6 +573,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // Additional details about which types were added / removed.
     bool deleted_type;
     syncable::ModelTypeBitSet added_types;
+    sync_api::ConfigureReason reason;
   };
 
   UIModelWorker* ui_worker();
@@ -582,7 +586,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       const DataTypeController::TypeMap& data_type_controllers,
       const syncable::ModelTypeSet& types,
       CancelableTask* ready_task,
-      ModelSafeRoutingInfo* routing_info);
+      ModelSafeRoutingInfo* routing_info,
+      sync_api::ConfigureReason reason);
 
   // A thread we dedicate for use by our Core to perform initialization,
   // authentication, handle messages from the syncapi, and periodically tell

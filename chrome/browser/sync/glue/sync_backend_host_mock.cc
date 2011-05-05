@@ -7,13 +7,14 @@
 namespace browser_sync {
 
 ACTION(InvokeTask) {
-  arg2->Run();
-  delete arg2;
+  arg3->Run();
+  delete arg3;
 }
 
 SyncBackendHostMock::SyncBackendHostMock() {
   // By default, invoke the ready callback.
-  ON_CALL(*this, ConfigureDataTypes(testing::_, testing::_, testing::_)).
+  ON_CALL(*this, ConfigureDataTypes(testing::_, testing::_, testing::_,
+          testing::_)).
       WillByDefault(InvokeTask());
 }
 

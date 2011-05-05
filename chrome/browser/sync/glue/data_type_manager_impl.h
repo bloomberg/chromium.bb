@@ -26,7 +26,8 @@ class DataTypeManagerImpl : public DataTypeManager {
   virtual ~DataTypeManagerImpl();
 
   // DataTypeManager interface.
-  virtual void Configure(const TypeSet& desired_types);
+  virtual void Configure(const TypeSet& desired_types,
+                         sync_api::ConfigureReason reason);
   virtual void Stop();
   virtual const DataTypeController::TypeMap& controllers();
   virtual State state();
@@ -51,7 +52,7 @@ class DataTypeManagerImpl : public DataTypeManager {
   bool GetControllersNeedingStart(
       std::vector<DataTypeController*>* needs_start);
 
-  void Restart();
+  void Restart(sync_api::ConfigureReason reason);
   void DownloadReady();
   void NotifyStart();
   void NotifyDone(ConfigureResult result,
@@ -71,6 +72,10 @@ class DataTypeManagerImpl : public DataTypeManager {
   // Whether an attempt to reconfigure was made while we were busy configuring.
   // The |last_requested_types_| will reflect the newest set of requested types.
   bool needs_reconfigure_;
+
+  // The reason for the last reconfigure attempt. Not this will be set to a
+  // valid value only if needs_reconfigure_ is set.
+  sync_api::ConfigureReason last_configure_reason_;
 
   ScopedRunnableMethodFactory<DataTypeManagerImpl> method_factory_;
 

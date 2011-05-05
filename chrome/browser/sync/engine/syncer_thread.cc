@@ -62,6 +62,20 @@ GetUpdatesCallerInfo::GetUpdatesSource GetUpdatesFromNudgeSource(
   }
 }
 
+GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
+    sync_api::ConfigureReason reason) {
+  switch (reason) {
+    case sync_api::CONFIGURE_REASON_RECONFIGURATION:
+      return GetUpdatesCallerInfo::RECONFIGURATION;
+    case sync_api::CONFIGURE_REASON_MIGRATION:
+      return GetUpdatesCallerInfo::MIGRATION;
+    default:
+      NOTREACHED();
+  }
+
+  return GetUpdatesCallerInfo::UNKNOWN;
+}
+
 SyncerThread::WaitInterval::WaitInterval(Mode mode, TimeDelta length)
     : mode(mode), had_nudge(false), length(length) { }
 
@@ -445,7 +459,8 @@ void GetModelSafeParamsForTypes(const ModelTypeBitSet& types,
   }
 }
 
-void SyncerThread::ScheduleConfig(const ModelTypeBitSet& types) {
+void SyncerThread::ScheduleConfig(const ModelTypeBitSet& types,
+                                  sync_api::ConfigureReason reason) {
   if (!thread_.IsRunning()) {
     VLOG(0) << "ScheduleConfig failed because thread is not running.";
     NOTREACHED();
@@ -460,7 +475,7 @@ void SyncerThread::ScheduleConfig(const ModelTypeBitSet& types) {
 
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &SyncerThread::ScheduleConfigImpl, routes, workers,
-      GetUpdatesCallerInfo::FIRST_UPDATE));
+      GetSourceFromReason(reason)));
 }
 
 void SyncerThread::ScheduleConfigImpl(const ModelSafeRoutingInfo& routing_info,
