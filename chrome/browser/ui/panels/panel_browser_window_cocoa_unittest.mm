@@ -57,3 +57,64 @@ TEST_F(PanelBrowserWindowCocoaTest, CreateClose) {
   EXPECT_FALSE(native_window->controller_);
 }
 
+TEST_F(PanelBrowserWindowCocoaTest, AssignedBounds) {
+  PanelManager* manager = PanelManager::GetInstance();
+  scoped_ptr<Panel> panel1(manager->CreatePanel(browser_helper_.browser()));
+  scoped_ptr<Panel> panel2(manager->CreatePanel(browser_helper_.browser()));
+  scoped_ptr<Panel> panel3(manager->CreatePanel(browser_helper_.browser()));
+  panel1->Show();
+  panel2->Show();
+  panel3->Show();
+
+  gfx::Rect bounds1 = panel1->GetBounds();
+  gfx::Rect bounds2 = panel2->GetBounds();
+  gfx::Rect bounds3 = panel3->GetBounds();
+
+  // This checks panelManager calculating and assigning bounds right.
+  // Panels should stack on the bottom right to left.
+  EXPECT_LT(bounds3.x() + bounds3.width(), bounds2.x());
+  EXPECT_LT(bounds2.x() + bounds2.width(), bounds1.x());
+  EXPECT_EQ(bounds1.y(), bounds2.y());
+  EXPECT_EQ(bounds2.y(), bounds3.y());
+
+  panel2->Close();
+  bounds3 = panel3->GetBounds();
+  // After panel2 is closed, panel3 should take its place.
+  EXPECT_EQ(bounds2, bounds3);
+}
+
+// Same test as AssignedBounds, but checks actual bounds on native OS windows.
+TEST_F(PanelBrowserWindowCocoaTest, NativeBounds) {
+  PanelManager* manager = PanelManager::GetInstance();
+  scoped_ptr<Panel> panel1(manager->CreatePanel(browser_helper_.browser()));
+  scoped_ptr<Panel> panel2(manager->CreatePanel(browser_helper_.browser()));
+  scoped_ptr<Panel> panel3(manager->CreatePanel(browser_helper_.browser()));
+  panel1->Show();
+  panel2->Show();
+  panel3->Show();
+
+  PanelBrowserWindowCocoa* native_window1 =
+      static_cast<PanelBrowserWindowCocoa*>(panel1->browser_window());
+  PanelBrowserWindowCocoa* native_window2 =
+      static_cast<PanelBrowserWindowCocoa*>(panel2->browser_window());
+  PanelBrowserWindowCocoa* native_window3 =
+      static_cast<PanelBrowserWindowCocoa*>(panel3->browser_window());
+
+  NSRect bounds1 = [[native_window1->controller_ window] frame];
+  NSRect bounds2 = [[native_window2->controller_ window] frame];
+  NSRect bounds3 = [[native_window3->controller_ window] frame];
+
+  EXPECT_LT(bounds3.origin.x + bounds3.size.width, bounds2.origin.x);
+  EXPECT_LT(bounds2.origin.x + bounds2.size.width, bounds1.origin.x);
+  EXPECT_EQ(bounds1.origin.y, bounds2.origin.y);
+  EXPECT_EQ(bounds2.origin.y, bounds3.origin.y);
+
+  panel2->Close();
+  bounds3 = [[native_window3->controller_ window] frame];
+  // After panel2 is closed, panel3 should take its place.
+  EXPECT_EQ(bounds2.origin.x, bounds3.origin.x);
+  EXPECT_EQ(bounds2.origin.y, bounds3.origin.y);
+  EXPECT_EQ(bounds2.size.width, bounds3.size.width);
+  EXPECT_EQ(bounds2.size.height, bounds3.size.height);
+}
+

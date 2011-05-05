@@ -111,8 +111,10 @@ class PanelBrowserWindowCocoa : public BrowserWindow {
  private:
   friend class PanelBrowserWindowCocoaTest;
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, CreateClose);
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, NativeBounds);
 
   bool isClosed();
+  NSRect ConvertCoordinatesToCocoa(const gfx::Rect& bounds);
 
   Panel* panel_;  // weak, owns us.
   scoped_nsobject<PanelWindowControllerCocoa> controller_;

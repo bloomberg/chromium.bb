@@ -38,10 +38,7 @@ void PanelBrowserWindowCocoa::Show() {
   if (isClosed())
     return;
 
-  gfx::Rect bounds = panel_->GetBounds();
-  // TODO(dimich): Fix up coordinates.
-  NSRect finalFrame = NSMakeRect(bounds.x(), bounds.y(),
-                                 bounds.width(), bounds.height());
+  NSRect finalFrame = ConvertCoordinatesToCocoa(panel_->GetBounds());
   NSRect startFrame = NSMakeRect(NSMinX(finalFrame), NSMinY(finalFrame),
                                  NSWidth(finalFrame), 0);
   // Show the window, using OS-specific animation.
@@ -55,10 +52,14 @@ void PanelBrowserWindowCocoa::ShowInactive() {
 }
 
 void PanelBrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
-  NOTIMPLEMENTED();
+  NSRect frame = ConvertCoordinatesToCocoa(bounds);
+  [[controller_ window] setFrame:frame display:YES animate:YES];
 }
 
 void PanelBrowserWindowCocoa::Close() {
+  NSRect frame = [[controller_ window] frame];
+  frame.size.height = 0;
+  [[controller_ window] setFrame:frame display:YES animate:YES];
   [controller_ close];
   // Close is destructive.
   controller_.reset();
@@ -364,3 +365,14 @@ WindowOpenDisposition PanelBrowserWindowCocoa::GetDispositionForPopupBounds(
 
 void PanelBrowserWindowCocoa::DestroyBrowser() {
 }
+
+NSRect PanelBrowserWindowCocoa::ConvertCoordinatesToCocoa(
+    const gfx::Rect& bounds) {
+  // Flip coordinates based on the primary screen.
+  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+
+  return NSMakeRect(
+      bounds.x(), NSHeight([screen frame]) - bounds.height() - bounds.y(),
+      bounds.width(), bounds.height());
+}
+
