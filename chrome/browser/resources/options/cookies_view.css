@@ -126,7 +126,7 @@ list.cookie-list > .deletable-item[selected] .cookie-data {
   font-size: 85%;
   height: auto;
   margin: 2px 4px 2px 0;
-  max-width: 80px;
+  max-width: 100px;
   min-width: 40px;
   overflow: hidden;
   padding: 0 3px;

@@ -7644,8 +7644,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_COOKIES" desc="Label for folder under which a list of cookies appear">
         Cookies
       </message>
-      <message name="IDS_COOKIES_APPLICATION_CACHES" desc="Label for folder under which a list of application caches (that's the name of a HTML standard, have yet to see it translated) are stored">
+      <message name="IDS_COOKIES_APPLICATION_CACHES" desc="Label for folder under which a list of application caches (name of an HTML standard) are stored">
         Application Caches
+      </message>
+      <message name="IDS_COOKIES_APPLICATION_CACHE" desc="The text shown when there is an Application Cache (name of an HTML standard) in the Cookies table">
+        Application Cache
       </message>
       <message name="IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL" desc="The Manifest label (manifest is a URL specified by the application cache)">
         Manifest:
@@ -7656,22 +7659,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_DATABASE_STORAGE" desc="The text shown when there is either Web Database or Indexed Database Storage (names of HTML standards) in the Cookies table">
         Database Storage
       </message>
-      <message name="IDS_COOKIES_WEB_DATABASES" desc="Label for the folder under which a list of web databases (name of a HTML standard) are displayed">
+      <message name="IDS_COOKIES_WEB_DATABASES" desc="Label for the folder under which a list of web databases (name of an HTML standard) are displayed">
         Web Databases
       </message>
-      <message name="IDS_COOKIES_WEB_DATABASE_NAME" desc="Label for the name of an individual web databases (name of a HTML standard) are displayed">
+      <message name="IDS_COOKIES_WEB_DATABASE_NAME" desc="Label for the name of an individual web databases (name of an HTML standard) are displayed">
         Database Name:
       </message>
-      <message name="IDS_COOKIES_LOCAL_STORAGE" desc="Label for local storage (name of a HTML standard)">
+      <message name="IDS_COOKIES_LOCAL_STORAGE" desc="Label for local storage (name of an HTML standard)">
         Local Storage
       </message>
-      <message name="IDS_COOKIES_SESSION_STORAGE" desc="Label for session storage (name of a HTML standard)">
+      <message name="IDS_COOKIES_SESSION_STORAGE" desc="Label for session storage (name of an HTML standard)">
         Session Storage
       </message>
-      <message name="IDS_COOKIES_INDEXED_DB" desc="Label for a single Indexed Database (name of a HTML standard)">
+      <message name="IDS_COOKIES_INDEXED_DB" desc="The text shown when there is an Indexed Database (name of an HTML standard) in the Cookies table">
         Indexed Database
       </message>
-      <message name="IDS_COOKIES_INDEXED_DBS" desc="Label for Indexed Databases (name of a HTML standard)">
+      <message name="IDS_COOKIES_INDEXED_DBS" desc="Label for Indexed Databases (name of an HTML standard)">
         Indexed Databases
       </message>
       <message name="IDS_COOKIES_LAST_ACCESSED_LABEL" desc="The last access date label">

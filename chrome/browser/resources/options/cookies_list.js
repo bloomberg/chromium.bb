@@ -217,7 +217,7 @@ cr.define('options', function() {
       if (info.localStorage)
         list.push(localStrings.getString('cookie_local_storage'));
       if (info.appCache)
-        list.push(localStrings.getString('cookie_session_storage'));
+        list.push(localStrings.getString('cookie_app_cache'));
       var text = '';
       for (var i = 0; i < list.length; ++i)
         if (text.length > 0)
@@ -438,7 +438,7 @@ cr.define('options', function() {
             text = localStrings.getString('cookie_local_storage');
             break;
           case 'app_cache':
-            text = localStrings.getString('cookie_session_storage');
+            text = localStrings.getString('cookie_app_cache');
             break;
           case 'indexed_db':
             text = localStrings.getString('cookie_indexed_db');
