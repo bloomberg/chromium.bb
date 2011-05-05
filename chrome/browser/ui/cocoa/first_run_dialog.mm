@@ -149,7 +149,7 @@ void ShowFirstRunDialog(Profile* profile,
   // choose a default.
   TemplateURLModel* model = profile->GetTemplateURLModel();
   if (!FirstRun::SearchEngineSelectorDisallowed() ||
-      model && !model->is_default_search_managed()) {
+      (model && !model->is_default_search_managed())) {
     ShowSearchEngineSelectionDialog(profile,
                                     randomize_search_engine_experiment);
   }
