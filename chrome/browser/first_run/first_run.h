@@ -141,6 +141,10 @@ class FirstRun {
   // Returns false if the pref could not be set.
   static bool SetPersonalDataManagerFirstRunPref();
 
+  // True if special circumstances should prevent the search engine ballot from
+  // being shown.
+  static bool SearchEngineSelectorDisallowed();
+
  private:
   friend class FirstRunTest;
   FRIEND_TEST_ALL_PREFIXES(Toolbar5ImporterTest, BookmarkParse);

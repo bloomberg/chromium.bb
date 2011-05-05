@@ -106,7 +106,9 @@ bool FirstRunDialog::Show(Profile* profile,
   // Figure out which dialogs we will show.
   // If the default search is managed via policy, we won't ask.
   const TemplateURLModel* search_engines_model = profile->GetTemplateURLModel();
-  bool show_search_engines_dialog = search_engines_model &&
+  bool show_search_engines_dialog =
+      !FirstRun::SearchEngineSelectorDisallowed() &&
+      search_engines_model &&
       !search_engines_model->is_default_search_managed();
 
 #if defined(GOOGLE_CHROME_BUILD)

@@ -396,6 +396,14 @@ bool FirstRun::SetPersonalDataManagerFirstRunPref() {
 }
 
 // static
+bool FirstRun::SearchEngineSelectorDisallowed() {
+  // For now, the only case in which the search engine dialog should never be
+  // shown is if the locale is Russia.
+  std::string locale = g_browser_process->GetApplicationLocale();
+  return (locale == "ru");
+}
+
+// static
 bool FirstRun::SetOEMFirstRunBubblePref() {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)

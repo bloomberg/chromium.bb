@@ -12,6 +12,7 @@
 #include "base/rand_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
@@ -57,8 +58,10 @@ void ShowFirstRunDialog(Profile* profile,
   // If the default search is managed via policy, we don't ask the user to
   // choose.
   TemplateURLModel* model = profile->GetTemplateURLModel();
-  if (NULL == model || model->is_default_search_managed())
+  if (FirstRun::SearchEngineSelectorDisallowed() || !model ||
+      model->is_default_search_managed()) {
     return;
+  }
 
   views::Window* window = views::Window::CreateChromeWindow(
       NULL,
