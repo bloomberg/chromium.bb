@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -63,12 +64,12 @@ class PersonalDataManager
   // ProfileSyncServiceObserver:
   virtual void OnStateChanged();
 
-        // TODO(isherman): Update this comment
-  // If Autofill is able to determine the field types of a significant number of
-  // field types that contain information in the FormStructures a profile will
-  // be created with all of the information from recognized fields. Returns
-  // whether a profile was created.
-  bool ImportFormData(const std::vector<const FormStructure*>& form_structures,
+  // Scans the given |form| for importable Autofill data. If the form includes
+  // sufficient address data, it is immediately imported. If the form includes
+  // sufficient credit card data, it is stored into |credit_card|, so that we
+  // can prompt the user whether to save this data.
+  // Returns |true| if sufficient address or credit card data was found.
+  bool ImportFormData(const FormStructure& form,
                       const CreditCard** credit_card);
 
   // Saves a credit card value detected in |ImportedFormData|.

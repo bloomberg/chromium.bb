@@ -77,9 +77,6 @@ std::string FormStructureBrowserTest::FormStructuresToString(
             (*iter)->begin();
          field_iter != (*iter)->end();
          ++field_iter) {
-      // The field list is NULL-terminated.  Exit loop when at the end.
-      if (!*field_iter)
-        break;
       forms_string += AutofillType::FieldTypeToString((*field_iter)->type());
       forms_string += "\n";
     }

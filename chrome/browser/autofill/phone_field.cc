@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
+#include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/fax_number.h"
 #include "chrome/browser/autofill/home_phone_number.h"
 #include "grit/autofill_resources.h"
@@ -97,14 +98,12 @@ PhoneField::Parser PhoneField::phone_field_grammars_[] = {
 PhoneField::~PhoneField() {}
 
 // static
-PhoneField* PhoneField::Parse(std::vector<AutofillField*>::const_iterator* iter,
-                              bool is_ecml) {
-  DCHECK(iter);
-  if (!iter)
+PhoneField* PhoneField::Parse(AutofillScanner* scanner, bool is_ecml) {
+  if (scanner->IsEnd())
     return NULL;
 
   if (is_ecml)
-    return ParseECML(iter);
+    return ParseECML(scanner);
 
   scoped_ptr<PhoneField> phone_field(new PhoneField);
 
@@ -113,7 +112,7 @@ PhoneField* PhoneField::Parse(std::vector<AutofillField*>::const_iterator* iter,
   // but "area" and "someotherarea" parsed as HOME, for example).
   for (int i = PHONE_TYPE_MAX - 1; i >= PHONE_TYPE_FIRST; --i) {
     phone_field->SetPhoneType(static_cast<PhoneField::PhoneType>(i));
-    if (ParseInternal(phone_field.get(), iter, i == HOME_PHONE))
+    if (ParseInternal(phone_field.get(), scanner, i == HOME_PHONE))
       return phone_field.release();
   }
 
@@ -121,12 +120,11 @@ PhoneField* PhoneField::Parse(std::vector<AutofillField*>::const_iterator* iter,
 }
 
 // static
-PhoneField* PhoneField::ParseECML(
-    std::vector<AutofillField*>::const_iterator* iter) {
+PhoneField* PhoneField::ParseECML(AutofillScanner* scanner) {
   string16 pattern(GetEcmlPattern(kEcmlShipToPhone, kEcmlBillToPhone, '|'));
 
-  AutofillField* field;
-  if (ParseText(iter, pattern, &field)) {
+  const AutofillField* field;
+  if (ParseText(scanner, pattern, &field)) {
     PhoneField* phone_field = new PhoneField();
     phone_field->parsed_phone_fields_[FIELD_PHONE] = field;
     return phone_field;
@@ -136,7 +134,7 @@ PhoneField* PhoneField::ParseECML(
 }
 
 bool PhoneField::GetFieldInfo(FieldTypeMap* field_type_map) const {
-  bool ok = false;
+  bool ok = true;
 
   DCHECK(parsed_phone_fields_[FIELD_PHONE]);  // Phone was correctly parsed.
 
@@ -144,36 +142,31 @@ bool PhoneField::GetFieldInfo(FieldTypeMap* field_type_map) const {
       (parsed_phone_fields_[FIELD_AREA_CODE] != NULL) ||
       (parsed_phone_fields_[FIELD_SUFFIX] != NULL)) {
     if (parsed_phone_fields_[FIELD_COUNTRY_CODE] != NULL) {
-      ok = Add(field_type_map,
-               parsed_phone_fields_[FIELD_COUNTRY_CODE],
-               AutofillType(number_->GetCountryCodeType()));
-      DCHECK(ok);
+      ok = ok && Add(field_type_map,
+                     parsed_phone_fields_[FIELD_COUNTRY_CODE],
+                     number_->GetCountryCodeType());
     }
     if (parsed_phone_fields_[FIELD_AREA_CODE] != NULL) {
-      ok = Add(field_type_map,
-               parsed_phone_fields_[FIELD_AREA_CODE],
-               AutofillType(number_->GetCityCodeType()));
-      DCHECK(ok);
+      ok = ok && Add(field_type_map,
+                     parsed_phone_fields_[FIELD_AREA_CODE],
+                     number_->GetCityCodeType());
     }
     // We tag the prefix as PHONE_HOME_NUMBER, then when filling the form
     // we fill only the prefix depending on the size of the input field.
-    ok = Add(field_type_map,
-             parsed_phone_fields_[FIELD_PHONE],
-             AutofillType(number_->GetNumberType()));
-    DCHECK(ok);
+    ok = ok && Add(field_type_map,
+                   parsed_phone_fields_[FIELD_PHONE],
+                   number_->GetNumberType());
     // We tag the suffix as PHONE_HOME_NUMBER, then when filling the form
     // we fill only the suffix depending on the size of the input field.
     if (parsed_phone_fields_[FIELD_SUFFIX] != NULL) {
-      ok = Add(field_type_map,
-               parsed_phone_fields_[FIELD_SUFFIX],
-               AutofillType(number_->GetNumberType()));
-      DCHECK(ok);
+      ok = ok && Add(field_type_map,
+                     parsed_phone_fields_[FIELD_SUFFIX],
+                     number_->GetNumberType());
     }
   } else {
     ok = Add(field_type_map,
              parsed_phone_fields_[FIELD_PHONE],
-             AutofillType(number_->GetWholeNumberType()));
-    DCHECK(ok);
+             number_->GetWholeNumberType());
   }
 
   return ok;
@@ -256,28 +249,25 @@ string16 PhoneField::GetRegExp(RegexType regex_id) const {
 }
 
 // static
-bool PhoneField::ParseInternal(
-    PhoneField *phone_field,
-    std::vector<AutofillField*>::const_iterator* iter,
-    bool regular_phone) {
-  DCHECK(iter);
-
+bool PhoneField::ParseInternal(PhoneField *phone_field,
+                               AutofillScanner* scanner,
+                               bool regular_phone) {
   DCHECK(phone_field);
-  if (!phone_field)
-    return false;
-
-  std::vector<AutofillField*>::const_iterator q = *iter;
+  scanner->SaveCursor();
 
   // The form owns the following variables, so they should not be deleted.
-  AutofillField* parsed_fields[FIELD_MAX];
+  const AutofillField* parsed_fields[FIELD_MAX];
 
   for (size_t i = 0; i < arraysize(phone_field_grammars_); ++i) {
     memset(parsed_fields, 0, sizeof(parsed_fields));
-    q = *iter;
-    // Attempt to parse next possible match.
+    scanner->Rewind();
+    scanner->SaveCursor();
+
+    // Attempt to parse according to the next grammar.
     for (; i < arraysize(phone_field_grammars_) &&
          phone_field_grammars_[i].regex != REGEX_SEPARATOR; ++i) {
-      if (!ParseText(&q, phone_field->GetRegExp(phone_field_grammars_[i].regex),
+      if (!ParseText(scanner,
+                     phone_field->GetRegExp(phone_field_grammars_[i].regex),
                      &parsed_fields[phone_field_grammars_[i].phone_part]))
         break;
       if (phone_field_grammars_[i].max_size &&
@@ -287,19 +277,30 @@ bool PhoneField::ParseInternal(
         break;
       }
     }
-    if (i >= arraysize(phone_field_grammars_))
+
+    if (i >= arraysize(phone_field_grammars_)) {
+      scanner->Rewind();
       return false;  // Parsing failed.
+    }
     if (phone_field_grammars_[i].regex == REGEX_SEPARATOR)
       break;  // Parsing succeeded.
+
+    // Proceed to the next grammar.
     do {
       ++i;
     } while (i < arraysize(phone_field_grammars_) &&
              phone_field_grammars_[i].regex != REGEX_SEPARATOR);
-    if (i + 1 == arraysize(phone_field_grammars_))
+
+    if (i + 1 == arraysize(phone_field_grammars_)) {
+      scanner->Rewind();
       return false;  // Tried through all the possibilities - did not match.
+    }
   }
-  if (!parsed_fields[FIELD_PHONE])
+
+  if (!parsed_fields[FIELD_PHONE]) {
+    scanner->Rewind();
     return false;
+  }
 
   for (int i = 0; i < FIELD_MAX; ++i)
     phone_field->parsed_phone_fields_[i] = parsed_fields[i];
@@ -308,18 +309,17 @@ bool PhoneField::ParseInternal(
 
   // Look for a third text box.
   if (!phone_field->parsed_phone_fields_[FIELD_SUFFIX]) {
-    if (!ParseText(&q, phone_field->GetSuffixRegex(),
+    if (!ParseText(scanner, phone_field->GetSuffixRegex(),
                    &phone_field->parsed_phone_fields_[FIELD_SUFFIX])) {
-      ParseText(&q, phone_field->GetSuffixSeparatorRegex(),
+      ParseText(scanner, phone_field->GetSuffixSeparatorRegex(),
                 &phone_field->parsed_phone_fields_[FIELD_SUFFIX]);
     }
   }
 
   // Now look for an extension.
-  ParseText(&q, phone_field->GetExtensionRegex(),
+  ParseText(scanner, phone_field->GetExtensionRegex(),
             &phone_field->parsed_phone_fields_[FIELD_EXTENSION]);
 
-  *iter = q;
   return true;
 }
 

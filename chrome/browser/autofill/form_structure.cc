@@ -47,9 +47,6 @@ FormStructure::FormStructure(const FormData& form)
     : form_name_(form.name),
       source_url_(form.origin),
       target_url_(form.action),
-      has_credit_card_field_(false),
-      has_autofillable_field_(false),
-      has_password_fields_(false),
       autofill_count_(0) {
   // Copy the form fields.
   std::vector<webkit_glue::FormField>::const_iterator field;
@@ -66,9 +63,6 @@ FormStructure::FormStructure(const FormData& form)
     fields_.push_back(new AutofillField(*field, unique_name));
   }
 
-  // Terminate the vector with a NULL item.
-  fields_.push_back(NULL);
-
   std::string method = UTF16ToUTF8(form.method);
   if (StringToLowerASCII(method) == kFormMethodPost) {
     method_ = POST;
@@ -82,16 +76,13 @@ FormStructure::FormStructure(const FormData& form)
 FormStructure::~FormStructure() {}
 
 void FormStructure::DetermineHeuristicTypes() {
-  has_credit_card_field_ = false;
-  has_autofillable_field_ = false;
   autofill_count_ = 0;
 
   FieldTypeMap field_type_map;
-  GetHeuristicFieldInfo(&field_type_map);
+  FormField::ParseFormFields(fields_.get(), &field_type_map);
 
   for (size_t index = 0; index < field_count(); index++) {
     AutofillField* field = fields_[index];
-    DCHECK(field);
     FieldTypeMap::iterator iter = field_type_map.find(field->unique_name());
 
     AutofillFieldType heuristic_autofill_type;
@@ -105,10 +96,6 @@ void FormStructure::DetermineHeuristicTypes() {
     field->set_heuristic_type(heuristic_autofill_type);
 
     AutofillType autofill_type(field->type());
-    if (autofill_type.group() == AutofillType::CREDIT_CARD)
-      has_credit_card_field_ = true;
-    if (autofill_type.field_type() != UNKNOWN_TYPE)
-      has_autofillable_field_ = true;
   }
 }
 
@@ -223,18 +210,8 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
     FormStructure* form = *iter;
     form->server_experiment_id_ = experiment_id;
 
-    if (form->has_autofillable_field_)
-      heuristics_detected_fillable_field = true;
-
-    form->has_credit_card_field_ = false;
-    form->has_autofillable_field_ = false;
-
     for (std::vector<AutofillField*>::iterator field = form->fields_.begin();
          field != form->fields_.end(); ++field, ++current_type) {
-      // The field list is terminated by a NULL AutofillField.
-      if (!*field)
-        break;
-
       // In some cases *successful* response does not return all the fields.
       // Quit the update of the types then.
       if (current_type == field_types.end())
@@ -244,15 +221,12 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
       DCHECK_NE(*current_type, UNKNOWN_TYPE);
 
       AutofillFieldType heuristic_type = (*field)->type();
+      if (heuristic_type != UNKNOWN_TYPE)
+        heuristics_detected_fillable_field = true;
+
       (*field)->set_server_type(*current_type);
       if (heuristic_type != (*field)->type())
         query_response_overrode_heuristics = true;
-
-      AutofillType autofill_type((*field)->type());
-      if (autofill_type.group() == AutofillType::CREDIT_CARD)
-        form->has_credit_card_field_ = true;
-      if (autofill_type.field_type() != UNKNOWN_TYPE)
-        form->has_autofillable_field_ = true;
     }
 
     form->UpdateAutofillCount();
@@ -330,8 +304,6 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
   for (std::vector<AutofillField*>::const_iterator iter = begin();
        iter != end(); ++iter) {
     AutofillField* field = *iter;
-    if (!field)
-      continue;
 
     std::map<std::string, const AutofillField*>::const_iterator
         cached_field = cached_fields.find(field->FieldSignature());
@@ -466,21 +438,27 @@ void FormStructure::LogQualityMetrics(
   }
 }
 
-void FormStructure::set_possible_types(int index, const FieldTypeSet& types) {
-  int num_fields = static_cast<int>(field_count());
-  DCHECK(index >= 0 && index < num_fields);
-  if (index >= 0 && index < num_fields)
-    fields_[index]->set_possible_types(types);
+void FormStructure::set_possible_types(size_t index,
+                                       const FieldTypeSet& types) {
+  if (index >= fields_.size()) {
+    NOTREACHED();
+    return;
+  }
+
+  fields_[index]->set_possible_types(types);
 }
 
-const AutofillField* FormStructure::field(int index) const {
+const AutofillField* FormStructure::field(size_t index) const {
+  if (index >= fields_.size()) {
+    NOTREACHED();
+    return NULL;
+  }
+
   return fields_[index];
 }
 
 size_t FormStructure::field_count() const {
-  // Don't count the NULL terminator.
-  size_t field_size = fields_.size();
-  return (field_size == 0) ? 0 : field_size - 1;
+  return fields_.size();
 }
 
 std::string FormStructure::server_experiment_id() const {
@@ -519,16 +497,6 @@ std::string FormStructure::Hash64Bit(const std::string& str) {
                    ((static_cast<uint64>(hash_bin[7])) & 0xFF);
 
   return base::Uint64ToString(hash64);
-}
-
-void FormStructure::GetHeuristicFieldInfo(FieldTypeMap* field_type_map) {
-  FormFieldSet fields(this);
-
-  FormFieldSet::const_iterator field;
-  for (field = fields.begin(); field != fields.end(); field++) {
-    bool ok = (*field)->GetFieldInfo(field_type_map);
-    DCHECK(ok);
-  }
 }
 
 bool FormStructure::EncodeFormRequest(

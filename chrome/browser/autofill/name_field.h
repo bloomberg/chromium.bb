@@ -8,14 +8,16 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/form_field.h"
+
+class AutofillScanner;
 
 // A form field that can parse either a FullNameField or a FirstLastNameField.
 class NameField : public FormField {
  public:
-  static NameField* Parse(std::vector<AutofillField*>::const_iterator* iter,
-                          bool is_ecml);
+  static NameField* Parse(AutofillScanner* scanner, bool is_ecml);
 
  protected:
   NameField() {}
@@ -27,38 +29,33 @@ class NameField : public FormField {
 // A form field that can parse a full name field.
 class FullNameField : public NameField {
  public:
-  virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const;
+  virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const OVERRIDE;
 
-  static FullNameField* Parse(
-      std::vector<AutofillField*>::const_iterator* iter);
+  static FullNameField* Parse(AutofillScanner* scanner);
 
  private:
-  explicit FullNameField(AutofillField* field);
+  explicit FullNameField(const AutofillField* field);
 
-  AutofillField* field_;
+  const AutofillField* field_;
   DISALLOW_COPY_AND_ASSIGN(FullNameField);
 };
 
 // A form field that can parse a first and last name field.
 class FirstLastNameField : public NameField {
  public:
-  static FirstLastNameField* Parse1(
-      std::vector<AutofillField*>::const_iterator* iter);
-  static FirstLastNameField* Parse2(
-      std::vector<AutofillField*>::const_iterator* iter);
-  static FirstLastNameField* ParseEcmlName(
-      std::vector<AutofillField*>::const_iterator* iter);
-  static FirstLastNameField* Parse(
-      std::vector<AutofillField*>::const_iterator* iter, bool is_ecml);
+  virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const OVERRIDE;
 
-  virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const;
+  static FirstLastNameField* ParseSpecificName(AutofillScanner* scanner);
+  static FirstLastNameField* ParseComponentNames(AutofillScanner* scanner);
+  static FirstLastNameField* ParseEcmlName(AutofillScanner* scanner);
+  static FirstLastNameField* Parse(AutofillScanner* scanner, bool is_ecml);
 
  private:
   FirstLastNameField();
 
-  AutofillField* first_name_;
-  AutofillField* middle_name_;  // Optional.
-  AutofillField* last_name_;
+  const AutofillField* first_name_;
+  const AutofillField* middle_name_;  // Optional.
+  const AutofillField* last_name_;
   bool middle_initial_;  // True if middle_name_ is a middle initial.
 
   DISALLOW_COPY_AND_ASSIGN(FirstLastNameField);

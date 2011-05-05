@@ -8,12 +8,14 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/form_field.h"
 #include "chrome/browser/autofill/phone_number.h"
 
 class AutofillField;
+class AutofillScanner;
 
 // A phone number in one of the following formats:
 // - area code, prefix, suffix
@@ -23,12 +25,10 @@ class PhoneField : public FormField {
  public:
   virtual ~PhoneField();
 
-  static PhoneField* Parse(std::vector<AutofillField*>::const_iterator* iter,
-                           bool is_ecml);
-  static PhoneField* ParseECML(
-      std::vector<AutofillField*>::const_iterator* iter);
+  virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const OVERRIDE;
 
-  virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const;
+  static PhoneField* Parse(AutofillScanner* scanner, bool is_ecml);
+  static PhoneField* ParseECML(AutofillScanner* scanner);
 
  private:
   PhoneField();
@@ -83,7 +83,7 @@ class PhoneField : public FormField {
   // |regular_phone| - true if the parsed phone is a HOME phone, false
   //   otherwise.
   static bool ParseInternal(PhoneField* field,
-                            std::vector<AutofillField*>::const_iterator* iter,
+                            AutofillScanner* scanner,
                             bool regular_phone);
 
   void SetPhoneType(PhoneType phone_type);
@@ -108,7 +108,7 @@ class PhoneField : public FormField {
 
   // FIELD_PHONE is always present; holds suffix if prefix is present.
   // The rest could be NULL.
-  AutofillField* parsed_phone_fields_[FIELD_MAX];
+  const AutofillField* parsed_phone_fields_[FIELD_MAX];
 
   static struct Parser {
     RegexType regex;       // Field matching reg-ex.

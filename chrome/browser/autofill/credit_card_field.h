@@ -9,25 +9,24 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/form_field.h"
 
 class AutofillField;
+class AutofillScanner;
 
 class CreditCardField : public FormField {
  public:
   // FormField implementation:
-  virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const;
-  virtual FormFieldType GetFormFieldType() const;
+  virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const OVERRIDE;
 
-  static CreditCardField* Parse(
-      std::vector<AutofillField*>::const_iterator* iter,
-      bool is_ecml);
+  static CreditCardField* Parse(AutofillScanner* scanner, bool is_ecml);
 
  private:
   CreditCardField();
 
-  AutofillField* cardholder_;  // Optional.
+  const AutofillField* cardholder_;  // Optional.
 
   // Occasionally pages have separate fields for the cardholder's first and
   // last names; for such pages cardholder_ holds the first name field and
@@ -36,17 +35,18 @@ class CreditCardField : public FormField {
   // because the text patterns for matching a cardholder name are different
   // than for ordinary names, and because cardholder names never have titles,
   // middle names or suffixes.)
-  AutofillField* cardholder_last_;
+  const AutofillField* cardholder_last_;
 
-  AutofillField* type_;  // Optional.  TODO(jhawkins): Parse the select control.
-  AutofillField* number_;  // Required.
+  // TODO(jhawkins): Parse the select control.
+  const AutofillField* type_;  // Optional.
+  const AutofillField* number_;  // Required.
 
   // The 3-digit card verification number; we don't currently fill this.
-  AutofillField* verification_;
+  const AutofillField* verification_;
 
   // Both required.  TODO(jhawkins): Parse the select control.
-  AutofillField* expiration_month_;
-  AutofillField* expiration_year_;
+  const AutofillField* expiration_month_;
+  const AutofillField* expiration_year_;
 
   DISALLOW_COPY_AND_ASSIGN(CreditCardField);
 };

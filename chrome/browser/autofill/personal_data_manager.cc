@@ -189,7 +189,7 @@ void PersonalDataManager::OnStateChanged() {
 }
 
 bool PersonalDataManager::ImportFormData(
-    const std::vector<const FormStructure*>& form_structures,
+    const FormStructure& form,
     const CreditCard** imported_credit_card) {
   scoped_ptr<AutofillProfile> imported_profile(new AutofillProfile);
   scoped_ptr<CreditCard> local_imported_credit_card(new CreditCard);
@@ -202,103 +202,100 @@ bool PersonalDataManager::ImportFormData(
   // Detect and discard forms with multiple fields of the same type.
   std::set<AutofillFieldType> types_seen;
 
-  for (iter = form_structures.begin(); iter != form_structures.end(); ++iter) {
-    const FormStructure* form = *iter;
-    for (size_t i = 0; i < form->field_count(); ++i) {
-      const AutofillField* field = form->field(i);
-      string16 value = CollapseWhitespace(field->value, false);
+  for (size_t i = 0; i < form.field_count(); ++i) {
+    const AutofillField* field = form.field(i);
+    string16 value = CollapseWhitespace(field->value, false);
 
-      // If we don't know the type of the field, or the user hasn't entered any
-      // information into the field, then skip it.
-      if (!field->IsFieldFillable() || value.empty())
+    // If we don't know the type of the field, or the user hasn't entered any
+    // information into the field, then skip it.
+    if (!field->IsFieldFillable() || value.empty())
+      continue;
+
+    AutofillFieldType field_type = field->type();
+    FieldTypeGroup group(AutofillType(field_type).group());
+
+    // Abandon the import if two fields of the same type are encountered.
+    // This indicates ambiguous data or miscategorization of types.
+    // Make an exception for PHONE_HOME_NUMBER however as both prefix and
+    // suffix are stored against this type.
+    if (types_seen.count(field_type) &&
+        field_type != PHONE_HOME_NUMBER  &&
+        field_type != PHONE_FAX_NUMBER) {
+      imported_profile.reset();
+      local_imported_credit_card.reset();
+      break;
+    } else {
+      types_seen.insert(field_type);
+    }
+
+    if (group == AutofillType::CREDIT_CARD) {
+      // If the user has a password set, we have no way of setting credit
+      // card numbers.
+      if (!HasPassword()) {
+        if (LowerCaseEqualsASCII(field->form_control_type, "month")) {
+          DCHECK_EQ(CREDIT_CARD_EXP_MONTH, field_type);
+          local_imported_credit_card->SetInfoForMonthInputType(value);
+        } else {
+          if (field_type == CREDIT_CARD_NUMBER) {
+            // Clean up any imported credit card numbers.
+            value = CreditCard::StripSeparators(value);
+          }
+          local_imported_credit_card->SetInfo(field_type, value);
+        }
+        ++importable_credit_card_fields;
+      }
+    } else {
+      // In the case of a phone number, if the whole phone number was entered
+      // into a single field, then parse it and set the sub components.
+      if (AutofillType(field_type).subgroup() ==
+              AutofillType::PHONE_WHOLE_NUMBER) {
+        string16 number;
+        string16 city_code;
+        string16 country_code;
+        PhoneNumber::ParsePhoneNumber(value,
+                                      &number,
+                                      &city_code,
+                                      &country_code);
+        if (number.empty())
+          continue;
+
+        if (group == AutofillType::PHONE_HOME) {
+          imported_profile->SetInfo(PHONE_HOME_COUNTRY_CODE, country_code);
+          imported_profile->SetInfo(PHONE_HOME_CITY_CODE, city_code);
+          imported_profile->SetInfo(PHONE_HOME_NUMBER, number);
+        } else if (group == AutofillType::PHONE_FAX) {
+          imported_profile->SetInfo(PHONE_FAX_COUNTRY_CODE, country_code);
+          imported_profile->SetInfo(PHONE_FAX_CITY_CODE, city_code);
+          imported_profile->SetInfo(PHONE_FAX_NUMBER, number);
+        }
+
         continue;
-
-      AutofillFieldType field_type = field->type();
-      FieldTypeGroup group(AutofillType(field_type).group());
-
-      // Abandon the import if two fields of the same type are encountered.
-      // This indicates ambiguous data or miscategorization of types.
-      // Make an exception for PHONE_HOME_NUMBER however as both prefix and
-      // suffix are stored against this type.
-      if (types_seen.count(field_type) &&
-          field_type != PHONE_HOME_NUMBER  &&
-          field_type != PHONE_FAX_NUMBER) {
-        imported_profile.reset();
-        local_imported_credit_card.reset();
-        break;
-      } else {
-        types_seen.insert(field_type);
       }
 
-      if (group == AutofillType::CREDIT_CARD) {
-        // If the user has a password set, we have no way of setting credit
-        // card numbers.
-        if (!HasPassword()) {
-          if (LowerCaseEqualsASCII(field->form_control_type, "month")) {
-            DCHECK_EQ(CREDIT_CARD_EXP_MONTH, field_type);
-            local_imported_credit_card->SetInfoForMonthInputType(value);
-          } else {
-            if (field_type == CREDIT_CARD_NUMBER) {
-              // Clean up any imported credit card numbers.
-              value = CreditCard::StripSeparators(value);
-            }
-            local_imported_credit_card->SetInfo(field_type, value);
-          }
-          ++importable_credit_card_fields;
+      // Phone and fax numbers can be split across multiple fields, so we
+      // might have already stored the prefix, and now be at the suffix.
+      // If so, combine them to form the full number.
+      if (group == AutofillType::PHONE_HOME ||
+          group == AutofillType::PHONE_FAX) {
+        AutofillFieldType number_type = PHONE_HOME_NUMBER;
+        if (group == AutofillType::PHONE_FAX)
+          number_type = PHONE_FAX_NUMBER;
+
+        string16 stored_number = imported_profile->GetInfo(number_type);
+        if (stored_number.size() ==
+                static_cast<size_t>(PhoneNumber::kPrefixLength) &&
+            value.size() == static_cast<size_t>(PhoneNumber::kSuffixLength)) {
+          value = stored_number + value;
         }
-      } else {
-        // In the case of a phone number, if the whole phone number was entered
-        // into a single field, then parse it and set the sub components.
-        if (AutofillType(field_type).subgroup() ==
-                AutofillType::PHONE_WHOLE_NUMBER) {
-          string16 number;
-          string16 city_code;
-          string16 country_code;
-          PhoneNumber::ParsePhoneNumber(value,
-                                        &number,
-                                        &city_code,
-                                        &country_code);
-          if (number.empty())
-            continue;
+      }
 
-          if (group == AutofillType::PHONE_HOME) {
-            imported_profile->SetInfo(PHONE_HOME_COUNTRY_CODE, country_code);
-            imported_profile->SetInfo(PHONE_HOME_CITY_CODE, city_code);
-            imported_profile->SetInfo(PHONE_HOME_NUMBER, number);
-          } else if (group == AutofillType::PHONE_FAX) {
-            imported_profile->SetInfo(PHONE_FAX_COUNTRY_CODE, country_code);
-            imported_profile->SetInfo(PHONE_FAX_CITY_CODE, city_code);
-            imported_profile->SetInfo(PHONE_FAX_NUMBER, number);
-          }
+      imported_profile->SetInfo(field_type, value);
 
-          continue;
-        }
-
-        // Phone and fax numbers can be split across multiple fields, so we
-        // might have already stored the prefix, and now be at the suffix.
-        // If so, combine them to form the full number.
-        if (group == AutofillType::PHONE_HOME ||
-            group == AutofillType::PHONE_FAX) {
-          AutofillFieldType number_type = PHONE_HOME_NUMBER;
-          if (group == AutofillType::PHONE_FAX)
-            number_type = PHONE_FAX_NUMBER;
-
-          string16 stored_number = imported_profile->GetInfo(number_type);
-          if (stored_number.size() ==
-                  static_cast<size_t>(PhoneNumber::kPrefixLength) &&
-              value.size() == static_cast<size_t>(PhoneNumber::kSuffixLength)) {
-            value = stored_number + value;
-          }
-        }
-
-        imported_profile->SetInfo(field_type, value);
-
-        // Reject profiles with invalid country information.
-        if (field_type == ADDRESS_HOME_COUNTRY &&
-            !value.empty() && imported_profile->CountryCode().empty()) {
-          imported_profile.reset();
-          break;
-        }
+      // Reject profiles with invalid country information.
+      if (field_type == ADDRESS_HOME_COUNTRY &&
+          !value.empty() && imported_profile->CountryCode().empty()) {
+        imported_profile.reset();
+        break;
       }
     }
   }

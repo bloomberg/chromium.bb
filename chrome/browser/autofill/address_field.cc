@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
+#include "chrome/browser/autofill/autofill_scanner.h"
 #include "grit/autofill_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -52,44 +53,23 @@ bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
       return false;
   }
 
-  bool ok;
-  ok = Add(field_type_map, company_, AutofillType(address_company));
-  DCHECK(ok);
-  ok = ok && Add(field_type_map, address1_, AutofillType(address_line1));
-  DCHECK(ok);
-  ok = ok && Add(field_type_map, address2_, AutofillType(address_line2));
-  DCHECK(ok);
-  ok = ok && Add(field_type_map, city_, AutofillType(address_city));
-  DCHECK(ok);
-  ok = ok && Add(field_type_map, state_, AutofillType(address_state));
-  DCHECK(ok);
-  ok = ok && Add(field_type_map, zip_, AutofillType(address_zip));
-  DCHECK(ok);
-  ok = ok && Add(field_type_map, country_, AutofillType(address_country));
-  DCHECK(ok);
-
+  bool ok = Add(field_type_map, company_, address_company);
+  ok = ok && Add(field_type_map, address1_, address_line1);
+  ok = ok && Add(field_type_map, address2_, address_line2);
+  ok = ok && Add(field_type_map, city_, address_city);
+  ok = ok && Add(field_type_map, state_, address_state);
+  ok = ok && Add(field_type_map, zip_, address_zip);
+  ok = ok && Add(field_type_map, country_, address_country);
   return ok;
 }
 
-FormFieldType AddressField::GetFormFieldType() const {
-  return kAddressType;
-}
-
-AddressField* AddressField::Parse(
-    std::vector<AutofillField*>::const_iterator* iter,
-    bool is_ecml) {
-  DCHECK(iter);
-  if (!iter)
+AddressField* AddressField::Parse(AutofillScanner* scanner, bool is_ecml) {
+  if (scanner->IsEnd())
     return NULL;
 
   scoped_ptr<AddressField> address_field(new AddressField);
-  std::vector<AutofillField*>::const_iterator q = *iter;
-  string16 pattern;
-
-  // The ECML standard uses 2 letter country codes.  So we will
-  // have to remember that this is an ECML form, for when we fill
-  // it out.
-  address_field->is_ecml_ = is_ecml;
+  const AutofillField* initial_field = scanner->Cursor();
+  scanner->SaveCursor();
 
   string16 attention_ignored =
       l10n_util::GetStringUTF16(IDS_AUTOFILL_ATTENTION_IGNORED_RE);
@@ -97,21 +77,21 @@ AddressField* AddressField::Parse(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_REGION_IGNORED_RE);
 
   // Allow address fields to appear in any order.
-  while (true) {
-    if (ParseCompany(&q, is_ecml, address_field.get()) ||
-        ParseAddressLines(&q, is_ecml, address_field.get()) ||
-        ParseCity(&q, is_ecml, address_field.get()) ||
-        ParseState(&q, is_ecml, address_field.get()) ||
-        ParseZipCode(&q, is_ecml, address_field.get()) ||
-        ParseCountry(&q, is_ecml, address_field.get())) {
+  while (!scanner->IsEnd()) {
+    if (ParseCompany(scanner, is_ecml, address_field.get()) ||
+        ParseAddressLines(scanner, is_ecml, address_field.get()) ||
+        ParseCity(scanner, is_ecml, address_field.get()) ||
+        ParseState(scanner, is_ecml, address_field.get()) ||
+        ParseZipCode(scanner, is_ecml, address_field.get()) ||
+        ParseCountry(scanner, is_ecml, address_field.get())) {
       continue;
-    } else if (ParseText(&q, attention_ignored) ||
-               ParseText(&q, region_ignored)) {
+    } else if (ParseText(scanner, attention_ignored) ||
+               ParseText(scanner, region_ignored)) {
       // We ignore the following:
       // * Attention.
       // * Province/Region/Other.
       continue;
-    } else if (*q != **iter && ParseEmpty(&q)) {
+    } else if (scanner->Cursor() != initial_field && ParseEmpty(scanner)) {
       // Ignore non-labeled fields within an address; the page
       // MapQuest Driving Directions North America.html contains such a field.
       // We only ignore such fields after we've parsed at least one other field;
@@ -133,10 +113,11 @@ AddressField* AddressField::Parse(
       address_field->city_ != NULL || address_field->state_ != NULL ||
       address_field->zip_ != NULL || address_field->zip4_ ||
       address_field->country_ != NULL) {
-    *iter = q;
+    address_field->type_ = address_field->FindType();
     return address_field.release();
   }
 
+  scanner->Rewind();
   return NULL;
 }
 
@@ -167,34 +148,31 @@ AddressField::AddressField()
       zip_(NULL),
       zip4_(NULL),
       country_(NULL),
-      type_(kGenericAddress),
-      is_ecml_(false) {
+      type_(kGenericAddress) {
 }
 
 // static
-bool AddressField::ParseCompany(
-    std::vector<AutofillField*>::const_iterator* iter,
-    bool is_ecml, AddressField* address_field) {
+bool AddressField::ParseCompany(AutofillScanner* scanner,
+                                bool is_ecml,
+                                AddressField* address_field) {
   if (address_field->company_ && !address_field->company_->IsEmpty())
     return false;
 
   string16 pattern;
-  if (is_ecml)
+  if (is_ecml) {
     pattern = GetEcmlPattern(kEcmlShipToCompanyName,
                              kEcmlBillToCompanyName, '|');
-  else
+  } else {
     pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_COMPANY_RE);
+  }
 
-  if (!ParseText(iter, pattern, &address_field->company_))
-    return false;
-
-  return true;
+  return ParseText(scanner, pattern, &address_field->company_);
 }
 
 // static
-bool AddressField::ParseAddressLines(
-    std::vector<AutofillField*>::const_iterator* iter,
-    bool is_ecml, AddressField* address_field) {
+bool AddressField::ParseAddressLines(AutofillScanner* scanner,
+                                     bool is_ecml,
+                                     AddressField* address_field) {
   // We only match the string "address" in page text, not in element names,
   // because sometimes every element in a group of address fields will have
   // a name containing the string "address"; for example, on the page
@@ -209,16 +187,16 @@ bool AddressField::ParseAddressLines(
   string16 pattern;
   if (is_ecml) {
     pattern = GetEcmlPattern(kEcmlShipToAddress1, kEcmlBillToAddress1, '|');
-    if (!ParseText(iter, pattern, &address_field->address1_))
+    if (!ParseText(scanner, pattern, &address_field->address1_))
       return false;
   } else {
     pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_1_RE);
     string16 label_pattern =
         l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_1_LABEL_RE);
 
-    if (!ParseText(iter, pattern, &address_field->address1_))
-      if (!ParseLabelText(iter, label_pattern, &address_field->address1_))
-        return false;
+    if (!ParseText(scanner, pattern, &address_field->address1_) &&
+        !ParseLabelText(scanner, label_pattern, &address_field->address1_))
+      return false;
   }
 
   // Optionally parse more address lines, which may have empty labels.
@@ -226,26 +204,26 @@ bool AddressField::ParseAddressLines(
   // Some pages even have 4 address lines (e.g. uk/ShoesDirect2.html)!
   if (is_ecml) {
     pattern = GetEcmlPattern(kEcmlShipToAddress2, kEcmlBillToAddress2, '|');
-    if (!ParseEmptyText(iter, &address_field->address2_))
-      ParseText(iter, pattern, &address_field->address2_);
+    if (!ParseEmptyText(scanner, &address_field->address2_))
+      ParseText(scanner, pattern, &address_field->address2_);
   } else {
     pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_2_RE);
     string16 label_pattern =
         l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_1_LABEL_RE);
-    if (!ParseEmptyText(iter, &address_field->address2_))
-      if (!ParseText(iter, pattern, &address_field->address2_))
-        ParseLabelText(iter, label_pattern, &address_field->address2_);
+    if (!ParseEmptyText(scanner, &address_field->address2_) &&
+        !ParseText(scanner, pattern, &address_field->address2_))
+      ParseLabelText(scanner, label_pattern, &address_field->address2_);
   }
 
   // Try for a third line, which we will promptly discard.
   if (address_field->address2_ != NULL) {
     if (is_ecml) {
       pattern = GetEcmlPattern(kEcmlShipToAddress3, kEcmlBillToAddress3, '|');
-      ParseText(iter, pattern);
+      ParseText(scanner, pattern);
     } else {
       pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_3_RE);
-      if (!ParseEmptyText(iter, NULL))
-        ParseText(iter, pattern, NULL);
+      if (!ParseEmptyText(scanner, NULL))
+        ParseText(scanner, pattern, NULL);
     }
   }
 
@@ -253,9 +231,9 @@ bool AddressField::ParseAddressLines(
 }
 
 // static
-bool AddressField::ParseCountry(
-    std::vector<AutofillField*>::const_iterator* iter,
-    bool is_ecml, AddressField* address_field) {
+bool AddressField::ParseCountry(AutofillScanner* scanner,
+                                bool is_ecml,
+                                AddressField* address_field) {
   // Parse a country.  The occasional page (e.g.
   // Travelocity_New Member Information1.html) calls this a "location".
   // Note: ECML standard uses 2 letter country code (ISO 3166)
@@ -268,16 +246,13 @@ bool AddressField::ParseCountry(
   else
     pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_COUNTRY_RE);
 
-  if (!ParseText(iter, pattern, &address_field->country_))
-    return false;
-
-  return true;
+  return ParseText(scanner, pattern, &address_field->country_);
 }
 
 // static
-bool AddressField::ParseZipCode(
-    std::vector<AutofillField*>::const_iterator* iter,
-    bool is_ecml, AddressField* address_field) {
+bool AddressField::ParseZipCode(AutofillScanner* scanner,
+                                bool is_ecml,
+                                AddressField* address_field) {
   // Parse a zip code.  On some UK pages (e.g. The China Shop2.html) this
   // is called a "post code".
   //
@@ -288,10 +263,6 @@ bool AddressField::ParseZipCode(
   if (address_field->zip_)
     return false;
 
-  // We may be out of fields.
-  if (!**iter)
-    return false;
-
   string16 pattern;
   if (is_ecml) {
     pattern = GetEcmlPattern(kEcmlShipToPostalCode, kEcmlBillToPostalCode, '|');
@@ -300,7 +271,7 @@ bool AddressField::ParseZipCode(
   }
 
   AddressType tempType;
-  string16 name = (**iter)->name;
+  string16 name = scanner->Cursor()->name;
 
   // Note: comparisons using the ecml compliant name as a prefix must be used in
   // order to accommodate Google Checkout. See FormFieldSet::GetEcmlPattern for
@@ -314,14 +285,14 @@ bool AddressField::ParseZipCode(
     tempType = kGenericAddress;
   }
 
-  if (!ParseText(iter, pattern, &address_field->zip_))
+  if (!ParseText(scanner, pattern, &address_field->zip_))
     return false;
 
   address_field->type_ = tempType;
   if (!is_ecml) {
     // Look for a zip+4, whose field name will also often contain
     // the substring "zip".
-    ParseText(iter,
+    ParseText(scanner,
               l10n_util::GetStringUTF16(IDS_AUTOFILL_ZIP_4_RE),
               &address_field->zip4_);
   }
@@ -330,9 +301,9 @@ bool AddressField::ParseZipCode(
 }
 
 // static
-bool AddressField::ParseCity(
-    std::vector<AutofillField*>::const_iterator* iter,
-    bool is_ecml, AddressField* address_field) {
+bool AddressField::ParseCity(AutofillScanner* scanner,
+                             bool is_ecml,
+                             AddressField* address_field) {
   // Parse a city name.  Some UK pages (e.g. The China Shop2.html) use
   // the term "town".
   if (address_field->city_)
@@ -344,16 +315,13 @@ bool AddressField::ParseCity(
   else
     pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_CITY_RE);
 
-  if (!ParseText(iter, pattern, &address_field->city_))
-    return false;
-
-  return true;
+  return ParseText(scanner, pattern, &address_field->city_);
 }
 
 // static
-bool AddressField::ParseState(
-    std::vector<AutofillField*>::const_iterator* iter,
-    bool is_ecml, AddressField* address_field) {
+bool AddressField::ParseState(AutofillScanner* scanner,
+                              bool is_ecml,
+                              AddressField* address_field) {
   if (address_field->state_)
     return false;
 
@@ -363,10 +331,7 @@ bool AddressField::ParseState(
   else
     pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_STATE_RE);
 
-  if (!ParseText(iter, pattern, &address_field->state_))
-    return false;
-
-  return true;
+  return ParseText(scanner, pattern, &address_field->state_);
 }
 
 AddressType AddressField::AddressTypeFromText(const string16 &text) {

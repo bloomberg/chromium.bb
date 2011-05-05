@@ -625,11 +625,8 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
 }
 
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
-  std::vector<const FormStructure*> submitted_forms;
-  submitted_forms.push_back(&submitted_form);
-
   const CreditCard* imported_credit_card;
-  if (!personal_data_->ImportFormData(submitted_forms, &imported_credit_card))
+  if (!personal_data_->ImportFormData(submitted_form, &imported_credit_card))
     return;
 
   // If credit card information was submitted, show an infobar to offer to save
@@ -742,11 +739,6 @@ bool AutofillManager::FindCachedFormAndField(const FormData& form,
   for (std::vector<AutofillField*>::const_iterator iter =
            (*form_structure)->begin();
        iter != (*form_structure)->end(); ++iter) {
-    // The field list is terminated with a NULL AutofillField, so don't try to
-    // dereference it.
-    if (!*iter)
-      break;
-
     if ((**iter) == field) {
       *autofill_field = *iter;
       break;
@@ -793,10 +785,6 @@ void AutofillManager::GetProfileSuggestions(FormStructure* form,
     form_fields.reserve(form->field_count());
     for (std::vector<AutofillField*>::const_iterator iter = form->begin();
          iter != form->end(); ++iter) {
-      // The field list is terminated with a NULL AutofillField, so don't try to
-      // dereference it.
-      if (!*iter)
-        break;
       form_fields.push_back((*iter)->type());
     }
 
