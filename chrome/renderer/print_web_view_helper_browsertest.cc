@@ -29,20 +29,6 @@ const char kHelloWorldHTML[] = "<body><p>Hello World!</p></body>";
 const char kPrintWithJSHTML[] =
     "<body>Hello<script>window.print()</script>World</body>";
 
-// A web page to simulate the print preview page.
-const char kPrintPreviewHTML[] =
-    "<body><p id=\"pdf-viewer\">Hello World!</p></body>";
-
-void CreatePrintSettingsDictionary(DictionaryValue* dict) {
-  dict->SetBoolean(printing::kSettingLandscape, false);
-  dict->SetBoolean(printing::kSettingCollate, false);
-  dict->SetBoolean(printing::kSettingColor, false);
-  dict->SetBoolean(printing::kSettingPrintToPDF, true);
-  dict->SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
-  dict->SetInteger(printing::kSettingCopies, 1);
-  dict->SetString(printing::kSettingDeviceName, "dummy");
-}
-
 }  // namespace
 
 class PrintWebViewHelperTest : public RenderViewTest {
@@ -311,12 +297,6 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTest {
     }
   }
 
-  void VerifyPrintFailed(bool did_fail) {
-    bool print_failed = (render_thread_.sink().GetUniqueMessageMatching(
-        PrintHostMsg_PrintingFailed::ID) != NULL);
-    EXPECT_EQ(did_fail, print_failed);
-  }
-
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperPreviewTest);
 };
 
@@ -327,7 +307,13 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreview) {
 
   // Fill in some dummy values.
   DictionaryValue dict;
-  CreatePrintSettingsDictionary(&dict);
+  dict.SetBoolean(printing::kSettingLandscape, false);
+  dict.SetBoolean(printing::kSettingCollate, false);
+  dict.SetBoolean(printing::kSettingColor, false);
+  dict.SetBoolean(printing::kSettingPrintToPDF, true);
+  dict.SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
+  dict.SetInteger(printing::kSettingCopies, 1);
+  dict.SetString(printing::kSettingDeviceName, "dummy");
   PrintWebViewHelper::Get(view_)->OnPrintPreview(dict);
 
   VerifyPrintPreviewFailed(false);
@@ -346,33 +332,6 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewFail) {
 
   VerifyPrintPreviewFailed(true);
   VerifyPrintPreviewGenerated(false);
-  VerifyPagesPrinted(false);
-}
-
-// Tests that printing from print preview works and sending and receiving
-// messages through that channel all works.
-TEST_F(PrintWebViewHelperPreviewTest, OnPrintForPrintPreview) {
-  LoadHTML(kPrintPreviewHTML);
-
-  // Fill in some dummy values.
-  DictionaryValue dict;
-  CreatePrintSettingsDictionary(&dict);
-  PrintWebViewHelper::Get(view_)->OnPrintForPrintPreview(dict);
-
-  VerifyPrintFailed(false);
-  VerifyPagesPrinted(true);
-}
-
-// Tests that printing from print preview fails and receiving error messages
-// through that channel all works.
-TEST_F(PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewFail) {
-  LoadHTML(kPrintPreviewHTML);
-
-  // An empty dictionary should fail.
-  DictionaryValue empty_dict;
-  PrintWebViewHelper::Get(view_)->OnPrintForPrintPreview(empty_dict);
-
-  VerifyPrintFailed(true);
   VerifyPagesPrinted(false);
 }
 #endif  // !defined(OS_CHROMEOS)
