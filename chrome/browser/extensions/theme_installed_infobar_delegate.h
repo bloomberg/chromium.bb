@@ -38,17 +38,17 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
 
  private:
   // ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed();
-  virtual gfx::Image* GetIcon() const;
-  virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
-  virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual ThemeInstalledInfoBarDelegate*
+      AsThemePreviewInfobarDelegate() OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   Profile* profile_;
   ThemeService* theme_service_;

@@ -36,17 +36,16 @@ class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(
-      const NavigationController::LoadCommittedDetails& details) const;
-  virtual void InfoBarClosed();
-  virtual void InfoBarDismissed();
-  virtual gfx::Image* GetIcon() const;
-  virtual Type GetInfoBarType() const;
-  virtual string16 GetMessageText() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
-  virtual bool Cancel();
-  virtual string16 GetLinkText();
-  virtual bool LinkClicked(WindowOpenDisposition disposition);
+      const NavigationController::LoadCommittedDetails& details) const OVERRIDE;
+  virtual void InfoBarDismissed() OVERRIDE;
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+  virtual string16 GetLinkText() OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   // The credit card that should be saved if the user accepts the infobar.
   scoped_ptr<const CreditCard> credit_card_;

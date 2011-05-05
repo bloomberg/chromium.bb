@@ -27,7 +27,6 @@ class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(
       const NavigationController::LoadCommittedDetails& details) const OVERRIDE;
-  virtual void InfoBarClosed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;

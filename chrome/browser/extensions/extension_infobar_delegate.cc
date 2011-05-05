@@ -59,10 +59,6 @@ void ExtensionInfoBarDelegate::InfoBarDismissed() {
   closing_ = true;
 }
 
-void ExtensionInfoBarDelegate::InfoBarClosed() {
-  delete this;
-}
-
 InfoBarDelegate::Type ExtensionInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }

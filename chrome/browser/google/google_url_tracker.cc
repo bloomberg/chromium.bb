@@ -59,12 +59,8 @@ bool GoogleURLTrackerInfoBarDelegate::Cancel() {
   return true;
 }
 
-void GoogleURLTrackerInfoBarDelegate::InfoBarClosed() {
-  google_url_tracker_->InfoBarClosed();
-  delete this;
-}
-
 GoogleURLTrackerInfoBarDelegate::~GoogleURLTrackerInfoBarDelegate() {
+  google_url_tracker_->InfoBarClosed();
 }
 
 string16 GoogleURLTrackerInfoBarDelegate::GetMessageText() const {

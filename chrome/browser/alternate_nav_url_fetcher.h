@@ -47,7 +47,7 @@ class AlternateNavURLFetcher : public NotificationObserver,
   // NotificationObserver
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source,
@@ -55,15 +55,14 @@ class AlternateNavURLFetcher : public NotificationObserver,
                                   const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
-                                  const std::string& data);
+                                  const std::string& data) OVERRIDE;
 
   // LinkInfoBarDelegate
-  virtual gfx::Image* GetIcon() const;
-  virtual Type GetInfoBarType() const;
-  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const;
-  virtual string16 GetLinkText() const;
-  virtual bool LinkClicked(WindowOpenDisposition disposition);
-  virtual void InfoBarClosed();
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   // Sets |state_| to either SUCCEEDED or FAILED depending on the result of the
   // fetch.

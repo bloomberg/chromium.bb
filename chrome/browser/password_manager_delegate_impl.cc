@@ -41,13 +41,12 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~SavePasswordInfoBarDelegate();
 
   // ConfirmInfoBarDelegate
-  virtual void InfoBarClosed();
-  virtual gfx::Image* GetIcon() const;
-  virtual Type GetInfoBarType() const;
-  virtual string16 GetMessageText() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
-  virtual bool Cancel();
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
 
   // The PasswordFormManager managing the form we're asking the user about,
   // and should update as per her decision.
@@ -68,12 +67,8 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
 }
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
-}
-
-void SavePasswordInfoBarDelegate::InfoBarClosed() {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.InfoBarResponse",
                             infobar_response_, NUM_RESPONSE_TYPES);
-  delete this;
 }
 
 gfx::Image* SavePasswordInfoBarDelegate::GetIcon() const {

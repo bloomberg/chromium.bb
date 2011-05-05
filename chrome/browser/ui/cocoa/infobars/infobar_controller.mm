@@ -266,7 +266,7 @@ const float kAnimateCloseDuration = 0.12;
   if (!infoBarClosing_)
     return;
 
-  // Notify the delegate that the infobar was closed.  The delegate may delete
+  // Notify the delegate that the infobar was closed.  The delegate will delete
   // itself as a result of InfoBarClosed(), so we null out its pointer.
   if (delegate_) {
     delegate_->InfoBarClosed();

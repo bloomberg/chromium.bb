@@ -9,23 +9,21 @@
 
 const char MockConfirmInfoBarDelegate::kMessage[] = "MockConfirmInfoBarMessage";
 
-MockConfirmInfoBarDelegate::MockConfirmInfoBarDelegate()
+MockConfirmInfoBarDelegate::MockConfirmInfoBarDelegate(Owner* owner)
     : ConfirmInfoBarDelegate(NULL),
+      owner_(owner),
       closes_on_action_(true),
       icon_accessed_(false),
       message_text_accessed_(false),
       link_text_accessed_(false),
       ok_clicked_(false),
       cancel_clicked_(false),
-      link_clicked_(false),
-      closed_(false) {
+      link_clicked_(false) {
 }
 
 MockConfirmInfoBarDelegate::~MockConfirmInfoBarDelegate() {
-}
-
-void MockConfirmInfoBarDelegate::InfoBarClosed() {
-  closed_ = true;
+  if (owner_)
+    owner_->OnInfoBarDelegateClosed();
 }
 
 gfx::Image* MockConfirmInfoBarDelegate::GetIcon() const {

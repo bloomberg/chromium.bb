@@ -15,7 +15,16 @@ class SkBitmap;
 
 class MockConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  MockConfirmInfoBarDelegate();
+  // Called when |this| is about to be destroyed.
+  class Owner {
+   public:
+    virtual void OnInfoBarDelegateClosed() = 0;
+
+   protected:
+    virtual ~Owner() {}
+  };
+
+  explicit MockConfirmInfoBarDelegate(Owner* owner);
   virtual ~MockConfirmInfoBarDelegate();
 
   void set_dont_close_on_action() { closes_on_action_ = false; }
@@ -25,13 +34,11 @@ class MockConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool ok_clicked() const { return ok_clicked_; }
   bool cancel_clicked() const { return cancel_clicked_; }
   bool link_clicked() const { return link_clicked_; }
-  bool closed() const { return closed_; }
 
   static const char kMessage[];
 
  private:
   // ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
@@ -40,6 +47,7 @@ class MockConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetLinkText() OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
+  Owner* owner_;
   // Determines whether the infobar closes when an action is taken or not.
   bool closes_on_action_;
   mutable bool icon_accessed_;
@@ -48,7 +56,6 @@ class MockConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool ok_clicked_;
   bool cancel_clicked_;
   bool link_clicked_;
-  bool closed_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConfirmInfoBarDelegate);
 };

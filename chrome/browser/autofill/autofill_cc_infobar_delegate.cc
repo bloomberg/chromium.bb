@@ -28,6 +28,8 @@ AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(
 }
 
 AutofillCCInfoBarDelegate::~AutofillCCInfoBarDelegate() {
+  if (!had_user_interaction_)
+    LogUserAction(AutofillMetrics::INFOBAR_IGNORED);
 }
 
 void AutofillCCInfoBarDelegate::LogUserAction(
@@ -44,13 +46,6 @@ bool AutofillCCInfoBarDelegate::ShouldExpire(
   // don't want the infobar to be expired at this point, because the user won't
   // get a chance to answer the question.
   return false;
-}
-
-void AutofillCCInfoBarDelegate::InfoBarClosed() {
-  if (!had_user_interaction_)
-    LogUserAction(AutofillMetrics::INFOBAR_IGNORED);
-
-  delete this;
 }
 
 void AutofillCCInfoBarDelegate::InfoBarDismissed() {

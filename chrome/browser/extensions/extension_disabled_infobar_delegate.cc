@@ -87,16 +87,15 @@ class ExtensionDisabledInfobarDelegate : public ConfirmInfoBarDelegate,
   virtual ~ExtensionDisabledInfobarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed();
-  virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   NotificationRegistrar registrar_;
   TabContents* tab_contents_;
@@ -120,10 +119,6 @@ ExtensionDisabledInfobarDelegate::ExtensionDisabledInfobarDelegate(
 }
 
 ExtensionDisabledInfobarDelegate::~ExtensionDisabledInfobarDelegate() {
-}
-
-void ExtensionDisabledInfobarDelegate::InfoBarClosed() {
-  delete this;
 }
 
 string16 ExtensionDisabledInfobarDelegate::GetMessageText() const {

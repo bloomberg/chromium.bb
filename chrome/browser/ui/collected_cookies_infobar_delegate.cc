@@ -34,8 +34,8 @@ int CollectedCookiesInfoBarDelegate::GetButtons() const {
   return BUTTON_OK;
 }
 
-string16 CollectedCookiesInfoBarDelegate::GetButtonLabel(InfoBarButton button)
-    const {
+string16 CollectedCookiesInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
   return l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_INFOBAR_BUTTON);
 }

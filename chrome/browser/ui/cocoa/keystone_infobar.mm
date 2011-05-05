@@ -47,13 +47,12 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate
   virtual bool ShouldExpire(
-      const NavigationController::LoadCommittedDetails& details) const;
-  virtual void InfoBarClosed();
-  virtual gfx::Image* GetIcon() const;
-  virtual string16 GetMessageText() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
-  virtual bool Cancel();
+      const NavigationController::LoadCommittedDetails& details) const OVERRIDE;
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
 
   // The TabContents' profile.
   Profile* profile_;  // weak
@@ -86,10 +85,6 @@ KeystonePromotionInfoBarDelegate::~KeystonePromotionInfoBarDelegate() {
 bool KeystonePromotionInfoBarDelegate::ShouldExpire(
     const NavigationController::LoadCommittedDetails& details) const {
   return can_expire_;
-}
-
-void KeystonePromotionInfoBarDelegate::InfoBarClosed() {
-  delete this;
 }
 
 gfx::Image* KeystonePromotionInfoBarDelegate::GetIcon() const {

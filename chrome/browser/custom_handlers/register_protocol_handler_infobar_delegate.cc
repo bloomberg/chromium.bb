@@ -27,10 +27,6 @@ bool RegisterProtocolHandlerInfoBarDelegate::ShouldExpire(
   return false;
 }
 
-void RegisterProtocolHandlerInfoBarDelegate::InfoBarClosed() {
-  delete this;
-}
-
 InfoBarDelegate::Type
     RegisterProtocolHandlerInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;

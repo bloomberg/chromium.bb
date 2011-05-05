@@ -30,11 +30,10 @@ class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~DownloadRequestInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed();
-  virtual gfx::Image* GetIcon() const;
-  virtual string16 GetMessageText() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
 
   DownloadRequestLimiter::TabDownloadState* host_;
 

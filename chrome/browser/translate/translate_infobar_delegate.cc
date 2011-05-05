@@ -359,10 +359,6 @@ void TranslateInfoBarDelegate::InfoBarDismissed() {
   UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslateCloseInfobar", 1);
 }
 
-void TranslateInfoBarDelegate::InfoBarClosed() {
-  delete this;
-}
-
 gfx::Image* TranslateInfoBarDelegate::GetIcon() const {
   return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_TRANSLATE);

@@ -20,14 +20,15 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~PluginInstallerInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual gfx::Image* GetIcon() const;
-  virtual PluginInstallerInfoBarDelegate* AsPluginInstallerInfoBarDelegate();
-  virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
-  virtual string16 GetLinkText();
-  virtual bool LinkClicked(WindowOpenDisposition disposition);
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual PluginInstallerInfoBarDelegate*
+      AsPluginInstallerInfoBarDelegate() OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual string16 GetLinkText() OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   // The containing TabContents
   TabContents* tab_contents_;

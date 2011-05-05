@@ -15,7 +15,16 @@ class SkBitmap;
 
 class MockLinkInfoBarDelegate : public LinkInfoBarDelegate {
  public:
-  MockLinkInfoBarDelegate();
+  // Called when |this| is about to be destroyed.
+  class Owner {
+   public:
+    virtual void OnInfoBarDelegateClosed() = 0;
+
+   protected:
+    virtual ~Owner() {}
+  };
+
+  explicit MockLinkInfoBarDelegate(Owner* owner);
   virtual ~MockLinkInfoBarDelegate();
 
   void set_dont_close_on_action() { closes_on_action_ = false; }
@@ -23,26 +32,24 @@ class MockLinkInfoBarDelegate : public LinkInfoBarDelegate {
   bool message_text_accessed() const { return message_text_accessed_; }
   bool link_text_accessed() const { return link_text_accessed_; }
   bool link_clicked() const { return link_clicked_; }
-  bool closed() const { return closed_; }
 
   static const char kMessage[];
   static const char kLink[];
 
  private:
   // LinkInfoBarDelegate:
-  virtual void InfoBarClosed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageTextWithOffset(size_t* link_offset) const OVERRIDE;
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
+  Owner* owner_;
   // Determines whether the infobar closes when an action is taken or not.
   bool closes_on_action_;
   mutable bool icon_accessed_;
   mutable bool message_text_accessed_;
   mutable bool link_text_accessed_;
   bool link_clicked_;
-  bool closed_;
 
   DISALLOW_COPY_AND_ASSIGN(MockLinkInfoBarDelegate);
 };

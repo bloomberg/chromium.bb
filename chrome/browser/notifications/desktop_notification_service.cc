@@ -102,13 +102,12 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~NotificationPermissionInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed();
-  virtual gfx::Image* GetIcon() const;
-  virtual Type GetInfoBarType() const;
-  virtual string16 GetMessageText() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
-  virtual bool Cancel();
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
 
   // The origin we are asking for permissions on.
   GURL origin_;
@@ -151,9 +150,6 @@ NotificationPermissionInfoBarDelegate::NotificationPermissionInfoBarDelegate(
 
 NotificationPermissionInfoBarDelegate::
     ~NotificationPermissionInfoBarDelegate() {
-}
-
-void NotificationPermissionInfoBarDelegate::InfoBarClosed() {
   if (!action_taken_)
     UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Ignored", 1);
 
@@ -162,8 +158,6 @@ void NotificationPermissionInfoBarDelegate::InfoBarClosed() {
     host->Send(new DesktopNotificationMsg_PermissionRequestDone(
         route_id_, callback_context_));
   }
-
-  delete this;
 }
 
 gfx::Image* NotificationPermissionInfoBarDelegate::GetIcon() const {

@@ -25,7 +25,6 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(const NavigationController::LoadCommittedDetails&
       details) const OVERRIDE;
-  virtual void InfoBarClosed() OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;

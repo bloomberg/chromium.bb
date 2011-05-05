@@ -38,9 +38,8 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~PluginInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed();
-  virtual bool Cancel();
-  virtual bool LinkClicked(WindowOpenDisposition disposition);
+  virtual bool Cancel() OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   virtual std::string GetLearnMoreURL() const = 0;
 
@@ -63,10 +62,6 @@ PluginInfoBarDelegate::PluginInfoBarDelegate(TabContents* tab_contents,
 }
 
 PluginInfoBarDelegate::~PluginInfoBarDelegate() {
-}
-
-void PluginInfoBarDelegate::InfoBarClosed() {
-  delete this;
 }
 
 bool PluginInfoBarDelegate::Cancel() {
@@ -102,14 +97,13 @@ class BlockedPluginInfoBarDelegate : public PluginInfoBarDelegate {
   virtual ~BlockedPluginInfoBarDelegate();
 
   // PluginInfoBarDelegate:
-  virtual string16 GetMessageText() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
-  virtual bool Cancel();
-  virtual void InfoBarClosed();
-  virtual void InfoBarDismissed();
-  virtual bool LinkClicked(WindowOpenDisposition disposition);
-  virtual std::string GetLearnMoreURL() const;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+  virtual void InfoBarDismissed() OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+  virtual std::string GetLearnMoreURL() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(BlockedPluginInfoBarDelegate);
 };
@@ -135,6 +129,7 @@ BlockedPluginInfoBarDelegate::BlockedPluginInfoBarDelegate(
 }
 
 BlockedPluginInfoBarDelegate::~BlockedPluginInfoBarDelegate() {
+  UserMetrics::RecordAction(UserMetricsAction("BlockedPluginInfobar.Closed"));
 }
 
 std::string BlockedPluginInfoBarDelegate::GetLearnMoreURL() const {
@@ -171,11 +166,6 @@ void BlockedPluginInfoBarDelegate::InfoBarDismissed() {
       UserMetricsAction("BlockedPluginInfobar.Dismissed"));
 }
 
-void BlockedPluginInfoBarDelegate::InfoBarClosed() {
-  UserMetrics::RecordAction(UserMetricsAction("BlockedPluginInfobar.Closed"));
-  PluginInfoBarDelegate::InfoBarClosed();
-}
-
 bool BlockedPluginInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   UserMetrics::RecordAction(
@@ -195,14 +185,13 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate {
   virtual ~OutdatedPluginInfoBarDelegate();
 
   // PluginInfoBarDelegate:
-  virtual string16 GetMessageText() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
-  virtual bool Cancel();
-  virtual void InfoBarClosed();
-  virtual void InfoBarDismissed();
-  virtual bool LinkClicked(WindowOpenDisposition disposition);
-  virtual std::string GetLearnMoreURL() const;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+  virtual void InfoBarDismissed() OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+  virtual std::string GetLearnMoreURL() const OVERRIDE;
 
   GURL update_url_;
 
@@ -238,6 +227,7 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
 }
 
 OutdatedPluginInfoBarDelegate::~OutdatedPluginInfoBarDelegate() {
+  UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Closed"));
 }
 
 std::string OutdatedPluginInfoBarDelegate::GetLearnMoreURL() const {
@@ -270,11 +260,6 @@ bool OutdatedPluginInfoBarDelegate::Cancel() {
 void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
   UserMetrics::RecordAction(
       UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
-}
-
-void OutdatedPluginInfoBarDelegate::InfoBarClosed() {
-  UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Closed"));
-  PluginInfoBarDelegate::InfoBarClosed();
 }
 
 bool OutdatedPluginInfoBarDelegate::LinkClicked(

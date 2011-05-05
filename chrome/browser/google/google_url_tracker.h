@@ -168,9 +168,8 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
                                   const GURL& new_google_url);
 
   // ConfirmInfoBarDelegate:
-  virtual bool Accept();
-  virtual bool Cancel();
-  virtual void InfoBarClosed();
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
 
  protected:
   virtual ~GoogleURLTrackerInfoBarDelegate();
@@ -180,8 +179,8 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   // ConfirmInfoBarDelegate:
-  virtual string16 GetMessageText() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerInfoBarDelegate);
 };

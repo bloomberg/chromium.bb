@@ -159,12 +159,11 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   typedef std::pair<std::string, string16> LanguageNamePair;
 
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar();
-  virtual void InfoBarDismissed();
-  virtual void InfoBarClosed();
-  virtual gfx::Image* GetIcon() const;
-  virtual InfoBarDelegate::Type GetInfoBarType() const;
-  virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
+  virtual InfoBar* CreateInfoBar() OVERRIDE;
+  virtual void InfoBarDismissed() OVERRIDE;
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual InfoBarDelegate::Type GetInfoBarType() const OVERRIDE;
+  virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() OVERRIDE;
 
   // Gets the host of the page being translated, or an empty string if no URL is
   // associated with the current page.

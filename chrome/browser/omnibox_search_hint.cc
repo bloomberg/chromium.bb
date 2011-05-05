@@ -56,15 +56,14 @@ class HintInfoBar : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(
-      const NavigationController::LoadCommittedDetails& details) const;
-  virtual void InfoBarDismissed();
-  virtual void InfoBarClosed();
-  virtual gfx::Image* GetIcon() const;
-  virtual Type GetInfoBarType() const;
-  virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
+      const NavigationController::LoadCommittedDetails& details) const OVERRIDE;
+  virtual void InfoBarDismissed() OVERRIDE;
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
 
   // The omnibox hint that shows us.
   OmniboxSearchHint* omnibox_hint_;
@@ -95,6 +94,8 @@ HintInfoBar::HintInfoBar(OmniboxSearchHint* omnibox_hint)
 }
 
 HintInfoBar::~HintInfoBar() {
+  if (!action_taken_)
+    UMA_HISTOGRAM_COUNTS("OmniboxSearchHint.Ignored", 1);
 }
 
 bool HintInfoBar::ShouldExpire(
@@ -107,12 +108,6 @@ void HintInfoBar::InfoBarDismissed() {
   UMA_HISTOGRAM_COUNTS("OmniboxSearchHint.Closed", 1);
   // User closed the infobar, let's not bug him again with this in the future.
   omnibox_hint_->DisableHint();
-}
-
-void HintInfoBar::InfoBarClosed() {
-  if (!action_taken_)
-    UMA_HISTOGRAM_COUNTS("OmniboxSearchHint.Ignored", 1);
-  delete this;
 }
 
 gfx::Image* HintInfoBar::GetIcon() const {

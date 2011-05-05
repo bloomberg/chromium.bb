@@ -53,26 +53,31 @@ TEST_F(InfoBarContainerControllerTest, AddAndRemoveInfoBars) {
   // Add three infobars and then remove them.
   // After each step check to make sure we have the correct number of
   // infobar subviews.
-  MockLinkInfoBarDelegate linkDelegate, linkDelegate2;
-  MockConfirmInfoBarDelegate confirmDelegate;
 
-  [controller_ addInfoBar:&linkDelegate animate:NO];
+  // These delegates delete themselves when they're told their infobars have
+  // closed.
+  MockLinkInfoBarDelegate* linkDelegate = new MockLinkInfoBarDelegate(NULL);
+  MockLinkInfoBarDelegate* linkDelegate2 = new MockLinkInfoBarDelegate(NULL);
+  MockConfirmInfoBarDelegate* confirmDelegate =
+      new MockConfirmInfoBarDelegate(NULL);
+
+  [controller_ addInfoBar:linkDelegate animate:NO];
   EXPECT_EQ(1U, [[view subviews] count]);
 
-  [controller_ addInfoBar:&confirmDelegate animate:NO];
+  [controller_ addInfoBar:confirmDelegate animate:NO];
   EXPECT_EQ(2U, [[view subviews] count]);
 
-  [controller_ addInfoBar:&linkDelegate2 animate:NO];
+  [controller_ addInfoBar:linkDelegate2 animate:NO];
   EXPECT_EQ(3U, [[view subviews] count]);
 
   // Just to mix things up, remove them in a different order.
-  [controller_ closeInfoBarsForDelegate:&confirmDelegate animate:NO];
+  [controller_ closeInfoBarsForDelegate:confirmDelegate animate:NO];
   EXPECT_EQ(2U, [[view subviews] count]);
 
-  [controller_ closeInfoBarsForDelegate:&linkDelegate animate:NO];
+  [controller_ closeInfoBarsForDelegate:linkDelegate animate:NO];
   EXPECT_EQ(1U, [[view subviews] count]);
 
-  [controller_ closeInfoBarsForDelegate:&linkDelegate2 animate:NO];
+  [controller_ closeInfoBarsForDelegate:linkDelegate2 animate:NO];
   EXPECT_EQ(0U, [[view subviews] count]);
 }
 
@@ -80,12 +85,18 @@ TEST_F(InfoBarContainerControllerTest, RemoveAllInfoBars) {
   NSView* view = [controller_ view];
 
   // Add three infobars and then remove them all.
-  MockLinkInfoBarDelegate linkDelegate;
-  MockConfirmInfoBarDelegate confirmDelegate, confirmDelegate2;
 
-  [controller_ addInfoBar:&linkDelegate animate:NO];
-  [controller_ addInfoBar:&confirmDelegate animate:NO];
-  [controller_ addInfoBar:&confirmDelegate2 animate:NO];
+  // These delegates delete themselves when they're told their infobars have
+  // closed.
+  MockLinkInfoBarDelegate* linkDelegate = new MockLinkInfoBarDelegate(NULL);
+  MockConfirmInfoBarDelegate* confirmDelegate =
+      new MockConfirmInfoBarDelegate(NULL);
+  MockConfirmInfoBarDelegate* confirmDelegate2 =
+      new MockConfirmInfoBarDelegate(NULL);
+
+  [controller_ addInfoBar:linkDelegate animate:NO];
+  [controller_ addInfoBar:confirmDelegate animate:NO];
+  [controller_ addInfoBar:confirmDelegate2 animate:NO];
   EXPECT_EQ(3U, [[view subviews] count]);
 
   [controller_ removeAllInfoBars];

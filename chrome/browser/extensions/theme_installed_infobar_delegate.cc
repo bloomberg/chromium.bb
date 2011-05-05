@@ -69,10 +69,6 @@ bool ThemeInstalledInfoBarDelegate::Cancel() {
   return true;
 }
 
-void ThemeInstalledInfoBarDelegate::InfoBarClosed() {
-  delete this;
-}
-
 gfx::Image* ThemeInstalledInfoBarDelegate::GetIcon() const {
   // TODO(aa): Reply with the theme's icon, but this requires reading it
   // asynchronously from disk.

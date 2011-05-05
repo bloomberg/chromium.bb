@@ -131,10 +131,6 @@ bool AlternateNavURLFetcher::LinkClicked(WindowOpenDisposition disposition) {
   return true;
 }
 
-void AlternateNavURLFetcher::InfoBarClosed() {
-  delete this;
-}
-
 void AlternateNavURLFetcher::SetStatusFromURLFetch(
     const GURL& url,
     const net::URLRequestStatus& status,

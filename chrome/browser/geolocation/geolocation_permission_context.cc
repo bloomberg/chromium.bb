@@ -125,15 +125,14 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~GeolocationConfirmInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed();
-  virtual gfx::Image* GetIcon() const;
-  virtual Type GetInfoBarType() const;
-  virtual string16 GetMessageText() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
-  virtual bool Cancel();
-  virtual string16 GetLinkText();
-  virtual bool LinkClicked(WindowOpenDisposition disposition);
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+  virtual string16 GetLinkText() OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   TabContents* tab_contents_;
   GeolocationInfoBarQueueController* controller_;
@@ -165,12 +164,8 @@ GeolocationConfirmInfoBarDelegate::GeolocationConfirmInfoBarDelegate(
 }
 
 GeolocationConfirmInfoBarDelegate::~GeolocationConfirmInfoBarDelegate() {
-}
-
-void GeolocationConfirmInfoBarDelegate::InfoBarClosed() {
   controller_->OnInfoBarClosed(render_process_id_, render_view_id_,
                                bridge_id_);
-  delete this;
 }
 
 gfx::Image* GeolocationConfirmInfoBarDelegate::GetIcon() const {

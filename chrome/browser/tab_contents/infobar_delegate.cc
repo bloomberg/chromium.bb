@@ -30,6 +30,7 @@ void InfoBarDelegate::InfoBarDismissed() {
 }
 
 void InfoBarDelegate::InfoBarClosed() {
+  delete this;
 }
 
 gfx::Image* InfoBarDelegate::GetIcon() const {

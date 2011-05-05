@@ -144,7 +144,6 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(
       const NavigationController::LoadCommittedDetails& details) const OVERRIDE;
-  virtual void InfoBarClosed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
@@ -182,17 +181,13 @@ DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(
 }
 
 DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {
+  if (!action_taken_)
+    UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.Ignored", 1);
 }
 
 bool DefaultBrowserInfoBarDelegate::ShouldExpire(
     const NavigationController::LoadCommittedDetails& details) const {
   return should_expire_;
-}
-
-void DefaultBrowserInfoBarDelegate::InfoBarClosed() {
-  if (!action_taken_)
-    UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.Ignored", 1);
-  delete this;
 }
 
 gfx::Image* DefaultBrowserInfoBarDelegate::GetIcon() const {
@@ -305,7 +300,6 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~SessionCrashedInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
@@ -325,10 +319,6 @@ SessionCrashedInfoBarDelegate::SessionCrashedInfoBarDelegate(
 }
 
 SessionCrashedInfoBarDelegate::~SessionCrashedInfoBarDelegate() {
-}
-
-void SessionCrashedInfoBarDelegate::InfoBarClosed() {
-  delete this;
 }
 
 gfx::Image* SessionCrashedInfoBarDelegate::GetIcon() const {
@@ -1081,29 +1071,13 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
 
 class DNSCertProvenanceCheckingInfoBar : public ConfirmInfoBarDelegate {
  public:
-  explicit DNSCertProvenanceCheckingInfoBar(TabContents* tab_contents)
-      : ConfirmInfoBarDelegate(tab_contents),
-        tab_contents_(tab_contents) {
-  }
+  explicit DNSCertProvenanceCheckingInfoBar(TabContents* tab_contents);
+  virtual ~DNSCertProvenanceCheckingInfoBar();
 
-  virtual string16 GetMessageText() const {
-    return l10n_util::GetStringUTF16(
-        IDS_DNS_CERT_PROVENANCE_CHECKING_WARNING_MESSAGE);
-  }
-
-  virtual int GetButtons() const {
-    return BUTTON_OK;
-  }
-
-  virtual string16 GetButtonLabel(InfoBarButton button) const {
-    return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-  }
-
-  virtual bool Accept() {
-    tab_contents_->OpenURL(GURL(kLearnMoreURL), GURL(), NEW_FOREGROUND_TAB,
-                           PageTransition::AUTO_BOOKMARK);
-    return true;
-  }
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DNSCertProvenanceCheckingInfoBar);
@@ -1111,6 +1085,35 @@ class DNSCertProvenanceCheckingInfoBar : public ConfirmInfoBarDelegate {
   static const char kLearnMoreURL[];
   TabContents* const tab_contents_;
 };
+
+DNSCertProvenanceCheckingInfoBar::DNSCertProvenanceCheckingInfoBar(
+    TabContents* tab_contents)
+    : ConfirmInfoBarDelegate(tab_contents),
+      tab_contents_(tab_contents) {
+}
+
+DNSCertProvenanceCheckingInfoBar::~DNSCertProvenanceCheckingInfoBar() {
+}
+
+string16 DNSCertProvenanceCheckingInfoBar::GetMessageText() const {
+  return l10n_util::GetStringUTF16(
+      IDS_DNS_CERT_PROVENANCE_CHECKING_WARNING_MESSAGE);
+}
+
+int DNSCertProvenanceCheckingInfoBar::GetButtons() const {
+  return BUTTON_OK;
+}
+
+string16 DNSCertProvenanceCheckingInfoBar::GetButtonLabel(
+    InfoBarButton button) const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+bool DNSCertProvenanceCheckingInfoBar::Accept() {
+  tab_contents_->OpenURL(GURL(kLearnMoreURL), GURL(), NEW_FOREGROUND_TAB,
+                         PageTransition::AUTO_BOOKMARK);
+  return true;
+}
 
 // This is the page which provides information on DNS certificate provenance
 // checking.

@@ -18,12 +18,8 @@ DownloadRequestInfoBarDelegate::DownloadRequestInfoBarDelegate(
 }
 
 DownloadRequestInfoBarDelegate::~DownloadRequestInfoBarDelegate() {
-}
-
-void DownloadRequestInfoBarDelegate::InfoBarClosed() {
   if (host_)
     host_->Cancel();
-  delete this;
 }
 
 gfx::Image* DownloadRequestInfoBarDelegate::GetIcon() const {

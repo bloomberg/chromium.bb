@@ -42,13 +42,12 @@ class SSLCertAddedInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~SSLCertAddedInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed();
-  virtual gfx::Image* GetIcon() const;
-  virtual Type GetInfoBarType() const;
-  virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
 
   TabContents* tab_contents_;  // The TabContents we are attached to.
   scoped_refptr<net::X509Certificate> cert_;  // The cert we added.
@@ -63,11 +62,6 @@ SSLCertAddedInfoBarDelegate::SSLCertAddedInfoBarDelegate(
 }
 
 SSLCertAddedInfoBarDelegate::~SSLCertAddedInfoBarDelegate() {
-}
-
-void SSLCertAddedInfoBarDelegate::InfoBarClosed() {
-  // ConfirmInfoBarDelegate doesn't delete itself.
-  delete this;
 }
 
 gfx::Image* SSLCertAddedInfoBarDelegate::GetIcon() const {

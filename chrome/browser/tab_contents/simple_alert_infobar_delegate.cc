@@ -27,10 +27,6 @@ bool SimpleAlertInfoBarDelegate::ShouldExpire(
   return auto_expire_ && ConfirmInfoBarDelegate::ShouldExpire(details);
 }
 
-void SimpleAlertInfoBarDelegate::InfoBarClosed() {
-  delete this;
-}
-
 gfx::Image* SimpleAlertInfoBarDelegate::GetIcon() const {
   return icon_;
 }
