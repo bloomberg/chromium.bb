@@ -26,7 +26,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_data.h"
-#include "webkit/glue/form_data.h"
 
 using webkit_glue::FormData;
 
