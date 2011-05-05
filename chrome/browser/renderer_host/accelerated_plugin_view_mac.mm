@@ -156,34 +156,36 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   int dirtyRectCount;
   [self getRectsBeingDrawn:&dirtyRects count:&dirtyRectCount];
 
-  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
+  {
+    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
 
-  // Mask out any cutout rects--somewhat counterintuitively cutout rects are
-  // places where clearColor is *not* drawn. The trick is that drawing nothing
-  // lets the parent view (i.e., the web page) show through, whereas drawing
-  // clearColor punches a hole in the window (letting OpenGL show through).
-  if ([cutoutRects_.get() count] > 0) {
-    NSBezierPath* path = [NSBezierPath bezierPath];
-    // Trace the bounds clockwise to give a base clip rect of the whole view.
-    NSRect bounds = [self bounds];
-    [path moveToPoint:bounds.origin];
-    [path lineToPoint:NSMakePoint(NSMinX(bounds), NSMaxY(bounds))];
-    [path lineToPoint:NSMakePoint(NSMaxX(bounds), NSMaxY(bounds))];
-    [path lineToPoint:NSMakePoint(NSMaxX(bounds), NSMinY(bounds))];
-    [path closePath];
+    // Mask out any cutout rects--somewhat counterintuitively cutout rects are
+    // places where clearColor is *not* drawn. The trick is that drawing nothing
+    // lets the parent view (i.e., the web page) show through, whereas drawing
+    // clearColor punches a hole in the window (letting OpenGL show through).
+    if ([cutoutRects_.get() count] > 0) {
+      NSBezierPath* path = [NSBezierPath bezierPath];
+      // Trace the bounds clockwise to give a base clip rect of the whole view.
+      NSRect bounds = [self bounds];
+      [path moveToPoint:bounds.origin];
+      [path lineToPoint:NSMakePoint(NSMinX(bounds), NSMaxY(bounds))];
+      [path lineToPoint:NSMakePoint(NSMaxX(bounds), NSMaxY(bounds))];
+      [path lineToPoint:NSMakePoint(NSMaxX(bounds), NSMinY(bounds))];
+      [path closePath];
 
-    // Then trace each cutout rect counterclockwise to remove that region from
-    // the clip region.
-    for (NSValue* rectWrapper in cutoutRects_.get()) {
-      [path appendBezierPathWithRect:[rectWrapper rectValue]];
+      // Then trace each cutout rect counterclockwise to remove that region from
+      // the clip region.
+      for (NSValue* rectWrapper in cutoutRects_.get()) {
+        [path appendBezierPathWithRect:[rectWrapper rectValue]];
+      }
+
+      [path addClip];
     }
 
-    [path addClip];
+    // Punch a hole so that the OpenGL view shows through.
+    [[NSColor clearColor] set];
+    NSRectFillList(dirtyRects, dirtyRectCount);
   }
-
-  // Punch a hole so that the OpenGL view shows through.
-  [[NSColor clearColor] set];
-  NSRectFillList(dirtyRects, dirtyRectCount);
 
   [self drawView];
 }
