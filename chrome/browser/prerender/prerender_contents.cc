@@ -435,16 +435,14 @@ void PrerenderContents::Observe(NotificationType type,
 
     case NotificationType::AUTH_NEEDED:
     case NotificationType::AUTH_CANCELLED: {
-      // Prerendered pages have a NULL controller and the login handler should
-      // be referencing us as the RenderViewHost delegate.
-      NavigationController* controller =
-          Source<NavigationController>(source).ptr();
+      // Only respond to HTTP authentication notifications which
+      // are required for this prerendered page.
       LoginNotificationDetails* details_ptr =
           Details<LoginNotificationDetails>(details).ptr();
       LoginHandler* handler = details_ptr->handler();
       DCHECK(handler != NULL);
       RenderViewHostDelegate* delegate = handler->GetRenderViewHostDelegate();
-      if (controller == NULL && delegate == GetRenderViewHostDelegate()) {
+      if (delegate == GetRenderViewHostDelegate()) {
         Destroy(FINAL_STATUS_AUTH_NEEDED);
         return;
       }
