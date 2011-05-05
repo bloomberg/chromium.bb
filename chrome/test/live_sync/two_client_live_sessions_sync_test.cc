@@ -115,8 +115,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest, BothChanged) {
   ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows));
 }
 
+// Flaky. http://crbug.com/81688
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       FirstChangesAndSetsPassphrase) {
+                       FLAKY_FirstChangesAndSetsPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -157,8 +158,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows));
 }
 
+// Flaky. http://crbug.com/81688
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       FirstChangesWhileSecondWaitingForPassphrase) {
+                       FLAKY_FirstChangesWhileSecondWaitingForPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -205,8 +207,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows));
 }
 
+// Flaky. http://crbug.com/81688
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       SecondChangesAfterEncrAndPassphraseChange) {
+                       FLAKY_SecondChangesAfterEncrAndPassphraseChange) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -255,8 +258,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_FALSE(GetSessionData(1, &sessions1));
 }
 
+// Flaky. http://crbug.com/81688
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       SecondChangesBeforeEncrAndPassphraseChange) {
+                       FLAKY_SecondChangesBeforeEncrAndPassphraseChange) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
