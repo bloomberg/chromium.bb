@@ -12,6 +12,7 @@
 #include <map>
 #include <string>
 
+class Extension;
 class ExtensionServiceInterface;
 struct ExtensionSyncData;
 
@@ -62,8 +63,11 @@ bool FlushExtensionData(const ExtensionSyncTraits& traits,
 // Updates the server data for the given extension.  Returns true iff
 // this was successful; if unsuccessful, an error string is put into
 // |error|.
+//
+// TODO(akalin): Remove dependence on Extension once we have the
+// ExtensionService push changes onto us.
 bool UpdateServerData(const ExtensionSyncTraits& traits,
-                      const std::string& id,
+                      const Extension& extension,
                       const ExtensionServiceInterface& extension_service,
                       sync_api::UserShare* user_share,
                       std::string* error);

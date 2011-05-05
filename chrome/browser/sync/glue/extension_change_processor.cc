@@ -80,7 +80,7 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
   VLOG(1) << "Updating server data for extension " << id
           << " (notification type = " << type.value << ")";
   std::string error;
-  if (!UpdateServerData(traits_, id, *extension_service_,
+  if (!UpdateServerData(traits_, extension, *extension_service_,
                         share_handle(), &error)) {
     error_handler()->OnUnrecoverableError(FROM_HERE, error);
   }

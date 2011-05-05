@@ -1321,15 +1321,13 @@ ExtensionSyncData ExtensionService::GetSyncDataHelper(
 }
 
 bool ExtensionService::GetSyncData(
-    const std::string& id,
+    const Extension& extension,
     ExtensionFilter filter,
     ExtensionSyncData* extension_sync_data) const {
-  DCHECK(Extension::IdIsValid(id));
-  const Extension* extension = GetInstalledExtension(id);
-  if (!extension || !(*filter)(*extension)) {
+  if (!(*filter)(extension)) {
     return false;
   }
-  *extension_sync_data = GetSyncDataHelper(*extension);
+  *extension_sync_data = GetSyncDataHelper(extension);
   return true;
 }
 

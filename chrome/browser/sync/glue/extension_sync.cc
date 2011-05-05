@@ -177,13 +177,14 @@ bool FlushExtensionData(const ExtensionSyncTraits& traits,
 }
 
 bool UpdateServerData(const ExtensionSyncTraits& traits,
-                      const std::string& id,
+                      const Extension& extension,
                       const ExtensionServiceInterface& extension_service,
                       sync_api::UserShare* user_share,
                       std::string* error) {
+  const std::string& id = extension.id();
   ExtensionSyncData data;
   if (!extension_service.GetSyncData(
-          id, traits.is_valid_and_syncable, &data)) {
+          extension, traits.is_valid_and_syncable, &data)) {
     *error =
         std::string("UpdateServerData() called for invalid or "
                     "unsyncable extension ") + id;

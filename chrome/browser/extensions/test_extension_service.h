@@ -38,7 +38,7 @@ class TestExtensionService : public ExtensionServiceInterface {
   virtual void CheckAdminBlacklist() OVERRIDE;
   virtual void CheckForUpdatesSoon() OVERRIDE;
   virtual bool GetSyncData(
-      const std::string& id, ExtensionFilter filter,
+      const Extension& extension, ExtensionFilter filter,
       ExtensionSyncData* extension_sync_data) const OVERRIDE;
   virtual std::vector<ExtensionSyncData> GetSyncDataList(
       ExtensionFilter filter) const OVERRIDE;

@@ -62,7 +62,7 @@ void TestExtensionService::CheckForUpdatesSoon() {
 }
 
 bool TestExtensionService::GetSyncData(
-    const std::string& id, ExtensionFilter filter,
+    const Extension& extension, ExtensionFilter filter,
     ExtensionSyncData* extension_sync_data) const {
   ADD_FAILURE();
   return false;

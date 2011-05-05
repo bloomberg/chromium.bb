@@ -3419,11 +3419,11 @@ bool GoodOnly(const Extension& extension) {
 TEST_F(ExtensionServiceTest, GetSyncData) {
   InitializeEmptyExtensionService();
   InstallCrx(data_dir_.AppendASCII("good.crx"), true);
-
-  ExtensionSyncData data;
-  EXPECT_TRUE(service_->GetSyncData(good_crx, &AllExtensions, &data));
   const Extension* extension = service_->GetInstalledExtension(good_crx);
   ASSERT_TRUE(extension);
+
+  ExtensionSyncData data;
+  EXPECT_TRUE(service_->GetSyncData(*extension, &AllExtensions, &data));
   EXPECT_EQ(extension->id(), data.id);
   EXPECT_FALSE(data.uninstalled);
   EXPECT_EQ(service_->IsExtensionEnabled(good_crx), data.enabled);
@@ -3437,30 +3437,30 @@ TEST_F(ExtensionServiceTest, GetSyncDataTerminated) {
   InitializeEmptyExtensionService();
   InstallCrx(data_dir_.AppendASCII("good.crx"), true);
   TerminateExtension(good_crx);
+  const Extension* extension = service_->GetInstalledExtension(good_crx);
+  ASSERT_TRUE(extension);
   ExtensionSyncData data;
-  EXPECT_TRUE(service_->GetSyncData(good_crx, &AllExtensions, &data));
+  EXPECT_TRUE(service_->GetSyncData(*extension, &AllExtensions, &data));
 }
 
 TEST_F(ExtensionServiceTest, GetSyncDataFilter) {
   InitializeEmptyExtensionService();
   InstallCrx(data_dir_.AppendASCII("good.crx"), true);
+  const Extension* extension = service_->GetInstalledExtension(good_crx);
+  ASSERT_TRUE(extension);
   ExtensionSyncData data;
-  EXPECT_FALSE(service_->GetSyncData(good_crx, &ThemesOnly, &data));
-}
-
-TEST_F(ExtensionServiceTest, GetSyncDataNotPresent) {
-  InitializeEmptyExtensionService();
-  ExtensionSyncData data;
-  EXPECT_FALSE(service_->GetSyncData(good_crx, &AllExtensions, &data));
+  EXPECT_FALSE(service_->GetSyncData(*extension, &ThemesOnly, &data));
 }
 
 TEST_F(ExtensionServiceTest, GetSyncDataUserSettings) {
   InitializeEmptyExtensionService();
   InstallCrx(data_dir_.AppendASCII("good.crx"), true);
+  const Extension* extension = service_->GetInstalledExtension(good_crx);
+  ASSERT_TRUE(extension);
 
   {
     ExtensionSyncData data;
-    EXPECT_TRUE(service_->GetSyncData(good_crx, &AllExtensions, &data));
+    EXPECT_TRUE(service_->GetSyncData(*extension, &AllExtensions, &data));
     EXPECT_TRUE(data.enabled);
     EXPECT_FALSE(data.incognito_enabled);
   }
@@ -3468,7 +3468,7 @@ TEST_F(ExtensionServiceTest, GetSyncDataUserSettings) {
   service_->DisableExtension(good_crx);
   {
     ExtensionSyncData data;
-    EXPECT_TRUE(service_->GetSyncData(good_crx, &AllExtensions, &data));
+    EXPECT_TRUE(service_->GetSyncData(*extension, &AllExtensions, &data));
     EXPECT_FALSE(data.enabled);
     EXPECT_FALSE(data.incognito_enabled);
   }
@@ -3476,7 +3476,7 @@ TEST_F(ExtensionServiceTest, GetSyncDataUserSettings) {
   service_->SetIsIncognitoEnabled(good_crx, true);
   {
     ExtensionSyncData data;
-    EXPECT_TRUE(service_->GetSyncData(good_crx, &AllExtensions, &data));
+    EXPECT_TRUE(service_->GetSyncData(*extension, &AllExtensions, &data));
     EXPECT_FALSE(data.enabled);
     EXPECT_TRUE(data.incognito_enabled);
   }
@@ -3484,7 +3484,7 @@ TEST_F(ExtensionServiceTest, GetSyncDataUserSettings) {
   service_->EnableExtension(good_crx);
   {
     ExtensionSyncData data;
-    EXPECT_TRUE(service_->GetSyncData(good_crx, &AllExtensions, &data));
+    EXPECT_TRUE(service_->GetSyncData(*extension, &AllExtensions, &data));
     EXPECT_TRUE(data.enabled);
     EXPECT_TRUE(data.incognito_enabled);
   }

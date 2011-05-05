@@ -90,10 +90,14 @@ class ExtensionServiceInterface {
   // TODO(akalin): We'll eventually need separate methods for app
   // sync.  See http://crbug.com/58077 and http://crbug.com/61447.
 
-  // Get the sync data for a particular id.  If an extension with the
-  // given ID exists and passes |filter|, fill in
-  // |extension_sync_data| and return true.  Otherwise, return false.
-  virtual bool GetSyncData(const std::string& id,
+  // Get the sync data for |extension|.  If |extension| passes
+  // |filter|, fill in |extension_sync_data| and return true.
+  // Otherwise, return false.
+  //
+  // Ideally, we'd just have to pass in the extension ID, but the
+  // service may not know about the extension anymore (if it's
+  // unloaded).
+  virtual bool GetSyncData(const Extension& extension,
                            ExtensionFilter filter,
                            ExtensionSyncData* extension_sync_data) const = 0;
 
@@ -385,7 +389,7 @@ class ExtensionService
 
   // Sync methods implementation.
   virtual bool GetSyncData(
-      const std::string& id,
+      const Extension& extension,
       ExtensionFilter filter,
       ExtensionSyncData* extension_sync_data) const OVERRIDE;
   virtual std::vector<ExtensionSyncData> GetSyncDataList(
