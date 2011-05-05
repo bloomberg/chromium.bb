@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@ class Size;
 namespace views {
 
 class Combobox;
+class KeyEvent;
 class View;
 
 class NativeComboboxWrapper {
@@ -42,6 +43,18 @@ class NativeComboboxWrapper {
 
   // Sets the focus to the button.
   virtual void SetFocus() = 0;
+
+  // Invoked when a key is pressed/release on Combobox.  Subclasser
+  // should return true if the event has been processed and false
+  // otherwise.
+  // See also View::OnKeyPressed/OnKeyReleased.
+  virtual bool HandleKeyPressed(const views::KeyEvent& e) = 0;
+  virtual bool HandleKeyReleased(const views::KeyEvent& e) = 0;
+
+  // Invoked when focus is being moved from or to the Combobox.
+  // See also View::OnFocus/OnBlur.
+  virtual void HandleFocus() = 0;
+  virtual void HandleBlur() = 0;
 
   // Returns a handle to the underlying native view for testing.
   virtual gfx::NativeView GetTestingHandle() const = 0;

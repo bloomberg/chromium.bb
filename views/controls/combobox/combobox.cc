@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,12 +99,12 @@ void Combobox::OnPaintFocusBorder(gfx::Canvas* canvas) {
     View::OnPaintFocusBorder(canvas);
 }
 
-void Combobox::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_COMBOBOX;
-  state->name = accessible_name_;
-  state->value = model_->GetItemAt(selected_item_);
-  state->index = selected_item();
-  state->count = model()->GetItemCount();
+bool Combobox::OnKeyPressed(const views::KeyEvent& e) {
+  return native_wrapper_ && native_wrapper_->HandleKeyPressed(e);
+}
+
+bool Combobox::OnKeyReleased(const views::KeyEvent& e) {
+  return native_wrapper_ && native_wrapper_->HandleKeyReleased(e);
 }
 
 void Combobox::OnFocus() {
@@ -114,6 +114,19 @@ void Combobox::OnFocus() {
   else
     View::OnFocus();  // Will focus the RootView window (so we still get
                       // keyboard messages).
+}
+
+void Combobox::OnBlur() {
+  if (native_wrapper_)
+    native_wrapper_->HandleBlur();
+}
+
+void Combobox::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_COMBOBOX;
+  state->name = accessible_name_;
+  state->value = model_->GetItemAt(selected_item_);
+  state->index = selected_item();
+  state->count = model()->GetItemCount();
 }
 
 void Combobox::ViewHierarchyChanged(bool is_add, View* parent,

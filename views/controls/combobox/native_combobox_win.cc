@@ -139,6 +139,20 @@ void NativeComboboxWin::SetFocus() {
   OnFocus();
 }
 
+bool NativeComboboxWin::HandleKeyPressed(const views::KeyEvent& event) {
+  return false;
+}
+
+bool NativeComboboxWin::HandleKeyReleased(const views::KeyEvent& event) {
+  return false;
+}
+
+void NativeComboboxWin::HandleFocus() {
+}
+
+void NativeComboboxWin::HandleBlur() {
+}
+
 gfx::NativeView NativeComboboxWin::GetTestingHandle() const {
   return native_view();
 }

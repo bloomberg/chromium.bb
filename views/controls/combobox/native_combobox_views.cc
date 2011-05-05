@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -75,9 +76,9 @@ NativeComboboxViews::~NativeComboboxViews() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeComboboxViews, View overrides:
 
-bool NativeComboboxViews::OnMousePressed(const views::MouseEvent& e) {
+bool NativeComboboxViews::OnMousePressed(const views::MouseEvent& mouse_event) {
   combobox_->RequestFocus();
-  if (e.IsLeftMouseButton()) {
+  if (mouse_event.IsLeftMouseButton()) {
     UpdateFromModel();
     ShowDropDownMenu();
   }
@@ -85,20 +86,61 @@ bool NativeComboboxViews::OnMousePressed(const views::MouseEvent& e) {
   return true;
 }
 
-bool NativeComboboxViews::OnMouseDragged(const views::MouseEvent& event) {
+bool NativeComboboxViews::OnMouseDragged(const views::MouseEvent& mouse_event) {
   return true;
 }
 
-bool NativeComboboxViews::OnKeyPressed(const views::KeyEvent& event) {
-  // OnKeyPressed/OnKeyReleased/OnFocus/OnBlur will never be invoked on
-  // NativeComboboxViews as it will never gain focus.
-  NOTREACHED();
-  return false;
+bool NativeComboboxViews::OnKeyPressed(const views::KeyEvent& key_event) {
+  // TODO(oshima): handle IME.
+  DCHECK(key_event.type() == ui::ET_KEY_PRESSED);
+
+  // Check if we are in the default state (-1) and set to first item.
+  if(selected_item_ == -1)
+    selected_item_ = 0;
+
+  int new_item = selected_item_;
+  switch(key_event.key_code()){
+
+    // move to the next element if any
+    case ui::VKEY_DOWN:
+      if (new_item < (combobox_->model()->GetItemCount() - 1))
+        new_item++;
+      break;
+
+    // move to the end of the list
+    case ui::VKEY_END:
+    case ui::VKEY_NEXT:
+      new_item = combobox_->model()->GetItemCount() - 1;
+      break;
+
+    // move to the top of the list
+   case ui::VKEY_HOME:
+   case ui::VKEY_PRIOR:
+      new_item = 0;
+      break;
+
+    // move to the previous element if any
+    case ui::VKEY_UP:
+      if (new_item > 0)
+        new_item--;
+      break;
+
+    default:
+      return false;
+
+  }
+
+  if(new_item != selected_item_) {
+    selected_item_ = new_item;
+    combobox_->SelectionChanged();
+    SchedulePaint();
+  }
+
+  return true;
 }
 
-bool NativeComboboxViews::OnKeyReleased(const views::KeyEvent& event) {
-  NOTREACHED();
-  return false;
+bool NativeComboboxViews::OnKeyReleased(const views::KeyEvent& key_event) {
+  return true;
 }
 
 void NativeComboboxViews::OnPaint(gfx::Canvas* canvas) {
@@ -176,6 +218,21 @@ View* NativeComboboxViews::GetView() {
 
 void NativeComboboxViews::SetFocus() {
   text_border_->set_has_focus(true);
+}
+
+bool NativeComboboxViews::HandleKeyPressed(const KeyEvent& e) {
+  return OnKeyPressed(e);
+}
+
+bool NativeComboboxViews::HandleKeyReleased(const KeyEvent& e) {
+  return true;
+}
+
+void NativeComboboxViews::HandleFocus() {
+  SchedulePaint();
+}
+
+void NativeComboboxViews::HandleBlur() {
 }
 
 gfx::NativeView NativeComboboxViews::GetTestingHandle() const {

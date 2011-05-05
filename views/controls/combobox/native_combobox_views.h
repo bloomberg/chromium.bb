@@ -31,10 +31,10 @@ class NativeComboboxViews : public views::View,
   virtual ~NativeComboboxViews();
 
   // views::View overrides:
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
-  virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const views::MouseEvent& mouse_event) OVERRIDE;
+  virtual bool OnMouseDragged(const views::MouseEvent& mouse_event) OVERRIDE;
+  virtual bool OnKeyPressed(const views::KeyEvent& key_event) OVERRIDE;
+  virtual bool OnKeyReleased(const views::KeyEvent& key_event) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
@@ -48,6 +48,10 @@ class NativeComboboxViews : public views::View,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual View* GetView() OVERRIDE;
   virtual void SetFocus() OVERRIDE;
+  virtual bool HandleKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool HandleKeyReleased(const views::KeyEvent& event) OVERRIDE;
+  virtual void HandleFocus() OVERRIDE;
+  virtual void HandleBlur() OVERRIDE;
   virtual gfx::NativeView GetTestingHandle() const OVERRIDE;
 
   // MenuDelegate overrides:

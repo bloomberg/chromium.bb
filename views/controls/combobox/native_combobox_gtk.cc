@@ -101,6 +101,20 @@ void NativeComboboxGtk::SetFocus() {
   OnFocus();
 }
 
+bool NativeComboboxGtk::HandleKeyPressed(const views::KeyEvent& event) {
+  return false;
+}
+
+bool NativeComboboxGtk::HandleKeyReleased(const views::KeyEvent& event) {
+  return false;
+}
+
+void NativeComboboxGtk::HandleFocus() {
+}
+
+void NativeComboboxGtk::HandleBlur() {
+}
+
 gfx::NativeView NativeComboboxGtk::GetTestingHandle() const {
   return native_view();
 }

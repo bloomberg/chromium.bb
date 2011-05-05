@@ -67,11 +67,14 @@ class Combobox : public View {
   virtual void SetEnabled(bool enabled) OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e) OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE;
+  virtual bool OnKeyReleased(const views::KeyEvent& e) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:
   // Overridden from View:
-  virtual void OnFocus() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add, View* parent,
                                     View* child) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;

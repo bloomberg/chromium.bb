@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,20 +19,24 @@ class NativeComboboxGtk : public NativeControlGtk,
   virtual ~NativeComboboxGtk();
 
   // Overridden from NativeComboboxWrapper:
-  virtual void UpdateFromModel();
-  virtual void UpdateSelectedItem();
-  virtual void UpdateEnabled();
-  virtual int GetSelectedItem() const;
-  virtual bool IsDropdownOpen() const;
-  virtual gfx::Size GetPreferredSize();
-  virtual View* GetView();
-  virtual void SetFocus();
-  virtual gfx::NativeView GetTestingHandle() const;
+  virtual void UpdateFromModel() OVERRIDE;
+  virtual void UpdateSelectedItem() OVERRIDE;
+  virtual void UpdateEnabled() OVERRIDE;
+  virtual int GetSelectedItem() const OVERRIDE;
+  virtual bool IsDropdownOpen() const OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual View* GetView() OVERRIDE;
+  virtual void SetFocus() OVERRIDE;
+  virtual bool HandleKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool HandleKeyReleased(const views::KeyEvent& event) OVERRIDE;
+  virtual void HandleFocus() OVERRIDE;
+  virtual void HandleBlur() OVERRIDE;
+  virtual gfx::NativeView GetTestingHandle() const OVERRIDE;
 
  protected:
   // Overridden from NativeControlGtk:
-  virtual void CreateNativeControl();
-  virtual void NativeControlCreated(GtkWidget* widget);
+  virtual void CreateNativeControl() OVERRIDE;
+  virtual void NativeControlCreated(GtkWidget* widget) OVERRIDE;
 
  private:
   void SelectionChanged();
