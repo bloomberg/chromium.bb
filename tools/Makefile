@@ -602,7 +602,7 @@ glibc-adhoc-files: | SRC/glibc SRC/linux-headers-for-nacl
 
 # Extra arguments to scons to define build and install destinations.
 SCONS_DESTINATIONS_NOLIB=\
- DESTINATION_ROOT=tools/BUILD/build-extra_sdk-$(CROSSARCH) \
+ DESTINATION_ROOT=tools/BUILD \
  naclsdk_mode=custom:$(SDKLOC_NATIVE) \
  extra_sdk_include_destination=$(ARCH_DEST_INC_NATIVE) \
 
