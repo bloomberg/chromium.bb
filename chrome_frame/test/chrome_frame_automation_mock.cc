@@ -45,7 +45,9 @@ TEST(ChromeFrame, PostMessage) {
   EXPECT_FALSE(mock_postmessage.postmessage_result());
 }
 
-TEST(ChromeFrame, RequestStart) {
+// Marking this test as flaky as it fails randomly on the CF builders.
+// http://code.google.com/p/chromium/issues/detail?id=81479
+TEST(ChromeFrame, FLAKY_RequestStart) {
   MessageLoopForUI loop;
   AutomationMockHostNetworkRequestStart mock_request_start(&loop,
                                                            kLongWaitTimeout);
