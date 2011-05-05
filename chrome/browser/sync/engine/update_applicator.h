@@ -62,6 +62,7 @@ class UpdateApplicator {
   class ResultTracker {
    public:
      explicit ResultTracker(size_t num_results);
+     virtual ~ResultTracker();
      void AddConflict(syncable::Id);
      void AddEncryptionConflict(syncable::Id);
      void AddSuccess(syncable::Id);

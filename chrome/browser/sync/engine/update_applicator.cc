@@ -130,6 +130,9 @@ UpdateApplicator::ResultTracker::ResultTracker(size_t num_results) {
   successful_ids_.reserve(num_results);
 }
 
+UpdateApplicator::ResultTracker::~ResultTracker() {
+}
+
 void UpdateApplicator::ResultTracker::AddConflict(syncable::Id id) {
   conflicting_ids_.push_back(id);
 }
