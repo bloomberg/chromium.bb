@@ -625,7 +625,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExcessiveMemory) {
 
 // Checks that we don't prerender in an infinite loop.
 // TODO(dominich): fix test to work with TabContents.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
+// Disabled for OSX as per http://crbug.com/81679
+#if defined(OS_MACOSX)
+#define MAYBE_PrerenderInfiniteTest DISABLED_PrerenderInfiniteTest
+#else
+#define MAYBE_PrerenderInfiniteTest PrerenderInfiniteTest
+#endif
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderInfiniteLoop) {
   const char* const kHtmlFileA = "files/prerender/prerender_infinite_a.html";
   const char* const kHtmlFileB = "files/prerender/prerender_infinite_b.html";
 
