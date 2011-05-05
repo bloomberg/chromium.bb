@@ -200,3 +200,4 @@ AutomationProxyVisibleTest.AppendTab
 
 # NavigateToURL fails, see http://crbug.com/81658
 LoginPromptTest.TestDigestAuth
+ResourceDispatcherTest.DoNotSniffHTMLFromTextPlain
