@@ -303,8 +303,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows));
 }
 
+// Flaky. http://crbug.com/81688
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       BothChangeWithEncryptionAndPassphrase) {
+                       FLAKY_BothChangeWithEncryptionAndPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
