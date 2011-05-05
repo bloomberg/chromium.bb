@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -151,10 +151,11 @@ def ReadSuppressions(lines, supp_descriptor):
       cur_descr = line
       continue
     elif not cur_type:
-      if not line.startswith("Memcheck:"):
+      if (not line.startswith("Memcheck:")) and \
+         (line != "Heapcheck:Leak"):
         raise SuppressionError(supp_descriptor, nline,
-                               '"Memcheck:TYPE" is expected, got "%s"' % line)
-      if not line[9:] in ["Addr1", "Addr2", "Addr4", "Addr8",
+            '"Memcheck:TYPE" or "Heapcheck:Leak is expected, got "%s"' % line)
+      if not line.split(':')[1] in ["Addr1", "Addr2", "Addr4", "Addr8",
                           "Cond", "Free", "Jump", "Leak", "Overlap", "Param",
                           "Value1", "Value2", "Value4", "Value8"]:
         raise SuppressionError(supp_descriptor, nline,
@@ -172,6 +173,21 @@ def ReadSuppressions(lines, supp_descriptor):
   return result
 
 
+def TestStack(stack, positive, negative):
+  """A helper function for SelfTest() that checks a single stack.
+
+  Args:
+    stack: the stack to match the suppressions.
+    positive: the list of suppressions that must match the given stack.
+    negative: the list of suppressions that should not match.
+  """
+  for supp in positive:
+    assert ReadSuppressions(supp.split("\n"), "")[0].Match(stack), \
+           "Suppression:\n%s\ndidn't match stack:\n%s" % (supp, stack)
+  for supp in negative:
+    assert not ReadSuppressions(supp.split("\n"), "")[0].Match(stack), \
+           "Suppression:\n%s\ndidn't match stack:\n%s" % (supp, stack)
+
 def SelfTest():
   """Tests the Suppression.Match() capabilities."""
 
@@ -185,7 +201,17 @@ def SelfTest():
     fun:expression
   }""".split("\n")
 
-  positive_suppressions = [
+  test_stack2 = """{
+    test
+    Heapcheck:Leak
+    fun:absolutly
+    fun:brilliant
+    obj:condition
+    fun:detection
+    fun:expression
+  }""".split("\n")
+
+  positive_memcheck_suppressions = [
     "{\nzzz\nMemcheck:Leak\nfun:absolutly\n}",
     "{\nzzz\nMemcheck:Leak\nfun:ab*ly\n}",
     "{\nzzz\nMemcheck:Leak\nfun:absolutly\nfun:brilliant\n}",
@@ -198,7 +224,12 @@ def SelfTest():
     "{\nzzz\nMemcheck:Leak\n...\nfun:brilliant\nobj:condition\n}",
   ]
 
-  negative_suppressions = [
+  positive_heapcheck_suppressions = [
+    "{\nzzz\nHeapcheck:Leak\n...\nobj:condition\n}",
+    "{\nzzz\nHeapcheck:Leak\nfun:absolutly\n}",
+  ]
+
+  negative_memcheck_suppressions = [
     "{\nzzz\nMemcheck:Leak\nfun:abnormal\n}",
     "{\nzzz\nMemcheck:Leak\nfun:ab*liant\n}",
     "{\nzzz\nMemcheck:Leak\nfun:brilliant\n}",
@@ -206,12 +237,15 @@ def SelfTest():
     "{\nzzz\nMemcheck:Addr8\nfun:brilliant\n}",
   ]
 
-  for supp in positive_suppressions:
-    assert ReadSuppressions(supp.split("\n"), "")[0].Match(test_stack1), \
-           "Suppression:\n%s\ndidn't match stack:\n%s" % (supp, test_stack1)
-  for supp in negative_suppressions:
-    assert not ReadSuppressions(supp.split("\n"), "")[0].Match(test_stack1), \
-           "Suppression:\n%s\ndidn't match stack:\n%s" % (supp, test_stack1)
+  negative_heapcheck_suppressions = [
+    "{\nzzz\nMemcheck:Leak\nfun:absolutly\n}",
+    "{\nzzz\nHeapcheck:Leak\nfun:brilliant\n}",
+  ]
+
+  TestStack(test_stack1, positive_memcheck_suppressions,
+            negative_memcheck_suppressions)
+  TestStack(test_stack2, positive_heapcheck_suppressions,
+            negative_heapcheck_suppressions)
 
 if __name__ == '__main__':
   SelfTest()

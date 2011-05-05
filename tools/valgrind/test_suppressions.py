@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -56,6 +56,10 @@ supp_filename = os.path.join(suppressions_root,
                              "memcheck", "suppressions_mac.txt")
 mac_suppressions = suppressions.ReadSuppressionsFromFile(supp_filename)
 
+supp_filename = os.path.join(suppressions_root,
+                             "..", "heapcheck", "suppressions.txt")
+heapcheck_suppressions = suppressions.ReadSuppressionsFromFile(supp_filename)
+
 # all_reports is a map {report: list of urls containing this report}
 all_reports = defaultdict(list)
 report_hashes = {}
@@ -72,6 +76,9 @@ for r in all_reports:
                          for url in all_reports[r]]):
     # Include mac suppressions if the report is only present on Mac
     cur_supp = common_suppressions + mac_suppressions
+  elif set([False]) == set([not re.search("Linux%20Heapcheck", url)\
+                         for url in all_reports[r]]):
+    cur_supp = common_suppressions + heapcheck_suppressions
   else:
     cur_supp = common_suppressions
 
