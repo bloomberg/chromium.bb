@@ -5,23 +5,55 @@
 // proxy api test
 // browser_tests.exe --gtest_filter=ProxySettingsApiTest.ProxyEvents
 
+var captured_events = [];
+var expected_events = [
+    {
+      error: "net::ERR_PROXY_CONNECTION_FAILED",
+      details: "",
+      fatal: true
+    },
+    {
+      error: "net::ERR_PROXY_CONNECTION_FAILED",
+      details: "",
+      fatal: true
+    },
+    {
+      error: "net::ERR_PAC_SCRIPT_FAILED",
+      details: "line: 1: Uncaught SyntaxError: Unexpected token !",
+      fatal: false
+    }
+  ];
+
 chrome.experimental.proxy.onProxyError.addListener(function (error) {
-  chrome.test.assertTrue(error.fatal);
-  chrome.test.assertEq("net::ERR_PROXY_CONNECTION_FAILED", error.error);
-  chrome.test.assertEq("", error.details);
+  captured_events.push(error);
+  if (captured_events.length < expected_events.length)
+    return;
+  chrome.test.assertEq(expected_events, captured_events);
   chrome.test.notifyPass();
 });
+
+function pacTest(e) {
+  var config = {
+    mode: "pac_script",
+    pacScript: {
+      data: "trash!",
+      mandatory: false
+    }
+  };
+  chrome.experimental.proxy.settings.set({'value': config});
+}
 
 var rules = {
   singleProxy: { host: "does.not.exist" }
 };
 
 var config = { rules: rules, mode: "fixed_servers" };
-chrome.experimental.proxy.settings.set(
-    {'value': config},
-    chrome.test.callbackPass());
-
-var req = new XMLHttpRequest();
-req.open("GET", "http://127.0.0.1/", true);
-req.onload = function () { chrome.test.notifyFail(); }
-req.send(null);
+chrome.experimental.proxy.settings.set({'value': config}, function () {
+  var req = new XMLHttpRequest();
+  req.open("GET", "http://127.0.0.1/", true);
+  req.onload = function () {
+    chrome.test.notifyFail("proxy settings should not work");
+  }
+  req.onerror = pacTest;
+  req.send(null);
+});

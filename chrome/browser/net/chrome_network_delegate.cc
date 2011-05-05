@@ -135,4 +135,6 @@ net::URLRequestJob* ChromeNetworkDelegate::OnMaybeCreateURLRequestJob(
 
 void ChromeNetworkDelegate::OnPACScriptError(int line_number,
                                              const string16& error) {
+  ExtensionProxyEventRouter::GetInstance()->OnPACScriptError(
+      event_router_.get(), profile_id_, line_number, error);
 }

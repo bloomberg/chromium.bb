@@ -7,6 +7,8 @@
 #include "chrome/browser/extensions/extension_proxy_api.h"
 
 #include "base/json/json_writer.h"
+#include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_proxy_api_constants.h"
@@ -38,6 +40,38 @@ void ExtensionProxyEventRouter::OnProxyError(
   dict->SetBoolean(keys::kProxyEventFatal, true);
   dict->SetString(keys::kProxyEventError, net::ErrorToString(error_code));
   dict->SetString(keys::kProxyEventDetails, "");
+  args.Append(dict);
+
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+
+  if (profile_id != Profile::kInvalidProfileId) {
+    event_router->DispatchEventToRenderers(
+        keys::kProxyEventOnProxyError, json_args, profile_id, true, GURL());
+  } else {
+    event_router->BroadcastEventToRenderers(
+        keys::kProxyEventOnProxyError, json_args, GURL());
+  }
+}
+
+void ExtensionProxyEventRouter::OnPACScriptError(
+    ExtensionEventRouterForwarder* event_router,
+    ProfileId profile_id,
+    int line_number,
+    const string16& error) {
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetBoolean(keys::kProxyEventFatal, false);
+  dict->SetString(keys::kProxyEventError,
+                  net::ErrorToString(net::ERR_PAC_SCRIPT_FAILED));
+  std::string error_msg;
+  if (line_number != -1) {
+    base::SStringPrintf(
+        &error_msg, "line: %d: %s", line_number, UTF16ToUTF8(error).c_str());
+  } else {
+    error_msg = UTF16ToUTF8(error);
+  }
+  dict->SetString(keys::kProxyEventDetails, error_msg);
   args.Append(dict);
 
   std::string json_args;

@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/memory/singleton.h"
+#include "base/string16.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -46,6 +47,11 @@ class ExtensionProxyEventRouter {
   void OnProxyError(ExtensionEventRouterForwarder* event_router,
                     ProfileId profile_id,
                     int error_code);
+
+  void OnPACScriptError(ExtensionEventRouterForwarder* event_router,
+                        ProfileId profile_id,
+                        int line_number,
+                        const string16& error);
 
  private:
   friend struct DefaultSingletonTraits<ExtensionProxyEventRouter>;
