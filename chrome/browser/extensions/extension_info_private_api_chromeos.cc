@@ -53,14 +53,7 @@ bool GetChromeosInfoFunction::GetValue(const std::string& property_name,
   } else if (property_name == kPropertyHomeProvider) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
       NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
-      const chromeos::NetworkDevice* device = netlib->FindCellularDevice();
-      if (device) {
-        DLOG(INFO) << "Taking the home provider of  " << device->name()
-                   << " (" << device->device_path() << ")";
-        (*value) = device->home_provider();
-      } else {
-        LOG(WARNING) << "Can't find cellular device.";
-      }
+      (*value) = netlib->GetCellularHomeCarrierId();
     } else {
       LOG(ERROR) << "CrosLibrary can't be loaded.";
     }

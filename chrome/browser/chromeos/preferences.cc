@@ -130,6 +130,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
 
   // 3G first-time usage promo will be shown at least once.
   prefs->RegisterBooleanPref(prefs::kShow3gPromoNotification, true);
+
+  // Carrier deal notification shown count defaults to 0.
+  prefs->RegisterIntegerPref(prefs::kCarrierDealPromoShown, 0);
 }
 
 void Preferences::Init(PrefService* prefs) {

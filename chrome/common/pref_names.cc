@@ -482,6 +482,11 @@ const char kShowPlanNotifications[] =
 const char kShow3gPromoNotification[] =
     "settings.internet.mobile.show_3g_promo_notification";
 
+// An integer pref which shows number of times carrier deal promo
+// notification has been shown to user.
+const char kCarrierDealPromoShown[] =
+    "settings.internet.mobile.carrier_deal_promo_shown";
+
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

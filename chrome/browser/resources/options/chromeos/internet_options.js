@@ -370,7 +370,14 @@ cr.define('options', function() {
       page.removeAttribute('ethernet');
       page.removeAttribute('wireless');
       page.setAttribute('cellular', true);
-      $('serviceName').textContent = data.serviceName;
+      if (data.carrierUrl) {
+        var a = $('serviceName').appendChild(document.createElement('a'));
+        a.href = data.carrierUrl;
+        a.target = "_blank";
+        a.textContent = data.serviceName;
+      } else {
+        $('serviceName').textContent = data.serviceName;
+      }
       $('networkTechnology').textContent = data.networkTechnology;
       $('activationState').textContent = data.activationState;
       $('roamingState').textContent = data.roamingState;

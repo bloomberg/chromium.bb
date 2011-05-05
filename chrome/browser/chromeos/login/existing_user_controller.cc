@@ -337,7 +337,8 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
 
     ServicesCustomizationDocument* customization =
       ServicesCustomizationDocument::GetInstance();
-    if (customization->IsReady()) {
+    if (!ServicesCustomizationDocument::WasApplied() &&
+        customization->IsReady()) {
       std::string locale = g_browser_process->GetApplicationLocale();
       std::string initial_start_page =
           customization->GetInitialStartPage(locale);

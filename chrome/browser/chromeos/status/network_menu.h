@@ -106,6 +106,7 @@ class NetworkMenuModel : public ui::MenuModel {
     FLAG_VPN               = 1 << 12,
     FLAG_ADD_VPN           = 1 << 13,
     FLAG_DISCONNECT_VPN    = 1 << 14,
+    FLAG_VIEW_ACCOUNT      = 1 << 15,
   };
 
   struct MenuItem {
@@ -142,6 +143,13 @@ class NetworkMenuModel : public ui::MenuModel {
   MenuItemVector menu_items_;
 
   NetworkMenu* owner_;  // Weak pointer to NetworkMenu that owns this MenuModel.
+
+  // Top up URL of the current carrier on empty string if there's none.
+  std::string top_up_url_;
+
+  // Carrier ID which top up URL is initialized for.
+  // Used to update top up URL only when cellular carrier has changed.
+  std::string carrier_id_;
 
  private:
   // Show a NetworkConfigView modal dialog instance.

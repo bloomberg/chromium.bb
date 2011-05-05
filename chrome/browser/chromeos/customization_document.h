@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CUSTOMIZATION_DOCUMENT_H_
 #pragma once
 
+#include <map>
 #include <string>
 
 #include "base/gtest_prod_util.h"
@@ -20,6 +21,10 @@ class DictionaryValue;
 class FilePath;
 class ListValue;
 class PrefService;
+
+namespace base {
+  class Time;
+}
 
 namespace chromeos {
 
@@ -99,6 +104,26 @@ class StartupCustomizationDocument : public CustomizationDocument {
 class ServicesCustomizationDocument : public CustomizationDocument,
                                       private URLFetcher::Delegate {
  public:
+  // OEM specific carrier deal.
+  struct CarrierDeal {
+    explicit CarrierDeal(DictionaryValue* deal_dict);
+
+    // Returns string with the specified |locale| and |id|.
+    // If there's no version for |locale|, default one is returned.
+    // If there's no string with specified |id|, empty string is returned.
+    std::string GetLocalizedString(const std::string& locale,
+                                   const std::string& id) const;
+
+    std::string deal_locale;
+    std::string top_up_url;
+    int notification_count;
+    base::Time expire_date;
+    DictionaryValue* localized_strings;
+  };
+
+  // Carrier ID (ex. "Verizon (us)") mapping to carrier deals.
+  typedef std::map<std::string, CarrierDeal*> CarrierDeals;
+
   static ServicesCustomizationDocument* GetInstance();
 
   // Registers preferences.
@@ -118,16 +143,29 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   std::string GetInitialStartPage(const std::string& locale) const;
   std::string GetSupportPage(const std::string& locale) const;
 
+  // Returns carrier deal by specified |carrier_id|.
+  // Also checks deal restrictions, such as deal locale (launch locale) and
+  // deal expiration date if |check_restrictions| is true.
+  const ServicesCustomizationDocument::CarrierDeal* GetCarrierDeal(
+      const std::string& carrier_id, bool check_restrictions) const;
+
+ protected:
+  virtual bool LoadManifestFromString(const std::string& manifest) OVERRIDE;
+
  private:
   FRIEND_TEST(ServicesCustomizationDocumentTest, Basic);
   FRIEND_TEST(ServicesCustomizationDocumentTest, BadManifest);
+  FRIEND_TEST(ServicesCustomizationDocumentTest, DealOtherLocale);
+  FRIEND_TEST(ServicesCustomizationDocumentTest, NoDealRestrictions);
+  FRIEND_TEST(ServicesCustomizationDocumentTest, OldDeal);
   friend struct DefaultSingletonTraits<ServicesCustomizationDocument>;
 
   // C-tor for singleton construction.
   ServicesCustomizationDocument();
 
   // C-tor for test construction.
-  explicit ServicesCustomizationDocument(const std::string& manifest);
+  ServicesCustomizationDocument(const std::string& manifest,
+                                const std::string& initial_locale);
 
   // Save applied state in machine settings.
   static void SetApplied(bool val);
@@ -157,6 +195,12 @@ class ServicesCustomizationDocument : public CustomizationDocument,
 
   // How many times we already tried to fetch customization manifest file.
   int num_retries_;
+
+  // Carrier-specific deals.
+  CarrierDeals carrier_deals_;
+
+  // Initial locale value.
+  std::string initial_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(ServicesCustomizationDocument);
 };

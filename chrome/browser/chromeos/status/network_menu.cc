@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -270,6 +271,10 @@ void NetworkMenuModel::ActivatedAt(int index) {
     const VirtualNetwork* active_vpn = cros->virtual_network();
     if (active_vpn)
       cros->DisconnectFromNetwork(active_vpn);
+  } else if (flags & FLAG_VIEW_ACCOUNT) {
+    Browser* browser = BrowserList::GetLastActive();
+    if (browser)
+      browser->ShowSingletonTab(GURL(top_up_url_));
   }
 }
 
@@ -498,18 +503,46 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
       }
     }
     const NetworkDevice* cellular_device = cros->FindCellularDevice();
-    // TODO(dpolukhin): replace imsi check with more specific supportNetworkScan
-    if (cellular_device && !cellular_device->imsi().empty()) {
-      // For GSM add mobile network scan.
-      if (!separator_added && !menu_items_.empty())
-        menu_items_.push_back(MenuItem());
+    if (cellular_device) {
+      // Add "View Account" with top up URL if we know that.
+      ServicesCustomizationDocument* customization =
+          ServicesCustomizationDocument::GetInstance();
+      if (is_browser_mode && customization->IsReady()) {
+        std::string carrier_id = cros->GetCellularHomeCarrierId();
+        // If we don't have top up URL cached.
+        if (carrier_id != carrier_id_) {
+          // Mark that we've checked this carrier ID.
+          carrier_id_ = carrier_id;
+          top_up_url_.clear();
+          // Ignoring deal restrictions, use any carrier information available.
+          const ServicesCustomizationDocument::CarrierDeal* deal =
+              customization->GetCarrierDeal(carrier_id, false);
+          if (deal && !deal->top_up_url.empty())
+            top_up_url_ = deal->top_up_url;
+        }
+        if (!top_up_url_.empty()) {
+          menu_items_.push_back(MenuItem(
+              ui::MenuModel::TYPE_COMMAND,
+              l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT),
+              SkBitmap(),
+              std::string(), FLAG_VIEW_ACCOUNT));
+        }
+      }
 
-      menu_items_.push_back(MenuItem(
-          ui::MenuModel::TYPE_COMMAND,
-          l10n_util::GetStringUTF16(
-              IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS),
-          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
-          std::string(), FLAG_ADD_CELLULAR));
+      // TODO(dpolukhin): replace imsi check with more specific
+      // supportNetworkScan.
+      if (!cellular_device->imsi().empty()) {
+        // For GSM add mobile network scan.
+        if (!separator_added && !menu_items_.empty())
+          menu_items_.push_back(MenuItem());
+
+        menu_items_.push_back(MenuItem(
+            ui::MenuModel::TYPE_COMMAND,
+            l10n_util::GetStringUTF16(
+                IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS),
+            *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
+            std::string(), FLAG_ADD_CELLULAR));
+      }
     }
   }
 

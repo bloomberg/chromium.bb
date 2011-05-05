@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
@@ -696,6 +697,16 @@ void InternetOptionsHandler::PopulateCellularDetails(
     dictionary->SetString("min", device->min());
     dictionary->SetBoolean("simCardLockEnabled",
         device->sim_pin_required() == chromeos::SIM_PIN_REQUIRED);
+
+    chromeos::ServicesCustomizationDocument* customization =
+        chromeos::ServicesCustomizationDocument::GetInstance();
+    if (customization->IsReady()) {
+      std::string carrier_id = cros->GetCellularHomeCarrierId();
+      const chromeos::ServicesCustomizationDocument::CarrierDeal* deal =
+          customization->GetCarrierDeal(carrier_id, false);
+      if (deal && !deal->top_up_url.empty())
+        dictionary->SetString("carrierUrl", deal->top_up_url);
+    }
   }
 
   SetActivationButtonVisibility(cellular, dictionary);

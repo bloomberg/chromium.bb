@@ -10,7 +10,9 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -32,15 +34,28 @@ namespace {
 
 // Time in milliseconds to delay showing of promo
 // notification when Chrome window is not on screen.
-const int kPromoShowDelayMs = 5000;
+const int kPromoShowDelayMs = 10000;
+
+const int kNotificationCountPrefDefault = -1;
 
 bool GetBooleanPref(const char* pref_name) {
   Browser* browser = BrowserList::GetLastActive();
+  // Default to safe value which is false (not to show bubble).
   if (!browser || !browser->profile())
-    return true;
+    return false;
 
   PrefService* prefs = browser->profile()->GetPrefs();
   return prefs->GetBoolean(pref_name);
+}
+
+int GetIntegerPref(const char* pref_name) {
+  Browser* browser = BrowserList::GetLastActive();
+  // Default to "safe" value.
+  if (!browser || !browser->profile())
+    return kNotificationCountPrefDefault;
+
+  PrefService* prefs = browser->profile()->GetPrefs();
+  return prefs->GetInteger(pref_name);
 }
 
 void SetBooleanPref(const char* pref_name, bool value) {
@@ -52,13 +67,33 @@ void SetBooleanPref(const char* pref_name, bool value) {
   prefs->SetBoolean(pref_name, value);
 }
 
-// Returns prefs::kShow3gPromoNotification or true if there's no active browser.
+void SetIntegerPref(const char* pref_name, int value) {
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser || !browser->profile())
+    return;
+
+  PrefService* prefs = browser->profile()->GetPrefs();
+  prefs->SetInteger(pref_name, value);
+}
+
+// Returns prefs::kShow3gPromoNotification or false
+// if there's no active browser.
 bool ShouldShow3gPromoNotification() {
   return GetBooleanPref(prefs::kShow3gPromoNotification);
 }
 
 void SetShow3gPromoNotification(bool value) {
   SetBooleanPref(prefs::kShow3gPromoNotification, value);
+}
+// Returns prefs::kCarrierDealPromoShown which is number of times
+// carrier deal notification has been shown to user or -1
+// if there's no active browser.
+int GetCarrierDealPromoShown() {
+  return GetIntegerPref(prefs::kCarrierDealPromoShown);
+}
+
+void SetCarrierDealPromoShown(int value) {
+  SetIntegerPref(prefs::kCarrierDealPromoShown, value);
 }
 
 }  // namespace
@@ -78,6 +113,7 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
       right_badge_(NULL),
       left_badge_(NULL),
       mobile_data_bubble_(NULL),
+      check_for_promo_(true),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
@@ -187,15 +223,53 @@ void NetworkMenuButton::OnHelpLinkActivated() {
   // mobile_data_bubble_ will be set to NULL in callback.
   if (mobile_data_bubble_)
     mobile_data_bubble_->Close();
-  const Network* cellular =
-      CrosLibrary::Get()->GetNetworkLibrary()->cellular_network();
-  if (!cellular)
-    return;
-  ShowTabbedNetworkSettings(cellular);
+  if (!deal_url_.empty()) {
+    Browser* browser = BrowserList::GetLastActive();
+    if (!browser)
+      return;
+    browser->ShowSingletonTab(GURL(deal_url_));
+    deal_url_.clear();
+  } else {
+    const Network* cellular =
+        CrosLibrary::Get()->GetNetworkLibrary()->cellular_network();
+    if (!cellular)
+      return;
+    ShowTabbedNetworkSettings(cellular);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton, private methods
+
+const ServicesCustomizationDocument::CarrierDeal*
+NetworkMenuButton::GetCarrierDeal(
+    NetworkLibrary* cros) {
+  std::string carrier_id = cros->GetCellularHomeCarrierId();
+  if (carrier_id.empty()) {
+    LOG(ERROR) << "Empty carrier ID with a cellular connected.";
+    return NULL;
+  }
+
+  ServicesCustomizationDocument* customization =
+      ServicesCustomizationDocument::GetInstance();
+  if (!customization->IsReady())
+    return NULL;
+
+  const ServicesCustomizationDocument::CarrierDeal* deal =
+      customization->GetCarrierDeal(carrier_id, true);
+  if (deal) {
+    // Check deal for validity.
+    int carrier_deal_promo_pref = GetCarrierDealPromoShown();
+    if (carrier_deal_promo_pref >= deal->notification_count)
+      return NULL;
+    const std::string locale = g_browser_process->GetApplicationLocale();
+    std::string deal_text = deal->GetLocalizedString(locale,
+                                                     "notification_text");
+    if (deal_text.empty())
+      return NULL;
+  }
+  return deal;
+}
 
 void NetworkMenuButton::SetIconAndBadges(const SkBitmap* icon,
                                          const SkBitmap* right_badge,
@@ -333,14 +407,26 @@ void NetworkMenuButton::RefreshNetworkDeviceObserver(NetworkLibrary* cros) {
 void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
     NetworkLibrary* cros) {
   // Display one-time notification for non-Guest users on first use
-  // of Mobile Data connection.
+  // of Mobile Data connection or if there's a carrier deal defined
+  // show that even if user has already seen generic promo.
   if (IsBrowserMode() && !UserManager::Get()->IsLoggedInAsGuest() &&
-      ShouldShow3gPromoNotification() &&
+      check_for_promo_ &&
       cros->cellular_connected() && !cros->ethernet_connected() &&
       !cros->wifi_connected()) {
-    const CellularNetwork* cellular = cros->cellular_network();
-    if (!cellular)
+
+    const ServicesCustomizationDocument::CarrierDeal* deal =
+        GetCarrierDeal(cros);
+    std::string deal_text;
+    int carrier_deal_promo_pref = -1;
+    if (deal) {
+      carrier_deal_promo_pref = GetCarrierDealPromoShown();
+      const std::string locale = g_browser_process->GetApplicationLocale();
+      deal_text = deal->GetLocalizedString(locale, "notification_text");
+      deal_url_ = deal->top_up_url;
+    } else if (!ShouldShow3gPromoNotification()) {
+      check_for_promo_ = false;
       return;
+    }
 
     gfx::Rect button_bounds = GetScreenBounds();
     // StatusArea button Y position is usually -1, fix it so that
@@ -364,15 +450,38 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
       return;
     }
 
+    // Add deal text if it's defined.
+    std::wstring notification_text;
+    std::wstring default_text =
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE));
+    if (!deal_text.empty()) {
+      notification_text = StringPrintf(L"%ls\n\n%ls",
+                                       UTF8ToWide(deal_text).c_str(),
+                                       default_text.c_str());
+    } else {
+      notification_text = default_text;
+    }
+
+    // Use deal URL if it's defined or general "Network Settings" URL.
+    int link_message_id;
+    if (deal_url_.empty())
+      link_message_id = IDS_OFFLINE_NETWORK_SETTINGS;
+    else
+      link_message_id = IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT;
+
     mobile_data_bubble_ = MessageBubble::Show(
         GetWidget(),
         button_bounds,
         BubbleBorder::TOP_RIGHT ,
         ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_NOTIFICATION_3G),
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE)),
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_OFFLINE_NETWORK_SETTINGS)),
+        notification_text,
+        UTF16ToWide(l10n_util::GetStringUTF16(link_message_id)),
         this);
+
+    check_for_promo_ = false;
     SetShow3gPromoNotification(false);
+    if (carrier_deal_promo_pref != kNotificationCountPrefDefault)
+      SetCarrierDealPromoShown(carrier_deal_promo_pref + 1);
   }
 }
 

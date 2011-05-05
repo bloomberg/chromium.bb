@@ -12,6 +12,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -94,6 +95,9 @@ const int kRecentPlanPaymentHours = 6;
 // If cellular device doesn't have SIM card, then retries are never used.
 const int kDefaultSimUnlockRetriesCount = 999;
 
+// Format of the Carrier ID: <carrier name> (<carrier country>).
+const char* kCarrierIdFormat = "%s (%s)";
+
 // Type of a pending SIM operation.
 enum SimOperationType {
   SIM_OPERATION_NONE               = 0,
@@ -131,6 +135,7 @@ const char* kNetworkTechnologyProperty = "Cellular.NetworkTechnology";
 const char* kRoamingStateProperty = "Cellular.RoamingState";
 const char* kOperatorNameProperty = "Cellular.OperatorName";
 const char* kOperatorCodeProperty = "Cellular.OperatorCode";
+const char* kServingOperatorProperty = "Cellular.ServingOperator";
 const char* kPaymentURLProperty = "Cellular.OlpUrl";
 const char* kUsageURLProperty = "Cellular.UsageUrl";
 const char* kCellularApnProperty = "Cellular.APN";
@@ -168,6 +173,11 @@ const char* kApnProperty = "apn";
 const char* kNetworkIdProperty = "network_id";
 const char* kUsernameProperty = "username";
 const char* kPasswordProperty = "password";
+
+// Operator info property names.
+const char* kOperatorNameKey = "name";
+const char* kOperatorCodeKey = "code";
+const char* kOperatorCountryKey = "country";
 
 // Flimflam device info property names.
 const char* kScanningProperty = "Scanning";
@@ -485,6 +495,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_SELECTED_NETWORK,
   PROPERTY_INDEX_SERVICES,
   PROPERTY_INDEX_SERVICE_WATCH_LIST,
+  PROPERTY_INDEX_SERVING_OPERATOR,
   PROPERTY_INDEX_SIGNAL_STRENGTH,
   PROPERTY_INDEX_SIM_LOCK,
   PROPERTY_INDEX_STATE,
@@ -570,6 +581,7 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kSelectedNetworkProperty, PROPERTY_INDEX_SELECTED_NETWORK },
   { kServiceWatchListProperty, PROPERTY_INDEX_SERVICE_WATCH_LIST },
   { kServicesProperty, PROPERTY_INDEX_SERVICES },
+  { kServingOperatorProperty, PROPERTY_INDEX_SERVING_OPERATOR },
   { kSignalStrengthProperty, PROPERTY_INDEX_SIGNAL_STRENGTH },
   { kSIMLockStatusProperty, PROPERTY_INDEX_SIM_LOCK },
   { kStateProperty, PROPERTY_INDEX_STATE },
@@ -876,8 +888,33 @@ bool NetworkDevice::ParseValue(int index, const Value* value) {
             &found_cellular_networks_);
       }
       break;
-    case PROPERTY_INDEX_HOME_PROVIDER:
-      return value->GetAsString(&home_provider_);
+    case PROPERTY_INDEX_HOME_PROVIDER: {
+      if (value->IsType(Value::TYPE_DICTIONARY)) {
+        const DictionaryValue *dict =
+            static_cast<const DictionaryValue*>(value);
+        home_provider_code_.clear();
+        home_provider_country_.clear();
+        home_provider_name_.clear();
+        dict->GetStringWithoutPathExpansion(kOperatorCodeKey,
+                                            &home_provider_code_);
+        dict->GetStringWithoutPathExpansion(kOperatorCountryKey,
+                                            &home_provider_country_);
+        dict->GetStringWithoutPathExpansion(kOperatorNameKey,
+                                            &home_provider_name_);
+        if (!home_provider_name_.empty() && !home_provider_country_.empty()) {
+          home_provider_id_ = base::StringPrintf(
+              kCarrierIdFormat,
+              home_provider_name_.c_str(),
+              home_provider_country_.c_str());
+        } else {
+          home_provider_id_ = home_provider_code_;
+          LOG(WARNING) << "Carrier ID not defined, using code instead: "
+                       << home_provider_id_;
+        }
+        return true;
+      }
+      break;
+    }
     case PROPERTY_INDEX_MEID:
       return value->GetAsString(&MEID_);
     case PROPERTY_INDEX_IMEI:
@@ -1522,6 +1559,23 @@ bool CellularNetwork::ParseValue(int index, const Value* value) {
       return value->GetAsString(&operator_name_);
     case PROPERTY_INDEX_OPERATOR_CODE:
       return value->GetAsString(&operator_code_);
+    case PROPERTY_INDEX_SERVING_OPERATOR: {
+      if (value->IsType(Value::TYPE_DICTIONARY)) {
+        const DictionaryValue *dict =
+            static_cast<const DictionaryValue*>(value);
+        operator_code_.clear();
+        operator_country_.clear();
+        operator_name_.clear();
+        dict->GetStringWithoutPathExpansion(kOperatorNameKey,
+                                            &operator_name_);
+        dict->GetStringWithoutPathExpansion(kOperatorCodeKey,
+                                            &operator_code_);
+        dict->GetStringWithoutPathExpansion(kOperatorCountryKey,
+                                            &operator_country_);
+        return true;
+      }
+      break;
+    }
     case PROPERTY_INDEX_PAYMENT_URL:
       return value->GetAsString(&payment_url_);
     case PROPERTY_INDEX_USAGE_URL:
@@ -2777,6 +2831,16 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     DeleteRememberedService(service_path.c_str());
     DeleteRememberedWifiNetwork(service_path);
     NotifyNetworkManagerChanged(true);  // Forced update.
+  }
+
+  virtual std::string GetCellularHomeCarrierId() const {
+    std::string carrier_id;
+    const NetworkDevice* cellular = FindCellularDevice();
+    if (cellular) {
+      return cellular->home_provider_id();
+
+    }
+    return carrier_id;
   }
 
   virtual bool ethernet_available() const {
@@ -4311,6 +4375,7 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual bool HasRecentCellularPlanPayment() { return false; }
   virtual void DisconnectFromNetwork(const Network* network) {}
   virtual void ForgetWifiNetwork(const std::string& service_path) {}
+  virtual std::string GetCellularHomeCarrierId() const { return std::string(); }
   virtual bool ethernet_available() const { return true; }
   virtual bool wifi_available() const { return false; }
   virtual bool cellular_available() const { return false; }

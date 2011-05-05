@@ -213,6 +213,12 @@ class NetworkDevice {
   const std::string& last_update() const { return last_update_; }
   const unsigned int prl_version() const { return PRL_version_; }
   const std::string& home_provider() const { return home_provider_; }
+  const std::string& home_provider_code() const { return home_provider_code_; }
+  const std::string& home_provider_country() const {
+    return home_provider_country_;
+  }
+  const std::string& home_provider_id() const { return home_provider_id_; }
+  const std::string& home_provider_name() const { return home_provider_name_; }
   const std::string& selected_cellular_network() const {
     return selected_cellular_network_;
   }
@@ -233,6 +239,10 @@ class NetworkDevice {
   // Cellular specific device info.
   std::string carrier_;
   std::string home_provider_;
+  std::string home_provider_code_;
+  std::string home_provider_country_;
+  std::string home_provider_id_;
+  std::string home_provider_name_;
   std::string MEID_;
   std::string IMEI_;
   std::string IMSI_;
@@ -580,6 +590,7 @@ class CellularNetwork : public WirelessNetwork {
   }
   const std::string& operator_name() const { return operator_name_; }
   const std::string& operator_code() const { return operator_code_; }
+  const std::string& operator_country() const { return operator_country_; }
   const std::string& payment_url() const { return payment_url_; }
   const std::string& usage_url() const { return usage_url_; }
   DataLeft data_left() const { return data_left_; }
@@ -616,6 +627,7 @@ class CellularNetwork : public WirelessNetwork {
   // Carrier Info
   std::string operator_name_;
   std::string operator_code_;
+  std::string operator_country_;
   std::string payment_url_;
   std::string usage_url_;
   // Cached values
@@ -1127,6 +1139,10 @@ class NetworkLibrary {
 
   // Forget the wifi network corresponding to service_path.
   virtual void ForgetWifiNetwork(const std::string& service_path) = 0;
+
+  // Returns home carrier ID if available, otherwise empty string is returned.
+  // Carrier ID format: <carrier name> (country). Ex.: "Verizon (us)".
+  virtual std::string GetCellularHomeCarrierId() const = 0;
 
   virtual bool ethernet_available() const = 0;
   virtual bool wifi_available() const = 0;

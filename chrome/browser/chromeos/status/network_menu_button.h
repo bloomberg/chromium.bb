@@ -11,6 +11,7 @@
 #include "base/task.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
@@ -93,6 +94,11 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual void OnHelpLinkActivated();
 
  private:
+  // Returns carrier deal if it's specified and should be shown,
+  // otherwise returns NULL.
+  const ServicesCustomizationDocument::CarrierDeal* GetCarrierDeal(
+      NetworkLibrary* cros);
+
   // Sets the icon and the badges (badges are at the bottom of the icon).
   void SetIconAndBadges(const SkBitmap* icon,
                         const SkBitmap* right_badge,
@@ -129,6 +135,10 @@ class NetworkMenuButton : public StatusAreaButton,
   // Notification bubble for 3G promo.
   MessageBubble* mobile_data_bubble_;
 
+  // True if check for promo needs to be done,
+  // otherwise just ignore it for current session.
+  bool check_for_promo_;
+
   // The throb animation that does the wifi connecting animation.
   ui::ThrobAnimation animation_connecting_;
 
@@ -138,6 +148,9 @@ class NetworkMenuButton : public StatusAreaButton,
   // If any network is currently active, this is the service path of the one
   // whose status is displayed in the network menu button.
   std::string active_network_;
+
+  // Current carrier deal URL.
+  std::string deal_url_;
 
   // Factory for delaying showing promo notification.
   ScopedRunnableMethodFactory<NetworkMenuButton> method_factory_;

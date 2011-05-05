@@ -10,9 +10,12 @@
 #include "base/logging.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/system_access.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -40,6 +43,15 @@ const char kSupportPageAttr[] = "support_page";
 const char kAcceptedManifestVersion[] = "1.0";
 
 const char kHwid[] = "hwid";
+
+// Carrier deals attributes.
+const char kCarrierDealsAttr[] = "carrier_deals";
+const char kDealLocaleAttr[] = "deal_locale";
+const char kTopUpURLAttr[] = "top_up_url";
+const char kNotificationCountAttr[] = "notification_count";
+const char kDealExpireDateAttr[] = "expire_date";
+const char kLocalizedContentAttr[] = "localized_content";
+const char kNotificationTextAttr[] = "notification_text";
 
 // Path to OEM partner startup customization manifest.
 const char kStartupCustomizationManifestPath[] =
@@ -202,12 +214,45 @@ std::string StartupCustomizationDocument::GetEULAPage(
 
 // ServicesCustomizationDocument implementation. -------------------------------
 
+ServicesCustomizationDocument::CarrierDeal::CarrierDeal(
+    DictionaryValue* deal_dict)
+    : notification_count(0),
+      localized_strings(NULL) {
+  deal_dict->GetString(kDealLocaleAttr, &deal_locale);
+  deal_dict->GetString(kTopUpURLAttr, &top_up_url);
+  deal_dict->GetInteger(kNotificationCountAttr, &notification_count);
+  std::string date_string;
+  if (deal_dict->GetString(kDealExpireDateAttr, &date_string)) {
+    if (!base::Time::FromString(ASCIIToWide(date_string).c_str(), &expire_date))
+      LOG(ERROR) << "Error parsing deal_expire_date: " << date_string;
+  }
+  deal_dict->GetDictionary(kLocalizedContentAttr, &localized_strings);
+}
+
+std::string ServicesCustomizationDocument::CarrierDeal::GetLocalizedString(
+    const std::string& locale, const std::string& id) const {
+  std::string result;
+  if (localized_strings) {
+    DictionaryValue* locale_dict = NULL;
+    if (localized_strings->GetDictionary(locale, &locale_dict) &&
+        locale_dict->GetString(id, &result)) {
+      return result;
+    } else if (localized_strings->GetDictionary(kDefaultAttr, &locale_dict) &&
+               locale_dict->GetString(id, &result)) {
+      return result;
+    }
+  }
+  return result;
+}
+
 ServicesCustomizationDocument::ServicesCustomizationDocument()
-  : url_(kServicesCustomizationManifestUrl) {
+  : url_(kServicesCustomizationManifestUrl),
+    initial_locale_(WizardController::GetInitialLocale()) {
 }
 
 ServicesCustomizationDocument::ServicesCustomizationDocument(
-    const std::string& manifest) {
+    const std::string& manifest, const std::string& initial_locale)
+    : initial_locale_(initial_locale) {
   LoadManifestFromString(manifest);
 }
 
@@ -308,6 +353,47 @@ std::string ServicesCustomizationDocument::GetSupportPage(
     const std::string& locale) const {
   return GetLocaleSpecificString(
       locale, kAppContentAttr, kSupportPageAttr);
+}
+
+const ServicesCustomizationDocument::CarrierDeal*
+ServicesCustomizationDocument::GetCarrierDeal(const std::string& carrier_id,
+                                              bool check_restrictions) const {
+  CarrierDeals::const_iterator iter = carrier_deals_.find(carrier_id);
+  if (iter != carrier_deals_.end()) {
+    CarrierDeal* deal = iter->second;
+    if (check_restrictions) {
+      // Deal locale has to match initial_locale (= launch country).
+      if (initial_locale_ != deal->deal_locale)
+        return NULL;
+      // Make sure that deal is still active,
+      // i.e. if deal expire date is defined, check it.
+      if (!deal->expire_date.is_null() &&
+          deal->expire_date <= base::Time::Now()) {
+        return NULL;
+      }
+    }
+    return deal;
+  } else {
+    return NULL;
+  }
+}
+
+bool ServicesCustomizationDocument::LoadManifestFromString(
+    const std::string& manifest) {
+  if (!CustomizationDocument::LoadManifestFromString(manifest))
+    return false;
+
+  DictionaryValue* carriers = NULL;
+  if (root_.get() && root_->GetDictionary(kCarrierDealsAttr, &carriers)) {
+    for (DictionaryValue::key_iterator iter = carriers->begin_keys();
+         iter != carriers->end_keys(); ++iter) {
+     DictionaryValue* carrier_deal = NULL;
+     if (carriers->GetDictionary(*iter, &carrier_deal)) {
+       carrier_deals_[*iter] = new CarrierDeal(carrier_deal);
+     }
+   }
+  }
+  return true;
 }
 
 }  // namespace chromeos
