@@ -272,7 +272,7 @@ void PrerenderContents::StartPrerendering(
   // APP_TERMINATING before non-OTR profiles are destroyed).
   // TODO(tburkard): figure out if this is needed.
   notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
-                 Source<Profile>(profile_));
+                              Source<Profile>(profile_));
 
   // Register to cancel if Authentication is required.
   notification_registrar_.Add(this, NotificationType::AUTH_NEEDED,
@@ -285,6 +285,11 @@ void PrerenderContents::StartPrerendering(
   notification_registrar_.Add(this, NotificationType::DOWNLOAD_INITIATED,
                               NotificationService::AllSources());
 
+  // Register to inform new RenderViews that we're prerendering.
+  notification_registrar_.Add(
+      this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
+      Source<TabContents>(new_contents));
+
   // Register for redirect notifications sourced from |this|.
   notification_registrar_.Add(
       this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
@@ -292,10 +297,6 @@ void PrerenderContents::StartPrerendering(
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
-
-  RenderViewHost* rvh = prerender_contents_->render_view_host();
-  CHECK(rvh);
-  rvh->Send(new ViewMsg_SetIsPrerendering(rvh->routing_id(), true));
 
   new_contents->controller().LoadURL(prerender_url_,
                                      referrer_, PageTransition::LINK);
@@ -479,6 +480,24 @@ void PrerenderContents::Observe(NotificationType type,
           ResourceType::MAIN_FRAME) {
         if (!AddAliasURL(resource_redirect_details->new_url()))
           return;
+      }
+      break;
+    }
+
+    case NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+      // When a new RenderView is created for a prerendering TabContents,
+      // tell the new RenderView it's being used for prerendering before any
+      // navigations occur.  Note that this is always triggered before the
+      // first navigation, so there's no need to send the message just after the
+      // TabContents is created.
+      if (prerender_contents_.get()) {
+        DCHECK_EQ(Source<TabContents>(source).ptr(),
+                  prerender_contents_->tab_contents());
+
+        Details<RenderViewHost> new_render_view_host(details);
+        new_render_view_host->Send(
+            new ViewMsg_SetIsPrerendering(new_render_view_host->routing_id(),
+                                          true));
       }
       break;
     }

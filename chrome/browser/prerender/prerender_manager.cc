@@ -542,12 +542,9 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
   RenderViewHost* render_view_host =
       prerender_contents->prerender_contents()->render_view_host();
   DCHECK(render_view_host);
-  // TODO(tburkard): this crashes b/c the navigation type is not set
-  // correctly (yet).
-  /*
   render_view_host->Send(
-      new ViewMsg_DisplayPrerenderedPage(render_view_host->routing_id()));
-  */
+      new ViewMsg_SetIsPrerendering(render_view_host->routing_id(), false));
+
   TabContentsWrapper* new_tab_contents =
       prerender_contents->ReleasePrerenderContents();
   TabContentsWrapper* old_tab_contents =
