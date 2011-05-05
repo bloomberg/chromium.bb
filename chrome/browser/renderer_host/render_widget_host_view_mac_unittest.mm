@@ -17,9 +17,6 @@ class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {
   RenderWidgetHostViewMacTest() : old_rwhv_(NULL), rwhv_mac_(NULL) {}
 
   virtual void SetUp() {
-    // Set up Cocoa.
-    [CrApplication sharedApplication];
-
     RenderViewHostTestHarness::SetUp();
 
     // TestRenderViewHost's destruction assumes that its view is a

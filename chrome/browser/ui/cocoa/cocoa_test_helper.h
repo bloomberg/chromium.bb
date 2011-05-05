@@ -46,17 +46,18 @@
 @end
 
 // A test class that all tests that depend on AppKit should inherit from.
-// Sets up NSApplication and paths correctly, and makes sure that any windows
-// created in the test are closed down properly by the test. If you need to
-// inherit from a different test class, but need to set up the AppKit runtime
-// environment, you can call BootstrapCocoa directly from your test class. You
-// will have to deal with windows on your own though.
+// Sets up paths correctly, and makes sure that any windows created in the test
+// are closed down properly by the test. If you need to inherit from a
+// different test class, but need to set up the AppKit runtime environment, you
+// can call BootstrapCocoa directly from your test class. You will have to deal
+// with windows on your own though.  Note that NSApp is initialized by
+// ChromeTestSuite.
 class CocoaTest : public PlatformTest {
  public:
-  // Sets up AppKit and paths correctly for unit tests. If you can't inherit
-  // from CocoaTest but are going to be using any AppKit features directly,
-  // or indirectly, you should be calling this from the c'tor or SetUp methods
-  // of your test class.
+  // Sets up paths correctly for unit tests. If you can't inherit from
+  // CocoaTest but are going to be using any AppKit features directly, or
+  // indirectly, you should be calling this from the c'tor or SetUp methods of
+  // your test class. Note that NSApp is initialized by ChromeTestSuite.
   static void BootstrapCocoa();
 
   CocoaTest();
