@@ -2746,7 +2746,7 @@ void Browser::TabInsertedAt(TabContentsWrapper* contents,
   // If the tab crashes in the beforeunload or unload handler, it won't be
   // able to ack. But we know we can close it.
   registrar_.Add(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
-                 Source<TabContentsWrapper>(contents));
+                 Source<TabContents>(contents->tab_contents()));
 }
 
 void Browser::TabClosingAt(TabStripModel* tab_strip_model,
@@ -4347,7 +4347,7 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
   }
 
   registrar_.Remove(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
-                    Source<TabContentsWrapper>(contents));
+                    Source<TabContents>(contents->tab_contents()));
 }
 
 // static

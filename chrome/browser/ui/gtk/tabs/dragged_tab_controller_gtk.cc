@@ -187,7 +187,8 @@ void DraggedTabControllerGtk::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
   DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
-  DCHECK(Source<TabContentsWrapper>(source).ptr() == dragged_contents_);
+  DCHECK_EQ(Source<TabContents>(source).ptr(),
+            dragged_contents_->tab_contents());
   EndDragImpl(TAB_DESTROYED);
 }
 
@@ -206,7 +207,7 @@ void DraggedTabControllerGtk::SetDraggedContents(
   if (dragged_contents_) {
     registrar_.Remove(this,
                       NotificationType::TAB_CONTENTS_DESTROYED,
-                      Source<TabContentsWrapper>(dragged_contents_));
+                      Source<TabContents>(dragged_contents_->tab_contents()));
     if (original_delegate_)
       dragged_contents_->tab_contents()->set_delegate(original_delegate_);
   }
@@ -215,7 +216,7 @@ void DraggedTabControllerGtk::SetDraggedContents(
   if (dragged_contents_) {
     registrar_.Add(this,
                    NotificationType::TAB_CONTENTS_DESTROYED,
-                   Source<TabContentsWrapper>(dragged_contents_));
+                   Source<TabContents>(dragged_contents_->tab_contents()));
 
     // We need to be the delegate so we receive messages about stuff,
     // otherwise our dragged_contents() may be replaced and subsequently
