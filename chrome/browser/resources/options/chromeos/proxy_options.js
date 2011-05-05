@@ -164,7 +164,10 @@ cr.define('options', function() {
     handleAddException_: function(e) {
       var exception = $('newHost').value;
       $('newHost').value = '';
-      $('ignoredHostList').addException(exception);
+
+      exception = exception.trim();
+      if (exception)
+        $('ignoredHostList').addException(exception);
     },
 
     /**
