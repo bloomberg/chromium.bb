@@ -10,22 +10,25 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 
-#define kToolbarTopOffset 12
-#define kToolbarMaxHeight 100
+@interface BackgroundGradientView (Private)
+- (NSColor*)backgroundImageColor;
+@end
 
 @implementation BackgroundGradientView
 @synthesize showsDivider = showsDivider_;
 
 - (id)initWithFrame:(NSRect)frameRect {
-  self = [super initWithFrame:frameRect];
-  if (self != nil) {
+  if ((self = [super initWithFrame:frameRect])) {
     showsDivider_ = YES;
   }
   return self;
 }
 
-- (void)awakeFromNib {
-  showsDivider_ = YES;
+- (id)initWithCoder:(NSCoder*)decoder {
+  if ((self = [super initWithCoder:decoder])) {
+    showsDivider_ = YES;
+  }
+  return self;
 }
 
 - (void)setShowsDivider:(BOOL)show {
@@ -33,41 +36,26 @@
   [self setNeedsDisplay:YES];
 }
 
-- (void)drawBackground {
-  BOOL isKey = [[self window] isKeyWindow];
-  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
-  if (themeProvider) {
-    NSColor* backgroundImageColor =
-        themeProvider->GetNSImageColorNamed(IDR_THEME_TOOLBAR, false);
-    if (backgroundImageColor) {
-      [backgroundImageColor set];
-      NSRectFill([self bounds]);
-    } else {
-      CGFloat winHeight = NSHeight([[self window] frame]);
-      NSGradient* gradient = themeProvider->GetNSGradient(
-          isKey ? ThemeService::GRADIENT_TOOLBAR :
-                  ThemeService::GRADIENT_TOOLBAR_INACTIVE);
-      NSPoint startPoint =
-          [self convertPoint:NSMakePoint(0, winHeight - kToolbarTopOffset)
-                    fromView:nil];
-      NSPoint endPoint =
-          NSMakePoint(0, winHeight - kToolbarTopOffset - kToolbarMaxHeight);
-      endPoint = [self convertPoint:endPoint fromView:nil];
+- (void)drawBackgroundWithOpaque:(BOOL)opaque {
+  const NSRect bounds = [self bounds];
 
-      [gradient drawFromPoint:startPoint
-                      toPoint:endPoint
-                      options:(NSGradientDrawsBeforeStartingLocation |
-                               NSGradientDrawsAfterEndingLocation)];
-    }
+  if (opaque) {
+    // If the background image is semi transparent then we need something
+    // to blend against. Using 20% black gives us a color similar to Windows.
+    [[NSColor colorWithCalibratedWhite:0.2 alpha:1.0] set];
+    NSRectFill(bounds);
+  }
 
-    if (showsDivider_) {
-      // Draw bottom stroke
-      [[self strokeColor] set];
-      NSRect borderRect, contentRect;
-      NSDivideRect([self bounds], &borderRect, &contentRect,
-                   [self cr_lineWidth], NSMinYEdge);
-      NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
-    }
+  [[self backgroundImageColor] set];
+  NSRectFillUsingOperation(bounds, NSCompositeSourceOver);
+
+  if (showsDivider_) {
+    // Draw bottom stroke
+    [[self strokeColor] set];
+    NSRect borderRect, contentRect;
+    NSDivideRect(bounds, &borderRect, &contentRect, [self cr_lineWidth],
+                 NSMinYEdge);
+    NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
   }
 }
 
@@ -79,6 +67,24 @@
   return themeProvider->GetNSColor(
       isKey ? ThemeService::COLOR_TOOLBAR_STROKE :
               ThemeService::COLOR_TOOLBAR_STROKE_INACTIVE, true);
+}
+
+- (NSColor*)backgroundImageColor {
+  ThemeService* themeProvider =
+      static_cast<ThemeService*>([[self window] themeProvider]);
+  if (!themeProvider)
+    return [[self window] backgroundColor];
+
+  // Themes don't have an inactive image so only look for one if there's no
+  // theme.
+  if (![[self window] isKeyWindow] && themeProvider->UsingDefaultTheme()) {
+    NSColor* color = themeProvider->GetNSImageColorNamed(
+        IDR_THEME_TOOLBAR_INACTIVE, true);
+    if (color)
+      return color;
+  }
+
+  return themeProvider->GetNSImageColorNamed(IDR_THEME_TOOLBAR, true);
 }
 
 @end

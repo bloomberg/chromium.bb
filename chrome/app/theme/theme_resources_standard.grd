@@ -123,11 +123,14 @@
       <if expr="not pp_ifdef('chromeos')">
         <include name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background.png" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="pp_ifdef('chromeos') or os == 'darwin'">
         <include name="IDR_THEME_TOOLBAR" file="theme_toolbar_default2.png" type="BINDATA" />
       </if>
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not pp_ifdef('chromeos') and os != 'darwin'">
         <include name="IDR_THEME_TOOLBAR" file="theme_toolbar_default.png" type="BINDATA" />
+      </if>
+      <if expr="os == 'darwin'">
+        <include name="IDR_THEME_TOOLBAR_INACTIVE" file="theme_toolbar_default_inactive2.png" type="BINDATA" />
       </if>
       <include name="IDR_THROBBER_WAITING" file="throbber_waiting.png" type="BINDATA" />
       <include name="IDR_TOOLS" file="tools.png" type="BINDATA" />

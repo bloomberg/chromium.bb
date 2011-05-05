@@ -72,7 +72,7 @@ CGFloat kCurveSize = 8;
     NSPoint phase = [[self window] themePatternPhase];
 
     [context setPatternPhase:phase];
-    [super drawBackground];
+    [super drawBackgroundWithOpaque:YES];
   }
 
   [[self strokeColor] set];

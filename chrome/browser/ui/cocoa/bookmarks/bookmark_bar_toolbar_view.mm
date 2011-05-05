@@ -41,7 +41,7 @@ const CGFloat kBorderRadius = 3.0;
   } else {
     NSPoint phase = [[self window] themePatternPhase];
     [[NSGraphicsContext currentContext] setPatternPhase:phase];
-    [self drawBackground];
+    [self drawBackgroundWithOpaque:YES];
   }
 }
 
@@ -109,7 +109,7 @@ const CGFloat kBorderRadius = 3.0;
     CGContextBeginTransparencyLayer(cgContext, NULL);
     CGContextSetAlpha(cgContext, 1 - morph);
     [context setPatternPhase:[[self window] themePatternPhase]];
-    [self drawBackground];
+    [self drawBackgroundWithOpaque:YES];
     CGContextEndTransparencyLayer(cgContext);
   }
 

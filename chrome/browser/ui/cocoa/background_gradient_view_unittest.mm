@@ -12,13 +12,22 @@
 
 // Since BackgroundGradientView doesn't do any drawing by default, we
 // create a subclass to call its draw method for us.
-@interface BackgroundGradientSubClassTest : BackgroundGradientView
+@interface BackgroundGradientSubClassTest : BackgroundGradientView {
+  BOOL backgroundIsOpaque;
+}
+
+@property BOOL backgroundIsOpaque;
+
 @end
 
 @implementation BackgroundGradientSubClassTest
+
+@synthesize backgroundIsOpaque;
+
 - (void)drawRect:(NSRect)rect {
-  [self drawBackground];
+  [self drawBackgroundWithOpaque:backgroundIsOpaque];
 }
+
 @end
 
 namespace {
@@ -41,6 +50,9 @@ TEST_VIEW(BackgroundGradientViewTest, view_)
 // Test drawing, mostly to ensure nothing leaks or crashes.
 TEST_F(BackgroundGradientViewTest, DisplayWithDivider) {
   [view_ setShowsDivider:YES];
+  [view_ setBackgroundIsOpaque:YES];
+  [view_ display];
+  [view_ setBackgroundIsOpaque:NO];
   [view_ display];
 }
 

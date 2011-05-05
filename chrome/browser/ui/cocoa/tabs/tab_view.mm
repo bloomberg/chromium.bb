@@ -715,7 +715,7 @@ const CGFloat kRapidCloseDist = 2.5;
     [path addClip];
     {
       gfx::ScopedNSGraphicsContextSaveGState drawBackgroundState(context);
-      [super drawBackground];
+      [super drawBackgroundWithOpaque:NO];
     }
 
     // Draw a mouse hover gradient for the default themes.
