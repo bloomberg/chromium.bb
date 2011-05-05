@@ -433,9 +433,6 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
   # Fixed properties
   keep_max = 3
 
-  # This command shouldn't be called if there is no path at all.
-  assert buildconfig['gs_path'], "Error in cbuildbot handling of gs_path config"
-
   if buildconfig['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
     gsutil_archive = 'gs://chromeos-archive/' + bot_id
   else:
@@ -447,12 +444,17 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
          '--to', '/var/www/archive/' + bot_id,
          '--keep_max', str(keep_max),
          '--board', buildconfig['board'],
-         '--acl', '/home/chrome-bot/slave_archive_acl',
-         '--gsutil_archive', gsutil_archive,
-         '--gsd_gen_index',
-           '/b/scripts/gsd_generate_index/gsd_generate_index.py',
-         '--gsutil', '/b/scripts/slave/gsutil',
-  ]
+         ]
+
+  # If we archive to Google Storage
+  if gsutil_archive:
+    cmd += ['--gsutil_archive', gsutil_archive,
+            '--acl', '/home/chrome-bot/slave_archive_acl',
+            '--gsd_gen_index',
+            '/b/scripts/gsd_generate_index/gsd_generate_index.py',
+            '--gsutil', '/b/scripts/slave/gsutil',
+            ]
+
   # Give the right args to archive_build.
   if buildconfig.get('factory_test_mod', True): cmd.append('--factory_test_mod')
   if not buildconfig['archive_build_debug']: cmd.append('--noarchive_debug')

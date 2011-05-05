@@ -97,7 +97,7 @@ def RunBuildStages(bot_id, options, build_config):
                                                     success=True).Run()
 
     finally:
-      if options.archive and build_config['gs_path']:
+      if options.archive:
         stages.ArchiveStage(bot_id, options, build_config).Run()
         cros_lib.Info('BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:')
         cros_lib.Info(stages.BuilderStage.archive_url)
