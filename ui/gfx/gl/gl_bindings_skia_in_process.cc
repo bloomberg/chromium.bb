@@ -473,8 +473,8 @@ void BindSkiaToInProcessGL() {
       StubGLClearColor,
       StubGLClearStencil,
       NULL,  // glClientActiveTexture
-      StubGLColorMask,
       NULL,  // glColor4ub
+      StubGLColorMask,
       NULL,  // glColorPointer
       StubGLCompileShader,
       StubGLCompressedTexImage2D,
