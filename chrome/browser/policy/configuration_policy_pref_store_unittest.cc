@@ -61,9 +61,10 @@ TEST_P(ConfigurationPolicyPrefStoreListTest, SetValue) {
   in_value->Append(Value::CreateStringValue("test2,"));
   provider_.AddPolicy(GetParam().type(), in_value);
   store_->OnUpdatePolicy();
-  const Value* value;
+  const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
+  ASSERT_TRUE(value);
   EXPECT_TRUE(in_value->Equals(value));
 }
 
@@ -101,9 +102,10 @@ TEST_P(ConfigurationPolicyPrefStoreStringTest, SetValue) {
   provider_.AddPolicy(GetParam().type(),
                       Value::CreateStringValue("http://chromium.org"));
   store_->OnUpdatePolicy();
-  const Value* value;
+  const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
+  ASSERT_TRUE(value);
   EXPECT_TRUE(StringValue("http://chromium.org").Equals(value));
 }
 
@@ -142,18 +144,24 @@ TEST_P(ConfigurationPolicyPrefStoreBooleanTest, GetDefault) {
 TEST_P(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   provider_.AddPolicy(GetParam().type(), Value::CreateBooleanValue(false));
   store_->OnUpdatePolicy();
-  const Value* value;
-  bool result = true;
+  const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
-  EXPECT_TRUE(FundamentalValue(false).Equals(value));
+  ASSERT_TRUE(value);
+  bool boolean_value = true;
+  bool result = value->GetAsBoolean(&boolean_value);
+  ASSERT_TRUE(result);
+  EXPECT_FALSE(boolean_value);
 
   provider_.AddPolicy(GetParam().type(), Value::CreateBooleanValue(true));
   store_->OnUpdatePolicy();
-  result = false;
+  value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
-  EXPECT_TRUE(FundamentalValue(true).Equals(value));
+  boolean_value = false;
+  result = value->GetAsBoolean(&boolean_value);
+  ASSERT_TRUE(result);
+  EXPECT_TRUE(boolean_value);
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -673,8 +681,72 @@ TEST_F(ConfigurationPolicyPrefStoreSyncTest, Disabled) {
   // Sync should be flagged as managed.
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK, store_->GetValue(prefs::kSyncManaged, &value));
-  ASSERT_TRUE(value != NULL);
-  EXPECT_TRUE(FundamentalValue(true).Equals(value));
+  ASSERT_TRUE(value);
+  bool sync_managed = false;
+  bool result = value->GetAsBoolean(&sync_managed);
+  ASSERT_TRUE(result);
+  EXPECT_TRUE(sync_managed);
+}
+
+// Test cases for how the DownloadDirectory and AllowFileSelectionDialogs policy
+// influence the PromptForDownload preference.
+class ConfigurationPolicyPrefStorePromptDownloadTest
+    : public ConfigurationPolicyPrefStoreTestBase<testing::Test> {
+};
+
+TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, Default) {
+  EXPECT_EQ(PrefStore::READ_NO_VALUE,
+            store_->GetValue(prefs::kPromptForDownload, NULL));
+}
+
+TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, SetDownloadDirectory) {
+  EXPECT_EQ(PrefStore::READ_NO_VALUE,
+            store_->GetValue(prefs::kPromptForDownload, NULL));
+  provider_.AddPolicy(kPolicyDownloadDirectory, Value::CreateStringValue(""));
+  store_->OnUpdatePolicy();
+
+  // Setting a DownloadDirectory should disable the PromptForDownload pref.
+  const Value* value = NULL;
+  EXPECT_EQ(PrefStore::READ_OK, store_->GetValue(prefs::kPromptForDownload,
+                                                 &value));
+  ASSERT_TRUE(value);
+  bool prompt_for_download = true;
+  bool result = value->GetAsBoolean(&prompt_for_download);
+  ASSERT_TRUE(result);
+  EXPECT_FALSE(prompt_for_download);
+}
+
+TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest,
+       EnableFileSelectionDialogs) {
+  EXPECT_EQ(PrefStore::READ_NO_VALUE,
+            store_->GetValue(prefs::kPromptForDownload, NULL));
+  provider_.AddPolicy(kPolicyAllowFileSelectionDialogs,
+                      Value::CreateBooleanValue(true));
+  store_->OnUpdatePolicy();
+
+  // Allowing file-selection dialogs should not influence the PromptForDownload
+  // pref.
+  EXPECT_EQ(PrefStore::READ_NO_VALUE,
+            store_->GetValue(prefs::kPromptForDownload, NULL));
+}
+
+TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest,
+       DisableFileSelectionDialogs) {
+  EXPECT_EQ(PrefStore::READ_NO_VALUE,
+            store_->GetValue(prefs::kPromptForDownload, NULL));
+  provider_.AddPolicy(kPolicyAllowFileSelectionDialogs,
+                      Value::CreateBooleanValue(false));
+  store_->OnUpdatePolicy();
+
+  // Disabling file-selection dialogs should disable the PromptForDownload pref.
+  const Value* value = NULL;
+  EXPECT_EQ(PrefStore::READ_OK, store_->GetValue(prefs::kPromptForDownload,
+                                                 &value));
+  ASSERT_TRUE(value);
+  bool prompt_for_download = true;
+  bool result = value->GetAsBoolean(&prompt_for_download);
+  ASSERT_TRUE(result);
+  EXPECT_FALSE(prompt_for_download);
 }
 
 // Test cases for the Autofill policy setting.
@@ -702,7 +774,11 @@ TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Disabled) {
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(prefs::kAutofillEnabled, &value));
-  EXPECT_TRUE(FundamentalValue(false).Equals(value));
+  ASSERT_TRUE(value);
+  bool autofill_enabled = true;
+  bool result = value->GetAsBoolean(&autofill_enabled);
+  ASSERT_TRUE(result);
+  EXPECT_FALSE(autofill_enabled);
 }
 
 // Exercises the policy refresh mechanism.

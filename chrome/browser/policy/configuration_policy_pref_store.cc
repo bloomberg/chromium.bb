@@ -92,6 +92,13 @@ class ConfigurationPolicyPrefKeeper
   // ownership of |value| in the case that the policy is recognized.
   bool ApplyDownloadDirPolicy(ConfigurationPolicyType policy, Value* value);
 
+  // Processes file-selection dialogs policy. Returns true if the specified
+  // policy is the file-selection dialogs policy.
+  // ApplyFileSelectionDialogsPolicy assumes the ownership of |value| in the
+  // case that the policy is recognized.
+  bool ApplyFileSelectionDialogsPolicy(ConfigurationPolicyType policy,
+                                       Value* value);
+
   // Make sure that the |path| if present in |prefs_|.  If not, set it to
   // a blank string.
   void EnsureStringPrefExists(const std::string& path);
@@ -335,6 +342,9 @@ void ConfigurationPolicyPrefKeeper::Apply(ConfigurationPolicyType policy,
   if (ApplyDownloadDirPolicy(policy, value))
     return;
 
+  if (ApplyFileSelectionDialogsPolicy(policy, value))
+    return;
+
   if (ApplyPolicyFromMap(policy, value, kDefaultSearchPolicyMap,
                          arraysize(kDefaultSearchPolicyMap)))
     return;
@@ -437,6 +447,27 @@ bool ConfigurationPolicyPrefKeeper::ApplyDownloadDirPolicy(
     prefs_.SetValue(prefs::kPromptForDownload,
                     Value::CreateBooleanValue(false));
     delete value;
+    return true;
+  }
+  // We are not interested in this policy.
+  return false;
+}
+
+bool ConfigurationPolicyPrefKeeper::ApplyFileSelectionDialogsPolicy(
+    ConfigurationPolicyType policy,
+    Value* value) {
+  if (policy == kPolicyAllowFileSelectionDialogs) {
+    prefs_.SetValue(prefs::kAllowFileSelectionDialogs, value);
+    // If file-selection dialogs are not allowed we forbid the user to be
+    // prompted for the download location, since this would end up in an Infobar
+    // explaining that file-selection dialogs are forbidden anyways.
+    bool allow_file_selection_dialogs = true;
+    bool result = value->GetAsBoolean(&allow_file_selection_dialogs);
+    DCHECK(result);
+    if (!allow_file_selection_dialogs) {
+      prefs_.SetValue(prefs::kPromptForDownload,
+                      Value::CreateBooleanValue(false));
+    }
     return true;
   }
   // We are not interested in this policy.

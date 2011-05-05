@@ -576,7 +576,11 @@ void AdvancedOptionsHandler::SetupDownloadLocationPath() {
 
 void AdvancedOptionsHandler::SetupPromptForDownload() {
   FundamentalValue checked(ask_for_save_location_.GetValue());
-  FundamentalValue disabled(default_download_location_.IsManaged());
+  // If either the DownloadDirectory is managed or if file-selection dialogs are
+  // disallowed then |ask_for_save_location_| must currently be false and cannot
+  // be changed.
+  FundamentalValue disabled(default_download_location_.IsManaged() ||
+                            !allow_file_selection_dialogs_.GetValue());
   web_ui_->CallJavascriptFunction(
       "options.AdvancedOptions.SetPromptForDownload", checked, disabled);
 }

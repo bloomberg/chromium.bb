@@ -94,6 +94,7 @@ void ManagedPrefsBannerBase::Init(PrefService* local_state,
       AddUserPref(prefs::kProxy);
       AddUserPref(prefs::kCloudPrintProxyEnabled);
       AddUserPref(prefs::kDownloadDefaultDirectory);
+      AddUserPref(prefs::kPromptForDownload);
       AddUserPref(prefs::kEnableTranslate);
       AddUserPref(prefs::kChromotingEnabled);
       AddUserPref(prefs::kChromotingHostEnabled);

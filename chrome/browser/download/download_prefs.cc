@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_prefs.h"
 
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -79,7 +80,10 @@ void DownloadPrefs::RegisterUserPrefs(PrefService* prefs) {
 }
 
 bool DownloadPrefs::PromptForDownload() const {
-  return *prompt_for_download_ && !download_path_.IsManaged();
+  // If the DownloadDirectory policy is set, then |prompt_for_download_| should
+  // always be false.
+  DCHECK(!download_path_.IsManaged() || !prompt_for_download_.GetValue());
+  return *prompt_for_download_;
 }
 
 bool DownloadPrefs::IsDownloadPathManaged() const {
