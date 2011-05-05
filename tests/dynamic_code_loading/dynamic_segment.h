@@ -6,6 +6,8 @@
 #ifndef NATIVE_CLIENT_TESTS_DYNAMIC_CODE_LOADING_DYNAMIC_SEGMENT_H_
 #define NATIVE_CLIENT_TESTS_DYNAMIC_CODE_LOADING_DYNAMIC_SEGMENT_H_
 
+#include <stdint.h>
+
 extern char _etext[];
 /* TODO(sehr): add a sysconf to get the page size, rather than this magic. */
 #define DYNAMIC_CODE_PAGE_SIZE     (0x10000)
