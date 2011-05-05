@@ -101,7 +101,7 @@ def main():
 
   deps = DepGraphGenerator()
   deps.Initialize(argv)
-  deps_tree, deps_info = deps.GenDependencyTree()
+  deps_tree, deps_info = deps.GenDependencyTree({})
   print json.dumps(FlattenDepTree(deps_tree), sort_keys=True, indent=2)
 
 

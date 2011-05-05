@@ -231,8 +231,8 @@ class Upgrader(object):
 
     deps = parallel_emerge.DepGraphGenerator()
     deps.Initialize(argv)
-    deps_tree, deps_info = deps.GenDependencyTree()
-    deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
+    deps_tree, deps_info = deps.GenDependencyTree({})
+    deps_graph = deps.GenDependencyGraph(deps_tree, deps_info, {})
     return Upgrader._GetPreOrderDepGraph(deps_graph)
 
   def _GetInfoListWithOverlays(self, cpvlist):

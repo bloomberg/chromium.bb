@@ -6,7 +6,7 @@
 """Program to run emerge in parallel, for significant speedup.
 
 Usage:
- ./parallel_emerge [--board=BOARD] [--workon=PKGS]
+ ./parallel_emerge [--board=BOARD] [--workon=PKGS] [--no-workon-deps]
                    [--force-remote-binary=PKGS] [emerge args] package
 
 Basic operation:
@@ -44,11 +44,14 @@ import errno
 import multiprocessing
 import os
 import Queue
+import shlex
 import signal
 import sys
 import tempfile
 import time
 import traceback
+import urllib2
+import urlparse
 
 # If PORTAGE_USERNAME isn't specified, scrape it from the $HOME variable. On
 # Chromium OS, the default "portage" user doesn't have the necessary
@@ -74,27 +77,33 @@ if "PORTAGE_USERNAME" not in os.environ:
 from _emerge.actions import adjust_configs
 from _emerge.actions import load_emerge_config
 from _emerge.create_depgraph_params import create_depgraph_params
-from _emerge.depgraph import backtrack_depgraph
+from _emerge.depgraph import depgraph as emerge_depgraph
+from _emerge.depgraph import _frozen_depgraph_config
 from _emerge.main import emerge_main
 from _emerge.main import parse_opts
 from _emerge.Package import Package
 from _emerge.Scheduler import Scheduler
 from _emerge.SetArg import SetArg
 from _emerge.stdout_spinner import stdout_spinner
-from portage._global_updates import _global_updates
-from portage.versions import vercmp
 import portage
 import portage.debug
+import portage.versions
 
-NEW_PORTAGE = (0 <= vercmp(portage.VERSION, "2.1.9.46-r2"))
+new_portage = not portage.VERSION.startswith("2.1.7.")
+if new_portage:
+  from portage._global_updates import _global_updates
+else:
+  from portage import _global_updates
 
 def Usage():
   """Print usage."""
   print "Usage:"
-  print " ./parallel_emerge [--board=BOARD] [--workon=PKGS]"
+  print " ./parallel_emerge [--board=BOARD] [--workon=PKGS] [--no-workon-deps]"
   print "                   [--rebuild] [emerge args] package"
   print
   print "Packages specified as workon packages are always built from source."
+  print "Unless --no-workon-deps is specified, packages that depend on these"
+  print "packages are also built from source."
   print
   print "The --workon argument is mainly useful when you want to build and"
   print "install packages that you are working on unconditionally, but do not"
@@ -107,6 +116,10 @@ def Usage():
   print "are changed. This ensures that your build is correct."
   sys.exit(1)
 
+
+# These are dependencies that are not specified in the package,
+# but will prevent the package from installing.
+secret_deps = {}
 
 # Global start time
 GLOBAL_START = time.time()
@@ -213,13 +226,21 @@ class DepGraphGenerator(object):
     PrintDepsMap(deps_graph)
   """
 
-  __slots__ = ["board", "emerge", "package_db", "show_output"]
+  __slots__ = ["board", "emerge", "mandatory_source", "no_workon_deps",
+               "nomerge", "package_db", "rebuild", "show_output",
+               "force_remote_binary", "forced_remote_binary_packages"]
 
   def __init__(self):
     self.board = None
     self.emerge = EmergeData()
+    self.mandatory_source = set()
+    self.no_workon_deps = False
+    self.nomerge = set()
     self.package_db = {}
+    self.rebuild = False
     self.show_output = False
+    self.force_remote_binary = set()
+    self.forced_remote_binary_packages = set()
 
   def ParseParallelEmergeArgs(self, argv):
     """Read the parallel emerge arguments from the command-line.
@@ -240,29 +261,31 @@ class DepGraphGenerator(object):
         self.board = arg.replace("--board=", "")
       elif arg.startswith("--workon="):
         workon_str = arg.replace("--workon=", "")
-        if NEW_PORTAGE:
-          emerge_args.append("--reinstall-atoms=%s" % workon_str)
-          emerge_args.append("--usepkg-exclude=%s" % workon_str)
+        package_list = shlex.split(" ".join(shlex.split(workon_str)))
+        self.mandatory_source.update(package_list)
       elif arg.startswith("--force-remote-binary="):
         force_remote_binary = arg.replace("--force-remote-binary=", "")
-        if NEW_PORTAGE:
-          emerge_args.append("--useoldpkg-atoms=%s" % force_remote_binary)
+        force_remote_binary = \
+          shlex.split(" ".join(shlex.split(force_remote_binary)))
+        self.force_remote_binary.update(force_remote_binary)
+      elif arg.startswith("--nomerge="):
+        nomerge_str = arg.replace("--nomerge=", "")
+        package_list = shlex.split(" ".join(shlex.split(nomerge_str)))
+        self.nomerge.update(package_list)
+      elif arg == "--no-workon-deps":
+        self.no_workon_deps = True
+      elif arg == "--rebuild":
+        self.rebuild = True
       elif arg == "--show-output":
         self.show_output = True
-      elif arg == "--rebuild":
-        if NEW_PORTAGE:
-          emerge_args.append("--rebuild-if-unbuilt")
       else:
         # Not one of our options, so pass through to emerge.
         emerge_args.append(arg)
 
-    # These packages take a really long time to build, so, for expediency, we
-    # are blacklisting them from automatic rebuilds because one of their
-    # dependencies needs to be recompiled.
-    for pkg in ("chromeos-base/chromeos-chrome", "media-plugins/o3d",
-                "dev-java/icedtea"):
-      if NEW_PORTAGE:
-        emerge_args.append("--rebuild-exclude=%s" % pkg)
+    if self.rebuild:
+      if self.no_workon_deps:
+        print "--rebuild is not compatible with --no-workon-deps"
+        sys.exit(1)
 
     return emerge_args
 
@@ -405,7 +428,8 @@ class DepGraphGenerator(object):
       portage.debug.set_trace(True)
 
     # Complain about unsupported options
-    for opt in ("--ask", "--ask-enter-invalid", "--resume", "--skipfirst"):
+    for opt in ("--ask", "--ask-enter-invalid", "--complete-graph",
+                "--resume", "--skipfirst"):
       if opt in opts:
         print "%s is not supported by parallel_emerge" % opt
         sys.exit(1)
@@ -421,20 +445,124 @@ class DepGraphGenerator(object):
     root = settings["ROOT"]
     emerge.root_config = trees[root]["root_config"]
 
-    if "--usepkg" in opts:
+    if new_portage and "--usepkg" in opts:
       emerge.trees[root]["bintree"].populate("--getbinpkg" in opts)
+
+  def CheckUseFlags(self, pkgsettings, cur_pkg, new_pkg):
+    """Are the use flags in cur_pkg up to date?
+
+    Return True if use flags are up to date; return false otherwise."""
+
+    # cur_use:  The set of flags that were enabled when the package was
+    #           first installed.
+    # cur_iuse: The set of flags that affected the specified package
+    #           when it was first installed.
+    #
+    # The intersection of cur_use and cur_iuse provides the set of
+    # flags that were enabled and affected the specified package.
+    cur_use = cur_pkg.use.enabled
+    cur_iuse = cur_pkg.iuse.all
+
+    # Check whether this package is already installed with the right use
+    # flags.
+    #
+    # now_use: The set of flags (special and non-special) that are now
+    #          enabled for the specified package.
+    # now_iuse: The set of non-special flags that affect the specified
+    #           package.
+    now_use = new_pkg.use.enabled
+    now_iuse = new_pkg.iuse.all
+
+    # Tell portage we want to lookup the flags for the specified package
+    # in package.use.{mask,force}
+    pkgsettings.setcpv(new_pkg.cpv)
+
+    # Grab the set of flags that are requested for the given package.
+    # This includes flags that don't affect the package, and includes
+    # all sources of flags (e.g. USE environment variable, make.conf,
+    # make.defaults, package.use.{mask,force}, etc.).
+    #
+    # This is used by portage in the _reinstall_for_flags function below.
+    forced_flags = set(pkgsettings.useforce).union(pkgsettings.usemask)
+
+    depgraph = self.emerge.depgraph
+    flags = depgraph._reinstall_for_flags(forced_flags, cur_use,
+                                          cur_iuse, now_use, now_iuse)
+    return not flags
 
   def CreateDepgraph(self, emerge, packages):
     """Create an emerge depgraph object."""
     # Setup emerge options.
     emerge_opts = emerge.opts.copy()
 
-    # Ask portage to build a dependency graph. with the options we specified
-    # above.
+    # Enable --emptytree so that we get the full tree, which we need for
+    # dependency analysis. By default, with this option, emerge optimizes
+    # the graph by removing uninstall instructions from the graph. By
+    # specifying --tree as well, we tell emerge that it's not safe to remove
+    # uninstall instructions because we're planning on analyzing the output.
+    emerge_opts["--tree"] = True
+    emerge_opts["--emptytree"] = True
+
+    # Set up parameters.
     params = create_depgraph_params(emerge_opts, emerge.action)
-    success, depgraph, _ = backtrack_depgraph(
-        emerge.settings, emerge.trees, emerge_opts, params, emerge.action,
-        packages, emerge.spinner)
+    frozen_config = _frozen_depgraph_config(emerge.settings, emerge.trees,
+                                            emerge_opts, emerge.spinner)
+    backtrack_max = emerge_opts.get('--backtrack', 5)
+    backtrack_parameters = {}
+    allow_backtracking = backtrack_max > 0
+
+    # Try up to backtrack_max times to create a working depgraph. Each time we
+    # run into a conflict, mask the offending package and try again.
+    # TODO(davidjames): When Portage supports --force-remote-binary directly,
+    #                   switch back to using the backtrack_depgraph function.
+    for i in range(backtrack_max + 2):
+      # Create a depgraph object.
+      depgraph = emerge_depgraph(emerge.settings, emerge.trees, emerge_opts,
+          params, emerge.spinner, frozen_config=frozen_config,
+          allow_backtracking=allow_backtracking,
+          **backtrack_parameters)
+
+      if i == 0:
+        for cpv in self.forced_remote_binary_packages:
+          # If --force-remote-binary was specified, we want to use this package
+          # regardless of its use flags. Unfortunately, Portage doesn't support
+          # ignoring use flags for just one package. To convince Portage to
+          # install the package, we trick Portage into thinking the package has
+          # the right use flags.
+          # TODO(davidjames): Update Portage to support --force-remote-binary
+          #                   directly, so that this hack isn't necessary.
+          pkg = depgraph._pkg(cpv, "binary", emerge.root_config)
+          pkgsettings = frozen_config.pkgsettings[pkg.root]
+          pkgsettings.setcpv(pkg)
+          pkg.use.enabled = pkgsettings["PORTAGE_USE"].split()
+
+      # Select the packages we want.
+      success, favorites = depgraph.select_files(packages)
+      if success:
+        break
+      elif depgraph.need_restart() and i < backtrack_max:
+        # Looks like we found some packages that can't be installed due to
+        # conflicts. Try again, masking out the conflicting packages.
+        if new_portage:
+          backtrack_parameters = depgraph.get_backtrack_parameters()
+        else:
+          backtrack_parameters = {
+            'runtime_pkg_mask': depgraph.get_runtime_pkg_mask()
+          }
+      elif allow_backtracking and i > 0:
+        # Looks like we can't solve the graph. Stop backtracking and report an
+        # error message.
+        backtrack_parameters.pop('runtime_pkg_mask', None)
+        allow_backtracking = False
+      else:
+        break
+
+    # Delete the --tree option, because we don't really want to display a
+    # tree. We just wanted to get emerge to leave uninstall instructions on
+    # the graph. Later, when we display the graph, we'll want standard-looking
+    # output, so removing the --tree option is important.
+    frozen_config.myopts.pop("--tree", None)
+
     emerge.depgraph = depgraph
 
     # Is it impossible to honor the user's request? Bail!
@@ -442,16 +570,10 @@ class DepGraphGenerator(object):
       depgraph.display_problems()
       sys.exit(1)
 
-    emerge.depgraph = depgraph
-
-    # Is it impossible to honor the user's request? Bail!
-    if not success:
-      depgraph.display_problems()
-      sys.exit(1)
-
-  def GenDependencyTree(self):
+  def GenDependencyTree(self, remote_pkgs):
     """Get dependency tree info from emerge.
 
+    TODO(): Update cros_extract_deps to also use this code.
     Returns:
       Dependency tree
     """
@@ -461,6 +583,29 @@ class DepGraphGenerator(object):
 
     # Create a list of packages to merge
     packages = set(emerge.cmdline_packages[:])
+    if self.mandatory_source:
+      packages.update(self.mandatory_source)
+    if self.force_remote_binary:
+      forced_pkgs = {}
+      for pkg in remote_pkgs:
+        category, pkgname, _, _ = portage.catpkgsplit(pkg)
+        full_pkgname = "%s/%s" % (category, pkgname)
+        if (pkgname in self.force_remote_binary or
+            full_pkgname in self.force_remote_binary):
+          forced_pkgs.setdefault(full_pkgname, []).append(pkg)
+
+      # Add forced binary packages to the dependency list. This is necessary
+      # to ensure that the install plan contains the right package.
+      #
+      # Putting the forced binary package at the beginning of the list is an
+      # optimization that helps avoid unnecessary backtracking (e.g., if
+      # Portage first selects the wrong version, and then backtracks later, it
+      # takes a bit longer and uses up an unnecessary backtrack iteration.)
+      packages = list(packages)
+      for pkgs in forced_pkgs.values():
+        forced_package = portage.versions.best(pkgs)
+        packages.insert(0, "=%s" % forced_package)
+        self.forced_remote_binary_packages.add(forced_package)
 
     # Tell emerge to be quiet. We print plenty of info ourselves so we don't
     # need any extra output from portage.
@@ -513,15 +658,44 @@ class DepGraphGenerator(object):
         deps_tree[str(node.cpv)] = dict(action=str(node.operation),
                                         deps=deps)
 
+    emptytree = "--emptytree" in emerge.opts
+
     # Ask portage for its install plan, so that we can only throw out
-    # dependencies that portage throws out.
+    # dependencies that portage throws out. Also, keep track of the old
+    # versions of packages that we're either upgrading or replacing.
+    #
+    # The "vardb" is the database of installed packages.
+    root = emerge.settings["ROOT"]
+    frozen_config = depgraph._frozen_config
+    vardb = frozen_config.trees[root]["vartree"].dbapi
+    pkgsettings = frozen_config.pkgsettings[root]
+
     deps_info = {}
     for pkg in depgraph.altlist():
       if isinstance(pkg, Package):
+        # If we're not using --force-remote-binary, check what flags are being
+        # used by the real package.
+        if pkg.operation != "uninstall" and "--usepkgonly" not in emerge.opts:
+          try:
+            pkg = emerge.depgraph._pkg(pkg.cpv, "ebuild", emerge.root_config)
+          except portage.exception.PackageNotFound:
+            # This is a --force-remote-binary package.
+            pass
         self.package_db[pkg.cpv] = pkg
 
+        # If we're not in emptytree mode, and we're going to replace a package
+        # that is already installed, then this operation is possibly optional.
+        # ("--selective" mode is handled later, in RemoveInstalledPackages())
+        optional = False
+        if pkg.operation != "uninstall" and not emptytree:
+          for vardb_pkg in vardb.match_pkgs(pkg.cpv):
+            if self.CheckUseFlags(pkgsettings, vardb_pkg, pkg):
+              optional = True
+              break
+
         # Save off info about the package
-        deps_info[str(pkg.cpv)] = {"idx": len(deps_info)}
+        deps_info[str(pkg.cpv)] = {"idx": len(deps_info),
+                                   "optional": optional}
 
     seconds = time.time() - start
     if "--quiet" not in emerge.opts:
@@ -541,7 +715,24 @@ class DepGraphGenerator(object):
       print "%s %s (%s)" % (depth, entry, action)
       self.PrintTree(deps[entry]["deps"], depth=depth + "  ")
 
-  def GenDependencyGraph(self, deps_tree, deps_info):
+  def RemotePackageDatabase(self):
+    """Grab the latest binary package database from the prebuilt server.
+
+    We need to know the modification times of the prebuilt packages so that we
+    know when it is OK to use these packages and when we should rebuild them
+    instead.
+
+    Returns:
+      A dict mapping package identifiers to modification times.
+    """
+    root = self.emerge.settings["ROOT"]
+    bindb = self.emerge.trees[root]["bintree"].dbapi
+    prebuilt_pkgs = {}
+    for pkg in bindb.cpv_all():
+      prebuilt_pkgs[pkg] = bindb.aux_get(pkg, ["BUILD_TIME"])[0]
+    return prebuilt_pkgs
+
+  def GenDependencyGraph(self, deps_tree, deps_info, remote_pkgs):
     """Generate a doubly linked dependency graph.
 
     Args:
@@ -554,6 +745,25 @@ class DepGraphGenerator(object):
     emerge = self.emerge
     root = emerge.settings["ROOT"]
 
+    # It's useful to know what packages will actually end up on the
+    # system at some point. Packages in final_db are either already
+    # installed, or will be installed by the time we're done.
+    final_db = emerge.depgraph._dynamic_config.mydbapi[root]
+
+    # final_pkgs is a set of the packages we found in the final_db. These
+    # packages are either already installed, or will be installed by the time
+    # we're done. It's populated in BuildFinalPackageSet()
+    final_pkgs = set()
+
+    # These packages take a really long time to build, so, for expediency, we
+    # are blacklisting them from automatic rebuilds because one of their
+    # dependencies needs to be recompiled.
+    rebuild_blacklist = set()
+    for pkg in ("chromeos-base/chromeos-chrome", "media-plugins/o3d",
+                "dev-java/icedtea"):
+      for match in final_db.match_pkgs(pkg):
+        rebuild_blacklist.add(str(match.cpv))
+
     # deps_map is the actual dependency graph.
     #
     # Each package specifies a "needs" list and a "provides" list. The "needs"
@@ -563,6 +773,19 @@ class DepGraphGenerator(object):
     # We also provide some other information in the dependency graph:
     #  - action: What we're planning on doing with this package. Generally,
     #            "merge", "nomerge", or "uninstall"
+    #  - mandatory_source:
+    #    If true, indicates that this package must be compiled from source.
+    #    We set this for "workon" packages, and for packages where the
+    #    binaries are known to be out of date.
+    #  - mandatory:
+    #    If true, indicates that this package must be installed. We don't care
+    #    whether it's binary or source, unless the mandatory_source flag is
+    #    also set.
+    #  - force_remote_binary:
+    #    If true, indicates that we want to update to the latest remote prebuilt
+    #    of this package. Packages that depend on this package should be built
+    #    from source.
+    #
     deps_map = {}
 
     def ReverseTree(packages):
@@ -579,7 +802,9 @@ class DepGraphGenerator(object):
 
         # Create an entry for the package
         action = packages[pkg]["action"]
-        default_pkg = {"needs": {}, "provides": set(), "action": action}
+        default_pkg = {"needs": {}, "provides": set(), "action": action,
+                       "mandatory_source": False, "mandatory": False,
+                       "force_remote_binary": False}
         this_pkg = deps_map.setdefault(pkg, default_pkg)
 
         # Create entries for dependencies of this package first.
@@ -592,6 +817,14 @@ class DepGraphGenerator(object):
           if dep_type != "runtime_post":
             dep_pkg["provides"].add(pkg)
             this_pkg["needs"][dep] = dep_type
+
+    def BuildFinalPackageSet():
+      # If this package is installed, or will get installed, add it to
+      # final_pkgs
+      for pkg in deps_map:
+        for match in final_db.match_pkgs(pkg):
+          if match.cpv in deps_info:
+            final_pkgs.add(str(match.cpv))
 
     def FindCycles():
       """Find cycles in the dependency tree.
@@ -637,10 +870,55 @@ class DepGraphGenerator(object):
         FindCyclesAtNode(pkg, cycles, unresolved, resolved)
       return cycles
 
-    def RemoveUnusedPackages():
+    def RemoveInstalledPackages():
       """Remove installed packages, propagating dependencies."""
+
+      # If we're in non-selective mode, the packages specified on the command
+      # line are generally mandatory.
+      #
+      # There are a few exceptions to this rule:
+      #  1. If the package isn't getting installed because it's in
+      #     package.provided, it's not mandatory.
+      #  2. If the package isn't getting installed because we're in --onlydeps
+      #     mode, it's not mandatory either.
+      if "--selective" in emerge.opts:
+        selective = emerge.opts["--selective"] != "n"
+      else:
+        selective = ("--noreplace" in emerge.opts or
+                     "--update" in emerge.opts or
+                     "--newuse" in emerge.opts or
+                     "--reinstall" in emerge.opts)
+      onlydeps = "--onlydeps" in emerge.opts
+      if not selective:
+        for pkg in emerge.cmdline_packages:
+          # If the package specified on the command-line is in our install
+          # list, mark it as non-optional.
+          found = False
+          for db_pkg in final_db.match_pkgs(pkg):
+            this_pkg = deps_info.get(db_pkg.cpv)
+            if this_pkg:
+              found = True
+              this_pkg["optional"] = False
+
+          # We didn't find the package in our final db. If we're not in
+          # --onlydeps mode, this likely means that the package was specified
+          # in package.provided.
+          if not found and not onlydeps and "--verbose" in emerge.opts:
+            print "Skipping %s (is it in package.provided?)" % pkg
+
       # Schedule packages that aren't on the install list for removal
       rm_pkgs = set(deps_map.keys()) - set(deps_info.keys())
+
+      # Schedule optional packages for removal
+      for pkg, info in deps_info.items():
+        if info["optional"]:
+          rm_pkgs.add(pkg)
+
+      # Schedule nomerge packages for removal
+      for pkg in self.nomerge:
+        for db_pkg in final_db.match_pkgs(pkg):
+          if db_pkg.cpv in deps_map:
+            rm_pkgs.add(str(db_pkg.cpv))
 
       # Remove the packages we don't want, simplifying the graph and making
       # it easier for us to crack cycles.
@@ -710,12 +988,223 @@ class DepGraphGenerator(object):
       if "--quiet" not in emerge.opts and seconds >= 0.1:
         print "Tree sanitized in %dm%.1fs" % (seconds / 60, seconds % 60)
 
-    ReverseTree(deps_tree)
+    def AddSecretDeps():
+      """Find these tagged packages and add extra dependencies.
 
-    # We need to remove unused packages so that we can use the dependency
-    # ordering of the install process to show us what cycles to crack.
-    RemoveUnusedPackages()
+      For debugging dependency problems.
+      """
+      for bad in secret_deps:
+        needed = secret_deps[bad]
+        bad_pkg = None
+        needed_pkg = None
+        for dep in deps_map:
+          if dep.find(bad) != -1:
+            bad_pkg = dep
+          if dep.find(needed) != -1:
+            needed_pkg = dep
+        if bad_pkg and needed_pkg:
+          deps_map[needed_pkg]["provides"].add(bad_pkg)
+          deps_map[bad_pkg]["needs"][needed_pkg] = "secret"
+
+    def MergeChildren(pkg, merge_type):
+      """Merge this package and all packages it provides."""
+
+      this_pkg = deps_map[pkg]
+      if (this_pkg[merge_type] or pkg not in final_pkgs):
+        return
+
+      # Mark this package as non-optional
+      deps_info[pkg]["optional"] = False
+      this_pkg[merge_type] = True
+      for w in this_pkg["provides"].difference(rebuild_blacklist):
+        MergeChildren(w, merge_type)
+
+      if this_pkg["action"] == "nomerge":
+        this_pkg["action"] = "merge"
+
+    def LocalPackageDatabase():
+      """Get the modification times of the packages in the local database.
+
+      We need to know the modification times of the local packages so that we
+      know when they need to be rebuilt.
+
+      Returns:
+        A dict mapping package identifiers to modification times.
+      """
+      vardb = emerge.trees[root]["vartree"].dbapi
+      local_pkgs = {}
+      for pkg in vardb.cpv_all():
+        local_pkgs[pkg] = vardb.aux_get(pkg, ["BUILD_TIME"])[0]
+      return local_pkgs
+
+    def AutoRebuildDeps(local_pkgs, remote_pkgs, cycles):
+      """Recursively rebuild packages when necessary using modification times.
+
+      If you've modified a package, it's a good idea to rebuild all the packages
+      that depend on it from source. This function looks for any packages which
+      depend on packages that have been modified and ensures that they get
+      rebuilt.
+
+      Args:
+        local_pkgs: Modification times from the local database.
+        remote_pkgs: Modification times from the prebuilt server.
+        cycles: Dictionary returned from FindCycles()
+
+      Returns:
+        The set of packages we marked as needing to be merged.
+      """
+
+      def PrebuiltsReady(pkg, pkg_db, cache):
+        """Check whether the prebuilts are ready for pkg and all deps.
+
+        Args:
+          pkg: The specified package.
+          pkg_db: The package DB to use.
+          cache: A dict, where the results are stored.
+
+        Returns:
+          True iff the prebuilts are ready for pkg and all deps.
+        """
+        if pkg in cache:
+          return cache[pkg]
+        if pkg not in pkg_db and pkg not in self.forced_remote_binary_packages:
+          cache[pkg] = False
+        else:
+          cache[pkg] = True
+          for dep in deps_map[pkg]["needs"]:
+            if not PrebuiltsReady(dep, pkg_db, cache):
+              cache[pkg] = False
+              break
+        return cache[pkg]
+
+      def LastModifiedWithDeps(pkg, pkg_db, cache):
+        """Calculate the last modified time of a package and its dependencies.
+
+        This function looks at all the packages needed by the specified package
+        and checks the most recent modification time of all of those packages.
+        If the dependencies of a package were modified more recently than the
+        package itself, then we know the package needs to be rebuilt.
+
+        Args:
+          pkg: The specified package.
+          pkg_db: The package DB to use.
+          cache: A dict, where the last modified times are stored.
+
+        Returns:
+          The last modified time of the specified package and its dependencies.
+        """
+        if pkg in cache:
+          return cache[pkg]
+
+        cache[pkg] = pkg_db.get(pkg, 0)
+        for dep in deps_map[pkg]["needs"]:
+          t = LastModifiedWithDeps(dep, pkg_db, cache)
+          cache[pkg] = max(cache[pkg], t)
+        return cache[pkg]
+
+      # For every package that's getting updated in our local cache (binary
+      # or source), make sure we also update the children. If a package is
+      # built from source, all children must also be built from source.
+      local_ready_cache, remote_ready_cache = {}, {}
+      local_mtime_cache, remote_mtime_cache = {}, {}
+      for pkg in final_pkgs.difference(rebuild_blacklist):
+        # If all the necessary local packages are ready, and their
+        # modification times are in sync, we don't need to do anything here.
+        local_mtime = LastModifiedWithDeps(pkg, local_pkgs, local_mtime_cache)
+        local_ready = PrebuiltsReady(pkg, local_pkgs, local_ready_cache)
+        if (not local_ready or local_pkgs.get(pkg, 0) < local_mtime and
+            pkg not in cycles):
+          # OK, at least one package is missing from the local cache or is
+          # outdated. This means we're going to have to install the package
+          # and all dependencies.
+          #
+          # If all the necessary remote packages are ready, and they're at
+          # least as new as our local packages, we can install them.
+          # Otherwise, we need to build from source.
+          remote_mtime = LastModifiedWithDeps(pkg, remote_pkgs,
+                                              remote_mtime_cache)
+          remote_ready = PrebuiltsReady(pkg, remote_pkgs, remote_ready_cache)
+          if remote_ready and (local_mtime <= remote_mtime or pkg in cycles):
+            MergeChildren(pkg, "mandatory")
+          else:
+            MergeChildren(pkg, "mandatory_source")
+
+    def UsePrebuiltPackages(remote_pkgs):
+      """Update packages that can use prebuilts to do so."""
+      start = time.time()
+
+      # Build list of prebuilt packages.
+      prebuilt_pkgs = {}
+      for pkg, info in deps_map.iteritems():
+        if info and info["action"] == "merge":
+          if (not info["force_remote_binary"] and info["mandatory_source"] or
+              "--usepkgonly" not in emerge.opts and pkg not in remote_pkgs):
+            continue
+
+          db_pkg = emerge.depgraph._pkg(pkg, "binary", emerge.root_config)
+          if info["force_remote_binary"]:
+            # Undo our earlier hacks to the use flags so that the use flags
+            # display correctly.
+            db_pkg.use.enabled = db_pkg.metadata["USE"].split()
+          prebuilt_pkgs[pkg] = db_pkg
+
+      # Calculate what packages need to be rebuilt due to changes in use flags.
+      pkgsettings = emerge.depgraph._frozen_config.pkgsettings[root]
+      for pkg, db_pkg in prebuilt_pkgs.iteritems():
+        if not self.CheckUseFlags(pkgsettings, db_pkg, self.package_db[pkg]):
+          MergeChildren(pkg, "mandatory_source")
+
+      # Convert eligible packages to binaries.
+      for pkg, info in deps_map.iteritems():
+        if info and info["action"] == "merge" and pkg in prebuilt_pkgs:
+          if not info["mandatory_source"] or info["force_remote_binary"]:
+            self.package_db[pkg] = prebuilt_pkgs[pkg]
+
+      seconds = time.time() - start
+      if "--quiet" not in emerge.opts:
+        print "Prebuilt DB populated in %dm%.1fs" % (seconds / 60, seconds % 60)
+
+      return prebuilt_pkgs
+
+    ReverseTree(deps_tree)
+    BuildFinalPackageSet()
+    AddSecretDeps()
+
+    # Mark that we want to use remote binaries only for a particular package.
+    vardb = emerge.depgraph._frozen_config.trees[root]["vartree"].dbapi
+    for pkg in self.force_remote_binary:
+      for db_pkg in final_db.match_pkgs(pkg):
+        match = deps_map.get(str(db_pkg.cpv))
+        if match:
+          match["force_remote_binary"] = True
+
+          rebuild_blacklist.add(str(db_pkg.cpv))
+          if not vardb.match_pkgs(db_pkg.cpv):
+            MergeChildren(str(db_pkg.cpv), "mandatory")
+
+    if self.no_workon_deps:
+      for pkg in self.mandatory_source.copy():
+        for db_pkg in final_db.match_pkgs(pkg):
+          deps_map[str(db_pkg.cpv)]["mandatory_source"] = True
+    else:
+      for pkg in self.mandatory_source.copy():
+        for db_pkg in final_db.match_pkgs(pkg):
+          MergeChildren(str(db_pkg.cpv), "mandatory_source")
+
+      cycles = FindCycles()
+      if self.rebuild:
+        local_pkgs = LocalPackageDatabase()
+        AutoRebuildDeps(local_pkgs, remote_pkgs, cycles)
+
+    # We need to remove installed packages so that we can use the dependency
+    # ordering of the install process to show us what cycles to crack. Once
+    # we've done that, we also need to recalculate our list of cycles so that
+    # we don't include the installed packages in our cycles.
+    RemoveInstalledPackages()
     SanitizeTree()
+    if deps_map:
+      if "--usepkg" in emerge.opts:
+        UsePrebuiltPackages(remote_pkgs)
     return deps_map
 
   def PrintInstallPlan(self, deps_map):
@@ -846,9 +1335,10 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db):
   settings, trees, mtimedb = emerge.settings, emerge.trees, emerge.mtimedb
   opts, spinner = emerge.opts, emerge.spinner
   opts["--nodeps"] = True
-  # When Portage launches new processes, it goes on a rampage and closes all
-  # open file descriptors. Ask Portage not to do that, as it breaks us.
-  portage.process.get_open_fds = lambda: []
+  if new_portage:
+    # When Portage launches new processes, it goes on a rampage and closes all
+    # open file descriptors. Ask Portage not to do that, as it breaks us.
+    portage.process.get_open_fds = lambda: []
   while True:
     # Wait for a new item to show up on the queue. This is a blocking wait,
     # so if there's nothing to do, we just sit here.
@@ -875,9 +1365,13 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db):
       try:
         sys.stdout = output
         sys.stderr = output
-        emerge.scheduler_graph.mergelist = install_list
-        scheduler = Scheduler(settings, trees, mtimedb, opts, spinner,
-            favorites=[], graph_config=emerge.scheduler_graph)
+        if new_portage:
+          emerge.scheduler_graph.mergelist = install_list
+          scheduler = Scheduler(settings, trees, mtimedb, opts, spinner,
+              favorites=[], graph_config=emerge.scheduler_graph)
+        else:
+          scheduler = Scheduler(settings, trees, mtimedb, opts, spinner,
+              install_list, [], emerge.scheduler_graph)
         retcode = scheduler.merge()
       except Exception:
         traceback.print_exc(file=output)
@@ -1075,9 +1569,7 @@ class EmergeQueue(object):
     # It is possible to reinstall deps of deps, without reinstalling
     # first level deps, like so:
     # chromeos (merge) -> eselect (nomerge) -> python (merge)
-    if target not in self._deps_map:
-      pass
-    elif self._deps_map[target]["action"] == "nomerge":
+    if self._deps_map[target]["action"] == "nomerge":
       self._Finish(target)
     elif target not in self._jobs:
       # Kick off the build if it's marked to be built.
@@ -1266,17 +1758,25 @@ def main():
 
   if "--quiet" not in emerge.opts:
     cmdline_packages = " ".join(emerge.cmdline_packages)
+    nomerge_packages = " ".join(deps.nomerge)
     print "Starting fast-emerge."
     print " Building package %s on %s" % (cmdline_packages,
                                           deps.board or "root")
+    if nomerge_packages:
+      print " Skipping package %s on %s" % (nomerge_packages,
+                                            deps.board or "root")
 
-  deps_tree, deps_info = deps.GenDependencyTree()
+  remote_pkgs = {}
+  if "--getbinpkg" in emerge.opts:
+    remote_pkgs = deps.RemotePackageDatabase()
+
+  deps_tree, deps_info = deps.GenDependencyTree(remote_pkgs)
 
   # You want me to be verbose? I'll give you two trees! Twice as much value.
   if "--tree" in emerge.opts and "--verbose" in emerge.opts:
     deps.PrintTree(deps_tree)
 
-  deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
+  deps_graph = deps.GenDependencyGraph(deps_tree, deps_info, remote_pkgs)
 
   # OK, time to print out our progress so far.
   deps.PrintInstallPlan(deps_graph)
@@ -1324,7 +1824,7 @@ def main():
   # If we already upgraded portage, we don't need to do so again. But we do
   # need to upgrade the rest of the packages. So we'll go ahead and do that.
   if portage_upgrade:
-    args = sys.argv[1:] + ["--exclude=sys-apps/portage"]
+    args = sys.argv[1:] + ["--nomerge=sys-apps/portage"]
     os.execvp(os.path.realpath(sys.argv[0]), args)
 
   print "Done"
