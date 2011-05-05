@@ -164,7 +164,7 @@ SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
 
 # Current milestones in each repo
 # hg-update-stable  uses these
-readonly LLVM_REV=04b41cdd08e9
+readonly LLVM_REV=cb0453305609
 readonly LLVM_GCC_REV=38c54bef2849
 readonly NEWLIB_REV=14dba0855c57
 readonly BINUTILS_REV=ef2d3d0a5c51
