@@ -35,6 +35,8 @@ chrome.dll: %(VersionDir)s\
 nacl64.exe: %(VersionDir)s\
 nacl64.dll: %(VersionDir)s\
 ppGoogleNaClPluginChrome.dll: %(VersionDir)s\
+nacl_irt_x86_32.nexe: %(VersionDir)s\
+nacl_irt_x86_64.nexe: %(VersionDir)s\
 icudt.dll: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
 locales\*.dll: %(VersionDir)s\Locales
