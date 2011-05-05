@@ -477,7 +477,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
 
 // Test RenderView correctly send back favicon url for web page that redirects
 // to an anchor in javascript body.onload handler.
-IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconOfOnloadRedirectToAnchorPage) {
+IN_PROC_BROWSER_TEST_F(BrowserTest,
+                       DISABLED_FaviconOfOnloadRedirectToAnchorPage) {
   ASSERT_TRUE(test_server()->Start());
   GURL url(test_server()->GetURL("files/onload_redirect_to_anchor.html"));
   GURL expected_favicon_url(test_server()->GetURL("files/test.png"));
