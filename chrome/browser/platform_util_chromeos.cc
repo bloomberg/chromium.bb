@@ -64,6 +64,7 @@ void OpenItem(const FilePath& full_path) {
       base::strcasecmp(ext.data(), ".png") == 0 ||
       base::strcasecmp(ext.data(), ".gif") == 0 ||
       base::strcasecmp(ext.data(), ".txt") == 0 ||
+      base::strcasecmp(ext.data(), ".pdf") == 0 ||
       base::strcasecmp(ext.data(), ".html") == 0 ||
       base::strcasecmp(ext.data(), ".htm") == 0) {
     std::string path;
