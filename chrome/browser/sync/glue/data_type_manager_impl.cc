@@ -363,7 +363,7 @@ void DataTypeManagerImpl::NotifyDone(ConfigureResult result,
     const tracked_objects::Location& location) {
   ConfigureResultWithErrorLocation result_with_location(result, location,
                                                         last_requested_types_);
-  VLOG(0) << "NotifyDone called with result: " << result;
+  VLOG(1) << "NotifyDone called with result: " << result;
   NotificationService::current()->Notify(
       NotificationType::SYNC_CONFIGURE_DONE,
       Source<DataTypeManager>(this),

@@ -396,7 +396,7 @@ void SyncerThread::ScheduleNudgeImpl(const TimeDelta& delay,
     pending_nudge_->session->Coalesce(*(job.session.get()));
 
     if (!IsBackingOff()) {
-      VLOG(1) << "SyncerThread(" << this << ")" << " Dropping a nudge because"
+      VLOG(0) << "SyncerThread(" << this << ")" << " Dropping a nudge because"
               << " we are not in backoff and the job was coalesced";
       return;
     } else {
@@ -547,8 +547,12 @@ void SyncerThread::DoSyncSessionJob(const SyncSessionJob& job) {
   }
 
   if (job.purpose == SyncSessionJob::NUDGE) {
-    if (pending_nudge_.get() == NULL || pending_nudge_->session != job.session)
+    if (pending_nudge_.get() == NULL ||
+        pending_nudge_->session != job.session) {
+      VLOG(0) << "SyncerThread(" << this << ")" << "Dropping a nudge in "
+              << "DoSyncSessionJob because another nudge was scheduled";
       return;  // Another nudge must have been scheduled in in the meantime.
+    }
     pending_nudge_.reset();
 
     // Create the session with the latest model safe table and use it to purge
