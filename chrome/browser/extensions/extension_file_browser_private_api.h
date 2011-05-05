@@ -28,7 +28,7 @@ class RequestLocalFileSystemFunction : public AsyncExtensionFunction {
   void RespondSuccessOnUIThread(const std::string& name,
                                 const GURL& root_path);
   void RespondFailedOnUIThread(base::PlatformFileError error_code);
-  void RequestOnFileThread(const GURL& source_url);
+  void RequestOnFileThread(const GURL& source_url, int child_id);
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.requestLocalFileSystem");
 };
 
@@ -69,6 +69,7 @@ class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
                                     const std::string& file_system_name,
                                     const GURL& file_system_root,
                                     const FileDefinitionList& file_list);
+  void ExecuteFailedOnUIThread();
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.executeTask");
 };
 
@@ -101,9 +102,9 @@ class FileDialogFunction
                     void* params);
     static void Remove(int32 tab_id);
     static const Callback& Find(int32 tab_id);
+    static const Callback& null() { return null_; }
 
    private:
-    static const Callback& null() { return null_; }
 
     SelectFileDialog::Listener* listener_;
     HtmlDialogView* dialog_;
@@ -215,15 +216,14 @@ class CancelFileDialogFunction
 };
 
 // File Dialog Strings.
-class FileDialogStringsFunction
-    : public FileDialogFunction {
+class FileDialogStringsFunction : public SyncExtensionFunction {
  public:
   FileDialogStringsFunction() {}
 
  protected:
   virtual ~FileDialogStringsFunction() {}
 
-  // AsyncExtensionFunction overrides.
+  // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 
  private:

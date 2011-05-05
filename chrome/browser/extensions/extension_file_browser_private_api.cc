@@ -294,13 +294,13 @@ class LocalFileSystemCallbackDispatcher
 };
 
 void RequestLocalFileSystemFunction::RequestOnFileThread(
-    const GURL& source_url) {
+    const GURL& source_url, int child_id) {
   fileapi::FileSystemOperation* operation =
       new fileapi::FileSystemOperation(
           new LocalFileSystemCallbackDispatcher(
               this,
               profile(),
-              dispatcher()->render_view_host()->process()->id(),
+              child_id,
               GetExtension()),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
           profile()->GetFileSystemContext(),
@@ -311,11 +311,16 @@ void RequestLocalFileSystemFunction::RequestOnFileThread(
 }
 
 bool RequestLocalFileSystemFunction::RunImpl() {
+  if (!dispatcher() || !dispatcher()->render_view_host() ||
+      !dispatcher()->render_view_host()->process())
+    return false;
+
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
           &RequestLocalFileSystemFunction::RequestOnFileThread,
-          source_url_));
+          source_url_,
+          dispatcher()->render_view_host()->process()->id()));
   // Will finish asynchronously.
   return true;
 }
@@ -437,8 +442,13 @@ class ExecuteTasksFileSystemCallbackDispatcher
       }
       file_list.push_back(file);
     }
-    if (file_list.empty())
+    if (file_list.empty()) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(function_,
+              &ExecuteTasksFileBrowserFunction::ExecuteFailedOnUIThread));
       return;
+    }
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -452,6 +462,10 @@ class ExecuteTasksFileSystemCallbackDispatcher
 
   virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
     LOG(WARNING) << "Local file system cant be resolved";
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(function_,
+            &ExecuteTasksFileBrowserFunction::ExecuteFailedOnUIThread));
   }
 
  private:
@@ -588,9 +602,7 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
   if (!files_list->GetSize())
     return true;
 
-  InitiateFileTaskExecution(task_id, files_list);
-  SendResponse(true);
-  return true;
+  return InitiateFileTaskExecution(task_id, files_list);
 }
 
 bool ExecuteTasksFileBrowserFunction::InitiateFileTaskExecution(
@@ -600,7 +612,6 @@ bool ExecuteTasksFileBrowserFunction::InitiateFileTaskExecution(
     std::string origin_file_url;
     if (!files_list->GetString(i, &origin_file_url)) {
       error_ = kInvalidFileUrl;
-      SendResponse(false);
       return false;
     }
     file_urls.push_back(GURL(origin_file_url));
@@ -639,6 +650,11 @@ void ExecuteTasksFileBrowserFunction::RequestFileEntryOnFileThread(
                             false);     // create
 }
 
+void ExecuteTasksFileBrowserFunction::ExecuteFailedOnUIThread() {
+  SendResponse(false);
+}
+
+
 void ExecuteTasksFileBrowserFunction::ExecuteFileActionsOnUIThread(
     const std::string& task_id,
     const std::string& file_system_name,
@@ -654,17 +670,22 @@ void ExecuteTasksFileBrowserFunction::ExecuteFileActionsOnUIThread(
   if (!CrackTaskIdentifier(task_id, &handler_extension_id,
                            &action_id)) {
     LOG(WARNING) << "Invalid task " << task_id;
+    SendResponse(false);
     return;
   }
 
   const Extension* extension = service->GetExtensionById(handler_extension_id,
                                                          false);
-  if (!extension)
+  if (!extension) {
+    SendResponse(false);
     return;
+  }
 
   ExtensionEventRouter* event_router = profile_->GetExtensionEventRouter();
-  if (!event_router)
+  if (!event_router) {
+    SendResponse(false);
     return;
+  }
 
   scoped_ptr<ListValue> event_args(new ListValue());
   event_args->Append(Value::CreateStringValue(action_id));
@@ -698,6 +719,7 @@ void ExecuteTasksFileBrowserFunction::ExecuteFileActionsOnUIThread(
       handler_extension_id, std::string("fileBrowserHandler.onExecute"),
       json_args, profile_,
       GURL());
+  SendResponse(true);
 }
 
 FileDialogFunction::FileDialogFunction() {
@@ -744,6 +766,10 @@ int32 FileDialogFunction::GetTabId() const {
 }
 
 const FileDialogFunction::Callback& FileDialogFunction::GetCallback() const {
+  if (!dispatcher() || !dispatcher()->delegate() ||
+      !dispatcher()->delegate()->associated_tab_contents()) {
+    return Callback::null();
+  }
   return Callback::Find(GetTabId());
 }
 
@@ -828,6 +854,7 @@ void SelectFileFunction::GetLocalPathsResponseOnUIThread(
     const FilePathList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (files.size() != 1) {
+    SendResponse(false);
     return;
   }
   int index;
@@ -842,6 +869,7 @@ void SelectFileFunction::GetLocalPathsResponseOnUIThread(
                                       index,
                                       callback.params());
   }
+  SendResponse(true);
 }
 
 
@@ -886,6 +914,7 @@ void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
        ++iter) {
     platform_util::OpenItem(*iter);
   }
+  SendResponse(true);
 }
 
 SelectFilesFunction::SelectFilesFunction() {
@@ -933,6 +962,7 @@ void SelectFilesFunction::GetLocalPathsResponseOnUIThread(
     CloseDialog(callback.dialog());
     callback.listener()->MultiFilesSelected(files, callback.params());
   }
+  SendResponse(true);
 }
 
 bool CancelFileDialogFunction::RunImpl() {
@@ -944,6 +974,7 @@ bool CancelFileDialogFunction::RunImpl() {
     CloseDialog(callback.dialog());
     callback.listener()->FileSelectionCanceled(callback.params());
   }
+  SendResponse(true);
   return true;
 }
 
@@ -1022,6 +1053,5 @@ bool FileDialogStringsFunction::RunImpl() {
 
 #undef SET_STRING
 
-  SendResponse(true);
   return true;
 }
