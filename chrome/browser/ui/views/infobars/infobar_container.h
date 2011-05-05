@@ -31,8 +31,9 @@ class InfoBarContainer : public NotificationObserver {
     // The separator color may vary depending on where the container is hosted.
     virtual SkColor GetInfoBarSeparatorColor() const = 0;
 
-    // The delegate is notified each time the infobar container changes height.
-    virtual void InfoBarContainerHeightChanged(bool is_animating) = 0;
+    // The delegate is notified each time the infobar container changes height,
+    // as well as when it stops animating.
+    virtual void InfoBarContainerStateChanged(bool is_animating) = 0;
 
     // The delegate needs to tell us whether "unspoofable" arrows should be
     // drawn, and if so, at what |x| coordinate.  |x| may not be NULL.
@@ -62,14 +63,14 @@ class InfoBarContainer : public NotificationObserver {
   // desired.
   //
   // IMPORTANT: This MUST NOT result in a call back to
-  // Delegate::InfoBarContainerHeightChanged() unless it causes an actual
+  // Delegate::InfoBarContainerStateChanged() unless it causes an actual
   // change, lest we infinitely recurse.
   void SetMaxTopArrowHeight(int height);
 
   // Called when a contained infobar has animated or by some other means changed
-  // its height.  The container is expected to do anything necessary to respond,
-  // e.g. re-layout.
-  void OnInfoBarHeightChanged(bool is_animating);
+  // its height, or when it stops animating.  The container is expected to do
+  // anything necessary to respond, e.g. re-layout.
+  void OnInfoBarStateChanged(bool is_animating);
 
   // Removes the specified InfoBarDelegate from the selected TabContents.  This
   // will notify us back and cause us to close the InfoBar.  This is called from

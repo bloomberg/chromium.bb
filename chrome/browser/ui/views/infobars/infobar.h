@@ -86,9 +86,10 @@ class InfoBar : public ui::AnimationDelegate {
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
   // Finds the new desired arrow and bar heights, and if they differ from the
-  // current ones, calls PlatformSpecificOnHeightRecalculated() and informs our
-  // container our height has changed.
-  void RecalculateHeights();
+  // current ones, calls PlatformSpecificOnHeightRecalculated().  Informs our
+  // container our state has changed if either the heights have changed or
+  // |force_notify| is set.
+  void RecalculateHeights(bool force_notify);
 
   // Checks whether we're closed.  If so, notifies the container that it should
   // remove us (which will cause the platform-specific code to asynchronously

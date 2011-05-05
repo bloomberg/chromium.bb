@@ -58,7 +58,7 @@ void InfoBarContainer::ChangeTabContents(TabContents* contents) {
   }
 
   // Now that everything is up to date, signal the delegate to re-layout.
-  OnInfoBarHeightChanged(false);
+  OnInfoBarStateChanged(false);
 }
 
 int InfoBarContainer::GetVerticalOverlap(int* total_height) {
@@ -88,9 +88,9 @@ void InfoBarContainer::SetMaxTopArrowHeight(int height) {
   UpdateInfoBarArrowTargetHeights();
 }
 
-void InfoBarContainer::OnInfoBarHeightChanged(bool is_animating) {
+void InfoBarContainer::OnInfoBarStateChanged(bool is_animating) {
   if (delegate_)
-    delegate_->InfoBarContainerHeightChanged(is_animating);
+    delegate_->InfoBarContainerStateChanged(is_animating);
 }
 
 void InfoBarContainer::RemoveDelegate(InfoBarDelegate* delegate) {
@@ -108,7 +108,7 @@ void InfoBarContainer::RemoveInfoBar(InfoBar* infobar) {
 void InfoBarContainer::RemoveAllInfoBarsForDestruction() {
   // Before we remove any children, we reset |delegate_|, so that no removals
   // will result in us trying to call
-  // delegate_->InfoBarContainerHeightChanged().  This is important because at
+  // delegate_->InfoBarContainerStateChanged().  This is important because at
   // this point |delegate_| may be shutting down, and it's at best unimportant
   // and at worst disastrous to call that.
   delegate_ = NULL;

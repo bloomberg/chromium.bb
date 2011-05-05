@@ -645,17 +645,20 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   // Inform the InfoBarContainer that the distance to the location icon may have
   // changed.  We have to do this after the block above so that the toolbars are
   // laid out correctly for calculating the maximum arrow height below.
-  AutoReset<CallState> resetter(&call_state,
-      is_animating ? REENTRANT : REENTRANT_FORCE_FAST_RESIZE);
-  const LocationIconView* location_icon_view =
-      toolbar_->location_bar()->location_icon_view();
-  // The +1 in the next line creates a 1-px gap between icon and arrow tip.
-  gfx::Point icon_bottom(0, location_icon_view->GetImageBounds().bottom() -
-      LocationBarView::kIconInternalPadding + 1);
-  ConvertPointToView(location_icon_view, this, &icon_bottom);
-  gfx::Point infobar_top(0, infobar_container_->GetVerticalOverlap(NULL));
-  ConvertPointToView(infobar_container_, this, &infobar_top);
-  infobar_container_->SetMaxTopArrowHeight(infobar_top.y() - icon_bottom.y());
+  {
+    const LocationIconView* location_icon_view =
+        toolbar_->location_bar()->location_icon_view();
+    // The +1 in the next line creates a 1-px gap between icon and arrow tip.
+    gfx::Point icon_bottom(0, location_icon_view->GetImageBounds().bottom() -
+        LocationBarView::kIconInternalPadding + 1);
+    ConvertPointToView(location_icon_view, this, &icon_bottom);
+    gfx::Point infobar_top(0, infobar_container_->GetVerticalOverlap(NULL));
+    ConvertPointToView(infobar_container_, this, &infobar_top);
+
+    AutoReset<CallState> resetter(&call_state,
+        is_animating ? REENTRANT_FORCE_FAST_RESIZE : REENTRANT);
+    infobar_container_->SetMaxTopArrowHeight(infobar_top.y() - icon_bottom.y());
+  }
 
   // When transitioning from animating to not animating we need to make sure the
   // contents_container_ gets layed out. If we don't do this and the bounds
@@ -1710,7 +1713,7 @@ SkColor BrowserView::GetInfoBarSeparatorColor() const {
       ResourceBundle::toolbar_separator_color : SK_ColorBLACK;
 }
 
-void BrowserView::InfoBarContainerHeightChanged(bool is_animating) {
+void BrowserView::InfoBarContainerStateChanged(bool is_animating) {
   ToolbarSizeChanged(is_animating);
 }
 

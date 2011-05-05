@@ -51,12 +51,12 @@ void InfoBar::SetArrowTargetHeight(int height) {
   // target height.
   if ((arrow_target_height_ != height) && !animation()->IsClosing()) {
     arrow_target_height_ = height;
-    RecalculateHeights();
+    RecalculateHeights(false);
   }
 }
 
 void InfoBar::AnimationProgressed(const ui::Animation* animation) {
-  RecalculateHeights();
+  RecalculateHeights(false);
 }
 
 void InfoBar::RemoveInfoBar() {
@@ -67,7 +67,7 @@ void InfoBar::RemoveInfoBar() {
 void InfoBar::SetBarTargetHeight(int height) {
   if (bar_target_height_ != height) {
     bar_target_height_ = height;
-    RecalculateHeights();
+    RecalculateHeights(false);
   }
 }
 
@@ -78,11 +78,15 @@ int InfoBar::OffsetY(const gfx::Size& prefsize) const {
 }
 
 void InfoBar::AnimationEnded(const ui::Animation* animation) {
-  RecalculateHeights();
+  // When the animation ends, we must ensure the container is notified even if
+  // the heights haven't changed, lest it never get an "animation finished"
+  // notification.  (If the browser doesn't get this notification, it will not
+  // bother to re-layout the content area for the new infobar size.)
+  RecalculateHeights(true);
   MaybeDelete();
 }
 
-void InfoBar::RecalculateHeights() {
+void InfoBar::RecalculateHeights(bool force_notify) {
   int old_arrow_height = arrow_height_;
   int old_bar_height = bar_height_;
 
@@ -117,11 +121,13 @@ void InfoBar::RecalculateHeights() {
 
   // Don't re-layout if nothing has changed, e.g. because the animation step was
   // not large enough to actually change the heights by at least a pixel.
-  if ((old_arrow_height != arrow_height_) || (old_bar_height != bar_height_)) {
+  bool heights_differ =
+      (old_arrow_height != arrow_height_) || (old_bar_height != bar_height_);
+  if (heights_differ)
     PlatformSpecificOnHeightsRecalculated();
-    if (container_)
-      container_->OnInfoBarHeightChanged(animation_->is_animating());
-  }
+
+  if (container_ && (heights_differ || force_notify))
+    container_->OnInfoBarStateChanged(animation_->is_animating());
 }
 
 void InfoBar::MaybeDelete() {

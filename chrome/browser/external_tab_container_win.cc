@@ -917,7 +917,7 @@ SkColor ExternalTabContainer::GetInfoBarSeparatorColor() const {
   return ResourceBundle::toolbar_separator_color;
 }
 
-void ExternalTabContainer::InfoBarContainerHeightChanged(bool is_animating) {
+void ExternalTabContainer::InfoBarContainerStateChanged(bool is_animating) {
   if (external_tab_view_)
     external_tab_view_->Layout();
 }
