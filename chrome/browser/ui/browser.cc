@@ -2110,6 +2110,9 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kPluginsAlwaysAuthorize, false);
   prefs->RegisterBooleanPref(prefs::kEnableHyperlinkAuditing, true);
   prefs->RegisterBooleanPref(prefs::kEnableReferrers, true);
+  prefs->RegisterBooleanPref(prefs::kWebKitAllowRunningInsecureContent, false);
+  prefs->RegisterBooleanPref(prefs::kWebKitAllowDisplayingInsecureContent,
+                             true);
 }
 
 // static

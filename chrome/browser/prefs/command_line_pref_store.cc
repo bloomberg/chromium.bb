@@ -35,6 +35,10 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
           true },
       { switches::kNoPings, prefs::kEnableHyperlinkAuditing, false },
       { switches::kNoReferrers, prefs::kEnableReferrers, false },
+      { switches::kAllowRunningInsecureContent,
+        prefs::kWebKitAllowRunningInsecureContent, true },
+      { switches::kNoDisplayingInsecureContent,
+        prefs::kWebKitAllowDisplayingInsecureContent, false },
 };
 
 CommandLinePrefStore::CommandLinePrefStore(const CommandLine* command_line)

@@ -77,7 +77,9 @@ WebPreferences::WebPreferences()
       accelerated_plugins_enabled(false),
       memory_info_enabled(false),
       interactive_form_validation_enabled(true),
-      fullscreen_enabled(false) {
+      fullscreen_enabled(false),
+      allow_displaying_insecure_content(true),
+      allow_running_insecure_content(false) {
 }
 
 WebPreferences::~WebPreferences() {
@@ -223,4 +225,6 @@ void WebPreferences::Apply(WebView* web_view) const {
       interactive_form_validation_enabled);
 
   settings->setFullScreenEnabled(fullscreen_enabled);
+  settings->setAllowDisplayOfInsecureContent(allow_displaying_insecure_content);
+  settings->setAllowRunningOfInsecureContent(allow_running_insecure_content);
 }

@@ -129,6 +129,10 @@ const char kWebKitTextAreasAreResizable[] =
     "webkit.webprefs.text_areas_are_resizable";
 const char kWebKitJavaEnabled[] = "webkit.webprefs.java_enabled";
 const char kWebkitTabsToLinks[] = "webkit.webprefs.tabs_to_links";
+const char kWebKitAllowDisplayingInsecureContent[] =
+    "webkit.webprefs.allow_displaying_insecure_content";
+const char kWebKitAllowRunningInsecureContent[] =
+    "webkit.webprefs.allow_running_insecure_content";
 
 // Boolean which specifies whether the bookmark bar is visible on all tabs.
 const char kShowBookmarkBar[] = "bookmark_bar.show_on_all_tabs";

@@ -11,6 +11,7 @@
 namespace switches {
 
 extern const char kAllowFileAccessFromFiles[];
+extern const char kAllowRunningInsecureContent[];
 extern const char kAllowSandboxDebugging[];
 extern const char kBrowserSubprocessPath[];
 extern const char kDisable3DAPIs[];
@@ -76,6 +77,7 @@ extern const char kLoggingLevel[];
 extern const char kLogPluginMessages[];
 // TODO(jam): this doesn't belong in content.
 extern const char kNaClLoaderProcess[];
+extern const char kNoDisplayingInsecureContent[];
 extern const char kNoJsRandomness[];
 extern const char kNoReferrers[];
 extern const char kNoSandbox[];

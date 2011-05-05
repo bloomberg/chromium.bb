@@ -146,6 +146,8 @@ const char* kPrefsToObserve[] = {
   prefs::kWebKitMinimumFontSize,
   prefs::kWebKitMinimumLogicalFontSize,
   prefs::kWebkitTabsToLinks,
+  prefs::kWebKitAllowRunningInsecureContent,
+  prefs::kWebKitAllowDisplayingInsecureContent,
   prefs::kDefaultCharset,
   prefs::kEnableReferrers
 };

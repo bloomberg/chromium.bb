@@ -324,6 +324,8 @@ IPC_STRUCT_TRAITS_BEGIN(WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(memory_info_enabled)
   IPC_STRUCT_TRAITS_MEMBER(interactive_form_validation_enabled)
   IPC_STRUCT_TRAITS_MEMBER(fullscreen_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(allow_displaying_insecure_content)
+  IPC_STRUCT_TRAITS_MEMBER(allow_running_insecure_content)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(WebMenuItem)
