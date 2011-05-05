@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -156,8 +157,9 @@ void FormField::ParseFormFields(const std::vector<AutofillField*>& fields,
   // Parse fields.
   AutofillScanner scanner(fields);
   while (!scanner.IsEnd()) {
-    FormField* form_field = FormField::ParseFormField(&scanner, is_ecml);
-    if (!form_field) {
+    scoped_ptr<FormField> form_field(
+        FormField::ParseFormField(&scanner, is_ecml));
+    if (!form_field.get()) {
       scanner.Advance();
       continue;
     }
