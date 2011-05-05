@@ -451,12 +451,9 @@ input[type='text'].invalid {
   color: #8c1414;
 }
 
-
-span.invalid-hint {
-  -webkit-padding-start: 8px;
+span.hint {
   -webkit-transition: color 200ms;
   background: white;
-  color: #8c1414;
   display: block;
   font-size: 11px;
   font-weight: 600;
@@ -467,9 +464,18 @@ span.invalid-hint {
   overflow: hidden;
 }
 
-span.invalid-hint.visible {
+span.hint.invalid {
+  color: #8c1414;
+}
+
+span.hint.suggestion {
+  color: #7c7c7c;
+}
+
+span.hint.visible {
   -webkit-animation-duration: 200ms;
   -webkit-animation-fill-mode: forwards;
+  -webkit-user-select: text;
   height: auto;
   margin-bottom: -10px;
   margin-top: 5px;

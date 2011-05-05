@@ -52,14 +52,12 @@ function onLoad() {
   $('all-pages').addEventListener('click', onPageSelectionMayHaveChanged);
   $('copies').addEventListener('input', copiesFieldChanged);
   $('print-pages').addEventListener('click', handleIndividualPagesCheckbox);
-  $('individual-pages').addEventListener('blur', handlePageRangesFieldBlur);
-  $('individual-pages').addEventListener('focus', addTimerToPageRangeField);
-  $('individual-pages').addEventListener('input', function() {
-    resetPageRangeFieldTimer();
-    updatePrintButtonState();
-    updatePrintSummary();
+  $('individual-pages').addEventListener('blur', function() {
+      clearTimeout(timerId);
+      onPageSelectionMayHaveChanged();
   });
-
+  $('individual-pages').addEventListener('focus', addTimerToPageRangeField);
+  $('individual-pages').addEventListener('input', pageRangesFieldChanged);
   $('two-sided').addEventListener('click', handleTwoSidedClick)
   $('landscape').addEventListener('click', onLayoutModeToggle);
   $('portrait').addEventListener('click', onLayoutModeToggle);
@@ -168,15 +166,6 @@ function setControlsDisabled(disabled) {
 }
 
 /**
- * Handles page ranges field blur event.
- */
-function handlePageRangesFieldBlur() {
-  checkAndSetPageRangesField();
-  updatePrintButtonState();
-  onPageSelectionMayHaveChanged();
-}
-
-/**
  * Validates the copies text field value.
  * NOTE: An empty copies field text is considered valid because the blur event
  * listener of this field will set it back to a default value.
@@ -187,17 +176,26 @@ function isNumberOfCopiesValid() {
   if (copiesFieldText == '')
     return true;
 
-  var numericExp = /^[0-9]+$/;
-  return (numericExp.test(copiesFieldText) && Number(copiesFieldText) > 0);
+  return (isInteger(copiesFieldText) && Number(copiesFieldText) > 0);
 }
 
 /**
- * Checks the value of the page ranges text field. It parses the page ranges and
- * normalizes them. For example: '1-3,2,4,8,9-10,4,4' becomes '1-4, 8-10'.
- * If it can't parse the whole string it will replace with the part it parsed.
+ * Returns true if |toTest| contains only digits. Leading and trailing
+ * whitespace is allowed.
+ * @param {string} toTest The string to be tested.
+ */
+function isInteger(toTest) {
+  var numericExp = /^\s*[0-9]+\s*$/;
+  return numericExp.test(toTest);
+}
+
+/**
+ * Parses the page ranges textfield and returns a suggestion.
+ * For example: '1-3,2,4,8,9-10,4,4' becomes '1-4, 8-10'. If it can't parse the
+ * whole string it will suggest only the part that was parsed.
  * For example: '1-3,2,4,8,abcdef,9-10,4,4' becomes '1-4, 8-10'.
  */
-function checkAndSetPageRangesField() {
+function getPageRangesSuggestion() {
   var pageRanges = getSelectedPageRanges();
   var parsedPageRanges = '';
   var individualPagesField = $('individual-pages');
@@ -210,8 +208,7 @@ function checkAndSetPageRangesField() {
     if (i < pageRanges.length - 1)
       parsedPageRanges += ', ';
   }
-  individualPagesField.value = parsedPageRanges;
-  updatePrintSummary();
+  return parsedPageRanges;
 }
 
 /**
@@ -505,7 +502,7 @@ function createPDFPlugin() {
  */
 function updatePrintButtonState() {
   $('print-button').disabled = (!isNumberOfCopiesValid() ||
-                                getSelectedPagesSet().length == 0);
+                                getSelectedPagesValidityLevel() != 1);
 }
 
 window.addEventListener('DOMContentLoaded', onLoad);
@@ -518,6 +515,50 @@ function copiesFieldChanged() {
   updateCopiesButtonsState();
   updatePrintButtonState();
   $('collate-option').hidden = getCopies() <= 1;
+  updatePrintSummary();
+}
+
+/**
+ * Executes whenever an input event occurs on the 'individual-pages'
+ * field. It takes care of
+ * 1) showing/hiding warnings/suggestions
+ * 2) updating print button/summary
+ */
+function pageRangesFieldChanged() {
+  var currentlySelectedPages = getSelectedPagesSet();
+  var individualPagesField = $('individual-pages');
+  var individualPagesHint = $('individual-pages-hint');
+  var validityLevel = getSelectedPagesValidityLevel();
+
+  if (validityLevel == 1)
+    individualPagesField.classList.remove('invalid');
+  else
+    individualPagesField.classList.add('invalid');
+
+  if (individualPagesField.value.length == 0) {
+    hideInvalidHint(individualPagesHint);
+  } else if (currentlySelectedPages.length == 0) {
+    individualPagesHint.classList.remove('suggestion');
+    individualPagesHint.classList.add('invalid');
+    individualPagesHint.innerHTML =
+        localStrings.getStringF('pageRangeInstruction',
+                                localStrings.getString(
+                                    'examplePageRangeText'));
+    showInvalidHint(individualPagesHint);
+  } else if (individualPagesField.value.replace(/\s*/g,'') !=
+      getPageRangesSuggestion().replace(/\s*/g,'')) {
+    individualPagesHint.innerHTML =
+        localStrings.getStringF('didYouMean', getPageRangesSuggestion());
+    individualPagesHint.classList.remove('invalid');
+    individualPagesHint.classList.add('suggestion');
+    showInvalidHint(individualPagesHint);
+  } else if (individualPagesField.value.replace(/\s*/g,'') ==
+      getPageRangesSuggestion().replace(/\s*/g,'')) {
+    hideInvalidHint(individualPagesHint);
+  }
+
+  resetPageRangeFieldTimer();
+  updatePrintButtonState();
   updatePrintSummary();
 }
 
@@ -553,12 +594,12 @@ function updatePrintSummary() {
     return;
   }
 
-  var pageList = getSelectedPagesSet();
-  if (pageList.length <= 0) {
+  if (getSelectedPagesValidityLevel() != 1) {
     printSummary.innerHTML = localStrings.getString('invalidPageRange');
     return;
   }
 
+  var pageList = getSelectedPagesSet();
   var pagesLabel = localStrings.getString('printPreviewPageLabelSingular');
   var twoSidedLabel = '';
   var timesSign = '';
@@ -635,6 +676,7 @@ function onLayoutModeToggle() {
     return;
 
   previouslySelectedLayout = currentlySelectedLayout;
+  $('individual-pages').classList.remove('invalid');
   setDefaultValuesAndRegeneratePreview();
 }
 
@@ -643,6 +685,7 @@ function onLayoutModeToggle() {
  */
 function setDefaultValuesAndRegeneratePreview() {
   $('individual-pages').value = '';
+  hideInvalidHint($('individual-pages-hint'));
   $('all-pages').checked = true;
   totalPageCount = -1;
   previouslySelectedPages.length = 0;
@@ -660,7 +703,7 @@ function setDefaultValuesAndRegeneratePreview() {
 function getSelectedPages() {
   var pageText = $('individual-pages').value;
 
-  if ($('all-pages').checked || pageText == '')
+  if ($('all-pages').checked || pageText.length == 0)
     pageText = '1-' + totalPageCount;
 
   var pageList = [];
@@ -668,7 +711,7 @@ function getSelectedPages() {
 
   for (var i = 0; i < parts.length; ++i) {
     var part = parts[i];
-    var match = part.match(/([0-9]+)-([0-9]+)/);
+    var match = part.match(/^\s*([0-9]+)\s*-\s*([0-9]+)\s*$/);
 
     if (match && match[1] && match[2]) {
       var from = parseInt(match[1], 10);
@@ -679,12 +722,65 @@ function getSelectedPages() {
           if (j <= totalPageCount)
             pageList.push(j);
       }
-    } else if (parseInt(part, 10)) {
-      if (parseInt(part, 10) <= totalPageCount)
+    } else {
+      var singlePageNumber = parseInt(part, 10);
+      if (singlePageNumber && singlePageNumber > 0 &&
+          singlePageNumber <= totalPageCount) {
         pageList.push(parseInt(part, 10));
+      }
     }
   }
   return pageList;
+}
+
+/**
+ * Checks the 'individual-pages' field and returns -1 if nothing is valid, 0 if
+ * it is partially valid, 1 if it is completely valid.
+ * Note: This function is stricter than getSelectedPages(), in other words this
+ * could return -1 and getSelectedPages() might still extract some pages.
+ */
+function getSelectedPagesValidityLevel() {
+  var pageText = $('individual-pages').value;
+
+  if ($('all-pages').checked || pageText.length == 0)
+    return 1;
+
+  var successfullyParsed = 0;
+  var failedToParse = 0;
+
+  var parts = pageText.split(/,/);
+
+  for (var i = 0; i < parts.length; ++i) {
+    var part = parts[i].replace(/\s*/g, '');
+    if (part.length == 0)
+      continue;
+
+    var match = part.match(/^([0-9]+)-([0-9]+)$/);
+
+    if (match && match[1] && match[2]) {
+      var from = parseInt(match[1], 10);
+      var to = parseInt(match[2], 10);
+
+      if (from && to && from < to && to <= totalPageCount)
+        successfullyParsed += 1;
+      else
+        failedToParse += 1;
+
+    } else if (isInteger(part) && parseInt(part, 10) <= totalPageCount)
+      successfullyParsed += 1;
+    else
+      failedToParse += 1;
+  }
+  if (successfullyParsed > 0 && failedToParse == 0)
+    return 1;
+  else if (successfullyParsed > 0 && failedToParse > 0)
+    return 0;
+  else
+    return -1;
+}
+
+function isSelectedPagesFieldValid() {
+  return (getSelectedPages().length != 0)
 }
 
 /**
@@ -741,7 +837,7 @@ function removeDuplicates(inArray) {
  * the user stops typing in order to update the print preview.
  */
 function addTimerToPageRangeField() {
-  timerId = window.setTimeout(onPageSelectionMayHaveChanged, 500);
+  timerId = window.setTimeout(onPageSelectionMayHaveChanged, 1000);
 }
 
 /**
@@ -756,16 +852,22 @@ function resetPageRangeFieldTimer() {
 /**
  * When the user stops typing in the page range textfield or clicks on the
  * 'all-pages' checkbox, a new print preview is requested, only if
- * 1) The input is valid (it can be parsed, even only partially).
+ * 1) The input is compeletely valid (it can be parsed in its entirety).
  * 2) The newly selected pages differ from the previously selected.
  */
 function onPageSelectionMayHaveChanged() {
+  var validityLevel = getSelectedPagesValidityLevel();
   var currentlySelectedPages = getSelectedPagesSet();
 
-  if (currentlySelectedPages.length == 0)
+  // Toggling between "all pages"/"some pages" radio buttons while having an
+  // invalid entry in the page selection textfield still requires updating the
+  // print summary and print button.
+  if (validityLevel < 1 ||
+      areArraysEqual(previouslySelectedPages, currentlySelectedPages)) {
+    updatePrintButtonState();
+    updatePrintSummary();
     return;
-  if (areArraysEqual(previouslySelectedPages, currentlySelectedPages))
-    return;
+  }
 
   previouslySelectedPages = currentlySelectedPages;
   requestPrintPreview();
