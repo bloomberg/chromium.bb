@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/test/in_process_browser_test.h"
-#include "content/browser/webui/web_ui_test_handler.h"
 
 class Value;
 class WebUIMessageHandler;

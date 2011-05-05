@@ -4,10 +4,10 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "chrome/browser/ui/webui/web_ui_browsertest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
-#include "content/browser/webui/web_ui_browsertest.h"
 #include "googleurl/src/gurl.h"
 
 class MostVisitedWebUITest : public WebUIBrowserTest {
