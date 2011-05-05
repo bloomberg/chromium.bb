@@ -75,7 +75,7 @@ testProgressEventStateMachine(
     1,  // errorCount
     0,  // abortCount
     0,  // loadCount
-    'NaCl module load failed: could not read manifest file.');
+    'NaCl module load failed: manifest JSON parsing failed');
 // The driver invoked when the body has finished loading.
 function runTests() {
   tester.loadErrorsAreOK();

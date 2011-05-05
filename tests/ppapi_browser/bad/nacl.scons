@@ -24,6 +24,8 @@ env.Publish(bad_target, 'run', [
     'ppapi_bad_doesnotexist.nmf',
     'ppapi_bad_magic.nmf',
     'ppapi_bad_nexe.nmf',
+    ('${SCONSTRUCT_DIR}/tests/ppapi_browser/progress_events/' +
+     'ppapi_progress_events.js'),
     '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js',
 ])
 

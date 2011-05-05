@@ -110,6 +110,9 @@ function RPCWrapper() {
   }
 
   this.shutdown = function() {
+    if (this.num_passed == 0 && this.num_failed == 0 && this.num_errors == 0) {
+      this.client_error('No tests were run. This may be a bug.');
+    }
     var full_message = '[SHUTDOWN] ';
     full_message += this.num_passed + ' passed';
     full_message += ', ' + this.num_failed + ' failed';
@@ -427,13 +430,18 @@ function NaClWaiter(body_element) {
     var waiting = [];
 
     for (var i = 0; i < embedsToWaitFor.length; i++) {
-      var e = embedsToWaitFor[i];
-      if (this.has_errored(e)) {
-        errored.push(e);
-      } else if (this.is_loaded(e)) {
-        loaded.push(e);
-      } else {
-        waiting.push(e);
+      try {
+        var e = embedsToWaitFor[i];
+        if (this.has_errored(e)) {
+          errored.push(e);
+        } else if (this.is_loaded(e)) {
+          loaded.push(e);
+        } else {
+          waiting.push(e);
+        }
+      } catch(err) {
+        // If the module is badly horked, touching lastError, etc, may except.
+        errored.push(err);
       }
     }
 
@@ -523,12 +531,25 @@ function Tester(body_element) {
         for (var i = 0; i < loaded.length; i++) {
           this_.rpc.log(embed_name(loaded[i]) + ' loaded');
         }
+        // Be careful when interacting with horked nexes.
+        var getCarefully = function (callback) {
+          try {
+            return callback();
+          } catch (err) {
+            return '<exception>';
+          }
+        }
         for (var j = 0; j < waiting.length; j++) {
-          var msg = (embed_name(waiting[j]) +
-                     ' did not load. Status: ' +
-                     toString(waiting[j].__moduleReady) +
-                     ' / ' +
-                     toString(waiting[j].lastError));
+          var name = getCarefully(function(){
+            return embed_name(waiting[j]);
+          });
+          var ready = getCarefully(function(){
+            return toString(waiting[j].__moduleReady);
+          });
+          var last = getCarefully(function(){
+            return toString(waiting[j].lastError);
+          });
+          var msg = (name + ' did not load. Status: ' + ready + ' / ' + last);
           if(load_errors_are_test_errors) {
             this_.rpc.client_error(msg);
           } else {

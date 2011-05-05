@@ -24,8 +24,9 @@ env.ComponentProgram(progress_events_target,
 # Needed by other tests using progress events.
 env.Publish(progress_events_target, 'run', [
     'ppapi_progress_events.html',
-    'ppapi_progress_events.js',
     'ppapi_progress_events.nmf',
+    ('${SCONSTRUCT_DIR}/tests/ppapi_browser/progress_events/' +
+     'ppapi_progress_events.js'),
     '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js',
 ])
 
