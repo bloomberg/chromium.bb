@@ -30,7 +30,6 @@ extern const char kDisableGLMultisampling[];
 extern const char kDisableGLSLTranslator[];
 extern const char kDisableGpuSandbox[];
 extern const char kDisableGpuWatchdog[];
-extern const char kDisableHolePunching[];
 extern const char kDisableIndexedDatabase[];
 extern const char kDisableJava[];
 extern const char kDisableJavaScript[];

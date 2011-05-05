@@ -74,13 +74,10 @@ static CVReturn DrawOneAcceleratedPluginCallback(
     glContext_.reset([[NSOpenGLContext alloc] initWithFormat:glPixelFormat_
                                                 shareContext:nil]);
 
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableHolePunching)) {
-      // We "punch a hole" in the window, and have the WindowServer render the
-      // OpenGL surface underneath so we can draw over it.
-      GLint belowWindow = -1;
-      [glContext_ setValues:&belowWindow forParameter:NSOpenGLCPSurfaceOrder];
-    }
+    // We "punch a hole" in the window, and have the WindowServer render the
+    // OpenGL surface underneath so we can draw over it.
+    GLint belowWindow = -1;
+    [glContext_ setValues:&belowWindow forParameter:NSOpenGLCPSurfaceOrder];
 
     cglContext_ = (CGLContextObj)[glContext_ CGLContextObj];
     cglPixelFormat_ = (CGLPixelFormatObj)[glPixelFormat_ CGLPixelFormatObj];
@@ -155,41 +152,38 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 }
 
 - (void)drawRect:(NSRect)rect {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableHolePunching)) {
-    const NSRect* dirtyRects;
-    int dirtyRectCount;
-    [self getRectsBeingDrawn:&dirtyRects count:&dirtyRectCount];
+  const NSRect* dirtyRects;
+  int dirtyRectCount;
+  [self getRectsBeingDrawn:&dirtyRects count:&dirtyRectCount];
 
-    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
+  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
 
-    // Mask out any cutout rects--somewhat counterintuitively cutout rects are
-    // places where clearColor is *not* drawn. The trick is that drawing nothing
-    // lets the parent view (i.e., the web page) show through, whereas drawing
-    // clearColor punches a hole in the window (letting OpenGL show through).
-    if ([cutoutRects_.get() count] > 0) {
-      NSBezierPath* path = [NSBezierPath bezierPath];
-      // Trace the bounds clockwise to give a base clip rect of the whole view.
-      NSRect bounds = [self bounds];
-      [path moveToPoint:bounds.origin];
-      [path lineToPoint:NSMakePoint(NSMinX(bounds), NSMaxY(bounds))];
-      [path lineToPoint:NSMakePoint(NSMaxX(bounds), NSMaxY(bounds))];
-      [path lineToPoint:NSMakePoint(NSMaxX(bounds), NSMinY(bounds))];
-      [path closePath];
+  // Mask out any cutout rects--somewhat counterintuitively cutout rects are
+  // places where clearColor is *not* drawn. The trick is that drawing nothing
+  // lets the parent view (i.e., the web page) show through, whereas drawing
+  // clearColor punches a hole in the window (letting OpenGL show through).
+  if ([cutoutRects_.get() count] > 0) {
+    NSBezierPath* path = [NSBezierPath bezierPath];
+    // Trace the bounds clockwise to give a base clip rect of the whole view.
+    NSRect bounds = [self bounds];
+    [path moveToPoint:bounds.origin];
+    [path lineToPoint:NSMakePoint(NSMinX(bounds), NSMaxY(bounds))];
+    [path lineToPoint:NSMakePoint(NSMaxX(bounds), NSMaxY(bounds))];
+    [path lineToPoint:NSMakePoint(NSMaxX(bounds), NSMinY(bounds))];
+    [path closePath];
 
-      // Then trace each cutout rect counterclockwise to remove that region from
-      // the clip region.
-      for (NSValue* rectWrapper in cutoutRects_.get()) {
-        [path appendBezierPathWithRect:[rectWrapper rectValue]];
-      }
-
-      [path addClip];
+    // Then trace each cutout rect counterclockwise to remove that region from
+    // the clip region.
+    for (NSValue* rectWrapper in cutoutRects_.get()) {
+      [path appendBezierPathWithRect:[rectWrapper rectValue]];
     }
 
-    // Punch a hole so that the OpenGL view shows through.
-    [[NSColor clearColor] set];
-    NSRectFillList(dirtyRects, dirtyRectCount);
+    [path addClip];
   }
+
+  // Punch a hole so that the OpenGL view shows through.
+  [[NSColor clearColor] set];
+  NSRectFillList(dirtyRects, dirtyRectCount);
 
   [self drawView];
 }
@@ -265,17 +259,13 @@ static CVReturn DrawOneAcceleratedPluginCallback(
       CVDisplayLinkStop(displayLink_);
   }
 
-  // If hole punching is enabled, inform the window hosting this accelerated
-  // view that it needs to be opaque.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableHolePunching)) {
-    if ([[self window] respondsToSelector:@selector(underlaySurfaceRemoved)]) {
-      [static_cast<id>([self window]) underlaySurfaceRemoved];
-    }
-
-    if ([newWindow respondsToSelector:@selector(underlaySurfaceAdded)]) {
-      [static_cast<id>(newWindow) underlaySurfaceAdded];
-    }
+  // Inform the window hosting this accelerated view that it needs to be
+  // transparent.
+  if ([[self window] respondsToSelector:@selector(underlaySurfaceRemoved)]) {
+    [static_cast<id>([self window]) underlaySurfaceRemoved];
+  }
+  if ([newWindow respondsToSelector:@selector(underlaySurfaceAdded)]) {
+    [static_cast<id>(newWindow) underlaySurfaceAdded];
   }
 }
 

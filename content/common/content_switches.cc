@@ -74,11 +74,6 @@ const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
 // messages.
 const char kDisableGpuWatchdog[]            = "disable-gpu-watchdog";
 
-// Temporary flag to disable hole punching for accelerated surfaces. This is
-// here to aid debugging eventual problems, it can be removed once hole punching
-// has been out there for a few dev channel releases without problems.
-const char kDisableHolePunching[]           = "disable-hole-punching";
-
 // Disable the Indexed Database API.
 const char kDisableIndexedDatabase[]        = "disable-indexed-database";
 
