@@ -119,6 +119,9 @@ call vcvarsall.bat %VCBITS% && call scons.bat ^
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 endlocal
 
+:: TODO(bradchen): add dynamic_library_browser_tests
+::  when DSOs are added to Windows toolchain build
+
 if "%TOOLCHAIN%" equ "glibc" goto SkipNonGlibsTests
 echo @@@BUILD_STEP medium_tests@@@
 setlocal

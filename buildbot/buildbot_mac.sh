@@ -77,6 +77,9 @@ echo @@@BUILD_STEP small_tests@@@
     ${GLIBCOPTS} --mode=${MODE}-mac,nacl,doc small_tests platform=x86-${BITS} ||
     { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
+# TODO(bradchen): add dynamic_library_browser_tests when DSOs
+# are added to the Mac toolchain build
+
 # TODO(khim): run other tests with glibc toolchain
 if [[ $TOOLCHAIN != glibc ]]; then
 echo @@@BUILD_STEP medium_tests@@@

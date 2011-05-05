@@ -85,6 +85,15 @@ echo @@@BUILD_STEP small_tests${BITS}@@@
     platform=x86-${BITS} ||
     { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 
+if [[ $TOOLCHAIN = glibc ]]; then
+echo @@@BUILD_STEP dynamic_library_browser_tests@@@
+    ./scons DOXYGEN=../third_party/doxygen/linux/doxygen -k --verbose \
+    browser_headless=1 \
+    ${GLIBCOPTS} --mode=${MODE}-linux,nacl,doc SILENT=1 platform=x86-${BITS} \
+    dynamic_library_browser_tests ||
+    { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
+fi
+
 # TODO(khim): run other tests with glibc toolchain
 if [[ $TOOLCHAIN != glibc ]]; then
 echo @@@BUILD_STEP medium_tests${BITS}@@@
