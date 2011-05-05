@@ -77,9 +77,9 @@ class HelperMethodsTest(unittest.TestCase):
   def testPushGitChanges(self):
     """Tests if we can append to an authors file and push it using dryrun."""
     if not os.path.exists(GIT_DIR): os.makedirs(GIT_DIR)
-    cros_lib.RunCommand(('repo init -u http://git.chromium.org/git/manifest '
-                        '-m minilayout.xml -q').split(), cwd=GIT_DIR,
-                        input='\n\ny\n')
+    cros_lib.RunCommand(
+        ('repo init -u http://git.chromium.org/chromiumos/manifest.git '
+         '-m minilayout.xml -q').split(), cwd=GIT_DIR, input='\n\ny\n')
     cros_lib.RunCommand(('repo sync --jobs 16').split(), cwd=GIT_DIR)
     git_dir = os.path.join(GIT_DIR, GIT_TEST_PATH)
     cros_lib.RunCommand(
@@ -116,12 +116,12 @@ class VersionInfoTest(mox.MoxTestBase):
   def testLoadFromFile(self):
     """Tests whether we can load from a version file."""
     version_file = self.CreateFakeVersionFile(self.tmpdir)
-    info = manifest_version._VersionInfo(version_file=version_file)
+    info = manifest_version.VersionInfo(version_file=version_file)
     self.assertEqual(info.VersionString(), FAKE_VERSION_STRING)
 
   def testLoadFromString(self):
     """Tests whether we can load from a string."""
-    info = manifest_version._VersionInfo(version_string=FAKE_VERSION_STRING)
+    info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING)
     self.assertEqual(info.VersionString(), FAKE_VERSION_STRING)
 
   def testIncrementVersionPatch(self):
@@ -134,10 +134,10 @@ class VersionInfoTest(mox.MoxTestBase):
                                      use_repo=True)
 
     self.mox.ReplayAll()
-    info = manifest_version._VersionInfo(version_file=version_file,
+    info = manifest_version.VersionInfo(version_file=version_file,
                                          incr_type='patch')
     info.IncrementVersion(message, dry_run=False)
-    new_info = manifest_version._VersionInfo(version_file=version_file,
+    new_info = manifest_version.VersionInfo(version_file=version_file,
                                              incr_type='patch')
     self.assertEqual(new_info.VersionString(), FAKE_VERSION_STRING_NEXT)
     self.mox.VerifyAll()
@@ -168,7 +168,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     """Tests whether we can load specs correctly."""
     self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
     self.mox.StubOutWithMock(manifest_version, '_CloneGitRepo')
-    info = manifest_version._VersionInfo(version_string=FAKE_VERSION_STRING,
+    info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING,
                                          incr_type='patch')
     dir_pfx = '1.2'
     m1 = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx,
@@ -205,7 +205,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     """Tests whether we can get sorted specs correctly from a directory."""
     self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
     self.mox.StubOutWithMock(manifest_version, '_CloneGitRepo')
-    info = manifest_version._VersionInfo(version_string=FAKE_VERSION_STRING,
+    info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING,
                                          incr_type='patch')
     dir_pfx = '1.2'
     specs_dir = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx)
@@ -234,7 +234,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     Tests without pre-existing version file in manifest dir.
     """
     self.mox.StubOutWithMock(manifest_version, '_ExportManifest')
-    info = manifest_version._VersionInfo(version_string=FAKE_VERSION_STRING,
+    info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING,
                                          incr_type='patch')
     self.manager.all_specs_dir = os.path.join(self.manager.manifests_dir,
                                               'buildspecs', '1.2')
@@ -249,11 +249,11 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
   def testCreateNewBuildIncrement(self):
     """Tests that we create a new version if a previous one exists."""
     self.mox.StubOutWithMock(manifest_version, '_ExportManifest')
-    self.mox.StubOutWithMock(manifest_version._VersionInfo, 'IncrementVersion')
+    self.mox.StubOutWithMock(manifest_version.VersionInfo, 'IncrementVersion')
     self.mox.StubOutWithMock(manifest_version._RepoRepository, 'Sync')
 
     version_file = VersionInfoTest.CreateFakeVersionFile(self.tmpdir)
-    info = manifest_version._VersionInfo(version_file=version_file,
+    info = manifest_version.VersionInfo(version_file=version_file,
                                          incr_type='patch')
     self.manager.all_specs_dir = os.path.join(self.manager.manifests_dir,
                                               'buildspecs', '1.2')

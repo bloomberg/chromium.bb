@@ -91,6 +91,11 @@ def _PushGitChanges(git_repo, message, use_repo=False, dry_run=True):
                           cwd=git_repo)
     else:
       cros_lib.RunCommand(['git', 'pull', '--force'], cwd=git_repo)
+
+    cros_lib.RunCommand(['git',
+                         'config',
+                         'url.ssh://gerrit.chromium.org:29418.insteadof',
+                         'http://git.chromium.org'], cwd=git_repo)
     cros_lib.RunCommand(['git', 'add', '-A'], cwd=git_repo)
     cros_lib.RunCommand(['git', 'commit', '-am', message], cwd=git_repo)
 
@@ -219,7 +224,7 @@ class _RepoRepository(object):
       raise SrcCheckOutException(err_msg)
 
 
-class _VersionInfo(object):
+class VersionInfo(object):
   """Class to encapsualte the chrome os version info
 
   You can instantiate this class in two ways.
@@ -397,6 +402,7 @@ class BuildSpecsManager(object):
     self.latest = None
     self.latest_unprocessed = None
     self.current_build_spec = None
+    self.compare_versions_fn = lambda s: map(int, s.split('.'))
 
   def _GetMatchingSpecs(self, version_info, directory):
     """Returns the sorted list of buildspecs that match '*.xml in a directory.'
@@ -416,17 +422,18 @@ class BuildSpecsManager(object):
           all_manifests, match_string)
       matched_manifests = [os.path.splitext(m)[0] for m in matched_manifests]
 
-    return sorted(matched_manifests, key=lambda s: map(int, s.split('.')))
+    return sorted(matched_manifests, key=self.compare_versions_fn)
 
-  def _LoadSpecs(self, version_info):
+  def _LoadSpecs(self, version_info, relative_working_dir=''):
     """Loads the specifications from the working directory.
     Args:
       version_info: Info class for version information of cros.
     """
+    working_dir = os.path.join(self.manifests_dir, relative_working_dir)
     dir_pfx = version_info.DirPrefix()
-    specs_for_build = os.path.join(self.manifests_dir, 'build-name',
+    specs_for_build = os.path.join(working_dir, 'build-name',
                                    self.build_name)
-    self.all_specs_dir = os.path.join(self.manifests_dir, 'buildspecs', dir_pfx)
+    self.all_specs_dir = os.path.join(working_dir, 'buildspecs', dir_pfx)
     self.pass_dir = os.path.join(specs_for_build, 'pass', dir_pfx)
     self.fail_dir = os.path.join(specs_for_build, 'fail', dir_pfx)
     self.inflight_dir = os.path.join(specs_for_build, 'inflight', dir_pfx)
@@ -443,9 +450,9 @@ class BuildSpecsManager(object):
     failed = self._GetMatchingSpecs(version_info, self.fail_dir)
     inflight = self._GetMatchingSpecs(version_info, self.inflight_dir)
     processed = sorted(set(passed + failed + inflight),
-                            key=lambda s: map(int, s.split('.')))
+                            key=self.compare_versions_fn)
     self.unprocessed = sorted(set(self.all).difference(set(processed)),
-                              key=lambda s: map(int, s.split('.')))
+                              key=self.compare_versions_fn)
 
     if self.all: self.latest = self.all[-1]
     latest_processed = None
@@ -474,8 +481,8 @@ class BuildSpecsManager(object):
     """
     self.cros_source.Sync(branch=self.branch)
     version_file_path = os.path.join(self.source_dir, version_file)
-    return _VersionInfo(version_file=version_file_path,
-                        incr_type=self.incr_type)
+    return VersionInfo(version_file=version_file_path,
+                       incr_type=self.incr_type)
 
   def _CreateNewBuildSpec(self, version_info):
     """Generates a new buildspec for the builders to consume.
