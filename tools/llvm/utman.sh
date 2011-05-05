@@ -166,7 +166,7 @@ SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
 # hg-update-stable  uses these
 readonly LLVM_REV=04b41cdd08e9
 readonly LLVM_GCC_REV=38c54bef2849
-readonly NEWLIB_REV=bb325d885304
+readonly NEWLIB_REV=14dba0855c57
 readonly BINUTILS_REV=ef2d3d0a5c51
 
 # Repositories
@@ -2140,7 +2140,6 @@ newlib-configure-common() {
     ${srcdir}/newlib-trunk/configure \
         --disable-libgloss \
         --disable-multilib \
-        --enable-newlib-reent-small \
         --prefix="${NEWLIB_INSTALL_DIR}" \
         --disable-newlib-supplied-syscalls \
         --disable-texinfo \
