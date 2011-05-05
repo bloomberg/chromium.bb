@@ -453,12 +453,14 @@ void PPB_URLLoader_Impl::didReceiveData(WebURLLoader* loader,
   // To avoid letting the network stack download an entire stream all at once,
   // defer loading when we have enough buffer.
   // Check the buffer size after potentially moving some to the user buffer.
-  DCHECK(request_info_->prefetch_buffer_lower_threshold() <
-         request_info_->prefetch_buffer_upper_threshold());
+  DCHECK(!request_info_ ||
+         (request_info_->prefetch_buffer_lower_threshold() <
+          request_info_->prefetch_buffer_upper_threshold()));
   if (!is_streaming_to_file_ &&
       !is_asynchronous_load_suspended_ &&
-      buffer_.size() >= static_cast<size_t>(
-          request_info_->prefetch_buffer_upper_threshold())) {
+      request_info_ &&
+      (buffer_.size() >= static_cast<size_t>(
+          request_info_->prefetch_buffer_upper_threshold()))) {
     DVLOG(1) << "Suspending async load - buffer size: " << buffer_.size();
     loader->setDefersLoading(true);
     is_asynchronous_load_suspended_ = true;
@@ -522,6 +524,7 @@ size_t PPB_URLLoader_Impl::FillUserBuffer() {
   buffer_.erase(buffer_.begin(), buffer_.begin() + bytes_to_copy);
 
   // If the buffer is getting too empty, resume asynchronous loading.
+  DCHECK(!is_asynchronous_load_suspended_ || request_info_);
   if (is_asynchronous_load_suspended_ &&
       buffer_.size() <= static_cast<size_t>(
           request_info_->prefetch_buffer_lower_threshold())) {
