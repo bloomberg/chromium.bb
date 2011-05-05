@@ -93,13 +93,11 @@ void ExtensionEventRouterForwarder::CallExtensionEventRouter(
     Profile* profile, const std::string& extension_id,
     const std::string& event_name, const std::string& event_args,
     Profile* restrict_to_profile, const GURL& event_url) {
-#if defined(OS_CHROMEOS)
-  // Extension does not exist for chromeos login.  This needs to be
-  // removed once we have an extension service for login screen.
-  // crosbug.com/12856.
+  // We may not have an extension in cases like chromeos login
+  // (crosbug.com/12856), chrome_frame_net_tests.exe which reuses the chrome
+  // browser single process framework.
   if (!profile->GetExtensionEventRouter())
     return;
-#endif
 
   if (extension_id.empty()) {
     profile->GetExtensionEventRouter()->
