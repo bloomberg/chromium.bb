@@ -182,7 +182,13 @@ const int   kSingleRealmTestResourceCount = 6;
 // correctness.  Instead, it relies on the auth dialog blocking the
 // browser, and triggering a timeout to cause failure when the
 // prefetch resource requires authorization.
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PrefetchAuthCancels) {
+// Crashing on mac. http://crbug.com/81706.
+#if defined(OS_MACOSX)
+#define MAYBE_PrefetchAuthCancels DISABLED_PrefetchAuthCancels
+#else
+#define MAYBE_PrefetchAuthCancels PrefetchAuthCancels
+#endif
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MAYBE_PrefetchAuthCancels) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL test_page = test_server()->GetURL(kPrefetchAuthPage);
