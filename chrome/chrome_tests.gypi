@@ -1231,6 +1231,7 @@
         'browser/autofill/personal_data_manager_unittest.cc',
         'browser/autofill/phone_field_unittest.cc',
         'browser/autofill/phone_number_unittest.cc',
+        'browser/autofill/phone_number_i18n_unittest.cc',
         'browser/autofill/select_control_handler_unittest.cc',
         'browser/automation/automation_provider_unittest.cc',
         'browser/automation/automation_tab_helper_unittest.cc',
