@@ -38,6 +38,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+#include "net/base/net_util.h"
 #include "net/url_request/url_request_test_util.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
