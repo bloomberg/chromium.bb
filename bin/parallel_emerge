@@ -1244,8 +1244,9 @@ class EmergeQueue(object):
 
 def main():
 
+  parallel_emerge_args = sys.argv[:]
   deps = DepGraphGenerator()
-  deps.Initialize(sys.argv[1:])
+  deps.Initialize(parallel_emerge_args[1:])
   emerge = deps.emerge
 
   if emerge.action is not None:
@@ -1325,7 +1326,7 @@ def main():
   # If we already upgraded portage, we don't need to do so again. But we do
   # need to upgrade the rest of the packages. So we'll go ahead and do that.
   if portage_upgrade:
-    args = sys.argv[1:] + ["--exclude=sys-apps/portage"]
+    args = parallel_emerge_args + ["--exclude=sys-apps/portage"]
     os.execvp(os.path.realpath(sys.argv[0]), args)
 
   print "Done"
