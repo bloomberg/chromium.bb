@@ -2256,13 +2256,6 @@ bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
   if (!UseCustomFrame())
     return false;
 
-  // Since panels are not resizable or movable by the user, we should not
-  // detect the window edge for behavioral purposes.  The edge if any is present
-  // only for visual aspects.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels) &&
-      browser_->is_type_panel())
-    return false;
-
   if (IsMaximized() || IsFullscreen())
     return false;
 
@@ -2317,11 +2310,6 @@ bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
 }
 
 bool BrowserWindowGtk::UseCustomFrame() {
-  // We always use custom frame for panels.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels) &&
-      browser_->is_type_panel())
-    return true;
-
   // We don't use the custom frame for app mode windows or app window popups.
   return use_custom_frame_pref_.GetValue() && !browser_->is_app();
 }

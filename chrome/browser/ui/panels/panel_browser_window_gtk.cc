@@ -24,14 +24,21 @@ void PanelBrowserWindowGtk::Init() {
   gtk_window_set_gravity(window(), GDK_GRAVITY_SOUTH_EAST);
 
   // Keep the window always on top.
-  gtk_window_set_keep_above(window(), true);
+  gtk_window_set_keep_above(window(), TRUE);
 
   // Show the window on all the virtual desktops.
   gtk_window_stick(window());
 
   // Do not show an icon in the task bar.  Window operations such as close,
   // minimize etc. can only be done from the panel UI.
-  gtk_window_set_skip_taskbar_hint(window(), true);
+  gtk_window_set_skip_taskbar_hint(window(), TRUE);
+}
+
+bool PanelBrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
+  // Since panels are not resizable or movable by the user, we should not
+  // detect the window edge for behavioral purposes.  The edge, if any,
+  // is present only for visual aspects.
+  return FALSE;
 }
 
 bool PanelBrowserWindowGtk::HandleTitleBarLeftMousePress(
@@ -42,12 +49,23 @@ bool PanelBrowserWindowGtk::HandleTitleBarLeftMousePress(
   return TRUE;
 }
 
+void PanelBrowserWindowGtk::SaveWindowPosition() {
+  // We don't save window position for panels as it's controlled by
+  // PanelManager.
+  return;
+}
+
 void PanelBrowserWindowGtk::SetGeometryHints() {
   SetBoundsImpl();
 }
 
 void PanelBrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
   SetBoundsImpl();
+}
+
+bool PanelBrowserWindowGtk::UseCustomFrame() {
+  // We always use custom frame for panels.
+  return TRUE;
 }
 
 void PanelBrowserWindowGtk::SetBoundsImpl() {

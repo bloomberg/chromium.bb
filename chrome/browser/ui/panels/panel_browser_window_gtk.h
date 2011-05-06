@@ -17,22 +17,25 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk {
   // BrowserWindowGtk overrides
   virtual void Init() OVERRIDE;
 
-
   // BrowserWindow overrides
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
 
  protected:
   // BrowserWindowGtk overrides
+  virtual bool GetWindowEdge(int x, int y, GdkWindowEdge* edge) OVERRIDE;
   virtual bool HandleTitleBarLeftMousePress(
       GdkEventButton* event,
       guint32 last_click_time,
       gfx::Point last_click_position) OVERRIDE;
+  virtual void SaveWindowPosition() OVERRIDE;
   virtual void SetGeometryHints() OVERRIDE;
+  virtual bool UseCustomFrame() OVERRIDE;
 
  private:
   void SetBoundsImpl();
 
   Panel* panel_;
+  DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowGtk);
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_WINDOW_GTK_H_

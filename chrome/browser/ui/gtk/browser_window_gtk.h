@@ -228,13 +228,24 @@ class BrowserWindowGtk : public BrowserWindow,
  protected:
   virtual void DestroyBrowser();
 
+  // Checks to see if the mouse pointer at |x|, |y| is over the border of the
+  // custom frame (a spot that should trigger a window resize). Returns true if
+  // it should and sets |edge|.
+  virtual bool GetWindowEdge(int x, int y, GdkWindowEdge* edge);
+
   virtual bool HandleTitleBarLeftMousePress(GdkEventButton* event,
                                             guint32 last_click_time,
                                             gfx::Point last_click_position);
 
-  // Sets the default size for the window and the the way the user is allowed to
+  // Save the window position in the prefs.
+  virtual void SaveWindowPosition();
+
+  // Sets the default size for the window and the way the user is allowed to
   // resize it.
   virtual void SetGeometryHints();
+
+  // Returns |true| if we should use the custom frame.
+  virtual bool UseCustomFrame();
 
   // Top level window.
   GtkWindow* window_;
@@ -293,9 +304,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // Must be called once at startup.
   // Triggers relayout of the content.
   void UpdateCustomFrame();
-
-  // Save the window position in the prefs.
-  void SaveWindowPosition();
 
   // Set the bounds of the current window. If |exterior| is true, set the size
   // of the window itself, otherwise set the bounds of the web contents.
@@ -408,14 +416,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // Whether we should draw the tab background instead of the theme_frame
   // background because this window is a popup.
   bool UsingCustomPopupFrame() const;
-
-  // Checks to see if the mouse pointer at |x|, |y| is over the border of the
-  // custom frame (a spot that should trigger a window resize). Returns true if
-  // it should and sets |edge|.
-  bool GetWindowEdge(int x, int y, GdkWindowEdge* edge);
-
-  // Returns |true| if we should use the custom frame.
-  bool UseCustomFrame();
 
   // Returns |true| if the window bounds match the monitor size.
   bool BoundsMatchMonitorSize();
