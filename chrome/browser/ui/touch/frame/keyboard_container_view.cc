@@ -21,6 +21,10 @@ void MakeViewHierarchyUnfocusable(views::View* view) {
 
 }  // namepsace
 
+// static
+const char KeyboardContainerView::kViewClassName[] =
+    "browser/ui/touch/frame/KeyboardContainerView";
+
 ///////////////////////////////////////////////////////////////////////////////
 // KeyboardContainerView, public:
 
@@ -36,6 +40,10 @@ KeyboardContainerView::KeyboardContainerView(Profile* profile)
 }
 
 KeyboardContainerView::~KeyboardContainerView() {
+}
+
+std::string KeyboardContainerView::GetClassName() const {
+  return kViewClassName;
 }
 
 void KeyboardContainerView::Layout() {

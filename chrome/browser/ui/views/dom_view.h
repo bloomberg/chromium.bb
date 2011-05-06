@@ -20,8 +20,14 @@ class TabContents;
 
 class DOMView : public views::NativeViewHost {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   DOMView();
   virtual ~DOMView();
+
+  // Overridden from View.
+  virtual std::string GetClassName() const OVERRIDE;
 
   // Initialize the view, creating the contents. This should be
   // called once the view has been added to a container.

@@ -41,6 +41,10 @@ bool TabContentsHasFocus(const TabContents* contents) {
 
 }  // namespace
 
+// static
+const char TouchBrowserFrameView::kViewClassName[] =
+    "browser/ui/touch/frame/TouchBrowserFrameView";
+
 ///////////////////////////////////////////////////////////////////////////////
 // TouchBrowserFrameView, public:
 
@@ -69,6 +73,10 @@ TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
 
 TouchBrowserFrameView::~TouchBrowserFrameView() {
   browser_view()->browser()->tabstrip_model()->RemoveObserver(this);
+}
+
+std::string TouchBrowserFrameView::GetClassName() const {
+  return kViewClassName;
 }
 
 void TouchBrowserFrameView::Layout() {

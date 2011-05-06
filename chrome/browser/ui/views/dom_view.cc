@@ -11,6 +11,10 @@
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
 #endif
 
+// static
+const char DOMView::kViewClassName[] =
+    "browser/ui/views/DOMView";
+
 DOMView::DOMView() : tab_contents_(NULL), initialized_(false) {
   SetFocusable(true);
 }
@@ -18,6 +22,10 @@ DOMView::DOMView() : tab_contents_(NULL), initialized_(false) {
 DOMView::~DOMView() {
   if (native_view())
     Detach();
+}
+
+std::string DOMView::GetClassName() const {
+  return kViewClassName;
 }
 
 bool DOMView::Init(Profile* profile, SiteInstance* instance) {

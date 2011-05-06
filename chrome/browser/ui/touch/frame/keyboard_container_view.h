@@ -17,10 +17,14 @@ class Profile;
 // the keyboard to prevent them from interfering with the ClientView.
 class KeyboardContainerView : public views::View {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   explicit KeyboardContainerView(Profile* profile);
   virtual ~KeyboardContainerView();
 
   // Overridden from views::View
+  virtual std::string GetClassName() const OVERRIDE;
   virtual void Layout();
 
  protected:

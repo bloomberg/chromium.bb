@@ -34,9 +34,15 @@ class TouchBrowserFrameView : public OpaqueBrowserFrameView,
     URL,
   };
 
+  // Internal class name.
+  static const char kViewClassName[];
+
   // Constructs a non-client view for an BrowserFrame.
   TouchBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
   virtual ~TouchBrowserFrameView();
+
+  // Overriden from Views.
+  virtual std::string GetClassName() const OVERRIDE;
 
   // Overridden from OpaqueBrowserFrameView
   virtual void Layout();
