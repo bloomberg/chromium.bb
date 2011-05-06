@@ -145,11 +145,13 @@ class AutofillTest : public InProcessBrowserTest {
   }
 
   void FocusFirstNameField() {
+    LOG(WARNING) << "Clicking on the tab.";
     ASSERT_NO_FATAL_FAILURE(ui_test_utils::ClickOnView(browser(),
                                                        VIEW_ID_TAB_CONTAINER));
     ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
                                              VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
+    LOG(WARNING) << "Focusing the first name field.";
     bool result = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
         render_view_host(), L"",
@@ -174,6 +176,7 @@ class AutofillTest : public InProcessBrowserTest {
 
     // Start filling the first name field with "M" and wait for the popup to be
     // shown.
+    LOG(WARNING) << "Typing 'M' to bring up the Autofill popup.";
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_M, false, true, false, false,
         NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
@@ -181,6 +184,7 @@ class AutofillTest : public InProcessBrowserTest {
 
     // Press the down arrow to select the suggestion and preview the autofilled
     // form.
+    LOG(WARNING) << "Simulating down arrow press to initiate Autofill preview.";
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_DOWN, false, false, false, false,
         NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
@@ -200,6 +204,7 @@ class AutofillTest : public InProcessBrowserTest {
     // displayed: http://crbug.com/57220
 
     // Press Enter to accept the autofill suggestions.
+    LOG(WARNING) << "Simulating Return press to fill the form.";
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_RETURN, false, false, false, false,
         NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
@@ -375,28 +380,30 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillFormsDistinguishedById) {
   TryBasicFormFill();
 }
 
-#if defined(OS_MACOSX)
 // Test that form filling works after reloading the current page.
 // This test brought to you by http://crbug.com/69204
-// http://crbug.com/81451
-IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillAfterReload) {
-#else
+// Sometimes times out on Mac: http://crbug.com/81451
+// Currently enabled to try to debug timeouts.
 IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterReload) {
-#endif
+  LOG(WARNING) << "Creating test profile.";
   CreateTestProfile();
 
   // Load the test page.
+  LOG(WARNING) << "Bringing browser window to front.";
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  LOG(WARNING) << "Navigating to URL.";
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
       GURL(std::string(kDataURIPrefix) + kTestFormString)));
 
   // Reload the page.
+  LOG(WARNING) << "Reloading the page.";
   TabContents* tab =
       browser()->GetSelectedTabContentsWrapper()->tab_contents();
   tab->controller().Reload(false);
   ui_test_utils::WaitForLoadStop(tab);
 
   // Invoke Autofill.
+  LOG(WARNING) << "Trying to fill the form.";
   TryBasicFormFill();
 }
 
