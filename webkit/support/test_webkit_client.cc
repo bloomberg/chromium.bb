@@ -39,8 +39,10 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitclient_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/support/simple_database_system.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
+#include "webkit/support/webkit_support.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_file_system.h"
@@ -351,5 +353,13 @@ WebKit::WebSharedWorkerRepository* TestWebKitClient::sharedWorkerRepository() {
 }
 
 WebKit::WebGraphicsContext3D* TestWebKitClient::createGraphicsContext3D() {
-  return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
+  switch (webkit_support::GetGraphicsContext3DImplementation()) {
+    case webkit_support::IN_PROCESS:
+      return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
+    case webkit_support::IN_PROCESS_COMMAND_BUFFER:
+      return new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl();
+    default:
+      CHECK(false) << "Unknown GraphicsContext3D Implementation";
+      return NULL;
+  }
 }

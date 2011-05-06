@@ -211,6 +211,9 @@ class TaskAdaptorHolder : public CancelableTask {
   scoped_ptr<webkit_support::TaskAdaptor> adaptor_;
 };
 
+webkit_support::GraphicsContext3DImplementation
+    g_graphics_context_3d_implementation = webkit_support::IN_PROCESS;
+
 }  // namespace
 
 namespace webkit_support {
@@ -328,6 +331,14 @@ void SetUpGLBindings(GLBindingPreferences bindingPref) {
     default:
       NOTREACHED();
   }
+}
+
+void SetGraphicsContext3DImplementation(GraphicsContext3DImplementation impl) {
+  g_graphics_context_3d_implementation = impl;
+}
+
+GraphicsContext3DImplementation GetGraphicsContext3DImplementation() {
+  return g_graphics_context_3d_implementation;
 }
 
 void RegisterMockedURL(const WebKit::WebURL& url,
