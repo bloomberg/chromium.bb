@@ -2240,9 +2240,7 @@ nacl_env = pre_base_env.Clone(
 )
 
 if nacl_env.Bit('irt'):
-  nacl_env.Append(LINKFLAGS='-Wl,--section-start,.rodata='
-                  '${IRT_DATA_REGION_START}')
-  nacl_env.Replace(PPAPI_LIBS=['ppapi_stub', 'pthread'])
+  nacl_env.Replace(PPAPI_LIBS=['ppapi'])
   # Even non-PPAPI nexes need this for IRT-compatible linking.
   # We don't just make them link with ${PPAPI_LIBS} because in
   # the non-IRT case under dynamic linking, that tries to link
@@ -2470,6 +2468,7 @@ nacl_extra_sdk_env = pre_base_env.Clone(
     BUILD_TYPE = 'nacl_extra_sdk',
     BUILD_TYPE_DESCRIPTION = 'NaCl SDK extra library build',
     NACL_BUILD_FAMILY = 'UNTRUSTED',
+    IRT_DATA_REGION_START = nacl_env['IRT_DATA_REGION_START'],
     CPPPATH = ['${SOURCE_ROOT}'],
     CPPDEFINES = [
       ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
