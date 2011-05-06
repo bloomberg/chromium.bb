@@ -631,6 +631,7 @@ static void
 vt_func(struct wlsc_compositor *compositor, int event)
 {
 	struct drm_compositor *ec = (struct drm_compositor *) compositor;
+	struct wlsc_output *output;
 
 	switch (event) {
 	case TTY_ENTER_VT:
@@ -643,6 +644,10 @@ vt_func(struct wlsc_compositor *compositor, int event)
 		compositor->focus = 0;
 		compositor->state = WLSC_COMPOSITOR_SLEEPING;
 		drmDropMaster(ec->drm.fd);
+
+		wl_list_for_each(output, &ec->base.output_list, link)
+			drm_output_set_cursor(output, NULL);
+
 		break;
 	};
 }
