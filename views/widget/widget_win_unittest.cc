@@ -9,7 +9,8 @@
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace views;
+namespace views {
+namespace {
 
 class WidgetWinTest : public testing::Test {
  public:
@@ -40,7 +41,6 @@ class WidgetWinTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(WidgetWinTest);
 };
-
 
 WidgetWin* WidgetWinTest::CreateWidgetWin() {
   scoped_ptr<Widget> widget(Widget::CreateWidget());
@@ -81,3 +81,6 @@ TEST_F(WidgetWinTest, SetBoundsForZoomedWindow) {
   window->CloseNow();
   window2->CloseNow();
 }
+
+}  // namespace
+}  // namespace views

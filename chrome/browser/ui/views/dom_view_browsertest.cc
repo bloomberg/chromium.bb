@@ -9,7 +9,7 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
-using namespace views;
+using views::Widget;
 
 class DOMViewTest : public InProcessBrowserTest {
  public:
