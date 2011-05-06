@@ -201,10 +201,13 @@ class EventQueueWatcher : public Task {
                                            inMode:NSDefaultRunLoopMode
                                           dequeue:NO];
     // If there is still event in the queue, then we need to check again.
-    if (event)
+    if (event) {
+      LOG(WARNING) << "Processed an event... still more to go.";
       MessageLoop::current()->PostTask(FROM_HERE, new EventQueueWatcher(task_));
-    else
+    } else {
+      LOG(WARNING) << "Processed the final event, posting the callback task.";
       MessageLoop::current()->PostTask(FROM_HERE, task_);
+    }
   }
 
  private:
@@ -255,8 +258,10 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
        iter != events.end(); ++iter)
     [[NSApplication sharedApplication] sendEvent:*iter];
 
-  if (task)
+  if (task) {
+    LOG(WARNING) << "Posting task from SendKeyPressNotifyWhenDone()";
     MessageLoop::current()->PostTask(FROM_HERE, new EventQueueWatcher(task));
+  }
 
   return true;
 }

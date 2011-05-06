@@ -745,6 +745,7 @@ bool SendKeyPressSync(const Browser* browser,
   if (!GetNativeWindow(browser, &window))
     return false;
 
+  LOG(WARNING) << "Sending keypress";
   if (!ui_controls::SendKeyPressNotifyWhenDone(
           window, key, control, shift, alt, command,
           new MessageLoop::QuitTask())) {
@@ -771,7 +772,10 @@ bool SendKeyPressAndWait(const Browser* browser,
   if (!SendKeyPressSync(browser, key, control, shift, alt, command))
     return false;
 
+  LOG(WARNING) << "Sent keypress!  "
+               << "Now waiting on the expected resulting event to trigger.";
   observer.Wait();
+  LOG(WARNING) << "The expected resulting event was triggered!  All clear!";
   return !testing::Test::HasFatalFailure();
 }
 
