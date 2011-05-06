@@ -38,9 +38,6 @@
       '-autofill.AutofillTest.testDistinguishMiddleInitialWithinName',
       '-autofill.AutofillTest.testFormFillableOnReset',
       '-autofill.AutofillTest.testMultipleEmailFilledByOneUserGesture',
-      # crbug.com/81271
-      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
-      '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
       'bookmark_bar',
       'bookmarks',
       'browser',

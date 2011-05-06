@@ -637,7 +637,8 @@ class AutofillTest(pyauto.PyUITest):
     # Run the parser script to generate the dictionary list needed for the
     # profiles.
     c = autofill_dataset_converter.DatasetConverter(
-        os.path.join(self.DataDir(), 'autofill', 'functional', data),
+        os.path.abspath(
+            os.path.join(self.DataDir(), 'autofill', 'functional', data)),
         logging_level=logging.INFO)  # Set verbosity to INFO, WARNING, ERROR.
     list_of_dict = c.Convert()
 
