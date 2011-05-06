@@ -710,33 +710,56 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TaskManager) {
   browser()->window()->ShowTaskManager();
 
   // Start with two resources.
-  EXPECT_EQ(2, model()->ResourceCount());
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
 
-  // The prerender makes three.
-  EXPECT_EQ(3, model()->ResourceCount());
+  // One of the resources that has a TabContents associated with it should have
+  // the Prerender prefix.
+  const string16 prefix =
+      l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX, string16());
+  string16 prerender_title;
+  int num_prerender_tabs = 0;
 
-  // It should have a TabContents associated with it.
-  ASSERT_TRUE(model()->GetResourceTabContents(1) != NULL);
-
-  // The prefix should be "Prerender:"
-  string16 prefix =
-      l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX,
-                                 string16());
-  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), prefix, true));
+  VLOG(1) << "After prerender:";
+  for (int i = 0; i < model()->ResourceCount(); ++i) {
+    VLOG(1) << "  " << i << ": " << model()->GetResourceTitle(i);
+    if (model()->GetResourceTabContents(i)) {
+      prerender_title = model()->GetResourceTitle(i);
+      if (StartsWith(prerender_title, prefix, true))
+        ++num_prerender_tabs;
+    }
+  }
+  ASSERT_EQ(1, num_prerender_tabs);
+  const string16 prerender_page_title = prerender_title.substr(prefix.length());
 
   NavigateToDestURL();
 
-  // Prerender task should become a normal tab.
-  EXPECT_EQ(3, model()->ResourceCount());
+  // There should be no tabs with the Prerender prefix.
+  const string16 tab_prefix =
+      l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX, string16());
+  num_prerender_tabs = 0;
+  bool found_tab_with_prerender_page_title = false;
+  VLOG(1) << "After navigate:";
+  for (int i = 0; i < model()->ResourceCount(); ++i) {
+    VLOG(1) << "  " << i << ": " << model()->GetResourceTitle(i);
+    if (model()->GetResourceTabContents(i)) {
+      string16 tab_title = model()->GetResourceTitle(i);
+      if (StartsWith(tab_title, prefix, true)) {
+        ++num_prerender_tabs;
+      } else {
+        ASSERT_TRUE(StartsWith(tab_title, tab_prefix, true));
 
-  // It should have a TabContents associated with it.
-  ASSERT_TRUE(model()->GetResourceTabContents(2) != NULL);
-
-  // The prefix should now be "Tab:"
-  prefix = l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX,
-                                      string16());
-  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), prefix, true));
+        // The prerender tab should now be a normal tab but the title should be
+        // the same.
+        const string16 tab_page_title = tab_title.substr(tab_prefix.length());
+        if (prerender_page_title.compare(tab_page_title) == 0) {
+          ASSERT_FALSE(found_tab_with_prerender_page_title);
+          found_tab_with_prerender_page_title = true;
+        }
+      }
+    }
+  }
+  ASSERT_EQ(0, num_prerender_tabs);
+  ASSERT_TRUE(found_tab_with_prerender_page_title);
 }
 
 // Checks that prerenderers will terminate when an audio tag is encountered.
