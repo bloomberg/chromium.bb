@@ -195,9 +195,14 @@ class PrintToPdfTask : public Task {
   // Takes ownership of |metafile|.
   PrintToPdfTask(printing::Metafile* metafile, const FilePath& path)
       : metafile_(metafile), path_(path) {
+    DCHECK(metafile);
   }
 
-  ~PrintToPdfTask() {}
+  ~PrintToPdfTask() {
+    // This has to get deleted on the same thread it was created.
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        new DeleteTask<printing::Metafile>(metafile_.release()));
+  }
 
   // Task implementation
   virtual void Run() {
