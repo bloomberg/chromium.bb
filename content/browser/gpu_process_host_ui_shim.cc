@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/id_map.h"
-#include "base/debug/trace_event.h"
 #include "base/process_util.h"
 #include "chrome/browser/browser_process.h"
 #include "content/browser/browser_thread.h"
@@ -17,6 +16,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/content_switches.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "gpu/common/gpu_trace_event.h"
 
 #if defined(OS_LINUX)
 // These two #includes need to come after gpu_messages.h.
