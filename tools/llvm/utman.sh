@@ -2487,8 +2487,8 @@ readonly LLVM_AR=${CROSS_TARGET_AR}
 #       if we do not want to depend on binutils
 readonly NACL_OBJDUMP=${INSTALL_DIR}/bin/arm-pc-nacl-objdump
 
-# Usage: VerifyArchive <checker> <filename> <pattern>
-VerifyArchive() {
+# Usage: VerifyArchive <checker> <pattern> <filename>
+ExtractAndCheck() {
   local checker="$1"
   local pattern="$2"
   local archive="$3"
@@ -2497,7 +2497,6 @@ VerifyArchive() {
   mkdir -p ${tmp}
   cp "${archive}" "${tmp}"
   spushd ${tmp}
-  echo -n "verify $(basename "${archive}"): "
   ${LLVM_AR} x $(basename ${archive})
   # extract all the files
   local count=0
@@ -2517,6 +2516,45 @@ VerifyArchive() {
   echo "PASS  (${count} files)"
   rm -rf "${tmp}"
   spopd
+}
+
+# Usage: VerifyLinkerScript <filename>
+VerifyLinkerScript() {
+  local archive="$1"
+  # Use cpp to strip the C-style comments.
+  ${PNACL_GCC} -E -xc "${archive}" | awk -v archive="$(basename ${archive})" '
+    BEGIN { status = 0 }
+    NF == 0 || $1 == "#" { next }
+    $1 == "INPUT" && $2 == "(" && $NF == ")" { next }
+    {
+      print "FAIL - unexpected linker script(?) contents:", archive
+      status = 1
+      exit(status)
+    }
+    END { if (status == 0) print "PASS  (trivial linker script)" }
+' || exit -1
+}
+
+# Usage: VerifyArchive <checker> <pattern> <filename>
+VerifyArchive() {
+  local checker="$1"
+  local pattern="$2"
+  local archive="$3"
+  echo -n "verify $(basename "${archive}"): "
+  type="$(file --brief --mime-type "${archive}")"
+  case "$type" in
+    application/x-archive)
+      ExtractAndCheck "$checker" "$pattern" "$archive"
+      ;;
+    text/x-c)
+      # A linker script with C comments looks like C to "file".
+      VerifyLinkerScript "$archive"
+      ;;
+    *)
+      echo "FAIL - unknown file type ($type): ${archive}"
+      exit -1
+      ;;
+  esac
 }
 
 #
