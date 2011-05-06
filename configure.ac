@@ -27,6 +27,14 @@ if test "x$GCC" = "xyes"; then
 fi
 AC_SUBST(GCC_CFLAGS)
 
+AC_ARG_ENABLE([scanner],
+              [AC_HELP_STRING([--disable-scanner],
+                              [Disable compilation of wayland-scannner])],
+              [],
+              [enable_scanner=yes])
+
+AM_CONDITIONAL(ENABLE_SCANNER, test "x$enable_scanner" = xyes)
+
 EXPAT_LIB=""
 AC_ARG_WITH(expat, [  --with-expat=<dir>      Use expat from here],
 		   [ expat=$withval
