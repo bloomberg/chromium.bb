@@ -835,6 +835,7 @@ function playlistChanged(info, playlist) {
         currentItem = 0;
       }
       var item = playlist[currentItem];
+      chrome.send('currentOffsetChanged', ['' + currentItem]);
       playMediaFile(item.path);
     }
   } else {
@@ -875,7 +876,7 @@ function playMediaFile(url) {
   } else if(pathIsAudioFile(url)) {
     playAudioFile(url);
   } else {
-    alert('file unknown');
+    alert('file unknown:' + url);
   }
 }
 

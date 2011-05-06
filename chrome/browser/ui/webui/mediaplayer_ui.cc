@@ -254,9 +254,8 @@ void MediaplayerHandler::GetPlaylistValue(ListValue& urls) {
 }
 
 void MediaplayerHandler::PlaybackMediaFile(const GURL& url) {
-  current_playlist_.clear();
   current_playlist_.push_back(MediaplayerHandler::MediaUrl(url));
-  FirePlaylistChanged(url.spec(), true, 0);
+  FirePlaylistChanged(url.spec(), true, current_playlist_.size() - 1);
   MediaPlayer::GetInstance()->NotifyPlaylistChanged();
 }
 

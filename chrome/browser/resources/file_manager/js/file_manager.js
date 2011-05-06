@@ -105,16 +105,12 @@ FileManager.prototype = {
    * defined, so don't depend on it.
    */
   const iconTypes = {
-    'audio': /\.(aac|aiff|atrac|cda|flac|mp3|pcm|ogg|raw|wav)$/i,
-    'doc' : /\.(doc|docx|odt|ps|rtf|txt|wpd)$/i,
+    'audio': /\.(mp3|m4a|oga|ogg|wav)$/i,
     'html': /\.(html?)$/i,
     'image': /\.(bmp|gif|jpe?g|ico|png|webp)$/i,
     'pdf' : /\.(pdf)$/i,
-    'presentation': /\.(odp|ppt|pptx)$/i,
-    'spreadsheet': /\.(ods|xls|xlsx)$/i,
-    'text': /\.(pod|rst|txt)$/i,
-    'video':
-    /\.(3gp|asf|avi|di?vx|f4v|fbr|mp4|mpe?g4?|ogm|ogv|ogx|webm|wmv?|xvid)$/i
+    'text': /\.(pod|rst|txt|log)$/i,
+    'video': /\.(mov|mp4|m4v|mpe?g4?|ogm|ogv|ogx|webm)$/i
   };
 
 
@@ -992,6 +988,22 @@ FileManager.prototype = {
     for (var i = 0; i < tasksList.length; i++) {
       var task = tasksList[i];
 
+      // Tweak images, titles of internal tasks.
+      var task_parts = task.taskId.split('|');
+      if (task_parts[0] == this.getExtensionId_()) {
+        if (task_parts[1] == 'preview') {
+          // TODO(serya): This hack needed until task.iconUrl get working
+          //              (see GetFileTasksFileBrowserFunction::RunImpl).
+          task.iconUrl =
+              chrome.extension.getURL('images/icon_preview_16x16.png');
+          task.title = str('PREVIEW_IMAGE');
+        } else if (task_parts[1] == 'play') {
+          task.iconUrl =
+              chrome.extension.getURL('images/icon_play_16x16.png');
+          task.title = str('PLAY_MEDIA').replace("&", "");
+        }
+      }
+
       var button = this.document_.createElement('button');
       button.addEventListener('click', this.onTaskButtonClicked_.bind(this));
       button.className = 'task-button';
@@ -1012,11 +1024,18 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onTaskButtonClicked_ = function(event) {
-    if (event.srcElement.task.taskId == this.getExtensionId_() + '|preview') {
-      g_slideshow_data = this.selection.urls;
-      chrome.tabs.create({url: "slideshow.html"});
+    // Check internal tasks first.
+    var task_parts = event.srcElement.task.taskId.split('|');
+    if (task_parts[0] == this.getExtensionId_()) {
+      if (task_parts[1] == 'preview') {
+        g_slideshow_data = this.selection.urls;
+        chrome.tabs.create({url: "slideshow.html"});
+      } else if (task_parts[1] == 'play') {
+        chrome.fileBrowserPrivate.viewFiles(this.selection.urls);
+      }
       return;
     }
+
     chrome.fileBrowserPrivate.executeTask(event.srcElement.task.taskId,
                                           this.selection.urls);
   }

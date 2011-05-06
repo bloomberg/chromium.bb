@@ -18,16 +18,50 @@
   "file_browser_handlers": [
     {
       "id": "preview",
-      "default_title": "Preview image",
+      "default_title": "__MSG_PREVIEW_IMAGE__",
+      "default_icon": "images/icon_preview_16x16.png",
       "file_filters": [
         "filesystem:*.gif",
         "filesystem:*.jpg",
         "filesystem:*.jpeg",
+        "filesystem:*.webp",
         "filesystem:*.png",
         "filesystem:*.GIF",
         "filesystem:*.JPG",
         "filesystem:*.JPEG",
+        "filesystem:*.WEBP",
         "filesystem:*.PNG"
+      ]
+    },
+    {
+      "id": "play",
+      "default_title": "__MSG_PLAY_MEDIA__",
+      "default_icon": "images/icon_play_16x16.png",
+      "file_filters": [
+        "filesystem:*.webm",
+        "filesystem:*.WEBM",
+        "filesystem:*.mp4",
+        "filesystem:*.MP4",
+        "filesystem:*.m4v",
+        "filesystem:*.M4V",
+        "filesystem:*.mov",
+        "filesystem:*.MOV",
+        "filesystem:*.ogg",
+        "filesystem:*.OGG",
+        "filesystem:*.oga",
+        "filesystem:*.OGA",
+        "filesystem:*.ogm",
+        "filesystem:*.OGM",
+        "filesystem:*.ogv",
+        "filesystem:*.OGV",
+        "filesystem:*.ogx",
+        "filesystem:*.OGX",
+        "filesystem:*.wav",
+        "filesystem:*.WAV",
+        "filesystem:*.mp3",
+        "filesystem:*.MP3",
+        "filesystem:*.m4a",
+        "filesystem:*.M4A"
       ]
     }
   ]

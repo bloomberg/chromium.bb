@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 function pathIsVideoFile(path) {
-  return /\.(mp4|ogg|mpg|avi|mov)$/i.test(path);
+  return /\.(3gp|asf|avi|di?vx|f4v|fbr|mov|mp4|m4v|mpe?g4?|ogm|ogv|ogx|webm|wmv?|xvid)$/i.test(path);
 }
 
 function pathIsAudioFile(path) {
-  return /\.(mp3|m4a|wav)$/i.test(path);
+  return /\.(aac|aiff|atrac|cda|flac|m4a|mp3|pcm|oga|ogg|raw|wav)$/i.test(path);
 }
 
 function pathIsImageFile(path) {
-  return /\.(jpg|png|gif)$/i.test(path);
+  return /\.(bmp|gif|jpe?g|ico|png|webp)$/i.test(path);
 }
 
 function pathIsHtmlFile(path) {

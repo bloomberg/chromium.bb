@@ -55,18 +55,43 @@ void ShowItemInFolder(const FilePath& full_path) {
   }
 }
 
+const char* kBrowserSupportedExtensions[] = {
+    ".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf", ".txt", ".html", ".htm"
+};
+
+const char* kAVExtensions[] = {
+    ".webm", ".mp4", ".m4v", ".mov", ".ogm", ".ogv", ".ogx",
+    ".mp3", ".m4a", ".ogg", ".oga", ".wav",
+/* TODO(zelidrag): Add unsupported ones as we enable them:
+    ".3gp", ".mkv", ".avi", ".divx", ".xvid", ".wmv", ".asf", ".mpeg", ".mpg",
+    ".wma", ".aiff",
+*/
+};
+
+bool IsSupportedBrowserExtension(const char* ext) {
+  for (size_t i = 0; i < arraysize(kBrowserSupportedExtensions); i++) {
+    if (base::strcasecmp(ext, kBrowserSupportedExtensions[i]) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool IsSupportedAVExtension(const char* ext) {
+  for (size_t i = 0; i < arraysize(kAVExtensions); i++) {
+    if (base::strcasecmp(ext, kAVExtensions[i]) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
 void OpenItem(const FilePath& full_path) {
   std::string ext = full_path.Extension();
   // For things supported natively by the browser, we should open it
   // in a tab.
-  if (base::strcasecmp(ext.data(), ".jpg") == 0 ||
-      base::strcasecmp(ext.data(), ".jpeg") == 0 ||
-      base::strcasecmp(ext.data(), ".png") == 0 ||
-      base::strcasecmp(ext.data(), ".gif") == 0 ||
-      base::strcasecmp(ext.data(), ".txt") == 0 ||
-      base::strcasecmp(ext.data(), ".pdf") == 0 ||
-      base::strcasecmp(ext.data(), ".html") == 0 ||
-      base::strcasecmp(ext.data(), ".htm") == 0) {
+  if (IsSupportedBrowserExtension(ext.data())) {
     std::string path;
     path = "file://";
     path.append(full_path.value());
@@ -81,17 +106,12 @@ void OpenItem(const FilePath& full_path) {
     browser->AddSelectedTabWithURL(GURL(path), PageTransition::LINK);
     return;
   }
-  if (base::strcasecmp(ext.data(), ".avi") == 0 ||
-      base::strcasecmp(ext.data(), ".wav") == 0 ||
-      base::strcasecmp(ext.data(), ".mp4") == 0 ||
-      base::strcasecmp(ext.data(), ".mp3") == 0 ||
-      base::strcasecmp(ext.data(), ".mkv") == 0 ||
-      base::strcasecmp(ext.data(), ".ogg") == 0) {
+  if (IsSupportedAVExtension(ext.data())) {
     Browser* browser = BrowserList::GetLastActive();
     if (!browser)
       return;
     MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
-    mediaplayer->EnqueueMediaFile(browser->profile(), full_path, NULL);
+    mediaplayer->ForcePlayMediaFile(browser->profile(), full_path, NULL);
     return;
   }
 

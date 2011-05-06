@@ -1050,8 +1050,12 @@ bool FileDialogStringsFunction::RunImpl() {
   // FILEBROWSER, without the underscore, is from the old school codebase.
   // TODO(rginda): Move these into IDS_FILE_BROWSER post M12.
   SET_STRING(IDS_FILEBROWSER, CONFIRM_DELETE);
-
 #undef SET_STRING
+  // TODO(serya): Create a new string in .grd file for this one in M13.
+  dict->SetString("PREVIEW_IMAGE",
+      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_VIEW_CERT_BUTTON));
+  dict->SetString("PLAY_MEDIA",
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAY));
 
   return true;
 }
