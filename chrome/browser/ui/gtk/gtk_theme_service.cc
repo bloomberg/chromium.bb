@@ -40,6 +40,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/skia_utils_gtk.h"
@@ -555,7 +556,7 @@ CairoCachedSurface* GtkThemeService::GetUnthemedSurfaceNamed(
     GtkWidget* widget_on_display) {
   return GetSurfaceNamedImpl(id,
       &per_display_unthemed_surfaces_,
-      ResourceBundle::GetSharedInstance().GetPixbufNamed(id),
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(id),
       widget_on_display);
 }
 
@@ -575,7 +576,7 @@ GdkPixbuf* GtkThemeService::GetFolderIcon(bool native) {
   }
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  static GdkPixbuf* default_folder_icon_ = rb.GetPixbufNamed(
+  static GdkPixbuf* default_folder_icon_ = rb.GetNativeImageNamed(
       IDR_BOOKMARK_BAR_FOLDER);
   return default_folder_icon_;
 }
@@ -596,7 +597,7 @@ GdkPixbuf* GtkThemeService::GetDefaultFavicon(bool native) {
   }
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  static GdkPixbuf* default_bookmark_icon_ = rb.GetPixbufNamed(
+  static GdkPixbuf* default_bookmark_icon_ = rb.GetNativeImageNamed(
       IDR_DEFAULT_FAVICON);
   return default_bookmark_icon_;
 }
