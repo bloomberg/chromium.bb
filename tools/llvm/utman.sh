@@ -95,6 +95,10 @@ readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_NEWLIB="${TC_SRC}/newlib"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/llvm-gcc-4.2/libstdc++-v3"
 
+# Unfortunately, binutils/configure generates this untracked file
+# in the binutils source directory
+readonly BINUTILS_MESS="${TC_SRC_BINUTILS}/binutils-2.20/opcodes/i386-tbl.h"
+
 readonly SERVICE_RUNTIME_SRC="${NACL_ROOT}/src/trusted/service_runtime"
 readonly EXPORT_HEADER_SCRIPT="${SERVICE_RUNTIME_SRC}/export_header.py"
 readonly NACL_SYS_HEADERS="${SERVICE_RUNTIME_SRC}/include"
@@ -169,7 +173,7 @@ SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
 SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
 
 # Current milestones in each repo
-# hg-update-stable  uses these
+# hg-update-all uses these
 readonly LLVM_REV=7e79e53efc08
 readonly LLVM_GCC_REV=38c54bef2849
 readonly NEWLIB_REV=14dba0855c57
@@ -271,115 +275,112 @@ hg-info-all() {
   hg-info "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
 }
 
-#@ hg-freshness-check    - Make sure all repos are at the stable revision
-hg-freshness-check() {
-  StepBanner "HG-FRESHNESS-CHECK"
-
-  # Leave this global and mutable
-  FRESHNESS_ERROR=false
-
-  hg-freshness-check-common "${TC_SRC_LLVM}"       ${LLVM_REV}
-  hg-freshness-check-common "${TC_SRC_LLVM_GCC}"   ${LLVM_GCC_REV}
-  hg-freshness-check-common "${TC_SRC_NEWLIB}"     ${NEWLIB_REV}
-  hg-freshness-check-common "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
-
-  if ${FRESHNESS_ERROR}; then
-    exit -1
-  fi
+#@ hg-update-all      - Update all repos to the latest stable rev
+hg-update-all() {
+  hg-update-llvm-gcc
+  hg-update-llvm
+  hg-update-newlib
+  hg-update-binutils
 }
 
-hg-freshness-check-common() {
-  local dir="$1"
-  local rev="$2"
-  local name=$(basename "${dir}")
+hg-assert-safe-to-update() {
+  local name="$1"
+  local dir="$2"
+  local rev="$3"
   local defstr=$(echo "${name}" | tr '[a-z]-' '[A-Z]_')
 
-  if ! hg-at-revision "${dir}" "${rev}" ; then
-    echo ""
-    echo "*******************************************************************"
-    echo "*                         ERROR                                   *"
-    echo "*                                                                 *"
-    echo "*         hg/${name} is not at the stable revision"
-    echo "*                                                                 *"
-    echo "*  If your repository is behind stable, update it using:          *"
-    echo "*    tools/llvm/utman.sh hg-update-stable-${name}"
-    echo "*                                                                 *"
-    echo "*  If your repository is ahead of stable, then update:            *"
-    echo "*    ${defstr}_REV"
-    echo "*  in tools/llvm/utman.sh to prevent this error message.          *"
-    echo "*******************************************************************"
-    FRESHNESS_ERROR=true
+  if ! hg-on-branch "${dir}" pnacl-sfi ; then
+    Banner "hg/${name} is not on branch pnacl-sfi"
+    exit -1
+  fi
+
+  if ! hg-has-changes "${dir}"; then
+    return 0
+  fi
+
+  if hg-at-revision "${dir}" "${rev}" ; then
+    return 0
+  fi
+
+  Banner \
+    "                         ERROR                          " \
+    "                                                        " \
+    " hg/${name} needs to be updated to the stable revision  " \
+    " but has local modifications.                           " \
+    "                                                        " \
+    " If your repository is behind stable, update it using:  " \
+    "                                                        " \
+    "        cd hg/${name}; hg update ${rev}                 " \
+    "        (you may need to resolve conflicts)             " \
+    "                                                        " \
+    " If your repository is ahead of stable, then modify:    " \
+    "   ${defstr}_REV   (in tools/llvm/utman.sh)             " \
+    " to suppress this error message.                        "
+  exit -1
+}
+
+
+hg-bot-sanity() {
+  local name="$1"
+  local dir="$2"
+
+  if ! ${UTMAN_BUILDBOT} ; then
+    return 0
+  fi
+
+  if ! hg-on-branch "${dir}" pnacl-sfi ||
+     hg-has-changes "${dir}" ||
+     hg-has-untracked "${dir}" ; then
+    Banner "WARNING: hg/${name} is in an illegal state." \
+           "         Wiping and trying again."
+    rm -rf "${dir}"
+    hg-checkout-${name}
   fi
 }
 
-#@ hg-update-tip         - Update all repos to the tip (may merge)
-#@ hg-update-tip-REPO    - Update REPO to the tip
-#@                         (REPO can be llvm-gcc, llvm, newlib, binutils)
-hg-update-tip() {
-  hg-update-tip-llvm-gcc
-  hg-update-tip-llvm
-  hg-update-tip-newlib
-  hg-update-tip-binutils
+hg-update-common() {
+  local name="$1"
+  local rev="$2"
+  local dir="$3"
+
+  # If this is a buildbot, do sanity checks here.
+  hg-bot-sanity "${name}" "${dir}"
+
+  # Make sure it is safe to update
+  hg-assert-safe-to-update "${name}" "${dir}" "${rev}"
+
+  StepBanner "HG-UPDATE" "Updating ${name} to ${rev}"
+  hg-pull "${dir}"
+  hg-update "${dir}" ${rev}
 }
 
-hg-update-tip-llvm-gcc() {
-  hg-pull-llvm-gcc
-  hg-update "${TC_SRC_LLVM_GCC}"
+#@ hg-update-llvm-gcc    - Update LLVM-GCC to the stable revision
+hg-update-llvm-gcc() {
+  hg-update-common "llvm-gcc" ${LLVM_GCC_REV} "${TC_SRC_LLVM_GCC}"
 }
 
-hg-update-tip-llvm() {
-  hg-pull-llvm
-  hg-update "${TC_SRC_LLVM}"
+#@ hg-update-llvm        - Update LLVM to the stable revision
+hg-update-llvm() {
+  hg-update-common "llvm" ${LLVM_REV} "${TC_SRC_LLVM}"
 }
 
-hg-update-tip-newlib() {
+#@ hg-update-newlib      - Update NEWLIB To the stable revision
+hg-update-newlib() {
+  # Clean the headers first, so that sanity checks inside
+  # hg-update-common do not see any local modifications.
   newlib-nacl-headers-check
   newlib-nacl-headers-clean
-  hg-pull-newlib
-  hg-update "${TC_SRC_NEWLIB}"
-  newlib-nacl-headers-force
+  hg-update-common "newlib" ${NEWLIB_REV} "${TC_SRC_NEWLIB}"
+  newlib-nacl-headers
 }
 
-hg-update-tip-binutils() {
-  hg-pull-binutils
-  hg-update "${TC_SRC_BINUTILS}"
-}
-
-#@ hg-update-stable      - Update all repos to the latest stable rev (may merge)
-#@ hg-update-stable-REPO - Update REPO to stable
-#@                         (REPO can be llvm-gcc, llvm, newlib, binutils)
-hg-update-stable() {
-  hg-update-stable-llvm-gcc
-  hg-update-stable-llvm
-  hg-update-stable-newlib
-  hg-update-stable-binutils
-}
-
-hg-update-stable-llvm-gcc() {
-  StepBanner "HG-UPDATE" "Updating hg/llvm-gcc to ${LLVM_GCC_REV}"
-  hg-pull-llvm-gcc
-  hg-update "${TC_SRC_LLVM_GCC}" ${LLVM_GCC_REV}
-}
-
-hg-update-stable-llvm() {
-  StepBanner "HG-UPDATE" "Updating hg/llvm to ${LLVM_REV}"
-  hg-pull-llvm
-  hg-update "${TC_SRC_LLVM}" ${LLVM_REV}
-}
-
-hg-update-stable-newlib() {
-  StepBanner "HG-UPDATE" "Updating hg/newlib to ${NEWLIB_REV}"
-  newlib-nacl-headers-check
-  newlib-nacl-headers-clean
-  hg-pull-newlib
-  hg-update "${TC_SRC_NEWLIB}" ${NEWLIB_REV}
-  newlib-nacl-headers-force
-}
-
-hg-update-stable-binutils() {
-  StepBanner "HG-UPDATE" "Updating hg/binutils to ${BINUTILS_REV}"
-  hg-pull-binutils
-  hg-update "${TC_SRC_BINUTILS}"  ${BINUTILS_REV}
+#@ hg-update-binutils    - Update BINUTILS to the stable revision
+hg-update-binutils() {
+  # Clean the binutils generated file first, so that sanity checks
+  # inside hg-update-common do not see any local modifications.
+  binutils-mess-hide
+  hg-update-common "binutils" ${BINUTILS_REV} "${TC_SRC_BINUTILS}"
+  binutils-mess-unhide
 }
 
 #@ hg-pull-all           - Pull all repos. (but do not update working copy)
@@ -432,16 +433,8 @@ hg-checkout-binutils() {
 }
 
 hg-checkout-newlib() {
-  local force_headers=false
-  if [ ! -d "${TC_SRC_NEWLIB}" ]; then
-    force_headers=true
-  fi
   hg-checkout ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
-  if ${force_headers} ; then
-    newlib-nacl-headers-force
-  else
-    newlib-nacl-headers
-  fi
+  newlib-nacl-headers
 }
 
 #@ hg-clean              - Remove all repos. (WARNING: local changes are lost)
@@ -516,39 +509,6 @@ rebuild-pnacl-libs() {
   organize-native-code
 }
 
-hg-force-fresh() {
-  if ! ${UTMAN_BUILDBOT} ; then
-    echo "hg-force-fresh may wipe local hg changes; it is meant for the bots."
-    return 1
-  fi
-  StepBanner "HG-FORCE-FRESH (BOTS ONLY)"
-
-  tidy-binutils
-  newlib-nacl-headers-clean
-
-  hg-force-fresh-common llvm "${TC_SRC_LLVM}"
-  hg-force-fresh-common llvm-gcc "${TC_SRC_LLVM_GCC}"
-  hg-force-fresh-common binutils "${TC_SRC_BINUTILS}"
-  hg-force-fresh-common newlib "${TC_SRC_NEWLIB}"
-
-  newlib-nacl-headers-force
-
-  # Update everything
-  hg-update-stable
-}
-
-hg-force-fresh-common() {
-  local name="$1"
-  local dir="$2"
-
-  if ! hg-assert-branch "${dir}" pnacl-sfi ||
-     ! hg-assert-no-changes "${dir}" pnacl-sfi ; then
-    Banner "ERROR: hg/${name} is in an illegal state." \
-           "       Wiping and trying again."
-    rm -rf "${dir}"
-    hg-checkout-${name}
-  fi
-}
 
 #@ everything            - Build and install untrusted SDK.
 everything() {
@@ -561,12 +521,7 @@ everything() {
   check-for-trusted
 
   hg-checkout-all
-
-  if ${UTMAN_BUILDBOT} ; then
-    hg-force-fresh
-  fi
-
-  hg-freshness-check
+  hg-update-all
 
   clean-install
   RecordRevisionInfo
@@ -649,7 +604,6 @@ clean() {
   clean-build
   clean-install
   clean-scons
-  tidy-binutils
 }
 
 #@ fast-clean            - Clean everything except LLVM.
@@ -671,13 +625,18 @@ fast-clean() {
   fi
 }
 
-tidy-binutils() {
-  # The binutils configure/make process leaves this residual file
-  # in the source directory.
-  rm -f "${TC_SRC_BINUTILS}"/binutils-2.20/opcodes/i386-tbl.h
+binutils-mess-hide() {
+  local messtmp="${TC_SRC}/binutils.tmp"
+  if [ -f "${BINUTILS_MESS}" ] ; then
+    mv "${BINUTILS_MESS}" "${messtmp}"
+  fi
+}
 
-  # If we delete this, we must reconfigure.
-  binutils-arm-clean
+binutils-mess-unhide() {
+  local messtmp="${TC_SRC}/binutils.tmp"
+  if [ -f "${messtmp}" ] ; then
+    mv "${messtmp}" "${BINUTILS_MESS}"
+  fi
 }
 
 #+ clean-scons           - Clean scons-out directory
@@ -2347,23 +2306,25 @@ extrasdk-make-install() {
 
 newlib-nacl-headers-clean() {
   # Clean the include directory and revert it to its pure state
-  if [ -d "${NEWLIB_INCLUDE_DIR}" ]; then
+  if [ -d "${TC_SRC_NEWLIB}" ]; then
     rm -rf "${NEWLIB_INCLUDE_DIR}"
     # If the script is interrupted right here,
     # then NEWLIB_INCLUDE_DIR will not exist, and the repository
     # will be in a bad state. This will be fixed during the next
-    # invocation by newlib-nacl-headers-force.
+    # invocation by newlib-nacl-headers.
     RunWithLog "newlib-freshen" \
       hg-revert "${NEWLIB_INCLUDE_DIR}"
   fi
 }
 
-#+ newlib-nacl-headers-force   - Install NaCl headers to newlib
-newlib-nacl-headers-force() {
+#+ newlib-nacl-headers   - Install NaCl headers to newlib
+newlib-nacl-headers() {
   StepBanner "newlib-nacl-headers" "Adding nacl headers to newlib"
 
   assert-dir "${TC_SRC_NEWLIB}" "Newlib is not checked out"
 
+  # Make sure the headers directory has no local changes
+  newlib-nacl-headers-check
   newlib-nacl-headers-clean
 
   # Install the headers
@@ -2387,6 +2348,12 @@ newlib-nacl-headers-check() {
     return 0
   fi
 
+  # Already clean?
+  if ! hg-has-changes "${NEWLIB_INCLUDE_DIR}" &&
+     ! hg-has-untracked "${NEWLIB_INCLUDE_DIR}" ; then
+    return 0
+  fi
+
   if ts-dir-changed "${NACL_SYS_TS}" "${NEWLIB_INCLUDE_DIR}"; then
     echo ""
     echo "*******************************************************************"
@@ -2397,25 +2364,17 @@ newlib-nacl-headers-check() {
     echo "* Instead, modifications should be done from:                     *"
     echo "*   src/trusted/service_runtime/include                           *"
     echo "*                                                                 *"
-    echo "* To overwrite the local changes to newlib, run:                  *"
-    echo "*  tools/llvm/utman.sh newlib-nacl-headers-force                  *"
+    echo "* To destroy the local changes to newlib, run:                    *"
+    echo "*  tools/llvm/utman.sh newlib-nacl-headers-clean                  *"
     echo "*******************************************************************"
     echo ""
-    if ! ${UTMAN_BUILDBOT} ; then
+    if ${UTMAN_BUILDBOT} ; then
+      newlib-nacl-headers-clean
+    else
       exit -1
     fi
   fi
 }
-
-#+ newlib-nacl-headers   - Install NaCl headers to newlib (if safe)
-newlib-nacl-headers() {
-  # Refuse to freshen newlib headers if they have
-  # been modified since the last install.
-  newlib-nacl-headers-check
-  newlib-nacl-headers-force
-}
-
-
 
 #+-------------------------------------------------------------------------
 #+ driver                - Install driver scripts.

@@ -125,7 +125,8 @@ hg-checkout() {
   if [ ! -d ${dest} ] ; then
     StepBanner "HG-CHECKOUT" "Checking out new repository for ${repo} @ ${rev}"
     # Use a temporary directory just in case HG has problems
-    # with long filenames during checkout.
+    # with long filenames during checkout, and to make sure the
+    # repo directory only exists if the checkout was successful.
     local TMPDIR="/tmp/hg-${rev}-$RANDOM"
     hg-clone "https://${repo}.googlecode.com/hg/" "${TMPDIR}"
     hg-update "${TMPDIR}" -C ${rev}
@@ -215,42 +216,68 @@ hg-assert-is-merge() {
   exit -1
 }
 
-#+ hg-assert-branch <dir> <branch> - Assert hg repo in <dir> is on <branch>
-hg-assert-branch() {
+hg-on-branch() {
   local dir=$1
   local branch=$2
   spushd "${dir}"
   if hg branch | grep -q "^${branch}\$"; then
     spopd
     return 0
+  else
+    spopd
+    return 1
   fi
-  local CURBRANCH=$(hg branch)
-  local REPONAME=$(basename $(pwd))
+}
+
+#+ hg-assert-branch <dir> <branch> - Assert hg repo in <dir> is on <branch>
+hg-assert-branch() {
+  local dir=$1
+  local branch=$2
+
+  if ! hg-on-branch "${dir}" "${branch}" ; then
+    local REPONAME=$(basename "${dir}")
+    Banner "ERROR: ${REPONAME} is not on branch '${branch}'."
+    exit -1
+  fi
+}
+
+hg-has-changes() {
+  local dir=$1
+  spushd "${dir}"
+  local PLUS=$(hg status . | grep -v '^?')
   spopd
-  Banner "ERROR: ${REPONAME} is on branch ${CURBRANCH} instead of ${branch}."
-  return 1
+
+  [ "${PLUS}" != "" ]
+  return $?
 }
 
 #+ hg-assert-no-changes <dir> - Assert an hg repo has no local changes
 hg-assert-no-changes() {
+  local dir="$1"
+  if hg-has-changes "${dir}" ; then
+    local REPONAME=$(basename "${dir}")
+    Banner "ERROR: Repository ${REPONAME} has local changes"
+    exit -1
+  fi
+}
+
+hg-has-untracked() {
   local dir=$1
   spushd "${dir}"
-  local PLUS=$(hg identify | tr -d -c '+')
-  local STATUS=$(hg status)
-  local REPONAME=$(basename $(pwd))
+  local STATUS=$(hg status . | grep '^?')
   spopd
 
-  if [ "${PLUS}" != "" ]; then
-    Banner "ERROR: Repository ${REPONAME} has local changes"
-    return 1
-  fi
+  [ "${STATUS}" != "" ]
+  return $?
+}
 
-  if [ "${STATUS}" != "" ]; then
+hg-assert-no-untracked() {
+  local dir=$1
+  if hg-has-untracked "${dir}"; then
+    local REPONAME=$(basename "${dir}")
     Banner "ERROR: Repository ${REPONAME} has untracked files"
-    return 2
+    exit -1
   fi
-
-  return 0
 }
 
 hg-assert-no-outgoing() {
