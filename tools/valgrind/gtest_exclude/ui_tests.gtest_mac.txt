@@ -172,6 +172,7 @@ NamedInterfaceTest.BasicNamedInterface
 # Fails to start the browser, see http://crbug.com/75249
 AutomationProxySnapshotTest.ContentLargerThanView
 AutomationProxyTest.AcceleratorNewTab
+BookmarksUITest.CommandOpensBookmarksTab
 HistoryTester.VerifyHistoryLength1
 HistoryTester.VerifyHistoryLength2
 RedirectTest.ClientServerServer
