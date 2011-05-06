@@ -319,7 +319,7 @@ void BackgroundModeManager::RemoveStatusTrayIcon() {
   if (status_icon_)
     status_tray_->RemoveStatusIcon(status_icon_);
   status_icon_ = NULL;
-  context_menu_ = NULL;  // Do not delete, points within status_icon_
+  context_menu_ = NULL;  // Do not delete, points within |status_icon_|.
 }
 
 void BackgroundModeManager::ExecuteApplication(int item) {
@@ -330,7 +330,7 @@ void BackgroundModeManager::ExecuteApplication(int item) {
     browser = BrowserList::GetLastActive();
   }
   const Extension* extension = applications_.GetExtension(item);
-  browser->OpenApplicationTab(profile_, extension, NULL);
+  browser->OpenApplicationTab(profile_, extension, NEW_FOREGROUND_TAB);
 }
 
 void BackgroundModeManager::ExecuteCommand(int item) {

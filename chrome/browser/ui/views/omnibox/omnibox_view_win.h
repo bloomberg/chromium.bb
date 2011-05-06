@@ -83,64 +83,66 @@ class OmniboxViewWin
   gfx::Font GetFont();
 
   // OmniboxView:
-  virtual AutocompleteEditModel* model() { return model_.get(); }
-  virtual const AutocompleteEditModel* model() const { return model_.get(); }
+  virtual AutocompleteEditModel* model() OVERRIDE { return model_.get(); }
+  virtual const AutocompleteEditModel* model() const OVERRIDE {
+    return model_.get();
+  }
 
-  virtual void SaveStateToTab(TabContents* tab);
+  virtual void SaveStateToTab(TabContents* tab) OVERRIDE;
 
-  virtual void Update(const TabContents* tab_for_state_restoring);
+  virtual void Update(const TabContents* tab_for_state_restoring) OVERRIDE;
 
-  virtual void OpenURL(const GURL& url,
-                       WindowOpenDisposition disposition,
-                       PageTransition::Type transition,
-                       const GURL& alternate_nav_url,
-                       size_t selected_line,
-                       const string16& keyword);
+  virtual void OpenMatch(const AutocompleteMatch& match,
+                         WindowOpenDisposition disposition,
+                         const GURL& alternate_nav_url,
+                         size_t index,
+                         const string16& keyword) OVERRIDE;
 
-  virtual string16 GetText() const;
+  virtual string16 GetText() const OVERRIDE;
 
-  virtual bool IsEditingOrEmpty() const;
-  virtual int GetIcon() const;
+  virtual bool IsEditingOrEmpty() const OVERRIDE;
+  virtual int GetIcon() const OVERRIDE;
 
-  virtual void SetUserText(const string16& text);
+  virtual void SetUserText(const string16& text) OVERRIDE;
   virtual void SetUserText(const string16& text,
                            const string16& display_text,
-                           bool update_popup);
+                           bool update_popup) OVERRIDE;
 
   virtual void SetWindowTextAndCaretPos(const string16& text,
-                                        size_t caret_pos);
+                                        size_t caret_pos) OVERRIDE;
 
-  virtual void SetForcedQuery();
+  virtual void SetForcedQuery() OVERRIDE;
 
-  virtual bool IsSelectAll();
-  virtual bool DeleteAtEndPressed();
+  virtual bool IsSelectAll() OVERRIDE;
+  virtual bool DeleteAtEndPressed() OVERRIDE;
   virtual void GetSelectionBounds(string16::size_type* start,
-                                  string16::size_type* end);
-  virtual void SelectAll(bool reversed);
-  virtual void RevertAll();
+                                  string16::size_type* end) OVERRIDE;
+  virtual void SelectAll(bool reversed) OVERRIDE;
+  virtual void RevertAll() OVERRIDE;
 
-  virtual void UpdatePopup();
-  virtual void ClosePopup();
+  virtual void UpdatePopup() OVERRIDE;
+  virtual void ClosePopup() OVERRIDE;
 
-  virtual void SetFocus();
+  virtual void SetFocus() OVERRIDE;
 
-  virtual void OnTemporaryTextMaybeChanged(const string16& display_text,
-                                           bool save_original_selection);
+  virtual void OnTemporaryTextMaybeChanged(
+      const string16& display_text,
+      bool save_original_selection) OVERRIDE;
   virtual bool OnInlineAutocompleteTextMaybeChanged(
-      const string16& display_text, size_t user_text_length);
-  virtual void OnRevertTemporaryText();
-  virtual void OnBeforePossibleChange();
-  virtual bool OnAfterPossibleChange();
-  virtual gfx::NativeView GetNativeView() const;
-  virtual CommandUpdater* GetCommandUpdater();
+      const string16& display_text, size_t user_text_length) OVERRIDE;
+  virtual void OnRevertTemporaryText() OVERRIDE;
+  virtual void OnBeforePossibleChange() OVERRIDE;
+  virtual bool OnAfterPossibleChange() OVERRIDE;
+  virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual CommandUpdater* GetCommandUpdater() OVERRIDE;
   virtual void SetInstantSuggestion(const string16& suggestion,
-                                    bool animate_to_complete);
-  virtual int TextWidth() const;
-  virtual string16 GetInstantSuggestion() const;
-  virtual bool IsImeComposing() const;
+                                    bool animate_to_complete) OVERRIDE;
+  virtual int TextWidth() const OVERRIDE;
+  virtual string16 GetInstantSuggestion() const OVERRIDE;
+  virtual bool IsImeComposing() const OVERRIDE;
 
-  virtual views::View* AddToView(views::View* parent);
-  virtual int OnPerformDrop(const views::DropTargetEvent& event);
+  virtual views::View* AddToView(views::View* parent) OVERRIDE;
+  virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
 
   int GetPopupMaxYCoordinate();
 
@@ -209,13 +211,14 @@ class OmniboxViewWin
   END_MSG_MAP()
 
   // ui::SimpleMenuModel::Delegate
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual bool IsCommandIdEnabled(int command_id) const;
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator);
-  virtual bool IsItemForCommandIdDynamic(int command_id) const;
-  virtual string16 GetLabelForCommandId(int command_id) const;
-  virtual void ExecuteCommand(int command_id);
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
+  virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
+  virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
 
   // Returns true if the caret is at the end of the content.
   bool IsCaretAtEnd() const;
@@ -533,7 +536,7 @@ class OmniboxViewWin
   mutable ITextDocument* text_object_model_;
 
   // This contains the scheme char start and stop indexes that should be
-  // striken-out when displaying an insecure scheme.
+  // stricken-out when displaying an insecure scheme.
   url_parse::Component insecure_scheme_component_;
 
   // Instance of accessibility information and handling.

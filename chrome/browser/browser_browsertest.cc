@@ -580,7 +580,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   ASSERT_NE(
       new_browser->app_name_.find(extension_app->id()),
       std::string::npos) << new_browser->app_name_;
-
 }
 #endif
 
@@ -728,8 +727,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   const Extension* extension_app = GetExtension();
 
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
-  TabContents* app_window = Browser::OpenApplication(
-      browser()->profile(), extension_app, extension_misc::LAUNCH_WINDOW, NULL);
+  TabContents* app_window =
+      Browser::OpenApplication(browser()->profile(),
+                               extension_app,
+                               extension_misc::LAUNCH_WINDOW,
+                               NEW_WINDOW);
   ASSERT_TRUE(app_window);
 
   // Apps launched in a window from the NTP do not have extension_app set in

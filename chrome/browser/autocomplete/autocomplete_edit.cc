@@ -77,7 +77,6 @@ AutocompleteEditModel::AutocompleteEditModel(
       paste_state_(NONE),
       control_key_state_(UP),
       is_keyword_hint_(false),
-      paste_and_go_transition_(PageTransition::TYPED),
       profile_(profile),
       update_instant_(true),
       allow_exact_keyword_match_(false),
@@ -412,12 +411,9 @@ bool AutocompleteEditModel::CanPasteAndGo(const string16& text) const {
   if (!view_->GetCommandUpdater()->IsCommandEnabled(IDC_OPEN_CURRENT_URL))
     return false;
 
-  AutocompleteMatch match;
   profile_->GetAutocompleteClassifier()->Classify(text, string16(), false,
-      &match, &paste_and_go_alternate_nav_url_);
-  paste_and_go_url_ = match.destination_url;
-  paste_and_go_transition_ = match.transition;
-  return paste_and_go_url_.is_valid();
+      &paste_and_go_match_, &paste_and_go_alternate_nav_url_);
+  return paste_and_go_match_.destination_url.is_valid();
 }
 
 void AutocompleteEditModel::PasteAndGo() {
@@ -425,7 +421,7 @@ void AutocompleteEditModel::PasteAndGo() {
   // possible to "paste and go" a string that contains a keyword.  This is
   // enough of an edge case that we ignore this possibility.
   view_->RevertAll();
-  view_->OpenURL(paste_and_go_url_, CURRENT_TAB, paste_and_go_transition_,
+  view_->OpenMatch(paste_and_go_match_, CURRENT_TAB,
       paste_and_go_alternate_nav_url_, AutocompletePopupModel::kNoMatch,
       string16());
 }
@@ -475,17 +471,17 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
 #endif
     }
   }
-  view_->OpenURL(match.destination_url, disposition, match.transition,
-                 alternate_nav_url, AutocompletePopupModel::kNoMatch,
-                 is_keyword_hint_ ? string16() : keyword_);
+
+  view_->OpenMatch(match, disposition, alternate_nav_url,
+                   AutocompletePopupModel::kNoMatch,
+                   is_keyword_hint_ ? string16() : keyword_);
 }
 
-void AutocompleteEditModel::OpenURL(const GURL& url,
-                                    WindowOpenDisposition disposition,
-                                    PageTransition::Type transition,
-                                    const GURL& alternate_nav_url,
-                                    size_t index,
-                                    const string16& keyword) {
+void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
+                                      WindowOpenDisposition disposition,
+                                      const GURL& alternate_nav_url,
+                                      size_t index,
+                                      const string16& keyword) {
   // We only care about cases where there is a selection (i.e. the popup is
   // open).
   if (popup_->IsOpen()) {
@@ -538,8 +534,13 @@ void AutocompleteEditModel::OpenURL(const GURL& url,
     update_instant_ = false;
     view_->RevertAll();  // Revert the box to its unedited state
   }
-  controller_->OnAutocompleteAccept(url, disposition, transition,
-                                    alternate_nav_url);
+
+  if (match.type == AutocompleteMatch::EXTENSION_APP) {
+    LaunchAppFromOmnibox(match, profile_, disposition);
+  } else {
+    controller_->OnAutocompleteAccept(match.destination_url, disposition,
+                                      match.transition, alternate_nav_url);
+  }
 
   InstantController* instant = controller_->GetInstant();
   if (instant && !popup_->IsOpen())

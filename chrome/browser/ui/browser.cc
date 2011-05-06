@@ -523,7 +523,7 @@ TabContents* Browser::OpenApplication(
     Profile* profile,
     const Extension* extension,
     extension_misc::LaunchContainer container,
-    TabContents* existing_tab) {
+    WindowOpenDisposition disposition) {
   TabContents* tab = NULL;
   ExtensionPrefs* prefs = profile->GetExtensionService()->extension_prefs();
   prefs->SetActiveBit(extension->id(), true);
@@ -537,7 +537,7 @@ TabContents* Browser::OpenApplication(
                                            GURL(), NULL);
       break;
     case extension_misc::LAUNCH_TAB: {
-      tab = Browser::OpenApplicationTab(profile, extension, existing_tab);
+      tab = Browser::OpenApplicationTab(profile, extension, disposition);
       break;
     }
     default:
@@ -627,7 +627,7 @@ TabContents* Browser::OpenAppShortcutWindow(Profile* profile,
 // static
 TabContents* Browser::OpenApplicationTab(Profile* profile,
                                          const Extension* extension,
-                                         TabContents* existing_tab) {
+                                         WindowOpenDisposition disposition) {
   Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
   TabContents* contents = NULL;
   if (!browser)
@@ -658,14 +658,15 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
   browser::NavigateParams params(browser, extension_url,
                                  PageTransition::START_PAGE);
   params.tabstrip_add_types = add_type;
+  params.disposition = disposition;
 
-  // Launch the application in the existing TabContents, if it was supplied.
-  if (existing_tab) {
+  if (disposition == CURRENT_TAB) {
+    TabContents* existing_tab = browser->GetSelectedTabContents();
     TabStripModel* model = browser->tabstrip_model();
     int tab_index = model->GetWrapperIndex(existing_tab);
 
     existing_tab->OpenURL(extension->GetFullLaunchURL(), existing_tab->GetURL(),
-                          CURRENT_TAB, PageTransition::LINK);
+                          disposition, PageTransition::LINK);
     if (params.tabstrip_add_types & TabStripModel::ADD_PINNED) {
       model->SetTabPinned(tab_index, true);
       tab_index = model->GetWrapperIndex(existing_tab);
@@ -675,7 +676,6 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
 
     contents = existing_tab;
   } else {
-    params.disposition = NEW_FOREGROUND_TAB;
     browser::Navigate(&params);
     contents = params.target_contents->tab_contents();
   }

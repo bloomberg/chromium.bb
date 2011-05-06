@@ -539,16 +539,15 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
         event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   }
 
-  // OpenURL() may close the popup, which will clear the result set
+  // OpenMatch() may close the popup, which will clear the result set
   // and, by extension, |match| and its contents.  So copy the
-  // relevant strings out to make sure they stay alive until the call
+  // relevant match out to make sure it stays alive until the call
   // completes.
-  const AutocompleteMatch& match = model_->result().match_at(row);
-  const GURL url(match.destination_url);
+  AutocompleteMatch match = model_->result().match_at(row);
   string16 keyword;
   const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
-  omnibox_view_->OpenURL(url, disposition, match.transition, GURL(), row,
-                         is_keyword_hint ? string16() : keyword);
+  omnibox_view_->OpenMatch(match, disposition, GURL(), row,
+                           is_keyword_hint ? string16() : keyword);
 }
 
 void AutocompletePopupViewMac::UserPressedOptIn(bool opt_in) {

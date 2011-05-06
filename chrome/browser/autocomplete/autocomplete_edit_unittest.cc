@@ -20,12 +20,11 @@ class TestingOmniboxView : public OmniboxView {
   virtual const AutocompleteEditModel* model() const { return NULL; }
   virtual void SaveStateToTab(TabContents* tab) {}
   virtual void Update(const TabContents* tab_for_state_restoring) {}
-  virtual void OpenURL(const GURL& url,
-                       WindowOpenDisposition disposition,
-                       PageTransition::Type transition,
-                       const GURL& alternate_nav_url,
-                       size_t selected_line,
-                       const string16& keyword) {}
+  virtual void OpenMatch(const AutocompleteMatch& match,
+                         WindowOpenDisposition disposition,
+                         const GURL& alternate_nav_url,
+                         size_t selected_line,
+                         const string16& keyword) {}
   virtual string16 GetText() const { return string16(); }
   virtual bool IsEditingOrEmpty() const { return true; }
   virtual int GetIcon() const { return 0; }
@@ -94,7 +93,7 @@ class TestingAutocompleteEditController : public AutocompleteEditController {
   DISALLOW_COPY_AND_ASSIGN(TestingAutocompleteEditController);
 };
 
-}
+}  // namespace
 
 typedef testing::Test AutocompleteEditTest;
 

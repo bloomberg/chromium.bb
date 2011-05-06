@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "content/common/notification_observer.h"
@@ -77,12 +78,11 @@ class OmniboxViewViews : public views::View,
 
   virtual void Update(const TabContents* tab_for_state_restoring) OVERRIDE;
 
-  virtual void OpenURL(const GURL& url,
-                       WindowOpenDisposition disposition,
-                       PageTransition::Type transition,
-                       const GURL& alternate_nav_url,
-                       size_t selected_line,
-                       const string16& keyword) OVERRIDE;
+  virtual void OpenMatch(const AutocompleteMatch& match,
+                         WindowOpenDisposition disposition,
+                         const GURL& alternate_nav_url,
+                         size_t selected_line,
+                         const string16& keyword) OVERRIDE;
 
   virtual string16 GetText() const OVERRIDE;
 

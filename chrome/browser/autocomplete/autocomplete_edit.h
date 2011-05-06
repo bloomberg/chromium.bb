@@ -230,13 +230,10 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // Navigates to the destination last supplied to CanPasteAndGo.
   void PasteAndGo();
 
-  // Returns the url set by way of CanPasteAndGo.
-  const GURL& paste_and_go_url() const { return paste_and_go_url_; }
-
   // Returns true if this is a paste-and-search rather than paste-and-go (or
   // nothing).
   bool is_paste_and_search() const {
-    return (paste_and_go_transition_ != PageTransition::TYPED);
+    return (paste_and_go_match_.transition != PageTransition::TYPED);
   }
 
   // Asks the browser to load the popup's currently selected item, using the
@@ -248,12 +245,11 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
                    bool for_drop);
 
   // Asks the browser to load the item at |index|, with the given properties.
-  void OpenURL(const GURL& url,
-               WindowOpenDisposition disposition,
-               PageTransition::Type transition,
-               const GURL& alternate_nav_url,
-               size_t index,
-               const string16& keyword);
+  void OpenMatch(const AutocompleteMatch& match,
+                 WindowOpenDisposition disposition,
+                 const GURL& alternate_nav_url,
+                 size_t index,
+                 const string16& keyword);
 
   bool has_focus() const { return has_focus_; }
 
@@ -528,8 +524,7 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   bool is_keyword_hint_;
 
   // Paste And Go-related state.  See CanPasteAndGo().
-  mutable GURL paste_and_go_url_;
-  mutable PageTransition::Type paste_and_go_transition_;
+  mutable AutocompleteMatch paste_and_go_match_;
   mutable GURL paste_and_go_alternate_nav_url_;
 
   Profile* profile_;

@@ -884,7 +884,7 @@ void RecordLastRunAppBundlePath() {
     browser = BrowserList::GetLastActive();
   }
   const Extension* extension = applications.GetExtension(tag);
-  browser->OpenApplicationTab(profile, extension, NULL);
+  browser->OpenApplicationTab(profile, extension, NEW_FOREGROUND_TAB);
 }
 
 // Same as |-commandDispatch:|, but executes commands using a disposition

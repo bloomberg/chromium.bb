@@ -15,6 +15,7 @@
 #include <string>
 
 #include "base/string16.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "content/common/page_transition_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -46,22 +47,22 @@ class OmniboxView {
   // state we should restore.
   virtual void Update(const TabContents* tab_for_state_restoring) = 0;
 
-  // Asks the browser to load the specified URL, which is assumed to be one of
-  // the popup entries, using the supplied disposition and transition type.
-  // |alternate_nav_url|, if non-empty, contains the alternate navigation URL
-  // for |url|.  See comments on AutocompleteResult::GetAlternateNavURL().
+  // Asks the browser to load the specified match's |destination_url|, which
+  // is assumed to be one of the popup entries, using the supplied disposition
+  // and transition type. |alternate_nav_url|, if non-empty, contains the
+  // alternate navigation URL for for this match. See comments on
+  // AutocompleteResult::GetAlternateNavURL().
   //
   // |selected_line| is passed to SendOpenNotification(); see comments there.
   //
   // If the URL was expanded from a keyword, |keyword| is that keyword.
   //
   // This may close the popup.
-  virtual void OpenURL(const GURL& url,
-                       WindowOpenDisposition disposition,
-                       PageTransition::Type transition,
-                       const GURL& alternate_nav_url,
-                       size_t selected_line,
-                       const string16& keyword) = 0;
+  virtual void OpenMatch(const AutocompleteMatch& match,
+                         WindowOpenDisposition disposition,
+                         const GURL& alternate_nav_url,
+                         size_t selected_line,
+                         const string16& keyword) = 0;
 
   // Returns the current text of the edit control, which could be the
   // "temporary" text set by the popup, the "permanent" text set by the

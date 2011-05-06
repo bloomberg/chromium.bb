@@ -199,7 +199,7 @@ OmniboxViewGtk::OmniboxViewGtk(
       content_maybe_changed_by_key_press_(false),
       update_popup_without_focus_(false),
 #if GTK_CHECK_VERSION(2, 20, 0)
-      preedit_size_before_change_(0),
+      pre_edit_size_before_change_(0),
 #endif
       going_to_focus_(NULL) {
   popup_view_.reset(
@@ -346,7 +346,7 @@ void OmniboxViewGtk::Init() {
                    G_CALLBACK(&HandleHierarchyChangedThunk), this);
 #if GTK_CHECK_VERSION(2, 20, 0)
   g_signal_connect(text_view_, "preedit-changed",
-                   G_CALLBACK(&HandlePreeditChangedThunk), this);
+                   G_CALLBACK(&HandlePreEditChangedThunk), this);
 #endif
   g_signal_connect(text_view_, "undo", G_CALLBACK(&HandleUndoRedoThunk), this);
   g_signal_connect(text_view_, "redo", G_CALLBACK(&HandleUndoRedoThunk), this);
@@ -368,8 +368,8 @@ void OmniboxViewGtk::Init() {
 
   // Insert a Zero Width Space character just before the instant anchor.
   // It's a hack to workaround a bug of GtkTextView which can not align the
-  // preedit string and a child anchor correctly when there is no other content
-  // around the preedit string.
+  // pre-edit string and a child anchor correctly when there is no other content
+  // around the pre-edit string.
   gtk_text_buffer_insert(text_buffer_, &end_iter, "\342\200\213", -1);
   GtkTextChildAnchor* instant_anchor =
       gtk_text_buffer_create_child_anchor(text_buffer_, &end_iter);
@@ -494,17 +494,16 @@ void OmniboxViewGtk::Update(const TabContents* contents) {
   }
 }
 
-void OmniboxViewGtk::OpenURL(const GURL& url,
-                             WindowOpenDisposition disposition,
-                             PageTransition::Type transition,
-                             const GURL& alternate_nav_url,
-                             size_t selected_line,
-                             const string16& keyword) {
-  if (!url.is_valid())
+void OmniboxViewGtk::OpenMatch(const AutocompleteMatch& match,
+                               WindowOpenDisposition disposition,
+                               const GURL& alternate_nav_url,
+                               size_t selected_line,
+                               const string16& keyword) {
+  if (!match.destination_url.is_valid())
     return;
 
-  model_->OpenURL(url, disposition, transition, alternate_nav_url,
-                  selected_line, keyword);
+  model_->OpenMatch(match, disposition, alternate_nav_url,
+                    selected_line, keyword);
 }
 
 string16 OmniboxViewGtk::GetText() const {
@@ -518,10 +517,10 @@ string16 OmniboxViewGtk::GetText() const {
   // We need to treat the text currently being composed by the input method as
   // part of the text content, so that omnibox can work correctly in the middle
   // of composition.
-  if (preedit_.size()) {
+  if (pre_edit_.size()) {
     GtkTextMark* mark = gtk_text_buffer_get_insert(text_buffer_);
     gtk_text_buffer_get_iter_at_mark(text_buffer_, &start, mark);
-    out.insert(gtk_text_iter_get_offset(&start), preedit_);
+    out.insert(gtk_text_iter_get_offset(&start), pre_edit_);
   }
 #endif
   return out;
@@ -673,7 +672,7 @@ void OmniboxViewGtk::OnBeforePossibleChange() {
   text_before_change_ = GetText();
   sel_before_change_ = GetSelection();
 #if GTK_CHECK_VERSION(2, 20, 0)
-  preedit_size_before_change_ = preedit_.size();
+  pre_edit_size_before_change_ = pre_edit_.size();
 #endif
 }
 
@@ -713,7 +712,7 @@ bool OmniboxViewGtk::OnAfterPossibleChange() {
   text_changed_ = (new_text != text_before_change_);
 #if GTK_CHECK_VERSION(2, 20, 0)
   text_changed_ =
-      text_changed_ || (preedit_.size() != preedit_size_before_change_);
+      text_changed_ || (pre_edit_.size() != pre_edit_size_before_change_);
 #endif
 
   if (text_changed_)
@@ -775,7 +774,7 @@ void OmniboxViewGtk::SetInstantSuggestion(const string16& suggestion,
   }
   if (animate_to_complete
 #if GTK_CHECK_VERSION(2, 20, 0)
-      && preedit_.empty()
+      && pre_edit_.empty()
 #endif
       ) {
     instant_animation_->set_delegate(this);
@@ -839,7 +838,7 @@ int OmniboxViewGtk::TextWidth() const {
 
 bool OmniboxViewGtk::IsImeComposing() const {
 #if GTK_CHECK_VERSION(2, 20, 0)
-  return !preedit_.empty();
+  return !pre_edit_.empty();
 #else
   return false;
 #endif
@@ -1695,7 +1694,7 @@ void OmniboxViewGtk::HandleViewMoveFocus(GtkWidget* widget,
     handled = model_->AcceptKeyword();
 
 #if GTK_CHECK_VERSION(2, 20, 0)
-  if (!handled && !preedit_.empty())
+  if (!handled && !pre_edit_.empty())
     handled = true;
 #endif
 
@@ -1951,10 +1950,10 @@ OmniboxViewGtk::CharRange OmniboxViewGtk::GetSelection() const {
 
 #if GTK_CHECK_VERSION(2, 20, 0)
   // Nothing should be selected when we are in the middle of composition.
-  DCHECK(preedit_.empty() || start_offset == end_offset);
-  if (!preedit_.empty()) {
-    start_offset += preedit_.size();
-    end_offset += preedit_.size();
+  DCHECK(pre_edit_.empty() || start_offset == end_offset);
+  if (!pre_edit_.empty()) {
+    start_offset += pre_edit_.size();
+    end_offset += pre_edit_.size();
   }
 #endif
 
@@ -1975,7 +1974,7 @@ int OmniboxViewGtk::GetTextLength() const {
 #if GTK_CHECK_VERSION(2, 20, 0)
   // We need to count the length of the text being composed, because we treat
   // it as part of the content in GetText().
-  return gtk_text_iter_get_offset(&end) + preedit_.size();
+  return gtk_text_iter_get_offset(&end) + pre_edit_.size();
 #else
   return gtk_text_iter_get_offset(&end);
 #endif
@@ -1995,12 +1994,12 @@ bool OmniboxViewGtk::IsCaretAtEnd() const {
 
 void OmniboxViewGtk::EmphasizeURLComponents() {
 #if GTK_CHECK_VERSION(2, 20, 0)
-  // We can't change the text style easily, if the preedit string (the text
+  // We can't change the text style easily, if the pre-edit string (the text
   // being composed by the input method) is not empty, which is not treated as
   // a part of the text content inside GtkTextView. And it's ok to simply return
-  // in this case, as this method will be called again when the preedit string
+  // in this case, as this method will be called again when the pre-edit string
   // gets committed.
-  if (preedit_.size()) {
+  if (pre_edit_.size()) {
     strikethrough_ = CharRange();
     return;
   }
@@ -2276,21 +2275,21 @@ void OmniboxViewGtk::UpdatePrimarySelectionIfValidURL() {
 }
 
 #if GTK_CHECK_VERSION(2, 20, 0)
-void OmniboxViewGtk::HandlePreeditChanged(GtkWidget* sender,
-                                          const gchar* preedit) {
+void OmniboxViewGtk::HandlePreEditChanged(GtkWidget* sender,
+                                          const gchar* pre_edit) {
   // GtkTextView won't fire "begin-user-action" and "end-user-action" signals
-  // when changing the preedit string, so we need to call
+  // when changing the pre-edit string, so we need to call
   // OnBeforePossibleChange() and OnAfterPossibleChange() by ourselves.
   OnBeforePossibleChange();
-  if (preedit && *preedit) {
+  if (pre_edit && *pre_edit) {
     // GtkTextView will only delete the selection range when committing the
-    // preedit string, which will cause very strange behavior, so we need to
+    // pre-edit string, which will cause very strange behavior, so we need to
     // delete the selection range here explicitly. See http://crbug.com/18808.
-    if (preedit_.empty())
+    if (pre_edit_.empty())
       gtk_text_buffer_delete_selection(text_buffer_, false, true);
-    preedit_ = UTF8ToUTF16(preedit);
+    pre_edit_ = UTF8ToUTF16(pre_edit);
   } else {
-    preedit_.clear();
+    pre_edit_.clear();
   }
   OnAfterPossibleChange();
 }

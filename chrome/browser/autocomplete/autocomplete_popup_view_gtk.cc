@@ -472,15 +472,14 @@ size_t AutocompletePopupViewGtk::LineFromY(int y) {
 
 void AutocompletePopupViewGtk::AcceptLine(size_t line,
                                           WindowOpenDisposition disposition) {
-  const AutocompleteMatch& match = model_->result().match_at(line);
-  // OpenURL() may close the popup, which will clear the result set and, by
-  // extension, |match| and its contents.  So copy the relevant strings out to
-  // make sure they stay alive until the call completes.
-  const GURL url(match.destination_url);
+  // OpenMatch() may close the popup, which will clear the result set and, by
+  // extension, |match| and its contents.  So copy the relevant match out to
+  // make sure it stays alive until the call completes.
+  AutocompleteMatch match = model_->result().match_at(line);
   string16 keyword;
   const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
-  omnibox_view_->OpenURL(url, disposition, match.transition, GURL(), line,
-                      is_keyword_hint ? string16() : keyword);
+  omnibox_view_->OpenMatch(match, disposition, GURL(), line,
+                           is_keyword_hint ? string16() : keyword);
 }
 
 GdkPixbuf* AutocompletePopupViewGtk::IconForMatch(

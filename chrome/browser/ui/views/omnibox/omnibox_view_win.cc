@@ -596,13 +596,12 @@ void OmniboxViewWin::Update(const TabContents* tab_for_state_restoring) {
   }
 }
 
-void OmniboxViewWin::OpenURL(const GURL& url,
-                             WindowOpenDisposition disposition,
-                             PageTransition::Type transition,
-                             const GURL& alternate_nav_url,
-                             size_t selected_line,
-                             const string16& keyword) {
-  if (!url.is_valid())
+void OmniboxViewWin::OpenMatch(const AutocompleteMatch& match,
+                               WindowOpenDisposition disposition,
+                               const GURL& alternate_nav_url,
+                               size_t selected_line,
+                               const string16& keyword) {
+  if (!match.destination_url.is_valid())
     return;
 
   // When we navigate, we first revert to the unedited state, then if necessary
@@ -610,8 +609,8 @@ void OmniboxViewWin::OpenURL(const GURL& url,
   // here, the user could potentially see a flicker of the current URL before
   // the new one reappears, which would look glitchy.
   ScopedFreeze freeze(this, GetTextObjectModel());
-  model_->OpenURL(url, disposition, transition, alternate_nav_url,
-                  selected_line, keyword);
+  model_->OpenMatch(match, disposition, alternate_nav_url,
+                    selected_line, keyword);
 }
 
 string16 OmniboxViewWin::GetText() const {

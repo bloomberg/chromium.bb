@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
@@ -89,65 +90,65 @@ class OmniboxViewGtk : public OmniboxView,
   int WidthOfTextAfterCursor();
 
   // OmniboxView:
-  virtual AutocompleteEditModel* model();
-  virtual const AutocompleteEditModel* model() const;
+  virtual AutocompleteEditModel* model() OVERRIDE;
+  virtual const AutocompleteEditModel* model() const OVERRIDE;
 
-  virtual void SaveStateToTab(TabContents* tab);
+  virtual void SaveStateToTab(TabContents* tab) OVERRIDE;
 
-  virtual void Update(const TabContents* tab_for_state_restoring);
+  virtual void Update(const TabContents* tab_for_state_restoring) OVERRIDE;
 
-  virtual void OpenURL(const GURL& url,
-                       WindowOpenDisposition disposition,
-                       PageTransition::Type transition,
-                       const GURL& alternate_nav_url,
-                       size_t selected_line,
-                       const string16& keyword);
+  virtual void OpenMatch(const AutocompleteMatch& match,
+                         WindowOpenDisposition disposition,
+                         const GURL& alternate_nav_url,
+                         size_t index,
+                         const string16& keyword) OVERRIDE;
 
-  virtual string16 GetText() const;
+  virtual string16 GetText() const OVERRIDE;
 
-  virtual bool IsEditingOrEmpty() const;
-  virtual int GetIcon() const;
+  virtual bool IsEditingOrEmpty() const OVERRIDE;
+  virtual int GetIcon() const OVERRIDE;
 
-  virtual void SetUserText(const string16& text);
+  virtual void SetUserText(const string16& text) OVERRIDE;
   virtual void SetUserText(const string16& text,
                            const string16& display_text,
-                           bool update_popup);
+                           bool update_popup) OVERRIDE;
 
   virtual void SetWindowTextAndCaretPos(const string16& text,
-                                        size_t caret_pos);
+                                        size_t caret_pos) OVERRIDE;
 
-  virtual void SetForcedQuery();
+  virtual void SetForcedQuery() OVERRIDE;
 
-  virtual bool IsSelectAll();
-  virtual bool DeleteAtEndPressed();
+  virtual bool IsSelectAll() OVERRIDE;
+  virtual bool DeleteAtEndPressed() OVERRIDE;
   virtual void GetSelectionBounds(string16::size_type* start,
-                                  string16::size_type* end);
-  virtual void SelectAll(bool reversed);
-  virtual void RevertAll();
+                                  string16::size_type* end) OVERRIDE;
+  virtual void SelectAll(bool reversed) OVERRIDE;
+  virtual void RevertAll() OVERRIDE;
 
-  virtual void UpdatePopup();
-  virtual void ClosePopup();
+  virtual void UpdatePopup() OVERRIDE;
+  virtual void ClosePopup() OVERRIDE;
 
-  virtual void SetFocus();
+  virtual void SetFocus() OVERRIDE;
 
-  virtual void OnTemporaryTextMaybeChanged(const string16& display_text,
-                                           bool save_original_selection);
+  virtual void OnTemporaryTextMaybeChanged(
+      const string16& display_text,
+      bool save_original_selection) OVERRIDE;
   virtual bool OnInlineAutocompleteTextMaybeChanged(
-      const string16& display_text, size_t user_text_length);
-  virtual void OnRevertTemporaryText();
-  virtual void OnBeforePossibleChange();
-  virtual bool OnAfterPossibleChange();
-  virtual gfx::NativeView GetNativeView() const;
-  virtual CommandUpdater* GetCommandUpdater();
+      const string16& display_text, size_t user_text_length) OVERRIDE;
+  virtual void OnRevertTemporaryText() OVERRIDE;
+  virtual void OnBeforePossibleChange() OVERRIDE;
+  virtual bool OnAfterPossibleChange() OVERRIDE;
+  virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual CommandUpdater* GetCommandUpdater() OVERRIDE;
   virtual void SetInstantSuggestion(const string16& suggestion,
-                                    bool animate_to_complete);
-  virtual string16 GetInstantSuggestion() const;
-  virtual int TextWidth() const;
-  virtual bool IsImeComposing() const;
+                                    bool animate_to_complete) OVERRIDE;
+  virtual string16 GetInstantSuggestion() const OVERRIDE;
+  virtual int TextWidth() const OVERRIDE;
+  virtual bool IsImeComposing() const OVERRIDE;
 
 #if defined(TOOLKIT_VIEWS)
-  virtual views::View* AddToView(views::View* parent);
-  virtual int OnPerformDrop(const views::DropTargetEvent& event);
+  virtual views::View* AddToView(views::View* parent) OVERRIDE;
+  virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
 
   // A factory method to create an OmniboxView instance initialized for
   // linux_views.  This currently returns an instance of OmniboxViewGtk only,
@@ -164,12 +165,12 @@ class OmniboxViewGtk : public OmniboxView,
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Overridden from ui::AnimationDelegate.
-  virtual void AnimationEnded(const ui::Animation* animation);
-  virtual void AnimationProgressed(const ui::Animation* animation);
-  virtual void AnimationCanceled(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
 
   // Sets the colors of the text view according to the theme.
   void SetBaseColor();
@@ -243,7 +244,7 @@ class OmniboxViewGtk : public OmniboxView,
   CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandleHierarchyChanged,
                        GtkWidget*);
 #if GTK_CHECK_VERSION(2, 20, 0)
-  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandlePreeditChanged,
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandlePreEditChanged,
                        const gchar*);
 #endif
   // Undo/redo operations won't trigger "begin-user-action" and
@@ -309,7 +310,7 @@ class OmniboxViewGtk : public OmniboxView,
                           GtkTextIter* iter_min,
                           GtkTextIter* iter_max);
 
-  // Return the number of characers in the current buffer.
+  // Return the number of characters in the current buffer.
   int GetTextLength() const;
 
   // Places the caret at the given position. This clears any selection.
@@ -515,7 +516,7 @@ class OmniboxViewGtk : public OmniboxView,
   // Indicates if omnibox's content maybe changed by a key press event, so that
   // we need to call OnAfterPossibleChange() after handling the event.
   // This flag should be set for changes directly caused by a key press event,
-  // including changes to content text, selection range and preedit string.
+  // including changes to content text, selection range and pre-edit string.
   // Changes caused by function calls like SetUserText() should not affect this
   // flag.
   bool content_maybe_changed_by_key_press_;
@@ -527,11 +528,11 @@ class OmniboxViewGtk : public OmniboxView,
 
 #if GTK_CHECK_VERSION(2, 20, 0)
   // Stores the text being composed by the input method.
-  string16 preedit_;
+  string16 pre_edit_;
 
-  // Tracking preedit state before and after a possible change. We don't need to
-  // track preedit_'s content, as it'll be treated as part of text content.
-  size_t preedit_size_before_change_;
+  // Tracking pre-edit state before and after a possible change. We don't need
+  // to track pre-edit_'s content, as it'll be treated as part of text content.
+  size_t pre_edit_size_before_change_;
 #endif
 
   // The view that is going to be focused next. Only valid while handling

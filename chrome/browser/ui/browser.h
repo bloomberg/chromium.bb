@@ -234,14 +234,13 @@ class Browser : public TabHandlerDelegate,
   // |profile|, that session is re-used.
   static void OpenURLOffTheRecord(Profile* profile, const GURL& url);
 
-  // Open |extension| in |container|, using |existing_tab| if not NULL and if
-  // the correct container type.  Returns the TabContents* that was created or
-  // NULL.
+  // Open |extension| in |container|, using |disposition| if container type is
+  // TAB. Returns the TabContents* that was created or NULL.
   static TabContents* OpenApplication(
       Profile* profile,
       const Extension* extension,
       extension_misc::LaunchContainer container,
-      TabContents* existing_tab);
+      WindowOpenDisposition disposition);
 
   // Opens a new application window for the specified url. If |as_panel|
   // is true, the application will be opened as a Browser::Type::APP_PANEL in
@@ -267,12 +266,11 @@ class Browser : public TabHandlerDelegate,
                                             const GURL& url,
                                             bool update_shortcut);
 
-  // Open an application for |extension| in a new application tab, or
-  // |existing_tab| if not NULL.  Returns NULL if there are no appropriate
-  // existing browser windows for |profile|.
+  // Open an application for |extension| using |disposition|.  Returns NULL if
+  // there are no appropriate existing browser windows for |profile|.
   static TabContents* OpenApplicationTab(Profile* profile,
                                          const Extension* extension,
-                                         TabContents* existing_tab);
+                                         WindowOpenDisposition disposition);
 
   // Opens a new window and opens the bookmark manager.
   static void OpenBookmarkManagerWindow(Profile* profile);

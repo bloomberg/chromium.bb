@@ -372,11 +372,11 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
     // TODO(jamescook): Proper support for background tabs.
     Browser::OpenApplication(
-        profile, extension, extension_misc::LAUNCH_TAB, NULL);
+        profile, extension, extension_misc::LAUNCH_TAB, disposition);
   } else if (disposition == NEW_WINDOW) {
     // Force a new window open.
     Browser::OpenApplication(
-            profile, extension, extension_misc::LAUNCH_WINDOW, NULL);
+            profile, extension, extension_misc::LAUNCH_WINDOW, disposition);
   } else {
     // Look at preference to find the right launch container.  If no preference
     // is set, launch as a regular tab.
@@ -392,13 +392,13 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
       old_contents = browser->GetSelectedTabContents();
 
     TabContents* new_contents = Browser::OpenApplication(
-        profile, extension, launch_container, old_contents);
+        profile, extension, launch_container,
+        old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB);
 
     // This will also destroy the handler, so do not perform any actions after.
     if (new_contents != old_contents && browser->tab_count() > 1)
       browser->CloseTabContents(old_contents);
   }
-
 }
 
 void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {

@@ -768,7 +768,8 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationTab(Profile* profile) {
 
   RecordCmdLineAppHistogram();
 
-  TabContents* app_tab = Browser::OpenApplicationTab(profile, extension, NULL);
+  TabContents* app_tab = Browser::OpenApplicationTab(profile, extension,
+                                                     NEW_FOREGROUND_TAB);
   return (app_tab != NULL);
 }
 
@@ -796,7 +797,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
 
     RecordCmdLineAppHistogram();
     TabContents* tab_in_app_window = Browser::OpenApplication(
-        profile, extension, launch_container, NULL);
+        profile, extension, launch_container, NEW_WINDOW);
     return (tab_in_app_window != NULL);
   }
 
@@ -1080,10 +1081,10 @@ class DNSCertProvenanceCheckingInfoBar : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DNSCertProvenanceCheckingInfoBar);
-
   static const char kLearnMoreURL[];
   TabContents* const tab_contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(DNSCertProvenanceCheckingInfoBar);
 };
 
 DNSCertProvenanceCheckingInfoBar::DNSCertProvenanceCheckingInfoBar(

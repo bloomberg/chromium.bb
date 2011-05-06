@@ -5141,7 +5141,7 @@ void TestingAutomationProvider::LaunchApp(
   new AppLaunchObserver(&old_contents->controller(), this, reply_message,
                         launch_container);
   Browser::OpenApplication(profile(), extension, launch_container,
-                           old_contents);
+                           CURRENT_TAB);
 }
 
 // Sample JSON input: { "command": "SetAppLaunchType",

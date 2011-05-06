@@ -287,21 +287,20 @@ void OmniboxViewMac::Update(const TabContents* tab_for_state_restoring) {
   }
 }
 
-void OmniboxViewMac::OpenURL(const GURL& url,
-                             WindowOpenDisposition disposition,
-                             PageTransition::Type transition,
-                             const GURL& alternate_nav_url,
-                             size_t selected_line,
-                             const string16& keyword) {
+void OmniboxViewMac::OpenMatch(const AutocompleteMatch& match,
+                               WindowOpenDisposition disposition,
+                               const GURL& alternate_nav_url,
+                               size_t selected_line,
+                               const string16& keyword) {
   // TODO(shess): Why is the caller passing an invalid url in the
   // first place?  Make sure that case isn't being dropped on the
   // floor.
-  if (!url.is_valid()) {
+  if (!match.destination_url.is_valid()) {
     return;
   }
 
-  model_->OpenURL(url, disposition, transition, alternate_nav_url,
-                  selected_line, keyword);
+  model_->OpenMatch(match, disposition, alternate_nav_url,
+                    selected_line, keyword);
 }
 
 string16 OmniboxViewMac::GetText() const {

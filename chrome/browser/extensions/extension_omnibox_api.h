@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,13 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_OMNIBOX_API_H_
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "webkit/glue/window_open_disposition.h"
 
 // Event router class for events related to the omnibox API.
 class ExtensionOmniboxEventRouter {
@@ -88,5 +92,12 @@ void ApplyDefaultSuggestionForExtensionKeyword(
     const TemplateURL* keyword,
     const string16& remaining_input,
     AutocompleteMatch* match);
+
+// Launch an Extension App from |match| details provided by the Omnibox. If the
+// application wants to launch as a window or panel, |disposition| is ignored;
+// otherwise it's used to determine in which tab we'll launch the application.
+void LaunchAppFromOmnibox(const AutocompleteMatch& match,
+                          Profile* profile,
+                          WindowOpenDisposition disposition);
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_OMNIBOX_API_H_

@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 
@@ -35,77 +36,78 @@ class OmniboxViewMac : public OmniboxView,
   virtual ~OmniboxViewMac();
 
   // OmniboxView:
-  virtual AutocompleteEditModel* model();
-  virtual const AutocompleteEditModel* model() const;
+  virtual AutocompleteEditModel* model() OVERRIDE;
+  virtual const AutocompleteEditModel* model() const OVERRIDE;
 
-  virtual void SaveStateToTab(TabContents* tab);
-  virtual void Update(const TabContents* tab_for_state_restoring);
+  virtual void SaveStateToTab(TabContents* tab) OVERRIDE;
+  virtual void Update(const TabContents* tab_for_state_restoring) OVERRIDE;
 
-  virtual void OpenURL(const GURL& url,
-                       WindowOpenDisposition disposition,
-                       PageTransition::Type transition,
-                       const GURL& alternate_nav_url,
-                       size_t selected_line,
-                       const string16& keyword);
+  virtual void OpenMatch(const AutocompleteMatch& match,
+                         WindowOpenDisposition disposition,
+                         const GURL& alternate_nav_url,
+                         size_t index,
+                         const string16& keyword) OVERRIDE;
 
-  virtual string16 GetText() const;
+  virtual string16 GetText() const OVERRIDE;
 
-  virtual bool IsEditingOrEmpty() const;
-  virtual int GetIcon() const;
+  virtual bool IsEditingOrEmpty() const OVERRIDE;
+  virtual int GetIcon() const OVERRIDE;
 
-  virtual void SetUserText(const string16& text);
+  virtual void SetUserText(const string16& text) OVERRIDE;
   virtual void SetUserText(const string16& text,
                            const string16& display_text,
-                           bool update_popup);
+                           bool update_popup) OVERRIDE;
 
   virtual void SetWindowTextAndCaretPos(const string16& text,
-                                        size_t caret_pos);
+                                        size_t caret_pos) OVERRIDE;
 
-  virtual void SetForcedQuery();
+  virtual void SetForcedQuery() OVERRIDE;
 
-  virtual bool IsSelectAll();
-  virtual bool DeleteAtEndPressed();
+  virtual bool IsSelectAll() OVERRIDE;
+  virtual bool DeleteAtEndPressed() OVERRIDE;
   virtual void GetSelectionBounds(string16::size_type* start,
-                                  string16::size_type* end);
+                                  string16::size_type* end) OVERRIDE;
 
-  virtual void SelectAll(bool reversed);
-  virtual void RevertAll();
-  virtual void UpdatePopup();
-  virtual void ClosePopup();
-  virtual void SetFocus();
-  virtual void OnTemporaryTextMaybeChanged(const string16& display_text,
-                                           bool save_original_selection);
+  virtual void SelectAll(bool reversed) OVERRIDE;
+  virtual void RevertAll() OVERRIDE;
+  virtual void UpdatePopup() OVERRIDE;
+  virtual void ClosePopup() OVERRIDE;
+  virtual void SetFocus() OVERRIDE;
+  virtual void OnTemporaryTextMaybeChanged(
+      const string16& display_text,
+      bool save_original_selection) OVERRIDE;
   virtual bool OnInlineAutocompleteTextMaybeChanged(
-      const string16& display_text, size_t user_text_length);
-  virtual void OnStartingIME();
-  virtual void OnRevertTemporaryText();
-  virtual void OnBeforePossibleChange();
-  virtual bool OnAfterPossibleChange();
-  virtual gfx::NativeView GetNativeView() const;
-  virtual CommandUpdater* GetCommandUpdater();
+      const string16& display_text, size_t user_text_length) OVERRIDE;
+  virtual void OnStartingIME() OVERRIDE;
+  virtual void OnRevertTemporaryText() OVERRIDE;
+  virtual void OnBeforePossibleChange() OVERRIDE;
+  virtual bool OnAfterPossibleChange() OVERRIDE;
+  virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual CommandUpdater* GetCommandUpdater() OVERRIDE;
   virtual void SetInstantSuggestion(const string16& input,
-                                    bool animate_to_complete);
-  virtual string16 GetInstantSuggestion() const;
-  virtual int TextWidth() const;
-  virtual bool IsImeComposing() const;
+                                    bool animate_to_complete) OVERRIDE;
+  virtual string16 GetInstantSuggestion() const OVERRIDE;
+  virtual int TextWidth() const OVERRIDE;
+  virtual bool IsImeComposing() const OVERRIDE;
 
   // Implement the AutocompleteTextFieldObserver interface.
-  virtual NSRange SelectionRangeForProposedRange(NSRange proposed_range);
-  virtual void OnControlKeyChanged(bool pressed);
-  virtual bool CanCopy();
-  virtual void CopyToPasteboard(NSPasteboard* pboard);
-  virtual void OnPaste();
-  virtual bool CanPasteAndGo();
-  virtual int GetPasteActionStringId();
-  virtual void OnPasteAndGo();
-  virtual void OnFrameChanged();
-  virtual void OnDidBeginEditing();
-  virtual void OnBeforeChange();
-  virtual void OnDidChange();
-  virtual void OnDidEndEditing();
-  virtual bool OnDoCommandBySelector(SEL cmd);
-  virtual void OnSetFocus(bool control_down);
-  virtual void OnKillFocus();
+  virtual NSRange SelectionRangeForProposedRange(
+      NSRange proposed_range) OVERRIDE;
+  virtual void OnControlKeyChanged(bool pressed) OVERRIDE;
+  virtual bool CanCopy() OVERRIDE;
+  virtual void CopyToPasteboard(NSPasteboard* pboard) OVERRIDE;
+  virtual void OnPaste() OVERRIDE;
+  virtual bool CanPasteAndGo() OVERRIDE;
+  virtual int GetPasteActionStringId() OVERRIDE;
+  virtual void OnPasteAndGo() OVERRIDE;
+  virtual void OnFrameChanged() OVERRIDE;
+  virtual void OnDidBeginEditing() OVERRIDE;
+  virtual void OnBeforeChange() OVERRIDE;
+  virtual void OnDidChange() OVERRIDE;
+  virtual void OnDidEndEditing() OVERRIDE;
+  virtual bool OnDoCommandBySelector(SEL cmd) OVERRIDE;
+  virtual void OnSetFocus(bool control_down) OVERRIDE;
+  virtual void OnKillFocus() OVERRIDE;
 
   // Helper for LocationBarViewMac.  Optionally selects all in |field_|.
   void FocusLocation(bool select_all);

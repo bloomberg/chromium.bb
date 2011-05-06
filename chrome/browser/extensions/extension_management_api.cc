@@ -184,7 +184,8 @@ bool LaunchAppFunction::RunImpl() {
   extension_misc::LaunchContainer launch_container =
       service()->extension_prefs()->GetLaunchContainer(
           extension, ExtensionPrefs::LAUNCH_DEFAULT);
-  Browser::OpenApplication(profile(), extension, launch_container, NULL);
+  Browser::OpenApplication(profile(), extension, launch_container,
+                           NEW_FOREGROUND_TAB);
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
                             extension_misc::APP_LAUNCH_EXTENSION_API,
                             extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);

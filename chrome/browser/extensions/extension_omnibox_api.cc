@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/ui/browser.h"
 #include "content/common/notification_service.h"
 
 namespace events {
@@ -262,4 +263,20 @@ void ApplyDefaultSuggestionForExtensionKeyword(
   }
 
   match->contents.assign(description);
+}
+
+void LaunchAppFromOmnibox(const AutocompleteMatch& match,
+                          Profile* profile,
+                          WindowOpenDisposition disposition) {
+  ExtensionService* service = profile->GetExtensionService();
+  const Extension* extension =
+      service->GetExtensionById(match.destination_url.host(), false);
+
+  // Look at the preferences to find the right launch container.  If no
+  // preference is set, launch as a regular tab.
+  extension_misc::LaunchContainer launch_container =
+      service->extension_prefs()->GetLaunchContainer(
+          extension, ExtensionPrefs::LAUNCH_REGULAR);
+
+  Browser::OpenApplication(profile, extension, launch_container, disposition);
 }
