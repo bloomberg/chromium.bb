@@ -87,6 +87,8 @@ const struct {
   { "xkb:us:intl:eng", "INTL" },
   { "xkb:us:colemak:eng", "CO" },
   { "xkb:de:neo:ger", "NEO" },
+  // To distinguish from "xkb:es::spa"
+  { "xkb:es:cat:cat", "CAS" },
   // To distinguish from "xkb:gb::eng"
   { "xkb:gb:dvorak:eng", "DV" },
   // To distinguish from "xkb:jp::jpn"
