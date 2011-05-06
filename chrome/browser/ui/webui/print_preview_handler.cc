@@ -98,7 +98,19 @@ class PrintSystemTaskProxy
     int i = 0;
     for (printing::PrinterList::iterator index = printer_list.begin();
          index != printer_list.end(); ++index, ++i) {
-      printers->Append(new StringValue(index->printer_name));
+      DictionaryValue* printer_info = new DictionaryValue;
+      std::string printerName;
+  #if defined(OS_MACOSX)
+      // On Mac, |index->printer_description| specifies the printer name and
+      // |index->printer_name| specifies the device name / printer queue name.
+      printerName = index->printer_description;
+  #else
+      printerName = index->printer_name;
+  #endif
+      printer_info->SetString(printing::kSettingPrinterName, printerName);
+      printer_info->SetString(printing::kSettingDeviceName,
+                              index->printer_name);
+      printers->Append(printer_info);
       if (index->is_default)
         default_printer_index = i;
     }

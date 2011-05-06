@@ -313,7 +313,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
   bool print_to_pdf;
   int copies;
   int duplex_mode;
-  string16 printer_name;
+  string16 device_name;
 
   if (!job_settings.GetBoolean(kSettingLandscape, &landscape) ||
       !job_settings.GetBoolean(kSettingCollate, &collate) ||
@@ -321,7 +321,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
       !job_settings.GetBoolean(kSettingPrintToPDF, &print_to_pdf) ||
       !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
       !job_settings.GetInteger(kSettingCopies, &copies) ||
-      !job_settings.GetString(kSettingPrinterName, &printer_name)) {
+      !job_settings.GetString(kSettingDeviceName, &device_name)) {
     return OnError();
   }
 
@@ -338,20 +338,20 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
   ResetSettings();
 
   HANDLE printer;
-  LPWSTR printer_name_wide = const_cast<wchar_t*>(printer_name.c_str());
-  if (!OpenPrinter(printer_name_wide, &printer, NULL))
+  LPWSTR device_name_wide = const_cast<wchar_t*>(device_name.c_str());
+  if (!OpenPrinter(device_name_wide, &printer, NULL))
     return OnError();
 
   // Make printer changes local to Chrome.
   // See MSDN documentation regarding DocumentProperties.
   scoped_array<uint8> buffer;
   DEVMODE* dev_mode = NULL;
-  LONG buffer_size = DocumentProperties(NULL, printer, printer_name_wide,
+  LONG buffer_size = DocumentProperties(NULL, printer, device_name_wide,
                                         NULL, NULL, 0);
   if (buffer_size) {
     buffer.reset(new uint8[buffer_size]);
     memset(buffer.get(), 0, buffer_size);
-    if (DocumentProperties(NULL, printer, printer_name_wide,
+    if (DocumentProperties(NULL, printer, device_name_wide,
                            reinterpret_cast<PDEVMODE>(buffer.get()), NULL,
                            DM_OUT_BUFFER) == IDOK) {
       dev_mode = reinterpret_cast<PDEVMODE>(buffer.get());
@@ -381,19 +381,19 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
   dev_mode->dmOrientation = landscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;
 
   // Update data using DocumentProperties.
-  if (DocumentProperties(NULL, printer, printer_name_wide, dev_mode, dev_mode,
+  if (DocumentProperties(NULL, printer, device_name_wide, dev_mode, dev_mode,
                          DM_IN_BUFFER | DM_OUT_BUFFER) != IDOK) {
     ClosePrinter(printer);
     return OnError();
   }
 
   // Set printer then refresh printer settings.
-  if (!AllocateContext(printer_name, dev_mode, &context_)) {
+  if (!AllocateContext(device_name, dev_mode, &context_)) {
     ClosePrinter(printer);
     return OnError();
   }
   PrintSettingsInitializerWin::InitPrintSettings(context_, *dev_mode,
-                                                 ranges, printer_name,
+                                                 ranges, device_name,
                                                  false, &settings_);
   ClosePrinter(printer);
   return OK;
@@ -609,10 +609,10 @@ bool PrintingContextWin::GetPrinterSettings(HANDLE printer,
 }
 
 // static
-bool PrintingContextWin::AllocateContext(const std::wstring& printer_name,
+bool PrintingContextWin::AllocateContext(const std::wstring& device_name,
                                          const DEVMODE* dev_mode,
                                          gfx::NativeDrawingContext* context) {
-  *context = CreateDC(L"WINSPOOL", printer_name.c_str(), NULL, dev_mode);
+  *context = CreateDC(L"WINSPOOL", device_name.c_str(), NULL, dev_mode);
   DCHECK(*context);
   return *context != NULL;
 }

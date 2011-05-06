@@ -166,7 +166,7 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
   bool print_to_pdf;
   int copies;
   int duplex_mode;
-  std::string printer_name;
+  std::string device_name;
 
   if (!settings.GetBoolean(printing::kSettingLandscape, &landscape) ||
       !settings.GetBoolean(printing::kSettingCollate, &collate) ||
@@ -174,13 +174,13 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
       !settings.GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf) ||
       !settings.GetInteger(printing::kSettingDuplexMode, &duplex_mode) ||
       !settings.GetInteger(printing::kSettingCopies, &copies) ||
-      !settings.GetString(printing::kSettingPrinterName, &printer_name)) {
+      !settings.GetString(printing::kSettingDeviceName, &device_name)) {
     return false;
   }
 
   if (!print_to_pdf) {
     scoped_ptr<GtkPrinterList> printer_list(new GtkPrinterList);
-    printer_ = printer_list->GetPrinterWithName(printer_name.c_str());
+    printer_ = printer_list->GetPrinterWithName(device_name.c_str());
     if (printer_) {
       g_object_ref(printer_);
       gtk_print_settings_set_printer(gtk_settings_,

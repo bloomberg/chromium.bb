@@ -39,6 +39,10 @@ var printerCapabilities;
 // when the mime type is application/pdf.
 var previewDataMimeType = null;
 
+// Destination list special value constants.
+const PRINT_TO_PDF = 'Print To PDF';
+const MANAGE_PRINTERS = 'Manage Printers';
+
 /**
  * Window onload handler, sets up the page and starts print preview by getting
  * the printer list.
@@ -101,25 +105,25 @@ function onInitiatorTabClosed() {
  */
 function updateControlsWithSelectedPrinterCapabilities() {
   var printerList = $('printer-list');
-  var selectedPrinter = printerList.selectedIndex;
-  if (selectedPrinter < 0)
+  var selectedIndex = printerList.selectedIndex;
+  if (selectedIndex < 0)
     return;
 
-  var printerName = printerList.options[selectedPrinter].textContent;
-  if (printerName == localStrings.getString('printToPDF')) {
+  var selectedValue = printerList.options[selectedIndex].value;
+  if (selectedValue == PRINT_TO_PDF) {
     updateWithPrinterCapabilities({'disableColorOption': true,
                                    'setColorAsDefault': true});
-  } else if (printerName == localStrings.getString('managePrinters')) {
+  } else if (selectedValue == MANAGE_PRINTERS) {
     printerList.selectedIndex = lastSelectedPrinterIndex;
     chrome.send('managePrinters');
     return;
   } else {
     // This message will call back to 'updateWithPrinterCapabilities'
     // function.
-    chrome.send('getPrinterCapabilities', [printerName]);
+    chrome.send('getPrinterCapabilities', [selectedValue]);
   }
 
-  lastSelectedPrinterIndex = selectedPrinter;
+  lastSelectedPrinterIndex = selectedIndex;
 
   // Regenerate the preview data based on selected printer settings.
   setDefaultValuesAndRegeneratePreview();
@@ -286,16 +290,13 @@ function getDuplexMode() {
 function getSettingsJSON() {
   var printerList = $('printer-list')
   var selectedPrinter = printerList.selectedIndex;
-  var printerName = '';
+  var deviceName = '';
   if (selectedPrinter >= 0)
-    printerName = printerList.options[selectedPrinter].textContent;
+    deviceName = printerList.options[selectedPrinter].value;
   var printAll = $('all-pages').checked;
-  var printToPDF = (printerName == localStrings.getString('printToPDF'));
+  var printToPDF = (deviceName == PRINT_TO_PDF);
 
-  // TODO(kmadhusu): Fix the printer device name (http://crbug.com/81488).
-
-  return JSON.stringify({'printerName': printerName,
-                         'deviceName': printerName,
+  return JSON.stringify({'deviceName': deviceName,
                          'pageRange': getSelectedPageRanges(),
                          'printAll': printAll,
                          'duplex': getDuplexMode(),
@@ -327,19 +328,23 @@ function requestPrintPreview() {
 /**
  * Fill the printer list drop down.
  * Called from PrintPreviewHandler::SendPrinterList().
- * @param {Array} printers Array of printer names.
+ * @param {Array} printers Array of printer info objects.
  * @param {number} defaultPrinterIndex The index of the default printer.
  */
 function setPrinters(printers, defaultPrinterIndex) {
   var printerList = $('printer-list');
-  for (var i = 0; i < printers.length; ++i)
-    addDestinationListOption(printers[i], i == defaultPrinterIndex);
+  for (var i = 0; i < printers.length; ++i) {
+    addDestinationListOption(printers[i].printerName, printers[i].deviceName,
+                             i == defaultPrinterIndex);
+  }
 
   // Adding option for saving PDF to disk.
-  addDestinationListOption(localStrings.getString('printToPDF'), false);
+  addDestinationListOption(localStrings.getString('printToPDF'),
+                           PRINT_TO_PDF, false);
 
   // Add an option to manage printers.
-  addDestinationListOption(localStrings.getString('managePrinters'), false);
+  addDestinationListOption(localStrings.getString('managePrinters'),
+                           MANAGE_PRINTERS, false);
 
   printerList.disabled = false;
   updateControlsWithSelectedPrinterCapabilities();
@@ -348,11 +353,13 @@ function setPrinters(printers, defaultPrinterIndex) {
 /**
  * Adds an option to the printer destination list.
  * @param {String} optionText specifies the option text content.
+ * @param {String} optionValue specifies the option value.
  * @param {boolean} is_default is true if the option needs to be selected.
  */
-function addDestinationListOption(optionText, is_default) {
+function addDestinationListOption(optionText, optionValue, is_default) {
   var option = document.createElement('option');
   option.textContent = optionText;
+  option.value = optionValue;
   $('printer-list').add(option);
   if (is_default)
     option.selected = true;
