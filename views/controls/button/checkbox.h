@@ -93,8 +93,6 @@ class Checkbox : public NativeButtonBase {
 //
 // This class will eventually be renamed to Checkbox to replace the class
 // above.
-//
-// TODO: A Checkbox feature not support by CheckboxNt is multi-line.
 class CheckboxNt : public TextButtonBase {
  public:
   explicit CheckboxNt(const std::wstring& label);
@@ -107,13 +105,6 @@ class CheckboxNt : public TextButtonBase {
   // Sets/Gets whether or not the checkbox is checked.
   virtual void SetChecked(bool checked);
   bool checked() const { return checked_; }
-
-  // Sets whether or not the checkbox label should wrap multiple lines of text.
-  // If true, long lines are wrapped, and this is reflected in the preferred
-  // size returned by GetPreferredSize. If false, text that will not fit within
-  // the available bounds for the label will be cropped.
-  // TODO: not yet implemented.
-  void SetMultiLine(bool multiline);
 
  protected:
   // Overridden from View:

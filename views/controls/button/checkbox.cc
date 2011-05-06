@@ -238,10 +238,6 @@ void CheckboxNt::SetChecked(bool checked) {
   SchedulePaint();
 }
 
-void CheckboxNt::SetMultiLine(bool multiline) {
-  NOTREACHED() << "Not yet implemented";
-}
-
 gfx::Size CheckboxNt::GetPreferredSize() {
   gfx::Size prefsize(TextButtonBase::GetPreferredSize());
   gfx::NativeTheme::ExtraParams extra;
