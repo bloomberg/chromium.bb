@@ -46,6 +46,13 @@ void InstallationValidator::ChromeRules::AddProductSwitchExpectations(
       std::make_pair(std::string(switches::kChromeFrameReadyMode), ready_mode));
 }
 
+bool InstallationValidator::ChromeRules::UsageStatsAllowed(
+    const ProductState& product_state) const {
+  // Products must not have usagestats consent values when multi-install
+  // (only the multi-install binaries may).
+  return !product_state.is_multi_install();
+}
+
 BrowserDistribution::Type
     InstallationValidator::ChromeFrameRules::distribution_type() const {
   return BrowserDistribution::CHROME_FRAME;
@@ -64,6 +71,13 @@ void InstallationValidator::ChromeFrameRules::AddProductSwitchExpectations(
                                          false));
 }
 
+bool InstallationValidator::ChromeFrameRules::UsageStatsAllowed(
+    const ProductState& product_state) const {
+  // Products must not have usagestats consent values when multi-install
+  // (only the multi-install binaries may).
+  return !product_state.is_multi_install();
+}
+
 BrowserDistribution::Type
     InstallationValidator::ChromeBinariesRules::distribution_type() const {
   return BrowserDistribution::CHROME_BINARIES;
@@ -75,6 +89,12 @@ void InstallationValidator::ChromeBinariesRules::AddProductSwitchExpectations(
     const ProductState& product_state,
     SwitchExpectations* expectations) const {
   NOTREACHED();
+}
+
+bool InstallationValidator::ChromeBinariesRules::UsageStatsAllowed(
+    const ProductState& product_state) const {
+  // UsageStats consent values are always allowed on the binaries.
+  return true;
 }
 
 // static
@@ -279,7 +299,10 @@ void InstallationValidator::ValidateBinaries(
     binaries_state,
     binaries_rules
   };
+
   ValidateBinariesCommands(ctx, is_valid);
+
+  ValidateUsageStats(ctx, is_valid);
 }
 
 // Validates the path to |setup_exe| for the product described by |ctx|.
@@ -448,6 +471,25 @@ void InstallationValidator::ValidateAppCommands(
   ValidateAppCommandExpectations(ctx, CommandExpectations(), is_valid);
 }
 
+// Validates usagestats for the product or binaries in |ctx|.
+void InstallationValidator::ValidateUsageStats(const ProductContext& ctx,
+                                               bool* is_valid) {
+  DWORD usagestats = 0;
+  if (ctx.state.GetUsageStats(&usagestats)) {
+    if (!ctx.rules.UsageStatsAllowed(ctx.state)) {
+      *is_valid = false;
+      LOG(ERROR) << ctx.dist->GetAppShortCutName()
+                 << " has a usagestats value (" << usagestats
+                 << "), yet should not.";
+    } else if (usagestats != 0 && usagestats != 1) {
+      *is_valid = false;
+      LOG(ERROR) << ctx.dist->GetAppShortCutName()
+                 << " has an unsupported usagestats value (" << usagestats
+                 << ").";
+    }
+  }
+}
+
 // Validates the product described in |product_state| according to |rules|.
 void InstallationValidator::ValidateProduct(
     const InstallationState& machine_state,
@@ -473,6 +515,8 @@ void InstallationValidator::ValidateProduct(
     ValidateMultiInstallProduct(ctx, is_valid);
 
   ValidateAppCommands(ctx, is_valid);
+
+  ValidateUsageStats(ctx, is_valid);
 }
 
 // static
