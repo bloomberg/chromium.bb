@@ -23,6 +23,7 @@ class XServerPixelBuffer {
   XServerPixelBuffer();
   ~XServerPixelBuffer();
 
+  void Release();
   void Init(Display* display);
 
   // If shared memory is being used without pixmaps, synchronize this pixel
@@ -55,7 +56,6 @@ class XServerPixelBuffer {
  private:
   void InitShm(int screen);
   bool InitPixmaps(int width, int height, int depth);
-  void DestroyShmSegmentInfo();
 
   Display* display_;
   Window root_window_;

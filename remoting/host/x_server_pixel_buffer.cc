@@ -17,16 +17,34 @@ XServerPixelBuffer::XServerPixelBuffer()
 }
 
 XServerPixelBuffer::~XServerPixelBuffer() {
-  if (x_image_)
+  Release();
+}
+
+void XServerPixelBuffer::Release() {
+  if (x_image_) {
     XDestroyImage(x_image_);
-  if (shm_pixmap_)
+    x_image_ = NULL;
+  }
+  if (shm_pixmap_) {
     XFreePixmap(display_, shm_pixmap_);
-  if (shm_gc_)
+    shm_pixmap_ = 0;
+  }
+  if (shm_gc_) {
     XFreeGC(display_, shm_gc_);
-  DestroyShmSegmentInfo();
+    shm_gc_ = NULL;
+  }
+  if (shm_segment_info_) {
+    if (shm_segment_info_->shmaddr != reinterpret_cast<char*>(-1))
+      shmdt(shm_segment_info_->shmaddr);
+    if (shm_segment_info_->shmid != -1)
+      shmctl(shm_segment_info_->shmid, IPC_RMID, 0);
+    delete shm_segment_info_;
+    shm_segment_info_ = NULL;
+  }
 }
 
 void XServerPixelBuffer::Init(Display* display) {
+  Release();
   display_ = display;
   int default_screen = DefaultScreen(display_);
   root_window_ = RootWindow(display_, default_screen);
@@ -72,11 +90,7 @@ void XServerPixelBuffer::InitShm(int screen) {
 
   if (!using_shm) {
     VLOG(1) << "Not using shared memory.";
-    DestroyShmSegmentInfo();
-    if (x_image_) {
-      XDestroyImage(x_image_);
-      x_image_ = 0;
-    }
+    Release();
     return;
   }
 
@@ -123,17 +137,6 @@ bool XServerPixelBuffer::InitPixmaps(int width, int height, int depth) {
   }
 
   return true;
-}
-
-void XServerPixelBuffer::DestroyShmSegmentInfo() {
-  if (shm_segment_info_) {
-    if (shm_segment_info_->shmaddr != reinterpret_cast<char*>(-1))
-      shmdt(shm_segment_info_->shmaddr);
-    if (shm_segment_info_->shmid != -1)
-      shmctl(shm_segment_info_->shmid, IPC_RMID, 0);
-    delete shm_segment_info_;
-    shm_segment_info_ = NULL;
-  }
 }
 
 void XServerPixelBuffer::Synchronize() {

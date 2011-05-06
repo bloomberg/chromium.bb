@@ -21,6 +21,43 @@ namespace remoting {
 
 namespace {
 
+static const int kBytesPerPixel = 4;
+
+// A class representing a full-frame pixel buffer
+class VideoFrameBuffer {
+ public:
+  VideoFrameBuffer() : bytes_per_row_(0), needs_update_(true) {}
+
+  void Update(Display* display, Window root_window) {
+    if (needs_update_) {
+      needs_update_ = false;
+      XWindowAttributes root_attr;
+      XGetWindowAttributes(display, root_window, &root_attr);
+      if (root_attr.width != size_.width() ||
+          root_attr.height != size_.height()) {
+        size_.SetSize(root_attr.width, root_attr.height);
+        bytes_per_row_ = size_.width() * kBytesPerPixel;
+        size_t buffer_size = size_.width() * size_.height() * kBytesPerPixel;
+        ptr_.reset(new uint8[buffer_size]);
+      }
+    }
+  }
+
+  gfx::Size size() const { return size_; }
+  int bytes_per_row() const { return bytes_per_row_; }
+  uint8* ptr() const { return ptr_.get(); }
+
+  void set_needs_update() { needs_update_ = true; }
+
+ private:
+  gfx::Size size_;
+  int bytes_per_row_;
+  scoped_array<uint8> ptr_;
+  bool needs_update_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameBuffer);
+};
+
 // A class to perform capturing for Linux.
 class CapturerLinux : public Capturer {
  public:
@@ -50,14 +87,10 @@ class CapturerLinux : public Capturer {
   void FastBlit(uint8* image, const gfx::Rect& rect, CaptureData* capture_data);
   void SlowBlit(uint8* image, const gfx::Rect& rect, CaptureData* capture_data);
 
-  static const int kBytesPerPixel = 4;
-
   // X11 graphics context.
   Display* display_;
   GC gc_;
   Window root_window_;
-  int width_;
-  int height_;
 
   // XDamage information.
   Damage damage_handle_;
@@ -73,10 +106,8 @@ class CapturerLinux : public Capturer {
 
   // Capture state.
   static const int kNumBuffers = 2;
-  uint8* buffers_[kNumBuffers];
+  VideoFrameBuffer buffers_[kNumBuffers];
   int current_buffer_;
-  int stride_;
-  bool capture_fullscreen_;
 
   // Format of pixels returned in buffer.
   media::VideoFrame::Format pixel_format_;
@@ -95,29 +126,17 @@ CapturerLinux::CapturerLinux()
     : display_(NULL),
       gc_(NULL),
       root_window_(BadValue),
-      width_(0),
-      height_(0),
       damage_handle_(BadValue),
       damage_event_base_(-1),
       damage_error_base_(-1),
       current_buffer_(0),
-      stride_(0),
-      capture_fullscreen_(true),
       pixel_format_(media::VideoFrame::RGB32),
       last_buffer_(NULL) {
-  for (int i = 0; i < kNumBuffers; i++) {
-    buffers_[i] = NULL;
-  }
   CHECK(Init());
 }
 
 CapturerLinux::~CapturerLinux() {
   DeinitXlib();
-
-  for (int i = 0; i < kNumBuffers; i++) {
-    delete [] buffers_[i];
-    buffers_[i] = NULL;
-  }
 }
 
 bool CapturerLinux::Init() {
@@ -161,28 +180,20 @@ bool CapturerLinux::Init() {
     return false;
   }
 
-  // TODO(ajwong): We should be able to replace this with a XDamageAdd().
-  capture_fullscreen_ = true;
-
-  // Set up the dimensions of the catpure framebuffer.
-  XWindowAttributes root_attr;
-  XGetWindowAttributes(display_, root_window_, &root_attr);
-  width_ = root_attr.width;
-  height_ = root_attr.height;
-  stride_ = width_ * kBytesPerPixel;
-  VLOG(1) << "Initialized with Geometry: " << width_ << "x" << height_;
-
-  // Allocate the screen buffers.
-  for (int i = 0; i < kNumBuffers; i++) {
-    buffers_[i] = new uint8[width_ * height_ * kBytesPerPixel];
-  }
+  // Register for changes to the dimensions of the root window.
+  XSelectInput(display_, root_window_, StructureNotifyMask);
 
   return true;
 }
 
 void CapturerLinux::ScreenConfigurationChanged() {
-  // TODO(ajwong): Support resolution changes.
-  NOTIMPLEMENTED();
+  last_buffer_ = NULL;
+  for (int i = 0; i < kNumBuffers; ++i) {
+    buffers_[i].set_needs_update();
+  }
+  InvalidRects rects;
+  helper_.SwapInvalidRects(rects);
+  x_server_pixel_buffer_.Init(display_);
 }
 
 media::VideoFrame::Format CapturerLinux::pixel_format() const {
@@ -216,11 +227,6 @@ void CapturerLinux::CaptureInvalidRects(
 }
 
 void CapturerLinux::CalculateInvalidRects() {
-  if (helper_.IsCaptureFullScreen(gfx::Size(width_, height_)))
-    capture_fullscreen_ = true;
-
-  // TODO(ajwong): The capture_fullscreen_ logic here is very ugly. Refactor.
-
   // Find the number of events that are outstanding "now."  We don't just loop
   // on XPending because we want to guarantee this terminates.
   int events_to_process = XPending(display_);
@@ -230,32 +236,26 @@ void CapturerLinux::CalculateInvalidRects() {
     XNextEvent(display_, &e);
     if (e.type == damage_event_base_ + XDamageNotify) {
       // If we're doing a full screen capture, we should just drain the events.
-      if (!capture_fullscreen_) {
-        XDamageNotifyEvent *event = reinterpret_cast<XDamageNotifyEvent*>(&e);
-        gfx::Rect damage_rect(event->area.x, event->area.y, event->area.width,
-                              event->area.height);
+      XDamageNotifyEvent *event = reinterpret_cast<XDamageNotifyEvent*>(&e);
+      gfx::Rect damage_rect(event->area.x, event->area.y, event->area.width,
+                            event->area.height);
 
-        // TODO(hclam): Perform more checks on the rect.
-        if (damage_rect.width() <= 0 && damage_rect.height() <= 0)
-          continue;
+      // TODO(hclam): Perform more checks on the rect.
+      if (damage_rect.width() <= 0 && damage_rect.height() <= 0)
+        continue;
 
-        invalid_rects.insert(damage_rect);
-        VLOG(3) << "Damage received for rect at ("
-                << damage_rect.x() << "," << damage_rect.y() << ") size ("
-                << damage_rect.width() << "," << damage_rect.height() << ")";
-      }
+      invalid_rects.insert(damage_rect);
+      VLOG(3) << "Damage received for rect at ("
+              << damage_rect.x() << "," << damage_rect.y() << ") size ("
+              << damage_rect.width() << "," << damage_rect.height() << ")";
+    } else if (e.type == ConfigureNotify) {
+      ScreenConfigurationChanged();
     } else {
       LOG(WARNING) << "Got unknown event type: " << e.type;
     }
   }
 
-  if (capture_fullscreen_) {
-    // TODO(hclam): Check the new dimension again.
-    helper_.InvalidateScreen(gfx::Size(width_, height_));
-    capture_fullscreen_ = false;
-  } else {
-    helper_.InvalidateRects(invalid_rects);
-  }
+  helper_.InvalidateRects(invalid_rects);
 }
 
 void CapturerLinux::CaptureRects(
@@ -263,13 +263,14 @@ void CapturerLinux::CaptureRects(
     Capturer::CaptureCompletedCallback* callback) {
   scoped_ptr<CaptureCompletedCallback> callback_deleter(callback);
 
-  uint8* buffer = buffers_[current_buffer_];
+  VideoFrameBuffer& buffer = buffers_[current_buffer_];
+  buffer.Update(display_, root_window_);
   DataPlanes planes;
-  planes.data[0] = buffer;
-  planes.strides[0] = stride_;
+  planes.data[0] = buffer.ptr();
+  planes.strides[0] = buffer.bytes_per_row();
 
   scoped_refptr<CaptureData> capture_data(new CaptureData(
-      planes, gfx::Size(width_, height_), media::VideoFrame::RGB32));
+      planes, buffer.size(), media::VideoFrame::RGB32));
 
   // Synchronize the current buffer with the last one since we do not capture
   // the entire desktop. Note that encoder may be reading from the previous
@@ -280,11 +281,11 @@ void CapturerLinux::CaptureRects(
   for (InvalidRects::const_iterator it = last_invalid_rects_.begin();
        last_buffer_ && it != last_invalid_rects_.end();
        ++it) {
-    int offset = it->y() * stride_ + it->x() * kBytesPerPixel;
+    int offset = it->y() * buffer.bytes_per_row() + it->x() * kBytesPerPixel;
     for (int i = 0; i < it->height(); ++i) {
-      memcpy(buffer + offset, last_buffer_ + offset,
+      memcpy(buffer.ptr() + offset, last_buffer_ + offset,
              it->width() * kBytesPerPixel);
-      offset += width_ * kBytesPerPixel;
+      offset += buffer.size().width() * kBytesPerPixel;
     }
   }
 
@@ -311,7 +312,7 @@ void CapturerLinux::CaptureRects(
 
   capture_data->mutable_dirty_rects() = rects;
   last_invalid_rects_ = rects;
-  last_buffer_ = buffer;
+  last_buffer_ = buffer.ptr();
 
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
   helper_.set_size_most_recent(capture_data->size());
