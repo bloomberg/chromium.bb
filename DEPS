@@ -11,7 +11,6 @@ vars = {
   "nacl_irt_hash_x86_32": "22aa515c504417708751f081f4b4325c0cebb1c7",
   "nacl_irt_hash_x86_64": "3f345b96ba52220f404140d73f75d5443818774a",
   "nacl_revision": "5062",
-  "nacl_tools_revision": "5025",
   "libjingle_revision": "55",
   "libvpx_revision": "81610",
   "ffmpeg_revision": "83815",
@@ -20,6 +19,9 @@ vars = {
 }
 
 deps = {
+  "src/native_client/nacl_deps":
+    File(Var("nacl_trunk") + "/src/native_client/DEPS@" + Var("nacl_revision")),
+
   "src/breakpad/src":
     (Var("googlecode_url") % "google-breakpad") + "/trunk/src@786",
 
@@ -223,10 +225,9 @@ deps = {
 
   # Needed to support nacl browser test jig.
   "src/third_party/pylib":
-    Var("nacl_trunk") + "/src/third_party/pylib@" + Var("nacl_tools_revision"),
+    From("src/native_client/nacl_deps", "third_party/pylib"),
   "src/third_party/scons-2.0.1":
-    Var("nacl_trunk") + "/src/third_party/scons-2.0.1@" +
-        Var("nacl_tools_revision"),
+    From("src/native_client/nacl_deps", "third_party/scons-2.0.1"),
 }
 
 
@@ -268,8 +269,7 @@ deps_os = {
       "/trunk/deps/third_party/swig/win@" + Var("swig_revision"),
 
     "src/third_party/mingw-w64/mingw/bin":
-      (Var("nacl_trunk") + "/src/third_party/mingw-w64/mingw/bin@" +
-       Var("nacl_tools_revision")),
+      From("src/native_client/nacl_deps", "third_party/mingw-w64/mingw/bin"),
 
     "src/rlz":
       (Var("googlecode_url") % "rlz") + "/trunk@35",
