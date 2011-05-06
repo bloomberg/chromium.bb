@@ -41,6 +41,7 @@ struct tty {
 	struct wl_event_source *input_source;
 	struct wl_event_source *enter_vt_source;
 	struct wl_event_source *leave_vt_source;
+	tty_vt_func_t vt_func;
 };
 
 static int on_enter_vt(int signal_number, void *data)
@@ -48,7 +49,7 @@ static int on_enter_vt(int signal_number, void *data)
 	struct tty *tty = data;
 	int ret;
 
-	fprintf(stderr, "enter vt\n");
+	tty->vt_func(tty->compositor, TTY_ENTER_VT);
 
 	ioctl(tty->fd, VT_RELDISP, VT_ACKACQ);
 	ret = ioctl(tty->fd, KDSETMODE, KD_GRAPHICS);
@@ -70,6 +71,8 @@ on_leave_vt(int signal_number, void *data)
 		fprintf(stderr,
 			"failed to set KD_TEXT mode on console: %m\n");
 
+	tty->vt_func(tty->compositor, TTY_LEAVE_VT);
+
 	return 1;
 }
 
@@ -86,7 +89,7 @@ on_tty_input(int fd, uint32_t mask, void *data)
 }
 
 struct tty *
-tty_create(struct wlsc_compositor *compositor)
+tty_create(struct wlsc_compositor *compositor, tty_vt_func_t vt_func)
 {
 	struct termios raw_attributes;
 	struct vt_mode mode = { 0 };
@@ -100,6 +103,7 @@ tty_create(struct wlsc_compositor *compositor)
 
 	memset(tty, 0, sizeof *tty);
 	tty->compositor = compositor;
+	tty->vt_func = vt_func;
 	tty->fd = open("/dev/tty0", O_RDWR | O_NOCTTY);
 	if (tty->fd <= 0) {
 		fprintf(stderr, "failed to open active tty: %m\n");

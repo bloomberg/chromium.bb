@@ -627,6 +627,26 @@ drm_destroy(struct wlsc_compositor *ec)
 	free(d);
 }
 
+static void
+vt_func(struct wlsc_compositor *compositor, int event)
+{
+	struct drm_compositor *ec = (struct drm_compositor *) compositor;
+
+	switch (event) {
+	case TTY_ENTER_VT:
+		compositor->focus = 1;
+		drmSetMaster(ec->drm.fd);
+		compositor->state = WLSC_COMPOSITOR_ACTIVE;
+		wlsc_compositor_damage_all(compositor);
+		break;
+	case TTY_LEAVE_VT:
+		compositor->focus = 0;
+		compositor->state = WLSC_COMPOSITOR_SLEEPING;
+		drmDropMaster(ec->drm.fd);
+		break;
+	};
+}
+
 static struct wlsc_compositor *
 drm_compositor_create(struct wl_display *display, int connector)
 {
@@ -699,7 +719,7 @@ drm_compositor_create(struct wl_display *display, int connector)
 	ec->drm_source =
 		wl_event_loop_add_fd(loop, ec->drm.fd,
 				     WL_EVENT_READABLE, on_drm_input, ec);
-	ec->tty = tty_create(&ec->base);
+	ec->tty = tty_create(&ec->base, vt_func);
 
 	ec->udev_monitor = udev_monitor_new_from_netlink(ec->udev, "udev");
 	if (ec->udev_monitor == NULL) {

@@ -341,8 +341,15 @@ wlsc_switcher_init(struct wlsc_compositor *compositor);
 void
 evdev_input_add_devices(struct wlsc_compositor *c, struct udev *udev);
 
+enum {
+	TTY_ENTER_VT,
+	TTY_LEAVE_VT
+};
+
+typedef void (*tty_vt_func_t)(struct wlsc_compositor *compositor, int event);
+
 struct tty *
-tty_create(struct wlsc_compositor *compositor);
+tty_create(struct wlsc_compositor *compositor, tty_vt_func_t vt_func);
 
 void
 tty_destroy(struct tty *tty);
