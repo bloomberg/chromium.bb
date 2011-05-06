@@ -371,9 +371,14 @@ cr.define('options', function() {
       page.removeAttribute('wireless');
       page.setAttribute('cellular', true);
       if (data.carrierUrl) {
-        var a = $('serviceName').appendChild(document.createElement('a'));
+        var a = $('carrierUrl');
+        if (!a) {
+          a = document.createElement('a');
+          $('serviceName').appendChild(a);
+          a.id = 'carrierUrl';
+          a.target = "_blank";
+        }
         a.href = data.carrierUrl;
-        a.target = "_blank";
         a.textContent = data.serviceName;
       } else {
         $('serviceName').textContent = data.serviceName;

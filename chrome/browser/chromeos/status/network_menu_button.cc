@@ -410,10 +410,9 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
   // of Mobile Data connection or if there's a carrier deal defined
   // show that even if user has already seen generic promo.
   if (IsBrowserMode() && !UserManager::Get()->IsLoggedInAsGuest() &&
-      check_for_promo_ &&
+      check_for_promo_ && BrowserList::GetLastActive() &&
       cros->cellular_connected() && !cros->ethernet_connected() &&
       !cros->wifi_connected()) {
-
     const ServicesCustomizationDocument::CarrierDeal* deal =
         GetCarrierDeal(cros);
     std::string deal_text;
