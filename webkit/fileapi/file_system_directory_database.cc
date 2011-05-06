@@ -59,6 +59,7 @@ bool FileInfoFromPickle(
 const char kChildLookupPrefix[] = "CHILD_OF:";
 const char kChildLookupSeparator[] = ":";
 const char kLastFileIdKey[] = "LAST_FILE_ID";
+const char kLastIntegerKey[] = "LAST_INTEGER";
 
 std::string GetChildLookupKey(
     fileapi::FileSystemDirectoryDatabase::FileId parent_id,
@@ -77,6 +78,10 @@ std::string GetChildListingKeyPrefix(
 
 const char* LastFileIdKey() {
   return kLastFileIdKey;
+}
+
+const char* LastIntegerKey() {
+  return kLastIntegerKey;
 }
 
 std::string GetFileLookupKey(
@@ -116,8 +121,13 @@ bool FileSystemDirectoryDatabase::GetChildWithName(
       db_->Get(leveldb::ReadOptions(), child_key, &child_id_string);
   if (status.IsNotFound())
     return false;
-  if (status.ok())
-    return base::StringToInt64(child_id_string, child_id);
+  if (status.ok()) {
+    if (!base::StringToInt64(child_id_string, child_id)) {
+      LOG(ERROR) << "Hit database corruption!";
+      return false;
+    }
+    return true;
+  }
   HandleError(status);
   return false;
 }
@@ -277,6 +287,40 @@ bool FileSystemDirectoryDatabase::UpdateModificationTime(
   return true;
 }
 
+bool FileSystemDirectoryDatabase::GetNextInteger(int64* next) {
+  if (!Init())
+    return false;
+  DCHECK(next);
+  std::string int_string;
+  leveldb::Status status =
+      db_->Get(leveldb::ReadOptions(), LastIntegerKey(), &int_string);
+  if (status.ok()) {
+    int64 temp;
+    if (!base::StringToInt64(int_string, &temp)) {
+      LOG(ERROR) << "Hit database corruption!";
+      return false;
+    }
+    ++temp;
+    status = db_->Put(leveldb::WriteOptions(), LastIntegerKey(),
+        base::Int64ToString(temp));
+    if (!status.ok()) {
+      HandleError(status);
+      return false;
+    }
+    *next = temp;
+    return true;
+  }
+  if (!status.IsNotFound()) {
+    HandleError(status);
+    return false;
+  }
+  // The database must not yet exist; initialize it.
+  if (!StoreDefaultValues())
+    return false;
+
+  return GetNextInteger(next);
+}
+
 bool FileSystemDirectoryDatabase::Init() {
  if (db_.get())
    return true;
@@ -293,28 +337,16 @@ bool FileSystemDirectoryDatabase::Init() {
  return false;
 }
 
-bool FileSystemDirectoryDatabase::GetLastFileId(FileId* file_id) {
-  if (!Init())
-    return false;
-  DCHECK(file_id);
-  std::string id_string;
-  leveldb::Status status =
-      db_->Get(leveldb::ReadOptions(), LastFileIdKey(), &id_string);
-  if (status.ok())
-    return base::StringToInt64(id_string, file_id);
-  if (!status.IsNotFound()) {
-    HandleError(status);
-    return false;
-  }
+bool FileSystemDirectoryDatabase::StoreDefaultValues() {
   // Verify that this is a totally new database, and initialize it.
   scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(leveldb::ReadOptions()));
   iter->SeekToFirst();
-  if (iter->Valid()) {  // DB was not empty, but had no last fileId!
+  if (iter->Valid()) {  // DB was not empty--we shouldn't have been called.
     LOG(ERROR) << "File system origin database is corrupt!";
     return false;
   }
   // This is always the first write into the database.  If we ever add a
-  // version number, they should go in in a single transaction.
+  // version number, it should go in this transaction too.
   FileInfo root;
   root.parent_id = 0;
   root.modification_time = base::Time::Now();
@@ -322,11 +354,36 @@ bool FileSystemDirectoryDatabase::GetLastFileId(FileId* file_id) {
   if (!AddFileInfoHelper(root, 0, &batch))
     return false;
   batch.Put(LastFileIdKey(), base::Int64ToString(0));
-  status = db_->Write(leveldb::WriteOptions(), &batch);
+  batch.Put(LastIntegerKey(), base::Int64ToString(-1));
+  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
   if (!status.ok()) {
     HandleError(status);
     return false;
   }
+  return true;
+}
+
+bool FileSystemDirectoryDatabase::GetLastFileId(FileId* file_id) {
+  if (!Init())
+    return false;
+  DCHECK(file_id);
+  std::string id_string;
+  leveldb::Status status =
+      db_->Get(leveldb::ReadOptions(), LastFileIdKey(), &id_string);
+  if (status.ok()) {
+    if (!base::StringToInt64(id_string, file_id)) {
+      LOG(ERROR) << "Hit database corruption!";
+      return false;
+    }
+    return true;
+  }
+  if (!status.IsNotFound()) {
+    HandleError(status);
+    return false;
+  }
+  // The database must not yet exist; initialize it.
+  if (!StoreDefaultValues())
+    return false;
   *file_id = 0;
   return true;
 }

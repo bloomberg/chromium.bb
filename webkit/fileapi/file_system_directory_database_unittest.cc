@@ -19,12 +19,17 @@ class FileSystemDirectoryDatabaseTest : public testing::Test {
 
   FileSystemDirectoryDatabaseTest() {
     EXPECT_TRUE(base_.CreateUniqueTempDir());
-    FilePath path = base_.path().AppendASCII("db");
-    db_.reset(new FileSystemDirectoryDatabase(path));
+    InitDatabase();
   }
 
   FileSystemDirectoryDatabase* db() {
     return db_.get();
+  }
+
+  void InitDatabase() {
+    db_.reset();
+    FilePath path = base_.path().AppendASCII("db");
+    db_.reset(new FileSystemDirectoryDatabase(path));
   }
 
   bool AddFileInfo(FileId parent_id, const std::string& name) {
@@ -254,7 +259,6 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestUpdateModificationTime) {
   EXPECT_FALSE(db()->UpdateModificationTime(999, base::Time::UnixEpoch()));
 }
 
-
 TEST_F(FileSystemDirectoryDatabaseTest, TestSimpleFileOperations) {
   FileId file_id = 888;
   FileInfo info0;
@@ -270,6 +274,22 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestSimpleFileOperations) {
   EXPECT_EQ(info0.data_path, info1.data_path);
   EXPECT_EQ(info0.name, info1.name);
   EXPECT_EQ(info0.modification_time, info1.modification_time);
+}
+
+TEST_F(FileSystemDirectoryDatabaseTest, TestGetNextInteger) {
+  int64 next;
+  EXPECT_TRUE(db()->GetNextInteger(&next));
+  EXPECT_EQ(0, next);
+  EXPECT_TRUE(db()->GetNextInteger(&next));
+  EXPECT_EQ(1, next);
+  InitDatabase();
+  EXPECT_TRUE(db()->GetNextInteger(&next));
+  EXPECT_EQ(2, next);
+  EXPECT_TRUE(db()->GetNextInteger(&next));
+  EXPECT_EQ(3, next);
+  InitDatabase();
+  EXPECT_TRUE(db()->GetNextInteger(&next));
+  EXPECT_EQ(4, next);
 }
 
 }  // namespace fileapi

@@ -67,12 +67,18 @@ class FileSystemDirectoryDatabase {
   bool UpdateModificationTime(
       FileId file_id, const base::Time& modification_time);
 
+  // This produces the series 0, 1, 2..., starting at 0 when the underlying
+  // filesystem is first created, and maintaining state across
+  // creation/destruction of FileSystemDirectoryDatabase objects.
+  bool GetNextInteger(int64* next);
+
  private:
   bool Init();
+  bool StoreDefaultValues();
   bool GetLastFileId(FileId* file_id);
   bool VerifyIsDirectory(FileId file_id);
   bool AddFileInfoHelper(
-    const FileInfo& info, FileId file_id, leveldb::WriteBatch* batch);
+      const FileInfo& info, FileId file_id, leveldb::WriteBatch* batch);
   bool RemoveFileInfoHelper(FileId file_id, leveldb::WriteBatch* batch);
   void HandleError(leveldb::Status status);
 
