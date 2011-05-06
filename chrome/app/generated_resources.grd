@@ -747,9 +747,6 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
         <message name="IDS_PASTE" desc="The text label of the Paste menu item">
           &amp;Paste
         </message>
-        <message name="IDS_DELETE" desc="The text label of the Delete menu item (which deletes selected text without copying to clipboard)">
-          &amp;Delete
-        </message>
         <message name="IDS_SELECT_ALL" desc="The text label of the Select All menu item">
           Select &amp;all
         </message>
@@ -826,9 +823,6 @@ Other platform defines such as use_titlecase are declared in build/common.gypi.
         </message>
         <message name="IDS_PASTE" desc="In Title Case: The text label of the Paste menu item">
           &amp;Paste
-        </message>
-        <message name="IDS_DELETE" desc="In Title Case: The text label of the Delete menu item (which deletes selected text without copying to clipboard)">
-          &amp;Delete
         </message>
         <message name="IDS_SELECT_ALL" desc="In Title Case: The text label of the Select All menu item">
           Select &amp;All
