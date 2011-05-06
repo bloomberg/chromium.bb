@@ -11,6 +11,7 @@
 #include "base/environment.h"
 #include "base/file_path.h"
 #include "base/file_version_info_win.h"
+#include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -274,7 +275,7 @@ void ModuleEnumerator::NormalizeModule(Module* module) {
   if (!ConvertToLongPath(path, &module->location))
     module->location = path;
 
-  module->location = l10n_util::ToLower(module->location);
+  module->location = base::i18n::ToLower(module->location);
 
   // Location contains the filename, so the last slash is where the path
   // ends.
@@ -586,8 +587,8 @@ void ModuleEnumerator::PreparePathMappings() {
     std::string path;
     if (environment->GetVar(WideToASCII(*variable).c_str(), &path)) {
       path_mapping_.push_back(
-          std::make_pair(l10n_util::ToLower(UTF8ToWide(path)) + L"\\",
-                         L"%" + l10n_util::ToLower(*variable) + L"%"));
+          std::make_pair(base::i18n::WideToLower(UTF8ToWide(path)) + L"\\",
+                         L"%" + base::i18n::ToLower(*variable) + L"%"));
     }
   }
 }

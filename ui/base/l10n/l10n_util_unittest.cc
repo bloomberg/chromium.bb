@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/environment.h"
 #include "base/file_util.h"
+#include "base/i18n/case_conversion.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -303,19 +304,6 @@ TEST_F(L10nUtilTest, SortStringsUsingFunction) {
   STLDeleteElements(&strings);
 }
 
-// Test upper and lower case string conversion.
-TEST_F(L10nUtilTest, UpperLower) {
-  string16 mixed(ASCIIToUTF16("Text with UPPer & lowER casE."));
-  const string16 expected_lower(ASCIIToUTF16("text with upper & lower case."));
-  const string16 expected_upper(ASCIIToUTF16("TEXT WITH UPPER & LOWER CASE."));
-
-  string16 result = l10n_util::ToLower(mixed);
-  EXPECT_EQ(expected_lower, result);
-
-  result = l10n_util::ToUpper(mixed);
-  EXPECT_EQ(expected_upper, result);
-}
-
 TEST_F(L10nUtilTest, LocaleDisplayName) {
   // TODO(jungshik): Make this test more extensive.
   // Test zh-CN and zh-TW are treated as zh-Hans and zh-Hant.
@@ -336,12 +324,12 @@ TEST_F(L10nUtilTest, LocaleDisplayName) {
   char16 buf_with_null[length_with_null] = { 0, 'a', 0, 'b' };
   string16 string16_with_null(buf_with_null, length_with_null);
 
-  string16 upper_with_null = l10n_util::ToUpper(string16_with_null);
+  string16 upper_with_null = base::i18n::ToUpper(string16_with_null);
   ASSERT_EQ(length_with_null, upper_with_null.size());
   EXPECT_TRUE(upper_with_null[0] == 0 && upper_with_null[1] == 'A' &&
               upper_with_null[2] == 0 && upper_with_null[3] == 'B');
 
-  string16 lower_with_null = l10n_util::ToLower(upper_with_null);
+  string16 lower_with_null = base::i18n::ToLower(upper_with_null);
   ASSERT_EQ(length_with_null, upper_with_null.size());
   EXPECT_TRUE(lower_with_null[0] == 0 && lower_with_null[1] == 'a' &&
               lower_with_null[2] == 0 && lower_with_null[3] == 'b');

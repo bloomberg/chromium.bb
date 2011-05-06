@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/callback.h"
+#include "base/i18n/case_conversion.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
@@ -836,7 +837,7 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
   // NOTE: Keep this ToLower() call in sync with url_database.cc.
   const std::pair<MatchMap::iterator, bool> i = map->insert(
       std::pair<string16, AutocompleteMatch>(
-          l10n_util::ToLower(query_string), match));
+          base::i18n::ToLower(query_string), match));
   // NOTE: We purposefully do a direct relevance comparison here instead of
   // using AutocompleteMatch::MoreRelevant(), so that we'll prefer "items added
   // first" rather than "items alphabetically first" when the scores are equal.

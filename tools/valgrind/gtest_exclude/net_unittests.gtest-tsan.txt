@@ -22,6 +22,3 @@ DirectoryListerTest.BigDirRecursiveTest
 
 # Crashes silently, see http://crbug.com/76911
 URLRequestTest.FileTest
-
-# This test does not finish in our time-out period. http://crbug.com/79022
-FtpDirectoryListingBufferTest.Parse

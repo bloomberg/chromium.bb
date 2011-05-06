@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "app/sql/statement.h"
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
@@ -429,7 +430,7 @@ bool AutofillTable::GetFormValuesForElementName(const string16& name,
     s.BindString16(0, name);
     s.BindInt(1, limit);
   } else {
-    string16 prefix_lower = l10n_util::ToLower(prefix);
+    string16 prefix_lower = base::i18n::ToLower(prefix);
     string16 next_prefix = prefix_lower;
     next_prefix[next_prefix.length() - 1]++;
 
@@ -625,7 +626,7 @@ bool AutofillTable::InsertFormElement(const FormField& element,
 
   s.BindString16(0, element.name);
   s.BindString16(1, element.value);
-  s.BindString16(2, l10n_util::ToLower(element.value));
+  s.BindString16(2, base::i18n::ToLower(element.value));
 
   if (!s.Run()) {
     NOTREACHED();
@@ -824,7 +825,7 @@ bool AutofillTable::InsertAutofillEntry(const AutofillEntry& entry) {
 
   s.BindString16(0, entry.key().name());
   s.BindString16(1, entry.key().value());
-  s.BindString16(2, l10n_util::ToLower(entry.key().value()));
+  s.BindString16(2, base::i18n::ToLower(entry.key().value()));
   s.BindInt(3, entry.timestamps().size());
 
   if (!s.Run()) {

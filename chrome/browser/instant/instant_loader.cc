@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/i18n/case_conversion.h"
 #include "base/string_number_conversions.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -685,9 +686,9 @@ bool InstantLoader::Update(TabContentsWrapper* tab_contents,
       host->Send(new ViewMsg_SearchBoxChange(
           host->routing_id(), user_text_, verbatim, text_length, text_length));
 
-      string16 complete_suggested_text_lower = l10n_util::ToLower(
+      string16 complete_suggested_text_lower = base::i18n::ToLower(
           complete_suggested_text_);
-      string16 user_text_lower = l10n_util::ToLower(user_text_);
+      string16 user_text_lower = base::i18n::ToLower(user_text_);
       if (!verbatim &&
           complete_suggested_text_lower.size() > user_text_lower.size() &&
           !complete_suggested_text_lower.compare(0, user_text_lower.size(),
@@ -841,8 +842,8 @@ void InstantLoader::SetCompleteSuggestedText(
     return;
   }
 
-  string16 user_text_lower = l10n_util::ToLower(user_text_);
-  string16 complete_suggested_text_lower = l10n_util::ToLower(
+  string16 user_text_lower = base::i18n::ToLower(user_text_);
+  string16 complete_suggested_text_lower = base::i18n::ToLower(
       complete_suggested_text);
   last_suggestion_.clear();
   if (user_text_lower.compare(0, user_text_lower.size(),

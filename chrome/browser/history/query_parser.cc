@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/break_iterator.h"
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -313,7 +314,7 @@ int QueryParser::ParseQuery(const string16& query, string16* sqlite_query) {
 void QueryParser::ParseQuery(const string16& query,
                              std::vector<QueryNode*>* nodes) {
   QueryNodeList root;
-  if (ParseQueryImpl(l10n_util::ToLower(query), &root))
+  if (ParseQueryImpl(base::i18n::ToLower(query), &root))
     nodes->swap(*root.children());
 }
 
@@ -333,7 +334,7 @@ bool QueryParser::DoesQueryMatch(const string16& text,
     return false;
 
   std::vector<QueryWord> query_words;
-  string16 lower_text = l10n_util::ToLower(text);
+  string16 lower_text = base::i18n::ToLower(text);
   ExtractQueryWords(lower_text, &query_words);
 
   if (query_words.empty())

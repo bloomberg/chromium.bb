@@ -13,6 +13,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/i18n/case_conversion.h"
 #include "base/message_loop.h"
 #include "base/string_split.h"
 #include "base/threading/thread.h"
@@ -143,7 +144,7 @@ std::wstring FormatFilterForExtensions(
         // the we create a description "QQQ File (.qqq)").
         include_all_files = true;
         desc = l10n_util::GetStringFUTF16(IDS_APP_SAVEAS_EXTENSION_FORMAT,
-                                          l10n_util::ToUpper(ext_name),
+                                          base::i18n::WideToUpper(ext_name),
                                           ext_name);
       }
       if (desc.empty())

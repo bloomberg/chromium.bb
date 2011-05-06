@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
@@ -191,7 +192,7 @@ void DownloadManager::SearchDownloads(const string16& query,
                                       std::vector<DownloadItem*>* result) {
   DCHECK(result);
 
-  string16 query_lower(l10n_util::ToLower(query));
+  string16 query_lower(base::i18n::ToLower(query));
 
   for (DownloadMap::iterator it = history_downloads_.begin();
        it != history_downloads_.end(); ++it) {

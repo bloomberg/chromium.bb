@@ -12,6 +12,7 @@
 
 #include "base/file_util.h"
 #include "base/i18n/break_iterator.h"
+#include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -180,7 +181,7 @@ bool InMemoryURLIndex::IndexRow(const URLRow& row) {
   history_info_map_[history_id] = new_row;
 
   // Split URL into individual, unique words then add in the title words.
-  url = l10n_util::ToLower(url);
+  url = base::i18n::ToLower(url);
   String16Set url_words = WordSetFromString16(url);
   String16Set title_words = WordSetFromString16(row.title());
   String16Set words;
@@ -353,7 +354,7 @@ ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
     String16Vector lower_terms;
     for (String16Vector::const_iterator term_iter = terms.begin();
          term_iter != terms.end(); ++term_iter)
-      lower_terms.push_back(l10n_util::ToLower(*term_iter));
+      lower_terms.push_back(base::i18n::ToLower(*term_iter));
 
     String16Vector::value_type all_terms(JoinString(lower_terms, ' '));
     HistoryIDSet history_id_set = HistoryIDSetFromWords(all_terms);
@@ -477,7 +478,7 @@ InMemoryURLIndex::String16Set InMemoryURLIndex::WordSetFromString16(
   String16Set word_set;
   for (String16Vector::const_iterator iter = words.begin(); iter != words.end();
        ++iter)
-    word_set.insert(l10n_util::ToLower(*iter));
+    word_set.insert(base::i18n::ToLower(*iter));
   return word_set;
 }
 
@@ -710,8 +711,8 @@ ScoredHistoryMatch InMemoryURLIndex::ScoredMatchForURL(
 
   // Figure out where each search term appears in the URL and/or page title
   // so that we can score as well as provide autocomplete highlighting.
-  string16 url = l10n_util::ToLower(UTF8ToUTF16(gurl.spec()));
-  string16 title = l10n_util::ToLower(row.title());
+  string16 url = base::i18n::ToLower(UTF8ToUTF16(gurl.spec()));
+  string16 title = base::i18n::ToLower(row.title());
   int term_num = 0;
   for (String16Vector::const_iterator iter = terms.begin(); iter != terms.end();
        ++iter, ++term_num) {

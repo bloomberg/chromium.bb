@@ -779,26 +779,6 @@ string16 TruncateString(const string16& string, size_t length) {
   return string.substr(0, index) + kElideString;
 }
 
-string16 ToLower(const string16& string) {
-  icu::UnicodeString lower_u_str(
-      icu::UnicodeString(FALSE, string.c_str(), string.size()).toLower(
-          icu::Locale::getDefault()));
-  string16 result;
-  lower_u_str.extract(0, lower_u_str.length(),
-                      WriteInto(&result, lower_u_str.length() + 1));
-  return result;
-}
-
-string16 ToUpper(const string16& string) {
-  icu::UnicodeString upper_u_str(
-      icu::UnicodeString(FALSE, string.c_str(), string.size()).toUpper(
-          icu::Locale::getDefault()));
-  string16 result;
-  upper_u_str.extract(0, upper_u_str.length(),
-                      WriteInto(&result, upper_u_str.length() + 1));
-  return result;
-}
-
 // Compares the character data stored in two different string16 strings by
 // specified Collator instance.
 UCollationResult CompareString16WithCollator(const icu::Collator* collator,

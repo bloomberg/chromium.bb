@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/i18n/case_conversion.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -153,7 +154,7 @@ string16 TemplateURLModel::GenerateKeyword(const GURL& url,
 // static
 string16 TemplateURLModel::CleanUserInputKeyword(const string16& keyword) {
   // Remove the scheme.
-  string16 result(l10n_util::ToLower(keyword));
+  string16 result(base::i18n::ToLower(keyword));
   url_parse::Component scheme_component;
   if (url_parse::ExtractScheme(UTF16ToUTF8(keyword).c_str(),
                                static_cast<int>(keyword.length()),

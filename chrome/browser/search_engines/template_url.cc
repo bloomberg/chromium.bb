@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/template_url.h"
 
+#include "base/i18n/case_conversion.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -628,7 +629,7 @@ void TemplateURL::SetInstantURL(const std::string& url,
 void TemplateURL::set_keyword(const string16& keyword) {
   // Case sensitive keyword matching is confusing. As such, we force all
   // keywords to be lower case.
-  keyword_ = l10n_util::ToLower(keyword);
+  keyword_ = base::i18n::ToLower(keyword);
   autogenerate_keyword_ = false;
 }
 

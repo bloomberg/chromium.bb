@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <iterator>
 #include <list>
 
+#include "base/i18n/case_conversion.h"
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -242,8 +243,9 @@ std::vector<string16> BookmarkIndex::ExtractQueryWords(const string16& query) {
   if (query.empty())
     return std::vector<string16>();
   QueryParser parser;
-  // TODO: use ICU normalization.
-  parser.ExtractQueryWords(l10n_util::ToLower(query), &terms);
+  // TODO(brettw): use ICU normalization:
+  // http://userguide.icu-project.org/transforms/normalization
+  parser.ExtractQueryWords(base::i18n::ToLower(query), &terms);
   return terms;
 }
 

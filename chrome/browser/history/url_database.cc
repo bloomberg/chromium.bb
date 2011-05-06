@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "app/sql/statement.h"
+#include "base/i18n/case_conversion.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -426,7 +427,7 @@ bool URLDatabase::SetKeywordSearchTermsForURL(URLID url_id,
 
   statement.BindInt64(0, keyword_id);
   statement.BindInt64(1, url_id);
-  statement.BindString16(2, l10n_util::ToLower(term));
+  statement.BindString16(2, base::i18n::ToLower(term));
   statement.BindString16(3, term);
   return statement.Run();
 }
@@ -485,7 +486,7 @@ void URLDatabase::GetMostRecentKeywordSearchTerms(
     return;
 
   // NOTE: Keep this ToLower() call in sync with search_provider.cc.
-  string16 lower_prefix = l10n_util::ToLower(prefix);
+  string16 lower_prefix = base::i18n::ToLower(prefix);
   // This magic gives us a prefix search.
   string16 next_prefix = lower_prefix;
   next_prefix[next_prefix.size() - 1] =

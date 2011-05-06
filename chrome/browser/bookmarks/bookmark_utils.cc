@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/i18n/case_conversion.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
@@ -194,10 +195,10 @@ bool DoesBookmarkContainWords(const BookmarkNode* node,
                               const std::string& languages) {
   return
       DoesBookmarkTextContainWords(
-          l10n_util::ToLower(node->GetTitle()), words) ||
+          base::i18n::ToLower(node->GetTitle()), words) ||
       DoesBookmarkTextContainWords(
-          l10n_util::ToLower(UTF8ToUTF16(node->GetURL().spec())), words) ||
-      DoesBookmarkTextContainWords(l10n_util::ToLower(
+          base::i18n::ToLower(UTF8ToUTF16(node->GetURL().spec())), words) ||
+      DoesBookmarkTextContainWords(base::i18n::ToLower(
           net::FormatUrl(node->GetURL(), languages, net::kFormatUrlOmitNothing,
                          UnescapeRule::NORMAL, NULL, NULL, NULL)), words);
 }
@@ -519,7 +520,7 @@ void GetBookmarksContainingText(BookmarkModel* model,
                                 std::vector<const BookmarkNode*>* nodes) {
   std::vector<string16> words;
   QueryParser parser;
-  parser.ExtractQueryWords(l10n_util::ToLower(text), &words);
+  parser.ExtractQueryWords(base::i18n::ToLower(text), &words);
   if (words.empty())
     return;
 
@@ -539,7 +540,7 @@ bool DoesBookmarkContainText(const BookmarkNode* node,
                              const std::string& languages) {
   std::vector<string16> words;
   QueryParser parser;
-  parser.ExtractQueryWords(l10n_util::ToLower(text), &words);
+  parser.ExtractQueryWords(base::i18n::ToLower(text), &words);
   if (words.empty())
     return false;
 

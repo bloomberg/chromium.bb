@@ -131,12 +131,6 @@ string16 GetStringFUTF16Int(int message_id, int64 a);
 // less.
 string16 TruncateString(const string16& string, size_t length);
 
-// Returns the lower case equivalent of string.
-string16 ToLower(const string16& string);
-
-// Returns the upper case equivalent of string.
-string16 ToUpper(const string16& string);
-
 // In place sorting of string16 strings using collation rules for |locale|.
 void SortStrings16(const std::string& locale,
                    std::vector<string16>* strings);

@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
@@ -538,9 +539,9 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
   if (query.empty())
     return true;
 
-  DCHECK_EQ(query, l10n_util::ToLower(query));
+  DCHECK_EQ(query, base::i18n::ToLower(query));
 
-  string16 url_raw(l10n_util::ToLower(UTF8ToUTF16(url().spec())));
+  string16 url_raw(base::i18n::ToLower(UTF8ToUTF16(url().spec())));
   if (url_raw.find(query) != string16::npos)
     return true;
 
@@ -551,11 +552,11 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
   //   "/%E4%BD%A0%E5%A5%BD%E4%BD%A0%E5%A5%BD"
   PrefService* prefs = download_manager_->profile()->GetPrefs();
   std::string languages(prefs->GetString(prefs::kAcceptLanguages));
-  string16 url_formatted(l10n_util::ToLower(net::FormatUrl(url(), languages)));
+  string16 url_formatted(base::i18n::ToLower(net::FormatUrl(url(), languages)));
   if (url_formatted.find(query) != string16::npos)
     return true;
 
-  string16 path(l10n_util::ToLower(full_path().LossyDisplayName()));
+  string16 path(base::i18n::ToLower(full_path().LossyDisplayName()));
   // This shouldn't just do a substring match; it is wrong for Unicode
   // due to normalization and we have a fancier search-query system
   // used elsewhere.

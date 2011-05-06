@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -199,7 +200,7 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
 }
 
 void PhishingTermFeatureExtractor::HandleWord(const string16& word) {
-  std::string word_lower = UTF16ToUTF8(l10n_util::ToLower(word));
+  std::string word_lower = UTF16ToUTF8(base::i18n::ToLower(word));
   std::string word_hash = crypto::SHA256HashString(word_lower);
 
   // Quick out if the word is not part of any term, which is the common case.

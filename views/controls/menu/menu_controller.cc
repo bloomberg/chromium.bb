@@ -4,6 +4,7 @@
 
 #include "views/controls/menu/menu_controller.h"
 
+#include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -61,8 +62,7 @@ bool TitleMatchesMnemonic(MenuItemView* menu, wchar_t key) {
   if (menu->GetMnemonic())
     return false;
 
-  std::wstring lower_title = UTF16ToWide(
-      l10n_util::ToLower(WideToUTF16(menu->GetTitle())));
+  std::wstring lower_title = base::i18n::WideToLower(menu->GetTitle());
   return !lower_title.empty() && lower_title[0] == key;
 }
 
@@ -1661,7 +1661,7 @@ bool MenuController::AcceptOrSelect(MenuItemView* parent,
 
 bool MenuController::SelectByChar(wchar_t character) {
   wchar_t char_array[1] = { character };
-  wchar_t key = UTF16ToWide(l10n_util::ToLower(WideToUTF16(char_array)))[0];
+  wchar_t key = base::i18n::WideToLower(char_array)[0];
   MenuItemView* item = pending_state_.item;
   if (!item->HasSubmenu() || !item->GetSubmenu()->IsShowing())
     item = item->GetParentMenuItem();

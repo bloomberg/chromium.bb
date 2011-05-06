@@ -4,6 +4,7 @@
 
 #include "views/controls/menu/menu_item_view.h"
 
+#include "base/i18n/case_conversion.h"
 #include "base/utf_string_conversions.h"
 #include "grit/app_strings.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -393,7 +394,11 @@ wchar_t MenuItemView::GetMnemonic() {
     if (index != std::wstring::npos) {
       if (index + 1 != title.size() && title[index + 1] != '&') {
         wchar_t char_array[1] = { title[index + 1] };
-        return UTF16ToWide(l10n_util::ToLower(WideToUTF16(char_array)))[0];
+        // TODO(jshin): What about Turkish locale? See http://crbug.com/81719.
+        // If the mnemonic is capital I and the UI language is Turkish,
+        // lowercasing it results in 'small dotless i', which is different
+        // from a 'dotted i'. Similar issues may exist for az and lt locales.
+        return base::i18n::WideToLower(char_array)[0];
       }
       index++;
     }
