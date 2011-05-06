@@ -62,7 +62,8 @@ ExistingUserController* ExistingUserController::current_controller_ = NULL;
 // ExistingUserController, public:
 
 ExistingUserController::ExistingUserController(LoginDisplayHost* host)
-    : host_(host),
+    : login_status_consumer_(NULL),
+      host_(host),
       num_login_attempts_(0),
       user_settings_(new UserCrosSettingsProvider),
       method_factory_(this) {
