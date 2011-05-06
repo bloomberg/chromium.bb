@@ -6,6 +6,7 @@ ErrorPageTest.IFrameDNSError_GoBack
 ErrorPageTest.DNSError_GoBack1
 # Hung one each on the mac bots
 AutomatedUITestBase.CloseBrowserWindow
+AutomatedUITestBase.DuplicateTab
 AutomatedUITestBase.OpenBrowserWindow
 ErrorPageTest.DNSError_GoBack2
 ResourceDispatcherTest.CrossSiteNavigationErrorPage
@@ -169,13 +170,16 @@ ErrorPageTest.Page404_GoBack
 NamedInterfaceTest.BasicNamedInterface
 
 # Fails to start the browser, see http://crbug.com/75249
+AutomationProxySnapshotTest.ContentLargerThanView
 AutomationProxyTest.AcceleratorNewTab
+HistoryTester.VerifyHistoryLength1
 HistoryTester.VerifyHistoryLength2
 RedirectTest.ClientServerServer
 DomCheckerTest.File
 ResourceDispatcherTest.CrossSiteNavigationNonBuffered
 ResourceDispatcherTest.CrossSiteNoUnloadOn204
 ResourceDispatcherTest.CrossSiteOnunloadCookie
+ResourceDispatcherTest.CrossOriginRedirectBlocked
 ResourceDispatcherTest.SniffHTMLWithNoContentType
 
 # Fails, see http://crbug.com/75250
