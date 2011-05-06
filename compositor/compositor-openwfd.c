@@ -16,6 +16,8 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -163,7 +165,7 @@ wfd_output_prepare_scanout_surface(struct wlsc_output *output_base,
 
 static int
 wfd_output_set_cursor(struct wlsc_output *output_base,
-		      struct wl_input_device *input)
+		      struct wlsc_input_device *input)
 {
 	return -1;
 }
@@ -507,7 +509,15 @@ wfd_destroy(struct wlsc_compositor *ec)
 	free(d);
 }
 
-struct wlsc_compositor *
+/* FIXME: Just add a stub here for now
+ * handle drm{Set,Drop}Master in owfdrm somehow */
+static void
+vt_func(struct wlsc_compositor *compositor, int event)
+{
+	return;
+}
+
+static struct wlsc_compositor *
 wfd_compositor_create(struct wl_display *display, int connector)
 {
 	struct wfd_compositor *ec;
@@ -574,10 +584,13 @@ wfd_compositor_create(struct wl_display *display, int connector)
 		wl_event_loop_add_fd(loop,
 				     wfdDeviceEventGetFD(ec->dev, ec->event),
 				     WL_EVENT_READABLE, on_wfd_event, ec);
-	ec->tty = tty_create(&ec->base);
+	ec->tty = tty_create(&ec->base, vt_func);
 
 	return &ec->base;
 }
+
+struct wlsc_compositor *
+backend_init(struct wl_display *display, char *options);
 
 struct wlsc_compositor *
 backend_init(struct wl_display *display, char *options)
