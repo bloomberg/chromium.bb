@@ -878,12 +878,10 @@ std::string AboutSandbox() {
 
   AboutSandboxRow(&data, "", IDS_ABOUT_SANDBOX_SUID_SANDBOX,
                   status & ZygoteHost::kSandboxSUID);
-  if (status & ZygoteHost::kSandboxPIDNS) {
-    AboutSandboxRow(&data, "&nbsp;&nbsp;", IDS_ABOUT_SANDBOX_PID_NAMESPACES,
-                    status & ZygoteHost::kSandboxPIDNS);
-    AboutSandboxRow(&data, "&nbsp;&nbsp;", IDS_ABOUT_SANDBOX_NET_NAMESPACES,
-                    status & ZygoteHost::kSandboxNetNS);
-  }
+  AboutSandboxRow(&data, "&nbsp;&nbsp;", IDS_ABOUT_SANDBOX_PID_NAMESPACES,
+                  status & ZygoteHost::kSandboxPIDNS);
+  AboutSandboxRow(&data, "&nbsp;&nbsp;", IDS_ABOUT_SANDBOX_NET_NAMESPACES,
+                  status & ZygoteHost::kSandboxNetNS);
   AboutSandboxRow(&data, "", IDS_ABOUT_SANDBOX_SECCOMP_SANDBOX,
                   status & ZygoteHost::kSandboxSeccomp);
 
