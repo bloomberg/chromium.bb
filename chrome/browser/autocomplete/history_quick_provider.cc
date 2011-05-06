@@ -104,7 +104,7 @@ void HistoryQuickProvider::DoAutocomplete() {
   // |max_match_score|. Upon use of |max_match_score| it is decremented.
   // All subsequent matches must be clamped to retain match results ordering.
   int max_match_score = autocomplete_input_.prevent_inline_autocomplete() ?
-      kMaxNonInliningScore : 1425;
+      kMaxNonInliningScore : -1;
   for (ScoredHistoryMatches::const_iterator match_iter = matches.begin();
        match_iter != matches.end(); ++match_iter) {
     const ScoredHistoryMatch& history_match(*match_iter);
@@ -187,8 +187,8 @@ int HistoryQuickProvider::CalculateRelevance(
   // match in the URL.
   int score = (history_match.can_inline) ? history_match.raw_score :
       std::min(kMaxNonInliningScore, history_match.raw_score);
-  *max_match_score = ((*max_match_score < 0) ? score :
-                      std::min(score, *max_match_score)) - 1;
+  *max_match_score = ((*max_match_score < 0) ?
+      score : std::min(score, *max_match_score)) - 1;
   return *max_match_score + 1;
 }
 
