@@ -2186,6 +2186,7 @@
         '../v8/tools/gyp/v8.gyp:v8',
         # Runtime dependencies
         'chrome_mesa',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:copy_TestNetscapePlugIn',
       ],
       'include_dirs': [
         '..',
