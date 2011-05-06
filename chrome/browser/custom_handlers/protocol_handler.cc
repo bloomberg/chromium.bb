@@ -55,7 +55,7 @@ GURL ProtocolHandler::TranslateUrl(const GURL& url) {
   return GURL(translatedUrlSpec);
 }
 
-Value* ProtocolHandler::Encode() {
+DictionaryValue* ProtocolHandler::Encode() {
   DictionaryValue* d = new DictionaryValue();
   d->Set("protocol", Value::CreateStringValue(protocol_));
   d->Set("url", Value::CreateStringValue(url_.spec()));

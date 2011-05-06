@@ -20,6 +20,8 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
  public:
   virtual ~FakeDelegate() { }
   virtual void RegisterExternalHandler(const std::string& protocol) {
+    ASSERT_TRUE(
+        registered_protocols_.find(protocol) == registered_protocols_.end());
     registered_protocols_.insert(protocol);
   }
   virtual void DeregisterExternalHandler(const std::string& protocol) {
@@ -62,19 +64,15 @@ class ProtocolHandlerRegistryTest : public testing::Test {
         name);
   }
 
-  ProtocolHandler MakeProtocolHandler(const std::string& protocol) {
-    return CreateProtocolHandler(protocol, GURL("http://blah.com/%s"),
-        protocol);
-  }
-
   void ReloadProtocolHandlerRegistry() {
-    delegate_ = new FakeDelegate(*delegate_);  // Copy across the delegate.
+    delegate_ = new FakeDelegate();
     registry_ = new ProtocolHandlerRegistry(profile(), delegate());
     registry_->Load();
   }
 
  private:
   virtual void SetUp() {
+    test_protocol_handler_ = CreateProtocolHandler("test", "test");
     profile_.reset(new TestingProfile());
     profile_->SetPrefService(new TestingPrefService());
     delegate_ = new FakeDelegate();
@@ -116,7 +114,8 @@ TEST_F(ProtocolHandlerRegistryTest, IgnoreProtocolHandler) {
 }
 
 TEST_F(ProtocolHandlerRegistryTest, SaveAndLoad) {
-  ProtocolHandler stuff_protocol_handler(MakeProtocolHandler("stuff"));
+  ProtocolHandler stuff_protocol_handler(
+      CreateProtocolHandler("stuff", "stuff"));
   registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
   registry()->OnIgnoreRegisterProtocolHandler(stuff_protocol_handler);
 
@@ -141,3 +140,106 @@ TEST_F(ProtocolHandlerRegistryTest,
   ASSERT_FALSE(registry()->CanSchemeBeOverridden("test"));
 }
 
+TEST_F(ProtocolHandlerRegistryTest, TestStartsAsDefault) {
+  registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
+  ASSERT_TRUE(registry()->IsDefault(test_protocol_handler()));
+}
+
+TEST_F(ProtocolHandlerRegistryTest,
+    TestClearDefaultDoesntClearImplicitDefault) {
+  registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
+  registry()->ClearDefault("test");
+  ASSERT_TRUE(registry()->IsDefault(test_protocol_handler()));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestClearDefault) {
+  ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("test", "test2");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  registry()->OnAcceptRegisterProtocolHandler(ph2);
+
+  registry()->SetDefault(ph2);
+  registry()->ClearDefault("test");
+  ASSERT_FALSE(registry()->IsDefault(ph2));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestGetHandlerFor) {
+  ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("test", "test2");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  registry()->OnAcceptRegisterProtocolHandler(ph2);
+
+  registry()->SetDefault(ph2);
+  ASSERT_EQ(ph2, registry()->GetHandlerFor("test"));
+  ASSERT_TRUE(registry()->HasDefault("test"));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestMultipleHandlersClearsDefault) {
+  ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("test", "test2");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  registry()->OnAcceptRegisterProtocolHandler(ph2);
+  ASSERT_FALSE(registry()->IsDefault(ph1));
+  ASSERT_FALSE(registry()->IsDefault(ph2));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestSetDefault) {
+  ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("test", "test2");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  registry()->OnAcceptRegisterProtocolHandler(ph2);
+
+  registry()->SetDefault(ph1);
+  ASSERT_TRUE(registry()->IsDefault(ph1));
+  ASSERT_FALSE(registry()->IsDefault(ph2));
+
+  registry()->SetDefault(ph2);
+  ASSERT_FALSE(registry()->IsDefault(ph1));
+  ASSERT_TRUE(registry()->IsDefault(ph2));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestDefaultSaveLoad) {
+  ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("test", "test2");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  registry()->OnAcceptRegisterProtocolHandler(ph2);
+
+  registry()->SetDefault(ph2);
+
+  ReloadProtocolHandlerRegistry();
+
+  ASSERT_FALSE(registry()->IsDefault(ph1));
+  ASSERT_TRUE(registry()->IsDefault(ph2));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestRemoveHandler) {
+  ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+
+  registry()->RemoveHandler(ph1);
+  ASSERT_FALSE(registry()->IsRegistered(ph1));
+  ASSERT_FALSE(registry()->HasHandler("test"));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestIsRegistered) {
+  ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("test", "test2");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  registry()->OnAcceptRegisterProtocolHandler(ph2);
+
+  ASSERT_TRUE(registry()->IsRegistered(ph1));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestRemoveHandlerRemovesDefault) {
+  ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("test", "test2");
+  ProtocolHandler ph3 = CreateProtocolHandler("test", "test3");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  registry()->OnAcceptRegisterProtocolHandler(ph2);
+  registry()->OnAcceptRegisterProtocolHandler(ph3);
+
+  registry()->SetDefault(ph1);
+  registry()->RemoveHandler(ph1);
+  ASSERT_FALSE(registry()->IsDefault(ph1));
+}

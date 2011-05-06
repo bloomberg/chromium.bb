@@ -36,9 +36,9 @@ class ProtocolHandler {
   // Interpolates the given URL into the URL template of this handler.
   GURL TranslateUrl(const GURL& url);
 
-  // Encodes this protocol handler as a Value. The caller is responsible for
-  // deleting the returned value.
-  Value* Encode();
+  // Encodes this protocol handler as a DictionaryValue. The caller is
+  // responsible for deleting the returned value.
+  DictionaryValue* Encode();
 
   std::string protocol() const { return protocol_; }
   GURL url() const { return url_;}

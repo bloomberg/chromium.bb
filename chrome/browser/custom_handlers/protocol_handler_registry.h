@@ -13,14 +13,14 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
+#include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
-class ProtocolHandler;
-
 typedef std::map<std::string, ProtocolHandler> ProtocolHandlerMap;
 typedef std::vector<ProtocolHandler> ProtocolHandlerList;
+typedef std::map<std::string, ProtocolHandlerList> ProtocolHandlerMultiMap;
 
 // This is where handlers for protocols registered with
 // navigator.registerProtocolHandler() are registered. Each Profile owns an
@@ -46,17 +46,31 @@ class ProtocolHandlerRegistry
   // given protocol handler again.
   void OnIgnoreRegisterProtocolHandler(const ProtocolHandler& handler);
 
+  // Makes this ProtocolHandler the default handler for its protocol.
+  void SetDefault(const ProtocolHandler& handler);
+
+  // Clears the default for the provided protocol.
+  void ClearDefault(const std::string& scheme);
+
+  // Returns true if this handler is the default handler for its protocol.
+  bool IsDefault(const ProtocolHandler& handler) const;
+
+  // Returns true if the given protocol has a default handler associated with
+  // it.
+  const bool HasDefault(const std::string& scheme) const;
+
+  // Returns true if there is a handler registered for the given protocol.
+  bool HasHandler(const std::string& scheme);
+
   // Loads a user's registered protocol handlers.
   void Load();
 
   // Saves a user's registered protocol handlers.
   void Save();
 
-  // Returns true if there is a handler registered for the given protocol.
-  bool HandlerExistsFor(const std::string& scheme) const;
-
-  // Returns the handler for this protocol.
-  ProtocolHandler GetHandlerFor(const std::string& scheme) const;
+  // Returns the default handler for this protocol, or an empty handler if none
+  // exists.
+  const ProtocolHandler& GetHandlerFor(const std::string& scheme) const;
 
   // Yields a list of the protocols handled by this registry.
   void GetHandledProtocols(std::vector<std::string>* output) const;
@@ -66,7 +80,7 @@ class ProtocolHandlerRegistry
   bool CanSchemeBeOverridden(const std::string& scheme) const;
 
   // Returns true if an identical protocol handler has already been registered.
-  bool IsRegistered(const ProtocolHandler& handler) const;
+  bool IsRegistered(const ProtocolHandler& handler);
 
   // Returns true if the protocol handler is being ignored.
   bool IsIgnored(const ProtocolHandler& handler) const;
@@ -74,8 +88,8 @@ class ProtocolHandlerRegistry
   // Returns true if the protocol has a registered protocol handler.
   bool IsHandledProtocol(const std::string& scheme) const;
 
-  // Removes any existing protocol handler for the given protocol.
-  void RemoveHandlerFor(const std::string& scheme);
+  // Removes the given protocol handler from the registry.
+  void RemoveHandler(const ProtocolHandler& handler);
 
   // Causes the given protocol handler to not be ignored anymore.
   void RemoveIgnoredHandler(const ProtocolHandler& handler);
@@ -125,9 +139,10 @@ class ProtocolHandlerRegistry
   // Registers a new protocol handler.
   void RegisterProtocolHandler(const ProtocolHandler& handler);
 
-  // Get the ProtocolHandlers stored under the given pref name. The caller owns
-  // the returned ProtocolHandlers and is responsible for deleting them.
-  ProtocolHandlerList GetHandlersFromPref(const char* pref_name);
+  // Get the DictionaryValues stored under the given pref name that are valid
+  // ProtocolHandler values.
+  std::vector<const DictionaryValue*> GetHandlersFromPref(
+      const char* pref_name);
 
   // Ignores future requests to register the given protocol handler.
   void IgnoreProtocolHandler(const ProtocolHandler& handler);
@@ -138,11 +153,16 @@ class ProtocolHandlerRegistry
   // Register
   void IgnoreHandlerFromValue(const DictionaryValue* value);
 
+  ProtocolHandlerList& GetHandlerListFor(const std::string& scheme);
+
   // Map from protocols (strings) to protocol handlers.
-  ProtocolHandlerMap protocol_handlers_;
+  ProtocolHandlerMultiMap protocol_handlers_;
 
   // Protocol handlers that the user has told us to ignore.
   ProtocolHandlerList ignored_protocol_handlers_;
+
+  // Protocol handlers that are the defaults for a given protocol.
+  ProtocolHandlerMap default_handlers_;
 
   // The Profile that owns this ProtocolHandlerRegistry.
   Profile* profile_;
@@ -153,6 +173,9 @@ class ProtocolHandlerRegistry
   // If false then registered protocol handlers will not be used to handle
   // requests.
   bool enabled_;
+
+  // Whether or not we are loading.
+  bool is_loading_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistry);
 };
