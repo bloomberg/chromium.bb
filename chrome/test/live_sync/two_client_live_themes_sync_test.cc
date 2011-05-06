@@ -19,6 +19,7 @@ class TwoClientLiveThemesSyncTest : public LiveThemesSyncTest {
 // start with SetupClients(), change the theme state, then call
 // SetupSync()).
 
+// TCM ID - 3667311.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -42,6 +43,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomTheme) {
   ASSERT_EQ(GetCustomTheme(0), GetThemeID(verifier()));
 }
 
+// TCM ID - 3599303.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -63,6 +65,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeTheme) {
   ASSERT_TRUE(UsingNativeTheme(verifier()));
 }
 
+// TCM ID - 7247455.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DefaultTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -84,6 +87,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DefaultTheme) {
   ASSERT_TRUE(UsingDefaultTheme(verifier()));
 }
 
+// TCM ID - 7292065.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeDefaultRace) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -103,6 +107,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeDefaultRace) {
             UsingDefaultTheme(GetProfile(1)));
 }
 
+// TCM ID - 7294077.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomNativeRace) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -120,6 +125,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomNativeRace) {
             HasOrWillHaveCustomTheme(GetProfile(1), GetCustomTheme(0)));
 }
 
+// TCM ID - 7307225.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomDefaultRace) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -134,6 +140,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomDefaultRace) {
             HasOrWillHaveCustomTheme(GetProfile(1), GetCustomTheme(0)));
 }
 
+// TCM ID - 7264758.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomCustomRace) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
