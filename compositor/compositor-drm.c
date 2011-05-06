@@ -627,7 +627,7 @@ drm_destroy(struct wlsc_compositor *ec)
 	free(d);
 }
 
-struct wlsc_compositor *
+static struct wlsc_compositor *
 drm_compositor_create(struct wl_display *display, int connector)
 {
 	struct drm_compositor *ec;
@@ -721,6 +721,9 @@ drm_compositor_create(struct wl_display *display, int connector)
 }
 
 struct wlsc_compositor *
+backend_init(struct wl_display *display, char *options);
+
+WL_EXPORT struct wlsc_compositor *
 backend_init(struct wl_display *display, char *options)
 {
 	int connector = 0, i;

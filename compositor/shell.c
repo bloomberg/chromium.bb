@@ -733,6 +733,9 @@ attach(struct wlsc_shell *shell, struct wlsc_surface *surface)
 {
 }
 
+int
+shell_init(struct wlsc_compositor *ec);
+
 WL_EXPORT int
 shell_init(struct wlsc_compositor *ec)
 {

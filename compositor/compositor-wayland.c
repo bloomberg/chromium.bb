@@ -465,7 +465,7 @@ wayland_destroy(struct wlsc_compositor *ec)
 	free(ec);
 }
 
-struct wlsc_compositor *
+static struct wlsc_compositor *
 wayland_compositor_create(struct wl_display *display, int width, int height)
 {
 	struct wayland_compositor *c;
@@ -520,6 +520,9 @@ wayland_compositor_create(struct wl_display *display, int width, int height)
 }
 
 struct wlsc_compositor *
+backend_init(struct wl_display *display, char *options);
+
+WL_EXPORT struct wlsc_compositor *
 backend_init(struct wl_display *display, char *options)
 {
 	int width = 1024, height = 640, i;
