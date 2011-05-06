@@ -164,6 +164,9 @@
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # Importer tests are invalid on chromeos since chrome is the only browser
       '-imports',
+      # Plugin crash infobar does not show up for file:/// flash urls
+      # crosbug.com/14971
+      '-infobars.InfobarTest.testPluginCrashInfobar',
       # Flaky: crosbug.com/14439
       '-instant.InstantSettingsTest.testEnableDisableInstant',
       # crbug.com/70694
