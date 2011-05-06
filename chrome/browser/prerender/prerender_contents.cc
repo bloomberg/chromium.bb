@@ -284,6 +284,10 @@ void PrerenderContents::StartPrerendering(
       this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
       Source<RenderViewHostDelegate>(GetRenderViewHostDelegate()));
 
+  // Register for new windows from any source.
+  notification_registrar_.Add(this, NotificationType::CREATING_NEW_WINDOW,
+                              Source<TabContents>(new_contents));
+
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
 
@@ -482,6 +486,17 @@ void PrerenderContents::Observe(NotificationType type,
         new_render_view_host->Send(
             new ViewMsg_SetIsPrerendering(new_render_view_host->routing_id(),
                                           true));
+      }
+      break;
+    }
+
+    case NotificationType::CREATING_NEW_WINDOW: {
+      if (prerender_contents_.get()) {
+        CHECK(Source<TabContents>(source).ptr() ==
+              prerender_contents_->tab_contents());
+        // Since we don't want to permit child windows that would have a
+        // window.opener property, terminate prerendering.
+        Destroy(FINAL_STATUS_CREATE_NEW_WINDOW);
       }
       break;
     }

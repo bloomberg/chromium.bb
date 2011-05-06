@@ -135,7 +135,6 @@ class PrerenderContents : public RenderViewHostDelegate,
                               std::wstring* prompt_field);
   virtual void OnRenderViewGone(int status, int exit_code);
 
-
   // RenderViewHostDelegate implementation.
   // TODO(dominich): Remove when RenderViewHostDelegate is removed as a base
   // class.
@@ -157,6 +156,7 @@ class PrerenderContents : public RenderViewHostDelegate,
   virtual void DidStopLoading() OVERRIDE;
 
   // RenderViewHostDelegate::View
+  // TODO(dominich): Remove when no longer a delegate for the view.
   virtual void CreateNewWindow(
       int route_id,
       const ViewHostMsg_CreateWindow_Params& params) OVERRIDE;
