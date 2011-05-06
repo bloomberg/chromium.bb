@@ -15,6 +15,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/cpp/common.h"
+#include "ppapi/thunk/thunk.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/blit.h"
 #include "ui/gfx/point.h"
@@ -114,82 +115,6 @@ void ConvertImageData(PPB_ImageData_Impl* src_image, const SkIRect& src_rect,
   }
 }
 
-PP_Resource Create(PP_Instance instance_id,
-                   const PP_Size* size,
-                   PP_Bool is_always_opaque) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
-  scoped_refptr<PPB_Graphics2D_Impl> context(
-      new PPB_Graphics2D_Impl(instance));
-  if (!context->Init(size->width, size->height, PPBoolToBool(is_always_opaque)))
-    return 0;
-  return context->GetReference();
-}
-
-PP_Bool IsGraphics2D(PP_Resource resource) {
-  return BoolToPPBool(!!Resource::GetAs<PPB_Graphics2D_Impl>(resource));
-}
-
-PP_Bool Describe(PP_Resource graphics_2d,
-                 PP_Size* size,
-                 PP_Bool* is_always_opaque) {
-  scoped_refptr<PPB_Graphics2D_Impl> context(
-      Resource::GetAs<PPB_Graphics2D_Impl>(graphics_2d));
-  if (!context) {
-    *size = PP_MakeSize(0, 0);
-    *is_always_opaque = PP_FALSE;
-    return PP_FALSE;
-  }
-  return context->Describe(size, is_always_opaque);
-}
-
-void PaintImageData(PP_Resource graphics_2d,
-                    PP_Resource image_data,
-                    const PP_Point* top_left,
-                    const PP_Rect* src_rect) {
-  scoped_refptr<PPB_Graphics2D_Impl> context(
-      Resource::GetAs<PPB_Graphics2D_Impl>(graphics_2d));
-  if (context)
-    context->PaintImageData(image_data, top_left, src_rect);
-}
-
-void Scroll(PP_Resource graphics_2d,
-            const PP_Rect* clip_rect,
-            const PP_Point* amount) {
-  scoped_refptr<PPB_Graphics2D_Impl> context(
-      Resource::GetAs<PPB_Graphics2D_Impl>(graphics_2d));
-  if (context)
-    context->Scroll(clip_rect, amount);
-}
-
-void ReplaceContents(PP_Resource graphics_2d, PP_Resource image_data) {
-  scoped_refptr<PPB_Graphics2D_Impl> context(
-      Resource::GetAs<PPB_Graphics2D_Impl>(graphics_2d));
-  if (context)
-    context->ReplaceContents(image_data);
-}
-
-int32_t Flush(PP_Resource graphics_2d,
-              PP_CompletionCallback callback) {
-  scoped_refptr<PPB_Graphics2D_Impl> context(
-      Resource::GetAs<PPB_Graphics2D_Impl>(graphics_2d));
-  if (!context)
-    return PP_ERROR_BADRESOURCE;
-  return context->Flush(callback);
-}
-
-const PPB_Graphics2D ppb_graphics_2d = {
-  &Create,
-  &IsGraphics2D,
-  &Describe,
-  &PaintImageData,
-  &Scroll,
-  &ReplaceContents,
-  &Flush
-};
-
 }  // namespace
 
 struct PPB_Graphics2D_Impl::QueuedOperation {
@@ -235,7 +160,7 @@ PPB_Graphics2D_Impl::~PPB_Graphics2D_Impl() {
 
 // static
 const PPB_Graphics2D* PPB_Graphics2D_Impl::GetInterface() {
-  return &ppb_graphics_2d;
+  return ::ppapi::thunk::GetPPB_Graphics2D_Thunk();
 }
 
 bool PPB_Graphics2D_Impl::Init(int width, int height, bool is_always_opaque) {
@@ -249,6 +174,10 @@ bool PPB_Graphics2D_Impl::Init(int width, int height, bool is_always_opaque) {
   }
   is_always_opaque_ = is_always_opaque;
   return true;
+}
+
+::ppapi::thunk::PPB_Graphics2D_API* PPB_Graphics2D_Impl::AsGraphics2D_API() {
+  return this;
 }
 
 PPB_Graphics2D_Impl* PPB_Graphics2D_Impl::AsPPB_Graphics2D_Impl() {
@@ -340,7 +269,7 @@ void PPB_Graphics2D_Impl::ReplaceContents(PP_Resource image_data) {
   queued_operations_.push_back(operation);
 }
 
-int32_t PPB_Graphics2D_Impl::Flush(const PP_CompletionCallback& callback) {
+int32_t PPB_Graphics2D_Impl::Flush(PP_CompletionCallback callback) {
   // Don't allow more than one pending flush at a time.
   if (HasPendingFlush())
     return PP_ERROR_INPROGRESS;

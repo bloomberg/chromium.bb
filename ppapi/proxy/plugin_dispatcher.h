@@ -14,6 +14,7 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"
+#include "ppapi/shared_impl/function_group_base.h"
 
 class MessageLoop;
 
@@ -71,8 +72,15 @@ class PluginDispatcher : public Dispatcher {
   void DidDestroyInstance(PP_Instance instance);
 
   // Gets the data for an existing instance, or NULL if the instance id doesn't
-  // correspond to  a known instance.
+  // correspond to a known instance.
   InstanceData* GetInstanceData(PP_Instance instance);
+
+  // Returns the "new-style" function API for the given interface ID, creating
+  // it if necessary.
+  // TODO(brettw) this is in progress. It should be merged with the target
+  // proxies so there is one list to consult.
+  ::ppapi::shared_impl::FunctionGroupBase* GetFunctionAPI(
+      pp::proxy::InterfaceID id);
 
  private:
   friend class PluginDispatcherTest;
@@ -87,6 +95,12 @@ class PluginDispatcher : public Dispatcher {
   // All target proxies currently created. These are ones that receive
   // messages.
   scoped_ptr<InterfaceProxy> target_proxies_[INTERFACE_ID_COUNT];
+
+  // Function proxies created for "new-style" FunctionGroups.
+  // TODO(brettw) this is in progress. It should be merged with the target
+  // proxies so there is one list to consult.
+  scoped_ptr< ::ppapi::shared_impl::FunctionGroupBase >
+      function_proxies_[INTERFACE_ID_COUNT];
 
   typedef base::hash_map<PP_Instance, InstanceData> InstanceDataMap;
   InstanceDataMap instance_map_;

@@ -573,11 +573,6 @@ IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBFullscreen_GetScreenSize,
                            PP_Size /* size */)
 
 // PPB_Graphics2D.
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics2D_Create,
-                           PP_Instance /* instance */,
-                           PP_Size /* size */,
-                           PP_Bool /* is_always_opaque */,
-                           pp::proxy::HostResource /* result */)
 IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBGraphics2D_PaintImageData,
                     pp::proxy::HostResource /* graphics_2d */,
                     pp::proxy::HostResource /* image_data */,
@@ -594,16 +589,6 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics2D_ReplaceContents,
                     pp::proxy::HostResource /* image_data */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics2D_Flush,
                     pp::proxy::HostResource /* graphics_2d */)
-
-// PPB_ImageData.
-IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_Create,
-                           PP_Instance /* instance */,
-                           int32 /* format */,
-                           PP_Size /* size */,
-                           PP_Bool /* init_to_zero */,
-                           pp::proxy::HostResource /* result_resource */,
-                           std::string /* image_data_desc */,
-                           pp::proxy::ImageHandle /* result */)
 
 // PPB_Instance.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetWindowObject,
@@ -798,3 +783,18 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBVar_CreateObjectDeprecated,
                            int64 /* object_class */,
                            int64 /* object_data */,
                            pp::proxy::SerializedVar /* result */)
+
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_ResourceCreation_Graphics2D,
+                           PP_Instance /* instance */,
+                           PP_Size /* size */,
+                           PP_Bool /* is_always_opaque */,
+                           pp::proxy::HostResource /* result */)
+IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_ResourceCreation_ImageData,
+                           PP_Instance /* instance */,
+                           int32 /* format */,
+                           PP_Size /* size */,
+                           PP_Bool /* init_to_zero */,
+                           pp::proxy::HostResource /* result_resource */,
+                           std::string /* image_data_desc */,
+                           pp::proxy::ImageHandle /* result */)
+

@@ -15,6 +15,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/host_resource.h"
+#include "ppapi/shared_impl/tracker_base.h"
 
 template<typename T> struct DefaultSingletonTraits;
 
@@ -24,7 +25,7 @@ namespace proxy {
 class PluginDispatcher;
 class PluginResource;
 
-class PluginResourceTracker {
+class PluginResourceTracker : public ::ppapi::shared_impl::TrackerBase {
  public:
   // Called by tests that want to specify a specific ResourceTracker. This
   // allows them to use a unique one each time and avoids singletons sticking
@@ -33,6 +34,7 @@ class PluginResourceTracker {
 
   // Returns the global singleton resource tracker for the plugin.
   static PluginResourceTracker* GetInstance();
+  static ::ppapi::shared_impl::TrackerBase* GetTrackerBaseInstance();
 
   // Returns the object associated with the given resource ID, or NULL if
   // there isn't one.
@@ -51,6 +53,13 @@ class PluginResourceTracker {
   // exists, or returns 0 on failure.
   PP_Resource PluginResourceForHostResource(
       const HostResource& resource) const;
+
+  // TrackerBase.
+  virtual ::ppapi::shared_impl::ResourceObjectBase* GetResourceAPI(
+      PP_Resource res);
+  virtual ::ppapi::shared_impl::FunctionGroupBase* GetFunctionAPI(
+      PP_Instance inst,
+      pp::proxy::InterfaceID id);
 
  private:
   friend struct DefaultSingletonTraits<PluginResourceTracker>;

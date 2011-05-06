@@ -10,6 +10,7 @@
 #include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
+#include "ppapi/shared_impl/resource_object_base.h"
 
 // If you inherit from resource, make sure you add the class name here.
 #define FOR_ALL_PLUGIN_RESOURCES(F)                   \
@@ -41,7 +42,7 @@ namespace proxy {
 FOR_ALL_PLUGIN_RESOURCES(DECLARE_RESOURCE_CLASS)
 #undef DECLARE_RESOURCE_CLASS
 
-class PluginResource {
+class PluginResource : public ::ppapi::shared_impl::ResourceObjectBase {
  public:
   PluginResource(const HostResource& resource);
   virtual ~PluginResource();
@@ -61,6 +62,8 @@ class PluginResource {
   const HostResource& host_resource() const {
     return host_resource_;
   }
+
+  PluginDispatcher* GetDispatcher();
 
  private:
   // Type-specific getters for individual resource types. These will return

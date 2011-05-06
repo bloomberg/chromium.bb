@@ -13,7 +13,10 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/serialized_structs.h"
+#include "ppapi/shared_impl/image_data_impl.h"
+#include "ppapi/thunk/ppb_image_data_api.h"
 
 struct PPB_ImageData;
 
@@ -35,18 +38,40 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
+};
+
+class ImageData : public PluginResource,
+                  public ::ppapi::thunk::PPB_ImageData_API,
+                  public pp::shared_impl::ImageDataImpl {
+ public:
+  ImageData(const HostResource& resource,
+            const PP_ImageDataDesc& desc,
+            ImageHandle handle);
+  virtual ~ImageData();
+
+  // ResourceObjectBase overrides.
+  virtual ::ppapi::thunk::PPB_ImageData_API* AsImageData_API();
+
+  // Resource overrides.
+  virtual ImageData* AsImageData();
+
+  // PPB_ImageData API.
+  virtual PP_Bool Describe(PP_ImageDataDesc* desc);
+  virtual void* Map();
+  virtual void Unmap();
+
+  const PP_ImageDataDesc& desc() const { return desc_; }
+
+  static const ImageHandle NullHandle;
+  static ImageHandle HandleFromInt(int32_t i);
 
  private:
-  // Message handlers.
-  void OnMsgGetNativeImageDataFormat(int32* result);
-  void OnMsgIsImageDataFormatSupported(int32 format, PP_Bool* result);
-  void OnMsgCreate(PP_Instance instance,
-                   int32_t format,
-                   const PP_Size& size,
-                   PP_Bool init_to_zero,
-                   HostResource* result,
-                   std::string* image_data_desc,
-                   ImageHandle* result_image_handle);
+  PP_ImageDataDesc desc_;
+  ImageHandle handle_;
+
+  void* mapped_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageData);
 };
 
 }  // namespace proxy

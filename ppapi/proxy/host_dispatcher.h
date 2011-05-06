@@ -14,6 +14,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
+#include "ppapi/shared_impl/function_group_base.h"
 
 struct PPB_Proxy_Private;
 struct PPB_Var_Deprecated;
@@ -114,6 +115,12 @@ class HostDispatcher : public Dispatcher {
   // All target proxies currently created. These are ones that receive
   // messages. They are created on demand when we receive messages.
   scoped_ptr<InterfaceProxy> target_proxies_[INTERFACE_ID_COUNT];
+
+  // Function proxies created for "new-style" FunctionGroups.
+  // TODO(brettw) this is in progress. It should be merged with the target
+  // proxies so there is one list to consult.
+  scoped_ptr< ::ppapi::shared_impl::FunctionGroupBase >
+      function_proxies_[INTERFACE_ID_COUNT];
 
   // Guaranteed non-NULL.
   const PPB_Proxy_Private* ppb_proxy_;

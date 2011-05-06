@@ -14,9 +14,12 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/plugin_message_filter.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_serialization_rules.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
+#include "ppapi/proxy/resource_creation_proxy.h"
+#include "ppapi/shared_impl/tracker_base.h"
 
 #if defined(OS_POSIX)
 #include "base/eintr_wrapper.h"
@@ -41,6 +44,9 @@ PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
   // As a plugin, we always support the PPP_Class interface. There's no
   // GetInterface call or name for it, so we insert it into our table now.
   target_proxies_[INTERFACE_ID_PPP_CLASS].reset(new PPP_Class_Proxy(this));
+
+  ::ppapi::shared_impl::TrackerBase::Init(
+      &PluginResourceTracker::GetTrackerBaseInstance);
 }
 
 PluginDispatcher::~PluginDispatcher() {
@@ -193,6 +199,17 @@ void PluginDispatcher::DidDestroyInstance(PP_Instance instance) {
 InstanceData* PluginDispatcher::GetInstanceData(PP_Instance instance) {
   InstanceDataMap::iterator it = instance_map_.find(instance);
   return (it == instance_map_.end()) ? NULL : &it->second;
+}
+
+::ppapi::shared_impl::FunctionGroupBase* PluginDispatcher::GetFunctionAPI(
+    pp::proxy::InterfaceID id) {
+  if (function_proxies_[id].get())
+    return function_proxies_[id].get();
+
+  if (id == INTERFACE_ID_RESOURCE_CREATION)
+    function_proxies_[id].reset(new ResourceCreationProxy(this));
+
+  return function_proxies_[id].get();
 }
 
 void PluginDispatcher::ForceFreeAllInstances() {

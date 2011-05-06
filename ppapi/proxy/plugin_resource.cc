@@ -19,5 +19,11 @@ PluginResource::~PluginResource() {
 FOR_ALL_PLUGIN_RESOURCES(DEFINE_TYPE_GETTER)
 #undef DEFINE_TYPE_GETTER
 
+PluginDispatcher* PluginResource::GetDispatcher() {
+  PluginDispatcher* disp = PluginDispatcher::GetForInstance(instance());
+  CHECK(disp);
+  return disp;
+}
+
 }  // namespace proxy
 }  // namespace pp

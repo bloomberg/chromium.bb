@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/shared_impl/resource_object_base.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
 namespace webkit {
@@ -49,7 +50,8 @@ namespace ppapi {
 FOR_ALL_RESOURCES(DECLARE_RESOURCE_CLASS)
 #undef DECLARE_RESOURCE_CLASS
 
-class Resource : public base::RefCountedThreadSafe<Resource> {
+class Resource : public base::RefCountedThreadSafe<Resource>,
+                 public ::ppapi::shared_impl::ResourceObjectBase {
  public:
   explicit Resource(PluginInstance* instance);
   virtual ~Resource();

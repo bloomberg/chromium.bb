@@ -13,9 +13,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/proxy/interface_id.h"
+#include "ppapi/shared_impl/function_group_base.h"
+#include "ppapi/shared_impl/tracker_base.h"
 
 namespace webkit {
 namespace ppapi {
@@ -30,7 +34,7 @@ class Var;
 // us to check resource ID validity and to map them to a specific module.
 //
 // This object is NOT threadsafe.
-class ResourceTracker {
+class ResourceTracker : public ::ppapi::shared_impl::TrackerBase {
  public:
   // Returns the pointer to the singleton object.
   static ResourceTracker* Get();
@@ -51,6 +55,13 @@ class ResourceTracker {
 
   // Returns the number of resources associated with this module.
   uint32 GetLiveObjectsForInstance(PP_Instance instance) const;
+
+  // ResourceTrackerBase.
+  virtual ::ppapi::shared_impl::ResourceObjectBase* GetResourceAPI(
+      PP_Resource res);
+  virtual ::ppapi::shared_impl::FunctionGroupBase* GetFunctionAPI(
+      PP_Instance inst,
+      pp::proxy::InterfaceID id);
 
   // PP_Vars -------------------------------------------------------------------
 
@@ -176,6 +187,9 @@ class ResourceTracker {
   // destructor will notify us when the module is deleted.
   typedef std::map<PP_Module, PluginModule*> ModuleMap;
   ModuleMap module_map_;
+
+  scoped_ptr< ::ppapi::shared_impl::FunctionGroupBase >
+      function_proxies_[::pp::proxy::INTERFACE_ID_COUNT];
 
   DISALLOW_COPY_AND_ASSIGN(ResourceTracker);
 };

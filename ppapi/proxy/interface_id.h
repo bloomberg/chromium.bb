@@ -56,6 +56,8 @@ enum InterfaceID {
   INTERFACE_ID_PPP_INSTANCE,
   INTERFACE_ID_PPP_VIDEO_DECODER_DEV,
 
+  INTERFACE_ID_RESOURCE_CREATION,
+
   // Must be last to indicate the number of interface IDs.
   INTERFACE_ID_COUNT
 };

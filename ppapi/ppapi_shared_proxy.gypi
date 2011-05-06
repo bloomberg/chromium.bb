@@ -30,8 +30,17 @@
         'shared_impl/crypto_impl.h',
         'shared_impl/image_data_impl.cc',
         'shared_impl/image_data_impl.h',
+        'shared_impl/tracker_base.cc',
+        'shared_impl/tracker_base.h',
         'shared_impl/url_util_impl.cc',
         'shared_impl/url_util_impl.h',
+
+        'thunk/enter.h',
+        'thunk/ppb_graphics_2d_api.h',
+        'thunk/ppb_graphics_2d_thunk.cc',
+        'thunk/ppb_image_data_api.h',
+        'thunk/ppb_image_data_thunk.cc',
+        'thunk/thunk.h',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -163,6 +172,8 @@
         'proxy/proxy_channel.h',
         'proxy/proxy_module.cc',
         'proxy/proxy_module.h',
+        'proxy/resource_creation_proxy.cc',
+        'proxy/resource_creation_proxy.h',
         'proxy/serialized_flash_menu.cc',
         'proxy/serialized_flash_menu.h',
         'proxy/serialized_structs.cc',

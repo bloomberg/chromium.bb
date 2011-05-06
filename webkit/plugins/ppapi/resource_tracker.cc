@@ -11,9 +11,11 @@
 #include "base/rand_util.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/tracker_base.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource.h"
+#include "webkit/plugins/ppapi/resource_creation_impl.h"
 #include "webkit/plugins/ppapi/var.h"
 
 enum PPIdType {
@@ -40,8 +42,18 @@ template <typename T> static inline bool CheckIdType(T id, PPIdType type) {
   return (id & mask) == type;
 }
 
+namespace shared_impl = ::ppapi::shared_impl;
+
 namespace webkit {
 namespace ppapi {
+
+namespace {
+
+shared_impl::TrackerBase* GetTrackerBase() {
+  return ResourceTracker::Get();
+}
+
+}  // namespace
 
 struct ResourceTracker::InstanceData {
   InstanceData() : instance(0) {}
@@ -72,6 +84,8 @@ ResourceTracker* ResourceTracker::singleton_override_ = NULL;
 ResourceTracker::ResourceTracker()
     : last_resource_id_(0),
       last_var_id_(0) {
+  // Wire up the new shared resource tracker base to use our implementation.
+  shared_impl::TrackerBase::Init(&GetTrackerBase);
 }
 
 ResourceTracker::~ResourceTracker() {
@@ -224,6 +238,28 @@ uint32 ResourceTracker::GetLiveObjectsForInstance(
     return 0;
   return static_cast<uint32>(found->second.resources.size() +
                              found->second.object_vars.size());
+}
+
+shared_impl::ResourceObjectBase* ResourceTracker::GetResourceAPI(
+    PP_Resource res) {
+  DLOG_IF(ERROR, !CheckIdType(res, PP_ID_TYPE_RESOURCE))
+      << res << " is not a PP_Resource.";
+  ResourceMap::const_iterator result = live_resources_.find(res);
+  if (result == live_resources_.end())
+    return NULL;
+  return result->second.first.get();
+}
+
+shared_impl::FunctionGroupBase* ResourceTracker::GetFunctionAPI(
+    PP_Instance inst,
+    pp::proxy::InterfaceID id) {
+  if (function_proxies_[id].get())
+    return function_proxies_[id].get();
+
+  if (id == ::pp::proxy::INTERFACE_ID_RESOURCE_CREATION)
+    function_proxies_[id].reset(new ResourceCreationImpl());
+
+  return function_proxies_[id].get();
 }
 
 scoped_refptr<Var> ResourceTracker::GetVar(int32 var_id) const {

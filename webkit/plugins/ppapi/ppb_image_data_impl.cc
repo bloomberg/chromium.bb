@@ -14,6 +14,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
+#include "ppapi/thunk/thunk.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -22,64 +23,6 @@ namespace webkit {
 namespace ppapi {
 
 namespace {
-
-PP_ImageDataFormat GetNativeImageDataFormat() {
-  return PPB_ImageData_Impl::GetNativeImageDataFormat();
-}
-
-PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
-  return BoolToPPBool(PPB_ImageData_Impl::IsImageDataFormatSupported(format));
-}
-
-PP_Resource Create(PP_Instance instance_id,
-                   PP_ImageDataFormat format,
-                   const PP_Size* size,
-                   PP_Bool init_to_zero) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
-    return 0;
-
-  scoped_refptr<PPB_ImageData_Impl> data(new PPB_ImageData_Impl(instance));
-  if (!data->Init(format,
-                  size->width,
-                  size->height,
-                  PPBoolToBool(init_to_zero))) {
-    return 0;
-  }
-
-  return data->GetReference();
-}
-
-PP_Bool IsImageData(PP_Resource resource) {
-  return BoolToPPBool(!!Resource::GetAs<PPB_ImageData_Impl>(resource));
-}
-
-PP_Bool Describe(PP_Resource resource, PP_ImageDataDesc* desc) {
-  // Give predictable values on failure.
-  memset(desc, 0, sizeof(PP_ImageDataDesc));
-
-  scoped_refptr<PPB_ImageData_Impl> image_data(
-      Resource::GetAs<PPB_ImageData_Impl>(resource));
-  if (!image_data)
-    return PP_FALSE;
-  image_data->Describe(desc);
-  return PP_TRUE;
-}
-
-void* Map(PP_Resource resource) {
-  scoped_refptr<PPB_ImageData_Impl> image_data(
-      Resource::GetAs<PPB_ImageData_Impl>(resource));
-  if (!image_data)
-    return NULL;
-  return image_data->Map();
-}
-
-void Unmap(PP_Resource resource) {
-  scoped_refptr<PPB_ImageData_Impl> image_data(
-      Resource::GetAs<PPB_ImageData_Impl>(resource));
-  if (image_data)
-    image_data->Unmap();
-}
 
 int32_t GetSharedMemory(PP_Resource resource,
                         int* handle,
@@ -92,16 +35,6 @@ int32_t GetSharedMemory(PP_Resource resource,
   }
   return PP_ERROR_BADRESOURCE;
 }
-
-const PPB_ImageData ppb_imagedata = {
-  &GetNativeImageDataFormat,
-  &IsImageDataFormatSupported,
-  &Create,
-  &IsImageData,
-  &Describe,
-  &Map,
-  &Unmap,
-};
 
 const PPB_ImageDataTrusted ppb_imagedata_trusted = {
   &GetSharedMemory,
@@ -121,12 +54,16 @@ PPB_ImageData_Impl::~PPB_ImageData_Impl() {
 
 // static
 const PPB_ImageData* PPB_ImageData_Impl::GetInterface() {
-  return &ppb_imagedata;
+  return ::ppapi::thunk::GetPPB_ImageData_Thunk();
 }
 
 // static
 const PPB_ImageDataTrusted* PPB_ImageData_Impl::GetTrustedInterface() {
   return &ppb_imagedata_trusted;
+}
+
+::ppapi::thunk::PPB_ImageData_API* PPB_ImageData_Impl::AsImageData_API() {
+  return this;
 }
 
 PPB_ImageData_Impl* PPB_ImageData_Impl::AsPPB_ImageData_Impl() {
@@ -154,11 +91,12 @@ bool PPB_ImageData_Impl::Init(PP_ImageDataFormat format,
   return !!platform_image_.get();
 }
 
-void PPB_ImageData_Impl::Describe(PP_ImageDataDesc* desc) const {
+PP_Bool PPB_ImageData_Impl::Describe(PP_ImageDataDesc* desc) {
   desc->format = format_;
   desc->size.width = width_;
   desc->size.height = height_;
   desc->stride = width_ * 4;
+  return PP_TRUE;
 }
 
 void* PPB_ImageData_Impl::Map() {

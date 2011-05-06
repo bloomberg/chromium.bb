@@ -12,6 +12,7 @@
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/proxy/host_var_serialization_rules.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/resource_creation_proxy.h"
 
 namespace pp {
 namespace proxy {
@@ -163,6 +164,15 @@ bool HostDispatcher::OnMessageReceived(const IPC::Message& msg) {
     NOTREACHED();
     // TODO(brettw): kill the plugin if it starts sending invalid messages?
     return true;
+  }
+
+  // New-style function proxies.
+  // TODO(brettw) this is hacked in for the routing for the types we've
+  // implemented in this style so far. When everything is implemented in this
+  // style, this function should be cleaned up.
+  if (msg.routing_id() == INTERFACE_ID_RESOURCE_CREATION) {
+    ResourceCreationProxy proxy(this);
+    return proxy.OnMessageReceived(msg);
   }
 
   InterfaceProxy* proxy = target_proxies_[msg.routing_id()].get();

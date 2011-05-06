@@ -13,13 +13,11 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/shared_impl/image_data_impl.h"
+#include "ppapi/thunk/thunk.h"
 
 #if defined(OS_LINUX)
 #include <sys/shm.h>
@@ -33,33 +31,42 @@
 namespace pp {
 namespace proxy {
 
-class ImageData : public PluginResource,
-                  public pp::shared_impl::ImageDataImpl {
- public:
-  ImageData(const HostResource& resource,
-            const PP_ImageDataDesc& desc,
-            ImageHandle handle);
-  virtual ~ImageData();
+namespace {
 
-  // Resource overrides.
-  virtual ImageData* AsImageData();
+InterfaceProxy* CreateImageDataProxy(Dispatcher* dispatcher,
+                                     const void* target_interface) {
+  return new PPB_ImageData_Proxy(dispatcher, target_interface);
+}
 
-  void* Map();
-  void Unmap();
+}  // namespace
 
-  const PP_ImageDataDesc& desc() const { return desc_; }
+// PPB_ImageData_Proxy ---------------------------------------------------------
 
-  static const ImageHandle NullHandle;
-  static ImageHandle HandleFromInt(int32_t i);
+PPB_ImageData_Proxy::PPB_ImageData_Proxy(Dispatcher* dispatcher,
+                                         const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface) {
+}
 
- private:
-  PP_ImageDataDesc desc_;
-  ImageHandle handle_;
+PPB_ImageData_Proxy::~PPB_ImageData_Proxy() {
+}
 
-  void* mapped_data_;
+// static
+const InterfaceProxy::Info* PPB_ImageData_Proxy::GetInfo() {
+  static const Info info = {
+    ::ppapi::thunk::GetPPB_ImageData_Thunk(),
+    PPB_IMAGEDATA_INTERFACE,
+    INTERFACE_ID_PPB_IMAGE_DATA,
+    false,
+    &CreateImageDataProxy,
+  };
+  return &info;
+}
 
-  DISALLOW_COPY_AND_ASSIGN(ImageData);
-};
+bool PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  return false;
+}
+
+// ImageData -------------------------------------------------------------------
 
 ImageData::ImageData(const HostResource& resource,
                      const PP_ImageDataDesc& desc,
@@ -74,8 +81,17 @@ ImageData::~ImageData() {
   Unmap();
 }
 
+::ppapi::thunk::PPB_ImageData_API* ImageData::AsImageData_API() {
+  return this;
+}
+
 ImageData* ImageData::AsImageData() {
   return this;
+}
+
+PP_Bool ImageData::Describe(PP_ImageDataDesc* desc) {
+  memcpy(desc, &desc_, sizeof(PP_ImageDataDesc));
+  return PP_TRUE;
 }
 
 void* ImageData::Map() {
@@ -138,155 +154,6 @@ ImageHandle ImageData::HandleFromInt(int32_t i) {
 #else
     return static_cast<ImageHandle>(i);
 #endif
-}
-
-namespace {
-
-PP_ImageDataFormat GetNativeImageDataFormat() {
-  return ImageData::GetNativeImageDataFormat();
-}
-
-PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
-  return BoolToPPBool(ImageData::IsImageDataFormatSupported(format));
-}
-
-PP_Resource Create(PP_Instance instance,
-                   PP_ImageDataFormat format,
-                   const PP_Size* size,
-                   PP_Bool init_to_zero) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return 0;
-
-  HostResource result;
-  std::string image_data_desc;
-  ImageHandle image_handle = ImageData::NullHandle;
-  dispatcher->Send(new PpapiHostMsg_PPBImageData_Create(
-      INTERFACE_ID_PPB_IMAGE_DATA, instance, format, *size, init_to_zero,
-      &result, &image_data_desc, &image_handle));
-
-  if (result.is_null() || image_data_desc.size() != sizeof(PP_ImageDataDesc))
-    return 0;
-
-  // We serialize the PP_ImageDataDesc just by copying to a string.
-  PP_ImageDataDesc desc;
-  memcpy(&desc, image_data_desc.data(), sizeof(PP_ImageDataDesc));
-
-  linked_ptr<ImageData> object(new ImageData(result, desc, image_handle));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
-}
-
-PP_Bool IsImageData(PP_Resource resource) {
-  ImageData* object = PluginResource::GetAs<ImageData>(resource);
-  return BoolToPPBool(!!object);
-}
-
-PP_Bool Describe(PP_Resource resource, PP_ImageDataDesc* desc) {
-  ImageData* object = PluginResource::GetAs<ImageData>(resource);
-  if (!object)
-    return PP_FALSE;
-  memcpy(desc, &object->desc(), sizeof(PP_ImageDataDesc));
-  return PP_TRUE;
-}
-
-void* Map(PP_Resource resource) {
-  ImageData* object = PluginResource::GetAs<ImageData>(resource);
-  if (!object)
-    return NULL;
-  return object->Map();
-}
-
-void Unmap(PP_Resource resource) {
-  ImageData* object = PluginResource::GetAs<ImageData>(resource);
-  if (object)
-    object->Unmap();
-}
-
-const PPB_ImageData image_data_interface = {
-  &GetNativeImageDataFormat,
-  &IsImageDataFormatSupported,
-  &Create,
-  &IsImageData,
-  &Describe,
-  &Map,
-  &Unmap,
-};
-
-InterfaceProxy* CreateImageDataProxy(Dispatcher* dispatcher,
-                                     const void* target_interface) {
-  return new PPB_ImageData_Proxy(dispatcher, target_interface);
-}
-
-}  // namespace
-
-PPB_ImageData_Proxy::PPB_ImageData_Proxy(Dispatcher* dispatcher,
-                                         const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
-}
-
-PPB_ImageData_Proxy::~PPB_ImageData_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_ImageData_Proxy::GetInfo() {
-  static const Info info = {
-    &image_data_interface,
-    PPB_IMAGEDATA_INTERFACE,
-    INTERFACE_ID_PPB_IMAGE_DATA,
-    false,
-    &CreateImageDataProxy,
-  };
-  return &info;
-}
-
-bool PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PPB_ImageData_Proxy, msg)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_Create, OnMsgCreate)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  // FIXME(brettw) handle bad messages!
-  return handled;
-}
-
-void PPB_ImageData_Proxy::OnMsgCreate(PP_Instance instance,
-                                      int32_t format,
-                                      const PP_Size& size,
-                                      PP_Bool init_to_zero,
-                                      HostResource* result,
-                                      std::string* image_data_desc,
-                                      ImageHandle* result_image_handle) {
-  PP_Resource resource = ppb_image_data_target()->Create(
-      instance, static_cast<PP_ImageDataFormat>(format), &size, init_to_zero);
-  *result_image_handle = ImageData::NullHandle;
-  if (resource) {
-    // The ImageDesc is just serialized as a string.
-    PP_ImageDataDesc desc;
-    if (ppb_image_data_target()->Describe(resource, &desc)) {
-      image_data_desc->resize(sizeof(PP_ImageDataDesc));
-      memcpy(&(*image_data_desc)[0], &desc, sizeof(PP_ImageDataDesc));
-    }
-
-    // Get the shared memory handle.
-    const PPB_ImageDataTrusted* trusted =
-        reinterpret_cast<const PPB_ImageDataTrusted*>(
-            dispatcher()->GetLocalInterface(PPB_IMAGEDATA_TRUSTED_INTERFACE));
-    uint32_t byte_count = 0;
-    if (trusted) {
-      int32_t handle;
-      if (trusted->GetSharedMemory(resource, &handle, &byte_count) == PP_OK) {
-#if defined(OS_WIN)
-        pp::proxy::ImageHandle ih = ImageData::HandleFromInt(handle);
-        *result_image_handle = dispatcher()->ShareHandleWithRemote(ih, false);
-#else
-        // TODO: This memory sharing is probaly broken on Mac.
-        *result_image_handle = ImageData::HandleFromInt(handle);
-#endif
-      }
-    }
-
-    result->SetHostResource(instance, resource);
-  }
 }
 
 }  // namespace proxy

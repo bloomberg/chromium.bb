@@ -10,6 +10,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/tracker_base.h"
 
 namespace pp {
 namespace proxy {
@@ -18,6 +19,10 @@ namespace {
 
 // When non-NULL, this object overrides the ResourceTrackerSingleton.
 PluginResourceTracker* g_resource_tracker_override = NULL;
+
+::ppapi::shared_impl::TrackerBase* GetTrackerBase() {
+  return PluginResourceTracker::GetInstance();
+}
 
 }  // namespace
 
@@ -33,6 +38,8 @@ PluginResourceTracker::ResourceInfo::ResourceInfo(int rc,
 PluginResourceTracker::ResourceInfo::ResourceInfo(const ResourceInfo& other)
     : ref_count(other.ref_count),
       resource(other.resource) {
+  // Wire up the new shared resource tracker base to use our implementation.
+  ::ppapi::shared_impl::TrackerBase::Init(&GetTrackerBase);
 }
 
 PluginResourceTracker::ResourceInfo::~ResourceInfo() {
@@ -65,6 +72,12 @@ PluginResourceTracker* PluginResourceTracker::GetInstance() {
   if (g_resource_tracker_override)
     return g_resource_tracker_override;
   return Singleton<PluginResourceTracker>::get();
+}
+
+// static
+::ppapi::shared_impl::TrackerBase*
+PluginResourceTracker::GetTrackerBaseInstance() {
+  return GetInstance();
 }
 
 PluginResource* PluginResourceTracker::GetResourceObject(
@@ -110,6 +123,23 @@ PP_Resource PluginResourceTracker::PluginResourceForHostResource(
   if (found == host_resource_map_.end())
     return 0;
   return found->second;
+}
+
+::ppapi::shared_impl::ResourceObjectBase* PluginResourceTracker::GetResourceAPI(
+    PP_Resource res) {
+  ResourceMap::iterator found = resource_map_.find(res);
+  if (found == resource_map_.end())
+    return NULL;
+  return found->second.resource.get();
+}
+
+::ppapi::shared_impl::FunctionGroupBase* PluginResourceTracker::GetFunctionAPI(
+    PP_Instance inst,
+    pp::proxy::InterfaceID id) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(inst);
+  if (dispatcher)
+    return dispatcher->GetFunctionAPI(id);
+  return NULL;
 }
 
 void PluginResourceTracker::ReleasePluginResourceRef(

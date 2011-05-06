@@ -307,6 +307,8 @@
         '../plugins/ppapi/ppb_widget_impl.h',
         '../plugins/ppapi/resource.cc',
         '../plugins/ppapi/resource.h',
+        '../plugins/ppapi/resource_creation_impl.cc',
+        '../plugins/ppapi/resource_creation_impl.h',
         '../plugins/ppapi/resource_tracker.cc',
         '../plugins/ppapi/resource_tracker.h',
         '../plugins/ppapi/string.cc',

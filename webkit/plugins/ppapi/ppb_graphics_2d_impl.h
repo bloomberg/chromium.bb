@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "webkit/plugins/ppapi/resource.h"
 
@@ -26,7 +27,9 @@ class PPB_ImageData_Impl;
 class PluginInstance;
 class PluginModule;
 
-class PPB_Graphics2D_Impl : public Resource {
+class PPB_Graphics2D_Impl
+    : public Resource,
+      public ::ppapi::thunk::PPB_Graphics2D_API {
  public:
   PPB_Graphics2D_Impl(PluginInstance* instance);
   virtual ~PPB_Graphics2D_Impl();
@@ -39,17 +42,19 @@ class PPB_Graphics2D_Impl : public Resource {
 
   bool is_always_opaque() const { return is_always_opaque_; }
 
+  virtual ::ppapi::thunk::PPB_Graphics2D_API* AsGraphics2D_API();
+
   // Resource override.
   virtual PPB_Graphics2D_Impl* AsPPB_Graphics2D_Impl();
 
   // PPB_Graphics2D functions.
-  PP_Bool Describe(PP_Size* size, PP_Bool* is_always_opaque);
-  void PaintImageData(PP_Resource image_data,
-                      const PP_Point* top_left,
-                      const PP_Rect* src_rect);
-  void Scroll(const PP_Rect* clip_rect, const PP_Point* amount);
-  void ReplaceContents(PP_Resource image_data);
-  int32_t Flush(const PP_CompletionCallback& callback);
+  virtual PP_Bool Describe(PP_Size* size, PP_Bool* is_always_opaque);
+  virtual void PaintImageData(PP_Resource image_data,
+                              const PP_Point* top_left,
+                              const PP_Rect* src_rect);
+  virtual void Scroll(const PP_Rect* clip_rect, const PP_Point* amount);
+  virtual void ReplaceContents(PP_Resource image_data);
+  virtual int32_t Flush(PP_CompletionCallback callback);
 
   bool ReadImageData(PP_Resource image, const PP_Point* top_left);
 

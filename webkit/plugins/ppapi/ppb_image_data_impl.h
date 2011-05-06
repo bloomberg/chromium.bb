@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/shared_impl/image_data_impl.h"
+#include "ppapi/thunk/ppb_image_data_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/resource.h"
 
@@ -23,10 +24,15 @@ namespace webkit {
 namespace ppapi {
 
 class PPB_ImageData_Impl : public Resource,
-                           public pp::shared_impl::ImageDataImpl {
+                           public pp::shared_impl::ImageDataImpl,
+                           public ::ppapi::thunk::PPB_ImageData_API {
  public:
   explicit PPB_ImageData_Impl(PluginInstance* instance);
   virtual ~PPB_ImageData_Impl();
+
+  bool Init(PP_ImageDataFormat format,
+            int width, int height,
+            bool init_to_zero);
 
   int width() const { return width_; }
   int height() const { return height_; }
@@ -47,16 +53,15 @@ class PPB_ImageData_Impl : public Resource,
   static const PPB_ImageData* GetInterface();
   static const PPB_ImageDataTrusted* GetTrustedInterface();
 
+  virtual ::ppapi::thunk::PPB_ImageData_API* AsImageData_API();
+
   // Resource overrides.
   virtual PPB_ImageData_Impl* AsPPB_ImageData_Impl();
 
-  // PPB_ImageData implementation.
-  bool Init(PP_ImageDataFormat format,
-            int width, int height,
-            bool init_to_zero);
-  void Describe(PP_ImageDataDesc* desc) const;
-  void* Map();
-  void Unmap();
+  // PPB_ImageData_API implementation.
+  virtual PP_Bool Describe(PP_ImageDataDesc* desc);
+  virtual void* Map();
+  virtual void Unmap();
 
   // PPB_ImageDataTrusted implementation.
   int GetSharedMemoryHandle(uint32* byte_count) const;
