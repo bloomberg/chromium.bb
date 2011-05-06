@@ -213,6 +213,21 @@ LinuxDumper::ElfFileIdentifierForMapping(const MappingInfo& mapping,
   if (IsMappedFileOpenUnsafe(mapping))
     return false;
 
+  // Special-case linux-gate because it's not a real file.
+  if (my_strcmp(mapping.name, kLinuxGateLibraryName) == 0) {
+    const uintptr_t kPageSize = getpagesize();
+    void* linux_gate = NULL;
+    if (pid_ == sys_getpid()) {
+      linux_gate = reinterpret_cast<void*>(mapping.start_addr);
+    } else {
+      linux_gate = allocator_.Alloc(kPageSize);
+      CopyFromProcess(linux_gate, pid_,
+                      reinterpret_cast<const void*>(mapping.start_addr),
+                      kPageSize);
+    }
+    return FileID::ElfFileIdentifierFromMappedFile(linux_gate, identifier);
+  }
+
   char filename[NAME_MAX];
   size_t filename_len = my_strlen(mapping.name);
   assert(filename_len < NAME_MAX);

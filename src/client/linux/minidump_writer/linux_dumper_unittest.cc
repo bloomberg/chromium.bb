@@ -276,6 +276,7 @@ TEST(LinuxDumperTest, BuildProcPath) {
 }
 
 #if !defined(__ARM_EABI__)
+// Ensure that the linux-gate VDSO is included in the mapping list.
 TEST(LinuxDumperTest, MappingsIncludeLinuxGate) {
   LinuxDumper dumper(getpid());
   ASSERT_TRUE(dumper.Init());
@@ -297,6 +298,80 @@ TEST(LinuxDumperTest, MappingsIncludeLinuxGate) {
   EXPECT_EQ(linux_gate_loc, reinterpret_cast<void*>(mapping->start_addr));
   EXPECT_EQ(0, memcmp(linux_gate_loc, ELFMAG, SELFMAG));
 }
+
+// Ensure that the linux-gate VDSO can generate a non-zeroed File ID.
+TEST(LinuxDumperTest, LinuxGateMappingID) {
+  LinuxDumper dumper(getpid());
+  ASSERT_TRUE(dumper.Init());
+
+  bool found_linux_gate = false;
+  const wasteful_vector<MappingInfo*> mappings = dumper.mappings();
+  unsigned index = 0;
+  for (unsigned i = 0; i < mappings.size(); ++i) {
+    if (!strcmp(mappings[i]->name, kLinuxGateLibraryName)) {
+      found_linux_gate = true;
+      index = i;
+      break;
+    }
+  }
+  ASSERT_TRUE(found_linux_gate);
+
+  uint8_t identifier[sizeof(MDGUID)];
+  ASSERT_TRUE(dumper.ElfFileIdentifierForMapping(*mappings[index],
+                                                 true,
+                                                 index,
+                                                 identifier));
+  uint8_t empty_identifier[sizeof(MDGUID)];
+  memset(empty_identifier, 0, sizeof(empty_identifier));
+  EXPECT_NE(0, memcmp(empty_identifier, identifier, sizeof(identifier)));
+}
+
+// Ensure that the linux-gate VDSO can generate a non-zeroed File ID
+// from a child process.
+TEST(LinuxDumperTest, LinuxGateMappingIDChild) {
+  int fds[2];
+  ASSERT_NE(-1, pipe(fds));
+
+  // Fork a child so ptrace works.
+  const pid_t child = fork();
+  if (child == 0) {
+    close(fds[1]);
+    // Now wait forever for the parent.
+    char b;
+    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
+    close(fds[0]);
+    syscall(__NR_exit);
+  }
+  close(fds[0]);
+
+  LinuxDumper dumper(child);
+  ASSERT_TRUE(dumper.Init());
+
+  bool found_linux_gate = false;
+  const wasteful_vector<MappingInfo*> mappings = dumper.mappings();
+  unsigned index = 0;
+  for (unsigned i = 0; i < mappings.size(); ++i) {
+    if (!strcmp(mappings[i]->name, kLinuxGateLibraryName)) {
+      found_linux_gate = true;
+      index = i;
+      break;
+    }
+  }
+  ASSERT_TRUE(found_linux_gate);
+
+  // Need to suspend the child so ptrace actually works.
+  ASSERT_TRUE(dumper.ThreadsSuspend());
+  uint8_t identifier[sizeof(MDGUID)];
+  ASSERT_TRUE(dumper.ElfFileIdentifierForMapping(*mappings[index],
+                                                 true,
+                                                 index,
+                                                 identifier));
+  uint8_t empty_identifier[sizeof(MDGUID)];
+  memset(empty_identifier, 0, sizeof(empty_identifier));
+  EXPECT_NE(0, memcmp(empty_identifier, identifier, sizeof(identifier)));
+  EXPECT_TRUE(dumper.ThreadsResume());
+  close(fds[1]);
+}
 #endif
 
 TEST(LinuxDumperTest, FileIDsMatch) {
@@ -311,11 +386,11 @@ TEST(LinuxDumperTest, FileIDsMatch) {
   int fds[2];
   ASSERT_NE(-1, pipe(fds));
 
-  // fork a child so we can ptrace it
+  // Fork a child so ptrace works.
   const pid_t child = fork();
   if (child == 0) {
     close(fds[1]);
-    // now wait forever for the parent
+    // Now wait forever for the parent.
     char b;
     HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
     close(fds[0]);
