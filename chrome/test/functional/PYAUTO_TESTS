@@ -89,8 +89,6 @@
     ],
 
     'win': [
-      # testBookmarkBarVisible fails on windows. crbug.com/42823
-      '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
       # Some download test fails on win official builder, only thru buildbot
       # when downloading the small zip file.
       # crbug.com/50481, crbug.com/54942
