@@ -8,4 +8,5 @@ include_rules = [
   "+media/video",
   "+sandbox",
   "+skia",
+  "+third_party/openmax",
 ]
