@@ -67,7 +67,8 @@
       '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
       'navigation',
       'notifications',
-      '-notifications.NotificationsTest.testKillNotificationProcess',  # crbug.com/80510
+      # crbug.com/80510
+      '-notifications.NotificationsTest.testKillNotificationProcess',
       'ntp',
       'omnibox',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
@@ -197,7 +198,6 @@
 
       # Exclusions that have not been narrowed to other categories yet.
       # crosbug.com/12653
-      '-autofill',
       '-sync',
     ],
   },
