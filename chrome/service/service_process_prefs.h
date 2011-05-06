@@ -41,6 +41,9 @@ class ServiceProcessPrefs {
   // Get a dictionary preference for |key| and store it in |result|.
   void GetDictionary(const std::string& key, const DictionaryValue** result);
 
+  // Removes the pref specified by |key|.
+  void RemovePref(const std::string& key);
+
  private:
   scoped_refptr<JsonPrefStore> prefs_;
 

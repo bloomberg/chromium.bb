@@ -33,14 +33,12 @@ void PrinterJobHandler::JobDetails::Clear() {
 PrinterJobHandler::PrinterJobHandler(
     const printing::PrinterBasicInfo& printer_info,
     const PrinterInfoFromCloud& printer_info_cloud,
-    const std::string& auth_token,
     const GURL& cloud_print_server_url,
     cloud_print::PrintSystem* print_system,
     Delegate* delegate)
     : print_system_(print_system),
       printer_info_(printer_info),
       printer_info_cloud_(printer_info_cloud),
-      auth_token_(auth_token),
       cloud_print_server_url_(cloud_print_server_url),
       delegate_(delegate),
       local_job_id_(-1),
@@ -110,7 +108,6 @@ void PrinterJobHandler::Start() {
             CloudPrintHelpers::GetUrlForPrinterDelete(
                 cloud_print_server_url_, printer_info_cloud_.printer_id),
             this,
-            auth_token_,
             kCloudPrintAPIMaxRetryCount,
             std::string());
       }
@@ -129,7 +126,6 @@ void PrinterJobHandler::Start() {
                 cloud_print_server_url_, printer_info_cloud_.printer_id,
                 job_fetch_reason_),
             this,
-            auth_token_,
             kCloudPrintAPIMaxRetryCount,
             std::string());
         last_job_fetch_time_ = base::TimeTicks::Now();
@@ -261,7 +257,6 @@ void PrinterJobHandler::OnReceivePrinterCaps(
         CloudPrintHelpers::GetUrlForPrinterUpdate(
             cloud_print_server_url_, printer_info_cloud_.printer_id),
         this,
-        auth_token_,
         kCloudPrintAPIMaxRetryCount,
         mime_type,
         post_data,
@@ -443,7 +438,6 @@ PrinterJobHandler::HandleJobMetadataResponse(
         request_ = new CloudPrintURLFetcher;
         request_->StartGetRequest(GURL(print_ticket_url.c_str()),
                                   this,
-                                  auth_token_,
                                   kCloudPrintAPIMaxRetryCount,
                                   std::string());
       }
@@ -470,7 +464,6 @@ PrinterJobHandler::HandlePrintTicketResponse(const URLFetcher* source,
     accept_headers += print_system_->GetSupportedMimeTypes();
     request_->StartGetRequest(GURL(print_data_url_.c_str()),
                               this,
-                              auth_token_,
                               kJobDataMaxRetryCount,
                               accept_headers);
   } else {
@@ -520,7 +513,7 @@ PrinterJobHandler::HandleSuccessStatusUpdateResponse(
   // that monitors the status of the job and updates the server.
   scoped_refptr<JobStatusUpdater> job_status_updater(
       new JobStatusUpdater(printer_info_.printer_name, job_details_.job_id_,
-                           local_job_id_, auth_token_, cloud_print_server_url_,
+                           local_job_id_, cloud_print_server_url_,
                            print_system_.get(), this));
   job_status_updater_list_.push_back(job_status_updater);
   MessageLoop::current()->PostTask(
@@ -619,7 +612,6 @@ void PrinterJobHandler::UpdateJobStatus(cloud_print::PrintJobStatus status,
                                                       job_details_.job_id_,
                                                       status),
           this,
-          auth_token_,
           kCloudPrintAPIMaxRetryCount,
           std::string());
     }

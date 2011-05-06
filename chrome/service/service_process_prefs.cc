@@ -54,3 +54,7 @@ void ServiceProcessPrefs::GetDictionary(const std::string& key,
 
   *result = static_cast<const DictionaryValue*>(value);
 }
+
+void ServiceProcessPrefs::RemovePref(const std::string& key) {
+  prefs_->RemoveValue(key);
+}

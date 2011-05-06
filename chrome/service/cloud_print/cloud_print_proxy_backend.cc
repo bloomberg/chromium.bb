@@ -15,8 +15,10 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/net/gaia/gaia_oauth_client.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
+#include "chrome/service/cloud_print/cloud_print_token_store.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/cloud_print/printer_job_handler.h"
 #include "chrome/service/gaia/service_gaia_authenticator.h"
@@ -36,13 +38,15 @@ class CloudPrintProxyBackend::Core
       public CloudPrintURLFetcherDelegate,
       public cloud_print::PrintServerWatcherDelegate,
       public PrinterJobHandlerDelegate,
-      public notifier::TalkMediator::Delegate {
+      public notifier::TalkMediator::Delegate,
+      public gaia::GaiaOAuthClient::Delegate {
  public:
   // It is OK for print_server_url to be empty. In this case system should
   // use system default (local) print server.
   explicit Core(CloudPrintProxyBackend* backend,
                 const GURL& cloud_print_server_url,
                 const DictionaryValue* print_system_settings,
+                const gaia::OAuthClientInfo& oauth_client_info,
                 bool enable_job_poll);
 
   // Note:
@@ -55,11 +59,16 @@ class CloudPrintProxyBackend::Core
   // initialization. When we are passed in an LSID we authenticate using that
   // and retrieve new auth tokens.
   void DoInitializeWithLsid(const std::string& lsid,
-                            const std::string& proxy_id);
+                            const std::string& proxy_id,
+                            const std::string& last_robot_refresh_token,
+                            const std::string& last_robot_email,
+                            const std::string& last_user_email);
+
   void DoInitializeWithToken(const std::string cloud_print_token,
-                             const std::string cloud_print_xmpp_token,
-                             const std::string email,
                              const std::string& proxy_id);
+  void DoInitializeWithRobotToken(const std::string& robot_oauth_refresh_token,
+                                  const std::string& robot_email,
+                                  const std::string& proxy_id);
 
   // Called on the CloudPrintProxyBackend core_thread_ to perform
   // shutdown.
@@ -91,6 +100,15 @@ class CloudPrintProxyBackend::Core
   virtual void OnIncomingNotification(
       const notifier::Notification& notification);
   virtual void OnOutgoingNotification();
+
+  // gaia::GaiaOAuthClient::Delegate implementation.
+  virtual void OnGetTokensResponse(const std::string& refresh_token,
+                                   const std::string& access_token,
+                                   int expires_in_seconds);
+  virtual void OnRefreshTokenResponse(const std::string& access_token,
+                                      int expires_in_seconds);
+  virtual void OnOAuthError();
+  virtual void OnNetworkError(int response_code);
 
  private:
   // Prototype for a response handler.
@@ -130,6 +148,13 @@ class CloudPrintProxyBackend::Core
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded);
+
+  CloudPrintURLFetcher::ResponseAction HandleGetAuthCodeResponse(
+      const URLFetcher* source,
+      const GURL& url,
+      DictionaryValue* json_data,
+      bool succeeded);
+
   // End response handlers
 
   // NotifyXXX is how the Core communicates with the frontend across
@@ -137,12 +162,14 @@ class CloudPrintProxyBackend::Core
   void NotifyPrinterListAvailable(
       const printing::PrinterList& printer_list);
   void NotifyAuthenticated(
-    const std::string& cloud_print_token,
-    const std::string& cloud_print_xmpp_token,
-    const std::string& email);
+    const std::string& robot_oauth_refresh_token,
+    const std::string& robot_email,
+    const std::string& user_email);
   void NotifyAuthenticationFailed();
   void NotifyPrintSystemUnavailable();
 
+  // Once we have robot credentials, this method gets the ball rolling.
+  void PostAuthInitialization();
   // Starts a new printer registration process.
   void StartRegistration();
   // Ends the printer registration process.
@@ -164,6 +191,8 @@ class CloudPrintProxyBackend::Core
   void ReportUserMessage(const std::string& message_id,
                          const std::string& failure_message,
                          ResponseHandler handler);
+  // Make a GAIA request to refresh the access token.
+  void RefreshAccessToken();
 
   // Callback method for GetPrinterCapsAndDefaults.
   void OnReceivePrinterCaps(
@@ -176,11 +205,13 @@ class CloudPrintProxyBackend::Core
   // Schedules a task to poll for jobs. Does nothing if a task is already
   // scheduled.
   void ScheduleJobPoll();
+  CloudPrintTokenStore* GetTokenStore();
 
   // Our parent CloudPrintProxyBackend
   CloudPrintProxyBackend* backend_;
 
   GURL cloud_print_server_url_;
+  gaia::OAuthClientInfo oauth_client_info_;
   scoped_ptr<DictionaryValue> print_system_settings_;
   // Pointer to current print system.
   scoped_refptr<cloud_print::PrintSystem> print_system_;
@@ -201,8 +232,14 @@ class CloudPrintProxyBackend::Core
   size_t next_upload_index_;
   // The unique id for this proxy
   std::string proxy_id_;
-  // The GAIA auth token
-  std::string auth_token_;
+  // The OAuth2 refresh token for the robot.
+  std::string refresh_token_;
+  // The email address of the user. This is only used during initial
+  // authentication with an LSID. This is only used for storing in prefs for
+  // display purposes.
+  std::string user_email_;
+  // The email address of the robot account.
+  std::string robot_email_;
   // Cached info about the last printer that we tried to upload. We cache this
   // so we won't have to requery the printer if the upload fails and we need
   // to retry.
@@ -231,6 +268,8 @@ class CloudPrintProxyBackend::Core
   // The channel we are interested in receiving push notifications for.
   // This is "cloudprint.google.com/proxy/<proxy_id>"
   std::string push_notifications_channel_;
+  scoped_ptr<gaia::GaiaOAuthClient> oauth_client_;
+  scoped_ptr<CloudPrintTokenStore> token_store_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -239,6 +278,7 @@ CloudPrintProxyBackend::CloudPrintProxyBackend(
     CloudPrintProxyFrontend* frontend,
     const GURL& cloud_print_server_url,
     const DictionaryValue* print_system_settings,
+    const gaia::OAuthClientInfo& oauth_client_info,
     bool enable_job_poll)
       : core_thread_("Chrome_CloudPrintProxyCoreThread"),
         frontend_loop_(MessageLoop::current()),
@@ -247,6 +287,7 @@ CloudPrintProxyBackend::CloudPrintProxyBackend(
   core_ = new Core(this,
                    cloud_print_server_url,
                    print_system_settings,
+                   oauth_client_info,
                    enable_job_poll);
 }
 
@@ -254,30 +295,54 @@ CloudPrintProxyBackend::~CloudPrintProxyBackend() {
   DCHECK(!core_);
 }
 
-bool CloudPrintProxyBackend::InitializeWithLsid(const std::string& lsid,
-                                                const std::string& proxy_id) {
+bool CloudPrintProxyBackend::InitializeWithLsid(
+    const std::string& lsid,
+    const std::string& proxy_id,
+    const std::string& last_robot_refresh_token,
+    const std::string& last_robot_email,
+    const std::string& last_user_email) {
   if (!core_thread_.Start())
     return false;
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(
-        core_.get(), &CloudPrintProxyBackend::Core::DoInitializeWithLsid, lsid,
-        proxy_id));
+        core_.get(),
+        &CloudPrintProxyBackend::Core::DoInitializeWithLsid,
+        lsid,
+        proxy_id,
+        last_robot_refresh_token,
+        last_robot_email,
+        last_user_email));
   return true;
 }
 
 bool CloudPrintProxyBackend::InitializeWithToken(
     const std::string& cloud_print_token,
-    const std::string& cloud_print_xmpp_token,
-    const std::string& email,
     const std::string& proxy_id) {
   if (!core_thread_.Start())
     return false;
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(
         core_.get(), &CloudPrintProxyBackend::Core::DoInitializeWithToken,
-        cloud_print_token, cloud_print_xmpp_token, email, proxy_id));
+        cloud_print_token, proxy_id));
   return true;
 }
+
+bool CloudPrintProxyBackend::InitializeWithRobotToken(
+    const std::string& robot_oauth_refresh_token,
+    const std::string& robot_email,
+    const std::string& proxy_id) {
+  if (!core_thread_.Start())
+    return false;
+  core_thread_.message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(
+        core_.get(),
+        &CloudPrintProxyBackend::Core::DoInitializeWithRobotToken,
+        robot_oauth_refresh_token,
+        robot_email,
+        proxy_id));
+  return true;
+}
+
 
 void CloudPrintProxyBackend::Shutdown() {
   core_thread_.message_loop()->PostTask(FROM_HERE,
@@ -296,20 +361,23 @@ void CloudPrintProxyBackend::RegisterPrinters(
           printer_list));
 }
 
-CloudPrintProxyBackend::Core::Core(CloudPrintProxyBackend* backend,
-                                   const GURL& cloud_print_server_url,
-                                   const DictionaryValue* print_system_settings,
-                                   bool enable_job_poll)
-    : backend_(backend),
-      cloud_print_server_url_(cloud_print_server_url),
-      complete_list_available_(false),
-      next_upload_index_(0),
-      next_response_handler_(NULL),
-      new_printers_available_(false),
-      registration_in_progress_(false),
-      notifications_enabled_(false),
-      job_poll_scheduled_(false),
-      enable_job_poll_(enable_job_poll) {
+CloudPrintProxyBackend::Core::Core(
+    CloudPrintProxyBackend* backend,
+    const GURL& cloud_print_server_url,
+    const DictionaryValue* print_system_settings,
+    const gaia::OAuthClientInfo& oauth_client_info,
+    bool enable_job_poll)
+      : backend_(backend),
+        cloud_print_server_url_(cloud_print_server_url),
+        oauth_client_info_(oauth_client_info),
+        complete_list_available_(false),
+        next_upload_index_(0),
+        next_response_handler_(NULL),
+        new_printers_available_(false),
+        registration_in_progress_(false),
+        notifications_enabled_(false),
+        job_poll_scheduled_(false),
+        enable_job_poll_(enable_job_poll) {
   if (print_system_settings) {
     // It is possible to have no print settings specified.
     print_system_settings_.reset(print_system_settings->DeepCopy());
@@ -317,92 +385,108 @@ CloudPrintProxyBackend::Core::Core(CloudPrintProxyBackend* backend,
 }
 
 void CloudPrintProxyBackend::Core::DoInitializeWithLsid(
-    const std::string& lsid, const std::string& proxy_id) {
+    const std::string& lsid,
+    const std::string& proxy_id,
+    const std::string& last_robot_refresh_token,
+    const std::string& last_robot_email,
+    const std::string& last_user_email) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  // Since Talk does not accept a Cloud Print token, for now, we make 2 auth
-  // requests, one for the chromiumsync service and another for print. This is
-  // temporary and should be removed once Talk supports our token.
   // Note: The GAIA login is synchronous but that should be OK because we are in
   // the CloudPrintProxyCoreThread and we cannot really do anything else until
   // the GAIA signin is successful.
   std::string user_agent = "ChromiumBrowser";
-  scoped_refptr<ServiceGaiaAuthenticator> gaia_auth_for_talk(
+  scoped_refptr<ServiceGaiaAuthenticator> gaia_auth_for_print(
       new ServiceGaiaAuthenticator(
-          user_agent, kSyncGaiaServiceId, kGaiaUrl,
+          user_agent, kCloudPrintGaiaServiceId, kGaiaUrl,
           g_service_process->io_thread()->message_loop_proxy()));
-  gaia_auth_for_talk->set_message_loop(MessageLoop::current());
-  bool auth_succeeded = false;
-  if (gaia_auth_for_talk->AuthenticateWithLsid(lsid)) {
-    scoped_refptr<ServiceGaiaAuthenticator> gaia_auth_for_print(
-        new ServiceGaiaAuthenticator(
-            user_agent, kCloudPrintGaiaServiceId, kGaiaUrl,
-            g_service_process->io_thread()->message_loop_proxy()));
-    gaia_auth_for_print->set_message_loop(MessageLoop::current());
-    if (gaia_auth_for_print->AuthenticateWithLsid(lsid)) {
-      auth_succeeded = true;
-      // Let the frontend know that we have authenticated.
-      backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &Core::NotifyAuthenticated, gaia_auth_for_print->auth_token(),
-          gaia_auth_for_talk->auth_token(), gaia_auth_for_talk->email()));
-      backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &Core::NotifyAuthenticated, gaia_auth_for_print->auth_token(),
-          gaia_auth_for_talk->auth_token(), gaia_auth_for_talk->email()));
-      DoInitializeWithToken(gaia_auth_for_print->auth_token(),
-                            gaia_auth_for_talk->auth_token(),
-                            gaia_auth_for_talk->email(),
-                            proxy_id);
+  gaia_auth_for_print->set_message_loop(MessageLoop::current());
+  if (gaia_auth_for_print->AuthenticateWithLsid(lsid)) {
+    // Stash away the user email so we can save it in prefs.
+    user_email_ = gaia_auth_for_print->email();
+    // If the same user is re-enabling Cloud Print and we have stashed robot
+    // credentials, we will use those.
+    if ((0 == base::strcasecmp(user_email_.c_str(), last_user_email.c_str())) &&
+        !last_robot_refresh_token.empty() &&
+        !last_robot_email.empty()) {
+      DoInitializeWithRobotToken(last_robot_refresh_token,
+                                 last_robot_email,
+                                 proxy_id);
     }
-  }
-
-  if (!auth_succeeded) {
+    DoInitializeWithToken(gaia_auth_for_print->auth_token(),
+                          proxy_id);
+  } else {
     // Let the frontend know the of authentication failure.
-    backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &Core::NotifyAuthenticationFailed));
+    OnAuthError();
   }
 }
 
 void CloudPrintProxyBackend::Core::DoInitializeWithToken(
     const std::string cloud_print_token,
-    const std::string cloud_print_xmpp_token,
-    const std::string email, const std::string& proxy_id) {
+    const std::string& proxy_id) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   VLOG(1) << "CP_PROXY: Starting proxy, id: " << proxy_id;
+  proxy_id_ = proxy_id;
+  GetTokenStore()->SetToken(cloud_print_token, false);
 
+  // We need to get the credentials of the robot here.
+  GURL get_authcode_url =
+      CloudPrintHelpers::GetUrlForGetAuthCode(cloud_print_server_url_,
+                                              oauth_client_info_.client_id,
+                                              proxy_id_);
+  next_response_handler_ =
+      &CloudPrintProxyBackend::Core::HandleGetAuthCodeResponse;
+  request_ = new CloudPrintURLFetcher;
+  request_->StartGetRequest(get_authcode_url,
+                            this,
+                            kCloudPrintAPIMaxRetryCount,
+                            std::string());
+}
+
+void CloudPrintProxyBackend::Core::DoInitializeWithRobotToken(
+    const std::string& robot_oauth_refresh_token,
+    const std::string& robot_email,
+    const std::string& proxy_id) {
+  robot_email_ = robot_email;
+  proxy_id_ = proxy_id;
+  refresh_token_ = robot_oauth_refresh_token;
+  RefreshAccessToken();
+}
+
+void CloudPrintProxyBackend::Core::PostAuthInitialization() {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  // Now we can get down to registering printers.
   print_system_ =
       cloud_print::PrintSystem::CreateInstance(print_system_settings_.get());
   if (!print_system_.get()) {
     NOTREACHED();
     return;  // No print system available, fail initalization.
   }
-
   cloud_print::PrintSystem::PrintSystemResult result = print_system_->Init();
-
-  // TODO(sanjeevr): Validate the tokens.
-  auth_token_ = cloud_print_token;
 
   if (result.succeeded()) {
     notifier::NotifierOptions notifier_options;
     notifier_options.request_context_getter =
         g_service_process->GetServiceURLRequestContextGetter();
+    notifier_options.auth_mechanism = "X-OAUTH2";
     talk_mediator_.reset(new notifier::TalkMediatorImpl(
         new notifier::MediatorThreadImpl(notifier_options),
         notifier_options));
     notifier::Subscription subscription;
     subscription.channel = kCloudPrintPushNotificationsSource;
     subscription.channel.append("/proxy/");
-    subscription.channel.append(proxy_id);
+    subscription.channel.append(proxy_id_);
     subscription.from = kCloudPrintPushNotificationsSource;
     push_notifications_channel_ = subscription.channel;
     talk_mediator_->AddSubscription(subscription);
     talk_mediator_->SetDelegate(this);
-    talk_mediator_->SetAuthToken(email, cloud_print_xmpp_token,
-                                 kSyncGaiaServiceId);
+    talk_mediator_->SetAuthToken(
+        robot_email_,
+        CloudPrintTokenStore::current()->token(),
+        kSyncGaiaServiceId);
     talk_mediator_->Login();
 
     print_server_watcher_ = print_system_->CreatePrintServerWatcher();
     print_server_watcher_->StartWatching(this);
-
-    proxy_id_ = proxy_id;
 
     StartRegistration();
   } else {
@@ -466,6 +550,7 @@ void CloudPrintProxyBackend::Core::DoShutdown() {
   notifications_enabled_ = false;
   notifications_enabled_since_ = base::TimeTicks();
   request_ = NULL;
+  token_store_.reset();
 }
 
 void CloudPrintProxyBackend::Core::DoRegisterSelectedPrinters(
@@ -488,7 +573,6 @@ void CloudPrintProxyBackend::Core::GetRegisteredPrinters() {
   request_ = new CloudPrintURLFetcher;
   request_->StartGetRequest(printer_list_url,
                             this,
-                            auth_token_,
                             kCloudPrintAPIMaxRetryCount,
                             std::string());
 }
@@ -581,7 +665,6 @@ void CloudPrintProxyBackend::Core::OnReceivePrinterCaps(
     request_ = new CloudPrintURLFetcher;
     request_->StartPostRequest(post_url,
                                this,
-                               auth_token_,
                                kCloudPrintAPIMaxRetryCount,
                                mime_type,
                                post_data,
@@ -642,6 +725,13 @@ void CloudPrintProxyBackend::Core::ScheduleJobPoll() {
   }
 }
 
+CloudPrintTokenStore* CloudPrintProxyBackend::Core::GetTokenStore() {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  if (!token_store_.get())
+    token_store_.reset(new CloudPrintTokenStore);
+  return token_store_.get();
+}
+
 // CloudPrintURLFetcher::Delegate implementation.
 CloudPrintURLFetcher::ResponseAction
 CloudPrintProxyBackend::Core::HandleJSONData(
@@ -664,12 +754,13 @@ void CloudPrintProxyBackend::Core::NotifyPrinterListAvailable(
 }
 
 void CloudPrintProxyBackend::Core::NotifyAuthenticated(
-    const std::string& cloud_print_token,
-    const std::string& cloud_print_xmpp_token,
-    const std::string& email) {
+    const std::string& robot_oauth_refresh_token,
+    const std::string& robot_email,
+    const std::string& user_email) {
   DCHECK(MessageLoop::current() == backend_->frontend_loop_);
-  backend_->frontend_->OnAuthenticated(cloud_print_token,
-                                       cloud_print_xmpp_token, email);
+  backend_->frontend_->OnAuthenticated(robot_oauth_refresh_token,
+                                       robot_email,
+                                       user_email);
 }
 
 void CloudPrintProxyBackend::Core::NotifyAuthenticationFailed() {
@@ -680,6 +771,35 @@ void CloudPrintProxyBackend::Core::NotifyAuthenticationFailed() {
 void CloudPrintProxyBackend::Core::NotifyPrintSystemUnavailable() {
   DCHECK(MessageLoop::current() == backend_->frontend_loop_);
   backend_->frontend_->OnPrintSystemUnavailable();
+}
+
+CloudPrintURLFetcher::ResponseAction
+CloudPrintProxyBackend::Core::HandleGetAuthCodeResponse(
+    const URLFetcher* source,
+    const GURL& url,
+    DictionaryValue* json_data,
+    bool succeeded) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  if (!succeeded) {
+    OnAuthError();
+    return CloudPrintURLFetcher::STOP_PROCESSING;
+  }
+  std::string auth_code;
+  if (!json_data->GetString(kOAuthCodeValue, &auth_code)) {
+    OnAuthError();
+    return CloudPrintURLFetcher::STOP_PROCESSING;
+  }
+  json_data->GetString(kXMPPJidValue, &robot_email_);
+  // Now that we have an auth code we need to get the refresh and access tokens.
+  oauth_client_.reset(new gaia::GaiaOAuthClient(
+      gaia::kGaiaOAuth2Url,
+      g_service_process->GetServiceURLRequestContextGetter()));
+  oauth_client_->GetTokensFromAuthCode(oauth_client_info_,
+                                       auth_code,
+                                       kCloudPrintAPIMaxRetryCount,
+                                       this);
+
+  return CloudPrintURLFetcher::STOP_PROCESSING;
 }
 
 CloudPrintURLFetcher::ResponseAction
@@ -763,9 +883,11 @@ void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
       }
     }
     scoped_refptr<PrinterJobHandler> job_handler;
-    job_handler = new PrinterJobHandler(printer_info, printer_info_cloud,
-                                        auth_token_, cloud_print_server_url_,
-                                        print_system_.get(), this);
+    job_handler = new PrinterJobHandler(printer_info,
+                                        printer_info_cloud,
+                                        cloud_print_server_url_,
+                                        print_system_.get(),
+                                        this);
     job_handler_map_[printer_info_cloud.printer_id] = job_handler;
     job_handler->Initialize();
   }
@@ -795,7 +917,6 @@ void CloudPrintProxyBackend::Core::ReportUserMessage(
   request_ = new CloudPrintURLFetcher;
   request_->StartPostRequest(post_url,
                              this,
-                             auth_token_,
                              kCloudPrintAPIMaxRetryCount,
                              mime_type,
                              post_data,
@@ -885,6 +1006,17 @@ bool CloudPrintProxyBackend::Core::RemovePrinterFromList(
   return false;
 }
 
+void CloudPrintProxyBackend::Core::RefreshAccessToken() {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  oauth_client_.reset(new gaia::GaiaOAuthClient(
+      gaia::kGaiaOAuth2Url,
+      g_service_process->GetServiceURLRequestContextGetter()));
+  oauth_client_->RefreshToken(oauth_client_info_,
+                              refresh_token_,
+                              kCloudPrintAPIMaxRetryCount,
+                              this);
+}
+
 void CloudPrintProxyBackend::Core::OnNotificationStateChange(
     bool notification_enabled) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
@@ -950,4 +1082,60 @@ void CloudPrintProxyBackend::Core::OnPrinterNotFound(
   // If we have a complete list of local printers, then this needs to be deleted
   // from the server.
   *delete_from_server = complete_list_available_;
+}
+
+  // gaia::GaiaOAuthClient::Delegate implementation.
+void CloudPrintProxyBackend::Core::OnGetTokensResponse(
+    const std::string& refresh_token,
+    const std::string& access_token,
+    int expires_in_seconds) {
+  refresh_token_ = refresh_token;
+  // After saving the refresh token, this is just like having just refreshed
+  // the access token. Just call OnRefreshTokenResponse.
+  OnRefreshTokenResponse(access_token, expires_in_seconds);
+}
+
+void CloudPrintProxyBackend::Core::OnRefreshTokenResponse(
+    const std::string& access_token, int expires_in_seconds) {
+  // If our current token is not OAuth, we either have no token at all or we
+  // have a ClientLogin token which we just exchanged for an OAuth token.
+  // In this case we need to do the startup initialiazation.
+  // TODO(sanjeevr): Use an enum for state instead of using this as a signal.
+  // I will do this in a follow-up change.
+  CloudPrintTokenStore* token_store = GetTokenStore();
+  bool first_time = !token_store->token_is_oauth();
+  token_store->SetToken(access_token, true);
+  // Let the frontend know that we have authenticated.
+  backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &Core::NotifyAuthenticated, refresh_token_, robot_email_, user_email_));
+  if (first_time) {
+    PostAuthInitialization();
+  } else {
+    // If we are refreshing a token, update the XMPP token too.
+    DCHECK(talk_mediator_.get());
+    talk_mediator_->SetAuthToken(robot_email_,
+                                 access_token,
+                                 kSyncGaiaServiceId);
+  }
+  // Schedule a task to refresh the access token again when it is about to
+  // expire.
+  DCHECK(expires_in_seconds > kTokenRefreshGracePeriodSecs);
+  int64 refresh_delay =
+      (expires_in_seconds - kTokenRefreshGracePeriodSecs)*1000;
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &Core::RefreshAccessToken),
+      refresh_delay);
+}
+
+void CloudPrintProxyBackend::Core::OnOAuthError() {
+  OnAuthError();
+}
+
+void CloudPrintProxyBackend::Core::OnNetworkError(int response_code) {
+  // Since we specify inifinite retries on network errors, this should never
+  // be called.
+  NOTREACHED() <<
+      "OnNetworkError invoked when not expected, response code is " <<
+      response_code;
 }

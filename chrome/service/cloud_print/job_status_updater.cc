@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,12 +15,11 @@
 JobStatusUpdater::JobStatusUpdater(const std::string& printer_name,
                            const std::string& job_id,
                            cloud_print::PlatformJobId& local_job_id,
-                           const std::string& auth_token,
                            const GURL& cloud_print_server_url,
                            cloud_print::PrintSystem* print_system,
                            Delegate* delegate)
     : printer_name_(printer_name), job_id_(job_id),
-      local_job_id_(local_job_id), auth_token_(auth_token),
+      local_job_id_(local_job_id),
       cloud_print_server_url_(cloud_print_server_url),
       print_system_(print_system), delegate_(delegate), stopped_(false) {
   DCHECK(delegate_);
@@ -63,7 +62,6 @@ void JobStatusUpdater::UpdateStatus() {
           CloudPrintHelpers::GetUrlForJobStatusUpdate(
               cloud_print_server_url_, job_id_, last_job_details_),
           this,
-          auth_token_,
           kCloudPrintAPIMaxRetryCount,
           std::string());
     }

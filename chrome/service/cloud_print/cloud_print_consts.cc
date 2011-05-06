@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,9 @@ const char kJobListValue[] = "jobs";
 const char kTitleValue[] = "title";
 const char kPrinterCapsHashValue[] = "capsHash";
 const char kTagsValue[] = "tags";
+const char kXMPPJidValue[] = "xmpp_jid";
+const char kOAuthCodeValue[] = "authorization_code";
+
 const char kProxyTagPrefix[] = "__cp__";
 const char kTagsHashTagName[] = "__cp__tagshash";
 const char kTagDryRunFlag[] = "__cp__dry_run";
@@ -58,3 +61,8 @@ const char kJobFetchReasonQueryMore[] = "querymore";
 const char kPrintSystemFailedMessageId[] = "printsystemfail";
 const char kGetPrinterCapsFailedMessageId[] = "getprncapsfail";
 const char kEnumPrintersFailedMessageId[] = "enumfail";
+
+const char kDefaultCloudPrintOAuthClientId[] =
+    "551556820943.apps.googleusercontent.com";
+const char kDefaultCloudPrintOAuthClientSecret[] = "u3/mp8CgLFxh4uiX1855/MHe";
+

@@ -9,6 +9,7 @@
 #include "chrome/common/net/http_return.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
+#include "chrome/service/cloud_print/cloud_print_token_store.h"
 #include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_process.h"
 #include "googleurl/src/gurl.h"
@@ -22,23 +23,31 @@ CloudPrintURLFetcher::CloudPrintURLFetcher()
 void CloudPrintURLFetcher::StartGetRequest(
     const GURL& url,
     Delegate* delegate,
-    const std::string& auth_token,
     int max_retries,
     const std::string& additional_headers) {
-  StartRequestHelper(url, URLFetcher::GET, delegate, auth_token, max_retries,
-                     std::string(), std::string(), additional_headers);
+  StartRequestHelper(url,
+                     URLFetcher::GET,
+                     delegate,
+                     max_retries,
+                     std::string(),
+                     std::string(),
+                     additional_headers);
 }
 
 void CloudPrintURLFetcher::StartPostRequest(
     const GURL& url,
     Delegate* delegate,
-    const std::string& auth_token,
     int max_retries,
     const std::string& post_data_mime_type,
     const std::string& post_data,
     const std::string& additional_headers) {
-  StartRequestHelper(url, URLFetcher::POST, delegate, auth_token, max_retries,
-                     post_data_mime_type, post_data, additional_headers);
+  StartRequestHelper(url,
+                     URLFetcher::POST,
+                     delegate,
+                     max_retries,
+                     post_data_mime_type,
+                     post_data,
+                     additional_headers);
 }
 
   // URLFetcher::Delegate implementation.
@@ -60,8 +69,11 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
                                                        cookies,
                                                        data);
   if (action == CONTINUE_PROCESSING) {
-    // If there was an auth error, we are done.
-    if (RC_FORBIDDEN == response_code) {
+    // If we are not using an OAuth token, and we got an auth error, we are
+    // done. Else, the token may have been refreshed. Let us try again.
+    if ((RC_FORBIDDEN == response_code) &&
+        (!CloudPrintTokenStore::current() ||
+         !CloudPrintTokenStore::current()->token_is_oauth())) {
       delegate_->OnRequestAuthError();
       return;
     }
@@ -104,7 +116,9 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
       delegate_->OnRequestGiveUp();
     } else {
       // Either no retry limit specified or retry limit has not yet been
-      // reached. Try again.
+      // reached. Try again. Set up the request headers again because the token
+      // may have changed.
+      SetupRequestHeaders();
       request_->Start();
     }
   }
@@ -114,32 +128,42 @@ void CloudPrintURLFetcher::StartRequestHelper(
     const GURL& url,
     URLFetcher::RequestType request_type,
     Delegate* delegate,
-    const std::string& auth_token,
     int max_retries,
     const std::string& post_data_mime_type,
     const std::string& post_data,
     const std::string& additional_headers) {
   DCHECK(delegate);
+  // Persist the additional headers in case we need to retry the request.
+  additional_headers_ = additional_headers;
   request_.reset(new URLFetcher(url, request_type, this));
   request_->set_request_context(GetRequestContextGetter());
   // Since we implement our own retry logic, disable the retry in URLFetcher.
   request_->set_automatically_retry_on_5xx(false);
   request_->set_max_retries(max_retries);
+  SetupRequestHeaders();
   delegate_ = delegate;
-  std::string headers = "Authorization: GoogleLogin auth=";
-  headers += auth_token;
-  headers += "\r\n";
-  headers += kChromeCloudPrintProxyHeader;
-  if (!additional_headers.empty()) {
-    headers += "\r\n";
-    headers += additional_headers;
-  }
-  request_->set_extra_request_headers(headers);
   if (request_type == URLFetcher::POST) {
     request_->set_upload_data(post_data_mime_type, post_data);
   }
 
   request_->Start();
+}
+
+void CloudPrintURLFetcher::SetupRequestHeaders() {
+  std::string headers;
+  CloudPrintTokenStore* token_store = CloudPrintTokenStore::current();
+  if (token_store) {
+    headers = token_store->token_is_oauth() ?
+        "Authorization: OAuth " : "Authorization: GoogleLogin auth=";
+    headers += token_store->token();
+    headers += "\r\n";
+  }
+  headers += kChromeCloudPrintProxyHeader;
+  if (!additional_headers_.empty()) {
+    headers += "\r\n";
+    headers += additional_headers_;
+  }
+  request_->set_extra_request_headers(headers);
 }
 
 CloudPrintURLFetcher::~CloudPrintURLFetcher() {}

@@ -40,16 +40,16 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   // for authentication is also returned in the optional |email| argument.
   bool IsEnabled(std::string* email) const;
 
-  const std::string& cloud_print_email() const {
-    return cloud_print_email_;
+  const std::string& user_email() const {
+    return user_email_;
   }
 
   // CloudPrintProxyFrontend implementation. Called on UI thread.
   virtual void OnPrinterListAvailable(
       const printing::PrinterList& printer_list);
-  virtual void OnAuthenticated(const std::string& cloud_print_token,
-                               const std::string& cloud_print_xmpp_token,
-                               const std::string& email);
+  virtual void OnAuthenticated(const std::string& robot_oauth_refresh_token,
+                               const std::string& robot_email,
+                               const std::string& user_email);
   virtual void OnAuthenticationFailed();
   virtual void OnPrintSystemUnavailable();
 
@@ -67,7 +67,10 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   Client* client_;
   // The email address of the account used to authenticate to the Cloud Print
   // service.
-  std::string cloud_print_email_;
+  std::string user_email_;
+  // This is set to true when the Cloud Print proxy is enabled and after
+  // successful authentication with the Cloud Print service.
+  bool enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxy);
 };

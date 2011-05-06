@@ -35,7 +35,6 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
   JobStatusUpdater(const std::string& printer_name,
                    const std::string& job_id,
                    cloud_print::PlatformJobId& local_job_id,
-                   const std::string& auth_token,
                    const GURL& cloud_print_server_url,
                    cloud_print::PrintSystem* print_system,
                    Delegate* delegate);
@@ -59,7 +58,6 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
   cloud_print::PlatformJobId local_job_id_;
   cloud_print::PrintJobDetails last_job_details_;
   scoped_refptr<CloudPrintURLFetcher> request_;
-  std::string auth_token_;
   GURL cloud_print_server_url_;
   scoped_refptr<cloud_print::PrintSystem> print_system_;
   Delegate* delegate_;

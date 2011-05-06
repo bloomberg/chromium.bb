@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,10 @@ class CloudPrintHelpers {
       const cloud_print::PrintJobDetails& details);
   static GURL GetUrlForUserMessage(const GURL& cloud_print_server_url,
                                    const std::string& message_id);
+  static GURL GetUrlForGetAuthCode(const GURL& cloud_print_server_url,
+                                   const std::string& oauth_client_id,
+                                   const std::string& proxy_id);
+
 
   // Parses the response data for any cloud print server request. The method
   // returns false if there was an error in parsing the JSON. The succeeded

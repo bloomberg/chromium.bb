@@ -73,19 +73,17 @@ class CloudPrintURLFetcher
     // was a retry limit - a limit of -1 implies no limit).
     virtual void OnRequestGiveUp() { }
     // Invoked when the request returns a 403 error (applicable only when
-    // HandleRawResponse returns CONTINUE_PROCESSING)
+    // HandleRawResponse returns CONTINUE_PROCESSING).
     virtual void OnRequestAuthError() = 0;
   };
   CloudPrintURLFetcher();
 
   void StartGetRequest(const GURL& url,
                        Delegate* delegate,
-                       const std::string& auth_token,
                        int max_retries,
                        const std::string& additional_headers);
   void StartPostRequest(const GURL& url,
                         Delegate* delegate,
-                        const std::string& auth_token,
                         int max_retries,
                         const std::string& post_data_mime_type,
                         const std::string& post_data,
@@ -108,15 +106,16 @@ class CloudPrintURLFetcher
   void StartRequestHelper(const GURL& url,
                           URLFetcher::RequestType request_type,
                           Delegate* delegate,
-                          const std::string& auth_token,
                           int max_retries,
                           const std::string& post_data_mime_type,
                           const std::string& post_data,
                           const std::string& additional_headers);
+  void SetupRequestHeaders();
 
   scoped_ptr<URLFetcher> request_;
   Delegate* delegate_;
   int num_retries_;
+  std::string additional_headers_;
 };
 
 typedef CloudPrintURLFetcher::Delegate CloudPrintURLFetcherDelegate;

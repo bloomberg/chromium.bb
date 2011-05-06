@@ -9,6 +9,7 @@
 #include "base/process_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/gaia_oauth_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/print_system.h"
@@ -41,7 +42,8 @@ static void ShowTokenExpiredNotificationInBrowser() {
 
 CloudPrintProxy::CloudPrintProxy()
     : service_prefs_(NULL),
-      client_(NULL) {
+      client_(NULL),
+      enabled_(false) {
 }
 
 CloudPrintProxy::~CloudPrintProxy() {
@@ -81,6 +83,7 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
   if (cloud_print_server_url_str.empty()) {
     cloud_print_server_url_str = kDefaultCloudPrintServerUrl;
   }
+  service_prefs_->GetString(prefs::kCloudPrintEmail, &user_email_);
 
   // By default we don't poll for jobs when we lose XMPP connection. But this
   // behavior can be overridden by a preference.
@@ -88,29 +91,49 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
   service_prefs_->GetBoolean(prefs::kCloudPrintEnableJobPoll,
                              &enable_job_poll);
 
+  // TODO(sanjeevr): Allow overriding OAuthClientInfo in prefs.
+  gaia::OAuthClientInfo oauth_client_info;
+  oauth_client_info.client_id = kDefaultCloudPrintOAuthClientId;
+  oauth_client_info.client_secret = kDefaultCloudPrintOAuthClientSecret;
+
   GURL cloud_print_server_url(cloud_print_server_url_str.c_str());
   DCHECK(cloud_print_server_url.is_valid());
   backend_.reset(new CloudPrintProxyBackend(this, cloud_print_server_url,
                                             print_system_settings,
+                                            oauth_client_info,
                                             enable_job_poll));
+  // Read persisted robot credentials because we may decide to reuse it if the
+  // passed in LSID belongs the same user.
+  std::string robot_refresh_token;
+  service_prefs_->GetString(prefs::kCloudPrintRobotRefreshToken,
+                            &robot_refresh_token);
+  std::string robot_email;
+  service_prefs_->GetString(prefs::kCloudPrintRobotEmail,
+                            &robot_email);
+
   // If we have been passed in an LSID, we want to use this to authenticate.
   // Else we will try and retrieve the last used auth tokens from prefs.
   if (!lsid.empty()) {
-    backend_->InitializeWithLsid(lsid, proxy_id);
+    backend_->InitializeWithLsid(lsid,
+                                 proxy_id,
+                                 robot_refresh_token,
+                                 robot_email,
+                                 user_email_);
   } else {
-    std::string cloud_print_token;
-    service_prefs_->GetString(prefs::kCloudPrintAuthToken,
-                              &cloud_print_token);
-    DCHECK(!cloud_print_token.empty());
-    std::string cloud_print_xmpp_token;
-    service_prefs_->GetString(prefs::kCloudPrintXMPPAuthToken,
-                              &cloud_print_xmpp_token);
-    DCHECK(!cloud_print_xmpp_token.empty());
-    service_prefs_->GetString(prefs::kCloudPrintEmail,
-                              &cloud_print_email_);
-    DCHECK(!cloud_print_email_.empty());
-    backend_->InitializeWithToken(cloud_print_token, cloud_print_xmpp_token,
-                                  cloud_print_email_, proxy_id);
+    // See if we have persisted robot credentials.
+    if (!robot_refresh_token.empty()) {
+      DCHECK(!robot_email.empty());
+      backend_->InitializeWithRobotToken(robot_refresh_token,
+                                         robot_email,
+                                         proxy_id);
+    } else {
+      // Finally see if we have persisted user credentials (legacy case).
+      std::string cloud_print_token;
+      service_prefs_->GetString(prefs::kCloudPrintAuthToken,
+                                &cloud_print_token);
+      DCHECK(!cloud_print_token.empty());
+      backend_->InitializeWithToken(cloud_print_token, proxy_id);
+    }
   }
   if (client_) {
     client_->OnCloudPrintProxyEnabled(true);
@@ -119,7 +142,8 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
 
 void CloudPrintProxy::DisableForUser() {
   DCHECK(CalledOnValidThread());
-  cloud_print_email_.clear();
+  user_email_.clear();
+  enabled_ = false;
   Shutdown();
   if (client_) {
     client_->OnCloudPrintProxyDisabled(true);
@@ -127,11 +151,10 @@ void CloudPrintProxy::DisableForUser() {
 }
 
 bool CloudPrintProxy::IsEnabled(std::string* email) const {
-  bool enabled = !cloud_print_email().empty();
-  if (enabled && email) {
-    *email = cloud_print_email();
+  if (enabled_ && email) {
+    *email = user_email();
   }
-  return enabled;
+  return enabled_;
 }
 
 // Notification methods from the backend. Called on UI thread.
@@ -144,17 +167,21 @@ void CloudPrintProxy::OnPrinterListAvailable(
 }
 
 void CloudPrintProxy::OnAuthenticated(
-    const std::string& cloud_print_token,
-    const std::string& cloud_print_xmpp_token,
-    const std::string& email) {
+    const std::string& robot_oauth_refresh_token,
+    const std::string& robot_email,
+    const std::string& user_email) {
   DCHECK(CalledOnValidThread());
-  cloud_print_email_ = email;
-  service_prefs_->SetString(prefs::kCloudPrintAuthToken,
-                            cloud_print_token);
-  service_prefs_->SetString(prefs::kCloudPrintXMPPAuthToken,
-                            cloud_print_xmpp_token);
-  service_prefs_->SetString(prefs::kCloudPrintEmail,
-                            email);
+  service_prefs_->SetString(prefs::kCloudPrintRobotRefreshToken,
+                            robot_oauth_refresh_token);
+  service_prefs_->SetString(prefs::kCloudPrintRobotEmail,
+                            robot_email);
+  // If authenticating from a robot, the user email will be empty.
+  if (!user_email.empty()) {
+    user_email_ = user_email;
+    service_prefs_->SetString(prefs::kCloudPrintEmail, user_email);
+  }
+  enabled_ = true;
+  DCHECK(!user_email_.empty());
   service_prefs_->WritePrefs();
 }
 
@@ -162,6 +189,12 @@ void CloudPrintProxy::OnAuthenticationFailed() {
   DCHECK(CalledOnValidThread());
   // If authenticated failed, we will disable the cloud print proxy.
   DisableForUser();
+  // Also delete the cached robot credentials since they may not be valid any
+  // longer.
+  service_prefs_->RemovePref(prefs::kCloudPrintRobotRefreshToken);
+  service_prefs_->RemovePref(prefs::kCloudPrintRobotEmail);
+  service_prefs_->WritePrefs();
+
   // Launch the browser to display a notification that the credentials have
   // expired (unless error dialogs are disabled).
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoErrorDialogs))

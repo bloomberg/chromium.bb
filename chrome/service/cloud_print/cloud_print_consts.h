@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,9 @@ extern const char kJobListValue[];
 extern const char kTitleValue[];
 extern const char kPrinterCapsHashValue[];
 extern const char kTagsValue[];
+extern const char kXMPPJidValue[];
+extern const char kOAuthCodeValue[];
+
 extern const char kProxyTagPrefix[];
 extern const char kTagsHashTagName[];
 extern const char kTagDryRunFlag[];
@@ -46,6 +49,9 @@ extern const char kJobFetchReasonQueryMore[];
 extern const char kPrintSystemFailedMessageId[];
 extern const char kGetPrinterCapsFailedMessageId[];
 extern const char kEnumPrintersFailedMessageId[];
+extern const char kDefaultCloudPrintOAuthClientId[];
+extern const char kDefaultCloudPrintOAuthClientSecret[];
+
 
 // Max retry count for job data fetch requests.
 const int kJobDataMaxRetryCount = 5;
@@ -56,6 +62,10 @@ const int kCloudPrintAPIMaxRetryCount = -1;
 // print jobs. We choose a random interval in seconds between these 2 values.
 const int kMinJobPollIntervalSecs = 5*60;  // 5 minutes in seconds
 const int kMaxJobPollIntervalSecs = 8*60;  // 8 minutes in seconds
+
+// The number of seconds before the OAuth2 access token is due to expire that
+// we try and refresh it.
+const int kTokenRefreshGracePeriodSecs = 5*60;  // 5 minutes in seconds
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_CONSTS_H_
 

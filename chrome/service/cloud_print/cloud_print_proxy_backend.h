@@ -15,6 +15,10 @@ class CloudPrintProxyService;
 class GURL;
 class DictionaryValue;
 
+namespace gaia {
+struct OAuthClientInfo;
+}
+
 // CloudPrintProxyFrontend is the interface used by CloudPrintProxyBackend to
 // communicate with the entity that created it and, presumably, is interested in
 // cloud print proxy related activity.
@@ -29,9 +33,9 @@ class CloudPrintProxyFrontend {
       const printing::PrinterList& printer_list) = 0;
   // We successfully authenticated with the cloud print server. This callback
   // allows the frontend to persist the tokens.
-  virtual void OnAuthenticated(const std::string& cloud_print_token,
-                               const std::string& cloud_print_xmpp_token,
-                               const std::string& email) = 0;
+  virtual void OnAuthenticated(const std::string& robot_oauth_refresh_token,
+                               const std::string& robot_email,
+                               const std::string& user_email) = 0;
   // We have invalid/expired credentials.
   virtual void OnAuthenticationFailed() = 0;
   // The print system could not be initialized.
@@ -49,17 +53,31 @@ class CloudPrintProxyBackend {
  public:
   // It is OK for print_system_settings to be NULL. In this case system should
   // use system default settings.
-  explicit CloudPrintProxyBackend(CloudPrintProxyFrontend* frontend,
-                                  const GURL& cloud_print_server_url,
-                                  const DictionaryValue* print_sys_settings,
-                                  bool enable_job_poll);
+  CloudPrintProxyBackend(
+      CloudPrintProxyFrontend* frontend,
+      const GURL& cloud_print_server_url,
+      const DictionaryValue* print_sys_settings,
+      const gaia::OAuthClientInfo& oauth_client_info,
+      bool enable_job_poll);
   ~CloudPrintProxyBackend();
 
-  bool InitializeWithLsid(const std::string& lsid, const std::string& proxy_id);
+  // Called when the user enables Google Cloud Print.
+  // |last_robot_refresh_token|, |last_robot_email| and |last_user_email| are
+  // the previously persisted credentials if any. We will use this is the passed
+  // in LSID belongs to the same user as |last_user_email|.
+  bool InitializeWithLsid(const std::string& lsid,
+                          const std::string& proxy_id,
+                          const std::string& last_robot_refresh_token,
+                          const std::string& last_robot_email,
+                          const std::string& last_user_email);
+  // Legacy mechanism when we have saved user credentials but no saved robot
+  // credentials.
   bool InitializeWithToken(const std::string& cloud_print_token,
-                           const std::string& cloud_print_xmpp_token,
-                           const std::string& email,
                            const std::string& proxy_id);
+  // Called when we have saved robot credentials.
+  bool InitializeWithRobotToken(const std::string& robot_oauth_refresh_token,
+                                const std::string& robot_email,
+                                const std::string& proxy_id);
   void Shutdown();
   void RegisterPrinters(const printing::PrinterList& printer_list);
 
