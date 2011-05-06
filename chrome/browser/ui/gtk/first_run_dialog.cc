@@ -30,6 +30,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"
@@ -336,7 +337,7 @@ void FirstRunDialog::OnTemplateURLModelChanged() {
     int logo_id = (*search_engine_iter)->logo_id();
     if (show_images && logo_id > 0) {
       GdkPixbuf* pixbuf =
-          ResourceBundle::GetSharedInstance().GetPixbufNamed(logo_id);
+          ResourceBundle::GetSharedInstance().GetNativeImageNamed(logo_id);
       if (ballot_engines.size() > kNormalBallotSize) {
         pixbuf = gdk_pixbuf_scale_simple(pixbuf,
                                          kLogoLabelWidthSmall,
