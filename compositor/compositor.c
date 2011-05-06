@@ -671,9 +671,8 @@ wlsc_output_repaint(struct wlsc_output *output)
 {
 	struct wlsc_compositor *ec = output->compositor;
 	struct wlsc_surface *es;
-	struct wlsc_input_device *eid;
+	struct wlsc_input_device *eid, *hw_cursor;
 	pixman_region32_t new_damage, total_damage;
-	int using_hardware_cursor = 1;
 
 	output->prepare_render(output);
 
@@ -696,15 +695,18 @@ wlsc_output_repaint(struct wlsc_output *output)
 			      &output->previous_damage_region);
 	pixman_region32_copy(&output->previous_damage_region, &new_damage);
 
-	if (ec->focus)
-		if (output->set_hardware_cursor(output, ec->input_device) < 0)
-			using_hardware_cursor = 0;
-	if (ec->fade.spring.current > 0.001)
-		using_hardware_cursor = 0;
+	hw_cursor = NULL;
+	if (ec->focus && ec->fade.spring.current < 0.001) {
+		hw_cursor = (struct wlsc_input_device *) ec->input_device;
+		if (output->set_hardware_cursor(output, hw_cursor) < 0)
+			hw_cursor = NULL;
+	} else {
+		output->set_hardware_cursor(output, NULL);
+	}
 
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
 
-	if (es->visual == &ec->compositor.rgb_visual && using_hardware_cursor) {
+	if (es->visual == &ec->compositor.rgb_visual && hw_cursor) {
 		if (output->prepare_scanout_surface(output, es) == 0) {
 			/* We're drawing nothing now,
 			 * draw the damaged regions later. */
@@ -742,7 +744,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 	if (ec->focus)
 		wl_list_for_each(eid, &ec->input_device_list, link) {
 			if (&eid->input_device != ec->input_device ||
-			    !using_hardware_cursor)
+			    eid != hw_cursor)
 				wlsc_surface_draw(eid->sprite, output,
 						  &total_damage);
 		}

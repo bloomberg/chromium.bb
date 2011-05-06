@@ -51,6 +51,7 @@ struct wlsc_transform {
 };
 
 struct wlsc_surface;
+struct wlsc_input_device;
 
 struct wlsc_output {
 	struct wl_object object;
@@ -69,7 +70,7 @@ struct wlsc_output {
 	int (*prepare_scanout_surface)(struct wlsc_output *output,
 				       struct wlsc_surface *es);
 	int (*set_hardware_cursor)(struct wlsc_output *output,
-				   struct wl_input_device *input);
+				   struct wlsc_input_device *input);
 };
 
 enum wlsc_pointer_type {

@@ -172,15 +172,19 @@ drm_output_prepare_scanout_surface(struct wlsc_output *output_base,
 
 static int
 drm_output_set_cursor(struct wlsc_output *output_base,
-		      struct wl_input_device *input)
+		      struct wlsc_input_device *eid)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->base.compositor;
-	struct wlsc_input_device *eid = (struct wlsc_input_device *) input;
 	EGLint handle, stride;
 	int ret = -1;
 	pixman_region32_t cursor_region;
+
+	if (eid == NULL) {
+		drmModeSetCursor(c->drm.fd, output->crtc_id, 0, 0, 0);
+		return 0;
+	}
 
 	pixman_region32_init_rect(&cursor_region,
 				  eid->sprite->x, eid->sprite->y,

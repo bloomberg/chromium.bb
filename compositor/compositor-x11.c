@@ -200,7 +200,7 @@ x11_output_prepare_scanout_surface(struct wlsc_output *output_base,
 
 static int
 x11_output_set_cursor(struct wlsc_output *output_base,
-		      struct wl_input_device *input)
+		      struct wlsc_input_device *input)
 {
 	return -1;
 }
