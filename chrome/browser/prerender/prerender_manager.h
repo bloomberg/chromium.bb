@@ -160,6 +160,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Records that a prefetch tag has been observed.
   void RecordPrefetchTagObserved();
 
+  // Query the list of current prerender pages to see if the given tab contents
+  // is prerendering a page.
+  bool IsTabContentsPrerendering(TabContents* tab_contents) const;
+
   // Maintaining and querying the set of TabContents belonging to this
   // PrerenderManager that are currently showing prerendered pages.
   void MarkTabContentsAsPrerendered(TabContents* tab_contents);

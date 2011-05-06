@@ -84,7 +84,6 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
   AddResourceProvider(
       new TaskManagerBackgroundContentsResourceProvider(task_manager));
   AddResourceProvider(new TaskManagerTabContentsResourceProvider(task_manager));
-  AddResourceProvider(new TaskManagerPrerenderResourceProvider(task_manager));
   AddResourceProvider(
       new TaskManagerChildProcessResourceProvider(task_manager));
   AddResourceProvider(

@@ -415,10 +415,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttpAuthentication) {
 // than the final destination page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderClientRedirectNavigateToFirst) {
-  PrerenderTestURL(
-      CreateClientRedirect("files/prerender/prerender_page.html"),
-      FINAL_STATUS_USED,
-      2);
+  PrerenderTestURL(CreateClientRedirect("files/prerender/prerender_page.html"),
+                   FINAL_STATUS_USED,
+                   2);
   NavigateToDestURL();
 }
 
@@ -427,10 +426,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // page which does the redirection.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderClientRedirectNavigateToSecond) {
-  PrerenderTestURL(
-      CreateClientRedirect("files/prerender/prerender_page.html"),
-      FINAL_STATUS_USED,
-      2);
+  PrerenderTestURL(CreateClientRedirect("files/prerender/prerender_page.html"),
+                   FINAL_STATUS_USED,
+                   2);
   NavigateToURL("files/prerender/prerender_page.html");
 }
 
@@ -503,10 +501,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // than the final destination page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderServerRedirectNavigateToFirst) {
-  PrerenderTestURL(
-      CreateServerRedirect("files/prerender/prerender_page.html"),
-      FINAL_STATUS_USED,
-      1);
+  PrerenderTestURL(CreateServerRedirect("files/prerender/prerender_page.html"),
+                   FINAL_STATUS_USED,
+                   1);
   NavigateToDestURL();
 }
 
@@ -515,11 +512,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // page which does the redirection.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderServerRedirectNavigateToSecond) {
-  std::string redirect_path;
-  PrerenderTestURL(
-      CreateServerRedirect("files/prerender/prerender_page.html"),
-      FINAL_STATUS_USED,
-      1);
+  PrerenderTestURL(CreateServerRedirect("files/prerender/prerender_page.html"),
+                   FINAL_STATUS_USED,
+                   1);
   NavigateToURL("files/prerender/prerender_page.html");
 }
 
@@ -705,6 +700,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TaskManager) {
+  // Early out if we're not using TabContents for Prerendering.
+  if (!prerender::PrerenderContents::UseTabContents()) {
+    SUCCEED();
+    return;
+  }
+
   // Show the task manager. This populates the model.
   browser()->window()->ShowTaskManager();
 
@@ -715,19 +716,27 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TaskManager) {
   // The prerender makes three.
   EXPECT_EQ(3, model()->ResourceCount());
 
-  // It shouldn't have a TabContents associated with it.
-  ASSERT_TRUE(model()->GetResourceTabContents(1) == NULL);
+  // It should have a TabContents associated with it.
+  ASSERT_TRUE(model()->GetResourceTabContents(1) != NULL);
 
   // The prefix should be "Prerender:"
   string16 prefix =
       l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX,
                                  string16());
-  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(1), prefix, true));
+  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), prefix, true));
 
   NavigateToDestURL();
 
-  // Prerender task should be killed and removed from the Task Manager.
-  EXPECT_EQ(2, model()->ResourceCount());
+  // Prerender task should become a normal tab.
+  EXPECT_EQ(3, model()->ResourceCount());
+
+  // It should have a TabContents associated with it.
+  ASSERT_TRUE(model()->GetResourceTabContents(2) != NULL);
+
+  // The prefix should now be "Tab:"
+  prefix = l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX,
+                                      string16());
+  ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), prefix, true));
 }
 
 // Checks that prerenderers will terminate when an audio tag is encountered.

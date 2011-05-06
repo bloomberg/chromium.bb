@@ -126,14 +126,6 @@ void PrerenderContents::StartPrerenderingOld(
   render_view_host_observer_.reset(
       new PrerenderRenderViewHostObserver(this, render_view_host_mutable()));
 
-  int process_id = render_view_host_->process()->id();
-  int view_id = render_view_host_->routing_id();
-  std::pair<int, int> process_view_pair = std::make_pair(process_id, view_id);
-  NotificationService::current()->Notify(
-      NotificationType::PRERENDER_CONTENTS_STARTED,
-      Source<std::pair<int, int> >(&process_view_pair),
-      NotificationService::NoDetails());
-
   // Create the RenderView, so it can receive messages.
   render_view_host_->CreateRenderView(string16());
 
@@ -147,6 +139,9 @@ void PrerenderContents::StartPrerenderingOld(
   // RenderViewHost. This must be done before the Navigate message to catch all
   // resource requests, but as it is on the same thread as the Navigate message
   // (IO) there is no race condition.
+  int process_id = render_view_host_->process()->id();
+  int view_id = render_view_host_->routing_id();
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(&AddChildRoutePair,
@@ -247,12 +242,6 @@ void PrerenderContents::StartPrerendering(
   CHECK(GetChildId(&process_id));
   CHECK(GetRouteId(&view_id));
 
-  std::pair<int, int> process_view_pair = std::make_pair(process_id, view_id);
-  NotificationService::current()->Notify(
-      NotificationType::PRERENDER_CONTENTS_STARTED,
-      Source<std::pair<int, int> >(&process_view_pair),
-      NotificationService::NoDetails());
-
   // Register this with the ResourceDispatcherHost as a prerender
   // RenderViewHost. This must be done before the Navigate message to catch all
   // resource requests, but as it is on the same thread as the Navigate message
@@ -352,11 +341,6 @@ PrerenderContents::~PrerenderContents() {
 
     int process_id = prerender_render_view_host->process()->id();
     int view_id = prerender_render_view_host->routing_id();
-    std::pair<int, int> process_view_pair = std::make_pair(process_id, view_id);
-    NotificationService::current()->Notify(
-        NotificationType::PRERENDER_CONTENTS_DESTROYED,
-        Source<std::pair<int, int> >(&process_view_pair),
-        NotificationService::NoDetails());
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -555,6 +539,7 @@ WebPreferences PrerenderContents::GetWebkitPrefs() {
 void PrerenderContents::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
+  // TODO(dominich): Remove when we switch to TabContents.
   // Since we don't want to permit child windows that would have a
   // window.opener property, terminate prerendering.
   Destroy(FINAL_STATUS_CREATE_NEW_WINDOW);

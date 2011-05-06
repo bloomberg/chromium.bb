@@ -468,11 +468,6 @@ bool PrerenderManager::MaybeUsePreloadedPageOld(TabContents* tab_contents,
     pending_prerender_list_.erase(pending_it);
   }
 
-  NotificationService::current()->Notify(
-      NotificationType::PRERENDER_CONTENTS_USED,
-      Source<std::pair<int, int> >(&child_route_pair),
-      NotificationService::NoDetails());
-
   RenderViewHostDelegate* render_view_host_delegate =
       static_cast<RenderViewHostDelegate*>(tab_contents);
   ViewHostMsg_FrameNavigate_Params* params =
@@ -576,13 +571,6 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
     pending_prerender_list_.erase(pending_it);
   }
 
-  NotificationService::current()->Notify(
-      NotificationType::PRERENDER_CONTENTS_USED,
-      Source<std::pair<int, int> >(&child_route_pair),
-      NotificationService::NoDetails());
-
-  old_tab_contents_list_.push_back(old_tab_contents);
-  StartSchedulingPeriodicCleanups();
   return true;
 }
 
@@ -859,6 +847,22 @@ void PrerenderManager::PeriodicCleanup() {
        ++it) {
     (*it)->DestroyWhenUsingTooManyResources();
   }
+}
+
+bool PrerenderManager::IsTabContentsPrerendering(
+    TabContents* tab_contents) const {
+  DCHECK(CalledOnValidThread());
+  for (std::list<PrerenderContentsData>::const_iterator it =
+           prerender_list_.begin();
+       it != prerender_list_.end();
+       ++it) {
+    TabContentsWrapper* prerender_tab_contents_wrapper =
+        it->contents_->prerender_contents();
+    if (prerender_tab_contents_wrapper &&
+        prerender_tab_contents_wrapper->tab_contents() == tab_contents)
+      return true;
+  }
+  return false;
 }
 
 void PrerenderManager::MarkTabContentsAsPrerendered(TabContents* tab_contents) {
