@@ -25,6 +25,9 @@
 //   readonly attribute int videoDecodeLatency;
 //   // Latency for rendering in milliseconds.
 //   readonly attribute int videoRenderLatency;
+//   // Latency between an event is sent and a corresponding video packet is
+//   // received.
+//   readonly attribute int roundTripLatency;
 //
 //   // Constants for connection status.
 //   const unsigned short STATUS_UNKNOWN = 0;

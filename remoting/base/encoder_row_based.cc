@@ -118,6 +118,8 @@ void EncoderRowBased::EncodeRect(const gfx::Rect& rect, bool last) {
     if (!compress_again) {
       packet->set_flags(packet->flags() | VideoPacket::LAST_PACKET);
       packet->set_capture_time_ms(capture_data_->capture_time_ms());
+      packet->set_client_sequence_number(
+          capture_data_->client_sequence_number());
       if (last)
         packet->set_flags(packet->flags() | VideoPacket::LAST_PARTITION);
       DCHECK(row_pos == row_size);

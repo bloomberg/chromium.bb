@@ -32,6 +32,7 @@ const char kVideoCaptureLatencyAttribute[] = "videoCaptureLatency";
 const char kVideoEncodeLatencyAttribute[] = "videoEncodeLatency";
 const char kVideoDecodeLatencyAttribute[] = "videoDecodeLatency";
 const char kVideoRenderLatencyAttribute[] = "videoRenderLatency";
+const char kRoundTripLatencyAttribute[] = "roundTripLatency";
 
 }  // namespace
 
@@ -81,6 +82,7 @@ void ChromotingScriptableObject::Init() {
   AddAttribute(kVideoEncodeLatencyAttribute, Var());
   AddAttribute(kVideoDecodeLatencyAttribute, Var());
   AddAttribute(kVideoRenderLatencyAttribute, Var());
+  AddAttribute(kRoundTripLatencyAttribute, Var());
 
   AddMethod("connect", &ChromotingScriptableObject::DoConnect);
   AddMethod("connectSandboxed",
@@ -153,6 +155,8 @@ Var ChromotingScriptableObject::GetProperty(const Var& name, Var* exception) {
     return stats ? stats->video_decode_ms()->Average() : Var();
   if (name.AsString() == kVideoRenderLatencyAttribute)
     return stats ? stats->video_paint_ms()->Average() : Var();
+  if (name.AsString() == kRoundTripLatencyAttribute)
+    return stats ? stats->round_trip_ms()->Average() : Var();
 
   // TODO(ajwong): This incorrectly return a null object if a function
   // property is requested.

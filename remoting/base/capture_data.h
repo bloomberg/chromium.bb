@@ -54,6 +54,12 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
     capture_time_ms_ = capture_time_ms;
   }
 
+  int64 client_sequence_number() const { return client_sequence_number_; }
+
+  void set_client_sequence_number(int64 client_sequence_number) {
+    client_sequence_number_ = client_sequence_number;
+  }
+
  private:
   const DataPlanes data_planes_;
   InvalidRects dirty_rects_;
@@ -62,6 +68,9 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
 
   // Time spent in capture. Unit is in milliseconds.
   int capture_time_ms_;
+
+  // Sequence number supplied by client for performance tracking.
+  int64 client_sequence_number_;
 
   friend class base::RefCountedThreadSafe<CaptureData>;
   virtual ~CaptureData();

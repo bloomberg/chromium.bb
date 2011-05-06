@@ -50,7 +50,8 @@ ScreenRecorder::ScreenRecorder(
       network_stopped_(false),
       recordings_(0),
       frame_skipped_(false),
-      max_rate_(kDefaultCaptureRate) {
+      max_rate_(kDefaultCaptureRate),
+      sequence_number_(0) {
   DCHECK(capture_loop_);
   DCHECK(encode_loop_);
   DCHECK(network_loop_);
@@ -101,6 +102,19 @@ void ScreenRecorder::RemoveAllConnections() {
   network_loop_->PostTask(
       FROM_HERE,
       NewTracedMethod(this, &ScreenRecorder::DoRemoveAllClients));
+}
+
+void ScreenRecorder::UpdateSequenceNumber(int64 sequence_number) {
+  // Sequence number is used and written only on the capture thread.
+  if (MessageLoop::current() != capture_loop_) {
+    capture_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ScreenRecorder::UpdateSequenceNumber,
+                          sequence_number));
+    return;
+  }
+
+  sequence_number_ = sequence_number;
 }
 
 // Private accessors -----------------------------------------------------------
@@ -225,6 +239,14 @@ void ScreenRecorder::CaptureDoneCallback(
   int capture_time = static_cast<int>(
       (base::Time::Now() - capture_start_time_).InMilliseconds());
   capture_data->set_capture_time_ms(capture_time);
+
+  // The best way to get this value is by binding the sequence number to
+  // the callback when calling CaptureInvalidRects(). However the callback
+  // system doesn't allow this. Reading from the member variable is
+  // accurate as long as capture is synchronous as the following statement
+  // will obtain the most recent sequence number received.
+  capture_data->set_client_sequence_number(sequence_number_);
+
   encode_loop_->PostTask(
       FROM_HERE,
       NewTracedMethod(this, &ScreenRecorder::DoEncode, capture_data));

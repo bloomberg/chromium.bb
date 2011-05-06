@@ -30,7 +30,8 @@ ChromotingClient::ChromotingClient(const ClientConfig& config,
       input_handler_(input_handler),
       client_done_(client_done),
       state_(CREATED),
-      packet_being_processed_(false) {
+      packet_being_processed_(false),
+      last_sequence_number_(0) {
 }
 
 ChromotingClient::~ChromotingClient() {
@@ -137,6 +138,14 @@ void ChromotingClient::ProcessVideoPacket(const VideoPacket* packet,
     stats_.video_capture_ms()->Record(packet->capture_time_ms());
   if (packet->has_encode_time_ms())
     stats_.video_encode_ms()->Record(packet->encode_time_ms());
+  if (packet->has_client_sequence_number() &&
+      packet->client_sequence_number() > last_sequence_number_) {
+    last_sequence_number_ = packet->client_sequence_number();
+    base::TimeDelta round_trip_latency =
+        base::Time::Now() -
+        base::Time::FromInternalValue(packet->client_sequence_number());
+    stats_.round_trip_ms()->Record(round_trip_latency.InMilliseconds());
+  }
 
   received_packets_.push_back(QueuedVideoPacket(packet, done));
   if (!packet_being_processed_)

@@ -23,6 +23,7 @@ class ChromotingStats {
   RunningAverage* video_encode_ms() { return &video_encode_ms_; }
   RunningAverage* video_decode_ms() { return &video_decode_ms_; }
   RunningAverage* video_paint_ms() { return &video_paint_ms_; }
+  RunningAverage* round_trip_ms() { return &round_trip_ms_; }
 
  private:
   RateCounter video_bandwidth_;
@@ -30,6 +31,7 @@ class ChromotingStats {
   RunningAverage video_encode_ms_;
   RunningAverage video_decode_ms_;
   RunningAverage video_paint_ms_;
+  RunningAverage round_trip_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingStats);
 };

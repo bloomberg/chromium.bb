@@ -26,24 +26,26 @@ HostMessageDispatcher::~HostMessageDispatcher() {
 }
 
 void HostMessageDispatcher::Initialize(
-    protocol::Session* session,
+    ConnectionToClient* connection,
     HostStub* host_stub, InputStub* input_stub) {
-  if (!session || !host_stub || !input_stub ||
-      !session->event_channel() || !session->control_channel()) {
+  if (!connection || !host_stub || !input_stub ||
+      !connection->session()->event_channel() ||
+      !connection->session()->control_channel()) {
     return;
   }
 
   control_message_reader_.reset(new ProtobufMessageReader<ControlMessage>());
   event_message_reader_.reset(new ProtobufMessageReader<EventMessage>());
+  connection_ = connection;
   host_stub_ = host_stub;
   input_stub_ = input_stub;
 
   // Initialize the readers on the sockets provided by channels.
   event_message_reader_->Init(
-      session->event_channel(),
+      connection->session()->event_channel(),
       NewCallback(this, &HostMessageDispatcher::OnEventMessageReceived));
   control_message_reader_->Init(
-      session->control_channel(),
+      connection->session()->control_channel(),
       NewCallback(this, &HostMessageDispatcher::OnControlMessageReceived));
 }
 
@@ -67,6 +69,7 @@ void HostMessageDispatcher::OnControlMessageReceived(
 void HostMessageDispatcher::OnEventMessageReceived(
     EventMessage* message, Task* done_task) {
   // TODO(sergeyu): Add message validation.
+  connection_->UpdateSequenceNumber(message->sequence_number());
   if (message->has_key_event()) {
     input_stub_->InjectKeyEvent(&message->key_event(), done_task);
     return;

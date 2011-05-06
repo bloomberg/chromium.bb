@@ -136,6 +136,9 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   // Record the statistics of the connection.
   ChromotingStats stats_;
 
+  // Keep track of the last sequence number bounced back from the host.
+  int64 last_sequence_number_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromotingClient);
 };
 

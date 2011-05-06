@@ -13,6 +13,7 @@
 namespace remoting {
 namespace protocol {
 
+class ConnectionToClient;
 class ControlMessage;
 class EventMessage;
 class HostStub;
@@ -37,7 +38,7 @@ class HostMessageDispatcher {
 
   // Initialize the message dispatcher with the given connection and
   // message handlers.
-  void Initialize(protocol::Session* session,
+  void Initialize(ConnectionToClient* connection,
                   HostStub* host_stub, InputStub* input_stub);
 
  private:
@@ -56,6 +57,9 @@ class HostMessageDispatcher {
 
   // MessageReader that runs on the event channel.
   scoped_ptr<ProtobufMessageReader<EventMessage> > event_message_reader_;
+
+  // Connection that this object belongs to.
+  ConnectionToClient* connection_;
 
   // Stubs for host and input. These objects are not owned.
   // They are called on the thread there data is received, i.e. jingle thread.

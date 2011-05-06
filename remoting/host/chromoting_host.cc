@@ -197,6 +197,21 @@ void ChromotingHost::OnConnectionFailed(ConnectionToClient* connection) {
                         make_scoped_refptr(connection)));
 }
 
+void ChromotingHost::OnSequenceNumberUpdated(ConnectionToClient* connection,
+                                             int64 sequence_number) {
+  // Update the sequence number in ScreenRecorder.
+  if (MessageLoop::current() != context_->main_message_loop()) {
+    context_->main_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingHost::OnSequenceNumberUpdated,
+                          make_scoped_refptr(connection), sequence_number));
+    return;
+  }
+
+  if (recorder_.get())
+    recorder_->UpdateSequenceNumber(sequence_number);
+}
+
 ////////////////////////////////////////////////////////////////////////////
 // JingleClient::Callback implementations
 void ChromotingHost::OnStateChange(JingleClient* jingle_client,

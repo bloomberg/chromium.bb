@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ message ControlMessage {
 
 // Defines an event message on the event channel.
 message EventMessage {
-  required int32 timestamp = 1;  // Client timestamp for event
+  required int64 sequence_number = 1;  // Client timestamp for event
   optional bool dummy = 2;       // Is this a dummy event?
 
   optional KeyEvent key_event = 3;

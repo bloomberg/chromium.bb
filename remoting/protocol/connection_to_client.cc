@@ -64,6 +64,10 @@ void ConnectionToClient::Disconnect() {
   }
 }
 
+void ConnectionToClient::UpdateSequenceNumber(int64 sequence_number) {
+  handler_->OnSequenceNumberUpdated(this, sequence_number);
+}
+
 VideoStub* ConnectionToClient::video_stub() {
   return video_writer_.get();
 }
@@ -88,7 +92,7 @@ void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
     video_writer_->Init(session_);
 
     dispatcher_.reset(new HostMessageDispatcher());
-    dispatcher_->Initialize(session_.get(), host_stub_, input_stub_);
+    dispatcher_->Initialize(this, host_stub_, input_stub_);
   }
 
   // This method can be called from main thread so perform threading switching.

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/synchronization/lock.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/video_writer.h"
 
@@ -42,6 +43,10 @@ class ConnectionToClient :
 
     // Called when the network connection has failed.
     virtual void OnConnectionFailed(ConnectionToClient* connection) = 0;
+
+    // Called when sequence number is updated.
+    virtual void OnSequenceNumberUpdated(ConnectionToClient* connection,
+                                         int64 sequence_number) = 0;
   };
 
   // Constructs a ConnectionToClient object. |message_loop| is the message loop
@@ -61,6 +66,10 @@ class ConnectionToClient :
   //
   // After this method is called all the send method calls will be ignored.
   virtual void Disconnect();
+
+  // Update the sequence number when received from the client. EventHandler
+  // will be called.
+  virtual void UpdateSequenceNumber(int64 sequence_number);
 
   // Send encoded update stream data to the viewer.
   virtual VideoStub* video_stub();

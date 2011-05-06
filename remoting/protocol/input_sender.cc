@@ -28,16 +28,14 @@ InputSender::~InputSender() {
 
 void InputSender::InjectKeyEvent(const KeyEvent* event, Task* done) {
   EventMessage message;
-  // TODO(hclam): Provide timestamp.
-  message.set_timestamp(0);
+  message.set_sequence_number(base::Time::Now().ToInternalValue());
   message.mutable_key_event()->CopyFrom(*event);
   buffered_writer_->Write(SerializeAndFrameMessage(message), done);
 }
 
 void InputSender::InjectMouseEvent(const MouseEvent* event, Task* done) {
   EventMessage message;
-  // TODO(hclam): Provide timestamp.
-  message.set_timestamp(0);
+  message.set_sequence_number(base::Time::Now().ToInternalValue());
   message.mutable_mouse_event()->CopyFrom(*event);
   buffered_writer_->Write(SerializeAndFrameMessage(message), done);
 }

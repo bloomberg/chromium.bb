@@ -46,6 +46,8 @@ class MockConnectionToClientEventHandler :
   MOCK_METHOD1(OnConnectionOpened, void(ConnectionToClient* connection));
   MOCK_METHOD1(OnConnectionClosed, void(ConnectionToClient* connection));
   MOCK_METHOD1(OnConnectionFailed, void(ConnectionToClient* connection));
+  MOCK_METHOD2(OnSequenceNumberUpdated, void(ConnectionToClient* connection,
+                                             int64 sequence_number));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockConnectionToClientEventHandler);

@@ -96,6 +96,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   virtual void OnConnectionOpened(protocol::ConnectionToClient* client);
   virtual void OnConnectionClosed(protocol::ConnectionToClient* client);
   virtual void OnConnectionFailed(protocol::ConnectionToClient* client);
+  virtual void OnSequenceNumberUpdated(protocol::ConnectionToClient* client,
+                                       int64 sequence_number);
 
   ////////////////////////////////////////////////////////////////////////////
   // JingleClient::Callback implementations

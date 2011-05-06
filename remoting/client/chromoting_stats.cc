@@ -22,7 +22,8 @@ ChromotingStats::ChromotingStats()
       video_capture_ms_(kLatencyWindow),
       video_encode_ms_(kLatencyWindow),
       video_decode_ms_(kLatencyWindow),
-      video_paint_ms_(kLatencyWindow) {
+      video_paint_ms_(kLatencyWindow),
+      round_trip_ms_(kLatencyWindow) {
 }
 
 ChromotingStats::~ChromotingStats() {
