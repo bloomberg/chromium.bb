@@ -208,6 +208,7 @@
 <translation id="182729337634291014">Errore di sincronizzazione...</translation>
 <translation id="4465830120256509958">Tastiera brasiliana</translation>
 <translation id="2459861677908225199">Utilizza TLS 1.0</translation>
+<translation id="7803707311109816397">Nessuna rete trovata. Riprova.</translation>
 <translation id="4792711294155034829">&amp;Segnala un problema...</translation>
 <translation id="5819484510464120153">Crea &amp;scorciatoie applicazione...</translation>
 <translation id="6845180713465955339">Il certificato &quot;<ph name="CERTIFICATE_NAME"/>&quot; è stato emesso da:</translation>
@@ -508,6 +509,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="2800537048826676660">Usa questa lingua per il controllo ortografico</translation>
 <translation id="68541483639528434">Chiudi le altre schede</translation>
 <translation id="941543339607623937">Chiave privata non valida.</translation>
+<translation id="6499058468232888609">Si è verificato un errore di rete durante la comunicazione con il servizio di gestione del dispositivo.</translation>
 <translation id="4433862206975946675">Importa dati da un altro browser...</translation>
 <translation id="4022426551683927403">&amp;Aggiungi al dizionario</translation>
 <translation id="2897878306272793870">Aprire <ph name="TAB_COUNT"/> schede?</translation>
@@ -534,7 +536,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="8026684114486203427">Per poter utilizzare il Chrome Web Store devi accedere con un account Google.</translation>
 <translation id="8417276187983054885">Configura <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="3056462238804545033">Spiacenti. Si è verificato un problema durante il tentativo di autenticazione. Controlla attentamente le tue credenziali di accesso e riprova.</translation>
-<translation id="5298420986276701358">Se accedi con il tuo account Google Apps for your Domain, puoi gestire da remoto la configurazione di questo dispositivo <ph name="PRODUCT_NAME"/> dalla cloud.</translation>
+<translation id="5298420986276701358">Se accedi con il tuo account Google Apps, puoi gestire da remoto la configurazione di questo dispositivo <ph name="PRODUCT_NAME"/> dalla cloud.</translation>
 <translation id="2678063897982469759">Riattiva</translation>
 <translation id="1779766957982586368">Chiudi finestra</translation>
 <translation id="4850886885716139402">Visualizza</translation>
@@ -1327,7 +1329,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="8487693399751278191">Importa preferiti adesso...</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
 <translation id="7484580869648358686">Avviso: C'è qualcosa che non va qui.</translation>
-<translation id="2074739700630368799">Chrome OS per le aziende ti consente di collegare il tuo dispositivo a Google Apps for Your Domain, consentendoti di trovare e controllare il tuo dispositivo dal tuo pannello di controllo Google Apps for Your Domain.</translation>
+<translation id="2074739700630368799">Chrome OS for Business ti consente di collegare il tuo dispositivo a Google Apps, consentendoti di trovare e controllare il tuo dispositivo dal tuo pannello di controllo Google Apps for Your Domain.</translation>
 <translation id="4474155171896946103">Aggiungi tutte le schede ai Preferiti...</translation>
 <translation id="5895187275912066135">Emesso in data</translation>
 <translation id="1190844492833803334">Quando chiudo il browser</translation>
@@ -1457,6 +1459,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="3166547286524371413">Indirizzo:</translation>
 <translation id="4522570452068850558">Dettagli</translation>
 <translation id="59659456909144943">Notifica: <ph name="NOTIFICATION_NAME"/></translation>
+<translation id="4806525999832945986">Gestito da <ph name="DOMAIN"/> (<ph name="STATUS"/>)</translation>
 <translation id="7503191893372251637">Tipo di certificato Netscape</translation>
 <translation id="1502960562739459116">Non è stato possibile visualizzare alcune parti di questo documento PDF. Installare Adobe Reader?</translation>
 <translation id="4135450933899346655">I tuoi certificati</translation>
@@ -1737,6 +1740,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secondi fa</translation>
 <translation id="402759845255257575">Non consentire l'esecuzione di JavaScript nei siti</translation>
 <translation id="4610637590575890427">Forse intendevi accedere a <ph name="SITE"/>?</translation>
+<translation id="7723779034587221017">Connessione persa con il servizio di policy. Reimpostare il dispositivo o contattare il rappresentante dell'assistenza.</translation>
 <translation id="3046388203776734202">Impostazioni popup:</translation>
 <translation id="3437994698969764647">Esporta tutto...</translation>
 <translation id="8349305172487531364">Barra dei Preferiti</translation>
@@ -1808,6 +1812,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="7466861475611330213">Stile punteggiatura</translation>
 <translation id="2496180316473517155">Cronologia di navigazione</translation>
 <translation id="602251597322198729">Questo sito sta tentando di scaricare più file. Consentire l'operazione?</translation>
+<translation id="5843685321177053287">Handshake in attesa con il servizio di gestione del dispositivo...</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> ore</translation>
 <translation id="5411472733320185105">Non utilizzare le impostazioni proxy per i seguenti host e domini:</translation>
 <translation id="6691936601825168937">&amp;Avanti</translation>

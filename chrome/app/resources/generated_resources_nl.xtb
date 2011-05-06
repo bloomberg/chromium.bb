@@ -209,6 +209,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="182729337634291014">Synchronisatiefout...</translation>
 <translation id="4465830120256509958">Braziliaans toetsenbord</translation>
 <translation id="2459861677908225199">TLS 1.0 gebruiken</translation>
+<translation id="7803707311109816397">Geen netwerk gevonden. Probeer het later nog eens.</translation>
 <translation id="4792711294155034829">&amp;Een probleem melden...</translation>
 <translation id="5819484510464120153">&amp;Snelkoppelingen maken...</translation>
 <translation id="6845180713465955339">Het certificaat '<ph name="CERTIFICATE_NAME"/>' is verleend door:</translation>
@@ -508,6 +509,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="2800537048826676660">Deze taal voor spellingcontrole gebruiken</translation>
 <translation id="68541483639528434">Andere tabbladen sluiten</translation>
 <translation id="941543339607623937">Ongeldige persoonlijke sleutel.</translation>
+<translation id="6499058468232888609">Netwerkfout tijdens communicatie met de apparaatmanagementservice.</translation>
 <translation id="4433862206975946675">Gegevens uit een andere browser importeren...</translation>
 <translation id="4022426551683927403">Toevoegen &amp;aan woordenboek</translation>
 <translation id="2897878306272793870">Weet u zeker dat u <ph name="TAB_COUNT"/> tabbladen wilt openen?</translation>
@@ -531,7 +533,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="904752364881701675">Linksonder</translation>
 <translation id="3398951731874728419">Foutinformatie:</translation>
 <translation id="1464570622807304272">Probeer het eens: typ 'tulpen' en druk op Enter.</translation>
-<translation id="8026684114486203427">Als u de Chrome Webwinkel wilt gebruiken, moet u zich aanmelden met een Google-account.</translation>
+<translation id="8026684114486203427">Als u de Chrome Web Store wilt gebruiken, moet u zich aanmelden met een Google-account.</translation>
 <translation id="8417276187983054885"><ph name="CLOUD_PRINT_NAME"/> instellen</translation>
 <translation id="3056462238804545033">Oeps! Er is iets verkeerd gegaan tijdens de verificatie. Controleer uw aanmeldingsgegevens en probeer het opnieuw.</translation>
 <translation id="5298420986276701358">Als u zich aanmeldt met uw account van Google Apps voor uw domein, kunt u de configuratie van dit <ph name="PRODUCT_NAME"/>-apparaat op afstand via de cloud beheren.</translation>
@@ -1182,7 +1184,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="5815645614496570556">X.400-adres</translation>
 <translation id="3551320343578183772">Tabblad sluiten</translation>
 <translation id="3345886924813989455">Er is geen ondersteunde browser gevonden</translation>
-<translation id="74354239584446316">Uw account voor de webwinkel is <ph name="EMAIL_ADDRESS"/>. Wanneer u zich aanmeldt met een ander account, treden er compatibiliteitsproblemen op.</translation>
+<translation id="74354239584446316">Uw account voor de Web Store is <ph name="EMAIL_ADDRESS"/>. Wanneer u zich aanmeldt met een ander account, treden er compatibiliteitsproblemen op.</translation>
 <translation id="3712897371525859903">Pagina opslaan &amp;als...</translation>
 <translation id="7926251226597967072"><ph name="PRODUCT_NAME"/> importeert de volgende onderdelen van <ph name="IMPORT_BROWSER_NAME"/>:</translation>
 <translation id="2767649238005085901">Druk op Enter om door te gaan. Druk op de knop van het contextmenu om de geschiedenis te bekijken</translation>
@@ -1448,6 +1450,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="3166547286524371413">Adres:</translation>
 <translation id="4522570452068850558">Details</translation>
 <translation id="59659456909144943">Melding: <ph name="NOTIFICATION_NAME"/></translation>
+<translation id="4806525999832945986">Beheerd door <ph name="DOMAIN"/> (<ph name="STATUS"/>)</translation>
 <translation id="7503191893372251637">Type Netscape-certificaat</translation>
 <translation id="1502960562739459116">Delen van dit PDF-document kunnen niet worden weergegeven. Wilt u Adobe Reader installeren?</translation>
 <translation id="4135450933899346655">Uw certificaten</translation>
@@ -1532,7 +1535,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="1198271701881992799">Aan de slag</translation>
 <translation id="782590969421016895">Huidige pagina's gebruiken</translation>
 <translation id="6521850982405273806">Een fout melden</translation>
-<translation id="736515969993332243">Scannen naar netwerken.</translation>
+<translation id="736515969993332243">Zoeken naar netwerken.</translation>
 <translation id="8026334261755873520">Browsegegevens wissen</translation>
 <translation id="1769104665586091481">Link openen in nieu&amp;w venster</translation>
 <translation id="8503813439785031346">Gebruikersnaam</translation>
@@ -1735,6 +1738,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> seconden geleden</translation>
 <translation id="402759845255257575">Sites niet toestaan JavaScript uit te voeren</translation>
 <translation id="4610637590575890427">Wilde u naar <ph name="SITE"/> gaan?</translation>
+<translation id="7723779034587221017">De verbinding met de beleidsservice is verbroken. Stel uw apparaat opnieuw in of neem contact op met een mederwerker van het ondersteuningsteam.</translation>
 <translation id="3046388203776734202">Instellingen voor pop-ups:</translation>
 <translation id="3437994698969764647">Alles exporteren...</translation>
 <translation id="8349305172487531364">Bladwijzerbalk</translation>
@@ -1805,6 +1809,7 @@ verwijderen uit de lijst met toegestane programma's
 <translation id="7466861475611330213">Stijl van interpunctie</translation>
 <translation id="2496180316473517155">Browsegeschiedenis</translation>
 <translation id="602251597322198729">Deze site probeert meerdere bestanden te downloaden. Wilt u dit toestaan?</translation>
+<translation id="5843685321177053287">Handshake met apparaatmanagementservice is bezig...</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> uur</translation>
 <translation id="5411472733320185105">De proxyinstellingen niet gebruiken voor deze hosts en domeinen:</translation>
 <translation id="6691936601825168937">&amp;Vooruit</translation>
@@ -2787,7 +2792,7 @@ en de URL die aan uw feedback is gekoppeld.
 <translation id="7088418943933034707">Certificaten beheren...</translation>
 <translation id="8482183012530311851">Apparaat scannen...</translation>
 <translation id="3127589841327267804">PYJJ</translation>
-<translation id="8808478386290700967">Webwinkel</translation>
+<translation id="8808478386290700967">Web Store</translation>
 <translation id="1732215134274276513">Tabbladen losmaken</translation>
 <translation id="4084682180776658562">Bladwijzer maken</translation>
 <translation id="8859057652521303089">Selecteer uw taal:</translation>

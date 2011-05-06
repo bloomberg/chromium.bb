@@ -534,7 +534,7 @@
 <translation id="8026684114486203427">To use the Chrome Web Store, you must sign in with a Google Account.</translation>
 <translation id="8417276187983054885">Set up <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="3056462238804545033">Oops!  Something went wrong when trying to authenticate you.  Please double-check your login credentials and try again.</translation>
-<translation id="5298420986276701358">By signing in with your Google Apps for your Domain account, you can manage the configuration of this <ph name="PRODUCT_NAME"/> device remotely from the cloud.</translation>
+<translation id="5298420986276701358">By signing in with your Google Apps account, you can manage the configuration of this <ph name="PRODUCT_NAME"/> device remotely from the cloud.</translation>
 <translation id="2678063897982469759">Re-enable</translation>
 <translation id="1779766957982586368">Close window</translation>
 <translation id="4850886885716139402">View</translation>
@@ -1327,7 +1327,7 @@
 <translation id="8487693399751278191">Import bookmarks now...</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
 <translation id="7484580869648358686">Warning: Something's Not Right Here!</translation>
-<translation id="2074739700630368799">Chrome OS for enterprise allows you to connect your device to Google Apps for Your Domain, allowing you to find and control your device from your Google Apps for Your Domain Control Panel.</translation>
+<translation id="2074739700630368799">Chrome OS for enterprise allows you to connect your device to Google Apps, allowing you to find and control your device from your Google Apps Control Panel.</translation>
 <translation id="4474155171896946103">Bookmark all tabs...</translation>
 <translation id="5895187275912066135">Issued On</translation>
 <translation id="1190844492833803334">When I close my browser</translation>

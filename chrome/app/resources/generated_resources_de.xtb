@@ -204,6 +204,7 @@
 <translation id="182729337634291014">Synchronisierungsfehler...</translation>
 <translation id="4465830120256509958">Brasilianische Tastatur</translation>
 <translation id="2459861677908225199">TLS 1.0 verwenden</translation>
+<translation id="7803707311109816397">Keine Netzwerke gefunden. Bitte versuchen Sie es später erneut.</translation>
 <translation id="4792711294155034829">&amp;Probleme melden...</translation>
 <translation id="5819484510464120153">Anwendung&amp;sverknüpfungen erstellen...</translation>
 <translation id="6845180713465955339">Das Zertifikat &quot;<ph name="CERTIFICATE_NAME"/>&quot; wurde ausgestellt von:</translation>
@@ -432,7 +433,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2154710561487035718">URL kopieren</translation>
 <translation id="8163672774605900272">Wenn Sie keinen Proxy-Server verwenden möchten, versuchen Sie Folgendes:
         <ph name="PLATFORM_TEXT"/></translation>
-<translation id="5510687173983454382">Steuern Sie, welche Nutzer sich an einem Gerät anmelden können und konfigurieren Sie, ob Surfen als Gast gestattet ist.</translation>
+<translation id="5510687173983454382">Steuern Sie, welche Nutzer sich an einem Gerät anmelden können und konfigurieren Sie, ob Surfen im Gastmodus gestattet ist.</translation>
 <translation id="3241680850019875542">Wählen Sie das Stammverzeichnis der Erweiterung, die gepackt werden soll. Zur Aktualisierung einer Erweiterung wählen Sie eine private Schlüsseldatei zur Wiederverwendung.</translation>
 <translation id="7500424997253660722">Eingeschränkter Pool:</translation>
 <translation id="657402800789773160">&amp;Diese Seite neu laden</translation>
@@ -498,6 +499,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2800537048826676660">Diese Sprache für die Rechtschreibprüfung verwenden</translation>
 <translation id="68541483639528434">Andere Tabs schließen</translation>
 <translation id="941543339607623937">Ungültiger privater Schlüssel</translation>
+<translation id="6499058468232888609">Bei der Kommunikation mit dem Verwaltungsdienst des Geräts ist ein Netzwerkfehler aufgetreten.</translation>
 <translation id="4433862206975946675">Daten aus einem anderen Browser importieren...</translation>
 <translation id="4022426551683927403">&amp;Zum Wörterbuch hinzufügen</translation>
 <translation id="2897878306272793870">Möchten Sie wirklich <ph name="TAB_COUNT"/> Tabs öffnen?</translation>
@@ -523,7 +525,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1464570622807304272">Versuchen Sie es - geben Sie &quot;Orchideen&quot; ein und drücken Sie die Eingabetaste.</translation>
 <translation id="8026684114486203427">Zur Verwendung des Chrome Web Stores müssen Sie sich mit einem Google-Konto anmelden.</translation>
 <translation id="8417276187983054885"><ph name="CLOUD_PRINT_NAME"/> einrichten</translation>
-<translation id="3056462238804545033">Hoppla! Bei der Authentifizierung ist ein Fehler aufgetreten. Überprüfen Sie Ihre Anmeldedaten und versuchen Sie es erneut.</translation>
+<translation id="3056462238804545033">Hoppla! Bei der Authentifizierung ist ein Fehler aufgetreten. Bitte überprüfen Sie Ihre Anmeldedaten und versuchen Sie es erneut.</translation>
 <translation id="5298420986276701358">Wenn Sie sich mit Ihrem Google Apps-Konto anmelden, können Sie die Konfiguration von diesem <ph name="PRODUCT_NAME"/>-Gerät remote über die Cloud verwalten.</translation>
 <translation id="2678063897982469759">Wieder aktivieren</translation>
 <translation id="1779766957982586368">Fenster schließen</translation>
@@ -623,7 +625,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2832519330402637498">Links oben</translation>
 <translation id="6749695674681934117">Namen für den neuen Ordner eingeben</translation>
 <translation id="6204994989617056362">Die Erweiterung für die SSL-Aushandlung fehlte im sicheren Handshake. Für einige Websites, die die Aushandlungserweiterung bekanntermaßen unterstützen, benötigt Google Chrome einen sichereren Handshake zur Verhinderung einer Klasse bekannter Angriffe. Das Fehlen dieser Erweiterung deutet darauf hin, dass Ihre Verbindung abgefangen und manipuliert wurde.</translation>
-<translation id="6679492495854441399">Hoppla!  Bei der Anmeldung dieses Geräts ist ein Fehler in der Netzwerkkommunikation aufgetreten. Bitte überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es erneut.</translation>
+<translation id="6679492495854441399">Hoppla! Bei der Anmeldung dieses Geräts ist ein Fehler in der Netzwerkkommunikation aufgetreten. Bitte überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es erneut.</translation>
 <translation id="7789962463072032349">Pausieren</translation>
 <translation id="121827551500866099">Alle Downloads anzeigen...</translation>
 <translation id="1562633988311880769">Bei <ph name="CLOUD_PRINT_NAME"/> anmelden</translation>
@@ -709,7 +711,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1087119889335281750">&amp;Keine Rechtschreibvorschläge</translation>
 <translation id="5228309736894624122">SSL-Protokollfehler</translation>
 <translation id="8216170236829567922">Thai-Eingabemethode (Pattachote-Tastatur)</translation>
-<translation id="8464132254133862871">Dieses Nutzerkonto ist nicht für den Dienst berechtigt.</translation>
+<translation id="8464132254133862871">Dieses Nutzerkonto ist nicht für diesen Dienst berechtigt.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME"/> kann nicht als Root ausgeführt werden.</translation>
 <translation id="5076340679995252485">&amp;Einfügen</translation>
 <translation id="2904348843321044456">Inhaltseinstellungen...</translation>
@@ -1400,7 +1402,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7211994749225247711">Löschen...</translation>
 <translation id="2819994928625218237">&amp;Keine Rechtschreibvorschläge</translation>
 <translation id="1065449928621190041">Kanadisch-französische Tastatur</translation>
-<translation id="8327626790128680264">Erweiterte US-amerikanische Tastatur</translation>
+<translation id="8327626790128680264">US-amerikanische erweiterte Tastatur</translation>
 <translation id="2950186680359523359">Server hat die Verbindung geschlossen. Es wurden keine Daten gesendet.</translation>
 <translation id="9142623379911037913">Anzeige von Desktop-Benachrichtigungen auf <ph name="SITE"/> zulassen?</translation>
 <translation id="4196320913210960460">Klicken Sie zur Verwaltung Ihrer installierten Erweiterungen im Menü &quot;Tools&quot; auf &quot;Erweiterungen&quot;.</translation>
@@ -1436,6 +1438,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3166547286524371413">Adresse:</translation>
 <translation id="4522570452068850558">Details</translation>
 <translation id="59659456909144943">Benachrichtigung: <ph name="NOTIFICATION_NAME"/></translation>
+<translation id="4806525999832945986">Verwaltet von <ph name="DOMAIN"/> (<ph name="STATUS"/>)</translation>
 <translation id="7503191893372251637">Netscape-Zertifikatstyp</translation>
 <translation id="1502960562739459116">Teile dieses PDF-Dokuments konnten nicht angezeigt werden. Adobe Reader installieren?</translation>
 <translation id="4135450933899346655">Ihre Zertifikate</translation>
@@ -1606,7 +1609,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3981760180856053153">Eingegebener Speichertyp ist ungültig.</translation>
 <translation id="8464591670878858520"><ph name="NETWORK"/>-Daten abgelaufen</translation>
 <translation id="4568660204877256194">Lesezeichen exportieren...</translation>
-<translation id="3116361045094675131">Englische Tastatur</translation>
+<translation id="3116361045094675131">UK-Englische Tastatur </translation>
 <translation id="4577070033074325641">Lesezeichen importieren...</translation>
 <translation id="1641504961675316934"><ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="1715941336038158809">Ungültiger Nutzername oder ungültiges Passwort</translation>
@@ -1707,6 +1710,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
 <translation id="402759845255257575">Ausführung von JavaScript für keine Website zulassen</translation>
 <translation id="4610637590575890427">Wollten Sie <ph name="SITE"/> aufrufen?</translation>
+<translation id="7723779034587221017">Verbindung mit dem Policy-Dienst wurde unterbrochen. Bitte setzen Sie Ihr Gerät auf die Grundeinstellungen zurück oder wenden Sie sich an einen Support-Mitarbeiter.</translation>
 <translation id="3046388203776734202">Pop-up-Einstellungen:</translation>
 <translation id="3437994698969764647">Alle exportieren...</translation>
 <translation id="8349305172487531364">Lesezeichenleiste</translation>
@@ -1778,6 +1782,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="7466861475611330213">Satzzeichenstil</translation>
 <translation id="2496180316473517155">Browserverlauf</translation>
 <translation id="602251597322198729">Die Website versucht, mehrere Dateien herunterzuladen. Möchten Sie dies zulassen?</translation>
+<translation id="5843685321177053287">Warten auf Handshake mit dem Verwaltungsdienst des Geräts...</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> Stunden</translation>
 <translation id="5411472733320185105">Proxy-Einstellungen nicht für diese Hosts und Domains verwenden:</translation>
 <translation id="6691936601825168937">&amp;Vorwärts</translation>
@@ -2743,7 +2748,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
         <ph name="PRODUCT_NAME"/>
         eine Bedrohung für Ihren Computer darstellt und es daher am Zugriff auf das Internet hindert.</translation>
 <translation id="878069093594050299">Dieses Zertifikat wurde für folgende Verwendungszwecke verifiziert:</translation>
-<translation id="5852112051279473187">Hoppla!  Bei der Anmeldung dieses Geräts ist ein Fehler aufgetreten.  Bitte versuchen Sie es erneut oder wenden Sie sich an einen Support-Mitarbeiter.</translation>
+<translation id="5852112051279473187">Hoppla! Bei der Anmeldung dieses Geräts ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder wenden Sie sich an einen Support-Mitarbeiter.</translation>
 <translation id="1664314758578115406">Lesezeichen hinzufügen...</translation>
 <translation id="7088418943933034707">Zertifikate verwalten...</translation>
 <translation id="8482183012530311851">Gerät wird überprüft...</translation>

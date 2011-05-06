@@ -128,7 +128,7 @@
 <translation id="2296019197782308739">Метод EAP:</translation>
 <translation id="42981349822642051">Развернуть</translation>
 <translation id="4013794286379809233">Вход в систему</translation>
-<translation id="7693221960936265065">с самого начала</translation>
+<translation id="7693221960936265065">за все время</translation>
 <translation id="1763138995382273070">Отключить проверку интерактивных форм в формате HTML5</translation>
 <translation id="4920887663447894854">Следующие сайты были заблокированы для отслеживания вашего местоположения на этой странице:</translation>
 <translation id="7690346658388844119">Запись образа была прекращена</translation>
@@ -335,7 +335,7 @@
 <translation id="4120898696391891645">Страница не загружается</translation>
 <translation id="6060685159320643512">Будьте осторожны при работе с экспериментальной версией</translation>
 <translation id="5829990587040054282">Выкл. экрана или питания</translation>
-<translation id="7800304661137206267">Подключение защищено шифром <ph name="CIPHER"/> по алгоритму <ph name="MAC"/>, для обмена ключами используется метод <ph name="KX"/>.</translation>
+<translation id="7800304661137206267">Для аутентификации сообщений используется <ph name="CIPHER"/> c <ph name="MAC"/>, для обмена ключами используется <ph name="KX"/>.</translation>
 <translation id="7706319470528945664">Португальская раскладка</translation>
 <translation id="5584537427775243893">Импортирование</translation>
 <translation id="9128870381267983090">Подключиться к сети</translation>

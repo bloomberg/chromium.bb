@@ -208,6 +208,7 @@
 <translation id="182729337634291014">Erreur de synchronisation...</translation>
 <translation id="4465830120256509958">Clavier brésilien</translation>
 <translation id="2459861677908225199">Utiliser TLS 1.0</translation>
+<translation id="7803707311109816397">Aucun réseau trouvé. Veuillez réessayer ultérieurement.</translation>
 <translation id="4792711294155034829">&amp;Signaler un problème...</translation>
 <translation id="5819484510464120153">Créer des raccourci&amp;s vers des applications...</translation>
 <translation id="6845180713465955339">Le certificat &quot;<ph name="CERTIFICATE_NAME"/>&quot; a été émis par :</translation>
@@ -508,6 +509,7 @@
 <translation id="2800537048826676660">Utiliser cette langue pour corriger l'orthographe</translation>
 <translation id="68541483639528434">Fermer les autres onglets</translation>
 <translation id="941543339607623937">Clé privée non valide.</translation>
+<translation id="6499058468232888609">Une erreur réseau s'est produite pendant la communication avec le service de gestion des périphériques.</translation>
 <translation id="4433862206975946675">Importer les données d'un autre navigateur...</translation>
 <translation id="4022426551683927403">&amp;Ajouter au dictionnaire</translation>
 <translation id="2897878306272793870">Voulez-vous vraiment ouvrir <ph name="TAB_COUNT"/> onglets ?</translation>
@@ -534,7 +536,7 @@
 <translation id="8026684114486203427">Pour utiliser Chrome Web Store, vous devez être connecté à un compte Google.</translation>
 <translation id="8417276187983054885">Configurer <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="3056462238804545033">Petit problème... Nous n'avons pas réussi à vous authentifier. Veuillez vérifier vos identifiants de connexion puis réessayer.</translation>
-<translation id="5298420986276701358">Pour gérer à distance la configuration de ce périphérique <ph name="PRODUCT_NAME"/> depuis le cloud, connectez-vous avec votre compte Google Apps pour votre domaine.</translation>
+<translation id="5298420986276701358">Pour gérer à distance la configuration de ce périphérique <ph name="PRODUCT_NAME"/> depuis le cloud, connectez-vous avec votre compte Google Apps.</translation>
 <translation id="2678063897982469759">Réactiver</translation>
 <translation id="1779766957982586368">Fermer la fenêtre</translation>
 <translation id="4850886885716139402">Présentation</translation>
@@ -632,7 +634,7 @@
 <translation id="2832519330402637498">En haut à gauche</translation>
 <translation id="6749695674681934117">Saisissez le nom du nouveau dossier.</translation>
 <translation id="6204994989617056362">L'extension de renégociation SSL était introuvable lors de la négociation sécurisée. Avec certains sites, connus pour leur prise en charge de l'extension de renégociation, Google Chrome exige une négociation mieux sécurisée afin de prévenir certaines attaques. L'absence de cette extension suggère que votre connexion a été interceptée et manipulée au cours du transfert.</translation>
-<translation id="6679492495854441399">Petit problème... Une erreur de communication avec le réseau est survenue lors de la tentative d'inscription de ce périphérique. Veuillez vérifier votre connexion réseau avant de réessayer.</translation>
+<translation id="6679492495854441399">Petit problème... Une erreur de communication avec le réseau est survenue lors de la tentative d'inscription de ce périphérique. Veuillez vérifier votre connexion réseau et réessayer.</translation>
 <translation id="7789962463072032349">pause</translation>
 <translation id="121827551500866099">Afficher tous les téléchargements...</translation>
 <translation id="1562633988311880769">Connexion à <ph name="CLOUD_PRINT_NAME"/></translation>
@@ -714,7 +716,7 @@
 <translation id="2688477613306174402">Configuration en cours</translation>
 <translation id="1195447618553298278">Erreur inconnue</translation>
 <translation id="3353284378027041011"><ph name="NUMBER_FEW"/> days ago</translation>
-<translation id="8811462119186190367">Après la synchronisation de vos paramètres, la langue utilisée pour Google Chrome est passée de &quot;<ph name="FROM_LOCALE"/>&quot; à &quot;<ph name="TO_LOCALE"/>&quot;.</translation>
+<translation id="8811462119186190367">La langue utilisée pour Google Chrome est passée de &quot;<ph name="FROM_LOCALE"/>&quot; à &quot;<ph name="TO_LOCALE"/>&quot; après la synchronisation de vos paramètres.</translation>
 <translation id="1087119889335281750">&amp;Aucune suggestion orthographique</translation>
 <translation id="5228309736894624122">Erreur de protocole SSL</translation>
 <translation id="8216170236829567922">Mode de saisie du thaï (clavier Pattachote)</translation>
@@ -1196,7 +1198,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="7606992457248886637">Autorités</translation>
 <translation id="707392107419594760">Sélectionnez votre clavier :</translation>
 <translation id="2007404777272201486">Signaler un problème...</translation>
-<translation id="2390045462562521613">Oublier ce réseau</translation>
+<translation id="2390045462562521613">Ignorer ce réseau</translation>
 <translation id="3348038390189153836">Nouveau matériel détecté</translation>
 <translation id="1666788816626221136">Vous disposez de certificats qui n'appartiennent à aucune autre catégorie :</translation>
 <translation id="4821935166599369261">&amp;Profilage activé</translation>
@@ -1226,7 +1228,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="6035087343161522833">Lorsque l'option permettant de bloquer l'enregistrement des cookies tiers est activée, la lecture de ces cookies est également bloquée.</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/> : <ph name="ERROR"/></translation>
 <translation id="1567993339577891801">Console JavaScript</translation>
-<translation id="1548132948283577726">Les sites pour lesquels les mots de passe ne sont jamais enregistrés s'afficheront ici.</translation>
+<translation id="1548132948283577726">Les sites pour lesquels vos mots de passe ne seront jamais enregistrés s'afficheront ici.</translation>
 <translation id="583281660410589416">Inconnu</translation>
 <translation id="3774278775728862009">Mode de saisie du thaï (clavier TIS-820.2538)</translation>
 <translation id="9115675100829699941">&amp;Favoris</translation>
@@ -1323,7 +1325,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="8487693399751278191">Importer mes favoris maintenant...</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
 <translation id="7484580869648358686">Avertissement : Un problème a été détecté sur cette page.</translation>
-<translation id="2074739700630368799">Avec Google Chrome OS pour les entreprises, vous pouvez connecter votre périphérique à Google Apps pour votre domaine, ce qui vous permet de le rechercher et de le contrôler depuis le panneau de configuration de Google Apps pour votre domaine.</translation>
+<translation id="2074739700630368799">Avec Google Chrome OS for business, vous pouvez connecter votre périphérique à Google Apps, ce qui vous permet de le rechercher et de le contrôler depuis le panneau de configuration de Google Apps.</translation>
 <translation id="4474155171896946103">Ajouter tous les onglets aux favoris...</translation>
 <translation id="5895187275912066135">Émis le</translation>
 <translation id="1190844492833803334">Lorsque je ferme le navigateur</translation>
@@ -1453,6 +1455,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="3166547286524371413">Adresse :</translation>
 <translation id="4522570452068850558">Détails</translation>
 <translation id="59659456909144943">Notification : <ph name="NOTIFICATION_NAME"/></translation>
+<translation id="4806525999832945986">Géré par <ph name="DOMAIN"/> (<ph name="STATUS"/>)</translation>
 <translation id="7503191893372251637">Type de certificat Netscape</translation>
 <translation id="1502960562739459116">Impossible d'afficher certaines parties de ce document PDF. Souhaitez-vous installer Adobe Reader ?</translation>
 <translation id="4135450933899346655">Vos certificats</translation>
@@ -1735,6 +1738,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
 <translation id="402759845255257575">Interdire à tous les sites d'exécuter JavaScript</translation>
 <translation id="4610637590575890427">Vouliez-vous accéder à <ph name="SITE"/> ?</translation>
+<translation id="7723779034587221017">La connexion avec le service de configuration a été perdue. Veuillez réinitialiser votre périphérique ou contacter votre représentant de l'assistance technique.</translation>
 <translation id="3046388203776734202">Paramètres des fenêtres pop-up :</translation>
 <translation id="3437994698969764647">Tout exporter...</translation>
 <translation id="8349305172487531364">Barre de favoris</translation>
@@ -1806,6 +1810,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="7466861475611330213">Style de ponctuation</translation>
 <translation id="2496180316473517155">Historique de navigation</translation>
 <translation id="602251597322198729">Ce site tente de télécharger plusieurs fichiers. Voulez-vous autoriser le chargement ?</translation>
+<translation id="5843685321177053287">Établissement de la liaison avec le service de gestion des périphérique en attente...</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> heures</translation>
 <translation id="5411472733320185105">Ne pas utiliser les paramètres du proxy pour les hôtes et domaines suivants :</translation>
 <translation id="6691936601825168937">&amp;Avancer</translation>
@@ -2625,7 +2630,7 @@ Pour fusionner et synchroniser vos favoris dans <ph name="PRODUCT_NAME"/> sur un
 <translation id="822618367988303761">il y a <ph name="NUMBER_TWO"/> jours</translation>
 <translation id="7928333295097642153"><ph name="HOUR"/>:<ph name="MINUTE"/> restantes</translation>
 <translation id="7568593326407688803">Cette page est en<ph name="ORIGINAL_LANGUAGE"/>Voulez-vous la traduire ?</translation>
-<translation id="563969276220951735">Remplissage automatique des formulaires</translation>
+<translation id="563969276220951735">Saisie automatique des formulaires</translation>
 <translation id="6870130893560916279">Clavier ukrainien</translation>
 <translation id="8629974950076222828">Ouvrir tous les favoris dans une fenêtre de navigation privée</translation>
 <translation id="3126026824346185272">Ctrl</translation>
@@ -2749,7 +2754,7 @@ Pour fusionner et synchroniser vos favoris dans <ph name="PRODUCT_NAME"/> sur un
 <translation id="5332624210073556029">Fuseau horaire :</translation>
 <translation id="4799797264838369263">Cette option est soumise à une stratégie d'entreprise. Contactez votre administrateur pour plus d'informations.</translation>
 <translation id="4492190037599258964">Résultats de recherche pour &quot;<ph name="SEARCH_STRING"/>&quot;</translation>
-<translation id="3573179567135747900">Revenir à &quot;<ph name="FROM_LOCALE"/>&quot; (après redémarrage)</translation>
+<translation id="3573179567135747900">Revenir à &quot;<ph name="FROM_LOCALE"/>&quot; (redémarrage requis)</translation>
 <translation id="2238123906478057869"><ph name="PRODUCT_NAME"/> va exécuter les tâches suivantes :</translation>
 <translation id="4042471398575101546">Ajouter la page</translation>
 <translation id="8848709220963126773">Changement de mode via la touche Maj</translation>
