@@ -211,9 +211,6 @@ class DownloadItem {
   // Allow the user to temporarily pause a download or resume a paused download.
   void TogglePause();
 
-  // Called when the name of the download is finalized.
-  void OnNameFinalized();
-
   // Called when the download is ready to complete.
   // This may perform final rename if necessary and will eventually call
   // DownloadItem::Completed().
@@ -272,7 +269,6 @@ class DownloadItem {
   bool save_as() const { return save_as_; }
   bool is_otr() const { return is_otr_; }
   bool is_extension_install() const { return is_extension_install_; }
-  bool name_finalized() const { return name_finalized_; }
   bool is_temporary() const { return is_temporary_; }
   void set_opened(bool opened) { opened_ = opened; }
   bool opened() const { return opened_; }
@@ -398,9 +394,6 @@ class DownloadItem {
 
   // True if the item was downloaded for an extension installation.
   bool is_extension_install_;
-
-  // True if the filename is finalized.
-  bool name_finalized_;
 
   // True if the item was downloaded temporarily.
   bool is_temporary_;

@@ -141,7 +141,6 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       save_as_(false),
       is_otr_(false),
       is_extension_install_(info.is_extension_install),
-      name_finalized_(false),
       is_temporary_(false),
       all_data_saved_(false),
       opened_(false) {
@@ -184,7 +183,6 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       save_as_(info.prompt_user_for_save_location),
       is_otr_(is_otr),
       is_extension_install_(info.is_extension_install),
-      name_finalized_(false),
       is_temporary_(!info.save_info.file_path.empty()),
       all_data_saved_(false),
       opened_(false) {
@@ -221,7 +219,6 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       save_as_(false),
       is_otr_(is_otr),
       is_extension_install_(false),
-      name_finalized_(false),
       is_temporary_(false),
       all_data_saved_(false),
       opened_(false) {
@@ -389,15 +386,10 @@ void DownloadItem::Completed() {
     auto_opened_ = true;
   }
 
-  // The download file is meant to be completed if both the filename is
-  // finalized and the file data is downloaded. The ordering of these two
-  // actions is indeterministic. Thus, if the filename is not finalized yet,
-  // delay the notification.
-  if (name_finalized()) {
-    state_ = COMPLETE;
-    UpdateObservers();
-    download_manager_->RemoveFromActiveList(id());
-  }
+  DCHECK(all_data_saved_);
+  state_ = COMPLETE;
+  UpdateObservers();
+  download_manager_->RemoveFromActiveList(id());
 }
 
 void DownloadItem::Interrupted(int64 size, int os_error) {
@@ -483,19 +475,6 @@ void DownloadItem::TogglePause() {
   UpdateObservers();
 }
 
-void DownloadItem::OnNameFinalized() {
-  VLOG(20) << " " << __FUNCTION__ << "() "
-           << DebugString(true);
-  name_finalized_ = true;
-
-  // We can't reach this point in the code without having received all the
-  // data, so it's safe to move to the COMPLETE state.
-  DCHECK(all_data_saved_);
-  state_ = COMPLETE;
-  UpdateObservers();
-  download_manager_->RemoveFromActiveList(id());
-}
-
 void DownloadItem::OnDownloadCompleting(DownloadFileManager* file_manager) {
   VLOG(20) << " " << __FUNCTION__ << "() "
            << " needs rename = " << NeedsRename()
@@ -510,8 +489,6 @@ void DownloadItem::OnDownloadCompleting(DownloadFileManager* file_manager) {
             file_manager, &DownloadFileManager::RenameCompletingDownloadFile,
             id(), GetTargetFilePath(), safety_state() == SAFE));
     return;
-  } else {
-    name_finalized_ = true;
   }
 
   Completed();
@@ -530,7 +507,6 @@ void DownloadItem::OnDownloadRenamedToFinalName(const FilePath& full_path) {
   DCHECK(NeedsRename());
 
   Rename(full_path);
-  OnNameFinalized();
 
   Completed();
 }
