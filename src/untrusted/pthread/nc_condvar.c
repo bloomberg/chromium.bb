@@ -13,11 +13,14 @@
 
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
+#include "native_client/src/untrusted/pthread/pthread_internal.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
+
+struct nacl_irt_cond __nc_irt_cond;  /* Set up in __pthread_initialize. */
 
 static int nc_thread_cond_init(pthread_cond_t *cond,
                                pthread_condattr_t *cond_attr) {
-  return __libnacl_irt_cond.cond_create(&cond->handle);
+  return __nc_irt_cond.cond_create(&cond->handle);
 }
 
 /* TODO(gregoryd): make this static?  */
@@ -60,18 +63,18 @@ int pthread_cond_destroy (pthread_cond_t *cond) {
  */
 int pthread_cond_signal (pthread_cond_t *cond) {
   pthread_cond_validate(cond);
-  return __libnacl_irt_cond.cond_signal(cond->handle);
+  return __nc_irt_cond.cond_signal(cond->handle);
 }
 
 int pthread_cond_broadcast (pthread_cond_t *cond) {
   pthread_cond_validate(cond);
-  return __libnacl_irt_cond.cond_broadcast(cond->handle);
+  return __nc_irt_cond.cond_broadcast(cond->handle);
 }
 
 int pthread_cond_wait (pthread_cond_t *cond,
                        pthread_mutex_t *mutex) {
   pthread_cond_validate(cond);
-  int retval = __libnacl_irt_cond.cond_wait(cond->handle, mutex->mutex_handle);
+  int retval = __nc_irt_cond.cond_wait(cond->handle, mutex->mutex_handle);
   if (retval == 0) {
     mutex->owner_thread_id = pthread_self();
     mutex->recursion_counter = 1;
@@ -83,9 +86,9 @@ int pthread_cond_timedwait_abs(pthread_cond_t *cond,
                                pthread_mutex_t *mutex,
                                struct timespec *abstime) {
   pthread_cond_validate(cond);
-  int retval = __libnacl_irt_cond.cond_timed_wait_abs(cond->handle,
-                                                      mutex->mutex_handle,
-                                                      abstime);
+  int retval = __nc_irt_cond.cond_timed_wait_abs(cond->handle,
+                                                 mutex->mutex_handle,
+                                                 abstime);
   if (retval == 0) {
     mutex->owner_thread_id = pthread_self();
     mutex->recursion_counter = 1;

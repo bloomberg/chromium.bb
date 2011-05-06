@@ -18,6 +18,7 @@
 
 #include "native_client/src/include/nacl_base.h"
 
+#include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 
@@ -29,6 +30,11 @@
 #include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
 
 #define FUN_TO_VOID_PTR(a) ((void*)((uintptr_t) a))
+
+/*
+ * ABI tables for underyling NaCl thread interfaces.
+ */
+static struct nacl_irt_thread irt_thread;
 
 static const uint32_t kStackAlignment = 32;
 
@@ -332,6 +338,27 @@ int __pthread_initialize(void) {
   __pthread_initialize_minimal(sizeof(nc_thread_descriptor_t) +
                                sizeof(nc_basic_thread_data_t));
 
+  /*
+   * Fetch the ABI tables from the IRT.  We fall back to tables
+   * provided by libnacl, in case we have no IRT (or are the IRT).
+   */
+  if (NULL == __nacl_irt_query ||
+      __nacl_irt_query(NACL_IRT_THREAD_v0_1, &irt_thread,
+                       sizeof(irt_thread)) != sizeof(irt_thread))
+    irt_thread = nacl_irt_thread;
+  if (NULL == __nacl_irt_query ||
+      __nacl_irt_query(NACL_IRT_MUTEX_v0_1, &__nc_irt_mutex,
+                       sizeof(__nc_irt_mutex)) != sizeof(__nc_irt_mutex))
+    __nc_irt_mutex = nacl_irt_mutex;
+  if (NULL == __nacl_irt_query ||
+      __nacl_irt_query(NACL_IRT_COND_v0_1, &__nc_irt_cond,
+                       sizeof(__nc_irt_cond)) != sizeof(__nc_irt_cond))
+    __nc_irt_cond = nacl_irt_cond;
+  if (NULL == __nacl_irt_query ||
+      __nacl_irt_query(NACL_IRT_SEM_v0_1, &__nc_irt_sem,
+                       sizeof(__nc_irt_sem)) != sizeof(__nc_irt_sem))
+    __nc_irt_sem = nacl_irt_sem;
+
   /* At this point GS is already initialized */
   tdb = nc_get_tdb();
   basic_data = (nc_basic_thread_data_t *)(tdb + 1);
@@ -509,7 +536,7 @@ int pthread_create(pthread_t *thread_id,
   memset(esp, 0, return_addr_size);  /* NULL/0x00 pun is not strictly legal. */
 
   /* start the thread */
-  retval = __libnacl_irt_thread.thread_create(
+  retval = irt_thread.thread_create(
       FUN_TO_VOID_PTR(nc_thread_starter), esp,
       new_tdb, sizeof(nc_thread_descriptor_t));
   if (0 != retval) {
@@ -649,7 +676,7 @@ void pthread_exit (void* retval) {
   }
 
   pthread_mutex_unlock(&__nc_thread_management_lock);
-  __libnacl_irt_thread.thread_exit(is_used);
+  irt_thread.thread_exit(is_used);
   while (1) (*(void (*)(void)) 0)();  /* Crash.  */
 }
 
@@ -843,7 +870,7 @@ int pthread_setschedprio(pthread_t thread_id, int prio) {
      */
     return EPERM;
   }
-  return __libnacl_irt_thread.thread_nice(prio);
+  return irt_thread.thread_nice(prio);
 }
 
 int pthread_attr_init (pthread_attr_t *attr) {

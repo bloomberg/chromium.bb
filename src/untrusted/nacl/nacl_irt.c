@@ -17,10 +17,6 @@ struct nacl_irt_basic __libnacl_irt_basic;
 struct nacl_irt_file __libnacl_irt_file;
 struct nacl_irt_memory __libnacl_irt_memory;
 struct nacl_irt_dyncode __libnacl_irt_dyncode;
-struct nacl_irt_thread __libnacl_irt_thread;
-struct nacl_irt_mutex __libnacl_irt_mutex;
-struct nacl_irt_cond __libnacl_irt_cond;
-struct nacl_irt_sem __libnacl_irt_sem;
 struct nacl_irt_tls __libnacl_irt_tls;
 struct nacl_irt_blockhook __libnacl_irt_blockhook;
 
@@ -80,10 +76,6 @@ void __libnacl_irt_init(void) {
   DO_QUERY(NACL_IRT_FILE_v0_1, file);
   DO_QUERY(NACL_IRT_MEMORY_v0_1, memory);
   DO_QUERY(NACL_IRT_DYNCODE_v0_1, dyncode);
-  DO_QUERY(NACL_IRT_THREAD_v0_1, thread);
-  DO_QUERY(NACL_IRT_MUTEX_v0_1, mutex);
-  DO_QUERY(NACL_IRT_COND_v0_1, cond);
-  DO_QUERY(NACL_IRT_SEM_v0_1, sem);
   DO_QUERY(NACL_IRT_TLS_v0_1, tls);
   DO_QUERY(NACL_IRT_BLOCKHOOK_v0_1, blockhook);
 }

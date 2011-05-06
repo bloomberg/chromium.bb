@@ -13,14 +13,17 @@
 
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
+#include "native_client/src/untrusted/pthread/pthread_internal.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
+
+struct nacl_irt_mutex __nc_irt_mutex; /* Set up in __pthread_initialize. */
 
 /* Mutex functions */
 
 static int nc_thread_mutex_init(pthread_mutex_t *mutex) {
   mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
   mutex->recursion_counter = 0;
-  return __libnacl_irt_mutex.mutex_create(&mutex->mutex_handle);
+  return __nc_irt_mutex.mutex_create(&mutex->mutex_handle);
 }
 
 int pthread_mutex_validate(pthread_mutex_t *mutex) {
@@ -88,9 +91,9 @@ static int nc_thread_mutex_lock(pthread_mutex_t *mutex, int try_only) {
     }
   }
   if (try_only) {
-    rv = __libnacl_irt_mutex.mutex_trylock(mutex->mutex_handle);
+    rv = __nc_irt_mutex.mutex_trylock(mutex->mutex_handle);
   } else {
-    rv = __libnacl_irt_mutex.mutex_lock(mutex->mutex_handle);
+    rv = __nc_irt_mutex.mutex_lock(mutex->mutex_handle);
   }
   if (rv) {
     return rv;
@@ -130,7 +133,7 @@ int pthread_mutex_unlock (pthread_mutex_t *mutex) {
   }
   mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
   mutex->recursion_counter = 0;
-  return __libnacl_irt_mutex.mutex_unlock(mutex->mutex_handle);
+  return __nc_irt_mutex.mutex_unlock(mutex->mutex_handle);
 }
 
 /*
