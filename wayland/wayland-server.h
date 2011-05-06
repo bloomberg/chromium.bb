@@ -124,6 +124,7 @@ struct wl_resource {
 	void (*destroy)(struct wl_resource *resource,
 			struct wl_client *client);
 	struct wl_list link;
+	struct wl_list destroy_listener_list;
 };
 
 struct wl_buffer {
@@ -137,13 +138,12 @@ struct wl_buffer {
 struct wl_listener {
 	struct wl_list link;
 	void (*func)(struct wl_listener *listener,
-		     struct wl_surface *surface, uint32_t time);
+		     struct wl_resource *resource, uint32_t time);
 };
 
 struct wl_surface {
 	struct wl_resource resource;
 	struct wl_client *client;
-	struct wl_list destroy_listener_list;
 };
 
 struct wl_grab;
@@ -235,7 +235,8 @@ struct wl_display *
 wl_client_get_display(struct wl_client *client);
 
 void
-wl_resource_destroy(struct wl_resource *resource, struct wl_client *client);
+wl_resource_destroy(struct wl_resource *resource,
+		    struct wl_client *client, uint32_t time);
 
 void
 wl_input_device_init(struct wl_input_device *device,

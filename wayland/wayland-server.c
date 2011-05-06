@@ -260,6 +260,8 @@ wl_client_add_resource(struct wl_client *client,
 	if (client->id_count-- < 64)
 		wl_display_post_range(display, client);
 
+	wl_list_init(&resource->destroy_listener_list);
+
 	wl_hash_table_insert(client->display->objects,
 			     resource->object.id, resource);
 	wl_list_insert(client->resource_list.prev, &resource->link);
@@ -285,9 +287,15 @@ wl_client_post_global(struct wl_client *client, struct wl_object *object)
 }
 
 WL_EXPORT void
-wl_resource_destroy(struct wl_resource *resource, struct wl_client *client)
+wl_resource_destroy(struct wl_resource *resource,
+		    struct wl_client *client, uint32_t time)
 {
 	struct wl_display *display = client->display;
+	struct wl_listener *l, *next;
+
+	wl_list_for_each_safe(l, next,
+			      &resource->destroy_listener_list, link)
+		l->func(l, resource, time);
 
 	wl_list_remove(&resource->link);
 	if (resource->object.id > 0)
@@ -303,7 +311,7 @@ wl_client_destroy(struct wl_client *client)
 	printf("disconnect from client %p\n", client);
 
 	wl_list_for_each_safe(resource, tmp, &client->resource_list, link)
-		wl_resource_destroy(resource, client);
+		wl_resource_destroy(resource, client, 0);
 
 	wl_event_source_remove(client->source);
 	wl_connection_destroy(client->connection);
@@ -312,7 +320,7 @@ wl_client_destroy(struct wl_client *client)
 
 static void
 lose_pointer_focus(struct wl_listener *listener,
-		   struct wl_surface *surface, uint32_t time)
+		   struct wl_resource *resource, uint32_t time)
 {
 	struct wl_input_device *device =
 		container_of(listener, struct wl_input_device,
@@ -323,7 +331,7 @@ lose_pointer_focus(struct wl_listener *listener,
 
 static void
 lose_keyboard_focus(struct wl_listener *listener,
-		    struct wl_surface *surface, uint32_t time)
+		    struct wl_resource *resource, uint32_t time)
 {
 	struct wl_input_device *device =
 		container_of(listener, struct wl_input_device,
@@ -370,7 +378,7 @@ wl_input_device_set_pointer_focus(struct wl_input_device *device,
 				     &device->object,
 				     WL_INPUT_DEVICE_POINTER_FOCUS,
 				     time, surface, x, y, sx, sy);
-		wl_list_insert(surface->destroy_listener_list.prev,
+		wl_list_insert(surface->resource.destroy_listener_list.prev,
 			       &device->pointer_focus_listener.link);
 	}
 
@@ -401,7 +409,7 @@ wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 				     &device->object,
 				     WL_INPUT_DEVICE_KEYBOARD_FOCUS,
 				     time, surface, &device->keys);
-		wl_list_insert(surface->destroy_listener_list.prev,
+		wl_list_insert(surface->resource.destroy_listener_list.prev,
 			       &device->keyboard_focus_listener.link);
 	}
 
@@ -424,7 +432,7 @@ wl_input_device_end_grab(struct wl_input_device *device, uint32_t time)
 
 static void
 lose_grab_surface(struct wl_listener *listener,
-		  struct wl_surface *surface, uint32_t time)
+		  struct wl_resource *resource, uint32_t time)
 {
 	struct wl_input_device *device =
 		container_of(listener,
@@ -447,7 +455,7 @@ wl_input_device_start_grab(struct wl_input_device *device,
 	device->grab_y = device->y;
 
 	device->grab_listener.func = lose_grab_surface;
-	wl_list_insert(focus->destroy_listener_list.prev,
+	wl_list_insert(focus->resource.destroy_listener_list.prev,
 		       &device->grab_listener.link);
 
 	grab->input_device = device;
@@ -519,6 +527,7 @@ display_frame(struct wl_client *client,
 	listener->client = client;
 	listener->key = key;
 	listener->surface = surface;
+	wl_list_init(&listener->resource.destroy_listener_list);
 	wl_list_insert(client->resource_list.prev, &listener->resource.link);
 	wl_list_insert(display->frame_list.prev, &listener->link);
 }
@@ -631,7 +640,7 @@ wl_display_post_frame(struct wl_display *display, struct wl_surface *surface,
 			continue;
 		wl_client_post_event(listener->client, &display->object,
 				     WL_DISPLAY_KEY, listener->key, time);
-		wl_resource_destroy(&listener->resource, listener->client);
+		wl_resource_destroy(&listener->resource, listener->client, 0);
 	}
 }
 
