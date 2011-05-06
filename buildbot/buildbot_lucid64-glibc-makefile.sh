@@ -34,6 +34,12 @@ echo @@@BUILD_STEP compile_toolchain@@@
 )
 
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
+  echo @@@BUILD_STEP glibc_tests64@@@
+  (
+    cd tools
+    make glibc-check
+  )
+
   mkdir -p "$TOOLCHAINLOC"
   rm -rf "$TOOLCHAINLOC/$TOOLCHAINNAME"
   mv {tools/,}"$TOOLCHAINLOC/$TOOLCHAINNAME"
@@ -84,13 +90,13 @@ else
     tar JSxf ../tools/toolchain.tar.xz
     mv toolchain ..
   )
-fi
 
-echo @@@BUILD_STEP glibc_tests64@@@
-(
-  cd tools
-  make glibc-check
-)
+  echo @@@BUILD_STEP glibc_tests64@@@
+  (
+    cd tools
+    make glibc-check
+  )
+fi
 
 # First run 32bit tests, then 64bit tests. Both shell succeed.
 export INSIDE_TOOLCHAIN=1
