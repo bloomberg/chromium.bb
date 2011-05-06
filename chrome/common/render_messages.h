@@ -303,7 +303,7 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_AllowDatabase,
                             string16 /* database name */,
                             string16 /* database display name */,
                             unsigned long /* estimated size */,
-                            bool /* result */)
+                            bool /* allowed */)
 
 // Sent by the renderer process to check whether access to DOM Storage is
 // granted by content settings.
@@ -311,7 +311,7 @@ IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_AllowDOMStorage,
                             int /* render_view_id */,
                             GURL /* origin_url */,
                             DOMStorageType /* type */,
-                            bool /* result */)
+                            bool /* allowed */)
 
 // Tells the browser that a specific Web database in the current page was
 // accessed.

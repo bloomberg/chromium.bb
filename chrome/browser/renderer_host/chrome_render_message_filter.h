@@ -88,11 +88,11 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                        const string16& name,
                        const string16& display_name,
                        unsigned long estimated_size,
-                       bool* result);
+                       bool* allowed);
   void OnAllowDOMStorage(int render_view_id,
                          const GURL& url,
                          DOMStorageType type,
-                         bool* result);
+                         bool* allowed);
   void OnCanTriggerClipboardRead(const GURL& url, bool* allowed);
   void OnCanTriggerClipboardWrite(const GURL& url, bool* allowed);
 

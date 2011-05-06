@@ -309,28 +309,28 @@ void ChromeRenderMessageFilter::OnAllowDatabase(const std::string& origin_url,
                                                 const string16& name,
                                                 const string16& display_name,
                                                 unsigned long estimated_size,
-                                                bool* result) {
+                                                bool* allowed) {
   GURL url(origin_url);
   ContentSetting setting = host_content_settings_map_->GetContentSetting(
       url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   DCHECK((setting == CONTENT_SETTING_ALLOW) ||
          (setting == CONTENT_SETTING_BLOCK) ||
          (setting == CONTENT_SETTING_SESSION_ONLY));
-  *result = setting != CONTENT_SETTING_BLOCK;
+  *allowed = setting != CONTENT_SETTING_BLOCK;
 }
 
 void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_view_id,
                                                   const GURL& url,
                                                   DOMStorageType type,
-                                                  bool* result) {
+                                                  bool* allowed) {
   ContentSetting setting = host_content_settings_map_->GetContentSetting(
       url, CONTENT_SETTINGS_TYPE_COOKIES, "");
-  *result = setting != CONTENT_SETTING_BLOCK;
+  *allowed = setting != CONTENT_SETTING_BLOCK;
   // If content was blocked, tell the UI to display the blocked content icon.
   CallRenderViewHostContentSettingsDelegate(
       render_process_id_, render_view_id,
       &RenderViewHostDelegate::ContentSettings::OnLocalStorageAccessed,
-      url, type, *result);
+      url, type, !*allowed);
 }
 
 void ChromeRenderMessageFilter::OnCanTriggerClipboardRead(const GURL& url,
