@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -216,6 +217,12 @@ std::vector<int> GetAllNetErrorCodes() {
 #include "net/base/net_error_list.h"
 #undef NET_ERROR
   return all_error_codes;
+}
+
+void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
+                                               const FilePath& path) {
+  ChildProcessSecurityPolicy::GetInstance()->RevokeAllPermissionsForFile(
+      child_id, path);
 }
 
 #if defined(OS_WIN)
@@ -625,6 +632,18 @@ void ResourceDispatcherHost::RegisterDownloadedTempFile(
   registered_temp_files_[child_id][request_id] = reference;
   ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
       child_id, reference->path());
+
+  // When the temp file is deleted, revoke permissions that the renderer has
+  // to that file. This covers an edge case where the file is deleted and then
+  // the same name is re-used for some other purpose, we don't want the old
+  // renderer to still have access to it.
+  //
+  // We do this when the file is deleted because the renderer can take a blob
+  // reference to the temp file that outlives the url loaded that it was
+  // loaded with to keep the file (and permissions) alive.
+  reference->AddDeletionCallback(
+      base::Bind(&RemoveDownloadFileFromChildSecurityPolicy,
+                 child_id));
 }
 
 void ResourceDispatcherHost::UnregisterDownloadedTempFile(
@@ -634,9 +653,10 @@ void ResourceDispatcherHost::UnregisterDownloadedTempFile(
   if (found == map.end())
     return;
 
-  ChildProcessSecurityPolicy::GetInstance()->RevokeAllPermissionsForFile(
-      child_id, found->second->path());
   map.erase(found);
+
+  // Note that we don't remove the security bits here. This will be done
+  // when all file refs are deleted (see RegisterDownloadedTempFile).
 }
 
 bool ResourceDispatcherHost::Send(IPC::Message* message) {

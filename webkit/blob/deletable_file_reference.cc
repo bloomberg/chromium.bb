@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,11 @@ scoped_refptr<DeletableFileReference> DeletableFileReference::GetOrCreate(
   return reference;
 }
 
+void DeletableFileReference::AddDeletionCallback(
+    const DeletionCallback& callback) {
+  deletion_callbacks_.push_back(callback);
+}
+
 DeletableFileReference::DeletableFileReference(
     const FilePath& path, base::MessageLoopProxy* file_thread)
     : path_(path), file_thread_(file_thread) {
@@ -62,6 +67,9 @@ DeletableFileReference::DeletableFileReference(
 }
 
 DeletableFileReference::~DeletableFileReference() {
+  for (size_t i = 0; i < deletion_callbacks_.size(); i++)
+    deletion_callbacks_[i].Run(path_);
+
   DCHECK(g_deletable_file_map.Get().find(path_)->second == this);
   g_deletable_file_map.Get().erase(path_);
   base::FileUtilProxy::Delete(file_thread_, path_, false /* recursive */, NULL);

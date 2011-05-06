@@ -6,6 +6,9 @@
 #define WEBKIT_BLOB_DELETABLE_FILE_REFERENCE_H_
 #pragma once
 
+#include <vector>
+
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 
@@ -19,6 +22,8 @@ namespace webkit_blob {
 // to be deleted upon final release.
 class DeletableFileReference : public base::RefCounted<DeletableFileReference> {
  public:
+  typedef base::Callback<void(const FilePath&)> DeletionCallback;
+
   // Returns a DeletableFileReference for the given path, if no reference
   // for this path exists returns NULL.
   static scoped_refptr<DeletableFileReference> Get(const FilePath& path);
@@ -31,6 +36,8 @@ class DeletableFileReference : public base::RefCounted<DeletableFileReference> {
   // The full file path.
   const FilePath& path() const { return path_; }
 
+  void AddDeletionCallback(const DeletionCallback& callback);
+
  private:
   friend class base::RefCounted<DeletableFileReference>;
 
@@ -40,6 +47,8 @@ class DeletableFileReference : public base::RefCounted<DeletableFileReference> {
 
   const FilePath path_;
   scoped_refptr<base::MessageLoopProxy> file_thread_;
+
+  std::vector<DeletionCallback> deletion_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(DeletableFileReference);
 };
