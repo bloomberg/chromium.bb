@@ -254,6 +254,8 @@ void PrintPreviewHandler::RegisterMessages() {
       NewCallback(this, &PrintPreviewHandler::HandleShowSystemDialog));
   web_ui_->RegisterMessageCallback("managePrinters",
       NewCallback(this, &PrintPreviewHandler::HandleManagePrinters));
+  web_ui_->RegisterMessageCallback("closePrintPreviewTab",
+      NewCallback(this, &PrintPreviewHandler::HandleClosePreviewTab));
 }
 
 TabContents* PrintPreviewHandler::preview_tab() {
@@ -358,6 +360,17 @@ void PrintPreviewHandler::HandleManagePrinters(const ListValue* args) {
   printing::PrinterManagerDialog::ShowPrinterManagerDialog();
 }
 
+void PrintPreviewHandler::HandleClosePreviewTab(const ListValue* args) {
+  ActivateInitiatorTabAndClosePreviewTab();
+}
+
+void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {
+  TabContents* initiator_tab = GetInitiatorTab();
+  if (initiator_tab)
+    initiator_tab->Activate();
+  ClosePrintPreviewTab();
+}
+
 void PrintPreviewHandler::SendPrinterCapabilities(
     const DictionaryValue& settings_info) {
   web_ui_->CallJavascriptFunction("updateWithPrinterCapabilities",
@@ -432,5 +445,5 @@ void PrintPreviewHandler::FileSelected(const FilePath& path,
   PrintToPdfTask* task = new PrintToPdfTask(metafile, path);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, task);
 
-  ClosePrintPreviewTab();
+  ActivateInitiatorTabAndClosePreviewTab();
 }

@@ -51,8 +51,7 @@ function onLoad() {
   $('printer-list').disabled = true;
   $('print-button').disabled = true;
   $('print-button').addEventListener('click', printFile);
-  $('cancel-button').addEventListener('click',
-                                      function(e) { window.close(); });
+  $('cancel-button').addEventListener('click', handleCancelButtonClick);
   $('all-pages').addEventListener('click', onPageSelectionMayHaveChanged);
   $('copies').addEventListener('input', copiesFieldChanged);
   $('print-pages').addEventListener('click', handleIndividualPagesCheckbox);
@@ -76,6 +75,13 @@ function onLoad() {
                                   function() { onCopiesButtonsClicked(-1); });
   $('controls').onsubmit = function() { return false; };
   chrome.send('getPrinters');
+}
+
+/**
+ * Asks the browser to close the preview tab.
+ */
+function handleCancelButtonClick() {
+  chrome.send('closePrintPreviewTab');
 }
 
 /**

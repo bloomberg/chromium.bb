@@ -64,6 +64,10 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // |args| is unused.
   void HandleManagePrinters(const ListValue* args);
 
+  // Ask the browser to close the preview tab.
+  // |args| is unused.
+  void HandleClosePreviewTab(const ListValue* args);
+
   // Send the printer capabilities to the Web UI.
   // |settings_info| contains printer capabilities information.
   void SendPrinterCapabilities(const DictionaryValue& settings_info);
@@ -77,6 +81,9 @@ class PrintPreviewHandler : public WebUIMessageHandler,
 
   // Helper function to close the print preview tab.
   void ClosePrintPreviewTab();
+
+  // Helper function to activate the initiator tab and close the preview tab.
+  void ActivateInitiatorTabAndClosePreviewTab();
 
   // Pointer to current print system.
   scoped_refptr<printing::PrintBackend> print_backend_;
