@@ -14,7 +14,6 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/notification_registrar.h"
 
 namespace prerender {
 class PrerenderObserver;
@@ -28,6 +27,7 @@ class AutocompleteHistoryManager;
 class AutofillManager;
 class AutomationTabHelper;
 class BlockedContentTabHelper;
+class BookmarksTabHelper;
 class DownloadTabHelper;
 class Extension;
 class ExtensionTabHelper;
@@ -54,8 +54,7 @@ class ClientSideDetectionHost;
 // TODO(pinkerton): Eventually, this class will become TabContents as far as
 // the browser front-end is concerned, and the current TabContents will be
 // renamed to something like WebPage or WebView (ben's suggestions).
-class TabContentsWrapper : public NotificationObserver,
-                           public TabContentsObserver {
+class TabContentsWrapper : public TabContentsObserver {
  public:
   // Takes ownership of |contents|, which must be heap-allocated (as it lives
   // in a scoped_ptr) and can not be NULL.
@@ -102,7 +101,6 @@ class TabContentsWrapper : public NotificationObserver,
     return tab_contents()->render_view_host();
   }
   Profile* profile() const { return tab_contents()->profile(); }
-  bool is_starred() const { return is_starred_; }
 
   // Tab Helpers ---------------------------------------------------------------
 
@@ -119,6 +117,10 @@ class TabContentsWrapper : public NotificationObserver,
 
   BlockedContentTabHelper* blocked_content_tab_helper() {
     return blocked_content_tab_helper_.get();
+  }
+
+  BookmarksTabHelper* bookmarks_tab_helper() {
+    return bookmarks_tab_helper_.get();
   }
 
   DownloadTabHelper* download_tab_helper() {
@@ -154,15 +156,7 @@ class TabContentsWrapper : public NotificationObserver,
   // Overrides -----------------------------------------------------------------
 
   // TabContentsObserver overrides:
-  virtual void DidNavigateMainFramePostCommit(
-      const NavigationController::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  // NotificationObserver overrides:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
 
  private:
   // Internal helpers ----------------------------------------------------------
@@ -181,22 +175,12 @@ class TabContentsWrapper : public NotificationObserver,
   void OnSnapshot(const SkBitmap& bitmap);
   void OnPDFHasUnsupportedFeature();
 
-  // Updates the starred state from the bookmark bar model. If the state has
-  // changed, the delegate is notified.
-  void UpdateStarredStateForCurrentURL();
-
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   TabContentsWrapperDelegate* delegate_;
 
-  // Registers and unregisters us for notifications.
-  NotificationRegistrar registrar_;
-
   // Data for current page -----------------------------------------------------
-
-  // Whether the current URL is starred.
-  bool is_starred_;
 
   // Shows an info-bar to users when they search from a known search engine and
   // have never used the omnibox for search before.
@@ -210,6 +194,7 @@ class TabContentsWrapper : public NotificationObserver,
   scoped_ptr<AutofillManager> autofill_manager_;
   scoped_ptr<AutomationTabHelper> automation_tab_helper_;
   scoped_ptr<BlockedContentTabHelper> blocked_content_tab_helper_;
+  scoped_ptr<BookmarksTabHelper> bookmarks_tab_helper_;
   scoped_ptr<DownloadTabHelper> download_tab_helper_;
   scoped_ptr<ExtensionTabHelper> extension_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;

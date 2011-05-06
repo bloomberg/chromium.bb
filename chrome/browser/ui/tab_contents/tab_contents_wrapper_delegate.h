@@ -15,9 +15,6 @@ struct WebApplicationInfo;
 // TabContentsWrapper and to provide necessary functionality.
 class TabContentsWrapperDelegate {
  public:
-  // Notification that the starredness of the current URL changed.
-  virtual void URLStarredChanged(TabContentsWrapper* source, bool starred) = 0;
-
   // Notification that a user's request to install an application has completed.
   virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,
                                        int32 page_id);

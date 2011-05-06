@@ -29,6 +29,7 @@
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"  // TODO(beng): remove
 #include "chrome/browser/tabs/tab_strip_model_observer.h"  // TODO(beng): remove
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
+#include "chrome/browser/ui/bookmarks/bookmarks_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/shell_dialogs.h"
@@ -65,6 +66,7 @@ class Browser : public TabHandlerDelegate,
                 public TabContentsWrapperDelegate,
                 public SearchEngineTabHelperDelegate,
                 public BlockedContentTabHelperDelegate,
+                public BookmarksTabHelperDelegate,
                 public PageNavigator,
                 public CommandUpdater::CommandUpdaterDelegate,
                 public NotificationObserver,
@@ -833,8 +835,6 @@ class Browser : public TabHandlerDelegate,
   virtual void WorkerCrashed();
 
   // Overridden from TabContentsWrapperDelegate:
-  virtual void URLStarredChanged(TabContentsWrapper* source,
-                                 bool starred) OVERRIDE;
   virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,
                                        int32 page_id) OVERRIDE;
   virtual void OnInstallApplication(
@@ -856,6 +856,10 @@ class Browser : public TabHandlerDelegate,
   // Overridden from BlockedContentTabHelperDelegate:
   virtual TabContentsWrapper* GetConstrainingContentsWrapper(
       TabContentsWrapper* source) OVERRIDE;
+
+  // Overridden from BookmarksTabHelperDelegate:
+  virtual void URLStarredChanged(TabContentsWrapper* source,
+                                 bool starred) OVERRIDE;
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);

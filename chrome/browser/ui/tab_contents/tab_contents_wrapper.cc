@@ -9,7 +9,6 @@
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
@@ -32,6 +31,7 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/browser/ui/bookmarks/bookmarks_tab_helper.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
@@ -57,7 +57,6 @@ static base::LazyInstance<PropertyAccessor<TabContentsWrapper*> >
 TabContentsWrapper::TabContentsWrapper(TabContents* contents)
     : TabContentsObserver(contents),
       delegate_(NULL),
-      is_starred_(false),
       tab_contents_(contents) {
   DCHECK(contents);
   DCHECK(!GetCurrentWrapperForContents(contents));
@@ -70,6 +69,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   autofill_manager_.reset(new AutofillManager(contents));
   automation_tab_helper_.reset(new AutomationTabHelper(contents));
   blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
+  bookmarks_tab_helper_.reset(new BookmarksTabHelper(this));
   download_tab_helper_.reset(new DownloadTabHelper(contents));
   extension_tab_helper_.reset(new ExtensionTabHelper(this));
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
@@ -82,12 +82,6 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
   print_view_manager_.reset(new printing::PrintViewManager(contents));
-
-  // Register for notifications about URL starredness changing on any profile.
-  registrar_.Add(this, NotificationType::URLS_STARRED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
-                 NotificationService::AllSources());
 
   // Create the per-tab observers.
   file_select_observer_.reset(new FileSelectObserver(contents));
@@ -108,8 +102,6 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
 }
 
 TabContentsWrapper::~TabContentsWrapper() {
-  // We don't want any notifications while we're running our destructor.
-  registrar_.RemoveAll();
 }
 
 PropertyAccessor<TabContentsWrapper*>* TabContentsWrapper::property_accessor() {
@@ -241,12 +233,6 @@ TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsWrapper, TabContentsObserver implementation:
 
-void TabContentsWrapper::DidNavigateMainFramePostCommit(
-    const NavigationController::LoadCommittedDetails& /*details*/,
-    const ViewHostMsg_FrameNavigate_Params& /*params*/) {
-  UpdateStarredStateForCurrentURL();
-}
-
 bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TabContentsWrapper, message)
@@ -261,31 +247,6 @@ bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// TabContentsWrapper, NotificationObserver implementation:
-
-void TabContentsWrapper::Observe(NotificationType type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::BOOKMARK_MODEL_LOADED:
-      // BookmarkModel finished loading, fall through to update starred state.
-    case NotificationType::URLS_STARRED: {
-      // Somewhere, a URL has been starred.
-      // Ignore notifications for profiles other than our current one.
-      Profile* source_profile = Source<Profile>(source).ptr();
-      if (!source_profile || !source_profile->IsSameProfile(profile()))
-        return;
-
-      UpdateStarredStateForCurrentURL();
-      break;
-    }
-
-    default:
-      NOTREACHED();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -361,13 +322,4 @@ void TabContentsWrapper::OnSnapshot(const SkBitmap& bitmap) {
 
 void TabContentsWrapper::OnPDFHasUnsupportedFeature() {
   PDFHasUnsupportedFeature(tab_contents());
-}
-
-void TabContentsWrapper::UpdateStarredStateForCurrentURL() {
-  BookmarkModel* model = tab_contents()->profile()->GetBookmarkModel();
-  const bool old_state = is_starred_;
-  is_starred_ = (model && model->IsBookmarked(tab_contents()->GetURL()));
-
-  if (is_starred_ != old_state && delegate())
-    delegate()->URLStarredChanged(this, is_starred_);
 }
