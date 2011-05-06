@@ -1035,12 +1035,6 @@ class NotificationType {
     // acknowledged the module incompatibility. No details are expected.
     MODULE_INCOMPATIBILITY_BADGE_CHANGE,
 
-    // Background App Tracking Notifications -----------------------------------
-    // Sent when the state of the background page tracker has changed (the
-    // number of unacknowledged background pages have changed). Source is the
-    // BackgroundPageTracker and there are no Details.
-    BACKGROUND_PAGE_TRACKER_CHANGED,
-
     // Accessibility Notifications ---------------------------------------------
 
     // Notification that a window in the browser UI (not the web content)
