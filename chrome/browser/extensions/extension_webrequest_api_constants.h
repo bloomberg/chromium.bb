@@ -37,6 +37,7 @@ extern const char kOnRequestSent[];
 
 // Error messages.
 extern const char kInvalidRedirectUrl[];
+extern const char kInvalidBlockingResponse[];
 extern const char kInvalidRequestFilterUrl[];
 
 }  // namespace extension_webrequest_api_constants

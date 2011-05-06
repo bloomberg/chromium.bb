@@ -324,6 +324,11 @@ class ExtensionPrefs {
   //  for |pref_key| *and* it is specific to incognito mode.
   bool HasIncognitoPrefValue(const std::string& pref_key);
 
+  // Helper method to acquire the installation time of an extension.
+  // Returns base::Time() if the installation time could not be parsed or
+  // found.
+  base::Time GetInstallTime(const std::string& extension_id) const;
+
   static void RegisterUserPrefs(PrefService* prefs);
 
   // The underlying PrefService.
@@ -411,11 +416,6 @@ class ExtensionPrefs {
   // Return false if the value is false or kPrefBlacklist does not exist.
   // This is used to decide if an extension is blacklisted.
   bool IsBlacklistBitSet(DictionaryValue* ext);
-
-  // Helper method to acquire the installation time of an extension.
-  // Returns base::Time() if the installation time could not be parsed or
-  // found.
-  base::Time GetInstallTime(const std::string& extension_id) const;
 
   // Fix missing preference entries in the extensions that are were introduced
   // in a later Chrome version.

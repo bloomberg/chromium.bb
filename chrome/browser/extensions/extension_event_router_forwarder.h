@@ -72,6 +72,15 @@ class ExtensionEventRouterForwarder
   // Protected for testing.
   virtual ~ExtensionEventRouterForwarder();
 
+  // Helper function for {Broadcast,Dispatch}EventTo{Extension,Renderers}.
+  // Virtual for testing.
+  virtual void HandleEvent(const std::string& extension_id,
+                           const std::string& event_name,
+                           const std::string& event_args,
+                           ProfileId profile_id,
+                           bool use_profile_to_restrict_events,
+                           const GURL& event_url);
+
   // Calls DispatchEventToRenderers or DispatchEventToExtension (depending on
   // whether extension_id == "" or not) of |profile|'s ExtensionEventRouter.
   // |profile| may never be NULL.
@@ -85,14 +94,6 @@ class ExtensionEventRouterForwarder
 
  private:
   friend class base::RefCountedThreadSafe<ExtensionEventRouterForwarder>;
-
-  // Helper function for {Broadcast,Dispatch}EventTo{Extension,Renderers}.
-  void HandleEvent(const std::string& extension_id,
-                   const std::string& event_name,
-                   const std::string& event_args,
-                   ProfileId profile_id,
-                   bool use_profile_to_restrict_events,
-                   const GURL& event_url);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionEventRouterForwarder);
 };

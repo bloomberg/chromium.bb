@@ -11,12 +11,13 @@
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
+#include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
 #include "chrome/browser/extensions/extension_webrequest_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -130,44 +131,13 @@ static void EventHandledOnIOThread(
     const std::string& event_name,
     const std::string& sub_event_name,
     uint64 request_id,
-    bool cancel,
-    const GURL& new_url,
-    net::HttpRequestHeaders* request_headers) {
+    ExtensionWebRequestEventRouter::EventResponse* response) {
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       profile_id, extension_id, event_name, sub_event_name, request_id,
-      cancel, new_url, request_headers);
+      response);
 }
 
 }  // namespace
-
-// Internal representation of the webRequest.RequestFilter type, used to
-// filter what network events an extension cares about.
-struct ExtensionWebRequestEventRouter::RequestFilter {
-  ExtensionExtent urls;
-  std::vector<ResourceType::Type> types;
-  int tab_id;
-  int window_id;
-
-  RequestFilter() : tab_id(-1), window_id(-1) {}
-  // Returns false if there was an error initializing. If it is a user error,
-  // an error message is provided, otherwise the error is internal (and
-  // unexpected).
-  bool InitFromValue(const DictionaryValue& value, std::string* error);
-};
-
-// Internal representation of the extraInfoSpec parameter on webRequest events,
-// used to specify extra information to be included with network events.
-struct ExtensionWebRequestEventRouter::ExtraInfoSpec {
-  enum Flags {
-    REQUEST_LINE = 1<<0,
-    REQUEST_HEADERS = 1<<1,
-    STATUS_LINE = 1<<2,
-    RESPONSE_HEADERS = 1<<3,
-    BLOCKING = 1<<4,
-  };
-
-  static bool InitFromValue(const ListValue& value, int* extra_info_spec);
-};
 
 // Represents a single unique listener to an event, along with whatever filter
 // parameters and extra_info_spec were specified at the time the listener was
@@ -188,6 +158,8 @@ struct ExtensionWebRequestEventRouter::EventListener {
       return true;
     return false;
   }
+
+  EventListener() : extra_info_spec(0) {}
 };
 
 // Contains info about requests that are blocked waiting for a response from
@@ -213,12 +185,17 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   // Time the request was paused. Used for logging purposes.
   base::Time blocking_time;
 
-  BlockedRequest() :
-      event(kInvalidEvent),
-      num_handlers_blocking(0),
-      callback(NULL),
-      new_url(NULL),
-      request_headers(NULL) {}
+  // If non-NULL, this is the response we have chosen so far. Once all responses
+  // are received, this is the one that will be used to determine how to proceed
+  // with the request.
+  linked_ptr<ExtensionWebRequestEventRouter::EventResponse> chosen_response;
+
+  BlockedRequest()
+      : event(kInvalidEvent),
+        num_handlers_blocking(0),
+        callback(NULL),
+        new_url(NULL),
+        request_headers(NULL) {}
 };
 
 bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
@@ -290,6 +267,29 @@ bool ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
   }
   return true;
 }
+
+
+ExtensionWebRequestEventRouter::EventResponse::EventResponse(
+    const std::string& extension_id, const base::Time& extension_install_time)
+    : extension_id(extension_id),
+      extension_install_time(extension_install_time),
+      cancel(false) {
+}
+
+ExtensionWebRequestEventRouter::EventResponse::~EventResponse() {
+}
+
+
+ExtensionWebRequestEventRouter::RequestFilter::RequestFilter()
+    : tab_id(-1), window_id(-1) {
+}
+
+ExtensionWebRequestEventRouter::RequestFilter::~RequestFilter() {
+}
+
+//
+// ExtensionWebRequestEventRouter
+//
 
 // static
 ExtensionWebRequestEventRouter* ExtensionWebRequestEventRouter::GetInstance() {
@@ -669,9 +669,7 @@ void ExtensionWebRequestEventRouter::OnEventHandled(
     const std::string& event_name,
     const std::string& sub_event_name,
     uint64 request_id,
-    bool cancel,
-    const GURL& new_url,
-    net::HttpRequestHeaders* request_headers) {
+    EventResponse* response) {
   EventListener listener;
   listener.extension_id = extension_id;
   listener.sub_event_name = sub_event_name;
@@ -683,7 +681,7 @@ void ExtensionWebRequestEventRouter::OnEventHandled(
   if (found != listeners_[profile_id][event_name].end())
     found->blocked_requests.erase(request_id);
 
-  DecrementBlockCount(request_id, cancel, new_url, request_headers);
+  DecrementBlockCount(request_id, response);
 }
 
 void ExtensionWebRequestEventRouter::AddEventListener(
@@ -735,7 +733,7 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
   // Unblock any request that this event listener may have been blocking.
   for (std::set<uint64>::iterator it = found->blocked_requests.begin();
        it != found->blocked_requests.end(); ++it) {
-    DecrementBlockCount(*it, false, GURL(), NULL);
+    DecrementBlockCount(*it, NULL);
   }
 
   listeners_[profile_id][event_name].erase(listener);
@@ -793,10 +791,8 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
 
 void ExtensionWebRequestEventRouter::DecrementBlockCount(
     uint64 request_id,
-    bool cancel,
-    const GURL& new_url,
-    net::HttpRequestHeaders* request_headers) {
-  scoped_ptr<net::HttpRequestHeaders> request_headers_scoped(request_headers);
+    EventResponse* response) {
+  scoped_ptr<EventResponse> response_scoped(response);
 
   // It's possible that this request was deleted, or cancelled by a previous
   // event handler. If so, ignore this response.
@@ -807,11 +803,19 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
   int num_handlers_blocking = --blocked_request.num_handlers_blocking;
   CHECK_GE(num_handlers_blocking, 0);
 
-  // TODO(mpcomplete): handle conflicts more intelligently. Possibility: wait
-  // until all extensions respond, and process responses in order of
-  // extension_id.
-  if (num_handlers_blocking == 0 || cancel ||
-      !new_url.is_empty() || request_headers) {
+  // If |response| is NULL, then we assume the extension does not care about
+  // this request. In that case, we will fall back to the previous chosen
+  // response, if any. More recently installed extensions have greater
+  // precedence.
+  if (response) {
+    if (!blocked_request.chosen_response.get() ||
+        response->extension_install_time >
+            blocked_request.chosen_response->extension_install_time) {
+      blocked_request.chosen_response.reset(response_scoped.release());
+    }
+  }
+
+  if (num_handlers_blocking == 0) {
     // TODO(mpcomplete): it would be better if we accumulated the blocking times
     // for a given request over all events.
     HISTOGRAM_TIMES("Extensions.NetworkDelay",
@@ -819,16 +823,21 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
 
     if (blocked_request.event == kOnBeforeRequest) {
       CHECK(blocked_request.callback);
-      if (!new_url.is_empty()) {
-        CHECK(new_url.is_valid());
-        *blocked_request.new_url = new_url;
+      if (blocked_request.chosen_response.get() &&
+          !blocked_request.chosen_response->new_url.is_empty()) {
+        CHECK(blocked_request.chosen_response->new_url.is_valid());
+        *blocked_request.new_url = blocked_request.chosen_response->new_url;
       }
     } else if (blocked_request.event == kOnBeforeSendHeaders) {
       // It's possible that the HttpTransaction was deleted before we could call
       // the callback. In that case, we've already NULLed out the callback and
       // headers, and we just drop the response on the floor.
-      if (request_headers && blocked_request.request_headers)
-        blocked_request.request_headers->Swap(request_headers);
+      if (blocked_request.chosen_response.get() &&
+          blocked_request.chosen_response->request_headers.get() &&
+          blocked_request.request_headers) {
+        blocked_request.request_headers->Swap(
+            blocked_request.chosen_response->request_headers.get());
+      }
     } else {
       NOTREACHED();
     }
@@ -836,8 +845,12 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
     // This signals a failed request to subscribers of onErrorOccurred in case
     // a request is cancelled because net::ERR_EMPTY_RESPONSE cannot be
     // distinguished from a regular failure.
-    if (blocked_request.callback)
-      blocked_request.callback->Run(cancel ? net::ERR_EMPTY_RESPONSE : net::OK);
+    if (blocked_request.callback) {
+      int rv = (blocked_request.chosen_response.get() &&
+                blocked_request.chosen_response->cancel) ?
+                    net::ERR_EMPTY_RESPONSE : net::OK;
+      blocked_request.callback->Run(rv);
+    }
 
     blocked_requests_.erase(request_id);
   }
@@ -916,22 +929,38 @@ bool WebRequestEventHandled::RunImpl() {
   int64 request_id;
   EXTENSION_FUNCTION_VALIDATE(base::StringToInt64(request_id_str, &request_id));
 
-  bool cancel = false;
-  GURL new_url;
-  scoped_ptr<net::HttpRequestHeaders> request_headers;
+  scoped_ptr<ExtensionWebRequestEventRouter::EventResponse> response;
   if (HasOptionalArgument(3)) {
     DictionaryValue* value = NULL;
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(3, &value));
 
-    if (value->HasKey("cancel"))
+    if (!value->empty()) {
+      base::Time install_time =
+          profile()->GetExtensionService()->extension_prefs()->
+              GetInstallTime(extension_id());
+      response.reset(new ExtensionWebRequestEventRouter::EventResponse(
+          extension_id(), install_time));
+    }
+
+    if (value->HasKey("cancel")) {
+      bool cancel = false;
       EXTENSION_FUNCTION_VALIDATE(value->GetBoolean("cancel", &cancel));
+      response->cancel = cancel;
+    }
+
+    // Don't allow cancel mixed with other keys.
+    if (response->cancel &&
+        (value->HasKey("redirectUrl") || value->HasKey("requestHeaders"))) {
+      error_ = keys::kInvalidBlockingResponse;
+      return false;
+    }
 
     if (value->HasKey("redirectUrl")) {
       std::string new_url_str;
       EXTENSION_FUNCTION_VALIDATE(value->GetString("redirectUrl",
                                                    &new_url_str));
-      new_url = GURL(new_url_str);
-      if (!new_url.is_valid()) {
+      response->new_url = GURL(new_url_str);
+      if (!response->new_url.is_valid()) {
         error_ = ExtensionErrorUtils::FormatErrorMessage(
             keys::kInvalidRedirectUrl, new_url_str);
         return false;
@@ -940,7 +969,7 @@ bool WebRequestEventHandled::RunImpl() {
 
     if (value->HasKey("requestHeaders")) {
       ListValue* request_headers_value = NULL;
-      request_headers.reset(new net::HttpRequestHeaders());
+      response->request_headers.reset(new net::HttpRequestHeaders());
       EXTENSION_FUNCTION_VALIDATE(value->GetList(keys::kRequestHeadersKey,
                                                  &request_headers_value));
       for (size_t i = 0; i < request_headers_value->GetSize(); ++i) {
@@ -954,7 +983,7 @@ bool WebRequestEventHandled::RunImpl() {
         EXTENSION_FUNCTION_VALIDATE(
             header_value->GetString(keys::kHeaderValueKey, &value));
 
-        request_headers->SetHeader(name, value);
+        response->request_headers->SetHeader(name, value);
       }
     }
   }
@@ -964,8 +993,7 @@ bool WebRequestEventHandled::RunImpl() {
       NewRunnableFunction(
           &EventHandledOnIOThread,
           profile()->GetRuntimeId(), extension_id(),
-          event_name, sub_event_name, request_id,
-          cancel, new_url, request_headers.release()));
+          event_name, sub_event_name, request_id, response.release()));
 
   return true;
 }

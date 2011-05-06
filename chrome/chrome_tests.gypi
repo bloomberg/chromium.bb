@@ -1336,6 +1336,7 @@
         'browser/extensions/extension_ui_unittest.cc',
         'browser/extensions/extension_updater_unittest.cc',
         'browser/extensions/extension_webnavigation_unittest.cc',
+        'browser/extensions/extension_webrequest_api_unittest.cc',
         'browser/extensions/extensions_quota_service_unittest.cc',
         'browser/extensions/external_policy_extension_loader_unittest.cc',
         'browser/extensions/file_reader_unittest.cc',

@@ -12,14 +12,18 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
+#include "base/time.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/extension_extent.h"
 #include "ipc/ipc_message.h"
 #include "net/base/completion_callback.h"
 #include "webkit/glue/resource_type.h"
 
+class DictionaryValue;
 class ExtensionEventRouterForwarder;
 class GURL;
+class ListValue;
 
 namespace net {
 class HostPortPair;
@@ -43,8 +47,59 @@ class ExtensionWebRequestEventRouter {
     kOnCompleted = 1 << 6,
   };
 
-  struct RequestFilter;
-  struct ExtraInfoSpec;
+  // Internal representation of the webRequest.RequestFilter type, used to
+  // filter what network events an extension cares about.
+  struct RequestFilter {
+    ExtensionExtent urls;
+    std::vector<ResourceType::Type> types;
+    int tab_id;
+    int window_id;
+
+    RequestFilter();
+    ~RequestFilter();
+
+    // Returns false if there was an error initializing. If it is a user error,
+    // an error message is provided, otherwise the error is internal (and
+    // unexpected).
+    bool InitFromValue(const DictionaryValue& value, std::string* error);
+  };
+
+  // Internal representation of the extraInfoSpec parameter on webRequest
+  // events, used to specify extra information to be included with network
+  // events.
+  struct ExtraInfoSpec {
+    enum Flags {
+      REQUEST_LINE = 1<<0,
+      REQUEST_HEADERS = 1<<1,
+      STATUS_LINE = 1<<2,
+      RESPONSE_HEADERS = 1<<3,
+      BLOCKING = 1<<4,
+    };
+
+    static bool InitFromValue(const ListValue& value, int* extra_info_spec);
+  };
+
+  // Contains an extension's response to a blocking event.
+  struct EventResponse {
+    // ID of the extension that sent this response.
+    std::string extension_id;
+
+    // The time that the extension was installed. Used for deciding order of
+    // precedence in case multiple extensions respond with conflicting
+    // decisions.
+    base::Time extension_install_time;
+
+    // Response values. These are mutually exclusive.
+    bool cancel;
+    GURL new_url;
+    scoped_ptr<net::HttpRequestHeaders> request_headers;
+
+    EventResponse(const std::string& extension_id,
+                  const base::Time& extension_install_time);
+    ~EventResponse();
+
+    DISALLOW_COPY_AND_ASSIGN(EventResponse);
+  };
 
   static ExtensionWebRequestEventRouter* GetInstance();
 
@@ -102,16 +157,13 @@ class ExtensionWebRequestEventRouter {
   void OnHttpTransactionDestroyed(ProfileId profile_id, uint64 request_id);
 
   // Called when an event listener handles a blocking event and responds.
-  // TODO(mpcomplete): modify request
   void OnEventHandled(
       ProfileId profile_id,
       const std::string& extension_id,
       const std::string& event_name,
       const std::string& sub_event_name,
       uint64 request_id,
-      bool cancel,
-      const GURL& new_url,
-      net::HttpRequestHeaders* request_headers);
+      EventResponse* response);
 
   // Adds a listener to the given event. |event_name| specifies the event being
   // listened to. |sub_event_name| is an internal event uniquely generated in
@@ -172,15 +224,11 @@ class ExtensionWebRequestEventRouter {
       int* extra_info_spec);
 
   // Decrements the count of event handlers blocking the given request. When the
-  // count reaches 0 (or immediately if the request is being cancelled or
-  // modified headers are provided), we stop blocking the request and either
-  // resume or cancel it. If |request_headers| is non-NULL, this method assumes
-  // ownership.
-  void DecrementBlockCount(
-      uint64 request_id,
-      bool cancel,
-      const GURL& new_url,
-      net::HttpRequestHeaders* request_headers);
+  // count reaches 0, we stop blocking the request and proceed it using the
+  // method requested by the extension with the highest precedence. Precedence
+  // is decided by extension install time. If |response| is non-NULL, this
+  // method assumes ownership.
+  void DecrementBlockCount(uint64 request_id, EventResponse* response);
 
   void OnRequestDeleted(net::URLRequest* request);
 
