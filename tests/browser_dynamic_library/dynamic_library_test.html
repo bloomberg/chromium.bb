@@ -34,6 +34,11 @@ var onPageLoad = function() {
     'x86-64': './ppapi_core_x86-64.nexe',
     'arm': './ppapi_core_arm.nexe',
   };
+  var lib_names = {
+    'x86-32': 'lib',
+    'x86-64': 'lib',
+    'arm': 'lib',
+  };
   var onPluginStart = function() {
     log('started OK');
     var value = plugin.testCallOnMainThread_FromMainThread();
@@ -42,7 +47,7 @@ var onPageLoad = function() {
     }
   };
 
-  startPluginInstance(plugin, 'lib', log, nexe_names, onPluginStart);
+  startPluginInstance(plugin, lib_names, log, nexe_names, onPluginStart);
 };
 
 window.onload = onPageLoad;

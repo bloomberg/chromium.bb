@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+//                 P L E A S E   N O T E
+// This is a temporary file-loading solution for Native Client
+// dynamic libraries, pending the permanent solution documented in:
+//   http://code.google.com/p/nativeclient/issues/detail?id=1534
+// This mechanism should go away once the permanent solution is
+// in place.
 
 // This is a helper library for launching dynamically-linked programs
 // inside the browser.  It sends initial arguments to the NaCl process
@@ -106,29 +112,24 @@ var handlePluginInstance = function(plugin, libdir, log, args,
 
 var startPluginInstance = function(plugin, libdir, log, args,
                                    onload_callback) {
-  var dynamic_linker_url = libdir + '/runnable-ld.so';
   log('startPluginInstance');
-  plugin.__urlAsNaClDesc(dynamic_linker_url, {
-    onload: function(fd) {
-      try {
-        plugin.__launchExecutableFromFd(fd);
-      } catch (err) {
-        log(err);
-        log("Loading " + dynamic_linker_url + " failed.");
-        return;
-      }
-      try {
-        var my_isa = plugin.__getSandboxISA();
-        handlePluginInstance(plugin, libdir, log, args[my_isa],
-                             onload_callback);
-      } catch (err) {
-        log(err);
-        log("handlePluginInstance() failed.");
-      }
-    },
-    onfail: function(error) {
-      log('Failed to fetch dynamic linker, ' +
-          dynamic_linker_url + ': ' + error);
-    }
-  });
+  try {
+    var my_isa = plugin.__getSandboxISA();
+    var dynamic_linker_url = libdir[my_isa] + '/runnable-ld.so';
+
+    plugin.__urlAsNaClDesc(dynamic_linker_url, {
+     onload: function(fd) {
+       plugin.__launchExecutableFromFd(fd);
+       handlePluginInstance(plugin, libdir[my_isa], log, args[my_isa],
+                            onload_callback);
+     },
+     onfail: function(error) {
+       log('Failed to fetch dynamic linker, ' +
+           dynamic_linker_url + ': ' + error);
+     }
+    });
+  } catch (err) {
+    log(err);
+    log("Could not start plugin instance");
+  }
 };
