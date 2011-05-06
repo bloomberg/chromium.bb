@@ -4570,6 +4570,13 @@
    ...
    fun:*BrowserInit*
 }
+{
+   bug_81782
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8chromeos29ServicesCustomizationDocument22LoadManifestFromStringERKSs
+   fun:_ZN8chromeos29ServicesCustomizationDocumentC1ERKSsS2_
+}
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
