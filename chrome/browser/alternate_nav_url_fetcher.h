@@ -54,7 +54,7 @@ class AlternateNavURLFetcher : public NotificationObserver,
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data) OVERRIDE;
 
   // LinkInfoBarDelegate

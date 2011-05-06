@@ -241,7 +241,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   ASSERT_TRUE(fetcher);
   fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
                                           net::URLRequestStatus(),
-                                          200, ResponseCookies(),
+                                          200, net::ResponseCookies(),
                                           std::string(responses[1]));
   // After that upload rates would be adjusted to 0.5/0.3
   EXPECT_DOUBLE_EQ(0.5, helper.download_manager.GetPositiveUploadRate());
@@ -251,13 +251,13 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   ASSERT_TRUE(fetcher);
   fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
                                           net::URLRequestStatus(),
-                                          404, ResponseCookies(),
+                                          404, net::ResponseCookies(),
                                           std::string(responses[2]));
   fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
                                           net::URLRequestStatus(),
-                                          200, ResponseCookies(),
+                                          200, net::ResponseCookies(),
                                           std::string(responses[0]));
   EXPECT_EQ(static_cast<size_t>(3), helper.responses_.size());
 
@@ -317,7 +317,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
       base::TimeDelta::FromMilliseconds(TestTimeouts::action_max_timeout_ms()));
   fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
                                           net::URLRequestStatus(),
-                                          500, ResponseCookies(),
+                                          500, net::ResponseCookies(),
                                           std::string(responses[0]));
   EXPECT_EQ(AutofillDownloadTestHelper::REQUEST_QUERY_FAILED,
             helper.responses_.front().type_of_response);
@@ -345,7 +345,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
       base::TimeDelta::FromMilliseconds(TestTimeouts::action_max_timeout_ms()));
   fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
                                           net::URLRequestStatus(),
-                                          503, ResponseCookies(),
+                                          503, net::ResponseCookies(),
                                           std::string(responses[2]));
   EXPECT_EQ(AutofillDownloadTestHelper::REQUEST_UPLOAD_FAILED,
             helper.responses_.front().type_of_response);
@@ -453,7 +453,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   ASSERT_TRUE(fetcher);
   fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
                                           net::URLRequestStatus(),
-                                          200, ResponseCookies(),
+                                          200, net::ResponseCookies(),
                                           std::string(responses[0]));
   ASSERT_EQ(static_cast<size_t>(1), helper.responses_.size());
   EXPECT_EQ(responses[0], helper.responses_.front().response);
@@ -482,7 +482,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   ASSERT_TRUE(fetcher);
   fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
                                           net::URLRequestStatus(),
-                                          200, ResponseCookies(),
+                                          200, net::ResponseCookies(),
                                           std::string(responses[1]));
   ASSERT_EQ(static_cast<size_t>(1), helper.responses_.size());
   EXPECT_EQ(responses[1], helper.responses_.front().response);
@@ -499,7 +499,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   ASSERT_TRUE(fetcher);
   fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
                                           net::URLRequestStatus(),
-                                          200, ResponseCookies(),
+                                          200, net::ResponseCookies(),
                                           std::string(responses[2]));
   ASSERT_EQ(static_cast<size_t>(1), helper.responses_.size());
   EXPECT_EQ(responses[2], helper.responses_.front().response);
@@ -535,7 +535,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   ASSERT_TRUE(fetcher);
   fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
                                           net::URLRequestStatus(),
-                                          200, ResponseCookies(),
+                                          200, net::ResponseCookies(),
                                           std::string(responses[0]));
   ASSERT_EQ(static_cast<size_t>(1), helper.responses_.size());
   EXPECT_EQ(responses[0], helper.responses_.front().response);

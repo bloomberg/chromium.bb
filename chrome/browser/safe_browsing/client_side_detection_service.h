@@ -68,7 +68,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
 
   // NotificationObserver overrides:
@@ -189,7 +189,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
                            const GURL& url,
                            const net::URLRequestStatus& status,
                            int response_code,
-                           const ResponseCookies& cookies,
+                           const net::ResponseCookies& cookies,
                            const std::string& data);
 
   // Called by OnURLFetchComplete to handle the server response from
@@ -198,7 +198,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
                              const GURL& url,
                              const net::URLRequestStatus& status,
                              int response_code,
-                             const ResponseCookies& cookies,
+                             const net::ResponseCookies& cookies,
                              const std::string& data);
 
   // Invalidate cache results which are no longer useful.

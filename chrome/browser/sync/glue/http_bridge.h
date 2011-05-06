@@ -121,7 +121,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
 
 #if defined(UNIT_TEST)

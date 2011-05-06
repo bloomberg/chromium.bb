@@ -421,7 +421,7 @@ void GaiaAuthFetcher::OnURLFetchComplete(const URLFetcher* source,
                                          const GURL& url,
                                          const net::URLRequestStatus& status,
                                          int response_code,
-                                         const ResponseCookies& cookies,
+                                         const net::ResponseCookies& cookies,
                                          const std::string& data) {
   fetch_pending_ = false;
   if (url == client_login_gurl_) {

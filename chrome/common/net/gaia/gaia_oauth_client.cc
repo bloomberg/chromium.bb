@@ -49,7 +49,7 @@ class GaiaOAuthClient::Core
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data);
 
  private:
@@ -118,7 +118,7 @@ void GaiaOAuthClient::Core::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   bool should_retry = false;
   HandleResponse(source, url, status, response_code, data, &should_retry);

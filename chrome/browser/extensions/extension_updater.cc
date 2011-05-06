@@ -594,7 +594,7 @@ void ExtensionUpdater::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   // Stop() destroys all our URLFetchers, which means we shouldn't be
   // called after Stop() is called.

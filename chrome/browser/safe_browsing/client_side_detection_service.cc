@@ -137,7 +137,7 @@ void ClientSideDetectionService::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   if (source == model_fetcher_.get()) {
     HandleModelResponse(source, url, status, response_code, cookies, data);
@@ -302,7 +302,7 @@ void ClientSideDetectionService::HandleModelResponse(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   if (status.is_success() && RC_REQUEST_OK == response_code) {
     // Copy the model because it has to be accessible after this function
@@ -333,7 +333,7 @@ void ClientSideDetectionService::HandlePhishingVerdict(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   ClientPhishingResponse response;
   scoped_ptr<ClientReportInfo> info(client_phishing_reports_[source]);

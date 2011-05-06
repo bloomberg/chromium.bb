@@ -56,7 +56,7 @@ class MockOAuthFetcher : public URLFetcher {
                                    url_,
                                    status,
                                    response_code_,
-                                   ResponseCookies(),
+                                   net::ResponseCookies(),
                                    results_);
   }
 

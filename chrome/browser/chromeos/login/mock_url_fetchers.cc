@@ -62,7 +62,7 @@ void GotCanceledFetcher::Start() {
                                  url_,
                                  status,
                                  RC_FORBIDDEN,
-                                 ResponseCookies(),
+                                 net::ResponseCookies(),
                                  std::string());
 }
 
@@ -83,7 +83,7 @@ void SuccessFetcher::Start() {
                                  url_,
                                  success,
                                  RC_REQUEST_OK,
-                                 ResponseCookies(),
+                                 net::ResponseCookies(),
                                  std::string());
 }
 
@@ -104,7 +104,7 @@ void FailFetcher::Start() {
                                  url_,
                                  failed,
                                  RC_REQUEST_OK,
-                                 ResponseCookies(),
+                                 net::ResponseCookies(),
                                  std::string());
 }
 
@@ -158,7 +158,7 @@ void CaptchaFetcher::Start() {
                                  url_,
                                  success,
                                  RC_FORBIDDEN,
-                                 ResponseCookies(),
+                                 net::ResponseCookies(),
                                  body);
 }
 
@@ -187,7 +187,7 @@ void HostedFetcher::Start() {
                                  url_,
                                  success,
                                  response_code,
-                                 ResponseCookies(),
+                                 net::ResponseCookies(),
                                  data);
 }
 

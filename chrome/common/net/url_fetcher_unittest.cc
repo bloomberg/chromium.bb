@@ -82,7 +82,7 @@ class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy() {
@@ -131,7 +131,7 @@ void URLFetcherTest::OnURLFetchComplete(const URLFetcher* source,
                                         const GURL& url,
                                         const net::URLRequestStatus& status,
                                         int response_code,
-                                        const ResponseCookies& cookies,
+                                        const net::ResponseCookies& cookies,
                                         const std::string& data) {
   EXPECT_TRUE(status.is_success());
   EXPECT_EQ(200, response_code);  // HTTP OK
@@ -158,7 +158,7 @@ class URLFetcherPostTest : public URLFetcherTest {
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
 };
 
@@ -170,7 +170,7 @@ class URLFetcherHeadersTest : public URLFetcherTest {
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
 };
 
@@ -182,7 +182,7 @@ class URLFetcherSocketAddressTest : public URLFetcherTest {
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
  protected:
   std::string expected_host_;
@@ -198,7 +198,7 @@ class URLFetcherProtectTest : public URLFetcherTest {
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
  private:
   Time start_time_;
@@ -214,7 +214,7 @@ class URLFetcherProtectTestPassedThrough : public URLFetcherTest {
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
  private:
   Time start_time_;
@@ -230,7 +230,7 @@ class URLFetcherBadHTTPSTest : public URLFetcherTest {
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
 
  private:
@@ -246,7 +246,7 @@ class URLFetcherCancelTest : public URLFetcherTest {
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
 
   void CancelRequest();
@@ -299,7 +299,7 @@ class URLFetcherMultipleAttemptTest : public URLFetcherTest {
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
  private:
   std::string data_;
@@ -336,7 +336,7 @@ void URLFetcherPostTest::OnURLFetchComplete(const URLFetcher* source,
                                             const GURL& url,
                                             const net::URLRequestStatus& status,
                                             int response_code,
-                                            const ResponseCookies& cookies,
+                                            const net::ResponseCookies& cookies,
                                             const std::string& data) {
   EXPECT_EQ(std::string("bobsyeruncle"), data);
   URLFetcherTest::OnURLFetchComplete(source, url, status, response_code,
@@ -348,7 +348,7 @@ void URLFetcherHeadersTest::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   std::string header;
   EXPECT_TRUE(source->response_headers()->GetNormalizedHeader("cache-control",
@@ -363,7 +363,7 @@ void URLFetcherSocketAddressTest::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   EXPECT_EQ("127.0.0.1", source->socket_address().host());
   EXPECT_EQ(expected_port_, source->socket_address().port());
@@ -385,7 +385,7 @@ void URLFetcherProtectTest::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   const TimeDelta one_second = TimeDelta::FromMilliseconds(1000);
   if (response_code >= 500) {
@@ -427,7 +427,7 @@ void URLFetcherProtectTestPassedThrough::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   const TimeDelta one_minute = TimeDelta::FromMilliseconds(60000);
   if (response_code >= 500) {
@@ -466,7 +466,7 @@ void URLFetcherBadHTTPSTest::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   // This part is different from URLFetcherTest::OnURLFetchComplete
   // because this test expects the request to be cancelled.
@@ -499,7 +499,7 @@ void URLFetcherCancelTest::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   // We should have cancelled the request before completion.
   ADD_FAILURE();
@@ -519,7 +519,7 @@ void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   EXPECT_TRUE(status.is_success());
   EXPECT_EQ(200, response_code);  // HTTP OK

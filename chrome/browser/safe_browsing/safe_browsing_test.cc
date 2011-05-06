@@ -21,9 +21,10 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "base/string_split.h"
+#include "base/string_util.h"
 #include "base/synchronization/lock.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -34,10 +35,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "base/test/test_timeouts.h"
-#include "chrome/test/ui_test_utils.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_log.h"
@@ -497,7 +497,7 @@ class SafeBrowsingServiceTestHelper
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data) {
     response_data_ = data;
     response_status_ = status.status();

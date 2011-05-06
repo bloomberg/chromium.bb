@@ -11,11 +11,11 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
-#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -23,8 +23,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
+#include "chrome/common/net/url_fetcher.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
@@ -32,10 +32,10 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/network_change_notifier.h"
-#include "net/test/test_server.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
+#include "net/test/test_server.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -66,7 +66,7 @@ class SyncServerStatusChecker : public URLFetcher::Delegate {
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data) {
     running_ = (status.status() == net::URLRequestStatus::SUCCESS &&
                 response_code == 200 && data.find("ok") == 0);

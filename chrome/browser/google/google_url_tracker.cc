@@ -202,7 +202,7 @@ void GoogleURLTracker::OnURLFetchComplete(const URLFetcher* source,
                                           const GURL& url,
                                           const net::URLRequestStatus& status,
                                           int response_code,
-                                          const ResponseCookies& cookies,
+                                          const net::ResponseCookies& cookies,
                                           const std::string& data) {
   // Delete the fetcher on this function's exit.
   scoped_ptr<URLFetcher> clean_up_fetcher(fetcher_.release());

@@ -1291,7 +1291,7 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
                                         const GURL& url,
                                         const net::URLRequestStatus& status,
                                         int response_code,
-                                        const ResponseCookies& cookies,
+                                        const net::ResponseCookies& cookies,
                                         const std::string& data) {
   DCHECK(waiting_for_asynchronus_reporting_step_);
   waiting_for_asynchronus_reporting_step_ = false;

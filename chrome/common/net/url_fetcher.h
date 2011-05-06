@@ -23,13 +23,13 @@
 #include "base/time.h"
 
 class GURL;
-typedef std::vector<std::string> ResponseCookies;
 
 namespace net {
 class HostPortPair;
 class HttpResponseHeaders;
 class URLRequestContextGetter;
 class URLRequestStatus;
+typedef std::vector<std::string> ResponseCookies;
 }  // namespace net
 
 // To use this class, create an instance with the desired URL and a pointer to
@@ -78,7 +78,7 @@ class URLFetcher {
                                     const GURL& url,
                                     const net::URLRequestStatus& status,
                                     int response_code,
-                                    const ResponseCookies& cookies,
+                                    const net::ResponseCookies& cookies,
                                     const std::string& data) = 0;
 
    protected:

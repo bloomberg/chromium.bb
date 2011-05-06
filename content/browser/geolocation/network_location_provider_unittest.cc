@@ -432,7 +432,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
       "}";
   fetcher->delegate()->OnURLFetchComplete(
       fetcher, test_server_url_, net::URLRequestStatus(), 200,  // OK
-      ResponseCookies(), kNoFixNetworkResponse);
+      net::ResponseCookies(), kNoFixNetworkResponse);
 
   // This should have set the access token anyhow
   EXPECT_EQ(UTF8ToUTF16(REFERENCE_ACCESS_TOKEN),
@@ -466,7 +466,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
       "}";
   fetcher->delegate()->OnURLFetchComplete(
       fetcher, test_server_url_, net::URLRequestStatus(), 200,  // OK
-      ResponseCookies(), kReferenceNetworkResponse);
+      net::ResponseCookies(), kReferenceNetworkResponse);
 
   provider->GetPosition(&position);
   EXPECT_EQ(51.0, position.latitude);
@@ -505,7 +505,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
       fetcher, test_server_url_,
       net::URLRequestStatus(net::URLRequestStatus::FAILED, -1),
       200,  // should be ignored
-      ResponseCookies(), "");
+      net::ResponseCookies(), "");
 
   // Error means we now no longer have a fix.
   provider->GetPosition(&position);
@@ -540,7 +540,7 @@ TEST_F(GeolocationNetworkProviderTest, GatewayAndWifiScans) {
       "}";
   fetcher->delegate()->OnURLFetchComplete(
       fetcher, test_server_url_, net::URLRequestStatus(), 200,  // OK
-      ResponseCookies(), kNoFixNetworkResponse);
+      net::ResponseCookies(), kNoFixNetworkResponse);
 
   // This should have set the access token anyhow
   EXPECT_EQ(UTF8ToUTF16(REFERENCE_ACCESS_TOKEN),
@@ -575,7 +575,7 @@ TEST_F(GeolocationNetworkProviderTest, GatewayAndWifiScans) {
       "}";
   fetcher->delegate()->OnURLFetchComplete(
       fetcher, test_server_url_, net::URLRequestStatus(), 200,  // OK
-      ResponseCookies(), kReferenceNetworkResponse_1);
+      net::ResponseCookies(), kReferenceNetworkResponse_1);
 
   provider->GetPosition(&position);
   EXPECT_EQ(51.0, position.latitude);
@@ -615,7 +615,7 @@ TEST_F(GeolocationNetworkProviderTest, GatewayAndWifiScans) {
       "}";
   fetcher->delegate()->OnURLFetchComplete(
       fetcher, test_server_url_, net::URLRequestStatus(), 200,  // OK
-      ResponseCookies(), kReferenceNetworkResponse_2);
+      net::ResponseCookies(), kReferenceNetworkResponse_2);
 
   provider->GetPosition(&position);
   EXPECT_EQ(51.1, position.latitude);
@@ -648,7 +648,7 @@ TEST_F(GeolocationNetworkProviderTest, GatewayAndWifiScans) {
       "}";
   fetcher->delegate()->OnURLFetchComplete(
       fetcher, test_server_url_, net::URLRequestStatus(), 200,  // OK
-      ResponseCookies(), kReferenceNetworkResponse_3);
+      net::ResponseCookies(), kReferenceNetworkResponse_3);
 
   provider->GetPosition(&position);
   EXPECT_EQ(51.3, position.latitude);

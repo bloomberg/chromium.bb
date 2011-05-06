@@ -7,16 +7,16 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
@@ -32,8 +32,8 @@
 #include "grit/generated_resources.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/cld/languages/public/languages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/cld/languages/public/languages.h"
 
 using testing::_;
 using testing::Pointee;
@@ -183,7 +183,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
                                 net::URLRequestStatus::FAILED);
     fetcher->delegate()->OnURLFetchComplete(fetcher, fetcher->original_url(),
                                             status, success ? 200 : 500,
-                                            ResponseCookies(),
+                                            net::ResponseCookies(),
                                             std::string());
   }
 

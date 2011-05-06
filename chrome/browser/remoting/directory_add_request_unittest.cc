@@ -37,7 +37,7 @@ class DirectoryAddRequestTest : public testing::Test {
 
     GURL url;
     net::URLRequestStatus status_ok;
-    ResponseCookies cookies;
+    net::ResponseCookies cookies;
     target_->OnURLFetchComplete(NULL, url, status_ok, response_code,
                                cookies, data);
   }

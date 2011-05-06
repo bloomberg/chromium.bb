@@ -113,7 +113,7 @@ TEST_P(DeviceManagementServiceFailedRequestTest, RegisterRequest) {
                                           GURL(kServiceUrl),
                                           GetParam().request_status_,
                                           GetParam().http_status_,
-                                          ResponseCookies(),
+                                          net::ResponseCookies(),
                                           GetParam().response_);
 }
 
@@ -129,7 +129,7 @@ TEST_P(DeviceManagementServiceFailedRequestTest, UnregisterRequest) {
                                           GURL(kServiceUrl),
                                           GetParam().request_status_,
                                           GetParam().http_status_,
-                                          ResponseCookies(),
+                                          net::ResponseCookies(),
                                           GetParam().response_);
 }
 
@@ -149,7 +149,7 @@ TEST_P(DeviceManagementServiceFailedRequestTest, PolicyRequest) {
                                           GURL(kServiceUrl),
                                           GetParam().request_status_,
                                           GetParam().http_status_,
-                                          ResponseCookies(),
+                                          net::ResponseCookies(),
                                           GetParam().response_);
 }
 
@@ -316,7 +316,7 @@ TEST_F(DeviceManagementServiceTest, RegisterRequest) {
                                           GURL(kServiceUrl),
                                           status,
                                           200,
-                                          ResponseCookies(),
+                                          net::ResponseCookies(),
                                           response_data);
 }
 
@@ -358,7 +358,7 @@ TEST_F(DeviceManagementServiceTest, UnregisterRequest) {
                                           GURL(kServiceUrl),
                                           status,
                                           200,
-                                          ResponseCookies(),
+                                          net::ResponseCookies(),
                                           response_data);
 }
 
@@ -433,7 +433,7 @@ TEST_F(DeviceManagementServiceTest, JobQueueing) {
                                           GURL(kServiceUrl),
                                           status,
                                           200,
-                                          ResponseCookies(),
+                                          net::ResponseCookies(),
                                           response_data);
 }
 
@@ -473,7 +473,7 @@ TEST_F(DeviceManagementServiceTest, CancelDuringCallback) {
                                           GURL(kServiceUrl),
                                           status,
                                           500,
-                                          ResponseCookies(),
+                                          net::ResponseCookies(),
                                           "");
 
   // Backend should have been reset.

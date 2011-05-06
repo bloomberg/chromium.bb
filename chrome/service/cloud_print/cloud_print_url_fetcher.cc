@@ -47,7 +47,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   VLOG(1) << "CP_PROXY: OnURLFetchComplete, url: " << url
           << ", response code: " << response_code;

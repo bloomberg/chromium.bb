@@ -74,7 +74,7 @@ void SdchDictionaryFetcher::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   if ((200 == response_code) &&
       (status.status() == net::URLRequestStatus::SUCCESS))

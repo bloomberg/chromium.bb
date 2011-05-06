@@ -87,7 +87,7 @@ class FakeURLFetcher : public URLFetcher {
     status.set_status(success_ ? net::URLRequestStatus::SUCCESS :
                                  net::URLRequestStatus::FAILED);
     delegate()->OnURLFetchComplete(this, url_, status, success_ ? 200 : 500,
-                                   ResponseCookies(), response_data_);
+                                   net::ResponseCookies(), response_data_);
   }
 
   // Pre-baked response data and flag which indicates whether the request should

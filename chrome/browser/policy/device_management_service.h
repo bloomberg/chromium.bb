@@ -39,7 +39,7 @@ class DeviceManagementService : public URLFetcher::Delegate {
     // Handles the URL request response.
     virtual void HandleResponse(const net::URLRequestStatus& status,
                                 int response_code,
-                                const ResponseCookies& cookies,
+                                const net::ResponseCookies& cookies,
                                 const std::string& data) = 0;
 
     // Gets the URL to contact.
@@ -85,7 +85,7 @@ class DeviceManagementService : public URLFetcher::Delegate {
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
 
   // Server at which to contact the service.

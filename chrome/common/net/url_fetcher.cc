@@ -130,7 +130,7 @@ class URLFetcher::Core
                                      // Read buffer
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
                                      // Cookie/cache info for the request
-  ResponseCookies cookies_;          // Response cookies
+  net::ResponseCookies cookies_;     // Response cookies
   net::HttpRequestHeaders extra_request_headers_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
   bool was_fetched_via_proxy_;

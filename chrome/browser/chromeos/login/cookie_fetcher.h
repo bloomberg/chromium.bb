@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
 #include "chrome/browser/chromeos/login/client_login_response_handler.h"
@@ -49,7 +50,7 @@ class CookieFetcher : public URLFetcher::Delegate {
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
 
  private:

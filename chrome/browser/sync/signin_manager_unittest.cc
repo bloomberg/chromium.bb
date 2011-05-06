@@ -9,8 +9,8 @@
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
-#include "chrome/test/testing_profile.h"
 #include "chrome/test/signaling_task.h"
+#include "chrome/test/testing_profile.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 
@@ -36,7 +36,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
     DCHECK(fetcher->delegate());
     fetcher->delegate()->OnURLFetchComplete(
         fetcher, GURL(GaiaAuthFetcher::kClientLoginUrl),
-        net::URLRequestStatus(), 200, ResponseCookies(),
+        net::URLRequestStatus(), 200, net::ResponseCookies(),
         "SID=sid\nLSID=lsid\nAuth=auth");
 
     // Then simulate the correct GetUserInfo response for the canonical email.
@@ -46,7 +46,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
     DCHECK(fetcher->delegate());
     fetcher->delegate()->OnURLFetchComplete(
         fetcher, GURL(GaiaAuthFetcher::kGetUserInfoUrl),
-        net::URLRequestStatus(), 200, ResponseCookies(),
+        net::URLRequestStatus(), 200, net::ResponseCookies(),
         "email=user@gmail.com");
   }
 

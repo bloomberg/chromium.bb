@@ -62,7 +62,7 @@ void UserImageDownloader::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (response_code != 200) {

@@ -53,7 +53,7 @@ void MockFetcher::Start() {
                                  url_,
                                  status,
                                  http_code,
-                                 ResponseCookies(),
+                                 net::ResponseCookies(),
                                  results_);
 }
 
@@ -102,7 +102,7 @@ class GaiaAuthFetcherTest : public testing::Test {
     EXPECT_EQ(captcha_token, out_captcha_token);
   }
 
-  ResponseCookies cookies_;
+  net::ResponseCookies cookies_;
   GURL client_login_source_;
   GURL issue_auth_token_source_;
   TestingProfile profile_;

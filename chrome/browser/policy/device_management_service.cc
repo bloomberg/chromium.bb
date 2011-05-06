@@ -183,7 +183,7 @@ void DeviceManagementService::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   JobFetcherMap::iterator entry(pending_jobs_.find(source));
   if (entry != pending_jobs_.end()) {

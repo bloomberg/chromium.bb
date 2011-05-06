@@ -42,7 +42,7 @@ void MockAuthResponseHandler::CompleteFetch(URLFetcher::Delegate* delegate,
                                remote,
                                status,
                                http_response_code,
-                               ResponseCookies(),
+                               net::ResponseCookies(),
                                data);
 }
 

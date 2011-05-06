@@ -234,7 +234,7 @@ void SearchProvider::OnURLFetchComplete(const URLFetcher* source,
                                         const GURL& url,
                                         const net::URLRequestStatus& status,
                                         int response_code,
-                                        const ResponseCookies& cookie,
+                                        const net::ResponseCookies& cookie,
                                         const std::string& data) {
   DCHECK(!done_);
   suggest_results_pending_--;

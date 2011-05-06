@@ -8,8 +8,8 @@
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/test/test_url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
-#include "net/url_request/url_request_test_util.h"
 #include "net/test/test_server.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::HttpBridge;
@@ -125,7 +125,7 @@ class ShuntedHttpBridge : public HttpBridge {
   void CallOnURLFetchComplete() {
     ASSERT_TRUE(MessageLoop::current() == test_->io_thread_loop());
     // We return no cookies and a dummy content response.
-    ResponseCookies cookies;
+    net::ResponseCookies cookies;
 
     std::string response_content = "success!";
     DummyURLFetcher fetcher;

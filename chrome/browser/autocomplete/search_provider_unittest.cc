@@ -212,8 +212,8 @@ void SearchProviderTest::FinishDefaultSuggestQuery() {
 
   // Tell the SearchProvider the default suggest query is done.
   default_fetcher->delegate()->OnURLFetchComplete(
-      default_fetcher, GURL(), net::URLRequestStatus(), 200, ResponseCookies(),
-      std::string());
+      default_fetcher, GURL(), net::URLRequestStatus(), 200,
+      net::ResponseCookies(), std::string());
 }
 
 // Tests -----------------------------------------------------------------------
@@ -236,7 +236,7 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
 
   // Tell the SearchProvider the suggest query is done.
   fetcher->delegate()->OnURLFetchComplete(
-      fetcher, GURL(), net::URLRequestStatus(), 200, ResponseCookies(),
+      fetcher, GURL(), net::URLRequestStatus(), 200, net::ResponseCookies(),
       std::string());
   fetcher = NULL;
 
@@ -284,8 +284,8 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
 
   // Tell the SearchProvider the default suggest query is done.
   default_fetcher->delegate()->OnURLFetchComplete(
-      default_fetcher, GURL(), net::URLRequestStatus(), 200, ResponseCookies(),
-      std::string());
+      default_fetcher, GURL(), net::URLRequestStatus(), 200,
+      net::ResponseCookies(), std::string());
   default_fetcher = NULL;
 
   // Make sure the keyword providers suggest service was queried.
@@ -300,8 +300,8 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
 
   // Tell the SearchProvider the keyword suggest query is done.
   keyword_fetcher->delegate()->OnURLFetchComplete(
-      keyword_fetcher, GURL(), net::URLRequestStatus(), 200, ResponseCookies(),
-      std::string());
+      keyword_fetcher, GURL(), net::URLRequestStatus(), 200,
+      net::ResponseCookies(), std::string());
   keyword_fetcher = NULL;
 
   // Run till the history results complete.

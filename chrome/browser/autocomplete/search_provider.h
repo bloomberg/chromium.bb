@@ -72,7 +72,7 @@ class SearchProvider : public AutocompleteProvider,
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
 
   // ID used in creating URLFetcher for default provider's suggest results.

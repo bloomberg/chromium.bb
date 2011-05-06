@@ -44,7 +44,7 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
                                   const GURL& url,
                                   const net::URLRequestStatus& status,
                                   int response_code,
-                                  const ResponseCookies& cookies,
+                                  const net::ResponseCookies& cookies,
                                   const std::string& data);
 
   // URL of the OSDD.
@@ -121,7 +121,7 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   template_url_.reset(new TemplateURL());
 

@@ -36,7 +36,7 @@ void CookieFetcher::OnURLFetchComplete(const URLFetcher* source,
                                        const GURL& url,
                                        const net::URLRequestStatus& status,
                                        int response_code,
-                                       const ResponseCookies& cookies,
+                                       const net::ResponseCookies& cookies,
                                        const std::string& data) {
   if (status.is_success() && response_code == kHttpSuccess) {
     if (issue_handler_->CanHandle(url)) {

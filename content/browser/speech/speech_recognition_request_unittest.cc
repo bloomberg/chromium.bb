@@ -54,10 +54,9 @@ void SpeechRecognitionRequestTest::CreateAndTestRequest(
   net::URLRequestStatus status;
   status.set_status(success ? net::URLRequestStatus::SUCCESS :
                               net::URLRequestStatus::FAILED);
-  fetcher->delegate()->OnURLFetchComplete(fetcher, fetcher->original_url(),
-                                          status, success ? 200 : 500,
-                                          ResponseCookies(),
-                                          http_response);
+  fetcher->delegate()->OnURLFetchComplete(
+      fetcher, fetcher->original_url(), status, success ? 200 : 500,
+      net::ResponseCookies(), http_response);
   // Parsed response will be available in result_.
 }
 

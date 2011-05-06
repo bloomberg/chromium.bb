@@ -184,7 +184,7 @@ void SpeechRecognitionRequest::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   DCHECK_EQ(url_fetcher_.get(), source);
 

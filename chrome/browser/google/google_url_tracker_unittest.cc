@@ -179,7 +179,7 @@ void GoogleURLTrackerTest::MockSearchDomainCheckResponse(
     return;
   fetcher->delegate()->OnURLFetchComplete(fetcher,
       GURL(GoogleURLTracker::kSearchDomainCheckURL), net::URLRequestStatus(),
-      200, ResponseCookies(), domain);
+      200, net::ResponseCookies(), domain);
   // At this point, |fetcher| is deleted.
   MessageLoop::current()->RunAllPending();
 }

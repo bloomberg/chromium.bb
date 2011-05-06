@@ -10,9 +10,9 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "content/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "content/browser/browser_thread.h"
 
 namespace chromeos {
 
@@ -42,7 +42,7 @@ void ImageDownloader::OnURLFetchComplete(const URLFetcher* source,
                                          const GURL& url,
                                          const net::URLRequestStatus& status,
                                          int response_code,
-                                         const ResponseCookies& cookies,
+                                         const net::ResponseCookies& cookies,
                                          const std::string& data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (response_code != 200) {

@@ -120,7 +120,7 @@ class DeviceManagementJobBase
   // DeviceManagementJob overrides:
   virtual void HandleResponse(const net::URLRequestStatus& status,
                               int response_code,
-                              const ResponseCookies& cookies,
+                              const net::ResponseCookies& cookies,
                               const std::string& data);
   virtual GURL GetURL(const std::string& server_url);
   virtual void ConfigureRequest(URLFetcher* fetcher);
@@ -189,7 +189,7 @@ class DeviceManagementJobBase
 void DeviceManagementJobBase::HandleResponse(
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   // Delete ourselves when this is done.
   scoped_ptr<DeviceManagementJob> scoped_killer(this);

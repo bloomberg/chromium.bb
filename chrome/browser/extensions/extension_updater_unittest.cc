@@ -15,22 +15,22 @@
 #include "base/threading/thread.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
+#include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
+#include "libxml/globals.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "libxml/globals.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -578,7 +578,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, url1, net::URLRequestStatus(), 200, ResponseCookies(),
+        fetcher, url1, net::URLRequestStatus(), 200, net::ResponseCookies(),
         invalid_xml);
 
     // Now that the first request is complete, make sure the second one has
@@ -596,7 +596,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, url2, net::URLRequestStatus(), 200, ResponseCookies(),
+        fetcher, url2, net::URLRequestStatus(), 200, net::ResponseCookies(),
         kValidXml);
 
     // This should run the manifest parsing, then we want to make sure that our
@@ -658,7 +658,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, test_url, net::URLRequestStatus(), 200, ResponseCookies(),
+        fetcher, test_url, net::URLRequestStatus(), 200, net::ResponseCookies(),
         extension_data);
 
     file_thread.Stop();
@@ -714,7 +714,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, test_url, net::URLRequestStatus(), 200, ResponseCookies(),
+        fetcher, test_url, net::URLRequestStatus(), 200, net::ResponseCookies(),
         extension_data);
 
     message_loop.RunAllPending();
@@ -766,7 +766,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, url1, net::URLRequestStatus(), 200, ResponseCookies(),
+        fetcher, url1, net::URLRequestStatus(), 200, net::ResponseCookies(),
         extension_data1);
     message_loop.RunAllPending();
 
@@ -785,7 +785,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, url2, net::URLRequestStatus(), 200, ResponseCookies(),
+        fetcher, url2, net::URLRequestStatus(), 200, net::ResponseCookies(),
         extension_data2);
     message_loop.RunAllPending();
     EXPECT_EQ(id2, service.extension_id());
@@ -869,7 +869,7 @@ class ExtensionUpdaterTest : public testing::Test {
     fetched_urls.push_back(fetcher->original_url());
     fetcher->delegate()->OnURLFetchComplete(
       fetcher, fetched_urls[0], net::URLRequestStatus(), 500,
-      ResponseCookies(), "");
+      net::ResponseCookies(), "");
     fetcher =
       factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     fetched_urls.push_back(fetcher->original_url());

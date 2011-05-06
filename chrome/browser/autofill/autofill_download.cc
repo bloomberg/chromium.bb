@@ -266,7 +266,7 @@ void AutofillDownloadManager::OnURLFetchComplete(
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
-    const ResponseCookies& cookies,
+    const net::ResponseCookies& cookies,
     const std::string& data) {
   std::map<URLFetcher *, FormRequestData>::iterator it =
       url_fetchers_.find(const_cast<URLFetcher*>(source));

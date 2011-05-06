@@ -173,7 +173,7 @@ TEST_F(SpeechRecognizerTest, StopWithData) {
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::SUCCESS);
   fetcher->delegate()->OnURLFetchComplete(
-      fetcher, fetcher->original_url(), status, 200, ResponseCookies(),
+      fetcher, fetcher->original_url(), status, 200, net::ResponseCookies(),
       "{\"hypotheses\":[{\"utterance\":\"123\"}]}");
   EXPECT_TRUE(recognition_complete_);
   EXPECT_TRUE(result_received_);
@@ -223,8 +223,8 @@ TEST_F(SpeechRecognizerTest, ConnectionError) {
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::FAILED);
   status.set_os_error(net::ERR_CONNECTION_REFUSED);
-  fetcher->delegate()->OnURLFetchComplete(fetcher, fetcher->original_url(),
-                                          status, 0, ResponseCookies(), "");
+  fetcher->delegate()->OnURLFetchComplete(
+      fetcher, fetcher->original_url(), status, 0, net::ResponseCookies(), "");
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);
   EXPECT_EQ(SpeechRecognizer::RECOGNIZER_ERROR_NETWORK, error_);
@@ -254,7 +254,7 @@ TEST_F(SpeechRecognizerTest, ServerError) {
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::SUCCESS);
   fetcher->delegate()->OnURLFetchComplete(fetcher, fetcher->original_url(),
-                                          status, 500, ResponseCookies(),
+                                          status, 500, net::ResponseCookies(),
                                           "Internal Server Error");
   EXPECT_FALSE(recognition_complete_);
   EXPECT_FALSE(result_received_);

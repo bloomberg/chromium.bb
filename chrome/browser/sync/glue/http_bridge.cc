@@ -269,7 +269,7 @@ void HttpBridge::OnURLFetchComplete(const URLFetcher *source,
                                     const GURL &url,
                                     const net::URLRequestStatus &status,
                                     int response_code,
-                                    const ResponseCookies &cookies,
+                                    const net::ResponseCookies &cookies,
                                     const std::string &data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::AutoLock lock(fetch_state_lock_);
