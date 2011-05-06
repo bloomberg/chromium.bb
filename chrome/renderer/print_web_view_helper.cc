@@ -119,7 +119,8 @@ PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
       print_web_view_(NULL),
       script_initiated_preview_frame_(NULL),
       context_menu_preview_node_(NULL),
-      user_cancelled_scripted_print_count_(0) {
+      user_cancelled_scripted_print_count_(0),
+      notify_browser_of_print_failure_(true) {
   is_preview_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnablePrintPreview);
 }
@@ -240,6 +241,7 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
 }
 
 void PrintWebViewHelper::OnPrintingDone(bool success) {
+  notify_browser_of_print_failure_ = false;
   DidFinishPrinting(success ? OK : FAIL_PRINT);
 }
 
@@ -323,6 +325,7 @@ void PrintWebViewHelper::PrintPreview(WebKit::WebFrame* frame,
 }
 
 void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
+  int cookie = print_pages_params_->params.document_cookie;
   if (result == FAIL_PRINT) {
     WebView* web_view = print_web_view_;
     if (!web_view)
@@ -331,8 +334,10 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
     render_view()->runModalAlertDialog(
         web_view->mainFrame(),
         l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
+
+    if (notify_browser_of_print_failure_)
+      Send(new PrintHostMsg_PrintingFailed(routing_id(), cookie));
   } else if (result == FAIL_PREVIEW) {
-    int cookie = print_pages_params_->params.document_cookie;
     Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
   }
 
@@ -341,6 +346,7 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
     print_web_view_ = NULL;
   }
   print_pages_params_.reset();
+  notify_browser_of_print_failure_ = true;
 }
 
 bool PrintWebViewHelper::CopyAndPrint(WebKit::WebFrame* web_frame) {

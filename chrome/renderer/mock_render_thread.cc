@@ -106,11 +106,9 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
                         OnScriptedPrint)
     IPC_MESSAGE_HANDLER(PrintHostMsg_UpdatePrintSettings,
                         OnUpdatePrintSettings)
-#if defined(OS_WIN) || defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPrintedPagesCount,
                         OnDidGetPrintedPagesCount)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
-#endif
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
@@ -150,7 +148,7 @@ void MockRenderThread::OnDuplicateSection(
   // separate a browser process from a renderer process.
   *browser_handle = renderer_handle;
 }
-#endif
+#endif  // defined(OS_WIN)
 
 void MockRenderThread::OnAllocateSharedMemoryBuffer(
     uint32 buffer_size, base::SharedMemoryHandle* handle) {

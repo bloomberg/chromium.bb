@@ -165,12 +165,25 @@ void PrintViewManager::OnDidPrintPage(
   ShouldQuitFromInnerMessageLoop();
 }
 
+void PrintViewManager::OnPrintingFailed(int cookie) {
+  scoped_refptr<PrinterQuery> printer_query;
+  g_browser_process->print_job_manager()->PopPrinterQuery(cookie,
+                                                          &printer_query);
+  if (printer_query.get()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(printer_query.get(),
+                          &printing::PrinterQuery::StopWorker));
+  }
+}
+
 bool PrintViewManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintViewManager, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPrintedPagesCount,
                         OnDidGetPrintedPagesCount)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintingFailed, OnPrintingFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

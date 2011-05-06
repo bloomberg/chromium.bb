@@ -99,6 +99,7 @@ void MockPrinter::UpdateSettings(int cookie,
 
   memset(params, 0, sizeof(PrintMsg_PrintPages_Params));
   SetPrintParams(&(params->params));
+  printer_status_ = PRINTER_PRINTING;
 }
 
 void MockPrinter::SetPrintedPagesCount(int cookie, int number_pages) {
