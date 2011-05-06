@@ -205,5 +205,6 @@ WorkerFileSystemTest.AsyncOperations
 AutomationProxyVisibleTest.AppendTab
 
 # NavigateToURL fails, see http://crbug.com/81658
+BrowserEncodingTest.TestEncodingAliasMapping
 LoginPromptTest.TestDigestAuth
 ResourceDispatcherTest.DoNotSniffHTMLFromTextPlain
