@@ -8,9 +8,9 @@ vars = {
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
   # These hashes need to be updated when nacl_revision is changed.
-  "nacl_irt_hash_x86_32": "e72ddc4bc568d6804dc595c8a136550ecaf6b5aa",
-  "nacl_irt_hash_x86_64": "694c864d7c50a902abf627771021abe658f519b3",
-  "nacl_revision": "5188",
+  "nacl_irt_hash_x86_32": "22aa515c504417708751f081f4b4325c0cebb1c7",
+  "nacl_irt_hash_x86_64": "3f345b96ba52220f404140d73f75d5443818774a",
+  "nacl_revision": "5062",
   "nacl_tools_revision": "5025",
   "libjingle_revision": "55",
   "libvpx_revision": "81610",
