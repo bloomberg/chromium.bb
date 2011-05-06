@@ -73,6 +73,12 @@ class ExistingUserController : public LoginDisplay::Delegate,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Set a delegate that we will pass LoginStatusConsumer events to.
+  // Used for testing.
+  void set_login_status_consumer(LoginStatusConsumer* consumer) {
+    login_status_consumer_ = consumer;
+  }
+
  private:
   friend class ExistingUserControllerTest;
   friend class MockLoginPerformerDelegate;
@@ -134,6 +140,10 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Delegate for login performer to be overridden by tests.
   // |this| is used if |login_performer_delegate_| is NULL.
   scoped_ptr<LoginPerformer::Delegate> login_performer_delegate_;
+
+  // Delegate to forward all login status events to.
+  // Tests can use this to receive login status events.
+  LoginStatusConsumer* login_status_consumer_;
 
   // Username of the last login attempt.
   std::string last_login_attempt_username_;

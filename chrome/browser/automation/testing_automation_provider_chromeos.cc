@@ -184,7 +184,7 @@ void TestingAutomationProvider::Login(DictionaryValue* args,
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
   // Set up an observer (it will delete itself).
-  new LoginManagerObserver(this, reply_message);
+  new LoginObserver(controller, this, reply_message);
   controller->Login(username, password);
 }
 

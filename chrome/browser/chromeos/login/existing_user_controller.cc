@@ -295,6 +295,9 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
   // Reenable clicking on other windows and status area.
   login_display_->SetUIEnabled(true);
   SetStatusAreaEnabled(true);
+
+  if (login_status_consumer_)
+    login_status_consumer_->OnLoginFailure(failure);
 }
 
 void ExistingUserController::OnLoginSuccess(
@@ -326,6 +329,10 @@ void ExistingUserController::OnLoginSuccess(
                                     pending_requests,
                                     this);
 
+
+  if (login_status_consumer_)
+    login_status_consumer_->OnLoginSuccess(username, password,
+                                           credentials, pending_requests);
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile) {
@@ -370,6 +377,9 @@ void ExistingUserController::OnOffTheRecordLoginSuccess() {
     // Postpone CompleteOffTheRecordLogin until registration completion.
     ActivateWizard(WizardController::kRegistrationScreenName);
   }
+
+  if (login_status_consumer_)
+    login_status_consumer_->OnOffTheRecordLoginSuccess();
 }
 
 void ExistingUserController::OnPasswordChangeDetected(
@@ -395,6 +405,9 @@ void ExistingUserController::OnPasswordChangeDetected(
                                                      view);
   window->SetIsAlwaysOnTop(true);
   window->Show();
+
+  if (login_status_consumer_)
+    login_status_consumer_->OnPasswordChangeDetected(credentials);
 }
 
 void ExistingUserController::WhiteListCheckFailed(const std::string& email) {

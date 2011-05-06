@@ -22,6 +22,7 @@
 #include "chrome/browser/browsing_data_remover.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/login/login_status_consumer.h"
 #endif  // defined(OS_CHROMEOS)
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
@@ -51,6 +52,12 @@ class RenderViewHost;
 class SavePackage;
 class TabContents;
 class TranslateInfoBarDelegate;
+
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+  class ExistingUserController;
+}
+#endif  // defined(OS_CHROMEOS)
 
 namespace history {
 class TopSites;
@@ -715,24 +722,34 @@ class InfoBarCountObserver : public NotificationObserver {
 };
 
 #if defined(OS_CHROMEOS)
-// Collects LOGIN_USER_CHANGED notifications and returns
-// whether authentication succeeded to the automation provider.
-class LoginManagerObserver : public NotificationObserver {
+class LoginObserver : public chromeos::LoginStatusConsumer,
+                      public NotificationObserver {
  public:
-  LoginManagerObserver(AutomationProvider* automation,
-                       IPC::Message* reply_message);
-  virtual ~LoginManagerObserver();
+  LoginObserver(chromeos::ExistingUserController* controller,
+                AutomationProvider* automation,
+                IPC::Message* reply_message);
 
-  // NotificationObserver interface.
-  virtual void Observe(NotificationType type, const NotificationSource& source,
-                       const NotificationDetails& details);
+  ~LoginObserver();
+
+  void OnLoginFailure(const chromeos::LoginFailure& error);
+
+  void OnLoginSuccess(
+      const std::string& username,
+      const std::string& password,
+      const GaiaAuthConsumer::ClientLoginResult& credentials,
+      bool pending_requests);
+
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details);
 
  private:
+  chromeos::ExistingUserController* controller_;
   NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginManagerObserver);
+  DISALLOW_COPY_AND_ASSIGN(LoginObserver);
 };
 
 // Collects SCREEN_LOCK_STATE_CHANGED notifications and returns

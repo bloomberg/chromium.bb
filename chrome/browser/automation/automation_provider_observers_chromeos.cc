@@ -8,6 +8,7 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "content/common/notification_service.h"
 
 using chromeos::CrosLibrary;
@@ -40,33 +41,41 @@ void NetworkManagerInitObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   }
 }
 
-LoginManagerObserver::LoginManagerObserver(
-    AutomationProvider* automation,
-    IPC::Message* reply_message)
-    : automation_(automation->AsWeakPtr()),
+LoginObserver::LoginObserver(chromeos::ExistingUserController* controller,
+                             AutomationProvider* automation,
+                             IPC::Message* reply_message)
+    : controller_(controller),
+      automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
-  registrar_.Add(this, NotificationType::LOGIN_USER_CHANGED,
+  controller_->set_login_status_consumer(this);
+  registrar_.Add(this, NotificationType::LOAD_STOP,
                  NotificationService::AllSources());
 }
 
-LoginManagerObserver::~LoginManagerObserver() {}
+LoginObserver::~LoginObserver() {
+  controller_->set_login_status_consumer(NULL);
+}
 
-void LoginManagerObserver::Observe(NotificationType type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
-  DCHECK(type == NotificationType::LOGIN_USER_CHANGED);
+void LoginObserver::OnLoginFailure(const chromeos::LoginFailure& error) {
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetString("error_string", error.GetErrorString());
+  AutomationJSONReply(automation_, reply_message_.release())
+      .SendSuccess(return_value.get());
+  delete this;
+}
 
-  if (!automation_) {
-    delete this;
-    return;
-  }
+void LoginObserver::OnLoginSuccess(
+    const std::string& username,
+    const std::string& password,
+    const GaiaAuthConsumer::ClientLoginResult& credentials,
+    bool pending_requests) {
+  controller_->set_login_status_consumer(NULL);
+}
 
-  AutomationJSONReply reply(automation_, reply_message_.release());
-  Details<AuthenticationNotificationDetails> auth_details(details);
-  if (auth_details->success())
-    reply.SendSuccess(NULL);
-  else
-    reply.SendError("Login failure.");
+void LoginObserver::Observe(NotificationType type,
+                            const NotificationSource& source,
+                            const NotificationDetails& details) {
+  AutomationJSONReply(automation_, reply_message_.release()).SendSuccess(NULL);
   delete this;
 }
 

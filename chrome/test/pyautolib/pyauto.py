@@ -235,6 +235,33 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     ]
 
   @staticmethod
+  def IsSessionManagerReady(old_pid):
+    """Is the ChromeOS session_manager running and ready to accept DBus calls?
+
+    Called after session_manager is killed to know when it has restarted.
+
+    Args:
+      old_pid: The pid that session_manager had before it was killed,
+               to ensure that we don't look at the DBus interface
+               of an old session_manager process.
+    """
+    pgrep_process = subprocess.Popen(['pgrep', 'session_manager'],
+                                     stdout=subprocess.PIPE)
+    new_pid = pgrep_process.communicate()[0].strip()
+    if not new_pid or old_pid == new_pid:
+      return False
+
+    import dbus
+    try:
+      bus = dbus.SystemBus()
+      proxy = bus.get_object('org.chromium.SessionManager',
+                             '/org/chromium/SessionManager')
+      dbus.Interface(proxy, 'org.chromium.SessionManagerInterface')
+    except dbus.DBusException:
+      return False
+    return True
+
+  @staticmethod
   def CleanupBrowserProfileOnChromeOS():
     """Cleanup browser profile dir on ChromeOS.
 
@@ -2555,6 +2582,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Waits until logged in.
     Should be displaying the login screen to work.
 
+    Returns:
+      An error string if an error occured.
+      None otherwise.
+
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
@@ -2563,10 +2594,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'username': username,
         'password': password,
     }
-    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    result = self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    return result.get('error_string')
 
   def Logout(self):
-    """Log out from chromeos.
+    """Log out from ChromeOS and wait for session_manager to come up.
 
     May return before logout is complete and
     gives no indication of success or failure.
@@ -2574,7 +2606,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     assert self.GetLoginInfo()['is_logged_in'], \
         'Trying to log out when already logged out.'
+    pgrep_process = subprocess.Popen(['pgrep', 'session_manager'],
+                                     stdout=subprocess.PIPE)
+    old_pid = pgrep_process.communicate()[0].strip()
     self.ApplyAccelerator(IDC_EXIT)
+    self.WaitUntil(lambda: self.IsSessionManagerReady(old_pid))
 
   def LockScreen(self):
     """Locks the screen on chromeos.
