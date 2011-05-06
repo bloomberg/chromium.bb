@@ -144,7 +144,9 @@ drm_output_prepare_scanout_surface(struct wlsc_output *output_base,
 	int ret;
 	uint32_t fb_id = 0;
 
-	if (es->width != output->base.width ||
+	if (es->x != output->base.x ||
+	    es->y != output->base.y ||
+	    es->width != output->base.width ||
 	    es->height != output->base.height ||
 	    es->image == EGL_NO_IMAGE_KHR)
 		return -1;

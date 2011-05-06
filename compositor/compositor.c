@@ -703,19 +703,19 @@ wlsc_output_repaint(struct wlsc_output *output)
 		using_hardware_cursor = 0;
 
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
-	if (es->fullscreen_output == output) {
-		if (es->visual == &ec->compositor.rgb_visual &&
-		    using_hardware_cursor) {
-			if (output->prepare_scanout_surface(output, es) == 0) {
-				/* We're drawing nothing now,
-				 * draw the damaged regions later. */
-				pixman_region32_union(&ec->damage_region,
-						      &ec->damage_region,
-						      &total_damage);
-				return;
-			}
-		}
 
+	if (es->visual == &ec->compositor.rgb_visual && using_hardware_cursor) {
+		if (output->prepare_scanout_surface(output, es) == 0) {
+			/* We're drawing nothing now,
+			 * draw the damaged regions later. */
+			pixman_region32_union(&ec->damage_region,
+					      &ec->damage_region,
+					      &total_damage);
+			return;
+		}
+	}
+
+	if (es->fullscreen_output == output) {
 		if (es->width < output->width ||
 		    es->height < output->height)
 			glClear(GL_COLOR_BUFFER_BIT);
