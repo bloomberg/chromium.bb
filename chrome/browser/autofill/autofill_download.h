@@ -15,6 +15,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/time.h"
+#include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/common/net/url_fetcher.h"
 
 class AutofillMetrics;
@@ -71,13 +72,16 @@ class AutofillDownloadManager : public URLFetcher::Delegate {
   bool StartQueryRequest(const ScopedVector<FormStructure>& forms,
                          const AutofillMetrics& metric_logger);
 
-  // Start upload request if necessary. The probability of request going
-  // over the wire are GetPositiveUploadRate() if it was matched by
-  // Autofill, GetNegativeUploadRate() otherwise. Observer will be called
-  // even if there was no actual trip over the wire.
-  // |form| - form sent in this request.
-  // |form_was_matched| - true if form was matched by the Autofill.
-  bool StartUploadRequest(const FormStructure& form, bool form_was_matched);
+  // Starts an upload request for the given |form|, unless throttled by the
+  // server. The probability of the request going over the wire is
+  // GetPositiveUploadRate() if |form_was_autofilled| is true, or
+  // GetNegativeUploadRate() otherwise. The observer will be called even if
+  // there was no actual trip over the wire.
+  // |available_field_types| should contain the types for which we have data
+  // stored on the local client.
+  bool StartUploadRequest(const FormStructure& form,
+                          bool form_was_autofilled,
+                          const FieldTypeSet& available_field_types);
 
   // Cancels pending request.
   // |form_signature| - signature of the form being cancelled. Warning:

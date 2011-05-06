@@ -173,6 +173,12 @@ void CreditCard::GetPossibleFieldTypes(const string16& text,
 
   if (Is4DigitExpirationYear(text))
     possible_types->insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+
+  if (text == GetInfo(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR))
+    possible_types->insert(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
+
+  if (text == GetInfo(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR))
+    possible_types->insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
 }
 
 void CreditCard::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
@@ -192,6 +198,12 @@ void CreditCard::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
 
   if (!Expiration4DigitYearAsString().empty())
     available_types->insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+
+  if (!GetInfo(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR).empty())
+    available_types->insert(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
+
+  if (!GetInfo(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR).empty())
+    available_types->insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
 }
 
 string16 CreditCard::GetInfo(AutofillFieldType type) const {
@@ -257,6 +269,14 @@ void CreditCard::SetInfo(AutofillFieldType type, const string16& value) {
 
     case CREDIT_CARD_EXP_4_DIGIT_YEAR:
       SetExpirationYearFromString(value);
+      break;
+
+    case CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR:
+      // This is a read-only attribute.
+      break;
+
+    case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
+      // This is a read-only attribute.
       break;
 
     case CREDIT_CARD_TYPE:

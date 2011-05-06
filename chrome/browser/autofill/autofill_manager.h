@@ -202,7 +202,7 @@ class AutofillManager : public TabContentsObserver,
   // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_;
 
-  std::list<std::string> autofilled_forms_signatures_;
+  std::list<std::string> autofilled_form_signatures_;
   // Handles queries and uploads to Autofill servers.
   AutofillDownloadManager download_manager_;
 

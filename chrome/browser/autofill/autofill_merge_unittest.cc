@@ -75,7 +75,7 @@ class PersonalDataManagerMock : public PersonalDataManager {
 
   // PersonalDataManager:
   virtual void SaveImportedProfile(const AutofillProfile& profile) OVERRIDE;
-  virtual const std::vector<AutofillProfile*>& web_profiles() OVERRIDE;
+  virtual const std::vector<AutofillProfile*>& web_profiles() const OVERRIDE;
 
  private:
   ScopedVector<AutofillProfile> profiles_;
@@ -100,7 +100,8 @@ void PersonalDataManagerMock::SaveImportedProfile(
     profiles_.push_back(new AutofillProfile(profile));
 }
 
-const std::vector<AutofillProfile*>& PersonalDataManagerMock::web_profiles() {
+const std::vector<AutofillProfile*>& PersonalDataManagerMock::web_profiles()
+    const {
   return profiles_.get();
 }
 

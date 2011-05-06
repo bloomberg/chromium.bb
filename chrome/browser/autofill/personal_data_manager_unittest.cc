@@ -1782,3 +1782,128 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
 }
+
+TEST_F(PersonalDataManagerTest, GetAvailableFieldTypes) {
+  // Wait for the web database to be loaded.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
+
+  // Check that there are no available types with no profiles stored.
+  FieldTypeSet available_types;
+  personal_data_->GetAvailableFieldTypes(&available_types);
+  EXPECT_EQ(0U, available_types.size());
+
+  // Test with one profile stored.
+  AutofillProfile profile0;
+  autofill_test::SetProfileInfo(&profile0,
+      "Marion", NULL, "Morrison",
+      "johnwayne@me.xyz", NULL, "123 Zoo St.", NULL, "Hollywood", "CA",
+      "91601", "US", "2345678910", NULL);
+
+  std::vector<AutofillProfile> profiles;
+  profiles.push_back(profile0);
+  personal_data_->SetProfiles(&profiles);
+
+  personal_data_->GetAvailableFieldTypes(&available_types);
+  EXPECT_EQ(13U, available_types.size());
+  EXPECT_TRUE(available_types.count(NAME_FIRST));
+  EXPECT_TRUE(available_types.count(NAME_LAST));
+  EXPECT_TRUE(available_types.count(NAME_FULL));
+  EXPECT_TRUE(available_types.count(EMAIL_ADDRESS));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_LINE1));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_CITY));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_STATE));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_ZIP));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_COUNTRY));
+  EXPECT_TRUE(available_types.count(PHONE_HOME_NUMBER));
+  EXPECT_TRUE(available_types.count(PHONE_HOME_CITY_CODE));
+  EXPECT_TRUE(available_types.count(PHONE_HOME_CITY_AND_NUMBER));
+  EXPECT_TRUE(available_types.count(PHONE_HOME_WHOLE_NUMBER));
+
+  // Test with multiple profiles stored.
+  AutofillProfile profile1;
+  autofill_test::SetProfileInfo(&profile1,
+      "Josephine", "Alicia", "Saenz",
+      "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
+      "US", "19482937549", "13502849239");
+
+  AutofillProfile profile2;
+  autofill_test::SetProfileInfo(&profile2,
+      "Josephine", "Alicia", "Saenz",
+      "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
+      "32801", "US", "19482937549", "13502849239");
+
+  profiles.push_back(profile1);
+  profiles.push_back(profile2);
+  personal_data_->SetProfiles(&profiles);
+
+  personal_data_->GetAvailableFieldTypes(&available_types);
+  EXPECT_EQ(23U, available_types.size());
+  EXPECT_TRUE(available_types.count(NAME_FIRST));
+  EXPECT_TRUE(available_types.count(NAME_MIDDLE));
+  EXPECT_TRUE(available_types.count(NAME_MIDDLE_INITIAL));
+  EXPECT_TRUE(available_types.count(NAME_LAST));
+  EXPECT_TRUE(available_types.count(NAME_FULL));
+  EXPECT_TRUE(available_types.count(EMAIL_ADDRESS));
+  EXPECT_TRUE(available_types.count(COMPANY_NAME));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_LINE1));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_LINE2));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_CITY));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_STATE));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_ZIP));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_COUNTRY));
+  EXPECT_TRUE(available_types.count(PHONE_HOME_NUMBER));
+  EXPECT_TRUE(available_types.count(PHONE_HOME_CITY_CODE));
+  EXPECT_TRUE(available_types.count(PHONE_HOME_COUNTRY_CODE));
+  EXPECT_TRUE(available_types.count(PHONE_HOME_CITY_AND_NUMBER));
+  EXPECT_TRUE(available_types.count(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_TRUE(available_types.count(PHONE_FAX_NUMBER));
+  EXPECT_TRUE(available_types.count(PHONE_FAX_CITY_CODE));
+  EXPECT_TRUE(available_types.count(PHONE_FAX_COUNTRY_CODE));
+  EXPECT_TRUE(available_types.count(PHONE_FAX_CITY_AND_NUMBER));
+  EXPECT_TRUE(available_types.count(PHONE_FAX_WHOLE_NUMBER));
+
+  // Test with credit card information also stored.
+  CreditCard credit_card;
+  autofill_test::SetCreditCardInfo(&credit_card,
+                                   "John Dillinger", "423456789012" /* Visa */,
+                                   "01", "2010");
+
+  std::vector<CreditCard> credit_cards;
+  credit_cards.push_back(credit_card);
+  personal_data_->SetCreditCards(&credit_cards);
+
+  personal_data_->GetAvailableFieldTypes(&available_types);
+  EXPECT_EQ(30U, available_types.size());
+  EXPECT_TRUE(available_types.count(NAME_FIRST));
+  EXPECT_TRUE(available_types.count(NAME_MIDDLE));
+  EXPECT_TRUE(available_types.count(NAME_MIDDLE_INITIAL));
+  EXPECT_TRUE(available_types.count(NAME_LAST));
+  EXPECT_TRUE(available_types.count(NAME_FULL));
+  EXPECT_TRUE(available_types.count(EMAIL_ADDRESS));
+  EXPECT_TRUE(available_types.count(COMPANY_NAME));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_LINE1));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_LINE2));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_CITY));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_STATE));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_ZIP));
+  EXPECT_TRUE(available_types.count(ADDRESS_HOME_COUNTRY));
+  EXPECT_TRUE(available_types.count(PHONE_HOME_NUMBER));
+  EXPECT_TRUE(available_types.count(PHONE_HOME_CITY_CODE));
+  EXPECT_TRUE(available_types.count(PHONE_HOME_COUNTRY_CODE));
+  EXPECT_TRUE(available_types.count(PHONE_HOME_CITY_AND_NUMBER));
+  EXPECT_TRUE(available_types.count(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_TRUE(available_types.count(PHONE_FAX_NUMBER));
+  EXPECT_TRUE(available_types.count(PHONE_FAX_CITY_CODE));
+  EXPECT_TRUE(available_types.count(PHONE_FAX_COUNTRY_CODE));
+  EXPECT_TRUE(available_types.count(PHONE_FAX_CITY_AND_NUMBER));
+  EXPECT_TRUE(available_types.count(PHONE_FAX_WHOLE_NUMBER));
+  EXPECT_TRUE(available_types.count(CREDIT_CARD_NAME));
+  EXPECT_TRUE(available_types.count(CREDIT_CARD_NUMBER));
+  EXPECT_TRUE(available_types.count(CREDIT_CARD_EXP_MONTH));
+  EXPECT_TRUE(available_types.count(CREDIT_CARD_EXP_2_DIGIT_YEAR));
+  EXPECT_TRUE(available_types.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  EXPECT_TRUE(available_types.count(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR));
+  EXPECT_TRUE(available_types.count(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR));
+}

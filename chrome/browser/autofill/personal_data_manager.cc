@@ -565,8 +565,9 @@ CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
   return NULL;
 }
 
-void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
-                                                FieldTypeSet* possible_types) {
+void PersonalDataManager::GetPossibleFieldTypes(
+    const string16& text,
+    FieldTypeSet* possible_types) const {
   string16 clean_info = StringToLowerASCII(CollapseWhitespace(text, false));
   if (clean_info.empty()) {
     possible_types->insert(EMPTY_TYPE);
@@ -585,7 +586,7 @@ void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
     profile->GetPossibleFieldTypes(clean_info, possible_types);
   }
 
-  for (ScopedVector<CreditCard>::iterator iter = credit_cards_.begin();
+  for (ScopedVector<CreditCard>::const_iterator iter = credit_cards_.begin();
        iter != credit_cards_.end(); ++iter) {
     const FormGroup* credit_card = *iter;
     if (!credit_card) {
@@ -600,6 +601,20 @@ void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
     possible_types->insert(UNKNOWN_TYPE);
 }
 
+void PersonalDataManager::GetAvailableFieldTypes(
+    FieldTypeSet* available_types) const {
+  const std::vector<AutofillProfile*>& profiles = this->profiles();
+  for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
+       iter != profiles.end(); ++iter) {
+    (*iter)->GetAvailableFieldTypes(available_types);
+  }
+
+  for (ScopedVector<CreditCard>::const_iterator iter = credit_cards_.begin();
+       iter != credit_cards_.end(); ++iter) {
+    (*iter)->GetAvailableFieldTypes(available_types);
+  }
+}
+
 bool PersonalDataManager::HasPassword() {
   return !password_hash_.empty();
 }
@@ -608,7 +623,7 @@ bool PersonalDataManager::IsDataLoaded() const {
   return is_data_loaded_;
 }
 
-const std::vector<AutofillProfile*>& PersonalDataManager::profiles() {
+const std::vector<AutofillProfile*>& PersonalDataManager::profiles() const {
   // |profile_| is NULL in AutofillManagerTest.
   bool auxiliary_profiles_enabled = profile_ ? profile_->GetPrefs()->GetBoolean(
       prefs::kAutofillAuxiliaryProfilesEnabled) : false;
@@ -630,11 +645,11 @@ const std::vector<AutofillProfile*>& PersonalDataManager::profiles() {
   return profiles_;
 }
 
-const std::vector<AutofillProfile*>& PersonalDataManager::web_profiles() {
+const std::vector<AutofillProfile*>& PersonalDataManager::web_profiles() const {
   return web_profiles_.get();
 }
 
-const std::vector<CreditCard*>& PersonalDataManager::credit_cards() {
+const std::vector<CreditCard*>& PersonalDataManager::credit_cards() const {
   return credit_cards_.get();
 }
 
@@ -763,7 +778,7 @@ void PersonalDataManager::LoadProfiles() {
 // Win and Linux implementations do nothing.  Mac implementation fills in the
 // contents of |auxiliary_profiles_|.
 #if !defined(OS_MACOSX)
-void PersonalDataManager::LoadAuxiliaryProfiles() {
+void PersonalDataManager::LoadAuxiliaryProfiles() const {
 }
 #endif
 

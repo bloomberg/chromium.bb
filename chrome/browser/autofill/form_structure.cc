@@ -41,6 +41,42 @@ const char kXMLElementField[] = "field";
 // The number of fillable fields necessary for a form to be fillable.
 const size_t kRequiredFillableFields = 3;
 
+// Helper for |EncodeUploadRequest()| that creates a bit field corresponding to
+// |available_field_types| and returns the hex representation as a string.
+std::string EncodeFieldTypes(const FieldTypeSet& available_field_types) {
+  // There are |MAX_VALID_FIELD_TYPE| different field types and 8 bits per byte,
+  // so we need ceil(MAX_VALID_FIELD_TYPE / 8) bytes to encode the bit field.
+  const size_t kNumBytes = (MAX_VALID_FIELD_TYPE + 0x7) / 8;
+
+  // Pack the types in |available_field_types| into |bit_field|.
+  std::vector<uint8> bit_field(kNumBytes, 0);
+  for (FieldTypeSet::const_iterator field_type = available_field_types.begin();
+       field_type != available_field_types.end();
+       ++field_type) {
+    // Set the appropriate bit in the field.  The bit we set is the one
+    // |field_type| % 8 from the left of the byte.
+    const size_t byte = *field_type / 8;
+    const size_t bit = 0x80 >> (*field_type % 8);
+    DCHECK(byte < bit_field.size());
+    bit_field[byte] |= bit;
+  }
+
+  // Discard any trailing zeroes.
+  // If there are no available types, we return the empty string.
+  size_t data_end = bit_field.size();
+  for (; data_end > 0 && !bit_field[data_end - 1]; --data_end) {
+  }
+
+  // Print all meaningfull bytes into a string.
+  std::string data_presence;
+  data_presence.reserve(data_end * 2 + 1);
+  for (size_t i = 0; i < data_end; ++i) {
+    base::StringAppendF(&data_presence, "%02x", bit_field[i]);
+  }
+
+  return data_presence;
+}
+
 }  // namespace
 
 FormStructure::FormStructure(const FormData& form)
@@ -99,14 +135,28 @@ void FormStructure::DetermineHeuristicTypes() {
   }
 }
 
-bool FormStructure::EncodeUploadRequest(bool autofill_used,
-                                        std::string* encoded_xml) const {
-  DCHECK(encoded_xml);
-  encoded_xml->clear();
-  bool autofillable = ShouldBeParsed(true);
-  DCHECK(autofillable);  // Caller should've checked for search pages.
-  if (!autofillable)
+bool FormStructure::EncodeUploadRequest(
+    const FieldTypeSet& available_field_types,
+    bool form_was_autofilled,
+    std::string* encoded_xml) const {
+  if (!ShouldBeParsed(true)) {
+    NOTREACHED();  // Caller should've checked for search pages.
     return false;
+  }
+
+  // Verify that |available_field_types| agrees with the possible field types we
+  // are uploading.
+  for (std::vector<AutofillField*>::const_iterator field = begin();
+       field != end();
+       ++field) {
+    for (FieldTypeSet::const_iterator type = (*field)->possible_types().begin();
+         type != (*field)->possible_types().end();
+         ++type) {
+      DCHECK(*type == UNKNOWN_TYPE ||
+             *type == EMPTY_TYPE ||
+             available_field_types.count(*type));
+    }
+  }
 
   // Set up the <autofillupload> element and its attributes.
   buzz::XmlElement autofill_request_xml(
@@ -116,14 +166,15 @@ bool FormStructure::EncodeUploadRequest(bool autofill_used,
   autofill_request_xml.SetAttr(buzz::QName(kAttributeFormSignature),
                                FormSignature());
   autofill_request_xml.SetAttr(buzz::QName(kAttributeAutofillUsed),
-                               autofill_used ? "true" : "false");
+                               form_was_autofilled ? "true" : "false");
   autofill_request_xml.SetAttr(buzz::QName(kAttributeDataPresent),
-                               ConvertPresenceBitsToString().c_str());
+                               EncodeFieldTypes(available_field_types).c_str());
 
   if (!EncodeFormRequest(FormStructure::UPLOAD, &autofill_request_xml))
     return false;  // Malformed form, skip it.
 
   // Obtain the XML structure as a string.
+  encoded_xml->clear();
   *encoded_xml = kXMLDeclaration;
   *encoded_xml += autofill_request_xml.Str().c_str();
 
@@ -540,42 +591,3 @@ bool FormStructure::EncodeFormRequest(
   }
   return true;
 }
-
-std::string FormStructure::ConvertPresenceBitsToString() const {
-  std::vector<uint8> presence_bitfield;
-  // Determine all of the field types that were autofilled. Pack bits into
-  // |presence_bitfield|. The necessary size for |presence_bitfield| is
-  // ceil((MAX_VALID_FIELD_TYPE + 7) / 8) bytes (uint8).
-  presence_bitfield.resize((MAX_VALID_FIELD_TYPE + 0x7) / 8);
-  for (size_t i = 0; i < presence_bitfield.size(); ++i)
-    presence_bitfield[i] = 0;
-
-  for (size_t i = 0; i < field_count(); ++i) {
-    const AutofillField* field = fields_[i];
-    FieldTypeSet types = field->possible_types();
-    // |types| could be empty in unit-tests only.
-    for (FieldTypeSet::iterator field_type = types.begin();
-         field_type != types.end(); ++field_type) {
-      DCHECK(presence_bitfield.size() > (static_cast<size_t>(*field_type) / 8));
-      // Set bit in the bitfield: byte |field_type| / 8, bit in byte
-      // |field_type| % 8 from the left.
-      presence_bitfield[*field_type / 8] |= (0x80 >> (*field_type % 8));
-    }
-  }
-
-  std::string data_presence;
-  data_presence.reserve(presence_bitfield.size() * 2 + 1);
-
-  // Skip trailing zeroes. If all mask is 0 - return empty string.
-  size_t data_end = presence_bitfield.size();
-  for (; data_end > 0 && !presence_bitfield[data_end - 1]; --data_end) {
-  }
-
-  // Print all meaningfull bytes into the string.
-  for (size_t i = 0; i < data_end; ++i) {
-    base::StringAppendF(&data_presence, "%02x", presence_bitfield[i]);
-  }
-
-  return data_presence;
-}
-

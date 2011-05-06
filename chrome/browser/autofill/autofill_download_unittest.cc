@@ -10,6 +10,7 @@
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
+#include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/test/test_url_request_context_getter.h"
@@ -215,10 +216,12 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   helper.download_manager.SetNegativeUploadRate(1.0);
   // Request with id 1.
   EXPECT_TRUE(helper.download_manager.StartUploadRequest(*(form_structures[0]),
-                                                         true));
+                                                         true,
+                                                         FieldTypeSet()));
   // Request with id 2.
   EXPECT_TRUE(helper.download_manager.StartUploadRequest(*(form_structures[1]),
-                                                         false));
+                                                         false,
+                                                         FieldTypeSet()));
 
   const char *responses[] = {
     "<autofillqueryresponse>"
@@ -290,9 +293,11 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   helper.download_manager.SetNegativeUploadRate(0.0);
   // No actual requests for the next two calls, as we set upload rate to 0%.
   EXPECT_FALSE(helper.download_manager.StartUploadRequest(*(form_structures[0]),
-                                                         true));
+                                                          true,
+                                                          FieldTypeSet()));
   EXPECT_FALSE(helper.download_manager.StartUploadRequest(*(form_structures[1]),
-                                                         false));
+                                                          false,
+                                                          FieldTypeSet()));
   fetcher = factory.GetFetcherByID(3);
   EXPECT_EQ(NULL, fetcher);
 
@@ -338,7 +343,8 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   helper.download_manager.SetPositiveUploadRate(1.0);
   // Request with id 4.
   EXPECT_TRUE(helper.download_manager.StartUploadRequest(*(form_structures[0]),
-              true));
+                                                         true,
+                                                         FieldTypeSet()));
   fetcher = factory.GetFetcherByID(4);
   ASSERT_TRUE(fetcher);
   fetcher->set_backoff_delay(
@@ -354,7 +360,8 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
 
   // Upload requests should be ignored for the next 10 seconds.
   EXPECT_FALSE(helper.download_manager.StartUploadRequest(*(form_structures[0]),
-              true));
+                                                          true,
+                                                          FieldTypeSet()));
   fetcher = factory.GetFetcherByID(5);
   EXPECT_EQ(NULL, fetcher);
 

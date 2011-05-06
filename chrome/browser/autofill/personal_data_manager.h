@@ -121,7 +121,10 @@ class PersonalDataManager
   // Gets the possible field types for the given text, determined by matching
   // the text with all known personal information and returning matching types.
   void GetPossibleFieldTypes(const string16& text,
-                             FieldTypeSet* possible_types);
+                             FieldTypeSet* possible_types) const;
+
+  // Gets the field types availabe in the stored address and credit card data.
+  void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
 
   // Returns true if the credit card information is stored with a password.
   bool HasPassword();
@@ -133,9 +136,9 @@ class PersonalDataManager
   // lifetime is until the web database is updated with new profile and credit
   // card information, respectively.  |profiles()| returns both web and
   // auxiliary profiles.  |web_profiles()| returns only web profiles.
-  const std::vector<AutofillProfile*>& profiles();
-  virtual const std::vector<AutofillProfile*>& web_profiles();
-  virtual const std::vector<CreditCard*>& credit_cards();
+  const std::vector<AutofillProfile*>& profiles() const;
+  virtual const std::vector<AutofillProfile*>& web_profiles() const;
+  virtual const std::vector<CreditCard*>& credit_cards() const;
 
   // Re-loads profiles and credit cards from the WebDatabase asynchronously.
   // In the general case, this is a no-op and will re-create the same
@@ -177,7 +180,7 @@ class PersonalDataManager
   virtual void LoadProfiles();
 
   // Loads the auxiliary profiles.  Currently Mac only.
-  void LoadAuxiliaryProfiles();
+  void LoadAuxiliaryProfiles() const;
 
   // Loads the saved credit cards from the web database.
   virtual void LoadCreditCards();
@@ -223,11 +226,11 @@ class PersonalDataManager
   ScopedVector<AutofillProfile> web_profiles_;
 
   // Auxiliary profiles.
-  ScopedVector<AutofillProfile> auxiliary_profiles_;
+  mutable ScopedVector<AutofillProfile> auxiliary_profiles_;
 
   // Storage for combined web and auxiliary profiles.  Contents are weak
   // references.  Lifetime managed by |web_profiles_| and |auxiliary_profiles_|.
-  std::vector<AutofillProfile*> profiles_;
+  mutable std::vector<AutofillProfile*> profiles_;
 
   // The loaded credit cards.
   ScopedVector<CreditCard> credit_cards_;

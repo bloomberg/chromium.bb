@@ -1384,12 +1384,25 @@ TEST(FormStructureTest, EncodeUploadRequest) {
   for (size_t i = 0; i < form_structure->field_count(); ++i)
     form_structure->set_possible_types(i, possible_field_types[i]);
 
+  FieldTypeSet available_field_types;
+  available_field_types.insert(NAME_FIRST);
+  available_field_types.insert(NAME_LAST);
+  available_field_types.insert(ADDRESS_HOME_LINE1);
+  available_field_types.insert(ADDRESS_HOME_LINE2);
+  available_field_types.insert(ADDRESS_HOME_COUNTRY);
+  available_field_types.insert(ADDRESS_BILLING_LINE1);
+  available_field_types.insert(ADDRESS_BILLING_LINE2);
+  available_field_types.insert(EMAIL_ADDRESS);
+  available_field_types.insert(PHONE_HOME_WHOLE_NUMBER);
+  available_field_types.insert(PHONE_FAX_WHOLE_NUMBER);
+
   std::string encoded_xml;
-  EXPECT_TRUE(form_structure->EncodeUploadRequest(false, &encoded_xml));
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
+                                                  &encoded_xml));
   EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\" "
             "formsignature=\"7641728017676399335\" autofillused=\"false\" "
-            "datapresent=\"1442008008\">"
+            "datapresent=\"144200830e\">"
             "<field signature=\"3763331450\" autofilltype=\"3\"/>"
             "<field signature=\"3494530716\" autofilltype=\"5\"/>"
             "<field signature=\"1029417091\" autofilltype=\"9\"/>"
@@ -1398,11 +1411,12 @@ TEST(FormStructureTest, EncodeUploadRequest) {
             "<field signature=\"1876771436\" autofilltype=\"24\"/>"
             "</autofillupload>",
             encoded_xml);
-  EXPECT_TRUE(form_structure->EncodeUploadRequest(true, &encoded_xml));
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, true,
+                                                  &encoded_xml));
   EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\" "
             "formsignature=\"7641728017676399335\" autofillused=\"true\" "
-            "datapresent=\"1442008008\">"
+            "datapresent=\"144200830e\">"
             "<field signature=\"3763331450\" autofilltype=\"3\"/>"
             "<field signature=\"3494530716\" autofilltype=\"5\"/>"
             "<field signature=\"1029417091\" autofilltype=\"9\"/>"
@@ -1426,11 +1440,14 @@ TEST(FormStructureTest, EncodeUploadRequest) {
     possible_field_types.back().insert(ADDRESS_BILLING_LINE1);
     possible_field_types.back().insert(ADDRESS_BILLING_LINE2);
   }
+
   form_structure.reset(new FormStructure(form));
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i)
     form_structure->set_possible_types(i, possible_field_types[i]);
-  EXPECT_TRUE(form_structure->EncodeUploadRequest(false, &encoded_xml));
+
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
+                                                  &encoded_xml));
   EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\" "
             "formsignature=\"12226592129574322128\" autofillused=\"false\" "
@@ -1470,15 +1487,13 @@ TEST(FormStructureTest, EncodeUploadRequest) {
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i)
     form_structure->set_possible_types(i, possible_field_types[i]);
-  EXPECT_FALSE(form_structure->EncodeUploadRequest(false, &encoded_xml));
-  EXPECT_EQ("", encoded_xml);
+  EXPECT_FALSE(form_structure->EncodeUploadRequest(available_field_types, false,
+                                                   &encoded_xml));
 }
 
+// Check that we compute the "datapresent" string correctly for the given
+// |available_types|.
 TEST(FormStructureTest, CheckDataPresence) {
-  // Checks bits set in the datapresence field: for each type in the form
-  // relevant bit in datapresence has to be set.
-  scoped_ptr<FormStructure> form_structure;
-  std::vector<FieldTypeSet> possible_field_types;
   FormData form;
   form.method = ASCIIToUTF16("post");
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
@@ -1487,75 +1502,273 @@ TEST(FormStructureTest, CheckDataPresence) {
                         ASCIIToUTF16("text"),
                         0,
                         false));
-  possible_field_types.push_back(FieldTypeSet());
-  possible_field_types.back().insert(NAME_FIRST);
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
                         ASCIIToUTF16("last"),
                         string16(),
                         ASCIIToUTF16("text"),
                         0,
                         false));
-  possible_field_types.push_back(FieldTypeSet());
-  possible_field_types.back().insert(NAME_LAST);
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("email"),
                         ASCIIToUTF16("email"),
                         string16(),
                         ASCIIToUTF16("text"),
                         0,
                         false));
-  possible_field_types.push_back(FieldTypeSet());
-  possible_field_types.back().insert(EMAIL_ADDRESS);
-  form_structure.reset(new FormStructure(form));
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
-    form_structure->set_possible_types(i, possible_field_types[i]);
+
+  FormStructure form_structure(form);
+
+  FieldTypeSet unknown_type;
+  unknown_type.insert(UNKNOWN_TYPE);
+  for (size_t i = 0; i < form_structure.field_count(); ++i)
+    form_structure.set_possible_types(i, unknown_type);
+
+  // No available types.
+  // datapresent should be "" == trimmmed(0x0000000000000000) ==
+  //     0b0000000000000000000000000000000000000000000000000000000000000000
+  FieldTypeSet available_field_types;
+
   std::string encoded_xml;
-  EXPECT_TRUE(form_structure->EncodeUploadRequest(false, &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillupload "
-            "clientversion=\"6.1.1715.1442/en (GGLL)\" formsignature=\""
-            "6402244543831589061\" autofillused=\"false\" "
-            "datapresent=\"1440\"><field signature=\"1089846351\" ",
-            encoded_xml.substr(0, 200));
+  EXPECT_TRUE(form_structure.EncodeUploadRequest(available_field_types, false,
+                                                 &encoded_xml));
+  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"6402244543831589061\" autofillused=\"false\""
+            " datapresent=\"\">"
+            "<field signature=\"1089846351\" autofilltype=\"1\"/>"
+            "<field signature=\"2404144663\" autofilltype=\"1\"/>"
+            "<field signature=\"420638584\" autofilltype=\"1\"/>"
+            "</autofillupload>",
+            encoded_xml);
 
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Address"),
-                        ASCIIToUTF16("address"),
-                        string16(),
-                        ASCIIToUTF16("text"),
-                        0,
-                        false));
-  possible_field_types.push_back(FieldTypeSet());
-  possible_field_types.back().insert(ADDRESS_HOME_LINE1);
-  form_structure.reset(new FormStructure(form));
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
-    form_structure->set_possible_types(i, possible_field_types[i]);
-  EXPECT_TRUE(form_structure->EncodeUploadRequest(false, &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillupload "
-            "clientversion=\"6.1.1715.1442/en (GGLL)\" formsignature=\""
-            "11817937699000629499\" autofillused=\"false\" "
-            "datapresent=\"14400002\"><field signature=\"1089846",
-            encoded_xml.substr(0, 200));
+  // Only a few types available.
+  // datapresent should be "1540000240" == trimmmed(0x1540000240000000) ==
+  //     0b0001010101000000000000000000001001000000000000000000000000000000
+  // The set bits are:
+  //  3 == NAME_FIRST
+  //  5 == NAME_LAST
+  //  7 == NAME_FULL
+  //  9 == EMAIL_ADDRESS
+  // 30 == ADDRESS_HOME_LINE1
+  // 33 == ADDRESS_HOME_CITY
+  available_field_types.clear();
+  available_field_types.insert(NAME_FIRST);
+  available_field_types.insert(NAME_LAST);
+  available_field_types.insert(NAME_FULL);
+  available_field_types.insert(EMAIL_ADDRESS);
+  available_field_types.insert(ADDRESS_HOME_LINE1);
+  available_field_types.insert(ADDRESS_HOME_CITY);
 
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("F4"),
-                        ASCIIToUTF16("f4"),
-                        string16(),
-                        ASCIIToUTF16("text"),
-                        0,
-                        false));
-  possible_field_types.push_back(FieldTypeSet());
-  possible_field_types.back().insert(CREDIT_CARD_TYPE);
-  form_structure.reset(new FormStructure(form));
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
-    form_structure->set_possible_types(i, possible_field_types[i]);
-  EXPECT_TRUE(form_structure->EncodeUploadRequest(false, &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillupload "
-            "clientversion=\"6.1.1715.1442/en (GGLL)\" formsignature=\""
-            "15126663683491865216\" autofillused=\"false\" "
-            "datapresent=\"1440000200000020\"><field signature=",
-            encoded_xml.substr(0, 200));
+  EXPECT_TRUE(form_structure.EncodeUploadRequest(available_field_types, false,
+                                                 &encoded_xml));
+  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"6402244543831589061\" autofillused=\"false\""
+            " datapresent=\"1540000240\">"
+            "<field signature=\"1089846351\" autofilltype=\"1\"/>"
+            "<field signature=\"2404144663\" autofilltype=\"1\"/>"
+            "<field signature=\"420638584\" autofilltype=\"1\"/>"
+            "</autofillupload>",
+            encoded_xml);
+
+  // All supported non-credit card types available.
+  // datapresent should be "1f7e0f8378000008" == trimmmed(0x1f7e0f8378000008) ==
+  //     0b0001111101111110000011111000001101111000000000000000000000001000
+  // The set bits are:
+  //  3 == NAME_FIRST
+  //  4 == NAME_MIDDLE
+  //  5 == NAME_LAST
+  //  6 == NAME_MIDDLE_INITIAL
+  //  7 == NAME_FULL
+  //  9 == EMAIL_ADDRESS
+  // 10 == PHONE_HOME_NUMBER,
+  // 11 == PHONE_HOME_CITY_CODE,
+  // 12 == PHONE_HOME_COUNTRY_CODE,
+  // 13 == PHONE_HOME_CITY_AND_NUMBER,
+  // 14 == PHONE_HOME_WHOLE_NUMBER,
+  // 20 == PHONE_FAX_NUMBER,
+  // 21 == PHONE_FAX_CITY_CODE,
+  // 22 == PHONE_FAX_COUNTRY_CODE,
+  // 23 == PHONE_FAX_CITY_AND_NUMBER,
+  // 24 == PHONE_FAX_WHOLE_NUMBER,
+  // 30 == ADDRESS_HOME_LINE1
+  // 31 == ADDRESS_HOME_LINE2
+  // 33 == ADDRESS_HOME_CITY
+  // 34 == ADDRESS_HOME_STATE
+  // 35 == ADDRESS_HOME_ZIP
+  // 36 == ADDRESS_HOME_COUNTRY
+  // 60 == COMPANY_NAME
+  available_field_types.clear();
+  available_field_types.insert(NAME_FIRST);
+  available_field_types.insert(NAME_MIDDLE);
+  available_field_types.insert(NAME_LAST);
+  available_field_types.insert(NAME_MIDDLE_INITIAL);
+  available_field_types.insert(NAME_FULL);
+  available_field_types.insert(EMAIL_ADDRESS);
+  available_field_types.insert(PHONE_HOME_NUMBER);
+  available_field_types.insert(PHONE_HOME_CITY_CODE);
+  available_field_types.insert(PHONE_HOME_COUNTRY_CODE);
+  available_field_types.insert(PHONE_HOME_CITY_AND_NUMBER);
+  available_field_types.insert(PHONE_HOME_WHOLE_NUMBER);
+  available_field_types.insert(PHONE_FAX_NUMBER);
+  available_field_types.insert(PHONE_FAX_CITY_CODE);
+  available_field_types.insert(PHONE_FAX_COUNTRY_CODE);
+  available_field_types.insert(PHONE_FAX_CITY_AND_NUMBER);
+  available_field_types.insert(PHONE_FAX_WHOLE_NUMBER);
+  available_field_types.insert(ADDRESS_HOME_LINE1);
+  available_field_types.insert(ADDRESS_HOME_LINE2);
+  available_field_types.insert(ADDRESS_HOME_CITY);
+  available_field_types.insert(ADDRESS_HOME_STATE);
+  available_field_types.insert(ADDRESS_HOME_ZIP);
+  available_field_types.insert(ADDRESS_HOME_COUNTRY);
+  available_field_types.insert(COMPANY_NAME);
+
+  EXPECT_TRUE(form_structure.EncodeUploadRequest(available_field_types, false,
+                                                 &encoded_xml));
+  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"6402244543831589061\" autofillused=\"false\""
+            " datapresent=\"1f7e0f8378000008\">"
+            "<field signature=\"1089846351\" autofilltype=\"1\"/>"
+            "<field signature=\"2404144663\" autofilltype=\"1\"/>"
+            "<field signature=\"420638584\" autofilltype=\"1\"/>"
+            "</autofillupload>",
+            encoded_xml);
+
+  // All supported credit card types available.
+  // datapresent should be "0000000000001fc0" == trimmmed(0x0000000000001fc0) ==
+  //     0b0000000000000000000000000000000000000000000000000001111111000000
+  // The set bits are:
+  // 51 == CREDIT_CARD_NAME
+  // 52 == CREDIT_CARD_NUMBER
+  // 53 == CREDIT_CARD_EXP_MONTH
+  // 54 == CREDIT_CARD_EXP_2_DIGIT_YEAR
+  // 55 == CREDIT_CARD_EXP_4_DIGIT_YEAR
+  // 56 == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR
+  // 57 == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR
+  available_field_types.clear();
+  available_field_types.insert(CREDIT_CARD_NAME);
+  available_field_types.insert(CREDIT_CARD_NUMBER);
+  available_field_types.insert(CREDIT_CARD_EXP_MONTH);
+  available_field_types.insert(CREDIT_CARD_EXP_2_DIGIT_YEAR);
+  available_field_types.insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+  available_field_types.insert(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
+  available_field_types.insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
+
+  EXPECT_TRUE(form_structure.EncodeUploadRequest(available_field_types, false,
+                                                 &encoded_xml));
+  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"6402244543831589061\" autofillused=\"false\""
+            " datapresent=\"0000000000001fc0\">"
+            "<field signature=\"1089846351\" autofilltype=\"1\"/>"
+            "<field signature=\"2404144663\" autofilltype=\"1\"/>"
+            "<field signature=\"420638584\" autofilltype=\"1\"/>"
+            "</autofillupload>",
+            encoded_xml);
+
+  // All supported types available.
+  // datapresent should be "1f7e0f8378001fc8" == trimmmed(0x1f7e0f8378001fc8) ==
+  //     0b0001111101111110000011111000001101111000000000000001111111001000
+  // The set bits are:
+  //  3 == NAME_FIRST
+  //  4 == NAME_MIDDLE
+  //  5 == NAME_LAST
+  //  6 == NAME_MIDDLE_INITIAL
+  //  7 == NAME_FULL
+  //  9 == EMAIL_ADDRESS
+  // 10 == PHONE_HOME_NUMBER,
+  // 11 == PHONE_HOME_CITY_CODE,
+  // 12 == PHONE_HOME_COUNTRY_CODE,
+  // 13 == PHONE_HOME_CITY_AND_NUMBER,
+  // 14 == PHONE_HOME_WHOLE_NUMBER,
+  // 20 == PHONE_FAX_NUMBER,
+  // 21 == PHONE_FAX_CITY_CODE,
+  // 22 == PHONE_FAX_COUNTRY_CODE,
+  // 23 == PHONE_FAX_CITY_AND_NUMBER,
+  // 24 == PHONE_FAX_WHOLE_NUMBER,
+  // 30 == ADDRESS_HOME_LINE1
+  // 31 == ADDRESS_HOME_LINE2
+  // 33 == ADDRESS_HOME_CITY
+  // 34 == ADDRESS_HOME_STATE
+  // 35 == ADDRESS_HOME_ZIP
+  // 36 == ADDRESS_HOME_COUNTRY
+  // 51 == CREDIT_CARD_NAME
+  // 52 == CREDIT_CARD_NUMBER
+  // 53 == CREDIT_CARD_EXP_MONTH
+  // 54 == CREDIT_CARD_EXP_2_DIGIT_YEAR
+  // 55 == CREDIT_CARD_EXP_4_DIGIT_YEAR
+  // 56 == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR
+  // 57 == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR
+  // 60 == COMPANY_NAME
+  available_field_types.clear();
+  available_field_types.insert(NAME_FIRST);
+  available_field_types.insert(NAME_MIDDLE);
+  available_field_types.insert(NAME_LAST);
+  available_field_types.insert(NAME_MIDDLE_INITIAL);
+  available_field_types.insert(NAME_FULL);
+  available_field_types.insert(EMAIL_ADDRESS);
+  available_field_types.insert(PHONE_HOME_NUMBER);
+  available_field_types.insert(PHONE_HOME_CITY_CODE);
+  available_field_types.insert(PHONE_HOME_COUNTRY_CODE);
+  available_field_types.insert(PHONE_HOME_CITY_AND_NUMBER);
+  available_field_types.insert(PHONE_HOME_WHOLE_NUMBER);
+  available_field_types.insert(PHONE_FAX_NUMBER);
+  available_field_types.insert(PHONE_FAX_CITY_CODE);
+  available_field_types.insert(PHONE_FAX_COUNTRY_CODE);
+  available_field_types.insert(PHONE_FAX_CITY_AND_NUMBER);
+  available_field_types.insert(PHONE_FAX_WHOLE_NUMBER);
+  available_field_types.insert(ADDRESS_HOME_LINE1);
+  available_field_types.insert(ADDRESS_HOME_LINE2);
+  available_field_types.insert(ADDRESS_HOME_CITY);
+  available_field_types.insert(ADDRESS_HOME_STATE);
+  available_field_types.insert(ADDRESS_HOME_ZIP);
+  available_field_types.insert(ADDRESS_HOME_COUNTRY);
+  available_field_types.insert(CREDIT_CARD_NAME);
+  available_field_types.insert(CREDIT_CARD_NUMBER);
+  available_field_types.insert(CREDIT_CARD_EXP_MONTH);
+  available_field_types.insert(CREDIT_CARD_EXP_2_DIGIT_YEAR);
+  available_field_types.insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+  available_field_types.insert(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
+  available_field_types.insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
+  available_field_types.insert(COMPANY_NAME);
+
+  EXPECT_TRUE(form_structure.EncodeUploadRequest(available_field_types, false,
+                                                 &encoded_xml));
+  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"6402244543831589061\" autofillused=\"false\""
+            " datapresent=\"1f7e0f8378001fc8\">"
+            "<field signature=\"1089846351\" autofilltype=\"1\"/>"
+            "<field signature=\"2404144663\" autofilltype=\"1\"/>"
+            "<field signature=\"420638584\" autofilltype=\"1\"/>"
+            "</autofillupload>",
+            encoded_xml);
 }
 
 TEST(FormStructureTest, CheckMultipleTypes) {
-  // Check that multiple types for the field are processed correctly, both in
-  // datapresence and in actual field data.
+  // Throughout this test, datapresent should be
+  // 0x1440000360000008 ==
+  //     0b0001010001000000000000000000001101100000000000000000000000001000
+  // The set bits are:
+  //  3 == NAME_FIRST
+  //  5 == NAME_LAST
+  //  9 == EMAIL_ADDRESS
+  // 30 == ADDRESS_HOME_LINE1
+  // 31 == ADDRESS_HOME_LINE2
+  // 33 == ADDRESS_HOME_CITY
+  // 34 == ADDRESS_HOME_STATE
+  // 60 == COMPANY_NAME
+  FieldTypeSet available_field_types;
+  available_field_types.insert(NAME_FIRST);
+  available_field_types.insert(NAME_LAST);
+  available_field_types.insert(EMAIL_ADDRESS);
+  available_field_types.insert(ADDRESS_HOME_LINE1);
+  available_field_types.insert(ADDRESS_HOME_LINE2);
+  available_field_types.insert(ADDRESS_HOME_CITY);
+  available_field_types.insert(ADDRESS_HOME_STATE);
+  available_field_types.insert(COMPANY_NAME);
+
+  // Check that multiple types for the field are processed correctly.
   scoped_ptr<FormStructure> form_structure;
   std::vector<FieldTypeSet> possible_field_types;
   FormData form;
@@ -1593,87 +1806,77 @@ TEST(FormStructureTest, CheckMultipleTypes) {
   possible_field_types.push_back(FieldTypeSet());
   possible_field_types.back().insert(ADDRESS_HOME_LINE1);
   form_structure.reset(new FormStructure(form));
+
   for (size_t i = 0; i < form_structure->field_count(); ++i)
     form_structure->set_possible_types(i, possible_field_types[i]);
   std::string encoded_xml;
+
   // Now we matched both fields singularly.
-  EXPECT_TRUE(form_structure->EncodeUploadRequest(false, &encoded_xml));
-  // datapresent==14400002==00010100010000000000000000000010b set bits are:
-  // #3 == NAME_FIRST
-  // #5 == NAME_LAST
-  // #9 == EMAIL_ADDRESS
-  // #30 == ADDRESS_HOME_LINE1
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillupload "
-            "clientversion=\"6.1.1715.1442/en (GGLL)\" formsignature=\""
-            "18062476096658145866\" autofillused=\"false\" datapresent="
-            "\"14400002\"><field signature=\"420638584\" autofilltype="
-            "\"9\"/><field signature=\"1089846351\" autofilltype=\"3\"/><field "
-            "signature=\"2404144663\" autofilltype=\"5\"/><field signature="
-            "\"509334676\" autofilltype=\"30\"/></autofillupload>",
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
+                                                  &encoded_xml));
+  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"18062476096658145866\" autofillused=\"false\""
+            " datapresent=\"1440000360000008\">"
+            "<field signature=\"420638584\" autofilltype=\"9\"/>"
+            "<field signature=\"1089846351\" autofilltype=\"3\"/>"
+            "<field signature=\"2404144663\" autofilltype=\"5\"/>"
+            "<field signature=\"509334676\" autofilltype=\"30\"/>"
+            "</autofillupload>",
             encoded_xml);
   // Match third field as both first and last.
   possible_field_types[2].insert(NAME_FIRST);
   form_structure->set_possible_types(2, possible_field_types[2]);
-  EXPECT_TRUE(form_structure->EncodeUploadRequest(false, &encoded_xml));
-  // datapresent==14400002==00010100010000000000000000000010b set bits are:
-  // #3 == NAME_FIRST
-  // #5 == NAME_LAST
-  // #9 == EMAIL_ADDRESS
-  // #30 == ADDRESS_HOME_LINE1
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillupload "
-            "clientversion=\"6.1.1715.1442/en (GGLL)\" formsignature=\""
-            "18062476096658145866\" autofillused=\"false\" datapresent="
-            "\"14400002\"><field signature=\"420638584\" autofilltype="
-            "\"9\"/><field signature=\"1089846351\" autofilltype=\"3\"/><field "
-            "signature=\"2404144663\" autofilltype=\"3\"/><field "
-            "signature=\"2404144663\" autofilltype=\"5\"/><field signature="
-            "\"509334676\" autofilltype=\"30\"/></autofillupload>",
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
+                                                  &encoded_xml));
+  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"18062476096658145866\" autofillused=\"false\""
+            " datapresent=\"1440000360000008\">"
+            "<field signature=\"420638584\" autofilltype=\"9\"/>"
+            "<field signature=\"1089846351\" autofilltype=\"3\"/>"
+            "<field signature=\"2404144663\" autofilltype=\"3\"/>"
+            "<field signature=\"2404144663\" autofilltype=\"5\"/>"
+            "<field signature=\"509334676\" autofilltype=\"30\"/>"
+            "</autofillupload>",
             encoded_xml);
-  possible_field_types[3].insert(ADDRESS_BILLING_LINE1);
+  possible_field_types[3].insert(ADDRESS_HOME_LINE2);
   form_structure->set_possible_types(
       form_structure->field_count() - 1,
       possible_field_types[form_structure->field_count() - 1]);
-  EXPECT_TRUE(form_structure->EncodeUploadRequest(false, &encoded_xml));
-  // datapresent==1440000204==0001010001000000000000000000001000000100b set bits
-  // are:
-  // #3 == NAME_FIRST
-  // #5 == NAME_LAST
-  // #9 == EMAIL_ADDRESS
-  // #30 == ADDRESS_HOME_LINE1
-  // #37 == ADDRESS_BILLING_LINE1
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillupload "
-            "clientversion=\"6.1.1715.1442/en (GGLL)\" formsignature=\""
-            "18062476096658145866\" autofillused=\"false\" datapresent="
-            "\"1440000204\"><field signature=\"420638584\" autofilltype="
-            "\"9\"/><field signature=\"1089846351\" autofilltype=\"3\"/><field "
-            "signature=\"2404144663\" autofilltype=\"3\"/><field "
-            "signature=\"2404144663\" autofilltype=\"5\"/><field signature="
-            "\"509334676\" autofilltype=\"30\"/><field signature=\"509334676\" "
-            "autofilltype=\"37\"/></autofillupload>",
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
+                                                  &encoded_xml));
+  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"18062476096658145866\" autofillused=\"false\""
+            " datapresent=\"1440000360000008\">"
+            "<field signature=\"420638584\" autofilltype=\"9\"/>"
+            "<field signature=\"1089846351\" autofilltype=\"3\"/>"
+            "<field signature=\"2404144663\" autofilltype=\"3\"/>"
+            "<field signature=\"2404144663\" autofilltype=\"5\"/>"
+            "<field signature=\"509334676\" autofilltype=\"30\"/>"
+            "<field signature=\"509334676\" autofilltype=\"31\"/>"
+            "</autofillupload>",
             encoded_xml);
   possible_field_types[3].clear();
   possible_field_types[3].insert(ADDRESS_HOME_LINE1);
-  possible_field_types[3].insert(ADDRESS_BILLING_LINE2);
+  possible_field_types[3].insert(COMPANY_NAME);
   form_structure->set_possible_types(
       form_structure->field_count() - 1,
       possible_field_types[form_structure->field_count() - 1]);
-  EXPECT_TRUE(form_structure->EncodeUploadRequest(false, &encoded_xml));
-  // datapresent==1440000202==0001010001000000000000000000001000000010b set bits
-  // are:
-  // #3 == NAME_FIRST
-  // #5 == NAME_LAST
-  // #9 == EMAIL_ADDRESS
-  // #30 == ADDRESS_HOME_LINE1
-  // #38 == ADDRESS_BILLING_LINE2
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillupload "
-            "clientversion=\"6.1.1715.1442/en (GGLL)\" formsignature=\""
-            "18062476096658145866\" autofillused=\"false\" datapresent="
-            "\"1440000202\"><field signature=\"420638584\" autofilltype="
-            "\"9\"/><field signature=\"1089846351\" autofilltype=\"3\"/><field "
-            "signature=\"2404144663\" autofilltype=\"3\"/><field "
-            "signature=\"2404144663\" autofilltype=\"5\"/><field signature="
-            "\"509334676\" autofilltype=\"30\"/><field signature=\"509334676\" "
-            "autofilltype=\"38\"/></autofillupload>",
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
+                                                  &encoded_xml));
+  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"18062476096658145866\" autofillused=\"false\""
+            " datapresent=\"1440000360000008\">"
+            "<field signature=\"420638584\" autofilltype=\"9\"/>"
+            "<field signature=\"1089846351\" autofilltype=\"3\"/>"
+            "<field signature=\"2404144663\" autofilltype=\"3\"/>"
+            "<field signature=\"2404144663\" autofilltype=\"5\"/>"
+            "<field signature=\"509334676\" autofilltype=\"30\"/>"
+            "<field signature=\"509334676\" autofilltype=\"60\"/>"
+            "</autofillupload>",
             encoded_xml);
 }
 

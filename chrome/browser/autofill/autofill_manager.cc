@@ -57,6 +57,8 @@ namespace {
 const double kAutofillPositiveUploadRateDefaultValue = 0.20;
 const double kAutofillNegativeUploadRateDefaultValue = 0.20;
 
+const size_t kMaxRecentFormSignaturesToRemember = 3;
+
 const string16::value_type kCreditCardPrefix[] = {'*', 0};
 
 // Removes duplicate suggestions whilst preserving their original order.
@@ -561,7 +563,12 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
     // proceed to the next |result| field, and the next |form_structure|.
     ++i;
   }
-  autofilled_forms_signatures_.push_front(form_structure->FormSignature());
+
+  autofilled_form_signatures_.push_front(form_structure->FormSignature());
+  // Only remember the last few forms that we've seen, both to avoid false
+  // positives and to avoid wasting memory.
+  if (autofilled_form_signatures_.size() > kMaxRecentFormSignaturesToRemember)
+    autofilled_form_signatures_.pop_back();
 
   host->Send(new AutofillMsg_FormDataFilled(
       host->routing_id(), query_id, result));
@@ -642,25 +649,24 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
 }
 
 void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
-  if (!disable_download_manager_requests_) {
-    bool was_autofilled = false;
-    // Check if the form among last 3 forms that were auto-filled.
-    // Clear older signatures.
-    std::list<std::string>::iterator it;
-    int total_form_checked = 0;
-    for (it = autofilled_forms_signatures_.begin();
-         it != autofilled_forms_signatures_.end() && total_form_checked < 3;
-         ++it, ++total_form_checked) {
-      if (*it == submitted_form.FormSignature())
-        was_autofilled = true;
-    }
-    // Remove outdated form signatures.
-    if (total_form_checked == 3 && it != autofilled_forms_signatures_.end()) {
-      autofilled_forms_signatures_.erase(it,
-                                         autofilled_forms_signatures_.end());
-    }
-    download_manager_.StartUploadRequest(submitted_form, was_autofilled);
+  if (disable_download_manager_requests_)
+    return;
+
+  // Check if the form is among the forms that were recently auto-filled.
+  bool was_autofilled = false;
+  for (std::list<std::string>::const_iterator it =
+           autofilled_form_signatures_.begin();
+       it != autofilled_form_signatures_.end() && !was_autofilled;
+       ++it) {
+    if (*it == submitted_form.FormSignature())
+      was_autofilled = true;
   }
+
+  FieldTypeSet available_types;
+  personal_data_->GetAvailableFieldTypes(&available_types);
+
+  download_manager_.StartUploadRequest(submitted_form, was_autofilled,
+                                       available_types);
 }
 
 void AutofillManager::Reset() {
