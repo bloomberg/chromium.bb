@@ -562,6 +562,19 @@ class PpbInstanceRpcClient {
   void operator=(const PpbInstanceRpcClient);
 };  // class PpbInstanceRpcClient
 
+class PpbMessagingRpcClient {
+ public:
+  static NaClSrpcError PPB_Messaging_PostMessage(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      nacl_abi_size_t message_bytes, char* message);
+
+ private:
+  PpbMessagingRpcClient();
+  PpbMessagingRpcClient(const PpbMessagingRpcClient&);
+  void operator=(const PpbMessagingRpcClient);
+};  // class PpbMessagingRpcClient
+
 class PpbPdfRpcClient {
  public:
   static NaClSrpcError PPB_PDF_GetLocalizedString(

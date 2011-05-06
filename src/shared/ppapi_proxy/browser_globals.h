@@ -25,6 +25,7 @@
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
@@ -88,6 +89,7 @@ const PPB_Graphics2D* PPBGraphics2DInterface();
 const PPB_ImageData* PPBImageDataInterface();
 const PPB_ImageDataTrusted* PPBImageDataTrustedInterface();
 const PPB_Instance* PPBInstanceInterface();
+const PPB_Messaging* PPBMessagingInterface();
 const PPB_PDF* PPBPDFInterface();
 const PPB_Scrollbar_Dev* PPBScrollbarInterface();
 const PPB_Surface3D_Dev* PPBSurface3DInterface();

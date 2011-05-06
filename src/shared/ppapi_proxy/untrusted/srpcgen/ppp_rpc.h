@@ -227,6 +227,20 @@ class PppInstanceRpcServer {
   void operator=(const PppInstanceRpcServer);
 };  // class PppInstanceRpcServer
 
+class PppMessagingRpcServer {
+ public:
+  static void PPP_Messaging_HandleMessage(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      nacl_abi_size_t message_bytes, char* message);
+
+ private:
+  PppMessagingRpcServer();
+  PppMessagingRpcServer(const PppMessagingRpcServer&);
+  void operator=(const PppMessagingRpcServer);
+};  // class PppMessagingRpcServer
+
 class PppPrintingRpcServer {
  public:
   static void PPP_Printing_QuerySupportedFormats(

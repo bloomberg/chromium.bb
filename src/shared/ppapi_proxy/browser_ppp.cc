@@ -12,6 +12,7 @@
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_find.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_instance.h"
+#include "native_client/src/shared/ppapi_proxy/browser_ppp_messaging.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_printing.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_scrollbar.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_selection.h"
@@ -82,9 +83,7 @@ int32_t BrowserPpp::InitializeModule(
   if (srpc_result != NACL_SRPC_RESULT_OK) {
     return PP_ERROR_FAILED;
   }
-  ppp_instance_interface_ = reinterpret_cast<const PPP_Instance*>(
-      GetPluginInterface(PPP_INSTANCE_INTERFACE));
-  if (ppp_instance_interface_ == NULL) {
+  if (!InitializePPPInterfaces()) {
     return PP_ERROR_FAILED;
   }
   DebugPrintf("PPP_InitializeModule: pp_error=%"NACL_PRId32"\n", pp_error);
@@ -115,6 +114,9 @@ const void* BrowserPpp::GetPluginInterface(const char* interface_name) {
   } else if (strcmp(interface_name, PPP_INSTANCE_INTERFACE) == 0) {
     ppp_interface =
        reinterpret_cast<const void*>(BrowserInstance::GetInterface());
+  } else if (strcmp(interface_name, PPP_MESSAGING_INTERFACE) == 0) {
+    ppp_interface =
+        reinterpret_cast<const void*>(BrowserMessaging::GetInterface());
   } else if (strcmp(interface_name, PPP_FIND_DEV_INTERFACE) == 0) {
     ppp_interface =
        reinterpret_cast<const void*>(BrowserFind::GetInterface());
@@ -145,6 +147,18 @@ const void* BrowserPpp::GetPluginInterfaceSafe(const char* interface_name) {
     DebugPrintf("PPB_GetInterface: %s not found\n", interface_name);
   CHECK(ppp_interface != NULL);
   return ppp_interface;
+}
+
+bool BrowserPpp::InitializePPPInterfaces() {
+  ppp_instance_interface_ = reinterpret_cast<const PPP_Instance*>(
+      GetPluginInterface(PPP_INSTANCE_INTERFACE));
+  if (ppp_instance_interface_ == NULL) {
+    return false;
+  }
+  // PPB_Messaging is optional, so it's OK for this to return NULL.
+  ppp_messaging_interface_ = reinterpret_cast<const PPP_Messaging*>(
+        GetPluginInterface(PPP_MESSAGING_INTERFACE));
+  return true;
 }
 
 }  // namespace ppapi_proxy

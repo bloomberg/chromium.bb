@@ -1239,6 +1239,21 @@ static void PPB_Instance_ExecuteScriptDispatcher(
   );
 }
 
+static void PPB_Messaging_PostMessageDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbMessagingRpcServer::PPB_Messaging_PostMessage(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr
+  );
+}
+
 static void PPB_PDF_GetLocalizedStringDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -2055,6 +2070,7 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Instance_BindGraphics:ii:i", PPB_Instance_BindGraphicsDispatcher },
   { "PPB_Instance_IsFullFrame:i:i", PPB_Instance_IsFullFrameDispatcher },
   { "PPB_Instance_ExecuteScript:iCC:CC", PPB_Instance_ExecuteScriptDispatcher },
+  { "PPB_Messaging_PostMessage:iC:", PPB_Messaging_PostMessageDispatcher },
   { "PPB_PDF_GetLocalizedString:ii:C", PPB_PDF_GetLocalizedStringDispatcher },
   { "PPB_PDF_GetResourceImage:ii:i", PPB_PDF_GetResourceImageDispatcher },
   { "PPB_PDF_GetFontFileWithFallback:iCCi:i", PPB_PDF_GetFontFileWithFallbackDispatcher },

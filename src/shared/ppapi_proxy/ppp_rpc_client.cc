@@ -429,6 +429,20 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_GetInstanceObject(
   return retval;
 }
 
+NaClSrpcError PppMessagingRpcClient::PPP_Messaging_HandleMessage(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    nacl_abi_size_t message_bytes, char* message)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Messaging_HandleMessage:iC:",
+      instance,
+      message_bytes, message
+  );
+  return retval;
+}
+
 NaClSrpcError PppPrintingRpcClient::PPP_Printing_QuerySupportedFormats(
     NaClSrpcChannel* channel,
     PP_Instance instance,

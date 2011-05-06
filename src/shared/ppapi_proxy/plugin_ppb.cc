@@ -20,6 +20,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_2d.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_image_data.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_instance.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_messaging.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_pdf.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_scrollbar.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_testing.h"
@@ -58,6 +59,7 @@ InterfaceMapElement interface_map[] = {
   { PPB_GRAPHICS_2D_INTERFACE, PluginGraphics2D::GetInterface(), true },
   { PPB_IMAGEDATA_INTERFACE, PluginImageData::GetInterface(), true },
   { PPB_INSTANCE_INTERFACE, PluginInstance::GetInterface(), true },
+  { PPB_MESSAGING_INTERFACE, PluginMessaging::GetInterface(), true },
   { PPB_OPENGLES2_DEV_INTERFACE, PluginContext3D::GetOpenGLESInterface(),
     true },
   { PPB_PDF_INTERFACE, PluginPDF::GetInterface(), true },

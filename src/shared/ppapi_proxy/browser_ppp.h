@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/ppp_messaging.h"
 
 namespace plugin {
 class PluginPpapi;
@@ -24,9 +25,10 @@ namespace ppapi_proxy {
 
 class BrowserPpp {
  public:
-  explicit BrowserPpp(NaClSrpcChannel* main_channel,
-                      plugin::PluginPpapi* plugin)
-      : main_channel_(main_channel), plugin_pid_(0), plugin_(plugin) {}
+  BrowserPpp(NaClSrpcChannel* main_channel,
+             plugin::PluginPpapi* plugin)
+      : main_channel_(main_channel), plugin_pid_(0), plugin_(plugin),
+        ppp_instance_interface_(NULL), ppp_messaging_interface_(NULL) {}
   ~BrowserPpp() {}
 
   int32_t InitializeModule(PP_Module module_id,
@@ -39,8 +41,12 @@ class BrowserPpp {
 
   // Guaranteed to be non-NULL if module initialization succeeded.
   // Use this instead of GetPluginInterface for PPP_INSTANCE_INTERFACE.
-  const PPP_Instance* ppp_instance_interface() {
+  const PPP_Instance* ppp_instance_interface() const {
     return ppp_instance_interface_;
+  }
+
+  const PPP_Messaging* ppp_messaging_interface() const {
+    return ppp_messaging_interface_;
   }
 
   NaClSrpcChannel* main_channel() const { return main_channel_; }
@@ -48,6 +54,8 @@ class BrowserPpp {
   plugin::PluginPpapi* plugin() { return plugin_; }
 
  private:
+  // Called in constructor.
+  bool InitializePPPInterfaces();
   // The "main" SRPC channel used to communicate with the plugin.
   NaClSrpcChannel* main_channel_;
   // The PID of the plugin.
@@ -57,6 +65,7 @@ class BrowserPpp {
 
   // Set on module initialization.
   const PPP_Instance* ppp_instance_interface_;
+  const PPP_Messaging* ppp_messaging_interface_;
 
   // The thread used to handle calls on other than the main thread.
   struct NaClThread upcall_thread_;

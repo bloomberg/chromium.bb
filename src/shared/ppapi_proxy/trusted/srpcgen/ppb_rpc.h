@@ -641,6 +641,20 @@ class PpbInstanceRpcServer {
   void operator=(const PpbInstanceRpcServer);
 };  // class PpbInstanceRpcServer
 
+class PpbMessagingRpcServer {
+ public:
+  static void PPB_Messaging_PostMessage(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      nacl_abi_size_t message_bytes, char* message);
+
+ private:
+  PpbMessagingRpcServer();
+  PpbMessagingRpcServer(const PpbMessagingRpcServer&);
+  void operator=(const PpbMessagingRpcServer);
+};  // class PpbMessagingRpcServer
+
 class PpbPdfRpcServer {
  public:
   static void PPB_PDF_GetLocalizedString(

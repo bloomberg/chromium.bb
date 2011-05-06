@@ -239,6 +239,13 @@ const PPB_Scrollbar_Dev* PPBScrollbarInterface() {
   return ppb;
 }
 
+const PPB_Messaging* PPBMessagingInterface() {
+  static const PPB_Messaging* ppb =
+      reinterpret_cast<const PPB_Messaging*>(
+          GetBrowserInterfaceSafe(PPB_MESSAGING_INTERFACE));
+  return ppb;
+}
+
 const PPB_Surface3D_Dev* PPBSurface3DInterface() {
   static const PPB_Surface3D_Dev* ppb =
       reinterpret_cast<const PPB_Surface3D_Dev*>(

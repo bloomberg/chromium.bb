@@ -1315,6 +1315,20 @@ NaClSrpcError PpbInstanceRpcClient::PPB_Instance_ExecuteScript(
   return retval;
 }
 
+NaClSrpcError PpbMessagingRpcClient::PPB_Messaging_PostMessage(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    nacl_abi_size_t message_bytes, char* message)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Messaging_PostMessage:iC:",
+      instance,
+      message_bytes, message
+  );
+  return retval;
+}
+
 NaClSrpcError PpbPdfRpcClient::PPB_PDF_GetLocalizedString(
     NaClSrpcChannel* channel,
     PP_Instance instance,

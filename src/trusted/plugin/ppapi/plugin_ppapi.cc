@@ -564,6 +564,17 @@ bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader& url_loader) {
 }
 
 
+void PluginPpapi::HandleMessage(const pp::Var& message) {
+  PLUGIN_PRINTF(("PluginPpapi::HandleMessage (this=%p)\n",
+                 static_cast<void*>(this)));
+  if (ppapi_proxy_ != NULL &&
+      ppapi_proxy_->ppp_messaging_interface() != NULL) {
+    ppapi_proxy_->ppp_messaging_interface()->HandleMessage(
+        pp_instance(), message.pp_var());
+  }
+}
+
+
 pp::Var PluginPpapi::GetInstanceObject() {
   PLUGIN_PRINTF(("PluginPpapi::GetInstanceObject (this=%p)\n",
                  static_cast<void*>(this)));

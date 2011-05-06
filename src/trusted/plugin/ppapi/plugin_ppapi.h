@@ -68,6 +68,9 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Called by JavaScript document.getElementById(plugin_id).
   virtual pp::Var GetInstanceObject();
 
+  // Handles postMessage from browser
+  virtual void HandleMessage(const pp::Var& message);
+
   // ----- Methods inherited from Plugin:
 
   // Requests a NaCl manifest download from a |url| relative to the page origin.

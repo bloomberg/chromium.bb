@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
+#include "ppapi/c/ppp_messaging.h"
 
 struct NaClSrpcChannel;
 
@@ -40,6 +41,7 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 // under both trusted and untrusted compilation.
 const PPB_Core* PPBCoreInterface();  // shared
 const PPB_Var_Deprecated* PPBVarInterface();  // shared
+const PPP_Messaging* PPPMessagingInterface();
 
 // Get thread creation/join functions.
 const struct PP_ThreadFunctions* GetThreadCreator();

@@ -203,6 +203,19 @@ class PppInstanceRpcClient {
   void operator=(const PppInstanceRpcClient);
 };  // class PppInstanceRpcClient
 
+class PppMessagingRpcClient {
+ public:
+  static NaClSrpcError PPP_Messaging_HandleMessage(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      nacl_abi_size_t message_bytes, char* message);
+
+ private:
+  PppMessagingRpcClient();
+  PppMessagingRpcClient(const PppMessagingRpcClient&);
+  void operator=(const PppMessagingRpcClient);
+};  // class PppMessagingRpcClient
+
 class PppPrintingRpcClient {
  public:
   static NaClSrpcError PPP_Printing_QuerySupportedFormats(

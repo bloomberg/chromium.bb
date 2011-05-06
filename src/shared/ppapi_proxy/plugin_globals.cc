@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,6 +75,15 @@ const PPB_Core* PPBCoreInterface() {
 const PPB_Var_Deprecated* PPBVarInterface() {
   return reinterpret_cast<const PPB_Var_Deprecated*>(
       GetBrowserInterfaceSafe(PPB_VAR_DEPRECATED_INTERFACE));
+}
+
+const PPP_Messaging* PPPMessagingInterface() {
+  static const PPP_Messaging* ppp_messaging = static_cast<const PPP_Messaging*>(
+      ::PPP_GetInterface(PPP_MESSAGING_INTERFACE));
+  // This helper is only used from interface function proxies; a NULL return
+  // means something is wrong with the proxy.
+  CHECK(ppp_messaging != NULL);
+  return ppp_messaging;
 }
 
 const struct PP_ThreadFunctions* GetThreadCreator() {

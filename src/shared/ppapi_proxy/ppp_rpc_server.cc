@@ -405,6 +405,21 @@ static void PPP_Instance_GetInstanceObjectDispatcher(
   );
 }
 
+static void PPP_Messaging_HandleMessageDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PppMessagingRpcServer::PPP_Messaging_HandleMessage(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr
+  );
+}
+
 static void PPP_Printing_QuerySupportedFormatsDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -555,6 +570,7 @@ NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
   { "PPP_Instance_HandleInputEvent:iC:i", PPP_Instance_HandleInputEventDispatcher },
   { "PPP_Instance_HandleDocumentLoad:ii:i", PPP_Instance_HandleDocumentLoadDispatcher },
   { "PPP_Instance_GetInstanceObject:i:C", PPP_Instance_GetInstanceObjectDispatcher },
+  { "PPP_Messaging_HandleMessage:iC:", PPP_Messaging_HandleMessageDispatcher },
   { "PPP_Printing_QuerySupportedFormats:i:Ci", PPP_Printing_QuerySupportedFormatsDispatcher },
   { "PPP_Printing_Begin:iC:i", PPP_Printing_BeginDispatcher },
   { "PPP_Printing_PrintPages:iCi:i", PPP_Printing_PrintPagesDispatcher },
