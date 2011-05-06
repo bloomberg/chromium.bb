@@ -77,4 +77,9 @@ for arch in ${RUN_TESTS} ; do
       { RETCODE=$? && echo @@@STEP_FAILURE@@@;}
 done
 
-exit ${RETCODE}
+
+if [[ ${RETCODE} != 0 ]]; then
+  echo @@@BUILD_STEP summary@@@
+  echo There were failed stages.
+  exit ${RETCODE}
+fi

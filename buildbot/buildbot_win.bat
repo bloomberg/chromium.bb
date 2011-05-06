@@ -194,4 +194,8 @@ if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 :SkipArchive
 :SkipNonGlibsTests
 
-exit /b %RETCODE%
+if %RETCODE% neq 0 (
+  echo @@@BUILD_STEP summary@@@
+  echo There were failed stages.
+  exit /b %RETCODE%
+)
