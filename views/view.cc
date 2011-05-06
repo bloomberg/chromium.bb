@@ -1757,4 +1757,61 @@ void View::DoDrag(const MouseEvent& event, const gfx::Point& press_pt) {
   GetWidget()->RunShellDrag(this, data, drag_operations);
 }
 
+// Debugging -------------------------------------------------------------------
+
+#if defined(TOUCH_DEBUG)
+std::string View::PrintViewGraph(bool first) {
+  // 64-bit pointer = 16 bytes of hex + "0x" + '\0' = 19.
+  const size_t kMaxPointerStringLength = 19;
+
+  std::string result;
+
+  if (first)
+    result.append("digraph {\n");
+
+  // Node characteristics.
+  char p[kMaxPointerStringLength];
+
+  size_t baseNameIndex = GetClassName().find_last_of('/');
+  if (baseNameIndex == std::string::npos)
+    baseNameIndex = 0;
+  else
+    baseNameIndex++;
+
+  // Information about current node.
+  snprintf(p, kMaxPointerStringLength, "%p", this);
+  result.append("  N");
+  result.append(p+2);
+  result.append(" [label=\"");
+  result.append(GetClassName().substr(baseNameIndex).c_str());
+  result.append("\"");
+  if (!parent())
+    result.append(", shape=box");
+  if (canvas_.get())
+    result.append(", color=green");
+  result.append("]\n");
+
+  // Link to parent.
+  if (parent()) {
+    char pp[kMaxPointerStringLength];
+
+    snprintf(pp, kMaxPointerStringLength, "%p", parent());
+    result.append("  N");
+    result.append(p+2);
+    result.append(" -> N");
+    result.append(pp+2);
+    result.append("\n");
+  }
+
+  // Children.
+  for (int i = 0, count = child_count(); i < count; ++i)
+    result.append(GetChildViewAt(i)->PrintViewGraph(false));
+
+  if (first)
+    result.append("}\n");
+
+  return result;
+}
+#endif
+
 }  // namespace views

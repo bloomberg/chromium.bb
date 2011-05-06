@@ -1295,6 +1295,16 @@ class View : public AcceleratorTarget {
   // supported drag operations. When done, OnDragDone is invoked.
   void DoDrag(const MouseEvent& event, const gfx::Point& press_pt);
 
+  // Debugging -----------------------------------------------------------------
+
+#if defined(TOUCH_DEBUG)
+  // Returns string containing a graph of the views hierarchy in graphViz DOT
+  // language (http://graphviz.org/). Can be called within debugger and save
+  // to a file to compile/view.
+  // Note: Assumes initial call made with first = true.
+  std::string PrintViewGraph(bool first);
+#endif
+
   //////////////////////////////////////////////////////////////////////////////
 
   // Creation and lifetime -----------------------------------------------------
