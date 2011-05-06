@@ -251,6 +251,7 @@ class PodImageView : public views::ImageView {
 UserView::UserView(Delegate* delegate, bool is_login, bool need_background)
     : delegate_(delegate),
       signout_view_(NULL),
+      ignore_signout_click_(false),
       image_view_(NULL),
       remove_button_(NULL) {
   DCHECK(delegate);
@@ -313,17 +314,13 @@ gfx::Size UserView::GetPreferredSize() {
 }
 
 void UserView::SetSignoutEnabled(bool enabled) {
-  DCHECK(signout_view_);
-  signout_view_->signout_link()->SetEnabled(enabled);
-
-  // Relayout because active and inactive link has different preferred size.
-  Layout();
+  ignore_signout_click_ = !enabled;
 }
 
 void UserView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK(delegate_);
   DCHECK(signout_view_);
-  if (signout_view_->signout_link() == source)
+  if (!ignore_signout_click_ && signout_view_->signout_link() == source)
     delegate_->OnSignout();
 }
 

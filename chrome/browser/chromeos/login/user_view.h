@@ -85,6 +85,7 @@ class UserView : public views::View,
   Delegate* delegate_;
 
   SignoutView* signout_view_;
+  bool ignore_signout_click_;
   PodImageView* image_view_;
 
   views::TextButton* remove_button_;
