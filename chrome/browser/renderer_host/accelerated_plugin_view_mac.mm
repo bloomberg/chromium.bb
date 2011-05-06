@@ -263,7 +263,7 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 
   // Inform the window hosting this accelerated view that it needs to be
   // transparent.
-  if (![self isHidden]) {
+  if (![self isHiddenOrHasHiddenAncestor]) {
     if ([[self window] respondsToSelector:@selector(underlaySurfaceRemoved)])
       [static_cast<id>([self window]) underlaySurfaceRemoved];
     if ([newWindow respondsToSelector:@selector(underlaySurfaceAdded)])

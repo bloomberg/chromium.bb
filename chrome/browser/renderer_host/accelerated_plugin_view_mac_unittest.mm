@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/accelerated_plugin_view_mac.h"
 
+#include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -20,11 +21,13 @@
 @synthesize underlayCount = underlayCount_;
 
 - (void)underlaySurfaceAdded {
+  DCHECK_GE(underlayCount_, 0);
   ++underlayCount_;
 }
 
 - (void)underlaySurfaceRemoved {
   --underlayCount_;
+  DCHECK_GE(underlayCount_, 0);
 }
 @end
 
@@ -161,4 +164,25 @@ TEST_F(AcceleratedPluginViewTest, MoveBetweenWindowsWithHiding) {
   [view setHidden:NO];
   EXPECT_EQ(1, [window1 underlayCount]);
   EXPECT_EQ(0, [window2 underlayCount]);
+}
+
+// Regression test for http://crbug.com/81737
+TEST_F(AcceleratedPluginViewTest, RemoveWithHiddenParent) {
+  AcceleratedPluginView* view = StubAcceleratedPluginView();
+
+  NSView* parent =
+    [[[NSView alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)] autorelease];
+  [parent addSubview:view];
+
+  UnderlayCountingWindow* window = StubUnderlayWindow();
+  EXPECT_EQ(0, [window underlayCount]);
+
+  [[window contentView] addSubview:parent];
+  EXPECT_EQ(1, [window underlayCount]);
+
+  [parent setHidden:YES];
+  EXPECT_EQ(0, [window underlayCount]);
+
+  [parent removeFromSuperview];
+  EXPECT_EQ(0, [window underlayCount]);
 }
