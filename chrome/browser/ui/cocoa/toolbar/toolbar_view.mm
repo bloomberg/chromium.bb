@@ -80,4 +80,8 @@
   [super dealloc];
 }
 
+- (BOOL)isOpaque {
+  return YES;
+}
+
 @end

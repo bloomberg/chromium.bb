@@ -84,4 +84,8 @@
   return VIEW_ID_DOWNLOAD_SHELF;
 }
 
+- (BOOL)isOpaque {
+  return YES;
+}
+
 @end
