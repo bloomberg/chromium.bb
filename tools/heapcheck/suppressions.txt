@@ -1527,3 +1527,11 @@
    fun:Options
    fun:fileapi::FileSystemOriginDatabase::Init
 }
+{
+   bug_81796
+   Heapcheck:Leak
+   fun:base::MessageLoopProxy::CreateForCurrentThread
+   fun:Context
+   fun:ChannelProxy
+   fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
+}
