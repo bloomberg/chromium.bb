@@ -65,8 +65,6 @@ class DevToolsHttpProtocolHandler
                                   const std::string& data);
   virtual void OnClose(int connection_id);
 
-  virtual void OnRootRequestUI(int connection_id,
-                             const net::HttpServerRequestInfo& info);
   virtual void OnJsonRequestUI(int connection_id,
                              const net::HttpServerRequestInfo& info);
   virtual void OnWebSocketRequestUI(int connection_id,

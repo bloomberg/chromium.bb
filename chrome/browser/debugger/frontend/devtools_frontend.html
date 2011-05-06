@@ -1,0 +1,74 @@
+<html>
+<head>
+<style>
+.item {
+    height: 132px;
+    background-attachment: scroll;
+    background-origin: padding-box;
+    background-repeat: no-repeat;
+    border: 6px solid lightgray;
+    border-radius: 9px;
+    margin-top: 5px;
+}
+
+.item:hover {
+    border-color: gray;
+}
+
+.text {
+    margin-left: 220px;
+}
+</style>
+
+<script>
+function onLoad() {
+  var tabsListRequest = new XMLHttpRequest();
+  tabsListRequest.open("GET", "/json", true);
+  tabsListRequest.onreadystatechange = onReady;
+  tabsListRequest.send();
+}
+
+function onReady() {
+  if(this.readyState == 4 && this.status == 200) {
+    if(this.response != null)
+      var responseJSON = JSON.parse(this.response);
+      for (var i = 0; i < responseJSON.length; ++i)
+        appendItem(responseJSON[i]);
+  }
+}
+
+function appendItem(itemObject) {
+  var frontendRef;
+  if (itemObject.devtoolsFrontendUrl) {
+      frontendRef = document.createElement("a");
+      frontendRef.href = itemObject.devtoolsFrontendUrl;
+  } else {
+      frontendRef = document.createElement("div");
+  }
+
+  var item = document.createElement("div");
+  item.className = "item";
+  item.style.cssText = "background-image:url(" +
+                        itemObject.thumbnailUrl +
+                        ")";
+  frontendRef.appendChild(item);
+
+  var titleElement = document.createElement("div");
+  titleElement.className = "text";
+  titleElement.innerText = itemObject.title;
+  item.appendChild(titleElement);
+
+  var urlElement = document.createElement("div");
+  urlElement.className = "text";
+  urlElement.innerText = itemObject.url;
+  item.appendChild(urlElement);
+
+  document.getElementById("items").appendChild(frontendRef);
+}
+</script>
+</head>
+<body onload='onLoad()'>
+  <div id='items'>
+  </div>
+</body>
+</html>

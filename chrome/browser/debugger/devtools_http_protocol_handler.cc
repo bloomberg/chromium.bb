@@ -22,11 +22,14 @@
 #include "chrome/common/devtools_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "grit/devtools_frontend_resources.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/server/http_server_request_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/base/resource/resource_bundle.h"
 
 const int kBufferSize = 16 * 1024;
 
@@ -120,18 +123,6 @@ void DevToolsHttpProtocolHandler::Stop() {
 void DevToolsHttpProtocolHandler::OnHttpRequest(
     int connection_id,
     const net::HttpServerRequestInfo& info) {
-  if (info.path == "" || info.path == "/") {
-    // Pages discovery request.
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        NewRunnableMethod(this,
-                          &DevToolsHttpProtocolHandler::OnRootRequestUI,
-                          connection_id,
-                          info));
-    return;
-  }
-
   if (info.path == "/json") {
     // Pages discovery json request.
     BrowserThread::PostTask(
@@ -144,23 +135,34 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(
     return;
   }
 
-  size_t pos = info.path.find("/devtools/");
-  if (pos != 0) {
-    server_->Send404(connection_id);
-    return;
-  }
-
   // Proxy static files from chrome-devtools://devtools/*.
   if (!Profile::GetDefaultRequestContext()) {
     server_->Send404(connection_id);
     return;
   }
 
+  if (info.path == "" || info.path == "/") {
+    const base::StringPiece frontend_html(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_DEVTOOLS_FRONTEND_HTML));
+    std::string response(frontend_html.data(), frontend_html.length());
+    server_->Send200(connection_id, response, "text/html; charset=UTF-8");
+    return;
+  }
+
+  net::URLRequest* request;
+
+  if (info.path.find("/devtools/") == 0)
+    request = new net::URLRequest(GURL("chrome-devtools:/" + info.path), this);
+  else if (info.path.find("/thumb/") == 0)
+    request = new net::URLRequest(GURL("chrome:/" + info.path), this);
+  else {
+    server_->Send404(connection_id);
+    return;
+  }
+
   // Make sure DevTools data source is registered.
   DevToolsUI::RegisterDevToolsDataSource();
-
-  net::URLRequest* request = new net::URLRequest(
-      GURL("chrome-devtools:/" + info.path), this);
   Bind(request, connection_id);
   request->set_context(
       Profile::GetDefaultRequestContext()->GetURLRequestContext());
@@ -224,6 +226,7 @@ struct PageInfo
   std::string url;
   bool attached;
   std::string title;
+  std::string thumbnail_url;
   std::string favicon_url;
 };
 typedef std::vector<PageInfo> PageList;
@@ -253,43 +256,12 @@ static PageList GeneratePageList(
     page_info.id = controller.session_id().id();
     page_info.attached = client_host != NULL;
     page_info.url = entry->url().spec();
-    page_info.title = UTF16ToUTF8(entry->title());
+    page_info.title = UTF16ToUTF8(EscapeForHTML(entry->title()));
+    page_info.thumbnail_url = "/thumb/" + entry->url().spec();
     page_info.favicon_url = entry->favicon().url().spec();
     page_list.push_back(page_info);
   }
   return page_list;
-}
-
-void DevToolsHttpProtocolHandler::OnRootRequestUI(
-    int connection_id,
-    const net::HttpServerRequestInfo& info) {
-  std::string host = info.headers["Host"];
-  std::string response = "<html><body>";
-  PageList page_list = GeneratePageList(tab_contents_provider_.get(),
-                                        connection_id, info);
-  for (PageList::iterator i = page_list.begin();
-       i != page_list.end(); ++i) {
-
-    std::string frontendURL = StringPrintf("%s?host=%s&page=%d",
-                                           overriden_frontend_url_.c_str(),
-                                           host.c_str(),
-                                           i->id);
-    response += "<div>";
-    response += StringPrintf(
-        "<img style=\"margin-right:5px;width:16px;height:16px\" src=\"%s\">",
-        i->favicon_url.c_str());
-
-    if (i->attached) {
-      response += i->url.c_str();
-    } else {
-      response += StringPrintf("<a href=\"%s\">%s</a><br>",
-                               frontendURL.c_str(),
-                               i->url.c_str());
-    }
-    response += "</div>";
-  }
-  response += "</body></html>";
-  Send200(connection_id, response, "text/html; charset=UTF-8");
 }
 
 void DevToolsHttpProtocolHandler::OnJsonRequestUI(
@@ -306,6 +278,7 @@ void DevToolsHttpProtocolHandler::OnJsonRequestUI(
     json_pages_list.Append(page_info);
     page_info->SetString("title", i->title);
     page_info->SetString("url", i->url);
+    page_info->SetString("thumbnailUrl", i->thumbnail_url);
     page_info->SetString("faviconUrl", i->favicon_url);
     if (!i->attached) {
       page_info->SetString("webSocketDebuggerUrl",
