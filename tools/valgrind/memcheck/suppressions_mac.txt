@@ -1699,3 +1699,9 @@
    fun:_Znw*
    fun:*InfoBarContainerControllerTest_RemoveAllInfoBars_Test8TestBodyEv
 }
+{
+   bug_81788
+   Memcheck:Leak
+   ...
+   fun:CurResFile
+}
