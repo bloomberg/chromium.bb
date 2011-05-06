@@ -390,6 +390,7 @@ DriverPatterns = [
   ( '--pnacl-x86_64-bias',             "env.set('BIAS', 'X8664')"),
   ( '--pnacl-bias=(.+)',               "env.set('BIAS', FixArch($0))"),
   ( '--pnacl-skip-ll',                 "env.set('EMIT_LL', '0')"),
+  ( '--pnacl-skip-lto',                "env.set('SKIP_OPT', '1')"),
   ( '--pnacl-force-mc',                "env.set('FORCE_MC', '1')"),
   ( '--pnacl-force-mc-direct',         "env.set('FORCE_MC_DIRECT', '1')"),
 
