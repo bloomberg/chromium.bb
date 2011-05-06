@@ -5,8 +5,6 @@
 #include "ipc/ipc_channel_win.h"
 
 #include <windows.h>
-#include <sddl.h>
-#include <sstream>
 
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
@@ -19,72 +17,6 @@
 
 namespace IPC {
 
-namespace {
-
-// Creates a security descriptor with a DACL that has one ace giving full
-// access to the current logon session.
-// The security descriptor returned must be freed using LocalFree.
-// The function returns true if it succeeds, false otherwise.
-bool GetLogonSessionOnlyDACL(SECURITY_DESCRIPTOR** security_descriptor) {
-  // Get the current token.
-  HANDLE token = NULL;
-  if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token))
-    return false;
-  base::win::ScopedHandle token_scoped(token);
-
-  // Get the size of the TokenGroups structure.
-  DWORD size = 0;
-  BOOL result = GetTokenInformation(token, TokenGroups, NULL,  0, &size);
-  if (result != FALSE && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-    return false;
-
-  // Get the data.
-  scoped_array<char> token_groups_chars(new char[size]);
-  TOKEN_GROUPS* token_groups =
-      reinterpret_cast<TOKEN_GROUPS*>(token_groups_chars.get());
-
-  if (!GetTokenInformation(token, TokenGroups, token_groups, size, &size))
-    return false;
-
-  // Look for the logon sid.
-  SID* logon_sid = NULL;
-  for (unsigned int i = 0; i < token_groups->GroupCount ; ++i) {
-    if ((token_groups->Groups[i].Attributes & SE_GROUP_LOGON_ID) != 0) {
-        logon_sid = static_cast<SID*>(token_groups->Groups[i].Sid);
-        break;
-    }
-  }
-
-  if (!logon_sid)
-    return false;
-
-  // Convert the data to a string.
-  wchar_t* sid_string;
-  if (!ConvertSidToStringSid(logon_sid, &sid_string))
-    return false;
-
-  static const wchar_t dacl_format[] = L"D:(A;OICI;GA;;;%ls)";
-  wchar_t dacl[SECURITY_MAX_SID_SIZE + arraysize(dacl_format) + 1] = {0};
-  wsprintf(dacl, dacl_format, sid_string);
-
-  LocalFree(sid_string);
-
-  // Convert the string to a security descriptor
-  if (!ConvertStringSecurityDescriptorToSecurityDescriptor(
-      dacl,
-      SDDL_REVISION_1,
-      reinterpret_cast<PSECURITY_DESCRIPTOR*>(security_descriptor),
-      NULL)) {
-    return false;
-  }
-
-  return true;
-}
-
-}  // namespace
-
-//------------------------------------------------------------------------------
-
 Channel::ChannelImpl::State::State(ChannelImpl* channel) : is_pending(false) {
   memset(&context.overlapped, 0, sizeof(context.overlapped));
   context.handler = channel;
@@ -95,8 +27,6 @@ Channel::ChannelImpl::State::~State() {
                  starts_with_io_context);
 }
 
-//------------------------------------------------------------------------------
-
 Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle &channel_handle,
                                   Mode mode, Listener* listener)
     : ALLOW_THIS_IN_INITIALIZER_LIST(input_state_(this)),
@@ -106,11 +36,7 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle &channel_handle,
       waiting_connect_(mode & MODE_SERVER_FLAG),
       processing_incoming_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)) {
-  if (!CreatePipe(channel_handle, mode)) {
-    // The pipe may have been closed already.
-    LOG(WARNING) << "Unable to create pipe named \"" << channel_handle.name <<
-                    "\" in " << (mode == 0 ? "server" : "client") << " mode.";
-  }
+  CreatePipe(channel_handle, mode);
 }
 
 Channel::ChannelImpl::~ChannelImpl() {
@@ -169,10 +95,8 @@ bool Channel::ChannelImpl::Send(Message* message) {
 
 const std::wstring Channel::ChannelImpl::PipeName(
     const std::string& channel_id) const {
-  std::wostringstream ss;
-  // XXX(darin): get application name from somewhere else
-  ss << L"\\\\.\\pipe\\chrome." << ASCIIToWide(channel_id);
-  return ss.str();
+  std::string name("\\\\.\\pipe\\chrome.");
+  return ASCIIToWide(name.append(channel_id));
 }
 
 bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
@@ -180,27 +104,15 @@ bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
   DCHECK_EQ(INVALID_HANDLE_VALUE, pipe_);
   const std::wstring pipe_name = PipeName(channel_handle.name);
   if (mode & MODE_SERVER_FLAG) {
-    SECURITY_ATTRIBUTES security_attributes = {0};
-    security_attributes.bInheritHandle = FALSE;
-    security_attributes.nLength = sizeof(SECURITY_ATTRIBUTES);
-    if (!GetLogonSessionOnlyDACL(
-        reinterpret_cast<SECURITY_DESCRIPTOR**>(
-            &security_attributes.lpSecurityDescriptor))) {
-      NOTREACHED();
-    }
-
     pipe_ = CreateNamedPipeW(pipe_name.c_str(),
                              PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED |
-                                FILE_FLAG_FIRST_PIPE_INSTANCE,
+                              FILE_FLAG_FIRST_PIPE_INSTANCE,
                              PIPE_TYPE_BYTE | PIPE_READMODE_BYTE,
-                             1,         // number of pipe instances
-                             // output buffer size (XXX tune)
+                             1,
                              Channel::kReadBufferSize,
-                             // input buffer size (XXX tune)
                              Channel::kReadBufferSize,
-                             5000,      // timeout in milliseconds (XXX tune)
-                             &security_attributes);
-    LocalFree(security_attributes.lpSecurityDescriptor);
+                             5000,
+                             NULL);
   } else if (mode & MODE_CLIENT_FLAG) {
     pipe_ = CreateFileW(pipe_name.c_str(),
                         GENERIC_READ | GENERIC_WRITE,
@@ -215,7 +127,9 @@ bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
   }
   if (pipe_ == INVALID_HANDLE_VALUE) {
     // If this process is being closed, the pipe may be gone already.
-    LOG(WARNING) << "failed to create pipe: " << GetLastError();
+    LOG(WARNING) << "Unable to create pipe \"" << pipe_name <<
+                    "\" in " << (mode == 0 ? "server" : "client")
+                    << " mode. Error :" << GetLastError();
     return false;
   }
 
