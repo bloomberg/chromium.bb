@@ -1797,9 +1797,9 @@ std::string View::PrintViewGraph(bool first) {
 
     snprintf(pp, kMaxPointerStringLength, "%p", parent());
     result.append("  N");
-    result.append(p+2);
-    result.append(" -> N");
     result.append(pp+2);
+    result.append(" -> N");
+    result.append(p+2);
     result.append("\n");
   }
 
