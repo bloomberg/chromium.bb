@@ -285,6 +285,6 @@
     'dom_login': ['rharrison@chromium.org'],
     'imageburner': ['achuith+watch@chromium.org', 'tbarzic+watch@chromium.org'],
     'filebrowse': ['achuith+watch@chromium.org', 'rginda+watch@chromium.org'],
-    'clang_update': ['fischman+watch@chromium.org'],
+    'clang_update': ['fischman+watch@chromium.org', 'ukai+watch@chromium.org'],
   },
 }
