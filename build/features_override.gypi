@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -29,6 +29,7 @@
       'ENABLE_FILTERS=1',
       'ENABLE_FULLSCREEN_API=1',
       'ENABLE_GEOLOCATION=1',
+      'ENABLE_GESTURE_RECOGNIZER=1',
       'ENABLE_ICONDATABASE=0',
       'ENABLE_INDEXED_DATABASE=1',
       'ENABLE_INPUT_SPEECH=1',
