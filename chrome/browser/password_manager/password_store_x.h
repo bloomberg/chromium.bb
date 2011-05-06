@@ -76,6 +76,9 @@ class PasswordStoreX : public PasswordStoreDefault {
   virtual bool FillBlacklistLogins(
       std::vector<webkit_glue::PasswordForm*>* forms);
 
+  // Sort logins by origin, like the ORDER BY clause in login_database.cc.
+  void SortLoginsByOrigin(NativeBackend::PasswordFormList* list);
+
   // Check to see whether migration is necessary, and perform it if so.
   void CheckMigration();
 

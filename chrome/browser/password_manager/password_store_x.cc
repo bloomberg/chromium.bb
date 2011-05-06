@@ -4,6 +4,7 @@
 
 #include "chrome/browser/password_manager/password_store_x.h"
 
+#include <algorithm>
 #include <map>
 #include <vector>
 
@@ -98,10 +99,24 @@ void PasswordStoreX::RemoveLoginsCreatedBetweenImpl(
   STLDeleteElements(&forms);
 }
 
+namespace {
+struct LoginLessThan {
+  bool operator()(const PasswordForm* a, const PasswordForm* b) {
+    return a->origin < b->origin;
+  }
+};
+}  // anonymous namespace
+
+void PasswordStoreX::SortLoginsByOrigin(NativeBackend::PasswordFormList* list) {
+  // In login_database.cc, the query has ORDER BY origin_url. Simulate that.
+  std::sort(list->begin(), list->end(), LoginLessThan());
+}
+
 void PasswordStoreX::GetLoginsImpl(GetLoginsRequest* request,
                                    const PasswordForm& form) {
   CheckMigration();
   if (use_native_backend() && backend_->GetLogins(form, &request->value)) {
+    SortLoginsByOrigin(&request->value);
     ForwardLoginsResult(request);
     allow_fallback_ = false;
   } else if (allow_default_store()) {
@@ -116,6 +131,7 @@ void PasswordStoreX::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
   CheckMigration();
   if (use_native_backend() &&
       backend_->GetAutofillableLogins(&request->value)) {
+    SortLoginsByOrigin(&request->value);
     ForwardLoginsResult(request);
     allow_fallback_ = false;
   } else if (allow_default_store()) {
@@ -130,6 +146,7 @@ void PasswordStoreX::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
   CheckMigration();
   if (use_native_backend() &&
       backend_->GetBlacklistLogins(&request->value)) {
+    SortLoginsByOrigin(&request->value);
     ForwardLoginsResult(request);
     allow_fallback_ = false;
   } else if (allow_default_store()) {
