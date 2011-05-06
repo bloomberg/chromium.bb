@@ -163,6 +163,11 @@ void GpuScheduler::ProcessCommands() {
          !parser_->IsEmpty()) {
     error = parser_->ProcessCommand();
 
+    // TODO(piman): various classes duplicate various pieces of state, leading
+    // to needlessly complex update logic. It should be possible to simply share
+    // the state across all of them.
+    command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
+
     if (error == error::kWaiting || error == error::kYield) {
       break;
     } else if (error::IsError(error)) {
@@ -178,8 +183,6 @@ void GpuScheduler::ProcessCommands() {
       command_processed_callback_->Run();
     }
   }
-
-  command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
 
   if (unscheduled_count_ == 0 &&
       error != error::kWaiting &&

@@ -258,6 +258,7 @@ void GpuCommandBufferStub::OnResizeOffscreenFrameBuffer(const gfx::Size& size) {
 
 void GpuCommandBufferStub::OnSwapBuffers() {
   GPU_TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSwapBuffers");
+  ReportState();
   Send(new GpuCommandBufferMsg_SwapBuffers(route_id_));
 }
 

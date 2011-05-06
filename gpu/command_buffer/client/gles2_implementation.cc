@@ -684,15 +684,22 @@ void GLES2Implementation::Finish() {
 }
 
 void GLES2Implementation::SwapBuffers() {
-  // Wait if this would add too many swap buffers.
-  if (swap_buffers_tokens_.size() == kMaxSwapBuffers) {
+  // TODO(piman): Strictly speaking we'd want to insert the token after the
+  // swap, but the state update with the updated token might not have happened
+  // by the time the SwapBuffer callback gets called, forcing us to synchronize
+  // with the GPU process more than needed. So instead, make it happen before.
+  // All it means is that we could be slightly looser on the kMaxSwapBuffers
+  // semantics if the client doesn't use the callback mechanism, and by chance
+  // the scheduler yields between the InsertToken and the SwapBuffers.
+  swap_buffers_tokens_.push(helper_->InsertToken());
+  helper_->SwapBuffers();
+  helper_->YieldScheduler();
+  helper_->CommandBufferHelper::Flush();
+  // Wait if we added too many swap buffers.
+  if (swap_buffers_tokens_.size() > kMaxSwapBuffers) {
     helper_->WaitForToken(swap_buffers_tokens_.front());
     swap_buffers_tokens_.pop();
   }
-  helper_->SwapBuffers();
-  swap_buffers_tokens_.push(helper_->InsertToken());
-  helper_->YieldScheduler();
-  Flush();
 }
 
 void GLES2Implementation::CopyTextureToParentTextureCHROMIUM(
