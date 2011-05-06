@@ -4,7 +4,7 @@ EXE = sample
 CFLAGS = -W -Wall -g 
 
 $(EXE): $(OBJECTS) 
-	$(AR) rcs $(LIB) mkvparser.o 
+	$(AR) rcs $(LIB) mkvparser.o mkvreader.o
 	$(CXX) $(OBJECTS)  -L./ -lmkvparser -o $(EXE)
 
 mkvparser.o: mkvparser.cpp

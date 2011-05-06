@@ -10,6 +10,9 @@
 
 #include <cassert>
 
+namespace mkvparser
+{
+
 MkvReader::MkvReader() :
     m_file(NULL)
 {
@@ -121,3 +124,5 @@ int MkvReader::Read(long long offset, long len, unsigned char* buffer)
 
     return 0;  //success
 }
+
+}  //end namespace mkvparser

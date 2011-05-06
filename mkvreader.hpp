@@ -12,7 +12,10 @@
 #include "mkvparser.hpp"
 #include <cstdio>
 
-class MkvReader : public mkvparser::IMkvReader
+namespace mkvparser
+{
+
+class MkvReader : public IMkvReader
 {
     MkvReader(const MkvReader&);
     MkvReader& operator=(const MkvReader&);
@@ -30,5 +33,7 @@ private:
     long long m_length;
     FILE* m_file;
 };
+
+}  //end namespace mkvparser
 
 #endif //MKVREADER_HPP
