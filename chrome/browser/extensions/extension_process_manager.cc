@@ -291,7 +291,7 @@ void ExtensionProcessManager::Observe(NotificationType type,
       for (ExtensionHostSet::iterator iter = background_hosts_.begin();
            iter != background_hosts_.end(); ++iter) {
         ExtensionHost* host = *iter;
-        if (host->extension()->id() == extension->id()) {
+        if (host->extension_id() == extension->id()) {
           delete host;
           // |host| should deregister itself from our structures.
           DCHECK(background_hosts_.find(host) == background_hosts_.end());

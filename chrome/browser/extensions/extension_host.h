@@ -37,7 +37,7 @@ struct WebPreferences;
 // This class is the browser component of an extension component's RenderView.
 // It handles setting up the renderer process, if needed, with special
 // privileges available to extensions.  It may have a view to be shown in the
-// in the browser UI, or it may be hidden.
+// browser UI, or it may be hidden.
 class ExtensionHost : public RenderViewHostDelegate,
                       public RenderViewHostDelegate::View,
                       public ExtensionFunctionDispatcher::Delegate,
@@ -72,6 +72,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   void CreateView(Browser* browser);
 
   const Extension* extension() const { return extension_; }
+  const std::string& extension_id() const { return extension_id_; }
   RenderViewHost* render_view_host() const { return render_view_host_; }
   RenderProcessHost* render_process_host() const;
   SiteInstance* site_instance() const;
@@ -240,6 +241,9 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   // The extension that we're hosting in this view.
   const Extension* extension_;
+
+  // Id of extension that we're hosting in this view.
+  const std::string extension_id_;
 
   // The profile that this host is tied to.
   Profile* profile_;

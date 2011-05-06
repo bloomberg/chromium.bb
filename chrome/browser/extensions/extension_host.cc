@@ -126,6 +126,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
                              const GURL& url,
                              ViewType::Type host_type)
     : extension_(extension),
+      extension_id_(extension->id()),
       profile_(site_instance->browsing_instance()->profile()),
       did_stop_loading_(false),
       document_element_available_(false),
@@ -234,8 +235,7 @@ void ExtensionHost::NavigateToURL(const GURL& url) {
   // Prevent explicit navigation to another extension id's pages.
   // This method is only called by some APIs, so we still need to protect
   // DidNavigate below (location = "").
-  if (url.SchemeIs(chrome::kExtensionScheme) &&
-      url.host() != extension_->id()) {
+  if (url.SchemeIs(chrome::kExtensionScheme) && url.host() != extension_id()) {
     // TODO(erikkay) communicate this back to the caller?
     return;
   }
@@ -259,7 +259,7 @@ void ExtensionHost::Observe(NotificationType type,
   switch (type.value) {
     case NotificationType::EXTENSION_BACKGROUND_PAGE_READY:
       DCHECK(profile_->GetExtensionService()->
-           IsBackgroundPageReady(extension_));
+          IsBackgroundPageReady(extension_));
       NavigateToURL(url_);
       break;
     case NotificationType::RENDERER_PROCESS_CREATED:
@@ -342,7 +342,7 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
   // will leave the host in kind of a bad state with poor UI and errors, but
   // it's better than the alternative.
   // TODO(erikkay) Perhaps we should display errors in developer mode.
-  if (params.url.host() != extension_->id()) {
+  if (params.url.host() != extension_id()) {
     extension_function_dispatcher_.reset(NULL);
     return;
   }
