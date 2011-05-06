@@ -45,7 +45,8 @@ void PrerenderHelper::RecordHistograms(
     const base::Time& finish_all_loads,
     const base::TimeDelta& begin_to_finish_all_loads) {
   static bool use_prerender_histogram =
-      base::FieldTrialList::TrialExists("Prefetch");
+      base::FieldTrialList::Find("Prefetch") &&
+      !base::FieldTrialList::Find("Prefetch")->group_name().empty();
   if (!use_prerender_histogram)
     return;
 

@@ -82,10 +82,6 @@ class MetricsService : public NotificationObserver,
   void StartRecordingOnly();
   void Stop();
 
-  // Returns the client ID for this client, or the empty string if metrics
-  // recording is not currently running.
-  std::string GetClientId();
-
   // At startup, prefs needs to be called with a list of all the pref names and
   // types we'll be using.
   static void RegisterPrefs(PrefService* local_state);
