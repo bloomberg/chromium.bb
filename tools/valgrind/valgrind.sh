@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -27,7 +27,9 @@ setup_memcheck() {
   DEFAULT_TOOL_FLAGS=("--db-command=$GDB -nw %f %p" "--db-attach=yes" \
                       # Overwrite newly allocated or freed objects
                       # with 0x41 to catch inproper use.
-                      "--malloc-fill=41" "--free-fill=41")
+                      "--malloc-fill=41" "--free-fill=41" \
+                      # Increase the size of stacks being tracked.
+                      "--num-callers=30")
 }
 
 setup_tsan() {
