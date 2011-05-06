@@ -108,19 +108,59 @@ def UpdateAddrEventMap(line, sel_ldr_offset, addr_to_event):
     addr_to_event[address] = cur + sample_count
   return
 
+def CheckTrustedRecord(line, trusted_events, filter_events):
+  """ Checks if this line is a samplecount for a trusted function. Because
+      oprofile understands these, we just use its aggregate count.
+      Updates the trusted_events map."""
+  # oprofile function records have the following format:
+  # address sample_count percent image_name app_name symbol_name
+  # Some symbol names have spaces (function prototypes), so only split 6 words.
+  fields = line.split(None, 5)
+  if len(fields) < 6:
+    return False
+  image_name = fields[3]
+  symbol_name = fields[5].rstrip()
+  # 2 cases: we want only 'relevant' samples, or we want all of them.
+  # Either way, ignore the untrusted region.
+  if (image_name == "anon" and symbol_name.find('sel_ldr') != -1):
+    return False
 
-def GetAddressToEventSelLdr(fd):
-  """ Returns a map: address (int) -> event count (int) """
+  try: # catch lines that aren't records (e.g. the CPU type)
+    sample_count = int(fields[1])
+  except ValueError:
+    return False
+
+  if (filter_events and not (image_name.endswith('sel_ldr')
+                            or image_name == 'llc'
+                            or image_name.endswith('.so')
+                            or image_name == 'no-vmlinux'
+                            or image_name == 'chrome')):
+    trusted_events['FILTERED'] = trusted_events.get('FILTERED',0) + sample_count
+    return False
+
+  # If there are duplicate function names, just use the first instance.
+  # (Most likely they are from shared libraries in different processes, and
+  # because the opreport output is sorted, the top one is most likely to be
+  # our process of interest, and the rest are not.)
+  key = image_name + ':' + symbol_name
+  trusted_events[key] = trusted_events.get(key, sample_count)
+  return True
+
+def GetAddressToEventSelLdr(fd, filter_events):
+  """ Returns 2 maps: addr_to_event: address (int) -> event count (int)
+  and trusted_events: func (str) - > event count (int)"""
   addr_to_event = {}
+  trusted_events = {}
   sel_ldr_offset = None
   for line in fd:
+    CheckTrustedRecord(line, trusted_events, filter_events)
     sel_ldr_offset = CheckIfInSelLdrRegion(line, sel_ldr_offset)
     if sel_ldr_offset:
       # If we've parsed the header of the region and know the untrusted
       # sandbox's offset, start picking up event counts.
       UpdateAddrEventMap(line, sel_ldr_offset, addr_to_event)
   fd.seek(0) # Reset for future use...
-  return addr_to_event
+  return addr_to_event, trusted_events
 
 #--------------- Parse Assembly File ---------------
 
@@ -261,7 +301,7 @@ def GetAssemblyRanges(fd):
 
 #--------------- Summarize Data ---------------
 
-def PrintTopFunctions(assembly_ranges, address_to_events):
+def PrintTopFunctions(assembly_ranges, address_to_events, trusted_events):
   """ Prints the N functions with the top event counts """
   func_events = {}
   some_addrs_not_found = False
@@ -283,6 +323,15 @@ def PrintTopFunctions(assembly_ranges, address_to_events):
   if some_addrs_not_found:
     # Addresses < 0x20000 are likely trampoline addresses.
     Debug('NOTE: sample addrs < 0x20000 are likely trampolines')
+
+  filtered_events = trusted_events.pop('FILTERED', 0)
+
+  # convert trusted functions (which are just functions and not ranges) into
+  # the same format and mix them with untrusted. Just use 0s for the ranges
+
+  for (func, count) in trusted_events.iteritems():
+    key = (func, 0, 0)
+    func_events[key] = count
   flattened = func_events.items()
   def CompareCounts ((k1, c1), (k2, c2)):
     if c1 < c2:
@@ -293,14 +342,18 @@ def PrintTopFunctions(assembly_ranges, address_to_events):
       return 1
   flattened.sort(cmp=CompareCounts, reverse=True)
   top_30 = flattened[:30]
-  print "============= Top 30 Untrusted Functions ==============="
-  print "EVENTS\t\tFUNC [LOW_VMA, UPPER_VMA]"
+  total_samples = (sum(address_to_events.itervalues())
+                   + sum(trusted_events.itervalues()))
+  print "============= Top 30 Functions ==============="
+  print "EVENTS\t\tPCT\tCUM\tFUNC [LOW_VMA, UPPER_VMA]"
+  cum_pct = 0.0
   for ((func, lb, ub), count) in top_30:
-    print "%d\t\t%s [%s, %s]" % (count, DemangleFunc(func), hex(lb), hex(ub))
-  print """ TODO: process the rest of the oprofile log and also include
- the top trusted funcs / OS funcs. For now you must look at the log
- yourself for that data. It may end up being a large portion of
- the execution time."""
+    pct = 100.0 * count / total_samples
+    cum_pct += pct
+    print "%d\t\t%.2f\t%.2f\t%s [%s, %s]" % (count, pct, cum_pct,
+                                       DemangleFunc(func), hex(lb), hex(ub))
+  print "%d samples filtered (%.2f%% of all samples)" % (filtered_events,
+        100.0 * filtered_events / (filtered_events + total_samples))
 
 
 #--------------- Annotate Assembly ---------------
@@ -325,7 +378,7 @@ def PrintAnnotatedAssembly(fd_in, address_to_events, fd_out):
 def main(argv):
   try:
     opts, args = getopt.getopt(argv[1:],
-                               'l:s:o:',
+                               'l:s:o:f',
                                ['oprofilelog=',
                                 'assembly=',
                                 'output=',
@@ -336,6 +389,7 @@ def main(argv):
     oprof_fd = None
     output = sys.stdout
     out_name = None
+    filter_events = False
     for o, a in opts:
       if o in ('-l', '--oprofilelog'):
         oprof_log = a
@@ -346,15 +400,18 @@ def main(argv):
       elif o in ('-o', '--output'):
         out_name = a
         output = open(out_name, 'w')
+      elif o == '-f':
+        filter_events = True
       else:
         assert False, 'unhandled option'
     if assembly_file and oprof_log:
       Debug('Parsing assembly file of nexe: %s' % assembly_file)
       assembly_ranges = GetAssemblyRanges(assembly_fd)
       Debug('Parsing oprofile log: %s' % oprof_log)
-      address_to_events = GetAddressToEventSelLdr(oprof_fd)
+      address_to_events, trusted_events = GetAddressToEventSelLdr(oprof_fd,
+                                                                  filter_events)
       Debug('Printing the top functions (most events)')
-      PrintTopFunctions(assembly_ranges, address_to_events)
+      PrintTopFunctions(assembly_ranges, address_to_events, trusted_events)
       Debug('Printing annotated assembly to %s (or stdout)' % out_name)
       PrintAnnotatedAssembly(assembly_fd, address_to_events, output)
     else:
