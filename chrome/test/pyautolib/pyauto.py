@@ -344,14 +344,14 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return PyUITest.GetFileURLForPath(PyUITest.DataDir(), *relative_path)
 
   @staticmethod
-  def GetHttpURLForDataPath(data_path):
+  def GetHttpURLForDataPath(*relative_path):
     """Get http:// url for the given path in the data dir.
 
     The URL will be usable only after starting the http server.
     """
     global _HTTP_SERVER
     assert _HTTP_SERVER, 'HTTP Server not yet started'
-    return _HTTP_SERVER.GetURL(os.path.join('files', data_path)).spec()
+    return _HTTP_SERVER.GetURL(os.path.join('files', *relative_path)).spec()
 
   @staticmethod
   def IsMac():
