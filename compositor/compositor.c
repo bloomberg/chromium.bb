@@ -1883,7 +1883,7 @@ load_module(const char *name, const char *entrypoint, void **handle)
 	if (name[0] != '/')
 		snprintf(path, sizeof path, MODULEDIR "/%s", name);
 	else
-		snprintf(path, sizeof path, name);
+		snprintf(path, sizeof path, "%s", name);
 
 	module = dlopen(path, RTLD_LAZY);
 	if (!module) {
