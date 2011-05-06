@@ -89,9 +89,10 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
   // URL.
   GURL rewritten_url(params->url);
   bool reverse_on_redirect = false;
-  BrowserURLHandler::RewriteURLIfNecessary(&rewritten_url,
-                                           params->browser->profile(),
-                                           &reverse_on_redirect);
+  BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
+      &rewritten_url,
+      params->browser->profile(),
+      &reverse_on_redirect);
 
   // If there are several matches: prefer the active tab by starting there.
   int start_index = std::max(0, params->browser->active_index());

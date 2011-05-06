@@ -292,7 +292,7 @@ TEST_F(RenderViewHostManagerTest, NonWebUIChromeURLs) {
   GURL about_url(chrome::kAboutMemoryURL);
   // Rewrite so it looks like chrome://about/memory
   bool reverse_on_redirect = false;
-  BrowserURLHandler::RewriteURLIfNecessary(
+  BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
       &about_url, profile_.get(), &reverse_on_redirect);
   NavigationEntry about_entry(NULL /* instance */, -1 /* page_id */, about_url,
                               GURL() /* referrer */, string16() /* title */,

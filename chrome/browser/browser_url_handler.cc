@@ -77,57 +77,77 @@ static bool HandleWebUI(GURL* url, Profile* profile) {
   return true;
 }
 
-std::vector<BrowserURLHandler::HandlerPair> BrowserURLHandler::url_handlers_;
+// static
+BrowserURLHandler* BrowserURLHandler::GetInstance() {
+  return Singleton<BrowserURLHandler>::get();
+}
 
 // static
-void BrowserURLHandler::InitURLHandlers() {
-  if (!url_handlers_.empty())
-    return;
-
+BrowserURLHandler::URLHandler BrowserURLHandler::null_handler() {
   // Visual Studio 2010 has problems converting NULL to the null pointer for
   // std::pair.  See http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
   // It will work if we pass nullptr.
 #if defined(_MSC_VER) && _MSC_VER >= 1600
-  URLHandler null_handler = nullptr;
+  return nullptr;
 #else
-  URLHandler null_handler = NULL;
+  return NULL;
 #endif
-
-  // Add the default URL handlers.
-  url_handlers_.push_back(
-      HandlerPair(&ExtensionWebUI::HandleChromeURLOverride, null_handler));
-  // about:
-  url_handlers_.push_back(HandlerPair(&WillHandleBrowserAboutURL,
-                                      null_handler));
-  // chrome: & friends.
-  url_handlers_.push_back(HandlerPair(&HandleWebUI, null_handler));
-  // view-source:
-  url_handlers_.push_back(HandlerPair(&HandleViewSource, &ReverseViewSource));
 }
 
-// static
+BrowserURLHandler::BrowserURLHandler() {
+}
+
+BrowserURLHandler::~BrowserURLHandler() {
+}
+
+void BrowserURLHandler::AddHandlerPair(URLHandler handler,
+                                       URLHandler reverse_handler) {
+  url_handlers_.push_back(HandlerPair(handler, reverse_handler));
+}
+
+void BrowserURLHandler::InitURLHandlers() {
+  if (!url_handlers_.empty())
+    return;
+
+  // Add the default URL handlers.
+  AddHandlerPair(&ExtensionWebUI::HandleChromeURLOverride, null_handler());
+  AddHandlerPair(null_handler(),
+                 &ExtensionWebUI::HandleChromeURLOverrideReverse);
+
+  // about:
+  AddHandlerPair(&WillHandleBrowserAboutURL, null_handler());
+  // chrome: & friends.
+  AddHandlerPair(&HandleWebUI, null_handler());
+  // view-source:
+  AddHandlerPair(&HandleViewSource, &ReverseViewSource);
+}
+
 void BrowserURLHandler::RewriteURLIfNecessary(GURL* url, Profile* profile,
                                               bool* reverse_on_redirect) {
   if (url_handlers_.empty())
     InitURLHandlers();
   for (size_t i = 0; i < url_handlers_.size(); ++i) {
-    if ((*url_handlers_[i].first)(url, profile)) {
+    URLHandler handler = *url_handlers_[i].first;
+    if (handler && handler(url, profile)) {
       *reverse_on_redirect = (url_handlers_[i].second != NULL);
       return;
     }
   }
 }
 
-// static
 bool BrowserURLHandler::ReverseURLRewrite(
     GURL* url, const GURL& original, Profile* profile) {
   for (size_t i = 0; i < url_handlers_.size(); ++i) {
-    GURL test_url(original);
-    if ((*url_handlers_[i].first)(&test_url, profile)) {
-      if (url_handlers_[i].second)
-        return (*url_handlers_[i].second)(url, profile);
-      else
-        return false;
+    URLHandler reverse_rewriter = *url_handlers_[i].second;
+    if (reverse_rewriter) {
+      GURL test_url(original);
+      URLHandler handler = *url_handlers_[i].first;
+      if (!handler) {
+        if (reverse_rewriter(url, profile))
+          return true;
+      } else if (handler(&test_url, profile)) {
+        return reverse_rewriter(url, profile);
+      }
     }
   }
   return false;

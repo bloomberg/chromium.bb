@@ -72,7 +72,7 @@ void TestTabContents::NavigateAndCommit(const GURL& url) {
   controller().LoadURL(url, GURL(), PageTransition::LINK);
   GURL loaded_url(url);
   bool reverse_on_redirect = false;
-  BrowserURLHandler::RewriteURLIfNecessary(
+  BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
       &loaded_url, profile(), &reverse_on_redirect);
 
   // LoadURL created a navigation entry, now simulate the RenderView sending

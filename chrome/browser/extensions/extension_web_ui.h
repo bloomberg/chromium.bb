@@ -58,6 +58,7 @@ class ExtensionWebUI
 
   // BrowserURLHandler
   static bool HandleChromeURLOverride(GURL* url, Profile* profile);
+  static bool HandleChromeURLOverrideReverse(GURL* url, Profile* profile);
 
   // Register and unregister a dictionary of one or more overrides.
   // Page names are the keys, and chrome-extension: URLs are the values.

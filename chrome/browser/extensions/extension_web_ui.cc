@@ -147,9 +147,13 @@ ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
     bindings_ |= BindingsPolicy::EXTERNAL_HOST;
   // For chrome:// overrides, some of the defaults are a little different.
   GURL effective_url = tab_contents->GetURL();
-  if (effective_url.SchemeIs(chrome::kChromeUIScheme) &&
-      effective_url.host() == chrome::kChromeUINewTabHost) {
-    focus_location_bar_by_default_ = true;
+  if (effective_url.SchemeIs(chrome::kChromeUIScheme)) {
+    if (effective_url.host() == chrome::kChromeUINewTabHost) {
+      focus_location_bar_by_default_ = true;
+    } else {
+      // Current behavior of other chrome:// pages is to display the URL.
+      should_hide_url_ = false;
+    }
   }
 }
 
@@ -266,6 +270,8 @@ bool ExtensionWebUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
       UnregisterChromeURLOverride(page, profile, val);
       continue;
     }
+    if (!url->ref().empty())
+      override += "#" + url->ref();
     GURL extension_url(override);
     if (!extension_url.is_valid()) {
       NOTREACHED();
@@ -297,6 +303,40 @@ bool ExtensionWebUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
     *url = extension_url;
     return true;
   }
+  return false;
+}
+
+// static
+bool ExtensionWebUI::HandleChromeURLOverrideReverse(GURL* url,
+                                                    Profile* profile) {
+  const DictionaryValue* overrides =
+      profile->GetPrefs()->GetDictionary(kExtensionURLOverrides);
+  if (!overrides)
+    return false;
+
+  // Find the reverse mapping based on the given URL. For example this maps the
+  // internal URL chrome-extension://eemcgdkndhakfknomggombfjeno/main.html#1 to
+  // chrome://bookmarks/#1 for display in the omnibox.
+  for (DictionaryValue::key_iterator it = overrides->begin_keys(),
+       end = overrides->end_keys(); it != end; ++it) {
+    ListValue* url_list;
+    if (!overrides->GetList(*it, &url_list))
+      continue;
+
+    for (ListValue::const_iterator it2 = url_list->begin(),
+         end2 = url_list->end(); it2 != end2; ++it2) {
+      std::string override;
+      if (!(*it2)->GetAsString(&override))
+        continue;
+      if (StartsWithASCII(url->spec(), override, true)) {
+        GURL original_url(chrome::kChromeUIScheme + std::string("://") + *it +
+                          url->spec().substr(override.length()));
+        *url = original_url;
+        return true;
+      }
+    }
+  }
+
   return false;
 }
 

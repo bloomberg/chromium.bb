@@ -231,7 +231,7 @@ NavigationEntry* NavigationController::CreateNavigationEntry(
   // used internally.
   GURL loaded_url(url);
   bool reverse_on_redirect = false;
-  BrowserURLHandler::RewriteURLIfNecessary(
+  BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
       &loaded_url, profile, &reverse_on_redirect);
 
   NavigationEntry* entry = new NavigationEntry(
@@ -465,7 +465,7 @@ void NavigationController::RemoveEntryAtIndex(int index,
 void NavigationController::UpdateVirtualURLToURL(
     NavigationEntry* entry, const GURL& new_url) {
   GURL new_virtual_url(new_url);
-  if (BrowserURLHandler::ReverseURLRewrite(
+  if (BrowserURLHandler::GetInstance()->ReverseURLRewrite(
           &new_virtual_url, entry->virtual_url(), profile_)) {
     entry->set_virtual_url(new_virtual_url);
   }
@@ -713,6 +713,7 @@ void NavigationController::CreateNavigationEntriesFromTabNavigations(
 void NavigationController::RendererDidNavigateToNewPage(
     const ViewHostMsg_FrameNavigate_Params& params, bool* did_replace_entry) {
   NavigationEntry* new_entry;
+  bool update_virtual_url;
   if (pending_entry_) {
     // TODO(brettw) this assumes that the pending entry is appropriate for the
     // new page that was just loaded. I don't think this is necessarily the
@@ -723,12 +724,18 @@ void NavigationController::RendererDidNavigateToNewPage(
     // may have set the type to interstitial. Once we commit, however, the page
     // type must always be normal.
     new_entry->set_page_type(NORMAL_PAGE);
+    update_virtual_url = new_entry->update_virtual_url_with_url();
   } else {
     new_entry = new NavigationEntry;
+    // When navigating to a new page, give the browser URL handler a chance to
+    // update the virtual URL based on the new URL. For example, this is needed
+    // to show chrome://bookmarks/#1 when the bookmarks webui extension changes
+    // the URL.
+    update_virtual_url = true;
   }
 
   new_entry->set_url(params.url);
-  if (new_entry->update_virtual_url_with_url())
+  if (update_virtual_url)
     UpdateVirtualURLToURL(new_entry, params.url);
   new_entry->set_referrer(params.referrer);
   new_entry->set_page_id(params.page_id);
