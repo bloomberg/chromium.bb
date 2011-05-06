@@ -41,12 +41,9 @@ bool InMemoryHistoryBackend::Init(const FilePath& history_filename,
                                   const std::string& languages) {
   db_.reset(new InMemoryDatabase);
   bool success = db_->InitFromDisk(history_filename);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHistoryQuickProvider) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableHistoryQuickProvider)) {
     index_.reset(new InMemoryURLIndex(history_dir));
-
     index_->Init(db, languages);
   }
   return success;
