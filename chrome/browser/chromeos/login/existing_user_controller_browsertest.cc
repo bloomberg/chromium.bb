@@ -83,9 +83,10 @@ class MockLoginPerformerDelegate : public LoginPerformer::Delegate {
                       const std::string&,
                       const GaiaAuthConsumer::ClientLoginResult&,
                       bool) {
+    WizardController::MarkDeviceRegistered();
     LoginPerformer* login_performer = controller_->login_performer_.release();
     login_performer = NULL;
-    controller_->ActivateWizard(WizardController::kUserImageScreenName);
+    controller_->OnProfilePrepared(NULL);
   }
 
   MOCK_METHOD1(OnLoginFailure, void(const LoginFailure&));
