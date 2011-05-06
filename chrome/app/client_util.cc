@@ -130,9 +130,9 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
       key.Close();
     }
     if (pre_read) {
-      TRACE_EVENT_BEGIN("PreReadImage", 0, "");
+      TRACE_EVENT_BEGIN_ETW("PreReadImage", 0, "");
       file_util::PreReadImage(dir->c_str(), pre_read_size, pre_read_step_size);
-      TRACE_EVENT_END("PreReadImage", 0, "");
+      TRACE_EVENT_END_ETW("PreReadImage", 0, "");
     }
   }
 #endif  // NDEBUG

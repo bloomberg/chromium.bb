@@ -5,6 +5,7 @@
 #if defined(ENABLE_GPU)
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
@@ -15,7 +16,6 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_watchdog.h"
 #include "gpu/command_buffer/common/constants.h"
-#include "gpu/common/gpu_trace_event.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
 
@@ -184,7 +184,7 @@ void GpuCommandBufferStub::OnGetState(gpu::CommandBuffer::State* state) {
 void GpuCommandBufferStub::OnFlush(int32 put_offset,
                                    int32 last_known_get,
                                    gpu::CommandBuffer::State* state) {
-  GPU_TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnFlush");
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnFlush");
   *state = command_buffer_->FlushSync(put_offset, last_known_get);
   if (state->error == gpu::error::kLostContext &&
       gfx::GLContext::LosesAllContextsOnContextLost())
@@ -192,7 +192,7 @@ void GpuCommandBufferStub::OnFlush(int32 put_offset,
 }
 
 void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset) {
-  GPU_TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnAsyncFlush");
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnAsyncFlush");
   command_buffer_->Flush(put_offset);
   // TODO(piman): Do this everytime the scheduler finishes processing a batch of
   // commands.
@@ -257,7 +257,7 @@ void GpuCommandBufferStub::OnResizeOffscreenFrameBuffer(const gfx::Size& size) {
 }
 
 void GpuCommandBufferStub::OnSwapBuffers() {
-  GPU_TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSwapBuffers");
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSwapBuffers");
   ReportState();
   Send(new GpuCommandBufferMsg_SwapBuffers(route_id_));
 }

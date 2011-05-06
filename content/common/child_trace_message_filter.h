@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/debug/trace_event.h"
 #include "base/process.h"
 #include "ipc/ipc_channel_proxy.h"
 
@@ -18,6 +19,7 @@ class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   // IPC::ChannelProxy::MessageFilter implementation.
   virtual void OnFilterAdded(IPC::Channel* channel);
+  virtual void OnFilterRemoved();
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
@@ -27,7 +29,9 @@ class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
   void OnGetTraceBufferPercentFull();
 
   // Callback from trace subsystem.
-  void OnTraceDataCollected(const std::string& data);
+  void OnTraceDataCollected(
+      const scoped_refptr<base::debug::TraceLog::RefCountedString>&
+          json_events_str_ptr);
   void OnTraceBufferFull();
 
   IPC::Channel* channel_;

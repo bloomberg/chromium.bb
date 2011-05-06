@@ -111,7 +111,7 @@ AutomationProvider::AutomationProvider(Profile* profile)
       is_connected_(false),
       initial_tab_loads_complete_(false),
       network_library_initialized_(true) {
-  TRACE_EVENT_BEGIN("AutomationProvider::AutomationProvider", 0, "");
+  TRACE_EVENT_BEGIN_ETW("AutomationProvider::AutomationProvider", 0, "");
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -126,7 +126,7 @@ AutomationProvider::AutomationProvider(Profile* profile)
       new ExtensionTestResultNotificationObserver(this));
   g_browser_process->AddRefModule();
 
-  TRACE_EVENT_END("AutomationProvider::AutomationProvider", 0, "");
+  TRACE_EVENT_END_ETW("AutomationProvider::AutomationProvider", 0, "");
 }
 
 AutomationProvider::~AutomationProvider() {
@@ -137,7 +137,7 @@ AutomationProvider::~AutomationProvider() {
 }
 
 bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
-  TRACE_EVENT_BEGIN("AutomationProvider::InitializeChannel", 0, "");
+  TRACE_EVENT_BEGIN_ETW("AutomationProvider::InitializeChannel", 0, "");
 
   channel_id_ = channel_id;
   std::string effective_channel_id = channel_id;
@@ -176,7 +176,7 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
     delete observer;
 #endif
 
-  TRACE_EVENT_END("AutomationProvider::InitializeChannel", 0, "");
+  TRACE_EVENT_END_ETW("AutomationProvider::InitializeChannel", 0, "");
 
   return true;
 }

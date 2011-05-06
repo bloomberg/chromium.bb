@@ -137,7 +137,7 @@ RenderThread::RenderThread(const std::string& channel_name)
 }
 
 void RenderThread::Init() {
-  TRACE_EVENT_BEGIN("RenderThread::Init", 0, "");
+  TRACE_EVENT_BEGIN_ETW("RenderThread::Init", 0, "");
 
 #if defined(OS_MACOSX)
   // On Mac, the select popups are rendered by the browser.
@@ -169,7 +169,7 @@ void RenderThread::Init() {
 
   content::GetContentClient()->renderer()->RenderThreadStarted();
 
-  TRACE_EVENT_END("RenderThread::Init", 0, "");
+  TRACE_EVENT_END_ETW("RenderThread::Init", 0, "");
 }
 
 RenderThread::~RenderThread() {

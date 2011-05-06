@@ -233,7 +233,7 @@ void AutomationProvider::CreateExternalTab(
     const ExternalTabSettings& settings,
     gfx::NativeWindow* tab_container_window, gfx::NativeWindow* tab_window,
     int* tab_handle, int* session_id) {
-  TRACE_EVENT_BEGIN("AutomationProvider::CreateExternalTab", 0, "");
+  TRACE_EVENT_BEGIN_ETW("AutomationProvider::CreateExternalTab", 0, "");
 
   *tab_handle = 0;
   *tab_container_window = NULL;
@@ -263,7 +263,7 @@ void AutomationProvider::CreateExternalTab(
     external_tab_container->Uninitialize();
   }
 
-  TRACE_EVENT_END("AutomationProvider::CreateExternalTab", 0, "");
+  TRACE_EVENT_END_ETW("AutomationProvider::CreateExternalTab", 0, "");
 }
 
 bool AutomationProvider::AddExternalTab(ExternalTabContainer* external_tab) {
@@ -374,7 +374,7 @@ void AutomationProvider::ConnectExternalTab(
     gfx::NativeWindow* tab_window,
     int* tab_handle,
     int* session_id) {
-  TRACE_EVENT_BEGIN("AutomationProvider::ConnectExternalTab", 0, "");
+  TRACE_EVENT_BEGIN_ETW("AutomationProvider::ConnectExternalTab", 0, "");
 
   *tab_handle = 0;
   *tab_container_window = NULL;
@@ -401,7 +401,7 @@ void AutomationProvider::ConnectExternalTab(
     external_tab_container->Uninitialize();
   }
 
-  TRACE_EVENT_END("AutomationProvider::ConnectExternalTab", 0, "");
+  TRACE_EVENT_END_ETW("AutomationProvider::ConnectExternalTab", 0, "");
 }
 
 void AutomationProvider::OnBrowserMoved(int tab_handle) {

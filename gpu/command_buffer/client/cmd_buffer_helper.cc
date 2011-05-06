@@ -6,7 +6,7 @@
 
 #include "../client/cmd_buffer_helper.h"
 #include "../common/command_buffer.h"
-#include "gpu/common/gpu_trace_event.h"
+#include "../common/trace_event.h"
 
 namespace gpu {
 
@@ -62,7 +62,7 @@ void CommandBufferHelper::Flush() {
 // Calls Flush() and then waits until the buffer is empty. Break early if the
 // error is set.
 bool CommandBufferHelper::Finish() {
-  GPU_TRACE_EVENT0("gpu", "CommandBufferHelper::Finish");
+  TRACE_EVENT0("gpu", "CommandBufferHelper::Finish");
   do {
     // Do not loop forever if the flush fails, meaning the command buffer reader
     // has shutdown.
@@ -84,7 +84,7 @@ int32 CommandBufferHelper::InsertToken() {
   cmd::SetToken& cmd = GetCmdSpace<cmd::SetToken>();
   cmd.Init(token_);
   if (token_ == 0) {
-    GPU_TRACE_EVENT0("gpu", "CommandBufferHelper::InsertToken(wrapped)");
+    TRACE_EVENT0("gpu", "CommandBufferHelper::InsertToken(wrapped)");
     // we wrapped
     Finish();
     GPU_DCHECK_EQ(token_, last_token_read_);
@@ -95,7 +95,7 @@ int32 CommandBufferHelper::InsertToken() {
 // Waits until the current token value is greater or equal to the value passed
 // in argument.
 void CommandBufferHelper::WaitForToken(int32 token) {
-  GPU_TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForToken");
+  TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForToken");
   // Return immediately if corresponding InsertToken failed.
   if (token < 0)
     return;
@@ -131,7 +131,7 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
     // put will wrap to 0 after we add the jump).
     GPU_DCHECK_LE(1, put_);
     if (get_ > put_ || get_ == 0) {
-      GPU_TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries");
+      TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries");
       while (get_ > put_ || get_ == 0) {
         // Do not loop forever if the flush fails, meaning the command buffer
         // reader has shutdown.
@@ -144,7 +144,7 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
     put_ = 0;
   }
   if (AvailableEntries() < count) {
-    GPU_TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries1");
+    TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries1");
     while (AvailableEntries() < count) {
       // Do not loop forever if the flush fails, meaning the command buffer
       // reader has shutdown.

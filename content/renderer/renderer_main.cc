@@ -129,7 +129,7 @@ class RendererMessageLoopObserver : public MessageLoop::TaskObserver {
 
 // mainline routine for running as the Renderer process
 int RendererMain(const MainFunctionParams& parameters) {
-  TRACE_EVENT_BEGIN("RendererMain", 0, "");
+  TRACE_EVENT_BEGIN_ETW("RendererMain", 0, "");
 
   const CommandLine& parsed_command_line = parameters.command_line_;
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
@@ -229,12 +229,12 @@ int RendererMain(const MainFunctionParams& parameters) {
     if (run_loop) {
       if (pool)
         pool->Recycle();
-      TRACE_EVENT_BEGIN("RendererMain.START_MSG_LOOP", 0, 0);
+      TRACE_EVENT_BEGIN_ETW("RendererMain.START_MSG_LOOP", 0, 0);
       MessageLoop::current()->Run();
-      TRACE_EVENT_END("RendererMain.START_MSG_LOOP", 0, 0);
+      TRACE_EVENT_END_ETW("RendererMain.START_MSG_LOOP", 0, 0);
     }
   }
   platform.PlatformUninitialize();
-  TRACE_EVENT_END("RendererMain", 0, "");
+  TRACE_EVENT_END_ETW("RendererMain", 0, "");
   return 0;
 }

@@ -148,7 +148,7 @@ void GetMiniContextMenuData(UINT cmd,
 
 ChromeFrameActivex::ChromeFrameActivex()
     : chrome_wndproc_hook_(NULL) {
-  TRACE_EVENT_BEGIN("chromeframe.createactivex", this, "");
+  TRACE_EVENT_BEGIN_ETW("chromeframe.createactivex", this, "");
 }
 
 HRESULT ChromeFrameActivex::FinalConstruct() {
@@ -177,7 +177,7 @@ ChromeFrameActivex::~ChromeFrameActivex() {
   // ChromeFramePlugin::Uninitialize()
   Base::Uninitialize();
 
-  TRACE_EVENT_END("chromeframe.createactivex", this, "");
+  TRACE_EVENT_END_ETW("chromeframe.createactivex", this, "");
 }
 
 LRESULT ChromeFrameActivex::OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
