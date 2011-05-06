@@ -156,7 +156,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
   if (!sync_service_->IsSyncEnabled())
     return;
   if (sync_service_->HasSyncSetupCompleted()) {
-    sync_service_->ShowErrorUI(NULL);
+    sync_service_->ShowErrorUI();
     DictionaryValue value;
     value.SetString("syncEnabledMessage",
                     l10n_util::GetStringFUTF16(IDS_SYNC_NTP_SYNCED_TO,
@@ -165,7 +165,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
   } else {
     // User clicked the 'Start now' link to begin syncing.
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_NTP);
-    sync_service_->ShowLoginDialog(NULL);
+    sync_service_->ShowLoginDialog();
   }
 }
 

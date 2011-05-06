@@ -272,7 +272,7 @@ void OpenSyncMyBookmarksDialog(Profile* profile,
     if (create_window)
       browser->window()->Show();
   } else {
-    service->ShowLoginDialog(NULL);
+    service->ShowLoginDialog();
     ProfileSyncService::SyncEvent(code);  // UMA stats
   }
 }

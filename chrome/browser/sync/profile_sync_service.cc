@@ -47,7 +47,6 @@
 #include "content/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/native_widget_types.h"
 
 using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
@@ -506,7 +505,7 @@ void ProfileSyncService::OnBackendInitialized() {
 
   if (!cros_user_.empty()) {
     if (profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart)) {
-      ShowConfigure(NULL, true);
+      ShowConfigure(true);
     } else {
       SetSyncSetupCompleted();
     }
@@ -666,7 +665,7 @@ void ProfileSyncService::OnMigrationNeededForTypes(
   migrator_->MigrateTypes(types);
 }
 
-void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
+void ProfileSyncService::ShowLoginDialog() {
   if (WizardIsVisible()) {
     wizard_.Focus();
     // Force the wizard to step to the login screen (which will only actually
@@ -686,12 +685,12 @@ void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
   NotifyObservers();
 }
 
-void ProfileSyncService::ShowErrorUI(gfx::NativeWindow parent_window) {
+void ProfileSyncService::ShowErrorUI() {
   if (IsPassphraseRequired()) {
     if (IsUsingSecondaryPassphrase())
-      PromptForExistingPassphrase(parent_window);
+      PromptForExistingPassphrase();
     else
-      SigninForPassphraseMigration(parent_window);
+      SigninForPassphraseMigration();
     return;
   }
   const GoogleServiceAuthError& error = GetAuthError();
@@ -700,13 +699,12 @@ void ProfileSyncService::ShowErrorUI(gfx::NativeWindow parent_window) {
       error.state() == GoogleServiceAuthError::ACCOUNT_DELETED ||
       error.state() == GoogleServiceAuthError::ACCOUNT_DISABLED ||
       error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
-    ShowLoginDialog(parent_window);
+    ShowLoginDialog();
   }
 }
 
 
-void ProfileSyncService::ShowConfigure(
-    gfx::NativeWindow parent_window, bool sync_everything) {
+void ProfileSyncService::ShowConfigure(bool sync_everything) {
   if (WizardIsVisible()) {
     wizard_.Focus();
     return;
@@ -718,8 +716,7 @@ void ProfileSyncService::ShowConfigure(
     wizard_.Step(SyncSetupWizard::CONFIGURE);
 }
 
-void ProfileSyncService::PromptForExistingPassphrase(
-    gfx::NativeWindow parent_window) {
+void ProfileSyncService::PromptForExistingPassphrase() {
   if (WizardIsVisible()) {
     wizard_.Focus();
     return;
@@ -728,10 +725,9 @@ void ProfileSyncService::PromptForExistingPassphrase(
   wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
 }
 
-void ProfileSyncService::SigninForPassphraseMigration(
-    gfx::NativeWindow parent_window) {
+void ProfileSyncService::SigninForPassphraseMigration() {
   passphrase_migration_in_progress_ = true;
-  ShowLoginDialog(parent_window);
+  ShowLoginDialog();
 }
 
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {

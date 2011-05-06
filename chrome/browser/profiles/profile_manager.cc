@@ -80,7 +80,7 @@ class NewProfileLauncher : public ProfileManager::Observer {
     Browser::NewWindowWithProfile(profile);
     ProfileSyncService* service = profile->GetProfileSyncService();
     DCHECK(service);
-    service->ShowLoginDialog(NULL);
+    service->ShowLoginDialog();
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_PROFILE_MENU);
   }
 

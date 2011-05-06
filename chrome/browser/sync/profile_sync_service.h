@@ -32,7 +32,6 @@
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_type.h"
 #include "googleurl/src/gurl.h"
-#include "ui/gfx/native_widget_types.h"
 
 class NotificationDetails;
 class NotificationSource;
@@ -240,21 +239,21 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   bool WizardIsVisible() const {
     return wizard_.IsVisible();
   }
-  virtual void ShowLoginDialog(gfx::NativeWindow parent_window);
+  virtual void ShowLoginDialog();
   SyncSetupWizard& get_wizard() { return wizard_; }
 
   // This method handles clicks on "sync error" UI, showing the appropriate
   // dialog for the error condition (relogin / enter passphrase).
-  virtual void ShowErrorUI(gfx::NativeWindow parent_window);
+  virtual void ShowErrorUI();
 
   // Shows the configure screen of the Sync setup wizard. If |sync_everything|
   // is true, shows the corresponding page in the customize screen; otherwise,
   // displays the page that gives the user the ability to select which data
   // types to sync.
-  void ShowConfigure(gfx::NativeWindow parent_window, bool sync_everything);
+  void ShowConfigure(bool sync_everything);
 
-  void PromptForExistingPassphrase(gfx::NativeWindow parent_window);
-  void SigninForPassphraseMigration(gfx::NativeWindow parent_window);
+  void PromptForExistingPassphrase();
+  void SigninForPassphraseMigration();
 
   // Pretty-printed strings for a given StatusSummary.
   static std::string BuildSyncStatusSummaryText(

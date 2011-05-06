@@ -376,20 +376,20 @@ void PersonalOptionsHandler::Initialize() {
 void PersonalOptionsHandler::ShowSyncActionDialog(const ListValue* args) {
   ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
   DCHECK(service);
-  service->ShowErrorUI(NULL);
+  service->ShowErrorUI();
 }
 
 void PersonalOptionsHandler::ShowSyncLoginDialog(const ListValue* args) {
   ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
   DCHECK(service);
-  service->ShowLoginDialog(NULL);
+  service->ShowLoginDialog();
   ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
 }
 
 void PersonalOptionsHandler::ShowCustomizeSyncDialog(const ListValue* args) {
   ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
   DCHECK(service);
-  service->ShowConfigure(NULL, false);
+  service->ShowConfigure(false);
 }
 
 void PersonalOptionsHandler::ThemesReset(const ListValue* args) {
