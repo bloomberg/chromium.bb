@@ -13,6 +13,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/animation/linear_animation.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image.h"
 #include "ui/gfx/rect.h"
 
 namespace {
@@ -83,7 +84,7 @@ DownloadStartedAnimationGtk::DownloadStartedAnimationGtk(
   static GdkPixbuf* kDownloadImage = NULL;
   if (!kDownloadImage) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    kDownloadImage = rb.GetPixbufNamed(IDR_DOWNLOAD_ANIMATION_BEGIN);
+    kDownloadImage = rb.GetNativeImageNamed(IDR_DOWNLOAD_ANIMATION_BEGIN);
   }
 
   width_ = gdk_pixbuf_get_width(kDownloadImage);

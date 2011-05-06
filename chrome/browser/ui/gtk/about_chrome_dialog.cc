@@ -27,6 +27,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
@@ -101,7 +102,7 @@ gboolean OnEventBoxExpose(GtkWidget* event_box,
 
 void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  static GdkPixbuf* background = rb.GetPixbufNamed(IDR_ABOUT_BACKGROUND);
+  static GdkPixbuf* background = rb.GetNativeImageNamed(IDR_ABOUT_BACKGROUND);
   chrome::VersionInfo version_info;
   std::string current_version = version_info.Version();
 #if !defined(GOOGLE_CHROME_BUILD)

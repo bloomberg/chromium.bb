@@ -47,6 +47,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image.h"
 
 namespace {
 
@@ -282,10 +283,10 @@ void BookmarkBarGtk::Init(Profile* profile) {
                      FALSE, FALSE, 0);
 
   sync_error_button_ = theme_service_->BuildChromeButton();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gtk_button_set_image(
       GTK_BUTTON(sync_error_button_),
-      gtk_image_new_from_pixbuf(
-          ResourceBundle::GetSharedInstance().GetPixbufNamed(IDR_WARNING)));
+      gtk_image_new_from_pixbuf(rb.GetNativeImageNamed(IDR_WARNING)));
   g_signal_connect(sync_error_button_, "button-press-event",
                    G_CALLBACK(OnSyncErrorButtonPressedThunk), this);
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), sync_error_button_,

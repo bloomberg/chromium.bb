@@ -39,6 +39,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/frame/browser_view.h"
@@ -133,8 +134,10 @@ void OnLabelRealize(GtkWidget* label, gpointer pixel_width) {
 GList* GetIconList() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   GList* icon_list = NULL;
-  icon_list = g_list_append(icon_list, rb.GetPixbufNamed(IDR_PRODUCT_ICON_32));
-  icon_list = g_list_append(icon_list, rb.GetPixbufNamed(IDR_PRODUCT_LOGO_16));
+  icon_list = g_list_append(icon_list,
+                            rb.GetNativeImageNamed(IDR_PRODUCT_ICON_32));
+  icon_list = g_list_append(icon_list,
+                            rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16));
   return icon_list;
 }
 

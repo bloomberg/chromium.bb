@@ -673,7 +673,7 @@ void DownloadItemGtk::UpdateDangerIcon() {
     int pixbuf_id =
         get_download()->danger_type() == DownloadItem::DANGEROUS_URL ?
         IDR_SAFEBROWSING_WARNING : IDR_WARNING;
-    GdkPixbuf* download_pixbuf = rb.GetPixbufNamed(pixbuf_id);
+    GdkPixbuf* download_pixbuf = rb.GetNativeImageNamed(pixbuf_id);
     gtk_image_set_from_pixbuf(GTK_IMAGE(dangerous_image_), download_pixbuf);
   }
 }

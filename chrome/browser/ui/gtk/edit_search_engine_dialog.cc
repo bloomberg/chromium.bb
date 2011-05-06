@@ -22,6 +22,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image.h"
 
 namespace {
 
@@ -247,13 +248,13 @@ void EditSearchEngineDialog::UpdateImage(GtkWidget* image,
   if (is_valid) {
     gtk_widget_set_has_tooltip(image, FALSE);
     gtk_image_set_from_pixbuf(GTK_IMAGE(image),
-        ResourceBundle::GetSharedInstance().GetPixbufNamed(
+        ResourceBundle::GetSharedInstance().GetNativeImageNamed(
             IDR_INPUT_GOOD));
   } else {
     gtk_widget_set_tooltip_text(
         image, l10n_util::GetStringUTF8(invalid_message_id).c_str());
     gtk_image_set_from_pixbuf(GTK_IMAGE(image),
-        ResourceBundle::GetSharedInstance().GetPixbufNamed(
+        ResourceBundle::GetSharedInstance().GetNativeImageNamed(
             IDR_INPUT_ALERT));
   }
 }
