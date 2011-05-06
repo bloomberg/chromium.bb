@@ -596,48 +596,19 @@ static EGLImageKHR
 drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
 				   int32_t width, int32_t height)
 {
-	EGLint image_attribs[] = {
-		EGL_WIDTH, 0,
-		EGL_HEIGHT, 0,
+	static const EGLint image_attribs[] = {
+		EGL_WIDTH, 64,
+		EGL_HEIGHT, 64,
 		EGL_DRM_BUFFER_FORMAT_MESA, EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
-		0, 0,
+		EGL_DRM_BUFFER_USE_MESA, EGL_DRM_BUFFER_USE_CURSOR_MESA,
 		EGL_NONE
 	};
-	EGLint stride, name;
-	EGLImageKHR tmp_image, image;
 	struct drm_compositor *c = (struct drm_compositor *) ec;
 
 	if (width > 64 || height > 64)
 		return EGL_NO_IMAGE_KHR;
 
-	image_attribs[1] = 64;
-	image_attribs[3] = 64;
-	image_attribs[6] = EGL_DRM_BUFFER_USE_MESA;
-	image_attribs[7] = EGL_DRM_BUFFER_USE_SCANOUT_MESA;
-
-	tmp_image = c->create_drm_image(ec->display, image_attribs);
-
-	c->export_drm_image(ec->display, tmp_image, &name, NULL, &stride);
-
-	if (stride == 64)
-		return tmp_image;
-
-	/* recreate image width stide 64 forced */
-	image_attribs[1] = width;
-	image_attribs[3] = height;
-	image_attribs[6] = EGL_DRM_BUFFER_STRIDE_MESA;
-	image_attribs[7] = 64;
-
-	image = ec->create_image(ec->display, 
-				 EGL_NO_CONTEXT,
-				 EGL_DRM_BUFFER_MESA,
-				 (EGLClientBuffer)(intptr_t) name,
-				 image_attribs);
-	c->export_drm_image(ec->display, image, &name, NULL, &stride);
-
-	ec->destroy_image(ec->display, tmp_image);
-
-	return image;
+	return c->create_drm_image(ec->display, image_attribs);
 }
 
 static void
