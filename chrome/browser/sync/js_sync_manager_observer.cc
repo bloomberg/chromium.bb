@@ -35,7 +35,7 @@ void JsSyncManagerObserver::OnChangesApplied(
   for (int i = 0; i < change_count; ++i) {
     change_values->Append(changes[i].ToValue(trans));
   }
-  parent_router_->RouteJsEvent("onChangesApplied", JsArgList(return_args));
+  parent_router_->RouteJsEvent("onChangesApplied", JsArgList(&return_args));
 }
 
 void JsSyncManagerObserver::OnChangesComplete(
@@ -43,27 +43,28 @@ void JsSyncManagerObserver::OnChangesComplete(
   ListValue return_args;
   return_args.Append(Value::CreateStringValue(
       syncable::ModelTypeToString(model_type)));
-  parent_router_->RouteJsEvent("onChangesComplete", JsArgList(return_args));
+  parent_router_->RouteJsEvent("onChangesComplete", JsArgList(&return_args));
 }
 
 void JsSyncManagerObserver::OnSyncCycleCompleted(
     const sessions::SyncSessionSnapshot* snapshot) {
   ListValue return_args;
   return_args.Append(snapshot->ToValue());
-  parent_router_->RouteJsEvent("onSyncCycleCompleted", JsArgList(return_args));
+  parent_router_->RouteJsEvent("onSyncCycleCompleted",
+                               JsArgList(&return_args));
 }
 
 void JsSyncManagerObserver::OnAuthError(
     const GoogleServiceAuthError& auth_error) {
   ListValue return_args;
   return_args.Append(auth_error.ToValue());
-  parent_router_->RouteJsEvent("onAuthError", JsArgList(return_args));
+  parent_router_->RouteJsEvent("onAuthError", JsArgList(&return_args));
 }
 
 void JsSyncManagerObserver::OnUpdatedToken(const std::string& token) {
   ListValue return_args;
   return_args.Append(Value::CreateStringValue("<redacted>"));
-  parent_router_->RouteJsEvent("onUpdatedToken", JsArgList(return_args));
+  parent_router_->RouteJsEvent("onUpdatedToken", JsArgList(&return_args));
 }
 
 void JsSyncManagerObserver::OnPassphraseRequired(
@@ -73,7 +74,7 @@ void JsSyncManagerObserver::OnPassphraseRequired(
   return_args.Append(Value::CreateStringValue(
       sync_api::PassphraseRequiredReasonToString(reason)));
   parent_router_->RouteJsEvent("onPassphraseRequired",
-                               JsArgList(return_args));
+                               JsArgList(&return_args));
 }
 
 void JsSyncManagerObserver::OnPassphraseAccepted(
@@ -81,7 +82,7 @@ void JsSyncManagerObserver::OnPassphraseAccepted(
   ListValue return_args;
   return_args.Append(Value::CreateStringValue("<redacted>"));
   parent_router_->RouteJsEvent("onPassphraseAccepted",
-                               JsArgList(return_args));
+                               JsArgList(&return_args));
 }
 
 void JsSyncManagerObserver::OnEncryptionComplete(
@@ -89,7 +90,7 @@ void JsSyncManagerObserver::OnEncryptionComplete(
   ListValue return_args;
   return_args.Append(syncable::ModelTypeSetToValue(encrypted_types));
   parent_router_->RouteJsEvent("onEncryptionComplete",
-                               JsArgList(return_args));
+                               JsArgList(&return_args));
 }
 
 void JsSyncManagerObserver::OnMigrationNeededForTypes(
@@ -97,7 +98,7 @@ void JsSyncManagerObserver::OnMigrationNeededForTypes(
   ListValue return_args;
   return_args.Append(syncable::ModelTypeSetToValue(types));
   parent_router_->RouteJsEvent("onMigrationNeededForTypes",
-                               JsArgList(return_args));
+                               JsArgList(&return_args));
 }
 
 void JsSyncManagerObserver::OnInitializationComplete() {

@@ -906,7 +906,7 @@ TEST_F(SyncManagerTest, ProcessMessageGetNodeById) {
   {
     ListValue args;
     args.Append(Value::CreateStringValue("1"));
-    js_backend->ProcessMessage("getNodeById", JsArgList(args), &event_handler);
+    js_backend->ProcessMessage("getNodeById", JsArgList(&args), &event_handler);
   }
 
   CheckGetNodeByIdReturnArgs(sync_manager_, return_args, 1);
@@ -915,7 +915,7 @@ TEST_F(SyncManagerTest, ProcessMessageGetNodeById) {
   {
     ListValue args;
     args.Append(Value::CreateStringValue(base::Int64ToString(child_id)));
-    js_backend->ProcessMessage("getNodeById", JsArgList(args), &event_handler);
+    js_backend->ProcessMessage("getNodeById", JsArgList(&args), &event_handler);
   }
 
   CheckGetNodeByIdReturnArgs(sync_manager_, return_args, child_id);
@@ -941,31 +941,31 @@ TEST_F(SyncManagerTest, ProcessMessageGetNodeByIdFailure) {
 
   {
     ListValue args;
-    js_backend->ProcessMessage("getNodeById", JsArgList(args), &event_handler);
+    js_backend->ProcessMessage("getNodeById", JsArgList(&args), &event_handler);
   }
 
   {
     ListValue args;
     args.Append(Value::CreateStringValue(""));
-    js_backend->ProcessMessage("getNodeById", JsArgList(args), &event_handler);
+    js_backend->ProcessMessage("getNodeById", JsArgList(&args), &event_handler);
   }
 
   {
     ListValue args;
     args.Append(Value::CreateStringValue("nonsense"));
-    js_backend->ProcessMessage("getNodeById", JsArgList(args), &event_handler);
+    js_backend->ProcessMessage("getNodeById", JsArgList(&args), &event_handler);
   }
 
   {
     ListValue args;
     args.Append(Value::CreateStringValue("nonsense"));
-    js_backend->ProcessMessage("getNodeById", JsArgList(args), &event_handler);
+    js_backend->ProcessMessage("getNodeById", JsArgList(&args), &event_handler);
   }
 
   {
     ListValue args;
     args.Append(Value::CreateStringValue("0"));
-    js_backend->ProcessMessage("getNodeById", JsArgList(args), &event_handler);
+    js_backend->ProcessMessage("getNodeById", JsArgList(&args), &event_handler);
   }
 
   // TODO(akalin): Figure out how to test InitByIdLookup() failure.

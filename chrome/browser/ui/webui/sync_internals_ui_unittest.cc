@@ -144,7 +144,7 @@ TEST_F(SyncInternalsUITest, HandleJsEvent) {
   ListValue args;
   args.Append(Value::CreateIntegerValue(5));
   args.Append(Value::CreateBooleanValue(true));
-  GetTestSyncInternalsUI()->HandleJsEvent("testMessage", JsArgList(args));
+  GetTestSyncInternalsUI()->HandleJsEvent("testMessage", JsArgList(&args));
 }
 
 TEST_F(SyncInternalsUITest, HandleJsEventNullService) {
@@ -159,7 +159,7 @@ TEST_F(SyncInternalsUITest, HandleJsEventNullService) {
   ListValue args;
   args.Append(Value::CreateIntegerValue(5));
   args.Append(Value::CreateBooleanValue(true));
-  GetTestSyncInternalsUI()->HandleJsEvent("testMessage", JsArgList(args));
+  GetTestSyncInternalsUI()->HandleJsEvent("testMessage", JsArgList(&args));
 }
 
 TEST_F(SyncInternalsUITest, HandleJsMessageReply) {
@@ -176,7 +176,7 @@ TEST_F(SyncInternalsUITest, HandleJsMessageReply) {
   args.Append(Value::CreateIntegerValue(5));
   args.Append(Value::CreateBooleanValue(true));
   GetTestSyncInternalsUI()->HandleJsMessageReply(
-      "testMessage", JsArgList(args));
+      "testMessage", JsArgList(&args));
 }
 
 TEST_F(SyncInternalsUITest, HandleJsMessageReplyNullService) {
@@ -193,7 +193,7 @@ TEST_F(SyncInternalsUITest, HandleJsMessageReplyNullService) {
   args.Append(Value::CreateIntegerValue(5));
   args.Append(Value::CreateBooleanValue(true));
   GetTestSyncInternalsUI()->HandleJsMessageReply(
-      "testMessage", JsArgList(args));
+      "testMessage", JsArgList(&args));
 }
 
 TEST_F(SyncInternalsUITest, OnWebUISendBasic) {

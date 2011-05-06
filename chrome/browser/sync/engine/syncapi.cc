@@ -2631,7 +2631,7 @@ void SyncManager::SyncInternal::ProcessMessage(
     ListValue return_args;
     return_args.Append(Value::CreateBooleanValue(notifications_enabled));
     parent_router_->RouteJsMessageReply(
-        name, browser_sync::JsArgList(return_args), sender);
+        name, browser_sync::JsArgList(&return_args), sender);
   } else if (name == "getNotificationInfo") {
     if (!parent_router_) {
       LogNoRouter(name, args);
@@ -2641,7 +2641,7 @@ void SyncManager::SyncInternal::ProcessMessage(
     ListValue return_args;
     return_args.Append(NotificationInfoToValue(notification_info_map_));
     parent_router_->RouteJsMessageReply(
-        name, browser_sync::JsArgList(return_args), sender);
+        name, browser_sync::JsArgList(&return_args), sender);
   } else if (name == "getRootNode") {
     if (!parent_router_) {
       LogNoRouter(name, args);
@@ -2653,7 +2653,7 @@ void SyncManager::SyncInternal::ProcessMessage(
     ListValue return_args;
     return_args.Append(root.ToValue());
     parent_router_->RouteJsMessageReply(
-        name, browser_sync::JsArgList(return_args), sender);
+        name, browser_sync::JsArgList(&return_args), sender);
   } else if (name == "getNodeById") {
     if (!parent_router_) {
       LogNoRouter(name, args);
@@ -2678,7 +2678,7 @@ browser_sync::JsArgList SyncManager::SyncInternal::ProcessGetNodeByIdMessage(
     const browser_sync::JsArgList& args) {
   ListValue null_return_args_list;
   null_return_args_list.Append(Value::CreateNullValue());
-  browser_sync::JsArgList null_return_args(null_return_args_list);
+  browser_sync::JsArgList null_return_args(&null_return_args_list);
   std::string id_str;
   if (!args.Get().GetString(0, &id_str)) {
     return null_return_args;
@@ -2697,7 +2697,7 @@ browser_sync::JsArgList SyncManager::SyncInternal::ProcessGetNodeByIdMessage(
   }
   ListValue return_args;
   return_args.Append(node.ToValue());
-  return browser_sync::JsArgList(return_args);
+  return browser_sync::JsArgList(&return_args);
 }
 
 browser_sync::JsArgList SyncManager::SyncInternal::
@@ -2707,12 +2707,12 @@ browser_sync::JsArgList SyncManager::SyncInternal::
   ListValue return_args;
   if (!args.Get().GetString(0, &query)) {
     return_args.Append(new ListValue());
-    return browser_sync::JsArgList(return_args);
+    return browser_sync::JsArgList(&return_args);
   }
 
   ListValue* result = FindNodesContainingString(query);
   return_args.Append(result);
-  return browser_sync::JsArgList(return_args);
+  return browser_sync::JsArgList(&return_args);
 }
 
 void SyncManager::SyncInternal::OnNotificationStateChange(
@@ -2728,7 +2728,7 @@ void SyncManager::SyncInternal::OnNotificationStateChange(
     args.Append(Value::CreateBooleanValue(notifications_enabled));
     // TODO(akalin): Tidy up grammar in event names.
     parent_router_->RouteJsEvent("onSyncNotificationStateChange",
-                                 browser_sync::JsArgList(args));
+                                 browser_sync::JsArgList(&args));
   }
 }
 
@@ -2769,7 +2769,7 @@ void SyncManager::SyncInternal::OnIncomingNotification(
       changed_types->Append(Value::CreateStringValue(model_type_str));
     }
     parent_router_->RouteJsEvent("onSyncIncomingNotification",
-                                 browser_sync::JsArgList(args));
+                                 browser_sync::JsArgList(&args));
   }
 }
 

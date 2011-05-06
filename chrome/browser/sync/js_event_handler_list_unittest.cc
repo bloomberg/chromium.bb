@@ -26,7 +26,7 @@ TEST_F(JsEventHandlerListTest, Basic) {
   ListValue arg_list1, arg_list2;
   arg_list1.Append(Value::CreateBooleanValue(false));
   arg_list2.Append(Value::CreateIntegerValue(5));
-  JsArgList args1(arg_list1), args2(arg_list2);
+  JsArgList args1(&arg_list1), args2(&arg_list2);
 
   StrictMock<MockJsEventHandler> handler1, handler2;
 
@@ -84,7 +84,7 @@ TEST_F(JsEventHandlerListTest, QueuedMessages) {
   ListValue arg_list1, arg_list2;
   arg_list1.Append(Value::CreateBooleanValue(false));
   arg_list2.Append(Value::CreateIntegerValue(5));
-  JsArgList args1(arg_list1), args2(arg_list2);
+  JsArgList args1(&arg_list1), args2(&arg_list2);
 
   StrictMock<MockJsEventHandler> handler1, handler2;
 

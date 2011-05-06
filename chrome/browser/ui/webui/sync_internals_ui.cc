@@ -45,7 +45,8 @@ SyncInternalsUI::~SyncInternalsUI() {
 void SyncInternalsUI::OnWebUISend(const GURL& source_url,
                                   const std::string& name,
                                   const ListValue& content) {
-  browser_sync::JsArgList args(content);
+  scoped_ptr<ListValue> content_copy(content.DeepCopy());
+  browser_sync::JsArgList args(content_copy.get());
   VLOG(1) << "Received message: " << name << " with args "
           << args.ToString();
   // We handle this case directly because it needs to work even if
@@ -56,7 +57,7 @@ void SyncInternalsUI::OnWebUISend(const GURL& source_url,
     args.Append(about_info);
     ProfileSyncService* service = GetProfile()->GetProfileSyncService();
     sync_ui_util::ConstructAboutInformation(service, about_info);
-    HandleJsMessageReply(name, browser_sync::JsArgList(args));
+    HandleJsMessageReply(name, browser_sync::JsArgList(&args));
   } else {
     browser_sync::JsFrontend* backend = GetJsFrontend();
     if (backend) {

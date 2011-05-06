@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/js_test_util.h"
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/js_arg_list.h"
 
 namespace browser_sync {
@@ -53,7 +54,8 @@ class HasArgsMatcher
 
 ::testing::Matcher<const JsArgList&> HasArgsAsList(
     const ListValue& expected_args) {
-  return HasArgs(JsArgList(expected_args));
+  scoped_ptr<ListValue> expected_args_copy(expected_args.DeepCopy());
+  return HasArgs(JsArgList(expected_args_copy.get()));
 }
 
 MockJsBackend::MockJsBackend() {}

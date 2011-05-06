@@ -26,37 +26,13 @@ TEST_F(JsArgListTest, FromList) {
   dict->SetString("foo", "bar");
   dict->Set("baz", new ListValue());
 
-  JsArgList arg_list(*list);
-
-  // Make sure arg_list takes a deep copy.
   scoped_ptr<ListValue> list_copy(list->DeepCopy());
-  list.reset();
+
+  JsArgList arg_list(list.get());
+
+  // |arg_list| should take over |list|'s data.
+  EXPECT_TRUE(list->empty());
   EXPECT_TRUE(arg_list.Get().Equals(list_copy.get()));
-}
-
-TEST_F(JsArgListTest, FromVector) {
-  FundamentalValue bool_value(false);
-  FundamentalValue int_value(5);
-  DictionaryValue dict;
-  dict.SetString("foo", "bar");
-  dict.Set("baz", new ListValue());
-
-  std::vector<const Value*> vec;
-  vec.push_back(&bool_value);
-  vec.push_back(&int_value);
-  vec.push_back(&dict);
-
-  JsArgList arg_list(vec);
-
-  ListValue list;
-  list.Append(bool_value.DeepCopy());
-  list.Append(int_value.DeepCopy());
-  list.Append(dict.DeepCopy());
-
-  // Make sure arg_list takes a deep copy.
-  vec.clear();
-  dict.SetString("baz", "foo");
-  EXPECT_TRUE(arg_list.Get().Equals(&list));
 }
 
 }  // namespace
