@@ -14,6 +14,12 @@
 
 namespace net {
 
+// This class represents an HTTP MAC signature for use in the HTTP MAC
+// Authentication scheme.  The current draft specification of this
+// authentication scheme is located at the following URL:
+//
+//   http://tools.ietf.org/html/draft-hammer-oauth-v2-mac-token
+//
 class HttpMacSignature {
  public:
   HttpMacSignature();
@@ -31,6 +37,7 @@ class HttpMacSignature {
                    const std::string& host,
                    int port);
 
+  // Returns the value of the Authorization header for use in an HTTP request.
   std::string GenerateAuthorizationHeader();
 
  private:
