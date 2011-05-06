@@ -57,7 +57,7 @@ class ProtocolHandlerRegistry
 
   // Returns true if the given protocol has a default handler associated with
   // it.
-  const bool HasDefault(const std::string& scheme) const;
+  bool HasDefault(const std::string& scheme) const;
 
   // Returns true if there is a handler registered for the given protocol.
   bool HasHandler(const std::string& scheme);

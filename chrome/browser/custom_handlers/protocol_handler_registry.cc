@@ -307,7 +307,7 @@ const ProtocolHandler& ProtocolHandlerRegistry::GetHandlerFor(
   return ProtocolHandler::kEmpty;
 }
 
-const bool ProtocolHandlerRegistry::HasDefault(
+bool ProtocolHandlerRegistry::HasDefault(
     const std::string& scheme) const {
   return !GetHandlerFor(scheme).IsEmpty();
 }
