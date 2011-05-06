@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,6 +125,10 @@ class InitProxyResolver {
 
   // Filled when the PAC script fetch completes.
   string16 pac_script_;
+
+  // Flag indicating whether the caller requested a mandatory pac script
+  // (i.e. fallback to direct connections are prohibited).
+  bool pac_mandatory_;
 
   UrlList pac_urls_;
   State next_state_;

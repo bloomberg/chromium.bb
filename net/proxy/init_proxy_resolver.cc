@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,6 +39,7 @@ InitProxyResolver::InitProxyResolver(ProxyResolver* resolver,
           this, &InitProxyResolver::OnIOCompletion)),
       user_callback_(NULL),
       current_pac_url_index_(0u),
+      pac_mandatory_(false),
       next_state_(STATE_NONE),
       net_log_(BoundNetLog::Make(
           net_log, NetLog::SOURCE_INIT_PROXY_RESOLVER)),
@@ -66,6 +67,8 @@ int InitProxyResolver::Init(const ProxyConfig& config,
     wait_delay_ = base::TimeDelta();
 
   effective_config_ = effective_config;
+
+  pac_mandatory_ = config.pac_mandatory();
 
   pac_urls_ = BuildPacUrlsFallbackList(config);
   DCHECK(!pac_urls_.empty());
@@ -243,6 +246,7 @@ int InitProxyResolver::DoSetPacScriptComplete(int result) {
     } else {
       *effective_config_ =
           ProxyConfig::CreateFromCustomPacURL(current_pac_url().url);
+      effective_config_->set_pac_mandatory(pac_mandatory_);
     }
   }
 
