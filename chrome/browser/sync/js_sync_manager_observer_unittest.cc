@@ -35,16 +35,16 @@ TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
 
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onInitializationComplete",
-                           HasArgs(JsArgList()), NULL));
+                           HasArgs(JsArgList())));
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onStopSyncingPermanently",
-                           HasArgs(JsArgList()), NULL));
+                           HasArgs(JsArgList())));
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onClearServerDataSucceeded",
-                           HasArgs(JsArgList()), NULL));
+                           HasArgs(JsArgList())));
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onClearServerDataFailed",
-                           HasArgs(JsArgList()), NULL));
+                           HasArgs(JsArgList())));
 
   sync_manager_observer_.OnInitializationComplete();
   sync_manager_observer_.OnStopSyncingPermanently();
@@ -63,7 +63,7 @@ TEST_F(JsSyncManagerObserverTest, OnChangesComplete) {
     expected_args.Append(Value::CreateStringValue(model_type_str));
     EXPECT_CALL(mock_router_,
                 RouteJsEvent("onChangesComplete",
-                             HasArgsAsList(expected_args), NULL));
+                             HasArgsAsList(expected_args)));
   }
 
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
@@ -92,7 +92,7 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
 
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onSyncCycleCompleted",
-                           HasArgsAsList(expected_args), NULL));
+                           HasArgsAsList(expected_args)));
 
   sync_manager_observer_.OnSyncCycleCompleted(&snapshot);
 }
@@ -104,7 +104,7 @@ TEST_F(JsSyncManagerObserverTest, OnAuthError) {
 
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onAuthError",
-                           HasArgsAsList(expected_args), NULL));
+                           HasArgsAsList(expected_args)));
 
   sync_manager_observer_.OnAuthError(error);
 }
@@ -129,19 +129,18 @@ TEST_F(JsSyncManagerObserverTest, OnPassphraseRequired) {
           sync_api::REASON_SET_PASSPHRASE_FAILED)));
 
   EXPECT_CALL(mock_router_,
-              RouteJsEvent("onPassphraseRequired",
-                           HasArgsAsList(reason_passphrase_not_required_args),
-                           NULL));
+              RouteJsEvent(
+                  "onPassphraseRequired",
+                  HasArgsAsList(reason_passphrase_not_required_args)));
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onPassphraseRequired",
-                           HasArgsAsList(reason_encryption_args), NULL));
+                           HasArgsAsList(reason_encryption_args)));
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onPassphraseRequired",
-                           HasArgsAsList(reason_decryption_args), NULL));
+                           HasArgsAsList(reason_decryption_args)));
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onPassphraseRequired",
-                           HasArgsAsList(reason_set_passphrase_failed_args),
-                           NULL));
+                           HasArgsAsList(reason_set_passphrase_failed_args)));
 
   sync_manager_observer_.OnPassphraseRequired(
       sync_api::REASON_PASSPHRASE_NOT_REQUIRED);
@@ -157,10 +156,10 @@ TEST_F(JsSyncManagerObserverTest, SensitiveNotifiations) {
 
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onUpdatedToken",
-                           HasArgsAsList(redacted_args), NULL));
+                           HasArgsAsList(redacted_args)));
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onPassphraseAccepted",
-                           HasArgsAsList(redacted_args), NULL));
+                           HasArgsAsList(redacted_args)));
 
   sync_manager_observer_.OnUpdatedToken("sensitive_token");
   sync_manager_observer_.OnPassphraseAccepted("sensitive_token");
@@ -182,7 +181,7 @@ TEST_F(JsSyncManagerObserverTest, OnEncryptionComplete) {
 
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onEncryptionComplete",
-                           HasArgsAsList(expected_args), NULL));
+                           HasArgsAsList(expected_args)));
 
   sync_manager_observer_.OnEncryptionComplete(encrypted_types);
 }
@@ -203,7 +202,7 @@ TEST_F(JsSyncManagerObserverTest, OnMigrationNeededForTypes) {
 
   EXPECT_CALL(mock_router_,
               RouteJsEvent("onMigrationNeededForTypes",
-                           HasArgsAsList(expected_args), NULL));
+                           HasArgsAsList(expected_args)));
 
   sync_manager_observer_.OnMigrationNeededForTypes(types);
 }
@@ -281,7 +280,7 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
     }
     EXPECT_CALL(mock_router_,
                 RouteJsEvent("onChangesApplied",
-                             HasArgsAsList(expected_args), NULL));
+                             HasArgsAsList(expected_args)));
   }
 
   // Fire OnChangesApplied() for each data type.

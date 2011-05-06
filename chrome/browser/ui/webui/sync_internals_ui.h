@@ -43,6 +43,9 @@ class SyncInternalsUI : public WebUI, public browser_sync::JsEventHandler {
   // browser_sync::JsEventHandler implementation.
   virtual void HandleJsEvent(const std::string& name,
                              const browser_sync::JsArgList& args) OVERRIDE;
+  virtual void HandleJsMessageReply(
+      const std::string& name,
+      const browser_sync::JsArgList& args) OVERRIDE;
 
  private:
   // Returns the sync service's JsFrontend object, or NULL if the sync

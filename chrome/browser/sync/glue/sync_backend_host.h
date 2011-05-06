@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -292,16 +293,18 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         const syncable::ModelTypeSet& encrypted_types);
 
     // JsBackend implementation.
-    virtual void SetParentJsEventRouter(JsEventRouter* router);
-    virtual void RemoveParentJsEventRouter();
-    virtual const JsEventRouter* GetParentJsEventRouter() const;
+    virtual void SetParentJsEventRouter(JsEventRouter* router) OVERRIDE;
+    virtual void RemoveParentJsEventRouter() OVERRIDE;
+    virtual const JsEventRouter* GetParentJsEventRouter() const OVERRIDE;
     virtual void ProcessMessage(const std::string& name, const JsArgList& args,
-                                const JsEventHandler* sender);
+                                const JsEventHandler* sender) OVERRIDE;
 
     // JsEventRouter implementation.
     virtual void RouteJsEvent(const std::string& event_name,
-                              const JsArgList& args,
-                              const JsEventHandler* dst);
+                              const JsArgList& args) OVERRIDE;
+    virtual void RouteJsMessageReply(const std::string& event_name,
+                                     const JsArgList& args,
+                                     const JsEventHandler* target) OVERRIDE;
 
     struct DoInitializeOptions {
       DoInitializeOptions(
@@ -485,8 +488,11 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void HandleInitalizationCompletedOnFrontendLoop();
 
     void RouteJsEventOnFrontendLoop(
+        const std::string& name, const JsArgList& args);
+
+    void RouteJsMessageReplyOnFrontendLoop(
         const std::string& name, const JsArgList& args,
-        const JsEventHandler* dst);
+        const JsEventHandler* target);
 
     void FinishConfigureDataTypesOnFrontendLoop();
 

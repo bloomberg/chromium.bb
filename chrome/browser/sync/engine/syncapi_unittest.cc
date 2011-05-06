@@ -807,18 +807,19 @@ TEST_F(SyncManagerTest, ProcessMessage) {
     false_args.Append(Value::CreateBooleanValue(false));
 
     EXPECT_CALL(event_router,
-                RouteJsEvent("onGetNotificationStateFinished",
-                             HasArgsAsList(false_args), &event_handler));
+                RouteJsMessageReply("getNotificationState",
+                                    HasArgsAsList(false_args),
+                                    &event_handler));
 
     js_backend->SetParentJsEventRouter(&event_router);
 
     // This message should be dropped.
     js_backend->ProcessMessage("unknownMessage",
-                                 kNoArgs, &event_handler);
+                               kNoArgs, &event_handler);
 
     // This should trigger the reply.
     js_backend->ProcessMessage("getNotificationState",
-                                 kNoArgs, &event_handler);
+                               kNoArgs, &event_handler);
 
     js_backend->RemoveParentJsEventRouter();
   }
@@ -828,9 +829,9 @@ TEST_F(SyncManagerTest, ProcessMessage) {
   {
     StrictMock<MockJsEventHandler> event_handler;
     js_backend->ProcessMessage("unknownMessage",
-                                 kNoArgs, &event_handler);
+                               kNoArgs, &event_handler);
     js_backend->ProcessMessage("getNotificationState",
-                                 kNoArgs, &event_handler);
+                               kNoArgs, &event_handler);
   }
 }
 
@@ -845,8 +846,8 @@ TEST_F(SyncManagerTest, ProcessMessageGetRootNode) {
   JsArgList return_args;
 
   EXPECT_CALL(event_router,
-              RouteJsEvent("onGetRootNodeFinished", _, &event_handler)).
-      WillOnce(SaveArg<1>(&return_args));
+              RouteJsMessageReply("getRootNode", _, &event_handler))
+      .WillOnce(SaveArg<1>(&return_args));
 
   js_backend->SetParentJsEventRouter(&event_router);
 
@@ -896,7 +897,7 @@ TEST_F(SyncManagerTest, ProcessMessageGetNodeById) {
   JsArgList return_args;
 
   EXPECT_CALL(event_router,
-              RouteJsEvent("onGetNodeByIdFinished", _, &event_handler))
+              RouteJsMessageReply("getNodeById", _, &event_handler))
       .Times(2).WillRepeatedly(SaveArg<1>(&return_args));
 
   js_backend->SetParentJsEventRouter(&event_router);
@@ -932,8 +933,8 @@ TEST_F(SyncManagerTest, ProcessMessageGetNodeByIdFailure) {
   null_args.Append(Value::CreateNullValue());
 
   EXPECT_CALL(event_router,
-              RouteJsEvent("onGetNodeByIdFinished",
-                           HasArgsAsList(null_args), &event_handler))
+              RouteJsMessageReply("getNodeById", HasArgsAsList(null_args),
+                                  &event_handler))
       .Times(5);
 
   js_backend->SetParentJsEventRouter(&event_router);
@@ -982,10 +983,10 @@ TEST_F(SyncManagerTest, OnNotificationStateChange) {
 
   EXPECT_CALL(event_router,
               RouteJsEvent("onSyncNotificationStateChange",
-                           HasArgsAsList(true_args), NULL));
+                           HasArgsAsList(true_args)));
   EXPECT_CALL(event_router,
               RouteJsEvent("onSyncNotificationStateChange",
-                           HasArgsAsList(false_args), NULL));
+                           HasArgsAsList(false_args)));
 
   browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
 
@@ -1028,7 +1029,7 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
 
   EXPECT_CALL(event_router,
               RouteJsEvent("onSyncIncomingNotification",
-                           HasArgsAsList(expected_args), NULL));
+                           HasArgsAsList(expected_args)));
 
   browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
 

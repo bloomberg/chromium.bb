@@ -56,8 +56,7 @@ void SyncInternalsUI::OnWebUISend(const GURL& source_url,
     args.Append(about_info);
     ProfileSyncService* service = GetProfile()->GetProfileSyncService();
     sync_ui_util::ConstructAboutInformation(service, about_info);
-    HandleJsEvent("onGetAboutInfoFinished",
-                  browser_sync::JsArgList(args));
+    HandleJsMessageReply(name, browser_sync::JsArgList(args));
   } else {
     browser_sync::JsFrontend* backend = GetJsFrontend();
     if (backend) {
@@ -72,8 +71,19 @@ void SyncInternalsUI::OnWebUISend(const GURL& source_url,
 void SyncInternalsUI::HandleJsEvent(const std::string& name,
                                     const browser_sync::JsArgList& args) {
   VLOG(1) << "Handling event: " << name << " with args " << args.ToString();
+  const std::string& event_handler = "chrome.sync." + name + ".fire";
   std::vector<const Value*> arg_list(args.Get().begin(), args.Get().end());
-  CallJavascriptFunction(name, arg_list);
+  CallJavascriptFunction(event_handler, arg_list);
+}
+
+void SyncInternalsUI::HandleJsMessageReply(
+    const std::string& name,
+    const browser_sync::JsArgList& args) {
+  VLOG(1) << "Handling reply for " << name << " message with args "
+          << args.ToString();
+  const std::string& reply_handler = "chrome.sync." + name + ".handleReply";
+  std::vector<const Value*> arg_list(args.Get().begin(), args.Get().end());
+  CallJavascriptFunction(reply_handler, arg_list);
 }
 
 browser_sync::JsFrontend* SyncInternalsUI::GetJsFrontend() {

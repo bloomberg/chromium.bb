@@ -122,9 +122,9 @@ void SyncBackendHostForProfileSyncTest::ProcessMessage(
     const std::string& name, const JsArgList& args,
     const JsEventHandler* sender) {
   if (name.find("delay") != name.npos) {
-    core_->RouteJsEvent(name, args, sender);
+    core_->RouteJsMessageReply(name, args, sender);
   } else {
-    core_->RouteJsEventOnFrontendLoop(name, args, sender);
+    core_->RouteJsMessageReplyOnFrontendLoop(name, args, sender);
   }
 }
 

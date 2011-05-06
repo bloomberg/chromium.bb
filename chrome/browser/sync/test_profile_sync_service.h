@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
 #include "chrome/browser/sync/js_backend.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -60,14 +61,14 @@ class SyncBackendHostForProfileSyncTest
   virtual JsBackend* GetJsBackend();
 
   // JsBackend implementation.
-  virtual void SetParentJsEventRouter(JsEventRouter* router);
-  virtual void RemoveParentJsEventRouter();
-  virtual const JsEventRouter* GetParentJsEventRouter() const;
+  virtual void SetParentJsEventRouter(JsEventRouter* router) OVERRIDE;
+  virtual void RemoveParentJsEventRouter() OVERRIDE;
+  virtual const JsEventRouter* GetParentJsEventRouter() const OVERRIDE;
   // Fires an event identical to the message unless the message has
   // "delay" as a prefix, in which case a task to fire the identical
   // event is posted instead.
   virtual void ProcessMessage(const std::string& name, const JsArgList& args,
-                              const JsEventHandler* sender);
+                              const JsEventHandler* sender) OVERRIDE;
 
   virtual void StartConfiguration(Callback0::Type* callback);
 

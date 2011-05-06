@@ -20,13 +20,15 @@ class JsEventHandler;
 // JsEventRouters.
 class JsEventRouter {
  public:
-  // If |target| is NULL that means the event is intended for every
-  // handler.  Otherwise the event is meant for the given target only.
+  virtual void RouteJsEvent(
+      const std::string& name, const JsArgList& args) = 0;
+
   // |target| is const because it shouldn't be used except by the
   // router that directly knows about it (which can then safely cast
   // away the constness).
-  virtual void RouteJsEvent(const std::string& name, const JsArgList& args,
-                            const JsEventHandler* target) = 0;
+  virtual void RouteJsMessageReply(
+      const std::string& name, const JsArgList& args,
+      const JsEventHandler* target) = 0;
 
  protected:
   virtual ~JsEventRouter() {}

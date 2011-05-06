@@ -1024,11 +1024,19 @@ void SyncBackendHost::Core::OnEncryptionComplete(
 }
 
 void SyncBackendHost::Core::RouteJsEvent(
+    const std::string& name, const JsArgList& args) {
+  host_->frontend_loop_->PostTask(
+      FROM_HERE, NewRunnableMethod(
+          this, &Core::RouteJsEventOnFrontendLoop, name, args));
+}
+
+void SyncBackendHost::Core::RouteJsMessageReply(
     const std::string& name, const JsArgList& args,
     const JsEventHandler* target) {
   host_->frontend_loop_->PostTask(
       FROM_HERE, NewRunnableMethod(
-          this, &Core::RouteJsEventOnFrontendLoop, name, args, target));
+          this, &Core::RouteJsMessageReplyOnFrontendLoop,
+          name, args, target));
 }
 
 void SyncBackendHost::Core::HandleStopSyncingPermanentlyOnFrontendLoop() {
@@ -1061,6 +1069,16 @@ void SyncBackendHost::Core::HandleAuthErrorEventOnFrontendLoop(
 }
 
 void SyncBackendHost::Core::RouteJsEventOnFrontendLoop(
+    const std::string& name, const JsArgList& args) {
+  if (!host_ || !parent_router_)
+    return;
+
+  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
+
+  parent_router_->RouteJsEvent(name, args);
+}
+
+void SyncBackendHost::Core::RouteJsMessageReplyOnFrontendLoop(
     const std::string& name, const JsArgList& args,
     const JsEventHandler* target) {
   if (!host_ || !parent_router_)
@@ -1068,7 +1086,7 @@ void SyncBackendHost::Core::RouteJsEventOnFrontendLoop(
 
   DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
 
-  parent_router_->RouteJsEvent(name, args, target);
+  parent_router_->RouteJsMessageReply(name, args, target);
 }
 
 void SyncBackendHost::Core::StartSavingChanges() {

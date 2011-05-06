@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_event_router.h"
@@ -38,17 +39,19 @@ class JsEventHandlerList : public JsFrontend, public JsEventRouter {
   // JsFrontend implementation.  Routes messages to any attached
   // backend; if there is none, queues up the message for processing
   // when the next backend is attached.
-  virtual void AddHandler(JsEventHandler* handler);
-  virtual void RemoveHandler(JsEventHandler* handler);
+  virtual void AddHandler(JsEventHandler* handler) OVERRIDE;
+  virtual void RemoveHandler(JsEventHandler* handler) OVERRIDE;
   virtual void ProcessMessage(
       const std::string& name, const JsArgList& args,
-      const JsEventHandler* sender);
+      const JsEventHandler* sender) OVERRIDE;
 
   // JsEventRouter implementation.  Routes the event to the
   // appropriate handler(s).
   virtual void RouteJsEvent(const std::string& name,
-                            const JsArgList& args,
-                            const JsEventHandler* target);
+                            const JsArgList& args) OVERRIDE;
+  virtual void RouteJsMessageReply(const std::string& name,
+                                   const JsArgList& args,
+                                   const JsEventHandler* target) OVERRIDE;
 
  private:
   // A struct used to hold the arguments to ProcessMessage() for

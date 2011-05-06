@@ -1404,12 +1404,15 @@ class SyncManager::SyncInternal
   virtual void OnServerConnectionEvent(const ServerConnectionEvent& event);
 
   // browser_sync::JsBackend implementation.
-  virtual void SetParentJsEventRouter(browser_sync::JsEventRouter* router);
-  virtual void RemoveParentJsEventRouter();
-  virtual const browser_sync::JsEventRouter* GetParentJsEventRouter() const;
-  virtual void ProcessMessage(const std::string& name,
-                              const browser_sync::JsArgList& args,
-                              const browser_sync::JsEventHandler* sender);
+  virtual void SetParentJsEventRouter(
+      browser_sync::JsEventRouter* router) OVERRIDE;
+  virtual void RemoveParentJsEventRouter() OVERRIDE;
+  virtual const browser_sync::JsEventRouter*
+      GetParentJsEventRouter() const OVERRIDE;
+  virtual void ProcessMessage(
+      const std::string& name,
+      const browser_sync::JsArgList& args,
+      const browser_sync::JsEventHandler* sender) OVERRIDE;
 
   ListValue* FindNodesContainingString(const std::string& query);
 
@@ -2627,9 +2630,8 @@ void SyncManager::SyncInternal::ProcessMessage(
     bool notifications_enabled = allstatus_.status().notifications_enabled;
     ListValue return_args;
     return_args.Append(Value::CreateBooleanValue(notifications_enabled));
-    parent_router_->RouteJsEvent(
-        "onGetNotificationStateFinished",
-        browser_sync::JsArgList(return_args), sender);
+    parent_router_->RouteJsMessageReply(
+        name, browser_sync::JsArgList(return_args), sender);
   } else if (name == "getNotificationInfo") {
     if (!parent_router_) {
       LogNoRouter(name, args);
@@ -2638,8 +2640,8 @@ void SyncManager::SyncInternal::ProcessMessage(
 
     ListValue return_args;
     return_args.Append(NotificationInfoToValue(notification_info_map_));
-    parent_router_->RouteJsEvent("onGetNotificationInfoFinished",
-        browser_sync::JsArgList(return_args), sender);
+    parent_router_->RouteJsMessageReply(
+        name, browser_sync::JsArgList(return_args), sender);
   } else if (name == "getRootNode") {
     if (!parent_router_) {
       LogNoRouter(name, args);
@@ -2650,24 +2652,22 @@ void SyncManager::SyncInternal::ProcessMessage(
     root.InitByRootLookup();
     ListValue return_args;
     return_args.Append(root.ToValue());
-    parent_router_->RouteJsEvent(
-        "onGetRootNodeFinished",
-        browser_sync::JsArgList(return_args), sender);
+    parent_router_->RouteJsMessageReply(
+        name, browser_sync::JsArgList(return_args), sender);
   } else if (name == "getNodeById") {
     if (!parent_router_) {
       LogNoRouter(name, args);
       return;
     }
-    parent_router_->RouteJsEvent(
-        "onGetNodeByIdFinished", ProcessGetNodeByIdMessage(args), sender);
+    parent_router_->RouteJsMessageReply(
+        name, ProcessGetNodeByIdMessage(args), sender);
   } else if (name == "findNodesContainingString") {
     if (!parent_router_) {
       LogNoRouter(name, args);
       return;
     }
-    parent_router_->RouteJsEvent(
-        "onFindNodesContainingStringFinished",
-        ProcessFindNodesContainingString(args), sender);
+    parent_router_->RouteJsMessageReply(
+        name, ProcessFindNodesContainingString(args), sender);
   } else {
     VLOG(1) << "Dropping unknown message " << name
               << " with args " << args.ToString();
@@ -2728,7 +2728,7 @@ void SyncManager::SyncInternal::OnNotificationStateChange(
     args.Append(Value::CreateBooleanValue(notifications_enabled));
     // TODO(akalin): Tidy up grammar in event names.
     parent_router_->RouteJsEvent("onSyncNotificationStateChange",
-                                 browser_sync::JsArgList(args), NULL);
+                                 browser_sync::JsArgList(args));
   }
 }
 
@@ -2769,7 +2769,7 @@ void SyncManager::SyncInternal::OnIncomingNotification(
       changed_types->Append(Value::CreateStringValue(model_type_str));
     }
     parent_router_->RouteJsEvent("onSyncIncomingNotification",
-                                 browser_sync::JsArgList(args), NULL);
+                                 browser_sync::JsArgList(args));
   }
 }
 

@@ -21,6 +21,9 @@ class JsEventHandler {
   virtual void HandleJsEvent(
       const std::string& name, const JsArgList& args) = 0;
 
+  virtual void HandleJsMessageReply(
+      const std::string& name, const JsArgList& args) = 0;
+
  protected:
   virtual ~JsEventHandler() {}
 };

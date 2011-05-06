@@ -222,14 +222,15 @@ TEST_F(ProfileSyncServiceTest, JsFrontendProcessMessageBasic) {
   arg_list1.Append(Value::CreateBooleanValue(true));
   arg_list1.Append(Value::CreateIntegerValue(5));
   JsArgList args1(arg_list1);
-  EXPECT_CALL(event_handler, HandleJsEvent("testMessage1", HasArgs(args1)));
+  EXPECT_CALL(event_handler,
+              HandleJsMessageReply("testMessage1", HasArgs(args1)));
 
   ListValue arg_list2;
   arg_list2.Append(Value::CreateStringValue("test"));
   arg_list2.Append(arg_list1.DeepCopy());
   JsArgList args2(arg_list2);
   EXPECT_CALL(event_handler,
-              HandleJsEvent("delayTestMessage2", HasArgs(args2)));
+              HandleJsMessageReply("delayTestMessage2", HasArgs(args2)));
 
   ListValue arg_list3;
   arg_list3.Append(arg_list1.DeepCopy());
@@ -280,20 +281,22 @@ TEST_F(ProfileSyncServiceTest,
   arg_list1.Append(Value::CreateBooleanValue(true));
   arg_list1.Append(Value::CreateIntegerValue(5));
   JsArgList args1(arg_list1);
-  EXPECT_CALL(event_handler, HandleJsEvent("testMessage1", HasArgs(args1)));
+  EXPECT_CALL(event_handler,
+              HandleJsMessageReply("testMessage1", HasArgs(args1)));
 
   ListValue arg_list2;
   arg_list2.Append(Value::CreateStringValue("test"));
   arg_list2.Append(arg_list1.DeepCopy());
   JsArgList args2(arg_list2);
-  EXPECT_CALL(event_handler, HandleJsEvent("testMessage2", HasArgs(args2)));
+  EXPECT_CALL(event_handler,
+              HandleJsMessageReply("testMessage2", HasArgs(args2)));
 
   ListValue arg_list3;
   arg_list3.Append(arg_list1.DeepCopy());
   arg_list3.Append(arg_list2.DeepCopy());
   JsArgList args3(arg_list3);
   EXPECT_CALL(event_handler,
-              HandleJsEvent("delayTestMessage3", HasArgs(args3)));
+              HandleJsMessageReply("delayTestMessage3", HasArgs(args3)));
 
   const JsArgList kNoArgs;
 

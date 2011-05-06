@@ -429,7 +429,7 @@ void ProfileSyncService::NotifyObservers() {
   // TODO(akalin): Make an Observer subclass that listens and does the
   // event routing.
   js_event_handlers_.RouteJsEvent(
-      "onSyncServiceStateChanged", browser_sync::JsArgList(), NULL);
+      "onSyncServiceStateChanged", browser_sync::JsArgList());
 }
 
 // static

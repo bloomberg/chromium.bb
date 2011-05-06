@@ -65,6 +65,8 @@ class MockJsEventHandler : public JsEventHandler {
   ~MockJsEventHandler();
 
   MOCK_METHOD2(HandleJsEvent, void(const ::std::string&, const JsArgList&));
+  MOCK_METHOD2(HandleJsMessageReply,
+               void(const ::std::string&, const JsArgList&));
 };
 
 class MockJsEventRouter : public JsEventRouter {
@@ -72,7 +74,9 @@ class MockJsEventRouter : public JsEventRouter {
   MockJsEventRouter();
   ~MockJsEventRouter();
 
-  MOCK_METHOD3(RouteJsEvent,
+  MOCK_METHOD2(RouteJsEvent,
+               void(const ::std::string&, const JsArgList&));
+  MOCK_METHOD3(RouteJsMessageReply,
                void(const ::std::string&, const JsArgList&,
                     const JsEventHandler*));
 };

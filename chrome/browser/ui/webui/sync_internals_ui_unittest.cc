@@ -138,7 +138,8 @@ TEST_F(SyncInternalsUITest, HandleJsEvent) {
   ConstructTestSyncInternalsUI();
 
   EXPECT_CALL(*GetTestSyncInternalsUI(),
-              ExecuteJavascript(ASCIIToUTF16("testMessage(5,true);")));
+              ExecuteJavascript(
+                  ASCIIToUTF16("chrome.sync.testMessage.fire(5,true);")));
 
   ListValue args;
   args.Append(Value::CreateIntegerValue(5));
@@ -152,12 +153,47 @@ TEST_F(SyncInternalsUITest, HandleJsEventNullService) {
   ConstructTestSyncInternalsUI();
 
   EXPECT_CALL(*GetTestSyncInternalsUI(),
-              ExecuteJavascript(ASCIIToUTF16("testMessage(5,true);")));
+              ExecuteJavascript(
+                  ASCIIToUTF16("chrome.sync.testMessage.fire(5,true);")));
 
   ListValue args;
   args.Append(Value::CreateIntegerValue(5));
   args.Append(Value::CreateBooleanValue(true));
   GetTestSyncInternalsUI()->HandleJsEvent("testMessage", JsArgList(args));
+}
+
+TEST_F(SyncInternalsUITest, HandleJsMessageReply) {
+  ExpectSetupTeardownCalls();
+
+  ConstructTestSyncInternalsUI();
+
+  EXPECT_CALL(
+      *GetTestSyncInternalsUI(),
+      ExecuteJavascript(
+          ASCIIToUTF16("chrome.sync.testMessage.handleReply(5,true);")));
+
+  ListValue args;
+  args.Append(Value::CreateIntegerValue(5));
+  args.Append(Value::CreateBooleanValue(true));
+  GetTestSyncInternalsUI()->HandleJsMessageReply(
+      "testMessage", JsArgList(args));
+}
+
+TEST_F(SyncInternalsUITest, HandleJsMessageReplyNullService) {
+  ExpectSetupTeardownCallsNullService();
+
+  ConstructTestSyncInternalsUI();
+
+  EXPECT_CALL(
+      *GetTestSyncInternalsUI(),
+      ExecuteJavascript(
+          ASCIIToUTF16("chrome.sync.testMessage.handleReply(5,true);")));
+
+  ListValue args;
+  args.Append(Value::CreateIntegerValue(5));
+  args.Append(Value::CreateBooleanValue(true));
+  GetTestSyncInternalsUI()->HandleJsMessageReply(
+      "testMessage", JsArgList(args));
 }
 
 TEST_F(SyncInternalsUITest, OnWebUISendBasic) {
@@ -191,7 +227,7 @@ TEST_F(SyncInternalsUITest, OnWebUISendBasicNullService) {
 
 namespace {
 const char kAboutInfoCall[] =
-    "onGetAboutInfoFinished({\"summary\":\"SYNC DISABLED\"});";
+    "chrome.sync.getAboutInfo.handleReply({\"summary\":\"SYNC DISABLED\"});";
 }  // namespace
 
 // TODO(lipalani) - add a test case to test about:sync with a non null service.

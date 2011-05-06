@@ -37,13 +37,13 @@ TEST_F(JsEventHandlerListTest, Basic) {
   EXPECT_CALL(backend, ProcessMessage("test1", HasArgs(args2), &handler1));
   EXPECT_CALL(backend, ProcessMessage("test2", HasArgs(args1), &handler2));
 
-  EXPECT_CALL(handler1, HandleJsEvent("reply1", HasArgs(args2)));
-  EXPECT_CALL(handler1, HandleJsEvent("allreply", HasArgs(args1)));
+  EXPECT_CALL(handler1, HandleJsMessageReply("reply1", HasArgs(args2)));
+  EXPECT_CALL(handler1, HandleJsEvent("event", HasArgs(args1)));
 
-  EXPECT_CALL(handler2, HandleJsEvent("reply2", HasArgs(args1)));
-  EXPECT_CALL(handler2, HandleJsEvent("allreply", HasArgs(args1)));
-  EXPECT_CALL(handler2, HandleJsEvent("anotherreply2", HasArgs(args2)));
-  EXPECT_CALL(handler2, HandleJsEvent("anotherallreply", HasArgs(args2)));
+  EXPECT_CALL(handler2, HandleJsMessageReply("reply2", HasArgs(args1)));
+  EXPECT_CALL(handler2, HandleJsEvent("event", HasArgs(args1)));
+  EXPECT_CALL(handler2, HandleJsMessageReply("anotherreply2", HasArgs(args2)));
+  EXPECT_CALL(handler2, HandleJsEvent("anotherevent", HasArgs(args2)));
 
   event_handlers.SetBackend(&backend);
 
@@ -52,23 +52,25 @@ TEST_F(JsEventHandlerListTest, Basic) {
 
   event_handlers.ProcessMessage("test1", args2, &handler1);
 
-  event_handlers.RouteJsEvent("reply2", args1, &handler2);
-  event_handlers.RouteJsEvent("reply1", args2, &handler1);
-  event_handlers.RouteJsEvent("allreply", args1, NULL);
+  event_handlers.RouteJsMessageReply("reply2", args1, &handler2);
+  event_handlers.RouteJsMessageReply("reply1", args2, &handler1);
+  event_handlers.RouteJsEvent("event", args1);
 
   event_handlers.RemoveHandler(&handler1);
 
   event_handlers.ProcessMessage("test2", args1, &handler2);
 
-  event_handlers.RouteJsEvent("droppedreply1", args1, &handler1);
-  event_handlers.RouteJsEvent("anotherreply2", args2, &handler2);
-  event_handlers.RouteJsEvent("anotherallreply", args2, NULL);
+  event_handlers.RouteJsMessageReply("droppedreply1", args1, &handler1);
+  event_handlers.RouteJsMessageReply("anotherreply2", args2, &handler2);
+  event_handlers.RouteJsEvent("anotherevent", args2);
 
   event_handlers.RemoveHandler(&handler2);
 
-  event_handlers.RouteJsEvent("anotherdroppedreply1", args1, &handler1);
-  event_handlers.RouteJsEvent("anotheranotherreply2", args2, &handler2);
-  event_handlers.RouteJsEvent("droppedallreply", args2, NULL);
+  event_handlers.RouteJsMessageReply("anotherdroppedreply1",
+                                     args1, &handler1);
+  event_handlers.RouteJsMessageReply("anotheranotherreply2",
+                                     args2, &handler2);
+  event_handlers.RouteJsEvent("droppedevent", args2);
 
   // Let destructor of |event_handlers| call RemoveBackend().
 }
