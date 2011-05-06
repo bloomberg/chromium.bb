@@ -58,3 +58,16 @@
   fun:doexit
   fun:exit
 }
+{
+  bug_81793a
+  ThreadSanitizer:Race
+  ...
+  fun:NetTestSuite::InitializeTestThread
+}
+{
+  bug_81793b
+  ThreadSanitizer:Race
+  fun:MessageLoop::CalculateDelayedRuntime
+  fun:MessageLoop::PostDelayedTask
+  fun:net::internal::ClientSocketPoolBaseHelper::Group::StartBackupSocketTimer
+}
