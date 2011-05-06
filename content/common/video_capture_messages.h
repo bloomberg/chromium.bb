@@ -10,10 +10,10 @@
 
 IPC_ENUM_TRAITS(media::VideoCapture::State)
 
-IPC_STRUCT_TRAITS_BEGIN(media::VideoCapture::CaptureParams)
+IPC_STRUCT_TRAITS_BEGIN(media::VideoCaptureParams)
   IPC_STRUCT_TRAITS_MEMBER(width)
   IPC_STRUCT_TRAITS_MEMBER(height)
-  IPC_STRUCT_TRAITS_MEMBER(frame_rate)
+  IPC_STRUCT_TRAITS_MEMBER(frame_per_second)
   IPC_STRUCT_TRAITS_MEMBER(session_id)
 IPC_STRUCT_TRAITS_END()
 
@@ -32,12 +32,12 @@ IPC_MESSAGE_ROUTED3(VideoCaptureMsg_BufferReady,
 // Tell the renderer process the width, height and frame rate the camera use.
 IPC_MESSAGE_ROUTED2(VideoCaptureMsg_DeviceInfo,
                     int /* device_id */,
-                    media::VideoCapture::CaptureParams)
+                    media::VideoCaptureParams)
 
 // Start the video capture specified by (routing_id, device_id).
 IPC_MESSAGE_ROUTED2(VideoCaptureHostMsg_Start,
                     int /* device_id */,
-                    media::VideoCapture::CaptureParams)
+                    media::VideoCaptureParams)
 
 // Pause the video capture specified by (routing_id, device_id).
 IPC_MESSAGE_ROUTED1(VideoCaptureHostMsg_Pause,

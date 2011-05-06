@@ -1924,6 +1924,7 @@
         '../content/renderer/gpu_video_decoder_host_unittest.cc',
         '../content/renderer/media/audio_renderer_impl_unittest.cc',
         '../content/renderer/paint_aggregator_unittest.cc',
+        '../content/renderer/video_capture_message_filter_unittest.cc',
         '../testing/gtest_mac_unittest.mm',
         '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
         '../webkit/fileapi/file_system_dir_url_request_job_unittest.cc',
