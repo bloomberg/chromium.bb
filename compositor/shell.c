@@ -299,7 +299,7 @@ wl_drag_set_pointer_focus(struct wl_drag *drag,
 
 	wl_list_remove(&drag->drag_focus_listener.link);
 	if (surface)
-		wl_list_insert(surface->destroy_listener_list.prev,
+		wl_list_insert(surface->resource.destroy_listener_list.prev,
 			       &drag->drag_focus_listener.link);
 }
 
@@ -450,7 +450,8 @@ drag_activate(struct wl_client *client,
 static void
 drag_destroy(struct wl_client *client, struct wl_drag *drag)
 {
-	wl_resource_destroy(&drag->resource, client);
+	wl_resource_destroy(&drag->resource, client,
+			    wlsc_compositor_get_time());
 }
 
 static const struct wl_drag_interface drag_interface = {
@@ -461,10 +462,11 @@ static const struct wl_drag_interface drag_interface = {
 
 static void
 drag_handle_surface_destroy(struct wl_listener *listener,
-			    struct wl_surface *surface, uint32_t time)
+			    struct wl_resource *resource, uint32_t time)
 {
 	struct wl_drag *drag =
 		container_of(listener, struct wl_drag, drag_focus_listener);
+	struct wl_surface *surface = (struct wl_surface *) resource;
 
 	if (drag->drag_focus == surface)
 		wl_drag_set_pointer_focus(drag, NULL, time, 0, 0, 0, 0);
@@ -523,7 +525,7 @@ wlsc_selection_set_focus(struct wlsc_shell *shell,
 					     WL_SELECTION_OFFER_OFFER, *p);
 
 		wl_list_remove(&selection->selection_focus_listener.link);
-		wl_list_insert(surface->destroy_listener_list.prev,
+		wl_list_insert(surface->resource.destroy_listener_list.prev,
 			       &selection->selection_focus_listener.link);
 
 		wl_client_post_event(surface->client,
@@ -536,7 +538,7 @@ wlsc_selection_set_focus(struct wlsc_shell *shell,
 
 	wl_list_remove(&selection->selection_focus_listener.link);
 	if (surface)
-		wl_list_insert(surface->destroy_listener_list.prev,
+		wl_list_insert(surface->resource.destroy_listener_list.prev,
 			       &selection->selection_focus_listener.link);
 }
 
@@ -604,7 +606,8 @@ selection_activate(struct wl_client *client,
 static void
 selection_destroy(struct wl_client *client, struct wl_selection *selection)
 {
-	wl_resource_destroy(&selection->resource, client);
+	wl_resource_destroy(&selection->resource, client,
+			    wlsc_compositor_get_time());
 }
 
 static const struct wl_selection_interface selection_interface = {
@@ -636,7 +639,7 @@ destroy_selection(struct wl_resource *resource, struct wl_client *client)
 
 static void
 selection_handle_surface_destroy(struct wl_listener *listener,
-				 struct wl_surface *surface, uint32_t time)
+				 struct wl_resource *resource, uint32_t time)
 {
 }
 

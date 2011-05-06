@@ -170,7 +170,6 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	if (surface == NULL)
 		return NULL;
 
-	wl_list_init(&surface->surface.destroy_listener_list);
 	wl_list_init(&surface->link);
 	wl_list_init(&surface->buffer_link);
 	surface->map_type = WLSC_SURFACE_MAP_UNMAPPED;
@@ -232,9 +231,7 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 {
 	struct wlsc_surface *surface =
 		container_of(resource, struct wlsc_surface, surface.resource);
-	struct wl_listener *l, *next;
 	struct wlsc_compositor *compositor = surface->compositor;
-	uint32_t time;
 
 	wlsc_surface_damage(surface);
 
@@ -250,11 +247,6 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 					  surface->image);
 
 	wl_list_remove(&surface->buffer_link);
-
-	time = wlsc_compositor_get_time();
-	wl_list_for_each_safe(l, next,
-			      &surface->surface.destroy_listener_list, link)
-		l->func(l, &surface->surface, time);
 
 	free(surface);
 }
@@ -825,7 +817,8 @@ static void
 surface_destroy(struct wl_client *client,
 		struct wl_surface *surface)
 {
-	wl_resource_destroy(&surface->resource, client);
+	wl_resource_destroy(&surface->resource, client,
+			    wlsc_compositor_get_time());
 }
 
 WL_EXPORT void

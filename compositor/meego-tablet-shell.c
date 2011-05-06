@@ -119,7 +119,7 @@ meego_tablet_shell_set_state(struct meego_tablet_shell *shell, int state)
 
 static void
 handle_zoom_surface_destroy(struct wl_listener *listener,
-			    struct wl_surface *surface, uint32_t time)
+			    struct wl_resource *resource, uint32_t time)
 {
 	struct meego_tablet_zoom *zoom =
 		container_of(listener, struct meego_tablet_zoom, listener);
@@ -185,7 +185,7 @@ meego_tablet_zoom_run(struct meego_tablet_shell *shell,
 				zoom->spring.timestamp);
 
 	zoom->listener.func = handle_zoom_surface_destroy;
-	wl_list_insert(surface->surface.destroy_listener_list.prev,
+	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
 		       &zoom->listener.link);
 
 	wl_list_insert(shell->compositor->animation_list.prev,
@@ -231,7 +231,7 @@ meego_tablet_shell_attach(struct wlsc_shell *base,
 
 static void
 handle_lockscreen_surface_destroy(struct wl_listener *listener,
-				struct wl_surface *surface, uint32_t time)
+				  struct wl_resource *resource, uint32_t time)
 {
 	struct meego_tablet_shell *shell =
 		container_of(listener,
@@ -257,13 +257,13 @@ tablet_shell_set_lockscreen(struct wl_client *client,
 	shell->lockscreen_surface = es;
 
 	shell->lockscreen_listener.func = handle_lockscreen_surface_destroy;
-	wl_list_insert(es->surface.destroy_listener_list.prev,
+	wl_list_insert(es->surface.resource.destroy_listener_list.prev,
 		       &shell->lockscreen_listener.link);
 }
 
 static void
 handle_switcher_surface_destroy(struct wl_listener *listener,
-				struct wl_surface *surface, uint32_t time)
+				struct wl_resource *resource, uint32_t time)
 {
 	struct meego_tablet_shell *shell =
 		container_of(listener,
@@ -297,7 +297,7 @@ tablet_shell_set_switcher(struct wl_client *client,
 		es, es->width, es->height);
 
 	shell->switcher_listener.func = handle_switcher_surface_destroy;
-	wl_list_insert(es->surface.destroy_listener_list.prev,
+	wl_list_insert(es->surface.resource.destroy_listener_list.prev,
 		       &shell->switcher_listener.link);
 }
 
@@ -369,7 +369,8 @@ static void
 tablet_client_destroy(struct wl_client *client,
 		      struct meego_tablet_client *tablet_client)
 {
-	wl_resource_destroy(&tablet_client->resource, client);
+	wl_resource_destroy(&tablet_client->resource,
+			    client, wlsc_compositor_get_time());
 }
 
 static void

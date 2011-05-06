@@ -36,6 +36,7 @@ static void
 wlsc_switcher_next(struct wlsc_switcher *switcher)
 {
 	struct wl_list *l;
+	struct wl_surface *current;
 
 	wlsc_surface_damage(switcher->current);
 	l = switcher->current->link.next;
@@ -43,7 +44,8 @@ wlsc_switcher_next(struct wlsc_switcher *switcher)
 		l = switcher->compositor->surface_list.next;
 	switcher->current = container_of(l, struct wlsc_surface, link);
 	wl_list_remove(&switcher->listener.link);
-	wl_list_insert(switcher->current->surface.destroy_listener_list.prev,
+	current = &switcher->current->surface;
+	wl_list_insert(current->resource.destroy_listener_list.prev,
 		       &switcher->listener.link);
 	switcher->compositor->overlay = switcher->current;
 	wlsc_surface_damage(switcher->current);
@@ -51,7 +53,7 @@ wlsc_switcher_next(struct wlsc_switcher *switcher)
 
 static void
 switcher_handle_surface_destroy(struct wl_listener *listener,
-				struct wl_surface *surface, uint32_t time)
+				struct wl_resource *resource, uint32_t time)
 {
 	struct wlsc_switcher *switcher =
 		container_of(listener, struct wlsc_switcher, listener);
