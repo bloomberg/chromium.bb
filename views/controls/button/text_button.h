@@ -141,6 +141,13 @@ class TextButtonBase : public CustomButton, public NativeThemeDelegate {
   void SetIsDefault(bool is_default);
   bool is_default() const { return is_default_; }
 
+  // Set whether the button text can wrap on multiple lines.
+  // Default is false.
+  void SetMultiLine(bool multi_line);
+
+  // Return whether the button text can wrap on multiple lines.
+  bool multi_line() const { return multi_line_; }
+
   // TextButton remembers the maximum display size of the text passed to
   // SetText. This method resets the cached maximum display size to the
   // current size.
@@ -218,6 +225,8 @@ class TextButtonBase : public CustomButton, public NativeThemeDelegate {
 
   virtual gfx::Rect GetTextBounds() const;
 
+  int ComputeCanvasStringFlags() const;
+
   // Calculate the bounds of the content of this button, including any extra
   // width needed on top of the text width.
   gfx::Rect GetContentBounds(int extra_width) const;
@@ -271,6 +280,9 @@ class TextButtonBase : public CustomButton, public NativeThemeDelegate {
   // Whether or not the button appears and behaves as the default button in its
   // current context.
   bool is_default_;
+
+  // Whether the text button should handle its text string as multi-line.
+  bool multi_line_;
 
   PrefixType prefix_type_;
 

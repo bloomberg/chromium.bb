@@ -42,13 +42,24 @@ void ButtonExample::ButtonPressed(views::Button* sender,
 
   if (event.IsControlDown()) {
     if (event.IsShiftDown()) {
-      switch(button_->icon_placement()) {
-        case views::TextButton::ICON_ON_LEFT:
-          button_->set_icon_placement(views::TextButton::ICON_ON_RIGHT);
-          break;
-        case views::TextButton::ICON_ON_RIGHT:
-          button_->set_icon_placement(views::TextButton::ICON_ON_LEFT);
-          break;
+      if (event.IsAltDown()) {
+        button_->SetMultiLine(!button_->multi_line());
+        if (button_->multi_line()) {
+          button_->SetText(L"Multi-line text\n"
+                           L"is here to stay all the way!\n"
+                           L"123");
+        } else {
+          button_->SetText(L"Button");
+        }
+      } else {
+        switch(button_->icon_placement()) {
+          case views::TextButton::ICON_ON_LEFT:
+            button_->set_icon_placement(views::TextButton::ICON_ON_RIGHT);
+            break;
+          case views::TextButton::ICON_ON_RIGHT:
+            button_->set_icon_placement(views::TextButton::ICON_ON_LEFT);
+            break;
+        }
       }
     } else if (event.IsAltDown()) {
       if (button_->HasIcon())

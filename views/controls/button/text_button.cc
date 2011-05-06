@@ -270,6 +270,7 @@ TextButtonBase::TextButtonBase(ButtonListener* listener,
       normal_has_border_(false),
       show_multiple_icon_states_(true),
       is_default_(false),
+      multi_line_(false),
       prefix_type_(PREFIX_NONE) {
   SetText(text);
   SetAnimationDuration(kHoverAnimationDurationMs);
@@ -351,6 +352,15 @@ void TextButtonBase::ClearEmbellishing() {
   has_text_halo_ = false;
 }
 
+void TextButtonBase::SetMultiLine(bool multi_line) {
+  if (multi_line != multi_line_) {
+    multi_line_ = multi_line;
+    UpdateTextSize();
+    PreferredSizeChanged();
+    SchedulePaint();
+  }
+}
+
 gfx::Size TextButtonBase::GetPreferredSize() {
   gfx::Insets insets = GetInsets();
 
@@ -377,22 +387,47 @@ void TextButtonBase::UpdateColor() {
 }
 
 void TextButtonBase::UpdateTextSize() {
-  int width = 0, height = 0;
-  gfx::CanvasSkia::SizeStringInt(
-      text_, font_, &width, &height,
-      gfx::Canvas::NO_ELLIPSIS | PrefixTypeToCanvasType(prefix_type_));
+  int h = font_.GetHeight();
+  int w = multi_line_ ? width() : 0;
+  int flags = ComputeCanvasStringFlags();
+  if (!multi_line_)
+    flags |= gfx::Canvas::NO_ELLIPSIS;
+
+  gfx::CanvasSkia::SizeStringInt(text_, font_, &w, &h, flags);
 
   // Add 2 extra pixels to width and height when text halo is used.
   if (has_text_halo_) {
-    width += 2;
-    height += 2;
+    w += 2;
+    h += 2;
   }
 
-  text_size_.SetSize(width, font_.GetHeight());
+  text_size_.SetSize(w, h);
   max_text_size_.SetSize(std::max(max_text_size_.width(), text_size_.width()),
                          std::max(max_text_size_.height(),
                                   text_size_.height()));
   PreferredSizeChanged();
+}
+
+int TextButtonBase::ComputeCanvasStringFlags() const {
+  int flags = PrefixTypeToCanvasType(prefix_type_);
+
+  if (multi_line_) {
+    flags |= gfx::Canvas::MULTI_LINE;
+
+    switch (alignment_) {
+      case ALIGN_LEFT:
+        flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
+        break;
+      case ALIGN_RIGHT:
+        flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
+        break;
+      case ALIGN_CENTER:
+        flags |= gfx::Canvas::TEXT_ALIGN_CENTER;
+        break;
+    }
+  }
+
+  return flags;
 }
 
 void TextButtonBase::GetExtraParams(
@@ -460,7 +495,7 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
         (state() == BS_HOT || state() == BS_PUSHED)) ? color_hover_ : color_;
 
     int draw_string_flags = gfx::CanvasSkia::DefaultCanvasTextAlignment() |
-        PrefixTypeToCanvasType(prefix_type_);
+        ComputeCanvasStringFlags();
 
     if (mode == PB_FOR_DRAG) {
 #if defined(OS_WIN)
