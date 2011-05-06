@@ -162,6 +162,32 @@ wlsc_spring_done(struct wlsc_spring *spring)
 		fabs(spring->current - spring->target) < 0.0002;
 }
 
+static void
+surface_handle_buffer_destroy(struct wl_listener *listener,
+			      struct wl_resource *resource, uint32_t time)
+{
+	struct wlsc_surface *es = container_of(listener, struct wlsc_surface,
+					       buffer_destroy_listener);
+	struct wl_buffer *buffer = (struct wl_buffer *) resource;
+
+	if (es->buffer == buffer)
+		es->buffer = NULL;
+}
+
+static void
+output_handle_scanout_buffer_destroy(struct wl_listener *listener,
+				     struct wl_resource *resource,
+				     uint32_t time)
+{
+	struct wlsc_output *output =
+		container_of(listener, struct wlsc_output,
+			     scanout_buffer_destroy_listener);
+	struct wl_buffer *buffer = (struct wl_buffer *) resource;
+
+	if (output->scanout_buffer == buffer)
+		output->scanout_buffer = NULL;
+}
+
 WL_EXPORT struct wlsc_surface *
 wlsc_surface_create(struct wlsc_compositor *compositor,
 		    int32_t x, int32_t y, int32_t width, int32_t height)
@@ -191,6 +217,11 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	surface->y = y;
 	surface->width = width;
 	surface->height = height;
+
+	surface->buffer = NULL;
+
+	surface->buffer_destroy_listener.func = surface_handle_buffer_destroy;
+	wl_list_init(&surface->buffer_destroy_listener.link);
 
 	surface->transform = NULL;
 
@@ -243,6 +274,8 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 	else
 		glDeleteTextures(1, &surface->saved_texture);
 
+	if (surface->buffer)
+		wl_list_remove(&surface->buffer_destroy_listener.link);
 
 	if (surface->image != EGL_NO_IMAGE_KHR)
 		compositor->destroy_image(compositor->display,
@@ -312,6 +345,9 @@ wlsc_sprite_attach(struct wlsc_sprite *sprite, struct wl_surface *surface)
 	}
 
 	es->visual = sprite->visual;
+
+	if (es->buffer)
+		es->buffer = NULL;
 }
 
 enum sprite_usage {
@@ -574,11 +610,32 @@ wlsc_compositor_damage_all(struct wlsc_compositor *compositor)
 		wlsc_output_damage(output);
 }
 
+static inline void
+wlsc_buffer_post_release(struct wl_buffer *buffer)
+{
+	if (buffer->client == NULL) {
+		fprintf(stderr, "buffer.release warning: buffer.client: %p\n",
+			buffer->client);
+		return;
+	}
+
+	wl_client_post_event(buffer->client,
+			     &buffer->resource.object,
+			     WL_BUFFER_RELEASE);
+}
+
 WL_EXPORT void
 wlsc_output_finish_frame(struct wlsc_output *output, int msecs)
 {
 	struct wlsc_compositor *compositor = output->compositor;
 	struct wlsc_animation *animation, *next;
+
+	if (output->scanout_buffer) {
+		if (--output->scanout_buffer->busy_count == 0)
+			wlsc_buffer_post_release(output->scanout_buffer);
+
+		output->scanout_buffer = NULL;
+	}
 
 	output->finished = 1;
 
@@ -715,6 +772,13 @@ wlsc_output_repaint(struct wlsc_output *output)
 			pixman_region32_union(&ec->damage_region,
 					      &ec->damage_region,
 					      &total_damage);
+
+			output->scanout_buffer = es->buffer;
+			output->scanout_buffer->busy_count++;
+
+			wl_list_remove(&output->scanout_buffer_destroy_listener.link);
+			wl_list_insert(output->scanout_buffer->resource.destroy_listener_list.prev,
+				       &output->scanout_buffer_destroy_listener.link);
 
 			wlsc_output_finish_redraw(output,
 						  wlsc_compositor_get_time());
@@ -868,6 +932,17 @@ surface_attach(struct wl_client *client,
 	       int32_t x, int32_t y)
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+
+	buffer->busy_count++;
+
+	if (es->buffer && es->buffer->busy_count > 0)
+		if (--es->buffer->busy_count == 0)
+			wlsc_buffer_post_release(es->buffer);
+
+	es->buffer = buffer;
+	wl_list_remove(&es->buffer_destroy_listener.link);
+	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
+		       &es->buffer_destroy_listener.link);
 
 	es->x += x;
 	es->y += y;
@@ -1640,6 +1715,10 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 	output->flags = flags;
 	output->finished = 1;
 	wlsc_output_move(output, x, y);
+
+	output->scanout_buffer_destroy_listener.func =
+		output_handle_scanout_buffer_destroy;
+	wl_list_init(&output->scanout_buffer_destroy_listener.link);
 
 	output->object.interface = &wl_output_interface;
 	wl_display_add_object(c->wl_display, &output->object);
