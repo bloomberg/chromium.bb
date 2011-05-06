@@ -268,6 +268,14 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
       SignalStateCompleteWithNextState(FULLY_SYNCED);
       break;
     }
+    case WAITING_FOR_PASSPHRASE_REQUIRED: {
+      LogClientInfo("WAITING_FOR_PASSPHRASE_REQUIRED", 1);
+      if (service()->IsPassphraseRequired()) {
+        // A passphrase is now required. Wait for it to be accepted.
+        SignalStateCompleteWithNextState(WAITING_FOR_PASSPHRASE_ACCEPTED);
+      }
+      break;
+    }
     case WAITING_FOR_PASSPHRASE_ACCEPTED: {
       LogClientInfo("WAITING_FOR_PASSPHRASE_ACCEPTED", 1);
       if (service()->ShouldPushChanges() &&
@@ -333,6 +341,23 @@ void ProfileSyncServiceHarness::OnStateChanged() {
   RunStateChangeMachine();
 }
 
+bool ProfileSyncServiceHarness::AwaitPassphraseRequired() {
+  LogClientInfo("AwaitPassphraseRequired", 1);
+  if (wait_state_ == SYNC_DISABLED) {
+    LOG(ERROR) << "Sync disabled for Client " << id_ << ".";
+    return false;
+  }
+
+  if (service()->IsPassphraseRequired()) {
+    // It's already true that a passphrase is required; don't wait.
+    return true;
+  }
+
+  wait_state_ = WAITING_FOR_PASSPHRASE_REQUIRED;
+  return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
+                                      "Waiting for passphrase to be required.");
+}
+
 bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
   LogClientInfo("AwaitPassphraseAccepted", 1);
   if (wait_state_ == SYNC_DISABLED) {
@@ -348,7 +373,7 @@ bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
 
   wait_state_ = WAITING_FOR_PASSPHRASE_ACCEPTED;
   return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
-                                      "Waiting for passphrase accepted.");
+                                      "Waiting for passphrase to be accepted.");
 }
 
 bool ProfileSyncServiceHarness::AwaitBackendInitialized() {

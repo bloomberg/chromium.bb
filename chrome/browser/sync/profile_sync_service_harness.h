@@ -101,8 +101,11 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   static bool AwaitQuiescence(
       std::vector<ProfileSyncServiceHarness*>& clients);
 
-  // If a SetPassphrase call has been issued with a valid passphrase, this
-  // will wait until the passphrase has been accepted.
+  // Blocks the caller until |service_| indicates that a passphrase is required.
+  bool AwaitPassphraseRequired();
+
+  // Blocks the caller until |service_| indicates that the passphrase set by
+  // calling SetPassphrase has been accepted.
   bool AwaitPassphraseAccepted();
 
   // Returns the ProfileSyncService member of the the sync client.
@@ -164,6 +167,10 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
 
     // The sync client anticipates incoming updates leading to a new sync cycle.
     WAITING_FOR_UPDATES,
+
+    // The sync client is waiting for a passphrase to be required by the
+    // cryptographer.
+    WAITING_FOR_PASSPHRASE_REQUIRED,
 
     // The sync client is waiting for its passphrase to be accepted by the
     // cryptographer.

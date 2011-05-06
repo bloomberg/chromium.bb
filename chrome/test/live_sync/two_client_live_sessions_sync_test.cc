@@ -115,9 +115,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest, BothChanged) {
   ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows));
 }
 
-// Flaky. http://crbug.com/81688
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       FLAKY_FirstChangesAndSetsPassphrase) {
+                       FirstChangesAndSetsPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -130,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   GetClient(0)->service()->SetPassphrase(kValidPassphrase, true, true);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(GetClient(1)->service()->IsPassphraseRequired());
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
       num_blocking_conflicting_updates);
   // We have 3 non-blocking conflicts due to the two meta nodes (one for each
@@ -158,9 +157,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows));
 }
 
-// Flaky. http://crbug.com/81688
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       FLAKY_FirstChangesWhileSecondWaitingForPassphrase) {
+                       FirstChangesWhileSecondWaitingForPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -170,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   GetClient(0)->service()->SetPassphrase(kValidPassphrase, true, true);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(GetClient(1)->service()->IsPassphraseRequired());
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
       num_blocking_conflicting_updates);
   // We have two non-blocking conflicts due to the two meta nodes (one for each
@@ -207,9 +205,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows));
 }
 
-// Flaky. http://crbug.com/81688
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       FLAKY_SecondChangesAfterEncrAndPassphraseChange) {
+                       SecondChangesAfterEncrAndPassphraseChange) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -219,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   GetClient(0)->service()->SetPassphrase(kValidPassphrase, true, true);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(GetClient(1)->service()->IsPassphraseRequired());
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
       num_blocking_conflicting_updates);
   // We have two non-blocking conflicts due to the two meta nodes (one for each
@@ -258,9 +255,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_FALSE(GetSessionData(1, &sessions1));
 }
 
-// Flaky. http://crbug.com/81688
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       FLAKY_SecondChangesBeforeEncrAndPassphraseChange) {
+                       SecondChangesBeforeEncrAndPassphraseChange) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -278,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   GetClient(0)->service()->SetPassphrase(kValidPassphrase, true, true);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(GetClient(1)->service()->IsPassphraseRequired());
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
       num_blocking_conflicting_updates);
   // We have three non-blocking conflicts due to the two meta nodes (one for
@@ -307,9 +303,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows));
 }
 
-// Flaky. http://crbug.com/81688
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       FLAKY_BothChangeWithEncryptionAndPassphrase) {
+                       BothChangeWithEncryptionAndPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -318,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   GetClient(0)->service()->SetPassphrase(kValidPassphrase, true, true);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(GetClient(1)->service()->IsPassphraseRequired());
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
 
   // These changes will sync over to client 1, who will be unable to decrypt
   // them due to the missing passphrase.
