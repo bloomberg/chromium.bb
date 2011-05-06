@@ -17,6 +17,16 @@
 #include "ppapi/c/ppp.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
+#if defined(OS_WIN)
+#include "sandbox/src/sandbox.h"
+#endif
+
+#if defined(OS_WIN)
+extern sandbox::TargetServices* g_target_services;
+#else
+extern void* g_target_services;
+#endif
+
 typedef int32_t (*InitializeBrokerFunc)
     (PP_ConnectInstance_Func* connect_instance_func);
 
@@ -72,8 +82,19 @@ std::set<PP_Instance>* PpapiThread::GetGloballySeenInstanceIDSet() {
 
 void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
   base::ScopedNativeLibrary library(base::LoadNativeLibrary(path, NULL));
-  if (!library.is_valid())
+
+#if defined(OS_WIN)
+  // Once we lower the token the sandbox is locked down and no new modules
+  // can be loaded. TODO(cpu): consider changing to the loading style of
+  // regular plugins.
+  if (g_target_services)
+    g_target_services->LowerToken();
+#endif
+
+  if (!library.is_valid()) {
+    LOG(ERROR) << "Failed to load pepper module";
     return;
+  }
 
   if (is_broker_) {
     // Get the InitializeBroker function (required).

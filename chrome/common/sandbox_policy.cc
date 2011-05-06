@@ -531,8 +531,7 @@ bool AddPolicyForGPU(CommandLine*, sandbox::TargetPolicy* policy) {
   return true;
 }
 
-void AddPolicyForRenderer(sandbox::TargetPolicy* policy,
-                          bool* on_sandbox_desktop) {
+void AddPolicyForRenderer(sandbox::TargetPolicy* policy) {
   policy->SetJobLevel(sandbox::JOB_LOCKDOWN, 0);
 
   sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
@@ -548,14 +547,26 @@ void AddPolicyForRenderer(sandbox::TargetPolicy* policy,
   bool use_winsta = !CommandLine::ForCurrentProcess()->HasSwitch(
                         switches::kDisableAltWinstation);
 
-  if (sandbox::SBOX_ALL_OK ==  policy->SetAlternateDesktop(use_winsta)) {
-    *on_sandbox_desktop = true;
-  } else {
-    *on_sandbox_desktop = false;
+  if (sandbox::SBOX_ALL_OK !=  policy->SetAlternateDesktop(use_winsta)) {
     DLOG(WARNING) << "Failed to apply desktop security to the renderer";
   }
 
   AddDllEvictionPolicy(policy);
+}
+
+// The Pepper process as locked-down as a renderer execpt that it can
+// create the server side of chrome pipes.
+bool AddPolicyForPepperPlugin(sandbox::TargetPolicy* policy) {
+  sandbox::ResultCode result;
+  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
+                           sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
+                           L"\\\\.\\pipe\\chrome.*");
+  if (result != sandbox::SBOX_ALL_OK) {
+    NOTREACHED();
+    return false;
+  }
+  AddPolicyForRenderer(policy);
+  return true;
 }
 
 }  // namespace
@@ -670,15 +681,17 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   PROCESS_INFORMATION target = {0};
   sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();
 
-  bool on_sandbox_desktop = false;
   if (type == ChildProcessInfo::PLUGIN_PROCESS) {
     if (!AddPolicyForPlugin(cmd_line, policy))
       return 0;
   } else if (type == ChildProcessInfo::GPU_PROCESS) {
     if (!AddPolicyForGPU(cmd_line, policy))
       return 0;
+  } else if (type == ChildProcessInfo::PPAPI_PLUGIN_PROCESS) {
+    if (!AddPolicyForPepperPlugin(policy))
+      return 0;
   } else {
-    AddPolicyForRenderer(policy, &on_sandbox_desktop);
+    AddPolicyForRenderer(policy);
 
     if (type_str != switches::kRendererProcess) {
       // Hack for Google Desktop crash. Trick GD into not injecting its DLL into

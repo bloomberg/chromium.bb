@@ -45,8 +45,11 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
                               switches::kPpapiPluginProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
 
+  // TODO(vtl): Stop passing flash args in the command line, on windows is
+  // going to explode.
   static const char* kForwardSwitches[] = {
     switches::kPpapiFlashArgs,
+    switches::kPpapiStartupDialog
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
                              arraysize(kForwardSwitches));
