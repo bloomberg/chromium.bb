@@ -51,13 +51,15 @@ bool CompareMatchRelevance(const MatchReference& a, const MatchReference& b) {
 using history::HistoryDatabase;
 
 HistoryContentsProvider::HistoryContentsProvider(ACProviderListener* listener,
-                                                 Profile* profile)
+                                                 Profile* profile,
+                                                 bool body_only)
     : HistoryProvider(listener, profile, "HistoryContents"),
       star_title_count_(0),
       star_contents_count_(0),
       title_count_(0),
       contents_count_(0),
       input_type_(AutocompleteInput::INVALID),
+      body_only_(body_only),
       trim_http_(false),
       have_results_(false) {
 }
@@ -137,6 +139,7 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
       done_ = false;
 
       history::QueryOptions options;
+      options.body_only = body_only_;
       options.SetRecentDayRange(kDaysToSearch);
       options.max_count = kMaxMatches;
       history->QueryHistory(input.text(), options,

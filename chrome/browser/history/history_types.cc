@@ -296,7 +296,7 @@ void QueryResults::AdjustResultMap(size_t begin, size_t end, ptrdiff_t delta) {
 
 // QueryOptions ----------------------------------------------------------------
 
-QueryOptions::QueryOptions() : max_count(0) {}
+QueryOptions::QueryOptions() : max_count(0), body_only(false) {}
 
 void QueryOptions::SetRecentDayRange(int days_ago) {
   end_time = base::Time::Now();

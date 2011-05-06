@@ -45,13 +45,13 @@ struct TestURLInfo {
   {"http://foo.com/", "Dir", 5, 5, 0},
   {"http://foo.com/dir/", "Dir", 2, 1, 10},
   {"http://foo.com/dir/another/", "Dir", 5, 1, 0},
-  {"http://foo.com/dir/another/again/", "Dir", 10, 0, 0},
+  {"http://foo.com/dir/another/again/", "Dir", 5, 1, 0},
   {"http://foo.com/dir/another/again/myfile.html", "File", 10, 2, 0},
-  {"http://visitedest.com/y/a", "VA", 5, 1, 0},
-  {"http://visitedest.com/y/b", "VB", 4, 1, 0},
-  {"http://visitedest.com/x/c", "VC", 3, 1, 0},
-  {"http://visitedest.com/x/d", "VD", 2, 1, 0},
-  {"http://visitedest.com/y/e", "VE", 1, 1, 0},
+  {"http://visitedest.com/y/a", "VA", 10, 1, 20},
+  {"http://visitedest.com/y/b", "VB", 9, 1, 20},
+  {"http://visitedest.com/x/c", "VC", 8, 1, 20},
+  {"http://visitedest.com/x/d", "VD", 7, 1, 20},
+  {"http://visitedest.com/y/e", "VE", 6, 1, 20},
   {"http://typeredest.com/y/a", "TA", 3, 5, 0},
   {"http://typeredest.com/y/b", "TB", 3, 4, 0},
   {"http://typeredest.com/x/c", "TC", 3, 3, 0},
@@ -165,7 +165,8 @@ class SetShouldContain : public std::unary_function<const std::string&,
   }
 
   void operator()(const std::string& expected) {
-    EXPECT_EQ(1U, matches_.erase(expected));
+    EXPECT_EQ(1U, matches_.erase(expected)) << "Results did not contain '"
+        << expected << "' but should have.";
   }
 
   std::set<std::string> LeftOvers() const { return matches_; }
@@ -199,14 +200,18 @@ void HistoryQuickProviderTest::RunTest(const string16 text,
   std::set<std::string> leftovers =
       for_each(expected_urls.begin(), expected_urls.end(),
                SetShouldContain(ac_matches_)).LeftOvers();
-  EXPECT_EQ(0U, leftovers.size());
+  EXPECT_EQ(0U, leftovers.size()) << "There were " << leftovers.size()
+      << " unexpected results, one of which was: '"
+      << *(leftovers.begin()) << "'.";
 
+  // We always expect to get at least one result.
+  ASSERT_FALSE(ac_matches_.empty());
   // See if we got the expected top scorer.
-  if (!ac_matches_.empty()) {
-    std::partial_sort(ac_matches_.begin(), ac_matches_.begin() + 1,
-                      ac_matches_.end(), AutocompleteMatch::MoreRelevant);
-    EXPECT_EQ(expected_top_result, ac_matches_[0].destination_url.spec());
-  }
+  std::partial_sort(ac_matches_.begin(), ac_matches_.begin() + 1,
+                    ac_matches_.end(), AutocompleteMatch::MoreRelevant);
+  EXPECT_EQ(expected_top_result, ac_matches_[0].destination_url.spec())
+      << "Unexpected top result '" << ac_matches_[0].destination_url.spec()
+      << "'.";
 }
 
 TEST_F(HistoryQuickProviderTest, SimpleSingleMatch) {
@@ -297,7 +302,7 @@ TEST_F(HistoryQuickProviderTest, Spans) {
   matches_a.push_back(history::TermMatch(3, 10, 1));
   matches_a.push_back(history::TermMatch(4, 14, 5));
   ACMatchClassifications spans_a =
-      HistoryQuickProvider::SpansFromTermMatch(matches_a, 20);
+      HistoryQuickProvider::SpansFromTermMatch(matches_a, 20, false);
   // ACMatch spans should be: 'NM-NM---N-M-N--M----N-'
   ASSERT_EQ(9U, spans_a.size());
   EXPECT_EQ(0U, spans_a[0].offset);
@@ -318,19 +323,81 @@ TEST_F(HistoryQuickProviderTest, Spans) {
   EXPECT_EQ(ACMatchClassification::MATCH, spans_a[7].style);
   EXPECT_EQ(19U, spans_a[8].offset);
   EXPECT_EQ(ACMatchClassification::NONE, spans_a[8].style);
-  // Simulates matches: 'xx.xx' which will test matches at both beginning an
+  // Simulates matches: 'xx.xx' which will test matches at both beginning and
   // end.
   history::TermMatches matches_b;
   matches_b.push_back(history::TermMatch(1, 0, 2));
   matches_b.push_back(history::TermMatch(2, 3, 2));
   ACMatchClassifications spans_b =
-      HistoryQuickProvider::SpansFromTermMatch(matches_b, 5);
+      HistoryQuickProvider::SpansFromTermMatch(matches_b, 5, true);
   // ACMatch spans should be: 'M-NM-'
   ASSERT_EQ(3U, spans_b.size());
   EXPECT_EQ(0U, spans_b[0].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_b[0].style);
+  EXPECT_EQ(ACMatchClassification::MATCH | ACMatchClassification::URL,
+            spans_b[0].style);
   EXPECT_EQ(2U, spans_b[1].offset);
-  EXPECT_EQ(ACMatchClassification::NONE, spans_b[1].style);
+  EXPECT_EQ(ACMatchClassification::URL, spans_b[1].style);
   EXPECT_EQ(3U, spans_b[2].offset);
-  EXPECT_EQ(ACMatchClassification::MATCH, spans_b[2].style);
+  EXPECT_EQ(ACMatchClassification::MATCH | ACMatchClassification::URL,
+            spans_b[2].style);
+}
+
+TEST_F(HistoryQuickProviderTest, Relevance) {
+  history::ScoredHistoryMatch match;
+  int next_score = 1500;
+
+  // Can inline, not clamped.
+  match.raw_score = 1425;
+  match.can_inline = true;
+  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 1425);
+  EXPECT_EQ(next_score, 1424);
+
+  // Can't inline, not clamped.
+  next_score = 1500;
+  match.raw_score = 1425;
+  match.can_inline = false;
+  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 1199);
+  EXPECT_EQ(next_score, 1198);
+
+  // Can inline, clamped.
+  next_score = 1199;
+  match.raw_score = 1425;
+  match.can_inline = true;
+  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 1199);
+  EXPECT_EQ(next_score, 1198);
+
+  // Can't inline, clamped.
+  next_score = 1199;
+  match.raw_score = 1425;
+  match.can_inline = false;
+  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 1199);
+  EXPECT_EQ(next_score, 1198);
+
+  // Score just above the clamped limit.
+  next_score = 1199;
+  match.raw_score = 1200;
+  match.can_inline = false;
+  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 1199);
+  EXPECT_EQ(next_score, 1198);
+
+  // Score right at the clamped limit.
+  next_score = 1199;
+  match.raw_score = 1199;
+  match.can_inline = true;
+  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 1199);
+  EXPECT_EQ(next_score, 1198);
+
+  // Score just below the clamped limit.
+  next_score = 1199;
+  match.raw_score = 1198;
+  match.can_inline = true;
+  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 1198);
+  EXPECT_EQ(next_score, 1197);
+
+  // Low score, can inline, not clamped.
+  next_score = 1500;
+  match.raw_score = 500;
+  match.can_inline = true;
+  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 500);
+  EXPECT_EQ(next_score, 499);
 }

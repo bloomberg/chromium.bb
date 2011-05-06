@@ -170,7 +170,9 @@ void AutocompleteEditModel::FinalizeInstantQuery(
   } else if (popup_->IsOpen()) {
     SearchProvider* search_provider =
         autocomplete_controller_->search_provider();
-    search_provider->FinalizeInstantQuery(input_text, suggest_text);
+    // There may be no providers during testing; guard against that.
+    if (search_provider)
+      search_provider->FinalizeInstantQuery(input_text, suggest_text);
   }
 }
 

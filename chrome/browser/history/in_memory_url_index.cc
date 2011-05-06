@@ -5,6 +5,7 @@
 #include "chrome/browser/history/in_memory_url_index.h"
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <limits>
 #include <numeric>
@@ -57,12 +58,12 @@ const int kScoreRank[] = { 1425, 1200, 900, 400 };
 
 ScoredHistoryMatch::ScoredHistoryMatch()
     : raw_score(0),
-      prefix_adjust(0) {}
+      can_inline(false) {}
 
 ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& url_info)
     : HistoryMatch(url_info, 0, false, false),
       raw_score(0),
-      prefix_adjust(0) {}
+      can_inline(false) {}
 
 ScoredHistoryMatch::~ScoredHistoryMatch() {}
 
@@ -710,12 +711,6 @@ ScoredHistoryMatch InMemoryURLIndex::ScoredMatchForURL(
   // Figure out where each search term appears in the URL and/or page title
   // so that we can score as well as provide autocomplete highlighting.
   string16 url = l10n_util::ToLower(UTF8ToUTF16(gurl.spec()));
-  // Strip any 'http://' prefix before matching.
-  if (url_util::FindAndCompareScheme(url, chrome::kHttpScheme, NULL)) {
-    match.prefix_adjust = strlen(chrome::kHttpScheme) + 3;  // Allow for '://'.
-    url = url.substr(match.prefix_adjust);
-  }
-
   string16 title = l10n_util::ToLower(row.title());
   int term_num = 0;
   for (String16Vector::const_iterator iter = terms.begin(); iter != terms.end();
@@ -736,6 +731,13 @@ ScoredHistoryMatch InMemoryURLIndex::ScoredMatchForURL(
   match.url_matches = SortAndDeoverlap(match.url_matches);
   match.title_matches = SortAndDeoverlap(match.title_matches);
 
+  // We should not (currently) inline autocomplete a result unless both of the
+  // following are true:
+  //   * There is exactly one substring matches in the URL, and
+  //   * The one URL match starts at the beginning of the URL.
+  match.can_inline =
+      match.url_matches.size() == 1 && match.url_matches[0].offset == 0;
+
   // Get partial scores based on term matching. Note that the score for
   // each of the URL and title are adjusted by the fraction of the
   // terms appearing in each.
@@ -752,32 +754,34 @@ ScoredHistoryMatch InMemoryURLIndex::ScoredMatchForURL(
   if (term_score == 0)
     return match;
 
-  // Factor in recency of visit, visit count and typed count attributes of the
-  // URLRow.
+  // Determine scoring factors for the recency of visit, visit count and typed
+  // count attributes of the URLRow.
   const int kDaysAgoLevel[] = { 0, 10, 20, 30 };
-  int score = ScoreForValue((base::Time::Now() -
+  int days_ago_value = ScoreForValue((base::Time::Now() -
       row.last_visit()).InDays(), kDaysAgoLevel);
   const int kVisitCountLevel[] = { 30, 10, 5, 3 };
   int visit_count_value = ScoreForValue(row.visit_count(), kVisitCountLevel);
   const int kTypedCountLevel[] = { 10, 5, 3, 1 };
   int typed_count_value = ScoreForValue(row.typed_count(), kTypedCountLevel);
 
-  // Determine how many of the factors comprising the final score are
-  // significant by summing the relative factors for each and subtracting how
-  // many will be 'discarded' even if they are low.
-  const int kVisitCountMultiplier = 2;
-  const int kTypedCountMultiplier = 3;
-  const int kSignificantFactors =
-      kVisitCountMultiplier +  // Visit count factor plus
-      kTypedCountMultiplier +  // typed count factor plus
-      2 -                      // one each for string match and last visit
-      2;                       // minus 2 insignificant factors.
-  // The following, in effect, discards up to |kSignificantFactors| low scoring
-  // elements which contribute little to the score but which can inordinately
-  // drag down an otherwise good score.
-  match.raw_score = std::min(kScoreRank[0], (term_score + score +
-      (visit_count_value * kVisitCountMultiplier) + (typed_count_value *
-      kTypedCountMultiplier)) / kSignificantFactors);
+  // The final raw score is calculated by:
+  //   - accumulating each contributing factor, some of which are added more
+  //     than once giving them more 'influence' on the final score (currently,
+  //     visit_count_value is added twice and typed_count_value three times)
+  //   - dropping the lowest scores (|kInsignificantFactors|)
+  //   - dividing by the remaining significant factors
+  // This approach allows emphasis on more relevant factors while reducing the
+  // inordinate impact of low scoring factors.
+  int factor[] = {term_score, days_ago_value, visit_count_value,
+      visit_count_value, typed_count_value, typed_count_value,
+      typed_count_value};
+  const int kInsignificantFactors = 2;
+  const int kSignificantFactors = arraysize(factor) - kInsignificantFactors;
+  std::partial_sort(factor, factor + kSignificantFactors,
+                    factor + arraysize(factor), std::greater<int>());
+  for (int i = 0; i < kSignificantFactors; ++i)
+    match.raw_score += factor[i];
+  match.raw_score /= kSignificantFactors;
 
   return match;
 }

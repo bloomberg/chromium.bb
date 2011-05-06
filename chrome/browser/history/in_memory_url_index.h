@@ -70,7 +70,7 @@ struct ScoredHistoryMatch : public HistoryMatch {
   int raw_score;
   TermMatches url_matches;  // Term matches within the URL.
   TermMatches title_matches;  // Term matches within the page title.
-  size_t prefix_adjust;  // The length of a prefix which should be ignored.
+  bool can_inline;  // True if this is a candidate for in-line autocompletion.
 };
 typedef std::vector<ScoredHistoryMatch> ScoredHistoryMatches;
 

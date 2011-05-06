@@ -43,21 +43,22 @@ class HistoryQuickProvider : public HistoryProvider {
  private:
   friend class HistoryQuickProviderTest;
   FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest, Spans);
+  FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest, Relevance);
 
+  // Creates an AutocompleteMatch from |history_match|. |max_match_score| gives
+  // the maximum possible score for the match.
   AutocompleteMatch QuickMatchToACMatch(
       const history::ScoredHistoryMatch& history_match,
-      size_t match_number,
-      bool prevent_inline_autocomplete,
-      int* next_dont_inline_score);
+      int* max_match_score);
 
-  // Determines the relevance for some input, given its type and which match it
-  // is.  If |match_type| is NORMAL, |match_number| is a number
-  // [0, kMaxSuggestions) indicating the relevance of the match (higher == more
-  // relevant).  For other values of |match_type|, |match_number| is ignored.
-  static int CalculateRelevance(int raw_score,
-                                AutocompleteInput::Type input_type,
-                                MatchType match_type,
-                                size_t match_number);
+  // Determines the relevance score of |history_match|. The maximum allowed
+  // score for the match is passed in |max_match_score|. The |max_match_score|
+  // is always set to the resulting score minus 1 whenever the match's score
+  // has to be limited or is <= to |max_match_score|. This function should be
+  // called in a loop with each match in decreasing order of raw score.
+  static int CalculateRelevance(
+      const history::ScoredHistoryMatch& history_match,
+      int* max_match_score);
 
   // Returns the index that should be used for history lookups.
   history::InMemoryURLIndex* GetIndex();
@@ -66,7 +67,8 @@ class HistoryQuickProvider : public HistoryProvider {
   // matches (|matches|) to highlight where terms were found.
   static ACMatchClassifications SpansFromTermMatch(
       const history::TermMatches& matches,
-      size_t text_length);
+      size_t text_length,
+      bool is_url);
 
   // Only for use in unittests.  Takes ownership of |index|.
   void SetIndexForTesting(history::InMemoryURLIndex* index);

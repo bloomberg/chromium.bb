@@ -499,6 +499,10 @@ struct QueryOptions {
   // the most recent first, so older results may not be returned if there is not
   // enough room. When 0, this will return everything (the default).
   int max_count;
+
+  // Only search within the page body if true, otherwise search all columns
+  // including url and time. Defaults to false.
+  bool body_only;
 };
 
 // KeywordSearchTermVisit -----------------------------------------------------

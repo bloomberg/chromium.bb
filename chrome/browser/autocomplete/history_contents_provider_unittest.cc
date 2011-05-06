@@ -50,10 +50,11 @@ class HistoryContentsProviderTest : public TestingBrowserProcessTest,
   }
 
   const ACMatches& matches() const { return provider_->matches(); }
-
   TestingProfile* profile() const { return profile_.get(); }
-
   HistoryContentsProvider* provider() const { return provider_.get(); }
+
+ protected:
+  virtual bool BodyOnly() { return false; }
 
  private:
   // testing::Test
@@ -82,7 +83,7 @@ class HistoryContentsProviderTest : public TestingBrowserProcessTest,
       history_service->SetPageContents(url, UTF8ToUTF16(test_entries[i].body));
     }
 
-    provider_ = new HistoryContentsProvider(this, profile_.get());
+    provider_ = new HistoryContentsProvider(this, profile_.get(), BodyOnly());
   }
 
   virtual void TearDown() {
@@ -104,6 +105,11 @@ class HistoryContentsProviderTest : public TestingBrowserProcessTest,
 
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<HistoryContentsProvider> provider_;
+};
+
+class HistoryContentsProviderBodyOnlyTest : public HistoryContentsProviderTest {
+ protected:
+  virtual bool BodyOnly() { return true; }
 };
 
 TEST_F(HistoryContentsProviderTest, Body) {
@@ -156,6 +162,29 @@ TEST_F(HistoryContentsProviderTest, MinimalChanges) {
   RunQuery(sync_input, true);
   const ACMatches& m3 = matches();
   EXPECT_EQ(2U, m3.size());
+}
+
+TEST_F(HistoryContentsProviderBodyOnlyTest, MinimalChanges) {
+  // A minimal changes request when there have been no real queries should
+  // give us no results.
+  AutocompleteInput sync_input(ASCIIToUTF16("PAGEONE"), string16(), true, false,
+                               true, AutocompleteInput::SYNCHRONOUS_MATCHES);
+  RunQuery(sync_input, true);
+  const ACMatches& m1 = matches();
+  EXPECT_EQ(0U, m1.size());
+
+  // Now do a "regular" query to get no results because we are body-only.
+  AutocompleteInput async_input(ASCIIToUTF16("PAGEONE"), string16(), true,
+                                false, true, AutocompleteInput::ALL_MATCHES);
+  RunQuery(async_input, false);
+  const ACMatches& m2 = matches();
+  EXPECT_EQ(0U, m2.size());
+
+  // Now do a minimal one where we want synchronous results, and the results
+  // should still not be there.
+  RunQuery(sync_input, true);
+  const ACMatches& m3 = matches();
+  EXPECT_EQ(0U, m3.size());
 }
 
 // Tests that the BookmarkModel is queried correctly.
