@@ -40,33 +40,24 @@ testProgressEventStateMachine(
     0,  // abortCount
     0,  // loadCount
     'NaCl module load failed: could not load manifest url.');
-// 'nonexist_nexe' loads a manifest, then tries to load a nonexistent nexe.
+// 'nonexistent_nexe' loads a manifest, then tries to load a nonexistent nexe.
 testProgressEventStateMachine(
     tester,
-    'nonexist_nexe',
+    'nonexistent_nexe',
     1,  // progressMinCount
     1,  // errorCount
     0,  // abortCount
     0,  // loadCount
     'NaCl module load failed: could not load nexe url.');
-// 'nonexist_manifest' tries to load a nonexistent manifest.
+// 'nonexistent_manifest' tries to load a nonexistent manifest.
 testProgressEventStateMachine(
     tester,
-    'nonexist_manifest',
+    'nonexistent_manifest',
     0,  // progressMinCount
     1,  // errorCount
     0,  // abortCount
     0,  // loadCount
     'NaCl module load failed: could not load manifest url.');
-// 'bad_nexe' loads a manifest, then loads a nexe that fails to start.
-testProgressEventStateMachine(
-    tester,
-    'bad_nexe',
-    1,  // progressMinCount
-    1,  // errorCount
-    0,  // abortCount
-    0,  // loadCount
-    'NaCl module load failed: could not initialize module.');
 // 'bad_manifest' loads an invalid manifest.
 testProgressEventStateMachine(
     tester,
@@ -76,6 +67,37 @@ testProgressEventStateMachine(
     0,  // abortCount
     0,  // loadCount
     'NaCl module load failed: manifest JSON parsing failed');
+// 'bad_ppp_initialize' loads a manifest, then loads a nexe that fails to
+// initialize PPAPI module
+testProgressEventStateMachine(
+    tester,
+    'bad_ppp_initialize',
+    1,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: could not initialize module.');
+// 'bad_no_ppp_instance' loads a manifest, then loads a nexe that fails to
+// get the required PPP_Instance interface
+testProgressEventStateMachine(
+    tester,
+    'bad_no_ppp_instance',
+    1,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: could not initialize module.');
+// 'bad_ppp_instance_didcreate' loads a manifest, then loads a nexe that fails
+// to create the instance
+testProgressEventStateMachine(
+    tester,
+    'bad_ppp_instance_didcreate',
+    1,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: could not create instance.');
+
 // The driver invoked when the body has finished loading.
 function runTests() {
   tester.loadErrorsAreOK();
@@ -83,10 +105,13 @@ function runTests() {
       $('bad_magic'),
       $('cross_origin'),
       $('cross_manifest'),
-      $('nonexist_nexe'),
-      $('nonexist_manifest'),
-      $('bad_nexe'),
-      $('bad_manifest'));
+      $('nonexistent_nexe'),
+      $('nonexistent_manifest'),
+      $('bad_manifest'),
+      $('bad_ppp_initialize'),
+      $('bad_no_ppp_instance'),
+      $('bad_ppp_instance_didcreate'));
+
   tester.run();
 }
 // Set all the listeners on the body.
@@ -105,7 +130,7 @@ setListeners($('body'));
       style="background-color:gray"
       type="application/pdf" />
 
-    <embed id="nonexist_manifest"
+    <embed id="nonexistent_manifest"
       class="naclModule"
       width=100 height=20
       src="doesnotexist.manifest"
@@ -134,26 +159,39 @@ setListeners($('body'));
       style="background-color:gray"
       type="application/pdf" />
 
-    <embed id="nonexist_nexe"
+    <embed id="nonexistent_nexe"
       class="naclModule"
       width=100 height=20
       src="ppapi_bad_doesnotexist.nmf"
       style="background-color:gray"
       type="application/x-nacl" />
-
     <embed id="bad_magic"
       class="naclModule"
       width=100 height=20
       src="ppapi_bad_magic.nmf"
       style="background-color:gray"
       type="application/x-nacl" />
-
-    <embed id="bad_nexe"
+    <!-- Nexes that load successfully but fail PPAPI initialization for
+         various reasons -->
+    <embed id="bad_ppp_initialize"
       class="naclModule"
       width=100 height=20
-      src="ppapi_bad_nexe.nmf"
+      src="ppapi_bad_ppp_initialize.nmf"
       style="background-color:gray"
       type="application/x-nacl" />
+    <embed id="bad_no_ppp_instance"
+      class="naclModule"
+      width=100 height=20
+      src="ppapi_bad_no_ppp_instance.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
+    <embed id="bad_ppp_instance_didcreate"
+      class="naclModule"
+      width=100 height=20
+      src="ppapi_bad_ppp_instance_didcreate.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
+
   <script type="text/javascript">
   //<![CDATA[
   runTests();

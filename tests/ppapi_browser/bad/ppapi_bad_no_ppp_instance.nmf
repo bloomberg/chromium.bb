@@ -1,0 +1,7 @@
+{
+  "nexes": {
+    "x86-32": "ppapi_bad_no_ppp_instance_x86-32.nexe",
+    "x86-64": "ppapi_bad_no_ppp_instance_x86-64.nexe",
+    "arm": "ppapi_bad_no_ppp_instance_arm.nexe"
+  }
+}

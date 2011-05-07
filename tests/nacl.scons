@@ -47,6 +47,7 @@ example_nexes = [
     'ppapi_progress_events.nexe',  # ppapi_progress_events.html
     'earth_c.nexe',                # earth_c.html
     'earth_cc.nexe',               # earth_cc.html
+    'ppapi_bad',                   # ppapi_bad.html
     # PPAPI Proxy Tests
     'ppapi_core.nexe',            # ppapi_core.html
     'ppapi_ppb_graphics2d.nexe',  # ppapi_ppb_graphics2d.html
@@ -55,4 +56,5 @@ example_nexes = [
     ]
 
 env.Depends(html_examples, [ env.Alias(nexe) for nexe in example_nexes ])
-env.Alias('html_examples', html_examples)  # scons --mode=nacl examples
+env.Alias('html_examples', html_examples)  # scons --mode=nacl examples_html
+env.Alias('examples_html', html_examples)  # scons --mode=nacl html_examples

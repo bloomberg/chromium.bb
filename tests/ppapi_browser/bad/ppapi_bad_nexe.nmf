@@ -1,7 +1,0 @@
-{
-  "nexes": {
-    "x86-32": "ppapi_bad_x86-32.nexe",
-    "x86-64": "ppapi_bad_x86-64.nexe",
-    "arm": "ppapi_bad_arm.nexe"
-  }
-}

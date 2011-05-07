@@ -83,11 +83,20 @@ int32_t BrowserPpp::InitializeModule(
   if (srpc_result != NACL_SRPC_RESULT_OK) {
     return PP_ERROR_FAILED;
   }
-  if (!InitializePPPInterfaces()) {
-    return PP_ERROR_FAILED;
-  }
   DebugPrintf("PPP_InitializeModule: pp_error=%"NACL_PRId32"\n", pp_error);
-  return pp_error;
+  if (pp_error != PP_OK) {
+    return pp_error;
+  }
+  const void* ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE);
+  DebugPrintf("PPP_InitializeModule: ppp_instance=%p\n", ppp_instance);
+  ppp_instance_interface_ = reinterpret_cast<const PPP_Instance*>(ppp_instance);
+  if (ppp_instance_interface_ == NULL) {  // PPP_Instance is required.
+    return PP_ERROR_NOINTERFACE;
+  }
+  // PPB_Messaging is optional, so it's OK for this to return NULL.
+  ppp_messaging_interface_ = reinterpret_cast<const PPP_Messaging*>(
+        GetPluginInterface(PPP_MESSAGING_INTERFACE));
+  return PP_OK;
 }
 
 void BrowserPpp::ShutdownModule() {
@@ -147,18 +156,6 @@ const void* BrowserPpp::GetPluginInterfaceSafe(const char* interface_name) {
     DebugPrintf("PPB_GetInterface: %s not found\n", interface_name);
   CHECK(ppp_interface != NULL);
   return ppp_interface;
-}
-
-bool BrowserPpp::InitializePPPInterfaces() {
-  ppp_instance_interface_ = reinterpret_cast<const PPP_Instance*>(
-      GetPluginInterface(PPP_INSTANCE_INTERFACE));
-  if (ppp_instance_interface_ == NULL) {
-    return false;
-  }
-  // PPB_Messaging is optional, so it's OK for this to return NULL.
-  ppp_messaging_interface_ = reinterpret_cast<const PPP_Messaging*>(
-        GetPluginInterface(PPP_MESSAGING_INTERFACE));
-  return true;
 }
 
 }  // namespace ppapi_proxy

@@ -54,8 +54,6 @@ class BrowserPpp {
   plugin::PluginPpapi* plugin() { return plugin_; }
 
  private:
-  // Called in constructor.
-  bool InitializePPPInterfaces();
   // The "main" SRPC channel used to communicate with the plugin.
   NaClSrpcChannel* main_channel_;
   // The PID of the plugin.

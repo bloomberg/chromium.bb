@@ -46,6 +46,8 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 
+using ppapi_proxy::BrowserPpp;
+
 namespace plugin {
 
 namespace {
@@ -100,7 +102,7 @@ class FindAdapter : public pp::Find_Dev {
   explicit FindAdapter(PluginPpapi* plugin)
     : pp::Find_Dev(plugin),
       plugin_(plugin) {
-    ppapi_proxy::BrowserPpp* proxy = plugin_->ppapi_proxy();
+    BrowserPpp* proxy = plugin_->ppapi_proxy();
     CHECK(proxy != NULL);
     ppp_find_ = reinterpret_cast<const PPP_Find_Dev*>(
         proxy->GetPluginInterface(PPP_FIND_DEV_INTERFACE));
@@ -144,7 +146,7 @@ class PrintingAdapter : public pp::Printing_Dev {
   explicit PrintingAdapter(PluginPpapi* plugin)
     : pp::Printing_Dev(plugin),
       plugin_(plugin) {
-    ppapi_proxy::BrowserPpp* proxy = plugin_->ppapi_proxy();
+    BrowserPpp* proxy = plugin_->ppapi_proxy();
     CHECK(proxy != NULL);
     ppp_printing_ = reinterpret_cast<const PPP_Printing_Dev*>(
         proxy->GetPluginInterface(PPP_PRINTING_DEV_INTERFACE));
@@ -198,7 +200,7 @@ class SelectionAdapter : public pp::Selection_Dev {
   explicit SelectionAdapter(PluginPpapi* plugin)
     : pp::Selection_Dev(plugin),
       plugin_(plugin) {
-    ppapi_proxy::BrowserPpp* proxy = plugin_->ppapi_proxy();
+    BrowserPpp* proxy = plugin_->ppapi_proxy();
     CHECK(proxy != NULL);
     ppp_selection_ = reinterpret_cast<const PPP_Selection_Dev*>(
         proxy->GetPluginInterface(PPP_SELECTION_DEV_INTERFACE));
@@ -228,7 +230,7 @@ class WidgetClientAdapter : public pp::WidgetClient_Dev {
   explicit WidgetClientAdapter(PluginPpapi* plugin)
     : pp::WidgetClient_Dev(plugin),
       plugin_(plugin) {
-    ppapi_proxy::BrowserPpp* proxy = plugin_->ppapi_proxy();
+    BrowserPpp* proxy = plugin_->ppapi_proxy();
     CHECK(proxy != NULL);
     ppp_widget_ = reinterpret_cast<const PPP_Widget_Dev*>(
         proxy->GetPluginInterface(PPP_WIDGET_DEV_INTERFACE));
@@ -268,7 +270,7 @@ class ZoomAdapter : public pp::Zoom_Dev {
   explicit ZoomAdapter(PluginPpapi* plugin)
     : pp::Zoom_Dev(plugin),
       plugin_(plugin) {
-    ppapi_proxy::BrowserPpp* proxy = plugin_->ppapi_proxy();
+    BrowserPpp* proxy = plugin_->ppapi_proxy();
     CHECK(proxy != NULL);
     ppp_zoom_ = reinterpret_cast<const PPP_Zoom_Dev*>(
         proxy->GetPluginInterface(PPP_ZOOM_DEV_INTERFACE));
@@ -650,37 +652,49 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
       kNaClSrpcInvalidMethodIndex) {
     *error_string =
         "could not find PPP_InitializeModule() - toolchain version mismatch?";
+    PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (%s)\n",
+                   error_string->c_str()));
     return false;
   }
-  ppapi_proxy_ =
-      new(std::nothrow) ppapi_proxy::BrowserPpp(srpc_channel, this);
+  nacl::scoped_ptr<BrowserPpp> ppapi_proxy(
+      new(std::nothrow) BrowserPpp(srpc_channel, this));
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (ppapi_proxy=%p)\n",
-                 reinterpret_cast<void*>(ppapi_proxy_)));
-  if (ppapi_proxy_ == NULL) {
+                 reinterpret_cast<void*>(ppapi_proxy.get())));
+  if (ppapi_proxy.get() == NULL) {
     *error_string = "could not allocate proxy memory.";
     return false;
   }
   pp::Module* module = pp::Module::Get();
+  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (module=%p)\n",
+                 reinterpret_cast<void*>(module)));
   CHECK(module != NULL);  // We could not have gotten past init stage otherwise.
   int32_t pp_error =
-      ppapi_proxy_->InitializeModule(module->pp_module(),
+      ppapi_proxy->InitializeModule(module->pp_module(),
                                      module->get_browser_interface());
+  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (pp_error=%"
+                 NACL_PRId32")\n", pp_error));
   if (pp_error != PP_OK) {
     *error_string = "could not initialize module.";
     return false;
   }
   const PPP_Instance* instance_interface =
-      ppapi_proxy_->ppp_instance_interface();
+      ppapi_proxy->ppp_instance_interface();
+  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (ppp_instance=%p)\n",
+                 reinterpret_cast<const void*>(instance_interface)));
   CHECK(instance_interface != NULL);  // Verified on module initialization.
   PP_Bool did_create = instance_interface->DidCreate(
       pp_instance(),
       argc(),
       const_cast<const char**>(argn()),
       const_cast<const char**>(argv()));
+  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (did_create=%d)\n",
+                 did_create));
   if (did_create == PP_FALSE) {
     *error_string = "could not create instance.";
     return false;
   }
+
+  ppapi_proxy_ = ppapi_proxy.release();
 
   ScriptableHandlePpapi* handle =
       static_cast<ScriptableHandlePpapi*>(scriptable_handle());
@@ -700,6 +714,7 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
     replayDidChangeView = false;
     DidChangeView(replayDidChangeViewPosition, replayDidChangeViewClip);
   }
+  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (success=true)\n"));
   return true;
 }
 

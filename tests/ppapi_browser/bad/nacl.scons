@@ -2,6 +2,12 @@
 # Copyright (c) 2011 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+#
+# Manual testing with localhost:5103/scons-out/.../staging/ppapi_bad.html:
+#   scons --mode=nacl ppapi_bad
+# Automatic testing:
+#   scons run_ppapi_bad_browser_test
+#
 
 Import('env')
 
@@ -9,34 +15,44 @@ Import('env')
 env.FilterOut(CFLAGS=['-pedantic'])
 env.FilterOut(CCFLAGS=['-pedantic'])
 
-bad_target = ('ppapi_bad_%s.nexe' % env.get('TARGET_FULLARCH'))
-env.ComponentProgram(bad_target,
-                     ['ppapi_bad.cc'],
-                     EXTRA_LIBS=['${PPAPI_LIBS}',
-                                 'platform',
-                                 'pthread',
-                                 'gio'])
+ppapi_bad_files = [
+  'ppapi_bad.html',
+  'ppapi_bad_crossorigin.nmf',
+  'ppapi_bad_doesnotexist.nmf',
+  'ppapi_bad_magic.nmf',
+  env.File('${SCONSTRUCT_DIR}/tests/ppapi_browser/progress_events/' +
+           'ppapi_progress_events.js'),
+  env.File('${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js')
+  ]
+ppapi_bad = env.Replicate('${STAGING_DIR}', ppapi_bad_files)
 
-# Note that the html and a .nmf manifest is required to run this program.
-env.Publish(bad_target, 'run', [
-    'ppapi_bad.html',
-    'ppapi_bad_crossorigin.nmf',
-    'ppapi_bad_doesnotexist.nmf',
-    'ppapi_bad_magic.nmf',
-    'ppapi_bad_nexe.nmf',
-    ('${SCONSTRUCT_DIR}/tests/ppapi_browser/progress_events/' +
-     'ppapi_progress_events.js'),
-    '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js',
-])
+
+# Compile all nexes embedded into the above html
+for kind in [ 'ppp_initialize', 'no_ppp_instance', 'ppp_instance_didcreate' ]:
+  bad_nmf = 'ppapi_bad_%s.nmf' % kind
+  bad_nexe = ('ppapi_bad_%s_%s.nexe' % (kind, env.get('TARGET_FULLARCH')))
+  env.ComponentProgram(bad_nexe,
+                       ['ppapi_bad_%s.cc' % kind],
+                       EXTRA_LIBS=['${PPAPI_LIBS}',
+                                   'platform',
+                                   'pthread',
+                                   'gio'])
+
+  env.Publish(bad_nexe, 'run', [bad_nmf])
+  ppapi_bad_files.extend(env.ExtractPublishedFiles(bad_nexe))
+  env.Depends(ppapi_bad, env.Alias(bad_nexe))
+
+# "scons --mode=nacl ppapi_bad" will publish the html and all of its
+# dependencies to scons-out.
+env.Alias('ppapi_bad', ppapi_bad)
 
 node = env.PPAPIBrowserTester(
     'ppapi_bad_browser_test.out',
     url='ppapi_bad.html',
-    files=env.ExtractPublishedFiles(bad_target),
+    files=[ env.File(f) for f in ppapi_bad_files ],
     args=['--allow_404'])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_ppapi_bad_browser_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken())
-
