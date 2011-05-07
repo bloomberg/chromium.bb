@@ -59,6 +59,7 @@ class URLRequestContextGetter;
 }
 
 namespace printing {
+class BackgroundPrintingManager;
 class PrintJobManager;
 class PrintPreviewTabController;
 }
@@ -167,6 +168,8 @@ class BrowserProcess {
   virtual printing::PrintJobManager* print_job_manager() = 0;
   virtual printing::PrintPreviewTabController*
       print_preview_tab_controller() = 0;
+  virtual printing::BackgroundPrintingManager*
+      background_printing_manager() = 0;
 
   virtual GoogleURLTracker* google_url_tracker() = 0;
   virtual IntranetRedirectDetector* intranet_redirect_detector() = 0;

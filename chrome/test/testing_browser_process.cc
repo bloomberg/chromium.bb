@@ -13,6 +13,7 @@
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -178,7 +179,7 @@ unsigned int TestingBrowserProcess::AddRefModule() {
 }
 
 unsigned int TestingBrowserProcess::ReleaseModule() {
-  DCHECK(module_ref_count_ > 0);
+  DCHECK_GT(module_ref_count_, 0U);
   return --module_ref_count_;
 }
 
@@ -193,6 +194,15 @@ printing::PrintJobManager* TestingBrowserProcess::print_job_manager() {
 printing::PrintPreviewTabController*
 TestingBrowserProcess::print_preview_tab_controller() {
   return NULL;
+}
+
+printing::BackgroundPrintingManager*
+TestingBrowserProcess::background_printing_manager() {
+  if (!background_printing_manager_.get()) {
+    background_printing_manager_.reset(
+        new printing::BackgroundPrintingManager());
+  }
+  return background_printing_manager_.get();
 }
 
 const std::string& TestingBrowserProcess::GetApplicationLocale() {

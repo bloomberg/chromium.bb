@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -169,6 +170,10 @@ Browser* FindBrowserWithTabbedOrAnyType(Profile* profile,
   return browser ? browser :
       FindBrowserMatching(BrowserList::begin(), BrowserList::end(), profile,
                           Browser::FEATURE_NONE, match_types);
+}
+
+printing::BackgroundPrintingManager* GetBackgroundPrintingManager() {
+  return g_browser_process->background_printing_manager();
 }
 
 }  // namespace
@@ -621,6 +626,7 @@ void BrowserList::RemoveBrowserFrom(Browser* browser,
 TabContentsIterator::TabContentsIterator()
     : browser_iterator_(BrowserList::begin()),
       web_view_index_(-1),
+      bg_printing_iterator_(GetBackgroundPrintingManager()->begin()),
       cur_(NULL) {
   Advance();
 }
@@ -646,6 +652,13 @@ void TabContentsIterator::Advance() {
       cur_ = next_tab;
       return;
     }
+  }
+  // If no more TabContents from Browsers, check the BackgroundPrintingManager.
+  while (bg_printing_iterator_ != GetBackgroundPrintingManager()->end()) {
+    cur_ = *bg_printing_iterator_;
+    CHECK(cur_);
+    ++bg_printing_iterator_;
+    return;
   }
   // Reached the end - no more TabContents.
   cur_ = NULL;

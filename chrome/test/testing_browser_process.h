@@ -11,11 +11,10 @@
 #define CHROME_TEST_TESTING_BROWSER_PROCESS_H_
 #pragma once
 
-#include "build/build_config.h"
-
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "content/common/notification_service.h"
 
@@ -118,6 +117,8 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual printing::PrintPreviewTabController* print_preview_tab_controller();
 
+  virtual printing::BackgroundPrintingManager* background_printing_manager();
+
   virtual const std::string& GetApplicationLocale();
 
   virtual void SetApplicationLocale(const std::string& app_locale);
@@ -159,6 +160,7 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
   scoped_ptr<ProfileManager> profile_manager_;
   scoped_ptr<NotificationUIManager> notification_ui_manager_;
+  scoped_ptr<printing::BackgroundPrintingManager> background_printing_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };

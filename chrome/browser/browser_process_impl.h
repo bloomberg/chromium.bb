@@ -85,6 +85,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual bool IsShuttingDown();
   virtual printing::PrintJobManager* print_job_manager();
   virtual printing::PrintPreviewTabController* print_preview_tab_controller();
+  virtual printing::BackgroundPrintingManager* background_printing_manager();
   virtual GoogleURLTracker* google_url_tracker();
   virtual IntranetRedirectDetector* intranet_redirect_detector();
   virtual const std::string& GetApplicationLocale();
@@ -143,6 +144,7 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateStatusTrayManager();
   void CreateTabCloseableStateWatcher();
   void CreatePrintPreviewTabController();
+  void CreateBackgroundPrintingManager();
   void CreateSafeBrowsingDetectionService();
 
   bool IsSafeBrowsingDetectionServiceEnabled();
@@ -211,6 +213,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_refptr<printing::PrintPreviewTabController>
       print_preview_tab_controller_;
+
+  scoped_ptr<printing::BackgroundPrintingManager> background_printing_manager_;
 
   scoped_ptr<ui::Clipboard> clipboard_;
 

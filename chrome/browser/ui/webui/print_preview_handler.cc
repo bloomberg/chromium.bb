@@ -13,7 +13,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -297,13 +299,13 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   bool print_to_pdf = false;
   settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
 
+  TabContentsWrapper* preview_tab_wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
+
   if (print_to_pdf) {
     // Pre-populating select file dialog with print job title.
-    TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
-
     string16 print_job_title_utf16 =
-        wrapper->print_view_manager()->RenderSourceName();
+        preview_tab_wrapper->print_view_manager()->RenderSourceName();
 
 #if defined(OS_WIN)
     FilePath::StringType print_job_title(print_job_title_utf16);
@@ -318,6 +320,9 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
     SelectFile(default_filename);
   } else {
+    g_browser_process->background_printing_manager()->OwnTabContents(
+        preview_tab_wrapper);
+
     // The PDF being printed contains only the pages that the user selected,
     // so ignore the page range and print all pages.
     settings->Remove(printing::kSettingPageRange, NULL);

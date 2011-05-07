@@ -773,8 +773,12 @@ class NotificationType {
 
     // Notification from PrintJob that an event occured. It can be that a page
     // finished printing or that the print job failed. Details is
-    // PrintJob::EventDetails.
+    // PrintJob::EventDetails. Source is a PrintJob.
     PRINT_JOB_EVENT,
+
+    // Sent when a PrintJob has been released.
+    // Source is the TabContents that holds the print job.
+    PRINT_JOB_RELEASED,
 
     // Shutdown ----------------------------------------------------------------
 

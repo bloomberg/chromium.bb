@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/browser_with_test_window_test.h"
 
 typedef BrowserWithTestWindowTest BrowserListTest;
@@ -15,6 +18,13 @@ size_t CountAllTabs() {
   for (TabContentsIterator iterator; !iterator.done(); ++iterator)
     ++count;
   return count;
+}
+
+// Helper function to navigate to the print preview page.
+void NavigateToPrintUrl(TabContentsWrapper* tab, int page_id) {
+  static_cast<TestRenderViewHost*>(
+      tab->render_view_host())->SendNavigate(page_id,
+                                             GURL(chrome::kChromeUIPrintURL));
 }
 
 }  // namespace
@@ -136,4 +146,84 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
   // Close all remaining tabs to keep all the destructors happy.
   browser2->CloseAllTabs();
   browser3->CloseAllTabs();
+}
+
+TEST_F(BrowserListTest, TabContentsIteratorBackgroundPrinting) {
+  // Make sure we have 1 window to start with.
+  EXPECT_EQ(1U, BrowserList::size());
+
+  // Create more browsers/windows.
+  scoped_ptr<Browser> browser2(new Browser(Browser::TYPE_TABBED, profile()));
+  scoped_ptr<Browser> browser3(new Browser(Browser::TYPE_TABBED, profile()));
+
+  scoped_ptr<TestBrowserWindow> window2(new TestBrowserWindow(browser2.get()));
+  scoped_ptr<TestBrowserWindow> window3(new TestBrowserWindow(browser3.get()));
+
+  browser2->set_window(window2.get());
+  browser3->set_window(window3.get());
+
+  EXPECT_EQ(0U, CountAllTabs());
+
+  // Add some tabs.
+  for (size_t i = 0; i < 3; ++i)
+    browser2->NewTab();
+  browser3->NewTab();
+
+  EXPECT_EQ(4U, CountAllTabs());
+
+  TestingBrowserProcess* browser_process = testing_browser_process_.get();
+  printing::BackgroundPrintingManager* bg_print_manager =
+      browser_process->background_printing_manager();
+
+  // Grab a tab and give ownership to BackgroundPrintingManager.
+  TabContentsIterator tab_iterator;
+  TabContentsWrapper* tab = *tab_iterator;
+  int page_id = 1;
+  NavigateToPrintUrl(tab, page_id++);
+
+  bg_print_manager->OwnTabContents(tab);
+
+  EXPECT_EQ(4U, CountAllTabs());
+
+  // Close remaining tabs.
+  browser2->CloseAllTabs();
+  browser3->CloseAllTabs();
+
+  EXPECT_EQ(1U, CountAllTabs());
+
+  // Delete the last remaining tab.
+  delete tab;
+
+  EXPECT_EQ(0U, CountAllTabs());
+
+  // Add some tabs.
+  for (size_t i = 0; i < 3; ++i) {
+    browser2->NewTab();
+    browser3->NewTab();
+  }
+
+  EXPECT_EQ(6U, CountAllTabs());
+
+  // Tell BackgroundPrintingManager to take ownership of all tabs.
+  // Save the tabs in |owned_tabs| because manipulating tabs in the middle of
+  // TabContentsIterator is a bad idea.
+  std::vector<TabContentsWrapper*> owned_tabs;
+  for (TabContentsIterator iterator; !iterator.done(); ++iterator) {
+    NavigateToPrintUrl(*iterator, page_id++);
+    owned_tabs.push_back(*iterator);
+  }
+  for (std::vector<TabContentsWrapper*>::iterator it = owned_tabs.begin();
+       it != owned_tabs.end(); ++it) {
+    bg_print_manager->OwnTabContents(*it);
+  }
+
+  EXPECT_EQ(6U, CountAllTabs());
+
+  // Delete all tabs to clean up.
+  for (std::vector<TabContentsWrapper*>::iterator it = owned_tabs.begin();
+       it != owned_tabs.end(); ++it) {
+    delete *it;
+  }
+
+  EXPECT_EQ(0U, CountAllTabs());
 }

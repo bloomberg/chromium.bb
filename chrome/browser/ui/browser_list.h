@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_LIST_H_
 #pragma once
 
+#include <set>
 #include <vector>
 
 #include "base/observer_list.h"
@@ -218,7 +219,9 @@ class TabContentsIterator {
   // Returns the Browser instance associated with the current TabContents.
   // Valid as long as !Done()
   Browser* browser() const {
-    return *browser_iterator_;
+    if (browser_iterator_ != BrowserList::end())
+      return *browser_iterator_;
+    return NULL;
   }
 
   // Returns the current TabContents, valid as long as !Done()
@@ -251,6 +254,9 @@ class TabContentsIterator {
 
   // tab index into the current Browser of the current web view
   int web_view_index_;
+
+  // iterator over the TabContentsWrappers doing background printing.
+  std::set<TabContentsWrapper*>::const_iterator bg_printing_iterator_;
 
   // Current TabContents, or NULL if we're at the end of the list. This can
   // be extracted given the browser iterator and index, but it's nice to cache

@@ -5,6 +5,8 @@
 #include "chrome/browser/browser_process_impl.h"
 
 #include <map>
+#include <set>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -41,6 +43,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -561,6 +564,14 @@ printing::PrintPreviewTabController*
   return print_preview_tab_controller_.get();
 }
 
+printing::BackgroundPrintingManager*
+    BrowserProcessImpl::background_printing_manager() {
+  DCHECK(CalledOnValidThread());
+  if (!background_printing_manager_.get())
+    CreateBackgroundPrintingManager();
+  return background_printing_manager_.get();
+}
+
 GoogleURLTracker* BrowserProcessImpl::google_url_tracker() {
   DCHECK(CalledOnValidThread());
   if (!google_url_tracker_.get())
@@ -911,6 +922,11 @@ void BrowserProcessImpl::CreateTabCloseableStateWatcher() {
 void BrowserProcessImpl::CreatePrintPreviewTabController() {
   DCHECK(print_preview_tab_controller_.get() == NULL);
   print_preview_tab_controller_ = new printing::PrintPreviewTabController();
+}
+
+void BrowserProcessImpl::CreateBackgroundPrintingManager() {
+  DCHECK(background_printing_manager_.get() == NULL);
+  background_printing_manager_.reset(new printing::BackgroundPrintingManager());
 }
 
 void BrowserProcessImpl::CreateSafeBrowsingDetectionService() {

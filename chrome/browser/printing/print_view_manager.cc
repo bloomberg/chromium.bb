@@ -17,6 +17,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
+#include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "printing/metafile.h"
@@ -175,6 +176,11 @@ void PrintViewManager::OnPrintingFailed(int cookie) {
         NewRunnableMethod(printer_query.get(),
                           &printing::PrinterQuery::StopWorker));
   }
+
+  NotificationService::current()->Notify(
+      NotificationType::PRINT_JOB_RELEASED,
+      Source<TabContents>(tab_contents()),
+      NotificationService::NoDetails());
 }
 
 bool PrintViewManager::OnMessageReceived(const IPC::Message& message) {
@@ -209,6 +215,11 @@ void PrintViewManager::OnNotifyPrintJobEvent(
   switch (event_details.type()) {
     case JobEventDetails::FAILED: {
       TerminatePrintJob(true);
+
+      NotificationService::current()->Notify(
+          NotificationType::PRINT_JOB_RELEASED,
+          Source<TabContents>(tab_contents()),
+          NotificationService::NoDetails());
       break;
     }
     case JobEventDetails::USER_INIT_DONE:
@@ -234,6 +245,11 @@ void PrintViewManager::OnNotifyPrintJobEvent(
       // of object registration.
       printing_succeeded_ = true;
       ReleasePrintJob();
+
+      NotificationService::current()->Notify(
+          NotificationType::PRINT_JOB_RELEASED,
+          Source<TabContents>(tab_contents()),
+          NotificationService::NoDetails());
       break;
     }
     default: {
