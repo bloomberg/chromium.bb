@@ -72,12 +72,15 @@ def RenameWithRetry(old_path, new_path):
   if sys.platform in ('win32', 'cygwin'):
     for i in range(5):
       try:
+        if os.path.exists(new_path):
+          os.remove(new_path)
         os.rename(old_path, new_path)
-        break
+        return
       except Exception, exn:
         sys.stdout.write('Rename failed with %r.  Retrying...\n' % str(exn))
         sys.stdout.flush()
         time.sleep(1)
+    raise Exception('Unabled to rename irt file')
   else:
     os.rename(old_path, new_path)
 
