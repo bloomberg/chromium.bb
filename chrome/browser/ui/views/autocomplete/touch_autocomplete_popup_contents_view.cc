@@ -36,16 +36,18 @@ void TouchAutocompleteResultView::PaintMatch(gfx::Canvas* canvas,
              text_bounds().y());
 
   if (!match.description.empty()) {
+    // We use our base class's GetTextHeight below because we need the height
+    // of a single line of text.
     DrawString(canvas, match.description, match.description_class, true, x,
-        text_bounds().y() + GetFontHeight());
+        text_bounds().y() + AutocompleteResultView::GetTextHeight());
   }
 }
 
-int TouchAutocompleteResultView::GetFontHeight() const {
-  // In touch version of autocomplete popup, the text is displayed in two lines:
-  // First line is the title of the suggestion and second is the description.
-  // Hence, the total text height is 2 times the height of one line.
-  return AutocompleteResultView::GetFontHeight() * 2;
+int TouchAutocompleteResultView::GetTextHeight() const {
+  // In the touch version of the autocomplete popup, the text is displayed in
+  // two lines: First line is the title of the suggestion and second is the
+  // description. Hence, the total text height is twice the height of one line.
+  return AutocompleteResultView::GetTextHeight() * 2;
 }
 
 

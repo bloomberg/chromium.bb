@@ -51,7 +51,10 @@ class AutocompleteResultView : public views::View {
   virtual void PaintMatch(gfx::Canvas* canvas,
                           const AutocompleteMatch& match,
                           int x);
-  virtual int GetFontHeight() const;
+
+  // Returns the height of the text portion of the result view. In the base
+  // class, this is the height of one line of text.
+  virtual int GetTextHeight() const;
 
   // Draws the specified |text| into the canvas, using highlighting provided by
   // |classifications|. If |force_dim| is true, ACMatchClassification::DIM is

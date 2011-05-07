@@ -36,7 +36,7 @@ class TouchAutocompleteResultView : public AutocompleteResultView {
   virtual void PaintMatch(gfx::Canvas* canvas,
                           const AutocompleteMatch& match,
                           int x) OVERRIDE;
-  virtual int GetFontHeight() const OVERRIDE;
+  virtual int GetTextHeight() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(TouchAutocompleteResultView);
 };
