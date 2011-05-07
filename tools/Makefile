@@ -167,106 +167,35 @@ MPFR_VERSION=2.4.1
 SRC:
 	mkdir SRC
 
+git-sources := binutils gcc gdb glibc linux-headers-for-nacl newlib
 
-SRC/binutils: | SRC
-	git clone $(GIT_BASE_URL)/nacl-binutils.git SRC/binutils
+nacl-name = $(subst nacl-linux-headers-for-nacl,linux-headers-for-nacl,nacl-$*)
 
-.PHONY: fetched-src-binutils
-fetched-src-binutils: | SRC/binutils
-	cd SRC/binutils && git fetch
+all-git-sources = $(git-sources:%=SRC/%)
+$(all-git-sources): SRC/%: | SRC
+	git clone $(GIT_BASE_URL)/$(nacl-name).git SRC/$*
 
-.PHONY: pinned-src-binutils
-pinned-src-binutils: fetched-src-binutils
-	cd SRC/binutils && git checkout "$(NACL_BINUTILS_COMMIT)"
+all-fetched-git-sources = $(git-sources:%=fetched-src-%)
+.PHONY: $(all-fetched-git-sources)
+$(all-fetched-git-sources): fetched-src-%: | SRC/%
+	cd SRC/$* && git fetch
 
-.PHONY: latest-src-binutils
-latest-src-binutils: fetched-src-binutils
-	./update_to_latest.sh SRC/binutils
+all-pinned-git-sources = $(git-sources:%=pinned-src-%)
+.PHONY: $(all-pinned-git-sources)
+$(all-pinned-git-sources): pinned-src-%: fetched-src-%
+	cd SRC/$* && git checkout \
+	    "$($(shell echo $(nacl-name)| tr '[:lower:]-' '[:upper:]_')_COMMIT)"
 
+all-latest-git-sources = $(git-sources:%=latest-src-%)
+.PHONY: $(all-latest-git-sources)
+$(all-latest-git-sources): latest-src-%: fetched-src-%
+	./update_to_latest.sh SRC/$*
 
-SRC/newlib: | SRC
-	git clone $(GIT_BASE_URL)/nacl-newlib.git SRC/newlib
-
-.PHONY: fetched-src-newlib
-fetched-src-newlib: | SRC/newlib
-	cd SRC/newlib && git fetch
-
-.PHONY: pinned-src-newlib
-pinned-src-newlib: fetched-src-newlib
-	cd SRC/newlib && git checkout "$(NACL_NEWLIB_COMMIT)"
-
-.PHONY: latest-src-newlib
-latest-src-newlib: fetched-src-newlib
-	./update_to_latest.sh SRC/newlib
-
-
-SRC/gcc: | SRC
-	git clone $(GIT_BASE_URL)/nacl-gcc.git SRC/gcc
-
-.PHONY: fetched-src-gcc
-fetched-src-gcc: | SRC/gcc
-	cd SRC/gcc && git fetch
-
-.PHONY: pinned-src-gcc
-pinned-src-gcc: fetched-src-gcc
-	cd SRC/gcc && git checkout "$(NACL_GCC_COMMIT)"
+pinned-src-gcc: gcc-symlinks
+latest-src-gcc: gcc-symlinks
+.PHONY: gcc-symlinks
+gcc-symlinks: SRC/gcc
 	./use_gcc_extras.sh GMP_VERSION=$(GMP_VERSION) MPFR_VERSION=$(MPFR_VERSION)
-
-.PHONY: latest-src-gcc
-latest-src-gcc: fetched-src-gcc
-	./update_to_latest.sh SRC/gcc
-	./use_gcc_extras.sh GMP_VERSION=$(GMP_VERSION) MPFR_VERSION=$(MPFR_VERSION)
-
-
-SRC/glibc: | SRC
-	git clone $(GIT_BASE_URL)/nacl-glibc.git SRC/glibc
-
-.PHONY: fetched-src-glibc
-fetched-src-glibc: | SRC/glibc
-	cd SRC/glibc && git fetch
-
-.PHONY: pinned-src-glibc
-pinned-src-glibc: fetched-src-glibc
-	cd SRC/glibc && git checkout "$(NACL_GLIBC_COMMIT)"
-
-.PHONY: latest-src-glibc
-latest-src-glibc: fetched-src-glibc
-	./update_to_latest.sh SRC/glibc
-
-
-SRC/linux-headers-for-nacl: | SRC
-	git clone $(GIT_BASE_URL)/linux-headers-for-nacl.git \
-	  SRC/linux-headers-for-nacl
-
-.PHONY: fetched-src-linux-headers-for-nacl
-fetched-src-linux-headers-for-nacl: | SRC/linux-headers-for-nacl
-	cd SRC/linux-headers-for-nacl && git fetch
-
-.PHONY: pinned-src-linux-headers-for-nacl
-pinned-src-linux-headers-for-nacl: fetched-src-linux-headers-for-nacl
-	cd SRC/linux-headers-for-nacl && \
-	  git checkout "$(LINUX_HEADERS_FOR_NACL_COMMIT)"
-
-.PHONY: latest-src-linux-headers-for-nacl
-latest-src-linux-headers-for-nacl: fetched-src-linux-headers-for-nacl
-	./update_to_latest.sh SRC/linux-headers-for-nacl
-
-
-SRC/gdb: | SRC
-	git clone $(GIT_BASE_URL)/nacl-gdb.git SRC/gdb
-
-.PHONY: fetched-src-gdb
-fetched-src-gdb: | SRC/gdb
-	cd SRC/gdb && git fetch
-
-.PHONY: pinned-src-gdb
-pinned-src-gdb: fetched-src-gdb
-	cd SRC/gdb && git checkout "$(NACL_GDB_COMMIT)"
-
-.PHONY: latest-src-gdb
-latest-src-gdb: fetched-src-gdb
-	./update_to_latest.sh SRC/gdb
-
 
 .PHONY: sync-pinned
 sync-pinned: | \
