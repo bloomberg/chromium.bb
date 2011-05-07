@@ -140,7 +140,7 @@ void SyncerThread::Start(Mode mode, ModeChangeCallback* callback) {
           << mode;
 
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SyncerThread::StartImpl, mode, make_linked_ptr(callback)));
+      this, &SyncerThread::StartImpl, mode, callback));
 }
 
 void SyncerThread::SendInitialSnapshot() {
@@ -160,17 +160,20 @@ void SyncerThread::WatchConnectionManager() {
   scm->AddListener(this);
 }
 
-void SyncerThread::StartImpl(Mode mode,
-                             linked_ptr<ModeChangeCallback> callback) {
+void SyncerThread::StartImpl(Mode mode, ModeChangeCallback* callback) {
   VLOG(1) << "SyncerThread(" << this << ")" << " Doing StartImpl with mode "
           << mode;
+
+  // TODO(lipalani): This will leak if startimpl is never run. Fix it using a
+  // ThreadSafeRefcounted object.
+  scoped_ptr<ModeChangeCallback> scoped_callback(callback);
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
   DCHECK(!session_context_->account_name().empty());
   DCHECK(syncer_.get());
   mode_ = mode;
   AdjustPolling(NULL);  // Will kick start poll timer if needed.
-  if (callback.get())
-    callback->Run();
+  if (scoped_callback.get())
+    scoped_callback->Run();
 
   // We just changed our mode. See if there are any pending jobs that we could
   // execute in the new mode.

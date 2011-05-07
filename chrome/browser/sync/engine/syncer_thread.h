@@ -247,7 +247,7 @@ class SyncerThread : public sessions::SyncSession::Delegate,
 
   // 'Impl' here refers to real implementation of public functions, running on
   // |thread_|.
-  void StartImpl(Mode mode, linked_ptr<ModeChangeCallback> callback);
+  void StartImpl(Mode mode, ModeChangeCallback* callback);
   void ScheduleNudgeImpl(
       const base::TimeDelta& delay,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
