@@ -1,0 +1,7 @@
+{
+  "nexes": {
+    "x86-64": "ppapi_messaging_x86-64.nexe",
+    "x86-32": "ppapi_messaging_x86-32.nexe",
+    "arm": "ppapi_messaging_arm.nexe"
+  }
+}

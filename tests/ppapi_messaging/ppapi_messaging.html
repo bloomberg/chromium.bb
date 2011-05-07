@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2011 Google Inc.  All rights reserved. -->
+  <head>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+    <META HTTP-EQUIV="Expires" CONTENT="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <script type="application/x-javascript">
+      //<![CDATA[
+      function setupTests(tester, plugin) {
+
+        function TestPostMessageAndOnMessage(messageToSend) {
+          onMessageEventReceived = false;
+          messageReceived = null;
+          plugin.onmessage = function(message) {
+            onMessageEventReceived = true;
+            messageReceived = message;
+          }
+          function waitForAndVerifyOnMessageEvent() {
+            if (!onMessageEventReceived) {
+              halt_and_callback(1, waitForAndVerifyOnMessageEvent);
+            } else {
+              tester.log('Received onmessage event: ' + messageReceived.data);
+              // Verify the message received against the message sent.
+              halt_and_callback(0, function() {
+                  assert(messageReceived.data == messageToSend);
+                  assert(typeof(messageReceived.data) == typeof(messageToSend));
+                  });
+            }
+          }
+          plugin.postMessage(messageToSend);
+          waitForAndVerifyOnMessageEvent();
+        }
+        tester.addTest('PPB_Messaging_PPP_Messaging:String', function() {
+            TestPostMessageAndOnMessage('Some String Value');
+            });
+        tester.addTest('PPB_Messaging_PPP_Messaging:Double', function() {
+            TestPostMessageAndOnMessage(3.14);  // dummy double value
+            });
+        tester.addTest('PPB_Messaging_PPP_Messaging:Int', function() {
+            TestPostMessageAndOnMessage(8);  // dummy integer value
+            });
+        tester.addTest('PPB_Messaging_PPP_Messaging:Null', function() {
+            TestPostMessageAndOnMessage(null);
+            });
+        tester.addTest('PPB_Messaging_PPP_Messaging:Undefined', function() {
+            TestPostMessageAndOnMessage(undefined);
+            });
+        // TODO(dspringer): Add tests for other types like object, array, etc.
+      }
+      //]]>
+    </script>
+    <title>PPAPI PPB_Messaging Test</title>
+  </head>
+  <body>
+    <h1>PPAPI PPB_Messaging Test</h1>
+
+    <embed type="application/x-nacl" id="test_nexe"
+           name="nacl_module"
+           src="ppapi_messaging.nmf"
+           width="0" height="0" />
+
+    <script type="text/javascript">
+      //<![CDATA[
+      var tester = new Tester();
+      setupTests(tester, $('test_nexe'));
+      tester.waitFor($('test_nexe'));
+      tester.run();
+      //]]>
+    </script>
+  </body>
+</html>
