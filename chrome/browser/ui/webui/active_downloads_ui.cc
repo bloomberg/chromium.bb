@@ -152,6 +152,10 @@ void ActiveDownloadsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_FILEBROWSER_CONFIRM_DOWNLOAD));
   localized_strings.SetString("cancel",
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_CANCEL));
+  localized_strings.SetString("confirmcancel",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_CONFIRM_CANCEL));
+  localized_strings.SetString("confirmyes",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_CONFIRM_YES));
   localized_strings.SetString("open",
       l10n_util::GetStringUTF16(IDS_FILEBROWSER_OPEN));
   localized_strings.SetString("pause",
@@ -261,13 +265,14 @@ void ActiveDownloadsHandler::HandlePauseToggleDownload(const ListValue* args) {
 void ActiveDownloadsHandler::HandleAllowDownload(const ListValue* args) {
   DownloadItem* item = GetDownloadById(args);
   if (item)
-    download_manager_->DangerousDownloadValidated(item);
+    item->DangerousDownloadValidated();
 }
 
 void ActiveDownloadsHandler::HandleCancelDownload(const ListValue* args) {
   DownloadItem* item = GetDownloadById(args);
-  if (item && item->IsPartialDownload()) {
-    item->Cancel(true);
+  if (item) {
+    if (item->IsPartialDownload())
+      item->Cancel(true);
     item->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
   }
 }
