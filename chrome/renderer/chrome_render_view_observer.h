@@ -26,10 +26,6 @@ class TranslateHelper;
 struct ThumbnailScore;
 struct ViewMsg_Navigate_Params;
 
-namespace WebKit {
-class WebView;
-}
-
 namespace safe_browsing {
 class PhishingClassifierDelegate;
 }
@@ -75,6 +71,10 @@ class ChromeRenderViewObserver : public RenderViewObserver,
                              unsigned long estimated_size) OVERRIDE;
   virtual bool allowImages(WebKit::WebFrame* frame,
                            bool enabled_per_settings) OVERRIDE;
+  // TODO(jam): add OVERRIDE once WebKit is rolled.
+  virtual bool allowIndexedDB(WebKit::WebFrame* frame,
+                              const WebKit::WebString& name,
+                              const WebKit::WebSecurityOrigin& origin);
   virtual bool allowPlugins(WebKit::WebFrame* frame,
                             bool enabled_per_settings) OVERRIDE;
   virtual bool allowScript(WebKit::WebFrame* frame,
@@ -82,8 +82,7 @@ class ChromeRenderViewObserver : public RenderViewObserver,
   virtual bool allowScriptExtension(WebKit::WebFrame* frame,
                                     const WebKit::WebString& extension_name,
                                     int extension_group) OVERRIDE;
-  // TODO(jam): add OVERRIDE once WebKit is rolled.
-  virtual bool allowStorage(WebKit::WebFrame* frame, bool local);
+  virtual bool allowStorage(WebKit::WebFrame* frame, bool local) OVERRIDE;
   virtual bool allowReadFromClipboard(WebKit::WebFrame* frame,
                                       bool default_value) OVERRIDE;
   virtual bool allowWriteToClipboard(WebKit::WebFrame* frame,

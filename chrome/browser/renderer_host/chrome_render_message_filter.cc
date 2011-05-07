@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
@@ -23,16 +24,18 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 #if defined(USE_TCMALLOC)
 #include "chrome/browser/browser_about_handler.h"
 #endif
 
 using WebKit::WebCache;
+using WebKit::WebSecurityOrigin;
 
 ChromeRenderMessageFilter::ChromeRenderMessageFilter(
     int render_process_id,
@@ -77,6 +80,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginPolicies, OnGetPluginPolicies)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AllowIndexedDB, OnAllowIndexedDB)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CanTriggerClipboardRead,
                         OnCanTriggerClipboardRead)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CanTriggerClipboardWrite,
@@ -305,18 +309,24 @@ void ChromeRenderMessageFilter::OnGetPluginPolicies(
       CONTENT_SETTING_ALLOW : CONTENT_SETTING_ASK;
 }
 
-void ChromeRenderMessageFilter::OnAllowDatabase(const std::string& origin_url,
+void ChromeRenderMessageFilter::OnAllowDatabase(int render_view_id,
+                                                const GURL& origin_url,
                                                 const string16& name,
                                                 const string16& display_name,
-                                                unsigned long estimated_size,
                                                 bool* allowed) {
-  GURL url(origin_url);
   ContentSetting setting = host_content_settings_map_->GetContentSetting(
-      url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+      origin_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   DCHECK((setting == CONTENT_SETTING_ALLOW) ||
          (setting == CONTENT_SETTING_BLOCK) ||
          (setting == CONTENT_SETTING_SESSION_ONLY));
   *allowed = setting != CONTENT_SETTING_BLOCK;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          &TabSpecificContentSettings::WebDatabaseAccessed,
+          render_process_id_, render_view_id, origin_url, name, display_name,
+          !*allowed));
 }
 
 void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_view_id,
@@ -327,10 +337,33 @@ void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_view_id,
       url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   *allowed = setting != CONTENT_SETTING_BLOCK;
   // If content was blocked, tell the UI to display the blocked content icon.
-  CallRenderViewHostContentSettingsDelegate(
-      render_process_id_, render_view_id,
-      &RenderViewHostDelegate::ContentSettings::OnLocalStorageAccessed,
-      url, type, !*allowed);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          &TabSpecificContentSettings::DOMStorageAccessed,
+          render_process_id_, render_view_id, url, type, !*allowed));
+}
+
+void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_view_id,
+                                                 const string16& origin_url,
+                                                 const string16& name,
+                                                 bool* allowed) {
+  // TODO(jochen): This doesn't support file:/// urls properly. We probably need
+  //               to add some toString method to WebSecurityOrigin that doesn't
+  //               return null for them.
+  WebSecurityOrigin origin(
+      WebSecurityOrigin::createFromDatabaseIdentifier(origin_url));
+  GURL url(origin.toString());
+
+  ContentSetting setting = host_content_settings_map_->GetContentSetting(
+      url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+  *allowed = setting != CONTENT_SETTING_BLOCK;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          &TabSpecificContentSettings::IndexedDBAccessed,
+          render_process_id_, render_view_id, url, name, !*allowed));
 }
 
 void ChromeRenderMessageFilter::OnCanTriggerClipboardRead(const GURL& url,

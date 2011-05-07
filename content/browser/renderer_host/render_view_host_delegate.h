@@ -283,16 +283,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
                                         DOMStorageType storage_type,
                                         bool blocked_by_policy) = 0;
 
-    // Called when a specific Web database in the current page was accessed. If
-    // access was blocked due to the user's content settings,
-    // |blocked_by_policy| should eb true, and this function should invoke
-    // OnContentBlocked.
-    virtual void OnWebDatabaseAccessed(const GURL& url,
-                                       const string16& name,
-                                       const string16& display_name,
-                                       unsigned long estimated_size,
-                                       bool blocked_by_policy) = 0;
-
     // Called when a specific appcache in the current page was accessed. If
     // access was blocked due to the user's content settings,
     // |blocked_by_policy| should eb true, and this function should invoke

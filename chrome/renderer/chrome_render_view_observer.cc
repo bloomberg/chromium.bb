@@ -53,6 +53,7 @@ using WebKit::WebFrame;
 using WebKit::WebPageSerializer;
 using WebKit::WebPageSerializerClient;
 using WebKit::WebRect;
+using WebKit::WebSecurityOrigin;
 using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -303,6 +304,12 @@ bool ChromeRenderViewObserver::allowDatabase(
 bool ChromeRenderViewObserver::allowImages(WebFrame* frame,
                                           bool enabled_per_settings) {
   return content_settings_->AllowImages(frame, enabled_per_settings);
+}
+
+bool ChromeRenderViewObserver::allowIndexedDB(WebFrame* frame,
+                                              const WebString& name,
+                                              const WebSecurityOrigin& origin) {
+  return content_settings_->AllowIndexedDB(frame, name, origin);
 }
 
 bool ChromeRenderViewObserver::allowPlugins(WebFrame* frame,

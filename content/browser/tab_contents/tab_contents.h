@@ -16,7 +16,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/browser/tab_contents/tab_specific_content_settings.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/tab_contents/constrained_window.h"
@@ -56,11 +55,11 @@ class RenderViewHost;
 class SessionStorageNamespace;
 class SiteInstance;
 class SkBitmap;
-class TabContents;
 class TabContentsDelegate;
 class TabContentsObserver;
 class TabContentsSSLHelper;
 class TabContentsView;
+class TabSpecificContentSettings;
 class URLPattern;
 struct RendererPreferences;
 struct ThumbnailScore;

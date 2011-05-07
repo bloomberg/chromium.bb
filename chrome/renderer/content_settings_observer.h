@@ -14,6 +14,10 @@
 
 class GURL;
 
+namespace WebKit {
+class WebSecurityOrigin;
+}
+
 // Handles blocking content per content settings for each RenderView.
 class ContentSettingsObserver
     : public RenderViewObserver,
@@ -42,6 +46,9 @@ class ContentSettingsObserver
                      const WebKit::WebString& display_name,
                      unsigned long estimated_size);
   bool AllowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
+  bool AllowIndexedDB(WebKit::WebFrame* frame,
+                      const WebKit::WebString& name,
+                      const WebKit::WebSecurityOrigin& origin);
   bool AllowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
   bool AllowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
   bool AllowStorage(WebKit::WebFrame* frame, bool local);

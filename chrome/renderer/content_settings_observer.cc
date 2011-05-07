@@ -139,16 +139,9 @@ bool ContentSettingsObserver::AllowDatabase(WebFrame* frame,
   if (origin.isEmpty())
     return false;  // Uninitialized document?
 
-  bool result;
-  if (!Send(new ViewHostMsg_AllowDatabase(
-      origin.toString().utf8(), name, display_name, estimated_size, &result)))
-    return false;
-  Send(new ViewHostMsg_WebDatabaseAccessed(routing_id(),
-                                           GURL(origin.toString().utf8()),
-                                           name,
-                                           display_name,
-                                           estimated_size,
-                                           !result));
+  bool result = false;
+  Send(new ViewHostMsg_AllowDatabase(
+      routing_id(), GURL(origin.toString()), name, display_name, &result));
   return result;
 }
 
@@ -164,6 +157,15 @@ bool ContentSettingsObserver::AllowImages(WebFrame* frame,
 
   DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES, std::string());
   return false;  // Other protocols fall through here.
+}
+
+bool ContentSettingsObserver::AllowIndexedDB(WebFrame* frame,
+                                             const WebString& name,
+                                             const WebSecurityOrigin& origin) {
+  bool result = false;
+  Send(new ViewHostMsg_AllowIndexedDB(
+      routing_id(), origin.databaseIdentifier(), name, &result));
+  return result;
 }
 
 bool ContentSettingsObserver::AllowPlugins(WebFrame* frame,

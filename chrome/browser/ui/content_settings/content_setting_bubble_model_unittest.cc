@@ -5,6 +5,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"

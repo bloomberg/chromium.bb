@@ -64,13 +64,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
  private:
   ~IndexedDBDispatcherHost();
 
-  // True if the given |origin| can use databases according to the content
-  // settings.
-  bool CheckContentSetting(const GURL& origin,
-                           const string16& description,
-                           int routing_id,
-                           int response_id);
-
   // Message processing. Most of the work is delegated to the dispatcher hosts
   // below.
   void OnIDBFactoryOpen(const IndexedDBHostMsg_FactoryOpen_Params& p);

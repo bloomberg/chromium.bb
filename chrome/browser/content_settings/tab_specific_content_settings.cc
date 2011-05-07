@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/tab_specific_content_settings.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 
+#include <list>
+
+#include "base/lazy_instance.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
@@ -11,9 +14,17 @@
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "net/base/cookie_monster.h"
+
+namespace {
+typedef std::list<TabSpecificContentSettings*> TabSpecificList;
+static base::LazyInstance<TabSpecificList> g_tab_specific(
+    base::LINKER_INITIALIZED);
+}
 
 bool TabSpecificContentSettings::LocalSharedObjectsContainer::empty() const {
   return cookies_->GetAllCookies().empty() &&
@@ -22,6 +33,68 @@ bool TabSpecificContentSettings::LocalSharedObjectsContainer::empty() const {
       indexed_dbs_->empty() &&
       local_storages_->empty() &&
       session_storages_->empty();
+}
+
+TabSpecificContentSettings::TabSpecificContentSettings(TabContents* tab)
+    : TabContentsObserver(tab),
+      allowed_local_shared_objects_(tab->profile()),
+      blocked_local_shared_objects_(tab->profile()),
+      geolocation_settings_state_(tab->profile()),
+      load_plugins_link_enabled_(true) {
+  ClearBlockedContentSettingsExceptForCookies();
+  ClearCookieSpecificContentSettings();
+  g_tab_specific.Get().push_back(this);
+}
+
+TabSpecificContentSettings::~TabSpecificContentSettings() {
+  g_tab_specific.Get().remove(this);
+}
+
+TabSpecificContentSettings* TabSpecificContentSettings::Get(
+    int render_process_id, int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  for (TabSpecificList::iterator i = g_tab_specific.Get().begin();
+       i != g_tab_specific.Get().end(); ++i) {
+    RenderViewHost* view = (*i)->tab_contents()->render_view_host();
+    if (view->process()->id() == render_process_id &&
+        view->routing_id() == render_view_id) {
+      return (*i);
+    }
+  }
+
+  return NULL;
+}
+
+void TabSpecificContentSettings::WebDatabaseAccessed(
+    int render_process_id,
+    int render_view_id,
+    const GURL& url,
+    const string16& name,
+    const string16& display_name,
+    bool blocked_by_policy) {
+  TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
+  if (settings)
+    settings->OnWebDatabaseAccessed(url, name, display_name, blocked_by_policy);
+}
+
+void TabSpecificContentSettings::DOMStorageAccessed(int render_process_id,
+                                                    int render_view_id,
+                                                    const GURL& url,
+                                                    DOMStorageType storage_type,
+                                                    bool blocked_by_policy) {
+  TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
+  if (settings)
+    settings->OnLocalStorageAccessed(url, storage_type, blocked_by_policy);
+}
+
+void TabSpecificContentSettings::IndexedDBAccessed(int render_process_id,
+                                                   int render_view_id,
+                                                   const GURL& url,
+                                                   const string16& description,
+                                                   bool blocked_by_policy) {
+  TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
+  if (settings)
+    settings->OnIndexedDBAccessed(url, description, blocked_by_policy);
 }
 
 bool TabSpecificContentSettings::IsContentBlocked(
@@ -185,7 +258,6 @@ void TabSpecificContentSettings::OnWebDatabaseAccessed(
     const GURL& url,
     const string16& name,
     const string16& display_name,
-    unsigned long estimated_size,
     bool blocked_by_policy) {
   if (blocked_by_policy) {
     blocked_local_shared_objects_.databases()->AddDatabase(
@@ -216,16 +288,6 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
                                                          allowed);
   if (tab_contents()->delegate())
     tab_contents()->delegate()->OnContentSettingsChange(tab_contents());
-}
-
-TabSpecificContentSettings::TabSpecificContentSettings(TabContents* tab)
-    : TabContentsObserver(tab),
-      allowed_local_shared_objects_(tab->profile()),
-      blocked_local_shared_objects_(tab->profile()),
-      geolocation_settings_state_(tab->profile()),
-      load_plugins_link_enabled_(true) {
-  ClearBlockedContentSettingsExceptForCookies();
-  ClearCookieSpecificContentSettings();
 }
 
 void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
@@ -274,17 +336,6 @@ CookiesTreeModel* TabSpecificContentSettings::GetAllowedCookiesTreeModel() {
 
 CookiesTreeModel* TabSpecificContentSettings::GetBlockedCookiesTreeModel() {
   return blocked_local_shared_objects_.GetCookiesTreeModel();
-}
-
-bool TabSpecificContentSettings::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(TabSpecificContentSettings, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_WebDatabaseAccessed, OnWebDatabaseAccessed)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
 }
 
 void TabSpecificContentSettings::DidNavigateMainFramePostCommit(

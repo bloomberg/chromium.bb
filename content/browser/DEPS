@@ -19,7 +19,7 @@ include_rules = [
   # http://crbug.com/76793
   "+chrome/browser/content_settings/content_settings_details.h",
   "+chrome/browser/content_settings/host_content_settings_map.h",
-  "+chrome/browser/tab_contents/tab_specific_content_settings.h",
+  "+chrome/browser/content_settings/tab_specific_content_settings.h",
   "+chrome/common/content_settings.h",
   "+chrome/common/content_settings_types.h",
 

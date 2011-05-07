@@ -12,7 +12,6 @@
 #include "content/browser/in_process_webkit/indexed_db_database_callbacks.h"
 #include "content/browser/in_process_webkit/indexed_db_transaction_callbacks.h"
 #include "content/browser/renderer_host/render_message_filter.h"
-#include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_switches.h"
 #include "content/common/indexed_db_messages.h"
@@ -181,32 +180,6 @@ int32 IndexedDBDispatcherHost::Add(WebIDBTransaction* idb_transaction) {
   return id;
 }
 
-bool IndexedDBDispatcherHost::CheckContentSetting(const GURL& origin,
-                                                  const string16& description,
-                                                  int routing_id,
-                                                  int response_id) {
-  ContentSetting content_setting =
-      host_content_settings_map_->GetContentSetting(
-          origin, CONTENT_SETTINGS_TYPE_COOKIES, "");
-
-  CallRenderViewHostContentSettingsDelegate(
-      process_id_, routing_id,
-      &RenderViewHostDelegate::ContentSettings::OnIndexedDBAccessed,
-      origin, description, content_setting == CONTENT_SETTING_BLOCK);
-
-  if (content_setting == CONTENT_SETTING_BLOCK) {
-    // TODO(jorlow): Change this to the proper error code once we figure out
-    // one.
-    int error_code = 0; // Defined by the IndexedDB spec.
-    static string16 error_message = ASCIIToUTF16(
-        "The user denied permission to access the database.");
-    Send(new IndexedDBMsg_CallbacksError(response_id, error_code,
-                                         error_message));
-    return false;
-  }
-  return true;
-}
-
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     const IndexedDBHostMsg_FactoryOpen_Params& params) {
   FilePath base_path = webkit_context_->data_path();
@@ -224,11 +197,6 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   GURL url(origin.toString());
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
-  if (!CheckContentSetting(url, params.name, params.routing_id,
-                           params.response_id)) {
-    return;
-  }
-
   DCHECK(kDefaultQuota == params.maximum_size);
 
   uint64 quota = kDefaultQuota;
@@ -271,11 +239,6 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
   GURL url(origin.toString());
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
-  if (!CheckContentSetting(url, params.name, params.routing_id,
-                           params.response_id)) {
-    return;
-  }
-
   Context()->GetIDBFactory()->deleteDatabase(
       params.name,
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id),

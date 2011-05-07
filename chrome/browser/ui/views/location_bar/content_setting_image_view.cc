@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/google/google_util.h"

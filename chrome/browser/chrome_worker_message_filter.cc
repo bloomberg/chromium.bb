@@ -5,7 +5,7 @@
 #include "chrome/browser/chrome_worker_message_filter.h"
 
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "content/browser/renderer_host/render_view_host_notification_task.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/worker_messages.h"
@@ -55,10 +55,12 @@ void ChromeWorkerMessageFilter::OnAllowDatabase(int worker_route_id,
         i->worker_document_set()->documents();
     for (WorkerDocumentSet::DocumentInfoSet::const_iterator doc =
          documents.begin(); doc != documents.end(); ++doc) {
-      CallRenderViewHostContentSettingsDelegate(
-          doc->render_process_id(), doc->render_view_id(),
-          &RenderViewHostDelegate::ContentSettings::OnWebDatabaseAccessed,
-          url, name, display_name, estimated_size, !*result);
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableFunction(
+              &TabSpecificContentSettings::WebDatabaseAccessed,
+              doc->render_process_id(), doc->render_view_id(),
+              url, name, display_name, !*result));
     }
     break;
   }

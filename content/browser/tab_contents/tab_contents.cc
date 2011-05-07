@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_item_model.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_TAB_SPECIFIC_CONTENT_SETTINGS_H_
-#define CHROME_BROWSER_TAB_CONTENTS_TAB_SPECIFIC_CONTENT_SETTINGS_H_
+#ifndef CHROME_BROWSER_CONTENT_SETTINGS_TAB_SPECIFIC_CONTENT_SETTINGS_H_
+#define CHROME_BROWSER_CONTENT_SETTINGS_TAB_SPECIFIC_CONTENT_SETTINGS_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -32,7 +32,43 @@ class TabSpecificContentSettings
  public:
   TabSpecificContentSettings(TabContents* tab);
 
-  virtual ~TabSpecificContentSettings() {}
+  virtual ~TabSpecificContentSettings();
+
+  // Returns the object given a render view's id.
+  static TabSpecificContentSettings* Get(int render_process_id,
+                                         int render_view_id);
+
+  // Static methods called on the UI threads.
+  // Called when a specific Web database in the current page was accessed. If
+  // access was blocked due to the user's content settings,
+  // |blocked_by_policy| should be true, and this function should invoke
+  // OnContentBlocked.
+  static void WebDatabaseAccessed(int render_process_id,
+                                  int render_view_id,
+                                  const GURL& url,
+                                  const string16& name,
+                                  const string16& display_name,
+                                  bool blocked_by_policy);
+
+  // Called when a specific DOM storage area in the current page was
+  // accessed. If access was blocked due to the user's content settings,
+  // |blocked_by_policy| should be true, and this function should invoke
+  // OnContentBlocked.
+  static void DOMStorageAccessed(int render_process_id,
+                                 int render_view_id,
+                                 const GURL& url,
+                                 DOMStorageType storage_type,
+                                 bool blocked_by_policy);
+
+  // Called when a specific indexed db factory in the current page was
+  // accessed. If access was blocked due to the user's content settings,
+  // |blocked_by_policy| should be true, and this function should invoke
+  // OnContentBlocked.
+  static void IndexedDBAccessed(int render_process_id,
+                                int render_view_id,
+                                const GURL& url,
+                                const string16& description,
+                                bool blocked_by_policy);
 
   // Resets the |content_blocked_| and |content_accessed_| arrays, except for
   // CONTENT_SETTINGS_TYPE_COOKIES related information.
@@ -103,7 +139,6 @@ class TabSpecificContentSettings
   virtual void OnWebDatabaseAccessed(const GURL& url,
                                      const string16& name,
                                      const string16& display_name,
-                                     unsigned long estimated_size,
                                      bool blocked_by_policy);
   virtual void OnAppCacheAccessed(const GURL& manifest_url,
                                   bool blocked_by_policy);
@@ -111,7 +146,6 @@ class TabSpecificContentSettings
                                           bool allowed);
 
   // TabContentsObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
@@ -193,4 +227,4 @@ class TabSpecificContentSettings
   DISALLOW_COPY_AND_ASSIGN(TabSpecificContentSettings);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_TAB_SPECIFIC_CONTENT_SETTINGS_H_
+#endif  // CHROME_BROWSER_CONTENT_SETTINGS_TAB_SPECIFIC_CONTENT_SETTINGS_H_

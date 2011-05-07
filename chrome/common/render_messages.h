@@ -299,10 +299,10 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ContentBlocked,
 // Sent by the renderer process to check whether access to web databases is
 // granted by content settings.
 IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_AllowDatabase,
-                            std::string /* origin_url */,
+                            int /* render_view_id */,
+                            GURL /* origin_url */,
                             string16 /* database name */,
                             string16 /* database display name */,
-                            unsigned long /* estimated size */,
                             bool /* allowed */)
 
 // Sent by the renderer process to check whether access to DOM Storage is
@@ -313,14 +313,13 @@ IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_AllowDOMStorage,
                             DOMStorageType /* type */,
                             bool /* allowed */)
 
-// Tells the browser that a specific Web database in the current page was
-// accessed.
-IPC_MESSAGE_ROUTED5(ViewHostMsg_WebDatabaseAccessed,
-                    GURL /* origin url */,
-                    string16 /* database name */,
-                    string16 /* database display name */,
-                    unsigned long /* estimated size */,
-                    bool /* blocked by policy */)
+// Sent by the renderer process to check whether access to Indexed DBis
+// granted by content settings.
+IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_AllowIndexedDB,
+                            int /* render_view_id */,
+                            string16 /* origin_url */,
+                            string16 /* database name */,
+                            bool /* allowed */)
 
 // Specifies the URL as the first parameter (a wstring) and thumbnail as
 // binary data as the second parameter.
