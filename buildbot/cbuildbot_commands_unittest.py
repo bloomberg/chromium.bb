@@ -10,6 +10,7 @@ import __builtin__
 import mox
 import os
 import shutil
+import socket
 import sys
 import unittest
 
@@ -213,9 +214,11 @@ class CBuildBotTest(mox.MoxTestBase):
     buildconfig['useflags'] = None
     buildconfig['archive_build_debug'] = False
 
+    self.mox.StubOutWithMock(socket, 'gethostname')
+
     output_obj = cros_lib.CommandResult()
-    output_obj.output = ('archive to dir: archive/dir \n'
-                         'CROS_ARCHIVE_URL=http://archive/url \n'
+    output_obj.output = ('archive to dir: /var/archive/dir \n'
+                         'CROS_ARCHIVE_URL=http://gs/archive/url \n'
                          )
 
     cros_lib.RunCommand(['./archive_build.sh',
@@ -230,6 +233,8 @@ class CBuildBotTest(mox.MoxTestBase):
                         redirect_stderr=True,
                         redirect_stdout=True).AndReturn(output_obj)
 
+    socket.gethostname().AndReturn('testhost')
+
     self.mox.ReplayAll()
     result = commands.LegacyArchiveBuild(buildroot,
                                          'bot_id',
@@ -239,7 +244,8 @@ class CBuildBotTest(mox.MoxTestBase):
                                          debug=False)
     self.mox.VerifyAll()
 
-    self.assertTrue(result == ('http://archive/url', 'archive/dir'), result)
+    self.assertTrue(result == ('http://testhost/archive/dir',
+                               '/var/archive/dir'), result)
 
   def testLegacyArchiveBuildMaximum(self):
     """Test Legacy Archive Command, with all values."""
@@ -257,8 +263,8 @@ class CBuildBotTest(mox.MoxTestBase):
     buildconfig['archive_build_debug'] = True
 
     output_obj = cros_lib.CommandResult()
-    output_obj.output = ('archive to dir: archive/dir \n'
-                         'CROS_ARCHIVE_URL=http://archive/url \n'
+    output_obj.output = ('archive to dir: /var/archive/dir \n'
+                         'CROS_ARCHIVE_URL=http://gs/archive/url \n'
                          )
 
     cros_lib.RunCommand(['./archive_build.sh',
@@ -290,7 +296,8 @@ class CBuildBotTest(mox.MoxTestBase):
                                          debug=True)
     self.mox.VerifyAll()
 
-    self.assertTrue(result == ('http://archive/url', 'archive/dir'), result)
+    self.assertTrue(result == ('http://gs/archive/url',
+                               '/var/archive/dir'), result)
 
   def testUploadSymbols(self):
     """Test UploadSymbols Command."""

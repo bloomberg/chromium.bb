@@ -7,7 +7,7 @@
 import os
 import re
 import shutil
-import sys
+import socket
 
 import chromite.buildbot.cbuildbot_config as cbuildbot_config
 import chromite.lib.cros_build_lib as cros_lib
@@ -498,15 +498,13 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
   # returned. However, we can instead build one based on the HTTP
   # server on the buildbot.
   if not gsutil_archive:
-    assert archive_url == None
-
     # '/var/www/archive/build/version' becomes:
     # 'archive/build/version'
     http_offset = archive_dir.index('archive/')
     http_dir = archive_dir[http_offset:]
 
     # 'http://botname/archive/build/version'
-    archive_url = 'http://' + os.environ['HOSTNAME'] + '/' + http_dir
+    archive_url = 'http://' + socket.gethostname() + '/' + http_dir
 
   return archive_url, archive_dir
 
