@@ -50,14 +50,18 @@ function registerConnection() {
         chromoting.plugin.connectSandboxed(clientjid, chromoting.hostjid);
         // TODO(ajwong): This should just be feedIq();
         window.setTimeout(feedIq, 1000);
+        window.setTimeout(updateStatusBarStats, 1000);
       } else {
-        addToDebugLog('FailedToConnect: --' + xhr.responseText + '--');
+        addToDebugLog('FailedToConnect: --' + xhr.responseText +
+                      '-- (status=' + xhr.status + ')');
+        setClientStateMessage("Failed")
       }
     }
   }
   xhr.send('host_jid=' + encodeURIComponent(chromoting.hostjid) +
            '&username=' + encodeURIComponent(chromoting.username) +
            '&password=' + encodeURIComponent(chromoting.xmppAuthToken));
+  setClientStateMessage("Connecting")
 }
 
 function sendIq(msg) {
@@ -113,8 +117,8 @@ function init() {
   plugin.desktopSizeUpdate = desktopSizeChanged;
   plugin.loginChallenge = loginChallengeCallback;
 
-  console.log('connect request received: ' + chromoting.hostname + ' by ' +
-              chromoting.username);
+  addToDebugLog('Connect to ' + chromoting.hostname + ' as user ' +
+                chromoting.username);
 
   // TODO(garykac): Clean exit if |connect| isn't a function.
   if (typeof plugin.connect === 'function') {
@@ -123,14 +127,14 @@ function init() {
     } else {
       plugin.connect(chromoting.username, chromoting.hostjid,
                      chromoting.xmppAuthToken);
+      window.setTimeout("updateStatusBarStats()", 1000);
     }
   } else {
-    console.log('ERROR: chromoting plugin not loaded');
+    addToDebugLog('ERROR: chromoting plugin not loaded');
+    setClientStateMessage('Plugin not loaded');
   }
 
   document.getElementById('title').innerText = chromoting.hostname;
-
-  window.setTimeout("updateStatusBarStats()", 1000);
 }
 
 function toggleDebugLog() {
@@ -182,36 +186,9 @@ function desktopSizeChanged() {
   var width = chromoting.plugin.desktopWidth;
   var height = chromoting.plugin.desktopHeight;
 
-  console.log('desktop size changed: ' + width + 'x' + height);
+  addToDebugLog('desktop size changed: ' + width + 'x' + height);
   chromoting.plugin.style.width = width + "px";
   chromoting.plugin.style.height = height + "px";
-}
-
-/**
- * Show a client message on the screen.
- * If duration is specified, the message fades out after the duration expires.
- * Otherwise, the message stays until the state changes.
- *
- * @param {string} message The message to display.
- * @param {number} duration Milliseconds to show message before fading.
- */
-function showClientStateMessage(message, duration) {
-  // Increment message id to ignore any previous fadeout requests.
-  chromoting.messageId++;
-  console.log('setting message ' + chromoting.messageId + '!');
-
-  // Update the status message.
-  var msg = document.getElementById('status_msg');
-  msg.innerText = message;
-  msg.style.opacity = 1;
-  msg.style.display = '';
-
-  if (duration) {
-    // Set message duration.
-    window.setTimeout("fade('status_msg', " + chromoting.messageId + ", " +
-                            "100, 10, 200)",
-                      duration);
-  }
 }
 
 /**
@@ -248,7 +225,6 @@ function connectionInfoUpdateCallback() {
 function setClientStateMessage(message) {
   // Increment message id to ignore any previous fadeout requests.
   chromoting.messageId++;
-  console.log('setting message ' + chromoting.messageId);
 
   // Update the status message.
   var msg = document.getElementById('status_msg');
@@ -315,7 +291,7 @@ function fade(name, id, val, delta, delay) {
  * is additional debug log info to display.
  */
 function debugInfoCallback(msg) {
-  addToDebugLog(msg);
+  addToDebugLog('plugin: ' + msg);
 }
 
 /**
@@ -324,8 +300,6 @@ function debugInfoCallback(msg) {
  * @param {string} message The debug info to add to the log.
  */
 function addToDebugLog(message) {
-  console.log('DebugLog: ' + message);
-
   var debugLog = document.getElementById('debug_log');
 
   // Remove lines from top if we've hit our max log size.
@@ -354,14 +328,12 @@ function updateStatusBarStats() {
   var videoDecodeLatency = chromoting.plugin.videoDecodeLatency;
   var videoRenderLatency = chromoting.plugin.videoRenderLatency;
 
-  var status = document.getElementById('status_msg');
-  status.innerText = "Video stats: bandwidth: " + videoBandwidth +
-      ", Latency: capture: " + videoCaptureLatency +
-      ", encode: " + videoEncodeLatency +
-      ", decode: " + videoDecodeLatency +
-      ", render: " + videoRenderLatency;
-  status.style.opacity = 1;
-  status.style.display = '';
+  setClientStateMessage(
+      "Video stats: bandwidth: " + videoBandwidth.toFixed(2) + "Kbps" +
+      ", Latency: capture: " + videoCaptureLatency.toFixed(2) + "ms" +
+      ", encode: " + videoEncodeLatency.toFixed(2) + "ms" +
+      ", decode: " + videoDecodeLatency.toFixed(2) + "ms" +
+      ", render: " + videoRenderLatency.toFixed(2) + "ms");
 
   // Update the stats once per second.
   window.setTimeout("updateStatusBarStats()", 1000);
