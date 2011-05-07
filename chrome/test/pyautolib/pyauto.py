@@ -164,10 +164,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       self.UseNamedChannelID(named_channel_id)
     self.SetUp()     # Fire browser
 
-    # TODO(dtu): Cannot access http urls for some time after browser startup
-    #            on chromeos. Replace with WaitUntil. crosbug.com/12851
+    # TODO(dtu): Remove this after crosbug.com/4558 is fixed.
     if self.IsChromeOS():
-      time.sleep(1)
+      self.WaitUntil(lambda: not self.GetNetworkInfo()['offline_mode'])
 
   def tearDown(self):
     self.TearDown()  # Destroy browser
