@@ -182,6 +182,7 @@ release = {
 
   'gs_path' : None,
 
+  'archive_build_debug' : True,
 
 # --official
 # --officialversion
@@ -213,6 +214,8 @@ internal_full = {
   'git_url' : 'ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal',
 
   'gs_path' : None,
+
+  'archive_build_debug' : True,
 
   # cbuild --official
 }
