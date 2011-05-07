@@ -65,10 +65,14 @@ bool ObjectProxy::HasProperty(PP_Var name,
   if (name_chars == NULL) {
     return false;
   }
-  uint32_t ex_in_length = kMaxVarSize;
-  nacl::scoped_array<char> ex_in_chars(Serialize(exception, 1, &ex_in_length));
-  if (ex_in_chars == NULL) {
-    return false;
+  uint32_t ex_in_length(0);
+  nacl::scoped_array<char> ex_in_chars(NULL);
+  if (exception != NULL) {
+    ex_in_length = kMaxVarSize;
+    ex_in_chars.reset(Serialize(exception, 1, &ex_in_length));
+    if (ex_in_chars == NULL) {
+      return false;
+    }
   }
   uint32_t ex_length = kMaxVarSize;
   nacl::scoped_array<char> ex_chars(new char[kMaxVarSize]);
@@ -112,10 +116,14 @@ bool ObjectProxy::HasMethod(PP_Var name,
   if (name_chars == NULL) {
     return false;
   }
-  uint32_t ex_in_length = kMaxVarSize;
-  nacl::scoped_array<char> ex_in_chars(Serialize(exception, 1, &ex_in_length));
-  if (ex_in_chars == NULL) {
-    return false;
+  uint32_t ex_in_length(0);
+  nacl::scoped_array<char> ex_in_chars(NULL);
+  if (exception != NULL) {
+    ex_in_length = kMaxVarSize;
+    ex_in_chars.reset(Serialize(exception, 1, &ex_in_length));
+    if (ex_in_chars == NULL) {
+      return false;
+    }
   }
   uint32_t ex_length = kMaxVarSize;
   nacl::scoped_array<char> ex_chars(new char[kMaxVarSize]);
@@ -160,10 +168,14 @@ PP_Var ObjectProxy::GetProperty(PP_Var name,
   if (name_chars == NULL) {
     return value;
   }
-  uint32_t ex_in_length = kMaxVarSize;
-  nacl::scoped_array<char> ex_in_chars(Serialize(exception, 1, &ex_in_length));
-  if (ex_in_chars == NULL) {
-    return value;
+  uint32_t ex_in_length(0);
+  nacl::scoped_array<char> ex_in_chars(NULL);
+  if (exception != NULL) {
+    ex_in_length = kMaxVarSize;
+    ex_in_chars.reset(Serialize(exception, 1, &ex_in_length));
+    if (ex_in_chars == NULL) {
+      return value;
+    }
   }
   uint32_t value_length = kMaxVarSize;
   nacl::scoped_array<char> value_chars(new char[kMaxVarSize]);
@@ -238,10 +250,14 @@ void ObjectProxy::SetProperty(PP_Var name,
   if (value_chars == NULL) {
     return;
   }
-  uint32_t ex_in_length = kMaxVarSize;
-  nacl::scoped_array<char> ex_in_chars(Serialize(exception, 1, &ex_in_length));
-  if (ex_in_chars == NULL) {
-    return;
+  uint32_t ex_in_length(0);
+  nacl::scoped_array<char> ex_in_chars(NULL);
+  if (exception != NULL) {
+    ex_in_length = kMaxVarSize;
+    ex_in_chars.reset(Serialize(exception, 1, &ex_in_length));
+    if (ex_in_chars == NULL) {
+      return;
+    }
   }
   uint32_t ex_length = kMaxVarSize;
   nacl::scoped_array<char> ex_chars(new char[kMaxVarSize]);
@@ -282,10 +298,14 @@ void ObjectProxy::RemoveProperty(PP_Var name,
   if (name_chars == NULL) {
     return;
   }
-  uint32_t ex_in_length = kMaxVarSize;
-  nacl::scoped_array<char> ex_in_chars(Serialize(exception, 1, &ex_in_length));
-  if (ex_in_chars == NULL) {
-    return;
+  uint32_t ex_in_length(0);
+  nacl::scoped_array<char> ex_in_chars(NULL);
+  if (exception != NULL) {
+    ex_in_length = kMaxVarSize;
+    ex_in_chars.reset(Serialize(exception, 1, &ex_in_length));
+    if (ex_in_chars == NULL) {
+      return;
+    }
   }
   uint32_t ex_length = kMaxVarSize;
   nacl::scoped_array<char> ex_chars(new char[kMaxVarSize]);
@@ -333,10 +353,14 @@ PP_Var ObjectProxy::Call(PP_Var method_name,
   if (argv_chars == NULL && argc > 0) {
     return ret;
   }
-  uint32_t ex_in_length = kMaxVarSize;
-  nacl::scoped_array<char> ex_in_chars(Serialize(exception, 1, &ex_in_length));
-  if (ex_in_chars == NULL && exception != NULL) {
-    return ret;
+  uint32_t ex_in_length(0);
+  nacl::scoped_array<char> ex_in_chars(NULL);
+  if (exception != NULL) {
+    ex_in_length = kMaxVarSize;
+    ex_in_chars.reset(Serialize(exception, 1, &ex_in_length));
+    if (ex_in_chars == NULL) {
+      return ret;
+    }
   }
   uint32_t ex_length = kMaxVarSize;
   nacl::scoped_array<char> ex_chars(new char[kMaxVarSize]);
@@ -381,10 +405,14 @@ PP_Var ObjectProxy::Construct(uint32_t argc,
   if (argv_chars == NULL) {
     return ret;
   }
-  uint32_t ex_in_length = kMaxVarSize;
-  nacl::scoped_array<char> ex_in_chars(Serialize(exception, 1, &ex_in_length));
-  if (ex_in_chars == NULL) {
-    return ret;
+  uint32_t ex_in_length(0);
+  nacl::scoped_array<char> ex_in_chars(NULL);
+  if (exception != NULL) {
+    ex_in_length = kMaxVarSize;
+    ex_in_chars.reset(Serialize(exception, 1, &ex_in_length));
+    if (ex_in_chars == NULL) {
+      return ret;
+    }
   }
   uint32_t ex_length = kMaxVarSize;
   nacl::scoped_array<char> ex_chars(new char[kMaxVarSize]);
