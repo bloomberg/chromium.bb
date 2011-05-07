@@ -4577,6 +4577,32 @@
    fun:_ZN8chromeos29ServicesCustomizationDocument22LoadManifestFromStringERKSs
    fun:_ZN8chromeos29ServicesCustomizationDocumentC1ERKSsS2_
 }
+{
+   bug_81753a
+   Memcheck:Value4
+   fun:ucase_toFullFolding_46
+   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
+   fun:_ZN6icu_4612RegexMatcher7matchesExR10UErrorCode
+   fun:_ZNK20IcuRegularExpression5MatchEPKcbPSs
+   fun:_ZN4i18n12phonenumbers15PhoneNumberUtil19IsViablePhoneNumberERKSs
+   fun:_ZNK4i18n12phonenumbers15PhoneNumberUtil11ParseHelperERKSsS3_bbPNS0_11PhoneNumberE
+   fun:_ZNK4i18n12phonenumbers15PhoneNumberUtil5ParseERKSsS3_PNS0_11PhoneNumberE
+   fun:_ZN13autofill_i18n17PhoneNumbersMatchERKSbItN4base20string16_char_traitsESaItEES5_RKSs
+   fun:_ZN42PhoneNumberI18NTest_PhoneNumbersMatch_Test8TestBodyEv
+}
+{
+   bug_81753b
+   Memcheck:Cond
+   ...
+   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
+   fun:_ZN6icu_4612RegexMatcher7matchesExR10UErrorCode
+   fun:_ZNK20IcuRegularExpression5MatchEPKcbPSs
+   fun:_ZN4i18n12phonenumbers15PhoneNumberUtil19IsViablePhoneNumberERKSs
+   fun:_ZNK4i18n12phonenumbers15PhoneNumberUtil11ParseHelperERKSsS3_bbPNS0_11PhoneNumberE
+   fun:_ZNK4i18n12phonenumbers15PhoneNumberUtil5ParseERKSsS3_PNS0_11PhoneNumberE
+   fun:_ZN13autofill_i18n17PhoneNumbersMatchERKSbItN4base20string16_char_traitsESaItEES5_RKSs
+   fun:_ZN42PhoneNumberI18NTest_PhoneNumbersMatch_Test8TestBodyEv
+}
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
