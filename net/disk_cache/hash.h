@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,13 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "net/base/net_api.h"
 
 namespace disk_cache {
 
 // From http://www.azillionmonkeys.com/qed/hash.html
 // This is the hash used on WebCore/platform/stringhash
-uint32 SuperFastHash(const char * data, int len);
+NET_TEST uint32 SuperFastHash(const char * data, int len);
 
 inline uint32 Hash(const char* key, size_t length) {
   return SuperFastHash(key, static_cast<int>(length));
