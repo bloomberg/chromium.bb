@@ -142,7 +142,10 @@ class XKeyboard {
   // Remaps modifier keys. This function does not change the current keyboard
   // layout. Returns true on success.
   bool RemapModifierKeys(const ModifierMap& modifier_map) {
-    if (SetLayoutInternal(current_layout_name_, modifier_map)) {
+    const std::string layout_name = current_layout_name_.empty() ?
+        kDefaultLayoutName : current_layout_name_;
+    if (SetLayoutInternal(layout_name, modifier_map)) {
+      current_layout_name_ = layout_name;
       current_modifier_map_ = modifier_map;
       return true;
     }
@@ -190,7 +193,7 @@ class XKeyboard {
  private:
   friend struct DefaultSingletonTraits<XKeyboard>;
 
-  XKeyboard() : current_layout_name_(kDefaultLayoutName) {
+  XKeyboard() {
     for (size_t i = 0; i < arraysize(kCustomizableKeys); ++i) {
       ModifierKey key = kCustomizableKeys[i];
       current_modifier_map_.push_back(ModifierKeyPair(key, key));
@@ -209,11 +212,13 @@ class XKeyboard {
       return false;
     }
 
-    const std::string current_layout = CreateFullXkbLayoutName(
-        current_layout_name_, current_modifier_map_);
-    if (current_layout == layouts_to_set) {
-      DLOG(INFO) << "The requested layout is already set: " << layouts_to_set;
-      return true;
+    if (!current_layout_name_.empty()) {
+      const std::string current_layout = CreateFullXkbLayoutName(
+          current_layout_name_, current_modifier_map_);
+      if (current_layout == layouts_to_set) {
+        DLOG(INFO) << "The requested layout is already set: " << layouts_to_set;
+        return true;
+      }
     }
 
     // Turn off caps lock if there is no kCapsLockKey in the remapped keys.
