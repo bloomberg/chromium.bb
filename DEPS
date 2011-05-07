@@ -11,7 +11,7 @@ vars = {
   "native_client_trunk": "http://src.chromium.org/native_client/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "python_26_rev": "53573",
-  "tools_rev": "5025",
+  "tools_rev": "5215",
   "wix_rev": "153",
 }
 
@@ -43,6 +43,8 @@ deps = {
     Var("chromium_trunk") + "/src/ppapi@" + Var("chrome_rev"),
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
+  "third_party/cloog":
+    Var("native_client_trunk") + "/src/third_party/cloog@" + Var("tools_rev"),
   "third_party/gles2_book":
     Var("chromium_trunk") + "/src/third_party/gles2_book@" + Var("chrome_rev"),
   "third_party/gmp":
@@ -51,6 +53,10 @@ deps = {
     Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
   "third_party/mpfr":
     Var("native_client_trunk") + "/src/third_party/mpfr@" + Var("tools_rev"),
+  "third_party/mpc":
+    Var("native_client_trunk") + "/src/third_party/mpc@" + Var("tools_rev"),
+  "third_party/ppl":
+    Var("native_client_trunk") + "/src/third_party/ppl@" + Var("tools_rev"),
   "third_party/pyftpdlib":
     Var("chromium_trunk") + "/src/third_party/pyftpdlib@" + Var("chrome_rev"),
   "third_party/pylib":

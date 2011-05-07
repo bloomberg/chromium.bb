@@ -72,8 +72,9 @@ def HttpDownload(url, target, username=None, password=None, verbose=True):
   urllib2.install_opener(opener)
   _CreateDirectory(os.path.split(target)[0])
   # Retry up to 10 times (appengine logger is flaky).
-  retries = 10
-  for i in range(retries):
+  for i in xrange(10):
+    if i:
+      sys.stdout.write('Download failed on %s, retrying... (%d)\n' % (url, i))
     try:
       src = urllib2.urlopen(url)
       try:
@@ -83,8 +84,7 @@ def HttpDownload(url, target, username=None, password=None, verbose=True):
         src.close()
       break
     except urllib2.HTTPError:
-      if i < retries - 1:
-        sys.stdout.write('Download failed on %s, retrying... (%d)\n' % (url, i))
-        continue
-      sys.stdout.write('Download failed on %s, giving up.\n' % url)
-      raise
+      pass
+  else:
+    sys.stdout.write('Download failed on %s, giving up.\n' % url)
+    raise

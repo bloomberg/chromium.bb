@@ -118,13 +118,18 @@ def WriteSourceStamp(path, url):
 
 def Retry(op, *args):
   if sys.platform in ('win32', 'cygwin'):
-    for i in range(5):
+    for i in xrange(5):
+      if i:
+        sys.stdout.write("RETRY: %s %s\n" % (op.__name__, repr(args)))
+        time.sleep(pow(2, i))
       try:
         op(*args)
         break
       except Exception:
-        sys.stdout.write("RETRY: %s %s\n" % (op.__name__, repr(args)))
-        time.sleep(pow(2, i))
+        pass
+    else:
+      sys.stdout.write("FAILED: %s %s\n" % (op.__name__, repr(args)))
+      raise
   else:
     op(*args)
 
