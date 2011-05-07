@@ -493,6 +493,21 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
 
   # assert archive_url, 'Archive Build Failed to Provide Archive URL'
   assert archive_dir, 'Archive Build Failed to Provide Archive Directory'
+
+  # If we didn't upload to Google Storage, no URL should have been
+  # returned. However, we can instead build one based on the HTTP
+  # server on the buildbot.
+  if not gsutil_archive:
+    assert archive_url == None
+
+    # '/var/www/archive/build/version' becomes:
+    # 'archive/build/version'
+    http_offset = archive_dir.index('archive/')
+    http_dir = archive_dir[http_offset:]
+
+    # 'http://botname/archive/build/version'
+    archive_url = 'http://' + os.environ['HOSTNAME'] + '/' + http_dir
+
   return archive_url, archive_dir
 
 
