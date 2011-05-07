@@ -195,9 +195,9 @@
       '-notifications.NotificationsTest.testCreateDenyCloseNotifications',
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
 
-      # Exclusions that have not been narrowed to other categories yet.
-      # crosbug.com/12653
-      '-sync',
+      # sync tests cause segfault.  crosbug.com/15016
+      '-sync.SyncTest.testRestartBrowser',
+      '-sync.SyncTest.testSignInToSync',
     ],
   },
 
