@@ -439,11 +439,23 @@
         <include name="IDR_DROPDOWN_TOP_RIGHT_H" file="textbutton_dropdown_tr_h.png" type="BINDATA" />
         <include name="IDR_DROPDOWN_TOP_RIGHT_P" file="textbutton_dropdown_tr_p.png" type="BINDATA" />
         <include name="IDR_INCOGNITO_GUY" file="incognito_guy.png" type="BINDATA" />
-        <include name="IDR_LOGIN_DEFAULT_USER" file="login_default.png" type="BINDATA" />
-        <include name="IDR_LOGIN_DEFAULT_USER_1" file="login_default_green.png" type="BINDATA" />
-        <include name="IDR_LOGIN_DEFAULT_USER_2" file="login_default_blue.png" type="BINDATA" />
-        <include name="IDR_LOGIN_DEFAULT_USER_3" file="login_default_yellow.png" type="BINDATA" />
-        <include name="IDR_LOGIN_DEFAULT_USER_4" file="login_default_red.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER" file="avatar_beaker.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_1" file="avatar_bee.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_2" file="avatar_briefcase.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_3" file="avatar_circles.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_4" file="avatar_cloud.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_5" file="avatar_cupcake.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_6" file="avatar_day.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_7" file="avatar_flower.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_8" file="avatar_globe.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_9" file="avatar_hotair.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_10" file="avatar_ladybug.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_11" file="avatar_leaf.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_12" file="avatar_night.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_13" file="avatar_plane.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_14" file="avatar_robot_body.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_15" file="avatar_robot_head.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_16" file="avatar_toolbox.png" type="BINDATA" />
         <include name="IDR_LOGIN_GUEST" file="login_guest.png" type="BINDATA" />
         <include name="IDR_LOGIN_ADD_USER" file="login_add_user.png" type="BINDATA" />
         <include name="IDR_LOGIN_ADD_USER_HOVER" file="login_add_user_hover.png" type="BINDATA" />
