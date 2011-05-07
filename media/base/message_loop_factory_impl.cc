@@ -48,4 +48,29 @@ MessageLoop* MessageLoopFactoryImpl::GetMessageLoop(const std::string& name) {
   return NULL;
 }
 
+scoped_refptr<base::MessageLoopProxy>
+MessageLoopFactoryImpl::GetMessageLoopProxy(const std::string& name) {
+  if (name.empty()) {
+    return NULL;
+  }
+
+  base::AutoLock auto_lock(lock_);
+
+  ThreadMap::iterator it = thread_map_.find(name);
+  if (it != thread_map_.end())
+    return (*it).second->message_loop_proxy();
+
+  scoped_ptr<base::Thread> thread(new base::Thread(name.c_str()));
+
+  if (thread->Start()) {
+    scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
+        thread->message_loop_proxy();
+    thread_map_[name] = thread.release();
+    return message_loop_proxy;
+  }
+
+  LOG(ERROR) << "Failed to start '" << name << "' thread!";
+  return NULL;
+}
+
 }  // namespace media

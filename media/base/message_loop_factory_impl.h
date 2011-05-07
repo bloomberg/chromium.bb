@@ -19,6 +19,8 @@ class MessageLoopFactoryImpl : public MessageLoopFactory {
 
   // MessageLoopFactory methods.
   virtual MessageLoop* GetMessageLoop(const std::string& name);
+  virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoopProxy(
+      const std::string& name);
 
  protected:
   virtual ~MessageLoopFactoryImpl();
