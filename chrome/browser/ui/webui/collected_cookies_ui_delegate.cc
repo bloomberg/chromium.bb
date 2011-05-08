@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"

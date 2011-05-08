@@ -8,6 +8,7 @@
 
 #import "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"

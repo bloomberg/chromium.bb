@@ -52,6 +52,11 @@ std::string ContentBrowserClient::GetApplicationLocale() {
   return std::string();
 }
 
+bool ContentBrowserClient::AllowAppCache(
+    const GURL& manifest_url, const content::ResourceContext* context) {
+  return true;
+}
+
 #if defined(OS_LINUX)
 int ContentBrowserClient::GetCrashSignalFD(const std::string& process_type) {
   return -1;

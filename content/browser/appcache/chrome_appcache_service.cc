@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "content/browser/content_browser_client.h"
 #include "content/common/notification_service.h"
 #include "net/base/net_errors.h"
 #include "webkit/appcache/appcache_thread.h"
@@ -29,12 +30,12 @@ void DeleteLocalStateOnIOThread(FilePath cache_path) {
 // ----------------------------------------------------------------------------
 
 ChromeAppCacheService::ChromeAppCacheService()
-    : clear_local_state_on_exit_(false) {
+    : resource_context_(NULL), clear_local_state_on_exit_(false) {
 }
 
 void ChromeAppCacheService::InitializeOnIOThread(
     const FilePath& cache_path,
-    scoped_refptr<HostContentSettingsMap> content_settings_map,
+    const content::ResourceContext* resource_context,
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
     bool clear_local_state_on_exit) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -45,7 +46,7 @@ void ChromeAppCacheService::InitializeOnIOThread(
   }
 
   cache_path_ = cache_path;
-  host_contents_settings_map_ = content_settings_map;
+  resource_context_ = resource_context;
   registrar_.Add(
       this, NotificationType::PURGE_MEMORY, NotificationService::AllSources());
   SetClearLocalStateOnExit(clear_local_state_on_exit);
@@ -82,21 +83,16 @@ void ChromeAppCacheService::SetClearLocalStateOnExit(bool clear_local_state) {
 
 bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ContentSetting setting = host_contents_settings_map_->GetContentSetting(
-      manifest_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
-  DCHECK(setting != CONTENT_SETTING_DEFAULT);
   // We don't prompt for read access.
-  return setting != CONTENT_SETTING_BLOCK;
+  return content::GetContentClient()->browser()->AllowAppCache(
+      manifest_url, resource_context_);
 }
 
 int ChromeAppCacheService::CanCreateAppCache(
     const GURL& manifest_url, net::CompletionCallback* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ContentSetting setting = host_contents_settings_map_->GetContentSetting(
-      manifest_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
-  DCHECK(setting != CONTENT_SETTING_DEFAULT);
-  return (setting != CONTENT_SETTING_BLOCK) ? net::OK :
-                                              net::ERR_ACCESS_DENIED;
+  return content::GetContentClient()->browser()->AllowAppCache(
+      manifest_url, resource_context_) ? net::OK : net::ERR_ACCESS_DENIED;
 }
 
 void ChromeAppCacheService::Observe(NotificationType type,

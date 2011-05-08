@@ -20,6 +20,7 @@
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
+#include "chrome/common/content_settings.h"
 #include "net/base/cookie_monster.h"
 #include "ui/base/models/tree_node_model.h"
 
@@ -37,6 +38,7 @@ class CookieTreeSessionStoragesNode;
 class CookieTreeIndexedDBNode;
 class CookieTreeIndexedDBsNode;
 class CookieTreeOriginNode;
+class HostContentSettingsMap;
 
 // CookieTreeNode -------------------------------------------------------------
 // The base node type in the Cookies, Databases, and Local Storage options

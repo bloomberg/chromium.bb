@@ -43,12 +43,13 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
   FilePath appcache_path = temp_dir_.path().Append(chrome::kAppCacheDirname);
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService;
+  const content::ResourceContext* resource_context = NULL;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(appcache_service.get(),
                         &ChromeAppCacheService::InitializeOnIOThread,
                         appcache_path,
-                        scoped_refptr<HostContentSettingsMap>(NULL),
+                        resource_context,
                         scoped_refptr<quota::SpecialStoragePolicy>(NULL),
                         false));
   // Make the steps needed to initialize the storage of AppCache data.
@@ -74,12 +75,13 @@ TEST_F(ChromeAppCacheServiceTest, RemoveOnDestruction) {
   FilePath appcache_path = temp_dir_.path().Append(chrome::kAppCacheDirname);
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService;
+  const content::ResourceContext* resource_context = NULL;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(appcache_service.get(),
                         &ChromeAppCacheService::InitializeOnIOThread,
                         appcache_path,
-                        scoped_refptr<HostContentSettingsMap>(NULL),
+                        resource_context,
                         scoped_refptr<quota::SpecialStoragePolicy>(NULL),
                         true));
   // Make the steps needed to initialize the storage of AppCache data.

@@ -49,7 +49,9 @@ OffTheRecordProfileIOData::Handle::~Handle() {
 const content::ResourceContext&
 OffTheRecordProfileIOData::Handle::GetResourceContext() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LazyInitialize();
+  // Don't call LazyInitialize here, since the resource context is created at
+  // the beginning of initalization and is used by some members while they're
+  // being initialized (i.e. AppCacheService).
   return io_data_->GetResourceContext();
 }
 

@@ -7,14 +7,18 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/quota/special_storage_policy.h"
 
 class FilePath;
+
+namespace content {
+class ResourceContext;
+}
 
 // An AppCacheService subclass used by the chrome. There is an instance
 // associated with each Profile. This derivation adds refcounting semantics
@@ -35,7 +39,7 @@ class ChromeAppCacheService
 
   void InitializeOnIOThread(
       const FilePath& cache_path,  // may be empty to use in-memory structures
-      scoped_refptr<HostContentSettingsMap> content_settings_map,
+      const content::ResourceContext* resource_context,
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
       bool clear_local_state_on_exit);
 
@@ -57,7 +61,7 @@ class ChromeAppCacheService
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  scoped_refptr<HostContentSettingsMap> host_contents_settings_map_;
+  const content::ResourceContext* resource_context_;
   NotificationRegistrar registrar_;
   bool clear_local_state_on_exit_;
   FilePath cache_path_;

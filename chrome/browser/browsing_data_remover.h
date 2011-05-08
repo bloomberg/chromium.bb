@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/cancelable_request.h"
+#include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
 class ExtensionSpecialStoragePolicy;

@@ -352,7 +352,7 @@ class ExtensionTestingProfile : public TestingProfile {
                   &ChromeAppCacheService::InitializeOnIOThread,
                   IsOffTheRecord()
                   ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
-                  make_scoped_refptr(GetHostContentSettingsMap()),
+                  &GetResourceContext(),
                   make_scoped_refptr(GetExtensionSpecialStoragePolicy()),
                   false)))
         NOTREACHED();

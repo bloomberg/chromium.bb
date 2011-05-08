@@ -76,7 +76,9 @@ void ProfileImplIOData::Handle::Init(const FilePath& cookie_path,
 const content::ResourceContext&
 ProfileImplIOData::Handle::GetResourceContext() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LazyInitialize();
+  // Don't call LazyInitialize here, since the resource context is created at
+  // the beginning of initalization and is used by some members while they're
+  // being initialized (i.e. AppCacheService).
   return io_data_->GetResourceContext();
 }
 

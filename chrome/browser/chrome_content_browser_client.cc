@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_worker_message_filter.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/debugger/devtools_handler.h"
 #include "chrome/browser/desktop_notification_handler.h"
 #include "chrome/browser/extensions/extension_message_handler.h"
@@ -28,6 +29,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/resource_context.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
 
@@ -178,6 +180,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
 std::string ChromeContentBrowserClient::GetApplicationLocale() {
   return g_browser_process->GetApplicationLocale();
+}
+
+bool ChromeContentBrowserClient::AllowAppCache(
+    const GURL& manifest_url, const content::ResourceContext* context) {
+  ContentSetting setting = context->host_content_settings_map()->
+      GetContentSetting(manifest_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+  DCHECK(setting != CONTENT_SETTING_DEFAULT);
+  return setting != CONTENT_SETTING_BLOCK;
 }
 
 #if defined(OS_LINUX)

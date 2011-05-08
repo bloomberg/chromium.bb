@@ -12,6 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "grit/app_resources.h"

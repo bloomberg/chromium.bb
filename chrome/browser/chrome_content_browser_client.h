@@ -26,6 +26,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,
                                               int child_process_id);
   virtual std::string GetApplicationLocale();
+  virtual bool AllowAppCache(const GURL& manifest_url,
+                             const content::ResourceContext* context);
 #if defined(OS_LINUX)
   // Can return an optional fd for crash handling, otherwise returns -1.
   virtual int GetCrashSignalFD(const std::string& process_type);

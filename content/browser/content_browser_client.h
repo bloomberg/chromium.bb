@@ -20,6 +20,7 @@ class WorkerProcessHost;
 
 namespace content {
 
+class ResourceContext;
 class WebUIFactory;
 
 // Embedder API for participating in browser logic.
@@ -60,6 +61,11 @@ class ContentBrowserClient {
 
   // Returns the locale used by the application.
   virtual std::string GetApplicationLocale();
+
+  // Allow the embedder to control if an AppCache can be used for the given url.
+  // This is called on the IO thread.
+  virtual bool AllowAppCache(const GURL& manifest_url,
+                             const content::ResourceContext* context);
 
 #if defined(OS_LINUX)
   // Can return an optional fd for crash handling, otherwise returns -1.
