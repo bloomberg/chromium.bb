@@ -31,7 +31,7 @@ class PlatformDevice;
 
 #if defined(OS_CHROMEOS)
 namespace base {
-class  FileDescriptor;
+struct FileDescriptor;
 }
 #endif
 

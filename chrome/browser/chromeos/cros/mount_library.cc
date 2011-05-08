@@ -78,21 +78,6 @@ class MountLibraryImpl : public MountLibrary {
                      this);
   }
 
-  virtual void RefreshDiskProperties(const Disk* disk) OVERRIDE {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    DCHECK(disk);
-    if (!CrosLibrary::Get()->EnsureLoaded()) {
-      OnGetDiskProperties(disk->device_path().c_str(),
-                          NULL,
-                          MOUNT_METHOD_ERROR_LOCAL,
-                          kLibraryNotLoaded);
-      return;
-    }
-    GetDiskProperties(disk->device_path().c_str(),
-                      &MountLibraryImpl::GetDiskPropertiesCallback,
-                      this);
-  }
-
   const DiskMap& disks() const OVERRIDE { return disks_; }
 
  private:
@@ -414,7 +399,6 @@ class MountLibraryStubImpl : public MountLibrary {
   virtual void RequestMountInfoRefresh() OVERRIDE {}
   virtual void MountPath(const char* device_path) OVERRIDE {}
   virtual void UnmountPath(const char* device_path) OVERRIDE {}
-  virtual bool IsBootPath(const char* device_path) OVERRIDE { return true; }
 
  private:
   // The list of disks found.

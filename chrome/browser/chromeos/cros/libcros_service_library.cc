@@ -174,12 +174,10 @@ LibCrosServiceLibraryImpl::NetworkProxyLibrary::NetworkProxyLibrary(
 
 LibCrosServiceLibraryImpl::NetworkProxyLibrary::~NetworkProxyLibrary() {
   base::AutoLock lock(data_lock_);
-  if (!all_requests_.empty()) {
-    for (size_t i = all_requests_.size() - 1;  i >= 0; --i) {
-      LOG(WARNING) << "Pending request for " << all_requests_[i]->source_url_;
-      delete all_requests_[i];
-    }
-    all_requests_.clear();
+  while (!all_requests_.empty()) {
+    LOG(WARNING) << "Pending request for " << all_requests_.back()->source_url_;
+    delete all_requests_.back();
+    all_requests_.pop_back();
   }
 }
 

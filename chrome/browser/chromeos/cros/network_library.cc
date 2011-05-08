@@ -751,7 +751,7 @@ static bool ParseFoundNetworksFromList(const ListValue* list,
   for (ListValue::const_iterator it = list->begin(); it != list->end(); ++it) {
     if ((*it)->IsType(Value::TYPE_DICTIONARY)) {
       found_networks_->resize(found_networks_->size() + 1);
-      DictionaryValue* dict = static_cast<const DictionaryValue*>(*it);
+      const DictionaryValue* dict = static_cast<const DictionaryValue*>(*it);
       dict->GetStringWithoutPathExpansion(
           kStatusProperty, &found_networks_->back().status);
       dict->GetStringWithoutPathExpansion(
