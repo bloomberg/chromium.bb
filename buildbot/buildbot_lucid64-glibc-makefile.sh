@@ -20,7 +20,7 @@ echo @@@BUILD_STEP gclient_runhooks@@@
 gclient runhooks --force
 
 echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out tools/SRC tools/BUILD tools/out tools/toolchain \
+rm -rf scons-out tools/SRC/* tools/BUILD/* tools/out tools/toolchain \
   tools/glibc tools/glibc.tar tools/toolchain.t* toolchain .tmp ||
   echo already_clean
 

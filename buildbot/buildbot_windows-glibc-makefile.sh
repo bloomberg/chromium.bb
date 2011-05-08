@@ -34,7 +34,7 @@ function convert_symlinks_to_hardlinks
 }
 
 echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out tools/SRC tools/BUILD tools/out tools/toolchain \
+rm -rf scons-out tools/SRC/* tools/BUILD/* tools/out tools/toolchain \
   tools/glibc tools/glibc.tar tools/toolchain.t* toolchain .tmp ||
   echo already_clean
 mkdir -p tools/toolchain/win_x86

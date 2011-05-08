@@ -33,7 +33,7 @@ cd tools
 export INSIDE_TOOLCHAIN=1
 
 echo @@@BUILD_STEP clobber_toolchain@@@
-rm -rf ../scons-out sdk-out sdk ../toolchain SRC BUILD
+rm -rf ../scons-out sdk-out sdk ../toolchain SRC/* BUILD/*
 
 echo @@@BUILD_STEP compile_toolchain@@@
 mkdir -p ../toolchain/${PLATFORM}_x86
