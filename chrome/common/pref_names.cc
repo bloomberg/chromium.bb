@@ -487,9 +487,6 @@ const char kShow3gPromoNotification[] =
 const char kCarrierDealPromoShown[] =
     "settings.internet.mobile.carrier_deal_promo_shown";
 
-// Map of timestamps of the last used file browser tasks.
-const char kLastUsedFileBrowserHandlers[] =
-    "filebrowser.handler.lastused";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.
