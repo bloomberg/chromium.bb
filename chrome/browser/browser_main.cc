@@ -236,6 +236,8 @@ void BrowserMainParts::EarlyInitialization() {
     net::SSLConfigService::EnableDNSCertProvenanceChecking();
   }
 
+  // TODO(abarth): Should this move to InitializeNetworkOptions?  This doesn't
+  // seem dependent on InitializeSSL().
   if (parsed_command_line().HasSwitch(switches::kEnableTcpFastOpen))
     net::set_tcp_fastopen_enabled(true);
 
@@ -618,6 +620,9 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
     // Profile (and therefore the first CookieMonster) is created.
     net::CookieMonster::EnableFileScheme();
   }
+
+  if (parsed_command_line.HasSwitch(switches::kEnableMacCookies))
+    net::URLRequest::EnableMacCookies();
 
   if (parsed_command_line.HasSwitch(switches::kIgnoreCertificateErrors))
     net::HttpStreamFactory::set_ignore_certificate_errors(true);
@@ -1473,10 +1478,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // notification it needs to track the logged in user.
   g_browser_process->profile_manager();
 
+  // TODO(abarth): Should this move to InitializeNetworkOptions()?
   // Allow access to file:// on ChromeOS for tests.
-  if (parsed_command_line.HasSwitch(switches::kAllowFileAccess)) {
+  if (parsed_command_line.HasSwitch(switches::kAllowFileAccess))
     net::URLRequest::AllowFileAccess();
-  }
 
   // There are two use cases for kLoginUser:
   //   1) if passed in tandem with kLoginPassword, to drive a "StubLogin"
