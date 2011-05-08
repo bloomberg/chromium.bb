@@ -5,13 +5,19 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/webui/mediaplayer_ui.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
+#include "grit/generated_resources.h"
 #include "third_party/libjingle/source/talk/base/urlencode.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -21,6 +27,37 @@
 // out this file manager for an aftermarket part, but not yet.
 const char kBaseFileBrowserUrl[] =
     "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/main.html";
+// List of file extension we can open in tab.
+const char* kBrowserSupportedExtensions[] = {
+    ".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf", ".txt", ".html", ".htm"
+};
+// List of file extension that can be handled with the media player.
+const char* kAVExtensions[] = {
+    ".webm", ".mp4", ".m4v", ".mov", ".ogm", ".ogv", ".ogx",
+    ".mp3", ".m4a", ".ogg", ".oga", ".wav",
+/* TODO(zelidrag): Add unsupported ones as we enable them:
+    ".3gp", ".mkv", ".avi", ".divx", ".xvid", ".wmv", ".asf", ".mpeg", ".mpg",
+    ".wma", ".aiff",
+*/
+};
+
+bool IsSupportedBrowserExtension(const char* ext) {
+  for (size_t i = 0; i < arraysize(kBrowserSupportedExtensions); i++) {
+    if (base::strcasecmp(ext, kBrowserSupportedExtensions[i]) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool IsSupportedAVExtension(const char* ext) {
+  for (size_t i = 0; i < arraysize(kAVExtensions); i++) {
+    if (base::strcasecmp(ext, kAVExtensions[i]) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
 
 // static
 GURL FileManagerUtil::GetFileBrowserUrl() {
@@ -82,6 +119,51 @@ void FileManagerUtil::ShowFullTabUrl(Profile*,
 
   UserMetrics::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
   browser->ShowSingletonTab(GURL(url));
+}
+
+
+void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
+  std::string ext = full_path.Extension();
+  // For things supported natively by the browser, we should open it
+  // in a tab.
+  if (IsSupportedBrowserExtension(ext.data())) {
+    std::string path;
+    path = "file://";
+    path.append(full_path.value());
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      bool result = BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableFunction(&ViewItem, full_path, enqueue));
+      DCHECK(result);
+      return;
+    }
+    Browser* browser = BrowserList::GetLastActive();
+    if (browser)
+      browser->AddSelectedTabWithURL(GURL(path), PageTransition::LINK);
+    return;
+  }
+  if (IsSupportedAVExtension(ext.data())) {
+    Browser* browser = BrowserList::GetLastActive();
+    if (!browser)
+      return;
+    MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
+    if (enqueue)
+      mediaplayer->EnqueueMediaFile(browser->profile(), full_path, NULL);
+    else
+      mediaplayer->ForcePlayMediaFile(browser->profile(), full_path, NULL);
+    return;
+  }
+
+  // Unknwon file type. Show an error message.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          &platform_util::SimpleErrorBox,
+          static_cast<gfx::NativeWindow>(NULL),
+          l10n_util::GetStringUTF16(IDS_FILEBROWSER_ERROR_TITLE),
+          l10n_util::GetStringFUTF16(IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE,
+                                     UTF8ToUTF16(full_path.BaseName().value()))
+          ));
 }
 
 // static

@@ -1001,6 +1001,10 @@ FileManager.prototype = {
           task.iconUrl =
               chrome.extension.getURL('images/icon_play_16x16.png');
           task.title = str('PLAY_MEDIA').replace("&", "");
+        } else if (task_parts[1] == 'enqueue') {
+          task.iconUrl =
+              chrome.extension.getURL('images/icon_add_to_queue_16x16.png');
+          task.title = str('ENQUEUE');
         }
       }
 
@@ -1031,7 +1035,11 @@ FileManager.prototype = {
         g_slideshow_data = this.selection.urls;
         chrome.tabs.create({url: "slideshow.html"});
       } else if (task_parts[1] == 'play') {
-        chrome.fileBrowserPrivate.viewFiles(this.selection.urls);
+        chrome.fileBrowserPrivate.viewFiles(this.selection.urls,
+            event.srcElement.task.taskId);
+      } else if (task_parts[1] == 'enqueue') {
+        chrome.fileBrowserPrivate.viewFiles(this.selection.urls,
+            event.srcElement.task.taskId);
       }
       return;
     }
@@ -1753,7 +1761,7 @@ FileManager.prototype = {
 
     // In full screen mode, open all files for vieweing.
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
-      chrome.fileBrowserPrivate.viewFiles(ary);
+      chrome.fileBrowserPrivate.viewFiles(ary, "default");
       // Window stays open.
       return;
     }

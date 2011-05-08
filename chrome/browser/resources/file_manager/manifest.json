@@ -63,6 +63,37 @@
         "filesystem:*.m4a",
         "filesystem:*.M4A"
       ]
+    },
+    {
+      "id": "enqueue",
+      "default_title": "__MSG_ENQUEUE_MEDIA__",
+      "default_icon": "images/icon_add_to_queue_16x16.png",
+      "file_filters": [
+        "filesystem:*.webm",
+        "filesystem:*.WEBM",
+        "filesystem:*.mp4",
+        "filesystem:*.MP4",
+        "filesystem:*.m4v",
+        "filesystem:*.M4V",
+        "filesystem:*.mov",
+        "filesystem:*.MOV",
+        "filesystem:*.ogg",
+        "filesystem:*.OGG",
+        "filesystem:*.oga",
+        "filesystem:*.OGA",
+        "filesystem:*.ogm",
+        "filesystem:*.OGM",
+        "filesystem:*.ogv",
+        "filesystem:*.OGV",
+        "filesystem:*.ogx",
+        "filesystem:*.OGX",
+        "filesystem:*.wav",
+        "filesystem:*.WAV",
+        "filesystem:*.mp3",
+        "filesystem:*.MP3",
+        "filesystem:*.m4a",
+        "filesystem:*.M4A"
+      ]
     }
   ]
 }

@@ -3490,6 +3490,8 @@
             ['exclude', '^browser/chromeos'],
             ['exclude', '^browser/ui/webui/chromeos'],
             ['exclude', '^browser/ui/webui/options/chromeos'],
+            ['exclude', 'browser/extensions/extension_file_browser_private_api.cc'],
+            ['exclude', 'browser/extensions/extension_file_browser_private_api.h'],
             ['exclude', 'browser/extensions/extension_tts_api_chromeos.cc'],
             ['exclude', 'browser/extensions/file_manager_util.h'],
             ['exclude', 'browser/extensions/file_manager_util.cc'],
@@ -3513,8 +3515,6 @@
             ['exclude', 'browser/ui/webui/cookies_tree_model_adapter.cc'],
             ['exclude', 'browser/ui/webui/cookies_tree_model_adapter.h'],
             ['exclude', 'browser/ui/webui/mediaplayer_ui.cc'],
-            ['exclude', 'browser/extensions/extension_file_browser_private_api.cc'],
-            ['exclude', 'browser/extensions/extension_file_browser_private_api.h'],
           ],
         }],
         ['chromeos==1', {
@@ -4228,6 +4228,7 @@
             # non-ChromeOS views Linux builds.
             ['OS=="linux" and toolkit_views==1 and chromeos==0', {
               'sources/': [
+                ['exclude', '^browser/extensions/extension_file_browser_private_api'],
                 ['include', '^browser/ui/gtk/dialogs_gtk.cc'],
                 ['include', '^browser/ui/gtk/external_protocol_dialog_gtk.cc'],
                 ['include', '^browser/ui/gtk/external_protocol_dialog_gtk.h'],

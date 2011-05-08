@@ -123,10 +123,12 @@ class FileDialogFunction
   virtual ~FileDialogFunction();
 
   // Convert virtual paths to local paths on the file thread.
-  void GetLocalPathsOnFileThread(const UrlList& file_urls);
+  void GetLocalPathsOnFileThread(const UrlList& file_urls,
+                                 const std::string& internal_task_id);
 
   // Callback with converted local paths.
-  virtual void GetLocalPathsResponseOnUIThread(const FilePathList& files) {}
+  virtual void GetLocalPathsResponseOnUIThread(const FilePathList& files,
+      const std::string& internal_task_id) {}
 
   // Get the callback for the hosting tab.
   const Callback& GetCallback() const;
@@ -153,7 +155,7 @@ class SelectFileFunction
 
   // FileDialogFunction overrides.
   virtual void GetLocalPathsResponseOnUIThread(
-      const FilePathList& files) OVERRIDE;
+      const FilePathList& files, const std::string& internal_task_id) OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.selectFile");
@@ -173,7 +175,7 @@ class ViewFilesFunction
 
   // FileDialogFunction overrides.
   virtual void GetLocalPathsResponseOnUIThread(
-      const FilePathList& files) OVERRIDE;
+      const FilePathList& files, const std::string& internal_task_id) OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.viewFiles");
@@ -193,7 +195,7 @@ class SelectFilesFunction
 
   // FileDialogFunction overrides.
   virtual void GetLocalPathsResponseOnUIThread(
-      const FilePathList& files) OVERRIDE;
+      const FilePathList& files, const std::string& internal_task_id) OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.selectFiles");
