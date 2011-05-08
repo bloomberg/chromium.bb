@@ -4905,9 +4905,15 @@
         "description": "View multiple files.",
         "parameters": [
           {
+            "name": "fileUrls",
             "type": "array",
             "description": "Array of selected paths",
             "items": {"type": "string"}
+          },
+          {
+            "name": "id",
+            "type": "string",
+            "description": "File browser handler id as for internal tasks."
           }
         ]
       }

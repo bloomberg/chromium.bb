@@ -3490,6 +3490,8 @@
             ['exclude', '^browser/chromeos'],
             ['exclude', '^browser/ui/webui/chromeos'],
             ['exclude', '^browser/ui/webui/options/chromeos'],
+            ['exclude', 'browser/extensions/extension_file_browser_private_api.cc'],
+            ['exclude', 'browser/extensions/extension_file_browser_private_api.h'],
             ['exclude', 'browser/extensions/extension_tts_api_chromeos.cc'],
             ['exclude', 'browser/extensions/file_manager_util.h'],
             ['exclude', 'browser/extensions/file_manager_util.cc'],
@@ -3513,8 +3515,6 @@
             ['exclude', 'browser/ui/webui/cookies_tree_model_adapter.cc'],
             ['exclude', 'browser/ui/webui/cookies_tree_model_adapter.h'],
             ['exclude', 'browser/ui/webui/mediaplayer_ui.cc'],
-            ['exclude', 'browser/extensions/extension_file_browser_private_api.cc'],
-            ['exclude', 'browser/extensions/extension_file_browser_private_api.h'],
           ],
         }],
         ['chromeos==1', {
@@ -3886,6 +3886,7 @@
                 # order of evaluation of the 'sources/' rule above, the
                 # conditions, and this 'sources/' rule.
                 ['exclude', '^browser/extensions/extension_rlz_module'],
+                ['exclude', '^browser/extensions/extension_file_browser_private_api'],
                 ['include', 'browser/printing/print_dialog_cloud.cc'],
                 ['include', 'browser/printing/print_dialog_cloud.h'],
                 ['include', '^browser/speech/speech_input_bubble_views.cc'],

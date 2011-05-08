@@ -133,6 +133,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
 
   // Carrier deal notification shown count defaults to 0.
   prefs->RegisterIntegerPref(prefs::kCarrierDealPromoShown, 0);
+
+  // The map of timestamps of the last used file browser handlers.
+  prefs->RegisterDictionaryPref(prefs::kLastUsedFileBrowserHandlers);
 }
 
 void Preferences::Init(PrefService* prefs) {

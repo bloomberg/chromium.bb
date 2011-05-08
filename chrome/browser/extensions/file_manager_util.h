@@ -34,6 +34,9 @@ class FileManagerUtil {
   // |default_path|.
   static void ShowFullTabUrl(Profile* profile,
                              const FilePath& default_path);
+
+  static void ViewItem(const FilePath& full_path, bool enqueue);
+
  private:
   FileManagerUtil() {}
   // Helper to convert numeric dialog type to a string.
