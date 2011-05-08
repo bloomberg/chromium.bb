@@ -97,9 +97,9 @@ class MediaPlayer : public NotificationObserver,
   virtual net::URLRequestJob* MaybeInterceptResponse(net::URLRequest* request);
 
   // Used to detect when the mediaplayer is closed.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Getter for the singleton.
   static MediaPlayer* GetInstance();
