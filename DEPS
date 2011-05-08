@@ -114,7 +114,7 @@ deps = {
     "/trunk/deps/page_cycler/acid3@19546",
 
   "src/third_party/bidichecker":
-    "http://bidichecker.googlecode.com/svn/trunk/lib@4",
+    (Var("googlecode_url") % "bidichecker") + "/trunk/lib@4",
 
   # We run these layout tests as UI tests. Since many of the buildbots that
   # run layout tests do NOT have access to the LayoutTest directory, we need
