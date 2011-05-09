@@ -397,8 +397,8 @@ cr.define('cr.ui', function() {
         return;
 
       var target = this.getListItemAncestor(e.target);
-      var index = target ? this.getIndexOfListItem(target) : -1;
-      this.activateItemAtIndex(index);
+      if (target)
+        this.activateItemAtIndex(this.getIndexOfListItem(target));
     },
 
     /**
