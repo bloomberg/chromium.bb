@@ -5586,11 +5586,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
           desc="Option shown in printer drop-down list for managing printers.">
         Manage Printers...
       </message>
-      <message name="IDS_PRINT_PREVIEW_SUMMARY_FORMAT" desc="Print summary, explaining to the user how many pages will be printed.">
-        Total: <ph name="NUMBER_OF_PAGES">$1<ex>4</ex></ph> <ph name="PAGE_OR_PAGES_LABEL">$2<ex>Pages</ex></ph> <ph name="TWO_SIDED">$3<ex>(two-sided)</ex></ph> <ph name="TIMES">$4<ex>x</ex></ph> <ph name="NUMBER_OF_COPIES">$5<ex>2</ex></ph> <ph name="COPIES_LABEL">$6<ex>copies</ex></ph> <ph name="EQUAL_SIGN">$7<ex>=</ex></ph> <ph name="NUMBER_OF_SHEETS">$8<ex>10</ex></ph> <ph name="SHEETS_LABEL">$9<ex>sheets of paper</ex></ph>
+      <message name="IDS_PRINT_PREVIEW_SUMMARY_FORMAT_LONG" desc="Print summary, explaining to the user how many pages will be printed.">
+        Total: <ph name="NUMBER_OF_SHEETS">$1<ex>10</ex></ph> <ph name="SHEETS_LABEL">$2<ex>sheets of paper</ex></ph> (<ph name="NUMBER_OF_PAGES">$3<ex>4</ex></ph> <ph name="PAGE_OR_PAGES_LABEL">$4<ex>Pages</ex></ph>)
       </message>
-      <message name="IDS_PRINT_PREVIEW_SHEETS_LABEL" desc="Label shown in the print preview summary.">
+      <message name="IDS_PRINT_PREVIEW_SUMMARY_FORMAT_SHORT" desc="Print summary, explaining to the user how many pages will be printed.">
+        Total: <ph name="NUMBER_OF_SHEETS">$1<ex>10</ex></ph> <ph name="SHEETS_LABEL">$2<ex>sheets of paper</ex></ph>
+      </message>
+      <message name="IDS_PRINT_PREVIEW_SHEETS_LABEL_PLURAL" desc="Label shown in the print preview summary.">
         sheets of paper
+      </message>
+      <message name="IDS_PRINT_PREVIEW_SHEETS_LABEL_SINGULAR" desc="Label shown in the print preview summary.">
+        sheet of paper
       </message>
       <message name="IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR" desc="Label shown in the print preview summary.">
         page

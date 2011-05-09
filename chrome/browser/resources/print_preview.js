@@ -613,47 +613,33 @@ function updatePrintSummary() {
   }
 
   var pageList = getSelectedPagesSet();
-  var pagesLabel = localStrings.getString('printPreviewPageLabelSingular');
-  var twoSidedLabel = '';
-  var timesSign = '';
-  var numOfCopies = '';
-  var copiesLabel = '';
-  var equalSign = '';
-  var numOfSheets = '';
-  var sheetsLabel = '';
-
-  if (pageList.length > 1)
-    pagesLabel = localStrings.getString('printPreviewPageLabelPlural');
+  var numOfSheets = pageList.length;
+  var sheetsLabel = localStrings.getString('printPreviewSheetsLabelSingular');
+  var numOfPagesText = '';
+  var pagesLabel = '';
 
   if (isTwoSided())
-    twoSidedLabel = '('+localStrings.getString('optionTwoSided')+')';
+    numOfSheets = Math.ceil(numOfSheets / 2);
+  numOfSheets *= copies;
 
-  if (copies > 1) {
-    timesSign = '×';
-    numOfCopies = copies;
-    copiesLabel = localStrings.getString('copiesLabel').toLowerCase();
-  }
+  if (numOfSheets > 1)
+    sheetsLabel = localStrings.getString('printPreviewSheetsLabelPlural');
 
-  if ((copies > 1) || (isTwoSided())) {
-    numOfSheets = pageList.length;
-
-    if (isTwoSided())
-      numOfSheets = Math.ceil(numOfSheets / 2);
-
-    equalSign = '=';
-    numOfSheets *= copies;
-    sheetsLabel = localStrings.getString('printPreviewSheetsLabel');
-  }
-
-  var html = localStrings.getStringF('printPreviewSummaryFormat',
-                                     pageList.length, pagesLabel,
-                                     twoSidedLabel, timesSign, numOfCopies,
-                                     copiesLabel, equalSign,
-                                     '<strong>' + numOfSheets + '</strong>',
-                                     '<strong>' + sheetsLabel + '</strong>');
+  var html = '';
+  if (pageList.length * copies != numOfSheets) {
+    numOfPagesText = pageList.length * copies;
+    pagesLabel = localStrings.getString('printPreviewPageLabelPlural');
+    html = localStrings.getStringF('printPreviewSummaryFormatLong',
+                                   '<b>' + numOfSheets + '</b>',
+                                   '<b>' + sheetsLabel + '</b>',
+                                   numOfPagesText, pagesLabel);
+  } else
+    html = localStrings.getStringF('printPreviewSummaryFormatShort',
+                                   '<b>' + numOfSheets + '</b>',
+                                   '<b>' + sheetsLabel + '</b>');
 
   // Removing extra spaces from within the string.
-  html.replace(/\s{2,}/g, ' ');
+  html = html.replace(/\s{2,}/g, ' ');
   printSummary.innerHTML = html;
 }
 
