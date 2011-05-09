@@ -403,15 +403,14 @@ function toggleDevModeExpanded() {
  */
 function renderTemplate(extensionsData) {
   // Sort by order specified in the data or (if equal) then sort by
-  // extension name (case-insensitive).
+  // extension name.
+  var locale = new v8Locale(window.navigator.language);
+  var coll = locale.createCollator();
   extensionsData.extensions.sort(function(a, b) {
     if (a.order == b.order) {
-      a = a.name.toLowerCase();
-      b = b.name.toLowerCase();
-      return a < b ? -1 : (a > b ? 1 : 0);
-    } else {
-      return a.order < b.order ? -1 : 1;
+      return coll.compare(a.name, b.name);
     }
+    return a.order < b.order ? -1 : 1;
   });
 
   // This is the javascript code that processes the template:
