@@ -51,7 +51,7 @@ fortytwo2.bc:  fortytwo2.c
 LD_X86_ARGS= --pnacl-driver-set-WHICH_LD=GOLD
 # http://code.google.com/p/nativeclient/issues/detail?id=1531
 # uncomment this for BFD linking
-# LD_X86_ARGS= --pnacl-driver-set-LD_SCRIPT_ARM=ld_script_x86_32_shared
+# LD_X86_ARGS= --pnacl-driver-set-LD_SCRIPT_X8632=ld_script_x86_32_shared
 LLC_X86_ARGS= --add-llc-option -sfi-x86-jmp-mask=-1 
 X86_FLAGS= $(DEBUG_FLAGS) $(LD_X86_ARGS) $(LLC_X86_ARGS)
 
@@ -70,11 +70,11 @@ libsimple2.x86-32.so: hello2.bc fortytwo2.bc
 	$(ELF_PATCHER) -l $@	
 
 # *not* sanboxed
-main2.x86-32: main.c libsimple1.x86-32.so libsimple2.x86-32.so
-	gcc -m32 -o $@ -L. -lsimple1.x86-32 -lsimple2.x86-32 main2.c
-
 main.x86-32: main.c libsimple1.x86-32.so 
 	gcc -m32 -o $@ -L. -lsimple1.x86-32 main.c
+
+main2.x86-32: main.c libsimple1.x86-32.so libsimple2.x86-32.so
+	gcc -m32 -o $@ -L. -lsimple1.x86-32 -lsimple2.x86-32 main2.c
 
 run.x86-32: main.x86-32 
 	LD_LIBRARY_PATH=. ./main.x86-32
@@ -105,11 +105,12 @@ libsimple2.arm.so: hello2.bc fortytwo2.bc
 	$(ELF_PATCHER) -l $@
 
 # *not* sanboxed
+main.arm: main.c libsimple1.arm.so 
+	$(ARM_CC)  -Wl,-Ttext-segment=20000 -o $@ -L. -lsimple1.arm  main.c
+
 main2.arm: main.c libsimple1.arm.so libsimple2.arm.so
 	$(ARM_CC)  -Wl,-Ttext-segment=20000 -o $@ -L. -lsimple1.arm  -lsimple2.arm main.c
 
-main.arm: main.c libsimple1.arm.so 
-	$(ARM_CC)  -Wl,-Ttext-segment=20000 -o $@ -L. -lsimple1.arm  main.c
 
 run.arm: main.arm
 	LD_LIBRARY_PATH=. $(QEMU) ./main.arm

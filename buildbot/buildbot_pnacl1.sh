@@ -114,8 +114,13 @@ ad-hoc-shared-lib-tests() {
   pushd  tests/pnacl_ld_example/
   make -f Makefile.pnacl clean
   make -f Makefile.pnacl preparation
+  # NOTE: these tests use the gold linker rather than the standard bfd linker
+  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=1782
   make -f Makefile.pnacl run.x86-32
+  make -f Makefile.pnacl run2.x86-32
   make -f Makefile.pnacl run.arm
+  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=1782
+  # make -f Makefile.pnacl arm2.x86-32
   popd
 }
 
