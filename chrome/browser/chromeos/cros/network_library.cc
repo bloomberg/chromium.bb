@@ -2354,9 +2354,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   virtual const CellularDataPlanVector* GetDataPlans(
       const std::string& path) const {
     CellularDataPlanMap::const_iterator iter = data_plan_map_.find(path);
-    if (iter != data_plan_map_.end())
-      return iter->second;
-    return NULL;
+    if (iter == data_plan_map_.end())
+      return NULL;
+    // If we need a new plan, then ignore any data plans we have.
+    CellularNetwork* cellular = FindCellularNetworkByPath(path);
+    if (cellular && cellular->needs_new_plan())
+      return NULL;
+    return iter->second;
   }
 
   virtual const CellularDataPlan* GetSignificantDataPlan(
