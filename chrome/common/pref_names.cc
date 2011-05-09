@@ -1359,11 +1359,6 @@ const char kManagedPopupsAllowedForUrls[] =
 const char kManagedPopupsBlockedForUrls[] =
     "profile.managed_popups_blocked_for_urls";
 
-// Dictionary for storing the set of known background pages (keys are extension
-// IDs of background page owners, value is a boolean that is true if the user
-// needs to acknowledge this page.
-const char kKnownBackgroundPages[] = "background_pages.known";
-
 // Set to true if the user created a login item so we should not modify it when
 // uninstalling background apps.
 const char kUserCreatedLoginItem[] = "background_mode.user_created_login_item";
