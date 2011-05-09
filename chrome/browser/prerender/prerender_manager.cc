@@ -571,6 +571,8 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
     pending_prerender_list_.erase(pending_it);
   }
 
+  old_tab_contents_list_.push_back(old_tab_contents);
+  StartSchedulingPeriodicCleanups();
   return true;
 }
 
