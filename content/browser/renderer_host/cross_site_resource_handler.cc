@@ -178,10 +178,6 @@ void CrossSiteResourceHandler::ResumeResponse() {
   if (completed_during_transition_) {
     next_handler_->OnResponseCompleted(request_id_, completed_status_,
                                        completed_security_info_);
-
-    // Since we didn't notify the world or clean up the pending request in
-    // RDH::OnResponseCompleted during the transition, we should do it now.
-    rdh_->NotifyResponseCompleted(request, render_process_host_id_);
     rdh_->RemovePendingRequest(render_process_host_id_, request_id_);
   }
 }

@@ -1566,7 +1566,6 @@ void ResourceDispatcherHost::OnResponseCompleted(net::URLRequest* request) {
   if (info->resource_handler()->OnResponseCompleted(info->request_id(),
                                                     request->status(),
                                                     security_info)) {
-    NotifyResponseCompleted(request, info->child_id());
 
     // The request is complete so we can remove it.
     RemovePendingRequest(info->child_id(), info->request_id());
@@ -1623,14 +1622,6 @@ bool ResourceDispatcherHost::RenderViewForRequest(
   return true;
 }
 
-void ResourceDispatcherHost::AddObserver(Observer* obs) {
-  observer_list_.AddObserver(obs);
-}
-
-void ResourceDispatcherHost::RemoveObserver(Observer* obs) {
-  observer_list_.RemoveObserver(obs);
-}
-
 net::URLRequest* ResourceDispatcherHost::GetURLRequest(
     const GlobalRequestID& request_id) const {
   // This should be running in the IO loop.
@@ -1654,8 +1645,6 @@ static int GetCertID(net::URLRequest* request, int child_id) {
 void ResourceDispatcherHost::NotifyResponseStarted(net::URLRequest* request,
                                                    int child_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // Notify the observers on the IO thread.
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnRequestStarted(this, request));
 
   int render_process_id, render_view_id;
   if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
@@ -1672,20 +1661,9 @@ void ResourceDispatcherHost::NotifyResponseStarted(net::URLRequest* request,
           render_process_id, render_view_id, detail));
 }
 
-void ResourceDispatcherHost::NotifyResponseCompleted(net::URLRequest* request,
-                                                     int child_id) {
-  // Notify the observers on the IO thread.
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnResponseCompleted(this, request));
-}
-
 void ResourceDispatcherHost::NotifyReceivedRedirect(net::URLRequest* request,
                                                     int child_id,
                                                     const GURL& new_url) {
-  // Notify the observers on the IO thread.
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnReceivedRedirect(this, request, new_url));
-
   int render_process_id, render_view_id;
   if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
     return;

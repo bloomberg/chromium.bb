@@ -20,7 +20,6 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
 #include "base/timer.h"
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/common/child_process_info.h"
@@ -57,19 +56,6 @@ class DeletableFileReference;
 
 class ResourceDispatcherHost : public net::URLRequest::Delegate {
  public:
-  class Observer {
-   public:
-    virtual ~Observer() {}
-    virtual void OnRequestStarted(ResourceDispatcherHost* resource_dispatcher,
-                                  net::URLRequest* request) = 0;
-    virtual void OnResponseCompleted(
-        ResourceDispatcherHost* resource_dispatcher,
-        net::URLRequest* request) = 0;
-    virtual void OnReceivedRedirect(ResourceDispatcherHost* resource_dispatcher,
-                                    net::URLRequest* request,
-                                    const GURL& new_url) = 0;
-  };
-
   explicit ResourceDispatcherHost(
       const ResourceQueue::DelegateSet& resource_queue_delegates);
   ~ResourceDispatcherHost();
@@ -218,19 +204,8 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
                                    int* render_process_host_id,
                                    int* render_view_host_id);
 
-  // Adds an observer.  The observer will be called on the IO thread.  To
-  // observe resource events on the UI thread, subscribe to the
-  // NOTIFY_RESOURCE_* notifications of the notification service.
-  void AddObserver(Observer* obs);
-
-  // Removes an observer.
-  void RemoveObserver(Observer* obs);
-
   // Retrieves a net::URLRequest.  Must be called from the IO thread.
   net::URLRequest* GetURLRequest(const GlobalRequestID& request_id) const;
-
-  // Notifies our observers that a request has been cancelled.
-  void NotifyResponseCompleted(net::URLRequest* request, int process_unique_id);
 
   void RemovePendingRequest(int process_unique_id, int request_id);
 
@@ -475,9 +450,6 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   // observed in the real world!) event where we have two requests with the same
   // request_id_.
   int request_id_;
-
-  // List of objects observing resource dispatching.
-  ObserverList<Observer> observer_list_;
 
   // For running tasks.
   ScopedRunnableMethodFactory<ResourceDispatcherHost> method_runner_;
