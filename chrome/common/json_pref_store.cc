@@ -86,7 +86,7 @@ void FileThreadDeserializer::HandleErrors(
     PersistentPrefStore::PrefReadError* error) {
   *error = PersistentPrefStore::PREF_READ_ERROR_NONE;
   if (!value) {
-    DLOG(ERROR) << "Error while loading JSON file: " << error_msg;
+    VLOG(1) << "Error while loading JSON file: " << error_msg;
     switch (error_code) {
       case JSONFileValueSerializer::JSON_ACCESS_DENIED:
         *error = PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED;
