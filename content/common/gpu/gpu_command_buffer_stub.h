@@ -8,8 +8,9 @@
 
 #if defined(ENABLE_GPU)
 
-#include <vector>
+#include <queue>
 #include <string>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/process.h"
@@ -80,25 +81,27 @@ class GpuCommandBufferStub
   // Message handlers:
   void OnInitialize(base::SharedMemoryHandle ring_buffer,
                     int32 size,
-                    bool* result);
-  void OnGetState(gpu::CommandBuffer::State* state);
+                    IPC::Message* reply_message);
+  void OnGetState(IPC::Message* reply_message);
   void OnFlush(int32 put_offset,
                int32 last_known_get,
-               gpu::CommandBuffer::State* state);
+               IPC::Message* reply_message);
   void OnAsyncFlush(int32 put_offset);
-  void OnCreateTransferBuffer(int32 size, int32 id_request, int32* id);
+  void OnCreateTransferBuffer(int32 size,
+                              int32 id_request,
+                              IPC::Message* reply_message);
   void OnRegisterTransferBuffer(base::SharedMemoryHandle transfer_buffer,
                                 size_t size,
                                 int32 id_request,
-                                int32* id);
-  void OnDestroyTransferBuffer(int32 id);
-  void OnGetTransferBuffer(int32 id,
-                           base::SharedMemoryHandle* transfer_buffer,
-                           uint32* size);
+                                IPC::Message* reply_message);
+  void OnDestroyTransferBuffer(int32 id, IPC::Message* reply_message);
+  void OnGetTransferBuffer(int32 id, IPC::Message* reply_message);
   void OnResizeOffscreenFrameBuffer(const gfx::Size& size);
 
   void OnSwapBuffers();
   void OnCommandProcessed();
+  void HandleDeferredMessages();
+  void OnScheduled();
 
 #if defined(OS_MACOSX)
   void OnSetWindowSize(const gfx::Size& size);
@@ -129,6 +132,8 @@ class GpuCommandBufferStub
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
+  std::queue<IPC::Message*> deferred_messages_;
+
   GpuWatchdog* watchdog_;
   ScopedRunnableMethodFactory<GpuCommandBufferStub> task_factory_;
 
