@@ -37,7 +37,8 @@ SubmenuView::SubmenuView(MenuItemView* parent)
       drop_item_(NULL),
       drop_position_(MenuDelegate::DROP_NONE),
       scroll_view_container_(NULL),
-      max_accelerator_width_(0) {
+      max_accelerator_width_(0),
+      minimum_preferred_width_(0) {
   DCHECK(parent);
   // We'll delete ourselves, otherwise the ScrollView would delete us on close.
   set_parent_owned(false);
@@ -123,8 +124,10 @@ gfx::Size SubmenuView::GetPreferredSize() {
         MenuConfig::instance().label_to_accelerator_padding;
   }
   gfx::Insets insets = GetInsets();
-  return gfx::Size(max_width + max_accelerator_width_ + insets.width(),
-                   height + insets.height());
+  return gfx::Size(
+      std::max(max_width + max_accelerator_width_ + insets.width(),
+               minimum_preferred_width_),
+      height + insets.height());
 }
 
 void SubmenuView::GetAccessibleState(ui::AccessibleViewState* state) {

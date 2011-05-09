@@ -130,6 +130,12 @@ class SubmenuView : public View {
   // children's children, only direct children.
   int max_accelerator_width() const { return max_accelerator_width_; }
 
+  // Minimum width of menu in pixels (default 0).  This becomes the smallest
+  // width returned by GetPreferredSize().
+  void set_minimum_preferred_width(int minimum_preferred_width) {
+    minimum_preferred_width_ = minimum_preferred_width;
+  }
+
   // Padding around the edges of the submenu.
   static const int kSubmenuBorderSize;
 
@@ -175,6 +181,9 @@ class SubmenuView : public View {
 
   // See description above getter.
   int max_accelerator_width_;
+
+  // Minimum width returned in GetPreferredSize().
+  int minimum_preferred_width_;
 
   DISALLOW_COPY_AND_ASSIGN(SubmenuView);
 };
