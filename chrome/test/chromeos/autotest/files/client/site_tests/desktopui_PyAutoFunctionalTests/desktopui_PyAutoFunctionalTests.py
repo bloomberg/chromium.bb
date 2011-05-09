@@ -4,6 +4,7 @@
 
 import dbus
 import os
+import pwd
 import shutil
 import subprocess
 
@@ -82,7 +83,9 @@ class desktopui_PyAutoFunctionalTests(chrome_test.ChromeTestBase):
         utils.system(login_cmd)
 
         # Run pyauto tests in the "FULL" suite
+        chronos_id = pwd.getpwnam('chronos')
+        os.chown(os.getcwd(), chronos_id.pw_uid, chronos_id.pw_gid)
         functional_cmd = cros_ui.xcommand_as(
-            '%s/chrome_test/test_src/chrome/test/functional/' \
+            '%s/chrome_test/test_src/chrome/test/functional/'
             'pyauto_functional.py --suite=FULL -v' % deps_dir)
         utils.system(functional_cmd)
