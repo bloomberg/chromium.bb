@@ -65,25 +65,28 @@ NaClProcessHost::NaClProcessHost(const std::wstring& url)
 }
 
 NaClProcessHost::~NaClProcessHost() {
-  if (!reply_msg_)
-    return;
-
   // nacl::Close() is not available at link time if DISABLE_NACL is
   // defined, but we still compile a bunch of other code from this
   // file anyway.  TODO(mseaborn): Make this less messy.
 #ifndef DISABLE_NACL
   for (size_t i = 0; i < internal_->sockets_for_renderer.size(); i++) {
-    nacl::Close(internal_->sockets_for_renderer[i]);
+    if (nacl::Close(internal_->sockets_for_renderer[i]) != 0) {
+      LOG(ERROR) << "nacl::Close() failed";
+    }
   }
   for (size_t i = 0; i < internal_->sockets_for_sel_ldr.size(); i++) {
-    nacl::Close(internal_->sockets_for_sel_ldr[i]);
+    if (nacl::Close(internal_->sockets_for_sel_ldr[i]) != 0) {
+      LOG(ERROR) << "nacl::Close() failed";
+    }
   }
 #endif
 
-  // OnProcessLaunched didn't get called because the process couldn't launch.
-  // Don't keep the renderer hanging.
-  reply_msg_->set_reply_error();
-  chrome_render_message_filter_->Send(reply_msg_);
+  if (reply_msg_) {
+    // The process failed to launch for some reason.
+    // Don't keep the renderer hanging.
+    reply_msg_->set_reply_error();
+    chrome_render_message_filter_->Send(reply_msg_);
+  }
 }
 
 bool NaClProcessHost::Launch(
@@ -249,14 +252,18 @@ void NaClProcessHost::OpenIrtFileDone(base::PlatformFileError error_code,
 #if defined(OS_WIN)
     // Copy the handle into the renderer process.
     HANDLE handle_in_renderer;
-    DuplicateHandle(base::GetCurrentProcessHandle(),
-                    reinterpret_cast<HANDLE>(
-                        internal_->sockets_for_renderer[i]),
-                    chrome_render_message_filter_->peer_handle(),
-                    &handle_in_renderer,
-                    0,  // Unused given DUPLICATE_SAME_ACCESS.
-                    FALSE,
-                    DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS);
+    if (!DuplicateHandle(base::GetCurrentProcessHandle(),
+                         reinterpret_cast<HANDLE>(
+                             internal_->sockets_for_renderer[i]),
+                         chrome_render_message_filter_->peer_handle(),
+                         &handle_in_renderer,
+                         0,  // Unused given DUPLICATE_SAME_ACCESS.
+                         FALSE,
+                         DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
+      LOG(ERROR) << "DuplicateHandle() failed";
+      delete this;
+      return;
+    }
     handles_for_renderer.push_back(
         reinterpret_cast<nacl::FileDescriptor>(handle_in_renderer));
 #else
@@ -271,13 +278,17 @@ void NaClProcessHost::OpenIrtFileDone(base::PlatformFileError error_code,
 
 #if defined(OS_WIN)
   // Copy the process handle into the renderer process.
-  DuplicateHandle(base::GetCurrentProcessHandle(),
-                  handle(),
-                  chrome_render_message_filter_->peer_handle(),
-                  &nacl_process_handle,
-                  PROCESS_DUP_HANDLE,
-                  FALSE,
-                  0);
+  if (!DuplicateHandle(base::GetCurrentProcessHandle(),
+                       handle(),
+                       chrome_render_message_filter_->peer_handle(),
+                       &nacl_process_handle,
+                       PROCESS_DUP_HANDLE,
+                       FALSE,
+                       0)) {
+    LOG(ERROR) << "DuplicateHandle() failed";
+    delete this;
+    return;
+  }
 #else
   // We use pid as process handle on Posix
   nacl_process_handle = handle();
@@ -305,6 +316,8 @@ void NaClProcessHost::OpenIrtFileDone(base::PlatformFileError error_code,
                          0,  // Unused given DUPLICATE_SAME_ACCESS.
                          FALSE,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
+      LOG(ERROR) << "DuplicateHandle() failed";
+      delete this;
       return;
     }
     handles_for_sel_ldr.push_back(
@@ -314,6 +327,7 @@ void NaClProcessHost::OpenIrtFileDone(base::PlatformFileError error_code,
     channel.fd = dup(internal_->sockets_for_sel_ldr[i]);
     if (channel.fd < 0) {
       LOG(ERROR) << "Failed to dup() a file descriptor";
+      delete this;
       return;
     }
     channel.auto_close = true;
@@ -329,12 +343,14 @@ void NaClProcessHost::OpenIrtFileDone(base::PlatformFileError error_code,
   base::SharedMemory memory_buffer;
   if (!memory_buffer.CreateAnonymous(/* size= */ 1)) {
     LOG(ERROR) << "Failed to allocate memory buffer";
+    delete this;
     return;
   }
   nacl::FileDescriptor memory_fd;
   memory_fd.fd = dup(memory_buffer.handle().fd);
   if (memory_fd.fd < 0) {
     LOG(ERROR) << "Failed to dup() a file descriptor";
+    delete this;
     return;
   }
   memory_fd.auto_close = true;
