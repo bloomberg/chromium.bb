@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/preferences.h"
 
 #include "base/i18n/time_formatting.h"
+#include "base/metrics/histogram.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -249,7 +250,7 @@ void Preferences::Init(PrefService* prefs) {
 
   enable_screen_lock_.Init(prefs::kEnableScreenLock, prefs, this);
 
-  // Initialize touchpad settings to what's saved in user preferences.
+  // Initialize preferences to currently saved state.
   NotifyPrefChanged(NULL);
 
   // If a guest is logged in, initialize the prefs as if this is the first
@@ -268,12 +269,23 @@ void Preferences::Observe(NotificationType type,
 
 void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kTapToClickEnabled) {
-    CrosLibrary::Get()->GetTouchpadLibrary()->SetTapToClick(
-        tap_to_click_enabled_.GetValue());
+    bool enabled = tap_to_click_enabled_.GetValue();
+    CrosLibrary::Get()->GetTouchpadLibrary()->SetTapToClick(enabled);
+    if (pref_name)
+      UMA_HISTOGRAM_BOOLEAN("Touchpad.TapToClick.Changed", enabled);
+    else
+      UMA_HISTOGRAM_BOOLEAN("Touchpad.TapToClick.Started", enabled);
   }
   if (!pref_name || *pref_name == prefs::kTouchpadSensitivity) {
-    CrosLibrary::Get()->GetTouchpadLibrary()->SetSensitivity(
-        sensitivity_.GetValue());
+    int sensitivity = sensitivity_.GetValue();
+    CrosLibrary::Get()->GetTouchpadLibrary()->SetSensitivity(sensitivity);
+    if (pref_name) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Touchpad.Sensitivity.Changed", sensitivity, 1, 5, 5);
+    } else {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Touchpad.Sensitivity.Started", sensitivity, 1, 5, 5);
+    }
   }
 
   // We don't handle prefs::kLanguageCurrentInputMethod and PreviousInputMethod
