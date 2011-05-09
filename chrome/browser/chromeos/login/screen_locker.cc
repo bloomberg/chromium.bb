@@ -371,6 +371,24 @@ class GrabWidget : public views::WidgetGtk {
     CHECK_NE(GDK_GRAB_SUCCESS, mouse_grab_status_);
   }
 
+  // Define separate methods for each error code so that stack trace
+  // will tell which error the grab failed with.
+  void FailedWithGrabAlreadyGrabbed() {
+    LOG(FATAL) << "Grab already grabbed";
+  }
+  void FailedWithGrabInvalidTime() {
+    LOG(FATAL) << "Grab invalid time";
+  }
+  void FailedWithGrabNotViewable() {
+    LOG(FATAL) << "Grab not viewable";
+  }
+  void FailedWithGrabFrozen() {
+    LOG(FATAL) << "Grab frozen";
+  }
+  void FailedWithUnknownError() {
+    LOG(FATAL) << "Grab uknown";
+  }
+
   chromeos::ScreenLocker* screen_locker_;
   ScopedRunnableMethodFactory<GrabWidget> task_factory_;
 
@@ -419,10 +437,29 @@ void GrabWidget::TryGrabAllInputs() {
         kRetryGrabIntervalMs);
   } else {
     gdk_x11_ungrab_server();
-    CHECK_EQ(GDK_GRAB_SUCCESS, kbd_grab_status_)
-        << "Failed to grab keyboard input:" << kbd_grab_status_;
-    CHECK_EQ(GDK_GRAB_SUCCESS, mouse_grab_status_)
-        << "Failed to grab pointer input:" << mouse_grab_status_;
+    GdkGrabStatus status = kbd_grab_status_;
+    if (status == GDK_GRAB_SUCCESS) {
+      status = mouse_grab_status_;
+    }
+    switch (status) {
+      case GDK_GRAB_SUCCESS:
+        break;
+      case GDK_GRAB_ALREADY_GRABBED:
+        FailedWithGrabAlreadyGrabbed();
+        break;
+      case GDK_GRAB_INVALID_TIME:
+        FailedWithGrabInvalidTime();
+        break;
+      case GDK_GRAB_NOT_VIEWABLE:
+        FailedWithGrabNotViewable();
+        break;
+      case GDK_GRAB_FROZEN:
+        FailedWithGrabFrozen();
+        break;
+      default:
+        FailedWithUnknownError();
+        break;
+    }
     DVLOG(1) << "Grab Success";
     screen_locker_->OnGrabInputs();
   }
