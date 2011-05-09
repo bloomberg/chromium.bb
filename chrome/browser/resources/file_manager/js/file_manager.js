@@ -93,6 +93,12 @@ FileManager.prototype = {
   const RIGHT_TRIANGLE = '\u25b8';
 
   /**
+   * The DirectoryEntry.fullPath value of the directory containing external
+   * storage volumes.
+   */
+  const MEDIA_DIRECTORY = '/media';
+
+  /**
    * Translated strings.
    */
   var localStrings;
@@ -832,9 +838,17 @@ FileManager.prototype = {
 
     div.textContent = '...';
 
+    var self = this;
     cacheEntryDate(entry, function(entry) {
-      div.textContent = cr.locale.formatDate(entry.cachedMtime_,
-                                             str('LOCALE_FMT_DATE_SHORT'));
+      if (self.currentDirEntry_.fullPath == MEDIA_DIRECTORY &&
+          entry.cachedMtime_.getTime() == 0) {
+        // Mount points for FAT volumes have this time associated with them.
+        // We'd rather display nothing than this bogus date.
+        div.textContent = '---';
+      } else {
+        div.textContent = cr.locale.formatDate(entry.cachedMtime_,
+                                               str('LOCALE_FMT_DATE_SHORT'));
+      }
     });
 
     return div;
@@ -1373,6 +1387,10 @@ FileManager.prototype = {
                         this.currentDirEntry_.fullPath,
                         location.href);
     }
+
+    // New folder should never be enabled in the root directory.
+    this.newFolderButton_.disabled = this.currentDirEntry_.fullPath == '/';
+
     this.document_.title = this.currentDirEntry_.fullPath;
     this.rescanDirectory_();
   };
