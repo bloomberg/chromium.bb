@@ -378,7 +378,7 @@ BUILD/stamp-$(CROSSARCH)-binutils: | SRC/binutils BUILD
 	cd BUILD/build-binutils-$(CROSSARCH) && \
 	  CC="gcc" \
 	  CFLAGS="-m$(HOST_TOOLCHAIN_BITS) -O2 -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) $(CFLAGS)" \
-	  LDFLAGS="-s" \
+	  LDFLAGS="-s $(LDFLAGS)" \
 	  ../../SRC/binutils/configure \
 	    --prefix=$(SDKROOT) \
 	    --target=${CROSSARCH} \
@@ -407,6 +407,8 @@ BUILD/stamp-$(CROSSARCH)-pregcc: | SRC/gcc BUILD
 	    srcdir=../../SRC/gcc \
 	    rootdir=$$PWD/BUILD \
 	    target=$(CROSSARCH) \
+	    GCC_CFLAGS="-O2 $(CFLAGS)" \
+	    GCC_LDFLAGS="-s $(LDFLAGS)" \
 	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
 	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
@@ -471,8 +473,11 @@ BUILD/stamp-$(CROSSARCH)-pregcc-standalone: \
 	    srcdir=../../SRC/gcc \
 	    rootdir=$$PWD/BUILD \
 	    target=$(CROSSARCH) \
+	    GCC_CFLAGS="-O2 $(CFLAGS)" \
+	    GCC_LDFLAGS="-s $(LDFLAGS)" \
 	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
+	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
 	    MULTILIB=$(MULTILIB) \
 	    configure-gcc-with-nolibc
 	$(MAKE) \
@@ -717,6 +722,8 @@ endif
 	    srcdir=../../SRC/gcc \
 	    rootdir=$$PWD/BUILD \
 	    target=$(CROSSARCH) \
+	    GCC_CFLAGS="-O2 $(CFLAGS)" \
+	    GCC_LDFLAGS="-s $(LDFLAGS)" \
 	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
 	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
@@ -754,8 +761,11 @@ endif
 	    srcdir=../../SRC/gcc \
 	    rootdir=$$PWD/BUILD \
 	    target=$(CROSSARCH) \
+	    GCC_CFLAGS="-O2 $(CFLAGS)" \
+	    GCC_LDFLAGS="-s $(LDFLAGS)" \
 	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
+	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
 	    MULTILIB=$(MULTILIB) \
 	    configure-gcc-with-newlib
 	PATH=$(BUILDPATH) $(MAKE) \
