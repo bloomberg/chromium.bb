@@ -1242,7 +1242,8 @@ FilePath SavePackage::GetSaveDirPreference(PrefService* prefs) {
     FilePath default_save_path = prefs->GetFilePath(
         prefs::kDownloadDefaultDirectory);
     prefs->RegisterFilePathPref(prefs::kSaveFileDefaultDirectory,
-                                default_save_path);
+                                default_save_path,
+                                PrefService::UNSYNCABLE_PREF);
   }
 
   // Get the directory from preference.
