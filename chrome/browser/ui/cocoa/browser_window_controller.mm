@@ -141,7 +141,7 @@
 // and if it's set we continue to constrain the resize.
 
 
-@interface NSWindow(NSPrivateApis)
+@interface NSWindow (NSPrivateApis)
 // Note: These functions are private, use -[NSObject respondsToSelector:]
 // before calling them.
 
@@ -151,13 +151,14 @@
 
 @end
 
-// 10.7 adds public APIs for full-screen support. Provide the declaration so it
-// can be called below when building with the 10.5 SDK.
+// Provide the forward-declarations of new 10.7 SDK symbols so they can be
+// called when building with the 10.5 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 
 @interface NSWindow (LionSDKDeclarations)
 - (void)toggleFullScreen:(id)sender;
+- (void)setRestorable:(BOOL)flag;
 @end
 
 enum {
@@ -259,6 +260,13 @@ enum {
     // the resize control from being inset slightly and looking ugly.
     if ([window respondsToSelector:@selector(setBottomCornerRounded:)])
       [window setBottomCornerRounded:NO];
+
+    // Lion will attempt to automagically save and restore the UI. This
+    // functionality appears to be leaky (or at least interacts badly with our
+    // architecture) and thus BrowserWindowController never gets released. This
+    // prevents the browser from being able to quit <http://crbug.com/79113>.
+    if ([window respondsToSelector:@selector(setRestorable:)])
+      [window setRestorable:NO];
 
     // Get the most appropriate size for the window, then enforce the
     // minimum width and height. The window shim will handle flipping
