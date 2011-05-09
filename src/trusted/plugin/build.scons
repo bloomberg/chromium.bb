@@ -108,6 +108,7 @@ common_libs = [
     'nonnacl_srpc',
     'gio_wrapped_desc',
     'nrd_xfer',
+    'nacl_perf_counter',
     'nacl_base',
     'imc',
     'platform',

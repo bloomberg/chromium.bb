@@ -29,6 +29,7 @@ runner = trusted_env.ComponentProgram(
                 'gio_wrapped_desc',
                 'nonnacl_srpc',
                 'nrd_xfer',
+                'nacl_perf_counter',
                 'nacl_base',
                 'imc',
                 'container',

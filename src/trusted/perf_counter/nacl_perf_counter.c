@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -97,10 +97,24 @@ int64_t NaClPerfCounterInterval(struct NaClPerfCounter *sv,
                     sv->sample_list[lo].nacl_abi_tv_usec);
     int64_t rtn = seconds * NACL_MICROS_PER_UNIT + usec;
 
-    NaClLog(1, "NaClLogCounterInterval(%s %s:%s):%"NACL_PRId64"\n",
+    NaClLog(1, "NaClPerfCounterInterval(%s %s:%s): %"NACL_PRId64" microsecs\n",
             sv->app_name, sv->sample_names[lo], sv->sample_names[hi], rtn);
 
     return rtn;
+  }
+  return -1;
+}
+
+int64_t NaClPerfCounterIntervalLast(struct NaClPerfCounter *sv) {
+  if (NULL != sv) {
+    return NaClPerfCounterInterval(sv, sv->samples - 2, sv->samples - 1);
+  }
+  return -1;
+}
+
+int64_t NaClPerfCounterIntervalTotal(struct NaClPerfCounter *sv) {
+  if (NULL != sv) {
+    return NaClPerfCounterInterval(sv, 0, sv->samples - 1);
   }
   return -1;
 }

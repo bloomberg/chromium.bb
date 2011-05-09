@@ -30,6 +30,7 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
+#include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
@@ -187,6 +188,8 @@ int main(int  argc,
   int                           skip_qualification = 0;
   int                           enable_debug_stub = 0;
   int                           handle_signals = 0;
+  struct NaClPerfCounter        time_all_main;
+
 
   const char* sandbox_fd_string;
 
@@ -225,6 +228,8 @@ int main(int  argc,
   NaClAllModulesInit();
 
   verbosity = NaClLogGetVerbosity();
+
+  NaClPerfCounterCtor(&time_all_main, "SelMain");
 
   fflush((FILE *) NULL);
 
@@ -525,6 +530,8 @@ int main(int  argc,
       fprintf(stderr, "Cannot open \"%s\".\n", blob_library_file);
       exit(1);
     }
+    NaClPerfCounterMark(&time_all_main, "SnapshotBlob");
+    NaClPerfCounterIntervalLast(&time_all_main);
   }
 
   if (!rpc_supplies_nexe) {
@@ -535,6 +542,8 @@ int main(int  argc,
       fprintf(stderr, "Cannot open \"%s\".\n", nacl_file);
       exit(1);
     }
+    NaClPerfCounterMark(&time_all_main, "SnapshotNaclFile");
+    NaClPerfCounterIntervalLast(&time_all_main);
 
     if (LOAD_OK == errcode) {
       errcode = NaClAppLoadFile((struct Gio *) &main_file, nap, check_abi);
@@ -548,6 +557,8 @@ int main(int  argc,
                  "or a corrupt nexe file may be"
                  " responsible for this error.\n"));
       }
+      NaClPerfCounterMark(&time_all_main, "AppLoadEnd");
+      NaClPerfCounterIntervalLast(&time_all_main);
 
       NaClXMutexLock(&nap->mu);
       nap->module_load_status = errcode;
@@ -565,7 +576,6 @@ int main(int  argc,
       exit(0);
     }
   }
-
 
   NaClAppInitialDescriptorHookup(nap);
 
@@ -617,6 +627,7 @@ int main(int  argc,
       NaClSecureCommandChannel(nap);
     }
   }
+
   /*
    * May have created a thread, so need to synchronize uses of nap
    * contents henceforth.
@@ -624,6 +635,8 @@ int main(int  argc,
 
   if (rpc_supplies_nexe) {
     errcode = NaClWaitForLoadModuleStatus(nap);
+    NaClPerfCounterMark(&time_all_main, "WaitForLoad");
+    NaClPerfCounterIntervalLast(&time_all_main);
   } else {
     /**************************************************************************
      * TODO(bsy): This else block should be made unconditional and
@@ -649,11 +662,14 @@ int main(int  argc,
         nap->module_load_status = errcode;
         fprintf(stderr, "NaClAppPrepareToLaunch returned %d", errcode);
       }
+      NaClPerfCounterMark(&time_all_main, "AppPrepLaunch");
+      NaClPerfCounterIntervalLast(&time_all_main);
     }
 
     /* Give debuggers a well known point at which xlate_base is known.  */
     NaClGdbHook(&state);
   }
+
 
   if (NULL != blob_library_file) {
     if (LOAD_OK == errcode) {
@@ -663,6 +679,8 @@ int main(int  argc,
                 blob_library_file,
                 NaClErrorString(errcode));
       }
+      NaClPerfCounterMark(&time_all_main, "BlobLoaded");
+      NaClPerfCounterIntervalLast(&time_all_main);
     }
 
     if (-1 == (*((struct Gio *) &blob_file)->vtbl->Close)((struct Gio *)
@@ -747,6 +765,8 @@ int main(int  argc,
      * wait for start_module RPC call on secure channel thread.
      */
     errcode = NaClWaitForStartModuleCommand(nap);
+    NaClPerfCounterMark(&time_all_main, "WaitedForStartModuleCommand");
+    NaClPerfCounterIntervalLast(&time_all_main);
   }
 
   /*
@@ -763,6 +783,7 @@ int main(int  argc,
   if (!DynArraySet(&env_vars, env_vars.num_entries, NULL)) {
     NaClLog(LOG_FATAL, "Adding env_vars NULL terminator failed\n");
   }
+
   /*
    * only nap->ehdrs.e_entry is usable, no symbol table is
    * available.
@@ -774,9 +795,16 @@ int main(int  argc,
     fprintf(stderr, "creating main thread failed\n");
     goto done;
   }
+  NaClPerfCounterMark(&time_all_main, "CreateMainThread");
+  NaClPerfCounterIntervalLast(&time_all_main);
   DynArrayDtor(&env_vars);
 
   ret_code = NaClWaitForMainThreadToExit(nap);
+  NaClPerfCounterMark(&time_all_main, "WaitForMainThread");
+  NaClPerfCounterIntervalLast(&time_all_main);
+
+  NaClPerfCounterMark(&time_all_main, "SelMainEnd");
+  NaClPerfCounterIntervalTotal(&time_all_main);
 
   /*
    * exit_group or equiv kills any still running threads while module

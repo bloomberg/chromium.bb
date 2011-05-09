@@ -1,7 +1,6 @@
-# Copyright 2010, Google Inc.
-# Copyright 2009 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright 2011 (c) The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 {
   # ----------------------------------------------------------------------
@@ -24,5 +23,25 @@
         'nacl_perf_counter.c',
       ],
     },
+  ],
+
+  # Version for windows 64.
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'nacl_perf_counter64',
+          'type': 'static_library',
+          'sources': [
+            'nacl_perf_counter.c',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
+      ],
+    }],
   ],
 }

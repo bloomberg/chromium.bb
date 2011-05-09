@@ -16,6 +16,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_effector.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
+#include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
@@ -647,6 +648,8 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
   uint8_t                     *mapped_addr;
   int32_t                     retval = -NACL_ABI_EINVAL;
   int                         validator_result;
+  struct NaClPerfCounter      time_dyncode_create;
+  NaClPerfCounterCtor(&time_dyncode_create, "NaClTextDyncodeCreate");
 
   if (NULL == nap->text_shm) {
     NaClLog(1, "NaClTextSysDyncode_Copy: Dynamic loading not enabled\n");
@@ -684,6 +687,9 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
   if (NaClDynamicRegionCreate(nap, dest_addr, size) == 1) {
     /* target memory region is free */
     validator_result = NaClValidateCode(nap, dest, code_copy, size);
+    NaClPerfCounterMark(&time_dyncode_create,
+                        NACL_PERF_IMPORTANT_PREFIX "DynRegionValidate");
+    NaClPerfCounterIntervalLast(&time_dyncode_create);
   } else {
     /* target addr is in use */
     NaClLog(1, "NaClTextSysDyncode_Copy: Code range already allocated\n");
@@ -717,7 +723,6 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
 
  cleanup_unlock:
   NaClXMutexUnlock(&nap->dynamic_load_mutex);
-
   return retval;
 }
 

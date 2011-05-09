@@ -1,21 +1,22 @@
-#ifndef NACL_PERF_COUNTER_H
-#define NACL_PERF_COUNTER_H 1
 /*
- * Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PERF_COUNTER_NACL_PERF_COUNTER_H
+#define NATIVE_CLIENT_SRC_TRUSTED_PERF_COUNTER_NACL_PERF_COUNTER_H 1
 
 /*
  * NaCl performance counter/instrumentation code.
  */
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
 EXTERN_C_BEGIN
 
-#define NACL_MAX_PERF_COUNTER_SAMPLES  (12)
-#define NACL_MAX_PERF_COUNTER_NAME     (10)
+#define NACL_MAX_PERF_COUNTER_SAMPLES  (16)
+#define NACL_MAX_PERF_COUNTER_NAME     (20)
 struct NaClPerfCounter {
   char app_name[128]; /* name of the app being run */
 
@@ -52,6 +53,17 @@ extern int NaClPerfCounterMark(struct NaClPerfCounter *sv,
 extern int64_t NaClPerfCounterInterval(struct NaClPerfCounter *sv,
                                        uint32_t sample1,
                                        uint32_t sample2);
+
+/* Returns the time spent between the last sampling points, in microseconds */
+extern int64_t NaClPerfCounterIntervalLast(struct NaClPerfCounter *sv);
+
+/* Returns the time spent between all sampling points, in microseconds */
+extern int64_t NaClPerfCounterIntervalTotal(struct NaClPerfCounter *sv);
+
+/* Prefix for important events and app_names */
+#define NACL_PERF_IMPORTANT_PREFIX "*"
+
+
 EXTERN_C_END
 
 #endif

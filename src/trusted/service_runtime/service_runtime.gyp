@@ -1,6 +1,6 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.  Use
-# of this source code is governed by a BSD-style license that can be
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 {
@@ -178,6 +178,7 @@
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp',
         '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
+        '<(DEPTH)/native_client/src/trusted/perf_counter/perf_counter.gyp:nacl_perf_counter',
         '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service',
       ],
       'conditions': [
@@ -270,6 +271,7 @@
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
             '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp64',
             '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc64',
+            '<(DEPTH)/native_client/src/trusted/perf_counter/perf_counter.gyp:nacl_perf_counter64',
             '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service64',
             '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncopcode_utils_gen',
             '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_sfi64',

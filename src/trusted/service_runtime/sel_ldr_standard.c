@@ -22,6 +22,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_time.h"
+#include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 
@@ -112,6 +113,9 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   uintptr_t           data_end;
   uintptr_t           max_vaddr;
   struct NaClElfImage *image = NULL;
+  struct NaClPerfCounter  time_load_file;
+
+  NaClPerfCounterCtor(&time_load_file, "NaClAppLoadFile");
 
   /* NACL_MAX_ADDR_BITS < 32 */
   if (nap->addr_bits > NACL_MAX_ADDR_BITS) {
@@ -328,6 +332,9 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
           ("Replacing gap between static text and"
            " (ro)data with shareable memory\n"));
   subret = NaClMakeDynamicTextShared(nap);
+  NaClPerfCounterMark(&time_load_file,
+                      NACL_PERF_IMPORTANT_PREFIX "MakeDynText");
+  NaClPerfCounterIntervalLast(&time_load_file);
   if (LOAD_OK != subret) {
     ret = subret;
     goto done;
@@ -403,6 +410,9 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
 #if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
   NaClLog(2, "Validating image\n");
   subret = NaClValidateImage(nap);
+  NaClPerfCounterMark(&time_load_file,
+                      NACL_PERF_IMPORTANT_PREFIX "ValidateImg");
+  NaClPerfCounterIntervalLast(&time_load_file);
   if (LOAD_OK != subret) {
     ret = subret;
     goto done;
@@ -467,6 +477,9 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   ret = LOAD_OK;
 done:
   NaClElfImageDelete(image);
+
+  NaClPerfCounterMark(&time_load_file, "EndLoadFile");
+  NaClPerfCounterIntervalTotal(&time_load_file);
   return ret;
 }
 

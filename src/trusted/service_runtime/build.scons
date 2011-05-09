@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2009 The Native Client Authors.  All rights reserved.
+# Copyright 2011 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -270,6 +270,7 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
                                                       'gio_wrapped_desc',
                                                       'nonnacl_srpc',
                                                       'nrd_xfer',
+                                                      'nacl_perf_counter',
                                                       'nacl_base',
                                                       'imc',
                                                       'container',
@@ -287,6 +288,7 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
     env.ComponentProgram('nacl_ldt_unittest',
                          'nacl_ldt_unittest.c',
                          EXTRA_LIBS=['sel',
+                                     'nacl_perf_counter',
                                      'gio_wrapped_desc',
                                      'platform',
                                      'gio',
@@ -333,6 +335,7 @@ if (not env.CrossToolsBuild() and
                                                           'gio_wrapped_desc',
                                                           'nonnacl_srpc',
                                                           'nrd_xfer',
+                                                          'nacl_perf_counter',
                                                           'nacl_base',
                                                           'imc',
                                                           'platform',
@@ -349,9 +352,11 @@ if (not env.CrossToolsBuild() and
 
 
 if not env.Bit('coverage_enabled') or not env.Bit('windows'):
-  format_string_test_exe = env.ComponentProgram('format_string_test',
-                                                    ['format_string_test.c'],
-                                                    EXTRA_LIBS=['sel'])
+  format_string_test_exe = env.ComponentProgram(
+      'format_string_test',
+      ['format_string_test.c'],
+      EXTRA_LIBS=['sel',
+                  'nacl_perf_counter'])
   env.Requires(format_string_test_exe, crt)
 
   node = env.CommandTest(
@@ -380,6 +385,7 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                                                        'gio_wrapped_desc',
                                                        'nonnacl_srpc',
                                                        'nrd_xfer',
+                                                       'nacl_perf_counter',
                                                        'nacl_base',
                                                        'imc',
                                                        'platform',
@@ -411,6 +417,7 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                   'gio_wrapped_desc',
                   'nonnacl_srpc',
                   'nrd_xfer',
+                  'nacl_perf_counter',
                   'nacl_base',
                   'imc',
                   'platform',
@@ -443,6 +450,7 @@ if (not env.Bit('coverage_enabled') and
   nacl_signal_exe = env.ComponentProgram('nacl_signal_unittest',
                                          'nacl_signal_unittest.c',
                                          EXTRA_LIBS=['sel',
+                                                     'nacl_perf_counter',
                                                      'gio_wrapped_desc',
                                                      'platform',
                                                      'gio',
@@ -458,6 +466,7 @@ if env.Bit('posix'):
   test_prog = env.ComponentProgram('nacl_signal_frame_test',
                                    'nacl_signal_frame_test.c',
                                    EXTRA_LIBS=['sel',
+                                               'nacl_perf_counter',
                                                'gio_wrapped_desc',
                                                'platform',
                                                'gio',
@@ -471,6 +480,7 @@ if env.Bit('posix'):
 check_test_exe = env.ComponentProgram('nacl_check_test',
                                       ['nacl_check_test.c'],
                                       EXTRA_LIBS=['sel',
+                                                  'nacl_perf_counter',
                                                   'gio_wrapped_desc',
                                                   'platform',
                                                   'gio',
@@ -585,6 +595,7 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                                                         'gio_wrapped_desc',
                                                         'nonnacl_srpc',
                                                         'nrd_xfer',
+                                                        'nacl_perf_counter',
                                                         'nacl_base',
                                                         'imc',
                                                         'platform',
@@ -726,6 +737,7 @@ if (not env.CrossToolsBuild() and
                   'gio_wrapped_desc',
                   'nonnacl_srpc',
                   'nrd_xfer',
+                  'nacl_perf_counter',
                   'nacl_base',
                   'imc',
                   'platform',
