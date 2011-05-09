@@ -5,6 +5,7 @@
 #include "chrome/common/chrome_switches.h"
 
 #include "base/base_switches.h"
+#include "base/command_line.h"
 
 namespace switches {
 
@@ -471,9 +472,6 @@ const char kEnablePanels[]                  = "enable-panels";
 
 // Enable speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";
-
-// Enable print preview (work in progress).
-const char kEnablePrintPreview[]            = "enable-print-preview";
 
 // Enable the IsSearchProviderInstalled and InstallSearchProvider with an extra
 // parameter to indicate if the provider should be the default.
@@ -1158,6 +1156,21 @@ const char kExposePrivateExtensionApi[]   = "expose-private-extension-api";
 const char kTouchDevices[]                  = "touch-devices";
 #endif
 
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+// Disable print preview (Not exposed via about:flags. Only used for testing.)
+const char kDisablePrintPreview[]           = "disable-print-preview";
+
+bool IsPrintPreviewEnabled() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(kDisablePrintPreview);
+}
+#else
+// Enable print preview (no PDF viewer, thus not supported with Chromium).
+const char kEnablePrintPreview[]            = "enable-print-preview";
+
+bool IsPrintPreviewEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(kEnablePrintPreview);
+}
+#endif
 
 // -----------------------------------------------------------------------------
 // DO NOT ADD YOUR CRAP TO THE BOTTOM OF THIS FILE.

@@ -19,8 +19,9 @@ class PrintPreviewUITest : public UITest {
  public:
   PrintPreviewUITest() {
     dom_automation_enabled_ = true;
-    // TODO(thestig): Remove when print preview is enabled by default.
+#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
     launch_arguments_.AppendSwitch(switches::kEnablePrintPreview);
+#endif
   }
 
   void AssertIsPrintPage(TabProxy* tab) {

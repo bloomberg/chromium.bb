@@ -537,6 +537,13 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableJavaScriptI18NAPI,
     switches::kDisableLocalStorage,
     switches::kDisableLogging,
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+    // Enabled by default in Google Chrome builds, except on CrOS.
+    switches::kDisablePrintPreview,
+#else
+    // Disabled by default in Chromium builds and on CrOS.
+    switches::kEnablePrintPreview,
+#endif
     switches::kDisableSeccompSandbox,
     switches::kDisableSessionStorage,
     switches::kDisableSharedWorkers,
@@ -560,7 +567,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableP2PApi,
 #endif
     switches::kEnablePepperTesting,
-    switches::kEnablePrintPreview,
     switches::kEnableQuota,
     switches::kEnableRemoting,
     switches::kEnableResourceContentSettings,

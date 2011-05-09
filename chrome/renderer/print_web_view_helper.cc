@@ -121,8 +121,7 @@ PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
       context_menu_preview_node_(NULL),
       user_cancelled_scripted_print_count_(0),
       notify_browser_of_print_failure_(true) {
-  is_preview_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePrintPreview);
+  is_preview_ = switches::IsPrintPreviewEnabled();
 }
 
 PrintWebViewHelper::~PrintWebViewHelper() {}

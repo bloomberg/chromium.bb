@@ -210,11 +210,9 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
 #else
   if (url.host() == chrome::kChromeUISettingsHost)
     return &NewWebUI<OptionsUI>;
-  if (url.host() == chrome::kChromeUIPrintHost) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnablePrintPreview)) {
-      return &NewWebUI<PrintPreviewUI>;
-    }
+  if (url.host() == chrome::kChromeUIPrintHost &&
+      switches::IsPrintPreviewEnabled()) {
+    return &NewWebUI<PrintPreviewUI>;
   }
 #endif  // defined(OS_CHROMEOS)
 

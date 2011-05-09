@@ -150,13 +150,17 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableAccelerated2dCanvas)
   },
+#if !defined(GOOGLE_CHROME_BUILD)
+  // Only expose this for Chromium builds where users may not have the PDF
+  // plugin. Do not give Google Chrome users the option to disable it here.
   {
     "print-preview",  // FLAGS:RECORD_UMA
     IDS_FLAGS_PRINT_PREVIEW_NAME,
     IDS_FLAGS_PRINT_PREVIEW_DESCRIPTION,
-    kOsMac | kOsWin | kOsLinux, // This switch is not available in CrOS.
+    kOsMac | kOsWin | kOsLinux,  // This switch is not available in CrOS.
     SINGLE_VALUE_TYPE(switches::kEnablePrintPreview)
   },
+#endif
   {
     "enable-nacl",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ENABLE_NACL_NAME,
@@ -718,7 +722,7 @@ void FlagsState::reset() {
   flags_switches_.clear();
 }
 
-} // namespace
+}  // namespace
 
 namespace testing {
 

@@ -1351,8 +1351,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
 
     case IDC_PRINT:
       if (params_.media_type == WebContextMenuData::MediaTypeNone) {
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnablePrintPreview)) {
+        if (switches::IsPrintPreviewEnabled()) {
           printing::PrintPreviewTabController::PrintPreview(
               source_tab_contents_);
         } else {

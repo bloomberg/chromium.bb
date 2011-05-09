@@ -45,10 +45,10 @@ void CreatePrintSettingsDictionary(DictionaryValue* dict) {
 
 }  // namespace
 
-class PrintWebViewHelperTest : public RenderViewTest {
+class PrintWebViewHelperTestBase : public RenderViewTest {
  public:
-  PrintWebViewHelperTest() {}
-  ~PrintWebViewHelperTest() {}
+  PrintWebViewHelperTestBase() {}
+  ~PrintWebViewHelperTestBase() {}
 
  protected:
   // The renderer should be done calculating the number of rendered pages
@@ -91,6 +91,25 @@ class PrintWebViewHelperTest : public RenderViewTest {
 #endif  // defined(OS_CHROMEOS)
   }
 
+  DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperTestBase);
+};
+
+class PrintWebViewHelperTest : public PrintWebViewHelperTestBase {
+ public:
+  PrintWebViewHelperTest() {}
+  virtual ~PrintWebViewHelperTest() {}
+
+  virtual void SetUp() {
+    // Append the print preview switch before creating the PrintWebViewHelper.
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisablePrintPreview);
+#endif
+
+    RenderViewTest::SetUp();
+  }
+
+ protected:
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperTest);
 };
 
@@ -275,16 +294,17 @@ TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
 
 // These print preview tests do not work on Chrome OS yet.
 #if !defined(OS_CHROMEOS)
-class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTest {
+class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
  public:
   PrintWebViewHelperPreviewTest() {}
   virtual ~PrintWebViewHelperPreviewTest() {}
 
   virtual void SetUp() {
     // Append the print preview switch before creating the PrintWebViewHelper.
-    // TODO(thestig): Remove when print preview is enabled by default.
+#if !defined(GOOGLE_CHROME_BUILD)
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnablePrintPreview);
+#endif
 
     RenderViewTest::SetUp();
   }

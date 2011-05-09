@@ -1669,9 +1669,7 @@ void Browser::EmailPageLocation() {
 }
 
 void Browser::Print() {
-  UserMetrics::RecordAction(UserMetricsAction("PrintPreview"));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePrintPreview)) {
+  if (switches::IsPrintPreviewEnabled()) {
     printing::PrintPreviewTabController::PrintPreview(
         GetSelectedTabContents());
   } else {

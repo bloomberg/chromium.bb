@@ -139,7 +139,6 @@ extern const char kEnableNaCl[];
 extern const char kEnableNaClDebug[];
 extern const char kEnablePanels[];
 extern const char kEnablePreconnect[];
-extern const char kEnablePrintPreview[];
 extern const char kEnableRemoting[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSearchProviderApiV2[];
@@ -347,6 +346,14 @@ extern const char kExposePrivateExtensionApi[];
 #if defined(HAVE_XINPUT2)
 extern const char kTouchDevices[];
 #endif
+
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+extern const char kDisablePrintPreview[];
+#else
+extern const char kEnablePrintPreview[];
+#endif
+
+bool IsPrintPreviewEnabled();
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
