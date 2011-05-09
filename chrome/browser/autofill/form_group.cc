@@ -12,8 +12,8 @@ const string16 FormGroup::Label() const { return string16(); }
 
 bool FormGroup::operator!=(const FormGroup& form_group) const {
   FieldTypeSet a, b, symmetric_difference;
-  GetAvailableFieldTypes(&a);
-  form_group.GetAvailableFieldTypes(&b);
+  GetNonEmptyTypes(&a);
+  form_group.GetNonEmptyTypes(&b);
   std::set_symmetric_difference(
       a.begin(), a.end(),
       b.begin(), b.end(),
@@ -27,7 +27,7 @@ bool FormGroup::operator!=(const FormGroup& form_group) const {
 
 bool FormGroup::IsSubsetOf(const FormGroup& form_group) const {
   FieldTypeSet types;
-  GetAvailableFieldTypes(&types);
+  GetNonEmptyTypes(&types);
 
   for (FieldTypeSet::const_iterator iter = types.begin(); iter != types.end();
        ++iter) {
@@ -42,8 +42,8 @@ bool FormGroup::IsSubsetOf(const FormGroup& form_group) const {
 bool FormGroup::IntersectionOfTypesHasEqualValues(
     const FormGroup& form_group) const {
   FieldTypeSet a, b, intersection;
-  GetAvailableFieldTypes(&a);
-  form_group.GetAvailableFieldTypes(&b);
+  GetNonEmptyTypes(&a);
+  form_group.GetNonEmptyTypes(&b);
   std::set_intersection(a.begin(), a.end(),
                         b.begin(), b.end(),
                         std::inserter(intersection, intersection.begin()));
@@ -64,8 +64,8 @@ bool FormGroup::IntersectionOfTypesHasEqualValues(
 
 void FormGroup::MergeWith(const FormGroup& form_group) {
   FieldTypeSet a, b, intersection;
-  GetAvailableFieldTypes(&a);
-  form_group.GetAvailableFieldTypes(&b);
+  GetNonEmptyTypes(&a);
+  form_group.GetNonEmptyTypes(&b);
   std::set_difference(b.begin(), b.end(),
                       a.begin(), a.end(),
                       std::inserter(intersection, intersection.begin()));
@@ -78,7 +78,7 @@ void FormGroup::MergeWith(const FormGroup& form_group) {
 
 void FormGroup::OverwriteWith(const FormGroup& form_group) {
   FieldTypeSet a;;
-  form_group.GetAvailableFieldTypes(&a);
+  form_group.GetNonEmptyTypes(&a);
 
   for (FieldTypeSet::const_iterator iter = a.begin(); iter != a.end(); ++iter) {
     SetInfo(*iter, form_group.GetInfo(*iter));

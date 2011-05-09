@@ -90,11 +90,10 @@ TEST(AddressTest, IsCountry) {
   };
   for (size_t i = 0; i < arraysize(kValidMatches); ++i) {
     SCOPED_TRACE(kValidMatches[i]);
-    FieldTypeSet possible_field_types;
-    address.GetPossibleFieldTypes(ASCIIToUTF16(kValidMatches[i]),
-                                  &possible_field_types);
-    ASSERT_EQ(1U, possible_field_types.size());
-    EXPECT_EQ(ADDRESS_HOME_COUNTRY, *possible_field_types.begin());
+    FieldTypeSet matching_types;
+    address.GetMatchingTypes(ASCIIToUTF16(kValidMatches[i]), &matching_types);
+    ASSERT_EQ(1U, matching_types.size());
+    EXPECT_EQ(ADDRESS_HOME_COUNTRY, *matching_types.begin());
   }
 
   const char* const kInvalidMatches[] = {
@@ -102,17 +101,15 @@ TEST(AddressTest, IsCountry) {
     "Garbage"
   };
   for (size_t i = 0; i < arraysize(kInvalidMatches); ++i) {
-    FieldTypeSet possible_field_types;
-    address.GetPossibleFieldTypes(ASCIIToUTF16(kInvalidMatches[i]),
-                                  &possible_field_types);
-    EXPECT_EQ(0U, possible_field_types.size());
+    FieldTypeSet matching_types;
+    address.GetMatchingTypes(ASCIIToUTF16(kInvalidMatches[i]), &matching_types);
+    EXPECT_EQ(0U, matching_types.size());
   }
 
   // Make sure that garbage values don't match when the country code is empty.
   address.set_country_code("");
   EXPECT_EQ(std::string(), address.country_code());
-  FieldTypeSet possible_field_types;
-  address.GetPossibleFieldTypes(ASCIIToUTF16("Garbage"),
-                                &possible_field_types);
-  EXPECT_EQ(0U, possible_field_types.size());
+  FieldTypeSet matching_types;
+  address.GetMatchingTypes(ASCIIToUTF16("Garbage"), &matching_types);
+  EXPECT_EQ(0U, matching_types.size());
 }

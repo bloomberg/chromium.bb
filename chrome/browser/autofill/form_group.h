@@ -21,13 +21,13 @@ class FormGroup {
 
   // Used to determine the type of a field based on the text that a user enters
   // into the field. The field types can then be reported back to the server.
-  // This method is additive on |possible_types|.
-  virtual void GetPossibleFieldTypes(const string16& text,
-                                     FieldTypeSet* possible_types) const = 0;
+  // This method is additive on |matching_types|.
+  virtual void GetMatchingTypes(const string16& text,
+                                FieldTypeSet* matching_types) const = 0;
 
   // Returns a set of AutofillFieldTypes for which this FormGroup has non-empty
   // data.
-  virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const = 0;
+  virtual void GetNonEmptyTypes(FieldTypeSet* non_empty_types) const = 0;
 
   // Returns the string that should be auto-filled into a text field given the
   // type of that field.

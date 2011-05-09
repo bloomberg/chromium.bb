@@ -53,9 +53,9 @@ Address& Address::operator=(const Address& address) {
   return *this;
 }
 
-void Address::GetPossibleFieldTypes(const string16& text,
-                                    FieldTypeSet* possible_types) const {
-  DCHECK(possible_types);
+void Address::GetMatchingTypes(const string16& text,
+                               FieldTypeSet* matching_types) const {
+  DCHECK(matching_types);
 
   // If the text to match against the field types is empty, then no results will
   // match.
@@ -63,44 +63,44 @@ void Address::GetPossibleFieldTypes(const string16& text,
     return;
 
   if (IsLine1(text))
-    possible_types->insert(ADDRESS_HOME_LINE1);
+    matching_types->insert(ADDRESS_HOME_LINE1);
 
   if (IsLine2(text))
-    possible_types->insert(ADDRESS_HOME_LINE2);
+    matching_types->insert(ADDRESS_HOME_LINE2);
 
   if (IsCity(text))
-    possible_types->insert(ADDRESS_HOME_CITY);
+    matching_types->insert(ADDRESS_HOME_CITY);
 
   if (IsState(text))
-    possible_types->insert(ADDRESS_HOME_STATE);
+    matching_types->insert(ADDRESS_HOME_STATE);
 
   if (IsZipCode(text))
-    possible_types->insert(ADDRESS_HOME_ZIP);
+    matching_types->insert(ADDRESS_HOME_ZIP);
 
   if (IsCountry(text))
-    possible_types->insert(ADDRESS_HOME_COUNTRY);
+    matching_types->insert(ADDRESS_HOME_COUNTRY);
 }
 
-void Address::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
-  DCHECK(available_types);
+void Address::GetNonEmptyTypes(FieldTypeSet* non_empty_types) const {
+  DCHECK(non_empty_types);
 
   if (!line1_.empty())
-    available_types->insert(ADDRESS_HOME_LINE1);
+    non_empty_types->insert(ADDRESS_HOME_LINE1);
 
   if (!line2_.empty())
-    available_types->insert(ADDRESS_HOME_LINE2);
+    non_empty_types->insert(ADDRESS_HOME_LINE2);
 
   if (!city_.empty())
-    available_types->insert(ADDRESS_HOME_CITY);
+    non_empty_types->insert(ADDRESS_HOME_CITY);
 
   if (!state_.empty())
-    available_types->insert(ADDRESS_HOME_STATE);
+    non_empty_types->insert(ADDRESS_HOME_STATE);
 
   if (!zip_code_.empty())
-    available_types->insert(ADDRESS_HOME_ZIP);
+    non_empty_types->insert(ADDRESS_HOME_ZIP);
 
   if (!country_code_.empty())
-    available_types->insert(ADDRESS_HOME_COUNTRY);
+    non_empty_types->insert(ADDRESS_HOME_COUNTRY);
 }
 
 string16 Address::GetInfo(AutofillFieldType type) const {

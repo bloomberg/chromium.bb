@@ -565,12 +565,11 @@ CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
   return NULL;
 }
 
-void PersonalDataManager::GetPossibleFieldTypes(
-    const string16& text,
-    FieldTypeSet* possible_types) const {
+void PersonalDataManager::GetMatchingTypes(const string16& text,
+                                           FieldTypeSet* matching_types) const {
   string16 clean_info = StringToLowerASCII(CollapseWhitespace(text, false));
   if (clean_info.empty()) {
-    possible_types->insert(EMPTY_TYPE);
+    matching_types->insert(EMPTY_TYPE);
     return;
   }
 
@@ -583,7 +582,7 @@ void PersonalDataManager::GetPossibleFieldTypes(
       continue;
     }
 
-    profile->GetPossibleFieldTypes(clean_info, possible_types);
+    profile->GetMatchingTypes(clean_info, matching_types);
   }
 
   for (ScopedVector<CreditCard>::const_iterator iter = credit_cards_.begin();
@@ -594,24 +593,24 @@ void PersonalDataManager::GetPossibleFieldTypes(
       continue;
     }
 
-    credit_card->GetPossibleFieldTypes(clean_info, possible_types);
+    credit_card->GetMatchingTypes(clean_info, matching_types);
   }
 
-  if (possible_types->empty())
-    possible_types->insert(UNKNOWN_TYPE);
+  if (matching_types->empty())
+    matching_types->insert(UNKNOWN_TYPE);
 }
 
-void PersonalDataManager::GetAvailableFieldTypes(
-    FieldTypeSet* available_types) const {
+void PersonalDataManager::GetNonEmptyTypes(
+    FieldTypeSet* non_empty_types) const {
   const std::vector<AutofillProfile*>& profiles = this->profiles();
   for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
-    (*iter)->GetAvailableFieldTypes(available_types);
+    (*iter)->GetNonEmptyTypes(non_empty_types);
   }
 
   for (ScopedVector<CreditCard>::const_iterator iter = credit_cards_.begin();
        iter != credit_cards_.end(); ++iter) {
-    (*iter)->GetAvailableFieldTypes(available_types);
+    (*iter)->GetNonEmptyTypes(non_empty_types);
   }
 }
 

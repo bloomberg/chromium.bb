@@ -213,19 +213,18 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   return *this;
 }
 
-void AutofillProfile::GetPossibleFieldTypes(
-    const string16& text,
-    FieldTypeSet* possible_types) const {
+void AutofillProfile::GetMatchingTypes(const string16& text,
+                                       FieldTypeSet* matching_types) const {
   FormGroupList info = FormGroups();
   for (FormGroupList::const_iterator it = info.begin(); it != info.end(); ++it)
-    (*it)->GetPossibleFieldTypes(text, possible_types);
+    (*it)->GetMatchingTypes(text, matching_types);
 }
 
-void AutofillProfile::GetAvailableFieldTypes(
-    FieldTypeSet* available_types) const {
+void AutofillProfile::GetNonEmptyTypes(
+    FieldTypeSet* non_empty_types) const {
   FormGroupList info = FormGroups();
   for (FormGroupList::const_iterator it = info.begin(); it != info.end(); ++it)
-    (*it)->GetAvailableFieldTypes(available_types);
+    (*it)->GetNonEmptyTypes(non_empty_types);
 }
 
 string16 AutofillProfile::GetInfo(AutofillFieldType type) const {
@@ -378,7 +377,7 @@ void AutofillProfile::CreateInferredLabels(
 
 bool AutofillProfile::IsEmpty() const {
   FieldTypeSet types;
-  GetAvailableFieldTypes(&types);
+  GetNonEmptyTypes(&types);
   return types.empty();
 }
 
@@ -466,7 +465,7 @@ const string16 AutofillProfile::PrimaryValue() const {
 
 void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {
   FieldTypeSet field_types;
-  profile.GetAvailableFieldTypes(&field_types);
+  profile.GetNonEmptyTypes(&field_types);
 
   // Only transfer "full" types (e.g. full name) and not fragments (e.g.
   // first name, last name).

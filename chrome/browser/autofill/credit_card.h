@@ -25,9 +25,9 @@ class CreditCard : public FormGroup {
   virtual ~CreditCard();
 
   // FormGroup implementation:
-  virtual void GetPossibleFieldTypes(const string16& text,
-                                     FieldTypeSet* possible_types) const;
-  virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
+  virtual void GetMatchingTypes(const string16& text,
+                                FieldTypeSet* matching_types) const;
+  virtual void GetNonEmptyTypes(FieldTypeSet* non_empty_types) const;
   virtual string16 GetInfo(AutofillFieldType type) const;
   virtual void SetInfo(AutofillFieldType type, const string16& value);
   // Credit card preview summary, for example: ******1234, Exp: 01/2020

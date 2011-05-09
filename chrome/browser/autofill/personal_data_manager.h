@@ -120,11 +120,11 @@ class PersonalDataManager
 
   // Gets the possible field types for the given text, determined by matching
   // the text with all known personal information and returning matching types.
-  void GetPossibleFieldTypes(const string16& text,
-                             FieldTypeSet* possible_types) const;
+  void GetMatchingTypes(const string16& text,
+                        FieldTypeSet* matching_types) const;
 
   // Gets the field types availabe in the stored address and credit card data.
-  void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
+  void GetNonEmptyTypes(FieldTypeSet* non_empty_types) const;
 
   // Returns true if the credit card information is stored with a password.
   bool HasPassword();

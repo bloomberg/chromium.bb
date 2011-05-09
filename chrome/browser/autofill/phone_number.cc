@@ -50,46 +50,46 @@ PhoneNumber& PhoneNumber::operator=(const PhoneNumber& number) {
   return *this;
 }
 
-void PhoneNumber::GetPossibleFieldTypes(const string16& text,
-                                        FieldTypeSet* possible_types) const {
+void PhoneNumber::GetMatchingTypes(const string16& text,
+                                   FieldTypeSet* matching_types) const {
   string16 stripped_text(text);
   StripPunctuation(&stripped_text);
   if (!Validate(stripped_text))
     return;
 
   if (IsNumber(stripped_text))
-    possible_types->insert(GetNumberType());
+    matching_types->insert(GetNumberType());
 
   if (IsCityCode(stripped_text))
-    possible_types->insert(GetCityCodeType());
+    matching_types->insert(GetCityCodeType());
 
   if (IsCountryCode(stripped_text))
-    possible_types->insert(GetCountryCodeType());
+    matching_types->insert(GetCountryCodeType());
 
   if (IsCityAndNumber(stripped_text))
-    possible_types->insert(GetCityAndNumberType());
+    matching_types->insert(GetCityAndNumberType());
 
   if (IsWholeNumber(stripped_text))
-    possible_types->insert(GetWholeNumberType());
+    matching_types->insert(GetWholeNumberType());
 }
 
-void PhoneNumber::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
-  DCHECK(available_types);
+void PhoneNumber::GetNonEmptyTypes(FieldTypeSet* non_empty_typess) const {
+  DCHECK(non_empty_typess);
 
   if (!number().empty())
-    available_types->insert(GetNumberType());
+    non_empty_typess->insert(GetNumberType());
 
   if (!city_code().empty())
-    available_types->insert(GetCityCodeType());
+    non_empty_typess->insert(GetCityCodeType());
 
   if (!country_code().empty())
-    available_types->insert(GetCountryCodeType());
+    non_empty_typess->insert(GetCountryCodeType());
 
   if (!CityAndNumber().empty())
-    available_types->insert(GetCityAndNumberType());
+    non_empty_typess->insert(GetCityAndNumberType());
 
   if (!WholeNumber().empty())
-    available_types->insert(GetWholeNumberType());
+    non_empty_typess->insert(GetWholeNumberType());
 }
 
 string16 PhoneNumber::GetInfo(AutofillFieldType type) const {

@@ -47,43 +47,43 @@ NameInfo& NameInfo::operator=(const NameInfo& info) {
   return *this;
 }
 
-void NameInfo::GetPossibleFieldTypes(const string16& text,
-                                        FieldTypeSet* possible_types) const {
-  DCHECK(possible_types);
+void NameInfo::GetMatchingTypes(const string16& text,
+                                FieldTypeSet* matching_types) const {
+  DCHECK(matching_types);
 
   if (IsFirstName(text))
-    possible_types->insert(NAME_FIRST);
+    matching_types->insert(NAME_FIRST);
 
   if (IsMiddleName(text))
-    possible_types->insert(NAME_MIDDLE);
+    matching_types->insert(NAME_MIDDLE);
 
   if (IsLastName(text))
-    possible_types->insert(NAME_LAST);
+    matching_types->insert(NAME_LAST);
 
   if (IsMiddleInitial(text))
-    possible_types->insert(NAME_MIDDLE_INITIAL);
+    matching_types->insert(NAME_MIDDLE_INITIAL);
 
   if (IsFullName(text))
-    possible_types->insert(NAME_FULL);
+    matching_types->insert(NAME_FULL);
 }
 
-void NameInfo::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
-  DCHECK(available_types);
+void NameInfo::GetNonEmptyTypes(FieldTypeSet* non_empty_types) const {
+  DCHECK(non_empty_types);
 
   if (!first().empty())
-    available_types->insert(NAME_FIRST);
+    non_empty_types->insert(NAME_FIRST);
 
   if (!middle().empty())
-    available_types->insert(NAME_MIDDLE);
+    non_empty_types->insert(NAME_MIDDLE);
 
   if (!last().empty())
-    available_types->insert(NAME_LAST);
+    non_empty_types->insert(NAME_LAST);
 
   if (!MiddleInitial().empty())
-    available_types->insert(NAME_MIDDLE_INITIAL);
+    non_empty_types->insert(NAME_MIDDLE_INITIAL);
 
   if (!FullName().empty())
-    available_types->insert(NAME_FULL);
+    non_empty_types->insert(NAME_FULL);
 }
 
 string16 NameInfo::GetInfo(AutofillFieldType type) const {
@@ -341,18 +341,18 @@ EmailInfo& EmailInfo::operator=(const EmailInfo& info) {
   return *this;
 }
 
-void EmailInfo::GetPossibleFieldTypes(const string16& text,
-                                      FieldTypeSet* possible_types) const {
-  DCHECK(possible_types);
+void EmailInfo::GetMatchingTypes(const string16& text,
+                                 FieldTypeSet* matching_types) const {
+  DCHECK(matching_types);
   // TODO(isherman): Investigate case-insensitive comparison.
   if (email_ == text)
-    possible_types->insert(EMAIL_ADDRESS);
+    matching_types->insert(EMAIL_ADDRESS);
 }
 
-void EmailInfo::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
-  DCHECK(available_types);
+void EmailInfo::GetNonEmptyTypes(FieldTypeSet* non_empty_types) const {
+  DCHECK(non_empty_types);
   if (!email_.empty())
-    available_types->insert(EMAIL_ADDRESS);
+    non_empty_types->insert(EMAIL_ADDRESS);
 }
 
 string16 EmailInfo::GetInfo(AutofillFieldType type) const {
@@ -383,19 +383,19 @@ CompanyInfo& CompanyInfo::operator=(const CompanyInfo& info) {
   return *this;
 }
 
-void CompanyInfo::GetPossibleFieldTypes(const string16& text,
-                                        FieldTypeSet* possible_types) const {
-  DCHECK(possible_types);
+void CompanyInfo::GetMatchingTypes(const string16& text,
+                                   FieldTypeSet* matching_types) const {
+  DCHECK(matching_types);
 
   if (company_name_ == text)
-    possible_types->insert(COMPANY_NAME);
+    matching_types->insert(COMPANY_NAME);
 }
 
-void CompanyInfo::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
-  DCHECK(available_types);
+void CompanyInfo::GetNonEmptyTypes(FieldTypeSet* non_empty_types) const {
+  DCHECK(non_empty_types);
 
   if (!company_name_.empty())
-    available_types->insert(COMPANY_NAME);
+    non_empty_types->insert(COMPANY_NAME);
 }
 
 string16 CompanyInfo::GetInfo(AutofillFieldType type) const {

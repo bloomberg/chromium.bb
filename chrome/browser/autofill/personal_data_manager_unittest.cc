@@ -1783,16 +1783,16 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
 }
 
-TEST_F(PersonalDataManagerTest, GetAvailableFieldTypes) {
+TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   // Wait for the web database to be loaded.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
   // Check that there are no available types with no profiles stored.
-  FieldTypeSet available_types;
-  personal_data_->GetAvailableFieldTypes(&available_types);
-  EXPECT_EQ(0U, available_types.size());
+  FieldTypeSet non_empty_types;
+  personal_data_->GetNonEmptyTypes(&non_empty_types);
+  EXPECT_EQ(0U, non_empty_types.size());
 
   // Test with one profile stored.
   AutofillProfile profile0;
@@ -1805,21 +1805,21 @@ TEST_F(PersonalDataManagerTest, GetAvailableFieldTypes) {
   profiles.push_back(profile0);
   personal_data_->SetProfiles(&profiles);
 
-  personal_data_->GetAvailableFieldTypes(&available_types);
-  EXPECT_EQ(13U, available_types.size());
-  EXPECT_TRUE(available_types.count(NAME_FIRST));
-  EXPECT_TRUE(available_types.count(NAME_LAST));
-  EXPECT_TRUE(available_types.count(NAME_FULL));
-  EXPECT_TRUE(available_types.count(EMAIL_ADDRESS));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_LINE1));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_CITY));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_STATE));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_ZIP));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_COUNTRY));
-  EXPECT_TRUE(available_types.count(PHONE_HOME_NUMBER));
-  EXPECT_TRUE(available_types.count(PHONE_HOME_CITY_CODE));
-  EXPECT_TRUE(available_types.count(PHONE_HOME_CITY_AND_NUMBER));
-  EXPECT_TRUE(available_types.count(PHONE_HOME_WHOLE_NUMBER));
+  personal_data_->GetNonEmptyTypes(&non_empty_types);
+  EXPECT_EQ(13U, non_empty_types.size());
+  EXPECT_TRUE(non_empty_types.count(NAME_FIRST));
+  EXPECT_TRUE(non_empty_types.count(NAME_LAST));
+  EXPECT_TRUE(non_empty_types.count(NAME_FULL));
+  EXPECT_TRUE(non_empty_types.count(EMAIL_ADDRESS));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_LINE1));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_CITY));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_STATE));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_ZIP));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_COUNTRY));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_CITY_CODE));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_CITY_AND_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_WHOLE_NUMBER));
 
   // Test with multiple profiles stored.
   AutofillProfile profile1;
@@ -1838,31 +1838,31 @@ TEST_F(PersonalDataManagerTest, GetAvailableFieldTypes) {
   profiles.push_back(profile2);
   personal_data_->SetProfiles(&profiles);
 
-  personal_data_->GetAvailableFieldTypes(&available_types);
-  EXPECT_EQ(23U, available_types.size());
-  EXPECT_TRUE(available_types.count(NAME_FIRST));
-  EXPECT_TRUE(available_types.count(NAME_MIDDLE));
-  EXPECT_TRUE(available_types.count(NAME_MIDDLE_INITIAL));
-  EXPECT_TRUE(available_types.count(NAME_LAST));
-  EXPECT_TRUE(available_types.count(NAME_FULL));
-  EXPECT_TRUE(available_types.count(EMAIL_ADDRESS));
-  EXPECT_TRUE(available_types.count(COMPANY_NAME));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_LINE1));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_LINE2));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_CITY));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_STATE));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_ZIP));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_COUNTRY));
-  EXPECT_TRUE(available_types.count(PHONE_HOME_NUMBER));
-  EXPECT_TRUE(available_types.count(PHONE_HOME_CITY_CODE));
-  EXPECT_TRUE(available_types.count(PHONE_HOME_COUNTRY_CODE));
-  EXPECT_TRUE(available_types.count(PHONE_HOME_CITY_AND_NUMBER));
-  EXPECT_TRUE(available_types.count(PHONE_HOME_WHOLE_NUMBER));
-  EXPECT_TRUE(available_types.count(PHONE_FAX_NUMBER));
-  EXPECT_TRUE(available_types.count(PHONE_FAX_CITY_CODE));
-  EXPECT_TRUE(available_types.count(PHONE_FAX_COUNTRY_CODE));
-  EXPECT_TRUE(available_types.count(PHONE_FAX_CITY_AND_NUMBER));
-  EXPECT_TRUE(available_types.count(PHONE_FAX_WHOLE_NUMBER));
+  personal_data_->GetNonEmptyTypes(&non_empty_types);
+  EXPECT_EQ(23U, non_empty_types.size());
+  EXPECT_TRUE(non_empty_types.count(NAME_FIRST));
+  EXPECT_TRUE(non_empty_types.count(NAME_MIDDLE));
+  EXPECT_TRUE(non_empty_types.count(NAME_MIDDLE_INITIAL));
+  EXPECT_TRUE(non_empty_types.count(NAME_LAST));
+  EXPECT_TRUE(non_empty_types.count(NAME_FULL));
+  EXPECT_TRUE(non_empty_types.count(EMAIL_ADDRESS));
+  EXPECT_TRUE(non_empty_types.count(COMPANY_NAME));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_LINE1));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_LINE2));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_CITY));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_STATE));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_ZIP));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_COUNTRY));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_CITY_CODE));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_COUNTRY_CODE));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_CITY_AND_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(PHONE_FAX_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(PHONE_FAX_CITY_CODE));
+  EXPECT_TRUE(non_empty_types.count(PHONE_FAX_COUNTRY_CODE));
+  EXPECT_TRUE(non_empty_types.count(PHONE_FAX_CITY_AND_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(PHONE_FAX_WHOLE_NUMBER));
 
   // Test with credit card information also stored.
   CreditCard credit_card;
@@ -1874,36 +1874,36 @@ TEST_F(PersonalDataManagerTest, GetAvailableFieldTypes) {
   credit_cards.push_back(credit_card);
   personal_data_->SetCreditCards(&credit_cards);
 
-  personal_data_->GetAvailableFieldTypes(&available_types);
-  EXPECT_EQ(30U, available_types.size());
-  EXPECT_TRUE(available_types.count(NAME_FIRST));
-  EXPECT_TRUE(available_types.count(NAME_MIDDLE));
-  EXPECT_TRUE(available_types.count(NAME_MIDDLE_INITIAL));
-  EXPECT_TRUE(available_types.count(NAME_LAST));
-  EXPECT_TRUE(available_types.count(NAME_FULL));
-  EXPECT_TRUE(available_types.count(EMAIL_ADDRESS));
-  EXPECT_TRUE(available_types.count(COMPANY_NAME));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_LINE1));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_LINE2));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_CITY));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_STATE));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_ZIP));
-  EXPECT_TRUE(available_types.count(ADDRESS_HOME_COUNTRY));
-  EXPECT_TRUE(available_types.count(PHONE_HOME_NUMBER));
-  EXPECT_TRUE(available_types.count(PHONE_HOME_CITY_CODE));
-  EXPECT_TRUE(available_types.count(PHONE_HOME_COUNTRY_CODE));
-  EXPECT_TRUE(available_types.count(PHONE_HOME_CITY_AND_NUMBER));
-  EXPECT_TRUE(available_types.count(PHONE_HOME_WHOLE_NUMBER));
-  EXPECT_TRUE(available_types.count(PHONE_FAX_NUMBER));
-  EXPECT_TRUE(available_types.count(PHONE_FAX_CITY_CODE));
-  EXPECT_TRUE(available_types.count(PHONE_FAX_COUNTRY_CODE));
-  EXPECT_TRUE(available_types.count(PHONE_FAX_CITY_AND_NUMBER));
-  EXPECT_TRUE(available_types.count(PHONE_FAX_WHOLE_NUMBER));
-  EXPECT_TRUE(available_types.count(CREDIT_CARD_NAME));
-  EXPECT_TRUE(available_types.count(CREDIT_CARD_NUMBER));
-  EXPECT_TRUE(available_types.count(CREDIT_CARD_EXP_MONTH));
-  EXPECT_TRUE(available_types.count(CREDIT_CARD_EXP_2_DIGIT_YEAR));
-  EXPECT_TRUE(available_types.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-  EXPECT_TRUE(available_types.count(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR));
-  EXPECT_TRUE(available_types.count(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR));
+  personal_data_->GetNonEmptyTypes(&non_empty_types);
+  EXPECT_EQ(30U, non_empty_types.size());
+  EXPECT_TRUE(non_empty_types.count(NAME_FIRST));
+  EXPECT_TRUE(non_empty_types.count(NAME_MIDDLE));
+  EXPECT_TRUE(non_empty_types.count(NAME_MIDDLE_INITIAL));
+  EXPECT_TRUE(non_empty_types.count(NAME_LAST));
+  EXPECT_TRUE(non_empty_types.count(NAME_FULL));
+  EXPECT_TRUE(non_empty_types.count(EMAIL_ADDRESS));
+  EXPECT_TRUE(non_empty_types.count(COMPANY_NAME));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_LINE1));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_LINE2));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_CITY));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_STATE));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_ZIP));
+  EXPECT_TRUE(non_empty_types.count(ADDRESS_HOME_COUNTRY));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_CITY_CODE));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_COUNTRY_CODE));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_CITY_AND_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(PHONE_FAX_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(PHONE_FAX_CITY_CODE));
+  EXPECT_TRUE(non_empty_types.count(PHONE_FAX_COUNTRY_CODE));
+  EXPECT_TRUE(non_empty_types.count(PHONE_FAX_CITY_AND_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(PHONE_FAX_WHOLE_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_NAME));
+  EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_NUMBER));
+  EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_EXP_MONTH));
+  EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_EXP_2_DIGIT_YEAR));
+  EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR));
+  EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR));
 }

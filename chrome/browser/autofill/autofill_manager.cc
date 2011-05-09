@@ -633,7 +633,7 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
   for (size_t i = 0; i < submitted_form->field_count(); i++) {
     const AutofillField* field = submitted_form->field(i);
     FieldTypeSet field_types;
-    personal_data_->GetPossibleFieldTypes(field->value, &field_types);
+    personal_data_->GetMatchingTypes(field->value, &field_types);
 
     DCHECK(!field_types.empty());
     submitted_form->set_possible_types(i, field_types);
@@ -671,11 +671,11 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
       was_autofilled = true;
   }
 
-  FieldTypeSet available_types;
-  personal_data_->GetAvailableFieldTypes(&available_types);
+  FieldTypeSet non_empty_types;
+  personal_data_->GetNonEmptyTypes(&non_empty_types);
 
   download_manager_.StartUploadRequest(submitted_form, was_autofilled,
-                                       available_types);
+                                       non_empty_types);
 }
 
 void AutofillManager::Reset() {
