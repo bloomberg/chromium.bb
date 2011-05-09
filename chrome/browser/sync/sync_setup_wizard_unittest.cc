@@ -351,24 +351,6 @@ TEST_F(SyncSetupWizardTest, DISABLED_EnterPassphraseRequired) {
 #endif
 }
 
-TEST_F(SyncSetupWizardTest, DISABLED_PassphraseMigration) {
-  SKIP_TEST_ON_MACOSX();
-  wizard_->Step(SyncSetupWizard::PASSPHRASE_MIGRATION);
-#if 0
-  ListValue value;
-  value.Append(new StringValue("{\"option\":\"explicit\","
-                               "\"passphrase\":\"myPassphrase\"}"));
-  test_window_->flow()->flow_handler_->HandleFirstPassphrase(&value);
-  EXPECT_EQ("myPassphrase", service_->passphrase_);
-
-  ListValue value2;
-  value2.Append(new StringValue("{\"option\":\"nothanks\","
-                                "\"passphrase\":\"myPassphrase\"}"));
-  test_window_->flow()->flow_handler_->HandleFirstPassphrase(&value2);
-  EXPECT_EQ(service_->chosen_data_types_.count(syncable::PASSWORDS), 0U);
-#endif
-}
-
 TEST_F(SyncSetupWizardTest, DISABLED_DialogCancelled) {
   SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);

@@ -69,7 +69,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
                                        const std::string& cros_user)
     : last_auth_error_(AuthError::None()),
       passphrase_required_reason_(sync_api::REASON_PASSPHRASE_NOT_REQUIRED),
-      passphrase_migration_in_progress_(false),
       factory_(factory),
       profile_(profile),
       cros_user_(cros_user),
@@ -720,9 +719,11 @@ void ProfileSyncService::ShowErrorUI() {
     if (IsUsingSecondaryPassphrase())
       PromptForExistingPassphrase();
     else
-      SigninForPassphraseMigration();
+      NOTREACHED();  // Migration no longer supported.
+
     return;
   }
+
   const GoogleServiceAuthError& error = GetAuthError();
   if (error.state() == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
       error.state() == GoogleServiceAuthError::CAPTCHA_REQUIRED ||
@@ -753,11 +754,6 @@ void ProfileSyncService::PromptForExistingPassphrase() {
   }
 
   wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
-}
-
-void ProfileSyncService::SigninForPassphraseMigration() {
-  passphrase_migration_in_progress_ = true;
-  ShowLoginDialog();
 }
 
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {
@@ -1245,15 +1241,6 @@ void ProfileSyncService::Observe(NotificationType type,
       // becomes a no-op.
       tried_implicit_gaia_remove_when_bug_62103_fixed_ = true;
       SetPassphrase(successful->password, false, true);
-
-      // If this signin was to initiate a passphrase migration (on the
-      // first computer, thus not for decryption), continue the migration.
-      if (passphrase_migration_in_progress_ &&
-          !IsPassphraseRequiredForDecryption()) {
-        wizard_.Step(SyncSetupWizard::PASSPHRASE_MIGRATION);
-        passphrase_migration_in_progress_ = false;
-      }
-
       break;
     }
     case NotificationType::GOOGLE_SIGNIN_FAILED: {

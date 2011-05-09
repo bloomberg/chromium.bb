@@ -78,8 +78,7 @@ SyncSetupWizard::State SyncSetupWizard::GetEndStateForDiscreteRun(
     result = GAIA_SUCCESS;
   } else if (start_state == ENTER_PASSPHRASE ||
              start_state == SYNC_EVERYTHING ||
-             start_state == CONFIGURE ||
-             start_state == PASSPHRASE_MIGRATION) {
+             start_state == CONFIGURE) {
     result = DONE;
   }
   DCHECK_NE(FATAL_ERROR, result) <<

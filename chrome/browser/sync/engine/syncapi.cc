@@ -1989,6 +1989,8 @@ void SyncManager::SyncInternal::SetPassphrase(
     // TODO(tim): If this is the first time the user has entered a passphrase
     // since the protocol changed to store passphrase preferences in the cloud,
     // make sure we update this preference. See bug 62103.
+    // TODO(jhawkins): Verify that this logic may be removed now that the
+    // migration is no longer supported.
     if (is_explicit)
       SetUsingExplicitPassphrasePrefForMigration(&trans);
 

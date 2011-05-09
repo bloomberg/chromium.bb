@@ -4,7 +4,7 @@
 <script type="text/javascript">
   function hideAllPages() {
     var pages = ['login', 'configure', 'passphrase',
-                 'settingup', 'done', 'firstpassphrase'];
+                 'settingup', 'done'];
     for (var i = 0; i < pages.length; ++i) {
       document.getElementById(pages[i]).style.display = 'none';
       document.getElementById(pages[i]).tabIndex = -1;
@@ -22,7 +22,6 @@
   function showPassphrase() { showPage('passphrase'); }
   function showSettingUp() { showPage('settingup'); }
   function showSetupDone() { showPage('done'); }
-  function showFirstPassphrase() { showPage('firstpassphrase'); }
 
   // Called once, when this html/js is loaded.
   function showTheRightIframe() {
@@ -47,8 +46,5 @@
   <iframe id="done" frameborder="0" width="100%" scrolling="no" height="100%"
           src="chrome://syncresources/setupdone" style="display:none"
           tabindex="-1"></iframe>
-  <iframe id="firstpassphrase" frameborder="0" width="100%" scrolling="no"
-          height="100%" src="chrome://syncresources/firstpassphrase"
-          style="display:none" tabindex="-1"></iframe>
 </body>
 </html>

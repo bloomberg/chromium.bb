@@ -34,9 +34,6 @@ class SyncSetupWizard {
     CONFIGURE,
     // Show the screen that prompts for your passphrase
     ENTER_PASSPHRASE,
-    // Show the passphrase "first time" screen for migrating users, where all
-    // is explained and they choose between google password/custom passphrase.
-    PASSPHRASE_MIGRATION,
     // The panic switch.  Something went terribly wrong during setup and we
     // can't recover.
     FATAL_ERROR,

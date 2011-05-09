@@ -139,18 +139,6 @@ bool GetPassphrase(const std::string& json, std::string* passphrase) {
   return result->GetString("passphrase", passphrase);
 }
 
-bool GetFirstPassphrase(const std::string& json,
-                        std::string* option,
-                        std::string* passphrase) {
-  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
-  if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
-    return false;
-
-  DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
-  return result->GetString("option", option) &&
-         result->GetString("passphrase", passphrase);
-}
-
 }  // namespace
 
 SyncSetupHandler::SyncSetupHandler() : flow_(NULL) {
@@ -238,8 +226,6 @@ void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "mismatchErrorMessage", IDS_SYNC_PASSPHRASE_MISMATCH_ERROR },
     { "passphraseWarning", IDS_SYNC_PASSPHRASE_WARNING },
     { "clearDataLink", IDS_SYNC_CLEAR_DATA_LINK },
-    { "enterPassphraseTitle", IDS_SYNC_ENTER_PASSPHRASE_TITLE },
-    { "firstPassphraseTitle", IDS_SYNC_FIRST_PASSPHRASE_TITLE },
     { "customizeLinkLabel", IDS_SYNC_CUSTOMIZE_LINK_LABEL },
     { "confirmSyncPreferences", IDS_SYNC_CONFIRM_SYNC_PREFERENCES },
     { "syncEverything", IDS_SYNC_SYNC_EVERYTHING },
@@ -281,8 +267,6 @@ void SyncSetupHandler::RegisterMessages() {
       NewCallback(this, &SyncSetupHandler::HandlePassphraseEntry));
   web_ui_->RegisterMessageCallback("PassphraseCancel",
       NewCallback(this, &SyncSetupHandler::HandlePassphraseCancel));
-  web_ui_->RegisterMessageCallback("FirstPassphrase",
-      NewCallback(this, &SyncSetupHandler::HandleFirstPassphrase));
 }
 
 void SyncSetupHandler::ShowGaiaLogin(const DictionaryValue& args) {
@@ -309,12 +293,6 @@ void SyncSetupHandler::ShowPassphraseEntry(const DictionaryValue& args) {
   StringValue page("passphrase");
   web_ui_->CallJavascriptFunction(
       "SyncSetupOverlay.showSyncSetupPage", page, args);
-}
-
-void SyncSetupHandler::ShowFirstPassphrase(const DictionaryValue& args) {
-  // TODO(jhawkins): Remove this logic in SyncSetupFlow. It will never be
-  // reached.
-  NOTREACHED();
 }
 
 void SyncSetupHandler::ShowSettingUp() {
@@ -418,25 +396,4 @@ void SyncSetupHandler::HandlePassphraseEntry(const ListValue* args) {
 void SyncSetupHandler::HandlePassphraseCancel(const ListValue* args) {
   DCHECK(flow_);
   flow_->OnPassphraseCancel();
-}
-
-void SyncSetupHandler::HandleFirstPassphrase(const ListValue* args) {
-  std::string json;
-  if (!args->GetString(0, &json)) {
-    NOTREACHED() << "Could not read JSON argument";
-    return;
-  }
-  if (json.empty())
-    return;
-
-  std::string option;
-  std::string passphrase;
-  if (!GetFirstPassphrase(json, &option, &passphrase)) {
-    // Page sent result which couldn't be parsed.  Programming error.
-    NOTREACHED();
-    return;
-  }
-
-  DCHECK(flow_);
-  flow_->OnFirstPassphraseEntry(option, passphrase);
 }

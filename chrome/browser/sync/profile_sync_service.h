@@ -253,7 +253,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   void ShowConfigure(bool sync_everything);
 
   void PromptForExistingPassphrase();
-  void SigninForPassphraseMigration();
 
   // Pretty-printed strings for a given StatusSummary.
   static std::string BuildSyncStatusSummaryText(
@@ -524,9 +523,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // was required for encryption, decryption with a cached passphrase, or
   // because a new passphrase is required?
   sync_api::PassphraseRequiredReason passphrase_required_reason_;
-
-  // Is the user in a passphrase migration?
-  bool passphrase_migration_in_progress_;
 
  private:
   friend class ProfileSyncServicePasswordTest;

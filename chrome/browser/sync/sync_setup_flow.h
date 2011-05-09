@@ -89,12 +89,6 @@ class SyncSetupFlow {
   // The user canceled the passphrase entry without supplying a passphrase.
   void OnPassphraseCancel();
 
-  // The 'first passphrase' screen is for users migrating from a build
-  // without passwords, who are prompted to make a passphrase choice.
-  // TODO(jhawkins): This is no longer used; remove this method.
-  void OnFirstPassphraseEntry(const std::string& option,
-                              const std::string& passphrase);
-
   void OnGoToDashboard();
 
   void OnDialogClosed(const std::string& json_retval);
@@ -111,7 +105,6 @@ class SyncSetupFlow {
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest,
                            DiscreteRunChooseDataTypesAbortedByPendingClear);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, EnterPassphraseRequired);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, PassphraseMigration);
 
   // Use static Run method to get an instance.
   SyncSetupFlow(SyncSetupWizard::State start_state,
