@@ -544,14 +544,14 @@ bool InstantController::ShouldUpdateNow(TemplateURLID instant_id,
   if (url.SchemeIsFile())
     return true;  // File urls should load quickly, so don't delay loading them.
 
-  if (loader_manager_->WillUpateChangeActiveLoader(instant_id)) {
+  if (loader_manager_->WillUpdateChangeActiveLoader(instant_id)) {
     // If Update would change loaders, update now. This indicates transitioning
     // from an instant to non-instant loader.
     return true;
   }
 
   InstantLoader* active_loader = loader_manager_->active_loader();
-  // WillUpateChangeActiveLoader should return true if no active loader, so
+  // WillUpdateChangeActiveLoader should return true if no active loader, so
   // we know there will be an active loader if we get here.
   DCHECK(active_loader);
   // Immediately update if the url is the same (which should result in nothing

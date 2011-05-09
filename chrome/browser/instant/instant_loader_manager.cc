@@ -86,7 +86,7 @@ InstantLoader* InstantLoaderManager::UpdateLoader(
   return active_loader();
 }
 
-bool InstantLoaderManager::WillUpateChangeActiveLoader(
+bool InstantLoaderManager::WillUpdateChangeActiveLoader(
     TemplateURLID instant_id) {
   return !active_loader() || active_loader()->template_url_id() != instant_id;
 }

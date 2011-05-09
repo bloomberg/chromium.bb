@@ -45,7 +45,7 @@ class InstantLoaderManager {
 
   // Returns true if invoking |UpdateLoader| with |instant_id| would change the
   // active loader.
-  bool WillUpateChangeActiveLoader(TemplateURLID instant_id);
+  bool WillUpdateChangeActiveLoader(TemplateURLID instant_id);
 
   // Makes the pending loader the current loader. If ownership of the old
   // loader is to pass to the caller |old_loader| is set appropriately.

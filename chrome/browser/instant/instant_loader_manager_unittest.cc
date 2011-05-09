@@ -255,27 +255,27 @@ TEST_F(InstantLoaderManagerTest, DestroyPendingLoader) {
   EXPECT_EQ(first_loader, manager.current_loader());
 }
 
-// Makes sure WillUpateChangeActiveLoader works.
-TEST_F(InstantLoaderManagerTest, WillUpateChangeActiveLoader) {
+// Makes sure WillUpdateChangeActiveLoader works.
+TEST_F(InstantLoaderManagerTest, WillUpdateChangeActiveLoader) {
   InstantLoaderDelegateImpl delegate;
   InstantLoaderManager manager(&delegate);
   scoped_ptr<InstantLoader> loader;
 
-  // When there is no loader WillUpateChangeActiveLoader should return true.
-  EXPECT_TRUE(manager.WillUpateChangeActiveLoader(0));
-  EXPECT_TRUE(manager.WillUpateChangeActiveLoader(1));
+  // When there is no loader WillUpdateChangeActiveLoader should return true.
+  EXPECT_TRUE(manager.WillUpdateChangeActiveLoader(0));
+  EXPECT_TRUE(manager.WillUpdateChangeActiveLoader(1));
 
   // Add a loder with id 0 and test again.
   manager.UpdateLoader(0, &loader);
-  EXPECT_FALSE(manager.WillUpateChangeActiveLoader(0));
-  EXPECT_TRUE(manager.WillUpateChangeActiveLoader(1));
+  EXPECT_FALSE(manager.WillUpdateChangeActiveLoader(0));
+  EXPECT_TRUE(manager.WillUpdateChangeActiveLoader(1));
   ASSERT_TRUE(manager.active_loader());
   MarkReady(manager.active_loader());
 
   // Add a loader with id 1 and test again.
   manager.UpdateLoader(1, &loader);
-  EXPECT_TRUE(manager.WillUpateChangeActiveLoader(0));
-  EXPECT_FALSE(manager.WillUpateChangeActiveLoader(1));
+  EXPECT_TRUE(manager.WillUpdateChangeActiveLoader(0));
+  EXPECT_FALSE(manager.WillUpdateChangeActiveLoader(1));
 }
 
 // Makes sure UpdateLoader doesn't schedule a loader for deletion when asked
