@@ -32,6 +32,9 @@ class EncoderVp8 : public Encoder {
   // Initialize the encoder. Returns true if successful.
   bool Init(const gfx::Size& size);
 
+  // Destroy the encoder.
+  void Destroy();
+
   // Prepare |image_| for encoding. Write updated rectangles into
   // |updated_rects|. Returns true if successful.
   bool PrepareImage(scoped_refptr<CaptureData> capture_data,

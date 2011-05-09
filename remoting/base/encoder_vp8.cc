@@ -37,13 +37,19 @@ EncoderVp8::EncoderVp8()
 }
 
 EncoderVp8::~EncoderVp8() {
+  Destroy();
+}
+
+void EncoderVp8::Destroy() {
   if (initialized_) {
     vpx_codec_err_t ret = vpx_codec_destroy(codec_.get());
     DCHECK(ret == VPX_CODEC_OK) << "Failed to destroy codec";
+    initialized_ = false;
   }
 }
 
 bool EncoderVp8::Init(const gfx::Size& size) {
+  Destroy();
   size_ = size;
   codec_.reset(new vpx_codec_ctx_t());
   image_.reset(new vpx_image_t());
