@@ -16,6 +16,7 @@
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_image_data_api.h"
 
 using ::ppapi::thunk::ResourceCreationAPI;
 
@@ -126,9 +127,10 @@ void ResourceCreationProxy::OnMsgCreateImageData(
   result->SetHostResource(instance, resource);
 
   // Get the description, it's just serialized as a string.
-  ppapi::thunk::EnterResource<PPB_ImageData> enter_resource(resource, false);
+  ppapi::thunk::EnterResource<ppapi::thunk::PPB_ImageData_API>
+      enter_resource(resource, false);
   PP_ImageDataDesc desc;
-  if (enter_resource.object()->Describe(resource, &desc)) {
+  if (enter_resource.object()->Describe(&desc)) {
     image_data_desc->resize(sizeof(PP_ImageDataDesc));
     memcpy(&(*image_data_desc)[0], &desc, sizeof(PP_ImageDataDesc));
   }

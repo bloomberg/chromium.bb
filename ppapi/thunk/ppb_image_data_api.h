@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef PPAPI_THUNK_IMAGE_DATA_API_H_
+#define PPAPI_THUNK_IMAGE_DATA_API_H_
+
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/ppb_image_data.h"
-#include "ppapi/c/pp_point.h"
-#include "ppapi/c/pp_resource.h"
 
 namespace ppapi {
 namespace thunk {
@@ -19,3 +20,5 @@ class PPB_ImageData_API {
 
 }  // namespace thunk
 }  // namespace ppapi
+
+#endif  // PPAPI_THUNK_IMAGE_DATA_API_H_
