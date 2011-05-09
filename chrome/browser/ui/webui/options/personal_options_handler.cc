@@ -208,8 +208,6 @@ void PersonalOptionsHandler::RegisterMessages() {
       "themesSetGTK",
       NewCallback(this, &PersonalOptionsHandler::ThemesSetGTK));
 #endif
-  web_ui_->RegisterMessageCallback("updatePreferredDataTypes",
-      NewCallback(this, &PersonalOptionsHandler::OnPreferredDataTypesUpdated));
 #if defined(OS_CHROMEOS)
   web_ui_->RegisterMessageCallback(
       "loadAccountPicture",
@@ -403,14 +401,6 @@ void PersonalOptionsHandler::ThemesSetGTK(const ListValue* args) {
   ThemeServiceFactory::GetForProfile(web_ui_->GetProfile())->SetNativeTheme();
 }
 #endif
-
-void PersonalOptionsHandler::OnPreferredDataTypesUpdated(
-    const ListValue* args) {
-  NotificationService::current()->Notify(
-      NotificationType::SYNC_DATA_TYPES_UPDATED,
-      Source<Profile>(web_ui_->GetProfile()),
-      NotificationService::NoDetails());
-}
 
 #if defined(OS_CHROMEOS)
 void PersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {

@@ -53,10 +53,6 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
   void ThemesSetGTK(const ListValue* args);
 #endif
 
-  // Called when the user updates the set of enabled data types to sync. |args|
-  // is ignored.
-  void OnPreferredDataTypesUpdated(const ListValue* args);
-
 #if defined(OS_CHROMEOS)
   void LoadAccountPicture(const ListValue* args);
   NotificationRegistrar registrar_;

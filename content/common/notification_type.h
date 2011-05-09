@@ -1122,11 +1122,6 @@ class NotificationType {
     // session data.
     FOREIGN_SESSION_DISABLED,
 
-    // Sent when the set of data types that should be synced has been modified
-    // externally (eg. by the WebUI options screen).
-    // The source is the Profile, there are no details.
-    SYNC_DATA_TYPES_UPDATED,
-
     // Cookies -----------------------------------------------------------------
 
     // Sent when a cookie changes. The source is a Profile object, the details

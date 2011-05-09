@@ -80,10 +80,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       scoped_runnable_method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       expect_sync_configuration_aborted_(false),
       clear_server_data_state_(CLEAR_NOT_STARTED) {
-  registrar_.Add(this,
-                 NotificationType::SYNC_DATA_TYPES_UPDATED,
-                 Source<Profile>(profile));
-
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
   // sync servers. Users with officially-branded Chrome stable and beta builds
@@ -1209,14 +1205,6 @@ void ProfileSyncService::Observe(NotificationType type,
       // this is the point where it is safe to switch from config-mode to
       // normal operation.
       backend_->StartSyncingWithServer();
-      break;
-    }
-    case NotificationType::SYNC_DATA_TYPES_UPDATED: {
-      if (!HasSyncSetupCompleted()) break;
-
-      syncable::ModelTypeSet types;
-      GetPreferredDataTypes(&types);
-      OnUserChoseDatatypes(false, types);
       break;
     }
     case NotificationType::PREF_CHANGED: {
