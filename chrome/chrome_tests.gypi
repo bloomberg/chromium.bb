@@ -1889,7 +1889,7 @@
         '../content/browser/geolocation/wifi_data_provider_unittest_win.cc',
         '../content/browser/geolocation/win7_location_api_unittest_win.cc',
         '../content/browser/geolocation/win7_location_provider_unittest_win.cc',
-        '../content/browser/gpu_blacklist_unittest.cc',
+        '../content/browser/gpu/gpu_blacklist_unittest.cc',
         '../content/browser/host_zoom_map_unittest.cc',
         '../content/browser/in_process_webkit/webkit_context_unittest.cc',
         '../content/browser/in_process_webkit/webkit_thread_unittest.cc',

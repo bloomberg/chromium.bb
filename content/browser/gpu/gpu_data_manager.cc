@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gpu_data_manager.h"
+#include "content/browser/gpu/gpu_data_manager.h"
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/gpu_blacklist.h"
-#include "content/browser/gpu_process_host.h"
+#include "content/browser/gpu/gpu_blacklist.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/content_client.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/gpu/gpu_info_collector.h"

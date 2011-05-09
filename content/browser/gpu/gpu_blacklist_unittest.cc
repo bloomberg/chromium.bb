@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/version.h"
-#include "content/browser/gpu_blacklist.h"
+#include "content/browser/gpu/gpu_blacklist.h"
 #include "content/common/gpu/gpu_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
