@@ -331,6 +331,7 @@
         'client/chromoting_stats.h',
         'client/chromoting_view.cc',
         'client/chromoting_view.h',
+        'client/client_config.cc',
         'client/client_config.h',
         'client/client_context.cc',
         'client/client_context.h',

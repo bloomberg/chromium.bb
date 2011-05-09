@@ -12,6 +12,9 @@
 namespace remoting {
 
 struct ClientConfig {
+  ClientConfig();
+  ~ClientConfig();
+
   std::string host_jid;
   std::string username;
   std::string auth_token;
