@@ -24,6 +24,7 @@ class DictionaryValue;
 class ExtensionEventRouterForwarder;
 class GURL;
 class ListValue;
+class StringValue;
 
 namespace net {
 class HostPortPair;

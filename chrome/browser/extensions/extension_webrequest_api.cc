@@ -155,6 +155,12 @@ ListValue* GetResponseHeadersList(net::HttpResponseHeaders* headers) {
   return headers_value;
 }
 
+// Creates a StringValue with the status line of |headers|. If |headers| is
+// NULL, an empty string is returned.  Ownership is passed to the caller.
+StringValue* GetStatusLine(net::HttpResponseHeaders* headers) {
+  return new StringValue(headers ? headers->GetStatusLine() : "");
+}
+
 }  // namespace
 
 // Represents a single unique listener to an event, along with whatever filter
@@ -507,7 +513,8 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
     dict->Set(keys::kResponseHeadersKey,
               GetResponseHeadersList(request->response_headers()));
   }
-  // TODO(battre): support "statusLine".
+  if (extra_info_spec & ExtraInfoSpec::STATUS_LINE)
+    dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   args.Append(dict);
 
   DispatchEvent(profile_id, event_router, request, listeners, args);
@@ -549,7 +556,8 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
     dict->Set(keys::kResponseHeadersKey,
               GetResponseHeadersList(request->response_headers()));
   }
-  // TODO(battre): support "statusLine".
+  if (extra_info_spec & ExtraInfoSpec::STATUS_LINE)
+    dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   args.Append(dict);
 
   DispatchEvent(profile_id, event_router, request, listeners, args);
@@ -591,7 +599,8 @@ void ExtensionWebRequestEventRouter::OnCompleted(
     dict->Set(keys::kResponseHeadersKey,
               GetResponseHeadersList(request->response_headers()));
   }
-  // TODO(battre): support "statusLine".
+  if (extra_info_spec & ExtraInfoSpec::STATUS_LINE)
+    dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   args.Append(dict);
 
   DispatchEvent(profile_id, event_router, request, listeners, args);
@@ -671,6 +680,8 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
       dict->Remove(keys::kRequestHeadersKey, NULL);
     if (!((*it)->extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS))
       dict->Remove(keys::kResponseHeadersKey, NULL);
+    if (!((*it)->extra_info_spec & ExtraInfoSpec::STATUS_LINE))
+      dict->Remove(keys::kStatusLineKey, NULL);
 
     base::JSONWriter::Write(args_filtered.get(), false, &json_args);
     event_router->DispatchEventToExtension(

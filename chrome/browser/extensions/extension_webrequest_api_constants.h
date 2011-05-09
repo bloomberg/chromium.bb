@@ -17,6 +17,7 @@ extern const char kMethodKey[];
 extern const char kRedirectUrlKey[];
 extern const char kRequestIdKey[];
 extern const char kStatusCodeKey[];
+extern const char kStatusLineKey[];
 extern const char kTabIdKey[];
 extern const char kTimeStampKey[];
 extern const char kTypeKey[];
