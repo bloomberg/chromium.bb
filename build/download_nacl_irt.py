@@ -153,7 +153,7 @@ def Main():
     # later.
     sys.stdout.write(
         'The directory %r does not exist: skipping downloading binaries '
-        'for Native Client\'s IRT library\n')
+        'for Native Client\'s IRT library\n' % nacl_dir)
     return
   if len(options.file_hashes) == 0:
     sys.stdout.write('No --file_hash arguments given: nothing to update\n')
