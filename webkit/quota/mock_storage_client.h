@@ -14,25 +14,22 @@
 
 namespace quota {
 
-class QuotaManager;
+class QuotaManagerProxy;
 
 // Mock storage class for testing.
 class MockStorageClient : public QuotaClient {
  public:
-  MockStorageClient(QuotaManager* qm);
+  MockStorageClient(QuotaManagerProxy* quota_manager_proxy);
   virtual ~MockStorageClient();
-
-  virtual QuotaClient::ID id() const OVERRIDE;
 
   // To add or modify mock data in this client.
   void AddMockOriginData(const GURL& origin_url, StorageType type, int64 size);
   void ModifyMockOriginDataSize(
       const GURL& origin_url, StorageType type, int64 delta);
 
-  typedef QuotaClient::GetUsageCallback GetUsageCallback;
-  typedef QuotaClient::GetOriginsCallback GetOriginsCallback;
-
   // QuotaClient methods.
+  virtual QuotaClient::ID id() const OVERRIDE;
+  virtual void OnQuotaManagerDestroyed() OVERRIDE;
   virtual void GetOriginUsage(const GURL& origin_url,
                               StorageType type,
                               GetUsageCallback* callback) OVERRIDE;
@@ -51,7 +48,7 @@ class MockStorageClient : public QuotaClient {
                             const std::string& host,
                             GetOriginsCallback* callback);
 
-  QuotaManager* quota_manager_;
+  scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
   const ID id_;
 
   struct MockOriginData {

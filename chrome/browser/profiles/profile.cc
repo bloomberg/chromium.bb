@@ -435,10 +435,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual fileapi::FileSystemContext* GetFileSystemContext() {
-    if (!file_system_context_)
-      file_system_context_ = CreateFileSystemContext(
-          GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy());
-    DCHECK(file_system_context_.get());
+    CreateQuotaManagerAndClients();
     return file_system_context_.get();
   }
 
@@ -447,13 +444,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual quota::QuotaManager* GetQuotaManager() {
-    if (!quota_manager_.get()) {
-      quota_manager_ = new quota::QuotaManager(
-          IsOffTheRecord(),
-          GetPath(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
-    }
+    CreateQuotaManagerAndClients();
     return quota_manager_.get();
   }
 
@@ -705,6 +696,30 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
  private:
+  void CreateQuotaManagerAndClients() {
+    if (quota_manager_.get()) {
+      DCHECK(file_system_context_.get());
+      return;
+    }
+
+    // All of the clients have to be created and registered with the
+    // QuotaManager prior to the QuotaManger being used. So we do them
+    // all together here prior to handing out a reference to anything
+    // that utlizes the QuotaManager.
+    quota_manager_ = new quota::QuotaManager(
+        IsOffTheRecord(),
+        GetPath(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
+
+    // Each consumer is responsible for registering its QuotaClient during
+    // its construction.
+    file_system_context_ = CreateFileSystemContext(
+        GetPath(), IsOffTheRecord(),
+        GetExtensionSpecialStoragePolicy(),
+        quota_manager_->proxy());
+  }
+
   NotificationRegistrar registrar_;
 
   // The real underlying profile.

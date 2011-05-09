@@ -7,6 +7,7 @@
 #pragma once
 
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/quota/quota_types.h"
 
 class FilePath;
 class GURL;
@@ -26,6 +27,11 @@ bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
                         FilePath* file_path);
 
 GURL GetFileSystemRootURI(const GURL& origin_url, fileapi::FileSystemType type);
+
+FileSystemType QuotaStorageTypeToFileSystemType(
+    quota::StorageType storage_type);
+
+quota::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type);
 
 }  // namespace fileapi
 

@@ -68,7 +68,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
         new FileSystemContext(
             base::MessageLoopProxy::CreateForCurrentThread(),
             base::MessageLoopProxy::CreateForCurrentThread(),
-            special_storage_policy_,
+            special_storage_policy_, NULL,
             FilePath(), false /* is_incognito */,
             false, true,
             new FileSystemPathManager(

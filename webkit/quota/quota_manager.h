@@ -28,9 +28,11 @@ class QuotaDatabase;
 class UsageTracker;
 
 struct QuotaManagerDeleter;
+class QuotaManagerProxy;
 
 // The quota manager class.  This class is instantiated per profile and
-// held by the profile.
+// held by the profile.  With the exception of the constructor and the
+// proxy() method, all methods should only be called on the IO thread.
 class QuotaManager : public QuotaTaskObserver,
                      public base::RefCountedThreadSafe<
                          QuotaManager, QuotaManagerDeleter> {
@@ -48,25 +50,19 @@ class QuotaManager : public QuotaTaskObserver,
 
   virtual ~QuotaManager();
 
-  // The client's ownership is transferred to the manager.
-  void RegisterClient(QuotaClient* client);
+  // Returns a proxy object that can be used on any thread.
+  QuotaManagerProxy* proxy() { return proxy_.get(); }
 
-  // Called by clients or webapps on the IO thread.
-  void GetUsageAndQuota(const GURL& origin, StorageType type,
+  // Called by clients or webapps.
+  void GetUsageAndQuota(const GURL& origin,
+                        StorageType type,
                         GetUsageAndQuotaCallback* callback);
 
-  // Called by webapps on the IO thread.
-  void RequestQuota(const GURL& origin, StorageType type,
+  // Called by webapps.
+  void RequestQuota(const GURL& origin,
+                    StorageType type,
                     int64 requested_size,
                     RequestQuotaCallback* callback);
-
-  // Called by clients on the IO thread.
-  // QuotaClients must call this method whenever they have made any
-  // modifications that change the amount of data stored in their storage.
-  void NotifyStorageModified(QuotaClient::ID client_id,
-                             const GURL& origin,
-                             StorageType type,
-                             int64 delta);
 
   // Called by UI and internal modules.
   void GetTemporaryGlobalQuota(QuotaCallback* callback);
@@ -97,23 +93,39 @@ class QuotaManager : public QuotaTaskObserver,
   typedef std::map<HostAndType, UsageAndQuotaDispatcherTask*>
       UsageAndQuotaDispatcherTaskMap;
 
+  friend struct QuotaManagerDeleter;
+  friend class QuotaManagerProxy;
+
   // This initialization method is lazily called on the IO thread
   // when the first quota manager API is called.
   // Initialize must be called after all quota clients are added to the
   // manager by RegisterStorage.
   void LazyInitialize();
 
+  // Called by clients via proxy.
+  // Registers a quota client to the manager.
+  // The client must remain valid until OnQuotaManagerDestored is called.
+  void RegisterClient(QuotaClient* client);
+
+  // Called by clients via proxy.
+  // QuotaClients must call this method whenever they have made any
+  // modifications that change the amount of data stored in their storage.
+  void NotifyStorageModified(QuotaClient::ID client_id,
+                             const GURL& origin,
+                             StorageType type,
+                             int64 delta);
+
   UsageTracker* GetUsageTracker(StorageType type) const;
 
   void DidGetTemporaryGlobalQuota(int64 quota);
   void DidGetPersistentHostQuota(const std::string& host, int64 quota);
 
-  friend struct QuotaManagerDeleter;
   void DeleteOnCorrectThread() const;
 
   const bool is_incognito_;
   const FilePath profile_path_;
 
+  scoped_refptr<QuotaManagerProxy> proxy_;
   bool db_initialized_;
   bool db_disabled_;
   scoped_refptr<base::MessageLoopProxy> io_thread_;
@@ -133,8 +145,6 @@ class QuotaManager : public QuotaTaskObserver,
   std::map<std::string, int64> persistent_host_quota_;
   HostQuotaCallbackMap persistent_host_quota_callbacks_;
 
-  base::ScopedCallbackFactory<QuotaManager> callback_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(QuotaManager);
 };
 
@@ -143,6 +153,28 @@ struct QuotaManagerDeleter {
     manager->DeleteOnCorrectThread();
   }
 };
+
+// The proxy may be called and finally released on any thread.
+class QuotaManagerProxy
+    : public base::RefCountedThreadSafe<QuotaManagerProxy> {
+ public:
+  void RegisterClient(QuotaClient* client);
+  void NotifyStorageModified(QuotaClient::ID client_id,
+                            const GURL& origin,
+                            StorageType type,
+                            int64 delta);
+ private:
+  friend class QuotaManager;
+  friend class base::RefCountedThreadSafe<QuotaManagerProxy>;
+  QuotaManagerProxy(QuotaManager* manager, base::MessageLoopProxy* io_thread);
+  ~QuotaManagerProxy();
+
+  QuotaManager* manager_;  // only accessed on the io thread
+  scoped_refptr<base::MessageLoopProxy> io_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuotaManagerProxy);
+};
+
 
 }  // namespace quota
 

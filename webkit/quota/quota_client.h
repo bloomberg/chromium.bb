@@ -37,6 +37,9 @@ class QuotaClient {
 
   virtual ID id() const = 0;
 
+  // Called when the quota manager is destroyed.
+  virtual void OnQuotaManagerDestroyed() = 0;
+
   // Called by the QuotaManager.
   // Gets the amount of data stored in the storage specified by
   // |origin_url| and |type|.

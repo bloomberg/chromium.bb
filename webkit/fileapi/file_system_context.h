@@ -16,6 +16,11 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace quota {
+class QuotaClient;
+class QuotaManagerProxy;
+}
+
 namespace fileapi {
 
 class FileSystemContext;
@@ -34,6 +39,7 @@ class FileSystemContext
       scoped_refptr<base::MessageLoopProxy> file_message_loop,
       scoped_refptr<base::MessageLoopProxy> io_message_loop,
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
+      quota::QuotaManagerProxy* quota_manager_proxy,
       const FilePath& profile_path,
       bool is_incognito,
       bool allow_file_access_from_files,
@@ -46,8 +52,10 @@ class FileSystemContext
 
   void DeleteDataForOriginOnFileThread(const GURL& origin_url);
 
-  FileSystemPathManager* path_manager() { return path_manager_.get(); }
-  FileSystemUsageTracker* usage_tracker() { return usage_tracker_.get(); }
+  FileSystemPathManager* path_manager() const { return path_manager_.get(); }
+  quota::QuotaManagerProxy* quota_manager_proxy() const {
+    return quota_manager_proxy_.get();
+  }
 
  private:
   friend struct DefaultContextDeleter;
@@ -58,11 +66,11 @@ class FileSystemContext
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
   const bool allow_file_access_from_files_;
   const bool unlimited_quota_;
 
   scoped_ptr<FileSystemPathManager> path_manager_;
-  scoped_ptr<FileSystemUsageTracker> usage_tracker_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemContext);
 };

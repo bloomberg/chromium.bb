@@ -16,7 +16,9 @@ class SpecialStoragePolicy;
 // Helper method that returns FileSystemContext constructed for
 // the browser process.
 scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
-        const FilePath& profile_path, bool is_incognito,
-        quota::SpecialStoragePolicy* special_storage_policy);
+    const FilePath& profile_path,
+    bool is_incognito,
+    quota::SpecialStoragePolicy* special_storage_policy,
+    quota::QuotaManagerProxy* quota_manager_proxy);
 
 #endif  // CONTENT_BROWSER_FILE_SYSTEM_BROWSER_FILE_SYSTEM_HELPER_H_

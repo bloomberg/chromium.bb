@@ -132,6 +132,7 @@ SimpleFileSystem::SimpleFileSystem() {
         base::MessageLoopProxy::CreateForCurrentThread(),
         base::MessageLoopProxy::CreateForCurrentThread(),
         NULL /* special storage policy */,
+        NULL /* quota manager */,
         file_system_dir_.path(),
         false /* incognito */,
         true /* allow_file_access */,

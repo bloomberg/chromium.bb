@@ -1170,21 +1170,12 @@ PersonalDataManager* ProfileImpl::GetPersonalDataManager() {
 }
 
 fileapi::FileSystemContext* ProfileImpl::GetFileSystemContext() {
-  if (!file_system_context_.get())
-    file_system_context_ = CreateFileSystemContext(
-        GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy());
-  DCHECK(file_system_context_.get());
+  CreateQuotaManagerAndClients();
   return file_system_context_.get();
 }
 
 quota::QuotaManager* ProfileImpl::GetQuotaManager() {
-  if (!quota_manager_.get()) {
-    quota_manager_ = new quota::QuotaManager(
-        IsOffTheRecord(),
-        GetPath(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
-  }
+  CreateQuotaManagerAndClients();
   return quota_manager_.get();
 }
 
@@ -1277,6 +1268,30 @@ ExtensionPrefValueMap* ProfileImpl::GetExtensionPrefValueMap() {
   if (!extension_pref_value_map_.get())
     extension_pref_value_map_.reset(new ExtensionPrefValueMap);
   return extension_pref_value_map_.get();
+}
+
+void ProfileImpl::CreateQuotaManagerAndClients() {
+  if (quota_manager_.get()) {
+    DCHECK(file_system_context_.get());
+    return;
+  }
+
+  // All of the clients have to be created and registered with the
+  // QuotaManager prior to the QuotaManger being used. So we do them
+  // all together here prior to handing out a reference to anything
+  // that utlizes the QuotaManager.
+  quota_manager_ = new quota::QuotaManager(
+      IsOffTheRecord(),
+      GetPath(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
+
+  // Each consumer is responsible for registering its QuotaClient during
+  // its construction.
+  file_system_context_ = CreateFileSystemContext(
+      GetPath(), IsOffTheRecord(),
+      GetExtensionSpecialStoragePolicy(),
+      quota_manager_->proxy());
 }
 
 WebKitContext* ProfileImpl::GetWebKitContext() {

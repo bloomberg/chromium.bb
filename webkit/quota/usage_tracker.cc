@@ -252,7 +252,7 @@ void UsageTracker::DidGetClientHostUsage(const std::string& host, int64 usage) {
   if (--info.pending_clients == 0) {
     // All the clients have returned their usage data.  Dispatches the
     // pending callbacks.
-    host_usage_callbacks_.Run(host, info.usage);
+    host_usage_callbacks_.Run(host, host, info.usage);
     outstanding_host_usage_.erase(host);
   }
 }
@@ -372,9 +372,9 @@ void ClientUsageTracker::DidGetGlobalUsage(
     std::map<std::string, int64>::iterator found  =
         host_usage_map_.find(iter->first);
     if (found == host_usage_map_.end())
-      HostUsageCallbackMap::RunAt(iter, 0);
+      iter->second.Run(iter->first, 0);
     else
-      HostUsageCallbackMap::RunAt(iter, found->second);
+      iter->second.Run(iter->first, found->second);
   }
   host_usage_callbacks_.Clear();
 }
@@ -394,7 +394,7 @@ void ClientUsageTracker::DidGetHostUsage(
   }
 
   // Dispatches the host usage callback.
-  host_usage_callbacks_.Run(host, host_usage_map_[host]);
+  host_usage_callbacks_.Run(host, host, host_usage_map_[host]);
 }
 
 }  // namespace quota

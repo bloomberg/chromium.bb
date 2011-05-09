@@ -179,6 +179,8 @@ class ProfileImpl : public Profile,
 
   ExtensionPrefValueMap* GetExtensionPrefValueMap();
 
+  void CreateQuotaManagerAndClients();
+
   NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 

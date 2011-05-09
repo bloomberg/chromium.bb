@@ -8,14 +8,17 @@
 #include "base/command_line.h"
 #include "content/common/content_switches.h"
 #include "content/browser/browser_thread.h"
+#include "webkit/quota/quota_manager.h"
 
 scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
         const FilePath& profile_path, bool is_incognito,
-        quota::SpecialStoragePolicy* special_storage_policy) {
+        quota::SpecialStoragePolicy* special_storage_policy,
+        quota::QuotaManagerProxy* quota_manager_proxy) {
   return new fileapi::FileSystemContext(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
       special_storage_policy,
+      quota_manager_proxy,
       profile_path,
       is_incognito,
       CommandLine::ForCurrentProcess()->HasSwitch(

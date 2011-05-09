@@ -19,6 +19,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
@@ -49,6 +50,28 @@ inline std::string FilePathStringToASCII(
 #elif defined(OS_POSIX)
   return path_string;
 #endif
+}
+
+// TODO(kinuko): Merge these two methods (conversion methods between
+// origin url <==> identifier) with the ones in the database module.
+std::string GetOriginIdentifierFromURL(const GURL& url) {
+  WebKit::WebSecurityOrigin web_security_origin =
+      WebKit::WebSecurityOrigin::createFromString(UTF8ToUTF16(url.spec()));
+  return web_security_origin.databaseIdentifier().utf8();
+}
+
+GURL GetOriginURLFromIdentifier(const std::string& origin_identifier) {
+  WebKit::WebSecurityOrigin web_security_origin =
+      WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
+          UTF8ToUTF16(origin_identifier));
+  GURL origin_url(web_security_origin.toString());
+
+  // We need this work-around for file:/// URIs as
+  // createFromDatabaseIdentifier returns empty origin_url for them.
+  if (origin_url.spec().empty() &&
+      origin_identifier.find("file__") == 0)
+    return GURL("file:///");
+  return origin_url;
 }
 
 FilePath::StringType CreateUniqueDirectoryName(const GURL& origin_url) {
@@ -103,6 +126,36 @@ FilePath GetFileSystemRootPathOnFileThreadHelper(
 
   return root;
 }
+
+class SandboxOriginEnumerator
+    : public fileapi::SandboxMountPointProvider::OriginEnumerator {
+ public:
+  explicit SandboxOriginEnumerator(const FilePath& base_path)
+      : enumerator_(base_path, false /* recursive */,
+                    file_util::FileEnumerator::DIRECTORIES) {}
+  virtual ~SandboxOriginEnumerator() {}
+
+  virtual GURL Next() OVERRIDE {
+    current_ = enumerator_.Next();
+    if (current_.empty())
+      return GURL();
+    return GetOriginURLFromIdentifier(
+        FilePathStringToASCII(current_.BaseName().value()));
+  }
+
+  virtual bool HasFileSystemType(fileapi::FileSystemType type) const OVERRIDE {
+    if (current_.empty())
+      return false;
+    std::string directory =
+        fileapi::FileSystemPathManager::GetFileSystemTypeString(type);
+    DCHECK(!directory.empty());
+    return file_util::DirectoryExists(current_.AppendASCII(directory));
+  }
+
+ private:
+  file_util::FileEnumerator enumerator_;
+  FilePath current_;
+};
 
 }  // anonymous namespace
 
@@ -220,6 +273,11 @@ std::vector<FilePath> SandboxMountPointProvider::GetRootDirectories() const {
   return  std::vector<FilePath>();
 }
 
+SandboxMountPointProvider::OriginEnumerator*
+SandboxMountPointProvider::CreateOriginEnumerator() const {
+  return new SandboxOriginEnumerator(base_path_);
+}
+
 void SandboxMountPointProvider::ValidateFileSystemRootAndGetURL(
     const GURL& origin_url, fileapi::FileSystemType type,
     bool create, FileSystemPathManager::GetRootPathCallback* callback_ptr) {
@@ -251,49 +309,20 @@ SandboxMountPointProvider::ValidateFileSystemRootAndGetPathOnFileThread(
       origin_url, origin_base_path, create);
 }
 
-// static
-std::string SandboxMountPointProvider::GetOriginIdentifierFromURL(
-    const GURL& url) {
-  WebKit::WebSecurityOrigin web_security_origin =
-      WebKit::WebSecurityOrigin::createFromString(UTF8ToUTF16(url.spec()));
-  return web_security_origin.databaseIdentifier().utf8();
+FilePath SandboxMountPointProvider::GetBaseDirectoryForOrigin(
+    const GURL& origin_url) const {
+  return base_path_.AppendASCII(GetOriginIdentifierFromURL(origin_url));
 }
 
-// static
-FilePath SandboxMountPointProvider::GetFileSystemBaseDirectoryForOriginAndType(
-    const FilePath& base_path, const std::string& origin_identifier,
-    fileapi::FileSystemType type) {
-  if (origin_identifier.empty())
-    return FilePath();
+FilePath SandboxMountPointProvider::GetBaseDirectoryForOriginAndType(
+    const GURL& origin_url, fileapi::FileSystemType type) const {
   std::string type_string =
       FileSystemPathManager::GetFileSystemTypeString(type);
   if (type_string.empty()) {
     LOG(WARNING) << "Unknown filesystem type is requested:" << type;
     return FilePath();
   }
-  return base_path.AppendASCII(origin_identifier)
-                  .AppendASCII(type_string);
-}
-
-SandboxMountPointProvider::OriginEnumerator::OriginEnumerator(
-    const FilePath& base_path)
-    : enumerator_(base_path, false /* recursive */,
-                  file_util::FileEnumerator::DIRECTORIES) {
-}
-
-std::string SandboxMountPointProvider::OriginEnumerator::Next() {
-  current_ = enumerator_.Next();
-  return FilePathStringToASCII(current_.BaseName().value());
-}
-
-bool SandboxMountPointProvider::OriginEnumerator::HasTemporary() {
-  return !current_.empty() && file_util::DirectoryExists(current_.AppendASCII(
-      fileapi::kTemporaryName));
-}
-
-bool SandboxMountPointProvider::OriginEnumerator::HasPersistent() {
-  return !current_.empty() && file_util::DirectoryExists(current_.AppendASCII(
-      fileapi::kPersistentName));
+  return GetBaseDirectoryForOrigin(origin_url).AppendASCII(type_string);
 }
 
 bool SandboxMountPointProvider::GetOriginBasePathAndName(
@@ -309,12 +338,11 @@ bool SandboxMountPointProvider::GetOriginBasePathAndName(
   if (!path_manager_->IsAllowedScheme(origin_url))
     return false;
 
-  std::string origin_identifier = GetOriginIdentifierFromURL(origin_url);
-  *origin_base_path = GetFileSystemBaseDirectoryForOriginAndType(
-      base_path(), origin_identifier, type);
+  *origin_base_path = GetBaseDirectoryForOriginAndType(origin_url, type);
   if (origin_base_path->empty())
     return false;
 
+  std::string origin_identifier = GetOriginIdentifierFromURL(origin_url);
   std::string type_string =
       FileSystemPathManager::GetFileSystemTypeString(type);
   DCHECK(!type_string.empty());

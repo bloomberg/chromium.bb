@@ -40,8 +40,8 @@ class MockStorageClientIDSequencer {
 
 }  // anonymous namespace
 
-MockStorageClient::MockStorageClient(QuotaManager* qm)
-    : quota_manager_(qm),
+MockStorageClient::MockStorageClient(QuotaManagerProxy* quota_manager_proxy)
+    : quota_manager_proxy_(quota_manager_proxy),
       id_(MockStorageClientIDSequencer::GetInstance()->NextMockID()),
       runnable_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
@@ -50,10 +50,6 @@ MockStorageClient::~MockStorageClient() {
   STLDeleteContainerPointers(usage_callbacks_.begin(), usage_callbacks_.end());
   STLDeleteContainerPointers(
       origins_callbacks_.begin(), origins_callbacks_.end());
-}
-
-QuotaClient::ID MockStorageClient::id() const {
-  return id_;
 }
 
 void MockStorageClient::AddMockOriginData(
@@ -69,7 +65,15 @@ void MockStorageClient::ModifyMockOriginDataSize(
     AddMockOriginData(origin_url, type, delta);
     return;
   }
-  quota_manager_->NotifyStorageModified(id(), origin_url, type, delta);
+  quota_manager_proxy_->NotifyStorageModified(id(), origin_url, type, delta);
+}
+
+QuotaClient::ID MockStorageClient::id() const {
+  return id_;
+}
+
+void MockStorageClient::OnQuotaManagerDestroyed() {
+  delete this;
 }
 
 void MockStorageClient::GetOriginUsage(const GURL& origin_url,

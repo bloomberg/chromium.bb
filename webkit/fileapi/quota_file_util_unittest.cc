@@ -62,7 +62,7 @@ class QuotaFileUtilTest : public testing::Test {
     FileSystemOperationContext *context = new FileSystemOperationContext(
         new FileSystemContext(base::MessageLoopProxy::CreateForCurrentThread(),
                               base::MessageLoopProxy::CreateForCurrentThread(),
-                              NULL, FilePath(), false,
+                              NULL, NULL, FilePath(), false,
                               true, true,
                               new MockFileSystemPathManager(filesystem_dir_)),
         QuotaFileUtil::GetInstance());

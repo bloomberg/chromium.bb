@@ -128,4 +128,27 @@ GURL GetFileSystemRootURI(
   return GURL(path);
 }
 
+FileSystemType QuotaStorageTypeToFileSystemType(
+    quota::StorageType storage_type) {
+  switch (storage_type) {
+    case quota::kStorageTypeTemporary:
+      return kFileSystemTypeTemporary;
+    case quota::kStorageTypePersistent:
+      return kFileSystemTypePersistent;
+    default:
+      return kFileSystemTypeUnknown;
+  }
+}
+
+quota::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type) {
+  switch (type) {
+    case kFileSystemTypeTemporary:
+      return quota::kStorageTypeTemporary;
+    case kFileSystemTypePersistent:
+      return quota::kStorageTypePersistent;
+    default:
+      return quota::kStorageTypeUnknown;
+  }
+}
+
 }  // namespace fileapi

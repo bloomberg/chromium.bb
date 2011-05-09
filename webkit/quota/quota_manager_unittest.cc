@@ -12,6 +12,7 @@
 #include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/stl_util-inl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaType.h"
 #include "webkit/quota/mock_storage_client.h"
@@ -57,8 +58,7 @@ class QuotaManagerTest : public testing::Test {
  protected:
   MockStorageClient* CreateClient(
       const MockOriginData* mock_data, size_t mock_data_size) {
-    MockStorageClient* client(
-        new MockStorageClient(quota_manager_.get()));
+    MockStorageClient* client = new MockStorageClient(quota_manager_->proxy());
     for (size_t i = 0; i < mock_data_size; ++i) {
       client->AddMockOriginData(GURL(mock_data[i].origin),
                                 mock_data[i].type,
@@ -68,7 +68,7 @@ class QuotaManagerTest : public testing::Test {
   }
 
   void RegisterClient(MockStorageClient* client) {
-    quota_manager_->RegisterClient(client);
+    quota_manager_->proxy()->RegisterClient(client);
   }
 
   void GetUsageAndQuota(const GURL& origin, StorageType type) {

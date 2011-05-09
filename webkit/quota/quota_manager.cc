@@ -345,21 +345,22 @@ QuotaManager::QuotaManager(bool is_incognito,
                            scoped_refptr<base::MessageLoopProxy> db_thread)
   : is_incognito_(is_incognito),
     profile_path_(profile_path),
+    proxy_(new QuotaManagerProxy(
+        ALLOW_THIS_IN_INITIALIZER_LIST(this), io_thread)),
     db_initialized_(false),
     db_disabled_(false),
     io_thread_(io_thread),
     db_thread_(db_thread),
-    temporary_global_quota_(-1),
-    callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+    temporary_global_quota_(-1) {
 }
 
 QuotaManager::~QuotaManager() {
-  STLDeleteContainerPointers(clients_.begin(), clients_.end());
-}
-
-void QuotaManager::RegisterClient(QuotaClient* client) {
-  DCHECK(!database_.get());
-  clients_.push_back(client);
+  DCHECK(io_thread_->BelongsToCurrentThread());
+  proxy_->manager_ = NULL;
+  std::for_each(clients_.begin(), clients_.end(),
+                std::mem_fun(&QuotaClient::OnQuotaManagerDestroyed));
+  if (database_.get())
+    db_thread_->DeleteSoon(FROM_HERE, database_.release());
 }
 
 void QuotaManager::GetUsageAndQuota(
@@ -397,15 +398,6 @@ void QuotaManager::RequestQuota(
   // TODO(kinuko): implement me.
   callback->Run(kQuotaErrorNotSupported, 0);
   delete callback;
-}
-
-void QuotaManager::NotifyStorageModified(
-    QuotaClient::ID client_id,
-    const GURL& origin, StorageType type, int64 delta) {
-  LazyInitialize();
-  UsageTracker* tracker = GetUsageTracker(type);
-  DCHECK(tracker);
-  tracker->UpdateUsageCache(client_id, origin, delta);
 }
 
 void QuotaManager::GetTemporaryGlobalQuota(QuotaCallback* callback) {
@@ -478,6 +470,21 @@ void QuotaManager::LazyInitialize() {
   task->Start();
 }
 
+void QuotaManager::RegisterClient(QuotaClient* client) {
+  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(!database_.get());
+  clients_.push_back(client);
+}
+
+void QuotaManager::NotifyStorageModified(
+    QuotaClient::ID client_id,
+    const GURL& origin, StorageType type, int64 delta) {
+  LazyInitialize();
+  UsageTracker* tracker = GetUsageTracker(type);
+  DCHECK(tracker);
+  tracker->UpdateUsageCache(client_id, origin, delta);
+}
+
 UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {
   switch (type) {
     case kStorageTypeTemporary:
@@ -499,18 +506,52 @@ void QuotaManager::DidGetPersistentHostQuota(const std::string& host,
                                              int64 quota) {
   DCHECK(persistent_host_quota_.find(host) == persistent_host_quota_.end());
   persistent_host_quota_[host] = quota;
-  persistent_host_quota_callbacks_.Run(host, quota);
+  persistent_host_quota_callbacks_.Run(host, host, quota);
 }
 
 void QuotaManager::DeleteOnCorrectThread() const {
-  if (database_.get()) {
-    db_thread_->DeleteSoon(FROM_HERE, database_.release());
-  }
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->DeleteSoon(FROM_HERE, this);
     return;
   }
   delete this;
+}
+
+// QuotaManagerProxy ----------------------------------------------------------
+
+void QuotaManagerProxy::RegisterClient(QuotaClient* client) {
+  if (!io_thread_->BelongsToCurrentThread()) {
+    io_thread_->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &QuotaManagerProxy::RegisterClient, client));
+    return;
+  }
+  if (manager_)
+    manager_->RegisterClient(client);
+  else
+    client->OnQuotaManagerDestroyed();
+}
+
+void QuotaManagerProxy::NotifyStorageModified(
+    QuotaClient::ID client_id,
+    const GURL& origin,
+    StorageType type,
+    int64 delta) {
+  if (!io_thread_->BelongsToCurrentThread()) {
+    io_thread_->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &QuotaManagerProxy::NotifyStorageModified,
+        client_id, origin, type, delta));
+    return;
+  }
+  if (manager_)
+    manager_->NotifyStorageModified(client_id, origin, type, delta);
+}
+
+QuotaManagerProxy::QuotaManagerProxy(
+    QuotaManager* manager, base::MessageLoopProxy* io_thread)
+    : manager_(manager), io_thread_(io_thread) {
+}
+
+QuotaManagerProxy::~QuotaManagerProxy() {
 }
 
 }  // namespace quota

@@ -208,7 +208,7 @@ void FileWriterDelegateTest::SetUp() {
   context_.reset(new FileSystemOperationContext(
       new FileSystemContext(base::MessageLoopProxy::CreateForCurrentThread(),
                             base::MessageLoopProxy::CreateForCurrentThread(),
-                            NULL, FilePath(), false /* is_incognito */,
+                            NULL, NULL, FilePath(), false /* is_incognito */,
                             true, true,
                             new MockFileSystemPathManager(filesystem_dir_)),
       NULL));
@@ -345,7 +345,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   context2.reset(new FileSystemOperationContext(
       new FileSystemContext(base::MessageLoopProxy::CreateForCurrentThread(),
                             base::MessageLoopProxy::CreateForCurrentThread(),
-                            NULL, FilePath(), false /* is_incognito */,
+                            NULL, NULL, FilePath(), false /* is_incognito */,
                             true, true,
                             new MockFileSystemPathManager(filesystem_dir_)),
       NULL));

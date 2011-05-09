@@ -12,8 +12,6 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 
-class GURL;
-
 namespace base {
 class MessageLoopProxy;
 }
@@ -22,6 +20,18 @@ namespace fileapi {
 
 class SandboxMountPointProvider : public FileSystemMountPointProvider {
  public:
+  // Origin enumerator interface.
+  // An instance of this interface is assumed to be called on the file thread.
+  class OriginEnumerator {
+   public:
+    virtual ~OriginEnumerator() {}
+
+    // Returns the next origin.  Returns empty if there are no more origins.
+    virtual GURL Next() = 0;
+
+    // Returns the current origin's information.
+    virtual bool HasFileSystemType(FileSystemType type) const = 0;
+  };
 
   SandboxMountPointProvider(
       FileSystemPathManager* path_manager,
@@ -63,40 +73,26 @@ class SandboxMountPointProvider : public FileSystemMountPointProvider {
 
   virtual std::vector<FilePath> GetRootDirectories() const;
 
-  // Returns the origin identifier string, which is used as a part of the
-  // sandboxed path component, for the given |url|.
-  static std::string GetOriginIdentifierFromURL(const GURL& url);
+  // Returns an origin enumerator of this provider.
+  // This method is supposed to be called on the file thread.
+  OriginEnumerator* CreateOriginEnumerator() const;
 
   // Gets a base directory path of the sandboxed filesystem that is
-  // specified by |origin_identifier| and |type|.
-  // |base_path| must be pointing the FileSystem's data directory
-  // under the profile directory, i.e. <profile_dir>/kFileSystemDirectory.
-  // Returns an empty path if any of the given parameters are invalid.
-  // Returned directory path does not contain 'unique' part, therefore
-  // it is not an actual root path for the filesystem.
-  static FilePath GetFileSystemBaseDirectoryForOriginAndType(
-      const FilePath& base_path,
-      const std::string& origin_identifier,
-      fileapi::FileSystemType type);
+  // specified by |origin_url|.
+  // (The path is similar to the origin's root path but doesn't contain
+  // the 'unique' and 'type' part.)
+  // This method is portable and can be called on any threads.
+  FilePath GetBaseDirectoryForOrigin(const GURL& origin_url) const;
 
-  // Enumerates origins under the given |base_path|.
-  // This must be used on the FILE thread.
-  class OriginEnumerator {
-   public:
-    explicit OriginEnumerator(const FilePath& base_path);
-
-    // Returns the next origin identifier.  Returns empty if there are no
-    // more origins.
-    std::string Next();
-
-    bool HasTemporary();
-    bool HasPersistent();
-    const FilePath& path() { return current_; }
-
-    private:
-    file_util::FileEnumerator enumerator_;
-    FilePath current_;
-  };
+  // Gets a base directory path of the sandboxed filesystem that is
+  // specified by |origin_url| and |type|.
+  // (The path is similar to the origin's root path but doesn't contain
+  // the 'unique' part.)
+  // Returns an empty path if the given type is invalid.
+  // This method is portable and can be called on any threads.
+  FilePath GetBaseDirectoryForOriginAndType(
+      const GURL& origin_url,
+      fileapi::FileSystemType type) const;
 
  private:
   bool GetOriginBasePathAndName(
@@ -121,4 +117,3 @@ class SandboxMountPointProvider : public FileSystemMountPointProvider {
 }  // namespace fileapi
 
 #endif  // WEBKIT_FILEAPI_SANDBOX_MOUNT_POINT_PROVIDER_H_
-
