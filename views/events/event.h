@@ -382,6 +382,7 @@ class DropTargetEvent : public LocatedEvent {
       : LocatedEvent(ui::ET_DROP_TARGET_EVENT, gfx::Point(x, y), 0),
         data_(data),
         source_operations_(source_operations) {
+    // TODO(msw): Hook up key state flags for CTRL + drag and drop, etc.
   }
 
   const OSExchangeData& data() const { return data_; }

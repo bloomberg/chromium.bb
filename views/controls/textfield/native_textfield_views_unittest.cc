@@ -7,10 +7,13 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
+#include "base/pickle.h"
 #include "base/utf_string_conversions.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/textfield/native_textfield_views.h"
@@ -211,6 +214,12 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
 
   View* GetFocusedView() {
     return widget_->GetFocusManager()->GetFocusedView();
+  }
+
+  int GetCursorPositionX(int cursor_pos) {
+    const string16 text = textfield_->text().substr(0, cursor_pos);
+    return textfield_view_->GetInsets().left() + textfield_view_->text_offset_ +
+           textfield_view_->GetFont().GetStringWidth(text);
   }
 
   // We need widget to populate wrapper class.
@@ -542,22 +551,256 @@ TEST_F(NativeTextfieldViewsTest, DoubleAndTripleClickTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
   MouseEvent click(ui::ET_MOUSE_PRESSED, 0, 0, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent release(ui::ET_MOUSE_RELEASED, 0, 0, ui::EF_LEFT_BUTTON_DOWN);
   MouseEvent double_click(ui::ET_MOUSE_PRESSED, 0, 0,
                           ui::EF_LEFT_BUTTON_DOWN | ui::EF_IS_DOUBLE_CLICK);
 
   // Test for double click.
   textfield_view_->OnMousePressed(click);
-  EXPECT_STR_EQ("", textfield_->GetSelectedText());
+  textfield_view_->OnMouseReleased(release);
+  EXPECT_TRUE(textfield_->GetSelectedText().empty());
   textfield_view_->OnMousePressed(double_click);
+  textfield_view_->OnMouseReleased(release);
   EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
 
   // Test for triple click.
   textfield_view_->OnMousePressed(click);
+  textfield_view_->OnMouseReleased(release);
   EXPECT_STR_EQ("hello world", textfield_->GetSelectedText());
 
   // Another click should reset back to single click.
   textfield_view_->OnMousePressed(click);
-  EXPECT_STR_EQ("", textfield_->GetSelectedText());
+  textfield_view_->OnMouseReleased(release);
+  EXPECT_TRUE(textfield_->GetSelectedText().empty());
+}
+
+TEST_F(NativeTextfieldViewsTest, DragToSelect) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  textfield_->SetText(ASCIIToUTF16("hello world"));
+  const int kStart = GetCursorPositionX(5);
+  const int kEnd = 500;
+  MouseEvent click_a(ui::ET_MOUSE_PRESSED, kStart, 0, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent click_b(ui::ET_MOUSE_PRESSED, kEnd, 0, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent drag_left(ui::ET_MOUSE_DRAGGED, 0, 0, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent drag_right(ui::ET_MOUSE_DRAGGED, kEnd, 0, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent release(ui::ET_MOUSE_RELEASED, kEnd, 0, ui::EF_LEFT_BUTTON_DOWN);
+  textfield_view_->OnMousePressed(click_a);
+  EXPECT_TRUE(textfield_->GetSelectedText().empty());
+  // Check that dragging left selects the beginning of the string.
+  textfield_view_->OnMouseDragged(drag_left);
+  string16 text_left = textfield_->GetSelectedText();
+  EXPECT_STR_EQ("hello", text_left);
+  // Check that dragging right selects the rest of the string.
+  textfield_view_->OnMouseDragged(drag_right);
+  string16 text_right = textfield_->GetSelectedText();
+  EXPECT_STR_EQ(" world", text_right);
+  // Check that releasing in the same location does not alter the selection.
+  textfield_view_->OnMouseReleased(release);
+  EXPECT_EQ(text_right, textfield_->GetSelectedText());
+  // Check that dragging from beyond the text length works too.
+  textfield_view_->OnMousePressed(click_b);
+  textfield_view_->OnMouseDragged(drag_left);
+  textfield_view_->OnMouseReleased(release);
+  EXPECT_EQ(textfield_->text(), textfield_->GetSelectedText());
+}
+
+TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  textfield_->SetText(ASCIIToUTF16("hello world"));
+
+  ui::OSExchangeData data;
+  string16 string(ASCIIToUTF16("string "));
+  data.SetString(string);
+  int formats = 0;
+  std::set<OSExchangeData::CustomFormat> custom_formats;
+
+  // Ensure that disabled textfields do not accept drops.
+  textfield_->SetEnabled(false);
+  EXPECT_FALSE(textfield_view_->GetDropFormats(&formats, &custom_formats));
+  EXPECT_EQ(0, formats);
+  EXPECT_TRUE(custom_formats.empty());
+  EXPECT_FALSE(textfield_view_->CanDrop(data));
+  textfield_->SetEnabled(true);
+
+  // Ensure that read-only textfields do not accept drops.
+  textfield_->SetReadOnly(true);
+  EXPECT_FALSE(textfield_view_->GetDropFormats(&formats, &custom_formats));
+  EXPECT_EQ(0, formats);
+  EXPECT_TRUE(custom_formats.empty());
+  EXPECT_FALSE(textfield_view_->CanDrop(data));
+  textfield_->SetReadOnly(false);
+
+  // Ensure that enabled and editable textfields do accept drops.
+  EXPECT_TRUE(textfield_view_->GetDropFormats(&formats, &custom_formats));
+  EXPECT_EQ(ui::OSExchangeData::STRING, formats);
+  EXPECT_TRUE(custom_formats.empty());
+  EXPECT_TRUE(textfield_view_->CanDrop(data));
+  DropTargetEvent drop(data, GetCursorPositionX(6), 0,
+      ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE);
+  EXPECT_EQ(ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE,
+            textfield_view_->OnDragUpdated(drop));
+  EXPECT_EQ(ui::DragDropTypes::DRAG_COPY, textfield_view_->OnPerformDrop(drop));
+  EXPECT_STR_EQ("hello string world", textfield_->text());
+
+  // Ensure that textfields do not accept non-OSExchangeData::STRING types.
+  ui::OSExchangeData bad_data;
+  bad_data.SetFilename(FilePath(FILE_PATH_LITERAL("x")));
+#if defined(OS_WIN)
+  bad_data.SetPickledData(CF_BITMAP, Pickle());
+  bad_data.SetFileContents(FilePath(L"x"), "x");
+  bad_data.SetHtml(string16(ASCIIToUTF16("x")), GURL("x.org"));
+  ui::OSExchangeData::DownloadFileInfo download(FilePath(), NULL);
+  bad_data.SetDownloadFileInfo(download);
+#else
+  // Skip OSExchangeDataProviderWin::SetURL, which also sets CF_TEXT / STRING.
+  bad_data.SetURL(GURL("x.org"), string16(ASCIIToUTF16("x")));
+  bad_data.SetPickledData(GDK_SELECTION_PRIMARY, Pickle());
+#endif
+  EXPECT_FALSE(textfield_view_->CanDrop(bad_data));
+}
+
+TEST_F(NativeTextfieldViewsTest, DragAndDrop_InitiateDrag) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  textfield_->SetText(ASCIIToUTF16("hello string world"));
+
+  // Ensure the textfield will provide selected text for drag data.
+  string16 string;
+  ui::OSExchangeData data;
+  const ui::Range kStringRange(6, 12);
+  textfield_->SelectRange(kStringRange);
+  const gfx::Point kStringPoint(GetCursorPositionX(9), 0);
+  textfield_view_->WriteDragDataForView(NULL, kStringPoint, &data);
+  EXPECT_TRUE(data.GetString(&string));
+  EXPECT_EQ(textfield_->GetSelectedText(), string);
+
+  // Ensure that disabled textfields do not support drag operations.
+  textfield_->SetEnabled(false);
+  EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
+            textfield_view_->GetDragOperationsForView(NULL, kStringPoint));
+  textfield_->SetEnabled(true);
+  // Ensure that textfields without selections do not support drag operations.
+  textfield_->ClearSelection();
+  EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
+            textfield_view_->GetDragOperationsForView(NULL, kStringPoint));
+  textfield_->SelectRange(kStringRange);
+  // Ensure that textfields only initiate drag operations inside the selection.
+  EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
+            textfield_view_->GetDragOperationsForView(NULL, gfx::Point()));
+  EXPECT_FALSE(textfield_view_->CanStartDragForView(NULL, gfx::Point(),
+                                                    gfx::Point()));
+  EXPECT_EQ(ui::DragDropTypes::DRAG_COPY,
+            textfield_view_->GetDragOperationsForView(NULL, kStringPoint));
+  EXPECT_TRUE(textfield_view_->CanStartDragForView(NULL, kStringPoint,
+                                                   gfx::Point()));
+  // Ensure that textfields support local moves.
+  EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY,
+      textfield_view_->GetDragOperationsForView(textfield_view_, kStringPoint));
+}
+
+TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheRight) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  textfield_->SetText(ASCIIToUTF16("hello world"));
+
+  string16 string;
+  ui::OSExchangeData data;
+  int formats = 0;
+  int operations = 0;
+  std::set<OSExchangeData::CustomFormat> custom_formats;
+
+  // Start dragging "ello".
+  textfield_->SelectRange(ui::Range(1, 5));
+  MouseEvent click_a(ui::ET_MOUSE_PRESSED, GetCursorPositionX(3), 0,
+                     ui::EF_LEFT_BUTTON_DOWN);
+  textfield_view_->OnMousePressed(click_a);
+  EXPECT_TRUE(textfield_view_->CanStartDragForView(textfield_view_,
+                  click_a.location(), gfx::Point()));
+  operations = textfield_view_->GetDragOperationsForView(textfield_view_,
+                                                         click_a.location());
+  EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY,
+            operations);
+  textfield_view_->WriteDragDataForView(NULL, click_a.location(), &data);
+  EXPECT_TRUE(data.GetString(&string));
+  EXPECT_EQ(textfield_->GetSelectedText(), string);
+  EXPECT_TRUE(textfield_view_->GetDropFormats(&formats, &custom_formats));
+  EXPECT_EQ(ui::OSExchangeData::STRING, formats);
+  EXPECT_TRUE(custom_formats.empty());
+
+  // Drop "ello" after "w".
+  const gfx::Point kDropPoint(GetCursorPositionX(7), 0);
+  EXPECT_TRUE(textfield_view_->CanDrop(data));
+  DropTargetEvent drop_a(data, kDropPoint.x(), 0, operations);
+  EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE,
+            textfield_view_->OnDragUpdated(drop_a));
+  EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE,
+            textfield_view_->OnPerformDrop(drop_a));
+  EXPECT_STR_EQ("h welloorld", textfield_->text());
+  textfield_view_->OnDragDone();
+}
+
+TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheLeft) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  textfield_->SetText(ASCIIToUTF16("hello world"));
+
+  string16 string;
+  ui::OSExchangeData data;
+  int formats = 0;
+  int operations = 0;
+  std::set<OSExchangeData::CustomFormat> custom_formats;
+
+  // Start dragging " worl".
+  textfield_->SelectRange(ui::Range(5, 10));
+  MouseEvent click_a(ui::ET_MOUSE_PRESSED, GetCursorPositionX(7), 0,
+                     ui::EF_LEFT_BUTTON_DOWN);
+  textfield_view_->OnMousePressed(click_a);
+  EXPECT_TRUE(textfield_view_->CanStartDragForView(textfield_view_,
+                  click_a.location(), gfx::Point()));
+  operations = textfield_view_->GetDragOperationsForView(textfield_view_,
+                                                         click_a.location());
+  EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY,
+            operations);
+  textfield_view_->WriteDragDataForView(NULL, click_a.location(), &data);
+  EXPECT_TRUE(data.GetString(&string));
+  EXPECT_EQ(textfield_->GetSelectedText(), string);
+  EXPECT_TRUE(textfield_view_->GetDropFormats(&formats, &custom_formats));
+  EXPECT_EQ(ui::OSExchangeData::STRING, formats);
+  EXPECT_TRUE(custom_formats.empty());
+
+  // Drop " worl" after "h".
+  EXPECT_TRUE(textfield_view_->CanDrop(data));
+  DropTargetEvent drop_a(data, GetCursorPositionX(1), 0, operations);
+  EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE,
+            textfield_view_->OnDragUpdated(drop_a));
+  EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE,
+            textfield_view_->OnPerformDrop(drop_a));
+  EXPECT_STR_EQ("h worlellod", textfield_->text());
+  textfield_view_->OnDragDone();
+}
+
+TEST_F(NativeTextfieldViewsTest, DragAndDrop_Canceled) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  textfield_->SetText(ASCIIToUTF16("hello world"));
+
+  // Start dragging "worl".
+  textfield_->SelectRange(ui::Range(6, 10));
+  MouseEvent click(ui::ET_MOUSE_PRESSED, GetCursorPositionX(8), 0,
+                   ui::EF_LEFT_BUTTON_DOWN);
+  textfield_view_->OnMousePressed(click);
+  ui::OSExchangeData data;
+  textfield_view_->WriteDragDataForView(NULL, click.location(), &data);
+  EXPECT_TRUE(textfield_view_->CanDrop(data));
+  // Drag the text over somewhere valid, outside the current selection.
+  DropTargetEvent drop(data, GetCursorPositionX(2), 0,
+                       ui::DragDropTypes::DRAG_MOVE);
+  EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE, textfield_view_->OnDragUpdated(drop));
+  // "Cancel" the drag, via move and release over the selection, and OnDragDone.
+  MouseEvent drag(ui::ET_MOUSE_DRAGGED, GetCursorPositionX(9), 0,
+                  ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent release(ui::ET_MOUSE_RELEASED, GetCursorPositionX(9), 0,
+                     ui::EF_LEFT_BUTTON_DOWN);
+  textfield_view_->OnMouseDragged(drag);
+  textfield_view_->OnMouseReleased(release);
+  textfield_view_->OnDragDone();
+  EXPECT_EQ(ASCIIToUTF16("hello world"), textfield_->text());
 }
 
 TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {

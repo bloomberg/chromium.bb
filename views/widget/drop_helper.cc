@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,8 @@ int DropHelper::OnDrop(const OSExchangeData& data,
   }
 
   gfx::Point view_location(root_view_location);
-  View::ConvertPointToView(NULL, drop_view, &view_location);
+  View* root_view = drop_view->GetRootView();
+  View::ConvertPointToView(root_view, drop_view, &view_location);
   DropTargetEvent drop_event(data, view_location.x(), view_location.y(),
                              drag_operation);
   return drop_view->OnPerformDrop(drop_event);

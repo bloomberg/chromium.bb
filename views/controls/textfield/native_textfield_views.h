@@ -41,6 +41,7 @@ class Menu2;
 // * Undo/Redo
 class NativeTextfieldViews : public View,
                              public ContextMenuController,
+                             public DragController,
                              public NativeTextfieldWrapper,
                              public ui::SimpleMenuModel::Delegate,
                              public TextInputClient,
@@ -53,7 +54,15 @@ class NativeTextfieldViews : public View,
   virtual gfx::NativeCursor GetCursor(const MouseEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
+  virtual bool GetDropFormats(
+      int* formats,
+      std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
+  virtual bool CanDrop(const OSExchangeData& data) OVERRIDE;
+  virtual int OnDragUpdated(const DropTargetEvent& event) OVERRIDE;
+  virtual int OnPerformDrop(const DropTargetEvent& event) OVERRIDE;
+  virtual void OnDragDone() OVERRIDE;
   virtual bool OnKeyReleased(const KeyEvent& event) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
@@ -63,6 +72,16 @@ class NativeTextfieldViews : public View,
   virtual void ShowContextMenuForView(View* source,
                                       const gfx::Point& p,
                                       bool is_mouse_gesture) OVERRIDE;
+
+  // Overridden from DragController:
+  virtual void WriteDragDataForView(View* sender,
+                                    const gfx::Point& press_pt,
+                                    OSExchangeData* data) OVERRIDE;
+  virtual int GetDragOperationsForView(View* sender,
+                                       const gfx::Point& p) OVERRIDE;
+  virtual bool CanStartDragForView(View* sender,
+                                   const gfx::Point& press_pt,
+                                   const gfx::Point& p) OVERRIDE;
 
   // NativeTextfieldWrapper overrides:
   virtual string16 GetText() const OVERRIDE;
@@ -229,6 +248,9 @@ class NativeTextfieldViews : public View,
 
   // True if InputMethod::CancelComposition() should not be called.
   bool skip_input_method_cancel_composition_;
+
+  // Is the user potentially dragging and dropping from this view?
+  bool initiating_drag_;
 
   // A runnable method factory for callback to update the cursor.
   ScopedRunnableMethodFactory<NativeTextfieldViews> cursor_timer_;

@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "grit/app_strings.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
@@ -66,6 +67,7 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
       insert_(true),
       is_cursor_visible_(false),
       skip_input_method_cancel_composition_(false),
+      initiating_drag_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cursor_timer_(this)),
       aggregated_clicks_(0),
       last_click_time_(base::Time::FromInternalValue(0)),
@@ -78,6 +80,7 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
   DCHECK_NE(parent->style(), Textfield::STYLE_LOWERCASE);
 
   SetContextMenuController(this);
+  SetDragController(this);
 }
 
 NativeTextfieldViews::~NativeTextfieldViews() {
@@ -102,9 +105,13 @@ bool NativeTextfieldViews::OnMousePressed(const MouseEvent& event) {
     last_click_time_ = event.time_stamp();
     last_click_location_ = event.location();
 
+    initiating_drag_ = false;
     switch(aggregated_clicks_) {
       case 0:
-        MoveCursorTo(event.location(), event.IsShiftDown());
+        if (!IsPointInSelection(event.location()))
+          MoveCursorTo(event.location(), event.IsShiftDown());
+        else
+          initiating_drag_ = true;
         break;
       case 1:
         model_->SelectWord();
@@ -123,11 +130,24 @@ bool NativeTextfieldViews::OnMousePressed(const MouseEvent& event) {
 }
 
 bool NativeTextfieldViews::OnMouseDragged(const MouseEvent& event) {
+  // Don't adjust the cursor on a potential drag and drop.
+  if (initiating_drag_)
+    return true;
+
   OnBeforeUserAction();
   if (MoveCursorTo(event.location(), true))
     SchedulePaint();
   OnAfterUserAction();
   return true;
+}
+
+void NativeTextfieldViews::OnMouseReleased(const MouseEvent& event) {
+  OnBeforeUserAction();
+  // Cancel suspected drag initiations, the user was clicking in the selection.
+  if (initiating_drag_ && MoveCursorTo(event.location(), false))
+    SchedulePaint();
+  initiating_drag_ = false;
+  OnAfterUserAction();
 }
 
 bool NativeTextfieldViews::OnKeyPressed(const KeyEvent& event) {
@@ -140,6 +160,64 @@ bool NativeTextfieldViews::OnKeyPressed(const KeyEvent& event) {
 bool NativeTextfieldViews::OnKeyReleased(const KeyEvent& event) {
   NOTREACHED();
   return false;
+}
+
+bool NativeTextfieldViews::GetDropFormats(
+    int* formats,
+    std::set<OSExchangeData::CustomFormat>* custom_formats) {
+  if (!textfield_->IsEnabled() || textfield_->read_only())
+    return false;
+  // TODO(msw): Can we support URL, FILENAME, etc.?
+  *formats = ui::OSExchangeData::STRING;
+  return true;
+}
+
+bool NativeTextfieldViews::CanDrop(const OSExchangeData& data) {
+  return textfield_->IsEnabled() && !textfield_->read_only() &&
+         data.HasString();
+}
+
+int NativeTextfieldViews::OnDragUpdated(const DropTargetEvent& event) {
+  // TODO(msw): retain unfocused selection, render secondary cursor...
+  DCHECK(CanDrop(event.data()));
+  if (initiating_drag_) {
+    if (IsPointInSelection(event.location()))
+      return ui::DragDropTypes::DRAG_NONE;
+    return event.IsControlDown() ? ui::DragDropTypes::DRAG_COPY :
+                                   ui::DragDropTypes::DRAG_MOVE;
+  }
+  return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE;
+}
+
+int NativeTextfieldViews::OnPerformDrop(const DropTargetEvent& event) {
+  DCHECK(CanDrop(event.data()));
+  DCHECK(!initiating_drag_ || !IsPointInSelection(event.location()));
+  OnBeforeUserAction();
+  size_t drop_destination = FindCursorPosition(event.location());
+  // We'll delete the current selection for a drag and drop within this view.
+  bool move = initiating_drag_ && !event.IsControlDown() &&
+              event.source_operations() & ui::DragDropTypes::DRAG_MOVE;
+  if (move) {
+    ui::Range selected_range;
+    model_->GetSelectedRange(&selected_range);
+    // Adjust the drop destination if it is on or after the current selection.
+    if (selected_range.GetMax() <= drop_destination)
+      drop_destination -= selected_range.length();
+    else if (selected_range.GetMin() <= drop_destination)
+      drop_destination = selected_range.GetMin();
+    model_->DeleteSelection();
+  }
+  model_->MoveCursorTo(drop_destination, false);
+  string16 text;
+  event.data().GetString(&text);
+  InsertText(text);
+  UpdateCursorBoundsAndTextOffset();
+  OnAfterUserAction();
+  return move ? ui::DragDropTypes::DRAG_MOVE : ui::DragDropTypes::DRAG_COPY;
+}
+
+void NativeTextfieldViews::OnDragDone() {
+  initiating_drag_ = false;
 }
 
 void NativeTextfieldViews::OnPaint(gfx::Canvas* canvas) {
@@ -159,11 +237,14 @@ void NativeTextfieldViews::OnBlur() {
 }
 
 gfx::NativeCursor NativeTextfieldViews::GetCursor(const MouseEvent& event) {
+  bool text = !initiating_drag_ && (event.type() == ui::ET_MOUSE_DRAGGED ||
+                                    !IsPointInSelection(event.location()));
 #if defined(OS_WIN)
   static HCURSOR ibeam = LoadCursor(NULL, IDC_IBEAM);
-  return ibeam;
+  static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);
+  return text ? ibeam : arrow;
 #else
-  return gfx::GetCursor(GDK_XTERM);
+  return text ? gfx::GetCursor(GDK_XTERM) : NULL;
 #endif
 }
 
@@ -174,6 +255,31 @@ void NativeTextfieldViews::ShowContextMenuForView(View* source,
                                                   bool is_mouse_gesture) {
   InitContextMenuIfRequired();
   context_menu_menu_->RunContextMenuAt(p);
+}
+
+/////////////////////////////////////////////////////////////////
+// NativeTextfieldViews, views::DragController overrides:
+void NativeTextfieldViews::WriteDragDataForView(views::View* sender,
+                                                const gfx::Point& press_pt,
+                                                OSExchangeData* data) {
+  DCHECK_NE(ui::DragDropTypes::DRAG_NONE,
+            GetDragOperationsForView(sender, press_pt));
+  data->SetString(GetSelectedText());
+}
+
+int NativeTextfieldViews::GetDragOperationsForView(views::View* sender,
+                                                   const gfx::Point& p) {
+  if (!textfield_->IsEnabled() || !IsPointInSelection(p))
+    return ui::DragDropTypes::DRAG_NONE;
+  if (sender == this && !textfield_->read_only())
+    return ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY;
+  return ui::DragDropTypes::DRAG_COPY;
+}
+
+bool NativeTextfieldViews::CanStartDragForView(View* sender,
+                                               const gfx::Point& press_pt,
+                                               const gfx::Point& p) {
+  return IsPointInSelection(press_pt);
 }
 
 /////////////////////////////////////////////////////////////////
