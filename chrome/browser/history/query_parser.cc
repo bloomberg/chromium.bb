@@ -12,9 +12,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
-#include "base/string_util.h"
-#include "base/utf_string_conversions.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -318,7 +315,6 @@ void QueryParser::ParseQuery(const string16& query,
     nodes->swap(*root.children());
 }
 
-
 void QueryParser::ExtractQueryWords(const string16& query,
                                     std::vector<string16>* words) {
   QueryNodeList root;
@@ -375,9 +371,7 @@ bool QueryParser::ParseQueryImpl(const string16& query, QueryNodeList* root) {
     // is not necessarily a word, but could also be a sequence of punctuation
     // or whitespace.
     if (iter.IsWord()) {
-      string16 word = iter.GetString();
-
-      QueryNodeWord* word_node = new QueryNodeWord(word);
+      QueryNodeWord* word_node = new QueryNodeWord(iter.GetString());
       if (in_quotes)
         word_node->set_literal(true);
       query_stack.back()->AddChild(word_node);
