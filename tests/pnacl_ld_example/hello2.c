@@ -6,6 +6,6 @@
 
 #include "native_client/tests/pnacl_ld_example/simple.h"
 
-const char* hello() {
-  return "Hello, world.";
+const char* hello2() {
+  return hello();
 }

@@ -14,6 +14,8 @@ int main(int argc, char** argv) {
   printf("hello returned '%s'\n", hello());
   printf("fortytwo returned: %d\n", fortytwo());
 
+  printf("hello2 returned '%s'\n", hello2());
+  printf("fortytwo2 returned '%d'\n", fortytwo2());
   printf("after shlib calls\n");
   fflush(stdout);
   return 0;

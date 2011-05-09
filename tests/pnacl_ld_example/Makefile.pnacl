@@ -40,27 +40,48 @@ hello.bc:  hello.c
 fortytwo.bc:  fortytwo.c
 	$(PNACL_CC)  -c -fPIC -I../../.. $(DEBUG_FLAGS) -o $@ $^
 
+hello2.bc:  hello2.c
+	$(PNACL_CC)  -c -fPIC -I../../.. $(DEBUG_FLAGS) -o $@ $^
+
+
+fortytwo2.bc:  fortytwo2.c
+	$(PNACL_CC)  -c -fPIC -I../../.. $(DEBUG_FLAGS) -o $@ $^
+
 ######################################################################
-LD_X86_ARGS= --pnacl-driver-set-WHICH_LD=GOLD 
+LD_X86_ARGS= --pnacl-driver-set-WHICH_LD=GOLD
 # http://code.google.com/p/nativeclient/issues/detail?id=1531
 # uncomment this for BFD linking
-#LD_X86_ARGS= --pnacl-driver-set-LD_SCRIPT_X8632=ld_script_x86_32_shared
+# LD_X86_ARGS= --pnacl-driver-set-LD_SCRIPT_ARM=ld_script_x86_32_shared
 LLC_X86_ARGS= --add-llc-option -sfi-x86-jmp-mask=-1 
 X86_FLAGS= $(DEBUG_FLAGS) $(LD_X86_ARGS) $(LLC_X86_ARGS)
 
 # mostly sandboxed
-libsimple.x86-32.so: hello.bc fortytwo.bc
+libsimple1.x86-32.so: hello.bc fortytwo.bc
 	$(PNACL_LD) -shared -fPIC  -arch x86-32 $(X86_FLAGS) -o $@ $^
 	# TODO(robertm): enable this once ncval has been fixed
 	#	$(NCVAL_X86_32) $@
 	$(ELF_PATCHER) -l $@	
 
-# *not* sanboxed
-main.x86-32: main.c libsimple.x86-32.so
-	gcc -m32 -o $@ -L. -lsimple.x86-32 main.c
+# mostly sandboxed
+libsimple2.x86-32.so: hello2.bc fortytwo2.bc
+	$(PNACL_LD) -shared -fPIC  -arch x86-32 $(X86_FLAGS) -o $@ $^
+	# TODO(robertm): enable this once ncval has been fixed
+	# $(NCVAL_X86_32) $@
+	$(ELF_PATCHER) -l $@	
 
-run.x86-32: main.x86-32
+# *not* sanboxed
+main2.x86-32: main.c libsimple1.x86-32.so libsimple2.x86-32.so
+	gcc -m32 -o $@ -L. -lsimple1.x86-32 -lsimple2.x86-32 main2.c
+
+main.x86-32: main.c libsimple1.x86-32.so 
+	gcc -m32 -o $@ -L. -lsimple1.x86-32 main.c
+
+run.x86-32: main.x86-32 
 	LD_LIBRARY_PATH=. ./main.x86-32
+	echo "success"
+
+run2.x86-32: main2.x86-32 
+	LD_LIBRARY_PATH=. ./main2.x86-32
 	echo "success"
 
 ######################################################################
@@ -72,17 +93,30 @@ LLC_ARM_ARGS= --add-llc-option -sfi-zero-mask
 ARM_FLAGS= $(DEBUG_FLAGS) $(LD_ARM_ARGS) $(LLC_ARM_ARGS)
 
 # mostly sandboxed
-libsimple.arm.so: hello.bc fortytwo.bc
+libsimple1.arm.so: hello.bc fortytwo.bc
 	$(PNACL_LD) -shared -fPIC  -arch arm $(ARM_FLAGS) -o $@ $^
 	$(NCVAL_ARM) --zero-masks $@
 	$(ELF_PATCHER) -l $@
 
+# mostly sandboxed
+libsimple2.arm.so: hello2.bc fortytwo2.bc
+	$(PNACL_LD) -shared -fPIC  -arch arm $(ARM_ARGS) -o $@ $^
+	$(NCVAL_ARM) --zero-masks $@
+	$(ELF_PATCHER) -l $@
+
 # *not* sanboxed
-main.arm: main.c libsimple.arm.so
-	$(ARM_CC)  -Wl,-Ttext-segment=20000 -o $@ -L. -lsimple.arm main.c
+main2.arm: main.c libsimple1.arm.so libsimple2.arm.so
+	$(ARM_CC)  -Wl,-Ttext-segment=20000 -o $@ -L. -lsimple1.arm  -lsimple2.arm main.c
+
+main.arm: main.c libsimple1.arm.so 
+	$(ARM_CC)  -Wl,-Ttext-segment=20000 -o $@ -L. -lsimple1.arm  main.c
 
 run.arm: main.arm
 	LD_LIBRARY_PATH=. $(QEMU) ./main.arm
+	echo "success"
+
+run2.arm: main2.arm
+	LD_LIBRARY_PATH=. $(QEMU) ./main2.arm
 	echo "success"
 ######################################################################
 
