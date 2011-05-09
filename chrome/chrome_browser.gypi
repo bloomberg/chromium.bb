@@ -917,6 +917,8 @@
         'browser/extensions/extension_infobar_module_constants.h',
         'browser/extensions/extension_input_api.cc',
         'browser/extensions/extension_input_api.h',
+        'browser/extensions/extension_input_ui_api.cc',
+        'browser/extensions/extension_input_ui_api.h',
         'browser/extensions/extension_install_dialog.h',
         'browser/extensions/extension_install_ui.cc',
         'browser/extensions/extension_install_ui.h',
@@ -3487,6 +3489,8 @@
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
+            ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
+            ['exclude', '^browser/extensions/extension_input_ui_api.h'],
             ['exclude', '^browser/ui/webui/chromeos'],
             ['exclude', '^browser/ui/webui/options/chromeos'],
             ['exclude', 'browser/extensions/extension_file_browser_private_api.cc'],
@@ -3550,6 +3554,8 @@
           'sources/': [
             ['exclude', '^browser/chromeos/frame/dom_*'],
             ['exclude', '^browser/chromeos/login/dom_*'],
+            ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
+            ['exclude', '^browser/extensions/extension_input_ui_api.h'],
             ['exclude', '^browser/webui/keyboard_ui.*'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views.*'],
             ['exclude', '^browser/ui/touch/*'],
@@ -4239,6 +4245,14 @@
                 ['exclude', '^browser/ui/views/keyboard_overlay_dialog_view.cc'],
                 ['exclude', '^browser/ui/views/keyboard_overlay_dialog_view.h'],
                 ['exclude', '^browser/ui/views/select_file_dialog.cc'],
+              ],
+            }],
+            # Exclude extension_input_ui_api again
+            # (Required because of the '^browser/extensions/' include abrove)
+            ['OS=="linux" and ( touchui==0 or chromeos==0 )', {
+              'sources/': [
+                ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
+                ['exclude', '^browser/extensions/extension_input_ui_api.h'],
               ],
             }],
             # GTK build only

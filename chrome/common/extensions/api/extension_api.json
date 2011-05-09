@@ -2423,6 +2423,144 @@
     "events": []
   },
   {
+    "namespace": "experimental.inputUI",
+    "nodoc": true,
+    "types": [],
+    "functions": [
+      {
+        "name": "register",
+        "type": "function",
+        "description": "Register the extension, so the extension can receive input method related events.",
+        "parameters": [
+          { "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "This function is called when the event processing is completed.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "candidateClicked",
+        "type": "function",
+        "description": "Notify input method engine that a candidate was clicked.",
+        "parameters": [
+          { "type": "integer",
+            "name": "index"
+          },
+          { "type": "integer",
+            "name": "button"
+          },
+          { "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "This function is called when the event processing is completed.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "cursorUp",
+        "type": "function",
+        "description": "Notify input method engine cursor up button was clicked.",
+        "parameters": [
+          { "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "This function is called when the event processing is completed.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "cursorDown",
+        "type": "function",
+        "description": "Notify input method engine cursor down button was clicked.",
+        "parameters": [
+          { "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "This function is called when the event processing is completed.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "pageUp",
+        "type": "function",
+        "description": "Notify input method engine page up button was clicked.",
+        "parameters": [
+          { "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "This function is called when the event processing is completed.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "pageDown",
+        "type": "function",
+        "description": "Notify input method engine page down button was clicked.",
+        "parameters": [
+          { "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "This function is called when the event processing is completed.",
+            "parameters": []
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onSetCursorLocation",
+        "type": "function",
+        "description": "Fired when input cursor location is changed.",
+        "parameters": [
+          { "type": "integer",
+            "name": "x"
+          },
+          { "type": "integer",
+            "name": "y"
+          },
+          { "type": "integer",
+            "name": "width"
+          },
+          { "type": "integer",
+            "name": "height"
+          }
+        ]
+      },
+      {
+        "name": "onUpdateAuxiliaryText",
+        "type": "function",
+        "description": "Fired when auxiliary text is changed.",
+        "parameters": [
+          { "type": "string",
+            "name": "text",
+            "description": "Auxiliary text."
+          }
+        ]
+      },
+      {
+        "name": "onUpdateLookupTable",
+        "type": "function",
+        "description": "Fired when lookup table is updated.",
+        "parameters": [
+          { "type": "object",
+            "properties": {
+              "visible": { "type": "boolean" },
+              "candidates": { "type": "array", "items": { "type": "string" } }
+            },
+            "description": "Lookup table"
+          }
+        ]
+      }
+
+    ]
+  },
+  {
     "namespace": "experimental.bookmarkManager",
     "nodoc": true,
     "types": [

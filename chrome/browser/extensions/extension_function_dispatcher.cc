@@ -63,6 +63,10 @@
 #include "chrome/browser/extensions/extension_input_api.h"
 #endif
 
+#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+#include "chrome/browser/extensions/extension_input_ui_api.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/extension_file_browser_private_api.h"
 #include "chrome/browser/extensions/extension_info_private_api_chromeos.h"
@@ -271,6 +275,18 @@ void FactoryRegistry::ResetFunctions() {
 #if defined(TOOLKIT_VIEWS)
   // Input.
   RegisterFunction<SendKeyboardEventInputFunction>();
+#endif
+
+#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+  // IME
+  RegisterFunction<CandidateClickedInputUiFunction>();
+  RegisterFunction<CursorUpInputUiFunction>();
+  RegisterFunction<CursorDownInputUiFunction>();
+  RegisterFunction<PageUpInputUiFunction>();
+  RegisterFunction<PageDownInputUiFunction>();
+  RegisterFunction<RegisterInputUiFunction>();
+  RegisterFunction<PageUpInputUiFunction>();
+  RegisterFunction<PageDownInputUiFunction>();
 #endif
 
   // Management.
