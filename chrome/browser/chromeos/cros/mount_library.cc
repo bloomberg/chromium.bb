@@ -15,6 +15,37 @@ const char* kLibraryNotLoaded = "Cros Library not loaded";
 
 namespace chromeos {
 
+MountLibrary::Disk::Disk(const std::string& device_path,
+     const std::string& mount_path,
+     const std::string& system_path,
+     const std::string& file_path,
+     const std::string& device_label,
+     const std::string& drive_label,
+     const std::string& parent_path,
+     DeviceType device_type,
+     uint64 total_size,
+     bool is_parent,
+     bool is_read_only,
+     bool has_media,
+     bool on_boot_device)
+    : device_path_(device_path),
+      mount_path_(mount_path),
+      system_path_(system_path),
+      file_path_(file_path),
+      device_label_(device_label),
+      drive_label_(drive_label),
+      parent_path_(parent_path),
+      device_type_(device_type),
+      total_size_(total_size),
+      is_parent_(is_parent),
+      is_read_only_(is_read_only),
+      has_media_(has_media),
+      on_boot_device_(on_boot_device) {
+  // Add trailing slash to mount path.
+  if (mount_path_.length() && mount_path_.at(mount_path_.length() -1) != '/')
+    mount_path_ = mount_path_.append("/");
+}
+
 class MountLibraryImpl : public MountLibrary {
  public:
   MountLibraryImpl() : mount_status_connection_(NULL) {
