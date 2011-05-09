@@ -335,7 +335,8 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
   if (touch_pressed_handler_) {
     TouchEvent touch_event(e, this, touch_pressed_handler_);
     status = touch_pressed_handler_->ProcessTouchEvent(touch_event);
-    gesture_manager_->ProcessTouchEventForGesture(e, this, status);
+    if (gesture_manager_->ProcessTouchEventForGesture(e, this, status))
+      status = View::TOUCH_STATUS_SYNTH_MOUSE;
     if (status == TOUCH_STATUS_END)
       touch_pressed_handler_ = NULL;
     return status;
@@ -373,7 +374,8 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
     if (status != TOUCH_STATUS_START)
       touch_pressed_handler_ = NULL;
 
-    gesture_manager_->ProcessTouchEventForGesture(e, this, status);
+    if (gesture_manager_->ProcessTouchEventForGesture(e, this, status))
+      status = View::TOUCH_STATUS_SYNTH_MOUSE;
     return status;
   }
 
@@ -381,7 +383,8 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
   touch_pressed_handler_ = NULL;
 
   // Give the touch event to the gesture manager.
-  gesture_manager_->ProcessTouchEventForGesture(e, this, status);
+  if (gesture_manager_->ProcessTouchEventForGesture(e, this, status))
+    status = View::TOUCH_STATUS_SYNTH_MOUSE;
   return status;
 }
 #endif
