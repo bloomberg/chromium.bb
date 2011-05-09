@@ -33,8 +33,6 @@
         '../third_party/skia/gpu/src/GrGpuGLFixed.h',
         '../third_party/skia/gpu/src/GrGpuGLShaders.cpp',
         '../third_party/skia/gpu/src/GrGpuGLShaders.h',
-        '../third_party/skia/gpu/src/GrGpuGLShaders2.cpp',
-        '../third_party/skia/gpu/src/GrGpuGLShaders2.h',
         '../third_party/skia/gpu/src/GrInOrderDrawBuffer.cpp',
         '../third_party/skia/gpu/src/GrMatrix.cpp',
         '../third_party/skia/gpu/src/GrMemory.cpp',
