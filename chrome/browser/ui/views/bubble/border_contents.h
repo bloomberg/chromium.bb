@@ -14,7 +14,7 @@
 // BorderWidgetWin, while others can use it directly in the bubble.
 class BorderContents : public views::View {
  public:
-  BorderContents() : bubble_border_(NULL) { }
+  BorderContents();
 
   // Must be called before this object can be used.
   void Init();
@@ -36,6 +36,11 @@ class BorderContents : public views::View {
       gfx::Rect* contents_bounds,             // Returned in window coordinates
       gfx::Rect* window_bounds);              // Returned in screen coordinates
 
+  // Sets content margins.
+  void set_content_margins(const gfx::Insets& margins) {
+    content_margins_ = margins;
+  }
+
  protected:
   virtual ~BorderContents() { }
 
@@ -43,11 +48,10 @@ class BorderContents : public views::View {
   // Overridden in unit-tests.
   virtual gfx::Rect GetMonitorBounds(const gfx::Rect& rect);
 
-  // Margins between the contents and the inside of the border, in pixels.
-  static const int kLeftMargin = 6;
-  static const int kTopMargin = 6;
-  static const int kRightMargin = 6;
-  static const int kBottomMargin = 9;
+  // Accessor for |content_margins_|.
+  const gfx::Insets& content_margins() const {
+    return content_margins_;
+  }
 
   BubbleBorder* bubble_border_;
 
@@ -73,6 +77,9 @@ class BorderContents : public views::View {
   // Convenience method that returns the height of |insets| if |vertical| is
   // true, its width otherwise.
   static int GetInsetsLength(const gfx::Insets& insets, bool vertical);
+
+  // Margins between the content and the inside of the border, in pixels.
+  gfx::Insets content_margins_;
 
   DISALLOW_COPY_AND_ASSIGN(BorderContents);
 };

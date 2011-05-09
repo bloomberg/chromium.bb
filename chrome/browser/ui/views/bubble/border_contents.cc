@@ -10,6 +10,16 @@
 #include "chrome/browser/ui/window_sizer.h"
 #include "third_party/skia/include/core/SkPaint.h"
 
+static const int kLeftMargin = 6;
+static const int kTopMargin = 6;
+static const int kRightMargin = 6;
+static const int kBottomMargin = 9;
+
+BorderContents::BorderContents()
+    : bubble_border_(NULL),
+      content_margins_(kTopMargin, kLeftMargin, kBottomMargin, kRightMargin) {
+}
+
 void BorderContents::Init() {
   // Default arrow location.
   BubbleBorder::ArrowLocation arrow_location = BubbleBorder::TOP_LEFT;
@@ -41,8 +51,8 @@ void BorderContents::SizeAndGetBounds(
 
   // Give the contents a margin.
   gfx::Size local_contents_size(contents_size);
-  local_contents_size.Enlarge(kLeftMargin + kRightMargin,
-                              kTopMargin + kBottomMargin);
+  local_contents_size.Enlarge(content_margins_.width(),
+                              content_margins_.height());
 
   // Try putting the arrow in its initial location, and calculating the bounds.
   *window_bounds =
@@ -68,8 +78,8 @@ void BorderContents::SizeAndGetBounds(
   *contents_bounds = gfx::Rect(gfx::Point(), window_bounds->size());
   gfx::Insets insets;
   bubble_border_->GetInsets(&insets);
-  contents_bounds->Inset(insets.left() + kLeftMargin, insets.top() + kTopMargin,
-      insets.right() + kRightMargin, insets.bottom() + kBottomMargin);
+  insets += content_margins_;
+  contents_bounds->Inset(insets);
 }
 
 gfx::Rect BorderContents::GetMonitorBounds(const gfx::Rect& rect) {

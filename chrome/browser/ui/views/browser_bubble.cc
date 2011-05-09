@@ -48,7 +48,12 @@ BrowserBubble::BrowserBubble(views::View* view,
   views::View::ConvertPointToView(NULL, frame_->GetRootView(), &origin);
   relative_to_.set_origin(origin);
 
-  InitPopup();
+  // Use half the corner radius as contents margins so that contents fit better
+  // in the bubble. See http://crbug.com/80416.
+  int corner_inset = BubbleBorder::GetCornerRadius() / 2;
+  gfx::Insets content_margins(corner_inset, corner_inset,
+                              corner_inset, corner_inset);
+  InitPopup(content_margins);
 }
 
 BrowserBubble::~BrowserBubble() {

@@ -105,7 +105,7 @@ class BubbleWidget : public views::WidgetWin {
   DISALLOW_COPY_AND_ASSIGN(BubbleWidget);
 };
 
-void BrowserBubble::InitPopup() {
+void BrowserBubble::InitPopup(const gfx::Insets& content_margins) {
   // popup_ is a Widget, but we need to do some WidgetWin stuff first, then
   // we'll assign it into popup_.
   BubbleWidget* pop = new BubbleWidget(this);
@@ -114,6 +114,7 @@ void BrowserBubble::InitPopup() {
   BorderWidgetWin* border_widget = pop->border_widget();
   border_widget->InitBorderWidgetWin(new BorderContents,
                                      frame_->GetNativeView());
+  border_widget->border_contents()->set_content_margins(content_margins);
 
   // We make the BorderWidgetWin the owner of the Bubble HWND, so that the
   // latter is displayed on top of the former.
@@ -121,7 +122,6 @@ void BrowserBubble::InitPopup() {
   params.parent = border_widget->GetNativeView();
   popup_->Init(params);
   popup_->SetContentsView(view_);
-
 
   ResizeToView();
   Reposition();

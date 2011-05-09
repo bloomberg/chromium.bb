@@ -22,10 +22,11 @@ namespace {
 
 class BubbleWidget : public views::WidgetGtk {
  public:
-  explicit BubbleWidget(BrowserBubble* bubble)
+  BubbleWidget(BrowserBubble* bubble, const gfx::Insets& content_margins)
       : bubble_(bubble),
         border_contents_(new BorderContents) {
     border_contents_->Init();
+    border_contents_->set_content_margins(content_margins);
   }
 
   void ShowAndActivate(bool activate) {
@@ -89,9 +90,9 @@ class BubbleWidget : public views::WidgetGtk {
 
 }  // namespace
 
-void BrowserBubble::InitPopup() {
+void BrowserBubble::InitPopup(const gfx::Insets& content_margins) {
   // TODO(port)
-  BubbleWidget* pop = new BubbleWidget(this);
+  BubbleWidget* pop = new BubbleWidget(this, content_margins);
   pop->MakeTransparent();
   pop->make_transient_to_parent();
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);

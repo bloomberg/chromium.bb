@@ -97,7 +97,7 @@ class BrowserBubble {
 
  protected:
   // Create the popup widget.
-  virtual void InitPopup();
+  virtual void InitPopup(const gfx::Insets& content_margins);
 
   // Get |relative_to_| rect in screen coordinates.
   gfx::Rect GetAbsoluteRelativeTo();

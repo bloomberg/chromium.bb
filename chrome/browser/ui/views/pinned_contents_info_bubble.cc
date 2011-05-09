@@ -19,7 +19,7 @@ void PinnedContentsBorderContents::SizeAndGetBounds(
 
   gfx::Insets insets;
   bubble_border_->GetInsets(&insets);
-  offset += kLeftMargin + insets.left() + 1;
+  offset += content_margins().left() + insets.left() + 1;
   bubble_border_->SetArrowOffset(offset, contents_size);
 
   BorderContents::SizeAndGetBounds(
@@ -28,7 +28,7 @@ void PinnedContentsBorderContents::SizeAndGetBounds(
       contents_size, contents_bounds, window_bounds);
 
   // Now move the y position to make sure the bubble contents overlap the view.
-  window_bounds->Offset(0, -(kTopMargin + 1));
+  window_bounds->Offset(0, -(content_margins().top() + 1));
 }
 
 // Bubble -----------------------------------------------------------------
