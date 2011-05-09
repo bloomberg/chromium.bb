@@ -107,9 +107,10 @@ bool NativeViewGLSurfaceGLX::Initialize() {
     config_ = glXGetFBConfigFromVisualSGIX(g_display, visual_infos.get());
     if (!config_) {
       LOG(ERROR) << "glXGetFBConfigFromVisualSGIX failed.";
-      return false;
     }
-  } else {
+  }
+
+  if (!config_) {
     int config_id;
     if (glXGetConfig(g_display,
                      visual_infos.get(),
