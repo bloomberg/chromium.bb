@@ -1321,7 +1321,7 @@ void WidgetGtk::OnMap(GtkWidget* widget) {
   // a bug in message_pump_glib_x.cc as we do get X Expose event but
   // it doesn't trigger gtk's expose signal. We're not going to fix this
   // as we're removing gtk and migrating to new compositor.
-  gdk_window_process_updates(widget_->window, true);
+  gdk_window_process_all_updates();
 #endif
 }
 
