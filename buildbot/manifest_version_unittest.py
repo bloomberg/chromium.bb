@@ -36,8 +36,8 @@ GIT_DIR = '/tmp/repo_for_manifest_version_unittest'
 # Use the chromite repo to actually test git changes.
 GIT_TEST_PATH = 'chromite'
 
-def _TouchFile(file_path):
-  """Touches a file."""
+def TouchFile(file_path):
+  """Touches a file specified by file_path"""
   if not os.path.exists(os.path.dirname(file_path)):
     os.makedirs(os.path.dirname(file_path))
 
@@ -169,7 +169,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
     self.mox.StubOutWithMock(manifest_version, '_CloneGitRepo')
     info = manifest_version.VersionInfo(version_string=FAKE_VERSION_STRING,
-                                         incr_type='patch')
+                                        incr_type='patch')
     dir_pfx = '1.2'
     m1 = os.path.join(self.manager.manifests_dir, 'buildspecs', dir_pfx,
                       '1.2.3.2.xml')
@@ -183,10 +183,10 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
                              self.build_name)
 
     # Create fake buildspecs.
-    _TouchFile(m1)
-    _TouchFile(m2)
-    _TouchFile(m3)
-    _TouchFile(m4)
+    TouchFile(m1)
+    TouchFile(m2)
+    TouchFile(m3)
+    TouchFile(m4)
 
     # Fail 1, pass 2, leave 3,4 unprocessed.
     manifest_version._CreateSymlink(m1, os.path.join(for_build, 'fail', dir_pfx,
@@ -217,10 +217,10 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
                              self.build_name)
 
     # Create fake buildspecs.
-    _TouchFile(m1)
-    _TouchFile(m2)
-    _TouchFile(m3)
-    _TouchFile(m4)
+    TouchFile(m1)
+    TouchFile(m2)
+    TouchFile(m3)
+    TouchFile(m4)
 
     self.mox.ReplayAll()
     specs = self.manager._GetMatchingSpecs(info, specs_dir)
