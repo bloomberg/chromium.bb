@@ -9,6 +9,7 @@ html {
   /* It's necessary to put this here instead of in body in order to get the
      background-size of 100% to work properly */
   height: 100%;
+  overflow: hidden;
 }
 
 body {

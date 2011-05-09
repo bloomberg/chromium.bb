@@ -8,31 +8,10 @@ html,
   background-repeat: $5;
 }
 
-html[bookmarkbarattached='true'],
-html[bookmarkbarattached='true'] .section > h2 span,
-html[bookmarkbarattached='true'] #most-visited-settings {
-  background-position: $4;
-}
-
 body {
   color: $8; /* COLOR_NTP_TEXT */
   height: 100%;
   overflow: auto;
-}
-
-/* TODO(aa): Is this still in use? The styling may be incorrect with M7 NTP
-   rework. */
-#notification.first-run {
-  background-color: $$1; /* COLOR_NTP_SECTION */
-  border-color: $$2; /* COLOR_NTP_SECTION_BORDER */
-}
-
-#notification.first-run .link {
-   color: $$5; /* COLOR_NTP_LINK_UNDERLINE */
-}
-
-#notification.first-run .link-color {
-  color: $9; /* COLOR_NTP_LINK */
 }
 
 #attribution {
@@ -81,7 +60,7 @@ body {
   border-color-top: $$9; /* COLOR_NTP_SECTION_HEADER_RULE */
 }
 
-.app a {
+.app span {
   color: $8; /* COLOR_NTP_TEXT */
 }
 
@@ -89,14 +68,6 @@ body {
 .app.dragging > a {
   color: $$3; /* COLOR_NTP_SECTION_TEXT */
   background-color: $$1; /* COLOR_NTP_SECTION */;
-}
-
-#apps-promo-hide {
-  color: $9; /* COLOR_NTP_LINK */
-}
-
-#apps-promo-text2 {
-  color: $$$3; /* COLOR_NTP_TEXT_LIGHT */
 }
 
 /* Footer *********************************************************************/

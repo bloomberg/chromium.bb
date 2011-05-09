@@ -37,8 +37,12 @@
 }
 
 .tile.dragging {
+  opacity: 0;
+}
+
+.tile.drag-representation {
+  pointer-events: none;
   z-index: 10;
-  -webkit-transition-duration: 0 !important;
 }
 
 .drag-target {
@@ -46,6 +50,6 @@
 }
 
 .animating-tile-page .tile,
-.tile.placing {
+.tile.drag-representation.placing {
   -webkit-transition: left 200ms, top 200ms;
 }

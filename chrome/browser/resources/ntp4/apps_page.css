@@ -5,6 +5,7 @@
 
 .app {
   position: absolute;
+  text-align: center;
 }
 
 .app span {

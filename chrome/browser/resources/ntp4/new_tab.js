@@ -352,6 +352,13 @@ cr.define('ntp4', function() {
     dotList.appendChild(newDot);
     page.navigationDot = newDot;
 
+    newDot.showPage = function() {
+      cardSlider.selectCard(dotCount, true);
+    };
+    function switchPage(e) {
+      newDot.showPage();
+      e.stopPropagation();
+    }
     // Add click handler to the dot to change the page.
     // TODO(rbyers): Perhaps this should be TouchHandler.START_EVENT_ (so we
     // don't rely on synthesized click events, and the change takes effect
@@ -359,10 +366,6 @@ cr.define('ntp4', function() {
     // region outside the border, and a 10px box is too small to require touch
     // events to fall inside of. We could get around this by adding a box around
     // the dot for accepting the touch events.
-    function switchPage(e) {
-      cardSlider.selectCard(dotCount, true);
-      e.stopPropagation();
-    }
     newDot.addEventListener('click', switchPage);
 
     // Change pages whenever an app is dragged over a dot.

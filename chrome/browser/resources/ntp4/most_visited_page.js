@@ -273,6 +273,11 @@ cr.define('ntp4', function() {
     },
 
     /** @inheritDoc */
+    acceptOutsideDrags: function() {
+      return false;
+    },
+
+    /** @inheritDoc */
     heightForWidth: heightForWidth,
   };
 
