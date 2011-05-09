@@ -141,14 +141,48 @@ DWORD UnPackArchive(const FilePath& archive,
       output_directory.value(), &unpacked_file);
 }
 
+// In multi-install, adds all products to |installer_state| that are
+// multi-installed and must be updated along with the products already present
+// in |installer_state|.
+void AddExistingMultiInstalls(const InstallationState& original_state,
+                              InstallerState* installer_state) {
+  if (installer_state->is_multi_install()) {
+    // TODO(grt): Find all occurrences of such arrays and generalize/centralize.
+    BrowserDistribution::Type product_checks[] = {
+      BrowserDistribution::CHROME_BROWSER,
+      BrowserDistribution::CHROME_FRAME
+    };
+
+    for (size_t i = 0; i < arraysize(product_checks); ++i) {
+      BrowserDistribution::Type type = product_checks[i];
+      if (!installer_state->FindProduct(type)) {
+        const ProductState* state =
+            original_state.GetProductState(installer_state->system_install(),
+                                           type);
+        if ((state != NULL) && state->is_multi_install()) {
+          installer_state->AddProductFromState(type, *state);
+          VLOG(1) << "Product already installed and must be included: "
+                  << BrowserDistribution::GetSpecificDistribution(
+                         type)->GetApplicationName();
+        }
+      }
+    }
+  }
+}
+
 // This function is called when --rename-chrome-exe option is specified on
 // setup.exe command line. This function assumes an in-use update has happened
 // for Chrome so there should be a file called new_chrome.exe on the file
 // system and a key called 'opv' in the registry. This function will move
 // new_chrome.exe to chrome.exe and delete 'opv' key in one atomic operation.
 installer::InstallStatus RenameChromeExecutables(
-    const InstallerState& installer_state) {
-  const FilePath &target_path = installer_state.target_path();
+    const InstallationState& original_state,
+    InstallerState* installer_state) {
+  // See what products are already installed in multi mode.  When we do the
+  // rename for multi installs, we must update all installations since they
+  // share the binaries.
+  AddExistingMultiInstalls(original_state, installer_state);
+  const FilePath &target_path = installer_state->target_path();
   FilePath chrome_exe(target_path.Append(installer::kChromeExe));
   FilePath chrome_new_exe(target_path.Append(installer::kChromeNewExe));
   FilePath chrome_old_exe(target_path.Append(installer::kChromeOldExe));
@@ -176,12 +210,26 @@ installer::InstallStatus RenameChromeExecutables(
   install_list->AddDeleteTreeWorkItem(chrome_old_exe, temp_path.path())
       ->set_ignore_failure(true);
 
-  HKEY reg_root = installer_state.root_key();
-  const Products& products = installer_state.products();
-  for (size_t i = 0; i < products.size(); ++i) {
-    const Product* product = products[i];
-    BrowserDistribution* browser_dist = product->distribution();
-    std::wstring version_key(browser_dist->GetVersionKey());
+  // Collect the set of distributions we need to update, which is the
+  // multi-install binaries (if this is a multi-install operation) and all
+  // products we're operating on.
+  BrowserDistribution* dists[BrowserDistribution::NUM_TYPES];
+  int num_dists = 0;
+  // First, add the multi-install binaries, if relevant.
+  if (installer_state->is_multi_install())
+    dists[num_dists++] = installer_state->multi_package_binaries_distribution();
+  // Next, add all products we're operating on.  std::transform can handily do
+  // this for us, but this is discouraged as being too tricky.
+  const Products& products = installer_state->products();
+  for (Products::size_type i = 0; i < products.size(); ++i) {
+    dists[num_dists++] = products[i]->distribution();
+  }
+
+  // Add work items to delete the "opv" and "cmd" values from all distributions.
+  HKEY reg_root = installer_state->root_key();
+  std::wstring version_key;
+  for (int i = 0; i < num_dists; ++i) {
+    version_key = dists[i]->GetVersionKey();
     install_list->AddDeleteRegValueWorkItem(reg_root,
                                             version_key,
                                             google_update::kRegOldVersionField);
@@ -327,34 +375,6 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
   }
 
   return true;
-}
-
-// In multi-install, adds all products to |installer_state| that are
-// multi-installed and must be updated along with the products already present
-// in |installer_state|.
-void AddExistingMultiInstalls(const InstallationState& original_state,
-                              InstallerState* installer_state) {
-  if (installer_state->is_multi_install()) {
-    BrowserDistribution::Type product_checks[] = {
-      BrowserDistribution::CHROME_BROWSER,
-      BrowserDistribution::CHROME_FRAME
-    };
-
-    for (size_t i = 0; i < arraysize(product_checks); ++i) {
-      BrowserDistribution::Type type = product_checks[i];
-      if (!installer_state->FindProduct(type)) {
-        const ProductState* state =
-            original_state.GetProductState(installer_state->system_install(),
-                                           type);
-        if ((state != NULL) && state->is_multi_install()) {
-          installer_state->AddProductFromState(type, *state);
-          VLOG(1) << "Product already installed and must be included: "
-                  << BrowserDistribution::GetSpecificDistribution(
-                         type)->GetApplicationName();
-        }
-      }
-    }
-  }
 }
 
 // Checks for compatibility between the current state of the system and the
@@ -854,7 +874,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
   } else if (cmd_line.HasSwitch(installer::switches::kRenameChromeExe)) {
     // If --rename-chrome-exe is specified, we want to rename the executables
     // and exit.
-    *exit_code = RenameChromeExecutables(*installer_state);
+    *exit_code = RenameChromeExecutables(original_state, installer_state);
   } else if (cmd_line.HasSwitch(
       installer::switches::kRemoveChromeRegistration)) {
     // This is almost reverse of --register-chrome-browser option above.

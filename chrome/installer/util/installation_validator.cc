@@ -397,9 +397,6 @@ void InstallationValidator::ValidateRenameCommand(const ProductContext& ctx,
                                     ctx.system_install));
   expected.push_back(std::make_pair(std::string(switches::kMultiInstall),
                                     ctx.state.is_multi_install()));
-  ctx.rules.AddProductSwitchExpectations(ctx.machine_state,
-                                         ctx.system_install,
-                                         ctx.state, &expected);
 
   ValidateCommandExpectations(ctx, command, expected, "in-use renamer",
                               is_valid);

@@ -423,6 +423,8 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
     rename.AppendSwitch(switches::kRenameChromeExe);
     if (installer_state.system_install())
       rename.AppendSwitch(switches::kSystemLevel);
+    if (installer_state.is_multi_install())
+      rename.AppendSwitch(switches::kMultiInstall);
 
     if (installer_state.verbose_logging())
       rename.AppendSwitch(switches::kVerboseLogging);
@@ -440,16 +442,14 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
 
       // Adding this registry entry for all products is overkill.
       // However, as it stands, we don't have a way to know which distribution
-      // will check the key and run the command, so we add it for all.
-      // After the first run, the subsequent runs should just be noops.
-      // (see upgrade_utils::SwapNewChromeExeIfPresent).
-      CommandLine product_rename_cmd(rename);
-      products[i]->AppendProductFlags(&product_rename_cmd);
+      // will check the key and run the command, so we add it for all.  The
+      // first to run it will perform the operation and clean up the other
+      // values.
       in_use_update_work_items->AddSetRegValueWorkItem(
           root,
           version_key,
           google_update::kRegRenameCmdField,
-          product_rename_cmd.command_line_string(),
+          rename.command_line_string(),
           true);
     }
 
