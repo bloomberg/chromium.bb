@@ -30,6 +30,7 @@ using WebKit::WebVector;
 
 namespace webkit_glue {
 
+namespace {
 struct SerializeObject {
   SerializeObject() : iter(NULL) {}
   SerializeObject(const char* data, int len) : pickle(data, len), iter(NULL) {}
@@ -204,7 +205,7 @@ inline WebString ReadString(const SerializeObject* obj) {
 }
 
 // Writes a Vector of Strings into a SerializeObject for serialization.
-static void WriteStringVector(
+void WriteStringVector(
     const WebVector<WebString>& data, SerializeObject* obj) {
   WriteInteger(static_cast<int>(data.size()), obj);
   for (size_t i = 0, c = data.size(); i < c; ++i) {
@@ -213,7 +214,7 @@ static void WriteStringVector(
   }
 }
 
-static WebVector<WebString> ReadStringVector(const SerializeObject* obj) {
+WebVector<WebString> ReadStringVector(const SerializeObject* obj) {
   int num_elements = ReadInteger(obj);
   WebVector<WebString> result(static_cast<size_t>(num_elements));
   for (int i = 0; i < num_elements; ++i)
@@ -222,7 +223,7 @@ static WebVector<WebString> ReadStringVector(const SerializeObject* obj) {
 }
 
 // Writes a FormData object into a SerializeObject for serialization.
-static void WriteFormData(const WebHTTPBody& http_body, SerializeObject* obj) {
+void WriteFormData(const WebHTTPBody& http_body, SerializeObject* obj) {
   WriteBoolean(!http_body.isNull(), obj);
 
   if (http_body.isNull())
@@ -247,7 +248,7 @@ static void WriteFormData(const WebHTTPBody& http_body, SerializeObject* obj) {
   WriteInteger64(http_body.identifier(), obj);
 }
 
-static WebHTTPBody ReadFormData(const SerializeObject* obj) {
+WebHTTPBody ReadFormData(const SerializeObject* obj) {
   // In newer versions, an initial boolean indicates if we have form data.
   if (obj->version >= 5 && !ReadBoolean(obj))
     return WebHTTPBody();
@@ -293,7 +294,7 @@ static WebHTTPBody ReadFormData(const SerializeObject* obj) {
 
 // Writes the HistoryItem data into the SerializeObject object for
 // serialization.
-static void WriteHistoryItem(
+void WriteHistoryItem(
     const WebHistoryItem& item, SerializeObject* obj) {
   // WARNING: This data may be persisted for later use. As such, care must be
   // taken when changing the serialized format. If a new field needs to be
@@ -342,7 +343,7 @@ static void WriteHistoryItem(
 
 // Creates a new HistoryItem tree based on the serialized string.
 // Assumes the data is in the format returned by WriteHistoryItem.
-static WebHistoryItem ReadHistoryItem(
+WebHistoryItem ReadHistoryItem(
     const SerializeObject* obj,
     bool include_form_data,
     bool include_scroll_offset) {
@@ -413,22 +414,12 @@ static WebHistoryItem ReadHistoryItem(
   return item;
 }
 
-// Serialize a HistoryItem to a string, using our JSON Value serializer.
-std::string HistoryItemToString(const WebHistoryItem& item) {
-  if (item.isNull())
-    return std::string();
-
-  SerializeObject obj;
-  WriteHistoryItem(item, &obj);
-  return obj.GetAsString();
-}
-
 // Reconstruct a HistoryItem from a string, using our JSON Value deserializer.
 // This assumes that the given serialized string has all the required key,value
 // pairs, and does minimal error checking. If |include_form_data| is true,
 // the form data from a post is restored, otherwise the form data is empty.
 // If |include_scroll_offset| is true, the scroll offset is restored.
-static WebHistoryItem HistoryItemFromString(
+WebHistoryItem HistoryItemFromString(
     const std::string& serialized_item,
     bool include_form_data,
     bool include_scroll_offset) {
@@ -439,42 +430,7 @@ static WebHistoryItem HistoryItemFromString(
                       static_cast<int>(serialized_item.length()));
   return ReadHistoryItem(&obj, include_form_data, include_scroll_offset);
 }
-
-WebHistoryItem HistoryItemFromString(
-    const std::string& serialized_item) {
-  return HistoryItemFromString(serialized_item, true, true);
-}
-
-// For testing purposes only.
-void HistoryItemToVersionedString(const WebHistoryItem& item, int version,
-                                  std::string* serialized_item) {
-  if (item.isNull()) {
-    serialized_item->clear();
-    return;
-  }
-
-  // Temporarily change the version.
-  int real_version = kVersion;
-  kVersion = version;
-
-  SerializeObject obj;
-  WriteHistoryItem(item, &obj);
-  *serialized_item = obj.GetAsString();
-
-  kVersion = real_version;
-}
-
-std::string CreateHistoryStateForURL(const GURL& url) {
-  // We avoid using the WebKit API here, so that we do not need to have WebKit
-  // initialized before calling this method.  Instead, we write a simple
-  // serialization of the given URL with a dummy version number of -1.  This
-  // will be interpreted by ReadHistoryItem as a request to create a default
-  // WebHistoryItem.
-  SerializeObject obj;
-  WriteInteger(-1, &obj);
-  WriteGURL(url, &obj);
-  return obj.GetAsString();
-}
+}  // namespace
 
 std::string RemoveFormDataFromHistoryState(const std::string& content_state) {
   // TODO(darin): We should avoid using the WebKit API here, so that we do not
@@ -501,6 +457,51 @@ std::string RemoveScrollOffsetFromHistoryState(
   }
 
   return HistoryItemToString(item);
+}
+
+std::string CreateHistoryStateForURL(const GURL& url) {
+  // We avoid using the WebKit API here, so that we do not need to have WebKit
+  // initialized before calling this method.  Instead, we write a simple
+  // serialization of the given URL with a dummy version number of -1.  This
+  // will be interpreted by ReadHistoryItem as a request to create a default
+  // WebHistoryItem.
+  SerializeObject obj;
+  WriteInteger(-1, &obj);
+  WriteGURL(url, &obj);
+  return obj.GetAsString();
+}
+
+// Serialize a HistoryItem to a string, using our JSON Value serializer.
+std::string HistoryItemToString(const WebHistoryItem& item) {
+  if (item.isNull())
+    return std::string();
+
+  SerializeObject obj;
+  WriteHistoryItem(item, &obj);
+  return obj.GetAsString();
+}
+
+WebHistoryItem HistoryItemFromString(const std::string& serialized_item) {
+  return HistoryItemFromString(serialized_item, true, true);
+}
+
+// For testing purposes only.
+void HistoryItemToVersionedString(const WebHistoryItem& item, int version,
+                                  std::string* serialized_item) {
+  if (item.isNull()) {
+    serialized_item->clear();
+    return;
+  }
+
+  // Temporarily change the version.
+  int real_version = kVersion;
+  kVersion = version;
+
+  SerializeObject obj;
+  WriteHistoryItem(item, &obj);
+  *serialized_item = obj.GetAsString();
+
+  kVersion = real_version;
 }
 
 }  // namespace webkit_glue
