@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -182,13 +183,7 @@ const int   kSingleRealmTestResourceCount = 6;
 // correctness.  Instead, it relies on the auth dialog blocking the
 // browser, and triggering a timeout to cause failure when the
 // prefetch resource requires authorization.
-// Crashing on mac and linux. http://crbug.com/81706.
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_PrefetchAuthCancels DISABLED_PrefetchAuthCancels
-#else
-#define MAYBE_PrefetchAuthCancels PrefetchAuthCancels
-#endif
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MAYBE_PrefetchAuthCancels) {
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PrefetchAuthCancels) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL test_page = test_server()->GetURL(kPrefetchAuthPage);
@@ -196,15 +191,21 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MAYBE_PrefetchAuthCancels) {
   class SetPrefetchForTest {
    public:
     explicit SetPrefetchForTest(bool prefetch)
-        : old_prefetch_state_(ResourceDispatcherHost::is_prefetch_enabled()) {
+        : old_prefetch_state_(ResourceDispatcherHost::is_prefetch_enabled()),
+          old_mode_(prerender::PrerenderManager::GetMode()) {
       ResourceDispatcherHost::set_is_prefetch_enabled(prefetch);
+      // Disable prerender so this is just a prefetch of the top-level page.
+      prerender::PrerenderManager::SetMode(
+          prerender::PrerenderManager::PRERENDER_MODE_DISABLED);
     }
 
     ~SetPrefetchForTest() {
       ResourceDispatcherHost::set_is_prefetch_enabled(old_prefetch_state_);
+      prerender::PrerenderManager::SetMode(old_mode_);
     }
    private:
     bool old_prefetch_state_;
+    prerender::PrerenderManager::PrerenderManagerMode old_mode_;
   } set_prefetch_for_test(true);
 
   TabContentsWrapper* contents =
