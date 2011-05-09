@@ -2372,8 +2372,8 @@
         'browser/ui/cocoa/applescript/window_applescript_test.mm',
         'browser/ui/find_bar/find_bar_host_browsertest.cc',
         'browser/ui/login/login_prompt_browsertest.cc',
-        'browser/ui/panels/panel_browser_window_gtk_browsertest.cc',
         'browser/ui/panels/panel_browsertest.cc',
+        'browser/ui/panels/panel_browser_view_browsertest.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/dom_view_browsertest.cc',
         'browser/ui/views/html_dialog_view_browsertest.cc',
@@ -2452,7 +2452,6 @@
           'sources!': [
             'browser/extensions/browser_action_test_util_gtk.cc',
             'browser/ui/gtk/view_id_util_browsertest.cc',
-            'browser/ui/panels/panel_browser_window_gtk_browsertest.cc',
           ],
         }],
         ['OS=="win"', {
@@ -2565,6 +2564,7 @@
         }, { # else: toolkit_views == 0
           'sources!': [
             'browser/extensions/browser_action_test_util_views.cc',
+            'browser/ui/panels/panel_browser_view_browsertest.cc',
             'browser/ui/views/browser_actions_container_browsertest.cc',
             'browser/ui/views/dom_view_browsertest.cc',
             'browser/ui/views/html_dialog_view_browsertest.cc',

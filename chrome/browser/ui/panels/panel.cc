@@ -67,8 +67,7 @@ void Panel::Deactivate() {
 }
 
 bool Panel::IsActive() const {
-  NOTIMPLEMENTED();
-  return false;
+  return browser_window_->IsActive();
 }
 
 void Panel::FlashFrame() {
@@ -94,7 +93,7 @@ void Panel::ToolbarSizeChanged(bool is_animating){
 }
 
 void Panel::UpdateTitleBar() {
-  NOTIMPLEMENTED();
+  browser_window_->UpdateTitleBar();
 }
 
 void Panel::ShelfVisibilityChanged() {
