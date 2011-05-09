@@ -131,8 +131,11 @@ const CGFloat kBaseHeight = 36.0;
 
 @interface InfoBarContainerController (JustForTesting)
 
-// Removes all infobar views.  Callers must call
-// positionInfoBarsAndRedraw() after calling this method.
+// Removes all infobar views.  Infobars which were already closing will be
+// completely closed (i.e. InfobarDelegate::InfoBarClosed() will be called and
+// we'll get a callback to removeController).  Other infobars will simply stop
+// animating and disappear.  Callers must call positionInfoBarsAndRedraw()
+// after calling this method.
 - (void)removeAllInfoBars;
 
 @end

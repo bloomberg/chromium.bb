@@ -86,17 +86,15 @@ TEST_F(InfoBarContainerControllerTest, RemoveAllInfoBars) {
 
   // Add three infobars and then remove them all.
 
-  // These delegates delete themselves when they're told their infobars have
-  // closed.
-  MockLinkInfoBarDelegate* linkDelegate = new MockLinkInfoBarDelegate(NULL);
-  MockConfirmInfoBarDelegate* confirmDelegate =
-      new MockConfirmInfoBarDelegate(NULL);
-  MockConfirmInfoBarDelegate* confirmDelegate2 =
-      new MockConfirmInfoBarDelegate(NULL);
+  // removeAllInfobars does not close these, so we stack-allocate them so
+  // they'll get cleaned up.
+  MockLinkInfoBarDelegate linkDelegate(NULL);
+  MockConfirmInfoBarDelegate confirmDelegate(NULL);
+  MockConfirmInfoBarDelegate confirmDelegate2(NULL);
 
-  [controller_ addInfoBar:linkDelegate animate:NO];
-  [controller_ addInfoBar:confirmDelegate animate:NO];
-  [controller_ addInfoBar:confirmDelegate2 animate:NO];
+  [controller_ addInfoBar:&linkDelegate animate:NO];
+  [controller_ addInfoBar:&confirmDelegate animate:NO];
+  [controller_ addInfoBar:&confirmDelegate2 animate:NO];
   EXPECT_EQ(3U, [[view subviews] count]);
 
   [controller_ removeAllInfoBars];

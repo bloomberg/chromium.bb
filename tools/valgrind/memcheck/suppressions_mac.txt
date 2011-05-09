@@ -1694,12 +1694,6 @@
    fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
 }
 {
-   bug_81652
-   Memcheck:Leak
-   fun:_Znw*
-   fun:*InfoBarContainerControllerTest_RemoveAllInfoBars_Test8TestBodyEv
-}
-{
    bug_81788
    Memcheck:Leak
    ...

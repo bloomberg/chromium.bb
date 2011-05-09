@@ -214,7 +214,10 @@ class InfoBarNotificationObserver : public NotificationObserver {
 }
 
 - (void)removeAllInfoBars {
-  for (InfoBarController* controller in infobarControllers_.get()) {
+  // stopAnimation can remove the infobar from infobarControllers_ if it was in
+  // the midst of closing, so copy the array so mutations won't cause problems.
+  for (InfoBarController* controller in
+       [NSArray arrayWithArray:infobarControllers_.get()]) {
     [[controller animatableView] stopAnimation];
     [[controller view] removeFromSuperview];
   }
