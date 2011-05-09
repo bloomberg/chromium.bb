@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,10 +112,10 @@ inline void WriteReal(double data, SerializeObject* obj) {
 }
 
 inline double ReadReal(const SerializeObject* obj) {
-  const void* tmp;
+  const void* tmp = NULL;
   int length = 0;
   ReadData(obj, &tmp, &length);
-  if (length > 0 && length >= static_cast<int>(sizeof(0.0)))
+  if (tmp && length > 0 && length >= static_cast<int>(sizeof(0.0)))
     return *static_cast<const double*>(tmp);
   else
     return 0.0;
