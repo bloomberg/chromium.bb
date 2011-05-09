@@ -6,13 +6,10 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
-#include "webkit/fileapi/file_system_util.h"
-#include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
 
@@ -57,23 +54,13 @@ static FilePath InitUsageFile(FileSystemOperationContext* fs_context) {
   return usage_file_path;
 }
 
-static void UpdateUsage(
-    FileSystemOperationContext* fs_context,
-    const GURL& modified_origin,
-    FileSystemType type,
-    const FilePath& usage_file_path, int64 growth) {
+static void UpdateUsageFile(const FilePath& usage_file_path, int64 growth) {
   if (FileSystemUsageCache::Exists(usage_file_path))
     FileSystemUsageCache::DecrementDirty(usage_file_path);
 
-  FileSystemUsageCache::AtomicUpdateUsageByDelta(usage_file_path, growth);
-
-  if (fs_context->file_system_context()->quota_manager_proxy())
-    fs_context->file_system_context()->quota_manager_proxy()
-        ->NotifyStorageModified(
-            quota::QuotaClient::kFileSystem,
-            GURL(modified_origin),
-            FileSystemTypeToQuotaStorageType(type),
-            growth);
+  int64 usage = FileSystemUsageCache::GetUsage(usage_file_path);
+  if (usage >= 0)
+    FileSystemUsageCache::UpdateUsage(usage_file_path, usage + growth);
 }
 
 }  // namespace (anonymous)
@@ -112,9 +99,7 @@ base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
   base::PlatformFileError error = FileSystemFileUtil::GetInstance()->
       CopyOrMoveFile(fs_context, src_file_path, dest_file_path, copy);
 
-  UpdateUsage(fs_context,
-              fs_context->dest_origin_url(), fs_context->dest_type(),
-              usage_file_path, growth);
+  UpdateUsageFile(usage_file_path, growth);
 
   return error;
 }
@@ -133,8 +118,7 @@ base::PlatformFileError QuotaFileUtil::DeleteFile(
   base::PlatformFileError error = FileSystemFileUtil::GetInstance()->
       DeleteFile(fs_context, file_path);
 
-  UpdateUsage(fs_context, fs_context->src_origin_url(), fs_context->src_type(),
-              usage_file_path, growth);
+  UpdateUsageFile(usage_file_path, growth);
 
   return error;
 }
@@ -164,8 +148,7 @@ base::PlatformFileError QuotaFileUtil::Truncate(
   base::PlatformFileError error = FileSystemFileUtil::GetInstance()->Truncate(
       fs_context, path, length);
 
-  UpdateUsage(fs_context, fs_context->src_origin_url(), fs_context->src_type(),
-              usage_file_path, growth);
+  UpdateUsageFile(usage_file_path, growth);
 
   return error;
 }

@@ -10,6 +10,21 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/quota/quota_database.h"
 
+namespace {
+
+const base::Time kZeroTime;
+
+class TestErrorDelegate : public sql::ErrorDelegate {
+ public:
+  virtual ~TestErrorDelegate() { }
+  virtual int OnError(
+      int error, sql::Connection* connection, sql::Statement* stmt) {
+    return error;
+  }
+};
+
+}  // namespace
+
 namespace quota {
 
 TEST(QuotaDatabaseTest, LazyOpen) {

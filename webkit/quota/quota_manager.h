@@ -81,16 +81,6 @@ class QuotaManager : public QuotaTaskObserver,
 
   const static int64 kIncognitoDefaultTemporaryQuota;
 
- protected:
-  // Called by clients via proxy.
-  // QuotaClients must call this method whenever they have made any
-  // modifications that change the amount of data stored in their storage.
-  // This method is declared as virtual only to allow test code to override.
-  virtual void NotifyStorageModified(QuotaClient::ID client_id,
-                                     const GURL& origin,
-                                     StorageType type,
-                                     int64 delta);
-
  private:
   class InitializeTask;
   class TemporaryGlobalQuotaUpdateTask;
@@ -116,6 +106,14 @@ class QuotaManager : public QuotaTaskObserver,
   // Registers a quota client to the manager.
   // The client must remain valid until OnQuotaManagerDestored is called.
   void RegisterClient(QuotaClient* client);
+
+  // Called by clients via proxy.
+  // QuotaClients must call this method whenever they have made any
+  // modifications that change the amount of data stored in their storage.
+  void NotifyStorageModified(QuotaClient::ID client_id,
+                             const GURL& origin,
+                             StorageType type,
+                             int64 delta);
 
   UsageTracker* GetUsageTracker(StorageType type) const;
 
@@ -162,9 +160,9 @@ class QuotaManagerProxy
  public:
   void RegisterClient(QuotaClient* client);
   void NotifyStorageModified(QuotaClient::ID client_id,
-                             const GURL& origin,
-                             StorageType type,
-                             int64 delta);
+                            const GURL& origin,
+                            StorageType type,
+                            int64 delta);
  private:
   friend class QuotaManager;
   friend class base::RefCountedThreadSafe<QuotaManagerProxy>;

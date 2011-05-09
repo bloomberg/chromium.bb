@@ -16,14 +16,8 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
-#include "webkit/quota/quota_client.h"
-#include "webkit/quota/quota_manager.h"
 
 using namespace fileapi;
-using quota::QuotaClient;
-using quota::QuotaManager;
-using quota::QuotaManagerProxy;
-using quota::StorageType;
 
 namespace {
 
@@ -48,30 +42,6 @@ class MockFileSystemPathManager : public FileSystemPathManager {
 
 }  // namespace (anonymous)
 
-class MockQuotaManager : public QuotaManager {
- public:
-  MockQuotaManager(const FilePath& filesystem_path)
-      : QuotaManager(false /* is_incognito */,
-                     filesystem_path,
-                     base::MessageLoopProxy::CreateForCurrentThread(),
-                     base::MessageLoopProxy::CreateForCurrentThread()),
-        usage_(0) {}
-
-  int64 usage() const { return usage_; }
-
- protected:
-  virtual void NotifyStorageModified(QuotaClient::ID client_id,
-                                     const GURL& origin,
-                                     StorageType type,
-                                     int64 delta) {
-    DCHECK(client_id == QuotaClient::kFileSystem);
-    usage_ += delta;
-  }
-
- private:
-  int64 usage_;
-};
-
 class QuotaFileUtilTest : public testing::Test {
  public:
   QuotaFileUtilTest()
@@ -85,8 +55,6 @@ class QuotaFileUtilTest : public testing::Test {
 
     usage_file_path_ = Path(FileSystemUsageCache::kUsageFileName);
     FileSystemUsageCache::UpdateUsage(usage_file_path_, 0);
-
-    quota_manager_ = new MockQuotaManager(filesystem_dir_);
   }
 
  protected:
@@ -94,7 +62,7 @@ class QuotaFileUtilTest : public testing::Test {
     FileSystemOperationContext *context = new FileSystemOperationContext(
         new FileSystemContext(base::MessageLoopProxy::CreateForCurrentThread(),
                               base::MessageLoopProxy::CreateForCurrentThread(),
-                              NULL, quota_manager_proxy(), FilePath(), false,
+                              NULL, NULL, FilePath(), false,
                               true, true,
                               new MockFileSystemPathManager(filesystem_dir_)),
         QuotaFileUtil::GetInstance());
@@ -131,21 +99,11 @@ class QuotaFileUtilTest : public testing::Test {
     return FileSystemUsageCache::GetUsage(usage_file_path_);
   }
 
-  int64 usage() const {
-    DCHECK(quota_manager_.get());
-    return quota_manager_->usage();
-  }
-  QuotaManagerProxy* quota_manager_proxy() const {
-    DCHECK(quota_manager_.get());
-    return quota_manager_->proxy();
-  }
-
  private:
   ScopedTempDir data_dir_;
   FilePath filesystem_dir_;
   FilePath usage_file_path_;
   base::ScopedCallbackFactory<QuotaFileUtilTest> callback_factory_;
-  scoped_refptr<MockQuotaManager> quota_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaFileUtilTest);
 };
@@ -189,7 +147,6 @@ TEST_F(QuotaFileUtilTest, Truncate) {
                                                    Path(file_name),
                                                    1020));
   ASSERT_EQ(1020, GetCachedUsage());
-  ASSERT_EQ(1020, usage());
 
   truncate_context.reset(NewContext());
   truncate_context->set_allowed_bytes_growth(0);
@@ -198,7 +155,6 @@ TEST_F(QuotaFileUtilTest, Truncate) {
                                                    Path(file_name),
                                                    0));
   ASSERT_EQ(0, GetCachedUsage());
-  ASSERT_EQ(0, usage());
 
   truncate_context.reset(NewContext());
   truncate_context->set_allowed_bytes_growth(1020);
@@ -207,7 +163,6 @@ TEST_F(QuotaFileUtilTest, Truncate) {
                                                    Path(file_name),
                                                    1021));
   ASSERT_EQ(0, GetCachedUsage());
-  ASSERT_EQ(0, usage());
 }
 
 TEST_F(QuotaFileUtilTest, CopyFile) {
@@ -229,7 +184,6 @@ TEST_F(QuotaFileUtilTest, CopyFile) {
                                                    Path(from_file),
                                                    1020));
   ASSERT_EQ(1020, GetCachedUsage());
-  ASSERT_EQ(1020, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
@@ -238,7 +192,6 @@ TEST_F(QuotaFileUtilTest, CopyFile) {
                                                    Path(obstacle_file),
                                                    1));
   ASSERT_EQ(1021, GetCachedUsage());
-  ASSERT_EQ(1021, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(1020);
@@ -247,7 +200,6 @@ TEST_F(QuotaFileUtilTest, CopyFile) {
                                                Path(from_file),
                                                Path(to_file1)));
   ASSERT_EQ(2041, GetCachedUsage());
-  ASSERT_EQ(2041, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(1019);
@@ -256,7 +208,6 @@ TEST_F(QuotaFileUtilTest, CopyFile) {
                                                Path(from_file),
                                                Path(to_file2)));
   ASSERT_EQ(2041, GetCachedUsage());
-  ASSERT_EQ(2041, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(1019);
@@ -265,7 +216,6 @@ TEST_F(QuotaFileUtilTest, CopyFile) {
                                                Path(from_file),
                                                Path(obstacle_file)));
   ASSERT_EQ(3060, GetCachedUsage());
-  ASSERT_EQ(3060, usage());
 }
 
 TEST_F(QuotaFileUtilTest, CopyDirectory) {
@@ -291,7 +241,6 @@ TEST_F(QuotaFileUtilTest, CopyDirectory) {
                                                    Path(from_file),
                                                    1020));
   ASSERT_EQ(1020, GetCachedUsage());
-  ASSERT_EQ(1020, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(1020);
@@ -300,7 +249,6 @@ TEST_F(QuotaFileUtilTest, CopyDirectory) {
                                                Path(from_dir),
                                                Path(to_dir1)));
   ASSERT_EQ(2040, GetCachedUsage());
-  ASSERT_EQ(2040, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(1019);
@@ -309,7 +257,6 @@ TEST_F(QuotaFileUtilTest, CopyDirectory) {
                                                Path(from_dir),
                                                Path(to_dir2)));
   ASSERT_EQ(2040, GetCachedUsage());
-  ASSERT_EQ(2040, usage());
 }
 
 TEST_F(QuotaFileUtilTest, MoveFile) {
@@ -328,7 +275,6 @@ TEST_F(QuotaFileUtilTest, MoveFile) {
                                                    Path(from_file),
                                                    1020));
   ASSERT_EQ(1020, GetCachedUsage());
-  ASSERT_EQ(1020, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(0);
@@ -337,7 +283,6 @@ TEST_F(QuotaFileUtilTest, MoveFile) {
                                                Path(from_file),
                                                Path(to_file)));
   ASSERT_EQ(1020, GetCachedUsage());
-  ASSERT_EQ(1020, usage());
 
   ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file, &created));
   ASSERT_TRUE(created);
@@ -351,7 +296,6 @@ TEST_F(QuotaFileUtilTest, MoveFile) {
                                                    Path(from_file),
                                                    1020));
   ASSERT_EQ(2040, GetCachedUsage());
-  ASSERT_EQ(2040, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
@@ -360,7 +304,6 @@ TEST_F(QuotaFileUtilTest, MoveFile) {
                                                    Path(obstacle_file),
                                                    1));
   ASSERT_EQ(2041, GetCachedUsage());
-  ASSERT_EQ(2041, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(0);
@@ -369,7 +312,6 @@ TEST_F(QuotaFileUtilTest, MoveFile) {
                                                Path(from_file),
                                                Path(obstacle_file)));
   ASSERT_EQ(2040, GetCachedUsage());
-  ASSERT_EQ(2040, usage());
 }
 
 TEST_F(QuotaFileUtilTest, MoveDirectory) {
@@ -395,7 +337,6 @@ TEST_F(QuotaFileUtilTest, MoveDirectory) {
                                                    Path(from_file),
                                                    1020));
   ASSERT_EQ(1020, GetCachedUsage());
-  ASSERT_EQ(1020, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(1020);
@@ -404,7 +345,6 @@ TEST_F(QuotaFileUtilTest, MoveDirectory) {
                                                Path(from_dir),
                                                Path(to_dir1)));
   ASSERT_EQ(1020, GetCachedUsage());
-  ASSERT_EQ(1020, usage());
 
   context.reset(NewContext());
   ASSERT_EQ(base::PLATFORM_FILE_OK,
@@ -421,7 +361,6 @@ TEST_F(QuotaFileUtilTest, MoveDirectory) {
                                                    Path(from_file),
                                                    1020));
   ASSERT_EQ(2040, GetCachedUsage());
-  ASSERT_EQ(2040, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(1019);
@@ -430,7 +369,6 @@ TEST_F(QuotaFileUtilTest, MoveDirectory) {
                                                Path(from_dir),
                                                Path(to_dir2)));
   ASSERT_EQ(2040, GetCachedUsage());
-  ASSERT_EQ(2040, usage());
 }
 
 TEST_F(QuotaFileUtilTest, Remove) {
@@ -460,7 +398,6 @@ TEST_F(QuotaFileUtilTest, Remove) {
                                                    Path(file),
                                                    340));
   ASSERT_EQ(340, GetCachedUsage());
-  ASSERT_EQ(340, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
@@ -469,7 +406,6 @@ TEST_F(QuotaFileUtilTest, Remove) {
                                                    Path(dfile1),
                                                    1020));
   ASSERT_EQ(1360, GetCachedUsage());
-  ASSERT_EQ(1360, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
@@ -478,7 +414,6 @@ TEST_F(QuotaFileUtilTest, Remove) {
                                                    Path(dfile2),
                                                    120));
   ASSERT_EQ(1480, GetCachedUsage());
-  ASSERT_EQ(1480, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
@@ -487,7 +422,6 @@ TEST_F(QuotaFileUtilTest, Remove) {
                                                  Path(file),
                                                  false));
   ASSERT_EQ(1140, GetCachedUsage());
-  ASSERT_EQ(1140, usage());
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
@@ -496,5 +430,4 @@ TEST_F(QuotaFileUtilTest, Remove) {
                                                  Path(dir),
                                                  true));
   ASSERT_EQ(0, GetCachedUsage());
-  ASSERT_EQ(0, usage());
 }
