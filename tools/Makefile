@@ -163,7 +163,6 @@ MPC_VERSION=0.9
 PPL_VERSION=0.11.2
 CLOOG_PPL_VERSION=0.15.9
 define GCC_EXTRAS
-gcc: $(GCC_VERSION), \
 gmp: $(GMP_VERSION), \
 mpfr: $(MPFR_VERSION), \
 mpc: $(MPC_VERSION), \
@@ -1098,4 +1097,4 @@ nacl-check:
 
 .PHONY: clean
 clean:
-	rm -rf BUILD
+	rm -rf BUILD/*
