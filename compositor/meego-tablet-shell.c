@@ -207,22 +207,20 @@ meego_tablet_shell_attach(struct wlsc_shell *base,
 	surface->y = 0;
 
 	if (surface == shell->lockscreen_surface) {
-		if (shell->state == STATE_STARTING) {
-			wlsc_compositor_fade(shell->compositor, 0.0);
-			wlsc_compositor_wake(shell->compositor);
-			wlsc_surface_damage(surface);
-			meego_tablet_shell_set_state(shell, STATE_LOCKED);
-			shell->previous_state = STATE_HOME;
-		}
+		wlsc_compositor_fade(shell->compositor, 0.0);
+		wlsc_compositor_wake(shell->compositor);
 	} else if (surface == shell->switcher_surface) {
 		/* */
 	} else if (surface == shell->home_surface) {
-		/* */
+		if (shell->state == STATE_STARTING) {
+			meego_tablet_shell_set_state(shell, STATE_LOCKED);
+			shell->previous_state = STATE_HOME;
+			wl_client_post_event(shell->client, &shell->object,
+					     MEEGO_TABLET_SHELL_SHOW_LOCKSCREEN);
+		}
 	} else if (shell->current_client &&
 		   shell->current_client->surface != surface &&
 		   shell->current_client->client == surface->surface.client) {
-		fprintf(stderr, "initial attach from surface %p, client %p\n",
-			surface, surface->surface.client);
 		meego_tablet_shell_set_state(shell, STATE_TASK);
 		shell->current_client->surface = surface;
 		meego_tablet_zoom_run(shell, surface);
@@ -250,7 +248,6 @@ tablet_shell_set_lockscreen(struct wl_client *client,
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) shell->compositor->input_device;
 
-	fprintf(stderr, "set lock screen\n");
 	es->x = 0;
 	es->y = 0;
 	wlsc_surface_activate(es, device, wlsc_compositor_get_time());
@@ -293,9 +290,6 @@ tablet_shell_set_switcher(struct wl_client *client,
 
 	wlsc_surface_activate(es, device, wlsc_compositor_get_time());
 
-	fprintf(stderr, "set switcher %p, size %dx%d\n",
-		es, es->width, es->height);
-
 	shell->switcher_listener.func = handle_switcher_surface_destroy;
 	wl_list_insert(es->surface.resource.destroy_listener_list.prev,
 		       &shell->switcher_listener.link);
@@ -315,7 +309,6 @@ tablet_shell_set_homescreen(struct wl_client *client,
 
 	wlsc_surface_activate(shell->home_surface, device,
 			      wlsc_compositor_get_time());
-	fprintf(stderr, "set home screen\n");
 }
 
 static void
@@ -580,17 +573,6 @@ home_key_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
-tablet_shell_bind(struct wl_client *client,
-		  struct wl_object *object, uint32_t version)
-{
-	struct meego_tablet_shell *shell =
-		(struct meego_tablet_shell *) object;
-
-	wl_client_post_event(shell->client, &shell->object,
-			     MEEGO_TABLET_SHELL_SHOW_LOCKSCREEN);
-}
-
-static void
 meego_tablet_shell_set_selection_focus(struct wlsc_shell *shell,
 				       struct wl_selection *selection,
 				       struct wl_surface *surface,
@@ -620,8 +602,7 @@ shell_init(struct wlsc_compositor *compositor)
 	wl_display_add_object(compositor->wl_display, &shell->object);
 
 	/* FIXME: This will make the object available to all clients. */
-	wl_display_add_global(compositor->wl_display,
-			      &shell->object, tablet_shell_bind);
+	wl_display_add_global(compositor->wl_display, &shell->object, NULL);
 
 	loop = wl_display_get_event_loop(compositor->wl_display);
 	shell->sigchld_source =
