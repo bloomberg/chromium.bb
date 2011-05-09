@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -175,9 +175,9 @@ class TabContentsView : public RenderViewHostDelegate::View {
       WebKit::WebPopupType popup_type);
   virtual void ShowCreatedWidgetInternal(RenderWidgetHostView* widget_host_view,
                                          const gfx::Rect& initial_pos);
+  virtual RenderWidgetHostView* CreateNewFullscreenWidgetInternal(int route_id);
   virtual void ShowCreatedFullscreenWidgetInternal(
       RenderWidgetHostView* widget_host_view);
-  virtual RenderWidgetHostView* CreateNewFullscreenWidgetInternal(int route_id);
 
   // Common implementations of some RenderViewHostDelegate::View methods.
   RenderViewHostDelegateViewHelper delegate_view_helper_;

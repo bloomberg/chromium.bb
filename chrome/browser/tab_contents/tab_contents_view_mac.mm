@@ -304,6 +304,31 @@ void TabContentsViewMac::ShowCreatedWidgetInternal(
   [widget_view_mac->native_view() release];
 }
 
+RenderWidgetHostView* TabContentsViewMac::CreateNewFullscreenWidgetInternal(
+    int route_id) {
+  // A RenderWidgetHostViewMac has lifetime scoped to the view. We'll retain it
+  // to allow it to survive the trip without being hosted.
+  RenderWidgetHostView* widget_view =
+      TabContentsView::CreateNewFullscreenWidgetInternal(route_id);
+  RenderWidgetHostViewMac* widget_view_mac =
+      static_cast<RenderWidgetHostViewMac*>(widget_view);
+  [widget_view_mac->native_view() retain];
+
+  return widget_view;
+}
+
+void TabContentsViewMac::ShowCreatedFullscreenWidgetInternal(
+    RenderWidgetHostView* widget_host_view) {
+  TabContentsView::ShowCreatedFullscreenWidgetInternal(widget_host_view);
+
+  // A RenderWidgetHostViewMac has lifetime scoped to the view. Now that it's
+  // properly embedded (or purposely ignored) we can release the retain we took
+  // in CreateNewFullscreenWidgetInternal().
+  RenderWidgetHostViewMac* widget_view_mac =
+      static_cast<RenderWidgetHostViewMac*>(widget_host_view);
+  [widget_view_mac->native_view() release];
+}
+
 bool TabContentsViewMac::IsEventTracking() const {
   if ([NSApp isKindOfClass:[CrApplication class]] &&
       [static_cast<CrApplication*>(NSApp) isHandlingSendEvent]) {

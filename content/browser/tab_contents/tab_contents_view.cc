@@ -142,12 +142,6 @@ RenderWidgetHostView* TabContentsView::CreateNewWidgetInternal(
       tab_contents()->render_view_host()->process());
 }
 
-RenderWidgetHostView* TabContentsView::CreateNewFullscreenWidgetInternal(
-    int route_id) {
-  return delegate_view_helper_.CreateNewFullscreenWidget(
-      route_id, tab_contents()->render_view_host()->process());
-}
-
 void TabContentsView::ShowCreatedWidgetInternal(
     RenderWidgetHostView* widget_host_view, const gfx::Rect& initial_pos) {
   if (tab_contents_->delegate())
@@ -156,6 +150,12 @@ void TabContentsView::ShowCreatedWidgetInternal(
   widget_host_view->InitAsPopup(tab_contents_->GetRenderWidgetHostView(),
                                 initial_pos);
   widget_host_view->GetRenderWidgetHost()->Init();
+}
+
+RenderWidgetHostView* TabContentsView::CreateNewFullscreenWidgetInternal(
+    int route_id) {
+  return delegate_view_helper_.CreateNewFullscreenWidget(
+      route_id, tab_contents()->render_view_host()->process());
 }
 
 void TabContentsView::ShowCreatedFullscreenWidgetInternal(

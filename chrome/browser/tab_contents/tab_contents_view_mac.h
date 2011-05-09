@@ -74,6 +74,10 @@ class TabContentsViewMac : public TabContentsView,
       WebKit::WebPopupType popup_type);
   virtual void ShowCreatedWidgetInternal(RenderWidgetHostView* widget_host_view,
                                          const gfx::Rect& initial_pos);
+
+  virtual RenderWidgetHostView* CreateNewFullscreenWidgetInternal(int route_id);
+  virtual void ShowCreatedFullscreenWidgetInternal(
+      RenderWidgetHostView* widget_host_view);
   virtual bool IsEventTracking() const;
   virtual void CloseTabAfterEventTracking();
   virtual void GetViewBounds(gfx::Rect* out) const;
