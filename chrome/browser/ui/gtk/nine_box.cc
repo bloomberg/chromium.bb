@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image.h"
 #include "ui/gfx/point.h"
 
 namespace {
@@ -46,28 +47,32 @@ void TileImage(cairo_t* cr, GdkPixbuf* src,
   }
 }
 
+GdkPixbuf* GetPixbufImage(int resource_id) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return static_cast<GdkPixbuf*>(rb.GetNativeImageNamed(resource_id));
+}
+
 }  // namespace
 
 NineBox::NineBox(int top_left, int top, int top_right, int left, int center,
                  int right, int bottom_left, int bottom, int bottom_right)
     : unref_pixbufs_on_destroy_(false) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  images_[0] = top_left ? rb.GetPixbufNamed(top_left) : NULL;
-  images_[1] = top ? rb.GetPixbufNamed(top) : NULL;
-  images_[2] = top_right ? rb.GetPixbufNamed(top_right) : NULL;
-  images_[3] = left ? rb.GetPixbufNamed(left) : NULL;
-  images_[4] = center ? rb.GetPixbufNamed(center) : NULL;
-  images_[5] = right ? rb.GetPixbufNamed(right) : NULL;
-  images_[6] = bottom_left ? rb.GetPixbufNamed(bottom_left) : NULL;
-  images_[7] = bottom ? rb.GetPixbufNamed(bottom) : NULL;
-  images_[8] = bottom_right ? rb.GetPixbufNamed(bottom_right) : NULL;
+  images_[0] = top_left ? GetPixbufImage(top_left) : NULL;
+  images_[1] = top ? GetPixbufImage(top) : NULL;
+  images_[2] = top_right ? GetPixbufImage(top_right) : NULL;
+  images_[3] = left ? GetPixbufImage(left) : NULL;
+  images_[4] = center ? GetPixbufImage(center) : NULL;
+  images_[5] = right ? GetPixbufImage(right) : NULL;
+  images_[6] = bottom_left ? GetPixbufImage(bottom_left) : NULL;
+  images_[7] = bottom ? GetPixbufImage(bottom) : NULL;
+  images_[8] = bottom_right ? GetPixbufImage(bottom_right) : NULL;
 }
 
 NineBox::NineBox(int image, int top_margin, int bottom_margin, int left_margin,
                  int right_margin)
     : unref_pixbufs_on_destroy_(true) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  GdkPixbuf* pixbuf = rb.GetPixbufNamed(image);
+  GdkPixbuf* pixbuf = rb.GetNativeImageNamed(image);
   int width = gdk_pixbuf_get_width(pixbuf);
   int height = gdk_pixbuf_get_height(pixbuf);
   int inset_width = left_margin + right_margin;
