@@ -192,6 +192,11 @@ void PPB_Surface3D_Impl::OnContextLost() {
 }
 
 void PPB_Surface3D_Impl::SendContextLost() {
+  // By the time we run this, the instance may have been deleted, or in the
+  // process of being deleted. Even in the latter case, we don't want to send a
+  // callback after DidDestroy.
+  if (!instance() || !instance()->container())
+    return;
   const PPP_Graphics3D_Dev* ppp_graphics_3d =
       static_cast<const PPP_Graphics3D_Dev*>(
           instance()->module()->GetPluginInterface(
