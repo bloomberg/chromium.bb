@@ -389,7 +389,7 @@ void DownloadItem::Completed() {
   DCHECK(all_data_saved_);
   state_ = COMPLETE;
   UpdateObservers();
-  download_manager_->RemoveFromActiveList(id());
+  download_manager_->DownloadCompleted(id());
 }
 
 void DownloadItem::Interrupted(int64 size, int os_error) {

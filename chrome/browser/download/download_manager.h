@@ -162,8 +162,9 @@ class DownloadManager
   // deleted is returned back to the caller.
   int RemoveAllDownloads();
 
-  // Remove the download with id |download_id| from |active_downloads_|.
-  void RemoveFromActiveList(int32 download_id);
+  // Final download manager transition for download: Update the download
+  // history and remove the download from |active_downloads_|.
+  void DownloadCompleted(int32 download_id);
 
   // Called when a Save Page As download is started. Transfers ownership
   // of |download_item| to the DownloadManager.

@@ -15,6 +15,8 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/history/download_create_info.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/browser/net/url_request_slow_download_job.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -27,6 +29,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/cancelable_request.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/page_transition_types.h"
 #include "net/base/net_util.h"
@@ -259,7 +262,7 @@ class DownloadsFlushObserver
   virtual ~DownloadsFlushObserver() {
     download_manager_->RemoveObserver(this);
     for (std::set<DownloadItem*>::iterator it = downloads_observed_.begin();
-         it != downloads_observed_.end(); it++) {
+         it != downloads_observed_.end(); ++it) {
       (*it)->RemoveObserver(this);
     }
   }
@@ -294,7 +297,7 @@ class DownloadsFlushObserver
         // of DownloadManager so that we don't have to independently track
         // whether we are observing it for conditional destruction.
         for (std::set<DownloadItem*>::iterator it = downloads_observed_.begin();
-             it != downloads_observed_.end(); it++) {
+             it != downloads_observed_.end(); ++it) {
           (*it)->RemoveObserver(this);
         }
         downloads_observed_.clear();
@@ -431,6 +434,16 @@ class DownloadTest : public InProcessBrowserTest {
     SIZE_TEST_TYPE_UNKNOWN,
   };
 
+  // Location of the file source (the place from which it is downloaded).
+  FilePath OriginFile(FilePath file) {
+    return test_dir_.Append(file);
+  }
+
+  // Location of the file destination (place to which it is downloaded).
+  FilePath DestinationFile(Browser* browser, FilePath file) {
+    return GetDownloadDirectory(browser).Append(file);
+  }
+
   // Must be called after browser creation.  Creates a temporary
   // directory for downloads that is auto-deleted on destruction.
   // Returning false indicates a failure of the function, and should be asserted
@@ -530,11 +543,10 @@ class DownloadTest : public InProcessBrowserTest {
                      const FilePath& downloaded_filename,
                      const FilePath& origin_filename) {
     // Find the path to which the data will be downloaded.
-    FilePath downloaded_file =
-        GetDownloadDirectory(browser).Append(downloaded_filename);
+    FilePath downloaded_file(DestinationFile(browser, downloaded_filename));
 
     // Find the origin path (from which the data comes).
-    FilePath origin_file(test_dir_.Append(origin_filename));
+    FilePath origin_file(OriginFile(origin_filename));
     bool origin_file_exists = file_util::PathExists(origin_file);
     EXPECT_TRUE(origin_file_exists);
     if (!origin_file_exists)
@@ -631,6 +643,12 @@ class DownloadTest : public InProcessBrowserTest {
     return true;
   }
 
+  void GetDownloads(Browser* browser, std::vector<DownloadItem*>* downloads) {
+    DCHECK(downloads);
+    DownloadManager* manager = browser->profile()->GetDownloadManager();
+    manager->SearchDownloads(string16(), downloads);
+  }
+
   // Figure out if the appropriate download visibility was done.  A
   // utility function to support ChromeOS variations.  On ChromeOS
   // a webui panel is used instead of the download shelf; the
@@ -665,6 +683,55 @@ class DownloadTest : public InProcessBrowserTest {
 
   // Location of the downloads directory for these tests
   ScopedTempDir downloads_directory_;
+};
+
+// Get History Information.
+class DownloadsHistoryDataCollector {
+ public:
+  explicit DownloadsHistoryDataCollector(int64 download_db_handle,
+                                         DownloadManager* manager)
+      : result_valid_(false),
+        download_db_handle_(download_db_handle) {
+    HistoryService* hs =
+        manager->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    DCHECK(hs);
+    hs->QueryDownloads(
+        &callback_consumer_,
+        NewCallback(this,
+                    &DownloadsHistoryDataCollector::OnQueryDownloadsComplete));
+
+    // Cannot complete immediately because the history backend runs on a
+    // separate thread, so we can assume that the RunMessageLoop below will
+    // be exited by the Quit in OnQueryDownloadsComplete.
+    ui_test_utils::RunMessageLoop();
+  }
+
+  bool GetDownloadsHistoryEntry(DownloadCreateInfo* result) {
+    DCHECK(result);
+    *result = result_;
+    return result_valid_;
+  }
+
+ private:
+  void OnQueryDownloadsComplete(
+      std::vector<DownloadCreateInfo>* entries) {
+    result_valid_ = false;
+    for (std::vector<DownloadCreateInfo>::const_iterator it = entries->begin();
+         it != entries->end(); ++it) {
+      if (it->db_handle == download_db_handle_) {
+        result_ = *it;
+        result_valid_ = true;
+      }
+    }
+    MessageLoopForUI::current()->Quit();
+  }
+
+  DownloadCreateInfo result_;
+  bool result_valid_;
+  int64 download_db_handle_;
+  CancelableRequestConsumer callback_consumer_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadsHistoryDataCollector);
 };
 
 // NOTES:
@@ -702,7 +769,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CheckInternetZone) {
   // Check state.  Special file state must be checked before CheckDownload,
   // as CheckDownload will delete the output file.
   EXPECT_EQ(1, browser()->tab_count());
-  FilePath downloaded_file = GetDownloadDirectory(browser()).Append(file);
+  FilePath downloaded_file(DestinationFile(browser(), file));
   if (file_util::VolumeSupportsADS(downloaded_file))
     EXPECT_TRUE(file_util::HasInternetZoneIdentifier(downloaded_file));
   CheckDownload(browser(), file, file);
@@ -739,7 +806,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NoDownload) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test2.html"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
-  FilePath file_path = GetDownloadDirectory(browser()).Append(file);
+  FilePath file_path(DestinationFile(browser(), file));
 
   // Open a web page and wait.
   ui_test_utils::NavigateToURL(browser(), url);
@@ -1201,4 +1268,41 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadCancelled) {
 #else
   EXPECT_FALSE(IsDownloadUIVisible(browser()));
 #endif
+}
+
+// Confirm a download makes it into the history properly.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
+  ASSERT_TRUE(InitialSetup(false));
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
+  FilePath origin_file(OriginFile(file));
+  int64 origin_size;
+  file_util::GetFileSize(origin_file, &origin_size);
+
+  // Download the file and wait.  We do not expect the Select File dialog.
+  DownloadAndWait(browser(), url, EXPECT_NO_SELECT_DIALOG);
+
+  // Get details of what downloads have just happened.
+  std::vector<DownloadItem*> downloads;
+  GetDownloads(browser(), &downloads);
+  ASSERT_EQ(1u, downloads.size());
+  int64 db_handle = downloads[0]->db_handle();
+
+  // Check state.
+  EXPECT_EQ(1, browser()->tab_count());
+  CheckDownload(browser(), file, file);
+  EXPECT_TRUE(IsDownloadUIVisible(browser()));
+
+  // Check history results.
+  DownloadsHistoryDataCollector history_collector(
+      db_handle,
+      browser()->profile()->GetDownloadManager());
+  DownloadCreateInfo info;
+  EXPECT_TRUE(history_collector.GetDownloadsHistoryEntry(&info)) << db_handle;
+  EXPECT_EQ(file, info.path.BaseName());
+  EXPECT_EQ(url, info.url());
+  // Ignore start_time.
+  EXPECT_EQ(origin_size, info.received_bytes);
+  EXPECT_EQ(origin_size, info.total_bytes);
+  EXPECT_EQ(DownloadItem::COMPLETE, info.state);
 }

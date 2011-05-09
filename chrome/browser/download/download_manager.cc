@@ -645,15 +645,17 @@ void DownloadManager::MaybeCompleteDownload(DownloadItem* download) {
   in_progress_.erase(download->id());
   UpdateAppIcon();  // Reflect removal from in_progress_.
 
-  // Final update of download item and history.
   download_history_->UpdateEntry(download);
 
   // Finish the download.
   download->OnDownloadCompleting(file_manager_);
 }
 
-void DownloadManager::RemoveFromActiveList(int32 download_id) {
+void DownloadManager::DownloadCompleted(int32 download_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DownloadItem* download = GetDownloadItem(download_id);
+  DCHECK(download);
+  download_history_->UpdateEntry(download);
   active_downloads_.erase(download_id);
 }
 
