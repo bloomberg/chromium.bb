@@ -39,6 +39,7 @@
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_data_remover.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -951,13 +952,17 @@ void BrowserProcessImpl::CreateSafeBrowsingDetectionService() {
 bool BrowserProcessImpl::IsSafeBrowsingDetectionServiceEnabled() {
   // The safe browsing client-side detection is enabled only if the switch is
   // enabled and when safe browsing related stats is allowed to be collected.
+  // For now we only enable client-side detection on the canary, dev and beta
+  // channel.
 #ifdef OS_CHROMEOS
   return false;
 #else
+  std::string channel = platform_util::GetVersionStringModifier();
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableClientSidePhishingDetection) &&
       resource_dispatcher_host()->safe_browsing_service() &&
-      resource_dispatcher_host()->safe_browsing_service()->CanReportStats();
+      resource_dispatcher_host()->safe_browsing_service()->CanReportStats() &&
+      (channel == "beta" || channel == "dev" || channel == "canary");
 #endif
 }
 
