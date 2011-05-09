@@ -497,7 +497,7 @@ function Tester(body_element) {
 
   // TODO(ncbray): implement parallelized async test harness
   this.waitForCallback = function(callbackName, expectedCalls) {
-    tester.log('Waiting for ' + expectedCalls + ' invocations of callback: '
+    this_.log('Waiting for ' + expectedCalls + ' invocations of callback: '
                + callbackName);
     var gotCallbacks = 0;
 
@@ -509,14 +509,14 @@ function Tester(body_element) {
     // when done waiting.
     window[callbackName] = function() {
       ++gotCallbacks;
-      tester.log('Received callback ' + gotCallbacks);
+      this_.log('Received callback ' + gotCallbacks);
     };
 
     function wait() {
       if (gotCallbacks < expectedCalls) {
         halt_and_callback(1, wait);
       } else {
-        tester.log("Done waiting");
+        this_.log("Done waiting");
       }
     }
 
