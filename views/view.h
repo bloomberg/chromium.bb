@@ -528,9 +528,6 @@ class View : public AcceleratorTarget {
   // the hierarchy beneath it.
   virtual void Paint(gfx::Canvas* canvas);
 
-  // Paint this View immediately.
-  virtual void PaintNow();
-
   // The background object is owned by this object and may be NULL.
   void set_background(Background* b) { background_.reset(b); }
   const Background* background() const { return background_.get(); }

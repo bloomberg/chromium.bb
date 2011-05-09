@@ -74,11 +74,6 @@ MenuButton::~MenuButton() {
 
 bool MenuButton::Activate() {
   SetState(BS_PUSHED);
-  // We need to synchronously paint here because subsequently we enter a
-  // menu modal loop which will stop this window from updating and
-  // receiving the paint message that should be spawned by SetState until
-  // after the menu closes.
-  PaintNow();
   if (menu_delegate_) {
     gfx::Rect lb = GetLocalBounds();
 

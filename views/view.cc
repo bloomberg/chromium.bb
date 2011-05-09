@@ -727,16 +727,6 @@ void View::Paint(gfx::Canvas* canvas) {
   }
 }
 
-void View::PaintNow() {
-  if (!IsVisible())
-    return;
-
-  if (parent())
-    parent()->PaintNow();
-}
-
-
-
 ThemeProvider* View::GetThemeProvider() const {
   const Widget* widget = GetWidget();
   return widget ? widget->GetThemeProvider() : NULL;

@@ -198,7 +198,6 @@ void StatusBubbleViews::StatusView::Show() {
   SetOpacity(1.0);
   popup_->Show();
   stage_ = BUBBLE_SHOWN;
-  PaintNow();
 }
 
 void StatusBubbleViews::StatusView::Hide() {
