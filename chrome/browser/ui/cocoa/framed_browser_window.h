@@ -21,9 +21,6 @@ const NSInteger kFramedWindowButtonsWithTabStripOffsetFromLeft = 11;
 const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromTop = 4;
 const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 8;
 
-// Offset between the window controls (zoom, close, miniaturize).
-const NSInteger kFramedWindowButtonsInterButtonSpacing = 7;
-
 // Cocoa class representing a framed browser window.
 // We need to override NSWindow with our own class since we need access to all
 // unhandled keyboard events and subclassing NSWindow is the only method to do
@@ -35,10 +32,15 @@ const NSInteger kFramedWindowButtonsInterButtonSpacing = 7;
   NSButton* closeButton_;
   NSButton* miniaturizeButton_;
   NSButton* zoomButton_;
+
+  CGFloat windowButtonsInterButtonSpacing_;
 }
 
 // Tells the window to suppress title drawing.
 - (void)setShouldHideTitle:(BOOL)flag;
+
+// Returns the desired spacing between window control views.
+- (CGFloat)windowButtonsInterButtonSpacing;
 
 @end
 

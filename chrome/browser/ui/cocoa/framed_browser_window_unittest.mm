@@ -121,7 +121,7 @@ TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
             NSMaxY(windowBounds) -
                 kFramedWindowButtonsWithoutTabStripOffsetFromTop);
   EXPECT_EQ(NSMinX(miniaturizeFrame),
-            NSMaxX(closeBoxFrame) + kFramedWindowButtonsInterButtonSpacing);
+            NSMaxX(closeBoxFrame) + [window_ windowButtonsInterButtonSpacing]);
 
   // Then with a tabstrip.
   id controller = [OCMockObject mockForClass:[BrowserWindowController class]];
@@ -153,7 +153,7 @@ TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
             NSMaxY(windowBounds) -
                 kFramedWindowButtonsWithTabStripOffsetFromTop);
   EXPECT_EQ(NSMinX(miniaturizeFrame),
-            NSMaxX(closeBoxFrame) + kFramedWindowButtonsInterButtonSpacing);
+            NSMaxX(closeBoxFrame) + [window_ windowButtonsInterButtonSpacing]);
   [window_ setWindowController:nil];
 }
 

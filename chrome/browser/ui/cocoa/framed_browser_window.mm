@@ -66,6 +66,9 @@ const CGFloat kWindowGradientHeight = 24.0;
     zoomButton_ = [self standardWindowButton:NSWindowZoomButton];
     [zoomButton_ setPostsFrameChangedNotifications:YES];
 
+    windowButtonsInterButtonSpacing_ =
+        NSMinX([miniaturizeButton_ frame]) - NSMaxX([closeButton_ frame]);
+
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     [center addObserver:self
                selector:@selector(adjustCloseButton:)
@@ -152,11 +155,11 @@ const CGFloat kWindowGradientHeight = 24.0;
   switch (kind) {
     case NSWindowZoomButton:
       buttonFrame.origin.x += NSWidth([miniaturizeButton_ frame]);
-      buttonFrame.origin.x += kFramedWindowButtonsInterButtonSpacing;
+      buttonFrame.origin.x += windowButtonsInterButtonSpacing_;
       // fallthrough
     case NSWindowMiniaturizeButton:
       buttonFrame.origin.x += NSWidth([closeButton_ frame]);
-      buttonFrame.origin.x += kFramedWindowButtonsInterButtonSpacing;
+      buttonFrame.origin.x += windowButtonsInterButtonSpacing_;
       // fallthrough
     default:
       break;
@@ -250,6 +253,10 @@ const CGFloat kWindowGradientHeight = 24.0;
 
 - (BOOL)_isTitleHidden {
   return shouldHideTitle_;
+}
+
+- (CGFloat)windowButtonsInterButtonSpacing {
+  return windowButtonsInterButtonSpacing_;
 }
 
 // This method is called whenever a window is moved in order to ensure it fits
