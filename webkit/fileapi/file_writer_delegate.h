@@ -67,7 +67,7 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   int64 offset_;
   scoped_refptr<base::MessageLoopProxy> proxy_;
   base::Time last_progress_event_time_;
-  int bytes_read_backlog_;
+  int bytes_written_backlog_;
   int bytes_written_;
   int bytes_read_;
   FilePath usage_file_path_;

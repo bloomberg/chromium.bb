@@ -12,7 +12,9 @@
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/quota_file_util.h"
+#include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
 
@@ -92,7 +94,7 @@ FileWriterDelegate::FileWriterDelegate(
       file_(base::kInvalidPlatformFileValue),
       offset_(offset),
       proxy_(proxy),
-      bytes_read_backlog_(0),
+      bytes_written_backlog_(0),
       bytes_written_(0),
       bytes_read_(0),
       total_bytes_written_(0),
@@ -260,31 +262,40 @@ void FileWriterDelegate::OnError(base::PlatformFileError error) {
   file_system_operation_->DidWrite(error, 0, true);
 }
 
-void FileWriterDelegate::OnProgress(int bytes_read, bool done) {
-  DCHECK(bytes_read + bytes_read_backlog_ >= bytes_read_backlog_);
-  if (bytes_read > 0 && !usage_file_path_.empty()) {
+void FileWriterDelegate::OnProgress(int bytes_written, bool done) {
+  DCHECK(bytes_written + bytes_written_backlog_ >= bytes_written_backlog_);
+  if (bytes_written > 0 && !usage_file_path_.empty()) {
     proxy_->PostTask(FROM_HERE, NewRunnableFunction(
         &FileSystemUsageCache::AtomicUpdateUsageByDelta,
-        usage_file_path_, bytes_read));
+        usage_file_path_, bytes_written));
+    FileSystemOperationContext* operation_context =
+        file_system_operation_->file_system_operation_context();
+    if (file_system_operation_->file_system_context()->quota_manager_proxy())
+      file_system_operation_->file_system_context()->
+          quota_manager_proxy()->NotifyStorageModified(
+              quota::QuotaClient::kFileSystem,
+              operation_context->src_origin_url(),
+              FileSystemTypeToQuotaStorageType(operation_context->src_type()),
+              bytes_written);
   }
   static const int kMinProgressDelayMS = 200;
   base::Time currentTime = base::Time::Now();
   if (done || last_progress_event_time_.is_null() ||
       (currentTime - last_progress_event_time_).InMilliseconds() >
           kMinProgressDelayMS) {
-    bytes_read += bytes_read_backlog_;
+    bytes_written += bytes_written_backlog_;
     last_progress_event_time_ = currentTime;
-    bytes_read_backlog_ = 0;
+    bytes_written_backlog_ = 0;
     if (done && !usage_file_path_.empty()) {
       // Decrement the dirty when the Write operation finishes.
       proxy_->PostTask(FROM_HERE, NewRunnableFunction(
           &FileSystemUsageCache::DecrementDirty, usage_file_path_));
     }
     file_system_operation_->DidWrite(
-        base::PLATFORM_FILE_OK, bytes_read, done);
+        base::PLATFORM_FILE_OK, bytes_written, done);
     return;
   }
-  bytes_read_backlog_ += bytes_read;
+  bytes_written_backlog_ += bytes_written;
 }
 
 }  // namespace fileapi

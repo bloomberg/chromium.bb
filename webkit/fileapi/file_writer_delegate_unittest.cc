@@ -27,6 +27,12 @@
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_writer_delegate.h"
 #include "webkit/fileapi/quota_file_util.h"
+#include "webkit/quota/quota_manager.h"
+
+using quota::QuotaClient;
+using quota::QuotaManager;
+using quota::QuotaManagerProxy;
+using quota::StorageType;
 
 namespace fileapi {
 
@@ -49,6 +55,29 @@ class MockFileSystemPathManager : public FileSystemPathManager {
 
  private:
   FilePath test_filesystem_path_;
+};
+
+class MockQuotaManager : public QuotaManager {
+ public:
+  MockQuotaManager(const FilePath& filesystem_path)
+      : QuotaManager(false /* is_incognito */,
+                     filesystem_path,
+                     base::MessageLoopProxy::CreateForCurrentThread(),
+                     base::MessageLoopProxy::CreateForCurrentThread()),
+        usage_(0) {}
+  int64 usage() const { return usage_; }
+
+ protected:
+  virtual void NotifyStorageModified(QuotaClient::ID client_id,
+                                     const GURL& origin,
+                                     StorageType type,
+                                     int64 delta) {
+    DCHECK(client_id == QuotaClient::kFileSystem);
+    usage_ += delta;
+  }
+
+ private:
+  int64 usage_;
 };
 
 class Result {
@@ -81,40 +110,7 @@ class Result {
   bool complete_;
 };
 
-}  // namespace (anonymous)
-
-class FileWriterDelegateTest : public PlatformTest {
- public:
-  FileWriterDelegateTest()
-      : loop_(MessageLoop::TYPE_IO) {}
-
- protected:
-  virtual void SetUp();
-  virtual void TearDown();
-
-  int64 GetCachedUsage() {
-    return FileSystemUsageCache::GetUsage(usage_file_path_);
-  }
-
-  static net::URLRequest::ProtocolFactory Factory;
-
-  scoped_ptr<FileWriterDelegate> file_writer_delegate_;
-  scoped_ptr<net::URLRequest> request_;
-  scoped_ptr<FileSystemOperationContext> context_;
-  scoped_ptr<Result> result_;
-
-  MessageLoop loop_;
-
-  ScopedTempDir dir_;
-  FilePath filesystem_dir_;
-  FilePath usage_file_path_;
-  FilePath file_path_;
-  PlatformFile file_;
-};
-
-namespace {
-
-static std::string g_content;
+static const char* g_content = NULL;
 
 class FileWriterDelegateTestJob : public net::URLRequestJob {
  public:
@@ -191,6 +187,47 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
 
 }  // namespace (anonymous)
 
+class FileWriterDelegateTest : public PlatformTest {
+ public:
+  FileWriterDelegateTest()
+      : loop_(MessageLoop::TYPE_IO) {}
+
+ protected:
+  virtual void SetUp();
+  virtual void TearDown();
+
+  int64 GetCachedUsage() {
+    return FileSystemUsageCache::GetUsage(usage_file_path_);
+  }
+
+  int64 GetManagerUsage() const {
+    DCHECK(quota_manager_.get());
+    return quota_manager_->usage();
+  }
+
+  FileSystemContext* file_system_context() const {
+    return file_system_context_.get();
+  }
+
+  static net::URLRequest::ProtocolFactory Factory;
+
+  scoped_ptr<FileWriterDelegate> file_writer_delegate_;
+  scoped_ptr<net::URLRequest> request_;
+  scoped_ptr<FileSystemOperationContext> context_;
+  scoped_ptr<Result> result_;
+
+  scoped_refptr<FileSystemContext> file_system_context_;
+  scoped_refptr<MockQuotaManager> quota_manager_;
+
+  MessageLoop loop_;
+
+  ScopedTempDir dir_;
+  FilePath filesystem_dir_;
+  FilePath usage_file_path_;
+  FilePath file_path_;
+  PlatformFile file_;
+};
+
 // static
 net::URLRequestJob* FileWriterDelegateTest::Factory(
     net::URLRequest* request,
@@ -205,13 +242,17 @@ void FileWriterDelegateTest::SetUp() {
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(filesystem_dir_,
                                                   &file_path_));
 
-  context_.reset(new FileSystemOperationContext(
+  quota_manager_ = new MockQuotaManager(filesystem_dir_);
+  file_system_context_ =
       new FileSystemContext(base::MessageLoopProxy::CreateForCurrentThread(),
                             base::MessageLoopProxy::CreateForCurrentThread(),
-                            NULL, NULL, FilePath(), false /* is_incognito */,
+                            NULL, quota_manager_->proxy(),
+                            FilePath(), false /* is_incognito */,
                             true, true,
                             new MockFileSystemPathManager(filesystem_dir_)),
-      NULL));
+
+  context_.reset(new FileSystemOperationContext(
+      file_system_context_.get(), NULL));
 
   usage_file_path_ =
       filesystem_dir_.AppendASCII(FileSystemUsageCache::kUsageFileName);
@@ -233,25 +274,32 @@ void FileWriterDelegateTest::SetUp() {
 
 void FileWriterDelegateTest::TearDown() {
   net::URLRequest::RegisterProtocolFactory("blob", NULL);
-  result_.reset(NULL);
+  result_.reset();
   base::ClosePlatformFile(file_);
-  context_.reset(NULL);
+  context_.reset();
+  file_system_context_ = NULL;
+  quota_manager_ = NULL;
+  // Make sure objects that need to be freed on a particular thread go away.
+  MessageLoop::current()->RunAllPending();
 }
 
 TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
   GURL blob_url("blob:nolimit");
-  g_content = std::string("The quick brown fox jumps over the lazy dog.\n");
+  g_content = "The quick brown fox jumps over the lazy dog.\n";
   file_writer_delegate_.reset(new FileWriterDelegate(
-      new FileSystemOperation(new MockDispatcher(result_.get()), NULL, NULL,
+      new FileSystemOperation(new MockDispatcher(result_.get()),
+                              NULL, file_system_context(),
                               QuotaFileUtil::GetInstance()),
       0, base::MessageLoopProxy::CreateForCurrentThread()));
   request_.reset(new net::URLRequest(blob_url, file_writer_delegate_.get()));
 
   ASSERT_EQ(0, GetCachedUsage());
+  ASSERT_EQ(0, GetManagerUsage());
   context_->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
   file_writer_delegate_->Start(file_, request_.get(), *context_);
   MessageLoop::current()->Run();
   ASSERT_EQ(45, GetCachedUsage());
+  ASSERT_EQ(45, GetManagerUsage());
 
   EXPECT_EQ(45, result_->bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
@@ -262,9 +310,10 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
 
 TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
   GURL blob_url("blob:just");
-  g_content = std::string("The quick brown fox jumps over the lazy dog.\n");
+  g_content = "The quick brown fox jumps over the lazy dog.\n";
   file_writer_delegate_.reset(new FileWriterDelegate(
-      new FileSystemOperation(new MockDispatcher(result_.get()), NULL, NULL,
+      new FileSystemOperation(new MockDispatcher(result_.get()),
+                              NULL, file_system_context(),
                               QuotaFileUtil::GetInstance()),
       0, base::MessageLoopProxy::CreateForCurrentThread()));
   request_.reset(new net::URLRequest(blob_url, file_writer_delegate_.get()));
@@ -274,6 +323,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
   file_writer_delegate_->Start(file_, request_.get(), *context_);
   MessageLoop::current()->Run();
   ASSERT_EQ(45, GetCachedUsage());
+  ASSERT_EQ(45, GetManagerUsage());
 
   file_writer_delegate_.reset(NULL);
 
@@ -284,9 +334,10 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
 
 TEST_F(FileWriterDelegateTest, WriteFailureByQuota) {
   GURL blob_url("blob:failure");
-  g_content = std::string("The quick brown fox jumps over the lazy dog.\n");
+  g_content = "The quick brown fox jumps over the lazy dog.\n";
   file_writer_delegate_.reset(new FileWriterDelegate(
-      new FileSystemOperation(new MockDispatcher(result_.get()), NULL, NULL,
+      new FileSystemOperation(new MockDispatcher(result_.get()),
+                              NULL, file_system_context(),
                               QuotaFileUtil::GetInstance()),
       0, base::MessageLoopProxy::CreateForCurrentThread()));
   request_.reset(new net::URLRequest(blob_url, file_writer_delegate_.get()));
@@ -296,6 +347,7 @@ TEST_F(FileWriterDelegateTest, WriteFailureByQuota) {
   file_writer_delegate_->Start(file_, request_.get(), *context_);
   MessageLoop::current()->Run();
   ASSERT_EQ(44, GetCachedUsage());
+  ASSERT_EQ(44, GetManagerUsage());
 
   file_writer_delegate_.reset(NULL);
 
@@ -306,9 +358,10 @@ TEST_F(FileWriterDelegateTest, WriteFailureByQuota) {
 
 TEST_F(FileWriterDelegateTest, WriteZeroBytesSuccessfullyWithZeroQuota) {
   GURL blob_url("blob:zero");
-  g_content = std::string("");
+  g_content = "";
   file_writer_delegate_.reset(new FileWriterDelegate(
-      new FileSystemOperation(new MockDispatcher(result_.get()), NULL, NULL,
+      new FileSystemOperation(new MockDispatcher(result_.get()),
+                              NULL, file_system_context(),
                               QuotaFileUtil::GetInstance()),
       0, base::MessageLoopProxy::CreateForCurrentThread()));
   request_.reset(new net::URLRequest(blob_url, file_writer_delegate_.get()));
@@ -318,6 +371,7 @@ TEST_F(FileWriterDelegateTest, WriteZeroBytesSuccessfullyWithZeroQuota) {
   file_writer_delegate_->Start(file_, request_.get(), *context_);
   MessageLoop::current()->Run();
   ASSERT_EQ(0, GetCachedUsage());
+  ASSERT_EQ(0, GetManagerUsage());
 
   file_writer_delegate_.reset(NULL);
 
@@ -343,24 +397,20 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, error_code);
 
   context2.reset(new FileSystemOperationContext(
-      new FileSystemContext(base::MessageLoopProxy::CreateForCurrentThread(),
-                            base::MessageLoopProxy::CreateForCurrentThread(),
-                            NULL, NULL, FilePath(), false /* is_incognito */,
-                            true, true,
-                            new MockFileSystemPathManager(filesystem_dir_)),
-      NULL));
-
+      file_system_context(), NULL));
   result2.reset(new Result());
 
   GURL blob_url("blob:nolimitconcurrent");
   GURL blob_url2("blob:nolimitconcurrent2");
-  g_content = std::string("The quick brown fox jumps over the lazy dog.\n");
+  g_content = "The quick brown fox jumps over the lazy dog.\n";
   file_writer_delegate_.reset(new FileWriterDelegate(
-      new FileSystemOperation(new MockDispatcher(result_.get()), NULL, NULL,
+      new FileSystemOperation(new MockDispatcher(result_.get()),
+                              NULL, file_system_context(),
                               QuotaFileUtil::GetInstance()),
       0, base::MessageLoopProxy::CreateForCurrentThread()));
   file_writer_delegate2.reset(new FileWriterDelegate(
-      new FileSystemOperation(new MockDispatcher(result2.get()), NULL, NULL,
+      new FileSystemOperation(new MockDispatcher(result2.get()),
+                              NULL, file_system_context(),
                               QuotaFileUtil::GetInstance()),
       0, base::MessageLoopProxy::CreateForCurrentThread()));
   request_.reset(new net::URLRequest(blob_url, file_writer_delegate_.get()));
@@ -375,6 +425,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   if (!result_->complete() || !result2->complete())
     MessageLoop::current()->Run();
   ASSERT_EQ(90, GetCachedUsage());
+  ASSERT_EQ(90, GetManagerUsage());
 
   file_writer_delegate_.reset(NULL);
 
