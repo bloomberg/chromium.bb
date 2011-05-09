@@ -145,3 +145,11 @@ size_t HistoryProvider::TrimHttpPrefix(string16* url) {
   url->erase(scheme_pos, prefix_end - scheme_pos);
   return (scheme_pos == 0) ? prefix_end : 0;
 }
+
+// static
+bool HistoryProvider::PreventInlineAutocomplete(
+    const AutocompleteInput& input) {
+  return input.prevent_inline_autocomplete() ||
+        (!input.text().empty() &&
+         IsWhitespace(input.text()[input.text().size() - 1]));
+}

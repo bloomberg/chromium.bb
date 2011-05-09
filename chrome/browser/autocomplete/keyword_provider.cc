@@ -280,8 +280,10 @@ bool KeywordProvider::ExtractKeywordFromInput(const AutocompleteInput& input,
       (input.type() == AutocompleteInput::FORCED_QUERY))
     return false;
 
+  string16 trimmed_input;
+  TrimWhitespace(input.text(), TRIM_TRAILING, &trimmed_input);
   *keyword = TemplateURLModel::CleanUserInputKeyword(
-      SplitKeywordFromInput(input.text(), true, remaining_input));
+      SplitKeywordFromInput(trimmed_input, true, remaining_input));
   return !keyword->empty();
 }
 
@@ -300,7 +302,7 @@ string16 KeywordProvider::SplitKeywordFromInput(
   // Set |remaining_input| to everything after the first token.
   DCHECK(remaining_input != NULL);
   const size_t remaining_start = trim_leading_whitespace ?
-    input.find_first_not_of(kWhitespaceUTF16, first_white) : first_white + 1;
+      input.find_first_not_of(kWhitespaceUTF16, first_white) : first_white + 1;
 
   if (remaining_start < input.length())
     remaining_input->assign(input.begin() + remaining_start, input.end());

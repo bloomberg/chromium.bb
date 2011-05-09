@@ -95,6 +95,11 @@ struct HistoryURLProviderParams {
   // live beyond the original query while it runs on the history thread.
   AutocompleteInput input;
 
+  // Should inline autocompletion be disabled? This is initalized from
+  // |input.prevent_inline_autocomplete()|, but set to false is the input
+  // contains trailing white space.
+  bool prevent_inline_autocomplete;
+
   // Set when "http://" should be trimmed from the beginning of the URLs.
   bool trim_http;
 

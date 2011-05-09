@@ -442,14 +442,13 @@ TEST_F(SearchProviderTest, DifferingText) {
   // Finalize the instant query immediately.
   provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"), ASCIIToUTF16("bar"));
 
-  // Query with input that ends up getting trimmed to be the same as was
-  // originally supplied.
-  QueryForInput(ASCIIToUTF16("foo "), false, true);
+  // Query with the same input text, but trailing whitespace.
+  QueryForInput(ASCIIToUTF16("foo "), false, false);
 
   // There should only one match, for what you typed.
   EXPECT_EQ(1u, provider_->matches().size());
   GURL instant_url = GURL(default_t_url_->url()->ReplaceSearchTerms(
-      *default_t_url_, ASCIIToUTF16("foo"), 0, string16()));
+      *default_t_url_, ASCIIToUTF16("foo "), 0, string16()));
   AutocompleteMatch instant_match = FindMatchWithDestination(instant_url);
   EXPECT_FALSE(instant_match.destination_url.is_empty());
 }
@@ -491,4 +490,44 @@ TEST_F(SearchProviderTest, DontAutocompleteURLLikeTerms) {
   AutocompleteMatch what_you_typed_match =
       FindMatchWithDestination(what_you_typed_url);
   EXPECT_GT(what_you_typed_match.relevance, term_match.relevance);
+}
+
+// Verifies autocomplete of previously typed words works on word boundaries.
+TEST_F(SearchProviderTest, AutocompletePreviousSearchOnSpace) {
+  // Add an entry that corresponds to a search with two words.
+  string16 term(ASCIIToUTF16("two words"));
+  HistoryService* history =
+      profile_.GetHistoryService(Profile::EXPLICIT_ACCESS);
+  GURL term_url(default_t_url_->url()->ReplaceSearchTerms(
+      *default_t_url_, term, 0, string16()));
+  history->AddPageWithDetails(term_url, string16(), 1, 1,
+                              base::Time::Now(), false,
+                              history::SOURCE_BROWSED);
+  history->SetKeywordSearchTermsForURL(term_url, default_t_url_->id(), term);
+
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+
+  QueryForInput(ASCIIToUTF16("two "), false, false);
+
+  // Wait until history and the suggest query complete.
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+  ASSERT_NO_FATAL_FAILURE(FinishDefaultSuggestQuery());
+
+  // Provider should be done.
+  EXPECT_TRUE(provider_->done());
+
+  // There should be two matches, one for what you typed, the other for
+  // 'two words'.
+  ASSERT_EQ(2u, provider_->matches().size());
+  AutocompleteMatch term_match = FindMatchWithDestination(term_url);
+  EXPECT_FALSE(term_match.destination_url.is_empty());
+  GURL what_you_typed_url = GURL(default_t_url_->url()->ReplaceSearchTerms(
+      *default_t_url_, ASCIIToUTF16("two "), 0, string16()));
+  AutocompleteMatch what_you_typed_match =
+      FindMatchWithDestination(what_you_typed_url);
+  EXPECT_FALSE(what_you_typed_match.destination_url.is_empty());
+  // term_match should be autocompleted.
+  EXPECT_GT(term_match.relevance, what_you_typed_match.relevance);
+  // And the offset should be at 4.
+  EXPECT_EQ(4u, term_match.inline_autocomplete_offset);
 }

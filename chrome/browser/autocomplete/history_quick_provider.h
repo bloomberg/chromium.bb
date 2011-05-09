@@ -49,6 +49,7 @@ class HistoryQuickProvider : public HistoryProvider {
   // the maximum possible score for the match.
   AutocompleteMatch QuickMatchToACMatch(
       const history::ScoredHistoryMatch& history_match,
+      bool prevent_inline_autocomplete,
       int* max_match_score);
 
   // Determines the relevance score of |history_match|. The maximum allowed

@@ -48,7 +48,6 @@ using base::TimeDelta;
 
 AutocompleteInput::AutocompleteInput()
   : type_(INVALID),
-    initial_prevent_inline_autocomplete_(false),
     prevent_inline_autocomplete_(false),
     prefer_keyword_(false),
     allow_exact_keyword_match_(true),
@@ -61,17 +60,14 @@ AutocompleteInput::AutocompleteInput(const string16& text,
                                      bool prefer_keyword,
                                      bool allow_exact_keyword_match,
                                      MatchesRequested matches_requested)
-    : original_text_(text),
-      desired_tld_(desired_tld),
-      initial_prevent_inline_autocomplete_(prevent_inline_autocomplete),
+    : desired_tld_(desired_tld),
       prevent_inline_autocomplete_(prevent_inline_autocomplete),
       prefer_keyword_(prefer_keyword),
       allow_exact_keyword_match_(allow_exact_keyword_match),
       matches_requested_(matches_requested) {
-  // Trim whitespace from edges of input; don't inline autocomplete if there
-  // was trailing whitespace.
-  if (TrimWhitespace(text, TRIM_ALL, &text_) & TRIM_TRAILING)
-    prevent_inline_autocomplete_ = true;
+  // None of the providers care about leading white space so we always trim it.
+  // Providers that care about trailing white space handle trimming themselves.
+  TrimWhitespace(text, TRIM_LEADING, &text_);
 
   GURL canonicalized_url;
   type_ = Parse(text_, desired_tld, &parts_, &scheme_, &canonicalized_url);

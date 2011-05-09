@@ -10,6 +10,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_url_tracker.h"
@@ -155,6 +156,7 @@ string16 TemplateURLModel::GenerateKeyword(const GURL& url,
 string16 TemplateURLModel::CleanUserInputKeyword(const string16& keyword) {
   // Remove the scheme.
   string16 result(base::i18n::ToLower(keyword));
+  TrimWhitespace(result, TRIM_ALL, &result);
   url_parse::Component scheme_component;
   if (url_parse::ExtractScheme(UTF16ToUTF8(keyword).c_str(),
                                static_cast<int>(keyword.length()),

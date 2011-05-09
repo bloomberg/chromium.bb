@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,6 +51,13 @@ class HistoryProvider : public AutocompleteProvider {
   // NOTE: For a view-source: URL, this will trim from after "view-source:" and
   // return 0.
   static size_t TrimHttpPrefix(string16* url);
+
+  // Returns true if inline autocompletion should be prevented. Use this instead
+  // of |input.prevent_inline_autocomplete| if the input is passed through
+  // FixupUserInput(). This method returns true if
+  // |input.prevent_inline_autocomplete()| is true, or the input text contains
+  // trailing whitespace.
+  bool PreventInlineAutocomplete(const AutocompleteInput& input);
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_H_

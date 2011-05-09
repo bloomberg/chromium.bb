@@ -493,3 +493,16 @@ TEST_F(HistoryURLProviderTestNoDB, NavigateWithoutDB) {
 
   RunTest(ASCIIToUTF16("this is a query"), string16(), false, NULL, 0);
 }
+
+TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
+  AutocompleteInput input(ASCIIToUTF16("slash "), string16(), false,
+                          false, true, AutocompleteInput::ALL_MATCHES);
+  autocomplete_->Start(input, false);
+  if (!autocomplete_->done())
+    MessageLoop::current()->Run();
+
+  // None of the matches should attempt to autocomplete.
+  matches_ = autocomplete_->matches();
+  for (size_t i = 0; i < matches_.size(); ++i)
+    EXPECT_EQ(string16::npos, matches_[i].inline_autocomplete_offset);
+}

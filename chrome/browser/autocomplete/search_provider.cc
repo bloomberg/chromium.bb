@@ -120,7 +120,7 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
                 CalculateRelevanceForWhatYouTyped() + 1,
                 AutocompleteMatch::SEARCH_SUGGEST,
                 did_not_accept_default_suggestion, false,
-                input_.initial_prevent_inline_autocomplete(), &match_map);
+                input_.prevent_inline_autocomplete(), &match_map);
   DCHECK_EQ(1u, match_map.size());
   matches_.push_back(match_map.begin()->second);
   // Sort the results so that UpdateFirstSearchDescription does the right thing.
@@ -173,9 +173,6 @@ void SearchProvider::Start(const AutocompleteInput& input,
       default_provider_suggest_text_.clear();
     else
       Stop();
-  } else if (minimal_changes &&
-             (input_.original_text() != input.original_text())) {
-    default_provider_suggest_text_.clear();
   }
 
   providers_.Set(default_provider, keyword_provider);
@@ -544,13 +541,13 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
                   CalculateRelevanceForWhatYouTyped(),
                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
                   did_not_accept_default_suggestion, false,
-                  input_.initial_prevent_inline_autocomplete(), &map);
+                  input_.prevent_inline_autocomplete(), &map);
     if (!default_provider_suggest_text_.empty()) {
       AddMatchToMap(input_.text() + default_provider_suggest_text_,
                     input_.text(), CalculateRelevanceForWhatYouTyped() + 1,
                     AutocompleteMatch::SEARCH_SUGGEST,
                     did_not_accept_default_suggestion, false,
-                    input_.initial_prevent_inline_autocomplete(), &map);
+                    input_.prevent_inline_autocomplete(), &map);
     }
   }
 
@@ -646,7 +643,7 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
                   is_keyword ? keyword_input_text_ : input_.text(),
                   relevance,
                   AutocompleteMatch::SEARCH_HISTORY, did_not_accept_suggestion,
-                  is_keyword, input_.initial_prevent_inline_autocomplete(),
+                  is_keyword, input_.prevent_inline_autocomplete(),
                   map);
   }
 }
@@ -663,7 +660,7 @@ void SearchProvider::AddSuggestResultsToMap(
                                                   is_keyword),
                   AutocompleteMatch::SEARCH_SUGGEST,
                   static_cast<int>(i), is_keyword,
-                  input_.initial_prevent_inline_autocomplete(), map);
+                  input_.prevent_inline_autocomplete(), map);
   }
 }
 

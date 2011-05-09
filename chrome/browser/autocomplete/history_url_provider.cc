@@ -109,6 +109,7 @@ HistoryURLProviderParams::HistoryURLProviderParams(
     const std::string& languages)
     : message_loop(MessageLoop::current()),
       input(input),
+      prevent_inline_autocomplete(input.prevent_inline_autocomplete()),
       trim_http(trim_http),
       cancel(false),
       failed(false),
@@ -243,7 +244,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     // regardless of the input type.
     exact_suggestion = 1;
     params->matches.push_back(what_you_typed_match);
-  } else if (params->input.prevent_inline_autocomplete() ||
+  } else if (params->prevent_inline_autocomplete ||
       history_matches.empty() ||
       !PromoteMatchForInlineAutocomplete(params, history_matches.front())) {
     // Failed to promote any URLs for inline autocompletion.  Use the What You
@@ -603,6 +604,9 @@ void HistoryURLProvider::RunAutocompletePasses(
   scoped_ptr<HistoryURLProviderParams> params(
       new HistoryURLProviderParams(input, trim_http, languages));
 
+  params->prevent_inline_autocomplete =
+      PreventInlineAutocomplete(input);
+
   if (fixup_input_and_run_pass_1) {
     // Do some fixup on the user input before matching against it, so we provide
     // good results for local file paths, input with spaces, etc.
@@ -792,7 +796,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
           net::FormatUrl(info.url(), languages, format_types,
                          UnescapeRule::SPACES, NULL, NULL,
                          &inline_autocomplete_offset));
-  if (!params->input.prevent_inline_autocomplete())
+  if (!params->prevent_inline_autocomplete)
     match.inline_autocomplete_offset = inline_autocomplete_offset;
   DCHECK((match.inline_autocomplete_offset == string16::npos) ||
          (match.inline_autocomplete_offset <= match.fill_into_edit.length()));
