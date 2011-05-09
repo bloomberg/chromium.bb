@@ -657,7 +657,8 @@ bool InstantController::ShouldShowPreviewFor(const AutocompleteMatch& match,
   if (cl->HasSwitch(switches::kRestrictInstantToSearch) &&
       match.type != AutocompleteMatch::SEARCH_WHAT_YOU_TYPED &&
       match.type != AutocompleteMatch::SEARCH_HISTORY &&
-      match.type != AutocompleteMatch::SEARCH_SUGGEST) {
+      match.type != AutocompleteMatch::SEARCH_SUGGEST &&
+      match.type != AutocompleteMatch::SEARCH_OTHER_ENGINE) {
     return false;
   }
 
