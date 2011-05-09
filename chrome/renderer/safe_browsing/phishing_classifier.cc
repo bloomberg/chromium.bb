@@ -157,10 +157,12 @@ void PhishingClassifier::TermExtractionFinished(bool success) {
     WebKit::WebView* web_view = render_view_->webview();
     if (!web_view) {
       RunFailureCallback();
+      return;
     }
     WebKit::WebFrame* main_frame = web_view->mainFrame();
     if (!main_frame) {
       RunFailureCallback();
+      return;
     }
 
     // Hash all of the features so that they match the model, then compute
