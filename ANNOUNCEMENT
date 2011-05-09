@@ -9,11 +9,11 @@ Introduction
 ------------	
 
 Liblouis is an open-source braille translator and back-translator. It
-features support for computer, literary and math braille[1], supports
-contracted and uncontracted translation for many, many languages[2].
+features support for computer, literary and math braille, supports
+contracted and uncontracted translation for many, many languages[1].
 It plays an important role in an open source accessibility stack and
 is used by screenreaders such as NVDA and Orca. A companion project
-liblouisxml[3] deals with formatting of braille. 
+liblouisutdml/liblouisxml[2] deals with formatting of braille.
 
 Changes in this release
 -----------------------
@@ -49,7 +49,7 @@ Share and Enjoy!
 Footnotes
 ---------
 
-[1]  Liblouis supports Nemeth Code, with Marburg and UK maths on the way
-[2]  See http://code.google.com/p/liblouis/
-[3]  See http://code.google.com/p/liblouisxml/
+[1]  See http://code.google.com/p/liblouis/
+[2]  See http://code.google.com/p/liblouisutdml/ and
+     http://code.google.com/p/liblouisxml/ 
 
