@@ -25,7 +25,6 @@
 }
 
 - (void)drawRect:(NSRect)rect {
-  // BOOL isKey = [[self window] isKeyWindow];
   NSColor* aColor =
       [NSColor colorWithCalibratedRed:0.506 green:0.660 blue:0.985 alpha:1.000];
   NSColor* bColor =

@@ -33,11 +33,11 @@
 }
 
 - (NSColor*)strokeColor {
-  BOOL isKey = [[self window] isKeyWindow];
+  BOOL isActive = [[self window] isMainWindow];
   ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   return themeProvider ? themeProvider->GetNSColor(
-      isKey ? ThemeService::COLOR_TOOLBAR_STROKE :
-              ThemeService::COLOR_TOOLBAR_STROKE_INACTIVE, true) :
+      isActive ? ThemeService::COLOR_TOOLBAR_STROKE :
+                 ThemeService::COLOR_TOOLBAR_STROKE_INACTIVE, true) :
       [NSColor blackColor];
 }
 

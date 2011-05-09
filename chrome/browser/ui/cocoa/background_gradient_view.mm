@@ -60,13 +60,13 @@
 }
 
 - (NSColor*)strokeColor {
-  BOOL isKey = [[self window] isKeyWindow];
+  BOOL isActive = [[self window] isMainWindow];
   ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   if (!themeProvider)
     return [NSColor blackColor];
   return themeProvider->GetNSColor(
-      isKey ? ThemeService::COLOR_TOOLBAR_STROKE :
-              ThemeService::COLOR_TOOLBAR_STROKE_INACTIVE, true);
+      isActive ? ThemeService::COLOR_TOOLBAR_STROKE :
+                 ThemeService::COLOR_TOOLBAR_STROKE_INACTIVE, true);
 }
 
 - (NSColor*)backgroundImageColor {
@@ -77,7 +77,7 @@
 
   // Themes don't have an inactive image so only look for one if there's no
   // theme.
-  if (![[self window] isKeyWindow] && themeProvider->UsingDefaultTheme()) {
+  if (![[self window] isMainWindow] && themeProvider->UsingDefaultTheme()) {
     NSColor* color = themeProvider->GetNSImageColorNamed(
         IDR_THEME_TOOLBAR_INACTIVE, true);
     if (color)
