@@ -17,8 +17,9 @@ typedef BrowserWithTestWindowTest PrintPreviewUIHTMLSourceTest;
 
 // Create/Get a preview tab for initiator tab.
 TEST_F(PrintPreviewUIHTMLSourceTest, PrintPreviewData) {
-  // TODO(thestig) Remove when print preview is enabled by default.
+#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePrintPreview);
+#endif
   ASSERT_TRUE(browser());
   BrowserList::SetLastActive(browser());
   ASSERT_TRUE(BrowserList::GetLastActive());
