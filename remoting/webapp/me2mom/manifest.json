@@ -1,0 +1,9 @@
+{
+  "name": "Chromoting Me2Mom",
+  "version": "1.0",
+  "description": "Me2Mom-style remote support in Chrome.",
+  "browser_action": {
+      "default_icon": "chromoting.png",
+      "popup": "choice.html"
+  }
+}
