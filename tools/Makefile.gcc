@@ -11,6 +11,10 @@ ifndef srcdir
 $(error srcdir: Undefined)
 endif
 
+ifndef rootdir
+$(error rootdir: Undefined)
+endif
+
 ifndef target
 $(error target: Undefined)
 endif
@@ -22,15 +26,6 @@ ifndef DEFAULT_ALIGN_POW2
 $(error DEFAULT_ALIGN_POW2: Undefined)
 endif
 
-# Disable configure's check of ppl and cloog on systems, where the packages are
-# installed, this would make the libs enabled in GCC.  The configure check looks
-# for only a specific version of a library, but we would like to use more than
-# one.  See: http://code.google.com/p/nativeclient/issues/detail?id=1734
-DISABLE_PPL_CHECK=\
-    $(shell test -f /usr/include/ppl.hh && echo --disable-ppl-version-check)
-DISABLE_CLOOG_CHECK=\
-    $(shell test -d /usr/include/cloog $$ echo --disable-cloog-version-check)
-
 GCC_CONFIGURE_FLAGS = \
     --disable-decimal-float \
     --disable-libgomp \
@@ -39,8 +34,12 @@ GCC_CONFIGURE_FLAGS = \
     --disable-libstdcxx-pch \
     --prefix=$(prefix) \
     --target=$(target) \
-    $(DISABLE_PPL_CHECK) \
-    $(DISABLE_CLOOG_CHECK)
+    --with-gmp=$(rootdir)/.+install-gmp \
+    --with-mpfr=$(rootdir)/.+install-mpfr \
+    --with-ppl=$(rootdir)/.+install-ppl \
+    --with-host-libstdcxx="-lpwl -lstdc++ -lm" \
+    --with-cloog=$(rootdir)/.+install-cloog-ppl \
+    --disable-ppl-version-check
 
 # At the moment multilib build with glibc is broken.
 # TODO(eaeltsin): fix glibc and get rid of MULTILIB variable!
