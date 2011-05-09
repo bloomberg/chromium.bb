@@ -105,10 +105,9 @@ DownloadItem::DangerType GetDangerType(bool dangerous_file,
   if (dangerous_url) {
     // dangerous URL overweights dangerous file. We check dangerous URL first.
     return DownloadItem::DANGEROUS_URL;
-  } else if (dangerous_file) {
-    return DownloadItem::DANGEROUS_FILE;
   }
-  return DownloadItem::NOT_DANGEROUS;
+  return dangerous_file ?
+      DownloadItem::DANGEROUS_FILE : DownloadItem::NOT_DANGEROUS;
 }
 
 }  // namespace
@@ -333,7 +332,7 @@ void DownloadItem::Update(int64 bytes_so_far) {
 
 // Triggered by a user action.
 void DownloadItem::Cancel(bool update_history) {
-  VLOG(20) << __FUNCTION__ << "()" << " download = " << DebugString(true);
+  VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
   if (!IsPartialDownload()) {
     // Small downloads might be complete before this method has
     // a chance to run.
@@ -363,8 +362,7 @@ void DownloadItem::OnAllDataSaved(int64 size) {
 }
 
 void DownloadItem::Completed() {
-  VLOG(20) << " " << __FUNCTION__ << "() "
-           << DebugString(false);
+  VLOG(20) << __FUNCTION__ << "() " << DebugString(false);
 
   download_util::RecordDownloadCount(download_util::COMPLETED_COUNT);
 
@@ -405,21 +403,18 @@ void DownloadItem::Interrupted(int64 size, int os_error) {
 void DownloadItem::Delete(DeleteReason reason) {
   switch (reason) {
     case DELETE_DUE_TO_USER_DISCARD:
-      UMA_HISTOGRAM_ENUMERATION("Download.UserDiscard",
-                                danger_type_,
+      UMA_HISTOGRAM_ENUMERATION("Download.UserDiscard", danger_type_,
                                 DANGEROUS_TYPE_MAX);
       break;
     case DELETE_DUE_TO_BROWSER_SHUTDOWN:
-      UMA_HISTOGRAM_ENUMERATION("Download.Discard",
-                                danger_type_,
+      UMA_HISTOGRAM_ENUMERATION("Download.Discard", danger_type_,
                                 DANGEROUS_TYPE_MAX);
       break;
     default:
       NOTREACHED();
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(&DeleteDownloadedFile, full_path_));
   Remove();
   // We have now been deleted.
@@ -454,16 +449,14 @@ int64 DownloadItem::CurrentSpeed() const {
 }
 
 int DownloadItem::PercentComplete() const {
-  int percent = -1;
-  if (total_bytes_ > 0)
-    percent = static_cast<int>(received_bytes_ * 100.0 / total_bytes_);
-  return percent;
+  return (total_bytes_ > 0) ?
+      static_cast<int>(received_bytes_ * 100.0 / total_bytes_) : -1;
 }
 
 void DownloadItem::Rename(const FilePath& full_path) {
-  VLOG(20) << " " << __FUNCTION__ << "()"
+  VLOG(20) << __FUNCTION__ << "()"
            << " full_path = \"" << full_path.value() << "\""
-           << DebugString(true);
+           << " " << DebugString(true);
   DCHECK(!full_path.empty());
   full_path_ = full_path;
 }
@@ -476,31 +469,29 @@ void DownloadItem::TogglePause() {
 }
 
 void DownloadItem::OnDownloadCompleting(DownloadFileManager* file_manager) {
-  VLOG(20) << " " << __FUNCTION__ << "() "
+  VLOG(20) << __FUNCTION__ << "()"
            << " needs rename = " << NeedsRename()
            << " " << DebugString(true);
   DCHECK_NE(DANGEROUS, safety_state());
   DCHECK(file_manager);
 
   if (NeedsRename()) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(
-            file_manager, &DownloadFileManager::RenameCompletingDownloadFile,
-            id(), GetTargetFilePath(), safety_state() == SAFE));
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(file_manager,
+            &DownloadFileManager::RenameCompletingDownloadFile, id(),
+            GetTargetFilePath(), safety_state() == SAFE));
     return;
   }
 
   Completed();
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          file_manager, &DownloadFileManager::CompleteDownload, id()));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(file_manager, &DownloadFileManager::CompleteDownload,
+                        id()));
 }
 
 void DownloadItem::OnDownloadRenamedToFinalName(const FilePath& full_path) {
-  VLOG(20) << " " << __FUNCTION__ << "()"
+  VLOG(20) << __FUNCTION__ << "()"
            << " full_path = " << full_path.value()
            << " needed rename = " << NeedsRename()
            << " " << DebugString(false);
@@ -537,10 +528,7 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
   // due to normalization and we have a fancier search-query system
   // used elsewhere.
   // http://code.google.com/p/chromium/issues/detail?id=71982
-  if (path.find(query) != string16::npos)
-    return true;
-
-  return false;
+  return (path.find(query) != string16::npos);
 }
 
 void DownloadItem::SetFileCheckResults(const FilePath& path,
@@ -590,9 +578,8 @@ FilePath DownloadItem::GetFileNameToReportUser() const {
 }
 
 FilePath DownloadItem::GetUserVerifiedFilePath() const {
-  if (safety_state_ == DownloadItem::SAFE)
-    return GetTargetFilePath();
-  return full_path_;
+  return (safety_state_ == DownloadItem::SAFE) ?
+      GetTargetFilePath() : full_path_;
 }
 
 void DownloadItem::Init(bool start_timer) {
@@ -600,7 +587,7 @@ void DownloadItem::Init(bool start_timer) {
     target_name_ = full_path_.BaseName();
   if (start_timer)
     StartProgressTimer();
-  VLOG(20) << " " << __FUNCTION__ << "() " << DebugString(true);
+  VLOG(20) << __FUNCTION__ << "() " << DebugString(true);
 }
 
 // TODO(ahendrickson) -- Move |INTERRUPTED| from |IsCancelled()| to
@@ -622,27 +609,24 @@ bool DownloadItem::IsInterrupted() const {
 }
 
 bool DownloadItem::IsComplete() const {
-  return state() == COMPLETE;
+  return (state_ == COMPLETE);
 }
 
 std::string DownloadItem::DebugString(bool verbose) const {
-  std::string description =
-      base::StringPrintf("{ id_ = %d"
-                         " state = %s",
-                         id_,
-                         DebugDownloadStateString(state()));
+  std::string description = base::StringPrintf(
+      "{ id_ = %d state = %s", id_, DebugDownloadStateString(state()));
 
   if (verbose) {
     description += base::StringPrintf(
         " db_handle = %" PRId64
         " total_bytes = %" PRId64
-        " is_paused = " "%c"
-        " is_extension_install = " "%c"
-        " is_otr = " "%c"
-        " safety_state = " "%s"
-        " url = " "\"%s\""
+        " is_paused = %c"
+        " is_extension_install = %c"
+        " is_otr = %c"
+        " safety_state = %s"
+        " url = \"%s\""
         " target_name_ = \"%" PRFilePath "\""
-        " full_path = \"%" PRFilePath "\"",
+        " full_path = \"%" PRFilePath "\" }",
         db_handle(),
         total_bytes(),
         is_paused() ? 'T' : 'F',
@@ -653,10 +637,7 @@ std::string DownloadItem::DebugString(bool verbose) const {
         target_name_.value().c_str(),
         full_path().value().c_str());
   } else {
-    description += base::StringPrintf(" url = \"%s\"", url().spec().c_str());
+    description += " url = \"" + url().spec() + "\" }";
   }
-
-  description += " }";
-
   return description;
 }

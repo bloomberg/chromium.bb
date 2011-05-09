@@ -35,7 +35,8 @@ DownloadPrefs::DownloadPrefs(PrefService* prefs) : prefs_(prefs) {
 #elif defined(OS_WIN)
     FilePath path(UTF8ToWide(extensions[i]));
 #endif
-    if (!extensions[i].empty() && download_util::IsFileSafe(path))
+    if (!extensions[i].empty() &&
+        download_util::GetFileDangerLevel(path) == download_util::NotDangerous)
       auto_open_.insert(path.value());
   }
 }

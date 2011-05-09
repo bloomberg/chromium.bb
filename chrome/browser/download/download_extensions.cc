@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -187,11 +187,7 @@ static const struct Executables {
 };
 
 DownloadDangerLevel GetFileDangerLevel(const FilePath& path) {
-  return GetFileExtensionDangerLevel(path.Extension());
-}
-
-DownloadDangerLevel GetFileExtensionDangerLevel(
-    const FilePath::StringType& extension) {
+  FilePath::StringType extension(path.Extension());
   if (extension.empty())
     return NotDangerous;
   if (!IsStringASCII(extension))
@@ -211,10 +207,6 @@ DownloadDangerLevel GetFileExtensionDangerLevel(
       return g_executables[i].level;
   }
   return NotDangerous;
-}
-
-bool IsFileSafe(const FilePath& path) {
-  return GetFileDangerLevel(path) == NotDangerous;
 }
 
 static const char* kExecutableWhiteList[] = {

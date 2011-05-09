@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,13 +20,6 @@ enum DownloadDangerLevel {
 
 // Determine the download danger level of a file.
 DownloadDangerLevel GetFileDangerLevel(const FilePath& path);
-
-// Determine the download danger level using a file extension.
-DownloadDangerLevel GetFileExtensionDangerLevel(
-    const FilePath::StringType& extension);
-
-// True if the download danger level of the file is NotDangerous.
-bool IsFileSafe(const FilePath& path);
 
 // Tests if we think the server means for this mime_type to be executable.
 bool IsExecutableMimeType(const std::string& mime_type);
