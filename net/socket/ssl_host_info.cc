@@ -188,7 +188,8 @@ void SSLHostInfo::VerifyCallback(int rv) {
   base::TimeTicks now = base::TimeTicks::Now();
   const base::TimeDelta duration = now - verification_start_time();
   bool is_google = hostname_ == "google.com" ||
-                   hostname_.rfind(".google.com") == hostname_.size() - 11;
+                   (hostname_.size() > 11 &&
+                    hostname_.rfind(".google.com") == hostname_.size() - 11);
   if (is_google) {
     UMA_HISTOGRAM_TIMES("Net.SSLHostInfoVerificationTimeMs_Google", duration);
   }
