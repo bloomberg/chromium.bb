@@ -47,7 +47,8 @@ function registerConnection() {
         var clientjid = xhr.responseText;
 
         chromoting.plugin.sendIq = sendIq;
-        chromoting.plugin.connectSandboxed(clientjid, chromoting.hostjid);
+        // TODO:(jamiewalch): Pass in the correct nonce.
+        chromoting.plugin.connectSandboxed(clientjid, chromoting.hostjid, '');
         // TODO(ajwong): This should just be feedIq();
         window.setTimeout(feedIq, 1000);
         window.setTimeout(updateStatusBarStats, 1000);
@@ -125,8 +126,9 @@ function init() {
     if (chromoting.connectMethod == "sandboxed") {
       registerConnection();
     } else {
+      // TODO:(jamiewalch): Pass in the correct nonce.
       plugin.connect(chromoting.username, chromoting.hostjid,
-                     chromoting.xmppAuthToken);
+                     chromoting.xmppAuthToken, '');
       window.setTimeout("updateStatusBarStats()", 1000);
     }
   } else {

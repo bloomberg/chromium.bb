@@ -332,7 +332,7 @@ void ChromotingScriptableObject::SendIq(const std::string& message_xml) {
 
 Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
                                           Var* exception) {
-  if (args.size() != 3) {
+  if (args.size() != 4) {
     *exception = Var("Usage: connect(username, host_jid, auth_token)");
     return Var();
   }
@@ -357,6 +357,12 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
   }
   config.auth_token = args[2].AsString();
 
+  if (!args[3].is_string()) {
+    *exception = Var("nonce must be a string.");
+    return Var();
+  }
+  config.nonce = args[3].AsString();
+
   LogDebugInfo("Connecting to host.");
   instance_->Connect(config);
 
@@ -365,8 +371,8 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
 
 Var ChromotingScriptableObject::DoConnectSandboxed(
     const std::vector<Var>& args, Var* exception) {
-  if (args.size() != 2) {
-    *exception = Var("Usage: connectSandboxed(your_jid, host_jid)");
+  if (args.size() != 3) {
+    *exception = Var("Usage: connectSandboxed(your_jid, host_jid, nonce)");
     return Var();
   }
 
@@ -384,8 +390,16 @@ Var ChromotingScriptableObject::DoConnectSandboxed(
   }
   host_jid = args[1].AsString();
 
-  VLOG(1) << "your_jid: " << your_jid << " and host_jid: " << host_jid;
-  instance_->ConnectSandboxed(your_jid, host_jid);
+  std::string nonce;
+  if (!args[2].is_string()) {
+    *exception = Var("nonce must be a string.");
+    return Var();
+  }
+  nonce = args[2].AsString();
+
+  VLOG(1) << "your_jid: " << your_jid << ", host_jid: " << host_jid
+          << ", nonce: " << nonce;
+  instance_->ConnectSandboxed(your_jid, host_jid, nonce);
 
   return Var();
 }

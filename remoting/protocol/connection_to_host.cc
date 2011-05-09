@@ -56,12 +56,15 @@ MessageLoop* ConnectionToHost::message_loop() {
 void ConnectionToHost::Connect(const std::string& username,
                                const std::string& auth_token,
                                const std::string& host_jid,
+                               const std::string& nonce,
                                HostEventCallback* event_callback,
                                ClientStub* client_stub,
                                VideoStub* video_stub) {
   event_callback_ = event_callback;
   client_stub_ = client_stub;
   video_stub_ = video_stub;
+
+  NOTIMPLEMENTED() << "Nonce ignored.";
 
   // Initialize |jingle_client_|.
   signal_strategy_.reset(
@@ -81,12 +84,15 @@ void ConnectionToHost::Connect(const std::string& username,
 void ConnectionToHost::ConnectSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
                                         const std::string& your_jid,
                                         const std::string& host_jid,
+                                        const std::string& nonce,
                                         HostEventCallback* event_callback,
                                         ClientStub* client_stub,
                                         VideoStub* video_stub) {
   event_callback_ = event_callback;
   client_stub_ = client_stub;
   video_stub_ = video_stub;
+
+  NOTIMPLEMENTED() << "Nonce ignored.";
 
   // Initialize |jingle_client_|.
   JavascriptSignalStrategy* strategy = new JavascriptSignalStrategy(your_jid);

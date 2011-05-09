@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,8 @@ bool GetLoginInfoFromArgs(int argc, char** argv, ClientConfig* config) {
   if ((host_jid.find("/chromoting") == std::string::npos) || !found_jid ||
       !found_auth_token)
     return false;
+
+  NOTIMPLEMENTED() << "Nonce ignored.";
 
   config->host_jid = host_jid;
   config->username = username;

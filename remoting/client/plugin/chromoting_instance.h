@@ -64,7 +64,8 @@ class ChromotingInstance : public pp::Instance {
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
   virtual void Connect(const ClientConfig& config);
   virtual void ConnectSandboxed(const std::string& your_jid,
-                                const std::string& host_jid);
+                                const std::string& host_jid,
+                                const std::string& nonce);
   virtual bool HandleInputEvent(const PP_InputEvent& event);
   virtual void Disconnect();
   virtual pp::Var GetInstanceObject();

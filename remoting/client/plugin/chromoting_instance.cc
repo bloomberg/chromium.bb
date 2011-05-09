@@ -130,7 +130,8 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
 }
 
 void ChromotingInstance::ConnectSandboxed(const std::string& your_jid,
-                                          const std::string& host_jid) {
+                                          const std::string& host_jid,
+                                          const std::string& nonce) {
   // TODO(ajwong): your_jid and host_jid should be moved into ClientConfig. In
   // fact, this whole function should go away, and Connect() should just look at
   // ClientConfig.
@@ -145,7 +146,9 @@ void ChromotingInstance::ConnectSandboxed(const std::string& your_jid,
                           context_.jingle_thread()->message_loop());
   scriptable_object->AttachXmppProxy(xmpp_proxy);
 
-  client_.reset(new ChromotingClient(ClientConfig(),
+  ClientConfig config_;
+  config_.nonce = nonce;
+  client_.reset(new ChromotingClient(config_,
                                      &context_,
                                      host_connection_.get(),
                                      view_proxy_,

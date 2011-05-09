@@ -77,8 +77,9 @@
 //   // Either use connect() or connectSandboxed(), not both. If using
 //   // connectSandboxed(), sendIq must be set, and responses to calls on
 //   // sendIq must be piped back into onIq().
-//   void connect(string username, string host_jid, string auth_token);
-//   void connectSandboxed();
+//   void connect(string username, string host_jid, string auth_token,
+//                string nonce);
+//   void connectSandboxed(string your_jid, string host_jid, string nonce);
 //   void disconnect();
 //
 //   // Method for submitting login information.

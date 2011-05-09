@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ void ChromotingClient::Start() {
   }
 
   connection_->Connect(config_.username, config_.auth_token, config_.host_jid,
-                       this, this, this);
+                       config_.nonce, this, this, this);
 
   if (!view_->Initialize()) {
     ClientDone();
@@ -66,8 +66,8 @@ void ChromotingClient::StartSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
     return;
   }
 
-  connection_->ConnectSandboxed(xmpp_proxy, your_jid, host_jid, this, this,
-                                this);
+  connection_->ConnectSandboxed(xmpp_proxy, your_jid, host_jid, config_.nonce,
+                                this, this, this);
 
   if (!view_->Initialize()) {
     ClientDone();

@@ -74,12 +74,14 @@ class ConnectionToHost : public JingleClient::Callback {
   virtual void Connect(const std::string& username,
                        const std::string& auth_token,
                        const std::string& host_jid,
+                       const std::string& nonce,
                        HostEventCallback* event_callback,
                        ClientStub* client_stub,
                        VideoStub* video_stub);
   virtual void ConnectSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
                                 const std::string& your_jid,
                                 const std::string& host_jid,
+                                const std::string& nonce,
                                 HostEventCallback* event_callback,
                                 ClientStub* client_stub,
                                 VideoStub* video_stub);
