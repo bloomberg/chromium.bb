@@ -23,22 +23,21 @@ ExpectCanceledFetcher::ExpectCanceledFetcher(
     const std::string& results,
     URLFetcher::RequestType request_type,
     URLFetcher::Delegate* d)
-    : URLFetcher(url, request_type, d) {
+    : URLFetcher(url, request_type, d),
+      ALLOW_THIS_IN_INITIALIZER_LIST(complete_fetch_factory_(this)) {
 }
 
 ExpectCanceledFetcher::~ExpectCanceledFetcher() {
-  task_->Cancel();
 }
 
 void ExpectCanceledFetcher::Start() {
-  task_ = NewRunnableFunction(&ExpectCanceledFetcher::CompleteFetch);
-  BrowserThread::PostDelayedTask(BrowserThread::UI,
-                                 FROM_HERE,
-                                 task_,
-                                 100);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      complete_fetch_factory_.NewRunnableMethod(
+          &ExpectCanceledFetcher::CompleteFetch),
+      100);
 }
 
-// static
 void ExpectCanceledFetcher::CompleteFetch() {
   ADD_FAILURE() << "Fetch completed in ExpectCanceledFetcher!";
   MessageLoop::current()->Quit();  // Allow exiting even if we mess up.
