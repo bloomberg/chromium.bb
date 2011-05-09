@@ -2,6 +2,11 @@ liblouis NEWS -- history of user-visible changes.
 
 * Noteworthy changes in release 2.3.0 (2011-05-09)
 
+This release contains support for many more languages than before
+(Swedish, Kurdish, Ethiopic, Serbian, many Indian languages). The
+search path for tables is now a list of paths. Finally there is the
+usual assortment of bug fixes.
+
 ** New features
 *** Multiple table search path
     The environment variable LOUIS_TABLEPATH can now contain a list of
