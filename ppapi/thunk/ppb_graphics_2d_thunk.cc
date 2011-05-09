@@ -71,7 +71,7 @@ int32_t Flush(PP_Resource graphics_2d,
               PP_CompletionCallback callback) {
   EnterResource<PPB_Graphics2D_API> enter(graphics_2d, true);
   if (enter.failed())
-    return PP_ERROR_BADARGUMENT;
+    return PP_ERROR_BADRESOURCE;
   return enter.object()->Flush(callback);
 }
 
