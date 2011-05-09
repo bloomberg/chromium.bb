@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -187,6 +187,11 @@ void SSLHostInfo::VerifyCallback(int rv) {
   DCHECK(!verification_start_time_.is_null());
   base::TimeTicks now = base::TimeTicks::Now();
   const base::TimeDelta duration = now - verification_start_time();
+  bool is_google = hostname_ == "google.com" ||
+                   hostname_.rfind(".google.com") == hostname_.size() - 11;
+  if (is_google) {
+    UMA_HISTOGRAM_TIMES("Net.SSLHostInfoVerificationTimeMs_Google", duration);
+  }
   UMA_HISTOGRAM_TIMES("Net.SSLHostInfoVerificationTimeMs", duration);
   VLOG(1) << "Verification took " << duration.InMilliseconds() << "ms";
   verification_end_time_ = now;
