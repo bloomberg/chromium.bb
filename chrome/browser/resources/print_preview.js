@@ -393,8 +393,9 @@ function setColor(color) {
  */
 function printPreviewFailed() {
   isPreviewStillLoading = false;
-  $('dancing-dots').classList.add('hidden');
-  $('preview-failed').classList.remove('hidden');
+  $('dancing-dots-text').classList.add('hidden');
+  $('error-text').innerHTML = localStrings.getString('previewFailed');
+  $('error-text').classList.remove('hidden');
   setControlsDisabled(true);
 
   var pdfViewer = $('pdf-viewer');
@@ -465,8 +466,6 @@ function createPDFPlugin() {
     $('print-button').disabled = false;
   }
 
-  $('preview-failed').classList.add('hidden');
-
   var pdfViewer = $('pdf-viewer');
   if (pdfViewer) {
     // Older version of the PDF plugin may not have this method.
@@ -492,8 +491,9 @@ function createPDFPlugin() {
   if (!pdfPlugin.onload) {
     hasCompatiblePDFPlugin = false;
     mainView.removeChild(pdfPlugin);
-    $('dancing-dots').classList.add('hidden');
-    $('no-plugin').classList.remove('hidden');
+    $('dancing-dots-text').classList.add('hidden');
+    $('error-text').innerHTML = localStrings.getString('noPlugin');
+    $('error-text').classList.remove('hidden');
     return;
   }
   pdfPlugin.onload('onPDFLoad()');

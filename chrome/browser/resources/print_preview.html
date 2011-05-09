@@ -132,14 +132,13 @@
     </form>
   </div>
   <div id="mainview">
-    <p id="no-plugin" class="hidden" i18n-values=".innerHTML:noPlugin"></p>
-    <p id="preview-failed" class="hidden" i18n-content="previewFailed"></p>
-      <div id="dancing-dots" class="invisible">
-        <div id="dancing-dots-text">
-          <span i18n-content="loading"></span>
-          <span><span>.</span><span>.</span><span>.</span></span>
-        </div>
+    <div id="dancing-dots" class="invisible">
+      <div id="dancing-dots-text" class="messages">
+        <span i18n-content="loading"></span>
+        <span><span>.</span><span>.</span><span>.</span></span>
       </div>
+      <div id="error-text" class="messages hidden"></div>
+    </div>
   </div>
 </body>
 </html>

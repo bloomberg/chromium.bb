@@ -697,7 +697,7 @@ select {
   pointer-events: none;
 }
 
-#dancing-dots-text {
+.messages {
   color: #404040;
   font-size: 15px;
   left: 25%;
@@ -708,7 +708,7 @@ select {
   width: 50%;
 }
 
-html[dir='rtl'] #dancing-dots-text {
+html[dir='rtl'] .messages {
   right: 25%;
 }
 
