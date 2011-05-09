@@ -339,8 +339,12 @@ void PluginUpdater::RegisterPrefs(PrefService* prefs) {
   FilePath internal_dir;
   PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir);
   prefs->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
-                              internal_dir);
-  prefs->RegisterListPref(prefs::kPluginsDisabledPlugins);
-  prefs->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions);
-  prefs->RegisterListPref(prefs::kPluginsEnabledPlugins);
+                              internal_dir,
+                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kPluginsDisabledPlugins,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kPluginsEnabledPlugins,
+                          PrefService::UNSYNCABLE_PREF);
 }

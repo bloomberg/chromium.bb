@@ -11,16 +11,15 @@
 #include "base/tracked_objects.h"
 #include "chrome/browser/sync/glue/preference_data_type_controller.h"
 #include "chrome/browser/sync/glue/change_processor_mock.h"
-#include "chrome/browser/sync/glue/model_associator_mock.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "chrome/browser/sync/syncable_service_mock.h"
 #include "chrome/test/profile_mock.h"
 #include "content/browser/browser_thread.h"
 
 using browser_sync::PreferenceDataTypeController;
 using browser_sync::ChangeProcessorMock;
 using browser_sync::DataTypeController;
-using browser_sync::ModelAssociatorMock;
 using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;
@@ -48,11 +47,13 @@ class PreferenceDataTypeControllerTest : public testing::Test {
 
  protected:
   void SetStartExpectations() {
-    model_associator_ = new ModelAssociatorMock();
+    model_associator_.reset(new SyncableServiceMock());
     change_processor_ = new ChangeProcessorMock();
     EXPECT_CALL(*profile_sync_factory_, CreatePreferenceSyncComponents(_, _)).
-        WillOnce(Return(ProfileSyncFactory::SyncComponents(model_associator_,
-                                                           change_processor_)));
+        WillOnce(Return(
+            ProfileSyncFactory::SyncComponents(model_associator_.get(),
+                                               change_processor_)));
+    EXPECT_CALL(*model_associator_, SetupSync(_,_)).Times(1);
   }
 
   void SetAssociateExpectations() {
@@ -79,7 +80,7 @@ class PreferenceDataTypeControllerTest : public testing::Test {
   scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
   ProfileMock profile_;
   ProfileSyncServiceMock service_;
-  ModelAssociatorMock* model_associator_;
+  scoped_ptr<SyncableServiceMock> model_associator_;
   ChangeProcessorMock* change_processor_;
   StartCallback start_callback_;
 };

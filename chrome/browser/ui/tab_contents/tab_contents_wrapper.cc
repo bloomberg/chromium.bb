@@ -109,60 +109,97 @@ PropertyAccessor<TabContentsWrapper*>* TabContentsWrapper::property_accessor() {
 }
 
 void TabContentsWrapper::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kAlternateErrorPagesEnabled, true);
+  prefs->RegisterBooleanPref(prefs::kAlternateErrorPagesEnabled,
+                             true,
+                             PrefService::SYNCABLE_PREF);
 
   WebPreferences pref_defaults;
   prefs->RegisterBooleanPref(prefs::kWebKitJavascriptEnabled,
-                             pref_defaults.javascript_enabled);
+                             pref_defaults.javascript_enabled,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitWebSecurityEnabled,
-                             pref_defaults.web_security_enabled);
+                             pref_defaults.web_security_enabled,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(
-      prefs::kWebKitJavascriptCanOpenWindowsAutomatically, true);
+      prefs::kWebKitJavascriptCanOpenWindowsAutomatically,
+      true,
+      PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitLoadsImagesAutomatically,
-                             pref_defaults.loads_images_automatically);
+                             pref_defaults.loads_images_automatically,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitPluginsEnabled,
-                             pref_defaults.plugins_enabled);
+                             pref_defaults.plugins_enabled,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitDomPasteEnabled,
-                             pref_defaults.dom_paste_enabled);
+                             pref_defaults.dom_paste_enabled,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitShrinksStandaloneImagesToFit,
-                             pref_defaults.shrinks_standalone_images_to_fit);
-  prefs->RegisterDictionaryPref(prefs::kWebKitInspectorSettings);
+                             pref_defaults.shrinks_standalone_images_to_fit,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kWebKitInspectorSettings,
+                                PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitTextAreasAreResizable,
-                             pref_defaults.text_areas_are_resizable);
+                             pref_defaults.text_areas_are_resizable,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitJavaEnabled,
-                             pref_defaults.java_enabled);
+                             pref_defaults.java_enabled,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebkitTabsToLinks,
-                             pref_defaults.tabs_to_links);
+                             pref_defaults.tabs_to_links,
+                             PrefService::UNSYNCABLE_PREF);
 
+#if !defined(OS_MACOSX)
   prefs->RegisterLocalizedStringPref(prefs::kAcceptLanguages,
-                                     IDS_ACCEPT_LANGUAGES);
+                                     IDS_ACCEPT_LANGUAGES,
+                                     PrefService::SYNCABLE_PREF);
+#else
+  // Not used in OSX.
+  prefs->RegisterLocalizedStringPref(prefs::kAcceptLanguages,
+                                     IDS_ACCEPT_LANGUAGES,
+                                     PrefService::UNSYNCABLE_PREF);
+#endif
   prefs->RegisterLocalizedStringPref(prefs::kDefaultCharset,
-                                     IDS_DEFAULT_ENCODING);
+                                     IDS_DEFAULT_ENCODING,
+                                     PrefService::SYNCABLE_PREF);
   prefs->RegisterLocalizedStringPref(prefs::kWebKitStandardFontFamily,
-                                     IDS_STANDARD_FONT_FAMILY);
+                                     IDS_STANDARD_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedStringPref(prefs::kWebKitFixedFontFamily,
-                                     IDS_FIXED_FONT_FAMILY);
+                                     IDS_FIXED_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedStringPref(prefs::kWebKitSerifFontFamily,
-                                     IDS_SERIF_FONT_FAMILY);
+                                     IDS_SERIF_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedStringPref(prefs::kWebKitSansSerifFontFamily,
-                                     IDS_SANS_SERIF_FONT_FAMILY);
+                                     IDS_SANS_SERIF_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedStringPref(prefs::kWebKitCursiveFontFamily,
-                                     IDS_CURSIVE_FONT_FAMILY);
+                                     IDS_CURSIVE_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedStringPref(prefs::kWebKitFantasyFontFamily,
-                                     IDS_FANTASY_FONT_FAMILY);
+                                     IDS_FANTASY_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFontSize,
-                                      IDS_DEFAULT_FONT_SIZE);
+                                      IDS_DEFAULT_FONT_SIZE,
+                                      PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFixedFontSize,
-                                      IDS_DEFAULT_FIXED_FONT_SIZE);
+                                      IDS_DEFAULT_FIXED_FONT_SIZE,
+                                      PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedIntegerPref(prefs::kWebKitMinimumFontSize,
-                                      IDS_MINIMUM_FONT_SIZE);
+                                      IDS_MINIMUM_FONT_SIZE,
+                                      PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedIntegerPref(prefs::kWebKitMinimumLogicalFontSize,
-                                      IDS_MINIMUM_LOGICAL_FONT_SIZE);
+                                      IDS_MINIMUM_LOGICAL_FONT_SIZE,
+                                      PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedBooleanPref(prefs::kWebKitUsesUniversalDetector,
-                                      IDS_USES_UNIVERSAL_DETECTOR);
+                                      IDS_USES_UNIVERSAL_DETECTOR,
+                                      PrefService::SYNCABLE_PREF);
   prefs->RegisterLocalizedStringPref(prefs::kStaticEncodings,
-                                     IDS_STATIC_ENCODING_LIST);
-  prefs->RegisterStringPref(prefs::kRecentlySelectedEncoding, "");
+                                     IDS_STATIC_ENCODING_LIST,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kRecentlySelectedEncoding,
+                            "",
+                            PrefService::UNSYNCABLE_PREF);
 }
 
 string16 TabContentsWrapper::GetDefaultTitle() {

@@ -21,10 +21,12 @@ const char kDoublePref[] = "double";
 const char kStringPref[] = "string";
 
 void RegisterTestPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(kBoolPref, false);
-  prefs->RegisterIntegerPref(kIntPref, 0);
-  prefs->RegisterDoublePref(kDoublePref, 0.0);
-  prefs->RegisterStringPref(kStringPref, "default");
+  prefs->RegisterBooleanPref(kBoolPref, false, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(kIntPref, 0, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(kDoublePref, 0.0, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(kStringPref,
+                            "default",
+                            PrefService::UNSYNCABLE_PREF);
 }
 
 class GetPrefValueCallback

@@ -22,12 +22,11 @@
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_model_associator.h"
 #include "chrome/browser/sync/glue/extension_sync_traits.h"
+#include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/glue/password_change_processor.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
-#include "chrome/browser/sync/glue/preference_change_processor.h"
 #include "chrome/browser/sync/glue/preference_data_type_controller.h"
-#include "chrome/browser/sync/glue/preference_model_associator.h"
 #include "chrome/browser/sync/glue/session_change_processor.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
@@ -40,6 +39,7 @@
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
+#include "chrome/browser/sync/syncable_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -61,12 +61,11 @@ using browser_sync::DataTypeManagerImpl;
 using browser_sync::ExtensionChangeProcessor;
 using browser_sync::ExtensionDataTypeController;
 using browser_sync::ExtensionModelAssociator;
+using browser_sync::GenericChangeProcessor;
 using browser_sync::PasswordChangeProcessor;
 using browser_sync::PasswordDataTypeController;
 using browser_sync::PasswordModelAssociator;
-using browser_sync::PreferenceChangeProcessor;
 using browser_sync::PreferenceDataTypeController;
-using browser_sync::PreferenceModelAssociator;
 using browser_sync::SessionChangeProcessor;
 using browser_sync::SessionDataTypeController;
 using browser_sync::SessionModelAssociator;
@@ -273,12 +272,11 @@ ProfileSyncFactory::SyncComponents
 ProfileSyncFactoryImpl::CreatePreferenceSyncComponents(
     ProfileSyncService* profile_sync_service,
     UnrecoverableErrorHandler* error_handler) {
-  PreferenceModelAssociator* model_associator =
-      new PreferenceModelAssociator(profile_sync_service);
-  PreferenceChangeProcessor* change_processor =
-      new PreferenceChangeProcessor(model_associator,
-                                    error_handler);
-  return SyncComponents(model_associator, change_processor);
+  SyncableService* pref_sync_service =
+      profile_->GetPrefs()->GetSyncableService();
+  GenericChangeProcessor* change_processor =
+      new GenericChangeProcessor(pref_sync_service, error_handler);
+  return SyncComponents(pref_sync_service, change_processor);
 }
 
 ProfileSyncFactory::SyncComponents

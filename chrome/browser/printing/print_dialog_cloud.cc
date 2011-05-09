@@ -533,11 +533,13 @@ void CreateDialogImpl(const FilePath& path_to_file,
   DCHECK(pref_service);
   if (!pref_service->FindPreference(prefs::kCloudPrintDialogWidth)) {
     pref_service->RegisterIntegerPref(prefs::kCloudPrintDialogWidth,
-                                      kDefaultWidth);
+                                      kDefaultWidth,
+                                      PrefService::UNSYNCABLE_PREF);
   }
   if (!pref_service->FindPreference(prefs::kCloudPrintDialogHeight)) {
     pref_service->RegisterIntegerPref(prefs::kCloudPrintDialogHeight,
-                                      kDefaultHeight);
+                                      kDefaultHeight,
+                                      PrefService::UNSYNCABLE_PREF);
   }
 
   int width = pref_service->GetInteger(prefs::kCloudPrintDialogWidth);

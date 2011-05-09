@@ -46,8 +46,11 @@ SessionStartupPref::Type PrefValueToType(int pref_value) {
 // static
 void SessionStartupPref::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kRestoreOnStartup,
-      TypeToPrefValue(browser_defaults::kDefaultSessionStartupType));
-  prefs->RegisterListPref(prefs::kURLsToRestoreOnStartup);
+                             TypeToPrefValue(
+                                 browser_defaults::kDefaultSessionStartupType),
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kURLsToRestoreOnStartup,
+                          PrefService::SYNCABLE_PREF);
 }
 
 // static

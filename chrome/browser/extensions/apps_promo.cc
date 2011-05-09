@@ -29,10 +29,15 @@ void AppsPromo::RegisterPrefs(PrefService* local_state) {
 void AppsPromo::RegisterUserPrefs(PrefService* prefs) {
   // Set the default value for the counter to max+1 since we don't install
   // default apps for new users.
-  prefs->RegisterIntegerPref(
-      prefs::kAppsPromoCounter, kDefaultAppsCounterMax + 1);
-  prefs->RegisterBooleanPref(prefs::kDefaultAppsInstalled, false);
-  prefs->RegisterStringPref(prefs::kNTPWebStorePromoLastId, std::string());
+  prefs->RegisterIntegerPref(prefs::kAppsPromoCounter,
+                             kDefaultAppsCounterMax + 1,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kDefaultAppsInstalled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kNTPWebStorePromoLastId,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
 }
 
 // static

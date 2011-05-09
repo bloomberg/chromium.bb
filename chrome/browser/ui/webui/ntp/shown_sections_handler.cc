@@ -105,9 +105,12 @@ void ShownSectionsHandler::RegisterUserPrefs(PrefService* pref_service) {
 #if defined(OS_CHROMEOS)
   // Default to have expanded APPS and all other sections are minimized.
   pref_service->RegisterIntegerPref(prefs::kNTPShownSections,
-                                    APPS | MENU_THUMB | MENU_RECENT);
+                                    APPS | MENU_THUMB | MENU_RECENT,
+                                    PrefService::UNSYNCABLE_PREF);
 #else
-  pref_service->RegisterIntegerPref(prefs::kNTPShownSections, THUMB);
+  pref_service->RegisterIntegerPref(prefs::kNTPShownSections,
+                                    THUMB,
+                                    PrefService::UNSYNCABLE_PREF);
 #endif
 }
 

@@ -240,7 +240,8 @@ gfx::NativeView ExtensionWebUI::GetNativeViewOfHost() {
 
 // static
 void ExtensionWebUI::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(kExtensionURLOverrides);
+  prefs->RegisterDictionaryPref(kExtensionURLOverrides,
+                                PrefService::UNSYNCABLE_PREF);
 }
 
 // static

@@ -257,8 +257,12 @@ Profile* Profile::CreateProfileAsync(const FilePath&path,
 
 // static
 void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled, false);
-  prefs->RegisterBooleanPref(prefs::kClearSiteDataOnExit, false);
+  prefs->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kClearSiteDataOnExit,
+                             false,
+                             PrefService::SYNCABLE_PREF);
 }
 
 ProfileImpl::ProfileImpl(const FilePath& path,

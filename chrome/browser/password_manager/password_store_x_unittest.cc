@@ -475,7 +475,8 @@ TEST_P(PasswordStoreXTest, WDSMigrationAlreadyDone) {
 
   // Prentend that the migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
-                                            true);
+                                            true,
+                                            PrefService::UNSYNCABLE_PREF);
 
   // Initializing the PasswordStore shouldn't trigger a migration.
   scoped_refptr<PasswordStoreX> store(
@@ -508,7 +509,8 @@ TEST_P(PasswordStoreXTest, WDSMigrationAlreadyDone) {
 TEST_P(PasswordStoreXTest, Notifications) {
   // Pretend that the migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
-                                            true);
+                                            true,
+                                            PrefService::UNSYNCABLE_PREF);
 
   // Initializing the PasswordStore shouldn't trigger a migration.
   scoped_refptr<PasswordStoreX> store(
@@ -646,7 +648,8 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   // Pretend that the WDS migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
-                                            true);
+                                            true,
+                                            PrefService::UNSYNCABLE_PREF);
 
   // Initializing the PasswordStore shouldn't trigger a native migration (yet).
   scoped_refptr<PasswordStoreX> store(

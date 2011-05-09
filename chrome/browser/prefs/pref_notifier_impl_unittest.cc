@@ -56,8 +56,12 @@ class MockPrefNotifier : public PrefNotifierImpl {
 class PrefNotifierTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    pref_service_.RegisterBooleanPref(kChangedPref, true);
-    pref_service_.RegisterBooleanPref(kUnchangedPref, true);
+    pref_service_.RegisterBooleanPref(kChangedPref,
+                                      true,
+                                      PrefService::UNSYNCABLE_PREF);
+    pref_service_.RegisterBooleanPref(kUnchangedPref,
+                                      true,
+                                      PrefService::UNSYNCABLE_PREF);
   }
 
   TestingPrefService pref_service_;

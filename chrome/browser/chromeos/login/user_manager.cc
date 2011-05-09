@@ -236,8 +236,9 @@ UserManager* UserManager::Get() {
 
 // static
 void UserManager::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterListPref(kLoggedInUsers);
-  local_state->RegisterDictionaryPref(kUserImages);
+  local_state->RegisterListPref(kLoggedInUsers, PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterDictionaryPref(kUserImages,
+                                      PrefService::UNSYNCABLE_PREF);
 }
 
 std::vector<UserManager::User> UserManager::GetUsers() const {

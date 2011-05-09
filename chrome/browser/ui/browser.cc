@@ -2089,9 +2089,14 @@ void Browser::RegisterPrefs(PrefService* prefs) {
 // static
 void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kHomePage,
-                            chrome::kChromeUINewTabURL);
-  prefs->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, true);
-  prefs->RegisterBooleanPref(prefs::kShowHomeButton, false);
+                            chrome::kChromeUINewTabURL,
+                            PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kHomePageIsNewTabPage,
+                             true,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kShowHomeButton,
+                             false,
+                             PrefService::SYNCABLE_PREF);
 #if defined(OS_MACOSX)
   // This really belongs in platform code, but there's no good place to
   // initialize it between the time when the AppController is created
@@ -2101,46 +2106,112 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   // pref to be already initialized. Doing it here also saves us from having
   // to hard-code pref registration in the several unit tests that use
   // this preference.
-  prefs->RegisterBooleanPref(prefs::kConfirmToQuitEnabled, false);
-  prefs->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar, true);
+  prefs->RegisterBooleanPref(prefs::kConfirmToQuitEnabled,
+                             false,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
 #endif
-  prefs->RegisterBooleanPref(prefs::kDeleteBrowsingHistory, true);
-  prefs->RegisterBooleanPref(prefs::kDeleteDownloadHistory, true);
-  prefs->RegisterBooleanPref(prefs::kDeleteCache, true);
-  prefs->RegisterBooleanPref(prefs::kDeleteCookies, true);
-  prefs->RegisterBooleanPref(prefs::kDeletePasswords, false);
-  prefs->RegisterBooleanPref(prefs::kDeleteFormData, false);
-  prefs->RegisterIntegerPref(prefs::kDeleteTimePeriod, 0);
-  prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser, true);
-  prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint, true);
-  prefs->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop, true);
-  prefs->RegisterBooleanPref(prefs::kWebAppCreateInAppsMenu, true);
-  prefs->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar, true);
-  prefs->RegisterBooleanPref(prefs::kUseVerticalTabs, false);
-  prefs->RegisterBooleanPref(prefs::kEnableTranslate, true);
-  prefs->RegisterBooleanPref(prefs::kEnableBookmarkBar, true);
-  prefs->RegisterBooleanPref(prefs::kRemotingHasSetupCompleted, false);
-  prefs->RegisterBooleanPref(prefs::kChromotingEnabled, false);
-  prefs->RegisterBooleanPref(prefs::kChromotingHostEnabled, false);
-  prefs->RegisterBooleanPref(prefs::kChromotingHostFirewallTraversal, false);
-  prefs->RegisterStringPref(prefs::kCloudPrintEmail, std::string());
-  prefs->RegisterBooleanPref(prefs::kCloudPrintProxyEnabled, true);
-  prefs->RegisterBooleanPref(prefs::kDevToolsDisabled, false);
-  prefs->RegisterBooleanPref(prefs::kIncognitoEnabled, true);
-  prefs->RegisterIntegerPref(prefs::kDevToolsSplitLocation, -1);
-  prefs->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);
-  prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement);
+  prefs->RegisterBooleanPref(prefs::kDeleteBrowsingHistory,
+                             true,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kDeleteDownloadHistory,
+                             true,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kDeleteCache,
+                             true,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kDeleteCookies,
+                             true,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kDeletePasswords,
+                             false,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kDeleteFormData,
+                             false,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kDeleteTimePeriod,
+                             0,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWebAppCreateInAppsMenu,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kUseVerticalTabs,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kEnableTranslate,
+                             true,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kEnableBookmarkBar,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kRemotingHasSetupCompleted,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kChromotingEnabled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kChromotingHostEnabled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kChromotingHostFirewallTraversal,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kCloudPrintEmail,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kCloudPrintProxyEnabled,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kDevToolsDisabled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kIncognitoEnabled,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kDevToolsSplitLocation,
+                             -1,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kBrowserWindowPlacement,
+                                PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement,
+                                PrefService::UNSYNCABLE_PREF);
   // We need to register the type of these preferences in order to query
-  // them even though they're typically only controlled via policy or command
-  // line switches.
-  prefs->RegisterBooleanPref(prefs::kDisable3DAPIs, false);
-  prefs->RegisterBooleanPref(prefs::kPluginsAllowOutdated, false);
-  prefs->RegisterBooleanPref(prefs::kPluginsAlwaysAuthorize, false);
-  prefs->RegisterBooleanPref(prefs::kEnableHyperlinkAuditing, true);
-  prefs->RegisterBooleanPref(prefs::kEnableReferrers, true);
-  prefs->RegisterBooleanPref(prefs::kWebKitAllowRunningInsecureContent, false);
+  // them even though they're only typically controlled via policy.
+  prefs->RegisterBooleanPref(prefs::kDisable3DAPIs,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kPluginsAllowOutdated,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kPluginsAlwaysAuthorize,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kEnableHyperlinkAuditing,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kEnableReferrers,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWebKitAllowRunningInsecureContent,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitAllowDisplayingInsecureContent,
-                             true);
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 // static
@@ -4363,8 +4434,10 @@ void Browser::RegisterAppPrefs(const std::string& app_name, Profile* profile) {
   window_pref.append("_");
   window_pref.append(app_name);
   PrefService* prefs = profile->GetPrefs();
-  if (!prefs->FindPreference(window_pref.c_str()))
-    prefs->RegisterDictionaryPref(window_pref.c_str());
+  if (!prefs->FindPreference(window_pref.c_str())) {
+    prefs->RegisterDictionaryPref(window_pref.c_str(),
+                                  PrefService::UNSYNCABLE_PREF);
+  }
 }
 
 void Browser::TabRestoreServiceChanged(TabRestoreService* service) {

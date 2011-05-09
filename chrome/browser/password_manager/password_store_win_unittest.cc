@@ -169,7 +169,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
 
   // Prentend that the migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
-                                            true);
+                                            true,
+                                            PrefService::UNSYNCABLE_PREF);
 
   // Initializing the PasswordStore shouldn't trigger a migration.
   scoped_refptr<PasswordStore> store(
@@ -228,7 +229,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
 TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
   // Prentend that the migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
-                                            true);
+                                            true,
+                                            PrefService::UNSYNCABLE_PREF);
 
   // Initializing the PasswordStore shouldn't trigger a migration.
   scoped_refptr<PasswordStore> store(
@@ -278,7 +280,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
 
   // Prentend that the migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
-                                            true);
+                                            true,
+                                            PrefService::UNSYNCABLE_PREF);
 
   // Initializing the PasswordStore shouldn't trigger a migration.
   scoped_refptr<PasswordStore> store(

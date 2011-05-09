@@ -553,7 +553,8 @@ const string16& BackgroundContentsService::GetParentApplicationId(
 
 // static
 void BackgroundContentsService::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kRegisteredBackgroundContents);
+  prefs->RegisterDictionaryPref(prefs::kRegisteredBackgroundContents,
+                                PrefService::UNSYNCABLE_PREF);
 }
 
 void BackgroundContentsService::AddTabContents(

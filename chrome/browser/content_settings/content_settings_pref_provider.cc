@@ -313,12 +313,14 @@ void PrefDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
   DictionaryValue* default_content_settings = new DictionaryValue();
   SetDefaultContentSettings(default_content_settings);
   prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings,
-                                default_content_settings);
+                                default_content_settings,
+                                PrefService::SYNCABLE_PREF);
 
   // Obsolete prefs, for migrations:
   prefs->RegisterIntegerPref(
       prefs::kDesktopNotificationDefaultContentSetting,
-          kDefaultSettings[CONTENT_SETTINGS_TYPE_NOTIFICATIONS]);
+      kDefaultSettings[CONTENT_SETTINGS_TYPE_NOTIFICATIONS],
+      PrefService::SYNCABLE_PREF);
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -327,13 +329,18 @@ void PrefDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
 
 // static
 void PrefProvider::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kContentSettingsVersion,
-      ContentSettingsPattern::kContentSettingsPatternVersion);
-  prefs->RegisterDictionaryPref(prefs::kContentSettingsPatterns);
+  prefs->RegisterIntegerPref(
+      prefs::kContentSettingsVersion,
+      ContentSettingsPattern::kContentSettingsPatternVersion,
+      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kContentSettingsPatterns,
+                                PrefService::SYNCABLE_PREF);
 
   // Obsolete prefs, for migration:
-  prefs->RegisterListPref(prefs::kPopupWhitelistedHosts);
-  prefs->RegisterDictionaryPref(prefs::kPerHostContentSettings);
+  prefs->RegisterListPref(prefs::kPopupWhitelistedHosts,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kPerHostContentSettings,
+                                PrefService::UNSYNCABLE_PREF);
 }
 
 PrefProvider::PrefProvider(Profile* profile)

@@ -55,6 +55,7 @@ class FrontendDataTypeController : public DataTypeController {
   // UnrecoverableErrorHandler interface.
   virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
                                     const std::string& message);
+
  protected:
   // For testing only.
   FrontendDataTypeController();
@@ -100,6 +101,11 @@ class FrontendDataTypeController : public DataTypeController {
   // Record causes of start failure.
   virtual void RecordStartFailure(StartResult result) = 0;
 
+  virtual AssociatorInterface* model_associator() const;
+  virtual void set_model_associator(AssociatorInterface* associator);
+  virtual ChangeProcessor* change_processor() const;
+  virtual void set_change_processor(ChangeProcessor* processor);
+
   ProfileSyncFactory* const profile_sync_factory_;
   Profile* const profile_;
   ProfileSyncService* const sync_service_;
@@ -107,6 +113,8 @@ class FrontendDataTypeController : public DataTypeController {
   State state_;
 
   scoped_ptr<StartCallback> start_callback_;
+  // TODO(sync): transition all datatypes to SyncableService and deprecate
+  // AssociatorInterface.
   scoped_ptr<AssociatorInterface> model_associator_;
   scoped_ptr<ChangeProcessor> change_processor_;
 

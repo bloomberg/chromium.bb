@@ -18,6 +18,7 @@
 #include "content/browser/browser_thread.h"
 
 class FilePath;
+class PrefModelAssociator;
 class PrefNotifier;
 class PrefStore;
 
@@ -56,6 +57,7 @@ class PrefValueStore {
                  PrefStore* recommended_platform_prefs,
                  PrefStore* recommended_cloud_prefs,
                  PrefStore* default_prefs,
+                 PrefModelAssociator* pref_sync_associator,
                  PrefNotifier* pref_notifier);
   virtual ~PrefValueStore();
 
@@ -69,6 +71,7 @@ class PrefValueStore {
                                      PrefStore* recommended_platform_prefs,
                                      PrefStore* recommended_cloud_prefs,
                                      PrefStore* default_prefs,
+                                     PrefModelAssociator* pref_sync_associator,
                                      PrefNotifier* pref_notifier);
 
   // Gets the value for the given preference name that has the specified value
@@ -232,6 +235,9 @@ class PrefValueStore {
 
   // Keeps the PrefStore references in order of precedence.
   PrefStoreKeeper pref_stores_[PREF_STORE_TYPE_MAX + 1];
+
+  // The associator for syncing preferences.
+  PrefModelAssociator* pref_sync_associator_;
 
   // Used for generating PREF_CHANGED and PREF_INITIALIZATION_COMPLETED
   // notifications. This is a weak reference, since the notifier is owned by the

@@ -1512,8 +1512,9 @@ void BrowserWindowGtk::RegisterUserPrefs(PrefService* prefs) {
       !prefs->HasPrefPath(prefs::kUseCustomChromeFrame)) {
     custom_frame_default = GetCustomFramePrefDefault();
   }
-  prefs->RegisterBooleanPref(
-      prefs::kUseCustomChromeFrame, custom_frame_default);
+  prefs->RegisterBooleanPref(prefs::kUseCustomChromeFrame,
+                             custom_frame_default,
+                             PrefService::SYNCABLE_PREF);
 }
 
 void BrowserWindowGtk::BookmarkBarIsFloating(bool is_floating) {

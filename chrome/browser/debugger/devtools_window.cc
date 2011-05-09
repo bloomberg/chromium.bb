@@ -226,7 +226,7 @@ void DevToolsWindow::CreateDevToolsBrowser() {
 
   PrefService* prefs = profile_->GetPrefs();
   if (!prefs->FindPreference(wp_key.c_str())) {
-    prefs->RegisterDictionaryPref(wp_key.c_str());
+    prefs->RegisterDictionaryPref(wp_key.c_str(), PrefService::UNSYNCABLE_PREF);
   }
 
   const DictionaryValue* wp_pref = prefs->GetDictionary(wp_key.c_str());

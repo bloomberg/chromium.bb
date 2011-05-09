@@ -269,5 +269,7 @@ void PrefProxyConfigService::RegisterObservers() {
 // static
 void PrefProxyConfigService::RegisterPrefs(PrefService* pref_service) {
   DictionaryValue* default_settings = ProxyConfigDictionary::CreateSystem();
-  pref_service->RegisterDictionaryPref(prefs::kProxy, default_settings);
+  pref_service->RegisterDictionaryPref(prefs::kProxy,
+                                       default_settings,
+                                       PrefService::UNSYNCABLE_PREF);
 }

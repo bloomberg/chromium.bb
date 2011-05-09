@@ -145,8 +145,10 @@ void DiscardInitialNavigationHistory() {
 }
 
 void RegisterUserPrefs(PrefService* user_prefs) {
-  user_prefs->RegisterListPref(prefs::kDnsPrefetchingStartupList);
-  user_prefs->RegisterListPref(prefs::kDnsPrefetchingHostReferralList);
+  user_prefs->RegisterListPref(prefs::kDnsPrefetchingStartupList,
+                               PrefService::UNSYNCABLE_PREF);
+  user_prefs->RegisterListPref(prefs::kDnsPrefetchingHostReferralList,
+                               PrefService::UNSYNCABLE_PREF);
 }
 
 // When enabled, we use the following instance to service all requests in the
@@ -414,8 +416,10 @@ static void InitNetworkPredictor(TimeDelta max_dns_queue_delay,
   int current_version =
       local_state->GetInteger(prefs::kMultipleProfilePrefMigration);
   if ((current_version & browser::DNS_PREFS) == 0) {
-    local_state->RegisterListPref(prefs::kDnsStartupPrefetchList);
-    local_state->RegisterListPref(prefs::kDnsHostReferralList);
+    local_state->RegisterListPref(prefs::kDnsStartupPrefetchList,
+                                  PrefService::UNSYNCABLE_PREF);
+    local_state->RegisterListPref(prefs::kDnsHostReferralList,
+                                  PrefService::UNSYNCABLE_PREF);
     local_state->ClearPref(prefs::kDnsStartupPrefetchList);
     local_state->ClearPref(prefs::kDnsHostReferralList);
     local_state->SetInteger(prefs::kMultipleProfilePrefMigration,

@@ -218,7 +218,9 @@ WebResourceService::WebResourceService(
       web_resource_update_scheduled_(false) {
   DCHECK(prefs);
   DCHECK(profile);
-  prefs_->RegisterStringPref(last_update_time_pref_name, "0");
+  prefs_->RegisterStringPref(last_update_time_pref_name,
+                             "0",
+                             PrefService::UNSYNCABLE_PREF);
   resource_dispatcher_host_ = g_browser_process->resource_dispatcher_host();
   web_resource_fetcher_.reset(new WebResourceFetcher(this));
 }

@@ -24,7 +24,8 @@ void CloudPrintURL::RegisterPreferences() {
   if (pref_service->FindPreference(prefs::kCloudPrintServiceURL))
     return;
   pref_service->RegisterStringPref(prefs::kCloudPrintServiceURL,
-                                   kDefaultCloudPrintServiceURL);
+                                   kDefaultCloudPrintServiceURL,
+                                   PrefService::UNSYNCABLE_PREF);
 }
 
 // Returns the root service URL for the cloud print service.  The default is to

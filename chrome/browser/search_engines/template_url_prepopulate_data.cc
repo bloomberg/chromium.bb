@@ -3341,11 +3341,18 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
 namespace TemplateURLPrepopulateData {
 
 void RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kCountryIDAtInstall, kCountryIDUnknown);
-  prefs->RegisterListPref(prefs::kSearchProviderOverrides);
-  prefs->RegisterIntegerPref(prefs::kSearchProviderOverridesVersion, -1);
+  prefs->RegisterIntegerPref(prefs::kCountryIDAtInstall,
+                             kCountryIDUnknown,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kSearchProviderOverrides,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kSearchProviderOverridesVersion,
+                             -1,
+                             PrefService::UNSYNCABLE_PREF);
   // Obsolete pref, for migration.
-  prefs->RegisterIntegerPref(prefs::kGeoIDAtInstall, -1);
+  prefs->RegisterIntegerPref(prefs::kGeoIDAtInstall,
+                             -1,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 int GetDataVersion(PrefService* prefs) {

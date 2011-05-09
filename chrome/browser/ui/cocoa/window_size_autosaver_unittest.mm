@@ -26,7 +26,9 @@ class WindowSizeAutosaverTest : public CocoaTest {
                                               NSResizableWindowMask
                                       backing:NSBackingStoreBuffered
                                         defer:NO];
-    browser_helper_.profile()->GetPrefs()->RegisterDictionaryPref(path_);
+    browser_helper_.profile()->GetPrefs()->RegisterDictionaryPref(
+        path_,
+        PrefService::UNSYNCABLE_PREF);
   }
 
   virtual void TearDown() {

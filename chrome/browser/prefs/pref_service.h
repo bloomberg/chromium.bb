@@ -21,12 +21,13 @@ class DefaultPrefStore;
 class FilePath;
 class NotificationObserver;
 class PersistentPrefStore;
-class PrefChangeObserver;
+class PrefModelAssociator;
 class PrefNotifier;
 class PrefNotifierImpl;
 class PrefStore;
 class PrefValueStore;
 class Profile;
+class SyncableService;
 
 namespace subtle {
 class PrefMemberBase;
@@ -43,6 +44,14 @@ class PrefServiceDelegate {
 class PrefService : public base::NonThreadSafe,
                     public JsonPrefStore::Delegate {
  public:
+  // Enum used when registering preferences to determine if it should be synced
+  // or not. This is only used for profile prefs, not local state prefs.
+  // See the Register*Pref methods for profile prefs below.
+  enum PrefSyncStatus {
+    UNSYNCABLE_PREF,
+    SYNCABLE_PREF
+  };
+
   // A helper class to store all the information associated with a preference.
   class Preference {
    public:
@@ -172,6 +181,8 @@ class PrefService : public base::NonThreadSafe,
   void CommitPendingWrite();
 
   // Make the PrefService aware of a pref.
+  // TODO(zea): split local state and profile prefs into their own subclasses.
+  // ---------- Local state prefs  ----------
   void RegisterBooleanPref(const char* path, bool default_value);
   void RegisterIntegerPref(const char* path, int default_value);
   void RegisterDoublePref(const char* path, double default_value);
@@ -182,7 +193,6 @@ class PrefService : public base::NonThreadSafe,
   // These take ownership of the default_value:
   void RegisterListPref(const char* path, ListValue* default_value);
   void RegisterDictionaryPref(const char* path, DictionaryValue* default_value);
-
   // These variants use a default value from the locale dll instead.
   void RegisterLocalizedBooleanPref(const char* path,
                                     int locale_default_message_id);
@@ -192,6 +202,51 @@ class PrefService : public base::NonThreadSafe,
                                    int locale_default_message_id);
   void RegisterLocalizedStringPref(const char* path,
                                    int locale_default_message_id);
+  void RegisterInt64Pref(const char* path, int64 default_value);
+
+  //  ---------- Profile prefs  ----------
+  // Profile prefs must specify whether the pref should be synchronized across
+  // machines or not (see PrefSyncStatus enum above).
+  void RegisterBooleanPref(const char* path,
+                           bool default_value,
+                           PrefSyncStatus sync_status);
+  void RegisterIntegerPref(const char* path,
+                           int default_value,
+                           PrefSyncStatus sync_status);
+  void RegisterDoublePref(const char* path,
+                          double default_value,
+                          PrefSyncStatus sync_status);
+  void RegisterStringPref(const char* path,
+                          const std::string& default_value,
+                          PrefSyncStatus sync_status);
+  void RegisterFilePathPref(const char* path,
+                            const FilePath& default_value,
+                            PrefSyncStatus sync_status);
+  void RegisterListPref(const char* path, PrefSyncStatus sync_status);
+  void RegisterDictionaryPref(const char* path, PrefSyncStatus sync_status);
+  // These take ownership of the default_value:
+  void RegisterListPref(const char* path,
+                        ListValue* default_value,
+                        PrefSyncStatus sync_status);
+  void RegisterDictionaryPref(const char* path,
+                              DictionaryValue* default_value,
+                              PrefSyncStatus sync_status);
+  // These variants use a default value from the locale dll instead.
+  void RegisterLocalizedBooleanPref(const char* path,
+                                    int locale_default_message_id,
+                                    PrefSyncStatus sync_status);
+  void RegisterLocalizedIntegerPref(const char* path,
+                                    int locale_default_message_id,
+                                    PrefSyncStatus sync_status);
+  void RegisterLocalizedDoublePref(const char* path,
+                                   int locale_default_message_id,
+                                   PrefSyncStatus sync_status);
+  void RegisterLocalizedStringPref(const char* path,
+                                   int locale_default_message_id,
+                                   PrefSyncStatus sync_status);
+  void RegisterInt64Pref(const char* path,
+                         int64 default_value,
+                         PrefSyncStatus sync_status);
 
   // If the path is valid and the value at the end of the path matches the type
   // specified, it will return the specified value.  Otherwise, the default
@@ -228,7 +283,6 @@ class PrefService : public base::NonThreadSafe,
   // Value type will be TYPE_STRING.
   void SetInt64(const char* path, int64 value);
   int64 GetInt64(const char* path) const;
-  void RegisterInt64Pref(const char* path, int64 default_value);
 
   // Returns true if a value has been set for the specified path.
   // NOTE: this is NOT the same as FindPreference. In particular
@@ -245,6 +299,10 @@ class PrefService : public base::NonThreadSafe,
   const Preference* FindPreference(const char* pref_name) const;
 
   bool ReadOnly() const;
+
+  // SyncableService getter.
+  // TODO(zea): Have PrefService implement SyncableService directly.
+  SyncableService* GetSyncableService();
 
  protected:
   // Construct a new pref service, specifying the pref sources as explicit
@@ -308,7 +366,9 @@ class PrefService : public base::NonThreadSafe,
   // NULL as it determines the preference value's type.
   // RegisterPreference must not be called twice for the same path.
   // This method takes ownership of |default_value|.
-  void RegisterPreference(const char* path, Value* default_value);
+  void RegisterPreference(const char* path,
+                          Value* default_value,
+                          PrefSyncStatus sync_status);
 
   // Sets the value for this pref path in the user pref store and informs the
   // PrefNotifier of the change.
@@ -343,6 +403,9 @@ class PrefService : public base::NonThreadSafe,
   // Holds delegator to be called after initialization, if async version
   // is used.
   PrefServiceDelegate* delegate_;
+
+  // The model associator that maintains the links with the sync db.
+  scoped_ptr<PrefModelAssociator> pref_sync_associator_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };

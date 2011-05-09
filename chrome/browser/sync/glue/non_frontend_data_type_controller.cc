@@ -194,7 +194,7 @@ void NonFrontendDataTypeController::Stop() {
 
   // Deactivate the change processor on the UI thread. We dont want to listen
   // for any more changes or process them from server.
-  if (change_processor_ != NULL)
+  if (change_processor_.get())
     profile_sync_service_->DeactivateDataType(this, change_processor_.get());
 
   if (StopAssociationAsync()) {
@@ -215,10 +215,10 @@ void NonFrontendDataTypeController::StopModels() {
 
 void NonFrontendDataTypeController::StopAssociation() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (model_associator_ != NULL)
+  if (model_associator_.get())
     model_associator_->DisassociateModels();
-  change_processor_.reset();
   model_associator_.reset();
+  change_processor_.reset();
   datatype_stopped_.Signal();
 }
 

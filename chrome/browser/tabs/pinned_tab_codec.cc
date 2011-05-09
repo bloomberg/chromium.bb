@@ -89,7 +89,7 @@ static bool DecodeTab(const DictionaryValue& value, Tab* tab) {
 
 // static
 void PinnedTabCodec::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterListPref(prefs::kPinnedTabs);
+  prefs->RegisterListPref(prefs::kPinnedTabs, PrefService::UNSYNCABLE_PREF);
 }
 
 // static

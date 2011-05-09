@@ -624,8 +624,12 @@ void ToggleWhenVisible(Profile* profile) {
 }
 
 void RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kShowBookmarkBar, false);
-  prefs->RegisterBooleanPref(prefs::kEditBookmarksEnabled, true);
+  prefs->RegisterBooleanPref(prefs::kShowBookmarkBar,
+                             false,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kEditBookmarksEnabled,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 void GetURLAndTitleToBookmark(TabContents* tab_contents,

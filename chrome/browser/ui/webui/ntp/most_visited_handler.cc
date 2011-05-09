@@ -368,8 +368,10 @@ std::string MostVisitedHandler::GetDictionaryKeyForURL(const std::string& url) {
 
 // static
 void MostVisitedHandler::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kNTPMostVisitedURLsBlacklist);
-  prefs->RegisterDictionaryPref(prefs::kNTPMostVisitedPinnedURLs);
+  prefs->RegisterDictionaryPref(prefs::kNTPMostVisitedURLsBlacklist,
+                                PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kNTPMostVisitedPinnedURLs,
+                                PrefService::UNSYNCABLE_PREF);
 }
 
 // static

@@ -436,14 +436,24 @@ void WizardController::SkipRegistration() {
 
 // static
 void WizardController::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterBooleanPref(kOobeComplete, false);
-  local_state->RegisterIntegerPref(kDeviceRegistered, -1);
-  local_state->RegisterBooleanPref(kEulaAccepted, false);
-  local_state->RegisterStringPref(kInitialLocale, "en-US");
+  local_state->RegisterBooleanPref(kOobeComplete,
+                                   false,
+                                   PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterIntegerPref(kDeviceRegistered,
+                                   -1,
+                                   PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterBooleanPref(kEulaAccepted,
+                                   false,
+                                   PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterStringPref(kInitialLocale,
+                                  "en-US",
+                                  PrefService::UNSYNCABLE_PREF);
   // Check if the pref is already registered in case
   // Preferences::RegisterUserPrefs runs before this code in the future.
   if (local_state->FindPreference(prefs::kAccessibilityEnabled) == NULL) {
-    local_state->RegisterBooleanPref(prefs::kAccessibilityEnabled, false);
+    local_state->RegisterBooleanPref(prefs::kAccessibilityEnabled,
+                                     false,
+                                     PrefService::UNSYNCABLE_PREF);
   }
 }
 

@@ -145,7 +145,8 @@ ConfigurationPolicyProvider*
 // static
 void CloudPolicySubsystem::RegisterPrefs(PrefService* pref_service) {
   pref_service->RegisterIntegerPref(prefs::kPolicyRefreshRate,
-                                    kDefaultPolicyRefreshRateMs);
+                                    kDefaultPolicyRefreshRateMs,
+                                    PrefService::UNSYNCABLE_PREF);
 }
 
 void CloudPolicySubsystem::UpdatePolicyRefreshRate() {

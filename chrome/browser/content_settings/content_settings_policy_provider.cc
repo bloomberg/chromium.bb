@@ -241,15 +241,20 @@ void PolicyDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
   // Preferences for default content setting policies. A policy is not set of
   // the corresponding preferences below is set to CONTENT_SETTING_DEFAULT.
   prefs->RegisterIntegerPref(prefs::kManagedDefaultCookiesSetting,
-      CONTENT_SETTING_DEFAULT);
+                             CONTENT_SETTING_DEFAULT,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kManagedDefaultImagesSetting,
-      CONTENT_SETTING_DEFAULT);
+                             CONTENT_SETTING_DEFAULT,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kManagedDefaultJavaScriptSetting,
-      CONTENT_SETTING_DEFAULT);
+                             CONTENT_SETTING_DEFAULT,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kManagedDefaultPluginsSetting,
-      CONTENT_SETTING_DEFAULT);
+                             CONTENT_SETTING_DEFAULT,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kManagedDefaultPopupsSetting,
-      CONTENT_SETTING_DEFAULT);
+                             CONTENT_SETTING_DEFAULT,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -257,17 +262,28 @@ void PolicyDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
 
 // static
 void PolicyProvider::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterListPref(prefs::kManagedCookiesAllowedForUrls);
-  prefs->RegisterListPref(prefs::kManagedCookiesBlockedForUrls);
-  prefs->RegisterListPref(prefs::kManagedCookiesSessionOnlyForUrls);
-  prefs->RegisterListPref(prefs::kManagedImagesAllowedForUrls);
-  prefs->RegisterListPref(prefs::kManagedImagesBlockedForUrls);
-  prefs->RegisterListPref(prefs::kManagedJavaScriptAllowedForUrls);
-  prefs->RegisterListPref(prefs::kManagedJavaScriptBlockedForUrls);
-  prefs->RegisterListPref(prefs::kManagedPluginsAllowedForUrls);
-  prefs->RegisterListPref(prefs::kManagedPluginsBlockedForUrls);
-  prefs->RegisterListPref(prefs::kManagedPopupsAllowedForUrls);
-  prefs->RegisterListPref(prefs::kManagedPopupsBlockedForUrls);
+  prefs->RegisterListPref(prefs::kManagedCookiesAllowedForUrls,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kManagedCookiesBlockedForUrls,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kManagedCookiesSessionOnlyForUrls,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kManagedImagesAllowedForUrls,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kManagedImagesBlockedForUrls,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kManagedJavaScriptAllowedForUrls,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kManagedJavaScriptBlockedForUrls,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kManagedPluginsAllowedForUrls,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kManagedPluginsBlockedForUrls,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kManagedPopupsAllowedForUrls,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kManagedPopupsBlockedForUrls,
+                          PrefService::UNSYNCABLE_PREF);
 }
 
 PolicyProvider::PolicyProvider(Profile* profile)

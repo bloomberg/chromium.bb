@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,9 +39,15 @@ PromoCounter::~PromoCounter() {
 // static
 void PromoCounter::RegisterUserPrefs(PrefService* prefs,
                                      const std::string& base_key) {
-  prefs->RegisterBooleanPref((base_key + kShowKey).c_str(), true);
-  prefs->RegisterIntegerPref((base_key + kNumSessionsKey).c_str(), 0);
-  prefs->RegisterInt64Pref((base_key + kInitialTimeKey).c_str(), 0);
+  prefs->RegisterBooleanPref((base_key + kShowKey).c_str(),
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref((base_key + kNumSessionsKey).c_str(),
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterInt64Pref((base_key + kInitialTimeKey).c_str(),
+                           0,
+                           PrefService::UNSYNCABLE_PREF);
 }
 
 bool PromoCounter::ShouldShow(base::Time current_time) {

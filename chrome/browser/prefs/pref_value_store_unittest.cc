@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
+#include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
@@ -29,6 +30,12 @@ class MockPrefNotifier : public PrefNotifier {
  public:
   MOCK_METHOD1(OnPreferenceChanged, void(const std::string&));
   MOCK_METHOD0(OnInitializationCompleted, void());
+};
+
+// Allows to capture sync model associator interaction.
+class MockPrefModelAssociator : public PrefModelAssociator {
+ public:
+  MOCK_METHOD1(ProcessPrefChange, void(const std::string&));
 };
 
 }  // namespace
@@ -121,6 +128,7 @@ class PrefValueStoreTest : public testing::Test {
     CreateRecommendedPlatformPrefs();
     CreateRecommendedCloudPrefs();
     CreateDefaultPrefs();
+    sync_associator_.reset(new MockPrefModelAssociator());
 
     // Create a fresh PrefValueStore.
     pref_value_store_.reset(new PrefValueStore(
@@ -132,6 +140,7 @@ class PrefValueStoreTest : public testing::Test {
         recommended_platform_pref_store_,
         recommended_cloud_pref_store_,
         default_pref_store_,
+        sync_associator_.get(),
         &pref_notifier_));
   }
 
@@ -276,6 +285,7 @@ class PrefValueStoreTest : public testing::Test {
   }
 
   MockPrefNotifier pref_notifier_;
+  scoped_ptr<MockPrefModelAssociator> sync_associator_;
   scoped_ptr<PrefValueStore> pref_value_store_;
 
   scoped_refptr<TestingPrefStore> managed_platform_pref_store_;
@@ -365,11 +375,15 @@ TEST_F(PrefValueStoreTest, GetValue) {
 TEST_F(PrefValueStoreTest, PrefChanges) {
   // Check pref controlled by highest-priority store.
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kManagedPlatformPref));
+  EXPECT_CALL(*sync_associator_,
+      ProcessPrefChange(prefs::kManagedPlatformPref));
   managed_platform_pref_store_->NotifyPrefValueChanged(
       prefs::kManagedPlatformPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(_)).Times(0);
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(_)).Times(0);
   managed_cloud_pref_store_->NotifyPrefValueChanged(
       prefs::kManagedPlatformPref);
   extension_pref_store_->NotifyPrefValueChanged(
@@ -385,29 +399,41 @@ TEST_F(PrefValueStoreTest, PrefChanges) {
   default_pref_store_->NotifyPrefValueChanged(
       prefs::kManagedPlatformPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   // Check pref controlled by user store.
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kUserPref));
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kUserPref));
   managed_platform_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kUserPref));
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kUserPref));
   managed_cloud_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kUserPref));
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kUserPref));
   extension_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kUserPref));
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kUserPref));
   command_line_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kUserPref));
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kUserPref));
   user_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(_)).Times(0);
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(_)).Times(0);
   recommended_platform_pref_store_->NotifyPrefValueChanged(
       prefs::kUserPref);
   recommended_cloud_pref_store_->NotifyPrefValueChanged(
@@ -415,39 +441,56 @@ TEST_F(PrefValueStoreTest, PrefChanges) {
   default_pref_store_->NotifyPrefValueChanged(
       prefs::kUserPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   // Check pref controlled by default-pref store.
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kDefaultPref));
   managed_platform_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kDefaultPref));
   managed_cloud_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kDefaultPref));
   extension_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kDefaultPref));
   command_line_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kDefaultPref));
   user_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kDefaultPref));
   recommended_platform_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kDefaultPref));
   recommended_cloud_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  EXPECT_CALL(*sync_associator_, ProcessPrefChange(prefs::kDefaultPref));
   default_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
+  Mock::VerifyAndClearExpectations(sync_associator_.get());
 }
 
 TEST_F(PrefValueStoreTest, OnInitializationCompleted) {

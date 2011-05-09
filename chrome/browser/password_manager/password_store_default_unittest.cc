@@ -152,7 +152,8 @@ MATCHER(EmptyWDResult, "") {
 TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
   // Prentend that the migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
-                                            true);
+                                            true,
+                                            PrefService::UNSYNCABLE_PREF);
 
   // Initializing the PasswordStore shouldn't trigger a migration.
   scoped_refptr<PasswordStoreDefault> store(
@@ -399,7 +400,8 @@ TEST_F(PasswordStoreDefaultTest, MigrationAlreadyDone) {
 
   // Prentend that the migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
-                                            true);
+                                            true,
+                                            PrefService::UNSYNCABLE_PREF);
 
   // Initializing the PasswordStore shouldn't trigger a migration.
   scoped_refptr<PasswordStore> store(
@@ -430,7 +432,8 @@ TEST_F(PasswordStoreDefaultTest, MigrationAlreadyDone) {
 TEST_F(PasswordStoreDefaultTest, Notifications) {
   // Prentend that the migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
-                                            true);
+                                            true,
+                                            PrefService::UNSYNCABLE_PREF);
 
   // Initializing the PasswordStore shouldn't trigger a migration.
   scoped_refptr<PasswordStore> store(

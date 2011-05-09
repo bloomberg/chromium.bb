@@ -274,9 +274,12 @@ void ProtocolHandlerRegistry::OnIgnoreRegisterProtocolHandler(
 }
 
 void ProtocolHandlerRegistry::RegisterPrefs(PrefService* prefService) {
-  prefService->RegisterListPref(prefs::kRegisteredProtocolHandlers);
-  prefService->RegisterListPref(prefs::kIgnoredProtocolHandlers);
-  prefService->RegisterBooleanPref(prefs::kCustomHandlersEnabled, true);
+  prefService->RegisterListPref(prefs::kRegisteredProtocolHandlers,
+                                PrefService::UNSYNCABLE_PREF);
+  prefService->RegisterListPref(prefs::kIgnoredProtocolHandlers,
+                                PrefService::UNSYNCABLE_PREF);
+  prefService->RegisterBooleanPref(prefs::kCustomHandlersEnabled, true,
+                                   PrefService::UNSYNCABLE_PREF);
 }
 
 void ProtocolHandlerRegistry::SetDefault(const ProtocolHandler& handler) {

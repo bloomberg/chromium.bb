@@ -50,8 +50,10 @@ GeolocationContentSettingsMap::GeolocationContentSettingsMap(Profile* profile)
 // static
 void GeolocationContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kGeolocationDefaultContentSetting,
-                             CONTENT_SETTING_ASK);
-  prefs->RegisterDictionaryPref(prefs::kGeolocationContentSettings);
+                             CONTENT_SETTING_ASK,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kGeolocationContentSettings,
+                                PrefService::SYNCABLE_PREF);
 }
 
 ContentSetting GeolocationContentSettingsMap::GetDefaultContentSetting() const {

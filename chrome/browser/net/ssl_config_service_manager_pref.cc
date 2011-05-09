@@ -125,15 +125,18 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefService* prefs) {
   net::SSLConfig default_config;
   if (!prefs->FindPreference(prefs::kCertRevocationCheckingEnabled)) {
     prefs->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
-                               default_config.rev_checking_enabled);
+                               default_config.rev_checking_enabled,
+                               PrefService::UNSYNCABLE_PREF);
   }
   if (!prefs->FindPreference(prefs::kSSL3Enabled)) {
     prefs->RegisterBooleanPref(prefs::kSSL3Enabled,
-                               default_config.ssl3_enabled);
+                               default_config.ssl3_enabled,
+                               PrefService::UNSYNCABLE_PREF);
   }
   if (!prefs->FindPreference(prefs::kTLS1Enabled)) {
     prefs->RegisterBooleanPref(prefs::kTLS1Enabled,
-                               default_config.tls1_enabled);
+                               default_config.tls1_enabled,
+                               PrefService::UNSYNCABLE_PREF);
   }
 }
 

@@ -94,7 +94,8 @@ void PasswordStoreDefault::MigrateHelper::OnWebDataServiceRequestDone(
   }
   if (handles_.empty()) {
     profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
-                                              true);
+                                              true,
+                                              PrefService::UNSYNCABLE_PREF);
   }
 }
 

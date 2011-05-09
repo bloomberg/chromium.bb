@@ -515,6 +515,9 @@ void SyncBackendHost::ActivateDataType(
   // processors so it can receive updates.
   DCHECK_EQ(processors_.count(type), 0U);
   processors_[type] = change_processor;
+
+  // Start the change processor.
+  change_processor->Start(profile_, GetUserShare());
 }
 
 void SyncBackendHost::DeactivateDataType(
@@ -523,6 +526,8 @@ void SyncBackendHost::DeactivateDataType(
   base::AutoLock lock(registrar_lock_);
   registrar_.routing_info.erase(data_type_controller->type());
 
+  // Stop the change processor and remove it from the list of processors.
+  change_processor->Stop();
   std::map<syncable::ModelType, ChangeProcessor*>::size_type erased =
       processors_.erase(data_type_controller->type());
   DCHECK_EQ(erased, 1U);

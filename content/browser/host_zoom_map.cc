@@ -72,8 +72,11 @@ void HostZoomMap::Load() {
 
 // static
 void HostZoomMap::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterDoublePref(prefs::kDefaultZoomLevel, 0.0);
-  prefs->RegisterDictionaryPref(prefs::kPerHostZoomLevels);
+  prefs->RegisterDoublePref(prefs::kDefaultZoomLevel,
+                            0.0,
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kPerHostZoomLevels,
+                                PrefService::UNSYNCABLE_PREF);
 }
 
 double HostZoomMap::GetZoomLevel(const GURL& url) const {

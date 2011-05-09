@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,8 +20,7 @@ class UnrecoverableErrorHandler;
 // native model.  This does not currently distinguish between model data types.
 class ChangeProcessor {
  public:
-  explicit ChangeProcessor(UnrecoverableErrorHandler* error_handler)
-      : running_(false), error_handler_(error_handler), share_handle_(NULL) {}
+  explicit ChangeProcessor(UnrecoverableErrorHandler* error_handler);
   virtual ~ChangeProcessor();
 
   // Call when the processor should accept changes from either provided model
@@ -45,11 +44,13 @@ class ChangeProcessor {
       int change_count) = 0;
 
   // The changes found in ApplyChangesFromSyncModel may be too slow to be
-  // performed while holding a [Read/Write]Transaction lock. This function
-  // is called once the lock is released and performs any slow I/O operations
-  // without unnecessarily slowing the UI. Note that not all datatypes need
-  // this, so we provide an empty default version.
-  virtual void CommitChangesFromSyncModel() { }
+  // performed while holding a [Read/Write]Transaction lock or may interact
+  // with another thread, which might itself be waiting on the transaction lock,
+  // putting us at risk of deadlock.
+  // This function is called once the transactional lock is released and it is
+  // safe to perform inter-thread or slow I/O operations. Note that not all
+  // datatypes need this, so we provide an empty default version.
+  virtual void CommitChangesFromSyncModel();
 
  protected:
   // These methods are invoked by Start() and Stop() to do
@@ -58,8 +59,8 @@ class ChangeProcessor {
   virtual void StopImpl() = 0;
 
   bool running() { return running_; }
-  UnrecoverableErrorHandler* error_handler() { return error_handler_; }
-  sync_api::UserShare* share_handle() { return share_handle_; }
+  UnrecoverableErrorHandler* error_handler();
+  sync_api::UserShare* share_handle();
 
  private:
   bool running_;  // True if we have been told it is safe to process changes.

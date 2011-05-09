@@ -77,17 +77,25 @@ bool IsControlledListSetting(const std::string& pref_path) {
 
 void RegisterSetting(PrefService* local_state, const std::string& pref_path) {
   local_state->RegisterBooleanPref((pref_path + kTrustedSuffix).c_str(),
-                                   false);
+                                   false,
+                                   PrefService::UNSYNCABLE_PREF);
   if (IsControlledBooleanSetting(pref_path)) {
     if (pref_path == kSignedDataRoamingEnabled)
-      local_state->RegisterBooleanPref(pref_path.c_str(), false);
+      local_state->RegisterBooleanPref(pref_path.c_str(),
+                                       false,
+                                       PrefService::UNSYNCABLE_PREF);
     else
-      local_state->RegisterBooleanPref(pref_path.c_str(), true);
+      local_state->RegisterBooleanPref(pref_path.c_str(),
+                                       true,
+                                       PrefService::UNSYNCABLE_PREF);
   } else if (IsControlledStringSetting(pref_path)) {
-    local_state->RegisterStringPref(pref_path.c_str(), "");
+    local_state->RegisterStringPref(pref_path.c_str(),
+                                    "",
+                                    PrefService::UNSYNCABLE_PREF);
   } else {
     DCHECK(IsControlledListSetting(pref_path));
-    local_state->RegisterListPref(pref_path.c_str());
+    local_state->RegisterListPref(pref_path.c_str(),
+                                  PrefService::UNSYNCABLE_PREF);
   }
 }
 

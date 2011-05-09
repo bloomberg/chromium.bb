@@ -678,10 +678,18 @@ class ExtensionPrefsPreferencesBase : public ExtensionPrefsTest {
   }
 
   void RegisterPreferences() {
-    prefs()->pref_service()->RegisterStringPref(kPref1, kDefaultPref1);
-    prefs()->pref_service()->RegisterStringPref(kPref2, kDefaultPref2);
-    prefs()->pref_service()->RegisterStringPref(kPref3, kDefaultPref3);
-    prefs()->pref_service()->RegisterStringPref(kPref4, kDefaultPref4);
+    prefs()->pref_service()->RegisterStringPref(kPref1,
+                                                kDefaultPref1,
+                                                PrefService::UNSYNCABLE_PREF);
+    prefs()->pref_service()->RegisterStringPref(kPref2,
+                                                kDefaultPref2,
+                                                PrefService::UNSYNCABLE_PREF);
+    prefs()->pref_service()->RegisterStringPref(kPref3,
+                                                kDefaultPref3,
+                                                PrefService::UNSYNCABLE_PREF);
+    prefs()->pref_service()->RegisterStringPref(kPref4,
+                                                kDefaultPref4,
+                                                PrefService::UNSYNCABLE_PREF);
   }
 
   void InstallExtControlledPref(Extension *ext,

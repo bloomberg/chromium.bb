@@ -35,8 +35,8 @@ void ThemeDataTypeController::CreateSyncComponents() {
   ProfileSyncFactory::SyncComponents sync_components =
       profile_sync_factory_->CreateThemeSyncComponents(sync_service_,
                                                      this);
-  model_associator_.reset(sync_components.model_associator);
-  change_processor_.reset(sync_components.change_processor);
+  set_model_associator(sync_components.model_associator);
+  set_change_processor(sync_components.change_processor);
 }
 
 void ThemeDataTypeController::RecordUnrecoverableError(

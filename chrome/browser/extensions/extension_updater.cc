@@ -499,12 +499,15 @@ ExtensionUpdater::~ExtensionUpdater() {
 static void EnsureInt64PrefRegistered(PrefService* prefs,
                                       const char name[]) {
   if (!prefs->FindPreference(name))
-    prefs->RegisterInt64Pref(name, 0);
+    prefs->RegisterInt64Pref(name, 0, PrefService::UNSYNCABLE_PREF);
 }
 
 static void EnsureBlacklistVersionPrefRegistered(PrefService* prefs) {
-  if (!prefs->FindPreference(kExtensionBlacklistUpdateVersion))
-    prefs->RegisterStringPref(kExtensionBlacklistUpdateVersion, "0");
+  if (!prefs->FindPreference(kExtensionBlacklistUpdateVersion)) {
+    prefs->RegisterStringPref(kExtensionBlacklistUpdateVersion,
+                              "0",
+                              PrefService::UNSYNCABLE_PREF);
+  }
 }
 
 // The overall goal here is to balance keeping clients up to date while

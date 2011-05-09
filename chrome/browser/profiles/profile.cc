@@ -96,37 +96,68 @@ const ProfileId Profile::kInvalidProfileId = static_cast<ProfileId>(0);
 
 // static
 void Profile::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kSearchSuggestEnabled, true);
-  prefs->RegisterBooleanPref(prefs::kSessionExitedCleanly, true);
-  prefs->RegisterBooleanPref(prefs::kSafeBrowsingEnabled, true);
-  prefs->RegisterBooleanPref(prefs::kSafeBrowsingReportingEnabled, false);
+  prefs->RegisterBooleanPref(prefs::kSearchSuggestEnabled,
+                             true,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kSessionExitedCleanly,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kSafeBrowsingEnabled,
+                             true,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kSafeBrowsingReportingEnabled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
   // TODO(estade): IDS_SPELLCHECK_DICTIONARY should be an ASCII string.
   prefs->RegisterLocalizedStringPref(prefs::kSpellCheckDictionary,
-      IDS_SPELLCHECK_DICTIONARY);
-  prefs->RegisterBooleanPref(prefs::kEnableSpellCheck, true);
-  prefs->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect, true);
+                                     IDS_SPELLCHECK_DICTIONARY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kEnableSpellCheck,
+                             true,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
 #if defined(TOOLKIT_USES_GTK)
   prefs->RegisterBooleanPref(prefs::kUsesSystemTheme,
-                             GtkThemeService::DefaultUsesSystemTheme());
+                             GtkThemeService::DefaultUsesSystemTheme(),
+                             PrefService::UNSYNCABLE_PREF);
 #endif
-  prefs->RegisterFilePathPref(prefs::kCurrentThemePackFilename, FilePath());
+  prefs->RegisterFilePathPref(prefs::kCurrentThemePackFilename,
+                              FilePath(),
+                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kCurrentThemeID,
-                            ThemeService::kDefaultThemeID);
-  prefs->RegisterDictionaryPref(prefs::kCurrentThemeImages);
-  prefs->RegisterDictionaryPref(prefs::kCurrentThemeColors);
-  prefs->RegisterDictionaryPref(prefs::kCurrentThemeTints);
-  prefs->RegisterDictionaryPref(prefs::kCurrentThemeDisplayProperties);
-  prefs->RegisterBooleanPref(prefs::kDisableExtensions, false);
-  prefs->RegisterStringPref(prefs::kSelectFileLastDirectory, "");
+                            ThemeService::kDefaultThemeID,
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kCurrentThemeImages,
+                                PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kCurrentThemeColors,
+                                PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kCurrentThemeTints,
+                                PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kCurrentThemeDisplayProperties,
+                                PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kDisableExtensions,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kSelectFileLastDirectory,
+                            "",
+                            PrefService::UNSYNCABLE_PREF);
 #if defined(OS_CHROMEOS)
   // TODO(dilmah): For OS_CHROMEOS we maintain kApplicationLocale in both
   // local state and user's profile.  For other platforms we maintain
   // kApplicationLocale only in local state.
   // In the future we may want to maintain kApplicationLocale
   // in user's profile for other platforms as well.
-  prefs->RegisterStringPref(prefs::kApplicationLocale, "");
-  prefs->RegisterStringPref(prefs::kApplicationLocaleBackup, "");
-  prefs->RegisterStringPref(prefs::kApplicationLocaleAccepted, "");
+  prefs->RegisterStringPref(prefs::kApplicationLocale,
+                            "",
+                            PrefService::SYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kApplicationLocaleBackup,
+                            "",
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kApplicationLocaleAccepted,
+                            "",
+                            PrefService::UNSYNCABLE_PREF);
 #endif
 }
 

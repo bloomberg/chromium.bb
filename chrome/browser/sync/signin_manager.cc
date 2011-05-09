@@ -21,7 +21,9 @@ SigninManager::~SigninManager() {}
 
 // static
 void SigninManager::RegisterUserPrefs(PrefService* user_prefs) {
-  user_prefs->RegisterStringPref(prefs::kGoogleServicesUsername, "");
+  user_prefs->RegisterStringPref(prefs::kGoogleServicesUsername,
+                                 "",
+                                 PrefService::UNSYNCABLE_PREF);
 }
 
 void SigninManager::Initialize(Profile* profile) {

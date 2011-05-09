@@ -62,16 +62,34 @@ void PromoResourceService::RegisterPrefs(PrefService* local_state) {
 
 // static
 void PromoResourceService::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterDoublePref(prefs::kNTPCustomLogoStart, 0);
-  prefs->RegisterDoublePref(prefs::kNTPCustomLogoEnd, 0);
-  prefs->RegisterDoublePref(prefs::kNTPPromoStart, 0);
-  prefs->RegisterDoublePref(prefs::kNTPPromoEnd, 0);
-  prefs->RegisterStringPref(prefs::kNTPPromoLine, std::string());
-  prefs->RegisterBooleanPref(prefs::kNTPPromoClosed, false);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoGroup, -1);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoBuild,
-       CANARY_BUILD | DEV_BUILD | BETA_BUILD | STABLE_BUILD);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoGroupTimeSlice, 0);
+  prefs->RegisterDoublePref(prefs::kNTPCustomLogoStart,
+                            0,
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(prefs::kNTPCustomLogoEnd,
+                            0,
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(prefs::kNTPPromoStart,
+                            0,
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(prefs::kNTPPromoEnd,
+                            0,
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kNTPPromoLine,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kNTPPromoClosed,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kNTPPromoGroup,
+                             -1,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(
+      prefs::kNTPPromoBuild,
+      CANARY_BUILD | DEV_BUILD | BETA_BUILD | STABLE_BUILD,
+      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kNTPPromoGroupTimeSlice,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 // static

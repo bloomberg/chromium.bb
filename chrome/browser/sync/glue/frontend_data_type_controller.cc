@@ -78,19 +78,19 @@ bool FrontendDataTypeController::Associate() {
   DCHECK_EQ(state_, ASSOCIATING);
   CreateSyncComponents();
 
-  if (!model_associator_->CryptoReadyIfNecessary()) {
+  if (!model_associator()->CryptoReadyIfNecessary()) {
     StartFailed(NEEDS_CRYPTO, FROM_HERE);
     return false;
   }
 
   bool sync_has_nodes = false;
-  if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
+  if (!model_associator()->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
     StartFailed(UNRECOVERABLE_ERROR, FROM_HERE);
     return false;
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
-  bool merge_success = model_associator_->AssociateModels();
+  bool merge_success = model_associator()->AssociateModels();
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
   if (!merge_success) {
     StartFailed(ASSOCIATION_FAILED, FROM_HERE);
@@ -107,7 +107,7 @@ void FrontendDataTypeController::StartFailed(StartResult result,
     const tracked_objects::Location& location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CleanUpState();
-  model_associator_.reset();
+  set_model_associator(NULL);
   change_processor_.reset();
   state_ = NOT_RUNNING;
   RecordStartFailure(result);
@@ -144,14 +144,14 @@ void FrontendDataTypeController::Stop() {
 
   CleanUpState();
 
-  if (change_processor_ != NULL)
+  if (change_processor_.get())
     sync_service_->DeactivateDataType(this, change_processor_.get());
 
-  if (model_associator_ != NULL)
-    model_associator_->DisassociateModels();
+  if (model_associator())
+    model_associator()->DisassociateModels();
 
+  set_model_associator(NULL);
   change_processor_.reset();
-  model_associator_.reset();
 
   state_ = NOT_RUNNING;
 }
@@ -179,6 +179,24 @@ void FrontendDataTypeController::OnUnrecoverableError(
   // The ProfileSyncService will invoke our Stop() method in response to this.
   RecordUnrecoverableError(from_here, message);
   sync_service_->OnUnrecoverableError(from_here, message);
+}
+
+AssociatorInterface* FrontendDataTypeController::model_associator() const {
+  return model_associator_.get();
+}
+
+void FrontendDataTypeController::set_model_associator(
+    AssociatorInterface* model_associator) {
+  model_associator_.reset(model_associator);
+}
+
+ChangeProcessor* FrontendDataTypeController::change_processor() const {
+  return change_processor_.get();
+}
+
+void FrontendDataTypeController::set_change_processor(
+    ChangeProcessor* change_processor) {
+  change_processor_.reset(change_processor);
 }
 
 }  // namespace browser_sync

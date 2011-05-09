@@ -396,6 +396,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
       const syncable::AutofillMigrationDebugInfo& info);
 
+  // TODO(zea): Remove these and have the dtc's call directly into the SBH.
   virtual void ActivateDataType(
       browser_sync::DataTypeController* data_type_controller,
       browser_sync::ChangeProcessor* change_processor);

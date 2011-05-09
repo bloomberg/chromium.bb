@@ -417,7 +417,9 @@ class ExtensionServiceObserverBridge : public NotificationObserver,
 }
 
 + (void)registerUserPrefs:(PrefService*)prefs {
-  prefs->RegisterDoublePref(prefs::kBrowserActionContainerWidth, 0);
+  prefs->RegisterDoublePref(prefs::kBrowserActionContainerWidth,
+                            0,
+                            PrefService::UNSYNCABLE_PREF);
 }
 
 #pragma mark -

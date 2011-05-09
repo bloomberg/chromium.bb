@@ -461,7 +461,9 @@ void NewTabUI::InitializeCSSCaches() {
 
 // static
 void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kNTPPrefVersion, 0);
+  prefs->RegisterIntegerPref(prefs::kNTPPrefVersion,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
 
   MostVisitedHandler::RegisterUserPrefs(prefs);
   ShownSectionsHandler::RegisterUserPrefs(prefs);

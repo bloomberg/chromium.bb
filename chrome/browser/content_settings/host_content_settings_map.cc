@@ -113,13 +113,20 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
 
 // static
 void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kBlockThirdPartyCookies, false);
-  prefs->RegisterBooleanPref(prefs::kBlockNonsandboxedPlugins, false);
-  prefs->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex, 0);
+  prefs->RegisterBooleanPref(prefs::kBlockThirdPartyCookies,
+                             false,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kBlockNonsandboxedPlugins,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
 
   // Obsolete prefs, for migration:
   prefs->RegisterIntegerPref(prefs::kCookieBehavior,
-                             net::StaticCookiePolicy::ALLOW_ALL_COOKIES);
+                             net::StaticCookiePolicy::ALLOW_ALL_COOKIES,
+                             PrefService::UNSYNCABLE_PREF);
 
   // Register the prefs for the content settings providers.
   content_settings::PrefDefaultProvider::RegisterUserPrefs(prefs);

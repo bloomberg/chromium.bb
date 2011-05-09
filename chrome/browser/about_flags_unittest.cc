@@ -86,11 +86,18 @@ static Experiment kExperiments[] = {
 class AboutFlagsTest : public ::testing::Test {
  protected:
   AboutFlagsTest() {
-    prefs_.RegisterListPref(prefs::kEnabledLabsExperiments);
+    prefs_.RegisterListPref(prefs::kEnabledLabsExperiments,
+                            PrefService::UNSYNCABLE_PREF);
 #if defined(OS_CHROMEOS)
-    prefs_.RegisterBooleanPref(prefs::kLabsMediaplayerEnabled, false);
-    prefs_.RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled, false);
-    prefs_.RegisterBooleanPref(prefs::kUseVerticalTabs, false);
+    prefs_.RegisterBooleanPref(prefs::kLabsMediaplayerEnabled,
+                               false,
+                               PrefService::UNSYNCABLE_PREF);
+    prefs_.RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled,
+                               false,
+                               PrefService::UNSYNCABLE_PREF);
+    prefs_.RegisterBooleanPref(prefs::kUseVerticalTabs,
+                               false,
+                               PrefService::UNSYNCABLE_PREF);
 #endif
     testing::ClearState();
   }

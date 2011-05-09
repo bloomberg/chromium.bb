@@ -71,7 +71,13 @@ void NetPrefObserver::ApplySettings(const std::string* pref_name) {
 
 // static
 void NetPrefObserver::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kNetworkPredictionEnabled, true);
-  prefs->RegisterBooleanPref(prefs::kDisableSpdy, false);
-  prefs->RegisterBooleanPref(prefs::kHttpThrottlingEnabled, false);
+  prefs->RegisterBooleanPref(prefs::kNetworkPredictionEnabled,
+                             true,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kDisableSpdy,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kHttpThrottlingEnabled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
 }

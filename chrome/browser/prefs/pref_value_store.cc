@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prefs/pref_value_store.h"
 
+#include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 
 PrefValueStore::PrefStoreKeeper::PrefStoreKeeper()
@@ -49,8 +50,10 @@ PrefValueStore::PrefValueStore(PrefStore* managed_platform_prefs,
                                PrefStore* recommended_platform_prefs,
                                PrefStore* recommended_cloud_prefs,
                                PrefStore* default_prefs,
+                               PrefModelAssociator* pref_sync_associator,
                                PrefNotifier* pref_notifier)
-    : pref_notifier_(pref_notifier) {
+    : pref_sync_associator_(pref_sync_associator),
+      pref_notifier_(pref_notifier) {
   InitPrefStore(MANAGED_PLATFORM_STORE, managed_platform_prefs);
   InitPrefStore(MANAGED_CLOUD_STORE, managed_cloud_prefs);
   InitPrefStore(EXTENSION_STORE, extension_prefs);
@@ -74,6 +77,7 @@ PrefValueStore* PrefValueStore::CloneAndSpecialize(
     PrefStore* recommended_platform_prefs,
     PrefStore* recommended_cloud_prefs,
     PrefStore* default_prefs,
+    PrefModelAssociator* pref_sync_associator,
     PrefNotifier* pref_notifier) {
   DCHECK(pref_notifier);
   if (!managed_platform_prefs)
@@ -96,7 +100,7 @@ PrefValueStore* PrefValueStore::CloneAndSpecialize(
   return new PrefValueStore(
       managed_platform_prefs, managed_cloud_prefs, extension_prefs,
       command_line_prefs, user_prefs, recommended_platform_prefs,
-      recommended_cloud_prefs, default_prefs,
+      recommended_cloud_prefs, default_prefs, pref_sync_associator,
       pref_notifier);
 }
 
@@ -129,8 +133,11 @@ void PrefValueStore::NotifyPrefChanged(
   // If the pref is controlled by a higher-priority store, its effective value
   // cannot have changed.
   PrefStoreType controller = ControllingPrefStoreForPref(path);
-  if (controller == INVALID_STORE || controller >= new_store)
+  if (controller == INVALID_STORE || controller >= new_store) {
     pref_notifier_->OnPreferenceChanged(path);
+    if (pref_sync_associator_)
+      pref_sync_associator_->ProcessPrefChange(path);
+  }
 }
 
 bool PrefValueStore::PrefValueInManagedStore(const char* name) const {

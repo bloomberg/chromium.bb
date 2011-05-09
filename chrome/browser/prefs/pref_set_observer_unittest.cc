@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,9 +16,15 @@ class PrefSetObserverTest : public testing::Test {
  public:
   virtual void SetUp() {
     pref_service_.reset(new TestingPrefService);
-    pref_service_->RegisterStringPref(prefs::kHomePage, "http://google.com");
-    pref_service_->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, false);
-    pref_service_->RegisterStringPref(prefs::kApplicationLocale, "");
+    pref_service_->RegisterStringPref(prefs::kHomePage,
+                                      "http://google.com",
+                                      PrefService::UNSYNCABLE_PREF);
+    pref_service_->RegisterBooleanPref(prefs::kHomePageIsNewTabPage,
+                                       false,
+                                       PrefService::UNSYNCABLE_PREF);
+    pref_service_->RegisterStringPref(prefs::kApplicationLocale,
+                                      "",
+                                      PrefService::UNSYNCABLE_PREF);
   }
 
   PrefSetObserver* CreatePrefSetObserver(NotificationObserver* observer) {

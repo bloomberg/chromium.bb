@@ -409,8 +409,7 @@ bool FirstRun::SetOEMFirstRunBubblePref() {
   if (!local_state)
     return false;
   if (!local_state->FindPreference(prefs::kShouldUseOEMFirstRunBubble)) {
-    local_state->RegisterBooleanPref(prefs::kShouldUseOEMFirstRunBubble,
-                                     false);
+    local_state->RegisterBooleanPref(prefs::kShouldUseOEMFirstRunBubble, false);
     local_state->SetBoolean(prefs::kShouldUseOEMFirstRunBubble, true);
   }
   return true;

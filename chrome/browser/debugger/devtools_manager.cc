@@ -36,7 +36,9 @@ DevToolsManager* DevToolsManager::GetInstance() {
 
 // static
 void DevToolsManager::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kDevToolsOpenDocked, true);
+  prefs->RegisterBooleanPref(prefs::kDevToolsOpenDocked,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 DevToolsManager::DevToolsManager()

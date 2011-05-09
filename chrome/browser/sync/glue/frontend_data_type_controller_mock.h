@@ -36,6 +36,10 @@ class FrontendDataTypeControllerMock : public FrontendDataTypeController {
   MOCK_METHOD2(FinishStart, void(StartResult result,
                                  const tracked_objects::Location& from_here));
   MOCK_METHOD0(CleanUpState, void());
+  MOCK_CONST_METHOD0(model_associator, AssociatorInterface*());
+  MOCK_METHOD1(set_model_associator, void(AssociatorInterface* associator));
+  MOCK_CONST_METHOD0(change_processor, ChangeProcessor*());
+  MOCK_METHOD1(set_change_processor, void(ChangeProcessor* processor));
   MOCK_METHOD2(RecordUnrecoverableError, void(const tracked_objects::Location&,
                                               const std::string&));
   MOCK_METHOD1(RecordAssociationTime, void(base::TimeDelta time));

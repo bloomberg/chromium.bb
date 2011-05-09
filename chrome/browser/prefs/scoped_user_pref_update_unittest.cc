@@ -18,7 +18,7 @@ class ScopedUserPrefUpdateTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    prefs_.RegisterDictionaryPref(kPref);
+    prefs_.RegisterDictionaryPref(kPref, PrefService::UNSYNCABLE_PREF);
     registrar_.Init(&prefs_);
     registrar_.Add(kPref, &observer_);
   }

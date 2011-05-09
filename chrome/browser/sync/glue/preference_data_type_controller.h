@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller.h"
 
 namespace browser_sync {
@@ -21,16 +22,24 @@ class PreferenceDataTypeController : public FrontendDataTypeController {
   virtual ~PreferenceDataTypeController();
 
   // FrontendDataTypeController implementation.
-  virtual syncable::ModelType type() const;
+  virtual syncable::ModelType type() const OVERRIDE;
+  virtual AssociatorInterface* model_associator() const OVERRIDE;
+  virtual void set_model_associator(AssociatorInterface* associator) OVERRIDE;
 
  private:
   // FrontendDataTypeController implementations.
-  virtual void CreateSyncComponents();
+  // TODO(zea): Remove this once everything uses the NewAssociatorInterface.
+  virtual void CreateSyncComponents() OVERRIDE;
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
-      const std::string& message);
-  virtual void RecordAssociationTime(base::TimeDelta time);
-  virtual void RecordStartFailure(StartResult result);
+      const std::string& message) OVERRIDE;
+  virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE;
+  virtual void RecordStartFailure(StartResult result) OVERRIDE;
+
+  // Owned by pref service.
+  // TODO(zea): Make this a SyncableService once AssociatorInterface is
+  // deprecated.
+  AssociatorInterface* pref_sync_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PreferenceDataTypeController);
 };

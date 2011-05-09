@@ -391,7 +391,9 @@ BrowserActionsContainer::~BrowserActionsContainer() {
 
 // Static.
 void BrowserActionsContainer::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kBrowserActionContainerWidth, 0);
+  prefs->RegisterIntegerPref(prefs::kBrowserActionContainerWidth,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 void BrowserActionsContainer::Init() {

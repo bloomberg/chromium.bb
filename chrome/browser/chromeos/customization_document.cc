@@ -264,7 +264,8 @@ ServicesCustomizationDocument* ServicesCustomizationDocument::GetInstance() {
 
 // static
 void ServicesCustomizationDocument::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterBooleanPref(kServicesCustomizationAppliedPref, false);
+  local_state->RegisterBooleanPref(kServicesCustomizationAppliedPref, false,
+                                   PrefService::UNSYNCABLE_PREF);
 }
 
 // static

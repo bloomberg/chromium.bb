@@ -33,109 +33,154 @@ Preferences::~Preferences() {}
 
 // static
 void Preferences::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kTapToClickEnabled, false);
-  prefs->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled, false);
-  prefs->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled, false);
+  prefs->RegisterBooleanPref(prefs::kTapToClickEnabled,
+                             false,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
   // Check if the accessibility pref is already registered, which can happen
   // in WizardController::RegisterPrefs. We still want to try to register
   // the pref here in case of Chrome/Linux with ChromeOS=1.
   if (prefs->FindPreference(prefs::kAccessibilityEnabled) == NULL) {
-    prefs->RegisterBooleanPref(prefs::kAccessibilityEnabled, false);
+    prefs->RegisterBooleanPref(prefs::kAccessibilityEnabled,
+                               false,
+                               PrefService::UNSYNCABLE_PREF);
   }
-  prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 3);
-  // Set the default based on the hour clock type of the current locale.
+  prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity,
+                             3,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kUse24HourClock,
-                             base::GetHourClockType() == base::k24HourClock);
-  prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod, "");
-  prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod, "");
+                             base::GetHourClockType() == base::k24HourClock,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod,
+                            "",
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod,
+                            "",
+                            PrefService::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kLanguageHotkeyNextEngineInMenu,
-                            language_prefs::kHotkeyNextEngineInMenu);
+                            language_prefs::kHotkeyNextEngineInMenu,
+                            PrefService::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kLanguageHotkeyPreviousEngine,
-                            language_prefs::kHotkeyPreviousEngine);
+                            language_prefs::kHotkeyPreviousEngine,
+                            PrefService::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kLanguagePreferredLanguages,
-                            kFallbackInputMethodLocale);
-  prefs->RegisterStringPref(
-      prefs::kLanguagePreloadEngines,
-      input_method::GetHardwareInputMethodId());
+                            kFallbackInputMethodLocale,
+                            PrefService::SYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
+                            input_method::GetHardwareInputMethodId(),
+                            PrefService::SYNCABLE_PREF);
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(
         language_prefs::kChewingBooleanPrefs[i].pref_name,
-        language_prefs::kChewingBooleanPrefs[i].default_pref_value);
+        language_prefs::kChewingBooleanPrefs[i].default_pref_value,
+        PrefService::UNSYNCABLE_PREF);
   }
   for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs; ++i) {
     prefs->RegisterStringPref(
         language_prefs::kChewingMultipleChoicePrefs[i].pref_name,
-        language_prefs::kChewingMultipleChoicePrefs[i].default_pref_value);
+        language_prefs::kChewingMultipleChoicePrefs[i].default_pref_value,
+        PrefService::UNSYNCABLE_PREF);
   }
   prefs->RegisterIntegerPref(
       language_prefs::kChewingHsuSelKeyType.pref_name,
-      language_prefs::kChewingHsuSelKeyType.default_pref_value);
+      language_prefs::kChewingHsuSelKeyType.default_pref_value,
+      PrefService::UNSYNCABLE_PREF);
 
   for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
     prefs->RegisterIntegerPref(
         language_prefs::kChewingIntegerPrefs[i].pref_name,
-        language_prefs::kChewingIntegerPrefs[i].default_pref_value);
+        language_prefs::kChewingIntegerPrefs[i].default_pref_value,
+        PrefService::UNSYNCABLE_PREF);
   }
   prefs->RegisterStringPref(
       prefs::kLanguageHangulKeyboard,
-      language_prefs::kHangulKeyboardNameIDPairs[0].keyboard_id);
+      language_prefs::kHangulKeyboardNameIDPairs[0].keyboard_id,
+      PrefService::SYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kLanguageHangulHanjaKeys,
-                            language_prefs::kHangulHanjaKeys);
+                            language_prefs::kHangulHanjaKeys,
+                            PrefService::UNSYNCABLE_PREF);
   for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(
         language_prefs::kPinyinBooleanPrefs[i].pref_name,
-        language_prefs::kPinyinBooleanPrefs[i].default_pref_value);
+        language_prefs::kPinyinBooleanPrefs[i].default_pref_value,
+        PrefService::UNSYNCABLE_PREF);
   }
   for (size_t i = 0; i < language_prefs::kNumPinyinIntegerPrefs; ++i) {
     prefs->RegisterIntegerPref(
         language_prefs::kPinyinIntegerPrefs[i].pref_name,
-        language_prefs::kPinyinIntegerPrefs[i].default_pref_value);
+        language_prefs::kPinyinIntegerPrefs[i].default_pref_value,
+        PrefService::UNSYNCABLE_PREF);
   }
   prefs->RegisterIntegerPref(
       language_prefs::kPinyinDoublePinyinSchema.pref_name,
-      language_prefs::kPinyinDoublePinyinSchema.default_pref_value);
+      language_prefs::kPinyinDoublePinyinSchema.default_pref_value,
+      PrefService::UNSYNCABLE_PREF);
 
   for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(
         language_prefs::kMozcBooleanPrefs[i].pref_name,
-        language_prefs::kMozcBooleanPrefs[i].default_pref_value);
+        language_prefs::kMozcBooleanPrefs[i].default_pref_value,
+        PrefService::UNSYNCABLE_PREF);
   }
   for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
     prefs->RegisterStringPref(
         language_prefs::kMozcMultipleChoicePrefs[i].pref_name,
-        language_prefs::kMozcMultipleChoicePrefs[i].default_pref_value);
+        language_prefs::kMozcMultipleChoicePrefs[i].default_pref_value,
+        PrefService::UNSYNCABLE_PREF);
   }
   for (size_t i = 0; i < language_prefs::kNumMozcIntegerPrefs; ++i) {
     prefs->RegisterIntegerPref(
         language_prefs::kMozcIntegerPrefs[i].pref_name,
-        language_prefs::kMozcIntegerPrefs[i].default_pref_value);
+        language_prefs::kMozcIntegerPrefs[i].default_pref_value,
+        PrefService::UNSYNCABLE_PREF);
   }
   prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapSearchKeyTo,
-                             input_method::kSearchKey);
+                             input_method::kSearchKey,
+                             PrefService::SYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapControlKeyTo,
-                             input_method::kLeftControlKey);
+                             input_method::kLeftControlKey,
+                             PrefService::SYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapAltKeyTo,
-                             input_method::kLeftAltKey);
-  prefs->RegisterBooleanPref(prefs::kLanguageXkbAutoRepeatEnabled, true);
+                             input_method::kLeftAltKey,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kLanguageXkbAutoRepeatEnabled,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kLanguageXkbAutoRepeatDelay,
-                             language_prefs::kXkbAutoRepeatDelayInMs);
+                             language_prefs::kXkbAutoRepeatDelayInMs,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kLanguageXkbAutoRepeatInterval,
-                             language_prefs::kXkbAutoRepeatIntervalInMs);
+                             language_prefs::kXkbAutoRepeatIntervalInMs,
+                             PrefService::UNSYNCABLE_PREF);
 
   // Screen lock default to off.
-  prefs->RegisterBooleanPref(prefs::kEnableScreenLock, false);
+  prefs->RegisterBooleanPref(prefs::kEnableScreenLock,
+                             false,
+                             PrefService::SYNCABLE_PREF);
 
   // Mobile plan notifications default to on.
-  prefs->RegisterBooleanPref(prefs::kShowPlanNotifications, true);
+  prefs->RegisterBooleanPref(prefs::kShowPlanNotifications,
+                             true,
+                             PrefService::SYNCABLE_PREF);
 
   // 3G first-time usage promo will be shown at least once.
-  prefs->RegisterBooleanPref(prefs::kShow3gPromoNotification, true);
+  prefs->RegisterBooleanPref(prefs::kShow3gPromoNotification,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
 
   // Carrier deal notification shown count defaults to 0.
-  prefs->RegisterIntegerPref(prefs::kCarrierDealPromoShown, 0);
+  prefs->RegisterIntegerPref(prefs::kCarrierDealPromoShown,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
 
   // The map of timestamps of the last used file browser handlers.
-  prefs->RegisterDictionaryPref(prefs::kLastUsedFileBrowserHandlers);
+  prefs->RegisterDictionaryPref(prefs::kLastUsedFileBrowserHandlers,
+                                PrefService::UNSYNCABLE_PREF);
 }
 
 void Preferences::Init(PrefService* prefs) {

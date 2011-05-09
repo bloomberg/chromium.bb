@@ -644,7 +644,9 @@ std::wstring InputMethodMenu::GetTextForMenu(
 }
 
 void InputMethodMenu::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterStringPref(language_prefs::kPreferredKeyboardLayout, "");
+  local_state->RegisterStringPref(language_prefs::kPreferredKeyboardLayout,
+                                  "",
+                                  PrefService::UNSYNCABLE_PREF);
 }
 
 void InputMethodMenu::Observe(NotificationType type,

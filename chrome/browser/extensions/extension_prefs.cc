@@ -1544,12 +1544,20 @@ bool ExtensionPrefs::HasIncognitoPrefValue(const std::string& pref_key) {
 
 // static
 void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(kExtensionsPref);
-  prefs->RegisterListPref(kExtensionToolbar);
-  prefs->RegisterIntegerPref(prefs::kExtensionToolbarSize, -1);
-  prefs->RegisterDictionaryPref(kExtensionsBlacklistUpdate);
-  prefs->RegisterListPref(prefs::kExtensionInstallAllowList);
-  prefs->RegisterListPref(prefs::kExtensionInstallDenyList);
-  prefs->RegisterListPref(prefs::kExtensionInstallForceList);
-  prefs->RegisterStringPref(kWebStoreLogin, std::string() /* default_value */);
+  prefs->RegisterDictionaryPref(kExtensionsPref, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(kExtensionToolbar, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kExtensionToolbarSize,
+                             -1,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(kExtensionsBlacklistUpdate,
+                                PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kExtensionInstallAllowList,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kExtensionInstallDenyList,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kExtensionInstallForceList,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(kWebStoreLogin,
+                            std::string() /* default_value */,
+                            PrefService::UNSYNCABLE_PREF);
 }

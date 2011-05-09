@@ -242,9 +242,15 @@ void ProfileSyncService::RegisterPreferences() {
   PrefService* pref_service = profile_->GetPrefs();
   if (pref_service->FindPreference(prefs::kSyncLastSyncedTime))
     return;
-  pref_service->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
-  pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);
-  pref_service->RegisterBooleanPref(prefs::kSyncSuppressStart, false);
+  pref_service->RegisterInt64Pref(prefs::kSyncLastSyncedTime,
+                                  0,
+                                  PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted,
+                                    false,
+                                    PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterBooleanPref(prefs::kSyncSuppressStart,
+                                    false,
+                                    PrefService::UNSYNCABLE_PREF);
 
   // If you've never synced before, or if you're using Chrome OS, all datatypes
   // are on by default.
@@ -257,22 +263,46 @@ void ProfileSyncService::RegisterPreferences() {
       !pref_service->HasPrefPath(prefs::kSyncHasSetupCompleted);
 #endif
 
-  pref_service->RegisterBooleanPref(prefs::kSyncBookmarks, true);
-  pref_service->RegisterBooleanPref(prefs::kSyncPasswords, enable_by_default);
-  pref_service->RegisterBooleanPref(prefs::kSyncPreferences, enable_by_default);
-  pref_service->RegisterBooleanPref(prefs::kSyncAutofill, enable_by_default);
-  pref_service->RegisterBooleanPref(prefs::kSyncThemes, enable_by_default);
-  pref_service->RegisterBooleanPref(prefs::kSyncTypedUrls, enable_by_default);
-  pref_service->RegisterBooleanPref(prefs::kSyncExtensions, enable_by_default);
-  pref_service->RegisterBooleanPref(prefs::kSyncApps, enable_by_default);
-  pref_service->RegisterBooleanPref(prefs::kSyncSessions, enable_by_default);
+  pref_service->RegisterBooleanPref(prefs::kSyncBookmarks,
+                                    true,
+                                    PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterBooleanPref(prefs::kSyncPasswords,
+                                    enable_by_default,
+                                    PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterBooleanPref(prefs::kSyncPreferences,
+                                    enable_by_default,
+                                    PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterBooleanPref(prefs::kSyncAutofill,
+                                    enable_by_default,
+                                    PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterBooleanPref(prefs::kSyncThemes,
+                                    enable_by_default,
+                                    PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterBooleanPref(prefs::kSyncTypedUrls,
+                                    enable_by_default,
+                                    PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterBooleanPref(prefs::kSyncExtensions,
+                                    enable_by_default,
+                                    PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterBooleanPref(prefs::kSyncApps,
+                                    enable_by_default,
+                                    PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterBooleanPref(prefs::kSyncSessions,
+                                    enable_by_default,
+                                    PrefService::UNSYNCABLE_PREF);
   pref_service->RegisterBooleanPref(prefs::kKeepEverythingSynced,
-      enable_by_default);
-  pref_service->RegisterBooleanPref(prefs::kSyncManaged, false);
-  pref_service->RegisterStringPref(prefs::kEncryptionBootstrapToken, "");
+                                    enable_by_default,
+                                    PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterBooleanPref(prefs::kSyncManaged,
+                                    false,
+                                    PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterStringPref(prefs::kEncryptionBootstrapToken,
+                                   "",
+                                   PrefService::UNSYNCABLE_PREF);
 
   pref_service->RegisterBooleanPref(prefs::kSyncAutofillProfile,
-      enable_by_default);
+                                    enable_by_default,
+                                    PrefService::UNSYNCABLE_PREF);
 }
 
 void ProfileSyncService::ClearPreferences() {
@@ -1099,16 +1129,15 @@ void ProfileSyncService::ActivateDataType(
     return;
   }
   DCHECK(backend_initialized_);
-  change_processor->Start(profile(), backend_->GetUserShare());
   backend_->ActivateDataType(data_type_controller, change_processor);
 }
 
 void ProfileSyncService::DeactivateDataType(
     DataTypeController* data_type_controller,
     ChangeProcessor* change_processor) {
-  change_processor->Stop();
-  if (backend_.get())
-    backend_->DeactivateDataType(data_type_controller, change_processor);
+  if (!backend_.get())
+    return;
+  backend_->DeactivateDataType(data_type_controller, change_processor);
 }
 
 void ProfileSyncService::SetPassphrase(const std::string& passphrase,

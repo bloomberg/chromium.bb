@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,11 +16,17 @@ class ManagedPrefsBannerBaseTest : public testing::Test {
  public:
   virtual void SetUp() {
     user_prefs_.reset(new TestingPrefService);
-    user_prefs_->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, false);
-    user_prefs_->RegisterBooleanPref(prefs::kSearchSuggestEnabled, false);
+    user_prefs_->RegisterBooleanPref(prefs::kHomePageIsNewTabPage,
+                                     false,
+                                     PrefService::UNSYNCABLE_PREF);
+    user_prefs_->RegisterBooleanPref(prefs::kSearchSuggestEnabled,
+                                     false,
+                                     PrefService::UNSYNCABLE_PREF);
     local_state_.reset(new TestingPrefService);
-    local_state_->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, false);
-    local_state_->RegisterBooleanPref(prefs::kMetricsReportingEnabled, false);
+    local_state_->RegisterBooleanPref(prefs::kHomePageIsNewTabPage,
+                                      false);
+    local_state_->RegisterBooleanPref(prefs::kMetricsReportingEnabled,
+                                      false);
   }
 
   scoped_ptr<TestingPrefService> local_state_;

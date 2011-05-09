@@ -35,9 +35,11 @@ namespace content_settings {
 // static
 void NotificationProvider::RegisterUserPrefs(PrefService* user_prefs) {
   if (!user_prefs->FindPreference(prefs::kDesktopNotificationAllowedOrigins))
-    user_prefs->RegisterListPref(prefs::kDesktopNotificationAllowedOrigins);
+    user_prefs->RegisterListPref(prefs::kDesktopNotificationAllowedOrigins,
+                                 PrefService::SYNCABLE_PREF);
   if (!user_prefs->FindPreference(prefs::kDesktopNotificationDeniedOrigins))
-    user_prefs->RegisterListPref(prefs::kDesktopNotificationDeniedOrigins);
+    user_prefs->RegisterListPref(prefs::kDesktopNotificationDeniedOrigins,
+                                 PrefService::SYNCABLE_PREF);
 }
 
 // TODO(markusheintz): Re-factoring in progress. Do not move or touch the

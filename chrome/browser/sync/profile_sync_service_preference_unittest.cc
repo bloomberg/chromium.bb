@@ -9,12 +9,12 @@
 #include "base/stl_util-inl.h"
 #include "base/string_piece.h"
 #include "base/task.h"
+#include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/preference_change_processor.h"
+#include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/glue/preference_data_type_controller.h"
-#include "chrome/browser/sync/glue/preference_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
@@ -29,9 +29,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::JSONReader;
-using browser_sync::PreferenceChangeProcessor;
+using browser_sync::GenericChangeProcessor;
 using browser_sync::PreferenceDataTypeController;
-using browser_sync::PreferenceModelAssociator;
 using browser_sync::SyncBackendHost;
 using sync_api::SyncManager;
 using testing::_;
@@ -57,7 +56,8 @@ class ProfileSyncServicePreferenceTest
     prefs_ = profile_->GetTestingPrefService();
 
     prefs_->RegisterStringPref(not_synced_preference_name_.c_str(),
-                               not_synced_preference_default_value_);
+                               not_synced_preference_default_value_,
+                               PrefService::UNSYNCABLE_PREF);
   }
 
   virtual void TearDown() {
@@ -72,12 +72,10 @@ class ProfileSyncServicePreferenceTest
 
     service_.reset(new TestProfileSyncService(
         &factory_, profile_.get(), "test", false, task));
-
-    // Register the preference data type.
     model_associator_ =
-        new PreferenceModelAssociator(service_.get());
-    change_processor_ = new PreferenceChangeProcessor(model_associator_,
-                                                      service_.get());
+        reinterpret_cast<PrefModelAssociator*>(prefs_->GetSyncableService());
+    change_processor_ = new GenericChangeProcessor(model_associator_,
+                                                   service_.get());
     EXPECT_CALL(factory_, CreatePreferenceSyncComponents(_, _)).
         WillOnce(Return(ProfileSyncFactory::SyncComponents(
             model_associator_, change_processor_)));
@@ -85,12 +83,13 @@ class ProfileSyncServicePreferenceTest
     EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
         WillOnce(ReturnNewDataTypeManager());
 
-    service_->RegisterDataTypeController(
-        new PreferenceDataTypeController(&factory_,
-                                         profile_.get(),
-                                         service_.get()));
+    dtc_ = new PreferenceDataTypeController(&factory_,
+                                            profile_.get(),
+                                            service_.get());
+    service_->RegisterDataTypeController(dtc_);
     profile_->GetTokenService()->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token");
+
     service_->Initialize();
     MessageLoop::current()->Run();
     return true;
@@ -123,7 +122,7 @@ class ProfileSyncServicePreferenceTest
   int64 WriteSyncedValue(const std::string& name,
                          const Value& value,
                          sync_api::WriteNode* node) {
-    if (!PreferenceModelAssociator::WritePreferenceToNode(name, value, node))
+    if (!PrefModelAssociator::WritePreferenceToNode(name, value, node))
       return sync_api::kInvalidId;
     return node->GetId();
   }
@@ -131,8 +130,10 @@ class ProfileSyncServicePreferenceTest
   int64 SetSyncedValue(const std::string& name, const Value& value) {
     sync_api::WriteTransaction trans(service_->GetUserShare());
     sync_api::ReadNode root(&trans);
-    if (!root.InitByTagLookup(browser_sync::kPreferencesTag))
+    if (!root.InitByTagLookup(
+        syncable::ModelTypeToRootTag(syncable::PREFERENCES))) {
       return sync_api::kInvalidId;
+    }
 
     sync_api::WriteNode tag_node(&trans);
     sync_api::WriteNode node(&trans);
@@ -174,8 +175,10 @@ class ProfileSyncServicePreferenceTest
   scoped_ptr<TestingProfile> profile_;
   TestingPrefService* prefs_;
 
-  PreferenceModelAssociator* model_associator_;
-  PreferenceChangeProcessor* change_processor_;
+  PreferenceDataTypeController* dtc_;
+  PrefModelAssociator* model_associator_;
+  GenericChangeProcessor* change_processor_;
+
   std::string example_url0_;
   std::string example_url1_;
   std::string example_url2_;
@@ -223,7 +226,7 @@ TEST_F(ProfileSyncServicePreferenceTest, WritePreferenceToNode) {
   EXPECT_TRUE(node.InitByClientTagLookup(syncable::PREFERENCES,
                                          prefs::kHomePage));
 
-  EXPECT_TRUE(PreferenceModelAssociator::WritePreferenceToNode(
+  EXPECT_TRUE(PrefModelAssociator::WritePreferenceToNode(
       pref->name(), *pref->GetValue(), &node));
   EXPECT_EQ(UTF8ToWide(prefs::kHomePage), node.GetTitle());
   const sync_pb::PreferenceSpecifics& specifics(node.GetPreferenceSpecifics());

@@ -58,10 +58,18 @@ InstantController::~InstantController() {
 
 // static
 void InstantController::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kInstantConfirmDialogShown, false);
-  prefs->RegisterBooleanPref(prefs::kInstantEnabled, false);
-  prefs->RegisterBooleanPref(prefs::kInstantEnabledOnce, false);
-  prefs->RegisterInt64Pref(prefs::kInstantEnabledTime, false);
+  prefs->RegisterBooleanPref(prefs::kInstantConfirmDialogShown,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kInstantEnabled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kInstantEnabledOnce,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterInt64Pref(prefs::kInstantEnabledTime,
+                           false,
+                           PrefService::UNSYNCABLE_PREF);
   PromoCounter::RegisterUserPrefs(prefs, prefs::kInstantPromo);
 }
 
