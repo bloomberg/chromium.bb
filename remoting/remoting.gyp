@@ -4,7 +4,23 @@
 
 {
   'variables': {
+    # TODO(dmaclach): can we pick this up some other way? Right now it's
+    # duplicated from chrome.gyp
     'chromium_code': 1,
+    'conditions': [
+      ['OS=="mac"', {
+        'conditions': [
+          ['branding=="Chrome"', {
+            'mac_bundle_id': 'com.google.Chrome',
+            'mac_creator': 'rimZ',
+          }, {  # else: branding!="Chrome"
+            'mac_bundle_id': 'org.chromium.Chromium',
+            'mac_creator': 'Cr24',
+          }],  # branding
+        ],  # conditions
+
+      }],
+    ],
   },
 
   'target_defaults': {
@@ -59,12 +75,11 @@
         },  # end of target 'chromoting_x11_client'
       ],
     }],  # end of OS conditions for x11 client
-
   ],  # end of 'conditions'
 
   'targets': [
     {
-      'target_name': 'chromoting_plugin',
+      'target_name': 'chromoting_client_plugin',
       'type': 'static_library',
       'defines': [
         'HAVE_STDINT_H',  # Required by on2_integer.h
@@ -108,8 +123,40 @@
         '../media/base/yuv_row_win.cc',
         '../media/base/yuv_row_posix.cc',
       ],
-    },  # end of target 'chromoting_plugin'
-
+    },  # end of target 'chromoting_client_plugin'
+    {
+      'target_name': 'chromoting_host_plugin',
+      'type': 'loadable_module',
+      'defines': [
+      ],
+      'dependencies': [
+        'chromoting_base',
+        'chromoting_host',
+        '../third_party/npapi/npapi.gyp:npapi',
+      ],
+      'sources': [
+        'host/host_plugin.cc',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'mac_bundle': 1,
+          'xcode_settings': {
+            'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
+            'INFOPLIST_FILE': 'host/host_plugin-Info.plist',
+            'WRAPPER_EXTENSION': 'plugin',
+          },
+          # TODO(mark): Come up with a fancier way to do this.  It should
+          # only be necessary to list framework-Info.plist once, not the
+          # three times it is listed here.
+          'mac_bundle_resources': [
+            'host/host_plugin-Info.plist',
+          ],
+          'mac_bundle_resources!': [
+            'host/host_plugin-Info.plist',
+          ],
+        }],
+      ],
+    },  # end of target 'chromoting_host_plugin'
     {
       'target_name': 'chromoting_base',
       'type': '<(library)',

@@ -5,4 +5,5 @@ include_rules = [
 
   "+remoting/protocol",
   "+remoting/jingle_glue",
+  "+third_party/npapi",
 ]
