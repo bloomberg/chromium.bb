@@ -67,9 +67,13 @@ git_url -- git repository URL for our manifests.
                ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal
 
 manifest_version -- URL to git repo to store per-build manifest.
+                    Usually None or
+                    MANIFEST_URL
 """
 
 GS_PATH_DEFAULT = 'default'
+MANIFEST_URL='ssh://gerrit-int.chromium.org:29419/chromeos/manifest-versions'
+
 
 default = {
   # 'board' No default value
@@ -183,6 +187,7 @@ release = {
   'gs_path' : None,
 
   'archive_build_debug' : True,
+  'manifest_version' : MANIFEST_URL,
 
 # --official
 # --officialversion
@@ -204,7 +209,7 @@ internal_full = {
   'quick_unit' : False,
 
   'vm_tests' : True,
-  'quick_vm' : False,
+  'quick_vm' : True, # TODO, turned off for testing
 
   'build_type': 'full',
   'test_mod' : True,
@@ -213,9 +218,14 @@ internal_full = {
 
   'git_url' : 'ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal',
 
+  # Enable these two temporarily for Bot Testing
+  'push_image' : True,
+  'upload_symbols' : True,
+
   'gs_path' : None,
 
   'archive_build_debug' : True,
+  'manifest_version' : MANIFEST_URL,
 
   # cbuild --official
 }
