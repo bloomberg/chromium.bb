@@ -46,6 +46,8 @@ class MockFileSystemPathManager : public FileSystemPathManager {
   FilePath test_filesystem_path_;
 };
 
+}  // namespace (anonymous)
+
 class MockQuotaManager : public QuotaManager {
  public:
   MockQuotaManager(const FilePath& filesystem_path)
@@ -69,8 +71,6 @@ class MockQuotaManager : public QuotaManager {
  private:
   int64 usage_;
 };
-
-}  // namespace (anonymous)
 
 class QuotaFileUtilTest : public testing::Test {
  public:
