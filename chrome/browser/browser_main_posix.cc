@@ -5,8 +5,10 @@
 #include "chrome/browser/browser_main_posix.h"
 
 #include <errno.h>
+#include <limits.h>
 #include <signal.h>
 #include <sys/resource.h>
+#include <unistd.h>
 
 #include <string>
 
@@ -14,7 +16,6 @@
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "base/threading/platform_thread.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
@@ -89,6 +90,27 @@ ShutdownDetector::ShutdownDetector(int shutdown_fd)
   CHECK_NE(shutdown_fd_, -1);
 }
 
+
+// These functions are used to help us diagnose crash dumps that happen
+// during the shutdown process.
+NOINLINE void ShutdownFDReadError() {
+  // Ensure function isn't optimized away.
+  asm("");
+  sleep(UINT_MAX);
+}
+
+NOINLINE void ShutdownFDClosedError() {
+  // Ensure function isn't optimized away.
+  asm("");
+  sleep(UINT_MAX);
+}
+
+NOINLINE void CloseAllBrowsersAndExitPosted() {
+  // Ensure function isn't optimized away.
+  asm("");
+  sleep(UINT_MAX);
+}
+
 void ShutdownDetector::ThreadMain() {
   base::PlatformThread::SetName("CrShutdownDetector");
 
@@ -102,9 +124,11 @@ void ShutdownDetector::ThreadMain() {
              sizeof(signal) - bytes_read));
     if (ret < 0) {
       NOTREACHED() << "Unexpected error: " << strerror(errno);
+      ShutdownFDReadError();
       break;
     } else if (ret == 0) {
       NOTREACHED() << "Unexpected closure of shutdown pipe.";
+      ShutdownFDClosedError();
       break;
     }
     bytes_read += ret;
@@ -134,6 +158,7 @@ void ShutdownDetector::ThreadMain() {
     RAW_LOG(WARNING, "Still here, exiting really ungracefully.");
     _exit(signal | (1 << 7));
   }
+  CloseAllBrowsersAndExitPosted();
 }
 
 // Sets the file descriptor soft limit to |max_descriptors| or the OS hard
