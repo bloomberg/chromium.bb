@@ -691,7 +691,7 @@ void ResourceDispatcherHost::OnFollowRedirect(
 ResourceHandler* ResourceDispatcherHost::CreateSafeBrowsingResourceHandler(
     ResourceHandler* handler, int child_id, int route_id,
     ResourceType::Type resource_type) {
-  return new SafeBrowsingResourceHandler(
+  return SafeBrowsingResourceHandler::Create(
       handler, child_id, route_id, resource_type, safe_browsing_, this);
 }
 

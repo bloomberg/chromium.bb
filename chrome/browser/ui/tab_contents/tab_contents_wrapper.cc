@@ -77,8 +77,8 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(contents));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
-  safebrowsing_detection_host_.reset(new safe_browsing::ClientSideDetectionHost(
-      contents));
+  safebrowsing_detection_host_.reset(
+      safe_browsing::ClientSideDetectionHost::Create(contents));
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
   print_view_manager_.reset(new printing::PrintViewManager(contents));

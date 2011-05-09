@@ -252,6 +252,12 @@ class CsdClient : public SafeBrowsingService::Client {
   DISALLOW_COPY_AND_ASSIGN(CsdClient);
 };
 
+// static
+ClientSideDetectionHost* ClientSideDetectionHost::Create(
+    TabContents* tab) {
+  return new ClientSideDetectionHost(tab);
+}
+
 ClientSideDetectionHost::ClientSideDetectionHost(TabContents* tab)
     : TabContentsObserver(tab),
       csd_service_(g_browser_process->safe_browsing_detection_service()),

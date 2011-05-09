@@ -22,6 +22,19 @@ static const int kCheckUrlTimeoutMs = 5000;
 // TODO(eroman): Downgrade these CHECK()s to DCHECKs once there is more
 //               unit test coverage.
 
+// static
+SafeBrowsingResourceHandler* SafeBrowsingResourceHandler::Create(
+    ResourceHandler* handler,
+    int render_process_host_id,
+    int render_view_id,
+    ResourceType::Type resource_type,
+    SafeBrowsingService* safe_browsing,
+    ResourceDispatcherHost* resource_dispatcher_host) {
+  return new SafeBrowsingResourceHandler(
+      handler, render_process_host_id, render_view_id,
+      resource_type, safe_browsing, resource_dispatcher_host);
+}
+
 SafeBrowsingResourceHandler::SafeBrowsingResourceHandler(
     ResourceHandler* handler,
     int render_process_host_id,
