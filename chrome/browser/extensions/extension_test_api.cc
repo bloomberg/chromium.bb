@@ -50,6 +50,7 @@ ExtensionTestLogFunction::~ExtensionTestLogFunction() {}
 bool ExtensionTestLogFunction::RunImpl() {
   std::string message;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &message));
+  VLOG(1) << message;
   return true;
 }
 
