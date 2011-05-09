@@ -96,9 +96,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   ASSERT_TRUE(app_browser->is_app());
 
   // Close the app panel.
+  ui_test_utils::WindowedNotificationObserver signal(
+      NotificationType::BROWSER_CLOSED,
+      Source<Browser>(app_browser));
+
   app_browser->CloseWindow();
-  ui_test_utils::WaitForNotificationFrom(NotificationType::BROWSER_CLOSED,
-                                           Source<Browser>(app_browser));
+  signal.Wait();
 
   // Unload the extension.
   UninstallExtension(app_id);

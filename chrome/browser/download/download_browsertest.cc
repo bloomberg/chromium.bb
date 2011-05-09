@@ -31,14 +31,13 @@
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/page_transition_types.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-// Variation of DownloadsCompleteObserver from ui_test_utils.cc; the
-// specifically targeted download tests need finer granularity on waiting.
 // Construction of this class defines a system state, based on some number
 // of downloads being seen in a particular state + other events that
 // may occur in the download system.  That state will be recorded if it
@@ -391,8 +390,6 @@ class CancelTestDataCollector
   DISALLOW_COPY_AND_ASSIGN(CancelTestDataCollector);
 };
 
-}  // namespace
-
 class DownloadTest : public InProcessBrowserTest {
  public:
   enum SelectExpectation {
@@ -400,6 +397,10 @@ class DownloadTest : public InProcessBrowserTest {
     EXPECT_NOTHING,
     EXPECT_SELECT_DIALOG
   };
+
+  DownloadTest() {
+    EnableDOMAutomation();
+  }
 
   // Returning false indicates a failure of the setup, and should be asserted
   // in the caller.
@@ -924,15 +925,20 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
   bool is_shelf_visible = IsDownloadUIVisible(incognito);
   EXPECT_TRUE(is_shelf_visible);
 
-  // Close the Incognito window and don't crash.
-  incognito->CloseWindow();
 #if !defined(OS_MACOSX)
   // On Mac OS X, the UI window close is delayed until the outermost
   // message loop runs.  So it isn't possible to get a BROWSER_CLOSED
   // notification inside of a test.
-  ui_test_utils::WaitForNotificationFrom(NotificationType::BROWSER_CLOSED,
-                                         Source<Browser>(incognito));
+  ui_test_utils::WindowedNotificationObserver signal(
+      NotificationType::BROWSER_CLOSED,
+      Source<Browser>(incognito));
+#endif
 
+  // Close the Incognito window and don't crash.
+  incognito->CloseWindow();
+
+#if !defined(OS_MACOSX)
+  signal.Wait();
   ExpectWindowCountAfterDownload(1);
 #endif
 
@@ -1180,14 +1186,20 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   EXPECT_EQ(1, download_browser->tab_count());
   EXPECT_TRUE(IsDownloadUIVisible(download_browser));
 
-  // Close the new window.
-  download_browser->CloseWindow();
 #if !defined(OS_MACOSX)
   // On Mac OS X, the UI window close is delayed until the outermost
   // message loop runs.  So it isn't possible to get a BROWSER_CLOSED
   // notification inside of a test.
-  ui_test_utils::WaitForNotificationFrom(NotificationType::BROWSER_CLOSED,
-                                         Source<Browser>(download_browser));
+  ui_test_utils::WindowedNotificationObserver signal(
+      NotificationType::BROWSER_CLOSED,
+      Source<Browser>(download_browser));
+#endif
+
+  // Close the new window.
+  download_browser->CloseWindow();
+
+#if !defined(OS_MACOSX)
+  signal.Wait();
   EXPECT_EQ(first_browser, browser());
   ExpectWindowCountAfterDownload(1);
 #endif
@@ -1306,3 +1318,58 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   EXPECT_EQ(origin_size, info.total_bytes);
   EXPECT_EQ(DownloadItem::COMPLETE, info.state);
 }
+
+// Test for crbug.com/14505. This tests that chrome:// urls are still functional
+// after download of a file while viewing another chrome://.
+IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
+  ASSERT_TRUE(InitialSetup(false));
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
+  GURL flags_url(chrome::kAboutFlagsURL);
+  GURL extensions_url(chrome::kChromeUIExtensionsURL);
+
+  ui_test_utils::NavigateToURL(browser(), flags_url);
+  DownloadAndWait(browser(), download_url, EXPECT_NO_SELECT_DIALOG);
+  ui_test_utils::NavigateToURL(browser(), extensions_url);
+  TabContents* contents = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(contents);
+  bool webui_responded = false;
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      contents->render_view_host(),
+      L"",
+      L"window.domAutomationController.send(window.webui_responded_);",
+      &webui_responded));
+  EXPECT_TRUE(webui_responded);
+}
+
+// Test for crbug.com/12745. This tests that if a download is initiated from
+// a chrome:// page that has registered and onunload handler, the browser
+// will be able to close.
+IN_PROC_BROWSER_TEST_F(DownloadTest,
+                       BrowserCloseAfterDownload) {
+  GURL downloads_url(chrome::kAboutFlagsURL);
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
+
+  ui_test_utils::NavigateToURL(browser(), downloads_url);
+  TabContents* contents = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(contents);
+  bool result = false;
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      contents->render_view_host(),
+      L"",
+      L"window.onunload = function() { var do_nothing = 0; }; "
+      L"window.domAutomationController.send(true);",
+      &result));
+  EXPECT_TRUE(result);
+
+  DownloadAndWait(browser(), download_url, EXPECT_NO_SELECT_DIALOG);
+
+  ui_test_utils::WindowedNotificationObserver signal(
+      NotificationType::BROWSER_CLOSED,
+      Source<Browser>(browser()));
+  browser()->CloseWindow();
+  signal.Wait();
+}
+
+}  // namespace

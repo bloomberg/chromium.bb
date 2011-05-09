@@ -191,10 +191,6 @@ FilePath GetTestFilePath(const FilePath& dir, const FilePath& file);
 // The returned path is GURL format.
 GURL GetTestUrl(const FilePath& dir, const FilePath& file);
 
-// Creates an observer that waits for |download_manager| to report that it
-// has a total of |count| downloads that have been handles
-void WaitForDownloadCount(DownloadManager* download_manager, size_t count);
-
 // Blocks until an application modal dialog is showns and returns it.
 AppModalDialog* WaitForAppModalDialog();
 
