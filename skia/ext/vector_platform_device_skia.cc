@@ -13,23 +13,17 @@
 
 namespace skia {
 
-SkDevice* VectorPlatformDeviceSkiaFactory::newDevice(SkCanvas* noUsed,
+SkDevice* VectorPlatformDeviceSkiaFactory::newDevice(SkCanvas* canvas,
                                                      SkBitmap::Config config,
                                                      int width, int height,
                                                      bool isOpaque,
                                                      bool isForLayer) {
   SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  SkMatrix initialTransform;
-  initialTransform.reset();
-  if (isForLayer) {
-    initialTransform.setTranslate(0, height);
-    initialTransform.preScale(1, -1);
-  }
-  SkISize size = SkISize::Make(width, height);
-  SkRefPtr<SkPDFDevice> pdf_device =
-      new SkPDFDevice(size, size, initialTransform);
-  pdf_device->unref();  // SkRefPtr and new both took a reference.
-  return new VectorPlatformDeviceSkia(pdf_device.get());
+  SkRefPtr<SkDevice> device = factory_.newDevice(canvas, config, width, height,
+                                                 isOpaque, isForLayer);
+  device->unref();  // SkRefPtr and new both took a reference.
+  SkPDFDevice* pdf_device = static_cast<SkPDFDevice*>(device.get());
+  return new VectorPlatformDeviceSkia(pdf_device);
 }
 
 static inline SkBitmap makeABitmap(int width, int height) {

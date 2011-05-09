@@ -27,6 +27,8 @@ class VectorPlatformDeviceSkiaFactory : public SkDeviceFactory {
   virtual SkDevice* newDevice(SkCanvas* notUsed, SkBitmap::Config config,
                               int width, int height, bool isOpaque,
                               bool isForLayer);
+ private:
+  SkPDFDeviceFactory factory_;
 };
 
 class VectorPlatformDeviceSkia : public PlatformDevice {
