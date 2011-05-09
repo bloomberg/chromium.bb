@@ -8,6 +8,7 @@ import os
 import re
 import shutil
 import socket
+import time
 
 import chromite.buildbot.cbuildbot_config as cbuildbot_config
 import chromite.lib.cros_build_lib as cros_lib
@@ -140,8 +141,21 @@ def ManifestCheckout(buildroot, tracking_branch, next_version,
      next_version_subdir[0] + '.' + next_version_subdir[1],
      next_version + '.xml')
 
-  cros_lib.OldRunCommand(['repo', 'init', '-u', url, '-m', manifest ],
-                         cwd=buildroot, input='\n\ny\n')
+  # Retry the command up to 3 times to check for a race condition.
+  # If it fails the third time, let the exception go as normal.
+  count = 3
+  while True:
+    try:
+      cros_lib.OldRunCommand(['repo', 'init', '-u', url, '-m', manifest ],
+                             cwd=buildroot, input='\n\ny\n')
+      break
+    except cros_lib.RunCommandError:
+      time.sleep(60)
+      print 'Retrying repo init...'
+      count -= 1
+      if count <= 0:
+        raise
+
   _RepoSync(buildroot, retries)
 
 

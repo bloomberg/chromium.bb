@@ -80,7 +80,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     A CommandResult object.
 
   Raises:
-    Exception:  Raises generic exception on error with optional error_message.
+    RunCommandError:  Raises exception on error with optional error_message.
   """
   # Set default for variables.
   stdout = None
