@@ -46,7 +46,6 @@
 #include "ppapi/cpp/non_thread_safe_ref_count.h"
 #include "ppapi/cpp/paint_aggregator.h"
 #include "ppapi/cpp/paint_manager.h"
-#include "ppapi/cpp/private/instance_private.cc"
 #include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
