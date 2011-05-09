@@ -139,6 +139,9 @@
 
     <!-- Destroy a buffer.  This will invalidate the object id. -->
     <request name="destroy" type="destructor"/>
+
+    <!-- Sent when an attached buffer is no longer used by the compositor. -->
+    <event name="release"/>
   </interface>
 
   <interface name="wl_shell" version="1">
