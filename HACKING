@@ -125,14 +125,14 @@ it in
    cp ../liblouis/doc/liblouis.html .
    svn ci liblouis.html -m "Update online documentation"
 
-** Announce
-Send an announcement to the liblouis list
-liblouis-liblouisxml@freelists.org. See ANNOUNCEMENT for an example.
-
 ** Other web updates
 Update the Google project page. Add the current NEWS to the front
 page.
 
 Also update the page on freshmeat (http://freshmeat.net/projects/liblouis/).
+
+** Announce
+Send an announcement to the liblouis list
+liblouis-liblouisxml@freelists.org. See ANNOUNCEMENT for an example.
 
 
