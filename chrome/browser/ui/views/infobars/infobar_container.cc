@@ -181,6 +181,8 @@ void InfoBarContainer::UpdateInfoBarArrowTargetHeights() {
 }
 
 int InfoBarContainer::ArrowTargetHeightForInfoBar(size_t infobar_index) const {
+  if (!delegate_->DrawInfoBarArrows(NULL))
+    return 0;
   if (infobar_index == 0)
     return top_arrow_target_height_;
   const ui::SlideAnimation* first_infobar_animation =

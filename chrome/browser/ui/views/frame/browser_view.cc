@@ -1718,11 +1718,13 @@ void BrowserView::InfoBarContainerStateChanged(bool is_animating) {
 }
 
 bool BrowserView::DrawInfoBarArrows(int* x) const {
-  const LocationIconView* location_icon_view =
-      toolbar_->location_bar()->location_icon_view();
-  gfx::Point icon_center(location_icon_view->GetImageBounds().CenterPoint());
-  ConvertPointToView(location_icon_view, this, &icon_center);
-  *x = icon_center.x();
+  if (x) {
+    const LocationIconView* location_icon_view =
+        toolbar_->location_bar()->location_icon_view();
+    gfx::Point icon_center(location_icon_view->GetImageBounds().CenterPoint());
+    ConvertPointToView(location_icon_view, this, &icon_center);
+    *x = icon_center.x();
+  }
   return true;
 }
 

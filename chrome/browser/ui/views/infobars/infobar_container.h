@@ -36,7 +36,7 @@ class InfoBarContainer : public NotificationObserver {
     virtual void InfoBarContainerStateChanged(bool is_animating) = 0;
 
     // The delegate needs to tell us whether "unspoofable" arrows should be
-    // drawn, and if so, at what |x| coordinate.  |x| may not be NULL.
+    // drawn, and if so, at what |x| coordinate.  |x| may be NULL.
     virtual bool DrawInfoBarArrows(int* x) const = 0;
 
    protected:
