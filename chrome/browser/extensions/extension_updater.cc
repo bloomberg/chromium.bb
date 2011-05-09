@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/file_util.h"
+#include "base/memory/scoped_handle.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/stl_util-inl.h"
@@ -55,6 +56,8 @@ using prefs::kNextExtensionsUpdateCheck;
 // Update AppID for extension blacklist.
 const char* ExtensionUpdater::kBlacklistAppID = "com.google.crx.blacklist";
 
+namespace {
+
 // Wait at least 5 minutes after browser startup before we do any checks. If you
 // change this value, make sure to update comments where it is used.
 const int kStartupWaitSeconds = 60 * 5;
@@ -66,6 +69,16 @@ static const int kMaxUpdateFrequencySeconds = 60 * 60 * 24 * 7;  // 7 days
 // Maximum length of an extension manifest update check url, since it is a GET
 // request. We want to stay under 2K because of proxies, etc.
 static const int kExtensionsManifestMaxURLSize = 2000;
+
+enum FileWriteResult {
+  SUCCESS = 0,
+  CANT_CREATE_TEMP_CRX,
+  CANT_WRITE_CRX_DATA,
+  CANT_READ_CRX_FILE,
+  NUM_FILE_WRITE_RESULTS
+};
+
+}  // namespace
 
 ManifestFetchData::ManifestFetchData(const GURL& update_url)
     : base_url_(update_url),
@@ -381,21 +394,35 @@ class ExtensionUpdaterFileHandler
     // Make sure we're running in the right thread.
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-    bool failed = false;
+    FileWriteResult file_write_result = SUCCESS;
     FilePath path;
     if (!file_util::CreateTemporaryFile(&path)) {
       LOG(WARNING) << "Failed to create temporary file path";
-      failed = true;
+      file_write_result = CANT_CREATE_TEMP_CRX;
     } else if (file_util::WriteFile(path, data.c_str(), data.length()) !=
         static_cast<int>(data.length())) {
       // TODO(asargent) - It would be nice to back off updating altogether if
       // the disk is full. (http://crbug.com/12763).
       LOG(ERROR) << "Failed to write temporary file";
       file_util::Delete(path, false);
-      failed = true;
+      file_write_result = CANT_WRITE_CRX_DATA;
+    } else {
+      // We are seeing a high failure rate unpacking extensions, where
+      // the crx file can not be read. See if the file we wrote is readable.
+      // See crbug.com/81687 .
+      ScopedStdioHandle file(file_util::OpenFile(path, "rb"));
+      if (!file.get()) {
+        LOG(ERROR) << "Can't read CRX file written for update at path "
+                   << path.value().c_str();
+        file_util::Delete(path, false);
+        file_write_result = CANT_READ_CRX_FILE;
+      }
     }
 
-    if (failed) {
+    UMA_HISTOGRAM_ENUMERATION("Extensions.UpdaterWriteCrx", file_write_result,
+                              NUM_FILE_WRITE_RESULTS);
+
+    if (file_write_result != SUCCESS) {
       if (!BrowserThread::PostTask(
               BrowserThread::UI, FROM_HERE,
               NewRunnableMethod(

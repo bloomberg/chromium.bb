@@ -365,6 +365,17 @@ namespace extension_misc {
   // stored.
   extern const char* kAccessExtensionPath;
 #endif
+
+  // What causes an extension to be installed? Used in histograms, so don't
+  // change existing values.
+  enum CrxInstallCause {
+    INSTALL_CAUSE_UNSET = 0,
+    INSTALL_CAUSE_USER_DOWNLOAD,
+    INSTALL_CAUSE_UPDATE,
+    INSTALL_CAUSE_EXTERNAL_FILE,
+    INSTALL_CAUSE_AUTOMATION,
+    NUM_INSTALL_CAUSES
+  };
 }  // extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

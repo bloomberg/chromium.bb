@@ -784,6 +784,7 @@ void AutomationProvider::InstallExtension(const FilePath& crx_path,
 
     // Pass NULL for a silent install with no UI.
     scoped_refptr<CrxInstaller> installer(service->MakeCrxInstaller(NULL));
+    installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
     installer->InstallCrx(crx_path);
   } else {
     AutomationMsg_InstallExtension::WriteReplyParams(
@@ -816,6 +817,7 @@ void AutomationProvider::InstallExtensionAndGetHandle(
     ExtensionInstallUI* client =
         (with_ui ? new ExtensionInstallUI(profile_) : NULL);
     scoped_refptr<CrxInstaller> installer(service->MakeCrxInstaller(client));
+    installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
     installer->InstallCrx(crx_path);
   } else {
     AutomationMsg_InstallExtensionAndGetHandle::WriteReplyParams(

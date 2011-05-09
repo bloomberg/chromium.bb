@@ -472,7 +472,6 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
 
 void SandboxedExtensionUnpacker::ReportFailure(FailureReason reason,
                                                const std::string& error) {
-  UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackFailure", 1);
   UMA_HISTOGRAM_ENUMERATION("Extensions.SandboxUnpackFailureReason",
                             reason, NUM_FAILURE_REASONS);
   UMA_HISTOGRAM_TIMES("Extensions.SandboxUnpackFailureTime",

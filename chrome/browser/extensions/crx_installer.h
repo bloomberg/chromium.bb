@@ -47,7 +47,6 @@ class CrxInstaller
     : public SandboxedExtensionUnpackerClient,
       public ExtensionInstallUI::Delegate {
  public:
-
   // This is pretty lame, but given the difficulty of connecting a particular
   // ExtensionFunction to a resulting download in the download manager, it's
   // currently necessary. This is the |id| of an extension to be installed
@@ -133,6 +132,14 @@ class CrxInstaller
 
   void set_original_mime_type(const std::string& original_mime_type) {
     original_mime_type_ = original_mime_type;
+  }
+
+  extension_misc::CrxInstallCause install_cause() const {
+    return install_cause_;
+  }
+
+  void set_install_cause(extension_misc::CrxInstallCause install_cause) {
+    install_cause_ = install_cause;
   }
 
  private:
@@ -255,6 +262,10 @@ class CrxInstaller
   // The value of the content type header sent with the CRX.
   // Ignorred unless |require_extension_mime_type_| is true.
   std::string original_mime_type_;
+
+  // What caused this install?  Used only for histograms that report
+  // on failure rates, broken down by the cause of the install.
+  extension_misc::CrxInstallCause install_cause_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };

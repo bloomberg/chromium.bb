@@ -341,8 +341,9 @@ void OpenChromeExtension(Profile* profile,
   installer->set_apps_require_extension_mime_type(true);
   installer->set_original_url(download_item.url());
   installer->set_is_gallery_install(is_gallery_download);
-  installer->InstallCrx(download_item.full_path());
   installer->set_allow_silent_install(is_gallery_download);
+  installer->set_install_cause(extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
+  installer->InstallCrx(download_item.full_path());
 }
 
 void RecordDownloadCount(DownloadCountTypes type) {

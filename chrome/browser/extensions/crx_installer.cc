@@ -117,7 +117,8 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
       frontend_weak_(frontend_weak),
       client_(client),
       apps_require_extension_mime_type_(false),
-      allow_silent_install_(false) {
+      allow_silent_install_(false),
+      install_cause_(extension_misc::INSTALL_CAUSE_UNSET) {
 }
 
 CrxInstaller::~CrxInstaller() {
@@ -297,6 +298,15 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
 
 void CrxInstaller::OnUnpackFailure(const std::string& error_message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackFailureInstallSource",
+                            install_source(), Extension::NUM_LOCATIONS);
+
+
+  UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackFailureInstallCause",
+                            install_cause(),
+                            extension_misc::NUM_INSTALL_CAUSES);
+
   ReportFailureFromFileThread(error_message);
 }
 
@@ -304,6 +314,14 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
                                    const FilePath& extension_dir,
                                    const Extension* extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackSuccessInstallSource",
+                            install_source(), Extension::NUM_LOCATIONS);
+
+
+  UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackSuccessInstallCause",
+                            install_cause(),
+                            extension_misc::NUM_INSTALL_CAUSES);
 
   // Note: We take ownership of |extension| and |temp_dir|.
   extension_ = extension;

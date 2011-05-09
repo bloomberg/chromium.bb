@@ -488,6 +488,10 @@ ExtensionService::ExtensionService(Profile* profile,
   omnibox_icon_manager_.set_monochrome(true);
   omnibox_icon_manager_.set_padding(gfx::Insets(0, kOmniboxIconPaddingLeft,
                                                 0, kOmniboxIconPaddingRight));
+
+  // How long is the path to the Extensions directory?
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ExtensionRootPathLength",
+                              install_directory_.value().length(), 0, 500, 100);
 }
 
 const ExtensionList* ExtensionService::extensions() const {
@@ -610,6 +614,7 @@ void ExtensionService::UpdateExtension(const std::string& id,
     installer->set_install_source(extension->location());
   installer->set_delete_source(true);
   installer->set_original_url(download_url);
+  installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
   installer->InstallCrx(extension_path);
 }
 
@@ -2018,7 +2023,8 @@ void ExtensionService::OnExternalExtensionFileFound(
   scoped_refptr<CrxInstaller> installer(MakeCrxInstaller(NULL));
   installer->set_install_source(location);
   installer->set_expected_id(id);
-  installer->set_expected_version(*version),
+  installer->set_expected_version(*version);
+  installer->set_install_cause(extension_misc::INSTALL_CAUSE_EXTERNAL_FILE);
   installer->InstallCrx(path);
 }
 
