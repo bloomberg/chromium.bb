@@ -849,8 +849,6 @@
         'browser/extensions/extension_browser_actions_api.h',
         'browser/extensions/extension_browser_event_router.cc',
         'browser/extensions/extension_browser_event_router.h',
-        'browser/extensions/extension_clipboard_api.cc',
-        'browser/extensions/extension_clipboard_api.h',
         'browser/extensions/extension_context_menu_api.cc',
         'browser/extensions/extension_context_menu_api.h',
         'browser/extensions/extension_context_menu_model.cc',

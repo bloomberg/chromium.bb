@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/extension_bookmark_manager_api.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_browser_actions_api.h"
-#include "chrome/browser/extensions/extension_clipboard_api.h"
 #include "chrome/browser/extensions/extension_context_menu_api.h"
 #include "chrome/browser/extensions/extension_cookies_api.h"
 #include "chrome/browser/extensions/extension_debugger_api.h"
@@ -247,11 +246,6 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<ExtensionTtsStopSpeakingFunction>();
   RegisterFunction<ExtensionTtsIsSpeakingFunction>();
   RegisterFunction<ExtensionTtsSpeakCompletedFunction>();
-
-  // Clipboard.
-  RegisterFunction<ExecuteCopyClipboardFunction>();
-  RegisterFunction<ExecuteCutClipboardFunction>();
-  RegisterFunction<ExecutePasteClipboardFunction>();
 
   // Context Menus.
   RegisterFunction<CreateContextMenuFunction>();

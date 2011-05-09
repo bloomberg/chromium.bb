@@ -1,13 +1,7 @@
 {
   "name": "chrome.clipboard",
   "version": "0.1",
-  "description": "end-to-end browser test for chrome.experimental.clipboard API",
+  "description": "end-to-end browser test for clipboard permissions",
   "background_page": "test.html",
-  "permissions": ["clipboardRead", "experimental", "tabs"],
-  "content_scripts": [
-    {
-      "matches": ["http://*/*"],
-      "js": ["test_helper.js"]
-    }
-  ]
+  "permissions": ["clipboardRead"]
 }
