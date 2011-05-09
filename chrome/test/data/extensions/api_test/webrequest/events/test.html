@@ -126,6 +126,10 @@ function captureEvent(name, details) {
     details.requestHeadersExist = true;
     delete details.requestHeaders;
   }
+  if (details.responseHeaders) {
+    details.responseHeadersExist = true;
+    delete details.responseHeaders;
+  }
 
   // find |details| in expectedEventData
   var found = false;
@@ -173,15 +177,15 @@ function initListeners(filter, extraInfoSpec) {
   chrome.experimental.webRequest.onResponseStarted.addListener(
       function(details) {
     return captureEvent("onResponseStarted", details);
-  }, filter);
+  }, filter, intersect(extraInfoSpec, ["responseHeaders"]));
   chrome.experimental.webRequest.onBeforeRedirect.addListener(
       function(details) {
     return captureEvent("onBeforeRedirect", details);
-  }, filter);
+  }, filter, intersect(extraInfoSpec, ["responseHeaders"]));
   chrome.experimental.webRequest.onCompleted.addListener(
       function(details) {
     return captureEvent("onCompleted", details);
-  }, filter);
+  }, filter, intersect(extraInfoSpec, ["responseHeaders"]));
   chrome.experimental.webRequest.onErrorOccurred.addListener(
       function(details) {
     return captureEvent("onErrorOccurred", details);
@@ -274,7 +278,8 @@ runTests([
           details: {
             url: URL_HTTP_SIMPLE_LOAD_REDIRECT,
             redirectUrl: URL_HTTP_SIMPLE_LOAD,
-            statusCode: 301
+            statusCode: 301,
+            responseHeadersExist: true
           }
         },
         { label: "onBeforeRequest-2",
@@ -304,14 +309,16 @@ runTests([
           event: "onResponseStarted",
           details: {
             url: URL_HTTP_SIMPLE_LOAD,
-            statusCode: 200
+            statusCode: 200,
+            responseHeadersExist: true
           }
         },
         { label: "onCompleted",
           event: "onCompleted",
           details: {
             url: URL_HTTP_SIMPLE_LOAD,
-            statusCode: 200
+            statusCode: 200,
+            responseHeadersExist: true
           }
         }
       ],
@@ -320,8 +327,8 @@ runTests([
          "onBeforeRedirect",
          "onBeforeRequest-2", "onBeforeSendHeaders-2", "onRequestSent-2",
          "onResponseStarted", "onCompleted"] ],
-      {},
-      ["requestHeaders"]);
+      {},  // filter
+      ["requestHeaders", "responseHeaders"]);
     navigateAndWait(URL_HTTP_SIMPLE_LOAD_REDIRECT);
   },
 

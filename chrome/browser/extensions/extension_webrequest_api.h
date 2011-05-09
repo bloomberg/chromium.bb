@@ -28,6 +28,7 @@ class ListValue;
 namespace net {
 class HostPortPair;
 class HttpRequestHeaders;
+class HttpResponseHeaders;
 class URLRequest;
 }
 
