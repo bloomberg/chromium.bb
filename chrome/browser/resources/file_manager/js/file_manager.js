@@ -121,8 +121,10 @@ FileManager.prototype = {
 
 
   const previewArt = {
+    'audio': 'images/filetype_large_audio.png',
+    'folder': 'images/filetype_large_folder.png',
     'unknown': 'images/filetype_large_generic.png',
-    'folder': 'images/filetype_large_folder.png'
+    'video': 'images/filetype_large_video.png'
   };
 
   /**
