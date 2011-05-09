@@ -59,7 +59,8 @@ class AutofillTest(pyauto.PyUITest):
     profiles = self.EvalDataFrom(file_path)
     self.FillAutofillProfile(profiles=profiles)
 
-    self.assertEqual(profiles, self.GetAutofillProfile()['profiles'])
+    self.assertEqual(profiles, self.GetAutofillProfile()['profiles'],
+                     msg='Autofill profile data does not match.')
 
     # Adding credit cards.
     file_path = os.path.join(self.DataDir(), 'autofill', 'functional',
@@ -67,8 +68,10 @@ class AutofillTest(pyauto.PyUITest):
     test_data = self.EvalDataFrom(file_path)
     credit_cards_input = test_data['input']
     self.FillAutofillProfile(credit_cards=credit_cards_input)
+
     self.assertEqual(test_data['expected'],
-                     self.GetAutofillProfile()['credit_cards'])
+                     self.GetAutofillProfile()['credit_cards'],
+                     msg='Autofill credit card data does not match.')
 
   def testGetProfilesEmpty(self):
     """Test getting profiles when none have been filled."""

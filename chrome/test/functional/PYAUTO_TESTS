@@ -29,8 +29,6 @@
     'all': [
       'autofill',
       '-autofill.AutofillTest.testComparePhoneNumbers',
-      # crbug.com/77969
-      '-autofill.AutofillTest.testFillProfileCrazyCharacters',
       '-autofill.AutofillTest.testNoAutofillForReadOnlyFields',
       # crbug.com/77113 - M13 feature.
       '-autofill.AutofillTest.testProfileWithEmailInOtherFieldNotSaved',
