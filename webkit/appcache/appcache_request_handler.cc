@@ -137,6 +137,16 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
     int code_major = request->GetResponseCode() / 100;
     if (code_major !=4 && code_major != 5)
       return NULL;
+
+    // Servers can override the fallback behavior with a response header.
+    const std::string kFallbackOverrideHeader(
+        "x-chromium-appcache-fallback-override");
+    const std::string kFallbackOverrideValue(
+        "disallow-fallback");
+    std::string header_value;
+    request->GetResponseHeaderByName(kFallbackOverrideHeader, &header_value);
+    if (header_value == kFallbackOverrideValue)
+      return NULL;
   }
 
   // 6.9.6, step 4: If this results in a 4xx or 5xx status code

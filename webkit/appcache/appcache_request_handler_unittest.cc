@@ -10,6 +10,7 @@
 #include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_error_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,16 +69,41 @@ class AppCacheRequestHandlerTest : public testing::Test {
     Method method_;
   };
 
-  // Subclasses to simulate particular response codes so test cases can
+  // Subclasses to simulate particular responses so test cases can
   // exercise fallback code paths.
+
+  class MockURLRequestDelegate : public net::URLRequest::Delegate {
+    virtual void OnResponseStarted(net::URLRequest* request) {}
+    virtual void OnReadCompleted(net::URLRequest* request, int bytes_read) {}
+  };
 
   class MockURLRequestJob : public net::URLRequestJob {
    public:
-    MockURLRequestJob(net::URLRequest* request, int response_code)
-        : net::URLRequestJob(request), response_code_(response_code) {}
-    virtual void Start() {}
-    virtual int GetResponseCode() const { return response_code_; }
+    MockURLRequestJob(
+        net::URLRequest* request, int response_code)
+        : net::URLRequestJob(request),
+          response_code_(response_code),
+          has_response_info_(false) {}
+    MockURLRequestJob(
+        net::URLRequest* request, const net::HttpResponseInfo& info)
+        : net::URLRequestJob(request),
+          response_code_(info.headers->response_code()),
+          has_response_info_(true),
+          response_info_(info) {}
+    virtual void Start() {
+      NotifyHeadersComplete();
+    }
+    virtual int GetResponseCode() const {
+      return response_code_;
+    }
+    virtual void GetResponseInfo(net::HttpResponseInfo* info) {
+      if (!has_response_info_)
+        return;
+      *info = response_info_;
+    }
     int response_code_;
+    bool has_response_info_;
+    net::HttpResponseInfo response_info_;
   };
 
   class MockURLRequest : public net::URLRequest {
@@ -88,10 +114,19 @@ class AppCacheRequestHandlerTest : public testing::Test {
       mock_factory_job_ = new MockURLRequestJob(this, http_response_code);
       Start();
       DCHECK(!mock_factory_job_);
-      // All our simulation need to do satisfy are the following two DCHECKs
+      // All our simulation needs  to satisfy are the following two DCHECKs
       DCHECK(status().is_success());
       DCHECK_EQ(http_response_code, GetResponseCode());
     }
+
+    void SimulateResponseInfo(const net::HttpResponseInfo& info) {
+      mock_factory_job_ = new MockURLRequestJob(this, info);
+      set_delegate(&delegate_);  // needed to get the info back out
+      Start();
+      DCHECK(!mock_factory_job_);
+    }
+
+    MockURLRequestDelegate delegate_;
   };
 
   static net::URLRequestJob* MockHttpJobFactory(net::URLRequest* request,
@@ -324,6 +359,59 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
     EXPECT_EQ(GURL("http://blah/manifest/"),
               host_->preferred_manifest_url());
+
+    TestFinished();
+  }
+
+  // MainResource_FallbackOverride --------------------------------------------
+
+  void MainResource_FallbackOverride() {
+    PushNextTask(NewRunnableMethod(
+       this,
+       &AppCacheRequestHandlerTest::Verify_MainResource_FallbackOverride));
+
+    request_.reset(new MockURLRequest(GURL("http://blah/fallback-override")));
+    handler_.reset(host_->CreateRequestHandler(request_.get(),
+                                               ResourceType::MAIN_FRAME));
+    EXPECT_TRUE(handler_.get());
+
+    mock_storage()->SimulateFindMainResource(
+        AppCacheEntry(),
+        GURL("http://blah/fallbackurl"),
+        AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
+        1, GURL("http://blah/manifest/"));
+
+    job_ = handler_->MaybeLoadResource(request_.get());
+    EXPECT_TRUE(job_.get());
+    EXPECT_TRUE(job_->is_waiting());
+
+    // We have to wait for completion of storage->FindResponseForMainRequest.
+    ScheduleNextTask();
+  }
+
+  void Verify_MainResource_FallbackOverride() {
+    EXPECT_FALSE(job_->is_waiting());
+    EXPECT_TRUE(job_->is_delivering_network_response());
+
+    // When the request is restarted, the existing job is dropped so a
+    // real network job gets created. We expect NULL here which will cause
+    // the net library to create a real job.
+    job_ = handler_->MaybeLoadResource(request_.get());
+    EXPECT_FALSE(job_);
+
+    // Simulate an http error of the real network job, but with custom
+    // headers that override the fallback behavior.
+    const char kOverrideHeaders[] =
+        "HTTP/1.1 404 BOO HOO\0"
+        "x-chromium-appcache-fallback-override: disallow-fallback\0"
+        "\0";
+    net::HttpResponseInfo info;
+    info.headers = new net::HttpResponseHeaders(
+        std::string(kOverrideHeaders, arraysize(kOverrideHeaders)));
+    request_->SimulateResponseInfo(info);
+
+    job_ = handler_->MaybeLoadFallbackForResponse(request_.get());
+    EXPECT_FALSE(job_);
 
     TestFinished();
   }
@@ -695,6 +783,11 @@ TEST_F(AppCacheRequestHandlerTest, MainResource_Hit) {
 
 TEST_F(AppCacheRequestHandlerTest, MainResource_Fallback) {
   RunTestOnIOThread(&AppCacheRequestHandlerTest::MainResource_Fallback);
+}
+
+TEST_F(AppCacheRequestHandlerTest, MainResource_FallbackOverride) {
+  RunTestOnIOThread(
+      &AppCacheRequestHandlerTest::MainResource_FallbackOverride);
 }
 
 TEST_F(AppCacheRequestHandlerTest, SubResource_Miss_WithNoCacheSelected) {
