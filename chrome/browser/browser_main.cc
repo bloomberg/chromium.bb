@@ -1070,6 +1070,33 @@ OSStatus KeychainCallback(SecKeychainEvent keychain_event,
 }
 #endif
 
+#if defined(OS_CHROMEOS)
+void RegisterTranslateableItems(void) {
+  struct {
+    const char* stock_id;
+    int resource_id;
+  } translations[] = {
+    { GTK_STOCK_COPY, IDS_COPY },
+    { GTK_STOCK_CUT, IDS_CUT },
+    { GTK_STOCK_PASTE, IDS_PASTE },
+    { GTK_STOCK_DELETE, IDS_DELETE },
+    { GTK_STOCK_SELECT_ALL, IDS_SELECT_ALL },
+    { NULL, -1 }
+  }, *trans;
+
+  for (trans = translations; trans->stock_id; trans++) {
+    GtkStockItem stock_item;
+    if (gtk_stock_lookup(trans->stock_id, &stock_item)) {
+      std::string trans_label = gfx::ConvertAcceleratorsFromWindowsStyle(
+          l10n_util::GetStringUTF8(trans->resource_id));
+      stock_item.label = g_strdup(trans_label.c_str());
+      gtk_stock_add(&stock_item, 1);
+      g_free(stock_item.label);
+    }
+  }
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace
 
 #if defined(OS_CHROMEOS)
@@ -1288,6 +1315,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
     return ResultCodes::NORMAL_EXIT;
 #endif  // defined(OS_WIN)
   }
+
+#if defined(OS_CHROMEOS)
+  // This needs to be called after the locale has been set.
+  RegisterTranslateableItems();
+#endif
 
   BrowserInit browser_init;
 

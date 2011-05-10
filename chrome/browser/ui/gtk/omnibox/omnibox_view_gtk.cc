@@ -148,20 +148,6 @@ void ClipboardSelectionCleared(GtkClipboard* clipboard,
   }
 }
 
-// TODO(gspencer): remove the version check when
-// http://crbug.com/82022 has been addressed.  The version check is
-// only here because some buildbots are not yet upgraded to Lucid.
-#if defined(OS_CHROMEOS) && GTK_CHECK_VERSION(2, 16, 0)
-// Sets the label of the menu item pointed to by |node| to the string given
-// by the |resource_id|, and returns a pointer to the next item in the list.
-GList* SetMenuLabelAndGetNext(GList* node, int resource_id) {
-  gtk_menu_item_set_label(GTK_MENU_ITEM(node->data),
-                          gfx::ConvertAcceleratorsFromWindowsStyle(
-                              l10n_util::GetStringUTF8(resource_id)).c_str());
-  return node->next;
-}
-#endif
-
 }  // namespace
 
 OmniboxViewGtk::OmniboxViewGtk(
@@ -1455,36 +1441,7 @@ void OmniboxViewGtk::HandlePopupMenuDeactivate(GtkWidget* sender) {
 }
 
 void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
-  // TODO(gspencer): remove the version check when
-  // http://crbug.com/82022 has been addressed.  The version check is
-  // only here because some buildbots are not yet upgraded to Lucid.
-#if defined(OS_CHROMEOS) && GTK_CHECK_VERSION(2, 16, 0)
-  // Because the menu already contains cut/copy/paste/delete/selectall,
-  // but uses GTK's translations (which don't work on ChromeOS), we
-  // want to set the labels to be the translations we have in our
-  // resources instead.  To do this, we set the label for each menu
-  // item based on its index in the menu.
-  // We only do this on ChromeOS because the contents of the context
-  // menu on generic Linux are not predictable enough to use this
-  // method, and the regular gtk localization framework handles it
-  // properly there anyhow.
-  GList* node = gtk_container_get_children(GTK_CONTAINER(menu));
-  node = SetMenuLabelAndGetNext(node, IDS_CUT);
-  CHECK(node);
-  node = SetMenuLabelAndGetNext(node, IDS_COPY);
-  CHECK(node);
-  node = SetMenuLabelAndGetNext(node, IDS_PASTE);
-  CHECK(node);
-  node = SetMenuLabelAndGetNext(node, IDS_DELETE);
-  CHECK(node);
-  // Skip the separator
-  node = node->next;
-  CHECK(node);
-  node = SetMenuLabelAndGetNext(node, IDS_SELECT_ALL);
-#endif
-
   GtkWidget* separator = gtk_separator_menu_item_new();
-
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), separator);
   gtk_widget_show(separator);
 
