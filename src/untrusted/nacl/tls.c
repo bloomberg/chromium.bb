@@ -30,16 +30,6 @@ extern char __tls_template_end;
 #define TLS_TBSS_SIZE   (&__tls_template_end - &__tls_template_tdata_end)
 
 
-/*
- * These stubs provide setup for thread local storage when libpthread is not
- * being used.  Since they are declared as weak symbols, they are overridden
- * if libpthread is used.
- */
-
-/* @IGNORE_LINES_FOR_CODE_HYGIENE[2] */
-extern int __pthread_initialize() __attribute__ ((weak));
-extern int __pthread_shutdown() __attribute__ ((weak));
-
 /* NOTE: Avoid dependence on libc.
    PLEASE DO NOT REPLACE THESE.
    Otherwise you get a circular dependency and typically the
@@ -123,18 +113,5 @@ int __pthread_initialize_minimal(size_t tdb_size) {
 
   /* initialize newlib's thread-specific pointer. */
   __newlib_thread_init();
-  return 0;
-}
-
-
-int __pthread_initialize() {
-  /* all we need is to have the self pointer in the TDB */
-  return __pthread_initialize_minimal(sizeof(void*));
-}
-
-
-int __pthread_shutdown() {
-  /* No shutdown is required when pthread library is not used */
-  __newlib_thread_exit();
   return 0;
 }

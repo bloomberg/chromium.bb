@@ -31,6 +31,7 @@ sources_for_standard_interfaces = [
     'nacl_read_tp.c',
     'open.c',
     'read.c',
+    'pthread_stubs.c',
     'sbrk.c',
     'sched_yield.c',
     'stacktrace.c',
