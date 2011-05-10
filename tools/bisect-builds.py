@@ -104,7 +104,7 @@ def SetArchiveVars(archive):
     BUILD_ZIP_NAME = 'chrome-mac.zip'
     BUILD_DIR_NAME = 'chrome-mac'
     BUILD_EXE_NAME = 'Chromium.app/Contents/MacOS/Chromium'
-  elif BUILD_ARCHIVE_TYPE in ('xp'):
+  elif BUILD_ARCHIVE_TYPE in ('win'):
     BUILD_ZIP_NAME = 'chrome-win32.zip'
     BUILD_DIR_NAME = 'chrome-win32'
     BUILD_EXE_NAME = 'chrome.exe'
@@ -223,7 +223,7 @@ def main():
            'Tip: add "-- --no-first-run" to bypass the first run prompts.')
   parser = optparse.OptionParser(usage=usage)
   # Strangely, the default help output doesn't include the choice list.
-  choices = ['mac', 'xp', 'linux', 'linux64']
+  choices = ['mac', 'win', 'linux', 'linux64']
             # linux-chromiumos lacks a continuous archive http://crbug.com/78158
   parser.add_option('-a', '--archive',
                     choices = choices,
