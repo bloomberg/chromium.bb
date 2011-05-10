@@ -559,7 +559,8 @@ bool FileSystemOperation::GetUsageAndQuotaThenCallback(
     quota::QuotaManager::GetUsageAndQuotaCallback* callback) {
   quota::QuotaManagerProxy* quota_manager_proxy =
       file_system_context()->quota_manager_proxy();
-  if (quota_manager_proxy != NULL) {
+  if (quota_manager_proxy != NULL &&
+      file_system_operation_context_.src_type() != kFileSystemTypeExternal) {
     quota_manager_proxy->GetUsageAndQuota(
         file_system_operation_context_.src_origin_url(),
         FileSystemTypeToQuotaStorageType(
