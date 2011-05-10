@@ -1119,8 +1119,12 @@ def CMDchange(args):
       if sys.platform == 'win32' and os.environ.get('TERM') == 'msys':
         # Msysgit requires the usage of 'env' to be present.
         cmd = 'env ' + cmd
-      # shell=True to allow the shell to handle all forms of quotes in $EDITOR.
-      subprocess.check_call(cmd, shell=True)
+      try:
+        # shell=True to allow the shell to handle all forms of quotes in
+        # $EDITOR.
+        subprocess.check_call(cmd, shell=True)
+      except subprocess.CalledProcessError, e:
+        ErrorExit('Editor returned %d' % e.returncode)
     result = gclient_utils.FileRead(filename, 'r')
   finally:
     os.remove(filename)

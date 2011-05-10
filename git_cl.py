@@ -842,7 +842,10 @@ def UserEditedLog(starting_text):
       # Msysgit requires the usage of 'env' to be present.
       cmd = 'env ' + cmd
     # shell=True to allow the shell to handle all forms of quotes in $EDITOR.
-    subprocess.check_call(cmd, shell=True)
+    try:
+      subprocess.check_call(cmd, shell=True)
+    except subprocess.CalledProcessError, e:
+      DieWithError('Editor returned %d' % e.returncode)
     fileobj = open(filename)
     text = fileobj.read()
     fileobj.close()
