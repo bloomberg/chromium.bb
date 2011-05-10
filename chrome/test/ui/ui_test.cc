@@ -113,7 +113,10 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
 UITestBase::~UITestBase() {}
 
 void UITestBase::SetUp() {
-  launcher_.reset(CreateProxyLauncher());
+  // Some tests (e.g. SessionRestoreUITest) call SetUp() multiple times,
+  // but the ProxyLauncher should be initialized only once per instance.
+  if (!launcher_.get())
+    launcher_.reset(CreateProxyLauncher());
   launcher_->AssertAppNotRunning(L"Please close any other instances "
                                  L"of the app before testing.");
 
@@ -155,14 +158,6 @@ void UITestBase::TearDown() {
     error_msg += kFailedNoCrashService;
   }
   EXPECT_EQ(expected_crashes_, actual_crashes) << error_msg;
-}
-
-void UITestBase::ResetConnection() {
-  if (launcher_.get()) {
-    launcher_->TerminateConnection();
-    launcher_->InitializeConnection(DefaultLaunchState(),
-                                    wait_for_initial_loads_);
-  }
 }
 
 int UITestBase::action_timeout_ms() {
