@@ -187,8 +187,6 @@ bool ServiceProcessControl::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ServiceProcessControl, message)
     IPC_MESSAGE_HANDLER(ServiceHostMsg_CloudPrintProxy_IsEnabled,
                         OnCloudPrintProxyIsEnabled)
-    IPC_MESSAGE_HANDLER(ServiceHostMsg_RemotingHost_HostInfo,
-                         OnRemotingHostInfo)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -241,15 +239,6 @@ void ServiceProcessControl::OnCloudPrintProxyIsEnabled(bool enabled,
   }
 }
 
-void ServiceProcessControl::OnRemotingHostInfo(
-    const remoting::ChromotingHostInfo& host_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  for (std::set<MessageHandler*>::iterator it = message_handlers_.begin();
-       it != message_handlers_.end(); ++it) {
-    (*it)->OnRemotingHostInfo(host_info);
-  }
-}
-
 bool ServiceProcessControl::GetCloudPrintProxyStatus(
     Callback2<bool, std::string>::Type* cloud_print_status_callback) {
   DCHECK(cloud_print_status_callback);
@@ -261,46 +250,6 @@ bool ServiceProcessControl::Shutdown() {
   bool ret = Send(new ServiceMsg_Shutdown());
   channel_.reset();
   return ret;
-}
-
-bool ServiceProcessControl::SetRemotingHostCredentials(
-    const std::string& user,
-    const std::string& talk_token) {
-  return Send(
-      new ServiceMsg_SetRemotingHostCredentials(user, talk_token));
-}
-
-bool ServiceProcessControl::EnableRemotingHost() {
-  return Send(new ServiceMsg_EnableRemotingHost());
-}
-
-bool ServiceProcessControl::DisableRemotingHost() {
-  return Send(new ServiceMsg_DisableRemotingHost());
-}
-
-bool ServiceProcessControl::RequestRemotingHostStatus() {
-  if (CheckServiceProcessReady()) {
-    remoting::ChromotingHostInfo failure_host_info;
-    failure_host_info.enabled = false;
-
-    Launch(NewRunnableMethod(this, &ServiceProcessControl::Send,
-                             new ServiceMsg_GetRemotingHostInfo),
-           NewRunnableMethod(this,
-                             &ServiceProcessControl::OnRemotingHostInfo,
-                             failure_host_info));
-    return true;
-  }
-  return false;
-}
-
-void ServiceProcessControl::AddMessageHandler(
-    MessageHandler* message_handler) {
-  message_handlers_.insert(message_handler);
-}
-
-void ServiceProcessControl::RemoveMessageHandler(
-    MessageHandler* message_handler) {
-  message_handlers_.erase(message_handler);
 }
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ServiceProcessControl);

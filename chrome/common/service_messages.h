@@ -1,23 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Multiply-included message file, no traditional include guard.
 #include <string>
 
-#include "chrome/common/remoting/chromoting_host_info.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START ServiceMsgStart
-
-IPC_STRUCT_TRAITS_BEGIN(remoting::ChromotingHostInfo)
-  IPC_STRUCT_TRAITS_MEMBER(host_id)
-  IPC_STRUCT_TRAITS_MEMBER(hostname)
-  IPC_STRUCT_TRAITS_MEMBER(public_key)
-  IPC_STRUCT_TRAITS_MEMBER(enabled)
-  IPC_STRUCT_TRAITS_MEMBER(login)
-IPC_STRUCT_TRAITS_END()
 
 //-----------------------------------------------------------------------------
 // Service process messages:
@@ -38,20 +29,6 @@ IPC_MESSAGE_CONTROL0(ServiceMsg_DisableCloudPrintProxy)
 // enabled.
 IPC_MESSAGE_CONTROL0(ServiceMsg_IsCloudPrintProxyEnabled)
 
-// Set credentials used by the RemotingHost.
-IPC_MESSAGE_CONTROL2(ServiceMsg_SetRemotingHostCredentials,
-                     std::string, /* username */
-                     std::string  /* token for XMPP */)
-
-// Enabled remoting host.
-IPC_MESSAGE_CONTROL0(ServiceMsg_EnableRemotingHost)
-
-// Disable remoting host.
-IPC_MESSAGE_CONTROL0(ServiceMsg_DisableRemotingHost)
-
-// Get remoting host status information.
-IPC_MESSAGE_CONTROL0(ServiceMsg_GetRemotingHostInfo)
-
 // Tell the service process to shutdown.
 IPC_MESSAGE_CONTROL0(ServiceMsg_Shutdown)
 
@@ -68,7 +45,3 @@ IPC_MESSAGE_CONTROL0(ServiceHostMsg_CloudPrintProxy_AuthError)
 IPC_MESSAGE_CONTROL2(ServiceHostMsg_CloudPrintProxy_IsEnabled,
                      bool,       /* Is the proxy enabled? */
                      std::string /* Email address of account */)
-
-IPC_MESSAGE_CONTROL1(ServiceHostMsg_RemotingHost_HostInfo,
-                     remoting::ChromotingHostInfo /* host_info */)
-

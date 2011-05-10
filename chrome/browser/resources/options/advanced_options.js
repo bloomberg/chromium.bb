@@ -133,14 +133,6 @@ var OptionsPage = options.OptionsPage;
         };
       }
 
-      if ($('remotingSetupButton')) {
-          $('remotingSetupButton').onclick = function(event) {
-              chrome.send('showRemotingSetupDialog');
-          }
-          $('remotingStopButton').onclick = function(event) {
-              chrome.send('disableRemoting');
-          }
-      }
   }
   };
 
@@ -268,31 +260,6 @@ var OptionsPage = options.OptionsPage;
       if (proxySectionElm)
         proxySectionElm.parentNode.removeChild(proxySectionElm);
     }
-  };
-
-  AdvancedOptions.SetRemotingStatus = function(enabled, configured, status) {
-    if (configured) {
-      $('remotingSetupButton').style.display = 'none';
-      $('remotingStopButton').style.display = 'inline';
-    } else {
-      $('remotingSetupButton').style.display = 'inline';
-      $('remotingStopButton').style.display = 'none';
-    }
-
-    $('remotingSetupButton').disabled = !enabled;
-    $('remotingStopButton').disabled = !enabled;
-    if (!enabled) {
-      $('remotingSetupButton').style.display = 'none';
-      $('remotingStopButton').style.display = 'none';
-    }
-
-    $('remotingStatus').textContent = status;
-  };
-
-  AdvancedOptions.RemoveRemotingSection = function() {
-    var proxySectionElm = $('remoting-section');
-    if (proxySectionElm)
-      proxySectionElm.parentNode.removeChild(proxySectionElm);
   };
 
   // Export

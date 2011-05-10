@@ -14,7 +14,6 @@
 #include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
-#include "chrome/service/remoting/chromoting_host_manager.h"
 
 class ServiceProcessPrefs;
 class ServiceIPCServer;
@@ -30,8 +29,7 @@ class CommandLine;
 
 // The ServiceProcess does not inherit from ChildProcess because this
 // process can live independently of the browser process.
-class ServiceProcess : public CloudPrintProxy::Client,
-                       public remoting::ChromotingHostManager::Observer {
+class ServiceProcess : public CloudPrintProxy::Client {
  public:
   ServiceProcess();
   ~ServiceProcess();
@@ -91,17 +89,6 @@ class ServiceProcess : public CloudPrintProxy::Client,
   virtual void OnCloudPrintProxyEnabled(bool persist_state);
   virtual void OnCloudPrintProxyDisabled(bool persist_state);
 
-  // ChromotingHostManager::Observer interface.
-  virtual void OnChromotingHostEnabled();
-  virtual void OnChromotingHostDisabled();
-
-#if defined(ENABLE_REMOTING)
-  // Return the reference to the chromoting host only if it has started.
-  remoting::ChromotingHostManager* remoting_host_manager() {
-    return remoting_host_manager_;
-  }
-#endif
-
   ServiceURLRequestContextGetter* GetServiceURLRequestContextGetter();
 
  private:
@@ -138,10 +125,6 @@ class ServiceProcess : public CloudPrintProxy::Client,
   bool update_available_;
 
   scoped_refptr<ServiceURLRequestContextGetter> request_context_getter_;
-
-#if defined(ENABLE_REMOTING)
-  scoped_refptr<remoting::ChromotingHostManager> remoting_host_manager_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcess);
 };

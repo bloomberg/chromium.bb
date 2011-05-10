@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -187,9 +187,6 @@
 #define IDC_WRITING_DIRECTION_DEFAULT    41121     // OSX only
 #define IDC_WRITING_DIRECTION_LTR        41122     // OSX only
 #define IDC_WRITING_DIRECTION_RTL        41123     // OSX only
-
-// Remoting
-#define IDC_REMOTING_SETUP               41140
 
 // Translate
 #define IDC_TRANSLATE_OPTIONS_ALWAYS                42000

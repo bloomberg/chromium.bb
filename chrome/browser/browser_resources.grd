@@ -73,10 +73,6 @@
       <include name="IDR_SYNC_SETTING_UP_HTML" file="sync\resources\setting_up.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_SETUP_DONE_HTML" file="sync\resources\setup_done.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_SETUP_FLOW_HTML" file="sync\resources\setup_flow.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_REMOTING_SETUP_FLOW_HTML" file="remoting\resources\remoting_setup_flow.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_REMOTING_SETUP_DONE_HTML" file="remoting\resources\remoting_setup_done.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_REMOTING_SETUP_ERROR_HTML" file="remoting\resources\remoting_setup_error.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_REMOTING_SETTING_UP_HTML" file="remoting\resources\remoting_setting_up.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_CLOUD_PRINT_SETUP_FLOW_HTML" file="printing\cloud_print\resources\cloud_print_setup_flow.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_CLOUD_PRINT_SETUP_LOGIN_HTML" file="printing\cloud_print\resources\cloud_print_setup_login.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_CLOUD_PRINT_SETUP_DONE_HTML" file="printing\cloud_print\resources\cloud_print_setup_done.html" flattenhtml="true" type="BINDATA" />

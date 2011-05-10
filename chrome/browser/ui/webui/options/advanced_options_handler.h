@@ -9,7 +9,6 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
-#include "chrome/browser/remoting/remoting_options_handler.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
@@ -117,17 +116,6 @@ class AdvancedOptionsHandler
 
 #endif
 
-#if defined(ENABLE_REMOTING) && !defined(OS_CHROMEOS)
-  // Removes remoting section. Called if remoting is not enabled.
-  void RemoveRemotingSection();
-
-  // Callback for Setup Remoting button.
-  void ShowRemotingSetupDialog(const ListValue* args);
-
-  // Disable Remoting.
-  void DisableRemoting(const ListValue* args);
-#endif
-
   // Setup the checked state for the metrics reporting checkbox.
   void SetupMetricsReportingCheckbox();
 
@@ -165,10 +153,6 @@ class AdvancedOptionsHandler
   BooleanPrefMember rev_checking_enabled_;
   BooleanPrefMember ssl3_enabled_;
   BooleanPrefMember tls1_enabled_;
-
-#if defined(ENABLE_REMOTING) && !defined(OS_CHROMEOS)
-  remoting::RemotingOptionsHandler remoting_options_handler_;
-#endif
 
   FilePathPrefMember default_download_location_;
   BooleanPrefMember ask_for_save_location_;

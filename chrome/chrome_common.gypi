@@ -213,8 +213,6 @@
         'common/print_messages.h',
         'common/random.cc',
         'common/random.h',
-        'common/remoting/chromoting_host_info.cc',
-        'common/remoting/chromoting_host_info.h',
         'common/render_messages.cc',
         'common/render_messages.h',
         '<(protoc_out_dir)/chrome/common/safe_browsing/csd.pb.cc',

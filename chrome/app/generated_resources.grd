@@ -4064,7 +4064,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Remoting
       </message>
       <message name="IDS_FLAGS_REMOTING_DESCRIPTION" desc="Description of the 'Remoting' client lab.">
-        Enable the UI plus backing code for the Remoting serivce process, and client plugin. Warning: This is currently for developer testing only. Unless you are on the dev team and whitelisted, nothing in the enabled UI will work.
+        Enable the Remoting client plugin. Warning: This is currently for developer testing only. Unless you are on the dev team and whitelisted, nothing in the enabled UI will work.
       </message>
       <message name="IDS_FLAGS_FOCUS_EXISTING_TAB_ON_OPEN_NAME" desc="Name for 'Focus existing tab on open' lab">
         Focus existing tab on open
@@ -8585,53 +8585,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OMNIBOX_SEARCH_HINT_OMNIBOX_TEXT" desc="The text displayed selected in the omnibox once the user clicked the 'Show Me' button on the omnibox search hint infobar.">
         Type your search query here
-      </message>
-
-      <!-- Remoting strings -->
-      <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_REMOTING" desc="Title for the remoting options section.">
-        Remoting
-      </message>
-      <message name="IDS_OPTIONS_REMOTING_SETUP_BUTTON" desc="Title for the remoting setup button.">
-        Set up this computer for remote access...
-      </message>
-      <message name="IDS_OPTIONS_REMOTING_STOP_BUTTON" desc="Title for the remoting stop button.">
-        Disable remote access to this computer
-      </message>
-      <message name="IDS_REMOTING_SETUP_DIALOG_TITLE" desc="Title of the remoting setup dialog.">
-        Set up remote access
-      </message>
-      <message name="IDS_REMOTING_SETTING_UP_MESSAGE" desc="Message shown while remoting host is being started">
-        Setting up remote access to this computer.
-      </message>
-      <message name="IDS_REMOTING_SUCCESS_TITLE" desc="Header of the page that is shown when remoting configuration is finished.">
-        Success!
-      </message>
-      <message name="IDS_REMOTING_SUCCESS_MESSAGE" desc="Message shown during remoting host setup after the host is successfully initialized.">
-        Remoting was started successfully. Now you should be able to connect to this computer remotely.
-      </message>
-      <message name="IDS_REMOTING_SERVICE_PROCESS_FAILED_MESSAGE" desc="Message shown during remoting host setup if there was an error starting service process.">
-        Unable to start service process.
-      </message>
-      <message name="IDS_REMOTING_REGISTRATION_FAILED_MESSAGE" desc="Message shown during remoting host setup if there was an error registering the host.">
-        Failed to register this computer for remote access.
-      </message>
-      <message name="IDS_REMOTING_REGISTRATION_ACCESS_DENIED" desc="Error message during remoting host setup if access to the remoting directory was denied.">
-        Access to the remoting host directory was denied. Please try with another account.
-      </message>
-      <message name="IDS_REMOTING_RETRY_BUTTON_TEXT" desc="Text for retry button">
-        Retry
-      </message>
-      <message name="IDS_REMOTING_STATUS_DISABLED_TEXT" desc="Status string shown when remoting is completely disabled.">
-        Remote access to or from this computer is disabled.
-      </message>
-      <message name="IDS_REMOTING_STATUS_ENABLED_TEXT" desc="Status string shown when a machine is enabled to be a remote access viewer (but not a host).">
-        Remote access to other computers is enabled.
-      </message>
-      <message name="IDS_REMOTING_STATUS_HOST_ENABLED_TEXT" desc="Status string shown when a machine is enabled to be a remote access host, but has not yet been configured.">
-        Remote access to this computer is not set up.
-      </message>
-      <message name="IDS_REMOTING_STATUS_CONFIGURED_TEXT" desc="Status string shown when a machine has been configured as a host for remote access.">
-        Remote access to this computer is set up for <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>.
       </message>
 
       <!-- Sync strings -->

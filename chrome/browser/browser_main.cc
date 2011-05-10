@@ -1817,20 +1817,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
     ChildProcess::WaitForDebugger("Browser");
   }
 
-  // If remoting or cloud print proxy is enabled and setup has been completed
-  // we start the service process here.
-  // The prerequisite for running the service process is that we have IO, UI
-  // and PROCESS_LAUNCHER threads up and running.
-  // TODO(hclam): Need to check for cloud print proxy too.
-  if (parsed_command_line.HasSwitch(switches::kEnableRemoting)) {
-    if (user_prefs->GetBoolean(prefs::kRemotingHasSetupCompleted)) {
-      ServiceProcessControl* control =
-          ServiceProcessControlManager::GetInstance()->GetProcessControl(
-              profile);
-       control->Launch(NULL, NULL);
-    }
-  }
-
 #if defined(OS_CHROMEOS)
   // Run the Out of Memory priority manager while in this scope.  Wait
   // until here to start so that we give the most amount of time for

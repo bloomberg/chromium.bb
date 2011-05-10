@@ -225,13 +225,7 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyEditBookmarksEnabled,
                     prefs::kEditBookmarksEnabled),
         TypeAndName(kPolicyAllowFileSelectionDialogs,
-                    prefs::kAllowFileSelectionDialogs),
-        TypeAndName(kPolicyChromotingEnabled,
-                    prefs::kChromotingEnabled),
-        TypeAndName(kPolicyChromotingHostEnabled,
-                    prefs::kChromotingHostEnabled),
-        TypeAndName(kPolicyChromotingHostFirewallTraversal,
-                    prefs::kChromotingHostFirewallTraversal)));
+                    prefs::kAllowFileSelectionDialogs)));
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(

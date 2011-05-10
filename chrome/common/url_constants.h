@@ -109,8 +109,6 @@ extern const char kChromeUINetInternalsHost[];
 extern const char kChromeUINewTabHost[];
 extern const char kChromeUIPluginsHost[];
 extern const char kChromeUIPrintHost[];
-extern const char kChromeUIRemotingHost[];
-extern const char kChromeUIRemotingResourcesHost[];
 extern const char kChromeUIResourcesHost[];
 extern const char kChromeUIScreenshotPath[];
 extern const char kChromeUISettingsHost[];

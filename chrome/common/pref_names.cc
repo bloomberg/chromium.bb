@@ -929,17 +929,6 @@ const char kSelectFileLastDirectory[] = "selectfile.last_directory";
 // Boolean that specifies if file selection dialogs are shown.
 const char kAllowFileSelectionDialogs[] = "select_file_dialogs.allowed";
 
-// Boolean that specifies if remote access features are allowed.
-const char kChromotingEnabled[] = "chromoting.enabled";
-
-// Boolean that specifies if machine is allowed to be shared for remote access.
-const char kChromotingHostEnabled[] = "chromoting.host_enabled";
-
-// Boolean that specifies if a machine that is shared for remote access is
-// is allowed to accept connections from across a firewall.
-const char kChromotingHostFirewallTraversal[] =
-    "chromoting.host_firewall_traversal";
-
 // Extensions which should be opened upon completion.
 const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";
 
@@ -1254,8 +1243,6 @@ const char kCloudPrintServiceURL[] = "cloud_print.service_url";
 const char kCloudPrintDialogWidth[] = "cloud_print.dialog_size.width";
 const char kCloudPrintDialogHeight[] = "cloud_print.dialog_size.height";
 
-const char kRemotingHasSetupCompleted[] = "remoting.has_setup_completed";
-
 // The list of BackgroundContents that should be loaded when the browser
 // launches.
 const char kRegisteredBackgroundContents[] = "background_contents.registered";
@@ -1314,9 +1301,6 @@ const char kCloudPrintPrintSystemSettings[] =
 const char kCloudPrintEnableJobPoll[] = "cloud_print.enable_job_poll";
 const char kCloudPrintRobotRefreshToken[] = "cloud_print.robot_refresh_token";
 const char kCloudPrintRobotEmail[] = "cloud_print.robot_email";
-
-// Used by the service process to determine if the remoting host is enabled.
-const char kRemotingHostEnabled[] = "remoting.host_enabled";
 
 // Preference to story proxy settings.
 const char kProxy[] = "proxy";

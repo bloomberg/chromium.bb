@@ -263,12 +263,6 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kEditBookmarksEnabled },
   { Value::TYPE_BOOLEAN, kPolicyAllowFileSelectionDialogs,
     prefs::kAllowFileSelectionDialogs },
-  { Value::TYPE_BOOLEAN, kPolicyChromotingEnabled,
-    prefs::kChromotingEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyChromotingHostEnabled,
-    prefs::kChromotingHostEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyChromotingHostFirewallTraversal,
-    prefs::kChromotingHostFirewallTraversal },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
@@ -1007,12 +1001,6 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kEditBookmarksEnabled },
     { kPolicyAllowFileSelectionDialogs, Value::TYPE_BOOLEAN,
       key::kAllowFileSelectionDialogs },
-    { kPolicyChromotingEnabled, Value::TYPE_BOOLEAN,
-      key::kChromotingEnabled },
-    { kPolicyChromotingHostEnabled, Value::TYPE_BOOLEAN,
-      key::kChromotingHostEnabled },
-    { kPolicyChromotingHostFirewallTraversal, Value::TYPE_BOOLEAN,
-      key::kChromotingHostFirewallTraversal },
 
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,

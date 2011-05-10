@@ -559,9 +559,6 @@ class Browser : public TabHandlerDelegate,
   void OpenOptionsDialog();
   void OpenPasswordManager();
   void OpenSyncMyBookmarksDialog();
-#if defined(ENABLE_REMOTING)
-  void OpenRemotingSetupDialog();
-#endif
   void OpenImportSettingsDialog();
   void OpenInstantConfirmDialog();
   void OpenAboutChromeDialog();

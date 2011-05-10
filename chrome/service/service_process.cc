@@ -28,7 +28,6 @@
 #include "chrome/service/service_process_prefs.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "media/base/media.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -38,13 +37,6 @@
 #include "ui/gfx/gtk_util.h"
 #include <gtk/gtk.h>
 #endif
-
-#if defined(ENABLE_REMOTING)
-#include "chrome/service/remoting/chromoting_host_manager.h"
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif  // defined(OS_MACOSX)
-#endif  // defined(ENABLED_REMOTING)
 
 ServiceProcess* g_service_process = NULL;
 
@@ -188,18 +180,6 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
 
   PrepareRestartOnCrashEnviroment(command_line);
 
-#if defined(ENABLE_REMOTING)
-  // Load media codecs, required by the Chromoting host
-  FilePath module_path;
-  if (PathService::Get(chrome::DIR_MEDIA_LIBS, &module_path) &&
-      media::InitializeMediaLibrary(module_path)) {
-    // Initialize chromoting host manager.
-    remoting_host_manager_ = new remoting::ChromotingHostManager(this);
-    remoting_host_manager_->Initialize(message_loop,
-                                       file_thread_->message_loop_proxy());
-  }
-#endif // ENABLE_REMOTING
-
   // Enable Cloud Print if needed. First check the command-line.
   bool cloud_print_proxy_enabled =
       command_line.HasSwitch(switches::kEnableCloudPrintProxy);
@@ -248,26 +228,11 @@ bool ServiceProcess::Teardown() {
   return true;
 }
 
-#if defined(ENABLE_REMOTING)
-static void QuitMessageLoop(MessageLoop* message_loop) {
-  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-}
-#endif
-
 // This method is called when a shutdown command is received from IPC channel
 // or there was an error in the IPC channel.
 void ServiceProcess::Shutdown() {
-#if defined(ENABLE_REMOTING)
-  // During shutdown of remoting host it has some left over operations on
-  // the UI thread. So we let the teardown to proceed asynchronously
-  if (remoting_host_manager_.get()) {
-    remoting_host_manager_->Teardown(
-        NewRunnableFunction(&QuitMessageLoop, main_message_loop_));
-  }
-#else
   // Quit the main message loop.
   main_message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-#endif
 }
 
 bool ServiceProcess::HandleClientDisconnect() {
@@ -304,14 +269,6 @@ void ServiceProcess::OnCloudPrintProxyDisabled(bool persist_state) {
     service_prefs_->SetBoolean(prefs::kCloudPrintProxyEnabled, false);
     service_prefs_->WritePrefs();
   }
-  OnServiceDisabled();
-}
-
-void ServiceProcess::OnChromotingHostEnabled() {
-  OnServiceEnabled();
-}
-
-void ServiceProcess::OnChromotingHostDisabled() {
   OnServiceDisabled();
 }
 

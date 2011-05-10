@@ -11,7 +11,6 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/common/service_process_util.h"
-#include "remoting/host/host_key_pair.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,49 +22,3 @@ TEST(ServiceProcessTest, DISABLED_Run) {
   EXPECT_TRUE(process.Initialize(&main_message_loop, command_line, &state));
   EXPECT_TRUE(process.Teardown());
 }
-
-#if defined(ENABLE_REMOTING)
-// This test seems to break randomly so disabling it.
-TEST(ServiceProcessTest, DISABLED_RunChromoting) {
-  MessageLoopForUI main_message_loop;
-  ServiceProcess process;
-  ServiceProcessState state;
-  CommandLine command_line(CommandLine::NO_PROGRAM);
-  EXPECT_TRUE(process.Initialize(&main_message_loop, command_line, &state));
-
-  // Then config the chromoting host and start it.
-  process.remoting_host_manager()->SetCredentials("email", "token");
-  process.remoting_host_manager()->Enable();
-  process.remoting_host_manager()->Disable();
-  EXPECT_TRUE(process.Teardown());
-}
-
-class MockServiceProcess : public ServiceProcess {
- private:
-  FRIEND_TEST_ALL_PREFIXES(ServiceProcessTest, RunChromotingUntilShutdown);
-  MOCK_METHOD0(OnChromotingHostShutdown, void());
-};
-
-ACTION_P(QuitMessageLoop, message_loop) {
-  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-}
-
-TEST(ServiceProcessTest, DISABLED_RunChromotingUntilShutdown) {
-  MessageLoopForUI main_message_loop;
-  MockServiceProcess process;
-  ServiceProcessState state;
-  CommandLine command_line(CommandLine::NO_PROGRAM);
-  EXPECT_TRUE(process.Initialize(&main_message_loop, command_line, &state));
-
-  // Expect chromoting shutdown be called because the login token is invalid.
-  EXPECT_CALL(process, OnChromotingHostShutdown())
-      .WillOnce(QuitMessageLoop(&main_message_loop));
-
-  // Then config the chromoting host and start it.
-  process.remoting_host_manager()->SetCredentials("email", "token");
-  process.remoting_host_manager()->Enable();
-  MessageLoop::current()->Run();
-
-  EXPECT_TRUE(process.Teardown());
-}
-#endif  // defined(ENABLE_REMOTING)

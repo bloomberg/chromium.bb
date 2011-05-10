@@ -2156,18 +2156,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kEnableBookmarkBar,
                              true,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kRemotingHasSetupCompleted,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kChromotingEnabled,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kChromotingHostEnabled,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kChromotingHostFirewallTraversal,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kCloudPrintEmail,
                             std::string(),
                             PrefService::UNSYNCABLE_PREF);

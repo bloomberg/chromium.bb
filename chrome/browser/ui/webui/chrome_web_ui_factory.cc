@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
-#include "chrome/browser/ui/webui/remoting_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 #include "chrome/browser/ui/webui/textfields_ui.h"
 #include "chrome/common/chrome_switches.h"
@@ -115,7 +114,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return NULL;
 
   if (url.host() == chrome::kChromeUISyncResourcesHost ||
-      url.host() == chrome::kChromeUIRemotingResourcesHost ||
       url.host() == chrome::kCloudPrintSetupHost)
     return &NewWebUI<HtmlDialogUI>;
 
@@ -169,14 +167,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<PluginsUI>;
   if (url.host() == chrome::kChromeUISyncInternalsHost)
     return &NewWebUI<SyncInternalsUI>;
-#if defined(ENABLE_REMOTING)
-  if (url.host() == chrome::kChromeUIRemotingHost) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableRemoting)) {
-      return &NewWebUI<RemotingUI>;
-    }
-  }
-#endif
 
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)
@@ -349,11 +339,6 @@ RefCountedMemory* ChromeWebUIFactory::GetFaviconResourceBytes(
 
   if (page_url.host() == chrome::kChromeUIPluginsHost)
     return PluginsUI::GetFaviconResourceBytes();
-
-#if defined(ENABLE_REMOTING)
-  if (page_url.host() == chrome::kChromeUIRemotingHost)
-    return RemotingUI::GetFaviconResourceBytes();
-#endif
 
   return NULL;
 }
