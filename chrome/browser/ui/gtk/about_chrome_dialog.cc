@@ -107,7 +107,13 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   std::string current_version = version_info.Version();
 #if !defined(GOOGLE_CHROME_BUILD)
   current_version += " (";
+  current_version += l10n_util::GetStringUTF8(
+      version_info.IsOfficialBuild() ?
+      IDS_ABOUT_VERSION_OFFICIAL : IDS_ABOUT_VERSION_UNOFFICIAL);
+  current_version += " ";
   current_version += version_info.LastChange();
+  current_version += " ";
+  current_version += version_info.OSType();
   current_version += ")";
 #endif
   std::string channel = platform_util::GetVersionStringModifier();

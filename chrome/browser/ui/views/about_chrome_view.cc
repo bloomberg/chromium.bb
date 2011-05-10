@@ -107,9 +107,7 @@ AboutChromeView::AboutChromeView(Profile* profile)
       about_dlg_background_logo_(NULL),
       about_title_label_(NULL),
       version_label_(NULL),
-#if defined(OS_CHROMEOS)
       os_version_label_(NULL),
-#endif
       copyright_label_(NULL),
       main_text_label_(NULL),
       main_text_label_height_(0),
@@ -120,11 +118,7 @@ AboutChromeView::AboutChromeView(Profile* profile)
       chromium_url_appears_first_(true),
       text_direction_is_rtl_(false) {
   DCHECK(profile);
-#if defined(OS_CHROMEOS)
-  loader_.GetVersion(&consumer_,
-                     NewCallback(this, &AboutChromeView::OnOSVersion),
-                     chromeos::VersionLoader::VERSION_FULL);
-#endif
+
   Init();
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
@@ -168,6 +162,10 @@ void AboutChromeView::Init() {
 
 #if !defined(GOOGLE_CHROME_BUILD)
   version_details_ += " (";
+  version_details_ += l10n_util::GetStringUTF8(
+      version_info.IsOfficialBuild() ?
+      IDS_ABOUT_VERSION_OFFICIAL : IDS_ABOUT_VERSION_UNOFFICIAL);
+  version_details_ += " ";
   version_details_ += version_info.LastChange();
   version_details_ += ")";
 #endif
@@ -223,8 +221,14 @@ void AboutChromeView::Init() {
       ResourceBundle::BaseFont));
   AddChildView(version_label_);
 
-#if defined(OS_CHROMEOS)
   os_version_label_ = new views::Textfield(views::Textfield::STYLE_MULTILINE);
+#if defined(OS_CHROMEOS)
+  loader_.GetVersion(&consumer_,
+                     NewCallback(this, &AboutChromeView::OnOSVersion),
+                     chromeos::VersionLoader::VERSION_FULL);
+#else
+  os_version_label_->SetText(UTF8ToUTF16(version_info.OSType()));
+#endif
   os_version_label_->SetReadOnly(true);
   os_version_label_->RemoveBorder();
   os_version_label_->SetTextColor(SK_ColorBLACK);
@@ -232,7 +236,6 @@ void AboutChromeView::Init() {
   os_version_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont));
   AddChildView(os_version_label_);
-#endif
 
   // The copyright URL portion of the main label.
   copyright_label_ = new views::Label(
@@ -361,7 +364,6 @@ void AboutChromeView::Layout() {
                             kVersionFieldWidth,
                             sz.height());
 
-#if defined(OS_CHROMEOS)
   // Then we have the version number right below it.
   sz = os_version_label_->GetPreferredSize();
   os_version_label_->SetBounds(
@@ -371,7 +373,6 @@ void AboutChromeView::Layout() {
           views::kRelatedControlVerticalSpacing,
       kVersionFieldWidth,
       sz.height());
-#endif
 
   // For the width of the main text label we want to use up the whole panel
   // width and remaining height, minus a little margin on each side.

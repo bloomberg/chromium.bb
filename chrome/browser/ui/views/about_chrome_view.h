@@ -105,9 +105,7 @@ class AboutChromeView : public views::View,
   views::ImageView* about_dlg_background_logo_;
   views::Label* about_title_label_;
   views::Textfield* version_label_;
-#if defined(OS_CHROMEOS)
   views::Textfield* os_version_label_;
-#endif
   views::Label* copyright_label_;
   views::Label* main_text_label_;
   int main_text_label_height_;
