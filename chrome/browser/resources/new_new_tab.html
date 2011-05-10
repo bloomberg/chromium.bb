@@ -42,11 +42,6 @@ function registerCallback(name) {
   global[name] = f;
 }
 
-chrome.send('getMostVisited');
-chrome.send('getRecentlyClosedTabs');
-chrome.send('getForeignSessions');
-chrome.send('getApps');
-
 registerCallback('setMostVisitedPages');
 registerCallback('recentlyClosedTabs');
 registerCallback('syncMessageChanged');
@@ -55,6 +50,11 @@ registerCallback('setShownSections');
 registerCallback('foreignSessions');
 registerCallback('bookmarkBarDetached');
 registerCallback('bookmarkBarAttached');
+
+chrome.send('getMostVisited');
+chrome.send('getRecentlyClosedTabs');
+chrome.send('getForeignSessions');
+chrome.send('getApps');
 
 </script>
 <!-- template data placeholder -->
