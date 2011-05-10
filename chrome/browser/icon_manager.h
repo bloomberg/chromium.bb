@@ -48,7 +48,7 @@
 
 #include <map>
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/hash_tables.h"
 #include "chrome/browser/icon_loader.h"
 #include "content/browser/cancelable_request.h"

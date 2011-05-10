@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/remoting/chromoting_host_info.h"
 #include "chrome/common/net/url_fetcher.h"

@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/extensions/extension_resource.h"
 

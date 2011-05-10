@@ -6,7 +6,7 @@
 #define REMOTING_HOST_CAPTURER_H_
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/types.h"
 

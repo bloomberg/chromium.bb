@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/file_path.h"
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration.h"

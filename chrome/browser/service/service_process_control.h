@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"

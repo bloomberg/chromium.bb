@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/hash_tables.h"
 #include "base/task.h"
 #include "base/time.h"

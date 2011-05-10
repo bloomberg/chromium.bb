@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/sessions/status_controller.h"
 #include "chrome/browser/sync/sessions/sync_session.h"

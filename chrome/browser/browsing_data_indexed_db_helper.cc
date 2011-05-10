@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 
+#include "base/callback_old.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"

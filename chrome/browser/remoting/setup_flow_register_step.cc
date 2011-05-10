@@ -4,6 +4,7 @@
 
 #include "chrome/browser/remoting/setup_flow_register_step.h"
 
+#include "base/callback_old.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/remoting/setup_flow_login_step.h"

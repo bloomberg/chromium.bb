@@ -10,7 +10,7 @@
 #define CONTENT_RENDERER_RENDERER_GL_CONTEXT_H_
 #pragma once
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

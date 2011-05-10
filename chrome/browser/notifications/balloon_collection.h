@@ -11,7 +11,7 @@
 #include <deque>
 #include <string>
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/memory/scoped_ptr.h"
 
 class Balloon;

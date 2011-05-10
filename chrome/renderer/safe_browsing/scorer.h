@@ -18,7 +18,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"

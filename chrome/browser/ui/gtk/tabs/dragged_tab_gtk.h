@@ -8,7 +8,7 @@
 
 #include <gtk/gtk.h>
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "ui/base/animation/animation_delegate.h"

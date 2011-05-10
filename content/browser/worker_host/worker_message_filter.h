@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_WORKER_HOST_WORKER_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_WORKER_HOST_WORKER_MESSAGE_FILTER_H_
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "content/browser/browser_message_filter.h"
 
 class ResourceDispatcherHost;

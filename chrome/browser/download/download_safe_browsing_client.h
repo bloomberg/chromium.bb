@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SAFE_BROWSING_CLIENT_H_
 #pragma once
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"

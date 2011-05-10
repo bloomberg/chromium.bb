@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"

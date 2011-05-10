@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/accessibility_events.h"

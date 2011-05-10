@@ -11,7 +11,7 @@
 #include <map>
 #include <queue>
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/command_buffer.h"

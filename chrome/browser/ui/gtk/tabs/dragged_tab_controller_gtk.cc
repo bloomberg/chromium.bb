@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
