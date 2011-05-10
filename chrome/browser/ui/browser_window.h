@@ -299,6 +299,9 @@ class BrowserWindow {
   virtual void ShowCreateChromeAppShortcutsDialog(Profile* profile,
                                                   const Extension* app) = 0;
 
+  // Toggles compact navigation bar.
+  virtual void ToggleUseCompactNavigationBar() = 0;
+
   // Clipboard commands applied to the whole browser window.
   virtual void Cut() = 0;
   virtual void Copy() = 0;

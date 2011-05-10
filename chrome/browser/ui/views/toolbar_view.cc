@@ -254,6 +254,61 @@ void ToolbarView::RemoveMenuListener(views::MenuListener* listener) {
   }
 }
 
+SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
+  ui::ThemeProvider* tp = GetThemeProvider();
+
+  int id = 0;
+  switch (state) {
+    case views::CustomButton::BS_NORMAL: id = IDR_TOOLS;   break;
+    case views::CustomButton::BS_HOT:    id = IDR_TOOLS_H; break;
+    case views::CustomButton::BS_PUSHED: id = IDR_TOOLS_P; break;
+    default:                             NOTREACHED();     break;
+  }
+  SkBitmap icon = *tp->GetBitmapNamed(id);
+
+#if defined(OS_WIN)
+  // Keep track of whether we were showing the badge before, so we don't send
+  // multiple UMA events for example when multiple Chrome windows are open.
+  static bool incompatibility_badge_showing = false;
+  // Save the old value before resetting it.
+  bool was_showing = incompatibility_badge_showing;
+  incompatibility_badge_showing = false;
+#endif
+
+  bool add_badge = IsUpgradeRecommended() || ShouldShowIncompatibilityWarning();
+  if (!add_badge)
+    return icon;
+
+  // Draw the chrome app menu icon onto the canvas.
+  scoped_ptr<gfx::CanvasSkia> canvas(
+      new gfx::CanvasSkia(icon.width(), icon.height(), false));
+  canvas->DrawBitmapInt(icon, 0, 0);
+
+  SkBitmap badge;
+  // Only one badge can be active at any given time. The Upgrade notification
+  // is deemed most important, then the DLL conflict badge.
+  if (IsUpgradeRecommended()) {
+    badge = *tp->GetBitmapNamed(
+        UpgradeDetector::GetInstance()->GetIconResourceID(
+            UpgradeDetector::UPGRADE_ICON_TYPE_BADGE));
+  } else if (ShouldShowIncompatibilityWarning()) {
+#if defined(OS_WIN)
+    if (!was_showing)
+      UserMetrics::RecordAction(UserMetricsAction("ConflictBadge"));
+    badge = *tp->GetBitmapNamed(IDR_CONFLICT_BADGE);
+    incompatibility_badge_showing = true;
+#else
+    NOTREACHED();
+#endif
+  } else {
+    NOTREACHED();
+  }
+
+  canvas->DrawBitmapInt(badge, icon.width() - badge.width(), kBadgeTopMargin);
+
+  return canvas->ExtractBitmap();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, AccessiblePaneView overrides:
 
@@ -654,59 +709,4 @@ void ToolbarView::UpdateAppMenuBadge() {
   app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::BS_HOT));
   app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::BS_PUSHED));
   SchedulePaint();
-}
-
-SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
-  ui::ThemeProvider* tp = GetThemeProvider();
-
-  int id = 0;
-  switch (state) {
-    case views::CustomButton::BS_NORMAL: id = IDR_TOOLS;   break;
-    case views::CustomButton::BS_HOT:    id = IDR_TOOLS_H; break;
-    case views::CustomButton::BS_PUSHED: id = IDR_TOOLS_P; break;
-    default:                             NOTREACHED();     break;
-  }
-  SkBitmap icon = *tp->GetBitmapNamed(id);
-
-#if defined(OS_WIN)
-  // Keep track of whether we were showing the badge before, so we don't send
-  // multiple UMA events for example when multiple Chrome windows are open.
-  static bool incompatibility_badge_showing = false;
-  // Save the old value before resetting it.
-  bool was_showing = incompatibility_badge_showing;
-  incompatibility_badge_showing = false;
-#endif
-
-  bool add_badge = IsUpgradeRecommended() || ShouldShowIncompatibilityWarning();
-  if (!add_badge)
-    return icon;
-
-  // Draw the chrome app menu icon onto the canvas.
-  scoped_ptr<gfx::CanvasSkia> canvas(
-      new gfx::CanvasSkia(icon.width(), icon.height(), false));
-  canvas->DrawBitmapInt(icon, 0, 0);
-
-  SkBitmap badge;
-  // Only one badge can be active at any given time. The Upgrade notification
-  // is deemed most important, then the DLL conflict badge.
-  if (IsUpgradeRecommended()) {
-    badge = *tp->GetBitmapNamed(
-        UpgradeDetector::GetInstance()->GetIconResourceID(
-            UpgradeDetector::UPGRADE_ICON_TYPE_BADGE));
-  } else if (ShouldShowIncompatibilityWarning()) {
-#if defined(OS_WIN)
-    if (!was_showing)
-      UserMetrics::RecordAction(UserMetricsAction("ConflictBadge"));
-    badge = *tp->GetBitmapNamed(IDR_CONFLICT_BADGE);
-    incompatibility_badge_showing = true;
-#else
-    NOTREACHED();
-#endif
-  } else {
-    NOTREACHED();
-  }
-
-  canvas->DrawBitmapInt(badge, icon.width() - badge.width(), kBadgeTopMargin);
-
-  return canvas->ExtractBitmap();
 }

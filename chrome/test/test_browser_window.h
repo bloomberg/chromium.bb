@@ -59,9 +59,7 @@ class TestBrowserWindow : public BrowserWindow {
       TabContentsWrapper* tab_contents) {}
   virtual void ShowCreateChromeAppShortcutsDialog(Profile* profile,
                                                   const Extension* app) {}
-#if defined(TOOLKIT_VIEWS)
-  virtual void ToggleCompactNavigationBar() {}
-#endif  // defined(TOOLKIT_VIEWS)
+  virtual void ToggleUseCompactNavigationBar() {}
 
   virtual bool IsBookmarkBarVisible() const;
   virtual bool IsBookmarkBarAnimating() const;

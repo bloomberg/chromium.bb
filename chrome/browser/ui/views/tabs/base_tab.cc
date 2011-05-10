@@ -301,6 +301,8 @@ bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
       }
     } else if (!IsSelected()) {
       controller()->SelectTab(this);
+    } else if (IsActive()) {
+      controller()->ClickActiveTab(this);
     }
     controller()->MaybeStartDrag(this, event);
   }

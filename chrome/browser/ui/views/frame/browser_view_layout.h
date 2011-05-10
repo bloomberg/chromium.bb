@@ -62,9 +62,11 @@ class BrowserViewLayout : public views::LayoutManager {
   Browser* browser();
   const Browser* browser() const;
 
-  // Layout the TabStrip, returns the coordinate of the bottom of the TabStrip,
-  // for laying out subsequent controls.
-  virtual int LayoutTabStrip();
+  // Layout the tab strip region, returns the coordinate of the bottom of the
+  // TabStrip, for laying out subsequent controls. This also lays out the
+  // compact navigation and options bars if the browser is in compact navigation
+  // mode.
+  virtual int LayoutTabStripRegion();
 
   // Layout the following controls, starting at |top|, returns the coordinate
   // of the bottom of the control, for laying out the next control.
@@ -112,6 +114,9 @@ class BrowserViewLayout : public views::LayoutManager {
   views::SingleSplitView* contents_split_;
   ContentsContainer* contents_container_;
   views::View* infobar_container_;
+  views::View* compact_navigation_bar_;
+  views::View* compact_options_bar_;
+  views::View* compact_spacer_;
   DownloadShelfView* download_shelf_;
   BookmarkBarView* active_bookmark_bar_;
 

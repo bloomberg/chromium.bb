@@ -53,6 +53,7 @@
 #define IDC_TOGGLE_VERTICAL_TABS        34034
 #define IDC_SEARCH                      34035
 #define IDC_TABPOSE                     34036
+#define IDC_COMPACT_NAVBAR              34037
 
 // Page-related commands
 #define IDC_BOOKMARK_PAGE               35000

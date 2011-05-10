@@ -240,6 +240,7 @@ extern const char kAutofillPersonalDataManagerFirstRun[];
 extern const char kEditBookmarksEnabled[];
 
 extern const char kUseVerticalTabs[];
+extern const char kUseCompactNavigationBar[];
 extern const char kEnableTranslate[];
 extern const char kEnableBookmarkBar[];
 extern const char kPinnedTabs[];

@@ -52,10 +52,12 @@ class DefaultTabHandler : public TabHandler,
   virtual void BookmarkAllTabs();
   virtual bool CanCloseTab() const;
   virtual void ToggleUseVerticalTabs();
+  virtual void ToggleUseCompactNavigationBar();
   virtual bool CanRestoreTab();
   virtual void RestoreTab();
   virtual bool LargeIconsPermitted() const;
   virtual bool UseVerticalTabs() const;
+  virtual bool UseCompactNavigationBar() const;
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(TabContentsWrapper* contents,

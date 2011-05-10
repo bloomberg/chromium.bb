@@ -127,6 +127,10 @@ class TabStripModelObserver {
   // must be dropped.
   virtual void TabStripModelDeleted();
 
+  // Invoked when an active/selected tab at |index| is selected again (ie - the
+  // active/foreground tab is clicked).
+  virtual void ActiveTabClicked(int index);
+
  protected:
   virtual ~TabStripModelObserver() {}
 };

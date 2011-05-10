@@ -309,6 +309,11 @@ void BrowserTabStripController::CreateNewTab() {
   model_->delegate()->AddBlankTab(true);
 }
 
+void BrowserTabStripController::ClickActiveTab(int index) {
+  DCHECK(model_->active_index() == index);
+  model_->ActiveTabClicked(index);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, TabStripModelObserver implementation:
 

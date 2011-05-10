@@ -74,20 +74,6 @@ ui::EventType EventTypeFromNative(NativeEvent native_event) {
   return ui::ET_UNKNOWN;
 }
 
-bool IsClientMouseEvent(NativeEvent native_event) {
-  return native_event.message == WM_MOUSELEAVE ||
-         native_event.message == WM_MOUSEHOVER ||
-        (native_event.message >= WM_MOUSEFIRST &&
-         native_event.message <= WM_MOUSELAST);
-}
-
-bool IsNonClientMouseEvent(NativeEvent native_event) {
-  return native_event.message == WM_NCMOUSELEAVE ||
-         native_event.message == WM_NCMOUSEHOVER ||
-        (native_event.message >= WM_NCMOUSEMOVE &&
-         native_event.message <= WM_NCXBUTTONDBLCLK);
-}
-
 // Get views::Event flags from a native Windows message
 int EventFlagsFromNative(NativeEvent native_event) {
   int flags = 0;
@@ -171,6 +157,20 @@ int EventFlagsFromNative(NativeEvent native_event) {
 }
 
 }  // namespace
+
+bool IsClientMouseEvent(const views::NativeEvent& native_event) {
+  return native_event.message == WM_MOUSELEAVE ||
+    native_event.message == WM_MOUSEHOVER ||
+    (native_event.message >= WM_MOUSEFIRST &&
+    native_event.message <= WM_MOUSELAST);
+}
+
+bool IsNonClientMouseEvent(const views::NativeEvent& native_event) {
+  return native_event.message == WM_NCMOUSELEAVE ||
+    native_event.message == WM_NCMOUSEHOVER ||
+    (native_event.message >= WM_NCMOUSEMOVE &&
+    native_event.message <= WM_NCXBUTTONDBLCLK);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Event, public:

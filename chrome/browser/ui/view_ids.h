@@ -78,6 +78,15 @@ enum ViewID {
   // The sidebar split.
   VIEW_ID_SIDE_BAR_SPLIT,
 
+  // The Compact Navigation bar.
+  VIEW_ID_COMPACT_NAV_BAR,
+
+  // The Compact Options bar.
+  VIEW_ID_COMPACT_OPT_BAR,
+
+  // The spacer for the compact navigation bar.
+  VIEW_ID_COMPACT_NAV_BAR_SPACER,
+
   // Used in chrome/browser/ui/gtk/view_id_util_browsertests.cc
   // If you add new ids, make sure the above test passes.
   VIEW_ID_PREDEFINED_COUNT

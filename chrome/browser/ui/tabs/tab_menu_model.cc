@@ -32,6 +32,16 @@ bool TabMenuModel::AreVerticalTabsEnabled() {
 #endif
 }
 
+bool TabMenuModel::IsCompactNavigationModeEnabled() {
+#if defined(TOOLKIT_VIEWS)
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCompactNavigation);
+#else
+  return false;
+#endif
+}
+
+
 void TabMenuModel::Build(bool is_pinned) {
   AddItemWithStringId(TabStripModel::CommandNewTab, IDS_TAB_CXMENU_NEWTAB);
   AddSeparator();
@@ -52,10 +62,16 @@ void TabMenuModel::Build(bool is_pinned) {
   AddItemWithStringId(TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB);
   AddItemWithStringId(TabStripModel::CommandBookmarkAllTabs,
                       IDS_TAB_CXMENU_BOOKMARK_ALL_TABS);
-  if (AreVerticalTabsEnabled()) {
+  if (AreVerticalTabsEnabled() || IsCompactNavigationModeEnabled()) {
     AddSeparator();
-    AddCheckItemWithStringId(TabStripModel::CommandUseVerticalTabs,
-                             IDS_TAB_CXMENU_USE_VERTICAL_TABS);
+    if (AreVerticalTabsEnabled()) {
+      AddCheckItemWithStringId(TabStripModel::CommandUseVerticalTabs,
+                               IDS_TAB_CXMENU_USE_VERTICAL_TABS);
+    }
+    if (IsCompactNavigationModeEnabled()) {
+      AddCheckItemWithStringId(TabStripModel::CommandUseCompactNavigationBar,
+                               IDS_TAB_CXMENU_USE_COMPACT_NAVIGATION_BAR);
+    }
   }
 }
 
@@ -94,10 +110,16 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   AddItemWithStringId(TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB);
   AddItemWithStringId(TabStripModel::CommandBookmarkAllTabs,
                       IDS_TAB_CXMENU_BOOKMARK_ALL_TABS);
-  if (AreVerticalTabsEnabled()) {
+  if (AreVerticalTabsEnabled() || IsCompactNavigationModeEnabled()) {
     AddSeparator();
-    AddCheckItemWithStringId(TabStripModel::CommandUseVerticalTabs,
-                             IDS_TAB_CXMENU_USE_VERTICAL_TABS);
+    if (AreVerticalTabsEnabled()) {
+      AddCheckItemWithStringId(TabStripModel::CommandUseVerticalTabs,
+        IDS_TAB_CXMENU_USE_VERTICAL_TABS);
+    }
+    if (IsCompactNavigationModeEnabled()) {
+      AddCheckItemWithStringId(TabStripModel::CommandUseCompactNavigationBar,
+        IDS_TAB_CXMENU_USE_COMPACT_NAVIGATION_BAR);
+    }
   }
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableTabGroupsContextMenu)) {

@@ -711,6 +711,10 @@ void TabStripModel::MoveTabPrevious() {
   MoveTabContentsAt(active_index(), new_index, true);
 }
 
+void TabStripModel::ActiveTabClicked(int index) {
+  FOR_EACH_OBSERVER(TabStripModelObserver, observers_, ActiveTabClicked(index));
+}
+
 // Context menu functions.
 bool TabStripModel::IsContextMenuCommandEnabled(
     int context_index, ContextMenuCommand command_id) const {
@@ -764,6 +768,7 @@ bool TabStripModel::IsContextMenuCommandEnabled(
           delegate_->CanBookmarkAllTabs();
 
     case CommandUseVerticalTabs:
+    case CommandUseCompactNavigationBar:
       return true;
 
     case CommandSelectByDomain:
@@ -782,6 +787,8 @@ bool TabStripModel::IsContextMenuCommandChecked(
   switch (command_id) {
     case CommandUseVerticalTabs:
       return delegate()->UseVerticalTabs();
+    case CommandUseCompactNavigationBar:
+      return delegate()->UseCompactNavigationBar();
     default:
       NOTREACHED();
       break;
@@ -901,6 +908,14 @@ void TabStripModel::ExecuteContextMenuCommand(
           UserMetricsAction("TabContextMenu_UseVerticalTabs"));
 
       delegate()->ToggleUseVerticalTabs();
+      break;
+    }
+
+    case CommandUseCompactNavigationBar: {
+      UserMetrics::RecordAction(
+          UserMetricsAction("TabContextMenu_CompactNavigationBar"));
+
+      delegate()->ToggleUseCompactNavigationBar();
       break;
     }
 
@@ -1028,6 +1043,9 @@ bool TabStripModel::ContextMenuCommandToBrowserCommand(int cmd_id,
       break;
     case CommandUseVerticalTabs:
       *browser_cmd = IDC_TOGGLE_VERTICAL_TABS;
+      break;
+    case CommandUseCompactNavigationBar:
+      *browser_cmd = IDC_COMPACT_NAVBAR;
       break;
     default:
       *browser_cmd = 0;
