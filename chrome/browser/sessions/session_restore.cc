@@ -573,7 +573,7 @@ class SessionRestoreImpl : public NotificationObserver {
     StartTabCreation();
 
     Browser* current_browser =
-        browser_ ? browser_ : BrowserList::GetLastActive();
+        browser_ ? browser_ : BrowserList::GetLastActiveWithProfile(profile_);
     // After the for loop this contains the last TABBED_BROWSER. Is null if no
     // tabbed browsers exist.
     Browser* last_browser = NULL;
