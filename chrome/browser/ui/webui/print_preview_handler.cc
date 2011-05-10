@@ -275,8 +275,10 @@ void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
 
 void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   TabContents* initiator_tab = GetInitiatorTab();
-  if (!initiator_tab)
+  if (!initiator_tab) {
+    web_ui_->CallJavascriptFunction("printPreviewFailed");
     return;
+  }
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
   if (!settings.get())
     return;
