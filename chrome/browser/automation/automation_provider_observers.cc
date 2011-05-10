@@ -1204,30 +1204,30 @@ DocumentPrintedNotificationObserver::~DocumentPrintedNotificationObserver() {
 }
 
 void DocumentPrintedNotificationObserver::Observe(
-    NotificationType type, const NotificationSource& source,
+    NotificationType type,
+    const NotificationSource& source,
     const NotificationDetails& details) {
-  using namespace printing;
   DCHECK(type == NotificationType::PRINT_JOB_EVENT);
-  switch (Details<JobEventDetails>(details)->type()) {
-    case JobEventDetails::JOB_DONE: {
+  switch (Details<printing::JobEventDetails>(details)->type()) {
+    case printing::JobEventDetails::JOB_DONE: {
       // Succeeded.
       success_ = true;
       delete this;
       break;
     }
-    case JobEventDetails::USER_INIT_CANCELED:
-    case JobEventDetails::FAILED: {
+    case printing::JobEventDetails::USER_INIT_CANCELED:
+    case printing::JobEventDetails::FAILED: {
       // Failed.
       delete this;
       break;
     }
-    case JobEventDetails::NEW_DOC:
-    case JobEventDetails::USER_INIT_DONE:
-    case JobEventDetails::DEFAULT_INIT_DONE:
-    case JobEventDetails::NEW_PAGE:
-    case JobEventDetails::PAGE_DONE:
-    case JobEventDetails::DOC_DONE:
-    case JobEventDetails::ALL_PAGES_REQUESTED: {
+    case printing::JobEventDetails::NEW_DOC:
+    case printing::JobEventDetails::USER_INIT_DONE:
+    case printing::JobEventDetails::DEFAULT_INIT_DONE:
+    case printing::JobEventDetails::NEW_PAGE:
+    case printing::JobEventDetails::PAGE_DONE:
+    case printing::JobEventDetails::DOC_DONE:
+    case printing::JobEventDetails::ALL_PAGES_REQUESTED: {
       // Don't care.
       break;
     }
