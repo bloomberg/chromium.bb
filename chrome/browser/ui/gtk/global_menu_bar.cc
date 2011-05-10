@@ -130,17 +130,6 @@ GlobalMenuBarCommand bookmark_menu[] = {
   { IDS_BOOKMARK_CURRENT_PAGE_LINUX, IDC_BOOKMARK_PAGE },
   { IDS_BOOKMARK_ALL_TABS_LINUX, IDC_BOOKMARK_ALL_TABS },
 
-  { MENU_SEPARATOR, MENU_SEPARATOR },
-  // TODO(erg): Real implementation of bookmark bar bookmarks!
-  { MENU_SEPARATOR, MENU_SEPARATOR },
-
-  { IDS_BOOMARK_BAR_OPEN_ALL, IDC_BOOKMARK_BAR_OPEN_ALL },
-  { IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW, IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW },
-  { IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO, IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO },
-
-  { MENU_SEPARATOR, MENU_SEPARATOR },
-  // TODO(erg): "Other bookmarks" bookmarks
-
   { MENU_END, MENU_END }
 };
 
@@ -176,6 +165,7 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
       profile_(browser_->profile()),
       menu_bar_(gtk_menu_bar_new()),
       history_menu_(browser_),
+      bookmark_menu_(browser_),
       dummy_accel_group_(gtk_accel_group_new()),
       block_activation_(false) {
   // The global menu bar should never actually be shown in the app; it should
@@ -191,7 +181,8 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
   BuildGtkMenuFrom(IDS_VIEW_MENU_LINUX, &id_to_menu_item_, view_menu);
   history_menu_.Init(BuildGtkMenuFrom(IDS_HISTORY_MENU_LINUX, &id_to_menu_item_,
                                       history_menu));
-  BuildGtkMenuFrom(IDS_BOOKMARKS_MENU_LINUX, &id_to_menu_item_, bookmark_menu);
+  bookmark_menu_.Init(BuildGtkMenuFrom(IDS_BOOKMARKS_MENU_LINUX,
+                                       &id_to_menu_item_, bookmark_menu));
   BuildGtkMenuFrom(IDS_TOOLS_MENU_LINUX, &id_to_menu_item_, tools_menu);
   BuildGtkMenuFrom(IDS_HELP_MENU_LINUX, &id_to_menu_item_, help_menu);
 
