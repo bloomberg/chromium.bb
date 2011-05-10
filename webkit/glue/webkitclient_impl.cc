@@ -25,7 +25,6 @@
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "gpu/common/gpu_trace_event.h"
 #include "grit/webkit_chromium_resources.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
@@ -284,16 +283,12 @@ void WebKitClientImpl::histogramEnumeration(
 
 void WebKitClientImpl::traceEventBegin(const char* name, void* id,
                                        const char* extra) {
-  TRACE_EVENT_BEGIN(name, id, extra);
-  GPU_TRACE_EVENT_BEGIN2("webkit", name,
-                         "id", id,
-                         "extra", extra ? extra : "");
+  TRACE_EVENT_BEGIN_ETW(name, id, extra);
 }
 
 void WebKitClientImpl::traceEventEnd(const char* name, void* id,
                                      const char* extra) {
-  TRACE_EVENT_END(name, id, extra);
-  GPU_TRACE_EVENT_END0("webkit", name);
+  TRACE_EVENT_END_ETW(name, id, extra);
 }
 
 namespace {

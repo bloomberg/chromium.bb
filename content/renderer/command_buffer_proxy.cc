@@ -4,6 +4,7 @@
 
 #include "content/renderer/command_buffer_proxy.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
@@ -14,7 +15,6 @@
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_thread.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
-#include "gpu/common/gpu_trace_event.h"
 #include "ui/gfx/size.h"
 
 using gpu::Buffer;
@@ -158,7 +158,7 @@ void CommandBufferProxy::Flush(int32 put_offset) {
 
 gpu::CommandBuffer::State CommandBufferProxy::FlushSync(int32 put_offset,
                                                         int32 last_known_get) {
-  GPU_TRACE_EVENT0("gpu", "CommandBufferProxy::FlushSync");
+  TRACE_EVENT0("gpu", "CommandBufferProxy::FlushSync");
   if (last_known_get == last_state_.get_offset) {
     // Send will flag state with lost context if IPC fails.
     if (last_state_.error == gpu::error::kNoError) {

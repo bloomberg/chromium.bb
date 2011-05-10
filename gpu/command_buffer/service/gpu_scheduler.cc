@@ -6,8 +6,8 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop.h"
-#include "gpu/common/gpu_trace_event.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_bindings.h"
 
@@ -128,7 +128,7 @@ void GpuScheduler::PutChanged(bool sync) {
 }
 
 void GpuScheduler::ProcessCommands() {
-  GPU_TRACE_EVENT0("gpu", "GpuScheduler:ProcessCommands");
+  TRACE_EVENT0("gpu", "GpuScheduler:ProcessCommands");
   CommandBuffer::State state = command_buffer_->GetState();
   if (state.error != error::kNoError)
     return;

@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
-#include "gpu/common/gpu_trace_event.h"
+#include "base/debug/trace_event.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/plugin_message_filter.h"
@@ -92,9 +92,9 @@ bool PluginDispatcher::IsPlugin() const {
 }
 
 bool PluginDispatcher::Send(IPC::Message* msg) {
-  GPU_TRACE_EVENT2("ppapi proxy", "PluginDispatcher::Send",
-                   "Class", IPC_MESSAGE_ID_CLASS(msg->type()),
-                   "Line", IPC_MESSAGE_ID_LINE(msg->type()));
+  TRACE_EVENT2("ppapi proxy", "PluginDispatcher::Send",
+               "Class", IPC_MESSAGE_ID_CLASS(msg->type()),
+               "Line", IPC_MESSAGE_ID_LINE(msg->type()));
   // We always want plugin->renderer messages to arrive in-order. If some sync
   // and some async messages are send in response to a synchronous
   // renderer->plugin call, the sync reply will be processed before the async
@@ -107,9 +107,9 @@ bool PluginDispatcher::Send(IPC::Message* msg) {
 }
 
 bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
-  GPU_TRACE_EVENT2("ppapi proxy", "PluginDispatcher::OnMessageReceived",
-                   "Class", IPC_MESSAGE_ID_CLASS(msg.type()),
-                   "Line", IPC_MESSAGE_ID_LINE(msg.type()));
+  TRACE_EVENT2("ppapi proxy", "PluginDispatcher::OnMessageReceived",
+               "Class", IPC_MESSAGE_ID_CLASS(msg.type()),
+               "Line", IPC_MESSAGE_ID_LINE(msg.type()));
   // Handle common control messages.
   if (Dispatcher::OnMessageReceived(msg))
     return true;

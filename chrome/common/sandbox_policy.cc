@@ -612,7 +612,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     return 0;
   }
 
-  TRACE_EVENT_BEGIN("StartProcessWithAccess", 0, type_str);
+  TRACE_EVENT_BEGIN_ETW("StartProcessWithAccess", 0, type_str);
 
   // To decide if the process is going to be sandboxed we have two cases.
   // First case: all process types except the nacl broker, and the plugin
@@ -721,7 +721,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     return 0;
   }
 
-  TRACE_EVENT_BEGIN("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
+  TRACE_EVENT_BEGIN_ETW("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
 
   result = g_broker_services->SpawnTarget(
       cmd_line->GetProgram().value().c_str(),
@@ -729,7 +729,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
       policy, &target);
   policy->Release();
 
-  TRACE_EVENT_END("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
+  TRACE_EVENT_END_ETW("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
 
   if (sandbox::SBOX_ALL_OK != result)
     return 0;

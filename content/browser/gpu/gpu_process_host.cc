@@ -5,6 +5,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
@@ -18,7 +19,6 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "gpu/common/gpu_trace_event.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
@@ -286,7 +286,7 @@ void GpuProcessHost::EstablishGpuChannel(
     int renderer_id,
     EstablishChannelCallback *callback) {
   DCHECK(CalledOnValidThread());
-  GPU_TRACE_EVENT0("gpu", "GpuProcessHostUIShim::EstablishGpuChannel");
+  TRACE_EVENT0("gpu", "GpuProcessHostUIShim::EstablishGpuChannel");
   linked_ptr<EstablishChannelCallback> wrapped_callback(callback);
 
   // If GPU features are already blacklisted, no need to establish the channel.

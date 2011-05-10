@@ -566,7 +566,7 @@ void HandleTestParameters(const CommandLine& command_line) {
 }
 
 void RunUIMessageLoop(BrowserProcess* browser_process) {
-  TRACE_EVENT_BEGIN("BrowserMain:MESSAGE_LOOP", 0, "");
+  TRACE_EVENT_BEGIN_ETW("BrowserMain:MESSAGE_LOOP", 0, "");
   // This should be invoked as close to the start of the browser's
   // UI thread message loop as possible to get a stable measurement
   // across versions.
@@ -589,7 +589,7 @@ void RunUIMessageLoop(BrowserProcess* browser_process) {
                                                         true);
 #endif
 
-  TRACE_EVENT_END("BrowserMain:MESSAGE_LOOP", 0, "");
+  TRACE_EVENT_END_ETW("BrowserMain:MESSAGE_LOOP", 0, "");
 }
 
 void AddFirstRunNewTabs(BrowserInit* browser_init,
@@ -1122,7 +1122,7 @@ bool IsMetricsReportingEnabled(const PrefService* local_state) {
 
 // Main routine for running as the Browser process.
 int BrowserMain(const MainFunctionParams& parameters) {
-  TRACE_EVENT_BEGIN("BrowserMain", 0, "");
+  TRACE_EVENT_BEGIN_ETW("BrowserMain", 0, "");
 
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
@@ -1912,6 +1912,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
                                                         false);
   chromeos::BootTimesLoader::Get()->WriteLogoutTimes();
 #endif
-  TRACE_EVENT_END("BrowserMain", 0, 0);
+  TRACE_EVENT_END_ETW("BrowserMain", 0, 0);
   return result_code;
 }

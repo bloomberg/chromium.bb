@@ -66,7 +66,7 @@ ChromeActiveDocument::ChromeActiveDocument()
       is_automation_client_reused_(false),
       popup_allowed_(false),
       accelerator_table_(NULL) {
-  TRACE_EVENT_BEGIN("chromeframe.createactivedocument", this, "");
+  TRACE_EVENT_BEGIN_ETW("chromeframe.createactivedocument", this, "");
 
   url_fetcher_->set_frame_busting(false);
   memset(navigation_info_.get(), 0, sizeof(NavigationInfo));
@@ -133,7 +133,7 @@ ChromeActiveDocument::~ChromeActiveDocument() {
   // ChromeFramePlugin
   BaseActiveX::Uninitialize();
 
-  TRACE_EVENT_END("chromeframe.createactivedocument", this, "");
+  TRACE_EVENT_END_ETW("chromeframe.createactivedocument", this, "");
 }
 
 // Override DoVerb

@@ -25,21 +25,6 @@
   },
   'targets': [
     {
-      'target_name': 'gpu_common',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'common/gpu_trace_event.cc',
-        'common/gpu_trace_event.h',
-      ],
-    },
-    {
       'target_name': 'command_buffer_common',
       'type': 'static_library',
       'include_dirs': [
@@ -95,6 +80,7 @@
       'target_name': 'gles2_implementation',
       'type': 'static_library',
       'dependencies': [
+        '../base/base.gyp:base',
         'gles2_cmd_helper',
       ],
       'all_dependent_settings': {
@@ -115,6 +101,7 @@
         'GLES2_SUPPORT_CLIENT_SIDE_ARRAYS=1'
       ],
       'dependencies': [
+        '../base/base.gyp:base',
         'gles2_cmd_helper',
       ],
       'all_dependent_settings': {
@@ -167,7 +154,6 @@
       },
       'dependencies': [
         'command_buffer_common',
-        'gpu_common',
       ],
       'sources': [
         'command_buffer/client/cmd_buffer_helper.cc',
@@ -193,7 +179,6 @@
       },
       'dependencies': [
         'command_buffer_common',
-        'gpu_common',
         '../base/base.gyp:base',
         '../ui/gfx/gl/gl.gyp:gl',
         '../ui/gfx/surface/surface.gyp:surface',
@@ -264,7 +249,6 @@
         'command_buffer_client',
         'command_buffer_common',
         'command_buffer_service',
-        'gpu_common',
         'gpu_unittest_utils',
         'gles2_implementation_client_side_arrays',
         'gles2_cmd_helper',
@@ -283,26 +267,15 @@
         'command_buffer/common/gles2_cmd_format_test_autogen.h',
         'command_buffer/common/gles2_cmd_id_test.cc',
         'command_buffer/common/gles2_cmd_id_test_autogen.h',
-        'command_buffer/common/gles2_cmd_format_test.cc',
-        'command_buffer/common/gles2_cmd_format_test_autogen.h',
-        'command_buffer/common/gles2_cmd_id_test.cc',
-        'command_buffer/common/gles2_cmd_id_test_autogen.h',
-        'command_buffer/common/gles2_cmd_format_test.cc',
-        'command_buffer/common/gles2_cmd_format_test_autogen.h',
-        'command_buffer/common/gles2_cmd_id_test.cc',
-        'command_buffer/common/gles2_cmd_id_test_autogen.h',
         'command_buffer/common/id_allocator_test.cc',
+        'command_buffer/common/trace_event.h',
         'command_buffer/common/unittest_main.cc',
         'command_buffer/service/buffer_manager_unittest.cc',
-        'command_buffer/service/context_group_unittest.cc',
-        'command_buffer/service/cmd_parser_test.cc',
         'command_buffer/service/cmd_parser_test.cc',
         'command_buffer/service/common_decoder_unittest.cc',
+        'command_buffer/service/context_group_unittest.cc',
         'command_buffer/service/feature_info_unittest.cc',
         'command_buffer/service/framebuffer_manager_unittest.cc',
-        'command_buffer/service/gpu_scheduler_unittest.cc',
-        'command_buffer/service/gles2_cmd_decoder_unittest_base.h',
-        'command_buffer/service/gles2_cmd_decoder_unittest_base.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_1.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_1_autogen.h',
@@ -310,6 +283,9 @@
         'command_buffer/service/gles2_cmd_decoder_unittest_2_autogen.h',
         'command_buffer/service/gles2_cmd_decoder_unittest_3.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_3_autogen.h',
+        'command_buffer/service/gles2_cmd_decoder_unittest_base.cc',
+        'command_buffer/service/gles2_cmd_decoder_unittest_base.h',
+        'command_buffer/service/gpu_scheduler_unittest.cc',
         'command_buffer/service/id_manager_unittest.cc',
         'command_buffer/service/mocks.cc',
         'command_buffer/service/mocks.h',
@@ -317,8 +293,8 @@
         'command_buffer/service/renderbuffer_manager_unittest.cc',
         'command_buffer/service/shader_manager_unittest.cc',
         'command_buffer/service/shader_translator_unittest.cc',
-        'command_buffer/service/test_helper.h',
         'command_buffer/service/test_helper.cc',
+        'command_buffer/service/test_helper.h',
         'command_buffer/service/texture_manager_unittest.cc',
       ],
     },

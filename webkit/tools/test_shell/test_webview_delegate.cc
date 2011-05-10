@@ -819,7 +819,7 @@ void TestWebViewDelegate::didFailLoad(
 }
 
 void TestWebViewDelegate::didFinishLoad(WebFrame* frame) {
-  TRACE_EVENT_END("frame.load", this, frame->url().spec());
+  TRACE_EVENT_END_ETW("frame.load", this, frame->url().spec());
   UpdateAddressBar(frame->view());
   LocationChangeDone(frame);
 }
@@ -877,7 +877,7 @@ void TestWebViewDelegate::willSendRequest(
        header != clear_headers_.end(); ++header)
     request.clearHTTPHeaderField(WebString::fromUTF8(*header));
 
-  TRACE_EVENT_BEGIN("url.load", identifier, request_url);
+  TRACE_EVENT_BEGIN_ETW("url.load", identifier, request_url);
   // Set the new substituted URL.
   request.setURL(GURL(TestShell::RewriteLocalUrl(request_url)));
 }
@@ -888,7 +888,7 @@ void TestWebViewDelegate::didReceiveResponse(
 
 void TestWebViewDelegate::didFinishResourceLoad(
     WebFrame* frame, unsigned identifier) {
-  TRACE_EVENT_END("url.load", identifier, "");
+  TRACE_EVENT_END_ETW("url.load", identifier, "");
   resource_identifier_map_.erase(identifier);
 }
 

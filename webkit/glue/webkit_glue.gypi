@@ -107,7 +107,6 @@
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base_i18n',
-        '<(DEPTH)/gpu/gpu.gyp:gpu_common',
         '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/ppapi/ppapi.gyp:ppapi_shared_impl',

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,9 +64,6 @@ const char kDebugMemoryInUse[] = "debug-memory-in-use";
 
 // Enable cookies on the file:// scheme.  --layout-tests also enables this.
 const char kEnableFileCookies[] = "enable-file-cookies";
-
-// Enable tracing events (see base/debug/trace_event.h)
-const char kEnableTracing[] = "enable-tracing";
 
 // Allow scripts to close windows in all cases.
 const char kAllowScriptsToCloseWindows[] = "allow-scripts-to-close-windows";

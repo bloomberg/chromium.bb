@@ -730,8 +730,8 @@ void ExternalTabContainer::Observe(NotificationType type,
         const LoadNotificationDetails* load =
             Details<LoadNotificationDetails>(details).ptr();
         if (load != NULL && PageTransition::IsMainFrame(load->origin())) {
-          TRACE_EVENT_END("ExternalTabContainer::Navigate", 0,
-                          load->url().spec());
+          TRACE_EVENT_END_ETW("ExternalTabContainer::Navigate", 0,
+                              load->url().spec());
           automation_->Send(new AutomationMsg_TabLoaded(tab_handle_,
                                                         load->url()));
         }
@@ -980,7 +980,7 @@ void ExternalTabContainer::Navigate(const GURL& url, const GURL& referrer) {
     return;
   }
 
-  TRACE_EVENT_BEGIN("ExternalTabContainer::Navigate", 0, url.spec());
+  TRACE_EVENT_BEGIN_ETW("ExternalTabContainer::Navigate", 0, url.spec());
 
   tab_contents_->controller().LoadURL(url, referrer,
                                       PageTransition::START_PAGE);

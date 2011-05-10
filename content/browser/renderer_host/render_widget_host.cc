@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
@@ -22,7 +23,6 @@
 #include "content/common/notification_service.h"
 #include "content/common/result_codes.h"
 #include "content/common/view_messages.h"
-#include "gpu/common/gpu_trace_event.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/glue/webcursor.h"
@@ -837,7 +837,7 @@ void RenderWidgetHost::OnMsgPaintAtSizeAck(int tag, const gfx::Size& size) {
 
 void RenderWidgetHost::OnMsgUpdateRect(
     const ViewHostMsg_UpdateRect_Params& params) {
-  GPU_TRACE_EVENT0("renderer_host", "RenderWidgetHost::OnMsgUpdateRect");
+  TRACE_EVENT0("renderer_host", "RenderWidgetHost::OnMsgUpdateRect");
   TimeTicks paint_start = TimeTicks::Now();
 
   NotificationService::current()->Notify(

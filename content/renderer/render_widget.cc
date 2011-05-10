@@ -5,6 +5,7 @@
 #include "content/renderer/render_widget.h"
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -15,7 +16,6 @@
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/renderer_webkitclient_impl.h"
-#include "gpu/common/gpu_trace_event.h"
 #include "ipc/ipc_sync_message.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -305,7 +305,7 @@ void RenderWidget::OnRequestMoveAck() {
 }
 
 void RenderWidget::OnUpdateRectAck() {
-  GPU_TRACE_EVENT0("renderer", "RenderWidget::OnUpdateRectAck");
+  TRACE_EVENT0("renderer", "RenderWidget::OnUpdateRectAck");
   DCHECK(update_reply_pending());
   update_reply_pending_ = false;
 
@@ -553,7 +553,7 @@ void RenderWidget::CallDoDeferredUpdate() {
 }
 
 void RenderWidget::DoDeferredUpdate() {
-  GPU_TRACE_EVENT0("renderer", "RenderWidget::DoDeferredUpdate");
+  TRACE_EVENT0("renderer", "RenderWidget::DoDeferredUpdate");
 
   if (!webwidget_ || update_reply_pending())
     return;

@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/id_allocator.h"
+#include "gpu/command_buffer/common/trace_event.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -34,7 +35,6 @@
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/common/gpu_trace_event.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
@@ -5576,7 +5576,7 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
 
 error::Error GLES2DecoderImpl::HandleTexImage2D(
     uint32 immediate_data_size, const gles2::TexImage2D& c) {
-  GPU_TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleTexImage2D");
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleTexImage2D");
   tex_image_2d_failed_ = true;
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -5890,7 +5890,7 @@ void GLES2DecoderImpl::DoTexSubImage2D(
 
 error::Error GLES2DecoderImpl::HandleTexSubImage2D(
     uint32 immediate_data_size, const gles2::TexSubImage2D& c) {
-  GPU_TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleTexSubImage2D");
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleTexSubImage2D");
   GLboolean internal = static_cast<GLboolean>(c.internal);
   if (internal == GL_TRUE && tex_image_2d_failed_)
     return error::kNoError;
@@ -6314,7 +6314,7 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(
 
 error::Error GLES2DecoderImpl::HandleSwapBuffers(
     uint32 immediate_data_size, const gles2::SwapBuffers& c) {
-  GPU_TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleSwapBuffers");
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleSwapBuffers");
   // If offscreen then don't actually SwapBuffers to the display. Just copy
   // the rendered frame to another frame buffer.
   if (offscreen_target_frame_buffer_.get()) {
@@ -6360,7 +6360,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       return error::kNoError;
     }
   } else {
-    GPU_TRACE_EVENT0("gpu", "GLContext::SwapBuffers");
+    TRACE_EVENT0("gpu", "GLContext::SwapBuffers");
     if (!context_->SwapBuffers()) {
       LOG(ERROR) << "Context lost because SwapBuffers failed.";
       return error::kLostContext;
@@ -6376,7 +6376,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
 
 error::Error GLES2DecoderImpl::HandleSetLatchCHROMIUM(
     uint32 immediate_data_size, const gles2::SetLatchCHROMIUM& c) {
-  GPU_TRACE_EVENT0("gpu", "SetLatch");
+  TRACE_EVENT0("gpu", "SetLatch");
   // Ensure the side effects of previous commands are visible to other contexts.
   // There is no need to do this for ANGLE because it uses a
   // single D3D device for all contexts.
@@ -6403,7 +6403,7 @@ error::Error GLES2DecoderImpl::HandleSetLatchCHROMIUM(
 
 error::Error GLES2DecoderImpl::HandleWaitLatchCHROMIUM(
     uint32 immediate_data_size, const gles2::WaitLatchCHROMIUM& c) {
-  GPU_TRACE_EVENT0("gpu", "WaitLatch");
+  TRACE_EVENT0("gpu", "WaitLatch");
   int32 shm_id = gpu::kLatchSharedMemoryId;
   uint32 latch_id = c.latch_id;
   uint32 shm_offset = 0;

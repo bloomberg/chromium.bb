@@ -129,7 +129,7 @@ ChromeFrameAutomationProxyImpl::ChromeFrameAutomationProxyImpl(
     AutomationProxyCacheEntry* entry,
     std::string channel_id, int launch_timeout)
     : AutomationProxy(launch_timeout, false), proxy_entry_(entry) {
-  TRACE_EVENT_BEGIN("chromeframe.automationproxy", this, "");
+  TRACE_EVENT_BEGIN_ETW("chromeframe.automationproxy", this, "");
 
   InitializeChannel(channel_id, false);
 
@@ -142,7 +142,7 @@ ChromeFrameAutomationProxyImpl::ChromeFrameAutomationProxyImpl(
 }
 
 ChromeFrameAutomationProxyImpl::~ChromeFrameAutomationProxyImpl() {
-  TRACE_EVENT_END("chromeframe.automationproxy", this, "");
+  TRACE_EVENT_END_ETW("chromeframe.automationproxy", this, "");
 }
 
 void ChromeFrameAutomationProxyImpl::SendAsAsync(
@@ -354,7 +354,7 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
                                 AUTOMATION_CREATE_TAB_FAILED + 1);
   }
 
-  TRACE_EVENT_END("chromeframe.createproxy", this, "");
+  TRACE_EVENT_END_ETW("chromeframe.createproxy", this, "");
 
   // Finally set the proxy.
   proxy_.reset(proxy);
@@ -467,7 +467,7 @@ ProxyFactory::~ProxyFactory() {
 void ProxyFactory::GetAutomationServer(
     LaunchDelegate* delegate, ChromeFrameLaunchParams* params,
     void** automation_server_id) {
-  TRACE_EVENT_BEGIN("chromeframe.createproxy", this, "");
+  TRACE_EVENT_BEGIN_ETW("chromeframe.createproxy", this, "");
 
   scoped_refptr<AutomationProxyCacheEntry> entry;
   // Find already existing launcher thread for given profile

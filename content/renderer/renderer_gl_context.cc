@@ -4,6 +4,7 @@
 
 #include "content/renderer/renderer_gl_context.h"
 
+#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -27,7 +28,6 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/common/constants.h"
-#include "gpu/common/gpu_trace_event.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
 #endif  // ENABLE_GPU
 
@@ -293,7 +293,7 @@ bool RendererGLContext::MakeCurrent(RendererGLContext* context) {
 }
 
 bool RendererGLContext::SwapBuffers() {
-  GPU_TRACE_EVENT0("gpu", "RendererGLContext::SwapBuffers");
+  TRACE_EVENT0("gpu", "RendererGLContext::SwapBuffers");
   // Don't request latest error status from service. Just use the locally cached
   // information from the last flush.
   if (command_buffer_->GetLastState().error != gpu::error::kNoError)
@@ -376,7 +376,7 @@ bool RendererGLContext::Initialize(bool onscreen,
                                    const int32* attrib_list,
                                    const GURL& active_url) {
   DCHECK(size.width() >= 0 && size.height() >= 0);
-  GPU_TRACE_EVENT2("gpu", "RendererGLContext::Initialize",
+  TRACE_EVENT2("gpu", "RendererGLContext::Initialize",
                    "on_screen", onscreen, "num_pixels", size.GetArea());
 
   if (channel_->state() != GpuChannelHost::kConnected)

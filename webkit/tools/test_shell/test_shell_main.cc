@@ -158,9 +158,6 @@ int main(int argc, char* argv[]) {
     platform.SuppressErrorReporting();
   }
 
-  if (parsed_command_line.HasSwitch(test_shell::kEnableTracing))
-    base::debug::TraceLog::StartTracing();
-
   net::HttpCache::Mode cache_mode = net::HttpCache::NORMAL;
 
   // This is a special mode where JS helps the browser implement
