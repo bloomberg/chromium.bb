@@ -69,7 +69,7 @@ class BookmarkStorage::LoadTask : public Task {
         BookmarkCodec codec;
         TimeTicks start_time = TimeTicks::Now();
         codec.Decode(details_->bb_node(), details_->other_folder_node(),
-                     &max_node_id, *root.get());
+                     details_->synced_folder_node(), &max_node_id, *root.get());
         details_->set_max_id(std::max(max_node_id, details_->max_id()));
         details_->set_computed_checksum(codec.computed_checksum());
         details_->set_stored_checksum(codec.stored_checksum());
@@ -80,6 +80,7 @@ class BookmarkStorage::LoadTask : public Task {
         start_time = TimeTicks::Now();
         AddBookmarksToIndex(details_->bb_node());
         AddBookmarksToIndex(details_->other_folder_node());
+        AddBookmarksToIndex(details_->synced_folder_node());
         UMA_HISTOGRAM_TIMES("Bookmarks.CreateBookmarkIndexTime",
                             TimeTicks::Now() - start_time);
       }
@@ -115,10 +116,12 @@ class BookmarkStorage::LoadTask : public Task {
 
 BookmarkLoadDetails::BookmarkLoadDetails(BookmarkNode* bb_node,
                                          BookmarkNode* other_folder_node,
+                                         BookmarkNode* synced_folder_node,
                                          BookmarkIndex* index,
                                          int64 max_id)
     : bb_node_(bb_node),
       other_folder_node_(other_folder_node),
+      synced_folder_node_(synced_folder_node),
       index_(index),
       max_id_(max_id),
       ids_reassigned_(false) {

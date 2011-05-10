@@ -111,6 +111,7 @@ class BookmarkCodecTest : public testing::Test {
     int64 max_id;
     bool result = codec->Decode(AsMutable(model->GetBookmarkBarNode()),
                                 AsMutable(model->other_node()),
+                                AsMutable(model->synced_node()),
                                 &max_id, value);
     model->set_next_node_id(max_id);
     return result;
@@ -161,6 +162,7 @@ class BookmarkCodecTest : public testing::Test {
     std::set<int64> assigned_ids;
     CheckIDs(model->GetBookmarkBarNode(), &assigned_ids);
     CheckIDs(model->other_node(), &assigned_ids);
+    CheckIDs(model->synced_node(), &assigned_ids);
   }
 };
 

@@ -539,6 +539,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   // Don't allow edit/delete of the bar node, or of "Other Bookmarks"
   if ((node == nil) ||
       (node == bookmarkModel_->other_node()) ||
+      (node == bookmarkModel_->synced_node()) ||
       (node == bookmarkModel_->GetBookmarkBarNode()))
     return NO;
   return YES;
@@ -800,6 +801,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   BookmarkNode::Type type = senderNode->type();
   if (type == BookmarkNode::BOOKMARK_BAR ||
       type == BookmarkNode::OTHER_NODE ||
+      type == BookmarkNode::SYNCED ||
       type == BookmarkNode::FOLDER) {
     parent = senderNode;
     newIndex = parent->child_count();

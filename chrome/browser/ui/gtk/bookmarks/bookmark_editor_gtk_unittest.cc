@@ -6,11 +6,13 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_editor_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_tree_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,6 +35,8 @@ class BookmarkEditorGtkTest : public testing::Test {
   }
 
   virtual void SetUp() {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableSyncedBookmarksFolder);
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
     profile_->BlockUntilBookmarkModelLoaded();
@@ -71,6 +75,8 @@ class BookmarkEditorGtkTest : public testing::Test {
   //   oa
   //   OF1
   //     of1a
+  // synced node
+  //   sa
   void AddTestData() {
     std::string test_base = base_path();
 
@@ -89,6 +95,10 @@ class BookmarkEditorGtkTest : public testing::Test {
     const BookmarkNode* of1 =
         model_->AddFolder(model_->other_node(), 1, ASCIIToUTF16("OF1"));
     model_->AddURL(of1, 0, ASCIIToUTF16("of1a"), GURL(test_base + "of1a"));
+
+    // Children of the synced node.
+    model_->AddURL(model_->synced_node(), 0, ASCIIToUTF16("sa"),
+                   GURL(test_base + "sa"));
   }
 };
 
@@ -106,6 +116,8 @@ TEST_F(BookmarkEditorGtkTest, ModelsMatch) {
   GtkTreeIter bookmark_bar_node = toplevel;
   ASSERT_TRUE(gtk_tree_model_iter_next(store, &toplevel));
   GtkTreeIter other_node = toplevel;
+  ASSERT_TRUE(gtk_tree_model_iter_next(store, &toplevel));
+  GtkTreeIter synced_node = toplevel;
   ASSERT_FALSE(gtk_tree_model_iter_next(store, &toplevel));
 
   // The bookmark bar should have 2 nodes: folder F1 and F2.
@@ -130,6 +142,9 @@ TEST_F(BookmarkEditorGtkTest, ModelsMatch) {
   ASSERT_TRUE(gtk_tree_model_iter_children(store, &child, &other_node));
   ASSERT_EQ("OF1", UTF16ToUTF8(GetTitleFromTreeIter(store, &child)));
   ASSERT_FALSE(gtk_tree_model_iter_next(store, &child));
+
+  // Synced node should have one child (sa).
+  ASSERT_EQ(0, gtk_tree_model_iter_n_children(store, &synced_node));
 }
 
 // Changes the title and makes sure parent/visual order doesn't change.

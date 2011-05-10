@@ -171,6 +171,8 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   //   F3
   //     F4
   //       url1
+  // Synced
+  //   url1
   string16 f1_title = ASCIIToUTF16("F\"&;<1\"");
   string16 f2_title = ASCIIToUTF16("F2");
   string16 f3_title = ASCIIToUTF16("F 3");
@@ -208,6 +210,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   model->AddURLWithCreationTime(f4, 0, url1_title, url1, t1);
   model->AddURLWithCreationTime(model->GetBookmarkBarNode(), 2, url4_title,
                                 url4, t4);
+  model->AddURLWithCreationTime(model->synced_node(), 0, url1_title, url1, t1);
 
   // Write to a temp file.
   BookmarksObserver observer(&message_loop);
@@ -232,8 +235,8 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
                                         NULL,
                                         &favicons);
 
-  // Check loaded favicon (url1 is represents by 3 separate bookmarks).
-  EXPECT_EQ(3U, favicons.size());
+  // Check loaded favicon (url1 is represented by 4 separate bookmarks).
+  EXPECT_EQ(4U, favicons.size());
   for (size_t i = 0; i < favicons.size(); i++) {
     if (url1_favicon == favicons[i].favicon_url) {
       EXPECT_EQ(1U, favicons[i].urls.size());
@@ -245,7 +248,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   }
 
   // Verify we got back what we wrote.
-  ASSERT_EQ(7U, parsed_bookmarks.size());
+  ASSERT_EQ(8U, parsed_bookmarks.size());
   // Windows and ChromeOS builds use Sentence case.
   string16 bookmark_folder_name =
       l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_FOLDER_NAME);
@@ -263,4 +266,6 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
                             string16(), string16(), string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[6], false, url1, url1_title, t1,
                             f3_title, f4_title, string16());
+  AssertBookmarkEntryEquals(parsed_bookmarks[7], false, url1, url1_title, t1,
+                            string16(), string16(), string16());
 }

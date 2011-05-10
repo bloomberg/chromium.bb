@@ -4,7 +4,9 @@
 
 #include "chrome/browser/bookmarks/recently_used_folders_combo_model.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -26,11 +28,13 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
   // We special case the placement of these, so remove them from the list, then
   // fix up the order.
   RemoveNode(model->GetBookmarkBarNode());
+  RemoveNode(model->synced_node());
   RemoveNode(model->other_node());
   RemoveNode(node->parent());
 
   // Make the parent the first item, unless it's the bookmark bar or other node.
   if (node->parent() != model->GetBookmarkBarNode() &&
+      node->parent() != model->synced_node() &&
       node->parent() != model->other_node()) {
     nodes_.insert(nodes_.begin(), node->parent());
   }
@@ -42,6 +46,10 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
   // And put the bookmark bar and other nodes at the end of the list.
   nodes_.push_back(model->GetBookmarkBarNode());
   nodes_.push_back(model->other_node());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSyncedBookmarksFolder)) {
+    nodes_.push_back(model->synced_node());
+  }
 
   std::vector<const BookmarkNode*>::iterator it = std::find(nodes_.begin(),
                                                             nodes_.end(),

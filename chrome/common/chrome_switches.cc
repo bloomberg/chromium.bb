@@ -495,6 +495,9 @@ const char kEnableTabGroupsContextMenu[]     = "enable-tab-groups-context-menu";
 // Enable syncing browser typed urls.
 const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";
 
+// Enable syncing browser typed urls.
+const char kEnableSyncedBookmarksFolder[]   = "enable-synced-bookmarks-folder";
+
 // Enable use of experimental TCP sockets API for sending data in the
 // SYN packet.
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";

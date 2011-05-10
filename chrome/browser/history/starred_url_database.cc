@@ -66,6 +66,9 @@ void FillInStarredEntry(const sql::Statement& s, StarredEntry* entry) {
     case 3:
       entry->type = history::StarredEntry::OTHER;
       break;
+    case 4:
+      entry->type = history::StarredEntry::SYNCED;
+      break;
     default:
       NOTREACHED();
       break;
@@ -212,6 +215,9 @@ StarID StarredURLDatabase::CreateStarredEntryRow(URLID url_id,
       break;
     case history::StarredEntry::OTHER:
       statement.BindInt(0, 3);
+      break;
+    case history::StarredEntry::SYNCED:
+      statement.BindInt(0, 4);
       break;
     default:
       NOTREACHED();
@@ -435,6 +441,29 @@ bool StarredURLDatabase::EnsureStarredIntegrityImpl(
     return false;
   }
 
+  // Make sure the synced node exists.
+  StarredNode* synced_node = GetNodeByType(*roots, StarredEntry::SYNCED);
+  if (!synced_node) {
+    LOG(WARNING) << "No bookmark synced folder in database";
+    StarredEntry entry;
+    entry.folder_id = GetMaxFolderID() + 1;
+    // TODO (yfriedman): Is this index right?
+    if (entry.folder_id == 1) {
+      NOTREACHED() << "Unable to get new id for synced bookmarks folder";
+      return false;
+    }
+    entry.id = CreateStarredEntryRow(
+        0, entry.folder_id, 0, UTF8ToUTF16("synced"), base::Time::Now(), 0,
+        history::StarredEntry::SYNCED);
+    if (!entry.id) {
+      NOTREACHED() << "Unable to create synced bookmarks folder";
+      return false;
+    }
+    entry.type = StarredEntry::SYNCED;
+    StarredNode* synced_node = new StarredNode(entry);
+    roots->insert(synced_node);
+  }
+
   // Make sure the other node exists.
   StarredNode* other_node = GetNodeByType(*roots, StarredEntry::OTHER);
   if (!other_node) {
@@ -545,10 +574,16 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
   entry.type = history::StarredEntry::OTHER;
   BookmarkNode other_node(0, GURL());
   other_node.Reset(entry);
+  entry.type = history::StarredEntry::SYNCED;
+  BookmarkNode synced_node(0, GURL());
+  synced_node.Reset(entry);
 
   std::map<history::UIStarID, history::StarID> folder_id_to_id_map;
   typedef std::map<history::StarID, BookmarkNode*> IDToNodeMap;
   IDToNodeMap id_to_node_map;
+
+  history::UIStarID synced_folder_folder_id = 0;
+  history::StarID synced_folder_id = 0;
 
   history::UIStarID other_folder_folder_id = 0;
   history::StarID other_folder_id = 0;
@@ -562,6 +597,10 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
         other_folder_id = i->id;
         other_folder_folder_id = i->folder_id;
       }
+      if (i->type == history::StarredEntry::SYNCED) {
+        synced_folder_id = i->id;
+        synced_folder_folder_id = i->folder_id;
+      }
     }
   }
 
@@ -573,12 +612,17 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
     id_to_node_map[other_folder_id] = &other_node;
     folder_id_to_id_map[other_folder_folder_id] = other_folder_id;
   }
+  if (synced_folder_folder_id) {
+    id_to_node_map[synced_folder_id] = &synced_node;
+    folder_id_to_id_map[synced_folder_folder_id] = synced_folder_id;
+  }
 
   // Iterate through the entries again creating the nodes.
   for (std::vector<history::StarredEntry>::iterator i = entries.begin();
        i != entries.end(); ++i) {
     if (!i->parent_folder_id) {
       DCHECK(i->type == history::StarredEntry::BOOKMARK_BAR ||
+             i->type == history::StarredEntry::SYNCED ||
              i->type == history::StarredEntry::OTHER);
       // Only entries with no parent should be the bookmark bar and other
       // bookmarks folders.
@@ -616,7 +660,7 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
   // Save to file.
   BookmarkCodec encoder;
   scoped_ptr<Value> encoded_bookmarks(
-      encoder.Encode(&bookmark_bar_node, &other_node));
+      encoder.Encode(&bookmark_bar_node, &other_node, &synced_node));
   std::string content;
   base::JSONWriter::Write(encoded_bookmarks.get(), true, &content);
 

@@ -114,12 +114,16 @@ class Writer : public Task {
     DictionaryValue* roots_d_value = static_cast<DictionaryValue*>(roots);
     Value* root_folder_value;
     Value* other_folder_value;
+    Value* synced_folder_value;
     if (!roots_d_value->Get(BookmarkCodec::kRootFolderNameKey,
                             &root_folder_value) ||
         root_folder_value->GetType() != Value::TYPE_DICTIONARY ||
         !roots_d_value->Get(BookmarkCodec::kOtherBookmarkFolderNameKey,
                             &other_folder_value) ||
-        other_folder_value->GetType() != Value::TYPE_DICTIONARY) {
+        other_folder_value->GetType() != Value::TYPE_DICTIONARY ||
+        !roots_d_value->Get(BookmarkCodec::kSyncedBookmarkFolderNameKey,
+                            &synced_folder_value) ||
+        synced_folder_value->GetType() != Value::TYPE_DICTIONARY) {
       NOTREACHED();
       return;  // Invalid type for root folder and/or other folder.
     }
@@ -129,7 +133,9 @@ class Writer : public Task {
     if (!WriteNode(*static_cast<DictionaryValue*>(root_folder_value),
                    BookmarkNode::BOOKMARK_BAR) ||
         !WriteNode(*static_cast<DictionaryValue*>(other_folder_value),
-                   BookmarkNode::OTHER_NODE)) {
+                   BookmarkNode::OTHER_NODE) ||
+        !WriteNode(*static_cast<DictionaryValue*>(synced_folder_value),
+                   BookmarkNode::SYNCED)) {
       return;
     }
 
@@ -286,10 +292,11 @@ class Writer : public Task {
       NOTREACHED();
       return false;
     }
-    if (folder_type != BookmarkNode::OTHER_NODE) {
-      // The other folder name is not written out. This gives the effect of
-      // making the contents of the 'other folder' be a sibling to the bookmark
-      // bar folder.
+    if (folder_type != BookmarkNode::OTHER_NODE &&
+        folder_type != BookmarkNode::SYNCED) {
+      // The other/synced folder name are not written out. This gives the effect
+      // of making the contents of the 'other folder' be a sibling to the
+      // bookmark bar folder.
       if (!WriteIndent() ||
           !Write(kFolderStart) ||
           !WriteTime(date_added_string) ||
@@ -329,7 +336,8 @@ class Writer : public Task {
         return false;
       }
     }
-    if (folder_type != BookmarkNode::OTHER_NODE) {
+    if (folder_type != BookmarkNode::OTHER_NODE &&
+        folder_type != BookmarkNode::SYNCED) {
       // Close out the folder.
       DecrementIndent();
       if (!WriteIndent() ||
@@ -383,6 +391,7 @@ BookmarkFaviconFetcher::~BookmarkFaviconFetcher() {
 void BookmarkFaviconFetcher::ExportBookmarks() {
   ExtractUrls(profile_->GetBookmarkModel()->GetBookmarkBarNode());
   ExtractUrls(profile_->GetBookmarkModel()->other_node());
+  ExtractUrls(profile_->GetBookmarkModel()->synced_node());
   if (!bookmark_urls_.empty()) {
     FetchNextFavicon();
   } else {
