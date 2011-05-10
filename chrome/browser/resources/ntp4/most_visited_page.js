@@ -56,11 +56,13 @@ cr.define('ntp4', function() {
                 // thumbnail-shield provides a gradient fade effect.
                 '<div class="thumbnail-shield fills-parent"></div>' +
               '</span>' +
-              '<span class="title"></span>' +
+              '<span class="color-bar"></span>' +
             '</span>' +
+            '<span class="title"></span>' +
           '</div>';
 
       this.tabIndex = -1;
+      this.data_ = null;
     },
 
     /**
@@ -69,7 +71,8 @@ cr.define('ntp4', function() {
      */
     updateForData: function(data) {
       if (!data || data.filler) {
-        this.reset();
+        if (this.data_)
+          this.reset();
         return;
       }
 
@@ -77,10 +80,14 @@ cr.define('ntp4', function() {
       this.tabIndex = 0;
       this.classList.remove('filler');
 
+      var colorBar = this.querySelector('.color-bar');
+      var faviconUrl = data.faviconUrl || 'chrome://favicon/' + data.url;
+      colorBar.style.backgroundImage = url(faviconUrl);
+      colorBar.dir = data.direction;
+      // TODO(estade): add a band of color based on the favicon.
+
       var title = this.querySelector('.title');
       title.textContent = data.title;
-      var faviconUrl = data.faviconUrl || 'chrome://favicon/' + data.url;
-      title.style.backgroundImage = url(faviconUrl);
       title.dir = data.direction;
 
       var thumbnailUrl = data.thumbnailUrl || 'chrome://thumb/' + data.url;
@@ -199,7 +206,7 @@ cr.define('ntp4', function() {
    * @return {number} The height.
    */
   function heightForWidth(width) {
-    return (width - 6) * 132 / 212 + 29;
+    return (width - 2) * 132 / 212 + 48;
   }
 
   var THUMBNAIL_COUNT = 8;

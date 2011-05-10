@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html i18n-values='dir:textdirection;'>
+<html i18n-values="
+    dir:textdirection;
+    hasattribution:hasattribution;
+    customlogo:customlogo;">
 <head>
 <meta charset="utf-8">
 <title i18n-content="title"></title>
@@ -56,7 +59,7 @@ document.documentElement.setAttribute('touchui', true);
   <div id="footer">
     <div id="footer-border"></div>
     <div id="footer-content">
-      <img src="../../../app/theme/%DISTRIBUTION%/product_logo.png">
+      <img id="attribution-img">
 
       <ul id="dot-list">
         <!-- This is another template node (see above). -->

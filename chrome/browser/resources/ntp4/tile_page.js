@@ -219,7 +219,7 @@ cr.define('ntp4', function() {
 
   // The smallest amount of horizontal blank space to display on the sides when
   // displaying a wide arrangement.
-  var MIN_WIDE_MARGIN = 100;
+  var MIN_WIDE_MARGIN = 44;
 
   /**
    * Creates a new TilePage object. This object contains tiles and controls

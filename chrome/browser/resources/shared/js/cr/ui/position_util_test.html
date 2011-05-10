@@ -195,6 +195,20 @@ function testAboveSecondaryRtl() {
   assertEquals('auto', popup.style.right);
 }
 
+function testAboveSecondarySwappedAlign() {
+  cr.ui.positionPopupAroundElement(anchor, popup, cr.ui.AnchorType.ABOVE, true);
+
+  assertEquals('auto', popup.style.left);
+  assertEquals('90px', popup.style.right);
+
+  anchor.style.left = '80px';
+
+  cr.ui.positionPopupAroundElement(anchor, popup, cr.ui.AnchorType.ABOVE, true);
+
+  assertEquals('80px', popup.style.left);
+  assertEquals('auto', popup.style.right);
+}
+
 function testBelowSecondary() {
   cr.ui.positionPopupAroundElement(anchor, popup, cr.ui.AnchorType.BELOW);
 
@@ -220,6 +234,20 @@ function testBelowSecondaryRtl() {
   anchor.style.left = '80px';
 
   cr.ui.positionPopupAroundElement(anchor, popup, cr.ui.AnchorType.BELOW);
+
+  assertEquals('80px', popup.style.left);
+  assertEquals('auto', popup.style.right);
+}
+
+function testBelowSecondarySwappedAlign() {
+  cr.ui.positionPopupAroundElement(anchor, popup, cr.ui.AnchorType.BELOW, true);
+
+  assertEquals('auto', popup.style.left);
+  assertEquals('90px', popup.style.right);
+
+  anchor.style.left = '80px';
+
+  cr.ui.positionPopupAroundElement(anchor, popup, cr.ui.AnchorType.BELOW, true);
 
   assertEquals('80px', popup.style.left);
   assertEquals('auto', popup.style.right);

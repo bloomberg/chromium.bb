@@ -89,7 +89,7 @@ cr.define('ntp4', function() {
    */
   function initialize() {
     // Load the current theme colors.
-    themeChanged(false);
+    themeChanged();
 
     dotList = getRequiredElement('dot-list');
     pageList = getRequiredElement('page-list');
@@ -675,10 +675,27 @@ cr.define('ntp4', function() {
     updateSliderCards();
   }
 
-  // TODO(estade): remove |hasAttribution|.
   // TODO(estade): rename newtab.css to new_tab_theme.css
   function themeChanged(hasAttribution) {
     $('themecss').href = 'chrome://theme/css/newtab.css?' + Date.now();
+    if (typeof hasAttribution != 'undefined')
+      document.documentElement.setAttribute('hasattribution', hasAttribution);
+    updateAttribution();
+  }
+
+  /**
+   * Sets the proper image for the logo at the bottom left.
+   */
+  function updateAttribution() {
+    // Default value for standard NTP with no theme attribution or custom logo.
+    var imageId = 'IDR_PRODUCT_LOGO';
+    // Theme attribution always overrides custom logos.
+    if (document.documentElement.getAttribute('hasattribution') == 'true')
+      imageId = 'IDR_THEME_NTP_ATTRIBUTION';
+    else if (document.documentElement.getAttribute('customlogo') == 'true')
+      imageId = 'IDR_CUSTOM_PRODUCT_LOGO';
+
+    $('attribution-img').src = 'chrome://theme/' + imageId + '?' + Date.now();
   }
 
   function setRecentlyClosedTabs(dataItems) {

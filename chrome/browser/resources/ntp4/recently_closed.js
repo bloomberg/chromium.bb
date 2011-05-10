@@ -39,6 +39,8 @@ cr.define('ntp4', function() {
 
       this.needsRebuild_ = true;
       this.hidden = true;
+      this.anchorType = cr.ui.AnchorType.ABOVE;
+      this.invertLeftRight = true;
     },
 
     /**

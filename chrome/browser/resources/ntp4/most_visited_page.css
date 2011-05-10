@@ -134,21 +134,28 @@
   background-image: url('../ntp/ntp_close_p.png');
 }
 
-.most-visited .title {
+.most-visited .color-bar {
   background: no-repeat 0 50%;
   background-size: 16px;
   bottom: 5px;
   display: block;
+  height: 16px;
   left: 0;
-  overflow: hidden;
   position: absolute;
   right: 0;
-  text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   -webkit-margin-start: 5px;
   -webkit-padding-end: 0;
   -webkit-padding-start: 20px;
+}
+
+.most-visited .title {
+  display: block;
+  height: 23px;
+  line-height: 23px;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .thumbnail {
@@ -166,12 +173,13 @@
 }
 
 .thumbnail-shield {
+  border-radius: 5px;
   -webkit-mask-box-image: -webkit-linear-gradient(
       rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, .9));
 }
 
 .thumbnail-wrapper {
-  border: 3px solid transparent;
+  border: 1px solid transparent;
   border-radius: 5px;
   box-shadow: 0px 2px 2px hsla(0, 0%, 0%, 0);
   display: block;

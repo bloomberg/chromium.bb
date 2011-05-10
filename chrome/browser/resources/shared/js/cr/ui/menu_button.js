@@ -31,6 +31,9 @@ cr.define('cr.ui', function() {
       // An event tracker for events we only connect to while the menu is
       // displayed.
       this.showingEvents_ = new EventTracker();
+
+      this.anchorType = cr.ui.AnchorType.BELOW;
+      this.invertLeftRight = false;
     },
 
     /**
@@ -145,7 +148,8 @@ cr.define('cr.ui', function() {
      * @private
      */
     positionMenu_: function() {
-      positionPopupAroundElement(this, this.menu, cr.ui.AnchorType.BELOW);
+      positionPopupAroundElement(this, this.menu, this.anchorType,
+                                 this.invertLeftRight);
     },
 
     /**
