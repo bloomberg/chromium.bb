@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/register_support_host_request.h"
+
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
-#include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/in_memory_host_config.h"
 #include "remoting/host/test_key_pair.h"
@@ -23,75 +23,68 @@ using buzz::QName;
 using buzz::XmlElement;
 
 using testing::_;
-using testing::DeleteArg;
-using testing::DoAll;
 using testing::Invoke;
 using testing::NotNull;
 using testing::Return;
+using testing::SaveArg;
 
 namespace remoting {
 
 namespace {
-const char kHostId[] = "0";
 const char kTestJid[] = "user@gmail.com/chromoting123";
 const int64 kTestTime = 123123123;
+const char kSupportId[] = "AB4RF3";
+
+class MockCallback {
+ public:
+  MOCK_METHOD2(OnResponse, void(bool result, const std::string& support_id));
+};
+
 }  // namespace
 
-class HeartbeatSenderTest : public testing::Test {
+class RegisterSupportHostRequestTest : public testing::Test {
+ public:
  protected:
   virtual void SetUp() {
     config_ = new InMemoryHostConfig();
-    config_->SetString(kHostIdConfigPath, kHostId);
     config_->SetString(kPrivateKeyConfigPath, kTestHostKeyPair);
   }
 
   MockSignalStrategy signal_strategy_;
   MessageLoop message_loop_;
   scoped_refptr<InMemoryHostConfig> config_;
+  MockCallback callback_;
 };
 
-// Call Start() followed by Stop(), and makes sure an Iq stanza is
-// being send.
-TEST_F(HeartbeatSenderTest, DoSendStanza) {
-  // |iq_request| is freed by HeartbeatSender.
+TEST_F(RegisterSupportHostRequestTest, Send) {
+  // |iq_request| is freed by RegisterSupportHostRequest.
+  int64 start_time = static_cast<int64>(base::Time::Now().ToDoubleT());
+
+  scoped_refptr<RegisterSupportHostRequest> request(
+      new RegisterSupportHostRequest());
+  ASSERT_TRUE(request->Init(
+      config_, NewCallback(&callback_, &MockCallback::OnResponse)));
+
   MockIqRequest* iq_request = new MockIqRequest();
   iq_request->Init();
-
   EXPECT_CALL(*iq_request, set_callback(_)).Times(1);
-
-  scoped_refptr<HeartbeatSender> heartbeat_sender(
-      new HeartbeatSender(&message_loop_, config_));
-  ASSERT_TRUE(heartbeat_sender->Init());
 
   EXPECT_CALL(signal_strategy_, CreateIqRequest())
       .WillOnce(Return(iq_request));
 
+  XmlElement* sent_iq = NULL;
   EXPECT_CALL(*iq_request, SendIq(buzz::STR_SET, kChromotingBotJid, NotNull()))
-      .WillOnce(DoAll(DeleteArg<2>(), Return()));
+      .WillOnce(SaveArg<2>(&sent_iq));
 
-  heartbeat_sender->OnSignallingConnected(&signal_strategy_, kTestJid);
+  request->OnSignallingConnected(&signal_strategy_, kTestJid);
   message_loop_.RunAllPending();
 
-  heartbeat_sender->OnSignallingDisconnected();
-  message_loop_.RunAllPending();
-}
+  // Verify format of the query.
+  scoped_ptr<XmlElement> stanza(sent_iq);
+  ASSERT_TRUE(stanza != NULL);
 
-// Validate format of the heartbeat stanza.
-TEST_F(HeartbeatSenderTest, CreateHeartbeatMessage) {
-  scoped_refptr<HeartbeatSender> heartbeat_sender(
-      new HeartbeatSender(&message_loop_, config_));
-  ASSERT_TRUE(heartbeat_sender->Init());
-
-  int64 start_time = static_cast<int64>(base::Time::Now().ToDoubleT());
-
-  heartbeat_sender->full_jid_ = kTestJid;
-  scoped_ptr<XmlElement> stanza(heartbeat_sender->CreateHeartbeatMessage());
-  ASSERT_TRUE(stanza.get() != NULL);
-
-  EXPECT_TRUE(QName(kChromotingXmlNamespace, "heartbeat") ==
-              stanza->Name());
-  EXPECT_EQ(std::string(kHostId),
-            stanza->Attr(QName(kChromotingXmlNamespace, "hostid")));
+  EXPECT_EQ(QName(kChromotingXmlNamespace, "register-support-host"),
+            stanza->Name());
 
   QName signature_tag(kChromotingXmlNamespace, "signature");
   XmlElement* signature = stanza->FirstNamed(signature_tag);
@@ -111,29 +104,24 @@ TEST_F(HeartbeatSenderTest, CreateHeartbeatMessage) {
   std::string expected_signature =
       key_pair.GetSignature(std::string(kTestJid) + ' ' + time_str);
   EXPECT_EQ(expected_signature, signature->BodyText());
-}
 
-// Verify that ProcessResponse parses set-interval result.
-TEST_F(HeartbeatSenderTest, ProcessResponse) {
+  // Generate response and verify that callback is called.
+  EXPECT_CALL(callback_, OnResponse(true, kSupportId));
+
   scoped_ptr<XmlElement> response(new XmlElement(QName("", "iq")));
   response->AddAttr(QName("", "type"), "result");
 
   XmlElement* result = new XmlElement(
-      QName(kChromotingXmlNamespace, "heartbeat-result"));
+      QName(kChromotingXmlNamespace, "register-support-host-result"));
   response->AddElement(result);
 
-  XmlElement* set_interval = new XmlElement(
-      QName(kChromotingXmlNamespace, "set-interval"));
-  result->AddElement(set_interval);
+  XmlElement* support_id = new XmlElement(
+      QName(kChromotingXmlNamespace, "support-id"));
+  support_id->AddText(kSupportId);
+  result->AddElement(support_id);
 
-  const int kTestInterval = 123;
-  set_interval->AddText(base::IntToString(kTestInterval));
-
-  scoped_refptr<HeartbeatSender> heartbeat_sender(
-      new HeartbeatSender(&message_loop_, config_));
-  heartbeat_sender->ProcessResponse(response.get());
-
-  EXPECT_EQ(kTestInterval * 1000, heartbeat_sender->interval_ms_);
+  iq_request->callback()->Run(response.get());
+  message_loop_.RunAllPending();
 }
 
 }  // namespace remoting

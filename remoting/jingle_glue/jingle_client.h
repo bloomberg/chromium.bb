@@ -176,6 +176,10 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // Message loop used by this object to execute tasks.
   MessageLoop* message_loop();
 
+  // SignalStrategy::StatusObserver implementation.
+  virtual void OnStateChange(State state);
+  virtual void OnJidChange(const std::string& full_jid);
+
  private:
   friend class JingleClientTest;
 
@@ -188,10 +192,6 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   void UpdateState(State new_state);
 
   // Virtual for mocking in a unittest.
-  //
-  // TODO(ajwong): Private virtual functions are odd. Can we remove this?
-  virtual void OnStateChange(State state);
-  virtual void OnJidChange(const std::string& full_jid);
   void OnJingleInfo(const std::string& token,
                     const std::vector<std::string>& relay_hosts,
                     const std::vector<talk_base::SocketAddress>& stun_hosts);
