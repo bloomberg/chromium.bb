@@ -9,7 +9,7 @@
 #include <map>
 #include <queue>
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/memory/linked_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/browser/browser_child_process_host.h"

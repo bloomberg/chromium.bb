@@ -6,7 +6,7 @@
 #define WEBKIT_FILEAPI_FILE_SYSTEM_PATH_MANAGER_H_
 #pragma once
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "webkit/fileapi/file_system_types.h"

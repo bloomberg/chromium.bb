@@ -8,7 +8,7 @@
 #include <set>
 #include <list>
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/quota/quota_types.h"

@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_ALT_ERROR_PAGE_RESOURCE_FETCHER_H_
 #define WEBKIT_GLUE_ALT_ERROR_PAGE_RESOURCE_FETCHER_H_
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"

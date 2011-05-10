@@ -8,7 +8,7 @@
 #include <set>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"

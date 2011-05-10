@@ -6,7 +6,7 @@
 #define REMOTING_BASE_ENCODER_H_
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "media/base/data_buffer.h"
 
 namespace media {

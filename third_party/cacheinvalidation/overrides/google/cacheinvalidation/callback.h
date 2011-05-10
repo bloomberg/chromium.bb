@@ -5,7 +5,7 @@
 #ifndef GOOGLE_CACHEINVALIDATION_CALLBACK_H_
 #define GOOGLE_CACHEINVALIDATION_CALLBACK_H_
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 
 #define INVALIDATION_CALLBACK1_TYPE(Arg1) ::Callback1<Arg1>::Type
 

@@ -65,6 +65,7 @@
 
 #include <string>
 
+#include "base/callback_old.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/atomicops.h"
 #include "base/memory/scoped_vector.h"

@@ -23,7 +23,7 @@
 
 #include "webkit/glue/cpp_variant.h"
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace WebKit {

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/string16.h"
 #include "printing/print_settings.h"
 #include "ui/gfx/native_widget_types.h"

@@ -4,6 +4,7 @@
 
 #include "content/browser/certificate_manager_model.h"
 
+#include "base/callback_old.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"

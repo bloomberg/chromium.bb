@@ -6,7 +6,7 @@
 #define WEBKIT_GLUE_IMAGE_RESOURCE_FETCHER_H_
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "webkit/glue/resource_fetcher.h"
 
 class SkBitmap;

@@ -16,6 +16,7 @@
 
 #include <map>
 
+#include "base/callback_old.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "content/browser/cancelable_request.h"

@@ -36,7 +36,7 @@
 #ifndef BASE_MEMORY_SCOPED_CALLBACK_FACTORY_H_
 #define BASE_MEMORY_SCOPED_CALLBACK_FACTORY_H_
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/memory/weak_ptr.h"
 
 namespace base {

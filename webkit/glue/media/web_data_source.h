@@ -5,6 +5,7 @@
 #ifndef WEBKIT_GLUE_MEDIA_WEB_DATA_SOURCE_H_
 #define WEBKIT_GLUE_MEDIA_WEB_DATA_SOURCE_H_
 
+#include "base/callback_old.h"
 #include "media/base/filters.h"
 #include "media/base/pipeline_status.h"
 
