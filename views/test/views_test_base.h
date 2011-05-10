@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/message_loop.h"
+#include "views/test/test_views_delegate.h"
 
 namespace views {
 
@@ -28,6 +29,7 @@ class ViewsTestBase : public testing::Test {
 
  private:
   MessageLoopForUI message_loop_;
+  TestViewsDelegate views_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsTestBase);
 };

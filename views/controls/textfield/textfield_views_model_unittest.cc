@@ -319,9 +319,6 @@ TEST_F(TextfieldViewsModelTest, SetText) {
 }
 
 TEST_F(TextfieldViewsModelTest, Clipboard) {
-  scoped_ptr<TestViewsDelegate> test_views_delegate(new TestViewsDelegate());
-  AutoReset<views::ViewsDelegate*> auto_reset(
-      &views::ViewsDelegate::views_delegate, test_views_delegate.get());
   ui::Clipboard* clipboard
       = views::ViewsDelegate::views_delegate->GetClipboard();
   string16 initial_clipboard_text;

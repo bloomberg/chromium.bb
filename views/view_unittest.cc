@@ -862,8 +862,6 @@ TEST_F(ViewTest, Textfield) {
 
 // Tests that the Textfield view respond appropiately to cut/copy/paste.
 TEST_F(ViewTest, TextfieldCutCopyPaste) {
-  views::ViewsDelegate::views_delegate = new TestViewsDelegate;
-
   const std::wstring kNormalText = L"Normal";
   const std::wstring kReadOnlyText = L"Read only";
   const std::wstring kPasswordText = L"Password! ** Secret stuff **";
@@ -970,9 +968,6 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   ::SendMessage(normal->GetTestingHandle(), WM_PASTE, 0, 0);
   ::GetWindowText(normal->GetTestingHandle(), buffer, 1024);
   EXPECT_EQ(kReadOnlyText, std::wstring(buffer));
-
-  delete views::ViewsDelegate::views_delegate;
-  views::ViewsDelegate::views_delegate = NULL;
 }
 #endif
 

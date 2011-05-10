@@ -534,10 +534,6 @@ void VerifyTextfieldContextMenuContents(bool textfield_has_selection,
 }
 
 TEST_F(NativeTextfieldViewsTest, ContextMenuDisplayTest) {
-  scoped_ptr<TestViewsDelegate> test_views_delegate(new TestViewsDelegate());
-  AutoReset<views::ViewsDelegate*> auto_reset(
-      &views::ViewsDelegate::views_delegate, test_views_delegate.get());
-  views::ViewsDelegate::views_delegate = test_views_delegate.get();
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
   EXPECT_TRUE(GetContextMenu());
@@ -804,10 +800,6 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_Canceled) {
 }
 
 TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
-  scoped_ptr<TestViewsDelegate> test_views_delegate(new TestViewsDelegate());
-  AutoReset<views::ViewsDelegate*> auto_reset(
-      &views::ViewsDelegate::views_delegate, test_views_delegate.get());
-
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16(" one two three "));
   textfield_->SetReadOnly(true);
