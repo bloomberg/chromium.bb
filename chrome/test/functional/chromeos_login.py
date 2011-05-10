@@ -20,7 +20,7 @@ class LoginTest(pyauto.PyUITest):
       self.Logout()
     pyauto.PyUITest.tearDown(self)
 
-  def _ValidCredentials(self):
+  def _ValidCredentials(self, account_type='test_google_account'):
     """Obtains a valid username and password from a data file.
 
     Returns:
@@ -29,72 +29,115 @@ class LoginTest(pyauto.PyUITest):
     credentials_file = os.path.join(pyauto.PyUITest.DataDir(),
                                    'pyauto_private', 'private_tests_info.txt')
     assert os.path.exists(credentials_file), 'Credentials file does not exist.'
-    return pyauto.PyUITest.EvalDataFrom(credentials_file)['test_google_account']
+    return pyauto.PyUITest.EvalDataFrom(credentials_file)[account_type]
 
   def testGoodLogin(self):
     """Test that login is successful with valid credentials."""
     credentials = self._ValidCredentials()
-    username = credentials['username']
-    passwd = credentials['password']
-    self.Login(username, passwd)
+    self.Login(credentials['username'], credentials['password'])
     login_info = self.GetLoginInfo()
-    self.assertTrue(login_info['is_logged_in'], 'Login failed.')
+    self.assertTrue(login_info['is_logged_in'], msg='Login failed.')
 
   def testBadUsername(self):
     """Test that login fails when passed an invalid username."""
-    username = 'doesnotexist@fakedomain.org'
-    passwd = 'badpassword'
-    self.Login(username, passwd)
+    self.Login('doesnotexist@fakedomain.org', 'badpassword')
     login_info = self.GetLoginInfo()
-    self.assertFalse(login_info['is_logged_in'], 'Login succeeded, with bad '
-                    'credentials.')
+    self.assertFalse(login_info['is_logged_in'],
+                     msg='Login succeeded, with bad credentials.')
 
   def testBadPassword(self):
     """Test that login fails when passed an invalid password."""
     credentials = self._ValidCredentials()
-    username = credentials['username']
-    passwd = 'badpassword'
-    self.Login(username, passwd)
+    self.Login(credentials['username'], badpassword')
     login_info = self.GetLoginInfo()
-    self.assertFalse(login_info['is_logged_in'], 'Login succeeded, with bad '
-                    'credentials.')
+    self.assertFalse(login_info['is_logged_in'],
+                     msg='Login succeeded, with bad credentials.')
 
   def testLoginAsGuest(self):
     """Test we can login with guest mode."""
     self.LoginAsGuest()
     login_info = self.GetLoginInfo()
-    self.assertTrue(login_info['is_guest'], 'Not logged in as guest.')
+    self.assertTrue(login_info['is_logged_in'], msg='Not logged in at all.')
+    self.assertTrue(login_info['is_guest'], msg='Not logged in as guest.')
 
   def testLockScreenAfterLogin(self):
     """Test after logging in that the screen can be locked."""
     credentials = self._ValidCredentials()
-    username = credentials['username']
-    passwd = credentials['password']
-    self.Login(username, passwd)
+    self.Login(credentials['username'], credentials['password'])
     login_info = self.GetLoginInfo()
-    self.assertTrue(login_info['is_logged_in'], 'Login failed.')
-    self.assertFalse(login_info['is_screen_locked'], 'Screen is locked, but the'
-                     ' screen was not locked.')
+    self.assertTrue(login_info['is_logged_in'], msg='Login failed.')
+    self.assertFalse(login_info['is_screen_locked'],
+                     msg='Screen is locked, but the screen was not locked.')
     self.LockScreen()
     login_info = self.GetLoginInfo()
-    self.assertTrue(login_info['is_screen_locked'], 'The screen is not locked '
-                    'after attempting to lock the screen.')
+    self.assertTrue(login_info['is_screen_locked'], msg='The screen is not '
+                    'locked after attempting to lock the screen.')
 
   def testLockAndUnlockScreenAfterLogin(self):
     """Test locking and unlocking the screen after logging in."""
     self.testLockScreenAfterLogin()
     self.UnlockScreen(self._ValidCredentials()['password'])
     login_info = self.GetLoginInfo()
-    self.assertFalse(login_info['is_screen_locked'], 'Screen is locked, but it '
-                     'should have been unlocked.')
+    self.assertFalse(login_info['is_screen_locked'],
+                     msg='Screen is locked, but it should have been unlocked.')
 
-  ## TODO(krisr) add test case to log out after logging in.
-  ## TODO(krisr) add test cases to login, add bad proxy settings, logout and
-  ##             log back in testing cached credentials
-  ## TODO(krisr) see if we can change the password of an account using GData
-  ##             APIs to test password change on login
-  ## TODO(krisr) add test for google apps domains
+  def testLockAndUnlockScreenAfterLoginWithBadPassword(self):
+    """Test locking and unlocking the screen with the wrong password."""
+    self.testLockScreenAfterLogin()
+    self.UnlockScreen('not_the_right_password')
+    login_info = self.GetLoginInfo()
+    self.assertTrue(login_info['is_screen_locked'],
+                     msg='Screen is unlock, but it should have been unlocked '
+                         'since we attempted to unlock with a bad password')
 
+  def testLoginToCreateNewAccount(self):
+    """Test we can login as a guest and create a new account."""
+    self.ShowCreateAccountUI()
+    # The login hook does not wait for the first tab to load, so we wait here.
+    self.assertTrue(
+      self.WaitUntil(self.GetActiveTabTitle(), expect_retval='Google Accounts'),
+        msg='Could not verify that the Google Accounts tab was opened.')
+    login_info = self.GetLoginInfo()
+    self.assertTrue(login_info['is_guest'], msg='Not logged in as guest.')
+
+  def testGoodLoginForTransitionedDomainAccount(self):
+    """Test that login is successful with valid credentials for a domain.
+
+    ChromeOS only allows GA+ accounts to login, there are also known as
+    transitioned accounts.
+
+    """
+    credentials = self._ValidCredentials(account_type='test_domain_account')
+    self.Login(credentials['username'], credentials['password'])
+    login_info = self.GetLoginInfo()
+    self.assertTrue(login_info['is_logged_in'], msg='Login failed.')
+
+  def testNoLoginForNonTransitionedDomainAccount(self):
+    """Test that login is successful with valid credentials for a domain."""
+    credentials =
+      self._ValidCredentials(account_type='test_domain_account_non_transistion')
+    self.Login(credentials['username'], credentials['password'])
+    login_info = self.GetLoginInfo()
+    self.assertFalse(login_info['is_logged_in'], msg='Login succeeded for a '
+                     'non-transistioned account, this account should have not '
+                     'been able to login.')
+
+  def testCachedCredentials(self):
+    """Test that we can login without connectivity if we have so before."""
+    credentials = self._ValidCredentials()
+    self.Login(credentials['username'], credentials['password'])
+    login_info = self.GetLoginInfo()
+    self.assertTrue(login_info['is_logged_in'], msg='Login failed.')
+    self.Logout()
+    self.SetProxySettingsOnChromeOS('singlehttp', '10.10.10.10')
+    self.Login(username, password)
+    login_info = self.GetLoginInfo()
+    # Reset back to direct proxy
+    self.SetProxySettingsOnChromeOS('type', self.PROXY_TYPE_DIRECT)
+    self.assertTrue(login_info['is_logged_in'], msg='Login failed.')
+
+  # TODO(krisr): Add a test that navigates to a page after login
+  # TODO(krisr): Add a test that uses SignoutInScreenLocker()
 
 if __name__ == '__main__':
   pyauto_functional.Main()
