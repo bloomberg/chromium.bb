@@ -936,9 +936,6 @@ def PanProjectChecks(input_api, output_api,
   snapshot( "checking stray whitespace")
   results.extend(input_api.canned_checks.CheckChangeHasNoStrayWhitespace(
       input_api, output_api, source_file_filter=sources))
-  snapshot("checking eol style")
-  results.extend(input_api.canned_checks.CheckChangeSvnEolStyle(
-      input_api, output_api, source_file_filter=text_files))
   snapshot("checking nsobjects")
   results.extend(_CheckConstNSObject(
       input_api, output_api, source_file_filter=sources))
@@ -949,6 +946,9 @@ def PanProjectChecks(input_api, output_api,
   # The following checks are only done on commit, since the commit bot will
   # auto-fix most of these.
   if input_api.is_committing:
+    snapshot("checking eol style")
+    results.extend(input_api.canned_checks.CheckChangeSvnEolStyle(
+        input_api, output_api, source_file_filter=text_files))
     snapshot("checking svn mime types")
     results.extend(input_api.canned_checks.CheckSvnForCommonMimeTypes(
         input_api, output_api))
