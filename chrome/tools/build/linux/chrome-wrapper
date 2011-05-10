@@ -81,6 +81,12 @@ HERE="`dirname "$CHROME_WRAPPER"`"
 if ! which xdg-settings &> /dev/null; then
   # Old xdg utilities. Prepend $HERE to $PATH to use ours instead.
   export PATH="$HERE:$PATH"
+else
+  # Use system xdg utilities. But first create mimeapps.list if it doesn't
+  # exist; some systems have bugs in xdg-mime that make it fail without it.
+  xdg_app_dir="${XDG_DATA_HOME:-$HOME/.local/share/applications}"
+  mkdir -p "$xdg_app_dir"
+  [ -f "$xdg_app_dir/mimeapps.list" ] || touch "$xdg_app_dir/mimeapps.list"
 fi
 
 # Always use our ffmpeg and other shared libs.
