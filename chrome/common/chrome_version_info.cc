@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,10 @@
 #include "base/basictypes.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "grit/chromium_strings.h"
 
 namespace chrome {
 
@@ -86,5 +88,25 @@ bool VersionInfo::IsOfficialBuild() const {
 }
 
 #endif
+
+std::string VersionInfo::OSType() const {
+#if defined(OS_WIN)
+  return "Windows";
+#elif defined(OS_MACOSX)
+  return "Mac OS";
+#elif defined(OS_CHROMEOS)
+  return UTF16ToASCII(l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
+#elif defined(OS_LINUX)
+  return "Linux";
+#elif defined(OS_FREEBSD)
+  return "FreeBSD";
+#elif defined(OS_OPENBSD)
+  return "OpenBSD";
+#elif defined(OS_SOLARIS)
+  return "Solaris";
+#else
+  return "Unknown";
+#endif
+}
 
 }  // namespace chrome

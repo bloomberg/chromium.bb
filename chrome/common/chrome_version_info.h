@@ -37,6 +37,9 @@ class VersionInfo {
   // The SVN revision of this release.  E.g. "55800".
   std::string LastChange() const;
 
+  // OS type. E.g. "Windows", "Linux", "FreeBSD", ...
+  std::string OSType() const;
+
   // Whether this is an "official" release of the current Version():
   // whether knowing Version() is enough to completely determine what
   // LastChange() is.

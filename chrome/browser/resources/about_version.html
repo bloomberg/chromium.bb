@@ -71,17 +71,17 @@ about:version template page
         <div id="copyright" i18n-content="copyright"></div>
       </div>
       <table id="inner" cellpadding="0" cellspacing="0" border="0">
-        <tr jsdisplay="is_chrome_os"><td class="label" valign="top" id="os_name" i18n-content="os_name"></td>
-            <td class="version" id="os_version"><span i18n-content="os_version"></span></td>
-        </tr>
         <tr><td class="label" valign="top" id="name" i18n-content="name"></td>
           <td class="version" id="version"><span i18n-content="version"></span> (<span i18n-content="official"></span> <span i18n-content="cl"></span>) <span i18n-content="version_modifier"></span></td>
         </tr>
-        <tr><td class="label" valign="top">WebKit</td>
-            <td class="version" id="webkit_version" i18n-content="webkit_version"></td>
+        <tr><td class="label" valign="top" i18n-content="os_name"></td>
+          <td class="version" id="os_type"><span i18n-content="os_type"></span> <span i18n-content="os_version"></span></td>
         </tr>
-        <tr><td class="label" valign="top" i18n-content="js_engine"></td>
-            <td class="version" id="js_version" i18n-content="js_version"></td>
+        <tr><td class="label" valign="top">WebKit</td>
+          <td class="version" id="webkit_version" i18n-content="webkit_version"></td>
+        </tr>
+        <tr><td class="label" valign="top">JavaScript</td>
+          <td class="version" id="js_engine"><span i18n-content="js_engine"></span> <span i18n-content="js_version"></span></td>
         </tr>
         <tr><td class="label" valign="top" i18n-content="flash_plugin"></td>
             <td class="version" id="flash_version" i18n-content="flash_version"></td>
@@ -90,8 +90,14 @@ about:version template page
             <td class="version" id="useragent" i18n-content="useragent"></td>
         </tr>
         <tr><td class="label" valign="top" i18n-content="command_line_name"></td>
-            <td class="version" id="Td1" i18n-content="command_line"></td>
-        </tr>       
+            <td class="version" id="command_line" i18n-content="command_line"></td>
+        </tr>
+        <tr><td class="label" valign="top" i18n-content="executable_path_name"></td>
+            <td class="version" id="executable_path" i18n-content="executable_path"></td>
+        </tr>
+        <tr><td class="label" valign="top" i18n-content="profile_path_name"></td>
+            <td class="version" id="profile_path" i18n-content="profile_path"></td>
+        </tr>
       </table>
     </div>
   </body>
