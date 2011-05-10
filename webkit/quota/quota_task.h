@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_proxy.h"
 
 namespace base {
 class MessageLoopProxy;
