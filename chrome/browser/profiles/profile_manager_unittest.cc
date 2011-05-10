@@ -49,7 +49,7 @@ class ProfileManagerTest : public TestingBrowserProcessTest {
     profile_manager_.reset();
   }
 
-  class MockObserver : public ProfileManager::Observer {
+  class MockObserver : public ProfileManagerObserver {
    public:
     MOCK_METHOD1(OnProfileCreated, void(Profile* profile));
   };
