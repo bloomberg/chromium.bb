@@ -25,8 +25,7 @@ void ChildTraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
       base::Bind(&ChildTraceMessageFilter::OnTraceBufferFull, this));
 }
 
-void ChildTraceMessageFilter::OnFilterRemoved()
-{
+void ChildTraceMessageFilter::OnFilterRemoved() {
   base::debug::TraceLog::GetInstance()->SetOutputCallback(
       base::debug::TraceLog::OutputCallback());
   base::debug::TraceLog::GetInstance()->SetBufferFullCallback(
