@@ -45,6 +45,17 @@ void BackgroundPrintingManager::OwnTabContents(TabContentsWrapper* contents) {
       contents->controller().window_id().id());
   TabStripModel* tabstrip = browser->tabstrip_model();
   tabstrip->DetachTabContentsAt(tabstrip->GetIndexOfTabContents(contents));
+
+  // Activate the initiator tab.
+  printing::PrintPreviewTabController* tab_controller =
+      printing::PrintPreviewTabController::GetInstance();
+  if (!tab_controller)
+    return;
+  TabContents* initiator_tab = tab_controller->GetInitiatorTab(
+      contents->tab_contents());
+  if (!initiator_tab)
+    return;
+  initiator_tab->Activate();
 }
 
 void BackgroundPrintingManager::Observe(NotificationType type,
