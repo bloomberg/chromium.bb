@@ -377,6 +377,12 @@ void QuotaManager::GetUsageAndQuota(
     return;
   }
 
+  if (type == kStorageTypeUnknown) {
+    // Quota only supports temporary/persistent types.
+    callback->Run(kQuotaErrorNotSupported, 0, 0);
+    return;
+  }
+
   std::string host = net::GetHostOrSpecFromURL(origin);
   UsageAndQuotaDispatcherTaskMap::iterator found =
       usage_and_quota_dispatchers_.find(std::make_pair(host, type));
