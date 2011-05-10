@@ -214,7 +214,8 @@ PrerenderManager::~PrerenderManager() {
   while (!prerender_list_.empty()) {
     PrerenderContentsData data = prerender_list_.front();
     prerender_list_.pop_front();
-    data.contents_->Destroy(FINAL_STATUS_MANAGER_SHUTDOWN);
+    data.contents_->set_final_status(FINAL_STATUS_MANAGER_SHUTDOWN);
+    delete data.contents_;
   }
   DeletePendingDeleteEntries();
 }
@@ -299,7 +300,8 @@ bool PrerenderManager::AddPreload(
   while (prerender_list_.size() > max_elements_) {
     data = prerender_list_.front();
     prerender_list_.pop_front();
-    data.contents_->Destroy(FINAL_STATUS_EVICTED);
+    data.contents_->set_final_status(FINAL_STATUS_EVICTED);
+    delete data.contents_;
   }
   StartSchedulingPeriodicCleanups();
   return true;
@@ -367,7 +369,9 @@ void PrerenderManager::DestroyPreloadForChildRouteIdPair(
       FindPrerenderContentsForChildRouteIdPair(child_route_id_pair);
   if (it != prerender_list_.end()) {
     PrerenderContents* prerender_contents = it->contents_;
-    prerender_contents->Destroy(final_status);
+    prerender_contents->set_final_status(final_status);
+    prerender_contents->OnDestroy();
+    MoveEntryToPendingDelete(prerender_contents);
   }
 }
 
@@ -378,7 +382,8 @@ void PrerenderManager::DeleteOldEntries() {
     if (IsPrerenderElementFresh(data.start_time_))
       return;
     prerender_list_.pop_front();
-    data.contents_->Destroy(FINAL_STATUS_TIMED_OUT);
+    data.contents_->set_final_status(FINAL_STATUS_TIMED_OUT);
+    delete data.contents_;
   }
   MaybeStopSchedulingPeriodicCleanups();
 }

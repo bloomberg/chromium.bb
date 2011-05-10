@@ -236,10 +236,6 @@ class PrerenderContents : public RenderViewHostDelegate,
   // derived classes to clean up.
   virtual void OnDestroy() {}
 
-  // Sets the final status, calls OnDestroy and adds |this| to the
-  // PrerenderManager's pending deletes list.
-  void Destroy(FinalStatus reason);
-
   // Indicates whether to use the legacy code doing prerendering via
   // a RenderViewHost (false), or whether the new TabContent based prerendering
   // is to be used (true).
@@ -270,6 +266,10 @@ class PrerenderContents : public RenderViewHostDelegate,
                                          const GURL& url);
   void OnUpdateFaviconURL(int32 page_id, const std::vector<FaviconURL>& urls);
   void OnMaybeCancelPrerenderForHTML5Media();
+
+  // Remove |this| from the PrerenderManager, set a final status, and
+  // delete |this|.
+  void Destroy(FinalStatus reason);
 
   // Returns the RenderViewHost Delegate for this prerender.
   RenderViewHostDelegate* GetRenderViewHostDelegate();
