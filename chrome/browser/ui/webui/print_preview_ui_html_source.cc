@@ -38,6 +38,8 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
 #endif
   localized_strings->SetString(std::string("previewFailed"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_FAILED));
+  localized_strings->SetString(std::string("initiatorTabClosed"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_INITIATOR_TAB_CLOSED));
 
   localized_strings->SetString(std::string("printButton"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PRINT_BUTTON));

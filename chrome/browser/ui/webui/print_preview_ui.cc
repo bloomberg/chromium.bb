@@ -29,8 +29,10 @@ PrintPreviewUIHTMLSource* PrintPreviewUI::html_source() {
   return html_source_.get();
 }
 
-void PrintPreviewUI::OnInitiatorTabClosed() {
-  CallJavascriptFunction("onInitiatorTabClosed");
+void PrintPreviewUI::OnInitiatorTabClosed(
+    const std::string& initiator_url) {
+  StringValue initiator_tab_url(initiator_url);
+  CallJavascriptFunction("onInitiatorTabClosed", initiator_tab_url);
 }
 
 void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,

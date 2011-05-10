@@ -94,10 +94,12 @@ function showSystemDialog() {
 /**
  * Disables the controls which need the initiator tab to generate preview
  * data. This function is called when the initiator tab is closed.
+ * @param {string} initiatorTabURL The URL of the initiator tab.
  */
-function onInitiatorTabClosed() {
+function onInitiatorTabClosed(initiatorTabURL) {
   if (isPreviewStillLoading)
-    printPreviewFailed();
+    displayErrorMessage(localStrings.getStringF('initiatorTabClosed',
+                                                initiatorTabURL));
 
   var controlIDs = ['landscape', 'portrait', 'all-pages', 'print-pages',
                     'individual-pages', 'printer-list'];
@@ -383,19 +385,27 @@ function setColor(color) {
 }
 
 /**
- * Display an error message when print preview fails.
- * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
+ * Display an error message in the center of the preview area.
+ * @param (string) errorMessage The error message to be displayed.
  */
-function printPreviewFailed() {
+function displayErrorMessage(errorMessage) {
   isPreviewStillLoading = false;
   $('dancing-dots-text').classList.add('hidden');
-  $('error-text').innerHTML = localStrings.getString('previewFailed');
+  $('error-text').innerHTML = errorMessage;
   $('error-text').classList.remove('hidden');
   setControlsDisabled(true);
 
   var pdfViewer = $('pdf-viewer');
   if (pdfViewer)
     $('mainview').removeChild(pdfViewer);
+}
+
+/**
+ * Display an error message when print preview fails.
+ * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
+ */
+function printPreviewFailed() {
+  displayErrorMessage(localStrings.getString('printPreviewFailed'));
 }
 
 /**
@@ -485,10 +495,7 @@ function createPDFPlugin() {
   // Check to see if the PDF plugin is our PDF plugin. (or compatible)
   if (!pdfPlugin.onload) {
     hasCompatiblePDFPlugin = false;
-    mainView.removeChild(pdfPlugin);
-    $('dancing-dots-text').classList.add('hidden');
-    $('error-text').innerHTML = localStrings.getString('noPlugin');
-    $('error-text').classList.remove('hidden');
+    displayErrorMessage(localStrings.getString('noPlugin'));
     return;
   }
   pdfPlugin.onload('onPDFLoad()');

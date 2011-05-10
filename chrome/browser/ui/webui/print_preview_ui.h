@@ -26,8 +26,10 @@ class PrintPreviewUI : public WebUI {
                                 const std::string& mime_type);
 
   // Notify the Web UI that initiator tab is closed, so we can disable all
-  // the controls that needs initiator tab for generating the preview data.
-  void OnInitiatorTabClosed();
+  // the controls that need the initiator tab for generating the preview data.
+  // |initiator_tab_url| is passed in order to display a more accurate error
+  // message.
+  void OnInitiatorTabClosed(const std::string& initiator_tab_url);
 
  private:
   scoped_refptr<PrintPreviewUIHTMLSource> html_source_;
