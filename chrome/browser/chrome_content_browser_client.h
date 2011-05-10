@@ -27,7 +27,20 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                               int child_process_id);
   virtual std::string GetApplicationLocale();
   virtual bool AllowAppCache(const GURL& manifest_url,
-                             const content::ResourceContext* context);
+                             const content::ResourceContext& context);
+  virtual bool AllowGetCookie(const GURL& url,
+                              const GURL& first_party,
+                              const net::CookieList& cookie_list,
+                              const content::ResourceContext& context,
+                              int render_process_id,
+                              int render_view_id);
+  virtual bool AllowSetCookie(const GURL& url,
+                              const GURL& first_party,
+                              const std::string& cookie_line,
+                              const content::ResourceContext& context,
+                              int render_process_id,
+                              int render_view_id,
+                              net::CookieOptions* options);
 #if defined(OS_LINUX)
   // Can return an optional fd for crash handling, otherwise returns -1.
   virtual int GetCrashSignalFD(const std::string& process_type);

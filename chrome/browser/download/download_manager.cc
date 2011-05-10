@@ -27,7 +27,6 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/history/download_create_info.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -130,8 +129,6 @@ void DownloadManager::Shutdown() {
   download_history_.reset();
   download_prefs_.reset();
 
-  request_context_getter_ = NULL;
-
   shutdown_needed_ = false;
 }
 
@@ -224,7 +221,6 @@ bool DownloadManager::Init(Profile* profile) {
   shutdown_needed_ = true;
 
   profile_ = profile;
-  request_context_getter_ = profile_->GetRequestContext();
   download_history_.reset(new DownloadHistory(profile));
   download_history_->Load(
       NewCallback(this, &DownloadManager::OnQueryDownloadEntriesComplete));
@@ -904,6 +900,8 @@ void DownloadManager::DownloadUrlToFile(const GURL& url,
                                         const DownloadSaveInfo& save_info,
                                         TabContents* tab_contents) {
   DCHECK(tab_contents);
+  // We send a pointer to content::ResourceContext, instead of the usual
+  // reference, so that a copy of the object isn't made.
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(&download_util::DownloadUrl,
                           url,
@@ -913,7 +911,7 @@ void DownloadManager::DownloadUrlToFile(const GURL& url,
                           g_browser_process->resource_dispatcher_host(),
                           tab_contents->GetRenderProcessHost()->id(),
                           tab_contents->render_view_host()->routing_id(),
-                          request_context_getter_));
+                          &tab_contents->profile()->GetResourceContext()));
 }
 
 void DownloadManager::AddObserver(Observer* observer) {

@@ -53,7 +53,6 @@
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "net/url_request/url_request_context_getter.h"
 
 using base::Time;
 using WebKit::WebPageSerializerClient;
@@ -310,8 +309,6 @@ bool SavePackage::Init() {
     NOTREACHED();
     return false;
   }
-
-  request_context_getter_ = profile->GetRequestContext();
 
   // Create the fake DownloadItem and display the view.
   DownloadManager* download_manager =
@@ -866,7 +863,7 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
                            routing_id(),
                            save_item->save_source(),
                            save_item->full_path(),
-                           request_context_getter_.get(),
+                           tab_contents()->profile()->GetResourceContext(),
                            this);
   } while (process_all_remaining_items && waiting_item_queue_.size());
 }

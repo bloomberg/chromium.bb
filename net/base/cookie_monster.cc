@@ -305,7 +305,7 @@ Time CanonExpiration(const CookieMonster::ParsedCookie& pc,
   Time expiration_time = CanonExpirationInternal(pc, current);
 
   if (options.force_session()) {
-    // Only override the expiry  adte if it's in the future. If the expiry date
+    // Only override the expiry date if it's in the future. If the expiry date
     // is before the creation date, the cookie is supposed to be deleted.
     if (expiration_time.is_null() || expiration_time > current)
       return Time();

@@ -38,10 +38,6 @@ class Thread;
 class Time;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 
 // The SavePackage object manages the process of saving a page as only-html or
 // complete-html and providing the information for displaying saving status.
@@ -263,10 +259,6 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   typedef base::hash_map<int32, SaveItem*> SavedItemMap;
   // saved_success_items_ is map of all saving job which are successfully saved.
   SavedItemMap saved_success_items_;
-
-  // The request context which provides application-specific context for
-  // net::URLRequest instances.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // Non-owning pointer for handling file writing on the file thread.
   SaveFileManager* file_manager_;

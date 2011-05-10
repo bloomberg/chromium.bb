@@ -46,9 +46,9 @@ struct GlobalRequestID;
 struct ResourceHostMsg_Request;
 struct ViewMsg_ClosePage_Params;
 
-namespace net {
-class URLRequestContext;
-}  // namespace net
+namespace content {
+class ResourceContext;
+}
 
 namespace webkit_blob {
 class DeletableFileReference;
@@ -80,7 +80,7 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
                      bool prompt_for_save_location,
                      int process_unique_id,
                      int route_id,
-                     net::URLRequestContext* request_context);
+                     const content::ResourceContext& context);
 
   // Initiates a save file from the browser process (as opposed to a resource
   // request from the renderer or another child process).
@@ -88,7 +88,7 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
                      const GURL& referrer,
                      int process_unique_id,
                      int route_id,
-                     net::URLRequestContext* request_context);
+                     const content::ResourceContext& context);
 
   // Cancels the given request if it still exists. We ignore cancels from the
   // renderer in the event of a download.
@@ -179,12 +179,10 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   virtual void OnSSLCertificateError(net::URLRequest* request,
                                      int cert_error,
                                      net::X509Certificate* cert);
-  virtual void OnGetCookies(net::URLRequest* request,
-                            bool blocked_by_policy);
-  virtual void OnSetCookie(net::URLRequest* request,
-                           const std::string& cookie_line,
-                           const net::CookieOptions& options,
-                           bool blocked_by_policy);
+  virtual bool CanGetCookies(net::URLRequest* request);
+  virtual bool CanSetCookie(net::URLRequest* request,
+                            const std::string& cookie_line,
+                            net::CookieOptions* options);
   virtual void OnResponseStarted(net::URLRequest* request);
   virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
   void OnResponseCompleted(net::URLRequest* request);
@@ -392,7 +390,11 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   // (a download or a page save). |download| should be true if the request
   // is a file download.
   ResourceDispatcherHostRequestInfo* CreateRequestInfoForBrowserRequest(
-      ResourceHandler* handler, int child_id, int route_id, bool download);
+      ResourceHandler* handler,
+      int child_id,
+      int route_id,
+      bool download,
+      const content::ResourceContext& context);
 
   // Returns true if |request| is in |pending_requests_|.
   bool IsValidRequest(net::URLRequest* request);

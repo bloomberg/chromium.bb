@@ -281,6 +281,7 @@ RenderMessageFilter::RenderMessageFilter(
       extension_info_map_(profile->GetExtensionInfoMap()),
       content_settings_(profile->GetHostContentSettingsMap()),
       request_context_(request_context),
+      resource_context_(profile->GetResourceContext()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
       render_widget_helper_(render_widget_helper),
       notification_prefs_(
@@ -656,8 +657,6 @@ void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {
 void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                         const GURL& url,
                                         const GURL& referrer) {
-  net::URLRequestContext* context = request_context_->GetURLRequestContext();
-
   // Don't show "Save As" UI.
   bool prompt_for_save_location = false;
   resource_dispatcher_host_->BeginDownload(url,
@@ -666,7 +665,7 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                            prompt_for_save_location,
                                            render_process_id_,
                                            message.routing_id(),
-                                           context);
+                                           resource_context_);
   download_util::RecordDownloadCount(
       download_util::INITIATED_BY_RENDERER_COUNT);
 }

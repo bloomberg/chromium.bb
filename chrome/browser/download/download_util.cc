@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/history/download_create_info.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
@@ -798,12 +797,8 @@ void DownloadUrl(
     ResourceDispatcherHost* rdh,
     int render_process_host_id,
     int render_view_id,
-    net::URLRequestContextGetter* request_context_getter) {
+    const content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  net::URLRequestContext* context =
-      request_context_getter->GetURLRequestContext();
-  context->set_referrer_charset(referrer_charset);
 
   rdh->BeginDownload(url,
                      referrer,
@@ -811,7 +806,7 @@ void DownloadUrl(
                      true,  // Show "Save as" UI.
                      render_process_host_id,
                      render_view_id,
-                     context);
+                     *context);
 }
 
 void CancelDownloadRequest(ResourceDispatcherHost* rdh,

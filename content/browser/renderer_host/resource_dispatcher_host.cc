@@ -40,6 +40,7 @@
 #include "content/browser/cert_store.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/chrome_blob_storage_context.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/in_process_webkit/webkit_thread.h"
 #include "content/browser/plugin_service.h"
@@ -567,7 +568,8 @@ void ResourceDispatcherHost::BeginRequest(
           upload_size,
           false,  // is download
           ResourceType::IsFrame(request_data.resource_type),  // allow_download
-          request_data.has_user_gesture);
+          request_data.has_user_gesture,
+          &resource_context);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
   chrome_browser_net::SetOriginPIDForRequest(
       request_data.origin_pid, request);
@@ -697,7 +699,11 @@ ResourceHandler* ResourceDispatcherHost::CreateSafeBrowsingResourceHandler(
 
 ResourceDispatcherHostRequestInfo*
 ResourceDispatcherHost::CreateRequestInfoForBrowserRequest(
-    ResourceHandler* handler, int child_id, int route_id, bool download) {
+    ResourceHandler* handler,
+    int child_id,
+    int route_id,
+    bool download,
+    const content::ResourceContext& context) {
   return new ResourceDispatcherHostRequestInfo(handler,
                                                ChildProcessInfo::RENDER_PROCESS,
                                                child_id,
@@ -707,7 +713,8 @@ ResourceDispatcherHost::CreateRequestInfoForBrowserRequest(
                                                0,         // upload_size
                                                download,  // is_download
                                                download,  // allow_download
-                                               false);    // has_user_gesture
+                                               false,     // has_user_gesture
+                                               &context);
 }
 
 void ResourceDispatcherHost::OnClosePageACK(
@@ -744,7 +751,7 @@ void ResourceDispatcherHost::BeginDownload(
     bool prompt_for_save_location,
     int child_id,
     int route_id,
-    net::URLRequestContext* request_context) {
+    const content::ResourceContext& context) {
   if (is_shutdown_)
     return;
 
@@ -789,12 +796,13 @@ void ResourceDispatcherHost::BeginDownload(
 
   request->set_method("GET");
   request->set_referrer(MaybeStripReferrer(referrer).spec());
-  request->set_context(request_context);
+  request->set_context(context.request_context());
   request->set_load_flags(request->load_flags() |
       net::LOAD_IS_DOWNLOAD);
 
   ResourceDispatcherHostRequestInfo* extra_info =
-      CreateRequestInfoForBrowserRequest(handler, child_id, route_id, true);
+      CreateRequestInfoForBrowserRequest(
+          handler, child_id, route_id, true, context);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
 
   BeginRequestInternal(request);
@@ -806,7 +814,7 @@ void ResourceDispatcherHost::BeginSaveFile(
     const GURL& referrer,
     int child_id,
     int route_id,
-    net::URLRequestContext* request_context) {
+    const content::ResourceContext& context) {
   if (is_shutdown_)
     return;
 
@@ -832,11 +840,12 @@ void ResourceDispatcherHost::BeginSaveFile(
   // So far, for saving page, we need fetch content from cache, in the
   // future, maybe we can use a configuration to configure this behavior.
   request->set_load_flags(net::LOAD_PREFERRING_CACHE);
-  request->set_context(request_context);
+  request->set_context(context.request_context());
 
   // Since we're just saving some resources we need, disallow downloading.
   ResourceDispatcherHostRequestInfo* extra_info =
-      CreateRequestInfoForBrowserRequest(handler, child_id, route_id, false);
+      CreateRequestInfoForBrowserRequest(
+          handler, child_id, route_id, false, context);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
 
   BeginRequestInternal(request);
@@ -1128,41 +1137,37 @@ void ResourceDispatcherHost::OnSSLCertificateError(
   SSLManager::OnSSLCertificateError(this, request, cert_error, cert);
 }
 
-void ResourceDispatcherHost::OnGetCookies(
-    net::URLRequest* request,
-    bool blocked_by_policy) {
+bool ResourceDispatcherHost::CanGetCookies(net::URLRequest* request) {
   VLOG(1) << "OnGetCookies: " << request->url().spec();
-
   int render_process_id, render_view_id;
   if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
-    return;
+    return false;
 
   net::URLRequestContext* context = request->context();
-
   net::CookieMonster* cookie_monster =
       context->cookie_store()->GetCookieMonster();
   net::CookieList cookie_list =
       cookie_monster->GetAllCookiesForURL(request->url());
-  CallRenderViewHostContentSettingsDelegate(
-      render_process_id, render_view_id,
-      &RenderViewHostDelegate::ContentSettings::OnCookiesRead,
-      request->url(), cookie_list, blocked_by_policy);
+  ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
+
+  return content::GetContentClient()->browser()->AllowGetCookie(
+      request->url(), request->first_party_for_cookies(), cookie_list,
+      *info->context(), render_process_id, render_view_id);
 }
 
-void ResourceDispatcherHost::OnSetCookie(net::URLRequest* request,
-                                         const std::string& cookie_line,
-                                         const net::CookieOptions& options,
-                                         bool blocked_by_policy) {
+bool ResourceDispatcherHost::CanSetCookie(net::URLRequest* request,
+                                          const std::string& cookie_line,
+                                          net::CookieOptions* options) {
   VLOG(1) << "OnSetCookie: " << request->url().spec();
 
   int render_process_id, render_view_id;
   if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
-    return;
+    return false;
 
-  CallRenderViewHostContentSettingsDelegate(
-      render_process_id, render_view_id,
-      &RenderViewHostDelegate::ContentSettings::OnCookieChanged,
-      request->url(), cookie_line, options, blocked_by_policy);
+  ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
+  return content::GetContentClient()->browser()->AllowSetCookie(
+      request->url(), request->first_party_for_cookies(), cookie_line,
+      *info->context(), render_process_id, render_view_id, options);
 }
 
 void ResourceDispatcherHost::OnResponseStarted(net::URLRequest* request) {

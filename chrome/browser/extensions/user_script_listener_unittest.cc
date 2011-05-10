@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_handler.h"
@@ -89,7 +90,8 @@ class DummyResourceHandler : public ResourceHandler {
 ResourceDispatcherHostRequestInfo* CreateRequestInfo(int request_id) {
   return new ResourceDispatcherHostRequestInfo(
       new DummyResourceHandler(), ChildProcessInfo::RENDER_PROCESS, 0, 0,
-      request_id, ResourceType::MAIN_FRAME, 0, false, false, false);
+      request_id, ResourceType::MAIN_FRAME, 0, false, false, false,
+      &content::MockResourceContext::GetInstance());
 }
 
 // A simple test net::URLRequestJob. We don't care what it does, only that

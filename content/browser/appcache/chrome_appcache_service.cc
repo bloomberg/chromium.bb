@@ -85,14 +85,14 @@ bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // We don't prompt for read access.
   return content::GetContentClient()->browser()->AllowAppCache(
-      manifest_url, resource_context_);
+      manifest_url, *resource_context_);
 }
 
 int ChromeAppCacheService::CanCreateAppCache(
     const GURL& manifest_url, net::CompletionCallback* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return content::GetContentClient()->browser()->AllowAppCache(
-      manifest_url, resource_context_) ? net::OK : net::ERR_ACCESS_DENIED;
+      manifest_url, *resource_context_) ? net::OK : net::ERR_ACCESS_DENIED;
 }
 
 void ChromeAppCacheService::Observe(NotificationType type,

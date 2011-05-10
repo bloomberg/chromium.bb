@@ -21,6 +21,10 @@ class ResourceDispatcherHost;
 class ResourceHandler;
 class SSLClientAuthHandler;
 
+namespace content {
+class ResourceContext;
+}
+
 namespace webkit_blob {
 class BlobData;
 }
@@ -40,7 +44,8 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
       uint64 upload_size,
       bool is_download,
       bool allow_download,
-      bool has_user_gesture);
+      bool has_user_gesture,
+      const content::ResourceContext* context);
   virtual ~ResourceDispatcherHostRequestInfo();
 
   // Top-level ResourceHandler servicing this request.
@@ -150,6 +155,8 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   }
   void set_requested_blob_data(webkit_blob::BlobData* data);
 
+  const content::ResourceContext* context() const { return context_; }
+
  private:
   friend class ResourceDispatcherHost;
 
@@ -203,6 +210,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   bool waiting_for_upload_progress_ack_;
   int memory_cost_;
   scoped_refptr<webkit_blob::BlobData> requested_blob_data_;
+  const content::ResourceContext* context_;
 
   // "Private" data accessible only to ResourceDispatcherHost (use the
   // accessors above for consistency).

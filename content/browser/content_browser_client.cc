@@ -53,7 +53,28 @@ std::string ContentBrowserClient::GetApplicationLocale() {
 }
 
 bool ContentBrowserClient::AllowAppCache(
-    const GURL& manifest_url, const content::ResourceContext* context) {
+    const GURL& manifest_url, const content::ResourceContext& context) {
+  return true;
+}
+
+bool ContentBrowserClient::AllowGetCookie(
+    const GURL& url,
+    const GURL& first_party,
+    const net::CookieList& cookie_list,
+    const content::ResourceContext& context,
+    int render_process_id,
+    int render_view_id) {
+  return true;
+}
+
+bool ContentBrowserClient::AllowSetCookie(
+    const GURL& url,
+    const GURL& first_party,
+    const std::string& cookie_line,
+    const content::ResourceContext& context,
+    int render_process_id,
+    int render_view_id,
+    net::CookieOptions* options) {
   return true;
 }
 

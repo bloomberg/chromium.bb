@@ -29,9 +29,13 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
+#include "net/base/cookie_monster.h"
+#include "net/base/cookie_options.h"
+#include "net/base/static_cookie_policy.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
@@ -183,11 +187,85 @@ std::string ChromeContentBrowserClient::GetApplicationLocale() {
 }
 
 bool ChromeContentBrowserClient::AllowAppCache(
-    const GURL& manifest_url, const content::ResourceContext* context) {
-  ContentSetting setting = context->host_content_settings_map()->
+    const GURL& manifest_url, const content::ResourceContext& context) {
+  ContentSetting setting = context.host_content_settings_map()->
       GetContentSetting(manifest_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   DCHECK(setting != CONTENT_SETTING_DEFAULT);
   return setting != CONTENT_SETTING_BLOCK;
+}
+
+bool ChromeContentBrowserClient::AllowGetCookie(
+    const GURL& url,
+    const GURL& first_party,
+    const net::CookieList& cookie_list,
+    const content::ResourceContext& context,
+    int render_process_id,
+    int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  bool allow = true;
+  if (context.host_content_settings_map()->BlockThirdPartyCookies()) {
+    bool strict = CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kBlockReadingThirdPartyCookies);
+    net::StaticCookiePolicy policy(strict ?
+        net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES :
+        net::StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES);
+    int rv = policy.CanGetCookies(url, first_party);
+    DCHECK_NE(net::ERR_IO_PENDING, rv);
+    if (rv != net::OK)
+      allow = false;
+  }
+
+  if (allow) {
+    ContentSetting setting = context.host_content_settings_map()->
+        GetContentSetting(url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+    allow = setting == CONTENT_SETTING_ALLOW ||
+        setting == CONTENT_SETTING_SESSION_ONLY;
+  }
+
+  CallRenderViewHostContentSettingsDelegate(
+      render_process_id, render_view_id,
+      &RenderViewHostDelegate::ContentSettings::OnCookiesRead,
+      url, cookie_list, !allow);
+  return allow;
+}
+
+bool ChromeContentBrowserClient::AllowSetCookie(
+    const GURL& url,
+    const GURL& first_party,
+    const std::string& cookie_line,
+    const content::ResourceContext& context,
+    int render_process_id,
+    int render_view_id,
+    net::CookieOptions* options) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  bool allow = true;
+  if (context.host_content_settings_map()->BlockThirdPartyCookies()) {
+    bool strict = CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kBlockReadingThirdPartyCookies);
+    net::StaticCookiePolicy policy(strict ?
+        net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES :
+        net::StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES);
+    int rv = policy.CanSetCookie(url, first_party, cookie_line);
+    if (rv != net::OK)
+      allow = false;
+  }
+
+  if (allow) {
+    ContentSetting setting = context.host_content_settings_map()->
+        GetContentSetting(url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+
+    if (setting == CONTENT_SETTING_SESSION_ONLY)
+      options->set_force_session();
+
+    allow = setting == CONTENT_SETTING_ALLOW ||
+        setting == CONTENT_SETTING_SESSION_ONLY;
+  }
+
+  CallRenderViewHostContentSettingsDelegate(
+      render_process_id, render_view_id,
+      &RenderViewHostDelegate::ContentSettings::OnCookieChanged,
+      url, cookie_line, *options, !allow);
+  return allow;
 }
 
 #if defined(OS_LINUX)

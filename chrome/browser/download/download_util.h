@@ -19,11 +19,6 @@
 #include "views/view.h"
 #endif
 
-namespace gfx {
-class Canvas;
-class Image;
-}
-
 class BaseDownloadItemModel;
 class DictionaryValue;
 class DownloadItem;
@@ -36,8 +31,13 @@ class SkBitmap;
 struct DownloadCreateInfo;
 struct DownloadSaveInfo;
 
-namespace net {
-class URLRequestContextGetter;
+namespace content {
+class ResourceContext;
+}
+
+namespace gfx {
+class Canvas;
+class Image;
 }
 
 namespace download_util {
@@ -238,7 +238,7 @@ void DownloadUrl(const GURL& url,
                  ResourceDispatcherHost* rdh,
                  int render_process_host_id,
                  int render_view_id,
-                 net::URLRequestContextGetter* request_context_getter);
+                 const content::ResourceContext* context);
 
 // Tells the resource dispatcher host to cancel a download request.
 // Must be called on the IO thread.

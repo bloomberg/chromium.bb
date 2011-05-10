@@ -41,11 +41,16 @@ namespace WebKit {
 struct WebScreenInfo;
 }
 
-namespace gfx {
-class Rect;
+namespace content {
+class ResourceContext;
 }
+
 namespace base {
 class SharedMemory;
+}
+
+namespace gfx {
+class Rect;
 }
 
 namespace net {
@@ -239,6 +244,9 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   // Contextual information to be used for requests created here.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  // The ResourceContext which is to be used on the IO thread.
+  const content::ResourceContext& resource_context_;
 
   // A request context that holds a cookie store for chrome-extension URLs.
   scoped_refptr<net::URLRequestContextGetter> extensions_request_context_;

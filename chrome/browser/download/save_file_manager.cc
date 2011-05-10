@@ -25,8 +25,6 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "net/base/io_buffer.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 
 SaveFileManager::SaveFileManager(ResourceDispatcherHost* rdh)
     : next_id_(0),
@@ -123,7 +121,7 @@ void SaveFileManager::SaveURL(
     int render_view_id,
     SaveFileCreateInfo::SaveFileSource save_source,
     const FilePath& file_full_path,
-    net::URLRequestContextGetter* request_context_getter,
+    const content::ResourceContext& context,
     SavePackage* save_package) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -140,7 +138,7 @@ void SaveFileManager::SaveURL(
                           referrer,
                           render_process_host_id,
                           render_view_id,
-                          make_scoped_refptr(request_context_getter)));
+                          &context));
   } else {
     // We manually start the save job.
     SaveFileCreateInfo* info = new SaveFileCreateInfo(file_full_path,
@@ -364,15 +362,13 @@ void SaveFileManager::OnSaveURL(
     const GURL& referrer,
     int render_process_host_id,
     int render_view_id,
-    net::URLRequestContextGetter* request_context_getter) {
+    const content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::URLRequestContext* context =
-      request_context_getter->GetURLRequestContext();
   resource_dispatcher_host_->BeginSaveFile(url,
                                            referrer,
                                            render_process_host_id,
                                            render_view_id,
-                                           context);
+                                           *context);
 }
 
 void SaveFileManager::OnRequireSaveJobFromOtherSource(
