@@ -106,7 +106,8 @@ class DatabaseTracker_TestHelper_Test {
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     scoped_refptr<DatabaseTracker> tracker(
         new DatabaseTracker(temp_dir.path(), incognito_mode,
-                            new TestSpecialStoragePolicy));
+                            new TestSpecialStoragePolicy,
+                            NULL, NULL));
 
     // Create and open three databases.
     int64 database_size = 0;
@@ -209,7 +210,8 @@ class DatabaseTracker_TestHelper_Test {
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     scoped_refptr<DatabaseTracker> tracker(
         new DatabaseTracker(temp_dir.path(), incognito_mode,
-                            new TestSpecialStoragePolicy));
+                            new TestSpecialStoragePolicy,
+                            NULL, NULL));
 
     // Add two observers.
     TestObserver observer1;

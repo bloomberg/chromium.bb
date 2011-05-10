@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,12 +14,15 @@
 #include "app/sql/transaction.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
+#include "webkit/database/database_quota_client.h"
 #include "webkit/database/database_util.h"
 #include "webkit/database/databases_table.h"
 #include "webkit/database/quota_table.h"
+#include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 
 namespace {
@@ -46,6 +49,10 @@ const FilePath::CharType kTrackerDatabaseFileName[] =
 static const int kCurrentVersion = 2;
 static const int kCompatibleVersion = 1;
 static const char* kExtensionOriginIdentifierPrefix = "chrome-extension_";
+
+OriginInfo::OriginInfo()
+    : total_size_(0),
+      quota_(0) {}
 
 OriginInfo::OriginInfo(const OriginInfo& origin_info)
     : origin_(origin_info.origin_),
@@ -83,7 +90,9 @@ OriginInfo::OriginInfo(const string16& origin, int64 total_size, int64 quota)
 DatabaseTracker::DatabaseTracker(
     const FilePath& profile_path,
     bool is_incognito,
-    quota::SpecialStoragePolicy* special_storage_policy)
+    quota::SpecialStoragePolicy* special_storage_policy,
+    quota::QuotaManagerProxy* quota_manager_proxy,
+    base::MessageLoopProxy* db_tracker_thread)
     : is_initialized_(false),
       is_incognito_(is_incognito),
       shutting_down_(false),
@@ -96,7 +105,12 @@ DatabaseTracker::DatabaseTracker(
       meta_table_(NULL),
       default_quota_(5 * 1024 * 1024),
       special_storage_policy_(special_storage_policy),
+      quota_manager_proxy_(quota_manager_proxy),
       incognito_origin_directories_generator_(0) {
+  if (quota_manager_proxy) {
+    quota_manager_proxy->RegisterClient(
+        new DatabaseQuotaClient(db_tracker_thread, this));
+  }
 }
 
 DatabaseTracker::~DatabaseTracker() {
@@ -140,6 +154,17 @@ void DatabaseTracker::DatabaseModified(const string16& origin_identifier,
   int64 space_available = GetOriginSpaceAvailable(origin_identifier);
   FOR_EACH_OBSERVER(Observer, observers_, OnDatabaseSizeChanged(
       origin_identifier, database_name, updated_db_size, space_available));
+
+  if (quota_manager_proxy_) {
+    // TODO(michaeln): notify the quota manager
+    // CachedOriginInfo* origin_info = GetCachedOriginInfo(origin_identifier);
+    // if (origin_info)
+    //   quota_manager_proxy_->NotifyStorageConsumed(
+    //       quota::QuotaClient::kDatabase,
+    //       DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
+    //       quota::kStorageTypeTemporary,
+    //       origin_info->TotalSize());
+  }
 }
 
 void DatabaseTracker::DatabaseClosed(const string16& origin_identifier,
@@ -259,14 +284,31 @@ FilePath DatabaseTracker::GetFullDBFilePath(
       UTF16ToWide(GetOriginDirectory(origin_identifier)))).Append(file_name);
 }
 
+bool DatabaseTracker::GetOriginInfo(const string16& origin_identifier,
+                                    OriginInfo* info) {
+  DCHECK(info);
+  CachedOriginInfo* cached_info = GetCachedOriginInfo(origin_identifier);
+  if (!cached_info)
+    return false;
+  *info = OriginInfo(*cached_info);
+  return true;
+}
+
+bool DatabaseTracker::GetAllOriginIdentifiers(
+    std::vector<string16>* origin_identifiers) {
+  DCHECK(origin_identifiers);
+  DCHECK(origin_identifiers->empty());
+  if (!LazyInit())
+    return false;
+  return databases_table_->GetAllOrigins(origin_identifiers);
+}
+
 bool DatabaseTracker::GetAllOriginsInfo(std::vector<OriginInfo>* origins_info) {
   DCHECK(origins_info);
   DCHECK(origins_info->empty());
-  if (!LazyInit())
-    return false;
 
   std::vector<string16> origins;
-  if (!databases_table_->GetAllOrigins(&origins))
+  if (!GetAllOriginIdentifiers(&origins))
     return false;
 
   for (std::vector<string16>::const_iterator it = origins.begin();
@@ -314,11 +356,21 @@ bool DatabaseTracker::DeleteClosedDatabase(const string16& origin_identifier,
   databases_table_->DeleteDatabaseDetails(origin_identifier, database_name);
   origins_info_map_.erase(origin_identifier);
 
-  // Try to delete the origin in case this was the last database.
   std::vector<DatabaseDetails> details;
   if (databases_table_->GetAllDatabaseDetailsForOrigin(
-          origin_identifier, &details) && details.empty())
+          origin_identifier, &details) && details.empty()) {
+    // Try to delete the origin in case this was the last database.
     DeleteOrigin(origin_identifier);
+  } else if (quota_manager_proxy_) {
+    // TODO(michaeln): notify the quota manager
+    // CachedOriginInfo* origin_info = GetCachedOriginInfo(origin_identifier);
+    // if (origin_info)
+    //  quota_manager_proxy_->NotifyStorageConsumed(
+    //      quota::QuotaClient::kDatabase,
+    //      DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
+    //      quota::kStorageTypeTemporary,
+    //      origin_info->TotalSize());
+  }
   return true;
 }
 
@@ -340,6 +392,16 @@ bool DatabaseTracker::DeleteOrigin(const string16& origin_identifier) {
     return false;
 
   databases_table_->DeleteOrigin(origin_identifier);
+
+  if (quota_manager_proxy_) {
+    // TODO(michaeln): notify the quota manager
+    // quota_manager_proxy_->NotifyStorageConsumed(
+    //    quota::QuotaClient::kDatabase,
+    //    DatabaseUtil::GetOriginFromIdentifier(origin_identifier),
+    //    quota::kStorageTypeTemporary,
+    //    0);
+  }
+
   return true;
 }
 
@@ -488,6 +550,7 @@ int64 DatabaseTracker::GetDBFileSize(const string16& origin_identifier,
 
 int64 DatabaseTracker::GetOriginSpaceAvailable(
     const string16& origin_identifier) {
+  // TODO(michaeln): Come up with a value according to the the QuotaMgr.
   CachedOriginInfo* origin_info = GetCachedOriginInfo(origin_identifier);
   if (!origin_info)
     return 0;
@@ -687,6 +750,7 @@ void DatabaseTracker::DeleteIncognitoDBDirectory() {
 
 // static
 void DatabaseTracker::ClearLocalState(const FilePath& profile_path) {
+  // TODO(michaeln): use SpecialStoragePolicy instead of kExtensionOriginPrefix
   FilePath db_dir = profile_path.Append(FilePath(kDatabaseDirectoryName));
   FilePath db_tracker = db_dir.Append(FilePath(kTrackerDatabaseFileName));
   if (file_util::DirectoryExists(db_dir) &&

@@ -20,12 +20,17 @@
 #include "net/base/completion_callback.h"
 #include "webkit/database/database_connections.h"
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace sql {
 class Connection;
 class MetaTable;
 }
 
 namespace quota {
+class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
@@ -40,6 +45,7 @@ class QuotaTable;
 // This class is used to store information about all databases in an origin.
 class OriginInfo {
  public:
+  OriginInfo();
   OriginInfo(const OriginInfo& origin_info);
   ~OriginInfo();
 
@@ -88,7 +94,9 @@ class DatabaseTracker
   };
 
   DatabaseTracker(const FilePath& profile_path, bool is_incognito,
-                  quota::SpecialStoragePolicy* special_storage_policy);
+                  quota::SpecialStoragePolicy* special_storage_policy,
+                  quota::QuotaManagerProxy* quota_manager_proxy,
+                  base::MessageLoopProxy* db_tracker_thread);
 
   void DatabaseOpened(const string16& origin_identifier,
                       const string16& database_name,
@@ -111,9 +119,12 @@ class DatabaseTracker
   FilePath GetFullDBFilePath(const string16& origin_identifier,
                              const string16& database_name);
 
-  bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info);
-  void SetOriginQuota(const string16& origin_identifier, int64 new_quota);
+  // virtual for unittesting only
+  virtual bool GetOriginInfo(const string16& origin_id, OriginInfo* info);
+  virtual bool GetAllOriginIdentifiers(std::vector<string16>* origin_ids);
+  virtual bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info);
 
+  void SetOriginQuota(const string16& origin_identifier, int64 new_quota);
   int64 GetDefaultQuota() { return default_quota_; }
   // Sets the default quota for all origins. Should be used in tests only.
   void SetDefaultQuota(int64 quota);
@@ -158,8 +169,8 @@ class DatabaseTracker
   static void ClearLocalState(const FilePath& profile_path);
 
  private:
-  // Need this here to allow RefCountedThreadSafe to call ~DatabaseTracker().
   friend class base::RefCountedThreadSafe<DatabaseTracker>;
+  friend class MockDatabaseTracker;  // for testing
 
   typedef std::map<string16, std::set<string16> > DatabaseSet;
   typedef std::map<net::CompletionCallback*, DatabaseSet> PendingCompletionMap;
@@ -185,7 +196,8 @@ class DatabaseTracker
     }
   };
 
-  ~DatabaseTracker();
+  // virtual for unittesting only
+  virtual ~DatabaseTracker();
 
   bool DeleteClosedDatabase(const string16& origin_identifier,
                             const string16& database_name);
@@ -242,6 +254,8 @@ class DatabaseTracker
 
   // Apps and Extensions can have special rights.
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+
+  scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
 
   // When in incognito mode, store a DELETE_ON_CLOSE handle to each
   // main DB and journal file that was accessed. When the incognito profile

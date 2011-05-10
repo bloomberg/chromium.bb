@@ -727,10 +727,7 @@ ChromeAppCacheService* ProfileImpl::GetAppCacheService() {
 }
 
 webkit_database::DatabaseTracker* ProfileImpl::GetDatabaseTracker() {
-  if (!db_tracker_) {
-    db_tracker_ = new webkit_database::DatabaseTracker(
-        GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy());
-  }
+  CreateQuotaManagerAndClients();
   return db_tracker_;
 }
 
@@ -1273,6 +1270,7 @@ ExtensionPrefValueMap* ProfileImpl::GetExtensionPrefValueMap() {
 void ProfileImpl::CreateQuotaManagerAndClients() {
   if (quota_manager_.get()) {
     DCHECK(file_system_context_.get());
+    DCHECK(db_tracker_.get());
     return;
   }
 
@@ -1292,6 +1290,10 @@ void ProfileImpl::CreateQuotaManagerAndClients() {
       GetPath(), IsOffTheRecord(),
       GetExtensionSpecialStoragePolicy(),
       quota_manager_->proxy());
+  db_tracker_ = new webkit_database::DatabaseTracker(
+      GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy(),
+      quota_manager_->proxy(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 }
 
 WebKitContext* ProfileImpl::GetWebKitContext() {

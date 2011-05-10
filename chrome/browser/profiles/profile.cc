@@ -287,10 +287,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() {
-    if (!db_tracker_.get()) {
-      db_tracker_ = new webkit_database::DatabaseTracker(
-          GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy());
-    }
+    CreateQuotaManagerAndClients();
     return db_tracker_;
   }
 
@@ -699,6 +696,7 @@ class OffTheRecordProfileImpl : public Profile,
   void CreateQuotaManagerAndClients() {
     if (quota_manager_.get()) {
       DCHECK(file_system_context_.get());
+      DCHECK(db_tracker_.get());
       return;
     }
 
@@ -718,6 +716,10 @@ class OffTheRecordProfileImpl : public Profile,
         GetPath(), IsOffTheRecord(),
         GetExtensionSpecialStoragePolicy(),
         quota_manager_->proxy());
+    db_tracker_ = new webkit_database::DatabaseTracker(
+        GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy(),
+        quota_manager_->proxy(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   }
 
   NotificationRegistrar registrar_;

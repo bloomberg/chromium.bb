@@ -372,6 +372,7 @@
         '../../blob/blob_url_request_job_unittest.cc',
         '../../blob/deletable_file_reference_unittest.cc',
         '../../database/database_connections_unittest.cc',
+        '../../database/database_quota_client_unittest.cc',
         '../../database/databases_table_unittest.cc',
         '../../database/database_tracker_unittest.cc',
         '../../database/database_util_unittest.cc',
