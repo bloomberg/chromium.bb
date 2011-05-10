@@ -358,8 +358,8 @@ class ExtensionPrefs {
 
   // Reads a boolean pref from |ext| with key |pref_key|.
   // Return false if the value is false or |pref_key| does not exist.
-  bool ReadBooleanFromPref(const DictionaryValue* ext,
-                           const std::string& pref_key);
+  static bool ReadBooleanFromPref(const DictionaryValue* ext,
+                                  const std::string& pref_key);
 
   // Reads a boolean pref |pref_key| from extension with id |extension_id|.
   bool ReadExtensionPrefBoolean(const std::string& extension_id,
@@ -367,9 +367,9 @@ class ExtensionPrefs {
 
   // Reads an integer pref from |ext| with key |pref_key|.
   // Return false if the value does not exist.
-  bool ReadIntegerFromPref(const DictionaryValue* ext,
-                           const std::string& pref_key,
-                           int* out_value);
+  static bool ReadIntegerFromPref(const DictionaryValue* ext,
+                                  const std::string& pref_key,
+                                  int* out_value);
 
   // Reads an integer pref |pref_key| from extension with id |extension_id|.
   bool ReadExtensionPrefInteger(const std::string& extension_id,
@@ -405,17 +405,14 @@ class ExtensionPrefs {
       const std::string& id) const;
 
   // Serializes the data and schedules a persistent save via the |PrefService|.
-  // Additionally fires a PREF_CHANGED notification with the top-level
-  // |kExtensionsPref| path set.
-  // TODO(andybons): Switch this to EXTENSION_PREF_CHANGED to be more granular.
-  // TODO(andybons): Use a ScopedUserPrefUpdate to update observers on changes
-  // to the mutable extension dictionary.
+  // TODO(andybons): Fire an EXTENSION_PREF_CHANGED notification to be more
+  // granular than PREF_CHANGED.
   void SavePrefs();
 
   // Checks if kPrefBlacklist is set to true in the DictionaryValue.
   // Return false if the value is false or kPrefBlacklist does not exist.
   // This is used to decide if an extension is blacklisted.
-  bool IsBlacklistBitSet(DictionaryValue* ext);
+  static bool IsBlacklistBitSet(DictionaryValue* ext);
 
   // Fix missing preference entries in the extensions that are were introduced
   // in a later Chrome version.
