@@ -41,10 +41,7 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Basic) {
         i == VIEW_ID_TAB ||
         i == VIEW_ID_SIDE_BAR_CONTAINER ||
         i == VIEW_ID_SIDE_BAR_SPLIT ||
-        i == VIEW_ID_FEEDBACK_BUTTON ||
-        i == VIEW_ID_COMPACT_NAV_BAR ||
-        i == VIEW_ID_COMPACT_OPT_BAR ||
-        i == VIEW_ID_COMPACT_NAV_BAR_SPACER) {
+        i == VIEW_ID_FEEDBACK_BUTTON) {
       continue;
     }
 

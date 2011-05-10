@@ -79,10 +79,6 @@ class ToolbarView : public AccessiblePaneView,
   // Remove a menu listener.
   void RemoveMenuListener(views::MenuListener* listener);
 
-  // Gets a bitmap with the icon for the app menu and any overlaid notification
-  // badge.
-  SkBitmap GetAppMenuIcon(views::CustomButton::ButtonState state);
-
   virtual bool GetAcceleratorInfo(int id, ui::Accelerator* accel);
 
   // Accessors...
@@ -173,6 +169,10 @@ class ToolbarView : public AccessiblePaneView,
 
   // Updates the badge on the app menu (Wrench).
   void UpdateAppMenuBadge();
+
+  // Gets a bitmap with the icon for the app menu and any overlaid notification
+  // badge.
+  SkBitmap GetAppMenuIcon(views::CustomButton::ButtonState state);
 
   // Gets a badge for the wrench icon corresponding to the number of
   // unacknowledged background pages in the system.

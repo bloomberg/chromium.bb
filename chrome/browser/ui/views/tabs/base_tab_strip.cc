@@ -375,13 +375,6 @@ BaseTab* BaseTabStrip::GetTabAt(BaseTab* tab,
   return GetTabAtLocal(local_point);
 }
 
-void BaseTabStrip::ClickActiveTab(const BaseTab* tab) const {
-  DCHECK(IsActiveTab(tab));
-  int index = GetModelIndexOfBaseTab(tab);
-  if (controller() && IsValidModelIndex(index))
-    controller()->ClickActiveTab(index);
-}
-
 void BaseTabStrip::Layout() {
   // Only do a layout if our size changed.
   if (last_layout_size_ == size())

@@ -18,8 +18,6 @@
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
-#include "chrome/browser/ui/views/dropdown_bar_host.h"
-#include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
@@ -50,7 +48,7 @@ class TemplateURLModel;
 namespace views {
 class HorizontalPainter;
 class Label;
-}  // namespace views
+};
 
 #if defined(OS_WIN)
 class SuggestedTextView;
@@ -69,19 +67,11 @@ class LocationBarView : public LocationBar,
                         public views::View,
                         public views::DragController,
                         public AutocompleteEditController,
-                        public DropdownBarHostDelegate,
                         public TemplateURLModelObserver,
                         public NotificationObserver {
  public:
   // The location bar view's class name.
   static const char kViewClassName[];
-
-  // DropdownBarHostDelegate
-  virtual void SetFocusAndSelection(bool select_all) OVERRIDE;
-  virtual void SetAnimationOffset(int offset) OVERRIDE;
-
-  // Returns the offset used while animating.
-  int animation_offset() const { return animation_offset_; }
 
   class Delegate {
    public:
@@ -421,12 +411,6 @@ class LocationBarView : public LocationBar,
 
   // Tracks this preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;
-
-  // While animating, the host clips the widget and draws only the bottom
-  // part of it. The view needs to know the pixel offset at which we are drawing
-  // the widget so that we can draw the curved edges that attach to the toolbar
-  // in the right location.
-  int animation_offset_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarView);
 };

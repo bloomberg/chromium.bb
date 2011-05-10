@@ -334,10 +334,6 @@ void PanelBrowserWindowCocoa::ToggleTabStripMode() {
   NOTIMPLEMENTED();
 }
 
-void PanelBrowserWindowCocoa::ToggleUseCompactNavigationBar() {
-  NOTIMPLEMENTED();
-}
-
 #if defined(OS_MACOSX)
 void PanelBrowserWindowCocoa::OpenTabpose() {
   NOTIMPLEMENTED();

@@ -4198,15 +4198,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_INTERACTIVE_FORM_VALIDATION_DESCRIPTION" desc="Description of the 'Disable HTML5 interactive form validation' lab.">
         Disable showing validation messages and preventing form submission.
       </message>
-      <message name="IDS_FLAGS_ENABLE_COMPACT_NAVIGATION" desc="Name of the 'Compact Navigation' lab.">
-        Compact Navigation
-      </message>
-      <message name="IDS_FLAGS_ENABLE_COMPACT_NAVIGATION_DESCRIPTION" desc="Description of the 'Compact Navigation' lab.">
-        Adds a "Hide the toolbar" entry to the tabstrip's context menu. Use this to toggle between always displaying the toolbar (default) and only opening it as a drop down box as needed.
-      </message>
-      <message name="IDS_COMPACT_NAVIGATION_BAR" desc="The menu item on the app menu to toggle compact navigation bar">
-        Compact Navigation Bar
-      </message>
       <message name="IDS_FLAGS_ENABLE_HISTORY_QUICK_PROVIDER" desc="Name of the 'Enable better visit history matching in the omnibox' lab.">
         Better omnibox history matching
       </message>
@@ -5702,9 +5693,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_TAB_CXMENU_USE_VERTICAL_TABS" desc="Use the vertical tab strip">
           Use side tabs
         </message>
-        <message name="IDS_TAB_CXMENU_USE_COMPACT_NAVIGATION_BAR" desc="Hide the toolbar so that we use the compact navigation bar instead">
-          Hide the toolbar
-        </message>
         <message name="IDS_TAB_CXMENU_SELECT_BY_DOMAIN" desc="The label of the tab context menu item for selecting tabs with the same domain">
           Select by domain
         </message>
@@ -5751,9 +5739,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_TAB_CXMENU_USE_VERTICAL_TABS" desc="In Title Case: Use the vertical tab strip">
           Use Side Tabs
-        </message>
-        <message name="IDS_TAB_CXMENU_USE_COMPACT_NAVIGATION_BAR" desc="In Title Case: Hide the toolbar so that we use the compact navigation bar instead">
-          Hide The Toolbar
         </message>
         <message name="IDS_TAB_CXMENU_SELECT_BY_DOMAIN" desc="The label of the tab context menu item for selecting tabs with the same domain">
           Select by Domain

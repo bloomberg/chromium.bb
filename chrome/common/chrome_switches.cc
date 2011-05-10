@@ -384,10 +384,6 @@ const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 // Enables the Cloud Print dialog hosting code.
 const char kEnableCloudPrint[]              = "enable-cloud-print";
 
-// Enables compact navigation mode, which removes the toolbar and moves most of
-// UI to the tab strip.
-const char kEnableCompactNavigation[]       = "enable-compact-navigation";
-
 // Enables compositing to texture instead of display.
 const char kEnableCompositeToTexture[]      = "enable-composite-to-texture";
 

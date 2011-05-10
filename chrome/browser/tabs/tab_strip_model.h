@@ -411,10 +411,6 @@ class TabStripModel : public NotificationObserver {
   void MoveTabNext();
   void MoveTabPrevious();
 
-  // Notifies the observers that the active/foreground tab at |index| was
-  // reselected (ie - it was already active and was clicked again).
-  void ActiveTabClicked(int index);
-
   // View API //////////////////////////////////////////////////////////////////
 
   // Context menu functions.
@@ -430,7 +426,6 @@ class TabStripModel : public NotificationObserver {
     CommandTogglePinned,
     CommandBookmarkAllTabs,
     CommandUseVerticalTabs,
-    CommandUseCompactNavigationBar,
     CommandSelectByDomain,
     CommandSelectByOpener,
     CommandLast

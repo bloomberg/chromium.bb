@@ -67,6 +67,11 @@ static const SkBitmap* kDialog_left = NULL;
 static const SkBitmap* kDialog_middle = NULL;
 static const SkBitmap* kDialog_right = NULL;
 
+// When we are animating, we draw only the top part of the left and right
+// edges to give the illusion that the find dialog is attached to the
+// window during this animation; this is the height of the items we draw.
+static const int kAnimatingEdgeHeight = 5;
+
 // The background image for the Find text box, which we draw behind the Find box
 // to provide the Chrome look to the edge of the text box.
 static const SkBitmap* kBackground = NULL;
@@ -165,7 +170,6 @@ FindBarView::FindBarView(FindBarHost* host)
     kBackground = rb.GetBitmapNamed(IDR_FIND_BOX_BACKGROUND);
     kBackground_left = rb.GetBitmapNamed(IDR_FIND_BOX_BACKGROUND_LEFT);
   }
-  SetDialogBorderBitmaps(kDialog_left, kDialog_middle, kDialog_right);
 }
 
 FindBarView::~FindBarView() {
@@ -242,7 +246,25 @@ void FindBarView::SetFocusAndSelection(bool select_all) {
 void FindBarView::OnPaint(gfx::Canvas* canvas) {
   SkPaint paint;
 
-  gfx::Rect bounds = PaintOffsetToolbarBackground(canvas);
+  // Determine the find bar size as well as the offset from which to tile the
+  // toolbar background image.  First, get the widget bounds.
+  gfx::Rect bounds = GetWidget()->GetWindowScreenBounds();
+  // Now convert from screen to parent coordinates.
+  gfx::Point origin(bounds.origin());
+  BrowserView* browser_view = host()->browser_view();
+  ConvertPointToView(NULL, browser_view, &origin);
+  bounds.set_origin(origin);
+  // Finally, calculate the background image tiling offset.
+  origin = browser_view->OffsetPointForToolbarBackgroundImage(origin);
+
+  // First, we draw the background image for the whole dialog (3 images: left,
+  // middle and right). Note, that the window region has been set by the
+  // controller, so the whitespace in the left and right background images is
+  // actually outside the window region and is therefore not drawn. See
+  // FindInPageWidgetWin::CreateRoundedWindowEdges() for details.
+  ui::ThemeProvider* tp = GetThemeProvider();
+  canvas->TileImageInt(*tp->GetBitmapNamed(IDR_THEME_TOOLBAR), origin.x(),
+                       origin.y(), 0, 0, bounds.width(), bounds.height());
 
   // Now flip the canvas for the rest of the graphics if in RTL mode.
   canvas->Save();
@@ -251,7 +273,16 @@ void FindBarView::OnPaint(gfx::Canvas* canvas) {
     canvas->ScaleInt(-1, 1);
   }
 
-  PaintDialogBorder(canvas, bounds);
+  canvas->DrawBitmapInt(*kDialog_left, 0, 0);
+
+  // Stretch the middle background to cover all of the area between the two
+  // other images.
+  canvas->TileImageInt(*kDialog_middle, kDialog_left->width(), 0,
+      bounds.width() - kDialog_left->width() - kDialog_right->width(),
+      kDialog_middle->height());
+
+  canvas->DrawBitmapInt(*kDialog_right, bounds.width() - kDialog_right->width(),
+                        0);
 
   // Then we draw the background image for the Find Textfield. We start by
   // calculating the position of background images for the Find text box.
@@ -269,7 +300,15 @@ void FindBarView::OnPaint(gfx::Canvas* canvas) {
                        back_button_origin.x() - find_text_x,
                        kBackground->height());
 
-  PaintAnimatingEdges(canvas, bounds);
+  if (animation_offset() > 0) {
+    // While animating we draw the curved edges at the point where the
+    // controller told us the top of the window is: |animation_offset()|.
+    canvas->TileImageInt(*kDialog_left, bounds.x(), animation_offset(),
+                         kDialog_left->width(), kAnimatingEdgeHeight);
+    canvas->TileImageInt(*kDialog_right,
+        bounds.width() - kDialog_right->width(), animation_offset(),
+        kDialog_right->width(), kAnimatingEdgeHeight);
+  }
 
   canvas->Restore();
 }

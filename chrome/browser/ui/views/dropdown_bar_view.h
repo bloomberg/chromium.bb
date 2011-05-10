@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_DROPDOWN_BAR_VIEW_H_
 #pragma once
 
-#include "chrome/browser/ui/views/dropdown_bar_host.h"
-#include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
-#include "chrome/browser/ui/views/accessible_pane_view.h"
+#include "views/view.h"
 
-namespace gfx {
-class Canvas;
-}  // namespace gfx
+class DropdownBarHost;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -20,15 +16,20 @@ class Canvas;
 // DropdownBarHost.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class DropdownBarView : public AccessiblePaneView,
-                        public DropdownBarHostDelegate {
+class DropdownBarView : public views::View {
  public:
-  explicit DropdownBarView(DropdownBarHost* host);
-  virtual ~DropdownBarView();
+  explicit DropdownBarView(DropdownBarHost* host)
+      : host_(host),
+        animation_offset_(0) {
+  }
+  virtual ~DropdownBarView() {}
+
+  // Claims focus for the text field and selects its contents.
+  virtual void SetFocusAndSelection(bool select_all) = 0;
 
   // Updates the view to let it know where the host is clipping the
   // dropdown widget (while animating the opening or closing of the widget).
-  virtual void SetAnimationOffset(int offset) OVERRIDE;
+  void set_animation_offset(int offset) { animation_offset_ = offset; }
 
   // Returns the offset used while animating.
   int animation_offset() const { return animation_offset_; }
@@ -36,22 +37,6 @@ class DropdownBarView : public AccessiblePaneView,
  protected:
   // Returns the DropdownBarHost that manages this view.
   DropdownBarHost* host() const { return host_; }
-
-  // Assign border bitmaps for this drop down instance.
-  void SetDialogBorderBitmaps(const SkBitmap* dialog_left,
-                              const SkBitmap* dialog_middle,
-                              const SkBitmap* dialog_right);
-
-  // Paints the offset toolbar background over the widget area and returns the
-  // bounds of the widget.
-  gfx::Rect PaintOffsetToolbarBackground(gfx::Canvas* canvas);
-
-  // Paint the border for the drop down dialog given the ends and middle
-  // bitmaps.
-  void PaintDialogBorder(gfx::Canvas* canvas, const gfx::Rect& bounds) const;
-
-  // Special paint code for the edges when the drop down bar is animating.
-  void PaintAnimatingEdges(gfx::Canvas* canvas, const gfx::Rect& bounds) const;
 
  private:
   // The dropdown bar host that controls this view.
@@ -62,11 +47,6 @@ class DropdownBarView : public AccessiblePaneView,
   // the widget so that we can draw the curved edges that attach to the toolbar
   // in the right location.
   int animation_offset_;
-
-  // The dialog border bitmaps.
-  const SkBitmap* dialog_left_;
-  const SkBitmap* dialog_middle_;
-  const SkBitmap* dialog_right_;
 
   DISALLOW_COPY_AND_ASSIGN(DropdownBarView);
 };

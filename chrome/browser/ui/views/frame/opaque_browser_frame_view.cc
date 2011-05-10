@@ -106,19 +106,6 @@ const int kMenuDisplayOffset = 7;
 const int kProfileTagYPosition = 1;
 // Offset y position of profile button and tag by this amount when maximized.
 const int kProfileElementMaximizedYOffset = 6;
-
-// Converts |bounds| from |src|'s coordinate system to |dst|, and checks if
-// |pt| is contained within.
-bool ConvertedContainsCheck(gfx::Rect bounds, const views::View* src,
-                            const views::View* dst, const gfx::Point& pt) {
-  DCHECK(src);
-  DCHECK(dst);
-  gfx::Point origin(bounds.origin());
-  views::View::ConvertPointToView(src, dst, &origin);
-  bounds.set_origin(origin);
-  return bounds.Contains(pt);
-}
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -456,8 +443,7 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   else
     PaintRestoredFrameBorder(canvas);
   PaintTitleBar(canvas);
-  if (browser_view_->IsToolbarVisible() ||
-      browser_view_->UseCompactNavigationBar())
+  if (browser_view_->IsToolbarVisible())
     PaintToolbarBackground(canvas);
   if (browser_view_->ShouldShowOffTheRecordAvatar())
     PaintOTRAvatar(canvas);
@@ -489,22 +475,6 @@ bool OpaqueBrowserFrameView::HitTest(const gfx::Point& l) const {
   if ((!vertical_tabs && l.y() > tabstrip_bounds.bottom()) ||
       (vertical_tabs && l.x() > tabstrip_bounds.right())) {
     return false;
-  }
-
-  // Claim it only if we're also not in the compact navigation buttons.
-  if (browser_view_->UseCompactNavigationBar()) {
-    if (ConvertedContainsCheck(browser_view_->GetCompactNavigationBarBounds(),
-                               frame_->GetWindow()->client_view(),
-                               static_cast<const View*>(this),
-                               l)) {
-      return false;
-    }
-    if (ConvertedContainsCheck(browser_view_->GetCompactOptionsBarBounds(),
-                               frame_->GetWindow()->client_view(),
-                               static_cast<const View*>(this),
-                               l)) {
-      return false;
-    }
   }
 
   // We convert from our parent's coordinates since we assume we fill its bounds
@@ -992,10 +962,9 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   gfx::Rect client_area_bounds = CalculateClientAreaBounds(width(), height());
   SkColor toolbar_color = tp->GetColor(ThemeService::COLOR_TOOLBAR);
 
-  if (browser_view_->IsToolbarVisible() ||
-      browser_view_->UseCompactNavigationBar()) {
+  if (browser_view_->IsToolbarVisible()) {
     // The client edge images always start below the toolbar corner images.  The
-    // client edge filled rects start there or at the bottom of the toolbar,
+    // client edge filled rects start there or at the bottom of the tooolbar,
     // whichever is shorter.
     gfx::Rect toolbar_bounds(browser_view_->GetToolbarBounds());
     image_top += toolbar_bounds.y() +
