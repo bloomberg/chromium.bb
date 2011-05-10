@@ -22,8 +22,11 @@ PrerenderObserver::~PrerenderObserver() {
 
 void PrerenderObserver::ProvisionalChangeToMainFrameUrl(const GURL& url) {
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
-  if (prerender_manager)
-    prerender_manager->MarkTabContentsAsNotPrerendered(tab_contents());
+  if (!prerender_manager)
+    return;
+  if (prerender_manager->IsTabContentsPrerendering(tab_contents()))
+    return;
+  prerender_manager->MarkTabContentsAsNotPrerendered(tab_contents());
   MaybeUsePreloadedPage(url);
 }
 
@@ -38,6 +41,10 @@ bool PrerenderObserver::OnMessageReceived(const IPC::Message& message) {
 void PrerenderObserver::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                           bool is_main_frame,
                                                           const GURL& url) {
+  // Don't include prerendered pages in the PPLT metric until after they are
+  // swapped in.
+  if (IsPrerendering())
+    return;
   if (is_main_frame) {
     // Record the beginning of a new PPLT navigation.
     pplt_load_start_ = base::TimeTicks::Now();
@@ -45,6 +52,11 @@ void PrerenderObserver::OnDidStartProvisionalLoadForFrame(int64 frame_id,
 }
 
 void PrerenderObserver::DidStopLoading() {
+  // Don't include prerendered pages in the PPLT metric until after they are
+  // swapped in.
+  if (IsPrerendering())
+    return;
+
   // Compute the PPLT metric and report it in a histogram, if needed.
   if (!pplt_load_start_.is_null()) {
     PrerenderManager::RecordPerceivedPageLoadTime(
@@ -61,10 +73,19 @@ PrerenderManager* PrerenderObserver::MaybeGetPrerenderManager() {
 
 bool PrerenderObserver::MaybeUsePreloadedPage(const GURL& url) {
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
-  if (prerender_manager &&
-      prerender_manager->MaybeUsePreloadedPage(tab_contents(), url))
+  if (!prerender_manager)
+    return false;
+  DCHECK(!prerender_manager->IsTabContentsPrerendering(tab_contents()));
+  if (prerender_manager->MaybeUsePreloadedPage(tab_contents(), url))
     return true;
   return false;
+}
+
+bool PrerenderObserver::IsPrerendering() {
+  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
+  if (!prerender_manager)
+    return false;
+  return prerender_manager->IsTabContentsPrerendering(tab_contents());
 }
 
 }  // namespace prerender

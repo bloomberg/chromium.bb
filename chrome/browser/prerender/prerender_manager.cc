@@ -554,7 +554,6 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
 
   old_tab_contents->delegate()->SwapTabContents(old_tab_contents,
                                                 new_tab_contents);
-
   MarkTabContentsAsPrerendered(tab_contents);
 
   // See if we have any pending prerender requests for this routing id and start
@@ -864,6 +863,19 @@ bool PrerenderManager::IsTabContentsPrerendering(
         prerender_tab_contents_wrapper->tab_contents() == tab_contents)
       return true;
   }
+
+  // Also look through the pending-deletion list.
+  for (std::list<PrerenderContentsData>::const_iterator it =
+           pending_delete_list_.begin();
+       it != pending_delete_list_.end();
+       ++it) {
+    TabContentsWrapper* prerender_tab_contents_wrapper =
+        it->contents_->prerender_contents();
+    if (prerender_tab_contents_wrapper &&
+        prerender_tab_contents_wrapper->tab_contents() == tab_contents)
+      return true;
+  }
+
   return false;
 }
 

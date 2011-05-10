@@ -48,6 +48,9 @@ class PrerenderObserver : public TabContentsObserver {
   // object.
   bool MaybeUsePreloadedPage(const GURL& url);
 
+  // Returns whether the TabContents being observed is currently prerendering.
+  bool IsPrerendering();
+
   // System time at which the current load was started for the purpose of
   // the perceived page load time (PPLT).
   base::TimeTicks pplt_load_start_;
