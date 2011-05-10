@@ -704,7 +704,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   EXPECT_FALSE(UrlIsPendingInPrerenderManager(kHtmlFileC));
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TaskManager) {
+// Flaky: http://crbug.com/82118
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderTaskManager) {
   // Early out if we're not using TabContents for Prerendering.
   if (!prerender::PrerenderContents::UseTabContents()) {
     SUCCEED();
