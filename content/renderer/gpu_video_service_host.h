@@ -21,12 +21,20 @@ class VideoDecodeAccelerator;
 class GpuVideoServiceHost : public IPC::ChannelProxy::MessageFilter {
  public:
   GpuVideoServiceHost();
+  virtual ~GpuVideoServiceHost();
 
-  // IPC::ChannelProxy::MessageFilter implementations.
+  // IPC::ChannelProxy::MessageFilter implementations, called on IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void OnFilterAdded(IPC::Channel* channel);
   virtual void OnFilterRemoved();
   virtual void OnChannelClosing();
+
+  // Register a callback to be notified when |*this| can be used to
+  // CreateVideo{Decoder,Accelerator} below.  Called on RenderThread.
+  // |on_initialized| will get invoked in-line in this function if |*this| is
+  // already ready for use, and asynchronously after this function returns
+  // otherwise.
+  void SetOnInitialized(const base::Closure& on_initialized);
 
   // Called on RenderThread to create a hardware accelerated video decoder
   // in the GPU process.
@@ -40,10 +48,16 @@ class GpuVideoServiceHost : public IPC::ChannelProxy::MessageFilter {
   // its GLES2 context in the GPU process.
   //
   // Returns a GpuVideoDecoderHost as a handle to control the video decoder.
+  //
+  // Note: OnFilterAdded() MUST be called before these methods are called,
+  // because they require |channel_| to be non-NULL.
   GpuVideoDecoderHost* CreateVideoDecoder(int context_route_id);
   media::VideoDecodeAccelerator* CreateVideoAccelerator();
 
  private:
+  // Guards all members other than |router_|.
+  base::Lock lock_;
+
   IPC::Channel* channel_;
 
   // Router to send messages to a GpuVideoDecoderHost.
@@ -51,6 +65,9 @@ class GpuVideoServiceHost : public IPC::ChannelProxy::MessageFilter {
 
   // ID for the next GpuVideoDecoderHost.
   int32 next_decoder_host_id_;
+
+  // Callback to invoke when initialized.
+  base::Closure on_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoServiceHost);
 };

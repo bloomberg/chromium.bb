@@ -17,8 +17,19 @@ GpuVideoServiceHost::GpuVideoServiceHost()
       next_decoder_host_id_(0) {
 }
 
+GpuVideoServiceHost::~GpuVideoServiceHost() {
+}
+
 void GpuVideoServiceHost::OnFilterAdded(IPC::Channel* channel) {
-  channel_ = channel;
+  base::Closure on_initialized;
+  {
+    base::AutoLock auto_lock(lock_);
+    DCHECK(!channel_);
+    channel_ = channel;
+    on_initialized = on_initialized_;
+  }
+  if (!on_initialized.is_null())
+    on_initialized.Run();
 }
 
 void GpuVideoServiceHost::OnFilterRemoved() {
@@ -50,19 +61,30 @@ bool GpuVideoServiceHost::OnMessageReceived(const IPC::Message& msg) {
   }
 }
 
+void GpuVideoServiceHost::SetOnInitialized(
+    const base::Closure& on_initialized) {
+  IPC::Channel* channel;
+  {
+    base::AutoLock auto_lock(lock_);
+    DCHECK(on_initialized_.is_null());
+    on_initialized_ = on_initialized;
+    channel = channel_;
+  }
+  if (channel)
+    on_initialized.Run();
+}
+
 GpuVideoDecoderHost* GpuVideoServiceHost::CreateVideoDecoder(
     int context_route_id) {
-  GpuVideoDecoderHost* host = new GpuVideoDecoderHost(&router_, channel_,
-                                                      context_route_id,
-                                                      next_decoder_host_id_);
-  // TODO(hclam): Handle thread safety of incrementing the ID.
-  ++next_decoder_host_id_;
-  return host;
+  base::AutoLock auto_lock(lock_);
+  DCHECK(channel_);
+  return new GpuVideoDecoderHost(
+      &router_, channel_, context_route_id, ++next_decoder_host_id_);
 }
 
 VideoDecodeAccelerator* GpuVideoServiceHost::CreateVideoAccelerator() {
-  // TODO(vmr): Handle thread safety of incrementing the ID.
-  VideoDecodeAccelerator* accelerator = new VideoDecodeAcceleratorHost(
-      &router_, channel_, next_decoder_host_id_++);
-  return accelerator;
+  base::AutoLock auto_lock(lock_);
+   DCHECK(channel_);
+  return new VideoDecodeAcceleratorHost(
+      &router_, channel_, next_decoder_host_id_);
 }
