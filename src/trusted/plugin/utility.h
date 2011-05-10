@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 // A collection of debugging related interfaces.
@@ -27,17 +27,21 @@ bool IsValidIdentifierString(const char* strval, uint32_t* length);
 
 // Debugging print utility
 extern int gNaClPluginDebugPrintEnabled;
+extern FILE* gNaClPluginLogFile;
+extern int NaClPluginPrintLog(const char *format, ...);
 extern int NaClPluginDebugPrintCheckEnv();
+extern FILE* NaClPluginLogFileEnv();
 #if SRPC_PLUGIN_DEBUG
 #  define PLUGIN_PRINTF(args) do {                                    \
     if (-1 == ::plugin::gNaClPluginDebugPrintEnabled) {               \
       ::plugin::gNaClPluginDebugPrintEnabled =                        \
           ::plugin::NaClPluginDebugPrintCheckEnv();                   \
+      ::plugin::gNaClPluginLogFile = ::plugin::NaClPluginLogFileEnv();\
     }                                                                 \
     if (0 != ::plugin::gNaClPluginDebugPrintEnabled) {                \
-      printf("%08"NACL_PRIx32": ", NaClThreadId());                    \
-      printf args;                                                    \
-      fflush(stdout);                                                 \
+      ::plugin::NaClPluginPrintLog("%08"NACL_PRIx32": ",              \
+                                   NaClThreadId());                   \
+      ::plugin::NaClPluginPrintLog args;                              \
     }                                                                 \
   } while (0)
 #else
