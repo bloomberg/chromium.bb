@@ -237,13 +237,11 @@ class PrerenderContents : public RenderViewHostDelegate,
   virtual void OnDestroy() {}
 
   // Indicates whether to use the legacy code doing prerendering via
-  // a RenderViewHost (false), or whether the new TabContent based prerendering
+  // a RenderViewHost (false), or whether the new TabContents based prerendering
   // is to be used (true).
-  // Eventually, this will go away and only the new TabContents based code
-  // will be in operation.  In the meantime, people can change this to true
-  // for testing purposes until the new code is stable.
+  // TODO(cbentzel): Remove once new approach looks stable.
   static bool UseTabContents() {
-    return false;
+    return true;
   }
 
  protected:
