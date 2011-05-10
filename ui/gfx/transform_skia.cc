@@ -101,4 +101,8 @@ bool TransformSkia::TransformRect(gfx::Rect* rect) {
   return true;
 }
 
+void TransformSkia::Copy(const Transform& transform) {
+  *matrix_ = *(static_cast<const TransformSkia&>(transform).matrix_);
+}
+
 }  // namespace ui

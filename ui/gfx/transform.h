@@ -74,6 +74,9 @@ class Transform {
   // Applies transformation on the rectangle. Returns true of the rectangle is
   // transformed successfully.
   virtual bool TransformRect(gfx::Rect* rect) = 0;
+
+  // operator=.
+  virtual void Copy(const Transform& transform) = 0;
 };
 
 }  // namespace ui

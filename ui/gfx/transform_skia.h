@@ -41,6 +41,7 @@ class TransformSkia : public Transform {
   virtual bool TransformPoint(gfx::Point* point) OVERRIDE;
   virtual bool TransformPointReverse(gfx::Point* point) OVERRIDE;
   virtual bool TransformRect(gfx::Rect* rect) OVERRIDE;
+  virtual void Copy(const Transform& transform) OVERRIDE;
 
  private:
   friend class gfx::CanvasSkia;
