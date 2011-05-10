@@ -196,6 +196,11 @@ const InterfaceProxy::Info* PPB_Flash_Proxy::GetInfo() {
 }
 
 bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  // Prevent the dispatcher from going away during a call to Navigate.
+  // This must happen OUTSIDE of OnMsgNavigate since the handling code use
+  // the dispatcher upon return of the function (sending the reply message).
+  ScopedModuleReference death_grip(dispatcher());
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Flash_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop,

@@ -160,7 +160,7 @@ bool HostDispatcher::OnMessageReceived(const IPC::Message& msg) {
   if (Dispatcher::OnMessageReceived(msg))
     return true;
 
-  if (msg.routing_id() <= 0 && msg.routing_id() >= INTERFACE_ID_COUNT) {
+  if (msg.routing_id() <= 0 || msg.routing_id() >= INTERFACE_ID_COUNT) {
     NOTREACHED();
     // TODO(brettw): kill the plugin if it starts sending invalid messages?
     return true;

@@ -161,13 +161,12 @@ void PluginResourceTracker::ReleasePluginResourceRef(
     resource_map_.erase(found);
     plugin_resource.reset();
 
-    if (notify_browser_on_release) {
-      if (dispatcher) {
-        dispatcher->Send(new PpapiHostMsg_PPBCore_ReleaseResource(
-            INTERFACE_ID_PPB_CORE, host_resource));
-      } else {
-        NOTREACHED();
-      }
+    // dispatcher can be NULL if the plugin held on to a resource after the
+    // instance was destroyed. In that case the browser-side resource has
+    // already been freed correctly on the browser side.
+    if (notify_browser_on_release && dispatcher) {
+      dispatcher->Send(new PpapiHostMsg_PPBCore_ReleaseResource(
+          INTERFACE_ID_PPB_CORE, host_resource));
     }
   }
 }
