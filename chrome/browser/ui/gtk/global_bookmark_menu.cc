@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/gtk/global_bookmark_menu.h"
 
+#include <dlfcn.h>
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
@@ -23,6 +24,30 @@
 namespace {
 
 const int kMaxChars = 50;
+
+// We need to know whether we're using a newer GTK at run time because we need
+// to prevent.
+//
+// TODO(erg): Once we've dropped Hardy support, remove this hack.
+typedef void (*gtk_menu_item_set_label_func)(GtkMenuItem*, const gchar*);
+gtk_menu_item_set_label_func gtk_menu_item_set_label_sym =
+#if GTK_CHECK_VERSION(2, 16, 1)
+    gtk_menu_item_set_label;
+#else
+    NULL;
+#endif
+
+void EnsureMenuItemFunctions() {
+#if !GTK_CHECK_VERSION(2, 16, 1)
+  static bool methods_looked_up = false;
+  if (!methods_looked_up) {
+    methods_looked_up = true;
+    gtk_menu_item_set_label_sym =
+        reinterpret_cast<gtk_menu_item_set_label_func>(
+            dlsym(NULL, "gtk_menu_item_set_label"));
+  }
+#endif
+}
 
 }  // namespace
 
@@ -46,10 +71,13 @@ GlobalBookmarkMenu::~GlobalBookmarkMenu() {
 void GlobalBookmarkMenu::Init(GtkWidget* bookmark_menu) {
   bookmark_menu_ = bookmark_menu;
 
-  BookmarkModel* model = profile_->GetBookmarkModel();
-  model->AddObserver(this);
-  if (model->IsLoaded())
-    Loaded(model);
+  EnsureMenuItemFunctions();
+  if (gtk_menu_item_set_label_sym) {
+    BookmarkModel* model = profile_->GetBookmarkModel();
+    model->AddObserver(this);
+    if (model->IsLoaded())
+      Loaded(model);
+  }
 }
 
 void GlobalBookmarkMenu::RebuildMenuInFuture() {
@@ -60,11 +88,8 @@ void GlobalBookmarkMenu::RebuildMenuInFuture() {
 }
 
 void GlobalBookmarkMenu::RebuildMenu() {
-#if !GTK_CHECK_VERSION(2, 16, 1)
-  // We can't deal with this case; we need to use dynamic APIs. Thankfully,
-  // this will never visibly do anything on earlier versions of GTK+.
-  return;
-#endif
+
+
   BookmarkModel* model = profile_->GetBookmarkModel();
   DCHECK(model);
   DCHECK(model->IsLoaded());
@@ -140,11 +165,12 @@ void GlobalBookmarkMenu::ConfigureMenuItem(const BookmarkNode* node,
   // This check is only to make things compile on Hardy; this code won't
   // display any visible widgets in older systems that don't have a global menu
   // bar.
-#if GTK_CHECK_VERSION(2, 16, 1)
-  string16 elided_name = l10n_util::TruncateString(node->GetTitle(), kMaxChars);
-  gtk_menu_item_set_label(GTK_MENU_ITEM(menu_item),
-                          UTF16ToUTF8(elided_name).c_str());
-#endif
+  if (gtk_menu_item_set_label_sym) {
+    string16 elided_name =
+        l10n_util::TruncateString(node->GetTitle(), kMaxChars);
+    gtk_menu_item_set_label_sym(GTK_MENU_ITEM(menu_item),
+                                UTF16ToUTF8(elided_name).c_str());
+  }
 
   if (node->is_url()) {
     std::string tooltip = gtk_util::BuildTooltipTitleFor(node->GetTitle(),
