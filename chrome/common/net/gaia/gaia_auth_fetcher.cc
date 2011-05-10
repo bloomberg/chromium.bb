@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/stringprintf.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"

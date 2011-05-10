@@ -8,6 +8,7 @@
 
 #include "base/process_util.h"
 #include "base/rand_util.h"
+#include "base/stringprintf.h"
 #include "content/common/child_process.h"
 #include "content/ppapi_plugin/broker_process_dispatcher.h"
 #include "content/ppapi_plugin/plugin_process_dispatcher.h"

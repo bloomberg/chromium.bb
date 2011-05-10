@@ -8,7 +8,7 @@
 #include <errno.h>
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "content/common/geoposition.h"
 
 namespace {
@@ -108,7 +108,7 @@ bool LibGps::Poll() {
   while (DataWaiting()) {
     int error = library().poll();
     if (error) {
-      last_error_ = StringPrintf("poll() returned %d", error);
+      last_error_ = base::StringPrintf("poll() returned %d", error);
       Stop();
       return false;
     }

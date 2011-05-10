@@ -9,6 +9,7 @@
 #include "app/sql/statement.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/sqlite/sqlite3.h"

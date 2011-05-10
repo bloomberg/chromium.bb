@@ -9,6 +9,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

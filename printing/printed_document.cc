@@ -14,6 +14,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/i18n/time_formatting.h"

@@ -17,8 +17,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util-inl.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -740,9 +740,9 @@ bool DirectoryBackingStore::MigrateToSpecifics(
     void (*handler_function)(SQLStatement* old_value_query,
                              int old_value_column,
                              sync_pb::EntitySpecifics* mutable_new_value)) {
-  std::string query_sql = StringPrintf("SELECT metahandle, %s, %s FROM metas",
-                                       specifics_column, old_columns);
-  std::string update_sql = StringPrintf(
+  std::string query_sql = base::StringPrintf(
+      "SELECT metahandle, %s, %s FROM metas", specifics_column, old_columns);
+  std::string update_sql = base::StringPrintf(
       "UPDATE metas SET %s = ? WHERE metahandle = ?", specifics_column);
   SQLStatement query;
   query.prepare(load_dbhandle_, query_sql.c_str());
@@ -769,8 +769,8 @@ bool DirectoryBackingStore::MigrateToSpecifics(
 
 bool DirectoryBackingStore::AddColumn(const ColumnSpec* column) {
   SQLStatement add_column;
-  std::string sql = StringPrintf("ALTER TABLE metas ADD COLUMN %s %s",
-                                 column->name, column->spec);
+  std::string sql = base::StringPrintf(
+      "ALTER TABLE metas ADD COLUMN %s %s", column->name, column->spec);
   add_column.prepare(load_dbhandle_, sql.c_str());
   return add_column.step() == SQLITE_DONE;
 }

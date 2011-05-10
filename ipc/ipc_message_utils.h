@@ -14,6 +14,7 @@
 
 #include "base/format_macros.h"
 #include "base/string16.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/tuple.h"
 #include "ipc/ipc_param_traits.h"

@@ -4,7 +4,7 @@
 
 #include "net/http/http_proxy_utils.h"
 
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_util.h"

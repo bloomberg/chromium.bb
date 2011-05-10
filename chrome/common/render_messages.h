@@ -15,6 +15,7 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/common_param_traits.h"

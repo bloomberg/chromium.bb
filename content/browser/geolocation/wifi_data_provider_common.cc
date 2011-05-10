@@ -4,6 +4,7 @@
 
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 
 string16 MacAddressAsString16(const uint8 mac_as_int[6]) {
@@ -11,9 +12,13 @@ string16 MacAddressAsString16(const uint8 mac_as_int[6]) {
   // Format is XX-XX-XX-XX-XX-XX.
   static const wchar_t* const kMacFormatString =
       L"%02x-%02x-%02x-%02x-%02x-%02x";
-  return WideToUTF16(StringPrintf(kMacFormatString,
-                                  mac_as_int[0], mac_as_int[1], mac_as_int[2],
-                                  mac_as_int[3], mac_as_int[4], mac_as_int[5]));
+  return WideToUTF16(base::StringPrintf(kMacFormatString,
+                                        mac_as_int[0],
+                                        mac_as_int[1],
+                                        mac_as_int[2],
+                                        mac_as_int[3],
+                                        mac_as_int[4],
+                                        mac_as_int[5]));
 }
 
 WifiDataProviderCommon::WifiDataProviderCommon()

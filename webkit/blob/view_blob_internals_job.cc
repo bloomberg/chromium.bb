@@ -10,6 +10,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"

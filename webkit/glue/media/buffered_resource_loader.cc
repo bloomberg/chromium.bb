@@ -5,6 +5,7 @@
 #include "webkit/glue/media/buffered_resource_loader.h"
 
 #include "base/format_macros.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"

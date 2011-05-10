@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/process.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 
 template <typename T> struct DefaultSingletonTraits;
 class GURL;
@@ -60,7 +60,8 @@ class AboutTcmallocOutputs {
   // the output for a canonical renderer header string that
   // incorporates the pid.
   void RendererCallback(base::ProcessId pid, const std::string& output) {
-    SetOutput(StringPrintf("Renderer PID %d", static_cast<int>(pid)), output);
+    SetOutput(
+        base::StringPrintf("Renderer PID %d", static_cast<int>(pid)), output);
   }
 
  private:

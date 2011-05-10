@@ -5,8 +5,8 @@
 #include "chrome/renderer/extensions/bindings_utils.h"
 
 #include "base/lazy_instance.h"
+#include "base/stringprintf.h"
 #include "base/string_split.h"
-#include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
@@ -71,7 +71,7 @@ bool ExtensionBase::CheckPermissionForCurrentContext(
   static const char kMessage[] =
       "You do not have permission to use '%s'. Be sure to declare"
       " in your manifest what permissions you need.";
-  std::string error_msg = StringPrintf(kMessage, function_name.c_str());
+  std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
 
   v8::ThrowException(v8::Exception::Error(v8::String::New(error_msg.c_str())));
   return false;

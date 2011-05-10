@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 
 ChildProcessInfo::ChildProcessInfo(ProcessType type, int id) :

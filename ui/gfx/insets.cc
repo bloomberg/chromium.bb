@@ -4,7 +4,7 @@
 
 #include "ui/gfx/insets.h"
 
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 
 namespace gfx {
 

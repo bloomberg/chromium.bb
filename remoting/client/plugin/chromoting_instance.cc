@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 // TODO(sergeyu): We should not depend on renderer here. Instead P2P
@@ -112,8 +112,9 @@ bool ChromotingInstance::Init(uint32_t argc,
 void ChromotingInstance::Connect(const ClientConfig& config) {
   DCHECK(CurrentlyOnPluginThread());
 
-  LogDebugInfo(StringPrintf("Connecting to %s as %s", config.host_jid.c_str(),
-                            config.username.c_str()).c_str());
+  LogDebugInfo(base::StringPrintf("Connecting to %s as %s",
+                                  config.host_jid.c_str(),
+                                  config.username.c_str()).c_str());
   client_.reset(new ChromotingClient(config,
                                      &context_,
                                      host_connection_.get(),

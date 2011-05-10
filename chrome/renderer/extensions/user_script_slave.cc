@@ -180,8 +180,9 @@ void UserScriptSlave::InsertInitExtensionCode(
   DCHECK(sources);
   bool incognito = ChromeRenderProcessObserver::is_incognito_process();
   sources->insert(sources->begin(), WebScriptSource(WebString::fromUTF8(
-      StringPrintf(kInitExtension, extension_id.c_str(),
-                   incognito ? "true" : "false"))));
+      base::StringPrintf(kInitExtension,
+                         extension_id.c_str(),
+                         incognito ? "true" : "false"))));
 }
 
 void UserScriptSlave::InjectScripts(WebFrame* frame,

@@ -12,7 +12,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
