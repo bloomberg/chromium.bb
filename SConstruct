@@ -1410,6 +1410,7 @@ def CommandSelLdrTestNacl(env, name, command,
                           size='medium',
                           # True for *.nexe statically linked with glibc
                           glibc_static=False,
+                          uses_ppapi=False,
                           **extra):
   # Disable all sel_ldr tests for windows under coverage.
   # Currently several .S files block sel_ldr from being instrumented.
@@ -1447,8 +1448,8 @@ def CommandSelLdrTestNacl(env, name, command,
     if env.Bit('build_x86_64'):
       sel_ldr_flags += ['-s']
 
-  if env.Bit('irt'):
-    sel_ldr_flags += ['-B', env.File('${STAGING_DIR}/irt.nexe')]
+  if env.Bit('irt') and uses_ppapi:
+    sel_ldr_flags += ['-B', nacl_env.File('${STAGING_DIR}/irt.nexe')]
 
   command = [sel_ldr] + sel_ldr_flags + ['--'] + command
 

@@ -32,6 +32,7 @@ for test in TESTS:
                           '--command_file',
                           env.File(test +'.stdin'),
                           ],
+     uses_ppapi=True,
      command=[nexe],
      stdout_golden=env.File(test + '.stdout'),
      )

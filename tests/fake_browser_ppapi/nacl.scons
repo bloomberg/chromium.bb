@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2009 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -83,6 +83,12 @@ else:
 sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
 log_file = env.File('fake_browser_ppapi.out').abspath
 
+test_env_vars = ['NACL_SEL_LDR=%s' % sel_ldr,
+                 'NACLLOG=%s' % log_file]
+if env.Bit('irt'):
+  irt_library = env.File('${STAGING_DIR}/irt.nexe')
+  test_env_vars.append('NACL_IRT_LIBRARY=%s' % irt_library)
+
 node = env.CommandTest('fake_browser_ppapi.out',
                        [fake_browser,
                         plugin,
@@ -93,8 +99,7 @@ node = env.CommandTest('fake_browser_ppapi.out',
                         '${STAGING_DIR}'
                        ],
                        'medium',
-                       osenv=('NACL_SEL_LDR=%s,NACLLOG=%s'
-                              % (sel_ldr, log_file)),
+                       osenv=','.join(test_env_vars),
                        extra_deps=[sel_ldr,
                                    basic_object_nmf,
                                    basic_object_target])
