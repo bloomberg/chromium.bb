@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -550,7 +550,7 @@ void AutomationResourceMessageFilter::ResumeJobsForPendingView(
 
   for (RequestMap::iterator index = old_filter->pending_request_map_.begin();
           index != old_filter->pending_request_map_.end(); index++) {
-    scoped_refptr<URLRequestAutomationJob> job = (*index).second;
+    URLRequestAutomationJob* job = (*index).second;
     DCHECK_EQ(job->message_filter(), old_filter);
     DCHECK(job->is_pending());
     // StartPendingJob will register the job with the new filter.

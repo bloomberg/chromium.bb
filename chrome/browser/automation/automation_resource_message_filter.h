@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -177,7 +177,7 @@ class AutomationResourceMessageFilter
   };
 
   typedef std::map<RendererId, AutomationDetails> RenderViewMap;
-  typedef std::map<int, scoped_refptr<URLRequestAutomationJob> > RequestMap;
+  typedef std::map<int, URLRequestAutomationJob*> RequestMap;
 
   // The channel associated with the automation connection. This pointer is not
   // owned by this class.
@@ -216,4 +216,3 @@ class AutomationResourceMessageFilter
 };
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_RESOURCE_MESSAGE_FILTER_H_
-
