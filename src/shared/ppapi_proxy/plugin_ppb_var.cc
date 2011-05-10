@@ -7,7 +7,9 @@
 #include <stdio.h>
 
 #include <map>
+#include <set>
 #include <string>
+#include <utility>
 
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -22,89 +24,121 @@ namespace ppapi_proxy {
 
 namespace {
 
-class ObjImpl {
+// The PP_Var interface contains two subtypes that require more complicated
+// handling: objects and strings.  Both of these subtypes are implemented
+// by a secondary structure pointed to by the value.as_id member.  The type
+// used to represent both is the template class VarImpl.
+// T is the contained type, which is a pair for objects, or a string.
+// There is a lookup method FromVar that extracts the implementation type
+// and has to check that the var's type field matches the appropriate value.
+// P is the PP_Var type used for the type check in FromVar.
+template<typename T, PP_VarType P> class VarImpl {
  public:
-  ObjImpl(const PPP_Class_Deprecated* object_class,
-          void* object_data) : object_class_(object_class),
-                               object_data_(object_data),
-                               ref_count_(1) {
-    static uint64_t impl_id = 0;
-    id_ = impl_id++;
-  }
-  ~ObjImpl() { }
-  void AddRef() { ++ref_count_; }
-  void Release() { --ref_count_; }
-  const PPP_Class_Deprecated* object_class() const { return object_class_; }
-  void* object_data() const { return object_data_; }
+  static VarImpl* New(T contents);
+  ~VarImpl() { }
+  // Add a reference to this object or string.
+  void AddRef();
+  // Remove a reference to this object or string.
+  void Release();
+  // Get the contained information.  (Either the pair or the string).
+  T contents() const { return contents_; }
+  // Get the reference count of this object.
   uint64_t ref_count() const { return ref_count_; }
+  // Get the id of this object (used for logging).
   uint64_t id() const { return id_; }
+  // Get the VarImpl (either the object or string instantiation) corresponding
+  // to var, if there is one.  Otherwise return NULL.
+  static VarImpl* FromVar(PP_Var var);
 
  private:
-  const PPP_Class_Deprecated* object_class_;
-  void* object_data_;
+  VarImpl(T contents, uint64_t id);
+
+  // A mapping to keep track of the instances we have allocated.
+  static std::set<VarImpl*>* instances;
+
+  T contents_;
   uint64_t ref_count_;
   uint64_t id_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(ObjImpl);
+  NACL_DISALLOW_COPY_AND_ASSIGN(VarImpl);
 };
 
-class StrImpl {
- public:
-  StrImpl(const char* data, uint32_t len) :
-    str_(data, len),
-    ref_count_(1) {
-  }
-  ~StrImpl() { }
-  void AddRef() { ++ref_count_; }
-  void Release() { --ref_count_; }
-  const std::string& str() const { return str_; }
-  uint64_t ref_count() const { return ref_count_; }
-
- private:
-  std::string str_;
-  uint64_t ref_count_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(StrImpl);
-};
-
-ObjImpl* VarToObjImpl(PP_Var var) {
-  if (var.type == PP_VARTYPE_OBJECT) {
-    return reinterpret_cast<ObjImpl*>(var.value.as_id);
-  } else {
-    return NULL;
-  }
+template<typename T, PP_VarType P>
+VarImpl<T, P>::VarImpl(T contents, uint64_t id)
+  : contents_(contents),
+  ref_count_(1),
+  id_(id) {
 }
 
-StrImpl* VarToStrImpl(PP_Var var) {
-  if (var.type == PP_VARTYPE_STRING) {
-    return reinterpret_cast<StrImpl*>(var.value.as_id);
-  } else {
+template<typename T, PP_VarType P>
+VarImpl<T, P>* VarImpl<T, P>::New(T contents) {
+  static uint64_t impl_id = 0;
+  uint64_t id = impl_id++;
+  VarImpl<T, P>* impl = new VarImpl<T, P>(contents, id);
+  if (instances == NULL) {
+    instances = new std::set<VarImpl<T, P>*>();
+  }
+  instances->insert(impl);
+  return impl;
+}
+
+template<typename T, PP_VarType P>
+void VarImpl<T, P>::AddRef() {
+  ++ref_count_;
+}
+
+template<typename T, PP_VarType P>
+void VarImpl<T, P>::Release() {
+  --ref_count_;
+  // TODO(sehr, polina): pull the generic Release below into specializations.
+}
+
+template<typename T, PP_VarType P>
+VarImpl<T, P>* VarImpl<T, P>::FromVar(PP_Var var) {
+  if (var.type != P) {
     return NULL;
   }
+  VarImpl<T, P>* obj = reinterpret_cast<VarImpl<T, P>*>(var.value.as_id);
+  if (instances->find(obj) == instances->end()) {
+    obj = NULL;
+  }
+  return obj;
 }
+
+template<typename T, PP_VarType P>
+std::set<VarImpl<T, P>*>* VarImpl<T, P>::instances = NULL;
+
+// The implementation of scriptable objects is done through ObjImpl, which
+// contains a pair consisting of object_class, and object_data.
+typedef std::pair<const PPP_Class_Deprecated*, void*> ObjPair;
+typedef VarImpl<ObjPair, PP_VARTYPE_OBJECT> ObjImpl;
+
+// The implementation of strings is done through StrImpl, which contains a
+// std::string&.
+typedef VarImpl<std::string&, PP_VARTYPE_STRING> StrImpl;
 
 void AddRef(PP_Var var) {
-  ObjImpl* obj_impl = VarToObjImpl(var);
+  ObjImpl* obj_impl = ObjImpl::FromVar(var);
   if (obj_impl != NULL) {
     DebugPrintf("PPB_Var::AddRef: %"NACL_PRIu64"\n", obj_impl->id());
     obj_impl->AddRef();
   }
-  StrImpl* str_impl = VarToStrImpl(var);
+  StrImpl* str_impl = StrImpl::FromVar(var);
   if (str_impl != NULL) {
-    DebugPrintf("PPB_Var::AddRef: '%s'\n", str_impl->str().c_str());
+    DebugPrintf("PPB_Var::AddRef: '%s'\n", str_impl->contents().c_str());
     str_impl->AddRef();
   }
 }
 
 void Release(PP_Var var) {
-  ObjImpl* obj_impl = VarToObjImpl(var);
+  ObjImpl* obj_impl = ObjImpl::FromVar(var);
   if (obj_impl != NULL) {
-    DebugPrintf("PPB_Var::Release: object(%"NACL_PRIu64")\n",
-                obj_impl->id());
+    DebugPrintf("PPB_Var::Release: object(%"NACL_PRIu64")\n", obj_impl->id());
     obj_impl->Release();
     if (obj_impl->ref_count() == 0) {
-      if (obj_impl->object_class() == NULL) {
-        free(obj_impl->object_data());
+      if (obj_impl->contents().first == NULL) {
+        free(obj_impl->contents().second);
       } else {
-        obj_impl->object_class()->Deallocate(obj_impl->object_data());
+        obj_impl->contents().first->Deallocate(obj_impl->contents().second);
       }
       // TODO(polina): under test/ppapi_geturl this deletes a window object
       // prematurely. Most likely we are missing an AddRef somewhere. For now
@@ -113,10 +147,10 @@ void Release(PP_Var var) {
       // delete obj_impl;
     }
   }
-  StrImpl* str_impl = VarToStrImpl(var);
+  StrImpl* str_impl = StrImpl::FromVar(var);
   if (str_impl != NULL) {
     DebugPrintf("PPB_Var::Release: string('%s')\n",
-                str_impl->str().c_str());
+                str_impl->contents().c_str());
     str_impl->Release();
     if (str_impl->ref_count() == 0) {
       delete str_impl;
@@ -126,7 +160,9 @@ void Release(PP_Var var) {
 
 PP_Var VarFromUtf8(PP_Module module_id, const char* data, uint32_t len) {
   UNREFERENCED_PARAMETER(module_id);
-  StrImpl* impl = new StrImpl(data, len);
+  std::string* str= new std::string(data, len);
+  // StrImpl takes ownership of string.
+  StrImpl* impl = StrImpl::New(*str);
   PP_Var result;
   result.type = PP_VARTYPE_STRING;
   result.value.as_id = reinterpret_cast<int64_t>(impl);
@@ -134,78 +170,81 @@ PP_Var VarFromUtf8(PP_Module module_id, const char* data, uint32_t len) {
 }
 
 const char* VarToUtf8(PP_Var var, uint32_t* len) {
-  StrImpl* str_impl = VarToStrImpl(var);
+  StrImpl* str_impl = StrImpl::FromVar(var);
   if (str_impl == NULL) {
     *len = 0;
     return NULL;
   } else {
-    *len = static_cast<uint32_t>(str_impl->str().size());
-    return str_impl->str().c_str();
+    *len = static_cast<uint32_t>(str_impl->contents().size());
+    // Mimics PPAPI implementation: as long as StrImpl is alive, the
+    // return value can be validly used.
+    return str_impl->contents().c_str();
   }
 }
 
 bool HasProperty(PP_Var object,
                  PP_Var name,
                  PP_Var* exception) {
-  ObjImpl* impl = VarToObjImpl(object);
+  ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
     return false;
   }
   DebugPrintf("PPB_Var::HasProperty: id=%"NACL_PRIu64"\n", impl->id());
   DebugPrintf("PPB_Var::HasProperty: "
               "object.type = %d; name.type = %d\n", object.type, name.type);
-  const PPP_Class_Deprecated* object_class = impl->object_class();
+  const PPP_Class_Deprecated* object_class = impl->contents().first;
   if (object_class == NULL || object_class->HasProperty == NULL) {
     return false;
   }
-  return object_class->HasProperty(impl->object_data(), name, exception);
+  return object_class->HasProperty(impl->contents().second, name, exception);
 }
 
 bool HasMethod(PP_Var object,
                PP_Var name,
                PP_Var* exception) {
-  ObjImpl* impl = VarToObjImpl(object);
+  DebugPrintf("PPB_Var::HasMethod: \n");
+  ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
     return false;
   }
   DebugPrintf("PPB_Var::HasMethod: id=%"NACL_PRIu64"\n", impl->id());
-  const PPP_Class_Deprecated* object_class = impl->object_class();
+  const PPP_Class_Deprecated* object_class = impl->contents().first;
   if (object_class == NULL || object_class->HasMethod == NULL) {
     return false;
   }
-  return object_class->HasMethod(impl->object_data(), name, exception);
+  return object_class->HasMethod(impl->contents().second, name, exception);
 }
 
 PP_Var GetProperty(PP_Var object,
                    PP_Var name,
                    PP_Var* exception) {
-  ObjImpl* impl = VarToObjImpl(object);
+  ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
     return PP_MakeUndefined();
   }
   DebugPrintf("PPB_Var::GetProperty: id=%"NACL_PRIu64"\n", impl->id());
-  const PPP_Class_Deprecated* object_class = impl->object_class();
+  const PPP_Class_Deprecated* object_class = impl->contents().first;
   if (object_class == NULL || object_class->GetProperty == NULL) {
     return PP_MakeUndefined();
   }
-  return object_class->GetProperty(impl->object_data(), name, exception);
+  return object_class->GetProperty(impl->contents().second, name, exception);
 }
 
 void GetAllPropertyNames(PP_Var object,
                          uint32_t* property_count,
                          PP_Var** properties,
                          PP_Var* exception) {
-  ObjImpl* impl = VarToObjImpl(object);
+  ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
     return;
   }
   DebugPrintf("PPB_Var::GetAllPropertyNames: id=%"NACL_PRIu64"\n",
               impl->id());
-  const PPP_Class_Deprecated* object_class = impl->object_class();
+  const PPP_Class_Deprecated* object_class = impl->contents().first;
   if (object_class == NULL || object_class->GetAllPropertyNames == NULL) {
     return;
   }
-  object_class->GetAllPropertyNames(impl->object_data(),
+  object_class->GetAllPropertyNames(impl->contents().second,
                                     property_count,
                                     properties,
                                     exception);
@@ -215,32 +254,32 @@ void SetProperty(PP_Var object,
                  PP_Var name,
                  PP_Var value,
                  PP_Var* exception) {
-  ObjImpl* impl = VarToObjImpl(object);
+  ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
     return;
   }
   DebugPrintf("PPB_Var::SetProperty: id=%"NACL_PRIu64"\n", impl->id());
-  const PPP_Class_Deprecated* object_class = impl->object_class();
+  const PPP_Class_Deprecated* object_class = impl->contents().first;
   if (object_class == NULL || object_class->SetProperty == NULL) {
     return;
   }
-  object_class->SetProperty(impl->object_data(), name, value, exception);
+  object_class->SetProperty(impl->contents().second, name, value, exception);
 }
 
 void RemoveProperty(PP_Var object,
                     PP_Var name,
                     PP_Var* exception) {
-  ObjImpl* impl = VarToObjImpl(object);
+  ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
     return;
   }
   DebugPrintf("PPB_Var::RemoveProperty: id=%"NACL_PRIu64"\n",
               impl->id());
-  const PPP_Class_Deprecated* object_class = impl->object_class();
+  const PPP_Class_Deprecated* object_class = impl->contents().first;
   if (object_class == NULL || object_class->RemoveProperty == NULL) {
     return;
   }
-  object_class->RemoveProperty(impl->object_data(), name, exception);
+  object_class->RemoveProperty(impl->contents().second, name, exception);
 }
 
 PP_Var Call(PP_Var object,
@@ -248,16 +287,16 @@ PP_Var Call(PP_Var object,
             uint32_t argc,
             PP_Var* argv,
             PP_Var* exception) {
-  ObjImpl* impl = VarToObjImpl(object);
+  ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
     return PP_MakeUndefined();
   }
   DebugPrintf("PPB_Var::Call: id=%"NACL_PRIu64"\n", impl->id());
-  const PPP_Class_Deprecated* object_class = impl->object_class();
+  const PPP_Class_Deprecated* object_class = impl->contents().first;
   if (object_class == NULL || object_class->Call == NULL) {
     return PP_MakeUndefined();
   }
-  return object_class->Call(impl->object_data(),
+  return object_class->Call(impl->contents().second,
                             method_name,
                             argc,
                             argv,
@@ -268,34 +307,35 @@ PP_Var Construct(PP_Var object,
                  uint32_t argc,
                  PP_Var* argv,
                  PP_Var* exception) {
-  ObjImpl* impl = VarToObjImpl(object);
+  ObjImpl* impl = ObjImpl::FromVar(object);
   if (impl == NULL) {
     return PP_MakeUndefined();
   }
   DebugPrintf("PPB_Var::Construct: %"NACL_PRIu64"\n", impl->id());
-  const PPP_Class_Deprecated* object_class = impl->object_class();
+  const PPP_Class_Deprecated* object_class = impl->contents().first;
   if (object_class == NULL || object_class->Construct == NULL) {
     return PP_MakeUndefined();
   }
-  return object_class->Construct(impl->object_data(), argc, argv, exception);
+  return
+      object_class->Construct(impl->contents().second, argc, argv, exception);
 }
 
 bool IsInstanceOf(PP_Var var,
                   const PPP_Class_Deprecated* object_class,
                   void** object_data) {
-  ObjImpl* impl = VarToObjImpl(var);
+  ObjImpl* impl = ObjImpl::FromVar(var);
   *object_data = NULL;
   if (impl == NULL) {
     return false;
   }
   DebugPrintf("PPB_Var::IsInstanceOf: id=%"NACL_PRIu64"\n", impl->id());
   DebugPrintf("PPB_Var::IsInstanceOf: is instance %p %p\n",
-              reinterpret_cast<const void*>(impl->object_class()),
+              reinterpret_cast<const void*>(impl->contents().first),
               reinterpret_cast<const void*>(object_class));
-  if (object_class != impl->object_class()) {
+  if (object_class != impl->contents().first) {
     return false;
   }
-  *object_data = impl->object_data();
+  *object_data = impl->contents().second;
   return true;
 }
 
@@ -308,7 +348,7 @@ uint64_t GetObjectId(const void* object) {
 }
 
 uint64_t GetVarId(PP_Var var) {
-  return GetObjectId(VarToObjImpl(var));
+  return GetObjectId(ObjImpl::FromVar(var));
 }
 
 PP_Var CreateObject(PP_Instance instance_id,
@@ -317,8 +357,8 @@ PP_Var CreateObject(PP_Instance instance_id,
   UNREFERENCED_PARAMETER(instance_id);
   PP_Var result;
   result.type = PP_VARTYPE_OBJECT;
-  result.value.as_id =
-      reinterpret_cast<uint64_t>(new ObjImpl(object_class, object_data));
+  result.value.as_id = reinterpret_cast<uint64_t>(
+      ObjImpl::New(ObjPair(object_class, object_data)));
   return result;
 }
 
@@ -329,8 +369,8 @@ PP_Var CreateObjectWithModuleDeprecated(
   UNREFERENCED_PARAMETER(module_id);
   PP_Var result;
   result.type = PP_VARTYPE_OBJECT;
-  result.value.as_id =
-      reinterpret_cast<uint64_t>(new ObjImpl(object_class, object_data));
+  result.value.as_id = reinterpret_cast<uint64_t>(
+      ObjImpl::New(ObjPair(object_class, object_data)));
   return result;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,9 +70,15 @@ void ObjectStubRpcServer::HasProperty(NaClSrpcRpc* rpc,
   }
   // Get the previous value of the exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
-    // Deserialization of exception failed.
-    return;
+  if (ex_in_length != 0) {
+    if (!DeserializeTo(rpc->channel,
+                       ex_in_bytes,
+                       ex_in_length,
+                       1,
+                       &exception)) {
+      // Deserialization of exception failed.
+      return;
+    }
   }
   // Invoke the method.
   *success = PPBVarInterface()->HasProperty(var, name, &exception);
@@ -113,9 +119,15 @@ void ObjectStubRpcServer::HasMethod(NaClSrpcRpc* rpc,
   }
   // Get the previous value of the exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
-    // Deserialization of exception failed.
-    return;
+  if (ex_in_length != 0) {
+    if (!DeserializeTo(rpc->channel,
+                       ex_in_bytes,
+                       ex_in_length,
+                       1,
+                       &exception)) {
+      // Deserialization of exception failed.
+      return;
+    }
   }
   // Invoke the method.
   *success = PPBVarInterface()->HasMethod(var, name, &exception);
@@ -157,9 +169,15 @@ void ObjectStubRpcServer::GetProperty(NaClSrpcRpc* rpc,
   }
   // Get the previous value of the exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
-    // Deserialization of exception failed.
-    return;
+  if (ex_in_length != 0) {
+    if (!DeserializeTo(rpc->channel,
+                       ex_in_bytes,
+                       ex_in_length,
+                       1,
+                       &exception)) {
+      // Deserialization of exception failed.
+      return;
+    }
   }
   // Invoke the method.
   PP_Var value = PPBVarInterface()->GetProperty(var, name, &exception);
@@ -253,9 +271,15 @@ void ObjectStubRpcServer::SetProperty(NaClSrpcRpc* rpc,
   }
   // Get the previous exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
-    // Deserialization of exception failed.
-    return;
+  if (ex_in_length != 0) {
+    if (!DeserializeTo(rpc->channel,
+                       ex_in_bytes,
+                       ex_in_length,
+                       1,
+                       &exception)) {
+      // Deserialization of exception failed.
+      return;
+    }
   }
   // Invoke the method.
   PPBVarInterface()->SetProperty(var, name, value, &exception);
@@ -295,9 +319,15 @@ void ObjectStubRpcServer::RemoveProperty(NaClSrpcRpc* rpc,
   }
   // Get the previous value of the exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
-    // Deserialization of exception failed.
-    return;
+  if (ex_in_length != 0) {
+    if (!DeserializeTo(rpc->channel,
+                       ex_in_bytes,
+                       ex_in_length,
+                       1,
+                       &exception)) {
+      // Deserialization of exception failed.
+      return;
+    }
   }
   // Invoke the method.
   PPBVarInterface()->RemoveProperty(var, name, &exception);
@@ -336,9 +366,15 @@ void ObjectStubRpcServer::Call(NaClSrpcRpc* rpc,
       LookupCapability(reinterpret_cast<ObjectCapability*>(capability_bytes));
   // Get the previous value of the exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
-    // Deserialization of exception failed.
-    return;
+  if (ex_in_length != 0) {
+    if (!DeserializeTo(rpc->channel,
+                       ex_in_bytes,
+                       ex_in_length,
+                       1,
+                       &exception)) {
+      // Deserialization of exception failed.
+      return;
+    }
   }
   // Get the name PP_Var.
   PP_Var name;
@@ -399,9 +435,15 @@ void ObjectStubRpcServer::Construct(NaClSrpcRpc* rpc,
       LookupCapability(reinterpret_cast<ObjectCapability*>(capability_bytes));
   // Get the previous value of the exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
-    // Deserialization of exception failed.
-    return;
+  if (ex_in_length != 0) {
+    if (!DeserializeTo(rpc->channel,
+                       ex_in_bytes,
+                       ex_in_length,
+                       1,
+                       &exception)) {
+      // Deserialization of exception failed.
+      return;
+    }
   }
   nacl::scoped_array<PP_Var> argv(new PP_Var[argc]);
   if (!DeserializeTo(rpc->channel,
