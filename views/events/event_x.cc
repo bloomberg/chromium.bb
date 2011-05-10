@@ -97,7 +97,6 @@ ui::EventType GetTouchEventType(XEvent* xev) {
 
   if (!factory->IsSlotUsed(slot)) {
     // This is a new touch point.
-    factory->SetSlotUsed(slot, true);
     return ui::ET_TOUCH_PRESSED;
   }
 
@@ -108,7 +107,6 @@ ui::EventType GetTouchEventType(XEvent* xev) {
 
   if (tracking == 0l) {
     // The touch point has been released.
-    factory->SetSlotUsed(slot, false);
     return ui::ET_TOUCH_RELEASED;
   }
 
@@ -370,6 +368,42 @@ MouseEvent::MouseEvent(NativeEvent2 native_event_2,
     : LocatedEvent(native_event_2, from_native) {
 }
 
+MouseEvent::MouseEvent(const TouchEvent& touch,
+                       FromNativeEvent2 from_native)
+    : LocatedEvent(touch.native_event_2(), from_native) {
+  // The location of the event is correctly extracted from the native event. But
+  // it is necessary to update the event type.
+  ui::EventType mtype = ui::ET_UNKNOWN;
+  switch (touch.type()) {
+    case ui::ET_TOUCH_RELEASED:
+      mtype = ui::ET_MOUSE_RELEASED;
+      break;
+    case ui::ET_TOUCH_PRESSED:
+      mtype = ui::ET_MOUSE_PRESSED;
+      break;
+    case ui::ET_TOUCH_MOVED:
+      mtype = ui::ET_MOUSE_MOVED;
+      break;
+    default:
+      NOTREACHED() << "Invalid mouse event.";
+  }
+  set_type(mtype);
+
+  // It may not be possible to extract the button-information necessary for a
+  // MouseEvent from the native event for a TouchEvent, so the flags are
+  // explicitly updated as well. The button is approximated from the touchpoint
+  // identity.
+  int new_flags = flags() & ~(ui::EF_LEFT_BUTTON_DOWN |
+                              ui::EF_RIGHT_BUTTON_DOWN |
+                              ui::EF_MIDDLE_BUTTON_DOWN);
+  int button = ui::EF_LEFT_BUTTON_DOWN;
+  if (touch.identity() == 1)
+    button = ui::EF_RIGHT_BUTTON_DOWN;
+  else if (touch.identity() == 2)
+    button = ui::EF_MIDDLE_BUTTON_DOWN;
+  set_flags(new_flags | button);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent, public:
 
@@ -390,6 +424,14 @@ TouchEvent::TouchEvent(NativeEvent2 native_event_2,
       radius_(GetTouchRadiusFromXEvent(native_event_2)),
       angle_(GetTouchAngleFromXEvent(native_event_2)),
       ratio_(GetTouchRatioFromXEvent(native_event_2)) {
+  if (type() == ui::ET_TOUCH_PRESSED || type() == ui::ET_TOUCH_RELEASED) {
+    TouchFactory* factory = TouchFactory::GetInstance();
+    float slot;
+    if (factory->ExtractTouchParam(*native_event_2,
+                                   TouchFactory::TP_SLOT_ID, &slot)) {
+      factory->SetSlotUsed(slot, type() == ui::ET_TOUCH_PRESSED);
+    }
+  }
 }
 #endif
 

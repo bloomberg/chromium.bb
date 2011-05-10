@@ -105,6 +105,8 @@ class Event {
         flags_(model.flags()) {
   }
 
+  void set_type(ui::EventType type) { type_ = type; }
+
  private:
   void operator=(const Event&);
 
@@ -154,6 +156,10 @@ class LocatedEvent : public Event {
   gfx::Point location_;
 };
 
+#if defined(TOUCH_UI)
+class TouchEvent;
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // MouseEvent class
@@ -170,6 +176,15 @@ class MouseEvent : public LocatedEvent {
   // If source / target views are provided, the model location will be converted
   // from |source| coordinate system to |target| coordinate system.
   MouseEvent(const MouseEvent& model, View* source, View* target);
+
+#if defined(TOUCH_UI)
+  // Creates a new MouseEvent from a TouchEvent. The location of the TouchEvent
+  // is the same as the MouseEvent. Other attributes (e.g. type, flags) are
+  // mapped from the TouchEvent to appropriate MouseEvent attributes.
+  // GestureManager uses this to convert TouchEvents that are not handled by any
+  // view.
+  MouseEvent(const TouchEvent& touch, FromNativeEvent2 from_native);
+#endif
 
   // TODO(msw): Kill this legacy constructor when we update uses.
   // Create a new mouse event
