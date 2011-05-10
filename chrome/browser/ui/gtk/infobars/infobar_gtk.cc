@@ -18,8 +18,6 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image.h"
 
-extern const int InfoBar::kInfoBarHeight = 37;
-
 namespace {
 
 // Pixels between infobar elements.
@@ -35,6 +33,7 @@ const int kIconSizePixels = 26;
 }  // namespace
 
 // static
+const int InfoBar::kInfoBarHeight = 37;
 const int InfoBar::kEndOfLabelSpacing = 6;
 const int InfoBar::kButtonButtonSpacing = 3;
 
@@ -106,16 +105,16 @@ void InfoBar::Show(bool animate) {
     gdk_window_lower(bg_box_->window);
 }
 
-void InfoBar::AnimateClose() {
-  slide_widget_->Close();
-}
-
-void InfoBar::Close() {
-  if (delegate_) {
-    delegate_->InfoBarClosed();
-    delegate_ = NULL;
+void InfoBar::Hide(bool animate) {
+  if (animate) {
+    slide_widget_->Close();
+  } else {
+    if (delegate_) {
+      delegate_->InfoBarClosed();
+      delegate_ = NULL;
+    }
+    delete this;
   }
-  delete this;
 }
 
 bool InfoBar::IsAnimating() {
@@ -139,7 +138,7 @@ void InfoBar::RemoveInfoBar() const {
 }
 
 void InfoBar::Closed() {
-  Close();
+  Hide(false);
 }
 
 void InfoBar::SetThemeProvider(GtkThemeService* theme_service) {

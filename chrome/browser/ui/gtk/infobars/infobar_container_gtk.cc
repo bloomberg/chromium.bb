@@ -39,7 +39,7 @@ void AnimateClosingForDelegate(GtkWidget* infobar_widget,
   }
 
   if (delegate == infobar->delegate())
-    infobar->AnimateClose();
+    infobar->Hide(true);
 }
 
 // If |infobar_widget| matches |info_bar_delegate|, then close the infobar w/o
@@ -56,7 +56,7 @@ void ClosingForDelegate(GtkWidget* infobar_widget, gpointer info_bar_delegate) {
   }
 
   if (delegate == infobar->delegate())
-    infobar->Close();
+    infobar->Hide(false);
 }
 
 // Get the height of the widget and add it to |userdata|, but only if it is in

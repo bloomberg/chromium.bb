@@ -42,14 +42,10 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
   // animated to full size.
   void Show(bool animate);
 
-  // Starts animating the InfoBar closed. It will not be closed until the
-  // animation has completed, when |Close| will be called.
-  void AnimateClose();
-
-  // Closes the InfoBar immediately and removes it from its container. Notifies
-  // the delegate that it has closed. The InfoBar is deleted after this function
-  // is called.
-  void Close();
+  // Makes the infobar hidden. If |animate| is true, the infobar is first
+  // animated to zero size. Once the infobar is hidden it notifies the delegate
+  // that it has closed.
+  void Hide(bool animate);
 
   // Returns true if the infobar is showing the its open or close animation.
   bool IsAnimating();
