@@ -65,11 +65,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         ibus_daemon_process_handle_(base::kNullProcessHandle),
         initialized_successfully_(false),
         candidate_window_controller_(NULL) {
-    // Here, we use the fallback input method descriptor but
-    // |current_input_method_| will be updated as soon as the login screen
-    // is shown or the user is logged in, so there is no problem.
-    current_input_method_ = input_method::GetFallbackInputMethodDescriptor();
-    active_input_method_ids_.push_back(current_input_method_.id);
     // Observe APP_TERMINATING to stop input method daemon gracefully.
     // We should not use APP_EXITING here since logout might be canceled by
     // JavaScript after APP_EXITING is sent (crosbug.com/11055).
@@ -136,10 +131,10 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         LOG(ERROR) << "Descriptor is not found for: " << input_method_id;
       }
     }
-    // This shouldn't happen as there should be at least one active input
-    // method, but just in case.
+    // Initially active_input_method_ids_ is empty. In this case, just
+    // returns the fallback input method descriptor.
     if (result->empty()) {
-      LOG(ERROR) << "No active input methods found.";
+      LOG(WARNING) << "No active input methods found.";
       result->push_back(input_method::GetFallbackInputMethodDescriptor());
     }
     return result;
@@ -243,11 +238,17 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     return pending_config_requests_.empty();
   }
 
-  virtual const InputMethodDescriptor& previous_input_method() const {
+  virtual InputMethodDescriptor previous_input_method() const {
+    if (previous_input_method_.id.empty()) {
+      return input_method::GetFallbackInputMethodDescriptor();
+    }
     return previous_input_method_;
   }
 
-  virtual const InputMethodDescriptor& current_input_method() const {
+  virtual InputMethodDescriptor current_input_method() const {
+    if (current_input_method_.id.empty()) {
+      return input_method::GetFallbackInputMethodDescriptor();
+    }
     return current_input_method_;
   }
 
@@ -879,11 +880,11 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     return false;
   }
 
-  virtual const InputMethodDescriptor& previous_input_method() const {
+  virtual InputMethodDescriptor previous_input_method() const {
     return previous_input_method_;
   }
 
-  virtual const InputMethodDescriptor& current_input_method() const {
+  virtual InputMethodDescriptor current_input_method() const {
     return current_input_method_;
   }
 

@@ -129,8 +129,8 @@ class InputMethodLibrary {
   // chromeos::CancelHandwriting for details.
   virtual void CancelHandwriting(int n_strokes) = 0;
 
-  virtual const InputMethodDescriptor& previous_input_method() const = 0;
-  virtual const InputMethodDescriptor& current_input_method() const = 0;
+  virtual InputMethodDescriptor previous_input_method() const = 0;
+  virtual InputMethodDescriptor current_input_method() const = 0;
 
   virtual const ImePropertyList& current_ime_properties() const = 0;
 

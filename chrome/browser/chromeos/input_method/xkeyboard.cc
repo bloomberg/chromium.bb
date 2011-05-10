@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/process_util.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 
 namespace chromeos {
@@ -142,7 +143,10 @@ class XKeyboard {
   // Remaps modifier keys. This function does not change the current keyboard
   // layout. Returns true on success.
   bool RemapModifierKeys(const ModifierMap& modifier_map) {
-    if (SetLayoutInternal(current_layout_name_, modifier_map)) {
+    const std::string layout_name = current_layout_name_.empty() ?
+        kDefaultLayoutName : current_layout_name_;
+    if (SetLayoutInternal(layout_name, modifier_map)) {
+      current_layout_name_ = layout_name;
       current_modifier_map_ = modifier_map;
       return true;
     }
@@ -190,7 +194,7 @@ class XKeyboard {
  private:
   friend struct DefaultSingletonTraits<XKeyboard>;
 
-  XKeyboard() : current_layout_name_(kDefaultLayoutName) {
+  XKeyboard() {
     for (size_t i = 0; i < arraysize(kCustomizableKeys); ++i) {
       ModifierKey key = kCustomizableKeys[i];
       current_modifier_map_.push_back(ModifierKeyPair(key, key));
@@ -203,17 +207,24 @@ class XKeyboard {
   // setxkbmap command if needed, and updates the last_full_layout_name_ cache.
   bool SetLayoutInternal(const std::string& layout_name,
                          const ModifierMap& modifier_map) {
+    if (!CrosLibrary::Get()->EnsureLoaded()) {
+      // We should not try to change a layout inside ui_tests.
+      return false;
+    }
+
     const std::string layouts_to_set = CreateFullXkbLayoutName(
         layout_name, modifier_map);
     if (layouts_to_set.empty()) {
       return false;
     }
 
-    const std::string current_layout = CreateFullXkbLayoutName(
-        current_layout_name_, current_modifier_map_);
-    if (current_layout == layouts_to_set) {
-      DLOG(INFO) << "The requested layout is already set: " << layouts_to_set;
-      return true;
+    if (!current_layout_name_.empty()) {
+      const std::string current_layout = CreateFullXkbLayoutName(
+          current_layout_name_, current_modifier_map_);
+      if (current_layout == layouts_to_set) {
+        DLOG(INFO) << "The requested layout is already set: " << layouts_to_set;
+        return true;
+      }
     }
 
     // Turn off caps lock if there is no kCapsLockKey in the remapped keys.
