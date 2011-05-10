@@ -616,6 +616,8 @@ void MenuItemView::RemoveEmptyMenus() {
         menu_item->RemoveEmptyMenus();
     } else if (child->GetID() == EmptyMenuMenuItem::kEmptyMenuItemViewID) {
       submenu_->RemoveChildView(child);
+      delete child;
+      child = NULL;
     }
   }
 }
