@@ -176,9 +176,11 @@ void ToolsMenuModel::Build(Browser* browser) {
 
   AddSeparator();
 
+#if !defined(OS_CHROMEOS)
+  // Show IDC_FEEDBACK in "Tools" menu for non-ChromeOS platforms.
   AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
-
   AddSeparator();
+#endif
 
   encoding_menu_model_.reset(new EncodingMenuModel(browser));
   AddSubMenuWithStringId(IDC_ENCODING_MENU, IDS_ENCODING_MENU,
@@ -480,6 +482,16 @@ void WrenchMenuModel::Build() {
 #endif
 
   AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
+#if defined(OS_CHROMEOS)
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  // Use an icon for IDC_HELP_PAGE menu item.
+  SetIcon(GetIndexOfCommandId(IDC_HELP_PAGE),
+          *rb.GetBitmapNamed(IDR_HELP_MENU));
+
+  // Show IDC_FEEDBACK in top-tier wrench menu for ChromeOS.
+  AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
+#endif
+
   if (browser_defaults::kShowExitMenuItem) {
     AddSeparator();
 #if defined(OS_CHROMEOS)

@@ -438,6 +438,7 @@
         <include name="IDR_DROPDOWN_TOP_P" file="textbutton_dropdown_t_p.png" type="BINDATA" />
         <include name="IDR_DROPDOWN_TOP_RIGHT_H" file="textbutton_dropdown_tr_h.png" type="BINDATA" />
         <include name="IDR_DROPDOWN_TOP_RIGHT_P" file="textbutton_dropdown_tr_p.png" type="BINDATA" />
+        <include name="IDR_HELP_MENU" file="help_16.png" type="BINDATA" />
         <include name="IDR_INCOGNITO_GUY" file="incognito_guy.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER" file="avatar_beaker.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER_1" file="avatar_bee.png" type="BINDATA" />
