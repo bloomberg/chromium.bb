@@ -28,6 +28,7 @@ DownloadSBClient::DownloadSBClient(int32 download_id,
     url_chain_(url_chain),
     referrer_url_(referrer_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!url_chain.empty());
   ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
   if (rdh)
     sb_service_ = rdh->safe_browsing_service();
@@ -158,11 +159,16 @@ void DownloadSBClient::SafeBrowsingCheckHashDone(
 
 void DownloadSBClient::ReportMalware(
     SafeBrowsingService::UrlCheckResult result) {
+  std::string post_data;
+  for (size_t i = 0; i < url_chain_.size(); ++i)
+    post_data += url_chain_[i].spec() + "\n";
+
   sb_service_->ReportSafeBrowsingHit(url_chain_.back(),  // malicious_url
                                      url_chain_.front(), // page_url
                                      referrer_url_,
                                      true,
-                                     result);
+                                     result,
+                                     post_data);
 }
 
 void DownloadSBClient::UpdateDownloadCheckStats(SBStatsType stat_type) {

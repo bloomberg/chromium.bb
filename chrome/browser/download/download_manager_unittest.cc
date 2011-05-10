@@ -348,6 +348,7 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     DownloadCreateInfo* info(new DownloadCreateInfo);
     info->download_id = static_cast<int>(i);
     info->prompt_user_for_save_location = false;
+    info->url_chain.push_back(GURL());
     info->is_dangerous_file = kDownloadRenameCases[i].is_dangerous_file;
     info->is_dangerous_url = kDownloadRenameCases[i].is_dangerous_url;
     FilePath new_path(kDownloadRenameCases[i].suggested_path);
@@ -402,6 +403,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   DownloadCreateInfo* info(new DownloadCreateInfo);
   info->download_id = static_cast<int>(0);
   info->prompt_user_for_save_location = false;
+  info->url_chain.push_back(GURL());
   info->is_dangerous_file = false;
   info->is_dangerous_url = false;
   const FilePath new_path(FILE_PATH_LITERAL("foo.zip"));
@@ -467,6 +469,7 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   DownloadCreateInfo* info(new DownloadCreateInfo);
   info->download_id = static_cast<int>(0);
   info->prompt_user_for_save_location = false;
+  info->url_chain.push_back(GURL());
   info->is_dangerous_file = false;
   info->is_dangerous_url = false;
   const FilePath new_path(FILE_PATH_LITERAL("foo.zip"));
@@ -545,6 +548,7 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   DownloadCreateInfo* info(new DownloadCreateInfo);
   info->download_id = static_cast<int>(0);
   info->prompt_user_for_save_location = true;
+  info->url_chain.push_back(GURL());
   info->is_dangerous_file = false;
   info->is_dangerous_url = false;
 

@@ -649,13 +649,17 @@ void SafeBrowsingProtocolManager::ReportSafeBrowsingHit(
     const GURL& page_url,
     const GURL& referrer_url,
     bool is_subresource,
-    SafeBrowsingService::UrlCheckResult threat_type) {
+    SafeBrowsingService::UrlCheckResult threat_type,
+    const std::string& post_data) {
   GURL report_url = SafeBrowsingHitUrl(malicious_url, page_url,
                                        referrer_url, is_subresource,
                                        threat_type);
-  URLFetcher* report = new URLFetcher(report_url, URLFetcher::GET, this);
+  URLFetcher* report = new URLFetcher(
+      report_url, post_data.empty() ? URLFetcher::GET : URLFetcher::POST, this);
   report->set_load_flags(net::LOAD_DISABLE_CACHE);
   report->set_request_context(request_context_getter_);
+  if (!post_data.empty())
+    report->set_upload_data("text/plain", post_data);
   report->Start();
   safebrowsing_reports_.insert(report);
 }

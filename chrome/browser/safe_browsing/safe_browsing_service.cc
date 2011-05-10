@@ -1026,7 +1026,7 @@ void SafeBrowsingService::DoDisplayBlockingPage(
       page_url = resource.original_url;
     }
     ReportSafeBrowsingHit(resource.url, page_url, referrer_url, is_subresource,
-                          resource.threat_type);
+                          resource.threat_type, std::string() /* post_data */);
   }
 
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
@@ -1039,7 +1039,8 @@ void SafeBrowsingService::ReportSafeBrowsingHit(
     const GURL& page_url,
     const GURL& referrer_url,
     bool is_subresource,
-    SafeBrowsingService::UrlCheckResult threat_type) {
+    SafeBrowsingService::UrlCheckResult threat_type,
+    const std::string& post_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!CanReportStats())
     return;
@@ -1053,7 +1054,8 @@ void SafeBrowsingService::ReportSafeBrowsingHit(
           page_url,
           referrer_url,
           is_subresource,
-          threat_type));
+          threat_type,
+          post_data));
 }
 
 void SafeBrowsingService::ReportSafeBrowsingHitOnIOThread(
@@ -1061,7 +1063,8 @@ void SafeBrowsingService::ReportSafeBrowsingHitOnIOThread(
     const GURL& page_url,
     const GURL& referrer_url,
     bool is_subresource,
-    SafeBrowsingService::UrlCheckResult threat_type) {
+    SafeBrowsingService::UrlCheckResult threat_type,
+    const std::string& post_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!enabled_)
     return;
@@ -1071,7 +1074,7 @@ void SafeBrowsingService::ReportSafeBrowsingHitOnIOThread(
            << threat_type;
   protocol_manager_->ReportSafeBrowsingHit(malicious_url, page_url,
                                            referrer_url, is_subresource,
-                                           threat_type);
+                                           threat_type, post_data);
 }
 
 // If the user had opted-in to send MalwareDetails, this gets called

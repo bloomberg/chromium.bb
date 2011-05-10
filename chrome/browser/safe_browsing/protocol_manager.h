@@ -132,13 +132,14 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   void OnChunkInserted();
 
   // For UMA users we report to Google when a SafeBrowsing interstitial is shown
-  // to the user.  We assume that the threat type is either URL_MALWARE or
-  // URL_PHISHING.
+  // to the user.  |threat_type| should be one of the types known by
+  // SafeBrowsingHitUrl.
   void ReportSafeBrowsingHit(const GURL& malicious_url,
                              const GURL& page_url,
                              const GURL& referrer_url,
                              bool is_subresource,
-                             SafeBrowsingService::UrlCheckResult threat_type);
+                             SafeBrowsingService::UrlCheckResult threat_type,
+                             const std::string& post_data);
 
   // Users can opt-in on the SafeBrowsing interstitial to send detailed
   // malware reports. |report| is the serialized report.

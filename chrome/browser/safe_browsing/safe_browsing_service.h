@@ -248,12 +248,14 @@ class SafeBrowsingService
   virtual void SendSerializedMalwareDetails(const std::string& serialized);
 
   // Report hits to the unsafe contents (malware, phishing, unsafe download URL)
-  // to the server. Can only be called on UI thread.
+  // to the server. Can only be called on UI thread.  If |post_data| is
+  // non-empty, the request will be sent as a POST instead of a GET.
   void ReportSafeBrowsingHit(const GURL& malicious_url,
                              const GURL& page_url,
                              const GURL& referrer_url,
                              bool is_subresource,
-                             UrlCheckResult threat_type);
+                             UrlCheckResult threat_type,
+                             const std::string& post_data);
 
  protected:
   // Creates the safe browsing service.  Need to initialize before using.
@@ -367,7 +369,8 @@ class SafeBrowsingService
                                        const GURL& page_url,
                                        const GURL& referrer_url,
                                        bool is_subresource,
-                                       UrlCheckResult threat_type);
+                                       UrlCheckResult threat_type,
+                                       const std::string& post_data);
 
   // Checks the download hash on safe_browsing_thread_.
   void CheckDownloadHashOnSBThread(SafeBrowsingCheck* check);
