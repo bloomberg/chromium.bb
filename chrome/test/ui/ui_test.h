@@ -264,6 +264,8 @@ class UITestBase {
   // Closes the browser window.
   virtual void TearDown();
 
+  void ResetConnection();
+
   AutomationProxy* automation() const {
     return launcher_->automation();
   }

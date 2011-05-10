@@ -35,13 +35,11 @@ class SessionRestoreUITest : public UITest {
 #if defined(OS_MACOSX)
     set_shutdown_type(ProxyLauncher::USER_QUIT);
 #endif
-    UITest::TearDown();
-
     clear_profile_ = false;
 
     launch_arguments_.AppendSwitchASCII(switches::kRestoreLastSession,
                                         base::IntToString(expected_tab_count));
-    UITest::SetUp();
+    ResetConnection();
   }
 
   void CloseWindow(int window_index, int initial_count) {
