@@ -44,11 +44,6 @@ extern "C" {
 	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
 	(type *)( (char *)__mptr - offsetof(type,member) );})
 
-struct wl_argument {
-	uint32_t type;
-	void *data;
-};
-
 struct wl_message {
 	const char *name;
 	const char *signature;
