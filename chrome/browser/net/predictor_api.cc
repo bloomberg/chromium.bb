@@ -571,12 +571,12 @@ PredictorInit::PredictorInit(PrefService* user_prefs,
   // latency of page loads.
   base::FieldTrial::Probability kDivisor = 1000;
   // For each option (i.e., non-default), we have a fixed probability.
-  base::FieldTrial::Probability kProbabilityPerGroup = 100;  // 10% probability.
+  base::FieldTrial::Probability kProbabilityPerGroup = 1;  // 0.1% probability.
 
   // After June 30, 2011 builds, it will always be in default group
   // (default_enabled_prefetch).
   trial_ = new base::FieldTrial("DnsImpact", kDivisor,
-                                "default_enabled_prefetch", 2011, 6, 30);
+                                "default_enabled_prefetch", 2011, 10, 30);
 
   // First option is to disable prefetching completely.
   int disabled_prefetch = trial_->AppendGroup("disabled_prefetch",
