@@ -169,6 +169,8 @@ cr.define('cr.ui', function() {
               this.handleDataModelSplice_.bind(this);
           this.boundHandleDataModelChange_ =
               this.handleDataModelChange_.bind(this);
+          this.boundHandleSorted_ =
+              this.handleSorted_.bind(this);
         }
 
         if (this.dataModel_) {
@@ -176,6 +178,8 @@ cr.define('cr.ui', function() {
                                               this.boundHandleDataModelSplice_);
           this.dataModel_.removeEventListener('change',
                                               this.boundHandleDataModelChange_);
+          this.dataModel_.removeEventListener('sorted',
+                                             this.boundHandleSorted_);
         }
 
         this.dataModel_ = dataModel;
@@ -190,6 +194,8 @@ cr.define('cr.ui', function() {
                                            this.boundHandleDataModelSplice_);
           this.dataModel_.addEventListener('change',
                                            this.boundHandleDataModelChange_);
+          this.dataModel_.addEventListener('sorted',
+                                           this.boundHandleSorted_);
         }
 
         this.redraw();
@@ -560,9 +566,28 @@ cr.define('cr.ui', function() {
 
     handleDataModelChange_: function(e) {
       if (e.index >= this.firstIndex_ && e.index < this.lastIndex_) {
-        delete this.cachedItems_;
+        this.cachedItems_ = null;
         this.redraw();
       }
+    },
+
+    /**
+     * This handles data model 'sorted' event.
+     * After sorting we need to
+     *  - adjust selection.
+     *  - delete the cache.
+     *  - redraw all the items.
+     *  - scroll the list to show selection.
+     * @param {Event} e The 'sorted' event.
+     */
+    handleSorted_: function(e) {
+      var sm = this.selectionModel;
+      sm.adjustToReordering(e.sortPermutation);
+
+      this.cachedItems_ = null;
+      this.redraw();
+      if (sm.leadIndex != -1)
+        this.scrollIndexIntoView(sm.leadIndex);
     },
 
     /**

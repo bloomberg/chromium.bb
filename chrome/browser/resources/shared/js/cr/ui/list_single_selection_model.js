@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,6 +190,13 @@ cr.define('cr.ui', function() {
      */
     get multiple() {
       return false;
+    },
+
+    /**
+     * Adjusts the selection after reordering of items in the table.
+     * @param {!Array.<number>} permutation The reordering permutation.
+     */
+    adjustToReordering: function(permutation) {
     },
 
     /**
