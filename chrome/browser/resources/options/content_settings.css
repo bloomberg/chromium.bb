@@ -11,19 +11,12 @@ found in the LICENSE file.
 }
 
 .exception-setting {
-  -webkit-margin-end: 20px;
   display: inline-block;
-  width: 100px;
+  width: 120px;
 }
 
 select.exception-setting {
   vertical-align: middle;
-}
-
-/* Hacks to make the <select> align better with the <input>. */
-html[toolkit=gtk] select.exception-setting {
-  height: 22px;
-  margin-top: 1px;
 }
 
 #exception-column-headers {
