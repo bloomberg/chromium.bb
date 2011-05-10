@@ -6,7 +6,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 
-using namespace printing;
+namespace printing {
 
 TEST(UnitsTest, Convertions) {
   EXPECT_EQ(100, ConvertUnit(100, 100, 100));
@@ -59,3 +59,5 @@ TEST(UnitsTest, Convertions) {
   EXPECT_EQ(8, ConvertPixelsToPoint(10));
   EXPECT_EQ(0, ConvertPixelsToPoint(0));
 }
+
+}  // namespace printing
