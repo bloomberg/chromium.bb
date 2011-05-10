@@ -672,17 +672,6 @@ void ExternalTabContainer::HandleKeyboardEvent(
                             event.os_event.wParam, event.os_event.lParam);
 }
 
-void ExternalTabContainer::ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
-                                          gfx::NativeWindow parent_window) {
-  if (!browser_.get()) {
-    browser_.reset(Browser::CreateForType(Browser::TYPE_POPUP,
-                                          tab_contents_->profile()));
-  }
-
-  gfx::NativeWindow parent = parent_window ? parent_window : GetParent();
-  browser_->window()->ShowHTMLDialog(delegate, parent);
-}
-
 void ExternalTabContainer::BeforeUnloadFired(TabContents* tab,
                                              bool proceed,
                                              bool* proceed_to_fire_unload) {

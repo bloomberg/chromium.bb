@@ -159,13 +159,6 @@ class ExternalTabContainer : public TabContentsDelegate,
   // parameter.
   virtual bool ExecuteContextMenuCommand(int command);
 
-  // Show a dialog with HTML content. |delegate| contains a pointer to the
-  // delegate who knows how to display the dialog (which file URL and JSON
-  // string input to use during initialization). |parent_window| is the window
-  // that should be parent of the dialog, or NULL for the default.
-  virtual void ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
-                              gfx::NativeWindow parent_window);
-
   virtual void BeforeUnloadFired(TabContents* tab,
                                  bool proceed,
                                  bool* proceed_to_fire_unload);

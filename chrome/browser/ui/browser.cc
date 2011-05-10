@@ -1066,7 +1066,7 @@ void Browser::CloseTabContents(TabContents* contents) {
 
 void Browser::BrowserShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                                     gfx::NativeWindow parent_window) {
-  ShowHtmlDialog(delegate, parent_window);
+  window_->ShowHTMLDialog(delegate, parent_window);
 }
 
 void Browser::BrowserRenderWidgetShowing() {
@@ -3259,11 +3259,6 @@ void Browser::BeforeUnloadFired(TabContents* tab,
   }
 
   *proceed_to_fire_unload = true;
-}
-
-void Browser::ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
-                             gfx::NativeWindow parent_window) {
-  window_->ShowHTMLDialog(delegate, parent_window);
 }
 
 void Browser::SetFocusToLocationBar(bool select_all) {

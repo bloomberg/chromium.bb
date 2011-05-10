@@ -48,10 +48,6 @@ bool TabContentsDelegate::CanReloadContents(TabContents* source) const {
   return true;
 }
 
-void TabContentsDelegate::ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
-                                         gfx::NativeWindow parent_window) {
-}
-
 void TabContentsDelegate::WillRunBeforeUnloadConfirm() {
 }
 
