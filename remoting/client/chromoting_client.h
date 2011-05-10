@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                    ChromotingView* view,
                    RectangleUpdateDecoder* rectangle_decoder,
                    InputHandler* input_handler,
-                   CancelableTask* client_done);
+                   Task* client_done);
   virtual ~ChromotingClient();
 
   void Start();
@@ -119,7 +119,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   InputHandler* input_handler_;
 
   // If non-NULL, this is called when the client is done.
-  CancelableTask* client_done_;
+  Task* client_done_;
 
   ConnectionState state_;
 

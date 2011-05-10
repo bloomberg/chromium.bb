@@ -21,7 +21,7 @@ ChromotingClient::ChromotingClient(const ClientConfig& config,
                                    ChromotingView* view,
                                    RectangleUpdateDecoder* rectangle_decoder,
                                    InputHandler* input_handler,
-                                   CancelableTask* client_done)
+                                   Task* client_done)
     : config_(config),
       context_(context),
       connection_(connection),
