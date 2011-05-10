@@ -125,10 +125,6 @@ gfx::Image* ResourceBundle::GetPixbufImpl(int resource_id, bool rtl_enabled) {
   return GetEmptyImage();
 }
 
-GdkPixbuf* ResourceBundle::GetPixbufNamed(int resource_id) {
-  return *GetPixbufImpl(resource_id, false);
-}
-
 GdkPixbuf* ResourceBundle::GetRTLEnabledPixbufNamed(int resource_id) {
   return *GetPixbufImpl(resource_id, true);
 }

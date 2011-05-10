@@ -154,9 +154,7 @@ class ResourceBundle {
   // assert in debug mode if it does not. On failure, this will return a
   // pointer to a shared empty placeholder bitmap so it will be visible what
   // is missing.
-  GdkPixbuf* GetPixbufNamed(int resource_id);
-
-  // As above, but flips it in RTL locales.
+  // This function flips it in RTL locales.
   GdkPixbuf* GetRTLEnabledPixbufNamed(int resource_id);
 
  private:
