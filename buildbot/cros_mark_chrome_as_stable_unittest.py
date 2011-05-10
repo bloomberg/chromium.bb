@@ -153,12 +153,12 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
 
   def testGetTipOfTrunkVersion(self):
     """Tests if we get the latest version from TOT."""
-    self.mox.StubOutWithMock(urllib, 'urlopen')
-    mock_file = self.mox.CreateMock(file)
-    urllib.urlopen(os.path.join(cros_mark_chrome_as_stable._GetSvnUrl(), 'src',
-                                'chrome', 'VERSION')).AndReturn(mock_file)
-    mock_file.read().AndReturn('A=8\nB=0\nC=256\nD=0')
-    mock_file.close()
+    path = os.path.join(cros_mark_chrome_as_stable._GetSvnUrl(), 'src',
+                        'chrome', 'VERSION')
+    self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
+    cros_mark_chrome_as_stable.RunCommand(
+        ['svn', 'cat', path], redirect_stdout=True,
+        error_message=mox.IsA(str)).AndReturn('A=8\nB=0\nC=256\nD=0')
 
     self.mox.ReplayAll()
     version = cros_mark_chrome_as_stable._GetTipOfTrunkVersion()
@@ -173,7 +173,7 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
                            'LATEST.txt'])
     self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
     cros_mark_chrome_as_stable.RunCommand(
-        ['svn', 'ls', 'http://src.chromium.org/svn/releases'],
+        ['svn', 'ls', 'svn://svn.chromium.org/chrome/releases'],
         redirect_stdout=True).AndReturn('some_data')
     cros_mark_chrome_as_stable.RunCommand(
         ['sort', '--version-sort'], input='some_data',
@@ -191,7 +191,7 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
                            'LATEST.txt'])
     self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
     cros_mark_chrome_as_stable.RunCommand(
-        ['svn', 'ls', 'http://src.chromium.org/svn/releases'],
+        ['svn', 'ls', 'svn://svn.chromium.org/chrome/releases'],
         redirect_stdout=True).AndReturn('some_data')
     cros_mark_chrome_as_stable.RunCommand(
         ['sort', '--version-sort'], input='some_data',

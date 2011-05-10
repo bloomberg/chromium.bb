@@ -26,7 +26,7 @@ import urllib
 import cros_mark_as_stable
 from cros_build_lib import RunCommand, Info, Warning
 
-BASE_CHROME_SVN_URL = 'http://src.chromium.org/svn'
+BASE_CHROME_SVN_URL = 'svn://svn.chromium.org/chrome/'
 
 # Command for which chrome ebuild to uprev.
 TIP_OF_TRUNK, LATEST_RELEASE, STICKY = 'tot', 'latest_release', 'stable_release'
@@ -67,18 +67,13 @@ def  _GetTipOfTrunkSvnRevision():
 
 def _GetTipOfTrunkVersion():
   """Returns the current Chrome version."""
-  svn_url = _GetSvnUrl()
-  chrome_version_file = urllib.urlopen(os.path.join(svn_url, 'src', 'chrome',
-                                                    'VERSION'))
-  chrome_version_info = chrome_version_file.read()
-  chrome_version_file.close()
-
-  # Sanity check.
-  if '404 Not Found' in chrome_version_info:
-    raise Exception('Url %s does not have version file.' % svn_url)
+  svn_url = os.path.join(_GetSvnUrl(), 'src', 'chrome', 'VERSION')
+  chrome_version_info = RunCommand(
+      ['svn', 'cat', svn_url],
+      redirect_stdout=True,
+      error_message='Could not read version file at %s.' % svn_url)
 
   chrome_version_array = []
-
   for line in chrome_version_info.splitlines():
     chrome_version_array.append(line.rpartition('=')[2])
 
@@ -94,7 +89,7 @@ def _GetLatestRelease(branch=None):
   Returns:
     Latest version string.
   """
-  buildspec_url = 'http://src.chromium.org/svn/releases'
+  buildspec_url = os.path.join(BASE_CHROME_SVN_URL, 'releases')
   svn_ls = RunCommand(['svn', 'ls', buildspec_url], redirect_stdout=True)
   sorted_ls = RunCommand(['sort', '--version-sort'], input=svn_ls,
                          redirect_stdout=True)
