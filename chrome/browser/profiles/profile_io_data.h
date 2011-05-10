@@ -42,6 +42,9 @@ namespace prerender {
 class PrerenderManager;
 };  // namespace prerender
 class ProtocolHandlerRegistry;
+namespace quota {
+class QuotaManager;
+};  // namespace quota
 namespace webkit_database {
 class DatabaseTracker;
 }  // webkit_database
@@ -111,6 +114,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     scoped_refptr<ChromeAppCacheService> appcache_service;
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context;
     scoped_refptr<fileapi::FileSystemContext> file_system_context;
+    scoped_refptr<quota::QuotaManager> quota_manager;
     scoped_refptr<ExtensionInfoMap> extension_info_map;
     base::WeakPtr<prerender::PrerenderManager> prerender_manager;
     scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry;
@@ -221,6 +225,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   mutable scoped_refptr<ChromeAppCacheService> appcache_service_;
   mutable scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   mutable scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  mutable scoped_refptr<quota::QuotaManager> quota_manager_;
   mutable scoped_refptr<HostZoomMap> host_zoom_map_;
 
   // TODO(willchan): Remove from ResourceContext.

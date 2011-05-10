@@ -24,6 +24,9 @@ class URLRequestContext;
 namespace prerender {
 class PrerenderManager;
 }  // namespace prerender
+namespace quota {
+class QuotaManager;
+};  // namespace quota
 namespace webkit_database {
 class DatabaseTracker;
 }  // namespace webkit_database
@@ -55,6 +58,9 @@ class ResourceContext {
 
   ChromeBlobStorageContext* blob_storage_context() const;
   void set_blob_storage_context(ChromeBlobStorageContext* context);
+
+  quota::QuotaManager* quota_manager() const;
+  void set_quota_manager(quota::QuotaManager* quota_manager);
 
   HostZoomMap* host_zoom_map() const;
   void set_host_zoom_map(HostZoomMap* host_zoom_map);
@@ -88,6 +94,7 @@ class ResourceContext {
   webkit_database::DatabaseTracker* database_tracker_;
   fileapi::FileSystemContext* file_system_context_;
   ChromeBlobStorageContext* blob_storage_context_;
+  quota::QuotaManager* quota_manager_;
   HostZoomMap* host_zoom_map_;
 
   // =======================================================================

@@ -94,6 +94,18 @@ void ResourceContext::set_blob_storage_context(
   blob_storage_context_ = context;
 }
 
+quota::QuotaManager* ResourceContext::quota_manager() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
+  return quota_manager_;
+}
+
+void ResourceContext::set_quota_manager(
+    quota::QuotaManager* quota_manager) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  quota_manager_ = quota_manager;
+}
+
 HostZoomMap* ResourceContext::host_zoom_map() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   EnsureInitialized();

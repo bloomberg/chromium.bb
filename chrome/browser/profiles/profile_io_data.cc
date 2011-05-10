@@ -38,6 +38,7 @@
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "webkit/database/database_tracker.h"
+#include "webkit/quota/quota_manager.h"
 
 namespace {
 
@@ -180,6 +181,7 @@ void ProfileIOData::InitializeProfileParams(Profile* profile) {
   params->appcache_service = profile->GetAppCacheService();
   params->blob_storage_context = profile->GetBlobStorageContext();
   params->file_system_context = profile->GetFileSystemContext();
+  params->quota_manager = profile->GetQuotaManager();
   params->extension_info_map = profile->GetExtensionInfoMap();
   prerender::PrerenderManager* prerender_manager =
       profile->GetPrerenderManager();
@@ -316,6 +318,7 @@ void ProfileIOData::LazyInitialize() const {
   appcache_service_ = profile_params_->appcache_service;
   blob_storage_context_ = profile_params_->blob_storage_context;
   file_system_context_ = profile_params_->file_system_context;
+  quota_manager_ = profile_params_->quota_manager;
   host_zoom_map_ = profile_params_->host_zoom_map;
   host_content_settings_map_ = profile_params_->host_content_settings_map;
   extension_info_map_ = profile_params_->extension_info_map;
@@ -327,6 +330,7 @@ void ProfileIOData::LazyInitialize() const {
   resource_context_.set_appcache_service(appcache_service_);
   resource_context_.set_blob_storage_context(blob_storage_context_);
   resource_context_.set_file_system_context(file_system_context_);
+  resource_context_.set_quota_manager(quota_manager_);
   resource_context_.set_host_zoom_map(host_zoom_map_);
   resource_context_.set_host_content_settings_map(host_content_settings_map_);
   resource_context_.set_extension_info_map(extension_info_map_);
