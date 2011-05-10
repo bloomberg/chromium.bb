@@ -226,6 +226,7 @@ class NetworkDevice {
     return found_cellular_networks_;
   }
   bool data_roaming_allowed() const { return data_roaming_allowed_; }
+  bool support_network_scan() const { return support_network_scan_; }
 
  private:
   bool ParseValue(int index, const Value* value);
@@ -261,6 +262,7 @@ class NetworkDevice {
   std::string selected_cellular_network_;
   CellularNetworkList found_cellular_networks_;
   bool data_roaming_allowed_;
+  bool support_network_scan_;
 
   friend class NetworkLibraryImpl;
   DISALLOW_COPY_AND_ASSIGN(NetworkDevice);

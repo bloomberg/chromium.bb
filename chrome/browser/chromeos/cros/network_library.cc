@@ -140,7 +140,6 @@ const char* kPaymentURLProperty = "Cellular.OlpUrl";
 const char* kUsageURLProperty = "Cellular.UsageUrl";
 const char* kCellularApnProperty = "Cellular.APN";
 const char* kCellularLastGoodApnProperty = "Cellular.LastGoodAPN";
-const char* kCellularAllowRoamingProperty = "Cellular.AllowRoaming";
 const char* kFavoriteProperty = "Favorite";
 const char* kConnectableProperty = "Connectable";
 const char* kAutoConnectProperty = "AutoConnect";
@@ -182,6 +181,7 @@ const char* kOperatorCountryKey = "country";
 // Flimflam device info property names.
 const char* kScanningProperty = "Scanning";
 const char* kCarrierProperty = "Cellular.Carrier";
+const char* kCellularAllowRoamingProperty = "Cellular.AllowRoaming";
 const char* kHomeProviderProperty = "Cellular.HomeProvider";
 const char* kMeidProperty = "Cellular.MEID";
 const char* kImeiProperty = "Cellular.IMEI";
@@ -196,6 +196,7 @@ const char* kHardwareRevisionProperty = "Cellular.HardwareRevision";
 const char* kLastDeviceUpdateProperty = "Cellular.LastDeviceUpdate";
 const char* kPRLVersionProperty = "Cellular.PRLVersion"; // (INT16)
 const char* kSelectedNetworkProperty = "Cellular.SelectedNetwork";
+const char* kSupportNetworkScanProperty = "Cellular.SupportNetworkScan";
 const char* kFoundNetworksProperty = "Cellular.FoundNetworks";
 
 // Flimflam type options.
@@ -499,6 +500,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_SIGNAL_STRENGTH,
   PROPERTY_INDEX_SIM_LOCK,
   PROPERTY_INDEX_STATE,
+  PROPERTY_INDEX_SUPPORT_NETWORK_SCAN,
   PROPERTY_INDEX_TYPE,
   PROPERTY_INDEX_UNKNOWN,
   PROPERTY_INDEX_USAGE_URL,
@@ -585,6 +587,7 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kSignalStrengthProperty, PROPERTY_INDEX_SIGNAL_STRENGTH },
   { kSIMLockStatusProperty, PROPERTY_INDEX_SIM_LOCK },
   { kStateProperty, PROPERTY_INDEX_STATE },
+  { kSupportNetworkScanProperty, PROPERTY_INDEX_SUPPORT_NETWORK_SCAN },
   { kTypeProperty, PROPERTY_INDEX_TYPE },
   { kUsageURLProperty, PROPERTY_INDEX_USAGE_URL },
 };
@@ -862,7 +865,8 @@ NetworkDevice::NetworkDevice(const std::string& device_path)
       sim_retries_left_(kDefaultSimUnlockRetriesCount),
       sim_pin_required_(SIM_PIN_REQUIRE_UNKNOWN),
       PRL_version_(0),
-      data_roaming_allowed_(false) {
+      data_roaming_allowed_(false),
+      support_network_scan_(false) {
 }
 
 bool NetworkDevice::ParseValue(int index, const Value* value) {
@@ -877,10 +881,12 @@ bool NetworkDevice::ParseValue(int index, const Value* value) {
     }
     case PROPERTY_INDEX_NAME:
       return value->GetAsString(&name_);
-    case PROPERTY_INDEX_SCANNING:
-      return value->GetAsBoolean(&scanning_);
     case PROPERTY_INDEX_CARRIER:
       return value->GetAsString(&carrier_);
+    case PROPERTY_INDEX_SCANNING:
+      return value->GetAsBoolean(&scanning_);
+    case PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING:
+      return value->GetAsBoolean(&data_roaming_allowed_);
     case PROPERTY_INDEX_FOUND_NETWORKS:
       if (value->IsType(Value::TYPE_LIST)) {
         return ParseFoundNetworksFromList(
@@ -960,8 +966,8 @@ bool NetworkDevice::ParseValue(int index, const Value* value) {
       return value->GetAsInteger(&PRL_version_);
     case PROPERTY_INDEX_SELECTED_NETWORK:
       return value->GetAsString(&selected_cellular_network_);
-    case PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING:
-      return value->GetAsBoolean(&data_roaming_allowed_);
+    case PROPERTY_INDEX_SUPPORT_NETWORK_SCAN:
+      return value->GetAsBoolean(&support_network_scan_);
     default:
       break;
   }

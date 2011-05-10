@@ -1130,8 +1130,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   }
 
   const chromeos::NetworkDevice* cellular_device = cros->FindCellularDevice();
-  // TODO(dpolukhin): replace imsi check with more specific supportNetworkScan
-  if (cellular_device && !cellular_device->imsi().empty() &&
+  if (cellular_device && cellular_device->support_network_scan() &&
       cros->cellular_enabled()) {
     list->Append(GetNetwork(
         kOtherNetworksFakePath,

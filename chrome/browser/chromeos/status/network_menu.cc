@@ -529,9 +529,7 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
         }
       }
 
-      // TODO(dpolukhin): replace imsi check with more specific
-      // supportNetworkScan.
-      if (!cellular_device->imsi().empty()) {
+      if (cellular_device->support_network_scan()) {
         // For GSM add mobile network scan.
         if (!separator_added && !menu_items_.empty())
           menu_items_.push_back(MenuItem());
