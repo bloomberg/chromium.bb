@@ -451,6 +451,18 @@ void RootView::OnPaint(gfx::Canvas* canvas) {
   canvas->AsCanvasSkia()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
 }
 
+bool RootView::ShouldPaintToTexture() const {
+  return widget_->compositor() != NULL;
+}
+
+const ui::Compositor* RootView::GetCompositor() const {
+  return widget_->compositor();
+}
+
+ui::Compositor* RootView::GetCompositor() {
+  return widget_->compositor();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, private:
 

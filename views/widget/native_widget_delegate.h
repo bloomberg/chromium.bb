@@ -37,6 +37,11 @@ class NativeWidgetDelegate {
   // Returns true if the delegate has a FocusManager.
   virtual bool HasFocusManager() const = 0;
 
+  // Paints the widget using acceleration. If the widget is not using
+  // accelerated painting this returns false and does nothing.
+  virtual bool OnNativeWidgetPaintAccelerated(
+      const gfx::Rect& dirty_region) = 0;
+
   // Paints the rootview in the canvas. This will also refresh the compositor
   // tree if necessary when accelerated painting is enabled.
   virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) = 0;

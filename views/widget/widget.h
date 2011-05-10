@@ -271,6 +271,9 @@ class Widget : public internal::NativeWidgetDelegate,
   void SetFocusTraversableParent(FocusTraversable* parent);
   void SetFocusTraversableParentView(View* parent_view);
 
+  const ui::Compositor* compositor() const { return compositor_.get(); }
+  ui::Compositor* compositor() { return compositor_.get(); }
+
   // Notifies assistive technology that an accessibility event has
   // occurred on |view|, such as when the view is focused or when its
   // value changes. Pass true for |send_native_event| except for rare
@@ -290,6 +293,8 @@ class Widget : public internal::NativeWidgetDelegate,
   virtual void OnNativeWidgetCreated() OVERRIDE;
   virtual void OnSizeChanged(const gfx::Size& new_size) OVERRIDE;
   virtual bool HasFocusManager() const OVERRIDE;
+  virtual bool OnNativeWidgetPaintAccelerated(
+      const gfx::Rect& dirty_region) OVERRIDE;
   virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool OnKeyEvent(const KeyEvent& event) OVERRIDE;
   virtual bool OnMouseEvent(const MouseEvent& event) OVERRIDE;
@@ -332,13 +337,8 @@ class Widget : public internal::NativeWidgetDelegate,
   gfx::Point last_mouse_event_position_;
 
  private:
-  // Refresh the compositor tree. This is called by a View whenever its texture
-  // is updated.
-  void RefreshCompositeTree();
-
-  // Try to create a compositor if one hasn't been created yet. Returns false if
-  // a compositor couldn't be created.
-  bool EnsureCompositor();
+  // Try to create a compositor if one hasn't been created yet.
+  void EnsureCompositor();
 
   // Returns whether capture should be released on mouse release.
   virtual bool ShouldReleaseCaptureOnMouseReleased() const;

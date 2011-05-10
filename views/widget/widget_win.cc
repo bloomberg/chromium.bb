@@ -845,9 +845,19 @@ LRESULT WidgetWin::OnNotify(int w_param, NMHDR* l_param) {
 }
 
 void WidgetWin::OnPaint(HDC dc) {
-  scoped_ptr<gfx::CanvasPaint> canvas(
-      gfx::CanvasPaint::CreateCanvasPaint(hwnd()));
-  delegate_->OnNativeWidgetPaint(canvas->AsCanvas());
+  RECT dirty_rect;
+  // Try to paint accelerated first.
+  if (GetUpdateRect(hwnd(), &dirty_rect, FALSE) &&
+      !IsRectEmpty(&dirty_rect)) {
+    if (delegate_->OnNativeWidgetPaintAccelerated(
+        gfx::Rect(dirty_rect))) {
+      ValidateRect(hwnd(), NULL);
+    } else {
+      scoped_ptr<gfx::CanvasPaint> canvas(
+          gfx::CanvasPaint::CreateCanvasPaint(hwnd()));
+      delegate_->OnNativeWidgetPaint(canvas->AsCanvas());
+    }
+  }
 }
 
 LRESULT WidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
@@ -1111,7 +1121,7 @@ void WidgetWin::ClientAreaSizeChanged() {
 }
 
 gfx::AcceleratedWidget WidgetWin::GetAcceleratedWidget() {
-  // TODO(beng):
+  // TODO(sky):
   return gfx::kNullAcceleratedWidget;
 }
 

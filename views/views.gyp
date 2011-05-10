@@ -603,6 +603,7 @@
         'test/test_views_delegate.cc',
         'test/test_views_delegate.h',
         '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
       ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {

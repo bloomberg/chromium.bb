@@ -25,7 +25,6 @@
 
 using ui::OSExchangeData;
 
-
 namespace gfx {
 class Canvas;
 class Insets;
@@ -35,6 +34,7 @@ class Path;
 namespace ui {
 struct AccessibleViewState;
 class Compositor;
+class Texture;
 class ThemeProvider;
 class Transform;
 
@@ -1040,8 +1040,29 @@ class View : public AcceleratorTarget {
 
   // Accelerated painting ------------------------------------------------------
 
+#if !defined(COMPOSITOR_2)
   // Performs accelerated painting using the compositor.
   virtual void PaintComposite(ui::Compositor* compositor);
+#else
+  // If our texture is out of date invokes Paint() with a canvas that is then
+  // copied to the texture. If the texture is not out of date recursively
+  // descends in case any children needed their textures updated.
+  //
+  // This is invoked internally by Widget and painting code.
+  void PaintToTexture(const gfx::Rect& dirty_rect);
+
+  // Instructs the compositor to show our texture and all children textures.
+  //
+  // This is invoked internally by Widget and painting code.
+  void PaintComposite();
+#endif
+
+  // Returns true if this view should paint using a texture.
+  virtual bool ShouldPaintToTexture() const;
+
+  // Returns the Compositor.
+  virtual const ui::Compositor* GetCompositor() const;
+  virtual ui::Compositor* GetCompositor();
 
   // Input ---------------------------------------------------------------------
 
@@ -1216,6 +1237,10 @@ class View : public AcceleratorTarget {
   // Initialize the transform matrix when necessary.
   void InitTransform();
 
+  // Returns in |transform| the transform to get from root view coordinates to
+  // this views coordinates.
+  void GetTransformRelativeToRoot(ui::Transform* transform);
+
   // Coordinate conversion -----------------------------------------------------
 
   // This is the actual implementation for ConvertPointToView()
@@ -1237,6 +1262,11 @@ class View : public AcceleratorTarget {
   // point was successfully from the ancestor's coordinate system to the view's
   // coordinate system.
   bool ConvertPointFromAncestor(const View* ancestor, gfx::Point* point) const;
+
+  // Accelerated painting ------------------------------------------------------
+
+  // Releases the texture of this and recurses through all children.
+  void ResetTexture();
 
   // Input ---------------------------------------------------------------------
 
@@ -1372,6 +1402,7 @@ class View : public AcceleratorTarget {
 
   // Accelerated painting ------------------------------------------------------
 
+#if !defined(COMPOSITOR_2)
   // Each transformed view will maintain its own canvas.
   scoped_ptr<gfx::Canvas> canvas_;
 
@@ -1379,6 +1410,17 @@ class View : public AcceleratorTarget {
   // TODO(sadrul): This will eventually be replaced by an abstract texture
   //               object.
   ui::TextureID texture_id_;
+#else
+  scoped_ptr<ui::Texture> texture_;
+
+  // If not empty and Paint() is invoked, the canvas is created with the
+  // specified size.
+  // TODO(sky): this should be passed in.
+  gfx::Rect texture_clip_rect_;
+#endif
+
+  // Is the texture out of date?
+  bool texture_needs_updating_;
 
   // Accelerators --------------------------------------------------------------
 

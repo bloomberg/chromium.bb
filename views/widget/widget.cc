@@ -314,6 +314,7 @@ void Widget::OnNativeWidgetCreated() {
     // manager.
     focus_manager_.reset(new FocusManager(this));
   }
+  EnsureCompositor();
 }
 
 void Widget::OnSizeChanged(const gfx::Size& new_size) {
@@ -324,9 +325,30 @@ bool Widget::HasFocusManager() const {
   return !!focus_manager_.get();
 }
 
+bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
+#if !defined(COMPOSITOR_2)
+  return false;
+#else
+  if (!compositor_.get())
+    return false;
+
+  compositor_->NotifyStart();
+  GetRootView()->PaintToTexture(dirty_region);
+  GetRootView()->PaintComposite();
+  compositor_->NotifyEnd();
+  return true;
+#endif
+}
+
 void Widget::OnNativeWidgetPaint(gfx::Canvas* canvas) {
   GetRootView()->Paint(canvas);
-  RefreshCompositeTree();
+#if !defined(COMPOSITOR_2)
+  if (compositor_.get()) {
+    compositor_->NotifyStart();
+    root_view_->PaintComposite(compositor_.get());
+    compositor_->NotifyEnd();
+  }
+#endif
 }
 
 bool Widget::OnKeyEvent(const KeyEvent& event) {
@@ -435,26 +457,14 @@ void Widget::ReplaceFocusManager(FocusManager* focus_manager) {
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, private:
 
-void Widget::RefreshCompositeTree() {
-  if (!EnsureCompositor())
-    return;
-
-  compositor_->NotifyStart();
-  root_view_->PaintComposite(compositor_.get());
-  compositor_->NotifyEnd();
-}
-
-bool Widget::EnsureCompositor() {
-  if (compositor_.get())
-    return true;
+void Widget::EnsureCompositor() {
+  DCHECK(!compositor_.get());
 
   // TODO(sad): If there is a parent Widget, then use the same compositor
   //            instead of creating a new one here.
   gfx::AcceleratedWidget widget = native_widget_->GetAcceleratedWidget();
   if (widget != gfx::kNullAcceleratedWidget)
     compositor_ = ui::Compositor::Create(widget);
-
-  return compositor_.get() != NULL;
 }
 
 bool Widget::ShouldReleaseCaptureOnMouseReleased() const {

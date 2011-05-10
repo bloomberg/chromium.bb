@@ -21,6 +21,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
 #include "ui/base/gtk/gtk_windowing.h"
+#include "ui/base/gtk/scoped_handle_gtk.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/path.h"
@@ -1061,10 +1062,17 @@ gboolean WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
     XSync(ui::GetXDisplay(), false /* don't discard events */);
   }
 
-  gfx::CanvasSkiaPaint canvas(event);
-  if (!canvas.is_empty()) {
-    canvas.set_composite_alpha(is_transparent());
-    delegate_->OnNativeWidgetPaint(&canvas);
+  ui::ScopedRegion region(gdk_region_copy(event->region));
+  if (!gdk_region_empty(region.Get())) {
+    GdkRectangle clip_bounds;
+    gdk_region_get_clipbox(region.Get(), &clip_bounds);
+    if (!delegate_->OnNativeWidgetPaintAccelerated(gfx::Rect(clip_bounds))) {
+      gfx::CanvasSkiaPaint canvas(event);
+      if (!canvas.is_empty()) {
+        canvas.set_composite_alpha(is_transparent());
+        delegate_->OnNativeWidgetPaint(&canvas);
+      }
+    }
   }
 
   if (!painted_) {
@@ -1558,6 +1566,11 @@ void WidgetGtk::CreateGtkWidget(const InitParams& params) {
 
     if (ignore_events_)
       ConfigureWidgetForIgnoreEvents();
+
+    // Realize the window_contents_ so that we can always get a handle for
+    // acceleration. Without this we need to check every time paint is
+    // invoked.
+    gtk_widget_realize(window_contents_);
 
     SetAlwaysOnTop(always_on_top_);
     // UpdateFreezeUpdatesProperty will realize the widget and handlers like
