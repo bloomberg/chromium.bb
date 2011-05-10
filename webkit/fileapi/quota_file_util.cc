@@ -10,7 +10,6 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
-#include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 namespace fileapi {
 
@@ -44,8 +43,8 @@ static bool CanCopy(
 
 static FilePath InitUsageFile(FileSystemOperationContext* fs_context) {
   FilePath base_path = fs_context->file_system_context()->path_manager()->
-      sandbox_provider()->GetBaseDirectoryForOriginAndType(
-          fs_context->src_origin_url(), fs_context->src_type());
+      ValidateFileSystemRootAndGetPathOnFileThread(fs_context->src_origin_url(),
+          fs_context->src_type(), FilePath(), false);
   FilePath usage_file_path =
       base_path.AppendASCII(FileSystemUsageCache::kUsageFileName);
 
