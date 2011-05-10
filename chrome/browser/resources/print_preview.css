@@ -31,7 +31,6 @@ body #main {
 body #main:after {
   content: '';
   display: block;
-  height: 72px;
 }
 
 /* Layout: Sidebar */
@@ -554,35 +553,9 @@ input[type='radio']:focus {
   outline: none;
 }
 
-.zippy {
-  -webkit-transform-origin: 9px 10px;
-  -webkit-transition: -webkit-transform 200ms, opacity 100ms;
-  -webkit-user-select: none;
-  background-position: 3px 0;
-  cursor: pointer;
-  display: inline-block;
-  height: 20px;
-  position: relative;
-  width: 20px;
-}
-
-.visible .zippy {
-  -webkit-transform: rotate(90deg);
-  -webkit-transition: -webkit-transform 100ms, opacity 100ms;
-}
-
 .hidden-section {
   background: white;
   position: relative;
-}
-
-.hidden-section .zippy {
-  position: absolute;
-  top: 0;
-}
-
-.two-column .zippy {
-  top: 0;
 }
 
 .extra {

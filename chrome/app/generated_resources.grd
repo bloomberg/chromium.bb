@@ -5531,15 +5531,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PRINT_PREVIEW_DESTINATION_LABEL" desc="Destination option label. It is displayed right on top of the available printers list.">
         Destination
       </message>
-      <message name="IDS_PRINT_PREVIEW_BINDING_LABEL" desc="Binding option label.">
-        Binding
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OPTION_LONG_EDGE_BINDING" desc="Option to specify long edge binding when duplex printing is used.">
-        Long-edge binding
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OPTION_SHORT_EDGE_BINDING" desc="Option to specify short edge binding when duplex printing is used.">
-        Short-edge binding
-      </message>
       <message name="IDS_PRINT_PREVIEW_OPTION_BW" desc="Option to print in black and white.">
         Black and white
       </message>

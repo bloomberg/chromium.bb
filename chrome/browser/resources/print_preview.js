@@ -280,12 +280,7 @@ function getDuplexMode() {
   // Constants values matches printing::DuplexMode enum.
   const SIMPLEX = 0;
   const LONG_EDGE = 1;
-  const SHORT_EDGE = 2;
-
-  if (!isTwoSided())
-    return SIMPLEX;
-
-  return $('long-edge').checked ? LONG_EDGE : SHORT_EDGE;
+  return !isTwoSided() ? SIMPLEX : LONG_EDGE;
 }
 
 /**
@@ -647,7 +642,6 @@ function updatePrintSummary() {
  * Handles a click event on the two-sided option.
  */
 function handleTwoSidedClick() {
-  handleZippyClickEl($('binding'));
   updatePrintSummary();
 }
 

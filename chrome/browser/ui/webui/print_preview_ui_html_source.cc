@@ -68,12 +68,6 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_OPTION_PORTRAIT));
   localized_strings->SetString(std::string("optionTwoSided"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_OPTION_TWO_SIDED));
-  localized_strings->SetString(std::string("bindingLabel"),
-      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_BINDING_LABEL));
-  localized_strings->SetString(std::string("optionLongEdgeBinding"),
-      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_OPTION_LONG_EDGE_BINDING));
-  localized_strings->SetString(std::string("optionShortEdgeBinding"),
-      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_OPTION_SHORT_EDGE_BINDING));
   localized_strings->SetString(std::string("pagesLabel"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PAGES_LABEL));
   localized_strings->SetString(std::string("pageRangeTextBox"),
