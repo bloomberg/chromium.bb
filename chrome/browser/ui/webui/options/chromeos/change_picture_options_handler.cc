@@ -25,24 +25,6 @@ namespace chromeos {
 
 namespace {
 
-// URLs to default user images through chrome://theme/ scheme.
-const char* kDefaultImagePaths[] = {
-  "chrome://theme/IDR_LOGIN_DEFAULT_USER",
-  "chrome://theme/IDR_LOGIN_DEFAULT_USER_1",
-  "chrome://theme/IDR_LOGIN_DEFAULT_USER_2",
-  "chrome://theme/IDR_LOGIN_DEFAULT_USER_3",
-  "chrome://theme/IDR_LOGIN_DEFAULT_USER_4"
-};
-
-int GetUserImageIndexFromURL(const std::string& url) {
-  for (size_t i = 0; i < arraysize(kDefaultImagePaths); ++i) {
-    if (url == kDefaultImagePaths[i]) {
-      return i;
-    }
-  }
-  return -1;
-}
-
 // Returns info about extensions for files we support as user images.
 SelectFileDialog::FileTypeInfo GetUserImageFileTypeInfo() {
   SelectFileDialog::FileTypeInfo file_type_info;
@@ -142,8 +124,8 @@ void ChangePictureOptionsHandler::TakePhoto(const ListValue* args) {
 void ChangePictureOptionsHandler::GetAvailableImages(const ListValue* args) {
   DCHECK(args && args->empty());
   ListValue image_urls;
-  for (size_t i = 0; i < arraysize(kDefaultImagePaths); ++i) {
-    image_urls.Append(new StringValue(kDefaultImagePaths[i]));
+  for (int i = 0; i < kDefaultImagesCount; ++i) {
+    image_urls.Append(new StringValue(GetDefaultImageUrl(i)));
   }
   web_ui_->CallJavascriptFunction("ChangePictureOptions.addUserImages",
                                   image_urls);
@@ -157,8 +139,8 @@ void ChangePictureOptionsHandler::SelectImage(const ListValue* args) {
     NOTREACHED();
     return;
   }
-  int user_image_index = GetUserImageIndexFromURL(image_url);
-  if (user_image_index == -1)
+  int user_image_index = -1;
+  if (!IsDefaultImageUrl(image_url, &user_image_index))
     return;
 
   const SkBitmap* image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
@@ -167,7 +149,7 @@ void ChangePictureOptionsHandler::SelectImage(const ListValue* args) {
   user_manager->SetLoggedInUserImage(*image);
   user_manager->SaveUserImagePath(
       user_manager->logged_in_user().email(),
-      GetDefaultImagePath(static_cast<size_t>(user_image_index)));
+      GetDefaultImagePath(user_image_index));
 }
 
 void ChangePictureOptionsHandler::FileSelected(const FilePath& path,

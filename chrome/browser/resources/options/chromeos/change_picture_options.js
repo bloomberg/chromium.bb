@@ -74,7 +74,7 @@ cr.define('options', function() {
     },
 
     /**
-     * Inserts new image before "Choose file" button.
+     * Appends new image to the end of the image list.
      * @param {string} src A url for the user image.
      * @private
      */
@@ -87,7 +87,7 @@ cr.define('options', function() {
       var divElement = document.createElement('div');
       divElement.classList.add('list-element');
       divElement.appendChild(imageElement);
-      $('images-list').insertBefore(divElement, $('choose-file-item'));
+      $('images-list').appendChild(divElement);
     },
 
     /**

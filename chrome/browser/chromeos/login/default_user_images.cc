@@ -16,7 +16,8 @@ namespace chromeos {
 namespace {
 
 const char kDefaultPathPrefix[] = "default:";
-const int kDefaultPathPrefixLength = arraysize(kDefaultPathPrefix) - 1;
+const char kDefaultUrlPrefix[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER_";
+const char kFirstDefaultUrl[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER";
 
 const char* kOldDefaultImageNames[] = {
   "default:gray",
@@ -26,33 +27,47 @@ const char* kOldDefaultImageNames[] = {
   "default:red",
 };
 
-}  // namespace
-
-std::string GetDefaultImagePath(int index) {
+// Returns a string consisting of the prefix specified and the index of the
+// image if its valid.
+std::string GetDefaultImageString(int index, const std::string& prefix) {
   if (index < 0 || index >= kDefaultImagesCount) {
     NOTREACHED();
     return std::string();
   }
-  return StringPrintf("default:%d", index);
+  return StringPrintf("%s%d", prefix.c_str(), index);
 }
 
-// Checks if given path is one of the default ones. If it is, returns true
-// and its index in kDefaultImageNames through |image_id|. If not, returns
-// false.
-bool IsDefaultImagePath(const std::string& path, int* image_id) {
+// Returns true if the string specified consists of the prefix and one of
+// the default images indices. Returns the index of the image in |image_id|
+// variable.
+bool IsDefaultImageString(const std::string& s,
+                          const std::string& prefix,
+                          int* image_id) {
   DCHECK(image_id);
-  if (!StartsWithASCII(path, kDefaultPathPrefix, true))
+  if (!StartsWithASCII(s, prefix, true))
     return false;
 
   int image_index = -1;
-  if (base::StringToInt(path.begin() + kDefaultPathPrefixLength,
-                        path.end(),
+  if (base::StringToInt(s.begin() + prefix.length(),
+                        s.end(),
                         &image_index)) {
     if (image_index < 0 || image_index >= kDefaultImagesCount)
       return false;
     *image_id = image_index;
     return true;
   }
+
+  return false;
+}
+}  // namespace
+
+std::string GetDefaultImagePath(int index) {
+  return GetDefaultImageString(index, kDefaultPathPrefix);
+}
+
+bool IsDefaultImagePath(const std::string& path, int* image_id) {
+  if (IsDefaultImageString(path, kDefaultPathPrefix, image_id))
+    return true;
 
   // Check old default image names for back-compatibility.
   for (size_t i = 0; i < arraysize(kOldDefaultImageNames); ++i) {
@@ -62,6 +77,20 @@ bool IsDefaultImagePath(const std::string& path, int* image_id) {
     }
   }
   return false;
+}
+
+std::string GetDefaultImageUrl(int index) {
+  if (index == 0)
+    return kFirstDefaultUrl;
+  return GetDefaultImageString(index, kDefaultUrlPrefix);
+}
+
+bool IsDefaultImageUrl(const std::string url, int* image_id) {
+  if (url == kFirstDefaultUrl) {
+    *image_id = 0;
+    return true;
+  }
+  return IsDefaultImageString(url, kDefaultUrlPrefix, image_id);
 }
 
 // Resource IDs of default user images.

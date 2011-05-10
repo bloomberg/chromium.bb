@@ -19,6 +19,13 @@ std::string GetDefaultImagePath(int index);
 // and its index through |image_id|. If not, returns false.
 bool IsDefaultImagePath(const std::string& path, int* image_id);
 
+// Returns URL to default user image with specifided index.
+std::string GetDefaultImageUrl(int index);
+
+// Checks if the given URL points to one of the default images. If it is,
+// returns true and its index through |image_id|. If not, returns false.
+bool IsDefaultImageUrl(const std::string url, int* image_id);
+
 // Resource IDs of default user images.
 extern const int kDefaultImageResources[];
 

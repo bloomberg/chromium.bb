@@ -15,6 +15,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/border.h"
+#include "views/background.h"
 #include "views/controls/button/image_button.h"
 #include "views/layout/grid_layout.h"
 
@@ -27,15 +28,19 @@ const int kDefaultImageSize = 64;
 // Margin from left and right sides to the view contents.
 const int kHorizontalMargin = 10;
 // Margin from top and bottom sides to the view contents.
-const int kVerticalMargin = 5;
-// Margin around the default image where selection border is drawn.
-const int kSelectionMargin = 5;
+const int kVerticalMargin = 10;
 // Padding between image columns.
-const int kHorizontalPadding = 10;
+const int kHorizontalPadding = 20;
 // Padding between image rows.
-const int kVerticalPadding = 5;
+const int kVerticalPadding = 15;
 // Number of columns in a row of default images.
 const int kColumnsCount = 5;
+// Size of the border around default image.
+const int kImageBorderSize = 1;
+// Color of default image border.
+const SkColor kImageBorderColor = SkColorSetARGB(38, 0, 0, 0);
+// Color of default image background.
+const SkColor kImageBackgroundColor = SK_ColorWHITE;
 // We give each image control an ID so we could distinguish them. Since 0 is
 // the default ID we want an offset for IDs we set.
 const int kImageStartId = 100;
@@ -44,55 +49,32 @@ const int kCaptureButtonId = 1000;
 
 }  // namespace
 
+// Image button with border and background. Corrects view size by border
+// insets as ImageButton ignores it.
 class UserImageButton : public views::ImageButton {
  public:
   explicit UserImageButton(views::ButtonListener* listener);
 
-  // Changes button state to selected or unselected.
-  void SetSelected(bool is_selected);
-
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
-  virtual void OnPaintBackground(gfx::Canvas* canvas);
 
  private:
-  bool is_selected_;
-
   DISALLOW_COPY_AND_ASSIGN(UserImageButton);
 };
 
 UserImageButton::UserImageButton(views::ButtonListener* listener)
-    : ImageButton(listener),
-      is_selected_(false) {
-  set_border(views::Border::CreateEmptyBorder(
-      kSelectionMargin,
-      kSelectionMargin,
-      kSelectionMargin,
-      kSelectionMargin));
-  set_background(CreateRoundedBackground(kSelectionMargin,
-                                         1,
-                                         SK_ColorLTGRAY,
-                                         SK_ColorDKGRAY));
+    : ImageButton(listener) {
+  set_border(
+      views::Border::CreateSolidBorder(kImageBorderSize, kImageBorderColor));
+  set_background(
+      views::Background::CreateSolidBackground(kImageBackgroundColor));
   SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
-}
-
-void UserImageButton::SetSelected(bool is_selected) {
-  if (is_selected_ != is_selected) {
-    is_selected_ = is_selected;
-    SchedulePaint();
-  }
 }
 
 gfx::Size UserImageButton::GetPreferredSize() {
   gfx::Size size = views::ImageButton::GetPreferredSize();
   size.Enlarge(GetInsets().width(), GetInsets().height());
   return size;
-}
-
-void UserImageButton::OnPaintBackground(gfx::Canvas* canvas) {
-  // TODO(avayvod): Either implement border highlight or remove it.
-  //  if (is_selected_)
-  //  views::View::OnPaintBackground(canvas);
 }
 
 
@@ -125,14 +107,11 @@ int DefaultImagesView::GetDefaultImageIndex() const {
 }
 
 void DefaultImagesView::ClearSelection() {
-  if (selected_image_index_ != -1) {
-    default_images_[selected_image_index_]->SetSelected(false);
-    selected_image_index_ = -1;
-  }
+  selected_image_index_ = -1;
 }
 
 gfx::Size DefaultImagesView::GetPreferredSize() {
-  int image_size_with_margin = (kDefaultImageSize + 2 * kSelectionMargin);
+  int image_size_with_margin = (kDefaultImageSize + 2 * kImageBorderSize);
   int width = kColumnsCount * image_size_with_margin +
               (kColumnsCount - 1) * kHorizontalPadding;
   size_t image_count = default_images_.size();
@@ -161,7 +140,6 @@ void DefaultImagesView::ButtonPressed(views::Button* sender,
       return;
     }
     selected_image_index_ = image_index + 1;
-    default_images_[selected_image_index_]->SetSelected(true);
     if (delegate_)
       delegate_->OnImageSelected(image_index % kDefaultImagesCount);
   }
@@ -188,6 +166,7 @@ void DefaultImagesView::InitLayout() {
                                 kHorizontalMargin));
   SetLayoutManager(layout);
 
+  size_t current_image = 0;
   size_t image_count = default_images_.size();
   int rows_count = (image_count + kColumnsCount - 1) / kColumnsCount;
   for (int row = 0; row < rows_count; ++row) {
@@ -195,24 +174,32 @@ void DefaultImagesView::InitLayout() {
     for (int column = 0; column < kColumnsCount; ++column) {
       if (column != 0)
         column_set->AddPaddingColumn(1, kHorizontalPadding);
-      column_set->AddColumn(
-          views::GridLayout::LEADING,
-          views::GridLayout::LEADING,
-          1,
-          views::GridLayout::USE_PREF,
-          0,
-          0);
+      if (current_image < image_count) {
+        column_set->AddColumn(
+            views::GridLayout::LEADING,
+            views::GridLayout::LEADING,
+            1,
+            views::GridLayout::USE_PREF,
+            0,
+            0);
+      } else {
+        int placeholders_count = kColumnsCount - column;
+        int placeholders_width = placeholders_count *
+                                 (kDefaultImageSize + 2 * kImageBorderSize);
+        int padding_width = (placeholders_count - 1) * kHorizontalPadding;
+        column_set->AddPaddingColumn(1, placeholders_width + padding_width);
+        break;
+      }
+      ++current_image;
     }
   }
-  size_t current_image = 0;
+  current_image = 0;
   for (int row = 0; row < rows_count; ++row) {
-    if (current_image >= default_images_.size())
-      break;
     if (row != 0)
       layout->AddPaddingRow(1, kVerticalPadding);
     layout->StartRow(0, row);
     for (int column = 0; column < kColumnsCount; ++column) {
-      if (current_image >= default_images_.size())
+      if (current_image >= image_count)
         break;
       layout->AddView(default_images_[current_image]);
       ++current_image;

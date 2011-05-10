@@ -19,14 +19,14 @@ std::vector<unsigned char> UserImageSource::GetUserImage(
   chromeos::UserVector users = chromeos::UserManager::Get()->GetUsers();
   for (size_t i = 0; i < users.size(); ++i) {
     if (users[i].email() == email) {
-      gfx::PNGCodec::EncodeBGRASkBitmap(users[i].image(), true, &user_image);
+      gfx::PNGCodec::EncodeBGRASkBitmap(users[i].image(), false, &user_image);
       return user_image;
     }
   }
   gfx::PNGCodec::EncodeBGRASkBitmap(
       *ResourceBundle::GetSharedInstance().GetBitmapNamed(
           IDR_LOGIN_DEFAULT_USER),
-      true,
+      false,
       &user_image);
   return user_image;
 }

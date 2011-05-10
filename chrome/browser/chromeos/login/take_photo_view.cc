@@ -12,6 +12,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "views/background.h"
+#include "views/border.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
@@ -24,6 +26,8 @@ namespace {
 const int kHorizontalPadding = 10;
 // Padding between vertically neighboring elements.
 const int kVerticalPadding = 10;
+// Color of image view border.
+const SkColor kImageBorderColor = SkColorSetARGB(38, 0, 0, 0);
 
 // IDs of column sets for grid layout manager.
 enum ColumnSets {
@@ -48,6 +52,9 @@ class CameraImageView : public views::ImageView {
   void Init() {
     DCHECK(NULL == throbber_);
     DCHECK(NULL == message_);
+
+    set_border(views::Border::CreateSolidBorder(1, kImageBorderColor));
+    set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
 
     throbber_ = CreateDefaultSmoothedThrobber();
     throbber_->SetVisible(false);
