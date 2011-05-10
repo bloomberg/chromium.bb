@@ -44,7 +44,7 @@
  * parameters that would require highe precision.
  */
 
-int     gVerbosity = 0;
+int     gVerbosity = 1;
 
 static int const kDefaultSleepStartMicroSeconds =  5000;
 static int const kDefaultSleepEndMicroSeconds   = 50000;
@@ -317,6 +317,9 @@ void TestAbsWait(void *arg) {
   NaClXMutexUnlock(&gMu);
 }
 
+#if NACL_WINDOW
+extern int cond_debug_me;
+#endif
 
 int main(int argc,
          char **argv) {
@@ -403,6 +406,10 @@ int main(int argc,
   ASSERT_MSG(0 < sleep_incr_usec,
              "nonsensical increment time");
 
+#if NACL_WINDOW
+  cond_debug_me = 1;
+#endif
+  
   /*
    * sum of [m..n) by k is (m+n)(n-m)/k/2, and we run Rel and Abs, so
    * the expected time is twice the sum
@@ -418,7 +425,7 @@ int main(int argc,
        sleep_usec < sleep_end_usec;
        sleep_usec += sleep_incr_usec) {
     if (gVerbosity) {
-      printf("testing wait limit of %"NACL_PRId64
+      printf("\ntesting wait limit of %"NACL_PRId64
              " microseconds.\n", sleep_usec);
     }
     arg.sleep_usec = sleep_usec;
