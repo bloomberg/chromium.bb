@@ -38,19 +38,19 @@ class PPB_Font_Impl : public Resource,
   virtual PPB_Font_Impl* AsPPB_Font_Impl() OVERRIDE;
 
   // PPB_Font implementation.
-  PP_Bool Describe(PP_FontDescription_Dev* description,
-                   PP_FontMetrics_Dev* metrics) OVERRIDE;
-  PP_Bool DrawTextAt(PP_Resource image_data,
-                     const PP_TextRun_Dev* text,
-                     const PP_Point* position,
-                     uint32_t color,
-                     const PP_Rect* clip,
-                     PP_Bool image_data_is_opaque) OVERRIDE;
-  int32_t MeasureText(const PP_TextRun_Dev* text) OVERRIDE;
-  uint32_t CharacterOffsetForPixel(const PP_TextRun_Dev* text,
-                                   int32_t pixel_position) OVERRIDE;
-  int32_t PixelOffsetForCharacter(const PP_TextRun_Dev* text,
-                                  uint32_t char_offset) OVERRIDE;
+  virtual PP_Bool Describe(PP_FontDescription_Dev* description,
+                           PP_FontMetrics_Dev* metrics) OVERRIDE;
+  virtual PP_Bool DrawTextAt(PP_Resource image_data,
+                             const PP_TextRun_Dev* text,
+                             const PP_Point* position,
+                             uint32_t color,
+                             const PP_Rect* clip,
+                             PP_Bool image_data_is_opaque) OVERRIDE;
+  virtual int32_t MeasureText(const PP_TextRun_Dev* text) OVERRIDE;
+  virtual uint32_t CharacterOffsetForPixel(const PP_TextRun_Dev* text,
+                                           int32_t pixel_position) OVERRIDE;
+  virtual int32_t PixelOffsetForCharacter(const PP_TextRun_Dev* text,
+                                          uint32_t char_offset) OVERRIDE;
 
  private:
   scoped_ptr<pp::shared_impl::WebKitForwarding::Font> font_forwarding_;
