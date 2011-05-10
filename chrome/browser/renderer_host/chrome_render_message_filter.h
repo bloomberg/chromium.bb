@@ -99,6 +99,13 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                         bool* allowed);
   void OnCanTriggerClipboardRead(const GURL& url, bool* allowed);
   void OnCanTriggerClipboardWrite(const GURL& url, bool* allowed);
+  void OnGetCookies(const GURL& url,
+                    const GURL& first_party_for_cookies,
+                    IPC::Message* reply_msg);
+  void OnSetCookie(const IPC::Message& message,
+                   const GURL& url,
+                   const GURL& first_party_for_cookies,
+                   const std::string& cookie);
 
   int render_process_id_;
 

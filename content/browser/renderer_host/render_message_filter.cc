@@ -12,7 +12,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_types.h"
@@ -345,7 +344,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnMsgCreateFullscreenWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCookie, OnSetCookie)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetCookies, OnGetCookies)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRawCookies, OnGetRawCookies)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetRawCookies, OnGetRawCookies)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DeleteCookie, OnDeleteCookie)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CookiesEnabled, OnCookiesEnabled)
 #if defined(OS_MACOSX)
@@ -457,49 +456,59 @@ void RenderMessageFilter::OnSetCookie(const IPC::Message& message,
                                       const std::string& cookie) {
   net::URLRequestContext* context = GetRequestContextForURL(url);
 
-  SetCookieCompletion* callback = new SetCookieCompletion(
-      render_process_id_, message.routing_id(), url, cookie, context);
-
-  // If this render view is associated with an automation channel, aka
-  // ChromeFrame then we need to set cookies in the external host.
-  if (!AutomationResourceMessageFilter::SetCookiesForUrl(url,
-                                                         cookie,
-                                                         callback)) {
-    int policy = net::OK;
-    if (context->cookie_policy()) {
-      policy = context->cookie_policy()->CanSetCookie(
-          url, first_party_for_cookies, cookie);
-    }
-    callback->Run(policy);
+  int policy = net::OK;
+  if (context->cookie_policy()) {
+    policy = context->cookie_policy()->CanSetCookie(
+        url, first_party_for_cookies, cookie);
   }
+
+  bool blocked_by_policy = true;
+  net::CookieOptions options;
+  if (policy == net::OK || policy == net::OK_FOR_SESSION_ONLY) {
+    blocked_by_policy = false;
+    if (policy == net::OK_FOR_SESSION_ONLY)
+      options.set_force_session();
+    context->cookie_store()->SetCookieWithOptions(url, cookie, options);
+  }
+  CallRenderViewHostContentSettingsDelegate(
+      render_process_id_, message.routing_id(),
+      &RenderViewHostDelegate::ContentSettings::OnCookieChanged,
+      url, cookie, options, blocked_by_policy);
 }
 
+// We use DELAY_REPLY even though we have the result here because we want the
+// message's routing_id, and there's no (current) way to get it.
 void RenderMessageFilter::OnGetCookies(const GURL& url,
                                        const GURL& first_party_for_cookies,
                                        IPC::Message* reply_msg) {
   net::URLRequestContext* context = GetRequestContextForURL(url);
 
-  GetCookiesCompletion* callback = new GetCookiesCompletion(
-      render_process_id_, reply_msg->routing_id(), url, reply_msg, this,
-      context, false);
-
-  // If this render view is associated with an automation channel, aka
-  // ChromeFrame then we need to retrieve cookies from the external host.
-  if (!AutomationResourceMessageFilter::GetCookiesForUrl(url, callback)) {
-    int policy = net::OK;
-    if (context->cookie_policy()) {
-      policy = context->cookie_policy()->CanGetCookies(
-          url, first_party_for_cookies);
-    }
-    callback->Run(policy);
+  int policy = net::OK;
+  if (context->cookie_policy()) {
+    policy = context->cookie_policy()->CanGetCookies(
+        url, first_party_for_cookies);
   }
+  std::string cookies;
+  if (policy == net::OK)
+    cookies = context->cookie_store()->GetCookies(url);
+  net::CookieMonster* cookie_monster =
+      context->cookie_store()->GetCookieMonster();
+  net::CookieList cookie_list = cookie_monster->GetAllCookiesForURLWithOptions(
+      url, net::CookieOptions());
+  CallRenderViewHostContentSettingsDelegate(
+      render_process_id_, reply_msg->routing_id(),
+      &RenderViewHostDelegate::ContentSettings::OnCookiesRead,
+      url, cookie_list, policy != net::OK);
+
+  ViewHostMsg_GetCookies::WriteReplyParams(reply_msg, cookies);
+  Send(reply_msg);
 }
 
 void RenderMessageFilter::OnGetRawCookies(
     const GURL& url,
     const GURL& first_party_for_cookies,
-    IPC::Message* reply_msg) {
-
+    std::vector<webkit_glue::WebCookie>* cookies) {
+  cookies->clear();
   net::URLRequestContext* context = GetRequestContextForURL(url);
 
   // Only return raw cookies to trusted renderers or if this request is
@@ -508,16 +517,8 @@ void RenderMessageFilter::OnGetRawCookies(
   // hosts.
   if (!ChildProcessSecurityPolicy::GetInstance()->CanReadRawCookies(
           render_process_id_)) {
-    ViewHostMsg_GetRawCookies::WriteReplyParams(
-        reply_msg,
-        std::vector<webkit_glue::WebCookie>());
-    Send(reply_msg);
     return;
   }
-
-  GetCookiesCompletion* callback = new GetCookiesCompletion(
-      render_process_id_, reply_msg->routing_id(), url, reply_msg, this,
-      context, true);
 
   // We check policy here to avoid sending back cookies that would not normally
   // be applied to outbound requests for the given URL.  Since this cookie info
@@ -527,7 +528,17 @@ void RenderMessageFilter::OnGetRawCookies(
     policy = context->cookie_policy()->CanGetCookies(
        url, first_party_for_cookies);
   }
-  callback->Run(policy);
+
+  // Ignore the policy result.  We only waited on the policy result so that
+  // any pending 'set-cookie' requests could be flushed.  The intent of
+  // querying the raw cookies is to reveal the contents of the cookie DB, so
+  // it important that we don't read the cookie db ahead of pending writes.
+  net::CookieMonster* cookie_monster =
+      context->cookie_store()->GetCookieMonster();
+  net::CookieList cookie_list = cookie_monster->GetAllCookiesForURL(url);
+
+  for (size_t i = 0; i < cookie_list.size(); ++i)
+    cookies->push_back(webkit_glue::WebCookie(cookie_list[i]));
 }
 
 void RenderMessageFilter::OnDeleteCookie(const GURL& url,
@@ -980,98 +991,4 @@ void RenderMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE, NewRunnableMethod(
           this, &RenderMessageFilter::Send, reply));
-}
-
-SetCookieCompletion::SetCookieCompletion(int render_process_id,
-                                         int render_view_id,
-                                         const GURL& url,
-                                         const std::string& cookie_line,
-                                         net::URLRequestContext* context)
-    : render_process_id_(render_process_id),
-      render_view_id_(render_view_id),
-      url_(url),
-      cookie_line_(cookie_line),
-      context_(context) {
-}
-
-SetCookieCompletion::~SetCookieCompletion() {}
-
-void SetCookieCompletion::RunWithParams(const Tuple1<int>& params) {
-  int result = params.a;
-  bool blocked_by_policy = true;
-  net::CookieOptions options;
-  if (result == net::OK ||
-      result == net::OK_FOR_SESSION_ONLY) {
-    blocked_by_policy = false;
-    if (result == net::OK_FOR_SESSION_ONLY)
-      options.set_force_session();
-    context_->cookie_store()->SetCookieWithOptions(url_, cookie_line_,
-                                                   options);
-  }
-  CallRenderViewHostContentSettingsDelegate(
-      render_process_id_, render_view_id_,
-      &RenderViewHostDelegate::ContentSettings::OnCookieChanged,
-      url_, cookie_line_, options, blocked_by_policy);
-  delete this;
-}
-
-GetCookiesCompletion::GetCookiesCompletion(int render_process_id,
-                                           int render_view_id,
-                                           const GURL& url,
-                                           IPC::Message* reply_msg,
-                                           RenderMessageFilter* filter,
-                                           net::URLRequestContext* context,
-                                           bool raw_cookies)
-    : url_(url),
-      reply_msg_(reply_msg),
-      filter_(filter),
-      context_(context),
-      render_process_id_(render_process_id),
-      render_view_id_(render_view_id),
-      raw_cookies_(raw_cookies) {
-  set_cookie_store(context_->cookie_store());
-}
-
-GetCookiesCompletion::~GetCookiesCompletion() {}
-
-void GetCookiesCompletion::RunWithParams(const Tuple1<int>& params) {
-  if (!raw_cookies_) {
-    int result = params.a;
-    std::string cookies;
-    if (result == net::OK)
-      cookies = cookie_store()->GetCookies(url_);
-    ViewHostMsg_GetCookies::WriteReplyParams(reply_msg_, cookies);
-    filter_->Send(reply_msg_);
-    net::CookieMonster* cookie_monster =
-        context_->cookie_store()->GetCookieMonster();
-    net::CookieList cookie_list =
-        cookie_monster->GetAllCookiesForURLWithOptions(
-            url_, net::CookieOptions());
-    CallRenderViewHostContentSettingsDelegate(
-        render_process_id_, render_view_id_,
-        &RenderViewHostDelegate::ContentSettings::OnCookiesRead,
-        url_, cookie_list, result != net::OK);
-    delete this;
-  } else {
-    // Ignore the policy result.  We only waited on the policy result so that
-    // any pending 'set-cookie' requests could be flushed.  The intent of
-    // querying the raw cookies is to reveal the contents of the cookie DB, so
-    // it important that we don't read the cookie db ahead of pending writes.
-    net::CookieMonster* cookie_monster =
-        context_->cookie_store()->GetCookieMonster();
-    net::CookieList cookie_list = cookie_monster->GetAllCookiesForURL(url_);
-
-    std::vector<webkit_glue::WebCookie> cookies;
-    for (size_t i = 0; i < cookie_list.size(); ++i) {
-      cookies.push_back(webkit_glue::WebCookie(cookie_list[i]));
-    }
-
-    ViewHostMsg_GetRawCookies::WriteReplyParams(reply_msg_, cookies);
-    filter_->Send(reply_msg_);
-    delete this;
-  }
-}
-
-void GetCookiesCompletion::set_cookie_store(CookieStore* cookie_store) {
-  cookie_store_ = cookie_store;
 }

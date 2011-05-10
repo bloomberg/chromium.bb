@@ -44,7 +44,7 @@ void RendererWebCookieJarImpl::rawCookies(
   std::vector<webkit_glue::WebCookie> cookies;
   // NOTE: This may pump events (see RenderThread::Send).
   sender_->Send(new ViewHostMsg_GetRawCookies(
-      MSG_ROUTING_NONE, url, first_party_for_cookies, &cookies));
+      url, first_party_for_cookies, &cookies));
 
   WebVector<WebCookie> result(cookies.size());
   int i = 0;
@@ -74,6 +74,6 @@ bool RendererWebCookieJarImpl::cookiesEnabled(
   bool cookies_enabled;
   // NOTE: This may pump events (see RenderThread::Send).
   sender_->Send(new ViewHostMsg_CookiesEnabled(
-      MSG_ROUTING_NONE, url, first_party_for_cookies, &cookies_enabled));
+      url, first_party_for_cookies, &cookies_enabled));
   return cookies_enabled;
 }

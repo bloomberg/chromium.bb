@@ -280,9 +280,10 @@ bool BrowserRenderProcessHost::Init(
   // be doing.
   channel_->set_sync_messages_with_no_timeout_allowed(false);
 
-  CreateMessageFilters();
-
+  // Call the embedder first so that their IPC filters have priority.
   content::GetContentClient()->browser()->BrowserRenderProcessHostCreated(this);
+
+  CreateMessageFilters();
 
   if (run_renderer_in_process()) {
     // Crank up a thread and run the initialization there.  With the way that

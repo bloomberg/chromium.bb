@@ -1459,11 +1459,11 @@ IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetCookies,
 
 // Used to get raw cookie information for the given URL. This may block
 // waiting for a previous SetCookie message to be processed.
-IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetRawCookies,
-                           GURL /* url */,
-                           GURL /* first_party_for_cookies */,
-                           std::vector<webkit_glue::WebCookie>
-                               /* raw_cookies */)
+IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_GetRawCookies,
+                            GURL /* url */,
+                            GURL /* first_party_for_cookies */,
+                            std::vector<webkit_glue::WebCookie>
+                                /* raw_cookies */)
 
 // Used to delete cookie for the given URL and name
 IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_DeleteCookie,
@@ -1472,10 +1472,10 @@ IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_DeleteCookie,
 
 // Used to check if cookies are enabled for the given URL. This may block
 // waiting for a previous SetCookie message to be processed.
-IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_CookiesEnabled,
-                           GURL /* url */,
-                           GURL /* first_party_for_cookies */,
-                           bool /* cookies_enabled */)
+IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CookiesEnabled,
+                            GURL /* url */,
+                            GURL /* first_party_for_cookies */,
+                            bool /* cookies_enabled */)
 
 // Used to get the list of plugins
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetPlugins,

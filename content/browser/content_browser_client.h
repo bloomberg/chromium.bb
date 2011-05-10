@@ -39,7 +39,9 @@ class ContentBrowserClient {
                                    Profile* profile,
                                    const GURL& url);
 
-  // Notifies that a BrowserRenderProcessHost has been created.
+  // Notifies that a BrowserRenderProcessHost has been created.  This is called
+  // before the content layer adds its own BrowserMessageFilters, so that the
+  // embedder's IPC filters have priority.
   virtual void BrowserRenderProcessHostCreated(BrowserRenderProcessHost* host);
 
   // Notifies that a WorkerProcessHost has been created.

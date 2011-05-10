@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -26,6 +27,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/url_constants.h"
+#include "content/common/view_messages.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -87,6 +89,19 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnCanTriggerClipboardWrite)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
+  if ((message.type() == ViewHostMsg_GetCookies::ID ||
+       message.type() == ViewHostMsg_SetCookie::ID) &&
+    AutomationResourceMessageFilter::ShouldFilterCookieMessages(
+        render_process_id_, message.routing_id())) {
+    // ChromeFrame then we need to get/set cookies from the external host.
+    IPC_BEGIN_MESSAGE_MAP_EX(ChromeRenderMessageFilter, message,
+                             *message_was_ok)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetCookies, OnGetCookies)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_SetCookie, OnSetCookie)
+    IPC_END_MESSAGE_MAP()
+    handled = true;
+  }
 
   return handled;
 }
@@ -383,4 +398,20 @@ void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(const GURL& url,
   *allowed = url.SchemeIs(chrome::kExtensionScheme) ||
       context->extension_info_map()->CheckURLAccessToExtensionPermission(
           url, Extension::kClipboardWritePermission);
+}
+
+void ChromeRenderMessageFilter::OnGetCookies(
+    const GURL& url,
+    const GURL& first_party_for_cookies,
+    IPC::Message* reply_msg) {
+  AutomationResourceMessageFilter::GetCookiesForUrl(
+      this, render_process_id_, reply_msg, url);
+}
+
+void ChromeRenderMessageFilter::OnSetCookie(const IPC::Message& message,
+                                            const GURL& url,
+                                            const GURL& first_party_for_cookies,
+                                            const std::string& cookie) {
+  AutomationResourceMessageFilter::SetCookiesForUrl(
+      render_process_id_, message.routing_id(), url, cookie);
 }

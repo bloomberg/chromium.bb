@@ -6,8 +6,6 @@ include_rules = [
 
   "+chrome/browser/accessibility/browser_accessibility_state.h",
 
-  "+chrome/browser/automation/automation_resource_message_filter.h",
-
   "+chrome/browser/browser_about_handler.h",
 
   "+chrome/browser/browser_process.h",
