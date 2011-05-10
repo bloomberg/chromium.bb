@@ -193,7 +193,6 @@ class AboutSource : public ChromeURLDataManager::DataSource {
  public:
   // Creates our datasource.
   AboutSource();
-  explicit AboutSource(Profile* profile);
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -208,12 +207,8 @@ class AboutSource : public ChromeURLDataManager::DataSource {
   // Send the response data.
   void FinishDataRequest(const std::string& html, int request_id);
 
-  Profile* profile() { return profile_; }
-
  private:
   virtual ~AboutSource();
-
-  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutSource);
 };
@@ -909,7 +904,7 @@ std::string AboutSandbox() {
 }
 #endif
 
-std::string AboutVersion(DictionaryValue* localized_strings, Profile* profile) {
+std::string AboutVersion(DictionaryValue* localized_strings) {
   localized_strings->SetString("title",
       l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_TITLE));
   chrome::VersionInfo version_info;
@@ -931,10 +926,6 @@ std::string AboutVersion(DictionaryValue* localized_strings, Profile* profile) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   localized_strings->SetString("version_modifier",
                                platform_util::GetVersionStringModifier());
-  localized_strings->SetString("os_name",
-                               l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_OS));
-  localized_strings->SetString("os_type", version_info.OSType());
-  localized_strings->SetString("webkit_version", webkit_version);
   localized_strings->SetString("js_engine", js_engine);
   localized_strings->SetString("js_version", js_version);
 
@@ -983,32 +974,6 @@ std::string AboutVersion(DictionaryValue* localized_strings, Profile* profile) {
   localized_strings->SetString("command_line", command_line);
 #endif
 
-  // Allow IO temporarily based on allow_io (defined above)
-  // since the following operation will complete quickly
-  localized_strings->SetString("executable_path_name",
-      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_EXECUTABLE_PATH));
-  FilePath executable_path = CommandLine::ForCurrentProcess()->GetProgram();
-  if (file_util::AbsolutePath(&executable_path)) {
-    localized_strings->SetString("executable_path", executable_path.value());
-  } else {
-    localized_strings->SetString("executable_path",
-        l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_PATH_NOTFOUND));
-  }
-  localized_strings->SetString("profile_path_name",
-      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_PROFILE_PATH));
-  if (profile) {
-    FilePath profile_path = profile->GetPath();
-    if (file_util::AbsolutePath(&profile_path)) {
-      localized_strings->SetString("profile_path", profile_path.value());
-    } else {
-      localized_strings->SetString("profile_path",
-          l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_PATH_NOTFOUND));
-    }
-  } else {
-    localized_strings->SetString("profile_path",
-        l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_PATH_NOTFOUND));
-  }
-
   base::StringPiece version_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_ABOUT_VERSION_HTML));
@@ -1021,11 +986,6 @@ std::string AboutVersion(DictionaryValue* localized_strings, Profile* profile) {
 
 AboutSource::AboutSource()
     : DataSource(chrome::kAboutScheme, MessageLoop::current()) {
-}
-
-AboutSource::AboutSource(Profile* profile)
-    : DataSource(chrome::kAboutScheme, MessageLoop::current()),
-      profile_(profile) {
 }
 
 AboutSource::~AboutSource() {
@@ -1068,9 +1028,8 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
     new ChromeOSAboutVersionHandler(this, request_id);
     return;
 #else
-    DictionaryValue localized_strings;
-    localized_strings.SetString("os_version", "");
-    response = AboutVersion(&localized_strings, profile_);
+    DictionaryValue value;
+    response = AboutVersion(&value);
 #endif
   } else if (path == kCreditsPath) {
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -1260,9 +1219,11 @@ void ChromeOSAboutVersionHandler::OnVersion(
     chromeos::VersionLoader::Handle handle,
     std::string version) {
   DictionaryValue localized_strings;
+  localized_strings.SetString("os_name",
+                              l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
   localized_strings.SetString("os_version", version);
-  source_->FinishDataRequest(AboutVersion(&localized_strings,
-                                          source_->profile()), request_id_);
+  localized_strings.SetBoolean("is_chrome_os", true);
+  source_->FinishDataRequest(AboutVersion(&localized_strings), request_id_);
 
   // CancelableRequestProvider isn't happy when it's deleted and servicing a
   // task, so we delay the deletion.
@@ -1402,7 +1363,7 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
 }
 
 void InitializeAboutDataSource(Profile* profile) {
-  profile->GetChromeURLDataManager()->AddDataSource(new AboutSource(profile));
+  profile->GetChromeURLDataManager()->AddDataSource(new AboutSource());
 }
 
 // This function gets called with the fixed-up chrome: URLs, so we have to
