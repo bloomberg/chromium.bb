@@ -4603,6 +4603,30 @@
    fun:_ZN13autofill_i18n17PhoneNumbersMatchERKSbItN4base20string16_char_traitsESaItEES5_RKSs
    fun:_ZN42PhoneNumberI18NTest_PhoneNumbersMatch_Test8TestBodyEv
 }
+{
+   bug_82183a
+   Memcheck:Cond
+   ...
+   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
+   fun:_ZN6icu_4612RegexMatcher7matchesExR10UErrorCode
+   fun:_ZNK20IcuRegularExpression5MatchEPKcbPSs
+   fun:_ZN4i18n12phonenumbers15PhoneNumberUtil19IsViablePhoneNumberERKSs
+}
+{
+   bug_82183b
+   Memcheck:Value4
+   ...
+   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
+   fun:_ZN6icu_4612RegexMatcher7matchesExR10UErrorCode
+   fun:_ZNK20IcuRegularExpression5MatchEPKcbPSs
+   fun:_ZN4i18n12phonenumbers15PhoneNumberUtil19IsViablePhoneNumberERKSs
+}
+{
+   bug_82186
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN13BookmarkModel30CreateRootNodeFromStarredEntryERKN7history12StarredEntryE
+}
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
