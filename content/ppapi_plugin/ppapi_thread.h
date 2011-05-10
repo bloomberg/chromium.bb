@@ -17,6 +17,7 @@
 #include "ppapi/c/trusted/ppp_broker.h"
 
 class FilePath;
+class PpapiWebKitThread;
 
 namespace IPC {
 struct ChannelHandle;
@@ -36,6 +37,9 @@ class PpapiThread : public ChildThread,
   virtual base::MessageLoopProxy* GetIPCMessageLoop();
   virtual base::WaitableEvent* GetShutdownEvent();
   virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet();
+  virtual pp::shared_impl::WebKitForwarding* GetWebKitForwarding();
+  virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
+                                  const base::Closure& task);
 
   // Message handlers.
   void OnMsgLoadPlugin(const FilePath& path);
@@ -69,6 +73,11 @@ class PpapiThread : public ChildThread,
 
   // See Dispatcher::Delegate::GetGloballySeenInstanceIDSet.
   std::set<PP_Instance> globally_seen_instance_ids_;
+
+  // Lazily created by GetWebKitForwarding.
+  scoped_ptr<pp::shared_impl::WebKitForwarding> webkit_forwarding_;
+
+  scoped_ptr<PpapiWebKitThread> webkit_thread_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PpapiThread);
 };

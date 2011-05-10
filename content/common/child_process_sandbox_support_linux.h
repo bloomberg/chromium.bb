@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDERER_SANDBOX_SUPPORT_LINUX_H_
-#define CONTENT_RENDERER_RENDERER_SANDBOX_SUPPORT_LINUX_H_
+#ifndef CONTENT_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_LINUX_H_
+#define CONTENT_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_LINUX_H_
 #pragma once
 
 #include <stdint.h>
@@ -14,7 +14,7 @@ namespace WebKit {
 struct WebFontRenderStyle;
 }
 
-namespace renderer_sandbox_support {
+namespace child_process_sandbox_support {
 
 // Return a font family which provides glyphs for the Unicode code points
 // specified by |utf16|
@@ -54,6 +54,6 @@ int MatchFontWithFallback(const std::string& face, bool bold,
 bool GetFontTable(int fd, uint32_t table, uint8_t* output,
                   size_t* output_length);
 
-};  // namespace render_sandbox_support
+};  // namespace child_process_sandbox_support
 
-#endif  // CONTENT_RENDERER_RENDERER_SANDBOX_SUPPORT_LINUX_H_
+#endif  // CONTENT_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_LINUX_H_

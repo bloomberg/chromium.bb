@@ -10,7 +10,7 @@
       'dependencies': [
         'content_common',
         '../app/app.gyp:app_resources',
-        '../ppapi/ppapi.gyp:ppapi_proxy',
+        '../ppapi/ppapi_internal.gyp:ppapi_proxy',
         '../skia/skia.gyp:skia',
         '../third_party/flac/flac.gyp:libflac',
         '../third_party/speex/speex.gyp:libspeex',

@@ -12,11 +12,13 @@
 #include "content/common/child_process.h"
 #include "content/ppapi_plugin/broker_process_dispatcher.h"
 #include "content/ppapi_plugin/plugin_process_dispatcher.h"
+#include "content/ppapi_plugin/ppapi_webkit_thread.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "webkit/plugins/ppapi/webkit_forwarding_impl.h"
 
 #if defined(OS_WIN)
 #include "sandbox/src/sandbox.h"
@@ -79,6 +81,19 @@ base::WaitableEvent* PpapiThread::GetShutdownEvent() {
 
 std::set<PP_Instance>* PpapiThread::GetGloballySeenInstanceIDSet() {
   return &globally_seen_instance_ids_;
+}
+
+pp::shared_impl::WebKitForwarding* PpapiThread::GetWebKitForwarding() {
+  if (!webkit_forwarding_.get())
+    webkit_forwarding_.reset(new webkit::ppapi::WebKitForwardingImpl);
+  return webkit_forwarding_.get();
+}
+
+void PpapiThread::PostToWebKitThread(const tracked_objects::Location& from_here,
+                                     const base::Closure& task) {
+  if (!webkit_thread_.get())
+    webkit_thread_.reset(new PpapiWebKitThread);
+  webkit_thread_->PostTask(from_here, task);
 }
 
 void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {

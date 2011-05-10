@@ -19,6 +19,11 @@
 #include "ppapi/thunk/ppb_image_data_api.h"
 
 struct PPB_ImageData;
+class TransportDIB;
+
+namespace skia {
+class PlatformCanvas;
+}
 
 namespace pp {
 namespace proxy {
@@ -60,6 +65,8 @@ class ImageData : public PluginResource,
   virtual void* Map();
   virtual void Unmap();
 
+  skia::PlatformCanvas* mapped_canvas() const { return mapped_canvas_.get(); }
+
   const PP_ImageDataDesc& desc() const { return desc_; }
 
   static const ImageHandle NullHandle;
@@ -67,9 +74,11 @@ class ImageData : public PluginResource,
 
  private:
   PP_ImageDataDesc desc_;
-  ImageHandle handle_;
 
-  void* mapped_data_;
+  scoped_ptr<TransportDIB> transport_dib_;
+
+  // Null when the image isn't mapped.
+  scoped_ptr<skia::PlatformCanvas> mapped_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageData);
 };

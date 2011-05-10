@@ -35,7 +35,7 @@
 #include "webkit/glue/websocketstreamhandle_bridge.h"
 
 #if defined(OS_LINUX)
-#include "content/renderer/renderer_sandbox_support_linux.h"
+#include "content/common/child_process_sandbox_support_linux.h"
 #endif
 
 // This definition of WriteBitmapFromPixels uses shared memory to communicate
@@ -262,13 +262,13 @@ void EnableSpdy(bool enable) {
 #if defined(OS_LINUX)
 int MatchFontWithFallback(const std::string& face, bool bold,
                           bool italic, int charset) {
-  return renderer_sandbox_support::MatchFontWithFallback(
+  return child_process_sandbox_support::MatchFontWithFallback(
       face, bold, italic, charset);
 }
 
 bool GetFontTable(int fd, uint32_t table, uint8_t* output,
                   size_t* output_length) {
-  return renderer_sandbox_support::GetFontTable(
+  return child_process_sandbox_support::GetFontTable(
       fd, table, output, output_length);
 }
 #endif

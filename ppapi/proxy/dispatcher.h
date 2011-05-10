@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
+#include "base/tracked_objects.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
@@ -19,6 +21,11 @@
 #include "ppapi/proxy/plugin_var_tracker.h"
 
 namespace pp {
+
+namespace shared_impl {
+class WebKitForwarding;
+}
+
 namespace proxy {
 
 class VarSerializationRules;
@@ -50,6 +57,17 @@ class Dispatcher : public ProxyChannel {
     //
     // DEREFERENCE ONLY ON THE I/O THREAD.
     virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet() = 0;
+
+    // Returns the WebKit forwarding object used to make calls into WebKit.
+    // Necessary only on the plugin side. The host side can return NULL.
+    virtual pp::shared_impl::WebKitForwarding* GetWebKitForwarding() = 0;
+
+    // Posts the given task to the WebKit thread associated with this plugin
+    // process. For host processes, this will not be called and can do
+    // nothing. The WebKit thread should be lazily created if it does not
+    // exist yet.
+    virtual void PostToWebKitThread(const tracked_objects::Location& from_here,
+                                    const base::Closure& task) = 0;
   };
 
   virtual ~Dispatcher();
@@ -104,6 +122,8 @@ class Dispatcher : public ProxyChannel {
   Dispatcher(base::ProcessHandle remote_process_handle,
              GetInterfaceFunc local_get_interface);
 
+  void SetDelegate(Delegate* delegate);
+
   // Setter for the derived classes to set the appropriate var serialization.
   // Takes ownership of the given pointer, which must be on the heap.
   void SetSerializationRules(VarSerializationRules* var_serialization_rules);
@@ -111,6 +131,8 @@ class Dispatcher : public ProxyChannel {
   bool disallow_trusted_interfaces() const {
     return disallow_trusted_interfaces_;
   }
+
+  Delegate* dispatcher_delegate_;
 
  private:
   bool disallow_trusted_interfaces_;

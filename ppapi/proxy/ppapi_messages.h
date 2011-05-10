@@ -529,39 +529,6 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlashNetConnector_ConnectTcpAddress,
                     pp::proxy::HostResource /* connector */,
                     std::string /* net_address_as_string */)
 
-// PPB_Font.
-IPC_SYNC_MESSAGE_ROUTED2_3(
-    PpapiHostMsg_PPBFont_Create,
-    PP_Instance /* instance */,
-    pp::proxy::SerializedFontDescription /* in_description */,
-    pp::proxy::HostResource /* result */,
-    pp::proxy::SerializedFontDescription /* out_description */,
-    std::string /* out_metrics */)
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFont_DrawTextAt,
-                           pp::proxy::SerializedVar /* text */,
-                           pp::proxy::PPBFont_DrawTextAt_Params /* params */,
-                           PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED4_1(PpapiHostMsg_PPBFont_MeasureText,
-                           pp::proxy::HostResource /* font */,
-                           pp::proxy::SerializedVar /* text */,
-                           PP_Bool /* text_is_rtl */,
-                           PP_Bool /* override_direction */,
-                           int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED5_1(PpapiHostMsg_PPBFont_CharacterOffsetForPixel,
-                           pp::proxy::HostResource /* font */,
-                           pp::proxy::SerializedVar /* text */,
-                           PP_Bool /* text_is_rtl */,
-                           PP_Bool /* override_direction */,
-                           int32_t /* pixel_pos */,
-                           uint32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED5_1(PpapiHostMsg_PPBFont_PixelOffsetForCharacter,
-                           pp::proxy::HostResource /* font */,
-                           pp::proxy::SerializedVar /* text */,
-                           PP_Bool /* text_is_rtl */,
-                           PP_Bool /* override_direction */,
-                           uint32_t /* char_offset */,
-                           int32_t /* result */)
-
 // PPB_Fullscreen.
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFullscreen_SetFullscreen,
                            PP_Instance /* instance */,

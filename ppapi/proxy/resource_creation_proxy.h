@@ -32,6 +32,9 @@ class ResourceCreationProxy : public ::ppapi::shared_impl::FunctionGroupBase,
   virtual ::ppapi::thunk::ResourceCreationAPI* AsResourceCreation();
 
   // ResourceCreationAPI (called in plugin).
+  virtual PP_Resource CreateFontObject(
+      PP_Instance instance,
+      const PP_FontDescription_Dev* description);
   virtual PP_Resource CreateGraphics2D(PP_Instance pp_instance,
                                        const PP_Size& size,
                                        PP_Bool is_always_opaque);

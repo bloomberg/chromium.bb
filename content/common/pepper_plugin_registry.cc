@@ -232,5 +232,19 @@ base::WaitableEvent* PepperPluginRegistry::GetShutdownEvent() {
 
 std::set<PP_Instance>* PepperPluginRegistry::GetGloballySeenInstanceIDSet() {
   // This function is not needed on the host side of the proxy.
+  NOTREACHED();
   return NULL;
+}
+
+pp::shared_impl::WebKitForwarding* PepperPluginRegistry::GetWebKitForwarding() {
+  // This function is not needed on the host side of the proxy.
+  NOTREACHED();
+  return NULL;
+}
+
+void PepperPluginRegistry::PostToWebKitThread(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
+  // This function is not needed on the host side of the proxy.
+  NOTREACHED();
 }

@@ -7,12 +7,14 @@
 
 #include "base/synchronization/lock.h"
 
+struct PPB_Font_Dev;
 struct PPB_Graphics2D;
 struct PPB_ImageData;
 
 namespace ppapi {
 namespace thunk {
 
+const PPB_Font_Dev* GetPPB_Font_Thunk();
 const PPB_Graphics2D* GetPPB_Graphics2D_Thunk();
 const PPB_ImageData* GetPPB_ImageData_Thunk();
 

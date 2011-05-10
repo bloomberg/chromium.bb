@@ -32,10 +32,16 @@ class WaitableEvent;
 }
 
 namespace pp {
+
 namespace proxy {
 class HostDispatcher;
-}  // proxy
-}  // pp
+}  // namespace proxy
+
+namespace shared_impl {
+class WebKitForwarding;
+}  // namespace shared_impl
+
+}  // namespace pp
 
 namespace IPC {
 struct ChannelHandle;
@@ -149,6 +155,9 @@ class PluginModule : public base::RefCounted<PluginModule>,
   void SetBroker(PluginDelegate::PpapiBroker* broker);
   PluginDelegate::PpapiBroker* GetBroker();
 
+  // Retrieves the forwarding interface used for talking to WebKit.
+  pp::shared_impl::WebKitForwarding* GetWebKitForwarding();
+
  private:
   // Calls the InitializeModule entrypoint. The entrypoint must have been
   // set and the plugin must not be out of process (we don't maintain
@@ -196,6 +205,9 @@ class PluginModule : public base::RefCounted<PluginModule>,
   PluginInstanceSet instances_;
 
   PP_Bool (*reserve_instance_id_)(PP_Module, PP_Instance);
+
+  // Lazily created by GetWebKitForwarding.
+  scoped_ptr<pp::shared_impl::WebKitForwarding> webkit_forwarding_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginModule);
 };

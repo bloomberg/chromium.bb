@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@
 #include <map>
 
 #include "base/synchronization/lock.h"
-#include "content/renderer/renderer_sandbox_support_linux.h"
+#include "content/common/child_process_sandbox_support_linux.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebSandboxSupport.h"
 #endif
 
@@ -128,7 +128,7 @@ class RendererWebKitClientImpl::SandboxSupport
   // here. The key in this map is an array of 16-bit UTF16 values from WebKit.
   // The value is a string containing the correct font family.
   base::Lock unicode_font_families_mutex_;
-  std::map<std::string, std::string> unicode_font_families_;
+  std::map<string16, std::string> unicode_font_families_;
 #endif
 };
 
@@ -440,24 +440,25 @@ WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
     size_t num_characters,
     const char* preferred_locale) {
   base::AutoLock lock(unicode_font_families_mutex_);
-  const std::string key(reinterpret_cast<const char*>(characters),
-                        num_characters * sizeof(characters[0]));
-  const std::map<std::string, std::string>::const_iterator iter =
+  const string16 key(characters, num_characters);
+  const std::map<string16, std::string>::const_iterator iter =
       unicode_font_families_.find(key);
   if (iter != unicode_font_families_.end())
     return WebString::fromUTF8(iter->second);
 
   const std::string family_name =
-      renderer_sandbox_support::getFontFamilyForCharacters(characters,
-                                                           num_characters,
-                                                           preferred_locale);
+      child_process_sandbox_support::getFontFamilyForCharacters(
+          characters,
+          num_characters,
+          preferred_locale);
   unicode_font_families_.insert(make_pair(key, family_name));
   return WebString::fromUTF8(family_name);
 }
 
 void RendererWebKitClientImpl::SandboxSupport::getRenderStyleForStrike(
     const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out) {
-  renderer_sandbox_support::getRenderStyleForStrike(family, sizeAndStyle, out);
+  child_process_sandbox_support::getRenderStyleForStrike(family, sizeAndStyle,
+                                                         out);
 }
 
 #elif defined(OS_MACOSX)

@@ -4,202 +4,35 @@
 
 #include "ppapi/proxy/ppb_font_proxy.h"
 
+#include "base/bind.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppb_image_data_proxy.h"
+#include "ppapi/shared_impl/resource_object_base.h"
+#include "ppapi/thunk/ppb_image_data_api.h"
+#include "ppapi/thunk/thunk.h"
+
+using ppapi::thunk::PPB_ImageData_API;
+using pp::shared_impl::WebKitForwarding;
 
 namespace pp {
 namespace proxy {
 
-class Font : public PluginResource {
- public:
-  Font(const HostResource& resource);
-  virtual ~Font();
-
-  // PluginResource overrides.
-  virtual Font* AsFont() { return this; }
-
-  PP_FontDescription_Dev& desc() { return desc_; }
-  PP_FontDescription_Dev* desc_ptr() { return &desc_; }
-  PP_FontMetrics_Dev& metrics() { return metrics_; }
-
- private:
-  PP_FontDescription_Dev desc_;
-  PP_FontMetrics_Dev metrics_;
-
-  DISALLOW_COPY_AND_ASSIGN(Font);
-};
-
-Font::Font(const HostResource& resource) : PluginResource(resource) {
-  memset(&desc_, 0, sizeof(PP_FontDescription_Dev));
-  desc_.face.type = PP_VARTYPE_UNDEFINED;
-  memset(&metrics_, 0, sizeof(PP_FontMetrics_Dev));
-}
-
-Font::~Font() {
-  PluginVarTracker::GetInstance()->Release(desc_.face);
-}
-
 namespace {
 
-PP_Resource Create(PP_Instance instance,
-                   const PP_FontDescription_Dev* description) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return 0;
+bool PPTextRunToTextRun(const PP_TextRun_Dev* run,
+                        WebKitForwarding::Font::TextRun* output) {
+  const std::string* str = PluginVarTracker::GetInstance()->GetExistingString(
+      run->text);
+  if (!str)
+    return false;
 
-  SerializedFontDescription in_description;
-  in_description.SetFromPPFontDescription(dispatcher, *description, true);
-
-  HostResource result;
-  SerializedFontDescription out_description;
-  std::string out_metrics;
-  dispatcher->Send(new PpapiHostMsg_PPBFont_Create(
-      INTERFACE_ID_PPB_FONT,
-      instance, in_description, &result, &out_description, &out_metrics));
-
-  if (result.is_null())
-    return 0;  // Failure creating font.
-
-  linked_ptr<Font> object(new Font(result));
-  out_description.SetToPPFontDescription(dispatcher, object->desc_ptr(), true);
-
-  // Convert the metrics, this is just serialized as a string of bytes.
-  if (out_metrics.size() != sizeof(PP_FontMetrics_Dev))
-    return 0;
-  memcpy(&object->metrics(), out_metrics.data(), sizeof(PP_FontMetrics_Dev));
-
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  output->text = *str;
+  output->rtl = PPBoolToBool(run->rtl);
+  output->override_direction = PPBoolToBool(run->override_direction);
+  return true;
 }
-
-PP_Bool IsFont(PP_Resource resource) {
-  Font* object = PluginResource::GetAs<Font>(resource);
-  return BoolToPPBool(!!object);
-}
-
-PP_Bool Describe(PP_Resource font_id,
-                 PP_FontDescription_Dev* description,
-                 PP_FontMetrics_Dev* metrics) {
-  Font* object = PluginResource::GetAs<Font>(font_id);
-  if (!object)
-    return PP_FALSE;
-
-  // Copy the description, the caller expects its face PP_Var to have a ref
-  // added to it on its behalf.
-  memcpy(description, &object->desc(), sizeof(PP_FontDescription_Dev));
-  PluginVarTracker::GetInstance()->AddRef(description->face);
-
-  memcpy(metrics, &object->metrics(), sizeof(PP_FontMetrics_Dev));
-  return PP_TRUE;
-}
-
-PP_Bool DrawTextAt(PP_Resource font_id,
-                   PP_Resource image_data,
-                   const PP_TextRun_Dev* text,
-                   const PP_Point* position,
-                   uint32_t color,
-                   const PP_Rect* clip,
-                   PP_Bool image_data_is_opaque) {
-  Font* font_object = PluginResource::GetAs<Font>(font_id);
-  if (!font_object)
-    return PP_FALSE;
-  PluginResource* image_object = PluginResourceTracker::GetInstance()->
-      GetResourceObject(image_data);
-  if (!image_object)
-    return PP_FALSE;
-  if (font_object->instance() != image_object->instance())
-    return PP_FALSE;
-
-  PPBFont_DrawTextAt_Params params;
-  params.font = font_object->host_resource();
-  params.image_data = image_object->host_resource();
-  params.text_is_rtl = text->rtl;
-  params.override_direction = text->override_direction;
-  params.position = *position;
-  params.color = color;
-  if (clip) {
-    params.clip = *clip;
-    params.clip_is_null = false;
-  } else {
-    params.clip = PP_MakeRectFromXYWH(0, 0, 0, 0);
-    params.clip_is_null = true;
-  }
-  params.image_data_is_opaque = image_data_is_opaque;
-
-  Dispatcher* dispatcher = PluginDispatcher::GetForInstance(
-      image_object->instance());
-  PP_Bool result = PP_FALSE;
-  if (dispatcher) {
-    dispatcher->Send(new PpapiHostMsg_PPBFont_DrawTextAt(
-        INTERFACE_ID_PPB_FONT,
-        SerializedVarSendInput(dispatcher, text->text),
-        params, &result));
-  }
-  return result;
-}
-
-int32_t MeasureText(PP_Resource font_id, const PP_TextRun_Dev* text) {
-  Font* object = PluginResource::GetAs<Font>(font_id);
-  if (!object)
-    return -1;
-
-  Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
-  int32_t result = 0;
-  if (dispatcher) {
-    dispatcher->Send(new PpapiHostMsg_PPBFont_MeasureText(
-        INTERFACE_ID_PPB_FONT, object->host_resource(),
-        SerializedVarSendInput(dispatcher, text->text),
-        text->rtl, text->override_direction, &result));
-  }
-  return result;
-}
-
-uint32_t CharacterOffsetForPixel(PP_Resource font_id,
-                                 const PP_TextRun_Dev* text,
-                                 int32_t pixel_position) {
-  Font* object = PluginResource::GetAs<Font>(font_id);
-  if (!object)
-    return -1;
-
-  Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
-  uint32_t result = 0;
-  if (dispatcher) {
-    dispatcher->Send(new PpapiHostMsg_PPBFont_CharacterOffsetForPixel(
-        INTERFACE_ID_PPB_FONT, object->host_resource(),
-        SerializedVarSendInput(dispatcher, text->text),
-        text->rtl, text->override_direction, pixel_position, &result));
-  }
-  return result;
-}
-
-int32_t PixelOffsetForCharacter(PP_Resource font_id,
-                                const PP_TextRun_Dev* text,
-                                uint32_t char_offset) {
-  Font* object = PluginResource::GetAs<Font>(font_id);
-  if (!object)
-    return -1;
-
-  Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
-  int32_t result = 0;
-  if (dispatcher) {
-    dispatcher->Send(new PpapiHostMsg_PPBFont_PixelOffsetForCharacter(
-          INTERFACE_ID_PPB_FONT, object->host_resource(),
-          SerializedVarSendInput(dispatcher, text->text),
-          text->rtl, text->override_direction, char_offset, &result));
-  }
-  return result;
-}
-
-const PPB_Font_Dev font_interface = {
-  &Create,
-  &IsFont,
-  &Describe,
-  &DrawTextAt,
-  &MeasureText,
-  &CharacterOffsetForPixel,
-  &PixelOffsetForCharacter
-};
 
 InterfaceProxy* CreateFontProxy(Dispatcher* dispatcher,
                                 const void* target_interface) {
@@ -219,7 +52,7 @@ PPB_Font_Proxy::~PPB_Font_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_Font_Proxy::GetInfo() {
   static const Info info = {
-    &font_interface,
+    ::ppapi::thunk::GetPPB_Font_Thunk(),
     PPB_FONT_DEV_INTERFACE,
     INTERFACE_ID_PPB_FONT,
     false,
@@ -229,112 +62,140 @@ const InterfaceProxy::Info* PPB_Font_Proxy::GetInfo() {
 }
 
 bool PPB_Font_Proxy::OnMessageReceived(const IPC::Message& msg) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PPB_Font_Proxy, msg)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFont_Create,
-                        OnMsgCreate)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFont_DrawTextAt,
-                        OnMsgDrawTextAt)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFont_MeasureText,
-                        OnMsgMeasureText)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFont_CharacterOffsetForPixel,
-                        OnMsgCharacterOffsetForPixel)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFont_PixelOffsetForCharacter,
-                        OnMsgPixelOffsetForCharacter)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+  // There aren't any font messages.
+  NOTREACHED();
+  return false;
 }
 
-void PPB_Font_Proxy::OnMsgCreate(
-    PP_Instance instance,
-    const SerializedFontDescription& in_description,
-    HostResource* result,
-    SerializedFontDescription* out_description,
-    std::string* out_metrics) {
-  // Convert the face name in the input description.
-  PP_FontDescription_Dev in_pp_desc;
-  in_description.SetToPPFontDescription(dispatcher(), &in_pp_desc, false);
+Font::Font(const HostResource& resource,
+           const PP_FontDescription_Dev& desc)
+    : PluginResource(resource),
+      webkit_event_(false, false) {
+  const std::string* face = PluginVarTracker::GetInstance()->GetExistingString(
+      desc.face);
 
-  // Make sure the output is always defined so we can still serialize it back
-  // to the plugin below.
-  PP_FontDescription_Dev out_pp_desc;
-  memset(&out_pp_desc, 0, sizeof(PP_FontDescription_Dev));
-  out_pp_desc.face = PP_MakeUndefined();
+  WebKitForwarding* forwarding = GetDispatcher()->GetWebKitForwarding();
 
-  result->SetHostResource(instance,
-                          ppb_font_target()->Create(instance, &in_pp_desc));
-  if (!result->is_null()) {
-    // Get the metrics and resulting description to return to the browser.
-    PP_FontMetrics_Dev metrics;
-    if (ppb_font_target()->Describe(result->host_resource(), &out_pp_desc,
-                                    &metrics)) {
-        out_metrics->assign(reinterpret_cast<const char*>(&metrics),
-                            sizeof(PP_FontMetrics_Dev));
-    }
+  WebKitForwarding::Font* result = NULL;
+  RunOnWebKitThread(base::Bind(&WebKitForwarding::CreateFontForwarding,
+                               base::Unretained(forwarding),
+                               &webkit_event_, desc,
+                               face ? *face : std::string(), &result));
+  font_forwarding_.reset(result);
+}
+
+Font::~Font() {
+}
+
+ppapi::thunk::PPB_Font_API* Font::AsFont_API() {
+  return this;
+}
+
+Font* Font::AsFont() {
+  return this;
+}
+
+PP_Bool Font::Describe(PP_FontDescription_Dev* description,
+                       PP_FontMetrics_Dev* metrics) {
+  std::string face;
+  PP_Bool result = PP_FALSE;
+  RunOnWebKitThread(base::Bind(&WebKitForwarding::Font::Describe,
+                               base::Unretained(font_forwarding_.get()),
+                               &webkit_event_, description, &face, metrics,
+                               &result));
+
+  if (result == PP_TRUE) {
+    description->face.type = PP_VARTYPE_STRING;
+    description->face.value.as_id =
+        PluginVarTracker::GetInstance()->MakeString(face);
+  } else {
+    description->face.type = PP_VARTYPE_UNDEFINED;
+  }
+  return result;
+}
+
+PP_Bool Font::DrawTextAt(PP_Resource pp_image_data,
+                         const PP_TextRun_Dev* text,
+                         const PP_Point* position,
+                         uint32_t color,
+                         const PP_Rect* clip,
+                         PP_Bool image_data_is_opaque) {
+  // Convert to an ImageData object.
+  ppapi::shared_impl::ResourceObjectBase* image_base =
+      ppapi::shared_impl::TrackerBase::Get()->GetResourceAPI(pp_image_data);
+  if (!image_base)
+    return PP_FALSE;
+  PPB_ImageData_API* image_api = image_base->GetAs<PPB_ImageData_API>();
+  if (!image_api)
+    return PP_FALSE;
+  ImageData* image_data = static_cast<ImageData*>(image_api);
+
+  skia::PlatformCanvas* canvas = image_data->mapped_canvas();
+  bool needs_unmapping = false;
+  if (!canvas) {
+    needs_unmapping = true;
+    image_data->Map();
+    canvas = image_data->mapped_canvas();
+    if (!canvas)
+      return PP_FALSE;  // Failure mapping.
   }
 
-  // This must always get called or it will assert when trying to serialize
-  // the un-filled-in SerializedFontDescription as the return value.
-  out_description->SetFromPPFontDescription(dispatcher(), out_pp_desc, false);
+  WebKitForwarding::Font::TextRun run;
+  if (!PPTextRunToTextRun(text, &run)) {
+    if (needs_unmapping)
+      image_data->Unmap();
+    return PP_FALSE;
+  }
+  RunOnWebKitThread(base::Bind(
+      &WebKitForwarding::Font::DrawTextAt,
+      base::Unretained(font_forwarding_.get()),
+      &webkit_event_,
+      WebKitForwarding::Font::DrawTextParams(canvas, run, position, color,
+                                             clip, image_data_is_opaque)));
+
+  if (needs_unmapping)
+    image_data->Unmap();
+  return PP_TRUE;
 }
 
-void PPB_Font_Proxy::OnMsgDrawTextAt(SerializedVarReceiveInput text,
-                                     const PPBFont_DrawTextAt_Params& params,
-                                     PP_Bool* result) {
-  PP_TextRun_Dev run;
-  run.text = text.Get(dispatcher());
-  run.rtl = params.text_is_rtl;
-  run.override_direction = params.override_direction;
-
-  *result = ppb_font_target()->DrawTextAt(params.font.host_resource(),
-      params.image_data.host_resource(), &run, &params.position, params.color,
-      params.clip_is_null ? NULL : &params.clip, params.image_data_is_opaque);
+int32_t Font::MeasureText(const PP_TextRun_Dev* text) {
+  WebKitForwarding::Font::TextRun run;
+  if (!PPTextRunToTextRun(text, &run))
+    return -1;
+  int32_t result = -1;
+  RunOnWebKitThread(base::Bind(&WebKitForwarding::Font::MeasureText,
+                               base::Unretained(font_forwarding_.get()),
+                               &webkit_event_, run, &result));
+  return result;
 }
 
-void PPB_Font_Proxy::OnMsgMeasureText(HostResource font,
-                                      SerializedVarReceiveInput text,
-                                      PP_Bool text_is_rtl,
-                                      PP_Bool override_direction,
-                                      int32_t* result) {
-  PP_TextRun_Dev run;
-  run.text = text.Get(dispatcher());
-  run.rtl = text_is_rtl;
-  run.override_direction = override_direction;
-
-  *result = ppb_font_target()->MeasureText(font.host_resource(), &run);
+uint32_t Font::CharacterOffsetForPixel(const PP_TextRun_Dev* text,
+                                       int32_t pixel_position) {
+  WebKitForwarding::Font::TextRun run;
+  if (!PPTextRunToTextRun(text, &run))
+    return -1;
+  uint32_t result = -1;
+  RunOnWebKitThread(base::Bind(&WebKitForwarding::Font::CharacterOffsetForPixel,
+                               base::Unretained(font_forwarding_.get()),
+                               &webkit_event_, run, pixel_position, &result));
+  return result;
 }
 
-void PPB_Font_Proxy::OnMsgCharacterOffsetForPixel(
-    HostResource font,
-    SerializedVarReceiveInput text,
-    PP_Bool text_is_rtl,
-    PP_Bool override_direction,
-    int32_t pixel_pos,
-    uint32_t* result) {
-  PP_TextRun_Dev run;
-  run.text = text.Get(dispatcher());
-  run.rtl = text_is_rtl;
-  run.override_direction = override_direction;
-
-  *result = ppb_font_target()->CharacterOffsetForPixel(font.host_resource(),
-                                                       &run, pixel_pos);
+int32_t Font::PixelOffsetForCharacter(const PP_TextRun_Dev* text,
+                                      uint32_t char_offset) {
+  WebKitForwarding::Font::TextRun run;
+  if (!PPTextRunToTextRun(text, &run))
+    return -1;
+  int32_t result = -1;
+  RunOnWebKitThread(base::Bind(&WebKitForwarding::Font::PixelOffsetForCharacter,
+                               base::Unretained(font_forwarding_.get()),
+                               &webkit_event_, run, char_offset, &result));
+  return result;
 }
 
-void PPB_Font_Proxy::OnMsgPixelOffsetForCharacter(
-    HostResource font,
-    SerializedVarReceiveInput text,
-    PP_Bool text_is_rtl,
-    PP_Bool override_direction,
-    uint32_t char_offset,
-    int32_t* result) {
-  PP_TextRun_Dev run;
-  run.text = text.Get(dispatcher());
-  run.rtl = text_is_rtl;
-  run.override_direction = override_direction;
-
-  *result = ppb_font_target()->PixelOffsetForCharacter(font.host_resource(),
-                                                       &run, char_offset);
+void Font::RunOnWebKitThread(const base::Closure& task) {
+  GetDispatcher()->PostToWebKitThread(FROM_HERE, task);
+  webkit_event_.Wait();
 }
 
 }  // namespace proxy

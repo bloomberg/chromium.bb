@@ -7,7 +7,7 @@
      {
       'target_name': 'ppapi_example',
       'dependencies': [
-        'ppapi_cpp'
+        'ppapi.gyp:ppapi_cpp'
       ],
       'xcode_settings': {
         'INFOPLIST_FILE': 'example/Info.plist',
@@ -64,7 +64,7 @@
 #      'target_name': 'ppapi_example_skeleton',
 #      'type': 'none',
 #      'dependencies': [
-#        'ppapi_cpp',
+#        'ppapi.gyp:ppapi_cpp',
 #      ],
 #      'export_dependent_setting': ['ppapi_cpp'],
 #      'direct_dependent_settings': {
@@ -242,7 +242,7 @@
         'tests/test_var_deprecated.h',
       ],
       'dependencies': [
-        'ppapi_cpp'
+        'ppapi.gyp:ppapi_cpp'
       ],
       'conditions': [
         ['OS=="win"', {
@@ -294,6 +294,7 @@
         '../ipc/ipc.gyp:test_support_ipc',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../ui/gfx/surface/surface.gyp:surface',
       ],
       'sources': [
         'proxy/run_all_unittests.cc',

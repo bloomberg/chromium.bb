@@ -11,6 +11,7 @@
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/proxy/interface_id.h"
 
+struct PP_FontDescription_Dev;
 struct PP_Size;
 
 namespace ppapi {
@@ -26,6 +27,10 @@ class ResourceCreationAPI {
   static const ::pp::proxy::InterfaceID interface_id =
       ::pp::proxy::INTERFACE_ID_RESOURCE_CREATION;
 
+  // Note: can't be called CreateFont due to Windows #defines.
+  virtual PP_Resource CreateFontObject(
+      PP_Instance instance,
+      const PP_FontDescription_Dev* description) = 0;
   virtual PP_Resource CreateGraphics2D(PP_Instance instance,
                                        const PP_Size& size,
                                        PP_Bool is_always_opaque) = 0;

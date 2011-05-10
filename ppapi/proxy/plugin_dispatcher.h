@@ -75,6 +75,13 @@ class PluginDispatcher : public Dispatcher {
   // correspond to a known instance.
   InstanceData* GetInstanceData(PP_Instance instance);
 
+  // Posts the given task to the WebKit thread.
+  void PostToWebKitThread(const tracked_objects::Location& from_here,
+                          const base::Closure& task);
+
+  // Returns the WebKitForwarding object used to forward events to WebKit.
+  pp::shared_impl::WebKitForwarding* GetWebKitForwarding();
+
   // Returns the "new-style" function API for the given interface ID, creating
   // it if necessary.
   // TODO(brettw) this is in progress. It should be merged with the target

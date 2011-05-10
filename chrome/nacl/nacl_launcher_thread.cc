@@ -12,7 +12,7 @@
 #include "native_client/src/shared/imc/nacl_imc.h"
 
 #if defined(OS_LINUX)
-#include "content/renderer/renderer_sandbox_support_linux.h"
+#include "content/common/child_process_sandbox_support_linux.h"
 #endif
 
 #if defined(OS_WIN)
@@ -97,7 +97,7 @@ void NaClLauncherThread::OnStartSelLdr(
     bool have_irt_file) {
 #if defined(OS_LINUX)
   nacl::SetCreateMemoryObjectFunc(
-      renderer_sandbox_support::MakeSharedMemorySegmentViaIPC);
+      child_process_sandbox_support::MakeSharedMemorySegmentViaIPC);
 #elif defined(OS_MACOSX)
   nacl::SetCreateMemoryObjectFunc(CreateMemoryObject);
   CHECK(handles.size() >= 1);

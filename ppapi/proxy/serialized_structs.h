@@ -81,22 +81,6 @@ struct PPBFileRef_CreateInfo {
   SerializedVar name;
 };
 
-// Since there are so many parameters, DrawTextAt requires this separate
-// structure. This includes everything but the font name. Because the font name
-// is a var, it's much more convenient to use the normal way of passing a
-// PP_Var.
-struct PPBFont_DrawTextAt_Params {
-  HostResource font;
-  HostResource image_data;
-  PP_Bool text_is_rtl;
-  PP_Bool override_direction;
-  PP_Point position;
-  uint32_t color;
-  PP_Rect clip;
-  bool clip_is_null;
-  PP_Bool image_data_is_opaque;
-};
-
 struct PPBFlash_DrawGlyphs_Params {
   PPBFlash_DrawGlyphs_Params();
   ~PPBFlash_DrawGlyphs_Params();

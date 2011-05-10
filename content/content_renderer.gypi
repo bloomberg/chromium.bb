@@ -11,7 +11,7 @@
       'dependencies': [
         'content_common',
         '../jingle/jingle.gyp:jingle_glue',
-        '../ppapi/ppapi.gyp:ppapi_proxy',
+        '../ppapi/ppapi_internal.gyp:ppapi_proxy',
         '../skia/skia.gyp:skia',
         '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
         '../third_party/icu/icu.gyp:icuuc',
@@ -102,8 +102,6 @@
         'renderer/renderer_main_platform_delegate_linux.cc',
         'renderer/renderer_main_platform_delegate_mac.mm',
         'renderer/renderer_main_platform_delegate_win.cc',
-        'renderer/renderer_sandbox_support_linux.cc',
-        'renderer/renderer_sandbox_support_linux.h',
         'renderer/renderer_webapplicationcachehost_impl.cc',
         'renderer/renderer_webapplicationcachehost_impl.h',
         'renderer/renderer_webaudiodevice_impl.cc',

@@ -90,10 +90,13 @@ HostDispatcher::~HostDispatcher() {
 }
 
 bool HostDispatcher::InitHostWithChannel(
-    ProxyChannel::Delegate* delegate,
+    Delegate* delegate,
     const IPC::ChannelHandle& channel_handle,
     bool is_client) {
-  return Dispatcher::InitWithChannel(delegate, channel_handle, is_client);
+  if (!Dispatcher::InitWithChannel(delegate, channel_handle, is_client))
+    return false;
+  SetDelegate(delegate);
+  return true;
 }
 
 // static

@@ -105,6 +105,7 @@
 #include "webkit/plugins/ppapi/ppb_widget_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/var.h"
+#include "webkit/plugins/ppapi/webkit_forwarding_impl.h"
 
 #ifdef ENABLE_GPU
 #include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
@@ -560,6 +561,12 @@ void PluginModule::SetBroker(PluginDelegate::PpapiBroker* broker) {
 
 PluginDelegate::PpapiBroker* PluginModule::GetBroker(){
   return broker_;
+}
+
+pp::shared_impl::WebKitForwarding* PluginModule::GetWebKitForwarding() {
+  if (!webkit_forwarding_.get())
+    webkit_forwarding_.reset(new WebKitForwardingImpl);
+  return webkit_forwarding_.get();
 }
 
 bool PluginModule::InitializeModule() {

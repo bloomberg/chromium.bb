@@ -12,8 +12,10 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
+#include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
+#include "ppapi/shared_impl/font_impl.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
@@ -33,6 +35,20 @@ ResourceCreationProxy::~ResourceCreationProxy() {
 ::ppapi::thunk::ResourceCreationAPI*
 ResourceCreationProxy::AsResourceCreation() {
   return this;
+}
+
+PP_Resource ResourceCreationProxy::CreateFontObject(
+    PP_Instance instance,
+    const PP_FontDescription_Dev* description) {
+  if (!pp::shared_impl::FontImpl::IsPPFontDescriptionValid(*description))
+    return 0;
+
+  // See the comment above Font's constructor for why we do this.
+  HostResource resource;
+  resource.SetHostResource(instance, 0);
+
+  linked_ptr<Font> object(new Font(resource, *description));
+  return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
 PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance pp_instance,
@@ -127,10 +143,10 @@ void ResourceCreationProxy::OnMsgCreateImageData(
   result->SetHostResource(instance, resource);
 
   // Get the description, it's just serialized as a string.
-  ppapi::thunk::EnterResource<ppapi::thunk::PPB_ImageData_API>
-      enter_resource(resource, false);
+  ppapi::thunk::EnterResource<ppapi::thunk::PPB_ImageData_API> enter_resource(
+      resource, false);
   PP_ImageDataDesc desc;
-  if (enter_resource.object()->Describe(&desc)) {
+  if (enter_resource.object()->Describe(&desc) == PP_TRUE) {
     image_data_desc->resize(sizeof(PP_ImageDataDesc));
     memcpy(&(*image_data_desc)[0], &desc, sizeof(PP_ImageDataDesc));
   }

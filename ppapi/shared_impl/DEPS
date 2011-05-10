@@ -1,13 +1,11 @@
 include_rules = [
   "+base",
+  "+skia",
+  "+webkit/glue",
 
   # Since this is used by the implementation in /webkit, we don't want it to
   # depend on IPC.
   "-ipc",
 
   "-ppapi/cpp",
-
-  # The image data implementation depends on how we're building Skia. This isn't
-  # a link-time dependency, so it's OK.
-  "+skia/config/SkUserConfig.h"
 ]

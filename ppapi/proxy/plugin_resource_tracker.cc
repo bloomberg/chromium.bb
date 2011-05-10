@@ -90,17 +90,14 @@ PluginResource* PluginResourceTracker::GetResourceObject(
 
 PP_Resource PluginResourceTracker::AddResource(
     linked_ptr<PluginResource> object) {
-  if (object->host_resource().is_null()) {
-    // Prevent adding null resources or GetResourceObject(0) will return a
-    // valid pointer!
-    NOTREACHED();
-    return 0;
-  }
-
   PP_Resource plugin_resource = ++last_resource_id_;
   DCHECK(resource_map_.find(plugin_resource) == resource_map_.end());
   resource_map_[plugin_resource] = ResourceInfo(1, object);
-  host_resource_map_[object->host_resource()] = plugin_resource;
+  if (!object->host_resource().is_null()) {
+    // The host resource ID will be 0 for resources that only exist in the
+    // plugin process. Don't add those to the list.
+    host_resource_map_[object->host_resource()] = plugin_resource;
+  }
   return plugin_resource;
 }
 
@@ -157,7 +154,8 @@ void PluginResourceTracker::ReleasePluginResourceRef(
     PluginDispatcher* dispatcher =
         PluginDispatcher::GetForInstance(plugin_resource->instance());
     HostResource host_resource = plugin_resource->host_resource();
-    host_resource_map_.erase(host_resource);
+    if (!host_resource.is_null())
+      host_resource_map_.erase(host_resource);
     resource_map_.erase(found);
     plugin_resource.reset();
 

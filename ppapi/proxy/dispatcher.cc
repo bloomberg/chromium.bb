@@ -181,6 +181,7 @@ InterfaceList* InterfaceList::GetInstance() {
 Dispatcher::Dispatcher(base::ProcessHandle remote_process_handle,
                        GetInterfaceFunc local_get_interface)
     : ProxyChannel(remote_process_handle),
+      dispatcher_delegate_(NULL),
       disallow_trusted_interfaces_(false),  // TODO(brettw) make this settable.
       local_get_interface_(local_get_interface),
       callback_tracker_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -239,6 +240,11 @@ const InterfaceProxy::Info* Dispatcher::GetPPPInterfaceInfo(InterfaceID id) {
     return NULL;
   const InterfaceList* list = InterfaceList::GetInstance();
   return list->id_to_plugin_info_[id];
+}
+
+void Dispatcher::SetDelegate(Delegate* delegate) {
+  DCHECK(!dispatcher_delegate_);
+  dispatcher_delegate_ = delegate;
 }
 
 void Dispatcher::SetSerializationRules(

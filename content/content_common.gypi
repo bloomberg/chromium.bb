@@ -43,6 +43,8 @@
         'common/child_process_info.cc',
         'common/child_process_info.h',
         'common/child_process_messages.h',
+        'common/child_process_sandbox_support_linux.cc',
+        'common/child_process_sandbox_support_linux.h',
         'common/child_thread.cc',
         'common/child_thread.h',
         'common/child_trace_message_filter.cc',

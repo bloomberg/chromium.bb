@@ -267,47 +267,6 @@ void ParamTraits<pp::proxy::PPBFileRef_CreateInfo>::Log(
     std::string* l) {
 }
 
-// PPBFont_DrawTextAt_Params ---------------------------------------------------
-
-// static
-void ParamTraits<pp::proxy::PPBFont_DrawTextAt_Params>::Write(
-    Message* m,
-    const param_type& p) {
-  ParamTraits<pp::proxy::HostResource>::Write(m, p.font);
-  ParamTraits<pp::proxy::HostResource>::Write(m, p.image_data);
-  ParamTraits<PP_Bool>::Write(m, p.text_is_rtl);
-  ParamTraits<PP_Bool>::Write(m, p.override_direction);
-  ParamTraits<PP_Point>::Write(m, p.position);
-  ParamTraits<uint32_t>::Write(m, p.color);
-  ParamTraits<PP_Rect>::Write(m, p.clip);
-  ParamTraits<bool>::Write(m, p.clip_is_null);
-  ParamTraits<PP_Bool>::Write(m, p.image_data_is_opaque);
-}
-
-// static
-bool ParamTraits<pp::proxy::PPBFont_DrawTextAt_Params>::Read(
-    const Message* m,
-    void** iter,
-    param_type* r) {
-  return
-      ParamTraits<pp::proxy::HostResource>::Read(m, iter, &r->font) &&
-      ParamTraits<pp::proxy::HostResource>::Read(m, iter,
-                                                       &r->image_data) &&
-      ParamTraits<PP_Bool>::Read(m, iter, &r->text_is_rtl) &&
-      ParamTraits<PP_Bool>::Read(m, iter, &r->override_direction) &&
-      ParamTraits<PP_Point>::Read(m, iter, &r->position) &&
-      ParamTraits<uint32_t>::Read(m, iter, &r->color) &&
-      ParamTraits<PP_Rect>::Read(m, iter, &r->clip) &&
-      ParamTraits<bool>::Read(m, iter, &r->clip_is_null) &&
-      ParamTraits<PP_Bool>::Read(m, iter, &r->image_data_is_opaque);
-}
-
-// static
-void ParamTraits<pp::proxy::PPBFont_DrawTextAt_Params>::Log(
-    const param_type& p,
-    std::string* l) {
-}
-
 // PPBURLLoader_UpdateProgress_Params ------------------------------------------
 
 // static

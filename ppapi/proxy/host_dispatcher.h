@@ -46,9 +46,9 @@ class HostDispatcher : public Dispatcher {
   // You must call this function before anything else. Returns true on success.
   // The delegate pointer must outlive this class, ownership is not
   // transferred.
-  virtual bool InitHostWithChannel(ProxyChannel::Delegate* delegate,
-                                     const IPC::ChannelHandle& channel_handle,
-                                     bool is_client);
+  virtual bool InitHostWithChannel(Delegate* delegate,
+                                   const IPC::ChannelHandle& channel_handle,
+                                   bool is_client);
 
   // The host side maintains a mapping from PP_Instance to Dispatcher so
   // that we can send the messages to the right channel.

@@ -8,6 +8,7 @@
 namespace ppapi {
 
 namespace thunk {
+class PPB_Font_API;
 class PPB_Graphics2D_API;
 class PPB_ImageData_API;
 }
@@ -17,12 +18,17 @@ namespace shared_impl {
 class ResourceObjectBase {
  public:
 
+  virtual thunk::PPB_Font_API* AsFont_API() { return NULL; }
   virtual thunk::PPB_Graphics2D_API* AsGraphics2D_API() { return NULL; }
   virtual thunk::PPB_ImageData_API* AsImageData_API() { return NULL; }
 
   template <typename T> T* GetAs() { return NULL; }
 };
 
+template<>
+inline thunk::PPB_Font_API* ResourceObjectBase::GetAs() {
+  return AsFont_API();
+}
 template<>
 inline thunk::PPB_Graphics2D_API* ResourceObjectBase::GetAs() {
   return AsGraphics2D_API();

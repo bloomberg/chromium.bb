@@ -5,7 +5,9 @@
 #include "webkit/plugins/ppapi/resource_creation_impl.h"
 
 #include "ppapi/c/pp_size.h"
+#include "ppapi/shared_impl/font_impl.h"
 #include "webkit/plugins/ppapi/common.h"
+#include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 
@@ -21,6 +23,20 @@ ResourceCreationImpl::~ResourceCreationImpl() {
 ::ppapi::thunk::ResourceCreationAPI*
 ResourceCreationImpl::AsResourceCreation() {
   return this;
+}
+
+PP_Resource ResourceCreationImpl::CreateFontObject(
+    PP_Instance pp_instance,
+    const PP_FontDescription_Dev* description) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return 0;
+
+  if (!pp::shared_impl::FontImpl::IsPPFontDescriptionValid(*description))
+    return 0;
+
+  scoped_refptr<PPB_Font_Impl> font(new PPB_Font_Impl(instance, *description));
+  return font->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateGraphics2D(

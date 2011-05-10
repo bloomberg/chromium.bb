@@ -37,10 +37,6 @@
 #include "base/mac/mac_util.h"
 #endif
 
-#if defined(OS_LINUX)
-#include "content/renderer/renderer_sandbox_support_linux.h"
-#endif
-
 RenderProcessImpl::RenderProcessImpl()
     : ALLOW_THIS_IN_INITIALIZER_LIST(shared_mem_cache_cleaner_(
           base::TimeDelta::FromSeconds(5),

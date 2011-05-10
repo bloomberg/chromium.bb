@@ -18,15 +18,8 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/thunk/thunk.h"
-
-#if defined(OS_LINUX)
-#include <sys/shm.h>
-#elif defined(OS_MACOSX)
-#include <sys/stat.h>
-#include <sys/mman.h>
-#elif defined(OS_WIN)
-#include <windows.h>
-#endif
+#include "skia/ext/platform_canvas.h"
+#include "ui/gfx/surface/transport_dib.h"
 
 namespace pp {
 namespace proxy {
@@ -72,13 +65,15 @@ ImageData::ImageData(const HostResource& resource,
                      const PP_ImageDataDesc& desc,
                      ImageHandle handle)
     : PluginResource(resource),
-      desc_(desc),
-      handle_(handle),
-      mapped_data_(NULL) {
+      desc_(desc) {
+#if defined(OS_WIN)
+  transport_dib_.reset(TransportDIB::CreateWithHandle(handle));
+#else
+  transport_dib_.reset(TransportDIB::Map(handle));
+#endif
 }
 
 ImageData::~ImageData() {
-  Unmap();
 }
 
 ::ppapi::thunk::PPB_ImageData_API* ImageData::AsImageData_API() {
@@ -95,47 +90,23 @@ PP_Bool ImageData::Describe(PP_ImageDataDesc* desc) {
 }
 
 void* ImageData::Map() {
-#if defined(OS_WIN)
-  mapped_data_ = ::MapViewOfFile(handle_, FILE_MAP_READ | FILE_MAP_WRITE,
-                                 0, 0, 0);
-  return mapped_data_;
-#elif defined(OS_MACOSX)
-  struct stat st;
-  if (fstat(handle_.fd, &st) != 0)
-    return NULL;
-  void* memory = mmap(NULL, st.st_size, PROT_READ | PROT_WRITE,
-                      MAP_SHARED, handle_.fd, 0);
-  if (memory == MAP_FAILED)
-    return NULL;
-  mapped_data_ = memory;
-  return mapped_data_;
-#else
-  int shmkey = handle_;
-  void* address = shmat(shmkey, NULL, 0);
-  // Mark for deletion in case we crash so the kernel will clean it up.
-  shmctl(shmkey, IPC_RMID, 0);
-  if (address == (void*)-1)
-    return NULL;
-  mapped_data_ = address;
-  return address;
-#endif
+  if (!mapped_canvas_.get()) {
+    mapped_canvas_.reset(transport_dib_->GetPlatformCanvas(desc_.size.width,
+                                                           desc_.size.height));
+    if (!mapped_canvas_.get())
+      return NULL;
+  }
+  const SkBitmap& bitmap =
+      mapped_canvas_->getTopPlatformDevice().accessBitmap(true);
+
+  bitmap.lockPixels();
+  return bitmap.getAddr(0, 0);
 }
 
 void ImageData::Unmap() {
-#if defined(OS_WIN)
-  if (mapped_data_)
-    ::UnmapViewOfFile(mapped_data_);
-#elif defined(OS_MACOSX)
-  if (mapped_data_) {
-    struct stat st;
-    if (fstat(handle_.fd, &st) == 0)
-      munmap(mapped_data_, st.st_size);
-  }
-#else
-  if (mapped_data_)
-    shmdt(mapped_data_);
-#endif
-  mapped_data_ = NULL;
+  // TODO(brettw) have a way to unmap a TransportDIB. Currently this isn't
+  // possible since deleting the TransportDIB also frees all the handles.
+  // We need to add a method to TransportDIB to release the handles.
 }
 
 #if defined(OS_WIN)

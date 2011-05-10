@@ -79,6 +79,7 @@ bool PluginDispatcher::InitPluginWithChannel(
     bool is_client) {
   if (!Dispatcher::InitWithChannel(delegate, channel_handle, is_client))
     return false;
+  SetDelegate(delegate);
 
   // The message filter will intercept and process certain messages directly
   // on the I/O thread.
@@ -199,6 +200,16 @@ void PluginDispatcher::DidDestroyInstance(PP_Instance instance) {
 InstanceData* PluginDispatcher::GetInstanceData(PP_Instance instance) {
   InstanceDataMap::iterator it = instance_map_.find(instance);
   return (it == instance_map_.end()) ? NULL : &it->second;
+}
+
+void PluginDispatcher::PostToWebKitThread(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
+  return dispatcher_delegate_->PostToWebKitThread(from_here, task);
+}
+
+pp::shared_impl::WebKitForwarding* PluginDispatcher::GetWebKitForwarding() {
+  return dispatcher_delegate_->GetWebKitForwarding();
 }
 
 ::ppapi::shared_impl::FunctionGroupBase* PluginDispatcher::GetFunctionAPI(

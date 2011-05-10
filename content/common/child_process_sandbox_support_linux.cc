@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/renderer_sandbox_support_linux.h"
+#include "content/common/child_process_sandbox_support_linux.h"
 
 #include <sys/stat.h>
 
@@ -13,14 +13,13 @@
 #include "content/common/chrome_descriptors.h"
 #include "content/common/sandbox_methods_linux.h"
 #include "content/common/unix_domain_socket_posix.h"
-
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontRenderStyle.h"
 
 static int GetSandboxFD() {
   return kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor;
 }
 
-namespace renderer_sandbox_support {
+namespace child_process_sandbox_support {
 
 std::string getFontFamilyForCharacters(const uint16_t* utf16,
                                        size_t num_utf16,
@@ -186,4 +185,4 @@ bool GetFontTable(int fd, uint32_t table, uint8_t* output,
   return true;
 }
 
-}  // namespace render_sandbox_support
+}  // namespace child_process_sandbox_support
