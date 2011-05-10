@@ -44,11 +44,10 @@ if asm_env.Bit('bitcode'):
 asm_helper = asm_env.ComponentObject(
     'elf_restart_%s.S' % env['TARGET_FULLARCH'].replace('-', '_'))
 
-files = [
+irt_support_sources = [
     'irt_entry.c',
     'irt_sbrk.c',
     'irt_elf_utils.c',
-    asm_helper,
     ]
 
 # The bitcode build does not yet use -mtls-use-call and so it improperly
@@ -57,25 +56,37 @@ files = [
 # mismatch where library code using (what should be reserved for) user TLS
 # will crash because it hasn't been initialized.
 if not env.Bit('bitcode'):
-  files.append('irt_tls.c')
+  irt_support_sources.append('irt_tls.c')
 
 # TODO(mcgrathr): most of these live in ../nacl/irt_*.c now because
 # of the dismal kludge state of building everything.  Eventually
 # all that should move here.
-irt_interface_sources = [
-    'irt_interfaces.c',
-    'irt_ppapi.c',
-    ]
+irt_common_interfaces = []
 
-irt_library = blob_env.ComponentProgram(
-    'irt.nexe', files + irt_interface_sources,
-    EXTRA_LIBS=['ppruntime',
-                'srpc',
-                'imc_syscalls',
-                'platform',
-                'gio',
-                'pthread',
-                'm'])
+# These are the objects and libraries that go into every IRT image.
+irt_support_objs = asm_helper + [blob_env.ComponentObject(x) for x in
+                                 (irt_support_sources + irt_common_interfaces)]
+irt_support_libs = ['pthread']
+
+# These go into only one image or the other.
+irt_nonbrowser = ['irt_interfaces.c',
+                  ]
+
+irt_browser = ['irt_interfaces_ppapi.c',
+               'irt_ppapi.c',
+               ]
+
+def LinkIrt(output, files, libs):
+  return blob_env.ComponentProgram(output, irt_support_objs + files,
+                                   EXTRA_LIBS=libs + irt_support_libs)
+
+irt_core_library = LinkIrt('irt_core.nexe', irt_nonbrowser, [])
+irt_library = LinkIrt('irt.nexe', irt_browser, ['ppruntime',
+                                                'srpc',
+                                                'imc_syscalls',
+                                                'platform',
+                                                'gio',
+                                                'm'])
 
 # TODO(mcgrathr): these should be installed, but scons is a mystery
 #env.AddHeaderToSdk(['irt.h'])
@@ -91,3 +102,7 @@ if env.Bit('build_x86_32') and not env.Bit('bitcode'):
                          ['${PYTHON}', env.File('check_tls.py'),
                           '${OBJDUMP}', irt_library])
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_tls_test')
+  node = env.CommandTest('irt_core_tls_test.out',
+                         ['${PYTHON}', env.File('check_tls.py'),
+                          '${OBJDUMP}', irt_core_library])
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_core_tls_test')
