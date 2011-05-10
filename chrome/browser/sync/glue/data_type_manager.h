@@ -34,6 +34,8 @@ class DataTypeManager {
     STOPPING           // Data types are being stopped.
   };
 
+  // Update NotifyDone() in data_type_manager_impl.cc if you update
+  // this.
   enum ConfigureResult {
     OK,                  // Configuration finished without error.
     ASSOCIATION_FAILED,  // An error occurred during model association.

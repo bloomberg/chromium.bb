@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/task.h"
+#include "base/time.h"
 
 namespace browser_sync {
 
@@ -59,6 +60,10 @@ class DataTypeManagerImpl : public DataTypeManager {
       const tracked_objects::Location& location);
   void SetBlockedAndNotify();
 
+  // Add to |configure_time_delta_| the time since we last called
+  // Restart().
+  void AddToConfigureTime();
+
   SyncBackendHost* backend_;
   // Map of all data type controllers that are available for sync.
   // This list is determined at startup by various command line flags.
@@ -78,6 +83,13 @@ class DataTypeManagerImpl : public DataTypeManager {
   sync_api::ConfigureReason last_configure_reason_;
 
   ScopedRunnableMethodFactory<DataTypeManagerImpl> method_factory_;
+
+  // The last time Restart() was called.
+  base::Time last_restart_time_;
+
+  // The accumulated time spent between calls to Restart() and going
+  // to the DONE/BLOCKED state.
+  base::TimeDelta configure_time_delta_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);
 };
