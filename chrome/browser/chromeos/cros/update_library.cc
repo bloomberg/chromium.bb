@@ -22,7 +22,7 @@ class UpdateLibraryImpl : public UpdateLibrary {
     }
   }
 
-  ~UpdateLibraryImpl() {
+  virtual ~UpdateLibraryImpl() {
     if (status_connection_) {
       DisconnectUpdateProgress(status_connection_);
     }
@@ -76,6 +76,8 @@ class UpdateLibraryImpl : public UpdateLibrary {
 
   void Init() {
     status_connection_ = MonitorUpdateStatus(&ChangedHandler, this);
+    // Asynchronously load the initial state.
+    RequestUpdateStatus(&ChangedHandler, this);
   }
 
   void UpdateStatus(const Status& status) {
@@ -115,7 +117,7 @@ class UpdateLibraryImpl : public UpdateLibrary {
 class UpdateLibraryStubImpl : public UpdateLibrary {
  public:
   UpdateLibraryStubImpl() {}
-  ~UpdateLibraryStubImpl() {}
+  virtual ~UpdateLibraryStubImpl() {}
   void AddObserver(Observer* observer) {}
   void RemoveObserver(Observer* observer) {}
   bool HasObserver(Observer* observer) { return false; }
