@@ -113,6 +113,7 @@ x11_compositor_init_egl(struct x11_compositor *c)
 		EGL_NONE
 	};
 
+	setenv("EGL_PLATFORM", "x11", 1);
 	c->base.display = eglGetDisplay(c->dpy);
 	if (c->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");

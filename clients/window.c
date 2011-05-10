@@ -1757,6 +1757,7 @@ init_egl(struct display *d)
 		EGL_NONE
 	};
 
+	setenv("EGL_PLATFORM", "wayland", 1);
 	d->dpy = eglGetDisplay(d->display);
 	if (!eglInitialize(d->dpy, &major, &minor)) {
 		fprintf(stderr, "failed to initialize display\n");

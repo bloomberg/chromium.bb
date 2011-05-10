@@ -269,6 +269,7 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
+	setenv("EGL_PLATFORM", "drm", 1);
 	ec->drm.fd = fd;
 	ec->base.display = eglGetDisplay(FD_TO_EGL_NATIVE_DPY(ec->drm.fd));
 	if (ec->base.display == NULL) {

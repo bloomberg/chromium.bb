@@ -111,6 +111,7 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 		EGL_NONE
 	};
 
+	setenv("EGL_PLATFORM", "wayland", 1);
 	c->base.display = eglGetDisplay(c->parent.display);
 	if (c->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");

@@ -118,6 +118,7 @@ init_egl(struct wfd_compositor *ec)
 		return -1;
 
 	ec->wfd_fd = fd;
+	setenv("EGL_PLATFORM", "drm", 1);
 	ec->base.display = eglGetDisplay(FD_TO_EGL_NATIVE_DPY(ec->wfd_fd));
 	if (ec->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
