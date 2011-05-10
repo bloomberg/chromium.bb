@@ -35,7 +35,7 @@ class ProfileManagerObserver {
 
   // If true, delete the observer after the profile has been created. Default
   // is false.
-  virtual bool DeleteAfterCreation() { return false; }
+  virtual bool DeleteAfterCreation();
 };
 
 class ProfileManager : public base::NonThreadSafe,

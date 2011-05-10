@@ -70,6 +70,11 @@ void ResumeRequestContext(
 
 }  // namespace
 
+
+bool ProfileManagerObserver::DeleteAfterCreation() {
+    return false;
+}
+
 // The NewProfileLauncher class is created when to wait for a multi-profile
 // to be created asynchronously. Upon completion of profile creation, the
 // NPL takes care of launching a new browser window and signing the user

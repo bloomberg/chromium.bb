@@ -54,7 +54,7 @@ namespace chromeos {
 class LoginPerformer : public LoginStatusConsumer,
                        public SignedSettingsHelper::Callback,
                        public NotificationObserver,
-                       public ProfileManager::Observer {
+                       public ProfileManagerObserver {
  public:
   // Delegate class to get notifications from the LoginPerformer.
   class Delegate : public LoginStatusConsumer {

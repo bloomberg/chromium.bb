@@ -105,7 +105,7 @@ class ResetDefaultProxyConfigServiceTask : public Task {
 }  // namespace
 
 class LoginUtilsImpl : public LoginUtils,
-                       public ProfileManager::Observer {
+                       public ProfileManagerObserver {
  public:
   LoginUtilsImpl()
       : background_view_(NULL) {
@@ -150,7 +150,7 @@ class LoginUtilsImpl : public LoginUtils,
   // Gets the current background view.
   virtual chromeos::BackgroundView* GetBackgroundView();
 
-  // ProfileManager::Observer implementation:
+  // ProfileManagerObserver implementation:
   virtual void OnProfileCreated(Profile* profile);
 
  protected:
