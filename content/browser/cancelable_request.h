@@ -659,11 +659,13 @@ class CancelableRequest : public CancelableRequestBase {
 
       // Execute the callback.
       callback_->RunWithParams(param);
-
-      // Notify the provider that the request is complete. The provider will
-      // notify the consumer for us.
-      NotifyCompleted();
     }
+
+    // Notify the provider that the request is complete. The provider will
+    // notify the consumer for us. Note that it is possible for the callback to
+    // cancel this request; we must check canceled again.
+    if (!canceled_.IsSet())
+      NotifyCompleted();
   }
 
   // This should only be executed if !canceled_.IsSet(),
