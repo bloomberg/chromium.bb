@@ -265,7 +265,6 @@ void BrowserOptionsHandler::OnTemplateURLModelChanged() {
     DictionaryValue* entry = new DictionaryValue();
     entry->SetString("name", model_urls[i]->short_name());
     entry->SetInteger("index", i);
-    entry->SetBoolean("hasInstant", model_urls[i]->instant_url() != NULL);
     search_engines.Append(entry);
     if (model_urls[i] == default_url)
       default_index = i;

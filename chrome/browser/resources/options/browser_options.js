@@ -203,15 +203,12 @@ cr.define('options', function() {
       for (var i = 0; i < engineCount; i++) {
         var engine = engines[i];
         var option = new Option(engine['name'], engine['index']);
-        option.hasInstant = engine['hasInstant'];
         if (defaultValue == option.value)
           defaultIndex = i;
         engineSelect.appendChild(option);
       }
       if (defaultIndex >= 0)
         engineSelect.selectedIndex = defaultIndex;
-
-      this.setDefaultSearchEngine_();
     },
 
     /**
@@ -425,7 +422,6 @@ cr.define('options', function() {
       var selectedIndex = engineSelect.selectedIndex;
       if (selectedIndex >= 0) {
         var selection = engineSelect.options[selectedIndex];
-        $('instantEnableCheckbox').disabled = !selection.hasInstant;
         chrome.send('setDefaultSearchEngine', [String(selection.value)]);
       }
     },
