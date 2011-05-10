@@ -71,6 +71,12 @@ WatchDogThread* TestingBrowserProcess::watchdog_thread() {
   return NULL;
 }
 
+#if defined(OS_CHROMEOS)
+base::Thread* TestingBrowserProcess::web_socket_proxy_thread() {
+  return NULL;
+}
+#endif
+
 ProfileManager* TestingBrowserProcess::profile_manager() {
   return profile_manager_.get();
 }

@@ -146,6 +146,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
+#include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #include "chrome/browser/oom_priority_manager.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #endif
@@ -660,6 +661,9 @@ void CreateChildThreads(BrowserProcessImpl* process) {
   process->process_launcher_thread();
   process->cache_thread();
   process->io_thread();
+#if defined(OS_CHROMEOS)
+  process->web_socket_proxy_thread();
+#endif
   // Create watchdog thread after creating all other threads because it will
   // watch the other threads and they must be running.
   process->watchdog_thread();

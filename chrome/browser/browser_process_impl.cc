@@ -88,6 +88,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -113,6 +114,9 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_cache_thread_(false),
       created_gpu_thread_(false),
       created_watchdog_thread_(false),
+#if defined(OS_CHROMEOS)
+      created_web_socket_proxy_thread_(false),
+#endif
       created_profile_manager_(false),
       created_local_state_(false),
       created_icon_manager_(false),
@@ -151,6 +155,12 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 
   // Store the profile path for clearing local state data on exit.
   clear_local_state_on_exit = ShouldClearLocalState(&profile_path);
+
+#if defined(OS_CHROMEOS)
+  if (web_socket_proxy_thread_.get())
+    chromeos::WebSocketProxyController::Shutdown();
+  web_socket_proxy_thread_.reset();
+#endif
 
   // Delete the AutomationProviderList before NotificationService,
   // since it may try to unregister notifications
@@ -434,6 +444,16 @@ WatchDogThread* BrowserProcessImpl::watchdog_thread() {
   DCHECK(watchdog_thread_.get() != NULL);
   return watchdog_thread_.get();
 }
+
+#if defined(OS_CHROMEOS)
+base::Thread* BrowserProcessImpl::web_socket_proxy_thread() {
+  DCHECK(CalledOnValidThread());
+  if (!created_web_socket_proxy_thread_)
+    CreateWebSocketProxyThread();
+  DCHECK(web_socket_proxy_thread_.get() != NULL);
+  return web_socket_proxy_thread_.get();
+}
+#endif
 
 ProfileManager* BrowserProcessImpl::profile_manager() {
   DCHECK(CalledOnValidThread());
@@ -762,6 +782,22 @@ void BrowserProcessImpl::CreateFileThread() {
     return;
   file_thread_.swap(thread);
 }
+
+#if defined(OS_CHROMEOS)
+void BrowserProcessImpl::CreateWebSocketProxyThread() {
+  DCHECK(!created_web_socket_proxy_thread_);
+  DCHECK(web_socket_proxy_thread_.get() == NULL);
+  created_web_socket_proxy_thread_ = true;
+
+  scoped_ptr<base::Thread> thread(
+      new BrowserProcessSubThread(BrowserThread::WEB_SOCKET_PROXY));
+  base::Thread::Options options;
+  options.message_loop_type = MessageLoop::TYPE_IO;
+  if (!thread->StartWithOptions(options))
+    return;
+  web_socket_proxy_thread_.swap(thread);
+}
+#endif
 
 void BrowserProcessImpl::CreateDBThread() {
   DCHECK(!created_db_thread_ && db_thread_.get() == NULL);

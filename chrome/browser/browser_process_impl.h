@@ -59,6 +59,9 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual base::Thread* background_x11_thread();
 #endif
   virtual WatchDogThread* watchdog_thread();
+#if defined(OS_CHROMEOS)
+  virtual base::Thread* web_socket_proxy_thread();
+#endif
   virtual ProfileManager* profile_manager();
   virtual PrefService* local_state();
   virtual DevToolsManager* devtools_manager();
@@ -130,6 +133,9 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateCacheThread();
   void CreateGpuThread();
   void CreateWatchdogThread();
+#if defined(OS_CHROMEOS)
+  void CreateWebSocketProxyThread();
+#endif
   void CreateTemplateURLModel();
   void CreateProfileManager();
   void CreateWebDataService();
@@ -185,6 +191,11 @@ class BrowserProcessImpl : public BrowserProcess,
 
   bool created_watchdog_thread_;
   scoped_ptr<WatchDogThread> watchdog_thread_;
+
+#if defined(OS_CHROMEOS)
+  bool created_web_socket_proxy_thread_;
+  scoped_ptr<base::Thread> web_socket_proxy_thread_;
+#endif
 
   bool created_profile_manager_;
   scoped_ptr<ProfileManager> profile_manager_;

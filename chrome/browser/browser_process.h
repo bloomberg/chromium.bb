@@ -145,6 +145,13 @@ class BrowserProcess {
   // Returns the thread that is used for health check of all browser threads.
   virtual WatchDogThread* watchdog_thread() = 0;
 
+#if defined(OS_CHROMEOS)
+  // Returns thread for websocket to TCP proxy.
+  // TODO(dilmah): remove this thread.  Instead provide this functionality via
+  // hooks into websocket bridge layer.
+  virtual base::Thread* web_socket_proxy_thread() = 0;
+#endif
+
   virtual policy::BrowserPolicyConnector* browser_policy_connector() = 0;
 
   virtual IconManager* icon_manager() = 0;

@@ -63,6 +63,10 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual WatchDogThread* watchdog_thread();
 
+#if defined(OS_CHROMEOS)
+  virtual base::Thread* web_socket_proxy_thread();
+#endif
+
   virtual ProfileManager* profile_manager();
 
   virtual PrefService* local_state();

@@ -1283,6 +1283,11 @@ class NotificationType {
     // Sent when the applications in the NTP app launcher have been reordered.
     EXTENSION_LAUNCHER_REORDERED,
 
+#if defined(OS_CHROMEOS)
+    // Sent when WebSocketProxy started accepting connections.
+    WEB_SOCKET_PROXY_STARTED,
+#endif
+
     // Sent when a new web store promo has been loaded.
     WEB_STORE_PROMO_LOADED,
 

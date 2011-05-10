@@ -75,6 +75,13 @@ class BrowserThread : public base::Thread {
     BACKGROUND_X11,
 #endif
 
+#if defined(OS_CHROMEOS)
+    // This thread runs websocket to TCP proxy.
+    // TODO(dilmah): remove this thread, instead implement this functionality
+    // as hooks into websocket layer.
+    WEB_SOCKET_PROXY,
+#endif
+
     // This identifier does not represent a thread.  Instead it counts the
     // number of well-known threads.  Insert new well-known threads before this
     // identifier.
