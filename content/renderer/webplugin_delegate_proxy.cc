@@ -20,6 +20,7 @@
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
+#include "base/version.h"
 #include "content/common/child_process.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
@@ -44,6 +45,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+#include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/sad_plugin.h"
 #include "webkit/glue/webkit_glue.h"
@@ -269,6 +271,29 @@ static bool SilverlightColorIsTransparent(const std::string& color) {
   return false;
 }
 
+#if defined(OS_MACOSX)
+// Returns true if the OS is 10.5 (Leopard).
+static bool OSIsLeopard() {
+  int32 major, minor, bugfix;
+  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+  return major == 10 && minor == 5;
+}
+
+// Returns true if the given Flash version assumes QuickDraw support is present
+// instead of checking using the negotiation system.
+static bool FlashVersionAssumesQuickDrawSupport(const string16& version) {
+  scoped_ptr<Version> plugin_version(
+      webkit::npapi::PluginGroup::CreateVersionFromString(version));
+  if (plugin_version.get() && plugin_version->components().size() >= 2) {
+    uint16 major = plugin_version->components()[0];
+    uint16 minor = plugin_version->components()[1];
+    return major < 10 || (major == 10 && minor < 3);
+  }
+  // If parsing fails for some reason, assume the best.
+  return false;
+}
+#endif
+
 bool WebPluginDelegateProxy::Initialize(
     const GURL& url,
     const std::vector<std::string>& arg_names,
@@ -335,31 +360,15 @@ bool WebPluginDelegateProxy::Initialize(
     }
   }
 #if defined(OS_MACOSX)
-  // Unless we have a real way to support accelerated (3D) drawing on Macs
-  // (which for now at least means the Core Animation drawing model), ask
-  // Flash to use windowless mode so that it use CoreGraphics instead of opening
-  // OpenGL contexts overlaying the browser window (which requires a very
-  // expensive extra copy for us).
-  if (!transparent_ && mime_type_ == "application/x-shockwave-flash") {
-    bool force_opaque_mode = false;
-    if (StartsWith(info_.version, ASCIIToUTF16("10.0"), false) ||
-        StartsWith(info_.version, ASCIIToUTF16("9."), false)) {
-      // Older versions of Flash don't support CA (and they assume QuickDraw
-      // support, so we can't rely on negotiation to do the right thing).
-      force_opaque_mode = true;
-    } else {
-      // Flash 10.1 doesn't respect QuickDraw negotiation either, so we still
-      // have to force opaque mode on 10.5 (where it doesn't use CA).
-      int32 major, minor, bugfix;
-      base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-      if (major < 10 || (major == 10 && minor < 6))
-        force_opaque_mode = true;
-    }
-
-    if (force_opaque_mode) {
-      params.arg_names.push_back("wmode");
-      params.arg_values.push_back("opaque");
-    }
+  // Older versions of Flash just assume QuickDraw support during negotiation,
+  // so force everything but transparent mode to use opaque mode on 10.5
+  // (where Flash doesn't use CA) to prevent QuickDraw from being used.
+  // TODO(stuartmorgan): Remove this code once the two latest major Flash
+  // releases negotiate correctly.
+  if (flash && !transparent_ && OSIsLeopard() &&
+      FlashVersionAssumesQuickDrawSupport(info_.version)) {
+    params.arg_names.push_back("wmode");
+    params.arg_values.push_back("opaque");
   }
 #endif
   params.load_manually = load_manually;
