@@ -572,7 +572,8 @@ WebKit::WebString RendererWebKitClientImpl::signedPublicKeyAndChallengeString(
 //------------------------------------------------------------------------------
 
 WebBlobRegistry* RendererWebKitClientImpl::blobRegistry() {
-  if (!blob_registry_.get())
+  // RenderThread::current can be NULL when running some tests.
+  if (!blob_registry_.get() && RenderThread::current())
     blob_registry_.reset(new WebBlobRegistryImpl(RenderThread::current()));
   return blob_registry_.get();
 }
