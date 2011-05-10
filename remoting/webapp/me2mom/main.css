@@ -1,3 +1,8 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 body {
   font-family: Helvetica, sans-serif;
   cursor: default;
@@ -16,6 +21,20 @@ p {
   padding: 0 4px 0 4px;
 }
 
+.mock {
+  color: gray;
+}
+
+#access_code_display {
+  font-family: sans-serif;
+  font-size: 200%;
+  margin: 0 0 0 24px;
+  padding: 0 4px 0 4px;
+  border-style: solid;
+  background-color: lightgray;
+  display: inline-block;
+}
+
 button {
   -webkit-border-radius: 2px;
   -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
@@ -28,7 +47,6 @@ button {
   min-width: 4em;
   padding: 3px 12px 3px 12px;
 }
-
 
 button:hover {
   -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);

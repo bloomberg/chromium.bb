@@ -1,3 +1,4 @@
+<!doctype html>
 <!--
 Copyright (c) 2011 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
@@ -5,19 +6,118 @@ found in the LICENSE file.
 -->
 
 <html>
+
   <head>
     <link rel="stylesheet" type="text/css" href="main.css" />
+    <script type="text/javascript" src="remoting.js"></script>
     <title>Select Role</title>
   </head>
-  <body>
-    <div id="host-or-client-choice">
-      <p class="message">Select role:</p>
-      <button class="role-select" onclick="location.replace('host.html');">
-        Host
-      </button>
-      <button class="role-select" onclick="location.replace('client.html');">
-        Client
-      </button>
+
+  <body onload="init();">
+
+    <!-- Host UI -->
+    <div id="host">
+
+      <div id="unshared">
+        <p class="message">
+          Your desktop is currently unshared.
+        </p>
+        <button type="button"
+                class="ok"
+                onclick="tryShare();">
+          Start sharing
+        </button>
+        <p>
+          <a class="switch_mode"
+             href="#c"
+             onclick="setGlobalMode('client');">
+            I want to connect to another computer instead...
+          </a>
+        </p>
+      </div>
+
+      <div id="ready_to_share">
+        <p class="message">
+          To begin sharing your desktop, read out the access code below to the
+          person who will be assisting you.
+        </p>
+        <p id="access_code_display">
+          ABCD-1234-WXYZ
+        </p>
+        <p class="message">
+          Waiting for connection...
+          <button type="button"
+                  class="cancel"
+                  onclick="cancelShare();">
+            Cancel
+          </button>
+        </p>
+        <p class="message mock">
+          (For this mock-up, this message will disappear automatically.)
+        </p>
+      </div>
+
+      <div id="shared">
+        <p class="message">
+          Your desktop is currently being shared.
+        </p>
+        <button type="button"
+                class="cancel"
+                onclick="setHostMode('unshared');">
+          Stop sharing
+        </button>
+      </div>
+
     </div>
+
+    <!-- Client UI -->
+    <div id="client">
+
+      <div id="unconnected">
+        <p class="message">
+          To connect to another computer, enter the access code provided to you
+          by that computer's user.
+        </p>
+        <form action="">
+          <input type="text"
+                 id="access_code_entry"/>
+          <button type="submit"
+                  onclick="tryConnect(this.form);">
+            Connect
+          </button>
+        </form>
+        <a class="switch_mode"
+           href="#h"
+           onclick="setGlobalMode('host');">
+          I want to share this computer instead...
+        </a>
+      </div>
+
+      <div id="connecting">
+        <p class="message">
+          Verifying access code...
+          <button type="button"
+                  class="cancel"
+                  onclick="cancelConnect();">
+            Cancel
+          </button>
+
+        </p>
+        <p class="message mock">
+          (For this mock-up, this message will disappear automatically.)
+        </p>
+      </div>
+
+    </div>
+
+    <!-- In-session UI -->
+    <div id="session">
+      <p class="message">
+        Congratulations! You have connected successfully. Your access code was
+        <em id="access_code_proof"></em>.
+      </p>
+    </div>
+
   </body>
+
 </html>
