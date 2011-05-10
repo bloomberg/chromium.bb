@@ -1235,6 +1235,18 @@ bool VirtualNetwork::ParseProviderValue(int index, const Value* value) {
       }
       break;
     }
+    case PROPERTY_INDEX_L2TPIPSEC_CA_CERT:
+      return value->GetAsString(&ca_cert_);
+    case PROPERTY_INDEX_L2TPIPSEC_PSK:
+      return value->GetAsString(&psk_passphrase_);
+    case PROPERTY_INDEX_L2TPIPSEC_CERT:
+      return value->GetAsString(&user_cert_);
+    case PROPERTY_INDEX_L2TPIPSEC_KEY:
+      return value->GetAsString(&user_cert_key_);
+    case PROPERTY_INDEX_L2TPIPSEC_USER:
+      return value->GetAsString(&username_);
+    case PROPERTY_INDEX_L2TPIPSEC_PASSWORD:
+      return value->GetAsString(&user_passphrase_);
     default:
       break;
   }
@@ -1261,18 +1273,6 @@ bool VirtualNetwork::ParseValue(int index, const Value* value) {
       }
       return true;
     }
-    case PROPERTY_INDEX_L2TPIPSEC_CA_CERT:
-      return value->GetAsString(&ca_cert_);
-    case PROPERTY_INDEX_L2TPIPSEC_PSK:
-      return value->GetAsString(&psk_passphrase_);
-    case PROPERTY_INDEX_L2TPIPSEC_CERT:
-      return value->GetAsString(&user_cert_);
-    case PROPERTY_INDEX_L2TPIPSEC_KEY:
-      return value->GetAsString(&user_cert_key_);
-    case PROPERTY_INDEX_L2TPIPSEC_USER:
-      return value->GetAsString(&username_);
-    case PROPERTY_INDEX_L2TPIPSEC_PASSWORD:
-      return value->GetAsString(&user_passphrase_);
     default:
       return Network::ParseValue(index, value);
       break;
@@ -2565,14 +2565,16 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       LOG(WARNING) << "Error from ServiceConnect callback for: "
                    << network->name()
                    << " Error: " << error << " Message: " << error_message;
+      // This will trigger the connection failed notification.
+      // TODO(stevenjb): Remove if chromium-os:13203 gets fixed.
+      network->SetState(STATE_FAILURE);
       if (error_message &&
           strcmp(error_message, kErrorPassphraseRequiredMsg) == 0) {
-        // This will trigger the connection failed notification.
-        // TODO(stevenjb): Remove if chromium-os:13203 gets fixed.
-        network->SetState(STATE_FAILURE);
         network->set_error(ERROR_BAD_PASSPHRASE);
-        networklib->NotifyNetworkManagerChanged(true);  // Forced update.
+      } else {
+        network->set_error(ERROR_CONNECT_FAILED);
       }
+      networklib->NotifyNetworkManagerChanged(true);  // Forced update.
       return;
     }
 
@@ -2613,6 +2615,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     // change without a forced notify.
     network->set_connecting(true);
     NotifyNetworkManagerChanged(true);  // Forced update.
+    VLOG(1) << "Requesting connect to network: " << network->service_path();
     RequestNetworkServiceConnect(network->service_path().c_str(),
                                  NetworkConnectCallback, this);
   }
@@ -2803,7 +2806,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
 
     vpn->set_added(true);
-    vpn->set_server_hostname(data.server_hostname);
+    if (!data.server_hostname.empty())
+      vpn->set_server_hostname(data.server_hostname);
     vpn->SetCACert("");
     vpn->SetUserCert("");
     vpn->SetUserCertKey("");
@@ -3580,7 +3584,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       //              << service_path;
     }
 
-    VLOG(1) << "ParseNetwork: " << network->name();
+    VLOG(1) << "ParseNetwork: " << network->name()
+            << " Path: " << network->service_path();
     NotifyNetworkManagerChanged(false);  // Not forced.
     return network;
   }
@@ -3606,7 +3611,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       }
     }
     network->ParseInfo(info);  // virtual.
-    VLOG(1) << "ParseRememberedNetwork: " << network->name();
+    VLOG(1) << "ParseRememberedNetwork: " << network->name()
+            << " Path: " << network->service_path();
     NotifyNetworkManagerChanged(false);  // Not forced.
     return network;
   }
