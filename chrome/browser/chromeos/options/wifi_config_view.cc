@@ -69,14 +69,13 @@ class SecurityComboboxModel : public ui::ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(SecurityComboboxModel);
 };
 
-// TODO(jamescook):  For M12 we only expose PEAP and EAP-TTLS.  Later, when
-// when we support all methods by default, order this list to be alphabetical.
+// Methods in alphabetical order.
 enum EAPMethodComboboxIndex {
   EAP_METHOD_INDEX_NONE  = 0,
-  EAP_METHOD_INDEX_PEAP  = 1,
-  EAP_METHOD_INDEX_TTLS  = 2,  // By default we support up to here.
+  EAP_METHOD_INDEX_LEAP  = 1,
+  EAP_METHOD_INDEX_PEAP  = 2,
   EAP_METHOD_INDEX_TLS   = 3,
-  EAP_METHOD_INDEX_LEAP  = 4,  // Flag "--enable-all-eap" allows up to here.
+  EAP_METHOD_INDEX_TTLS  = 4,
   EAP_METHOD_INDEX_COUNT = 5
 };
 
@@ -85,17 +84,15 @@ class EAPMethodComboboxModel : public ui::ComboboxModel {
   EAPMethodComboboxModel() {}
   virtual ~EAPMethodComboboxModel() {}
   virtual int GetItemCount() {
-    // TODO(jamescook):  For M12 we only expose PEAP and EAP-TTLS by default.
-    // Remove this switch when all methods are supported.
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableExperimentalEap))
-      return EAP_METHOD_INDEX_TTLS + 1;
     return EAP_METHOD_INDEX_COUNT;
   }
   virtual string16 GetItemAt(int index) {
     if (index == EAP_METHOD_INDEX_NONE)
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_NONE);
+    else if (index == EAP_METHOD_INDEX_LEAP)
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_LEAP);
     else if (index == EAP_METHOD_INDEX_PEAP)
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_PEAP);
@@ -105,9 +102,6 @@ class EAPMethodComboboxModel : public ui::ComboboxModel {
     else if (index == EAP_METHOD_INDEX_TTLS)
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_TTLS);
-    else if (index == EAP_METHOD_INDEX_LEAP)
-      return l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_LEAP);
     NOTREACHED();
     return string16();
   }
@@ -705,24 +699,19 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     layout->AddView(server_ca_cert_combobox_);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-    // TODO(jamescook): Add back client certificate combobox when we support
-    // EAP-TLS by default.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableExperimentalEap)) {
-      // Client certificate
-      layout->StartRow(0, column_view_set_id);
-      client_cert_label_ = new views::Label(
-          UTF16ToWide(l10n_util::GetStringUTF16(
-              IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT)));
-      layout->AddView(client_cert_label_);
-      client_cert_combobox_ = new views::Combobox(
-          new ClientCertComboboxModel(wifi_config_model_.get()));
-      client_cert_label_->SetEnabled(false);
-      client_cert_combobox_->SetEnabled(false);
-      client_cert_combobox_->set_listener(this);
-      layout->AddView(client_cert_combobox_);
-      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-    }
+    // Client certificate
+    layout->StartRow(0, column_view_set_id);
+    client_cert_label_ = new views::Label(
+        UTF16ToWide(l10n_util::GetStringUTF16(
+            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT)));
+    layout->AddView(client_cert_label_);
+    client_cert_combobox_ = new views::Combobox(
+        new ClientCertComboboxModel(wifi_config_model_.get()));
+    client_cert_label_->SetEnabled(false);
+    client_cert_combobox_->SetEnabled(false);
+    client_cert_combobox_->set_listener(this);
+    layout->AddView(client_cert_combobox_);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
     // Identity
     layout->StartRow(0, column_view_set_id);
@@ -805,18 +794,10 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
         eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_TTLS);
         break;
       case EAP_METHOD_TLS:
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kEnableExperimentalEap))
-          eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_TLS);
-        else // Clean up from previous run with the switch set.
-          eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_NONE);
+        eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_TLS);
         break;
       case EAP_METHOD_LEAP:
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kEnableExperimentalEap))
-          eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_LEAP);
-        else // Clean up from previous run with the switch set.
-          eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_NONE);
+        eap_method_combobox_->SetSelectedItem(EAP_METHOD_INDEX_LEAP);
         break;
       default:
         break;

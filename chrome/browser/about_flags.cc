@@ -286,18 +286,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "enable-experimental-eap",
-    IDS_FLAGS_ENABLE_EXPERIMENTAL_EAP_NAME,
-    IDS_FLAGS_ENABLE_EXPERIMENTAL_EAP_DESCRIPTION,
-    kOsCrOS,
-#if defined(OS_CHROMEOS)
-    // The switch exists only on Chrome OS.
-    SINGLE_VALUE_TYPE(switches::kEnableExperimentalEap)
-#else
-    SINGLE_VALUE_TYPE("")
-#endif
-  },
-  {
     "enable-vpn",
     IDS_FLAGS_ENABLE_VPN_NAME,
     IDS_FLAGS_ENABLE_VPN_DESCRIPTION,
