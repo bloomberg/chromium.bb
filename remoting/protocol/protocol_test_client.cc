@@ -230,7 +230,7 @@ void ProtocolTestClient::Run(const std::string& username,
       new XmppSignalStrategy(&jingle_thread, username, auth_token,
                              kChromotingTokenServiceName));
   client_ = new JingleClient(&jingle_thread, signal_strategy_.get(),
-                             NULL, this);
+                             NULL, NULL, NULL, this);
   client_->Init();
 
   session_manager_ = new JingleSessionManager(&jingle_thread);

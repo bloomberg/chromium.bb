@@ -104,8 +104,7 @@ void ChromotingHost::Start(Task* shutdown_task) {
                              kChromotingTokenServiceName));
   jingle_client_ = new JingleClient(context_->jingle_thread(),
                                     signal_strategy_.get(),
-                                    NULL,
-                                    this);
+                                    NULL, NULL, NULL, this);
   jingle_client_->Init();
 }
 

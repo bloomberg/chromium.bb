@@ -137,12 +137,8 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   };
 
   // Physical sockets are used if |network_manager| and
-  // |socket_factory| are not specified. Otherwise ownership of these
+  // |socket_factory| are set to NULL. Otherwise ownership of these
   // objects is given to JingleClient.
-  JingleClient(JingleThread* thread,
-               SignalStrategy* signal_strategy,
-               PortAllocatorSessionFactory* session_factory,
-               Callback* callback);
   JingleClient(JingleThread* thread,
                SignalStrategy* signal_strategy,
                talk_base::NetworkManager* network_manager,

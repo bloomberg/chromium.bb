@@ -41,8 +41,8 @@ class JingleClientTest : public testing::Test {
   virtual void SetUp() {
     signal_strategy_.reset(new XmppSignalStrategy(&thread_, "", "", ""));
     client_ = new JingleClient(&thread_, signal_strategy_.get(), NULL,
-                               &callback_);
-    // Fake initialization
+                               NULL, NULL, &callback_);
+    // Fake initialization.
     client_->initialized_ = true;
     signal_strategy_->observer_ = client_;
   }

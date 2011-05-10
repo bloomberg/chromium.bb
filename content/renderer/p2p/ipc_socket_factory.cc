@@ -29,7 +29,7 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
             const talk_base::SocketAddress& remote_address);
 
   // talk_base::AsyncPacketSocket interface.
-  virtual talk_base::SocketAddress GetLocalAddress(bool* allocated) const;
+  virtual bool GetLocalAddress(talk_base::SocketAddress* address) const;
   virtual talk_base::SocketAddress GetRemoteAddress() const;
   virtual int Send(const void *pv, size_t cb);
   virtual int SendTo(const void *pv, size_t cb,
@@ -142,14 +142,14 @@ void IpcPacketSocket::InitAcceptedTcp(
 }
 
 // talk_base::AsyncPacketSocket interface.
-talk_base::SocketAddress IpcPacketSocket::GetLocalAddress(
-     bool* allocated) const {
+bool IpcPacketSocket::GetLocalAddress(talk_base::SocketAddress* address) const {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 
-  if (allocated) {
-    *allocated = address_initialized_;
-  }
-  return local_address_;
+  if (!address_initialized_)
+    return false;
+
+  *address = local_address_;
+  return true;
 }
 
 talk_base::SocketAddress IpcPacketSocket::GetRemoteAddress() const {
@@ -329,7 +329,7 @@ talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateUdpSocket(
 
 talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateServerTcpSocket(
     const talk_base::SocketAddress& local_address, int min_port, int max_port,
-    bool listen, bool ssl) {
+    bool ssl) {
   // TODO(sergeyu): Implement SSL support.
   if (ssl)
     return NULL;

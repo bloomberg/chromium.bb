@@ -34,8 +34,8 @@ class FakeUDPPacketSocket : public talk_base::AsyncPacketSocket,
                      const std::vector<char>& data);
 
   // talk_base::AsyncPacketSocket implementation.
-  virtual talk_base::SocketAddress GetLocalAddress(
-      bool* allocated) const OVERRIDE;
+  virtual bool GetLocalAddress(
+      talk_base::SocketAddress* address) const OVERRIDE;
   virtual talk_base::SocketAddress GetRemoteAddress() const OVERRIDE;
   virtual int Send(const void *pv, size_t cb) OVERRIDE;
   virtual int SendTo(const void *pv, size_t cb,
@@ -101,7 +101,7 @@ class FakeSocketFactory : public talk_base::PacketSocketFactory {
       int min_port, int max_port) OVERRIDE;
   virtual talk_base::AsyncPacketSocket* CreateServerTcpSocket(
       const talk_base::SocketAddress& local_address, int min_port, int max_port,
-      bool listen, bool ssl) OVERRIDE;
+      bool ssl) OVERRIDE;
   virtual talk_base::AsyncPacketSocket* CreateClientTcpSocket(
       const talk_base::SocketAddress& local_address,
       const talk_base::SocketAddress& remote_address,

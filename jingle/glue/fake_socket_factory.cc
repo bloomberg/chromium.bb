@@ -22,11 +22,11 @@ FakeUDPPacketSocket::~FakeUDPPacketSocket() {
   fake_socket_manager_->RemoveSocket(this);
 }
 
-talk_base::SocketAddress FakeUDPPacketSocket::GetLocalAddress(
-    bool* allocated) const {
+bool FakeUDPPacketSocket::GetLocalAddress(
+    talk_base::SocketAddress* address) const {
   DCHECK(CalledOnValidThread());
-  *allocated = true;
-  return local_address_;
+  *address = local_address_;
+  return true;
 }
 
 talk_base::SocketAddress FakeUDPPacketSocket::GetRemoteAddress() const {
@@ -178,7 +178,7 @@ talk_base::AsyncPacketSocket* FakeSocketFactory::CreateUdpSocket(
 
 talk_base::AsyncPacketSocket* FakeSocketFactory::CreateServerTcpSocket(
     const talk_base::SocketAddress& local_address, int min_port, int max_port,
-    bool listen, bool ssl) {
+    bool ssl) {
   // TODO(sergeyu): Implement fake TCP sockets.
   NOTIMPLEMENTED();
   return NULL;

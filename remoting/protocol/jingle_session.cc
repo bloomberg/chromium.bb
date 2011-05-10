@@ -23,6 +23,7 @@
 #include "remoting/protocol/socket_wrapper.h"
 #include "third_party/libjingle/source/talk/base/thread.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
+#include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
 
 using cricket::BaseSession;
 
@@ -337,23 +338,33 @@ void JingleSession::OnInitiate() {
   }
 
   // Create video RTP channels.
-  video_rtp_channel_.reset(new jingle_glue::TransportChannelSocketAdapter(
-      cricket_session_->CreateChannel(content_name, kVideoRtpChannelName)));
-  video_rtcp_channel_.reset(new jingle_glue::TransportChannelSocketAdapter(
-      cricket_session_->CreateChannel(content_name, kVideoRtcpChannelName)));
+  raw_video_rtp_channel_ =
+      cricket_session_->CreateChannel(content_name, kVideoRtpChannelName);
+  video_rtp_channel_.reset(
+      new jingle_glue::TransportChannelSocketAdapter(raw_video_rtp_channel_));
+  raw_video_rtcp_channel_ =
+      cricket_session_->CreateChannel(content_name, kVideoRtcpChannelName);
+  video_rtcp_channel_.reset(
+      new jingle_glue::TransportChannelSocketAdapter(raw_video_rtcp_channel_));
 
   // Create control channel.
-  control_channel_.reset(new jingle_glue::TransportChannelSocketAdapter(
-      cricket_session_->CreateChannel(content_name, kControlChannelName)));
+  raw_control_channel_ =
+      cricket_session_->CreateChannel(content_name, kControlChannelName);
+  control_channel_.reset(
+      new jingle_glue::TransportChannelSocketAdapter(raw_control_channel_));
 
   // Create event channel.
-  event_channel_.reset(new jingle_glue::TransportChannelSocketAdapter(
-      cricket_session_->CreateChannel(content_name, kEventChannelName)));
+  raw_event_channel_ =
+      cricket_session_->CreateChannel(content_name, kEventChannelName);
+  event_channel_.reset(
+      new jingle_glue::TransportChannelSocketAdapter(raw_event_channel_));
 
   // Create video channel.
   // TODO(sergeyu): Remove video channel when we are ready to switch to RTP.
-  video_channel_.reset(new jingle_glue::TransportChannelSocketAdapter(
-      cricket_session_->CreateChannel(content_name, kVideoChannelName)));
+  raw_video_channel_ =
+      cricket_session_->CreateChannel(content_name, kVideoChannelName);
+  video_channel_.reset(
+      new jingle_glue::TransportChannelSocketAdapter(raw_video_channel_));
 
   if (!cricket_session_->initiator())
     jingle_session_manager_->AcceptConnection(this, cricket_session_);
@@ -437,23 +448,40 @@ bool JingleSession::InitializeConfigFromDescription(
   return true;
 }
 
-bool JingleSession::InitializeChannels() {
+bool JingleSession::InitializeSSL() {
   if (!EstablishSSLConnection(control_channel_.release(),
-                                    &control_ssl_socket_)) {
+                              &control_ssl_socket_)) {
     LOG(ERROR) << "Establish control channel failed";
     return false;
   }
   if (!EstablishSSLConnection(event_channel_.release(),
-                                    &event_ssl_socket_)) {
+                              &event_ssl_socket_)) {
     LOG(ERROR) << "Establish event channel failed";
     return false;
   }
   if (!EstablishSSLConnection(video_channel_.release(),
-                                    &video_ssl_socket_)) {
+                              &video_ssl_socket_)) {
     LOG(ERROR) << "Establish video channel failed";
     return false;
   }
   return true;
+}
+
+void JingleSession::InitializeChannels() {
+  // Disable incoming connections on the host so that we don't travers
+  // the firewall.
+  if (!cricket_session_->initiator()) {
+    raw_control_channel_->GetP2PChannel()->set_incoming_only(true);
+    raw_event_channel_->GetP2PChannel()->set_incoming_only(true);
+    raw_video_channel_->GetP2PChannel()->set_incoming_only(true);
+    raw_video_rtp_channel_->GetP2PChannel()->set_incoming_only(true);
+    raw_video_rtcp_channel_->GetP2PChannel()->set_incoming_only(true);
+  }
+
+  if (!InitializeSSL()) {
+    CloseInternal(net::ERR_CONNECTION_FAILED, true);
+    return;
+  }
 }
 
 void JingleSession::OnAccept() {
@@ -467,10 +495,15 @@ void JingleSession::OnAccept() {
     }
   }
 
-  if (!InitializeChannels()) {
-    CloseInternal(net::ERR_CONNECTION_FAILED, true);
-    return;
-  }
+  // TODO(sergeyu): This is a hack: Currently set_incoming_only()
+  // needs to be called on each channel before the channel starts
+  // creating candidates but after session is accepted (after
+  // TransportChannelProxy::GetP2PChannel() starts returning actual
+  // P2P channel). By posting a task here we can call it at the right
+  // moment. This problem will go away when we switch to Pepper P2P
+  // API.
+  jingle_session_manager_->message_loop()->PostTask(
+    FROM_HERE, NewRunnableMethod(this, &JingleSession::InitializeChannels));
 }
 
 void JingleSession::OnTerminate() {

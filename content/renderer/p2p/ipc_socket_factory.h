@@ -25,8 +25,10 @@ class IpcPacketSocketFactory : public talk_base::PacketSocketFactory {
       const talk_base::SocketAddress& local_address,
       int min_port, int max_port);
   virtual talk_base::AsyncPacketSocket* CreateServerTcpSocket(
-      const talk_base::SocketAddress& local_address, int min_port, int max_port,
-      bool listen, bool ssl);
+      const talk_base::SocketAddress& local_address,
+      int min_port,
+      int max_port,
+      bool ssl);
   virtual talk_base::AsyncPacketSocket* CreateClientTcpSocket(
       const talk_base::SocketAddress& local_address,
       const talk_base::SocketAddress& remote_address,

@@ -102,9 +102,12 @@ class JingleSession : public protocol::Session,
   bool InitializeConfigFromDescription(
     const cricket::SessionDescription* description);
 
+  // Configures channels and calls InitializeSSL().
+  void InitializeChannels();
+
   // Initialize PseudoTCP + SSL on each of the video, control and input
-  // channels.  The channels must have been created before this is called.
-  bool InitializeChannels();
+  // channels. The channels must have been created before this is called.
+  bool InitializeSSL();
 
   // Helper method to create and initialize PseudoTCP + SSL socket on
   // top of the provided |channel|. The resultant SSL socket is
@@ -163,12 +166,15 @@ class JingleSession : public protocol::Session,
   // |control_channel_| holds a channel until SSL socket is
   // created. After that |control_ssl_socket_| owns the channel. The
   // same is the case fo |event_channel_| and |video_channel_|.
+  cricket::TransportChannel* raw_control_channel_;
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> control_channel_;
   scoped_ptr<SocketWrapper> control_ssl_socket_;
 
+  cricket::TransportChannel* raw_event_channel_;
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> event_channel_;
   scoped_ptr<SocketWrapper> event_ssl_socket_;
 
+  cricket::TransportChannel* raw_video_channel_;
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> video_channel_;
   scoped_ptr<SocketWrapper> video_ssl_socket_;
 
@@ -178,7 +184,9 @@ class JingleSession : public protocol::Session,
   // Used to verify the certificate received in SSLClientSocket.
   scoped_ptr<net::CertVerifier> cert_verifier_;
 
+  cricket::TransportChannel* raw_video_rtp_channel_;
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> video_rtp_channel_;
+  cricket::TransportChannel* raw_video_rtcp_channel_;
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> video_rtcp_channel_;
 
   // Callback called by the SSL layer.
