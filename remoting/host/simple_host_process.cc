@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 
 #include "base/at_exit.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_path.h"
@@ -39,7 +38,6 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/json_host_config.h"
-#include "remoting/host/register_support_host_request.h"
 #include "remoting/proto/video.pb.h"
 
 #if defined(TOOLKIT_USES_GTK)
@@ -69,7 +67,6 @@ void ShutdownTask(MessageLoop* message_loop) {
 }
 
 const char kFakeSwitchName[] = "fake";
-const char kMe2MomSwitchName[] = "me2mom";
 const char kConfigSwitchName[] = "config";
 const char kVideoSwitchName[] = "video";
 
@@ -78,117 +75,6 @@ const char kVideoSwitchValueZip[] = "zip";
 const char kVideoSwitchValueVp8[] = "vp8";
 const char kVideoSwitchValueVp8Rtp[] = "vp8rtp";
 
-class SimpleHost {
- public:
-  SimpleHost()
-      : fake_(false),
-        me2mom_(false) {
-  }
-
-  int Run() {
-    MessageLoopForUI message_loop;
-
-    remoting::ChromotingHostContext context(&message_loop);
-    context.Start();
-
-    base::Thread file_io_thread("FileIO");
-    file_io_thread.Start();
-
-    FilePath config_path = GetConfigPath();
-    scoped_refptr<remoting::JsonHostConfig> config =
-        new remoting::JsonHostConfig(
-            config_path, file_io_thread.message_loop_proxy());
-    if (!config->Read()) {
-      LOG(ERROR) << "Failed to read configuration file "
-                 << config_path.value();
-      context.Stop();
-      return 1;
-    }
-
-    // Construct a chromoting host.
-    scoped_refptr<ChromotingHost> host;
-    if (fake_) {
-      remoting::Capturer* capturer =
-          new remoting::CapturerFake();
-      remoting::EventExecutor* event_executor =
-          remoting::EventExecutor::Create(context.ui_message_loop(), capturer);
-      remoting::Curtain* curtain = remoting::Curtain::Create();
-      host = ChromotingHost::Create(
-          &context, config,
-          new DesktopEnvironment(capturer, event_executor, curtain));
-    } else {
-      host = ChromotingHost::Create(&context, config);
-    }
-
-    if (protocol_config_.get()) {
-      host->set_protocol_config(protocol_config_.release());
-    }
-
-    if (me2mom_) {
-      scoped_refptr<remoting::RegisterSupportHostRequest> register_request =
-          new remoting::RegisterSupportHostRequest();
-      if (!register_request->Init(
-              config, NewCallback(this, &SimpleHost::OnMe2MomHostRegistered))) {
-        return 1;
-      }
-      host->AddStatusObserver(register_request);
-    } else {
-      // Initialize HeartbeatSender.
-      scoped_refptr<remoting::HeartbeatSender> heartbeat_sender =
-          new remoting::HeartbeatSender(context.network_message_loop(), config);
-      if (!heartbeat_sender->Init())
-        return 1;
-      host->AddStatusObserver(heartbeat_sender);
-    }
-
-    // Let the chromoting host run until the shutdown task is executed.
-    host->Start(NewRunnableFunction(&ShutdownTask, &message_loop));
-    message_loop.MessageLoop::Run();
-
-    // And then stop the chromoting context.
-    context.Stop();
-    file_io_thread.Stop();
-
-    return 0;
-  }
-
-  void set_config_path(const FilePath& config_path) {
-    config_path_ = config_path;
-  }
-  void set_fake(bool fake) { fake_ = fake; }
-  void set_me2mom(bool me2mom) { me2mom_ = me2mom; }
-  void set_protocol_config(CandidateSessionConfig* protocol_config) {
-    protocol_config_.reset(protocol_config);
-  }
-
- private:
-  FilePath GetConfigPath() {
-    if (!config_path_.empty())
-      return config_path_;
-
-#if defined(OS_WIN)
-    wstring home_path = GetEnvironmentVar(kHomeDrive);
-    home_path += GetEnvironmentVar(kHomePath);
-#else
-    string home_path = GetEnvironmentVar(base::env_vars::kHome);
-#endif
-    return FilePath(home_path).Append(kDefaultConfigPath);
-  }
-
-  void OnMe2MomHostRegistered(bool successful, const std::string& support_id) {
-    if (successful) {
-      std::cout << "Support host registered with SupportID: "
-                << support_id << std::endl;
-    } else {
-      LOG(ERROR) << "Failed to register support host";
-    }
-  }
-
-  FilePath config_path_;
-  bool fake_;
-  bool me2mom_;
-  scoped_ptr<CandidateSessionConfig> protocol_config_;
-};
 
 int main(int argc, char** argv) {
   // Needed for the Mac, so we don't leak objects when threads are created.
@@ -200,27 +86,61 @@ int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
   crypto::EnsureNSPRInit();
 
-  FilePath media_module_path;
-  PathService::Get(base::DIR_MODULE, &media_module_path);
-  CHECK(media::InitializeMediaLibrary(media_module_path))
-      << "Cannot load media library";
-
+  // Allocate a chromoting context and starts it.
 #if defined(TOOLKIT_USES_GTK)
   gfx::GtkInitFromCommandLine(*cmd_line);
-#endif  // TOOLKIT_USES_GTK
+#endif
+  MessageLoopForUI message_loop;
+  remoting::ChromotingHostContext context(&message_loop);
+  context.Start();
 
-#if defined(OS_MACOSX)
-  mock_cr_app::RegisterMockCrApp();
-#endif  // OS_MACOSX
 
-  SimpleHost simple_host;
-
+#if defined(OS_WIN)
+  wstring home_path = GetEnvironmentVar(kHomeDrive);
+  home_path += GetEnvironmentVar(kHomePath);
+#else
+  string home_path = GetEnvironmentVar(base::env_vars::kHome);
+#endif
+  FilePath config_path(home_path);
+  config_path = config_path.Append(kDefaultConfigPath);
   if (cmd_line->HasSwitch(kConfigSwitchName)) {
-    simple_host.set_config_path(
-        cmd_line->GetSwitchValuePath(kConfigSwitchName));
+    config_path = cmd_line->GetSwitchValuePath(kConfigSwitchName);
   }
-  simple_host.set_fake(cmd_line->HasSwitch(kFakeSwitchName));
-  simple_host.set_me2mom(cmd_line->HasSwitch(kMe2MomSwitchName));
+
+  base::Thread file_io_thread("FileIO");
+  file_io_thread.Start();
+
+  scoped_refptr<remoting::JsonHostConfig> config(
+      new remoting::JsonHostConfig(
+          config_path, file_io_thread.message_loop_proxy()));
+
+  if (!config->Read()) {
+    LOG(ERROR) << "Failed to read configuration file " << config_path.value();
+    context.Stop();
+    return 1;
+  }
+
+  FilePath module_path;
+  PathService::Get(base::DIR_MODULE, &module_path);
+  CHECK(media::InitializeMediaLibrary(module_path))
+      << "Cannot load media library";
+
+  // Construct a chromoting host.
+  scoped_refptr<ChromotingHost> host;
+
+  bool fake = cmd_line->HasSwitch(kFakeSwitchName);
+  if (fake) {
+    remoting::Capturer* capturer =
+        new remoting::CapturerFake();
+    remoting::EventExecutor* event_executor =
+        remoting::EventExecutor::Create(context.ui_message_loop(), capturer);
+    remoting::Curtain* curtain = remoting::Curtain::Create();
+    host = ChromotingHost::Create(
+        &context, config,
+        new DesktopEnvironment(capturer, event_executor, curtain));
+  } else {
+    host = ChromotingHost::Create(&context, config);
+  }
 
   if (cmd_line->HasSwitch(kVideoSwitchName)) {
     string video_codec = cmd_line->GetSwitchValueASCII(kVideoSwitchName);
@@ -241,12 +161,31 @@ int main(int argc, char** argv) {
       codec = ChannelConfig::CODEC_VP8;
     } else {
       LOG(ERROR) << "Unknown video codec: " << video_codec;
+      context.Stop();
       return 1;
     }
     config->mutable_video_configs()->push_back(ChannelConfig(
         transport, remoting::protocol::kDefaultStreamVersion, codec));
-    simple_host.set_protocol_config(config.release());
+    host->set_protocol_config(config.release());
   }
 
-  return simple_host.Run();
+#if defined(OS_MACOSX)
+  mock_cr_app::RegisterMockCrApp();
+#endif  // OS_MACOSX
+
+  // Initialize HeartbeatSender.
+  scoped_refptr<remoting::HeartbeatSender> heartbeat_sender =
+      new remoting::HeartbeatSender(context.network_message_loop(), config);
+  if (!heartbeat_sender->Init())
+    return 1;
+  host->AddStatusObserver(heartbeat_sender);
+
+  // Let the chromoting host run until the shutdown task is executed.
+  host->Start(NewRunnableFunction(&ShutdownTask, &message_loop));
+  message_loop.MessageLoop::Run();
+
+  // And then stop the chromoting context.
+  context.Stop();
+  file_io_thread.Stop();
+  return 0;
 }
