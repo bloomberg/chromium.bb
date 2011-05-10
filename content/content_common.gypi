@@ -139,7 +139,6 @@
         'common/json_value_serializer.cc',
         'common/json_value_serializer.h',
         'common/main_function_params.h',
-        'common/media_stream/media_stream_types.h',
         'common/message_router.cc',
         'common/message_router.h',
         'common/mime_registry_messages.h',
