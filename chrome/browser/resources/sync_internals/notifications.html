@@ -15,20 +15,21 @@ function updateNotificationsEnabledInfo(notificationsEnabled) {
 
 function updateNotificationInfo(notification) {
   var notificationInfo = document.getElementById('notificationInfo');
-    jstProcess(
-  new JsEvalContext({ 'notificationInfo':
-      JSON.stringify(notification, null, 2)
-  }),
-  notificationInfo);
+  jstProcess(
+      new JsEvalContext({
+        'notificationInfo': JSON.stringify(notification, null, 2)
+      }),
+      notificationInfo);
 }
 
 function onLoad() {
   chrome.sync.getNotificationState(updateNotificationsEnabledInfo);
   chrome.sync.getNotificationInfo(updateNotificationInfo);
-  chrome.sync.onSyncNotificationStateChange.addListener(
-      updateNotificationsEnabledInfo);
+  chrome.sync.onNotificationStateChange.addListener(
+      function(details) { updateNotificationsEnabledInfo(details.enabled); });
 
-  chrome.sync.onSyncIncomingNotification.addListener(function(changedTypes) {
+  chrome.sync.onIncomingNotification.addListener(function(details) {
+    var changedTypes = details.changedTypes;
     for (var i = 0; i < changedTypes.length; ++i) {
       var changedType = changedTypes[i];
       chrome.sync.notifications[changedType] =
@@ -66,9 +67,7 @@ table#notificationsInfo tr:nth-child(odd) {
 <p id='notificationsEnabledInfo'>
   Enabled: <span jscontent='notificationsEnabled'></span>
 </p>
-<p id='notificationInfo'>
-  <span jscontent='notificationInfo'></span>
-</p>
+<pre id='notificationInfo'><span jscontent='notificationInfo'></span></pre>
 <table id='notificationsInfo'>
   <tr jsselect='notifications'>
     <td jscontent='modelType'/>

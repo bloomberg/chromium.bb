@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/sync/js_arg_list.h"
+#include "chrome/browser/sync/js_event_details.h"
 #include "chrome/browser/sync/js_event_router.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -27,94 +28,92 @@ void JsSyncManagerObserver::OnChangesApplied(
     const sync_api::BaseTransaction* trans,
     const sync_api::SyncManager::ChangeRecord* changes,
     int change_count) {
-  ListValue return_args;
-  return_args.Append(Value::CreateStringValue(
-      syncable::ModelTypeToString(model_type)));
+  DictionaryValue details;
+  details.SetString("modelType", syncable::ModelTypeToString(model_type));
   ListValue* change_values = new ListValue();
-  return_args.Append(change_values);
+  details.Set("changes", change_values);
   for (int i = 0; i < change_count; ++i) {
     change_values->Append(changes[i].ToValue(trans));
   }
-  parent_router_->RouteJsEvent("onChangesApplied", JsArgList(&return_args));
+  parent_router_->RouteJsEvent("onChangesApplied", JsEventDetails(&details));
 }
 
 void JsSyncManagerObserver::OnChangesComplete(
     syncable::ModelType model_type) {
-  ListValue return_args;
-  return_args.Append(Value::CreateStringValue(
-      syncable::ModelTypeToString(model_type)));
-  parent_router_->RouteJsEvent("onChangesComplete", JsArgList(&return_args));
+  DictionaryValue details;
+  details.SetString("modelType", syncable::ModelTypeToString(model_type));
+  parent_router_->RouteJsEvent("onChangesComplete", JsEventDetails(&details));
 }
 
 void JsSyncManagerObserver::OnSyncCycleCompleted(
     const sessions::SyncSessionSnapshot* snapshot) {
-  ListValue return_args;
-  return_args.Append(snapshot->ToValue());
+  DictionaryValue details;
+  details.Set("snapshot", snapshot->ToValue());
   parent_router_->RouteJsEvent("onSyncCycleCompleted",
-                               JsArgList(&return_args));
+                               JsEventDetails(&details));
 }
 
 void JsSyncManagerObserver::OnAuthError(
     const GoogleServiceAuthError& auth_error) {
-  ListValue return_args;
-  return_args.Append(auth_error.ToValue());
-  parent_router_->RouteJsEvent("onAuthError", JsArgList(&return_args));
+  DictionaryValue details;
+  details.Set("authError", auth_error.ToValue());
+  parent_router_->RouteJsEvent("onAuthError", JsEventDetails(&details));
 }
 
 void JsSyncManagerObserver::OnUpdatedToken(const std::string& token) {
-  ListValue return_args;
-  return_args.Append(Value::CreateStringValue("<redacted>"));
-  parent_router_->RouteJsEvent("onUpdatedToken", JsArgList(&return_args));
+  DictionaryValue details;
+  details.SetString("token", "<redacted>");
+  parent_router_->RouteJsEvent("onUpdatedToken", JsEventDetails(&details));
 }
 
 void JsSyncManagerObserver::OnPassphraseRequired(
     sync_api::PassphraseRequiredReason reason) {
-  ListValue return_args;
-
-  return_args.Append(Value::CreateStringValue(
-      sync_api::PassphraseRequiredReasonToString(reason)));
+  DictionaryValue details;
+  details.SetString("reason",
+                     sync_api::PassphraseRequiredReasonToString(reason));
   parent_router_->RouteJsEvent("onPassphraseRequired",
-                               JsArgList(&return_args));
+                               JsEventDetails(&details));
 }
 
 void JsSyncManagerObserver::OnPassphraseAccepted(
     const std::string& bootstrap_token) {
-  ListValue return_args;
-  return_args.Append(Value::CreateStringValue("<redacted>"));
+  DictionaryValue details;
+  details.SetString("bootstrapToken", "<redacted>");
   parent_router_->RouteJsEvent("onPassphraseAccepted",
-                               JsArgList(&return_args));
+                               JsEventDetails(&details));
 }
 
 void JsSyncManagerObserver::OnEncryptionComplete(
     const syncable::ModelTypeSet& encrypted_types) {
-  ListValue return_args;
-  return_args.Append(syncable::ModelTypeSetToValue(encrypted_types));
+  DictionaryValue details;
+  details.Set("encryptedTypes",
+               syncable::ModelTypeSetToValue(encrypted_types));
   parent_router_->RouteJsEvent("onEncryptionComplete",
-                               JsArgList(&return_args));
+                               JsEventDetails(&details));
 }
 
 void JsSyncManagerObserver::OnMigrationNeededForTypes(
     const syncable::ModelTypeSet& types) {
-  ListValue return_args;
-  return_args.Append(syncable::ModelTypeSetToValue(types));
+  DictionaryValue details;
+  details.Set("types", syncable::ModelTypeSetToValue(types));
   parent_router_->RouteJsEvent("onMigrationNeededForTypes",
-                               JsArgList(&return_args));
+                               JsEventDetails(&details));
 }
 
 void JsSyncManagerObserver::OnInitializationComplete() {
-  parent_router_->RouteJsEvent("onInitializationComplete", JsArgList());
+  parent_router_->RouteJsEvent("onInitializationComplete", JsEventDetails());
 }
 
 void JsSyncManagerObserver::OnStopSyncingPermanently() {
-  parent_router_->RouteJsEvent("onStopSyncingPermanently", JsArgList());
+  parent_router_->RouteJsEvent("onStopSyncingPermanently", JsEventDetails());
 }
 
 void JsSyncManagerObserver::OnClearServerDataSucceeded() {
-  parent_router_->RouteJsEvent("onClearServerDataSucceeded", JsArgList());
+  parent_router_->RouteJsEvent("onClearServerDataSucceeded", JsEventDetails());
 }
 
 void JsSyncManagerObserver::OnClearServerDataFailed() {
-  parent_router_->RouteJsEvent("onClearServerDataFailed", JsArgList());
+  parent_router_->RouteJsEvent("onClearServerDataFailed", JsEventDetails());
 }
 
 }  // namespace browser_sync

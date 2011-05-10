@@ -13,6 +13,7 @@
 namespace browser_sync {
 
 class JsArgList;
+class JsEventDetails;
 class JsEventHandler;
 
 // An interface for objects that don't directly handle Javascript
@@ -21,7 +22,7 @@ class JsEventHandler;
 class JsEventRouter {
  public:
   virtual void RouteJsEvent(
-      const std::string& name, const JsArgList& args) = 0;
+      const std::string& name, const JsEventDetails& details) = 0;
 
   // |target| is const because it shouldn't be used except by the
   // router that directly knows about it (which can then safely cast

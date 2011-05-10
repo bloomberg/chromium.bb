@@ -8,10 +8,10 @@
 
 namespace browser_sync {
 
-JsArgList::JsArgList() : args_(new SharedListValue()) {}
+JsArgList::JsArgList() : args_(new SharedValue<ListValue>()) {}
 
 JsArgList::JsArgList(ListValue* args)
-    : args_(new SharedListValue(args)) {}
+    : args_(new SharedValue<ListValue>(args)) {}
 
 JsArgList::~JsArgList() {}
 
@@ -24,17 +24,5 @@ std::string JsArgList::ToString() const {
   base::JSONWriter::Write(&Get(), false, &str);
   return str;
 }
-
-JsArgList::SharedListValue::SharedListValue() {}
-
-JsArgList::SharedListValue::SharedListValue(ListValue* list_value) {
-  list_value_.Swap(list_value);
-}
-
-const ListValue& JsArgList::SharedListValue::Get() const {
-  return list_value_;
-}
-
-JsArgList::SharedListValue::~SharedListValue() {}
 
 }  // namespace browser_sync

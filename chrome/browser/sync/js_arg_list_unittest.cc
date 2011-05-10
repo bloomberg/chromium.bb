@@ -15,6 +15,7 @@ class JsArgListTest : public testing::Test {};
 TEST_F(JsArgListTest, EmptyList) {
   JsArgList arg_list;
   EXPECT_TRUE(arg_list.Get().empty());
+  EXPECT_EQ("[]", arg_list.ToString());
 }
 
 TEST_F(JsArgListTest, FromList) {

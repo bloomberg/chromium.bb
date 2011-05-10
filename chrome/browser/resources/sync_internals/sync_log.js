@@ -21,107 +21,20 @@ cr.define('chrome.sync', function() {
   var Log = function() {
     var self = this;
 
-    // Service
+    var makeListener = function(service, event) {
+      return function(details) {
+        self.log_(service, event, details);
+      };
+    };
 
-    chrome.sync.onSyncServiceStateChanged.addListener(function () {
-      self.log_('service', 'onSyncServiceStateChanged', {});
-    });
-
-    // Notifier
-
-    chrome.sync.onSyncNotificationStateChange.addListener(
-      function (notificationsEnabled) {
-        self.log_('notifier', 'onSyncNotificationStateChange', {
-                    notificationsEnabled: notificationsEnabled
-                  });
-      });
-
-    chrome.sync.onSyncIncomingNotification.addListener(function (changedTypes) {
-      self.log_('notifier', 'onSyncIncomingNotification', {
-                  changedTypes: changedTypes
-                });
-    });
-
-    // Manager
-
-    chrome.sync.onChangesApplied.addListener(function (modelType, changes) {
-      self.log_('manager', 'onChangesApplied', {
-                  modelType: modelType,
-                  changes: changes
-                });
-    });
-
-    chrome.sync.onChangesComplete.addListener(function (modelType) {
-      self.log_('manager', 'onChangesComplete', {
-                  modelType: modelType
-                });
-    });
-
-    chrome.sync.onSyncCycleCompleted.addListener(function (snapshot) {
-      self.log_('manager', 'onSyncCycleCompleted', {
-                  snapshot: snapshot
-                });
-    });
-
-    chrome.sync.onAuthError.addListener(function (authError) {
-      self.log_('manager', 'onAuthError', {
-                  authError: authError
-                });
-    });
-
-    chrome.sync.onUpdatedToken.addListener(function (token) {
-      self.log_('manager', 'onUpdatedToken', {
-                  token: token
-                });
-    });
-
-    chrome.sync.onPassphraseRequired.addListener(function (reason) {
-      self.log_('manager', 'onPassphraseRequired', {
-                  reason: reason
-                });
-    });
-
-    chrome.sync.onPassphraseAccepted.addListener(function (bootstrapToken) {
-      self.log_('manager', 'onPassphraseAccepted', {
-                  bootstrapToken: bootstrapToken
-                });
-    });
-
-    chrome.sync.onEncryptionComplete.addListener(function (encrypted_types) {
-      self.log_('manager', 'onEncryptionComplete', {
-                  encrypted_types: encrypted_types
-                });
-    });
-
-    chrome.sync.onMigrationNeededForTypes.addListener(function (model_types) {
-      self.log_('manager', 'onMigrationNeededForTypes', {
-                  model_types: model_types
-                });
-    });
-
-    chrome.sync.onInitializationComplete.addListener(function () {
-      self.log_('manager', 'onInitializationComplete', {});
-    });
-
-    chrome.sync.onPaused.addListener(function () {
-      self.log_('manager', 'onPaused', {});
-    });
-
-    chrome.sync.onResumed.addListener(function () {
-      self.log_('manager', 'onResumed', {});
-    });
-
-    chrome.sync.onStopSyncingPermanently.addListener(function () {
-      self.log_('manager', 'onStopSyncingPermanently', {});
-    });
-
-    chrome.sync.onClearServerDataSucceeded.addListener(function () {
-      self.log_('manager', 'onClearServerDataSucceeded', {});
-    });
-
-    chrome.sync.onClearServerDataFailed.addListener(function () {
-      self.log_('manager', 'onClearServerDataFailed', {});
-    });
+    for (var eventType in chrome.sync.events) {
+      var events = chrome.sync.events[eventType];
+      for (var i = 0; i < events.length; ++i) {
+        var eventName = events[i];
+        var event = chrome.sync[eventName];
+        event.addListener(makeListener(eventType, eventName));
+      }
+    }
   };
 
   Log.prototype = {

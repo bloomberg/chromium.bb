@@ -44,6 +44,7 @@
 
 using browser_sync::Cryptographer;
 using browser_sync::HasArgsAsList;
+using browser_sync::HasDetailsAsDictionary;
 using browser_sync::KeyParams;
 using browser_sync::JsArgList;
 using browser_sync::MockJsEventHandler;
@@ -58,6 +59,7 @@ using test::ExpectDictDictionaryValue;
 using test::ExpectDictStringValue;
 using testing::_;
 using testing::AtLeast;
+using testing::InSequence;
 using testing::Invoke;
 using testing::SaveArg;
 using testing::StrictMock;
@@ -974,19 +976,20 @@ TEST_F(SyncManagerTest, ProcessMessageGetNodeByIdFailure) {
 }
 
 TEST_F(SyncManagerTest, OnNotificationStateChange) {
+  InSequence dummy;
   StrictMock<MockJsEventRouter> event_router;
 
-  ListValue true_args;
-  true_args.Append(Value::CreateBooleanValue(true));
-  ListValue false_args;
-  false_args.Append(Value::CreateBooleanValue(false));
+  DictionaryValue true_details;
+  true_details.SetBoolean("enabled", true);
+  DictionaryValue false_details;
+  false_details.SetBoolean("enabled", false);
 
   EXPECT_CALL(event_router,
-              RouteJsEvent("onSyncNotificationStateChange",
-                           HasArgsAsList(true_args)));
+              RouteJsEvent("onNotificationStateChange",
+                           HasDetailsAsDictionary(true_details)));
   EXPECT_CALL(event_router,
-              RouteJsEvent("onSyncNotificationStateChange",
-                           HasArgsAsList(false_args)));
+              RouteJsEvent("onNotificationStateChange",
+                           HasDetailsAsDictionary(false_details)));
 
   browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
 
@@ -1012,10 +1015,10 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
 
   // Build expected_args to have a single argument with the string
   // equivalents of model_types.
-  ListValue expected_args;
+  DictionaryValue expected_details;
   {
     ListValue* model_type_list = new ListValue();
-    expected_args.Append(model_type_list);
+    expected_details.Set("changedTypes", model_type_list);
     for (int i = syncable::FIRST_REAL_MODEL_TYPE;
          i < syncable::MODEL_TYPE_COUNT; ++i) {
       if (model_types[i]) {
@@ -1028,8 +1031,8 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
   }
 
   EXPECT_CALL(event_router,
-              RouteJsEvent("onSyncIncomingNotification",
-                           HasArgsAsList(expected_args)));
+              RouteJsEvent("onIncomingNotification",
+                           HasDetailsAsDictionary(expected_details)));
 
   browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
 

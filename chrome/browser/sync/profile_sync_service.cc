@@ -33,6 +33,7 @@
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/js_arg_list.h"
+#include "chrome/browser/sync/js_event_details.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -453,7 +454,7 @@ void ProfileSyncService::NotifyObservers() {
   // TODO(akalin): Make an Observer subclass that listens and does the
   // event routing.
   js_event_handlers_.RouteJsEvent(
-      "onSyncServiceStateChanged", browser_sync::JsArgList());
+      "onServiceStateChanged", browser_sync::JsEventDetails());
 }
 
 // static

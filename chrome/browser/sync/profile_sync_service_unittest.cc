@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/js_arg_list.h"
+#include "chrome/browser/sync/js_event_details.h"
 #include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
@@ -171,8 +172,8 @@ TEST_F(ProfileSyncServiceTest,
 
   StrictMock<MockJsEventHandler> event_handler;
   EXPECT_CALL(event_handler,
-              HandleJsEvent("onSyncServiceStateChanged",
-                            HasArgs(JsArgList()))).Times(AtLeast(3));
+              HandleJsEvent("onServiceStateChanged",
+                            HasDetails(JsEventDetails()))).Times(AtLeast(3));
   // For some reason, these events may or may not fire.
   //
   // TODO(akalin): Figure out exactly why there's non-determinism
@@ -181,7 +182,7 @@ TEST_F(ProfileSyncServiceTest,
       .Times(AtMost(1));
   EXPECT_CALL(event_handler, HandleJsEvent("onChangesComplete", _))
       .Times(AtMost(1));
-  EXPECT_CALL(event_handler, HandleJsEvent("onSyncNotificationStateChange", _))
+  EXPECT_CALL(event_handler, HandleJsEvent("onNotificationStateChange", _))
       .Times(AtMost(1));
 
   EXPECT_EQ(NULL, service_->GetBackendForTest());
@@ -215,7 +216,7 @@ TEST_F(ProfileSyncServiceTest, JsFrontendProcessMessageBasic) {
       .Times(AtMost(1));
   EXPECT_CALL(event_handler, HandleJsEvent("onChangesComplete", _))
       .Times(AtMost(1));
-  EXPECT_CALL(event_handler, HandleJsEvent("onSyncNotificationStateChange", _))
+  EXPECT_CALL(event_handler, HandleJsEvent("onNotificationStateChange", _))
       .Times(AtMost(1));
 
   ListValue arg_list1;
@@ -274,7 +275,7 @@ TEST_F(ProfileSyncServiceTest,
       .Times(AtMost(1));
   EXPECT_CALL(event_handler, HandleJsEvent("onChangesComplete", _))
       .Times(AtMost(1));
-  EXPECT_CALL(event_handler, HandleJsEvent("onSyncNotificationStateChange", _))
+  EXPECT_CALL(event_handler, HandleJsEvent("onNotificationStateChange", _))
       .Times(AtMost(1));
 
   ListValue arg_list1;
@@ -298,10 +299,10 @@ TEST_F(ProfileSyncServiceTest,
   EXPECT_CALL(event_handler,
               HandleJsMessageReply("delayTestMessage3", HasArgs(args3)));
 
-  const JsArgList kNoArgs;
+  const JsEventDetails kNoDetails;
 
-  EXPECT_CALL(event_handler, HandleJsEvent("onSyncServiceStateChanged",
-      HasArgs(kNoArgs))).Times(AtLeast(3));
+  EXPECT_CALL(event_handler, HandleJsEvent("onServiceStateChanged",
+      HasDetails(kNoDetails))).Times(AtLeast(3));
 
   JsFrontend* js_backend = service_->GetJsFrontend();
 
@@ -320,6 +321,8 @@ TEST_F(ProfileSyncServiceTest,
 
   // Fires delayTestMessage3.
   ui_loop_.RunAllPending();
+
+  const JsArgList kNoArgs;
 
   js_backend->ProcessMessage("delayNotRepliedTo", kNoArgs, &event_handler);
 

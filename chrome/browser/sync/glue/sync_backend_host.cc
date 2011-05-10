@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/js_arg_list.h"
+#include "chrome/browser/sync/js_event_details.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_factory.h"
 #include "chrome/browser/sync/sessions/session_state.h"
@@ -1029,10 +1030,10 @@ void SyncBackendHost::Core::OnEncryptionComplete(
 }
 
 void SyncBackendHost::Core::RouteJsEvent(
-    const std::string& name, const JsArgList& args) {
+    const std::string& name, const JsEventDetails& details) {
   host_->frontend_loop_->PostTask(
       FROM_HERE, NewRunnableMethod(
-          this, &Core::RouteJsEventOnFrontendLoop, name, args));
+          this, &Core::RouteJsEventOnFrontendLoop, name, details));
 }
 
 void SyncBackendHost::Core::RouteJsMessageReply(
@@ -1074,13 +1075,13 @@ void SyncBackendHost::Core::HandleAuthErrorEventOnFrontendLoop(
 }
 
 void SyncBackendHost::Core::RouteJsEventOnFrontendLoop(
-    const std::string& name, const JsArgList& args) {
+    const std::string& name, const JsEventDetails& details) {
   if (!host_ || !parent_router_)
     return;
 
   DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
 
-  parent_router_->RouteJsEvent(name, args);
+  parent_router_->RouteJsEvent(name, details);
 }
 
 void SyncBackendHost::Core::RouteJsMessageReplyOnFrontendLoop(

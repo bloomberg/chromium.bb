@@ -9,10 +9,10 @@
 // See README.js for design comments.
 
 #include <string>
-#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
+#include "chrome/browser/sync/shared_value.h"
 
 namespace browser_sync {
 
@@ -35,21 +35,7 @@ class JsArgList {
   // Copy constructor and assignment operator welcome.
 
  private:
-  class SharedListValue : public base::RefCountedThreadSafe<SharedListValue> {
-   public:
-    SharedListValue();
-    explicit SharedListValue(ListValue* list_value);
-
-    const ListValue& Get() const;
-
-   private:
-    ~SharedListValue();
-    friend class base::RefCountedThreadSafe<SharedListValue>;
-
-    ListValue list_value_;
-  };
-
-  scoped_refptr<const SharedListValue> args_;
+  scoped_refptr<const SharedValue<ListValue> > args_;
 };
 
 }  // namespace browser_sync

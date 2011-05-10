@@ -41,8 +41,9 @@ class SyncInternalsUI : public WebUI, public browser_sync::JsEventHandler {
                            const ListValue& args) OVERRIDE;
 
   // browser_sync::JsEventHandler implementation.
-  virtual void HandleJsEvent(const std::string& name,
-                             const browser_sync::JsArgList& args) OVERRIDE;
+  virtual void HandleJsEvent(
+      const std::string& name,
+      const browser_sync::JsEventDetails& details) OVERRIDE;
   virtual void HandleJsMessageReply(
       const std::string& name,
       const browser_sync::JsArgList& args) OVERRIDE;

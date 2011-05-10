@@ -62,38 +62,44 @@ Event.prototype.fire = function() {
   }
 };
 
-var events = [
-  // Service events.
-  'onSyncServiceStateChanged',
+chrome.sync.events = {
+  'service': [
+    'onServiceStateChanged'
+  ],
 
-  // Notifier events.
-  'onSyncNotificationStateChange',
-  'onSyncIncomingNotification',
+  'notifier': [
+    'onNotificationStateChange',
+    'onIncomingNotification'
+  ],
 
-  // Manager events.
-  'onChangesApplied',
-  'onChangesComplete',
-  'onSyncCycleCompleted',
-  'onAuthError',
-  'onUpdatedToken',
-  'onPassphraseRequired',
-  'onPassphraseAccepted',
-  'onEncryptionComplete',
-  'onMigrationNeededForTypes',
-  'onInitializationComplete',
-  'onPaused',
-  'onResumed',
-  'onStopSyncingPermanently',
-  'onClearServerDataSucceeded',
-  'onClearServerDataFailed'
-];
+  'manager': [
+    'onChangesApplied',
+    'onChangesComplete',
+    'onSyncCycleCompleted',
+    'onAuthError',
+    'onUpdatedToken',
+    'onPassphraseRequired',
+    'onPassphraseAccepted',
+    'onEncryptionComplete',
+    'onMigrationNeededForTypes',
+    'onInitializationComplete',
+    'onPaused',
+    'onResumed',
+    'onStopSyncingPermanently',
+    'onClearServerDataSucceeded',
+    'onClearServerDataFailed'
+  ]
+};
 
-for (var i = 0; i < events.length; ++i) {
-  var event = events[i];
-  chrome.sync[event] = new Event();
+for (var eventType in chrome.sync.events) {
+  var events = chrome.sync.events[eventType];
+  for (var i = 0; i < events.length; ++i) {
+    var event = events[i];
+    chrome.sync[event] = new Event();
+  }
 }
 
-function makeAsyncFunction(name) {
+function makeSyncFunction(name) {
   var callbacks = [];
 
   // Calls the function, assuming the last argument is a callback to be
@@ -133,7 +139,7 @@ var syncFunctions = [
 
 for (var i = 0; i < syncFunctions.length; ++i) {
   var syncFunction = syncFunctions[i];
-  chrome.sync[syncFunction] = makeAsyncFunction(syncFunction);
+  chrome.sync[syncFunction] = makeSyncFunction(syncFunction);
 }
 
 })();

@@ -48,7 +48,7 @@ class JsEventHandlerList : public JsFrontend, public JsEventRouter {
   // JsEventRouter implementation.  Routes the event to the
   // appropriate handler(s).
   virtual void RouteJsEvent(const std::string& name,
-                            const JsArgList& args) OVERRIDE;
+                            const JsEventDetails& details) OVERRIDE;
   virtual void RouteJsMessageReply(const std::string& name,
                                    const JsArgList& args,
                                    const JsEventHandler* target) OVERRIDE;

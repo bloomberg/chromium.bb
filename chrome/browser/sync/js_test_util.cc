@@ -7,11 +7,16 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/js_arg_list.h"
+#include "chrome/browser/sync/js_event_details.h"
 
 namespace browser_sync {
 
 void PrintTo(const JsArgList& args, ::std::ostream* os) {
   *os << args.ToString();
+}
+
+void PrintTo(const JsEventDetails& details, ::std::ostream* os) {
+  *os << details.ToString();
 }
 
 namespace {
@@ -46,6 +51,36 @@ class HasArgsMatcher
   DISALLOW_COPY_AND_ASSIGN(HasArgsMatcher);
 };
 
+// Matcher implementation for HasDetails().
+class HasDetailsMatcher
+    : public ::testing::MatcherInterface<const JsEventDetails&> {
+ public:
+  explicit HasDetailsMatcher(const JsEventDetails& expected_details)
+      : expected_details_(expected_details) {}
+
+  virtual ~HasDetailsMatcher() {}
+
+  virtual bool MatchAndExplain(
+      const JsEventDetails& details,
+      ::testing::MatchResultListener* listener) const {
+    // No need to annotate listener since we already define PrintTo().
+    return details.Get().Equals(&expected_details_.Get());
+  }
+
+  virtual void DescribeTo(::std::ostream* os) const {
+    *os << "has details " << expected_details_.ToString();
+  }
+
+  virtual void DescribeNegationTo(::std::ostream* os) const {
+    *os << "doesn't have details " << expected_details_.ToString();
+  }
+
+ private:
+  const JsEventDetails expected_details_;
+
+  DISALLOW_COPY_AND_ASSIGN(HasDetailsMatcher);
+};
+
 }  // namespace
 
 ::testing::Matcher<const JsArgList&> HasArgs(const JsArgList& expected_args) {
@@ -56,6 +91,18 @@ class HasArgsMatcher
     const ListValue& expected_args) {
   scoped_ptr<ListValue> expected_args_copy(expected_args.DeepCopy());
   return HasArgs(JsArgList(expected_args_copy.get()));
+}
+
+::testing::Matcher<const JsEventDetails&> HasDetails(
+    const JsEventDetails& expected_details) {
+  return ::testing::MakeMatcher(new HasDetailsMatcher(expected_details));
+}
+
+::testing::Matcher<const JsEventDetails&> HasDetailsAsDictionary(
+    const DictionaryValue& expected_details) {
+  scoped_ptr<DictionaryValue> expected_details_copy(
+      expected_details.DeepCopy());
+  return HasDetails(JsEventDetails(expected_details_copy.get()));
 }
 
 MockJsBackend::MockJsBackend() {}

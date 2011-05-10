@@ -15,23 +15,36 @@
 #include "chrome/browser/sync/js_event_router.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+class DictionaryValue;
 class ListValue;
 
 namespace browser_sync {
 
 class JsArgList;
+class JsEventDetails;
 
 // Defined for googletest.  Equivalent to "*os << args.ToString()".
 void PrintTo(const JsArgList& args, ::std::ostream* os);
+void PrintTo(const JsEventDetails& details, ::std::ostream* os);
 
-// A matcher for gmock.  Use like:
+// A gmock matcher for JsArgList.  Use like:
 //
-//   EXPECT_CALL(mock, ProcessMessage("foo", HasArgs(args))).Times(1);
+//   EXPECT_CALL(mock, HandleJsMessageReply("foo", HasArgs(expected_args)));
 ::testing::Matcher<const JsArgList&> HasArgs(const JsArgList& expected_args);
 
 // Like HasArgs() but takes a ListValue instead.
 ::testing::Matcher<const JsArgList&> HasArgsAsList(
     const ListValue& expected_args);
+
+// A gmock matcher for JsEventDetails.  Use like:
+//
+//   EXPECT_CALL(mock, HandleJsEvent("foo", HasArgs(expected_details)));
+::testing::Matcher<const JsEventDetails&> HasDetails(
+    const JsEventDetails& expected_details);
+
+// Like HasDetails() but takes a DictionaryValue instead.
+::testing::Matcher<const JsEventDetails&> HasDetailsAsDictionary(
+    const DictionaryValue& expected_details);
 
 // Mocks.
 
@@ -64,7 +77,8 @@ class MockJsEventHandler : public JsEventHandler {
   MockJsEventHandler();
   ~MockJsEventHandler();
 
-  MOCK_METHOD2(HandleJsEvent, void(const ::std::string&, const JsArgList&));
+  MOCK_METHOD2(HandleJsEvent,
+               void(const ::std::string&, const JsEventDetails&));
   MOCK_METHOD2(HandleJsMessageReply,
                void(const ::std::string&, const JsArgList&));
 };
@@ -75,7 +89,7 @@ class MockJsEventRouter : public JsEventRouter {
   ~MockJsEventRouter();
 
   MOCK_METHOD2(RouteJsEvent,
-               void(const ::std::string&, const JsArgList&));
+               void(const ::std::string&, const JsEventDetails&));
   MOCK_METHOD3(RouteJsMessageReply,
                void(const ::std::string&, const JsArgList&,
                     const JsEventHandler*));

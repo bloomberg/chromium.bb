@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/sync/js_backend.h"
+#include "chrome/browser/sync/js_event_details.h"
 #include "chrome/browser/sync/js_event_handler.h"
 
 namespace browser_sync {
@@ -76,8 +77,8 @@ void JsEventHandlerList::ProcessMessage(
 }
 
 void JsEventHandlerList::RouteJsEvent(const std::string& name,
-                                      const JsArgList& args) {
-  FOR_EACH_OBSERVER(JsEventHandler, handlers_, HandleJsEvent(name, args));
+                                      const JsEventDetails& details) {
+  FOR_EACH_OBSERVER(JsEventHandler, handlers_, HandleJsEvent(name, details));
 }
 
 void JsEventHandlerList::RouteJsMessageReply(const std::string& name,

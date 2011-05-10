@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/sync/js_arg_list.h"
+#include "chrome/browser/sync/js_event_details.h"
 #include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/profile_mock.h"
@@ -23,6 +24,7 @@ namespace {
 
 using browser_sync::HasArgsAsList;
 using browser_sync::JsArgList;
+using browser_sync::JsEventDetails;
 using testing::NiceMock;
 using testing::Return;
 using testing::StrictMock;
@@ -139,12 +141,9 @@ TEST_F(SyncInternalsUITest, HandleJsEvent) {
 
   EXPECT_CALL(*GetTestSyncInternalsUI(),
               ExecuteJavascript(
-                  ASCIIToUTF16("chrome.sync.testMessage.fire(5,true);")));
+                  ASCIIToUTF16("chrome.sync.testMessage.fire({});")));
 
-  ListValue args;
-  args.Append(Value::CreateIntegerValue(5));
-  args.Append(Value::CreateBooleanValue(true));
-  GetTestSyncInternalsUI()->HandleJsEvent("testMessage", JsArgList(&args));
+  GetTestSyncInternalsUI()->HandleJsEvent("testMessage", JsEventDetails());
 }
 
 TEST_F(SyncInternalsUITest, HandleJsEventNullService) {
@@ -154,12 +153,9 @@ TEST_F(SyncInternalsUITest, HandleJsEventNullService) {
 
   EXPECT_CALL(*GetTestSyncInternalsUI(),
               ExecuteJavascript(
-                  ASCIIToUTF16("chrome.sync.testMessage.fire(5,true);")));
+                  ASCIIToUTF16("chrome.sync.testMessage.fire({});")));
 
-  ListValue args;
-  args.Append(Value::CreateIntegerValue(5));
-  args.Append(Value::CreateBooleanValue(true));
-  GetTestSyncInternalsUI()->HandleJsEvent("testMessage", JsArgList(&args));
+  GetTestSyncInternalsUI()->HandleJsEvent("testMessage", JsEventDetails());
 }
 
 TEST_F(SyncInternalsUITest, HandleJsMessageReply) {

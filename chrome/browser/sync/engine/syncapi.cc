@@ -38,6 +38,7 @@
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_backend.h"
+#include "chrome/browser/sync/js_event_details.h"
 #include "chrome/browser/sync/js_event_router.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
@@ -2726,11 +2727,10 @@ void SyncManager::SyncInternal::OnNotificationStateChange(
     syncer_thread()->set_notifications_enabled(notifications_enabled);
   }
   if (parent_router_) {
-    ListValue args;
-    args.Append(Value::CreateBooleanValue(notifications_enabled));
-    // TODO(akalin): Tidy up grammar in event names.
-    parent_router_->RouteJsEvent("onSyncNotificationStateChange",
-                                 browser_sync::JsArgList(&args));
+    DictionaryValue details;
+    details.Set("enabled", Value::CreateBooleanValue(notifications_enabled));
+    parent_router_->RouteJsEvent("onNotificationStateChange",
+                                 browser_sync::JsEventDetails(&details));
   }
 }
 
@@ -2760,9 +2760,9 @@ void SyncManager::SyncInternal::OnIncomingNotification(
   }
 
   if (parent_router_) {
-    ListValue args;
+    DictionaryValue details;
     ListValue* changed_types = new ListValue();
-    args.Append(changed_types);
+    details.Set("changedTypes", changed_types);
     for (syncable::ModelTypePayloadMap::const_iterator
              it = type_payloads.begin();
          it != type_payloads.end(); ++it) {
@@ -2770,8 +2770,8 @@ void SyncManager::SyncInternal::OnIncomingNotification(
           syncable::ModelTypeToString(it->first);
       changed_types->Append(Value::CreateStringValue(model_type_str));
     }
-    parent_router_->RouteJsEvent("onSyncIncomingNotification",
-                                 browser_sync::JsArgList(&args));
+    parent_router_->RouteJsEvent("onIncomingNotification",
+                                 browser_sync::JsEventDetails(&details));
   }
 }
 

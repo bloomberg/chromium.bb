@@ -301,7 +301,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     // JsEventRouter implementation.
     virtual void RouteJsEvent(const std::string& event_name,
-                              const JsArgList& args) OVERRIDE;
+                              const JsEventDetails& details) OVERRIDE;
     virtual void RouteJsMessageReply(const std::string& event_name,
                                      const JsArgList& args,
                                      const JsEventHandler* target) OVERRIDE;
@@ -488,7 +488,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void HandleInitalizationCompletedOnFrontendLoop();
 
     void RouteJsEventOnFrontendLoop(
-        const std::string& name, const JsArgList& args);
+        const std::string& name, const JsEventDetails& details);
 
     void RouteJsMessageReplyOnFrontendLoop(
         const std::string& name, const JsArgList& args,
