@@ -844,24 +844,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict)
 
-  def SendWebkitKeypressEvent(self, key_code, tab_index=0, windex=0):
-    """Send webkit key press event to the browser.
-
-    Used to simulate key press from the keyboard to interact with the browser.
-    Simulates a key press which consists of a down key press and up key press.
-
-    Args:
-      key_code: the hex value associated with the keypress (virtual key code).
-      tab_index: tab index to work on. Defaults to 0 (first tab).
-      windex: window index to work on. Defaults to 0 (first window).
-    """
-    KEY_DOWN_TYPE = 0  # kRawKeyDownType
-    KEY_UP_TYPE = 3  # kKeyUpType
-
-    # Sending two requests, one each for "key down" and "key up".
-    self.SendWebkitKeyEvent(KEY_DOWN_TYPE, key_code, tab_index, windex)
-    self.SendWebkitKeyEvent(KEY_UP_TYPE, key_code, tab_index, windex)
-
   def SendWebkitKeyEvent(self, key_type, key_code, tab_index=0, windex=0):
     """Send a webkit key event to the browser.
 
@@ -1537,6 +1519,123 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
 
+  def AutofillTriggerSuggestions(self, field_id=None, tab_index=0, windex=0):
+    """Focuses a webpage form field and triggers the autofill popup in it.
+
+    This function focuses the specified input field in a webpage form, then
+    causes the autofill popup to appear in that field.  The underlying
+    automation hook sends a "down arrow" keypress event to trigger the autofill
+    popup.  This function waits until the popup is displayed before returning.
+
+    Args:
+      field_id: The string ID of the webpage form field to focus.  Can be
+                'None' (the default), in which case nothing is focused.  This
+                can be useful if the field has already been focused by other
+                means.
+      tab_index: Integer index of the tab to work on; defaults to 0 (first tab).
+      windex: Integer index of the browser window to work on; defaults to 0
+              (first window).
+
+    Returns:
+      True, if no errors were encountered, or False otherwise.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    # Focus the field with the specified ID, if necessary.
+    if field_id:
+      if not self.JavascriptFocusElementById(field_id, tab_index, windex):
+        return False
+
+    # Cause the autofill popup to be shown in the focused form field.
+    cmd_dict = {
+      'command': 'AutofillTriggerSuggestions',
+      'tab_index': tab_index,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+    return True
+
+  def AutofillHighlightSuggestion(self, direction, tab_index=0, windex=0):
+    """Highlights the previous or next suggestion in an existing autofill popup.
+
+    This function assumes that an existing autofill popup is currently displayed
+    in a webpage form.  The underlying automation hook sends either a
+    "down arrow" or an "up arrow" keypress event to cause the next or previous
+    suggestion to be highlighted, respectively.  This function waits until
+    autofill displays a preview of the form's filled state before returning.
+
+    Use AutofillTriggerSuggestions() to trigger the autofill popup before
+    calling this function.  Use AutofillAcceptSelection() after calling this
+    function to accept a selection.
+
+    Args:
+      direction: The string direction in which to highlight an autofill
+                 suggestion.  Must be either "up" or "down".
+      tab_index: Integer index of the tab to work on; defaults to 0 (first tab).
+      windex: Integer index of the browser window to work on; defaults to 0
+              (first window).
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    assert direction in ('up', 'down')
+    cmd_dict = {
+      'command': 'AutofillHighlightSuggestion',
+      'direction': direction,
+      'tab_index': tab_index,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+
+  def AutofillAcceptSelection(self, tab_index=0, windex=0):
+    """Accepts the current selection in an already-displayed autofill popup.
+
+    This function assumes that a profile is already highlighted in an existing
+    autofill popup in a webpage form.  The underlying automation hook sends a
+    "return" keypress event to cause the highlighted profile to be accepted.
+    This function waits for the webpage form to be filled in with autofill data
+    before returning.  This function does not submit the webpage form.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'AutofillAcceptSelection',
+      'tab_index': tab_index,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+
+  def AutofillPopulateForm(self, field_id, profile_index=0, tab_index=0,
+                           windex=0):
+    """Populates a webpage form using autofill data and keypress events.
+
+    This function focuses the specified input field in the form, and then
+    sends keypress events to the associated tab to cause the form to be
+    populated with information from the requested autofill profile.
+
+    Args:
+      field_id: The string ID of the webpage form field to focus for autofill
+                purposes.
+      profile_index: The index of the profile in the autofill popup to use to
+                     populate the form; defaults to 0 (first profile).
+      tab_index: Integer index of the tab to work on; defaults to 0 (first tab).
+      windex: Integer index of the browser window to work on; defaults to 0
+              (first window).
+
+    Returns:
+      True, if the webpage form is populated successfully, or False if not.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if an automation call returns an error.
+    """
+    if not self.AutofillTriggerSuggestions(field_id, tab_index, windex):
+      return False
+
+    for _ in range(profile_index + 1):
+      self.AutofillHighlightSuggestion('down', tab_index, windex)
+
+    self.AutofillAcceptSelection(tab_index, windex)
+    return True
+
   def AddHistoryItem(self, item):
     """Forge a history item for Chrome.
 
@@ -1965,6 +2064,29 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     js = '%s(%s)' % (function, ', '.join(converted_args))
     logging.debug('Executing javascript: %s', js)
     return self.ExecuteJavascript(js, windex, tab_index)
+
+  def JavascriptFocusElementById(self, field_id, tab_index=0, windex=0):
+    """Uses Javascript to focus an element with the given ID in a webpage.
+
+    Args:
+      field_id: The string ID of the webpage form field to focus.
+      tab_index: Integer index of the tab to work on; defaults to 0 (first tab).
+      windex: Integer index of the browser window to work on; defaults to 0
+              (first window).
+
+    Returns:
+      True, on success, or False on failure.
+    """
+    focus_field_js = """
+        var field = document.getElementById("%s");
+        if (!field) {
+          window.domAutomationController.send("error");
+        } else {
+          field.focus();
+          window.domAutomationController.send("done");
+        }
+    """ % field_id
+    return self.ExecuteJavascript(focus_field_js, windex, tab_index) == 'done'
 
   def SignInToSync(self, username, password):
     """Signs in to sync using the given username and password.

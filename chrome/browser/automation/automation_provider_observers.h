@@ -1202,6 +1202,34 @@ class AutocompleteEditFocusedObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditFocusedObserver);
 };
 
+// Observes when Autofill information is displayed in the renderer.  This can
+// happen in two different ways: (1) a popup containing Autofill suggestions
+// has been shown in the renderer; (2) a webpage form is filled or previewed
+// with Autofill suggestions.  A constructor argument specifies the appropriate
+// notification to wait for.
+class AutofillDisplayedObserver : public NotificationObserver {
+ public:
+  AutofillDisplayedObserver(NotificationType notification,
+                            RenderViewHost* render_view_host,
+                            AutomationProvider* automation,
+                            IPC::Message* reply_message);
+  virtual ~AutofillDisplayedObserver();
+
+  // NotificationObserver interface.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationType notification_;
+  RenderViewHost* render_view_host_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillDisplayedObserver);
+};
+
 // Observes when a specified number of autofill profiles and credit cards have
 // been changed in the WebDataService.  The notifications are sent on
 // BrowserThread::DB, the thread that interacts with the database.

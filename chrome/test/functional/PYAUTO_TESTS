@@ -28,14 +28,8 @@
   'CONTINUOUS': {
     'all': [
       'autofill',
-      '-autofill.AutofillTest.testComparePhoneNumbers',
-      '-autofill.AutofillTest.testNoAutofillForReadOnlyFields',
       # crbug.com/77113 - M13 feature.
       '-autofill.AutofillTest.testProfileWithEmailInOtherFieldNotSaved',
-      # crbug.com/80190
-      '-autofill.AutofillTest.testDistinguishMiddleInitialWithinName',
-      '-autofill.AutofillTest.testFormFillableOnReset',
-      '-autofill.AutofillTest.testMultipleEmailFilledByOneUserGesture',
       # crbug.com/81271
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',

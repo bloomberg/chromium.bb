@@ -176,7 +176,7 @@ class PyUITestBase : public UITestBase {
   // a low-level method intended for use mostly by GetDOMValue(). Note that
   // any complicated manipulation of the page should be done by something
   // like WebDriver, not PyAuto. Also note that in order for the script to
-  // return a value to the calling code, it invoke
+  // return a value to the calling code, it invokes
   // window.domAutomationController.send(), passing in the intended return
   // value.
   std::wstring ExecuteJavascript(const std::wstring& script,

@@ -2087,6 +2087,34 @@ void AutocompleteEditFocusedObserver::Observe(
   delete this;
 }
 
+AutofillDisplayedObserver::AutofillDisplayedObserver(
+    NotificationType notification,
+    RenderViewHost* render_view_host,
+    AutomationProvider* automation,
+    IPC::Message* reply_message)
+    : notification_(notification),
+      render_view_host_(render_view_host),
+      automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message) {
+  Source<RenderViewHost> source(render_view_host_);
+  registrar_.Add(this, notification_, source);
+}
+
+AutofillDisplayedObserver::~AutofillDisplayedObserver() {}
+
+void AutofillDisplayedObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK_EQ(type.value, notification_.value);
+  DCHECK_EQ(Source<RenderViewHost>(source).ptr(), render_view_host_);
+  if (automation_) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendSuccess(NULL);
+  }
+  delete this;
+}
+
 AutofillChangedObserver::AutofillChangedObserver(
     AutomationProvider* automation,
     IPC::Message* reply_message,

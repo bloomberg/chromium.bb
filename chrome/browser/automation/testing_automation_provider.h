@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/page_type.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 class DictionaryValue;
 class TemplateURLModel;
@@ -647,6 +648,29 @@ class TestingAutomationProvider : public AutomationProvider,
                            DictionaryValue* args,
                            IPC::Message* reply_message);
 
+  // Causes the autofill popup to be displayed in an already-focused webpage
+  // form field.  Waits until the popup is displayed before returning.
+  void AutofillTriggerSuggestions(Browser* browser,
+                                  DictionaryValue* args,
+                                  IPC::Message* message);
+
+  // Highlights the previous or next autofill entry in an already-displayed
+  // autofill popup.  This is done by sending either an "up arrow" or
+  // "down arrow" keypress, then waiting for a preview of the filled-in state
+  // to be displayed in the webpage form before returning.  Use
+  // AutofillTriggerSuggestions() to cause the autofill popup to be displayed.
+  void AutofillHighlightSuggestion(Browser* browser,
+                                   DictionaryValue* args,
+                                   IPC::Message* message);
+
+  // Causes a webpage form to be filled with autofill information from an
+  // autofill profile that is already highlighted in an autofill popup.  Use
+  // AutofillHighlightSuggestion() as needed to highlight the desired profile
+  // in the autofill popup.
+  void AutofillAcceptSelection(Browser* browser,
+                               DictionaryValue* args,
+                               IPC::Message* message);
+
   // Signs in to sync using the given username and password.
   // Uses the JSON interface for input/output.
   void SignInToSync(Browser* browser,
@@ -764,12 +788,24 @@ class TestingAutomationProvider : public AutomationProvider,
                            DictionaryValue* args,
                            IPC::Message* reply_message);
 
-  // Populates the fields of the event parameters with what is found
-  // on the args one. If fails return false and puts the error message in
-  // the error parameter, else returns true.
+  // Populates the fields of the event parameter with what is found in the
+  // args parameter.  Upon failure, returns false and puts the error message in
+  // the error parameter, otherwise returns true.
   bool BuildWebKeyEventFromArgs(DictionaryValue* args,
                                 std::string* error,
                                 NativeWebKeyboardEvent* event);
+
+  // Populates the fields of the event parameter with default data, except for
+  // the specified key type and key code.
+  void BuildSimpleWebKeyEvent(WebKit::WebInputEvent::Type type,
+                              int windows_key_code,
+                              NativeWebKeyboardEvent* event);
+
+  // Sends a key press event using the given key code to the specified tab.
+  // A key press is a combination of a "key down" event and a "key up" event.
+  // This function does not wait before returning.
+  void SendWebKeyPressEventAsync(int key_code,
+                                 TabContents* tab_contents);
 
   // Determines whether each relevant section of the NTP is in thumbnail mode.
   void GetNTPThumbnailMode(Browser* browser,

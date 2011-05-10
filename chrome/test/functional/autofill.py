@@ -279,22 +279,6 @@ class AutofillTest(pyauto.PyUITest):
     self.assertFalse(self.GetAutofillProfile()['profiles'],
                      msg='Profile with invalid email was aggregated.')
 
-  def _SendKeyEventsToPopulateForm(self, tab_index=0, windex=0):
-    """Send key events to populate a web form with Autofill profile data.
-
-    Args:
-      tab_index: The tab index, default is 0.
-      windex: The window index, default is 0.
-    """
-    TAB_KEYPRESS = 0x09  # Tab keyboard key press.
-    DOWN_KEYPRESS = 0x28  # Down arrow keyboard key press.
-    RETURN_KEYPRESS = 0x0D  # Return keyboard key press.
-
-    self.SendWebkitKeypressEvent(TAB_KEYPRESS, tab_index, windex)
-    self.SendWebkitKeypressEvent(DOWN_KEYPRESS, tab_index, windex)
-    self.SendWebkitKeypressEvent(DOWN_KEYPRESS, tab_index, windex)
-    self.SendWebkitKeypressEvent(RETURN_KEYPRESS, tab_index, windex)
-
   def testComparePhoneNumbers(self):
     """Test phone fields parse correctly from a given profile.
 
@@ -314,7 +298,8 @@ class AutofillTest(pyauto.PyUITest):
         os.path.join('autofill', 'functional', 'form_phones.html'))
     for profile_expected in profiles_expected:
       self.NavigateToURL(url)
-      self._SendKeyEventsToPopulateForm()
+      self.assertTrue(self.AutofillPopulateForm('NAME_FIRST'),
+                      msg='Autofill form could not be populated.')
       form_values = {}
       for key, value in profile_expected.iteritems():
         js_returning_field_value = (
@@ -379,7 +364,8 @@ class AutofillTest(pyauto.PyUITest):
     url = self.GetHttpURLForDataPath(
         os.path.join('autofill', 'functional', 'read_only_field_test.html'))
     self.NavigateToURL(url)
-    self._SendKeyEventsToPopulateForm()
+    self.assertTrue(self.AutofillPopulateForm('firstname'),
+                    msg='Autofill form could not be populated.')
     js_return_readonly_field = (
         'var field_value = document.getElementById("email").value;'
         'window.domAutomationController.send(field_value);')
@@ -418,13 +404,15 @@ class AutofillTest(pyauto.PyUITest):
         os.path.join('autofill', 'functional', 'autofill_test_form.html'))
     self.NavigateToURL(url)
     # Fill form using an address profile.
-    self._SendKeyEventsToPopulateForm()
+    self.assertTrue(self.AutofillPopulateForm('NAME_FIRST'),
+                    msg='Autofill form could not be populated.')
     # Reset the form.
     self.ExecuteJavascript('document.getElementById("testform").reset();'
                            'window.domAutomationController.send("done");',
                            0, 0)
     # Fill in the form using an Autofill profile.
-    self._SendKeyEventsToPopulateForm()
+    self.assertTrue(self.AutofillPopulateForm('NAME_FIRST'),
+                    msg='Autofill form could not be populated.')
     # Verify value in fields match value in the profile dictionary.
     form_values = {}
     for key, value in profile.iteritems():
@@ -456,7 +444,8 @@ class AutofillTest(pyauto.PyUITest):
         os.path.join('autofill', 'functional', 'autofill_middleinit_form.html'))
     self.NavigateToURL(url)
     # Fill form using an address profile.
-    self._SendKeyEventsToPopulateForm()
+    self.assertTrue(self.AutofillPopulateForm('NAME_FIRST'),
+                    msg='Autofill form could not be populated.')
     js_return_middleinit_field = (
         'var field_value = document.getElementById("NAME_MIDDLE").value;'
         'window.domAutomationController.send(field_value);')
@@ -482,7 +471,8 @@ class AutofillTest(pyauto.PyUITest):
                      'autofill_confirmemail_form.html'))
     self.NavigateToURL(url)
     # Fill form using an address profile.
-    self._SendKeyEventsToPopulateForm()
+    self.assertTrue(self.AutofillPopulateForm('NAME_FIRST'),
+                    msg='Autofill form could not be populated.')
     js_return_confirmemail_field = (
         'var field_value = document.getElementById("EMAIL_CONFIRM").value;'
         'window.domAutomationController.send(field_value);')
@@ -550,7 +540,8 @@ class AutofillTest(pyauto.PyUITest):
     list_of_dict = gen.GenerateDataset(num_of_dict_to_generate=1501)
     self.FillAutofillProfile(profiles=list_of_dict)
     self.NavigateToURL(url)
-    self._SendKeyEventsToPopulateForm()
+    self.assertTrue(self.AutofillPopulateForm('NAME_FIRST'),
+                    msg='Autofill form could not be populated.')
     # TODO(dyu): add automated form hang or crash verification.
     raw_input(
         'Verify the test manually. Test hang time after submitting the form.')
