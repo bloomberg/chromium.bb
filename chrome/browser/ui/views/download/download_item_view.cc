@@ -1065,9 +1065,9 @@ void DownloadItemView::SizeLabelToMinWidth() {
   if (dangerous_download_label_sized_)
     return;
 
-  std::wstring text = dangerous_download_label_->GetText();
+  string16 text = WideToUTF16(dangerous_download_label_->GetText());
   TrimWhitespace(text, TRIM_ALL, &text);
-  DCHECK_EQ(std::wstring::npos, text.find(L"\n"));
+  DCHECK_EQ(string16::npos, text.find('\n'));
 
   // Make the label big so that GetPreferredSize() is not constrained by the
   // current width.
@@ -1075,24 +1075,23 @@ void DownloadItemView::SizeLabelToMinWidth() {
 
   gfx::Size size;
   int min_width = -1;
-  string16 text16 = WideToUTF16(text);
   // Using BREAK_WORD can work in most cases, but it can also break
   // lines where it should not. Using BREAK_LINE is safer although
   // slower for Chinese/Japanese. This is not perf-critical at all, though.
-  base::BreakIterator iter(&text16, base::BreakIterator::BREAK_LINE);
+  base::BreakIterator iter(&text, base::BreakIterator::BREAK_LINE);
   bool status = iter.Init();
   DCHECK(status);
 
-  string16 current_text = text16;
-  string16 prev_text = text16;
+  string16 current_text = text;
+  string16 prev_text = text;
   while (iter.Advance()) {
     size_t pos = iter.pos();
-    if (pos >= text16.length())
+    if (pos >= text.length())
       break;
     // This can be a low surrogate codepoint, but u_isUWhiteSpace will
     // return false and inserting a new line after a surrogate pair
     // is perfectly ok.
-    char16 line_end_char = text16[pos - 1];
+    char16 line_end_char = text[pos - 1];
     if (u_isUWhiteSpace(line_end_char))
       current_text.replace(pos - 1, 1, 1, char16('\n'));
     else
@@ -1113,7 +1112,7 @@ void DownloadItemView::SizeLabelToMinWidth() {
 
     // Restore the string.
     prev_text = current_text;
-    current_text = text16;
+    current_text = text;
   }
 
   // If we have a line with no line breaking opportunity (which is very

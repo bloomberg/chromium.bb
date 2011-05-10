@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,10 +80,10 @@ TrimPositions TrimWhitespaceUTF8(const std::string& input,
   // twice. Please feel free to file a bug if this function hurts the
   // performance of Chrome.
   DCHECK(IsStringUTF8(input));
-  std::wstring input_wide = UTF8ToWide(input);
-  std::wstring output_wide;
-  TrimPositions result = TrimWhitespace(input_wide, positions, &output_wide);
-  *output = WideToUTF8(output_wide);
+  string16 input16 = UTF8ToUTF16(input);
+  string16 output16;
+  TrimPositions result = TrimWhitespace(input16, positions, &output16);
+  *output = UTF16ToUTF8(output16);
   return result;
 }
 
