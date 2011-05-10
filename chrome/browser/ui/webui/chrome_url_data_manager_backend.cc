@@ -248,9 +248,7 @@ void ChromeURLDataManagerBackend::DataAvailable(RequestID request_id,
   // Forward this data on to the pending net::URLRequest, if it exists.
   PendingRequestMap::iterator i = pending_requests_.find(request_id);
   if (i != pending_requests_.end()) {
-    // We acquire a reference to the job so that it doesn't disappear under the
-    // feet of any method invoked here (we could trigger a callback).
-    scoped_refptr<URLRequestChromeJob> job(i->second);
+    URLRequestChromeJob* job(i->second);
     pending_requests_.erase(i);
     job->DataAvailable(bytes);
   }
