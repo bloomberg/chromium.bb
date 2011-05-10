@@ -7,7 +7,7 @@
 
 #include "ppapi/c/dev/pp_video_dev.h"
 
-#define PPP_VIDEODECODER_DEV_INTERFACE "PPP_VideoDecoder(Dev);0.1"
+#define PPP_VIDEODECODER_DEV_INTERFACE "PPP_VideoDecoder(Dev);0.2"
 
 // PPP_VideoDecoder_Dev structure contains the function pointers that the
 // plugin MUST implement to provide services needed by the video decoder
@@ -16,18 +16,20 @@ struct PPP_VideoDecoder_Dev {
   // Callback function to provide buffers for the decoded output pictures. If
   // succeeds plugin must provide buffers through AssignPictureBuffers function
   // to the API. If |req_num_of_bufs| matching exactly the specification
-  // given in |props| cannot be allocated decoder should be destroyed.
+  // given in the parameters cannot be allocated decoder should be destroyed.
   //
   // Decoding will not proceed until buffers have been provided.
   //
   // Parameters:
   //  |decoder| is pointer to the Pepper Video Decoder instance.
   //  |req_num_of_bufs| tells how many buffers are needed by the decoder.
-  //  |props| tells the properties that are required from the textures.
+  //  |dimensions| tells the dimensions of the buffer to allocate.
+  //  |type| specifies whether the buffer lives in system memory or GL texture.
   void (*ProvidePictureBuffers)(
       PP_Resource decoder,
       uint32_t req_num_of_bufs,
-      const struct PP_PictureBufferProperties_Dev* props);
+      struct PP_Size dimensions,
+      enum PP_PictureBufferType_Dev type);
 
   // Callback function for decoder to deliver unneeded picture buffers back to
   // the plugin.
@@ -36,7 +38,7 @@ struct PPP_VideoDecoder_Dev {
   //  |decoder| is pointer to the Pepper Video Decoder instance.
   //  |picture_buffer| points to the picture buffer that is no longer needed.
   void (*DismissPictureBuffer)(PP_Resource decoder,
-                               union PP_PictureData_Dev* picture_buffer);
+                               int32_t picture_buffer_id);
 
   // Callback function for decoder to deliver decoded pictures ready to be
   // displayed. Decoder expects the plugin to return the buffer back to the
@@ -46,7 +48,7 @@ struct PPP_VideoDecoder_Dev {
   //  |decoder| is pointer to the Pepper Video Decoder instance.
   //  |picture| is the picture that is ready.
   void (*PictureReady)(PP_Resource decoder,
-                       struct PP_Picture_Dev* picture);
+                       struct PP_Picture_Dev picture);
 
   // Callback function to tell the plugin that decoder has decoded end of stream
   // marker and output all the pictures that should be displayed from the

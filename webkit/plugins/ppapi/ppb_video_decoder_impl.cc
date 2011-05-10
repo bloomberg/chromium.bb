@@ -7,15 +7,18 @@
 #include <string>
 
 #include "base/logging.h"
+#include "media/video/picture.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
+#include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/var.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
+#include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
+#include "webkit/plugins/ppapi/var.h"
 
 namespace webkit {
 namespace ppapi {
@@ -23,10 +26,10 @@ namespace ppapi {
 namespace {
 
 PP_Bool GetConfigs(PP_Instance instance_id,
-                   PP_VideoDecoderConfig_Dev* proto_config,
-                   PP_VideoDecoderConfig_Dev* matching_configs,
-                   int32_t matching_configs_size,
-                   int32_t* num_of_matching_configs) {
+                   PP_VideoConfigElement* proto_config,
+                   PP_VideoConfigElement* matching_configs,
+                   uint32_t matching_configs_size,
+                   uint32_t* num_of_matching_configs) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return PP_FALSE;
@@ -41,7 +44,7 @@ PP_Bool GetConfigs(PP_Instance instance_id,
 }
 
 PP_Resource Create(PP_Instance instance_id,
-                   PP_VideoDecoderConfig_Dev* decoder_config) {
+                   PP_VideoConfigElement* decoder_config) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return 0;
@@ -49,7 +52,7 @@ PP_Resource Create(PP_Instance instance_id,
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       new PPB_VideoDecoder_Impl(instance));
 
-  if (!decoder->Init(const_cast<PP_VideoDecoderConfig_Dev*>(decoder_config)))
+  if (!decoder->Init(const_cast<PP_VideoConfigElement*>(decoder_config)))
     return 0;
 
   return decoder->GetReference();
@@ -70,29 +73,38 @@ PP_Bool Decode(PP_Resource decoder_id,
   return BoolToPPBool(decoder->Decode(bitstream_buffer, callback));
 }
 
-void AssignPictureBuffer(PP_Resource video_decoder,
+void AssignGLESBuffers(PP_Resource video_decoder,
+                       uint32_t no_of_buffers,
+                       PP_GLESBuffer_Dev* buffers) {
+  scoped_refptr<PPB_VideoDecoder_Impl> decoder(
+      Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
+  if (!decoder)
+    return;
+
+  decoder->AssignGLESBuffers(no_of_buffers, buffers);
+}
+
+void AssignSysmemBuffers(PP_Resource video_decoder,
                          uint32_t no_of_buffers,
-                         union PP_PictureData_Dev* picture_buffer) {
+                         PP_SysmemBuffer_Dev* buffers) {
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
   if (!decoder)
     return;
 
-  decoder->AssignPictureBuffer(no_of_buffers, picture_buffer);
+  decoder->AssignSysmemBuffers(no_of_buffers, buffers);
 }
 
-void ReusePictureBuffer(PP_Resource video_decoder,
-                        union PP_PictureData_Dev* picture_buffer) {
+void ReusePictureBuffer(PP_Resource video_decoder, int32_t picture_buffer_id) {
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
   if (!decoder)
     return;
 
-  decoder->ReusePictureBuffer(picture_buffer);
+  decoder->ReusePictureBuffer(picture_buffer_id);
 }
 
-PP_Bool Flush(PP_Resource video_decoder,
-              PP_CompletionCallback callback) {
+PP_Bool Flush(PP_Resource video_decoder, PP_CompletionCallback callback) {
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       Resource::GetAs<PPB_VideoDecoder_Impl>(video_decoder));
   if (!decoder)
@@ -111,17 +123,41 @@ PP_Bool Abort(PP_Resource video_decoder,
   return BoolToPPBool(decoder->Abort(callback));
 }
 
-
 const PPB_VideoDecoder_Dev ppb_videodecoder = {
   &GetConfigs,
   &Create,
   &IsVideoDecoder,
   &Decode,
-  &AssignPictureBuffer,
+  &AssignGLESBuffers,
+  &AssignSysmemBuffers,
   &ReusePictureBuffer,
   &Flush,
   &Abort,
 };
+
+// Utility methods to convert data to and from the ppapi C-types and their
+// C++ media-namespace equivalents.
+void CopyToPictureDev(const media::Picture& input, PP_Picture_Dev* output) {
+  output->picture_buffer_id = input.picture_buffer_id();
+  output->bitstream_user_handle = input.user_handle();
+  output->visible_size =
+      PP_MakeSize(input.visible_size().width(), input.visible_size().height());
+  output->decoded_size =
+      PP_MakeSize(input.decoded_size().width(), input.decoded_size().height());
+}
+
+void CopyToConfigList(
+    const PP_VideoConfigElement* configs, std::vector<uint32>* output) {
+  // TODO(vrk): This is assuming PP_VideoAttributeDictionary and
+  // VideoAttributeKey have identical enum values. There is no compiler
+  // assert to guarantee this. We either need to add such asserts or
+  // merge PP_VideoAttributeDictionary and VideoAttributeKey.
+  const PP_VideoConfigElement* current = configs;
+  while (*current != PP_VIDEOATTR_DICTIONARY_TERMINATOR) {
+    output->push_back(static_cast<uint32>(*configs));
+    current++;
+  }
+}
 
 }  // namespace
 
@@ -131,6 +167,9 @@ PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PluginInstance* instance)
       abort_callback_(PP_BlockUntilComplete()),
       flush_callback_(PP_BlockUntilComplete()),
       bitstream_buffer_callback_(PP_BlockUntilComplete()) {
+  ppp_videodecoder_ =
+      static_cast<const PPP_VideoDecoder_Dev*>(instance->module()->
+          GetPluginInterface(PPP_VIDEODECODER_DEV_INTERFACE));
 }
 
 PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() {
@@ -146,27 +185,36 @@ PPB_VideoDecoder_Impl* PPB_VideoDecoder_Impl::AsPPB_VideoDecoder_Impl() {
 }
 
 bool PPB_VideoDecoder_Impl::GetConfigs(
-    PP_VideoDecoderConfig_Dev* proto_config,
-    PP_VideoDecoderConfig_Dev* matching_configs,
-    int32_t matching_configs_size,
-    int32_t* num_of_matching_configs) {
+    PP_VideoConfigElement* requested_configs,
+    PP_VideoConfigElement* matching_configs,
+    uint32_t matching_configs_size,
+    uint32_t* num_of_matching_configs) {
   if (!instance())
     return false;
   if (!platform_video_decoder_.get())
     return false;
+  if (!matching_configs)
+    return false;
 
-  // TODO(vmr): Implement.
-  NOTIMPLEMENTED();
+  std::vector<uint32> requested;
+  CopyToConfigList(requested_configs, &requested);
+  std::vector<uint32> matched;
+  platform_video_decoder_->GetConfigs(requested, &matched);
 
-  return false;
+  uint32 i;
+  for (i = 0; i < matched.size() && i < matching_configs_size; i++)
+    matching_configs[i] = matched[i];
+  *num_of_matching_configs = i;
+
+  return true;
 }
 
-bool PPB_VideoDecoder_Impl::Init(PP_VideoDecoderConfig_Dev* decoder_config) {
+bool PPB_VideoDecoder_Impl::Init(PP_VideoConfigElement* decoder_config) {
   if (!instance())
     return false;
 
   platform_video_decoder_.reset(
-      instance()->delegate()->CreateVideoDecoder(decoder_config));
+      instance()->delegate()->CreateVideoDecoder(decoder_config, this));
 
   return platform_video_decoder_.get()? true : false;
 }
@@ -177,9 +225,12 @@ bool PPB_VideoDecoder_Impl::Decode(
   if (!platform_video_decoder_.get())
     return false;
 
-  media::BitstreamBuffer* decode_buffer = NULL;
-  // TODO(vmr): Convert bitstream_buffer to BitstreamBuffer object.
-  NOTIMPLEMENTED();
+  scoped_refptr<PPB_Buffer_Impl> pepper_buffer =
+      Resource::GetAs<PPB_Buffer_Impl>(bitstream_buffer->bitstream);
+
+  media::BitstreamBuffer decode_buffer(pepper_buffer->mapped_buffer(),
+                                       bitstream_buffer->bitstream_size,
+                                       bitstream_buffer->user_handle);
 
   // Store the callback to inform when bitstream buffer has been processed.
   // TODO(vmr): handle simultaneous decodes + callbacks.
@@ -191,29 +242,40 @@ bool PPB_VideoDecoder_Impl::Decode(
           &PPB_VideoDecoder_Impl::OnBitstreamBufferProcessed));
 }
 
-void PPB_VideoDecoder_Impl::AssignPictureBuffer(
-    uint32_t no_of_picture_buffers,
-    PP_PictureData_Dev* picture_buffers) {
+void PPB_VideoDecoder_Impl::AssignGLESBuffers(
+    uint32_t no_of_buffers,
+    PP_GLESBuffer_Dev* buffers) {
   if (!platform_video_decoder_.get())
     return;
 
-  // TODO(vmr): Map PP_PictureData_Dev into PictureBuffer object.
-  NOTIMPLEMENTED();
-
-  media::VideoDecodeAccelerator::PictureBuffer* buffer = NULL;
-  platform_video_decoder_->ReusePictureBuffer(buffer);
+  std::vector<media::GLESBuffer> wrapped_buffers;
+  for (uint32 i = 0; i < no_of_buffers; i++) {
+    PP_GLESBuffer_Dev in_buf = buffers[i];
+    media::GLESBuffer buffer(in_buf);
+    wrapped_buffers.push_back(buffer);
+  }
+  platform_video_decoder_->AssignGLESBuffers(wrapped_buffers);
 }
 
-void PPB_VideoDecoder_Impl::ReusePictureBuffer(
-    PP_PictureData_Dev* picture_buffer) {
+void PPB_VideoDecoder_Impl::AssignSysmemBuffers(
+    uint32_t no_of_buffers,
+    PP_SysmemBuffer_Dev* buffers) {
   if (!platform_video_decoder_.get())
     return;
 
-  // TODO(vmr): Map PP_PictureData_Dev into PictureBuffer object.
-  NOTIMPLEMENTED();
+  std::vector<media::SysmemBuffer> wrapped_buffers;
+  for (uint32 i = 0; i < no_of_buffers; i++) {
+    PP_SysmemBuffer_Dev in_buf = buffers[i];
+    media::SysmemBuffer buffer(in_buf);
+    wrapped_buffers.push_back(buffer);
+  }
+  platform_video_decoder_->AssignSysmemBuffers(wrapped_buffers);
+}
 
-  media::VideoDecodeAccelerator::PictureBuffer* buffer = NULL;
-  platform_video_decoder_->ReusePictureBuffer(buffer);
+void PPB_VideoDecoder_Impl::ReusePictureBuffer(int32_t picture_buffer_id) {
+  if (!platform_video_decoder_.get())
+    return;
+  platform_video_decoder_->ReusePictureBuffer(picture_buffer_id);
 }
 
 bool PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
@@ -243,54 +305,61 @@ bool PPB_VideoDecoder_Impl::Abort(PP_CompletionCallback callback) {
 }
 
 void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
-    uint32_t requested_num_of_buffers,
-    const std::vector<uint32_t>& buffer_properties) {
-  // TODO(vmr): Implement.
-  NOTIMPLEMENTED();
+    uint32 requested_num_of_buffers,
+    gfx::Size dimensions,
+    media::VideoDecodeAccelerator::MemoryType type) {
+  if (!ppp_videodecoder_)
+    return;
+
+  // TODO(vrk): Compiler assert or use switch statement instead of making
+  // a blind cast.
+  PP_PictureBufferType_Dev out_type =
+      static_cast<PP_PictureBufferType_Dev>(type);
+  PP_Size out_dim = PP_MakeSize(dimensions.width(), dimensions.height());
+  ScopedResourceId resource(this);
+  ppp_videodecoder_->ProvidePictureBuffers(
+      resource.id, requested_num_of_buffers, out_dim, out_type);
 }
 
 void PPB_VideoDecoder_Impl::PictureReady(
-    media::VideoDecodeAccelerator::Picture* picture) {
-  // TODO(vmr): Implement.
-  NOTIMPLEMENTED();
+    const media::Picture& picture) {
+  if (!ppp_videodecoder_)
+    return;
 
-  // Convert the picture.
-  // Get plugin's PPP interface function pointers.
-  // PPP_VideoDecoder* ppp_videodecoder;
-  // Call ProvidePictureBuffers function pointer and return.
-  // ppp_videodecoder->PictureReady(resource_decoder, picture,
-  //                                pic_buffer_used_again);
+  ScopedResourceId resource(this);
+  PP_Picture_Dev out_pic;
+  CopyToPictureDev(picture, &out_pic);
+  ppp_videodecoder_->PictureReady(resource.id, out_pic);
 }
 
-void PPB_VideoDecoder_Impl::DismissPictureBuffer(
-      media::VideoDecodeAccelerator::PictureBuffer* picture_buffer) {
-  // TODO(vmr): Implement.
-  NOTIMPLEMENTED();
+void PPB_VideoDecoder_Impl::DismissPictureBuffer(int32 picture_buffer_id) {
+  if (!ppp_videodecoder_)
+    return;
+
+  ScopedResourceId resource(this);
+  ppp_videodecoder_->DismissPictureBuffer(resource.id, picture_buffer_id);
 }
 
 void PPB_VideoDecoder_Impl::NotifyEndOfStream() {
-  // TODO(vmr): Implement.
-  NOTIMPLEMENTED();
+  if (!ppp_videodecoder_)
+    return;
 
-  // Get decoder's resource handle.
-  // PP_Resource resource_decoder;
-  // Get plugin's PPP interface function pointers.
-  // PPP_VideoDecoder* ppp_videodecoder;
-  // Call EndOfStream function pointer and return.
-  // ppp_videodecoder->EndOfStream(resource_decoder);
+  ScopedResourceId resource(this);
+  ppp_videodecoder_->EndOfStream(resource.id);
 }
 
 void PPB_VideoDecoder_Impl::NotifyError(
     media::VideoDecodeAccelerator::Error error) {
-  // TODO(vmr): Implement.
-  NOTIMPLEMENTED();
+  if (!ppp_videodecoder_)
+    return;
 
-  // Get decoder's resource handle.
-  // PP_Resource resource_decoder;
-  // Get plugin's PPP interface function pointers.
-  // PPP_VideoDecoder* ppp_videodecoder;
-  // Call NotifyError function pointer.
-  // ppp_videodecoder->NotifyError(error, error_data, data_size);
+  ScopedResourceId resource(this);
+  // TODO(vrk): This is assuming VideoDecodeAccelerator::Error and
+  // PP_VideoDecodeError_Dev have identical enum values. There is no compiler
+  // assert to guarantee this. We either need to add such asserts or
+  // merge these two enums.
+  ppp_videodecoder_->NotifyError(resource.id,
+      static_cast<PP_VideoDecodeError_Dev>(error));
 }
 
 void PPB_VideoDecoder_Impl::OnAbortComplete() {
@@ -326,3 +395,37 @@ void PPB_VideoDecoder_Impl::OnFlushComplete() {
 
 }  // namespace ppapi
 }  // namespace webkit
+
+// These functions are declared in picture.h but are defined here because of
+// dependencies (we can't depend on ppapi types from media).
+namespace media {
+BufferInfo::BufferInfo(const PP_BufferInfo_Dev& info)
+    : id_(info.id) {
+      size_ = gfx::Size(info.size.width, info.size.height);
+}
+
+// TODO(vrk): This assigns the PP_Resource context to be
+// the context_id. Not sure what it's actually supposed to be.
+GLESBuffer::GLESBuffer(const PP_GLESBuffer_Dev& buffer)
+    : texture_id_(buffer.texture_id),
+      context_id_(buffer.context),
+      info_(buffer.info) {
+}
+
+SysmemBuffer::SysmemBuffer(const PP_SysmemBuffer_Dev& buffer)
+    : info_(buffer.info) {
+  scoped_refptr<webkit::ppapi::PPB_Buffer_Impl> pepper_buffer =
+      webkit::ppapi::Resource::GetAs<webkit::ppapi::PPB_Buffer_Impl>(
+          buffer.data);
+  assert(pepper_buffer->is_mapped());
+  data_ = pepper_buffer->mapped_buffer();
+}
+
+Picture::Picture(const PP_Picture_Dev& picture)
+    : picture_buffer_id_(picture.picture_buffer_id),
+      user_handle_(picture.bitstream_user_handle),
+      visible_size_(picture.visible_size.width, picture.visible_size.height),
+      decoded_size_(picture.decoded_size.width, picture.decoded_size.height) {
+}
+
+}  // namespace media

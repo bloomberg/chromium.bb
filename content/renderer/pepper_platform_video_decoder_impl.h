@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
-#include "media/base/data_buffer.h"
 #include "media/video/video_decode_accelerator.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
@@ -21,25 +20,28 @@ class PlatformVideoDecoderImpl
   virtual ~PlatformVideoDecoderImpl();
 
   // PlatformVideoDecoder implementation.
-  virtual const std::vector<uint32>& GetConfig(
-      const std::vector<uint32>& prototype_config);
-  virtual bool Initialize(const std::vector<uint32>& config);
-  virtual bool Decode(media::BitstreamBuffer* bitstream_buffer,
-                      media::VideoDecodeAcceleratorCallback* callback);
-  virtual void AssignPictureBuffer(
-      std::vector<media::VideoDecodeAccelerator::PictureBuffer*>
-          picture_buffers);
-  virtual void ReusePictureBuffer(
-      media::VideoDecodeAccelerator::PictureBuffer* picture_buffer);
-  virtual bool Flush(media::VideoDecodeAcceleratorCallback* callback);
-  virtual bool Abort(media::VideoDecodeAcceleratorCallback* callback);
+  virtual void  GetConfigs(
+      const std::vector<uint32>& requested_configs,
+      std::vector<uint32>* matched_configs) OVERRIDE;
+  virtual bool Initialize(const std::vector<uint32>& config) OVERRIDE;
+  virtual bool Decode(
+      const media::BitstreamBuffer& bitstream_buffer,
+      media::VideoDecodeAcceleratorCallback* callback) OVERRIDE;
+  virtual void AssignGLESBuffers(
+      const std::vector<media::GLESBuffer>& buffers) OVERRIDE;
+  virtual void AssignSysmemBuffers(
+      const std::vector<media::SysmemBuffer>& buffers) OVERRIDE;
+  virtual void ReusePictureBuffer(uint32 picture_buffer_id) OVERRIDE;
+  virtual bool Flush(media::VideoDecodeAcceleratorCallback* callback) OVERRIDE;
+  virtual bool Abort(media::VideoDecodeAcceleratorCallback* callback) OVERRIDE;
 
   // VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(
       uint32 requested_num_of_buffers,
-      const std::vector<uint32>& buffer_properties) OVERRIDE;
+      gfx::Size dimensions,
+      media::VideoDecodeAccelerator::MemoryType type) OVERRIDE;
   virtual void PictureReady(
-      media::VideoDecodeAccelerator::Picture* picture) OVERRIDE;
+      const media::Picture& picture) OVERRIDE;
   virtual void NotifyEndOfStream() OVERRIDE;
   virtual void NotifyError(
       media::VideoDecodeAccelerator::Error error) OVERRIDE;

@@ -3334,36 +3334,42 @@
         }],
       ],
     },
-    {
+    # {
       # Executable that contains tests that specifically test gpu video decoding
       # features. Excludes for example command buffer implementation.
-      'target_name': 'gpu_video_tests',
-      'type': 'executable',
-      'dependencies': [
-        'test_support_common',
-        '../base/base.gyp:base',
-        '../base/base.gyp:base_i18n',
-        '../base/base.gyp:test_support_base',
-        '../ipc/ipc.gyp:test_support_ipc',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-        '../testing/gmock.gyp:gmock',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        '<(DEPTH)/content/gpu/gpu_video_decode_accelerator.cc',
-        '<(DEPTH)/content/gpu/gpu_video_decode_accelerator.h',
-        '<(DEPTH)/content/gpu/gpu_video_decode_accelerator_tester.cc',
-        '<(DEPTH)/media/video/picture.cc',
-        '<(DEPTH)/media/video/picture.h',
-        '<(DEPTH)/media/video/video_decode_accelerator.cc',
-        '<(DEPTH)/media/video/video_decode_accelerator.h',
-        '<(DEPTH)/ui/gfx/size.cc',
-        '<(DEPTH)/ui/gfx/size.h',
-      ],
-    },
+      #
+      # TODO(vrk): These tests are temporarily disabled as the VideoDecode PPAPI
+      # is getting an overhaul. Tests will be reenabled when the API has been
+      # stabilized and gpu_video_decode_accelerator_tester.cc is updated to
+      # reflect the changes.
+      #
+      # 'target_name': 'gpu_video_tests',
+      # 'type': 'executable',
+      # 'dependencies': [
+        # 'test_support_common',
+        # '../base/base.gyp:base',
+        # '../base/base.gyp:base_i18n',
+        # '../base/base.gyp:test_support_base',
+        # '../ipc/ipc.gyp:test_support_ipc',
+        # '../skia/skia.gyp:skia',
+        # '../testing/gtest.gyp:gtest',
+        # '../testing/gmock.gyp:gmock',
+      # ],
+      # 'include_dirs': [
+        # '..',
+      # ],
+      # 'sources': [
+        # '<(DEPTH)/content/gpu/gpu_video_decode_accelerator.cc',
+        # '<(DEPTH)/content/gpu/gpu_video_decode_accelerator.h',
+        # '<(DEPTH)/content/gpu/gpu_video_decode_accelerator_tester.cc',
+        # '<(DEPTH)/media/video/picture.cc',
+        # '<(DEPTH)/media/video/picture.h',
+        # '<(DEPTH)/media/video/video_decode_accelerator.cc',
+        # '<(DEPTH)/media/video/video_decode_accelerator.h',
+        # '<(DEPTH)/ui/gfx/size.cc',
+        # '<(DEPTH)/ui/gfx/size.h',
+      # ],
+    # },
     {
       'target_name': 'plugin_tests',
       'type': 'executable',

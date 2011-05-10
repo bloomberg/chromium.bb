@@ -8,11 +8,8 @@
 
 #include "base/logging.h"
 #include "content/renderer/video_decode_accelerator_host.h"
-#include "media/base/buffers.h"
-#include "media/base/video_frame.h"
 
 using media::BitstreamBuffer;
-using media::VideoDecodeAccelerator;
 using media::VideoDecodeAcceleratorCallback;
 
 PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
@@ -23,10 +20,10 @@ PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
 
 PlatformVideoDecoderImpl::~PlatformVideoDecoderImpl() {}
 
-const std::vector<uint32>& PlatformVideoDecoderImpl::GetConfig(
-    const std::vector<uint32>& prototype_config) {
+void PlatformVideoDecoderImpl::GetConfigs(
+    const std::vector<uint32>& requested_configs,
+    std::vector<uint32>* matched_configs) {
   NOTIMPLEMENTED();
-  return configs;
 }
 
 bool PlatformVideoDecoderImpl::Initialize(const std::vector<uint32>& config) {
@@ -36,7 +33,7 @@ bool PlatformVideoDecoderImpl::Initialize(const std::vector<uint32>& config) {
 }
 
 bool PlatformVideoDecoderImpl::Decode(
-    BitstreamBuffer* bitstream_buffer,
+    const BitstreamBuffer& bitstream_buffer,
     VideoDecodeAcceleratorCallback* callback) {
   // TODO(vmr): Implement me!
   NOTIMPLEMENTED();
@@ -44,12 +41,21 @@ bool PlatformVideoDecoderImpl::Decode(
   return false;
 }
 
-void PlatformVideoDecoderImpl::AssignPictureBuffer(
-    std::vector<VideoDecodeAccelerator::PictureBuffer*> picture_buffers) {
+void PlatformVideoDecoderImpl::AssignGLESBuffers(
+    const std::vector<media::GLESBuffer>& buffers) {
+  // TODO(vmr): Implement me!
+  NOTIMPLEMENTED();
 }
 
-void PlatformVideoDecoderImpl::ReusePictureBuffer(
-    VideoDecodeAccelerator::PictureBuffer* picture_buffer) {
+void PlatformVideoDecoderImpl::AssignSysmemBuffers(
+    const std::vector<media::SysmemBuffer>& buffers) {
+  // TODO(vmr): Implement me!
+  NOTIMPLEMENTED();
+}
+
+void PlatformVideoDecoderImpl::ReusePictureBuffer(uint32 picture_buffer_id) {
+  // TODO(vmr): Implement me!
+  NOTIMPLEMENTED();
 }
 
 bool PlatformVideoDecoderImpl::Flush(
@@ -83,13 +89,14 @@ void PlatformVideoDecoderImpl::NotifyError(
 
 void PlatformVideoDecoderImpl::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
-    const std::vector<uint32>& buffer_properties) {
+    gfx::Size dimensions,
+    media::VideoDecodeAccelerator::MemoryType type) {
   // TODO(vmr): Implement.
   NOTIMPLEMENTED();
 }
 
 void PlatformVideoDecoderImpl::PictureReady(
-    VideoDecodeAccelerator::Picture* picture) {
+    const media::Picture& picture) {
   // TODO(vmr): Implement.
   NOTIMPLEMENTED();
 }

@@ -28,21 +28,26 @@ class VideoDecodeAcceleratorHost : public IPC::Channel::Listener,
   virtual ~VideoDecodeAcceleratorHost();
 
   // IPC::Channel::Listener implementation.
-  virtual void OnChannelConnected(int32 peer_pid);
-  virtual void OnChannelError();
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // media::VideoDecodeAccelerator implementation.
-  virtual const std::vector<uint32>& GetConfig(
-      const std::vector<uint32>& prototype_config);
-  virtual bool Initialize(const std::vector<uint32>& config);
-  virtual bool Decode(media::BitstreamBuffer* bitstream_buffer,
-                      media::VideoDecodeAcceleratorCallback* callback);
-  virtual void AssignPictureBuffer(
-      std::vector<PictureBuffer*> picture_buffers);
-  virtual void ReusePictureBuffer(PictureBuffer* picture_buffer);
-  virtual bool Flush(media::VideoDecodeAcceleratorCallback* callback);
-  virtual bool Abort(media::VideoDecodeAcceleratorCallback* callback);
+  virtual void GetConfigs(
+      const std::vector<uint32>& requested_configs,
+      std::vector<uint32>* matched_configs) OVERRIDE;
+  virtual bool Initialize(
+      const std::vector<uint32>& config) OVERRIDE;
+  virtual bool Decode(
+      const media::BitstreamBuffer& bitstream_buffer,
+      media::VideoDecodeAcceleratorCallback* callback) OVERRIDE;
+  virtual void AssignGLESBuffers(
+      const std::vector<media::GLESBuffer>& buffers) OVERRIDE;
+  virtual void AssignSysmemBuffers(
+      const std::vector<media::SysmemBuffer>& buffers) OVERRIDE;
+  virtual void ReusePictureBuffer(uint32 picture_buffer_id) OVERRIDE;
+  virtual bool Flush(media::VideoDecodeAcceleratorCallback* callback) OVERRIDE;
+  virtual bool Abort(media::VideoDecodeAcceleratorCallback* callback) OVERRIDE;
 
  private:
   // Message loop that this object runs on.
@@ -66,8 +71,6 @@ class VideoDecodeAcceleratorHost : public IPC::Channel::Listener,
   // Transfer buffers for both input and output.
   // TODO(vmr): move into plugin provided IPC buffers.
   scoped_ptr<base::SharedMemory> input_transfer_buffer_;
-
-  std::vector<uint32> configs_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecodeAcceleratorHost);
 };

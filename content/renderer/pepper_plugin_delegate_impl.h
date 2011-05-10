@@ -175,7 +175,8 @@ class PepperPluginDelegateImpl
   virtual PlatformImage2D* CreateImage2D(int width, int height);
   virtual PlatformContext3D* CreateContext3D();
   virtual PlatformVideoDecoder* CreateVideoDecoder(
-      PP_VideoDecoderConfig_Dev* decoder_config);
+      PP_VideoConfigElement* decoder_config,
+      media::VideoDecodeAccelerator::Client* client);
   virtual PpapiBroker* ConnectToPpapiBroker(
       webkit::ppapi::PPB_Broker_Impl* client);
   virtual void NumberOfFindResultsChanged(int identifier,

@@ -36,11 +36,11 @@ bool VideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-const std::vector<uint32>& VideoDecodeAcceleratorHost::GetConfig(
-    const std::vector<uint32>& prototype_config) {
+void VideoDecodeAcceleratorHost::GetConfigs(
+    const std::vector<uint32>& requested_configs,
+    std::vector<uint32>* matched_configs) {
   // TODO(vmr): implement.
   NOTIMPLEMENTED();
-  return configs_;
 }
 
 bool VideoDecodeAcceleratorHost::Initialize(
@@ -51,21 +51,26 @@ bool VideoDecodeAcceleratorHost::Initialize(
 }
 
 bool VideoDecodeAcceleratorHost::Decode(
-    media::BitstreamBuffer* bitstream_buffer,
+    const media::BitstreamBuffer& bitstream_buffer,
     VideoDecodeAcceleratorCallback* callback) {
   // TODO(vmr): implement.
   NOTIMPLEMENTED();
   return false;
 }
 
-void VideoDecodeAcceleratorHost::AssignPictureBuffer(
-    std::vector<PictureBuffer*> picture_buffers) {
+void VideoDecodeAcceleratorHost::AssignGLESBuffers(
+    const std::vector<media::GLESBuffer>& buffers) {
   // TODO(vmr): implement.
   NOTIMPLEMENTED();
 }
 
-void VideoDecodeAcceleratorHost::ReusePictureBuffer(
-    PictureBuffer* picture_buffer) {
+void VideoDecodeAcceleratorHost::AssignSysmemBuffers(
+    const std::vector<media::SysmemBuffer>& buffers) {
+  // TODO(vmr): implement.
+  NOTIMPLEMENTED();
+}
+
+void VideoDecodeAcceleratorHost::ReusePictureBuffer(uint32 picture_buffer_id) {
   // TODO(vmr): implement.
   NOTIMPLEMENTED();
 }

@@ -814,7 +814,8 @@ webkit::ppapi::PluginDelegate::PlatformContext3D*
 
 webkit::ppapi::PluginDelegate::PlatformVideoDecoder*
 PepperPluginDelegateImpl::CreateVideoDecoder(
-    PP_VideoDecoderConfig_Dev* decoder_config) {
+    PP_VideoConfigElement* decoder_config,
+    media::VideoDecodeAccelerator::Client* client) {
   // TODO(vmr): Implement.
   NOTIMPLEMENTED();
   return NULL;

@@ -16,6 +16,7 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "media/video/video_decode_accelerator.h"
+#include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
@@ -61,7 +62,6 @@ class P2PTransport;
 }  // namespace webkit_glue
 
 struct PP_Flash_NetAddress;
-struct PP_VideoDecoderConfig_Dev;
 
 class TransportDIB;
 
@@ -251,7 +251,8 @@ class PluginDelegate {
 
   // The caller will own the pointer returned from this.
   virtual PlatformVideoDecoder* CreateVideoDecoder(
-      PP_VideoDecoderConfig_Dev* decoder_config) = 0;
+      PP_VideoConfigElement* decoder_config,
+      media::VideoDecodeAccelerator::Client* client) = 0;
 
   // The caller is responsible for calling Shutdown() on the returned pointer
   // to clean up the corresponding resources allocated during this call.

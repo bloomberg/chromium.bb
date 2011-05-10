@@ -69,92 +69,14 @@ enum PP_VideoAttributeDictionary {
   // H264 tool called Weighted Prediction.
   PP_VIDEOATTR_BITSTREAMFORMATKEY_H264_FEATURE_WEIGHTEDPREDICTION,
 
-  PP_VIDEOATTR_DICTIONARY_COLOR_CORMAT_BASE = 0x1000,
-  // Keys for definining attributes of a color buffer. Using these attributes
-  // users can define color spaces in terms of red, green, blue and alpha
-  // components as well as with combination of luma and chroma values with
-  // different subsampling schemes. Also planar, semiplanar and interleaved
-  // formats can be described by using the provided keys as instructed.
+  PP_VIDEOATTR_DICTIONARY_COLOR_FORMAT_BASE = 0x1000,
+  // This specifies the output color format for a decoded frame.
   //
-  // Rules for describing the color planes (1 or more) that constitute the whole
-  // picture are:
-  //   1. Each plane starts with PP_VIDEOATTR_COLORFORMATKEY_PLANE_PIXEL_SIZE
-  //   attribute telling how many bits per pixel the plane contains.
-  //   2. PP_VIDEOATTR_COLORFORMATKEY_PLANE_PIXEL_SIZE attribute must be
-  //   followed either by
-  //     a. Red, green and blue components followed optionally by alpha size
-  //     attribute.
-  //     OR
-  //     b. Luma, blue difference chroma and red difference chroma components as
-  //     well as three sampling reference factors that tell how the chroma may
-  //     have been subsampled with respect to luma.
-  //   3. Description must be terminated with PP_VIDEOATTR_COLORFORMATKEY_NONE
-  //   key with no value for attribute.
-  //
-  // For example, semiplanar YCbCr 4:2:2 (2 planes, one containing 8-bit luma,
-  // the other containing two interleaved chroma data components) may be
-  // described with the following attributes:
-  // {
-  //    PP_VIDEOATTR_COLORFORMATKEY_PLANE_PIXEL_SIZE, 8,
-  //    PP_VIDEOATTR_COLORFORMATKEY_LUMA_SIZE, 8,
-  //    PP_VIDEOATTR_COLORFORMATKEY_PLANE_PIXEL_SIZE, 16,
-  //    PP_VIDEOATTR_COLORFORMATKEY_CHROMA_BLUE_SIZE, 8,
-  //    PP_VIDEOATTR_COLORFORMATKEY_CHROMA_RED_SIZE, 8,
-  //    PP_VIDEOATTR_COLORFORMATKEY_HORIZONTAL_SAMPLING_FACTOR_REFERENCE, 4,
-  //    PP_VIDEOATTR_COLORFORMATKEY_CHROMA_HORIZONTAL_SUBSAMPLING_FACTOR, 2,
-  //    PP_VIDEOATTR_COLORFORMATKEY_CHROMA_VERTICAL_SUBSAMPLING_FACTOR, 2
-  //    PP_VIDEOATTR_DICTIONARY_TERMINATOR
-  // }
-  //
-  // Another example, commonly known 16-bit RGB 565 color format may be
-  // specified as follows:
-  // {
-  //   PP_VIDEOATTR_COLORFORMATKEY_PLANE_PIXEL_SIZE, 16,
-  //   PP_VIDEOATTR_COLORFORMATKEY_RED_SIZE, 5,
-  //   PP_VIDEOATTR_COLORFORMATKEY_GREEN_SIZE, 6,
-  //   PP_VIDEOATTR_COLORFORMATKEY_BLUE_SIZE, 5,
-  //   PP_VIDEOATTR_DICTIONARY_TERMINATOR
-  // }
-  // Total color component bits per pixel in the picture buffer.
-  PP_VIDEOATTR_COLORFORMATKEY_PLANE_PIXEL_SIZE,
-  // Bits of red per pixel in picture buffer.
-  PP_VIDEOATTR_COLORFORMATKEY_RED_SIZE,
-  // Bits of green per pixel in picture buffer.
-  PP_VIDEOATTR_COLORFORMATKEY_GREEN_SIZE,
-  // Bits of blue per pixel in picture buffer.
-  PP_VIDEOATTR_COLORFORMATKEY_BLUE_SIZE,
-  // Bits of alpha in color buffer.
-  PP_VIDEOATTR_COLORFORMATKEY_ALPHA_SIZE,
-  // Bits of luma per pixel in color buffer.
-  PP_VIDEOATTR_COLORFORMATKEY_LUMA_SIZE,
-  // Bits of blue difference chroma (Cb) data in color buffer.
-  PP_VIDEOATTR_COLORFORMATKEY_CHROMA_BLUE_SIZE,
-  // Bits of blue difference chroma (Cr) data in color buffer.
-  PP_VIDEOATTR_COLORFORMATKEY_CHROMA_RED_SIZE,
-  // Three keys to describe the subsampling of YCbCr sampled digital video
-  // signal. For example, 4:2:2 sampling could be defined by setting:
-  //   PP_VIDEOATTR_COLORFORMATKEY_HORIZONTAL_SAMPLING_FACTOR_REFERENCE = 4
-  //   PP_VIDEOATTR_COLORFORMATKEY_CHROMINANCE_HORIZONTAL_SUBSAMPLING_FACTOR = 2
-  //   PP_VIDEOATTR_COLORFORMATKEY_CHROMINANCE_VERTICAL_SUBSAMPLING_FACTOR = 2
-  PP_VIDEOATTR_COLORFORMATKEY_HORIZONTAL_SAMPLING_FACTOR_REFERENCE,
-  PP_VIDEOATTR_COLORFORMATKEY_CHROMA_HORIZONTAL_SUBSAMPLING_FACTOR,
-  PP_VIDEOATTR_COLORFORMATKEY_CHROMA_VERTICAL_SUBSAMPLING_FACTOR,
-  // Base for telling implementation specific information about the optimal
-  // number of picture buffers to be provided to the implementation.
-  PP_VIDEOATTR_DICTIONARY_PICTUREBUFFER_REQUIREMENTS_BASE = 0x10000,
-  // Following two keys are used to signal how many buffers are needed by the
-  // implementation as a function of the maximum number of reference frames set
-  // by the stream. Number of required buffers is
-  //   MAX_REF_FRAMES * REFERENCE_PIC_MULTIPLIER + ADDITIONAL_BUFFERS
-  PP_VIDEOATTR_PICTUREBUFFER_REQUIREMENTS_ADDITIONAL_BUFFERS,
-  PP_VIDEOATTR_PICTUREBUFFER_REQUIREMENTS_REFERENCE_PIC_MULTIPLIER,
-  // If decoder does not support pixel accurate strides for picture buffer, this
-  // parameter tells the stride multiple that is needed by the decoder. Plugin
-  // must obey the given stride in its picture buffer allocations.
-  PP_VIDEOATTR_PICTUREBUFFER_REQUIREMENTS_STRIDE_MULTIPLE
+  // Value represents 32-bit RGBA format where each component is 8-bit.
+  PP_VIDEOATTR_COLORFORMAT_RGBA
 };
 PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoAttributeDictionary, 4);
-typedef int32_t* PP_VideoConfigElement;
+typedef int32_t PP_VideoConfigElement;
 
 enum PP_VideoCodecFourcc {
   PP_VIDEOCODECFOURCC_NONE = 0,
@@ -241,26 +163,6 @@ enum PP_PictureBufferType_Dev {
 };
 PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_PictureBufferType_Dev, 4);
 
-// Structure to describe storage properties for a picture.
-struct PP_PictureBufferProperties_Dev {
-  // Size of the storage (as per width & height in pixels).
-  struct PP_Size size;
-
-  // Type of the picture buffer (GLES, system memory).
-  enum PP_PictureBufferType_Dev type;
-
-  // Key-attribute pairs defining color format for the buffer.
-  PP_VideoConfigElement color_format;
-};
-
-// Requested decoder configuration and callback from plugin.
-struct PP_VideoDecoderConfig_Dev {
-  // Input bitstream properties.
-  PP_VideoConfigElement bitstream_properties;
-  // Output picture properties.
-  struct PP_PictureBufferProperties_Dev picture_properties;
-};
-
 // The data structure for video bitstream buffer.
 struct PP_VideoBitstreamBuffer_Dev {
   // Buffer to hold the bitstream data. Should be allocated using the PPB_Buffer
@@ -270,49 +172,65 @@ struct PP_VideoBitstreamBuffer_Dev {
   // Size of the bitstream contained in buffer (in bytes).
   int32_t bitstream_size;
 
-  // Optional pointer for application to associate information with a sample.
-  // The pointer will be associated with the resulting decoded picture.
-  // Typically applications associate timestamps with buffers.
+  // Handle to identify the bitstream buffer.
   void* user_handle;
-
-  // TODO(vmr): Add information about access unit boundaries.
 };
 
-// Union for specifying picture data.
-union PP_PictureData_Dev {
-  // Resource representing system memory from shared memory address space.
-  // Use PPB_Buffer_Dev interface to handle this resource.
-  PP_Resource sysmem;
-
-  // Structure to define explicitly a GLES2 context.
-  struct {
-    // Context allocated using PPB_Context3D_Dev.
-    PP_Resource context;
-
-    // Texture ID in the given context where picture is stored.
-    GLuint texture_id;
-  } gles2_texture;
-
+// Struct for specifying data about buffer.
+struct PP_BufferInfo_Dev {
   // Client-specified id for the picture buffer. By using this value client can
   // keep track of the buffers it has assigned to the video decoder and how they
   // are passed back to it.
   int32_t id;
+
+  // Dimensions of the buffer.
+  struct PP_Size size;
 };
 
-// Structure to describe the decoded output picture for the plug-in along with
-// optional metadata associated with the picture.
-struct PP_Picture_Dev {
-  // Resource that represents the buffer where the picture data is stored.
-  // Actual implementation style of the picture buffer may be OpenGL ES texture
-  // (allocated using PPB_OpenGLES2_Dev) or system memory (allocated using
-  // PPB_Buffer_Dev).
-  union PP_PictureData_Dev picture_data;
+// Struct for specifying texture-backed picture data.
+struct PP_GLESBuffer_Dev {
+  // Context allocated using PPB_Context3D_Dev.
+  PP_Resource context;
 
-  // Optional pointer to associated metadata with the picture. Typical
-  // information carried over metadata includes timestamps. If there is
-  // multiple NAL units each with their own respective metadata, only the
-  // metadata from the latest call to Decode will be carried over.
-  void* user_handle;
+  // Texture ID in the given context where picture is stored.
+  GLuint texture_id;
+
+  // Information about the buffer.
+  struct PP_BufferInfo_Dev info;
+};
+
+// Struct for specifying sysmem-backed picture data.
+struct PP_SysmemBuffer_Dev {
+  // Resource representing system memory from shared memory address space.
+  // Use PPB_Buffer_Dev interface to handle this resource.
+  PP_Resource data;
+
+  // Information about the buffer.
+  struct PP_BufferInfo_Dev info;
+};
+
+// Structure to describe a decoded output frame.
+// The decoded pixels will always begin flush with the upper left-hand corner
+// of the buffer (0, 0).
+struct PP_Picture_Dev {
+  // ID of the picture buffer where the picture is stored.
+  int32_t picture_buffer_id;
+
+  // Visible size of the picture.
+  // This describes the dimensions of the picture that is intended to be
+  // displayed from the decoded output.
+  struct PP_Size visible_size;
+
+  // Decoded size of the picture.
+  // This describes the dimensions of the decoded output. This may be slightly
+  // larger than the visible size because the stride is sometimes larger than
+  // the width of the output. The plugin should handle rendering the frame
+  // appropriately with respect to the sizes.
+  struct PP_Size decoded_size;
+
+  // Handle to identify the bitstream buffer from which this picture was
+  // decoded.
+  void* bitstream_user_handle;
 };
 
 // Enumeration for error events that may be reported through
