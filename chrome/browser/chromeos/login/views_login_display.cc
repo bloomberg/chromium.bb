@@ -42,18 +42,10 @@ const int kCursorOffset = 5;
 // Otherwise, disables the tooltips.
 void EnableTooltipsIfNeeded(
     const std::vector<chromeos::UserController*>& controllers) {
-  std::map<std::string, int> visible_display_names;
-  for (size_t i = 0; i + 1 < controllers.size(); ++i) {
-    const std::string& display_name =
-        controllers[i]->user().GetDisplayName();
-    ++visible_display_names[display_name];
-  }
   for (size_t i = 0; i < controllers.size(); ++i) {
-    const std::string& display_name =
-        controllers[i]->user().GetDisplayName();
     bool show_tooltip = controllers[i]->is_new_user() ||
                         controllers[i]->is_guest() ||
-                        visible_display_names[display_name] > 1;
+                        controllers[i]->user().NeedsNameTooltip();
     controllers[i]->EnableNameTooltip(show_tooltip);
   }
 }

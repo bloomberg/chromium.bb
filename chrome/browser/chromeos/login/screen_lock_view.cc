@@ -115,11 +115,25 @@ void ScreenLockView::Init() {
   user_view_->SetImage(user.image(), user.image());
 
   // User name.
-  std::wstring text = UTF8ToWide(user.GetDisplayName());
+  std::string display_name = user.GetDisplayName();
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Font& font = rb.GetFont(ResourceBundle::MediumBoldFont).DeriveFont(
       kSelectedUsernameFontDelta);
+
+  UsernameView* username =
+      UsernameView::CreateShapedUsernameView(UTF8ToWide(display_name), false);
+  username_ = username;
+  username->SetColor(login::kTextColor);
+  username->SetFont(font);
+
+  // Add tooltip if screen name is not unique.
+  if (user.NeedsNameTooltip()) {
+    const std::wstring tooltip_text = UTF8ToWide(user.GetNameTooltip());
+
+    user_view_->SetTooltipText(tooltip_text);
+    username->SetTooltipText(tooltip_text);
+  }
 
   // Layouts image, textfield and button components.
   GridLayout* layout = new GridLayout(main_);
@@ -146,10 +160,6 @@ void ScreenLockView::Init() {
 
   AddChildView(main_);
 
-  UsernameView* username = UsernameView::CreateShapedUsernameView(text, false);
-  username_ = username;
-  username->SetColor(login::kTextColor);
-  username->SetFont(font);
   AddChildView(username);
 }
 

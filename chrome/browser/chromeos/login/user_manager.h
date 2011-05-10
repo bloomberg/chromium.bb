@@ -50,6 +50,9 @@ class UserManager : public UserImageLoader::Delegate,
     // this user from the other one with the same display name.
     std::string GetNameTooltip() const;
 
+    // Returns true if some users have same display name.
+    bool NeedsNameTooltip() const;
+
     // The image for this user.
     void set_image(const SkBitmap& image) { image_ = image; }
     const SkBitmap& image() const { return image_; }

@@ -212,6 +212,20 @@ std::string UserManager::User::GetDisplayName() const {
   return email_.substr(0, i);
 }
 
+bool UserManager::User::NeedsNameTooltip() const {
+  const std::vector<User>& users = UserManager::Get()->GetUsers();
+  const std::string& display_name = GetDisplayName();
+  const std::string& user_email = email();
+
+  for (std::vector<User>::const_iterator it = users.begin();
+       it != users.end();
+       ++it) {
+    if (display_name == it->GetDisplayName() && user_email != it->email())
+      return true;
+  }
+  return false;
+}
+
 std::string UserManager::User::GetNameTooltip() const {
   const std::string& user_email = email();
   size_t at_pos = user_email.rfind('@');
