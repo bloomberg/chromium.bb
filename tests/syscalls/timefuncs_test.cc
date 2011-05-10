@@ -1,9 +1,9 @@
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- *
- * These are the syscalls I am testing:
+ * These are the syscalls being tested:
  *   #define NACL_sys_gettimeofday           40
  *   #define NACL_sys_clock                  41
  *   #define NACL_sys_nanosleep              42
@@ -181,7 +181,13 @@ int TestNanoSleep(struct timespec *t_suspend) {
   if (t_elapsed.tv_sec < t_suspend->tv_sec ||
       (t_elapsed.tv_sec == t_suspend->tv_sec &&
        (NANOS_PER_MICRO * t_elapsed.tv_usec < t_suspend->tv_nsec))) {
-    printf("Error: Elapsed time too short!\n");
+    printf("Error: Elapsed time too short!"
+           " t_elapsed.tv_sec=%"NACL_PRIdNACL_TIME" "
+           " t_suspend->tv_sec=%"NACL_PRIdNACL_TIME" "
+           " t_elapsed.tv_usec=%"NACL_PRId64" "
+           " t_suspend->tv_nsec=%"NACL_PRId64" \n",
+           t_elapsed.tv_sec, t_suspend->tv_sec,
+           (int64_t) t_elapsed.tv_usec, (int64_t) t_suspend->tv_nsec);
   }
 
   /*
