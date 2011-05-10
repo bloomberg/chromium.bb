@@ -270,7 +270,12 @@ void LaunchAppFromOmnibox(const AutocompleteMatch& match,
                           WindowOpenDisposition disposition) {
   ExtensionService* service = profile->GetExtensionService();
   const Extension* extension =
-      service->GetExtensionById(match.destination_url.host(), false);
+      service->GetInstalledApp(match.destination_url);
+  // While the Omnibox popup is open, the extension can be updated, changing
+  // its URL and leaving us with no extension being found. In this case, we
+  // ignore the request.
+  if (!extension)
+    return;
 
   // Look at the preferences to find the right launch container.  If no
   // preference is set, launch as a regular tab.
