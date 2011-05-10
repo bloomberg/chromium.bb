@@ -357,8 +357,8 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   // |match_function| is used to determine which menus match.
   SelectByCharDetails FindChildForMnemonic(
       MenuItemView* parent,
-      wchar_t key,
-      bool (*match_function)(MenuItemView* menu, wchar_t mnemonic));
+      char16 key,
+      bool (*match_function)(MenuItemView* menu, char16 mnemonic));
 
   // Selects or accepts the appropriate menu item based on |details|. Returns
   // true if |Accept| was invoked (which happens if there aren't multiple item
@@ -367,7 +367,7 @@ class MenuController : public MessageLoopForUI::Dispatcher {
 
   // Selects by mnemonic, and if that doesn't work tries the first character of
   // the title. Returns true if a match was selected and the menu should exit.
-  bool SelectByChar(wchar_t key);
+  bool SelectByChar(char16 key);
 
 #if defined(OS_WIN)
   // If there is a window at the location of the event, a new mouse event is

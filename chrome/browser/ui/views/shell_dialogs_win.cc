@@ -144,7 +144,7 @@ std::wstring FormatFilterForExtensions(
         // the we create a description "QQQ File (.qqq)").
         include_all_files = true;
         desc = l10n_util::GetStringFUTF16(IDS_APP_SAVEAS_EXTENSION_FORMAT,
-                                          base::i18n::WideToUpper(ext_name),
+                                          base::i18n::ToUpper(ext_name),
                                           ext_name);
       }
       if (desc.empty())

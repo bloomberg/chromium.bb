@@ -261,7 +261,7 @@ class MenuItemView : public View {
 
   // Returns the mnemonic for this MenuItemView, or 0 if this MenuItemView
   // doesn't have a mnemonic.
-  wchar_t GetMnemonic();
+  char16 GetMnemonic();
 
   // Do we have icons? This only has effect on the top menu. Turning this on
   // makes the menus slightly wider and taller.

@@ -587,7 +587,7 @@ void ModuleEnumerator::PreparePathMappings() {
     std::string path;
     if (environment->GetVar(WideToASCII(*variable).c_str(), &path)) {
       path_mapping_.push_back(
-          std::make_pair(base::i18n::WideToLower(UTF8ToWide(path)) + L"\\",
+          std::make_pair(base::i18n::ToLower(UTF8ToUTF16(path)) + L"\\",
                          L"%" + base::i18n::ToLower(*variable) + L"%"));
     }
   }

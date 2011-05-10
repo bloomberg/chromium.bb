@@ -189,12 +189,12 @@ string16 NativeTextfieldWin::GetText() const {
 }
 
 void NativeTextfieldWin::UpdateText() {
-  std::wstring text = textfield_->text();
+  string16 text = textfield_->text();
   // Adjusting the string direction before setting the text in order to make
   // sure both RTL and LTR strings are displayed properly.
   base::i18n::AdjustStringForLocaleDirection(&text);
   if (textfield_->style() & Textfield::STYLE_LOWERCASE)
-    text = base::i18n::WideToLower(text);
+    text = base::i18n::ToLower(text);
   SetWindowText(text.c_str());
   UpdateAccessibleValue(text);
 }
@@ -905,9 +905,9 @@ void NativeTextfieldWin::OnPaste() {
   std::wstring clipboard_str;
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_str);
   if (!clipboard_str.empty()) {
-    std::wstring collapsed(CollapseWhitespace(clipboard_str, false));
+    string16 collapsed(CollapseWhitespace(clipboard_str, false));
     if (textfield_->style() & Textfield::STYLE_LOWERCASE)
-      collapsed = base::i18n::WideToLower(collapsed);
+      collapsed = base::i18n::ToLower(collapsed);
     // Force a Paste operation to trigger ContentsChanged, even if identical
     // contents are pasted into the text box. See http://crbug.com/79002
     ReplaceSel(L"", false);
