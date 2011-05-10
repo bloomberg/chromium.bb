@@ -347,6 +347,9 @@ class DepGraphGenerator(object):
     # TODO(davidjames): Look for a better solution.
     features = os.environ.get("FEATURES", "") + " -collision-protect"
 
+    # Install packages in parallel.
+    features = features + " parallel-install"
+
     # If we're installing packages to the board, and we're not using the
     # official flag, we can enable the following optimizations:
     #  1) Don't lock during install step. This allows multiple packages to be
@@ -358,7 +361,7 @@ class DepGraphGenerator(object):
     #     anyway.
     if self.board and os.environ.get("CHROMEOS_OFFICIAL") != "1":
       os.environ.setdefault("PORTAGE_LOCKS", "false")
-      features = features + " no-env-update"
+      features = features + " -ebuild-locks no-env-update"
 
     os.environ["FEATURES"] = features
 
@@ -448,6 +451,12 @@ class DepGraphGenerator(object):
     if not success:
       depgraph.display_problems()
       sys.exit(1)
+
+    # Prime and flush emerge caches.
+    root = emerge.settings["ROOT"]
+    vardb = emerge.trees[root]["vartree"].dbapi
+    vardb.counter_tick()
+    vardb.flush_cache()
 
   def GenDependencyTree(self):
     """Get dependency tree info from emerge.
@@ -845,6 +854,13 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db):
 
   SetupWorkerSignals()
   settings, trees, mtimedb = emerge.settings, emerge.trees, emerge.mtimedb
+
+  # Disable flushing of caches to save on I/O.
+  if 0 <= vercmp(portage.VERSION, "2.1.9.48"):
+    root = emerge.settings["ROOT"]
+    vardb = emerge.trees[root]["vartree"].dbapi
+    vardb._flush_cache_enabled = False
+
   opts, spinner = emerge.opts, emerge.spinner
   opts["--nodeps"] = True
   # When Portage launches new processes, it goes on a rampage and closes all
