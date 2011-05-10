@@ -13,10 +13,12 @@
 
 class BrowserThread;
 class CommandLine;
+class FieldTrialSynchronizer;
 class HighResolutionTimerManager;
 struct MainFunctionParams;
 class MessageLoop;
 class MetricsService;
+class PrefService;
 
 namespace net {
 class NetworkChangeNotifier;
@@ -80,7 +82,12 @@ class BrowserMainParts {
   void EarlyInitialization();
   void MainMessageLoopStart();
 
-  void SetupFieldTrials();
+  // Constructs metrics service and does related initialization, including
+  // creation of field trials. Call only after labs have been converted to
+  // switches.
+  MetricsService* SetupMetricsAndFieldTrials(
+      const CommandLine& parsed_command_line,
+      PrefService* local_state);
 
  protected:
   explicit BrowserMainParts(const MainFunctionParams& parameters);
@@ -132,6 +139,15 @@ class BrowserMainParts {
 
   void InitializeMainThread();
 
+  // Methods for |SetupMetricsAndFieldTrials()| --------------------------------
+
+  static MetricsService* InitializeMetrics(
+      const CommandLine& parsed_command_line,
+      const PrefService* local_state);
+
+  // Add an invocation of your field trial init function to this method.
+  void SetupFieldTrials(bool metrics_recording_enabled);
+
   // Members initialized on construction ---------------------------------------
 
   const MainFunctionParams& parameters_;
@@ -144,8 +160,9 @@ class BrowserMainParts {
   tracked_objects::AutoTracking tracking_objects_;
 #endif
 
-  // Statistical testing infrastructure for the entire browser.
-  base::FieldTrialList field_trial_;
+  // Statistical testing infrastructure for the entire browser. NULL until
+  // SetupMetricsAndFieldTrials is called.
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------
   scoped_ptr<MessageLoop> main_message_loop_;
@@ -153,6 +170,9 @@ class BrowserMainParts {
   scoped_ptr<HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<BrowserThread> main_thread_;
+
+  // Initialized in SetupMetricsAndFieldTrials.
+  scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainParts);
 };

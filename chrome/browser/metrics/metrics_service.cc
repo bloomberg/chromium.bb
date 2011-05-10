@@ -471,6 +471,10 @@ void MetricsService::Stop() {
   SetRecording(false);
 }
 
+std::string MetricsService::GetClientId() {
+  return client_id_;
+}
+
 void MetricsService::SetRecording(bool enabled) {
   DCHECK(IsSingleThreaded());
 

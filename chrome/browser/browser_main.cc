@@ -246,16 +246,28 @@ void BrowserMainParts::EarlyInitialization() {
 }
 
 // This will be called after the command-line has been mutated by about:flags
-void BrowserMainParts::SetupFieldTrials() {
-  // Note: make sure to call ConnectionFieldTrial() before
-  // ProxyConnectionsFieldTrial().
-  ConnectionFieldTrial();
-  SocketTimeoutFieldTrial();
-  ProxyConnectionsFieldTrial();
-  prerender::ConfigurePrefetchAndPrerender(parsed_command_line());
-  SpdyFieldTrial();
-  ConnectBackupJobsFieldTrial();
-  SSLFalseStartFieldTrial();
+MetricsService* BrowserMainParts::SetupMetricsAndFieldTrials(
+    const CommandLine& parsed_command_line,
+    PrefService* local_state) {
+  // Must initialize metrics after labs have been converted into switches,
+  // but before field trials are set up (so that client ID is available for
+  // one-time randomized field trials).
+  MetricsService* metrics = InitializeMetrics(parsed_command_line, local_state);
+
+  // Initialize FieldTrialList to support FieldTrials that use one-time
+  // randomization. The client ID will be empty if the user has not opted
+  // to send metrics.
+  field_trial_list_.reset(new base::FieldTrialList(metrics->GetClientId()));
+
+  SetupFieldTrials(metrics->recording_active());
+
+  // Initialize FieldTrialSynchronizer system. This is a singleton and is used
+  // for posting tasks via NewRunnableMethod. Its deleted when it goes out of
+  // scope. Even though NewRunnableMethod does AddRef and Release, the object
+  // will not be deleted after the Task is executed.
+  field_trial_synchronizer_ = new FieldTrialSynchronizer();
+
+  return metrics;
 }
 
 // This is an A/B test for the maximum number of persistent connections per
@@ -538,6 +550,62 @@ void BrowserMainParts::InitializeMainThread() {
                                        MessageLoop::current()));
 }
 
+// BrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------------
+
+// Initializes the metrics service with the configuration for this process,
+// returning the created service (guaranteed non-NULL).
+MetricsService* BrowserMainParts::InitializeMetrics(
+    const CommandLine& parsed_command_line,
+    const PrefService* local_state) {
+#if defined(OS_WIN)
+  if (parsed_command_line.HasSwitch(switches::kChromeFrame))
+    MetricsLog::set_version_extension("-F");
+#elif defined(ARCH_CPU_64_BITS)
+  MetricsLog::set_version_extension("-64");
+#endif  // defined(OS_WIN)
+
+  MetricsService* metrics = g_browser_process->metrics_service();
+
+  if (parsed_command_line.HasSwitch(switches::kMetricsRecordingOnly) ||
+      parsed_command_line.HasSwitch(switches::kEnableBenchmarking)) {
+    // If we're testing then we don't care what the user preference is, we turn
+    // on recording, but not reporting, otherwise tests fail.
+    metrics->StartRecordingOnly();
+    return metrics;
+  }
+
+  // If the user permits metrics reporting with the checkbox in the
+  // prefs, we turn on recording.  We disable metrics completely for
+  // non-official builds.
+#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
+  bool enabled = chromeos::MetricsCrosSettingsProvider::GetMetricsStatus();
+#else
+  bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
+#endif  // #if defined(OS_CHROMEOS)
+  if (enabled) {
+    metrics->Start();
+  }
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+  return metrics;
+}
+
+void BrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled) {
+  if (metrics_recording_enabled)
+    chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Start();
+
+  // Note: make sure to call ConnectionFieldTrial() before
+  // ProxyConnectionsFieldTrial().
+  ConnectionFieldTrial();
+  SocketTimeoutFieldTrial();
+  ProxyConnectionsFieldTrial();
+  prerender::ConfigurePrefetchAndPrerender(parsed_command_line());
+  SpdyFieldTrial();
+  ConnectBackupJobsFieldTrial();
+  SSLFalseStartFieldTrial();
+}
+
 // -----------------------------------------------------------------------------
 // TODO(viettrungluu): move more/rest of BrowserMain() into above structure
 
@@ -770,45 +838,6 @@ void InitializeBrokerServices(const MainFunctionParams& parameters,
     }
   }
 #endif
-}
-
-// Initializes the metrics service with the configuration for this process,
-// returning the created service (guaranteed non-NULL).
-MetricsService* InitializeMetrics(const CommandLine& parsed_command_line,
-                                  const PrefService* local_state) {
-#if defined(OS_WIN)
-  if (parsed_command_line.HasSwitch(switches::kChromeFrame))
-    MetricsLog::set_version_extension("-F");
-#elif defined(ARCH_CPU_64_BITS)
-  MetricsLog::set_version_extension("-64");
-#endif  // defined(OS_WIN)
-
-  MetricsService* metrics = g_browser_process->metrics_service();
-
-  if (parsed_command_line.HasSwitch(switches::kMetricsRecordingOnly) ||
-      parsed_command_line.HasSwitch(switches::kEnableBenchmarking)) {
-    // If we're testing then we don't care what the user preference is, we turn
-    // on recording, but not reporting, otherwise tests fail.
-    metrics->StartRecordingOnly();
-  } else {
-    // If the user permits metrics reporting with the checkbox in the
-    // prefs, we turn on recording.  We disable metrics completely for
-    // non-official builds.
-#if defined(GOOGLE_CHROME_BUILD)
-#if defined(OS_CHROMEOS)
-    bool enabled = chromeos::MetricsCrosSettingsProvider::GetMetricsStatus();
-#else
-    bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
-#endif  // #if defined(OS_CHROMEOS)
-    if (enabled) {
-      metrics->Start();
-      chrome_browser_net_websocket_experiment::
-          WebSocketExperimentRunner::Start();
-    }
-#endif
-  }
-
-  return metrics;
 }
 
 // Initializes the profile, possibly doing some user prompting to pick a
@@ -1368,16 +1397,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   about_flags::ConvertFlagsToSwitches(local_state,
                                       CommandLine::ForCurrentProcess());
 
-  // Now the command line has been mutated based on about:flags, we can run some
-  // field trials
-  parts->SetupFieldTrials();
-
-  // Initialize FieldTrialSynchronizer system. This is a singleton and is used
-  // for posting tasks via NewRunnableMethod. Its deleted when it goes out of
-  // scope. Even though NewRunnableMethod does AddRef and Release, the object
-  // will not be deleted after the Task is executed.
-  scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer(
-      new FieldTrialSynchronizer());
+  // Now the command line has been mutated based on about:flags, we can
+  // set up metrics and initialize field trials.
+  MetricsService* metrics = parts->SetupMetricsAndFieldTrials(
+      parsed_command_line, local_state);
 
   // Now that all preferences have been registered, set the install date
   // for the uninstall metrics if this is our first run. This only actually
@@ -1721,7 +1744,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   sdch_manager.set_sdch_fetcher(new SdchDictionaryFetcher);
   sdch_manager.EnableSdchSupport(sdch_supported_domain);
 
-  MetricsService* metrics = InitializeMetrics(parsed_command_line, local_state);
   InstallJankometer(parsed_command_line);
 
 #if defined(OS_WIN) && !defined(GOOGLE_CHROME_BUILD)
