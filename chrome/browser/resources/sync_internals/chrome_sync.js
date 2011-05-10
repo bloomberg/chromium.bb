@@ -88,6 +88,13 @@ chrome.sync.events = {
     'onStopSyncingPermanently',
     'onClearServerDataSucceeded',
     'onClearServerDataFailed'
+  ],
+
+  'directory': [
+    'handleCalculateChangesChangeEventFromSyncApi',
+    'handleCalculateChangesChangeEventFromSyncer',
+    'handleTransactionEndingChangeEvent',
+    'handleTransactionCompleteChangeEvent'
   ]
 };
 

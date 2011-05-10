@@ -18,6 +18,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -550,6 +551,9 @@ class LessEntryMetaHandles {
 };
 typedef std::set<EntryKernel, LessEntryMetaHandles> OriginalEntries;
 
+// Caller owns the return value.
+ListValue* OriginalEntriesToValue(const OriginalEntries& original_entries);
+
 // How syncable indices & Indexers work.
 //
 // The syncable Directory maintains several indices on the Entries it tracks.
@@ -632,6 +636,9 @@ enum WriterTag {
   PURGE_ENTRIES,
   SYNCAPI
 };
+
+// Make sure to update this if you update WriterTag.
+std::string WriterTagToString(WriterTag writer_tag);
 
 // The name Directory in this case means the entire directory
 // structure within a single user account.
@@ -793,7 +800,8 @@ class Directory {
   // Unique to each account / client pair.
   std::string cache_guid() const;
 
-  void SetChangeListener(DirectoryChangeListener* listener);
+  void AddChangeListener(DirectoryChangeListener* listener);
+  void RemoveChangeListener(DirectoryChangeListener* listener);
 
  protected:  // for friends, mainly used by Entry constructors
   virtual EntryKernel* GetEntryByHandle(int64 handle);
@@ -1015,9 +1023,9 @@ class Directory {
     // TODO(ncarter): Figure out what the hell this is, and comment it.
     Channel* const channel;
 
-    // The listener for directory change events, triggered when the transaction
-    // is ending.
-    DirectoryChangeListener* change_listener_;
+    // The listeners for directory change events, triggered when the
+    // transaction is ending.
+    ObserverList<DirectoryChangeListener> change_listeners_;
 
     KernelShareInfoStatus info_status;
 

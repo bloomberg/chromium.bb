@@ -607,6 +607,8 @@
         'browser/sync/js_arg_list.cc',
         'browser/sync/js_arg_list.h',
         'browser/sync/js_backend.h',
+        'browser/sync/js_directory_change_listener.cc',
+        'browser/sync/js_directory_change_listener.h',
         'browser/sync/js_event_details.cc',
         'browser/sync/js_event_details.h',
         'browser/sync/js_event_handler.h',

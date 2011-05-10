@@ -38,6 +38,7 @@
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_backend.h"
+#include "chrome/browser/sync/js_directory_change_listener.h"
 #include "chrome/browser/sync/js_event_details.h"
 #include "chrome/browser/sync/js_event_router.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
@@ -1192,6 +1193,7 @@ class SyncManager::SyncInternal
     : public net::NetworkChangeNotifier::IPAddressObserver,
       public sync_notifier::SyncNotifierObserver,
       public browser_sync::JsBackend,
+      public browser_sync::JsEventRouter,
       public SyncEngineEventListener,
       public ServerConnectionEventListener,
       public syncable::DirectoryChangeListener {
@@ -1204,7 +1206,8 @@ class SyncManager::SyncInternal
         sync_manager_(sync_manager),
         registrar_(NULL),
         initialized_(false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+        method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+        js_directory_change_listener_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
@@ -1415,6 +1418,15 @@ class SyncManager::SyncInternal
       const browser_sync::JsArgList& args,
       const browser_sync::JsEventHandler* sender) OVERRIDE;
 
+  // JsEventRouter implementation.
+  virtual void RouteJsEvent(
+      const std::string& name,
+      const browser_sync::JsEventDetails& details) OVERRIDE;
+  virtual void RouteJsMessageReply(
+      const std::string& name,
+      const browser_sync::JsArgList& args,
+      const browser_sync::JsEventHandler* target) OVERRIDE;
+
   ListValue* FindNodesContainingString(const std::string& query);
 
  private:
@@ -1597,6 +1609,8 @@ class SyncManager::SyncInternal
   // Map used to store the notification info to be displayed in about:sync page.
   // TODO(lipalani) - prefill the map with enabled data types.
   NotificationInfoMap notification_info_map_;
+
+  browser_sync::JsDirectoryChangeListener js_directory_change_listener_;
 };
 const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
 const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
@@ -1893,7 +1907,15 @@ bool SyncManager::SyncInternal::OpenDirectory() {
 
   connection_manager()->set_client_id(lookup->cache_guid());
 
-  lookup->SetChangeListener(this);
+  // Since we own |share_|, it's okay that we don't ever remove
+  // ourselves as a listener.
+  lookup->AddChangeListener(this);
+
+  if (parent_router_) {
+    // Make sure we add the listener at most once.
+    lookup->RemoveChangeListener(&js_directory_change_listener_);
+    lookup->AddChangeListener(&js_directory_change_listener_);
+  }
   return true;
 }
 
@@ -2600,10 +2622,34 @@ void SyncManager::SyncInternal::SetParentJsEventRouter(
     browser_sync::JsEventRouter* router) {
   DCHECK(router);
   parent_router_ = router;
+
+  // We might be called before OpenDirectory() or after shutdown.
+  if (!dir_manager()) {
+    return;
+  }
+  syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
+  if (!lookup.good()) {
+    return;
+  }
+
+  // Make sure we add the listener at most once.
+  lookup->RemoveChangeListener(&js_directory_change_listener_);
+  lookup->AddChangeListener(&js_directory_change_listener_);
 }
 
 void SyncManager::SyncInternal::RemoveParentJsEventRouter() {
   parent_router_ = NULL;
+
+  // We might be called before OpenDirectory() or after shutdown.
+  if (!dir_manager()) {
+    return;
+  }
+  syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
+  if (!lookup.good()) {
+    return;
+  }
+
+  lookup->RemoveChangeListener(&js_directory_change_listener_);
 }
 
 const browser_sync::JsEventRouter*
@@ -2675,6 +2721,25 @@ void SyncManager::SyncInternal::ProcessMessage(
     VLOG(1) << "Dropping unknown message " << name
               << " with args " << args.ToString();
   }
+}
+
+void SyncManager::SyncInternal::RouteJsEvent(
+    const std::string& name,
+    const browser_sync::JsEventDetails& details) {
+  if (!parent_router_) {
+    return;
+  }
+  parent_router_->RouteJsEvent(name, details);
+}
+
+void SyncManager::SyncInternal::RouteJsMessageReply(
+      const std::string& name,
+      const browser_sync::JsArgList& args,
+      const browser_sync::JsEventHandler* target) {
+  if (!parent_router_) {
+    return;
+  }
+  parent_router_->RouteJsMessageReply(name, args, target);
 }
 
 browser_sync::JsArgList SyncManager::SyncInternal::ProcessGetNodeByIdMessage(
