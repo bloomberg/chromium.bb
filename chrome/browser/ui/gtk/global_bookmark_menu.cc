@@ -60,6 +60,11 @@ void GlobalBookmarkMenu::RebuildMenuInFuture() {
 }
 
 void GlobalBookmarkMenu::RebuildMenu() {
+#if !GTK_CHECK_VERSION(2, 16, 1)
+  // We can't deal with this case; we need to use dynamic APIs. Thankfully,
+  // this will never visibly do anything on earlier versions of GTK+.
+  return;
+#endif
   BookmarkModel* model = profile_->GetBookmarkModel();
   DCHECK(model);
   DCHECK(model->IsLoaded());
@@ -132,9 +137,14 @@ void GlobalBookmarkMenu::AddNodeToMenu(const BookmarkNode* node,
 
 void GlobalBookmarkMenu::ConfigureMenuItem(const BookmarkNode* node,
                                            GtkWidget* menu_item) {
+  // This check is only to make things compile on Hardy; this code won't
+  // display any visible widgets in older systems that don't have a global menu
+  // bar.
+#if GTK_CHECK_VERSION(2, 16, 1)
   string16 elided_name = l10n_util::TruncateString(node->GetTitle(), kMaxChars);
   gtk_menu_item_set_label(GTK_MENU_ITEM(menu_item),
                           UTF16ToUTF8(elided_name).c_str());
+#endif
 
   if (node->is_url()) {
     std::string tooltip = gtk_util::BuildTooltipTitleFor(node->GetTitle(),
