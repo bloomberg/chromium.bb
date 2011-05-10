@@ -193,6 +193,13 @@
                 ],
               },
             ],
+            # TODO(rkc): Remove this once we have a fix for remote gdb
+            # and are able to correctly get section header offsets for
+            # pie executables. Currently -pie breaks remote debugging.
+            [ '(disable_pie==1 and chromeos==1)', {
+                'ldflags' : ['-nopie'],
+              }
+            ],
             ['use_system_xdg_utils==0', {
               'copies': [
                 {
