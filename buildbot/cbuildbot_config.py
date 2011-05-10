@@ -86,7 +86,8 @@ GERRIT_INT_URL = 'ssh://gerrit-int.chromium.org:29419'
 MANIFEST_URL = 'http://git.chromium.org/chromiumos/manifest.git'
 MANIFEST_INT_URL = GERRIT_INT_URL + '/chromeos/manifest-internal'
 
-MANIFEST_VERSIONS_URL = GERRIT_URL + '/chromiumos/manifest-versions-external'
+# TODO(sosa): Move to manifest-versions-external once its created.
+MANIFEST_VERSIONS_URL = GERRIT_URL + '/chromiumos/manifest-versions'
 MANIFEST_VERSIONS_INT_URL = GERRIT_INT_URL + '/chromeos/manifest-versions'
 
 default = {
@@ -233,11 +234,12 @@ add_config('x86-generic-pre-flight-queue', [{
   'board' : 'x86-generic',
   'master' : True,
   'hostname' : 'chromeosbuild2',
-  'important': False,
+  'important': True,
 
   'uprev' : True,
   'rev_overlays': 'public',
   'push_overlays': 'public',
+  'manifest_version': MANIFEST_VERSIONS_URL,
 }])
 
 add_config('x86-generic-chrome-pre-flight-queue', [{

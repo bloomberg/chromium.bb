@@ -4,16 +4,14 @@
 
 """Module containing the various individual commands a builder can run."""
 
+from chromite.buildbot import cbuildbot_config
+from chromite.buildbot import repository
+from chromite.lib import cros_build_lib as cros_lib
 import os
 import re
 import shutil
 import socket
 
-from chromite.buildbot import cbuildbot_config
-from chromite.buildbot import repository
-from chromite.lib import cros_build_lib as cros_lib
-
-import constants
 
 _DEFAULT_RETRIES = 3
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
@@ -117,8 +115,9 @@ def ManifestCheckout(buildroot, tracking_branch, next_manifest,
   print "TRACKING BRANCH: %s" % tracking_branch
   print "NEXT MANIFEST: %s" % next_manifest
 
-  repository.RepoRepository(url, buildroot,
-                            branch=tracking_branch).Sync(next_manifest)
+  repo = repository.RepoRepository(url, buildroot, branch=tracking_branch)
+  repo.Sync(next_manifest)
+  repo.ExportManifest('/dev/stderr')
 
 
 def FullCheckout(buildroot, tracking_branch,

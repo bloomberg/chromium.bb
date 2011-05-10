@@ -60,6 +60,8 @@ class _LKGMCandidateInfo(manifest_version.VersionInfo):
     if not self.ver_revision:
       self.ver_revision = 1
 
+    logging.debug('Using version %s' % self.VersionString())
+
   def VersionString(self):
     """returns the full version string of the lkgm candidate"""
     return '%s.%s.%s.%s-rc%s' % (self.ver_maj, self.ver_min, self.ver_sp,
@@ -85,10 +87,12 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   LGKM_SUBDIR = 'LKGM-candidates'
   # Wait an additional 5 minutes for any other builder.
 
-  def __init__(self, tmp_dir, source_repo, manifest_repo, branch,
-               build_name, dry_run):
-    super(LKGMManager, self).__init__(tmp_dir, source_repo, manifest_repo,
-                                      branch, build_name, 'patch', dry_run)
+  def __init__(self, source_dir, checkout_repo, manifest_repo, branch,
+               build_name, clobber=False, dry_run=True):
+    super(LKGMManager, self).__init__(
+        source_dir=source_dir, checkout_repo=checkout_repo,
+        manifest_repo=manifest_repo, branch=branch, build_name=build_name,
+        incr_type='patch', clobber=clobber, dry_run=dry_run)
     self.compare_versions_fn = lambda s: _LKGMCandidateInfo.VersionCompare(s)
 
   def _LoadSpecs(self, version_info):

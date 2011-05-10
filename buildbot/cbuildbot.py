@@ -19,11 +19,10 @@ if __name__ == '__main__':
   import constants
   sys.path.append(constants.SOURCE_ROOT)
 
-import chromite.buildbot.cbuildbot_comm as cbuildbot_comm
-import chromite.buildbot.cbuildbot_commands as commands
-import chromite.buildbot.cbuildbot_config as cbuildbot_config
-import chromite.buildbot.cbuildbot_stages as stages
-import chromite.lib.cros_build_lib as cros_lib
+from chromite.buildbot import cbuildbot_commands as commands
+from chromite.buildbot import cbuildbot_config
+from chromite.buildbot import cbuildbot_stages as stages
+from chromite.lib import cros_build_lib as cros_lib
 
 
 def _GetConfig(config_name, options):
@@ -71,8 +70,18 @@ def RunBuildStages(bot_id, options, build_config):
       stages.Results.RestoreCompletedStages(load_file)
 
   # TODO, Remove here and in config after bug chromium-os:14649 is fixed.
-  if build_config['chromeos_official']:
-    os.environ['CHROMEOS_OFFICIAL'] = '1'
+  if build_config['chromeos_official']: os.environ['CHROMEOS_OFFICIAL'] = '1'
+
+  # Determine the stages to use for syncing and completion.
+  sync_stage = stages.SyncStage
+  completion_stage = None
+  if build_config['manifest_version']:
+    if build_config['build_type'] == 'binary':
+      sync_stage = stages.LGKMVersionedSyncStage
+      completion_stage = stages.LGKMVersionedSyncCompletionStage
+    else:
+      sync_stage = stages.ManifestVersionedSyncStage
+      completion_stage = stages.ManifestVersionedSyncCompletionStage
 
   tracking_branch = _GetChromiteTrackingBranch()
   stages.BuilderStage.SetTrackingBranch(tracking_branch)
@@ -82,10 +91,7 @@ def RunBuildStages(bot_id, options, build_config):
 
   try:
     if options.sync:
-      if build_config['manifest_version']:
-        stages.ManifestVersionedSyncStage(bot_id, options, build_config).Run()
-      else:
-        stages.SyncStage(bot_id, options, build_config).Run()
+      sync_stage(bot_id, options, build_config).Run()
 
     if not options.clobber:
       # If we are doing an incremental checkout, make sure we are running on a
@@ -118,35 +124,19 @@ def RunBuildStages(bot_id, options, build_config):
       stages.RemoteTestStatusStage(bot_id, options, build_config).Run()
 
     build_and_test_success = True
-
   except stages.BuildException:
     # We skipped out of this build block early, all we need to do.
     pass
 
   # Control master / slave logic here.
-  if build_and_test_success and build_config['master']:
-    if cbuildbot_comm.HaveSlavesCompleted(cbuildbot_config.config):
+  if options.sync:
+    if (completion_stage and
+        stages.ManifestVersionedSyncStage.manifest_manager):
+      completion_stage(bot_id, options, build_config,
+                       success=build_and_test_success).Run()
+
+    if build_config['master']:
       stages.PushChangesStage(bot_id, options, build_config).Run()
-    else:
-      cros_lib.Die('One of the other slaves failed.')
-
-  if build_config['important']:
-    if build_and_test_success:
-      cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_COMPLETE)
-    else:
-      cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_FAILED)
-
-  # If the ManifestVersionedSync created a manifest, we need to
-  # store off final results for the manifest.
-  if stages.ManifestVersionedSyncStage.manifest_manager:
-    try:
-      stages.ManifestVersionedSyncCompletionStage(
-         bot_id,
-         options,
-         build_config,
-         success=build_and_test_success).Run()
-    except stages.BuildException:
-      pass
 
   if build_success and options.archive:
     try:
