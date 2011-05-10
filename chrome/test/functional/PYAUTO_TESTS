@@ -205,8 +205,7 @@
       '-notifications.NotificationsTest.testPermissionInfobarAppears',
 
       # sync tests cause segfault.  crosbug.com/15016
-      '-sync.SyncTest.testRestartBrowser',
-      '-sync.SyncTest.testSignInToSync',
+      '-sync',
     ],
   },
 
