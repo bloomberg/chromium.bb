@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #define CHROME_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_JOB_H_
 #pragma once
 
+#include "base/task.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 
 class URLRequestMockNetErrorJob : public URLRequestMockHTTPJob {
@@ -52,6 +53,8 @@ class URLRequestMockNetErrorJob : public URLRequestMockHTTPJob {
   struct MockInfo;
   typedef std::map<GURL, MockInfo> URLMockInfoMap;
   static URLMockInfoMap url_mock_info_map_;
+
+  ScopedRunnableMethodFactory<URLRequestMockNetErrorJob> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestMockNetErrorJob);
 };

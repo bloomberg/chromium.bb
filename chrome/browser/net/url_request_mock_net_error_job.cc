@@ -7,8 +7,10 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -86,15 +88,18 @@ URLRequestMockNetErrorJob::URLRequestMockNetErrorJob(net::URLRequest* request,
     const FilePath& file_path)
     : URLRequestMockHTTPJob(request, file_path),
       errors_(errors),
-      ssl_cert_(cert) {
+      ssl_cert_(cert),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
 URLRequestMockNetErrorJob::~URLRequestMockNetErrorJob() {
 }
 
 void URLRequestMockNetErrorJob::Start() {
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &URLRequestMockNetErrorJob::StartAsync));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &URLRequestMockNetErrorJob::StartAsync));
 }
 
 void URLRequestMockNetErrorJob::StartAsync() {
