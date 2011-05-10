@@ -261,8 +261,7 @@ void RedirectChromeLogging(const CommandLine& command_line) {
   }
 }
 
-
-#endif
+#endif  // OS_CHROMEOS
 
 void InitChromeLogging(const CommandLine& command_line,
                        OldFileDeletionState delete_old_log_file) {

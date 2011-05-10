@@ -77,8 +77,9 @@ void SdchDictionaryFetcher::OnURLFetchComplete(
     const net::ResponseCookies& cookies,
     const std::string& data) {
   if ((200 == response_code) &&
-      (status.status() == net::URLRequestStatus::SUCCESS))
+      (status.status() == net::URLRequestStatus::SUCCESS)) {
     net::SdchManager::Global()->AddSdchDictionary(data, url);
+  }
   current_fetch_.reset(NULL);
   ScheduleDelayedRun();
 }
