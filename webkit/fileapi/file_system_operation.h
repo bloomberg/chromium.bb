@@ -19,6 +19,7 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/quota/quota_manager.h"
 
 namespace base {
 class Time;
@@ -101,6 +102,19 @@ class FileSystemOperation {
   }
   friend class FileSystemOperationTest;
   friend class FileSystemOperationWriteTest;
+
+  bool GetUsageAndQuotaThenCallback(
+      const GURL& origin_url,
+      quota::QuotaManager::GetUsageAndQuotaCallback* callback);
+
+  void DelayedCopyForQuota(quota::QuotaStatusCode status,
+                           int64 usage, int64 quota);
+  void DelayedMoveForQuota(quota::QuotaStatusCode status,
+                           int64 usage, int64 quota);
+  void DelayedWriteForQuota(quota::QuotaStatusCode status,
+                            int64 usage, int64 quota);
+  void DelayedTruncateForQuota(quota::QuotaStatusCode status,
+                               int64 usage, int64 quota);
 
   // A callback used for OpenFileSystem.
   void DidGetRootPath(bool success,
@@ -223,6 +237,9 @@ class FileSystemOperation {
   // Used only by OpenFile, in order to clone the file handle back to the
   // requesting process.
   base::ProcessHandle peer_handle_;
+
+  // Length to be truncated.
+  int64 length_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperation);
 };

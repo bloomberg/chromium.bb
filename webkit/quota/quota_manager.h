@@ -54,9 +54,10 @@ class QuotaManager : public QuotaTaskObserver,
   QuotaManagerProxy* proxy() { return proxy_.get(); }
 
   // Called by clients or webapps.
-  void GetUsageAndQuota(const GURL& origin,
-                        StorageType type,
-                        GetUsageAndQuotaCallback* callback);
+  // This method is declared as virtual to allow test code to override it.
+  virtual void GetUsageAndQuota(const GURL& origin,
+                                StorageType type,
+                                GetUsageAndQuotaCallback* callback);
 
   // Called by webapps.
   void RequestQuota(const GURL& origin,
@@ -158,6 +159,9 @@ struct QuotaManagerDeleter {
 class QuotaManagerProxy
     : public base::RefCountedThreadSafe<QuotaManagerProxy> {
  public:
+  void GetUsageAndQuota(const GURL& origin,
+                        StorageType type,
+                        QuotaManager::GetUsageAndQuotaCallback* callback);
   void RegisterClient(QuotaClient* client);
   void NotifyStorageModified(QuotaClient::ID client_id,
                             const GURL& origin,

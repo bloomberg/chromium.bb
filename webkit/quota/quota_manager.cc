@@ -519,6 +519,15 @@ void QuotaManager::DeleteOnCorrectThread() const {
 
 // QuotaManagerProxy ----------------------------------------------------------
 
+void QuotaManagerProxy::GetUsageAndQuota(
+     const GURL& origin,
+     StorageType type,
+     QuotaManager::GetUsageAndQuotaCallback* callback) {
+  DCHECK(io_thread_->BelongsToCurrentThread());
+  if (manager_)
+    manager_->GetUsageAndQuota(origin, type, callback);
+}
+
 void QuotaManagerProxy::RegisterClient(QuotaClient* client) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(FROM_HERE, NewRunnableMethod(

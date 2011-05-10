@@ -11,6 +11,7 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/quota_file_util.h"
 
 namespace fileapi {
 
@@ -27,7 +28,7 @@ PlatformFileError LocalFileSystemFileUtil::CreateOrOpen(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return FileSystemFileUtil::GetInstance()->CreateOrOpen(
+  return QuotaFileUtil::GetInstance()->CreateOrOpen(
       context, local_path, file_flags, file_handle, created);
 }
 
@@ -40,7 +41,7 @@ PlatformFileError LocalFileSystemFileUtil::EnsureFileExists(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return FileSystemFileUtil::GetInstance()->EnsureFileExists(
+  return QuotaFileUtil::GetInstance()->EnsureFileExists(
       context, local_path, created);
 }
 
@@ -68,7 +69,7 @@ PlatformFileError LocalFileSystemFileUtil::GetFileInfo(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return FileSystemFileUtil::GetInstance()->GetFileInfo(
+  return QuotaFileUtil::GetInstance()->GetFileInfo(
       context, local_path, file_info, platform_file_path);
 }
 
@@ -82,7 +83,7 @@ PlatformFileError LocalFileSystemFileUtil::ReadDirectory(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return FileSystemFileUtil::GetInstance()->ReadDirectory(
+  return QuotaFileUtil::GetInstance()->ReadDirectory(
       context, local_path, entries);
 }
 
@@ -96,7 +97,7 @@ PlatformFileError LocalFileSystemFileUtil::CreateDirectory(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return FileSystemFileUtil::GetInstance()->CreateDirectory(
+  return QuotaFileUtil::GetInstance()->CreateDirectory(
       context, local_path, exclusive, recursive);
 }
 
@@ -116,7 +117,7 @@ PlatformFileError LocalFileSystemFileUtil::CopyOrMoveFile(
           dest_file_path);
   if (local_dest_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return FileSystemFileUtil::GetInstance()->CopyOrMoveFile(
+  return QuotaFileUtil::GetInstance()->CopyOrMoveFile(
       context, local_src_path, local_dest_path, copy);
 }
 
@@ -128,7 +129,7 @@ PlatformFileError LocalFileSystemFileUtil::DeleteFile(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return FileSystemFileUtil::GetInstance()->DeleteFile(
+  return QuotaFileUtil::GetInstance()->DeleteFile(
       context, local_path);
 }
 
@@ -140,7 +141,7 @@ PlatformFileError LocalFileSystemFileUtil::DeleteSingleDirectory(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return FileSystemFileUtil::GetInstance()->DeleteSingleDirectory(
+  return QuotaFileUtil::GetInstance()->DeleteSingleDirectory(
       context, local_path);
 }
 
@@ -154,7 +155,7 @@ PlatformFileError LocalFileSystemFileUtil::Touch(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return FileSystemFileUtil::GetInstance()->Touch(
+  return QuotaFileUtil::GetInstance()->Touch(
       context, local_path, last_access_time, last_modified_time);
 }
 
@@ -167,7 +168,7 @@ PlatformFileError LocalFileSystemFileUtil::Truncate(
           file_path);
   if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return FileSystemFileUtil::GetInstance()->Truncate(
+  return QuotaFileUtil::GetInstance()->Truncate(
       context, local_path, length);
 }
 
@@ -179,7 +180,7 @@ bool LocalFileSystemFileUtil::PathExists(
           file_path);
   if (local_path.empty())
     return false;
-  return FileSystemFileUtil::GetInstance()->PathExists(
+  return QuotaFileUtil::GetInstance()->PathExists(
       context, local_path);
 }
 
@@ -191,7 +192,7 @@ bool LocalFileSystemFileUtil::DirectoryExists(
           file_path);
   if (local_path.empty())
     return false;
-  return FileSystemFileUtil::GetInstance()->DirectoryExists(
+  return QuotaFileUtil::GetInstance()->DirectoryExists(
       context, local_path);
 }
 
@@ -203,7 +204,7 @@ bool LocalFileSystemFileUtil::IsDirectoryEmpty(
           file_path);
   if (local_path.empty())
     return true;
-  return FileSystemFileUtil::GetInstance()->IsDirectoryEmpty(
+  return QuotaFileUtil::GetInstance()->IsDirectoryEmpty(
       context, local_path);
 }
 

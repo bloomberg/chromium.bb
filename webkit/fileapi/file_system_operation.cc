@@ -13,10 +13,12 @@
 #include "webkit/fileapi/file_system_file_util_proxy.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/file_writer_delegate.h"
 #include "webkit/fileapi/local_file_system_file_util.h"
 #include "webkit/fileapi/quota_file_util.h"
+#include "webkit/quota/quota_types.h"
 
 namespace fileapi {
 
@@ -148,9 +150,28 @@ void FileSystemOperation::Copy(const GURL& src_path,
   file_system_operation_context_.set_dest_origin_url(dest_origin_url);
   file_system_operation_context_.set_src_type(src_type);
   file_system_operation_context_.set_dest_type(dest_type);
+  file_system_operation_context_.set_src_virtual_path(virtual_path_0);
+  file_system_operation_context_.set_dest_virtual_path(virtual_path_1);
+
+  GetUsageAndQuotaThenCallback(dest_origin_url, callback_factory_.NewCallback(
+      &FileSystemOperation::DelayedCopyForQuota));
+}
+
+void FileSystemOperation::DelayedCopyForQuota(quota::QuotaStatusCode status,
+                                              int64 usage, int64 quota) {
+  if (file_system_context()->IsStorageUnlimited(
+          file_system_operation_context()->dest_origin_url()) ||
+      quota == QuotaFileUtil::kNoLimit) {
+    file_system_operation_context_.set_allowed_bytes_growth(
+        QuotaFileUtil::kNoLimit);
+  } else {
+    file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
+  }
   FileSystemFileUtilProxy::Copy(
       file_system_operation_context_,
-      proxy_, virtual_path_0, virtual_path_1,
+      proxy_,
+      file_system_operation_context_.src_virtual_path(),
+      file_system_operation_context_.dest_virtual_path(),
       callback_factory_.NewCallback(
         &FileSystemOperation::DidFinishFileOperation));
 }
@@ -187,9 +208,28 @@ void FileSystemOperation::Move(const GURL& src_path,
   file_system_operation_context_.set_dest_origin_url(dest_origin_url);
   file_system_operation_context_.set_src_type(src_type);
   file_system_operation_context_.set_dest_type(dest_type);
+  file_system_operation_context_.set_src_virtual_path(virtual_path_0);
+  file_system_operation_context_.set_dest_virtual_path(virtual_path_1);
+
+  GetUsageAndQuotaThenCallback(dest_origin_url, callback_factory_.NewCallback(
+      &FileSystemOperation::DelayedMoveForQuota));
+}
+
+void FileSystemOperation::DelayedMoveForQuota(quota::QuotaStatusCode status,
+                                              int64 usage, int64 quota) {
+  if (file_system_context()->IsStorageUnlimited(
+          file_system_operation_context()->dest_origin_url()) ||
+      quota == QuotaFileUtil::kNoLimit) {
+    file_system_operation_context_.set_allowed_bytes_growth(
+        QuotaFileUtil::kNoLimit);
+  } else {
+    file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
+  }
   FileSystemFileUtilProxy::Move(
       file_system_operation_context_,
-      proxy_, virtual_path_0, virtual_path_1,
+      proxy_,
+      file_system_operation_context_.src_virtual_path(),
+      file_system_operation_context_.dest_virtual_path(),
       callback_factory_.NewCallback(
         &FileSystemOperation::DidFinishFileOperation));
 }
@@ -340,15 +380,31 @@ void FileSystemOperation::Write(
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
+  file_system_operation_context_.set_src_virtual_path(virtual_path);
   DCHECK(blob_url.is_valid());
   file_writer_delegate_.reset(new FileWriterDelegate(this, offset, proxy_));
   blob_request_.reset(
       new net::URLRequest(blob_url, file_writer_delegate_.get()));
   blob_request_->set_context(url_request_context);
+
+  GetUsageAndQuotaThenCallback(origin_url, callback_factory_.NewCallback(
+      &FileSystemOperation::DelayedWriteForQuota));
+}
+
+void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
+                                               int64 usage, int64 quota) {
+  if (file_system_context()->IsStorageUnlimited(
+          file_system_operation_context()->dest_origin_url()) ||
+      quota == QuotaFileUtil::kNoLimit) {
+    file_system_operation_context_.set_allowed_bytes_growth(
+        QuotaFileUtil::kNoLimit);
+  } else {
+    file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
+  }
   FileSystemFileUtilProxy::CreateOrOpen(
       file_system_operation_context_,
       proxy_,
-      virtual_path,
+      file_system_operation_context_.src_virtual_path(),
       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |
           base::PLATFORM_FILE_ASYNC,
       callback_factory_.NewCallback(
@@ -370,9 +426,28 @@ void FileSystemOperation::Truncate(const GURL& path, int64 length) {
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
+  file_system_operation_context_.set_src_virtual_path(virtual_path);
+  length_ = length;
+
+  GetUsageAndQuotaThenCallback(origin_url, callback_factory_.NewCallback(
+      &FileSystemOperation::DelayedTruncateForQuota));
+}
+
+void FileSystemOperation::DelayedTruncateForQuota(quota::QuotaStatusCode status,
+                                                  int64 usage, int64 quota) {
+  if (file_system_context()->IsStorageUnlimited(
+          file_system_operation_context()->dest_origin_url()) ||
+      quota == QuotaFileUtil::kNoLimit) {
+    file_system_operation_context_.set_allowed_bytes_growth(
+        QuotaFileUtil::kNoLimit);
+  } else {
+    file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
+  }
   FileSystemFileUtilProxy::Truncate(
       file_system_operation_context_,
-      proxy_, virtual_path, length, callback_factory_.NewCallback(
+      proxy_,
+      file_system_operation_context_.src_virtual_path(),
+      length_, callback_factory_.NewCallback(
           &FileSystemOperation::DidFinishFileOperation));
 }
 
@@ -477,6 +552,30 @@ void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation_ptr) {
     DCHECK(!cancel_operation_.get());
     cancel_operation_.swap(cancel_operation);
   }
+}
+
+bool FileSystemOperation::GetUsageAndQuotaThenCallback(
+    const GURL& origin_url,
+    quota::QuotaManager::GetUsageAndQuotaCallback* callback) {
+  quota::QuotaManagerProxy* quota_manager_proxy =
+      file_system_context()->quota_manager_proxy();
+  if (quota_manager_proxy != NULL) {
+    quota_manager_proxy->GetUsageAndQuota(
+        file_system_operation_context_.src_origin_url(),
+        FileSystemTypeToQuotaStorageType(
+            file_system_operation_context_.src_type()),
+        callback);
+  } else {
+    if (file_system_context()->IsStorageUnlimited(origin_url)) {
+      callback->Run(quota::kQuotaStatusOk, 0, QuotaFileUtil::kNoLimit);
+      delete callback;
+    } else {
+      dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_NO_SPACE);
+      delete callback;
+      return false;
+    }
+  }
+  return true;
 }
 
 void FileSystemOperation::DidGetRootPath(
@@ -713,11 +812,6 @@ bool FileSystemOperation::VerifyFileSystemPathForWrite(
   if (create && file_system_context()->path_manager()->IsRestrictedFileName(
           *type, virtual_path->BaseName())) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
-    return false;
-  }
-  // TODO(kinuko): the check must be moved to QuotaFileSystemFileUtil.
-  if (!file_system_context()->IsStorageUnlimited(*origin_url)) {
-    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_NO_SPACE);
     return false;
   }
   return true;

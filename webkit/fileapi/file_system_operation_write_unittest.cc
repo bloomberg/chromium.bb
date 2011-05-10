@@ -9,6 +9,7 @@
 //
 
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
@@ -27,8 +28,39 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_system_file_util.h"
+#include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
+
+namespace {
+
+class MockQuotaManager : public quota::QuotaManager {
+ public:
+  MockQuotaManager(const FilePath& filesystem_path, int64 usage, int64 quota)
+      : quota::QuotaManager(false /* is_incognito */,
+                            filesystem_path,
+                            base::MessageLoopProxy::CreateForCurrentThread(),
+                            base::MessageLoopProxy::CreateForCurrentThread()),
+        test_filesystem_path_(filesystem_path),
+        usage_(usage),
+        quota_(quota) {}
+
+  virtual void GetUsageAndQuota(const GURL& origin, quota::StorageType type,
+                                GetUsageAndQuotaCallback* callback) {
+    callback->Run(quota::kQuotaStatusOk, usage_, quota_);
+    delete callback;
+  }
+
+  void set_usage(int64 usage) { usage_ = usage; }
+  void set_quota(int64 quota) { quota_ = quota; }
+
+ private:
+  FilePath test_filesystem_path_;
+  int64 usage_;
+  int64 quota_;
+};
+
+}  // namespace (anonymous)
 
 class FileSystemOperationWriteTest : public testing::Test {
  public:
@@ -65,6 +97,8 @@ class FileSystemOperationWriteTest : public testing::Test {
     return GURL(GetFileSystemRootURI(GURL("http://www.example.com/"),
         kFileSystemTypeTemporary).spec() + path.MaybeAsASCII());
   }
+
+  scoped_refptr<MockQuotaManager> quota_manager_;
 
   MessageLoop loop_;
 
@@ -175,11 +209,14 @@ void FileSystemOperationWriteTest::SetUp() {
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(filesystem_dir_, &file_));
   virtual_path_ = file_.BaseName();
 
+  quota_manager_ = new MockQuotaManager(filesystem_dir_, 0, 1024);
+
   net::URLRequest::RegisterProtocolFactory("blob", &BlobURLRequestJobFactory);
 }
 
 void FileSystemOperationWriteTest::TearDown() {
   net::URLRequest::RegisterProtocolFactory("blob", NULL);
+  quota_manager_ = NULL;
 }
 
 FileSystemOperation* FileSystemOperationWriteTest::operation() {
@@ -188,8 +225,8 @@ FileSystemOperation* FileSystemOperationWriteTest::operation() {
       base::MessageLoopProxy::CreateForCurrentThread(),
       new FileSystemContext(base::MessageLoopProxy::CreateForCurrentThread(),
                             base::MessageLoopProxy::CreateForCurrentThread(),
-                            NULL, NULL, FilePath(), false /* is_incognito */,
-                            true, true,
+                            NULL, quota_manager_->proxy(), FilePath(),
+                            false /* is_incognito */, true, false,
                             new MockFileSystemPathManager(filesystem_dir_)),
       LocalFileSystemFileUtil::GetInstance());
   operation->file_system_operation_context()->set_src_type(
@@ -300,6 +337,28 @@ TEST_F(FileSystemOperationWriteTest, TestWriteDir) {
 
   EXPECT_EQ(0, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_ACCESS_DENIED, status());
+  EXPECT_TRUE(complete());
+}
+
+TEST_F(FileSystemOperationWriteTest, TestWriteFailureByQuota) {
+  GURL blob_url("blob:success");
+  scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
+  blob_data->AppendData("Hello, world!\n");
+
+  scoped_refptr<TestURLRequestContext> url_request_context(
+      new TestURLRequestContext());
+  url_request_context->blob_storage_controller()->
+      RegisterBlobUrl(blob_url, blob_data);
+
+  quota_manager_->set_quota(10);
+  operation()->Write(url_request_context, URLForPath(virtual_path_), blob_url,
+                     0);
+  MessageLoop::current()->Run();
+
+  url_request_context->blob_storage_controller()->UnregisterBlobUrl(blob_url);
+
+  EXPECT_EQ(10, bytes_written());
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status());
   EXPECT_TRUE(complete());
 }
 
