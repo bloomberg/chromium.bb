@@ -124,7 +124,7 @@ void ExtensionFileBrowserEventRouter::DispatchEvent(
   mount_info->SetString("eventType",
                         added ? kDiskAddedEventType : kDiskRemovedEventType);
   DictionaryValue* disk_info = DiskToDictionaryValue(disk);
-  mount_info->Set("diskInfo", disk_info);
+  mount_info->Set("volumeInfo", disk_info);
 
   std::string args_json;
   base::JSONWriter::Write(&args, false /* pretty_print */, &args_json);

@@ -154,6 +154,39 @@ FileManager.prototype = {
     return localStrings.getStringF.apply(localStrings, arguments);
   }
 
+
+  /**
+   * Checks if |parent_path| is parent file path of |child_path|.
+   *
+   * @param {string} parent_path The parent path.
+   * @param {string} child_path The child path.
+   */
+  function isParentPath(parent_path, child_path) {
+    if (!parent_path || parent_path.length == 0 ||
+        !child_path || child_path.length == 0)
+      return false;
+
+    if (parent_path[parent_path.length -1] != '/')
+      parent_path += '/';
+
+    if (child_path[child_path.length -1] != '/')
+      child_path += '/';
+
+    return child_path.indexOf(parent_path) == 0;
+  }
+
+  /**
+   * Returns parent folder path of file path.
+   *
+   * @param {string} path The file path.
+   */
+  function getParentPath(path) {
+    var parent = path.replace(/[\/]?[^\/]+[\/]?$/,'');
+    if (parent.length == 0)
+      parent = '/';
+    return parent;
+  }
+
   /**
    * Get the icon type for a given Entry.
    *
@@ -1403,8 +1436,15 @@ FileManager.prototype = {
    * @param {string} path The path that has been mounted or unmounted.
    */
   FileManager.prototype.onDiskChanged_ = function(event) {
-    // TODO(rginda): Please check and wire handling of other data passed here.
-    this.changeDirectory(event.volumeInfo.mountPath);
+    if (event.eventType == 'added') {
+      this.changeDirectory(event.volumeInfo.mountPath);
+    } else if (event.eventType == 'removed') {
+      if (this.currentDirEntry_ &&
+          isParentPath(event.volumeInfo.mountPath,
+                       this.currentDirEntry_.fullPath)) {
+        this.changeDirectory(getParentPath(event.volumeInfo.mountPath));
+      }
+    }
   };
 
   /**
