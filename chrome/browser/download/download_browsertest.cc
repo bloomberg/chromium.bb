@@ -1345,8 +1345,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
 // Test for crbug.com/12745. This tests that if a download is initiated from
 // a chrome:// page that has registered and onunload handler, the browser
 // will be able to close.
+// TODO(battre): renable, see crbug.com/82284
 IN_PROC_BROWSER_TEST_F(DownloadTest,
-                       BrowserCloseAfterDownload) {
+                       DISABLED_BrowserCloseAfterDownload) {
   GURL downloads_url(chrome::kAboutFlagsURL);
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
