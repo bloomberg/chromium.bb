@@ -124,7 +124,8 @@ void BrowserChildProcessHost::OnChildDied() {
     int exit_code;
     base::TerminationStatus status = GetChildTerminationStatus(&exit_code);
     switch (status) {
-      case base::TERMINATION_STATUS_PROCESS_CRASHED: {
+      case base::TERMINATION_STATUS_PROCESS_CRASHED:
+      case base::TERMINATION_STATUS_ABNORMAL_TERMINATION: {
         OnProcessCrashed(exit_code);
 
         // Report that this child process crashed.
