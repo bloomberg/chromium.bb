@@ -10,6 +10,7 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 TESTS = ['audio',
          'graphics2d',
+         'event',
          ]
 
 for test in TESTS:

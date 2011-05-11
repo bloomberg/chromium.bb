@@ -22,46 +22,11 @@ rpc call complete PPP_InitializeModule:iihs:ii
 "*** INIT INSTANCE"
 rpc call intiated PPP_Instance_DidCreate:iiCC:i
 input 0:  i(5555)
-input 1:  i(5)
-input 2:  C(23,id\x00name\x00src\x00style\x00type\x00)
-input 3:  C(74,naclModule\x00naclModule\x00ppapi.nexe\x00background-color:gray\x00application/x-nacl\x00)
+input 1:  i(1)
+input 2:  C(12,buffer_size\x00)
+input 3:  C(4,100\x00)
 rpc call complete PPP_Instance_DidCreate:iiCC:i
 output 0:  i(1)
-
-
-"*** GET INSTANCE OBJECT"
-rpc call intiated PPP_Instance_GetInstanceObject:i:C
-input 0:  i(5555)
-replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_Var(Deprecated\x29;0.3")
-output 0:  i(1)
-rpc call complete PPP_Instance_GetInstanceObject:i:C
-
-
-"*** GET PROPERTY (AT THE BEGINNING)"
-rpc call intiated HasProperty:CCC:iC
-input 0:  @THE_OBJECT
-input 1:  C(16,\x05\x00\x00\x00\x06\x00\x00\x00events\x00\x00)
-input 2:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
-rpc call complete HasProperty:CCC:iC
-output 0:  i(1)
-output 1:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
-
-rpc call intiated GetProperty:CCC:CC
-input 0:  @THE_OBJECT
-input 1:  C(16,\x05\x00\x00\x00\x06\x00\x00\x00events\x00\x00)
-input 2:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
-rpc call complete GetProperty:CCC:CC
-output 0:  C(8,\x05\x00\x00\x00\x00\x00\x00\x00)
-output 1:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
-
-
-"*** TRIGGER REPAINT"
-rpc call intiated PPP_Instance_DidChangeView:iII:
-input 0:  i(5555)
-input 1:  I(4,8,79,400,400)
-input 2:  I(4,0,0,400,400)
-rpc call complete PPP_Instance_DidChangeView:iII:
 
 
 "*** SENT EVENTS EV_MOUSE_DOWN"
@@ -120,23 +85,40 @@ rpc call complete PPP_Instance_HandleInputEvent:iC:i
 output 0:  i(1)
 
 
-"*** GET PROPERTY (AT THE END)"
-rpc call intiated HasProperty:CCC:iC
-input 0:  @THE_OBJECT
-input 1:  C(16,\x05\x00\x00\x00\x06\x00\x00\x00events\x00\x00)
-input 2:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
-rpc call complete HasProperty:CCC:iC
+"*** TRIGGER EVENT FLUSH"
+rpc call intiated PPP_Instance_DidChangeFocus:ib:
+input 0:  i(5555)
+input 1:  b(0)
+replaying PPB_GetInterface:s:i:
+input 0:  s("PPB_Var(Deprecated\x29;0.3")
 output 0:  i(1)
-output 1:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
-
-rpc call intiated GetProperty:CCC:CC
-input 0:  @THE_OBJECT
-input 1:  C(16,\x05\x00\x00\x00\x06\x00\x00\x00events\x00\x00)
-input 2:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
-rpc call complete GetProperty:CCC:CC
-output 0:  C(560,\x05\x00\x00\x00$\x02\x00\x005555: Mouse event:Down modifier:left-button-down  button:Left x:264 y:100 click_count:1 time:1\n5555: Mouse event:Up modifier:left-button-down  button:Left x:264 y:100 click_count:0 time:1.0625\n5555: Mouse event:Move modifier: button:Left x:264 y:100 click_count:0 time:1.125\n5555: Mouse event:Enter modifier: button:Left x:264 y:100 click_count:0 time:1.1875\n5555: Mouse event:Leave modifier: button:Left x:264 y:100 click_count:0 time:1.25\n5555: Key event:Up modifier: key_code:84 time:1.375\n5555: Key event:Down modifier: key_code:84 time:1.3125\n\x00\x00\x00\x00)
-output 1:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
+replaying PPB_GetInterface:s:i:
+input 0:  s("PPB_Messaging;0.1")
+output 0:  i(1)
+replaying PPB_Messaging_PostMessage:iC::
+input 0:  i(5555)
+input 1:  C(104,\x05\x00\x00\x00_\x00\x00\x005555:_Mouse_event:Down_modifier:left-button-down__button:Left_x:264_y:100_click_count:1_time:1\n\x00)
+replaying PPB_Messaging_PostMessage:iC::
+input 0:  i(5555)
+input 1:  C(112,\x05\x00\x00\x00b\x00\x00\x005555:_Mouse_event:Up_modifier:left-button-down__button:Left_x:264_y:100_click_count:0_time:1.0625\n\x00\x00\x00\x00\x00\x00)
+replaying PPB_Messaging_PostMessage:iC::
+input 0:  i(5555)
+input 1:  C(96,\x05\x00\x00\x00R\x00\x00\x005555:_Mouse_event:Move_modifier:_button:Left_x:264_y:100_click_count:0_time:1.125\n\x00\x00\x00\x00\x00\x00)
+replaying PPB_Messaging_PostMessage:iC::
+input 0:  i(5555)
+input 1:  C(96,\x05\x00\x00\x00T\x00\x00\x005555:_Mouse_event:Enter_modifier:_button:Left_x:264_y:100_click_count:0_time:1.1875\n\x00\x00\x00\x00)
+replaying PPB_Messaging_PostMessage:iC::
+input 0:  i(5555)
+input 1:  C(96,\x05\x00\x00\x00R\x00\x00\x005555:_Mouse_event:Leave_modifier:_button:Left_x:264_y:100_click_count:0_time:1.25\n\x00\x00\x00\x00\x00\x00)
+replaying PPB_Messaging_PostMessage:iC::
+input 0:  i(5555)
+input 1:  C(64,\x05\x00\x00\x004\x00\x00\x005555:_Key_event:Up_modifier:_key_code:84_time:1.375\n\x00\x00\x00\x00)
+replaying PPB_Messaging_PostMessage:iC::
+input 0:  i(5555)
+input 1:  C(64,\x05\x00\x00\x007\x00\x00\x005555:_Key_event:Down_modifier:_key_code:84_time:1.3125\n\x00)
+rpc call complete PPP_Instance_DidChangeFocus:ib:
 
 rpc call intiated PPP_ShutdownModule::
 rpc call complete PPP_ShutdownModule::
 
+"DONE"

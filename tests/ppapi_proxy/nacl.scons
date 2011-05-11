@@ -69,19 +69,3 @@ dest_copy = env.Replicate('$STAGING_DIR',
                           ['event_example.html',
                            'event_example.nmf'])
 env.Depends(event_target, dest_copy)
-
-node = env.SelUniversalTest(
-    'ppapi_event_example.out',
-    sel_universal_flags=['--silence_nexe',
-                         '--command_file',
-                         env.File('sel_universal_ppapi_replay_prolog.stdin'),
-                         '--command_file',
-                         env.File('event_example.stdin'),
-                         ],
-    command=[event_example_nexe],
-    stdout_golden=env.File('event_example.stdout'),
-    )
-
-env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'],
-                       'run_ppapi_event_test')

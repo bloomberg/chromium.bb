@@ -77,15 +77,6 @@ set_variable VALUES C(4,100\000)
 rpc PPP_Instance_DidCreate ${INSTANCE} i(1) ${TAGS} ${VALUES} * i(0)
 
 echo
-echo "*** GET INSTANCE OBJECT"
-replay 1 PPB_GetInterface:s:i  s("PPB_Var(Deprecated);0.3") * i(1)
-# the results contains and address like object item which is non-determinisitic
-rpc PPP_Instance_GetInstanceObject hide-results ${INSTANCE} * C(16)
-# save result to variable and also register it as non-deterministic
-set_variable OBJECT ${result0}
-nondeterministic ${result0} @THE_OBJECT
-
-echo
 echo "*** SENT EVENTS EV_MOUSE_DOWN"
 rpc PPP_Instance_HandleInputEvent ${INSTANCE} ${EV_MOUSE_DOWN} * i(0)
 echo
@@ -110,7 +101,19 @@ rpc PPP_Instance_HandleInputEvent ${INSTANCE} ${EV_KEY_DOWN} * i(0)
 
 echo
 echo "*** TRIGGER EVENT FLUSH"
-rpc PPP_Instance_DidChangeFocus ${INSTANCE} i(0) *
+# NOTE: This should not be necessary anymore
+replay 1 PPB_GetInterface:s:i  s("PPB_Var(Deprecated);0.3") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_Messaging;0.1") * i(1)
+replay 1 PPB_Messaging_PostMessage:iC: i(5555)  C(104,\x05\x00\x00\x00_\x00\x00\x005555:_Mouse_event:Down_modifier:left-button-down__button:Left_x:264_y:100_click_count:1_time:1\n\x00) *
+replay 1 PPB_Messaging_PostMessage:iC: i(5555)  C(112,\x05\x00\x00\x00b\x00\x00\x005555:_Mouse_event:Up_modifier:left-button-down__button:Left_x:264_y:100_click_count:0_time:1.0625\n\x00\x00\x00\x00\x00\x00) *
+replay 1 PPB_Messaging_PostMessage:iC: i(5555) C(96,\x05\x00\x00\x00R\x00\x00\x005555:_Mouse_event:Move_modifier:_button:Left_x:264_y:100_click_count:0_time:1.125\n\x00\x00\x00\x00\x00\x00) *
+replay 1 PPB_Messaging_PostMessage:iC: i(5555)  C(96,\x05\x00\x00\x00T\x00\x00\x005555:_Mouse_event:Enter_modifier:_button:Left_x:264_y:100_click_count:0_time:1.1875\n\x00\x00\x00\x00) *
+replay 1 PPB_Messaging_PostMessage:iC: i(5555)  C(96,\x05\x00\x00\x00R\x00\x00\x005555:_Mouse_event:Leave_modifier:_button:Left_x:264_y:100_click_count:0_time:1.25\n\x00\x00\x00\x00\x00\x00) *
+replay 1 PPB_Messaging_PostMessage:iC: i(5555)  C(64,\x05\x00\x00\x004\x00\x00\x005555:_Key_event:Up_modifier:_key_code:84_time:1.375\n\x00\x00\x00\x00) *
+replay 1 PPB_Messaging_PostMessage:iC: i(5555)  C(64,\x05\x00\x00\x007\x00\x00\x005555:_Key_event:Down_modifier:_key_code:84_time:1.3125\n\x00) *
+rpc PPP_Instance_DidChangeFocus ${INSTANCE} b(0) *
 
 
 rpc PPP_ShutdownModule *
+
+echo "DONE"

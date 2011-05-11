@@ -81,7 +81,7 @@ string KeyEvent(PP_InputEvent_Key key,
                 PP_TimeTicks time,
                 const string& kind) {
   ostringstream stream;
-  stream << "Key event:" << kind.c_str()
+  stream << "Key event:" << kind
          << " modifier:" << ModifierToString(key.modifier)
          << " key_code:" << key.key_code
          << " time:" << time
@@ -93,9 +93,9 @@ string MouseEvent(PP_InputEvent_Mouse mouse_event,
                 PP_TimeTicks time,
                 const string& kind) {
   ostringstream stream;
-  stream << "Mouse event:" << kind.c_str()
-         << " modifier:" << ModifierToString(mouse_event.modifier).c_str()
-         << " button:" << MouseButtonToString(mouse_event.button).c_str()
+  stream << "Mouse event:" << kind
+         << " modifier:" << ModifierToString(mouse_event.modifier)
+         << " button:" << MouseButtonToString(mouse_event.button)
          << " x:" << mouse_event.x
          << " y:" << mouse_event.y
          << " click_count:" << mouse_event.click_count
@@ -107,7 +107,7 @@ string MouseEvent(PP_InputEvent_Mouse mouse_event,
 string CharEvent(PP_InputEvent_Character char_event, PP_TimeTicks time) {
   ostringstream stream;
   stream << "Character event."
-         << " modifier:" << ModifierToString(char_event.modifier).c_str()
+         << " modifier:" << ModifierToString(char_event.modifier)
          << " text:" << char_event.text
          << " time:" << time
          << "\n";
@@ -118,7 +118,7 @@ string CharEvent(PP_InputEvent_Character char_event, PP_TimeTicks time) {
 string WheelEvent(PP_InputEvent_Wheel wheel_event, PP_TimeTicks time) {
   ostringstream stream;
   stream << "Wheel event."
-         << " modifier:" << ModifierToString(wheel_event.modifier).c_str()
+         << " modifier:" << ModifierToString(wheel_event.modifier)
          << " deltax:" << wheel_event.delta_x
          << " deltay:" << wheel_event.delta_y
          << " wheel_ticks_x:" << wheel_event.wheel_ticks_x
@@ -160,6 +160,24 @@ string EventToString(const PP_InputEvent& event) {
   }
 }
 
+void StringReplace(string* input,
+                   const string& find,
+                   const string& replace) {
+  if (find.length() == 0 || input->length() == 0) {
+    return;
+  }
+
+  size_t start_pos = 0;
+  while (1) {
+    start_pos = input->find(find, start_pos);
+    if (start_pos == string::npos) {
+      break;
+    }
+    input->replace(start_pos, find.length(), replace);
+    start_pos += replace.length();
+  }
+}
+
 } // namespace
 
 
@@ -176,14 +194,18 @@ class MyInstance : public pp::Instance {
      }
   }
 
+  // Dump all the event via PostMessage for testing
   void FlushEventBuffer() {
-      ostringstream stream;
       while (event_buffer_.size() > 0) {
+        ostringstream stream;
         stream << pp_instance() << ": " << EventToString(event_buffer_.front());
         event_buffer_.pop();
+        // Replace space with underscore to simplify testing
+        string s = stream.str();
+        StringReplace(&s, " ", "_");
+        pp::Var message(s);
+        PostMessage(message);
       }
-      pp::Var message(stream.str());
-      PostMessage(message);
   }
 
  public:

@@ -90,6 +90,8 @@ replay 0 PPB_URLResponseInfo_IsURLResponseInfo:i:i *
 replay 0 PPB_URLResponseInfo_GetProperty:ii:C *
 replay 0 PPB_URLResponseInfo_GetBodyAsFileRef:i:l *
 
+replay 0 PPB_Messaging_PostMessage:iC: *
+
 # Register  signatures found in all previous replay commands for export
 # via install_upcalls
 echo
