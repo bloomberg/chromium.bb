@@ -89,7 +89,6 @@ static NaCl::TimeTicks NaClWinUnixTimeBaseNow() {
       + unix_time.nacl_abi_tv_usec);
 }
 
-extern "C" int cond_debug_me = 0;
 int NaCl::ConditionVariable::TimedWaitAbs(Lock& user_lock, TimeTicks abs_time) {
 #if 0
   // Test the unit test
@@ -104,7 +103,6 @@ int NaCl::ConditionVariable::TimedWaitAbs(Lock& user_lock, TimeTicks abs_time) {
           "TimedWaitAbs: relative_time  %"NACL_PRId64" ticks (uS)\n",
           relative_time.InMicroseconds());
   if (relative_time.InMicroseconds() < 0) {
-       if (0 != cond_debug_me) printf("\n\n!!!! Elapsed already on relative time !!!!\n\n");
     NaClLog(4, "TimedWaitAbs: time already passed!\n");
     // we check to see if the object has been signaled anyway
     relative_time = TimeDelta::FromMicroseconds(0);
