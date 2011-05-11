@@ -11558,13 +11558,13 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "reload"
         },
         "3E": {
           "label": "full screen"
         },
         "3F": {
-          "label": "tools"
+          "label": "switch window"
         },
         "40": {
           "label": "bright down"
@@ -13076,13 +13076,13 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "reload"
         },
         "3E": {
           "label": "full screen"
         },
         "3F": {
-          "label": "tools"
+          "label": "switch window"
         },
         "40": {
           "label": "bright down"
@@ -14495,13 +14495,13 @@ var keyboardOverlayData = {
           "label": "forward"
         },
         "3D": {
-          "label": "switch window"
+          "label": "reload"
         },
         "3E": {
           "label": "full screen"
         },
         "3F": {
-          "label": "tools"
+          "label": "switch window"
         },
         "40": {
           "label": "bright down"
@@ -16745,7 +16745,6 @@ var keyboardOverlayData = {
     "l<>CTRL": "keyboardOverlayFocusAddressBar",
     "left<>ALT": "keyboardOverlayBack",
     "left<>CTRL<>SHIFT": "keyboardOverlaySelectWordAtATime",
-    "m<>ALT<>CTRL": "keyboardOverlayUseExternalMonitor",
     "n<>CTRL": "keyboardOverlayNewWindow",
     "n<>CTRL<>SHIFT": "keyboardOverlayNewIncognitoWindow",
     "o<>CTRL": "keyboardOverlayContentBrowser",

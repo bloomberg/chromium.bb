@@ -11822,9 +11822,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_KEYBOARD_OVERLAY_PREVIOUS_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
         Previous window
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_USE_EXTERNAL_MONITOR" desc="The text in the keyboard overlay to explain the shortcut.">
-        Use external monitor
-      </message>
       <message name="IDS_KEYBOARD_OVERLAY_RELOAD_IGNORING_CACHE" desc="The text in the keyboard overlay to explain the shortcut.">
         Reload ignoring cache
       </message>

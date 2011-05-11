@@ -240,8 +240,6 @@ void KeyboardOverlayUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_PAGE_DOWN));
   localized_strings.SetString("keyboardOverlayPreviousWindow",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_PREVIOUS_WINDOW));
-  localized_strings.SetString("keyboardOverlayUseExternalMonitor",
-      l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_USE_EXTERNAL_MONITOR));
   localized_strings.SetString("keyboardOverlayReloadIgnoringCache",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_RELOAD_IGNORING_CACHE));
   localized_strings.SetString("keyboardOverlaySave",
