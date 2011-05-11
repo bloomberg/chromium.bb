@@ -29,6 +29,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service.h"
@@ -36,7 +37,6 @@
 #include "content/browser/ppapi_broker_process_host.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/desktop_notification_messages.h"
@@ -44,7 +44,6 @@
 #include "content/common/view_messages.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/cookie_monster.h"
-#include "net/base/cookie_policy.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/base/io_buffer.h"
 #include "net/base/keygen_handler.h"
@@ -454,26 +453,14 @@ void RenderMessageFilter::OnSetCookie(const IPC::Message& message,
                                       const GURL& url,
                                       const GURL& first_party_for_cookies,
                                       const std::string& cookie) {
-  net::URLRequestContext* context = GetRequestContextForURL(url);
-
-  int policy = net::OK;
-  if (context->cookie_policy()) {
-    policy = context->cookie_policy()->CanSetCookie(
-        url, first_party_for_cookies, cookie);
-  }
-
-  bool blocked_by_policy = true;
   net::CookieOptions options;
-  if (policy == net::OK || policy == net::OK_FOR_SESSION_ONLY) {
-    blocked_by_policy = false;
-    if (policy == net::OK_FOR_SESSION_ONLY)
-      options.set_force_session();
+  if (content::GetContentClient()->browser()->AllowSetCookie(
+          url, first_party_for_cookies, cookie,
+          resource_context_, render_process_id_, message.routing_id(),
+          &options)) {
+    net::URLRequestContext* context = GetRequestContextForURL(url);
     context->cookie_store()->SetCookieWithOptions(url, cookie, options);
   }
-  CallRenderViewHostContentSettingsDelegate(
-      render_process_id_, message.routing_id(),
-      &RenderViewHostDelegate::ContentSettings::OnCookieChanged,
-      url, cookie, options, blocked_by_policy);
 }
 
 // We use DELAY_REPLY even though we have the result here because we want the
@@ -482,23 +469,16 @@ void RenderMessageFilter::OnGetCookies(const GURL& url,
                                        const GURL& first_party_for_cookies,
                                        IPC::Message* reply_msg) {
   net::URLRequestContext* context = GetRequestContextForURL(url);
-
-  int policy = net::OK;
-  if (context->cookie_policy()) {
-    policy = context->cookie_policy()->CanGetCookies(
-        url, first_party_for_cookies);
-  }
-  std::string cookies;
-  if (policy == net::OK)
-    cookies = context->cookie_store()->GetCookies(url);
   net::CookieMonster* cookie_monster =
       context->cookie_store()->GetCookieMonster();
-  net::CookieList cookie_list = cookie_monster->GetAllCookiesForURLWithOptions(
-      url, net::CookieOptions());
-  CallRenderViewHostContentSettingsDelegate(
-      render_process_id_, reply_msg->routing_id(),
-      &RenderViewHostDelegate::ContentSettings::OnCookiesRead,
-      url, cookie_list, policy != net::OK);
+  net::CookieList cookie_list = cookie_monster->GetAllCookiesForURL(url);
+
+  std::string cookies;
+  if (content::GetContentClient()->browser()->AllowGetCookie(
+          url, first_party_for_cookies, cookie_list, resource_context_,
+          render_process_id_, reply_msg->routing_id())) {
+    cookies = context->cookie_store()->GetCookies(url);
+  }
 
   ViewHostMsg_GetCookies::WriteReplyParams(reply_msg, cookies);
   Send(reply_msg);
@@ -509,7 +489,6 @@ void RenderMessageFilter::OnGetRawCookies(
     const GURL& first_party_for_cookies,
     std::vector<webkit_glue::WebCookie>* cookies) {
   cookies->clear();
-  net::URLRequestContext* context = GetRequestContextForURL(url);
 
   // Only return raw cookies to trusted renderers or if this request is
   // not targeted to an an external host like ChromeFrame.
@@ -523,16 +502,7 @@ void RenderMessageFilter::OnGetRawCookies(
   // We check policy here to avoid sending back cookies that would not normally
   // be applied to outbound requests for the given URL.  Since this cookie info
   // is visible in the developer tools, it is helpful to make it match reality.
-  int policy = net::OK;
-  if (context->cookie_policy()) {
-    policy = context->cookie_policy()->CanGetCookies(
-       url, first_party_for_cookies);
-  }
-
-  // Ignore the policy result.  We only waited on the policy result so that
-  // any pending 'set-cookie' requests could be flushed.  The intent of
-  // querying the raw cookies is to reveal the contents of the cookie DB, so
-  // it important that we don't read the cookie db ahead of pending writes.
+  net::URLRequestContext* context = GetRequestContextForURL(url);
   net::CookieMonster* cookie_monster =
       context->cookie_store()->GetCookieMonster();
   net::CookieList cookie_list = cookie_monster->GetAllCookiesForURL(url);
@@ -551,17 +521,12 @@ void RenderMessageFilter::OnCookiesEnabled(
     const GURL& url,
     const GURL& first_party_for_cookies,
     bool* cookies_enabled) {
-  net::URLRequestContext* context = GetRequestContextForURL(url);
-  int policy = net::OK;
   // TODO(ananta): If this render view is associated with an automation channel,
   // aka ChromeFrame then we need to retrieve cookie settings from the external
   // host.
-  if (context->cookie_policy()) {
-    policy = context->cookie_policy()->CanGetCookies(
-        url, first_party_for_cookies);
-  }
-
-  *cookies_enabled = policy != net::ERR_ACCESS_DENIED;
+  *cookies_enabled = content::GetContentClient()->browser()->AllowGetCookie(
+      url, first_party_for_cookies, net::CookieList(), resource_context_,
+      render_process_id_, MSG_ROUTING_CONTROL);
 }
 
 #if defined(OS_MACOSX)
