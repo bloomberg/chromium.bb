@@ -470,17 +470,6 @@
             },
           },
         }],
-        ['disable_nacl!=1', {
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)',
-              'files': [
-                '../native_client/irt_binaries/nacl_irt_x86_32.nexe',
-                '../native_client/irt_binaries/nacl_irt_x86_64.nexe',
-              ],
-            },
-          ],
-        }],
       ],
     },
     {
