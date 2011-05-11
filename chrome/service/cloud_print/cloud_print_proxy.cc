@@ -9,6 +9,7 @@
 #include "base/process_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/cloud_print/cloud_print_proxy_info.h"
 #include "chrome/common/net/gaia/gaia_oauth_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
@@ -150,11 +151,14 @@ void CloudPrintProxy::DisableForUser() {
   }
 }
 
-bool CloudPrintProxy::IsEnabled(std::string* email) const {
-  if (enabled_ && email) {
-    *email = user_email();
-  }
-  return enabled_;
+void CloudPrintProxy::GetProxyInfo(cloud_print::CloudPrintProxyInfo* info) {
+  info->enabled = enabled_;
+  info->email.clear();
+  info->proxy_id.clear();
+  if (enabled_)
+    info->email = user_email();
+  if (service_prefs_)
+    service_prefs_->GetString(prefs::kCloudPrintProxyId, &info->proxy_id);
 }
 
 // Notification methods from the backend. Called on UI thread.
@@ -217,3 +221,4 @@ void CloudPrintProxy::Shutdown() {
     backend_->Shutdown();
   backend_.reset();
 }
+

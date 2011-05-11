@@ -15,6 +15,10 @@
 
 class Profile;
 
+namespace cloud_print {
+struct CloudPrintProxyInfo;
+}  // namespace cloud_print
+
 // Layer between the browser user interface and the cloud print proxy code
 // running in the service process.
 class CloudPrintProxyService
@@ -55,8 +59,10 @@ class CloudPrintProxyService
   void EnableCloudPrintProxy(const std::string& lsid, const std::string& email);
   void DisableCloudPrintProxy();
 
-  // Callback that gets the cloud print proxy status.
-  void StatusCallback(bool enabled, std::string email);
+  // Callback that gets the cloud print proxy info.
+  void ProxyInfoCallback(
+    const cloud_print::CloudPrintProxyInfo& proxy_info);
+
   // Invoke a task that gets run after the service process successfully
   // launches. The task typically involves sending an IPC to the service
   // process.

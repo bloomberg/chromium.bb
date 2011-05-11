@@ -54,13 +54,13 @@ class ServiceProcessControlBrowserTest
 
   // Send a Cloud Print status request and wait for a reply from the service.
   void SendRequestAndWait() {
-    process()->GetCloudPrintProxyStatus(NewCallback(
-        this, &ServiceProcessControlBrowserTest::CloudPrintStatusCallback));
+    process()->GetCloudPrintProxyInfo(NewCallback(
+        this, &ServiceProcessControlBrowserTest::CloudPrintInfoCallback));
     ui_test_utils::RunMessageLoop();
   }
 
-  void CloudPrintStatusCallback(
-      bool enabled, std::string email) {
+  void CloudPrintInfoCallback(
+      const cloud_print::CloudPrintProxyInfo& proxy_info) {
     MessageLoop::current()->Quit();
   }
 

@@ -15,6 +15,10 @@
 
 class ServiceProcessPrefs;
 
+namespace cloud_print {
+struct CloudPrintProxyInfo;
+}  // namespace cloud_print
+
 // CloudPrintProxy is the layer between the service process UI thread
 // and the cloud print proxy backend.
 class CloudPrintProxy : public CloudPrintProxyFrontend,
@@ -36,9 +40,8 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   // Enables/disables cloud printing for the user
   void EnableForUser(const std::string& lsid);
   void DisableForUser();
-  // Returns the enabled stata of the proxy. If enabled, the email address used
-  // for authentication is also returned in the optional |email| argument.
-  bool IsEnabled(std::string* email) const;
+  // Returns the proxy info.
+  void GetProxyInfo(cloud_print::CloudPrintProxyInfo* info);
 
   const std::string& user_email() const {
     return user_email_;

@@ -101,12 +101,10 @@ bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(ServiceIPCServer, msg)
     IPC_MESSAGE_HANDLER(ServiceMsg_EnableCloudPrintProxy,
                         OnEnableCloudPrintProxy)
-    IPC_MESSAGE_HANDLER(ServiceMsg_EnableCloudPrintProxyWithTokens,
-                        OnEnableCloudPrintProxyWithTokens)
     IPC_MESSAGE_HANDLER(ServiceMsg_DisableCloudPrintProxy,
                         OnDisableCloudPrintProxy)
-    IPC_MESSAGE_HANDLER(ServiceMsg_IsCloudPrintProxyEnabled,
-                        OnIsCloudPrintProxyEnabled)
+    IPC_MESSAGE_HANDLER(ServiceMsg_GetCloudPrintProxyInfo,
+                        OnGetCloudPrintProxyInfo)
     IPC_MESSAGE_HANDLER(ServiceMsg_Shutdown, OnShutdown);
     IPC_MESSAGE_HANDLER(ServiceMsg_UpdateAvailable, OnUpdateAvailable);
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -118,17 +116,10 @@ void ServiceIPCServer::OnEnableCloudPrintProxy(const std::string& lsid) {
   g_service_process->GetCloudPrintProxy()->EnableForUser(lsid);
 }
 
-void ServiceIPCServer::OnEnableCloudPrintProxyWithTokens(
-    const std::string& cloud_print_token, const std::string& talk_token) {
-  // TODO(sanjeevr): Implement this.
-  NOTIMPLEMENTED();
-}
-
-void ServiceIPCServer::OnIsCloudPrintProxyEnabled() {
-  std::string email;
-  bool is_enabled = g_service_process->GetCloudPrintProxy()->IsEnabled(&email);
-  channel_->Send(new ServiceHostMsg_CloudPrintProxy_IsEnabled(is_enabled,
-                                                              email));
+void ServiceIPCServer::OnGetCloudPrintProxyInfo() {
+  cloud_print::CloudPrintProxyInfo info;
+  g_service_process->GetCloudPrintProxy()->GetProxyInfo(&info);
+  channel_->Send(new ServiceHostMsg_CloudPrintProxy_Info(info));
 }
 
 void ServiceIPCServer::OnDisableCloudPrintProxy() {

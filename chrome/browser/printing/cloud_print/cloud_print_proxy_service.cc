@@ -18,6 +18,7 @@
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/cloud_print/cloud_print_proxy_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
 #include "content/browser/browser_thread.h"
@@ -146,10 +147,10 @@ void CloudPrintProxyService::RefreshCloudPrintProxyStatus() {
   ServiceProcessControl* process_control =
       ServiceProcessControlManager::GetInstance()->GetProcessControl(profile_);
   DCHECK(process_control->is_connected());
-  Callback2<bool, std::string>::Type* callback =
-       NewCallback(this, &CloudPrintProxyService::StatusCallback);
-  // GetCloudPrintProxyStatus takes ownership of callback.
-  process_control->GetCloudPrintProxyStatus(callback);
+  ServiceProcessControl::CloudPrintProxyInfoHandler* callback =
+       NewCallback(this, &CloudPrintProxyService::ProxyInfoCallback);
+  // GetCloudPrintProxyInfo takes ownership of callback.
+  process_control->GetCloudPrintProxyInfo(callback);
 }
 
 void CloudPrintProxyService::EnableCloudPrintProxy(const std::string& lsid,
@@ -171,9 +172,11 @@ void CloudPrintProxyService::DisableCloudPrintProxy() {
   profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, std::string());
 }
 
-void CloudPrintProxyService::StatusCallback(bool enabled, std::string email) {
-  profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail,
-                                  enabled ? email : std::string());
+void CloudPrintProxyService::ProxyInfoCallback(
+    const cloud_print::CloudPrintProxyInfo& proxy_info) {
+  profile_->GetPrefs()->SetString(
+      prefs::kCloudPrintEmail,
+      proxy_info.enabled ? proxy_info.email : std::string());
 }
 
 bool CloudPrintProxyService::InvokeServiceTask(Task* task) {

@@ -5,10 +5,17 @@
 // Multiply-included message file, no traditional include guard.
 #include <string>
 
+#include "chrome/common/cloud_print/cloud_print_proxy_info.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START ServiceMsgStart
+
+IPC_STRUCT_TRAITS_BEGIN(cloud_print::CloudPrintProxyInfo)
+  IPC_STRUCT_TRAITS_MEMBER(enabled)
+  IPC_STRUCT_TRAITS_MEMBER(email)
+  IPC_STRUCT_TRAITS_MEMBER(proxy_id)
+IPC_STRUCT_TRAITS_END()
 
 //-----------------------------------------------------------------------------
 // Service process messages:
@@ -17,17 +24,13 @@
 // of the account to be used.
 IPC_MESSAGE_CONTROL1(ServiceMsg_EnableCloudPrintProxy,
                      std::string /* lsid */)
-// Tell the service process to enable the cloud proxy passing in specific
-// tokens to be used.
-IPC_MESSAGE_CONTROL2(ServiceMsg_EnableCloudPrintProxyWithTokens,
-                     std::string, /* token for cloudprint service */
-                     std::string  /* token for Google Talk service */)
+
 // Tell the service process to disable the cloud proxy.
 IPC_MESSAGE_CONTROL0(ServiceMsg_DisableCloudPrintProxy)
 
-// Requests a message back on whether the cloud print proxy is
-// enabled.
-IPC_MESSAGE_CONTROL0(ServiceMsg_IsCloudPrintProxyEnabled)
+// Requests a message back on the current status of the cloud print proxy
+// (whether it is enabled, the email address and the proxy id).
+IPC_MESSAGE_CONTROL0(ServiceMsg_GetCloudPrintProxyInfo)
 
 // Tell the service process to shutdown.
 IPC_MESSAGE_CONTROL0(ServiceMsg_Shutdown)
@@ -41,7 +44,6 @@ IPC_MESSAGE_CONTROL0(ServiceMsg_UpdateAvailable)
 // Sent when the cloud print proxy has an authentication error.
 IPC_MESSAGE_CONTROL0(ServiceHostMsg_CloudPrintProxy_AuthError)
 
-// Sent as a response to a request for enablement status.
-IPC_MESSAGE_CONTROL2(ServiceHostMsg_CloudPrintProxy_IsEnabled,
-                     bool,       /* Is the proxy enabled? */
-                     std::string /* Email address of account */)
+// Sent as a response to a request for cloud print proxy info
+IPC_MESSAGE_CONTROL1(ServiceHostMsg_CloudPrintProxy_Info,
+                     cloud_print::CloudPrintProxyInfo /* proxy info */)

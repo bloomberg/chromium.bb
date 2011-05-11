@@ -23,6 +23,10 @@
 class Profile;
 class CommandLine;
 
+namespace cloud_print {
+struct CloudPrintProxyInfo;
+}  // namespace cloud_print
+
 // A ServiceProcessControl works as a portal between the service process and
 // the browser process.
 //
@@ -39,6 +43,8 @@ class ServiceProcessControl : public IPC::Channel::Sender,
  public:
   typedef IDMap<ServiceProcessControl>::iterator iterator;
   typedef std::queue<IPC::Message> MessageQueue;
+  typedef Callback1<const cloud_print::CloudPrintProxyInfo&>::Type
+      CloudPrintProxyInfoHandler;
 
   // Construct a ServiceProcessControl with |profile|..
   explicit ServiceProcessControl(Profile* profile);
@@ -78,17 +84,18 @@ class ServiceProcessControl : public IPC::Channel::Sender,
                        const NotificationDetails& details);
 
   // Message handlers
-  void OnCloudPrintProxyIsEnabled(bool enabled, std::string email);
+  void OnCloudPrintProxyInfo(
+      const cloud_print::CloudPrintProxyInfo& proxy_info);
 
   // Send a shutdown message to the service process. IPC channel will be
   // destroyed after calling this method.
   // Return true if the message was sent.
   bool Shutdown();
 
-  // Send request for cloud print proxy status and the registered
-  // email address. The callback gets the information when received.
-  bool GetCloudPrintProxyStatus(
-      Callback2<bool, std::string>::Type* cloud_print_status_callback);
+  // Send request for cloud print proxy info (enabled state, email, proxy id).
+  // The callback gets the information when received.
+  bool GetCloudPrintProxyInfo(
+      CloudPrintProxyInfoHandler* cloud_print_status_callback);
 
  private:
   // This class is responsible for launching the service process on the
@@ -152,7 +159,7 @@ class ServiceProcessControl : public IPC::Channel::Sender,
 
   // Callback that gets invoked when a status message is received from
   // the cloud print proxy.
-  scoped_ptr<Callback2<bool, std::string>::Type> cloud_print_status_callback_;
+  scoped_ptr<CloudPrintProxyInfoHandler> cloud_print_info_callback_;
 
   NotificationRegistrar registrar_;
 };
