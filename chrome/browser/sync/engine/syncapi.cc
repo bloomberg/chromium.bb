@@ -1996,6 +1996,14 @@ void SyncManager::SyncInternal::SetUsingExplicitPassphrasePrefForMigration(
 
 void SyncManager::SyncInternal::SetPassphrase(
     const std::string& passphrase, bool is_explicit) {
+  // We do not accept empty passphrases.
+  if (passphrase.empty()) {
+    VLOG(1) << "Rejecting empty passphrase.";
+    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+        OnPassphraseRequired(sync_api::REASON_SET_PASSPHRASE_FAILED));
+    return;
+  }
+
   // All accesses to the cryptographer are protected by a transaction.
   WriteTransaction trans(GetUserShare());
   Cryptographer* cryptographer = trans.GetCryptographer();
