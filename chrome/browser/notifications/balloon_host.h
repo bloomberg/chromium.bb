@@ -44,7 +44,7 @@ class BalloonHost : public RenderViewHostDelegate,
   // ExtensionFunctionDispatcher::Delegate overrides.
   virtual Browser* GetBrowser();
   virtual gfx::NativeView GetNativeViewOfHost();
-  virtual TabContents* GetAssociatedTabContents() const;
+  virtual TabContents* associated_tab_contents() const;
 
   RenderViewHost* render_view_host() const { return render_view_host_; }
 
@@ -137,9 +137,6 @@ class BalloonHost : public RenderViewHostDelegate,
   // RenderViewHostDelegate
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // Message handlers
-  void OnRequest(const ExtensionHostMsg_Request_Params& params);
-
   // Called to send an event that the balloon has been disconnected from
   // a renderer (if should_notify_on_disconnect_ is true).
   void NotifyDisconnect();
@@ -161,12 +158,14 @@ class BalloonHost : public RenderViewHostDelegate,
   // Common implementations of some RenderViewHostDelegate::View methods.
   RenderViewHostDelegateViewHelper delegate_view_helper_;
 
+  // Handles requests to extension APIs. Will only be non-NULL if we are
+  // rendering a page from an extension.
+  scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
+
   // A flag to enable Web UI.
   bool enable_web_ui_;
 
   NotificationRegistrar registrar_;
-
-  ExtensionFunctionDispatcher extension_function_dispatcher_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_BALLOON_HOST_H_

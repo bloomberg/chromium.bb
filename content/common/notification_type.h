@@ -454,10 +454,6 @@ class NotificationType {
     // Used only in testing.
     RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
 
-    // Sent from RenderViewHost constructor. The source is the RenderViewHost,
-    // the details unused.
-    RENDER_VIEW_HOST_CREATED,
-
     // Sent from ~RenderViewHost. The source is the RenderViewHost, the details
     // unused.
     RENDER_VIEW_HOST_DELETED,
@@ -863,6 +859,18 @@ class NotificationType {
     // Sent when an extension has updated its user scripts. The details are an
     // Extension, and the source is a Profile.
     EXTENSION_USER_SCRIPTS_UPDATED,
+
+    // Sent after a new ExtensionFunctionDispatcher is created. The details are
+    // an ExtensionFunctionDispatcher* and the source is a Profile*. This is
+    // similar in timing to EXTENSION_HOST_CREATED, but also fires when an
+    // extension view which is hosted in TabContents* is created.
+    EXTENSION_FUNCTION_DISPATCHER_CREATED,
+
+    // Sent before an ExtensionHost is destroyed. The details are
+    // an ExtensionFunctionDispatcher* and the source is a Profile*. This is
+    // similar in timing to EXTENSION_HOST_DESTROYED, but also fires when an
+    // extension view which is hosted in TabContents* is destroyed.
+    EXTENSION_FUNCTION_DISPATCHER_DESTROYED,
 
     // Sent after a new ExtensionHost is created. The details are
     // an ExtensionHost* and the source is an ExtensionProcessManager*.
