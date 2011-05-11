@@ -493,6 +493,7 @@
         'controls/single_split_view_unittest.cc',
         'controls/tabbed_pane/tabbed_pane_unittest.cc',
         'controls/table/table_view_unittest.cc',
+        'controls/combobox/native_combobox_views_unittest.cc',
         'controls/textfield/native_textfield_views_unittest.cc',
         'controls/textfield/textfield_views_model_unittest.cc',
         'events/event_unittest.cc',

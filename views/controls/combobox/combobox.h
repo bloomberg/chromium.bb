@@ -10,6 +10,11 @@
 
 #include "views/view.h"
 
+#ifdef UNIT_TEST
+#include "ui/gfx/native_widget_types.h"
+#include "views/controls/combobox/native_combobox_wrapper.h"
+#endif
+
 namespace ui {
 class ComboboxModel;
 }
@@ -60,6 +65,15 @@ class Combobox : public View {
 
   // Set the accessible name of the combo box.
   void SetAccessibleName(const string16& name);
+
+#ifdef UNIT_TEST
+  gfx::NativeView GetTestingHandle() const {
+    return native_wrapper_ ? native_wrapper_->GetTestingHandle() : NULL;
+  }
+  NativeComboboxWrapper* native_wrapper() const {
+    return native_wrapper_;
+  }
+#endif
 
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
