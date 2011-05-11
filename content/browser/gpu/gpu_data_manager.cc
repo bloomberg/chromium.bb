@@ -98,7 +98,15 @@ GpuFeatureFlags GpuDataManager::GetGpuFeatureFlags() {
 }
 
 bool GpuDataManager::GpuAccessAllowed() {
-  return gpu_feature_flags_.flags() == 0;
+  uint32 flags = gpu_feature_flags_.flags();
+
+  // This will in effect block access to all GPU features if any of them
+  // is blacklisted.
+  // TODO(vangelis): Restructure the code to make it possible to selectively
+  // blaclist gpu features.
+  return !(flags & GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas ||
+           flags & GpuFeatureFlags::kGpuFeatureAcceleratedCompositing ||
+           flags & GpuFeatureFlags::kGpuFeatureWebgl);
 }
 
 void GpuDataManager::AddGpuInfoUpdateCallback(Callback0::Type* callback) {
