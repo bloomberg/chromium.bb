@@ -631,6 +631,15 @@ void ProfileSyncService::OnPassphraseRequired(
 
   passphrase_required_reason_ = reason;
 
+  // First try supplying gaia password as the passphrase.
+  if (!gaia_password_.empty()) {
+    SetPassphrase(gaia_password_, false, true);
+    gaia_password_ = std::string();
+    return;
+  }
+
+  // If the above failed then try the custom passphrase the user might have
+  // entered in setup.
   if (!cached_passphrase_.value.empty()) {
     SetPassphrase(cached_passphrase_.value,
                   cached_passphrase_.is_explicit,
@@ -1182,9 +1191,13 @@ void ProfileSyncService::Observe(NotificationType type,
         std::string message = StringPrintf("Sync Configuration failed with %d",
                                             result);
         OnUnrecoverableError(*(result_with_location->location), message);
+
+        gaia_password_ = std::string();
+        cached_passphrase_ = CachedPassphrase();
         return;
       }
 
+      // If the user had entered a custom passphrase use it now.
       if (!cached_passphrase_.value.empty()) {
         // Don't hold on to the passphrase in raw form longer than needed.
         SetPassphrase(cached_passphrase_.value,
@@ -1229,7 +1242,7 @@ void ProfileSyncService::Observe(NotificationType type,
       // actually change), or the user has an explicit passphrase set so this
       // becomes a no-op.
       tried_implicit_gaia_remove_when_bug_62103_fixed_ = true;
-      SetPassphrase(successful->password, false, true);
+      gaia_password_ = successful->password;
       break;
     }
     case NotificationType::GOOGLE_SIGNIN_FAILED: {

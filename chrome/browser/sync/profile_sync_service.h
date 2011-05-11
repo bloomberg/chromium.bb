@@ -625,6 +625,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   };
   CachedPassphrase cached_passphrase_;
 
+  // TODO(lipalani): Bug 82221 unify this with the CachedPassphrase struct.
+  std::string gaia_password_;
+
   // TODO(tim): Remove this once new 'explicit passphrase' code flushes through
   // dev channel. See bug 62103.
   // To "migrate" early adopters of password sync on dev channel to the new

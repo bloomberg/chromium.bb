@@ -303,8 +303,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows));
 }
 
+// TODO(lipalani): Bug 82246. Fix the test case to wait for sync completion
+// before checking the count of conflicting items.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       BothChangeWithEncryptionAndPassphrase) {
+                       FLAKY_BothChangeWithEncryptionAndPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
