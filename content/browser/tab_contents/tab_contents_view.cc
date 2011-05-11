@@ -50,11 +50,6 @@ void TabContentsView::CreateNewWindow(
 
     if (tab_contents_->delegate())
       tab_contents_->delegate()->TabContentsCreated(new_contents);
-  } else {
-    NotificationService::current()->Notify(
-        NotificationType::CREATING_NEW_WINDOW_CANCELLED,
-        Source<TabContents>(tab_contents_),
-        Details<const ViewHostMsg_CreateWindow_Params>(&params));
   }
 }
 
