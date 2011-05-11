@@ -73,30 +73,34 @@ def Main():
   # The downside is that SCons will need to understand how --dst gets modified.
   dst = os.path.join(options.dst, '%s_%s' % (options.os, options.arch))
 
-  # Not the complete URL, but as close as we can get without hitting the network
   uid = " ".join([options.base_url, options.os, options.arch, options.revision])
 
   if options.force or not download_utils.SourceIsCurrent(dst, uid):
-    # Requires hitting the network to read the index file.
-    index = chromebinaries.GetIndex(None, None, False,
-                                    base_url=options.base_url)
-
 
     # Create a temporary working directory.
     tempdir = tempfile.mkdtemp(prefix='nacl_chrome_download_')
     try:
-      chrome_url = chromebinaries.GetChromeURL(index,
-                                               options.base_url,
+      chrome_url = chromebinaries.GetChromeURL(options.base_url,
                                                options.os,
                                                options.arch,
                                                options.revision)
       # Everything inside the zip file will be inside this directory.
       prefix = os.path.splitext(os.path.split(chrome_url)[1])[0] + '/'
-      sync_zip.SyncZip(chrome_url, tempdir, remove_prefix=prefix)
+
+      try:
+        sync_zip.SyncZip(chrome_url, tempdir, remove_prefix=prefix)
+      except Exception:
+        print
+        print '*'*78
+        print ('A Chromium binary cannot be found for revision %s - run '
+               'build/find_chrome_revisions.py to find a better revision'
+               % str(options.revision))
+        print '*'*78
+        print
+        raise
 
       # Copy over files necessary to run pyauto.
       pyautopy_url, pyautolib_url = chromebinaries.GetPyAutoURLs(
-          index,
           options.base_url,
           options.os,
           options.arch,

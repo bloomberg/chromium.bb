@@ -7,46 +7,39 @@
 """
 
 import os.path
+import re
 import urllib
 
-# /continuous is "greener" than /snapshots, but contains fewer files.
-BASE_URL = 'http://build.chromium.org/f/chromium/continuous'
+BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-continuous'
+
+directory_pattern = re.compile('<Prefix>([\w\d]+/[\d]+)/?</Prefix>', re.I)
 
 # (os, arch) -> (base_directory, archive_name)
 # Used from constructing the full URL for a snapshot
 SNAPSHOT_MAP = {
-           ('windows', 'x86-32'): ('win',
+           ('windows', 'x86-32'): ('Win',
                                    'chrome-win32.zip',
                                    'chrome-win32.test/pyautolib.py',
                                    'chrome-win32.test/_pyautolib.pyd'),
-           ('mac', 'x86-32'): ('mac',
+           ('mac', 'x86-32'): ('Mac',
                                'chrome-mac.zip',
                                'chrome-mac.test/pyautolib.py',
                                'chrome-mac.test/_pyautolib.so'),
-           ('linux', 'x86-32'): ('linux',
+           ('linux', 'x86-32'): ('Linux',
                                  'chrome-linux.zip',
                                  'chrome-linux.test/pyautolib.py',
                                  'chrome-linux.test/lib.target/_pyautolib.so'),
-           ('linux', 'x86-64'): ('linux64',
+           ('linux', 'x86-64'): ('Linux_x64',
                                  'chrome-linux.zip',
                                  'chrome-linux.test/pyautolib.py',
                                  'chrome-linux.test/lib.target/_pyautolib.so'),
            }
 
 
-# Download the index file.  An example of the format is as follows:
-# linux/2010-09-14/59481
-# linux/2010-09-11/59193
-# linux/2010-03-18/42078
-# linux/2010-06-05/49017
-# linux/2009-12-27/35295
-# NOTE the date cannot be inferred from the revision number. This in turn means
-# that the URL cannot be determined without checking the index.
-# NOTE The entries are not sorted.
-def GetIndexData(verbose, base_url=None):
+def GetIndexData(verbose, platform, base_url=None):
   if base_url is None:
     base_url = BASE_URL
-  path = base_url + '/all_builds.txt'
+  path = '%s/?delimiter=/&prefix=%s/' % (base_url, platform)
   if verbose:
     print 'Getting', path
   index = urllib.urlopen(path)
@@ -57,27 +50,31 @@ def GetIndexData(verbose, base_url=None):
 # two-level map: platform -> revision -> directory.
 def ParseIndex(data, min_rev, max_rev):
   directories = {}
-  for directory in data.split():
-    platform, date, rev = directory.split('/')
-    rev = int(rev)
-    pdict = directories.setdefault(platform, {})
-    # NOTE the filter does not prevent pdict from being created.
-    # This ensures that if a platform exists, it will at least have an empty
-    # dictionary.  If an existing platform does not have an empty dictionary
-    # then the FindCommon function will effectively ignore that platform and
-    # find revisions in common for platforms that have at least one revision,
-    # which is incorrect.
-    if ((min_rev is None or rev >= min_rev) and
-        (max_rev is None or rev <= max_rev)):
-      pdict[rev] = directory
-  return directories
+  for page in data.itervalues():
+    for directory in directory_pattern.findall(page):
+      platform, rev = directory.split('/')
+      rev = int(rev)
+      pdict = directories.setdefault(platform, {})
+      # NOTE the filter does not prevent pdict from being created.
+      # This ensures that if a platform exists, it will at least have an empty
+      # dictionary.  If an existing platform does not have an empty dictionary
+      # then the FindCommon function will effectively ignore that platform and
+      # find revisions in common for platforms that have at least one revision,
+      # which is incorrect.
+      if ((min_rev is None or rev >= min_rev) and
+          (max_rev is None or rev <= max_rev)):
+        pdict[rev] = directory
+    return directories
 
 
 # Unfortunately, it is necessary to download the index file to map rev -> url.
 # This is because the continuous builder sticks revisions in directories based
 # on the day they were built, which is impossible to infer from the revision.
 def GetIndex(min_rev, max_rev, verbose, base_url=None):
-  data = GetIndexData(verbose, base_url=base_url)
+  data = {}
+  for _, v in SNAPSHOT_MAP.iteritems():
+    platform = v[0]
+    data[platform] = GetIndexData(verbose, platform, base_url=base_url)
   return ParseIndex(data, min_rev, max_rev)
 
 
@@ -99,38 +96,29 @@ def GetCommonRevisions(min_rev, max_rev, verbose, base_url=None):
   return FindCommon(directories)
 
 
+def GetBaseDirectory(base_url, os, arch, revision):
+  key = (os, arch)
+  if key not in SNAPSHOT_MAP:
+    raise Exception('%s/%s is not supported.  Update SNAPSHOT_MAP if this '
+                    'binary exists.' % key)
+  base_dir = SNAPSHOT_MAP[key][0]
+  return '/'.join([base_url, base_dir, str(revision)])
+
+
 # Construct the URL for a binary, given platform and revision.
-def GetChromeURL(index, base_url, os, arch, revision):
+def GetChromeURL(base_url, os, arch, revision):
+  directory = GetBaseDirectory(base_url, os, arch, revision)
   key = (os, arch)
-  if key not in SNAPSHOT_MAP:
-    raise Exception('%s/%s is not supported.  Update SNAPSHOT_MAP if this '
-                    'binary exists.' % key)
-  base_dir, archive_name, _, _ = SNAPSHOT_MAP[key]
-  revision = int(revision)
-
-  if revision not in index[base_dir]:
-    raise Exception('A Chromium binary cannot be found for %s at revision %d - '
-                    'run find_chrome_revisions.py to find a better revision'
-                    % (base_dir, revision))
-  directory = index[base_dir][revision]
-  return '/'.join([base_url, directory, archive_name])
+  _, archive_name, _, _ = SNAPSHOT_MAP[key]
+  return '/'.join([directory, archive_name])
 
 
-def GetPyAutoURLs(index, base_url, os, arch, revision):
+def GetPyAutoURLs( base_url, os, arch, revision):
+  directory = GetBaseDirectory(base_url, os, arch, revision)
   key = (os, arch)
-  if key not in SNAPSHOT_MAP:
-    raise Exception('%s/%s is not supported.  Update SNAPSHOT_MAP if this '
-                    'binary exists.' % key)
-  base_dir, _, pyautopy_name, pyautolib_name = SNAPSHOT_MAP[key]
-  revision = int(revision)
-
-  if revision not in index[base_dir]:
-    raise Exception('A Chromium binary cannot be found for %s at revision %d - '
-                    'run find_chrome_revisions.py to find a better revision'
-                    % (base_dir, revision))
-  directory = index[base_dir][revision]
-  pyautopy_url = '/'.join([base_url, directory, pyautopy_name])
-  pyautolib_url = '/'.join([base_url, directory, pyautolib_name])
+  _, _, pyautopy_name, pyautolib_name = SNAPSHOT_MAP[key]
+  pyautopy_url = '/'.join([directory, pyautopy_name])
+  pyautolib_url = '/'.join([directory, pyautolib_name])
   return pyautopy_url, pyautolib_url
 
 
