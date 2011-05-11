@@ -845,10 +845,6 @@ def Incarnation_ld(argv):
   AssertParseComplete()
   PrepareCompile()
 
-  # TODO(pdox): Fix the optimization bug(s) that require this.
-  # See: http://code.google.com/p/nativeclient/issues/detail?id=1225
-  env.set('SKIP_OPT', '1')
-
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
   arch = GetArch()
@@ -976,6 +972,9 @@ def Incarnation_translate(argv):
   AssertParseComplete()
   PrepareCompile()
 
+  # NOTE: When we translate browser side we do not want to run an expensive
+  # bitcode optimization pass. The optimizations should have already run when
+  # the pexe was generated.
   env.set('SKIP_OPT', '1')
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
