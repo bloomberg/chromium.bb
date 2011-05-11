@@ -25,11 +25,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using chromeos::input_method::ModifierKey;
 
 namespace {
 
 struct ModifierToLabel {
-  const chromeos::input_method::ModifierKey modifier;
+  const ModifierKey modifier;
   const char* label;
 } kModifierToLabels[] = {
   {chromeos::input_method::kSearchKey, "search"},
@@ -39,7 +40,7 @@ struct ModifierToLabel {
   {chromeos::input_method::kCapsLockKey, "caps lock"},
 };
 
-std::string ModifierKeyToLabel(chromeos::input_method::ModifierKey modifier) {
+std::string ModifierKeyToLabel(ModifierKey modifier) {
   for (size_t i = 0; i < arraysize(kModifierToLabels); ++i) {
     if (modifier == kModifierToLabels[i].modifier) {
       return kModifierToLabels[i].label;
@@ -49,7 +50,6 @@ std::string ModifierKeyToLabel(chromeos::input_method::ModifierKey modifier) {
 }
 
 }  // namespace
-
 
 class KeyboardOverlayUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
@@ -326,17 +326,16 @@ void KeyboardOverlayHandler::GetKeyboardOverlayId(const ListValue* args) {
 }
 
 void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
-  using namespace chromeos::input_method;
   DCHECK(profile_);
-
   PrefService* pref_service = profile_->GetPrefs();
   typedef std::map<ModifierKey, ModifierKey> ModifierMap;
   ModifierMap modifier_map;
-  modifier_map[kSearchKey] = static_cast<ModifierKey>(
+  modifier_map[chromeos::input_method::kSearchKey] = static_cast<ModifierKey>(
       pref_service->GetInteger(prefs::kLanguageXkbRemapSearchKeyTo));
-  modifier_map[kLeftControlKey] = static_cast<ModifierKey>(
-      pref_service->GetInteger(prefs::kLanguageXkbRemapControlKeyTo));
-  modifier_map[kLeftAltKey] = static_cast<ModifierKey>(
+  modifier_map[chromeos::input_method::kLeftControlKey] =
+      static_cast<ModifierKey>(
+          pref_service->GetInteger(prefs::kLanguageXkbRemapControlKeyTo));
+  modifier_map[chromeos::input_method::kLeftAltKey] = static_cast<ModifierKey>(
       pref_service->GetInteger(prefs::kLanguageXkbRemapAltKeyTo));
 
   DictionaryValue dict;
