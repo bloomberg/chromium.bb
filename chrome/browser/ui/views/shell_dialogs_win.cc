@@ -143,9 +143,10 @@ std::wstring FormatFilterForExtensions(
         // based on the unknown extension type (i.e. if the extension is .qqq,
         // the we create a description "QQQ File (.qqq)").
         include_all_files = true;
-        desc = l10n_util::GetStringFUTF16(IDS_APP_SAVEAS_EXTENSION_FORMAT,
-                                          base::i18n::ToUpper(ext_name),
-                                          ext_name);
+        desc = l10n_util::GetStringFUTF16(
+            IDS_APP_SAVEAS_EXTENSION_FORMAT,
+            base::i18n::ToUpper(WideToUTF16(ext_name)),
+            ext_name);
       }
       if (desc.empty())
         desc = L"*." + ext_name;
