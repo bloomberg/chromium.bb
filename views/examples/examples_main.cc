@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/process_util.h"
-#include "base/scoped_ptr.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "views/controls/button/text_button.h"
@@ -32,7 +31,6 @@
 #include "views/examples/widget_example.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/layout/grid_layout.h"
-#include "views/views_delegate.h"
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 #include "views/test/test_views_delegate.h"
@@ -188,8 +186,6 @@ int main(int argc, char** argv) {
 #endif
   TestViewsDelegate delegate;
 
-  // The delegate needs to be set before any UI is created so that windows
-  // display the correct icon.
   CommandLine::Init(argc, argv);
 
   // We do not this header: chrome/common/chrome_switches.h
