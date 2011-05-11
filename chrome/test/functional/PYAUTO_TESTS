@@ -75,7 +75,7 @@
       'special_tabs',
       # Flaky: crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
-      # 'sync',  # browser crash - crbug.com/82247
+      'sync',
       'test_basic',
       'themes',
     ],
@@ -198,7 +198,7 @@
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       '-notifications.NotificationsTest.testPermissionInfobarAppears',
 
-      # sync tests cause segfault.  crosbug.com/15016
+      # sync tests were running into a secondary passphrase. crosbug.com/15016.
       '-sync',
     ],
   },
