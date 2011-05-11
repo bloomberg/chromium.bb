@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,35 +11,16 @@
 
 namespace remoting {
 
-namespace protocol {
-class ClientAuthToken;
-}  // namespace protocol
-
-class HostConfig;
-
-// AccessVerifier is used by to verify that the client has access to the host.
-// Currently it
-//
-//   1) Checks that host and client have the same bare JID.
-//   2) Verifies that the access token can be decoded.
-//
-// TODO(sergeyu): Remove the bare-JID check, and instead ask the directory to
-// perform user authorization.
+// AccessVerifier is used by ChromotingHost to verify that access to
+// the host. There are two implementations: SelfAccessVerifier is used
+// in the Me2Me scenario, SupportAccessVerifier is used for Me2Mom.
 class AccessVerifier {
  public:
-  AccessVerifier();
-  bool Init(HostConfig* config);
-  bool VerifyPermissions(const std::string& client_jid,
-                         const std::string& encoded_client_token);
+  AccessVerifier() { }
+  virtual ~AccessVerifier() { }
 
- private:
-  bool DecodeClientAuthToken(const std::string& encoded_client_token,
-                             protocol::ClientAuthToken* client_token);
-
-  std::string host_jid_prefix_;
-  bool initialized_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessVerifier);
+  virtual bool VerifyPermissions(const std::string& client_jid,
+                                 const std::string& encoded_client_token) = 0;
 };
 
 }  // namespace remoting

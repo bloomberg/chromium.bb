@@ -37,6 +37,7 @@ const char kVideoTag[] = "video";
 const char kResolutionTag[] = "initial-resolution";
 const char kAuthenticationTag[] = "authentication";
 const char kCertificateTag[] = "certificate";
+const char kAuthTokenTag[] = "auth-token";
 
 const char kTransportAttr[] = "transport";
 const char kVersionAttr[] = "version";
@@ -329,6 +330,7 @@ void JingleSessionManager::AcceptConnection(
   const ContentDescription* content_description =
       static_cast<const ContentDescription*>(content->description);
   jingle_session->set_candidate_config(content_description->config()->Clone());
+  jingle_session->set_initiator_token(content_description->auth_token());
 
   // Always reject connection if there is no callback.
   IncomingSessionResponse response = protocol::SessionManager::DECLINE;
@@ -429,30 +431,36 @@ bool JingleSessionManager::ParseContent(
 
     *config->mutable_initial_resolution() = resolution;
 
-    std::string auth_token;
-    // TODO(ajwong): Parse this out.
-
-    // Parse the certificate.
+    // Parse authentication information.
     scoped_refptr<net::X509Certificate> certificate;
+    std::string auth_token;
     child = element->FirstNamed(QName(kChromotingXmlNamespace,
                                       kAuthenticationTag));
     if (child) {
-      child = child->FirstNamed(QName(kChromotingXmlNamespace,
-                                      kCertificateTag));
-    }
-    if (child) {
-      std::string base64_cert = child->BodyText();
-      std::string der_cert;
-      if (!base::Base64Decode(base64_cert, &der_cert)) {
-        LOG(ERROR) << "Failed to decode certificate received from the peer.";
-        return false;
+      // Parse the certificate.
+      const XmlElement* cert_tag =
+          child->FirstNamed(QName(kChromotingXmlNamespace, kCertificateTag));
+      if (cert_tag) {
+        std::string base64_cert = cert_tag->BodyText();
+        std::string der_cert;
+        if (!base::Base64Decode(base64_cert, &der_cert)) {
+          LOG(ERROR) << "Failed to decode certificate received from the peer.";
+          return false;
+        }
+
+        certificate = net::X509Certificate::CreateFromBytes(der_cert.data(),
+                                                            der_cert.length());
+        if (!certificate) {
+          LOG(ERROR) << "Failed to create platform-specific certificate handle";
+          return false;
+        }
       }
 
-      certificate = net::X509Certificate::CreateFromBytes(der_cert.data(),
-                                                          der_cert.length());
-      if (!certificate) {
-        LOG(ERROR) << "Failed to create platform-specific certificate handle";
-        return false;
+      // Parse auth-token.
+      const XmlElement* auth_token_tag =
+          child->FirstNamed(QName(kChromotingXmlNamespace, kAuthTokenTag));
+      if (auth_token_tag) {
+        auth_token = auth_token_tag->BodyText();
       }
     }
 
@@ -473,7 +481,8 @@ bool JingleSessionManager::ParseContent(
 //     <initial-resolution width="800" height="600" />
 //     <authentication>
 //       <certificate>[BASE64 Encoded Certificate]</certificate>
-//     </authentication>" />
+//       <auth-token>...</auth-token> // Me2Mom only.
+//     </authentication>
 //   </description>
 //
 bool JingleSessionManager::WriteContent(
@@ -515,22 +524,35 @@ bool JingleSessionManager::WriteContent(
                               config->initial_resolution().height));
   root->AddElement(resolution_tag);
 
-  if (desc->certificate()) {
+  if (desc->certificate() || !desc->auth_token().empty()) {
     XmlElement* authentication_tag = new XmlElement(
         QName(kChromotingXmlNamespace, kAuthenticationTag));
-    XmlElement* certificate_tag = new XmlElement(
-        QName(kChromotingXmlNamespace, kCertificateTag));
 
-    std::string der_cert;
-    bool ret = desc->certificate()->GetDEREncoded(&der_cert);
-    DCHECK(ret) << "Cannot obtain DER encoded certificate";
+    if (desc->certificate()) {
+      XmlElement* certificate_tag = new XmlElement(
+          QName(kChromotingXmlNamespace, kCertificateTag));
 
-    std::string base64_cert;
-    ret = base::Base64Encode(der_cert, &base64_cert);
-    DCHECK(ret) << "Cannot perform base64 encode on certificate";
+      std::string der_cert;
+      if (!desc->certificate()->GetDEREncoded(&der_cert)) {
+        LOG(DFATAL) << "Cannot obtain DER encoded certificate";
+      }
 
-    certificate_tag->SetBodyText(base64_cert);
-    authentication_tag->AddElement(certificate_tag);
+      std::string base64_cert;
+      if (!base::Base64Encode(der_cert, &base64_cert)) {
+        LOG(DFATAL) << "Cannot perform base64 encode on certificate";
+      }
+
+      certificate_tag->SetBodyText(base64_cert);
+      authentication_tag->AddElement(certificate_tag);
+    }
+
+    if (!desc->auth_token().empty()) {
+      XmlElement* auth_token_tag = new XmlElement(
+          QName(kChromotingXmlNamespace, kAuthTokenTag));
+      auth_token_tag->SetBodyText(desc->auth_token());
+      authentication_tag->AddElement(auth_token_tag);
+    }
+
     root->AddElement(authentication_tag);
   }
 

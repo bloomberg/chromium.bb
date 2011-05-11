@@ -89,7 +89,10 @@ class ChromotingHostTest : public testing::Test {
     curtain_ = new MockCurtain();
     DesktopEnvironment* desktop =
         new DesktopEnvironment(capturer, event_executor_, curtain_);
-    host_ = ChromotingHost::Create(&context_, config_, desktop);
+    MockAccessVerifier* access_verifier = new MockAccessVerifier();
+
+    host_ = ChromotingHost::Create(&context_, config_,
+                                   desktop, access_verifier);
     credentials_.set_type(protocol::PASSWORD);
     credentials_.set_username("user");
     credentials_.set_credential("password");

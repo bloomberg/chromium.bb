@@ -9,7 +9,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/http_port_allocator.h"
 #include "remoting/jingle_glue/jingle_thread.h"
-#include "remoting/proto/auth.pb.h"
+#include "remoting/protocol/auth_token_utils.h"
 #include "remoting/protocol/client_message_dispatcher.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/host_control_sender.h"
@@ -56,15 +56,14 @@ MessageLoop* ConnectionToHost::message_loop() {
 void ConnectionToHost::Connect(const std::string& username,
                                const std::string& auth_token,
                                const std::string& host_jid,
-                               const std::string& nonce,
+                               const std::string& access_code,
                                HostEventCallback* event_callback,
                                ClientStub* client_stub,
                                VideoStub* video_stub) {
   event_callback_ = event_callback;
   client_stub_ = client_stub;
   video_stub_ = video_stub;
-
-  NOTIMPLEMENTED() << "Nonce ignored.";
+  access_code_ = access_code;
 
   // Initialize |jingle_client_|.
   signal_strategy_.reset(
@@ -84,15 +83,14 @@ void ConnectionToHost::Connect(const std::string& username,
 void ConnectionToHost::ConnectSandboxed(scoped_refptr<XmppProxy> xmpp_proxy,
                                         const std::string& your_jid,
                                         const std::string& host_jid,
-                                        const std::string& nonce,
+                                        const std::string& access_code,
                                         HostEventCallback* event_callback,
                                         ClientStub* client_stub,
                                         VideoStub* video_stub) {
   event_callback_ = event_callback;
   client_stub_ = client_stub;
   video_stub_ = video_stub;
-
-  NOTIMPLEMENTED() << "Nonce ignored.";
+  access_code_ = access_code;
 
   // Initialize |jingle_client_|.
   JavascriptSignalStrategy* strategy = new JavascriptSignalStrategy(your_jid);
@@ -127,31 +125,24 @@ void ConnectionToHost::Disconnect() {
 void ConnectionToHost::InitSession() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
+  std::string jid = jingle_client_->GetFullJid();
+
   // Initialize chromotocol |session_manager_|.
   JingleSessionManager* session_manager =
       new JingleSessionManager(thread_);
   // TODO(ajwong): Make this a command switch when we're more stable.
   session_manager->set_allow_local_ips(true);
   session_manager->Init(
-      jingle_client_->GetFullJid(),
-      jingle_client_->session_manager(),
+      jid, jingle_client_->session_manager(),
       NewCallback(this, &ConnectionToHost::OnNewSession),
       NULL, NULL);
   session_manager_ = session_manager;
 
   CandidateSessionConfig* candidate_config =
       CandidateSessionConfig::CreateDefault();
-  // TODO(sergeyu): Set resolution in the |candidate_config| to the desired
-  // resolution.
 
-  ClientAuthToken auth_token_proto;
-  auth_token_proto.set_host_full_jid(host_jid_);
-  auth_token_proto.set_client_full_jid(jingle_client_->GetFullJid());
-  // TODO(ajwong): Use real token.
-  auth_token_proto.set_client_oauth_token("");
-
-  // TODO(ajwong): We should encrypt this based on the host's public key.
-  std::string client_token = auth_token_proto.SerializeAsString();
+  std::string client_token =
+      protocol::GenerateSupportAuthToken(jid, access_code_);
 
   // Initialize |session_|.
   session_ = session_manager_->Connect(

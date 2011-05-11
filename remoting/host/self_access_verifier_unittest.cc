@@ -4,8 +4,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/task.h"
-#include "remoting/host/access_verifier.h"
 #include "remoting/host/in_memory_host_config.h"
+#include "remoting/host/self_access_verifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,7 +15,7 @@ namespace {
 const char kTestJid[] = "host@domain.com";
 }  // namespace
 
-class AccessVerifierTest : public testing::Test {
+class SelfAccessVerifierTest : public testing::Test {
  protected:
   virtual void SetUp() {
     config_ = new InMemoryHostConfig();
@@ -28,13 +28,13 @@ class AccessVerifierTest : public testing::Test {
   scoped_refptr<InMemoryHostConfig> config_;
 };
 
-TEST_F(AccessVerifierTest, InvalidConfig) {
-  AccessVerifier target;
+TEST_F(SelfAccessVerifierTest, InvalidConfig) {
+  SelfAccessVerifier target;
   EXPECT_FALSE(target.Init(config_));
 }
 
-TEST_F(AccessVerifierTest, VerifyPermissions) {
-  AccessVerifier target;
+TEST_F(SelfAccessVerifierTest, VerifyPermissions) {
+  SelfAccessVerifier target;
   InitConfig();
   ASSERT_TRUE(target.Init(config_));
   EXPECT_TRUE(target.VerifyPermissions("host@domain.com/123123", ""));

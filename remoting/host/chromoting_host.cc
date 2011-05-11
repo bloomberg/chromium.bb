@@ -33,28 +33,33 @@ namespace remoting {
 
 // static
 ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
-                                       MutableHostConfig* config) {
+                                       MutableHostConfig* config,
+                                       AccessVerifier* access_verifier) {
   Capturer* capturer = Capturer::Create();
   EventExecutor* event_executor =
       EventExecutor::Create(context->ui_message_loop(), capturer);
   Curtain* curtain = Curtain::Create();
   return Create(context, config,
-                new DesktopEnvironment(capturer, event_executor, curtain));
+                new DesktopEnvironment(capturer, event_executor, curtain),
+                access_verifier);
 }
 
 // static
 ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
                                        MutableHostConfig* config,
-                                       DesktopEnvironment* environment) {
-  return new ChromotingHost(context, config, environment);
+                                       DesktopEnvironment* environment,
+                                       AccessVerifier* access_verifier) {
+  return new ChromotingHost(context, config, environment, access_verifier);
 }
 
 ChromotingHost::ChromotingHost(ChromotingHostContext* context,
                                MutableHostConfig* config,
-                               DesktopEnvironment* environment)
+                               DesktopEnvironment* environment,
+                               AccessVerifier* access_verifier)
     : context_(context),
       config_(config),
       desktop_environment_(environment),
+      access_verifier_(access_verifier),
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
       is_curtained_(false) {
@@ -74,6 +79,7 @@ void ChromotingHost::Start(Task* shutdown_task) {
 
   DCHECK(!jingle_client_);
   DCHECK(shutdown_task);
+  DCHECK(access_verifier_.get());
 
   // Make sure this object is not started.
   {
@@ -93,9 +99,6 @@ void ChromotingHost::Start(Task* shutdown_task) {
     LOG(ERROR) << "XMPP credentials are not defined in the config.";
     return;
   }
-
-  if (!access_verifier_.Init(config_))
-    return;
 
   // Connect to the talk network with a JingleClient.
   signal_strategy_.reset(
@@ -265,8 +268,8 @@ void ChromotingHost::OnNewClientSession(
   }
 
   // Check that the client has access to the host.
-  if (!access_verifier_.VerifyPermissions(session->jid(),
-                                          session->initiator_token())) {
+  if (!access_verifier_->VerifyPermissions(session->jid(),
+                                           session->initiator_token())) {
     *response = protocol::SessionManager::DECLINE;
     return;
   }

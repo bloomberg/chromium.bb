@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_HOST_MOCK_OBJECTS_H_
 #define REMOTING_HOST_HOST_MOCK_OBJECTS_H_
 
+#include "remoting/host/access_verifier.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/curtain.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -95,6 +96,18 @@ class MockUserAuthenticator : public UserAuthenticator {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockUserAuthenticator);
+};
+
+class MockAccessVerifier : public AccessVerifier {
+ public:
+  MockAccessVerifier();
+  virtual ~MockAccessVerifier();
+
+  MOCK_METHOD2(VerifyPermissions, bool(const std::string& client_jid,
+                                       const std::string& token));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockAccessVerifier);
 };
 
 }  // namespace remoting

@@ -40,6 +40,8 @@
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/register_support_host_request.h"
+#include "remoting/host/self_access_verifier.h"
+#include "remoting/host/support_access_verifier.h"
 #include "remoting/proto/video.pb.h"
 
 #if defined(TOOLKIT_USES_GTK)
@@ -105,6 +107,24 @@ class SimpleHost {
       return 1;
     }
 
+    // Initialize AccessVerifier.
+    scoped_ptr<remoting::AccessVerifier> access_verifier;
+    if (me2mom_) {
+      scoped_ptr<remoting::SupportAccessVerifier> support_access_verifier(
+          new remoting::SupportAccessVerifier());
+      if (!support_access_verifier->Init())
+        return 1;
+      std::cout << "Access Code: "
+                << support_access_verifier->access_code() << std::endl;
+      access_verifier.reset(support_access_verifier.release());
+    } else {
+      scoped_ptr<remoting::SelfAccessVerifier> self_access_verifier(
+          new remoting::SelfAccessVerifier());
+      if (!self_access_verifier->Init(config))
+        return 1;
+      access_verifier.reset(self_access_verifier.release());
+    }
+
     // Construct a chromoting host.
     scoped_refptr<ChromotingHost> host;
     if (fake_) {
@@ -115,9 +135,11 @@ class SimpleHost {
       remoting::Curtain* curtain = remoting::Curtain::Create();
       host = ChromotingHost::Create(
           &context, config,
-          new DesktopEnvironment(capturer, event_executor, curtain));
+          new DesktopEnvironment(capturer, event_executor, curtain),
+          access_verifier.release());
     } else {
-      host = ChromotingHost::Create(&context, config);
+      host = ChromotingHost::Create(&context, config,
+                                    access_verifier.release());
     }
 
     if (protocol_config_.get()) {

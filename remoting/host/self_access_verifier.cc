@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/access_verifier.h"
+#include "remoting/host/self_access_verifier.h"
 
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -11,11 +11,13 @@
 
 namespace remoting {
 
-AccessVerifier::AccessVerifier()
+SelfAccessVerifier::SelfAccessVerifier()
     : initialized_(false) {
 }
 
-bool AccessVerifier::Init(HostConfig* config) {
+SelfAccessVerifier::~SelfAccessVerifier() { }
+
+bool SelfAccessVerifier::Init(HostConfig* config) {
   std::string host_jid;
 
   if (!config->GetString(kXmppLoginConfigPath, &host_jid) ||
@@ -30,7 +32,7 @@ bool AccessVerifier::Init(HostConfig* config) {
   return true;
 }
 
-bool AccessVerifier::VerifyPermissions(
+bool SelfAccessVerifier::VerifyPermissions(
     const std::string& client_jid,
     const std::string& encoded_access_token) {
   CHECK(initialized_);
@@ -60,7 +62,7 @@ bool AccessVerifier::VerifyPermissions(
   return true;
 }
 
-bool AccessVerifier::DecodeClientAuthToken(
+bool SelfAccessVerifier::DecodeClientAuthToken(
     const std::string& encoded_client_token,
     protocol::ClientAuthToken* client_token) {
   // TODO(ajwong): Implement this.
