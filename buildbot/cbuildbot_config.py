@@ -52,8 +52,7 @@ gs_path -- Google Storage path to offload files to.
            'default' - 'gs://chromeos-archive/' + bot_id
            value - Upload to explicit path
 
-build_type -- Upload prebuilts under the specified category. Can be any of
-              [preflight|full|chrome].
+build_type -- Type of builder [binary | full | chrome].
 test_mod -- Create a test mod image for archival.
 factory_install_mod -- Create a factory install image for archival.
 factory_test_mod -- Create a factory test image for archival.
@@ -68,12 +67,19 @@ git_url -- git repository URL for our manifests.
 
 manifest_version -- URL to git repo to store per-build manifest.
                     Usually None or
-                    MANIFEST_URL
+                    MANIFEST_VERSIONS_INT_URL
 """
 
 GS_PATH_DEFAULT = 'default'
-MANIFEST_URL='ssh://gerrit-int.chromium.org:29419/chromeos/manifest-versions'
 
+GERRIT_URL = 'ssh://gerrit.chromium.org:29418'
+GERRIT_INT_URL = 'ssh://gerrit-int.chromium.org:29419'
+
+MANIFEST_URL = 'http://git.chromium.org/chromiumos/manifest.git'
+MANIFEST_INT_URL = GERRIT_INT_URL + '/chromeos/manifest-internal'
+
+MANIFEST_VERSIONS_URL = GERRIT_URL + '/chromiumos/manifest-versions-external'
+MANIFEST_VERSIONS_INT_URL = GERRIT_INT_URL + '/chromeos/manifest-versions'
 
 default = {
   # 'board' No default value
@@ -85,6 +91,7 @@ default = {
   'useflags' : None,
   'chromeos_official' : False,
   'usepkg' : True,
+
   'chroot_replace' : False,
 
   'uprev' : False,
@@ -102,7 +109,7 @@ default = {
 
   'gs_path': GS_PATH_DEFAULT,
 
-  'build_type' : False,
+  'build_type': 'binary',
   'archive_build_debug' : False,
 
   'test_mod' : False,
@@ -112,7 +119,7 @@ default = {
   'push_image' : False,
   'upload_symbols' : False,
 
-  'git_url' : 'http://git.chromium.org/chromiumos/manifest.git',
+  'git_url' : MANIFEST_URL,
   'manifest_version' : None,
 }
 
@@ -143,7 +150,7 @@ full = {
 }
 
 internal = {
-  'git_url' : 'ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal',
+  'git_url' : MANIFEST_INT_URL,
 }
 
 #
@@ -154,46 +161,13 @@ release = {
   # Typical matching cbuild command line
   # --autorev --official --officialversion --chromeos --with-pdf
   #   --bvt --clean --no-gstorage --ctest
-
-  'master' : False,
-  'uprev' : True,
-  'rev_overlays': 'both',
-
-  'useflags' : ['chrome_internal', 'chrome_pdf'],
-  'chromeos_official' : True,
-
-  'chroot_replace' : True,
-
-  'unittests' : True,
-  'quick_unit' : False,
-
-  'vm_tests' : True,
-  'quick_vm' : False,
-
   'chrome_tests' : True,
-
-  'usepkg' : False,
-  'chroot_replace' : True,
-
-  'build_type': 'full',
-  'archive_build_debug' : True,
-  'test_mod' : True,
-  'factory_install_mod' : True,
-  'factory_test_mod' : True,
-
-  'push_image' : True,
-  'upload_symbols' : True,
-
-  'gs_path' : None,
-
-  'archive_build_debug' : True,
-  'manifest_version' : MANIFEST_URL,
-
-# --official
-# --officialversion
+  'manifest_version' : MANIFEST_VERSIONS_INT_URL,
+  # --official
+  # --officialversion
 }
 
-internal_full = {
+official = {
 
   # Typical matching cbuild command line
   # master --official --chromeos --clean --upload-board-prebuilt
@@ -202,30 +176,13 @@ internal_full = {
   'useflags' : ['chrome_internal', 'chrome_pdf'],
   'chromeos_official' : True,
 
-  'usepkg' : False,
-  'chroot_replace' : True,
-
-  'unittests' : True,
-  'quick_unit' : False,
-
-  'vm_tests' : True,
   'quick_vm' : True, # TODO, turned off for testing
-
-  'build_type': 'full',
-  'test_mod' : True,
-  'factory_install_mod' : True,
-  'factory_test_mod' : True,
-
-  'git_url' : 'ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal',
 
   # Enable these two temporarily for Bot Testing
   'push_image' : True,
   'upload_symbols' : True,
 
   'gs_path' : None,
-
-  'archive_build_debug' : True,
-  'manifest_version' : MANIFEST_URL,
 
   # cbuild --official
 }
@@ -247,9 +204,9 @@ add_config('x86-generic-pre-flight-queue', [{
   'board' : 'x86-generic',
   'master' : True,
   'hostname' : 'chromeosbuild2',
+  'important': False,
 
   'uprev' : True,
-  'build_type': 'preflight',
   'rev_overlays': 'public',
   'push_overlays': 'public',
 }])
@@ -372,7 +329,7 @@ add_config('x86-mario-pre-flight-queue', [internal, {
 
 # cbuild --board=x86-mario  master --official --chromeos --clean
 #   --upload-board-prebuilt --ctest --unittests --bvt
-add_config('x86-mario-private-full', [internal_full, {
+add_config('x86-mario-private-full', [internal, full, official, {
   'board' : 'x86-mario',
 
   'master' : True,
@@ -383,7 +340,7 @@ add_config('x86-mario-private-full', [internal_full, {
 
 # cbuild --board=x86-zgb  master --official --chromeos --clean
 #   --upload-board-prebuilt --ctest --unittests --bvt
-add_config('x86-zgb-private-full', [internal_full, {
+add_config('x86-zgb-private-full', [internal, full, official, {
   'board' : 'x86-zgb',
 
   'master' : True,
@@ -394,7 +351,7 @@ add_config('x86-zgb-private-full', [internal_full, {
 
 # cbuild --board=x86-alex master --official --chromeos --clean
 #   --upload-board-prebuilt --unittests --bvt
-add_config('x86-alex-private-full', [internal_full, {
+add_config('x86-alex-private-full', [internal, full, official, {
   'board' : 'x86-alex',
 
   'master' : True,
@@ -405,7 +362,7 @@ add_config('x86-alex-private-full', [internal_full, {
 
 # cbuild --board=tegra2_seaboard master --official --chromeos --clean
 #   --upload-board-prebuilt
-add_config('arm-tegra2_seaboard-private-full', [internal_full, {
+add_config('arm-tegra2_seaboard-private-full', [internal, full, official, {
   'board' : 'arm-tegra2_seaboard',
 
   'master' : True,
@@ -416,7 +373,7 @@ add_config('arm-tegra2_seaboard-private-full', [internal_full, {
 
 # cbuild --board=tegra2_aebl  master --official --chromeos --clean
 #   --upload-board-prebuilt
-add_config('arm-tegra2_seaboard-private-full', [internal_full, {
+add_config('arm-tegra2_seaboard-private-full', [internal, full, official, {
   'board' : 'arm-tegra2_seaboard',
 
   'master' : True,
@@ -425,26 +382,29 @@ add_config('arm-tegra2_seaboard-private-full', [internal_full, {
   'push_overlays': 'private',
 }])
 
-add_config('x86-mario-release', [internal, release, {
+add_config('x86-mario-release', [internal, full, official, release, {
   'board' : 'x86-mario',
 }])
 
-add_config('x86-alex-release', [internal, release, {
+add_config('x86-alex-release', [internal, full, official, release, {
   'board' : 'x86-alex',
 }])
 
-add_config('x86-zgb-release', [internal, release, {
+add_config('x86-zgb-release', [internal, full, official, release, {
   'board' : 'x86-zgb',
 }])
 
-add_config('arm-tegra2_seaboard-release', [internal, release, arm, {
+add_config('arm-tegra2_seaboard-release', [
+    internal, full, official, release, arm, {
   'board' : 'tegra2_seaboard',
 }])
 
-add_config('arm-tegra2_aebl-release', [internal, release, arm, {
+add_config('arm-tegra2_aebl-release', [
+    internal, full, official, release, arm, {
   'board' : 'tegra2_aebl',
 }])
 
-add_config('arm-tegra2_kaen-release', [internal, release, arm, {
+add_config('arm-tegra2_kaen-release', [
+    internal, full, official, release, arm, {
   'board' : 'tegra2_kaen',
 }])

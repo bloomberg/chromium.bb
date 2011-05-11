@@ -140,7 +140,7 @@ class BuilderStage():
     self._options = options
     self._build_config = build_config
     self._name = self.name_stage_re.match(self.__class__.__name__).group(1)
-    self._build_type = None
+    self._prebuilt_type = None
     self._ExtractVariables()
     repo_dir = os.path.join(self._build_root, '.repo')
     if not self._options.clobber and os.path.isdir(repo_dir):
@@ -151,7 +151,7 @@ class BuilderStage():
     # TODO(sosa): Create more general method of passing around configuration.
     self._build_root = os.path.abspath(self._options.buildroot)
     if self._options.prebuilts and not self._options.debug:
-      self._build_type = self._build_config['build_type']
+      self._prebuilt_type = self._build_config['build_type']
 
   def _ExtractOverlays(self):
     """Extracts list of overlays into class."""
@@ -390,11 +390,10 @@ class BuildTargetStage(BuilderStage):
         build_autotest=(self._build_config['vm_tests'] and self._options.tests),
         extra_env=env)
 
-    # TODO(sosa):  Do this optimization in a better way.
-    if self._build_type == 'full':
+    if self._prebuilt_type == 'full':
       commands.UploadPrebuilts(
           self._build_root, self._build_config['board'],
-          self._build_config['rev_overlays'], [], self._build_type,
+          self._build_config['rev_overlays'], [], self._prebuilt_type,
           False)
 
     commands.BuildImage(self._build_root, extra_env=env)
@@ -467,11 +466,11 @@ class ArchiveStage(BuilderStage):
 class PushChangesStage(BuilderStage):
   """Pushes pfq and prebuilt url changes to git."""
   def _PerformStage(self):
-    if self._build_type in ('preflight', 'chrome'):
+    if self._prebuilt_type in ('binary', 'chrome'):
       commands.UploadPrebuilts(
           self._build_root, self._build_config['board'],
           self._build_config['rev_overlays'], [BuilderStage.new_binhost],
-          self._build_type, self._options.chrome_rev)
+          self._prebuilt_type, self._options.chrome_rev)
 
     commands.UprevPush(self._build_root, self._options.tracking_branch,
                        self._build_config['board'], BuilderStage.push_overlays,

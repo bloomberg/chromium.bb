@@ -96,11 +96,11 @@ class CBuildBotTest(mox.MoxTestBase):
     binhost = 'http://www.example.com'
     binhosts = [binhost, None]
     check = mox.And(mox.IsA(list), mox.In(binhost), mox.Not(mox.In(None)),
-                    mox.In('gs://chromeos-prebuilt'), mox.In('preflight'))
+                    mox.In('gs://chromeos-prebuilt'), mox.In('binary'))
     cros_lib.OldRunCommand(check, cwd=os.path.dirname(commands.__file__))
     self.mox.ReplayAll()
     commands.UploadPrebuilts(self._buildroot, self._test_board, 'public',
-                              binhosts, 'preflight', None)
+                              binhosts, 'binary', None)
     self.mox.VerifyAll()
 
   def testUploadPrivatePrebuilts(self):

@@ -400,7 +400,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
                     'both': Both the public and private overlays.
     binhosts: The URLs of the current binhosts. Binaries that are already
               present will not be uploaded twice. Empty URLs will be ignored.
-    category: Build type. Can be [preflight|full|chrome].
+    category: Build type. Can be [binary|full|chrome].
     chrome_rev: Chrome_rev of type [tot|latest_release|sticky_release].
   """
   cwd = os.path.dirname(__file__)
@@ -423,7 +423,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
     key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
     cmd.extend(['--sync-binhost-conf',
                  '--key', key.upper()])
-  elif category == 'preflight':
+  elif category == 'binary':
     cmd.extend(['--sync-binhost-conf',
                 '--key', _PREFLIGHT_BINHOST])
   else:

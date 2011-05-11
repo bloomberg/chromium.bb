@@ -643,7 +643,7 @@ class BuildTargetStageTest(AbstractStageTest):
     # Disable most paths by default and selectively enable in tests
 
     self.build_config['vm_tests'] = False
-    self.build_config['build_type'] = 'preflight'
+    self.build_config['build_type'] = 'binary'
     self.build_config['usepkg'] = False
 
     self.options.prebuilts = True
@@ -802,7 +802,7 @@ class PushChangesStageTest(AbstractStageTest):
 
   def testPreflightPush(self):
     """Test uploading of prebuilts for preflight build."""
-    self.build_config['build_type'] = 'preflight'
+    self.build_config['build_type'] = 'binary'
 
     commands.UploadPrebuilts(
         self.build_root, self.build_config['board'],
