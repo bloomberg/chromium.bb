@@ -249,11 +249,15 @@ void TouchBrowserFrameView::Observe(NotificationType type,
   } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {
     Browser* source_browser = Browser::GetBrowserForController(
         Source<NavigationController>(source).ptr(), NULL);
+
     // If the Browser for the keyboard has navigated, re-evaluate the visibility
     // of the keyboard.
+    TouchBrowserFrameView::VirtualKeyboardType keyboard_type = NONE;
+    views::View* view = GetFocusManager()->GetFocusedView();
+    if (view && view->GetClassName() == views::Textfield::kViewClassName)
+      keyboard_type = GENERIC;
     if (source_browser == browser)
-      UpdateKeyboardAndLayout(DecideKeyboardStateForView(
-          GetFocusManager()->GetFocusedView()) == GENERIC);
+      UpdateKeyboardAndLayout(keyboard_type == GENERIC);
   } else if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
     GetFocusedStateAccessor()->DeleteProperty(
         Source<TabContents>(source).ptr()->property_bag());
