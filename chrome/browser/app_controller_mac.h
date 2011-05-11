@@ -92,6 +92,8 @@ class Profile;
 // Clear the list of startup URLs.
 - (void)clearStartupUrls;
 
+- (BookmarkMenuBridge*)bookmarkMenuBridge;
+
 @end
 
 #endif

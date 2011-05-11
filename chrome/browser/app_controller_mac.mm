@@ -1170,6 +1170,10 @@ void RecordLastRunAppBundlePath() {
   startupUrls_.clear();
 }
 
+- (BookmarkMenuBridge*)bookmarkMenuBridge {
+  return bookmarkMenuBridge_.get();
+}
+
 @end  // @implementation AppController
 
 //---------------------------------------------------------------------------

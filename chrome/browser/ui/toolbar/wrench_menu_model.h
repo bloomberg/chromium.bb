@@ -69,6 +69,20 @@ class ToolsMenuModel : public ui::SimpleMenuModel {
   DISALLOW_COPY_AND_ASSIGN(ToolsMenuModel);
 };
 
+class BookmarkSubMenuModel : public ui::SimpleMenuModel {
+ public:
+  BookmarkSubMenuModel(ui::SimpleMenuModel::Delegate* delegate,
+                       Browser* browser);
+  virtual ~BookmarkSubMenuModel();
+
+ private:
+  void Build(Browser* browser);
+
+  scoped_ptr<EncodingMenuModel> encoding_menu_model_;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkSubMenuModel);
+};
+
 // A menu model that builds the contents of the wrench menu.
 class WrenchMenuModel : public ui::SimpleMenuModel,
                         public ui::SimpleMenuModel::Delegate,
@@ -140,6 +154,9 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
 
   // Tools menu.
   scoped_ptr<ToolsMenuModel> tools_menu_model_;
+
+  // Bookmark submenu.
+  scoped_ptr<BookmarkSubMenuModel> bookmark_sub_menu_model_;
 
   ui::AcceleratorProvider* provider_;  // weak
 

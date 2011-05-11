@@ -60,14 +60,20 @@ class BookmarkMenuBridge : public BookmarkModelObserver {
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node);
 
-  // Rebuilds the bookmark menu, if it has been marked invalid.
+  // Rebuilds the main bookmark menu, if it has been marked invalid.
   void UpdateMenu(NSMenu* bookmark_menu);
+
+  // Rebuilds a bookmark menu that's a submenu of another menu.
+  void UpdateSubMenu(NSMenu* bookmark_menu);
 
   // I wish I had a "friend @class" construct.
   BookmarkModel* GetBookmarkModel();
   Profile* GetProfile();
 
  protected:
+  // Rebuilds the bookmark content of supplied menu.
+  void UpdateMenuInternal(NSMenu* bookmark_menu, bool is_submenu);
+
   // Clear all bookmarks from the given bookmark menu.
   void ClearBookmarkMenu(NSMenu* menu);
 
@@ -76,14 +82,20 @@ class BookmarkMenuBridge : public BookmarkModelObserver {
 
   // Helper for adding the node as a submenu to the menu with the
   // given title.
+  // If |add_extra_items| is true, also adds extra menu items at bottom of
+  // menu, such as "Open All Bookmarks".
   void AddNodeAsSubmenu(NSMenu* menu,
                         const BookmarkNode* node,
-                        NSString* title);
+                        NSString* title,
+                        bool add_extra_items);
 
   // Helper for recursively adding items to our bookmark menu.
   // All children of |node| will be added to |menu|.
+  // If |add_extra_items| is true, also adds extra menu items at bottom of
+  // menu, such as "Open All Bookmarks".
   // TODO(jrg): add a counter to enforce maximum nodes added
-  void AddNodeToMenu(const BookmarkNode* node, NSMenu* menu);
+  void AddNodeToMenu(const BookmarkNode* node, NSMenu* menu,
+                     bool add_extra_items);
 
   // Helper for adding an item to our bookmark menu. An item which has a
   // localized title specified by |message_id| will be added to |menu|.

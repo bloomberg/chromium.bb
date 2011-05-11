@@ -45,8 +45,17 @@ void BookmarkMenuBridge::Loaded(BookmarkModel* model) {
 }
 
 void BookmarkMenuBridge::UpdateMenu(NSMenu* bookmark_menu) {
+  UpdateMenuInternal(bookmark_menu, false);
+}
+
+void BookmarkMenuBridge::UpdateSubMenu(NSMenu* bookmark_menu) {
+  UpdateMenuInternal(bookmark_menu, true);
+}
+
+void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
+                                            bool is_submenu) {
   DCHECK(bookmark_menu);
-  if (menuIsValid_)
+  if (menuIsValid_ && !is_submenu)
     return;
   BookmarkModel* model = GetBookmarkModel();
   if (!model || !model->IsLoaded())
@@ -65,7 +74,7 @@ void BookmarkMenuBridge::UpdateMenu(NSMenu* bookmark_menu) {
   CHECK(barNode);
   if (barNode->child_count()) {
     [bookmark_menu addItem:[NSMenuItem separatorItem]];
-    AddNodeToMenu(barNode, bookmark_menu);
+    AddNodeToMenu(barNode, bookmark_menu, !is_submenu);
   }
 
   // Create a submenu for "other bookmarks", and fill it in.
@@ -74,9 +83,12 @@ void BookmarkMenuBridge::UpdateMenu(NSMenu* bookmark_menu) {
   [bookmark_menu addItem:[NSMenuItem separatorItem]];
   AddNodeAsSubmenu(bookmark_menu,
                    model->other_node(),
-                   other_items_title);
+                   other_items_title,
+                   !is_submenu);
 
-  menuIsValid_ = true;
+  // The valid flag is just for state of the main menu.
+  if (!is_submenu)
+    menuIsValid_ = true;
 }
 
 void BookmarkMenuBridge::BookmarkModelBeingDeleted(BookmarkModel* model) {
@@ -172,7 +184,8 @@ void BookmarkMenuBridge::ClearBookmarkMenu(NSMenu* menu) {
 
 void BookmarkMenuBridge::AddNodeAsSubmenu(NSMenu* menu,
                                           const BookmarkNode* node,
-                                          NSString* title) {
+                                          NSString* title,
+                                          bool add_extra_items) {
   NSMenuItem* items = [[[NSMenuItem alloc]
                                initWithTitle:title
                                       action:nil
@@ -182,11 +195,12 @@ void BookmarkMenuBridge::AddNodeAsSubmenu(NSMenu* menu,
   NSMenu* other_submenu = [[[NSMenu alloc] initWithTitle:title]
                             autorelease];
   [menu setSubmenu:other_submenu forItem:items];
-  AddNodeToMenu(node, other_submenu);
+  AddNodeToMenu(node, other_submenu, add_extra_items);
 }
 
 // TODO(jrg): limit the number of bookmarks in the menubar?
-void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu) {
+void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu,
+                                       bool add_extra_items) {
   int child_count = node->child_count();
   if (!child_count) {
     NSString* empty_string = l10n_util::GetNSString(IDS_MENU_EMPTY_SUBMENU);
@@ -206,24 +220,26 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu) {
       [item setImage:folder_image_];
       NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
       [menu setSubmenu:submenu forItem:item];
-      AddNodeToMenu(child, submenu);  // recursive call
+      AddNodeToMenu(child, submenu, add_extra_items);  // recursive call
     } else {
       ConfigureMenuItem(child, item, false);
     }
   }
 
-  // Add menus for 'Open All Bookmarks'.
-  [menu addItem:[NSMenuItem separatorItem]];
-  bool enabled = child_count != 0;
-  AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL,
-                IDS_BOOMARK_BAR_OPEN_ALL,
-                node, menu, enabled);
-  AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
-                IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW,
-                node, menu, enabled);
-  AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
-                IDS_BOOMARK_BAR_OPEN_INCOGNITO,
-                node, menu, enabled);
+  if (add_extra_items) {
+    // Add menus for 'Open All Bookmarks'.
+    [menu addItem:[NSMenuItem separatorItem]];
+    bool enabled = child_count != 0;
+    AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL,
+                  IDS_BOOMARK_BAR_OPEN_ALL,
+                  node, menu, enabled);
+    AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
+                  IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW,
+                  node, menu, enabled);
+    AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
+                  IDS_BOOMARK_BAR_OPEN_INCOGNITO,
+                  node, menu, enabled);
+  }
 }
 
 void BookmarkMenuBridge::AddItemToMenu(int command_id,

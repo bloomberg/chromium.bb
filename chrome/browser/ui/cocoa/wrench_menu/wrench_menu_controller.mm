@@ -6,8 +6,10 @@
 
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
@@ -103,6 +105,18 @@ class ZoomLevelObserver : public NotificationObserver {
   [menu insertItem:customItem.get() atIndex:index];
 }
 
+- (NSMenu*)bookmarkSubMenu {
+  NSString* title = l10n_util::GetNSString(IDS_BOOKMARKS_MENU_MAC);
+  return [[[self menu] itemWithTitle:title] submenu];
+}
+
+- (void)updateBookmarkSubMenu {
+  BookmarkMenuBridge* bridge = [[NSApp delegate] bookmarkMenuBridge];
+  NSMenu* bookmarkMenu = [self bookmarkSubMenu];
+  if (bridge && bookmarkMenu)
+    bridge->UpdateSubMenu(bookmarkMenu);
+}
+
 - (void)menuWillOpen:(NSMenu*)menu {
   [super menuWillOpen:menu];
 
@@ -115,6 +129,8 @@ class ZoomLevelObserver : public NotificationObserver {
       [NSImage imageNamed:NSImageNameExitFullScreenTemplate] :
           [NSImage imageNamed:NSImageNameEnterFullScreenTemplate];
   [zoomFullScreen_ setImage:icon];
+
+  [self updateBookmarkSubMenu];
 }
 
 // Used to dispatch commands from the Wrench menu. The custom items within the

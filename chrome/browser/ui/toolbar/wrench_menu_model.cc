@@ -154,9 +154,10 @@ ToolsMenuModel::ToolsMenuModel(ui::SimpleMenuModel::Delegate* delegate,
 ToolsMenuModel::~ToolsMenuModel() {}
 
 void ToolsMenuModel::Build(Browser* browser) {
+#if !defined(OS_MACOSX)
   AddCheckItemWithStringId(IDC_SHOW_BOOKMARK_BAR, IDS_SHOW_BOOKMARK_BAR);
-
   AddSeparator();
+#endif
 
 #if !defined(OS_CHROMEOS)
 #if defined(OS_MACOSX)
@@ -194,6 +195,25 @@ void ToolsMenuModel::Build(Browser* browser) {
   AddCheckItemWithStringId(IDC_PROFILING_ENABLED, IDS_PROFILING_ENABLED);
 #endif
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// BookmarkSubMenuModel
+
+BookmarkSubMenuModel::BookmarkSubMenuModel(
+    ui::SimpleMenuModel::Delegate* delegate, Browser* browser)
+    : SimpleMenuModel(delegate) {
+  Build(browser);
+}
+
+BookmarkSubMenuModel::~BookmarkSubMenuModel() {}
+
+void BookmarkSubMenuModel::Build(Browser* browser) {
+  AddCheckItemWithStringId(IDC_SHOW_BOOKMARK_BAR, IDS_SHOW_BOOKMARK_BAR);
+  AddItemWithStringId(IDC_SHOW_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
+  AddItemWithStringId(IDC_IMPORT_SETTINGS, IDS_IMPORT_SETTINGS_TITLE);
+  AddSeparator();
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // WrenchMenuModel
@@ -441,7 +461,14 @@ void WrenchMenuModel::Build() {
                          tools_menu_model_.get());
 
   AddSeparator();
+
+#if defined(OS_MACOSX)
+  bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
+  AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_BOOKMARKS_MENU_MAC,
+                         bookmark_sub_menu_model_.get());
+#else
   AddItemWithStringId(IDC_SHOW_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
+#endif
   AddItemWithStringId(IDC_SHOW_HISTORY, IDS_SHOW_HISTORY);
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
   AddSeparator();

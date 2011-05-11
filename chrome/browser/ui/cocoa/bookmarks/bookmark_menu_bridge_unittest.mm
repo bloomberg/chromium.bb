@@ -58,7 +58,7 @@ class BookmarkMenuBridgeTest : public PlatformTest {
   void AddNodeToMenu(BookmarkMenuBridge* bridge,
                      const BookmarkNode* root,
                      NSMenu* menu) {
-    bridge->AddNodeToMenu(root, menu);
+    bridge->AddNodeToMenu(root, menu, true);
   }
 
   void AddItemToMenu(BookmarkMenuBridge* bridge,
