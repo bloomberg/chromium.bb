@@ -48,7 +48,7 @@ class LoginTest(pyauto.PyUITest):
   def testBadPassword(self):
     """Test that login fails when passed an invalid password."""
     credentials = self._ValidCredentials()
-    self.Login(credentials['username'], badpassword')
+    self.Login(credentials['username'], 'badpassword')
     login_info = self.GetLoginInfo()
     self.assertFalse(login_info['is_logged_in'],
                      msg='Login succeeded, with bad credentials.')
@@ -95,7 +95,7 @@ class LoginTest(pyauto.PyUITest):
     self.ShowCreateAccountUI()
     # The login hook does not wait for the first tab to load, so we wait here.
     self.assertTrue(
-      self.WaitUntil(self.GetActiveTabTitle(), expect_retval='Google Accounts'),
+      self.WaitUntil(self.GetActiveTabTitle, expect_retval='Google Accounts'),
         msg='Could not verify that the Google Accounts tab was opened.')
     login_info = self.GetLoginInfo()
     self.assertTrue(login_info['is_guest'], msg='Not logged in as guest.')
@@ -114,7 +114,7 @@ class LoginTest(pyauto.PyUITest):
 
   def testNoLoginForNonTransitionedDomainAccount(self):
     """Test that login is successful with valid credentials for a domain."""
-    credentials =
+    credentials = \
       self._ValidCredentials(account_type='test_domain_account_non_transistion')
     self.Login(credentials['username'], credentials['password'])
     login_info = self.GetLoginInfo()
@@ -125,7 +125,9 @@ class LoginTest(pyauto.PyUITest):
   def testCachedCredentials(self):
     """Test that we can login without connectivity if we have so before."""
     credentials = self._ValidCredentials()
-    self.Login(credentials['username'], credentials['password'])
+    username = credentials['username']
+    password = credentials['password']
+    self.Login(username, password)
     login_info = self.GetLoginInfo()
     self.assertTrue(login_info['is_logged_in'], msg='Login failed.')
     self.Logout()

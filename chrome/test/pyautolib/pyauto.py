@@ -277,6 +277,26 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       if item != 'user' and not item.startswith('.'):
         pyauto_utils.RemovePath(os.path.join(chronos_dir, item))
 
+  @staticmethod
+  def _IsInodeNew(path, old_inode):
+    """Determine whether an inode has changed. POSIX only.
+
+    Args:
+      path: The file path to check for changes.
+      old_inode: The old inode number.
+
+    Returns:
+      True if the path exists and its inode number is different from old_inode.
+      False otherwise.
+    """
+    try:
+      stat_result = os.stat(path)
+    except OSError:
+      return False
+    if not stat_result:
+      return False
+    return stat_result.st_ino != old_inode
+
   def RestartBrowser(self, clear_profile=True):
     """Restart the browser.
 
@@ -2674,10 +2694,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = { 'command': 'ShowCreateAccountUI' }
+    old_inode = os.stat(self._named_channel_id).st_ino
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
     # See note below under LoginAsGuest(). ShowCreateAccountUI() essentially
     # logs the user in as guest in order to access the account creation page.
-    os.unlink(self._named_channel_id)
+    self.WaitUntil(lambda: self._IsInodeNew(self._named_channel_id, old_inode))
     self.SetUp()
 
   def LoginAsGuest(self):
@@ -2690,11 +2711,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = { 'command': 'LoginAsGuest' }
+    old_inode = os.stat(self._named_channel_id).st_ino
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
     # Currently, logging in as guest causes session_manager to
     # restart Chrome, which will close the testing channel.
     # We need to call SetUp() again to reconnect to the new channel.
-    os.unlink(self._named_channel_id)
+    self.WaitUntil(lambda: self._IsInodeNew(self._named_channel_id, old_inode))
     self.SetUp()
 
   def Login(self, username, password):
@@ -2732,6 +2754,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     old_pid = pgrep_process.communicate()[0].strip()
     self.ApplyAccelerator(IDC_EXIT)
     self.WaitUntil(lambda: self.IsSessionManagerReady(old_pid))
+    self.setUp()
 
   def LockScreen(self):
     """Locks the screen on chromeos.

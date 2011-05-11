@@ -113,8 +113,9 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
 UITestBase::~UITestBase() {}
 
 void UITestBase::SetUp() {
-  // Some tests (e.g. SessionRestoreUITest) call SetUp() multiple times,
-  // but the ProxyLauncher should be initialized only once per instance.
+  // Tests that do a session restore (e.g. SessionRestoreUITest, StartupTest)
+  // call SetUp() multiple times because they restart the browser mid-test.
+  // We don't want to reset the ProxyLauncher's state in those cases.
   if (!launcher_.get())
     launcher_.reset(CreateProxyLauncher());
   launcher_->AssertAppNotRunning(L"Please close any other instances "

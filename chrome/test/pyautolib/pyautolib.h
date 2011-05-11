@@ -52,6 +52,7 @@ class PyUITestBase : public UITestBase {
 
   void UseNamedChannelID(const std::string& named_channel_id) {
     named_channel_id_ = named_channel_id;
+    launcher_.reset(CreateProxyLauncher());
   }
 
   virtual ProxyLauncher* CreateProxyLauncher();
