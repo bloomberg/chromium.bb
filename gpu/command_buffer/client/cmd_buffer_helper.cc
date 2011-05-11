@@ -123,7 +123,7 @@ void CommandBufferHelper::YieldScheduler() {
 // function will return early if an error occurs, in which case the available
 // space may not be available.
 void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
-  GPU_CHECK(count < usable_entry_count_);
+  GPU_DCHECK(count < usable_entry_count_);
   if (put_ + count > usable_entry_count_) {
     // There's not enough room between the current put and the end of the
     // buffer, so we need to wrap. We will add a jump back to the start, but we
