@@ -19,6 +19,7 @@ set RETCODE=0
 
 if "%MODE%" equ "dbg" (set GYPMODE=Debug) else (set GYPMODE=Release)
 if %BITS% equ 32 (set VCBITS=x86) else (set VCBITS=x64)
+if %BITS% equ 32 (set SEL_LDR=sel_ldr.exe) else (set SEL_LDR=sel_ldr64.exe)
 if "%TOOLCHAIN%" equ "glibc" (set GLIBCOPTS=--nacl_glibc) else (set GLIBCOPTS=)
 
 :: Skip over hooks, clobber, and partial_sdk when run inside the toolchain
@@ -152,6 +153,19 @@ call vcvarsall.bat %VCBITS% && call scons.bat ^
  chrome_browser_tests
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 endlocal
+
+echo @@@BUILD_STEP chrome_browser_tests using GYP@@@
+setlocal
+call vcvarsall.bat %VCBITS% && call scons.bat ^
+ DOXYGEN=..\third_party\doxygen\win\doxygen ^
+ %GLIBCOPTS% -k --verbose --mode=%MODE%-win,nacl,doc ^
+ SILENT=1 platform=x86-%BITS% ^
+ force_ppapi_plugin=build\%GYPMODE%\ppGoogleNaClPlugin.dll ^
+ force_sel_ldr=build\%GYPMODE%\%SEL_LDR% ^
+ chrome_browser_tests
+if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
+endlocal
+
 
 # TODO(mseaborn): Drop support for non-IRT builds so that this is the
 # default.  See http://code.google.com/p/nativeclient/issues/detail?id=1691
