@@ -12,7 +12,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 
 using base::Time;
 using base::TimeDelta;

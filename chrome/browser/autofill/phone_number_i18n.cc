@@ -5,8 +5,9 @@
 #include "chrome/browser/autofill/phone_number_i18n.h"
 
 #include "base/basictypes.h"
+#include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/libphonenumber/cpp/src/phonenumberutil.h"
 

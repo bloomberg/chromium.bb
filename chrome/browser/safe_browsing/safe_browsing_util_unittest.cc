@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "crypto/sha2.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "googleurl/src/gurl.h"
@@ -262,7 +262,7 @@ TEST(SafeBrowsingUtilTest, CanonicalizeUrl) {
     },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    SCOPED_TRACE(StringPrintf("Test: %s", tests[i].input_url));
+    SCOPED_TRACE(base::StringPrintf("Test: %s", tests[i].input_url));
     GURL url(tests[i].input_url);
 
     std::string canonicalized_hostname;

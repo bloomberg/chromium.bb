@@ -8,8 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "base/stringprintf.h"
 #include "base/task.h"
-#include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/host_resolver.h"
@@ -112,65 +112,65 @@ void WebSocketExperimentRunner::InitConfig() {
   config = &config_.ws_config[STATE_RUN_WS - STATE_RUN_WS];
   *config = task_config;
   config->url =
-      GURL(StringPrintf("ws://%s/live_exp", experiment_host.c_str()));
+      GURL(base::StringPrintf("ws://%s/live_exp", experiment_host.c_str()));
   config->ws_location =
-      StringPrintf("ws://%s/live_exp", experiment_host.c_str());
+      base::StringPrintf("ws://%s/live_exp", experiment_host.c_str());
   config->http_url =
-      GURL(StringPrintf("http://%s/", experiment_host.c_str()));
+      GURL(base::StringPrintf("http://%s/", experiment_host.c_str()));
 
   config = &config_.ws_config[STATE_RUN_WSS - STATE_RUN_WS];
   *config = task_config;
   config->url =
-      GURL(StringPrintf("wss://%s/live_exp", experiment_host.c_str()));
+      GURL(base::StringPrintf("wss://%s/live_exp", experiment_host.c_str()));
   config->ws_location =
-      StringPrintf("wss://%s/live_exp", experiment_host.c_str());
+      base::StringPrintf("wss://%s/live_exp", experiment_host.c_str());
   config->http_url =
-      GURL(StringPrintf("https://%s/", experiment_host.c_str()));
+      GURL(base::StringPrintf("https://%s/", experiment_host.c_str()));
 
   config = &config_.ws_config[STATE_RUN_WS_NODEFAULT_PORT -
                               STATE_RUN_WS];
   *config = task_config;
   config->url =
-      GURL(StringPrintf("ws://%s:%d/live_exp",
-                        experiment_host.c_str(), kAlternativePort));
+      GURL(base::StringPrintf("ws://%s:%d/live_exp",
+                              experiment_host.c_str(), kAlternativePort));
   config->ws_location =
-      StringPrintf("ws://%s:%d/live_exp",
-                   experiment_host.c_str(), kAlternativePort);
+      base::StringPrintf("ws://%s:%d/live_exp",
+                         experiment_host.c_str(), kAlternativePort);
   config->http_url =
-      GURL(StringPrintf("http://%s:%d/",
-                        experiment_host.c_str(), kAlternativePort));
+      GURL(base::StringPrintf("http://%s:%d/",
+                              experiment_host.c_str(), kAlternativePort));
 
   task_config.protocol_version = net::WebSocket::DRAFT75;
   config = &config_.ws_config[STATE_RUN_WS_DRAFT75 - STATE_RUN_WS];
   *config = task_config;
   config->url =
-      GURL(StringPrintf("ws://%s/live_exp", experiment_host.c_str()));
+      GURL(base::StringPrintf("ws://%s/live_exp", experiment_host.c_str()));
   config->ws_location =
-      StringPrintf("ws://%s/live_exp", experiment_host.c_str());
+      base::StringPrintf("ws://%s/live_exp", experiment_host.c_str());
   config->http_url =
-      GURL(StringPrintf("http://%s/", experiment_host.c_str()));
+      GURL(base::StringPrintf("http://%s/", experiment_host.c_str()));
 
   config = &config_.ws_config[STATE_RUN_WSS_DRAFT75 - STATE_RUN_WS];
   *config = task_config;
   config->url =
-      GURL(StringPrintf("wss://%s/live_exp", experiment_host.c_str()));
+      GURL(base::StringPrintf("wss://%s/live_exp", experiment_host.c_str()));
   config->ws_location =
-      StringPrintf("wss://%s/live_exp", experiment_host.c_str());
+      base::StringPrintf("wss://%s/live_exp", experiment_host.c_str());
   config->http_url =
-      GURL(StringPrintf("https://%s/", experiment_host.c_str()));
+      GURL(base::StringPrintf("https://%s/", experiment_host.c_str()));
 
   config = &config_.ws_config[STATE_RUN_WS_NODEFAULT_PORT_DRAFT75 -
                               STATE_RUN_WS];
   *config = task_config;
   config->url =
-      GURL(StringPrintf("ws://%s:%d/live_exp",
-                        experiment_host.c_str(), kAlternativePort));
+      GURL(base::StringPrintf("ws://%s:%d/live_exp",
+                              experiment_host.c_str(), kAlternativePort));
   config->ws_location =
-      StringPrintf("ws://%s:%d/live_exp",
-                   experiment_host.c_str(), kAlternativePort);
+      base::StringPrintf("ws://%s:%d/live_exp",
+                         experiment_host.c_str(), kAlternativePort);
   config->http_url =
-      GURL(StringPrintf("http://%s:%d/",
-                        experiment_host.c_str(), kAlternativePort));
+      GURL(base::StringPrintf("http://%s:%d/",
+                              experiment_host.c_str(), kAlternativePort));
 
 }
 

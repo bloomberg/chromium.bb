@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util-inl.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -300,7 +300,8 @@ void TabLoader::Observe(NotificationType type,
           // Record a time for the number of tabs, to help track down
           // contention.
           std::string time_for_count =
-              StringPrintf("SessionRestore.FirstTabPainted_%d", tab_count_);
+              base::StringPrintf("SessionRestore.FirstTabPainted_%d",
+                                 tab_count_);
           base::Histogram* counter_for_count =
               base::Histogram::FactoryTimeGet(
                   time_for_count,
@@ -388,7 +389,7 @@ void TabLoader::HandleTabClosedOrLoaded(NavigationController* tab) {
         100);
     // Record a time for the number of tabs, to help track down contention.
     std::string time_for_count =
-        StringPrintf("SessionRestore.AllTabsLoaded_%d", tab_count_);
+        base::StringPrintf("SessionRestore.AllTabsLoaded_%d", tab_count_);
     base::Histogram* counter_for_count =
         base::Histogram::FactoryTimeGet(
             time_for_count,

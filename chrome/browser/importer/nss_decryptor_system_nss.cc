@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "crypto/nss_util.h"
 
@@ -28,8 +28,10 @@ bool NSSDecryptor::Init(const FilePath& dll_path, const FilePath& db_path) {
   crypto::EnsureNSSInit();
   is_nss_initialized_ = true;
   const std::string modspec =
-      StringPrintf("configDir='%s' tokenDescription='Firefox NSS database' "
-                   "flags=readOnly", db_path.value().c_str());
+      base::StringPrintf(
+          "configDir='%s' tokenDescription='Firefox NSS database' "
+          "flags=readOnly",
+          db_path.value().c_str());
   db_slot_ = SECMOD_OpenUserDB(modspec.c_str());
   return db_slot_ != NULL;
 }

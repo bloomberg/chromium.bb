@@ -13,8 +13,8 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -283,14 +283,14 @@ void ReadLastShutdownFile(
   std::string time;
   std::string time_per;
   if (type == WINDOW_CLOSE) {
-    time = StringPrintf(time_fmt, "window_close");
-    time_per = StringPrintf(time_per_fmt, "window_close");
+    time = base::StringPrintf(time_fmt, "window_close");
+    time_per = base::StringPrintf(time_per_fmt, "window_close");
   } else if (type == BROWSER_EXIT) {
-    time = StringPrintf(time_fmt, "browser_exit");
-    time_per = StringPrintf(time_per_fmt, "browser_exit");
+    time = base::StringPrintf(time_fmt, "browser_exit");
+    time_per = base::StringPrintf(time_per_fmt, "browser_exit");
   } else if (type == END_SESSION) {
-    time = StringPrintf(time_fmt, "end_session");
-    time_per = StringPrintf(time_per_fmt, "end_session");
+    time = base::StringPrintf(time_fmt, "end_session");
+    time_per = base::StringPrintf(time_per_fmt, "end_session");
   } else {
     NOTREACHED();
   }

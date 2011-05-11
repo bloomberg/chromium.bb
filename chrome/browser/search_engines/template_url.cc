@@ -8,6 +8,7 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
@@ -353,7 +354,8 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
         if (accepted_suggestion == NO_SUGGESTION_CHOSEN)
           url.insert(i->index, "aq=f&");
         else if (accepted_suggestion != NO_SUGGESTIONS_AVAILABLE)
-          url.insert(i->index, StringPrintf("aq=%d&", accepted_suggestion));
+          url.insert(i->index,
+                     base::StringPrintf("aq=%d&", accepted_suggestion));
         break;
 
       case GOOGLE_BASE_URL:

@@ -68,6 +68,7 @@
 #include "base/rand_util.h"
 #include "base/safe_strerror_posix.h"
 #include "base/stl_util-inl.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/sys_string_conversions.h"
@@ -918,7 +919,7 @@ bool ProcessSingleton::Create() {
 
   // The symlink lock is pointed to the hostname and process id, so other
   // processes can find it out.
-  FilePath symlink_content(StringPrintf(
+  FilePath symlink_content(base::StringPrintf(
       "%s%c%u",
       net::GetHostName().c_str(),
       kLockDelimiter,

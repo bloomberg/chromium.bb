@@ -5,6 +5,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
 #include "base/base64.h"
+#include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "crypto/hmac.h"
 #include "crypto/sha2.h"
@@ -503,7 +505,7 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
   if (!lang)
     lang = "en";  // fallback
   const std::string continue_esc =
-      EscapeQueryParamValue(StringPrintf(kContinueUrlFormat, lang), true);
+      EscapeQueryParamValue(base::StringPrintf(kContinueUrlFormat, lang), true);
   const std::string current_esc = EscapeQueryParamValue(url_to_report, true);
 
 #if defined(OS_WIN)
@@ -513,9 +515,10 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
   std::string client_name("googlechrome");
 #endif
 
-  GURL report_url(report_page +
-      StringPrintf(kReportParams, client_name.c_str(), continue_esc.c_str(),
-                   current_esc.c_str()));
+  GURL report_url(report_page + base::StringPrintf(kReportParams,
+                                                   client_name.c_str(),
+                                                   continue_esc.c_str(),
+                                                   current_esc.c_str()));
   return google_util::AppendGoogleLocaleParam(report_url);
 }
 

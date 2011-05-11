@@ -4,7 +4,7 @@
 
 #include "chrome/browser/importer/profile_writer.h"
 
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"

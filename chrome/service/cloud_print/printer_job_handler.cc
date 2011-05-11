@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/md5.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/net/http_return.h"
@@ -242,8 +242,11 @@ void PrinterJobHandler::OnReceivePrinterCaps(
   }
   if (printer_info.printer_status != printer_info_.printer_status) {
     CloudPrintHelpers::AddMultipartValueForUpload(
-        kPrinterStatusValue, StringPrintf("%d", printer_info.printer_status),
-        mime_boundary, std::string(), &post_data);
+        kPrinterStatusValue,
+        base::StringPrintf("%d", printer_info.printer_status),
+        mime_boundary,
+        std::string(),
+        &post_data);
   }
   printer_info_ = printer_info;
   if (!post_data.empty()) {

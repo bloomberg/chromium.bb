@@ -11,7 +11,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 
@@ -117,26 +117,26 @@ std::string JSONStringify(const T& arg) {
 // |format| specifies. |format| should only expect string arguments.
 template <typename T>
 std::string JavaScriptPrintf(const std::string& format, const T& arg) {
-  return StringPrintf(format.c_str(), JSONStringify(arg).c_str());
+  return base::StringPrintf(format.c_str(), JSONStringify(arg).c_str());
 }
 
 // Similar to above, but with an additional argument.
 template <typename T1, typename T2>
 std::string JavaScriptPrintf(const std::string& format, const T1& arg1,
                              const T2& arg2) {
-  return StringPrintf(format.c_str(),
-                      JSONStringify(arg1).c_str(),
-                      JSONStringify(arg2).c_str());
+  return base::StringPrintf(format.c_str(),
+                            JSONStringify(arg1).c_str(),
+                            JSONStringify(arg2).c_str());
 }
 
 // Similar to above, but with an additional argument.
 template <typename T1, typename T2, typename T3>
 std::string JavaScriptPrintf(const std::string& format, const T1& arg1,
                              const T2& arg2, const T3& arg3) {
-  return StringPrintf(format.c_str(),
-                      JSONStringify(arg1).c_str(),
-                      JSONStringify(arg2).c_str(),
-                      JSONStringify(arg3).c_str());
+  return base::StringPrintf(format.c_str(),
+                            JSONStringify(arg1).c_str(),
+                            JSONStringify(arg2).c_str(),
+                            JSONStringify(arg3).c_str());
 }
 
 }  // namespace javascript_utils

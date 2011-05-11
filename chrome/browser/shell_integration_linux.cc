@@ -23,9 +23,9 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
-#include "base/string_util.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -407,7 +407,7 @@ std::string ShellIntegration::GetDesktopFileContents(
           final_title.find("\r") != std::string::npos) {
         final_title = url.spec();
       }
-      output_buffer += StringPrintf("Name=%s\n", final_title.c_str());
+      output_buffer += base::StringPrintf("Name=%s\n", final_title.c_str());
     } else if (tokenizer.token().substr(0, 11) == "GenericName" ||
                tokenizer.token().substr(0, 7) == "Comment" ||
                tokenizer.token().substr(0, 1) == "#") {
@@ -420,7 +420,7 @@ std::string ShellIntegration::GetDesktopFileContents(
       // different one based on the app name below.
     } else if (tokenizer.token().substr(0, 5) == "Icon=" &&
                !icon_name.empty()) {
-      output_buffer += StringPrintf("Icon=%s\n", icon_name.c_str());
+      output_buffer += base::StringPrintf("Icon=%s\n", icon_name.c_str());
     } else {
       output_buffer += tokenizer.token() + "\n";
     }
@@ -429,7 +429,7 @@ std::string ShellIntegration::GetDesktopFileContents(
 #if defined(TOOLKIT_USES_GTK)
   std::string wmclass = web_app::GetWMClassFromAppName(app_name);
   if (!wmclass.empty()) {
-    output_buffer += StringPrintf("StartupWMClass=%s\n", wmclass.c_str());
+    output_buffer += base::StringPrintf("StartupWMClass=%s\n", wmclass.c_str());
   }
 #endif
 

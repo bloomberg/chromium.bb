@@ -6,6 +6,7 @@
 
 #include "app/sql/connection.h"
 #include "base/format_macros.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "chrome/browser/history/history_unittest_base.h"
 
@@ -23,9 +24,9 @@ void HistoryUnitTestBase::ExecuteSQLScript(const FilePath& sql_path,
   // SQL with the current time.
   int64 now = base::Time::Now().ToInternalValue();
   std::vector<std::string> sql_time;
-  sql_time.push_back(StringPrintf("%" PRId64, now));  // last_visit_time
-  sql_time.push_back(StringPrintf("%" PRId64, now));  // visit_time
-  sql_time.push_back(StringPrintf("%" PRId64, now));  // time_slot
+  sql_time.push_back(base::StringPrintf("%" PRId64, now));  // last_visit_time
+  sql_time.push_back(base::StringPrintf("%" PRId64, now));  // visit_time
+  sql_time.push_back(base::StringPrintf("%" PRId64, now));  // time_slot
   sql = ReplaceStringPlaceholders(sql, sql_time, NULL);
 
   sql::Connection connection;

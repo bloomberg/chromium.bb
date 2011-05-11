@@ -9,7 +9,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/stats_table.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_constants.h"
@@ -136,7 +136,7 @@ void ChromeTestSuite::Initialize() {
   // initialize the global StatsTable for unit_tests (make sure the file
   // doesn't exist before opening it so the test gets a clean slate)
   stats_filename_ = "unit_tests";
-  std::string pid_string = StringPrintf("-%d", base::GetCurrentProcId());
+  std::string pid_string = base::StringPrintf("-%d", base::GetCurrentProcId());
   stats_filename_ += pid_string;
   RemoveSharedMemoryFile(stats_filename_);
   stats_table_ = new base::StatsTable(stats_filename_, 20, 200);

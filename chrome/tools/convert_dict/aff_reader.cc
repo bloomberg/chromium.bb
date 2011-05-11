@@ -8,8 +8,8 @@
 
 #include "base/file_util.h"
 #include "base/i18n/icu_string_conversions.h"
+#include "base/stringprintf.h"
 #include "base/string_split.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/tools/convert_dict/hunspell_reader.h"
 
@@ -223,10 +223,11 @@ void AffReader::AddAffix(std::string* rule) {
           std::vector<std::string> tokens;
           base::SplitString(part, ' ', &tokens);
           if (tokens.size() >= 5) {
-            part = StringPrintf("%s %s/%s %s",
-                                tokens[0].c_str(),
-                                tokens[1].c_str(), tokens[4].c_str(),
-                                tokens[2].c_str());
+            part = base::StringPrintf("%s %s/%s %s",
+                                      tokens[0].c_str(),
+                                      tokens[1].c_str(),
+                                      tokens[4].c_str(),
+                                      tokens[2].c_str());
           }
         }
 
@@ -257,9 +258,10 @@ void AffReader::AddAffix(std::string* rule) {
             return;
           }
 
-          part = StringPrintf("%s%d %s", before_flags.c_str(),
-                  GetAFIndexForAFString(after_slash[0]),
-                  after_slash[1].c_str());
+          part = base::StringPrintf("%s%d %s",
+                                    before_flags.c_str(),
+                                    GetAFIndexForAFString(after_slash[0]),
+                                    after_slash[1].c_str());
         }
 
         // Reencode from here

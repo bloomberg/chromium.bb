@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/string16.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -83,8 +84,11 @@ string16 GetUrlWithLang(const GURL& url) {
 std::string SkColorToRGBAString(SkColor color) {
   // We convert the alpha using DoubleToString because StringPrintf will use
   // locale specific formatters (e.g., use , instead of . in German).
-  return StringPrintf("rgba(%d,%d,%d,%s)", SkColorGetR(color),
-      SkColorGetG(color), SkColorGetB(color),
+  return base::StringPrintf(
+      "rgba(%d,%d,%d,%s)",
+      SkColorGetR(color),
+      SkColorGetG(color),
+      SkColorGetB(color),
       base::DoubleToString(SkColorGetA(color) / 255.0).c_str());
 }
 

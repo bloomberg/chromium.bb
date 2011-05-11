@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -50,7 +50,7 @@ void AddStartURLRequestEntries(LoadTimingObserver& observer,
                                bool request_timing) {
   scoped_refptr<net::URLRequestStartEventParameters> params(
       new net::URLRequestStartEventParameters(
-          GURL(StringPrintf("http://req%d", id)),
+          GURL(base::StringPrintf("http://req%d", id)),
           "GET",
           request_timing ? net::LOAD_ENABLE_LOAD_TIMING : 0,
           net::LOW));

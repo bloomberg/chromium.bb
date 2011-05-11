@@ -4,7 +4,7 @@
 //
 // Program to test the SafeBrowsing protocol parsing v2.1.
 
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -154,12 +154,12 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddBigChunk) {
   std::string add_chunk("a:1:4:1050\naaaaX");
   add_chunk[add_chunk.size() - 1] |= 0xFF;
   for (int i = 0; i < 255; ++i)
-    add_chunk.append(StringPrintf("%04d", i));
+    add_chunk.append(base::StringPrintf("%04d", i));
 
   add_chunk.append("aaaa");
   add_chunk.push_back(5);
   for (int i = 0; i < 5; ++i)
-    add_chunk.append(StringPrintf("001%d", i));
+    add_chunk.append(base::StringPrintf("001%d", i));
 
   SafeBrowsingProtocolParser parser;
   bool re_key = false;
@@ -873,7 +873,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddBinHashChunks) {
 TEST(SafeBrowsingProtocolParsingTest, TestAddBigBinHashChunk) {
   std::string add_chunk("a:1:4:1028\n");
   for (int i = 0; i < 257; ++i)
-    add_chunk.append(StringPrintf("%04d", i));
+    add_chunk.append(base::StringPrintf("%04d", i));
 
   SafeBrowsingProtocolParser parser;
   bool re_key = false;

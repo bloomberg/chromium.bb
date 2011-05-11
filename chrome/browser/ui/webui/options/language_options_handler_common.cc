@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -146,7 +147,7 @@ void LanguageOptionsHandlerCommon::UiLanguageChangeCallback(
     const ListValue* args) {
   const std::string language_code = UTF16ToASCII(ExtractStringValue(args));
   CHECK(!language_code.empty());
-  const std::string action = StringPrintf(
+  const std::string action = base::StringPrintf(
       "LanguageOptions_UiLanguageChange_%s", language_code.c_str());
   UserMetrics::RecordComputedAction(action);
   SetApplicationLocale(language_code);
@@ -157,7 +158,7 @@ void LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback(
     const ListValue* args) {
   const std::string language_code = UTF16ToASCII(ExtractStringValue(args));
   CHECK(!language_code.empty());
-  const std::string action = StringPrintf(
+  const std::string action = base::StringPrintf(
       "LanguageOptions_SpellCheckLanguageChange_%s", language_code.c_str());
   UserMetrics::RecordComputedAction(action);
 }

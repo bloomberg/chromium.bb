@@ -8,8 +8,9 @@
 
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/path_service.h"
@@ -58,7 +59,8 @@ class OperatingSystemTest : public DiagnosticTest {
 #else
     // TODO(port): define the OS criteria for Linux and Mac.
 #endif  // defined(OS_WIN)
-    RecordSuccess(ASCIIToUTF16(StringPrintf("%s %s",
+    RecordSuccess(ASCIIToUTF16(base::StringPrintf(
+        "%s %s",
         base::SysInfo::OperatingSystemName().c_str(),
         base::SysInfo::OperatingSystemVersion().c_str())));
     return true;

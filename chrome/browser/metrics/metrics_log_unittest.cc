@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/metrics/metrics_log.h"
@@ -43,7 +44,7 @@ static void NormalizeBuildtime(std::string* xml_encoded) {
 }
 
 TEST(MetricsLogTest, EmptyRecord) {
-  std::string expected_output = StringPrintf(
+  std::string expected_output = base::StringPrintf(
       "<log clientid=\"bogus client ID\" buildtime=\"123456789\" "
       "appversion=\"%s\"/>", MetricsLog::GetVersionString().c_str());
 
@@ -65,7 +66,7 @@ TEST(MetricsLogTest, EmptyRecord) {
 
 #if defined(OS_CHROMEOS)
 TEST(MetricsLogTest, ChromeOSEmptyRecord) {
-  std::string expected_output = StringPrintf(
+  std::string expected_output = base::StringPrintf(
       "<log clientid=\"bogus client ID\" buildtime=\"123456789\" "
       "appversion=\"%s\" hardwareclass=\"sample-class\"/>",
       MetricsLog::GetVersionString().c_str());
@@ -105,7 +106,7 @@ class NoTimeMetricsLog : public MetricsLog {
 };  // namespace
 
 TEST(MetricsLogTest, WindowEvent) {
-  std::string expected_output = StringPrintf(
+  std::string expected_output = base::StringPrintf(
       "<log clientid=\"bogus client ID\" buildtime=\"123456789\" "
           "appversion=\"%s\">\n"
       " <window action=\"create\" windowid=\"0\" session=\"0\" time=\"\"/>\n"
@@ -139,7 +140,7 @@ TEST(MetricsLogTest, WindowEvent) {
 }
 
 TEST(MetricsLogTest, LoadEvent) {
-  std::string expected_output = StringPrintf(
+  std::string expected_output = base::StringPrintf(
       "<log clientid=\"bogus client ID\" buildtime=\"123456789\" "
           "appversion=\"%s\">\n"
       " <document action=\"load\" docid=\"1\" window=\"3\" loadtime=\"7219\" "
@@ -169,7 +170,7 @@ TEST(MetricsLogTest, LoadEvent) {
 
 #if defined(OS_CHROMEOS)
 TEST(MetricsLogTest, ChromeOSLoadEvent) {
-  std::string expected_output = StringPrintf(
+  std::string expected_output = base::StringPrintf(
       "<log clientid=\"bogus client ID\" buildtime=\"123456789\" "
           "appversion=\"%s\" hardwareclass=\"sample-class\">\n"
       " <document action=\"load\" docid=\"1\" window=\"3\" loadtime=\"7219\" "
@@ -206,7 +207,7 @@ TEST(MetricsLogTest, ChromeOSStabilityData) {
   prefs.SetInteger(prefs::kStabilityOtherUserCrashCount, 11);
   prefs.SetInteger(prefs::kStabilityKernelCrashCount, 12);
   prefs.SetInteger(prefs::kStabilitySystemUncleanShutdownCount, 13);
-  std::string expected_output = StringPrintf(
+  std::string expected_output = base::StringPrintf(
       "<log clientid=\"bogus client ID\" buildtime=\"123456789\" "
           "appversion=\"%s\">\n"
       "<stability stuff>\n", MetricsLog::GetVersionString().c_str());

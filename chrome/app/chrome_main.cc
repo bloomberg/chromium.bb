@@ -15,8 +15,8 @@
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
@@ -49,6 +49,7 @@
 #if defined(OS_WIN)
 #include <algorithm>
 #include <malloc.h>
+#include "base/string_util.h"
 #include "base/win/registry.h"
 #include "sandbox/src/sandbox.h"
 #include "tools/memory_watcher/memory_watcher.h"
@@ -342,8 +343,9 @@ void InitializeStatsTable(base::ProcessId browser_pid,
     // NOTIMPLEMENTED: we probably need to shut this down correctly to avoid
     // leaking shared memory regions on posix platforms.
     std::string statsfile =
-        StringPrintf("%s-%u", chrome::kStatsFilename,
-                     static_cast<unsigned int>(browser_pid));
+        base::StringPrintf("%s-%u",
+                           chrome::kStatsFilename,
+                           static_cast<unsigned int>(browser_pid));
     base::StatsTable *stats_table = new base::StatsTable(statsfile,
         chrome::kStatsMaxThreads, chrome::kStatsMaxCounters);
     base::StatsTable::set_current(stats_table);

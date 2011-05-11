@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "net/url_request/url_request_netlog_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,8 +32,8 @@ ChromeNetLog::Entry MakeStartLogEntryWithURL(int source_id,
 }
 
 ChromeNetLog::Entry MakeStartLogEntry(int source_id) {
-  return MakeStartLogEntryWithURL(source_id,
-                                  StringPrintf("http://req%d", source_id));
+  return MakeStartLogEntryWithURL(
+      source_id, base::StringPrintf("http://req%d", source_id));
 }
 
 ChromeNetLog::Entry MakeEndLogEntry(int source_id) {
@@ -142,7 +142,7 @@ TEST(RequestTrackerTest, GraveyardBounded) {
 
   for (size_t i = 0; i < RequestTracker::kMaxGraveyardSize; ++i) {
     size_t req_number = i + RequestTracker::kMaxGraveyardSize;
-    std::string url = StringPrintf("http://req%" PRIuS "/", req_number);
+    std::string url = base::StringPrintf("http://req%" PRIuS "/", req_number);
     EXPECT_EQ(url, recent[i].GetURL());
   }
 }

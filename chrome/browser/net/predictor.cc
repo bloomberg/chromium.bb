@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/net/preconnect.h"

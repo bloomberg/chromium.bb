@@ -15,7 +15,8 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
-#include "base/string_util.h"
+#include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -251,9 +252,13 @@ class TestWriter {
 std::wstring PrintableUSCurrentTime() {
   base::Time::Exploded exploded = {0};
   base::Time::Now().UTCExplode(&exploded);
-  return StringPrintf(L"%d:%d:%d.%d:%d:%d",
-      exploded.year, exploded.month, exploded.day_of_month,
-      exploded.hour, exploded.minute, exploded.second);
+  return base::StringPrintf(L"%d:%d:%d.%d:%d:%d",
+                            exploded.year,
+                            exploded.month,
+                            exploded.day_of_month,
+                            exploded.hour,
+                            exploded.minute,
+                            exploded.second);
 }
 
 // This class is a basic test controller. In this design the view (TestWriter)
@@ -282,7 +287,8 @@ class TestController : public DiagnosticsModel::Observer {
       return;
     }
     int count = model->GetTestAvailableCount();
-    writer_->WriteInfoText(StringPrintf(L"%d available test(s)\n\n", count));
+    writer_->WriteInfoText(base::StringPrintf(
+        L"%d available test(s)\n\n", count));
     model->RunAll(this);
   }
 
@@ -301,8 +307,8 @@ class TestController : public DiagnosticsModel::Observer {
 
   virtual void OnDoneAll(DiagnosticsModel* model) {
     if (writer_->failures() > 0) {
-      writer_->WriteInfoText(StringPrintf(L"DONE. %d failure(s)\n\n",
-                             writer_->failures()));
+      writer_->WriteInfoText(base::StringPrintf(
+          L"DONE. %d failure(s)\n\n", writer_->failures()));
     } else {
       writer_->WriteInfoText(L"DONE\n\n");
     }

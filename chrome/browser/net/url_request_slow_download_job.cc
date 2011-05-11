@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
@@ -165,7 +166,8 @@ void URLRequestSlowDownloadJob::GetResponseInfoConst(
       "Cache-Control: max-age=0\n");
 
     if (LowerCaseEqualsASCII(kKnownSizeUrl, request_->url().spec().c_str())) {
-      raw_headers.append(StringPrintf("Content-Length: %d\n",
+      raw_headers.append(base::StringPrintf(
+          "Content-Length: %d\n",
           kFirstDownloadSize + kSecondDownloadSize));
     }
   }

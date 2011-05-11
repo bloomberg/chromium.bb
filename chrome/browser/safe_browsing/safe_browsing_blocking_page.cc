@@ -10,6 +10,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -286,7 +287,7 @@ void SafeBrowsingBlockingPage::PopulateMultipleThreatStringDictionary(
 
 void SafeBrowsingBlockingPage::PopulateMalwareStringDictionary(
     DictionaryValue* strings) {
-  std::string diagnostic_link = StringPrintf(kSbDiagnosticHtml,
+  std::string diagnostic_link = base::StringPrintf(kSbDiagnosticHtml,
       l10n_util::GetStringUTF8(
         IDS_SAFE_BROWSING_MALWARE_DIAGNOSTIC_PAGE).c_str());
 
@@ -304,7 +305,7 @@ void SafeBrowsingBlockingPage::PopulateMalwareStringDictionary(
         UTF8ToUTF16(url().host()));
   }
 
-  std::string proceed_link = StringPrintf(kPLinkHtml,
+  std::string proceed_link = base::StringPrintf(kPLinkHtml,
       l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_MALWARE_PROCEED_LINK).c_str());
   description3 =
       l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_MALWARE_DESCRIPTION3,
@@ -338,7 +339,7 @@ void SafeBrowsingBlockingPage::PopulateMalwareStringDictionary(
     // Show the checkbox for sending malware details.
     strings->SetBoolean(kDisplayCheckBox, true);
 
-    std::string privacy_link = StringPrintf(
+    std::string privacy_link = base::StringPrintf(
         kPrivacyLinkHtml,
         l10n_util::GetStringUTF8(
             IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
@@ -363,8 +364,10 @@ void SafeBrowsingBlockingPage::PopulateMalwareStringDictionary(
 
 void SafeBrowsingBlockingPage::PopulatePhishingStringDictionary(
     DictionaryValue* strings) {
-  std::string proceed_link = StringPrintf(kPLinkHtml, l10n_util::GetStringUTF8(
-      IDS_SAFE_BROWSING_PHISHING_PROCEED_LINK).c_str());
+  std::string proceed_link = base::StringPrintf(
+      kPLinkHtml,
+      l10n_util::GetStringUTF8(
+          IDS_SAFE_BROWSING_PHISHING_PROCEED_LINK).c_str());
   string16 description3 = l10n_util::GetStringFUTF16(
       IDS_SAFE_BROWSING_PHISHING_DESCRIPTION3,
       UTF8ToUTF16(proceed_link));
@@ -471,8 +474,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   if (command == kShowDiagnosticCommand) {
     // We're going to take the user to Google's SafeBrowsing diagnostic page.
     std::string diagnostic =
-        StringPrintf(kSbDiagnosticUrl,
-                     EscapeQueryParamValue(bad_url_spec, true).c_str());
+        base::StringPrintf(kSbDiagnosticUrl,
+                           EscapeQueryParamValue(bad_url_spec, true).c_str());
     GURL diagnostic_url(diagnostic);
     diagnostic_url = google_util::AppendGoogleLocaleParam(diagnostic_url);
     DCHECK(unsafe_resources_[element_index].threat_type ==

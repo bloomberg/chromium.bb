@@ -15,6 +15,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"

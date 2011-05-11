@@ -10,9 +10,9 @@
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/rand_util.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/net/gaia/gaia_oauth_client.h"
@@ -632,7 +632,7 @@ void CloudPrintProxyBackend::Core::OnReceivePrinterCaps(
                                                   mime_boundary,
                                                   std::string() , &post_data);
     CloudPrintHelpers::AddMultipartValueForUpload(
-        kPrinterStatusValue, StringPrintf("%d", info.printer_status),
+        kPrinterStatusValue, base::StringPrintf("%d", info.printer_status),
         mime_boundary, std::string(), &post_data);
     // Add printer options as tags.
     CloudPrintHelpers::GenerateMultipartPostDataForPrinterTags(info.options,

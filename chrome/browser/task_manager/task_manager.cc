@@ -8,8 +8,8 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/process_util.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background_contents_service.h"
@@ -140,7 +140,7 @@ double TaskManagerModel::GetCPUUsage(int index) const {
 
 string16 TaskManagerModel::GetResourceCPUUsage(int index) const {
   CHECK_LT(index, ResourceCount());
-  return UTF8ToUTF16(StringPrintf(
+  return UTF8ToUTF16(base::StringPrintf(
 #if defined(OS_MACOSX)
       // Activity Monitor shows %cpu with one decimal digit -- be
       // consistent with that.

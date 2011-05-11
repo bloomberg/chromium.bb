@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <string>
 
+#include "base/string_util.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/proxy_factory_mock.h"

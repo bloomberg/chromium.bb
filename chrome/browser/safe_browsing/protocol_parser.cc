@@ -6,21 +6,19 @@
 
 #include <stdlib.h>
 
+#include "base/format_macros.h"
+#include "base/logging.h"
+#include "base/stringprintf.h"
+#include "base/string_split.h"
+#include "build/build_config.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
-
-#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include <Winsock2.h>
 #elif defined(OS_POSIX)
 #include <arpa/inet.h>
 #endif
-
-#include "base/format_macros.h"
-#include "base/logging.h"
-#include "base/string_split.h"
-#include "base/string_util.h"
 
 namespace {
 // Helper function for quick scans of a line oriented protocol. Note that we use
@@ -120,9 +118,9 @@ void SafeBrowsingProtocolParser::FormatGetHash(
   DCHECK(request);
 
   // Format the request for GetHash.
-  request->append(StringPrintf("%" PRIuS ":%" PRIuS "\n",
-                               sizeof(SBPrefix),
-                               sizeof(SBPrefix) * prefixes.size()));
+  request->append(base::StringPrintf("%" PRIuS ":%" PRIuS "\n",
+                                     sizeof(SBPrefix),
+                                     sizeof(SBPrefix) * prefixes.size()));
   for (size_t i = 0; i < prefixes.size(); ++i) {
     request->append(reinterpret_cast<const char*>(&prefixes[i]),
                     sizeof(SBPrefix));
