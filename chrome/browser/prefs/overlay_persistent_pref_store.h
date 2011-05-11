@@ -43,6 +43,7 @@ class OverlayPersistentPrefStore : public PersistentPrefStore,
   virtual void RemoveValue(const std::string& key);
   virtual bool ReadOnly() const;
   virtual PrefReadError ReadPrefs();
+  virtual void ReadPrefsAsync(ReadErrorDelegate* delegate);
   virtual bool WritePrefs();
   virtual void ScheduleWritePrefs();
   virtual void CommitPendingWrite();
@@ -51,7 +52,7 @@ class OverlayPersistentPrefStore : public PersistentPrefStore,
  private:
   // Methods of PrefStore::Observer.
   virtual void OnPrefValueChanged(const std::string& key);
-  virtual void OnInitializationCompleted();
+  virtual void OnInitializationCompleted(bool succeeded);
 
   ObserverList<PrefStore::Observer, true> observers_;
   PrefValueMap overlay_;

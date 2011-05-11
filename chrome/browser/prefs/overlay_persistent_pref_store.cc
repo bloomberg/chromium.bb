@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prefs/overlay_persistent_pref_store.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 OverlayPersistentPrefStore::OverlayPersistentPrefStore(
@@ -80,7 +81,15 @@ bool OverlayPersistentPrefStore::ReadOnly() const {
 
 PersistentPrefStore::PrefReadError OverlayPersistentPrefStore::ReadPrefs() {
   // We do not read intentionally.
+  OnInitializationCompleted(true);
   return PersistentPrefStore::PREF_READ_ERROR_NONE;
+}
+
+void OverlayPersistentPrefStore::ReadPrefsAsync(
+    ReadErrorDelegate* error_delegate_raw) {
+  scoped_ptr<ReadErrorDelegate> error_delegate(error_delegate_raw);
+  // We do not read intentionally.
+  OnInitializationCompleted(true);
 }
 
 bool OverlayPersistentPrefStore::WritePrefs() {
@@ -105,7 +114,7 @@ void OverlayPersistentPrefStore::OnPrefValueChanged(const std::string& key) {
     FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
 }
 
-void OverlayPersistentPrefStore::OnInitializationCompleted() {
+void OverlayPersistentPrefStore::OnInitializationCompleted(bool succeeded) {
   FOR_EACH_OBSERVER(PrefStore::Observer, observers_,
-                    OnInitializationCompleted());
+                    OnInitializationCompleted(succeeded));
 }

@@ -55,7 +55,14 @@ bool TestingPrefStore::ReadOnly() const {
 
 PersistentPrefStore::PrefReadError TestingPrefStore::ReadPrefs() {
   prefs_.Clear();
+  NotifyInitializationCompleted();
   return PersistentPrefStore::PREF_READ_ERROR_NONE;
+}
+
+void TestingPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate_raw) {
+  scoped_ptr<ReadErrorDelegate> error_delegate(error_delegate_raw);
+  prefs_.Clear();
+  NotifyInitializationCompleted();
 }
 
 bool TestingPrefStore::WritePrefs() {
@@ -73,7 +80,7 @@ void TestingPrefStore::NotifyPrefValueChanged(const std::string& key) {
 }
 
 void TestingPrefStore::NotifyInitializationCompleted() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnInitializationCompleted());
+  FOR_EACH_OBSERVER(Observer, observers_, OnInitializationCompleted(true));
 }
 
 void TestingPrefStore::ReportValueChanged(const std::string& key) {

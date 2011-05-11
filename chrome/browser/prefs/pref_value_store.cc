@@ -38,8 +38,9 @@ void PrefValueStore::PrefStoreKeeper::OnPrefValueChanged(
   pref_value_store_->OnPrefValueChanged(type_, key);
 }
 
-void PrefValueStore::PrefStoreKeeper::OnInitializationCompleted() {
-  pref_value_store_->OnInitializationCompleted(type_);
+void PrefValueStore::PrefStoreKeeper::OnInitializationCompleted(
+    bool succeeded) {
+  pref_value_store_->OnInitializationCompleted(type_, succeeded);
 }
 
 PrefValueStore::PrefValueStore(PrefStore* managed_platform_prefs,
@@ -53,7 +54,8 @@ PrefValueStore::PrefValueStore(PrefStore* managed_platform_prefs,
                                PrefModelAssociator* pref_sync_associator,
                                PrefNotifier* pref_notifier)
     : pref_sync_associator_(pref_sync_associator),
-      pref_notifier_(pref_notifier) {
+      pref_notifier_(pref_notifier),
+      initialization_failed_(false) {
   InitPrefStore(MANAGED_PLATFORM_STORE, managed_platform_prefs);
   InitPrefStore(MANAGED_CLOUD_STORE, managed_cloud_prefs);
   InitPrefStore(EXTENSION_STORE, extension_prefs);
@@ -245,7 +247,14 @@ void PrefValueStore::OnPrefValueChanged(PrefValueStore::PrefStoreType type,
 }
 
 void PrefValueStore::OnInitializationCompleted(
-    PrefValueStore::PrefStoreType type) {
+    PrefValueStore::PrefStoreType type, bool succeeded) {
+  if (initialization_failed_)
+    return;
+  if (!succeeded) {
+    initialization_failed_ = true;
+    pref_notifier_->OnInitializationCompleted(false);
+    return;
+  }
   CheckInitializationCompleted();
 }
 
@@ -255,11 +264,13 @@ void PrefValueStore::InitPrefStore(PrefValueStore::PrefStoreType type,
 }
 
 void PrefValueStore::CheckInitializationCompleted() {
+  if (initialization_failed_)
+    return;
   for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
     scoped_refptr<PrefStore> store =
         GetPrefStore(static_cast<PrefStoreType>(i));
     if (store && !store->IsInitializationComplete())
       return;
   }
-  pref_notifier_->OnInitializationCompleted();
+  pref_notifier_->OnInitializationCompleted(true);
 }

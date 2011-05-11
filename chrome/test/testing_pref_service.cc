@@ -26,7 +26,7 @@ TestingPrefServiceBase::TestingPrefServiceBase(
                   recommended_platform_prefs,
                   NULL,
                   new DefaultPrefStore(),
-                  NULL),
+                  false),
       managed_platform_prefs_(managed_platform_prefs),
       user_prefs_(user_prefs),
       recommended_platform_prefs_(recommended_platform_prefs) {
@@ -111,4 +111,3 @@ ScopedTestingLocalState::~ScopedTestingLocalState() {
   EXPECT_EQ(&local_state_, browser_process_->local_state());
   browser_process_->SetLocalState(NULL);
 }
-

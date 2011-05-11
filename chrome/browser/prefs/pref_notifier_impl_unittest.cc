@@ -86,8 +86,8 @@ TEST_F(PrefNotifierTest, OnInitializationCompleted) {
       Field(&NotificationType::value,
             NotificationType::PREF_INITIALIZATION_COMPLETED),
       Source<PrefService>(&pref_service_),
-      NotificationService::NoDetails()));
-  notifier.OnInitializationCompleted();
+      Property(&Details<bool>::ptr, testing::Pointee(true))));
+  notifier.OnInitializationCompleted(true);
 }
 
 TEST_F(PrefNotifierTest, AddAndRemovePrefObservers) {

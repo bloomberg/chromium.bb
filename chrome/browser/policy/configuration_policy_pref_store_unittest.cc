@@ -819,7 +819,7 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
 TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Initialization) {
   EXPECT_FALSE(store_->IsInitializationComplete());
 
-  EXPECT_CALL(observer_, OnInitializationCompleted()).Times(1);
+  EXPECT_CALL(observer_, OnInitializationCompleted(true)).Times(1);
 
   provider_.SetInitializationComplete(true);
   EXPECT_FALSE(store_->IsInitializationComplete());

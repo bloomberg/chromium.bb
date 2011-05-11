@@ -79,25 +79,41 @@ Value* CreateLocaleDefaultValue(Value::ValueType type, int message_id) {
 
 // Forwards a notification after a PostMessage so that we can wait for the
 // MessageLoop to run.
-void NotifyReadError(PrefService* pref, int message_id) {
+void NotifyReadError(int message_id) {
   ShowProfileErrorDialog(message_id);
 }
+
+// Shows notifications which correspond to PersistentPrefStore's reading errors.
+class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
+ public:
+  virtual void OnError(PersistentPrefStore::PrefReadError error) {
+    if (error != PersistentPrefStore::PREF_READ_ERROR_NONE) {
+      // Failing to load prefs on startup is a bad thing(TM). See bug 38352 for
+      // an example problem that this can cause.
+      // Do some diagnosis and try to avoid losing data.
+      int message_id = 0;
+      if (error <= PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE) {
+        message_id = IDS_PREFERENCES_CORRUPT_ERROR;
+      } else if (error != PersistentPrefStore::PREF_READ_ERROR_NO_FILE) {
+        message_id = IDS_PREFERENCES_UNREADABLE_ERROR;
+      }
+
+      if (message_id) {
+        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+            NewRunnableFunction(&NotifyReadError, message_id));
+      }
+      UMA_HISTOGRAM_ENUMERATION("PrefService.ReadError", error, 20);
+    }
+  }
+};
 
 }  // namespace
 
 // static
 PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
                                             PrefStore* extension_prefs,
-                                            Profile* profile) {
-  return CreatePrefServiceAsync(pref_filename, extension_prefs, profile, NULL);
-}
-
-// static
-PrefService* PrefService::CreatePrefServiceAsync(
-    const FilePath& pref_filename,
-    PrefStore* extension_prefs,
-    Profile* profile,
-    PrefServiceDelegate* delegate) {
+                                            Profile* profile,
+                                            bool async) {
   using policy::ConfigurationPolicyPrefStore;
 
 #if defined(OS_LINUX)
@@ -129,9 +145,10 @@ PrefService* PrefService::CreatePrefServiceAsync(
           profile);
   DefaultPrefStore* default_pref_store = new DefaultPrefStore();
 
-  return new PrefService(managed_platform, managed_cloud, extension_prefs,
-                         command_line, user, recommended_platform,
-                         recommended_cloud, default_pref_store, delegate);
+  return new PrefService(
+      managed_platform, managed_cloud, extension_prefs,
+      command_line, user, recommended_platform,
+      recommended_cloud, default_pref_store, async);
 }
 
 PrefService* PrefService::CreateIncognitoPrefService(
@@ -147,10 +164,9 @@ PrefService::PrefService(PrefStore* managed_platform_prefs,
                          PrefStore* recommended_platform_prefs,
                          PrefStore* recommended_cloud_prefs,
                          DefaultPrefStore* default_store,
-                         PrefServiceDelegate* delegate)
+                         bool async)
     : user_pref_store_(user_prefs),
-      default_store_(default_store),
-      delegate_(delegate) {
+      default_store_(default_store) {
   pref_sync_associator_.reset(new PrefModelAssociator(this));
   pref_notifier_.reset(new PrefNotifierImpl(this));
   pref_value_store_.reset(
@@ -164,15 +180,14 @@ PrefService::PrefService(PrefStore* managed_platform_prefs,
                          default_store,
                          pref_sync_associator_.get(),
                          pref_notifier_.get()));
-  InitFromStorage();
+  InitFromStorage(async);
 }
 
 PrefService::PrefService(const PrefService& original,
                          PrefStore* incognito_extension_prefs)
       : user_pref_store_(
             new OverlayPersistentPrefStore(original.user_pref_store_.get())),
-        default_store_(original.default_store_.get()),
-        delegate_(NULL) {
+        default_store_(original.default_store_.get()) {
   // Incognito mode doesn't sync, so no need to create PrefModelAssociator.
   pref_notifier_.reset(new PrefNotifierImpl(this));
   pref_value_store_.reset(original.pref_value_store_->CloneAndSpecialize(
@@ -186,7 +201,6 @@ PrefService::PrefService(const PrefService& original,
       default_store_.get(),
       NULL, // pref_sync_associator_
       pref_notifier_.get()));
-  InitFromStorage();
 }
 
 PrefService::~PrefService() {
@@ -203,47 +217,17 @@ PrefService::~PrefService() {
   pref_sync_associator_.reset();
 }
 
-void PrefService::OnPrefsRead(PersistentPrefStore::PrefReadError error,
-                              bool no_dir) {
-  if (no_dir) {
-    // Bad news. When profile is created, the process that creates the directory
-    // is explicitly started. So if directory is missing it probably means that
-    // Chromium hasn't sufficient privileges.
-    CHECK(delegate_);
-    delegate_->OnPrefsLoaded(this, false);
-    return;
-  }
-
-  if (error != PersistentPrefStore::PREF_READ_ERROR_NONE) {
-    // Failing to load prefs on startup is a bad thing(TM). See bug 38352 for
-    // an example problem that this can cause.
-    // Do some diagnosis and try to avoid losing data.
-    int message_id = 0;
-    if (error <= PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE) {
-      message_id = IDS_PREFERENCES_CORRUPT_ERROR;
-    } else if (error != PersistentPrefStore::PREF_READ_ERROR_NO_FILE) {
-      message_id = IDS_PREFERENCES_UNREADABLE_ERROR;
-    }
-
-    if (message_id) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(&NotifyReadError, this, message_id));
-    }
-    UMA_HISTOGRAM_ENUMERATION("PrefService.ReadError", error, 20);
-  }
-
-  if (delegate_)
-    delegate_->OnPrefsLoaded(this, true);
-}
-
-void PrefService::InitFromStorage() {
-  if (!delegate_) {
-    const PersistentPrefStore::PrefReadError error =
-        user_pref_store_->ReadPrefs();
-    OnPrefsRead(error, false);
+void PrefService::InitFromStorage(bool async) {
+  if (!async) {
+    ReadErrorHandler error_handler;
+    error_handler.OnError(user_pref_store_->ReadPrefs());
   } else {
-    // todo(altimofeev): move this method to PersistentPrefStore interface.
-    (static_cast<JsonPrefStore*>(user_pref_store_.get()))->ReadPrefs(this);
+    // Guarantee that initialization happens after this function returned.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(user_pref_store_.get(),
+                          &PersistentPrefStore::ReadPrefsAsync,
+                          new ReadErrorHandler()));
   }
 }
 

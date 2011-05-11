@@ -36,7 +36,7 @@ class ContentSettingsPrefService : public PrefService {
       : PrefService(
           managed_platform_prefs, managed_cloud_prefs, extension_prefs,
           command_line_prefs, user_prefs, recommended_platform_prefs,
-          recommended_cloud_prefs, default_store, NULL) {}
+          recommended_cloud_prefs, default_store, false) {}
   virtual ~ContentSettingsPrefService() {}
 };
 }

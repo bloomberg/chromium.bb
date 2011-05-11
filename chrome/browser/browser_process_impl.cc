@@ -881,7 +881,7 @@ void BrowserProcessImpl::CreateLocalState() {
   FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   local_state_.reset(
-      PrefService::CreatePrefService(local_state_path, NULL, NULL));
+      PrefService::CreatePrefService(local_state_path, NULL, NULL, false));
 
   // Initialize the prefs of the local state.
   browser::RegisterLocalState(local_state_.get());

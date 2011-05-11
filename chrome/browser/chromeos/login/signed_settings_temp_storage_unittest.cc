@@ -30,7 +30,8 @@ class SignedSettingsTempStorageTest : public ::testing::Test {
     FilePath temp_file;
     ASSERT_TRUE(
         file_util::CreateTemporaryFileInDir(temp_dir_.path(), &temp_file));
-    local_state_.reset(PrefService::CreatePrefService(temp_file, NULL, NULL));
+    local_state_.reset(
+        PrefService::CreatePrefService(temp_file, NULL, NULL, false));
     ASSERT_TRUE(NULL != local_state_.get());
     SignedSettingsTempStorage::RegisterPrefs(local_state_.get());
   }

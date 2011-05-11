@@ -114,7 +114,7 @@ PrefService* PrefServiceMockBuilder::Create() {
                       recommended_platform_prefs_.get(),
                       recommended_cloud_prefs_.get(),
                       new DefaultPrefStore(),
-                      NULL);
+                      false);
   managed_platform_prefs_ = NULL;
   managed_cloud_prefs_ = NULL;
   extension_prefs_ = NULL;

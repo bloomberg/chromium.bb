@@ -29,7 +29,7 @@ namespace {
 class MockPrefNotifier : public PrefNotifier {
  public:
   MOCK_METHOD1(OnPreferenceChanged, void(const std::string&));
-  MOCK_METHOD0(OnInitializationCompleted, void());
+  MOCK_METHOD1(OnInitializationCompleted, void(bool));
 };
 
 // Allows to capture sync model associator interaction.
@@ -494,7 +494,7 @@ TEST_F(PrefValueStoreTest, PrefChanges) {
 }
 
 TEST_F(PrefValueStoreTest, OnInitializationCompleted) {
-  EXPECT_CALL(pref_notifier_, OnInitializationCompleted()).Times(0);
+  EXPECT_CALL(pref_notifier_, OnInitializationCompleted(true)).Times(0);
   managed_platform_pref_store_->SetInitializationCompleted();
   managed_cloud_pref_store_->SetInitializationCompleted();
   extension_pref_store_->SetInitializationCompleted();
@@ -505,7 +505,7 @@ TEST_F(PrefValueStoreTest, OnInitializationCompleted) {
   Mock::VerifyAndClearExpectations(&pref_notifier_);
 
   // The notification should only be triggered after the last store is done.
-  EXPECT_CALL(pref_notifier_, OnInitializationCompleted()).Times(1);
+  EXPECT_CALL(pref_notifier_, OnInitializationCompleted(true)).Times(1);
   user_pref_store_->SetInitializationCompleted();
   Mock::VerifyAndClearExpectations(&pref_notifier_);
 }

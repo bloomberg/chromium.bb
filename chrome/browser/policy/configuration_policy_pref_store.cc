@@ -1039,7 +1039,7 @@ void ConfigurationPolicyPrefStore::Refresh() {
       provider_->IsInitializationComplete()) {
     initialization_complete_ = true;
     FOR_EACH_OBSERVER(PrefStore::Observer, observers_,
-                      OnInitializationCompleted());
+                      OnInitializationCompleted(true));
   }
 }
 

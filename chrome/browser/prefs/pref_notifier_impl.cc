@@ -74,13 +74,13 @@ void PrefNotifierImpl::OnPreferenceChanged(const std::string& path) {
   FireObservers(path);
 }
 
-void PrefNotifierImpl::OnInitializationCompleted() {
+void PrefNotifierImpl::OnInitializationCompleted(bool succeeded) {
   DCHECK(CalledOnValidThread());
 
   NotificationService::current()->Notify(
       NotificationType::PREF_INITIALIZATION_COMPLETED,
       Source<PrefService>(pref_service_),
-      NotificationService::NoDetails());
+      Details<bool>(&succeeded));
 }
 
 void PrefNotifierImpl::FireObservers(const std::string& path) {

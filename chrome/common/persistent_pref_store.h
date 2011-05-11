@@ -34,6 +34,13 @@ class PersistentPrefStore : public PrefStore {
     PREF_READ_ERROR_FILE_NOT_SPECIFIED
   };
 
+  class ReadErrorDelegate {
+   public:
+    virtual ~ReadErrorDelegate() {}
+
+    virtual void OnError(PrefReadError error) = 0;
+  };
+
   // Equivalent to PrefStore::GetValue but returns a mutable value.
   virtual ReadResult GetMutableValue(const std::string& key,
                                      Value** result) = 0;
@@ -62,8 +69,15 @@ class PersistentPrefStore : public PrefStore {
   // read errors during startup.
   virtual bool ReadOnly() const = 0;
 
-  // Reads the preferences from disk.
+  // Reads the preferences from disk. Notifies observers via
+  // "PrefStore::OnInitializationCompleted" when done.
   virtual PrefReadError ReadPrefs() = 0;
+
+  // Reads the preferences from disk asynchronously. Notifies observers via
+  // "PrefStore::OnInitializationCompleted" when done. Also it fires
+  // |error_delegate| if it is not NULL and reading error has occurred.
+  // Owns |error_delegate|.
+  virtual void ReadPrefsAsync(ReadErrorDelegate* error_delegate) = 0;
 
   // Writes the preferences to disk immediately.
   virtual bool WritePrefs() = 0;

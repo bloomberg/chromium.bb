@@ -17,7 +17,7 @@ class PrefStoreObserverMock : public PrefStore::Observer {
   virtual ~PrefStoreObserverMock();
 
   MOCK_METHOD1(OnPrefValueChanged, void(const std::string&));
-  MOCK_METHOD0(OnInitializationCompleted, void());
+  MOCK_METHOD1(OnInitializationCompleted, void(bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrefStoreObserverMock);

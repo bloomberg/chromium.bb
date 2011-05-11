@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_proxy.h"
 #include "base/values.h"
-#include "content/browser/browser_thread.h"
 #include "content/common/json_value_serializer.h"
 
 namespace {
@@ -19,47 +19,54 @@ namespace {
 // Some extensions we'll tack on to copies of the Preferences files.
 const FilePath::CharType* kBadExtension = FILE_PATH_LITERAL("bad");
 
-// Differentiates file loading between UI and FILE threads.
+// Differentiates file loading between origin thread and passed
+// (aka file) thread.
 class FileThreadDeserializer
     : public base::RefCountedThreadSafe<FileThreadDeserializer> {
  public:
-  explicit FileThreadDeserializer(JsonPrefStore* delegate)
-      : delegate_(delegate) {
+  explicit FileThreadDeserializer(JsonPrefStore* delegate,
+                                  base::MessageLoopProxy* file_loop_proxy)
+      : delegate_(delegate),
+        file_loop_proxy_(file_loop_proxy),
+        origin_loop_proxy_(base::MessageLoopProxy::CreateForCurrentThread()) {
   }
 
   void Start(const FilePath& path) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
+    DCHECK(origin_loop_proxy_->BelongsToCurrentThread());
+    file_loop_proxy_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this,
                           &FileThreadDeserializer::ReadFileAndReport,
                           path));
   }
 
-  // Deserializes JSON on the FILE thread.
+  // Deserializes JSON on the file thread.
   void ReadFileAndReport(const FilePath& path) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK(file_loop_proxy_->BelongsToCurrentThread());
 
+    value_.reset(DoReading(path, &error_, &no_dir_));
+
+    origin_loop_proxy_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &FileThreadDeserializer::ReportOnOriginThread));
+  }
+
+  // Reports deserialization result on the origin thread.
+  void ReportOnOriginThread() {
+    DCHECK(origin_loop_proxy_->BelongsToCurrentThread());
+    delegate_->OnFileRead(value_.release(), error_, no_dir_);
+  }
+
+  static Value* DoReading(const FilePath& path,
+                          PersistentPrefStore::PrefReadError* error,
+                          bool* no_dir) {
     int error_code;
     std::string error_msg;
     JSONFileValueSerializer serializer(path);
-    value_.reset(serializer.Deserialize(&error_code, &error_msg));
-
-    HandleErrors(value_.get(), path, error_code, error_msg, &error_);
-
-    no_dir_ = !file_util::PathExists(path.DirName());
-
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        NewRunnableMethod(this, &FileThreadDeserializer::ReportOnUIThread));
-  }
-
-  // Reports deserialization result on the UI thread.
-  void ReportOnUIThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    delegate_->OnFileRead(value_.release(), error_, no_dir_);
+    Value* value = serializer.Deserialize(&error_code, &error_msg);
+    HandleErrors(value, path, error_code, error_msg, error);
+    *no_dir = !file_util::PathExists(path.DirName());
+    return value;
   }
 
   static void HandleErrors(const Value* value,
@@ -75,6 +82,8 @@ class FileThreadDeserializer
   PersistentPrefStore::PrefReadError error_;
   scoped_ptr<Value> value_;
   scoped_refptr<JsonPrefStore> delegate_;
+  scoped_refptr<base::MessageLoopProxy> file_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> origin_loop_proxy_;
 };
 
 // static
@@ -128,9 +137,12 @@ void FileThreadDeserializer::HandleErrors(
 JsonPrefStore::JsonPrefStore(const FilePath& filename,
                              base::MessageLoopProxy* file_message_loop_proxy)
     : path_(filename),
+      file_message_loop_proxy_(file_message_loop_proxy),
       prefs_(new DictionaryValue()),
       read_only_(false),
-      writer_(filename, file_message_loop_proxy) {
+      writer_(filename, file_message_loop_proxy),
+      error_delegate_(NULL),
+      initialized_(false) {
 }
 
 JsonPrefStore::~JsonPrefStore() {
@@ -153,6 +165,10 @@ void JsonPrefStore::AddObserver(PrefStore::Observer* observer) {
 
 void JsonPrefStore::RemoveObserver(PrefStore::Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+bool JsonPrefStore::IsInitializationComplete() const {
+  return initialized_;
 }
 
 PrefStore::ReadResult JsonPrefStore::GetMutableValue(const std::string& key,
@@ -194,11 +210,21 @@ void JsonPrefStore::OnFileRead(Value* value_owned,
                                PersistentPrefStore::PrefReadError error,
                                bool no_dir) {
   scoped_ptr<Value> value(value_owned);
+  initialized_ = true;
+
+  if (no_dir) {
+    FOR_EACH_OBSERVER(PrefStore::Observer,
+                      observers_,
+                      OnInitializationCompleted(false));
+    return;
+  }
+
   switch (error) {
     case PREF_READ_ERROR_ACCESS_DENIED:
     case PREF_READ_ERROR_FILE_OTHER:
     case PREF_READ_ERROR_FILE_LOCKED:
     case PREF_READ_ERROR_JSON_TYPE:
+    case PREF_READ_ERROR_FILE_NOT_SPECIFIED:
       read_only_ = true;
       break;
     case PREF_READ_ERROR_NONE:
@@ -216,53 +242,39 @@ void JsonPrefStore::OnFileRead(Value* value_owned,
       NOTREACHED() << "Unknown error: " << error;
   }
 
-  if (delegate_)
-    delegate_->OnPrefsRead(error, no_dir);
+  if (error_delegate_.get() && error != PREF_READ_ERROR_NONE)
+    error_delegate_->OnError(error);
+
+  FOR_EACH_OBSERVER(PrefStore::Observer,
+                    observers_,
+                    OnInitializationCompleted(true));
 }
 
-void JsonPrefStore::ReadPrefs(Delegate* delegate) {
-  DCHECK(delegate);
-  delegate_ = delegate;
-
+void JsonPrefStore::ReadPrefsAsync(ReadErrorDelegate *error_delegate) {
+  initialized_ = false;
+  error_delegate_.reset(error_delegate);
   if (path_.empty()) {
-    read_only_ = true;
-    delegate_->OnPrefsRead(PREF_READ_ERROR_FILE_NOT_SPECIFIED, false);
+    OnFileRead(NULL, PREF_READ_ERROR_FILE_NOT_SPECIFIED, false);
     return;
   }
-
-  // This guarantees that class will not be deleted while JSON is readed.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Start async reading of the preferences file. It will delete itself
   // in the end.
   scoped_refptr<FileThreadDeserializer> deserializer(
-      new FileThreadDeserializer(this));
+      new FileThreadDeserializer(this, file_message_loop_proxy_.get()));
   deserializer->Start(path_);
 }
 
 PersistentPrefStore::PrefReadError JsonPrefStore::ReadPrefs() {
-  delegate_ = NULL;
-
   if (path_.empty()) {
-    read_only_ = true;
+    OnFileRead(NULL, PREF_READ_ERROR_FILE_NOT_SPECIFIED, false);
     return PREF_READ_ERROR_FILE_NOT_SPECIFIED;
   }
 
-  int error_code = 0;
-  std::string error_msg;
-
-  JSONFileValueSerializer serializer(path_);
-  scoped_ptr<Value> value(serializer.Deserialize(&error_code, &error_msg));
-
-  PersistentPrefStore::PrefReadError error;
-  FileThreadDeserializer::HandleErrors(value.get(),
-                                       path_,
-                                       error_code,
-                                       error_msg,
-                                       &error);
-
-  OnFileRead(value.release(), error, false);
-
+  PrefReadError error;
+  bool no_dir;
+  Value* value = FileThreadDeserializer::DoReading(path_, &error, &no_dir);
+  OnFileRead(value, error, no_dir);
   return error;
 }
 

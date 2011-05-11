@@ -37,6 +37,7 @@ class TestingPrefStore : public PersistentPrefStore {
   virtual void RemoveValue(const std::string& key);
   virtual bool ReadOnly() const;
   virtual PersistentPrefStore::PrefReadError ReadPrefs();
+  virtual void ReadPrefsAsync(ReadErrorDelegate* error_delegate);
   virtual bool WritePrefs();
   virtual void ScheduleWritePrefs() {}
   virtual void CommitPendingWrite() {}

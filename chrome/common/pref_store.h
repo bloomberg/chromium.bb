@@ -30,7 +30,7 @@ class PrefStore : public base::RefCounted<PrefStore> {
     // Called when the value for the given |key| in the store changes.
     virtual void OnPrefValueChanged(const std::string& key) = 0;
     // Notification about the PrefStore being fully initialized.
-    virtual void OnInitializationCompleted() = 0;
+    virtual void OnInitializationCompleted(bool succeeded) = 0;
   };
 
   // Return values for GetValue().

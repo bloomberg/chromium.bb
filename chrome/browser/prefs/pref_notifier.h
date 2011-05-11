@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ class PrefNotifier {
   virtual void OnPreferenceChanged(const std::string& pref_name) = 0;
 
   // Broadcasts the intialization completed notification.
-  virtual void OnInitializationCompleted() = 0;
+  virtual void OnInitializationCompleted(bool succeeded) = 0;
 };
 
 #endif  // CHROME_BROWSER_PREFS_PREF_NOTIFIER_H_

@@ -36,8 +36,7 @@ class NetPrefObserver;
 // The default profile implementation.
 class ProfileImpl : public Profile,
                     public SpellCheckHostObserver,
-                    public NotificationObserver,
-                    public PrefServiceDelegate {
+                    public NotificationObserver {
  public:
   virtual ~ProfileImpl();
 
@@ -158,9 +157,8 @@ class ProfileImpl : public Profile,
   // Does final initialization. Should be called after prefs were loaded.
   void DoFinalInit();
 
-  // PrefServiceDelegate implementation. Does final prefs initialization and
-  // calls Init().
-  virtual void OnPrefsLoaded(PrefService* prefs, bool success);
+  // Does final prefs initialization and calls Init().
+  void OnPrefsLoaded(bool success);
 
   void CreateWebDataService();
   FilePath GetPrefFilePath();

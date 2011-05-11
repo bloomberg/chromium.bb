@@ -793,7 +793,7 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
     FilePath parent_profile =
         parsed_command_line.GetSwitchValuePath(switches::kParentProfile);
     scoped_ptr<PrefService> parent_local_state(
-        PrefService::CreatePrefService(parent_profile, NULL, NULL));
+        PrefService::CreatePrefService(parent_profile, NULL, NULL, false));
     parent_local_state->RegisterStringPref(prefs::kApplicationLocale,
                                            std::string());
     // Right now, we only inherit the locale setting from the parent profile.

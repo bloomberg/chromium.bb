@@ -27,11 +27,6 @@ class Value;
 class JsonPrefStore : public PersistentPrefStore,
                       public ImportantFileWriter::DataSerializer {
  public:
-  class Delegate {
-   public:
-    virtual void OnPrefsRead(PrefReadError error, bool no_dir) = 0;
-  };
-
   // |file_message_loop_proxy| is the MessageLoopProxy for a thread on which
   // file I/O can be done.
   JsonPrefStore(const FilePath& pref_filename,
@@ -43,6 +38,7 @@ class JsonPrefStore : public PersistentPrefStore,
                               const Value** result) const;
   virtual void AddObserver(PrefStore::Observer* observer);
   virtual void RemoveObserver(PrefStore::Observer* observer);
+  virtual bool IsInitializationComplete() const;
 
   // PersistentPrefStore overrides:
   virtual ReadResult GetMutableValue(const std::string& key, Value** result);
@@ -51,15 +47,16 @@ class JsonPrefStore : public PersistentPrefStore,
   virtual void RemoveValue(const std::string& key);
   virtual bool ReadOnly() const;
   virtual PrefReadError ReadPrefs();
-  // todo(altimofeev): move it to the PersistentPrefStore inteface.
-  void ReadPrefs(Delegate* delegate);
+  virtual void ReadPrefsAsync(ReadErrorDelegate* error_delegate);
   virtual bool WritePrefs();
   virtual void ScheduleWritePrefs();
   virtual void CommitPendingWrite();
   virtual void ReportValueChanged(const std::string& key);
 
   // This method is called after JSON file has been read. Method takes
-  // ownership of the |value| pointer.
+  // ownership of the |value| pointer. Note, this method is used with
+  // asynchronous file reading, so class exposes it only for the internal needs.
+  // (read: do not call it manually).
   void OnFileRead(Value* value_owned, PrefReadError error, bool no_dir);
 
  private:
@@ -67,6 +64,7 @@ class JsonPrefStore : public PersistentPrefStore,
   virtual bool SerializeData(std::string* output);
 
   FilePath path_;
+  scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy_;
 
   scoped_ptr<DictionaryValue> prefs_;
 
@@ -77,7 +75,9 @@ class JsonPrefStore : public PersistentPrefStore,
 
   ObserverList<PrefStore::Observer, true> observers_;
 
-  Delegate* delegate_;
+  scoped_ptr<ReadErrorDelegate> error_delegate_;
+
+  bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(JsonPrefStore);
 };

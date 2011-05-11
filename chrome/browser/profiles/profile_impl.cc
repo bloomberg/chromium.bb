@@ -292,18 +292,23 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       &ProfileImpl::EnsureSessionServiceCreated);
 
   if (delegate_) {
-    prefs_.reset(PrefService::CreatePrefServiceAsync(
+    prefs_.reset(PrefService::CreatePrefService(
         GetPrefFilePath(),
         new ExtensionPrefStore(GetExtensionPrefValueMap(), false),
         GetOriginalProfile(),
-        this));  // Ask to notify us in the end.
+        true));
+    // Wait for the notifcation that prefs has been loaded (successfully or
+    // not).
+    registrar_.Add(this, NotificationType::PREF_INITIALIZATION_COMPLETED,
+                   Source<PrefService>(prefs_.get()));
   } else {
     // Load prefs synchronously.
     prefs_.reset(PrefService::CreatePrefService(
         GetPrefFilePath(),
         new ExtensionPrefStore(GetExtensionPrefValueMap(), false),
-        GetOriginalProfile()));
-    OnPrefsLoaded(prefs_.get(), true);
+        GetOriginalProfile(),
+        false));
+    OnPrefsLoaded(true);
   }
 }
 
@@ -803,9 +808,7 @@ net::TransportSecurityState*
   return transport_security_state_.get();
 }
 
-void ProfileImpl::OnPrefsLoaded(PrefService* prefs, bool success) {
-  DCHECK(prefs == prefs_.get());
-
+void ProfileImpl::OnPrefsLoaded(bool success) {
   if (!success) {
     DCHECK(delegate_);
     delegate_->OnProfileCreated(this, false);
@@ -1319,39 +1322,55 @@ void ProfileImpl::MarkAsCleanShutdown() {
 void ProfileImpl::Observe(NotificationType type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
-  if (NotificationType::PREF_CHANGED == type) {
-    std::string* pref_name_in = Details<std::string>(details).ptr();
-    PrefService* prefs = Source<PrefService>(source).ptr();
-    DCHECK(pref_name_in && prefs);
-    if (*pref_name_in == prefs::kSpellCheckDictionary ||
-        *pref_name_in == prefs::kEnableSpellCheck) {
-      ReinitializeSpellCheckHost(true);
-    } else if (*pref_name_in == prefs::kEnableAutoSpellCorrect) {
-      bool enabled = prefs->GetBoolean(prefs::kEnableAutoSpellCorrect);
-      for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
-           !i.IsAtEnd(); i.Advance()) {
-        RenderProcessHost* process = i.GetCurrentValue();
-        process->Send(new SpellCheckMsg_EnableAutoSpellCorrect(enabled));
-      }
-    } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
-      clear_local_state_on_exit_ =
-          prefs->GetBoolean(prefs::kClearSiteDataOnExit);
-      if (webkit_context_) {
-        webkit_context_->set_clear_local_state_on_exit(
-            clear_local_state_on_exit_);
-      }
-      if (appcache_service_) {
-        appcache_service_->SetClearLocalStateOnExit(
-            clear_local_state_on_exit_);
-      }
-    } else if (*pref_name_in == prefs::kGoogleServicesUsername) {
-      ProfileManager* profile_manager = g_browser_process->profile_manager();
-      profile_manager->RegisterProfileName(this);
+  switch (type.value) {
+    case NotificationType::PREF_INITIALIZATION_COMPLETED: {
+      bool* succeeded = Details<bool>(details).ptr();
+      PrefService *prefs = Source<PrefService>(source).ptr();
+      DCHECK(prefs == prefs_.get());
+      registrar_.Remove(this, NotificationType::PREF_INITIALIZATION_COMPLETED,
+                        Source<PrefService>(prefs));
+      OnPrefsLoaded(*succeeded);
+      break;
     }
-  } else if (NotificationType::BOOKMARK_MODEL_LOADED == type) {
-    GetProfileSyncService();  // Causes lazy-load if sync is enabled.
-    registrar_.Remove(this, NotificationType::BOOKMARK_MODEL_LOADED,
-                      Source<Profile>(this));
+    case NotificationType::PREF_CHANGED: {
+      std::string* pref_name_in = Details<std::string>(details).ptr();
+      PrefService* prefs = Source<PrefService>(source).ptr();
+      DCHECK(pref_name_in && prefs);
+      if (*pref_name_in == prefs::kSpellCheckDictionary ||
+          *pref_name_in == prefs::kEnableSpellCheck) {
+        ReinitializeSpellCheckHost(true);
+      } else if (*pref_name_in == prefs::kEnableAutoSpellCorrect) {
+        bool enabled = prefs->GetBoolean(prefs::kEnableAutoSpellCorrect);
+        for (RenderProcessHost::iterator
+             i(RenderProcessHost::AllHostsIterator());
+             !i.IsAtEnd(); i.Advance()) {
+          RenderProcessHost* process = i.GetCurrentValue();
+          process->Send(new SpellCheckMsg_EnableAutoSpellCorrect(enabled));
+        }
+      } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
+        clear_local_state_on_exit_ =
+            prefs->GetBoolean(prefs::kClearSiteDataOnExit);
+        if (webkit_context_) {
+          webkit_context_->set_clear_local_state_on_exit(
+              clear_local_state_on_exit_);
+        }
+        if (appcache_service_) {
+          appcache_service_->SetClearLocalStateOnExit(
+              clear_local_state_on_exit_);
+        }
+      } else if (*pref_name_in == prefs::kGoogleServicesUsername) {
+        ProfileManager* profile_manager = g_browser_process->profile_manager();
+        profile_manager->RegisterProfileName(this);
+      }
+      break;
+    }
+    case NotificationType::BOOKMARK_MODEL_LOADED:
+      GetProfileSyncService();  // Causes lazy-load if sync is enabled.
+      registrar_.Remove(this, NotificationType::BOOKMARK_MODEL_LOADED,
+                        Source<Profile>(this));
+      break;
+    default:
+      NOTREACHED();
   }
 }
 
