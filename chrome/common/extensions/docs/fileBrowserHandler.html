@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>experimental.webInspector.audits API - Google Chrome Extensions - Google Code</title></head>
+  <title>chrome.fileBrowserHandler - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -251,25 +251,31 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">experimental.webInspector.audits
-API</h1>
+        <h1 class="page_title">chrome.fileBrowserHandler</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
-        <div id="toc" style="display: none; ">
+        <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a>h2Name</a>
+              <a href="#manifest">Manifest</a>
               <ol>
-                <li>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#code">Implementing a file browser handler</a>
+              <ol>
+                <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference</a>
+                <a href="#apiReference">API reference: chrome.fileBrowserHandler</a>
                 <ol>
-                  <li>
+                  <li style="display: none; ">
                     <a href="#properties">Properties</a>
                     <ol>
                       <li>
@@ -277,7 +283,7 @@ API</h1>
                       </li>
                     </ol>
                   </li>
-                  <li>
+                  <li style="display: none; ">
                     <a>Methods</a>
                     <ol>
                       <li>
@@ -286,10 +292,10 @@ API</h1>
                     </ol>
                   </li>
                   <li>
-                    <a>Events</a>
+                    <a href="#global-events">Events</a>
                     <ol>
                       <li>
-                        <a href="#event-anchor">eventName</a>
+                        <a href="#event-onExecute">onExecute</a>
                       </li>
                     </ol>
                   </li>
@@ -297,7 +303,7 @@ API</h1>
                     <a href="#types">Types</a>
                     <ol>
                       <li>
-                        <a href="#id-anchor">id</a>
+                        <a href="#type-FileHandlerExecuteEventDetails">FileHandlerExecuteEventDetails</a>
                       </li>
                     </ol>
                   </li>
@@ -313,22 +319,169 @@ API</h1>
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">experimental.webInspector.audits
-API</div>
-<p>The <code>experimental.webInspector.audits</code> API has been renamed to
-<a href="experimental.devtools.audits.html"><code>chrome.experimental.devtools.audits</code></a>.
-The old namepsace is deprecated and will be removed from future versions of
-Chrome.
+        <div id="static"><!-- BEGIN AUTHORED CONTENT -->
+<p id="classSummary">
+Use the <code>chrome.fileBrowserHandler</code> module to
+extend the Google Chrome OS file browser.
+For example, you can use this API
+to enable users to upload files to your website.
 </p>
-</div>
+
+<p class="caution">
+<b>Important:</b>
+This API works <b>only on ChromeOS</b>.
+</p>
+
+<p>
+The Chrome OS file browser comes up when
+the user either presses Ctrl+M
+or connects an external storage device,
+such as an SD card, USB key, external drive, or digital camera.
+Besides showing the files on external devices,
+the file browser can also display files
+that the user has previously saved to the system.
+</p>
+
+<p>
+When the user selects one or more files,
+the file browser adds buttons
+representing the valid handlers for those files.
+For example, in the following screenshot,
+selecting a file with a ".jpg" suffix
+results in an "Upload to Picasa" button that the user can click.
+</p>
+
+<p>
+<img src="images/filebrowserhandler.png" width="640" height="400" alt="file browser screenshot">
+</p>
+
+
+<h2 id="manifest">Manifest</h2>
+
+<p>
+You must declare the "fileBrowserHandler" permission
+in the <a href="manifest.html">extension manifest</a>,
+and you must use the "file_browser_handlers" field
+to register the extension as a handler of at least one file type.
+You should also provide a 16x16 icon
+to be displayed on the button.
+For example:
+</p>
+
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"file_browser_handlers"</b>: [
+    {
+      <b>"id"</b>: "upload",
+      <b>"default_title"</b>: "Save to Gallery", <em>// What the button will display</em>
+      <b>"file_filters"</b>: [
+        "filesystem:*.jpg", <em>// To match all files, use "filesystem:*.*"</em>
+        "filesystem:*.jpeg",
+        "filesystem:*.png"
+      ]
+    }
+  ],
+  "permissions" : [
+    <b>"fileBrowserHandler"</b>
+  ],
+  "icons": { <b>"16"</b>: "icon16.png",
+             "48": "icon48.png",
+            "128": "icon128.png" },
+  ...
+}</pre>
+
+<p class="note">
+<b>Note:</b>
+You can specify locale-specific strings for the value of "default_title".
+See <a href="i18n.html">Internationalization (i18n)</a> for details.
+</p>
+
+<h2 id="code">Implementing a file browser handler</h2>
+
+<p>
+To use this API,
+you must implement a function that handles the <code>onExecute</code> event
+of <code>chrome.fileBrowserHandler</code>.
+Your function will be called whenever the user clicks the button
+that represents your file browser handler.
+In your function, use the HTML5
+<a href="http://www.html5rocks.com/tutorials/file/filesystem/">FileSystem API</a>
+to get access to the file contents.
+Here is an example:
+</p>
+
+<pre><em>//In background.html:</em>
+chrome.fileBrowserHandler.onExecute.addListener(function(id, details) {
+  if (id == 'upload') {
+    var fileEntries = details.entries;
+    for (var i = 0, entry; entry = fileEntries[i]; ++i) {
+      entry.file(function(file) {
+        <em>// send file somewhere</em>
+      });
+    }
+  }
+});
+</pre>
+
+<p>
+Your event handler is passed two arguments:
+</p>
+
+<dl>
+  <dt> id </dt>
+  <dd> The "id" value from the manifest file.
+       If your extension implements multiple handlers,
+       you can check the <code>id</code> value
+       to see which handler has been triggered.
+       </dd>
+  <dt> details </dt>
+  <dd> An object describing the event.
+       You can get the file or files that the user has selected
+       from the <code>entries</code> field of this object,
+       which is an array of
+       FileSystem <code>Entry</code> objects.
+       </dd>
+<p></p>
+
+
+<!--
+<h2 id="manifest_details">Manifest details</h2>
+
+<p class="authornote">
+{PENDING: give details about "id" and "default_title".
+It should be unique within your extension -- don't worry about other extensions.
+"default_title" implies that you can change the title,
+but you can't aside from internationalizing it.
+</p>
+
+<p class="authornote">
+{PENDING: give details about the file_filters entry.
+File filters are currently case-sensitive, but we plan to change that.
+Mention <code>filesystem:*.*</code>.
+</p>
+-->
+
+<!--
+<h2 id="examples">Examples</h2>
+
+<p>
+For examples of using this API, see ...
+For other examples and for help in viewing the source code, see
+<a href="samples.html">Samples</a>.
+</p>
+-->
+
+<!-- END AUTHORED CONTENT -->
+</dl></div>
 
         <!-- API PAGE -->
-        <div class="apiPage" style="display: none; ">
+        <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.apiname </h2>
+        <h2>API reference: chrome.fileBrowserHandler</h2>
 
           <!-- PROPERTIES -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="properties"></a>
             <h3 id="properties">Properties</h3>
 
@@ -346,7 +499,7 @@ Chrome.
           </div> <!-- /apiGroup -->
 
           <!-- METHODS -->
-          <div id="methodsTemplate" class="apiGroup">
+          <div id="methodsTemplate" class="apiGroup" style="display: none; ">
             <a></a>
             <h3>Methods</h3>
 
@@ -423,23 +576,21 @@ Chrome.
 
           <!-- EVENTS -->
           <div id="eventsTemplate" class="apiGroup">
-            <a></a>
+            <a name="global-events"></a>
             <h3>Events</h3>
             <!-- iterates over all events -->
             <div class="apiItem">
-              <a></a>
-              <h4>event name</h4>
+              <a name="event-onExecute"></a>
+              <h4>onExecute</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>));
+                <span class="subdued">chrome.fileBrowserHandler.</span><span>onExecute</span><span class="subdued">.addListener</span>(function(<span>string id, FileHandlerExecuteEventDetails details</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the event goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Fired when file system action is executed from ChromeOS file browser.</p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div>
@@ -447,13 +598,146 @@ Chrome.
                   <dl>
                     <div>
                       <div>
-                      </div>
+          <dt>
+            <var>id</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>File browser action id as specified in the listener component's manifest.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                    </div><div>
+                      <div>
+          <dt>
+            <var>details</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="fileBrowserHandler.html#type-FileHandlerExecuteEventDetails">FileHandlerExecuteEventDetails</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                        <span></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>File handler execute event details.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
                     </div>
                   </dl>
                 </div>
 
                 <!-- EXTRA PARAMETERS -->
-                <div>
+                <div style="display: none; ">
                   <h4>Extra parameters to addListener</h4>
                   <dl>
                     <div>
@@ -464,9 +748,9 @@ Chrome.
                 </div>
 
                 <!-- LISTENER RETURN VALUE -->
-                <h4>Listener returns</h4>
+                <h4 style="display: none; ">Listener returns</h4>
                 <dl>
-                  <div>
+                  <div style="display: none; ">
                     <div>
                     </div>
                   </div>
@@ -484,11 +768,209 @@ Chrome.
 
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a></a>
-              <h4>type name</h4>
+              <a name="type-FileHandlerExecuteEventDetails"></a>
+              <h4>FileHandlerExecuteEventDetails</h4>
 
               <div>
+          <dt>
+            <var style="display: none; ">paramName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Event details payload for fileBrowserHandler.onExecute event.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>entries</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>any</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Array of Entry instances representing files that are targets of this action (selected in ChromeOS file browser).</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
               </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>tab_id</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The ID of the tab that raised this event. Tab IDs are unique within a browser session.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
 
             </div> <!-- /apiItem -->
 

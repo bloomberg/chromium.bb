@@ -4785,7 +4785,6 @@
   },
   {
     "namespace":"fileBrowserHandler",
-    "nodoc": "true",
     "types": [
       {
         "id": "FileHandlerExecuteEventDetails",

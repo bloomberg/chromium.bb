@@ -94,6 +94,7 @@
     "chrome.extension.onRequestExternal": "extension.html#event-onRequestExternal",
     "chrome.extension.sendRequest": "extension.html#method-sendRequest",
     "chrome.extension.setUpdateUrlData": "extension.html#method-setUpdateUrlData",
+    "chrome.fileBrowserHandler.onExecute": "fileBrowserHandler.html#event-onExecute",
     "chrome.history.addUrl": "history.html#method-addUrl",
     "chrome.history.deleteAll": "history.html#method-deleteAll",
     "chrome.history.deleteRange": "history.html#method-deleteRange",
@@ -1036,7 +1037,7 @@
         "info.html",
         "manifest.json"
       ],
-      "source_hash": "c746d9114348f4b414c1ec05e988e2807feb963a",
+      "source_hash": "672f49ed8edbe0829c7ba5a1d890b4440b157991",
       "zip_path": "examples\/extensions\/imageinfo.zip"
     },
     {
