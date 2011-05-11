@@ -3,15 +3,36 @@
 // found in the LICENSE file.
 
 var chromoting = {};
+XMPP_TOKEN_NAME = 'xmpp_token';
+OAUTH2_TOKEN_NAME = 'oauth2_token';
+
+function initAuthPanel_() {
+  document.getElementById('oauth2_token').value =
+      chromoting.getItem(OAUTH2_TOKEN_NAME);
+  document.getElementById('xmpp_token').value =
+      chromoting.getItem(XMPP_TOKEN_NAME);
+}
+
+function initBackgroundFuncs_() {
+  chromoting.getItem = chrome.extension.getBackgroundPage().getItem;
+  chromoting.setItem = chrome.extension.getBackgroundPage().setItem;
+}
+
+function saveCredentials(form) {
+  chromoting.setItem(OAUTH2_TOKEN_NAME, form['oauth2_token'].value);
+  chromoting.setItem(XMPP_TOKEN_NAME, form['xmpp_token'].value);
+}
 
 function init() {
+  initBackgroundFuncs_();
+  initAuthPanel_();
   setHostMode('unshared');
   setClientMode('unconnected');
   setGlobalMode('host');  // TODO(jamiewalch): Make the initial mode sticky.
 }
 
 // Show the div with id |mode| and hide those with other ids in |modes|.
-function setMode(mode, modes) {
+function setMode_(mode, modes) {
   for (var i = 0; i < modes.length; ++i) {
     var div = document.getElementById(modes[i]);
     if (mode == modes[i]) {
@@ -23,15 +44,15 @@ function setMode(mode, modes) {
 }
 
 function setGlobalMode(mode) {
-  setMode(mode, ['host', 'client', 'session']);
+  setMode_(mode, ['host', 'client', 'session']);
 }
 
 function setHostMode(mode) {
-  setMode(mode, ['unshared', 'ready_to_share', 'shared']);
+  setMode_(mode, ['unshared', 'ready_to_share', 'shared']);
 }
 
 function setClientMode(mode) {
-  setMode(mode, ['unconnected', 'connecting']);
+  setMode_(mode, ['unconnected', 'connecting']);
 }
 
 function tryShare() {
@@ -49,7 +70,7 @@ function cancelShare() {
 }
 
 function tryConnect(form) {
-  chromoting.accessCode = form.access_code_entry.value;
+  chromoting.accessCode = form['access_code_entry'].value;
   setClientMode('connecting');
   chromoting.clientTimer = setTimeout(
       function() {

@@ -15,6 +15,17 @@ found in the LICENSE file.
 
   <body onload="init();">
 
+    <!-- Auth panel -->
+    <div id="auth_panel">
+      <form action="">
+        XMPP Token: <input type="text" id="xmpp_token" /><br />
+        OAuth2 Token: <input type="text" id="oauth2_token" /><br />
+        <button onclick="saveCredentials(this.form);">
+          Save Credentials
+        </button>
+      </form>
+    </div>
+
     <!-- Host UI -->
     <div id="host">
 
