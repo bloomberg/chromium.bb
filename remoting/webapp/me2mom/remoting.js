@@ -6,16 +6,36 @@ var chromoting = {};
 XMPP_TOKEN_NAME = 'xmpp_token';
 OAUTH2_TOKEN_NAME = 'oauth2_token';
 
+function updateAuthStatus() {
+  var oauth1_status = document.getElementById('oauth1_status');
+  if (chromoting.oauth.hasToken()) {
+    oauth1_status.innerText = 'OK';
+    oauth1_status.style.color='green';
+  } else {
+    oauth1_status.innerText = 'Unauthorized';
+    oauth1_status.style.color='red';
+  }
+}
+
+function authorizeOAuth1() {
+  chromoting.oauth.authorize(updateAuthStatus);
+}
+
+function clearOAuth1() {
+  chromoting.oauth.clearTokens();
+  updateAuthStatus();
+}
+
 function initAuthPanel_() {
-  document.getElementById('oauth2_token').value =
-      chromoting.getItem(OAUTH2_TOKEN_NAME);
   document.getElementById('xmpp_token').value =
       chromoting.getItem(XMPP_TOKEN_NAME);
+  updateAuthStatus();
 }
 
 function initBackgroundFuncs_() {
   chromoting.getItem = chrome.extension.getBackgroundPage().getItem;
   chromoting.setItem = chrome.extension.getBackgroundPage().setItem;
+  chromoting.oauth = chrome.extension.getBackgroundPage().oauth;
 }
 
 function saveCredentials(form) {

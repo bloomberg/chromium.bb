@@ -17,9 +17,12 @@ found in the LICENSE file.
 
     <!-- Auth panel -->
     <div id="auth_panel">
+      Chromoting OAuth1 Token: <span id="oauth1_status"></span>
+      <button onclick="authorizeOAuth1();">Authorize</button>
+      <button onclick="clearOAuth1();">Clear</button >
+      <br />
       <form action="">
         XMPP Token: <input type="text" id="xmpp_token" /><br />
-        OAuth2 Token: <input type="text" id="oauth2_token" /><br />
         <button onclick="saveCredentials(this.form);">
           Save Credentials
         </button>

@@ -11,5 +11,9 @@
   "icons": {
     "128": "chromoting128.png"
   },
+  "permissions": [
+    "tabs",
+    "https://www.google.com/accounts/*"
+  ],
   "PLUGINS": "PLACEHOLDER"
 }
