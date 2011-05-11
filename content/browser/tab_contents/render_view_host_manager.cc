@@ -62,6 +62,10 @@ void RenderViewHostManager::Init(Profile* profile,
   render_view_host_ = RenderViewHostFactory::Create(
       site_instance, render_view_delegate_, routing_id, delegate_->
       GetControllerForRenderManager().session_storage_namespace());
+
+  // Keep track of renderer processes as they start to shut down.
+  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSING,
+                 NotificationService::AllSources());
 }
 
 RenderWidgetHostView* RenderViewHostManager::GetRenderWidgetHostView() const {
@@ -215,6 +219,12 @@ void RenderViewHostManager::RendererAbortedProvisionalLoad(
   // the response is not a download.
 }
 
+void RenderViewHostManager::RendererProcessClosing(
+    RenderProcessHost* render_process_host) {
+  // TODO(creis): Don't schedule new navigations in RenderViewHosts of this
+  // process.  (Part of http://crbug.com/65953.)
+}
+
 void RenderViewHostManager::ShouldClosePage(bool for_cross_site_transition,
                                             bool proceed) {
   if (for_cross_site_transition) {
@@ -276,6 +286,19 @@ void RenderViewHostManager::OnCrossSiteNavigationCanceled() {
   cross_navigation_pending_ = false;
   if (pending_render_view_host_)
     CancelPending();
+}
+
+void RenderViewHostManager::Observe(NotificationType type,
+                                    const NotificationSource& source,
+                                    const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::RENDERER_PROCESS_CLOSING:
+      RendererProcessClosing(Source<RenderProcessHost>(source).ptr());
+      break;
+
+    default:
+      NOTREACHED();
+  }
 }
 
 bool RenderViewHostManager::ShouldTransitionCrossSite() {
@@ -463,6 +486,9 @@ bool RenderViewHostManager::CreatePendingRenderView(
       instance, render_view_delegate_, MSG_ROUTING_NONE, delegate_->
       GetControllerForRenderManager().session_storage_namespace());
 
+  // Prevent the process from exiting while we're trying to use it.
+  pending_render_view_host_->process()->AddPendingView();
+
   bool success = InitRenderView(pending_render_view_host_, entry);
   if (success) {
     // Don't show the view until we get a DidNavigate from it.
@@ -520,6 +546,9 @@ void RenderViewHostManager::CommitPending() {
   // Swap in the pending view and make it active.
   render_view_host_ = pending_render_view_host_;
   pending_render_view_host_ = NULL;
+
+  // The process will no longer try to exit, so we can decrement the count.
+  render_view_host_->process()->RemovePendingView();
 
   // If the view is gone, then this RenderViewHost died while it was hidden.
   // We ignored the RenderViewGone call at the time, so we should send it now
@@ -655,6 +684,10 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
 
 void RenderViewHostManager::CancelPending() {
   RenderViewHost* pending_render_view_host = pending_render_view_host_;
+
+  // We no longer need to prevent the process from exiting.
+  pending_render_view_host->process()->RemovePendingView();
+
   pending_render_view_host_ = NULL;
   pending_render_view_host->Shutdown();
 

@@ -81,6 +81,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   void CreateMessageFilters();
 
   // Control message handlers.
+  void OnShutdownRequest();
   void OnUpdatedCacheStats(const WebKit::WebCache::UsageStats& stats);
   void SuddenTerminationChanged(bool enabled);
   void OnUserMetricsRecordAction(const std::string& action);

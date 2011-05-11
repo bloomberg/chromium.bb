@@ -104,6 +104,12 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // goes away we'll know that it was intentional rather than a crash.
   void ReportExpectingClose(int32 listener_id);
 
+  // Track the count of pending views that are being swapped back in.  Called
+  // by listeners to register and unregister pending views to prevent the
+  // process from exiting.
+  void AddPendingView();
+  void RemovePendingView();
+
   // Allows iteration over this RenderProcessHost's RenderViewHost listeners.
   // Use from UI thread only.
   typedef IDMap<IPC::Channel::Listener>::const_iterator listeners_iterator;
@@ -281,6 +287,11 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // True iff this process is being used as an extension process. Not valid
   // when running in single-process mode.
   bool is_extension_process_;
+
+  // The count of currently swapped out but pending RenderViews.  We have
+  // started to swap these in, so the renderer process should not exit if
+  // this count is non-zero.
+  int32 pending_views_;
 
  private:
   // The globally-unique identifier for this RPH.

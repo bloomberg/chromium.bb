@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
 class WebUI;
@@ -25,7 +26,8 @@ class SiteInstance;
 // it is easy to do. But we can also have transitions of processes (and hence
 // RenderViewHosts) that can get complex.
 class RenderViewHostManager
-    : public RenderViewHostDelegate::RendererManagement {
+    : public RenderViewHostDelegate::RendererManagement,
+      public NotificationObserver {
  public:
   // Functions implemented by our owner that we need.
   //
@@ -171,6 +173,11 @@ class RenderViewHostManager
                                    int new_request_id);
   virtual void OnCrossSiteNavigationCanceled();
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   // Called when a RenderViewHost is about to be deleted.
   void RenderViewDeleted(RenderViewHost* rvh);
 
@@ -223,6 +230,10 @@ class RenderViewHostManager
   void CancelPending();
 
   RenderViewHost* UpdateRendererStateForNavigate(const NavigationEntry& entry);
+
+  // Called when a renderer process is starting to close.  We should not
+  // schedule new navigations in its swapped out RenderViewHosts after this.
+  void RendererProcessClosing(RenderProcessHost* render_process_host);
 
   // Our delegate, not owned by us. Guaranteed non-NULL.
   Delegate* delegate_;

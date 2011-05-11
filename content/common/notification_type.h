@@ -408,6 +408,11 @@ class NotificationType {
     // RenderProcessHost that corresponds to the process.
     RENDERER_PROCESS_TERMINATED,
 
+    // Indicates that a render process is starting to exit, such that it should
+    // not be used for future navigations.  The source will be the
+    // RenderProcessHost that corresponds to the process.
+    RENDERER_PROCESS_CLOSING,
+
     // Indicates that a render process was closed (meaning it exited, but the
     // RenderProcessHost might be reused).  The source will be the corresponding
     // RenderProcessHost.  The details will be a RendererClosedDetails struct.

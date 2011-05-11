@@ -95,6 +95,7 @@ RenderProcessHost::RenderProcessHost(Profile* profile)
       fast_shutdown_started_(false),
       deleting_soon_(false),
       is_extension_process_(false),
+      pending_views_(0),
       id_(ChildProcessInfo::GenerateChildProcessUniqueId()),
       profile_(profile),
       sudden_termination_allowed_(true),
@@ -142,6 +143,15 @@ void RenderProcessHost::Release(int listener_id) {
 
 void RenderProcessHost::ReportExpectingClose(int32 listener_id) {
   listeners_expecting_close_.insert(listener_id);
+}
+
+void RenderProcessHost::AddPendingView() {
+  pending_views_++;
+}
+
+void RenderProcessHost::RemovePendingView() {
+  DCHECK(pending_views_);
+  pending_views_--;
 }
 
 void RenderProcessHost::UpdateMaxPageID(int32 page_id) {

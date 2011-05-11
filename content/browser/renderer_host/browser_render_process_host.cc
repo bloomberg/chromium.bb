@@ -786,6 +786,8 @@ bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
     // Dispatch control messages.
     bool msg_is_ok = true;
     IPC_BEGIN_MESSAGE_MAP_EX(BrowserRenderProcessHost, msg, msg_is_ok)
+      IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ShutdownRequest,
+                          OnShutdownRequest)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UpdatedCacheStats,
                           OnUpdatedCacheStats)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SuddenTerminationChanged,
@@ -825,6 +827,10 @@ void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
   Send(new ChildProcessMsg_SetIPCLoggingEnabled(
       IPC::Logging::GetInstance()->Enabled()));
 #endif
+
+  // Make sure the child checks with us before exiting, so that we do not try
+  // to schedule a new navigation in a swapped out and exiting renderer.
+  Send(new ChildProcessMsg_AskBeforeShutdown());
 }
 
 void BrowserRenderProcessHost::OnChannelError() {
@@ -878,6 +884,20 @@ void BrowserRenderProcessHost::OnChannelError() {
 
   // this object is not deleted at this point and may be reused later.
   // TODO(darin): clean this up
+}
+
+void BrowserRenderProcessHost::OnShutdownRequest() {
+  // Don't shutdown if there are pending RenderViews being swapped back in.
+  if (pending_views_)
+    return;
+
+  // Notify any tabs that might have swapped out renderers from this process.
+  // They should not attempt to swap them back in.
+  NotificationService::current()->Notify(
+      NotificationType::RENDERER_PROCESS_CLOSING,
+      Source<RenderProcessHost>(this), NotificationService::NoDetails());
+
+  Send(new ChildProcessMsg_Shutdown());
 }
 
 void BrowserRenderProcessHost::OnUpdatedCacheStats(
