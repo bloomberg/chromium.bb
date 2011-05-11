@@ -983,16 +983,15 @@ bool WebRequestEventHandled::RunImpl() {
     }
 
     if (value->HasKey("cancel")) {
+      // Don't allow cancel mixed with other keys.
+      if (value->HasKey("redirectUrl") || value->HasKey("requestHeaders")) {
+        error_ = keys::kInvalidBlockingResponse;
+        return false;
+      }
+
       bool cancel = false;
       EXTENSION_FUNCTION_VALIDATE(value->GetBoolean("cancel", &cancel));
       response->cancel = cancel;
-    }
-
-    // Don't allow cancel mixed with other keys.
-    if (response->cancel &&
-        (value->HasKey("redirectUrl") || value->HasKey("requestHeaders"))) {
-      error_ = keys::kInvalidBlockingResponse;
-      return false;
     }
 
     if (value->HasKey("redirectUrl")) {
