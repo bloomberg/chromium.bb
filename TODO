@@ -1,5 +1,44 @@
 Core wayland protocol
 
+ - Fix visuals
+
+ - Generic error reporting mechanism: display.error(object, code, msg)
+   event that all interfaces can use to report fatal (ie client
+   killing) errors.  The object is the object that the "error is
+   generated for", what that means is up to the interface to define,
+   but the errorcode has to be unique in the context of that object.
+   The msg argument is a textual description that the client can print
+   as it dies.
+
+ - Move map_* requests to wl_shell as set_*, rename to
+   wl_desktop_shell.  Make initial attach the request that shows the
+   surface and make attach with 0 buffer show the surface.  Drop the
+   map concept at that point.  Make wl_shell the EWMH of wayland.
+   Handle window title, icons, lower window, needs attention,
+   minimize, maximize, move to desktop?
+
+ - scanner: wl_* prefix removal: split it out into a namespace part so
+   we can call variables "surface" instead of "wl_surface"?
+
+ - Framebased input event delivery.
+
+ - Protocol for arbitrating access to scanout buffers (physically
+   contiguous memory).  When a client goes fullscreen (or ideally as
+   the compositor starts the animation that will make it fullscreen)
+   we send a "give up your scanout buffer" to the current fullscreen
+   client (if any) and when the client acks that we send a "try to
+   allocate a scanout buffer now" event to the fullscreen-to-be
+   client.
+
+ - Next steps based on EGL_WL_bind_display: create EGLImageKHR from
+   shm buffers? async auth in the implementation of the extension?
+
+ - wayland-egl: lazy-copy-back swapbuffer, sub-window, scanout flags
+   for fullscreen.
+
+ - configure should provide dx_left, dx_right, dy_top, dy_bottom, or
+   dx, dy, width and height.
+
  - surface.set_grab_mode(GRAB_OWNER_EVENTS vs GRAB_SURFACE_EVENTS), to
    make menus work right: click and drag in a menubar grabs the
    pointer to the menubar (which we need for detecting motion into
@@ -34,24 +73,29 @@ Core wayland protocol
 
  - DnD issues:
 
-   Root window must send NULL type (to decline drop) or
-   x-wayland/root-something type if the source offers that.  But the
-   target deletes the drag_offer object when drag.pointer_focus leaves
-   the surface...
+    - Drag should not be tied to a source surface, just the client.
+      the grab will break if the surface goes away, but the wl_drag
+      struct doesn't need to hold on to the source surface.
 
-   How do we animate the drag icon back to the drag origin in case of
-   a failed drag?
+    - Root window must send NULL type (to decline drop) or
+      x-wayland/root-something type if the source offers that.  But
+      the target deletes the drag_offer object when drag.pointer_focus
+      leaves the surface...
 
-   How to handle surfaces from clients that don't know about dnd or
-   don't care?  Maybe the dnd object should have a
-   dnd.register_surface() method so clients can opt-in the surfaces
-   that will participate in dnd.  Or just assume client is not
-   participating until we receive an accept request.
+    - How do we animate the drag icon back to the drag origin in case
+      of a failed drag?  Client should set drag icon separately,
+      compositor can do it then.
 
- - Selection/copy+paste issues: is it sufficient to only introduce the
-   selection offer when a client receives kb focus?  Or maybe it is
-   actually a security feature?  Clipboard manager in server for
-   retained selections?
+    - How to handle surfaces from clients that don't know about dnd or
+      don't care?  Maybe the dnd object should have a
+      dnd.register_surface() method so clients can opt-in the surfaces
+      that will participate in dnd.  Or just assume client is not
+      participating until we receive an accept request.
+
+    - Selection/copy+paste issues: is it sufficient to only introduce
+      the selection offer when a client receives kb focus?  Or maybe
+      it is actually a security feature?  Clipboard manager in server
+      for retained selections?
 
  - Pointer image issue:
 
@@ -60,17 +104,15 @@ Core wayland protocol
 
     - Cursor themes, tie in with glyph/image cache.
 
- - Discard buffer, as in "wayland discarded your buffer, it's no
-   longer visible, you can stop updating it now.", reattach, as in "oh
-   hey, I'm about to show your buffer that I threw away, what was it
+ - A "please suspend" event from the compositor, to indicate to an
+   application that it's no longer visible/active.  Or maybe discard
+   buffer, as in "wayland discarded your buffer, it's no longer
+   visible, you can stop updating it now.", reattach, as in "oh hey,
+   I'm about to show your buffer that I threw away, what was it
    again?".  for wayland system compositor vt switcing, for example,
    to be able to throw away the surfaces in the session we're
    switching away from.  for minimized windows that we don't want live
    thumb nails for. etc.
-
- - Import relevants bits from EWMH spec, stuff like window title,
-   window class, app groups, icons, lower window, need attention,
-   fullscreen (maybe different types of fullscreen).
 
  - Per client id space.  Each client has an entire 32 bit id namespace
    to itself.  On the server side, each struct wl_client has an object
@@ -117,35 +159,8 @@ Core wayland protocol
       client must have a server id, and each client has a server id ->
       client id hash.
 
- - When a surface is the size of the screen and on top, we can set the
-   scanout buffer to that surface directly.  Like compiz unredirect
-   top-level window feature.  Except it won't have any protocol state
-   side-effects and the client that owns the surface won't know.  We
-   lose control of updates.  Should work well for X server root window
-   under wayland.  Should be possible for yuv overlays as well.
-
-    - what about cursors then?  maybe use hw cursors if the cursor
-      satisfies hw limitations (64x64, only one cursor), switch to
-      composited cursors if not.
-
-    - clients needs to allocate the surface to be suitable for
-      scanout, which they can do whenever they go fullscreen.
-
- - multihead, screen geometry and crtc layout protocol, hotplug, lcd
-   subpixel info
-
- - a wayland settings protocol to tell clients about themes (icons,
-   cursors, widget themes), fonts details (family, hinting
-   preferences) etc.  Just send all settings at connect time, send
-   updates when a setting change.  Getting a little close to gconf
-   here, but could be pretty simple:
-
-     interface "settings":
-       event int_value(string name, int value)
-       event string_value(string name, string value)
-
-   but maybe it's better to just require that clients get that from
-   somewhere else (gconf/dbus).
+ - LCD subpixel info, dpi, monitor make and model, event when a
+   surface moves from one output to another.
 
  - input device discovery, hotplug
 
@@ -177,7 +192,59 @@ Core wayland protocol
    region of the window (or just a conservative, simple estimate), to
    let the compositor reduce overdraw.
 
+ - Protocol for specifying title bar rectangle (for moving
+   unresponsive apps) and a rectangle for the close button (for
+   detecting ignored close clicks).
+
  - multi gpu, needs queue and seqno to wait on in requests
+
+ - libxkbcommon
+
+    - pull in actions logic from xserver
+
+    - pull in keycode to keysym logic from libX11
+
+    - expose alloc functions in libxkbcommon, drop xserver funcs?
+
+    - pull the logic to write the xkb file from xkb_desc and names
+      into libxkbcommon and just build up the new xkb_desc instead of
+      dump+parse? (XkbWriteXKBKeymapForNames followed by
+      xkb_compile_keymap_from_string in XkbDDXLoadKeymapByNames)
+
+    - pull in keysym defs as XKB_KEY_BackSpace
+
+    - figure out what other X headers we can get rid of, make it not
+      need X at all (except when we gen the keysyms).
+
+    - Sort out namespace pollution (XkbFoo macros, atom funcs etc).
+
+    - Sort out 32 bit vmods and serialization
+
+ - Automatic "triple buffering", ie, don't block on vsync if we're
+   repainting below the refresh rate.
+
+    - surface.attach triggers a compositor.release_buffer event when
+      the buffer can be used again without messing things up (ie, it's
+      no longer the front buffer, or the compositor has attached the
+      new surface).
+
+    - compositor sends out a repaint event (to who? do clients have to
+      ask for this like they ask for the frame event?) once it has
+      repainted the scene with the recent updates.
+
+    - once a client receives the repaint event, it should start
+      rendering its next frame.  If it has received a buffer release
+      event for the old buffer, that can be reused, otherwise it has
+      to allocate a third buffer (ie, we automatically do triple
+      buffering for fullscreen surfaces).
+
+    - if a client is triple buffering and receives a release event
+      before the repaint event, it can go back to double buffering.
+
+    - the repaint event needs some kind of timestamp to drive
+      animations, since clients may not use the frame event at all.
+      Could just be the time of the most recent frame.
+
 
 Clients and ports
 
@@ -191,56 +258,61 @@ Clients and ports
       the menu and swallows the click.  without active grabs we can't
       swallow the click.  I'm sure there much more...
 
- - Port Qt?  There's already talk about this on the list.
+    - dnd, copy-paste
+
+ - Investigate DirectFB on Wayland (or is that Wayland on DirectFB?)
+
+ - SDL port, bnf has work in progress here:
+   http://cgit.freedesktop.org/~bnf/sdl-wayland/
+
+ - libva + eglimage + kms integration
 
  - X on Wayland
-
-    - move most of the code from xf86-video-intel into a Xorg wayland
-      module.
-
-    - don't ask KMS for available output and modes, use the info from
-      the wayland server.  then stop mooching off of drmmode.c.
 
     - map multiple wayland input devices to MPX in Xorg.
 
     - rootless; avoid allocating and setting the front buffer, draw
       window decorations in the X server (!), how to map input?
 
- - gnome-shell as a wayland session compositor
 
-    - runs as a client of the wayland session compositor, uses
-      clutter+egl on wayland
+Ideas
 
-    - talks to an Xorg server as the compositing and window manager
-      for that server and renders the output to a wayland surface.
-      the Xorg server should be modified to take input from the system
-      compositor through gnome-shell, but not allocate a front buffer.
+ - A wayland settings protocol to tell clients about themes (icons,
+   cursors, widget themes), fonts details (family, hinting
+   preferences) etc.  Just send all settings at connect time, send
+   updates when a setting change.  Getting a little close to gconf
+   here, but could be pretty simple:
 
-    - make gnome-shell itself a nested wayland server and allow native
-      wayland clients to connect and can native wayland windows with
-      the windows from the X server.
+     interface "settings":
+       event int_value(string name, int value)
+       event string_value(string name, string value)
 
- - qemu as a wayland client; session surface as X case
+   but maybe it's better to just require that clients get that from
+   somewhere else (gconf/dbus).
 
-    - qemu has too simple acceleration, so a Wayland backend like the
-      SDL/VNC ones it has now is trivial.
 
-    - paravirt: forward wayland screen info as mmio, expose gem ioctls as mmio
+Crazy ideas
 
-    - mapping vmem is tricky, should try to only use ioctl (pwrite+pread)
+ - AF_WAYLAND - A new socket type.  Eliminate compositor context
+   switch by making kernel understand enough of wayland that it can
+   forward input events as wayland events and do page flipping in
+   response to surface_attach requests:
 
-    - not useful for Windows without a windows paravirt driver.
+    - ioctl(wayland_fd, "surface_attach to object 5 should do a kms page
+			 flip on ctrc 2");
 
-    - two approaches: 1) do a toplevel qemu window, or 2) expose a
-      wayland server in the guest that forwards to the host wayland
-      server, ie a "remote" compositor, but with the gem buffers
-      shared.  could do a wl_connection directly on mmio memory, with
-      head and tail pointers.  use an alloc_head register to indicate
-      desired data to write, if it overwrites tail, block guest.  just
-      a socket would be easier.
+    - what about multiple crtcs? what about frame event for other
+      clients?
 
- - moblin as a wayland compositor
+    - forward these input devices to the client
 
-    - clutter as a wayland compositors
+    - "scancode 124 pressed or released with scan codes 18,22 and 30
+       held down gives control back to userspace wayland.
 
-    - argh, mutter
+    - what about maintaining cursor position? what about pointer
+      acceleration?  maybe this only works in "client cursor mode",
+      where wayland hides the cursor and only sends relative events?
+      Solves the composited cursor problem.  How does X show its
+      cursor then?
+
+    - Probably not worth it.
