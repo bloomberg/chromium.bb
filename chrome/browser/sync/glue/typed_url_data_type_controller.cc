@@ -81,7 +81,8 @@ bool TypedUrlDataTypeController::StartAssociationAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), ASSOCIATING);
   DCHECK(history_service_.get());
-  history_service_->ScheduleDBTask(new ControlTask(this, true), this);
+  history_service_->ScheduleDBTask(new ControlTask(this, true),
+                                   &cancelable_consumer_);
   return true;
 }
 
@@ -122,7 +123,8 @@ bool TypedUrlDataTypeController::StopAssociationAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), STOPPING);
   DCHECK(history_service_.get());
-  history_service_->ScheduleDBTask(new ControlTask(this, false), this);
+  history_service_->ScheduleDBTask(new ControlTask(this, false),
+                                   &cancelable_consumer_);
   return true;
 }
 

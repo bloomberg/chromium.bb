@@ -29,8 +29,7 @@ class ControlTask;
 
 // A class that manages the startup and shutdown of typed_url sync.
 class TypedUrlDataTypeController : public NonFrontendDataTypeController,
-                                   public NotificationObserver,
-                                   public CancelableRequestConsumerBase {
+                                   public NotificationObserver {
  public:
   TypedUrlDataTypeController(
       ProfileSyncFactory* profile_sync_factory,
@@ -78,6 +77,10 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
   history::HistoryBackend* backend_;
   scoped_refptr<HistoryService> history_service_;
   NotificationRegistrar notification_registrar_;
+
+  // Helper object to make sure we don't leave tasks running on the history
+  // thread.
+  CancelableRequestConsumerT<int, 0> cancelable_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(TypedUrlDataTypeController);
 };
