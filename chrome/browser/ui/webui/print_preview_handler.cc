@@ -18,6 +18,7 @@
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
@@ -402,7 +403,12 @@ TabContents* PrintPreviewHandler::GetInitiatorTab() {
 void PrintPreviewHandler::ClosePrintPreviewTab() {
   Browser* preview_tab_browser = BrowserList::FindBrowserWithID(
       preview_tab()->controller().window_id().id());
-  preview_tab_browser->CloseTabContents(preview_tab());
+  TabStripModel* tabstrip = preview_tab_browser->tabstrip_model();
+
+  // Keep print preview tab out of the recently closed tab list, because
+  // re-opening that page will just display a non-functional print preview page.
+  tabstrip->CloseTabContentsAt(tabstrip->GetIndexOfController(
+      &preview_tab()->controller()), TabStripModel::CLOSE_NONE);
 }
 
 void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
