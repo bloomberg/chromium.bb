@@ -138,18 +138,24 @@ bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(plugin->wrapper_factory()->MakeGeneric(params->ins()[0]->u.hval));
   plugin->set_nacl_module_ready(false);
-  // We intentionally do not report progress events for explicitly loaded
-  // modules as this is an experimental API that is going away.
+  // Generate the event stream for loading a module.
+  plugin->DispatchProgressEvent("loadstart",
+                                false,  // length_computable
+                                Plugin::kUnknownBytes,
+                                Plugin::kUnknownBytes);
   nacl::string error_string;
   bool was_successful = plugin->LoadNaClModule(wrapper.get(), &error_string);
   // Set the __moduleReady attribute to indicate ready to start.
   plugin->set_nacl_module_ready(was_successful);
-  if (!was_successful) {
+  if (was_successful) {
+    plugin->ReportLoadSuccess(false,  // length_computable
+                              Plugin::kUnknownBytes,
+                              Plugin::kUnknownBytes);
+  } else {
     // For reasons unknown, the message is garbled on windows.
     // TODO(sehr): know the reasons, and fix this.
-    nacl::string fdprefix("__launchExecutableFromFd failed: ");
-    plugin->browser_interface()->AddToConsole(plugin->instance_id(),
-                                              fdprefix + error_string);
+    plugin->ReportLoadError(nacl::string("__launchExecutableFromFd failed: ") +
+                            error_string);
   }
   return was_successful;
 }

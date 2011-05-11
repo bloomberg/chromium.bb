@@ -56,6 +56,13 @@ class Plugin : public PortableHandle {
   virtual void ReportLoadError(const nacl::string& error) = 0;
   // Report loading a module was aborted, typically due to user action.
   virtual void ReportLoadAbort() = 0;
+  // Dispatch a JavaScript event to indicate a key step in loading.
+  // |event_type| is a character string indicating which type of progress
+  // event (loadstart, progress, error, abort, load, loadend).
+  virtual void DispatchProgressEvent(const char* event_type,
+                                     bool length_computable,
+                                     uint64_t loaded_bytes,
+                                     uint64_t total_bytes) = 0;
 
   // overriding virtual methods
   virtual bool InvokeEx(uintptr_t method_id,

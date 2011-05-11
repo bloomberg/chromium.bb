@@ -26,26 +26,48 @@ function loadAndTestMethods(tester, server) {
     // Make the request.
     server.__urlAsNaClDesc('srpc_hw.nexe', new Callback());
 
-    function wait() {
+    function waitForStaticLoad() {
       if (!responded) {
         // Periodically poll until the results are ready.
-        halt_and_callback(5, wait);
+        halt_and_callback(5, waitForStaticLoad);
       } else {
-        // Validate the results.
+        // Validate the results of the static load.
         tester.log(nexe_file_descriptor_object);
+        // When __launchExecutableFromFd is called, it causes the set of
+        // progress events to be dispatched.  On successful loading a 'load'
+        // event will be dispatched.  We keep a variable to indicate whether
+        // the 'loadend' event has been dispatched and poll. An event listener
+        // changes the success/fail variable when the 'load' event is received.
+        var loadedFromFdEnded = false;
+        var loadedFromFdSucceeded = false;
+        $('nacl_server').addEventListener('loadend',
+            function() { loadedFromFdEnded = true; }, true);
+        $('nacl_server').addEventListener('load',
+            function() { loadedFromFdSucceeded = true; }, true);
+        // Start the load from the nexe file descriptor object.
         server.__launchExecutableFromFd(nexe_file_descriptor_object);
-        assertEqual(42, server.fortytwo());
-        assertEqual('hello, world.', server.helloworld());
+        // Wait until the variable indicates the load event was received.
+        function waitForLoadFromFd() {
+          if (!loadedFromFdEnded) {
+            // Periodically poll until the results are ready.
+            halt_and_callback(5, waitForLoadFromFd);
+          } else {
+            assert(loadedFromFdSucceeded);
+            assertEqual(42, server.fortytwo());
+            assertEqual('hello, world.', server.helloworld());
+          }
+        }
+        waitForLoadFromFd();
       }
     }
-    wait();
+    waitForStaticLoad();
   });
 }
 
       //]]>
     </script>
   </head>
-  <body>
+  <body id="bodyId">
     <h1>Native Client SRPC Plug-in from a File Descriptor</h1>
     NOTE: Set NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS=1 to run this test.
 

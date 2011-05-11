@@ -91,6 +91,13 @@ class PluginPpapi : public pp::Instance, public Plugin {
   virtual void ReportLoadError(const nacl::string& error);
   // Report loading a module was aborted, typically due to user action.
   virtual void ReportLoadAbort();
+  // Dispatch a JavaScript event to indicate a key step in loading.
+  // |event_type| is a character string indicating which type of progress
+  // event (loadstart, progress, error, abort, load, loadend).
+  virtual void DispatchProgressEvent(const char* event_type,
+                                     bool length_computable,
+                                     uint64_t loaded_bytes,
+                                     uint64_t total_bytes);
 
   // ----- Methods unique to PluginPpapi:
 
@@ -189,14 +196,6 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Handles the __setAsyncCallback() method.  Spawns a thread to receive
   // IMC messages from the NaCl process and pass them on to Javascript.
   static bool SetAsyncCallback(void* obj, SrpcParams* params);
-
-  // Dispatch a JavaScript event to indicate a key step in loading.
-  // |event_type| is a character string indicating which type of progress
-  // event (loadstart, progress, error, abort, load, loadend).
-  void DispatchProgressEvent(const char* event_type,
-                             bool length_computable,
-                             uint64_t loaded_bytes,
-                             uint64_t total_bytes);
 
   // The manifest dictionary.  Used for looking up resources to be loaded.
   pp::Var manifest_object_;
