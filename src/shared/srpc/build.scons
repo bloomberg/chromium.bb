@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 
 Import('env')
@@ -12,10 +12,10 @@ trusted_untrusted_shared = [
     'module_init_fini.c',
     'nacl_srpc.c',
     'nacl_srpc_message.c',
+    'rpc_log.c',
     'rpc_serialize.c',
     'rpc_service.c',
     'rpc_server_loop.c',
-    'utility.c',
 ]
 
 env.DualLibrary('nonnacl_srpc', trusted_untrusted_shared)

@@ -19,10 +19,10 @@
           'nacl_srpc.h',
           'nacl_srpc_internal.h',
           'nacl_srpc_message.c',
+          'rpc_log.c',
           'rpc_serialize.c',
           'rpc_service.c',
           'rpc_server_loop.c',
-          'utility.c',
         ],
         'cflags': [
           '-fno-strict-aliasing',

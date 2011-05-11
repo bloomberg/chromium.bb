@@ -1174,7 +1174,7 @@ void NaClSrpcRpcWait(NaClSrpcChannel* channel,
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "NaClSrpcRpcWait(channel=%p):"
                 " EOF is received instead of response. Probably, the other"
-                " side (usually, nacl module or browser plugin) crashed.",
+                " side (usually, nacl module or browser plugin) crashed.\n",
                 (void*) channel);
     rpc->result = NACL_SRPC_RESULT_INTERNAL;
   }

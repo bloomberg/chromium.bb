@@ -8,14 +8,19 @@
  * SRPC utility functions.
  */
 
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_process.h"
 
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/shared/platform/nacl_threads.h"
+#include "native_client/src/shared/platform/nacl_timestamp.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
@@ -50,8 +55,15 @@ static int getVerbosity() {
 }
 
 void NaClSrpcLog(int detail_level, const char* fmt, ...) {
+  /*
+   * It would be better to use the NaClLog infrastructure to do this, but
+   * it requires some more enhancement to be ready.
+   * http://code.google.com/p/nativeclient/issues/detail?id=1802
+   * TODO(bsy,sehr): convert this when NaClLog is ready for SRPC levels, etc.
+   */
   if (detail_level <= getVerbosity()) {
     int pid = GETPID();
+    char timestamp[128];
     va_list ap;
 #ifdef __native_client__
     const char* host_or_nacl = "NACL";
@@ -60,27 +72,77 @@ void NaClSrpcLog(int detail_level, const char* fmt, ...) {
 #endif
     va_start(ap, fmt);
     /* NaClXMutexLock(&log_mu); */
-    fprintf(stderr, "[SRPC: %08x: %s] ", pid, host_or_nacl);
+    fprintf(stderr,
+            "[SRPC:%s:%d:%s] ",
+            host_or_nacl,
+            pid,
+            NaClTimeStampString(timestamp, sizeof timestamp));
     vfprintf(stderr, fmt, ap);
     /* NaClXMutexUnlock(&log_mu); */
     va_end(ap);
   }
 }
 
-static void formatChar(char cval, char** buf, size_t* bytes_remaining) {
-  if (cval < ' ' || cval >= 0x7f) {
-    static const size_t kBytesRequiredForHex = 4;
-    if (*bytes_remaining >= kBytesRequiredForHex) {
-      SNPRINTF(*buf, kBytesRequiredForHex, "\\x%02x", cval);
-    }
-    *buf += kBytesRequiredForHex;
-    *bytes_remaining -= kBytesRequiredForHex;
-  } else {
+/*
+ * This makes a best-effort escape sequence to feed sel_universal's parser
+ * in src/trusted/sel_universal/parsing.cc.
+ */
+static int shouldPrintAsEscaped(int cval) {
+  switch (cval) {
+    case '\0':
+      return '0';
+    case '\\':
+      return '\\';
+    case '\"':
+      return '\"';
+    case '\'':
+      return '\'';
+    case '\a':
+      return 'a';
+    case '\b':
+      return 'b';
+    case '\f':
+      return 'f';
+    case '\n':
+      return 'n';
+    case '\r':
+      return 'r';
+    case '\t':
+      return 't';
+    case '\v':
+      return 'v';
+    default:
+      return -1;
+  }
+}
+
+static void formatChar(int cval, char** buf, size_t* bytes_remaining) {
+  int escaped_char;
+  if (isprint(cval)) {
     static const size_t kBytesRequiredForChar = 1;
     if (*bytes_remaining >= kBytesRequiredForChar) {
       **buf = cval;
       *buf += kBytesRequiredForChar;
       *bytes_remaining -= kBytesRequiredForChar;
+    }
+    return;
+  }
+  escaped_char = shouldPrintAsEscaped(cval);
+  if (escaped_char != -1) {
+    static const size_t kBytesRequiredForEscapedChar = 2;
+    if (*bytes_remaining >= kBytesRequiredForEscapedChar) {
+      (*buf)[0] = '\\';
+      (*buf)[1] = escaped_char;
+      *buf += kBytesRequiredForEscapedChar;
+      *bytes_remaining -= kBytesRequiredForEscapedChar;
+    }
+  } else {
+    static const size_t kBytesRequiredForHex = 4;
+    if (*bytes_remaining >= kBytesRequiredForHex) {
+      size_t written_bytes =
+          SNPRINTF(*buf, kBytesRequiredForHex, "\\x%02x", (unsigned char) cval);
+      *buf += written_bytes;
+      *bytes_remaining -= written_bytes;
     }
   }
 }
@@ -143,7 +205,7 @@ void NaClSrpcFormatArg(int detail_level,
       break;
     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
       formatCount(arg->u.count, &buffer, &buffer_size);
-      /*  this should really perform some escaping. */
+      formatString(",", &buffer, &buffer_size);
       for (i = 0; i < arg->u.count; ++i)
         formatChar(arg->arrays.carr[i], &buffer, &buffer_size);
       break;
@@ -182,7 +244,6 @@ void NaClSrpcFormatArg(int detail_level,
       }
       break;
     case NACL_SRPC_ARG_TYPE_STRING:
-      /* this should really perform some escaping. */
       formatString("\"", &buffer, &buffer_size);
       formatString(arg->arrays.str, &buffer, &buffer_size);
       formatString("\"", &buffer, &buffer_size);

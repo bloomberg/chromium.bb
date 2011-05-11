@@ -120,6 +120,8 @@ static int HandleEscapedHex(const string s, size_t* pos) {
 }
 
 
+// This should be kept in sync with the SRPC logging escaping done in
+// src/shared/srpc/rpc_log.c to allow easy capture of logs for testing.
 static int HandleEscapedChar(const string s, size_t* pos) {
   if (*pos >= s.size()) return -1;
   switch (s[*pos]) {
@@ -129,6 +131,12 @@ static int HandleEscapedChar(const string s, size_t* pos) {
     case '\"':
       ++*pos;
       return '\"';
+    case '\'':
+      ++*pos;
+      return '\'';
+    case 'a':
+      ++*pos;
+      return '\a';
     case 'b':
       ++*pos;
       return '\b';
@@ -138,6 +146,9 @@ static int HandleEscapedChar(const string s, size_t* pos) {
     case 'n':
       ++*pos;
       return '\n';
+    case 'r':
+      ++*pos;
+      return '\r';
     case 't':
       ++*pos;
       return '\t';

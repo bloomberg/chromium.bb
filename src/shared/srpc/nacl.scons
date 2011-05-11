@@ -24,10 +24,10 @@ trusted_untrusted_shared = [
     'module_init_fini.c',
     'nacl_srpc.c',
     'nacl_srpc_message.c',
+    'rpc_log.c',
     'rpc_serialize.c',
     'rpc_service.c',
     'rpc_server_loop.c',
-    'utility.c',
 ]
 
 # NOTE: these files maybe candidates for a separate library
