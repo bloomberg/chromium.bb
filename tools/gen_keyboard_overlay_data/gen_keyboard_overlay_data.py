@@ -369,8 +369,13 @@ def OutputCC(hotkey_data, outfile):
   print 'Generating: %s' % outfile
   out = file(outfile, 'w')
   for (behavior, _) in hotkey_data:
+    message_name = ToMessageName(behavior)
+    # Indent the line if message_name is longer than 45 characters, which means
+    # the second line in the generated code is longer than 80 characters.
+    if len(message_name) > 45:
+      message_name = '\n          %s' % message_name
     out.write(CC_SNIPPET_TEMPLATE % (Toi18nContent(behavior),
-                                     ToMessageName(behavior)))
+                                     message_name))
 
 
 def OutputAltGr(keyboard_glyph_data, outfile):
