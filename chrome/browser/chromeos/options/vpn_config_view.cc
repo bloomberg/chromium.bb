@@ -144,18 +144,13 @@ string16 VPNConfigView::GetTitle() {
 }
 
 bool VPNConfigView::CanLogin() {
-  static const size_t kMinPassphraseLen = 0;  // TODO(stevenjb): min length?
+  // TODO(stevenjb): min kMinPassphraseLen length?
   if (service_path_.empty() &&
       (GetService().empty() || GetServer().empty()))
-    return false;
-  if (provider_type_ == VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK &&
-      psk_passphrase_textfield_->text().length() < kMinPassphraseLen)
     return false;
   if (UserCertRequired() && GetUserCertID().empty())
     return false;
   if (GetUsername().empty())
-    return false;
-  if (user_passphrase_textfield_->text().length() < kMinPassphraseLen)
     return false;
   return true;
 }

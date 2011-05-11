@@ -51,6 +51,9 @@ const int kInitRetrySleepSec = 1;
 
 }  // namespace
 
+// static
+const double AudioMixer::kSilenceDb = -200.0;
+
 AudioMixerAlsa::AudioMixerAlsa()
     : min_volume_(kDefaultMinVolume),
       max_volume_(kDefaultMaxVolume),
