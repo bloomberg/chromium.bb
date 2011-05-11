@@ -71,8 +71,10 @@ BOT_ASSIGNMENT = {
     'karmic64-valgrind': 'bash buildbot/buildbot_valgrind.sh',
     # Coverage.
     'mac10.6-newlib-coverage': 'bash buildbot/buildbot_coverage_mac.sh',
-    'lucid64-32-newlib-coverage': 'bash buildbot/buildbot_coverage_linux.sh 32',
-    'lucid64-64-newlib-coverage': 'bash buildbot/buildbot_coverage_linux.sh 64',
+    'lucid-64-32-newlib-coverage':
+        'bash buildbot/buildbot_coverage_linux.sh 32',
+    'lucid-64-64-newlib-coverage':
+        'bash buildbot/buildbot_coverage_linux.sh 64',
     'xp-newlib-coverage': 'buildbot\\buildbot_coverage_win.bat',
     # PPAPI Integration.
     'lucid64-m32-n32-opt-ppapi':
