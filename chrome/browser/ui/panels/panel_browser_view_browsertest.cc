@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreateOrUpdateOptionsMenu) {
                            single_panel_menu);
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, TitleBarMouseEvent) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, DISABLED_TitleBarMouseEvent) {
   // Tests dragging a panel in single-panel environment.
   // We should get back to the original position after the dragging is ended.
   PanelBrowserView* browser_view1 = CreatePanelBrowserView("PanelTest1");
