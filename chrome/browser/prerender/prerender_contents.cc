@@ -285,7 +285,8 @@ void PrerenderContents::StartPrerendering(
       Source<RenderViewHostDelegate>(GetRenderViewHostDelegate()));
 
   // Register for new windows from any source.
-  notification_registrar_.Add(this, NotificationType::CREATING_NEW_WINDOW,
+  notification_registrar_.Add(this,
+                              NotificationType::CREATING_NEW_WINDOW_CANCELLED,
                               Source<TabContents>(new_contents));
 
   DCHECK(load_start_time_.is_null());
@@ -490,7 +491,7 @@ void PrerenderContents::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::CREATING_NEW_WINDOW: {
+    case NotificationType::CREATING_NEW_WINDOW_CANCELLED: {
       if (prerender_contents_.get()) {
         CHECK(Source<TabContents>(source).ptr() ==
               prerender_contents_->tab_contents());

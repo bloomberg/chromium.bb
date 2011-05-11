@@ -131,6 +131,12 @@ class NotificationType {
     // ViewHostMsg_CreateWindow_Params object are provided.
     CREATING_NEW_WINDOW,
 
+    // A new window was requested but was not created. The source will be a
+    // Source<TabContents> corresponding to the tab the request originated from.
+    // Details are the ViewHostMsg_CreateWindow_Params object that were used in
+    // the request.
+    CREATING_NEW_WINDOW_CANCELLED,
+
     // SSL ---------------------------------------------------------------------
 
     // Updating the SSL security indicators (the lock icon and such) proceeds
