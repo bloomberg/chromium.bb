@@ -443,7 +443,7 @@ runTests([
           event: "onErrorOccurred",
           details: {
             url: getURL("complexLoad/a.html"),
-            error: ""
+            error: "net::ERR_EMPTY_RESPONSE"
           }
         },
       ],
@@ -592,7 +592,7 @@ runTests([
           event: "onErrorOccurred",
           details: {
             url: getURL("does_not_exist.html"),
-            error: ""
+            error: "net::ERR_FILE_NOT_FOUND"
           }
         },
       ],

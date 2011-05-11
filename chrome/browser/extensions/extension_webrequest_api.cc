@@ -626,16 +626,13 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   if (listeners.empty())
     return;
 
-  // TODO(mpcomplete): Convert network error status to string, see discussion
-  // in http://codereview.chromium.org/6881104/.
-  std::string my_error = "";
-
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString(keys::kRequestIdKey,
                   base::Uint64ToString(request->identifier()));
   dict->SetString(keys::kUrlKey, request->url().spec());
-  dict->SetString(keys::kErrorKey, my_error);
+  dict->SetString(keys::kErrorKey,
+                  net::ErrorToString(request->status().os_error()));
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   args.Append(dict);
 

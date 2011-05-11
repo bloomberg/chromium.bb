@@ -3999,7 +3999,7 @@
             "properties": {
               "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string", "description": "The URL of the current request."},
-              "error": {"type": "string", "description": "The error description."},
+              "error": {"type": "string", "description": "The error description. This string is <em>not</em> guaranteed to remain backwards compatible between releases. You must not parse and act based upon its content."},
               "timeStamp": {"type": "number", "description": "The time when the error occurred, in milliseconds since the epoch."}
             }
           }
