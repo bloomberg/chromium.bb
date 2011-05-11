@@ -244,7 +244,7 @@ std::string PyUITestBase::_GetBookmarksAsJSON() {
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
-    return false;
+    return NULL;
 
   std::string s;
   EXPECT_TRUE(browser_proxy->GetBookmarksAsJSON(&s));

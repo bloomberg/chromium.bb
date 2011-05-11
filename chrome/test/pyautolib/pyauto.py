@@ -580,7 +580,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     This is a snapshot of the bookmark model; it is not a proxy and
     does not get updated as the bookmark model changes.
     """
-    return bookmark_model.BookmarkModel(self._GetBookmarksAsJSON())
+    bookmarks_as_json = self._GetBookmarksAsJSON()
+    if bookmarks_as_json == None:
+      raise JSONInterfaceError('Could not resolve browser proxy.')
+    return bookmark_model.BookmarkModel(bookmarks_as_json)
 
   def GetDownloadsInfo(self, windex=0):
     """Return info about downloads.
