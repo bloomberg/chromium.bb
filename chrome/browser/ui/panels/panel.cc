@@ -307,6 +307,10 @@ void Panel::ShowCreateChromeAppShortcutsDialog(Profile* profile,
   NOTIMPLEMENTED();
 }
 
+void Panel::ToggleUseCompactNavigationBar() {
+  NOTIMPLEMENTED();
+}
+
 void Panel::Cut() {
   NOTIMPLEMENTED();
 }

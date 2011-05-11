@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,10 @@ class ViewIDTest : public InProcessBrowserTest {
           i == VIEW_ID_AUTOCOMPLETE ||
           i == VIEW_ID_CONTENTS_SPLIT ||
           i == VIEW_ID_SIDE_BAR_SPLIT ||
-          i == VIEW_ID_FEEDBACK_BUTTON) {
+          i == VIEW_ID_FEEDBACK_BUTTON ||
+          i == VIEW_ID_COMPACT_NAV_BAR ||
+          i == VIEW_ID_COMPACT_OPT_BAR ||
+          i == VIEW_ID_COMPACT_NAV_BAR_SPACER) {
         continue;
       }
 

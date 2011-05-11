@@ -41,10 +41,15 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/ui/views/compact_nav/compact_location_bar_view.h"
+#include "chrome/browser/ui/views/compact_nav/compact_location_bar_view_host.h"
+#include "chrome/browser/ui/views/compact_nav/compact_navigation_bar.h"
+#include "chrome/browser/ui/views/compact_nav/compact_options_bar.h"
 #include "chrome/browser/ui/views/default_search_view.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
@@ -78,6 +83,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "grit/webkit_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -304,6 +310,9 @@ BrowserView::BrowserView(Browser* browser)
       active_bookmark_bar_(NULL),
       tabstrip_(NULL),
       toolbar_(NULL),
+      compact_navigation_bar_(NULL),
+      compact_options_bar_(NULL),
+      compact_spacer_(NULL),
       infobar_container_(NULL),
       sidebar_container_(NULL),
       sidebar_split_(NULL),
@@ -378,6 +387,11 @@ BrowserView* BrowserView::GetBrowserViewForNativeWindow(
 
 gfx::Rect BrowserView::GetToolbarBounds() const {
   gfx::Rect toolbar_bounds(toolbar_->bounds());
+  // In compact navigation mode, the spacer essentially replaces the toolbar.
+  // We must provide it's height in order to have the client area divider paint
+  // properly.
+  if (UseCompactNavigationBar())
+    toolbar_bounds = compact_spacer_->bounds();
   if (toolbar_bounds.IsEmpty())
     return toolbar_bounds;
   // When using vertical tabs, the toolbar appears to extend behind the tab
@@ -399,6 +413,14 @@ gfx::Rect BrowserView::GetClientAreaBounds() const {
 
 gfx::Rect BrowserView::GetFindBarBoundingBox() const {
   return GetBrowserViewLayout()->GetFindBarBoundingBox();
+}
+
+gfx::Rect BrowserView::GetCompactNavigationBarBounds() const {
+  return compact_navigation_bar_->bounds();
+}
+
+gfx::Rect BrowserView::GetCompactOptionsBarBounds() const {
+  return compact_options_bar_->bounds();
 }
 
 int BrowserView::GetTabStripHeight() const {
@@ -430,6 +452,10 @@ bool BrowserView::IsTabStripVisible() const {
 
 bool BrowserView::UseVerticalTabs() const {
   return browser_->tabstrip_model()->delegate()->UseVerticalTabs();
+}
+
+bool BrowserView::UseCompactNavigationBar() const {
+  return browser_->tabstrip_model()->delegate()->UseCompactNavigationBar();
 }
 
 bool BrowserView::IsOffTheRecord() const {
@@ -707,7 +733,7 @@ void BrowserView::UpdateLoadingAnimations(bool should_animate) {
 }
 
 void BrowserView::SetStarredState(bool is_starred) {
-  toolbar_->location_bar()->SetStarToggled(is_starred);
+  GetLocationBarView()->SetStarToggled(is_starred);
 }
 
 gfx::Rect BrowserView::GetRestoredBounds() const {
@@ -754,11 +780,16 @@ void BrowserView::RestoreFocus() {
 }
 
 LocationBar* BrowserView::GetLocationBar() const {
-  return toolbar_->location_bar();
+  return GetLocationBarView();
 }
 
 void BrowserView::SetFocusToLocationBar(bool select_all) {
-  LocationBarView* location_bar = toolbar_->location_bar();
+  if (UseCompactNavigationBar()) {
+    // If focus ever goes to the location bar, we should make sure it is shown
+    // in compact mode. This includes all accelerators that move focus there.
+    ShowCompactLocationBarUnderSelectedTab();
+  }
+  LocationBarView* location_bar = GetLocationBarView();
   if (location_bar->IsFocusableInRootView()) {
     // Location bar got focus.
     location_bar->FocusLocation(select_all);
@@ -772,20 +803,42 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
 }
 
 void BrowserView::UpdateReloadStopState(bool is_loading, bool force) {
-  toolbar_->reload_button()->ChangeMode(
+  ReloadButton* reload_button = NULL;
+  if (UseCompactNavigationBar()) {
+    reload_button = compact_location_bar_view_host_->
+        GetCompactLocationBarView()->reload_button();
+  } else {
+    reload_button = toolbar_->reload_button();
+  }
+  reload_button->ChangeMode(
       is_loading ? ReloadButton::MODE_STOP : ReloadButton::MODE_RELOAD, force);
 }
 
 void BrowserView::UpdateToolbar(TabContentsWrapper* contents,
                                 bool should_restore_state) {
-  toolbar_->Update(contents->tab_contents(), should_restore_state);
+  if (UseCompactNavigationBar()) {
+    if (compact_location_bar_view_host_->IsVisible()) {
+      compact_location_bar_view_host_->Update(
+          should_restore_state ? contents->tab_contents() : NULL, true);
+    }
+  } else {
+    toolbar_->Update(contents->tab_contents(), should_restore_state);
+  }
 }
 
 void BrowserView::FocusToolbar() {
   // Start the traversal within the main toolbar, passing it the storage id
   // of the view where focus should be returned if the user exits the toolbar.
   SaveFocusedView();
-  toolbar_->SetPaneFocus(last_focused_view_storage_id_, NULL);
+  if (UseCompactNavigationBar()) {
+    if (!compact_location_bar_view_host_->IsVisible())
+      compact_location_bar_view_host_->UpdateOnTabChange(
+          browser()->active_index(), true);
+    compact_location_bar_view_host_->GetCompactLocationBarView()->SetPaneFocus(
+        last_focused_view_storage_id_, NULL);
+  } else {
+    toolbar_->SetPaneFocus(last_focused_view_storage_id_, NULL);
+  }
 }
 
 void BrowserView::FocusBookmarksToolbar() {
@@ -807,6 +860,7 @@ void BrowserView::FocusAppMenu() {
     RestoreFocus();
   } else {
     SaveFocusedView();
+    // TODO(mad): find out how to add this to compact nav view.
     toolbar_->SetPaneFocusAndFocusAppMenu(last_focused_view_storage_id_);
   }
 }
@@ -906,8 +960,12 @@ bool BrowserView::IsTabStripEditable() const {
 }
 
 bool BrowserView::IsToolbarVisible() const {
-  return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
-         browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
+  if (UseCompactNavigationBar()) {
+    return false;
+  } else {
+    return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
+           browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
+  }
 }
 
 void BrowserView::DisableInactiveFrame() {
@@ -951,6 +1009,13 @@ void BrowserView::ShowUpdateChromeDialog() {
   UpdateRecommendedMessageBox::ShowMessageBox(GetWindow()->GetNativeWindow());
 }
 
+void BrowserView::ShowCompactLocationBarUnderSelectedTab() {
+  if (!UseCompactNavigationBar())
+    return;
+  compact_location_bar_view_host_->UpdateOnTabChange(browser()->active_index(),
+                                                     true);
+}
+
 void BrowserView::ShowTaskManager() {
   browser::ShowTaskManager();
 }
@@ -960,7 +1025,7 @@ void BrowserView::ShowBackgroundPages() {
 }
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
-  toolbar_->location_bar()->ShowStarBubble(url, !already_bookmarked);
+  GetLocationBarView()->ShowStarBubble(url, !already_bookmarked);
 }
 
 void BrowserView::SetDownloadShelfVisible(bool visible) {
@@ -1061,6 +1126,7 @@ void BrowserView::ShowPageInfo(Profile* profile,
 }
 
 void BrowserView::ShowAppMenu() {
+  // TODO(mad): find out how to add this to compact nav view.
   toolbar_->app_menu()->Activate();
 }
 
@@ -1156,6 +1222,16 @@ void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 #endif
 }
 
+void BrowserView::ToggleUseCompactNavigationBar() {
+  bool use_compact_navigation_bar = UseCompactNavigationBar();
+  // Compact Navigation Bar only works with horizontal tabs for now!
+  if (use_compact_navigation_bar && UseVerticalTabs())
+    browser()->ExecuteCommand(IDC_TOGGLE_VERTICAL_TABS);
+  compact_location_bar_view_host_->SetEnabled(use_compact_navigation_bar);
+  compact_location_bar_view_host_->Hide(!use_compact_navigation_bar);
+  Layout();
+}
+
 // TODO(devint): http://b/issue?id=1117225 Cut, Copy, and Paste are always
 // enabled in the page menu regardless of whether the command will do
 // anything. When someone selects the menu item, we just act as if they hit
@@ -1179,6 +1255,10 @@ void BrowserView::Paste() {
 }
 
 void BrowserView::ToggleTabStripMode() {
+  // Compact Navigation Bar only works with horizontal tabs for now!
+  if (UseVerticalTabs() && UseCompactNavigationBar())
+    browser()->ExecuteCommand(IDC_COMPACT_NAVBAR);
+
   InitTabStrip(browser_->tabstrip_model());
   frame_->TabStripDisplayModeChanged();
 }
@@ -1242,7 +1322,12 @@ BookmarkBarView* BrowserView::GetBookmarkBarView() const {
 }
 
 LocationBarView* BrowserView::GetLocationBarView() const {
-  return toolbar_->location_bar();
+  if (UseCompactNavigationBar()) {
+    return compact_location_bar_view_host_->GetCompactLocationBarView()->
+        location_bar_view();
+  } else {
+    return toolbar_ ? toolbar_->location_bar() : NULL;
+  }
 }
 
 views::View* BrowserView::GetTabContentsContainerView() const {
@@ -1563,8 +1648,9 @@ void BrowserView::OnWidgetMove() {
   browser::HideBookmarkBubbleView();
 
   // Close the omnibox popup, if any.
-  if (toolbar_ && toolbar_->location_bar())
-    toolbar_->location_bar()->location_entry()->ClosePopup();
+  LocationBarView* location_bar_view = GetLocationBarView();
+  if (location_bar_view)
+    location_bar_view->location_entry()->ClosePopup();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1843,6 +1929,27 @@ void BrowserView::Init() {
     browser_->tabstrip_model()->AddObserver(aeropeek_manager_.get());
   }
 #endif
+  // Only create our compact navigation classes if the switch is enabled. Note
+  // that we directly check the switch and not the pref as the switch may be on
+  // and the pref could be off (currently not selected in the context menu).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCompactNavigation)) {
+    compact_location_bar_view_host_.reset(new CompactLocationBarViewHost(this));
+    compact_navigation_bar_ = new CompactNavigationBar(this);
+    compact_navigation_bar_->SetID(VIEW_ID_COMPACT_NAV_BAR);
+    AddChildView(compact_navigation_bar_);
+    compact_navigation_bar_->Init();
+    compact_options_bar_ = new CompactOptionsBar(this);
+    compact_options_bar_->SetID(VIEW_ID_COMPACT_OPT_BAR);
+    AddChildView(compact_options_bar_);
+    compact_options_bar_->Init();
+  }
+
+  // Use an empty view for the spacer since all it does is that it replaces the
+  // toolbar area in compact navigation mode.
+  compact_spacer_ = new views::View();
+  compact_spacer_->SetID(VIEW_ID_COMPACT_NAV_BAR_SPACER);
+  AddChildView(compact_spacer_);
 
   // We're now initialized and ready to process Layout requests.
   ignore_layout_ = false;
@@ -2111,7 +2218,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
   //   * Ignoring all intervening Layout() calls, which resize the webpage and
   //     thus are slow and look ugly
   ignore_layout_ = true;
-  LocationBarView* location_bar = toolbar_->location_bar();
+  LocationBarView* location_bar = GetLocationBarView();
 #if defined(OS_WIN)
   OmniboxViewWin* omnibox_view =
       static_cast<OmniboxViewWin*>(location_bar->location_entry());

@@ -27,6 +27,11 @@ namespace views {
 class RootView;
 class View;
 
+#if defined(OS_WIN)
+bool IsClientMouseEvent(const views::NativeEvent& native_event);
+bool IsNonClientMouseEvent(const views::NativeEvent& native_event);
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Event class

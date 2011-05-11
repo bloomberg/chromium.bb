@@ -25,6 +25,9 @@ class TabMenuModel : public ui::SimpleMenuModel {
   // Returns true if vertical tabs are enabled.
   static bool AreVerticalTabsEnabled();
 
+  // Returns true if compact navigation bar is enabled.
+  static bool IsCompactNavigationModeEnabled();
+
  private:
   // TODO: nuke this when first constructor is removed.
   void Build(bool is_pinned);

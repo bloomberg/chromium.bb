@@ -111,6 +111,7 @@ class Panel : public BrowserWindow {
       TabContentsWrapper* tab_contents) OVERRIDE;
   virtual void ShowCreateChromeAppShortcutsDialog(
       Profile* profile, const Extension* app) OVERRIDE;
+  virtual void ToggleUseCompactNavigationBar();
   virtual void Cut() OVERRIDE;
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;

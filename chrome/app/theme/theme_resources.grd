@@ -38,6 +38,12 @@
         <include name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder_mac.png" type="BINDATA" />
       </if>
       <include name="IDR_CLOSE_BUTTON_MASK" file="close_button_mask.png" type="BINDATA" />
+      <include name="IDR_CNAV_DIALOG_LEFT" file="cnav_dialog_left.png" type="BINDATA" />
+      <include name="IDR_CNAV_DIALOG_MIDDLE" file="cnav_dialog_middle.png" type="BINDATA" />
+      <include name="IDR_CNAV_DIALOG_RIGHT" file="cnav_dialog_right.png" type="BINDATA" />
+      <include name="IDR_COMPACTNAV_BACK" file="compactnav_back.png" type="BINDATA" />
+      <include name="IDR_COMPACTNAV_FORWARD" file="compactnav_forward.png" type="BINDATA" />
+      <include name="IDR_COMPACTNAV_SEPARATOR" file="compactnav_separator.png" type="BINDATA" />
       <if expr="os.find('win') != -1">
         <include name="IDR_CONFLICT_BADGE" file="conflict_badge.png" type="BINDATA" />
         <include name="IDR_CONFLICT_MENU" file="conflict_menu.png" type="BINDATA" />

@@ -97,6 +97,7 @@ class PanelBrowserWindowCocoa : public BrowserWindow {
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;
   virtual void ToggleTabStripMode() OVERRIDE;
+  virtual void ToggleUseCompactNavigationBar() OVERRIDE;
   virtual void OpenTabpose() OVERRIDE;
   virtual void PrepareForInstant() OVERRIDE;
   virtual void ShowInstant(TabContentsWrapper* preview) OVERRIDE;

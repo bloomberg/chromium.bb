@@ -120,7 +120,8 @@ LocationBarView::LocationBarView(Profile* profile,
       mode_(mode),
       show_focus_rect_(false),
       bubble_type_(FirstRun::MINIMAL_BUBBLE),
-      template_url_model_(NULL) {
+      template_url_model_(NULL),
+      animation_offset_(0) {
   DCHECK(profile_);
   SetID(VIEW_ID_LOCATION_BAR);
   SetFocusable(true);
@@ -267,6 +268,15 @@ SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
       NOTREACHED();
       return GetColor(security_level, TEXT);
   }
+}
+
+// DropdownBarHostDelegate
+void LocationBarView::SetFocusAndSelection(bool select_all) {
+  FocusLocation(select_all);
+}
+
+void LocationBarView::SetAnimationOffset(int offset) {
+  animation_offset_ = offset;
 }
 
 void LocationBarView::Update(const TabContents* tab_for_state_restoring) {

@@ -15,18 +15,19 @@
 #include "views/focus/focus_manager.h"
 
 class BrowserView;
+class DropdownBarHostDelegate;
 class DropdownBarView;
 class TabContents;
 
 namespace ui {
 class SlideAnimation;
-}
+}  // namespace ui
 
 namespace views {
 class ExternalFocusTracker;
 class View;
 class Widget;
-}
+}  // namespace views
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -45,8 +46,7 @@ class DropdownBarHost : public views::AcceleratorTarget,
   explicit DropdownBarHost(BrowserView* browser_view);
   virtual ~DropdownBarHost();
 
-  // Initializes the dropdown bar host with the give view.
-  void Init(DropdownBarView* view);
+  void Init(views::View* view, DropdownBarHostDelegate* delegate);
 
   // Whether we are animating the position of the dropdown widget.
   bool IsAnimating() const;
@@ -101,7 +101,7 @@ class DropdownBarHost : public views::AcceleratorTarget,
 
  protected:
   // Returns the dropdown bar view.
-  DropdownBarView* view() const { return view_; }
+  views::View* view() const { return view_; }
 
   // Returns the focus tracker.
   views::ExternalFocusTracker* focus_tracker() const {
@@ -154,7 +154,8 @@ class DropdownBarHost : public views::AcceleratorTarget,
   BrowserView* browser_view_;
 
   // Our view, which is responsible for drawing the UI.
-  DropdownBarView* view_;
+  views::View* view_;
+  DropdownBarHostDelegate* delegate_;
 
   // The y position pixel offset of the widget while animating the
   // dropdown widget.

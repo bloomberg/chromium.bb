@@ -36,7 +36,8 @@ FindBar* CreateFindBar(BrowserView* browser_view) {
 FindBarHost::FindBarHost(BrowserView* browser_view)
     : DropdownBarHost(browser_view),
       find_bar_controller_(NULL) {
-  Init(new FindBarView(this));
+  FindBarView* find_bar_view = new FindBarView(this);
+  Init(find_bar_view, find_bar_view);
 }
 
 FindBarHost::~FindBarHost() {

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/dropdown_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/base/animation/slide_animation.h"
@@ -44,14 +45,20 @@ bool DropdownBarHost::disable_animations_during_testing_ = false;
 DropdownBarHost::DropdownBarHost(BrowserView* browser_view)
     : browser_view_(browser_view),
       view_(NULL),
+      delegate_(NULL),
       animation_offset_(0),
       focus_manager_(NULL),
       esc_accel_target_registered_(false),
       is_visible_(false) {
 }
 
-void DropdownBarHost::Init(DropdownBarView* view) {
+void DropdownBarHost::Init(views::View* view,
+                           DropdownBarHostDelegate* delegate) {
+  DCHECK(view);
+  DCHECK(delegate);
+
   view_ = view;
+  delegate_ = delegate;
 
   // Initialize the host.
   host_.reset(views::Widget::CreateWidget());
@@ -102,7 +109,7 @@ void DropdownBarHost::Show(bool animate) {
 }
 
 void DropdownBarHost::SetFocusAndSelection() {
-  view_->SetFocusAndSelection(true);
+  delegate_->SetFocusAndSelection(true);
 }
 
 bool DropdownBarHost::IsAnimating() const {
@@ -112,13 +119,23 @@ bool DropdownBarHost::IsAnimating() const {
 void DropdownBarHost::Hide(bool animate) {
   if (!IsVisible())
     return;
-  if (animate && !disable_animations_during_testing_) {
-    animation_->Reset(1.0);
+  if (animate && !disable_animations_during_testing_ &&
+      !animation_->IsClosing()) {
     animation_->Hide();
   } else {
-    StopAnimation();
-    is_visible_ = false;
-    host_->Hide();
+    if (animation_->IsClosing()) {
+      // If we're in the middle of a close animation, skip immediately to the
+      // end of the animation.
+      StopAnimation();
+    } else {
+      // Otherwise we need to set both the animation state to ended and the
+      // DropdownBarHost state to ended/hidden, otherwise the next time we try
+      // to show the bar, it might refuse to do so. Note that we call
+      // AnimationEnded ourselves as Reset does not call it if we are not
+      // animating here.
+      animation_->Reset();
+      AnimationEnded(animation_.get());
+    }
   }
 }
 
@@ -171,7 +188,7 @@ void DropdownBarHost::AnimationProgressed(const ui::Animation* animation) {
 
   // Let the view know if we are animating, and at which offset to draw the
   // edges.
-  view_->set_animation_offset(animation_offset_);
+  delegate_->SetAnimationOffset(animation_offset_);
   view_->SchedulePaint();
 }
 
