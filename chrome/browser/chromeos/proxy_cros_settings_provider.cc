@@ -49,7 +49,10 @@ void ProxyCrosSettingsProvider::DoSet(const std::string& path,
     std::string val;
     if (in_value->GetAsString(&val)) {
       GURL url(val);
-      config_service->UISetProxyConfigToPACScript(url);
+      if (url.is_valid())
+        config_service->UISetProxyConfigToPACScript(url);
+      else
+        config_service->UISetProxyConfigToAutoDetect();
     }
   } else if (path == kProxySingleHttp) {
     std::string val;
@@ -203,7 +206,12 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
   config_service->UIGetProxyConfig(&config);
 
   if (path == kProxyPacUrl) {
-    if (config.automatic_proxy.pac_url.is_valid()) {
+    // For auto-detect mode, there should be no pac url.
+    // For pac-script mode, there should be a pac url that is taking effect.
+    // For manual modes, the pac url, if previously cached, will be disabled.
+    if (config.mode !=
+            chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_AUTO_DETECT &&
+        config.automatic_proxy.pac_url.is_valid()) {
       data = Value::CreateStringValue(config.automatic_proxy.pac_url.spec());
       found = true;
     }

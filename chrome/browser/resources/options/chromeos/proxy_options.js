@@ -129,6 +129,7 @@ cr.define('options', function() {
       $('removeHost').disabled = true;
       $('addHost').disabled = true;
       $('advancedConfig').style.display = 'none';
+      $('proxyConfig').disabled = !$('autoProxy').checked;
     },
 
     /**
@@ -154,6 +155,7 @@ cr.define('options', function() {
       $('addHost').disabled = false;
       $('advancedConfig').style.display = '-webkit-box';
       $('ignoredHostList').redraw();
+      $('proxyConfig').disabled = true;
     },
 
     /**
