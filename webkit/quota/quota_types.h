@@ -22,26 +22,19 @@ enum StorageType {
   kStorageTypeUnknown,
 };
 
-// TODO(tzik): Add assertions to
-// content/browser/renderer_host/quota_dispatcher_host.cc
-// ref) third_party/WebKit/Source/WebCore/dom/ExceptionCode.h,
 enum QuotaStatusCode {
   kQuotaStatusOk = 0,
-  kQuotaErrorNotSupported = 9,         // NOT_SUPPORTED_ERR
-  kQuotaErrorInvalidModification = 13, // INVALID_MODIFICATION_ERR
-  kQuotaErrorInvalidAccess = 15,       // INVALID_ACCESS_ERR
-  kQuotaErrorAbort = 20,               // ABORT_ERR
+  kQuotaErrorNotSupported = 9,
+  kQuotaErrorAbort = 20,
   kQuotaStatusUnknown = -1,
 };
 
 // Common callback types that are used throughout in the quota module.
 typedef Callback1<int64>::Type UsageCallback;
-typedef Callback2<QuotaStatusCode,
-                  int64>::Type QuotaCallback;
+typedef Callback1<int64>::Type QuotaCallback;
 typedef Callback2<const std::string& /* host */,
                   int64>::Type HostUsageCallback;
-typedef Callback3<QuotaStatusCode,
-                  const std::string& /* host */,
+typedef Callback2<const std::string& /* host */,
                   int64>::Type HostQuotaCallback;
 
 // Simple template wrapper for a callback queue.
@@ -100,24 +93,8 @@ class CallbackQueue2 : public CallbackQueueBase<CallbackType2> {
   }
 };
 
-template <typename CallbackType3, typename A1, typename A2, typename A3>
-class CallbackQueue3 : public CallbackQueueBase<CallbackType3> {
- public:
-  typedef typename CallbackQueueBase<CallbackType3>::Queue Queue;
-  // Runs the callbacks added to the queue and clears the queue.
-  void Run(A1 arg1, A2 arg2, A3 arg3) {
-    for (typename Queue::iterator iter = this->callbacks_.begin();
-         iter != this->callbacks_.end(); ++iter) {
-      (*iter)->Run(arg1, arg2, arg3);
-      delete *iter;
-    }
-    this->callbacks_.clear();
-  }
-};
-
 typedef CallbackQueue1<UsageCallback*, int64> UsageCallbackQueue;
-typedef CallbackQueue2<QuotaCallback*,
-                       QuotaStatusCode, int64> QuotaCallbackQueue;
+typedef CallbackQueue1<QuotaCallback*, int64> QuotaCallbackQueue;
 
 template <typename CallbackType, typename CallbackQueueType, typename KEY>
 class CallbackQueueMapBase {
@@ -188,35 +165,9 @@ class CallbackQueueMap2
   }
 };
 
-template <typename CallbackType3, typename KEY,
-          typename ARG1, typename ARG2, typename ARG3>
-class CallbackQueueMap3
-    : public CallbackQueueMapBase<CallbackType3,
-                                  CallbackQueue3<CallbackType3,
-                                                 ARG1, ARG2, ARG3>,
-                                  KEY> {
- public:
-  typedef typename CallbackQueueMapBase<
-      CallbackType3,
-      CallbackQueue3<CallbackType3, ARG1, ARG2, ARG3>,
-      KEY>::iterator iterator;
-  typedef CallbackQueue3<CallbackType3, ARG1, ARG2, ARG3> Queue;
-
-  // Runs the callbacks added for the given |key| and clears the key
-  // from the map.
-  void Run(const KEY& key, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
-    if (!this->HasCallbacks(key))
-      return;
-    Queue& queue = this->callback_map_[key];
-    queue.Run(arg1, arg2, arg3);
-    this->callback_map_.erase(key);
-  }
-};
-
 typedef CallbackQueueMap2<HostUsageCallback*, std::string,
                           const std::string&, int64> HostUsageCallbackMap;
-typedef CallbackQueueMap3<HostQuotaCallback*, std::string,
-                          QuotaStatusCode,
+typedef CallbackQueueMap2<HostUsageCallback*, std::string,
                           const std::string&, int64> HostQuotaCallbackMap;
 
 }  // namespace quota
