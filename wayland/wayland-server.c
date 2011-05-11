@@ -113,6 +113,21 @@ wl_client_post_event(struct wl_client *client, struct wl_object *sender,
 	wl_closure_destroy(closure);
 }
 
+WL_EXPORT void
+wl_client_post_error(struct wl_client *client, struct wl_object *object,
+		     uint32_t code, const char *msg, ...)
+{
+	char buffer[128];
+	va_list ap;
+
+	va_start(ap, msg);
+	vsnprintf(buffer, sizeof buffer, msg, ap);
+	va_end(ap);
+
+	wl_client_post_event(client, &client->display->object,
+			     WL_DISPLAY_ERROR, object, code, buffer);
+}
+
 static int
 wl_client_connection_data(int fd, uint32_t mask, void *data)
 {
@@ -145,16 +160,20 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 
 		object = wl_hash_table_lookup(client->display->objects, p[0]);
 		if (object == NULL) {
-			wl_client_post_event(client, &client->display->object,
-					     WL_DISPLAY_INVALID_OBJECT, p[0]);
+			wl_client_post_error(client, &client->display->object,
+					     WL_DISPLAY_ERROR_INVALID_OBJECT,
+					     "invalid object %d", p[0]);
 			wl_connection_consume(connection, size);
 			len -= size;
 			continue;
 		}
 
 		if (opcode >= object->interface->method_count) {
-			wl_client_post_event(client, &client->display->object,
-					     WL_DISPLAY_INVALID_METHOD, p[0], opcode);
+			wl_client_post_error(client, &client->display->object,
+					     WL_DISPLAY_ERROR_INVALID_METHOD,
+					     "invalid method %d, object %s@%d",
+					     object->interface->name,
+					     object->id, opcode);
 			wl_connection_consume(connection, size);
 			len -= size;
 			continue;
@@ -167,9 +186,11 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		len -= size;
 
 		if (closure == NULL && errno == EINVAL) {
-			wl_client_post_event(client, &client->display->object,
-					     WL_DISPLAY_INVALID_METHOD,
-					     p[0], opcode);
+			wl_client_post_error(client, &client->display->object,
+					     WL_DISPLAY_ERROR_INVALID_METHOD,
+					     "invalid arguments for %s@%d.%s",
+					     object->interface->name,
+					     object->id, message->name);
 			continue;
 		} else if (closure == NULL && errno == ENOMEM) {
 			wl_client_post_no_memory(client);
@@ -270,9 +291,8 @@ wl_client_add_resource(struct wl_client *client,
 WL_EXPORT void
 wl_client_post_no_memory(struct wl_client *client)
 {
-	wl_client_post_event(client,
-			     &client->display->object,
-			     WL_DISPLAY_NO_MEMORY);
+	wl_client_post_error(client, &client->display->object,
+			     WL_DISPLAY_ERROR_NO_MEMORY, "no memory");
 }
 
 WL_EXPORT void

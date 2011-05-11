@@ -95,6 +95,8 @@ int wl_display_add_global(struct wl_display *display,
 
 struct wl_client *wl_client_create(struct wl_display *display, int fd);
 void wl_client_destroy(struct wl_client *client);
+void wl_client_post_error(struct wl_client *client, struct wl_object *object,
+			  uint32_t code, const char *msg, ...);
 void wl_client_post_no_memory(struct wl_client *client);
 void wl_client_post_global(struct wl_client *client, struct wl_object *object);
 

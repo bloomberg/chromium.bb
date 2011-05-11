@@ -28,21 +28,18 @@
       <arg name="key" type="uint"/>
     </request>
 
-    <!-- A request addressed a non-existent object id. This is
-         tyipcally a fatal error. -->
-    <event name="invalid_object">
-      <arg name="object_id" type="uint"/>
+    <!-- A fatal error has occurred. -->
+    <event name="error">
+      <arg name="object_id" type="object" interface="wl_object"/>
+      <arg name="code" type="uint"/>
+      <arg name="message" type="string"/>
     </event>
 
-    <!-- A request tried to invoke an opcode out of range.  This is
-         typically a fatal error. -->
-    <event name="invalid_method">
-      <arg name="object_id" type="uint"/>
-      <arg name="opcode" type="uint"/>
-    </event>
-
-    <!-- A request has failed due to an out of memory error. -->
-    <event name="no_memory"/>
+    <enum name="error">
+      <entry name="invalid_object" value="0"/>
+      <entry name="invalid_method" value="1"/>
+      <entry name="no_memory" value="2"/>
+    </enum>
 
     <!-- Notify the client of global objects. These are objects that
          are created by the server. Globals are published on the
@@ -87,7 +84,6 @@
       <arg name="id" type="new_id" interface="wl_surface"/>
     </request>
   </interface>
-
 
   <!-- Shared memory support -->
   <interface name="wl_shm" version="1">

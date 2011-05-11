@@ -258,27 +258,12 @@ wl_display_get_global(struct wl_display *display,
 }
 
 static void
-display_handle_invalid_object(void *data,
-			      struct wl_display *display, uint32_t id)
+display_handle_error(void *data,
+		     struct wl_display *display, struct wl_object *object,
+		     uint32_t code, const char *message)
 {
-	fprintf(stderr, "sent request to invalid object\n");
-	abort();
-}
-			      
-static void
-display_handle_invalid_method(void *data, 
-			      struct wl_display *display,
-			      uint32_t id, uint32_t opcode)
-{
-	fprintf(stderr, "sent invalid request opcode\n");
-	abort();
-}
-
-static void
-display_handle_no_memory(void *data,
-			 struct wl_display *display)
-{
-	fprintf(stderr, "server out of memory\n");
+	fprintf(stderr, "%s@%d: error %d: %s\n",
+		object->interface->name, object->id, code, message);
 	abort();
 }
 
@@ -345,9 +330,7 @@ display_handle_key(void *data,
 }
 
 static const struct wl_display_listener display_listener = {
-	display_handle_invalid_object,
-	display_handle_invalid_method,
-	display_handle_no_memory,
+	display_handle_error,
 	display_handle_global,
 	display_handle_range,
 	display_handle_key
