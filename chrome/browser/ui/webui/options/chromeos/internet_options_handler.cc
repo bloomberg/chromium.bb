@@ -1122,7 +1122,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         chromeos::TYPE_CELLULAR,
         false,
         (*it)->activation_state(),
-        (*it)->restricted_pool()));
+        (*it)->SupportsDataPlan() && (*it)->restricted_pool()));
   }
 
   const chromeos::NetworkDevice* cellular_device = cros->FindCellularDevice();

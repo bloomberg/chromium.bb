@@ -1642,6 +1642,11 @@ void CellularNetwork::SetApn(const Apn& apn) {
   }
 }
 
+bool CellularNetwork::SupportsDataPlan() const {
+  // TODO(nkostylev): Are there cases when only one of this is defined?
+  return !usage_url().empty() || !payment_url().empty();
+}
+
 std::string CellularNetwork::GetNetworkTechnologyString() const {
   // No need to localize these cellular technology abbreviations.
   switch (network_technology_) {

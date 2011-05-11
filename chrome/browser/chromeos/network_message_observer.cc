@@ -208,16 +208,14 @@ void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
 }
 
 void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* cros) {
-  if (!ShouldShowMobilePlanNotifications()) {
+  if (!ShouldShowMobilePlanNotifications())
     return;
-  }
-
   const CellularNetwork* cellular = cros->cellular_network();
-  if (!cellular)
+  if (!cellular || !cellular->SupportsDataPlan())
     return;
+
   const CellularDataPlanVector* plans =
       cros->GetDataPlans(cellular->service_path());
-
   // If no plans available, check to see if we need a new plan.
   if (!plans || plans->empty()) {
     // If previously, we had low data, we know that a plan was near expiring.

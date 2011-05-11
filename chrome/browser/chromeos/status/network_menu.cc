@@ -477,6 +477,8 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
       bool isActive = active_cellular &&
           cell_networks[i]->service_path() == active_cellular->service_path() &&
           (cell_networks[i]->connecting() || cell_networks[i]->connected());
+      bool supports_data_plan =
+          active_cellular && active_cellular->SupportsDataPlan();
       if (isActive)
         flag |= FLAG_ASSOCIATED;
       menu_items_.push_back(
@@ -484,7 +486,7 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
                    NetworkMenu::IconForDisplay(icon, badge, roaming_badge,
                                                NULL),
                    cell_networks[i]->service_path(), flag));
-      if (isActive) {
+      if (isActive && supports_data_plan) {
         label.clear();
         if (active_cellular->needs_new_plan()) {
           label = l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_NO_PLAN_LABEL);

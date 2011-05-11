@@ -597,6 +597,7 @@ class CellularNetwork : public WirelessNetwork {
   const Apn& apn() const { return apn_; }
   const Apn& last_good_apn() const { return last_good_apn_; }
   void SetApn(const Apn& apn);
+  bool SupportsDataPlan() const;
 
   // Misc.
   bool is_gsm() const {
