@@ -125,6 +125,13 @@
   fun:sync_api::SyncManager::SyncInternal::*
 }
 
+{
+  bug_82279
+  ThreadSanitizer:Race
+  fun:ObserverListBase::Iterator::Iterator
+  fun:syncable::BaseTransaction::NotifyTransactionChangingAndEnding
+}
+
 ############################
 # Benign races in Chromium
 {
