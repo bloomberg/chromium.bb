@@ -405,7 +405,8 @@ void ChromeRenderMessageFilter::OnGetCookies(
     const GURL& first_party_for_cookies,
     IPC::Message* reply_msg) {
   AutomationResourceMessageFilter::GetCookiesForUrl(
-      this, render_process_id_, reply_msg, url);
+      this, request_context_->GetURLRequestContext(), render_process_id_,
+      reply_msg, url);
 }
 
 void ChromeRenderMessageFilter::OnSetCookie(const IPC::Message& message,

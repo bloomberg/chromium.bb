@@ -21,6 +21,7 @@
 #include "content/common/view_messages.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_filter.h"
 
 base::LazyInstance<AutomationResourceMessageFilter::RenderViewMap>
@@ -102,6 +103,7 @@ AutomationResourceMessageFilter::AutomationDetails::~AutomationDetails() {}
 
 struct AutomationResourceMessageFilter::CookieCompletionInfo {
   scoped_refptr<BrowserMessageFilter> filter;
+  scoped_refptr<net::URLRequestContext> context;
   int render_process_id;
   IPC::Message* reply_msg;
   scoped_refptr<net::CookieStore> cookie_store;
@@ -442,8 +444,8 @@ bool AutomationResourceMessageFilter::ShouldFilterCookieMessages(
 }
 
 void AutomationResourceMessageFilter::GetCookiesForUrl(
-    BrowserMessageFilter* filter, int render_process_id,
-    IPC::Message* reply_msg, const GURL& url) {
+    BrowserMessageFilter* filter, net::URLRequestContext* context,
+    int render_process_id, IPC::Message* reply_msg, const GURL& url) {
 
   RendererId renderer_key(render_process_id, reply_msg->routing_id());
 
@@ -459,6 +461,7 @@ void AutomationResourceMessageFilter::GetCookiesForUrl(
 
   CookieCompletionInfo cookie_info;
   cookie_info.filter = filter;
+  cookie_info.context = context;
   cookie_info.render_process_id = render_process_id;
   cookie_info.reply_msg = reply_msg;
   cookie_info.cookie_store = automation_details_iter->second.cookie_store_;
@@ -493,14 +496,14 @@ void AutomationResourceMessageFilter::OnGetCookiesHostResponse(
   int render_view_id = index->second.reply_msg->routing_id();
   ViewHostMsg_GetCookies::WriteReplyParams(index->second.reply_msg, cookies);
   index->second.filter->Send(index->second.reply_msg);
-  net::CookieMonster* cookie_monster = cookie_store->GetCookieMonster();
+  net::CookieMonster* cookie_monster = index->second.context->cookie_store()->
+      GetCookieMonster();
   net::CookieList cookie_list = cookie_monster->GetAllCookiesForURLWithOptions(
       url, net::CookieOptions());
   CallRenderViewHostContentSettingsDelegate(
       index->second.render_process_id, render_view_id,
       &RenderViewHostDelegate::ContentSettings::OnCookiesRead,
       url, cookie_list, !success);
-
 
   // The cookie for this URL is only valid until it is read by the callback.
   cookie_store->SetCookieWithOptions(url, "", net::CookieOptions());

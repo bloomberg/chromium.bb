@@ -20,6 +20,7 @@ class URLRequestAutomationJob;
 
 namespace net {
 class CookieStore;
+class URLRequestContext;
 }  // namespace net
 
 // This class filters out incoming automation IPC messages for network
@@ -119,6 +120,7 @@ class AutomationResourceMessageFilter
   // Retrieves cookies for the url passed in from the external host. The
   // callback passed in is notified on success or failure asynchronously.
   static void GetCookiesForUrl(BrowserMessageFilter* filter,
+                               net::URLRequestContext* context,
                                int render_process_id,
                                IPC::Message* reply_msg,
                                const GURL& url);
