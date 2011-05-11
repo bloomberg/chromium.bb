@@ -190,7 +190,8 @@ class GenericRegexChecker(object):
       if self._analyze_match:
         if not self.IsProblemMatch(match):
           continue
-      problem.append(self._RenderItem(no, line))
+      # 'no' is zero-based, use 'no + 1' to get the actual line numbers.
+      problem.append(self._RenderItem(no + 1, line))
     return problem
 
   def _RenderItem(self, no, line):
