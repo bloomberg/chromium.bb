@@ -135,8 +135,6 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       danger_type_(NOT_DANGEROUS),
       auto_opened_(false),
       target_name_(info.original_name),
-      render_process_id_(-1),
-      request_id_(-1),
       save_as_(false),
       is_otr_(false),
       is_extension_install_(info.is_extension_install),
@@ -177,8 +175,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
                                  info.is_dangerous_url)),
       auto_opened_(false),
       target_name_(info.original_name),
-      render_process_id_(info.child_id),
-      request_id_(info.request_id),
+      process_handle_(info.process_handle),
       save_as_(info.prompt_user_for_save_location),
       is_otr_(is_otr),
       is_extension_install_(info.is_extension_install),
@@ -213,8 +210,6 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       safety_state_(SAFE),
       danger_type_(NOT_DANGEROUS),
       auto_opened_(false),
-      render_process_id_(-1),
-      request_id_(-1),
       save_as_(false),
       is_otr_(is_otr),
       is_extension_install_(false),
@@ -616,28 +611,42 @@ std::string DownloadItem::DebugString(bool verbose) const {
   std::string description = base::StringPrintf(
       "{ id_ = %d state = %s", id_, DebugDownloadStateString(state()));
 
+  // Construct a string of the URL chain.
+  std::string url_list("<none>");
+  if (!url_chain_.empty()) {
+    std::vector<GURL>::const_iterator iter = url_chain_.begin();
+    std::vector<GURL>::const_iterator last = url_chain_.end();
+    url_list = (*iter).spec();
+    ++iter;
+    for ( ; verbose && (iter != last); ++iter) {
+      url_list += " -> ";
+      const GURL& next_url = *iter;
+      url_list += next_url.spec();
+    }
+  }
+
   if (verbose) {
     description += base::StringPrintf(
         " db_handle = %" PRId64
         " total_bytes = %" PRId64
-        " is_paused = %c"
-        " is_extension_install = %c"
-        " is_otr = %c"
-        " safety_state = %s"
-        " url = \"%s\""
+        " is_paused = " "%c"
+        " is_extension_install = " "%c"
+        " is_otr = " "%c"
+        " safety_state = " "%s"
+        " url_chain = " "\"%s\""
         " target_name_ = \"%" PRFilePath "\""
-        " full_path = \"%" PRFilePath "\" }",
+        " full_path = \"%" PRFilePath "\"",
         db_handle(),
         total_bytes(),
         is_paused() ? 'T' : 'F',
         is_extension_install() ? 'T' : 'F',
         is_otr() ? 'T' : 'F',
         DebugSafetyStateString(safety_state()),
-        url().spec().c_str(),
+        url_list.c_str(),
         target_name_.value().c_str(),
         full_path().value().c_str());
   } else {
-    description += " url = \"" + url().spec() + "\" }";
+    description += base::StringPrintf(" url = \"%s\"", url_list.c_str());
   }
   return description;
 }

@@ -809,13 +809,24 @@ void DownloadUrl(
                      *context);
 }
 
-void CancelDownloadRequest(ResourceDispatcherHost* rdh,
-                           int render_process_id,
-                           int request_id) {
+static void CancelDownloadRequestOnIOThread(
+    ResourceDispatcherHost* rdh, DownloadProcessHandle process_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // |rdh| may be NULL in unit tests.
-  if (rdh)
-    rdh->CancelRequest(render_process_id, request_id, false);
+  if (!rdh)
+    return;
+
+  rdh->CancelRequest(process_handle.child_id(),
+                     process_handle.request_id(),
+                     false);
+}
+
+void CancelDownloadRequest(ResourceDispatcherHost* rdh,
+                           DownloadProcessHandle process_handle) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(&download_util::CancelDownloadRequestOnIOThread,
+                          rdh, process_handle));
 }
 
 void NotifyDownloadInitiated(int render_process_id, int render_view_id) {

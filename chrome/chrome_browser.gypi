@@ -792,6 +792,8 @@
         'browser/download/download_manager.h',
         'browser/download/download_prefs.cc',
         'browser/download/download_prefs.h',
+        'browser/download/download_process_handle.cc',
+        'browser/download/download_process_handle.h',
         'browser/download/download_request_infobar_delegate.cc',
         'browser/download/download_request_infobar_delegate.h',
         'browser/download/download_request_limiter.cc',

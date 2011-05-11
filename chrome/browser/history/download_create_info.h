@@ -15,6 +15,7 @@
 #include "base/file_path.h"
 #include "base/time.h"
 #include "chrome/browser/download/download_file.h"
+#include "chrome/browser/download/download_process_handle.h"
 #include "googleurl/src/gurl.h"
 
 // Used for informing the download database of a new download, where we don't
@@ -57,9 +58,7 @@ struct DownloadCreateInfo {
   int32 state;
   int32 download_id;
   bool has_user_gesture;
-  int child_id;
-  int render_view_id;
-  int request_id;
+  DownloadProcessHandle process_handle;
   int64 db_handle;
   std::string content_disposition;
   std::string mime_type;

@@ -47,6 +47,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer.h"
+#include "chrome/browser/download/download_process_handle.h"
 #include "ui/gfx/native_widget_types.h"
 
 struct DownloadBuffer;
@@ -143,7 +144,9 @@ class DownloadFileManager
 
   // Tells the ResourceDispatcherHost to resume a download request
   // that was paused to wait for the on-disk file to be created.
-  void ResumeDownloadRequest(int child_id, int request_id);
+  // |process| is passed by value because this is called from other
+  // threads, and this way we don't have to worry about object lifetimes.
+  void ResumeDownloadRequest(DownloadProcessHandle process);
 
   // Called only on the download thread.
   DownloadFile* GetDownloadFile(int id);

@@ -8,6 +8,7 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_process_handle.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/mock_download_manager.h"
@@ -57,8 +58,8 @@ class DownloadFileTest : public testing::Test {
   virtual void CreateDownloadFile(scoped_ptr<DownloadFile>* file, int offset) {
     DownloadCreateInfo info;
     info.download_id = kDummyDownloadId + offset;
-    info.child_id = kDummyChildId;
-    info.request_id = kDummyRequestId - offset;
+    info.process_handle =
+        DownloadProcessHandle(kDummyChildId, -1, kDummyRequestId - offset);
     info.save_info.file_stream = file_stream_;
     file->reset(new DownloadFile(&info, download_manager_));
   }

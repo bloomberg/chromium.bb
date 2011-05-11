@@ -42,6 +42,7 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/download/download_status_updater_delegate.h"
+#include "chrome/browser/download/download_process_handle.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "content/browser/browser_thread.h"
 
@@ -194,7 +195,7 @@ class DownloadManager
       DownloadCreateInfo info, int64 db_handle);
 
   // Display a new download in the appropriate browser UI.
-  void ShowDownloadInBrowser(const DownloadCreateInfo& info,
+  void ShowDownloadInBrowser(DownloadProcessHandle* process_handle,
                              DownloadItem* download);
 
   // The number of in progress (including paused) downloads.
@@ -285,9 +286,10 @@ class DownloadManager
   void AttachDownloadItem(DownloadCreateInfo* info);
 
   // Download cancel helper function.
+  // |process_handle| is passed by value because it is ultimately passed to
+  // other threads, and this way we don't have to worry about object lifetimes.
   void DownloadCancelledInternal(int download_id,
-                                 int render_process_id,
-                                 int request_id);
+                                 DownloadProcessHandle process_handle);
 
   // All data has been downloaded.
   // |hash| is sha256 hash for the downloaded file. It is empty when the hash
@@ -302,9 +304,10 @@ class DownloadManager
 
   // Makes the ResourceDispatcherHost pause/un-pause a download request.
   // Called on the IO thread.
+  // |process_handle| is passed by value because this is called from other
+  // threads, and this way we don't have to worry about object lifetimes.
   void PauseDownloadRequest(ResourceDispatcherHost* rdh,
-                            int render_process_id,
-                            int request_id,
+                            DownloadProcessHandle process_handle,
                             bool pause);
 
   // Inform observers that the model has changed.

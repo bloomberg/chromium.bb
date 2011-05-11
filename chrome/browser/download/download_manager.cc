@@ -22,6 +22,7 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_process_handle.h"
 #include "chrome/browser/download/download_safe_browsing_client.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_util.h"
@@ -429,8 +430,7 @@ void DownloadManager::OnPathExistenceAvailable(DownloadCreateInfo* info) {
     if (!select_file_dialog_.get())
       select_file_dialog_ = SelectFileDialog::Create(this);
 
-    TabContents* contents = tab_util::GetTabContentsByID(info->child_id,
-                                                         info->render_view_id);
+    TabContents* contents = info->process_handle.GetTabContents();
     SelectFileDialog::FileTypeInfo file_type_info;
     FilePath::StringType extension = info->suggested_path.Extension();
     if (!extension.empty()) {
@@ -702,22 +702,15 @@ void DownloadManager::DownloadCancelled(int32 download_id) {
     download_history_->UpdateEntry(download);
   }
 
-  DownloadCancelledInternal(download_id,
-                            download->render_process_id(),
-                            download->request_id());
+  DownloadCancelledInternal(download_id, download->process_handle());
 }
 
-void DownloadManager::DownloadCancelledInternal(int download_id,
-                                                int render_process_id,
-                                                int request_id) {
+void DownloadManager::DownloadCancelledInternal(
+    int download_id, DownloadProcessHandle process_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Cancel the network request.  RDH is guaranteed to outlive the IO thread.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&download_util::CancelDownloadRequest,
-                          g_browser_process->resource_dispatcher_host(),
-                          render_process_id,
-                          request_id));
+  download_util::CancelDownloadRequest(
+      g_browser_process->resource_dispatcher_host(), process_handle);
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -775,8 +768,7 @@ void DownloadManager::PauseDownload(int32 download_id, bool pause) {
       NewRunnableMethod(this,
                         &DownloadManager::PauseDownloadRequest,
                         g_browser_process->resource_dispatcher_host(),
-                        download->render_process_id(),
-                        download->request_id(),
+                        download->process_handle(),
                         pause));
 }
 
@@ -786,11 +778,12 @@ void DownloadManager::UpdateAppIcon() {
 }
 
 void DownloadManager::PauseDownloadRequest(ResourceDispatcherHost* rdh,
-                                           int render_process_id,
-                                           int request_id,
+                                           DownloadProcessHandle process_handle,
                                            bool pause) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  rdh->PauseRequest(render_process_id, request_id, pause);
+  rdh->PauseRequest(process_handle.child_id(),
+                    process_handle.request_id(),
+                    pause);
 }
 
 void DownloadManager::RemoveDownload(int64 download_handle) {
@@ -983,9 +976,7 @@ void DownloadManager::FileSelectionCanceled(void* params) {
   // The user didn't pick a place to save the file, so need to cancel the
   // download that's already in progress to the temporary location.
   DownloadCreateInfo* info = reinterpret_cast<DownloadCreateInfo*>(params);
-  DownloadCancelledInternal(info->download_id,
-                            info->child_id,
-                            info->request_id);
+  DownloadCancelledInternal(info->download_id, info->process_handle);
 }
 
 void DownloadManager::DangerousDownloadValidated(DownloadItem* download) {
@@ -1045,7 +1036,7 @@ void DownloadManager::OnCreateDownloadEntryComplete(
 
   // Show in the appropriate browser UI.
   // This includes buttons to save or cancel, for a dangerous download.
-  ShowDownloadInBrowser(info, download);
+  ShowDownloadInBrowser(&info.process_handle, download);
 
   // Inform interested objects about the new download.
   NotifyModelChanged();
@@ -1069,13 +1060,15 @@ void DownloadManager::OnCreateDownloadEntryComplete(
   }
 }
 
-void DownloadManager::ShowDownloadInBrowser(const DownloadCreateInfo& info,
-                                            DownloadItem* download) {
+void DownloadManager::ShowDownloadInBrowser(
+    DownloadProcessHandle* process_handle, DownloadItem* download) {
+  if (!process_handle)
+    return;
+
   // The 'contents' may no longer exist if the user closed the tab before we
   // get this start completion event. If it does, tell the origin TabContents
   // to display its download shelf.
-  TabContents* contents = tab_util::GetTabContentsByID(info.child_id,
-                                                       info.render_view_id);
+  TabContents* contents = process_handle->GetTabContents();
 
   // If the contents no longer exists, we start the download in the last active
   // browser. This is not ideal but better than fully hiding the download from
@@ -1086,8 +1079,10 @@ void DownloadManager::ShowDownloadInBrowser(const DownloadCreateInfo& info,
       contents = last_active->GetSelectedTabContents();
   }
 
-  if (contents)
-    contents->OnStartDownload(download);
+  if (!contents)
+    return;
+
+  contents->OnStartDownload(download);
 }
 
 // Clears the last download path, used to initialize "save as" dialogs.

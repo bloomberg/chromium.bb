@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/string16.h"
+#include "chrome/browser/download/download_process_handle.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -242,9 +243,10 @@ void DownloadUrl(const GURL& url,
 
 // Tells the resource dispatcher host to cancel a download request.
 // Must be called on the IO thread.
+// |process_handle| is passed by value because it is ultimately passed to
+// other threads, and this way we don't have to worry about object lifetimes.
 void CancelDownloadRequest(ResourceDispatcherHost* rdh,
-                           int render_process_id,
-                           int request_id);
+                           DownloadProcessHandle process_handle);
 
 // Sends a notification on downloads being initiated
 // Must be called on the UI thread.

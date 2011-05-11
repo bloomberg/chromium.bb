@@ -25,6 +25,7 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/download/download_process_handle.h"
 #include "googleurl/src/gurl.h"
 
 class DownloadFileManager;
@@ -257,8 +258,6 @@ class DownloadItem {
   bool is_paused() const { return is_paused_; }
   bool open_when_complete() const { return open_when_complete_; }
   void set_open_when_complete(bool open) { open_when_complete_ = open; }
-  int render_process_id() const { return render_process_id_; }
-  int request_id() const { return request_id_; }
   SafetyState safety_state() const { return safety_state_; }
   void set_safety_state(SafetyState safety_state) {
     safety_state_ = safety_state;
@@ -272,6 +271,10 @@ class DownloadItem {
   bool is_temporary() const { return is_temporary_; }
   void set_opened(bool opened) { opened_ = opened; }
   bool opened() const { return opened_; }
+
+  const DownloadProcessHandle& process_handle() const {
+    return process_handle_;
+  }
 
   // Returns the final target file path for the download.
   FilePath GetTargetFilePath() const;
@@ -382,9 +385,9 @@ class DownloadItem {
   // This stores their final target name.
   FilePath target_name_;
 
-  // For canceling or pausing requests.
-  int render_process_id_;
-  int request_id_;
+  // The handle to the process information.  Used for operations outside the
+  // download system.
+  DownloadProcessHandle process_handle_;
 
   // True if the item was downloaded as a result of 'save as...'
   bool save_as_;

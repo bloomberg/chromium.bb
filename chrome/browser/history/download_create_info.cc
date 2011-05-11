@@ -26,9 +26,6 @@ DownloadCreateInfo::DownloadCreateInfo(const FilePath& path,
       state(state),
       download_id(download_id),
       has_user_gesture(has_user_gesture),
-      child_id(-1),
-      render_view_id(-1),
-      request_id(-1),
       db_handle(0),
       prompt_user_for_save_location(false),
       is_dangerous_file(false),
@@ -43,9 +40,6 @@ DownloadCreateInfo::DownloadCreateInfo()
       state(-1),
       download_id(-1),
       has_user_gesture(false),
-      child_id(-1),
-      render_view_id(-1),
-      request_id(-1),
       db_handle(0),
       prompt_user_for_save_location(false),
       is_dangerous_file(false),
@@ -62,24 +56,24 @@ bool DownloadCreateInfo::IsDangerous() {
 
 std::string DownloadCreateInfo::DebugString() const {
   return base::StringPrintf("{"
-                            " url_ = \"%s\""
+                            " download_id = %d"
+                            " url = \"%s\""
                             " path = \"%" PRFilePath "\""
                             " received_bytes = %" PRId64
                             " total_bytes = %" PRId64
                             " child_id = %d"
                             " render_view_id = %d"
                             " request_id = %d"
-                            " download_id = %d"
                             " prompt_user_for_save_location = %c"
                             " }",
+                            download_id,
                             url().spec().c_str(),
                             path.value().c_str(),
                             received_bytes,
                             total_bytes,
-                            child_id,
-                            render_view_id,
-                            request_id,
-                            download_id,
+                            process_handle.child_id(),
+                            process_handle.render_view_id(),
+                            process_handle.request_id(),
                             prompt_user_for_save_location ? 'T' : 'F');
 }
 

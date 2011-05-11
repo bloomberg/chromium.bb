@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_process_handle.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -29,21 +30,6 @@ namespace {
 // Throttle updates to the UI thread so that a fast moving download doesn't
 // cause it to become unresponsive (in milliseconds).
 const int kUpdatePeriodMs = 500;
-
-DownloadManager* DownloadManagerForRenderViewHost(int render_process_id,
-                                                  int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  TabContents* contents = tab_util::GetTabContentsByID(render_process_id,
-                                                       render_view_id);
-  if (contents) {
-    Profile* profile = contents->profile();
-    if (profile)
-      return profile->GetDownloadManager();
-  }
-
-  return NULL;
-}
 
 }  // namespace
 
@@ -78,12 +64,8 @@ void DownloadFileManager::CreateDownloadFile(DownloadCreateInfo* info,
   scoped_ptr<DownloadFile>
       download_file(new DownloadFile(info, download_manager));
   if (!download_file->Initialize(get_hash)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(&download_util::CancelDownloadRequest,
-                            resource_dispatcher_host_,
-                            info->child_id,
-                            info->request_id));
+    download_util::CancelDownloadRequest(resource_dispatcher_host_,
+                                         info->process_handle);
     delete info;
     return;
   }
@@ -97,7 +79,7 @@ void DownloadFileManager::CreateDownloadFile(DownloadCreateInfo* info,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &DownloadFileManager::ResumeDownloadRequest,
-                        info->child_id, info->request_id));
+                        info->process_handle));
 
   StartUpdateTimer();
 
@@ -107,11 +89,14 @@ void DownloadFileManager::CreateDownloadFile(DownloadCreateInfo* info,
                         &DownloadManager::StartDownload, info));
 }
 
-void DownloadFileManager::ResumeDownloadRequest(int child_id, int request_id) {
+void DownloadFileManager::ResumeDownloadRequest(
+    DownloadProcessHandle process) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // This balances the pause in DownloadResourceHandler::OnResponseStarted.
-  resource_dispatcher_host_->PauseRequest(child_id, request_id, false);
+  resource_dispatcher_host_->PauseRequest(process.child_id(),
+                                          process.request_id(),
+                                          false);
 }
 
 DownloadFile* DownloadFileManager::GetDownloadFile(int id) {
@@ -158,15 +143,10 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(info);
 
-  DownloadManager* manager = DownloadManagerForRenderViewHost(
-      info->child_id, info->render_view_id);
+  DownloadManager* manager = info->process_handle.GetDownloadManager();
   if (!manager) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(&download_util::CancelDownloadRequest,
-                            resource_dispatcher_host_,
-                            info->child_id,
-                            info->request_id));
+    download_util::CancelDownloadRequest(resource_dispatcher_host_,
+                                         info->process_handle);
     delete info;
     return;
   }
@@ -178,7 +158,8 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &DownloadFileManager::CreateDownloadFile,
-                        info, make_scoped_refptr(manager), hash_needed));
+                        info,
+                        make_scoped_refptr(manager), hash_needed));
 }
 
 // We don't forward an update to the UI thread here, since we want to throttle
