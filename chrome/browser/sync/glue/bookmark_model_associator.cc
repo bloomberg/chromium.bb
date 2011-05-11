@@ -6,7 +6,6 @@
 
 #include <stack>
 
-#include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "base/message_loop.h"
 #include "base/task.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/browser/sync/util/cryptographer.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 
 namespace browser_sync {
@@ -42,7 +40,6 @@ namespace browser_sync {
 // TODO(ncarter): Pull these tags from an external protocol specification
 // rather than hardcoding them here.
 static const char kBookmarkBarTag[] = "bookmark_bar";
-static const char kSyncedBookmarksTag[] = "synced_bookmarks";
 static const char kOtherBookmarksTag[] = "other_bookmarks";
 
 // Bookmark comparer for map of bookmark nodes.
@@ -235,7 +232,6 @@ void BookmarkModelAssociator::Disassociate(int64 sync_id) {
 bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(has_nodes);
   *has_nodes = false;
-  bool has_synced_folder = true;
   int64 bookmark_bar_sync_id;
   if (!GetSyncIdForTaggedNode(kBookmarkBarTag, &bookmark_bar_sync_id)) {
     return false;
@@ -243,10 +239,6 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   int64 other_bookmarks_sync_id;
   if (!GetSyncIdForTaggedNode(kOtherBookmarksTag, &other_bookmarks_sync_id)) {
     return false;
-  }
-  int64 synced_bookmarks_sync_id;
-  if (!GetSyncIdForTaggedNode(kSyncedBookmarksTag, &synced_bookmarks_sync_id)) {
-    has_synced_folder = false;
   }
 
   sync_api::ReadTransaction trans(user_share_);
@@ -261,18 +253,10 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
     return false;
   }
 
-  sync_api::ReadNode synced_bookmarks_node(&trans);
-  if (has_synced_folder &&
-      !synced_bookmarks_node.InitByIdLookup(synced_bookmarks_sync_id)) {
-    return false;
-  }
-
   // Sync model has user created nodes if either one of the permanent nodes
   // has children.
   *has_nodes = bookmark_bar_node.GetFirstChildId() != sync_api::kInvalidId ||
-      other_bookmarks_node.GetFirstChildId() != sync_api::kInvalidId ||
-      (has_synced_folder &&
-          synced_bookmarks_node.GetFirstChildId() != sync_api::kInvalidId);
+      other_bookmarks_node.GetFirstChildId() != sync_api::kInvalidId;
   return true;
 }
 
@@ -362,32 +346,14 @@ bool BookmarkModelAssociator::BuildAssociations() {
                << "are running against an out-of-date server?";
     return false;
   }
-  // We only need to ensure that the "synced bookmarks" folder exists on the
-  // server if the command line flag is set.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncedBookmarksFolder) &&
-      !AssociateTaggedPermanentNode(bookmark_model_->synced_node(),
-                                    kSyncedBookmarksTag)) {
-    LOG(ERROR) << "Server did not create top-level synced nodes.  Possibly "
-               << "we are running against an out-of-date server?";
-    return false;
-  }
   int64 bookmark_bar_sync_id = GetSyncIdFromChromeId(
       bookmark_model_->GetBookmarkBarNode()->id());
   DCHECK(bookmark_bar_sync_id != sync_api::kInvalidId);
   int64 other_bookmarks_sync_id = GetSyncIdFromChromeId(
       bookmark_model_->other_node()->id());
   DCHECK(other_bookmarks_sync_id != sync_api::kInvalidId);
-  int64 synced_bookmarks_sync_id = GetSyncIdFromChromeId(
-       bookmark_model_->synced_node()->id());
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncedBookmarksFolder)) {
-    DCHECK(synced_bookmarks_sync_id != sync_api::kInvalidId);
-  }
 
   std::stack<int64> dfs_stack;
-  if (synced_bookmarks_sync_id != sync_api::kInvalidId)
-    dfs_stack.push(synced_bookmarks_sync_id);
   dfs_stack.push(other_bookmarks_sync_id);
   dfs_stack.push(bookmark_bar_sync_id);
 
@@ -520,24 +486,14 @@ bool BookmarkModelAssociator::LoadAssociations() {
     // We should always be able to find the permanent nodes.
     return false;
   }
-  int64 synced_bookmarks_id = -1;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncedBookmarksFolder) &&
-      !GetSyncIdForTaggedNode(kSyncedBookmarksTag, &synced_bookmarks_id)) {
-    // We should always be able to find the permanent nodes.
-    return false;
-  }
 
   // Build a bookmark node ID index since we are going to repeatedly search for
   // bookmark nodes by their IDs.
   BookmarkNodeIdIndex id_index;
   id_index.AddAll(bookmark_model_->GetBookmarkBarNode());
   id_index.AddAll(bookmark_model_->other_node());
-  id_index.AddAll(bookmark_model_->synced_node());
 
   std::stack<int64> dfs_stack;
-  if (synced_bookmarks_id != -1)
-    dfs_stack.push(synced_bookmarks_id);
   dfs_stack.push(other_bookmarks_id);
   dfs_stack.push(bookmark_bar_id);
 
@@ -566,7 +522,6 @@ bool BookmarkModelAssociator::LoadAssociations() {
     // Don't try to call NodesMatch on permanent nodes like bookmark bar and
     // other bookmarks. They are not expected to match.
     if (node != bookmark_model_->GetBookmarkBarNode() &&
-        node != bookmark_model_->synced_node() &&
         node != bookmark_model_->other_node() &&
         !NodesMatch(node, &sync_parent))
       return false;

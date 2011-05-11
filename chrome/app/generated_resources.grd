@@ -5805,9 +5805,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_BOOMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the bookmarks bar folder">
           Bookmarks bar
         </message>
-        <message name="IDS_BOOMARK_BAR_SYNCED_FOLDER_NAME" desc="Name shown in the tree for the synced bookmarks folder">
-          Synced bookmarks
-        </message>
         <message name="IDS_BOOMARK_BAR_OTHER_FOLDER_NAME" desc="Name shown in the tree for the other bookmarks folder">
           Other bookmarks
         </message>
@@ -5815,9 +5812,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_BOOMARK_BAR_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the bookmarks bar folder">
           Bookmarks Bar
-        </message>
-        <message name="IDS_BOOMARK_BAR_SYNCED_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the synced bookmarks folder">
-          Synced Bookmarks
         </message>
         <message name="IDS_BOOMARK_BAR_OTHER_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the other bookmarks folder">
           Other Bookmarks

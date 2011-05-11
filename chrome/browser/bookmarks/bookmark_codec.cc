@@ -19,7 +19,6 @@ using base::Time;
 const char* BookmarkCodec::kRootsKey = "roots";
 const char* BookmarkCodec::kRootFolderNameKey = "bookmark_bar";
 const char* BookmarkCodec::kOtherBookmarkFolderNameKey = "other";
-const char* BookmarkCodec::kSyncedBookmarkFolderNameKey = "synced";
 const char* BookmarkCodec::kVersionKey = "version";
 const char* BookmarkCodec::kChecksumKey = "checksum";
 const char* BookmarkCodec::kIdKey = "id";
@@ -44,19 +43,16 @@ BookmarkCodec::BookmarkCodec()
 BookmarkCodec::~BookmarkCodec() {}
 
 Value* BookmarkCodec::Encode(BookmarkModel* model) {
-  return Encode(model->GetBookmarkBarNode(), model->other_node(),
-                model->synced_node());
+  return Encode(model->GetBookmarkBarNode(), model->other_node());
 }
 
 Value* BookmarkCodec::Encode(const BookmarkNode* bookmark_bar_node,
-                             const BookmarkNode* other_folder_node,
-                             const BookmarkNode* synced_folder_node) {
+                             const BookmarkNode* other_folder_node) {
   ids_reassigned_ = false;
   InitializeChecksum();
   DictionaryValue* roots = new DictionaryValue();
   roots->Set(kRootFolderNameKey, EncodeNode(bookmark_bar_node));
   roots->Set(kOtherBookmarkFolderNameKey, EncodeNode(other_folder_node));
-  roots->Set(kSyncedBookmarkFolderNameKey, EncodeNode(synced_folder_node));
 
   DictionaryValue* main = new DictionaryValue();
   main->SetInteger(kVersionKey, kCurrentVersion);
@@ -71,7 +67,6 @@ Value* BookmarkCodec::Encode(const BookmarkNode* bookmark_bar_node,
 
 bool BookmarkCodec::Decode(BookmarkNode* bb_node,
                            BookmarkNode* other_folder_node,
-                           BookmarkNode* synced_folder_node,
                            int64* max_id,
                            const Value& value) {
   ids_.clear();
@@ -80,13 +75,12 @@ bool BookmarkCodec::Decode(BookmarkNode* bb_node,
   maximum_id_ = 0;
   stored_checksum_.clear();
   InitializeChecksum();
-  bool success = DecodeHelper(bb_node, other_folder_node, synced_folder_node,
-                              value);
+  bool success = DecodeHelper(bb_node, other_folder_node, value);
   FinalizeChecksum();
   // If either the checksums differ or some IDs were missing/not unique,
   // reassign IDs.
   if (!ids_valid_ || computed_checksum() != stored_checksum())
-    ReassignIDs(bb_node, other_folder_node, synced_folder_node);
+    ReassignIDs(bb_node, other_folder_node);
   *max_id = maximum_id_ + 1;
   return success;
 }
@@ -121,7 +115,6 @@ Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
 
 bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
                                  BookmarkNode* other_folder_node,
-                                 BookmarkNode* synced_folder_node,
                                  const Value& value) {
   if (value.GetType() != Value::TYPE_DICTIONARY)
     return false;  // Unexpected type.
@@ -151,34 +144,24 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
   DictionaryValue* roots_d_value = static_cast<DictionaryValue*>(roots);
   Value* root_folder_value;
   Value* other_folder_value;
-  Value* synced_folder_value;
   if (!roots_d_value->Get(kRootFolderNameKey, &root_folder_value) ||
       root_folder_value->GetType() != Value::TYPE_DICTIONARY ||
       !roots_d_value->Get(kOtherBookmarkFolderNameKey, &other_folder_value) ||
-      other_folder_value->GetType() != Value::TYPE_DICTIONARY ||
-      !roots_d_value->Get(kSyncedBookmarkFolderNameKey, &synced_folder_value) ||
-      synced_folder_value->GetType() != Value::TYPE_DICTIONARY) {
-    return false;  // Invalid type for root folder and/or synced and/or other
-                   // folder.
-  }
+      other_folder_value->GetType() != Value::TYPE_DICTIONARY)
+    return false;  // Invalid type for root folder and/or other folder.
 
   DecodeNode(*static_cast<DictionaryValue*>(root_folder_value), NULL,
              bb_node);
   DecodeNode(*static_cast<DictionaryValue*>(other_folder_value), NULL,
              other_folder_node);
-  DecodeNode(*static_cast<DictionaryValue*>(synced_folder_value), NULL,
-             synced_folder_node);
   // Need to reset the type as decoding resets the type to FOLDER. Similarly
   // we need to reset the title as the title is persisted and restored from
   // the file.
   bb_node->set_type(BookmarkNode::BOOKMARK_BAR);
   other_folder_node->set_type(BookmarkNode::OTHER_NODE);
-  synced_folder_node->set_type(BookmarkNode::SYNCED);
   bb_node->set_title(l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_FOLDER_NAME));
   other_folder_node->set_title(
       l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME));
-  synced_folder_node->set_title(
-        l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_SYNCED_FOLDER_NAME));
 
   return true;
 }
@@ -306,12 +289,10 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
 }
 
 void BookmarkCodec::ReassignIDs(BookmarkNode* bb_node,
-                                BookmarkNode* other_node,
-                                BookmarkNode* synced_node) {
+                                BookmarkNode* other_node) {
   maximum_id_ = 0;
   ReassignIDsHelper(bb_node);
   ReassignIDsHelper(other_node);
-  ReassignIDsHelper(synced_node);
   ids_reassigned_ = true;
 }
 

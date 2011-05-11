@@ -8,7 +8,6 @@
 #include <functional>
 
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
@@ -17,7 +16,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -77,9 +75,6 @@ void BookmarkNode::Reset(const history::StarredEntry& entry) {
     case history::StarredEntry::BOOKMARK_BAR:
       type_ = BookmarkNode::BOOKMARK_BAR;
       break;
-    case history::StarredEntry::SYNCED:
-        type_ = BookmarkNode::SYNCED;
-        break;
     case history::StarredEntry::OTHER:
       type_ = BookmarkNode::OTHER_NODE;
       break;
@@ -129,7 +124,6 @@ BookmarkModel::BookmarkModel(Profile* profile)
       root_(GURL()),
       bookmark_bar_node_(NULL),
       other_node_(NULL),
-      synced_node_(NULL),
       next_node_id_(1),
       observers_(ObserverList<BookmarkModelObserver>::NOTIFY_EXISTING_ONLY),
       loaded_signal_(TRUE, FALSE) {
@@ -265,8 +259,7 @@ void BookmarkModel::SetTitle(const BookmarkNode* node, const string16& title) {
   if (node->GetTitle() == title)
     return;
 
-  if (node == bookmark_bar_node_ || node == other_node_ ||
-      node == synced_node_) {
+  if (node == bookmark_bar_node_ || node == other_node_) {
     NOTREACHED();
     return;
   }
@@ -575,17 +568,12 @@ void BookmarkModel::DoneLoading(
   }
   bookmark_bar_node_ = details->release_bb_node();
   other_node_ = details->release_other_folder_node();
-  synced_node_ = details->release_synced_folder_node();
   index_.reset(details->release_index());
 
   // WARNING: order is important here, various places assume bookmark bar then
   // other node.
   root_.Add(bookmark_bar_node_, 0);
   root_.Add(other_node_, 1);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncedBookmarksFolder)) {
-    root_.Add(synced_node_, 2);
-  }
 
   {
     base::AutoLock url_lock(url_lock_);
@@ -731,24 +719,14 @@ BookmarkNode* BookmarkModel::CreateOtherBookmarksNode() {
   return CreateRootNodeFromStarredEntry(entry);
 }
 
-BookmarkNode* BookmarkModel::CreateSyncedBookmarksNode() {
-  history::StarredEntry entry;
-  entry.type = history::StarredEntry::SYNCED;
-  return CreateRootNodeFromStarredEntry(entry);
-}
-
 BookmarkNode* BookmarkModel::CreateRootNodeFromStarredEntry(
     const history::StarredEntry& entry) {
   DCHECK(entry.type == history::StarredEntry::BOOKMARK_BAR ||
-         entry.type == history::StarredEntry::OTHER ||
-         entry.type == history::StarredEntry::SYNCED);
+         entry.type == history::StarredEntry::OTHER);
   BookmarkNode* node = new BookmarkNode(generate_next_node_id(), GURL());
   node->Reset(entry);
   if (entry.type == history::StarredEntry::BOOKMARK_BAR) {
     node->set_title(l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_FOLDER_NAME));
-  } else if (entry.type == history::StarredEntry::SYNCED) {
-    node->set_title(l10n_util::GetStringUTF16(
-        IDS_BOOMARK_BAR_SYNCED_FOLDER_NAME));
   } else {
     node->set_title(
         l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME));
@@ -848,8 +826,6 @@ void BookmarkModel::SetFileChanged() {
 BookmarkLoadDetails* BookmarkModel::CreateLoadDetails() {
   BookmarkNode* bb_node = CreateBookmarkNode();
   BookmarkNode* other_folder_node = CreateOtherBookmarksNode();
-  BookmarkNode* synced_folder_node = CreateSyncedBookmarksNode();
   return new BookmarkLoadDetails(
-      bb_node, other_folder_node, synced_folder_node,
-      new BookmarkIndex(profile()), next_node_id_);
+      bb_node, other_folder_node, new BookmarkIndex(profile()), next_node_id_);
 }

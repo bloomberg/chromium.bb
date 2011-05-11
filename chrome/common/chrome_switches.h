@@ -149,7 +149,6 @@ extern const char kEnableSyncAutofill[];
 extern const char kEnableSyncPreferences[];
 extern const char kEnableSyncSessions[];
 extern const char kEnableSyncTypedUrls[];
-extern const char kEnableSyncedBookmarksFolder[];
 extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableTcpFastOpen[];
 extern const char kEnableTopSites[];

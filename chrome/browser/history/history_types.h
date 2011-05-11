@@ -282,9 +282,6 @@ struct StarredEntry {
     // User created folder.
     USER_FOLDER,
 
-    // The synced folder.
-    SYNCED,
-
     // The "other bookmarks" folder that holds uncategorized bookmarks.
     OTHER
   };

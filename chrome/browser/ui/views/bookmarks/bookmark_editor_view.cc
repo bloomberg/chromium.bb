@@ -485,10 +485,9 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::CreateRootNode() {
   EditorNode* root_node = new EditorNode(std::wstring(), 0);
   const BookmarkNode* bb_root_node = bb_model_->root_node();
   CreateNodes(bb_root_node, root_node);
-  DCHECK(root_node->child_count() == 3);
+  DCHECK(root_node->child_count() == 2);
   DCHECK(bb_root_node->GetChild(0)->type() == BookmarkNode::BOOKMARK_BAR);
   DCHECK(bb_root_node->GetChild(1)->type() == BookmarkNode::OTHER_NODE);
-  DCHECK(bb_root_node->GetChild(2)->type() == BookmarkNode::SYNCED);
   return root_node;
 }
 

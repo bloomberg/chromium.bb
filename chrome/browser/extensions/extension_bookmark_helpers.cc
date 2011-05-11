@@ -92,7 +92,6 @@ bool RemoveNode(BookmarkModel* model,
   }
   if (node == model->root_node() ||
       node == model->other_node() ||
-      node == model->synced_node() ||
       node == model->GetBookmarkBarNode()) {
     *error = keys::kModifySpecialError;
     return false;
