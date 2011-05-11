@@ -23,6 +23,7 @@
 #include "views/border.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/layout/grid_layout.h"
 
@@ -38,7 +39,8 @@ const int kCornerRadius = 5;
 class PasswordField : public TextfieldWithMargin {
  public:
   PasswordField()
-      : TextfieldWithMargin(views::Textfield::STYLE_PASSWORD) {
+      : TextfieldWithMargin(views::Textfield::STYLE_PASSWORD),
+        context_menu_disabled_(false) {
     set_text_to_display_when_empty(
         l10n_util::GetStringUTF16(IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT));
   }
@@ -49,9 +51,37 @@ class PasswordField : public TextfieldWithMargin {
     return false;
   }
 
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child) OVERRIDE {
+    Textfield::ViewHierarchyChanged(is_add, parent, child);
+    // Wiat until native widget is created.
+    if (!context_menu_disabled_ && native_wrapper_) {
+      gfx::NativeView widget = native_wrapper_->GetTestingHandle();
+      if (widget) {
+        context_menu_disabled_ = true;
+        g_signal_connect(widget, "button-press-event",
+                         G_CALLBACK(OnButtonPressEventThunk), this);
+      }
+    }
+  }
+
+  CHROMEGTK_CALLBACK_1(PasswordField, gboolean, OnButtonPressEvent,
+                       GdkEventButton*);
+
  private:
+  bool context_menu_disabled_;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordField);
 };
+
+gboolean PasswordField::OnButtonPressEvent(GtkWidget* widget,
+                                           GdkEventButton* event) {
+  // Eat button 2/3 and alt + any button to disable context menu.
+  return event->state & GDK_MOD1_MASK ||
+      event->button == 2 ||
+      event->button == 3;
+}
 
 }  // namespace
 

@@ -806,12 +806,6 @@ void ScreenLocker::Init() {
                               GTK_WINDOW(lock_window_->GetNativeView()));
   g_object_unref(window_group);
 
-  // Don't let X draw default background, which was causing flash on
-  // resume.
-  gdk_window_set_back_pixmap(lock_window_->GetNativeView()->window,
-                             NULL, false);
-  gdk_window_set_back_pixmap(lock_widget_->GetNativeView()->window,
-                             NULL, false);
   lock_window->set_toplevel_focus_widget(
       static_cast<views::WidgetGtk*>(lock_widget_->native_widget())->
           window_contents());
