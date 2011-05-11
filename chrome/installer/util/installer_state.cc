@@ -431,8 +431,11 @@ void InstallerState::RemoveOldVersionDirectories(
         scoped_ptr<WorkItem> item(
             WorkItem::CreateDeleteTreeWorkItem(next_version, temp_path,
                                                key_files));
-        if (!item->Do())
+        if (!item->Do()) {
+          LOG(ERROR) << "Failed to delete old version directory: "
+                     << next_version.value();
           item->Rollback();
+        }
       }
     }
 
