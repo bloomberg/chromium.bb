@@ -119,6 +119,13 @@ cr.define('options', function() {
   };
 
   /**
+   * Returns whether we're currently in guest mode.
+   */
+  AccountsOptions.loggedInAsGuest = function() {
+    return localStrings.getString('logged_in_as_guest') == 'true';
+  };
+
+  /**
    * Returns whether the whitelist is managed by policy or not.
    */
   AccountsOptions.whitelistIsManaged = function() {

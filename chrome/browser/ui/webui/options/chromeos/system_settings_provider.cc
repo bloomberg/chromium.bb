@@ -195,8 +195,8 @@ SystemSettingsProvider::~SystemSettingsProvider() {
 }
 
 void SystemSettingsProvider::DoSet(const std::string& path, Value* in_value) {
-  // Only the owner can change the time zone.
-  if (!UserManager::Get()->current_user_is_owner())
+  // Non-guest users can change the time zone.
+  if (UserManager::Get()->IsLoggedInAsGuest())
     return;
 
   if (path == kSystemTimezone) {

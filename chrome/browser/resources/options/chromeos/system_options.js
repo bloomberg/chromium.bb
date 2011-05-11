@@ -30,12 +30,15 @@ cr.define('options', function() {
      */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
-      var timezone = $('timezone-select');
-      if (timezone) {
-        // Disable the timezone setting for non-owners, as this is a
-        // system wide setting.
-        if (!AccountsOptions.currentUserIsOwner())
+
+      // Disable time-related settings if we're not logged in as a real user.
+      if (AccountsOptions.loggedInAsGuest()) {
+        var timezone = $('timezone-select');
+        if (timezone)
           timezone.disabled = true;
+        var use_24hour_clock = $('use-24hour-clock');
+        if (use_24hour_clock)
+          use_24hour_clock.disabled = true;
       }
 
       $('language-button').onclick = function(event) {
