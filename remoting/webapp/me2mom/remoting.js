@@ -28,7 +28,7 @@ function init() {
   initAuthPanel_();
   setHostMode('unshared');
   setClientMode('unconnected');
-  setGlobalMode('host');  // TODO(jamiewalch): Make the initial mode sticky.
+  setGlobalMode(chromoting.getItem('startup-mode', 'host'));
 }
 
 // Show the div with id |mode| and hide those with other ids in |modes|.
@@ -45,6 +45,11 @@ function setMode_(mode, modes) {
 
 function setGlobalMode(mode) {
   setMode_(mode, ['host', 'client', 'session']);
+}
+
+function setGlobalModePersistent(mode) {
+  setGlobalMode(mode);
+  chromoting.setItem('startup-mode', mode);
 }
 
 function setHostMode(mode) {

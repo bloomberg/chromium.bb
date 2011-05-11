@@ -9,8 +9,9 @@ found in the LICENSE file.
     function setItem(key, value) {
       window.localStorage.setItem(key, value);
     }
-    function getItem(key) {
-      return window.localStorage.getItem(key);
+    function getItem(key, defaultValue) {
+      var result = window.localStorage.getItem(key);
+      return (result != null) ? result : defaultValue;
     }
     function clearAll() {
       window.localStorage.clear();
