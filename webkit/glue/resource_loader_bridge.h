@@ -215,9 +215,6 @@ class ResourceLoaderBridge {
     // encoded as the url member.
     GURL referrer;
 
-    std::string frame_origin;
-    std::string main_frame_origin;
-
     // For HTTP(S) requests, the headers parameter can be a \r\n-delimited and
     // \r\n-terminated list of MIME headers.  They should be ASCII-encoded using
     // the standard MIME header encoding rules.  The headers parameter can also
