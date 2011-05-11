@@ -31,6 +31,15 @@ class MessagePumpGlibXDispatcher : public MessagePumpForUI::Dispatcher {
   virtual DispatchStatus DispatchX(XEvent* xevent) = 0;
 };
 
+class MessagePumpXObserver : public MessagePumpForUI::Observer {
+ public:
+  // This method is called before processing an XEvent. If the method returns
+  // true, it indicates the event has already been handled, so the event is not
+  // processed any farther. If the method returns false, the event dispatching
+  // proceeds as normal.
+  virtual bool WillProcessXEvent(XEvent* xevent);
+};
+
 }  // namespace base
 
 #endif  // BASE_MESSAGE_PUMP_GLIB_X_DISPATCH_H

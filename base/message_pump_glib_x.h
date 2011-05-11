@@ -14,6 +14,8 @@
 #include <gtk/gtk.h>
 #include <X11/X.h>
 
+typedef union _XEvent XEvent;
+
 namespace base {
 
 class MessagePumpGlibX : public MessagePumpForUI {
@@ -30,6 +32,11 @@ class MessagePumpGlibX : public MessagePumpForUI {
 
  private:
   static void EventDispatcherX(GdkEvent* event, gpointer data);
+
+  // Sends the event to the observers. If an observer returns true, then it does
+  // not send the event to any other observers and returns true. Returns false
+  // if no observer returns true.
+  bool WillProcessXEvent(XEvent* xevent);
 
   // Update the lookup table and flag the events that should be captured and
   // processed so that GDK doesn't get to them.

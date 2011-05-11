@@ -70,15 +70,17 @@ bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
       }
 #endif
 
-      MessagePumpGlibXDispatcher::DispatchStatus status =
-          static_cast<MessagePumpGlibXDispatcher*>
-          (GetDispatcher())->DispatchX(&xev);
+      if (!WillProcessXEvent(&xev)) {
+        MessagePumpGlibXDispatcher::DispatchStatus status =
+            static_cast<MessagePumpGlibXDispatcher*>
+            (GetDispatcher())->DispatchX(&xev);
 
-      if (status == MessagePumpGlibXDispatcher::EVENT_QUIT) {
-        should_quit = true;
-        Quit();
-      } else if (status == MessagePumpGlibXDispatcher::EVENT_IGNORED) {
-        DLOG(WARNING) << "Event (" << xev.type << ") not handled.";
+        if (status == MessagePumpGlibXDispatcher::EVENT_QUIT) {
+          should_quit = true;
+          Quit();
+        } else if (status == MessagePumpGlibXDispatcher::EVENT_IGNORED) {
+          DLOG(WARNING) << "Event (" << xev.type << ") not handled.";
+        }
       }
 
 #if defined(HAVE_XINPUT2)
@@ -117,6 +119,18 @@ bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
   }
 
   return retvalue;
+}
+
+bool MessagePumpGlibX::WillProcessXEvent(XEvent* xevent) {
+  ObserverListBase<Observer>::Iterator it(observers());
+  Observer* obs;
+  while ((obs = it.GetNext()) != NULL) {
+    MessagePumpXObserver* xobs =
+        static_cast<MessagePumpXObserver*>(obs);
+    if (xobs->WillProcessXEvent(xevent))
+      return true;
+  }
+  return false;
 }
 
 void MessagePumpGlibX::EventDispatcherX(GdkEvent* event, gpointer data) {
@@ -185,5 +199,9 @@ void MessagePumpGlibX::InitializeXInput2(void) {
   }
 }
 #endif  // HAVE_XINPUT2
+
+bool MessagePumpXObserver::WillProcessXEvent(XEvent* xev) {
+  return false;
+}
 
 }  // namespace base
