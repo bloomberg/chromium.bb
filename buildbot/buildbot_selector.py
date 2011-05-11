@@ -12,33 +12,30 @@ BOT_ASSIGNMENT = {
     ######################################################################
     # Buildbots.
     ######################################################################
-    'xp-m32-n32-opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
+    'xp-newlib-opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
     'xp-glibc-opt': 'buildbot\\buildbot_win.bat opt 32 glibc',
-    'vista64-m64-n64-dbg': 'buildbot\\buildbot_win.bat dbg 64 newlib',
-    'vista64-m64-n64-opt': 'buildbot\\buildbot_win.bat opt 64 newlib',
-    'win64-glibc-dbg': 'buildbot\\buildbot_win.bat dbg 64 glibc',
-    'win64-glibc-opt': 'buildbot\\buildbot_win.bat opt 64 glibc',
-    'xp-bare-m32-n32-opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
-    'win7-bare-m32-n32-opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
-    'win7-bare-m64-n64-dbg': 'buildbot\\buildbot_win.bat dbg 64 newlib',
-    'win7-bare-m64-n64-opt': 'buildbot\\buildbot_win.bat opt 64 newlib',
-    'win7atom64-m64-n64-test-dbg': 'buildbot\\buildbot_win_atom.bat dbg 64',
-    'win7atom64-m64-n64-test-opt': 'buildbot\\buildbot_win_atom.bat opt 64',
-    'mac10.5-m32-n32-opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',
-    'mac10.6-m32-n32-opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',
+    'vista-64-newlib-dbg': 'buildbot\\buildbot_win.bat dbg 64 newlib',
+    'vista-64-newlib-opt': 'buildbot\\buildbot_win.bat opt 64 newlib',
+    'win7-64-glibc-dbg': 'buildbot\\buildbot_win.bat dbg 64 glibc',
+    'win7-64-glibc-opt': 'buildbot\\buildbot_win.bat opt 64 glibc',
+    'xp-bare-newlib-opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
+    'win7-32-bare-newlib-opt': 'buildbot\\buildbot_win.bat opt 32 newlib',
+    'win7-64-bare-newlib-opt': 'buildbot\\buildbot_win.bat opt 64 newlib',
+    'mac10.5-newlib-opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',
+    'mac10.6-newlib-opt': 'bash buildbot/buildbot_mac.sh opt 32 newlib',
     'mac10.5-glibc-opt': 'bash buildbot/buildbot_mac.sh opt 32 glibc',
     'mac10.6-glibc-opt': 'bash buildbot/buildbot_mac.sh opt 32 glibc',
-    'lucid32-m32-n32-dbg': 'bash buildbot/buildbot_linux.sh dbg 32 newlib',
-    'lucid32-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
-    'lucid32-glibc-dbg': 'bash buildbot/buildbot_linux.sh dbg 32 glibc',
-    'lucid32-glibc-opt': 'bash buildbot/buildbot_linux.sh opt 32 glibc',
-    'lucid64-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
-    'lucid64-m64-n64-dbg': 'bash buildbot/buildbot_linux.sh dbg 64 newlib',
-    'lucid64-m64-n64-opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
-    'lucid64-glibc-dbg': 'bash buildbot/buildbot_linux.sh dbg 64 glibc',
-    'lucid64-glibc-opt': 'bash buildbot/buildbot_linux.sh opt 64 glibc',
-    'lucid32-bare-m32-n32-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
-    'lucid64-bare-m64-n64-opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
+    'lucid-32-newlib-dbg': 'bash buildbot/buildbot_linux.sh dbg 32 newlib',
+    'lucid-32-newlib-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
+    'lucid-32-glibc-dbg': 'bash buildbot/buildbot_linux.sh dbg 32 glibc',
+    'lucid-32-glibc-opt': 'bash buildbot/buildbot_linux.sh opt 32 glibc',
+    'lucid-64-newlib-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
+    'lucid-64-newlib-dbg': 'bash buildbot/buildbot_linux.sh dbg 64 newlib',
+    'lucid-64-newlib-opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
+    'lucid-64-glibc-dbg': 'bash buildbot/buildbot_linux.sh dbg 64 glibc',
+    'lucid-64-glibc-opt': 'bash buildbot/buildbot_linux.sh opt 64 glibc',
+    'lucid-32-bare-newlib-opt': 'bash buildbot/buildbot_linux.sh opt 32 newlib',
+    'lucid-64-bare-newlib-opt': 'bash buildbot/buildbot_linux.sh opt 64 newlib',
      # pnacl bots.
 
     'pnacl-arm-dbg':
@@ -73,11 +70,10 @@ BOT_ASSIGNMENT = {
     # Valgrind bots.
     'karmic64-valgrind': 'bash buildbot/buildbot_valgrind.sh',
     # Coverage.
-    'mac-m32-n32-coverage': 'bash buildbot/buildbot_coverage_mac.sh',
-    'lucid64-m32-n32-coverage': 'bash buildbot/buildbot_coverage_linux.sh 32',
-    'lucid64-m64-n64-coverage': 'bash buildbot/buildbot_coverage_linux.sh 64',
-    'lucid64-marm-narm-coverage': 'bash buildbot/buildbot_coverage_arm.sh',
-    'xp-m32-n32-coverage': 'buildbot\\buildbot_coverage_win.bat',
+    'mac10.6-newlib-coverage': 'bash buildbot/buildbot_coverage_mac.sh',
+    'lucid64-32-newlib-coverage': 'bash buildbot/buildbot_coverage_linux.sh 32',
+    'lucid64-64-newlib-coverage': 'bash buildbot/buildbot_coverage_linux.sh 64',
+    'xp-newlib-coverage': 'buildbot\\buildbot_coverage_win.bat',
     # PPAPI Integration.
     'lucid64-m32-n32-opt-ppapi':
         'bash buildbot/buildbot_linux.sh opt 32 newlib',
@@ -134,6 +130,10 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_toolchain_arm_untrusted.sh',
 
     # Toolchain trybots.
+    'nacl-toolchain-lucid64-newlib':
+        'bash buildbot/buildbot_toolchain.sh linux',
+    'nacl-toolchain-mac-newlib': 'bash buildbot/buildbot_toolchain.sh mac',
+    'nacl-toolchain-win7-newlib': 'buildbot\\buildbot_toolchain_win.bat',
     'nacl-toolchain-lucid64-glibc':
         'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
     'nacl-toolchain-mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
