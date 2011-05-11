@@ -706,8 +706,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   EXPECT_FALSE(UrlIsPendingInPrerenderManager(kHtmlFileC));
 }
 
-// Flaky: http://crbug.com/82118
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderTaskManager) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
   // Early out if we're not using TabContents for Prerendering.
   if (!prerender::PrerenderContents::UseTabContents()) {
     SUCCEED();
@@ -727,16 +726,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderTaskManager) {
   string16 prerender_title;
   int num_prerender_tabs = 0;
 
-  VLOG(1) << "After prerender:";
   for (int i = 0; i < model()->ResourceCount(); ++i) {
-    VLOG(1) << "  " << i << ": " << model()->GetResourceTitle(i);
     if (model()->GetResourceTabContents(i)) {
       prerender_title = model()->GetResourceTitle(i);
       if (StartsWith(prerender_title, prefix, true))
         ++num_prerender_tabs;
     }
   }
-  ASSERT_EQ(1, num_prerender_tabs);
+  EXPECT_EQ(1, num_prerender_tabs);
   const string16 prerender_page_title = prerender_title.substr(prefix.length());
 
   NavigateToDestURL();
@@ -745,29 +742,29 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderTaskManager) {
   const string16 tab_prefix =
       l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX, string16());
   num_prerender_tabs = 0;
-  bool found_tab_with_prerender_page_title = false;
-  VLOG(1) << "After navigate:";
+  int num_tabs_with_prerender_page_title = 0;
   for (int i = 0; i < model()->ResourceCount(); ++i) {
-    VLOG(1) << "  " << i << ": " << model()->GetResourceTitle(i);
     if (model()->GetResourceTabContents(i)) {
       string16 tab_title = model()->GetResourceTitle(i);
       if (StartsWith(tab_title, prefix, true)) {
         ++num_prerender_tabs;
       } else {
-        ASSERT_TRUE(StartsWith(tab_title, tab_prefix, true));
+        EXPECT_TRUE(StartsWith(tab_title, tab_prefix, true));
 
         // The prerender tab should now be a normal tab but the title should be
-        // the same.
+        // the same. Depending on timing, there may be more than one of these.
         const string16 tab_page_title = tab_title.substr(tab_prefix.length());
-        if (prerender_page_title.compare(tab_page_title) == 0) {
-          ASSERT_FALSE(found_tab_with_prerender_page_title);
-          found_tab_with_prerender_page_title = true;
-        }
+        if (prerender_page_title.compare(tab_page_title) == 0)
+          ++num_tabs_with_prerender_page_title;
       }
     }
   }
-  ASSERT_EQ(0, num_prerender_tabs);
-  ASSERT_TRUE(found_tab_with_prerender_page_title);
+  EXPECT_EQ(0, num_prerender_tabs);
+
+  // We may have deleted the prerender tab, but the swapped in tab should be
+  // active.
+  EXPECT_GE(num_tabs_with_prerender_page_title, 1);
+  EXPECT_LE(num_tabs_with_prerender_page_title, 2);
 }
 
 // Checks that prerenderers will terminate when an audio tag is encountered.
