@@ -405,7 +405,7 @@ function displayErrorMessage(errorMessage) {
  * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
  */
 function printPreviewFailed() {
-  displayErrorMessage(localStrings.getString('printPreviewFailed'));
+  displayErrorMessage(localStrings.getString('previewFailed'));
 }
 
 /**
