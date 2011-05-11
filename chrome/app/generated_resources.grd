@@ -10436,9 +10436,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_HARDWARE_REVISION" desc="Cellular device hardware revision label under network details in chrome:settings/internet.">
         Hardware:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_LAST_UPDATE" desc="Cellular device last updated label under network details in chrome:settings/internet.">
-        Last updated:
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION" desc="Cellular device PRL version label under network details in chrome:settings/internet.">
         PRL version:
       </message>
@@ -11629,9 +11626,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_HARDWARE_REVISION" desc="Label for cellular network modem hardware revision under chrome://options/internet">
         Hardware revision:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_LAST_UPDATE" desc="Label for cellular network modem last update time under chrome://options/internet">
-        Last update:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION" desc="Label for cellular network modem PRL (Preferred Roaming List) version under chrome://options/internet">
         PRL version:

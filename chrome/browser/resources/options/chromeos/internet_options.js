@@ -392,7 +392,6 @@ cr.define('options', function() {
       $('modelId').textContent = data.modelId;
       $('firmwareRevision').textContent = data.firmwareRevision;
       $('hardwareRevision').textContent = data.hardwareRevision;
-      $('lastUpdate').textContent = data.lastUpdate;
       $('prlVersion').textContent = data.prlVersion;
       $('meid').textContent = data.meid;
       $('imei').textContent = data.imei;

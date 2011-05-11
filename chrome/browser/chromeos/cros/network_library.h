@@ -210,7 +210,6 @@ class NetworkDevice {
   SIMPinRequire sim_pin_required() const { return sim_pin_required_; }
   const std::string& firmware_revision() const { return firmware_revision_; }
   const std::string& hardware_revision() const { return hardware_revision_; }
-  const std::string& last_update() const { return last_update_; }
   const unsigned int prl_version() const { return PRL_version_; }
   const std::string& home_provider() const { return home_provider_; }
   const std::string& home_provider_code() const { return home_provider_code_; }
@@ -257,7 +256,6 @@ class NetworkDevice {
   SIMPinRequire sim_pin_required_;
   std::string firmware_revision_;
   std::string hardware_revision_;
-  std::string last_update_;
   int PRL_version_;
   std::string selected_cellular_network_;
   CellularNetworkList found_cellular_networks_;

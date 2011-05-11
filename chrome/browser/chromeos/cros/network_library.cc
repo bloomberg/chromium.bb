@@ -193,7 +193,7 @@ const char* kModelIDProperty = "Cellular.ModelID";
 const char* kManufacturerProperty = "Cellular.Manufacturer";
 const char* kFirmwareRevisionProperty = "Cellular.FirmwareRevision";
 const char* kHardwareRevisionProperty = "Cellular.HardwareRevision";
-const char* kLastDeviceUpdateProperty = "Cellular.LastDeviceUpdate";
+const char* kPoweredProperty = "Powered";
 const char* kPRLVersionProperty = "Cellular.PRLVersion"; // (INT16)
 const char* kSelectedNetworkProperty = "Cellular.SelectedNetwork";
 const char* kSupportNetworkScanProperty = "Cellular.SupportNetworkScan";
@@ -465,7 +465,6 @@ enum PropertyIndex {
   PROPERTY_INDEX_IMEI,
   PROPERTY_INDEX_IMSI,
   PROPERTY_INDEX_IS_ACTIVE,
-  PROPERTY_INDEX_LAST_DEVICE_UPDATE,
   PROPERTY_INDEX_L2TPIPSEC_CA_CERT,
   PROPERTY_INDEX_L2TPIPSEC_CERT,
   PROPERTY_INDEX_L2TPIPSEC_KEY,
@@ -486,6 +485,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_PASSPHRASE,
   PROPERTY_INDEX_PASSPHRASE_REQUIRED,
   PROPERTY_INDEX_PAYMENT_URL,
+  PROPERTY_INDEX_POWERED,
   PROPERTY_INDEX_PRL_VERSION,
   PROPERTY_INDEX_PROFILES,
   PROPERTY_INDEX_PROVIDER,
@@ -558,7 +558,6 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kL2TPIPSecPasswordProperty, PROPERTY_INDEX_L2TPIPSEC_PASSWORD },
   { kL2TPIPSecPSKProperty, PROPERTY_INDEX_L2TPIPSEC_PSK },
   { kL2TPIPSecUserProperty, PROPERTY_INDEX_L2TPIPSEC_USER },
-  { kLastDeviceUpdateProperty, PROPERTY_INDEX_LAST_DEVICE_UPDATE },
   { kManufacturerProperty, PROPERTY_INDEX_MANUFACTURER },
   { kMdnProperty, PROPERTY_INDEX_MDN },
   { kMeidProperty, PROPERTY_INDEX_MEID },
@@ -574,6 +573,7 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kPassphraseProperty, PROPERTY_INDEX_PASSPHRASE },
   { kPassphraseRequiredProperty, PROPERTY_INDEX_PASSPHRASE_REQUIRED },
   { kPaymentURLProperty, PROPERTY_INDEX_PAYMENT_URL },
+  { kPoweredProperty, PROPERTY_INDEX_POWERED },
   { kProfilesProperty, PROPERTY_INDEX_PROFILES },
   { kProviderProperty, PROPERTY_INDEX_PROVIDER },
   { kRoamingStateProperty, PROPERTY_INDEX_ROAMING_STATE },
@@ -960,8 +960,9 @@ bool NetworkDevice::ParseValue(int index, const Value* value) {
       return value->GetAsString(&firmware_revision_);
     case PROPERTY_INDEX_HARDWARE_REVISION:
       return value->GetAsString(&hardware_revision_);
-    case PROPERTY_INDEX_LAST_DEVICE_UPDATE:
-      return value->GetAsString(&last_update_);
+    case PROPERTY_INDEX_POWERED:
+      // we don't care about the value, just the fact that it changed
+      return true;
     case PROPERTY_INDEX_PRL_VERSION:
       return value->GetAsInteger(&PRL_version_);
     case PROPERTY_INDEX_SELECTED_NETWORK:
@@ -2116,8 +2117,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (iter != network_device_observers_.end()) {
       oblist = iter->second;
     } else {
-      oblist = new NetworkDeviceObserverList(this, device_path);
-      network_device_observers_[device_path] = oblist;
+      LOG(WARNING) << "No NetworkDeviceObserverList found for "
+                   << device_path;
     }
     if (!oblist->HasObserver(observer))
       oblist->AddObserver(observer);
@@ -2131,10 +2132,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         network_device_observers_.find(device_path);
     if (map_iter != network_device_observers_.end()) {
       map_iter->second->RemoveObserver(observer);
-      if (!map_iter->second->size()) {
-        delete map_iter->second;
-        network_device_observers_.erase(map_iter);
-      }
     }
   }
 
@@ -3667,6 +3664,12 @@ class NetworkLibraryImpl : public NetworkLibrary  {
           VLOG(2) << " Adding device: " << device_path;
           device_map_[device_path] = found->second;
           old_device_map.erase(found);
+          // Add device property monitor before we request the
+          // full property list, to ensure that we won't miss any
+          // property changes.
+          network_device_observers_[device_path] =
+              new NetworkDeviceObserverList(this, device_path);
+
         }
         RequestNetworkDeviceInfo(
             device_path.c_str(), &NetworkDeviceUpdate, this);
@@ -3746,7 +3749,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   // Notifications.
 
   // We call this any time something in NetworkLibrary changes.
-  // TODO(stevenjb): We should consider breaking this into multiplie
+  // TODO(stevenjb): We should consider breaking this into multiple
   // notifications, e.g. connection state, devices, services, etc.
   void NotifyNetworkManagerChanged(bool force_update) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -3871,6 +3874,11 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       }
       // Notify only observers on device property change.
       NotifyNetworkDeviceChanged(device);
+      // If a device's power state changes, new properties may become
+      // defined.
+      if (strcmp(key, kPoweredProperty) == 0) {
+        RequestNetworkDeviceInfo(path, &NetworkDeviceUpdate, this);
+      }
     }
   }
 
