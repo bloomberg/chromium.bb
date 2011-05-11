@@ -9,5 +9,6 @@
   },
   "icons": {
     "128": "chromoting128.png"
-  }
+  },
+  "PLUGINS": "PLACEHOLDER"
 }
