@@ -180,9 +180,9 @@ class ExtensionFunction
    public:
     explicit RenderViewHostTracker(ExtensionFunction* extension_function);
    private:
-    void Observe(NotificationType type,
-                 const NotificationSource& source,
-                 const NotificationDetails& details);
+    virtual void Observe(NotificationType type,
+                         const NotificationSource& source,
+                         const NotificationDetails& details);
     ExtensionFunction* function_;
     NotificationRegistrar registrar_;
   };
