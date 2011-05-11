@@ -8,8 +8,6 @@
 #define CONTENT_COMMON_URL_CONSTANTS_H_
 #pragma once
 
-#include "content/common/url_constants.h"
-
 namespace chrome {
 
 // Canonical schemes you can use as input to GURL.SchemeIs().
