@@ -115,7 +115,7 @@ class WifiDownloadsTest(chromeos_network.PyNetworkUITest):
     self.DisconnectFromWifiNetwork()
 
   def testDownload100MBFile(self):
-    """Test downloading a 10MB file from a wireless router."""
+    """Test downloading a 100MB file from a wireless router."""
     download_url = 'http://172.22.12.98:8080/102400.lf'
     self._ConnectToRouterAndVerify('Trendnet_639gr')
     self._DownloadAndVerifyFile(download_url)
