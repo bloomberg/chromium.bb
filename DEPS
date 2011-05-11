@@ -308,7 +308,7 @@ deps_os = {
       "/trunk/deps/reference_builds/chrome_linux@70120",
 
     "src/third_party/xdg-utils":
-      "/trunk/deps/third_party/xdg-utils@84156",
+      "/trunk/deps/third_party/xdg-utils@84895",
 
     "src/third_party/swig/linux":
       "/trunk/deps/third_party/swig/linux@" + Var("swig_revision"),
