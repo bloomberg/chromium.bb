@@ -9,6 +9,7 @@
 
 #include <deque>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/stl_util-inl.h"
 #include "base/task.h"
@@ -129,8 +130,8 @@ class DecoderBase : public Decoder {
     DCHECK_LE(pending_reads_, pending_requests_);
     if (!fulfilled) {
       DCHECK_LT(pending_reads_, pending_requests_);
-      demuxer_stream_->Read(NewCallback(this, &DecoderBase::OnReadComplete));
       ++pending_reads_;
+      demuxer_stream_->Read(base::Bind(&DecoderBase::OnReadComplete, this));
     }
   }
 
@@ -234,8 +235,8 @@ class DecoderBase : public Decoder {
 
     // Since we can't fulfill a read request now then submit a read
     // request to the demuxer stream.
-    demuxer_stream_->Read(NewCallback(this, &DecoderBase::OnReadComplete));
     ++pending_reads_;
+    demuxer_stream_->Read(base::Bind(&DecoderBase::OnReadComplete, this));
   }
 
   void ReadCompleteTask(scoped_refptr<Buffer> buffer) {

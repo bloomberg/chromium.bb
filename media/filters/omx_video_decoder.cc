@@ -4,6 +4,7 @@
 
 #include "media/filters/omx_video_decoder.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "media/base/callback.h"
@@ -192,7 +193,7 @@ void OmxVideoDecoder::ProduceVideoSample(scoped_refptr<Buffer> buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   // Issue more demux.
-  demuxer_stream_->Read(NewCallback(this, &OmxVideoDecoder::DemuxCompleteTask));
+  demuxer_stream_->Read(base::Bind(&OmxVideoDecoder::DemuxCompleteTask, this));
 }
 
 void OmxVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame,

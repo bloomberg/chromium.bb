@@ -199,5 +199,5 @@ void IpcVideoDecoder::ConsumeVideoFrame(
 // This method is called by VideoDecodeEngine to request a video frame. The
 // request is passed to demuxer.
 void IpcVideoDecoder::ProduceVideoSample(scoped_refptr<media::Buffer> buffer) {
-  demuxer_stream_->Read(NewCallback(this, &IpcVideoDecoder::OnReadComplete));
+  demuxer_stream_->Read(base::Bind(&IpcVideoDecoder::OnReadComplete, this));
 }

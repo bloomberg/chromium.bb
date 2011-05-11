@@ -151,6 +151,8 @@ class DataSource : public Filter {
 
 class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
  public:
+  typedef base::Callback<void(Buffer*)> ReadCallback;
+
   enum Type {
     UNKNOWN,
     AUDIO,
@@ -160,9 +162,7 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
 
   // Schedules a read.  When the |read_callback| is called, the downstream
   // filter takes ownership of the buffer by AddRef()'ing the buffer.
-  //
-  // TODO(scherkus): switch Read() callback to scoped_refptr<>.
-  virtual void Read(Callback1<Buffer*>::Type* read_callback) = 0;
+  virtual void Read(const ReadCallback& read_callback) = 0;
 
   // Returns an |AVStream*| if supported, or NULL.
   virtual AVStream* GetAVStream();

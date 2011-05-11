@@ -63,8 +63,7 @@ ACTION_P(SaveDecodeRequest, list) {
 }
 
 ACTION(CompleteDemuxRequest) {
-  arg0->Run(new DataBuffer(0));
-  delete arg0;
+  arg0.Run(new DataBuffer(0));
 }
 
 // Test the flow control of decoder base by the following sequence of actions:
@@ -104,7 +103,7 @@ TEST(DecoderBaseTest, FlowControl) {
 
   // Read.
   std::vector<scoped_refptr<Buffer> > decode_requests;
-  EXPECT_CALL(*demuxer_stream, Read(NotNull()))
+  EXPECT_CALL(*demuxer_stream, Read(_))
       .Times(2)
       .WillRepeatedly(CompleteDemuxRequest());
   EXPECT_CALL(*decoder, DoDecode(NotNull()))

@@ -40,7 +40,7 @@ class AdaptiveDemuxerStream : public DemuxerStream {
   void ChangeCurrentStream(int index);
 
   // DemuxerStream methods.
-  virtual void Read(Callback1<Buffer*>::Type* read_callback);
+  virtual void Read(const ReadCallback& read_callback);
   virtual Type type();
   virtual const MediaFormat& media_format();
   virtual void EnableBitstreamConverter();

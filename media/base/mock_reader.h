@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/filters.h"
@@ -40,7 +41,7 @@ class MockReader :
     DCHECK(!expecting_call_);
     called_ = false;
     expecting_call_ = true;
-    filter->Read(NewCallback(this, &MockReader::OnReadComplete));
+    filter->Read(base::Bind(&MockReader::OnReadComplete, this));
   }
 
   // Mock accessors.
@@ -71,8 +72,6 @@ class MockReader :
 
 // Commonly used reader types.
 typedef MockReader<DemuxerStream, Buffer> DemuxerStreamReader;
-typedef MockReader<AudioDecoder, Buffer> AudioDecoderReader;
-typedef MockReader<VideoDecoder, VideoFrame> VideoDecoderReader;
 
 }  // namespace media
 

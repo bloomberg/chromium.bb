@@ -55,7 +55,7 @@ DemuxerStream* AdaptiveDemuxerStream::current_stream() {
   return streams_[current_stream_index_];
 }
 
-void AdaptiveDemuxerStream::Read(Callback1<Buffer*>::Type* read_callback) {
+void AdaptiveDemuxerStream::Read(const ReadCallback& read_callback) {
   current_stream()->Read(read_callback);
 }
 
