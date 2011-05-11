@@ -67,11 +67,16 @@ message DeviceProxySettingsProto {
   optional string proxy_bypass_list = 4;
 }
 
+message CameraEnabledProto {
+  optional bool camera_enabled = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
   optional GuestModeEnabledProto guest_mode_enabled = 3;
   optional DeviceProxySettingsProto device_proxy_settings = 4;
+  optional CameraEnabledProto camera_enabled = 5;
   optional ShowUserNamesOnSigninProto show_user_names = 6;
   optional DataRoamingEnabledProto data_roaming_enabled = 7;
   optional AllowNewUsersProto allow_new_users = 8;
