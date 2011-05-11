@@ -352,8 +352,7 @@ void RequestLocalFileSystemFunction::RequestOnFileThread(
 }
 
 bool RequestLocalFileSystemFunction::RunImpl() {
-  if (!dispatcher() || !dispatcher()->render_view_host() ||
-      !dispatcher()->render_view_host()->process())
+  if (!dispatcher() || !render_view_host() || !render_view_host()->process())
     return false;
 
   BrowserThread::PostTask(
@@ -361,7 +360,7 @@ bool RequestLocalFileSystemFunction::RunImpl() {
       NewRunnableMethod(this,
           &RequestLocalFileSystemFunction::RequestOnFileThread,
           source_url_,
-          dispatcher()->render_view_host()->process()->id()));
+          render_view_host()->process()->id()));
   // Will finish asynchronously.
   return true;
 }
@@ -678,7 +677,7 @@ void ExecuteTasksFileBrowserFunction::RequestFileEntryOnFileThread(
           new ExecuteTasksFileSystemCallbackDispatcher(
               this,
               profile(),
-              dispatcher()->render_view_host()->process()->id(),
+              render_view_host()->process()->id(),
               source_url,
               GetExtension(),
               task_id,
