@@ -140,8 +140,7 @@ class FileManagerDialog
 // selects FileManagerDialog as the dialog of choice.
 // static
 SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return new FileManagerDialog(listener);
 }
 
