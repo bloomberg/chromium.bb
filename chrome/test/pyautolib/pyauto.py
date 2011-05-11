@@ -3522,12 +3522,7 @@ class Main(object):
     chrome_flags = self._options.chrome_flags
     # Set CHROME_HEADLESS. It enables crash reporter on posix.
     os.putenv('CHROME_HEADLESS', '1')
-    # --dom-automation added in PyUITestBase::PyUITestBase()
-
-    suite_args.append('--extra-chrome-flags=%s' % chrome_flags)
-    # Note: The suite_args passed here are ignored on windows since it
-    # overrides to obtain the command line for the current process directly.
-    # Refer CommandLine::Init().
+    os.putenv('EXTRA_CHROME_FLAGS', chrome_flags)
     pyauto_suite = PyUITestSuite(suite_args)
     test_names = self._ExpandTestNames(self._args)
     test_names *= self._options.repeat

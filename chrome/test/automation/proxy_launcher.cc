@@ -5,6 +5,7 @@
 #include "chrome/test/automation/proxy_launcher.h"
 
 #include "app/sql/connection.h"
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -364,11 +365,21 @@ void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
       CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           switches::kExtraChromeFlags);
   if (!extra_chrome_flags.empty()) {
-    // Split by spaces and append to command line
+    // Split by spaces and append to command line.
     std::vector<CommandLine::StringType> flags;
-    base::SplitString(extra_chrome_flags, ' ', &flags);
+    base::SplitStringAlongWhitespace(extra_chrome_flags, &flags);
     for (size_t i = 0; i < flags.size(); ++i)
       command_line->AppendArgNative(flags[i]);
+  }
+
+  // Also look for extra flags in environment.
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::string extra_from_env;
+  if (env->GetVar("EXTRA_CHROME_FLAGS", &extra_from_env)) {
+    std::vector<std::string> flags;
+    base::SplitStringAlongWhitespace(extra_from_env, &flags);
+    for (size_t i = 0; i < flags.size(); ++i)
+      command_line->AppendArg(flags[i]);
   }
 
   // No default browser check, it would create an info-bar (if we are not the
