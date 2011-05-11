@@ -50,22 +50,22 @@
 <translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=it&amp;answer=161796</translation>
 <translation id="4736009297872521264">Chromium si comporta in modo anomalo</translation>
 <translation id="4818993768077639880">Chromium è già installato e disponibile a tutti gli utenti di questo computer. Se si desidera installare Chromium a livello utente occorre prima rimuovere la versione a livello di sistema installata da un amministratore.</translation>
-<translation id="4890456338028740446">Si è cercato di raggiungere &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il server ha presentato un certificato rilasciato da un ente non fidato per il proprio sistema operativo. Questo potrebbe significare che il server ha generato in proprio il certificato di sicurezza per cui Chromium non può verificarne l'identità oppure che un utente malintenzionato sta cercando di intercettare la comunicazione. Sarebbe meglio non procedere, &lt;strong&gt;specialmente&lt;/strong&gt; se non si è mai visto questo avviso prima d'ora su questo sito.</translation>
+<translation id="4890456338028740446">Si è cercato di raggiungere &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il server ha presentato un certificato rilasciato da un ente non fidato dal sistema operativo del computer. Questo potrebbe significare che il server ha generato in proprio il certificato di sicurezza per cui Chromium non può farvi affidamento per verificare l'identità oppure che un utente malintenzionato sta cercando di intercettare la comunicazione. Sarebbe meglio non procedere, &lt;strong&gt;specialmente&lt;/strong&gt; se non si è mai visto questo avviso prima d'ora su questo sito.</translation>
 <translation id="4931128279570440880">In questo caso, l'indirizzo elencato nel certificato non corrisponde all'indirizzo del sito web che il browser ha provato a raggiungere. Una possibile ragione di ciò è che le comunicazioni sono state intercettate da un aggressore che sta presentando un certificato per un sito web diverso, il che creerebbe una non corrispondenza. Un'altra ragione possibile è che il server è impostato per far ritornare lo stesso certificato per siti web multipli, includendo quello che si sta tentando di visitare, anche se quel certificato non è valido per tutti quei siti. Chromium può sicuramente dire che si è raggiunto &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ma non può verificare che quello è lo stesso sito di &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; che si aveva intenzione di raggiungere. Procedendo, Chromium non controllerà ulteriori errate corrispondenze. In generale, è meglio non procedere oltre questo punto.</translation>
 <translation id="4932687624772039103">Chromium non supporta <ph name="OS_NAME"/>.</translation>
 <translation id="5398878173008909840">È disponibile una nuova versione di Chromium.</translation>
 <translation id="5498103559159810756">Chromium usa il motore di ricerca predefinito, attualmente è impostato a <ph name="PAGE_TITLE"/>. Mantenere questo motore di ricerca predefinito?</translation>
-<translation id="5559945513746540383">Chromium non è installato o non è riuscito a trovare la directory di installazione. Scaricare di nuovo Chromium.</translation>
+<translation id="5559945513746540383">Chromium non è installato o ha fallito nel cercare la directory di installazione. Scaricare di nuovo Chromium.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Benvenuti in Chromium</translation>
-<translation id="5947389362804196214">Le preferenze non possono essere lette.\n\nAlcune funzionalità potrebbero non essere disponibili e le modifiche alle preferenze non verranno salvate.</translation>
-<translation id="5981059579301719217">Il profilo non può essere usato perchè proviene da una versione più recente di Chromium.\n\nAlcune funzionalità potrebbero non essere disponibili. Specificare una diversa cartella dei profili o usare una versione più recente di Chromium</translation>
+<translation id="5947389362804196214">Le preferenze non possono essere lette. \n\nAlcune funzionalità potrebbero essere indisponibili e le modifiche alle preferenze non verranno salvate.</translation>
+<translation id="5981059579301719217">Il profilo non può essere usato perchè proviene da una versione più recente di Chromium. \n\nAlcune funzionalità potrebbero essere indisponibili. Specificare una diversa cartella dei profili o usare una versione più recente di Chromium</translation>
 <translation id="6055895534982063517">È disponibile una nuova versione di Chromium, ed è più veloce che mai.</translation>
 <translation id="6089587093203430357">Istantaneo</translation>
-<translation id="6248213926982192922">Rendere Chromium il browser predefinito</translation>
-<translation id="6287463253129672858">Impossibile installare la stessa versione di Chromium Frame che è attualmente in uso. Chiudere Chromium Frame e riprovare.</translation>
-<translation id="6373523479360886564">Continuare veramente nella rimozione di Chromium?</translation>
-<translation id="6389904555427754410">Si è cercato di raggiungere &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il certificato che il server ha presentato contiene errori. Chromium non può usare un certificato con errori e non può validare l'identità del sito che si sta cercando di raggiungere. La  connessione non è sicura e non si dovrebbe procedere.</translation>
+<translation id="6248213926982192922">Rendeere Chromium il browser predefinito</translation>
+<translation id="6287463253129672858">Impossibile installare la stessa versione di Chromium Frame che è correntemente in uso. Chiudere Chromium Frame e riprovare.</translation>
+<translation id="6373523479360886564">Si è sicuri di voler rimuovere Chromium?</translation>
+<translation id="6389904555427754410">Si è cercato di raggiungere &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il certificato che il server ha presentato contiene errori. Chromium non può usare un certificato con errori e non può validare l'identità del sito che hai cercato di raggiungere. La  connessione non è sicura e non si dovrebbe procedere.</translation>
 <translation id="6510925080656968729">Rimuovi Chromium</translation>
 <translation id="6550687541571590855">Chromium non può leggere e scrivere nella propria directory dati:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6676384891291319759">Accesso a Internet</translation>
@@ -81,17 +81,17 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7421823331379285070">Chromium richiede Windows XP o successivi. Alcune funzionalità potrebbero non funzionare.</translation>
 <translation id="7483335560992089831">Impossibile installare la stessa versione di Chromium che è attualmente in esecuzione. Chiudere Chromium e riprovare.</translation>
-<translation id="7503101070699687603">Servizio Chromium plugin</translation>
+<translation id="7503101070699687603">Servizio Chromium Plug-In</translation>
 <translation id="7641113255207688324">Chromium non è il browser predefinito.</translation>
 <translation id="7747138024166251722">L'installer non ha potuto creare una directory temporanea. Controllare lo spazio libero ed i permessi di installazione software.</translation>
 <translation id="786596160034915371">Questo computer ha già la versione di Chromium più recente. Se il programma non funzionasse, rimuoverlo e scaricarlo di nuovo.</translation>
 <translation id="8046283042877435986">Questo sito raccomanda Chromium Frame (già installato).</translation>
 <translation id="8422904359318093226">Chromium si comporta in modo anomalo</translation>
-<translation id="8453117565092476964">L'archivio dell'installer è danneggiato o non valido. Scaricare Chromium di nuovo.</translation>
-<translation id="8621669128220841554">L'installazione non è riuscita per errori non specificati. Scaricare Chromium di nuovo.</translation>
+<translation id="8453117565092476964">L'archivio dell'installer è corrotto o non valido. Scaricare Chromium di nuovo.</translation>
+<translation id="8621669128220841554">L'installazione è fallita per errori non specificati. Scaricare Chromium di nuovo.</translation>
 <translation id="8738921060445980047">Versione sconosciuta.</translation>
 <translation id="8770560772173120024">Chromium sta ora importando Preferiti/Segnalibri.</translation>
-<translation id="8862326446509486874">Non si hanno i permessi appropriati per l'installazione a livello di sistema. Provare ad eseguire l'installer come amministratore.</translation>
+<translation id="8862326446509486874">Non si hanno i permessi appropriati per la installazione a livello di sistema. Provare ad eseguire l'installer come Amministratore.</translation>
 <translation id="8865765905101981392">Browser Internet</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>
 <translation id="8974095189086268230">Chromium OS è reso possibile da <ph name="BEGIN_LINK_CROS_OSS"/>software open source<ph name="END_LINK_CROS_OSS"/> aggiuntivo.</translation>
@@ -99,5 +99,5 @@
 <translation id="911206726377975832">Cancellare anche i dati di navigazione?</translation>
 <translation id="9191268552238695869">Un amministratore ha installato Chromium nel sistema, ed è disponibile per tutti gli utenti. Chromium a livello di sistema sostituirà adesso l'installazione a livello utente.</translation>
 <translation id="980185455267101462">Questo computer ha già una versione recente di Chromium Frame. Se il software non funzionasse, rimuoverlo e scaricarlo di nuovo.</translation>
-<translation id="985602178874221306">Gli autori di Chromium</translation>
+<translation id="985602178874221306">Gli Autori di Chromium</translation>
 </translationbundle>

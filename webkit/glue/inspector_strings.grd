@@ -129,6 +129,7 @@ so we include the original license below:
       <file path="../../third_party/launchpad_translations/inspector_strings_he.xtb" lang="he" />
       <file path="../../third_party/launchpad_translations/inspector_strings_id.xtb" lang="id" />
       <file path="../../third_party/launchpad_translations/inspector_strings_it.xtb" lang="it" />
+      <file path="../../third_party/launchpad_translations/inspector_strings_ka.xtb" lang="ka" />
       <file path="../../third_party/launchpad_translations/inspector_strings_ku.xtb" lang="ku" />
       <file path="../../third_party/launchpad_translations/inspector_strings_nl.xtb" lang="nl" />
       <file path="../../third_party/launchpad_translations/inspector_strings_no.xtb" lang="no" />

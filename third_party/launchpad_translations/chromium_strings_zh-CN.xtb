@@ -100,4 +100,5 @@
 <translation id="7278516633989165382">Chromium Frame 已更新。请重新启动您的浏览器。Chrome 版本: <ph name="TODO_0001"/>, Chromium Frame 版本: <ph name="TODO_0002"/></translation>
 <translation id="2886012850691518054">可选: 通过将使用统计与崩溃报告自动发送给 Google 来帮助改进 Chromium。</translation>
 <translation id="378917192836375108">Chromium 允许您点击网页中的电话号码调用 Skype 拨打!</translation>
+<translation id="5994107996638824097">抱歉! Chromium 未包含 Google Chrome 内置的显示打印预览所需的 PDF 查看器。</translation>
 </translationbundle>

@@ -18,7 +18,6 @@
 <translation id="1065245965611933814">Amestar imaxe de pantalla guardada:</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071917609930274619">Cifráu de datos</translation>
-<translation id="1074663319790387896">Configurar sincronización</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">Configurar anovaciones automátiques pa tolos usuarios</translation>
 <translation id="1084824384139382525">Copiar dir&amp;eición del enllaz</translation>
@@ -128,7 +127,6 @@ nun ye quien a amosar la páxina web porque'l to equipu nun ta coneutáu a Inter
 <translation id="1474842329983231719">Xestionar preferencies d'imprentación...</translation>
 <translation id="1481244281142949601">La estaya de pruebes ye afayadiza.</translation>
 <translation id="1485146213770915382">Pon <ph name="SEARCH_TERMS_LITERAL"/> nel URL nel que tienen d'amosase los términos de gueta..</translation>
-<translation id="1486740077039107580">Activar el sistema de ficheros avanzáu, incluyendo sofitu pa USB y tarxetes SD.</translation>
 <translation id="149347756975725155">Nun se pudo cargar l'iconu de la estensión «<ph name="ICON"/>».</translation>
 <translation id="1493492096534259649">Esta llingua nun puede usase pa la igua ortográfica</translation>
 <translation id="1497270430858433901">Recibiste <ph name="DATA_AMOUNT"/> d'usu gratuitu en <ph name="DATE"/></translation>
@@ -285,7 +283,6 @@ nun ye quien a amosar la páxina web porque'l to equipu nun ta coneutáu a Inter
 <translation id="1503894213707460512">El complementu <ph name="PLUGIN_NAME"/> precisa'l to permisu pa executase.</translation>
 <translation id="1516602185768225813">Volver a abrir les páxines que taben abiertes</translation>
 <translation id="1526811905352917883">Volvió recuperase la conexón con SSL 3.0. Esti fallu suel indicar que'l sirvidor usa un software enforma obsoletu y que ye posible que se produzan otres incidencies de seguridá.</translation>
-<translation id="1592960452683145077">La interaición remota empecipióse correchamente. Agora tendríes de ser capaz de coneutate a esti equipu de forma remota.</translation>
 <translation id="1607220950420093847">La to cuenta desanicióse o desactivóse. Por favor desconeuta.</translation>
 <translation id="1623661092385839831">El to equipu contién un preséu de seguridá del módulu de plataforma d'enfotu (TPM), que s'utiliza pa implementar un gran númberu de funciones de seguridá crítiques nel sistema operativu Chrome VOS.</translation>
 <translation id="1657406563541664238">Collabora na meyora de <ph name="PRODUCT_NAME"/> unviando automáticamente a Google estadístiques d'usu ya informes d'erros.</translation>
@@ -355,7 +352,6 @@ nun ye quien a amosar la páxina web porque'l to equipu nun ta coneutáu a Inter
 <translation id="1932098463447129402">Non enantes de</translation>
 <translation id="1936157145127842922">Amosar en carpeta</translation>
 <translation id="1949795154112250744"><ph name="BEGIN_BOLD"/>Avisu:<ph name="END_BOLD"/> <ph name="PRODUCT_NAME"/> nun pue prevenir que les estensiones rexistren l'historial de navegación. Pa desactivar esta estensión nel mou incógnito, desconseña esta opción.</translation>
-<translation id="1951332921786364801">Configurar serviciu remotu</translation>
 <translation id="1951615167417147110">Desplazase hacia arriba una páxina</translation>
 <translation id="1956050014111002555">El ficheru contenía dellos certificaos, pero nun s'importó dengún d'ellos:</translation>
 <translation id="1959258573753840401">'''   <ph name="LABEL"/>'''</translation>
@@ -481,7 +477,6 @@ nun ye quien a amosar la páxina web porque'l to equipu nun ta coneutáu a Inter
 <translation id="2359808026110333948">Siguir</translation>
 <translation id="2370882663124746154">Activa el mou pinyin de duble entrada</translation>
 <translation id="2371076942591664043">Abrir al &amp;finalizar</translation>
-<translation id="2371436973350908350">Facer semeya de cuenta</translation>
 <translation id="2374144379568843525">&amp;Anubrir panel d'ortografía</translation>
 <translation id="2378982052244864789">Esbilla'l direutoriu de la estensión.</translation>
 <translation id="2382901536325590843">El certificáu de sirvidor nun ta incluyíu en DNS.</translation>
@@ -590,7 +585,6 @@ nun ye quien a amosar la páxina web porque'l to equipu nun ta coneutáu a Inter
 <translation id="2773223079752808209">Asistencia al veceru</translation>
 <translation id="2784407158394623927">Activando'l to serviciu de datos móvil</translation>
 <translation id="2784949926578158345">Reanicióse la conexón</translation>
-<translation id="2786847742169026523">Sincronizar les contraseñes</translation>
 <translation id="2788135150614412178">+</translation>
 <translation id="2788575669734834343">Esbillar ficheru de certificáu</translation>
 <translation id="2791364193466153585">Información de seguridá</translation>
@@ -765,7 +759,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="2849936225196189499">Crítica</translation>
 <translation id="2850961597638370327">Unviáu a: <ph name="NAME"/></translation>
 <translation id="2857834222104759979">El ficheru de manifiestu nun ye válidu.</translation>
-<translation id="2860002559146138960"><ph name="PRODUCT_NAME"/> pue sincronizar les tos contraseñes; los datos van cifrase cola to contraseña de cuenta de Google o una contraseña de la to eleición.</translation>
 <translation id="2861301611394761800">Completóse l'anovamientu del sistema. Por favor, reanicia l'equipu.</translation>
 <translation id="2861941300086904918">Alministrador de seguridá de veceru nativu</translation>
 <translation id="2870560284913253234">Sitiu</translation>
@@ -1091,7 +1084,124 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="1947424002851288782">Tecláu Alemán</translation>
 <translation id="1995173078718234136">Analizando conteníu...</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME"/> colingóse. Calca nesti globu pa recargar la estensión.</translation>
-<translation id="2064746092913005102">Total: <ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/> <ph name="TWO_SIDED"/> <ph name="TIMES"/> <ph name="NUMBER_OF_COPIES"/> <ph name="COPIES_LABEL"/> <ph name="EQUAL_SIGN"/> <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/></translation>
 <translation id="2080010875307505892">Tecláu Serbiu</translation>
 <translation id="2113479184312716848">Abrir &amp;ficheru</translation>
+<translation id="1974060860693918893">Avanzáu</translation>
+<translation id="2049137146490122801">L'accesu a ficheros llocales na máquina ta desactiváu pol alministrador.</translation>
+<translation id="2359174522669474766">Un ficheru seleicionáu, $1</translation>
+<translation id="2406911946387278693">Xestionar los preseos dende la ñube</translation>
+<translation id="2529133382850673012">Tecláu EE.XX</translation>
+<translation id="2529657954821696995">Tecláu holandés</translation>
+<translation id="2541423446708352368">Amosar toles descargues</translation>
+<translation id="2608770217409477136">Usar axustes por defeutu</translation>
+<translation id="2610260699262139870">Tamañu a&amp;ctual</translation>
+<translation id="268053382412112343">Hi&amp;storial</translation>
+<translation id="2757031529886297178">Contador FPS</translation>
+<translation id="2760009672169282879">Tecláu búlgaru fonéticu</translation>
+<translation id="2790805296069989825">Tecláu rusu</translation>
+<translation id="2874027208508018603">Chrome usará datos 3G cuando nun heba una conexón inalámbrica.</translation>
+<translation id="289426338439836048">Otra rede móvil...</translation>
+<translation id="2963783323012015985">Tecláu turcu</translation>
+<translation id="2966459079597787514">Tecláu suecu</translation>
+<translation id="2972557485845626008">Firmware</translation>
+<translation id="298068999958468740">Caltener too sincronizao o seleicionar qué datos sincronizar d'esti equipu.</translation>
+<translation id="3024374909719388945">Usar reló de 24 hores</translation>
+<translation id="3056462238804545033">¡Eeepa! Asocedió daqué raro al intentar autenticate. Comprueba doblemente les credenciales d'accesu y inténtalo de nueves.</translation>
+<translation id="3116361045094675131">Tecláu noruegu Reinu Xuníu</translation>
+<translation id="3187212781151025377">Tecláu hebréu</translation>
+<translation id="3242765319725186192">Clave precompartida:</translation>
+<translation id="3269101346657272573">Introduz el PIN.</translation>
+<translation id="3300768886937313568">Cambiar PIN de la tarxeta SIM</translation>
+<translation id="3338239663705455570">Tecláu eslovenu</translation>
+<translation id="3348038390189153836">Preséu removible deteutáu</translation>
+<translation id="3363332416643747536"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, interrumpida</translation>
+<translation id="3391392691301057522">PIN antiguu:</translation>
+<translation id="3435541101098866721">Amestar teléfonu nuevu</translation>
+<translation id="3450660100078934250">MasterCard</translation>
+<translation id="3541661933757219855">Teclea Ctrl+Alt+/ o Escape p'anubrir</translation>
+<translation id="3573179567135747900">Volver a «<ph name="FROM_LOCALE"/>» (requier reiniciar)</translation>
+<translation id="3602290021589620013">Entever</translation>
+<translation id="3648460724479383440">Botón d'escoyeta seleicionáu</translation>
+<translation id="3675321783533846350">Afita un proxy pa la conexón a la rede.</translation>
+<translation id="368789413795732264">Hebo un fallu al intentar escribir el ficheru: <ph name="ERROR_TEXT"/>.</translation>
+<translation id="3725367690636977613">páxines</translation>
+<translation id="3733127536501031542">Sirvidor SSL con certificáu Step-Up</translation>
+<translation id="3749289110408117711">Nome del ficheru</translation>
+<translation id="3753317529742723206">¿Quies usar <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) pa remanar <ph name="PROTOCOL"/>:// enllaces, en cuenta de <ph name="REPLACED_HANDLER_TITLE"/> dende agora?</translation>
+<translation id="3775432569830822555">Certificáu de sirvidor SSL</translation>
+<translation id="3781488789734864345">Escueyi una rede móvil</translation>
+<translation id="3789841737615482174">Instalar</translation>
+<translation id="3798449238516105146">Versión</translation>
+<translation id="3800764353337460026">Estilu de símbolu</translation>
+<translation id="3819800052061700452">&amp;Pantalla completa</translation>
+<translation id="3827774300009121996">&amp;Pantalla completa</translation>
+<translation id="3828924085048779000">Nun ta permitida una contraseña erma.</translation>
+<translation id="4047345532928475040">N/A</translation>
+<translation id="4057991113334098539">Activandao...</translation>
+<translation id="4064575095154312869">、。</translation>
+<translation id="4092066334306401966">13px</translation>
+<translation id="422929353996972043">asdfzxcv89</translation>
+<translation id="4250680216510889253">Non</translation>
+<translation id="4268574628540273656">URL:</translation>
+<translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
+<translation id="4708849949179781599">Quitar <ph name="PRODUCT_NAME"/></translation>
+<translation id="4779083564647765204">Zoom</translation>
+<translation id="5317780077021120954">Guardar</translation>
+<translation id="5327248766486351172">Nome</translation>
+<translation id="5348645082134052587">，。</translation>
+<translation id="536318981397568351">「」／</translation>
+<translation id="5473075389972733037">IBM</translation>
+<translation id="5614591710265540323">1 -- 9</translation>
+<translation id="5659593005791499971">Email</translation>
+<translation id="5725734596824080201">DC</translation>
+<translation id="5729712731028706266">&amp;Ver</translation>
+<translation id="5827266244928330802">Safari</translation>
+<translation id="6008256403891681546">JCB</translation>
+<translation id="604124094241169006">Automáticu</translation>
+<translation id="6042308850641462728">Más</translation>
+<translation id="6092270396854197260">MSPY</translation>
+<translation id="6095984072944024315">−</translation>
+<translation id="6110555300980107810">NA</translation>
+<translation id="614161640521680948">Llingua:</translation>
+<translation id="6163363155248589649">&amp;Normal</translation>
+<translation id="6204930791202015665">Ver...</translation>
+<translation id="621638399744152264"><ph name="VALUE"/>%</translation>
+<translation id="6242054993434749861">fax:#<ph name="FAX"/></translation>
+<translation id="6406506848690869874">Sync</translation>
+<translation id="6426222199977479699">SSL Error</translation>
+<translation id="646727171725540434">HTTP proxy</translation>
+<translation id="6508261954199872201">App: <ph name="APP_NAME"/></translation>
+<translation id="6623404513811339374">、．</translation>
+<translation id="6985276906761169321">ID:</translation>
+<translation id="7102764600683407355">［］・</translation>
+<translation id="7133738947152483842">asdfjkl789</translation>
+<translation id="7150146631451105528"><ph name="DATE"/></translation>
+<translation id="7205869271332034173">SSID:</translation>
+<translation id="7320906967354320621">Idle</translation>
+<translation id="7378810950367401542">/</translation>
+<translation id="7400418766976504921">URL</translation>
+<translation id="7427315641433634153">MSCHAP</translation>
+<translation id="7481079953250545971">UID</translation>
+<translation id="7496226173579236143">1234567890</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="7566499939565597189">1234qweras</translation>
+<translation id="7822286184239325970">ST</translation>
+<translation id="7903984238293908205">Katakana</translation>
+<translation id="7905857892910330988">aoeu;qjkix (Dvorak)</translation>
+<translation id="81686154743329117">ZRM</translation>
+<translation id="8186706823560132848">Software</translation>
+<translation id="830868413617744215">Beta</translation>
+<translation id="8335971947739877923">Esportar...</translation>
+<translation id="8426519927982004547">HTTPS/SSL</translation>
+<translation id="8461914792118322307">Proxy</translation>
+<translation id="8477384620836102176">&amp;Xeneral</translation>
+<translation id="8494214181322051417">Nuevu!</translation>
+<translation id="8876215549894133151">Formatu:</translation>
+<translation id="8887090188469175989">ZGPY</translation>
+<translation id="9039663905644212491">PEAP</translation>
+<translation id="9073281213608662541">PAP</translation>
+<translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> díes</translation>
+<translation id="9207194316435230304">ATOK</translation>
+<translation id="939519157834106403">SSID</translation>
+<translation id="964324710553558337">C</translation>
 </translationbundle>
