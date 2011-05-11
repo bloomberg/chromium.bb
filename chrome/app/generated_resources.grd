@@ -5188,8 +5188,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing cookies and other site data to be stored on your computer.">
         Allow local data to be set (recommended)
       </message>
-      <message name="IDS_COOKIES_ASK_EVERY_TIME_RADIO" desc="A radio button in the Content Settings dialog for asking to store cookies and other site data on your computer every time.">
-        Ask me when a site tries to set data
+      <message name="IDS_COOKIES_SESSION_ONLY_RADIO" desc="A radio button in the Content Settings dialog for allowing cookies and other site data for the current session only.">
+        Allow local data to be set for the current session only
       </message>
       <message name="IDS_COOKIES_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking cookies and other site data from being stored on your computer.">
         Block sites from setting any data
