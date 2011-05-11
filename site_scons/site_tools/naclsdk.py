@@ -220,15 +220,6 @@ def _SetEnvForPnacl(env, root):
   pnacl_sdk_ld_flags = ' -arch %s' % arch
   pnacl_sdk_ld_flags += ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
 
-  if arch == 'arm' and not env.Bit('nacl_pic'):
-    # Turn on ONLY direct-mc for non PIC
-    # BUG=http://code.google.com/p/nativeclient/issues/detail?id=424
-    # This block can be deleted once ARM/ELF/MC is fully working
-    pnacl_bug_424_1588 = ' --pnacl-force-mc-direct'
-    pnacl_sdk_cc_flags += pnacl_bug_424_1588
-    pnacl_sdk_cxx_flags += pnacl_bug_424_1588
-    pnacl_sdk_ld_flags += pnacl_bug_424_1588
-
   if env.Bit('nacl_pic'):
     pnacl_sdk_cc_flags += ' -fPIC'
     pnacl_sdk_cxx_flags += ' -fPIC'
