@@ -1,5 +1,5 @@
 {
-  "name": "Remoting Me2Mom",
+  "name": "Chromoting Me2Mom",
   "version": "1.0",
   "description": "Me2Mom-style remote support in Chrome.",
   "app": {
@@ -8,9 +8,6 @@
     }
   },
   "icons": {
-     "128": "chromoting128.png"
+    "128": "chromoting128.png"
   }
-  "plugins": [
-    { "path": "HOST_PLUGIN_NAME" },
-  ],
 }
