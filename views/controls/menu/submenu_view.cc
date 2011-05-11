@@ -126,7 +126,7 @@ gfx::Size SubmenuView::GetPreferredSize() {
   gfx::Insets insets = GetInsets();
   return gfx::Size(
       std::max(max_width + max_accelerator_width_ + insets.width(),
-               minimum_preferred_width_),
+               minimum_preferred_width_ - 2 * kSubmenuBorderSize),
       height + insets.height());
 }
 

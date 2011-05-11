@@ -18,7 +18,6 @@ class Font;
 namespace views {
 
 class KeyEvent;
-class Menu2;
 class FocusableBorder;
 
 // A views/skia only implementation of NativeComboboxWrapper.

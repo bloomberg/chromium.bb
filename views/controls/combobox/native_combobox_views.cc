@@ -18,6 +18,7 @@
 #include "views/border.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/focusable_border.h"
+#include "views/controls/menu/submenu_view.h"
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 
@@ -364,6 +365,10 @@ void NativeComboboxViews::ShowDropDownMenu() {
 
   if (!dropdown_list_menu_.get())
     UpdateFromModel();
+
+  // Extend the menu to the width of the combobox.
+  SubmenuView* submenu = dropdown_list_menu_->CreateSubmenu();
+  submenu->set_minimum_preferred_width(size().width());
 
   gfx::Rect lb = GetLocalBounds();
   gfx::Point menu_position(lb.origin());
