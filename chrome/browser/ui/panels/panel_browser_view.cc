@@ -90,6 +90,8 @@ bool PanelBrowserView::OnTitleBarMouseReleased(const views::MouseEvent& event) {
   if (mouse_dragging_) {
     mouse_dragging_ = false;
     panel_->manager()->EndDragging(false);
+  } else {
+    panel_->manager()->EndDragging(true);
   }
   return true;
 }

@@ -50,6 +50,44 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
       }
     }
   }
+
+  void ValidateDragging(PanelBrowserView* browser_view,
+                        int delta_x,
+                        int delta_y,
+                        int expected_delta_x_after_release) {
+    gfx::Rect bounds_before_press = browser_view->panel()->GetRestoredBounds();
+
+    views::MouseEvent pressed(ui::ET_MOUSE_PRESSED,
+                              bounds_before_press.x(),
+                              bounds_before_press.y(),
+                              ui::EF_LEFT_BUTTON_DOWN);
+    browser_view->OnTitleBarMousePressed(pressed);
+    gfx::Rect bounds_after_press = browser_view->panel()->GetRestoredBounds();
+    EXPECT_EQ(bounds_before_press, bounds_after_press);
+
+    // If both delta_x and delta_y are 0, we perform no dragging.
+    if (delta_x || delta_y) {
+      views::MouseEvent dragged(ui::ET_MOUSE_DRAGGED,
+                                bounds_before_press.x() + delta_x,
+                                bounds_before_press.y() + delta_y,
+                                ui::EF_LEFT_BUTTON_DOWN);
+      browser_view->OnTitleBarMouseDragged(dragged);
+      gfx::Rect bounds_after_drag = browser_view->panel()->GetRestoredBounds();
+      EXPECT_EQ(bounds_before_press.x() + delta_x, bounds_after_drag.x());
+      EXPECT_EQ(bounds_before_press.y(), bounds_after_drag.y());
+      EXPECT_EQ(bounds_before_press.width(), bounds_after_drag.width());
+      EXPECT_EQ(bounds_before_press.height(), bounds_after_drag.height());
+    }
+
+    views::MouseEvent released(ui::ET_MOUSE_RELEASED, 0, 0, 0);
+    browser_view->OnTitleBarMouseReleased(released);
+    gfx::Rect bounds_after_release = browser_view->panel()->GetRestoredBounds();
+    EXPECT_EQ(bounds_before_press.x() + expected_delta_x_after_release,
+              bounds_after_release.x());
+    EXPECT_EQ(bounds_before_press.y(), bounds_after_release.y());
+    EXPECT_EQ(bounds_before_press.width(), bounds_after_release.width());
+    EXPECT_EQ(bounds_before_press.height(), bounds_after_release.height());
+  }
 };
 
 // Panel is not supported for Linux view yet.
@@ -179,5 +217,35 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreateOrUpdateOptionsMenu) {
   ValidateOptionsMenuItems(frame_view2->options_menu_contents_.get(),
                            single_panel_menu_count,
                            single_panel_menu);
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, TitleBarMouseEvent) {
+  // Tests dragging a panel in single-panel environment.
+  // We should get back to the original position after the dragging is ended.
+  PanelBrowserView* browser_view1 = CreatePanelBrowserView("PanelTest1");
+  ValidateDragging(browser_view1, -500, -5, 0);
+
+  // Tests dragging a panel with small delta in two-panel environment.
+  // We should get back to the original position after the dragging is ended.
+  PanelBrowserView* browser_view2 = CreatePanelBrowserView("PanelTest2");
+  ValidateDragging(browser_view1, -5, -5, 0);
+
+  // Tests dragging a panel with big delta in two-panel environment.
+  // We should move to the new position after the dragging is ended.
+  ValidateDragging(
+      browser_view1,
+      -(browser_view2->panel()->GetRestoredBounds().width() / 2 + 5),
+      -5,
+      browser_view2->panel()->GetRestoredBounds().x() -
+          browser_view1->panel()->GetRestoredBounds().x());
+
+  // Tests that no dragging is involved.
+  ValidateDragging(browser_view1, 0, 0, 0);
+
+  browser_view1->Close();
+  EXPECT_FALSE(browser_view1->panel());
+
+  browser_view2->Close();
+  EXPECT_FALSE(browser_view2->panel());
 }
 #endif
