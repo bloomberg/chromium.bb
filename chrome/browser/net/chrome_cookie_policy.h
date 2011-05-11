@@ -37,6 +37,7 @@ class ChromeCookiePolicy : public net::CookiePolicy {
   // True if blocking third-party cookies also applies to reading them.
   bool strict_third_party_blocking_;
 
+  friend class ChromeCookiePolicyTest;
   DISALLOW_COPY_AND_ASSIGN(ChromeCookiePolicy);
 };
 
