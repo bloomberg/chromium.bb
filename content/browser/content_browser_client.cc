@@ -14,11 +14,6 @@ void ContentBrowserClient::RenderViewHostCreated(
     RenderViewHost* render_view_host) {
 }
 
-void ContentBrowserClient::PreCreateRenderView(RenderViewHost* render_view_host,
-                                               Profile* profile,
-                                               const GURL& url) {
-}
-
 void ContentBrowserClient::BrowserRenderProcessHostCreated(
     BrowserRenderProcessHost* host) {
 }

@@ -94,6 +94,7 @@ RenderProcessHost::RenderProcessHost(Profile* profile)
     : max_page_id_(-1),
       fast_shutdown_started_(false),
       deleting_soon_(false),
+      is_extension_process_(false),
       id_(ChildProcessInfo::GenerateChildProcessUniqueId()),
       profile_(profile),
       sudden_termination_allowed_(true),

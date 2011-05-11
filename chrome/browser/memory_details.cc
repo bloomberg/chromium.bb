@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,7 +171,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         }
         TabContents* contents = host_delegate->GetAsTabContents();
         if (!contents) {
-          if (host->is_extension_process()) {
+          if (host->process()->is_extension_process()) {
             const Extension* extension =
                 extension_service->GetExtensionByURL(url);
             if (extension) {

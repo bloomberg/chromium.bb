@@ -6,12 +6,15 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/common/notification_service.h"
@@ -19,6 +22,8 @@
 ExtensionTabHelper::ExtensionTabHelper(TabContentsWrapper* wrapper)
     : TabContentsObserver(wrapper->tab_contents()),
       extension_app_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          extension_function_dispatcher_(wrapper->profile(), this)),
       wrapper_(wrapper) {
 }
 
@@ -113,6 +118,7 @@ bool ExtensionTabHelper::OnMessageReceived(const IPC::Message& message) {
                         OnDidGetApplicationInfo)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_InstallApplication,
                         OnInstallApplication)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -129,6 +135,12 @@ void ExtensionTabHelper::OnDidGetApplicationInfo(
 void ExtensionTabHelper::OnInstallApplication(const WebApplicationInfo& info) {
   if (wrapper_->delegate())
     wrapper_->delegate()->OnInstallApplication(wrapper_, info);
+}
+
+void ExtensionTabHelper::OnRequest(
+    const ExtensionHostMsg_Request_Params& request) {
+  extension_function_dispatcher_.Dispatch(request,
+                                          tab_contents()->render_view_host());
 }
 
 void ExtensionTabHelper::UpdateExtensionAppIcon(const Extension* extension) {
@@ -160,4 +172,38 @@ void ExtensionTabHelper::OnImageLoaded(SkBitmap* image,
     extension_app_icon_ = *image;
     tab_contents()->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
   }
+}
+
+Browser* ExtensionTabHelper::GetBrowser() {
+  TabContents* contents = tab_contents();
+  TabContentsIterator tab_iterator;
+  for (; !tab_iterator.done(); ++tab_iterator) {
+    if (contents == (*tab_iterator)->tab_contents())
+      return tab_iterator.browser();
+  }
+
+  return NULL;
+}
+
+TabContents* ExtensionTabHelper::GetAssociatedTabContents() const {
+  return tab_contents();
+}
+
+gfx::NativeWindow ExtensionTabHelper::GetCustomFrameNativeWindow() {
+  if (GetBrowser())
+    return NULL;
+
+  // If there was no browser associated with the function dispatcher delegate,
+  // then this WebUI may be hosted in an ExternalTabContainer, and a framing
+  // window will be accessible through the tab_contents.
+  TabContentsDelegate* tab_contents_delegate = tab_contents()->delegate();
+  if (tab_contents_delegate)
+    return tab_contents_delegate->GetFrameNativeWindow();
+  else
+    return NULL;
+}
+
+gfx::NativeView ExtensionTabHelper::GetNativeViewOfHost() {
+  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  return rwhv ? rwhv->GetNativeView() : NULL;
 }

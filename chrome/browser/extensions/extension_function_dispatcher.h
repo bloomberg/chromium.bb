@@ -11,7 +11,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "googleurl/src/gurl.h"
-#include "ipc/ipc_channel.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
@@ -27,9 +26,19 @@ struct ExtensionHostMsg_Request_Params;
 typedef ExtensionFunction* (*ExtensionFunctionFactory)();
 
 // ExtensionFunctionDispatcher receives requests to execute functions from
-// Chromium extensions running in a RenderViewHost and dispatches them to the
+// Chrome extensions running in a RenderViewHost and dispatches them to the
 // appropriate handler. It lives entirely on the UI thread.
-class ExtensionFunctionDispatcher : public IPC::Channel::Listener {
+//
+// ExtensionFunctionDispatcher should be a member of some class that hosts
+// RenderViewHosts and wants them to be able to display extension content.
+// This class should also implement ExtensionFunctionDispatcher::Delegate.
+//
+// Note that a single ExtensionFunctionDispatcher does *not* correspond to a
+// single RVH, a single extension, or a single URL. This is by design so that
+// we can gracefully handle cases like TabContents, where the RVH, extension,
+// and URL can all change over the lifetime of the tab. Instead, these items
+// are all passed into each request.
+class ExtensionFunctionDispatcher {
  public:
   class Delegate {
    public:
@@ -45,7 +54,7 @@ class ExtensionFunctionDispatcher : public IPC::Channel::Listener {
     // context. For example, the TabContents in which an infobar or
     // chrome-extension://<id> URL are being shown. Callers must check for a
     // NULL return value (as in the case of a background page).
-    virtual TabContents* associated_tab_contents() const = 0;
+    virtual TabContents* GetAssociatedTabContents() const = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -76,21 +85,19 @@ class ExtensionFunctionDispatcher : public IPC::Channel::Listener {
   // Resets all functions to their initial implementation.
   static void ResetFunctions();
 
-  // Creates an instance for the specified RenderViewHost and URL. If the URL
-  // does not contain a valid extension, returns NULL.
-  static ExtensionFunctionDispatcher* Create(RenderViewHost* render_view_host,
-                                             Delegate* delegate,
-                                             const GURL& url);
+  // Public constructor. Callers must ensure that:
+  // - |delegate| outlives this object.
+  // - This object outlives any RenderViewHost's passed to created
+  //   ExtensionFunctions.
+  ExtensionFunctionDispatcher(Profile* profile, Delegate* delegate);
 
   ~ExtensionFunctionDispatcher();
 
   Delegate* delegate() { return delegate_; }
 
-  // If |message| is an extension request, handle it. Returns true if handled.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  // Send a response to a function.
-  void SendResponse(ExtensionFunction* api, bool success);
+  // Message handlers.
+  void Dispatch(const ExtensionHostMsg_Request_Params& params,
+                RenderViewHost* sender);
 
   // Returns the current browser. Callers should generally prefer
   // ExtensionFunction::GetCurrentBrowser() over this method, as that one
@@ -98,45 +105,19 @@ class ExtensionFunctionDispatcher : public IPC::Channel::Listener {
   //
   // See the comments for ExtensionFunction::GetCurrentBrowser() for more
   // details.
-  Browser* GetCurrentBrowser(bool include_incognito);
-
-  // Handle a malformed message.  Possibly the result of an attack, so kill
-  // the renderer.
-  void HandleBadMessage(ExtensionFunction* api);
-
-  // Gets the URL for the view we're displaying.
-  const GURL& url() { return url_; }
-
-  // Gets the ID for this extension.
-  const std::string extension_id() { return extension_id_; }
+  Browser* GetCurrentBrowser(RenderViewHost* render_view_host,
+                             bool include_incognito);
 
   // The profile that this dispatcher is associated with.
-  Profile* profile();
-
-  // The RenderViewHost this dispatcher is associated with.
-  RenderViewHost* render_view_host() { return render_view_host_; }
+  Profile* profile() { return profile_; }
 
  private:
-  ExtensionFunctionDispatcher(RenderViewHost* render_view_host,
-                              Delegate* delegate,
-                              const Extension* extension,
-                              const GURL& url);
+  // Helper to send an access denied error to the requesting render view.
+  void SendAccessDenied(RenderViewHost* render_view_host, int request_id);
 
-  // Message handlers.
-  void OnRequest(const ExtensionHostMsg_Request_Params& params);
-
-  // We need to keep a pointer to the profile because we use it in the dtor
-  // in sending EXTENSION_FUNCTION_DISPATCHER_DESTROYED, but by that point
-  // the render_view_host_ has been deleted.
   Profile* profile_;
 
-  RenderViewHost* render_view_host_;
-
   Delegate* delegate_;
-
-  GURL url_;
-
-  std::string extension_id_;
 
   scoped_refptr<Peer> peer_;
 };

@@ -804,13 +804,13 @@ FileDialogFunction::Callback::Find(int32 tab_id) {
 
 
 int32 FileDialogFunction::GetTabId() const {
-  return dispatcher()->delegate()->associated_tab_contents()->
+  return dispatcher()->delegate()->GetAssociatedTabContents()->
     controller().session_id().id();
 }
 
 const FileDialogFunction::Callback& FileDialogFunction::GetCallback() const {
   if (!dispatcher() || !dispatcher()->delegate() ||
-      !dispatcher()->delegate()->associated_tab_contents()) {
+      !dispatcher()->delegate()->GetAssociatedTabContents()) {
     return Callback::null();
   }
   return Callback::Find(GetTabId());
@@ -818,7 +818,7 @@ const FileDialogFunction::Callback& FileDialogFunction::GetCallback() const {
 
 void FileDialogFunction::CloseDialog(HtmlDialogView* dialog) {
   DCHECK(dialog);
-  TabContents* contents = dispatcher()->delegate()->associated_tab_contents();
+  TabContents* contents = dispatcher()->delegate()->GetAssociatedTabContents();
   if (contents)
     dialog->CloseContents(contents);
 }

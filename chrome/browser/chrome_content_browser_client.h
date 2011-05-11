@@ -13,9 +13,6 @@ namespace chrome {
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
   virtual void RenderViewHostCreated(RenderViewHost* render_view_host);
-  virtual void PreCreateRenderView(RenderViewHost* render_view_host,
-                                   Profile* profile,
-                                   const GURL& url);
   virtual void BrowserRenderProcessHostCreated(BrowserRenderProcessHost* host);
   virtual void WorkerProcessHostCreated(WorkerProcessHost* host);
   virtual content::WebUIFactory* GetWebUIFactory();
