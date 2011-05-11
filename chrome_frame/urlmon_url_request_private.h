@@ -9,7 +9,7 @@
 #include <atlcom.h>
 #include <string>
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/threading/platform_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"

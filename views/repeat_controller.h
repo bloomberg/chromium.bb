@@ -6,7 +6,7 @@
 #define VIEWS_REPEAT_CONTROLLER_H_
 #pragma once
 
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 

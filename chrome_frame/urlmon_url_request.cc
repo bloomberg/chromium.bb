@@ -7,6 +7,7 @@
 #include <urlmon.h>
 #include <wininet.h>
 
+#include "base/callback_old.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"

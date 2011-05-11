@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_old.h"
 
 namespace chromeos {
 

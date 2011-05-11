@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/atomic_sequence_num.h"
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/time.h"
 #include "content/browser/cancelable_request.h"
 #include "content/common/notification_observer.h"

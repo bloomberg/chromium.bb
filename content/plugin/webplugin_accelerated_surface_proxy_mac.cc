@@ -6,6 +6,7 @@
 
 #include "content/plugin/webplugin_accelerated_surface_proxy_mac.h"
 
+#include "base/callback_old.h"
 #include "content/plugin/webplugin_proxy.h"
 #include "ui/gfx/surface/accelerated_surface_mac.h"
 #include "ui/gfx/surface/transport_dib.h"

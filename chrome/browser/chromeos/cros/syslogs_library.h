@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_SYSLOGS_LIBRARY_H_
 #pragma once
 
+#include "base/callback_old.h"
 #include "base/memory/singleton.h"
 #include "content/browser/cancelable_request.h"
 #include "third_party/cros/chromeos_syslogs.h"
