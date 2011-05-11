@@ -470,6 +470,10 @@ class BrowserAccessibilityWin
   // be the name, it may be the value, etc. depending on the role.
   const string16& TextForIAccessibleText();
 
+  // If offset is a member of IA2TextSpecialOffsets this function updates the
+  // value of offset and returns, otherwise offset remains unchanged.
+  void HandleSpecialTextOffset(const string16& text, LONG* offset);
+
   // Search forwards (direction == 1) or backwards (direction == -1) from
   // the given offset until the given IAccessible2 boundary (like word,
   // sentence) is found, and return its offset.

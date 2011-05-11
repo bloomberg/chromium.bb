@@ -358,6 +358,10 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   ASSERT_EQ(text, string16(L"One two three"));
   SysFreeString(text);
 
+  ASSERT_EQ(S_OK, text1_obj->get_text(0, IA2_TEXT_OFFSET_LENGTH, &text));
+  ASSERT_EQ(text, string16(L"One two three.\nFour five six."));
+  SysFreeString(text);
+
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
   delete manager;

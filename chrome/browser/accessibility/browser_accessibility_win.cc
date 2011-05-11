@@ -640,6 +640,10 @@ STDMETHODIMP BrowserAccessibilityWin::get_text(
 
   const string16& text_str = TextForIAccessibleText();
 
+  // Handle special text offsets.
+  HandleSpecialTextOffset(text_str, &start_offset);
+  HandleSpecialTextOffset(text_str, &end_offset);
+
   // The spec allows the arguments to be reversed.
   if (start_offset > end_offset) {
     LONG tmp = start_offset;
@@ -1205,6 +1209,15 @@ const string16& BrowserAccessibilityWin::TextForIAccessibleText() {
   }
 }
 
+void BrowserAccessibilityWin::HandleSpecialTextOffset(
+    const string16& text, LONG* offset) {
+  if (*offset == IA2_TEXT_OFFSET_LENGTH) {
+    *offset = static_cast<LONG>(text.size());
+  } else if (*offset == IA2_TEXT_OFFSET_CARET) {
+    get_caretOffset(offset);
+  }
+}
+
 LONG BrowserAccessibilityWin::FindBoundary(
     const string16& text,
     IA2TextBoundaryType boundary,
@@ -1216,11 +1229,7 @@ LONG BrowserAccessibilityWin::FindBoundary(
          start_offset == IA2_TEXT_OFFSET_CARET);
   DCHECK(direction == 1 || direction == -1);
 
-  if (start_offset == IA2_TEXT_OFFSET_LENGTH) {
-    start_offset = text_size;
-  } else if (start_offset == IA2_TEXT_OFFSET_CARET) {
-    get_caretOffset(&start_offset);
-  }
+  HandleSpecialTextOffset(text, &start_offset);
 
   if (boundary == IA2_TEXT_BOUNDARY_CHAR) {
     if (direction == 1 && start_offset < text_size)
