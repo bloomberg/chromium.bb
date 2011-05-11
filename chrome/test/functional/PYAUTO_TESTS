@@ -75,7 +75,7 @@
       'special_tabs',
       # Flaky: crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
-      'sync',
+      # 'sync',  # browser crash - crbug.com/82247
       'test_basic',
       'themes',
     ],
