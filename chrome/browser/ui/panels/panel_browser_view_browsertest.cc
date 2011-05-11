@@ -15,6 +15,7 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
+#include "views/controls/menu/menu_2.h"
 
 
 class PanelBrowserViewTest : public InProcessBrowserTest {
@@ -24,20 +25,38 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) {
     command_line->AppendSwitch(switches::kEnablePanels);
   }
+
+ protected:
+  PanelBrowserView* CreatePanelBrowserView(const std::string& panel_name) {
+    Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
+                                                   panel_name,
+                                                   gfx::Size(),
+                                                   browser()->profile());
+    panel_browser->window()->Show();
+    return static_cast<PanelBrowserView*>(
+        static_cast<Panel*>(panel_browser->window())->browser_window());
+  }
+
+  void ValidateOptionsMenuItems(
+      ui::SimpleMenuModel* options_menu_contents, size_t count, int* ids) {
+    ASSERT_TRUE(options_menu_contents);
+    EXPECT_EQ(static_cast<int>(count), options_menu_contents->GetItemCount());
+    for (size_t i = 0; i < count; ++i) {
+      if (ids[i] == -1) {
+        EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR,
+                  options_menu_contents->GetTypeAt(i));
+      } else {
+        EXPECT_EQ(ids[i] , options_menu_contents->GetCommandIdAt(i));
+      }
+    }
+  }
 };
 
 // Panel is not supported for Linux view yet.
 #if !defined(OS_LINUX) || !defined(TOOLKIT_VIEWS)
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
-  Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
-                                                 "PanelTest",
-                                                 gfx::Size(),
-                                                 browser()->profile());
-  panel_browser->window()->Show();
-
   PanelBrowserFrameView* frame_view =
-      static_cast<PanelBrowserView*>(static_cast<Panel*>(
-          panel_browser->window())->browser_window())->GetFrameView();
+      CreatePanelBrowserView("PanelTest")->GetFrameView();
 
   // We should have icon, text, options button and close button.
   EXPECT_EQ(4, frame_view->child_count());
@@ -82,5 +101,83 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
   frame_view->UpdateControlStyles(PanelBrowserFrameView::PAINT_AS_INACTIVE);
   SkColor title_label_color2 = frame_view->title_label_->GetColor();
   EXPECT_NE(title_label_color1, title_label_color2);
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreateOrUpdateOptionsMenu) {
+  int single_panel_menu[] = { PanelBrowserFrameView::COMMAND_ABOUT };
+  size_t single_panel_menu_count = arraysize(single_panel_menu);
+  int multi_panel_menu_for_minimize[] = {
+      PanelBrowserFrameView::COMMAND_MINIMIZE_ALL,
+      PanelBrowserFrameView::COMMAND_CLOSE_ALL,
+      -1,  // Separator
+      PanelBrowserFrameView::COMMAND_ABOUT };
+  size_t multi_panel_menu_for_minimize_count =
+      arraysize(multi_panel_menu_for_minimize);
+  int multi_panel_menu_for_restore[] = {
+      PanelBrowserFrameView::COMMAND_RESTORE_ALL,
+      PanelBrowserFrameView::COMMAND_CLOSE_ALL,
+      -1,  // Separator
+      PanelBrowserFrameView::COMMAND_ABOUT };
+  size_t multi_panel_menu_for_restore_count =
+      arraysize(multi_panel_menu_for_restore);
+
+  // With only one panel, we should only have 1 menu item: "About this panel".
+  PanelBrowserFrameView* frame_view1 =
+      CreatePanelBrowserView("PanelTest1")->GetFrameView();
+
+  frame_view1->CreateOrUpdateOptionsMenu();
+  ASSERT_TRUE(frame_view1->options_menu_.get());
+  ValidateOptionsMenuItems(frame_view1->options_menu_contents_.get(),
+                           single_panel_menu_count,
+                           single_panel_menu);
+
+  // With another panel, we should have 4 menu items, including separator.
+  PanelBrowserFrameView* frame_view2 =
+      CreatePanelBrowserView("PanelTest2")->GetFrameView();
+
+  frame_view1->CreateOrUpdateOptionsMenu();
+  ValidateOptionsMenuItems(frame_view1->options_menu_contents_.get(),
+                           multi_panel_menu_for_minimize_count,
+                           multi_panel_menu_for_minimize);
+
+  frame_view2->CreateOrUpdateOptionsMenu();
+  ValidateOptionsMenuItems(frame_view2->options_menu_contents_.get(),
+                           multi_panel_menu_for_minimize_count,
+                           multi_panel_menu_for_minimize);
+
+  // When we minimize one panel, "Minimize all" remains intact.
+  frame_view1->browser_view_->panel_->Minimize();
+
+  frame_view1->CreateOrUpdateOptionsMenu();
+  ValidateOptionsMenuItems(frame_view2->options_menu_contents_.get(),
+                           multi_panel_menu_for_minimize_count,
+                           multi_panel_menu_for_minimize);
+
+  frame_view2->CreateOrUpdateOptionsMenu();
+  ValidateOptionsMenuItems(frame_view2->options_menu_contents_.get(),
+                           multi_panel_menu_for_minimize_count,
+                           multi_panel_menu_for_minimize);
+
+  // When we minimize the remaining panel, "Minimize all" should become
+  // "Restore all".
+  frame_view2->browser_view_->panel_->Minimize();
+
+  frame_view1->CreateOrUpdateOptionsMenu();
+  ValidateOptionsMenuItems(frame_view1->options_menu_contents_.get(),
+                           multi_panel_menu_for_restore_count,
+                           multi_panel_menu_for_restore);
+
+  frame_view2->CreateOrUpdateOptionsMenu();
+  ValidateOptionsMenuItems(frame_view2->options_menu_contents_.get(),
+                           multi_panel_menu_for_restore_count,
+                           multi_panel_menu_for_restore);
+
+  // When we close one panel, we should be back to have only 1 menu item.
+  frame_view1->browser_view_->panel_->Close();
+
+  frame_view2->CreateOrUpdateOptionsMenu();
+  ValidateOptionsMenuItems(frame_view2->options_menu_contents_.get(),
+                           single_panel_menu_count,
+                           single_panel_menu);
 }
 #endif

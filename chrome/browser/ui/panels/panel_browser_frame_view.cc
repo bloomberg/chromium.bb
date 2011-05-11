@@ -7,6 +7,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
+#include "chrome/browser/ui/panels/panel_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
@@ -20,6 +21,7 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/painter.h"
 #include "views/window/window.h"
 #include "views/window/window_shape.h"
@@ -342,7 +344,43 @@ void PanelBrowserFrameView::ButtonPressed(views::Button* sender,
 }
 
 void PanelBrowserFrameView::RunMenu(View* source, const gfx::Point& pt) {
-  NOTIMPLEMENTED();
+  CreateOrUpdateOptionsMenu();
+  options_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+}
+
+bool PanelBrowserFrameView::IsCommandIdChecked(int command_id) const {
+  // Nothing in the menu is checked.
+  return false;
+}
+
+bool PanelBrowserFrameView::IsCommandIdEnabled(int command_id) const {
+  // All the menu options are always enabled.
+  return true;
+}
+
+bool PanelBrowserFrameView::GetAcceleratorForCommandId(
+    int command_id, ui::Accelerator* accelerator) {
+  return false;
+}
+
+void PanelBrowserFrameView::ExecuteCommand(int command_id) {
+  switch (command_id) {
+    case COMMAND_MINIMIZE_ALL:
+      browser_view_->panel()->manager()->MinimizeAll();
+      break;
+    case COMMAND_RESTORE_ALL:
+      browser_view_->panel()->manager()->RestoreAll();
+      break;
+    case COMMAND_CLOSE_ALL:
+      browser_view_->panel()->manager()->RemoveAllActive();
+      break;
+    case COMMAND_ABOUT:
+      NOTIMPLEMENTED();
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 bool PanelBrowserFrameView::ShouldTabIconViewAnimate() const {
@@ -481,4 +519,64 @@ void PanelBrowserFrameView::UpdateTitleBar() {
 
 void PanelBrowserFrameView::OnActivationChanged(bool active) {
   SchedulePaint();
+}
+
+void PanelBrowserFrameView::CreateOrUpdateOptionsMenu() {
+  bool rebuild_menu = CreateOrUpdateOptionsMenuItems();
+  if (options_menu_.get()) {
+    if (rebuild_menu)
+      options_menu_->Rebuild();
+  } else {
+    options_menu_.reset(new views::Menu2(options_menu_contents_.get()));
+  }
+}
+
+bool PanelBrowserFrameView::CreateOrUpdateOptionsMenuItems() {
+  // Determines if we need to rebuild the menu items. The menu items might
+  // be different if any of the following have been changed since the last
+  // time:
+  // 1) Multiple panel vs. single panel.
+  // 2) All panels minimized or not.
+  bool should_manipulate_all  =
+      browser_view_->panel()->manager()->active_count() > 1;
+  bool should_restore_all =
+      browser_view_->panel()->manager()->AreAllMinimized();
+
+  bool rebuild_menu = false;
+  if (options_menu_contents_.get()) {
+    bool manipulate_all = options_menu_contents_->GetItemCount() > 1;
+    bool restore_all =
+        options_menu_contents_->GetCommandIdAt(0) == COMMAND_RESTORE_ALL;
+
+    if (manipulate_all == should_manipulate_all &&
+        restore_all == should_restore_all) {
+      return false;
+    }
+
+    rebuild_menu = true;
+    options_menu_contents_->Clear();
+  } else {
+    options_menu_contents_.reset(new ui::SimpleMenuModel(this));
+  }
+
+  if (should_manipulate_all) {
+    if (should_restore_all) {
+      options_menu_contents_->AddItem(
+          COMMAND_RESTORE_ALL,
+          l10n_util::GetStringUTF16(IDS_PANEL_OPTIONS_MENU_RESTORE_ALL));
+    } else {
+      options_menu_contents_->AddItem(
+          COMMAND_MINIMIZE_ALL,
+          l10n_util::GetStringUTF16(IDS_PANEL_OPTIONS_MENU_MINIMIZE_ALL));
+    }
+    options_menu_contents_->AddItem(
+        COMMAND_CLOSE_ALL,
+        l10n_util::GetStringUTF16(IDS_PANEL_OPTIONS_MENU_CLOSE_ALL));
+    options_menu_contents_->AddSeparator();
+  }
+
+  options_menu_contents_->AddItem(
+      COMMAND_ABOUT, l10n_util::GetStringUTF16(IDS_PANEL_OPTIONS_MENU_ABOUT));
+
+  return rebuild_menu;
 }

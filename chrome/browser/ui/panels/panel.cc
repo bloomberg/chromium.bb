@@ -31,10 +31,18 @@ void Panel::SetPanelBounds(const gfx::Rect& bounds) {
 }
 
 void Panel::Minimize() {
+  if (minimized_)
+    return;
+  minimized_ = true;
+
   NOTIMPLEMENTED();
 }
 
 void Panel::Restore() {
+  if (!minimized_)
+    return;
+  minimized_ = false;
+
   NOTIMPLEMENTED();
 }
 
