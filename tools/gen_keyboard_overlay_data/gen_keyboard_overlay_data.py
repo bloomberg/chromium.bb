@@ -283,6 +283,9 @@ def FetchKeyboardGlyphData(client):
       if 'label' in line:
         line['label'] = LABEL_MAP.get(line['label'], line['label'])
       keys[scancode] = line
+    # Add a label to space key
+    if '39' not in keys:
+      keys['39'] = {'label': 'space'}
     ret[lang]['keys'] = keys
   return ret
 

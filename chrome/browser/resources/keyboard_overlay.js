@@ -235,6 +235,10 @@ function getAction(keycode, modifiers) {
  */
 function getKeyTextValue(keyData) {
   if (keyData.label) {
+    // Do not show text on the space key.
+    if (keyData.label == 'space') {
+      return '';
+    }
     return keyData.label;
   }
 

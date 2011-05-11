@@ -268,6 +268,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -585,6 +588,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -898,6 +904,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -1171,6 +1180,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -1477,6 +1489,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -1754,6 +1769,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -2030,6 +2048,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -2331,6 +2352,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -2607,6 +2631,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "Alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -2874,6 +2901,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -3136,6 +3166,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -3396,6 +3429,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -3651,6 +3687,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -3908,6 +3947,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -4174,6 +4216,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -4437,6 +4482,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -4735,6 +4783,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -5008,6 +5059,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -5272,6 +5326,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -5540,6 +5597,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -5817,6 +5877,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -6086,6 +6149,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -6362,6 +6428,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -6646,6 +6715,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -7002,6 +7074,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -7287,6 +7362,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -7580,6 +7658,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -7846,6 +7927,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -8116,6 +8200,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -8409,6 +8496,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -8724,6 +8814,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -9033,6 +9126,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -9312,6 +9408,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -9573,6 +9672,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -9843,6 +9945,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -10106,6 +10211,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -10401,6 +10509,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -10669,6 +10780,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -10948,6 +11062,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -11238,6 +11355,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -11551,6 +11671,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -11858,6 +11981,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -12150,6 +12276,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -12431,6 +12560,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "\u0430\u043b\u0442"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -12705,6 +12837,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -13069,6 +13204,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -13331,6 +13469,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -13648,6 +13789,9 @@ var keyboardOverlayData = {
           "format": "left",
           "label": "alt"
         },
+        "39": {
+          "label": "space"
+        },
         "3B": {
           "label": "back"
         },
@@ -13897,6 +14041,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -14164,6 +14311,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
@@ -14487,6 +14637,9 @@ var keyboardOverlayData = {
         "38": {
           "format": "left",
           "label": "alt"
+        },
+        "39": {
+          "label": "space"
         },
         "3B": {
           "label": "back"
