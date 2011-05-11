@@ -177,6 +177,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
 
     DCHECK(textfield_view_);
     model_ = textfield_view_->model_.get();
+    model_->ClearEditHistory();
 
     input_method_ = new MockInputMethod();
     widget_->native_widget()->ReplaceInputMethod(input_method_);
@@ -946,5 +947,109 @@ TEST_F(NativeTextfieldViewsTest, TextInputClientTest) {
   EXPECT_TRUE(textfield_->GetTextInputClient());
 }
 
+TEST_F(NativeTextfieldViewsTest, UndoRedoTest) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  SendKeyEvent(ui::VKEY_A);
+  EXPECT_STR_EQ("a", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("a", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("a", textfield_->text());
+
+  // AppendText
+  textfield_->AppendText(ASCIIToUTF16("b"));
+  last_contents_.clear();  // AppendText doesn't call ContentsChanged.
+  EXPECT_STR_EQ("ab", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("a", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("ab", textfield_->text());
+
+  // SetText
+  SendKeyEvent(ui::VKEY_C);
+  // Undo'ing append moves the cursor to the end for now.
+  // no-op SetText won't add new edit. See TextfieldViewsModel::SetText
+  // description.
+  EXPECT_STR_EQ("abc", textfield_->text());
+  textfield_->SetText(ASCIIToUTF16("abc"));
+  EXPECT_STR_EQ("abc", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("ab", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("abc", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("abc", textfield_->text());
+  textfield_->SetText(ASCIIToUTF16("123"));
+  textfield_->SetText(ASCIIToUTF16("123"));
+  EXPECT_STR_EQ("123", textfield_->text());
+  SendKeyEvent(ui::VKEY_END, false, false);
+  SendKeyEvent(ui::VKEY_4, false, false);
+  EXPECT_STR_EQ("1234", textfield_->text());
+  last_contents_.clear();
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("123", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("abc", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("ab", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("abc", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("123", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("1234", textfield_->text());
+
+  // Undoing to the same text shouldn't call ContentsChanged.
+  SendKeyEvent(ui::VKEY_A, false, true);  // select all
+  SendKeyEvent(ui::VKEY_A);
+  EXPECT_STR_EQ("a", textfield_->text());
+  SendKeyEvent(ui::VKEY_B);
+  SendKeyEvent(ui::VKEY_C);
+  EXPECT_STR_EQ("abc", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("1234", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("abc", textfield_->text());
+
+  // Delete/Backspace
+  SendKeyEvent(ui::VKEY_BACK);
+  EXPECT_STR_EQ("ab", textfield_->text());
+  SendKeyEvent(ui::VKEY_HOME);
+  SendKeyEvent(ui::VKEY_DELETE);
+  EXPECT_STR_EQ("b", textfield_->text());
+  SendKeyEvent(ui::VKEY_A, false, true);
+  SendKeyEvent(ui::VKEY_DELETE);
+  EXPECT_STR_EQ("", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("b", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("ab", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("abc", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("ab", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("b", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("", textfield_->text());
+
+  // Insert
+  textfield_->SetText(ASCIIToUTF16("123"));
+  SendKeyEvent(ui::VKEY_INSERT);
+  SendKeyEvent(ui::VKEY_A);
+  EXPECT_STR_EQ("a23", textfield_->text());
+  SendKeyEvent(ui::VKEY_B);
+  EXPECT_STR_EQ("ab3", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("123", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("ab3", textfield_->text());
+}
 
 }  // namespace views

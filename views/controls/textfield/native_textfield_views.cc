@@ -205,13 +205,19 @@ int NativeTextfieldViews::OnPerformDrop(const DropTargetEvent& event) {
       drop_destination -= selected_range.length();
     else if (selected_range.GetMin() <= drop_destination)
       drop_destination = selected_range.GetMin();
-    model_->DeleteSelection();
+    // TODO(oshima): Deletion and insertion has to be treated as one
+    // edit.
+    model_->DeleteSelection(true);
   }
   model_->MoveCursorTo(drop_destination, false);
   string16 text;
   event.data().GetString(&text);
-  InsertText(text);
-  UpdateCursorBoundsAndTextOffset();
+
+  skip_input_method_cancel_composition_ = true;
+  // Drop always inserts a text even if insert_ == false.
+  model_->InsertText(text);
+  skip_input_method_cancel_composition_ = false;
+  UpdateAfterChange(true, true);
   OnAfterUserAction();
   return move ? ui::DragDropTypes::DRAG_MOVE : ui::DragDropTypes::DRAG_COPY;
 }
@@ -670,7 +676,7 @@ bool NativeTextfieldViews::DeleteRange(const ui::Range& range) {
   OnBeforeUserAction();
   model_->SelectRange(range);
   if (model_->HasSelection()) {
-    model_->DeleteSelection();
+    model_->DeleteSelection(true);
     UpdateAfterChange(true, true);
   }
   OnAfterUserAction();
@@ -831,7 +837,7 @@ void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
 }
 
 bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
-  // TODO(oshima): handle IME.
+  // TODO(oshima): Refactor and consolidate with ExecuteCommand.
   if (key_event.type() == ui::ET_KEY_PRESSED) {
     ui::KeyboardCode key_code = key_event.key_code();
     // TODO(oshima): shift-tab does not work. Figure out why and fix.
@@ -845,6 +851,14 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
     bool text_changed = false;
     bool cursor_changed = false;
     switch (key_code) {
+      case ui::VKEY_Z:
+        if (control && editable)
+          cursor_changed = text_changed = model_->Undo();
+        break;
+      case ui::VKEY_Y:
+        if (control && editable)
+          cursor_changed = text_changed = model_->Redo();
+        break;
       case ui::VKEY_A:
         if (control) {
           model_->SelectAll();

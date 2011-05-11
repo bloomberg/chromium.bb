@@ -30,6 +30,7 @@ void TextfieldExample::CreateExampleView(views::View* container) {
   show_password_ = new views::TextButton(this, L"Show password");
   clear_all_ = new views::TextButton(this, L"Clear All");
   append_ = new views::TextButton(this, L"Append");
+  set_ = new views::TextButton(this, L"Set");
   name_->SetController(this);
   password_->SetController(this);
 
@@ -53,6 +54,8 @@ void TextfieldExample::CreateExampleView(views::View* container) {
   layout->AddView(clear_all_);
   layout->StartRow(0, 0);
   layout->AddView(append_);
+  layout->StartRow(0, 0);
+  layout->AddView(set_);
 }
 
 void TextfieldExample::ContentsChanged(views::Textfield* sender,
@@ -79,6 +82,8 @@ void TextfieldExample::ButtonPressed(views::Button* sender,
     password_->SetText(empty);
   } else if (sender == append_) {
     name_->AppendText(WideToUTF16(L"[append]"));
+  } else if (sender == set_) {
+    name_->SetText(WideToUTF16(L"[set]"));
   }
 }
 

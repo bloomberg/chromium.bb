@@ -33,12 +33,11 @@ class Menu2;
 // A views/skia only implementation of NativeTextfieldWrapper.
 // No platform specific code is used.
 // Following features are not yet supported.
-// * BIDI
-// * IME/i18n support.
+// * BIDI/Complex script.
+// * Support surrogate pair, or maybe we should just use UTF32 internally.
 // * X selection (only if we want to support).
 // * STYLE_MULTILINE, STYLE_LOWERCASE text. (These are not used in
 //   chromeos, so we may not need them)
-// * Undo/Redo
 class NativeTextfieldViews : public View,
                              public ContextMenuController,
                              public DragController,

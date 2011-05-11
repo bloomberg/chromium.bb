@@ -33,6 +33,11 @@ class TextfieldViewsModelTest : public ViewsTestBase,
   }
 
  protected:
+  void ResetModel(TextfieldViewsModel* model) const {
+    model->SetText(ASCIIToUTF16(""));
+    model->ClearEditHistory();
+  }
+
   bool composition_text_confirmed_or_cleared_;
 
  private:
@@ -302,17 +307,14 @@ TEST_F(TextfieldViewsModelTest, SetText) {
   model.MoveCursorToEnd(false);
   model.SetText(ASCIIToUTF16("GOODBYE"));
   EXPECT_STR_EQ("GOODBYE", model.text());
-  EXPECT_EQ(5U, model.cursor_pos());
+  EXPECT_EQ(0U, model.cursor_pos());
   model.SelectAll();
   EXPECT_STR_EQ("GOODBYE", model.GetSelectedText());
-  // Selection move the current pos to the end.
-  EXPECT_EQ(7U, model.cursor_pos());
-  model.MoveCursorToHome(false);
-  EXPECT_EQ(0U, model.cursor_pos());
   model.MoveCursorToEnd(false);
+  EXPECT_EQ(7U, model.cursor_pos());
 
   model.SetText(ASCIIToUTF16("BYE"));
-  EXPECT_EQ(3U, model.cursor_pos());
+  EXPECT_EQ(0U, model.cursor_pos());
   EXPECT_EQ(string16(), model.GetSelectedText());
   model.SetText(ASCIIToUTF16(""));
   EXPECT_EQ(0U, model.cursor_pos());
@@ -704,5 +706,382 @@ TEST_F(TextfieldViewsModelTest, CompositionTextTest) {
   EXPECT_FALSE(model.Cut());
   EXPECT_FALSE(composition_text_confirmed_or_cleared_);
 }
+
+TEST_F(TextfieldViewsModelTest, UndoRedo_BasicTest) {
+  TextfieldViewsModel model(NULL);
+  model.InsertChar('a');
+  EXPECT_FALSE(model.Redo());  // nothing to redo
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("a", model.text());
+
+  // Continuous inserts are treated as one edit.
+  model.InsertChar('b');
+  model.InsertChar('c');
+  EXPECT_STR_EQ("abc", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("a", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("", model.text());
+
+  // Undoing further shouldn't change the text.
+  EXPECT_FALSE(model.Undo());
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_FALSE(model.Undo());
+  EXPECT_STR_EQ("", model.text());
+
+  // Redoing to the latest text.
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("a", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("abc", model.text());
+
+  // Backspace ===============================
+  EXPECT_TRUE(model.Backspace());
+  EXPECT_STR_EQ("ab", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("abc", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("ab", model.text());
+  // Continous backspaces are treated as one edit.
+  EXPECT_TRUE(model.Backspace());
+  EXPECT_TRUE(model.Backspace());
+  EXPECT_STR_EQ("", model.text());
+  // Extra backspace shouldn't affect the history.
+  EXPECT_FALSE(model.Backspace());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ab", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("abc", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("a", model.text());
+
+  // Clear history
+  model.ClearEditHistory();
+  EXPECT_FALSE(model.Undo());
+  EXPECT_FALSE(model.Redo());
+  EXPECT_STR_EQ("a", model.text());
+
+  // Delete ===============================
+  model.SetText(ASCIIToUTF16("ABCDE"));
+  model.ClearEditHistory();
+  model.MoveCursorTo(2, false);
+  EXPECT_TRUE(model.Delete());
+  EXPECT_STR_EQ("ABDE", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("ABDE", model.text());
+  // Continous deletes are treated as one edit.
+  EXPECT_TRUE(model.Delete());
+  EXPECT_TRUE(model.Delete());
+  EXPECT_STR_EQ("AB", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ABDE", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("AB", model.text());
+}
+
+TEST_F(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest) {
+  TextfieldViewsModel model(NULL);
+  model.SetText(ASCIIToUTF16("ABCDE"));
+  EXPECT_FALSE(model.Redo());  // nothing to redo
+  // Cut
+  model.MoveCursorTo(1, false);
+  model.MoveCursorTo(3, true);
+  model.Cut();
+  EXPECT_STR_EQ("ADE", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_FALSE(model.Undo());  // no more undo
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("ADE", model.text());
+  EXPECT_FALSE(model.Redo());  // no more redo
+  EXPECT_STR_EQ("ADE", model.text());
+
+  model.Paste();
+  model.Paste();
+  model.Paste();
+  EXPECT_STR_EQ("ABCBCBCDE", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ABCBCDE", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ADE", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_FALSE(model.Undo());
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("ABCDE", model.text());
+  // Redo
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("ADE", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("ABCBCDE", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("ABCBCBCDE", model.text());
+  EXPECT_FALSE(model.Redo());
+
+  // with SelectRange
+  model.SelectRange(ui::Range(1, 3));
+  EXPECT_TRUE(model.Cut());
+  EXPECT_STR_EQ("ABCBCDE", model.text());
+  model.SelectRange(ui::Range(1, 1));
+  EXPECT_FALSE(model.Cut());
+  model.MoveCursorToEnd(false);
+  EXPECT_TRUE(model.Paste());
+  EXPECT_STR_EQ("ABCBCDEBC", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ABCBCDE", model.text());
+  // empty cut shouldn't create an edit.
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ABCBCBCDE", model.text());
+
+  // Copy
+  ResetModel(&model);
+  model.SetText(ASCIIToUTF16("12345"));
+  EXPECT_STR_EQ("12345", model.text());
+  model.MoveCursorTo(1, false);
+  model.MoveCursorTo(3, true);
+  model.Copy();
+  EXPECT_STR_EQ("12345", model.text());
+  model.Paste();
+  EXPECT_STR_EQ("12345", model.text());
+  model.Paste();
+  EXPECT_STR_EQ("1232345", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("12345", model.text());
+  EXPECT_FALSE(model.Undo());  // no text change
+  EXPECT_STR_EQ("12345", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_FALSE(model.Undo());
+  // Redo
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("12345", model.text());
+  EXPECT_FALSE(model.Redo());  // no text change.
+  EXPECT_STR_EQ("12345", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("1232345", model.text());
+  EXPECT_FALSE(model.Redo());
+  EXPECT_STR_EQ("1232345", model.text());
+
+  // with SelectRange
+  model.SelectRange(ui::Range(1, 3));
+  model.Copy();
+  EXPECT_STR_EQ("1232345", model.text());
+  model.MoveCursorToEnd(false);
+  EXPECT_TRUE(model.Paste());
+  EXPECT_STR_EQ("123234523", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("1232345", model.text());
+}
+
+TEST_F(TextfieldViewsModelTest, UndoRedo_CursorTest) {
+  TextfieldViewsModel model(NULL);
+  model.InsertChar('a');
+  model.MoveCursorLeft(false);
+  model.MoveCursorRight(false);
+  model.InsertChar('b');
+  // Moving cursor shoudln't create a new edit.
+  EXPECT_STR_EQ("ab", model.text());
+  EXPECT_FALSE(model.Redo());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_FALSE(model.Undo());
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("ab", model.text());
+  EXPECT_FALSE(model.Redo());
+}
+
+void RunInsertReplaceTest(TextfieldViewsModel& model) {
+  model.InsertChar('1');
+  model.InsertChar('2');
+  model.InsertChar('3');
+  EXPECT_STR_EQ("a123d", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("abcd", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_FALSE(model.Undo());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("abcd", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("a123d", model.text());
+  EXPECT_FALSE(model.Redo());
+}
+
+void RunOverwriteReplaceTest(TextfieldViewsModel& model) {
+  model.ReplaceChar('1');
+  model.ReplaceChar('2');
+  model.ReplaceChar('3');
+  model.ReplaceChar('4');
+  EXPECT_STR_EQ("a1234", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("abcd", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_FALSE(model.Undo());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("abcd", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("a1234", model.text());
+  EXPECT_FALSE(model.Redo());
+}
+
+TEST_F(TextfieldViewsModelTest, UndoRedo_ReplaceTest) {
+  // By Cursor
+  {
+    SCOPED_TRACE("forward & insert by cursor");
+    TextfieldViewsModel model(NULL);
+    model.SetText(ASCIIToUTF16("abcd"));
+    model.MoveCursorTo(1, false);
+    model.MoveCursorTo(3, true);
+    RunInsertReplaceTest(model);
+  }
+  {
+    SCOPED_TRACE("backward & insert by cursor");
+    TextfieldViewsModel model(NULL);
+    model.SetText(ASCIIToUTF16("abcd"));
+    model.MoveCursorTo(3, false);
+    model.MoveCursorTo(1, true);
+    RunInsertReplaceTest(model);
+  }
+  {
+    SCOPED_TRACE("forward & overwrite by cursor");
+    TextfieldViewsModel model(NULL);
+    model.SetText(ASCIIToUTF16("abcd"));
+    model.MoveCursorTo(1, false);
+    model.MoveCursorTo(3, true);
+    RunOverwriteReplaceTest(model);
+  }
+  {
+    SCOPED_TRACE("backward & overwrite by cursor");
+    TextfieldViewsModel model(NULL);
+    model.SetText(ASCIIToUTF16("abcd"));
+    model.MoveCursorTo(3, false);
+    model.MoveCursorTo(1, true);
+    RunOverwriteReplaceTest(model);
+  }
+  // By SelectRange API
+  {
+    SCOPED_TRACE("forward & insert by SelectRange");
+    TextfieldViewsModel model(NULL);
+    model.SetText(ASCIIToUTF16("abcd"));
+    model.SelectRange(ui::Range(1, 3));
+    RunInsertReplaceTest(model);
+  }
+  {
+    SCOPED_TRACE("backward & insert by SelectRange");
+    TextfieldViewsModel model(NULL);
+    model.SetText(ASCIIToUTF16("abcd"));
+    model.SelectRange(ui::Range(3, 1));
+    RunInsertReplaceTest(model);
+  }
+  {
+    SCOPED_TRACE("forward & overwrite by SelectRange");
+    TextfieldViewsModel model(NULL);
+    model.SetText(ASCIIToUTF16("abcd"));
+    model.SelectRange(ui::Range(1, 3));
+    RunOverwriteReplaceTest(model);
+  }
+  {
+    SCOPED_TRACE("backward & overwrite by SelectRange");
+    TextfieldViewsModel model(NULL);
+    model.SetText(ASCIIToUTF16("abcd"));
+    model.SelectRange(ui::Range(3, 1));
+    RunOverwriteReplaceTest(model);
+  }
+}
+
+TEST_F(TextfieldViewsModelTest, UndoRedo_CompositionText) {
+  TextfieldViewsModel model(NULL);
+
+  ui::CompositionText composition;
+  composition.text = ASCIIToUTF16("abc");
+  composition.underlines.push_back(ui::CompositionUnderline(0, 3, 0, false));
+  composition.selection = ui::Range(2, 3);
+
+  model.SetText(ASCIIToUTF16("ABCDE"));
+  model.MoveCursorToEnd(false);
+  model.SetCompositionText(composition);
+  EXPECT_TRUE(model.HasCompositionText());
+  EXPECT_TRUE(model.HasSelection());
+  EXPECT_STR_EQ("ABCDEabc", model.text());
+
+  // Accepting composition
+  model.ConfirmCompositionText();
+  EXPECT_STR_EQ("ABCDEabc", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("ABCDEabc", model.text());
+  EXPECT_FALSE(model.Redo());
+
+  // Canceling composition
+  model.MoveCursorToHome(false);
+  model.SetCompositionText(composition);
+  EXPECT_STR_EQ("abcABCDEabc", model.text());
+  model.ClearCompositionText();
+  EXPECT_STR_EQ("ABCDEabc", model.text());
+  EXPECT_FALSE(model.Redo());
+  EXPECT_STR_EQ("ABCDEabc", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("ABCDEabc", model.text());
+  EXPECT_FALSE(model.Redo());
+
+  // SetText with the same text as the result.
+  ResetModel(&model);
+  model.SetText(ASCIIToUTF16("ABCDE"));
+  model.MoveCursorToEnd(false);
+  model.SetCompositionText(composition);
+  EXPECT_STR_EQ("ABCDEabc", model.text());
+  model.SetText(ASCIIToUTF16("ABCDEabc"));
+  EXPECT_STR_EQ("ABCDEabc", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("ABCDEabc", model.text());
+  EXPECT_FALSE(model.Redo());
+
+  // SetText with the different text than the result
+  // should not remember composition text.
+  ResetModel(&model);
+  model.SetText(ASCIIToUTF16("ABCDE"));
+  model.MoveCursorToEnd(false);
+  model.SetCompositionText(composition);
+  EXPECT_STR_EQ("ABCDEabc", model.text());
+  model.SetText(ASCIIToUTF16("1234"));
+  EXPECT_STR_EQ("1234", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ABCDE", model.text());
+  EXPECT_TRUE(model.Redo());
+  EXPECT_STR_EQ("1234", model.text());
+  EXPECT_FALSE(model.Redo());
+
+  // TODO(oshima): undo/redo while compositing text should to be
+  // handled by IME layer. Figure out how to test.
+}
+
+// TODO(oshima): UndoRedo with Drag and Drop
 
 }  // namespace views

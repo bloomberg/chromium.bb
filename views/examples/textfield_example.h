@@ -48,6 +48,7 @@ class TextfieldExample : public ExampleBase,
   views::TextButton* show_password_;
   views::TextButton* clear_all_;
   views::TextButton* append_;
+  views::TextButton* set_;
 
   DISALLOW_COPY_AND_ASSIGN(TextfieldExample);
 };
