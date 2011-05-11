@@ -28,7 +28,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
@@ -132,13 +131,17 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       did_stop_loading_(false),
       document_element_available_(false),
       url_(url),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          extension_function_dispatcher_(profile_, this)),
       extension_host_type_(host_type),
       associated_tab_contents_(NULL),
       suppress_javascript_messages_(false) {
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
                                          NULL);
+  render_view_host_->set_is_extension_process(true);
+  if (extension->is_app()) {
+    profile()->GetExtensionService()->SetInstalledAppForRenderer(
+        render_view_host_->process()->id(), extension);
+  }
+  render_view_host_->AllowBindings(BindingsPolicy::EXTENSION);
   if (enable_dom_automation_)
     render_view_host_->AllowBindings(BindingsPolicy::DOM_AUTOMATION);
 
@@ -179,7 +182,7 @@ void ExtensionHost::CreateView(Browser* browser) {
 #endif
 }
 
-TabContents* ExtensionHost::GetAssociatedTabContents() const {
+TabContents* ExtensionHost::associated_tab_contents() const {
   return associated_tab_contents_;
 }
 
@@ -311,9 +314,6 @@ void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host,
   if (!extension_)
     return;
 
-  // TODO(aa): This is suspicious. There can be multiple views in an extension,
-  // and they aren't all going to use ExtensionHost. This should be in someplace
-  // more central, like EPM maybe.
   DCHECK_EQ(render_view_host_, render_view_host);
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_PROCESS_TERMINATED,
@@ -327,7 +327,29 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
   if (!PageTransition::IsMainFrame(params.transition))
     return;
 
+  if (!params.url.SchemeIs(chrome::kExtensionScheme)) {
+    extension_function_dispatcher_.reset(NULL);
+    url_ = params.url;
+    return;
+  }
+
+  // This catches two bogus use cases:
+  // (1) URLs that look like chrome-extension://somethingbogus or
+  //     chrome-extension://nosuchid/, in other words, no Extension would
+  //     be found.
+  // (2) URLs that refer to a different extension than this one.
+  // In both cases, we preserve the old URL and reset the EFD to NULL.  This
+  // will leave the host in kind of a bad state with poor UI and errors, but
+  // it's better than the alternative.
+  // TODO(erikkay) Perhaps we should display errors in developer mode.
+  if (params.url.host() != extension_id()) {
+    extension_function_dispatcher_.reset(NULL);
+    return;
+  }
+
   url_ = params.url;
+  extension_function_dispatcher_.reset(
+      ExtensionFunctionDispatcher::Create(render_view_host_, this, url_));
 }
 
 void ExtensionHost::InsertInfobarCSS() {
@@ -443,8 +465,7 @@ gfx::NativeWindow ExtensionHost::GetMessageBoxRootWindow() {
     return platform_util::GetTopLevel(native_view);
 
   // Otherwise, try the active tab's view.
-  Browser* browser = extension_function_dispatcher_.GetCurrentBrowser(
-      render_view_host_, true);
+  Browser* browser = extension_function_dispatcher_->GetCurrentBrowser(true);
   if (browser) {
     TabContents* active_tab = browser->GetSelectedTabContents();
     if (active_tab)
@@ -486,7 +507,7 @@ void ExtensionHost::Close(RenderViewHost* render_view_host) {
 RendererPreferences ExtensionHost::GetRendererPrefs(Profile* profile) const {
   RendererPreferences preferences;
 
-  TabContents* associated_contents = GetAssociatedTabContents();
+  TabContents* associated_contents = associated_tab_contents();
   if (associated_contents)
     preferences =
         static_cast<RenderViewHostDelegate*>(associated_contents)->
@@ -540,7 +561,7 @@ void ExtensionHost::CreateNewWindow(
       params.window_container_type,
       params.frame_name);
 
-  TabContents* associated_contents = GetAssociatedTabContents();
+  TabContents* associated_contents = associated_tab_contents();
   if (associated_contents && associated_contents->delegate())
     associated_contents->delegate()->TabContentsCreated(new_contents);
 }
@@ -595,7 +616,7 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
   // the case of extensions in 'spanning' incognito mode, they can mismatch.
   // We don't want to end up putting a normal tab into an incognito window, or
   // vice versa.
-  TabContents* associated_contents = GetAssociatedTabContents();
+  TabContents* associated_contents = associated_tab_contents();
   if (associated_contents &&
       associated_contents->profile() == contents->profile()) {
     associated_contents->AddNewContents(
@@ -753,17 +774,17 @@ ViewType::Type ExtensionHost::GetRenderViewType() const {
 }
 
 bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
+  if (extension_function_dispatcher_.get() &&
+      extension_function_dispatcher_->OnMessageReceived(message)) {
+    return true;
+  }
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionHost, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void ExtensionHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
-  extension_function_dispatcher_.Dispatch(params, render_view_host_);
 }
 
 const GURL& ExtensionHost::GetURL() const {
@@ -773,6 +794,13 @@ const GURL& ExtensionHost::GetURL() const {
 void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   if (view_.get())
     view_->RenderViewCreated();
+
+  // TODO(mpcomplete): This is duplicated in DidNavigate, which means that
+  // we'll create 2 EFDs for the first navigation. We should try to find a
+  // better way to unify them.
+  // See http://code.google.com/p/chromium/issues/detail?id=18240
+  extension_function_dispatcher_.reset(
+      ExtensionFunctionDispatcher::Create(render_view_host, this, url_));
 
   if (extension_host_type_ == ViewType::EXTENSION_POPUP ||
       extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
@@ -804,5 +832,5 @@ void ExtensionHost::OnRunFileChooser(
   if (file_select_helper_.get() == NULL)
     file_select_helper_.reset(new FileSelectHelper(profile()));
   file_select_helper_->RunFileChooser(render_view_host_,
-                                      GetAssociatedTabContents(), params);
+                                      associated_tab_contents(), params);
 }

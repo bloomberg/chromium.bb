@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -406,11 +407,13 @@ void ExtensionsDOMHandler::OnIconsLoaded(DictionaryValue* json) {
       NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
       NotificationService::AllSources());
-  registrar_.Add(this,
-      NotificationType::NAV_ENTRY_COMMITTED,
+  registrar_.Add(this, NotificationType::EXTENSION_FUNCTION_DISPATCHER_CREATED,
       NotificationService::AllSources());
   registrar_.Add(this,
-      NotificationType::RENDER_VIEW_HOST_CREATED,
+      NotificationType::EXTENSION_FUNCTION_DISPATCHER_DESTROYED,
+      NotificationService::AllSources());
+  registrar_.Add(this,
+      NotificationType::NAV_ENTRY_COMMITTED,
       NotificationService::AllSources());
   registrar_.Add(this,
       NotificationType::RENDER_VIEW_HOST_DELETED,
@@ -721,11 +724,9 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
     // we don't know about the views for an extension at EXTENSION_LOADED, but
     // if we only listen to EXTENSION_PROCESS_CREATED, we'll miss extensions
     // that don't have a process at startup. Similarly, NAV_ENTRY_COMMITTED &
-    // RENDER_VIEW_HOST_CREATED because we want to handle both
-    // the case of navigating from a non-extension page to an extension page in
-    // a TabContents (which will generate NAV_ENTRY_COMMITTED) as well as
-    // extension content being shown in popups and balloons (which will generate
-    // RENDER_VIEW_CREATED but no NAV_ENTRY_COMMITTED).
+    // EXTENSION_FUNCTION_DISPATCHER_CREATED because we want to handle both
+    // the case of live app pages (which don't have an EFD) and
+    // chrome-extension:// urls which are served in a TabContents.
     //
     // Doing it this way gets everything but causes the page to be rendered
     // more than we need. It doesn't seem to result in any noticeable flicker.
@@ -741,7 +742,8 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
     case NotificationType::EXTENSION_PROCESS_CREATED:
     case NotificationType::EXTENSION_UNLOADED:
     case NotificationType::EXTENSION_UPDATE_DISABLED:
-    case NotificationType::RENDER_VIEW_HOST_CREATED:
+    case NotificationType::EXTENSION_FUNCTION_DISPATCHER_CREATED:
+    case NotificationType::EXTENSION_FUNCTION_DISPATCHER_DESTROYED:
     case NotificationType::NAV_ENTRY_COMMITTED:
     case NotificationType::BACKGROUND_CONTENTS_NAVIGATED:
     case NotificationType::EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED:

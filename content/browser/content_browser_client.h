@@ -34,7 +34,14 @@ class ContentBrowserClient {
   // Notifies that a new RenderHostView has been created.
   virtual void RenderViewHostCreated(RenderViewHost* render_view_host);
 
-  // Notifies that a BrowserRenderProcessHost has been created.
+  // Initialize a RenderViewHost before its CreateRenderView method is called.
+  virtual void PreCreateRenderView(RenderViewHost* render_view_host,
+                                   Profile* profile,
+                                   const GURL& url);
+
+  // Notifies that a BrowserRenderProcessHost has been created.  This is called
+  // before the content layer adds its own BrowserMessageFilters, so that the
+  // embedder's IPC filters have priority.
   virtual void BrowserRenderProcessHostCreated(BrowserRenderProcessHost* host);
 
   // Notifies that a WorkerProcessHost has been created.

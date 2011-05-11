@@ -314,6 +314,12 @@ class RenderViewHost : public RenderWidgetHost {
   // RenderView. See BindingsPolicy for details.
   int enabled_bindings() const { return enabled_bindings_; }
 
+  // See variable comment.
+  bool is_extension_process() const { return is_extension_process_; }
+  void set_is_extension_process(bool is_extension_process) {
+    is_extension_process_ = is_extension_process;
+  }
+
   // Sets a property with the given name and value on the Web UI binding object.
   // Must call AllowWebUIBindings() on this renderer first.
   void SetWebUIProperty(const std::string& name, const std::string& value);
@@ -592,6 +598,10 @@ class RenderViewHost : public RenderWidgetHost {
 
   // The session storage namespace to be used by the associated render view.
   scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
+
+  // Whether this render view will get extension api bindings. This controls
+  // what process type we use.
+  bool is_extension_process_;
 
   // Whether the accessibility tree should be saved, for unit testing.
   bool save_accessibility_tree_for_testing_;

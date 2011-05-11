@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/notifications/balloon_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
@@ -29,12 +30,20 @@ BalloonHost::BalloonHost(Balloon* balloon)
       balloon_(balloon),
       initialized_(false),
       should_notify_on_disconnect_(false),
-      enable_web_ui_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          extension_function_dispatcher_(GetProfile(), this)) {
-  CHECK(balloon_);
-  site_instance_ = SiteInstance::CreateSiteInstanceForURL(balloon_->profile(),
-                                                          GetURL());
+      enable_web_ui_(false) {
+  DCHECK(balloon_);
+
+  // If the notification is for an extension URL, make sure to use the extension
+  // process to render it, so that it can communicate with other views in the
+  // extension.
+  const GURL& balloon_url = balloon_->notification().content_url();
+  if (balloon_url.SchemeIs(chrome::kExtensionScheme)) {
+    site_instance_ =
+      balloon_->profile()->GetExtensionProcessManager()->GetSiteInstanceForURL(
+          balloon_url);
+  } else {
+    site_instance_ = SiteInstance::CreateSiteInstance(balloon_->profile());
+  }
 }
 
 void BalloonHost::Shutdown() {
@@ -55,9 +64,7 @@ gfx::NativeView BalloonHost::GetNativeViewOfHost() {
   return NULL;
 }
 
-TabContents* BalloonHost::GetAssociatedTabContents() const {
-  return NULL;
-}
+TabContents* BalloonHost::associated_tab_contents() const { return NULL; }
 
 const string16& BalloonHost::GetSource() const {
   return balloon_->notification().display_source();
@@ -126,16 +133,10 @@ RenderViewHostDelegate::View* BalloonHost::GetViewDelegate() {
 }
 
 bool BalloonHost::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(BalloonHost, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
+  if (extension_function_dispatcher_.get())
+    return extension_function_dispatcher_->OnMessageReceived(message);
 
-void BalloonHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
-  extension_function_dispatcher_.Dispatch(params, render_view_host_);
+  return false;
 }
 
 // RenderViewHostDelegate::View methods implemented to allow links to
@@ -195,8 +196,24 @@ void BalloonHost::Init() {
   DCHECK(!render_view_host_) << "BalloonViewHost already initialized.";
   RenderViewHost* rvh = new RenderViewHost(
       site_instance_.get(), this, MSG_ROUTING_NONE, NULL);
-  if (enable_web_ui_)
+  if (GetProfile()->GetExtensionService()) {
+    extension_function_dispatcher_.reset(
+        ExtensionFunctionDispatcher::Create(
+            rvh, this, balloon_->notification().content_url()));
+  }
+  if (extension_function_dispatcher_.get()) {
+    rvh->AllowBindings(BindingsPolicy::EXTENSION);
+    rvh->set_is_extension_process(true);
+    const Extension* installed_app =
+        GetProfile()->GetExtensionService()->GetInstalledApp(
+            balloon_->notification().content_url());
+    if (installed_app) {
+      GetProfile()->GetExtensionService()->SetInstalledAppForRenderer(
+          rvh->process()->id(), installed_app);
+    }
+  } else if (enable_web_ui_) {
     rvh->AllowBindings(BindingsPolicy::WEB_UI);
+  }
 
   // Do platform-specific initialization.
   render_view_host_ = rvh;
