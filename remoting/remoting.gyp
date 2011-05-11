@@ -18,7 +18,16 @@
             'mac_creator': 'Cr24',
           }],  # branding
         ],  # conditions
-
+        'plugin_extension': 'plugin',
+        'plugin_prefix': '',
+      }],
+      ['OS=="linux"', {
+        'plugin_extension': 'so',
+        'plugin_prefix': 'lib',
+      }],
+      ['OS=="win"', {
+        'plugin_extension': 'dll',
+        'plugin_prefix': '',
       }],
     ],
   },
@@ -143,7 +152,7 @@
           'xcode_settings': {
             'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
             'INFOPLIST_FILE': 'host/host_plugin-Info.plist',
-            'WRAPPER_EXTENSION': 'plugin',
+            'WRAPPER_EXTENSION': '<(plugin_extension)',
           },
           # TODO(mark): Come up with a fancier way to do this.  It should
           # only be necessary to list framework-Info.plist once, not the
@@ -157,6 +166,36 @@
         }],
       ],
     },  # end of target 'chromoting_host_plugin'
+    {
+      'target_name': 'webapp_me2mom',
+      'type': 'none',
+      'dependencies': [
+        'chromoting_host_plugin',
+      ],
+      'sources': [
+        'webapp/build-webapp.py',
+      ],
+      'sources!': [
+        'webapp/build-webapp.py',
+      ],
+      'actions': [
+        {
+          'action_name': 'Build Me2Mom WebApp',
+          'inputs': [
+            'webapp/me2mom/',
+            '<(PRODUCT_DIR)/<(plugin_prefix)chromoting_host_plugin.<(plugin_extension)',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/remoting/remoting-me2mom.webapp',
+          ],
+          'action': [
+            'python', 'webapp/build-webapp.py',
+            '<@(_inputs)',
+            '<@(_outputs)'
+          ],
+        },
+      ],
+    }, # end of target 'webapp_me2mom'
     {
       'target_name': 'chromoting_base',
       'type': '<(library)',
