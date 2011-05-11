@@ -214,8 +214,7 @@ PrerenderManager::~PrerenderManager() {
   while (!prerender_list_.empty()) {
     PrerenderContentsData data = prerender_list_.front();
     prerender_list_.pop_front();
-    data.contents_->set_final_status(FINAL_STATUS_MANAGER_SHUTDOWN);
-    delete data.contents_;
+    data.contents_->Destroy(FINAL_STATUS_MANAGER_SHUTDOWN);
   }
   DeletePendingDeleteEntries();
 }
@@ -300,8 +299,7 @@ bool PrerenderManager::AddPreload(
   while (prerender_list_.size() > max_elements_) {
     data = prerender_list_.front();
     prerender_list_.pop_front();
-    data.contents_->set_final_status(FINAL_STATUS_EVICTED);
-    delete data.contents_;
+    data.contents_->Destroy(FINAL_STATUS_EVICTED);
   }
   StartSchedulingPeriodicCleanups();
   return true;
@@ -369,9 +367,7 @@ void PrerenderManager::DestroyPreloadForChildRouteIdPair(
       FindPrerenderContentsForChildRouteIdPair(child_route_id_pair);
   if (it != prerender_list_.end()) {
     PrerenderContents* prerender_contents = it->contents_;
-    prerender_contents->set_final_status(final_status);
-    prerender_contents->OnDestroy();
-    MoveEntryToPendingDelete(prerender_contents);
+    prerender_contents->Destroy(final_status);
   }
 }
 
@@ -583,23 +579,23 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry) {
        it != prerender_list_.end();
        ++it) {
     if (it->contents_ == entry) {
-      pending_delete_list_.push_back(*it);
       RemovePendingPreload(entry);
       prerender_list_.erase(it);
       break;
     }
   }
+  pending_delete_list_.push_back(entry);
   DeleteOldEntries();
   StartSchedulingPeriodicCleanups();
 }
 
 bool PrerenderManager::IsPendingDelete(PrerenderContents* entry) const {
   DCHECK(CalledOnValidThread());
-  for (std::list<PrerenderContentsData>::const_iterator it =
+  for (std::list<PrerenderContents*>::const_iterator it =
           pending_delete_list_.begin();
        it != pending_delete_list_.end();
        ++it) {
-    if (it->contents_ == entry)
+    if (*it == entry)
       return true;
   }
 
@@ -630,9 +626,9 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
 
 void PrerenderManager::DeletePendingDeleteEntries() {
   while (!pending_delete_list_.empty()) {
-    PrerenderContentsData data = pending_delete_list_.front();
+    PrerenderContents* contents = pending_delete_list_.front();
     pending_delete_list_.pop_front();
-    delete data.contents_;
+    delete contents;
   }
 }
 
@@ -866,12 +862,12 @@ bool PrerenderManager::IsTabContentsPrerendering(
   }
 
   // Also look through the pending-deletion list.
-  for (std::list<PrerenderContentsData>::const_iterator it =
+  for (std::list<PrerenderContents*>::const_iterator it =
            pending_delete_list_.begin();
        it != pending_delete_list_.end();
        ++it) {
     TabContentsWrapper* prerender_tab_contents_wrapper =
-        it->contents_->prerender_contents();
+        (*it)->prerender_contents();
     if (prerender_tab_contents_wrapper &&
         prerender_tab_contents_wrapper->tab_contents() == tab_contents)
       return true;

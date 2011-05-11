@@ -264,7 +264,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   std::list<PrerenderContentsData> prerender_list_;
 
   // List of prerender elements to be deleted
-  std::list<PrerenderContentsData> pending_delete_list_;
+  std::list<PrerenderContents*> pending_delete_list_;
 
   // Set of TabContents which are currently displaying a prerendered page.
   base::hash_set<TabContents*> prerendered_tab_contents_set_;
