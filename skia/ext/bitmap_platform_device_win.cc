@@ -177,6 +177,7 @@ BitmapPlatformDevice::BitmapPlatformDevice(
     : PlatformDevice(bitmap),
       data_(data) {
   // The data object is already ref'ed for us by create().
+  SkDEBUGCODE(begin_paint_count_ = 0);
 }
 
 // The copy constructor just adds another reference to the underlying data.
@@ -188,9 +189,11 @@ BitmapPlatformDevice::BitmapPlatformDevice(
           const_cast<BitmapPlatformDevice&>(other).accessBitmap(true)),
       data_(other.data_) {
   data_->ref();
+  SkDEBUGCODE(begin_paint_count_ = 0);
 }
 
 BitmapPlatformDevice::~BitmapPlatformDevice() {
+  SkASSERT(begin_paint_count_ == 0);
   data_->unref();
 }
 
@@ -202,7 +205,13 @@ BitmapPlatformDevice& BitmapPlatformDevice::operator=(
 }
 
 HDC BitmapPlatformDevice::BeginPlatformPaint() {
+  SkDEBUGCODE(begin_paint_count_++);
   return data_->GetBitmapDC();
+}
+
+void BitmapPlatformDevice::EndPlatformPaint() {
+  SkASSERT(begin_paint_count_--);
+  PlatformDevice::EndPlatformPaint();
 }
 
 void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
