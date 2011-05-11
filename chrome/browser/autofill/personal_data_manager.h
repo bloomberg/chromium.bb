@@ -39,13 +39,8 @@ class PersonalDataManager
   // the observer via PersonalDataManager::SetObserver.
   class Observer {
    public:
-    // Notifies the observer that the PersonalDataManager has finished loading.
-    // TODO: OnPersonalDataLoaded should be nuked in favor of only
-    // OnPersonalDataChanged.
-    virtual void OnPersonalDataLoaded() = 0;
-
     // Notifies the observer that the PersonalDataManager changed in some way.
-    virtual void OnPersonalDataChanged() {}
+    virtual void OnPersonalDataChanged() = 0;
 
    protected:
     virtual ~Observer() {}
@@ -74,23 +69,6 @@ class PersonalDataManager
 
   // Saves a credit card value detected in |ImportedFormData|.
   virtual void SaveImportedCreditCard(const CreditCard& imported_credit_card);
-
-  // Sets |web_profiles_| to the contents of |profiles| and updates the web
-  // database by adding, updating and removing profiles.
-  //
-  // The relationship between this and Refresh is subtle.
-  // A call to |SetProfiles| could include out-of-date data that may conflict
-  // if we didn't refresh-to-latest before an Autofill window was opened for
-  // editing. |SetProfiles| is implemented to make a "best effort" to apply the
-  // changes, but in extremely rare edge cases it is possible not all of the
-  // updates in |profiles| make it to the DB.  This is why SetProfiles will
-  // invoke Refresh after finishing, to ensure we get into a
-  // consistent state.  See Refresh for details.
-  void SetProfiles(std::vector<AutofillProfile>* profiles);
-
-  // Sets |credit_cards_| to the contents of |credit_cards| and updates the web
-  // database by adding, updating and removing credit cards.
-  void SetCreditCards(std::vector<CreditCard>* credit_cards);
 
   // Adds |profile| to the web database.
   void AddProfile(const AutofillProfile& profile);
@@ -169,12 +147,30 @@ class PersonalDataManager
   // PersonalDataManager.
   friend class base::RefCountedThreadSafe<PersonalDataManager>;
   friend class AutofillMergeTest;
+  friend class LiveAutofillSyncTest;
   friend class PersonalDataManagerTest;
   friend class ProfileImpl;
   friend class ProfileSyncServiceAutofillTest;
+  friend class TestingAutomationProvider;
 
   PersonalDataManager();
   virtual ~PersonalDataManager();
+
+  // Sets |web_profiles_| to the contents of |profiles| and updates the web
+  // database by adding, updating and removing profiles.
+  // The relationship between this and Refresh is subtle.
+  // A call to |SetProfiles| could include out-of-date data that may conflict
+  // if we didn't refresh-to-latest before an Autofill window was opened for
+  // editing. |SetProfiles| is implemented to make a "best effort" to apply the
+  // changes, but in extremely rare edge cases it is possible not all of the
+  // updates in |profiles| make it to the DB.  This is why SetProfiles will
+  // invoke Refresh after finishing, to ensure we get into a
+  // consistent state.  See Refresh for details.
+  void SetProfiles(std::vector<AutofillProfile>* profiles);
+
+  // Sets |credit_cards_| to the contents of |credit_cards| and updates the web
+  // database by adding, updating and removing credit cards.
+  void SetCreditCards(std::vector<CreditCard>* credit_cards);
 
   // Loads the saved profiles from the web database.
   virtual void LoadProfiles();

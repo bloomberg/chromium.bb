@@ -165,16 +165,20 @@ class AutofillImporter : public PersonalDataManager::Observer {
       return false;
     }
     if (personal_data_manager_->IsDataLoaded())
-      OnPersonalDataLoaded();
+      OnPersonalDataChanged();
     return true;
   }
 
   // PersonalDataManager::Observer methods:
-  virtual void OnPersonalDataLoaded() {
-    if (!profiles_.empty())
-      personal_data_manager_->SetProfiles(&profiles_);
-    if (!credit_cards_.empty())
-      personal_data_manager_->SetCreditCards(&credit_cards_);
+  virtual void OnPersonalDataChanged() {
+    for (std::vector<AutofillProfile>::const_iterator iter = profiles_.begin();
+         iter != profiles_.end(); ++iter) {
+      personal_data_manager_->AddProfile(*iter);
+    }
+    for (std::vector<CreditCard>::const_iterator iter = credit_cards_.begin();
+         iter != credit_cards_.end(); ++iter) {
+      personal_data_manager_->AddCreditCard(*iter);
+    }
     delete this;
   }
 

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
@@ -25,8 +26,7 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
   virtual void RegisterMessages();
 
   // PersonalDataManager::Observer implementation.
-  virtual void OnPersonalDataLoaded();
-  virtual void OnPersonalDataChanged();
+  virtual void OnPersonalDataChanged() OVERRIDE;
 
  private:
   // Loads the strings for the address and credit card overlays.

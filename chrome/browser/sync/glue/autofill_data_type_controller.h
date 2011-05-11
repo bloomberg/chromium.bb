@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
@@ -39,7 +40,7 @@ class AutofillDataTypeController : public NonFrontendDataTypeController,
                        const NotificationDetails& details);
 
   // PersonalDataManager::Observer implementation:
-  virtual void OnPersonalDataLoaded();
+  virtual void OnPersonalDataChanged() OVERRIDE;
 
  protected:
    // NonFrontendDataTypeController interface.

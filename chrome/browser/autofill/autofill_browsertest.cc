@@ -87,8 +87,7 @@ class AutofillTest : public InProcessBrowserTest {
         browser()->profile()->GetPersonalDataManager();
     ASSERT_TRUE(personal_data_manager);
 
-    std::vector<AutofillProfile> profiles(1, profile);
-    personal_data_manager->SetProfiles(&profiles);
+    personal_data_manager->AddProfile(profile);
   }
 
   void ExpectFieldValue(const std::wstring& field_name,

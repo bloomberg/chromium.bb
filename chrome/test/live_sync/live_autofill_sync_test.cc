@@ -73,7 +73,7 @@ class AutofillDBThreadObserverHelper : public DBThreadObserverHelper {
 
 class MockPersonalDataManagerObserver : public PersonalDataManager::Observer {
  public:
-  MOCK_METHOD0(OnPersonalDataLoaded, void());
+  MOCK_METHOD0(OnPersonalDataChanged, void());
 };
 
 }  // namespace
@@ -186,7 +186,7 @@ bool LiveAutofillSyncTest::KeysMatch(int profile_a, int profile_b) {
 void LiveAutofillSyncTest::SetProfiles(
     int profile, std::vector<AutofillProfile>* autofill_profiles) {
   MockPersonalDataManagerObserver observer;
-  EXPECT_CALL(observer, OnPersonalDataLoaded()).
+  EXPECT_CALL(observer, OnPersonalDataChanged()).
       WillOnce(QuitUIMessageLoop());
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
   pdm->SetObserver(&observer);
@@ -232,7 +232,7 @@ void LiveAutofillSyncTest::UpdateProfile(int profile,
 const std::vector<AutofillProfile*>& LiveAutofillSyncTest::GetAllProfiles(
     int profile) {
   MockPersonalDataManagerObserver observer;
-  EXPECT_CALL(observer, OnPersonalDataLoaded()).
+  EXPECT_CALL(observer, OnPersonalDataChanged()).
       WillOnce(QuitUIMessageLoop());
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
   pdm->SetObserver(&observer);

@@ -51,7 +51,7 @@ bool AutofillDataTypeController::StartModels() {
   }
 }
 
-void AutofillDataTypeController::OnPersonalDataLoaded() {
+void AutofillDataTypeController::OnPersonalDataChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), MODEL_STARTING);
   personal_data_->RemoveObserver(this);

@@ -252,10 +252,6 @@ void AutofillOptionsHandler::RegisterMessages() {
 
 /////////////////////////////////////////////////////////////////////////////
 // PersonalDataManager::Observer implementation:
-void  AutofillOptionsHandler::OnPersonalDataLoaded() {
-  LoadAutofillData();
-}
-
 void AutofillOptionsHandler::OnPersonalDataChanged() {
   LoadAutofillData();
 }
