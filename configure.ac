@@ -20,15 +20,6 @@ LT_INIT([disable-static])
 
 PKG_PROG_PKG_CONFIG()
 
-PKG_CHECK_MODULES([XCB], xcb)
-xcb_save_LIBS=$LIBS
-xcb_save_CFLAGS=$CFLAGS
-CFLAGS=$XCB_CFLAGS
-LIBS=$XCB_LIBS
-AC_CHECK_FUNCS([xcb_poll_for_queued_event])
-LIBS=$xcb_save_LIBS
-CFLAGS=$xcb_save_CFLAGS
-
 AC_CHECK_FUNC([dlopen], [],
               AC_CHECK_LIB([dl], [dlopen], DLOPEN_LIBS="-ldl"))
 AC_SUBST(DLOPEN_LIBS)
@@ -43,6 +34,15 @@ AC_ARG_ENABLE(x11-compositor, [  --enable-x11-compositor],,
 	      enable_x11_compositor=yes)
 AM_CONDITIONAL(ENABLE_X11_COMPOSITOR, test x$enable_x11_compositor == xyes)
 if test x$enable_x11_compositor == xyes; then
+  PKG_CHECK_MODULES([XCB], xcb)
+  xcb_save_LIBS=$LIBS
+  xcb_save_CFLAGS=$CFLAGS
+  CFLAGS=$XCB_CFLAGS
+  LIBS=$XCB_LIBS
+  AC_CHECK_FUNCS([xcb_poll_for_queued_event])
+  LIBS=$xcb_save_LIBS
+  CFLAGS=$xcb_save_CFLAGS
+
   AC_DEFINE([BUILD_X11_COMPOSITOR], [1], [Build the X11 compositor])
   PKG_CHECK_MODULES(X11_COMPOSITOR, [x11 x11-xcb])
 fi
