@@ -87,6 +87,12 @@
 
   <!-- Shared memory support -->
   <interface name="wl_shm" version="1">
+    <enum name="error">
+      <entry name="invalid_visual" value="0"/>
+      <entry name="invalid_stride" value="1"/>
+      <entry name="invalid_fd" value="2"/>
+    </enum>
+
     <!-- Transfer a shm buffer to the server.  The allocated buffer
          would include at least stride * height bytes starting at the
          beginning of fd.  The file descriptor is transferred over the

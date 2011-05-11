@@ -117,24 +117,21 @@ shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 		  uint32_t stride, struct wl_visual *visual)
 {
 	struct wl_shm_buffer *buffer;
-	struct wl_display *display = wl_client_get_display(client);
-
 	void *data;
 
-	/* FIXME: Define a real exception event instead of abusing the
-	 * display.invalid_object error */
 	if (visual->object.interface != &wl_visual_interface) {
-		wl_client_post_error(client, (struct wl_object *) display,
-				     WL_DISPLAY_ERROR_INVALID_OBJECT,
-				     "invalid visual in create_buffer\n");
+		wl_client_post_error(client, &shm->object,
+				     WL_SHM_ERROR_INVALID_VISUAL,
+				     "invalid visual");
 		close(fd);
 		return;
 	}
 
 	if (width < 0 || height < 0 || stride < width) {
-		wl_client_post_error(client, (struct wl_object *) display,
-				     WL_DISPLAY_ERROR_INVALID_OBJECT,
-				     "invalid width, height or stride in create_buffer\n");
+		wl_client_post_error(client, &shm->object,
+				     WL_SHM_ERROR_INVALID_STRIDE,
+				     "invalid width, height or stride (%dx%d, %u)",
+				     width, height, stride);
 		close(fd);
 		return;
 	}
@@ -144,11 +141,9 @@ shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 
 	close(fd);
 	if (data == MAP_FAILED) {
-		/* FIXME: Define a real exception event instead of
-		 * abusing this one */
-		wl_client_post_error(client, (struct wl_object *) display,
-				     WL_DISPLAY_ERROR_INVALID_OBJECT,
-				     "failed to create image for fd %d\n");
+		wl_client_post_error(client, &shm->object,
+				     WL_SHM_ERROR_INVALID_FD,
+				     "failed mmap fd %d", fd);
 		return;
 	}
 
