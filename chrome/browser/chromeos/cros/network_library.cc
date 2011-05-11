@@ -2116,12 +2116,12 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     NetworkDeviceObserverList* oblist;
     if (iter != network_device_observers_.end()) {
       oblist = iter->second;
+      if (!oblist->HasObserver(observer))
+        oblist->AddObserver(observer);
     } else {
       LOG(WARNING) << "No NetworkDeviceObserverList found for "
                    << device_path;
     }
-    if (!oblist->HasObserver(observer))
-      oblist->AddObserver(observer);
   }
 
   virtual void RemoveNetworkDeviceObserver(const std::string& device_path,
