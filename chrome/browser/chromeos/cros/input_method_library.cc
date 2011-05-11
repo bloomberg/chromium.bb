@@ -17,7 +17,6 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/input_method/candidate_window.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -25,6 +24,10 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
+
+#if !defined(TOUCH_UI)
+#include "chrome/browser/chromeos/input_method/candidate_window.h"
+#endif
 
 namespace {
 
@@ -63,8 +66,12 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         defer_ime_startup_(false),
         enable_auto_ime_shutdown_(true),
         ibus_daemon_process_handle_(base::kNullProcessHandle),
+#if !defined(TOUCH_UI)
         initialized_successfully_(false),
         candidate_window_controller_(NULL) {
+#else
+        initialized_successfully_(false) {
+#endif
     // Observe APP_TERMINATING to stop input method daemon gracefully.
     // We should not use APP_EXITING here since logout might be canceled by
     // JavaScript after APP_EXITING is sent (crosbug.com/11055).
@@ -697,12 +704,14 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       return false;
     }
 
+#if !defined(TOUCH_UI)
     if (!candidate_window_controller_.get()) {
       candidate_window_controller_.reset(new CandidateWindowController);
       if (!candidate_window_controller_->Init()) {
         LOG(WARNING) << "Failed to initialize the candidate window controller";
       }
     }
+#endif
 
     if (ibus_daemon_process_handle_ != base::kNullProcessHandle) {
       return false;  // ibus-daemon is already running.
@@ -770,7 +779,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     if (type.value == NotificationType::APP_TERMINATING) {
       notification_registrar_.RemoveAll();
       StopInputMethodDaemon();
+#if !defined(TOUCH_UI)
       candidate_window_controller_.reset(NULL);
+#endif
     }
   }
 
@@ -830,7 +841,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
 
   // The candidate window.  This will be deleted when the APP_TERMINATING
   // message is sent.
+#if !defined(TOUCH_UI)
   scoped_ptr<CandidateWindowController> candidate_window_controller_;
+#endif
 
   // The active input method ids cache.
   std::vector<std::string> active_input_method_ids_;

@@ -3574,6 +3574,8 @@
             ['exclude', '^browser/ui/views/handle_web_keyboard_event_gtk.cc'],
             ['exclude', '^browser/views/tab_contents/tab_contents_view_gtk.cc'],
             ['exclude', '^browser/views/tab_contents/tab_contents_view_gtk.h'],
+            ['exclude', '^browser/chromeos/input_method/candidate_window.cc'],
+            ['exclude', '^browser/chromeos/input_method/candidate_window.h'],
           ],
         }],
         ['OS=="linux"', {
