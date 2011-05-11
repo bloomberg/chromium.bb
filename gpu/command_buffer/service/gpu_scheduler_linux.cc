@@ -4,7 +4,6 @@
 
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_surface.h"
 
 using ::base::SharedMemory;
 
@@ -30,28 +29,19 @@ bool GpuScheduler::Initialize(
     DCHECK(parent_context);
   }
 
-  // Create either a view or pbuffer based GLSurface.
-  scoped_ptr<gfx::GLSurface> surface;
+  // Create either a view or pbuffer based GLContext.
+  scoped_ptr<gfx::GLContext> context;
   if (window) {
     DCHECK(!parent_handle);
 
-    surface.reset(gfx::GLSurface::CreateViewGLSurface(window));
+    // TODO(apatrick): support multisampling.
+    context.reset(gfx::GLContext::CreateViewGLContext(window, false));
   } else {
-    surface.reset(gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1)));
+    context.reset(gfx::GLContext::CreateOffscreenGLContext(parent_context));
   }
 
-  if (!surface.get()) {
-    LOG(ERROR) << "GpuScheduler::Initialize failed.\n";
-    Destroy();
-    return false;
-  }
-
-  // Create a GLContext and attach the surface.
-  scoped_ptr<gfx::GLContext> context(
-      gfx::GLContext::CreateGLContext(surface.release(), parent_context));
   if (!context.get()) {
-    LOG(ERROR) << "CreateGLContext failed.\n";
-    Destroy();
+    LOG(ERROR) << "GpuScheduler::Initialize failed";
     return false;
   }
 

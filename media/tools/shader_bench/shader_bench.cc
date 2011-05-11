@@ -22,7 +22,6 @@
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_LINUX)
@@ -131,11 +130,10 @@ int main(int argc, char** argv) {
 
   // Initialize window and graphics context.
   base::AtExitManager at_exit_manager;
-  gfx::GLSurface::InitializeOneOff();
+  gfx::GLContext::InitializeOneOff();
   scoped_ptr<media::Window> window(new media::Window(width, height));
-  gfx::GLSurface* surface =
-      gfx::GLSurface::CreateViewGLSurface(window->PluginWindow());
-  gfx::GLContext* context = gfx::GLContext::CreateGLContext(surface, NULL);
+  gfx::GLContext* context =
+      gfx::GLContext::CreateViewGLContext(window->PluginWindow(), false);
   context->MakeCurrent();
   // This sets D3DPRESENT_INTERVAL_IMMEDIATE on Windows.
   context->SetSwapInterval(0);

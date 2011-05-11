@@ -8,7 +8,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
 
@@ -27,7 +26,7 @@ bool AcceleratedSurface::Initialize(gfx::GLContext* share_context,
   allocate_fbo_ = allocate_fbo;
 
   // Ensure GL is initialized before trying to create an offscreen GL context.
-  if (!gfx::GLSurface::InitializeOneOff())
+  if (!gfx::GLContext::InitializeOneOff())
     return false;
 
   // Drawing to IOSurfaces via OpenGL only works with desktop GL and
@@ -35,19 +34,9 @@ bool AcceleratedSurface::Initialize(gfx::GLContext* share_context,
   if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL)
     return false;
 
-  scoped_ptr<gfx::GLSurface> surface(gfx::GLSurface::CreateOffscreenGLSurface(
-      gfx::Size(1, 1)));
-  if (!surface.get()) {
-    Destroy();
+  gl_context_.reset(gfx::GLContext::CreateOffscreenGLContext(share_context));
+  if (!gl_context_.get())
     return false;
-  }
-
-  gl_context_.reset(gfx::GLContext::CreateGLContext(surface.release(),
-                                                    share_context));
-  if (!gl_context_.get()) {
-    Destroy();
-    return false;
-  }
 
   // Now we're ready to handle SetSurfaceSize calls, which will
   // allocate and/or reallocate the IOSurface and associated offscreen

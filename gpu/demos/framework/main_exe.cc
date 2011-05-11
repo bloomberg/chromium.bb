@@ -6,7 +6,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "gpu/demos/framework/window.h"
-#include "ui/gfx/gl/gl_surface.h"
+#include "ui/gfx/gl/gl_context.h"
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
 
   CommandLine::Init(argc, argv);
 
-  gfx::GLSurface::InitializeOneOff();
+  gfx::GLContext::InitializeOneOff();
 
   gpu::demos::Window window;
   CHECK(window.Init(kWindowWidth, kWindowHeight));
