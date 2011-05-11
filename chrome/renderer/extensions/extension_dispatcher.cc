@@ -35,7 +35,8 @@ using WebKit::WebFrame;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
 
-ExtensionDispatcher::ExtensionDispatcher() {
+ExtensionDispatcher::ExtensionDispatcher()
+    : is_webkit_initialized_(false) {
   std::string type_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kProcessType);
   is_extension_process_ = type_str == switches::kExtensionProcess ||
@@ -88,6 +89,17 @@ void ExtensionDispatcher::WebKitInitialized() {
   RegisterExtension(EventBindings::Get(this), true);
   RegisterExtension(RendererExtensionBindings::Get(this), true);
   RegisterExtension(ExtensionApiTestV8Extension::Get(), true);
+
+  // Initialize host permissions for any extensions that were activated before
+  // WebKit was initialized.
+  for (std::set<std::string>::iterator iter = active_extension_ids_.begin();
+       iter != active_extension_ids_.end(); ++iter) {
+    const Extension* extension = extensions_.GetByID(*iter);
+    if (extension)
+      InitHostPermissions(extension);
+  }
+
+  is_webkit_initialized_ = true;
 }
 
 void ExtensionDispatcher::IdleNotification() {
@@ -202,6 +214,11 @@ void ExtensionDispatcher::OnActivateExtension(
   if (!extension)
     return;
 
+  if (is_webkit_initialized_)
+    InitHostPermissions(extension);
+}
+
+void ExtensionDispatcher::InitHostPermissions(const Extension* extension) {
   if (extension->HasApiPermission(Extension::kManagementPermission)) {
     WebSecurityPolicy::addOriginAccessWhitelistEntry(
         extension->url(),
@@ -210,13 +227,7 @@ void ExtensionDispatcher::OnActivateExtension(
         false);
   }
 
-  SetHostPermissions(extension->url(),
-                     extension->host_permissions());
-}
-
-void ExtensionDispatcher::SetHostPermissions(
-    const GURL& extension_url,
-    const std::vector<URLPattern>& permissions) {
+  const URLPatternList& permissions = extension->host_permissions();
   for (size_t i = 0; i < permissions.size(); ++i) {
     const char* schemes[] = {
       chrome::kHttpScheme,
@@ -227,7 +238,7 @@ void ExtensionDispatcher::SetHostPermissions(
     for (size_t j = 0; j < arraysize(schemes); ++j) {
       if (permissions[i].MatchesScheme(schemes[j])) {
         WebSecurityPolicy::addOriginAccessWhitelistEntry(
-            extension_url,
+            extension->url(),
             WebString::fromUTF8(schemes[j]),
             WebString::fromUTF8(permissions[i].host()),
             permissions[i].match_subdomains());
