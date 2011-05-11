@@ -1,3 +1,5 @@
+# To be used with
+#    sel_universal_ppapi_replay_prolog.stdin
 # define a bunch of variables for readability
 
 set_variable MODULE i(4444)
@@ -8,7 +10,8 @@ set_variable IMG_HANDLE i(7)
 set_variable GRAPHICS_HANLDE i(8)
 # PP_ImageDataDesc
 set_variable IMG_FMT2 R(16,4:0,4:400,4:400,4:1600)
-set_variable IMG_SIZE 64000
+# image size is width x height x 4-byte-pixel
+set_variable IMG_SIZE 640000
 # PP_Size
 set_variable GRAPHICS_FMT  R(8,4:400,4:400)
 
@@ -18,7 +21,8 @@ replay 1 PPB_GetInterface:s:i  s("PPB_Core;0.4") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Instance;0.4") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_ImageData;0.3") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Graphics2D;0.3") * i(1)
-# the results contain a process id which is non-determinisitic
+# The results contain a process id which is non-determinisitic. The
+# 'hide-results' option suppresses this output to help with golden file.
 rpc PPP_InitializeModule hide-results i(0) ${MODULE} h(pepper_desc) s("${service_string}") * i(0) i(0)
 
 echo
@@ -33,7 +37,9 @@ rpc PPP_Instance_DidCreate ${INSTANCE} i(1) ${TAGS} ${VALUES} * i(0)
 
 echo
 echo "*** SETTTING UP VIDEO MEMORY"
-shmem video_handle video_address 65536
+
+# video size is image size rounded up to 64k
+shmem video_handle video_address 655360
 memset ${video_address} 0  ${IMG_SIZE} 0
 checksum ${video_address} 0 ${IMG_SIZE}
 

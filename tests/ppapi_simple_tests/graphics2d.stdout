@@ -70,7 +70,7 @@ replaying PPB_ImageData_Describe:i:Chii:
 input 0:  i(7)
 output 0:  C(16,\x00\x00\x00\x00\x90\x01\x00\x00\x90\x01\x00\x00@\x06\x00\x00)
 output 1:  h(video_handle)
-output 2:  i(64000)
+output 2:  i(640000)
 output 3:  i(1)
 replaying PPB_Graphics2D_ReplaceContents:ii::
 input 0:  i(8)
@@ -86,7 +86,7 @@ rpc call complete PPP_Instance_DidChangeView:iII:
 
 
 "*** CHECKING MEMORY"
-CHECKSUM: 0xb4f6f800
+CHECKSUM: 0xe1913cee
 rpc call intiated PPP_ShutdownModule::
 rpc call complete PPP_ShutdownModule::
 
