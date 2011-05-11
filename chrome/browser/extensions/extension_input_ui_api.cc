@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "third_party/cros/chromeos_cros_api.h"
@@ -77,8 +78,8 @@ InputUiController::InputUiController(
     ExtensionInputUiEventRouter* router) :
   router_(router),
   ui_status_connection_(NULL) {
-  std::string error;
-  chromeos::LoadLibcros(NULL, error);
+  if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
+    return;
 
   chromeos::InputMethodUiStatusMonitorFunctions functions;
   functions.hide_auxiliary_text =
@@ -98,7 +99,8 @@ InputUiController::InputUiController(
 }
 
 InputUiController::~InputUiController() {
-  chromeos::DisconnectInputMethodUiStatus(ui_status_connection_);
+  if (ui_status_connection_)
+    chromeos::DisconnectInputMethodUiStatus(ui_status_connection_);
 }
 
 void InputUiController::CandidateClicked(
