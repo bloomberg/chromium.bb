@@ -354,21 +354,19 @@ void URLRequestAutomationJob::OnRequestEnd(
     if (!has_response_started()) {
       NotifyStartError(status);
     } else if (pending_buf_) {
+      pending_buf_ = NULL;
+      pending_buf_size_ = 0;
       NotifyDone(status);
+      NotifyReadComplete(0);
     } else {
       // Wait for the http stack to issue a Read request where we will notify
       // that the job has completed.
       request_status_ = status;
-      return;
     }
   }
-
-  // Reset any pending reads.
-  if (pending_buf_) {
-    pending_buf_ = NULL;
-    pending_buf_size_ = 0;
-    NotifyReadComplete(0);
-  }
+  // Note
+  // The job could have been destroyed above. Please don't attempt to access
+  // member variables here.
 }
 
 void URLRequestAutomationJob::Cleanup() {
