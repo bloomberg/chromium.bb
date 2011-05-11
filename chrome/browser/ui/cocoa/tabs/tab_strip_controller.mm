@@ -1961,7 +1961,7 @@ class NotificationBridge : public NotificationObserver {
   // If the input is plain text, classify the input and make the URL.
   AutocompleteMatch match;
   browser_->profile()->GetAutocompleteClassifier()->Classify(
-      base::SysNSStringToUTF16(text), string16(), false, &match, NULL);
+      base::SysNSStringToUTF16(text), string16(), false, false, &match, NULL);
   GURL url(match.destination_url);
 
   [self openURL:&url inView:view at:point];

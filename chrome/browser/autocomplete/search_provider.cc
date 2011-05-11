@@ -631,7 +631,7 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
     if (!input_.prevent_inline_autocomplete() && classifier &&
         i->term != input_.text()) {
       AutocompleteMatch match;
-      classifier->Classify(i->term, string16(), false, &match, NULL);
+      classifier->Classify(i->term, string16(), false, false, &match, NULL);
       term_looks_like_url = match.transition == PageTransition::TYPED;
     }
     int relevance = CalculateRelevanceForHistory(i->time, term_looks_like_url,
