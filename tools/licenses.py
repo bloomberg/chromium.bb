@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -61,6 +61,7 @@ PRUNE_PATHS = set([
     os.path.join('v8','src','third_party','valgrind'),
 
     # Used for development and test, not in the shipping product.
+    os.path.join('third_party','bidichecker'),
     os.path.join('third_party','cygwin'),
     os.path.join('third_party','lighttpd'),
     os.path.join('third_party','mingw-w64'),
