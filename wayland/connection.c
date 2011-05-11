@@ -352,7 +352,7 @@ wl_message_size_extra(const struct wl_message *message)
 			extra += sizeof (void *) + sizeof (struct wl_array);
 			break;
 		case 'h':
-			extra += sizeof (uint32_t);
+			extra += sizeof (int);
 			break;
 		default:
 			break;
