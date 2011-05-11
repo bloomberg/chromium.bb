@@ -461,7 +461,7 @@ bool CompleteInstallFunction::RunImpl() {
   // install flow. The above call to SetWhitelistedInstallId will bypass the
   // normal permissions install dialog.
   NavigationController& controller =
-      dispatcher()->delegate()->associated_tab_contents()->controller();
+      dispatcher()->delegate()->GetAssociatedTabContents()->controller();
   controller.LoadURL(url, source_url(), PageTransition::LINK);
 
   return true;
@@ -519,7 +519,7 @@ bool PromptBrowserLoginFunction::RunImpl() {
   // Login can currently only be invoked tab-modal.  Since this is
   // coming from the webstore, we should always have a tab, but check
   // just in case.
-  TabContents* tab = dispatcher()->delegate()->associated_tab_contents();
+  TabContents* tab = dispatcher()->delegate()->GetAssociatedTabContents();
   if (!tab)
     return false;
 

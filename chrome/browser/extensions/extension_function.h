@@ -12,6 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "content/browser/browser_thread.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 class ExtensionFunctionDispatcher;
 class ListValue;
@@ -37,9 +40,13 @@ class Value;
 
 // Abstract base class for extension functions the ExtensionFunctionDispatcher
 // knows how to dispatch to.
-class ExtensionFunction : public base::RefCountedThreadSafe<ExtensionFunction> {
+class ExtensionFunction
+    : public base::RefCountedThreadSafe<ExtensionFunction,
+                                        BrowserThread::DeleteOnUIThread> {
  public:
   ExtensionFunction();
+
+  virtual ~ExtensionFunction();
 
   // Specifies the name of the function.
   void set_name(const std::string& name) { name_ = name; }
@@ -55,6 +62,9 @@ class ExtensionFunction : public base::RefCountedThreadSafe<ExtensionFunction> {
     extension_id_ = extension_id;
   }
   std::string extension_id() const { return extension_id_; }
+
+  void SetRenderViewHost(RenderViewHost* render_view_host);
+  RenderViewHost* render_view_host() const { return render_view_host_; }
 
   // Specifies the raw arguments to the function, as a JSON value.
   virtual void SetArgs(const ListValue* args) = 0;
@@ -102,8 +112,6 @@ class ExtensionFunction : public base::RefCountedThreadSafe<ExtensionFunction> {
  protected:
   friend class base::RefCountedThreadSafe<ExtensionFunction>;
 
-  virtual ~ExtensionFunction();
-
   // Gets the extension that called this function. This can return NULL for
   // async functions, for example if the extension is unloaded while the
   // function is running.
@@ -129,6 +137,9 @@ class ExtensionFunction : public base::RefCountedThreadSafe<ExtensionFunction> {
 
   // The peer to the dispatcher that will service this extension function call.
   scoped_refptr<ExtensionFunctionDispatcher::Peer> peer_;
+
+  // The RenderViewHost we will send responses too.
+  RenderViewHost* render_view_host_;
 
   // Id of this request, used to map the response back to the caller.
   int request_id_;
@@ -157,6 +168,26 @@ class ExtensionFunction : public base::RefCountedThreadSafe<ExtensionFunction> {
 
   // True if the call was made in response of user gesture.
   bool user_gesture_;
+
+ private:
+  // Helper class to track the lifetime of ExtensionFunction's RenderViewHost
+  // pointer and NULL it out when it dies. We use this separate class (instead
+  // of implementing NotificationObserver on ExtensionFunction) because it is
+  // common for subclasses of ExtensionFunction to be NotificationObservers, and
+  // it would be an easy error to forget to call the base class's Observe()
+  // method.
+  class RenderViewHostTracker : public NotificationObserver {
+   public:
+    explicit RenderViewHostTracker(ExtensionFunction* extension_function);
+   private:
+    virtual void Observe(NotificationType type,
+                         const NotificationSource& source,
+                         const NotificationDetails& details);
+    ExtensionFunction* function_;
+    NotificationRegistrar registrar_;
+  };
+
+  scoped_ptr<RenderViewHostTracker> tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);
 };
@@ -203,6 +234,13 @@ class AsyncExtensionFunction : public ExtensionFunction {
   // Any class that gets a malformed message should set this to true before
   // returning.  The calling renderer process will be killed.
   bool bad_message_;
+
+ private:
+  // Called when we receive an extension api request that is invalid in a way
+  // that JSON validation in the renderer should have caught. This should never
+  // happen and could be an attacker trying to exploit the browser, so we crash
+  // the renderer instead.
+  void HandleBadMessage();
 
   DISALLOW_COPY_AND_ASSIGN(AsyncExtensionFunction);
 };

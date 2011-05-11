@@ -102,7 +102,6 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       are_javascript_messages_suppressed_(false),
       sudden_termination_allowed_(false),
       session_storage_namespace_(session_storage),
-      is_extension_process_(false),
       save_accessibility_tree_for_testing_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
   if (!session_storage_namespace_) {
@@ -114,6 +113,11 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
   DCHECK(delegate_);
 
   content::GetContentClient()->browser()->RenderViewHostCreated(this);
+
+  NotificationService::current()->Notify(
+      NotificationType::RENDER_VIEW_HOST_CREATED,
+      Source<RenderViewHost>(this),
+      NotificationService::NoDetails());
 }
 
 RenderViewHost::~RenderViewHost() {
@@ -139,7 +143,7 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   // initialized it) or may not (we have our own process or the old process
   // crashed) have been initialized. Calling Init multiple times will be
   // ignored, so this is safe.
-  if (!process()->Init(renderer_accessible(), is_extension_process_))
+  if (!process()->Init(renderer_accessible()))
     return false;
   DCHECK(process()->HasConnection());
   DCHECK(process()->profile());
@@ -152,10 +156,6 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   if (BindingsPolicy::is_extension_enabled(enabled_bindings_)) {
     ChildProcessSecurityPolicy::GetInstance()->GrantExtensionBindings(
         process()->id());
-
-    // Extensions may have permission to access chrome:// URLs.
-    ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-        process()->id(), chrome::kChromeUIScheme);
   }
 
   renderer_initialized_ = true;

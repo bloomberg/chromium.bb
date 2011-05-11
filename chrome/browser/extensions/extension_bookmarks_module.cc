@@ -856,7 +856,7 @@ void BookmarksIOFunction::ShowSelectFileDialog(SelectFileDialog::Type type,
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("html"));
 
   TabContents* tab_contents = dispatcher()->delegate()->
-      associated_tab_contents();
+      GetAssociatedTabContents();
 
   // |tab_contents| can be NULL (for background pages), which is fine. In such
   // a case if file-selection dialogs are forbidden by policy, we will not

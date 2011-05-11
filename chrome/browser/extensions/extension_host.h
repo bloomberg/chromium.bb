@@ -86,7 +86,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   ViewType::Type extension_host_type() const { return extension_host_type_; }
 
   // ExtensionFunctionDispatcher::Delegate
-  virtual TabContents* associated_tab_contents() const;
+  virtual TabContents* GetAssociatedTabContents() const;
   void set_associated_tab_contents(TabContents* associated_tab_contents) {
     associated_tab_contents_ = associated_tab_contents;
   }
@@ -229,6 +229,7 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   // Message handlers.
   void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
+  void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // Handles keyboard events that were not handled by HandleKeyboardEvent().
   // Platform specific implementation may override this method to handle the
@@ -274,7 +275,7 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   NotificationRegistrar registrar_;
 
-  scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
+  ExtensionFunctionDispatcher extension_function_dispatcher_;
 
   // Only EXTENSION_INFOBAR, EXTENSION_POPUP, and EXTENSION_BACKGROUND_PAGE
   // are used here, others are not hosted by ExtensionHost.

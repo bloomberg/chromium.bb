@@ -506,11 +506,6 @@ bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
   if (pending_web_ui_.get())
     render_view_host->AllowBindings(pending_web_ui_->bindings());
 
-  // Give the embedder a chance to initialize the render view.
-  Profile* profile = delegate_->GetControllerForRenderManager().profile();
-  content::GetContentClient()->browser()->PreCreateRenderView(
-      render_view_host, profile, entry.url());
-
   return delegate_->CreateRenderViewForRenderManager(render_view_host);
 }
 

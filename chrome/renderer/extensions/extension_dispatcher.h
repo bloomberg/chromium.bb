@@ -81,9 +81,8 @@ class ExtensionDispatcher : public RenderProcessObserver {
   // extension is for Chrome Extensions only.
   void RegisterExtension(v8::Extension* extension, bool restrict_to_extensions);
 
-  // Sets the host permissions for a particular extension.
-  void SetHostPermissions(const GURL& extension_url,
-                          const std::vector<URLPattern>& permissions);
+  // Sets up the host permissions for |extension|.
+  void InitHostPermissions(const Extension* extension);
 
   // True if this renderer is running extensions.
   bool is_extension_process_;
@@ -107,6 +106,9 @@ class ExtensionDispatcher : public RenderProcessObserver {
 
   // The extensions that are active in this process.
   std::set<std::string> active_extension_ids_;
+
+  // True once WebKit has been initialized (and it is therefore safe to poke).
+  bool is_webkit_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDispatcher);
 };

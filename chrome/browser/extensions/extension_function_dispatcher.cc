@@ -30,7 +30,6 @@
 #include "chrome/browser/extensions/extension_omnibox_api.h"
 #include "chrome/browser/extensions/extension_page_actions_module.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_rlz_module.h"
@@ -52,9 +51,6 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/user_metrics.h"
-#include "content/common/notification_service.h"
-#include "content/common/result_codes.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -385,71 +381,19 @@ void ExtensionFunctionDispatcher::ResetFunctions() {
   FactoryRegistry::GetInstance()->ResetFunctions();
 }
 
-ExtensionFunctionDispatcher* ExtensionFunctionDispatcher::Create(
-    RenderViewHost* render_view_host,
-    Delegate* delegate,
-    const GURL& url) {
-  ExtensionService* service =
-      render_view_host->process()->profile()->GetExtensionService();
-  DCHECK(service);
-
-  if (!service->ExtensionBindingsAllowed(url))
-    return NULL;
-
-  const Extension* extension = service->GetExtensionByURL(url);
-  if (!extension)
-    extension = service->GetExtensionByWebExtent(url);
-
-  if (extension)
-    return new ExtensionFunctionDispatcher(render_view_host, delegate,
-                                           extension, url);
-  else
-    return NULL;
-}
-
-ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
-    RenderViewHost* render_view_host,
-    Delegate* delegate,
-    const Extension* extension,
-    const GURL& url)
-  : profile_(render_view_host->process()->profile()),
-    render_view_host_(render_view_host),
+ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(Profile* profile,
+                                                         Delegate* delegate)
+  : profile_(profile),
     delegate_(delegate),
-    url_(url),
-    extension_id_(extension->id()),
     ALLOW_THIS_IN_INITIALIZER_LIST(peer_(new Peer(this))) {
-  // TODO(erikkay) should we do something for these errors in Release?
-  DCHECK(extension);
-  DCHECK(url.SchemeIs(chrome::kExtensionScheme) ||
-         extension->location() == Extension::COMPONENT);
-
-  // Notify the ExtensionProcessManager that the view was created.
-  ExtensionProcessManager* epm = profile()->GetExtensionProcessManager();
-  epm->RegisterExtensionProcess(extension_id(),
-                                render_view_host->process()->id());
-
-  // Activate this extension in the renderer. This must be done before any
-  // extension JavaScript code runs because it controls some privileges the
-  // extension code has in the renderer.
-  render_view_host->Send(new ExtensionMsg_ActivateExtension(extension->id()));
-
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_FUNCTION_DISPATCHER_CREATED,
-      Source<Profile>(profile_),
-      Details<ExtensionFunctionDispatcher>(this));
 }
 
 ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
   peer_->dispatcher_ = NULL;
-
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_FUNCTION_DISPATCHER_DESTROYED,
-      Source<Profile>(profile_),
-      Details<ExtensionFunctionDispatcher>(this));
 }
 
 Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
-    bool include_incognito) {
+    RenderViewHost* render_view_host, bool include_incognito) {
   Browser* browser = delegate_->GetBrowser();
 
   // If the delegate has an associated browser, that is always the right answer.
@@ -461,7 +405,7 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
   // profile. Note that the profile may already be incognito, in which case
   // we will search the incognito version only, regardless of the value of
   // |include_incognito|.
-  Profile* profile = render_view_host()->process()->profile();
+  Profile* profile = render_view_host->process()->profile();
   browser = BrowserList::FindTabbedBrowser(profile, include_incognito);
 
   // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
@@ -473,88 +417,84 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
   return browser;
 }
 
-bool ExtensionFunctionDispatcher::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ExtensionFunctionDispatcher, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
+void ExtensionFunctionDispatcher::Dispatch(
+    const ExtensionHostMsg_Request_Params& params,
+    RenderViewHost* render_view_host) {
+  // TODO(aa): It would be cool to use ExtensionProcessManager to track which
+  // processes are extension processes rather than ChildProcessSecurityPolicy.
+  // EPM has richer information: it not only knows which processes contain
+  // at least one extension, but it knows which extensions are inside and what
+  // permissions the have. So we would be able to enforce permissions more
+  // granularly.
+  if (!ChildProcessSecurityPolicy::GetInstance()->HasExtensionBindings(
+          render_view_host->process()->id())) {
+    // TODO(aa): Allow content scripts access to low-threat extension APIs.
+    // See: crbug.com/80308.
+    LOG(ERROR) << "Extension API called from non-extension process.";
+    SendAccessDenied(render_view_host, params.request_id);
+    return;
+  }
 
-void ExtensionFunctionDispatcher::OnRequest(
-    const ExtensionHostMsg_Request_Params& params) {
-  if (!ChildProcessSecurityPolicy::GetInstance()->
-          HasExtensionBindings(render_view_host_->process()->id())) {
-    // This can happen if someone uses window.open() to open an extension URL
-    // from a non-extension context.
-    render_view_host_->Send(new ExtensionMsg_Response(
-        render_view_host_->routing_id(), params.request_id, false,
-        std::string(), "Access to extension API denied."));
+  ExtensionService* service = profile()->GetExtensionService();
+  if (!service)
+    return;
+
+  if (!service->ExtensionBindingsAllowed(params.source_url)) {
+    LOG(ERROR) << "Extension bindings not allowed for URL: "
+               << params.source_url.spec();
+    SendAccessDenied(render_view_host, params.request_id);
+    return;
+  }
+
+  // TODO(aa): When we allow content scripts to call extension APIs, we will
+  // have to pass the extension ID explicitly here, not use the source URL.
+  const Extension* extension = service->GetExtensionByURL(params.source_url);
+  if (!extension)
+    extension = service->GetExtensionByWebExtent(params.source_url);
+  if (!extension) {
+    LOG(ERROR) << "Extension does not exist for URL: "
+               << params.source_url.spec();
+    SendAccessDenied(render_view_host, params.request_id);
+    return;
+  }
+
+  if (!extension->HasApiPermission(params.name)) {
+    LOG(ERROR) << "Extension " << extension->id() << " does not have "
+               << "permission to function: " << params.name;
+    SendAccessDenied(render_view_host, params.request_id);
     return;
   }
 
   scoped_refptr<ExtensionFunction> function(
       FactoryRegistry::GetInstance()->NewFunction(params.name));
+  function->SetRenderViewHost(render_view_host);
   function->set_dispatcher_peer(peer_);
   function->set_profile(profile_);
-  function->set_extension_id(extension_id());
+  function->set_extension_id(extension->id());
   function->SetArgs(&params.arguments);
   function->set_source_url(params.source_url);
   function->set_request_id(params.request_id);
   function->set_has_callback(params.has_callback);
   function->set_user_gesture(params.user_gesture);
-  ExtensionService* service = profile()->GetExtensionService();
-  DCHECK(service);
-  const Extension* extension = service->GetExtensionById(extension_id(), false);
-  DCHECK(extension);
   function->set_include_incognito(service->CanCrossIncognito(extension));
 
-  if (!service->ExtensionBindingsAllowed(function->source_url()) ||
-      !extension->HasApiPermission(function->name())) {
-    render_view_host_->Send(new ExtensionMsg_Response(
-        render_view_host_->routing_id(), function->request_id(), false,
-        std::string(), "Access to extension API denied."));
-    return;
-  }
-
   ExtensionsQuotaService* quota = service->quota_service();
-  if (quota->Assess(extension_id(), function, &params.arguments,
+  if (quota->Assess(extension->id(), function, &params.arguments,
                     base::TimeTicks::Now())) {
     // See crbug.com/39178.
     ExternalProtocolHandler::PermitLaunchUrl();
 
     function->Run();
   } else {
-    render_view_host_->Send(new ExtensionMsg_Response(
-        render_view_host_->routing_id(), function->request_id(), false,
+    render_view_host->Send(new ExtensionMsg_Response(
+        render_view_host->routing_id(), function->request_id(), false,
         std::string(), QuotaLimitHeuristic::kGenericOverQuotaError));
   }
 }
 
-void ExtensionFunctionDispatcher::SendResponse(ExtensionFunction* function,
-                                               bool success) {
-  render_view_host_->Send(new ExtensionMsg_Response(
-      render_view_host_->routing_id(), function->request_id(), success,
-      function->GetResult(), function->GetError()));
-}
-
-void ExtensionFunctionDispatcher::HandleBadMessage(ExtensionFunction* api) {
-  LOG(ERROR) << "bad extension message " <<
-                api->name() <<
-                " : terminating renderer.";
-  if (RenderProcessHost::run_renderer_in_process()) {
-    // In single process mode it is better if we don't suicide but just crash.
-    CHECK(false);
-  } else {
-    NOTREACHED();
-    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_EFD"));
-    base::KillProcess(render_view_host_->process()->GetHandle(),
-                      ResultCodes::KILLED_BAD_MESSAGE, false);
-  }
-}
-
-Profile* ExtensionFunctionDispatcher::profile() {
-  return profile_;
+void ExtensionFunctionDispatcher::SendAccessDenied(
+    RenderViewHost* render_view_host, int request_id) {
+  render_view_host->Send(new ExtensionMsg_Response(
+      render_view_host->routing_id(), request_id, false, std::string(),
+      "Access to extension API denied."));
 }
