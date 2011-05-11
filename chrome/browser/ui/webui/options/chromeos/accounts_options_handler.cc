@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
-#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -34,8 +33,6 @@ void AccountsOptionsHandler::RegisterMessages() {
       NewCallback(this, &AccountsOptionsHandler::WhitelistUser));
   web_ui_->RegisterMessageCallback("unwhitelistUser",
       NewCallback(this, &AccountsOptionsHandler::UnwhitelistUser));
-  web_ui_->RegisterMessageCallback("fetchUserPictures",
-      NewCallback(this, &AccountsOptionsHandler::FetchUserPictures));
   web_ui_->RegisterMessageCallback("whitelistExistingUsers",
       NewCallback(this, &AccountsOptionsHandler::WhitelistExistingUsers));
 }
@@ -93,22 +90,6 @@ void AccountsOptionsHandler::UnwhitelistUser(const ListValue* args) {
 
   users_settings()->UnwhitelistUser(Authenticator::Canonicalize(email));
   UserManager::Get()->RemoveUser(email, NULL);
-}
-
-void AccountsOptionsHandler::FetchUserPictures(const ListValue* args) {
-  DictionaryValue user_pictures;
-
-  UserVector users = UserManager::Get()->GetUsers();
-  for (UserVector::const_iterator it = users.begin();
-       it != users.end(); ++it) {
-    StringValue* image_url =
-        new StringValue(chrome::kChromeUIUserImageURL + it->email());
-    // SetWithoutPathExpansion because email has "." in it.
-    user_pictures.SetWithoutPathExpansion(it->email(), image_url);
-  }
-
-  web_ui_->CallJavascriptFunction("AccountsOptions.setUserPictures",
-                                  user_pictures);
 }
 
 void AccountsOptionsHandler::WhitelistExistingUsers(const ListValue* args) {

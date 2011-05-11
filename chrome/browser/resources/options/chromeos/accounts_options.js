@@ -76,10 +76,6 @@ cr.define('options', function() {
      */
     handleVisibleChange_: function(e) {
       if (this.visible) {
-        // fetchUserPictures calls back AccountsOptions.setUserPictures and
-        // triggers redraw.
-        chrome.send('fetchUserPictures', []);
-
         this.updateControls_();
       }
     },
@@ -127,13 +123,6 @@ cr.define('options', function() {
    */
   AccountsOptions.whitelistIsManaged = function() {
     return localStrings.getString('whitelist_is_managed') == 'true';
-  };
-
-  /**
-   * Updates user picture cache in UserList.
-   */
-  AccountsOptions.setUserPictures = function(cache) {
-    $('userList').setUserPictures(cache);
   };
 
   /**
