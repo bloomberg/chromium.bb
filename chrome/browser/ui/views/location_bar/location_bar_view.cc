@@ -974,11 +974,6 @@ void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
 void LocationBarView::ShowFirstRunBubbleInternal(
     FirstRun::BubbleType bubble_type) {
 #if defined(OS_WIN)  // First run bubble doesn't make sense for Chrome OS.
-  // If the browser is no longer active, let's not show the info bubble, as this
-  // would make the browser the active window again.
-  if (!location_entry_view_ || !location_entry_view_->GetWidget()->IsActive())
-    return;
-
   // Point at the start of the edit control; adjust to look as good as possible.
   const int kXOffset = kNormalHorizontalEdgeThickness + kEdgeItemPadding +
       ResourceBundle::GetSharedInstance().GetBitmapNamed(
@@ -1199,7 +1194,10 @@ void LocationBarView::TestPageActionPressed(size_t index) {
 void LocationBarView::OnTemplateURLModelChanged() {
   template_url_model_->RemoveObserver(this);
   template_url_model_ = NULL;
-  ShowFirstRunBubble(bubble_type_);
+  // If the browser is no longer active, let's not show the info bubble, as this
+  // would make the browser the active window again.
+  if (location_entry_view_ && location_entry_view_->GetWidget()->IsActive())
+    ShowFirstRunBubble(bubble_type_);
 }
 
 void LocationBarView::Observe(NotificationType type,
