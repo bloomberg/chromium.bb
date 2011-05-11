@@ -97,6 +97,8 @@ class Section : public views::View,
 ////////////////////////////////////////////////////////////////////////////////
 // PageInfoBubbleView
 
+Bubble* PageInfoBubbleView::bubble_ = NULL;
+
 PageInfoBubbleView::PageInfoBubbleView(gfx::NativeWindow parent_window,
                                        Profile* profile,
                                        const GURL& url,
@@ -106,10 +108,11 @@ PageInfoBubbleView::PageInfoBubbleView(gfx::NativeWindow parent_window,
                                             show_history, this)),
       parent_window_(parent_window),
       cert_id_(ssl.cert_id()),
-      bubble_(NULL),
       help_center_link_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(resize_animation_(this)),
       animation_start_height_(0) {
+  if (bubble_)
+    bubble_->Close();
   if (cert_id_ > 0) {
     scoped_refptr<net::X509Certificate> cert;
     CertStore::GetInstance()->RetrieveCert(cert_id_, &cert);
@@ -259,6 +262,11 @@ void PageInfoBubbleView::ModelChanged() {
   LayoutSections();
   resize_animation_.SetSlideDuration(kPageInfoSlideDuration);
   resize_animation_.Show();
+}
+
+void PageInfoBubbleView::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
+  resize_animation_.Reset();
+  bubble_ = NULL;
 }
 
 bool PageInfoBubbleView::CloseOnEscape() {
@@ -438,7 +446,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   bounds.set_origin(point);
   bounds.set_width(kIconHorizontalOffset);
 
-  // Show the bubble.
+  // Show the bubble. If the bubble already exist - it will be closed first.
   PageInfoBubbleView* page_info_bubble =
       new PageInfoBubbleView(parent, profile, url, ssl, show_history);
   Bubble* bubble =

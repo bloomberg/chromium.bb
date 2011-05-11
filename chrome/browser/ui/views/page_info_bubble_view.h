@@ -42,7 +42,7 @@ class PageInfoBubbleView : public views::View,
   virtual void ModelChanged();
 
   // BubbleDelegate methods:
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) {}
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
   virtual bool CloseOnEscape();
   virtual bool FadeInOnShow();
   virtual std::wstring accessible_name();
@@ -64,6 +64,9 @@ class PageInfoBubbleView : public views::View,
   // Layout the sections within the bubble.
   void LayoutSections();
 
+  // Global pointer to the bubble that is hosting our view.
+  static Bubble* bubble_;
+
   // The model providing the various section info.
   PageInfoModel model_;
 
@@ -72,8 +75,6 @@ class PageInfoBubbleView : public views::View,
 
   // The id of the certificate for this page.
   int cert_id_;
-
-  Bubble* bubble_;
 
   // The Help Center link at the bottom of the bubble.
   views::Link* help_center_link_;
