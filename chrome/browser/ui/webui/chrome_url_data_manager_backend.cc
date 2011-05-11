@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/appcache/view_appcache_internals_job_factory.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/url_util.h"
 #include "grit/platform_locale_settings.h"
@@ -28,6 +27,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job.h"
+#include "webkit/appcache/view_appcache_internals_job.h"
 
 namespace {
 
@@ -60,6 +60,12 @@ void URLToRequest(const GURL& url, std::string* source_name,
 
   if (offset < static_cast<int>(spec.size()))
     path->assign(spec.substr(offset));
+}
+
+bool IsViewAppCacheInternalsURL(const GURL& url) {
+  return StartsWithASCII(url.spec(),
+                         chrome::kAppCacheViewInternalsURL,
+                         true /*case_sensitive*/);
 }
 
 }  // namespace
@@ -274,8 +280,8 @@ net::URLRequestJob* ChromeURLDataManagerBackend::Factory(
     return ViewHttpCacheJobFactory::CreateJobForRequest(request);
 
   // Next check for chrome://appcache-internals/, which uses its own job type.
-  if (ViewAppCacheInternalsJobFactory::IsSupportedURL(request->url()))
-    return ViewAppCacheInternalsJobFactory::CreateJobForRequest(
+  if (IsViewAppCacheInternalsURL(request->url()))
+    return new appcache::ViewAppCacheInternalsJob(
         request, chrome_request_context->appcache_service());
 
   // Next check for chrome://blob-internals/, which uses its own job type.

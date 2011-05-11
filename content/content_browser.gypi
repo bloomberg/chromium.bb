@@ -28,8 +28,6 @@
         'browser/appcache/appcache_frontend_proxy.h',
         'browser/appcache/chrome_appcache_service.cc',
         'browser/appcache/chrome_appcache_service.h',
-        'browser/appcache/view_appcache_internals_job_factory.cc',
-        'browser/appcache/view_appcache_internals_job_factory.h',
         'browser/browser_child_process_host.cc',
         'browser/browser_child_process_host.h',
         'browser/browser_message_filter.cc',
