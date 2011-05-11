@@ -9,7 +9,7 @@ import pyauto_functional  # Must be imported before pyauto
 import pyauto
 
 
-class LoginTest(pyauto.PyUITest):
+class ChromeosLogin(pyauto.PyUITest):
   """TestCases for Logging into ChromeOS."""
 
   assert os.geteuid() == 0, 'Need to run this test as root'
@@ -62,11 +62,8 @@ class LoginTest(pyauto.PyUITest):
 
   def testLockScreenAfterLogin(self):
     """Test after logging in that the screen can be locked."""
-    credentials = self._ValidCredentials()
-    self.Login(credentials['username'], credentials['password'])
-    login_info = self.GetLoginInfo()
-    self.assertTrue(login_info['is_logged_in'], msg='Login failed.')
-    self.assertFalse(login_info['is_screen_locked'],
+    self.testGoodLogin()
+    self.assertFalse(self.GetLoginInfo()['is_screen_locked'],
                      msg='Screen is locked, but the screen was not locked.')
     self.LockScreen()
     login_info = self.GetLoginInfo()
@@ -96,7 +93,7 @@ class LoginTest(pyauto.PyUITest):
     # The login hook does not wait for the first tab to load, so we wait here.
     self.assertTrue(
       self.WaitUntil(self.GetActiveTabTitle, expect_retval='Google Accounts'),
-        msg='Could not verify that the Google Accounts tab was opened.')
+                     msg='Could not verify that the Accounts tab was opened.')
     login_info = self.GetLoginInfo()
     self.assertTrue(login_info['is_guest'], msg='Not logged in as guest.')
 
@@ -124,22 +121,40 @@ class LoginTest(pyauto.PyUITest):
 
   def testCachedCredentials(self):
     """Test that we can login without connectivity if we have so before."""
-    credentials = self._ValidCredentials()
-    username = credentials['username']
-    password = credentials['password']
-    self.Login(username, password)
-    login_info = self.GetLoginInfo()
-    self.assertTrue(login_info['is_logged_in'], msg='Login failed.')
+    self.testGoodLogin()
     self.Logout()
     self.SetProxySettingsOnChromeOS('singlehttp', '10.10.10.10')
-    self.Login(username, password)
-    login_info = self.GetLoginInfo()
+    self.testGoodLogin()
     # Reset back to direct proxy
     self.SetProxySettingsOnChromeOS('type', self.PROXY_TYPE_DIRECT)
-    self.assertTrue(login_info['is_logged_in'], msg='Login failed.')
 
-  # TODO(krisr): Add a test that navigates to a page after login
-  # TODO(krisr): Add a test that uses SignoutInScreenLocker()
+  def testNavigateAfterLogin(self):
+    """Test that page navigation is successful after logging in."""
+    self.testGoodLogin()
+    self.NavigateToURL("http://www.google.com")
+    self.assertEqual(self.GetActiveTabTitle(), 'Google',
+                     msg='Unable to navigate to Google and verify tab title.')
+
+  def testSigningOutFromLockedScreen(self):
+    """Test logout can be performed from the lock screen."""
+    self.testLockScreenAfterLogin()
+    self.SignoutInScreenLocker()
+    self.assertFalse(self.GetLoginInfo()['is_logged_in'],
+                     msg='Still logged in when we should be logged out.')
+
+  def testLoginSequenceSanity(self):
+    """Test that the interface can maintain a connection after multiple logins.
+
+    This test is to verify the stability of the automation interface.
+
+    """
+    self.testGoodLogin()
+    self.Logout()
+    self.testBadPassword()
+    self.testLoginAsGuest()
+    self.Logout()
+    self.testLoginToCreateNewAccount()
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
