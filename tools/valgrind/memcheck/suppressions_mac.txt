@@ -1699,3 +1699,15 @@
    ...
    fun:CurResFile
 }
+{
+   bug_82328
+   Memcheck:Addr8
+   fun:CGSFillDRAM64
+   fun:argb32_mark_pixelshape
+   ...
+   fun:ripc_DrawImages
+   fun:CGContextDrawImages
+   fun:_ZN11CUIRenderer19DrawWindowFrameDarkEPK10CUIContext
+   fun:_ZN11CUIRenderer4DrawE6CGRectP9CGContextPK14__CFDictionaryPS5_
+   fun:_NSDrawThemeBackground
+}
