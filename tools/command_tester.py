@@ -59,7 +59,7 @@ def DifferentFromGolden(actual, golden, output_type, fail_msg):
     True when there is a difference, False otherwise.
   """
 
-  diff = list(test_lib.DiffStringsIgnoringWhiteSpace(actual, golden))
+  diff = list(test_lib.DiffStringsIgnoringWhiteSpace(golden, actual))
   diff = '\n'.join(diff)
   if diff:
     Banner('Error %s diff found' % output_type)
