@@ -324,7 +324,6 @@ void PrintWebViewHelper::PrintPreview(WebKit::WebFrame* frame,
 }
 
 void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
-  int cookie = print_pages_params_->params.document_cookie;
   if (result == FAIL_PRINT) {
     WebView* web_view = print_web_view_;
     if (!web_view)
@@ -334,9 +333,12 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
         web_view->mainFrame(),
         l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
 
-    if (notify_browser_of_print_failure_)
+    if (notify_browser_of_print_failure_) {
+      int cookie = print_pages_params_->params.document_cookie;
       Send(new PrintHostMsg_PrintingFailed(routing_id(), cookie));
+    }
   } else if (result == FAIL_PREVIEW) {
+    int cookie = print_pages_params_->params.document_cookie;
     Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
   }
 
