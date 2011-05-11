@@ -185,7 +185,13 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Icon=/opt/google/chrome/product_logo_48.png\n"
       "Type=Application\n"
       "Categories=Application;Network;WebBrowser;\n"
-      "MimeType=text/html;text/xml;application/xhtml_xml;\n",
+      "MimeType=text/html;text/xml;application/xhtml_xml;\n"
+      "X-Ayatana-Desktop-Shortcuts=NewWindow;\n"
+      "\n"
+      "[NewWindow Shortcut Group]\n"
+      "Name=Open New Window\n"
+      "Exec=/opt/google/chrome/google-chrome\n"
+      "TargetEnvironment=Unity\n",
 
       "#!/usr/bin/env xdg-open\n"
       "[Desktop Entry]\n"
@@ -206,12 +212,15 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "chrome-http__gmail.com",
 
       "#!/some/shebang\n"
+      "[Desktop Entry]\n"
       "Name=Google Chrome\n"
       "Exec=/opt/google/chrome/google-chrome %U\n",
 
       "#!/usr/bin/env xdg-open\n"
+      "[Desktop Entry]\n"
       "Name=GMail\n"
       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
+      "Icon=chrome-http__gmail.com\n"
       "StartupWMClass=gmail.com\n"
     },
 
@@ -220,13 +229,16 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "GMail",
       "chrome-http__gmail.com",
 
+      "[Desktop Entry]\n"
       "Name=Google Chrome\n"
       "Exec=/opt/google/chrome/google-chrome %U\n"
       "Comment[pl]=Jakis komentarz.\n",
 
       "#!/usr/bin/env xdg-open\n"
+      "[Desktop Entry]\n"
       "Name=GMail\n"
       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
+      "Icon=chrome-http__gmail.com\n"
       "StartupWMClass=gmail.com\n"
     },
 
@@ -235,12 +247,14 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "GMail",
       "",
 
+      "[Desktop Entry]\n"
       "Name=Google Chrome\n"
       "Exec=/opt/google/chrome/google-chrome %U\n"
       "Comment[pl]=Jakis komentarz.\n"
       "Icon=/opt/google/chrome/product_logo_48.png\n",
 
       "#!/usr/bin/env xdg-open\n"
+      "[Desktop Entry]\n"
       "Name=GMail\n"
       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
       "Icon=/opt/google/chrome/product_logo_48.png\n"
@@ -252,23 +266,28 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Ownz0red\nExec=rm -rf /",
       "chrome-http__evil.com_evil",
 
+      "[Desktop Entry]\n"
       "Name=Google Chrome\n"
       "Exec=/opt/google/chrome/google-chrome %U\n",
 
       "#!/usr/bin/env xdg-open\n"
+      "[Desktop Entry]\n"
       "Name=http://evil.com/evil%20--join-the-b0tnet\n"
       "Exec=/opt/google/chrome/google-chrome "
       "--app=http://evil.com/evil%20--join-the-b0tnet\n"
+      "Icon=chrome-http__evil.com_evil\n"
       "StartupWMClass=evil.com__evil%20--join-the-b0tnet\n"
     },
     { "http://evil.com/evil; rm -rf /; \"; rm -rf $HOME >ownz0red",
       "Innocent Title",
       "chrome-http__evil.com_evil",
 
+      "[Desktop Entry]\n"
       "Name=Google Chrome\n"
       "Exec=/opt/google/chrome/google-chrome %U\n",
 
       "#!/usr/bin/env xdg-open\n"
+      "[Desktop Entry]\n"
       "Name=Innocent Title\n"
       "Exec=/opt/google/chrome/google-chrome "
       "\"--app=http://evil.com/evil;%20rm%20-rf%20/;%20%22;%20rm%20"
@@ -276,6 +295,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       // the \ is escaped as \\ as all strings in a Desktop file should
       // be; finally, \\ becomes \\\\ when represented in a C++ string!
       "-rf%20\\\\$HOME%20%3Eownz0red\"\n"
+      "Icon=chrome-http__evil.com_evil\n"
       "StartupWMClass=evil.com__evil;%20rm%20-rf%20_;%20%22;%20"
       "rm%20-rf%20$HOME%20%3Eownz0red\n"
     },
@@ -283,14 +303,17 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Innocent Title",
       "chrome-http__evil.com_evil",
 
+      "[Desktop Entry]\n"
       "Name=Google Chrome\n"
       "Exec=/opt/google/chrome/google-chrome %U\n",
 
       "#!/usr/bin/env xdg-open\n"
+      "[Desktop Entry]\n"
       "Name=Innocent Title\n"
       "Exec=/opt/google/chrome/google-chrome "
       "--app=http://evil.com/evil%20%7C%20cat%20%60echo%20ownz0red"
       "%60%20%3E/dev/null\n"
+      "Icon=chrome-http__evil.com_evil\n"
       "StartupWMClass=evil.com__evil%20%7C%20cat%20%60echo%20ownz0red"
       "%60%20%3E_dev_null\n"
     },

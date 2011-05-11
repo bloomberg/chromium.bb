@@ -5,6 +5,7 @@
 #include "chrome/browser/shell_integration.h"
 
 #include <fcntl.h>
+#include <glib.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -23,7 +24,6 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
 #include "base/task.h"
@@ -204,23 +204,20 @@ std::string QuoteArgForDesktopFileExec(const std::string& arg) {
   return quoted;
 }
 
-// Escape a string if needed for the right side of a Key=Value
-// construct in a desktop file.  (Note that for Exec= lines this
-// should be used in conjunction with QuoteArgForDesktopFileExec,
-// possibly escaping a backslash twice.)
-std::string EscapeStringForDesktopFile(const std::string& arg) {
-  // http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s03.html
-  if (arg.find('\\') == std::string::npos)
-    return arg;
+// Remove keys from the [Desktop Entry] that would be wrong if copied verbatim
+// into the new .desktop file.
+const char* kDesktopKeysToDelete[] = {
+  "GenericName",
+  "Comment",
+  "MimeType",
+  "X-Ayatana-Desktop-Shortcuts",
+  "StartupWMClass",
+  NULL
+};
 
-  std::string escaped;
-  for (size_t i = 0; i < arg.size(); ++i) {
-    if (arg[i] == '\\')
-      escaped += '\\';
-    escaped += arg[i];
-  }
-  return escaped;
-}
+const char* kDesktopEntry = "Desktop Entry";
+
+const char* kXdgOpenShebang = "#!/usr/bin/env xdg-open";
 
 }  // namespace
 
@@ -368,71 +365,105 @@ std::string ShellIntegration::GetDesktopFileContents(
     const std::string& extension_id,
     const string16& title,
     const std::string& icon_name) {
+  if (template_contents.empty())
+    return std::string(kXdgOpenShebang) + "\n";
+
   // See http://standards.freedesktop.org/desktop-entry-spec/latest/
-  // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
-  // launchers with an xdg-open shebang. Follow that convention.
-  std::string output_buffer("#!/usr/bin/env xdg-open\n");
-  StringTokenizer tokenizer(template_contents, "\n");
-  while (tokenizer.GetNext()) {
-    if (tokenizer.token().substr(0, 5) == "Exec=") {
-      std::string exec_path = tokenizer.token().substr(5);
-      StringTokenizer exec_tokenizer(exec_path, " ");
-      std::string final_path;
-      while (exec_tokenizer.GetNext() && exec_tokenizer.token() != "%U") {
-        if (!final_path.empty())
-          final_path += " ";
-        final_path += exec_tokenizer.token();
-      }
-      CommandLine cmd_line =
-          ShellIntegration::CommandLineArgsForLauncher(url, extension_id);
-      const CommandLine::SwitchMap& switch_map = cmd_line.GetSwitches();
-      for (CommandLine::SwitchMap::const_iterator i = switch_map.begin();
-           i != switch_map.end(); ++i) {
-        if (i->second.empty()) {
-          final_path += " --" + i->first;
-        } else {
-          final_path += " " + QuoteArgForDesktopFileExec("--" + i->first +
-                                                         "=" + i->second);
-        }
-      }
-      output_buffer += std::string("Exec=") +
-                       EscapeStringForDesktopFile(final_path) + "\n";
-    } else if (tokenizer.token().substr(0, 5) == "Name=") {
-      std::string final_title = UTF16ToUTF8(title);
-      // Make sure no endline characters can slip in and possibly introduce
-      // additional lines (like Exec, which makes it a security risk). Also
-      // use the URL as a default when the title is empty.
-      if (final_title.empty() ||
-          final_title.find("\n") != std::string::npos ||
-          final_title.find("\r") != std::string::npos) {
-        final_title = url.spec();
-      }
-      output_buffer += base::StringPrintf("Name=%s\n", final_title.c_str());
-    } else if (tokenizer.token().substr(0, 11) == "GenericName" ||
-               tokenizer.token().substr(0, 7) == "Comment" ||
-               tokenizer.token().substr(0, 1) == "#") {
-      // Skip comment lines.
-    } else if (tokenizer.token().substr(0, 9) == "MimeType=") {
-      // Skip MimeType lines, they are only relevant for a web browser
-      // shortcut, not a web application shortcut.
-    } else if (tokenizer.token().substr(0, 15) == "StartupWMClass=") {
-      // Skip StartupWMClass; it will certainly be wrong since we emit a
-      // different one based on the app name below.
-    } else if (tokenizer.token().substr(0, 5) == "Icon=" &&
-               !icon_name.empty()) {
-      output_buffer += base::StringPrintf("Icon=%s\n", icon_name.c_str());
-    } else {
-      output_buffer += tokenizer.token() + "\n";
+  // http://developer.gnome.org/glib/unstable/glib-Key-value-file-parser.html
+  GKeyFile* key_file = g_key_file_new();
+  GError* err = NULL;
+  // Loading the data will strip translations and comments from the desktop
+  // file (which we want to do!)
+  if (!g_key_file_load_from_data(
+          key_file,
+          template_contents.c_str(),
+          template_contents.size(),
+          G_KEY_FILE_NONE,
+          &err)) {
+    NOTREACHED() << "Unable to read desktop file template:" << err->message;
+    g_error_free(err);
+    return std::string(kXdgOpenShebang) + "\n";
+  }
+
+  // Remove all sections except for the Desktop Entry
+  gsize length = 0;
+  gchar** groups = g_key_file_get_groups(key_file, &length);
+  for (gsize i = 0; i < length; ++i) {
+    if (strcmp(groups[i], kDesktopEntry) != 0) {
+      g_key_file_remove_group(key_file, groups[i], NULL);
     }
   }
+  g_strfreev(groups);
+
+  // Remove keys that we won't need.
+  for (const char** current_key = kDesktopKeysToDelete; *current_key;
+       ++current_key) {
+    g_key_file_remove_key(key_file, kDesktopEntry, *current_key, NULL);
+  }
+
+  // Set the "Name" key.
+  std::string final_title = UTF16ToUTF8(title);
+  // Make sure no endline characters can slip in and possibly introduce
+  // additional lines (like Exec, which makes it a security risk). Also
+  // use the URL as a default when the title is empty.
+  if (final_title.empty() ||
+      final_title.find("\n") != std::string::npos ||
+      final_title.find("\r") != std::string::npos) {
+    final_title = url.spec();
+  }
+  g_key_file_set_string(key_file, kDesktopEntry, "Name", final_title.c_str());
+
+  // Set the "Exec" key.
+  char* exec_c_string = g_key_file_get_string(key_file, kDesktopEntry, "Exec",
+                                              NULL);
+  if (exec_c_string) {
+    std::string exec_string(exec_c_string);
+    g_free(exec_c_string);
+    StringTokenizer exec_tokenizer(exec_string, " ");
+
+    std::string final_path;
+    while (exec_tokenizer.GetNext() && exec_tokenizer.token() != "%U") {
+      if (!final_path.empty())
+        final_path += " ";
+      final_path += exec_tokenizer.token();
+    }
+    CommandLine cmd_line =
+        ShellIntegration::CommandLineArgsForLauncher(url, extension_id);
+    const CommandLine::SwitchMap& switch_map = cmd_line.GetSwitches();
+    for (CommandLine::SwitchMap::const_iterator i = switch_map.begin();
+         i != switch_map.end(); ++i) {
+      if (i->second.empty()) {
+        final_path += " --" + i->first;
+      } else {
+        final_path += " " + QuoteArgForDesktopFileExec("--" + i->first +
+                                                       "=" + i->second);
+      }
+    }
+
+    g_key_file_set_string(key_file, kDesktopEntry, "Exec", final_path.c_str());
+  }
+
+  // Set the "Icon" key.
+  if (!icon_name.empty())
+    g_key_file_set_string(key_file, kDesktopEntry, "Icon", icon_name.c_str());
 
 #if defined(TOOLKIT_USES_GTK)
   std::string wmclass = web_app::GetWMClassFromAppName(app_name);
-  if (!wmclass.empty()) {
-    output_buffer += base::StringPrintf("StartupWMClass=%s\n", wmclass.c_str());
-  }
+  g_key_file_set_string(key_file, kDesktopEntry, "StartupWMClass",
+                        wmclass.c_str());
 #endif
 
+  // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
+  // launchers with an xdg-open shebang. Follow that convention.
+  std::string output_buffer = kXdgOpenShebang;
+  length = 0;
+  gchar* data_dump = g_key_file_to_data(key_file, &length, NULL);
+  if (data_dump) {
+    output_buffer += data_dump;
+    g_free(data_dump);
+  }
+
+  g_key_file_free(key_file);
   return output_buffer;
 }
 
