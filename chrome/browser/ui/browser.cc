@@ -75,7 +75,7 @@
 #include "chrome/browser/tabs/tab_finder.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
-#include "chrome/browser/ui/bookmarks/bookmarks_tab_helper.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -3478,7 +3478,7 @@ TabContentsWrapper* Browser::GetConstrainingContentsWrapper(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Browser, BookmarksTabHelperDelegate implementation:
+// Browser, BookmarkTabHelperDelegate implementation:
 
 void Browser::URLStarredChanged(TabContentsWrapper* source, bool starred) {
   if (source == GetSelectedTabContentsWrapper())
@@ -3885,7 +3885,7 @@ void Browser::UpdateCommandsForTabState() {
 
   // Page-related commands
   window_->SetStarredState(
-      current_tab_wrapper->bookmarks_tab_helper()->is_starred());
+      current_tab_wrapper->bookmark_tab_helper()->is_starred());
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
       current_tab->controller().CanViewSource());
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
@@ -4384,7 +4384,7 @@ void Browser::SetAsDelegate(TabContentsWrapper* tab, Browser* delegate) {
 
   // ...and all the helpers.
   tab->blocked_content_tab_helper()->set_delegate(delegate);
-  tab->bookmarks_tab_helper()->set_delegate(delegate);
+  tab->bookmark_tab_helper()->set_delegate(delegate);
   tab->search_engine_tab_helper()->set_delegate(delegate);
 }
 

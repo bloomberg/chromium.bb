@@ -29,7 +29,7 @@
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"  // TODO(beng): remove
 #include "chrome/browser/tabs/tab_strip_model_observer.h"  // TODO(beng): remove
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
-#include "chrome/browser/ui/bookmarks/bookmarks_tab_helper_delegate.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/shell_dialogs.h"
@@ -66,7 +66,7 @@ class Browser : public TabHandlerDelegate,
                 public TabContentsWrapperDelegate,
                 public SearchEngineTabHelperDelegate,
                 public BlockedContentTabHelperDelegate,
-                public BookmarksTabHelperDelegate,
+                public BookmarkTabHelperDelegate,
                 public PageNavigator,
                 public CommandUpdater::CommandUpdaterDelegate,
                 public NotificationObserver,
@@ -853,7 +853,7 @@ class Browser : public TabHandlerDelegate,
   virtual TabContentsWrapper* GetConstrainingContentsWrapper(
       TabContentsWrapper* source) OVERRIDE;
 
-  // Overridden from BookmarksTabHelperDelegate:
+  // Overridden from BookmarkTabHelperDelegate:
   virtual void URLStarredChanged(TabContentsWrapper* source,
                                  bool starred) OVERRIDE;
 

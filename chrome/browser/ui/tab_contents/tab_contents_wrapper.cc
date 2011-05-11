@@ -31,7 +31,7 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
-#include "chrome/browser/ui/bookmarks/bookmarks_tab_helper.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
@@ -69,7 +69,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   autofill_manager_.reset(new AutofillManager(contents));
   automation_tab_helper_.reset(new AutomationTabHelper(contents));
   blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
-  bookmarks_tab_helper_.reset(new BookmarksTabHelper(this));
+  bookmark_tab_helper_.reset(new BookmarkTabHelper(this));
   download_tab_helper_.reset(new DownloadTabHelper(contents));
   extension_tab_helper_.reset(new ExtensionTabHelper(this));
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));

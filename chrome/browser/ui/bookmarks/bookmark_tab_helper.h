@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_BOOKMARKS_BOOKMARKS_TAB_HELPER_H_
-#define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARKS_TAB_HELPER_H_
+#ifndef CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TAB_HELPER_H_
+#define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TAB_HELPER_H_
 #pragma once
 
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
-class BookmarksTabHelperDelegate;
+class BookmarkTabHelperDelegate;
 class TabContentsWrapper;
 
 // Per-tab class to manage bookmarks.
-class BookmarksTabHelper : public NotificationObserver,
-                           public TabContentsObserver {
+class BookmarkTabHelper : public NotificationObserver,
+                          public TabContentsObserver {
  public:
-  explicit BookmarksTabHelper(TabContentsWrapper* tab_contents);
-  virtual ~BookmarksTabHelper();
+  explicit BookmarkTabHelper(TabContentsWrapper* tab_contents);
+  virtual ~BookmarkTabHelper();
 
   bool is_starred() const { return is_starred_; }
 
-  BookmarksTabHelperDelegate* delegate() const { return delegate_; }
-  void set_delegate(BookmarksTabHelperDelegate* d) { delegate_ = d; }
+  BookmarkTabHelperDelegate* delegate() const { return delegate_; }
+  void set_delegate(BookmarkTabHelperDelegate* d) { delegate_ = d; }
 
   // TabContentsObserver overrides:
   virtual void DidNavigateMainFramePostCommit(
@@ -51,9 +51,9 @@ class BookmarksTabHelper : public NotificationObserver,
 
   // Delegate for notifying our owner (usually Browser) about stuff. Not owned
   // by us.
-  BookmarksTabHelperDelegate* delegate_;
+  BookmarkTabHelperDelegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarksTabHelper);
+  DISALLOW_COPY_AND_ASSIGN(BookmarkTabHelper);
 };
 
-#endif  // CHROME_BROWSER_UI_BOOKMARKS_BOOKMARKS_TAB_HELPER_H_
+#endif  // CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TAB_HELPER_H_

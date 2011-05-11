@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/bookmarks/bookmarks_tab_helper.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/bookmarks/bookmarks_tab_helper_delegate.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/common/notification_service.h"
 
-BookmarksTabHelper::BookmarksTabHelper(TabContentsWrapper* tab_contents)
+BookmarkTabHelper::BookmarkTabHelper(TabContentsWrapper* tab_contents)
     : TabContentsObserver(tab_contents->tab_contents()),
       is_starred_(false),
       tab_contents_wrapper_(tab_contents),
@@ -22,20 +22,20 @@ BookmarksTabHelper::BookmarksTabHelper(TabContentsWrapper* tab_contents)
                  NotificationService::AllSources());
 }
 
-BookmarksTabHelper::~BookmarksTabHelper() {
+BookmarkTabHelper::~BookmarkTabHelper() {
   // We don't want any notifications while we're running our destructor.
   registrar_.RemoveAll();
 }
 
-void BookmarksTabHelper::DidNavigateMainFramePostCommit(
+void BookmarkTabHelper::DidNavigateMainFramePostCommit(
     const NavigationController::LoadCommittedDetails& /*details*/,
     const ViewHostMsg_FrameNavigate_Params& /*params*/) {
   UpdateStarredStateForCurrentURL();
 }
 
-void BookmarksTabHelper::Observe(NotificationType type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
+void BookmarkTabHelper::Observe(NotificationType type,
+                                const NotificationSource& source,
+                                const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::BOOKMARK_MODEL_LOADED:
       // BookmarkModel finished loading, fall through to update starred state.
@@ -56,7 +56,7 @@ void BookmarksTabHelper::Observe(NotificationType type,
   }
 }
 
-void BookmarksTabHelper::UpdateStarredStateForCurrentURL() {
+void BookmarkTabHelper::UpdateStarredStateForCurrentURL() {
   BookmarkModel* model = tab_contents()->profile()->GetBookmarkModel();
   const bool old_state = is_starred_;
   is_starred_ = (model && model->IsBookmarked(tab_contents()->GetURL()));
