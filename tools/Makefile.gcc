@@ -11,10 +11,6 @@ ifndef srcdir
 $(error srcdir: Undefined)
 endif
 
-ifndef rootdir
-$(error rootdir: Undefined)
-endif
-
 ifndef target
 $(error target: Undefined)
 endif
@@ -34,11 +30,11 @@ GCC_CONFIGURE_FLAGS = \
     --disable-libstdcxx-pch \
     --prefix=$(prefix) \
     --target=$(target) \
-    --with-gmp=$(rootdir)/.+install-gmp \
-    --with-mpfr=$(rootdir)/.+install-mpfr \
-    --with-ppl=$(rootdir)/.+install-ppl \
+    --with-gmp=$$PWD/../../BUILD/.gcc-extra-install-gmp \
+    --with-mpfr=$$PWD/../../BUILD/.gcc-extra-install-mpfr \
+    --with-ppl=$$PWD/../../BUILD/.gcc-extra-install-ppl \
     --with-host-libstdcxx="-lpwl -lstdc++ -lm" \
-    --with-cloog=$(rootdir)/.+install-cloog-ppl \
+    --with-cloog=$$PWD/../../BUILD/.gcc-extra-install-cloog-ppl \
     --disable-ppl-version-check
 
 # At the moment multilib build with glibc is broken.
@@ -55,7 +51,7 @@ HOST_TOOLCHAIN_BITS?=32
 
 GCC_CC = gcc -m$(HOST_TOOLCHAIN_BITS)
 
-GCC_CFLAGS = -O2
+GCC_CFLAGS = -O2 $(CFLAGS)
 
 GCC_DEFINES = \
     -Dinhibit_libc \
@@ -63,7 +59,7 @@ GCC_DEFINES = \
     -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
     -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)
 
-GCC_LDFLAGS =
+GCC_LDFLAGS = -s $(LDFLAGS)
 
 # In the use of these, $* is nolibc, newlib, or glibc.
 GCC_CONFIGURE_FLAGS += $(GCC_CONFIGURE_FLAGS-$*)

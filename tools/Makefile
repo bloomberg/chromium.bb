@@ -167,7 +167,7 @@ gmp: $(GMP_VERSION), \
 mpfr: $(MPFR_VERSION), \
 mpc: $(MPC_VERSION), \
 ppl: $(PPL_VERSION), \
-cloog: $(CLOOG_PPL_VERSION)
+cloog-ppl: $(CLOOG_PPL_VERSION)
 endef
 
 ##################################################################
@@ -179,7 +179,7 @@ SRC:
 
 git-sources := binutils gcc gdb glibc linux-headers-for-nacl newlib
 
-nacl-name = $(subst nacl-linux-headers-for-nacl,linux-headers-for-nacl,nacl-$*)
+nacl-name = $(patsubst nacl-linux-headers-for-nacl,linux-headers-for-nacl,nacl-$*)
 
 all-git-sources = $(git-sources:%=SRC/%)
 $(all-git-sources): SRC/%: | SRC
@@ -190,6 +190,9 @@ all-fetched-git-sources = $(git-sources:%=fetched-src-%)
 $(all-fetched-git-sources): fetched-src-%: | SRC/%
 	cd SRC/$* && git fetch
 
+# Note that we can not change names of variables in REVISIONS files since they
+# are used in other places, not just in this Makefile.  Small amount of sh-fu
+# will convert linux-headers-for-nacl to LINUX_HEADERS_FOR_NACL_COMMIT.
 all-pinned-git-sources = $(git-sources:%=pinned-src-%)
 .PHONY: $(all-pinned-git-sources)
 $(all-pinned-git-sources): pinned-src-%: fetched-src-%
@@ -215,7 +218,7 @@ sync: | $(all-latest-git-sources)
 .PHONY: gcc-extras
 gcc-extras:
 	if [[ "$$(cat BUILD/.gcc-extras-version)" != "$(GCC_EXTRAS)" ]]; then \
-	    rm -rf BUILD/.+* SRC/.+* && \
+	    rm -rf BUILD/.gcc-extra-* SRC/.gcc-extra-* && \
 	    $(MAKE) -f $(THISMAKEFILE) install-gcc-extras && \
 	    echo -n "$(GCC_EXTRAS)" > BUILD/.gcc-extras-version; \
 	fi
@@ -225,11 +228,11 @@ gcc-extras := gmp mpfr mpc ppl cloog-ppl
 gcc_extra_dir = $(subst cloog-ppl,cloog,$*)
 gcc_extra_version = $($(shell echo $*| tr '[:lower:]-' '[:upper:]_')_VERSION)
 
-all-src-gcc-extras = $(gcc-extras:%=SRC/.+%)
-$(all-src-gcc-extras): SRC/.+%: | SRC
-	rm -rf SRC/.+$*
+all-src-gcc-extras = $(gcc-extras:%=SRC/.gcc-extra-%)
+$(all-src-gcc-extras): SRC/.gcc-extra-%: | SRC
+	rm -rf SRC/.gcc-extra-$*
 	cd SRC && tar xpf ../../../third_party/$(gcc_extra_dir)/$*-$(gcc_extra_version).tar.*
-	mv SRC/$*-$(gcc_extra_version) SRC/.+$*
+	mv SRC/$*-$(gcc_extra_version) SRC/.gcc-extra-$*
 
 # All Macs need Core2 assembly and --enable-fat is broken with stock MacOS gcc.
 ifneq ($(PLATFORM), mac)
@@ -238,94 +241,69 @@ else
 gmp_use_fat_binary =
 endif
 
-BUILD/.+build-gmp: | BUILD SRC/.+gmp
-	rm -rf BUILD/.+build-gmp
-	mkdir -p BUILD/.+build-gmp
-	BUILD=$$PWD/BUILD && \
-	cd BUILD/.+build-gmp && \
-	    CFLAGS="-m$(HOST_TOOLCHAIN_BITS) $(CFLAGS)" \
-	    CXXFLAGS="-m$(HOST_TOOLCHAIN_BITS) $(CXXFLAGS)" \
-	    CPPFLAGS="-fexceptions $(CPPFLAGS)" \
-	    ../../SRC/.+gmp/configure \
-	    --prefix=$$BUILD/.+install-gmp \
-	    --disable-shared \
-	    --enable-cxx \
-	    $(gmp_use_fat_binary) \
+define gcc-extra-configure
+rm -rf $@
+mkdir -p $@
+BUILD=$$PWD/BUILD && cd $@ && \
+  ../../SRC/.gcc-extra-$(@:BUILD/.gcc-extra-build-%=%)/configure \
+  CFLAGS="-m$(HOST_TOOLCHAIN_BITS) $(CFLAGS)" \
+  CXXFLAGS="-m$(HOST_TOOLCHAIN_BITS) $(CXXFLAGS)" \
+  CPPFLAGS="-fexceptions $(CPPFLAGS)" \
+  --prefix=$$BUILD/.gcc-extra-install-$(@:BUILD/.gcc-extra-build-%=%) \
+  --disable-shared
+endef
+
+BUILD/.gcc-extra-build-gmp: | BUILD SRC/.gcc-extra-gmp
+	$(gcc-extra-configure) \
+	    --enable-cxx $(gmp_use_fat_binary) \
 	    ABI="$(HOST_TOOLCHAIN_BITS)"
 
-BUILD/.+build-mpfr: | SRC/.+mpfr BUILD/.+install-gmp
-	rm -rf BUILD/.+build-mpfr
-	mkdir -p BUILD/.+build-mpfr
-	BUILD=$$PWD/BUILD && \
-	cd BUILD/.+build-mpfr && \
-	    CFLAGS="-m$(HOST_TOOLCHAIN_BITS) $(CFLAGS)" \
-	    ../../SRC/.+mpfr/configure \
-	    --prefix=$$BUILD/.+install-mpfr \
-	    --disable-shared \
-	    --with-gmp=$$BUILD/.+install-gmp
+BUILD/.gcc-extra-build-mpfr: | SRC/.gcc-extra-mpfr BUILD/.gcc-extra-install-gmp
+	$(gcc-extra-configure) --with-gmp=$$BUILD/.gcc-extra-install-gmp
 
-BUILD/.+build-mpc: | SRC/.+mpc BUILD/.+install-gmp BUILD/.+install-mpfr
-	rm -rf BUILD/.+build-mpc
-	mkdir -p BUILD/.+build-mpc
-	BUILD=$$PWD/BUILD && \
-	cd BUILD/.+build-mpc && \
-	    CFLAGS="-m$(HOST_TOOLCHAIN_BITS) $(CFLAGS)" \
-	    ../../SRC/.+mpc/configure \
-	    --prefix=$$BUILD/.+install-mpc \
-	    --disable-shared \
-	    --with-gmp=$$BUILD/.+install-gmp \
-	    --with-mpfr=$$BUILD/.+install-mpfr
+BUILD/.gcc-extra-build-mpc: | SRC/.gcc-extra-mpc BUILD/.gcc-extra-install-gmp \
+                                                 BUILD/.gcc-extra-install-mpfr
+	$(gcc-extra-configure) \
+	    --with-gmp=$$BUILD/.gcc-extra-install-gmp \
+	    --with-mpfr=$$BUILD/.gcc-extra-install-mpfr
 
-BUILD/.+build-ppl: | SRC/.+ppl BUILD/.+install-gmp
-	rm -rf BUILD/.+build-ppl
-	mkdir -p BUILD/.+build-ppl
-	BUILD=$$PWD/BUILD && \
-	cd BUILD/.+build-ppl && \
-	    CFLAGS="-m$(HOST_TOOLCHAIN_BITS) $(CFLAGS)" \
-	    CXXFLAGS="-m$(HOST_TOOLCHAIN_BITS) $(CXXFLAGS)" \
-	    CPPFLAGS="-fexceptions $(CPPFLAGS)" \
-	    ../../SRC/.+ppl/configure \
-	    --prefix=$$BUILD/.+install-ppl \
-	    --disable-shared \
+BUILD/.gcc-extra-build-ppl: | SRC/.gcc-extra-ppl BUILD/.gcc-extra-install-gmp
+	$(gcc-extra-configure) \
 	    --enable-interfaces="cxx c" \
-	    --with-gmp-prefix=$$BUILD/.+install-gmp
+	    --with-gmp-prefix=$$BUILD/.gcc-extra-install-gmp
 
 .PHONY: fix-cloog-ppl-check
-fix-cloog-ppl-check: | SRC/.+cloog-ppl
-	for i in SRC/.+cloog-ppl/configure{.in,} ; do \
-	    sed -e s'|ppl_minor_version=10|ppl_minor_version=11|' <$$i >$$i.out; \
+fix-cloog-ppl-check: | SRC/.gcc-extra-cloog-ppl
+	for i in SRC/.gcc-extra-cloog-ppl/configure{.in,} ; do \
+	    sed -e s'|ppl_minor_version=10|ppl_minor_version=11|'<$$i >$$i.out;\
 	    cat $$i.out >$$i; \
 	    rm $$i.out; \
 	done
 	sed -e s'|cloog_LDADD = $(LDADD)|cloog_LDADD = $(LDADD) -lstdc++ -lm |' \
-	    <SRC/.+cloog-ppl/Makefile.in >SRC/.+cloog-ppl/Makefile.in.out
-	cat SRC/.+cloog-ppl/Makefile.in.out >SRC/.+cloog-ppl/Makefile.in
-	rm SRC/.+cloog-ppl/Makefile.in.out
-	find SRC/.+cloog-ppl -print0 | xargs -0 touch -r SRC/.+cloog-ppl
+	    <SRC/.gcc-extra-cloog-ppl/Makefile.in \
+	    >SRC/.gcc-extra-cloog-ppl/Makefile.in.out
+	cat SRC/.gcc-extra-cloog-ppl/Makefile.in.out \
+	    >SRC/.gcc-extra-cloog-ppl/Makefile.in
+	rm SRC/.gcc-extra-cloog-ppl/Makefile.in.out
+	find SRC/.gcc-extra-cloog-ppl -print0 | \
+	    xargs -0 touch -r SRC/.gcc-extra-cloog-ppl
 
-BUILD/.+build-cloog-ppl: fix-cloog-ppl-check | BUILD/.+install-ppl
-	rm -rf BUILD/.+build-cloog-ppl
-	mkdir -p BUILD/.+build-cloog-ppl
-	BUILD=$$PWD/BUILD && \
-	cd BUILD/.+build-cloog-ppl && \
-	    CFLAGS="-m$(HOST_TOOLCHAIN_BITS) $(CFLAGS)" \
-	    CXXFLAGS="-m$(HOST_TOOLCHAIN_BITS) $(CXXFLAGS)" \
-	    CPPFLAGS="-fexceptions $(CPPFLAGS)" \
-	    ../../SRC/.+cloog-ppl/configure \
-	    --prefix=$$BUILD/.+install-cloog-ppl \
-	    --disable-shared \
-	    --with-gmp=$$BUILD/.+install-gmp \
-	    --with-ppl=$$BUILD/.+install-ppl
+BUILD/.gcc-extra-build-cloog-ppl: fix-cloog-ppl-check | \
+                                                    BUILD/.gcc-extra-install-ppl
+	$(gcc-extra-configure) \
+	    --with-gmp=$$BUILD/.gcc-extra-install-gmp \
+	    --with-ppl=$$BUILD/.gcc-extra-install-ppl
 
-all-install-gcc-extras = $(gcc-extras:%=BUILD/.+install-%)
-$(all-install-gcc-extras): BUILD/.+install-%: | SRC BUILD/.+build-%
-	if mkdir BUILD/.+install-$*; then \
-	    mkdir BUILD/.+install-$*/include && \
-	    mkdir BUILD/.+install-$*/lib && \
-	    ln -s lib BUILD/.+install-$*/lib64 && \
-	    ln -s lib BUILD/.+install-$*/lib32; \
+all-install-gcc-extras = $(gcc-extras:%=BUILD/.gcc-extra-install-%)
+$(all-install-gcc-extras): BUILD/.gcc-extra-install-%: | SRC \
+                                                        BUILD/.gcc-extra-build-%
+	if mkdir BUILD/.gcc-extra-install-$*; then \
+	    mkdir BUILD/.gcc-extra-install-$*/include && \
+	    mkdir BUILD/.gcc-extra-install-$*/lib && \
+	    ln -s lib BUILD/.gcc-extra-install-$*/lib64 && \
+	    ln -s lib BUILD/.gcc-extra-install-$*/lib32; \
 	fi
-	cd BUILD/.+build-$* && $(MAKE) install
+	cd BUILD/.gcc-extra-build-$* && $(MAKE) install
 
 install-gcc-extras: | BUILD SRC $(all-install-gcc-extras)
 
@@ -404,10 +382,7 @@ BUILD/stamp-$(CROSSARCH)-pregcc: | SRC/gcc BUILD
 	    -f ../../Makefile.gcc \
 	    prefix=$(SDKROOT) \
 	    srcdir=../../SRC/gcc \
-	    rootdir=$$PWD/BUILD \
 	    target=$(CROSSARCH) \
-	    GCC_CFLAGS="-O2 $(CFLAGS)" \
-	    GCC_LDFLAGS="-s $(LDFLAGS)" \
 	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
 	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
@@ -470,10 +445,7 @@ BUILD/stamp-$(CROSSARCH)-pregcc-standalone: \
 	    -f ../../Makefile.gcc \
 	    prefix=$(PREGCC_PREFIX) \
 	    srcdir=../../SRC/gcc \
-	    rootdir=$$PWD/BUILD \
 	    target=$(CROSSARCH) \
-	    GCC_CFLAGS="-O2 $(CFLAGS)" \
-	    GCC_LDFLAGS="-s $(LDFLAGS)" \
 	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
 	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
@@ -719,10 +691,7 @@ endif
 	    -f ../../Makefile.gcc \
 	    prefix=$(SDKROOT) \
 	    srcdir=../../SRC/gcc \
-	    rootdir=$$PWD/BUILD \
 	    target=$(CROSSARCH) \
-	    GCC_CFLAGS="-O2 $(CFLAGS)" \
-	    GCC_LDFLAGS="-s $(LDFLAGS)" \
 	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
 	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
@@ -758,10 +727,7 @@ endif
 	    -f ../../Makefile.gcc \
 	    prefix=$(SDKROOT) \
 	    srcdir=../../SRC/gcc \
-	    rootdir=$$PWD/BUILD \
 	    target=$(CROSSARCH) \
-	    GCC_CFLAGS="-O2 $(CFLAGS)" \
-	    GCC_LDFLAGS="-s $(LDFLAGS)" \
 	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
 	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
 	    HOST_TOOLCHAIN_BITS=$(HOST_TOOLCHAIN_BITS) \
