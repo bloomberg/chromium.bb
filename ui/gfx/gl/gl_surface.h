@@ -16,8 +16,8 @@ namespace gfx {
 // specific management.
 class GLSurface {
  public:
-  GLSurface() {}
-  virtual ~GLSurface() {}
+  GLSurface();
+  virtual ~GLSurface();
 
   // (Re)create the surface. TODO(apatrick): This is an ugly hack to allow the
   // EGL surface associated to be recreated without destroying the associated
@@ -44,6 +44,16 @@ class GLSurface {
   // Returns the internal frame buffer object name if the surface is backed by
   // FBO. Otherwise returns 0.
   virtual unsigned int GetBackingFrameBufferObject();
+
+  static bool InitializeOneOff();
+
+#if !defined(OS_MACOSX)
+  // Create a GL surface that renders directly to a view.
+  static GLSurface* CreateViewGLSurface(gfx::PluginWindowHandle window);
+#endif
+
+  // Create a GL surface used for offscreen rendering.
+  static GLSurface* CreateOffscreenGLSurface(const gfx::Size& size);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurface);
