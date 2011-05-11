@@ -2312,8 +2312,13 @@ newlib-nacl-headers-clean() {
     # then NEWLIB_INCLUDE_DIR will not exist, and the repository
     # will be in a bad state. This will be fixed during the next
     # invocation by newlib-nacl-headers.
+
+    # We jump into the parent directory and use a relative path so that
+    # hg does not get confused by pathnames which contain a symlink.
+    spushd "$(dirname "${NEWLIB_INCLUDE_DIR}")"
     RunWithLog "newlib-freshen" \
-      hg-revert "${NEWLIB_INCLUDE_DIR}"
+      hg-revert "$(basename "${NEWLIB_INCLUDE_DIR}")"
+    spopd
   fi
 }
 

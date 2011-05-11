@@ -91,7 +91,7 @@ hg-pull-try() {
 #+ hg-revert <dir>
 hg-revert() {
   local dir="$1"
-  hg revert "$(GetAbsolutePath "${dir}")"
+  hg revert "${dir}"
 }
 
 #+ hg-clone <url> <dir>
