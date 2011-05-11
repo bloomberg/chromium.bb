@@ -161,8 +161,10 @@ void PluginResourceTracker::ReleasePluginResourceRef(
 
     // dispatcher can be NULL if the plugin held on to a resource after the
     // instance was destroyed. In that case the browser-side resource has
-    // already been freed correctly on the browser side.
-    if (notify_browser_on_release && dispatcher) {
+    // already been freed correctly on the browser side. The host_resource
+    // will be NULL for proxy-only resources, which we obviously don't need to
+    // tell the host about.
+    if (notify_browser_on_release && dispatcher && !host_resource.is_null()) {
       dispatcher->Send(new PpapiHostMsg_PPBCore_ReleaseResource(
           INTERFACE_ID_PPB_CORE, host_resource));
     }
