@@ -25,6 +25,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
+#endif
+
 namespace {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -186,9 +190,11 @@ void CrashesDOMHandler::UpdateUI() {
 }
 
 bool CrashesDOMHandler::CrashReportingEnabled() const {
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
   PrefService* prefs = g_browser_process->local_state();
   return prefs->GetBoolean(prefs::kMetricsReportingEnabled);
+#elif defined(GOOGLE_CHROME_BUILD) && defined(OS_CHROMEOS)
+  return chromeos::MetricsCrosSettingsProvider::GetMetricsStatus();
 #else
   return false;
 #endif
