@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEBUI_WEB_UI_BIDI_CHECKER_BROWSERTEST_H_
-#define CONTENT_BROWSER_WEBUI_WEB_UI_BIDI_CHECKER_BROWSERTEST_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_BIDICHECKERWEBUITEST_H_
+#define CHROME_BROWSER_UI_WEBUI_BIDICHECKERWEBUITEST_H_
 #pragma once
 
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
@@ -15,6 +15,10 @@ class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
  public:
   virtual ~WebUIBidiCheckerBrowserTest();
 
+  // Runs the Bidi Checker on the given page URL. |isRTL| should be true when
+  // the active page locale of the page is RTL.
+  void RunBidiCheckerOnPage(const char pageURL[], bool isRTL);
+
  protected:
   WebUIBidiCheckerBrowserTest();
 
@@ -22,4 +26,4 @@ class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture();
 };
 
-#endif  // CONTENT_BROWSER_WEBUI_WEB_UI_BIDI_CHECKER_BROWSERTEST_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_BIDICHECKERWEBUITEST_H_
