@@ -18,16 +18,18 @@ set -x
 set -e
 set -u
 
-if [[ ${BUILDBOT_BUILDERNAME} == "linux-pnacl-x86_32" ]]; then
+if [[ ${BUILDBOT_BUILDERNAME} == *linux*32* ]] ||
+   [[ ${BUILDBOT_BUILDERNAME} == *lucid*32* ]]; then
   # Don't test arm + 64-bit on 32-bit builder.
   # We can't build 64-bit trusted components on a 32-bit system.
   # Arm disabled on 32-bit because it runs out of memory.
   TOOLCHAIN_LABEL=pnacl_linux_i686
   RUN_TESTS="x86-32 x86-32-pic"
-elif [[ ${BUILDBOT_BUILDERNAME} == "linux-pnacl-x86_64" ]]; then
+elif [[ ${BUILDBOT_BUILDERNAME} == *linux*64* ]] ||
+     [[ ${BUILDBOT_BUILDERNAME} == *lucid*64* ]]; then
   TOOLCHAIN_LABEL=pnacl_linux_x86_64
   RUN_TESTS="x86-32 x86-32-pic arm arm-pic x86-64 x86-64-pic"
-elif [[ ${BUILDBOT_BUILDERNAME} == "mac-pnacl-x86_32" ]]; then
+elif [[ ${BUILDBOT_BUILDERNAME} == *mac* ]]; then
   # We don't test X86-32 because it is flaky.
   # We can't test ARM because we do not have QEMU for Mac.
   # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
@@ -62,14 +64,16 @@ cd toolchain/${TOOLCHAIN_LABEL}
 tar xfz ../../pnacl-toolchain.tgz
 cd ../..
 
-echo @@@BUILD_STEP archive_build@@@
-GS_BASE=gs://nativeclient-archive2/toolchain
-/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    pnacl-toolchain.tgz \
-    ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_${TOOLCHAIN_LABEL}.tgz
-/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    pnacl-toolchain.tgz \
-    ${GS_BASE}/latest/naclsdk_${TOOLCHAIN_LABEL}.tgz
+if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
+  echo @@@BUILD_STEP archive_build@@@
+  GS_BASE=gs://nativeclient-archive2/toolchain
+  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+      pnacl-toolchain.tgz \
+      ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_${TOOLCHAIN_LABEL}.tgz
+  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+      pnacl-toolchain.tgz \
+      ${GS_BASE}/latest/naclsdk_${TOOLCHAIN_LABEL}.tgz
+fi
 
 for arch in ${RUN_TESTS} ; do
   echo @@@BUILD_STEP test-${arch}@@@

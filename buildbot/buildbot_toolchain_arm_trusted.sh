@@ -37,11 +37,13 @@ tar xfz ../../arm-trusted.tgz
 cd arm-2009q3
 cd ../../..
 
-echo @@@BUILD_STEP archive_build@@@
-GS_BASE=gs://nativeclient-archive2/toolchain
-/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    arm-trusted.tgz \
-    ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_linux_arm-trusted.tgz
-/b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-    arm-trusted.tgz \
-    ${GS_BASE}/latest/naclsdk_linux_arm-trusted.tgz
+if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
+  echo @@@BUILD_STEP archive_build@@@
+  GS_BASE=gs://nativeclient-archive2/toolchain
+  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+      arm-trusted.tgz \
+      ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_linux_arm-trusted.tgz
+  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+      arm-trusted.tgz \
+      ${GS_BASE}/latest/naclsdk_linux_arm-trusted.tgz
+fi
