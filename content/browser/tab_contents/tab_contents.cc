@@ -871,6 +871,9 @@ bool TabContents::CanDownload(int request_id) {
 void TabContents::OnStartDownload(DownloadItem* download) {
   DCHECK(download);
 
+  if (!delegate())
+    return;
+
   // Download in a constrained popup is shown in the tab that opened it.
   TabContents* tab_contents = delegate()->GetConstrainingContents(this);
 
