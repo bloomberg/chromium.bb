@@ -35,6 +35,9 @@ class ChromeWorkerMessageFilter : public IPC::ChannelProxy::MessageFilter,
                        const string16& display_name,
                        unsigned long estimated_size,
                        bool* result);
+  void OnAllowFileSystem(int worker_route_id,
+                         const GURL& url,
+                         bool* result);
 
   WorkerProcessHost* process_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;

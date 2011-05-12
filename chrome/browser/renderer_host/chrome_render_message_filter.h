@@ -93,6 +93,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                          const GURL& url,
                          DOMStorageType type,
                          bool* allowed);
+  void OnAllowFileSystem(int render_view_id, const GURL& url, bool* allowed);
   void OnAllowIndexedDB(int render_view_id,
                         const string16& origin_url,
                         const string16& name,

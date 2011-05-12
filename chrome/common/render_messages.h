@@ -315,6 +315,13 @@ IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_AllowDOMStorage,
                             DOMStorageType /* type */,
                             bool /* allowed */)
 
+// Sent by the renderer process to check whether access to FileSystem is
+// granted by content settings.
+IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_AllowFileSystem,
+                            int /* render_view_id */,
+                            GURL /* origin_url */,
+                            bool /* allowed */)
+
 // Sent by the renderer process to check whether access to Indexed DBis
 // granted by content settings.
 IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_AllowIndexedDB,

@@ -11,7 +11,6 @@
 #include "base/platform_file.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/resource_context.h"
 #include "content/common/file_system_messages.h"
@@ -105,26 +104,20 @@ class BrowserFileSystemCallbackDispatcher
 };
 
 FileSystemDispatcherHost::FileSystemDispatcherHost(
-    const content::ResourceContext* resource_context,
-    HostContentSettingsMap* host_content_settings_map)
+    const content::ResourceContext* resource_context)
     : context_(NULL),
-      host_content_settings_map_(host_content_settings_map),
       resource_context_(resource_context),
       request_context_(NULL) {
   DCHECK(resource_context_);
-  DCHECK(host_content_settings_map_);
 }
 
 FileSystemDispatcherHost::FileSystemDispatcherHost(
     net::URLRequestContext* request_context,
-    HostContentSettingsMap* host_content_settings_map,
     fileapi::FileSystemContext* file_system_context)
     : context_(file_system_context),
-      host_content_settings_map_(host_content_settings_map),
       resource_context_(NULL),
       request_context_(request_context) {
   DCHECK(request_context_);
-  DCHECK(host_content_settings_map_);
   DCHECK(context_);
 }
 
@@ -171,20 +164,6 @@ bool FileSystemDispatcherHost::OnMessageReceived(
 void FileSystemDispatcherHost::OnOpen(
     int request_id, const GURL& origin_url, fileapi::FileSystemType type,
     int64 requested_size, bool create) {
-  ContentSetting content_setting =
-      host_content_settings_map_->GetContentSetting(
-          origin_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
-  DCHECK((content_setting == CONTENT_SETTING_ALLOW) ||
-         (content_setting == CONTENT_SETTING_BLOCK) ||
-         (content_setting == CONTENT_SETTING_SESSION_ONLY));
-  if (content_setting == CONTENT_SETTING_BLOCK) {
-    // TODO(kinuko): Need to notify the UI thread to indicate that
-    // there's a blocked content.
-    Send(new FileSystemMsg_OpenComplete(
-        request_id, false, std::string(), GURL()));
-    return;
-  }
-
   GetNewOperation(request_id)->OpenFileSystem(origin_url, type, create);
 }
 

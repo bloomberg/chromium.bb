@@ -82,6 +82,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginPolicies, OnGetPluginPolicies)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AllowFileSystem, OnAllowFileSystem)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllowIndexedDB, OnAllowIndexedDB)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CanTriggerClipboardRead,
                         OnCanTriggerClipboardRead)
@@ -357,6 +358,20 @@ void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_view_id,
       NewRunnableFunction(
           &TabSpecificContentSettings::DOMStorageAccessed,
           render_process_id_, render_view_id, url, type, !*allowed));
+}
+
+void ChromeRenderMessageFilter::OnAllowFileSystem(int render_view_id,
+                                                  const GURL& url,
+                                                  bool* allowed) {
+  
+  // TODO(kinuko): Need to notify the UI thread to indicate that
+  // there's a blocked content.  See the above for inspiration.
+  ContentSetting setting = host_content_settings_map_->GetContentSetting(
+      url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+  DCHECK((setting == CONTENT_SETTING_ALLOW) ||
+         (setting == CONTENT_SETTING_BLOCK) ||
+         (setting == CONTENT_SETTING_SESSION_ONLY));
+  *allowed = setting != CONTENT_SETTING_BLOCK;
 }
 
 void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_view_id,

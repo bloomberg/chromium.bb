@@ -201,9 +201,9 @@ bool WorkerProcessHost::Init(int render_process_id) {
           base::PLATFORM_FILE_WRITE_ATTRIBUTES);
   }
 
-  CreateMessageFilters(render_process_id);
-
+  // Call the embedder first so that their IPC filters have priority.
   content::GetContentClient()->browser()->WorkerProcessHostCreated(this);
+  CreateMessageFilters(render_process_id);
 
   return true;
 }
@@ -228,9 +228,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
   AddFilter(worker_message_filter_);
   AddFilter(new AppCacheDispatcherHost(resource_context_, id()));
   AddFilter(new FileSystemDispatcherHost(
-      request_context,
-      resource_context_->host_content_settings_map(),
-      resource_context_->file_system_context()));
+      request_context, resource_context_->file_system_context()));
   AddFilter(new FileUtilitiesMessageFilter(id()));
   AddFilter(
       new BlobMessageFilter(id(), resource_context_->blob_storage_context()));
@@ -293,6 +291,8 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP_EX(WorkerProcessHost, message, msg_is_ok)
     IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerContextClosed,
                         OnWorkerContextClosed)
+    IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowDatabase, OnAllowDatabase)
+    IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowFileSystem, OnAllowFileSystem)
     IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP_EX()
 
@@ -336,6 +336,21 @@ void WorkerProcessHost::OnWorkerContextClosed(int worker_route_id) {
       break;
     }
   }
+}
+
+void WorkerProcessHost::OnAllowDatabase(int worker_route_id,
+                                        const GURL& url,
+                                        const string16& name,
+                                        const string16& display_name,
+                                        unsigned long estimated_size,
+                                        bool* result) {
+  *result = true;
+}
+
+void WorkerProcessHost::OnAllowFileSystem(int worker_route_id,
+                                          const GURL& url,
+                                          bool* result) {
+  *result = true;
 }
 
 void WorkerProcessHost::RelayMessage(

@@ -13,7 +13,6 @@
 #include "webkit/fileapi/file_system_types.h"
 
 class GURL;
-class HostContentSettingsMap;
 class Profile;
 class Receiver;
 class RenderMessageFilter;
@@ -38,12 +37,10 @@ class URLRequestContext;
 class FileSystemDispatcherHost : public BrowserMessageFilter {
  public:
   // Used by the renderer.
-  FileSystemDispatcherHost(
-      const content::ResourceContext* resource_context,
-      HostContentSettingsMap* host_content_settings_map);
+  explicit FileSystemDispatcherHost(
+      const content::ResourceContext* resource_context);
   // Used by the worker, since it has the context handy already.
   FileSystemDispatcherHost(net::URLRequestContext* request_context,
-                           HostContentSettingsMap* host_content_settings_map,
                            fileapi::FileSystemContext* file_system_context);
   ~FileSystemDispatcherHost();
 
@@ -91,9 +88,6 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
   fileapi::FileSystemOperation* GetNewOperation(int request_id);
 
   fileapi::FileSystemContext* context_;
-
-  // Used to look up permissions.
-  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   // Keeps ongoing file system operations.
   typedef IDMap<fileapi::FileSystemOperation> OperationsMap;

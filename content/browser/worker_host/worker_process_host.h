@@ -162,6 +162,15 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   void OnWorkerContextClosed(int worker_route_id);
+  void OnAllowDatabase(int worker_route_id,
+                       const GURL& url,
+                       const string16& name,
+                       const string16& display_name,
+                       unsigned long estimated_size,
+                       bool* result);
+  void OnAllowFileSystem(int worker_route_id,
+                         const GURL& url,
+                         bool* result);
 
   // Relays a message to the given endpoint.  Takes care of parsing the message
   // if it contains a message port and sending it a valid route id.

@@ -149,12 +149,17 @@ bool WebWorkerClientProxy::allowDatabase(WebFrame* frame,
   if (origin.isEmpty())
     return false;
 
-  bool result;
-  if (!Send(new WorkerProcessHostMsg_AllowDatabase(route_id_,
-      GURL(origin.toString().utf8()), name, display_name, estimated_size,
-      &result)))
-    return false;
+  bool result = false;
+  Send(new WorkerProcessHostMsg_AllowDatabase(
+      route_id_, GURL(origin.toString().utf8()), name, display_name,
+      estimated_size, &result));
+  return result;
+}
 
+bool WebWorkerClientProxy::allowFileSystem() {
+  bool result = false;
+  Send(new WorkerProcessHostMsg_AllowFileSystem(
+      route_id_, stub_->url().GetOrigin(), &result));
   return result;
 }
 

@@ -301,6 +301,10 @@ bool ChromeRenderViewObserver::allowDatabase(
       frame, name, display_name, estimated_size);
 }
 
+bool ChromeRenderViewObserver::allowFileSystem(WebFrame* frame) {
+  return content_settings_->AllowFileSystem(frame);
+}
+
 bool ChromeRenderViewObserver::allowImages(WebFrame* frame,
                                           bool enabled_per_settings) {
   return content_settings_->AllowImages(frame, enabled_per_settings);

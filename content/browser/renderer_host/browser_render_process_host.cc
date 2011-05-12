@@ -371,8 +371,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       new PepperMessageFilter(&profile()->GetResourceContext()));
   channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(id()));
   channel_->AddFilter(
-      new FileSystemDispatcherHost(&profile()->GetResourceContext(),
-                                   profile()->GetHostContentSettingsMap()));
+      new FileSystemDispatcherHost(&profile()->GetResourceContext()));
   channel_->AddFilter(new device_orientation::MessageFilter());
   channel_->AddFilter(
       new BlobMessageFilter(id(), profile()->GetBlobStorageContext()));

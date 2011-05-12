@@ -145,6 +145,17 @@ bool ContentSettingsObserver::AllowDatabase(WebFrame* frame,
   return result;
 }
 
+bool ContentSettingsObserver::AllowFileSystem(WebFrame* frame) {
+  WebSecurityOrigin origin = frame->securityOrigin();
+  if (origin.isEmpty())
+    return false;  // Uninitialized document?
+
+  bool result = false;
+  Send(new ViewHostMsg_AllowFileSystem(
+      routing_id(), GURL(origin.toString()), &result));
+  return result;
+}
+
 bool ContentSettingsObserver::AllowImages(WebFrame* frame,
                                           bool enabled_per_settings) {
   if (enabled_per_settings &&

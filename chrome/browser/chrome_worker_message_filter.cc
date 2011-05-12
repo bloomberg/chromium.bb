@@ -23,6 +23,7 @@ bool ChromeWorkerMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeWorkerMessageFilter, message)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowDatabase, OnAllowDatabase)
+    IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowFileSystem, OnAllowFileSystem)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -64,4 +65,15 @@ void ChromeWorkerMessageFilter::OnAllowDatabase(int worker_route_id,
     }
     break;
   }
+}
+
+void ChromeWorkerMessageFilter::OnAllowFileSystem(int worker_route_id,
+                                                  const GURL& url,
+                                                  bool* result) {
+  // TODO(kinuko): Need to notify the UI thread to indicate that
+  // there's a blocked content.  See the above for inspiration.
+  ContentSetting content_setting =
+      host_content_settings_map_->GetContentSetting(
+          url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+  *result = content_setting != CONTENT_SETTING_BLOCK;
 }

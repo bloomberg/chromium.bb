@@ -73,7 +73,7 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
                              const WebKit::WebString& name,
                              const WebKit::WebString& display_name,
                              unsigned long estimated_size);
-
+  virtual bool allowFileSystem();
   virtual void openFileSystem(WebKit::WebFileSystem::Type type,
                               long long size,
                               bool create,

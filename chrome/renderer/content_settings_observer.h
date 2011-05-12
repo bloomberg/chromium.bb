@@ -45,6 +45,7 @@ class ContentSettingsObserver
                      const WebKit::WebString& name,
                      const WebKit::WebString& display_name,
                      unsigned long estimated_size);
+  bool AllowFileSystem(WebKit::WebFrame* frame);
   bool AllowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
   bool AllowIndexedDB(WebKit::WebFrame* frame,
                       const WebKit::WebString& name,

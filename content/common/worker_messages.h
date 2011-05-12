@@ -118,13 +118,19 @@ IPC_MESSAGE_CONTROL2(WorkerProcessHostMsg_SendQueuedMessages,
                      std::vector<QueuedMessage> /* queued_messages */)
 
 // Sent by the worker process to check whether access to web databases is
-// granted by content settings.
+// allowed.
 IPC_SYNC_MESSAGE_CONTROL5_1(WorkerProcessHostMsg_AllowDatabase,
                             int /* worker_route_id */,
                             GURL /* origin url */,
                             string16 /* database name */,
                             string16 /* database display name */,
                             unsigned long /* estimated size */,
+                            bool /* result */)
+
+// Sent by the worker process to check whether access to file system is allowed.
+IPC_SYNC_MESSAGE_CONTROL2_1(WorkerProcessHostMsg_AllowFileSystem,
+                            int /* worker_route_id */,
+                            GURL /* origin url */,
                             bool /* result */)
 
 //-----------------------------------------------------------------------------
