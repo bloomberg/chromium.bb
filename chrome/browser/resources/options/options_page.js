@@ -460,6 +460,16 @@ cr.define('options', function() {
   };
 
   /**
+   * Callback for window.onbeforeunload. Used to notify overlays that they will
+   * be closed.
+   */
+  OptionsPage.willClose = function() {
+    var overlay = this.getVisibleOverlay_();
+    if (overlay && overlay.didClosePage)
+      overlay.didClosePage();
+  };
+
+  /**
    * Freezes/unfreezes the scroll position of given level's page container.
    * @param {boolean} freeze Whether the page should be frozen.
    * @param {number} level The level to freeze/unfreeze.
