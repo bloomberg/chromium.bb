@@ -31,7 +31,7 @@ class SaveFileManager;
 class SaveItem;
 class SavePackage;
 struct SavePackageParam;
-class TabContents;
+class TabContentsWrapper;
 
 namespace base {
 class Thread;
@@ -84,12 +84,12 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // Constructor for user initiated page saving. This constructor results in a
   // SavePackage that will generate and sanitize a suggested name for the user
   // in the "Save As" dialog box.
-  explicit SavePackage(TabContents* tab_contents);
+  explicit SavePackage(TabContentsWrapper* wrapper);
 
   // This contructor is used only for testing. We can bypass the file and
   // directory name generation / sanitization by providing well known paths
   // better suited for tests.
-  SavePackage(TabContents* tab_contents,
+  SavePackage(TabContentsWrapper* wrapper,
               SavePackageType save_type,
               const FilePath& file_full_path,
               const FilePath& directory_full_path);
@@ -147,7 +147,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   friend class base::RefCountedThreadSafe<SavePackage>;
 
   // For testing only.
-  SavePackage(TabContents* tab_contents,
+  SavePackage(TabContentsWrapper* wrapper,
               const FilePath& file_full_path,
               const FilePath& directory_full_path);
 
@@ -251,6 +251,9 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // it returns "txt").
   static const FilePath::CharType* ExtensionForMimeType(
       const std::string& contents_mime_type);
+
+  // Owning TabContentsWrapper.
+  TabContentsWrapper* wrapper_;
 
   typedef std::queue<SaveItem*> SaveItemQueue;
   // A queue for items we are about to start saving.

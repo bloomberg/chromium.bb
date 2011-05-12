@@ -10,11 +10,13 @@
 #include "chrome/browser/download/save_package.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
+class TabContentsWrapper;
+
 // Per-tab download controller. Handles dealing with various per-tab download
 // duties.
 class DownloadTabHelper : public TabContentsObserver {
  public:
-  explicit DownloadTabHelper(TabContents* tab_contents);
+  explicit DownloadTabHelper(TabContentsWrapper* tab_contents);
   virtual ~DownloadTabHelper();
 
   // Prepare for saving the current web page to disk.
@@ -39,6 +41,9 @@ class DownloadTabHelper : public TabContentsObserver {
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;
+
+  // Owning TabContentsWrapper.
+  TabContentsWrapper* tab_contents_wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTabHelper);
 };

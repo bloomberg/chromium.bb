@@ -70,7 +70,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   automation_tab_helper_.reset(new AutomationTabHelper(contents));
   blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
   bookmark_tab_helper_.reset(new BookmarkTabHelper(this));
-  download_tab_helper_.reset(new DownloadTabHelper(contents));
+  download_tab_helper_.reset(new DownloadTabHelper(this));
   extension_tab_helper_.reset(new ExtensionTabHelper(this));
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));

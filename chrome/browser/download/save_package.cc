@@ -34,6 +34,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -152,24 +153,25 @@ bool CanSaveAsComplete(const std::string& contents_mime_type) {
 
 }  // namespace
 
-SavePackage::SavePackage(TabContents* tab_contents,
+SavePackage::SavePackage(TabContentsWrapper* wrapper,
                          SavePackageType save_type,
                          const FilePath& file_full_path,
                          const FilePath& directory_full_path)
-    : TabContentsObserver(tab_contents),
+    : TabContentsObserver(wrapper->tab_contents()),
+      wrapper_(wrapper),
       file_manager_(NULL),
       download_(NULL),
       page_url_(GetUrlToBeSaved()),
       saved_main_file_path_(file_full_path),
       saved_main_directory_path_(directory_full_path),
-      title_(tab_contents->GetTitle()),
+      title_(tab_contents()->GetTitle()),
       finished_(false),
       user_canceled_(false),
       disk_error_occurred_(false),
       save_type_(save_type),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(tab_contents->GetRenderProcessHost()->id()),
+      tab_id_(tab_contents()->GetRenderProcessHost()->id()),
       unique_id_(g_save_package_id++),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(page_url_.is_valid());
@@ -182,19 +184,20 @@ SavePackage::SavePackage(TabContents* tab_contents,
   InternalInit();
 }
 
-SavePackage::SavePackage(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents),
+SavePackage::SavePackage(TabContentsWrapper* wrapper)
+    : TabContentsObserver(wrapper->tab_contents()),
+      wrapper_(wrapper),
       file_manager_(NULL),
       download_(NULL),
       page_url_(GetUrlToBeSaved()),
-      title_(tab_contents->GetTitle()),
+      title_(tab_contents()->GetTitle()),
       finished_(false),
       user_canceled_(false),
       disk_error_occurred_(false),
       save_type_(SAVE_TYPE_UNKNOWN),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(tab_contents->GetRenderProcessHost()->id()),
+      tab_id_(tab_contents()->GetRenderProcessHost()->id()),
       unique_id_(g_save_package_id++),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(page_url_.is_valid());
@@ -204,10 +207,11 @@ SavePackage::SavePackage(TabContents* tab_contents)
 // This is for testing use. Set |finished_| as true because we don't want
 // method Cancel to be be called in destructor in test mode.
 // We also don't call InternalInit().
-SavePackage::SavePackage(TabContents* tab_contents,
+SavePackage::SavePackage(TabContentsWrapper* wrapper,
                          const FilePath& file_full_path,
                          const FilePath& directory_full_path)
-    : TabContentsObserver(tab_contents),
+    : TabContentsObserver(wrapper->tab_contents()),
+      wrapper_(wrapper),
       file_manager_(NULL),
       download_(NULL),
       saved_main_file_path_(file_full_path),

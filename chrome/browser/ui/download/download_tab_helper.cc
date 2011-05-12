@@ -7,12 +7,14 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/view_messages.h"
 
-DownloadTabHelper::DownloadTabHelper(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents) {
+DownloadTabHelper::DownloadTabHelper(TabContentsWrapper* tab_contents)
+    : TabContentsObserver(tab_contents->tab_contents()),
+      tab_contents_wrapper_(tab_contents) {
   DCHECK(tab_contents);
 }
 
@@ -37,7 +39,7 @@ void DownloadTabHelper::OnSavePage() {
   // Create the save package and possibly prompt the user for the name to save
   // the page as. The user prompt is an asynchronous operation that runs on
   // another thread.
-  save_package_ = new SavePackage(tab_contents());
+  save_package_ = new SavePackage(tab_contents_wrapper_);
   save_package_->GetSaveInfo();
 }
 
@@ -56,7 +58,7 @@ bool DownloadTabHelper::SavePage(const FilePath& main_file,
   tab_contents()->Stop();
 
   save_package_ =
-      new SavePackage(tab_contents(), save_type, main_file, dir_path);
+      new SavePackage(tab_contents_wrapper_, save_type, main_file, dir_path);
   return save_package_->Init();
 }
 
