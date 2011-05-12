@@ -153,7 +153,7 @@ def CheckSvnModifiedDirectories(input_api, output_api, source_file_filter=None):
   modified_files = [f for f in all_modified_files if f not in current_cl_files]
   modified_abspaths = [input_api.os_path.abspath(f) for f in modified_files]
 
-  for f in input_api.AffectedFiles(source_file_filter):
+  for f in input_api.AffectedFiles(file_filter=source_file_filter):
     if f.Action() == 'M' and f.IsDirectory():
       curpath = f.AbsoluteLocalPath()
       bad_files = []
@@ -236,7 +236,8 @@ def _FindNewViolationsOfRule(callable_rule, input_api, source_file_filter=None,
     A list of the newly-introduced violations reported by the rule.
   """
   errors = []
-  for f in input_api.AffectedFiles(source_file_filter, include_deletes=False):
+  for f in input_api.AffectedFiles(include_deletes=False,
+                                   file_filter=source_file_filter):
     # For speed, we do two passes, checking first the full file.  Shelling out
     # to the SCM to determine the changed region can be quite expensive on
     # Win32.  Assuming that most files will be kept problem-free, we can
@@ -733,7 +734,7 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
         "we can't check it for approvals.")]
 
   affected_files = set([f.LocalPath() for f in
-      input_api.change.AffectedFiles(source_file_filter)])
+      input_api.change.AffectedFiles(file_filter=source_file_filter)])
 
   owners_db = input_api.owners_db
   owner_email, approvers = _RietveldOwnerAndApprovers(input_api,

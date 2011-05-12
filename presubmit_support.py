@@ -314,7 +314,8 @@ class InputApi(object):
     if depot_path:
       return depot_path
 
-  def AffectedFiles(self, include_dirs=False, include_deletes=True):
+  def AffectedFiles(self, include_dirs=False, include_deletes=True,
+                    file_filter=None):
     """Same as input_api.change.AffectedFiles() except only lists files
     (and optionally directories) in the same directory as the current presubmit
     script, or subdirectories thereof.
@@ -322,9 +323,10 @@ class InputApi(object):
     dir_with_slash = normpath("%s/" % self.PresubmitLocalPath())
     if len(dir_with_slash) == 1:
       dir_with_slash = ''
+
     return filter(
         lambda x: normpath(x.AbsoluteLocalPath()).startswith(dir_with_slash),
-        self.change.AffectedFiles(include_dirs, include_deletes))
+        self.change.AffectedFiles(include_dirs, include_deletes, file_filter))
 
   def LocalPaths(self, include_dirs=False):
     """Returns local paths of input_api.AffectedFiles()."""
@@ -715,12 +717,14 @@ class Change(object):
       raise AttributeError(self, attr)
     return self.tags.get(attr)
 
-  def AffectedFiles(self, include_dirs=False, include_deletes=True):
+  def AffectedFiles(self, include_dirs=False, include_deletes=True,
+                    file_filter=None):
     """Returns a list of AffectedFile instances for all files in the change.
 
     Args:
       include_deletes: If false, deleted files will be filtered out.
       include_dirs: True to include directories in the list
+      file_filter: An additional filter to apply.
 
     Returns:
       [AffectedFile(path, action), AffectedFile(path, action)]
@@ -729,6 +733,8 @@ class Change(object):
       affected = self._affected_files
     else:
       affected = filter(lambda x: not x.IsDirectory(), self._affected_files)
+
+    affected = filter(file_filter, affected)
 
     if include_deletes:
       return affected

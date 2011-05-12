@@ -1392,8 +1392,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
         'foo1', 'foo1\n', self.fake_root_dir, None, 0, 0, None)
     input_api1 = self.MockInputApi(change1, False)
     affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
-    input_api1.AffectedFiles(mox.IgnoreArg(), include_deletes=False).AndReturn(
-        [affected_file])
+    input_api1.AffectedFiles(
+        include_deletes=False,
+        file_filter=mox.IgnoreArg()).AndReturn([affected_file])
     affected_file.NewContents().AndReturn([
         'ahoy',
         'yo' + content1,
@@ -1405,8 +1406,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
         'foo2', 'foo2\n', self.fake_root_dir, None, 0, 0, None)
     input_api2 = self.MockInputApi(change2, False)
 
-    input_api2.AffectedFiles(mox.IgnoreArg(), include_deletes=False).AndReturn(
-        [affected_file])
+    input_api2.AffectedFiles(
+        include_deletes=False,
+        file_filter=mox.IgnoreArg()).AndReturn([affected_file])
     affected_file.NewContents().AndReturn([
         'ahoy',
         'yo' + content2,
@@ -1596,10 +1598,10 @@ class CannedChecksUnittest(PresubmitTestsBase):
     affected_files = (affected_file1, affected_file2,
                       affected_file3, affected_file4)
 
-    def test(source_filter, include_deletes):
+    def test(file_filter, include_deletes):
       self.assertFalse(include_deletes)
       for x in affected_files:
-        if source_filter(x):
+        if file_filter(x):
           yield x
     # Override the mock of these functions.
     input_api1.FilterSourceFile = lambda x: x
@@ -1718,7 +1720,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     affected_file.IsDirectory().AndReturn(True)
     affected_file.AbsoluteLocalPath().AndReturn(accidental_submssion_file)
     affected_file.LocalPath().AndReturn(accidental_submssion_file)
-    input_api.AffectedFiles(None).AndReturn([affected_file])
+    input_api.AffectedFiles(file_filter=None).AndReturn([affected_file])
 
     self.mox.ReplayAll()
 
@@ -1996,7 +1998,7 @@ mac|success|blew
 
     if not tbr and issue:
       affected_file.LocalPath().AndReturn('foo.cc')
-      change.AffectedFiles(None).AndReturn([affected_file])
+      change.AffectedFiles(file_filter=None).AndReturn([affected_file])
 
       expected_host = 'http://localhost'
       if host_url:
