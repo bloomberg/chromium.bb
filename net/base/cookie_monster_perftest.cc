@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,6 +100,51 @@ TEST(CookieMonsterTest, TestAddCookieOnManyHosts) {
   PerfTimeLogger timer3("Cookie_monster_deleteall_many_hosts");
   cm->DeleteAll(false);
   timer3.Done();
+}
+
+TEST(CookieMonsterTest, TestGetCookiesWithOptions) {
+  scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
+  std::string cookie(kCookieLine);
+  std::vector<GURL> gurls;
+  for (int i = 0; i < kNumCookies; ++i)
+    gurls.push_back(GURL(base::StringPrintf("http://a%04d.izzle", i)));
+
+  for (std::vector<GURL>::const_iterator it = gurls.begin();
+       it != gurls.end(); ++it) {
+    EXPECT_TRUE(cm->SetCookie(*it, cookie));
+  }
+
+  PerfTimeLogger timer("Cookie_monster_get_cookie_info");
+  for (std::vector<GURL>::const_iterator it = gurls.begin();
+       it != gurls.end(); ++it) {
+    CookieOptions options;
+    std::string cookie_line;
+    cookie_line = cm->GetCookiesWithOptions(*it, options);
+  }
+  timer.Done();
+}
+
+TEST(CookieMonsterTest, TestGetCookiesWithInfo) {
+  scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
+  std::string cookie(kCookieLine);
+  std::vector<GURL> gurls;
+  for (int i = 0; i < kNumCookies; ++i)
+    gurls.push_back(GURL(base::StringPrintf("http://a%04d.izzle", i)));
+
+  for (std::vector<GURL>::const_iterator it = gurls.begin();
+       it != gurls.end(); ++it) {
+    EXPECT_TRUE(cm->SetCookie(*it, cookie));
+  }
+
+  PerfTimeLogger timer("Cookie_monster_get_cookie_info");
+  for (std::vector<GURL>::const_iterator it = gurls.begin();
+       it != gurls.end(); ++it) {
+    CookieOptions options;
+    std::string cookie_line;
+    std::vector<CookieStore::CookieInfo> cookie_infos;
+    cm->GetCookiesWithInfo(*it, options, &cookie_line, &cookie_infos);
+  }
+  timer.Done();
 }
 
 static int CountInString(const std::string& str, char c) {

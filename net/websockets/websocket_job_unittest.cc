@@ -122,6 +122,12 @@ class MockCookieStore : public CookieStore {
     }
     return result;
   }
+  virtual void GetCookiesWithInfo(const GURL& url,
+                                  const CookieOptions& options,
+                                  std::string* cookie_line,
+                                  std::vector<CookieInfo>* cookie_infos) {
+    NOTREACHED();
+  }
   virtual void DeleteCookie(const GURL& url,
                             const std::string& cookie_name) {}
   virtual CookieMonster* GetCookieMonster() { return NULL; }

@@ -66,6 +66,13 @@ class AutomationCookieStore : public net::CookieStore {
     return cookie_string_;
   }
 
+  virtual void GetCookiesWithInfo(const GURL& url,
+                                  const net::CookieOptions& options,
+                                  std::string* cookie_line,
+                                  std::vector<CookieInfo>* cookie_infos) {
+    NOTREACHED() << "Should not get called for an automation profile";
+  }
+
   virtual void DeleteCookie(const GURL& url,
                             const std::string& cookie_name) {
     NOTREACHED() << "Should not get called for an automation profile";

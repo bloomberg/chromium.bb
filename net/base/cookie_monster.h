@@ -230,6 +230,11 @@ class CookieMonster : public CookieStore {
   virtual std::string GetCookiesWithOptions(const GURL& url,
                                             const CookieOptions& options);
 
+  virtual void GetCookiesWithInfo(const GURL& url,
+                                  const CookieOptions& options,
+                                  std::string* cookie_line,
+                                  std::vector<CookieInfo>* cookie_info);
+
   // Deletes all cookies with that might apply to |url| that has |cookie_name|.
   virtual void DeleteCookie(const GURL& url, const std::string& cookie_name);
 
@@ -479,6 +484,7 @@ class CookieMonster : public CookieStore {
   base::Histogram* histogram_number_duplicate_db_cookies_;
   base::Histogram* histogram_cookie_deletion_cause_;
   base::Histogram* histogram_time_get_;
+  base::Histogram* histogram_time_mac_;
   base::Histogram* histogram_time_load_;
 
   CookieMap cookies_;

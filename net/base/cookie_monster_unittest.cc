@@ -725,6 +725,37 @@ TEST(CookieMonsterTest, HttpOnlyTest) {
   EXPECT_EQ("A=C", cm->GetCookies(url_google));
 }
 
+TEST(CookieMonsterTest, GetCookiesWithInfo) {
+  GURL url_google(kUrlGoogle);
+  scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
+  CookieOptions options;
+
+  EXPECT_TRUE(cm->SetCookieWithOptions(url_google, "A=B", options));
+  EXPECT_TRUE(cm->SetCookieWithOptions(url_google,
+    "C=D; Mac-Key=390jfn0awf3; Mac-Algorithm=hmac-sha-1", options));
+
+  EXPECT_EQ("A=B; C=D", cm->GetCookiesWithOptions(url_google, options));
+
+  std::string cookie_line;
+  std::vector<CookieStore::CookieInfo> cookie_infos;
+
+  cm->GetCookiesWithInfo(url_google, options, &cookie_line, &cookie_infos);
+
+  EXPECT_EQ("A=B; C=D", cookie_line);
+
+  EXPECT_EQ(2U, cookie_infos.size());
+
+  EXPECT_EQ("A", cookie_infos[0].name);
+  EXPECT_EQ("", cookie_infos[0].mac_key);
+  EXPECT_EQ("", cookie_infos[0].mac_algorithm);
+  EXPECT_EQ(url_google.spec(), cookie_infos[0].source);
+
+  EXPECT_EQ("C", cookie_infos[1].name);
+  EXPECT_EQ("390jfn0awf3", cookie_infos[1].mac_key);
+  EXPECT_EQ("hmac-sha-1", cookie_infos[1].mac_algorithm);
+  EXPECT_EQ(url_google.spec(), cookie_infos[1].source);
+}
+
 namespace {
 
 struct CookieDateParsingCase {

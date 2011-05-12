@@ -54,7 +54,6 @@
 #include "base/metrics/histogram.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
 #include "net/base/net_util.h"
@@ -77,6 +76,8 @@ const size_t CookieMonster::kPurgeCookies               = 300;
 const int CookieMonster::kSafeFromGlobalPurgeDays       = 30;
 
 namespace {
+
+typedef std::vector<CookieMonster::CanonicalCookie*> CanonicalCookieVector;
 
 // Default minimum delay after updating a cookie's LastAccessDate before we
 // will update it again.
@@ -379,6 +380,38 @@ ChangeCausePair ChangeCauseMapping[] = {
   // DELETE_COOKIE_LAST_ENTRY
   { CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT, false }
 };
+
+std::string BuildCookieLine(const CanonicalCookieVector& cookies) {
+  std::string cookie_line;
+  for (CanonicalCookieVector::const_iterator it = cookies.begin();
+       it != cookies.end(); ++it) {
+    if (it != cookies.begin())
+      cookie_line += "; ";
+    // In Mozilla if you set a cookie like AAAA, it will have an empty token
+    // and a value of AAAA.  When it sends the cookie back, it will send AAAA,
+    // so we need to avoid sending =AAAA for a blank token value.
+    if (!(*it)->Name().empty())
+      cookie_line += (*it)->Name() + "=";
+    cookie_line += (*it)->Value();
+  }
+  return cookie_line;
+}
+
+void BuildCookieInfoList(const CanonicalCookieVector& cookies,
+                         std::vector<CookieStore::CookieInfo>* cookie_infos) {
+  for (CanonicalCookieVector::const_iterator it = cookies.begin();
+       it != cookies.end(); ++it) {
+    const CookieMonster::CanonicalCookie* cookie = *it;
+    CookieStore::CookieInfo cookie_info;
+
+    cookie_info.name = cookie->Name();
+    cookie_info.mac_key = cookie->MACKey();
+    cookie_info.mac_algorithm = cookie->MACAlgorithm();
+    cookie_info.source = cookie->Source();
+
+    cookie_infos->push_back(cookie_info);
+  }
+}
 
 }  // namespace
 
@@ -776,35 +809,49 @@ std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
   base::AutoLock autolock(lock_);
   InitIfNecessary();
 
-  if (!HasCookieableScheme(url)) {
+  if (!HasCookieableScheme(url))
     return std::string();
-  }
 
   TimeTicks start_time(TimeTicks::Now());
 
-  // Get the cookies for this host and its domain(s).
   std::vector<CanonicalCookie*> cookies;
   FindCookiesForHostAndDomain(url, options, true, &cookies);
   std::sort(cookies.begin(), cookies.end(), CookieSorter);
 
-  std::string cookie_line;
-  for (std::vector<CanonicalCookie*>::const_iterator it = cookies.begin();
-       it != cookies.end(); ++it) {
-    if (it != cookies.begin())
-      cookie_line += "; ";
-    // In Mozilla if you set a cookie like AAAA, it will have an empty token
-    // and a value of AAAA.  When it sends the cookie back, it will send AAAA,
-    // so we need to avoid sending =AAAA for a blank token value.
-    if (!(*it)->Name().empty())
-      cookie_line += (*it)->Name() + "=";
-    cookie_line += (*it)->Value();
-  }
+  std::string cookie_line = BuildCookieLine(cookies);
 
   histogram_time_get_->AddTime(TimeTicks::Now() - start_time);
 
   VLOG(kVlogGetCookies) << "GetCookies() result: " << cookie_line;
 
   return cookie_line;
+}
+
+void CookieMonster::GetCookiesWithInfo(const GURL& url,
+                                       const CookieOptions& options,
+                                       std::string* cookie_line,
+                                       std::vector<CookieInfo>* cookie_infos) {
+  DCHECK(cookie_line->empty());
+  DCHECK(cookie_infos->empty());
+
+  base::AutoLock autolock(lock_);
+  InitIfNecessary();
+
+  if (!HasCookieableScheme(url))
+    return;
+
+  TimeTicks start_time(TimeTicks::Now());
+
+  std::vector<CanonicalCookie*> cookies;
+  FindCookiesForHostAndDomain(url, options, true, &cookies);
+  std::sort(cookies.begin(), cookies.end(), CookieSorter);
+  *cookie_line = BuildCookieLine(cookies);
+
+  histogram_time_get_->AddTime(TimeTicks::Now() - start_time);
+
+  TimeTicks mac_start_time = TimeTicks::Now();
+  BuildCookieInfoList(cookies, cookie_infos);
+  histogram_time_mac_->AddTime(TimeTicks::Now() - mac_start_time);
 }
 
 void CookieMonster::DeleteCookie(const GURL& url,
@@ -1216,10 +1263,9 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
   }
 
   std::string cookie_path = CanonPath(url, pc);
-
-  // TODO(abarth): Take these values as parameters.
-  std::string mac_key;
-  std::string mac_algorithm;
+  std::string mac_key = pc.HasMACKey() ? pc.MACKey() : std::string();
+  std::string mac_algorithm = pc.HasMACAlgorithm() ?
+      pc.MACAlgorithm() : std::string();
 
   scoped_ptr<CanonicalCookie> cc;
   Time cookie_expires = CanonExpiration(pc, creation_time, options);
@@ -1624,6 +1670,9 @@ void CookieMonster::InitializeHistograms() {
 
   // From UMA_HISTOGRAM_{CUSTOM_,}TIMES
   histogram_time_get_ = base::Histogram::FactoryTimeGet("Cookie.TimeGet",
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
+      50, base::Histogram::kUmaTargetedHistogramFlag);
+  histogram_time_mac_ = base::Histogram::FactoryTimeGet("Cookie.TimeGetMac",
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
       50, base::Histogram::kUmaTargetedHistogramFlag);
   histogram_time_load_ = base::Histogram::FactoryTimeGet("Cookie.TimeLoad",
