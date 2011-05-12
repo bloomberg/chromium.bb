@@ -35,7 +35,7 @@ static const int kInnerPadding = 1;
 static const int kHorizMargin = 3;
 
 // Left side margin of the back button to align with the main menu.
-static const int kBackButtonLeftMargin = 10;
+static const int kBackButtonLeftMargin = 2;
 
 // Right side margin of the forward button to align with the main menu.
 static const int kForwardButtonRightMargin = 1;

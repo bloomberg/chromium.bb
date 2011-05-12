@@ -41,7 +41,8 @@ const int kToolbarTabStripVerticalOverlap = 3;
 const int kCompactNavbarSpacerVisibleHeight = 4;
 const int kCompactNavbarSpacerHeight =
     kCompactNavbarSpacerVisibleHeight + kToolbarTabStripVerticalOverlap;
-// The size of the padding between the compact navigation bar and the tab strip.
+// The size of the padding between the compact navigation/options bars and the
+// tab strip.
 const int kCompactNavbarHorizontalPadding = 2;
 // The number of pixels the bookmark bar should overlap the spacer by if the
 // spacer is visible.
