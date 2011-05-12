@@ -7,44 +7,45 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_surface.h"
 
 namespace {
 
 // This creates an offscreen GL context for gl queries.  Returned GLContext
 // should be deleted in FinalizeGLContext.
 gfx::GLContext* InitializeGLContext() {
-  if (!gfx::GLContext::InitializeOneOff()) {
+  if (!gfx::GLSurface::InitializeOneOff()) {
     LOG(ERROR) << "gfx::GLContext::InitializeOneOff() failed";
     return NULL;
   }
-  gfx::GLContext* context = gfx::GLContext::CreateOffscreenGLContext(NULL);
-  if (context == NULL) {
-    LOG(ERROR) << "gfx::GLContext::CreateOffscreenGLContext(NULL) failed";
+  scoped_ptr<gfx::GLSurface> surface(gfx::GLSurface::CreateOffscreenGLSurface(
+      gfx::Size(1, 1)));
+  if (!surface.get()) {
+    LOG(ERROR) << "gfx::GLContext::CreateOffscreenGLSurface failed";
     return NULL;
   }
+
+  scoped_ptr<gfx::GLContext> context(gfx::GLContext::CreateGLContext(
+      surface.release(),
+      NULL));
+  if (!context.get()) {
+    LOG(ERROR) << "gfx::GLContext::CreateGLContext failed";
+    return NULL;
+  }
+
   if (!context->MakeCurrent()) {
     LOG(ERROR) << "gfx::GLContext::MakeCurrent() failed";
-    context->Destroy();
-    delete context;
     return NULL;
   }
-  return context;
-}
 
-// This destroy and delete the GL context.
-void FinalizeGLContext(gfx::GLContext** context) {
-  DCHECK(context);
-  if (*context) {
-    (*context)->Destroy();
-    delete *context;
-    *context = NULL;
-  }
+  return context.release();
 }
 
 std::string GetGLString(unsigned int pname) {
@@ -80,8 +81,8 @@ namespace gpu_info_collector {
 bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  gfx::GLContext* context = InitializeGLContext();
-  if (context == NULL)
+  scoped_ptr<gfx::GLContext> context(InitializeGLContext());
+  if (!context.get())
     return false;
 
   gpu_info->gl_renderer = GetGLString(GL_RENDERER);
@@ -92,8 +93,6 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   bool validGLVersionInfo = CollectGLVersionInfo(gpu_info);
   bool validVideoCardInfo = CollectVideoCardInfo(gpu_info);
   bool validDriverInfo = CollectDriverInfoGL(gpu_info);
-
-  FinalizeGLContext(&context);
 
   return (validGLVersionInfo && validVideoCardInfo && validDriverInfo);
 }

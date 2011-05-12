@@ -28,7 +28,7 @@ extern "C" {
 #include "content/common/chrome_application_mac.h"
 #include "content/common/content_switches.h"
 #include "unicode/uchar.h"
-#include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_surface.h"
 
 namespace {
 
@@ -252,7 +252,7 @@ void Sandbox::SandboxWarmup(SandboxProcessType sandbox_type) {
       {
          // Preload either the desktop GL or the osmesa so, depending on the
          // --use-gl flag.
-         gfx::GLContext::InitializeOneOff();
+         gfx::GLSurface::InitializeOneOff();
       }
       break;
 

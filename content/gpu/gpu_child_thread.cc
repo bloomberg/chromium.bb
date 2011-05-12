@@ -18,8 +18,8 @@
 #include "content/gpu/gpu_info_collector.h"
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "ipc/ipc_channel_handle.h"
-#include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/sandbox_init_wrapper.h"
@@ -121,7 +121,7 @@ void GpuChildThread::OnInitialize() {
   // Load the GL implementation and locate the bindings before starting the GPU
   // watchdog because this can take a lot of time and the GPU watchdog might
   // terminate the GPU process.
-  if (!gfx::GLContext::InitializeOneOff()) {
+  if (!gfx::GLSurface::InitializeOneOff()) {
     LOG(INFO) << "GLContext::InitializeOneOff failed";
     MessageLoop::current()->Quit();
     return;
