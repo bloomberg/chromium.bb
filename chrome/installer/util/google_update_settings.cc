@@ -48,12 +48,33 @@ bool ReadGoogleUpdateStrKey(const wchar_t* const name, std::wstring* value) {
   return true;
 }
 
+bool WriteGoogleUpdateStrKeyInternal(BrowserDistribution* dist,
+                                     const wchar_t* const name,
+                                     const std::wstring& value) {
+  DCHECK(dist);
+  std::wstring reg_path(dist->GetStateKey());
+  RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_SET_VALUE);
+  return (key.WriteValue(name, value.c_str()) == ERROR_SUCCESS);
+}
+
 bool WriteGoogleUpdateStrKey(const wchar_t* const name,
                              const std::wstring& value) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  std::wstring reg_path = dist->GetStateKey();
-  RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ | KEY_WRITE);
-  return (key.WriteValue(name, value.c_str()) == ERROR_SUCCESS);
+  return WriteGoogleUpdateStrKeyInternal(dist, name, value);
+}
+
+bool WriteGoogleUpdateStrKeyMultiInstall(const wchar_t* const name,
+                                         const std::wstring& value,
+                                         bool system_level) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  bool result = WriteGoogleUpdateStrKeyInternal(dist, name, value);
+  if (!InstallUtil::IsMultiInstall(dist, system_level))
+    return result;
+  // It is a multi-install distro. Must write the reg value again.
+  BrowserDistribution* multi_dist =
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BINARIES);
+  return WriteGoogleUpdateStrKeyInternal(multi_dist, name, value) && result;
 }
 
 bool ClearGoogleUpdateStrKey(const wchar_t* const name) {
@@ -311,6 +332,13 @@ bool GoogleUpdateSettings::GetReferral(std::wstring* referral) {
 
 bool GoogleUpdateSettings::ClearReferral() {
   return ClearGoogleUpdateStrKey(google_update::kRegReferralField);
+}
+
+bool GoogleUpdateSettings::UpdateDidRunState(bool did_run,
+                                             bool system_level) {
+  return WriteGoogleUpdateStrKeyMultiInstall(google_update::kRegDidRunField,
+                                             did_run ? L"1" : L"0",
+                                             system_level);
 }
 
 std::wstring GoogleUpdateSettings::GetChromeChannel(bool system_install) {

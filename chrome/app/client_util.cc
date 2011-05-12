@@ -23,6 +23,7 @@
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/common/result_codes.h"
 
@@ -141,56 +142,16 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
                           LOAD_WITH_ALTERED_SEARCH_PATH);
 }
 
-// Set did_run "dr" to |value| in Google Update's client state key for the
-// product associated with |dist|, creating the client state key if necessary.
-bool SetDidRunState(BrowserDistribution* dist, const wchar_t* value) {
-  DCHECK(dist);
-  DCHECK(value);
-  bool wrote_dr = false;
-  std::wstring product_key_path(dist->GetStateKey());
-  base::win::RegKey reg_key;
-  if (reg_key.Create(HKEY_CURRENT_USER, product_key_path.c_str(),
-                     KEY_SET_VALUE) == ERROR_SUCCESS) {
-    if (reg_key.WriteValue(google_update::kRegDidRunField,
-                           value) == ERROR_SUCCESS) {
-      wrote_dr = true;
-    }
-  }
-  return wrote_dr;
-}
-
-
 void RecordDidRun(const std::wstring& dll_path) {
-  static const wchar_t kSet[] = L"1";
-  BrowserDistribution* product_dist = BrowserDistribution::GetDistribution();
-  SetDidRunState(product_dist, kSet);
-
-  // If this is a multi-install, also write the did_run value under the
-  // multi key.
   bool system_level = !InstallUtil::IsPerUserInstall(dll_path.c_str());
-  if (InstallUtil::IsMultiInstall(product_dist, system_level)) {
-    BrowserDistribution* multi_dist =
-        BrowserDistribution::GetSpecificDistribution(
-            BrowserDistribution::CHROME_BINARIES);
-    SetDidRunState(multi_dist, kSet);
-  }
+  GoogleUpdateSettings::UpdateDidRunState(true, system_level);
 }
 
 void ClearDidRun(const std::wstring& dll_path) {
-  static const wchar_t kCleared[] = L"0";
-  BrowserDistribution* product_dist = BrowserDistribution::GetDistribution();
-  SetDidRunState(product_dist, kCleared);
-
-  // If this is a multi-install, also clear the did_run value under the
-  // multi key.
   bool system_level = !InstallUtil::IsPerUserInstall(dll_path.c_str());
-  if (InstallUtil::IsMultiInstall(product_dist, system_level)) {
-    BrowserDistribution* multi_dist =
-        BrowserDistribution::GetSpecificDistribution(
-            BrowserDistribution::CHROME_BINARIES);
-    SetDidRunState(multi_dist, kCleared);
-  }
+  GoogleUpdateSettings::UpdateDidRunState(false, system_level);
 }
+
 }
 //=============================================================================
 

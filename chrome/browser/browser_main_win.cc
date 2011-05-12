@@ -16,6 +16,7 @@
 #include "base/memory/scoped_native_library.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
@@ -29,6 +30,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
@@ -60,6 +62,37 @@ void InitializeWindowProcExceptions() {
   exception_filter = base::win::SetWinProcExceptionFilter(exception_filter);
   DCHECK(!exception_filter);
 }
+
+// BrowserUsageUpdater --------------------------------------------------------
+// This class' job is to update the registry 'dr' value every 24 hours
+// that way google update can accurately track browser usage without
+// undercounting users that do not close chrome for long periods of time.
+class BrowserUsageUpdater : public Task {
+ public:
+  virtual ~BrowserUsageUpdater() {}
+
+  virtual void Run() OVERRIDE {
+    if (UpdateUsageRegKey())
+      Track();
+  }
+
+  static void Track() {
+    BrowserThread::PostDelayedTask(
+        BrowserThread::FILE,
+        FROM_HERE, new BrowserUsageUpdater,
+        base::TimeDelta::FromHours(24).InMillisecondsRoundedUp());
+  }
+
+ private:
+  bool UpdateUsageRegKey() {
+    FilePath module_dir;
+    if (!PathService::Get(base::DIR_MODULE, &module_dir))
+      return false;
+    bool system_level =
+        !InstallUtil::IsPerUserInstall(module_dir.value().c_str());
+    return GoogleUpdateSettings::UpdateDidRunState(true, system_level);
+  }
+};
 
 }  // namespace
 
@@ -299,6 +332,13 @@ class BrowserMainPartsWin : public BrowserMainParts {
       // Make sure that we know how to handle exceptions from the message loop.
       InitializeWindowProcExceptions();
     }
+  }
+
+  virtual void PostMainMessageLoopStart() OVERRIDE {
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        NewRunnableFunction(&BrowserUsageUpdater::Track),
+        base::TimeDelta::FromSeconds(30).InMillisecondsRoundedUp());
   }
 
  private:
