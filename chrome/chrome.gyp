@@ -408,6 +408,7 @@
       'type': '<(library)',
       'msvs_guid': '57823D8C-A317-4713-9125-2C91FDFD12D6',
       'dependencies': [
+        'chrome_extra_resources',
         'chrome_resources',
         'chrome_strings',
         '../base/base.gyp:base',
@@ -505,8 +506,8 @@
       'target_name': 'syncapi',
       'type': '<(library)',
       'sources': [
-	'browser/sync/engine/http_post_provider_factory.h',
-	'browser/sync/engine/http_post_provider_interface.h',
+        'browser/sync/engine/http_post_provider_factory.h',
+        'browser/sync/engine/http_post_provider_interface.h',
         'browser/sync/engine/syncapi.cc',
         'browser/sync/engine/syncapi.h',
         'browser/sync/engine/configure_reason.h'
