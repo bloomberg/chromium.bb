@@ -569,6 +569,15 @@ bool BrowserView::IsPositionInWindowCaption(const gfx::Point& point) {
 // BrowserView, BrowserWindow implementation:
 
 void BrowserView::Show() {
+  // The same fix as in BrowserWindowGtk::Show.
+  //
+  // The Browser must become the active browser when Show() is called.
+  // But, on Gtk, the browser won't be shown until we return to the runloop.
+  // Therefore we need to set the active window here explicitly. otherwise
+  // any calls to BrowserList::GetLastActive() (for example, in bookmark_util),
+  // will return the previous browser.
+  BrowserList::SetLastActive(browser());
+
   // If the window is already visible, just activate it.
   if (frame_->GetWindow()->IsVisible()) {
     frame_->GetWindow()->Activate();
