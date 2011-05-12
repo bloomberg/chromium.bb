@@ -38,7 +38,9 @@ void PanelBrowserView::Close() {
 
   // Check if the panel is in the closing process, i.e. Panel::Close() is
   // called.
+#ifndef NDEBUG
   DCHECK(panel_->closing());
+#endif
 
   ::BrowserView::Close();
   panel_ = NULL;
