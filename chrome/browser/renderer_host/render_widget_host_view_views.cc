@@ -16,7 +16,6 @@
 #include "base/time.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/backing_store_skia.h"
-#include "content/browser/renderer_host/backing_store_x.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/result_codes.h"
@@ -38,7 +37,6 @@
 static const int kMaxWindowWidth = 4000;
 static const int kMaxWindowHeight = 4000;
 static const char kRenderWidgetHostViewKey[] = "__RENDER_WIDGET_HOST_VIEW__";
-static const char kBackingStoreSkiaSwitch[] = "use-backing-store-skia";
 
 // Copied from third_party/WebKit/Source/WebCore/page/EventHandler.cpp
 //
@@ -62,18 +60,6 @@ const char RenderWidgetHostViewViews::kViewClassName[] =
     "browser/renderer_host/RenderWidgetHostViewViews";
 
 namespace {
-
-bool UsingBackingStoreSkia() {
-  static bool decided = false;
-  static bool use_skia = false;
-  if (!decided) {
-    CommandLine* cmdline = CommandLine::ForCurrentProcess();
-    use_skia = (cmdline && cmdline->HasSwitch(kBackingStoreSkiaSwitch));
-    decided = true;
-  }
-
-  return use_skia;
-}
 
 int WebInputEventFlagsFromViewsEvent(const views::Event& event) {
   int modifiers = 0;
@@ -398,13 +384,7 @@ BackingStore* RenderWidgetHostViewViews::AllocBackingStore(
   if (!nview)
     return NULL;
 
-  if (UsingBackingStoreSkia()) {
-    return new BackingStoreSkia(host_, size);
-  } else {
-    return new BackingStoreX(host_, size,
-                             ui::GetVisualFromGtkWidget(nview),
-                             gtk_widget_get_visual(nview)->depth);
-  }
+  return new BackingStoreSkia(host_, size);
 }
 
 void RenderWidgetHostViewViews::SetBackground(const SkBitmap& background) {
@@ -843,31 +823,8 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
                           origin.y() + paint_rect.y());
           paint_rect.SetRect(0, 0, paint_rect.width(), paint_rect.height());
         }
-        if (UsingBackingStoreSkia()) {
-          static_cast<BackingStoreSkia*>(backing_store)->SkiaShowRect(
-              gfx::Point(paint_rect.x(), paint_rect.y()), canvas);
-        } else {
-          static_cast<BackingStoreX*>(backing_store)->XShowRect(origin,
-              paint_rect, ui::GetX11WindowFromGdkWindow(window));
-        }
-      } else if (!UsingBackingStoreSkia()) {
-        // If the grey blend is showing, we make two drawing calls. Use double
-        // buffering to prevent flicker. Use CairoShowRect because XShowRect
-        // shortcuts GDK's double buffering.
-        GdkRectangle rect = { paint_rect.x(), paint_rect.y(),
-                              paint_rect.width(), paint_rect.height() };
-        gdk_window_begin_paint_rect(window, &rect);
-
-        static_cast<BackingStoreX*>(backing_store)->CairoShowRect(
-            paint_rect, GDK_DRAWABLE(window));
-
-        cairo_t* cr = gdk_cairo_create(window);
-        gdk_cairo_rectangle(cr, &rect);
-        cairo_set_source_rgba(cr, 0, 0, 0, 0.7);
-        cairo_fill(cr);
-        cairo_destroy(cr);
-
-        gdk_window_end_paint(window);
+        static_cast<BackingStoreSkia*>(backing_store)->SkiaShowRect(
+            gfx::Point(paint_rect.x(), paint_rect.y()), canvas);
       } else {
         // TODO(sad)
         NOTIMPLEMENTED();
