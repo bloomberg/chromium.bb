@@ -5,14 +5,15 @@
 
 .tile-page {
   display: -webkit-box;
-  margin-top: 50px;
+  padding-top: 100px;
   text-align: center;
   width: 100%;
   -webkit-box-orient: vertical;
 }
 
 .tile-page-title {
-  display: inline-block;
+  /* TODO(estade): title is hidden for now. We may remove it later. */
+  display: none;
   font-size: 25px;
   height: 50px;
 }
@@ -52,4 +53,8 @@
 .animating-tile-page .tile,
 .tile.drag-representation.placing {
   -webkit-transition: left 200ms, top 200ms;
+}
+
+.animating-tile-page .top-margin {
+  -webkit-transition: margin-bottom 200ms;
 }

@@ -211,7 +211,7 @@ var CardSlider = (function() {
       if (e.wheelDeltaX == 0)
         return;
 
-      var scrollAmountPerPage = 120;
+      var scrollAmountPerPage = -120;
       this.mouseWheelScrollAmount_ += e.wheelDeltaX;
       if (Math.abs(this.mouseWheelScrollAmount_) >=
           Math.abs(scrollAmountPerPage)) {

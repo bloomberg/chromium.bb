@@ -279,6 +279,11 @@ cr.define('ntp4', function() {
       title.className = 'tile-page-title';
       this.appendChild(title);
 
+      // Div that sets the vertical position of the tile grid.
+      this.topMargin_ = this.ownerDocument.createElement('div');
+      this.topMargin_.className = 'top-margin';
+      this.appendChild(this.topMargin_);
+
       // Div that holds the tiles.
       this.tileGrid_ = this.ownerDocument.createElement('div');
       this.tileGrid_.className = 'tile-grid';
@@ -287,7 +292,9 @@ cr.define('ntp4', function() {
       // Ordered list of our tiles.
       this.tileElements_ = this.tileGrid_.getElementsByClassName('tile real');
 
-      this.maskWidth_ = this.clientWidth;
+      // These are properties used in updateTopMargin.
+      this.animatedTopMarginPx_ = 0;
+      this.topMarginPx_ = 0;
 
       this.eventTracker = new EventTracker();
       this.eventTracker.add(window, 'resize', this.onResize_.bind(this));
@@ -327,15 +334,13 @@ cr.define('ntp4', function() {
      * @protected
      */
     appendTile: function(tileElement) {
+      this.calculateLayoutValues_();
+
       var wrapperDiv = new Tile(tileElement);
       this.tileGrid_.appendChild(wrapperDiv);
 
       this.positionTile_(this.tileElements_.length - 1);
       this.classList.remove('animating-tile-page');
-
-      // This would be in initialize(), but at that point we don't yet know our
-      // width. This won't do any work if it doesn't need to update the mask.
-      this.updateMask_();
     },
 
     /**
@@ -348,9 +353,8 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Makes some calculations for tile layout. These calculations are shared
-     * by |positionTile_| and |getWouldBeIndexforPoint_|.
-     * @return {Object} Assorted layout pixel values.
+     * Makes some calculations for tile layout. These change depending on
+     * height, width, and the number of tiles.
      * @private
      */
     calculateLayoutValues_: function() {
@@ -370,15 +374,21 @@ cr.define('ntp4', function() {
       var leftMargin =
           Math.max(minMargin,
                    (this.tileGrid_.clientWidth - effectiveGridWidth) / 2);
-      return {
+
+      var rowHeight = this.heightForWidth(realTileValues.tileWidth) +
+          realTileValues.interTileSpacing;
+
+      this.layoutValues_ = {
         numRowTiles: numRowTiles,
         leftMargin: leftMargin,
         colWidth: realTileValues.offsetX,
-        rowHeight: this.heightForWidth(realTileValues.tileWidth) +
-            realTileValues.interTileSpacing,
+        rowHeight: rowHeight,
         tileWidth: realTileValues.tileWidth,
         wide: wide,
       };
+
+      // We need to update the top margin as well.
+      this.updateTopMargin_();
     },
 
     /**
@@ -391,7 +401,7 @@ cr.define('ntp4', function() {
      */
     positionTile_: function(index, indexOffset) {
       var grid = this.gridValues_;
-      var layout = this.calculateLayoutValues_();
+      var layout = this.layoutValues_;
 
       indexOffset = typeof indexOffset != 'undefined' ? indexOffset : 0;
       // Add the offset _after_ the modulus division. We might want to show the
@@ -444,7 +454,7 @@ cr.define('ntp4', function() {
      */
     getWouldBeIndexForPoint_: function(x, y) {
       var grid = this.gridValues_;
-      var layout = this.calculateLayoutValues_();
+      var layout = this.layoutValues_;
 
       var col = Math.floor((x - layout.leftMargin) / layout.colWidth);
       if (col < 0 || col >= layout.numRowTiles)
@@ -459,11 +469,15 @@ cr.define('ntp4', function() {
      * @param {Object} e The resize event.
      */
     onResize_: function(e) {
-      // Do nothing if the width didn't change.
-      if (this.maskWidth_ == this.clientWidth)
+      if (this.lastWidth_ == this.clientWidth &&
+          this.lastHeight_ == this.clientHeight) {
         return;
+      }
 
-      this.updateMask_();
+      this.calculateLayoutValues_();
+
+      this.lastWidth_ = this.clientWidth;
+      this.lastHeight_ = this.clientHeight;
       this.classList.add('animating-tile-page');
 
       for (var i = 0; i < this.tileElements_.length; i++) {
@@ -472,15 +486,18 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * The tile grid has an image mask which fades at the edges. This is only
-     * noticeable when doppleganger tiles are entering or exiting the grid.
+     * The tile grid has an image mask which fades at the edges. We only show
+     * the mask when there is an active drag; it obscures doppleganger tiles
+     * as they enter or exit the grid.
+     * @private
      */
     updateMask_: function() {
-      if (this.clientWidth == this.maskWidth_)
+      if (this.dragEnters_ == 0) {
+        this.style.WebkitMaskBoxImage = '';
         return;
-      this.maskWidth_ = this.clientWidth;
+      }
 
-      var leftMargin = this.calculateLayoutValues_().leftMargin;
+      var leftMargin = this.layoutValues_.leftMargin;
       var fadeDistance = 20;
       var gradient =
           '-webkit-linear-gradient(left,' +
@@ -492,6 +509,41 @@ cr.define('ntp4', function() {
                   'px, ' +
               'transparent)';
       this.style.WebkitMaskBoxImage = gradient;
+    },
+
+    updateTopMargin_: function() {
+      var layout = this.layoutValues_;
+
+      // The top margin is set so that the vertical midpoint of the grid will
+      // be 1/3 down the page.
+      var numRows = Math.ceil(this.tileElements_.length / layout.numRowTiles);
+      var usedHeight = layout.rowHeight * numRows;
+      // 100 matches the top padding of tile-page.
+      var newMargin = document.documentElement.clientHeight / 3 -
+          usedHeight / 2 - 100;
+      newMargin = Math.max(newMargin, 0);
+
+      // |newMargin| is the final margin we actually want to show. However,
+      // part of that should be animated and part should not (for the same
+      // reason as with leftMargin). The approach is to consider differences
+      // when the layout changes from wide to narrow or vice versa as
+      // 'animatable'. These differences accumulate in animatedTopMarginPx_,
+      // while topMarginPx_ caches the real (total) margin. Either of these
+      // calculations may come out to be negative, so we use margins as the
+      // css property.
+
+      if (typeof this.topMarginIsForWide_ == 'undefined')
+        this.topMarginIsForWide_ = layout.wide;
+      if (this.topMarginIsForWide_ != layout.wide) {
+        this.animatedTopMarginPx_ += newMargin - this.topMarginPx_;
+        this.topMargin_.style.marginBottom =
+            this.animatedTopMarginPx_ + 'px';
+      }
+
+      this.topMarginIsForWide_ = layout.wide;
+      this.topMarginPx_ = newMargin;
+      this.topMargin_.style.marginTop =
+          (this.topMarginPx_ - this.animatedTopMarginPx_) + 'px';
     },
 
     /**
@@ -529,8 +581,11 @@ cr.define('ntp4', function() {
       if (!TilePage.currentlyDraggingTile)
         return;
 
+      // Applies the mask so doppleganger tiles disappear into the fog.
+      this.updateMask_();
+
       this.classList.add('animating-tile-page');
-      this.withinPageDrag_ = isAncestor(this, TilePage.currentlyDraggingTile);
+      this.withinPageDrag_ = this.contains(TilePage.currentlyDraggingTile);
       this.dragItemIndex_ = this.withinPageDrag_ ?
           TilePage.currentlyDraggingTile.index : this.tileElements_.length;
       this.currentDropIndex_ = this.dragItemIndex_;
@@ -599,6 +654,9 @@ cr.define('ntp4', function() {
           continue;
         this.positionTile_(i);
       }
+
+      // Remove the drag mask.
+      this.updateMask_();
     },
 
     /**
