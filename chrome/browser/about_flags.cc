@@ -305,13 +305,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kMultiProfiles)
   },
   {
-    "enable-history-quick-provider",
-    IDS_FLAGS_ENABLE_HISTORY_QUICK_PROVIDER,
-    IDS_FLAGS_ENABLE_HISTORY_QUICK_PROVIDER_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableHistoryQuickProvider)
-  },
-  {
     "restrict-instant-to-search",
     IDS_FLAGS_RESTRICT_INSTANT_TO_SEARCH_NAME,
     IDS_FLAGS_RESTRICT_INSTANT_TO_SEARCH_DESCRIPTION,

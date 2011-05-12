@@ -786,9 +786,7 @@ AutocompleteController::AutocompleteController(
   providers_.push_back(search_provider_);
   // TODO(mrossetti): Remove the following and permanently modify the
   // HistoryURLProvider to not search titles once HQP is turned on permanently.
-  bool hqp_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-                         switches::kEnableHistoryQuickProvider) &&
-                     !CommandLine::ForCurrentProcess()->HasSwitch(
+  bool hqp_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
                          switches::kDisableHistoryQuickProvider);
   if (hqp_enabled)
     providers_.push_back(new HistoryQuickProvider(this, profile));

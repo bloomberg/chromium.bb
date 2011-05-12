@@ -65,6 +65,9 @@ class HistoryContentsProvider : public HistoryProvider {
   // results_.
   void AddBookmarkTitleMatchToResults(const bookmark_utils::TitleMatch& match);
 
+  // Return true if the search term can be found in the title of |result|.
+  bool MatchInTitle(const history::URLResult& result);
+
   CancelableRequestConsumerT<int, 0> request_consumer_;
 
   // The number of times we're returned each different type of result. These are
@@ -79,6 +82,8 @@ class HistoryContentsProvider : public HistoryProvider {
 
   // Whether we should match against the body text only (true) or also against
   // url and titles (false).
+  // TODO(mrossetti): Remove body_only_ and MatchInTitle once body_only_
+  // becomes permanent.
   bool body_only_;
 
   // Whether we should trim "http://" from results.

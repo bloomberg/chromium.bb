@@ -202,15 +202,14 @@ void HistoryContentsProvider::ConvertResults() {
   }
 }
 
-static bool MatchInTitle(const history::URLResult& result) {
-  return !result.title_match_positions().empty();
+// TODO(mrossetti): Remove MatchInTitle once body_only_ becomes permanent.
+bool HistoryContentsProvider::MatchInTitle(const history::URLResult& result) {
+  return !body_only_ && !result.title_match_positions().empty();
 }
 
 AutocompleteMatch HistoryContentsProvider::ResultToMatch(
     const history::URLResult& result,
     int score) {
-  // TODO(sky): if matched title highlight matching words in title.
-  // Also show star in popup.
   AutocompleteMatch match(this, score, true, MatchInTitle(result) ?
       AutocompleteMatch::HISTORY_TITLE : AutocompleteMatch::HISTORY_BODY);
   match.contents = StringForURLDisplay(result.url(), true, trim_http_);
