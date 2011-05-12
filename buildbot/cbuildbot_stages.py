@@ -294,7 +294,7 @@ class ManifestVersionedSyncStage(BuilderStage):
       increment = 'branch'
 
     manifest_manager = manifest_version.BuildSpecsManager(
-       tmp_dir=os.path.join('/var', 'buildbot-package-cache', 'git.root'),
+       tmp_dir=os.path.join('/b', 'git.root'),
        source_repo=self._build_config['git_url'],
        manifest_repo=self._build_config['manifest_version'],
        branch=branch,
