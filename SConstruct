@@ -2539,6 +2539,18 @@ def NaClSdkLibrary(env, lib_name, *args, **kwargs):
   env.ComponentLibrary(lib_name, *args, **kwargs)
   if not env.Bit('nacl_disable_shared'):
     env_shared = env.Clone(COMPONENT_STATIC=False)
+
+    # lib_name might already have 'lib' prefix.
+    # lib_name should not have '.so' suffix, but check anyway.
+    # TODO(eaeltsin): fix libraries named 'lib*' and remove this hack.
+    soname = ''
+    if not lib_name.startswith('lib'):
+      soname += 'lib'
+    soname += lib_name
+    if not lib_name.endswith('.so'):
+      soname += '.so'
+    env_shared.AppendUnique(SHLINKFLAGS=['-Wl,-soname,%s' % (soname)])
+
     env_shared.ComponentLibrary(lib_name, *args, **kwargs)
 
 nacl_extra_sdk_env.AddMethod(NaClSdkLibrary)
