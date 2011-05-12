@@ -217,7 +217,8 @@ class _RepoRepository(object):
     """Sync/update the source"""
     try:
       self.Initialize(branch)
-      cros_lib.RunCommand(['repo', 'sync'], cwd=self.directory)
+      cros_lib.RunCommand(['repo', 'sync', '-q', '--jobs=4'],
+                          cwd=self.directory)
     except cros_lib.RunCommandError, e:
       err_msg = 'Failed to sync sources %s' % e.message
       logging.error(err_msg)

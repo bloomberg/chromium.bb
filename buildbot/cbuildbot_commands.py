@@ -121,17 +121,13 @@ def PreFlightRinse(buildroot, board, tracking_branch, overlays):
 
 
 def ManifestCheckout(buildroot, tracking_branch, next_version,
-                     retries=_DEFAULT_RETRIES,
-                     url='ssh://git.chromium.org:9222/manifest-versions'):
+                     retries=_DEFAULT_RETRIES, url=None):
   """Performs a manifest checkout and clobbers any previous checkouts."""
 
-  print "buildroot %s" % buildroot
-  print "tracking_branch %s" % tracking_branch
-  print "nextversion %s" % next_version
-  print "url %s" % url
-
-  # Assume url is coming in and overriding and set to manifest-versions
-  url = os.path.dirname(url) + '/manifest-versions';
+  print "BUILDROOT: %s" % buildroot
+  print "TRACKING BRANCH: %s" % tracking_branch
+  print "NEXT VERSION: %s" % next_version
+  print "URL: %s" % url
 
   branch = tracking_branch.split('/');
   next_version_subdir = next_version.split('.');
@@ -143,15 +139,21 @@ def ManifestCheckout(buildroot, tracking_branch, next_version,
 
   # Retry the command up to 3 times to check for a race condition.
   # If it fails the third time, let the exception go as normal.
-  count = 3
+  count = retries
   while True:
     try:
-      print 'Buildspec not yet available, sleeping.'
-      time.sleep(120)
-      cros_lib.OldRunCommand(['repo', '--trace', 'init', '-u', url, '-m',
-                              manifest], cwd=buildroot, input='\n\ny\n')
+      # Re-init'ing does not work if previous .repo directory exists.
+      repo_directory = os.path.join(buildroot, '.repo')
+      if os.path.exists(repo_directory):
+        shutil.rmtree(repo_directory)
+
+      cros_lib.OldRunCommand(['repo', 'init', '-u', url, '-b', branch,
+                              '-m', manifest],
+                             cwd=buildroot, input='\n\ny\n')
       break
     except cros_lib.RunCommandException:
+      print 'Buildspec not yet available, sleeping.'
+      time.sleep(60)
       print 'Retrying repo init...'
       count -= 1
       if count <= 0:
