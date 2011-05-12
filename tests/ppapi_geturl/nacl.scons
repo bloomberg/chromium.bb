@@ -71,25 +71,3 @@ env.AddNodeToTestSuite(node,
                        'run_ppapi_geturl_browser_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken()
                        )
-
-for suffix in ['valid', 'invalid']:
-  basename = 'ppapi_geturl_' + suffix
-  node = env.SelUniversalTest(
-      basename + '.out',
-      sel_universal_flags=['--silence_nexe',
-                           '--command_file',
-                           env.File('${SCONSTRUCT_DIR}/tests/ppapi_proxy'
-                                    '/sel_universal_ppapi_replay_prolog.stdin'),
-                           '--command_file',
-                           env.File(basename + '.stdin'),
-                           ],
-      command=[ppapi_geturl_nexe],
-      stdout_golden=env.File(basename + '.stdout'),
-      # filter out a line that contains unpredictable values
-      filter_regex="'ScriptableObject::Call'",
-      filter_inverse='true',
-      )
-
-  env.AddNodeToTestSuite(node,
-                         ['small_tests', 'sel_ldr_tests'],
-                         'run_' + basename + '_test')
