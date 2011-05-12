@@ -6,6 +6,7 @@
 
 Import('env')
 
+
 if 'TRUSTED_ENV' in env and (env['TRUSTED_ENV'].Bit('windows') or
                              env['TRUSTED_ENV'].Bit('mac')):
   env.Append(CPPDEFINES=[
@@ -19,7 +20,11 @@ env.ComponentProgram('nanosleep_test.nexe',
                      'nanosleep_test.c',
                      EXTRA_LIBS=['pthread'])
 
+# This is a timing test, so we only run on real hardware
+is_broken = env.Bit('running_on_vm')
+
 node = env.CommandSelLdrTestNacl(
     'nanosleep_test.out',
     command=[env.File('nanosleep_test.nexe')])
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_nanosleep_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_nanosleep_test',
+    is_broken=is_broken)

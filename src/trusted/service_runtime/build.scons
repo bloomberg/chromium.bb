@@ -409,29 +409,33 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
   env.AddNodeToTestSuite(node, ['medium_tests'],
                          is_broken=env.Bit('build_arm') and env.UsingEmulator())
 
-  # also seems to have issues with windows coverage
-  # NOTE: uses validator
-  nacl_sync_cond_test_exe = env.ComponentProgram(
-      'nacl_sync_cond_test',
-      ['nacl_sync_cond_test.c'],
-      EXTRA_LIBS=['sel',
-                  'simple_service',
-                  'gio_wrapped_desc',
-                  'nonnacl_srpc',
-                  'nrd_xfer',
-                  'nacl_perf_counter',
-                  'nacl_base',
-                  'imc',
-                  'platform',
-                  'gio',
-                  ] + VALIDATOR_LIBS
-                   + DEBUG_LIBS)
-  env.Requires(nacl_sync_cond_test_exe, crt)
 
-  node = env.CommandTest(
-      'nacl_sync_cond_test.out',
-      command=[nacl_sync_cond_test_exe])
-  env.AddNodeToTestSuite(node, ['medium_tests'], 'run_nacl_sync_cond_test')
+# also seems to have issues with windows coverage or VMs
+# NOTE: uses validator
+is_broken = env.Bit('coverage_enabled') or env.Bit('running_on_vm')
+nacl_sync_cond_test_exe = env.ComponentProgram(
+    'nacl_sync_cond_test',
+    ['nacl_sync_cond_test.c'],
+    EXTRA_LIBS=['sel',
+                'simple_service',
+                'gio_wrapped_desc',
+                'nonnacl_srpc',
+                'nrd_xfer',
+                'nacl_perf_counter',
+                'nacl_base',
+                'imc',
+                'platform',
+                'gio',
+                ] + VALIDATOR_LIBS
+                 + DEBUG_LIBS)
+env.Requires(nacl_sync_cond_test_exe, crt)
+node = env.CommandTest(
+    'nacl_sync_cond_test.out',
+    command=[nacl_sync_cond_test_exe])
+env.AddNodeToTestSuite(node,
+                       ['medium_tests'],
+                       'run_nacl_sync_cond_test',
+                       is_broken=is_broken)
 
 
 env_cleanser_test_exe = env.ComponentProgram('env_cleanser_test',

@@ -18,6 +18,7 @@ from SCons.Script import GetBuildFailures
 import SCons.Warnings
 SCons.Warnings.warningAsException()
 
+
 # NOTE: Underlay for  src/third_party_mod/gtest
 # TODO: try to eliminate this hack
 Dir('src/third_party_mod/gtest').addRepository(
@@ -352,6 +353,16 @@ pre_base_env = Environment(
     COVERAGE_GENHTML = '../third_party/lcov/bin/genhtml',
     **kwargs
 )
+
+# If the environment valriable BUILDBOT_BUILDERNAME is set, we can determine
+# if we are running in a VM by the lack of a '-bare-' (aka bare metal) in the
+# bot name.  Otherwise if the builder name is not set, then assume real HW.
+DeclareBit('running_on_vm', 'Returns true when environment is running in a VM')
+builder = os.environ.get('BUILDBOT_BUILDERNAME')
+if builder and builder.find('-bare-') == -1:
+  pre_base_env.SetBits('running_on_vm')
+else:
+  pre_base_env.ClearBits('running_on_vm')
 
 DeclareBit('nacl_glibc', 'Use nacl-glibc for building untrusted code')
 pre_base_env.SetBitFromOption('nacl_glibc', False)

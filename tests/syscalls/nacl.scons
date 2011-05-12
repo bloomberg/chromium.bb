@@ -130,18 +130,22 @@ node = env.CommandSelLdrTestNacl(
     'timefuncs_test.out',
     command=[env.File('timefuncs_test.nexe')]
     )
+
 env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'], 'run_timefuncs_test')
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_timefuncs_test',
+                      )
 
 raw_syscall_timefunc_objects = env.RawSyscallObjects(['timefuncs_test.cc'])
 env.ComponentProgram('raw_timefuncs_test.nexe',
                      raw_syscall_timefunc_objects,
                      EXTRA_LIBS=['syscall_test_framework'])
 
-node = env.CommandSelLdrTestNacl(
-    'raw_timefuncs_test.out',
-    command=[env.File('raw_timefuncs_test.nexe')]
-    )
+# This is a timing test, so we only run on real hardware
+is_broken = env.Bit('running_on_vm')
+node = env.CommandSelLdrTestNacl('raw_timefuncs_test.out',
+                                 command=[env.File('raw_timefuncs_test.nexe')])
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
-                       'run_raw_timefuncs_test')
+                       'run_raw_timefuncs_test',
+                       is_broken=is_broken)
