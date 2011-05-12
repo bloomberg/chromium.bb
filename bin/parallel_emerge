@@ -455,7 +455,8 @@ class DepGraphGenerator(object):
     # Prime and flush emerge caches.
     root = emerge.settings["ROOT"]
     vardb = emerge.trees[root]["vartree"].dbapi
-    vardb.counter_tick()
+    if "--pretend" not in emerge.opts:
+      vardb.counter_tick()
     vardb.flush_cache()
 
   def GenDependencyTree(self):

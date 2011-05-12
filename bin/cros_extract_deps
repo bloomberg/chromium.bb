@@ -85,7 +85,7 @@ def main():
 
   # We want the toolchain to be quiet because we are going to output
   # a well-formed json payload.
-  argv = ['--quiet']
+  argv = ['--quiet', '--pretend']
 
   # cros_extract_deps defaults to rdeps. However, only use this if
   # there was no explicit --root-deps command line switch.

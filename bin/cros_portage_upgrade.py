@@ -221,7 +221,7 @@ class Upgrader(object):
 
   def _GetCurrentVersions(self):
     """Returns a list of cpvs of the current package dependencies."""
-    argv = ['--emptytree']
+    argv = ['--emptytree', '--pretend']
     argv.append('--board=%s' % self._options.board)
     if not self._options.verbose:
       argv.append('--quiet')
