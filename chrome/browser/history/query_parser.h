@@ -1,9 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// The query parser is used to parse queries entered into the history
-// search into more normalized queries can be passed to the SQLite backend.
 
 #ifndef CHROME_BROWSER_HISTORY_QUERY_PARSER_H_
 #define CHROME_BROWSER_HISTORY_QUERY_PARSER_H_
@@ -11,6 +8,7 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/string16.h"
 #include "chrome/browser/history/snippet.h"
 
@@ -25,9 +23,9 @@ struct QueryWord {
   size_t position;
 };
 
-// QueryNode is used by QueryNodeParser to represent the elements that
-// constitute a query. While QueryNode is exposed by way of ParseQuery, it
-// really isn't meant for external usage.
+// QueryNode is used by QueryParser to represent the elements that constitute a
+// query. While QueryNode is exposed by way of ParseQuery, it really isn't meant
+// for external usage.
 class QueryNode {
  public:
   virtual ~QueryNode() {}
@@ -36,16 +34,15 @@ class QueryNode {
   // the number of words in this node.
   virtual int AppendToSQLiteQuery(string16* query) const = 0;
 
-  // Return true if this is a word node, false if it's a QueryNodeList.
+  // Return true if this is a QueryNodeWord, false if it's a QueryNodeList.
   virtual bool IsWord() const = 0;
 
-  // Returns true if this node matches the specified text. If exact is true,
-  // the string must exactly match. Otherwise, this uses a starts with
-  // comparison.
+  // Returns true if this node matches |word|. If |exact| is true, the string
+  // must exactly match. Otherwise, this uses a starts with comparison.
   virtual bool Matches(const string16& word, bool exact) const = 0;
 
-  // Returns true if this node matches at least one of the words in words. If
-  // the node matches at least one word, an entry is added to match_positions
+  // Returns true if this node matches at least one of the words in |words|. If
+  // the node matches at least one word, an entry is added to |match_positions|
   // giving the matching region.
   virtual bool HasMatchIn(const std::vector<QueryWord>& words,
                           Snippet::MatchPositions* match_positions) const = 0;
@@ -54,7 +51,8 @@ class QueryNode {
   virtual void AppendWords(std::vector<string16>* words) const = 0;
 };
 
-
+// This class is used to parse queries entered into the history search into more
+// normalized queries that can be passed to the SQLite backend.
 class QueryParser {
  public:
   QueryParser();
@@ -69,40 +67,35 @@ class QueryParser {
   static bool IsWordLongEnoughForPrefixSearch(const string16& word);
 
   // Parse a query into a SQLite query. The resulting query is placed in
-  // sqlite_query and the number of words is returned.
-  int ParseQuery(const string16& query,
-                 string16* sqlite_query);
+  // |sqlite_query| and the number of words is returned.
+  int ParseQuery(const string16& query, string16* sqlite_query);
 
-  // Parses the query words in query, returning the nodes that constitute the
+  // Parses the query words in |query|, returning the nodes that constitute the
   // valid words in the query. This is intended for later usage with
-  // DoesQueryMatch.
-  // Ownership of the nodes passes to the caller.
-  void ParseQuery(const string16& query,
-                  std::vector<QueryNode*>* nodes);
+  // DoesQueryMatch. Ownership of the nodes passes to the caller.
+  void ParseQuery(const string16& query, std::vector<QueryNode*>* nodes);
 
-  // Parses a query returning the words that make up the query. Any words in
-  // quotes are put in |words| without the quotes. For example, the query text
-  // "foo bar" results in two entries being added to words, one for foo and one
-  // for bar.
-  void ExtractQueryWords(const string16& query,
-                         std::vector<string16>* words);
+  // Parses |query| returning the words that make up it. Any words in quotes are
+  // put in |words| without the quotes. For example, the query text "foo bar"
+  // results in two entries being added to words, one for foo and one for bar.
+  void ExtractQueryWords(const string16& query, std::vector<string16>* words);
 
   // Returns true if the string text matches the query nodes created by a call
-  // to ParseQuery. If the query does match each of the matching positions in
+  // to ParseQuery. If the query does match, each of the matching positions in
   // the text is added to |match_positions|.
   bool DoesQueryMatch(const string16& text,
                       const std::vector<QueryNode*>& nodes,
                       Snippet::MatchPositions* match_positions);
 
  private:
-  // Does the work of parsing a query; creates nodes in QueryNodeList as
-  // appropriate. This is invoked from both of the ParseQuery methods.
-  bool ParseQueryImpl(const string16& query,
-                      QueryNodeList* root);
+  // Does the work of parsing |query|; creates nodes in |root| as appropriate.
+  // This is invoked from both of the ParseQuery methods.
+  bool ParseQueryImpl(const string16& query, QueryNodeList* root);
 
-  // Extracts the words from text, placing each word into words.
-  void ExtractQueryWords(const string16& text,
-                         std::vector<QueryWord>* words);
+  // Extracts the words from |text|, placing each word into |words|.
+  void ExtractQueryWords(const string16& text, std::vector<QueryWord>* words);
+
+  DISALLOW_COPY_AND_ASSIGN(QueryParser);
 };
 
 #endif  // CHROME_BROWSER_HISTORY_QUERY_PARSER_H_
