@@ -149,7 +149,7 @@ def ManifestCheckout(buildroot, tracking_branch, next_version,
       cros_lib.OldRunCommand(['repo', 'init', '-u', url, '-m', manifest ],
                              cwd=buildroot, input='\n\ny\n')
       break
-    except cros_lib.RunCommandError:
+    except cros_lib.RunCommandException:
       time.sleep(60)
       print 'Retrying repo init...'
       count -= 1

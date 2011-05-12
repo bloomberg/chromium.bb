@@ -336,6 +336,8 @@ add_config('x86-mario-private-full', [internal, full, official, {
   'uprev' : True,
   'rev_overlays': 'both',
   'push_overlays': 'private',
+  # TODO(sosa): This is wrong but restores don's builder to build with mvp.
+  'manifest_version' : MANIFEST_VERSIONS_INT_URL,
 }])
 
 # cbuild --board=x86-zgb  master --official --chromeos --clean
