@@ -613,7 +613,8 @@ class ExecuteTasksFileSystemCallbackDispatcher
     GURL base_url = fileapi::GetFileSystemRootURI(target_origin_url,
         fileapi::kFileSystemTypeExternal);
     *target_file_url = GURL(base_url.spec() + virtual_path.value());
-    *file_path = virtual_path;
+    FilePath root(FILE_PATH_LITERAL("/"));
+    *file_path = root.Append(virtual_path);
     *is_directory = file_info.is_directory;
     return true;
   }
