@@ -8,8 +8,15 @@
 #include <string>
 #include <vector>
 
+#include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "base/rand_util.h"
+#include "base/stringize_macros.h"
+#include "base/task.h"
+#include "base/threading/platform_thread.h"
+#include "base/threading/thread.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npfunctions.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -24,18 +31,17 @@
  Supported Javascript interface:
  readonly attribute string supportID;
  readonly attribute int state;
-   state: {
-     disconnected: 1,
-     connecting: 2,
-     connected: 3,
-     affirmingConnection: 4,
-     error: 5,
-     initializing: 6
+ state: {
+     DISCONNECTED,
+     REQUESTED_SUPPORT_ID,
+     RECEIVED_SUPPORT_ID,
+     CONNECTED,
+     AFFIRMING_CONNECTION,
+     ERROR,
   }
- attribute Function void debugInfo(string info);
  attribute Function void onStateChanged();
 
- void connect(string uid, string auth_token, function done);
+ void connect(string uid, string auth_token);
  void disconnect();
 */
 
@@ -58,17 +64,59 @@ std::string StringFromNPIdentifier(NPIdentifier identifier) {
   return string;
 }
 
+// Convert an NPVariant into a std::string
+std::string StringFromNPVariant(const NPVariant& variant) {
+  if (!NPVARIANT_IS_STRING(variant))
+    return std::string();
+  const NPString& np_string = NPVARIANT_TO_STRING(variant);
+  return std::string(np_string.UTF8Characters, np_string.UTF8Length);
+}
+
+// Convert a std::string into an NPVariant.
+// Caller is responsible for making sure that NPN_ReleaseVariantValue is
+// called on returned value.
+NPVariant NPVariantFromString(const std::string& val) {
+  size_t len = val.length();
+  NPUTF8* chars =
+      reinterpret_cast<NPUTF8*>(g_npnetscape_funcs->memalloc(len + 1));
+  strcpy(chars, val.c_str());
+  NPVariant variant;
+  STRINGN_TO_NPVARIANT(chars, len, variant);
+  return variant;
+}
+
+// Convert an NPVariant into an NSPObject
+NPObject* ObjectFromNPVariant(const NPVariant& variant) {
+  if (!NPVARIANT_IS_OBJECT(variant))
+    return NULL;
+  return NPVARIANT_TO_OBJECT(variant);
+}
+
 // NPAPI plugin implementation for remoting host script object
 class HostNPScriptObject {
  public:
-  explicit HostNPScriptObject(NPObject* parent) : parent_(parent) {}
+  HostNPScriptObject(NPP plugin, NPObject* parent)
+      : plugin_(plugin),
+        parent_(parent),
+        state_(kDisconnected),
+        on_state_changed_func_(NULL),
+        worker_thread_("remoting_host_plugin"),
+        np_thread_id_(base::PlatformThread::CurrentId()) {}
+
+  ~HostNPScriptObject() {
+    CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
+    if (on_state_changed_func_) {
+      g_npnetscape_funcs->releaseobject(on_state_changed_func_);
+    }
+  }
 
   bool Init() {
-    return true;
+    return worker_thread_.Start();
   }
 
   bool HasMethod(std::string method_name) {
-    VLOG(1) << "HasMethod" << method_name;
+    LOG(INFO) << "HasMethod" << method_name;
+    CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     return (method_name == kFuncNameConnect ||
             method_name == kFuncNameDisconnect);
   }
@@ -76,8 +124,9 @@ class HostNPScriptObject {
   bool InvokeDefault(const NPVariant* args,
                      uint32_t argCount,
                      NPVariant* result) {
-    VLOG(1) << "InvokeDefault";
-    g_npnetscape_funcs->setexception(parent_, "exception during invocation");
+    LOG(INFO) << "InvokeDefault";
+    CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
+    SetException("exception during default invocation");
     return false;
   }
 
@@ -85,57 +134,122 @@ class HostNPScriptObject {
               const NPVariant* args,
               uint32_t argCount,
               NPVariant* result) {
-    VLOG(1) << "Invoke " << method_name;
+    LOG(INFO) << "Invoke " << method_name;
+    CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     if (method_name == kFuncNameConnect) {
       return Connect(args, argCount, result);
     } else if (method_name == kFuncNameDisconnect) {
       return Disconnect(args, argCount, result);
     } else {
-      g_npnetscape_funcs->setexception(parent_, "exception during invocation");
+      SetException("Invoke: unknown method " + method_name);
       return false;
     }
   }
 
   bool HasProperty(std::string property_name) {
-    VLOG(1) << "HasProperty " << property_name;
+    LOG(INFO) << "HasProperty " << property_name;
+    CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     return (property_name == kAttrNameSupportID ||
             property_name == kAttrNameState ||
-            property_name == kAttrNameDebugInfo ||
-            property_name == kAttrNameOnStateChanged);
+            property_name == kAttrNameOnStateChanged ||
+            property_name == kAttrNameDisconnected ||
+            property_name == kAttrNameRequestedSupportID ||
+            property_name == kAttrNameReceivedSupportID ||
+            property_name == kAttrNameConnected ||
+            property_name == kAttrNameAffirmingConnection ||
+            property_name == kAttrNameError);
   }
 
   bool GetProperty(std::string property_name, NPVariant* result) {
-    VLOG(1) << "GetProperty " << property_name;
-    NOTIMPLEMENTED();
-    return false;
+    LOG(INFO) << "GetProperty " << property_name;
+    CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
+    if (!result) {
+      SetException("GetProperty: NULL result");
+      return false;
+    }
+
+    if (property_name == kAttrNameOnStateChanged) {
+      OBJECT_TO_NPVARIANT(on_state_changed_func_, *result);
+      return true;
+    } else if (property_name == kAttrNameState) {
+      INT32_TO_NPVARIANT(state_, *result);
+      return true;
+    } else if (property_name == kAttrNameSupportID) {
+      *result = NPVariantFromString(support_id_);
+      return true;
+    } else if (property_name == kAttrNameDisconnected) {
+      INT32_TO_NPVARIANT(kDisconnected, *result);
+      return true;
+    } else if (property_name == kAttrNameRequestedSupportID) {
+      INT32_TO_NPVARIANT(kRequestedSupportID, *result);
+      return true;
+    } else if (property_name == kAttrNameReceivedSupportID) {
+      INT32_TO_NPVARIANT(kReceivedSupportID, *result);
+      return true;
+    } else if (property_name == kAttrNameConnected) {
+      INT32_TO_NPVARIANT(kConnected, *result);
+      return true;
+    } else if (property_name == kAttrNameAffirmingConnection) {
+      INT32_TO_NPVARIANT(kAffirmingConnection, *result);
+      return true;
+    } else if (property_name == kAttrNameError) {
+      INT32_TO_NPVARIANT(kError, *result);
+      return true;
+    } else {
+      SetException("GetProperty: unsupported property " + property_name);
+      return false;
+    }
   }
 
   bool SetProperty(std::string property_name, const NPVariant* value) {
-    VLOG(1) << "SetProperty " << property_name;
+    LOG(INFO) << "SetProperty " << property_name;
+    CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
+
     // Read-only
     if (property_name == kAttrNameSupportID ||
         property_name == kAttrNameState)
       return false;
 
-    NOTIMPLEMENTED();
-
+    if (property_name == kAttrNameOnStateChanged) {
+      if (on_state_changed_func_) {
+        g_npnetscape_funcs->releaseobject(on_state_changed_func_);
+        on_state_changed_func_ = NULL;
+      }
+      if (NPVARIANT_IS_OBJECT(*value)) {
+        on_state_changed_func_ = NPVARIANT_TO_OBJECT(*value);
+        if (on_state_changed_func_) {
+          g_npnetscape_funcs->retainobject(on_state_changed_func_);
+        }
+        return true;
+      } else {
+        SetException("SetProperty: unexpected type for property " +
+                     property_name);
+      }
+    }
     return false;
   }
 
   bool RemoveProperty(std::string property_name) {
-    VLOG(1) << "RemoveProperty " << property_name;
+    LOG(INFO) << "RemoveProperty " << property_name;
+    CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     return false;
   }
 
   bool Enumerate(std::vector<std::string>* values) {
-    VLOG(1) << "Enumerate";
+    LOG(INFO) << "Enumerate";
+    CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
     const char* entries[] = {
       kAttrNameSupportID,
       kAttrNameState,
-      kAttrNameDebugInfo,
       kAttrNameOnStateChanged,
       kFuncNameConnect,
-      kFuncNameDisconnect
+      kFuncNameDisconnect,
+      kAttrNameDisconnected,
+      kAttrNameRequestedSupportID,
+      kAttrNameReceivedSupportID,
+      kAttrNameConnected,
+      kAttrNameAffirmingConnection,
+      kAttrNameError
     };
     for (size_t i = 0; i < arraysize(entries); ++i) {
       values->push_back(entries[i]);
@@ -148,8 +262,6 @@ class HostNPScriptObject {
   static const char* kAttrNameSupportID;
   // JS int
   static const char* kAttrNameState;
-  // JS func(string)
-  static const char* kAttrNameDebugInfo;
   // JS func onStateChanged()
   static const char* kAttrNameOnStateChanged;
   // void connect(string uid, string auth_token, function done);
@@ -157,26 +269,205 @@ class HostNPScriptObject {
   // void disconnect();
   static const char* kFuncNameDisconnect;
 
+  // States
+  static const char* kAttrNameDisconnected;
+  static const char* kAttrNameRequestedSupportID;
+  static const char* kAttrNameReceivedSupportID;
+  static const char* kAttrNameConnected;
+  static const char* kAttrNameAffirmingConnection;
+  static const char* kAttrNameError;
+
+  enum State {
+    kDisconnected,
+    kRequestedSupportID,
+    kReceivedSupportID,
+    kConnected,
+    kAffirmingConnection,
+    kError
+  };
+
+  NPP plugin_;
   NPObject* parent_;
+  int state_;
+  std::string support_id_;
+  NPObject* on_state_changed_func_;
+  base::AtExitManager exit_manager_;
+  base::Thread worker_thread_;
+  base::PlatformThreadId np_thread_id_;
 
-  bool Connect(const NPVariant* args, uint32_t argCount, NPVariant* result) {
-    NOTIMPLEMENTED();
-    return false;
-  }
+  // Start connection. args are:
+  //   string uid, string auth_token
+  // No result.
+  bool Connect(const NPVariant* args, uint32_t argCount, NPVariant* result);
 
-  bool Disconnect(const NPVariant* args, uint32_t argCount, NPVariant* result) {
-    NOTIMPLEMENTED();
-    return false;
-  }
+  // Disconnect. No arguments or result.
+  bool Disconnect(const NPVariant* args, uint32_t argCount, NPVariant* result);
+
+  // Call OnStateChanged handler if there is one.
+  void OnStateChanged(State state);
+
+  // Currently just mock methods to verify that everything is working
+  void OnReceivedSupportID(const std::string& support_id);
+  void OnConnected();
+
+  // Call a JavaScript function wrapped as an NPObject.
+  // If result is non-null, the result of the call will be stored in it.
+  // Caller is responsible for releasing result if they ask for it.
+  static bool CallJSFunction(NPObject* func,
+                             const NPVariant* args,
+                             uint32_t argCount,
+                             NPVariant* result);
+
+  // Posts a task on the main NP thread.
+  void PostTaskToNPThread(Task* task);
+
+  // Utility function for PostTaskToNPThread.
+  static void NPTaskSpringboard(void* task);
+
+  // Set an exception for the current call.
+  void SetException(std::string exception_string);
 };
 
 const char* HostNPScriptObject::kAttrNameSupportID = "supportID";
 const char* HostNPScriptObject::kAttrNameState = "state";
-const char* HostNPScriptObject::kAttrNameDebugInfo = "debugInfo";
 const char* HostNPScriptObject::kAttrNameOnStateChanged = "onStateChanged";
 const char* HostNPScriptObject::kFuncNameConnect = "connect";
 const char* HostNPScriptObject::kFuncNameDisconnect = "disconnect";
 
+// States
+const char* HostNPScriptObject::kAttrNameDisconnected = "DISCONNECTED";
+const char* HostNPScriptObject::kAttrNameRequestedSupportID =
+    "REQUESTED_SUPPORT_ID";
+const char* HostNPScriptObject::kAttrNameReceivedSupportID =
+    "RECEIVED_SUPPORT_ID";
+const char* HostNPScriptObject::kAttrNameConnected = "CONNECTED";
+const char* HostNPScriptObject::kAttrNameAffirmingConnection =
+    "AFFIRMING_CONNECTION";
+const char* HostNPScriptObject::kAttrNameError = "ERROR";
+
+// string uid, string auth_token, function done
+bool HostNPScriptObject::Connect(const NPVariant* args,
+                                 uint32_t arg_count,
+                                 NPVariant* result) {
+  CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
+  if (arg_count != 2) {
+    SetException("connect: bad number of arguments");
+    return false;
+  }
+
+  std::string uid = StringFromNPVariant(args[0]);
+  if (uid.empty()) {
+    SetException("connect: bad uid argument");
+    return false;
+  }
+
+  std::string auth_token = StringFromNPVariant(args[1]);
+  if (auth_token.empty()) {
+    SetException("connect: bad auth_token argument");
+    return false;
+  }
+
+  // TODO: implement. Stuff below is just some mock stuff to test JS side of
+  // things.
+
+  static const char* some_ids[] = {
+    "ABCD-1234-WXYZ",
+    "LOVE-0000-HATE",
+    "COOL-9999-TOYZ",
+    "GOOD-7666-EVIL"
+  };
+
+  std::string support_id = some_ids[base::RandInt(1, arraysize(some_ids)) - 1];
+  worker_thread_.message_loop()->PostDelayedTask(
+      FROM_HERE,
+      NewRunnableMethod(this,
+                        &HostNPScriptObject::OnReceivedSupportID,
+                        support_id),
+      1000);
+
+
+  OnStateChanged(kRequestedSupportID);
+  return true;
+}
+
+bool HostNPScriptObject::Disconnect(const NPVariant* args,
+                                    uint32_t arg_count,
+                                    NPVariant* result) {
+  CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
+  if (arg_count != 0) {
+    SetException("disconnect: bad number of arguments");
+    return false;
+  }
+
+  // TODO: implement
+
+  OnStateChanged(kDisconnected);
+  return true;
+}
+
+void HostNPScriptObject::OnReceivedSupportID(const std::string& support_id) {
+  CHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
+  support_id_ = support_id;
+  OnStateChanged(kReceivedSupportID);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &HostNPScriptObject::OnConnected),
+      3000);
+}
+
+void HostNPScriptObject::OnConnected() {
+  CHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
+  OnStateChanged(kConnected);
+}
+
+void HostNPScriptObject::OnStateChanged(State state) {
+  if (base::PlatformThread::CurrentId() != np_thread_id_) {
+    PostTaskToNPThread(NewRunnableMethod(this,
+                                         &HostNPScriptObject::OnStateChanged,
+                                         state));
+    return;
+  }
+  state_ = state;
+  if (on_state_changed_func_) {
+    LOG(INFO) << "Calling state changed " << state;
+    bool is_good = CallJSFunction(on_state_changed_func_, NULL, 0, NULL);
+    LOG_IF(ERROR, !is_good) << "OnStateChangedNP failed";
+  }
+}
+
+void HostNPScriptObject::SetException(std::string exception_string) {
+  CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
+  g_npnetscape_funcs->setexception(parent_, exception_string.c_str());
+}
+
+bool HostNPScriptObject::CallJSFunction(NPObject* func,
+                                        const NPVariant* args,
+                                        uint32_t argCount,
+                                        NPVariant* result) {
+  NPVariant np_result;
+  bool is_good = func->_class->invokeDefault(func, args, argCount, &np_result);
+  if (is_good) {
+    if (result) {
+      *result = np_result;
+    } else {
+      g_npnetscape_funcs->releasevariantvalue(&np_result);
+    }
+  }
+  return is_good;
+}
+
+void HostNPScriptObject::PostTaskToNPThread(Task* task) {
+  // Can be called from any thread.
+  g_npnetscape_funcs->pluginthreadasynccall(plugin_,
+                                            &NPTaskSpringboard,
+                                            task);
+}
+
+void HostNPScriptObject::NPTaskSpringboard(void* task) {
+  Task* real_task = reinterpret_cast<Task*>(task);
+  real_task->Run();
+  delete real_task;
+}
 
 // NPAPI plugin implementation for remoting host.
 // Documentation for most of the calls in this class can be found here:
@@ -208,7 +499,9 @@ class HostNPPlugin {
 
   NPObject* GetScriptableObject() {
     if (!scriptable_object_) {
-      NPClass npc_ref_object = {
+      // Must be static. If it is a temporary, objects created by this
+      // method will fail in weird and wonderful ways later.
+      static NPClass npc_ref_object = {
         NP_CLASS_STRUCT_VERSION,
         &Allocate,
         &Deallocate,
@@ -239,13 +532,14 @@ class HostNPPlugin {
   }
 
   static NPObject* Allocate(NPP npp, NPClass* aClass) {
+    LOG(INFO) << "static Allocate";
     ScriptableNPObject* object =
         reinterpret_cast<ScriptableNPObject*>(
             g_npnetscape_funcs->memalloc(sizeof(ScriptableNPObject)));
 
     object->_class = aClass;
     object->referenceCount = 1;
-    object->scriptable_object = new HostNPScriptObject(object);
+    object->scriptable_object = new HostNPScriptObject(npp, object);
     if (!object->scriptable_object->Init()) {
       Deallocate(object);
       object = NULL;
@@ -254,6 +548,7 @@ class HostNPPlugin {
   }
 
   static void Deallocate(NPObject* npobj) {
+    LOG(INFO) << "static Deallocate";
     if (npobj) {
       Invalidate(npobj);
       g_npnetscape_funcs->memfree(npobj);
@@ -271,6 +566,7 @@ class HostNPPlugin {
   }
 
   static bool HasMethod(NPObject* obj, NPIdentifier method_name) {
+    LOG(INFO) << "static HasMethod";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable) return false;
     std::string method_name_string = StringFromNPIdentifier(method_name);
@@ -283,6 +579,7 @@ class HostNPPlugin {
                             const NPVariant* args,
                             uint32_t argCount,
                             NPVariant* result) {
+    LOG(INFO) << "static InvokeDefault";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable) return false;
     return scriptable->InvokeDefault(args, argCount, result);
@@ -293,6 +590,7 @@ class HostNPPlugin {
                      const NPVariant* args,
                      uint32_t argCount,
                      NPVariant* result) {
+    LOG(INFO) << "static Invoke";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable)
       return false;
@@ -303,6 +601,7 @@ class HostNPPlugin {
   }
 
   static bool HasProperty(NPObject* obj, NPIdentifier property_name) {
+    LOG(INFO) << "static HasProperty";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable) return false;
     std::string property_name_string = StringFromNPIdentifier(property_name);
@@ -314,6 +613,7 @@ class HostNPPlugin {
   static bool GetProperty(NPObject* obj,
                           NPIdentifier property_name,
                           NPVariant* result) {
+    LOG(INFO) << "static GetProperty";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable) return false;
     std::string property_name_string = StringFromNPIdentifier(property_name);
@@ -325,6 +625,7 @@ class HostNPPlugin {
   static bool SetProperty(NPObject* obj,
                           NPIdentifier property_name,
                           const NPVariant* value) {
+    LOG(INFO) << "static SetProperty";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable) return false;
     std::string property_name_string = StringFromNPIdentifier(property_name);
@@ -334,6 +635,7 @@ class HostNPPlugin {
   }
 
   static bool RemoveProperty(NPObject* obj, NPIdentifier property_name) {
+    LOG(INFO) << "static RemoveProperty";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable) return false;
     std::string property_name_string = StringFromNPIdentifier(property_name);
@@ -345,6 +647,7 @@ class HostNPPlugin {
   static bool Enumerate(NPObject* obj,
                         NPIdentifier** value,
                         uint32_t* count) {
+    LOG(INFO) << "static Enumerate";
     HostNPScriptObject* scriptable = ScriptableFromObject(obj);
     if (!scriptable) return false;
     std::vector<std::string> values;
@@ -377,7 +680,7 @@ NPError CreatePlugin(NPMIMEType pluginType,
                      char** argn,
                      char** argv,
                      NPSavedData* saved) {
-  VLOG(1) << "CreatePlugin";
+  LOG(INFO) << "CreatePlugin";
   HostNPPlugin* plugin = new HostNPPlugin(instance, mode);
   instance->pdata = plugin;
   if (!plugin->Init(argc, argn, argv, saved)) {
@@ -391,7 +694,7 @@ NPError CreatePlugin(NPMIMEType pluginType,
 
 NPError DestroyPlugin(NPP instance,
                       NPSavedData** save) {
-  VLOG(1) << "DestroyPlugin";
+  LOG(INFO) << "DestroyPlugin";
   HostNPPlugin* plugin = PluginFromInstance(instance);
   if (plugin) {
     plugin->Save(save);
@@ -406,18 +709,18 @@ NPError DestroyPlugin(NPP instance,
 NPError GetValue(NPP instance, NPPVariable variable, void* value) {
   switch(variable) {
   default:
-    VLOG(1) << "GetValue - default " << variable;
+    LOG(INFO) << "GetValue - default " << variable;
     return NPERR_GENERIC_ERROR;
   case NPPVpluginNameString:
-    VLOG(1) << "GetValue - name string";
+    LOG(INFO) << "GetValue - name string";
     *reinterpret_cast<const char**>(value) = g_plugin_name;
     break;
   case NPPVpluginDescriptionString:
-    VLOG(1) << "GetValue - description string";
+    LOG(INFO) << "GetValue - description string";
     *reinterpret_cast<const char**>(value) = g_plugin_description;
     break;
   case NPPVpluginScriptableNPObject:
-    VLOG(1) << "GetValue - scriptable object";
+    LOG(INFO) << "GetValue - scriptable object";
     HostNPPlugin* plugin = PluginFromInstance(instance);
     if (!plugin)
       return NPERR_INVALID_PLUGIN_ERROR;
@@ -430,23 +733,26 @@ NPError GetValue(NPP instance, NPPVariable variable, void* value) {
 }
 
 NPError HandleEvent(NPP instance, void* ev) {
-  VLOG(1) << "HandleEvent";
+  LOG(INFO) << "HandleEvent";
   return NPERR_NO_ERROR;
 }
 
 NPError SetWindow(NPP instance, NPWindow* pNPWindow) {
-  VLOG(1) << "SetWindow";
+  LOG(INFO) << "SetWindow";
   return NPERR_NO_ERROR;
 }
 
 }  // namespace
+
+// TODO(fix): Temporary hack while we figure out threading models correctly.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(HostNPScriptObject);
 
 // The actual required NPAPI Entry points
 
 extern "C" {
 
 OSCALL NPError NP_GetEntryPoints(NPPluginFuncs* nppfuncs) {
-  VLOG(1) << "NP_GetEntryPoints";
+  LOG(INFO) << "NP_GetEntryPoints";
   nppfuncs->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
   nppfuncs->newp = &CreatePlugin;
   nppfuncs->destroy = &DestroyPlugin;
@@ -462,7 +768,7 @@ OSCALL NPError NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
                             , NPPluginFuncs* nppfuncs
 #endif  // OS_LINUX
                             ) {
-  VLOG(1) << "NP_Initialize";
+  LOG(INFO) << "NP_Initialize";
   if(npnetscape_funcs == NULL)
     return NPERR_INVALID_FUNCTABLE_ERROR;
 
@@ -477,13 +783,13 @@ OSCALL NPError NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
 }
 
 OSCALL NPError NP_Shutdown() {
-  VLOG(1) << "NP_Shutdown";
+  LOG(INFO) << "NP_Shutdown";
   return NPERR_NO_ERROR;
 }
 
 OSCALL const char* NP_GetMIMEDescription(void) {
-  VLOG(1) << "NP_GetMIMEDescription";
-  return "";
+  LOG(INFO) << "NP_GetMIMEDescription";
+  return STRINGIZE(HOST_PLUGIN_MIME_TYPE);
 }
 
 OSCALL NPError NP_GetValue(void* npp, NPPVariable variable, void* value) {

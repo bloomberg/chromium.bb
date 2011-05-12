@@ -4,10 +4,24 @@
 # found in the LICENSE file.
 
 # Copies the remoting webapp resources and host plugin into a single directory.
+# Massages the files appropriately with host plugin data.
+
+# Python 2.5 compatibility
+from __future__ import with_statement
 
 import os
 import shutil
 import sys
+
+def findAndReplace( filepath, findString, replaceString ):
+  oldFilename = os.path.basename(filepath) + '.old'
+  oldFilepath = os.path.join(os.path.dirname(filepath), oldFilename)
+  os.rename(filepath, oldFilepath)
+  with open(oldFilepath) as input:
+    with open(filepath, 'w') as output:
+      for s in input:
+        output.write(s.replace(findString, replaceString))
+  os.remove(oldFilepath)
 
 # Temporary hack to work around fact that some build machines don't have
 # python 2.6
@@ -20,13 +34,14 @@ except Exception:
 # Do not copy git and svn files into the build.
 IGNORE_PATTERNS = ('.git', '.svn')
 
-if len(sys.argv) != 4:
-  print 'Usage: build-webapp.py <webapp-resource-dir> <host-plugin> <dst>'
+if len(sys.argv) != 5:
+  print 'Usage: build-webapp.py <mime-type> <webapp-dir> <host-plugin> <dst>'
   sys.exit(1)
 
-resources = sys.argv[1]
-plugin = sys.argv[2]
-destination = sys.argv[3]
+mimetype = sys.argv[1]
+resources = sys.argv[2]
+plugin = sys.argv[3]
+destination = sys.argv[4]
 
 try:
   shutil.rmtree(destination)
@@ -51,17 +66,11 @@ else:
   shutil.copy2(plugin, newPluginPath)
 
 # Now massage the manifest to the right plugin name
-manifestPath = os.path.join(destination, 'manifest.json')
-manifestBasePath = os.path.join(destination, 'manifest.base')
-os.rename(manifestPath, manifestBasePath)
-input = open(manifestBasePath)
-output = open(manifestPath, 'w')
-for s in input:
-  # Using this complex matching string to keep the json valid so that people
-  # who don't need the host plugin don't need to build the plugin all the time.
-  output.write(s.replace('"PLUGINS": "PLACEHOLDER"',
-                         '"plugins": [\n    { "path": "'
-                             + pluginName +'" }\n  ]'))
-input.close()
-output.close()
-os.remove(manifestBasePath)
+findAndReplace(os.path.join(destination,'manifest.json'),
+               '"PLUGINS": "PLACEHOLDER"',
+                '"plugins": [\n    { "path": "' + pluginName +'" }\n  ]')
+
+# Now massage files with our mimetype
+findAndReplace(os.path.join(destination,'remoting.js'),
+               'HOST_PLUGIN_MIMETYPE',
+               mimetype)

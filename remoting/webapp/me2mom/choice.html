@@ -31,6 +31,8 @@ found in the LICENSE file.
 
     <!-- Host UI -->
     <div id="host">
+      <div id="plugin_wrapper">
+      </div>
 
       <div id="unshared">
         <p class="message">
@@ -50,13 +52,19 @@ found in the LICENSE file.
         </p>
       </div>
 
+      <div id="preparing_to_share">
+        <p class="message">
+          Connecting...
+        </p>
+      </div>
+
       <div id="ready_to_share">
         <p class="message">
           To begin sharing your desktop, read out the access code below to the
           person who will be assisting you.
         </p>
         <p id="access_code_display">
-          ABCD-1234-WXYZ
+          FAILED!
         </p>
         <p class="message">
           Waiting for connection...
@@ -77,7 +85,7 @@ found in the LICENSE file.
         </p>
         <button type="button"
                 class="cancel"
-                onclick="setHostMode('unshared');">
+                onclick="cancelShare();">
           Stop sharing
         </button>
       </div>

@@ -29,6 +29,11 @@
         'plugin_extension': 'dll',
         'plugin_prefix': '',
       }],
+      ['branding=="Chrome"', {
+        'host_plugin_mime_type': 'application/vnd.google-chrome.remoting-host',
+      }, {  # else: branding!="Chrome"
+        'host_plugin_mime_type': 'application/vnd.chromium.remoting-host',
+      }],  # branding
     ],
   },
 
@@ -137,6 +142,7 @@
       'target_name': 'chromoting_host_plugin',
       'type': 'loadable_module',
       'defines': [
+        'HOST_PLUGIN_MIME_TYPE=<(host_plugin_mime_type)',
       ],
       'dependencies': [
         'chromoting_base',
@@ -152,6 +158,8 @@
           'xcode_settings': {
             'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
             'INFOPLIST_FILE': 'host/host_plugin-Info.plist',
+            'INFOPLIST_PREPROCESS': 'YES',
+            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'HOST_PLUGIN_MIME_TYPE=<(host_plugin_mime_type)',
             'WRAPPER_EXTENSION': '<(plugin_extension)',
           },
           # TODO(mark): Come up with a fancier way to do this.  It should
@@ -178,6 +186,12 @@
       'sources!': [
         'webapp/build-webapp.py',
       ],
+      # Can't use a 'copies' because we need to manipulate
+      # the manifest file to get the right plugin name.
+      # Also we need to move the plugin into the me2mom
+      # folder, which means 2 copies, and gyp doesn't
+      # seem to guarantee the ordering of 2 copies statements
+      # when the actual project is generated.
       'actions': [
         {
           'action_name': 'Build Me2Mom WebApp',
@@ -190,6 +204,7 @@
           ],
           'action': [
             'python', 'webapp/build-webapp.py',
+            '<(host_plugin_mime_type)',
             '<@(_inputs)',
             '<@(_outputs)'
           ],

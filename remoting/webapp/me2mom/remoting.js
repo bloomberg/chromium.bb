@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var chromoting = {};
+var remoting = {};
 XMPP_TOKEN_NAME = 'xmpp_token';
 OAUTH2_TOKEN_NAME = 'oauth2_token';
+HOST_PLUGIN_ID = 'host_plugin_id';
 
 function updateAuthStatus() {
   var oauth1_status = document.getElementById('oauth1_status');
-  if (chromoting.oauth.hasToken()) {
+  if (remoting.oauth.hasToken()) {
     oauth1_status.innerText = 'OK';
     oauth1_status.style.color='green';
   } else {
@@ -18,29 +19,29 @@ function updateAuthStatus() {
 }
 
 function authorizeOAuth1() {
-  chromoting.oauth.authorize(updateAuthStatus);
+  remoting.oauth.authorize(updateAuthStatus);
 }
 
 function clearOAuth1() {
-  chromoting.oauth.clearTokens();
+  remoting.oauth.clearTokens();
   updateAuthStatus();
 }
 
 function initAuthPanel_() {
   document.getElementById('xmpp_token').value =
-      chromoting.getItem(XMPP_TOKEN_NAME);
+      remoting.getItem(XMPP_TOKEN_NAME);
   updateAuthStatus();
 }
 
 function initBackgroundFuncs_() {
-  chromoting.getItem = chrome.extension.getBackgroundPage().getItem;
-  chromoting.setItem = chrome.extension.getBackgroundPage().setItem;
-  chromoting.oauth = chrome.extension.getBackgroundPage().oauth;
+  remoting.getItem = chrome.extension.getBackgroundPage().getItem;
+  remoting.setItem = chrome.extension.getBackgroundPage().setItem;
+  remoting.oauth = chrome.extension.getBackgroundPage().oauth;
 }
 
 function saveCredentials(form) {
-  chromoting.setItem(OAUTH2_TOKEN_NAME, form['oauth2_token'].value);
-  chromoting.setItem(XMPP_TOKEN_NAME, form['xmpp_token'].value);
+  remoting.setItem(OAUTH2_TOKEN_NAME, form['oauth2_token'].value);
+  remoting.setItem(XMPP_TOKEN_NAME, form['xmpp_token'].value);
 }
 
 function init() {
@@ -48,7 +49,7 @@ function init() {
   initAuthPanel_();
   setHostMode('unshared');
   setClientMode('unconnected');
-  setGlobalMode(chromoting.getItem('startup-mode', 'host'));
+  setGlobalMode(remoting.getItem('startup-mode', 'host'));
 }
 
 // Show the div with id |mode| and hide those with other ids in |modes|.
@@ -69,11 +70,14 @@ function setGlobalMode(mode) {
 
 function setGlobalModePersistent(mode) {
   setGlobalMode(mode);
-  chromoting.setItem('startup-mode', mode);
+  remoting.setItem('startup-mode', mode);
 }
 
 function setHostMode(mode) {
-  setMode_(mode, ['unshared', 'ready_to_share', 'shared']);
+  setMode_(mode, ['unshared',
+                  'preparing_to_share',
+                  'ready_to_share',
+                  'shared']);
 }
 
 function setClientMode(mode) {
@@ -81,33 +85,55 @@ function setClientMode(mode) {
 }
 
 function tryShare() {
-  setHostMode('ready_to_share');
-  chromoting.hostTimer = setTimeout(
-      function() {
-        setHostMode('shared');
-      },
-      3000);
+  var div = document.getElementById('plugin_wrapper');
+  var plugin = document.createElement('embed');
+  plugin.setAttribute('type', 'HOST_PLUGIN_MIMETYPE');
+  plugin.setAttribute('hidden', 'true');
+  plugin.setAttribute('id', HOST_PLUGIN_ID);
+  div.appendChild(plugin);
+  plugin.onStateChanged = onStateChanged;
+  plugin.connect('uid', 'authtoken');
+}
+
+function onStateChanged() {
+  var plugin = document.getElementById(HOST_PLUGIN_ID);
+  var state = plugin.state;
+  if (state == plugin.REQUESTED_SUPPORT_ID) {
+    setHostMode('preparing_to_share');
+  } else if (state == plugin.RECEIVED_SUPPORT_ID) {
+    var support_id = plugin.supportID;
+    var access_code = document.getElementById('access_code_display');
+    access_code.innerHTML = support_id;
+    setHostMode('ready_to_share');
+  } else if (state == plugin.CONNECTED) {
+    setHostMode('shared');
+  } else if (state == plugin.DISCONNECTED) {
+    setHostMode('unshared');
+    plugin.parentNode.removeChild(plugin);
+  } else {
+    window.alert("Unknown state -> " + state);
+  }
 }
 
 function cancelShare() {
-  setHostMode('unshared');
-  clearTimeout(chromoting.hostTimer);
+  var plugin = document.getElementById(HOST_PLUGIN_ID);
+  plugin.disconnect();
 }
 
 function tryConnect(form) {
-  chromoting.accessCode = form['access_code_entry'].value;
+  remoting.accessCode = form['access_code_entry'].value;
   setClientMode('connecting');
-  chromoting.clientTimer = setTimeout(
+  remoting.clientTimer = setTimeout(
       function() {
         var code = document.getElementById('access_code_proof');
-        code.innerHTML = chromoting.accessCode;
+        code.innerHTML = remoting.accessCode;
         setGlobalMode('session');
       },
       3000);
 }
 
 function cancelConnect() {
-  chromoting.accessCode = '';
+  remoting.accessCode = '';
   setClientMode('unconnected');
-  clearTimeout(chromoting.clientTimer);
+  clearTimeout(remoting.clientTimer);
 }
