@@ -195,6 +195,62 @@ function keyPressed(e) {
   }
 }
 
+/**
+ * Pattern of siblibng files to be shown. It should match exactly the same files
+ * that matches the appropriate "file_filters" section in the manifest. We want
+ * to avoid situation whan a file is accessible via "prev"/"next" button but not
+ * accessible via the File Browser directly (and vise versa).
+ */
+const imageFilesPattern = /\.(jpg|jpeg|png|gif|webp|JPG|JPEG|PNG|GIF|WEBP)$/;
+
+/**
+ * Loads directory siblings of the file what match the filePattern.
+ * Sets filelist. Sets currentFileOffset to index of the fileUrl.
+ * @param {string} fileUrl The file to show.
+ */
+function loadDirectorySiblings(fileUrl) {
+  var fileUrlFixed;
+  webkitResolveLocalFileSystemURL(fileUrl, function(entry) {
+    fileUrlFixed = entry.toURL();  // Make sure the URL has canonical shape.
+    entry.getParent(function(entry) {
+      readAllEntries(entry.createReader());
+    }, onError);
+  }, onError);
+
+  function readAllEntries(directoryReader) {
+    directoryReader.readEntries(function(entries) {
+      if (entries.length > 0) {
+        onReadSome(entries);
+        readAllEntries(directoryReader);
+      } else {
+        onReadDone();
+      }
+    }, onError);
+  }
+
+  function onError() {
+    console.error('Error reading directory content');
+  }
+
+  var siblings = [];
+  function onReadSome(entries) {
+    for (var i = 0; i < entries.length; i++) {
+      var entry = entries[i];
+      if (entry.isFile && imageFilesPattern.test(entry.name)) {
+        siblings.push(entry.toURL());
+      }
+    }
+  }
+
+  function onReadDone() {
+    // Only change the filelist if siblings have read successfully.
+    if (siblings.indexOf(fileUrl) >= 0) {
+      filelist = siblings;
+      currentFileOffset = filelist.indexOf(fileUrlFixed);
+    }
+  }
+}
+
 function load() {
   localStrings = new LocalStrings();
 
@@ -203,6 +259,10 @@ function load() {
     if (views[i].g_slideshow_data) {
       filelist = views[i].g_slideshow_data;
       views[i].g_slideshow_data = null;
+
+      // If selected exactly one file allow user to navigate to
+      // directory siblings.
+      if (filelist && filelist.length == 1) loadDirectorySiblings(filelist[0]);
     }
   }
 
