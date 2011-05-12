@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file implements the StubGLContext.
-
 #ifndef UI_GFX_GL_GL_CONTEXT_STUB_H_
 #define UI_GFX_GL_GL_CONTEXT_STUB_H_
 #pragma once
@@ -13,9 +11,10 @@
 namespace gfx {
 
 // A GLContext that does nothing for unit tests.
-class StubGLContext : public gfx::GLContext {
+class GLContextStub : public GLContext {
  public:
-  virtual ~StubGLContext();
+  GLContextStub();
+  virtual ~GLContextStub();
 
   void SetSize(const gfx::Size& size) { size_ = size; }
 
@@ -32,6 +31,7 @@ class StubGLContext : public gfx::GLContext {
 
  private:
   gfx::Size size_;
+  DISALLOW_COPY_AND_ASSIGN(GLContextStub);
 };
 
 }  // namespace gfx

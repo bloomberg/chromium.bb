@@ -126,7 +126,7 @@ void GLES2DecoderTestBase::InitDecoder(
   shared_memory_id_ = kSharedMemoryId;
   shared_memory_base_ = buffer.ptr;
 
-  context_ = new gfx::StubGLContext;
+  context_ = new gfx::GLContextStub;
   context_->SetSize(gfx::Size(kBackBufferWidth, kBackBufferHeight));
 
   decoder_.reset(GLES2Decoder::Create(group_.get()));

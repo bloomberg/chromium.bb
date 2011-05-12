@@ -36,6 +36,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/webkit_constants.h"
@@ -323,7 +324,7 @@ WebKit::WebString GetWebKitRootDir() {
 void SetUpGLBindings(GLBindingPreferences bindingPref) {
   switch(bindingPref) {
     case GL_BINDING_DEFAULT:
-      gfx::GLContext::InitializeOneOff();
+      gfx::GLSurface::InitializeOneOff();
       break;
     case GL_BINDING_SOFTWARE_RENDERER:
       gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);

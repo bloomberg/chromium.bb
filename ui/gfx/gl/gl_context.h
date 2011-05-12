@@ -66,19 +66,14 @@ class GLContext {
   // context must be current.
   bool HasExtension(const char* name);
 
-  static bool InitializeOneOff();
-
-#if !defined(OS_MACOSX)
-  // Create a GL context that renders directly to a view.
-  static GLContext* CreateViewGLContext(gfx::PluginWindowHandle window,
-                                        bool multisampled);
-#endif
-
-  // Create a GL context used for offscreen rendering. It is initially backed by
-  // a 1x1 pbuffer. Use it to create an FBO to do useful rendering.
-  // |share_context|, if non-NULL, is a context which the internally created
-  // OpenGL context shares textures and other resources.
-  static GLContext* CreateOffscreenGLContext(GLContext* shared_context);
+  // Create a GL context that is compatible with the given surface.
+  // |share_context|, if non-NULL, is a context which the
+  // internally created OpenGL context shares textures and other resources.
+  // TODO(apatrick): For the time being, the context will take ownership of the
+  // surface and the surface will be made the current read and draw surface
+  // when the context is made current.
+  static GLContext* CreateGLContext(GLSurface* compatible_surface,
+                                    GLContext* shared_context);
 
   static bool LosesAllContextsOnContextLost();
 

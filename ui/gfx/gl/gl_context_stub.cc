@@ -6,33 +6,37 @@
 
 namespace gfx {
 
-StubGLContext::~StubGLContext() {}
+GLContextStub::GLContextStub() {
+}
 
-bool StubGLContext::MakeCurrent() {
+GLContextStub::~GLContextStub() {
+}
+
+bool GLContextStub::MakeCurrent() {
   return true;
 }
 
-bool StubGLContext::IsCurrent() {
+bool GLContextStub::IsCurrent() {
   return true;
 }
 
-bool StubGLContext::IsOffscreen() {
+bool GLContextStub::IsOffscreen() {
   return false;
 }
 
-bool StubGLContext::SwapBuffers() {
+bool GLContextStub::SwapBuffers() {
   return true;
 }
 
-gfx::Size StubGLContext::GetSize() {
+gfx::Size GLContextStub::GetSize() {
   return size_;
 }
 
-void* StubGLContext::GetHandle() {
+void* GLContextStub::GetHandle() {
   return NULL;
 }
 
-std::string StubGLContext::GetExtensions() {
+std::string GLContextStub::GetExtensions() {
   return std::string();
 }
 

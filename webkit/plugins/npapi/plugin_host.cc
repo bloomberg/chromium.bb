@@ -17,8 +17,8 @@
 #include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
 #include "webkit/plugins/npapi/npapi_extension_thunk.h"
@@ -62,7 +62,7 @@ static bool SupportsSharingAcceleratedSurfaces() {
   gfx::GLImplementation implementation = gfx::GetGLImplementation();
   if (implementation == gfx::kGLImplementationNone) {
     // Not initialized yet.
-    if (!gfx::GLContext::InitializeOneOff()) {
+    if (!gfx::GLSurface::InitializeOneOff()) {
       return false;
     }
     implementation = gfx::GetGLImplementation();
