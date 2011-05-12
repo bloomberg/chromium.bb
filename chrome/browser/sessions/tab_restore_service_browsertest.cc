@@ -6,6 +6,7 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/render_view_test.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -171,6 +172,40 @@ TEST_F(TabRestoreServiceTest, Basic) {
 TEST_F(TabRestoreServiceTest, DontCreateEmptyTab) {
   service_->CreateHistoricalTab(&controller(), -1);
   EXPECT_TRUE(service_->entries().empty());
+}
+
+// Make sure TabRestoreService doesn't create an entry for print preview tab.
+TEST_F(TabRestoreServiceTest, DontRestorePrintPreviewTab) {
+  AddThreeNavigations();
+
+  // Navigate to a print preview tab.
+  GURL printPreviewURL(chrome::kChromeUIPrintURL);
+  NavigateAndCommit(printPreviewURL);
+  EXPECT_EQ(printPreviewURL, contents()->GetURL());
+  EXPECT_EQ(4, controller().entry_count());
+
+  // Have the service record the tab.
+  service_->CreateHistoricalTab(&controller(), -1);
+
+  // Recreate the service and have it load the tabs.
+  RecreateService();
+
+  // One entry should be created.
+  ASSERT_EQ(1U, service_->entries().size());
+
+  // And verify the entry.
+  TabRestoreService::Entry* entry = service_->entries().front();
+  ASSERT_EQ(TabRestoreService::TAB, entry->type);
+  TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+  EXPECT_FALSE(tab->pinned);
+
+  // Verify that print preview tab is not restored.
+  ASSERT_EQ(3U, tab->navigations.size());
+  EXPECT_NE(printPreviewURL, tab->navigations[0].virtual_url());
+  EXPECT_NE(printPreviewURL, tab->navigations[1].virtual_url());
+  EXPECT_NE(printPreviewURL, tab->navigations[2].virtual_url());
+  EXPECT_EQ(time_factory_->TimeNow().ToInternalValue(),
+            tab->timestamp.ToInternalValue());
 }
 
 // Tests restoring a single tab.

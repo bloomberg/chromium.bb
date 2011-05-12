@@ -352,8 +352,10 @@ void SessionService::UpdateTabNavigation(const SessionID& window_id,
                                          const SessionID& tab_id,
                                          int index,
                                          const NavigationEntry& entry) {
-  if (!ShouldTrackEntry(entry) || !ShouldTrackChangesToWindow(window_id))
+  if (!ShouldTrackEntry(entry.virtual_url()) ||
+      !ShouldTrackChangesToWindow(window_id)) {
     return;
+  }
 
   if (tab_to_available_range_.find(tab_id.id()) !=
       tab_to_available_range_.end()) {
@@ -1092,7 +1094,7 @@ void SessionService::BuildCommandsForTab(
     const NavigationEntry* entry = (i == pending_index) ?
         controller->pending_entry() : controller->GetEntryAtIndex(i);
     DCHECK(entry);
-    if (ShouldTrackEntry(*entry)) {
+    if (ShouldTrackEntry(entry->virtual_url())) {
       commands->push_back(
           CreateUpdateTabNavigationCommand(kCommandUpdateTabNavigation,
                                            controller->session_id().id(),

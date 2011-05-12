@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "content/browser/cancelable_request.h"
+#include "googleurl/src/gurl.h"
 
 class NavigationEntry;
 class Profile;
@@ -139,11 +140,8 @@ class BaseSessionService : public CancelableRequestProvider,
       SessionID::id_type* tab_id,
       std::string* extension_app_id);
 
-  // Returns true if the NavigationEntry should be written to disk.
-  bool ShouldTrackEntry(const NavigationEntry& entry);
-
-  // Returns true if the TabNavigationshould be written to disk.
-  bool ShouldTrackEntry(const TabNavigation& navigation);
+  // Returns true if the entry at specified |url| should be written to disk.
+  bool ShouldTrackEntry(const GURL& url);
 
   // Invokes ReadLastSessionCommands with request on the backend thread.
   // If testing, ReadLastSessionCommands is invoked directly.

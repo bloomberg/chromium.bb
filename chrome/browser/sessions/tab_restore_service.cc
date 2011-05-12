@@ -602,7 +602,7 @@ void TabRestoreService::ScheduleCommandsForTab(const Tab& tab,
   int first_index_to_persist = selected_index;
   for (int i = selected_index - 1; i >= 0 &&
        valid_count_before_selected < max_persist_navigation_count; --i) {
-    if (ShouldTrackEntry(navigations[i])) {
+    if (ShouldTrackEntry(navigations[i].virtual_url())) {
       first_index_to_persist = i;
       valid_count_before_selected++;
     }
@@ -631,7 +631,7 @@ void TabRestoreService::ScheduleCommandsForTab(const Tab& tab,
   // Then write the navigations.
   for (int i = first_index_to_persist, wrote_count = 0;
        i < max_index && wrote_count < 2 * max_persist_navigation_count; ++i) {
-    if (ShouldTrackEntry(navigations[i])) {
+    if (ShouldTrackEntry(navigations[i].virtual_url())) {
       // Creating a NavigationEntry isn't the most efficient way to go about
       // this, but it simplifies the code and makes it less error prone as we
       // add new data to NavigationEntry.
@@ -694,7 +694,7 @@ int TabRestoreService::GetSelectedNavigationIndexToPersist(const Tab& tab) {
   // Find the first navigation to persist. We won't persist the selected
   // navigation if ShouldTrackEntry returns false.
   while (selected_index >= 0 &&
-         !ShouldTrackEntry(navigations[selected_index])) {
+         !ShouldTrackEntry(navigations[selected_index].virtual_url())) {
     selected_index--;
   }
 
@@ -704,7 +704,7 @@ int TabRestoreService::GetSelectedNavigationIndexToPersist(const Tab& tab) {
   // Couldn't find a navigation to persist going back, go forward.
   selected_index = tab.current_navigation_index + 1;
   while (selected_index < max_index &&
-         !ShouldTrackEntry(navigations[selected_index])) {
+         !ShouldTrackEntry(navigations[selected_index].virtual_url())) {
     selected_index++;
   }
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -246,12 +247,10 @@ bool BaseSessionService::RestoreSetTabExtensionAppIDCommand(
       pickle->ReadString(&iterator, extension_app_id);
 }
 
-bool BaseSessionService::ShouldTrackEntry(const NavigationEntry& entry) {
-  return entry.virtual_url().is_valid();
-}
-
-bool BaseSessionService::ShouldTrackEntry(const TabNavigation& navigation) {
-  return navigation.virtual_url().is_valid();
+bool BaseSessionService::ShouldTrackEntry(const GURL& url) {
+  // NOTE: Do not track print preview tab because re-opening that page will
+  // just display a non-functional print preview page.
+  return url.is_valid() && url != GURL(chrome::kChromeUIPrintURL);
 }
 
 BaseSessionService::Handle BaseSessionService::ScheduleGetLastSessionCommands(
