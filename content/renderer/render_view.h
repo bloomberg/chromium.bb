@@ -71,7 +71,7 @@ class WebUIBindings;
 struct ContextMenuMediaParams;
 struct PP_Flash_NetAddress;
 struct ViewHostMsg_RunFileChooser_Params;
-struct ViewMsg_ClosePage_Params;
+struct ViewMsg_SwapOut_Params;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_StopFinding_Params;
 struct WebDropData;
@@ -710,7 +710,7 @@ class RenderView : public RenderWidget,
                                    IPC::ChannelHandle handle);
   void OnCancelDownload(int32 download_id);
   void OnClearFocusedNode();
-  void OnClosePage(const ViewMsg_ClosePage_Params& params);
+  void OnClosePage();
 #if defined(ENABLE_FLAPPER_HACKS)
   void OnConnectTcpACK(int request_id,
                        IPC::PlatformFileForTransit socket_for_transit,
@@ -796,6 +796,7 @@ class RenderView : public RenderWidget,
   void OnShouldClose();
   void OnStop();
   void OnStopFinding(const ViewMsg_StopFinding_Params& params);
+  void OnSwapOut(const ViewMsg_SwapOut_Params& params);
   void OnThemeChanged();
   void OnUndo();
   void OnUpdateTargetURLAck();

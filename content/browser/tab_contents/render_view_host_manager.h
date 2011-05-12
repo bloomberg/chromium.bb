@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/browser/site_instance.h"
 
 class WebUI;
 class InterstitialPage;
@@ -20,7 +21,6 @@ class NavigationEntry;
 class Profile;
 class RenderWidgetHostView;
 class RenderViewHost;
-class SiteInstance;
 
 // Manages RenderViewHosts for a TabContents. Normally there is only one and
 // it is easy to do. But we can also have transitions of processes (and hence
@@ -186,6 +186,10 @@ class RenderViewHostManager
   // deleted.
   void SwapInRenderViewHost(RenderViewHost* rvh);
 
+  // Returns whether the given RenderViewHost is on the list of swapped out
+  // RenderViewHosts.
+  bool IsSwappedOut(RenderViewHost* rvh);
+
  private:
   friend class TestTabContents;
   friend class RenderViewHostManagerTest;
@@ -264,6 +268,10 @@ class RenderViewHostManager
   // will be a pending Web UI associated with the navigation.
   RenderViewHost* pending_render_view_host_;
   scoped_ptr<WebUI> pending_web_ui_;
+
+  // A map of site instance ID to swapped out RenderViewHosts.
+  typedef base::hash_map<int32, RenderViewHost*> RenderViewHostMap;
+  RenderViewHostMap swapped_out_hosts_;
 
   // The intersitial page currently shown if any, not own by this class
   // (the InterstitialPage is self-owned, it deletes itself when hidden).

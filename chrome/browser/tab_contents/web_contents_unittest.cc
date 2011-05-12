@@ -300,6 +300,11 @@ TEST_F(TabContentsTest, CrossSiteBoundaries) {
   int pending_rvh_delete_count = 0;
   pending_rvh->set_delete_counter(&pending_rvh_delete_count);
 
+  // Navigations should be suspended in pending_rvh until ShouldCloseACK.
+  EXPECT_TRUE(pending_rvh->are_navigations_suspended());
+  orig_rvh->SendShouldCloseACK(true);
+  EXPECT_FALSE(pending_rvh->are_navigations_suspended());
+
   // DidNavigate from the pending page
   ViewHostMsg_FrameNavigate_Params params2;
   InitNavigateParams(&params2, 1, url2, PageTransition::TYPED);
@@ -310,20 +315,36 @@ TEST_F(TabContentsTest, CrossSiteBoundaries) {
   EXPECT_EQ(pending_rvh, contents()->render_view_host());
   EXPECT_NE(instance1, instance2);
   EXPECT_TRUE(contents()->pending_rvh() == NULL);
-  EXPECT_EQ(orig_rvh_delete_count, 1);
+  // We keep the original RVH around, swapped out.
+  EXPECT_TRUE(contents()->render_manager()->IsSwappedOut(orig_rvh));
+  EXPECT_EQ(orig_rvh_delete_count, 0);
 
   // Going back should switch SiteInstances again.  The first SiteInstance is
   // stored in the NavigationEntry, so it should be the same as at the start.
+  // We should use the same RVH as before, swapping it back in.
   controller().GoBack();
   TestRenderViewHost* goback_rvh = contents()->pending_rvh();
+  EXPECT_EQ(orig_rvh, goback_rvh);
   EXPECT_TRUE(contents()->cross_navigation_pending());
+
+  // Navigations should be suspended in goback_rvh until ShouldCloseACK.
+  EXPECT_TRUE(goback_rvh->are_navigations_suspended());
+  pending_rvh->SendShouldCloseACK(true);
+  EXPECT_FALSE(goback_rvh->are_navigations_suspended());
 
   // DidNavigate from the back action
   contents()->TestDidNavigate(goback_rvh, params1);
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(goback_rvh, contents()->render_view_host());
-  EXPECT_EQ(pending_rvh_delete_count, 1);
   EXPECT_EQ(instance1, contents()->GetSiteInstance());
+  // The pending RVH should now be swapped out, not deleted.
+  EXPECT_TRUE(contents()->render_manager()->IsSwappedOut(pending_rvh));
+  EXPECT_EQ(pending_rvh_delete_count, 0);
+
+  // Close tab and ensure RVHs are deleted.
+  DeleteContents();
+  EXPECT_EQ(orig_rvh_delete_count, 1);
+  EXPECT_EQ(pending_rvh_delete_count, 1);
 }
 
 // Test that navigating across a site boundary after a crash creates a new
@@ -355,6 +376,7 @@ TEST_F(TabContentsTest, CrossSiteBoundariesAfterCrash) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_TRUE(contents()->pending_rvh() == NULL);
   EXPECT_NE(orig_rvh, new_rvh);
+  EXPECT_FALSE(contents()->render_manager()->IsSwappedOut(orig_rvh));
   EXPECT_EQ(orig_rvh_delete_count, 1);
 
   // DidNavigate from the new page
@@ -367,6 +389,10 @@ TEST_F(TabContentsTest, CrossSiteBoundariesAfterCrash) {
   EXPECT_EQ(new_rvh, rvh());
   EXPECT_NE(instance1, instance2);
   EXPECT_TRUE(contents()->pending_rvh() == NULL);
+
+  // Close tab and ensure RVHs are deleted.
+  DeleteContents();
+  EXPECT_EQ(orig_rvh_delete_count, 1);
 }
 
 // Test that opening a new tab in the same SiteInstance and then navigating
@@ -395,6 +421,7 @@ TEST_F(TabContentsTest, NavigateTwoTabsCrossSite) {
   // Navigate first tab to a new site
   const GURL url2a("http://www.yahoo.com");
   controller().LoadURL(url2a, GURL(), PageTransition::TYPED);
+  orig_rvh->SendShouldCloseACK(true);
   TestRenderViewHost* pending_rvh_a = contents()->pending_rvh();
   ViewHostMsg_FrameNavigate_Params params2a;
   InitNavigateParams(&params2a, 1, url2a, PageTransition::TYPED);
@@ -405,6 +432,9 @@ TEST_F(TabContentsTest, NavigateTwoTabsCrossSite) {
   // Navigate second tab to the same site as the first tab
   const GURL url2b("http://mail.yahoo.com");
   contents2.controller().LoadURL(url2b, GURL(), PageTransition::TYPED);
+  TestRenderViewHost* rvh2 =
+      static_cast<TestRenderViewHost*>(contents2.render_view_host());
+  rvh2->SendShouldCloseACK(true);
   TestRenderViewHost* pending_rvh_b = contents2.pending_rvh();
   EXPECT_TRUE(pending_rvh_b != NULL);
   EXPECT_TRUE(contents2.cross_navigation_pending());
@@ -1602,7 +1632,8 @@ TEST_F(TabContentsTest, NoJSMessageOnInterstitials) {
   // attempting to show a JS message.
   IPC::Message* dummy_message = new IPC::Message;
   bool did_suppress_message = false;
-  contents()->RunJavaScriptMessage(L"This is an informative message", L"OK",
+  contents()->RunJavaScriptMessage(contents()->render_view_host(),
+      L"This is an informative message", L"OK",
       kGURL, ui::MessageBoxFlags::kIsJavascriptAlert, dummy_message,
       &did_suppress_message);
   EXPECT_TRUE(did_suppress_message);

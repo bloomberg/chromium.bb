@@ -461,9 +461,6 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
   // TODO(erikkay) This is happening inside of a check to is_content_initiated
   // which means that things like the back button won't trigger it.  Is that
   // OK?
-  // TODO(creis): For hosted apps, we currently only swap processes to enter
-  // the app and not exit it, since we currently lose context (e.g.,
-  // window.opener) if the window navigates back.  See crbug.com/65953.
   if (!CrossesExtensionExtents(frame, url))
     return false;
 
@@ -559,10 +556,7 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(WebFrame* frame,
   if (old_url.is_empty() && frame->opener())
     old_url = frame->opener()->url();
 
-  bool old_url_is_hosted_app = extensions->GetByURL(old_url) &&
-      !extensions->GetByURL(old_url)->web_extent().is_empty();
-  return !extensions->InSameExtent(old_url, new_url) &&
-         !old_url_is_hosted_app;
+  return !extensions->InSameExtent(old_url, new_url);
 }
 
 }  // namespace chrome

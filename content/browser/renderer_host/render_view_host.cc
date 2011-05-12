@@ -39,6 +39,7 @@
 #include "content/common/notification_service.h"
 #include "content/common/notification_type.h"
 #include "content/common/result_codes.h"
+#include "content/common/swapped_out_messages.h"
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
 #include "net/base/net_util.h"
@@ -92,9 +93,10 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       delegate_(delegate),
       waiting_for_drag_context_response_(false),
       enabled_bindings_(0),
-      pending_request_id_(0),
+      pending_request_id_(-1),
       navigations_suspended_(false),
       suspended_nav_message_(NULL),
+      is_swapped_out_(false),
       run_modal_reply_msg_(NULL),
       is_waiting_for_beforeunload_ack_(false),
       is_waiting_for_unload_ack_(false),
@@ -258,9 +260,18 @@ void RenderViewHost::SetNavigationsSuspended(bool suspend) {
   navigations_suspended_ = suspend;
   if (!suspend && suspended_nav_message_.get()) {
     // There's a navigation message waiting to be sent.  Now that we're not
-    // suspended anymore, resume navigation by sending it.
+    // suspended anymore, resume navigation by sending it.  If we were swapped
+    // out, we should also stop filtering out the IPC messages now.
+    is_swapped_out_ = false;
     Send(suspended_nav_message_.release());
   }
+}
+
+void RenderViewHost::CancelSuspendedNavigations() {
+  // Clear any state if a pending navigation is canceled or pre-empted.
+  if (suspended_nav_message_.get())
+    suspended_nav_message_.reset();
+  navigations_suspended_ = false;
 }
 
 void RenderViewHost::FirePageBeforeUnload(bool for_cross_site_transition) {
@@ -295,45 +306,66 @@ void RenderViewHost::FirePageBeforeUnload(bool for_cross_site_transition) {
   }
 }
 
-void RenderViewHost::ClosePage(bool for_cross_site_transition,
-                               int new_render_process_host_id,
-                               int new_request_id) {
-  // This will be set back to false in OnClosePageACK, just before we close the
-  // tab or replace it with a pending RVH.  There are some cases (such as 204
-  // errors) where we'll continue to show this RVH.
+void RenderViewHost::SwapOut(int new_render_process_host_id,
+                             int new_request_id) {
+  // Start filtering IPC messages to avoid confusing the delegate.  This will
+  // prevent any dialogs from appearing during unload handlers, but we've
+  // already decided to silence them in crbug.com/68780.  We will set it back
+  // to false in SetNavigationsSuspended if we swap back in.
+  is_swapped_out_ = true;
+
+  // This will be set back to false in OnSwapOutACK, just before we replace
+  // this RVH with the pending RVH.
   is_waiting_for_unload_ack_ = true;
   // Start the hang monitor in case the renderer hangs in the unload handler.
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
 
-  ViewMsg_ClosePage_Params params;
+  ViewMsg_SwapOut_Params params;
   params.closing_process_id = process()->id();
   params.closing_route_id = routing_id();
-  params.for_cross_site_transition = for_cross_site_transition;
   params.new_render_process_host_id = new_render_process_host_id;
   params.new_request_id = new_request_id;
   if (IsRenderViewLive()) {
+    Send(new ViewMsg_SwapOut(routing_id(), params));
+  } else {
+    // This RenderViewHost doesn't have a live renderer, so just skip the unload
+    // event.  We must notify the ResourceDispatcherHost on the IO thread,
+    // which we will do through the RenderProcessHost's widget helper.
+    process()->CrossSiteSwapOutACK(params);
+  }
+}
+
+void RenderViewHost::OnSwapOutACK() {
+  // Stop the hang monitor now that the unload handler has finished.
+  StopHangMonitorTimeout();
+  is_waiting_for_unload_ack_ = false;
+}
+
+void RenderViewHost::WasSwappedOut() {
+  // Don't bother reporting hung state anymore.
+  StopHangMonitorTimeout();
+
+  // Inform the renderer that it can exit if no one else is using it.
+  Send(new ViewMsg_WasSwappedOut(routing_id()));
+}
+
+void RenderViewHost::ClosePage() {
+  // Start the hang monitor in case the renderer hangs in the unload handler.
+  is_waiting_for_unload_ack_ = true;
+  StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
+
+  if (IsRenderViewLive()) {
+    // TODO(creis): Should this be moved to Shutdown?  It may not be called for
+    // RenderViewHosts that have been swapped out.
     NotificationService::current()->Notify(
         NotificationType::RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
         Source<RenderViewHost>(this),
         NotificationService::NoDetails());
 
-    Send(new ViewMsg_ClosePage(routing_id(), params));
+    Send(new ViewMsg_ClosePage(routing_id()));
   } else {
-    // This RenderViewHost doesn't have a live renderer, so just skip closing
-    // the page.  We must notify the ResourceDispatcherHost on the IO thread,
-    // which we will do through the RenderProcessHost's widget helper.
-    process()->CrossSiteClosePageACK(params);
-  }
-}
-
-void RenderViewHost::OnClosePageACK(bool for_cross_site_transition) {
-  StopHangMonitorTimeout();
-  is_waiting_for_unload_ack_ = false;
-
-  // If this ClosePageACK is not for a cross-site transition, then it is for an
-  // attempt to close the tab.  We have now finished the unload handler and can
-  // proceed with closing the tab.
-  if (!for_cross_site_transition) {
+    // This RenderViewHost doesn't have a live renderer, so just skip the unload
+    // event and close the page.
     ClosePageIgnoringUnloadEvents();
   }
 }
@@ -671,6 +703,12 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
   if (!BrowserMessageFilter::CheckCanDispatchOnUI(msg, this))
     return true;
 
+  // Filter out most IPC messages if this renderer is swapped out.
+  // We still want to certain ACKs to keep our state consistent.
+  if (is_swapped_out_)
+    if (!content::SwappedOutMessages::CanHandleWhileSwappedOut(msg))
+      return true;
+
   {
     // delegate_->OnMessageReceived can end up deleting |this|, in which case
     // the destructor for ObserverListBase::Iterator would access the deleted
@@ -728,6 +766,7 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnMsgClosePageACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnMsgSelectionChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityNotifications,
                         OnAccessibilityNotifications)
@@ -797,7 +836,8 @@ void RenderViewHost::OnMsgShowView(int route_id,
                                    bool user_gesture) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view) {
-    view->ShowCreatedWindow(route_id, disposition, initial_pos, user_gesture);
+    if (!is_swapped_out_)
+      view->ShowCreatedWindow(route_id, disposition, initial_pos, user_gesture);
     Send(new ViewMsg_Move_ACK(route_id));
   }
 }
@@ -806,7 +846,8 @@ void RenderViewHost::OnMsgShowWidget(int route_id,
                                      const gfx::Rect& initial_pos) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view) {
-    view->ShowCreatedWidget(route_id, initial_pos);
+    if (!is_swapped_out_)
+      view->ShowCreatedWidget(route_id, initial_pos);
     Send(new ViewMsg_Move_ACK(route_id));
   }
 }
@@ -814,7 +855,8 @@ void RenderViewHost::OnMsgShowWidget(int route_id,
 void RenderViewHost::OnMsgShowFullscreenWidget(int route_id) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view) {
-    view->ShowCreatedFullscreenWidget(route_id);
+    if (!is_swapped_out_)
+      view->ShowCreatedFullscreenWidget(route_id);
     Send(new ViewMsg_Move_ACK(route_id));
   }
 }
@@ -936,7 +978,8 @@ void RenderViewHost::OnMsgUpdateEncoding(const std::string& encoding_name) {
 
 void RenderViewHost::OnMsgUpdateTargetURL(int32 page_id,
                                           const GURL& url) {
-  delegate_->UpdateTargetURL(page_id, url);
+  if (!is_swapped_out_)
+    delegate_->UpdateTargetURL(page_id, url);
 
   // Send a notification back to the renderer that we are ready to
   // receive more target urls.
@@ -955,7 +998,8 @@ void RenderViewHost::OnMsgClose() {
 }
 
 void RenderViewHost::OnMsgRequestMove(const gfx::Rect& pos) {
-  delegate_->RequestMove(pos);
+  if (!is_swapped_out_)
+    delegate_->RequestMove(pos);
   Send(new ViewMsg_Move_ACK(routing_id()));
 }
 
@@ -1077,8 +1121,8 @@ void RenderViewHost::OnMsgRunJavaScriptMessage(
   // process input events.
   process()->set_ignore_input_events(true);
   StopHangMonitorTimeout();
-  delegate_->RunJavaScriptMessage(message, default_prompt, frame_url, flags,
-                                  reply_msg,
+  delegate_->RunJavaScriptMessage(this, message, default_prompt, frame_url,
+                                  flags, reply_msg,
                                   &are_javascript_messages_suppressed_);
 }
 
@@ -1089,7 +1133,7 @@ void RenderViewHost::OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
   // shouldn't process input events.
   process()->set_ignore_input_events(true);
   StopHangMonitorTimeout();
-  delegate_->RunBeforeUnloadConfirm(message, reply_msg);
+  delegate_->RunBeforeUnloadConfirm(this, message, reply_msg);
 }
 
 void RenderViewHost::MediaPlayerActionAt(const gfx::Point& location,
@@ -1110,7 +1154,7 @@ void RenderViewHost::OnMsgStartDragging(
     const gfx::Point& image_offset) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view)
-      view->StartDragging(drop_data, drag_operations_mask, image, image_offset);
+    view->StartDragging(drop_data, drag_operations_mask, image, image_offset);
 }
 
 void RenderViewHost::OnUpdateDragCursor(WebDragOperation current_op) {
@@ -1167,7 +1211,7 @@ void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
   // If this renderer navigated while the beforeunload request was in flight, we
   // may have cleared this state in OnMsgNavigate, in which case we can ignore
   // this message.
-  if (!is_waiting_for_beforeunload_ack_)
+  if (!is_waiting_for_beforeunload_ack_ || is_swapped_out_)
     return;
 
   is_waiting_for_beforeunload_ack_ = false;
@@ -1182,6 +1226,10 @@ void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
   // If canceled, notify the delegate to cancel its pending navigation entry.
   if (!proceed)
     delegate_->DidCancelLoading();
+}
+
+void RenderViewHost::OnMsgClosePageACK() {
+  ClosePageIgnoringUnloadEvents();
 }
 
 void RenderViewHost::WindowMoveOrResizeStarted() {
@@ -1326,7 +1374,7 @@ void RenderViewHost::FilterURL(ChildProcessSecurityPolicy* policy,
 
 void RenderViewHost::OnAccessibilityNotifications(
     const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
-  if (view())
+  if (view() && !is_swapped_out_)
     view()->OnAccessibilityNotifications(params);
 
   if (!params.empty()) {

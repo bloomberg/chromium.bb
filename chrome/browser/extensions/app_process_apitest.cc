@@ -105,12 +105,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
                    base_url.Resolve("path1/empty.html"), true);
   WindowOpenHelper(browser(), host,
                    base_url.Resolve("path2/empty.html"), true);
-  // TODO(creis): This should open in a new process (i.e., false for the last
-  // argument), but we temporarily avoid swapping processes away from an app
-  // until we're able to restore window.opener if the page later returns to an
-  // in-app URL.  See crbug.com/65953.
+  // This should open in a new process (i.e., false for the last argument).
   WindowOpenHelper(browser(), host,
-                   base_url.Resolve("path3/empty.html"), true);
+                   base_url.Resolve("path3/empty.html"), false);
 
   // Now let's have these pages navigate, into or out of the extension web
   // extent. They should switch processes.
@@ -118,10 +115,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   const GURL& non_app_url(base_url.Resolve("path3/empty.html"));
   NavigateTabHelper(browser()->GetTabContentsAt(2), non_app_url);
   NavigateTabHelper(browser()->GetTabContentsAt(3), app_url);
-  // TODO(creis): This should swap out of the app's process (i.e., EXPECT_NE),
-  // but we temporarily avoid swapping away from an app in case it needs to
-  // communicate with window.opener later.  See crbug.com/65953.
-  EXPECT_EQ(host->process(),
+  EXPECT_NE(host->process(),
             browser()->GetTabContentsAt(2)->render_view_host()->process());
   EXPECT_EQ(host->process(),
             browser()->GetTabContentsAt(3)->render_view_host()->process());

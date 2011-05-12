@@ -108,6 +108,10 @@ void TestRenderViewHost::SendNavigateWithTransition(
   OnMsgNavigate(msg);
 }
 
+void TestRenderViewHost::SendShouldCloseACK(bool proceed) {
+  OnMsgShouldCloseACK(proceed);
+}
+
 void TestRenderViewHost::set_simulate_fetch_via_proxy(bool proxy) {
   simulate_fetch_via_proxy_ = proxy;
 }

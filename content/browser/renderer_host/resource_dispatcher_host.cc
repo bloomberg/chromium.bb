@@ -345,7 +345,7 @@ bool ResourceDispatcherHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ResourceHostMsg_UploadProgress_ACK, OnUploadProgressACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_CancelRequest, OnCancelRequest)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_FollowRedirect, OnFollowRedirect)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SwapOut_ACK, OnSwapOutACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -717,30 +717,23 @@ ResourceDispatcherHost::CreateRequestInfoForBrowserRequest(
                                                &context);
 }
 
-void ResourceDispatcherHost::OnClosePageACK(
-    const ViewMsg_ClosePage_Params& params) {
-  if (params.for_cross_site_transition) {
-    // Closes for cross-site transitions are handled such that the cross-site
-    // transition continues.
-    GlobalRequestID global_id(params.new_render_process_host_id,
-                              params.new_request_id);
-    PendingRequestList::iterator i = pending_requests_.find(global_id);
-    if (i != pending_requests_.end()) {
-      // The response we were meant to resume could have already been canceled.
-      ResourceDispatcherHostRequestInfo* info = InfoForRequest(i->second);
-      if (info->cross_site_handler())
-        info->cross_site_handler()->ResumeResponse();
-    }
-  } else {
-    // This is a tab close, so we will close the tab in OnClosePageACK.
-    DCHECK(params.new_render_process_host_id == -1);
-    DCHECK(params.new_request_id == -1);
+void ResourceDispatcherHost::OnSwapOutACK(
+    const ViewMsg_SwapOut_Params& params) {
+  // Closes for cross-site transitions are handled such that the cross-site
+  // transition continues.
+  GlobalRequestID global_id(params.new_render_process_host_id,
+                            params.new_request_id);
+  PendingRequestList::iterator i = pending_requests_.find(global_id);
+  if (i != pending_requests_.end()) {
+    // The response we were meant to resume could have already been canceled.
+    ResourceDispatcherHostRequestInfo* info = InfoForRequest(i->second);
+    if (info->cross_site_handler())
+      info->cross_site_handler()->ResumeResponse();
   }
   // Update the RenderViewHost's internal state after the ACK.
   CallRenderViewHost(params.closing_process_id,
                      params.closing_route_id,
-                     &RenderViewHost::OnClosePageACK,
-                     params.for_cross_site_transition);
+                     &RenderViewHost::OnSwapOutACK);
 }
 
 // We are explicitly forcing the download of 'url'.

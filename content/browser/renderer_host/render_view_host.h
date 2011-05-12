@@ -163,27 +163,48 @@ class RenderViewHost : public RenderWidgetHost {
   // are_navigations_suspended() first.
   void SetNavigationsSuspended(bool suspend);
 
+  // Clears any suspended navigation state after a cross-site navigation is
+  // canceled or suspended.  This is important if we later return to this
+  // RenderViewHost.
+  void CancelSuspendedNavigations();
+
+  // Whether this RenderViewHost has been swapped out to be displayed by a
+  // different process.
+  bool is_swapped_out() const { return is_swapped_out_; }
+
   // Causes the renderer to invoke the onbeforeunload event handler.  The
-  // result will be returned via ViewMsg_ShouldClose. See also ClosePage which
-  // will fire the PageUnload event.
+  // result will be returned via ViewMsg_ShouldClose. See also ClosePage and
+  // SwapOut, which fire the PageUnload event.
   //
   // Set bool for_cross_site_transition when this close is just for the current
   // RenderView in the case of a cross-site transition. False means we're
   // closing the entire tab.
   void FirePageBeforeUnload(bool for_cross_site_transition);
 
+  // Tells the renderer that this RenderView is being swapped out for one in a
+  // different renderer process.  It should run its unload handler and move to
+  // a blank document.  The renderer should preserve the Frame object until it
+  // exits, in case we come back.  The renderer can exit if it has no other
+  // active RenderViews, but not until WasSwappedOut is called (when it is no
+  // longer visible).
+  //
+  // Please see ViewMsg_SwapOut_Params in view_messages.h for a description
+  // of the parameters.
+  void SwapOut(int new_render_process_host_id, int new_request_id);
+
+  // Called by ResourceDispatcherHost after the SwapOutACK is received.
+  void OnSwapOutACK();
+
+  // Called to notify the renderer that it has been visibly swapped out and
+  // replaced by another RenderViewHost, after an earlier call to SwapOut.
+  // It is now safe for the process to exit if there are no other active
+  // RenderViews.
+  void WasSwappedOut();
+
   // Causes the renderer to close the current page, including running its
   // onunload event handler.  A ClosePage_ACK message will be sent to the
   // ResourceDispatcherHost when it is finished.
-  //
-  // Please see ViewMsg_ClosePage in resource_messages_internal.h for a
-  // description of the parameters.
-  void ClosePage(bool for_cross_site_transition,
-                 int new_render_process_host_id,
-                 int new_request_id);
-
-  // Called by ResourceDispatcherHost after the ClosePageACK is received.
-  void OnClosePageACK(bool for_cross_site_transition);
+  void ClosePage();
 
   // Close the page ignoring whether it has unload events registers.
   // This is called after the beforeunload and unload events have fired
@@ -516,6 +537,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnUpdateInspectorSetting(const std::string& key,
                                 const std::string& value);
   void OnMsgShouldCloseACK(bool proceed);
+  void OnMsgClosePageACK();
 
   void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
@@ -569,6 +591,10 @@ class RenderViewHost : public RenderWidgetHost {
   // TabContents will destroy the pending RVH and create a new one if a second
   // navigation occurs.
   scoped_ptr<ViewMsg_Navigate> suspended_nav_message_;
+
+  // Whether this RenderViewHost is currently swapped out, such that the view is
+  // being rendered by another process.
+  bool is_swapped_out_;
 
   // If we were asked to RunModal, then this will hold the reply_msg that we
   // must return to the renderer to unblock it.

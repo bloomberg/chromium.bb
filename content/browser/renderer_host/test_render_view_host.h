@@ -182,6 +182,9 @@ class TestRenderViewHost : public RenderViewHost {
   void SendNavigateWithTransition(int page_id, const GURL& url,
                                   PageTransition::Type transition);
 
+  // Calls OnMsgShouldCloseACK on the RenderViewHost with the given parameter.
+  void SendShouldCloseACK(bool proceed);
+
   // If set, *delete_counter is incremented when this object destructs.
   void set_delete_counter(int* delete_counter) {
     delete_counter_ = delete_counter;

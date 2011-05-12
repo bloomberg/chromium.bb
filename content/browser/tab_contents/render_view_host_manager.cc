@@ -49,6 +49,13 @@ RenderViewHostManager::~RenderViewHostManager() {
   RenderViewHost* render_view_host = render_view_host_;
   render_view_host_ = NULL;
   render_view_host->Shutdown();
+
+  // Shut down any swapped out RenderViewHosts.
+  for (RenderViewHostMap::iterator iter = swapped_out_hosts_.begin();
+       iter != swapped_out_hosts_.end();
+       ++iter) {
+    iter->second->Shutdown();
+  }
 }
 
 void RenderViewHostManager::Init(Profile* profile,
@@ -152,21 +159,17 @@ bool RenderViewHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
     if (pending_render_view_host_->are_navigations_suspended())
       pending_render_view_host_->SetNavigationsSuspended(false);
   } else {
-    // The request has been started and paused, while we're waiting for the
+    // The request has been started and paused while we're waiting for the
     // unload handler to finish.  We'll pretend that it did, by notifying the
     // IO thread to let the response continue.  The pending renderer will then
     // be swapped in as part of the usual DidNavigate logic.  (If the unload
     // handler later finishes, this call will be ignored because the state in
     // CrossSiteResourceHandler will already be cleaned up.)
-    ViewMsg_ClosePage_Params params;
-    params.closing_process_id =
-        render_view_host_->process()->id();
-    params.closing_route_id = render_view_host_->routing_id();
-    params.for_cross_site_transition = true;
+    ViewMsg_SwapOut_Params params;
     params.new_render_process_host_id =
         pending_render_view_host_->process()->id();
     params.new_request_id = pending_request_id;
-    current_host()->process()->CrossSiteClosePageACK(params);
+    current_host()->process()->CrossSiteSwapOutACK(params);
   }
   return false;
 }
@@ -187,6 +190,14 @@ void RenderViewHostManager::DidNavigateMainFrame(
 
   if (render_view_host == pending_render_view_host_) {
     // The pending cross-site navigation completed, so show the renderer.
+    // If it committed without sending network requests (e.g., data URLs),
+    // then we still need to swap out the old RVH first and run its unload
+    // handler.  OK for that to happen in the background.
+    if (pending_render_view_host_->GetPendingRequestId() == -1) {
+      OnCrossSiteResponse(pending_render_view_host_->process()->id(),
+                          pending_render_view_host_->routing_id());
+    }
+
     CommitPending();
     cross_navigation_pending_ = false;
   } else if (render_view_host == render_view_host_) {
@@ -221,8 +232,23 @@ void RenderViewHostManager::RendererAbortedProvisionalLoad(
 
 void RenderViewHostManager::RendererProcessClosing(
     RenderProcessHost* render_process_host) {
-  // TODO(creis): Don't schedule new navigations in RenderViewHosts of this
-  // process.  (Part of http://crbug.com/65953.)
+  // Remove any swapped out RVHs from this process, so that we don't try to
+  // swap them back in while the process is exiting.  Start by finding them,
+  // since there could be more than one.
+  std::list<int> ids_to_remove;
+  for (RenderViewHostMap::iterator iter = swapped_out_hosts_.begin();
+       iter != swapped_out_hosts_.end();
+       ++iter) {
+    if (iter->second->process() == render_process_host)
+      ids_to_remove.push_back(iter->first);
+  }
+
+  // Now delete them.
+  while (!ids_to_remove.empty()) {
+    swapped_out_hosts_[ids_to_remove.back()]->Shutdown();
+    swapped_out_hosts_.erase(ids_to_remove.back());
+    ids_to_remove.pop_back();
+  }
 }
 
 void RenderViewHostManager::ShouldClosePage(bool for_cross_site_transition,
@@ -254,7 +280,7 @@ void RenderViewHostManager::ShouldClosePage(bool for_cross_site_transition,
 
     if (proceed_to_fire_unload) {
       // This is not a cross-site navigation, the tab is being closed.
-      render_view_host_->ClosePage(false, -1, -1);
+      render_view_host_->ClosePage();
     }
   }
 }
@@ -266,12 +292,12 @@ void RenderViewHostManager::OnCrossSiteResponse(int new_render_process_host_id,
     return;
   DCHECK(pending_render_view_host_);
 
-  // Tell the old renderer to run its onunload handler.  When it finishes, it
-  // will send a ClosePage_ACK to the ResourceDispatcherHost with the given
-  // IDs (of the pending RVH's request), allowing the pending RVH's response to
-  // resume.
-  render_view_host_->ClosePage(true,
-                               new_render_process_host_id, new_request_id);
+  // Tell the old renderer it is being swapped out.  This will fire the unload
+  // handler (without firing the beforeunload handler a second time).  When the
+  // unload handler finishes and the navigation completes, we will send a
+  // message to the ResourceDispatcherHost with the given pending request IDs,
+  // allowing the pending RVH's response to resume.
+  render_view_host_->SwapOut(new_render_process_host_id, new_request_id);
 
   // ResourceDispatcherHost has told us to run the onunload handler, which
   // means it is not a download or unsafe page, and we are going to perform the
@@ -482,6 +508,21 @@ bool RenderViewHostManager::CreatePendingRenderView(
     // we're about to switch away, so that it sends an UpdateState message.
   }
 
+  // Check if we've already created an RVH for this SiteInstance.
+  CHECK(instance);
+  RenderViewHostMap::iterator iter =
+      swapped_out_hosts_.find(instance->id());
+  if (iter != swapped_out_hosts_.end()) {
+    // Re-use the existing RenderViewHost, which has already been initialized.
+    // We'll remove it from the list of swapped out hosts if it commits.
+    pending_render_view_host_ = iter->second;
+
+    // Prevent the process from exiting while we're trying to use it.
+    pending_render_view_host_->process()->AddPendingView();
+
+    return true;
+  }
+
   pending_render_view_host_ = RenderViewHostFactory::Create(
       instance, render_view_delegate_, MSG_ROUTING_NONE, delegate_->
       GetControllerForRenderManager().session_storage_namespace());
@@ -541,14 +582,8 @@ void RenderViewHostManager::CommitPending() {
   bool focus_render_view = !will_focus_location_bar &&
       render_view_host_->view() && render_view_host_->view()->HasFocus();
 
-  // Hide the current view and prepare to destroy it.
-  // TODO(creis): Get the old RenderViewHost to send us an UpdateState message
-  // before we destroy it.
-  if (render_view_host_->view())
-    render_view_host_->view()->Hide();
-  RenderViewHost* old_render_view_host = render_view_host_;
-
   // Swap in the pending view and make it active.
+  RenderViewHost* old_render_view_host = render_view_host_;
   render_view_host_ = pending_render_view_host_;
   pending_render_view_host_ = NULL;
 
@@ -562,6 +597,12 @@ void RenderViewHostManager::CommitPending() {
     render_view_host_->view()->Show();
   else
     delegate_->RenderViewGoneFromRenderManager(render_view_host_);
+
+  // Hide the old view now that the new one is visible.
+  if (old_render_view_host->view()) {
+    old_render_view_host->view()->Hide();
+    old_render_view_host->WasSwappedOut();
+  }
 
   // Make sure the size is up to date.  (Fix for bug 1079768.)
   delegate_->UpdateRenderViewSizeForRenderManager();
@@ -579,7 +620,18 @@ void RenderViewHostManager::CommitPending() {
       Source<NavigationController>(&delegate_->GetControllerForRenderManager()),
       Details<RenderViewHostSwitchedDetails>(&details));
 
-  old_render_view_host->Shutdown();
+  // If the pending view was on the swapped out list, we can remove it.
+  swapped_out_hosts_.erase(render_view_host_->site_instance()->id());
+
+  // If the old RVH is live, we are swapping it out and should keep track of it
+  // in case we navigate back to it.
+  if (old_render_view_host->IsRenderViewLive()) {
+    DCHECK(old_render_view_host->is_swapped_out());
+    swapped_out_hosts_[old_render_view_host->site_instance()->id()] =
+        old_render_view_host;
+  } else {
+    old_render_view_host->Shutdown();
+  }
 
   // Let the task manager know that we've swapped RenderViewHosts, since it
   // might need to update its process groupings.
@@ -689,12 +741,26 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
 
 void RenderViewHostManager::CancelPending() {
   RenderViewHost* pending_render_view_host = pending_render_view_host_;
+  pending_render_view_host_ = NULL;
 
   // We no longer need to prevent the process from exiting.
   pending_render_view_host->process()->RemovePendingView();
 
-  pending_render_view_host_ = NULL;
-  pending_render_view_host->Shutdown();
+  // The pending RVH may already be on the swapped out list if we started to
+  // swap it back in and then canceled.  If so, make sure it gets swapped out
+  // again.  If it's not on the swapped out list (e.g., aborting a pending
+  // load), then it's safe to shut down.
+  if (IsSwappedOut(pending_render_view_host)) {
+    // Any currently suspended navigations are no longer needed.
+    pending_render_view_host->CancelSuspendedNavigations();
+
+    // We can pass -1,-1 because there is no pending response in the
+    // ResourceDispatcherHost to unpause.
+    pending_render_view_host->SwapOut(-1, -1);
+  } else {
+    // We won't be coming back, so shut this one down.
+    pending_render_view_host->Shutdown();
+  }
 
   pending_web_ui_.reset();
 }
@@ -711,17 +777,33 @@ void RenderViewHostManager::RenderViewDeleted(RenderViewHost* rvh) {
     NOTREACHED();
     pending_render_view_host_ = NULL;
   }
+
+  // Make sure deleted RVHs are not kept in the swapped out list while we are
+  // still alive.  (If render_view_host_ is null, we're already being deleted.)
+  if (!render_view_host_)
+    return;
+  // We can't look it up by SiteInstance ID, which may no longer be valid.
+  for (RenderViewHostMap::iterator iter = swapped_out_hosts_.begin();
+       iter != swapped_out_hosts_.end();
+       ++iter) {
+    if (iter->second == rvh) {
+      swapped_out_hosts_.erase(iter);
+      break;
+    }
+  }
 }
 
 void RenderViewHostManager::SwapInRenderViewHost(RenderViewHost* rvh) {
+  // TODO(creis): Abstract out the common code between this and CommitPending.
   web_ui_.reset();
 
-  // Hide the current view and prepare to destroy it.
-  if (render_view_host_->view())
-    render_view_host_->view()->Hide();
-  RenderViewHost* old_render_view_host = render_view_host_;
+  // Make sure the current RVH is swapped out so that it filters out any
+  // disruptive messages from the renderer.  We can pass -1,-1 because there is
+  // no pending response in the ResourceDispatcherHost to unpause.
+  render_view_host_->SwapOut(-1, -1);
 
   // Swap in the new view and make it active.
+  RenderViewHost* old_render_view_host = render_view_host_;
   render_view_host_ = rvh;
   render_view_host_->set_delegate(render_view_delegate_);
   // Remove old RenderWidgetHostView with mocked out methods so it can be
@@ -743,6 +825,12 @@ void RenderViewHostManager::SwapInRenderViewHost(RenderViewHost* rvh) {
     render_view_host_->view()->Show();
   }
 
+  // Hide the current view and prepare to swap it out.
+  if (old_render_view_host->view()) {
+    old_render_view_host->view()->Hide();
+    old_render_view_host->WasSwappedOut();
+  }
+
   delegate_->UpdateRenderViewSizeForRenderManager();
 
   RenderViewHostSwitchedDetails details;
@@ -753,10 +841,28 @@ void RenderViewHostManager::SwapInRenderViewHost(RenderViewHost* rvh) {
       Source<NavigationController>(&delegate_->GetControllerForRenderManager()),
       Details<RenderViewHostSwitchedDetails>(&details));
 
-  // This will cause the old RenderViewHost to delete itself.
-  old_render_view_host->Shutdown();
+  // If the given RVH was on the swapped out list, we can remove it.
+  swapped_out_hosts_.erase(render_view_host_->site_instance()->id());
+
+  // If the old RVH is live, we are swapping it out and should keep track of it
+  // in case we navigate back to it.
+  if (old_render_view_host->IsRenderViewLive()) {
+    DCHECK(old_render_view_host->is_swapped_out());
+    swapped_out_hosts_[old_render_view_host->site_instance()->id()] =
+        old_render_view_host;
+  } else {
+    old_render_view_host->Shutdown();
+  }
 
   // Let the task manager know that we've swapped RenderViewHosts, since it
   // might need to update its process groupings.
   delegate_->NotifySwappedFromRenderManager();
+}
+
+bool RenderViewHostManager::IsSwappedOut(RenderViewHost* rvh) {
+  if (!rvh->site_instance())
+    return false;
+
+  return swapped_out_hosts_.find(rvh->site_instance()->id()) !=
+      swapped_out_hosts_.end();
 }

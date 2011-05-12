@@ -83,11 +83,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   // Returns true if the frame is navigating to an URL either into or out of an
   // extension app's extent.
-  // TODO(creis): Temporary workaround for crbug.com/65953: Only return true if
-  // we would enter an extension app's extent from a non-app, or if we leave an
-  // extension with no web extent.  We avoid swapping processes to exit a hosted
-  // app with a web extent for now, since we do not yet restore context (such
-  // as window.opener) if the window navigates back.
   bool CrossesExtensionExtents(WebKit::WebFrame* frame, const GURL& new_url);
 
   scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;

@@ -193,6 +193,38 @@ TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
   ASSERT_STREQ("foo", value_result.c_str());
 }
 
+// Tests that onunload is run for cross-site requests to URLs that complete
+// without network loads (e.g., about:blank, data URLs).
+TEST_F(ResourceDispatcherTest, CrossSiteImmediateLoadOnunloadCookie) {
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
+  scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());
+  ASSERT_TRUE(tab.get());
+
+  GURL url(test_server.GetURL("files/onunload_cookie.html"));
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(url));
+
+  // Confirm that the page has loaded (since it changes its title during load).
+  std::wstring tab_title;
+  EXPECT_TRUE(tab->GetTabTitle(&tab_title));
+  EXPECT_EQ(L"set cookie on unload", tab_title);
+
+  // Navigate to a cross-site page that loads immediately without making a
+  // network request.  The unload event should still be run.
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
+            tab->NavigateToURL(GURL("about:blank")));
+
+  // Check that the cookie was set.
+  std::string value_result;
+  ASSERT_TRUE(tab->GetCookieByName(url, "onunloadCookie", &value_result));
+  ASSERT_FALSE(value_result.empty());
+  ASSERT_STREQ("foo", value_result.c_str());
+}
+
 // Tests that the unload handler is not run for 204 responses.
 TEST_F(ResourceDispatcherTest, CrossSiteNoUnloadOn204) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,

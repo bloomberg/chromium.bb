@@ -12,6 +12,7 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/render_messages.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
 
@@ -187,6 +188,32 @@ void ChromeContentClient::AddPepperPlugins(
   ComputeBuiltInPlugins(plugins);
   AddOutOfProcessFlash(plugins);
 #endif
+}
+
+bool ChromeContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {
+  // Any Chrome-specific messages that must be allowed to be sent from swapped
+  // out renderers.
+  switch (msg->type()) {
+    case ViewHostMsg_DomOperationResponse::ID:
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
+bool ChromeContentClient::CanHandleWhileSwappedOut(
+    const IPC::Message& msg) {
+  // Any Chrome-specific messages (apart from those listed in
+  // CanSendWhileSwappedOut) that must be handled by the browser when sent from
+  // swapped out renderers.
+  switch (msg.type()) {
+    case ViewHostMsg_Snapshot::ID:
+      return true;
+    default:
+      break;
+  }
+  return false;
 }
 
 }  // namespace chrome

@@ -182,19 +182,28 @@ TEST_F(WebUITest, FocusOnNavigate) {
   GURL next_url("http://google.com/");
   int next_page_id = page_id + 1;
   controller().LoadURL(next_url, GURL(), PageTransition::LINK);
+  TestRenderViewHost* old_rvh = rvh();
+  old_rvh->SendShouldCloseACK(true);
   pending_rvh()->SendNavigate(next_page_id, next_url);
+  old_rvh->OnSwapOutACK();
 
   // Navigate back.  Should focus the location bar.
   int focus_called = tc->focus_called();
   ASSERT_TRUE(controller().CanGoBack());
   controller().GoBack();
+  old_rvh = rvh();
+  old_rvh->SendShouldCloseACK(true);
   pending_rvh()->SendNavigate(page_id, new_tab_url);
+  old_rvh->OnSwapOutACK();
   EXPECT_LT(focus_called, tc->focus_called());
 
   // Navigate forward.  Shouldn't focus the location bar.
   focus_called = tc->focus_called();
   ASSERT_TRUE(controller().CanGoForward());
   controller().GoForward();
+  old_rvh = rvh();
+  old_rvh->SendShouldCloseACK(true);
   pending_rvh()->SendNavigate(next_page_id, next_url);
+  old_rvh->OnSwapOutACK();
   EXPECT_EQ(focus_called, tc->focus_called());
 }

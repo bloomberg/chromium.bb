@@ -107,14 +107,17 @@
 // - After RDH receives a response and determines that it is safe and not a
 //   download, it pauses the response to first run the old page's onunload
 //   handler.  It does this by asynchronously calling the OnCrossSiteResponse
-//   method of TabContents on the UI thread, which sends a ClosePage message
+//   method of TabContents on the UI thread, which sends a SwapOut message
 //   to the current RVH.
-// - Once the onunload handler is finished, a ClosePage_ACK message is sent to
+// - Once the onunload handler is finished, a SwapOut_ACK message is sent to
 //   the ResourceDispatcherHost, who unpauses the response.  Data is then sent
 //   to the pending RVH.
 // - The pending renderer sends a FrameNavigate message that invokes the
 //   DidNavigate method.  This replaces the current RVH with the
 //   pending RVH and goes back to the NORMAL RendererState.
+// - The previous renderer is kept swapped out in RenderViewHostManager in case
+//   the user goes back.  The process only stays live if another tab is using
+//   it, but if so, the existing frame relationships will be maintained.
 
 namespace {
 
@@ -1703,7 +1706,9 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
 void TabContents::UpdateState(RenderViewHost* rvh,
                               int32 page_id,
                               const std::string& state) {
-  DCHECK(rvh == render_view_host());
+  // Ensure that this state update comes from either the active RVH or one of
+  // the swapped out RVHs.  We don't expect to hear from any other RVHs.
+  DCHECK(rvh == render_view_host() || render_manager_.IsSwappedOut(rvh));
 
   // We must be prepared to handle state updates for any page, these occur
   // when the user is scrolling and entering form data, as well as when we're
@@ -1712,7 +1717,7 @@ void TabContents::UpdateState(RenderViewHost* rvh,
   // NavigationEntry and update it when it is notified via the delegate.
 
   int entry_index = controller_.GetEntryIndexWithPageID(
-      GetSiteInstance(), page_id);
+      rvh->site_instance(), page_id);
   if (entry_index < 0)
     return;
   NavigationEntry* entry = controller_.GetEntryAtIndex(entry_index);
@@ -1874,6 +1879,7 @@ void TabContents::ProcessExternalHostMessage(const std::string& message,
 }
 
 void TabContents::RunJavaScriptMessage(
+    const RenderViewHost* rvh,
     const std::wstring& message,
     const std::wstring& default_prompt,
     const GURL& frame_url,
@@ -1887,6 +1893,7 @@ void TabContents::RunJavaScriptMessage(
   // shown over the previous page, we don't want the hidden page dialogs to
   // interfere with the interstitial.
   bool suppress_this_message =
+      rvh->is_swapped_out() ||
       suppress_javascript_messages_ ||
       showing_interstitial_page() ||
       (delegate() && delegate()->ShouldSuppressDialogs());
@@ -1916,11 +1923,14 @@ void TabContents::RunJavaScriptMessage(
   }
 }
 
-void TabContents::RunBeforeUnloadConfirm(const std::wstring& message,
+void TabContents::RunBeforeUnloadConfirm(const RenderViewHost* rvh,
+                                         const std::wstring& message,
                                          IPC::Message* reply_msg) {
   if (delegate())
     delegate()->WillRunBeforeUnloadConfirm();
-  if (delegate() && delegate()->ShouldSuppressDialogs()) {
+  bool suppress_this_message = rvh->is_swapped_out() ||
+      (delegate() && delegate()->ShouldSuppressDialogs());
+  if (suppress_this_message) {
     render_view_host()->JavaScriptMessageBoxClosed(reply_msg, true,
                                                    std::wstring());
     return;
@@ -1984,6 +1994,10 @@ void TabContents::OnCrossSiteResponse(int new_render_process_host_id,
 
 void TabContents::RendererUnresponsive(RenderViewHost* rvh,
                                        bool is_during_unload) {
+  // Don't show hung renderer dialog for a swapped out RVH.
+  if (rvh != render_view_host())
+    return;
+
   if (is_during_unload) {
     // Hang occurred while firing the beforeunload/unload handler.
     // Pretend the handler fired so tab closing continues as if it had.

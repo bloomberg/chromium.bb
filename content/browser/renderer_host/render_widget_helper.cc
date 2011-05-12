@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,12 +85,12 @@ void RenderWidgetHelper::CancelResourceRequests(int render_widget_id) {
                         render_widget_id));
 }
 
-void RenderWidgetHelper::CrossSiteClosePageACK(
-    const ViewMsg_ClosePage_Params& params) {
+void RenderWidgetHelper::CrossSiteSwapOutACK(
+    const ViewMsg_SwapOut_Params& params) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this,
-                        &RenderWidgetHelper::OnCrossSiteClosePageACK,
+                        &RenderWidgetHelper::OnCrossSiteSwapOutACK,
                         params));
 }
 
@@ -202,9 +202,9 @@ void RenderWidgetHelper::OnCancelResourceRequests(
       render_process_id_, render_widget_id);
 }
 
-void RenderWidgetHelper::OnCrossSiteClosePageACK(
-    const ViewMsg_ClosePage_Params& params) {
-  resource_dispatcher_host_->OnClosePageACK(params);
+void RenderWidgetHelper::OnCrossSiteSwapOutACK(
+    const ViewMsg_SwapOut_Params& params) {
+  resource_dispatcher_host_->OnSwapOutACK(params);
 }
 
 void RenderWidgetHelper::CreateNewWindow(

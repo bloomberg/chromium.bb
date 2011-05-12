@@ -154,6 +154,12 @@ class RenderWidget : public IPC::Channel::Listener,
   void CompleteInit(gfx::NativeViewId parent,
                     gfx::PluginWindowHandle compositing_surface);
 
+  // Sets whether this RenderWidget has been swapped out to be displayed by
+  // a RenderWidget in a different process.  If so, no new IPC messages will be
+  // sent (only ACKs) and the process is free to exit when there are no other
+  // active RenderWidgets.
+  void SetSwappedOut(bool is_swapped_out);
+
   // Paints the given rectangular region of the WebWidget into canvas (a
   // shared memory segment returned by AllocPaintBuf on Windows). The caller
   // must ensure that the given rect fits within the bounds of the WebWidget.
@@ -183,6 +189,7 @@ class RenderWidget : public IPC::Channel::Listener,
                         const gfx::Rect& resizer_rect);
   virtual void OnWasHidden();
   virtual void OnWasRestored(bool needs_repainting);
+  virtual void OnWasSwappedOut();
   void OnUpdateRectAck();
   void OnCreateVideoAck(int32 video_id);
   void OnUpdateVideoAck(int32 video_id);
@@ -342,6 +349,11 @@ class RenderWidget : public IPC::Channel::Listener,
   // True if we have requested this widget be closed.  No more messages will
   // be sent, except for a Close.
   bool closing_;
+
+  // Whether this RenderWidget is currently swapped out, such that the view is
+  // being rendered by another process.  If all RenderWidgets in a process are
+  // swapped out, the process can exit.
+  bool is_swapped_out_;
 
   // Indicates if an input method is active in the browser process.
   bool input_method_is_active_;

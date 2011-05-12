@@ -412,9 +412,9 @@ void BrowserRenderProcessHost::CancelResourceRequests(int render_widget_id) {
   widget_helper_->CancelResourceRequests(render_widget_id);
 }
 
-void BrowserRenderProcessHost::CrossSiteClosePageACK(
-    const ViewMsg_ClosePage_Params& params) {
-  widget_helper_->CrossSiteClosePageACK(params);
+void BrowserRenderProcessHost::CrossSiteSwapOutACK(
+    const ViewMsg_SwapOut_Params& params) {
+  widget_helper_->CrossSiteSwapOutACK(params);
 }
 
 bool BrowserRenderProcessHost::WaitForUpdateMsg(

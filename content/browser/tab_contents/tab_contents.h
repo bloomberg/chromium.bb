@@ -758,13 +758,15 @@ class TabContents : public PageNavigator,
   virtual void ProcessExternalHostMessage(const std::string& message,
                                           const std::string& origin,
                                           const std::string& target);
-  virtual void RunJavaScriptMessage(const std::wstring& message,
+  virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
+                                    const std::wstring& message,
                                     const std::wstring& default_prompt,
                                     const GURL& frame_url,
                                     const int flags,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message);
-  virtual void RunBeforeUnloadConfirm(const std::wstring& message,
+  virtual void RunBeforeUnloadConfirm(const RenderViewHost* rvh,
+                                      const std::wstring& message,
                                       IPC::Message* reply_msg);
   virtual GURL GetAlternateErrorPageURL() const;
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;

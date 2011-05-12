@@ -631,37 +631,26 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   IPC_STRUCT_MEMBER(int, flags)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(ViewMsg_ClosePage_Params)
+IPC_STRUCT_BEGIN(ViewMsg_SwapOut_Params)
   // The identifier of the RenderProcessHost for the currently closing view.
   //
   // These first two parameters are technically redundant since they are
   // needed only when processing the ACK message, and the processor
   // theoretically knows both the process and route ID. However, this is
   // difficult to figure out with our current implementation, so this
-  // information is duplicate here.
+  // information is duplicated here.
   IPC_STRUCT_MEMBER(int, closing_process_id)
 
   // The route identifier for the currently closing RenderView.
   IPC_STRUCT_MEMBER(int, closing_route_id)
 
-  // True when this close is for the first (closing) tab of a cross-site
-  // transition where we switch processes. False indicates the close is for the
-  // entire tab.
-  //
-  // When true, the new_* variables below must be filled in. Otherwise they must
-  // both be -1.
-  IPC_STRUCT_MEMBER(bool, for_cross_site_transition)
-
   // The identifier of the RenderProcessHost for the new view attempting to
-  // replace the closing one above. This must be valid when
-  // for_cross_site_transition is set, and must be -1 otherwise.
+  // replace the closing one above.
   IPC_STRUCT_MEMBER(int, new_render_process_host_id)
 
   // The identifier of the *request* the new view made that is causing the
   // cross-site transition. This is *not* a route_id, but the request that we
-  // will resume once the ACK from the closing view has been received. This
-  // must be valid when for_cross_site_transition is set, and must be -1
-  // otherwise.
+  // will resume once the ACK from the closing view has been received.
   IPC_STRUCT_MEMBER(int, new_request_id)
 IPC_STRUCT_END()
 
@@ -795,6 +784,10 @@ IPC_MESSAGE_ROUTED0(ViewMsg_WasHidden)
 // message does not trigger a message in response.
 IPC_MESSAGE_ROUTED1(ViewMsg_WasRestored,
                     bool /* needs_repainting */)
+
+// Sent to inform the view that it was swapped out.  This allows the process to
+// exit if no other views are using it.
+IPC_MESSAGE_ROUTED0(ViewMsg_WasSwappedOut)
 
 // Sent to render the view into the supplied transport DIB, resize
 // the web widget to match the |page_size|, scale it by the
@@ -1062,13 +1055,19 @@ IPC_MESSAGE_ROUTED0(ViewMsg_CantFocus)
 // via ViewHostMsg_ShouldClose.
 IPC_MESSAGE_ROUTED0(ViewMsg_ShouldClose)
 
-// Instructs the renderer to close the current page, including running the
-// onunload event handler. See the struct in render_messages.h for more.
+// Instructs the renderer to swap out for a cross-site transition, including
+// running the unload event handler. See the struct above for more details.
 //
-// Expects a ClosePage_ACK message when finished, where the parameters are
+// Expects a SwapOut_ACK message when finished, where the parameters are
 // echoed back.
-IPC_MESSAGE_ROUTED1(ViewMsg_ClosePage,
-                    ViewMsg_ClosePage_Params)
+IPC_MESSAGE_ROUTED1(ViewMsg_SwapOut,
+                    ViewMsg_SwapOut_Params)
+
+// Instructs the renderer to close the current page, including running the
+// onunload event handler.
+//
+// Expects a ClosePage_ACK message when finished.
+IPC_MESSAGE_ROUTED0(ViewMsg_ClosePage)
 
 // Notifies the renderer about ui theme changes
 IPC_MESSAGE_ROUTED0(ViewMsg_ThemeChanged)
@@ -1304,10 +1303,14 @@ IPC_MESSAGE_ROUTED5(ViewHostMsg_Find_Reply,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ShouldClose_ACK,
                     bool /* proceed */)
 
+// Indicates that the current renderer has swapped out, after a SwapOut
+// message. The parameters are just echoed from the SwapOut request.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_SwapOut_ACK,
+                    ViewMsg_SwapOut_Params)
+
 // Indicates that the current page has been closed, after a ClosePage
-// message. The parameters are just echoed from the ClosePage request.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ClosePage_ACK,
-                    ViewMsg_ClosePage_Params)
+// message.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_ClosePage_ACK)
 
 // Notifies the browser that we have session history information.
 // page_id: unique ID that allows us to distinguish between history entries.

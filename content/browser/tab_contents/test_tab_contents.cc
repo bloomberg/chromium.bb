@@ -85,9 +85,10 @@ void TestTabContents::CommitPendingNavigation() {
   // notifying that it has unloaded so the pending RVH is resumed and can
   // navigate.
   ProceedWithCrossSiteNavigation();
+  RenderViewHost* old_rvh = render_manager_.current_host();
   TestRenderViewHost* rvh = pending_rvh();
   if (!rvh)
-    rvh = static_cast<TestRenderViewHost*>(render_manager_.current_host());
+    rvh = static_cast<TestRenderViewHost*>(old_rvh);
 
   const NavigationEntry* entry = controller().pending_entry();
   DCHECK(entry);
@@ -98,6 +99,11 @@ void TestTabContents::CommitPendingNavigation() {
         static_cast<MockRenderProcessHost*>(rvh->process())->max_page_id() + 1;
   }
   rvh->SendNavigate(page_id, entry->url());
+
+  // Simulate the SwapOut_ACK that fires if you commit a cross-site navigation
+  // without making any network requests.
+  if (old_rvh != rvh)
+    old_rvh->OnSwapOutACK();
 }
 
 void TestTabContents::ProceedWithCrossSiteNavigation() {

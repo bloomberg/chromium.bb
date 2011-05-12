@@ -29,12 +29,13 @@
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 
 // Singly-included section for enums and custom IPC traits.
 #ifndef CHROME_COMMON_RENDER_MESSAGES_H_
 #define CHROME_COMMON_RENDER_MESSAGES_H_
+
+class SkBitmap;
 
 // Command values for the cmd parameter of the
 // ViewHost_JavaScriptStressTestControl message. For each command the parameter

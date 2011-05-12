@@ -28,7 +28,7 @@ class TimeDelta;
 
 class ResourceDispatcherHost;
 struct ViewHostMsg_CreateWindow_Params;
-struct ViewMsg_ClosePage_Params;
+struct ViewMsg_SwapOut_Params;
 
 
 // Instantiated per RenderProcessHost to provide various optimizations on
@@ -107,7 +107,7 @@ class RenderWidgetHelper
   // corresponding functions in RenderProcessHost. See those declarations
   // for documentation.
   void CancelResourceRequests(int render_widget_id);
-  void CrossSiteClosePageACK(const ViewMsg_ClosePage_Params& params);
+  void CrossSiteSwapOutACK(const ViewMsg_SwapOut_Params& params);
   bool WaitForUpdateMsg(int render_widget_id,
                         const base::TimeDelta& max_delay,
                         IPC::Message* msg);
@@ -182,7 +182,7 @@ class RenderWidgetHelper
   void OnCancelResourceRequests(int render_widget_id);
 
   // Called on the IO thread to resume a cross-site response.
-  void OnCrossSiteClosePageACK(const ViewMsg_ClosePage_Params& params);
+  void OnCrossSiteSwapOutACK(const ViewMsg_SwapOut_Params& params);
 
 #if defined(OS_MACOSX)
   // Called on destruction to release all allocated transport DIBs

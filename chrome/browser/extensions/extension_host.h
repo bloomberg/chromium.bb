@@ -129,7 +129,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual WebPreferences GetWebkitPrefs();
-  virtual void RunJavaScriptMessage(const std::wstring& message,
+  virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
+                                    const std::wstring& message,
                                     const std::wstring& default_prompt,
                                     const GURL& frame_url,
                                     const int flags,

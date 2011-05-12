@@ -476,14 +476,16 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
                                           const std::string& target) {}
 
   // A javascript message, confirmation or prompt should be shown.
-  virtual void RunJavaScriptMessage(const std::wstring& message,
+  virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
+                                    const std::wstring& message,
                                     const std::wstring& default_prompt,
                                     const GURL& frame_url,
                                     const int flags,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) {}
 
-  virtual void RunBeforeUnloadConfirm(const std::wstring& message,
+  virtual void RunBeforeUnloadConfirm(const RenderViewHost* rvh,
+                                      const std::wstring& message,
                                       IPC::Message* reply_msg) {}
 
   // |url| is assigned to a server that can provide alternate error pages.  If

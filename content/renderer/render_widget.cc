@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
 #include "content/common/content_switches.h"
+#include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread.h"
@@ -74,6 +75,7 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread,
       has_focus_(false),
       handling_input_event_(false),
       closing_(false),
+      is_swapped_out_(false),
       input_method_is_active_(false),
       text_input_type_(WebKit::WebTextInputTypeNone),
       popup_type_(popup_type),
@@ -92,7 +94,9 @@ RenderWidget::~RenderWidget() {
     RenderProcess::current()->ReleaseTransportDIB(current_paint_buf_);
     current_paint_buf_ = NULL;
   }
-  RenderProcess::current()->ReleaseProcess();
+  // If we are swapped out, we have released already.
+  if (!is_swapped_out_)
+    RenderProcess::current()->ReleaseProcess();
 }
 
 // static
@@ -160,6 +164,20 @@ void RenderWidget::CompleteInit(gfx::NativeViewId parent_hwnd,
   Send(new ViewHostMsg_RenderViewReady(routing_id_));
 }
 
+void RenderWidget::SetSwappedOut(bool is_swapped_out) {
+  // We should only toggle between states.
+  DCHECK(is_swapped_out_ != is_swapped_out);
+  is_swapped_out_ = is_swapped_out;
+
+  // If we are swapping out, we will call ReleaseProcess, allowing the process
+  // to exit if all of its RenderViews are swapped out.  We wait until the
+  // WasSwappedOut call to do this, to avoid showing the sad tab.
+  // If we are swapping in, we call AddRefProcess to prevent the process from
+  // exiting.
+  if (!is_swapped_out)
+    RenderProcess::current()->AddRefProcess();
+}
+
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
@@ -168,6 +186,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Resize, OnResize)
     IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(ViewMsg_WasRestored, OnWasRestored)
+    IPC_MESSAGE_HANDLER(ViewMsg_WasSwappedOut, OnWasSwappedOut)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateRect_ACK, OnUpdateRectAck)
     IPC_MESSAGE_HANDLER(ViewMsg_HandleInputEvent, OnHandleInputEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_MouseCaptureLost, OnMouseCaptureLost)
@@ -185,8 +204,11 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
 }
 
 bool RenderWidget::Send(IPC::Message* message) {
-  // Don't send any messages after the browser has told us to close.
-  if (closing_) {
+  // Don't send any messages after the browser has told us to close, and filter
+  // most outgoing messages while swapped out.
+  if ((is_swapped_out_ &&
+       !content::SwappedOutMessages::CanSendWhileSwappedOut(message)) ||
+      closing_) {
     delete message;
     return false;
   }
@@ -297,6 +319,14 @@ void RenderWidget::OnWasRestored(bool needs_repainting) {
   } else {
     scheduleComposite();
   }
+}
+
+void RenderWidget::OnWasSwappedOut() {
+  // If we have been swapped out and no one else is using this process,
+  // it's safe to exit now.  If we get swapped back in, we will call
+  // AddRefProcess in SetSwappedOut.
+  if (is_swapped_out_)
+    RenderProcess::current()->ReleaseProcess();
 }
 
 void RenderWidget::OnRequestMoveAck() {

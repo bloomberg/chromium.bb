@@ -15,6 +15,10 @@ class GURL;
 struct GPUInfo;
 struct PepperPluginInfo;
 
+namespace IPC {
+class Message;
+}
+
 namespace content {
 
 class ContentBrowserClient;
@@ -48,6 +52,16 @@ class ContentClient {
 
   // Gives the embedder a chance to register its own pepper plugins.
   virtual void AddPepperPlugins(std::vector<PepperPluginInfo>* plugins) {}
+
+  // Returns whether the given message should be allowed to be sent from a
+  // swapped out renderer.
+  virtual bool CanSendWhileSwappedOut(const IPC::Message* msg) { return false; }
+
+  // Returns whether the given message should be processed in the browser on
+  // behalf of a swapped out renderer.
+  virtual bool CanHandleWhileSwappedOut(const IPC::Message& msg) {
+    return false;
+  }
 
  private:
   // The embedder API for participating in browser logic.

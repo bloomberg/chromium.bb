@@ -427,7 +427,8 @@ void ExtensionHost::DocumentOnLoadCompletedInMainFrame(RenderViewHost* rvh,
   }
 }
 
-void ExtensionHost::RunJavaScriptMessage(const std::wstring& message,
+void ExtensionHost::RunJavaScriptMessage(const RenderViewHost* rvh,
+                                         const std::wstring& message,
                                          const std::wstring& default_prompt,
                                          const GURL& frame_url,
                                          const int flags,

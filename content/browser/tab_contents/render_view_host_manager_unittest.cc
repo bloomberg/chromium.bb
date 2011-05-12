@@ -28,10 +28,23 @@ class RenderViewHostManagerTest : public RenderViewHostTestHarness {
     // won't have committed yet, so NavigateAndCommit does the wrong thing
     // for us.
     controller().LoadURL(url, GURL(), PageTransition::LINK);
+    TestRenderViewHost* old_rvh = rvh();
+
+    // Simulate the ShouldClose_ACK that is received from the current renderer
+    // for a cross-site navigation.
+    if (old_rvh != active_rvh())
+      old_rvh->SendShouldCloseACK(true);
+
+    // Commit the navigation.
     active_rvh()->SendNavigate(
         static_cast<MockRenderProcessHost*>(active_rvh()->process())->
             max_page_id() + 1,
         url);
+
+    // Simulate the SwapOut_ACK that fires if you commit a cross-site navigation
+    // without making any network requests.
+    if (old_rvh != active_rvh())
+      old_rvh->OnSwapOutACK();
   }
 
   bool ShouldSwapProcesses(RenderViewHostManager* manager,
@@ -61,26 +74,30 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   // a RVH that's not pending (since there is no cross-site transition), so
   // we use the committed one, but the second one is the opposite.
   contents2.controller().LoadURL(ntp, GURL(), PageTransition::LINK);
-  static_cast<TestRenderViewHost*>(contents2.render_manager()->
-     current_host())->SendNavigate(100, ntp);
+  TestRenderViewHost* ntp_rvh2 = static_cast<TestRenderViewHost*>(
+      contents2.render_manager()->current_host());
+  ntp_rvh2->SendNavigate(100, ntp);
   contents2.controller().LoadURL(dest, GURL(), PageTransition::LINK);
-  static_cast<TestRenderViewHost*>(contents2.render_manager()->
-      pending_render_view_host())->SendNavigate(101, dest);
+  TestRenderViewHost* dest_rvh2 = static_cast<TestRenderViewHost*>(
+      contents2.render_manager()->pending_render_view_host());
+  dest_rvh2->SendNavigate(101, dest);
+  ntp_rvh2->OnSwapOutACK();
 
   // The two RVH's should be different in every way.
-  EXPECT_NE(active_rvh()->process(), contents2.render_view_host()->process());
-  EXPECT_NE(active_rvh()->site_instance(),
-      contents2.render_view_host()->site_instance());
+  EXPECT_NE(active_rvh()->process(), dest_rvh2->process());
+  EXPECT_NE(active_rvh()->site_instance(), dest_rvh2->site_instance());
   EXPECT_NE(active_rvh()->site_instance()->browsing_instance(),
-      contents2.render_view_host()->site_instance()->browsing_instance());
+            dest_rvh2->site_instance()->browsing_instance());
 
   // Navigate both to the new tab page, and verify that they share a
   // SiteInstance.
   NavigateActiveAndCommit(ntp);
 
   contents2.controller().LoadURL(ntp, GURL(), PageTransition::LINK);
+  dest_rvh2->SendShouldCloseACK(true);
   static_cast<TestRenderViewHost*>(contents2.render_manager()->
      pending_render_view_host())->SendNavigate(102, ntp);
+  dest_rvh2->OnSwapOutACK();
 
   EXPECT_EQ(active_rvh()->site_instance(),
       contents2.render_view_host()->site_instance());

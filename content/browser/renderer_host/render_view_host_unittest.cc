@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,10 +48,9 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
   NavigateAndCommit(url1);
   controller().LoadURL(url2, GURL(), PageTransition::LINK);
   // Simulate the ClosePage call which is normally sent by the net::URLRequest.
-  rvh()->ClosePage(true, 0, 0);
-  // Needed so that navigations are not suspended on the RVH. Normally handled
-  // by way of ViewHostMsg_ShouldClose_ACK.
-  contents()->render_manager()->ShouldClosePage(true, true);
+  rvh()->ClosePage();
+  // Needed so that navigations are not suspended on the RVH.
+  rvh()->SendShouldCloseACK(true);
   contents()->Stop();
   controller().Reload(false);
   EXPECT_FALSE(rvh()->is_waiting_for_unload_ack());

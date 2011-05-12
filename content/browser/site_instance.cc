@@ -25,8 +25,11 @@ static bool IsURLSameAsAnySiteInstance(const GURL& url) {
          url.spec() == chrome::kAboutShorthangURL;
 }
 
+int32 SiteInstance::next_site_instance_id_ = 1;
+
 SiteInstance::SiteInstance(BrowsingInstance* browsing_instance)
-    : browsing_instance_(browsing_instance),
+    : id_(next_site_instance_id_++),
+      browsing_instance_(browsing_instance),
       render_process_host_factory_(NULL),
       process_(NULL),
       max_page_id_(-1),

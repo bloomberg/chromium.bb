@@ -103,6 +103,7 @@ void BackgroundContents::DidNavigate(
 }
 
 void BackgroundContents::RunJavaScriptMessage(
+    const RenderViewHost* rvh,
     const std::wstring& message,
     const std::wstring& default_prompt,
     const GURL& frame_url,

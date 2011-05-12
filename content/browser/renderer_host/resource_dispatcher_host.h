@@ -44,7 +44,7 @@ class WebKitThread;
 struct DownloadSaveInfo;
 struct GlobalRequestID;
 struct ResourceHostMsg_Request;
-struct ViewMsg_ClosePage_Params;
+struct ViewMsg_SwapOut_Params;
 
 namespace content {
 class ResourceContext;
@@ -157,8 +157,8 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
     return webkit_thread_.get();
   }
 
-  // Called when the onunload handler for a cross-site request has finished.
-  void OnClosePageACK(const ViewMsg_ClosePage_Params& params);
+  // Called when the unload handler for a cross-site request has finished.
+  void OnSwapOutACK(const ViewMsg_SwapOut_Params& params);
 
   // Force cancels any pending requests for the given process.
   void CancelRequestsForProcess(int process_unique_id);

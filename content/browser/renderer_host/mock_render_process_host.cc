@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,8 +36,8 @@ int MockRenderProcessHost::GetNextRoutingID() {
 void MockRenderProcessHost::CancelResourceRequests(int render_widget_id) {
 }
 
-void MockRenderProcessHost::CrossSiteClosePageACK(
-    const ViewMsg_ClosePage_Params& params) {
+void MockRenderProcessHost::CrossSiteSwapOutACK(
+    const ViewMsg_SwapOut_Params& params) {
 }
 
 bool MockRenderProcessHost::WaitForUpdateMsg(int render_widget_id,
