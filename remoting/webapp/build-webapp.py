@@ -9,6 +9,14 @@ import os
 import shutil
 import sys
 
+# Temporary hack to work around fact that some build machines don't have
+# python 2.6
+# TODO(dmaclach): fix this
+try:
+  from shutil import ignore_patterns
+except Exception:
+  exit(0)
+
 # Do not copy git and svn files into the build.
 IGNORE_PATTERNS = ('.git', '.svn')
 
