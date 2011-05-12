@@ -13,7 +13,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::UIModelWorker;
-using namespace sync_api;
 
 // Various boilerplate, primarily for the StopWithPendingWork test.
 

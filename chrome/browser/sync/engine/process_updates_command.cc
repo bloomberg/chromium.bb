@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,11 +94,10 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
     const sync_pb::SyncEntity& proto_update) {
 
   const SyncEntity& update = *static_cast<const SyncEntity*>(&proto_update);
-  using namespace syncable;
   syncable::Id server_id = update.id();
   const std::string name = SyncerProtoUtil::NameFromSyncEntity(update);
 
-  WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
+  syncable::WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
 
   // Look to see if there's a local item that should recieve this update,
   // maybe due to a duplicate client tag or a lost commit response.
@@ -113,7 +112,7 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
 
   // We take a two step approach. First we store the entries data in the
   // server fields of a local entry and then move the data to the local fields
-  MutableEntry target_entry(&trans, GET_BY_ID, local_id);
+  syncable::MutableEntry target_entry(&trans, syncable::GET_BY_ID, local_id);
 
   // We need to run the Verify checks again; the world could have changed
   // since VerifyUpdatesCommand.
@@ -134,23 +133,25 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
     // IS_UNAPPLIED_UPDATE to true.  If the item is UNSYNCED, it's committable
     // from the new state; it may commit before the conflict resolver gets
     // a crack at it.
-    if (target_entry.Get(IS_UNSYNCED) || target_entry.Get(BASE_VERSION) > 0) {
+    if (target_entry.Get(syncable::IS_UNSYNCED) ||
+        target_entry.Get(syncable::BASE_VERSION) > 0) {
       // If either of these conditions are met, then we can expect valid client
       // fields for this entry.  When BASE_VERSION is positive, consistency is
       // enforced on the client fields at update-application time.  Otherwise,
       // we leave the BASE_VERSION field alone; it'll get updated the first time
       // we successfully apply this update.
-      target_entry.Put(BASE_VERSION, update.version());
+      target_entry.Put(syncable::BASE_VERSION, update.version());
     }
     // Force application of this update, no matter what.
-    target_entry.Put(IS_UNAPPLIED_UPDATE, true);
+    target_entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
   }
 
   SyncerUtil::UpdateServerFieldsFromUpdate(&target_entry, update, name);
 
-  if (target_entry.Get(SERVER_VERSION) == target_entry.Get(BASE_VERSION) &&
-      !target_entry.Get(IS_UNSYNCED) &&
-      !target_entry.Get(IS_UNAPPLIED_UPDATE)) {
+  if (target_entry.Get(syncable::SERVER_VERSION) ==
+         target_entry.Get(syncable::BASE_VERSION) &&
+      !target_entry.Get(syncable::IS_UNSYNCED) &&
+      !target_entry.Get(syncable::IS_UNAPPLIED_UPDATE)) {
     // If these don't match, it means that we have a different view of the
     // truth from other clients.  That's a sync bug, though we may be able
     // to recover the next time this item commits.

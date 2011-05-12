@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,23 +50,22 @@ void GetCommitIdsCommand::AddUncommittedParentsAndTheirPredecessors(
     syncable::BaseTransaction* trans,
     syncable::Id parent_id,
     const ModelSafeRoutingInfo& routes) {
-  using namespace syncable;
   OrderedCommitSet item_dependencies(routes);
 
   // Climb the tree adding entries leaf -> root.
   while (!parent_id.ServerKnows()) {
-    Entry parent(trans, GET_BY_ID, parent_id);
+    syncable::Entry parent(trans, syncable::GET_BY_ID, parent_id);
     CHECK(parent.good()) << "Bad user-only parent in item path.";
-    int64 handle = parent.Get(META_HANDLE);
+    int64 handle = parent.Get(syncable::META_HANDLE);
     if (ordered_commit_set_->HaveCommitItem(handle) ||
         item_dependencies.HaveCommitItem(handle)) {
       break;
     }
-    if (!AddItemThenPredecessors(trans, &parent, IS_UNSYNCED,
+    if (!AddItemThenPredecessors(trans, &parent, syncable::IS_UNSYNCED,
                                  &item_dependencies)) {
       break;  // Parent was already present in the set.
     }
-    parent_id = parent.Get(PARENT_ID);
+    parent_id = parent.Get(syncable::PARENT_ID);
   }
 
   // Reverse what we added to get the correct order.
