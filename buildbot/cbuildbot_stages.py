@@ -280,7 +280,7 @@ class SyncStage(BuilderStage):
 class ManifestVersionedSyncStage(BuilderStage):
   """Stage that generates a unique manifest file, and sync's to it."""
 
-  build_version = None
+  manifest_manager = None
 
   def _PerformStage(self):
     # Need to determine branch and set a local value here
@@ -331,7 +331,6 @@ class ManifestVersionedSyncCompletionStage(BuilderStage):
     self.success = success
 
   def _PerformStage(self):
-
     if ManifestVersionedSyncStage.manifest_manager:
       ManifestVersionedSyncStage.manifest_manager.UpdateStatus(
          success=self.success)

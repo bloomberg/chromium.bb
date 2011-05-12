@@ -429,6 +429,7 @@ class ManifestVersionedSyncStageTest(BuilderStageTest):
     stage.Run()
     self.mox.VerifyAll()
 
+
 class BuildBoardTest(AbstractStageTest):
 
   def setUp(self):
@@ -436,7 +437,7 @@ class BuildBoardTest(AbstractStageTest):
     AbstractStageTest.setUp(self)
 
   def ConstructStage(self):
-     return stages.BuildBoardStage(self.bot_id, self.options, self.build_config)
+    return stages.BuildBoardStage(self.bot_id, self.options, self.build_config)
 
   def testFullBuild(self):
     """Tests whether correctly run make chroot and setup board for a full."""

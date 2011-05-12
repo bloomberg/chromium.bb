@@ -90,7 +90,9 @@ def RunBuildStages(bot_id, options, build_config):
       elif build_config['important']:
         cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_COMPLETE)
 
-      if options.sync and build_config['manifest_version']:
+      # If the ManifestVersionedSync created a manifest, we need to
+      # store off final results for the manifest.
+      if stages.ManifestVersionedSyncStage.manifest_manager:
         stages.ManifestVersionedSyncCompletionStage(bot_id,
                                                     options,
                                                     build_config,
@@ -137,8 +139,9 @@ def RunEverything(bot_id, options, build_config):
 
     # An error here can override sys.exit, but we'll get a stacktrace
     # and error out anyway
-    with open(completed_stages_file, 'w+') as save_file:
-      stages.BuilderStage.Results.SaveCompletedStages(save_file)
+    if os.path.exists(options.buildroot):
+      with open(completed_stages_file, 'w+') as save_file:
+        stages.BuilderStage.Results.SaveCompletedStages(save_file)
 
 
 def main():
