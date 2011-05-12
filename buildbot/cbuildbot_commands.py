@@ -146,12 +146,12 @@ def ManifestCheckout(buildroot, tracking_branch, next_version,
   count = 3
   while True:
     try:
-      cros_lib.OldRunCommand(['repo', 'init', '-u', url, '-m', manifest ],
-                             cwd=buildroot, input='\n\ny\n')
-      break
-    except cros_lib.RunCommandException:
       print 'Buildspec not yet available, sleeping.'
       time.sleep(120)
+      cros_lib.OldRunCommand(['repo', '--trace', 'init', '-u', url, '-m',
+                              manifest], cwd=buildroot, input='\n\ny\n')
+      break
+    except cros_lib.RunCommandException:
       print 'Retrying repo init...'
       count -= 1
       if count <= 0:
