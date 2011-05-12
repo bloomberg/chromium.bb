@@ -102,17 +102,29 @@ TEST_F(TextureManagerTest, SetParameter) {
   // Check texture got created.
   TextureManager::TextureInfo* info = manager_.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info != NULL);
-  manager_.SetParameter(
-      &feature_info_, info, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  EXPECT_TRUE(manager_.SetParameter(
+      &feature_info_, info, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
   EXPECT_EQ(static_cast<GLenum>(GL_NEAREST), info->min_filter());
-  manager_.SetParameter(
-      &feature_info_, info, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  EXPECT_TRUE(manager_.SetParameter(
+      &feature_info_, info, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
   EXPECT_EQ(static_cast<GLenum>(GL_NEAREST), info->mag_filter());
-  manager_.SetParameter(
-      &feature_info_, info, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  EXPECT_TRUE(manager_.SetParameter(
+      &feature_info_, info, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
   EXPECT_EQ(static_cast<GLenum>(GL_CLAMP_TO_EDGE), info->wrap_s());
-  manager_.SetParameter(
-      &feature_info_, info, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  EXPECT_TRUE(manager_.SetParameter(
+      &feature_info_, info, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+  EXPECT_EQ(static_cast<GLenum>(GL_CLAMP_TO_EDGE), info->wrap_t());
+  EXPECT_FALSE(manager_.SetParameter(
+      &feature_info_, info, GL_TEXTURE_MIN_FILTER, GL_CLAMP_TO_EDGE));
+  EXPECT_EQ(static_cast<GLenum>(GL_NEAREST), info->min_filter());
+  EXPECT_FALSE(manager_.SetParameter(
+      &feature_info_, info, GL_TEXTURE_MAG_FILTER, GL_CLAMP_TO_EDGE));
+  EXPECT_EQ(static_cast<GLenum>(GL_NEAREST), info->min_filter());
+  EXPECT_FALSE(manager_.SetParameter(
+      &feature_info_, info, GL_TEXTURE_WRAP_S, GL_NEAREST));
+  EXPECT_EQ(static_cast<GLenum>(GL_CLAMP_TO_EDGE), info->wrap_s());
+  EXPECT_FALSE(manager_.SetParameter(
+      &feature_info_, info, GL_TEXTURE_WRAP_T, GL_NEAREST));
   EXPECT_EQ(static_cast<GLenum>(GL_CLAMP_TO_EDGE), info->wrap_t());
 }
 

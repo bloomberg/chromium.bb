@@ -838,6 +838,32 @@ _ENUM_LISTS = {
       'GL_GENERATE_MIPMAP',
     ],
   },
+  'TextureWrapMode': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_CLAMP_TO_EDGE',
+      'GL_MIRRORED_REPEAT',
+      'GL_REPEAT',
+    ],
+  },
+  'TextureMinFilterMode': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_NEAREST',
+      'GL_LINEAR',
+      'GL_NEAREST_MIPMAP_NEAREST',
+      'GL_LINEAR_MIPMAP_NEAREST',
+      'GL_NEAREST_MIPMAP_LINEAR',
+      'GL_LINEAR_MIPMAP_LINEAR',
+    ],
+  },
+  'TextureMagFilterMode': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_NEAREST',
+      'GL_LINEAR',
+    ],
+  },
   'VertexAttribute': {
     'type': 'GLenum',
     'valid': [
@@ -1056,6 +1082,8 @@ _ENUM_LISTS = {
 # expectation:  If False the unit test will have no expected calls.
 # gen_func:     Name of function that generates GL resource for corresponding
 #               bind function.
+# valid_args:   A dictionary of argument indices to args to use in unit tests
+#               when they can not be automatically determined.
 
 _FUNCTION_INFO = {
   'ActiveTexture': {'decoder_func': 'DoActiveTexture', 'unit_test': False},
@@ -1479,17 +1507,29 @@ _FUNCTION_INFO = {
     'extension': True,
   },
   'TexImage2D': {'type': 'Manual', 'immediate': True},
-  'TexParameterf': {'decoder_func': 'DoTexParameterf'},
-  'TexParameteri': {'decoder_func': 'DoTexParameteri'},
+  'TexParameterf': {
+    'decoder_func': 'DoTexParameterf',
+    'valid_args': {
+      '2': 'GL_NEAREST'
+    },
+  },
+  'TexParameteri': {
+    'decoder_func': 'DoTexParameteri',
+    'valid_args': {
+      '2': 'GL_NEAREST'
+    },
+  },
   'TexParameterfv': {
     'type': 'PUT',
     'data_type': 'GLfloat',
+    'data_value': 'GL_NEAREST',
     'count': 1,
     'decoder_func': 'DoTexParameterfv',
   },
   'TexParameteriv': {
     'type': 'PUT',
     'data_type': 'GLint',
+    'data_value': 'GL_NEAREST',
     'count': 1,
     'decoder_func': 'DoTexParameteriv',
   },
@@ -2069,12 +2109,12 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     arg_strings = []
     count = 0
     for arg in func.GetOriginalArgs():
-      arg_strings.append(arg.GetValidArg(count, 0))
+      arg_strings.append(arg.GetValidArg(func, count, 0))
       count += 1
     gl_arg_strings = []
     count = 0
     for arg in func.GetOriginalArgs():
-      gl_arg_strings.append(arg.GetValidGLArg(count, 0))
+      gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
       count += 1
     gl_func_name = func.GetGLTestFunctionName()
     vars = {
@@ -2102,7 +2142,7 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
             (arg_string, parse_result, gl_error) = arg.GetInvalidArg(
                 count, value_index)
           else:
-            arg_string = arg.GetValidArg(count, 0)
+            arg_string = arg.GetValidArg(func, count, 0)
           arg_strings.append(arg_string)
           count += 1
         gl_arg_strings = []
@@ -2585,8 +2625,8 @@ TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
     gen_func_names = {
     }
     self.WriteValidUnitTest(func, file, valid_test, {
-        'first_arg': func.GetOriginalArgs()[0].GetValidArg(0, 0),
-        'first_gl_arg': func.GetOriginalArgs()[0].GetValidGLArg(0, 0),
+        'first_arg': func.GetOriginalArgs()[0].GetValidArg(func, 0, 0),
+        'first_gl_arg': func.GetOriginalArgs()[0].GetValidGLArg(func, 0, 0),
         'resource_type': func.GetOriginalArgs()[1].resource_type,
         'gl_gen_func_name': func.GetInfo("gen_func"),
     })
@@ -3261,7 +3301,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     valid_pname = ''
     count = 0
     for arg in func.GetOriginalArgs()[:-1]:
-      arg_value = arg.GetValidGLArg(count, 0)
+      arg_value = arg.GetValidGLArg(func, count, 0)
       gl_arg_strings.append(arg_value)
       if arg.name == 'pname':
         valid_pname = arg_value
@@ -3298,6 +3338,37 @@ class PUTHandler(TypeHandler):
   def __init__(self):
     TypeHandler.__init__(self)
 
+  def WriteServiceUnitTest(self, func, file):
+    """Writes the service unit test for a command."""
+    valid_test = """
+TEST_F(%(test_name)s, %(name)sValidArgs) {
+  EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
+  SpecializedSetup<%(name)s, 0>(true);
+  %(name)s cmd;
+  cmd.Init(%(args)s);
+  GetSharedMemoryAs<%(data_type)s*>()[0] = %(data_value)s;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+"""
+    extra = {
+      'data_type': func.GetInfo('data_type'),
+      'data_value': func.GetInfo('data_value') or '0',
+    }
+    self.WriteValidUnitTest(func, file, valid_test, extra)
+
+    invalid_test = """
+TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
+  EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
+  SpecializedSetup<%(name)s, 0>(false);
+  %(name)s cmd;
+  cmd.Init(%(args)s);
+  GetSharedMemoryAs<%(data_type)s*>()[0] = %(data_value)s;
+  EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
+}
+"""
+    self.WriteInvalidUnitTest(func, file, invalid_test, extra)
+
   def WriteImmediateServiceUnitTest(self, func, file):
     """Writes the service unit test for a command."""
     valid_test = """
@@ -3308,7 +3379,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
       %(gl_func_name)s(%(gl_args)s,
           reinterpret_cast<%(data_type)s*>(ImmediateDataAddress(&cmd))));
   SpecializedSetup<%(name)s, 0>(true);
-  %(data_type)s temp[%(data_count)s] = { 0, };
+  %(data_type)s temp[%(data_count)s] = { %(data_value)s, };
   cmd.Init(%(gl_args)s, &temp[0]);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
@@ -3319,12 +3390,13 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     gl_any_strings = []
     count = 0
     for arg in func.GetOriginalArgs()[0:-1]:
-      gl_arg_strings.append(arg.GetValidGLArg(count, 0))
+      gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
       gl_any_strings.append("_")
       count += 1
     extra = {
       'data_type': func.GetInfo('data_type'),
       'data_count': func.GetInfo('count'),
+      'data_value': func.GetInfo('data_value') or '0',
       'gl_args': ", ".join(gl_arg_strings),
       'gl_any_args': ", ".join(gl_any_strings),
     }
@@ -3335,7 +3407,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   %(name)s& cmd = *GetImmediateAs<%(name)s>();
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_any_args)s, _)).Times(0);
   SpecializedSetup<%(name)s, 0>(false);
-  %(data_type)s temp[%(data_count)s] = { 0, };
+  %(data_type)s temp[%(data_count)s] = { %(data_value)s, };
   cmd.Init(%(all_but_last_args)s, &temp[0]);
   EXPECT_EQ(error::%(parse_result)s,
             ExecuteImmediateCmd(cmd, sizeof(temp)));%(gl_error_test)s
@@ -3508,8 +3580,8 @@ TEST_F(%(test_name)s, %(name)sValidArgsCountTooLarge) {
         # the number of elements requested in the command.
         arg_strings.append("5")
       else:
-        gl_arg_strings.append(arg.GetValidGLArg(count, 0))
-        arg_strings.append(arg.GetValidArg(count, 0))
+        gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
+        arg_strings.append(arg.GetValidArg(func, count, 0))
       count += 1
     extra = {
       'gl_args': ", ".join(gl_arg_strings),
@@ -3538,7 +3610,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     gl_any_strings = []
     count = 0
     for arg in func.GetOriginalArgs()[0:-1]:
-      gl_arg_strings.append(arg.GetValidGLArg(count, 0))
+      gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
       gl_any_strings.append("_")
       count += 1
     extra = {
@@ -3729,7 +3801,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 }
 """
     args = func.GetOriginalArgs()
-    local_args = "%s, 1, _" % args[0].GetValidArg(0, 0)
+    local_args = "%s, 1, _" % args[0].GetValidArg(func, 0, 0)
     self.WriteValidUnitTest(func, file, valid_test, {
         'count': func.GetInfo('count'),
         'local_args': local_args,
@@ -4039,15 +4111,16 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 }
 """
     args = func.GetOriginalArgs()
-    id_name = args[0].GetValidGLArg(0, 0)
+    id_name = args[0].GetValidGLArg(func, 0, 0)
     get_len_func = func.GetInfo('get_len_func')
     get_len_enum = func.GetInfo('get_len_enum')
     sub = {
         'id_name': id_name,
         'get_len_func': get_len_func,
         'get_len_enum': get_len_enum,
-        'gl_args': '%s, strlen(kInfo) + 1, _, _' % args[0].GetValidGLArg(0, 0),
-        'args': '%s, kBucketId' % args[0].GetValidArg(0, 0),
+        'gl_args': '%s, strlen(kInfo) + 1, _, _' %
+             args[0].GetValidGLArg(func, 0, 0),
+        'args': '%s, kBucketId' % args[0].GetValidArg(func, 0, 0),
         'expect_len_code': '',
     }
     if get_len_func and get_len_func[0:2] == 'gl':
@@ -4121,10 +4194,18 @@ class Argument(object):
     """Adds init arguments for this argument to the given list."""
     return args.append(self)
 
-  def GetValidArg(self, offset, index):
+  def GetValidArg(self, func, offset, index):
+    """Gets a valid value for this argument."""
+    valid_arg = func.GetValidArg(offset)
+    if valid_arg != None:
+      return valid_arg
     return str(offset + 1)
 
-  def GetValidGLArg(self, offset, index):
+  def GetValidGLArg(self, func, offset, index):
+    """Gets a valid GL value for this argument."""
+    valid_arg = func.GetValidArg(offset)
+    if valid_arg != None:
+      return valid_arg
     return str(offset + 1)
 
   def GetNumInvalidValues(self, func):
@@ -4257,7 +4338,10 @@ class EnumBaseArgument(Argument):
     file.Write("    return error::kNoError;\n")
     file.Write("  }\n")
 
-  def GetValidArg(self, offset, index):
+  def GetValidArg(self, func, offset, index):
+    valid_arg = func.GetValidArg(offset)
+    if valid_arg != None:
+      return valid_arg
     if 'valid' in self.enum_info:
       valid = self.enum_info['valid']
       num_valid = len(valid)
@@ -4266,8 +4350,8 @@ class EnumBaseArgument(Argument):
       return valid[index]
     return str(offset + 1)
 
-  def GetValidGLArg(self, offset, index):
-    return self.GetValidArg(offset, index)
+  def GetValidGLArg(self, func, offset, index):
+    return self.GetValidArg(func, offset, index)
 
   def GetNumInvalidValues(self, func):
     """returns the number of invalid values to be tested."""
@@ -4390,11 +4474,11 @@ class PointerArgument(Argument):
     """Returns true if argument is a pointer."""
     return True
 
-  def GetValidArg(self, offset, index):
+  def GetValidArg(self, func, offset, index):
     """Overridden from Argument."""
     return "shared_memory_id_, shared_memory_offset_"
 
-  def GetValidGLArg(self, offset, index):
+  def GetValidGLArg(self, func, offset, index):
     """Overridden from Argument."""
     return "reinterpret_cast<%s>(shared_memory_address_)" % self.type
 
@@ -4477,10 +4561,10 @@ class InputStringBucketArgument(Argument):
         'name': self.name,
       })
 
-  def GetValidArg(self, offset, index):
+  def GetValidArg(self, func, offset, index):
     return "kNameBucketId"
 
-  def GetValidGLArg(self, offset, index):
+  def GetValidGLArg(self, func, offset, index):
     return "_"
 
 
@@ -4512,10 +4596,10 @@ class ResourceIdArgument(Argument):
     """Overridden from Argument."""
     file.Write("  %s %s = c.%s;\n" % (self.type, self.name, self.name))
 
-  def GetValidArg(self, offset, index):
+  def GetValidArg(self, func, offset, index):
     return "client_%s_id_" % self.resource_type.lower()
 
-  def GetValidGLArg(self, offset, index):
+  def GetValidGLArg(self, func, offset, index):
     return "kService%sId" % self.resource_type
 
 
@@ -4534,10 +4618,10 @@ class ResourceIdBindArgument(Argument):
 """
     file.Write(code % {'type': self.type, 'name': self.name})
 
-  def GetValidArg(self, offset, index):
+  def GetValidArg(self, func, offset, index):
     return "client_%s_id_" % self.resource_type.lower()
 
-  def GetValidGLArg(self, offset, index):
+  def GetValidGLArg(self, func, offset, index):
     return "kService%sId" % self.resource_type
 
 
@@ -4554,10 +4638,10 @@ class ResourceIdZeroArgument(Argument):
     """Overridden from Argument."""
     file.Write("  %s %s = c.%s;\n" % (self.type, self.name, self.name))
 
-  def GetValidArg(self, offset, index):
+  def GetValidArg(self, func, offset, index):
     return "client_%s_id_" % self.resource_type.lower()
 
-  def GetValidGLArg(self, offset, index):
+  def GetValidGLArg(self, func, offset, index):
     return "kService%sId" % self.resource_type
 
   def GetNumInvalidValues(self, func):
@@ -4600,6 +4684,13 @@ class Function(object):
     """Returns a value from the function info for this function."""
     if hasattr(self.info, name):
       return getattr(self.info, name)
+    return None
+
+  def GetValidArg(self, index):
+    """Gets a valid arg from the function info if one exists."""
+    valid_args = self.GetInfo('valid_args')
+    if valid_args and str(index) in valid_args:
+      return valid_args[str(index)]
     return None
 
   def AddInfo(self, name, value):

@@ -174,7 +174,8 @@ class TextureManager {
 
     // Sets a texture parameter.
     // TODO(gman): Expand to SetParameteri,f,iv,fv
-    void SetParameter(
+    // Returns false if param was INVALID_ENUN
+    bool SetParameter(
         const FeatureInfo* feature_info, GLenum pname, GLint param);
 
     // Makes each of the mip levels as though they were generated.
@@ -298,7 +299,7 @@ class TextureManager {
 
   // Sets a texture parameter of a TextureInfo
   // TODO(gman): Expand to SetParameteri,f,iv,fv
-  void SetParameter(
+  bool SetParameter(
       const FeatureInfo* feature_info,
       TextureInfo* info, GLenum pname, GLint param);
 

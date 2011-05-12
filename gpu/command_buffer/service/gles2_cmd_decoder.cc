@@ -3723,11 +3723,15 @@ void GLES2DecoderImpl::DoTexParameterf(
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glTexParameterf: unknown texture");
-  } else {
-    texture_manager()->SetParameter(
-        feature_info_, info, pname, static_cast<GLint>(param));
-    glTexParameterf(target, pname, param);
+    return;
   }
+
+  if (!texture_manager()->SetParameter(
+      feature_info_, info, pname, static_cast<GLint>(param))) {
+    SetGLError(GL_INVALID_ENUM, "glTexParameterf: param GL_INVALID_ENUM");
+    return;
+  }
+  glTexParameterf(target, pname, param);
 }
 
 void GLES2DecoderImpl::DoTexParameteri(
@@ -3735,10 +3739,14 @@ void GLES2DecoderImpl::DoTexParameteri(
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glTexParameteri: unknown texture");
-  } else {
-    texture_manager()->SetParameter(feature_info_, info, pname, param);
-    glTexParameteri(target, pname, param);
+    return;
   }
+
+  if (!texture_manager()->SetParameter(feature_info_, info, pname, param)) {
+    SetGLError(GL_INVALID_ENUM, "glTexParameteri: param GL_INVALID_ENUM");
+    return;
+  }
+  glTexParameteri(target, pname, param);
 }
 
 void GLES2DecoderImpl::DoTexParameterfv(
@@ -3746,11 +3754,15 @@ void GLES2DecoderImpl::DoTexParameterfv(
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glTexParameterfv: unknown texture");
-  } else {
-    texture_manager()->SetParameter(
-        feature_info_, info, pname, *reinterpret_cast<const GLint*>(params));
-    glTexParameterfv(target, pname, params);
+    return;
   }
+
+  if (!texture_manager()->SetParameter(
+      feature_info_, info, pname, static_cast<GLint>(params[0]))) {
+    SetGLError(GL_INVALID_ENUM, "glTexParameterfv: param GL_INVALID_ENUM");
+    return;
+  }
+  glTexParameterfv(target, pname, params);
 }
 
 void GLES2DecoderImpl::DoTexParameteriv(
@@ -3758,10 +3770,14 @@ void GLES2DecoderImpl::DoTexParameteriv(
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glTexParameteriv: unknown texture");
-  } else {
-    texture_manager()->SetParameter(feature_info_, info, pname, *params);
-    glTexParameteriv(target, pname, params);
+    return;
   }
+
+  if (!texture_manager()->SetParameter(feature_info_, info, pname, *params)) {
+    SetGLError(GL_INVALID_ENUM, "glTexParameteriv: param GL_INVALID_ENUM");
+    return;
+  }
+  glTexParameteriv(target, pname, params);
 }
 
 bool GLES2DecoderImpl::CheckCurrentProgram(const char* function_name) {

@@ -252,19 +252,32 @@ bool TextureManager::TextureInfo::GetLevelType(
   return false;
 }
 
-void TextureManager::TextureInfo::SetParameter(
+bool TextureManager::TextureInfo::SetParameter(
     const FeatureInfo* feature_info, GLenum pname, GLint param) {
+  DCHECK(feature_info);
   switch (pname) {
     case GL_TEXTURE_MIN_FILTER:
+      if (!feature_info->validators()->texture_min_filter_mode.IsValid(param)) {
+        return false;
+      }
       min_filter_ = param;
       break;
     case GL_TEXTURE_MAG_FILTER:
+      if (!feature_info->validators()->texture_mag_filter_mode.IsValid(param)) {
+        return false;
+      }
       mag_filter_ = param;
       break;
     case GL_TEXTURE_WRAP_S:
+      if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
+        return false;
+      }
       wrap_s_ = param;
       break;
     case GL_TEXTURE_WRAP_T:
+      if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
+        return false;
+      }
       wrap_t_ = param;
       break;
     case GL_TEXTURE_MAX_ANISOTROPY_EXT:
@@ -272,9 +285,10 @@ void TextureManager::TextureInfo::SetParameter(
       break;
     default:
       NOTREACHED();
-      break;
+      return false;
   }
   Update(feature_info);
+  return true;
 }
 
 void TextureManager::TextureInfo::Update(const FeatureInfo* feature_info) {
@@ -461,18 +475,20 @@ void TextureManager::SetLevelInfo(
   }
 }
 
-void TextureManager::SetParameter(
+bool TextureManager::SetParameter(
     const FeatureInfo* feature_info,
     TextureManager::TextureInfo* info, GLenum pname, GLint param) {
+  DCHECK(feature_info);
   DCHECK(info);
   DCHECK(!info->IsDeleted());
   if (!info->CanRender(feature_info)) {
     --num_unrenderable_textures_;
   }
-  info->SetParameter(feature_info, pname, param);
+  bool result = info->SetParameter(feature_info, pname, param);
   if (!info->CanRender(feature_info)) {
     ++num_unrenderable_textures_;
   }
+  return result;
 }
 
 bool TextureManager::MarkMipmapsGenerated(

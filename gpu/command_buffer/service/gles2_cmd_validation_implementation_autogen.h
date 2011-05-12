@@ -369,6 +369,20 @@ static GLenum valid_texture_internal_format_table[] = {
   GL_RGBA,
 };
 
+static GLenum valid_texture_mag_filter_mode_table[] = {
+  GL_NEAREST,
+  GL_LINEAR,
+};
+
+static GLenum valid_texture_min_filter_mode_table[] = {
+  GL_NEAREST,
+  GL_LINEAR,
+  GL_NEAREST_MIPMAP_NEAREST,
+  GL_LINEAR_MIPMAP_NEAREST,
+  GL_NEAREST_MIPMAP_LINEAR,
+  GL_LINEAR_MIPMAP_LINEAR,
+};
+
 static GLenum valid_texture_parameter_table[] = {
   GL_TEXTURE_MAG_FILTER,
   GL_TEXTURE_MIN_FILTER,
@@ -384,6 +398,12 @@ static GLenum valid_texture_target_table[] = {
   GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
   GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
   GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+};
+
+static GLenum valid_texture_wrap_mode_table[] = {
+  GL_CLAMP_TO_EDGE,
+  GL_MIRRORED_REPEAT,
+  GL_REPEAT,
 };
 
 static GLint valid_vertex_attrib_size_table[] = {
@@ -513,11 +533,20 @@ Validators::Validators()
       texture_internal_format(
           valid_texture_internal_format_table, arraysize(
               valid_texture_internal_format_table)),
+      texture_mag_filter_mode(
+          valid_texture_mag_filter_mode_table, arraysize(
+              valid_texture_mag_filter_mode_table)),
+      texture_min_filter_mode(
+          valid_texture_min_filter_mode_table, arraysize(
+              valid_texture_min_filter_mode_table)),
       texture_parameter(
           valid_texture_parameter_table, arraysize(
               valid_texture_parameter_table)),
       texture_target(
           valid_texture_target_table, arraysize(valid_texture_target_table)),
+      texture_wrap_mode(
+          valid_texture_wrap_mode_table, arraysize(
+              valid_texture_wrap_mode_table)),
       vertex_attrib_size(
           valid_vertex_attrib_size_table, arraysize(
               valid_vertex_attrib_size_table)),
