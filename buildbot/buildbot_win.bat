@@ -123,7 +123,7 @@ endlocal
 :: TODO(bradchen): add dynamic_library_browser_tests
 ::  when DSOs are added to Windows toolchain build
 
-if "%TOOLCHAIN%" equ "glibc" goto SkipNonGlibsTests
+if "%TOOLCHAIN%" equ "glibc" goto AfterTests
 echo @@@BUILD_STEP medium_tests@@@
 setlocal
 call vcvarsall.bat %VCBITS% && call scons.bat ^
@@ -142,7 +142,7 @@ call vcvarsall.bat %VCBITS% && call scons.bat ^
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 endlocal
 
-if "%INSIDE_TOOLCHAIN%" neq "" goto SkipArchive
+if "%INSIDE_TOOLCHAIN%" neq "" goto AfterTests
 
 echo @@@BUILD_STEP chrome_browser_tests@@@
 setlocal
@@ -189,24 +189,7 @@ call vcvarsall.bat %VCBITS% && call scons.bat ^
 if %ERRORLEVEL% neq 0 (set RETCODE=%ERRORLEVEL% & echo @@@STEP_FAILURE@@@)
 endlocal
 
-if %BUILDBOT_BUILDERNAME% equ vista64-m64-n64-dbg goto ArchiveIt
-if %BUILDBOT_BUILDERNAME% equ vista64-m64-n64-opt goto ArchiveIt
-goto SkipArchive
-:ArchiveIt
-echo @@@BUILD_STEP archive_build@@@
-set OLD_PATH=%PATH%
-set PATH=c:\cygwin\bin;%PATH%
-tar cvfz build.tgz scons-out/
-set PATH=%OLD_PATH%
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
-set GS_BASE="gs://nativeclient-archive2/between_builders/vista64_%MODE%"
-set HOME=c:\Users\chrome-bot
-\b\build\scripts\slave\gsutil -h Cache-Control:no-cache ^
- cp -a public-read build.tgz ^
- %GS_BASE%/rev_%BUILDBOT_GOT_REVISION%/build.tgz
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
-:SkipArchive
-:SkipNonGlibsTests
+:AfterTests
 
 if %RETCODE% neq 0 (
   echo @@@BUILD_STEP summary@@@
