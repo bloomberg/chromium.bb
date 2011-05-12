@@ -6,6 +6,9 @@ JingleSessionTest.TestEventChannel
 JingleSessionTest.TestVideoChannel
 JingleSessionTest.TestVideoRtpChannel
 
+# Crashes silently, see http://crbug.com/82401
+JingleSessionTest.CreateAndDestoy
+
 # This test fails on an assertion, see http://crbug.com/57266
 EncoderVp8Test.TestEncoder
 DecoderVp8Test.EncodeAndDecode
