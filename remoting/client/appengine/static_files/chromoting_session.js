@@ -11,6 +11,7 @@ var MAX_DEBUG_LOG_SIZE = 1000;
 chromoting.messageId = 1;
 
 chromoting.scaleToFit = false;
+
 // Default to trying to sandboxed connections.
 chromoting.connectMethod = 'sandboxed';
 
@@ -23,12 +24,16 @@ function feedIq() {
   xhr.withCredentials = true;
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
-      if (xhr.status == 200 || xhr.status == 204) {
+      if (xhr.status == 200) {
         addToDebugLog('Receiving Iq: --' + xhr.responseText + '--');
         chromoting.plugin.onIq(xhr.responseText);
+      }
+      if (xhr.status == 200 || xhr.status == 204) {
         window.setTimeout(feedIq, 0);
       } else {
         addToDebugLog("HttpXmpp gateway returned code: " + xhr.status);
+        chromoting.plugin.disconnect();
+        setClientStateMessage("Failed");
       }
     }
   }
@@ -51,7 +56,6 @@ function registerConnection() {
         chromoting.plugin.connectSandboxed(clientjid, chromoting.hostjid, '');
         // TODO(ajwong): This should just be feedIq();
         window.setTimeout(feedIq, 1000);
-        window.setTimeout(updateStatusBarStats, 1000);
       } else {
         addToDebugLog('FailedToConnect: --' + xhr.responseText +
                       '-- (status=' + xhr.status + ')');
@@ -129,7 +133,6 @@ function init() {
       // TODO:(jamiewalch): Pass in the correct nonce.
       plugin.connect(chromoting.username, chromoting.hostjid,
                      chromoting.xmppAuthToken, '');
-      window.setTimeout("updateStatusBarStats()", 1000);
     }
   } else {
     addToDebugLog('ERROR: chromoting plugin not loaded');
@@ -212,6 +215,7 @@ function connectionInfoUpdateCallback() {
   } else if (status == chromoting.plugin.STATUS_CONNECTED) {
     desktopSizeChanged();
     setClientStateMessageFade('Connected to ' + chromoting.hostname, 1000);
+    window.setTimeout(updateStatusBarStats, 1000);
   } else if (status == chromoting.plugin.STATUS_CLOSED) {
     setClientStateMessage('Closed');
   } else if (status == chromoting.plugin.STATUS_FAILED) {
@@ -324,6 +328,8 @@ function addToDebugLog(message) {
  * @param {string} message The message to display.
  */
 function updateStatusBarStats() {
+  if (chromoting.plugin.status != chromoting.plugin.STATUS_CONNECTED)
+    return;
   var videoBandwidth = chromoting.plugin.videoBandwidth;
   var videoCaptureLatency = chromoting.plugin.videoCaptureLatency;
   var videoEncodeLatency = chromoting.plugin.videoEncodeLatency;
