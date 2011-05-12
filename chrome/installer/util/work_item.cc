@@ -63,8 +63,12 @@ DeleteTreeWorkItem* WorkItem::CreateDeleteTreeWorkItem(
 MoveTreeWorkItem* WorkItem::CreateMoveTreeWorkItem(
     const FilePath& source_path,
     const FilePath& dest_path,
-    const FilePath& temp_dir) {
-  return new MoveTreeWorkItem(source_path, dest_path, temp_dir);
+    const FilePath& temp_dir,
+    MoveTreeOption duplicate_option) {
+  return new MoveTreeWorkItem(source_path,
+                              dest_path,
+                              temp_dir,
+                              duplicate_option);
 }
 
 SetRegValueWorkItem* WorkItem::CreateSetRegValueWorkItem(

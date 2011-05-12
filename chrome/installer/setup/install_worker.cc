@@ -102,9 +102,9 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
   // is in %ProgramFiles% for system level installs (and in %LOCALAPPDATA%
   // otherwise), there is no need to do this.
   install_list->AddMoveTreeWorkItem(setup_path.value(), exe_dst.value(),
-                                    temp_path.value());
+                                    temp_path.value(), WorkItem::ALWAYS_MOVE);
   install_list->AddMoveTreeWorkItem(archive_path.value(), archive_dst.value(),
-                                    temp_path.value());
+                                    temp_path.value(), WorkItem::ALWAYS_MOVE);
 }
 
 // This method adds work items to create (or update) Chrome uninstall entry in
@@ -564,17 +564,25 @@ void AddInstallWorkItems(const InstallationState& original_state,
     install_list->AddMoveTreeWorkItem(
         src_path.Append(installer::kWowHelperExe).value(),
         target_path.Append(installer::kWowHelperExe).value(),
-        temp_path.value());
+        temp_path.value(),
+        WorkItem::ALWAYS_MOVE);
   }
 
   // In the past, we copied rather than moved for system level installs so that
   // the permissions of %ProgramFiles% would be picked up.  Now that |temp_path|
   // is in %ProgramFiles% for system level installs (and in %LOCALAPPDATA%
   // otherwise), there is no need to do this.
+  // Note that we pass true for check_duplicates to avoid failing on in-use
+  // repair runs if the current_version is the same as the new_version.
+  bool check_for_duplicates =
+      (current_version != NULL && current_version->get() != NULL &&
+       current_version->get()->Equals(new_version));
   install_list->AddMoveTreeWorkItem(
       src_path.AppendASCII(new_version.GetString()).value(),
       target_path.AppendASCII(new_version.GetString()).value(),
-      temp_path.value());
+      temp_path.value(),
+      check_for_duplicates ? WorkItem::CHECK_DUPLICATES :
+                             WorkItem::ALWAYS_MOVE);
 
   // Copy the default Dictionaries only if the folder doesn't exist already.
   // TODO(grt): Use AddMoveTreeWorkItem in a conditional WorkItemList, which

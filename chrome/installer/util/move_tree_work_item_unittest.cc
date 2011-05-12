@@ -17,41 +17,41 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-  class MoveTreeWorkItemTest : public testing::Test {
-   protected:
-    virtual void SetUp() {
-      ASSERT_TRUE(temp_from_dir_.CreateUniqueTempDir());
-      ASSERT_TRUE(temp_to_dir_.CreateUniqueTempDir());
-    }
-
-    ScopedTempDir temp_from_dir_;
-    ScopedTempDir temp_to_dir_;
-  };
-
-  // Simple function to dump some text into a new file.
-  void CreateTextFile(const std::wstring& filename,
-                      const std::wstring& contents) {
-    std::ofstream file;
-    file.open(filename.c_str());
-    ASSERT_TRUE(file.is_open());
-    file << contents;
-    file.close();
+class MoveTreeWorkItemTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    ASSERT_TRUE(temp_from_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(temp_to_dir_.CreateUniqueTempDir());
   }
 
-  // Simple function to read text from a file.
-  std::wstring ReadTextFile(const FilePath& path) {
-    WCHAR contents[64];
-    std::wifstream file;
-    file.open(path.value().c_str());
-    EXPECT_TRUE(file.is_open());
-    file.getline(contents, 64);
-    file.close();
-    return std::wstring(contents);
-  }
-
-  wchar_t text_content_1[] = L"Gooooooooooooooooooooogle";
-  wchar_t text_content_2[] = L"Overwrite Me";
+  ScopedTempDir temp_from_dir_;
+  ScopedTempDir temp_to_dir_;
 };
+
+// Simple function to dump some text into a new file.
+void CreateTextFile(const std::wstring& filename,
+                    const std::wstring& contents) {
+  std::wofstream file;
+  file.open(WideToASCII(filename).c_str());
+  ASSERT_TRUE(file.is_open());
+  file << contents;
+  file.close();
+}
+
+// Simple function to read text from a file.
+std::wstring ReadTextFile(const FilePath& path) {
+  WCHAR contents[64];
+  std::wifstream file;
+  file.open(WideToASCII(path.value()).c_str());
+  EXPECT_TRUE(file.is_open());
+  file.getline(contents, arraysize(contents));
+  file.close();
+  return std::wstring(contents);
+}
+
+const wchar_t kTextContent1[] = L"Gooooooooooooooooooooogle";
+const wchar_t kTextContent2[] = L"Overwrite Me";
+};  // namespace
 
 // Move one directory from source to destination when destination does not
 // exist.
@@ -69,7 +69,7 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectory) {
 
   FilePath from_file(from_dir2);
   from_file = from_file.AppendASCII("From_File");
-  CreateTextFile(from_file.value(), text_content_1);
+  CreateTextFile(from_file.value(), kTextContent1);
   ASSERT_TRUE(file_util::PathExists(from_file));
 
   // Generate destination path
@@ -84,7 +84,10 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectory) {
 
   // test Do()
   scoped_ptr<MoveTreeWorkItem> work_item(
-      WorkItem::CreateMoveTreeWorkItem(from_dir1, to_dir, temp_to_dir_.path()));
+      WorkItem::CreateMoveTreeWorkItem(from_dir1,
+                                       to_dir,
+                                       temp_to_dir_.path(),
+                                       WorkItem::ALWAYS_MOVE));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_FALSE(file_util::PathExists(from_dir1));
@@ -115,7 +118,7 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExists) {
 
   FilePath from_file(from_dir2);
   from_file = from_file.AppendASCII("From_File");
-  CreateTextFile(from_file.value(), text_content_1);
+  CreateTextFile(from_file.value(), kTextContent1);
   ASSERT_TRUE(file_util::PathExists(from_file));
 
   // Create destination path
@@ -126,7 +129,7 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExists) {
 
   FilePath orig_to_file(to_dir);
   orig_to_file = orig_to_file.AppendASCII("To_File");
-  CreateTextFile(orig_to_file.value(), text_content_2);
+  CreateTextFile(orig_to_file.value(), kTextContent2);
   ASSERT_TRUE(file_util::PathExists(orig_to_file));
 
   FilePath new_to_file(to_dir);
@@ -134,9 +137,12 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExists) {
   new_to_file = new_to_file.AppendASCII("From_File");
   ASSERT_FALSE(file_util::PathExists(new_to_file));
 
-  // test Do()
+  // test Do(), don't check for duplicates.
   scoped_ptr<MoveTreeWorkItem> work_item(
-      WorkItem::CreateMoveTreeWorkItem(from_dir1, to_dir, temp_to_dir_.path()));
+      WorkItem::CreateMoveTreeWorkItem(from_dir1,
+                                       to_dir,
+                                       temp_to_dir_.path(),
+                                       WorkItem::ALWAYS_MOVE));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_FALSE(file_util::PathExists(from_dir1));
@@ -151,8 +157,8 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExists) {
   EXPECT_TRUE(file_util::PathExists(to_dir));
   EXPECT_FALSE(file_util::PathExists(new_to_file));
   EXPECT_TRUE(file_util::PathExists(orig_to_file));
-  EXPECT_EQ(0, ReadTextFile(orig_to_file).compare(text_content_2));
-  EXPECT_EQ(0, ReadTextFile(from_file).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(orig_to_file).compare(kTextContent2));
+  EXPECT_EQ(0, ReadTextFile(from_file).compare(kTextContent1));
 }
 
 // Move one file from source to destination when destination does not
@@ -166,7 +172,7 @@ TEST_F(MoveTreeWorkItemTest, MoveAFile) {
 
   FilePath from_file(from_dir);
   from_file = from_file.AppendASCII("From_File");
-  CreateTextFile(from_file.value(), text_content_1);
+  CreateTextFile(from_file.value(), kTextContent1);
   ASSERT_TRUE(file_util::PathExists(from_file));
 
   // Generate destination file name
@@ -176,14 +182,16 @@ TEST_F(MoveTreeWorkItemTest, MoveAFile) {
 
   // test Do()
   scoped_ptr<MoveTreeWorkItem> work_item(
-      WorkItem::CreateMoveTreeWorkItem(
-          from_file, to_file, temp_to_dir_.path()));
+      WorkItem::CreateMoveTreeWorkItem(from_file,
+                                       to_file,
+                                       temp_to_dir_.path(),
+                                       WorkItem::ALWAYS_MOVE));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
   EXPECT_FALSE(file_util::PathExists(from_file));
   EXPECT_TRUE(file_util::PathExists(to_file));
-  EXPECT_EQ(0, ReadTextFile(to_file).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(to_file).compare(kTextContent1));
 
   // test rollback()
   work_item->Rollback();
@@ -191,7 +199,7 @@ TEST_F(MoveTreeWorkItemTest, MoveAFile) {
   EXPECT_TRUE(file_util::PathExists(from_dir));
   EXPECT_TRUE(file_util::PathExists(from_file));
   EXPECT_FALSE(file_util::PathExists(to_file));
-  EXPECT_EQ(0, ReadTextFile(from_file).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(from_file).compare(kTextContent1));
 }
 
 // Move one file from source to destination when destination already
@@ -205,7 +213,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestExists) {
 
   FilePath from_file(from_dir);
   from_file = from_file.AppendASCII("From_File");
-  CreateTextFile(from_file.value(), text_content_1);
+  CreateTextFile(from_file.value(), kTextContent1);
   ASSERT_TRUE(file_util::PathExists(from_file));
 
   // Create destination path
@@ -216,27 +224,30 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestExists) {
 
   FilePath to_file(to_dir);
   to_file = to_file.AppendASCII("To_File");
-  CreateTextFile(to_file.value(), text_content_2);
+  CreateTextFile(to_file.value(), kTextContent2);
   ASSERT_TRUE(file_util::PathExists(to_file));
 
   // test Do()
   scoped_ptr<MoveTreeWorkItem> work_item(
-      WorkItem::CreateMoveTreeWorkItem(from_file, to_dir, temp_to_dir_.path()));
+      WorkItem::CreateMoveTreeWorkItem(from_file,
+                                       to_dir,
+                                       temp_to_dir_.path(),
+                                       WorkItem::ALWAYS_MOVE));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
   EXPECT_FALSE(file_util::PathExists(from_file));
   EXPECT_TRUE(file_util::PathExists(to_dir));
   EXPECT_FALSE(file_util::PathExists(to_file));
-  EXPECT_EQ(0, ReadTextFile(to_dir).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(to_dir).compare(kTextContent1));
 
   // test rollback()
   work_item->Rollback();
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
-  EXPECT_EQ(0, ReadTextFile(from_file).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(from_file).compare(kTextContent1));
   EXPECT_TRUE(file_util::PathExists(to_dir));
-  EXPECT_EQ(0, ReadTextFile(to_file).compare(text_content_2));
+  EXPECT_EQ(0, ReadTextFile(to_file).compare(kTextContent2));
 }
 
 // Move one file from source to destination when destination already
@@ -250,7 +261,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestInUse) {
 
   FilePath from_file(from_dir);
   from_file = from_file.AppendASCII("From_File");
-  CreateTextFile(from_file.value(), text_content_1);
+  CreateTextFile(from_file.value(), kTextContent1);
   ASSERT_TRUE(file_util::PathExists(from_file));
 
   // Create an executable in destination path by copying ourself to it.
@@ -278,20 +289,22 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestInUse) {
 
   // test Do()
   scoped_ptr<MoveTreeWorkItem> work_item(
-      WorkItem::CreateMoveTreeWorkItem(
-          from_file, to_file, temp_to_dir_.path()));
+      WorkItem::CreateMoveTreeWorkItem(from_file,
+                                       to_file,
+                                       temp_to_dir_.path(),
+                                       WorkItem::ALWAYS_MOVE));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
   EXPECT_FALSE(file_util::PathExists(from_file));
   EXPECT_TRUE(file_util::PathExists(to_dir));
-  EXPECT_EQ(0, ReadTextFile(to_file).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(to_file).compare(kTextContent1));
 
   // test rollback()
   work_item->Rollback();
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
-  EXPECT_EQ(0, ReadTextFile(from_file).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(from_file).compare(kTextContent1));
   EXPECT_TRUE(file_util::PathExists(to_dir));
   EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, to_file));
 
@@ -325,7 +338,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
 
   FilePath to_file(to_dir);
   to_file = to_file.AppendASCII("To_File");
-  CreateTextFile(to_file.value(), text_content_1);
+  CreateTextFile(to_file.value(), kTextContent1);
   ASSERT_TRUE(file_util::PathExists(to_file));
 
   // Run the executable in source path
@@ -339,8 +352,10 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
 
   // test Do()
   scoped_ptr<MoveTreeWorkItem> work_item(
-      WorkItem::CreateMoveTreeWorkItem(
-          from_file, to_file, temp_to_dir_.path()));
+      WorkItem::CreateMoveTreeWorkItem(from_file,
+                                       to_file,
+                                       temp_to_dir_.path(),
+                                       WorkItem::ALWAYS_MOVE));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
@@ -366,5 +381,172 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
   EXPECT_TRUE(file_util::PathExists(from_dir));
   EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, from_file));
   EXPECT_TRUE(file_util::PathExists(to_dir));
-  EXPECT_EQ(0, ReadTextFile(to_file).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(to_file).compare(kTextContent1));
+}
+
+// Move one directory from source to destination when destination already
+// exists.
+TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExistsCheckForDuplicatesFull) {
+  // Create two level deep source dir
+  FilePath from_dir1(temp_from_dir_.path());
+  from_dir1 = from_dir1.AppendASCII("From_Dir1");
+  file_util::CreateDirectory(from_dir1);
+  ASSERT_TRUE(file_util::PathExists(from_dir1));
+
+  FilePath from_dir2(from_dir1);
+  from_dir2 = from_dir2.AppendASCII("From_Dir2");
+  file_util::CreateDirectory(from_dir2);
+  ASSERT_TRUE(file_util::PathExists(from_dir2));
+
+  FilePath from_file(from_dir2);
+  from_file = from_file.AppendASCII("From_File");
+  CreateTextFile(from_file.value(), kTextContent1);
+  ASSERT_TRUE(file_util::PathExists(from_file));
+
+  // Create destination path
+  FilePath to_dir(temp_from_dir_.path());
+  to_dir = to_dir.AppendASCII("To_Dir");
+  file_util::CreateDirectory(to_dir);
+  ASSERT_TRUE(file_util::PathExists(to_dir));
+
+  // Create a sub-directory of the same name as in the source directory.
+  FilePath to_dir2(to_dir);
+  to_dir2 = to_dir2.AppendASCII("From_Dir2");
+  file_util::CreateDirectory(to_dir2);
+  ASSERT_TRUE(file_util::PathExists(to_dir2));
+
+  // Create an identical file in the to sub-directory.
+  FilePath orig_to_file(to_dir2);
+  orig_to_file = orig_to_file.AppendASCII("From_File");
+  CreateTextFile(orig_to_file.value(), kTextContent1);
+  ASSERT_TRUE(file_util::PathExists(orig_to_file));
+
+  // Lock one of the files in the to sub-directory to prevent moves.
+  file_util::MemoryMappedFile mapped_file;
+  EXPECT_TRUE(mapped_file.Initialize(orig_to_file));
+
+  // First check that we can't do the regular Move().
+  scoped_ptr<MoveTreeWorkItem> work_item(
+      WorkItem::CreateMoveTreeWorkItem(from_dir1,
+                                       to_dir,
+                                       temp_to_dir_.path(),
+                                       WorkItem::ALWAYS_MOVE));
+  EXPECT_FALSE(work_item->Do());
+  work_item->Rollback();
+
+  // Now test Do() with the check for duplicates. This should pass.
+  work_item.reset(
+      WorkItem::CreateMoveTreeWorkItem(from_dir1,
+                                       to_dir,
+                                       temp_to_dir_.path(),
+                                       WorkItem::CHECK_DUPLICATES));
+  EXPECT_TRUE(work_item->Do());
+
+  // Make sure that we "moved" the files, i.e. that the source directory isn't
+  // there anymore,
+  EXPECT_FALSE(file_util::PathExists(from_dir1));
+  // Make sure that the original directory structure and file are still present.
+  EXPECT_TRUE(file_util::PathExists(to_dir));
+  EXPECT_TRUE(file_util::PathExists(orig_to_file));
+  // Make sure that the backup path is not empty.
+  EXPECT_FALSE(file_util::IsDirectoryEmpty(temp_to_dir_.path()));
+
+  // Check that the work item believes the source to have been moved.
+  EXPECT_TRUE(work_item->source_moved_to_backup_);
+  EXPECT_FALSE(work_item->moved_to_dest_path_);
+  EXPECT_FALSE(work_item->moved_to_backup_);
+
+  // test rollback()
+  work_item->Rollback();
+
+  // Once we rollback all the original files should still be there, as should
+  // the source files.
+  EXPECT_TRUE(file_util::PathExists(from_dir1));
+  EXPECT_TRUE(file_util::PathExists(to_dir));
+  EXPECT_TRUE(file_util::PathExists(orig_to_file));
+  EXPECT_EQ(0, ReadTextFile(orig_to_file).compare(kTextContent1));
+  EXPECT_EQ(0, ReadTextFile(from_file).compare(kTextContent1));
+}
+
+// Move one directory from source to destination when destination already
+// exists but contains only a subset of the files in source.
+TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExistsCheckForDuplicatesPartial) {
+  // Create two level deep source dir
+  FilePath from_dir1(temp_from_dir_.path());
+  from_dir1 = from_dir1.AppendASCII("From_Dir1");
+  file_util::CreateDirectory(from_dir1);
+  ASSERT_TRUE(file_util::PathExists(from_dir1));
+
+  FilePath from_dir2(from_dir1);
+  from_dir2 = from_dir2.AppendASCII("From_Dir2");
+  file_util::CreateDirectory(from_dir2);
+  ASSERT_TRUE(file_util::PathExists(from_dir2));
+
+  FilePath from_file(from_dir2);
+  from_file = from_file.AppendASCII("From_File");
+  CreateTextFile(from_file.value(), kTextContent1);
+  ASSERT_TRUE(file_util::PathExists(from_file));
+
+  FilePath from_file2(from_dir2);
+  from_file2 = from_file2.AppendASCII("From_File2");
+  CreateTextFile(from_file2.value(), kTextContent2);
+  ASSERT_TRUE(file_util::PathExists(from_file2));
+
+  // Create destination path
+  FilePath to_dir(temp_from_dir_.path());
+  to_dir = to_dir.AppendASCII("To_Dir");
+  file_util::CreateDirectory(to_dir);
+  ASSERT_TRUE(file_util::PathExists(to_dir));
+
+  // Create a sub-directory of the same name as in the source directory.
+  FilePath to_dir2(to_dir);
+  to_dir2 = to_dir2.AppendASCII("From_Dir2");
+  file_util::CreateDirectory(to_dir2);
+  ASSERT_TRUE(file_util::PathExists(to_dir2));
+
+  // Create one of the files in the to sub-directory, but not the other.
+  FilePath orig_to_file(to_dir2);
+  orig_to_file = orig_to_file.AppendASCII("From_File");
+  CreateTextFile(orig_to_file.value(), kTextContent1);
+  ASSERT_TRUE(file_util::PathExists(orig_to_file));
+
+  // test Do(), check for duplicates.
+  scoped_ptr<MoveTreeWorkItem> work_item(
+      WorkItem::CreateMoveTreeWorkItem(from_dir1,
+                                       to_dir,
+                                       temp_to_dir_.path(),
+                                       WorkItem::CHECK_DUPLICATES));
+  EXPECT_TRUE(work_item->Do());
+
+  // Make sure that we "moved" the files, i.e. that the source directory isn't
+  // there anymore,
+  EXPECT_FALSE(file_util::PathExists(from_dir1));
+  // Make sure that the original directory structure and file are still present.
+  EXPECT_TRUE(file_util::PathExists(to_dir));
+  EXPECT_TRUE(file_util::PathExists(orig_to_file));
+  // Make sure that the backup path is not empty.
+  EXPECT_FALSE(file_util::IsDirectoryEmpty(temp_to_dir_.path()));
+  // Make sure that the "new" file is also present.
+  FilePath new_to_file2(to_dir2);
+  new_to_file2 = new_to_file2.AppendASCII("From_File2");
+  EXPECT_TRUE(file_util::PathExists(new_to_file2));
+
+  // Check that the work item believes that this was a regular move.
+  EXPECT_FALSE(work_item->source_moved_to_backup_);
+  EXPECT_TRUE(work_item->moved_to_dest_path_);
+  EXPECT_TRUE(work_item->moved_to_backup_);
+
+  // test rollback()
+  work_item->Rollback();
+
+  // Once we rollback all the original files should still be there, as should
+  // the source files.
+  EXPECT_TRUE(file_util::PathExists(from_dir1));
+  EXPECT_TRUE(file_util::PathExists(to_dir));
+  EXPECT_TRUE(file_util::PathExists(orig_to_file));
+  EXPECT_EQ(0, ReadTextFile(orig_to_file).compare(kTextContent1));
+  EXPECT_EQ(0, ReadTextFile(from_file).compare(kTextContent1));
+
+  // Also, after rollback the new "to" file should be gone.
+  EXPECT_FALSE(file_util::PathExists(new_to_file2));
 }

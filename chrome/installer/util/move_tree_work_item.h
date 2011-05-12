@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_temp_dir.h"
 #include "chrome/installer/util/work_item.h"
 
@@ -28,14 +29,24 @@ class MoveTreeWorkItem : public WorkItem {
 
  private:
   friend class WorkItem;
+  FRIEND_TEST_ALL_PREFIXES(MoveTreeWorkItemTest,
+                           MoveDirectoryDestExistsCheckForDuplicatesFull);
+  FRIEND_TEST_ALL_PREFIXES(MoveTreeWorkItemTest,
+                           MoveDirectoryDestExistsCheckForDuplicatesPartial);
 
-  // source_path specifies file or directory that will be moved to location
-  // specified by dest_path. To facilitate rollback, the caller needs to supply
-  // a temporary directory (temp_dir) to save the original files if they exist
-  // under dest_path.
+  // |source_path| specifies file or directory that will be moved to location
+  // specified by |dest_path|. To facilitate rollback, the caller needs to
+  // supply a temporary directory, |temp_dir| to save the original files if
+  // they exist under dest_path.
+  // If |check_duplicates| is CHECK_DUPLICATES, then Do() will first check
+  // whether the directory tree in source_path is entirely contained in
+  // dest_path and all files in source_path are present and of the same length
+  // in dest_path. If so, it will do nothing and return true, otherwise it will
+  // attempt to move source_path to dest_path as stated above.
   MoveTreeWorkItem(const FilePath& source_path,
                    const FilePath& dest_path,
-                   const FilePath& temp_dir);
+                   const FilePath& temp_dir,
+                   MoveTreeOption duplicate_option);
 
   // Source path to move files from.
   FilePath source_path_;
@@ -55,6 +66,14 @@ class MoveTreeWorkItem : public WorkItem {
   // Whether the original files have been moved to backup path under
   // temporary directory. If true, moving back is needed during rollback.
   bool moved_to_backup_;
+
+  // Whether we moved the source files to the backup path instead just to
+  // preserve the behaviour of a Move. This can only become true if
+  // duplicate_option_ is CHECK_DUPLICATES.
+  bool source_moved_to_backup_;
+
+  // Whether to check for duplicates before moving.
+  MoveTreeOption duplicate_option_;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_MOVE_TREE_WORK_ITEM_H_

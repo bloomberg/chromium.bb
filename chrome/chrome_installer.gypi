@@ -87,6 +87,7 @@
             'installer/util/delete_reg_key_work_item_unittest.cc',
             'installer/util/delete_reg_value_work_item_unittest.cc',
             'installer/util/delete_tree_work_item_unittest.cc',
+            'installer/util/duplicate_tree_detector_unittest.cc',
             'installer/util/google_chrome_distribution_unittest.cc',
             'installer/util/google_update_settings_unittest.cc',
             'installer/util/install_util_unittest.cc',

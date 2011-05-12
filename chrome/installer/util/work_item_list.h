@@ -81,7 +81,8 @@ class WorkItemList : public WorkItem {
   // Add a MoveTreeWorkItem to the list of work items.
   virtual WorkItem* AddMoveTreeWorkItem(const std::wstring& source_path,
                                         const std::wstring& dest_path,
-                                        const std::wstring& temp_dir);
+                                        const std::wstring& temp_dir,
+                                        MoveTreeOption duplicate_option);
 
   // Add a SetRegValueWorkItem that sets a registry value with REG_SZ type
   // at the key with specified path.

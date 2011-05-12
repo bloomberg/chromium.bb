@@ -34,12 +34,18 @@ class WorkItemList;
 class WorkItem {
  public:
   // Possible states
-  typedef enum CopyOverWriteOption {
+  enum CopyOverWriteOption {
     ALWAYS,  // Always overwrite regardless of what existed before.
     NEVER,  // Not used currently.
     IF_DIFFERENT,  // Overwrite if different. Currently only applies to file.
     IF_NOT_PRESENT,  // Copy only if file/directory do not exist already.
     NEW_NAME_IF_IN_USE  // Copy to a new path if dest is in use(only files).
+  };
+
+  // Options for the MoveTree work item.
+  enum MoveTreeOption {
+    ALWAYS_MOVE,  // Always attempt to do a move operation.
+    CHECK_DUPLICATES  // Only move if the move target is different.
   };
 
   // Abstract base class for the conditions used by ConditionWorkItemList.
@@ -97,7 +103,8 @@ class WorkItem {
   static MoveTreeWorkItem* CreateMoveTreeWorkItem(
       const FilePath& source_path,
       const FilePath& dest_path,
-      const FilePath& temp_dir);
+      const FilePath& temp_dir,
+      MoveTreeOption duplicate_option);
 
   // Create a SetRegValueWorkItem that sets a registry value with REG_SZ type
   // at the key with specified path.

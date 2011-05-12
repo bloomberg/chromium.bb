@@ -201,10 +201,12 @@ installer::InstallStatus RenameChromeExecutables(
   // Move chrome.exe to old_chrome.exe, then move new_chrome.exe to chrome.exe.
   install_list->AddMoveTreeWorkItem(chrome_exe.value(),
                                     chrome_old_exe.value(),
-                                    temp_path.path().value());
+                                    temp_path.path().value(),
+                                    WorkItem::ALWAYS_MOVE);
   install_list->AddMoveTreeWorkItem(chrome_new_exe.value(),
                                     chrome_exe.value(),
-                                    temp_path.path().value());
+                                    temp_path.path().value(),
+                                    WorkItem::ALWAYS_MOVE);
   install_list->AddDeleteTreeWorkItem(chrome_new_exe, temp_path.path());
   // old_chrome.exe is still in use in most cases, so ignore failures here.
   install_list->AddDeleteTreeWorkItem(chrome_old_exe, temp_path.path())
