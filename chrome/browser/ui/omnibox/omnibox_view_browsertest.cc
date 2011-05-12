@@ -929,9 +929,6 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
     ASSERT_TRUE(popup_model->IsOpen());
 
-    // Verify that we got something more than just what we 'typed'.
-    EXPECT_EQ(ASCIIToUTF16("bar.com/1"), omnibox_view->GetText());
-
     // Delete the inline autocomplete part.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_DELETE, 0));
     ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
