@@ -68,7 +68,7 @@ class HtmlDialogBrowserTest : public InProcessBrowserTest {
   HtmlDialogBrowserTest() {}
 
 #if defined(OS_WIN)
-  class WindowChangedObserver : public base::MessagePumpForUI::Observer {
+  class WindowChangedObserver : public MessageLoopForUI::Observer {
    public:
     WindowChangedObserver() {}
 
@@ -90,7 +90,7 @@ class HtmlDialogBrowserTest : public InProcessBrowserTest {
     }
   };
 #elif !defined(OS_MACOSX)
-  class WindowChangedObserver : public base::MessagePumpForUI::Observer {
+  class WindowChangedObserver : public MessageLoopForUI::Observer {
    public:
     WindowChangedObserver() {}
 
