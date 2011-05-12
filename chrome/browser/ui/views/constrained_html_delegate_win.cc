@@ -33,6 +33,7 @@ class ConstrainedHtmlDelegateWin : public TabContentsContainer,
     return this;
   }
   virtual void WindowClosing() {
+    html_delegate_->OnWindowClosed();
     html_delegate_->OnDialogClosed("");
   }
 

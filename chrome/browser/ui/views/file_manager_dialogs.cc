@@ -87,6 +87,14 @@ class FileManagerDialog
     owner_window_ = NULL;
   }
 
+  virtual void OnWindowClosed() {
+    // Directly closing the window selects no files.
+    const FileDialogFunction::Callback& callback =
+        FileDialogFunction::Callback::Find(tab_id_);
+    if (!callback.IsNull())
+      callback.listener()->FileSelectionCanceled(callback.params());
+  }
+
   // A callback to notify the delegate that the contents have gone
   // away. Only relevant if your dialog hosts code that calls
   // windows.close() and you've allowed that.  If the output parameter
