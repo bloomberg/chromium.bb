@@ -229,23 +229,19 @@ void ScreenRecorder::CaptureDoneCallback(
   if (!is_recording_)
     return;
 
-  // Early out if there's nothing to encode.
-  if (!capture_data || !capture_data->dirty_rects().size()) {
-    DoFinishOneRecording();
-    return;
-  }
-
   TraceContext::tracer()->PrintString("Capture Done");
-  int capture_time = static_cast<int>(
-      (base::Time::Now() - capture_start_time_).InMilliseconds());
-  capture_data->set_capture_time_ms(capture_time);
+  if (capture_data) {
+    int capture_time = static_cast<int>(
+        (base::Time::Now() - capture_start_time_).InMilliseconds());
+    capture_data->set_capture_time_ms(capture_time);
 
-  // The best way to get this value is by binding the sequence number to
-  // the callback when calling CaptureInvalidRects(). However the callback
-  // system doesn't allow this. Reading from the member variable is
-  // accurate as long as capture is synchronous as the following statement
-  // will obtain the most recent sequence number received.
-  capture_data->set_client_sequence_number(sequence_number_);
+    // The best way to get this value is by binding the sequence number to
+    // the callback when calling CaptureInvalidRects(). However the callback
+    // system doesn't allow this. Reading from the member variable is
+    // accurate as long as capture is synchronous as the following statement
+    // will obtain the most recent sequence number received.
+    capture_data->set_client_sequence_number(sequence_number_);
+  }
 
   encode_loop_->PostTask(
       FROM_HERE,
@@ -367,6 +363,14 @@ void ScreenRecorder::DoEncode(
     scoped_refptr<CaptureData> capture_data) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
   TraceContext::tracer()->PrintString("DoEncode called");
+
+  // Early out if there's nothing to encode.
+  if (!capture_data || !capture_data->dirty_rects().size()) {
+    capture_loop_->PostTask(
+        FROM_HERE,
+        NewTracedMethod(this, &ScreenRecorder::DoFinishOneRecording));
+    return;
+  }
 
   TraceContext::tracer()->PrintString("Encode start");
   encode_start_time_ = base::Time::Now();
