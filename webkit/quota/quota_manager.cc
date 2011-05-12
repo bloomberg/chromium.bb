@@ -341,8 +341,8 @@ class QuotaManager::TemporaryGlobalQuotaUpdateTask : public QuotaThreadTask {
 
 QuotaManager::QuotaManager(bool is_incognito,
                            const FilePath& profile_path,
-                           scoped_refptr<base::MessageLoopProxy> io_thread,
-                           scoped_refptr<base::MessageLoopProxy> db_thread)
+                           base::MessageLoopProxy* io_thread,
+                           base::MessageLoopProxy* db_thread)
   : is_incognito_(is_incognito),
     profile_path_(profile_path),
     proxy_(new QuotaManagerProxy(
@@ -482,6 +482,12 @@ void QuotaManager::RegisterClient(QuotaClient* client) {
   clients_.push_back(client);
 }
 
+void QuotaManager::NotifyStorageAccessed(
+    QuotaClient::ID client_id,
+    const GURL& origin, StorageType type) {
+  // TODO(michaeln): write me
+}
+
 void QuotaManager::NotifyStorageModified(
     QuotaClient::ID client_id,
     const GURL& origin, StorageType type, int64 delta) {
@@ -489,6 +495,19 @@ void QuotaManager::NotifyStorageModified(
   UsageTracker* tracker = GetUsageTracker(type);
   DCHECK(tracker);
   tracker->UpdateUsageCache(client_id, origin, delta);
+}
+
+void QuotaManager::NotifyOriginInUse(const GURL& origin) {
+  DCHECK(io_thread_->BelongsToCurrentThread());
+  origins_in_use_[origin]++;
+}
+
+void QuotaManager::NotifyOriginNoLongerInUse(const GURL& origin) {
+  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK(IsOriginInUse(origin));
+  int& count = origins_in_use_[origin];
+  if (--count == 0)
+    origins_in_use_.erase(origin);
 }
 
 UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {
@@ -525,15 +544,6 @@ void QuotaManager::DeleteOnCorrectThread() const {
 
 // QuotaManagerProxy ----------------------------------------------------------
 
-void QuotaManagerProxy::GetUsageAndQuota(
-     const GURL& origin,
-     StorageType type,
-     QuotaManager::GetUsageAndQuotaCallback* callback) {
-  DCHECK(io_thread_->BelongsToCurrentThread());
-  if (manager_)
-    manager_->GetUsageAndQuota(origin, type, callback);
-}
-
 void QuotaManagerProxy::RegisterClient(QuotaClient* client) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(FROM_HERE, NewRunnableMethod(
@@ -544,6 +554,20 @@ void QuotaManagerProxy::RegisterClient(QuotaClient* client) {
     manager_->RegisterClient(client);
   else
     client->OnQuotaManagerDestroyed();
+}
+
+void QuotaManagerProxy::NotifyStorageAccessed(
+    QuotaClient::ID client_id,
+    const GURL& origin,
+    StorageType type) {
+  if (!io_thread_->BelongsToCurrentThread()) {
+    io_thread_->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &QuotaManagerProxy::NotifyStorageAccessed,
+        client_id, origin, type));
+    return;
+  }
+  if (manager_)
+    manager_->NotifyStorageAccessed(client_id, origin, type);
 }
 
 void QuotaManagerProxy::NotifyStorageModified(
@@ -559,6 +583,33 @@ void QuotaManagerProxy::NotifyStorageModified(
   }
   if (manager_)
     manager_->NotifyStorageModified(client_id, origin, type, delta);
+}
+
+void QuotaManagerProxy::NotifyOriginInUse(
+    const GURL& origin) {
+  if (!io_thread_->BelongsToCurrentThread()) {
+    io_thread_->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &QuotaManagerProxy::NotifyOriginInUse, origin));
+    return;
+  }
+  if (manager_)
+    manager_->NotifyOriginInUse(origin);
+}
+
+void QuotaManagerProxy::NotifyOriginNoLongerInUse(
+    const GURL& origin) {
+  if (!io_thread_->BelongsToCurrentThread()) {
+    io_thread_->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &QuotaManagerProxy::NotifyOriginNoLongerInUse, origin));
+    return;
+  }
+  if (manager_)
+    manager_->NotifyOriginNoLongerInUse(origin);
+}
+
+QuotaManager* QuotaManagerProxy::quota_manager() const {
+  DCHECK(!io_thread_ || io_thread_->BelongsToCurrentThread());
+  return manager_;
 }
 
 QuotaManagerProxy::QuotaManagerProxy(

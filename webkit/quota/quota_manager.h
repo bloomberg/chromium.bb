@@ -20,6 +20,9 @@
 #include "webkit/quota/quota_task.h"
 #include "webkit/quota/quota_types.h"
 
+namespace base {
+class MessageLoopProxy;
+}
 class FilePath;
 
 namespace quota {
@@ -45,8 +48,8 @@ class QuotaManager : public QuotaTaskObserver,
 
   QuotaManager(bool is_incognito,
                const FilePath& profile_path,
-               scoped_refptr<base::MessageLoopProxy> io_thread,
-               scoped_refptr<base::MessageLoopProxy> db_thread);
+               base::MessageLoopProxy* io_thread,
+               base::MessageLoopProxy* db_thread);
 
   virtual ~QuotaManager();
 
@@ -64,6 +67,30 @@ class QuotaManager : public QuotaTaskObserver,
                     StorageType type,
                     int64 requested_size,
                     RequestQuotaCallback* callback);
+
+  // Called by clients via proxy.
+  // QuotaClients should call this method when storage is accessed.
+  // Used to maintain LRU ordering.
+  void NotifyStorageAccessed(QuotaClient::ID client_id,
+                             const GURL& origin,
+                             StorageType typea);
+
+  // Called by clients via proxy.
+  // QuotaClients must call this method whenever they have made any
+  // modifications that change the amount of data stored in their storage.
+  void NotifyStorageModified(QuotaClient::ID client_id,
+                             const GURL& origin,
+                             StorageType type,
+                             int64 delta);
+
+  // Used to avoid evicting origins with open pages.
+  // A call to NotifyOriginInUse must be balanced by a later call
+  // to NotifyOriginNoLongerInUse.
+  void NotifyOriginInUse(const GURL& origin);
+  void NotifyOriginNoLongerInUse(const GURL& origin);
+  bool IsOriginInUse(const GURL& origin) const {
+    return origins_in_use_.find(origin) != origins_in_use_.end();
+  }
 
   // Called by UI and internal modules.
   void GetTemporaryGlobalQuota(QuotaCallback* callback);
@@ -108,14 +135,6 @@ class QuotaManager : public QuotaTaskObserver,
   // The client must remain valid until OnQuotaManagerDestored is called.
   void RegisterClient(QuotaClient* client);
 
-  // Called by clients via proxy.
-  // QuotaClients must call this method whenever they have made any
-  // modifications that change the amount of data stored in their storage.
-  void NotifyStorageModified(QuotaClient::ID client_id,
-                             const GURL& origin,
-                             StorageType type,
-                             int64 delta);
-
   UsageTracker* GetUsageTracker(StorageType type) const;
 
   void DidGetTemporaryGlobalQuota(int64 quota);
@@ -146,6 +165,9 @@ class QuotaManager : public QuotaTaskObserver,
   std::map<std::string, int64> persistent_host_quota_;
   HostQuotaCallbackMap persistent_host_quota_callbacks_;
 
+  // Map from origin to count.
+  std::map<GURL, int> origins_in_use_;
+
   DISALLOW_COPY_AND_ASSIGN(QuotaManager);
 };
 
@@ -159,15 +181,22 @@ struct QuotaManagerDeleter {
 class QuotaManagerProxy
     : public base::RefCountedThreadSafe<QuotaManagerProxy> {
  public:
-  void GetUsageAndQuota(const GURL& origin,
-                        StorageType type,
-                        QuotaManager::GetUsageAndQuotaCallback* callback);
-  void RegisterClient(QuotaClient* client);
-  void NotifyStorageModified(QuotaClient::ID client_id,
-                            const GURL& origin,
-                            StorageType type,
-                            int64 delta);
- private:
+  virtual void RegisterClient(QuotaClient* client);
+  virtual void NotifyStorageAccessed(QuotaClient::ID client_id,
+                             const GURL& origin,
+                             StorageType type);
+  virtual void NotifyStorageModified(QuotaClient::ID client_id,
+                             const GURL& origin,
+                             StorageType type,
+                             int64 delta);
+  virtual void NotifyOriginInUse(const GURL& origin);
+  virtual void NotifyOriginNoLongerInUse(const GURL& origin);
+
+  // This method may only be called on the IO thread.
+  // It may return NULL if the manager has already been deleted.
+  QuotaManager* quota_manager() const;
+
+ protected:
   friend class QuotaManager;
   friend class base::RefCountedThreadSafe<QuotaManagerProxy>;
   QuotaManagerProxy(QuotaManager* manager, base::MessageLoopProxy* io_thread);

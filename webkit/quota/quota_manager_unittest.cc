@@ -292,4 +292,26 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_NukeManager) {
   EXPECT_EQ(kQuotaErrorAbort, status());
 }
 
+TEST_F(QuotaManagerTest, OriginInUse) {
+  const GURL kFooOrigin("http://foo.com/");
+  const GURL kBarOrigin("http://bar.com/");
+
+  EXPECT_FALSE(quota_manager()->IsOriginInUse(kFooOrigin));
+  quota_manager()->NotifyOriginInUse(kFooOrigin);  // count of 1
+  EXPECT_TRUE(quota_manager()->IsOriginInUse(kFooOrigin));
+  quota_manager()->NotifyOriginInUse(kFooOrigin);  // count of 2
+  EXPECT_TRUE(quota_manager()->IsOriginInUse(kFooOrigin));
+  quota_manager()->NotifyOriginNoLongerInUse(kFooOrigin);  // count of 1
+  EXPECT_TRUE(quota_manager()->IsOriginInUse(kFooOrigin));
+
+  EXPECT_FALSE(quota_manager()->IsOriginInUse(kBarOrigin));
+  quota_manager()->NotifyOriginInUse(kBarOrigin);
+  EXPECT_TRUE(quota_manager()->IsOriginInUse(kBarOrigin));
+  quota_manager()->NotifyOriginNoLongerInUse(kBarOrigin);
+  EXPECT_FALSE(quota_manager()->IsOriginInUse(kBarOrigin));
+
+  quota_manager()->NotifyOriginNoLongerInUse(kFooOrigin);
+  EXPECT_FALSE(quota_manager()->IsOriginInUse(kFooOrigin));
+}
+
 }  // namespace quota
