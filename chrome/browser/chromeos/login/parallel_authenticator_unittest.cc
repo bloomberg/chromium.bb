@@ -32,7 +32,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace file_util;
+using file_util::CloseFile;
+using file_util::CreateAndOpenTemporaryFile;
+using file_util::CreateAndOpenTemporaryFileInDir;
+using file_util::Delete;
+using file_util::WriteFile;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
 using ::testing::Invoke;
