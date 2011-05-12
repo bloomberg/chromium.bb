@@ -990,6 +990,22 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrDelete) {
                    1);
 }
 
+// Checks that a top-level page which would trigger an SSL error is simply
+// canceled. Note that this happens before checking the cert, since an https
+// URL should not be sent out.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorTopLevel) {
+  net::TestServer::HTTPSOptions https_options;
+  https_options.server_certificate =
+      net::TestServer::HTTPSOptions::CERT_MISMATCHED_NAME;
+  net::TestServer https_server(https_options,
+                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
+  PrerenderTestURL(https_url,
+                   FINAL_STATUS_HTTPS,
+                   1);
+}
+
 // Checks that an SSL error that comes from a subresource does not cancel
 // the page. Non-main-frame requests are simply cancelled if they run into
 // an SSL problem.
