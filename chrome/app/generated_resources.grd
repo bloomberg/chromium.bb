@@ -11299,6 +11299,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_BATTERY_PERCENTAGE" desc="In the power menu button, this shows what percentage of battery is left.">
         Battery: <ph name="PRECENTAGE">$1<ex>100</ex></ph>%
       </message>
+      <message name="IDS_STATUSBAR_NO_BATTERY" desc="In the power menu button, menu item label shown when there is no battery installed in the device.">
+        No battery
+      </message>
       <message name="IDS_STATUSBAR_BATTERY_TIME_UNTIL_FULL" desc="In the power menu button, this shows how much time until fully charged.">
         <ph name="HOUR">$1<ex>2</ex></ph>:<ph name="MINUTE">$2<ex>30</ex></ph> until full
       </message>

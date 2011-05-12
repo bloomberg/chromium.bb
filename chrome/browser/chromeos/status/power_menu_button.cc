@@ -42,7 +42,8 @@ PowerMenuButton::~PowerMenuButton() {
 // PowerMenuButton, ui::MenuModel implementation:
 
 int PowerMenuButton::GetItemCount() const {
-  return 2;
+  // We can't display charging information when no battery is installed.
+  return battery_is_present_ ? 2 : 1;
 }
 
 ui::MenuModel::ItemType PowerMenuButton::GetTypeAt(int index) const {
@@ -50,6 +51,9 @@ ui::MenuModel::ItemType PowerMenuButton::GetTypeAt(int index) const {
 }
 
 string16 PowerMenuButton::GetLabelAt(int index) const {
+  if (!battery_is_present_)
+    return l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_BATTERY);
+
   // The first item shows the percentage of battery left.
   if (index == 0) {
     return l10n_util::GetStringFUTF16(IDS_STATUSBAR_BATTERY_PERCENTAGE,
