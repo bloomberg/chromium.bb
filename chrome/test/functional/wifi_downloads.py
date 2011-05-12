@@ -85,7 +85,7 @@ class WifiDownloadsTest(chromeos_network.PyNetworkUITest):
     # Make a copy of the download directory now to work around segfault
     downloads_dir = self.GetDownloadDirectory().value()
     self.DownloadAndWaitForStart(download_url)
-    self.WaitForAllDownloadsToComplete()
+    self.WaitForAllDownloadsToComplete(timeout=self.large_test_timeout_ms())
     end = time.time()
     logging.info('Download took %2.2f seconds to complete' % (end - start))
     downloaded_files = os.listdir(downloads_dir)
