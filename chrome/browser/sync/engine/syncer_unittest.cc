@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
@@ -2188,7 +2189,7 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo) {
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     for (uint32 i = 0; i < items_to_commit; i++) {
-      string nameutf8 = StringPrintf("%d", i);
+      string nameutf8 = base::StringPrintf("%d", i);
       string name(nameutf8.begin(), nameutf8.end());
       MutableEntry e(&trans, CREATE, trans.root_id(), name);
       e.Put(IS_UNSYNCED, true);

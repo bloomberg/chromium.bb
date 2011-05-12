@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/ref_counted.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "remoting/jingle_glue/iq_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +20,7 @@ TEST(IqRequestTest, MakeIqStanza) {
   const char* kTo = "user@domain.com";
 
   std::string expected_xml_string =
-      StringPrintf(
+      base::StringPrintf(
           "<cli:iq type=\"%s\" to=\"%s\" id=\"%s\" "
           "xmlns:cli=\"jabber:client\">"
           "<%s:%s xmlns:%s=\"%s\"/>"

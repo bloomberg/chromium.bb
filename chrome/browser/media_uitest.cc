@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -35,10 +36,8 @@ class MediaTest : public UITest {
     test_file = test_file.AppendASCII("media/player.html");
 
     GURL player_gurl = net::FilePathToFileURL(test_file);
-    std::string url = StringPrintf("%s?%s=%s",
-                                   player_gurl.spec().c_str(),
-                                   tag,
-                                   media_file);
+    std::string url = base::StringPrintf(
+        "%s?%s=%s", player_gurl.spec().c_str(), tag, media_file);
 
     NavigateToURL(GURL(url));
 

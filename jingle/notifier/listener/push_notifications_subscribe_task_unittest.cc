@@ -5,7 +5,7 @@
 #include "jingle/notifier/listener/push_notifications_subscribe_task.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "talk/xmpp/jid.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,7 +45,7 @@ TEST_F(PushNotificationsSubscribeTaskTest, MakeSubscriptionMessage) {
       PushNotificationsSubscribeTask::MakeSubscriptionMessage(
           subscriptions, jid_, task_id_));
   std::string expected_xml_string =
-      StringPrintf(
+      base::StringPrintf(
           "<cli:iq type=\"set\" to=\"%s\" id=\"%s\" "
                   "xmlns:cli=\"jabber:client\">"
             "<subscribe xmlns=\"google:push\">"

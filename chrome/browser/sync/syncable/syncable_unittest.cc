@@ -25,7 +25,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_temp_dir.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/syncproto.h"
@@ -1645,8 +1645,8 @@ class StressTransactionsDelegate : public base::PlatformThread::Delegate {
         CHECK(1 == CountEntriesWithName(&trans, trans.root_id(), path_name));
         base::PlatformThread::Sleep(rand() % 10);
       } else {
-        std::string unique_name = StringPrintf("%d.%d", thread_number_,
-                                               entry_count++);
+        std::string unique_name =
+            base::StringPrintf("%d.%d", thread_number_, entry_count++);
         path_name.assign(unique_name.begin(), unique_name.end());
         WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
         MutableEntry e(&trans, CREATE, trans.root_id(), path_name);

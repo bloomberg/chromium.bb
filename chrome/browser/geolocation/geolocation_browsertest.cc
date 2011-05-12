@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/compiler_specific.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/dom_operation_notification_details.h"
@@ -46,7 +46,7 @@ class IFrameLoader : public NotificationObserver {
                    Source<NavigationController>(controller));
     registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
                    NotificationService::AllSources());
-    std::string script = StringPrintf(
+    std::string script = base::StringPrintf(
         "window.domAutomationController.setAutomationId(0);"
         "window.domAutomationController.send(addIFrame(%d, \"%s\"));",
         iframe_id,
@@ -55,10 +55,10 @@ class IFrameLoader : public NotificationObserver {
         ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(script));
     ui_test_utils::RunMessageLoop();
 
-    EXPECT_EQ(StringPrintf("\"%d\"", iframe_id), javascript_response_);
+    EXPECT_EQ(base::StringPrintf("\"%d\"", iframe_id), javascript_response_);
     registrar_.RemoveAll();
     // Now that we loaded the iframe, let's fetch its src.
-    script = StringPrintf(
+    script = base::StringPrintf(
         "window.domAutomationController.send(getIFrameSrc(%d))", iframe_id);
     std::string iframe_src;
     EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
@@ -342,7 +342,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   void CheckStringValueFromJavascriptForTab(
       const std::string& expected, const std::string& function,
       TabContents* tab_contents) {
-    std::string script = StringPrintf(
+    std::string script = base::StringPrintf(
         "window.domAutomationController.send(%s)", function.c_str());
     std::string result;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
@@ -602,7 +602,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   // First, set the JavaScript to navigate when it receives |final_position|.
   const Geoposition final_position = GeopositionFromLatLong(3.17, 4.23);
-  std::string script = StringPrintf(
+  std::string script = base::StringPrintf(
       "window.domAutomationController.send(geoSetFinalPosition(%f, %f))",
       final_position.latitude, final_position.longitude);
   std::string js_result;

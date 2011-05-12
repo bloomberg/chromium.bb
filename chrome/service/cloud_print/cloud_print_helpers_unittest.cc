@@ -4,7 +4,7 @@
 
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -15,50 +15,51 @@ void CheckURLs(const GURL& server_base_url) {
   if (expected_url_base[expected_url_base.length() - 1] != '/') {
     expected_url_base += "/";
   }
-  std::string expected_url = StringPrintf("%sregister",
-                                          expected_url_base.c_str());
+  std::string expected_url = base::StringPrintf("%sregister",
+                                                expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
   url = CloudPrintHelpers::GetUrlForPrinterUpdate(server_base_url,
                                                   "printeridfoo");
-  expected_url = StringPrintf("%supdate?printerid=printeridfoo",
-                              expected_url_base.c_str());
+  expected_url = base::StringPrintf("%supdate?printerid=printeridfoo",
+                                    expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
   url = CloudPrintHelpers::GetUrlForPrinterDelete(server_base_url,
                                                   "printeridbar");
-  expected_url = StringPrintf("%sdelete?printerid=printeridbar",
-                              expected_url_base.c_str());
+  expected_url = base::StringPrintf("%sdelete?printerid=printeridbar",
+                                    expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
   url = CloudPrintHelpers::GetUrlForPrinterList(server_base_url, "demoproxy");
-  expected_url = StringPrintf("%slist?proxy=demoproxy",
-                              expected_url_base.c_str());
+  expected_url = base::StringPrintf("%slist?proxy=demoproxy",
+                                    expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
   url = CloudPrintHelpers::GetUrlForJobFetch(server_base_url,
                                              "myprinter",
                                              "nogoodreason");
-  expected_url = StringPrintf("%sfetch?printerid=myprinter&deb=nogoodreason",
-                              expected_url_base.c_str());
+  expected_url = base::StringPrintf(
+      "%sfetch?printerid=myprinter&deb=nogoodreason",
+      expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
   url = CloudPrintHelpers::GetUrlForJobStatusUpdate(
       server_base_url, "12345678", cloud_print::PRINT_JOB_STATUS_IN_PROGRESS);
-  expected_url = StringPrintf("%scontrol?jobid=12345678&status=in_progress",
-                              expected_url_base.c_str());
+  expected_url = base::StringPrintf(
+      "%scontrol?jobid=12345678&status=in_progress", expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
   url = CloudPrintHelpers::GetUrlForJobStatusUpdate(
       server_base_url, "12345678", cloud_print::PRINT_JOB_STATUS_ERROR);
-  expected_url = StringPrintf("%scontrol?jobid=12345678&status=error",
-                              expected_url_base.c_str());
+  expected_url = base::StringPrintf("%scontrol?jobid=12345678&status=error",
+                                    expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
   url = CloudPrintHelpers::GetUrlForJobStatusUpdate(
       server_base_url, "12345678", cloud_print::PRINT_JOB_STATUS_COMPLETED);
-  expected_url = StringPrintf("%scontrol?jobid=12345678&status=done",
-                              expected_url_base.c_str());
+  expected_url = base::StringPrintf("%scontrol?jobid=12345678&status=done",
+                                    expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
   cloud_print::PrintJobDetails details;
@@ -69,22 +70,23 @@ void CheckURLs(const GURL& server_base_url) {
   details.pages_printed = 47;
   url = CloudPrintHelpers::GetUrlForJobStatusUpdate(server_base_url,
                                                     "87654321", details);
-  expected_url = StringPrintf("%scontrol?jobid=87654321&status=in_progress&"
-                              "code=2&message=Out%%20of%%20Paper&numpages=345&"
-                              "pagesprinted=47", expected_url_base.c_str());
+  expected_url = base::StringPrintf(
+      "%scontrol?jobid=87654321&status=in_progress&code=2"
+      "&message=Out%%20of%%20Paper&numpages=345&pagesprinted=47",
+      expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
   url = CloudPrintHelpers::GetUrlForUserMessage(server_base_url,
                                                 "blahmessageid");
-  expected_url = StringPrintf("%suser/message?code=blahmessageid",
-                              expected_url_base.c_str());
+  expected_url = base::StringPrintf("%suser/message?code=blahmessageid",
+                                    expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
   url = CloudPrintHelpers::GetUrlForGetAuthCode(
       server_base_url,
       "fooclientid.apps.googleusercontent.com",
       "test_proxy");
-  expected_url = StringPrintf(
+  expected_url = base::StringPrintf(
       "%screaterobot?oauth_client_id=fooclientid.apps.googleusercontent.com&"
       "proxy=test_proxy", expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());

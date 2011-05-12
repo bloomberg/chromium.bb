@@ -13,7 +13,7 @@
 
 #include "base/eintr_wrapper.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -187,7 +187,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessFailure) {
 TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessNoSuicide) {
   // Replace lockfile with one containing our own pid.
   EXPECT_EQ(0, unlink(lock_path_.value().c_str()));
-  std::string symlink_content = StringPrintf(
+  std::string symlink_content = base::StringPrintf(
       "%s%c%u",
       net::GetHostName().c_str(),
       '-',

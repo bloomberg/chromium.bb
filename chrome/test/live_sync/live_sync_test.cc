@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task.h"
@@ -265,7 +266,7 @@ bool LiveSyncTest::SetupClients() {
   // Create the required number of sync profiles and clients.
   for (int i = 0; i < num_clients_; ++i) {
     profiles_.push_back(MakeProfile(
-        StringPrintf(FILE_PATH_LITERAL("Profile%d"), i)));
+        base::StringPrintf(FILE_PATH_LITERAL("Profile%d"), i)));
     EXPECT_FALSE(GetProfile(i) == NULL) << "GetProfile(" << i << ") failed.";
     clients_.push_back(
         new ProfileSyncServiceHarness(GetProfile(i), username_, password_, i));

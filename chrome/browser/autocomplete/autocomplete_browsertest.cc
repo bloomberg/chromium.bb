@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/format_macros.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"

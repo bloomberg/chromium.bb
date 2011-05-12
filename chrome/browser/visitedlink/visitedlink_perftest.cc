@@ -10,7 +10,7 @@
 #include "base/file_util.h"
 #include "base/perftimer.h"
 #include "base/shared_memory.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/test/test_file_util.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +27,7 @@ const char unadded_prefix[] = "http://www.google.org/stuff/something/foo?session
 
 // Returns a URL with the given prefix and index
 GURL TestURL(const char* prefix, int i) {
-  return GURL(StringPrintf("%s%d", prefix, i));
+  return GURL(base::StringPrintf("%s%d", prefix, i));
 }
 
 // We have no slaves, so all methods on this listener are a no-ops.

@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "base/format_macros.h"
+#include "base/stringprintf.h"
 #include "base/string_split.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -113,8 +113,8 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    SCOPED_TRACE(StringPrintf("kTestCases[%" PRIuS "]: language=%s", i,
-                              kTestCases[i].language));
+    SCOPED_TRACE(base::StringPrintf("kTestCases[%" PRIuS "]: language=%s", i,
+                                    kTestCases[i].language));
 
     SpellcheckCharAttribute attributes;
     attributes.SetDefaultLanguage(kTestCases[i].language);

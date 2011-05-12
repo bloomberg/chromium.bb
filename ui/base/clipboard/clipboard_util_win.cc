@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_handle.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_hglobal.h"
@@ -466,8 +467,11 @@ std::string ClipboardUtil::HtmlToCFHtml(const std::string& html,
   size_t end_fragment_offset = start_fragment_offset + html.length();
   size_t end_html_offset = end_fragment_offset + strlen(end_markup);
 
-  std::string result = StringPrintf(header, start_html_offset,
-      end_html_offset, start_fragment_offset, end_fragment_offset);
+  std::string result = base::StringPrintf(header,
+                                          start_html_offset,
+                                          end_html_offset,
+                                          start_fragment_offset,
+                                          end_fragment_offset);
   if (!base_url.empty()) {
     result.append(source_url_prefix);
     result.append(base_url);

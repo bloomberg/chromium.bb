@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -85,8 +85,8 @@ class DevToolsSanityTest : public InProcessBrowserTest {
           ui_test_utils::ExecuteJavaScriptAndExtractString(
               client_contents_->render_view_host(),
               L"",
-              UTF8ToWide(StringPrintf("uiTests.runTest('%s')",
-                                      test_name.c_str())),
+              UTF8ToWide(base::StringPrintf("uiTests.runTest('%s')",
+                                            test_name.c_str())),
               &result));
       EXPECT_EQ("[OK]", result);
     } else {

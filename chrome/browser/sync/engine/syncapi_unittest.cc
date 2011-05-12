@@ -13,8 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
@@ -1077,18 +1077,18 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   size_t i;
   for (i = 0; i < batch_size; ++i) {
     MakeNodeWithParent(sync_manager_.GetUserShare(), syncable::BOOKMARKS,
-                       StringPrintf("%"PRIuS"", i), folder);
+                       base::StringPrintf("%"PRIuS"", i), folder);
   }
   // Next batch_size nodes are a different type and on their own.
   for (; i < 2*batch_size; ++i) {
     MakeNodeWithParent(sync_manager_.GetUserShare(), syncable::SESSIONS,
-                       StringPrintf("%"PRIuS"", i),
+                       base::StringPrintf("%"PRIuS"", i),
                        GetIdForDataType(syncable::SESSIONS));
   }
   // Last batch_size nodes are a third type that will not need encryption.
   for (; i < 3*batch_size; ++i) {
     MakeNodeWithParent(sync_manager_.GetUserShare(), syncable::THEMES,
-                       StringPrintf("%"PRIuS"", i),
+                       base::StringPrintf("%"PRIuS"", i),
                        GetIdForDataType(syncable::THEMES));
   }
 

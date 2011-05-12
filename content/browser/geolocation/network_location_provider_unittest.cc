@@ -4,6 +4,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
@@ -172,7 +173,8 @@ class GeolocationNetworkProviderTest : public testing::Test {
     WifiData data;
     for (int i = 0; i < ap_count; ++i) {
       AccessPointData ap;
-      ap.mac_address = ASCIIToUTF16(StringPrintf("%02d-34-56-78-54-32", i));
+      ap.mac_address =
+          ASCIIToUTF16(base::StringPrintf("%02d-34-56-78-54-32", i));
       ap.radio_signal_strength = i;
       ap.channel = IndexToChannal(i);
       ap.signal_to_noise = i + 42;
@@ -189,7 +191,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
     for (int i = 0; i < router_count; ++i) {
       RouterData router;
       router.mac_address =
-          ASCIIToUTF16(StringPrintf("%02d-34-56-78-54-32", i));
+          ASCIIToUTF16(base::StringPrintf("%02d-34-56-78-54-32", i));
       data.router_data.insert(router);
     }
     return data;

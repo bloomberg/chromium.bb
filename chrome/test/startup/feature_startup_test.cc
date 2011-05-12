@@ -5,7 +5,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/perftimer.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_paths.h"

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/test/live_sync/live_passwords_sync_test.h"
 
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
@@ -105,9 +105,10 @@ PasswordStore* LivePasswordsSyncTest::GetVerifierPasswordStore() {
 PasswordForm LivePasswordsSyncTest::CreateTestPasswordForm(int index) {
   PasswordForm form;
   form.signon_realm = kFakeSignonRealm;
-  form.origin = GURL(StringPrintf("http://fake-domain%d.google.com/", index));
-  form.username_value = ASCIIToUTF16(StringPrintf("username%d", index));
-  form.password_value = ASCIIToUTF16(StringPrintf("password%d", index));
+  form.origin =
+      GURL(base::StringPrintf("http://fake-domain%d.google.com/", index));
+  form.username_value = ASCIIToUTF16(base::StringPrintf("username%d", index));
+  form.password_value = ASCIIToUTF16(base::StringPrintf("password%d", index));
   return form;
 }
 

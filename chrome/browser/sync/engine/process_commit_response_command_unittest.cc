@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/engine/process_commit_response_command.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
@@ -297,8 +297,8 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   for (; i < batch_size; ++i) {
     // Alternate between new and old child items, just for kicks.
     Id id = (i % 4 < 2) ? id_factory_.NewLocalId() : id_factory_.NewServerId();
-    CreateUnprocessedCommitResult(id, folder_id, StringPrintf("Item %d", i),
-                                  syncable::BOOKMARKS);
+    CreateUnprocessedCommitResult(
+        id, folder_id, base::StringPrintf("Item %d", i), syncable::BOOKMARKS);
   }
   // The second 25 children will be unsynced items but NOT part of the commit
   // batch.  When the ID of the parent folder changes during the commit,
@@ -307,8 +307,8 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   for (; i < 2*batch_size; ++i) {
     // Alternate between new and old child items, just for kicks.
     Id id = (i % 4 < 2) ? id_factory_.NewLocalId() : id_factory_.NewServerId();
-    CreateUnsyncedItem(id, folder_id, StringPrintf("Item %d", i), false,
-                       syncable::BOOKMARKS, NULL);
+    CreateUnsyncedItem(id, folder_id, base::StringPrintf("Item %d", i),
+                       false, syncable::BOOKMARKS, NULL);
   }
 
   // Process the commit response for the parent folder and the first
@@ -343,7 +343,8 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
     SCOPED_TRACE(::testing::Message("Examining item #") << child_count);
     Entry c(&trans, syncable::GET_BY_ID, cid);
     DCHECK(c.good());
-    ASSERT_EQ(StringPrintf("Item %d", child_count), c.Get(NON_UNIQUE_NAME));
+    ASSERT_EQ(base::StringPrintf("Item %d", child_count),
+              c.Get(NON_UNIQUE_NAME));
     ASSERT_EQ(new_fid, c.Get(syncable::PARENT_ID));
     if (child_count < batch_size) {
       ASSERT_FALSE(c.Get(IS_UNSYNCED)) << "Item should be committed";

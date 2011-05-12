@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/format_macros.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/sync/engine/apply_updates_command.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
@@ -408,13 +408,13 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   size_t batch_s = 5;
   for (i = 0; i < batch_s; ++i) {
     CreateUnsyncedItem(id_factory_.NewLocalId(), folder_id,
-                       StringPrintf("Item %"PRIuS"", i), false,
+                       base::StringPrintf("Item %"PRIuS"", i), false,
                        syncable::BOOKMARKS, NULL);
   }
   // Next five items are children of the root.
   for (; i < 2*batch_s; ++i) {
     CreateUnsyncedItem(id_factory_.NewLocalId(), id_factory_.root(),
-                       StringPrintf("Item %"PRIuS"", i), false,
+                       base::StringPrintf("Item %"PRIuS"", i), false,
                        syncable::BOOKMARKS, NULL);
   }
 
@@ -504,13 +504,13 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   size_t batch_s = 5;
   for (i = 0; i < batch_s; ++i) {
     CreateUnsyncedItem(id_factory_.NewLocalId(), folder_id,
-                       StringPrintf("Item %"PRIuS"", i), false,
+                       base::StringPrintf("Item %"PRIuS"", i), false,
                        syncable::BOOKMARKS, NULL);
   }
   // Next five items are children of the root.
   for (; i < 2*batch_s; ++i) {
     CreateUnsyncedItem(id_factory_.NewLocalId(), id_factory_.root(),
-                       StringPrintf("Item %"PRIuS"", i), false,
+                       base::StringPrintf("Item %"PRIuS"", i), false,
                        syncable::BOOKMARKS, NULL);
   }
 

@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "base/stringprintf.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
@@ -508,7 +509,7 @@ void MockConnectionManager::ProcessCommit(ClientToServerMessage* csm,
     if (entry.has_version() && 0 != entry.version()) {
       er->set_id_string(id);  // Allows verification.
     } else {
-      string new_id = StringPrintf("mock_server:%d", next_new_id_++);
+      string new_id = base::StringPrintf("mock_server:%d", next_new_id_++);
       changed_ids[id] = new_id;
       er->set_id_string(new_id);
     }

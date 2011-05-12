@@ -4,7 +4,7 @@
 
 #include "base/message_loop.h"
 #include "base/string16.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "printing/page_overlays.h"
 #include "printing/print_settings.h"
@@ -66,14 +66,14 @@ TEST_F(PageOverlaysTest, StringConversion) {
   std::wstring input;
   std::wstring out;
   for (size_t i = 0; i < arraysize(kOverlayKeys); ++i) {
-    input = StringPrintf(L"foo%lsbar", kOverlayKeys[i].key);
+    input = base::StringPrintf(L"foo%lsbar", kOverlayKeys[i].key);
     out = printing::PageOverlays::ReplaceVariables(input, *doc.get(),
                                                    *page.get());
     EXPECT_FALSE(out.empty());
     if (wcslen(kOverlayKeys[i].expected) == 0)
       continue;
-    std::wstring expected = StringPrintf(L"foo%lsbar",
-                                         kOverlayKeys[i].expected);
+    std::wstring expected =
+        base::StringPrintf(L"foo%lsbar", kOverlayKeys[i].expected);
     EXPECT_EQ(expected, out) << kOverlayKeys[i].key;
   }
 

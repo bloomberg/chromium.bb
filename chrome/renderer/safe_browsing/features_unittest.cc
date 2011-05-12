@@ -5,7 +5,7 @@
 #include "chrome/renderer/safe_browsing/features.h"
 
 #include "base/format_macros.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,13 +14,15 @@ namespace safe_browsing {
 TEST(PhishingFeaturesTest, TooManyFeatures) {
   FeatureMap features;
   for (size_t i = 0; i < FeatureMap::kMaxFeatureMapSize; ++i) {
-    EXPECT_TRUE(features.AddBooleanFeature(StringPrintf("Feature%" PRIuS, i)));
+    EXPECT_TRUE(features.AddBooleanFeature(
+        base::StringPrintf("Feature%" PRIuS, i)));
   }
   EXPECT_EQ(FeatureMap::kMaxFeatureMapSize, features.features().size());
 
   // Attempting to add more features should fail.
   for (size_t i = 0; i < 3; ++i) {
-    EXPECT_FALSE(features.AddBooleanFeature(StringPrintf("Extra%" PRIuS, i)));
+    EXPECT_FALSE(features.AddBooleanFeature(
+        base::StringPrintf("Extra%" PRIuS, i)));
   }
   EXPECT_EQ(FeatureMap::kMaxFeatureMapSize, features.features().size());
 }

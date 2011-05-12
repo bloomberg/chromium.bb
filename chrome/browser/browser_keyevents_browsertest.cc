@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/dom_operation_notification_details.h"
@@ -144,7 +144,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
         browser()->GetTabContentsAt(tab_index)->render_view_host(),
         L"",
-        StringPrintf(kSuppressEventJS, type, GetBoolString(!suppress)),
+        base::StringPrintf(kSuppressEventJS, type, GetBoolString(!suppress)),
         &actual));
     ASSERT_EQ(!suppress, actual);
   }
@@ -181,7 +181,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
       std::string actual;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
           browser()->GetTabContentsAt(tab_index)->render_view_host(),
-          L"", StringPrintf(kGetResultJS, i), &actual));
+          L"", base::StringPrintf(kGetResultJS, i), &actual));
 
       // If more events were received than expected, then the additional events
       // must be keyup events.
@@ -207,7 +207,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
         browser()->GetTabContentsAt(tab_index)->render_view_host(),
         L"",
-        StringPrintf(kSetFocusedElementJS, focused),
+        base::StringPrintf(kSetFocusedElementJS, focused),
         &actual));
     ASSERT_TRUE(actual);
   }
@@ -219,7 +219,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
         browser()->GetTabContentsAt(tab_index)->render_view_host(),
         L"",
-        StringPrintf(kGetTextBoxValueJS, id),
+        base::StringPrintf(kGetTextBoxValueJS, id),
         &actual));
     ASSERT_EQ(WideToUTF8(value), actual);
   }
@@ -231,7 +231,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
         browser()->GetTabContentsAt(tab_index)->render_view_host(),
         L"",
-        StringPrintf(kSetTextBoxValueJS, id, value),
+        base::StringPrintf(kSetTextBoxValueJS, id, value),
         &actual));
     ASSERT_EQ(WideToUTF8(value), actual);
   }
@@ -241,7 +241,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     bool actual;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
         browser()->GetTabContentsAt(tab_index)->render_view_host(),
-        L"", StringPrintf(kStartTestJS, result_length), &actual));
+        L"", base::StringPrintf(kStartTestJS, result_length), &actual));
     ASSERT_TRUE(actual);
   }
 
@@ -270,7 +270,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
   }
 
   std::string GetTestDataDescription(const KeyEventTestData& data) {
-    std::string desc = StringPrintf(
+    std::string desc = base::StringPrintf(
         " VKEY:0x%02x, ctrl:%d, shift:%d, alt:%d, command:%d\n"
         " Suppress: keydown:%d, keypress:%d, keyup:%d, textInput:%d\n"
         " Expected results(%d):\n",

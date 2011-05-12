@@ -8,8 +8,8 @@
 #include "base/format_macros.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -45,6 +45,7 @@
 #if defined(OS_WIN)
 #include <Psapi.h>
 #include <windows.h>
+#include "base/string_util.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -465,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
 
   // Test forward focus traversal.
   for (int i = 0; i < 3; ++i) {
-    SCOPED_TRACE(StringPrintf("outer loop: %d", i));
+    SCOPED_TRACE(base::StringPrintf("outer loop: %d", i));
     // Location bar should be focused.
     ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
@@ -475,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
 
     // Now let's press tab to move the focus.
     for (size_t j = 0; j < arraysize(kExpElementIDs); ++j) {
-      SCOPED_TRACE(StringPrintf("inner loop %" PRIuS, j));
+      SCOPED_TRACE(base::StringPrintf("inner loop %" PRIuS, j));
       // Let's make sure the focus is on the expected element in the page.
       std::string actual;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
@@ -515,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
 
   // Now let's try reverse focus traversal.
   for (int i = 0; i < 3; ++i) {
-    SCOPED_TRACE(StringPrintf("outer loop: %d", i));
+    SCOPED_TRACE(base::StringPrintf("outer loop: %d", i));
     // Location bar should be focused.
     ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
@@ -525,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
 
     // Now let's press shift-tab to move the focus in reverse.
     for (size_t j = 0; j < arraysize(kExpElementIDs); ++j) {
-      SCOPED_TRACE(StringPrintf("inner loop: %" PRIuS, j));
+      SCOPED_TRACE(base::StringPrintf("inner loop: %" PRIuS, j));
       const char* next_element =
           kExpElementIDs[arraysize(kExpElementIDs) - 1 - j];
 

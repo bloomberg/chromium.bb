@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/string_piece.h"
 #include "chrome/test/v8_unit_test.h"
 
 V8UnitTest::V8UnitTest() {}
@@ -51,15 +52,15 @@ std::string V8UnitTest::ExceptionToString(v8::TryCatch* try_catch) {
   v8::String::Utf8Value exception(try_catch->Exception());
   v8::Handle<v8::Message> message = try_catch->Message();
   if (message.IsEmpty()) {
-    str.append(StringPrintf("%s\n", *exception));
+    str.append(base::StringPrintf("%s\n", *exception));
   } else {
     v8::String::Utf8Value filename(message->GetScriptResourceName());
     int linenum = message->GetLineNumber();
     int colnum = message->GetStartColumn();
-    str.append(StringPrintf("%s:%i:%i %s\n", *filename, linenum, colnum,
-                            *exception));
+    str.append(base::StringPrintf(
+        "%s:%i:%i %s\n", *filename, linenum, colnum, *exception));
     v8::String::Utf8Value sourceline(message->GetSourceLine());
-    str.append(StringPrintf("%s\n", *sourceline));
+    str.append(base::StringPrintf("%s\n", *sourceline));
   }
   return str;
 }

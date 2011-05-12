@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/common/pref_names.h"
@@ -14,7 +14,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientLivePreferencesSyncTest, Sanity) {
   for (int i = 0; i < num_clients(); ++i) {
     ListPrefUpdate update(GetPrefs(i), prefs::kURLsToRestoreOnStartup);
     ListValue* client_urls = update.Get();
-    client_urls->Append(Value::CreateStringValue(StringPrintf(
+    client_urls->Append(Value::CreateStringValue(base::StringPrintf(
         "http://www.google.com/%d", i)));
   }
   for (int i = 0; i < num_clients(); ++i) {

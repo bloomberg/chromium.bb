@@ -18,6 +18,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/sys_string_conversions.h"
@@ -602,7 +603,8 @@ static string16 GetStringF(int message_id,
     for (size_t i = 0; i < 9; ++i) {
       bool placeholder_should_exist = replacements.size() > i;
 
-      std::string placeholder = StringPrintf("$%d", static_cast<int>(i + 1));
+      std::string placeholder =
+          base::StringPrintf("$%d", static_cast<int>(i + 1));
       size_t pos = utf8_string.find(placeholder.c_str());
       if (placeholder_should_exist) {
         DCHECK_NE(std::string::npos, pos) <<

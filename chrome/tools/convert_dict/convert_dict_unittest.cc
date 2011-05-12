@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/i18n/icu_string_conversions.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/tools/convert_dict/aff_reader.h"
 #include "chrome/tools/convert_dict/dic_reader.h"
@@ -35,8 +35,8 @@ bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
   static const int kBufSize = 128;
   char buf[kBufSize];
   for (size_t i = 0; i < org_words.size(); i++) {
-    SCOPED_TRACE(StringPrintf("org_words[%" PRIuS "]: %s",
-                              i, org_words[i].first.c_str()));
+    SCOPED_TRACE(base::StringPrintf(
+        "org_words[%" PRIuS "]: %s", i, org_words[i].first.c_str()));
 
     int affix_matches = iter.Advance(buf, kBufSize, affix_ids);
     EXPECT_NE(0, affix_matches);
@@ -64,9 +64,9 @@ bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
 void RunDictionaryTest(const char* codepage,
                        const std::map<string16, bool>& word_list) {
   // Create an affix data and a dictionary data.
-  std::string aff_data(StringPrintf("SET %s\n", codepage));
+  std::string aff_data(base::StringPrintf("SET %s\n", codepage));
 
-  std::string dic_data(StringPrintf("%" PRIuS "\n", word_list.size()));
+  std::string dic_data(base::StringPrintf("%" PRIuS "\n", word_list.size()));
   for (std::map<string16, bool>::const_iterator it = word_list.begin();
        it != word_list.end(); ++it) {
     std::string encoded_word;
@@ -99,8 +99,8 @@ void RunDictionaryTest(const char* codepage,
     // Verify this DicReader includes all the input words.
     EXPECT_EQ(word_list.size(), dic_reader.words().size());
     for (size_t i = 0; i < dic_reader.words().size(); ++i) {
-      SCOPED_TRACE(StringPrintf("dic_reader.words()[%" PRIuS "]: %s",
-                                i, dic_reader.words()[i].first.c_str()));
+      SCOPED_TRACE(base::StringPrintf("dic_reader.words()[%" PRIuS "]: %s",
+                                      i, dic_reader.words()[i].first.c_str()));
       string16 word(UTF8ToUTF16(dic_reader.words()[i].first));
       EXPECT_TRUE(word_list.find(word) != word_list.end());
     }
@@ -121,7 +121,7 @@ void RunDictionaryTest(const char* codepage,
     // Trim the end of this BDICT and verify our verifier tells these trimmed
     // BDICTs are corrupted.
     for (size_t i = 1; i < bdict_data.size(); ++i) {
-      SCOPED_TRACE(StringPrintf("i = %" PRIuS, i));
+      SCOPED_TRACE(base::StringPrintf("i = %" PRIuS, i));
       EXPECT_FALSE(hunspell::BDict::Verify(bdict_data.data(),
                                            bdict_data.size() - i));
     }

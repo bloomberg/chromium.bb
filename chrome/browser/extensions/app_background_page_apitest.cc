@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/background_contents_service_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -49,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, Basic) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
-  std::string app_manifest = StringPrintf(
+  std::string app_manifest = base::StringPrintf(
       "{"
       "  \"name\": \"App\","
       "  \"version\": \"0.1\","
@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_LacksPermission) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
-  std::string app_manifest = StringPrintf(
+  std::string app_manifest = base::StringPrintf(
       "{"
       "  \"name\": \"App\","
       "  \"version\": \"0.1\","
@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
-  std::string app_manifest = StringPrintf(
+  std::string app_manifest = base::StringPrintf(
       "{"
       "  \"name\": \"App\","
       "  \"version\": \"0.1\","
