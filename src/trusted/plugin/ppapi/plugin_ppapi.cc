@@ -58,6 +58,11 @@ const char* const kTypeAttribute = "type";
 // JSON matching ISAs with .nexe URLs).
 // TODO(sehr,elijahtaylor): implement data URI support.
 const char* const kSrcManifestAttribute = "src";
+// The "nacl" attribute of the <embed> tag.  We use the value of this attribute
+// to find the manifest file when NaCl is registered as a plug-in for another
+// MIME type because the "src" attribute is used to supply us with the resource
+// of that MIME type that we're supposed to display.
+const char* const kNaClManifestAttribute = "nacl";
 // This is a pretty arbitrary limit on the byte size of the NaCl manfest file.
 // Note that the resulting string object has to have at least one byte extra
 // for the null termination character.
@@ -454,15 +459,18 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       std::transform(mime_type_.begin(), mime_type_.end(), mime_type_.begin(),
                      tolower);
     }
-    const char* src_attr = LookupArgument(kSrcManifestAttribute);
-    PLUGIN_PRINTF(("PluginPpapi::Init (src_attr=%s)\n", src_attr));
-    if (src_attr != NULL) {
-      // Issue a GET for the "src" attribute.  The value of the attribute
-      // can be a URI or a URL pointing to the manifest file. The manifest
-      // file will be parsed to determine the nexe URL.
+
+    const char* manifest_url = LookupArgument(kSrcManifestAttribute);
+    if (!mime_type_.empty() && mime_type_ != kNaClMIMEType)
+        manifest_url = LookupArgument(kNaClManifestAttribute);
+
+    PLUGIN_PRINTF(("PluginPpapi::Init (manifest_url=%s)\n", manifest_url));
+    if (manifest_url != NULL) {
+      // Issue a GET for the manifest_url.  The manifest file will be parsed to
+      // determine the nexe URL.
       // TODO(sehr,elijahtaylor): implement data URI support.
       // Sets src property to full manifest URL.
-      RequestNaClManifest(src_attr);
+      RequestNaClManifest(manifest_url);
     }
   }
 
