@@ -27,13 +27,15 @@ cr.define('options', function() {
   const SUBPAGE_SHEET_COUNT = 2;
 
   /**
-   * Main level option pages.
+   * Main level option pages. Maps lower-case page names to the respective page
+   * object.
    * @protected
    */
   OptionsPage.registeredPages = {};
 
   /**
-   * Pages which are meant to behave like modal dialogs.
+   * Pages which are meant to behave like modal dialogs. Maps lower-case overlay
+   * names to the respective overlay object.
    * @protected
    */
   OptionsPage.registeredOverlayPages = {};
@@ -86,7 +88,7 @@ cr.define('options', function() {
     }
 
     // Find the target page.
-    var targetPage = this.registeredPages[pageName];
+    var targetPage = this.registeredPages[pageName.toLowerCase()];
     if (!targetPage || !targetPage.canShowPage()) {
       // If it's not a page, try it as an overlay.
       if (!targetPage && this.showOverlay_(pageName, rootPage)) {
@@ -198,7 +200,7 @@ cr.define('options', function() {
    * @return {boolean} whether we showed an overlay.
    */
   OptionsPage.showOverlay_ = function(overlayName, rootPage) {
-    var overlay = this.registeredOverlayPages[overlayName];
+    var overlay = this.registeredOverlayPages[overlayName.toLowerCase()];
     if (!overlay || !overlay.canShowPage())
       return false;
 
@@ -356,7 +358,7 @@ cr.define('options', function() {
    * @param {OptionsPage} page Page to register.
    */
   OptionsPage.register = function(page) {
-    this.registeredPages[page.name] = page;
+    this.registeredPages[page.name.toLowerCase()] = page;
     // Create and add new page <li> element to navbar.
     var pageNav = document.createElement('li');
     pageNav.id = page.name + 'PageNav';
@@ -404,7 +406,7 @@ cr.define('options', function() {
   OptionsPage.registerSubPage = function(subPage,
                                          parentPage,
                                          associatedControls) {
-    this.registeredPages[subPage.name] = subPage;
+    this.registeredPages[subPage.name.toLowerCase()] = subPage;
     subPage.parentPage = parentPage;
     if (associatedControls) {
       subPage.associatedControls = associatedControls;
@@ -427,7 +429,7 @@ cr.define('options', function() {
   OptionsPage.registerOverlay = function(overlay,
                                          parentPage,
                                          associatedControls) {
-    this.registeredOverlayPages[overlay.name] = overlay;
+    this.registeredOverlayPages[overlay.name.toLowerCase()] = overlay;
     overlay.parentPage = parentPage;
     if (associatedControls) {
       overlay.associatedControls = associatedControls;
@@ -449,7 +451,7 @@ cr.define('options', function() {
     if (data && data.pageName) {
       // It's possible an overlay may be the last top-level page shown.
       if (this.isOverlayVisible_() &&
-          this.registeredOverlayPages[data.pageName] == undefined) {
+          !this.registeredOverlayPages[data.pageName.toLowerCase()]) {
         this.hideOverlay_();
       }
 
