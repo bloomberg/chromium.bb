@@ -103,7 +103,7 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   MockPhishingClassifier* classifier =
       new StrictMock<MockPhishingClassifier>(view_);
   PhishingClassifierDelegate* delegate =
-      new PhishingClassifierDelegate(view_, classifier);
+      PhishingClassifierDelegate::Create(view_, classifier);
   MockScorer scorer;
   delegate->SetPhishingScorer(&scorer);
   ASSERT_TRUE(classifier->is_ready());
@@ -230,7 +230,7 @@ TEST_F(PhishingClassifierDelegateTest, NoScorer) {
   MockPhishingClassifier* classifier =
       new StrictMock<MockPhishingClassifier>(view_);
   PhishingClassifierDelegate* delegate =
-      new PhishingClassifierDelegate(view_, classifier);
+      PhishingClassifierDelegate::Create(view_, classifier);
   ASSERT_FALSE(classifier->is_ready());
 
   // Queue up a pending classification, cancel it, then queue up another one.
@@ -263,7 +263,7 @@ TEST_F(PhishingClassifierDelegateTest, NoScorer_Ref) {
   MockPhishingClassifier* classifier =
       new StrictMock<MockPhishingClassifier>(view_);
   PhishingClassifierDelegate* delegate =
-      new PhishingClassifierDelegate(view_, classifier);
+      PhishingClassifierDelegate::Create(view_, classifier);
   ASSERT_FALSE(classifier->is_ready());
 
   // Queue up a pending classification, cancel it, then queue up another one.
@@ -296,7 +296,7 @@ TEST_F(PhishingClassifierDelegateTest, NoStartPhishingDetection) {
   MockPhishingClassifier* classifier =
       new StrictMock<MockPhishingClassifier>(view_);
   PhishingClassifierDelegate* delegate =
-      new PhishingClassifierDelegate(view_, classifier);
+      PhishingClassifierDelegate::Create(view_, classifier);
   MockScorer scorer;
   delegate->SetPhishingScorer(&scorer);
   ASSERT_TRUE(classifier->is_ready());
@@ -370,7 +370,7 @@ TEST_F(PhishingClassifierDelegateTest, IgnorePreliminaryCapture) {
   MockPhishingClassifier* classifier =
       new StrictMock<MockPhishingClassifier>(view_);
   PhishingClassifierDelegate* delegate =
-      new PhishingClassifierDelegate(view_, classifier);
+      PhishingClassifierDelegate::Create(view_, classifier);
   MockScorer scorer;
   delegate->SetPhishingScorer(&scorer);
   ASSERT_TRUE(classifier->is_ready());
@@ -404,7 +404,7 @@ TEST_F(PhishingClassifierDelegateTest, DuplicatePageCapture) {
   MockPhishingClassifier* classifier =
       new StrictMock<MockPhishingClassifier>(view_);
   PhishingClassifierDelegate* delegate =
-      new PhishingClassifierDelegate(view_, classifier);
+      PhishingClassifierDelegate::Create(view_, classifier);
   MockScorer scorer;
   delegate->SetPhishingScorer(&scorer);
   ASSERT_TRUE(classifier->is_ready());
@@ -439,7 +439,7 @@ TEST_F(PhishingClassifierDelegateTest, DetectedPhishingSite) {
   MockPhishingClassifier* classifier =
       new StrictMock<MockPhishingClassifier>(view_);
   PhishingClassifierDelegate* delegate =
-      new PhishingClassifierDelegate(view_, classifier);
+      PhishingClassifierDelegate::Create(view_, classifier);
   MockScorer scorer;
   delegate->SetPhishingScorer(&scorer);
   ASSERT_TRUE(classifier->is_ready());

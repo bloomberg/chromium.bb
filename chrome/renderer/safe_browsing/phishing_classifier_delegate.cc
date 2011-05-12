@@ -72,6 +72,13 @@ class ScorerCallback {
   scoped_ptr<base::ScopedCallbackFactory<ScorerCallback> > callback_factory_;
 };
 
+// static
+PhishingClassifierFilter* PhishingClassifierFilter::Create() {
+  // Private constructor and public static Create() method to facilitate
+  // stubbing out this class for binary-size reduction purposes.
+  return new PhishingClassifierFilter();
+}
+
 PhishingClassifierFilter::PhishingClassifierFilter()
     : RenderProcessObserver() {}
 
@@ -93,6 +100,14 @@ void PhishingClassifierFilter::OnSetPhishingModel(
       IPC::PlatformFileForTransitToPlatformFile(model_file),
       RenderThread::current()->GetFileThreadMessageLoopProxy(),
       ScorerCallback::CreateCallback());
+}
+
+// static
+PhishingClassifierDelegate* PhishingClassifierDelegate::Create(
+    RenderView* render_view, PhishingClassifier* classifier) {
+  // Private constructor and public static Create() method to facilitate
+  // stubbing out this class for binary-size reduction purposes.
+  return new PhishingClassifierDelegate(render_view, classifier);
 }
 
 PhishingClassifierDelegate::PhishingClassifierDelegate(

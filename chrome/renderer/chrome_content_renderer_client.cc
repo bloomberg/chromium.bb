@@ -140,7 +140,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   net_predictor_.reset(new RendererNetPredictor());
   spellcheck_.reset(new SpellCheck());
   visited_link_slave_.reset(new VisitedLinkSlave());
-  phishing_classifier_.reset(new safe_browsing::PhishingClassifierFilter);
+  phishing_classifier_.reset(safe_browsing::PhishingClassifierFilter::Create());
 
   RenderThread* thread = RenderThread::current();
   thread->AddFilter(new DevToolsAgentFilter());
@@ -186,7 +186,7 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableClientSidePhishingDetection)) {
     phishing_classifier =
-        new safe_browsing::PhishingClassifierDelegate(render_view, NULL);
+        safe_browsing::PhishingClassifierDelegate::Create(render_view, NULL);
   }
 #endif
 
@@ -198,7 +198,7 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
   new PrintWebViewHelper(render_view);
   new SearchBox(render_view);
   new SpellCheckProvider(render_view, spellcheck_.get());
-  new safe_browsing::MalwareDOMDetails(render_view);
+  safe_browsing::MalwareDOMDetails::Create(render_view);
 
 #if defined(OS_MACOSX)
   new TextInputClientObserver(render_view);

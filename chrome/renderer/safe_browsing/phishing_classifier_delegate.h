@@ -23,12 +23,13 @@ class Scorer;
 
 class PhishingClassifierFilter : public RenderProcessObserver {
  public:
-  PhishingClassifierFilter();
+  static PhishingClassifierFilter* Create();
   virtual ~PhishingClassifierFilter();
 
   virtual bool OnControlMessageReceived(const IPC::Message& message);
 
  private:
+  PhishingClassifierFilter();
   void OnSetPhishingModel(IPC::PlatformFileForTransit model_file);
 
   DISALLOW_COPY_AND_ASSIGN(PhishingClassifierFilter);
@@ -39,8 +40,8 @@ class PhishingClassifierDelegate : public RenderViewObserver {
   // The RenderView owns us.  This object takes ownership of the classifier.
   // Note that if classifier is null, a default instance of PhishingClassifier
   // will be used.
-  PhishingClassifierDelegate(RenderView* render_view,
-                             PhishingClassifier* classifier);
+  static PhishingClassifierDelegate* Create(RenderView* render_view,
+                                            PhishingClassifier* classifier);
   virtual ~PhishingClassifierDelegate();
 
   // Called by the RenderView once there is a phishing scorer available.
@@ -65,6 +66,9 @@ class PhishingClassifierDelegate : public RenderViewObserver {
 
  private:
   friend class PhishingClassifierDelegateTest;
+
+  PhishingClassifierDelegate(RenderView* render_view,
+                             PhishingClassifier* classifier);
 
   enum CancelClassificationReason {
     NAVIGATE_AWAY,
