@@ -8,6 +8,7 @@
 
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
@@ -15,6 +16,7 @@ int main() {
   struct NaClApp app;
   int ret_code;
 
+  NaClNrdAllModulesInit();
   ret_code = NaClAppCtor(&app);
   if (ret_code != 1) {
     printf("init failed\n");
@@ -27,6 +29,7 @@ int main() {
   }
 
   NaClRemoveThread(&app, 1);
+  NaClNrdAllModulesFini();
 
   return 0;
 }

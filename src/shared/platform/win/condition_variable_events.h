@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -33,7 +33,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_WIN_CONDITION_VARIABLE_EVENTS_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_WIN_CONDITION_VARIABLE_EVENTS_H_
 
-#include "native_client/src/shared/platform/time.h"
+#include "native_client/src/shared/platform/win/time.h"
 #include "native_client/src/shared/platform/win/lock.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_check.h"

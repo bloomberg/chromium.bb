@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import platform
 
@@ -320,7 +320,9 @@ if gtest_env.Bit('linux') or gtest_env.Bit('mac'):
 unittest_inputs = [
     'unittest_main.cc',
     'sel_memory_unittest.cc',
-    'nacl_sync_unittest.cc',
+    # nacl_sync_unittest.cc was testing the wrong (i.e., too low level) API
+    # re-enable it when it has been converted to the C API.
+    #'nacl_sync_unittest.cc',
     'sel_mem_test.cc',
     'sel_ldr_test.cc',
 ]
@@ -748,7 +750,7 @@ if (not env.CrossToolsBuild() and
   node = env.CommandTest(
       'sel_ldr_thread_death_test.out',
       command=[sel_ldr_thread_death_test_exe],
-      exit_status='segfault')
+      exit_status='sigabrt')
 
   # TODO(tuduce): Make it work on windows.
   env.AddNodeToTestSuite(node, ['medium_tests'],

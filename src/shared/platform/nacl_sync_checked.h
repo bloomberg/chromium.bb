@@ -39,12 +39,12 @@ void NaClXCondVarWait(struct NaClCondVar *cvp,
 NaClSyncStatus NaClXCondVarTimedWaitAbsolute(
     struct NaClCondVar              *cvp,
     struct NaClMutex                *mp,
-    struct nacl_abi_timespec const  *abstime);
+    NACL_TIMESPEC_T const           *abstime);
 
 NaClSyncStatus NaClXCondVarTimedWaitRelative(
     struct NaClCondVar              *cvp,
     struct NaClMutex                *mp,
-    struct nacl_abi_timespec const  *reltime);
+    NACL_TIMESPEC_T const           *reltime);
 
 EXTERN_C_END
 

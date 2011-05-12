@@ -17,15 +17,12 @@ if not env.Bit('bitcode') and not env.Bit('nacl_glibc'):
 platform_inputs = [
     'nacl_check.c',
     'nacl_log.c',
-    'linux/condition_variable.cc',
-    'linux/lock.cc',
+    'linux/condition_variable.c',
+    'linux/lock.c',
     'linux/nacl_exit.c',
     'linux/nacl_threads.c',
     'linux/nacl_timestamp.c',
-    'linux/time_linux.cc',
-    'nacl_sync.cc',
     'nacl_sync_checked.c',
-    'time.cc',
     ]
 
 env.NaClSdkLibrary('platform',

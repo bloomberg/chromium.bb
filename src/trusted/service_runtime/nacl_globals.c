@@ -18,7 +18,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 
-struct NaClMutex            nacl_thread_mu = {NULL};
+struct NaClMutex            nacl_thread_mu;
 
 struct NaClThreadContext    *nacl_user[NACL_THREAD_MAX] = {NULL};
 struct NaClThreadContext    *nacl_sys[NACL_THREAD_MAX] = {NULL};

@@ -87,7 +87,7 @@ void NaClXCondVarWait(struct NaClCondVar *cvp,
 NaClSyncStatus NaClXCondVarTimedWaitAbsolute(
     struct NaClCondVar              *cvp,
     struct NaClMutex                *mp,
-    struct nacl_abi_timespec const  *abstime) {
+    NACL_TIMESPEC_T const           *abstime) {
   NaClSyncStatus  status = NaClCondVarTimedWaitAbsolute(cvp, mp, abstime);
 
   if (NACL_SYNC_OK == status || NACL_SYNC_CONDVAR_TIMEDOUT == status) {
@@ -101,7 +101,7 @@ NaClSyncStatus NaClXCondVarTimedWaitAbsolute(
 NaClSyncStatus NaClXCondVarTimedWaitRelative(
     struct NaClCondVar              *cvp,
     struct NaClMutex                *mp,
-    struct nacl_abi_timespec const  *reltime) {
+    NACL_TIMESPEC_T const           *reltime) {
   NaClSyncStatus  status = NaClCondVarTimedWaitRelative(cvp, mp, reltime);
 
   if (NACL_SYNC_OK == status || NACL_SYNC_CONDVAR_TIMEDOUT == status) {

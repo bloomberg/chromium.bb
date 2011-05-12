@@ -11,19 +11,42 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_SYNC_H_
 #define NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_SYNC_H_
 
+#if defined(__native_client__) || NACL_LINUX || NACL_OSX
+#include <pthread.h>
+#endif
+#include "native_client/src/trusted/service_runtime/include/sys/time.h"
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
-#include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
 EXTERN_C_BEGIN
 
+// It is very difficult to get a definition of nacl_abi_timespec inside of a
+// native client compile.  Sidestep this issue for now.
+// TODO(bsy,sehr): change the include guards on time.h to allow both defines.
+#ifdef __native_client__
+// In a native client module timespec and nacl_abi_timespec are the same.
+typedef struct timespec NACL_TIMESPEC_T;
+#else
+// In trusted code time.h is not derived from
+// src/trusted/service_runtime/include/sys/time.h, so there is no conflict.
+typedef struct nacl_abi_timespec NACL_TIMESPEC_T;
+#endif
+
 struct NaClMutex {
+#if defined(__native_client__) || NACL_LINUX || NACL_OSX
+  pthread_mutex_t mu;
+#else
   void* lock;
+#endif
 };
 
 struct NaClCondVar {
+#if defined(__native_client__) || NACL_LINUX || NACL_OSX
+  pthread_cond_t cv;
+#else
   void* cv;
+#endif
 };
 
 struct nacl_abi_timespec;
@@ -67,12 +90,12 @@ NaClSyncStatus NaClCondVarWait(struct NaClCondVar *cvp,
 NaClSyncStatus NaClCondVarTimedWaitRelative(
     struct NaClCondVar              *cvp,
     struct NaClMutex                *mp,
-    struct nacl_abi_timespec const  *reltime) NACL_WUR;
+    NACL_TIMESPEC_T const           *reltime) NACL_WUR;
 
 NaClSyncStatus NaClCondVarTimedWaitAbsolute(
     struct NaClCondVar              *cvp,
     struct NaClMutex                *mp,
-    struct nacl_abi_timespec const  *abstime) NACL_WUR;
+    NACL_TIMESPEC_T const           *abstime) NACL_WUR;
 
 
 

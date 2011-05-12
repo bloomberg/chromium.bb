@@ -1,12 +1,9 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
-
-// NOTE(gregoryd): changed the Windows implementation to use mutex instead
-// of CRITICAL_SECTION
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_LINUX_LOCK_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_LINUX_LOCK_H_
@@ -20,21 +17,6 @@
 // should instead use Lock.
 
 namespace NaCl {
-
-class Lock {
-  friend class ConditionVariable;
- public:
-  Lock();
-  ~Lock();
-  void Acquire();
-  void Release();
-  bool Try();
-
- private:
-  pthread_mutex_t mutex_;
-
-  NACL_DISALLOW_COPY_AND_ASSIGN(Lock);
-};
 
 // A helper class that acquires the given Lock while the AutoLock is in scope.
 class AutoLock {

@@ -31,7 +31,9 @@
         'sources': [
           'unittest_main.cc',
           'sel_memory_unittest.cc',
-          'nacl_sync_unittest.cc',
+          # Currently tests the wrong (too low-level) APIs.
+          # TODO(bsy,sehr): replace by tests of C API.
+          #'nacl_sync_unittest.cc',
           'sel_mem_test.cc',
           'sel_ldr_test.cc',
         ],

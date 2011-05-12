@@ -1,9 +1,8 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
-
 
 // Time represents an absolute point in time, internally represented as
 // microseconds (s/1,000,000) since a platform-dependent epoch.  Each

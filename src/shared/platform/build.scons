@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-# Copyright (c) 2008 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -26,10 +26,12 @@ if env.Bit('windows'):
     'win/lock_impl_win.cc',
     'win/nacl_secure_random.c',
     'win/nacl_semaphore.c',
+    'win/nacl_sync_win.cc',
     'win/nacl_threads.c',
     'win/nacl_time.c',
     'win/nacl_timestamp.c',
     'win/port_win.c',
+    'win/time.cc',
     'win/time_win.cc',
     'win/xlate_system_error.c',
   ]
@@ -50,9 +52,8 @@ elif env.Bit('linux'):
     'linux/nacl_threads.c',
     'linux/nacl_time.c',
     'linux/nacl_timestamp.c',
-    'linux/condition_variable.cc',
-    'linux/lock.cc',
-    'linux/time_linux.cc',
+    'linux/condition_variable.c',
+    'linux/lock.c',
     ]
 elif env.Bit('mac'):
   platform_inputs += [
@@ -66,9 +67,8 @@ elif env.Bit('mac'):
     'osx/nacl_host_dir.c',
     'osx/nacl_semaphore.c',
     'osx/strnlen_osx.c',
-    'linux/condition_variable.cc',
-    'linux/lock.cc',
-    'linux/time_linux.cc',
+    'linux/condition_variable.c',
+    'linux/lock.c',
     ]
 
 platform_inputs += [
@@ -80,10 +80,8 @@ platform_inputs += [
     'nacl_log.c',
     'nacl_secure_random_common.c',
     'nacl_sync_checked.c',
-    'nacl_sync.cc',
     'platform_init.c',
     'refcount_base.cc',
-    'time.cc',
     ]
 
 env.DualLibrary('platform', platform_inputs)
