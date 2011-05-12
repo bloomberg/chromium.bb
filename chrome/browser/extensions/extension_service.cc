@@ -1467,6 +1467,15 @@ bool ExtensionService::CanCrossIncognito(const Extension* extension) {
       !extension->incognito_split_mode();
 }
 
+bool ExtensionService::CanLoadInIncognito(const Extension* extension) const {
+  if (extension->is_hosted_app())
+    return true;
+  // Packaged apps and regular extensions need to be enabled specifically for
+  // incognito (and split mode should be set).
+  return extension->incognito_split_mode() &&
+         IsIncognitoEnabled(extension->id());
+}
+
 bool ExtensionService::AllowFileAccess(const Extension* extension) {
   return (CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisableExtensionsFileAccessCheck) ||

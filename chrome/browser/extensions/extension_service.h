@@ -211,6 +211,9 @@ class ExtensionService
   // sub-profile (incognito to original profile, or vice versa).
   bool CanCrossIncognito(const Extension* extension);
 
+  // Returns true if the given extension can be loaded in incognito.
+  bool CanLoadInIncognito(const Extension* extension) const;
+
   // Whether this extension can inject scripts into pages with file URLs.
   bool AllowFileAccess(const Extension* extension);
   // Will reload the extension since this permission is applied at loading time

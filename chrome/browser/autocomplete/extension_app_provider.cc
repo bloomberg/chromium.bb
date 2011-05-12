@@ -95,6 +95,10 @@ void ExtensionAppProvider::RefreshAppList() {
   for (ExtensionList::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {
     if ((*app)->is_app() && (*app)->GetFullLaunchURL().is_valid()) {
+      if (profile_->IsOffTheRecord() &&
+          !extension_service->CanLoadInIncognito((*app)))
+        continue;
+
       extension_apps_.push_back(
           std::make_pair((*app)->name(),
                          (*app)->GetFullLaunchURL().spec()));
