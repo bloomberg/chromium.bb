@@ -28,7 +28,10 @@ const char* kNaClPluginExtension = "nexe";
 const char* kNaClPluginDescription = "Native Client Executable";
 
 #if defined(ENABLE_REMOTING)
-const char* kRemotingPluginMimeType = "pepper-application/x-chromoting";
+const char* kRemotingViewerPluginName = "Remoting Viewer";
+const char* kRemotingViewerPluginMimeType = "pepper-application/x-chromoting";
+const FilePath::CharType kRemotingViewerPluginPath[] =
+    FILE_PATH_LITERAL("internal-remoting-viewer");
 #endif
 
 const char* kFlashPluginName = "Shockwave Flash";
@@ -90,16 +93,18 @@ void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
     }
   }
 
-  // Remoting.
+  // The Remoting Viewer plugin is built-in, but behind a flag for now.
 #if defined(ENABLE_REMOTING)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableRemoting)) {
     PepperPluginInfo info;
     info.is_internal = true;
-    info.path = FilePath(FILE_PATH_LITERAL("internal-chromoting"));
-    webkit::npapi::WebPluginMimeType remoting_mime_type(kRemotingPluginMimeType,
-                                                        std::string(),
-                                                        std::string());
+    info.name = kRemotingViewerPluginName;
+    info.path = FilePath(kRemotingViewerPluginPath);
+    webkit::npapi::WebPluginMimeType remoting_mime_type(
+        kRemotingViewerPluginMimeType,
+        std::string(),
+        std::string());
     info.mime_types.push_back(remoting_mime_type);
     info.internal_entry_points.get_interface = remoting::PPP_GetInterface;
     info.internal_entry_points.initialize_module =
