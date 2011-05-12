@@ -255,7 +255,7 @@ class GLES2DecoderTestBase : public testing::Test {
 
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
-  gfx::GLContextStub* context_;
+  gfx::StubGLContext* context_;
   scoped_ptr<GLES2Decoder> decoder_;
 
   GLuint client_buffer_id_;

@@ -13,7 +13,6 @@ GLSurfaceOSMesa::GLSurfaceOSMesa()
 }
 
 GLSurfaceOSMesa::~GLSurfaceOSMesa() {
-  Destroy();
 }
 
 void GLSurfaceOSMesa::Resize(const gfx::Size& new_size) {

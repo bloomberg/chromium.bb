@@ -19,7 +19,6 @@ GLContextOSMesa::GLContextOSMesa(GLSurfaceOSMesa* surface)
 }
 
 GLContextOSMesa::~GLContextOSMesa() {
-  Destroy();
 }
 
 bool GLContextOSMesa::Initialize(GLuint format, GLContext* shared_context) {

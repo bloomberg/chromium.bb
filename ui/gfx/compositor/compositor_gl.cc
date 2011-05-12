@@ -9,10 +9,9 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/transform.h"
-#include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_context.h"
+#include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_surface.h"
 
 namespace ui {
 
@@ -39,10 +38,8 @@ class CompositorGL : public Compositor {
 };
 
 CompositorGL::CompositorGL(gfx::AcceleratedWidget widget)
-    : started_(false) {
-  scoped_ptr<gfx::GLSurface> surface(
-      gfx::GLSurface::CreateViewGLSurface(widget));
-  gl_context_.reset(gfx::GLContext::CreateGLContext(surface.release(), NULL)),
+    : gl_context_(gfx::GLContext::CreateViewGLContext(widget, false)),
+      started_(false) {
 }
 
 Texture* CompositorGL::CreateTexture() {
@@ -92,10 +89,8 @@ class CompositorGL : public Compositor {
 };
 
 CompositorGL::CompositorGL(gfx::AcceleratedWidget widget)
-    : started_(false) {
-  scoped_ptr<gfx::GLSurface> surface(
-      gfx::GLSurface::CreateViewGLSurface(widget));
-  gl_context_.reset(gfx::GLContext::CreateGLContext(surface.release(), NULL));
+    : gl_context_(gfx::GLContext::CreateViewGLContext(widget, false)),
+      started_(false) {
 }
 
 void CompositorGL::NotifyStart() {
