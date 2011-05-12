@@ -5,6 +5,12 @@
 
 # This script will try to sync the bootstrap directories and then defer control.
 
+if [ "$USER" == "root" ];
+then
+  echo Running depot tools as root is sad.
+  exit
+fi
+
 base_dir=$(dirname "$0")
 if [ -L "$base_dir" ]
 then
