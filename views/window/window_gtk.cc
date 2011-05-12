@@ -443,9 +443,6 @@ void WindowGtk::SaveWindowPosition() {
 void WindowGtk::OnDestroy(GtkWidget* widget) {
   delegate_->OnNativeWindowDestroying();
   WidgetGtk::OnDestroy(widget);
-}
-
-void WindowGtk::OnDestroyed() {
   delegate_->OnNativeWindowDestroyed();
 }
 
