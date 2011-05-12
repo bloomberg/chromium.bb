@@ -53,6 +53,11 @@ class DropdownBarView : public AccessiblePaneView,
   // Special paint code for the edges when the drop down bar is animating.
   void PaintAnimatingEdges(gfx::Canvas* canvas, const gfx::Rect& bounds) const;
 
+  // The dialog border bitmaps.
+  const SkBitmap* dialog_left_;
+  const SkBitmap* dialog_middle_;
+  const SkBitmap* dialog_right_;
+
  private:
   // The dropdown bar host that controls this view.
   DropdownBarHost* host_;
@@ -62,11 +67,6 @@ class DropdownBarView : public AccessiblePaneView,
   // the widget so that we can draw the curved edges that attach to the toolbar
   // in the right location.
   int animation_offset_;
-
-  // The dialog border bitmaps.
-  const SkBitmap* dialog_left_;
-  const SkBitmap* dialog_middle_;
-  const SkBitmap* dialog_right_;
 
   DISALLOW_COPY_AND_ASSIGN(DropdownBarView);
 };

@@ -24,11 +24,11 @@ const int kAnimatingEdgeHeight = 5;
 }  // namespace
 
 DropdownBarView::DropdownBarView(DropdownBarHost* host)
-    : host_(host),
-      animation_offset_(0),
-      dialog_left_(NULL),
+    : dialog_left_(NULL),
       dialog_middle_(NULL),
-      dialog_right_(NULL) {
+      dialog_right_(NULL),
+      host_(host),
+      animation_offset_(0) {
 }
 
 DropdownBarView::~DropdownBarView() {

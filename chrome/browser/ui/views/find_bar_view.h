@@ -134,6 +134,13 @@ class FindBarView : public DropdownBarView,
   views::ImageButton* find_next_button_;
   views::ImageButton* close_button_;
 
+  // The background image for the Find text box, which we draw behind the Find
+  // box to provide the Chrome look to the edge of the text box.
+  const SkBitmap* background_;
+
+  // The rounded edge on the left side of the Find text box.
+  const SkBitmap* background_left_;
+
   DISALLOW_COPY_AND_ASSIGN(FindBarView);
 };
 

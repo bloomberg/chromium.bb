@@ -59,21 +59,6 @@ static const SkColor kBackgroundColorMatch = SK_ColorWHITE;
 // The background color of the match count label when no results are found.
 static const SkColor kBackgroundColorNoMatch = SkColorSetRGB(255, 102, 102);
 
-// The background images for the dialog. They are split into a left, a middle
-// and a right part. The middle part determines the height of the dialog. The
-// middle part is stretched to fill any remaining part between the left and the
-// right image, after sizing the dialog to kWindowWidth.
-static const SkBitmap* kDialog_left = NULL;
-static const SkBitmap* kDialog_middle = NULL;
-static const SkBitmap* kDialog_right = NULL;
-
-// The background image for the Find text box, which we draw behind the Find box
-// to provide the Chrome look to the edge of the text box.
-static const SkBitmap* kBackground = NULL;
-
-// The rounded edge on the left side of the Find text box.
-static const SkBitmap* kBackground_left = NULL;
-
 // The default number of average characters that the text box will be. This
 // number brings the width on a "regular fonts" system to about 300px.
 static const int kDefaultCharWidth = 43;
@@ -88,7 +73,9 @@ FindBarView::FindBarView(FindBarHost* host)
       focus_forwarder_view_(NULL),
       find_previous_button_(NULL),
       find_next_button_(NULL),
-      close_button_(NULL) {
+      close_button_(NULL),
+      background_(NULL),
+      background_left_(NULL) {
   SetID(VIEW_ID_FIND_IN_PAGE);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
@@ -155,17 +142,13 @@ FindBarView::FindBarView(FindBarHost* host)
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
 
-  if (kDialog_left == NULL) {
-    // Background images for the dialog.
-    kDialog_left = rb.GetBitmapNamed(IDR_FIND_DIALOG_LEFT);
-    kDialog_middle = rb.GetBitmapNamed(IDR_FIND_DIALOG_MIDDLE);
-    kDialog_right = rb.GetBitmapNamed(IDR_FIND_DIALOG_RIGHT);
+  SetDialogBorderBitmaps(rb.GetBitmapNamed(IDR_FIND_DIALOG_LEFT),
+                         rb.GetBitmapNamed(IDR_FIND_DIALOG_MIDDLE),
+                         rb.GetBitmapNamed(IDR_FIND_DIALOG_RIGHT));
 
-    // Background images for the Find edit box.
-    kBackground = rb.GetBitmapNamed(IDR_FIND_BOX_BACKGROUND);
-    kBackground_left = rb.GetBitmapNamed(IDR_FIND_BOX_BACKGROUND_LEFT);
-  }
-  SetDialogBorderBitmaps(kDialog_left, kDialog_middle, kDialog_right);
+  // Background images for the Find edit box.
+  background_ = rb.GetBitmapNamed(IDR_FIND_BOX_BACKGROUND);
+  background_left_ = rb.GetBitmapNamed(IDR_FIND_BOX_BACKGROUND_LEFT);
 }
 
 FindBarView::~FindBarView() {
@@ -259,15 +242,15 @@ void FindBarView::OnPaint(gfx::Canvas* canvas) {
   gfx::Point back_button_origin = find_previous_button_->bounds().origin();
 
   // Draw the image to the left that creates a curved left edge for the box.
-  canvas->TileImageInt(*kBackground_left,
-      find_text_x - kBackground_left->width(), back_button_origin.y(),
-      kBackground_left->width(), kBackground_left->height());
+  canvas->TileImageInt(*background_left_,
+      find_text_x - background_left_->width(), back_button_origin.y(),
+      background_left_->width(), background_left_->height());
 
   // Draw the top and bottom border for whole text box (encompasses both the
   // find_text_ edit box and the match_count_text_ label).
-  canvas->TileImageInt(*kBackground, find_text_x, back_button_origin.y(),
+  canvas->TileImageInt(*background_, find_text_x, back_button_origin.y(),
                        back_button_origin.x() - find_text_x,
-                       kBackground->height());
+                       background_->height());
 
   PaintAnimatingEdges(canvas, bounds);
 
@@ -354,7 +337,7 @@ void FindBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 
 gfx::Size FindBarView::GetPreferredSize() {
   gfx::Size prefsize = find_text_->GetPreferredSize();
-  prefsize.set_height(kDialog_middle->height());
+  prefsize.set_height(dialog_middle_->height());
 
   // Add up all the preferred sizes and margins of the rest of the controls.
   prefsize.Enlarge(kMarginLeftOfCloseButton + kMarginRightOfCloseButton +
