@@ -265,9 +265,6 @@ class CloudPrintProxyBackend::Core
   bool job_poll_scheduled_;
   // Indicates whether we should poll for jobs when we lose XMPP connection.
   bool enable_job_poll_;
-  // The channel we are interested in receiving push notifications for.
-  // This is "cloudprint.google.com/proxy/<proxy_id>"
-  std::string push_notifications_channel_;
   scoped_ptr<gaia::GaiaOAuthClient> oauth_client_;
   scoped_ptr<CloudPrintTokenStore> token_store_;
 
@@ -473,10 +470,7 @@ void CloudPrintProxyBackend::Core::PostAuthInitialization() {
         notifier_options));
     notifier::Subscription subscription;
     subscription.channel = kCloudPrintPushNotificationsSource;
-    subscription.channel.append("/proxy/");
-    subscription.channel.append(proxy_id_);
     subscription.from = kCloudPrintPushNotificationsSource;
-    push_notifications_channel_ = subscription.channel;
     talk_mediator_->AddSubscription(subscription);
     talk_mediator_->SetDelegate(this);
     talk_mediator_->SetAuthToken(
@@ -1045,7 +1039,7 @@ void CloudPrintProxyBackend::Core::OnIncomingNotification(
     const notifier::Notification& notification) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   VLOG(1) << "CP_PROXY: Incoming notification.";
-  if (0 == base::strcasecmp(push_notifications_channel_.c_str(),
+  if (0 == base::strcasecmp(kCloudPrintPushNotificationsSource,
                             notification.channel.c_str()))
     HandlePrinterNotification(notification.data);
 }
