@@ -391,6 +391,7 @@
           'installer/linux/internal/debian/changelog.template',
           'installer/linux/internal/debian/control.template',
           'installer/linux/internal/debian/debian.menu',
+          'installer/linux/internal/debian/expected_deps',
           'installer/linux/internal/debian/postinst',
           'installer/linux/internal/debian/postrm',
           'installer/linux/internal/debian/prerm',
