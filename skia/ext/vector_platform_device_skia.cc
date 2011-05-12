@@ -81,6 +81,8 @@ void VectorPlatformDeviceSkia::EndPlatformPaint() {
   draw.fClip=&clip;
   pdf_device_->drawSprite(draw, raster_surface_->accessBitmap(false), 0, 0,
                           paint);
+  // BitmapPlatformDevice matches begin and end calls.
+  raster_surface_->EndPlatformPaint();
   raster_surface_ = NULL;
 }
 
