@@ -129,7 +129,11 @@ def ManifestCheckout(buildroot, tracking_branch, next_version,
   print "NEXT VERSION: %s" % next_version
   print "URL: %s" % url
 
-  branch = tracking_branch.split('/');
+  branch = 'master'
+  branch_parts = tracking_branch.split('/')
+  if len(branch_parts) >= 2:
+    branch = branch_parts[1]
+
   next_version_subdir = next_version.split('.');
 
   manifest = os.path.join(
