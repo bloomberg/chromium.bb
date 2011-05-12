@@ -434,7 +434,40 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     while (iter != pending_config_requests_.end()) {
       const std::string& section = iter->first.first;
       const std::string& config_name = iter->first.second;
-      const ImeConfigValue& value = iter->second;
+      ImeConfigValue& value = iter->second;
+
+      if (config_name == language_prefs::kPreloadEnginesConfigName &&
+          !tentative_current_input_method_id_.empty()) {
+        // We should use |tentative_current_input_method_id_| as the initial
+        // active input method for the following reasons:
+        //
+        // 1) Calls to ChangeInputMethod() will fail if the input method has not
+        // yet been added to preload_engines.  As such, the call is deferred
+        // until after all config values have been sent to the IME process.
+        //
+        // 2) We might have already changed the current input method to one
+        // of XKB layouts without going through the IBus daemon (we can do
+        // it without the IBus daemon started).
+        std::vector<std::string>::iterator engine_iter = std::find(
+            value.string_list_value.begin(),
+            value.string_list_value.end(),
+            tentative_current_input_method_id_);
+        if (engine_iter != value.string_list_value.end()) {
+          // Use std::rotate to keep the relative order of engines the same e.g.
+          // from "A,B,C" to "C,A,B".
+          // We don't have to |active_input_method_ids_|, which decides the
+          // order of engines in the switcher menu, since the relative order
+          // of |value.string_list_value| is not changed.
+          std::rotate(value.string_list_value.begin(),
+                      engine_iter,  // this becomes the new first element
+                      value.string_list_value.end());
+        } else {
+          LOG(WARNING) << tentative_current_input_method_id_
+                       << " is not in preload_engines: " << value.ToString();
+        }
+        tentative_current_input_method_id_.erase();
+      }
+
       if (chromeos::SetImeConfig(input_method_status_connection_,
                                  section.c_str(),
                                  config_name.c_str(),
@@ -449,23 +482,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       } else {
         // If SetImeConfig() fails, subsequent calls will likely fail.
         break;
-      }
-    }
-    if (pending_config_requests_.empty()) {
-      // We should change the current input method to the one we have last
-      // remembered in ChangeInputMethod(), for the following reasons:
-      //
-      // 1) Calls to ChangeInputMethod() will fail if the input method has not
-      // yet been added to preload_engines.  As such, the call is deferred
-      // until after all config values have been sent to the IME process.
-      //
-      // 2) We might have already changed the current input method to one
-      // of XKB layouts without going through the IBus daemon (we can do
-      // it without the IBus daemon started).
-      if (ime_connected_ && !tentative_current_input_method_id_.empty()) {
-        ChangeInputMethodViaIBus(tentative_current_input_method_id_);
-        tentative_current_input_method_id_.clear();
-        active_input_methods_are_changed = true;
       }
     }
 
