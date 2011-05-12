@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/active_downloads_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -414,8 +415,7 @@ class DownloadTest : public InProcessBrowserTest {
     int window_count = BrowserList::size();
     EXPECT_EQ(1, window_count);
     EXPECT_EQ(1, browser()->tab_count());
-    bool is_shelf_visible = browser()->window()->IsDownloadShelfVisible();
-    EXPECT_FALSE(is_shelf_visible);
+    EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
     // Set up the temporary download folder.
     bool created_downloads_dir = CreateAndSetDownloadsDirectory(browser());
@@ -651,19 +651,10 @@ class DownloadTest : public InProcessBrowserTest {
   }
 
   // Figure out if the appropriate download visibility was done.  A
-  // utility function to support ChromeOS variations.  On ChromeOS
-  // a webui panel is used instead of the download shelf; the
-  // test for is_type_panel and is_app detects this type of panel.
-  // TODO(stevenjb): The download panel may not be the only app panel.
-  // We need a better way to check for this.
+  // utility function to support ChromeOS variations.
   static bool IsDownloadUIVisible(Browser* browser) {
 #if defined(OS_CHROMEOS)
-    for (BrowserList::const_iterator it = BrowserList::begin();
-         it != BrowserList::end(); ++it) {
-      if ((*it)->is_type_panel() && (*it)->is_app() )
-        return true;
-    }
-    return false;
+    return ActiveDownloadsUI::GetPopup(browser->profile());
 #else
     return browser->window()->IsDownloadShelfVisible();
 #endif
@@ -922,8 +913,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
   ExpectWindowCountAfterDownload(2);
 
   // Verify that the download shelf is showing for the Incognito window.
-  bool is_shelf_visible = IsDownloadUIVisible(incognito);
-  EXPECT_TRUE(is_shelf_visible);
+  EXPECT_TRUE(IsDownloadUIVisible(incognito));
 
 #if !defined(OS_MACOSX)
   // On Mac OS X, the UI window close is delayed until the outermost
@@ -943,15 +933,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
 #endif
 
   // Verify that the regular window does not have a download shelf.
-  is_shelf_visible = IsDownloadUIVisible(browser());
-
-#if defined(OS_CHROMEOS)
-  // On ChromeOS it's a popup rather than a download shelf, and it sticks
-  // around.
-  EXPECT_TRUE(is_shelf_visible);
-#else
-  EXPECT_FALSE(is_shelf_visible);
-#endif
+  EXPECT_FALSE(IsDownloadUIVisible(browser()));
 
   CheckDownload(browser(), file, file);
 }
@@ -1217,14 +1199,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   CheckDownload(browser(), file, file);
 }
 
-// http://crbug.com/80327
-#if defined(OS_CHROMEOS)
-// Need to disable as failure is a crash->timeout.
-#define MAYBE_DownloadCancelled DISABLED_DownloadCancelled
-#else
-#define MAYBE_DownloadCancelled DownloadCancelled
-#endif
-IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadCancelled) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
   ASSERT_TRUE(InitialSetup(false));
   EXPECT_EQ(1, browser()->tab_count());
 
