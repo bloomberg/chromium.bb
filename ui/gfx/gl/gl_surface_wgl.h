@@ -37,6 +37,7 @@ class NativeViewGLSurfaceWGL : public GLSurfaceWGL {
 
  private:
   gfx::PluginWindowHandle window_;
+  gfx::PluginWindowHandle child_window_;
   HDC device_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceWGL);
