@@ -202,7 +202,7 @@ class WebSocketJobTest : public PlatformTest {
     memcpy(&sa_in.sin_addr, "\x7f\0\0\1", 4);
     addr.ai_addr = reinterpret_cast<sockaddr*>(&sa_in);
     addr.ai_next = NULL;
-    websocket_->addresses_.Copy(&addr, true);
+    websocket_->addresses_ = AddressList::CreateByCopying(&addr);
     WebSocketThrottle::GetInstance()->PutInQueue(websocket_);
   }
   WebSocketJob::State GetWebSocketJobState() {

@@ -178,8 +178,8 @@ bool FakeSocket::IsConnectedAndIdle() const {
 }
 
 int FakeSocket::GetPeerAddress(net::AddressList* address) const {
-  *address = net::AddressList(peer_address_.address(),
-                              peer_address_.port(), false);
+  *address = net::AddressList::CreateFromIPAddress(peer_address_.address(),
+                                                   peer_address_.port());
   return net::OK;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -273,7 +273,7 @@ int TransportSocket::GetPeerAddress(net::AddressList* address) const {
   ai.ai_addr = reinterpret_cast<struct sockaddr*>(&ipv4addr);
   ai.ai_addrlen = sizeof(ipv4addr);
 
-  address->Copy(&ai, false);
+  *address = net::AddressList::CreateByCopyingFirstAddress(&ai);
   return net::OK;
 }
 

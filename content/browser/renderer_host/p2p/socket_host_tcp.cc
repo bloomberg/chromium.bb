@@ -56,7 +56,8 @@ bool P2PSocketHostTcp::Init(const net::IPEndPoint& local_address,
   remote_address_ = remote_address;
   state_ = STATE_CONNECTING;
   socket_.reset(new net::TCPClientSocket(
-      net::AddressList(remote_address.address(), remote_address.port(), false),
+      net::AddressList::CreateFromIPAddress(
+          remote_address.address(), remote_address.port()),
       NULL, net::NetLog::Source()));
   int result = socket_->Connect(&connect_callback_);
   if (result != net::ERR_IO_PENDING) {

@@ -116,8 +116,8 @@ net::IPAddressNumber Uint32ToIPAddressNumber(uint32 ip) {
 net::AddressList SocketAddressToAddressList(
     const talk_base::SocketAddress& address) {
   DCHECK_NE(address.ip(), 0U);
-  return net::AddressList(Uint32ToIPAddressNumber(address.ip()),
-                          address.port(), false);
+  return net::AddressList::CreateFromIPAddress(
+      Uint32ToIPAddressNumber(address.ip()), address.port());
 }
 
 class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {

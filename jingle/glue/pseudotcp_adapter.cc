@@ -152,7 +152,7 @@ int PseudoTcpAdapter::GetPeerAddress(net::AddressList* address) const {
   // We actually don't know the peer address. Returning so the upper layers
   // won't complain.
   net::IPAddressNumber ip_address(4);
-  *address = net::AddressList(ip_address, 0, false);
+  *address = net::AddressList::CreateFromIPAddress(ip_address, 0);
   return net::OK;
 }
 
