@@ -110,7 +110,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     if (context_) {
       context_->SetSwapBuffersCallback(
           NewCallback(this,
-                      &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffers));
+              &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete));
     }
   } else {
     bool compositing_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1045,12 +1045,12 @@ void WebGraphicsContext3DCommandBufferImpl::copyTextureToCompositor(
   glFlush();
 }
 
-void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffers() {
+void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
   // This may be called after tear-down of the RenderView.
   RenderView* renderview =
       web_view_ ? RenderView::FromWebView(web_view_) : NULL;
   if (renderview)
-    renderview->DidFlushPaint();
+    renderview->OnViewContextSwapBuffersComplete();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::setContextLostCallback(
@@ -1063,6 +1063,11 @@ void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {
   if (context_lost_callback_) {
     context_lost_callback_->onContextLost();
   }
+
+  RenderView* renderview =
+      web_view_ ? RenderView::FromWebView(web_view_) : NULL;
+  if (renderview)
+    renderview->OnViewContextSwapBuffersAborted();
 }
 
 #endif  // defined(ENABLE_GPU)

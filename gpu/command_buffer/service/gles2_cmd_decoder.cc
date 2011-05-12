@@ -1478,6 +1478,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // failed texImage2D call should be ignored.
   bool tex_image_2d_failed_;
 
+  int frame_number_;
+
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
 
@@ -1803,7 +1805,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       use_shader_translator_(true),
       validators_(group_->feature_info()->validators()),
       feature_info_(group_->feature_info()),
-      tex_image_2d_failed_(false) {
+      tex_image_2d_failed_(false),
+      frame_number_(0) {
   attrib_0_value_.v[0] = 0.0f;
   attrib_0_value_.v[1] = 0.0f;
   attrib_0_value_.v[2] = 0.0f;
@@ -6360,7 +6363,8 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       return error::kNoError;
     }
   } else {
-    TRACE_EVENT0("gpu", "GLContext::SwapBuffers");
+    TRACE_EVENT1("gpu", "GLContext::SwapBuffers", "frame", frame_number_);
+    frame_number_++;
     if (!context_->SwapBuffers()) {
       LOG(ERROR) << "Context lost because SwapBuffers failed.";
       return error::kLostContext;

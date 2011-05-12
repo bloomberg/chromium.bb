@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/id_map.h"
 #include "base/process_util.h"
+#include "base/debug/trace_event.h"
 #include "chrome/browser/browser_process.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu/gpu_data_manager.h"
@@ -307,6 +308,8 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceSetIOSurface(
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
+  TRACE_EVENT0("renderer",
+      "GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped");
   RenderViewHost* host = RenderViewHost::FromID(params.renderer_id,
                                                 params.render_view_id);
   if (!host)

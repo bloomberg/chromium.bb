@@ -349,4 +349,3 @@ class GLES2Implementation {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_H_
-

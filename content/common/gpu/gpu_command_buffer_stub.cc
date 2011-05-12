@@ -352,6 +352,7 @@ void GpuCommandBufferStub::OnSetWindowSize(const gfx::Size& size) {
 }
 
 void GpuCommandBufferStub::SwapBuffersCallback() {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::SwapBuffersCallback");
   OnSwapBuffers();
   GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
@@ -369,6 +370,8 @@ void GpuCommandBufferStub::SwapBuffersCallback() {
 
 void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
     uint64 swap_buffers_count) {
+  TRACE_EVENT0("gpu",
+               "GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped");
   scheduler_->set_acknowledged_swap_buffers_count(swap_buffers_count);
 
   // Wake up the GpuScheduler to start doing work again.

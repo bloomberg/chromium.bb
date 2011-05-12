@@ -308,6 +308,10 @@ WebWidget* RenderWidgetFullscreenPepper::CreateWebWidget() {
   return new PepperWidget(plugin_, this);
 }
 
+bool RenderWidgetFullscreenPepper::SupportsAsynchronousSwapBuffers() {
+  return context_ != NULL;
+}
+
 void RenderWidgetFullscreenPepper::CreateContext() {
   DCHECK(!context_);
   RenderThread* render_thread = RenderThread::current();
@@ -340,7 +344,9 @@ void RenderWidgetFullscreenPepper::CreateContext() {
     return;
   }
   context_->SetSwapBuffersCallback(
-      NewCallback(this, &RenderWidgetFullscreenPepper::DidFlushPaint));
+      NewCallback(this,
+          &RenderWidgetFullscreenPepper::
+              OnSwapBuffersCompleteByRendererGLContext));
   context_->SetContextLostCallback(
       NewCallback(this, &RenderWidgetFullscreenPepper::OnLostContext));
 }
@@ -459,4 +465,9 @@ void RenderWidgetFullscreenPepper::OnLostContext() {
   context_ = NULL;
   program_ = 0;
   buffer_ = 0;
+  OnSwapBuffersAborted();
+}
+
+void RenderWidgetFullscreenPepper::OnSwapBuffersCompleteByRendererGLContext() {
+  OnSwapBuffersComplete();
 }

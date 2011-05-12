@@ -231,6 +231,7 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   gpu::gles2::GLES2Implementation* gles2_implementation_;
   gfx::Size size_;
   Error last_error_;
+  int frame_number_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererGLContext);
 };

@@ -171,7 +171,8 @@ class RenderWidget : public IPC::Channel::Listener,
 
   void AnimationCallback();
   void AnimateIfNeeded();
-  void CallDoDeferredUpdate();
+  void InvalidationCallback();
+  void DoDeferredUpdateAndSendInputAck();
   void DoDeferredUpdate();
   void DoDeferredClose();
   void DoDeferredSetWindowRect(const WebKit::WebRect& pos);
@@ -217,6 +218,17 @@ class RenderWidget : public IPC::Channel::Listener,
   // screen has actually been updated.
   virtual void DidInitiatePaint() {}
   virtual void DidFlushPaint() {}
+
+  // Override and return true when the widget is rendered with a graphics
+  // context that supports asynchronous swapbuffers. When returning true,
+  // the subclass must call RenderWidget::OnSwapBuffersComplete() when
+  // swaps complete, and OnSwapBuffersAborted if the context is lost.
+  virtual bool SupportsAsynchronousSwapBuffers();
+
+  // Notifies scheduler that the RenderWidget's subclass has finished or aborted
+  // a swap buffers.
+  void OnSwapBuffersAborted();
+  void OnSwapBuffersComplete();
 
   // Detects if a suitable opaque plugin covers the given paint bounds with no
   // compositing necessary.
@@ -327,6 +339,21 @@ class RenderWidget : public IPC::Channel::Listener,
   // UpdateRect message has been sent).
   bool update_reply_pending_;
 
+  // True if the underlying graphics context supports asynchronous swap.
+  // Cached on the RenderWidget because determining support is costly.
+  bool using_asynchronous_swapbuffers_;
+
+  // Number of OnSwapBuffersComplete we are expecting. Incremented each time
+  // WebWidget::composite has been been performed when the RenderWidget subclass
+  // SupportsAsynchronousSwapBuffers. Decremented in OnSwapBuffers. Will block
+  // rendering.
+  int num_swapbuffers_complete_pending_;
+
+  // When accelerated rendering is on, is the maximum number of swapbuffers that
+  // can be outstanding before we start throttling based on
+  // OnSwapBuffersComplete callback.
+  static const int kMaxSwapBuffersPending = 2;
+
   // Set to true if we should ignore RenderWidget::Show calls.
   bool did_show_;
 
@@ -395,6 +422,7 @@ class RenderWidget : public IPC::Channel::Listener,
   base::Time animation_floor_time_;
   bool animation_update_pending_;
   bool animation_task_posted_;
+  bool invalidation_task_posted_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

@@ -293,7 +293,9 @@ bool RendererGLContext::MakeCurrent(RendererGLContext* context) {
 }
 
 bool RendererGLContext::SwapBuffers() {
-  TRACE_EVENT0("gpu", "RendererGLContext::SwapBuffers");
+  TRACE_EVENT1("gpu", "RendererGLContext::SwapBuffers", "frame", frame_number_);
+  frame_number_++;
+
   // Don't request latest error status from service. Just use the locally cached
   // information from the last flush.
   if (command_buffer_->GetLastState().error != gpu::error::kNoError)
@@ -364,7 +366,8 @@ RendererGLContext::RendererGLContext(GpuChannelHost* channel,
       gles2_helper_(NULL),
       transfer_buffer_id_(-1),
       gles2_implementation_(NULL),
-      last_error_(SUCCESS) {
+      last_error_(SUCCESS),
+      frame_number_(0) {
   DCHECK(channel);
 }
 
@@ -592,4 +595,3 @@ bool RendererGLContext::GetChildToParentLatch(uint32* child_to_parent_latch) {
   }
   return false;
 }
-

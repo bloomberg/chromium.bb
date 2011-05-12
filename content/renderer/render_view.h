@@ -198,6 +198,11 @@ class RenderView : public RenderWidget,
   // May return NULL when the view is closing.
   WebKit::WebView* webview() const;
 
+  // Called by a GraphicsContext associated with this view when swapbuffers
+  // completes or is aborted.
+  void OnViewContextSwapBuffersComplete();
+  void OnViewContextSwapBuffersAborted();
+
   int page_id() const { return page_id_; }
   PepperPluginDelegateImpl* pepper_delegate() { return &pepper_delegate_; }
 
@@ -576,7 +581,6 @@ class RenderView : public RenderWidget,
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions
   // nearer to the top you can add it to.
-
   virtual void DidFlushPaint();
 
   // Cannot use std::set unfortunately since linked_ptr<> does not support
@@ -601,6 +605,7 @@ class RenderView : public RenderWidget,
   virtual void OnSetFocus(bool enable);
   virtual void OnWasHidden();
   virtual void OnWasRestored(bool needs_repainting);
+  virtual bool SupportsAsynchronousSwapBuffers() OVERRIDE;
 
  private:
   // For unit tests.

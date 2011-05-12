@@ -507,6 +507,7 @@ void RenderWidgetHost::SystemThemeChanged() {
 }
 
 void RenderWidgetHost::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
+  TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardMouseEvent");
   if (ignore_input_events_ || process_->ignore_input_events())
     return;
 
@@ -532,6 +533,7 @@ void RenderWidgetHost::OnMouseActivate() {
 
 void RenderWidgetHost::ForwardWheelEvent(
     const WebMouseWheelEvent& wheel_event) {
+  TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardWheelEvent");
   if (ignore_input_events_ || process_->ignore_input_events())
     return;
 
@@ -567,6 +569,7 @@ void RenderWidgetHost::ForwardWheelEvent(
 
 void RenderWidgetHost::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
+  TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardKeyboardEvent");
   if (ignore_input_events_ || process_->ignore_input_events())
     return;
 
@@ -628,6 +631,8 @@ void RenderWidgetHost::ForwardKeyboardEvent(
 void RenderWidgetHost::ForwardInputEvent(const WebInputEvent& input_event,
                                          int event_size,
                                          bool is_keyboard_shortcut) {
+  TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardInputEvent");
+
   if (!process_->HasConnection())
     return;
 
@@ -670,6 +675,7 @@ void RenderWidgetHost::ForwardEditCommandsForNextKeyEvent(
 #if defined(TOUCH_UI)
 void RenderWidgetHost::ForwardTouchEvent(
     const WebKit::WebTouchEvent& touch_event) {
+  TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardTouchEvent");
   ForwardInputEvent(touch_event, sizeof(WebKit::WebTouchEvent), false);
 }
 #endif
@@ -955,6 +961,8 @@ void RenderWidgetHost::OnMsgUpdateRect(
 }
 
 void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
+  TRACE_EVENT0("renderer_host", "RenderWidgetHost::OnMsgInputEventAck");
+
   // Log the time delta for processing an input event.
   TimeDelta delta = TimeTicks::Now() - input_event_start_time_;
   UMA_HISTOGRAM_TIMES("MPArch.RWH_InputEventDelta", delta);

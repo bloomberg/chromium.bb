@@ -6,6 +6,7 @@
 
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
@@ -854,6 +855,8 @@ void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
     int32 route_id,
     int gpu_host_id,
     uint64 swap_buffers_count) {
+  TRACE_EVENT1("gpu", "RenderWidgetHostViewMac::AcknowledgeSwapBuffers",
+      "swap_buffers_count", swap_buffers_count);
   // Called on the display link thread. Hand actual work off to the IO thread,
   // because |GpuProcessHost::Get()| can only be called there.
   // Currently, this is never called for plugins.

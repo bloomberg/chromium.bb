@@ -61,6 +61,9 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   // RenderWidgetFullscreen API.
   virtual WebKit::WebWidget* CreateWebWidget();
 
+  // RenderWidget overrides.
+  virtual bool SupportsAsynchronousSwapBuffers() OVERRIDE;
+
  private:
   // Creates the GL context for compositing.
   void CreateContext();
@@ -74,6 +77,10 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
 
   // Called when the compositing context gets lost.
   void OnLostContext();
+
+  // Binding of RendererGLContext swapbuffers callback to
+  // RenderWidget::OnSwapBuffersCompleted.
+  void OnSwapBuffersCompleteByRendererGLContext();
 
   // URL that is responsible for this widget, passed to ggl::CreateViewContext.
   GURL active_url_;

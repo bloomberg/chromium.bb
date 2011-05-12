@@ -477,4 +477,3 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
 }  // namespace webkit
 
 #endif  // WEBKIT_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_IMPL_H_
-
