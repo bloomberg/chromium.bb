@@ -376,7 +376,6 @@ TEST_F(TabContentsTest, CrossSiteBoundariesAfterCrash) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_TRUE(contents()->pending_rvh() == NULL);
   EXPECT_NE(orig_rvh, new_rvh);
-  EXPECT_FALSE(contents()->render_manager()->IsSwappedOut(orig_rvh));
   EXPECT_EQ(orig_rvh_delete_count, 1);
 
   // DidNavigate from the new page
