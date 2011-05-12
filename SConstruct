@@ -1484,6 +1484,7 @@ TEST_TIME_THRESHOLD = {
 
 # Valgrind handles SIGSEGV in a way our testing tools do not expect.
 UNSUPPORTED_VALGRIND_EXIT_STATUS = ['sigill' ,
+                                    'sigabrt',
                                     'segfault',
                                     'sigsegv_or_equivalent',
                                     'untrusted_sigill' ,
