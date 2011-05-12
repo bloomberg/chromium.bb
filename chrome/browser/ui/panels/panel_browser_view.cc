@@ -35,6 +35,11 @@ PanelBrowserView::~PanelBrowserView() {
 void PanelBrowserView::Close() {
   if (!panel_)
     return;
+
+  // Check if the panel is in the closing process, i.e. Panel::Close() is
+  // called.
+  DCHECK(panel_->closing());
+
   ::BrowserView::Close();
   panel_ = NULL;
 }
