@@ -97,12 +97,14 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
   FilePath exe_dst(installer_dir.Append(setup_path.BaseName()));
   FilePath archive_dst(installer_dir.Append(archive_path.BaseName()));
 
+  install_list->AddCopyTreeWorkItem(setup_path.value(), exe_dst.value(),
+                                    temp_path.value(), WorkItem::ALWAYS);
+
   // In the past, we copied rather than moved for system level installs so that
   // the permissions of %ProgramFiles% would be picked up.  Now that |temp_path|
   // is in %ProgramFiles% for system level installs (and in %LOCALAPPDATA%
-  // otherwise), there is no need to do this.
-  install_list->AddMoveTreeWorkItem(setup_path.value(), exe_dst.value(),
-                                    temp_path.value(), WorkItem::ALWAYS_MOVE);
+  // otherwise), there is no need to do this for the archive.  Setup.exe, on
+  // the other hand, is created elsewhere so it must always be copied.
   install_list->AddMoveTreeWorkItem(archive_path.value(), archive_dst.value(),
                                     temp_path.value(), WorkItem::ALWAYS_MOVE);
 }
