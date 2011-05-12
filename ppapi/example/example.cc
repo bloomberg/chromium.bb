@@ -303,6 +303,8 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
 
   void UpdateFps() {
     pp::VarPrivate window = GetWindowObject();
+    if (window.is_undefined())
+      return;
     pp::VarPrivate doc = window.GetProperty("document");
     pp::VarPrivate fps = doc.Call("getElementById", "fps");
 
