@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -127,6 +127,11 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   size_t    unmap_offset;
   size_t    chunk_size;
 
+  NaClLog(4,
+          ("NaClHostDescMap(0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR
+           ", 0x%"NACL_PRIxS", %d, %d, 0x%016"NACL_PRIxNACL_OFF64")\n"),
+          (uintptr_t) d, (uintptr_t) start_addr,
+          len, prot, flags, offset);
   if (NULL == d && 0 == (flags & NACL_ABI_MAP_ANONYMOUS)) {
     NaClLog(LOG_FATAL, "NaClHostDescMap: 'this' is NULL and not anon map\n");
   }

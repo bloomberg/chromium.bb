@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -21,12 +21,15 @@
 #include "native_client/src/trusted/desc/nacl_desc_effector.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 
+#include "native_client/src/shared/platform/nacl_find_addrsp.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
+#include "native_client/src/trusted/service_runtime/internal_errno.h"
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 
 /*
@@ -113,6 +116,9 @@ static uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
   int                   rv;
   uintptr_t             status;
+  uintptr_t             addr;
+  uintptr_t             end_addr;
+  nacl_off64_t          tmp_off;
 
   /*
    * prot must be PROT_NONE or a combination of PROT_{READ|WRITE}
@@ -130,24 +136,50 @@ static uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
              " but start_addr is NULL\n"));
   }
 
-  if (0 != (rv = (*effp->vtbl->UnmapMemory)(effp,
-                                            (uintptr_t) start_addr,
-                                            len))) {
-    NaClLog(LOG_FATAL,
-            ("NaClDescIoDescMap: error %d --"
-             " could not unmap 0x%08"NACL_PRIxPTR", length 0x%"NACL_PRIxS"\n"),
-            rv,
-            (uintptr_t) start_addr,
-            len);
+  if (0 == (NACL_ABI_MAP_FIXED & flags)) {
+    if (!NaClFindAddressSpace(&addr, len)) {
+      NaClLog(1, "NaClDescIoDescMap: no address space?\n");
+      return -NACL_ABI_ENOMEM;
+    }
+    start_addr = (void *) addr;
   }
+  flags |= NACL_ABI_MAP_FIXED;
 
-  status = NaClHostDescMap((NULL == self) ? NULL : self->hd,
-                           start_addr,
-                           len,
-                           prot,
-                           flags,
-                           offset);
-  return status;
+  for (addr = (uintptr_t) start_addr,
+           end_addr = addr + len,
+           tmp_off = offset;
+       addr < end_addr;
+       addr += NACL_MAP_PAGESIZE,
+           tmp_off += NACL_MAP_PAGESIZE) {
+    size_t map_size;
+
+    if (0 != (rv = (*effp->vtbl->UnmapMemory)(effp,
+                                              addr,
+                                              NACL_MAP_PAGESIZE))) {
+      NaClLog(LOG_FATAL,
+              ("NaClDescIoDescMap: error %d --"
+               " could not unmap 0x%08"NACL_PRIxPTR
+               ", length 0x%"NACL_PRIxS"\n"),
+              rv,
+              addr,
+              (size_t) NACL_MAP_PAGESIZE);
+    }
+
+    map_size = end_addr - addr;
+    if (map_size > NACL_MAP_PAGESIZE) {
+      map_size = NACL_MAP_PAGESIZE;
+    }
+    status = NaClHostDescMap((NULL == self) ? NULL : self->hd,
+                             (void *) addr,
+                             map_size,
+                             prot,
+                             flags,
+                             tmp_off);
+    if (NACL_MAP_FAILED == (void *) status) {
+      return -NACL_ABI_E_MOVE_ADDRESS_SPACE;
+    }
+  }
+  return (uintptr_t) start_addr;
 }
 
 uintptr_t NaClDescIoDescMapAnon(struct NaClDescEffector *effp,

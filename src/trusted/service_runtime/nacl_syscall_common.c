@@ -1296,6 +1296,9 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
     }
 
     file_bytes = file_size - offset;
+    NaClLog(4,
+            "NaClCommonSysMmapIntern: file_bytes 0x%016"NACL_PRIxNACL_OFF"\n",
+            file_bytes);
     if ((nacl_off64_t) kMaxUsableFileSize < file_bytes) {
       host_rounded_file_bytes = kMaxUsableFileSize;
     } else {

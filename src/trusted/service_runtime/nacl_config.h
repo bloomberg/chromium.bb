@@ -50,6 +50,11 @@
  * NACL_KERN_STACK_SIZE: The size of the secure stack allocated for
  * use while a NaCl thread is in kernel mode, i.e., during
  * startup/exit and during system call processing.
+ *
+ * This must be greater than 64K for address space squatting, but
+ * that uses up too much memory and decreases the maximum number of
+ * threads that the system can spawn.  Instead, we grab the vm lock
+ * when spawning threads.
  */
 #define NACL_KERN_STACK_SIZE          (64 << 10)
 

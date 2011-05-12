@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -25,11 +25,11 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
-#include "native_client/src/trusted/service_runtime/internal_errno.h"
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+#include "native_client/src/trusted/service_runtime/internal_errno.h"
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 #ifndef SIZE_T_MAX
 # define SIZE_T_MAX   (~(size_t) 0)
