@@ -4,10 +4,6 @@
 
 var localStrings = new LocalStrings();
 
-// Whether or not the PDF plugin supports all the capabilities needed for
-// print preview.
-var hasCompatiblePDFPlugin = true;
-
 // The total page count of the previewed document regardless of which pages the
 // user has selected.
 var totalPageCount = -1;
@@ -47,10 +43,19 @@ const MANAGE_PRINTERS = 'Manage Printers';
  * the printer list.
  */
 function onLoad() {
+  $('system-dialog-link').addEventListener('click', showSystemDialog);
+  $('cancel-button').addEventListener('click', handleCancelButtonClick);
+
+  if (!checkCompatiblePluginExists()) {
+    displayErrorMessage(localStrings.getString('noPlugin'));
+    $('mainview').parentElement.removeChild($('dummy-viewer'));
+    return;
+  }
+  $('mainview').parentElement.removeChild($('dummy-viewer'));
+
   $('printer-list').disabled = true;
   $('print-button').disabled = true;
   $('print-button').addEventListener('click', printFile);
-  $('cancel-button').addEventListener('click', handleCancelButtonClick);
   $('all-pages').addEventListener('click', onPageSelectionMayHaveChanged);
   $('copies').addEventListener('input', copiesFieldChanged);
   $('print-pages').addEventListener('click', handleIndividualPagesCheckbox);
@@ -67,7 +72,6 @@ function onLoad() {
   $('bw').addEventListener('click', function() { setColor(false); });
   $('printer-list').addEventListener(
       'change', updateControlsWithSelectedPrinterCapabilities);
-  $('system-dialog-link').addEventListener('click', showSystemDialog);
   $('increment').addEventListener('click',
                                   function() { onCopiesButtonsClicked(1); });
   $('decrement').addEventListener('click',
@@ -322,7 +326,6 @@ function printFile() {
 function requestPrintPreview() {
   isPreviewStillLoading = true;
   setControlsDisabled(true);
-  $('dancing-dots').classList.remove('hidden');
   $('dancing-dots').classList.remove('invisible');
   chrome.send('getPreview', [getSettingsJSON()]);
 }
@@ -373,9 +376,6 @@ function addDestinationListOption(optionText, optionValue, is_default) {
  * @param {boolean} color is true if the PDF plugin should display in color.
  */
 function setColor(color) {
-  if (!hasCompatiblePDFPlugin) {
-    return;
-  }
   var pdfViewer = $('pdf-viewer');
   if (!pdfViewer) {
     return;
@@ -389,6 +389,7 @@ function setColor(color) {
  */
 function displayErrorMessage(errorMessage) {
   isPreviewStillLoading = false;
+  $('dancing-dots').classList.remove('invisible');
   $('dancing-dots-text').classList.add('hidden');
   $('error-text').innerHTML = errorMessage;
   $('error-text').classList.remove('hidden');
@@ -462,10 +463,6 @@ function updatePrintPreview(pageCount, jobTitle, modifiable) {
  * Create the PDF plugin or reload the existing one.
  */
 function createPDFPlugin() {
-  if (!hasCompatiblePDFPlugin) {
-    return;
-  }
-
   // Enable the print button.
   if (!$('printer-list').disabled) {
     $('print-button').disabled = false;
@@ -491,13 +488,6 @@ function createPDFPlugin() {
   pdfPlugin.setAttribute('src', 'chrome://print/print.pdf');
   var mainView = $('mainview');
   mainView.appendChild(pdfPlugin);
-
-  // Check to see if the PDF plugin is our PDF plugin. (or compatible)
-  if (!pdfPlugin.onload) {
-    hasCompatiblePDFPlugin = false;
-    displayErrorMessage(localStrings.getString('noPlugin'));
-    return;
-  }
   pdfPlugin.onload('onPDFLoad()');
 
   // Older version of the PDF plugin may not have this method.
@@ -507,6 +497,14 @@ function createPDFPlugin() {
   }
 
   pdfPlugin.grayscale(true);
+}
+
+/**
+ * Returns true if a compatible pdf plugin exists, false if it doesn't.
+ */
+function checkCompatiblePluginExists() {
+  var dummyPlugin = $('dummy-viewer')
+  return !!dummyPlugin.onload;
 }
 
 /**
