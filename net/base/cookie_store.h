@@ -30,6 +30,9 @@ class CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   // be stored with cookies; currently just MAC information, see:
   // http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac
   struct CookieInfo {
+    CookieInfo();
+    ~CookieInfo();
+
     // The name of the cookie.
     std::string name;
     // TODO(abarth): Add value if any clients need it.
