@@ -593,7 +593,7 @@ def PrepareFlags():
 
   # Copy LD flags related to stripping over to OPT to have the analogous
   # actions be done to the bitcode.
-  linkflags = env.get('LD_FLAGS')
+  linkflags = shell.split(env.get('LD_FLAGS'))
   if '-s' in linkflags or '--strip-all' in linkflags:
     env.append('OPT_FLAGS', '-strip')
   if '-S' in linkflags or '--strip-debug' in linkflags:
@@ -1953,10 +1953,11 @@ def RunWithLog(args, stdin = None, silent = False, errexit = True):
   if isinstance(args, str):
     args = shell.split(env.eval(args))
 
+  Log.Info('\n' + StringifyCommand(args, stdin))
+
   if env.getbool('DRY_RUN'):
     return
 
-  Log.Info('\n' + StringifyCommand(args, stdin))
   try:
     p = subprocess.Popen(args, stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
