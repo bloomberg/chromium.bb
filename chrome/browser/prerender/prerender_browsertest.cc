@@ -1029,4 +1029,28 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorSubresource) {
   NavigateToDestURL();
 }
 
+// Checks that an SSL error that comes from an iframe does not cancel
+// the page. Non-main-frame requests are simply cancelled if they run into
+// an SSL problem.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorIframe) {
+  net::TestServer::HTTPSOptions https_options;
+  https_options.server_certificate =
+      net::TestServer::HTTPSOptions::CERT_MISMATCHED_NAME;
+  net::TestServer https_server(https_options,
+                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  GURL https_url = https_server.GetURL(
+      "files/prerender/prerender_embedded_content.html");
+  std::vector<net::TestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_URL", https_url.spec()));
+  std::string replacement_path;
+  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_with_iframe.html",
+      replacement_text,
+      &replacement_path));
+  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
+}
+
 }  // namespace prerender
