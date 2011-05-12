@@ -2245,6 +2245,7 @@
         'browser/chromeos/status/clock_menu_button_browsertest.cc',
         'browser/chromeos/status/input_method_menu_button_browsertest.cc',
         'browser/chromeos/status/power_menu_button_browsertest.cc',
+        'browser/chromeos/status/status_area_view_browsertest.cc',
         'browser/chromeos/tab_closeable_state_watcher_browsertest.cc',
         'browser/chromeos/update_browsertest.cc',
         'browser/crash_recovery_browsertest.cc',

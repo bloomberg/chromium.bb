@@ -86,7 +86,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
   // In the normal and the compact navigation bar mode, ChromeOS
   // layouts compact navigation buttons and status views in the title
   // area. See Layout
-  virtual int LayoutTabStrip() {
+  virtual int LayoutTabStripRegion() OVERRIDE {
     if (browser_view_->IsFullscreen() || !browser_view_->IsTabStripVisible()) {
       status_area_->SetVisible(false);
       tabstrip_->SetVisible(false);
@@ -105,7 +105,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
         LayoutTitlebarComponents(tabstrip_bounds);
   }
 
-  virtual int LayoutToolbar(int top) {
+  virtual int LayoutToolbar(int top) OVERRIDE {
     if (!browser_view_->IsFullscreen() && browser_view_->IsTabStripVisible() &&
         browser_view_->UseVerticalTabs()) {
       // For vertical tabs the toolbar is positioned in
@@ -115,12 +115,12 @@ class BrowserViewLayout : public ::BrowserViewLayout {
     return ::BrowserViewLayout::LayoutToolbar(top);
   }
 
-  virtual bool IsPositionInWindowCaption(const gfx::Point& point) {
+  virtual bool IsPositionInWindowCaption(const gfx::Point& point) OVERRIDE {
     return ::BrowserViewLayout::IsPositionInWindowCaption(point)
         && !IsPointInViewsInTitleArea(point);
   }
 
-  virtual int NonClientHitTest(const gfx::Point& point) {
+  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE {
     gfx::Point point_in_browser_view_coords(point);
     views::View::ConvertPointToView(
         browser_view_->parent(), browser_view_,
