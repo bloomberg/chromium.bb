@@ -2727,6 +2727,10 @@ void Browser::CreateHistoricalTab(TabContentsWrapper* contents) {
   if (!profile() || profile()->IsOffTheRecord())
     return;
 
+  // We don't create historical tabs for print preview tabs.
+  if (contents->tab_contents()->GetURL() == GURL(chrome::kChromeUIPrintURL))
+    return;
+
   TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(profile());
 
