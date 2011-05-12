@@ -35,6 +35,8 @@ static const SkColor kCrashBackgroundEndColor = SkColorSetRGB(35, 48, 64);
 // official versions.  See http://crosbug.com/10711.
 static const SkColor kKillBackgroundColor = SkColorSetRGB(57, 48, 88);
 static const SkColor kKillBackgroundEndColor = SkColorSetRGB(57, 48, 88);
+static const int kMessageFlags = gfx::Canvas::MULTI_LINE |
+    gfx::Canvas::NO_ELLIPSIS | gfx::Canvas::TEXT_ALIGN_CENTER;
 
 // Font size correction.
 #if defined(CROS_FONTS_USING_BCI)
@@ -96,7 +98,7 @@ void SadTabView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawStringInt(WideToUTF16Hack(message_), *message_font_,
                         kMessageColor, message_bounds_.x(), message_bounds_.y(),
                         message_bounds_.width(), message_bounds_.height(),
-                        gfx::Canvas::MULTI_LINE);
+                        kMessageFlags);
 
   if (learn_more_link_ != NULL)
     learn_more_link_->SetBounds(link_bounds_.x(), link_bounds_.y(),
@@ -115,11 +117,11 @@ void SadTabView::Layout() {
   int title_height = title_font_->GetHeight();
   title_bounds_.SetRect(title_x, title_y, title_width_, title_height);
 
-  gfx::CanvasSkia cc(0, 0, true);
   int message_width = static_cast<int>(width() * kMessageSize);
   int message_height = 0;
-  cc.SizeStringInt(WideToUTF16Hack(message_), *message_font_, &message_width,
-                   &message_height, gfx::Canvas::MULTI_LINE);
+  gfx::CanvasSkia::SizeStringInt(WideToUTF16Hack(message_),
+                                 *message_font_, &message_width,
+                                 &message_height, kMessageFlags);
   int message_x = (width() - message_width) / 2;
   int message_y = title_bounds_.bottom() + kTitleMessageSpacing;
   message_bounds_.SetRect(message_x, message_y, message_width, message_height);
