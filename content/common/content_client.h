@@ -55,13 +55,11 @@ class ContentClient {
 
   // Returns whether the given message should be allowed to be sent from a
   // swapped out renderer.
-  virtual bool CanSendWhileSwappedOut(const IPC::Message* msg) { return false; }
+  virtual bool CanSendWhileSwappedOut(const IPC::Message* msg);
 
   // Returns whether the given message should be processed in the browser on
   // behalf of a swapped out renderer.
-  virtual bool CanHandleWhileSwappedOut(const IPC::Message& msg) {
-    return false;
-  }
+  virtual bool CanHandleWhileSwappedOut(const IPC::Message& msg);
 
  private:
   // The embedder API for participating in browser logic.
