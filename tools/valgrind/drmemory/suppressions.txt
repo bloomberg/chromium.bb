@@ -313,6 +313,15 @@ GDI32.dll!CreateICW
 UNINITIALIZED READ
 USER32.dll!UnregisterClass*
 
+# http://code.google.com/p/drmemory/issues/detail?id=395
+UNINITIALIZED READ
+...
+*!gfx::PlatformFontWin::CreateHFontRef
+*!gfx::PlatformFontWin::GetBaseFontRef
+*!gfx::PlatformFontWin::PlatformFontWin
+*!gfx::PlatformFont::CreateDefault
+*!gfx::Font::Font
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
