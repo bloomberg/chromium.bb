@@ -83,10 +83,9 @@ class MockLoginPerformerDelegate : public LoginPerformer::Delegate {
                       const std::string&,
                       const GaiaAuthConsumer::ClientLoginResult&,
                       bool) {
-    WizardController::MarkDeviceRegistered();
     LoginPerformer* login_performer = controller_->login_performer_.release();
     login_performer = NULL;
-    controller_->OnProfilePrepared(NULL);
+    controller_->ActivateWizard(WizardController::kUserImageScreenName);
   }
 
   MOCK_METHOD1(OnLoginFailure, void(const LoginFailure&));
@@ -187,8 +186,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, NewUserLogin) {
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kUserImageScreenName,
                           GURL()))
-      .Times(1);
-  EXPECT_CALL(*mock_login_display_, OnFadeOut())
       .Times(1);
   existing_user_controller()->Login(kUsername, kPassword);
 }
