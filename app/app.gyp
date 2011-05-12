@@ -57,7 +57,7 @@
         '..',
       ],
       'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+        ['toolkit_uses_gtk==1', {
           'sources': [
             '../ui/base/dragdrop/gtk_dnd_util_unittest.cc',
           ],
@@ -73,7 +73,7 @@
             '../ui/base/view_prop_unittest.cc',
           ],
         }],
-        ['OS =="linux" or OS =="freebsd"', {
+        ['os_posix==1 and OS!="mac"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [

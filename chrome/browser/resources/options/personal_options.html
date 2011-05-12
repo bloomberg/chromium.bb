@@ -103,7 +103,7 @@
     </div>
   </section>
 </if>
-<if expr="not pp_ifdef('toolkit_views') and (os == 'linux2' or os.find('bsd') != -1)">
+<if expr="not pp_ifdef('toolkit_views') and (os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5')">
   <section>
     <h3 i18n-content="appearance"></h3>
     <div>

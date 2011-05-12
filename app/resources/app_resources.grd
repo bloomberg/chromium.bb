@@ -18,7 +18,7 @@
         <include name="IDR_CLOSE_H" file="close_h.png" type="BINDATA" />
         <include name="IDR_CLOSE_P" file="close_p.png" type="BINDATA" />
       </if>
-      <if expr="not pp_ifdef('toolkit_views') and (os == 'linux2' or os.find('bsd') != -1)">
+      <if expr="not pp_ifdef('toolkit_views') and (os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5')">
         <include name="IDR_CLOSE" file="linux_close.png" type="BINDATA" />
         <include name="IDR_CLOSE_H" file="linux_close_h.png" type="BINDATA" />
         <include name="IDR_CLOSE_P" file="linux_close_p.png" type="BINDATA" />
@@ -42,7 +42,7 @@
         <include name="IDR_MAXIMIZE_H" file="maximize_h.png" type="BINDATA" />
         <include name="IDR_MAXIMIZE_P" file="maximize_p.png" type="BINDATA" />
       </if>
-      <if expr="not pp_ifdef('toolkit_views') and (os == 'linux2' or os.find('bsd') != -1)">
+      <if expr="not pp_ifdef('toolkit_views') and (os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5')">
         <include name="IDR_MAXIMIZE" file="linux_maximize.png" type="BINDATA" />
         <include name="IDR_MAXIMIZE_H" file="linux_maximize_h.png" type="BINDATA" />
         <include name="IDR_MAXIMIZE_P" file="linux_maximize_p.png" type="BINDATA" />
@@ -54,7 +54,7 @@
         <include name="IDR_MINIMIZE_H" file="minimize_h.png" type="BINDATA" />
         <include name="IDR_MINIMIZE_P" file="minimize_p.png" type="BINDATA" />
       </if>
-      <if expr="not pp_ifdef('toolkit_views') and (os == 'linux2' or os.find('bsd') != -1)">
+      <if expr="not pp_ifdef('toolkit_views') and (os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5')">
         <include name="IDR_MINIMIZE" file="linux_minimize.png" type="BINDATA" />
         <include name="IDR_MINIMIZE_H" file="linux_minimize_h.png" type="BINDATA" />
         <include name="IDR_MINIMIZE_P" file="linux_minimize_p.png" type="BINDATA" />
@@ -64,7 +64,7 @@
         <include name="IDR_RESTORE_H" file="restore_h.png" type="BINDATA" />
         <include name="IDR_RESTORE_P" file="restore_p.png" type="BINDATA" />
       </if>
-      <if expr="not pp_ifdef('toolkit_views') and (os == 'linux2' or os.find('bsd') != -1)">
+      <if expr="not pp_ifdef('toolkit_views') and (os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5')">
         <include name="IDR_RESTORE" file="linux_restore.png" type="BINDATA" />
         <include name="IDR_RESTORE_H" file="linux_restore_h.png" type="BINDATA" />
         <include name="IDR_RESTORE_P" file="linux_restore_p.png" type="BINDATA" />

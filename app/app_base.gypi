@@ -31,7 +31,7 @@
             'app_paths.cc',
         ],
         'conditions': [
-          ['OS!="linux" and OS!="freebsd" and OS!="openbsd"', {
+          ['toolkit_uses_gtk!=1', {
             'sources!': [
               '../ui/base/dragdrop/gtk_dnd_util.cc',
               '../ui/base/dragdrop/gtk_dnd_util.h',
@@ -221,7 +221,7 @@
         'win/shell.h',
       ],
       'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['toolkit_uses_gtk==1', {
           'dependencies': [
             # font_gtk.cc uses fontconfig.
             # TODO(evanm): I think this is wrong; it should just use GTK.
@@ -273,7 +273,7 @@
             ['exclude', '^win/*'],
           ],
         }],
-        ['OS=="linux"', {
+        ['use_x11==1', {
           'sources!': [
             '../ui/base/keycodes/keyboard_code_conversion_mac.mm',
             '../ui/base/keycodes/keyboard_code_conversion_mac.h',
