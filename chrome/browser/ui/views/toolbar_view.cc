@@ -92,8 +92,7 @@ ToolbarView::ToolbarView(Browser* browser)
       app_menu_(NULL),
       profile_(NULL),
       browser_(browser),
-      profiles_menu_contents_(NULL),
-      destroyed_flag_(NULL) {
+      profiles_menu_contents_(NULL) {
   SetID(VIEW_ID_TOOLBAR);
 
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
@@ -115,9 +114,6 @@ ToolbarView::ToolbarView(Browser* browser)
 }
 
 ToolbarView::~ToolbarView() {
-  if (destroyed_flag_)
-    *destroyed_flag_ = true;
-
   // NOTE: Don't remove the command observers here.  This object gets destroyed
   // after the Browser (which owns the CommandUpdater), so the CommandUpdater is
   // already gone.
@@ -339,8 +335,6 @@ bool ToolbarView::GetAcceleratorInfo(int id, ui::Accelerator* accel) {
 void ToolbarView::RunMenu(views::View* source, const gfx::Point& /* pt */) {
   DCHECK_EQ(VIEW_ID_APP_MENU, source->GetID());
 
-  bool destroyed_flag = false;
-  destroyed_flag_ = &destroyed_flag;
   wrench_menu_ = new WrenchMenu(browser_);
   wrench_menu_->Init(wrench_menu_model_.get());
 
@@ -348,10 +342,6 @@ void ToolbarView::RunMenu(views::View* source, const gfx::Point& /* pt */) {
     menu_listeners_[i]->OnMenuOpened();
 
   wrench_menu_->RunMenu(app_menu_);
-
-  if (destroyed_flag)
-    return;
-  destroyed_flag_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

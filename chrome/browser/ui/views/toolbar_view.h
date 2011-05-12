@@ -221,11 +221,6 @@ class ToolbarView : public AccessiblePaneView,
 
   NotificationRegistrar registrar_;
 
-  // If non-null the destructor sets this to true. This is set to a non-null
-  // while the menu is showing and used to detect if the menu was deleted while
-  // running.
-  bool* destroyed_flag_;
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarView);
 };
 
