@@ -145,12 +145,16 @@ html[dir=rtl] .progress {
   white-space: nowrap;
 }
 
-.download .url {
-  color: #080;
+.download .src-url {
+  display: inline-block;
+  color: #5566DD;
   max-width: 500px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-decoration: none;
+  padding-top: 4px;
+  padding-bottom: 1px;
 }
 
 .controls a {
@@ -398,8 +402,12 @@ function Download(download) {
   this.nodeStatus_ = createElementWithClassName('span', 'status');
   this.nodeTitleArea_.appendChild(this.nodeStatus_);
 
-  this.nodeURL_ = createElementWithClassName('div', 'url');
-  this.safe_.appendChild(this.nodeURL_);
+  var nodeURLDiv = createElementWithClassName('div', 'url-container');
+  this.safe_.appendChild(nodeURLDiv);
+
+  this.nodeURL_ = createElementWithClassName('a', 'src-url');
+  this.nodeURL_.target = "_blank";
+  nodeURLDiv.appendChild(this.nodeURL_);
 
   // Controls.
   this.nodeControls_ = createElementWithClassName('div', 'controls');
@@ -582,8 +590,10 @@ Download.prototype.update = function(download) {
     this.nodeDate_.innerHTML = this.date_;
     // Don't unnecessarily update the url, as doing so will remove any
     // text selection the user has started (http://crbug.com/44982).
-    if (this.nodeURL_.textContent != this.url_)
+    if (this.nodeURL_.textContent != this.url_) {
       this.nodeURL_.textContent = this.url_;
+      this.nodeURL_.href = this.url_;
+    }
     this.nodeStatus_.innerHTML = this.getStatusText_();
 
     this.danger_.style.display = 'none';
