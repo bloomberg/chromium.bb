@@ -37,7 +37,6 @@ void ChromeFrameOperations::ReadOptions(
     const char* pref_name;
     const wchar_t* option_name;
   } map[] = {
-    { master_preferences::kCeee, kOptionCeee },
     { master_preferences::kChromeFrameReadyMode, kOptionReadyMode },
     { master_preferences::kMultiInstall, kOptionMultiInstall }
   };
@@ -62,7 +61,6 @@ void ChromeFrameOperations::ReadOptions(
     const char* flag_name;
     const wchar_t* option_name;
   } map[] = {
-    { switches::kCeee, kOptionCeee },
     { switches::kChromeFrameReadyMode, kOptionReadyMode },
     { switches::kMultiInstall, kOptionMultiInstall }
   };
@@ -82,10 +80,6 @@ void ChromeFrameOperations::AddKeyFiles(
   DCHECK(key_files);
   key_files->push_back(FilePath(installer::kChromeFrameDll));
   key_files->push_back(FilePath(installer::kChromeFrameHelperExe));
-  if (options.find(kOptionCeee) != options.end()) {
-    key_files->push_back(FilePath(installer::kCeeeIeDll));
-    key_files->push_back(FilePath(installer::kCeeeBrokerExe));
-  }
 }
 
 void ChromeFrameOperations::AddComDllList(
@@ -94,29 +88,39 @@ void ChromeFrameOperations::AddComDllList(
   DCHECK(com_dll_list);
   std::vector<FilePath> dll_list;
   com_dll_list->push_back(FilePath(installer::kChromeFrameDll));
-  if (options.find(kOptionCeee) != options.end()) {
-    com_dll_list->push_back(FilePath(installer::kCeeeInstallHelperDll));
-    com_dll_list->push_back(FilePath(installer::kCeeeIeDll));
-  }
 }
 
-void ChromeFrameOperations::AppendProductFlags(
+void ChromeFrameOperations::AppendUninstallFlags(
     const std::set<std::wstring>& options,
-    CommandLine* uninstall_command) const {
-  DCHECK(uninstall_command);
-  uninstall_command->AppendSwitch(switches::kChromeFrame);
+    CommandLine* cmd_line) const {
+  DCHECK(cmd_line);
+  bool is_multi_install = options.find(kOptionMultiInstall) != options.end();
 
-  if (options.find(kOptionCeee) != options.end())
-    uninstall_command->AppendSwitch(switches::kCeee);
+  // Add --multi-install if it isn't already there.
+  if (is_multi_install && !cmd_line->HasSwitch(switches::kMultiInstall))
+    cmd_line->AppendSwitch(switches::kMultiInstall);
 
-  if (options.find(kOptionMultiInstall) != options.end()) {
-    if (!uninstall_command->HasSwitch(switches::kMultiInstall))
-      uninstall_command->AppendSwitch(switches::kMultiInstall);
+  // --chrome-frame is always needed.
+  cmd_line->AppendSwitch(switches::kChromeFrame);
 
-    // ready-mode is only supported in multi-installs of Chrome Frame.
-    if (options.find(kOptionReadyMode) != options.end())
-      uninstall_command->AppendSwitch(switches::kChromeFrameReadyMode);
-  }
+  // ready-mode is only supported in multi-installs of Chrome Frame.
+  if (is_multi_install && options.find(kOptionReadyMode) != options.end())
+    cmd_line->AppendSwitch(switches::kChromeFrameReadyMode);
+}
+
+void ChromeFrameOperations::AppendRenameFlags(
+    const std::set<std::wstring>& options,
+    CommandLine* cmd_line) const {
+  DCHECK(cmd_line);
+  bool is_multi_install = options.find(kOptionMultiInstall) != options.end();
+
+  // Add --multi-install if it isn't already there.
+  if (is_multi_install && !cmd_line->HasSwitch(switches::kMultiInstall))
+    cmd_line->AppendSwitch(switches::kMultiInstall);
+
+  // --chrome-frame is needed for single installs.
+  if (!is_multi_install)
+    cmd_line->AppendSwitch(switches::kChromeFrame);
 }
 
 bool ChromeFrameOperations::SetChannelFlags(
@@ -129,9 +133,6 @@ bool ChromeFrameOperations::SetChannelFlags(
 
   // Always remove the options if we're called to remove flags or if the
   // corresponding option isn't set.
-  modified |= channel_info->SetCeee(
-      set && options.find(kOptionCeee) != options.end());
-
   modified |= channel_info->SetReadyMode(
       set && options.find(kOptionReadyMode) != options.end());
 

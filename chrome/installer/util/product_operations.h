@@ -51,10 +51,13 @@ class ProductOperations {
   virtual void AddComDllList(const std::set<std::wstring>& options,
                              std::vector<FilePath>* com_dll_list) const = 0;
 
-  // Given a command line, appends the set of uninstall flags the uninstaller
-  // for this product will require.
-  virtual void AppendProductFlags(const std::set<std::wstring>& options,
-                                  CommandLine* uninstall_command) const = 0;
+  // Given a command line, appends the set of product-specific uninstall flags.
+  virtual void AppendUninstallFlags(const std::set<std::wstring>& options,
+                                    CommandLine* cmd_line) const = 0;
+
+  // Given a command line, appends the set of product-specific rename flags.
+  virtual void AppendRenameFlags(const std::set<std::wstring>& options,
+                                 CommandLine* cmd_line) const = 0;
 
   // Adds or removes product-specific flags in |channel_info|.  Returns true if
   // |channel_info| is modified.

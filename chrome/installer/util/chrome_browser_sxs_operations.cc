@@ -10,13 +10,22 @@
 
 namespace installer {
 
-void ChromeBrowserSxSOperations::AppendProductFlags(
+void ChromeBrowserSxSOperations::AppendUninstallFlags(
     const std::set<std::wstring>& options,
-    CommandLine* uninstall_command) const {
-  DCHECK(uninstall_command);
+    CommandLine* cmd_line) const {
+  DCHECK(cmd_line);
 
-  uninstall_command->AppendSwitch(switches::kChromeSxS);
-  ChromeBrowserOperations::AppendProductFlags(options, uninstall_command);
+  cmd_line->AppendSwitch(switches::kChromeSxS);
+  ChromeBrowserOperations::AppendUninstallFlags(options, cmd_line);
+}
+
+void ChromeBrowserSxSOperations::AppendRenameFlags(
+    const std::set<std::wstring>& options,
+    CommandLine* cmd_line) const {
+  DCHECK(cmd_line);
+
+  cmd_line->AppendSwitch(switches::kChromeSxS);
+  ChromeBrowserOperations::AppendRenameFlags(options, cmd_line);
 }
 
 }  // namespace installer

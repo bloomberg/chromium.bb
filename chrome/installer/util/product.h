@@ -102,8 +102,11 @@ class Product {
   // See ProductOperations::AddComDllList.
   void AddComDllList(std::vector<FilePath>* com_dll_list) const;
 
-  // See ProductOperations::AppendProductFlags.
-  void AppendProductFlags(CommandLine* command_line) const;
+  // See ProductOperations::AppendUninstallFlags.
+  void AppendUninstallFlags(CommandLine* command_line) const;
+
+  // See ProductOperations::AppendRenameFlags.
+  void AppendRenameFlags(CommandLine* command_line) const;
 
   // See Productoperations::SetChannelFlags.
   bool SetChannelFlags(bool set, ChannelInfo* channel_info) const;

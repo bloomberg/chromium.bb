@@ -50,15 +50,30 @@ void ChromeBrowserOperations::AddComDllList(
     std::vector<FilePath>* com_dll_list) const {
 }
 
-void ChromeBrowserOperations::AppendProductFlags(
+void ChromeBrowserOperations::AppendUninstallFlags(
     const std::set<std::wstring>& options,
-    CommandLine* uninstall_command) const {
-  DCHECK(uninstall_command);
+    CommandLine* cmd_line) const {
+  DCHECK(cmd_line);
 
   if (options.find(kOptionMultiInstall) != options.end()) {
-    if (!uninstall_command->HasSwitch(switches::kMultiInstall))
-      uninstall_command->AppendSwitch(switches::kMultiInstall);
-    uninstall_command->AppendSwitch(switches::kChrome);
+    // Add --multi-install if it isn't already there.
+    if (!cmd_line->HasSwitch(switches::kMultiInstall))
+      cmd_line->AppendSwitch(switches::kMultiInstall);
+
+    // --chrome is only needed in multi-install.
+    cmd_line->AppendSwitch(switches::kChrome);
+  }
+}
+
+void ChromeBrowserOperations::AppendRenameFlags(
+    const std::set<std::wstring>& options,
+    CommandLine* cmd_line) const {
+  DCHECK(cmd_line);
+
+  // Add --multi-install if it isn't already there.
+  if (options.find(kOptionMultiInstall) != options.end() &&
+      !cmd_line->HasSwitch(switches::kMultiInstall)) {
+    cmd_line->AppendSwitch(switches::kMultiInstall);
   }
 }
 

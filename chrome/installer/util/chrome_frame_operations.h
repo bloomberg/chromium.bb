@@ -35,9 +35,13 @@ class ChromeFrameOperations : public ProductOperations {
       const std::set<std::wstring>& options,
       std::vector<FilePath>* com_dll_list) const OVERRIDE;
 
-  virtual void AppendProductFlags(
-    const std::set<std::wstring>& options,
-    CommandLine* uninstall_command) const OVERRIDE;
+  virtual void AppendUninstallFlags(
+      const std::set<std::wstring>& options,
+      CommandLine* cmd_line) const OVERRIDE;
+
+  virtual void AppendRenameFlags(
+      const std::set<std::wstring>& options,
+      CommandLine* cmd_line) const OVERRIDE;
 
   virtual bool SetChannelFlags(const std::set<std::wstring>& options,
                                bool set,

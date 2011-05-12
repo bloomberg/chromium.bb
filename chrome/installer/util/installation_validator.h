@@ -90,7 +90,12 @@ class InstallationValidator {
    public:
     virtual ~ProductRules() { }
     virtual BrowserDistribution::Type distribution_type() const = 0;
-    virtual void AddProductSwitchExpectations(
+    virtual void AddUninstallSwitchExpectations(
+        const InstallationState& machine_state,
+        bool system_install,
+        const ProductState& product_state,
+        SwitchExpectations* expectations) const = 0;
+    virtual void AddRenameSwitchExpectations(
         const InstallationState& machine_state,
         bool system_install,
         const ProductState& product_state,
@@ -103,7 +108,12 @@ class InstallationValidator {
   class ChromeRules : public ProductRules {
    public:
     virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
-    virtual void AddProductSwitchExpectations(
+    virtual void AddUninstallSwitchExpectations(
+        const InstallationState& machine_state,
+        bool system_install,
+        const ProductState& product_state,
+        SwitchExpectations* expectations) const OVERRIDE;
+    virtual void AddRenameSwitchExpectations(
         const InstallationState& machine_state,
         bool system_install,
         const ProductState& product_state,
@@ -116,7 +126,12 @@ class InstallationValidator {
   class ChromeFrameRules : public ProductRules {
    public:
     virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
-    virtual void AddProductSwitchExpectations(
+    virtual void AddUninstallSwitchExpectations(
+        const InstallationState& machine_state,
+        bool system_install,
+        const ProductState& product_state,
+        SwitchExpectations* expectations) const OVERRIDE;
+    virtual void AddRenameSwitchExpectations(
         const InstallationState& machine_state,
         bool system_install,
         const ProductState& product_state,
@@ -129,7 +144,12 @@ class InstallationValidator {
   class ChromeBinariesRules : public ProductRules {
    public:
     virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
-    virtual void AddProductSwitchExpectations(
+    virtual void AddUninstallSwitchExpectations(
+        const InstallationState& machine_state,
+        bool system_install,
+        const ProductState& product_state,
+        SwitchExpectations* expectations) const OVERRIDE;
+    virtual void AddRenameSwitchExpectations(
         const InstallationState& machine_state,
         bool system_install,
         const ProductState& product_state,

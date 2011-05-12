@@ -144,7 +144,7 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
     for (size_t i = 0; i < products.size(); ++i) {
       const Product& p = *products[i];
       if (!p.is_chrome() && !p.ShouldCreateUninstallEntry())
-        p.AppendProductFlags(&uninstall_arguments);
+        p.AppendUninstallFlags(&uninstall_arguments);
     }
   }
 
@@ -423,8 +423,6 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
     rename.AppendSwitch(switches::kRenameChromeExe);
     if (installer_state.system_install())
       rename.AppendSwitch(switches::kSystemLevel);
-    if (installer_state.is_multi_install())
-      rename.AppendSwitch(switches::kMultiInstall);
 
     if (installer_state.verbose_logging())
       rename.AppendSwitch(switches::kVerboseLogging);
@@ -445,11 +443,13 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
       // will check the key and run the command, so we add it for all.  The
       // first to run it will perform the operation and clean up the other
       // values.
+      CommandLine product_rename_cmd(rename);
+      products[i]->AppendRenameFlags(&product_rename_cmd);
       in_use_update_work_items->AddSetRegValueWorkItem(
           root,
           version_key,
           google_update::kRegRenameCmdField,
-          rename.command_line_string(),
+          product_rename_cmd.command_line_string(),
           true);
     }
 
@@ -873,7 +873,7 @@ void AppendUninstallCommandLineFlags(const InstallerState& installer_state,
   uninstall_cmd->AppendSwitch(installer::switches::kUninstall);
 
   // Append the product-specific uninstall flags.
-  product.AppendProductFlags(uninstall_cmd);
+  product.AppendUninstallFlags(uninstall_cmd);
   if (installer_state.is_msi()) {
     uninstall_cmd->AppendSwitch(installer::switches::kMsi);
     // See comment in uninstall.cc where we check for the kDeleteProfile switch.

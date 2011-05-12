@@ -22,7 +22,7 @@ BrowserDistribution::Type
   return BrowserDistribution::CHROME_BROWSER;
 }
 
-void InstallationValidator::ChromeRules::AddProductSwitchExpectations(
+void InstallationValidator::ChromeRules::AddUninstallSwitchExpectations(
     const InstallationState& machine_state,
     bool system_install,
     const ProductState& product_state,
@@ -30,10 +30,12 @@ void InstallationValidator::ChromeRules::AddProductSwitchExpectations(
   const bool is_multi_install =
       product_state.uninstall_command().HasSwitch(switches::kMultiInstall);
 
-  // --chrome should be present iff --multi-install.  This wasn't the case in
-  // Chrome 10 (between r68996 and r72497), though, so consider it optional.
+  // --chrome should be present for uninstall iff --multi-install.  This wasn't
+  // the case in Chrome 10 (between r68996 and r72497), though, so consider it
+  // optional.
 
-  // --chrome-frame --ready-mode should be present iff CF in ready mode.
+  // --chrome-frame --ready-mode should be present for uninstall iff CF in ready
+  // mode.
   const ProductState* cf_state =
       machine_state.GetProductState(system_install,
                                     BrowserDistribution::CHROME_FRAME);
@@ -44,6 +46,24 @@ void InstallationValidator::ChromeRules::AddProductSwitchExpectations(
                                          ready_mode));
   expectations->push_back(
       std::make_pair(std::string(switches::kChromeFrameReadyMode), ready_mode));
+}
+
+void InstallationValidator::ChromeRules::AddRenameSwitchExpectations(
+    const InstallationState& machine_state,
+    bool system_install,
+    const ProductState& product_state,
+    SwitchExpectations* expectations) const {
+  const bool is_multi_install =
+      product_state.uninstall_command().HasSwitch(switches::kMultiInstall);
+
+  // --chrome should not be present for rename.  It was for a time, so we'll be
+  // lenient so that mini_installer tests pass.
+
+  // --chrome-frame --ready-mode should never be present.
+  expectations->push_back(
+      std::make_pair(std::string(switches::kChromeFrame), false));
+  expectations->push_back(
+      std::make_pair(std::string(switches::kChromeFrameReadyMode), false));
 }
 
 bool InstallationValidator::ChromeRules::UsageStatsAllowed(
@@ -58,7 +78,7 @@ BrowserDistribution::Type
   return BrowserDistribution::CHROME_FRAME;
 }
 
-void InstallationValidator::ChromeFrameRules::AddProductSwitchExpectations(
+void InstallationValidator::ChromeFrameRules::AddUninstallSwitchExpectations(
     const InstallationState& machine_state,
     bool system_install,
     const ProductState& product_state,
@@ -66,6 +86,19 @@ void InstallationValidator::ChromeFrameRules::AddProductSwitchExpectations(
   // --chrome-frame must be present.
   expectations->push_back(std::make_pair(std::string(switches::kChromeFrame),
                                          true));
+  // --chrome must not be present.
+  expectations->push_back(std::make_pair(std::string(switches::kChrome),
+                                         false));
+}
+
+void InstallationValidator::ChromeFrameRules::AddRenameSwitchExpectations(
+    const InstallationState& machine_state,
+    bool system_install,
+    const ProductState& product_state,
+    SwitchExpectations* expectations) const {
+  // --chrome-frame must be present for SxS rename.
+  expectations->push_back(std::make_pair(std::string(switches::kChromeFrame),
+                                         !product_state.is_multi_install()));
   // --chrome must not be present.
   expectations->push_back(std::make_pair(std::string(switches::kChrome),
                                          false));
@@ -83,7 +116,15 @@ BrowserDistribution::Type
   return BrowserDistribution::CHROME_BINARIES;
 }
 
-void InstallationValidator::ChromeBinariesRules::AddProductSwitchExpectations(
+void InstallationValidator::ChromeBinariesRules::AddUninstallSwitchExpectations(
+    const InstallationState& machine_state,
+    bool system_install,
+    const ProductState& product_state,
+    SwitchExpectations* expectations) const {
+  NOTREACHED();
+}
+
+void InstallationValidator::ChromeBinariesRules::AddRenameSwitchExpectations(
     const InstallationState& machine_state,
     bool system_install,
     const ProductState& product_state,
@@ -372,9 +413,10 @@ void InstallationValidator::ValidateUninstallCommand(const ProductContext& ctx,
                                     ctx.system_install));
   expected.push_back(std::make_pair(std::string(switches::kMultiInstall),
                                     is_multi_install));
-  ctx.rules.AddProductSwitchExpectations(ctx.machine_state,
+  ctx.rules.AddUninstallSwitchExpectations(ctx.machine_state,
                                          ctx.system_install,
-                                         ctx.state, &expected);
+                                         ctx.state,
+                                         &expected);
 
   ValidateCommandExpectations(ctx, command, expected, source, is_valid);
 }
@@ -397,6 +439,10 @@ void InstallationValidator::ValidateRenameCommand(const ProductContext& ctx,
                                     ctx.system_install));
   expected.push_back(std::make_pair(std::string(switches::kMultiInstall),
                                     ctx.state.is_multi_install()));
+  ctx.rules.AddRenameSwitchExpectations(ctx.machine_state,
+                                        ctx.system_install,
+                                        ctx.state,
+                                        &expected);
 
   ValidateCommandExpectations(ctx, command, expected, "in-use renamer",
                               is_valid);
