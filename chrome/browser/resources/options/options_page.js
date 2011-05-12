@@ -100,7 +100,7 @@ cr.define('options', function() {
       }
     }
 
-    pageName = targetPage.name;
+    pageName = targetPage.name.toLowerCase();
 
     // Determine if the root page is 'sticky', meaning that it
     // shouldn't change when showing a sub-page.  This can happen for special
