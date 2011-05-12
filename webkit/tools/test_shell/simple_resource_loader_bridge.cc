@@ -488,7 +488,7 @@ class RequestProxy : public net::URLRequest::Delegate,
         StaticCookiePolicy::ALLOW_ALL_COOKIES :
         StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES;
 
-    net::StaticCookiePolicy policy(policy_type);
+    StaticCookiePolicy policy(policy_type);
     int rv = policy.CanGetCookies(
         request->url(), request->first_party_for_cookies());
     return rv == net::OK;
@@ -501,7 +501,7 @@ class RequestProxy : public net::URLRequest::Delegate,
         StaticCookiePolicy::ALLOW_ALL_COOKIES :
         StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES;
 
-    net::StaticCookiePolicy policy(policy_type);
+    StaticCookiePolicy policy(policy_type);
     int rv = policy.CanSetCookie(
         request->url(), request->first_party_for_cookies(), cookie_line);
     return rv == net::OK;

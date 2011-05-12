@@ -16,7 +16,6 @@
 #include "chrome/service/service_process.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
-#include "net/base/cookie_policy.h"
 #include "net/base/dnsrr_resolver.h"
 #include "net/base/host_resolver.h"
 #include "net/base/ssl_config_service_defaults.h"

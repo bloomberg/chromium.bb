@@ -383,7 +383,8 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
       new SocketStreamDispatcherHost(
-          new RendererURLRequestContextSelector(profile(), id()));
+          new RendererURLRequestContextSelector(profile(), id()),
+          &profile()->GetResourceContext());
   channel_->AddFilter(socket_stream_dispatcher_host);
 
   channel_->AddFilter(

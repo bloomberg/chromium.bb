@@ -157,10 +157,6 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     return proxy_service_.get();
   }
 
-  net::CookiePolicy* cookie_policy() const {
-    return cookie_policy_.get();
-  }
-
   ChromeURLRequestContext* main_request_context() const {
     return main_request_context_;
   }
@@ -218,7 +214,6 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   mutable scoped_ptr<net::NetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::DnsCertProvenanceChecker> dns_cert_checker_;
   mutable scoped_ptr<net::ProxyService> proxy_service_;
-  mutable scoped_ptr<net::CookiePolicy> cookie_policy_;
 
   // Pointed to by ResourceContext.
   mutable scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;

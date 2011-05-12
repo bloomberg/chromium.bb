@@ -12,7 +12,6 @@
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/ssl_config_service.h"
-#include "net/base/static_cookie_policy.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/proxy/proxy_config_service.h"
@@ -44,7 +43,6 @@ void TestShellRequestContext::Init(
     net::HttpCache::Mode cache_mode,
     bool no_proxy) {
   storage_.set_cookie_store(new net::CookieMonster(NULL, NULL));
-  storage_.set_cookie_policy(new net::StaticCookiePolicy());
 
   // hard-code A-L and A-C for test shells
   set_accept_language("en-us,en");

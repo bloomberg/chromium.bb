@@ -10,7 +10,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/cookie_monster.h"
-#include "net/base/cookie_policy.h"
 #include "net/base/host_resolver.h"
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/disk_cache/disk_cache.h"

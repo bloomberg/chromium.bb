@@ -182,10 +182,6 @@ void ProfileImplIOData::LazyInitializeInternal(
   ApplyProfileParamsToContext(media_request_context_);
   ApplyProfileParamsToContext(extensions_context);
 
-  main_context->set_cookie_policy(cookie_policy());
-  media_request_context_->set_cookie_policy(cookie_policy());
-  extensions_context->set_cookie_policy(cookie_policy());
-
   main_context->set_net_log(io_thread->net_log());
   media_request_context_->set_net_log(io_thread->net_log());
   extensions_context->set_net_log(io_thread->net_log());

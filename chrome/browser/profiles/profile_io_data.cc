@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
-#include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
@@ -291,10 +290,6 @@ void ProfileIOData::LazyInitialize() const {
   extensions_request_context_ = new RequestContext;
 
   profile_params_->appcache_service->set_request_context(main_request_context_);
-
-  // Create objects pointed to by URLRequestContext.
-  cookie_policy_.reset(
-      new ChromeCookiePolicy(profile_params_->host_content_settings_map));
 
   network_delegate_.reset(new ChromeNetworkDelegate(
         io_thread_globals->extension_event_router_forwarder.get(),

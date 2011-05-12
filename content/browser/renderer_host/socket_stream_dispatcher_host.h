@@ -16,14 +16,19 @@
 class GURL;
 class SocketStreamHost;
 
+namespace content {
+class ResourceContext;
+}
+
 // Dispatches ViewHostMsg_SocketStream_* messages sent from renderer.
 // It also acts as SocketStream::Delegate so that it sends
 // ViewMsg_SocketStream_* messages back to renderer.
 class SocketStreamDispatcherHost : public BrowserMessageFilter,
                                    public net::SocketStream::Delegate {
  public:
-  explicit SocketStreamDispatcherHost(
-      ResourceMessageFilter::URLRequestContextSelector* selector);
+  SocketStreamDispatcherHost(
+      ResourceMessageFilter::URLRequestContextSelector* selector,
+      const content::ResourceContext* resource_context);
   virtual ~SocketStreamDispatcherHost();
 
   // BrowserMessageFilter methods.
@@ -40,6 +45,11 @@ class SocketStreamDispatcherHost : public BrowserMessageFilter,
   virtual void OnReceivedData(net::SocketStream* socket,
                               const char* data, int len);
   virtual void OnClose(net::SocketStream* socket);
+  virtual bool CanGetCookies(net::SocketStream* socket, const GURL& url);
+  virtual bool CanSetCookie(net::SocketStream* request,
+                            const GURL& url,
+                            const std::string& cookie_line,
+                            net::CookieOptions* options);
 
  private:
   // Message handlers called by OnMessageReceived.
@@ -54,6 +64,7 @@ class SocketStreamDispatcherHost : public BrowserMessageFilter,
   IDMap<SocketStreamHost> hosts_;
   const scoped_ptr<ResourceMessageFilter::URLRequestContextSelector>
       url_request_context_selector_;
+  const content::ResourceContext* resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamDispatcherHost);
 };

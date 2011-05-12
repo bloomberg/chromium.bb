@@ -410,11 +410,6 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
       NotificationType::URL_REQUEST_CONTEXT_RELEASED,
       Source<net::URLRequestContext>(this),
       NotificationService::NoDetails());
-
-  // cookie_policy_'s lifetime is auto-managed by chrome_cookie_policy_.  We
-  // null this out here to avoid a dangling reference to chrome_cookie_policy_
-  // when ~net::URLRequestContext runs.
-  set_cookie_policy(NULL);
 }
 
 const std::string& ChromeURLRequestContext::GetUserAgent(

@@ -20,7 +20,6 @@
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "net/base/cookie_policy.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/fileapi/file_system_context.h"

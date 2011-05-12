@@ -124,7 +124,6 @@
 #include "net/base/cookie_monster.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
-#include "net/base/static_cookie_policy.h"
 #include "net/url_request/url_request_context.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -6,17 +6,21 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/socket_stream_host.h"
 #include "content/common/socket_stream.h"
 #include "content/common/socket_stream_messages.h"
 #include "content/common/resource_messages.h"
+#include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/websockets/websocket_job.h"
 #include "net/websockets/websocket_throttle.h"
 
 SocketStreamDispatcherHost::SocketStreamDispatcherHost(
-    ResourceMessageFilter::URLRequestContextSelector* selector)
-    : url_request_context_selector_(selector) {
+    ResourceMessageFilter::URLRequestContextSelector* selector,
+    const content::ResourceContext* resource_context)
+    : url_request_context_selector_(selector),
+      resource_context_(resource_context) {
   DCHECK(selector);
   net::WebSocketJob::EnsureInit();
 }
@@ -101,6 +105,20 @@ void SocketStreamDispatcherHost::OnClose(net::SocketStream* socket) {
     return;
   }
   DeleteSocketStreamHost(socket_id);
+}
+
+bool SocketStreamDispatcherHost::CanGetCookies(net::SocketStream* socket,
+                                               const GURL& url) {
+  return content::GetContentClient()->browser()->AllowGetCookie(
+      url, url, net::CookieList(), *resource_context_, 0, MSG_ROUTING_NONE);
+}
+
+bool SocketStreamDispatcherHost::CanSetCookie(net::SocketStream* request,
+                                              const GURL& url,
+                                              const std::string& cookie_line,
+                                              net::CookieOptions* options) {
+  return content::GetContentClient()->browser()->AllowSetCookie(
+      url, url, cookie_line, *resource_context_, 0, MSG_ROUTING_NONE, options);
 }
 
 // Message handlers called by OnMessageReceived.

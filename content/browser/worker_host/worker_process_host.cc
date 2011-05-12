@@ -240,7 +240,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
       new SocketStreamDispatcherHost(
-          new URLRequestContextSelector(request_context));
+          new URLRequestContextSelector(request_context), resource_context_);
   AddFilter(socket_stream_dispatcher_host);
 }
 

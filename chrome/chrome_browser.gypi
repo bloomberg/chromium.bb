@@ -1314,8 +1314,6 @@
         'browser/net/browser_url_util.cc',
         'browser/net/browser_url_util.h',
         'browser/net/chrome_cookie_notification_details.h',
-        'browser/net/chrome_cookie_policy.cc',
-        'browser/net/chrome_cookie_policy.h',
         'browser/net/chrome_dns_cert_provenance_checker.cc',
         'browser/net/chrome_dns_cert_provenance_checker.h',
         'browser/net/chrome_dns_cert_provenance_checker_factory.cc',
