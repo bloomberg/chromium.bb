@@ -358,6 +358,7 @@
           },
           'inputs': [
             '<(grit_grd_file)',
+            '<(frontend_folder)/devtools_frontend.html',
           ],
           'outputs': [
             '<(grit_out_dir)/grit/devtools_frontend_resources.h',
