@@ -457,7 +457,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   // If we've added types, we always want to request a nudge/config (even if
   // the initial sync is ended), in case we could not decrypt the data.
   if (pending_config_mode_state_->added_types.none()) {
-    VLOG(0) << "SyncBackendHost(" << this << "): No new types added. "
+    VLOG(1) << "SyncBackendHost(" << this << "): No new types added. "
             << "Calling ready_task directly";
     // No new types - just notify the caller that the types are available.
     pending_config_mode_state_->ready_task->Run();
@@ -467,7 +467,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
     syncable::ModelTypeBitSet types_copy(pending_download_state_->added_types);
     if (IsNigoriEnabled())
       types_copy.set(syncable::NIGORI);
-    VLOG(0) <<  "SyncBackendHost(" << this << "):New Types added. "
+    VLOG(1) <<  "SyncBackendHost(" << this << "):New Types added. "
             << "Calling DoRequestConfig";
     core_thread_.message_loop()->PostTask(FROM_HERE,
          NewRunnableMethod(core_.get(),
