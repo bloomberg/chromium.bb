@@ -192,7 +192,7 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
             base::TimeDelta::FromSeconds(5),
             this, &BrowserRenderProcessHost::ClearTransportDIBCache)),
       accessibility_enabled_(false),
-      is_initialized_(false) {
+      extension_process_(false) {
   widget_helper_ = new RenderWidgetHelper();
 
   WebCacheManager::GetInstance()->Add(id());
@@ -239,13 +239,18 @@ BrowserRenderProcessHost::~BrowserRenderProcessHost() {
   ClearTransportDIBCache();
 }
 
-bool BrowserRenderProcessHost::Init(bool is_accessibility_enabled) {
+bool BrowserRenderProcessHost::Init(
+    bool is_accessibility_enabled, bool is_extensions_process) {
   // calling Init() more than once does nothing, this makes it more convenient
   // for the view host which may not be sure in some cases
   if (channel_.get())
     return true;
 
   accessibility_enabled_ = is_accessibility_enabled;
+
+  // It is possible for an extension process to be reused for non-extension
+  // content, e.g. if an extension calls window.open.
+  extension_process_ = extension_process_ || is_extensions_process;
 
   CommandLine::StringType renderer_prefix;
 #if defined(OS_POSIX)
@@ -327,7 +332,6 @@ bool BrowserRenderProcessHost::Init(bool is_accessibility_enabled) {
     fast_shutdown_started_ = false;
   }
 
-  is_initialized_ = true;
   return true;
 }
 
@@ -466,8 +470,8 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   // Extensions use a special pseudo-process type to make them distinguishable,
   // even though they're just renderers.
   command_line->AppendSwitchASCII(switches::kProcessType,
-      is_extension_process_ ? switches::kExtensionProcess :
-                              switches::kRendererProcess);
+      extension_process_ ? switches::kExtensionProcess :
+                           switches::kRendererProcess);
 
   if (logging::DialogsAreSuppressed())
     command_line->AppendSwitch(switches::kNoErrorDialogs);
@@ -758,13 +762,8 @@ void BrowserRenderProcessHost::ClearTransportDIBCache() {
 
 bool BrowserRenderProcessHost::Send(IPC::Message* msg) {
   if (!channel_.get()) {
-    if (!is_initialized_) {
-      queued_messages_.push(msg);
-      return true;
-    } else {
-      delete msg;
-      return false;
-    }
+    delete msg;
+    return false;
   }
 
   if (child_process_launcher_.get() && child_process_launcher_->IsStarting()) {
@@ -853,15 +852,15 @@ void BrowserRenderProcessHost::OnChannelError() {
   if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
       status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
-                             is_extension_process_ ? 2 : 1);
+                             extension_process_ ? 2 : 1);
   }
 
   if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKills",
-                             is_extension_process_ ? 2 : 1);
+                             extension_process_ ? 2 : 1);
   }
 
-  RendererClosedDetails details(status, exit_code, is_extension_process_);
+  RendererClosedDetails details(status, exit_code, extension_process_);
   NotificationService::current()->Notify(
       NotificationType::RENDERER_PROCESS_CLOSED,
       Source<RenderProcessHost>(this),

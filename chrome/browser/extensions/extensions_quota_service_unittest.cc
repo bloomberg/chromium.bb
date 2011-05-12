@@ -95,17 +95,11 @@ class FrozenMockFunction : public MockFunction {
 class ExtensionsQuotaServiceTest : public testing::Test {
  public:
   ExtensionsQuotaServiceTest()
-      : extension_a_("a"),
-        extension_b_("b"),
-        extension_c_("c"),
-        loop_(),
-        ui_thread_(BrowserThread::UI, &loop_) {
-  }
+      : extension_a_("a"), extension_b_("b"), extension_c_("c") {}
   virtual void SetUp() {
     service_.reset(new ExtensionsQuotaService());
   }
   virtual void TearDown() {
-    loop_.RunAllPending();
     service_.reset();
   }
  protected:
@@ -113,8 +107,6 @@ class ExtensionsQuotaServiceTest : public testing::Test {
   std::string extension_b_;
   std::string extension_c_;
   scoped_ptr<ExtensionsQuotaService> service_;
-  MessageLoop loop_;
-  BrowserThread ui_thread_;
 };
 
 class QuotaLimitHeuristicTest : public testing::Test {
