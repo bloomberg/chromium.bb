@@ -174,7 +174,7 @@ u_int32_t DisassemblerX86::NextInstruction() {
     switch (current_instr_.type) {
       case libdis::insn_xor:
         if (src && src->type == libdis::op_register &&
-            dest->type == libdis::op_register &&
+            dest && dest->type == libdis::op_register &&
             src->data.reg.id == bad_register_.id &&
             src->data.reg.id == dest->data.reg.id)
           register_valid_ = false;
@@ -192,7 +192,7 @@ u_int32_t DisassemblerX86::NextInstruction() {
       case libdis::insn_xchg:
       case libdis::insn_xchgcc:
         if (dest && dest->type == libdis::op_register &&
-            src->type == libdis::op_register) {
+            src && src->type == libdis::op_register) {
           if (dest->data.reg.id == bad_register_.id)
             memcpy(&bad_register_, &src->data.reg, sizeof(libdis::x86_reg_t));
           else if (src->data.reg.id == bad_register_.id)
