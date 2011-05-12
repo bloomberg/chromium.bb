@@ -278,7 +278,7 @@ LEAK
 ...
 GDI32.dll!CreateDCW
 
-# http://code.google.com/p/drmemory/issues/detail?id=274
+# http://code.google.com/p/drmemory/issues/detail?id=275
 LEAK
 *!_getptd_noexit
 *!_getptd

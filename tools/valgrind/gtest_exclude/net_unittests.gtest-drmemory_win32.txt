@@ -2,6 +2,9 @@
 HttpNetworkTransactionTest.*
 HttpNetworkLayerTest.GET
 
+# See http://crbug.com/82391
+URLRequestTestHTTP.HTTPSToHTTPRedirectNoRefererTest
+
 # TODO(timurrrr): investigate these
 ClientSocketPoolBaseTest.*
 CookieMonsterTest.GarbageCollectionTriggers
