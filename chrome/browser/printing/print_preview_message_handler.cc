@@ -90,7 +90,7 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
   print_preview_ui->OnPreviewDataIsAvailable(
       params.expected_pages_count,
       wrapper->print_view_manager()->RenderSourceName(),
-      tab_contents()->contents_mime_type());
+      params.modifiable);
 }
 
 void PrintPreviewMessageHandler::OnPrintPreviewNodeUnderContextMenu() {

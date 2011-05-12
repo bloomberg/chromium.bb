@@ -37,9 +37,10 @@ void PrintPreviewUI::OnInitiatorTabClosed(
 
 void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                                               const string16& job_title,
-                                              const std::string& mime_type) {
+                                              bool modifiable) {
   FundamentalValue pages_count(expected_pages_count);
   StringValue title(job_title);
-  StringValue mime(mime_type);
-  CallJavascriptFunction("updatePrintPreview", pages_count, title, mime);
+  FundamentalValue is_preview_modifiable(modifiable);
+  CallJavascriptFunction("updatePrintPreview", pages_count, title,
+                         is_preview_modifiable);
 }

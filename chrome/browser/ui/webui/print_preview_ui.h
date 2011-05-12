@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_UI_H_
 #pragma once
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "content/browser/webui/web_ui.h"
 
@@ -21,9 +23,11 @@ class PrintPreviewUI : public WebUI {
   // Notify the Web UI renderer that preview data is available.
   // |expected_pages_count| specifies the total number of pages.
   // |job_title| is the title of the page being previewed.
+  // |modifiable| indicates if the preview can be rerendered with different
+  // print settings.
   void OnPreviewDataIsAvailable(int expected_pages_count,
                                 const string16& job_title,
-                                const std::string& mime_type);
+                                bool modifiable);
 
   // Notify the Web UI that initiator tab is closed, so we can disable all
   // the controls that need the initiator tab for generating the preview data.

@@ -82,6 +82,9 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewDocument_Params)
 
   // Store the expected pages count.
   IPC_STRUCT_MEMBER(int, expected_pages_count)
+
+  // Whether the preview can be modified.
+  IPC_STRUCT_MEMBER(bool, modifiable)
 IPC_STRUCT_END()
 
 // Parameters to describe a rendered page.

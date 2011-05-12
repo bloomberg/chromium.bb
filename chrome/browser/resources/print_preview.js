@@ -35,9 +35,8 @@ var isPreviewStillLoading = true;
 // Currently selected printer capabilities.
 var printerCapabilities;
 
-// Mime type of the initiator page. Used to disable some printing options
-// when the mime type is application/pdf.
-var previewDataMimeType = null;
+// Used to disable some printing options when the preview is not modifiable.
+var previewModifiable = false;
 
 // Destination list special value constants.
 const PRINT_TO_PDF = 'Print To PDF';
@@ -420,7 +419,7 @@ function onPDFLoad() {
   $('dancing-dots').classList.add('invisible');
   setControlsDisabled(false);
 
-  if (previewDataMimeType == "application/pdf") {
+  if (!previewModifiable) {
     $('landscape').disabled = true;
     $('portrait').disabled = true;
   }
@@ -435,10 +434,11 @@ function onPDFLoad() {
  * Called from PrintPreviewUI::PreviewDataIsAvailable().
  * @param {number} pageCount The expected total pages count.
  * @param {string} jobTitle The print job title.
+ * @param {boolean} modifiable If the preview is modifiable.
  *
  */
-function updatePrintPreview(pageCount, jobTitle, mimeType) {
-  previewDataMimeType = mimeType;
+function updatePrintPreview(pageCount, jobTitle, modifiable) {
+  previewModifiable = modifiable;
 
   if (totalPageCount == -1)
     totalPageCount = pageCount;

@@ -211,7 +211,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
   bool CopyMetafileDataToSharedMem(printing::Metafile* metafile,
                                    base::SharedMemoryHandle* shared_mem_handle);
 
-  static void GetPageSizeAndMarginsInPoints(
+  void GetPageSizeAndMarginsInPoints(
       WebKit::WebFrame* frame,
       int page_index,
       const PrintMsg_Print_Params& default_params,
@@ -221,6 +221,8 @@ class PrintWebViewHelper : public RenderViewObserver ,
       double* margin_right_in_points,
       double* margin_bottom_in_points,
       double* margin_left_in_points);
+
+  bool IsModifiable(WebKit::WebFrame* frame, WebKit::WebNode* node);
 
   void UpdatePrintableSizeInPrintParameters(WebKit::WebFrame* frame,
                                             WebKit::WebNode* node,

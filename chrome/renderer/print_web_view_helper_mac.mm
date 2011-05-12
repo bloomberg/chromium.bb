@@ -92,6 +92,7 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   preview_params.data_size = metafile.GetDataSize();
   preview_params.document_cookie = params.params.document_cookie;
   preview_params.expected_pages_count = page_count;
+  preview_params.modifiable = IsModifiable(frame, node);
 
   // Ask the browser to create the shared memory for us.
   if (!CopyMetafileDataToSharedMem(&metafile,

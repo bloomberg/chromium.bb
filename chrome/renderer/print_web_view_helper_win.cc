@@ -162,10 +162,10 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   DCHECK_GT(buf_size, 128u);
 
   PrintHostMsg_DidPreviewDocument_Params preview_params;
-  preview_params.document_cookie = params.params.document_cookie;
   preview_params.data_size = buf_size;
-  preview_params.metafile_data_handle = NULL;
+  preview_params.document_cookie = params.params.document_cookie;
   preview_params.expected_pages_count = page_count;
+  preview_params.modifiable = IsModifiable(frame, node);
 
   if (!CopyMetafileDataToSharedMem(metafile.get(),
                                    &(preview_params.metafile_data_handle))) {

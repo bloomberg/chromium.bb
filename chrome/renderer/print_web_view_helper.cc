@@ -17,10 +17,12 @@
 #include "printing/metafile.h"
 #include "printing/units.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -495,6 +497,16 @@ void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
   if (margin_left_in_points)
     *margin_left_in_points =
         ConvertPixelsToPointDouble(margin_left_in_pixels);
+}
+
+bool PrintWebViewHelper::IsModifiable(WebKit::WebFrame* frame,
+                                      WebKit::WebNode* node) {
+  if (node)
+    return false;
+  std::string mime(frame->dataSource()->response().mimeType().utf8());
+  if (mime == "application/pdf")
+    return false;
+  return true;
 }
 
 void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
