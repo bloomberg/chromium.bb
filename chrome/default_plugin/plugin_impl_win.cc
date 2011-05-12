@@ -11,13 +11,40 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/default_plugin/plugin_main.h"
+#include "content/common/child_thread.h"
+#include "content/common/plugin_messages.h"
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_strings.h"
+#include "net/base/net_errors.h"
 #include "unicode/locid.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
 
 static const int TOOLTIP_MAX_WIDTH = 500;
+
+namespace {
+
+bool GetPluginFinderURL(std::string* plugin_finder_url) {
+  if (!plugin_finder_url) {
+    NOTREACHED();
+    return false;
+  }
+
+  ChildThread::current()->Send(
+      new PluginProcessHostMsg_GetPluginFinderUrl(plugin_finder_url));
+  // If we get an empty string back this means the plugin finder has been
+  // disabled.
+  return true;
+}
+
+bool DownloadUrl(const std::string& url, HWND caller_window) {
+  return ChildThread::current()->Send(
+      new PluginProcessHostMsg_DownloadUrl(MSG_ROUTING_NONE, url,
+                                           ::GetCurrentProcessId(),
+                                           caller_window));
+}
+
+}
 
 PluginInstallerImpl::PluginInstallerImpl(int16 mode)
     : instance_(NULL),
@@ -67,7 +94,7 @@ bool PluginInstallerImpl::Initialize(HINSTANCE module_handle, NPP instance,
   instance_ = instance;
   mime_type_ = mime_type;
 
-  if (!webkit_glue::GetPluginFinderURL(&plugin_finder_url_)) {
+  if (!GetPluginFinderURL(&plugin_finder_url_)) {
     NOTREACHED() << __FUNCTION__ << " Failed to get the plugin finder URL";
     return false;
   }
@@ -341,7 +368,7 @@ void PluginInstallerImpl::DownloadPlugin() {
   DisplayStatus(IDS_DEFAULT_PLUGIN_DOWNLOADING_PLUGIN_MSG);
 
   if (!plugin_download_url_for_display_) {
-    webkit_glue::DownloadUrl(plugin_download_url_, hwnd());
+    DownloadUrl(plugin_download_url_, hwnd());
   } else {
     default_plugin::g_browser->geturl(instance(),
                                       plugin_download_url_.c_str(),

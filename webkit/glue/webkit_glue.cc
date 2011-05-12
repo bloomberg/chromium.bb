@@ -252,7 +252,7 @@ string16 DumpHistoryState(const std::string& history_state, int indent,
 void DumpLeakedObject(const char* file, int line, const char* object,
                       int count) {
   std::string msg = base::StringPrintf("%s LEAKED %d TIMES", object, count);
-  AppendToLog(file, line, msg.c_str());
+  logging::LogMessage(file, line).stream() << msg;
 }
 #endif
 

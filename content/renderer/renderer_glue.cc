@@ -118,10 +118,6 @@ ScopedClipboardWriterGlue::~ScopedClipboardWriterGlue() {
 
 namespace webkit_glue {
 
-void AppendToLog(const char* file, int line, const char* msg) {
-  logging::LogMessage(file, line).stream() << msg;
-}
-
 base::StringPiece GetDataResource(int resource_id) {
   return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
 }

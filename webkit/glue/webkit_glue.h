@@ -117,7 +117,8 @@ std::string RemoveScrollOffsetFromHistoryState(
 
 #ifndef NDEBUG
 // Checks various important objects to see if there are any in memory, and
-// calls AppendToLog with any leaked objects. Designed to be called on shutdown
+// calls AppendToLog with any leaked objects. Designed to be called on
+// shutdown.
 void CheckForLeaks();
 #endif
 
@@ -155,9 +156,6 @@ int GetGlyphPageCount();
 
 
 //---- BEGIN FUNCTIONS IMPLEMENTED BY EMBEDDER --------------------------------
-
-// This function is called to add a line to the application's log file.
-void AppendToLog(const char* filename, int line, const char* message);
 
 // Glue to get resources from the embedder.
 
@@ -234,15 +232,6 @@ bool IsDefaultPluginEnabled();
 // Returns true if the protocol implemented to serve |url| supports features
 // required by the media engine.
 bool IsProtocolSupportedForMedia(const GURL& url);
-
-#if defined(OS_WIN)
-// Downloads the file specified by the URL. On sucess a WM_COPYDATA message
-// will be sent to the caller_window.
-bool DownloadUrl(const std::string& url, HWND caller_window);
-#endif
-
-// Returns the plugin finder URL.
-bool GetPluginFinderURL(std::string* plugin_finder_url);
 
 // Resolves the proxies for the url, returns true on success.
 bool FindProxyForUrl(const GURL& url, std::string* proxy_list);

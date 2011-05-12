@@ -625,10 +625,6 @@ WebKit::WebGeolocationClientMock* TestShell::geolocation_client_mock() {
 
 namespace webkit_glue {
 
-void AppendToLog(const char* file, int line, const char* msg) {
-  logging::LogMessage(file, line).stream() << msg;
-}
-
 bool GetApplicationDirectory(FilePath* path) {
   return PathService::Get(base::DIR_EXE, path);
 }

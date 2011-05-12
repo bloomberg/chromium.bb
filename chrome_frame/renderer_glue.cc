@@ -12,9 +12,6 @@ bool IsPluginProcess() {
 
 namespace webkit_glue {
 
-void AppendToLog(const char* filename, int line, const char* message) {
-}
-
 bool IsDefaultPluginEnabled() {
   return false;
 }
