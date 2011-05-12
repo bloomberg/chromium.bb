@@ -234,6 +234,10 @@ cr.define('options', function() {
       if (!this.checkPassphraseMatch_())
         return;
 
+      // Don't allow the user to tweak the settings once we send the
+      // configuration to the backend.
+      this.disableConfigureElements_();
+
       var syncAll =
         document.getElementById('sync-select-datatypes').selectedIndex == 0;
 
@@ -254,6 +258,19 @@ cr.define('options', function() {
           "passphrase": $('custom-passphrase').value
       });
       chrome.send("Configure", [result]);
+    },
+
+    /**
+     * Disables all input elements within the 'Customize Sync Preferences'
+     * screen. This is used to prohibit the user from changing the inputs after
+     * confirming the customized sync preferences.
+     * @private
+     */
+    disableConfigureElements_: function() {
+      var configureElements =
+          $('customize-sync-preferences').querySelectorAll('input');
+      for (var i = 0; i < configureElements.length; i++)
+        configureElements[i].disabled = true;
     },
 
     setChooseDataTypesCheckboxes_: function(args) {
