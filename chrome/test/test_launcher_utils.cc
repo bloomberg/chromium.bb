@@ -49,6 +49,15 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
 
   // Disable safebrowsing autoupdate.
   command_line->AppendSwitch(switches::kSbDisableAutoUpdate);
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+  // Don't use the native password stores on Linux since they may
+  // prompt for additional UI during tests and cause test failures or
+  // timeouts.  Win, Mac and ChromeOS don't look at the kPasswordStore
+  // switch.
+  if (!command_line->HasSwitch(switches::kPasswordStore))
+    command_line->AppendSwitchASCII(switches::kPasswordStore, "basic");
+#endif
 }
 
 bool OverrideUserDataDir(const FilePath& user_data_dir) {

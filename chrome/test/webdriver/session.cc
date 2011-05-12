@@ -32,7 +32,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/automation_json_requests.h"
-#include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/webdriver_key_converter.h"
