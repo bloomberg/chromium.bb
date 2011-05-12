@@ -18,6 +18,12 @@ extern "C" {
 #else
 #include "third_party/libpng/png.h"
 #endif
+
+#if defined(USE_SYSTEM_ZLIB)
+#include <zlib.h>
+#else
+#include "third_party/zlib/zlib.h"
+#endif
 }
 
 namespace gfx {
