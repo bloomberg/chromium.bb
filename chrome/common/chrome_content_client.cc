@@ -30,9 +30,18 @@ const char* kNaClPluginDescription = "Native Client Executable";
 
 #if defined(ENABLE_REMOTING)
 const char* kRemotingViewerPluginName = "Remoting Viewer";
-const char* kRemotingViewerPluginMimeType = "pepper-application/x-chromoting";
 const FilePath::CharType kRemotingViewerPluginPath[] =
     FILE_PATH_LITERAL("internal-remoting-viewer");
+#if defined(GOOGLE_CHROME_BUILD)
+const char* kRemotingViewerPluginMimeType =
+    "application/vnd.google-chrome.remoting-viewer";
+#else // CHROMIUM_BUILD
+const char* kRemotingViewerPluginMimeType =
+    "application/vnd.chromium.remoting-viewer";
+#endif
+// TODO(wez): Remove the old MIME-type once client code no longer needs it.
+const char* kRemotingViewerPluginOldMimeType =
+    "pepper-application/x-chromoting";
 #endif
 
 const char* kFlashPluginName = "Shockwave Flash";
@@ -107,6 +116,11 @@ void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
         std::string(),
         std::string());
     info.mime_types.push_back(remoting_mime_type);
+    webkit::npapi::WebPluginMimeType old_remoting_mime_type(
+        kRemotingViewerPluginOldMimeType,
+        std::string(),
+        std::string());
+    info.mime_types.push_back(old_remoting_mime_type);
     info.internal_entry_points.get_interface = remoting::PPP_GetInterface;
     info.internal_entry_points.initialize_module =
         remoting::PPP_InitializeModule;
