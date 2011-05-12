@@ -176,7 +176,8 @@ official = {
   'useflags' : ['chrome_internal', 'chrome_pdf'],
   'chromeos_official' : True,
 
-  'quick_vm' : True, # TODO, turned off for testing
+  # TODO(dgarret): turned off for testing
+  'vm_tests' : False,
 
   # Enable these two temporarily for Bot Testing
   'push_image' : True,
