@@ -209,9 +209,6 @@ deps = {
   "src/third_party/speex":
     "/trunk/deps/third_party/speex@83190",
 
-  "src/third_party/libsrtp/src":
-    "/trunk/deps/third_party/libsrtp@60080",
-
   "src/third_party/yasm/source/patched-yasm":
     "/trunk/deps/third_party/yasm/patched-yasm@73761",
 
