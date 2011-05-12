@@ -106,15 +106,8 @@ void SyncBackendHost::Initialize(
   registrar_.workers[GROUP_DB] = new DatabaseModelWorker();
   registrar_.workers[GROUP_UI] = new UIModelWorker();
   registrar_.workers[GROUP_PASSIVE] = new ModelSafeWorker();
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncTypedUrls) || types.count(syncable::TYPED_URLS)) {
-    // TODO(tim): Bug 53916.  HistoryModelWorker crashes, so avoid adding it
-    // unless specifically requested until bug is fixed.
-    registrar_.workers[GROUP_HISTORY] =
-        new HistoryModelWorker(
-            profile_->GetHistoryService(Profile::IMPLICIT_ACCESS));
-  }
+  registrar_.workers[GROUP_HISTORY] = new HistoryModelWorker(
+      profile_->GetHistoryService(Profile::IMPLICIT_ACCESS));
 
   // Any datatypes that we want the syncer to pull down must
   // be in the routing_info map.  We set them to group passive, meaning that

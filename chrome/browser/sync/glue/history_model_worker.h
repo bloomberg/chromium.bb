@@ -23,8 +23,7 @@ namespace browser_sync {
 
 // A ModelSafeWorker for history models that accepts requests
 // from the syncapi that need to be fulfilled on the history thread.
-class HistoryModelWorker : public browser_sync::ModelSafeWorker,
-                           public CancelableRequestConsumerBase {
+class HistoryModelWorker : public browser_sync::ModelSafeWorker {
  public:
   explicit HistoryModelWorker(HistoryService* history_service);
   virtual ~HistoryModelWorker();
@@ -34,21 +33,11 @@ class HistoryModelWorker : public browser_sync::ModelSafeWorker,
   virtual ModelSafeGroup GetModelSafeGroup();
   virtual bool CurrentThreadIsWorkThread();
 
-  // CancelableRequestConsumerBase implementation.
-  virtual void OnRequestAdded(CancelableRequestProvider* provider,
-                              CancelableRequestProvider::Handle handle) {}
-
-  virtual void OnRequestRemoved(CancelableRequestProvider* provider,
-                                CancelableRequestProvider::Handle handle) {}
-
-  virtual void WillExecute(CancelableRequestProvider* provider,
-                           CancelableRequestProvider::Handle handle) {}
-
-  virtual void DidExecute(CancelableRequestProvider* provider,
-                          CancelableRequestProvider::Handle handle) {}
-
  private:
   scoped_refptr<HistoryService> history_service_;
+  // Helper object to make sure we don't leave tasks running on the history
+  // thread.
+  CancelableRequestConsumerT<int, 0> cancelable_consumer_;
   DISALLOW_COPY_AND_ASSIGN(HistoryModelWorker);
 };
 
