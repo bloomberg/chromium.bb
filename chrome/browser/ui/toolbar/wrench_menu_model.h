@@ -78,8 +78,6 @@ class BookmarkSubMenuModel : public ui::SimpleMenuModel {
  private:
   void Build(Browser* browser);
 
-  scoped_ptr<EncodingMenuModel> encoding_menu_model_;
-
   DISALLOW_COPY_AND_ASSIGN(BookmarkSubMenuModel);
 };
 
