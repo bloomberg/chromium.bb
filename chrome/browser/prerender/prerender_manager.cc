@@ -441,10 +441,11 @@ bool PrerenderManager::MaybeUsePreloadedPageOld(TabContents* tab_contents,
 
   RenderViewHost* render_view_host =
       prerender_contents->render_view_host_mutable();
+  prerender_contents->set_render_view_host(NULL);
+
   // RenderViewHosts in PrerenderContents start out hidden.
   // Since we are actually using it now, restore it.
   render_view_host->WasRestored();
-  prerender_contents->set_render_view_host(NULL);
   render_view_host->Send(
       new ViewMsg_SetIsPrerendering(render_view_host->routing_id(), false));
   tab_contents->SwapInRenderViewHost(render_view_host);

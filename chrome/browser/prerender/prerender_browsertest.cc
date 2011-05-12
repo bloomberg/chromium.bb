@@ -20,6 +20,7 @@
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -62,17 +63,33 @@ class TestPrerenderContents : public PrerenderContents {
       : PrerenderContents(prerender_manager, profile, url, referrer),
         number_of_loads_(0),
         expected_number_of_loads_(number_of_loads),
-        expected_final_status_(expected_final_status) {
+        expected_final_status_(expected_final_status),
+        new_render_view_host_(NULL),
+        was_hidden_(false),
+        was_shown_(false) {
   }
 
   virtual ~TestPrerenderContents() {
     EXPECT_EQ(expected_final_status_, final_status()) <<
         " when testing URL " << prerender_url().path();
+    // Prerendering RenderViewHosts should be hidden before the first
+    // navigation, so this should be happen for every PrerenderContents for
+    // while a RenderViewHost is created, regardless of whether or not it's
+    // used.
+    if (new_render_view_host_) {
+      EXPECT_TRUE(was_hidden_);
+    }
+
     // A used PrerenderContents will only be destroyed when we swap out
     // TabContents, at the end of a navigation caused by a call to
     // NavigateToURLImpl().
-    if (final_status() == FINAL_STATUS_USED)
+    if (final_status() == FINAL_STATUS_USED) {
+      EXPECT_TRUE(new_render_view_host_);
+      EXPECT_TRUE(was_shown_);
       MessageLoopForUI::current()->Quit();
+    } else {
+      EXPECT_FALSE(was_shown_);
+    }
   }
 
   virtual void OnRenderViewGone(int status, int exit_code) OVERRIDE {
@@ -108,9 +125,52 @@ class TestPrerenderContents : public PrerenderContents {
   }
 
  private:
+  virtual void OnRenderViewHostCreated(
+      RenderViewHost* new_render_view_host) OVERRIDE {
+    // Used to make sure the RenderViewHost is hidden and, if used,
+    // subsequently shown.
+    notification_registrar().Add(
+        this,
+        NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED,
+        Source<RenderWidgetHost>(new_render_view_host));
+
+    new_render_view_host_ = new_render_view_host;
+
+    PrerenderContents::OnRenderViewHostCreated(new_render_view_host);
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE {
+    if (type.value ==
+        NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED) {
+      EXPECT_EQ(new_render_view_host_, Source<RenderWidgetHost>(source).ptr());
+      bool is_visible = *Details<bool>(details).ptr();
+
+      if (!is_visible) {
+        was_hidden_ = true;
+      } else if (is_visible && was_hidden_) {
+        // Once hidden, a prerendered RenderViewHost should only be shown after
+        // being removed from the PrerenderContents for display.
+        EXPECT_FALSE(render_view_host());
+        was_shown_ = true;
+      }
+      return;
+    }
+    PrerenderContents::Observe(type, source, details);
+  }
+
   int number_of_loads_;
   int expected_number_of_loads_;
   FinalStatus expected_final_status_;
+
+  // The RenderViewHost created for the prerender, if any.
+  RenderViewHost* new_render_view_host_;
+  // Set to true when the prerendering RenderWidget is hidden.
+  bool was_hidden_;
+  // Set to true when the prerendering RenderWidget is shown, after having been
+  // hidden.
+  bool was_shown_;
 };
 
 // PrerenderManager that uses TestPrerenderContents.

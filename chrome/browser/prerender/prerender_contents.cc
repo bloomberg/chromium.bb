@@ -129,6 +129,8 @@ void PrerenderContents::StartPrerenderingOld(
   // Create the RenderView, so it can receive messages.
   render_view_host_->CreateRenderView(string16());
 
+  OnRenderViewHostCreated(render_view_host_);
+
   // Give the RVH a PrerenderRenderWidgetHostView, both so its size can be set
   // and so that the prerender can be cancelled under certain circumstances.
   PrerenderRenderWidgetHostView* view =
@@ -473,19 +475,29 @@ void PrerenderContents::Observe(NotificationType type,
     }
 
     case NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB: {
-      // When a new RenderView is created for a prerendering TabContents,
-      // tell the new RenderView it's being used for prerendering before any
-      // navigations occur.  Note that this is always triggered before the
-      // first navigation, so there's no need to send the message just after the
-      // TabContents is created.
       if (prerender_contents_.get()) {
         DCHECK_EQ(Source<TabContents>(source).ptr(),
                   prerender_contents_->tab_contents());
 
         Details<RenderViewHost> new_render_view_host(details);
+        OnRenderViewHostCreated(new_render_view_host.ptr());
+
+        // When a new RenderView is created for a prerendering TabContents,
+        // tell the new RenderView it's being used for prerendering before any
+        // navigations occur.  Note that this is always triggered before the
+        // first navigation, so there's no need to send the message just after
+        // the TabContents is created.
         new_render_view_host->Send(
             new ViewMsg_SetIsPrerendering(new_render_view_host->routing_id(),
                                           true));
+
+        // Set the new TabContents and its RenderViewHost as hidden, to reduce
+        // resource usage.  This can only be done after the first call to
+        // LoadURL, so there's an actual RenderViewHost with a
+        // RenderWidgetHostView to hide.
+        //
+        // Done here to prevent a race with loading the page.
+        prerender_contents_->tab_contents()->HideContents();
       }
       break;
     }
@@ -584,6 +596,10 @@ void PrerenderContents::ShowCreatedWidget(int route_id,
 
 void PrerenderContents::ShowCreatedFullscreenWidget(int route_id) {
   NOTIMPLEMENTED();
+}
+
+void PrerenderContents::OnRenderViewHostCreated(
+    RenderViewHost* new_render_view_host) {
 }
 
 void PrerenderContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,

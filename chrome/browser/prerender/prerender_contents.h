@@ -256,6 +256,14 @@ class PrerenderContents : public RenderViewHostDelegate,
 
   const GURL& prerender_url() const { return prerender_url_; }
 
+  NotificationRegistrar& notification_registrar() {
+    return notification_registrar_;
+  }
+
+  // Called whenever a RenderViewHost is created for prerendering.  Only called
+  // once the RenderViewHost has a RenderView and RenderWidgetHostView.
+  virtual void OnRenderViewHostCreated(RenderViewHost* new_render_view_host);
+
  private:
   // Needs to be able to call the constructor.
   friend class PrerenderContentsFactoryImpl;
