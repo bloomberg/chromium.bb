@@ -150,7 +150,8 @@ def ManifestCheckout(buildroot, tracking_branch, next_version,
                              cwd=buildroot, input='\n\ny\n')
       break
     except cros_lib.RunCommandException:
-      time.sleep(60)
+      print 'Buildspec not yet available, sleeping.'
+      time.sleep(120)
       print 'Retrying repo init...'
       count -= 1
       if count <= 0:
@@ -525,7 +526,7 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
 
 def UploadSymbols(buildroot, board, official):
   """Upload debug symbols for this build."""
-  cmd =['./upload_symbols',
+  cmd = ['./upload_symbols',
         '--board=%s' % board,
         '--yes',
         '--verbose']
@@ -540,7 +541,7 @@ def UploadSymbols(buildroot, board, official):
 
 def PushImages(buildroot, board, branch_name, archive_dir):
   """Push the generated image to http://chromeos_images."""
-  cmd =['./pushimage',
+  cmd = ['./pushimage',
         '--board=%s' % board,
         '--branch=%s' % branch_name,
         archive_dir]
