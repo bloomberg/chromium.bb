@@ -175,8 +175,9 @@ Key.prototype = {
 
     this.sizeElement(mode, height);
 
-    this.modeElements_[mode].onclick =
-        sendKeyFunction(this.modes_[mode].keyIdentifier);
+    var cb = sendKeyFunction(this.modes_[mode].keyIdentifier);
+    this.modeElements_[mode].onclick = cb;
+    this.modeElements_[mode].ontouchstart = cb;
 
     return this.modeElements_[mode];
   }
