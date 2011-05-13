@@ -505,8 +505,15 @@ display_bind(struct wl_client *client,
 	struct wl_global *global;
 
 	wl_list_for_each(global, &display->global_list, link)
-		if (global->object->id == id && global->func)
-			global->func(client, global->object, version);
+		if (global->object->id == id)
+			break;
+
+	if (&global->link == &display->global_list)
+		wl_client_post_error(client, &client->display->object,
+				     WL_DISPLAY_ERROR_INVALID_OBJECT,
+				     "invalid object %d", id);
+	else if (global->func)
+		global->func(client, global->object, version);
 }
 
 static void
