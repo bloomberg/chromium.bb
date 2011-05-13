@@ -299,6 +299,7 @@ class GLES2Implementation {
   std::string last_error_;
 
   std::queue<int32> swap_buffers_tokens_;
+  std::queue<int32> rate_limit_tokens_;
 
   // pack alignment as last set by glPixelStorei
   GLint pack_alignment_;

@@ -379,6 +379,11 @@ void WebGraphicsContext3DCommandBufferImpl::setLatchCHROMIUM(
   glFlush(); // required to ensure set command is sent to GPU process
 }
 
+void WebGraphicsContext3DCommandBufferImpl::
+    rateLimitOffscreenContextCHROMIUM() {
+  glRateLimitOffscreenContextCHROMIUM();
+}
+
 WebKit::WebString WebGraphicsContext3DCommandBufferImpl::
     getRequestableExtensionsCHROMIUM() {
   return WebKit::WebString::fromUTF8(glGetRequestableExtensionsCHROMIUM());

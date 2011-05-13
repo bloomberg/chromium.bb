@@ -1712,5 +1712,14 @@ void GLES2Implementation::RequestExtensionCHROMIUM(const char* extension) {
   helper_->SetBucketSize(kResultBucketId, 0);
 }
 
+void GLES2Implementation::RateLimitOffscreenContextCHROMIUM() {
+  // Wait if this would add too many rate limit tokens.
+  if (rate_limit_tokens_.size() == kMaxSwapBuffers) {
+    helper_->WaitForToken(rate_limit_tokens_.front());
+    rate_limit_tokens_.pop();
+  }
+  rate_limit_tokens_.push(helper_->InsertToken());
+}
+
 }  // namespace gles2
 }  // namespace gpu

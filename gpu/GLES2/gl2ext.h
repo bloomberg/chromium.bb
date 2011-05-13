@@ -971,9 +971,27 @@ typedef void (GL_APIENTRYP PFNGLWaitLATCHCHROMIUM) (GLuint latch_id);
 #endif
 #endif
 
+/* GL_CHROMIUM_rate_limit_offscreen_context */
+/*
+ * This extension will block if the calling context has gotten more than two
+ * glRateLimit calls ahead of the GPU process. This keeps the client in sync
+ * with the GPU without having to call swapbuffers, which has potentially
+ * undesirable side effects.
+ */
+#ifndef GL_CHROMIUM_rate_limit_offscreen_context
+#define GL_CHROMIUM_rate_limit_offscreen_context 1
+#ifdef GL_GLEXT_PROTOTYPES
+#define glRateLimitOffscreenContextCHROMIUM  GLES2_GET_FUN(RateLimitOffscreenContextCHROMIUM)
+#if !defined(GLES2_USE_CPP_BINDINGS)
+GL_APICALL void GL_APIENTRY glRateLimitOffscreenContextCHROMIUM (void);
+#endif
+#else
+typedef void (GL_APIENTRYP PFNGLRATELIMITOFFSCREENCONTEXTCHROMIUM) ();
+#endif
+#endif
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* __gl2ext_h_ */
-

@@ -213,6 +213,7 @@ GL_APICALL const GLchar* GL_APIENTRY glGetRequestableExtensionsCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glRequestExtensionCHROMIUM (const char* extension);
 GL_APICALL void         GL_APIENTRY glSetLatchCHROMIUM (GLuint latch_id);
 GL_APICALL void         GL_APIENTRY glWaitLatchCHROMIUM (GLuint latch_id);
+GL_APICALL void         GL_APIENTRY glRateLimitOffscreenContextCHROMIUM (void);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -1694,6 +1695,11 @@ _FUNCTION_INFO = {
   'WaitLatchCHROMIUM': {
     'type': 'Custom',
   },
+  'RateLimitOffscreenContextCHROMIUM': {
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+  },
 }
 
 
@@ -2225,9 +2231,11 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     """Writes the GLES2 Implemention."""
     impl_func = func.GetInfo('impl_func')
     impl_decl = func.GetInfo('impl_decl')
+    gen_cmd = func.GetInfo('gen_cmd')
     if (func.can_auto_generate and
         (impl_func == None or impl_func == True) and
-        (impl_decl == None or impl_decl == True)):
+        (impl_decl == None or impl_decl == True) and
+        (gen_cmd == None or gen_cmd == True)):
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))

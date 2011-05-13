@@ -897,5 +897,7 @@ void WaitLatchCHROMIUM(GLuint latch_id) {
   helper_->WaitLatchCHROMIUM(latch_id);
 }
 
+void RateLimitOffscreenContextCHROMIUM();
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 
