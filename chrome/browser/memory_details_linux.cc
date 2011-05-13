@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -242,6 +242,21 @@ void MemoryDetails::CollectProcessData(
   GetProcessDataMemoryInformation(current_browser_processes, &current_browser);
   current_browser.name = WideToUTF16(chrome::kBrowserAppName);
   current_browser.process_name = ASCIIToUTF16("chrome");
+
+  for (std::vector<ProcessMemoryInformation>::iterator
+       i = current_browser.processes.begin();
+       i != current_browser.processes.end(); ++i) {
+    // Check if this is one of the child processes whose data we collected
+    // on the IO thread, and if so copy over that data.
+    for (size_t child = 0; child < child_info.size(); child++) {
+      if (child_info[child].pid != i->pid)
+        continue;
+      i->titles = child_info[child].titles;
+      i->type = child_info[child].type;
+      break;
+    }
+  }
+
   process_data_.push_back(current_browser);
 
   // For each browser process, collect a list of its children and get the
