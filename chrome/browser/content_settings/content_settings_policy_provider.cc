@@ -286,9 +286,11 @@ void PolicyProvider::RegisterUserPrefs(PrefService* prefs) {
                           PrefService::UNSYNCABLE_PREF);
 }
 
-PolicyProvider::PolicyProvider(Profile* profile)
+PolicyProvider::PolicyProvider(Profile* profile,
+                               DefaultProviderInterface* default_provider)
     : BaseProvider(profile->IsOffTheRecord()),
-      profile_(profile) {
+      profile_(profile),
+      default_provider_(default_provider) {
   Init();
 }
 
@@ -296,23 +298,10 @@ PolicyProvider::~PolicyProvider() {
   UnregisterObservers();
 }
 
-void PolicyProvider::ReadManagedContentSettingsTypes(
-    ContentSettingsType content_type) {
-  PrefService* prefs = profile_->GetPrefs();
-  if (kPrefToManageType[content_type] == NULL) {
-    content_type_is_managed_[content_type] = false;
-  } else {
-    content_type_is_managed_[content_type] =
-         prefs->IsManagedPreference(kPrefToManageType[content_type]);
-  }
-}
-
 void PolicyProvider::Init() {
   PrefService* prefs = profile_->GetPrefs();
 
   ReadManagedContentSettings(false);
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
-    ReadManagedContentSettingsTypes(ContentSettingsType(i));
 
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kManagedCookiesBlockedForUrls, this);
@@ -327,19 +316,8 @@ void PolicyProvider::Init() {
   pref_change_registrar_.Add(prefs::kManagedPopupsBlockedForUrls, this);
   pref_change_registrar_.Add(prefs::kManagedPopupsAllowedForUrls, this);
 
-  pref_change_registrar_.Add(prefs::kManagedDefaultCookiesSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultImagesSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultJavaScriptSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultPluginsSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultPopupsSetting, this);
-
   notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                               Source<Profile>(profile_));
-}
-
-bool PolicyProvider::ContentSettingsTypeIsManaged(
-    ContentSettingsType content_type) {
-  return content_type_is_managed_[content_type];
 }
 
 void PolicyProvider::GetContentSettingsFromPreferences(
@@ -411,11 +389,14 @@ ContentSetting PolicyProvider::GetContentSetting(
     const GURL& embedding_url,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier) const {
-  return BaseProvider::GetContentSetting(
+  ContentSetting setting = BaseProvider::GetContentSetting(
       requesting_url,
       embedding_url,
       content_type,
       NO_RESOURCE_IDENTIFIER);
+  if (setting == CONTENT_SETTING_DEFAULT && default_provider_)
+    setting = default_provider_->ProvideDefaultSetting(content_type);
+  return setting;
 }
 
 void PolicyProvider::ClearAllContentSettingsRules(
@@ -468,22 +449,6 @@ void PolicyProvider::Observe(NotificationType type,
       ReadManagedContentSettings(true);
       NotifyObservers(ContentSettingsDetails(
           ContentSettingsPattern(), CONTENT_SETTINGS_TYPE_DEFAULT, ""));
-      // We do not want to sent a notification when managed default content
-      // settings change. The DefaultProvider will take care of that. We are
-      // only a passive observer.
-      // TODO(markusheintz): NOTICE: This is still work in progress and part of
-      // a larger refactoring. The code will change and be much cleaner and
-      // clearer in the end.
-    } else if (*name == prefs::kManagedDefaultCookiesSetting) {
-      ReadManagedContentSettingsTypes(CONTENT_SETTINGS_TYPE_COOKIES);
-    } else if (*name == prefs::kManagedDefaultImagesSetting) {
-      ReadManagedContentSettingsTypes(CONTENT_SETTINGS_TYPE_IMAGES);
-    } else if (*name == prefs::kManagedDefaultJavaScriptSetting) {
-      ReadManagedContentSettingsTypes(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
-    } else if (*name == prefs::kManagedDefaultPluginsSetting) {
-      ReadManagedContentSettingsTypes(CONTENT_SETTINGS_TYPE_PLUGINS);
-    } else if (*name == prefs::kManagedDefaultPopupsSetting) {
-      ReadManagedContentSettingsTypes(CONTENT_SETTINGS_TYPE_POPUPS);
     }
   } else if (type == NotificationType::PROFILE_DESTROYED) {
     DCHECK_EQ(profile_, Source<Profile>(source).ptr());

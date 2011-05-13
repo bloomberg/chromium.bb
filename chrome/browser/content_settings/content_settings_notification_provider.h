@@ -34,10 +34,6 @@ class NotificationProvider : public ProviderInterface,
 
   virtual ~NotificationProvider();
 
-  // ProviderInterface implementation
-  virtual bool ContentSettingsTypeIsManaged(
-      ContentSettingsType content_type);
-
   virtual ContentSetting GetContentSetting(
       const GURL& requesting_url,
       const GURL& embedding_url,

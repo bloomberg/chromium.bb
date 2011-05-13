@@ -91,11 +91,6 @@ NotificationProvider::~NotificationProvider() {
   StopObserving();
 }
 
-bool NotificationProvider::ContentSettingsTypeIsManaged(
-      ContentSettingsType content_type) {
-  return false;
-}
-
 ContentSetting NotificationProvider::GetContentSetting(
       const GURL& requesting_url,
       const GURL& embedding_url,

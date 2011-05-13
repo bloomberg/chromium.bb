@@ -84,16 +84,13 @@ class PolicyDefaultProvider : public DefaultProviderInterface,
 class PolicyProvider : public BaseProvider,
                        public NotificationObserver {
  public:
-  explicit PolicyProvider(Profile* profile);
+  explicit PolicyProvider(Profile* profile,
+                          DefaultProviderInterface* default_provider);
   ~PolicyProvider();
   static void RegisterUserPrefs(PrefService* prefs);
 
   // BaseProvider Implementation
   virtual void Init();
-
-  // ProviderInterface Implementation
-  virtual bool ContentSettingsTypeIsManaged(
-      ContentSettingsType content_type);
 
   virtual void SetContentSetting(
       const ContentSettingsPattern& requesting_pattern,
@@ -141,7 +138,8 @@ class PolicyProvider : public BaseProvider,
 
   Profile* profile_;
 
-  bool content_type_is_managed_[CONTENT_SETTINGS_NUM_TYPES];
+  // Weak, owned by HostContentSettingsMap.
+  DefaultProviderInterface* default_provider_;
 
   PrefChangeRegistrar pref_change_registrar_;
   NotificationRegistrar notification_registrar_;

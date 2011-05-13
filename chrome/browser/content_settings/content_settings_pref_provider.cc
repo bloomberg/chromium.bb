@@ -380,11 +380,6 @@ void PrefProvider::Init() {
   initializing_ = false;
 }
 
-bool PrefProvider::ContentSettingsTypeIsManaged(
-    ContentSettingsType content_type) {
-  return false;
-}
-
 void PrefProvider::SetContentSetting(
     const ContentSettingsPattern& requesting_pattern,
     const ContentSettingsPattern& embedding_pattern,

@@ -46,8 +46,7 @@ MockProvider::MockProvider()
       content_type_(CONTENT_SETTINGS_TYPE_COOKIES),
       resource_identifier_(""),
       setting_(CONTENT_SETTING_DEFAULT),
-      read_only_(false),
-      is_managed_(false) {}
+      read_only_(false) {}
 
 MockProvider::MockProvider(ContentSettingsPattern requesting_url_pattern,
                            ContentSettingsPattern embedding_url_pattern,
@@ -61,8 +60,7 @@ MockProvider::MockProvider(ContentSettingsPattern requesting_url_pattern,
       content_type_(content_type),
       resource_identifier_(resource_identifier),
       setting_(setting),
-      read_only_(read_only),
-      is_managed_(is_managed) {}
+      read_only_(read_only) {}
 
 MockProvider::~MockProvider() {}
 
@@ -92,13 +90,6 @@ void MockProvider::SetContentSetting(
   content_type_ = content_type;
   resource_identifier_ = resource_identifier;
   setting_ = content_setting;
-}
-
-bool MockProvider::ContentSettingsTypeIsManaged(ContentSettingsType type) {
-  if (type == content_type_) {
-    return is_managed_;
-  }
-  return false;
 }
 
 }  // namespace content_settings

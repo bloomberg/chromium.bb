@@ -48,10 +48,6 @@ class BaseProvider : public ProviderInterface {
   // Initializes the Provider.
   virtual void Init() = 0;
 
-  // ProviderInterface Implementation
-  virtual bool ContentSettingsTypeIsManaged(
-      ContentSettingsType content_type) = 0;
-
   virtual ContentSetting GetContentSetting(
       const GURL& requesting_url,
       const GURL& embedding_url,

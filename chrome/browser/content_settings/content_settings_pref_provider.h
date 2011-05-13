@@ -107,10 +107,6 @@ class PrefProvider : public BaseProvider,
   explicit PrefProvider(Profile* profile);
   virtual ~PrefProvider();
 
-  // ContentSettingsProvider implementation.
-  virtual bool ContentSettingsTypeIsManaged(
-      ContentSettingsType content_type);
-
   virtual void SetContentSetting(
       const ContentSettingsPattern& requesting_pattern,
       const ContentSettingsPattern& embedding_pattern,

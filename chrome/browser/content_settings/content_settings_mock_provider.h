@@ -53,8 +53,6 @@ class MockProvider : public ProviderInterface {
                bool is_managed);
   virtual ~MockProvider();
 
-  virtual bool ContentSettingsTypeIsManaged(ContentSettingsType type);
-
   // ProviderInterface implementation
   virtual ContentSetting GetContentSetting(
       const GURL& requesting_url,
@@ -130,14 +128,6 @@ class MockProvider : public ProviderInterface {
     return read_only_;
   }
 
-  void set_is_managed(bool is_managed) {
-    is_managed_ = is_managed;
-  }
-
-  bool is_managed() const {
-    return is_managed_;
-  }
-
  private:
   ContentSettingsPattern requesting_url_pattern_;
   ContentSettingsPattern embedding_url_pattern_;
@@ -145,7 +135,6 @@ class MockProvider : public ProviderInterface {
   ResourceIdentifier resource_identifier_;
   ContentSetting setting_;
   bool read_only_;
-  bool is_managed_;
 
   DISALLOW_COPY_AND_ASSIGN(MockProvider);
 };
