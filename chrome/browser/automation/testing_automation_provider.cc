@@ -4744,7 +4744,7 @@ void TestingAutomationProvider::CloseNotification(
   }
   // This will delete itself when finished.
   new OnNotificationBalloonCountObserver(
-      this, reply_message, collection, balloon_count - 1);
+      this, reply_message, balloon_count - 1);
   manager->CancelById(balloons[index]->notification().notification_id());
 }
 
@@ -4761,16 +4761,8 @@ void TestingAutomationProvider::WaitForNotificationCount(
         .SendError("'count' missing or invalid.");
     return;
   }
-  NotificationUIManager* manager = g_browser_process->notification_ui_manager();
-  BalloonCollection* collection = manager->balloon_collection();
-  const BalloonCollection::Balloons& balloons = collection->GetActiveBalloons();
-  if (static_cast<int>(balloons.size()) == count) {
-    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
-    return;
-  }
   // This will delete itself when finished.
-  new OnNotificationBalloonCountObserver(
-      this, reply_message, collection, count);
+  new OnNotificationBalloonCountObserver(this, reply_message, count);
 }
 
 // Sample JSON input: { "command": "GetNTPInfo" }

@@ -124,6 +124,9 @@ class BalloonHost : public RenderViewHostDelegate,
                                       const std::string& value);
   virtual void ClearInspectorSettings();
 
+  // Returns whether the associated render view is ready. Used only for testing.
+  bool IsRenderViewReady() const;
+
  protected:
   virtual ~BalloonHost();
   // Must override in platform specific implementations.

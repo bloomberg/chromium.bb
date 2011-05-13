@@ -450,8 +450,7 @@ class NotificationsTest(pyauto.PyUITest):
     self._AllowAllOrigins()
     self.NavigateToURL(self.TEST_PAGE_URL)
     self._CreateHTMLNotification(self.EMPTY_PAGE_URL)
-    self.KillRendererProcess(
-        self.GetActiveNotifications()[0]['pid'])
+    self.KillRendererProcess(self.GetActiveNotifications()[0]['pid'])
     self.assertTrue(self.IsBrowserRunning())
     self.WaitForNotificationCount(0)
 

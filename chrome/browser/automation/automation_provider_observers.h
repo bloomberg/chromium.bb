@@ -1291,27 +1291,39 @@ class GetActiveNotificationsObserver : public NotificationObserver {
                        const NotificationDetails& details);
 
  private:
+  // Sends a message via the |AutomationProvider|. |automation_| must be valid.
+  // Deletes itself after the message is sent.
   void SendMessage();
 
-  AutomationJSONReply reply_;
   NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(GetActiveNotificationsObserver);
 };
 
 // Allows the automation provider to wait for a given number of
 // notification balloons.
-class OnNotificationBalloonCountObserver {
+class OnNotificationBalloonCountObserver : public NotificationObserver {
  public:
   OnNotificationBalloonCountObserver(AutomationProvider* provider,
                                      IPC::Message* reply_message,
-                                     BalloonCollection* collection,
                                      int count);
 
-  void OnBalloonCollectionChanged();
+  // Sends an automation reply message if |automation_| is still valid and the
+  // number of ready balloons matches the desired count. Deletes itself if the
+  // message is sent or if |automation_| is invalid.
+  void CheckBalloonCount();
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
-  AutomationJSONReply reply_;
+  NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+
   BalloonCollection* collection_;
   int count_;
 

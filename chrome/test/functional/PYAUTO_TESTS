@@ -56,8 +56,6 @@
       'instant',
       'navigation',
       'notifications',
-      # crbug.com/80510
-      '-notifications.NotificationsTest.testKillNotificationProcess',
       'ntp',
       'omnibox',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715

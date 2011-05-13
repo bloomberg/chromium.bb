@@ -253,3 +253,7 @@ void BalloonHost::NotifyDisconnect() {
       NotificationType::NOTIFY_BALLOON_DISCONNECTED,
       Source<BalloonHost>(this), NotificationService::NoDetails());
 }
+
+bool BalloonHost::IsRenderViewReady() const {
+  return should_notify_on_disconnect_;
+}

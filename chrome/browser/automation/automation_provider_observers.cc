@@ -2188,14 +2188,6 @@ void AutofillChangedObserver::IndicateDone() {
 
 namespace {
 
-// Returns whether the notification's host has a non-null process handle.
-bool IsNotificationProcessReady(Balloon* balloon) {
-  return balloon->view() &&
-         balloon->view()->GetHost() &&
-         balloon->view()->GetHost()->render_view_host() &&
-         balloon->view()->GetHost()->render_view_host()->process()->GetHandle();
-}
-
 // Returns whether all active notifications have an associated process ID.
 bool AreActiveNotificationProcessesReady() {
   NotificationUIManager* manager = g_browser_process->notification_ui_manager();
@@ -2203,7 +2195,7 @@ bool AreActiveNotificationProcessesReady() {
       manager->balloon_collection()->GetActiveBalloons();
   BalloonCollection::Balloons::const_iterator iter;
   for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
-    if (!IsNotificationProcessReady(*iter))
+    if (!(*iter)->view()->GetHost()->IsRenderViewReady())
       return false;
   }
   return true;
@@ -2214,11 +2206,12 @@ bool AreActiveNotificationProcessesReady() {
 GetActiveNotificationsObserver::GetActiveNotificationsObserver(
     AutomationProvider* automation,
     IPC::Message* reply_message)
-    : reply_(automation, reply_message) {
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message) {
   if (AreActiveNotificationProcessesReady()) {
     SendMessage();
   } else {
-    registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
+    registrar_.Add(this, NotificationType::NOTIFY_BALLOON_CONNECTED,
                    NotificationService::AllSources());
   }
 }
@@ -2229,6 +2222,10 @@ void GetActiveNotificationsObserver::Observe(
     NotificationType type,
     const NotificationSource& source,
     const NotificationDetails& details) {
+  if (!automation_) {
+    delete this;
+    return;
+  }
   if (AreActiveNotificationProcessesReady())
     SendMessage();
 }
@@ -2238,9 +2235,9 @@ void GetActiveNotificationsObserver::SendMessage() {
       g_browser_process->notification_ui_manager();
   const BalloonCollection::Balloons& balloons =
       manager->balloon_collection()->GetActiveBalloons();
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  DictionaryValue return_value;
   ListValue* list = new ListValue;
-  return_value->Set("notifications", list);
+  return_value.Set("notifications", list);
   BalloonCollection::Balloons::const_iterator iter;
   for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
     const Notification& notification = (*iter)->notification();
@@ -2253,26 +2250,45 @@ void GetActiveNotificationsObserver::SendMessage() {
         view->GetHost()->render_view_host()->process()->GetHandle()));
     list->Append(balloon);
   }
-  reply_.SendSuccess(return_value.get());
+  AutomationJSONReply(automation_,
+                      reply_message_.release()).SendSuccess(&return_value);
   delete this;
 }
 
 OnNotificationBalloonCountObserver::OnNotificationBalloonCountObserver(
     AutomationProvider* provider,
     IPC::Message* reply_message,
-    BalloonCollection* collection,
     int count)
-    : reply_(provider, reply_message),
-      collection_(collection),
+    : automation_(provider->AsWeakPtr()),
+      reply_message_(reply_message),
+      collection_(
+          g_browser_process->notification_ui_manager()->balloon_collection()),
       count_(count) {
-  collection->set_on_collection_changed_callback(NewCallback(
-      this, &OnNotificationBalloonCountObserver::OnBalloonCollectionChanged));
+  registrar_.Add(this, NotificationType::NOTIFY_BALLOON_CONNECTED,
+                 NotificationService::AllSources());
+  collection_->set_on_collection_changed_callback(NewCallback(
+      this, &OnNotificationBalloonCountObserver::CheckBalloonCount));
+  CheckBalloonCount();
 }
 
-void OnNotificationBalloonCountObserver::OnBalloonCollectionChanged() {
-  if (static_cast<int>(collection_->GetActiveBalloons().size()) == count_) {
+void OnNotificationBalloonCountObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  CheckBalloonCount();
+}
+
+void OnNotificationBalloonCountObserver::CheckBalloonCount() {
+  bool balloon_count_met = AreActiveNotificationProcessesReady() &&
+      static_cast<int>(collection_->GetActiveBalloons().size()) == count_;
+
+  if (balloon_count_met && automation_) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendSuccess(NULL);
+  }
+
+  if (balloon_count_met || !automation_) {
     collection_->set_on_collection_changed_callback(NULL);
-    reply_.SendSuccess(NULL);
     delete this;
   }
 }
