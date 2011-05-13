@@ -15,7 +15,7 @@
  * @file
  * This file defines the PPB_Messaging interface implemented by the browser.
  * The PPB_Messaging interface contains pointers to functions related to
- * sending messages to the JavaScript onmessage handler on the DOM element
+ * sending messages to JavaScript message event listeners on the DOM element
  * associated with a specific module instance.
  *
  * @addtogroup Interfaces
@@ -24,23 +24,25 @@
 
 /**
  * The PPB_Messaging interface contains pointers to functions related to
- * sending messages to the JavaScript onmessage handler on the DOM element
+ * sending messages to JavaScript message event listeners on the DOM element
  * associated with a specific module instance.
  */
 struct PPB_Messaging {
   /**
-   * @a PostMessage is a pointer to a function which asynchronously invokes the
-   * onmessage handler on the DOM element for the given module instance, if one
-   * exists. This means that a call to @a PostMessage will not block while the
+   * @a PostMessage is a pointer to a function which asynchronously invokes any
+   * listeners for message events on the DOM element for the given module
+   * instance. This means that a call to @a PostMessage will not block while the
    * message is processed.
    *
    * @param message is a PP_Var containing the data to be sent to JavaScript.
    * Currently, it can have an int32_t, double, bool, or string value (objects
    * are not supported.)
    *
-   * The onmessage handler in JavaScript code will receive an object conforming
-   * to the MessageEvent interface. In particular, the value of @a message will
-   * be contained as a property called @a data in the received MessageEvent.
+   * Listeners for message events in JavaScript code will receive an object
+   * conforming to the MessageEvent interface. In particular, the value of @a
+   * message will be contained as a property called @a data in the received
+   * MessageEvent.
+   *
    * This is analogous to listening for messages from Web Workers.
    *
    * See:
@@ -54,9 +56,10 @@ struct PPB_Messaging {
    *   <object id="plugin"
    *           type="application/x-ppapi-postMessage-example"/>
    *   <script type="text/javascript">
-   *     document.getElementById('plugin').onmessage = function(message) {
-   *       alert(message.data);
-   *     }
+   *     var plugin = document.getElementById('plugin');
+   *     plugin.AddEventListener("message",
+   *                             function(message) { alert(message.data); },
+   *                             false);
    *   </script>
    * </body>
    *

@@ -23,10 +23,20 @@ class TestPostMessage : public TestCase {
   // the given value to the back of message_data_
   virtual void HandleMessage(const pp::Var& message_data);
 
-  // Set the JavaScript onmessage handler to echo back some expression based on
-  // the message_event by passing it to postMessage.  Returns true on success,
-  // false on failure.
-  bool MakeOnMessageEcho(const std::string& expression);
+  // Add a listener for message events which will echo back the given
+  // JavaScript expression by passing it to postMessage. JavaScript Variables
+  // available to the expression are:
+  //  'plugin' - the DOM element for the test plugin.
+  //  'message_event' - the message event parameter to the listener function.
+  // This also adds the new listener to an array called 'eventListeners' on the
+  // plugin's DOM element. This is used by ClearListeners().
+  // Returns true on success, false on failure.
+  bool AddEchoingListener(const std::string& expression);
+
+  // Clear any listeners that have been added using AddEchoingListener by
+  // calling removeEventListener for each.
+  // Returns true on success, false on failure.
+  bool ClearListeners();
 
   // Test some basic functionality;  make sure we can send data successfully
   // in both directions.
@@ -39,9 +49,11 @@ class TestPostMessage : public TestCase {
   // Test sending a message when no handler exists, make sure nothing happens.
   std::string TestNoHandler();
 
+  typedef std::vector<pp::Var> VarVector;
+
   // This is used to store pp::Var objects we receive via a call to
   // HandleMessage.
-  std::vector<pp::Var> message_data_;
+  VarVector message_data_;
 };
 
 #endif  // PPAPI_TESTS_TEST_POST_MESSAGE_H_

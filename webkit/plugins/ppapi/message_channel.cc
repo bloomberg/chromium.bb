@@ -295,25 +295,32 @@ bool MessageChannel::EvaluateOnMessageInvoker() {
   if (NPVARIANT_IS_OBJECT(onmessage_invoker_))
     return true;
 
-  // This is the javascript code that we invoke.  It checks to see if onmessage
-  // exists, and if so, it invokes it.
+  // This is the javascript code that we invoke to create and dispatch a
+  // message event.
   const char invoke_onmessage_js[] =
-      "(function(module_instance, message_data) {"
-      "  if (module_instance &&"  // Only invoke if the instance is valid and
-      "      module_instance.onmessage &&"  // has a function named onmessage.
-      "      typeof(module_instance.onmessage) == 'function') {"
-      "    var message_event = document.createEvent('MessageEvent');"
+      "(function(window, module_instance, message_data) {"
+      "  if (module_instance) {"
+      "    var message_event = window.document.createEvent('MessageEvent');"
       "    message_event.initMessageEvent('message',"  // type
       "                                   false,"  // canBubble
       "                                   false,"  // cancelable
       "                                   message_data,"  // data
-      "                                   '',"  // origin
+      "                                   '',"  // origin [*]
       "                                   '',"  // lastEventId
-      "                                   module_instance,"  // source
+      "                                   null,"  // source [*]
       "                                   []);"  // ports
-      "    module_instance.onmessage(message_event);"
+      "    module_instance.dispatchEvent(message_event);"
       "  }"
       "})";
+  // [*] Note that the |origin| is only specified for cross-document and server-
+  //     sent messages, while |source| is only specified for cross-document
+  //     messages:
+  //      http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html
+  //     This currently behaves like Web Workers. On Firefox, Chrome, and Safari
+  //     at least, postMessage on Workers does not provide the origin or source.
+  //     TODO(dmichael):  Add origin if we change to a more iframe-like origin
+  //                      policy (see crbug.com/81537)
+
   NPString function_string = { invoke_onmessage_js,
                                sizeof(invoke_onmessage_js)-1 };
   // Get the current frame to pass to the evaluate function.
@@ -351,13 +358,26 @@ void MessageChannel::PostMessageToJavaScriptImpl(PP_Var message_data) {
 
   NPVariant result_var;
   VOID_TO_NPVARIANT(result_var);
-  NPVariant npvariant_args[2];
+  NPVariant npvariant_args[3];
+  // Get the frame so we can get the window object.
+  WebKit::WebFrame* frame =
+      instance_->container()->element().document().frame();
+  if (!frame)
+    return;
+
+  OBJECT_TO_NPVARIANT(frame->windowObject(), npvariant_args[0]);
   OBJECT_TO_NPVARIANT(instance_->container()->scriptableObjectForElement(),
-                      npvariant_args[0]);
+                      npvariant_args[1]);
   // Convert message to an NPVariant without copying. At this point, the data
   // has already been copied.
-  if (!PPVarToNPVariantNoCopy(message_data, &npvariant_args[1]))
+  if (!PPVarToNPVariantNoCopy(message_data, &npvariant_args[2])) {
+    // We couldn't create an NPVariant, so we can't invoke the method.  Thus,
+    // WebBindings::invokeDefault does not take ownership of these variants, so
+    // we must release our references to them explicitly.
+    WebBindings::releaseVariantValue(&npvariant_args[0]);
+    WebBindings::releaseVariantValue(&npvariant_args[1]);
     return;
+  }
 
   WebBindings::invokeDefault(NULL,
                              NPVARIANT_TO_OBJECT(onmessage_invoker_),

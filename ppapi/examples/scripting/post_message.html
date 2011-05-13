@@ -7,44 +7,45 @@
   -->
 <head>
   <title>postMessage Example</title>
-</head>
+  <script>
 
-<body>
-
-<script type="text/javascript">
-
-function SendString() {
-  plugin = document.getElementById('plugin');
-
-  // If we haven't already done it, set up an 'onmessage' function.  This will
-  // get invoked whenever the plugin calls Instance::PostMessage in C++ (or
-  // PPB_Messaging::PostMessage in C).  In this case, we're expecting a bool to
-  // tell us whether the string we passed was a palindrome.
-  if (!plugin.onmessage) {
-    plugin.onmessage = function(message_event) {
-      if (message_event.data) {
-        alert("The string was a palindrome.");
-      } else {
-        alert("The string was not a palindrome.");
-      }
+  function HandleMessage(message_event) {
+    if (message_event.data) {
+      alert("The string was a palindrome.");
+    } else {
+      alert("The string was not a palindrome.");
     }
   }
 
-  var inputBox = document.getElementById("inputBox");
+  function AddListener() {
+    var plugin = document.getElementById("plugin");
+    plugin.addEventListener("message", HandleMessage, false);
+  }
+  document.addEventListener("DOMContentLoaded", AddListener, false);
 
-  // Send the string to the plugin using postMessage.  This results in a call
-  // to Instance::HandleMessage in C++ (or PPP_Messaging::HandleMessage in C).
-  plugin.postMessage(inputBox.value);
-}
+  </script>
+</head>
 
-</script>
+<body>
+  <script>
 
-<input type="text" id="inputBox" name="inputBox" value="ablewasiereisawelba"/>
-<p>
-<button onclick='SendString()'>Is Palindrome</button>
-<object id="plugin" type="application/x-ppapi-post-message-example"
-        width="0" height="0"/>
-<hr>
+  function SendString() {
+    var plugin = document.getElementById("plugin");
+    var inputBox = document.getElementById("inputBox");
+
+    // Send the string to the plugin using postMessage.  This results in a call
+    // to Instance::HandleMessage in C++ (or PPP_Messaging::HandleMessage in C).
+    plugin.postMessage(inputBox.value);
+  }
+
+  </script>
+
+  <input type="text" id="inputBox" name="inputBox" value="ablewasiereisawelba"/>
+  <p>
+  <button onclick="SendString()">Is Palindrome</button>
+  <object id="plugin" type="application/x-ppapi-post-message-example"
+          width="1" height="1"/>
+  <hr>
 </body>
 </html>
 
