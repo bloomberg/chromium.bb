@@ -88,5 +88,10 @@ bool HandlerSyncSocketCreate(NaClCommandLoop* ncl,
 bool HandlerSyncSocketWrite(NaClCommandLoop* ncl,
                             const vector<string>& args);
 // from file_handler.cc
-bool HandlerFileIOInitialize(NaClCommandLoop* ncl, const vector<string>& args);
+bool HandlerFileIOInitialize(NaClCommandLoop* ncl,
+                             const vector<string>& args);
+// from postmessage_handler.cc
+bool HandlerPostMessageInitialize(NaClCommandLoop* ncl,
+                                  const vector<string>& args);
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERSAL_RPC_UNIVERSAL_H_ */

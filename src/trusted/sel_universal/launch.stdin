@@ -19,6 +19,11 @@ echo
 echo "*** INITIALIZE SDL PEPPER"
 # this registers the currently supported PPB_xxx rpcs
 sdl_initialize  ${INSTANCE} ${WIDTH} ${HEIGHT} demo
+echo
+
+echo "*** INITIALIZE POST_MESSAGE"
+# this registers the currently supported PPB_xxx rpcs
+postmessage_initialize
 
 echo
 echo "*** CREATE UPCALL SERVICE"

@@ -306,6 +306,7 @@ int raii_main(int argc, char* argv[]) {
   loop.AddHandler("sync_socket_create", HandlerSyncSocketCreate);
   loop.AddHandler("sync_socket_write", HandlerSyncSocketWrite);
   loop.AddHandler("fileio_initialize", HandlerFileIOInitialize);
+  loop.AddHandler("postmessage_initialize", HandlerPostMessageInitialize);
 #if  NACL_SEL_UNIVERSAL_INCLUDE_SDL
   loop.AddHandler("sdl_initialize", HandlerSDLInitialize);
   loop.AddHandler("sdl_event_loop", HandlerSDLEventLoop);
