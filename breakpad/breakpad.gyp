@@ -211,6 +211,7 @@
                               '-mfpmath=sse'],
                   'ldflags!': ['-m32'],
                   'cflags': ['-O2'],
+                  'include_dirs!': ['/usr/include32'],
                 }],
               ],
 
