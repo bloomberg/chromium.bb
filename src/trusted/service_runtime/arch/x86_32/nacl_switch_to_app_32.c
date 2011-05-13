@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -30,7 +30,20 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
 #endif
   natp->sys.es = NaClGetEs();
   natp->sys.fs = NaClGetFs();
+#if NACL_WINDOWS
+  /*
+   * Win32 leaks %gs values on return from a windows syscall if the
+   * previously running thread had a non-zero %gs, e.g., an untrusted
+   * thread was interrupted by the scheduler.  If we used NaClGetGs()
+   * here, then in the trampoline context switch code, we will try to
+   * restore %gs to this leaked value, possibly generating a fault
+   * since that segment selector may not be valid (e.g., if that
+   * earlier thread had exited and its selector had been deallocated).
+   */
+  natp->sys.gs = 0;
+#else
   natp->sys.gs = NaClGetGs();
+#endif
   natp->sys.ss = NaClGetSs();
   /*
    * Preserves stack alignment.  The trampoline code loads this value
