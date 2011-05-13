@@ -114,6 +114,39 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
+// TCM ID - 3637311.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, Add) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+
+  InstallExtension(GetProfile(0), 0);
+  InstallExtension(verifier(), 0);
+  ASSERT_TRUE(AwaitQuiescence());
+
+  InstallExtensionsPendingForSync(GetProfile(0));
+  InstallExtensionsPendingForSync(GetProfile(1));
+  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+}
+
+// TCM ID - 3724281.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, Uninstall) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+
+  InstallExtension(GetProfile(0), 0);
+  InstallExtension(verifier(), 0);
+  ASSERT_TRUE(AwaitQuiescence());
+
+  InstallExtensionsPendingForSync(GetProfile(0));
+  InstallExtensionsPendingForSync(GetProfile(1));
+  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+
+  UninstallExtension(GetProfile(0), 0);
+  UninstallExtension(verifier(), 0);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+}
+
 // TCM ID - 3732278.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, DisableExtensions) {
   ASSERT_TRUE(SetupSync());
@@ -155,5 +188,4 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, DisableSync) {
 }
 
 // TODO(akalin): Add tests exercising:
-//   - Extension uninstallation
 //   - Offline installation/uninstallation behavior

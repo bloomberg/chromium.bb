@@ -9,6 +9,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 
+namespace {
+
+std::string CreateFakeExtensionName(int index) {
+  return "fakeextension" + base::IntToString(index);
+}
+
+}  // namespace
+
 LiveExtensionsSyncTest::LiveExtensionsSyncTest(TestType test_type)
     : LiveSyncTest(test_type) {}
 
@@ -44,9 +52,14 @@ bool LiveExtensionsSyncTest::AllProfilesHaveSameExtensionsAsVerifier() {
 }
 
 void LiveExtensionsSyncTest::InstallExtension(Profile* profile, int index) {
-  std::string name = "fakeextension" + base::IntToString(index);
-  return extension_helper_.InstallExtension(
-      profile, name, Extension::TYPE_EXTENSION);
+  return extension_helper_.InstallExtension(profile,
+                                            CreateFakeExtensionName(index),
+                                            Extension::TYPE_EXTENSION);
+}
+
+void LiveExtensionsSyncTest::UninstallExtension(Profile* profile, int index) {
+  return extension_helper_.UninstallExtension(profile,
+                                              CreateFakeExtensionName(index));
 }
 
 void LiveExtensionsSyncTest::InstallExtensionsPendingForSync(

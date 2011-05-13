@@ -34,6 +34,10 @@ class LiveExtensionsSyncTest : public LiveSyncTest {
   // Installs the extension for the given index to |profile|.
   void InstallExtension(Profile* profile, int index);
 
+  // Uninstalls the extension for the given index from |profile|. Assumes that
+  // it was previously installed.
+  void UninstallExtension(Profile* profile, int index);
+
   // Installs all pending synced extensions for |profile|.
   void InstallExtensionsPendingForSync(Profile* profile);
 

@@ -38,6 +38,9 @@ class LiveSyncExtensionHelper {
   void InstallExtension(
       Profile* profile, const std::string& name, Extension::Type type);
 
+  // Uninstalls the extension with the given name from |profile|.
+  void UninstallExtension(Profile* profile, const std::string& name);
+
   // Returns true iff the extension with the given id is pending
   // install in |profile|.
   bool IsExtensionPendingInstallForSync(

@@ -34,6 +34,10 @@ class LiveAppsSyncTest : public LiveSyncTest {
   // Installs the app for the given index to |profile|.
   void InstallApp(Profile* profile, int index);
 
+  // Uninstalls the app for the given index from |profile|. Assumes that it was
+  // previously installed.
+  void UninstallApp(Profile* profile, int index);
+
   // Installs all pending synced apps for |profile|.
   void InstallAppsPendingForSync(Profile* profile);
 

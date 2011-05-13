@@ -52,6 +52,12 @@ void LiveSyncExtensionHelper::InstallExtension(
   profile->GetExtensionService()->OnExtensionInstalled(extension);
 }
 
+void LiveSyncExtensionHelper::UninstallExtension(
+    Profile* profile, const std::string& name) {
+  ExtensionService::UninstallExtensionHelper(profile->GetExtensionService(),
+                                             NameToId(name));
+}
+
 bool LiveSyncExtensionHelper::IsExtensionPendingInstallForSync(
     Profile* profile, const std::string& id) const {
   const PendingExtensionManager* pending_extension_manager =

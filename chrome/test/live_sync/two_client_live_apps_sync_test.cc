@@ -114,6 +114,39 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }
 
+// TCM ID - 3711279.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, Add) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  InstallApp(GetProfile(0), 0);
+  InstallApp(verifier(), 0);
+  ASSERT_TRUE(AwaitQuiescence());
+
+  InstallAppsPendingForSync(GetProfile(0));
+  InstallAppsPendingForSync(GetProfile(1));
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+}
+
+// TCM ID - 3706267.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, Uninstall) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  InstallApp(GetProfile(0), 0);
+  InstallApp(verifier(), 0);
+  ASSERT_TRUE(AwaitQuiescence());
+
+  InstallAppsPendingForSync(GetProfile(0));
+  InstallAppsPendingForSync(GetProfile(1));
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  UninstallApp(GetProfile(0), 0);
+  UninstallApp(verifier(), 0);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+}
+
 // TCM ID - 3718276.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, DisableApps) {
   ASSERT_TRUE(SetupSync());
@@ -155,6 +188,5 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, DisableSync) {
 }
 
 // TODO(akalin): Add tests exercising:
-//   - App uninstallation
 //   - Offline installation/uninstallation behavior
 //   - App-specific properties
