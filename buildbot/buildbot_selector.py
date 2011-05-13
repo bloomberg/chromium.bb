@@ -169,9 +169,8 @@ def Main():
     sys.stderr.write('ERROR - unset/invalid builder name\n')
     sys.exit(1)
 
-  env = {
-      'ARCHIVE_IRT': builder in IRT_ARCHIVE_BUILDERS and '1' or '0',
-  }
+  env = os.environ.copy()
+  env['ARCHIVE_IRT'] = builder in IRT_ARCHIVE_BUILDERS and '1' or '0'
 
   p = subprocess.Popen(cmd, env=env, shell=True)
   p.wait()
