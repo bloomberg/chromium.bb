@@ -860,8 +860,6 @@ surface_attach(struct wl_client *client,
 	 * damaged by the client. */
 	wlsc_surface_damage(es);
 
-	wlsc_buffer_attach(buffer, surface);
-
 	switch (es->map_type) {
 	case WLSC_SURFACE_MAP_FULLSCREEN:
 		es->x = (es->fullscreen_output->width - es->width) / 2;
@@ -876,6 +874,8 @@ surface_attach(struct wl_client *client,
 	es->height = buffer->height;
 	if (x != 0 || y != 0)
 		wlsc_surface_assign_output(es);
+
+	wlsc_buffer_attach(buffer, surface);
 
 	es->compositor->shell->attach(es->compositor->shell, es);
 }
