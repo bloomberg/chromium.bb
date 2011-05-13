@@ -23,6 +23,10 @@ class LiveExtensionsSyncTest : public LiveSyncTest {
   // |extension_helper_|.
   virtual bool SetupClients() OVERRIDE WARN_UNUSED_RESULT;
 
+  // Returns true iff the profile with index |index| has the same extensions
+  // as the verifier.
+  bool HasSameExtensionsAsVerifier(int index) WARN_UNUSED_RESULT;
+
   // Returns true iff all existing profiles have the same extensions
   // as the verifier.
   bool AllProfilesHaveSameExtensionsAsVerifier() WARN_UNUSED_RESULT;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/test/live_sync/live_apps_sync_test.h"
 
 class TwoClientLiveAppsSyncTest : public LiveAppsSyncTest {
@@ -113,8 +114,47 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }
 
+// TCM ID - 3718276.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, DisableApps) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  GetClient(1)->DisableSyncForDatatype(syncable::APPS);
+  InstallApp(GetProfile(0), 0);
+  InstallApp(verifier(), 0);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(HasSameAppsAsVerifier(0));
+  ASSERT_FALSE(HasSameAppsAsVerifier(1));
+
+  GetClient(1)->EnableSyncForDatatype(syncable::APPS);
+  ASSERT_TRUE(AwaitQuiescence());
+
+  InstallAppsPendingForSync(GetProfile(0));
+  InstallAppsPendingForSync(GetProfile(1));
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+}
+
+// TCM ID - 3720303.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, DisableSync) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  GetClient(1)->DisableSyncForAllDatatypes();
+  InstallApp(GetProfile(0), 0);
+  InstallApp(verifier(), 0);
+  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Installed an app."));
+  ASSERT_TRUE(HasSameAppsAsVerifier(0));
+  ASSERT_FALSE(HasSameAppsAsVerifier(1));
+
+  GetClient(1)->EnableSyncForAllDatatypes();
+  ASSERT_TRUE(AwaitQuiescence());
+
+  InstallAppsPendingForSync(GetProfile(0));
+  InstallAppsPendingForSync(GetProfile(1));
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+}
+
 // TODO(akalin): Add tests exercising:
-//   - Apps enabled/disabled state sync behavior
 //   - App uninstallation
 //   - Offline installation/uninstallation behavior
 //   - App-specific properties

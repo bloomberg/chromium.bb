@@ -19,13 +19,8 @@ IN_PROC_BROWSER_TEST_F(MultipleClientLivePasswordsSyncTest, FAILS_Sanity) {
   }
   ASSERT_TRUE(AwaitQuiescence());
 
-  std::vector<PasswordForm> forms0;
-  GetLogins(GetPasswordStore(0), forms0);
-  ASSERT_EQ((size_t) num_clients(), forms0.size());
-
+  ASSERT_EQ(num_clients(), GetPasswordCount(0));
   for (int i = 1; i < num_clients(); ++i) {
-    std::vector<PasswordForm> forms;
-    GetLogins(GetPasswordStore(i), forms);
-    ASSERT_TRUE(ContainsSamePasswordForms(forms0, forms));
+    ASSERT_TRUE(ProfilesContainSamePasswordForms(0, i));
   }
 }

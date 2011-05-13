@@ -114,14 +114,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
-// TODO(akalin): Add tests exercising:
-//   - Extensions enabled/disabled state sync behavior
-//   - Extension uninstallation
-//   - Offline installation/uninstallation behavior
-
 // TCM ID - 3732278.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
-                       DisableExtensions) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, DisableExtensions) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 
@@ -138,3 +132,28 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
   InstallExtensionsPendingForSync(verifier());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
+
+// TCM ID - 3606290.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, DisableSync) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+
+  GetClient(1)->DisableSyncForAllDatatypes();
+  InstallExtension(GetProfile(0), 0);
+  InstallExtension(verifier(), 0);
+  ASSERT_TRUE(
+      GetClient(0)->AwaitSyncCycleCompletion("Installed an extension."));
+  ASSERT_TRUE(HasSameExtensionsAsVerifier(0));
+  ASSERT_FALSE(HasSameExtensionsAsVerifier(1));
+
+  GetClient(1)->EnableSyncForAllDatatypes();
+  ASSERT_TRUE(AwaitQuiescence());
+  InstallExtensionsPendingForSync(GetProfile(0));
+  InstallExtensionsPendingForSync(GetProfile(1));
+  InstallExtensionsPendingForSync(verifier());
+  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+}
+
+// TODO(akalin): Add tests exercising:
+//   - Extension uninstallation
+//   - Offline installation/uninstallation behavior

@@ -107,7 +107,10 @@ bool BookmarkModelVerifier::ModelsMatch(BookmarkModel* model_a,
   ui::TreeNodeIterator<const BookmarkNode> iterator_b(model_b->root_node());
   while (iterator_a.has_next()) {
     const BookmarkNode* node_a = iterator_a.Next();
-    EXPECT_TRUE(iterator_b.has_next());
+    if (!iterator_b.has_next()) {
+      LOG(ERROR) << "Models do not match.";
+      return false;
+    }
     const BookmarkNode* node_b = iterator_b.Next();
     ret_val = ret_val && NodesMatch(node_a, node_b);
     if (node_a->type() != BookmarkNode::URL ||

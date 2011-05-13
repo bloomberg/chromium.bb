@@ -22,16 +22,23 @@ bool LiveAppsSyncTest::SetupClients() {
   return true;
 }
 
-bool LiveAppsSyncTest::AllProfilesHaveSameAppsAsVerifier() {
+bool LiveAppsSyncTest::HasSameAppsAsVerifier(int index) {
   // TODO(akalin): We may want to filter out non-apps for some tests.
   LiveSyncExtensionHelper::ExtensionStateMap
       verifier_extension_state_map(
           extension_helper_.GetExtensionStates(verifier()));
+  LiveSyncExtensionHelper::ExtensionStateMap
+      extension_state_map(
+          extension_helper_.GetExtensionStates(GetProfile(index)));
+  return (extension_state_map == verifier_extension_state_map);
+}
+
+
+bool LiveAppsSyncTest::AllProfilesHaveSameAppsAsVerifier() {
   for (int i = 0; i < num_clients(); ++i) {
-    LiveSyncExtensionHelper::ExtensionStateMap
-        extension_state_map(
-            extension_helper_.GetExtensionStates(GetProfile(i)));
-    if (extension_state_map != verifier_extension_state_map) {
+    if (!HasSameAppsAsVerifier(i)) {
+      LOG(ERROR) << "Profile " << i << " doesn't have the same apps as the"
+                                       " verifier profile.";
       return false;
     }
   }

@@ -15,16 +15,11 @@ IN_PROC_BROWSER_TEST_F(ManyClientLivePasswordsSyncTest, DISABLED_Sanity) {
 
   PasswordForm form = CreateTestPasswordForm(0);
   AddLogin(GetVerifierPasswordStore(), form);
+  ASSERT_EQ(1, GetVerifierPasswordCount());
   AddLogin(GetPasswordStore(0), form);
+  ASSERT_EQ(1, GetPasswordCount(0));
   ASSERT_TRUE(GetClient(0)->AwaitGroupSyncCycleCompletion(clients()));
 
-  std::vector<PasswordForm> verifier_forms;
-  GetLogins(GetVerifierPasswordStore(), verifier_forms);
-  ASSERT_EQ(1U, verifier_forms.size());
-
-  for (int i = 0; i < num_clients(); ++i) {
-    std::vector<PasswordForm> forms;
-    GetLogins(GetPasswordStore(i), forms);
-    ASSERT_TRUE(ContainsSamePasswordForms(verifier_forms, forms));
-  }
+  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+  ASSERT_EQ(1, GetPasswordCount(0));
 }

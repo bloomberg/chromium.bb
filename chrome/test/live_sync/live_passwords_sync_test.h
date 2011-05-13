@@ -56,6 +56,28 @@ class LivePasswordsSyncTest : public LiveSyncTest {
   // Gets the password store of the verifier profile.
   PasswordStore* GetVerifierPasswordStore();
 
+  // Returns true iff the profile with index |index| contains the same password
+  // forms as the verifier profile.
+  bool ProfileContainsSamePasswordFormsAsVerifier(int index);
+
+  // Returns true iff the profile with index |index_a| contains the same
+  // password forms as the profile with index |index_b|.
+  bool ProfilesContainSamePasswordForms(int index_a, int index_b);
+
+  // Returns true iff all profiles contain the same password forms as the
+  // verifier profile.
+  bool AllProfilesContainSamePasswordFormsAsVerifier();
+
+  // Returns true iff all profiles contain the same password forms.
+  bool AllProfilesContainSamePasswordForms();
+
+  // Returns the number of forms in the password store of the profile with index
+  // |index|.
+  int GetPasswordCount(int index);
+
+  // Returns the number of forms in the password store of the verifier profile.
+  int GetVerifierPasswordCount();
+
   // Creates a test password form with a well known fake signon realm used only
   // by LivePasswordsSyncTest based on |index|.
   webkit_glue::PasswordForm CreateTestPasswordForm(int index);

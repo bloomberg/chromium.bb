@@ -22,15 +22,21 @@ bool LiveExtensionsSyncTest::SetupClients() {
   return true;
 }
 
-bool LiveExtensionsSyncTest::AllProfilesHaveSameExtensionsAsVerifier() {
+bool LiveExtensionsSyncTest::HasSameExtensionsAsVerifier(int index) {
   LiveSyncExtensionHelper::ExtensionStateMap
       verifier_extension_state_map(
           extension_helper_.GetExtensionStates(verifier()));
+  LiveSyncExtensionHelper::ExtensionStateMap
+      extension_state_map(
+          extension_helper_.GetExtensionStates(GetProfile(index)));
+  return (extension_state_map == verifier_extension_state_map);
+}
+
+bool LiveExtensionsSyncTest::AllProfilesHaveSameExtensionsAsVerifier() {
   for (int i = 0; i < num_clients(); ++i) {
-    LiveSyncExtensionHelper::ExtensionStateMap
-        extension_state_map(
-            extension_helper_.GetExtensionStates(GetProfile(i)));
-    if (extension_state_map != verifier_extension_state_map) {
+    if (!HasSameExtensionsAsVerifier(i)) {
+      LOG(ERROR) << "Profile " << i << " doesn't have the same extensions as"
+                                       " the verifier profile.";
       return false;
     }
   }

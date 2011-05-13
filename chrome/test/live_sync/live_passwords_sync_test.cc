@@ -7,6 +7,7 @@
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/password_manager/password_form_data.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
@@ -100,6 +101,58 @@ PasswordStore* LivePasswordsSyncTest::GetPasswordStore(int index) {
 
 PasswordStore* LivePasswordsSyncTest::GetVerifierPasswordStore() {
   return verifier()->GetPasswordStore(Profile::IMPLICIT_ACCESS);
+}
+
+bool LivePasswordsSyncTest::ProfileContainsSamePasswordFormsAsVerifier(
+    int index) {
+  std::vector<PasswordForm> verifier_forms;
+  std::vector<PasswordForm> forms;
+  GetLogins(GetVerifierPasswordStore(), verifier_forms);
+  GetLogins(GetPasswordStore(index), forms);
+  return ContainsSamePasswordForms(verifier_forms, forms);
+}
+
+bool LivePasswordsSyncTest::ProfilesContainSamePasswordForms(int index_a,
+                                                             int index_b) {
+  std::vector<PasswordForm> forms_a;
+  std::vector<PasswordForm> forms_b;
+  GetLogins(GetPasswordStore(index_a), forms_a);
+  GetLogins(GetPasswordStore(index_b), forms_b);
+  return ContainsSamePasswordForms(forms_a, forms_b);
+}
+
+bool LivePasswordsSyncTest::AllProfilesContainSamePasswordFormsAsVerifier() {
+  for (int i = 0; i < num_clients(); ++i) {
+    if (!ProfileContainsSamePasswordFormsAsVerifier(i)) {
+      LOG(ERROR) << "Profile " << i << " does not contain the same password "
+                                       " forms as the verifier.";
+      return false;
+    }
+  }
+  return true;
+}
+
+bool LivePasswordsSyncTest::AllProfilesContainSamePasswordForms() {
+  for (int i = 1; i < num_clients(); ++i) {
+    if (!ProfilesContainSamePasswordForms(0, i)) {
+      LOG(ERROR) << "Profile " << i << " does not contain the same password "
+                                       " forms as Profile 0.";
+      return false;
+    }
+  }
+  return true;
+}
+
+int LivePasswordsSyncTest::GetPasswordCount(int index) {
+  std::vector<PasswordForm> forms;
+  GetLogins(GetPasswordStore(index), forms);
+  return forms.size();
+}
+
+int LivePasswordsSyncTest::GetVerifierPasswordCount() {
+  std::vector<PasswordForm> verifier_forms;
+  GetLogins(GetVerifierPasswordStore(), verifier_forms);
+  return verifier_forms.size();
 }
 
 PasswordForm LivePasswordsSyncTest::CreateTestPasswordForm(int index) {
