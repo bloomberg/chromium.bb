@@ -69,6 +69,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
  public:
   // Factory methods that must be used to create ChromotingHost instances.
   // Default capturer and input stub are used if it is not specified.
+  // Returned instance takes ownership of |access_verifier| and |environment|,
+  // and adds a reference to |config|. It does NOT take ownership of |context|.
   static ChromotingHost* Create(ChromotingHostContext* context,
                                 MutableHostConfig* config,
                                 AccessVerifier* access_verifier);
@@ -128,6 +130,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   typedef std::vector<scoped_refptr<HostStatusObserver> > StatusObserverList;
   typedef std::vector<scoped_refptr<ClientSession> > ClientList;
 
+  // Takes ownership of |access_verifier| and |environment|, and adds a
+  // reference to |config|. Does NOT take ownership of |context|.
   ChromotingHost(ChromotingHostContext* context,
                  MutableHostConfig* config,
                  DesktopEnvironment* environment,

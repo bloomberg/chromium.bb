@@ -82,10 +82,7 @@ class ChromotingHostTest : public testing::Test {
         .Times(AnyNumber());
 
     Capturer* capturer = new CapturerFake();
-    host_stub_ = new MockHostStub();
-    host_stub2_ = new MockHostStub();
     event_executor_ = new MockEventExecutor();
-    event_executor2_ = new MockEventExecutor();
     curtain_ = new MockCurtain();
     DesktopEnvironment* desktop =
         new DesktopEnvironment(capturer, event_executor_, curtain_);
@@ -97,9 +94,9 @@ class ChromotingHostTest : public testing::Test {
     credentials_.set_username("user");
     credentials_.set_credential("password");
     connection_ = new MockConnectionToClient(
-        &message_loop_, &handler_, host_stub_, event_executor_);
+        &message_loop_, &handler_, &host_stub_, event_executor_);
     connection2_ = new MockConnectionToClient(
-        &message_loop_, &handler_, host_stub2_, event_executor2_);
+        &message_loop_, &handler_, &host_stub2_, &event_executor2_);
     session_ = new MockSession();
     session2_ = new MockSession();
     session_config_.reset(SessionConfig::CreateDefault());
@@ -199,16 +196,18 @@ class ChromotingHostTest : public testing::Test {
   scoped_ptr<SessionConfig> session_config_;
   MockVideoStub video_stub_;
   MockClientStub client_stub_;
-  MockHostStub* host_stub_;
-  MockEventExecutor* event_executor_;
-  MockCurtain* curtain_;
+  MockHostStub host_stub_;
   scoped_refptr<MockConnectionToClient> connection2_;
   scoped_refptr<MockSession> session2_;
   scoped_ptr<SessionConfig> session_config2_;
   MockVideoStub video_stub2_;
   MockClientStub client_stub2_;
-  MockHostStub* host_stub2_;
-  MockEventExecutor* event_executor2_;
+  MockHostStub host_stub2_;
+  MockEventExecutor event_executor2_;
+
+  // Owned by |host_|.
+  MockEventExecutor* event_executor_;
+  MockCurtain* curtain_;
 };
 
 TEST_F(ChromotingHostTest, StartAndShutdown) {

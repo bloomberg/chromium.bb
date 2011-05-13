@@ -535,11 +535,6 @@ LEAK
 *!operator new
 *!disk_cache::BackendImpl::NewEntry
 
-# http://crbug.com/75020
-LEAK
-*!operator new
-*!remoting::ChromotingHostTest::SetUp
-
 # http://crbug.com/81522
 LEAK
 *!operator new

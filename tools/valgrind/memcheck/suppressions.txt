@@ -3882,12 +3882,6 @@
    fun:_ZN20InProcessBrowserTest5SetUpEv
 }
 {
-   bug_75020
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8remoting18ChromotingHostTest5SetUpEv
-}
-{
    bug_75023
    Memcheck:Leak
    fun:_Znw*
