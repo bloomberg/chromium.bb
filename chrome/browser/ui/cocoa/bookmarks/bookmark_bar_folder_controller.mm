@@ -1064,6 +1064,10 @@ struct LayoutMetrics {
 // See comments above kDragHoverCloseDelay (bookmark_bar_controller.h)
 // for more details.
 - (void)openBookmarkFolderFromButtonAndCloseOldOne:(id)sender {
+  // Ignore if sender button is in a window that's just been hidden - that
+  // would leave us with an orphaned menu. BUG 69002
+  if ([[sender window] isVisible] != YES)
+    return;
   // If an old submenu exists, close it immediately.
   [self closeBookmarkFolder:sender];
 
