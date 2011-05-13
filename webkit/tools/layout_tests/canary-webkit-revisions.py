@@ -104,13 +104,19 @@ def _BuilderUrlFor(builder, max_builds):
 
 def _ExtractFailingTests(build):
   """Extracts failing test names from a build result entry JSON object."""
+  failing_tests = []
   for step in build["steps"]:
     if step["name"] == _WEBKIT_TESTS:
       for text in step["text"]:
         prefix = text.find(_TEST_PREFIX)
         suffix = text.find(_TEST_SUFFIX)
         if prefix != -1 and suffix != -1:
-          return sorted(text[prefix + len(_TEST_PREFIX): suffix].split(","))
+          failing_tests += sorted(
+              text[prefix + len(_TEST_PREFIX): suffix].split(","))
+    elif "results" in step:
+      # Existence of "results" entry seems to mean failure.
+      failing_tests.append(" ".join(step["text"]))
+  return failing_tests
 
 
 def _RetrieveBuildResult(builder, max_builds, oldest_revision_to_check):
@@ -147,7 +153,7 @@ def _RetrieveBuildResult(builder, max_builds, oldest_revision_to_check):
       continue
     if build["text"][1] == "successful":
       succeeded = True
-    elif not failing_tests and _WEBKIT_TESTS in build["text"][1:]:
+    elif not failing_tests:
       failing_tests = _ExtractFailingTests(build)
     revision = 0
     if build["sourceStamp"]["branch"] == "trunk":
