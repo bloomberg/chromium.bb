@@ -253,6 +253,12 @@ USE_SPIN_LOCKS           default: 1 iff USE_LOCKS and on x86 using gcc or MSC
   supported only for x86 platforms using gcc or recent MS compilers.
   Otherwise, posix locks or win32 critical sections are used.
 
+USE_GCC_SPIN_LOCKS       default: 0
+  If true and USE_SPIN_LOCKS is true, and using GCC 4.1 or later,
+  use the GCC __sync_lock_test_and_set and __sync_lock_release
+  built-in functions instead of assembly code.  These are available
+  on all machines, not just x86.
+
 FOOTERS                  default: 0
   If true, provide extra checking and dispatching by placing
   information in the footers of allocated chunks. This adds
@@ -536,7 +542,11 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #include <sys/types.h>  /* For size_t */
 #endif  /* LACKS_SYS_TYPES_H */
 
-#if (defined(__GNUC__) && ((defined(__i386__) || defined(__x86_64__)))) || (defined(_MSC_VER) && _MSC_VER>=1310)
+#ifndef USE_GCC_SPIN_LOCKS
+#define USE_GCC_SPIN_LOCKS 0
+#endif
+
+#if (defined(__GNUC__) && ((USE_GCC_SPIN_LOCKS && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1))) || defined(__i386__) || defined(__x86_64__))) || (defined(_MSC_VER) && _MSC_VER>=1310)
 #define SPIN_LOCKS_AVAILABLE 1
 #else
 #define SPIN_LOCKS_AVAILABLE 0
@@ -1655,45 +1665,35 @@ static FORCEINLINE int win32munmap(void* ptr, size_t size) {
 /* Custom pthread-style spin locks on x86 and x64 for gcc */
 struct pthread_mlock_t {
   volatile unsigned int l;
-  unsigned int c;
-  pthread_t threadid;
 };
 #define MLOCK_T               struct pthread_mlock_t
-#define CURRENT_THREAD        pthread_self()
-#define INITIAL_LOCK(sl)      ((sl)->threadid = 0, (sl)->l = (sl)->c = 0, 0)
+#define INITIAL_LOCK(sl)      ((sl)->l = 0)
 #define ACQUIRE_LOCK(sl)      pthread_acquire_lock(sl)
 #define RELEASE_LOCK(sl)      pthread_release_lock(sl)
-#define TRY_LOCK(sl)          pthread_try_lock(sl)
 #define SPINS_PER_YIELD       63
 
-static MLOCK_T malloc_global_mutex = { 0, 0, 0};
+static MLOCK_T malloc_global_mutex = { 0 };
 
 static FORCEINLINE int pthread_acquire_lock (MLOCK_T *sl) {
   int spins = 0;
   volatile unsigned int* lp = &sl->l;
   for (;;) {
-    if (*lp != 0) {
-      if (sl->threadid == CURRENT_THREAD) {
-        ++sl->c;
-        return 0;
-      }
-    }
-    else {
-      /* place args to cmpxchgl in locals to evade oddities in some gccs */
-      int cmp = 0;
-      int val = 1;
-      int ret;
-      __asm__ __volatile__  ("lock; cmpxchgl %1, %2"
-                             : "=a" (ret)
-                             : "r" (val), "m" (*(lp)), "0"(cmp)
-                             : "memory", "cc");
-      if (!ret) {
-        assert(!sl->threadid);
-        sl->threadid = CURRENT_THREAD;
-        sl->c = 1;
-        return 0;
-      }
-    }
+    /* place args to cmpxchgl in locals to evade oddities in some gccs */
+    int val = 1;
+    int ret;
+#if USE_GCC_SPIN_LOCKS
+    ret = __sync_lock_test_and_set(lp, val);
+#elif defined(__i386__) || defined(__x86_64__)
+    int cmp = 0;
+    __asm__ __volatile__  ("lock; cmpxchgl %1, %2"
+                           : "=a" (ret)
+                           : "r" (val), "m" (*(lp)), "0"(cmp)
+                           : "memory", "cc");
+#else
+# error "USE_SPIN_LOCKS set on machine without an implementation!"
+#endif
+    if (!ret)
+      return 0;
     if ((++spins & SPINS_PER_YIELD) == 0) {
 #if defined (__SVR4) && defined (__sun) /* solaris */
       thr_yield();
@@ -1711,44 +1711,19 @@ static FORCEINLINE int pthread_acquire_lock (MLOCK_T *sl) {
 static FORCEINLINE void pthread_release_lock (MLOCK_T *sl) {
   volatile unsigned int* lp = &sl->l;
   assert(*lp != 0);
-  assert(sl->threadid == CURRENT_THREAD);
-  if (--sl->c == 0) {
-    sl->threadid = 0;
-    int prev = 0;
-    int ret;
-    __asm__ __volatile__ ("lock; xchgl %0, %1"
-                          : "=r" (ret)
-                          : "m" (*(lp)), "0"(prev)
-                          : "memory");
-  }
+#if USE_GCC_SPIN_LOCKS
+  __sync_lock_release(lp);
+#elif defined(__i386__) || defined(__x86_64__)
+  int prev = 0;
+  int ret;
+  __asm__ __volatile__ ("lock; xchgl %0, %1"
+                        : "=r" (ret)
+                        : "m" (*(lp)), "0"(prev)
+                        : "memory");
+#else
+# error "USE_SPIN_LOCKS set on machine without an implementation!"
+#endif
 }
-
-static FORCEINLINE int pthread_try_lock (MLOCK_T *sl) {
-  volatile unsigned int* lp = &sl->l;
-  if (*lp != 0) {
-    if (sl->threadid == CURRENT_THREAD) {
-      ++sl->c;
-      return 1;
-    }
-  }
-  else {
-    int cmp = 0;
-    int val = 1;
-    int ret;
-    __asm__ __volatile__  ("lock; cmpxchgl %1, %2"
-                           : "=a" (ret)
-                           : "r" (val), "m" (*(lp)), "0"(cmp)
-                           : "memory", "cc");
-    if (!ret) {
-      assert(!sl->threadid);
-      sl->threadid = CURRENT_THREAD;
-      sl->c = 1;
-      return 1;
-    }
-  }
-  return 0;
-}
-
 
 #else /* WIN32 */
 /* Custom win32-style spin locks on x86 and x64 for MSC */

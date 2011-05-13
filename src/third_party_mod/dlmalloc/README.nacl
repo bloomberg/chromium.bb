@@ -8,3 +8,6 @@ This is a highly portable, parameterized malloc implementation.
 
 Local Modifications:
 * Added NO_MALLOC_STATS configuration option to disable malloc_stats interface.
+* Added USE_GCC_SPIN_LOCKS configuration option to use GCC>=4.1
+  __sync_* intrinstics rather than asm.
+* Removed recursive lock behavior of hand-rolled spin lock implementation.
