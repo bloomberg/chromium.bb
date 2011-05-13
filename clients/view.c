@@ -60,6 +60,11 @@ view_draw(struct view *view)
 	PopplerPage *page;
 	double width, height, doc_aspect, window_aspect, scale;
 
+	if (view->fullscreen)
+		window_set_transparent(view->window, 0);
+	else
+		window_set_transparent(view->window, 1);
+
 	window_draw(view->window);
 
 	window_get_child_allocation(view->window, &allocation);
