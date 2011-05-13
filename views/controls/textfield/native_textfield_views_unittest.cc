@@ -732,6 +732,20 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheRight) {
             textfield_view_->OnPerformDrop(drop_a));
   EXPECT_STR_EQ("h welloorld", textfield_->text());
   textfield_view_->OnDragDone();
+
+  // Undo/Redo the drag&drop change.
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("hello world", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("hello world", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("h welloorld", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("h welloorld", textfield_->text());
 }
 
 TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheLeft) {
@@ -771,6 +785,20 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheLeft) {
             textfield_view_->OnPerformDrop(drop_a));
   EXPECT_STR_EQ("h worlellod", textfield_->text());
   textfield_view_->OnDragDone();
+
+  // Undo/Redo the drag&drop change.
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("hello world", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("hello world", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("h worlellod", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("h worlellod", textfield_->text());
 }
 
 TEST_F(NativeTextfieldViewsTest, DragAndDrop_Canceled) {

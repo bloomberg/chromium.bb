@@ -193,7 +193,12 @@ int NativeTextfieldViews::OnPerformDrop(const DropTargetEvent& event) {
   DCHECK(CanDrop(event.data()));
   DCHECK(!initiating_drag_ || !IsPointInSelection(event.location()));
   OnBeforeUserAction();
+  skip_input_method_cancel_composition_ = true;
+
   size_t drop_destination = FindCursorPosition(event.location());
+  string16 text;
+  event.data().GetString(&text);
+
   // We'll delete the current selection for a drag and drop within this view.
   bool move = initiating_drag_ && !event.IsControlDown() &&
               event.source_operations() & ui::DragDropTypes::DRAG_MOVE;
@@ -205,17 +210,12 @@ int NativeTextfieldViews::OnPerformDrop(const DropTargetEvent& event) {
       drop_destination -= selected_range.length();
     else if (selected_range.GetMin() <= drop_destination)
       drop_destination = selected_range.GetMin();
-    // TODO(oshima): Deletion and insertion has to be treated as one
-    // edit.
-    model_->DeleteSelection(true);
+    model_->DeleteSelectionAndInsertTextAt(text, drop_destination);
+  } else {
+    model_->MoveCursorTo(drop_destination, false);
+    // Drop always inserts a text even if insert_ == false.
+    model_->InsertText(text);
   }
-  model_->MoveCursorTo(drop_destination, false);
-  string16 text;
-  event.data().GetString(&text);
-
-  skip_input_method_cancel_composition_ = true;
-  // Drop always inserts a text even if insert_ == false.
-  model_->InsertText(text);
   skip_input_method_cancel_composition_ = false;
   UpdateAfterChange(true, true);
   OnAfterUserAction();
@@ -676,7 +676,7 @@ bool NativeTextfieldViews::DeleteRange(const ui::Range& range) {
   OnBeforeUserAction();
   model_->SelectRange(range);
   if (model_->HasSelection()) {
-    model_->DeleteSelection(true);
+    model_->DeleteSelection();
     UpdateAfterChange(true, true);
   }
   OnAfterUserAction();

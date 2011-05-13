@@ -226,9 +226,13 @@ class TextfieldViewsModel {
   bool HasSelection() const;
 
   // Deletes the selected text. This method shouldn't be called with
-  // composition text. If |record_edit_history| is true, the deletion
-  // will be recorded so that it can be undone or redone.
-  void DeleteSelection(bool record_edit_history);
+  // composition text.
+  void DeleteSelection();
+
+  // Deletes the selected text (if any) and insert text at given
+  // position.
+  void DeleteSelectionAndInsertTextAt(
+      const string16& text, size_t position);
 
   // Retrieves the text content in a given range.
   string16 GetTextFromRange(const ui::Range& range) const;
@@ -294,13 +298,28 @@ class TextfieldViewsModel {
   // Clears redo history.
   void ClearRedoHistory();
 
-  // Records edit operations.
-  void RecordDelete(size_t cursor_pos, int size, bool mergeable);
-  void RecordReplace(const string16& text, bool mergeable);
-  void RecordInsert(const string16& text, bool mergeable);
+  // Executes and records edit operations.
+  void ExecuteAndRecordDelete(size_t from, size_t to, bool mergeable);
+  void ExecuteAndRecordReplace(const string16& text, bool mergeable);
+  void ExecuteAndRecordReplaceAt(const string16& text,
+                                 size_t at,
+                                 bool mergeable);
+  void ExecuteAndRecordInsert(const string16& text, bool mergeable);
 
-  // Adds edit into edit history.
-  void AddEditHistory(internal::Edit* edit);
+  // Adds or merge |edit| into edit history. Return true if the edit
+  // has been merged and must be deleted after redo.
+  bool AddOrMergeEditHistory(internal::Edit* edit);
+
+  // Modify the text buffer in following way:
+  // 1) Delete the string from |delete_from| to |delte_to|.
+  // 2) Insert the |new_text| at the index |new_text_insert_at|.
+  //    Note that the index is after deletion.
+  // 3) Move the cursor to |new_cursor_pos|.
+  void ModifyText(size_t delete_from,
+                  size_t delete_to,
+                  const string16& new_text,
+                  size_t new_text_insert_at,
+                  size_t new_cursor_pos);
 
   // Pointer to a TextfieldViewsModel::Delegate instance, should be provided by
   // the View object.
@@ -340,10 +359,6 @@ class TextfieldViewsModel {
   // 2) new edit is added. (redo history is cleared)
   // 3) redone all undone edits.
   EditHistory::iterator current_edit_;
-
-  // A guard variable to prevent edit history from being updated while
-  // performing undo/redo.
-  bool update_history_;
 
   DISALLOW_COPY_AND_ASSIGN(TextfieldViewsModel);
 };

@@ -769,6 +769,11 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_BasicTest) {
   model.MoveCursorTo(2, false);
   EXPECT_TRUE(model.Delete());
   EXPECT_STR_EQ("ABDE", model.text());
+  model.MoveCursorToHome(false);
+  EXPECT_TRUE(model.Delete());
+  EXPECT_STR_EQ("BDE", model.text());
+  EXPECT_TRUE(model.Undo());
+  EXPECT_STR_EQ("ABDE", model.text());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCDE", model.text());
   EXPECT_TRUE(model.Redo());
@@ -1017,6 +1022,9 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CompositionText) {
 
   model.SetText(ASCIIToUTF16("ABCDE"));
   model.MoveCursorToEnd(false);
+  model.InsertChar('x');
+  EXPECT_STR_EQ("ABCDEx", model.text());
+  EXPECT_TRUE(model.Undo());  // set composition should forget undone edit.
   model.SetCompositionText(composition);
   EXPECT_TRUE(model.HasCompositionText());
   EXPECT_TRUE(model.HasSelection());
@@ -1063,8 +1071,8 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CompositionText) {
   EXPECT_STR_EQ("ABCDEabc", model.text());
   EXPECT_FALSE(model.Redo());
 
-  // SetText with the different text than the result
-  // should not remember composition text.
+  // SetText with the different text than the result should not
+  // remember composition text.
   ResetModel(&model);
   model.SetText(ASCIIToUTF16("ABCDE"));
   model.MoveCursorToEnd(false);
@@ -1078,10 +1086,7 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CompositionText) {
   EXPECT_STR_EQ("1234", model.text());
   EXPECT_FALSE(model.Redo());
 
-  // TODO(oshima): undo/redo while compositing text should to be
-  // handled by IME layer. Figure out how to test.
+  // TODO(oshima): We need MockInputMethod to test the behavior with IME.
 }
-
-// TODO(oshima): UndoRedo with Drag and Drop
 
 }  // namespace views
