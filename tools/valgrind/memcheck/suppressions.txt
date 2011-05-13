@@ -3790,15 +3790,8 @@
    fun:_Znw*
    ...
    fun:_ZN24BrowserRenderProcessHost20CreateMessageFiltersEv
-   fun:_ZN24BrowserRenderProcessHost4InitEbb
+   fun:_ZN24BrowserRenderProcessHost4InitEb
    fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
-   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
-   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
-   ...
-   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
-   ...
-   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
-   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
 }
 {
    bug_73358
@@ -4147,39 +4140,6 @@
    fun:CERT_DestroyCertificate
 }
 {
-   bug_78067a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN25ChromeRenderMessageFilterC1EiP7Profile*URLRequestContextGetter*
-   fun:_ZN24BrowserRenderProcessHost20CreateMessageFiltersEv
-   fun:_ZN24BrowserRenderProcessHost4InitEbb
-   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
-   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
-   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
-   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
-   fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
-   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
-   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
-   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
-   fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
-   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
-}
-{
-   bug_78067b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN25ChromeRenderMessageFilterC1EiP7Profile*URLRequestContextGetter*
-   fun:_ZN24BrowserRenderProcessHost20CreateMessageFiltersEv
-   fun:_ZN24BrowserRenderProcessHost4InitEbb
-   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
-   fun:_ZN13ExtensionHost19CreateRenderViewNowEv
-   fun:_ZN13ExtensionHost20ProcessCreationQueue14ProcessOneHostEv
-   fun:_Z16DispatchToMethodIN13ExtensionHost20ProcessCreationQueueEMS1_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN27ScopedRunnableMethodFactoryIN13ExtensionHost20ProcessCreationQueueEE14RunnableMethodIMS1_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-}
-{
    bug_78197
    Memcheck:Cond
    fun:_ZN7WebCore8Document11updateTitleERKNS_19StringWithDirectionE
@@ -4418,21 +4378,6 @@
    fun:_ZN3net13SSLConnectJob12DoSSLConnectEv
    fun:_ZN3net13SSLConnectJob6DoLoopEi
    fun:_ZN3net13SSLConnectJob12OnIOCompleteEi
-}
-{
-   bug_80026
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN6chrome26ChromeContentBrowserClient31BrowserRenderProcessHostCreatedEP24BrowserRenderProcessHost
-   fun:_ZN24BrowserRenderProcessHost4InitEbb
-   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
-   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
-   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
-   ...
-   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
-   fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
-   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
-   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
 }
 {
    bug_80150
