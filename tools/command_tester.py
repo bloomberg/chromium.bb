@@ -91,7 +91,7 @@ def ResetGlobalSettings():
       'report': None,
 
       'stdin': None,
-      'logout': None,
+      'log_file': None,
 
       'stdout_golden': None,
       'stderr_golden': None,
@@ -424,7 +424,7 @@ def CheckGoldenOutput(stdout, stderr):
   for (stream, getter) in [
       ('stdout', lambda: stdout),
       ('stderr', lambda: stderr),
-      ('log', lambda: open(GlobalSettings['logout']).read()),
+      ('log', lambda: open(GlobalSettings['log_file']).read()),
       ]:
     golden = stream + '_golden'
     if GlobalSettings[golden]:
@@ -468,9 +468,9 @@ def main(argv):
   if GlobalSettings['stdin']:
     stdin_data = open(GlobalSettings['stdin'])
 
-  if GlobalSettings['logout']:
+  if GlobalSettings['log_file']:
     try:
-      os.unlink(GlobalSettings['logout'])  # might not pre-exist
+      os.unlink(GlobalSettings['log_file'])  # might not pre-exist
     except OSError:
       pass
 

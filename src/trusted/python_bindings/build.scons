@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -109,6 +109,6 @@ else:
 node = env.CommandTest(
     'python_imc_test.out',
     command=python_prefix + ['${PYTHON}', env.File('test_python_imc.py')],
-    osenv=','.join(env_vars))
+    osenv=env_vars)
 env.Depends(node, module)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_python_imc_test')

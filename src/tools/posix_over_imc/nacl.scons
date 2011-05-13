@@ -42,7 +42,7 @@ dependencies = [python_extension, sel_ldr, hello_world]
 node = env.CommandTest(
     'posix_over_imc_test.out',
     command=['${PYTHON}', env.File('nacl_launcher.py'), hello_world],
-    osenv=','.join(env_vars),
+    osenv=env_vars,
     extra_deps=dependencies,
     stdout_golden=env.File('${SCONSTRUCT_DIR}/tests/hello_world'
                            '/hello_world.stdout'))

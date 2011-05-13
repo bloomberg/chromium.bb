@@ -81,7 +81,7 @@ else:
   plugin = trusted_env.File('${STAGING_DIR}/${SHLIBPREFIX}'
                             'ppNaClPlugin${SHLIBSUFFIX}')
 sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
-log_file = env.File('fake_browser_ppapi.out').abspath
+log_file = env.MakeNaClLogOption('fake_browser_ppapi.out')
 
 test_env_vars = ['NACL_SEL_LDR=%s' % sel_ldr,
                  'NACLLOG=%s' % log_file]
@@ -98,7 +98,7 @@ node = env.CommandTest('fake_browser_ppapi.out',
                         '${STAGING_DIR}'
                        ],
                        'medium',
-                       osenv=','.join(test_env_vars),
+                       osenv=test_env_vars,
                        extra_deps=[sel_ldr,
                                    basic_object_nmf,
                                    basic_object_target])

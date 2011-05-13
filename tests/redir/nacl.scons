@@ -46,13 +46,12 @@ def CleanupBinder(fname):
 atexit.register(CleanupBinder(outfile))
 atexit.register(CleanupBinder(errfile))
 
-kwarg={'osenv': 'NACL_EXE_STDOUT=%s,NACL_EXE_STDERR=%s' % (outfile, errfile)}
-
 node = env.CommandSelLdrTestNacl(
     'redir_test.out',
     command=[env.File('redir_test.nexe')],
     filter_regex="'^REALOUTPUT'",
-    **kwarg)
+    osenv=['NACL_EXE_STDOUT=%s' % outfile,
+           'NACL_EXE_STDERR=%s' % errfile])
 
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],

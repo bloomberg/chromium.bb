@@ -44,6 +44,6 @@ dependencies = [python_extension, sel_ldr, hello_world]
 node = env.CommandTest(
     'startup_message_test.out',
     command=['${PYTHON}', env.File('test_startup.py')],
-    osenv=','.join(env_vars),
+    osenv=env_vars,
     extra_deps=dependencies)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_startup_message_test')

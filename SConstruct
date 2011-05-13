@@ -1422,11 +1422,27 @@ pre_base_env.AddMethod(SelUniversalTest)
 
 
 # ----------------------------------------------------------
-def AddToStringifiedList(lst, additions):
-  if not lst:
-    return additions
-  else:
-    return additions + "," + lst
+
+def MakeNaClLogOption(env, target):
+  """ Make up a filename related to the [target], for use with NACLLOG.
+  The file should end up in the build directory (scons-out/...).
+  """
+  # NOTE: to log to the source directory use file.srcnode().abspath instead.
+  # See http://www.scons.org/wiki/File%28%29
+  return env.File(target + '.nacllog').abspath
+
+pre_base_env.AddMethod(MakeNaClLogOption)
+
+def MakeVerboseExtraOptions(env, target, log_verbosity, extra):
+  ''' Generates **extra options that will give access to service runtime logs,
+  at a given log_verbosity. Slips the options into the given extra dict. '''
+  log_file = env.MakeNaClLogOption(target)
+  extra['log_file'] = log_file
+  extra_env = ['NACLLOG=%s' % log_file,
+               'NACLVERBOSITY=%d' % log_verbosity]
+  extra['osenv'] = extra.get('osenv', []) + extra_env
+
+pre_base_env.AddMethod(MakeVerboseExtraOptions)
 
 # ----------------------------------------------------------
 def CommandSelLdrTestNacl(env, name, command,
@@ -1483,11 +1499,8 @@ def CommandSelLdrTestNacl(env, name, command,
   # We do not pass these via flags because those are not usable for sel_ldr
   # when testing via plugin, esp windows.
   if 'log_golden' in extra:
-    logout = '${TARGET}.log'
-    extra['logout'] = logout
-    extra_env  = 'NACLLOG=%s,NACLVERBOSITY=%d' % (logout, log_verbosity)
-    extra['osenv'] = AddToStringifiedList(extra.get('osenv'),
-                                          extra_env)
+    env.MakeVerboseExtraOptions(name, log_verbosity, extra)
+
   # Add Architechture Info
   extra['arch'] = env['BUILD_ARCHITECTURE']
   extra['subarch'] = env['BUILD_SUBARCH']
@@ -1496,7 +1509,7 @@ def CommandSelLdrTestNacl(env, name, command,
 pre_base_env.AddMethod(CommandSelLdrTestNacl)
 
 # ----------------------------------------------------------
-TEST_EXTRA_ARGS = ['stdin', 'logout',
+TEST_EXTRA_ARGS = ['stdin', 'log_file',
                    'stdout_golden', 'stderr_golden', 'log_golden',
                    'filter_regex', 'filter_inverse', 'filter_group_only',
                    'osenv', 'arch', 'subarch', 'exit_status', 'track_cmdtime']
@@ -1579,9 +1592,8 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
     if direct_emulation:
       command = [emulator] + command
     else:
-      extra_env = 'EMULATOR=%s' %  env['EMULATOR'].replace(' ', r'\ ')
-      extra['osenv'] = AddToStringifiedList(extra.get('osenv'),
-                                            extra_env)
+      extra_env = ['EMULATOR=%s' %  env['EMULATOR'].replace(' ', r'\ ')]
+      extra['osenv'] = extra.get('osenv', []) + extra_env
   if not capture_output:
     script_flags.append('--capture_output 0')
 
@@ -1591,6 +1603,11 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
   for flag_name, flag_value in extra.iteritems():
     assert flag_name in TEST_EXTRA_ARGS
     script_flags.append('--' + flag_name)
+    if isinstance(flag_value, list):
+      # Options to command_tester.py which are actually lists must not be
+      # separated by whitespace. This stringifies the lists with a separator
+      # char to satisfy command_tester.
+      flag_value =  ','.join(flag_value)
     script_flags.append(flag_value)
 
   test_script = env.File('${SCONSTRUCT_DIR}/tools/command_tester.py')
