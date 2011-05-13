@@ -95,6 +95,8 @@ class MountLibrary {
   };
   typedef std::map<std::string, Disk*> DiskMap;
 
+  typedef void(*UnmountDeviceRecursiveCallbackType)(void*, bool);
+
   class Observer {
    public:
     virtual ~Observer() {}
@@ -113,6 +115,10 @@ class MountLibrary {
   virtual void RequestMountInfoRefresh() = 0;
   virtual void MountPath(const char* device_path) = 0;
   virtual void UnmountPath(const char* device_path) = 0;
+
+  // Unmounts device_poath and all of its known children.
+  virtual void UnmountDeviceRecursive(const char* device_path,
+      UnmountDeviceRecursiveCallbackType callback, void* user_data) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().
