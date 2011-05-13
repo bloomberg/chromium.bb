@@ -13,9 +13,9 @@
 #include "native_client/src/shared/platform/win/lock_impl.h"
 
 static const char kMutexCreateFailed[] =
-                     "Unrecoverable failure on CreateMutex.\n";
+    "Unrecoverable failure on CreateMutex.\n";
 static const char kMutexLockFailed[] =
-                     "Unrecoverable failure locking a Mutex.\n";
+    "Unrecoverable failure locking a Mutex (ret:%lu) (GetLastError:%lu).\n";
 
 NaCl::LockImpl::LockImpl() {
   mutex_ = CreateMutex(NULL, FALSE, NULL);
@@ -56,7 +56,13 @@ void NaCl::LockImpl::Lock() {
    * is seriously unstable, we write directly.
    */
   if (WAIT_OBJECT_0 != dwWaitResult) {
-    _write(2, kMutexLockFailed, sizeof kMutexLockFailed - 1);
+    /* GetLastError returns a 32b DWORD and dwWaitResult is one too.
+     * -2147483648 is the widest value that can be printed (so add 11 chars for
+     * each. */
+    char buf[sizeof kMutexLockFailed + 11 * 2];
+    sprintf_s(buf, sizeof(buf), kMutexLockFailed,
+              dwWaitResult, GetLastError());
+    _write(2, buf, lstrlenA(buf));
     NaClAbort();
   }
 }
