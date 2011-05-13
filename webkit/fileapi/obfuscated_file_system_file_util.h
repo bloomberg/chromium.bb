@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
 #include "base/platform_file.h"
+#include "base/timer.h"
 #include "webkit/fileapi/file_system_directory_database.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_origin_database.h"
@@ -146,12 +147,14 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil {
   FilePath GetTopDir(const GURL& origin, FileSystemType type);
   FileSystemDirectoryDatabase* GetDirectoryDatabase(
       const GURL& origin_url, FileSystemType type);
+  void MarkUsed();
   void DropDatabases();
 
   typedef std::map<std::string, FileSystemDirectoryDatabase*> DirectoryMap;
   DirectoryMap directories_;
   scoped_ptr<FileSystemOriginDatabase> origin_database_;
   FilePath file_system_directory_;
+  base::OneShotTimer<ObfuscatedFileSystemFileUtil> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileSystemFileUtil);
 };

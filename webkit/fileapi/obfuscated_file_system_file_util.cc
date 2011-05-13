@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
 #include "base/stl_util-inl.h"
@@ -22,6 +23,8 @@
 // to QuotaFileUtil as soon as I sort out FileSystemPathManager's and
 // SandboxMountPointProvider's lookups of the root path for a filesystem.
 namespace {
+
+const int64 kFlushDelaySeconds = 10 * 60;  // 10 minutes
 
 const char kOriginDatabaseName[] = "Origins";
 const char kDirectoryDatabaseName[] = "Paths";
@@ -732,6 +735,7 @@ FilePath ObfuscatedFileSystemFileUtil::GetTopDir(
 FileSystemDirectoryDatabase* ObfuscatedFileSystemFileUtil::GetDirectoryDatabase(
     const GURL& origin, FileSystemType type) {
 
+  MarkUsed();
   std::string type_string =
       FileSystemPathManager::GetFileSystemTypeString(type);
   if (type_string.empty()) {
@@ -754,6 +758,14 @@ FileSystemDirectoryDatabase* ObfuscatedFileSystemFileUtil::GetDirectoryDatabase(
   FileSystemDirectoryDatabase* database = new FileSystemDirectoryDatabase(path);
   directories_[key] = database;
   return database;
+}
+
+void ObfuscatedFileSystemFileUtil::MarkUsed() {
+  if (timer_.IsRunning())
+    timer_.Reset();
+  else
+    timer_.Start(base::TimeDelta::FromSeconds(kFlushDelaySeconds), this,
+      &ObfuscatedFileSystemFileUtil::DropDatabases);
 }
 
 void ObfuscatedFileSystemFileUtil::DropDatabases() {
