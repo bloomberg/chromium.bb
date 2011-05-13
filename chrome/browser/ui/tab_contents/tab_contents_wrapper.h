@@ -41,6 +41,7 @@ class PasswordManager;
 class PasswordManagerDelegate;
 class SearchEngineTabHelper;
 class TabContentsWrapperDelegate;
+class TabSpecificContentSettings;
 class ThumbnailGenerator;
 class TranslateTabHelper;
 
@@ -149,6 +150,10 @@ class TabContentsWrapper : public TabContentsObserver {
     return search_engine_tab_helper_.get();
   }
 
+  TabSpecificContentSettings* content_settings() {
+    return content_settings_.get();
+  }
+
   TranslateTabHelper* translate_tab_helper() {
     return translate_tab_helper_.get();
   }
@@ -213,6 +218,11 @@ class TabContentsWrapper : public TabContentsObserver {
       safebrowsing_detection_host_;
 
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
+
+  // The TabSpecificContentSettings object is used to query the blocked content
+  // state by various UI elements.
+  scoped_ptr<TabSpecificContentSettings> content_settings_;
+
   scoped_ptr<TranslateTabHelper> translate_tab_helper_;
 
   // Per-tab observers ---------------------------------------------------------

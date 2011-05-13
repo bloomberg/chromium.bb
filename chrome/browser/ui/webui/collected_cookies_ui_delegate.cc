@@ -11,6 +11,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 #include "chrome/browser/ui/webui/cookies_tree_model_util.h"
@@ -145,7 +146,8 @@ CollectedCookiesUIDelegate::CollectedCookiesUIDelegate(
     : tab_contents_(tab_contents),
       closed_(false) {
   TabSpecificContentSettings* content_settings =
-      tab_contents->GetTabSpecificContentSettings();
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
+          content_settings();
   HostContentSettingsMap* host_content_settings_map =
       tab_contents_->profile()->GetHostContentSettingsMap();
 
@@ -239,8 +241,6 @@ void CollectedCookiesUIDelegate::Observe(NotificationType type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
   DCHECK_EQ(type.value, NotificationType::COLLECTED_COOKIES_SHOWN);
-  DCHECK_EQ(Source<TabSpecificContentSettings>(source).ptr(),
-            tab_contents_->GetTabSpecificContentSettings());
   CloseDialog();
 }
 

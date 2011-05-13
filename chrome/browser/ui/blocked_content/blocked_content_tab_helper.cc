@@ -43,7 +43,7 @@ void BlockedContentTabHelper::PopupNotificationVisibilityChanged(
     bool visible) {
   if (tab_contents()->is_being_destroyed())
     return;
-  tab_contents()->GetTabSpecificContentSettings()->SetPopupsBlocked(visible);
+  tab_contents_wrapper_->content_settings()->SetPopupsBlocked(visible);
 }
 
 void BlockedContentTabHelper::SetAllContentsBlocked(bool value) {
@@ -96,7 +96,7 @@ void BlockedContentTabHelper::AddPopup(TabContentsWrapper* new_contents,
                                       NEW_POPUP,
                                       initial_pos,
                                       true);  // user_gesture
-    tab_contents()->GetTabSpecificContentSettings()->OnContentBlocked(
+    tab_contents_wrapper_->content_settings()->OnContentBlocked(
           CONTENT_SETTINGS_TYPE_POPUPS, std::string());
   }
 }
