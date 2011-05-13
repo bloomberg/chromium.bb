@@ -322,9 +322,6 @@ WidgetGtk::WidgetGtk()
 }
 
 WidgetGtk::~WidgetGtk() {
-  LOG(ERROR) << this << " WidgetGtk::~WidgetGtk()";                       // FIXME
-  if (!delete_on_destroy_ && widget_)
-    CloseNow();
   // We need to delete the input method before calling DestroyRootView(),
   // because it'll set focus_manager_ to NULL.
   input_method_.reset();
@@ -903,16 +900,15 @@ void WidgetGtk::MoveAbove(gfx::NativeView native_view) {
 }
 
 void WidgetGtk::SetShape(gfx::NativeRegion region) {
-  if (widget_ && widget_->window) {
-    gdk_window_shape_combine_region(widget_->window, region, 0, 0);
-    gdk_region_destroy(region);
-  }
+  DCHECK(widget_);
+  DCHECK(widget_->window);
+  gdk_window_shape_combine_region(widget_->window, region, 0, 0);
+  gdk_region_destroy(region);
 }
 
 void WidgetGtk::Close() {
   if (!widget_)
     return;  // No need to do anything.
-  LOG(ERROR) << this << " WidgetGtk::Close()";                            // FIXME
 
   // Hide first.
   Hide();
@@ -1308,16 +1304,17 @@ void WidgetGtk::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
 }
 
 void WidgetGtk::OnDestroy(GtkWidget* object) {
-  LOG(ERROR) << this << " WidgetGtk::OnDestroy" << delete_on_destroy_;    // FIXME
   if (!child_)
     ActiveWindowWatcherX::RemoveObserver(this);
   // Note that this handler is hooked to GtkObject::destroy.
   // NULL out pointers here since we might still be in an observerer list
   // until delstion happens.
   widget_ = window_contents_ = NULL;
-  OnDestroyed();
-  if (delete_on_destroy_)
-    delete this;
+  if (delete_on_destroy_) {
+    // Delays the deletion of this WidgetGtk as we want its children to have
+    // access to it when destroyed.
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  }
 }
 
 void WidgetGtk::OnShow(GtkWidget* widget) {

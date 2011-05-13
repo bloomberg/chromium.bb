@@ -253,10 +253,6 @@ class WidgetGtk : public Widget,
   CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnMap);
   CHROMEGTK_CALLBACK_0(WidgetGtk, void, OnHide);
 
-  // Invoked when the widget is destroyed and right before the object
-  // destruction. Useful for overriding.
-  virtual void OnDestroyed() { }
-
   // Invoked when gtk grab is stolen by other GtkWidget in the same
   // application.
   virtual void HandleGtkGrabBroke();
