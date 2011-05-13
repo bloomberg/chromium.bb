@@ -341,7 +341,7 @@
         }],
         ['remoting==1', {
           'dependencies': [
-            '../remoting/remoting.gyp:chromoting_client_plugin',
+            '../remoting/remoting.gyp:remoting_client_plugin',
           ],
         }],
       ],
