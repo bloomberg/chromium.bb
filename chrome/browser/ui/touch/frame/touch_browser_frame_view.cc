@@ -254,8 +254,15 @@ void TouchBrowserFrameView::Observe(NotificationType type,
     // of the keyboard.
     TouchBrowserFrameView::VirtualKeyboardType keyboard_type = NONE;
     views::View* view = GetFocusManager()->GetFocusedView();
-    if (view && view->GetClassName() == views::Textfield::kViewClassName)
-      keyboard_type = GENERIC;
+    if (view) {
+      if (view->GetClassName() == views::Textfield::kViewClassName)
+        keyboard_type = GENERIC;
+      if (view->GetClassName() == RenderWidgetHostViewViews::kViewClassName) {
+        // Reset the state of the focused field in the current tab.
+        GetFocusedStateAccessor()->SetProperty(
+            source_browser->GetSelectedTabContents()->property_bag(), false);
+      }
+    }
     if (source_browser == browser)
       UpdateKeyboardAndLayout(keyboard_type == GENERIC);
   } else if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
