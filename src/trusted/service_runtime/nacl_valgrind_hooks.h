@@ -7,7 +7,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_VALGRIND_HOOKS_H__ 1
 
 #include <stdlib.h>
-#include <stdint.h>
+#include "native_client/src/include/portability.h"
 
 /*
  * When running under Valgrind, calls to these functions are intercepted and
