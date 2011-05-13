@@ -17,8 +17,9 @@ if __name__ == '__main__':
   import constants
   sys.path.append(constants.SOURCE_ROOT)
 
-import chromite.buildbot.manifest_version as manifest_version
-import chromite.lib.cros_build_lib as cros_lib
+from chromite.buildbot import manifest_version
+from chromite.buildbot import repository
+from chromite.lib import cros_build_lib as cros_lib
 
 FAKE_VERSION = """
 CHROMEOS_VERSION_MAJOR=1
@@ -80,11 +81,11 @@ class HelperMethodsTest(unittest.TestCase):
     cros_lib.RunCommand(
         ('repo init -u http://git.chromium.org/chromiumos/manifest.git '
          '-m minilayout.xml -q').split(), cwd=GIT_DIR, input='\n\ny\n')
-    cros_lib.RunCommand(('repo sync --jobs 16').split(), cwd=GIT_DIR)
+    cros_lib.RunCommand(('repo sync --jobs 8').split(), cwd=GIT_DIR)
     git_dir = os.path.join(GIT_DIR, GIT_TEST_PATH)
     cros_lib.RunCommand(
-        ('git config url.ssh://git@gitrw.chromium.org:9222.insteadof'
-         ' http://git.chromium.org/git').split(), cwd=git_dir)
+        ('git config url.ssh://gerrit.chromium.org:29418.insteadof'
+         ' http://git.chromium.org').split(), cwd=git_dir)
 
     # Change something.
     cros_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
@@ -213,8 +214,6 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     m2 = os.path.join(specs_dir, '1.2.3.10.xml')
     m3 = os.path.join(specs_dir, '1.2.4.6.xml')
     m4 = os.path.join(specs_dir, '1.2.3.4.xml')
-    for_build = os.path.join(self.manager.manifests_dir, 'build-name',
-                             self.build_name)
 
     # Create fake buildspecs.
     TouchFile(m1)
@@ -250,7 +249,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     """Tests that we create a new version if a previous one exists."""
     self.mox.StubOutWithMock(manifest_version, '_ExportManifest')
     self.mox.StubOutWithMock(manifest_version.VersionInfo, 'IncrementVersion')
-    self.mox.StubOutWithMock(manifest_version._RepoRepository, 'Sync')
+    self.mox.StubOutWithMock(repository.RepoRepository, 'Sync')
 
     version_file = VersionInfoTest.CreateFakeVersionFile(self.tmpdir)
     info = manifest_version.VersionInfo(version_file=version_file,
@@ -261,7 +260,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     info.IncrementVersion('Automatic: Updating the new version number %s' %
                           FAKE_VERSION_STRING, dry_run=True).AndReturn(
                               FAKE_VERSION_STRING_NEXT)
-    manifest_version._RepoRepository.Sync(branch='master')
+    repository.RepoRepository.Sync()
     manifest_version._ExportManifest(self.manager.source_dir, mox.IgnoreArg())
     self.mox.ReplayAll()
     # Add to existing so we are forced to increment.

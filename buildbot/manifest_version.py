@@ -15,7 +15,8 @@ import re
 import shutil
 import tempfile
 
-import chromite.lib.cros_build_lib as cros_lib
+from chromite.buildbot import repository
+from chromite.lib import cros_build_lib as cros_lib
 
 logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'
 date_format = '%Y/%m/%d %H:%M:%S'
@@ -32,11 +33,6 @@ class VersionUpdateException(Exception):
 
 class GitCommandException(Exception):
   """Exception gets thrown for a git command that fails to execute."""
-  pass
-
-
-class SrcCheckOutException(Exception):
-  """Exception gets thrown for failure to sync sources"""
   pass
 
 
@@ -179,50 +175,6 @@ def _CreateSymlink(src_file, dest_file, remove_file=None):
   if remove_file and os.path.lexists(remove_file):
     logging.debug('REMOVE: Removing  %s', remove_file)
     os.unlink(remove_file)
-
-
-class _RepoRepository(object):
-  """ A Class to deal with the source tree/mirror setup and sync repos
-  Args:
-    repo_url: gitserver URL to fetch manifests from.
-    directory: location for setting up the repo repository.
-    local_mirror: If set, sync from git mirror rather than repo url.
-  """
-  def __init__(self, repo_url, directory, local_mirror=None):
-    self.repo_url = repo_url
-    self.directory = directory
-    self.local_mirror = local_mirror
-
-  def Initialize(self, branch):
-    """(Re)Initialize the repository"""
-    if not os.path.exists(self.directory):
-      os.makedirs(self.directory)
-      logging.debug('Repo directory does not exist. '
-                    'Creating it for the first time')
-
-    # Do not reinitialize mirrors.
-    if not os.path.exists(os.path.join(self.directory, '.repo')):
-      init_cmd = ['repo', 'init', '-u', self.repo_url]
-      if branch: init_cmd.extend(['-b', branch])
-
-      if self.local_mirror:
-        self.local_mirror.Sync()
-        init_cmd.extend(['--reference', self.local_mirror.directory])
-      else:
-        init_cmd.append('--mirror')
-
-      cros_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
-
-  def Sync(self, branch=None):
-    """Sync/update the source"""
-    try:
-      self.Initialize(branch)
-      cros_lib.RunCommand(['repo', 'sync', '-q', '--jobs=4'],
-                          cwd=self.directory)
-    except cros_lib.RunCommandError, e:
-      err_msg = 'Failed to sync sources %s' % e.message
-      logging.error(err_msg)
-      raise SrcCheckOutException(err_msg)
 
 
 class VersionInfo(object):
@@ -380,10 +332,13 @@ class BuildSpecsManager(object):
       dry_run: Whether we actually commit changes we make or not.
     """
     mirror_dir = os.path.join(tmp_dir, 'mirror')
-    local_mirror = _RepoRepository(source_repo, mirror_dir, None)
+    self.local_mirror = repository.RepoRepository(
+        source_repo, mirror_dir, is_mirror=True)
     self.source_dir = os.path.join(tmp_dir, 'source')
-    self.cros_source = _RepoRepository(source_repo, self.source_dir,
-                                       local_mirror)
+    self.cros_source = repository.RepoRepository(
+        source_repo, self.source_dir, branch=branch,
+        local_mirror=self.local_mirror)
+
     self.manifest_repo = manifest_repo
     self.manifests_dir = os.path.join(tmp_dir, 'manifests')
     self.branch = branch
@@ -417,7 +372,7 @@ class BuildSpecsManager(object):
       match_string = version_info.BuildPrefix() + '.*.xml'
 
       if self.incr_type == 'branch':
-         match_string = version_info.BuildPrefix() + '.*.0.xml'
+        match_string = version_info.BuildPrefix() + '.*.0.xml'
 
       matched_manifests = fnmatch.filter(
           all_manifests, match_string)
@@ -480,7 +435,7 @@ class BuildSpecsManager(object):
     Args:
       version_info: Info class for version information of cros.
     """
-    self.cros_source.Sync(branch=self.branch)
+    self.cros_source.Sync()
     version_file_path = os.path.join(self.source_dir, version_file)
     return VersionInfo(version_file=version_file_path,
                        incr_type=self.incr_type)
@@ -513,7 +468,7 @@ class BuildSpecsManager(object):
                  version)
       version = version_info.IncrementVersion(message, dry_run=self.dry_run)
       logging.debug('Incremented version number to  %s', version)
-      self.cros_source.Sync(branch=self.branch)
+      self.cros_source.Sync()
 
     spec_file = '%s.xml' % os.path.join(self.all_specs_dir, version)
     if not os.path.exists(os.path.dirname(spec_file)):
@@ -522,6 +477,10 @@ class BuildSpecsManager(object):
     _ExportManifest(self.source_dir, spec_file)
     logging.debug('Created New Build Spec %s', version)
     return version
+
+  def GetMirror(self):
+    """Returns a mirror repository object to use in other repos."""
+    return self.local_mirror
 
   def GetNextBuildSpec(self, version_file, latest=False, retries=0):
     """Gets the version number of the next build spec to build.

@@ -8,10 +8,10 @@ import os
 import re
 import shutil
 import socket
-import time
 
-import chromite.buildbot.cbuildbot_config as cbuildbot_config
-import chromite.lib.cros_build_lib as cros_lib
+from chromite.buildbot import cbuildbot_config
+from chromite.buildbot import repository
+from chromite.lib import cros_build_lib as cros_lib
 
 _DEFAULT_RETRIES = 3
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
@@ -107,7 +107,7 @@ def PreFlightRinse(buildroot, board, tracking_branch, overlays):
 
 
 def ManifestCheckout(buildroot, tracking_branch, next_version,
-                     retries=_DEFAULT_RETRIES, url=None):
+                     retries=_DEFAULT_RETRIES, url=None, mirror=None):
   """Performs a manifest checkout and clobbers any previous checkouts."""
 
   print "BUILDROOT: %s" % buildroot
@@ -121,16 +121,11 @@ def ManifestCheckout(buildroot, tracking_branch, next_version,
     branch = branch_parts[1]
 
   next_version_subdir = next_version.split('.');
-
-  manifest = os.path.join(
-     'buildspecs',
-     next_version_subdir[0] + '.' + next_version_subdir[1],
-     next_version + '.xml')
-
-  cros_lib.OldRunCommand(['repo', 'init', '-u', url, '-b', branch,
-                          '-m', manifest], cwd=buildroot, input='\n\ny\n')
-
-  _RepoSync(buildroot, retries)
+  manifest = os.path.join('buildspecs',
+                          next_version_subdir[0] + '.' + next_version_subdir[1],
+                          next_version + '.xml')
+  repository.RepoRepository(url, buildroot, branch=branch, manifest=manifest,
+                            local_mirror=mirror, clobber=True).Sync()
 
 
 def FullCheckout(buildroot, tracking_branch,
