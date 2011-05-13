@@ -2248,7 +2248,6 @@
         'browser/chromeos/status/status_area_view_browsertest.cc',
         'browser/chromeos/tab_closeable_state_watcher_browsertest.cc',
         'browser/chromeos/update_browsertest.cc',
-        'browser/content_settings/content_settings_browsertest.cc',
         'browser/crash_recovery_browsertest.cc',
         'browser/download/download_browsertest.cc',
         'browser/download/save_page_browsertest.cc',

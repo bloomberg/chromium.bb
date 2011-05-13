@@ -9,7 +9,6 @@
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
@@ -81,7 +80,6 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   safebrowsing_detection_host_.reset(
       safe_browsing::ClientSideDetectionHost::Create(contents));
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
-  content_settings_.reset(new TabSpecificContentSettings(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
   print_view_manager_.reset(new printing::PrintViewManager(contents));
 

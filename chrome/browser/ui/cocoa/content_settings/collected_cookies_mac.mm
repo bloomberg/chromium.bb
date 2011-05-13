@@ -14,7 +14,6 @@
 #import "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
 #import "chrome/browser/ui/cocoa/vertical_gradient_view.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -82,8 +81,7 @@ CollectedCookiesMac::CollectedCookiesMac(NSWindow* parent,
         @selector(sheetDidEnd:returnCode:contextInfo:)),
       tab_contents_(tab_contents) {
   TabSpecificContentSettings* content_settings =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
-          content_settings();
+      tab_contents->GetTabSpecificContentSettings();
   registrar_.Add(this, NotificationType::COLLECTED_COOKIES_SHOWN,
                  Source<TabSpecificContentSettings>(content_settings));
 
@@ -111,6 +109,8 @@ void CollectedCookiesMac::Observe(NotificationType type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
   DCHECK(type == NotificationType::COLLECTED_COOKIES_SHOWN);
+  DCHECK_EQ(Source<TabSpecificContentSettings>(source).ptr(),
+            tab_contents_->GetTabSpecificContentSettings());
   window_->CloseConstrainedWindow();
 }
 
@@ -355,8 +355,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 // the |cocoaAllowedTreeModel_| and |cocoaBlockedTreeModel_|.
 - (void)loadTreeModelFromTabContents {
   TabSpecificContentSettings* content_settings =
-      TabContentsWrapper::GetCurrentWrapperForContents(tabContents_)->
-          content_settings();
+      tabContents_->GetTabSpecificContentSettings();
   allowedTreeModel_.reset(content_settings->GetAllowedCookiesTreeModel());
   blockedTreeModel_.reset(content_settings->GetBlockedCookiesTreeModel());
 

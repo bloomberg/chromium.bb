@@ -6,8 +6,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/geolocation/arbitrator_dependency_factories_for_test.h"
@@ -16,6 +14,7 @@
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/mock_location_provider.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/geolocation_messages.h"
 #include "content/common/notification_details.h"
@@ -68,7 +67,7 @@ void TestTabContentsWithPendingInfoBar::Observe(
 // GeolocationPermissionContextTests ------------------------------------------
 
 // This class sets up GeolocationArbitrator.
-class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
+class GeolocationPermissionContextTests : public RenderViewHostTestHarness {
  public:
   GeolocationPermissionContextTests();
 
@@ -99,7 +98,7 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
   ScopedVector<TestTabContentsWithPendingInfoBar> extra_tabs_;
 
  private:
-  // TabContentsWrapperTestHarness:
+  // RenderViewHostTestHarness:
   virtual void SetUp();
   virtual void TearDown();
 
@@ -108,7 +107,8 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
 };
 
 GeolocationPermissionContextTests::GeolocationPermissionContextTests()
-    : tab_contents_with_pending_infobar_(NULL),
+    : RenderViewHostTestHarness(),
+      tab_contents_with_pending_infobar_(NULL),
       ui_thread_(BrowserThread::UI, MessageLoop::current()),
       dependency_factory_(
           new GeolocationArbitratorDependencyFactoryWithLocationProvider(
@@ -161,7 +161,7 @@ void GeolocationPermissionContextTests::CheckTabContentsState(
     const GURL& requesting_frame,
     ContentSetting expected_content_setting) {
   TabSpecificContentSettings* content_settings =
-      contents_wrapper()->content_settings();
+      contents()->GetTabSpecificContentSettings();
   const GeolocationSettingsState::StateMap& state_map =
       content_settings->geolocation_settings_state().state_map();
   EXPECT_EQ(1U, state_map.count(requesting_frame.GetOrigin()));
@@ -174,7 +174,7 @@ void GeolocationPermissionContextTests::CheckTabContentsState(
 }
 
 void GeolocationPermissionContextTests::SetUp() {
-  TabContentsWrapperTestHarness::SetUp();
+  RenderViewHostTestHarness::SetUp();
   GeolocationArbitrator::SetDependencyFactoryForTest(
       dependency_factory_.get());
   SiteInstance* site_instance = contents()->GetSiteInstance();
@@ -187,7 +187,7 @@ void GeolocationPermissionContextTests::SetUp() {
 
 void GeolocationPermissionContextTests::TearDown() {
   GeolocationArbitrator::SetDependencyFactoryForTest(NULL);
-  TabContentsWrapperTestHarness::TearDown();
+  RenderViewHostTestHarness::TearDown();
 }
 
 

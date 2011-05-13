@@ -14,7 +14,6 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -308,10 +307,8 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
 
   void SetInfobarResponse(const GURL& requesting_url, bool allowed) {
     TabContents* tab_contents = current_browser_->GetSelectedTabContents();
-    TabContentsWrapper* tab_contents_wrapper =
-        current_browser_->GetSelectedTabContentsWrapper();
     TabSpecificContentSettings* content_settings =
-        tab_contents_wrapper->content_settings();
+        tab_contents->GetTabSpecificContentSettings();
     const GeolocationSettingsState& settings_state =
         content_settings->geolocation_settings_state();
     size_t state_map_size = settings_state.state_map().size();

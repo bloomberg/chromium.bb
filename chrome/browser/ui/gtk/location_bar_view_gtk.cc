@@ -1287,11 +1287,8 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromTabContents(
       content_setting_image_model_->get_tooltip().c_str());
   gtk_widget_show_all(widget());
 
-  TabSpecificContentSettings* content_settings = NULL;
-  if (tab_contents) {
-    content_settings = TabContentsWrapper::GetCurrentWrapperForContents(
-        tab_contents)->content_settings();
-  }
+  TabSpecificContentSettings* content_settings = tab_contents ?
+      tab_contents->GetTabSpecificContentSettings() : NULL;
   if (!content_settings || content_settings->IsBlockageIndicated(
       content_setting_image_model_->get_content_settings_type()))
     return;
