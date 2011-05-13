@@ -24,8 +24,9 @@
 #include "ipc/ipc_sync_message_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace IPC;
 using base::WaitableEvent;
+
+namespace IPC {
 
 namespace {
 
@@ -127,7 +128,7 @@ class Worker : public Channel::Listener, public Message::Sender {
   void Done() { done_->Signal(); }
 
  protected:
-  IPC::SyncChannel* channel() { return channel_.get(); }
+  SyncChannel* channel() { return channel_.get(); }
   // Functions for dervied classes to implement if they wish.
   virtual void Run() { }
   virtual void OnAnswer(int* answer) { NOTREACHED(); }
@@ -460,7 +461,7 @@ TEST_F(IPCSyncChannelTest, Unblock) {
 
 //-----------------------------------------------------------------------------
 
-// Tests that the the IPC::SyncChannel object can be deleted during a Send.
+// Tests that the the SyncChannel object can be deleted during a Send.
 TEST_F(IPCSyncChannelTest, ChannelDeleteDuringSend) {
   Unblock(false, false, true);
   Unblock(false, true, true);
@@ -1064,7 +1065,7 @@ TEST_F(IPCSyncChannelTest, DoneEventRace) {
 
 namespace {
 
-class TestSyncMessageFilter : public IPC::SyncMessageFilter {
+class TestSyncMessageFilter : public SyncMessageFilter {
  public:
   TestSyncMessageFilter(base::WaitableEvent* shutdown_event, Worker* worker)
       : SyncMessageFilter(shutdown_event),
@@ -1178,7 +1179,7 @@ class RestrictedDispatchServer : public Worker {
 
   void OnDoPing(int ping) {
     // Send an asynchronous message that unblocks the caller.
-    IPC::Message* msg = new SyncChannelTestMsg_Ping(ping);
+    Message* msg = new SyncChannelTestMsg_Ping(ping);
     msg->set_unblock(true);
     Send(msg);
     // Signal the event after the message has been sent on the channel, on the
@@ -1315,3 +1316,5 @@ TEST_F(IPCSyncChannelTest, RestrictedDispatch) {
   RunTest(workers);
   EXPECT_EQ(3, success);
 }
+
+}  // namespace IPC
