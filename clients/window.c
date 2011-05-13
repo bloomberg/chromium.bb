@@ -99,6 +99,7 @@ struct window {
 	int margin;
 	int fullscreen;
 	int decoration;
+	int transparent;
 	struct input *grab_device;
 	struct input *keyboard_device;
 	uint32_t name;
@@ -212,11 +213,11 @@ egl_window_surface_data_destroy(void *p)
 static cairo_surface_t *
 display_create_egl_window_surface(struct display *display,
 				  struct wl_surface *surface,
+				  struct wl_visual *visual,
 				  struct rectangle *rectangle)
 {
 	cairo_surface_t *cairo_surface;
 	struct egl_window_surface_data *data;
-	struct wl_visual *visual;
 
 	data = malloc(sizeof *data);
 	if (data == NULL)
@@ -224,8 +225,6 @@ display_create_egl_window_surface(struct display *display,
 
 	data->display = display;
 	data->surface = surface;
-
-	visual = display->premultiplied_argb_visual;
 
 	data->window = wl_egl_window_create(surface,
 					    rectangle->width,
@@ -283,12 +282,12 @@ display_get_image_for_egl_image_surface(struct display *display,
 
 static cairo_surface_t *
 display_create_egl_image_surface(struct display *display,
+				 struct wl_visual *visual,
 				 struct rectangle *rectangle)
 {
 	struct egl_image_surface_data *data;
 	EGLDisplay dpy = display->dpy;
 	cairo_surface_t *surface;
-	struct wl_visual *visual;
 
 	data = malloc(sizeof *data);
 	if (data == NULL)
@@ -296,7 +295,6 @@ display_create_egl_image_surface(struct display *display,
 
 	data->display = display;
 
-	visual = display->premultiplied_argb_visual;
 	data->pixmap = wl_egl_pixmap_create(rectangle->width,
 					    rectangle->height,
 					    visual, 0);
@@ -347,6 +345,7 @@ display_create_egl_image_surface_from_file(struct display *display,
 	int stride, i;
 	unsigned char *pixels, *p, *end;
 	struct egl_image_surface_data *data;
+	struct wl_visual *visual;
 
 	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
 						   rect->width, rect->height,
@@ -378,7 +377,8 @@ display_create_egl_image_surface_from_file(struct display *display,
 		}
 	}
 
-	surface = display_create_egl_image_surface(display, rect);
+	visual = display->premultiplied_argb_visual;
+	surface = display_create_egl_image_surface(display, visual, rect);
 	if (surface == NULL) {
 		g_object_unref(pixbuf);
 		return NULL;
@@ -427,11 +427,11 @@ shm_surface_data_destroy(void *p)
 
 static cairo_surface_t *
 display_create_shm_surface(struct display *display,
-			   struct rectangle *rectangle)
+			   struct rectangle *rectangle, uint32_t flags)
 {
 	struct shm_surface_data *data;
-	cairo_surface_t *surface;
 	struct wl_visual *visual;
+	cairo_surface_t *surface;
 	int stride, fd;
 	char filename[] = "/tmp/wayland-shm-XXXXXX";
 
@@ -472,7 +472,11 @@ display_create_shm_surface(struct display *display,
 	cairo_surface_set_user_data (surface, &surface_data_key,
 				     data, shm_surface_data_destroy);
 
-	visual = display->premultiplied_argb_visual;
+	if (flags & SURFACE_OPAQUE)
+		visual = display->rgb_visual;
+	else
+		visual = display->premultiplied_argb_visual;
+
 	data->data.buffer = wl_shm_create_buffer(display->shm,
 						 fd,
 						 rectangle->width,
@@ -512,7 +516,7 @@ display_create_shm_surface_from_file(struct display *display,
 	stride = gdk_pixbuf_get_rowstride(pixbuf);
 	pixels = gdk_pixbuf_get_pixels(pixbuf);
 
-	surface = display_create_shm_surface(display, rect);
+	surface = display_create_shm_surface(display, rect, 0);
 	if (surface == NULL) {
 		g_object_unref(pixbuf);
 		return NULL;
@@ -557,8 +561,16 @@ check_size(struct rectangle *rect)
 cairo_surface_t *
 display_create_surface(struct display *display,
 		       struct wl_surface *surface,
-		       struct rectangle *rectangle)
+		       struct rectangle *rectangle,
+		       uint32_t flags)
 {
+	struct wl_visual *visual;
+
+	if (flags & SURFACE_OPAQUE)
+		visual = display->rgb_visual;
+	else
+		visual = display->premultiplied_argb_visual;
+
 	if (check_size(rectangle) < 0)
 		return NULL;
 #ifdef HAVE_CAIRO_EGL
@@ -566,13 +578,15 @@ display_create_surface(struct display *display,
 		if (surface)
 			return display_create_egl_window_surface(display,
 								 surface,
+								 visual,
 								 rectangle);
 		else
 			return display_create_egl_image_surface(display,
+								visual,
 								rectangle);
 	}
 #endif
-	return display_create_shm_surface(display, rectangle);
+	return display_create_shm_surface(display, rectangle, flags);
 }
 
 static cairo_surface_t *
@@ -783,7 +797,11 @@ void
 window_create_surface(struct window *window)
 {
 	cairo_surface_t *surface;
-
+	uint32_t flags = 0;
+	
+	if (!window->transparent)
+		flags = SURFACE_OPAQUE;
+	
 	switch (window->buffer_type) {
 #ifdef HAVE_CAIRO_EGL
 	case WINDOW_BUFFER_TYPE_EGL_WINDOW:
@@ -793,17 +811,17 @@ window_create_surface(struct window *window)
 		}
 		surface = display_create_surface(window->display,
 						 window->surface,
-						 &window->allocation);
+						 &window->allocation, flags);
 		break;
 	case WINDOW_BUFFER_TYPE_EGL_IMAGE:
 		surface = display_create_surface(window->display,
 						 NULL,
-						 &window->allocation);
+						 &window->allocation, flags);
 		break;
 #endif
 	case WINDOW_BUFFER_TYPE_SHM:
 		surface = display_create_shm_surface(window->display,
-						     &window->allocation);
+						     &window->allocation, flags);
 		break;
         default:
 		surface = NULL;
@@ -1422,6 +1440,12 @@ window_set_keyboard_focus_handler(struct window *window,
 }
 
 void
+window_set_transparent(struct window *window, int transparent)
+{
+	window->transparent = transparent;
+}
+
+void
 window_set_title(struct window *window, const char *title)
 {
 	free(window->title);
@@ -1473,6 +1497,7 @@ window_create_internal(struct display *display, struct window *parent,
 	window->saved_allocation = window->allocation;
 	window->margin = 16;
 	window->decoration = 1;
+	window->transparent = 1;
 
 	if (display->dpy)
 		/* FIXME: make TYPE_EGL_IMAGE choosable for testing */

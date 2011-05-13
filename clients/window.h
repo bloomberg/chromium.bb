@@ -79,10 +79,13 @@ display_get_image_for_egl_image_surface(struct display *display,
 #endif
 #endif
 
+#define SURFACE_OPAQUE 0x01
+
 cairo_surface_t *
 display_create_surface(struct display *display,
 		       struct wl_surface *surface,
-		       struct rectangle *rectangle);
+		       struct rectangle *rectangle,
+		       uint32_t flags);
 
 struct wl_buffer *
 display_get_buffer_for_surface(struct display *display,
@@ -163,6 +166,8 @@ void
 window_get_child_allocation(struct window *window,
 			    struct rectangle *allocation);
 
+void
+window_set_transparent(struct window *window, int transparent);
 void
 window_set_child_size(struct window *window, int32_t width, int32_t height);
 void
