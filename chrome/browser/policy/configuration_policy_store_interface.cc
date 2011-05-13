@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_store_interface.h"
+
+#include "base/values.h"
 
 namespace {
 
-using namespace policy;
-
-bool IsProxyPolicy(ConfigurationPolicyType policy) {
-  return policy == kPolicyProxyMode ||
-         policy == kPolicyProxyServerMode ||
-         policy == kPolicyProxyServer ||
-         policy == kPolicyProxyPacUrl ||
-         policy == kPolicyProxyBypassList;
+bool IsProxyPolicy(policy::ConfigurationPolicyType policy) {
+  return policy == policy::kPolicyProxyMode ||
+         policy == policy::kPolicyProxyServerMode ||
+         policy == policy::kPolicyProxyServer ||
+         policy == policy::kPolicyProxyPacUrl ||
+         policy == policy::kPolicyProxyBypassList;
 }
 
 } // namespace
