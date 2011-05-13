@@ -5,9 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_CONTEXT_GROUP_H_
 #define GPU_COMMAND_BUFFER_SERVICE_CONTEXT_GROUP_H_
 
-#include <map>
 #include <string>
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -133,7 +133,7 @@ class ContextGroup : public base::RefCounted<ContextGroup> {
 
   scoped_ptr<ShaderManager> shader_manager_;
 
-  typedef std::map<uint32, linked_ptr<IdAllocator> > IdAllocatorMap;
+  typedef base::hash_map<uint32, linked_ptr<IdAllocator> > IdAllocatorMap;
   IdAllocatorMap id_namespaces_;
 
   FeatureInfo feature_info_;

@@ -5,10 +5,10 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHADER_TRANSLATOR_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHADER_TRANSLATOR_H_
 
-#include <map>
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
 
@@ -53,7 +53,7 @@ class ShaderTranslatorInterface {
     int size;
   };
   // Mapping between variable name and info.
-  typedef std::map<std::string, VariableInfo> VariableMap;
+  typedef base::hash_map<std::string, VariableInfo> VariableMap;
   virtual const VariableMap& attrib_map() const = 0;
   virtual const VariableMap& uniform_map() const = 0;
 };

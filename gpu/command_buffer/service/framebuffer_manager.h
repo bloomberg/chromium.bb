@@ -5,8 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_FRAMEBUFFER_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_FRAMEBUFFER_MANAGER_H_
 
-#include <map>
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -96,7 +96,7 @@ class FramebufferManager {
     bool has_been_bound_;
 
     // A map of attachments.
-    typedef std::map<GLenum, Attachment::Ref> AttachmentMap;
+    typedef base::hash_map<GLenum, Attachment::Ref> AttachmentMap;
     AttachmentMap attachments_;
 
     DISALLOW_COPY_AND_ASSIGN(FramebufferInfo);
@@ -122,8 +122,7 @@ class FramebufferManager {
 
  private:
   // Info for each framebuffer in the system.
-  // TODO(gman): Choose a faster container.
-  typedef std::map<GLuint, FramebufferInfo::Ref> FramebufferInfoMap;
+  typedef base::hash_map<GLuint, FramebufferInfo::Ref> FramebufferInfoMap;
   FramebufferInfoMap framebuffer_infos_;
 
   DISALLOW_COPY_AND_ASSIGN(FramebufferManager);

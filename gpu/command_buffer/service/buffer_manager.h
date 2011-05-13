@@ -7,6 +7,7 @@
 
 #include <map>
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -172,8 +173,7 @@ class BufferManager {
 
  private:
   // Info for each buffer in the system.
-  // TODO(gman): Choose a faster container.
-  typedef std::map<GLuint, BufferInfo::Ref> BufferInfoMap;
+  typedef base::hash_map<GLuint, BufferInfo::Ref> BufferInfoMap;
   BufferInfoMap buffer_infos_;
 
   // Whether or not buffers can be bound to multiple targets.

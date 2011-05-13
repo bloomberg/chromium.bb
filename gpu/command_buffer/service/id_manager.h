@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef GPU_COMMAND_BUFFER_SERVICE_ID_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_ID_MANAGER_H_
 
-#include <map>
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 
 namespace gpu {
@@ -37,8 +37,7 @@ class IdManager {
   bool GetClientId(GLuint service_id, GLuint* client_id);
 
  private:
-  // TODO(gman): Replace with faster implementation.
-  typedef std::map<GLuint, GLuint> MapType;
+  typedef base::hash_map<GLuint, GLuint> MapType;
   MapType id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IdManager);

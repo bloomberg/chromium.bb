@@ -5,9 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHADER_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHADER_MANAGER_H_
 
-#include <map>
 #include <string>
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -139,7 +139,7 @@ class ShaderManager {
 
  private:
   // Info for each shader by service side shader Id.
-  typedef std::map<GLuint, ShaderInfo::Ref> ShaderInfoMap;
+  typedef base::hash_map<GLuint, ShaderInfo::Ref> ShaderInfoMap;
   ShaderInfoMap shader_infos_;
 
   void RemoveShaderInfoIfUnused(ShaderInfo* info);

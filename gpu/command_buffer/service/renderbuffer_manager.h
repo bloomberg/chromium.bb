@@ -5,8 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_RENDERBUFFER_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_RENDERBUFFER_MANAGER_H_
 
-#include <map>
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -138,8 +138,7 @@ class RenderbufferManager {
   GLint max_renderbuffer_size_;
 
   // Info for each renderbuffer in the system.
-  // TODO(gman): Choose a faster container.
-  typedef std::map<GLuint, RenderbufferInfo::Ref> RenderbufferInfoMap;
+  typedef base::hash_map<GLuint, RenderbufferInfo::Ref> RenderbufferInfoMap;
   RenderbufferInfoMap renderbuffer_infos_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderbufferManager);
