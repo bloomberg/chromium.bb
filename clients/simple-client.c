@@ -35,6 +35,7 @@
 
 struct display {
 	struct wl_display *display;
+	struct wl_visual *premultiplied_argb_visual;
 	struct wl_compositor *compositor;
 	struct {
 		EGLDisplay dpy;
@@ -195,7 +196,7 @@ create_surface(struct window *window)
 	EGLBoolean ret;
 
 	window->surface = wl_compositor_create_surface(display->compositor);
-	visual = wl_display_get_premultiplied_argb_visual(display->display);
+	visual = display->premultiplied_argb_visual;
 	window->native =
 		wl_egl_window_create(window->surface,
 				     window->geometry.width,
@@ -272,13 +273,35 @@ redraw(struct wl_surface *surface, void *data, uint32_t time)
 }
 
 static void
+compositor_handle_visual(void *data,
+			 struct wl_compositor *compositor,
+			 uint32_t id, uint32_t token)
+{
+	struct display *d = data;
+
+	switch (token) {
+	case WL_COMPOSITOR_VISUAL_PREMULTIPLIED_ARGB32:
+		d->premultiplied_argb_visual =
+			wl_visual_create(d->display, id, 1);
+		break;
+	}
+}
+
+static const struct wl_compositor_listener compositor_listener = {
+	compositor_handle_visual,
+};
+
+static void
 display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
 {
 	struct display *d = data;
 
-	if (strcmp(interface, "wl_compositor") == 0)
+	if (strcmp(interface, "wl_compositor") == 0) {
 		d->compositor = wl_compositor_create(display, id, 1);
+		wl_compositor_add_listener(d->compositor,
+					   &compositor_listener, d);
+	}
 }
 
 static int

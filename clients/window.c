@@ -62,6 +62,7 @@ struct display {
 	struct wl_shell *shell;
 	struct wl_shm *shm;
 	struct wl_output *output;
+	struct wl_visual *argb_visual, *premultiplied_argb_visual, *rgb_visual;
 	struct rectangle screen_allocation;
 	int authenticated;
 	EGLDisplay dpy;
@@ -224,7 +225,7 @@ display_create_egl_window_surface(struct display *display,
 	data->display = display;
 	data->surface = surface;
 
-	visual = wl_display_get_premultiplied_argb_visual(display->display);
+	visual = display->premultiplied_argb_visual;
 
 	data->window = wl_egl_window_create(surface,
 					    rectangle->width,
@@ -295,7 +296,7 @@ display_create_egl_image_surface(struct display *display,
 
 	data->display = display;
 
-	visual = wl_display_get_premultiplied_argb_visual(display->display);
+	visual = display->premultiplied_argb_visual;
 	data->pixmap = wl_egl_pixmap_create(rectangle->width,
 					    rectangle->height,
 					    visual, 0);
@@ -471,7 +472,7 @@ display_create_shm_surface(struct display *display,
 	cairo_surface_set_user_data (surface, &surface_data_key,
 				     data, shm_surface_data_destroy);
 
-	visual = wl_display_get_premultiplied_argb_visual(display->display);
+	visual = display->premultiplied_argb_visual;
 	data->data.buffer = wl_shm_create_buffer(display->shm,
 						 fd,
 						 rectangle->width,
@@ -1521,6 +1522,31 @@ window_set_buffer_type(struct window *window, enum window_buffer_type type)
 }
 
 static void
+compositor_handle_visual(void *data,
+			 struct wl_compositor *compositor,
+			 uint32_t id, uint32_t token)
+{
+	struct display *d = data;
+
+	switch (token) {
+	case WL_COMPOSITOR_VISUAL_ARGB32:
+		d->argb_visual = wl_visual_create(d->display, id, 1);
+		break;
+	case WL_COMPOSITOR_VISUAL_PREMULTIPLIED_ARGB32:
+		d->premultiplied_argb_visual =
+			wl_visual_create(d->display, id, 1);
+		break;
+	case WL_COMPOSITOR_VISUAL_XRGB32:
+		d->rgb_visual = wl_visual_create(d->display, id, 1);
+		break;
+	}
+}
+
+static const struct wl_compositor_listener compositor_listener = {
+	compositor_handle_visual,
+};
+
+static void
 display_handle_geometry(void *data,
 			struct wl_output *output,
 			int32_t x, int32_t y, int32_t width, int32_t height)
@@ -1672,6 +1698,8 @@ display_handle_global(struct wl_display *display, uint32_t id,
 
 	if (strcmp(interface, "wl_compositor") == 0) {
 		d->compositor = wl_compositor_create(display, id, 1);
+		wl_compositor_add_listener(d->compositor,
+					   &compositor_listener, d);
 	} else if (strcmp(interface, "wl_output") == 0) {
 		d->output = wl_output_create(display, id, 1);
 		wl_output_add_listener(d->output, &output_listener, d);
