@@ -7,7 +7,7 @@ XMPP_TOKEN_NAME = 'xmpp_token';
 OAUTH2_TOKEN_NAME = 'oauth2_token';
 HOST_PLUGIN_ID = 'host_plugin_id';
 
-function updateAuthStatus() {
+function updateAuthStatus_() {
   var oauth1_status = document.getElementById('oauth1_status');
   if (remoting.oauth.hasToken()) {
     oauth1_status.innerText = 'OK';
@@ -16,40 +16,130 @@ function updateAuthStatus() {
     oauth1_status.innerText = 'Unauthorized';
     oauth1_status.style.color='red';
   }
+  var xmpp_status = document.getElementById('xmpp_status');
+  if (remoting.getItem(XMPP_TOKEN_NAME)) {
+    document.getElementById('xmpp_clear').style.display = 'inline';
+    document.getElementById('xmpp_form').style.display = 'none';
+    xmpp_status.innerText = 'OK';
+    xmpp_status.style.color='green';
+  } else {
+    document.getElementById('xmpp_clear').style.display = 'none';
+    document.getElementById('xmpp_form').style.display = 'inline';
+    xmpp_status.innerText = 'Unauthorized';
+    xmpp_status.style.color='red';
+  }
 }
 
-function authorizeOAuth1() {
-  remoting.oauth.authorize(updateAuthStatus);
+function clientLoginError_(xhr) {
+  // If there's an error URL, load it into an iframe.
+  var url_line = xhr.responseText.match('Url=.*');
+  if (url_line) {
+    url = url_line[0].substr(4)
+    var error_frame = document.getElementById('xmpp_error');
+    error_frame.src = url;
+    error_frame.style.display = 'block';
+  }
+
+  var log_msg = 'Client Login failed. Status: ' + xhr.status +
+      ' body: ' + xhr.responseText;
+  console.log(log_msg);
+  var last_error = document.getElementById('xmpp_last_error');
+  last_error.innerText = log_msg;
+  last_error.style.display = 'inline';
 }
 
-function clearOAuth1() {
-  remoting.oauth.clearTokens();
-  updateAuthStatus();
+function resetXmppErrors_() {
+  document.getElementById('xmpp_captcha').style.display = 'none';
+  document.getElementById('xmpp_error').style.display = 'none';
+  document.getElementById('xmpp_last_error').style.display = 'none';
+}
+
+function displayCaptcha_(form, url, token) {
+  form['xmpp_captcha_token'].value = token;
+  document.getElementById('xmpp_captcha_img').src = url;
+  document.getElementById('xmpp_captcha').style.display = 'inline';
+}
+
+function readAndClearCaptcha_(form) {
+  var captcha_token = form['xmpp_captcha_token'].value;
+  form['xmpp_captcha_token'].value = '';
+  resetXmppErrors_();
+  return [captcha_token, form['xmpp_captcha_result'].value];
 }
 
 function initAuthPanel_() {
-  document.getElementById('xmpp_token').value =
-      remoting.getItem(XMPP_TOKEN_NAME);
-  updateAuthStatus();
+  updateAuthStatus_();
+  resetXmppErrors_();
 }
 
 function initBackgroundFuncs_() {
   remoting.getItem = chrome.extension.getBackgroundPage().getItem;
   remoting.setItem = chrome.extension.getBackgroundPage().setItem;
+  remoting.removeItem = chrome.extension.getBackgroundPage().removeItem;
   remoting.oauth = chrome.extension.getBackgroundPage().oauth;
 }
 
-function saveCredentials(form) {
-  remoting.setItem(OAUTH2_TOKEN_NAME, form['oauth2_token'].value);
-  remoting.setItem(XMPP_TOKEN_NAME, form['xmpp_token'].value);
+function authorizeXmpp(form) {
+  var xhr = new XMLHttpRequest();
+  var captcha_result = readAndClearCaptcha_(form);
+
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState != 4) {
+      return;
+    }
+
+    if (xhr.status == 200) {
+      var auth_line = xhr.responseText.match('Auth=.*');
+      if (!auth_line) {
+        clientLoginError_(xhr);
+        return;
+      }
+      remoting.setItem(XMPP_TOKEN_NAME, auth_line[0].substr(5));
+      updateAuthStatus_();
+    } else if (xhr.status == 403) {
+      var error_line = xhr.responseText.match('Error=.*');
+      if (error_line && error_line == 'Error=CaptchaRequired') {
+        var captcha_token = xhr.responseText.match('CaptchaToken=.*');
+        var captcha_url = xhr.responseText.match('CaptchaUrl=.*');
+        displayCaptcha_(
+            form,
+            'https://www.google.com/accounts/' + captcha_url[0].substr(11),
+            captcha_token[0].substr(13));
+        return;
+      }
+      clientLoginError_(xhr);
+    } else {
+      clientLoginError_(xhr);
+    }
+  };
+  xhr.open('POST', 'https://www.google.com/accounts/ClientLogin', true);
+  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  var post_data =
+      'accountType=HOSTED_OR_GOOGLE' +
+      '&service=chromiumsync' +
+      '&source=remoting-webapp' +
+      '&Email=' + encodeURIComponent(form['xmpp_username'].value) +
+      '&Passwd=' + encodeURIComponent(form['xmpp_password'].value);
+
+  if (captcha_result[0]) {
+    post_data += '&logintoken=' + encodeURIComponent(captcha_result[0]) +
+        '&logincaptcha=' + encodeURIComponent(captcha_result[1]);
+  }
+  xhr.send(post_data);
 }
 
-function init() {
-  initBackgroundFuncs_();
-  initAuthPanel_();
-  setHostMode('unshared');
-  setClientMode('unconnected');
-  setGlobalMode(remoting.getItem('startup-mode', 'host'));
+function authorizeOAuth1() {
+  remoting.oauth.authorize(updateAuthStatus_);
+}
+
+function clearOAuth1() {
+  remoting.oauth.clearTokens();
+  updateAuthStatus_();
+}
+
+function clearXmpp() {
+  remoting.removeItem(XMPP_TOKEN_NAME);
+  updateAuthStatus_();
 }
 
 // Show the div with id |mode| and hide those with other ids in |modes|.
@@ -62,6 +152,14 @@ function setMode_(mode, modes) {
       div.style.display = 'none';
     }
   }
+}
+
+function init() {
+  initBackgroundFuncs_();
+  initAuthPanel_();
+  setHostMode('unshared');
+  setClientMode('unconnected');
+  setGlobalMode(remoting.getItem('startup-mode', 'host'));
 }
 
 function setGlobalMode(mode) {

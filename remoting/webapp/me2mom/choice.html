@@ -21,12 +21,27 @@ found in the LICENSE file.
       <button onclick="authorizeOAuth1();">Authorize</button>
       <button onclick="clearOAuth1();">Clear</button >
       <br />
-      <form action="">
-        XMPP Token: <input type="text" id="xmpp_token" /><br />
-        <button onclick="saveCredentials(this.form);">
-          Save Credentials
-        </button>
+      XMPP Token: <span id="xmpp_status"></span>
+      <button onclick="clearXmpp();" id="xmpp_clear" style="display:none;">
+        Clear
+      </button>
+      <form id='xmpp_form' action=""
+        onsubmit="authorizeXmpp(this); return false;">
+        <label for="xmpp_username">Email:</label>
+        <input type="text" name="xmpp_username" id="xmpp_username" />
+        <label for="xmpp_password">App-specific Password:</label>
+        <input type="password" name="xmpp_password" id="xmpp_password" />
+        <div id="xmpp_captcha" style="display:none;">
+          <img style="display:block;" id="xmpp_captcha_img" />
+          <input type="hidden" name="xmpp_captcha_token" />
+          <input type="text" name="xmpp_captcha_result" />
+        </div>
+        <input type="submit"/>
       </form>
+      <span id="xmpp_last_error" style="display:none"></span>
+      <iframe id="xmpp_error" style="display:none">
+        <p> No iframe support
+      </iframe>
     </div>
 
     <!-- Host UI -->
