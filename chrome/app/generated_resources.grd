@@ -4225,6 +4225,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PPAPI_FLASH_IN_PROCESS_DESCRIPTION" desc="Description for the flag to run the custom flash in-process">
         If the PPAPI version of Flash is in use, run it in each renderer process rather than in a dedicated plugin process.
       </message>
+      <message name="IDS_FLAGS_LINUX_GLOBAL_MENUBAR_NAME" desc="Title for the flag to show a global menu bar on linux.">
+        Experimental GNOME menu bar support.
+      </message>
+      <message name="IDS_FLAGS_LINUX_GLOBAL_MENUBAR_DESCRIPTION" desc="Description for the flag to show a global menu bar on linux.">
+        Newer versions of Unity and GNOME (including the upcoming Ubuntu Natty Narwhal) show an OSX style menubar across the top of the screen.
+      </message>
       <message name="IDS_FLAGS_ENABLE_VPN_NAME" desc="Title for the flag to enable VPN support">
         VPN support
       </message>

@@ -324,6 +324,10 @@ extern const char kEnableExposeForTabs[];
 extern const char kKioskMode[];
 #endif
 
+#if defined(TOOLKIT_GTK)
+extern const char kGlobalGnomeMenu[];
+#endif
+
 #if defined(TOOLKIT_VIEWS)
 extern const char kDebugViewsPaint[];
 #endif
