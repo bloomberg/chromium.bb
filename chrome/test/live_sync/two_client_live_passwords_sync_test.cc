@@ -63,7 +63,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DisablePasswords) {
 }
 
 // TCM ID - 4649281.
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DisableSync) {
+// TODO(rsimha): Red on buildbots, green on trybots. http://crbug.com/82489.
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FAILS_DisableSync) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 

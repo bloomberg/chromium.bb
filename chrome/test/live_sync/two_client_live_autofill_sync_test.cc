@@ -287,7 +287,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DisableAutofill) {
 }
 
 // TCM ID - 3661291.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DisableSync) {
+// TODO(rsimha): Red on buildbots, green on trybots. http://crbug.com/82489.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, FAILS_DisableSync) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER));

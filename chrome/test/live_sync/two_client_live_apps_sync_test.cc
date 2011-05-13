@@ -168,7 +168,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, DisableApps) {
 }
 
 // TCM ID - 3720303.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, DisableSync) {
+// TODO(rsimha): Red on buildbots, green on trybots. http://crbug.com/82489.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, FAILS_DisableSync) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
