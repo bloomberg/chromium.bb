@@ -24,7 +24,7 @@ user_executable = env.ComponentProgram(
 
 node = env.CommandSelLdrTestNacl(
     'blob_library_loading_test.out',
-    sel_ldr_flags=['-B', env.File('${STAGING_DIR}/irt.nexe')],
+    sel_ldr_flags=['-B', env.GetIrtNexe()],
     command=[user_executable],
     stdout_golden=env.File('${SCONSTRUCT_DIR}/tests/hello_world'
                            '/hello_world.stdout'))

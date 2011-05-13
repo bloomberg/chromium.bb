@@ -86,8 +86,7 @@ log_file = env.File('fake_browser_ppapi.out').abspath
 test_env_vars = ['NACL_SEL_LDR=%s' % sel_ldr,
                  'NACLLOG=%s' % log_file]
 if env.Bit('irt'):
-  irt_library = env.File('${STAGING_DIR}/irt.nexe')
-  test_env_vars.append('NACL_IRT_LIBRARY=%s' % irt_library)
+  test_env_vars.append('NACL_IRT_LIBRARY=%s' % env.GetIrtNexe())
 
 node = env.CommandTest('fake_browser_ppapi.out',
                        [fake_browser,

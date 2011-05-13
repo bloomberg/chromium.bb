@@ -104,6 +104,8 @@ ACCEPTABLE_ARGUMENTS = set([
     'force_emulator',
     # force sel_ldr use by tests
     'force_sel_ldr',
+    # force irt image used by tests
+    'force_irt',
     # colon-separated list of compiler flags, e.g. "-g:-Wall".
     'nacl_ccflags',
     # colon-separated list of linker flags, e.g. "-lfoo:-Wl,-u,bar".
@@ -1010,6 +1012,15 @@ def GetSelLdr(env, loader='sel_ldr'):
                              loader)
   return sel_ldr
 
+def GetIrtNexe(env, irt_name='irt'):
+  image = ARGUMENTS.get('force_irt')
+  if image:
+    return env.SConstructAbsPath(image)
+
+  return env.File('${STAGING_DIR}/irt.nexe')
+
+pre_base_env.AddMethod(GetIrtNexe)
+
 
 def CommandValidatorTestNacl(env, name, image,
                              validator_flags=None,
@@ -1202,7 +1213,7 @@ def PPAPIBrowserTester(env,
     command.extend(['--ppapi_plugin', GetPPAPIPluginPath(env['TRUSTED_ENV'])])
     command.extend(['--sel_ldr', GetSelLdr(env)])
     if env.Bit('irt'):
-      command.extend(['--irt_library', env.File('${STAGING_DIR}/irt.nexe')])
+      command.extend(['--irt_library', env.GetIrtNexe()])
   for dep_file in files:
     command.extend(['--file', dep_file])
   for extension in extensions:
@@ -1460,7 +1471,7 @@ def CommandSelLdrTestNacl(env, name, command,
       sel_ldr_flags += ['-s']
 
   if env.Bit('irt') and uses_ppapi:
-    sel_ldr_flags += ['-B', nacl_env.File('${STAGING_DIR}/irt.nexe')]
+    sel_ldr_flags += ['-B', nacl_env.GetIrtNexe()]
 
   command = [sel_ldr] + sel_ldr_flags + ['--'] + command
 
