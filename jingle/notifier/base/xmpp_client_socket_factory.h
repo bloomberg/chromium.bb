@@ -37,7 +37,7 @@ class XmppClientSocketFactory : public ResolvingClientSocketFactory {
 
   // ResolvingClientSocketFactory implementation.
   virtual net::StreamSocket* CreateTransportClientSocket(
-      const net::HostPortPair& host_and_port, net::NetLog* net_log);
+      const net::HostPortPair& host_and_port);
 
   virtual net::SSLClientSocket* CreateSSLClientSocket(
       net::ClientSocketHandle* transport_socket,

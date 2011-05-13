@@ -28,12 +28,11 @@ XmppClientSocketFactory::XmppClientSocketFactory(
 XmppClientSocketFactory::~XmppClientSocketFactory() {}
 
 net::StreamSocket* XmppClientSocketFactory::CreateTransportClientSocket(
-    const net::HostPortPair& host_and_port, net::NetLog* net_log) {
+    const net::HostPortPair& host_and_port) {
   net::StreamSocket* transport_socket = new ProxyResolvingClientSocket(
       request_context_getter_,
       ssl_config_,
-      host_and_port,
-      net_log);
+      host_and_port);
   return (use_fake_ssl_client_socket_ ?
           new FakeSSLClientSocket(transport_socket) : transport_socket);
 }

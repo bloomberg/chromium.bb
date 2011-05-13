@@ -35,8 +35,7 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
     const scoped_refptr<net::URLRequestContextGetter>&
         request_context_getter,
     const net::SSLConfig& ssl_config,
-    const net::HostPortPair& dest_host_port_pair,
-    net::NetLog* net_log);
+    const net::HostPortPair& dest_host_port_pair);
   virtual ~ProxyResolvingClientSocket();
 
   // net::StreamSocket implementation.

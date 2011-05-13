@@ -30,8 +30,7 @@ namespace notifier {
 ChromeAsyncSocket::ChromeAsyncSocket(
     ResolvingClientSocketFactory* client_socket_factory,
     size_t read_buf_size,
-    size_t write_buf_size,
-    net::NetLog* net_log)
+    size_t write_buf_size)
     : connect_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                         &ChromeAsyncSocket::ProcessConnectDone),
       read_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
@@ -41,8 +40,6 @@ ChromeAsyncSocket::ChromeAsyncSocket(
       ssl_connect_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                             &ChromeAsyncSocket::ProcessSSLConnectDone),
       client_socket_factory_(client_socket_factory),
-      bound_net_log_(
-          net::BoundNetLog::Make(net_log, net::NetLog::SOURCE_SOCKET)),
       state_(STATE_CLOSED),
       error_(ERROR_NONE),
       net_error_(net::OK),
@@ -122,7 +119,7 @@ bool ChromeAsyncSocket::Connect(const talk_base::SocketAddress& address) {
 
   transport_socket_.reset(
       client_socket_factory_->CreateTransportClientSocket(
-          dest_host_port_pair, bound_net_log_.net_log()));
+          dest_host_port_pair));
   int status = transport_socket_->Connect(&connect_callback_);
   if (status != net::ERR_IO_PENDING) {
     // We defer execution of ProcessConnectDone instead of calling it

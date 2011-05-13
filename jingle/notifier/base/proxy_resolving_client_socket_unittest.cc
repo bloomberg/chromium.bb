@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
-#include "net/base/capturing_net_log.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,7 +43,6 @@ class ProxyResolvingClientSocketTest : public testing::Test {
  protected:
   ProxyResolvingClientSocketTest()
       : url_request_context_getter_(new TestURLRequestContextGetter()),
-        capturing_net_log_(net::CapturingNetLog::kUnbounded),
         connect_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                           &ProxyResolvingClientSocketTest::NetCallback) { }
 
@@ -61,7 +59,6 @@ class ProxyResolvingClientSocketTest : public testing::Test {
   // Needed by XmppConnection.
   MessageLoopForIO message_loop_;
   scoped_refptr<TestURLRequestContextGetter> url_request_context_getter_;
-  net::CapturingNetLog capturing_net_log_;
   net::CompletionCallbackImpl<ProxyResolvingClientSocketTest> connect_callback_;
 };
 
@@ -71,8 +68,7 @@ TEST_F(ProxyResolvingClientSocketTest, DISABLED_ConnectError) {
   ProxyResolvingClientSocket proxy_resolving_socket(
       url_request_context_getter_,
       net::SSLConfig(),
-      dest,
-      &capturing_net_log_);
+      dest);
   // ProxyResolvingClientSocket::Connect() will always return an error of
   // ERR_ADDRESS_INVALID for a 0 IP address.
   EXPECT_CALL(*this, NetCallback(net::ERR_ADDRESS_INVALID)).Times(1);

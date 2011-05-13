@@ -32,8 +32,6 @@ buzz::AsyncSocket* CreateSocket(
   // XmppSocketAdapter.
   const size_t kReadBufSize = 64U * 1024U;
   const size_t kWriteBufSize = 64U * 1024U;
-  net::NetLog* const net_log =
-      request_context_getter->GetURLRequestContext()->net_log();
   XmppClientSocketFactory* const client_socket_factory =
       new XmppClientSocketFactory(
           net::ClientSocketFactory::GetDefaultFactory(),
@@ -41,7 +39,7 @@ buzz::AsyncSocket* CreateSocket(
           request_context_getter,
           use_fake_ssl_client_socket);
   return new ChromeAsyncSocket(client_socket_factory,
-                               kReadBufSize, kWriteBufSize, net_log);
+                               kReadBufSize, kWriteBufSize);
 }
 
 }  // namespace

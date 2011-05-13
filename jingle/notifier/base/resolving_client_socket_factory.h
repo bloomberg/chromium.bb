@@ -25,7 +25,7 @@ class ResolvingClientSocketFactory {
   virtual ~ResolvingClientSocketFactory() { }
   // Method to create a transport socket using a HostPortPair.
   virtual net::StreamSocket* CreateTransportClientSocket(
-      const net::HostPortPair& host_and_port, net::NetLog* net_log) = 0;
+      const net::HostPortPair& host_and_port) = 0;
 
   virtual net::SSLClientSocket* CreateSSLClientSocket(
       net::ClientSocketHandle* transport_socket,

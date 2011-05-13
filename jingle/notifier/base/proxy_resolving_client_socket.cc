@@ -21,8 +21,7 @@ namespace notifier {
 ProxyResolvingClientSocket::ProxyResolvingClientSocket(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     const net::SSLConfig& ssl_config,
-    const net::HostPortPair& dest_host_port_pair,
-    net::NetLog* net_log)
+    const net::HostPortPair& dest_host_port_pair)
         : proxy_resolve_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                         &ProxyResolvingClientSocket::ProcessProxyResolveDone),
           connect_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
@@ -32,7 +31,9 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
           dest_host_port_pair_(dest_host_port_pair),
           tried_direct_connect_fallback_(false),
           bound_net_log_(
-              net::BoundNetLog::Make(net_log, net::NetLog::SOURCE_SOCKET)),
+              net::BoundNetLog::Make(
+                  request_context_getter->GetURLRequestContext()->net_log(),
+                  net::NetLog::SOURCE_SOCKET)),
           scoped_runnable_method_factory_(
               ALLOW_THIS_IN_INITIALIZER_LIST(this)),
           user_connect_callback_(NULL) {
@@ -41,13 +42,18 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
       request_context_getter->GetURLRequestContext();
   DCHECK(request_context);
   net::HttpNetworkSession::Params session_params;
+  session_params.client_socket_factory = NULL;
   session_params.host_resolver = request_context->host_resolver();
   session_params.cert_verifier = request_context->cert_verifier();
   session_params.dnsrr_resolver = request_context->dnsrr_resolver();
+  session_params.dns_cert_checker = request_context->dns_cert_checker();
   session_params.proxy_service = request_context->proxy_service();
+  session_params.ssl_host_info_factory = NULL;
   session_params.ssl_config_service = request_context->ssl_config_service();
   session_params.http_auth_handler_factory =
       request_context->http_auth_handler_factory();
+  session_params.network_delegate = request_context->network_delegate();
+  session_params.net_log = request_context->net_log();
   network_session_ = new net::HttpNetworkSession(session_params);
 }
 
