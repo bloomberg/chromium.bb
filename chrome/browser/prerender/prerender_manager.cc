@@ -550,7 +550,6 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
   new_tab_contents->controller().CopyStateFromAndPrune(
       &old_tab_contents->controller(),
       false);
-
   old_tab_contents->delegate()->SwapTabContents(old_tab_contents,
                                                 new_tab_contents);
 
@@ -821,6 +820,7 @@ void PrerenderManager::DeleteOldTabContents() {
   while (!old_tab_contents_list_.empty()) {
     TabContentsWrapper* tab_contents = old_tab_contents_list_.front();
     old_tab_contents_list_.pop_front();
+    // TODO(dominich): should we use Instant Unload Handler here?
     delete tab_contents;
   }
   MaybeStopSchedulingPeriodicCleanups();

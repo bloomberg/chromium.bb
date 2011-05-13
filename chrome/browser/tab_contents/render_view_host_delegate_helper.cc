@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
@@ -104,13 +105,23 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
     }
   }
 
+  TabContents* base_tab_contents = opener->GetAsTabContents();
+
+  // Do not create the new TabContents if the opener is a prerender TabContents.
+  prerender::PrerenderManager* prerender_manager =
+      profile->GetPrerenderManager();
+  if (prerender_manager &&
+      prerender_manager->IsTabContentsPrerendering(base_tab_contents)) {
+    return NULL;
+  }
+
   // Create the new web contents. This will automatically create the new
   // TabContentsView. In the future, we may want to create the view separately.
   TabContents* new_contents =
       new TabContents(profile,
                       site,
                       route_id,
-                      opener->GetAsTabContents(),
+                      base_tab_contents,
                       NULL);
   new_contents->set_opener_web_ui_type(webui_type);
   TabContentsView* new_view = new_contents->view();
@@ -150,8 +161,10 @@ RenderViewHostDelegateViewHelper::CreateNewFullscreenWidget(
 
 TabContents* RenderViewHostDelegateViewHelper::GetCreatedWindow(int route_id) {
   PendingContents::iterator iter = pending_contents_.find(route_id);
+
+  // Certain systems can block the creation of new windows. If we didn't succeed
+  // in creating one, just return NULL.
   if (iter == pending_contents_.end()) {
-    DCHECK(false);
     return NULL;
   }
 
