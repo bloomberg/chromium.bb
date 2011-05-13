@@ -91,6 +91,7 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   friend class Window;
 
   virtual void OnDestroy(GtkWidget* widget);
+  virtual void OnDestroyed();
 
  private:
   static gboolean CallConfigureEvent(GtkWidget* widget,
