@@ -102,7 +102,7 @@ class BuilderStage():
       cls._previous = [line.strip() for line in file.readlines()]
 
     @classmethod
-    def Report(cls, file):
+    def Report(cls, file, exception_description=None):
       """Generate a user friendly text display of the results data."""
       results = cls._results_log
 
@@ -136,6 +136,11 @@ class BuilderStage():
                      (edge, name, type(result).__name__))
 
       file.write(line)
+      if exception_description:
+        file.write('\n')
+        file.write('Build failed with:\n')
+        file.write('\n')
+        file.write(exception_description)
 
   def __init__(self, bot_id, options, build_config):
     self._bot_id = bot_id

@@ -128,15 +128,15 @@ def RunEverything(bot_id, options, build_config):
 
   try:
     RunBuildStages(bot_id, options, build_config)
-  except Exception as e:
-    traceback.print_exc()
-    print '\n'
-    print '\n'
+    stages.BuilderStage.Results.Report(sys.stdout)
+  except Exception:
+    stages.BuilderStage.Results.Report(
+       sys.stdout,
+       exception_description=traceback.format_exc())
+
     # Made sure cbuildbot returns an error exit code if we are failing.
     sys.exit(1)
   finally:
-    stages.BuilderStage.Results.Report(sys.stdout)
-
     # An error here can override sys.exit, but we'll get a stacktrace
     # and error out anyway
     if os.path.exists(options.buildroot):

@@ -257,7 +257,7 @@ class SyncStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'PreFlightRinse')
 
   def ConstructStage(self):
-     return stages.SyncStage(self.bot_id, self.options, self.build_config)
+    return stages.SyncStage(self.bot_id, self.options, self.build_config)
 
   def testFullSync(self):
     """Tests whether we can perform a full sync with a missing .repo folder."""
@@ -489,7 +489,7 @@ class TestStageTest(AbstractStageTest):
     self.fake_results_dir = '/tmp/fake_results_dir'
 
   def ConstructStage(self):
-     return stages.TestStage(self.bot_id, self.options, self.build_config)
+    return stages.TestStage(self.bot_id, self.options, self.build_config)
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
@@ -562,7 +562,7 @@ class UprevStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(sys, 'exit')
 
   def ConstructStage(self):
-     return stages.UprevStage(self.bot_id, self.options, self.build_config)
+    return stages.UprevStage(self.bot_id, self.options, self.build_config)
 
   def testChromeRevSuccess(self):
     """Case where MarkChromeAsStable returns an atom.  We shouldn't exit."""
@@ -653,7 +653,7 @@ class BuildTargetStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(stages.BuilderStage, '_GetPortageEnvVar')
 
   def ConstructStage(self):
-     return stages.BuildTargetStage(self.bot_id,
+    return stages.BuildTargetStage(self.bot_id,
                                     self.options,
                                     self.build_config)
 
@@ -774,9 +774,9 @@ class PushChangesStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'UprevPush')
 
   def ConstructStage(self):
-     return stages.PushChangesStage(self.bot_id,
-                                    self.options,
-                                    self.build_config)
+    return stages.PushChangesStage(self.bot_id,
+                                   self.options,
+                                   self.build_config)
 
   def testChromePush(self):
     """Test uploading of prebuilts for chrome build."""
@@ -941,6 +941,38 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     # Break out the asserts to be per item to make debugging easier
     self.assertEqual(len(expectedLines), len(actualLines))
+    for i in xrange(len(expectedLines)):
+      self.assertEqual(expectedLines[i], actualLines[i])
+
+    results = StringIO.StringIO()
+
+    stages.BuilderStage.Results.Report(results, 'Exception:\nMessage\n')
+
+    expectedResults = (
+        "************************************************************\n"
+        "** Stage Results\n"
+        "************************************************************\n"
+        "** Pass previously completed\n"
+        "************************************************************\n"
+        "** Pass2\n"
+        "************************************************************\n"
+        "** Fail failed with Exception\n"
+        "************************************************************\n"
+        "** FailRunCommand failed in /bin/false\n"
+        "************************************************************\n"
+        "** FailOldRunCommand failed in /bin/false\n"
+        "************************************************************\n"
+        "\n"
+        "Build failed with:\n"
+        "\n"
+        "Exception:\n"
+        "Message\n")
+
+    expectedLines = expectedResults.split('\n')
+    actualLines = results.getvalue().split('\n')
+
+    # Break out the asserts to be per item to make debugging easier
+#    self.assertEqual(len(expectedLines), len(actualLines))
     for i in xrange(len(expectedLines)):
       self.assertEqual(expectedLines[i], actualLines[i])
 
