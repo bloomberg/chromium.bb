@@ -509,7 +509,9 @@ void Navigate(NavigateParams* params) {
   if (singleton_index >= 0) {
     TabContents* target = params->browser->GetTabContentsAt(singleton_index);
 
-    if (params->path_behavior == NavigateParams::IGNORE_AND_NAVIGATE &&
+    if (target->is_crashed()) {
+      target->controller().Reload(true);
+    } else if (params->path_behavior == NavigateParams::IGNORE_AND_NAVIGATE &&
         target->GetURL() != params->url) {
       target->controller().LoadURL(
           params->url, params->referrer, params->transition);

@@ -834,4 +834,33 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
             browser()->GetSelectedTabContents()->GetURL());
 }
 
+// This test makes sure a crashed singleton tab reloads from a new navigation.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       NavigateToCrashedSingletonTab) {
+  GURL singleton_url("chrome://settings/advanced");
+  TabContentsWrapper* wrapper =
+      browser()->AddSelectedTabWithURL(singleton_url, PageTransition::LINK);
+  TabContents* tab_contents = wrapper->tab_contents();
+
+  // We should have one browser with 2 tabs, the 2nd selected.
+  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(1, browser()->active_index());
+
+  // Kill the singleton tab.
+  tab_contents->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  EXPECT_TRUE(tab_contents->is_crashed());
+
+  browser::NavigateParams p(MakeNavigateParams());
+  p.disposition = SINGLETON_TAB;
+  p.url = singleton_url;
+  p.window_action = browser::NavigateParams::SHOW_WINDOW;
+  p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+  browser::Navigate(&p);
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+
+  // The tab should not be sad anymore.
+  EXPECT_FALSE(tab_contents->is_crashed());
+}
+
 }  // namespace
