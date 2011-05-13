@@ -299,6 +299,16 @@ static bool WebAccessibilityNotificationToViewHostMsg(
   return true;
 }
 
+// If |data_source| is non-null and has a NavigationState associated with it,
+// the AltErrorPageResourceFetcher is reset.
+static void StopAltErrorPageFetcher(WebDataSource* data_source) {
+  if (data_source) {
+    NavigationState* state = NavigationState::FromDataSource(data_source);
+    if (state)
+      state->set_alt_error_page_fetcher(NULL);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int32 RenderView::next_page_id_ = 1;
@@ -792,8 +802,15 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
 
 // Stop loading the current page
 void RenderView::OnStop() {
-  if (webview())
-    webview()->mainFrame()->stopLoading();
+  if (webview()) {
+    WebFrame* main_frame = webview()->mainFrame();
+    // Stop the alt error page fetcher. If we let it continue it may complete
+    // and cause RenderViewHostManager to swap to this RenderView, even though
+    // it may no longer be active.
+    StopAltErrorPageFetcher(main_frame->provisionalDataSource());
+    StopAltErrorPageFetcher(main_frame->dataSource());
+    main_frame->stopLoading();
+  }
 }
 
 // Reload current focused frame.
