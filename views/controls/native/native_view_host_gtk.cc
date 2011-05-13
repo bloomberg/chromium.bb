@@ -323,7 +323,7 @@ void NativeViewHostGtk::DestroyFixed() {
 }
 
 WidgetGtk* NativeViewHostGtk::GetHostWidget() const {
-  return static_cast<WidgetGtk*>(host_->GetWidget());
+  return static_cast<WidgetGtk*>(host_->GetWidget()->native_widget());
 }
 
 GtkWidget* NativeViewHostGtk::GetFocusedDescendant() {

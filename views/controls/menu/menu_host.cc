@@ -31,8 +31,7 @@ void MenuHost::InitMenuHost(gfx::NativeWindow parent,
                             const gfx::Rect& bounds,
                             View* contents_view,
                             bool do_capture) {
-  Widget::InitParams params;
-  params.type = Widget::InitParams::TYPE_MENU;
+  Widget::InitParams params(Widget::InitParams::TYPE_MENU);
   params.has_dropshadow = true;
 #if defined(OS_WIN)
   params.parent = parent;
@@ -40,6 +39,7 @@ void MenuHost::InitMenuHost(gfx::NativeWindow parent,
   params.parent = GTK_WIDGET(parent);
 #endif
   params.bounds = bounds;
+  params.native_widget = native_menu_host_->AsNativeWidget();
   GetWidget()->Init(params);
   GetWidget()->SetContentsView(contents_view);
   ShowMenuHost(do_capture);
@@ -85,6 +85,18 @@ NativeWidget* MenuHost::GetNativeWidget() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// MenuHost, Widget overrides:
+
+
+RootView* MenuHost::CreateRootView() {
+  return new MenuHostRootView(GetWidget(), submenu_);
+}
+
+bool MenuHost::ShouldReleaseCaptureOnMouseReleased() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // MenuHost, internal::NativeMenuHostDelegate implementation:
 
 void MenuHost::OnNativeMenuHostDestroy() {
@@ -105,12 +117,8 @@ void MenuHost::OnNativeMenuHostCancelCapture() {
     menu_controller->CancelAll();
 }
 
-RootView* MenuHost::CreateRootView() {
-  return new MenuHostRootView(GetWidget(), submenu_);
-}
-
-bool MenuHost::ShouldReleaseCaptureOnMouseRelease() const {
-  return false;
+internal::NativeWidgetDelegate* MenuHost::AsNativeWidgetDelegate() {
+  return this;
 }
 
 }  // namespace views

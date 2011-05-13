@@ -558,19 +558,19 @@ StatusBubbleViews::~StatusBubbleViews() {
 
 void StatusBubbleViews::Init() {
   if (!popup_.get()) {
-    popup_.reset(Widget::CreateWidget());
+    popup_.reset(new Widget);
     views::Widget* frame = base_view_->GetWidget();
     if (!view_)
       view_ = new StatusView(this, popup_.get(), frame->GetThemeProvider());
     if (!expand_view_.get())
       expand_view_.reset(new StatusViewExpander(this, view_));
-    popup_->SetOpacity(0x00);
     Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
     params.transparent = true;
     params.accept_events = false;
     params.delete_on_destroy = false;
     params.parent = frame->GetNativeView();
     popup_->Init(params);
+    popup_->SetOpacity(0x00);
     popup_->SetContentsView(view_);
     Reposition();
     popup_->Show();
@@ -794,7 +794,7 @@ bool StatusBubbleViews::IsFrameVisible() {
   if (!frame->IsVisible())
     return false;
 
-  views::Window* window = frame->GetWindow();
+  views::Window* window = frame->GetContainingWindow();
   return !window || !window->IsMinimized();
 }
 

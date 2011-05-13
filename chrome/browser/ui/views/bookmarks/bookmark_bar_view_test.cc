@@ -1361,7 +1361,7 @@ class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(button->state() == views::CustomButton::BS_PUSHED);
 
     // Close the window.
-    window_->CloseWindow();
+    window_->Close();
     window_ = NULL;
   }
 };

@@ -43,7 +43,7 @@ class WidgetWinTest : public testing::Test {
 };
 
 WidgetWin* WidgetWinTest::CreateWidgetWin() {
-  scoped_ptr<Widget> widget(Widget::CreateWidget());
+  scoped_ptr<Widget> widget(new Widget);
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.delete_on_destroy = false;
   params.bounds = gfx::Rect(50, 50, 650, 650);

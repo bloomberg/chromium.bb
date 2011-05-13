@@ -228,7 +228,7 @@ void BubbleFrameView::OnPaint(gfx::Canvas* canvas) {
 void BubbleFrameView::ButtonPressed(views::Button* sender,
                                     const views::Event& event) {
   if (close_button_ != NULL && sender == close_button_)
-    frame_->CloseWindow();
+    frame_->Close();
 }
 
 }  // namespace chromeos

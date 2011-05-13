@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame_delegate.h"
+#include "views/window/window.h"
 
 class AeroGlassNonClientView;
 class BrowserNonClientFrameView;
@@ -34,19 +35,15 @@ class Window;
 }
 
 // This is a virtual interface that allows system specific browser frames.
-class BrowserFrame : public NativeBrowserFrameDelegate {
+class BrowserFrame : public views::Window {
  public:
+  explicit BrowserFrame(BrowserView* browser_view);
   virtual ~BrowserFrame();
-
-  // Creates the appropriate BrowserFrame for this platform. The returned
-  // object is owned by the caller.
-  static BrowserFrame* Create(BrowserView* browser_view, Profile* profile);
 
   static const gfx::Font& GetTitleFont();
 
-  // Returns the Window associated with this frame. Guaranteed non-NULL after
-  // construction.
-  views::Window* GetWindow();
+  // Initialize the frame (creates the underlying native window).
+  void InitBrowserFrame();
 
   // Determine the distance of the left edge of the minimize button from the
   // left edge of the window. Used in our Non-Client View's Layout.
@@ -64,9 +61,6 @@ class BrowserFrame : public NativeBrowserFrameDelegate {
   // Tells the frame to update the throbber.
   void UpdateThrobber(bool running);
 
-  // Returns the theme provider for this frame.
-  ui::ThemeProvider* GetThemeProviderForFrame() const;
-
   // Returns true if the window should use the native frame view. This is true
   // if there are no themes applied on Vista, or if there are themes applied and
   // this browser window is an app or popup.
@@ -79,19 +73,14 @@ class BrowserFrame : public NativeBrowserFrameDelegate {
   // its frame treatment if necessary.
   void TabStripDisplayModeChanged();
 
- protected:
-  // Overridden from NativeBrowserFrameDelegate:
-  virtual views::RootView* DelegateCreateRootView() OVERRIDE;
-  virtual views::NonClientFrameView* DelegateCreateFrameViewForWindow()
-      OVERRIDE;
-
-  // TODO(beng): Temporarily provided as a way to associate the subclass'
-  //             implementation of NativeBrowserFrame with this.
-  void set_native_browser_frame(NativeBrowserFrame* native_browser_frame) {
-    native_browser_frame_ = native_browser_frame;
-  }
-
-  explicit BrowserFrame(BrowserView* browser_view);
+  // Overridden from views::Window:
+  virtual bool IsMaximized() const OVERRIDE;
+  virtual views::RootView* CreateRootView() OVERRIDE;
+  virtual views::NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
+  virtual bool GetAccelerator(int command_id,
+                              ui::Accelerator* accelerator) OVERRIDE;
+  virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
+  virtual void OnNativeWindowActivationChanged(bool active) OVERRIDE;
 
  private:
   NativeBrowserFrame* native_browser_frame_;

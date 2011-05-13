@@ -13,6 +13,9 @@
 
 #if defined(TOUCH_UI)
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
+#elif defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_gtk.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #else
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
 #endif
@@ -120,7 +123,13 @@ void ConstrainedWindowGtk::FocusConstrainedWindow() {
 
 ConstrainedWindowGtk::TabContentsViewType*
     ConstrainedWindowGtk::ContainingView() {
+#if defined(TOOLKIT_VIEWS)
+  return static_cast<NativeTabContentsViewGtk*>(
+      static_cast<TabContentsViewViews*>(owner_->view())->
+          native_tab_contents_view());
+#else
   return static_cast<TabContentsViewType*>(owner_->view());
+#endif
 }
 
 gboolean ConstrainedWindowGtk::OnKeyPress(GtkWidget* sender,

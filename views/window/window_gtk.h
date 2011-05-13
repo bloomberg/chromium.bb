@@ -25,13 +25,13 @@ class Client;
 class WindowDelegate;
 
 // Window implementation for GTK.
-class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
+class WindowGtk : public WidgetGtk, public NativeWindow {
  public:
-  WindowGtk();
+  explicit WindowGtk(internal::NativeWindowDelegate* delegate);
   virtual ~WindowGtk();
 
-  virtual Window* AsWindow();
-  virtual const Window* AsWindow() const;
+  virtual Window* GetWindow() OVERRIDE;
+  virtual const Window* GetWindow() const OVERRIDE;
 
   // Overridden from WidgetGtk:
   virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event);
@@ -63,7 +63,6 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual void SetAccessibleName(const std::wstring& name) OVERRIDE;
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
-  virtual Window* GetWindow() OVERRIDE;
   virtual void SetWindowBounds(const gfx::Rect& bounds,
                                gfx::NativeWindow other_window) OVERRIDE;
   virtual void HideWindow() OVERRIDE;
@@ -79,7 +78,6 @@ class WindowGtk : public WidgetGtk, public NativeWindow, public Window {
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
   virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
-  virtual bool IsAppWindow() const OVERRIDE;
   virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
   virtual NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;

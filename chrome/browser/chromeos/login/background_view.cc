@@ -143,7 +143,7 @@ views::Widget* BackgroundView::CreateWindowContainingView(
     BackgroundView** view) {
   ResetXCursor();
 
-  Widget* window = Widget::CreateWidget();
+  Widget* window = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.bounds = bounds;
   window->Init(params);

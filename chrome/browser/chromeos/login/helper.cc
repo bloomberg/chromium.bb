@@ -103,12 +103,10 @@ void ThrobberHostView::StartThrobber() {
   views::SmoothedThrobber* throbber = CreateDefaultSmoothedThrobber();
   throbber->set_stop_delay_ms(0);
   gfx::Rect throbber_bounds = CalculateThrobberBounds(throbber);
-
-  throbber_widget_ = views::Widget::CreateWidget();
-  static_cast<views::WidgetGtk*>(throbber_widget_->native_widget())->
-      make_transient_to_parent();
-
   throbber_bounds.Offset(host_view_->GetScreenBounds().origin());
+
+  throbber_widget_ = new views::Widget;
+
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   params.bounds = throbber_bounds;

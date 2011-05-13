@@ -77,7 +77,7 @@ void ProfileTagView::CreateProfileTagBitmaps() {
     return;
   profile_tag_bitmaps_created_ = true;
 
-  ui::ThemeProvider* theme_provider = frame_->GetThemeProviderForFrame();
+  ui::ThemeProvider* theme_provider = frame_->GetThemeProvider();
   bool aero = theme_provider->ShouldUseNativeFrame();
   SkBitmap* profile_tag_center = aero ?
       theme_provider->GetBitmapNamed(IDR_PROFILE_TAG_CENTER_AERO) :

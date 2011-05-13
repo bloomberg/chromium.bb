@@ -152,8 +152,6 @@ void ContentsContainer::Layout() {
 
 void ContentsContainer::CreateOverlay(int initial_opacity) {
   DCHECK(!active_overlay_);
-  active_overlay_ = views::Widget::CreateWidget();
-  active_overlay_->SetOpacity(initial_opacity);
   gfx::Point screen_origin;
   views::View::ConvertPointToScreen(active_, &screen_origin);
   gfx::Rect overlay_bounds(screen_origin, active_->size());
@@ -162,11 +160,13 @@ void ContentsContainer::CreateOverlay(int initial_opacity) {
   params.accept_events = false;
   params.parent = active_->GetWidget()->GetNativeView();
   params.bounds = overlay_bounds;
+  active_overlay_ = new views::Widget;
   active_overlay_->Init(params);
   overlay_view_ = new OverlayContentView(this);
   overlay_view_->set_background(
       views::Background::CreateSolidBackground(SK_ColorWHITE));
   active_overlay_->SetContentsView(overlay_view_);
+  active_overlay_->SetOpacity(initial_opacity);
   active_overlay_->Show();
   active_overlay_->MoveAboveWidget(active_->GetWidget());
 }

@@ -16,7 +16,8 @@ class NativeConstrainedWindowWin : public NativeConstrainedWindow,
                                    public views::WindowWin {
  public:
   explicit NativeConstrainedWindowWin(NativeConstrainedWindowDelegate* delegate)
-      : delegate_(delegate) {
+      : views::WindowWin(delegate->AsNativeWindowDelegate()),
+        delegate_(delegate) {
   }
 
   virtual ~NativeConstrainedWindowWin() {
@@ -39,11 +40,6 @@ class NativeConstrainedWindowWin : public NativeConstrainedWindow,
     if (IsNonClientHitTestCode(static_cast<UINT>(LOWORD(l_param))))
       delegate_->OnNativeConstrainedWindowMouseActivate();
     return WindowWin::OnMouseActivate(message, w_param, l_param);
-  }
-
-  // Overridden from views::Window:
-  virtual views::NonClientFrameView* CreateFrameViewForWindow() OVERRIDE {
-    return delegate_->CreateFrameViewForWindow();
   }
 
   NativeConstrainedWindowDelegate* delegate_;

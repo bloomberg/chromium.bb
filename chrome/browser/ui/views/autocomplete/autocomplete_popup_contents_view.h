@@ -16,12 +16,6 @@
 #include "views/view.h"
 #include "webkit/glue/window_open_disposition.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/ui/views/autocomplete/autocomplete_popup_win.h"
-#elif defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/views/autocomplete/autocomplete_popup_gtk.h"
-#endif
-
 class AutocompleteEditModel;
 struct AutocompleteMatch;
 class AutocompleteResultView;
@@ -105,11 +99,7 @@ class AutocompletePopupContentsView : public views::View,
   views::View* opt_in_view_;
 
  private:
-#if defined(OS_WIN)
-  typedef AutocompletePopupWin AutocompletePopupClass;
-#elif defined(TOOLKIT_USES_GTK)
-  typedef AutocompletePopupGtk AutocompletePopupClass;
-#endif
+  class AutocompletePopupWidget;
   class InstantOptInView;
 
   // Returns true if the model has a match at the specified index.
@@ -148,7 +138,7 @@ class AutocompletePopupContentsView : public views::View,
   // when its window is destroyed.  This is a WeakPtr because it's possible for
   // the OS to destroy the window and thus delete this object before we're
   // deleted, or without our knowledge.
-  base::WeakPtr<AutocompletePopupClass> popup_;
+  base::WeakPtr<AutocompletePopupWidget> popup_;
 
   // The edit view that invokes us.
   OmniboxView* omnibox_view_;

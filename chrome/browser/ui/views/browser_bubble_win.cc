@@ -14,7 +14,8 @@
 class BubbleWidget : public views::WidgetWin {
  public:
   explicit BubbleWidget(BrowserBubble* bubble)
-      : bubble_(bubble),
+      : views::WidgetWin(new views::Widget),
+        bubble_(bubble),
         border_widget_(new BorderWidgetWin) {
     set_window_style(WS_POPUP | WS_CLIPCHILDREN);
     set_window_ex_style(WS_EX_TOOLWINDOW);
@@ -108,17 +109,18 @@ class BubbleWidget : public views::WidgetWin {
 void BrowserBubble::InitPopup(const gfx::Insets& content_margins) {
   // popup_ is a Widget, but we need to do some WidgetWin stuff first, then
   // we'll assign it into popup_.
-  BubbleWidget* pop = new BubbleWidget(this);
-  popup_ = pop;
+  BubbleWidget* bubble_widget = new BubbleWidget(this);
 
-  BorderWidgetWin* border_widget = pop->border_widget();
+  BorderWidgetWin* border_widget = bubble_widget->border_widget();
   border_widget->InitBorderWidgetWin(new BorderContents,
                                      frame_->GetNativeView());
   border_widget->border_contents()->set_content_margins(content_margins);
 
+  popup_ = bubble_widget->GetWidget();
   // We make the BorderWidgetWin the owner of the Bubble HWND, so that the
   // latter is displayed on top of the former.
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+  params.native_widget = bubble_widget;
   params.parent = border_widget->GetNativeView();
   popup_->Init(params);
   popup_->SetContentsView(view_);
@@ -128,30 +130,21 @@ void BrowserBubble::InitPopup(const gfx::Insets& content_margins) {
   AttachToBrowser();
 }
 
-void BrowserBubble::MovePopup(int x, int y, int w, int h) {
-  views::WidgetWin* pop = static_cast<views::WidgetWin*>(popup_);
-  pop->SetBounds(gfx::Rect(x, y, w, h));
-}
-
 void BrowserBubble::Show(bool activate) {
-  if (visible_)
-    return;
-  BubbleWidget* pop = static_cast<BubbleWidget*>(popup_);
-  pop->ShowAndActivate(activate);
-  visible_ = true;
+  if (!popup_->IsVisible()) {
+    static_cast<BubbleWidget*>(popup_->native_widget())->ShowAndActivate(
+        activate);
+  }
 }
 
 void BrowserBubble::Hide() {
-  if (!visible_)
-    return;
-  views::WidgetWin* pop = static_cast<views::WidgetWin*>(popup_);
-  pop->Hide();
-  visible_ = false;
+  if (popup_->IsVisible())
+    static_cast<BubbleWidget*>(popup_->native_widget())->Hide();
 }
 
 void BrowserBubble::ResizeToView() {
   BorderWidgetWin* border_widget =
-      static_cast<BubbleWidget*>(popup_)->border_widget();
+      static_cast<BubbleWidget*>(popup_->native_widget())->border_widget();
 
   gfx::Rect window_bounds;
   window_bounds = border_widget->SizeAndGetBounds(GetAbsoluteRelativeTo(),

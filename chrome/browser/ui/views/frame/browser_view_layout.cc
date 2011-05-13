@@ -556,8 +556,8 @@ void BrowserViewLayout::LayoutTabContents(int top, int bottom) {
   // TODO(alekseys): layout sidebar minitabs and adjust reserved rect
   // accordingly.
   gfx::Rect browser_reserved_rect;
-  if (!browser_view_->frame_->GetWindow()->IsMaximized() &&
-      !browser_view_->frame_->GetWindow()->IsFullscreen()) {
+  if (!browser_view_->frame_->IsMaximized() &&
+      !browser_view_->frame_->IsFullscreen()) {
     gfx::Size resize_corner_size = browser_view_->GetResizeCornerSize();
     if (!resize_corner_size.IsEmpty()) {
       gfx::Rect bounds = browser_view_->GetContentsBounds();

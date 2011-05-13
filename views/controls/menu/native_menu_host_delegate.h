@@ -9,6 +9,7 @@ namespace views {
 class MenuHost;
 class RootView;
 namespace internal {
+class NativeWidgetDelegate;
 
 class NativeMenuHostDelegate {
  public:
@@ -20,10 +21,7 @@ class NativeMenuHostDelegate {
   // Called when the NativeMenuHost is losing input capture.
   virtual void OnNativeMenuHostCancelCapture() = 0;
 
-  // Pass-thrus for Widget overrides.
-  // TODO(beng): Remove once MenuHost is-a Widget.
-  virtual RootView* CreateRootView() = 0;
-  virtual bool ShouldReleaseCaptureOnMouseRelease() const = 0;
+  virtual NativeWidgetDelegate* AsNativeWidgetDelegate() = 0;
 };
 
 }  // namespace internal

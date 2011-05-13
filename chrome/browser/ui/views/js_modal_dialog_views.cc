@@ -54,7 +54,7 @@ void JSModalDialogViews::ActivateAppModalDialog() {
 }
 
 void JSModalDialogViews::CloseAppModalDialog() {
-  window()->CloseWindow();
+  window()->Close();
 }
 
 void JSModalDialogViews::AcceptAppModalDialog() {

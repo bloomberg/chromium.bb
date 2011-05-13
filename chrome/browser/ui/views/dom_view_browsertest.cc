@@ -14,7 +14,7 @@ using views::Widget;
 class DOMViewTest : public InProcessBrowserTest {
  public:
   Widget* CreatePopupWindow() {
-    Widget* widget = Widget::CreateWidget();
+    Widget* widget = new Widget;
     Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(0, 0, 400, 400);
     widget->Init(params);

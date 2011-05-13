@@ -12,7 +12,6 @@
 #include "views/window/window_win.h"
 
 class BrowserView;
-class Profile;
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin
@@ -20,13 +19,10 @@ class Profile;
 //  BrowserFrame is a WindowWin subclass that provides the window frame for the
 //  Chrome browser window.
 //
-class BrowserFrameWin : public BrowserFrame,
-                        public views::WindowWin,
+class BrowserFrameWin : public views::WindowWin,
                         public NativeBrowserFrame {
  public:
-  // Normally you will create this class by calling BrowserFrame::Create.
-  // Init must be called before using this class, which Create will do for you.
-  BrowserFrameWin(BrowserView* browser_view, Profile* profile);
+  BrowserFrameWin(BrowserFrame* browser_frame, BrowserView* browser_view);
   virtual ~BrowserFrameWin();
 
   BrowserView* browser_view() const { return browser_view_; }
@@ -40,40 +36,28 @@ class BrowserFrameWin : public BrowserFrame,
   // Overridden from views::WindowWin:
   virtual int GetShowState() const OVERRIDE;
   virtual gfx::Insets GetClientAreaInsets() const OVERRIDE;
-  virtual bool GetAccelerator(int cmd_id,
-                              ui::Accelerator* accelerator) OVERRIDE;
+  virtual void UpdateFrameAfterFrameChange() OVERRIDE;
   virtual void OnEndSession(BOOL ending, UINT logoff) OVERRIDE;
   virtual void OnInitMenuPopup(HMENU menu,
                                UINT position,
                                BOOL is_system_menu) OVERRIDE;
   virtual void OnWindowPosChanged(WINDOWPOS* window_pos) OVERRIDE;
-  virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
   virtual void OnScreenReaderDetected() OVERRIDE;
-
-  // Overridden from views::Window:
-  virtual void Activate() OVERRIDE;
-  virtual bool IsAppWindow() const OVERRIDE { return true; }
-  virtual void UpdateFrameAfterFrameChange() OVERRIDE;
-  virtual views::RootView* CreateRootView() OVERRIDE;
-  virtual views::NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
 
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWindow* AsNativeWindow() OVERRIDE;
   virtual const views::NativeWindow* AsNativeWindow() const OVERRIDE;
-  virtual BrowserNonClientFrameView* CreateBrowserNonClientFrameView() OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
-  virtual ui::ThemeProvider* GetThemeProviderForFrame() const OVERRIDE;
-  virtual bool AlwaysUseNativeFrame() const OVERRIDE;
   virtual void TabStripDisplayModeChanged() OVERRIDE;
 
  private:
   // Updates the DWM with the frame bounds.
   void UpdateDWMFrame();
 
-  NativeBrowserFrameDelegate* delegate_;
-
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;
+
+  BrowserFrame* browser_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameWin);
 };

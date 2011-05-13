@@ -419,7 +419,7 @@ void UserController::CreateBorderWindow(int index,
     height += 2 * kBorderSize + kUserImageSize + kVerticalIntervalSize;
   }
 
-  border_window_ = Widget::CreateWidget();
+  border_window_ = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.transparent = true;
   params.bounds = gfx::Rect(0, 0, width, height);

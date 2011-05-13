@@ -132,8 +132,8 @@ bool WidgetWin::screen_reader_active_ = false;
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetWin, public:
 
-WidgetWin::WidgetWin()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
+WidgetWin::WidgetWin(internal::NativeWidgetDelegate* delegate)
+    : delegate_(delegate),
       close_widget_factory_(this),
       active_mouse_tracking_flags_(0),
       use_layered_buffer_(false),
@@ -147,14 +147,14 @@ WidgetWin::WidgetWin()
       accessibility_view_events_(kMaxAccessibilityViewEvents),
       previous_cursor_(NULL),
       is_input_method_win_(false) {
-  set_native_widget(this);
 }
 
 WidgetWin::~WidgetWin() {
   // We need to delete the input method before calling DestroyRootView(),
   // because it'll set focus_manager_ to NULL.
   input_method_.reset();
-  DestroyRootView();
+  if (delete_on_destroy_)
+    delete delegate_;
 }
 
 // static
@@ -192,39 +192,6 @@ void WidgetWin::ClearAccessibilityViewEvent(View* view) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WidgetWin, Widget implementation:
-
-gfx::NativeView WidgetWin::GetNativeView() const {
-  return WindowImpl::hwnd();
-}
-
-gfx::NativeWindow WidgetWin::GetNativeWindow() const {
-  return WindowImpl::hwnd();
-}
-
-bool WidgetWin::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
-  return false;
-}
-
-Window* WidgetWin::GetWindow() {
-  return GetWindowImpl(hwnd());
-}
-
-const Window* WidgetWin::GetWindow() const {
-  return GetWindowImpl(hwnd());
-}
-
-void WidgetWin::ViewHierarchyChanged(bool is_add, View* parent,
-                                     View* child) {
-  Widget::ViewHierarchyChanged(is_add, parent, child);
-  if (drop_target_.get())
-    drop_target_->ResetTargetViewIfEquals(child);
-
-  if (!is_add)
-    ClearAccessibilityViewEvent(child);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // WidgetWin, NativeWidget implementation:
 
 void WidgetWin::InitNativeWidget(const Widget::InitParams& params) {
@@ -237,7 +204,34 @@ void WidgetWin::InitNativeWidget(const Widget::InitParams& params) {
 }
 
 Widget* WidgetWin::GetWidget() {
-  return this;
+  return delegate_->AsWidget();
+}
+
+const Widget* WidgetWin::GetWidget() const {
+  return delegate_->AsWidget();
+}
+
+gfx::NativeView WidgetWin::GetNativeView() const {
+  return WindowImpl::hwnd();
+}
+
+gfx::NativeWindow WidgetWin::GetNativeWindow() const {
+  return WindowImpl::hwnd();
+}
+
+Window* WidgetWin::GetContainingWindow() {
+  return GetWindowImpl(hwnd());
+}
+
+const Window* WidgetWin::GetContainingWindow() const {
+  return GetWindowImpl(hwnd());
+}
+
+void WidgetWin::ViewRemoved(View* view) {
+  if (drop_target_.get())
+    drop_target_->ResetTargetViewIfEquals(view);
+
+  ClearAccessibilityViewEvent(view);
 }
 
 void WidgetWin::SetNativeWindowProperty(const char* name, void* value) {
@@ -265,6 +259,19 @@ bool WidgetWin::IsScreenReaderActive() const {
   return screen_reader_active_;
 }
 
+void WidgetWin::SendNativeAccessibilityEvent(
+    View* view,
+    ui::AccessibilityTypes::Event event_type) {
+  // Now call the Windows-specific method to notify MSAA clients of this
+  // event.  The widget gives us a temporary unique child ID to associate
+  // with this view so that clients can call get_accChild in
+  // NativeViewAccessibilityWin to retrieve the IAccessible associated
+  // with this view.
+  int child_id = AddAccessibilityViewEvent(view);
+  ::NotifyWinEvent(NativeViewAccessibilityWin::MSAAEvent(event_type),
+                   GetNativeView(), OBJID_CLIENT, child_id);
+}
+
 void WidgetWin::SetMouseCapture() {
   DCHECK(!HasMouseCapture());
   SetCapture(hwnd());
@@ -276,6 +283,14 @@ void WidgetWin::ReleaseMouseCapture() {
 
 bool WidgetWin::HasMouseCapture() const {
   return GetCapture() == hwnd();
+}
+
+bool WidgetWin::IsMouseButtonDown() const {
+  return (GetKeyState(VK_LBUTTON) & 0x80) ||
+      (GetKeyState(VK_RBUTTON) & 0x80) ||
+      (GetKeyState(VK_MBUTTON) & 0x80) ||
+      (GetKeyState(VK_XBUTTON1) & 0x80) ||
+      (GetKeyState(VK_XBUTTON2) & 0x80);
 }
 
 InputMethod* WidgetWin::GetInputMethodNative() {
@@ -447,26 +462,6 @@ void WidgetWin::SetCursor(gfx::NativeCursor cursor) {
   }
 }
 
-void WidgetWin::NotifyAccessibilityEvent(
-    View* view,
-    ui::AccessibilityTypes::Event event_type,
-    bool send_native_event) {
-  // Send the notification to the delegate.
-  if (ViewsDelegate::views_delegate)
-    ViewsDelegate::views_delegate->NotifyAccessibilityEvent(view, event_type);
-
-  // Now call the Windows-specific method to notify MSAA clients of this
-  // event.  The widget gives us a temporary unique child ID to associate
-  // with this view so that clients can call get_accChild in
-  // NativeViewAccessibilityWin to retrieve the IAccessible associated
-  // with this view.
-  if (send_native_event) {
-    int child_id = AddAccessibilityViewEvent(view);
-    ::NotifyWinEvent(NativeViewAccessibilityWin::MSAAEvent(event_type),
-                     GetNativeView(), OBJID_CLIENT, child_id);
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetWin, MessageLoop::Observer implementation:
 
@@ -507,7 +502,7 @@ LRESULT WidgetWin::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
     PostProcessActivateMessage(this, LOWORD(w_param));
   if (message == WM_ENABLE && restore_focus_when_enabled_) {
     restore_focus_when_enabled_ = false;
-    GetFocusManager()->RestoreFocusedView();
+    GetWidget()->GetFocusManager()->RestoreFocusedView();
   }
   return result;
 }
@@ -558,7 +553,7 @@ LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
 
   props_.push_back(SetWindowSupportsRerouteMouseWheel(hwnd()));
 
-  drop_target_ = new DropTargetWin(GetRootView());
+  drop_target_ = new DropTargetWin(GetWidget()->GetRootView());
 
   // We need to add ourselves as a message loop observer so that we can repaint
   // aggressively if the contents of our window become invalid. Unfortunately
@@ -569,10 +564,10 @@ LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   // Windows special DWM window frame requires a special tooltip manager so
   // that window controls in Chrome windows don't flicker when you move your
   // mouse over them. See comment in aero_tooltip_manager.h.
-  if (GetThemeProvider()->ShouldUseNativeFrame()) {
-    tooltip_manager_.reset(new AeroTooltipManager(this));
+  if (GetWidget()->GetThemeProvider()->ShouldUseNativeFrame()) {
+    tooltip_manager_.reset(new AeroTooltipManager(GetWidget()));
   } else {
-    tooltip_manager_.reset(new TooltipManagerWin(this));
+    tooltip_manager_.reset(new TooltipManagerWin(GetWidget()));
   }
 
   // This message initializes the window so that focus border are shown for
@@ -612,8 +607,8 @@ void WidgetWin::OnDestroy() {
 }
 
 void WidgetWin::OnDisplayChange(UINT bits_per_pixel, CSize screen_size) {
-  if (widget_delegate())
-    widget_delegate()->OnDisplayChanged();
+  if (GetWidget()->widget_delegate())
+    GetWidget()->widget_delegate()->OnDisplayChanged();
 }
 
 LRESULT WidgetWin::OnDwmCompositionChanged(UINT msg,
@@ -651,7 +646,8 @@ LRESULT WidgetWin::OnGetObject(UINT uMsg, WPARAM w_param, LPARAM l_param) {
   if (OBJID_CLIENT == l_param) {
     // Retrieve MSAA dispatch object for the root view.
     base::win::ScopedComPtr<IAccessible> root(
-        NativeViewAccessibilityWin::GetAccessibleForView(GetRootView()));
+        NativeViewAccessibilityWin::GetAccessibleForView(
+            GetWidget()->GetRootView()));
 
     // Create a reference that MSAA will marshall to the client.
     reference_result = LresultFromObject(IID_IAccessible, w_param,
@@ -789,14 +785,16 @@ LRESULT WidgetWin::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
 }
 
 void WidgetWin::OnMove(const CPoint& point) {
-  if (widget_delegate())
-    widget_delegate()->OnWidgetMove();
+  // TODO(beng): move to Widget.
+  if (GetWidget()->widget_delegate())
+    GetWidget()->widget_delegate()->OnWidgetMove();
   SetMsgHandled(FALSE);
 }
 
 void WidgetWin::OnMoving(UINT param, const LPRECT new_bounds) {
-  if (widget_delegate())
-    widget_delegate()->OnWidgetMove();
+  // TODO(beng): move to Widget.
+  if (GetWidget()->widget_delegate())
+    GetWidget()->widget_delegate()->OnWidgetMove();
 }
 
 LRESULT WidgetWin::OnNCActivate(BOOL active) {
@@ -893,8 +891,9 @@ LRESULT WidgetWin::OnSetText(const wchar_t* text) {
 }
 
 void WidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
-  if (flags == SPI_SETWORKAREA && widget_delegate())
-    widget_delegate()->OnWorkAreaChanged();
+  // TODO(beng): move to Widget.
+  if (flags == SPI_SETWORKAREA && GetWidget()->widget_delegate())
+    GetWidget()->widget_delegate()->OnWorkAreaChanged();
   SetMsgHandled(FALSE);
 }
 
@@ -961,8 +960,9 @@ void WidgetWin::OnScreenReaderDetected() {
 }
 
 void WidgetWin::SetInitialFocus() {
-  View* v = widget_delegate() ?
-      widget_delegate()->GetInitiallyFocusedView() : NULL;
+  // TODO(beng): move to Widget.
+  View* v = GetWidget()->widget_delegate() ?
+      GetWidget()->widget_delegate()->GetInitiallyFocusedView() : NULL;
   if (v)
     v->RequestFocus();
 }
@@ -979,7 +979,7 @@ Window* WidgetWin::GetWindowImpl(HWND hwnd) {
     WidgetWin* widget =
         reinterpret_cast<WidgetWin*>(ui::GetWindowUserData(parent));
     if (widget && widget->is_window_)
-      return static_cast<WindowWin*>(widget);
+      return static_cast<WindowWin*>(widget)->GetWindow();
     parent = ::GetParent(parent);
   }
   return NULL;
@@ -1016,7 +1016,7 @@ void WidgetWin::PostProcessActivateMessage(WidgetWin* widget,
   }
 }
 
-void WidgetWin::SetInitParams(const InitParams& params) {
+void WidgetWin::SetInitParams(const Widget::InitParams& params) {
   // Set non-style attributes.
   delete_on_destroy_ = params.delete_on_destroy;
 
@@ -1044,21 +1044,15 @@ void WidgetWin::SetInitParams(const InitParams& params) {
 
   // Set type-dependent style attributes.
   switch (params.type) {
-    case InitParams::TYPE_WINDOW:
-    case InitParams::TYPE_CONTROL:
+    case Widget::InitParams::TYPE_WINDOW:
+    case Widget::InitParams::TYPE_CONTROL:
       break;
-    case InitParams::TYPE_POPUP:
+    case Widget::InitParams::TYPE_POPUP:
       style |= WS_POPUP;
       ex_style |= WS_EX_TOOLWINDOW;
       break;
-    case InitParams::TYPE_MENU:
+    case Widget::InitParams::TYPE_MENU:
       style |= WS_POPUP;
-      is_mouse_button_pressed_ =
-          ((GetKeyState(VK_LBUTTON) & 0x80) ||
-          (GetKeyState(VK_RBUTTON) & 0x80) ||
-          (GetKeyState(VK_MBUTTON) & 0x80) ||
-          (GetKeyState(VK_XBUTTON1) & 0x80) ||
-          (GetKeyState(VK_XBUTTON2) & 0x80));
       break;
     default:
       NOTREACHED();
@@ -1089,7 +1083,7 @@ void WidgetWin::RedrawLayeredWindowContents() {
                                         layered_window_invalid_rect_.y(),
                                         layered_window_invalid_rect_.width(),
                                         layered_window_invalid_rect_.height());
-  GetRootView()->Paint(layered_window_contents_.get());
+  GetWidget()->GetRootView()->Paint(layered_window_contents_.get());
   layered_window_contents_->restore();
 
   RECT wr;
@@ -1107,7 +1101,7 @@ void WidgetWin::RedrawLayeredWindowContents() {
 
 void WidgetWin::ClientAreaSizeChanged() {
   RECT r;
-  if (GetThemeProvider()->ShouldUseNativeFrame() || IsZoomed())
+  if (GetWidget()->GetThemeProvider()->ShouldUseNativeFrame() || IsZoomed())
     GetClientRect(&r);
   else
     GetWindowRect(&r);
@@ -1133,13 +1127,26 @@ void WidgetWin::DispatchKeyEventPostIME(const KeyEvent& key) {
 // Widget, public:
 
 // static
-Widget* Widget::CreateWidget() {
-  return new WidgetWin;
-}
-
-// static
 void Widget::NotifyLocaleChanged() {
   NOTIMPLEMENTED();
+}
+
+namespace {
+BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
+  NativeWidget* native_widget =
+      NativeWidget::GetNativeWidgetForNativeView(hwnd);
+  if (native_widget) {
+    Widget* widget = native_widget->GetWidget();
+    if (widget->is_secondary_widget())
+      widget->Close();
+  }
+  return TRUE;
+}
+}  // namespace
+
+// static
+void Widget::CloseAllSecondaryWidgets() {
+  EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc, 0);
 }
 
 bool Widget::ConvertRect(const Widget* source,
@@ -1167,17 +1174,26 @@ bool Widget::ConvertRect(const Widget* source,
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidget, public:
 
+// static
+NativeWidget* NativeWidget::CreateNativeWidget(
+    internal::NativeWidgetDelegate* delegate) {
+  return new WidgetWin(delegate);
+}
+
+// static
 NativeWidget* NativeWidget::GetNativeWidgetForNativeView(
     gfx::NativeView native_view) {
   return reinterpret_cast<WidgetWin*>(
       ViewProp::GetValue(native_view, kNativeWidgetKey));
 }
 
+// static
 NativeWidget* NativeWidget::GetNativeWidgetForNativeWindow(
     gfx::NativeWindow native_window) {
   return GetNativeWidgetForNativeView(native_window);
 }
 
+// static
 NativeWidget* NativeWidget::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
   if (!native_view)
@@ -1206,6 +1222,7 @@ NativeWidget* NativeWidget::GetTopLevelNativeWidget(
   return widget;
 }
 
+// static
 void NativeWidget::GetAllNativeWidgets(gfx::NativeView native_view,
                                        NativeWidgets* children) {
   if (!native_view)
@@ -1218,6 +1235,7 @@ void NativeWidget::GetAllNativeWidgets(gfx::NativeView native_view,
       reinterpret_cast<LPARAM>(children));
 }
 
+// static
 void NativeWidget::ReparentNativeView(gfx::NativeView native_view,
                                       gfx::NativeView new_parent) {
   if (!native_view)

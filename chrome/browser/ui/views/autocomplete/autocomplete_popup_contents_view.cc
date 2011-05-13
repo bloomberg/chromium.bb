@@ -117,7 +117,34 @@ class OptInButtonBorder : public views::Border {
   DISALLOW_COPY_AND_ASSIGN(OptInButtonBorder);
 };
 
+gfx::NativeView GetRelativeWindowForPopup(gfx::NativeView edit_native_view) {
+#if defined(OS_WIN)
+  // When an IME is attached to the rich-edit control, retrieve its window
+  // handle and show this popup window under the IME windows.
+  // Otherwise, show this popup window under top-most windows.
+  // TODO(hbono): http://b/1111369 if we exclude this popup window from the
+  // display area of IME windows, this workaround becomes unnecessary.
+  HWND ime_window = ImmGetDefaultIMEWnd(edit_native_view);
+  return ime_window ? ime_window : HWND_NOTOPMOST;
+#elif defined(TOOLKIT_USES_GTK)
+  GtkWidget* toplevel = gtk_widget_get_toplevel(edit_native_view);
+  DCHECK(GTK_WIDGET_TOPLEVEL(toplevel));
+  return toplevel;
+#endif
+}
+
 }  // namespace
+
+class AutocompletePopupContentsView::AutocompletePopupWidget
+    : public views::Widget,
+      public base::SupportsWeakPtr<AutocompletePopupWidget> {
+ public:
+  AutocompletePopupWidget() {}
+  virtual ~AutocompletePopupWidget() {}
+
+ private:
+   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWidget);
+};
 
 class AutocompletePopupContentsView::InstantOptInView
     : public views::View,
@@ -328,16 +355,16 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
 
   if (popup_ == NULL) {
     // If the popup is currently closed, we need to create it.
-    popup_ = (new AutocompletePopupClass)->AsWeakPtr();
+    popup_ = (new AutocompletePopupWidget)->AsWeakPtr();
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.can_activate = false;
     params.transparent = true;
     params.parent = location_bar_->GetWidget()->GetNativeView();
     params.bounds = GetPopupBounds();
-    popup_->GetWidget()->Init(params);
+    popup_->Init(params);
     popup_->SetContentsView(this);
-    popup_->MoveAbove(popup_->GetRelativeWindowForPopup(
-        omnibox_view_->GetNativeView()));
+    popup_->MoveAbove(
+        GetRelativeWindowForPopup(omnibox_view_->GetNativeView()));
     popup_->Show();
   } else {
     // Animate the popup shrinking, but don't animate growing larger since that

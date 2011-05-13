@@ -233,6 +233,30 @@ class WindowWin::ScopedRedrawLock {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowWin, public:
 
+WindowWin::WindowWin(internal::NativeWindowDelegate* delegate)
+    : WidgetWin(delegate->AsNativeWidgetDelegate()),
+      delegate_(delegate),
+      focus_on_creation_(true),
+      restored_enabled_(false),
+      fullscreen_(false),
+      is_active_(false),
+      lock_updates_(false),
+      saved_window_style_(0),
+      ignore_window_pos_changes_(false),
+      ignore_pos_changes_factory_(this),
+      force_hidden_count_(0),
+      is_right_mouse_pressed_on_caption_(false),
+      last_monitor_(NULL),
+      is_in_size_move_(false) {
+  is_window_ = true;
+  // Initialize these values to 0 so that subclasses can override the default
+  // behavior before calling Init.
+  set_window_style(0);
+  set_window_ex_style(0);
+}
+
+
+
 WindowWin::~WindowWin() {
 }
 
@@ -282,28 +306,6 @@ gfx::Font WindowWin::GetWindowTitleFont() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // WindowWin, protected:
-
-WindowWin::WindowWin()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
-      focus_on_creation_(true),
-      restored_enabled_(false),
-      fullscreen_(false),
-      is_active_(false),
-      lock_updates_(false),
-      saved_window_style_(0),
-      ignore_window_pos_changes_(false),
-      ignore_pos_changes_factory_(this),
-      force_hidden_count_(0),
-      is_right_mouse_pressed_on_caption_(false),
-      last_monitor_(NULL),
-      is_in_size_move_(false) {
-  SetNativeWindow(this);
-  is_window_ = true;
-  // Initialize these values to 0 so that subclasses can override the default
-  // behavior before calling Init.
-  set_window_style(0);
-  set_window_ex_style(0);
-}
 
 gfx::Insets WindowWin::GetClientAreaInsets() const {
   // Returning an empty Insets object causes the default handling in
@@ -371,7 +373,7 @@ LRESULT WindowWin::OnAppCommand(HWND window, short app_command, WORD device,
 }
 
 void WindowWin::OnClose() {
-  GetWindow()->CloseWindow();
+  GetWindow()->Close();
 }
 
 void WindowWin::OnCommand(UINT notification_code, int command_id, HWND window) {
@@ -412,7 +414,7 @@ void WindowWin::OnExitSizeMove() {
   WidgetWin::OnExitSizeMove();
   delegate_->OnNativeWindowEndUserBoundsChange();
 
-  if (!GetThemeProvider()->ShouldUseNativeFrame()) {
+  if (!ShouldUseNativeFrame()) {
     // Sending SWP_FRAMECHANGED forces a non-client repaint, which fixes the
     // glitch in rendering the bottom pixel of the window caused by us
     // offsetting the client rect there (See comment in GetClientAreaInsets()).
@@ -773,7 +775,8 @@ void WindowWin::OnSysCommand(UINT notification_code, CPoint click) {
                             !!(GetKeyState(VK_SHIFT) & 0x8000),
                             !!(GetKeyState(VK_CONTROL) & 0x8000),
                             false);
-    GetFocusManager()->ProcessAccelerator(accelerator);
+    AsNativeWidget()->GetWidget()->GetFocusManager()->
+        ProcessAccelerator(accelerator);
     return;
   }
 
@@ -891,6 +894,14 @@ void WindowWin::SetInitialFocus() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowWin, NativeWindow implementation:
+
+Window* WindowWin::GetWindow() {
+  return delegate_->AsWindow();
+}
+
+const Window* WindowWin::GetWindow() const {
+  return delegate_->AsWindow();
+}
 
 NativeWidget* WindowWin::AsNativeWidget() {
   return this;
@@ -1163,10 +1174,6 @@ void WindowWin::SetAlwaysOnTop(bool always_on_top) {
                  0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }
 
-bool WindowWin::IsAppWindow() const {
-  return false;
-}
-
 void WindowWin::SetUseDragFrame(bool use_drag_frame) {
   if (use_drag_frame) {
     // Make the frame slightly transparent during the drag operation.
@@ -1187,8 +1194,8 @@ void WindowWin::SetUseDragFrame(bool use_drag_frame) {
 
 NonClientFrameView* WindowWin::CreateFrameViewForWindow() {
   if (ShouldUseNativeFrame())
-    return new NativeFrameView(this);
-  return new CustomFrameView(this);
+    return new NativeFrameView(GetWindow());
+  return new CustomFrameView(GetWindow());
 }
 
 void WindowWin::UpdateFrameAfterFrameChange() {
@@ -1201,10 +1208,7 @@ gfx::NativeWindow WindowWin::GetNativeWindow() const {
 }
 
 bool WindowWin::ShouldUseNativeFrame() const {
-  ui::ThemeProvider* tp = GetThemeProvider();
-  if (!tp)
-    return WidgetWin::IsAeroGlassEnabled();
-  return tp->ShouldUseNativeFrame();
+  return WidgetWin::IsAeroGlassEnabled();
 }
 
 void WindowWin::FrameTypeChanged() {
@@ -1344,26 +1348,13 @@ void WindowWin::ExecuteSystemMenuCommand(int command) {
     SendMessage(GetNativeView(), WM_SYSCOMMAND, command, 0);
 }
 
-namespace {
-BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
-  NativeWidget* native_widget =
-      NativeWidget::GetNativeWidgetForNativeView(hwnd);
-  if (native_widget)
-    Window::CloseSecondaryWidget(native_widget->GetWidget());
-  return TRUE;
-}
-}  // namespace
-
-void Window::CloseAllSecondaryWindows() {
-  EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc, 0);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWindow, public:
 
 // static
-Window* NativeWindow::CreateNativeWindow() {
-  return new WindowWin;
+NativeWindow* NativeWindow::CreateNativeWindow(
+    internal::NativeWindowDelegate* delegate) {
+  return new WindowWin(delegate);
 }
 
 }  // namespace views

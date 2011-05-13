@@ -346,7 +346,7 @@ std::wstring BookmarkBubbleView::accessible_name() {
 
 void BookmarkBubbleView::Close() {
   ApplyEdits();
-  static_cast<Bubble*>(GetWidget())->Close();
+  GetWidget()->Close();
 }
 
 void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
@@ -387,7 +387,8 @@ void BookmarkBubbleView::ShowEditor() {
   ShowWindow(GetWidget()->GetNativeView(), SW_HIDE);
 #elif defined(TOOLKIT_USES_GTK)
   gfx::NativeWindow parent = GTK_WINDOW(
-      static_cast<views::WidgetGtk*>(GetWidget())->GetTransientParent());
+      static_cast<views::WidgetGtk*>(GetWidget()->native_widget())->
+          GetTransientParent());
 #endif
 
   // Even though we just hid the window, we need to invoke Close to schedule

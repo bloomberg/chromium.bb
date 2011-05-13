@@ -28,8 +28,7 @@ class AcceleratorHandlerGtkTest
     window_ = Window::CreateChromeWindow(
         NULL, gfx::Rect(0, 0, 500, 500), this);
     window_->Show();
-    FocusManager* focus_manager = static_cast<WindowGtk*>(window_)->
-        GetFocusManager();
+    FocusManager* focus_manager = window_->GetFocusManager();
     focus_manager->RegisterAccelerator(kMenuAccelerator, this);
     focus_manager->RegisterAccelerator(kHomepageAccelerator, this);
     menu_pressed_ = false;
@@ -37,7 +36,7 @@ class AcceleratorHandlerGtkTest
   }
 
   virtual void TearDown() {
-    window_->CloseWindow();
+    window_->Close();
 
     // Flush the message loop to make Purify happy.
     message_loop_.RunAllPending();

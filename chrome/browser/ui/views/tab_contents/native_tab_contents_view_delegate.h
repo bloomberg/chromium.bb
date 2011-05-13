@@ -7,8 +7,13 @@
 #pragma once
 
 class TabContents;
-namespace gfx{
+namespace gfx {
 class Size;
+}
+namespace views {
+namespace internal {
+class NativeWidgetDelegate;
+}
 }
 
 namespace internal {
@@ -30,14 +35,16 @@ class NativeTabContentsViewDelegate {
   virtual void OnNativeTabContentsViewHidden() = 0;
   virtual void OnNativeTabContentsViewSized(const gfx::Size& size) = 0;
 
-  virtual void OnNativeTabContentsViewWheelZoom(int distance) = 0;
+  virtual void OnNativeTabContentsViewWheelZoom(bool zoom_in) = 0;
 
   // TODO(beng):
   // These two can be replaced by an override of Widget::OnMouseEvent.
   virtual void OnNativeTabContentsViewMouseDown() = 0;
-  virtual void OnNativeTabContentsViewMouseMove() = 0;
+  virtual void OnNativeTabContentsViewMouseMove(bool motion) = 0;
 
   virtual void OnNativeTabContentsViewDraggingEnded() = 0;
+
+  virtual views::internal::NativeWidgetDelegate* AsNativeWidgetDelegate() = 0;
 };
 
 }  // namespace internal

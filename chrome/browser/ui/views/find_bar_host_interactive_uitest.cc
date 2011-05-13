@@ -56,7 +56,13 @@ class FindInPageTest : public InProcessBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
+#if defined(TOOLKIT_USES_GTK)
+#define MAYBE_CrashEscHandlers FLAKY_CrashEscHandlers
+#else
+#define MAYBE_CrashEscHandlers CrashEscHandlers
+#endif
+
+IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_CrashEscHandlers) {
   ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test page (tab A).

@@ -263,7 +263,7 @@ void HungRendererDialogView::EndForTabContents(TabContents* contents) {
   DCHECK(contents);
   if (contents_ && contents_->GetRenderProcessHost() ==
       contents->GetRenderProcessHost()) {
-    window()->CloseWindow();
+    window()->Close();
     // Since we're closing, we no longer need this TabContents.
     contents_ = NULL;
   }

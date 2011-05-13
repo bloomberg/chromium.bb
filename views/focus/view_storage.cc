@@ -62,7 +62,7 @@ void ViewStorage::RemoveView(int storage_id) {
   EraseView(storage_id, false);
 }
 
-void ViewStorage::ViewRemoved(View* parent, View* removed) {
+void ViewStorage::ViewRemoved(View* removed) {
   // Let's first retrieve the ids for that view.
   std::map<View*, std::vector<int>*>::iterator ids_iter =
       view_to_ids_.find(removed);
