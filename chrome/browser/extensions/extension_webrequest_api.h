@@ -129,7 +129,8 @@ class ExtensionWebRequestEventRouter {
   void OnRequestSent(ProfileId profile_id,
                      ExtensionEventRouterForwarder* event_router,
                      uint64 request_id,
-                     const net::HostPortPair& socket_address);
+                     const net::HostPortPair& socket_address,
+                     const net::HttpRequestHeaders& headers);
 
   // Dispatches the onBeforeRedirect event. This is fired for HTTP(s) requests
   // only.

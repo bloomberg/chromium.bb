@@ -82,9 +82,10 @@ int ChromeNetworkDelegate::OnBeforeSendHeaders(
 
 void ChromeNetworkDelegate::OnRequestSent(
     uint64 request_id,
-    const net::HostPortPair& socket_address) {
+    const net::HostPortPair& socket_address,
+    const net::HttpRequestHeaders& headers) {
   ExtensionWebRequestEventRouter::GetInstance()->OnRequestSent(
-      profile_id_, event_router_.get(), request_id, socket_address);
+      profile_id_, event_router_.get(), request_id, socket_address, headers);
 }
 
 void ChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,

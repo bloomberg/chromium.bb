@@ -139,7 +139,7 @@ void EventHandledOnIOThread(
 
 // Creates a list of HttpHeaders (see extension_api.json). If |headers| is
 // NULL, the list is empty. Ownership is passed to the caller.
-ListValue* GetResponseHeadersList(net::HttpResponseHeaders* headers) {
+ListValue* GetResponseHeadersList(const net::HttpResponseHeaders* headers) {
   ListValue* headers_value = new ListValue();
   if (headers) {
     void* iter = NULL;
@@ -149,6 +149,19 @@ ListValue* GetResponseHeadersList(net::HttpResponseHeaders* headers) {
       DictionaryValue* header = new DictionaryValue();
       header->SetString(keys::kHeaderNameKey, name);
       header->SetString(keys::kHeaderValueKey, value);
+      headers_value->Append(header);
+    }
+  }
+  return headers_value;
+}
+
+ListValue* GetRequestHeadersList(const net::HttpRequestHeaders* headers) {
+  ListValue* headers_value = new ListValue();
+  if (headers) {
+    for (net::HttpRequestHeaders::Iterator it(*headers); it.GetNext(); ) {
+      DictionaryValue* header = new DictionaryValue();
+      header->SetString(keys::kHeaderNameKey, it.name());
+      header->SetString(keys::kHeaderValueKey, it.name());
       headers_value->Append(header);
     }
   }
@@ -414,16 +427,9 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   dict->SetString(keys::kUrlKey, request->url().spec());
   dict->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
 
-  if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS) {
-    ListValue* headers_value = new ListValue();
-    for (net::HttpRequestHeaders::Iterator it(*headers); it.GetNext(); ) {
-      DictionaryValue* header = new DictionaryValue();
-      header->SetString(keys::kHeaderNameKey, it.name());
-      header->SetString(keys::kHeaderValueKey, it.name());
-      headers_value->Append(header);
-    }
-    dict->Set(keys::kRequestHeadersKey, headers_value);
-  }
+  if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
+    dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(headers));
+  // TODO(battre): implement request line.
 
   args.Append(dict);
 
@@ -440,7 +446,8 @@ void ExtensionWebRequestEventRouter::OnRequestSent(
     ProfileId profile_id,
     ExtensionEventRouterForwarder* event_router,
     uint64 request_id,
-    const net::HostPortPair& socket_address) {
+    const net::HostPortPair& socket_address,
+    const net::HttpRequestHeaders& headers) {
   if (profile_id == Profile::kInvalidProfileId)
     return;
   base::Time time(base::Time::Now());
@@ -470,7 +477,9 @@ void ExtensionWebRequestEventRouter::OnRequestSent(
   dict->SetString(keys::kUrlKey, request->url().spec());
   dict->SetString(keys::kIpKey, socket_address.host());
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
-  // TODO(battre): support "request line" and "request headers".
+  if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
+    dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(&headers));
+  // TODO(battre): support "request line".
   args.Append(dict);
 
   DispatchEvent(profile_id, event_router, request, listeners, args);

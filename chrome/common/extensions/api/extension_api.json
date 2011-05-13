@@ -3853,7 +3853,8 @@
               "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string"},
               "ip": {"type": "string", "description": "The server IP address that is actually connected to. Note that it may be a literal IPv6 address."},
-              "timeStamp": {"type": "number", "description": "The time when the browser finished sending the request, in milliseconds since the epoch."}
+              "timeStamp": {"type": "number", "description": "The time when the browser finished sending the request, in milliseconds since the epoch."},
+              "requestHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP request headers that have been sent out with this request."}
             }
           }
         ],

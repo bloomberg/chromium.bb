@@ -173,7 +173,7 @@ function initListeners(filter, extraInfoSpec) {
   chrome.experimental.webRequest.onRequestSent.addListener(
       function(details) {
     return captureEvent("onRequestSent", details);
-  }, filter);
+  }, filter, intersect(extraInfoSpec, ["requestHeaders"]));
   chrome.experimental.webRequest.onResponseStarted.addListener(
       function(details) {
     return captureEvent("onResponseStarted", details);
@@ -270,7 +270,8 @@ runTests([
           event: "onRequestSent",
           details: {
             url: URL_HTTP_SIMPLE_LOAD_REDIRECT,
-            ip: "127.0.0.1"
+            ip: "127.0.0.1",
+            requestHeadersExist: true
           }
         },
         { label: "onBeforeRedirect",
@@ -303,7 +304,8 @@ runTests([
           event: "onRequestSent",
           details: {
             url: URL_HTTP_SIMPLE_LOAD,
-            ip: "127.0.0.1"
+            ip: "127.0.0.1",
+            requestHeadersExist: true
           }
         },
         { label: "onResponseStarted",
