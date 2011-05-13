@@ -24,12 +24,21 @@ static const SkColor kSelectedBackgroundColor = SkColorSetRGB(0xDC, 0xE4, 0xFA);
 static const SkColor kSelectedBackgroundColor = SkColorSetRGB(246, 249, 253);
 #endif
 
+#if defined(TOUCH_UI)
+const int kMinTouchHeight = 46;
+#endif
+
 gfx::Size MenuItemView::CalculatePreferredSize() {
   const gfx::Font& font = GetFont();
+#if defined(TOUCH_UI)
+  int height = std::max(font.GetHeight(), kMinTouchHeight);
+#else
+  int height = font.GetHeight();
+#endif
   return gfx::Size(
       font.GetStringWidth(title_) + label_start_ +
           item_right_margin_ + GetChildPreferredWidth(),
-      font.GetHeight() + GetBottomMargin() + GetTopMargin());
+      height + GetBottomMargin() + GetTopMargin());
 }
 
 void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {

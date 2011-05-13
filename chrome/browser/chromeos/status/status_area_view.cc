@@ -21,7 +21,11 @@
 namespace chromeos {
 
 // Number of pixels to separate each icon.
+#if defined(TOUCH_UI)
+const int kSeparation = 25;
+#else
 const int kSeparation = 5;
+#endif
 
 StatusAreaView::StatusAreaView(StatusAreaHost* host)
     : host_(host),
