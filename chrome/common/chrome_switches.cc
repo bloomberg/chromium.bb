@@ -18,6 +18,10 @@ namespace switches {
 // is launched on the command line (e.g. by Selenium).  Only needed on Mac.
 const char kActivateOnLaunch[]              = "activate-on-launch";
 
+// Allow third party content included on a page to prompt for a HTTP
+// basic auth username/password pair.
+const char kAllowCrossOriginAuthPrompt[]    = "allow-cross-origin-auth-prompt";
+
 // On ChromeOS, file:// access is disabled except for certain whitelisted
 // directories. This switch re-enables file:// for testing.
 const char kAllowFileAccess[]               = "allow-file-access";

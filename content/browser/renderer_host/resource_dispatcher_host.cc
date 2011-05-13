@@ -68,6 +68,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/registry_controlled_domain.h"
 #include "net/base/request_priority.h"
 #include "net/base/ssl_cert_request_info.h"
 #include "net/base/upload_data.h"
@@ -235,6 +236,32 @@ void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
 #pragma optimize("", on)
 #pragma warning(default: 4748)
 #endif
+
+// Relationship of resource being authenticated with the top level page.
+enum HttpAuthResourceType {
+  HTTP_AUTH_RESOURCE_TOP,              // Top-level page itself
+  HTTP_AUTH_RESOURCE_SAME_DOMAIN,      // Sub-content from same domain
+  HTTP_AUTH_RESOURCE_BLOCKED_CROSS,    // Blocked Sub-content from cross domain
+  HTTP_AUTH_RESOURCE_ALLOWED_CROSS,    // Allowed Sub-content per command line
+  HTTP_AUTH_RESOURCE_LAST
+};
+
+HttpAuthResourceType HttpAuthResourceTypeOf(net::URLRequest* request) {
+  // Use the same critera as for cookies to determine the sub-resource type
+  // that is requesting to be authenticated.
+  if (!request->first_party_for_cookies().is_valid())
+    return HTTP_AUTH_RESOURCE_TOP;
+
+  if (net::RegistryControlledDomainService::SameDomainOrHost(
+          request->first_party_for_cookies(), request->url()))
+    return HTTP_AUTH_RESOURCE_SAME_DOMAIN;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowCrossOriginAuthPrompt))
+    return HTTP_AUTH_RESOURCE_ALLOWED_CROSS;
+
+  return HTTP_AUTH_RESOURCE_BLOCKED_CROSS;
+}
 
 }  // namespace
 
@@ -1089,6 +1116,23 @@ void ResourceDispatcherHost::OnAuthRequired(
     request->CancelAuth();
     return;
   }
+
+  // Prevent third-party content from prompting for login, unless it is
+  // a proxy that is trying to authenticate.  This is often the foundation
+  // of a scam to extract credentials for another domain from the user.
+  if (!auth_info->is_proxy) {
+    HttpAuthResourceType resource_type = HttpAuthResourceTypeOf(request);
+    UMA_HISTOGRAM_ENUMERATION("Net.HttpAuthResource",
+                              resource_type,
+                              HTTP_AUTH_RESOURCE_LAST);
+
+    if (resource_type == HTTP_AUTH_RESOURCE_BLOCKED_CROSS) {
+      request->CancelAuth();
+      return;
+    }
+  }
+
+
   // Create a login dialog on the UI thread to get authentication data,
   // or pull from cache and continue on the IO thread.
   // TODO(mpcomplete): We should block the parent tab while waiting for
