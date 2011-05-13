@@ -256,7 +256,8 @@ class FileSystemFileUtil {
 
   // Returns a pointer to a new instance of AbstractFileEnumerator which is
   // implemented for each FileUtil subclass. The instance needs to be freed
-  // by the caller.
+  // by the caller, and its lifetime should not extend past when the current
+  // call returns to the main FILE message loop.
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* unused,
       const FilePath& root_path);

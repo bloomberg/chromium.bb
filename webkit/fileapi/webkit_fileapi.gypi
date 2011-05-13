@@ -50,6 +50,8 @@
         'file_writer_delegate.h',
         'local_file_system_file_util.cc',
         'local_file_system_file_util.h',
+        'obfuscated_file_system_file_util.cc',
+        'obfuscated_file_system_file_util.h',
         'quota_file_util.cc',
         'quota_file_util.h',
         'sandbox_mount_point_provider.cc',

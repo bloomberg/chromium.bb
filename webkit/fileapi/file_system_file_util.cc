@@ -56,7 +56,8 @@ PlatformFileError FileSystemFileUtil::EnsureFileExists(
       created, &error_code);
   if (error_code == base::PLATFORM_FILE_ERROR_EXISTS) {
     // Make sure created_ is false.
-    *created = false;
+    if (created)
+      *created = false;
     error_code = base::PLATFORM_FILE_OK;
   }
   if (handle != base::kInvalidPlatformFileValue)

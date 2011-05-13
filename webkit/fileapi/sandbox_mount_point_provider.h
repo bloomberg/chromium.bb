@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/obfuscated_file_system_file_util.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -94,6 +96,10 @@ class SandboxMountPointProvider : public FileSystemMountPointProvider {
       const GURL& origin_url,
       fileapi::FileSystemType type) const;
 
+  ObfuscatedFileSystemFileUtil* sandbox_file_util() {
+    return sandbox_file_util_.get();
+  }
+
  private:
   bool GetOriginBasePathAndName(
       const GURL& origin_url,
@@ -110,6 +116,8 @@ class SandboxMountPointProvider : public FileSystemMountPointProvider {
   scoped_refptr<base::MessageLoopProxy> file_message_loop_;
 
   const FilePath base_path_;
+
+  scoped_ptr<ObfuscatedFileSystemFileUtil> sandbox_file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxMountPointProvider);
 };

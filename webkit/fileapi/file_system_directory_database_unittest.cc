@@ -177,6 +177,8 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestGetChildWithName) {
   EXPECT_EQ(file_id1, check_file_id);
 }
 
+// TODO(ericu): Test GetFileWithPath.
+
 TEST_F(FileSystemDirectoryDatabaseTest, TestListChildren) {
   // No children in the root.
   std::vector<FileId> children;
@@ -275,6 +277,8 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestSimpleFileOperations) {
   EXPECT_EQ(info0.name, info1.name);
   EXPECT_EQ(info0.modification_time, info1.modification_time);
 }
+
+// TODO: Test for OverwritingMoveFile.
 
 TEST_F(FileSystemDirectoryDatabaseTest, TestGetNextInteger) {
   int64 next;

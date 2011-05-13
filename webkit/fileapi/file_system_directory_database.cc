@@ -132,9 +132,31 @@ bool FileSystemDirectoryDatabase::GetChildWithName(
   return false;
 }
 
+bool FileSystemDirectoryDatabase::GetFileWithPath(
+    const FilePath& path, FileId* file_id) {
+  std::vector<FilePath::StringType> components;
+  path.GetComponents(&components);
+  FileId local_id = 0;
+  std::vector<FilePath::StringType>::iterator iter;
+  for (iter = components.begin(); iter != components.end(); ++iter) {
+    std::string name;
+#if defined(OS_POSIX)
+    name = *iter;
+#elif defined(OS_WIN)
+    name = base::SysWideToUTF8(*iter);
+#endif
+    if (name == "/")
+      continue;
+    if (!GetChildWithName(local_id, name, &local_id))
+      return false;
+  }
+  *file_id = local_id;
+  return true;
+}
+
 bool FileSystemDirectoryDatabase::ListChildren(
     FileId parent_id, std::vector<FileId>* children) {
-  // Check to add later: fail if parent is a file, in debug builds.
+  // Check to add later: fail if parent is a file, at least in debug builds.
   if (!Init())
     return false;
   DCHECK(children);
@@ -287,6 +309,36 @@ bool FileSystemDirectoryDatabase::UpdateModificationTime(
   return true;
 }
 
+bool FileSystemDirectoryDatabase::OverwritingMoveFile(
+    FileId src_file_id, FileId dest_file_id) {
+  FileInfo src_file_info;
+  FileInfo dest_file_info;
+
+  if (!GetFileInfo(src_file_id, &src_file_info))
+    return false;
+  if (!GetFileInfo(dest_file_id, &dest_file_info))
+    return false;
+  leveldb::WriteBatch batch;
+  // This is the only field that really gets moved over; if you add fields to
+  // FileInfo, e.g. ctime, they might need to be copied here.
+  dest_file_info.data_path = src_file_info.data_path;
+  if (!RemoveFileInfoHelper(src_file_id, &batch))
+    return false;
+  Pickle pickle;
+  if (!PickleFromFileInfo(dest_file_info, &pickle))
+    return false;
+  batch.Put(
+      GetFileLookupKey(dest_file_id),
+      leveldb::Slice(reinterpret_cast<const char *>(pickle.data()),
+                     pickle.size()));
+  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
+  if (!status.ok()) {
+    HandleError(status);
+    return false;
+  }
+  return true;
+}
+
 bool FileSystemDirectoryDatabase::GetNextInteger(int64* next) {
   if (!Init())
     return false;
@@ -394,7 +446,7 @@ bool FileSystemDirectoryDatabase::VerifyIsDirectory(FileId file_id) {
     return true;  // The root is a directory.
   if (!GetFileInfo(file_id, &info))
     return false;
-  if (!info.data_path.empty()) {
+  if (!info.is_directory()) {
     LOG(ERROR) << "New parent directory is a file!";
     return false;
   }
@@ -432,6 +484,7 @@ bool FileSystemDirectoryDatabase::RemoveFileInfoHelper(
     return false;
   if (info.data_path.empty()) {  // It's a directory
     std::vector<FileId> children;
+    // TODO(ericu): Make a faster is-the-directory-empty check.
     if (!ListChildren(file_id, &children))
       return false;
     if(children.size()) {

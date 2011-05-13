@@ -13,6 +13,8 @@
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
         '../skia/skia.gyp:skia',
         '../third_party/flac/flac.gyp:libflac',
+        # TODO(ericu): remove leveldb ref after crbug.com/6955013 is fixed.
+        '../third_party/leveldb/leveldb.gyp:leveldb',
         '../third_party/speex/speex.gyp:libspeex',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../third_party/zlib/zlib.gyp:zlib',

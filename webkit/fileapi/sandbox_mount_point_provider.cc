@@ -170,10 +170,13 @@ SandboxMountPointProvider::SandboxMountPointProvider(
     const FilePath& profile_path)
     : path_manager_(path_manager),
       file_message_loop_(file_message_loop),
-      base_path_(profile_path.Append(kFileSystemDirectory)) {
+      base_path_(profile_path.Append(kFileSystemDirectory)),
+      sandbox_file_util_(new ObfuscatedFileSystemFileUtil(base_path_)) {
 }
 
 SandboxMountPointProvider::~SandboxMountPointProvider() {
+  if (!file_message_loop_->BelongsToCurrentThread())
+    file_message_loop_->DeleteSoon(FROM_HERE, sandbox_file_util_.release());
 }
 
 bool SandboxMountPointProvider::IsAccessAllowed(const GURL& origin_url,

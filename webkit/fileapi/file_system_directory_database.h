@@ -44,8 +44,11 @@ class FileSystemDirectoryDatabase {
 
     FileId parent_id;
     FilePath data_path;
+    // TODO: Switch name to be FilePath::StringType to cut down on conversions.
     std::string name;
-    // We could get this from the file if we touched it on every move.
+    // This modification time is valid only for directories, not files, as
+    // FileWriter will get the files out of sync.
+    // For files, look at the modification time of the underlying data_path.
     base::Time modification_time;
   };
 
@@ -54,6 +57,7 @@ class FileSystemDirectoryDatabase {
 
   bool GetChildWithName(
       FileId parent_id, const std::string& name, FileId* child_id);
+  bool GetFileWithPath(const FilePath& path, FileId* file_id);
   // ListChildren will succeed, returning 0 children, if parent_id doesn't
   // exist.
   bool ListChildren(FileId parent_id, std::vector<FileId>* children);
@@ -66,6 +70,11 @@ class FileSystemDirectoryDatabase {
   bool UpdateFileInfo(FileId file_id, const FileInfo& info);
   bool UpdateModificationTime(
       FileId file_id, const base::Time& modification_time);
+  // This is used for an overwriting move of a file [not a directory] on top of
+  // another file [also not a directory]; we need to alter two files' info in a
+  // single transaction to avoid weird backing file references in the event of a
+  // partial failure.
+  bool OverwritingMoveFile(FileId src_file_id, FileId dest_file_id);
 
   // This produces the series 0, 1, 2..., starting at 0 when the underlying
   // filesystem is first created, and maintaining state across
