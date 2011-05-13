@@ -19,9 +19,9 @@
 #include "webkit/fileapi/sandbox_quota_client.h"
 #include "webkit/quota/quota_types.h"
 
-using namespace fileapi;
-
+namespace fileapi {
 namespace {
+
 const char kDummyURL1[] = "http://www.dummy.org";
 const char kDummyURL2[] = "http://www.example.com";
 const char kDummyURL3[] = "http://www.bleh";
@@ -37,7 +37,8 @@ class MockFileSystemPathManager : public FileSystemPathManager {
       : FileSystemPathManager(base::MessageLoopProxy::CreateForCurrentThread(),
                               filesystem_path, NULL, false, true) {}
 };
-}
+
+}  // namespace
 
 class SandboxQuotaClientTest : public testing::Test {
  public:
@@ -429,3 +430,5 @@ TEST_F(SandboxQuotaClientTest, IncognitoTest) {
   origins = GetOriginsForHost(quota_client.get(), kTemporary, "www.dummy.org");
   EXPECT_EQ(0U, origins.size());
 }
+
+}  // namespace fileapi

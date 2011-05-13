@@ -14,8 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/quota_manager.h"
 
-using namespace fileapi;
-
+namespace fileapi {
 namespace {
 
 static const char* const kTestOrigins[] = {
@@ -92,3 +91,5 @@ TEST(FileSystemContextTest, IsStorageUnlimited) {
               context->IsStorageUnlimited(origin));
   }
 }
+
+}  // namespace fileapi

@@ -23,8 +23,7 @@
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/quota/special_storage_policy.h"
 
-using namespace fileapi;
-
+namespace fileapi {
 namespace {
 
 // PS stands for path separator.
@@ -414,3 +413,5 @@ TEST_F(FileSystemPathManagerTest, IsRestrictedName) {
               manager->IsRestrictedFileName(kFileSystemTypeTemporary, name));
   }
 }
+
+}  // namespace fileapi

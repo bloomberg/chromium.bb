@@ -17,10 +17,8 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 
-using namespace fileapi;
-
+namespace fileapi {
 namespace {
-
 class MockFileSystemPathManager : public FileSystemPathManager {
  public:
   MockFileSystemPathManager(const FilePath& filesystem_path)
@@ -39,8 +37,7 @@ class MockFileSystemPathManager : public FileSystemPathManager {
  private:
   FilePath test_filesystem_path_;
 };
-
-}  // namespace (anonymous)
+}  // namespace
 
 class QuotaFileUtilTest : public testing::Test {
  public:
@@ -431,3 +428,5 @@ TEST_F(QuotaFileUtilTest, Remove) {
                                                  true));
   ASSERT_EQ(0, GetCachedUsage());
 }
+
+}  // namespace fileapi

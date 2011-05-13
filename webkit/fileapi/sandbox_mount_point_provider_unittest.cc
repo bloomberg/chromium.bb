@@ -20,7 +20,7 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_util.h"
 
-using namespace fileapi;
+namespace fileapi {
 
 class MockFileSystemPathManager : public FileSystemPathManager {
  public:
@@ -105,3 +105,5 @@ TEST_F(SandboxMountPointProviderOriginEnumeratorTest, EnumerateOrigins) {
   ASSERT_EQ(temporary_size, temporary_actual_size);
   ASSERT_EQ(persistent_size, persistent_actual_size);
 }
+
+}  // namespace fileapi

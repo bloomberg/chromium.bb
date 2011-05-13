@@ -21,8 +21,7 @@
 #include "webkit/fileapi/quota_file_util.h"
 #include "webkit/quota/quota_manager.h"
 
-using namespace fileapi;
-
+namespace fileapi {
 namespace {
 
 class MockFileSystemPathManager : public FileSystemPathManager {
@@ -305,3 +304,5 @@ TEST_F(LocalFileSystemFileUtilTest, MoveDirectory) {
   EXPECT_TRUE(FileExists(to_file));
   EXPECT_EQ(1020, GetSize(to_file));
 }
+
+}  // namespace fileapi

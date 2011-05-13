@@ -9,7 +9,7 @@
 #include "base/memory/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace fileapi;
+namespace fileapi {
 
 class FileSystemUsageCacheTest : public testing::Test {
  public:
@@ -132,3 +132,5 @@ TEST_F(FileSystemUsageCacheTest, DecrementDirtyWithoutCacheFileTest) {
   FilePath usage_file_path = GetUsageFilePath();
   EXPECT_FALSE(FileSystemUsageCache::IncrementDirty(usage_file_path));
 }
+
+}  // namespace fileapi
