@@ -222,6 +222,36 @@ class NativeInputTest(unittest.TestCase):
     self.assertEqual(q.value, "\xe6\x9d\xb1\xe4\xba\xac")
 
 
+class CommandLineOptionsTest(unittest.TestCase):
+  """ Tests ability to add command line flags when startinfg chrome."""
+
+  def setUp(self):
+    self._launcher = ChromeDriverLauncher(root_path=os.path.dirname(__file__))
+    self._driver = None
+
+  def tearDown(self):
+    self._driver.quit()
+    self._launcher.Kill()
+
+  def sendFlag(self):
+    flags = {"enable-file-cookie" : ""}
+    args = {}
+    args.update(DesiredCapabilities.CHROME)
+    args.update({"chrome" : {"customSwitches":flags}})
+    # make sure enable cookie is not already enabled
+    self.__driver = WebDriver(self._launcher.GetURL(),
+                              DesiredCapabilities.CHROME)
+    self.__driver.get("about:version")
+    s = self.__driver.get_page_source()
+    self.assertEqual(-1, s.find("enable-file-cookie"))
+    self.__driver.close()
+    # relaunch with added flags
+    self.__driver = WebDriver(self._launcher.GetURL(), args)
+    self.__driver.get("about:version")
+    s = self.__driver.get_page_source()
+    self.assertNotEqual(-1, s.find("enable-file-cookie"))
+
+
 class CookieTest(unittest.TestCase):
   """Cookie test for the json webdriver protocol"""
 

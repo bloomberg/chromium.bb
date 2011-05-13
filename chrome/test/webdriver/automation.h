@@ -17,6 +17,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 
 class AutomationProxy;
+class CommandLine;
 class DictionaryValue;
 class FilePath;
 class GURL;
@@ -41,9 +42,11 @@ class Automation {
   Automation();
   virtual ~Automation();
 
-  // Creates a browser, using the exe found in |browser_dir|. If |browser_dir|
-  // is empty, it will search in all the default locations.
-  void Init(const FilePath& browser_dir, ErrorCode* code);
+  // Creates a browser, using the exe found in |browser_exe|. If |browser_exe|
+  // is empty, it will search in all the default locations. |options| contains
+  // extra parameters to be used on the command line when lauching the browser.
+  void Init(const FilePath& browser_exe, const CommandLine& options,
+            ErrorCode* code);
 
   // Terminates this session and disconnects its automation proxy. After
   // invoking this method, the Automation can safely be deleted.

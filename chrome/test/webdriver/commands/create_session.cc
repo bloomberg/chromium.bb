@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
@@ -31,10 +32,39 @@ bool CreateSession::DoesPost() { return true; }
 
 void CreateSession::ExecutePost(Response* const response) {
   SessionManager* session_manager = SessionManager::GetInstance();
+  DictionaryValue *added_options = NULL, *desiredCapabilities = NULL;
+  CommandLine options(CommandLine::NO_PROGRAM);
+
+  if (!GetDictionaryParameter("desiredCapabilities", &desiredCapabilities)) {
+    desiredCapabilities = NULL;
+  }
+
+  if ((desiredCapabilities != NULL) &&
+      desiredCapabilities->GetDictionary("chrome.customSwitches",
+                                         &added_options)) {
+    DictionaryValue::key_iterator i = added_options->begin_keys();
+    while (i != added_options->end_keys()) {
+      FilePath::StringType value;
+      if (!added_options->GetString(*i, &value)) {
+        SET_WEBDRIVER_ERROR(response,
+                            "Invalid format for added options to browser",
+                             kBadRequest);
+        return;
+      } else {
+        if (!value.empty()) {
+          options.AppendSwitchNative(*i, value);
+        } else {
+          options.AppendSwitch(*i);
+        }
+      }
+     ++i;
+    }
+  }
 
   // Session manages its own liftime, so do not call delete.
   Session* session = new Session();
-  ErrorCode code = session->Init(session_manager->chrome_dir());
+  ErrorCode code = session->Init(session_manager->chrome_dir(),
+                                 options);
 
   if (code == kBrowserCouldNotBeFound) {
     SET_WEBDRIVER_ERROR(response,
@@ -64,17 +94,18 @@ void CreateSession::ExecutePost(Response* const response) {
     return;
   }
 
-  DictionaryValue* capabilities = NULL;
-  bool native_events_required = false;
-  if (GetDictionaryParameter("desiredCapabilities", &capabilities)) {
-    capabilities->GetBoolean("chrome.nativeEvents", &native_events_required);
-    session->set_use_native_events(native_events_required);
-  }
+  if (desiredCapabilities != NULL) {
+    bool native_events_required = false;
+    if (desiredCapabilities->GetBoolean("chrome.nativeEvents",
+                                        &native_events_required)) {
+      session->set_use_native_events(native_events_required);
+    }
 
-  bool screenshot_on_error = false;
-  if (GetDictionaryParameter("desiredCapabilities", &capabilities)) {
-    capabilities->GetBoolean("takeScreenshotOnError", &screenshot_on_error);
-    session->set_screenshot_on_error(screenshot_on_error);
+    bool screenshot_on_error = false;
+    if (desiredCapabilities->GetBoolean("takeScreenshotOnError",
+                                        &screenshot_on_error)) {
+      session->set_screenshot_on_error(screenshot_on_error);
+    }
   }
 
   VLOG(1) << "Created session " << session->id();

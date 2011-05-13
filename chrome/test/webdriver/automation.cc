@@ -119,9 +119,10 @@ Automation::Automation() {}
 
 Automation::~Automation() {}
 
-void Automation::Init(const FilePath& user_browser_dir, ErrorCode* code) {
-  FilePath browser_dir = user_browser_dir;
-  if (browser_dir.empty() && !GetDefaultChromeExeDir(&browser_dir)) {
+void Automation::Init(const FilePath& browser_exe,
+                      const CommandLine& options, ErrorCode* code) {
+  FilePath browser = browser_exe;
+  if (browser.empty() && !GetDefaultChromeExeDir(&browser)) {
     *code = kBrowserCouldNotBeFound;
     return;
   }
@@ -136,12 +137,14 @@ void Automation::Init(const FilePath& user_browser_dir, ErrorCode* code) {
   args.AppendSwitch(switches::kNoFirstRun);
   args.AppendSwitchASCII(switches::kTestType, "webdriver");
 
+  args.AppendArguments(options, false);
+
   launcher_.reset(new AnonymousProxyLauncher(false));
   ProxyLauncher::LaunchState launch_props = {
       false,  // clear_profile
       FilePath(),  // template_user_data
       ProxyLauncher::DEFAULT_THEME,
-      browser_dir,
+      browser,
       args,
       true,  // include_testing_id
       true   // show_window

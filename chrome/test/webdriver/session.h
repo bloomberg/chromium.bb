@@ -19,6 +19,7 @@
 #include "chrome/test/webdriver/web_element_id.h"
 #include "ui/gfx/point.h"
 
+class CommandLine;
 class DictionaryValue;
 class FilePath;
 class GURL;
@@ -63,7 +64,8 @@ class Session {
   // |browser_dir|. If |browser_dir| is empty, it will search in all the default
   // locations. Returns true on success. On failure, the session will delete
   // itself and return an error code.
-  ErrorCode Init(const FilePath& browser_dir);
+  ErrorCode Init(const FilePath& browser_dir,
+                 const CommandLine& options);
 
   // Terminates this session and deletes itself.
   void Terminate();
@@ -246,7 +248,9 @@ class Session {
   void RunSessionTaskOnSessionThread(
       Task* task,
       base::WaitableEvent* done_event);
-  void InitOnSessionThread(const FilePath& browser_dir, ErrorCode* code);
+  void InitOnSessionThread(const FilePath& browser_dir,
+                           const CommandLine& options,
+                           ErrorCode* code);
   void TerminateOnSessionThread();
 
   // Executes the given |script| in the context of the given frame.
