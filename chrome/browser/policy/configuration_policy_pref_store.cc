@@ -714,6 +714,11 @@ void ConfigurationPolicyPrefKeeper::ApplyProxySettings() {
       prefs_.SetValue(prefs::kProxy, ProxyConfigDictionary::CreateAutoDetect());
       break;
     case ProxyPrefs::MODE_PAC_SCRIPT: {
+      if (!HasProxyPolicy(kPolicyProxyPacUrl)) {
+        LOG(WARNING) << "A centrally-administered policy specifies to use a "
+                     << "PAC script, but doesn't supply the PAC script URL.";
+        return;
+      }
       std::string pac_url;
       proxy_policies_[kPolicyProxyPacUrl]->GetAsString(&pac_url);
       prefs_.SetValue(prefs::kProxy,
@@ -721,6 +726,11 @@ void ConfigurationPolicyPrefKeeper::ApplyProxySettings() {
       break;
     }
     case ProxyPrefs::MODE_FIXED_SERVERS: {
+      if (!HasProxyPolicy(kPolicyProxyServer)) {
+        LOG(WARNING) << "A centrally-administered policy specifies to use a "
+                     << "fixed server, but doesn't supply the server address.";
+        return;
+      }
       std::string proxy_server;
       proxy_policies_[kPolicyProxyServer]->GetAsString(&proxy_server);
       std::string bypass_list;

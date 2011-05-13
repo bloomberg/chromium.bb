@@ -338,6 +338,19 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptionsReversedApplyOrder) {
       ProxyPrefs::MODE_FIXED_SERVERS);
 }
 
+TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptionsInvalid) {
+  MockConfigurationPolicyProvider provider;
+  provider.AddPolicy(kPolicyProxyServerMode,
+                     Value::CreateIntegerValue(
+                         kPolicyManuallyConfiguredProxyServerMode));
+
+  scoped_refptr<ConfigurationPolicyPrefStore> store(
+      new ConfigurationPolicyPrefStore(&provider));
+  const Value* value = NULL;
+  EXPECT_EQ(PrefStore::READ_NO_VALUE, store->GetValue(prefs::kProxy, &value));
+}
+
+
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, NoProxyServerMode) {
   MockConfigurationPolicyProvider provider;
   provider.AddPolicy(kPolicyProxyServerMode,
@@ -393,6 +406,18 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyMode) {
       new ConfigurationPolicyPrefStore(&provider));
   VerifyProxyPrefs(*store, "", "http://short.org/proxy.pac", "",
                    ProxyPrefs::MODE_PAC_SCRIPT);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyModeInvalid) {
+  MockConfigurationPolicyProvider provider;
+  provider.AddPolicy(
+      kPolicyProxyMode,
+      Value::CreateStringValue(ProxyPrefs::kPacScriptProxyModeName));
+
+  scoped_refptr<ConfigurationPolicyPrefStore> store(
+      new ConfigurationPolicyPrefStore(&provider));
+  const Value* value = NULL;
+  EXPECT_EQ(PrefStore::READ_NO_VALUE, store->GetValue(prefs::kProxy, &value));
 }
 
 // Regression test for http://crbug.com/78016, CPanel returns empty strings
