@@ -6,9 +6,13 @@ found in the LICENSE file.
 
 #sync-node-main {
   display: -webkit-box;
+  /* Should be > #sync-page's min-height. */
+  /* TODO(akalin): Find a less hacky way to do this. */
+  height: 750px;
 }
 
 #sync-node-tree-container {
+  height: 100%;
   width: 200px;
   /* min-width and max-width are used by the split pane. */
   min-width: 50px;
@@ -34,6 +38,20 @@ found in the LICENSE file.
   width: 5px;
   background-color: #ebeff9;
   cursor: col-resize;
+}
+
+#sync-node-browser-container {
+  height: 100%;
+  overflow: auto;
+  -webkit-box-flex: 1;
+}
+
+#node-browser {
+  width: 100%;
+}
+
+#node-browser td {
+  vertical-align: top;
 }
 
 /* Platform annotations are set in sync_node_browser.js. */
