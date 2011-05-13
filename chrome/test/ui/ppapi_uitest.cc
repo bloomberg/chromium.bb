@@ -125,8 +125,7 @@ TEST_F(PPAPITest, Buffer) {
   RunTest("Buffer");
 }
 
-// Flakey, http:L//crbug.com/57053
-TEST_F(PPAPITest, FLAKY_URLLoader) {
+TEST_F(PPAPITest, URLLoader) {
   RunTestViaHTTP("URLLoader");
 }
 
