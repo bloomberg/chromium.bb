@@ -165,13 +165,20 @@ IRT_PATH=scons-out/nacl-x86-${BITS}/staging/irt.nexe
 toolchain/linux_x86_newlib/bin/nacl-strip \
     --strip-debug ${IRT_PATH} -o ${IRT_PATH}.stripped
 
+function gscp() {
+  GSUTIL=/b/build/scripts/slave/gsutil
+  ${GSUTIL} -h Cache-Control:no-cache cp -a public-read "$@"
+}
+
 if [ "${BUILDBOT_BUILDERNAME:-}" = "lucid32-m32-n32-dbg" ] ||
    [ "${BUILDBOT_BUILDERNAME:-}" = "lucid64-m64-n64-dbg" ]; then
   IRT_DIR=nativeclient-archive2/irt
+  GSDVIEW=http://gsdview.appspot.com
   GS_PATH=${IRT_DIR}/r${BUILDBOT_GOT_REVISION}/irt_x86_${BITS}.nexe
-  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
-      ${IRT_PATH}.stripped gs://${GS_PATH}
-  echo @@@STEP_LINK@download@http://gsdview.appspot.com/${GS_PATH}@@@
+  gscp ${IRT_PATH}.stripped gs://${GS_PATH}
+  echo @@@STEP_LINK@stripped@${GSDVIEW}/${GS_PATH}@@@
+  gscp ${IRT_PATH} gs://${GS_PATH}.unstripped
+  echo @@@STEP_LINK@unstripped@${GSDVIEW}/${GS_PATH}.unstripped@@@
 else
   echo @@@STEP_TEXT@not uploading on this bot@@@
 fi
