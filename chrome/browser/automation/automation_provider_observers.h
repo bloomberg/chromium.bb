@@ -1309,6 +1309,7 @@ class OnNotificationBalloonCountObserver : public NotificationObserver {
   OnNotificationBalloonCountObserver(AutomationProvider* provider,
                                      IPC::Message* reply_message,
                                      int count);
+  virtual ~OnNotificationBalloonCountObserver();
 
   // Sends an automation reply message if |automation_| is still valid and the
   // number of ready balloons matches the desired count. Deletes itself if the

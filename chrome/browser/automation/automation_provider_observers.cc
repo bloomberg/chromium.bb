@@ -2271,6 +2271,9 @@ OnNotificationBalloonCountObserver::OnNotificationBalloonCountObserver(
   CheckBalloonCount();
 }
 
+OnNotificationBalloonCountObserver::~OnNotificationBalloonCountObserver() {
+}
+
 void OnNotificationBalloonCountObserver::Observe(
     NotificationType type,
     const NotificationSource& source,
