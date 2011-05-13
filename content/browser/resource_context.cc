@@ -23,6 +23,8 @@ ResourceContext::ResourceContext()
 ResourceContext::~ResourceContext() {}
 
 void* ResourceContext::GetUserData(const void* key) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  EnsureInitialized();
   UserDataMap::const_iterator found = user_data_.find(key);
   if (found != user_data_.end())
     return found->second;
@@ -30,6 +32,7 @@ void* ResourceContext::GetUserData(const void* key) const {
 }
 
 void ResourceContext::SetUserData(const void* key, void* data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   user_data_[key] = data;
 }
 

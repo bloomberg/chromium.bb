@@ -208,7 +208,6 @@ ProfileIOData::ProfileIOData(bool is_incognito)
     : initialized_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(resource_context_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  resource_context_.SetUserData(NULL, this);
 }
 
 ProfileIOData::~ProfileIOData() {
@@ -263,6 +262,10 @@ ProfileIOData::GetIsolatedAppRequestContext(
 
 const content::ResourceContext& ProfileIOData::GetResourceContext() const {
   return resource_context_;
+}
+
+HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
+  return host_content_settings_map_;
 }
 
 ProfileIOData::ResourceContext::ResourceContext(const ProfileIOData* io_data)
@@ -330,6 +333,7 @@ void ProfileIOData::LazyInitialize() const {
   resource_context_.set_host_zoom_map(host_zoom_map_);
   resource_context_.set_extension_info_map(extension_info_map_);
   resource_context_.set_prerender_manager(prerender_manager_);
+  resource_context_.SetUserData(NULL, const_cast<ProfileIOData*>(this));
 
   LazyInitializeInternal(profile_params_.get());
 

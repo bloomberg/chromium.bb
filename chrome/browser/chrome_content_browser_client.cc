@@ -241,7 +241,7 @@ bool ChromeContentBrowserClient::AllowAppCache(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data =
       reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
-  ContentSetting setting = io_data->host_content_settings_map()->
+  ContentSetting setting = io_data->GetHostContentSettingsMap()->
       GetContentSetting(manifest_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   DCHECK(setting != CONTENT_SETTING_DEFAULT);
   return setting != CONTENT_SETTING_BLOCK;
@@ -258,7 +258,7 @@ bool ChromeContentBrowserClient::AllowGetCookie(
   bool allow = true;
   ProfileIOData* io_data =
       reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
-  if (io_data->host_content_settings_map()->BlockThirdPartyCookies()) {
+  if (io_data->GetHostContentSettingsMap()->BlockThirdPartyCookies()) {
     bool strict = CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kBlockReadingThirdPartyCookies);
     net::StaticCookiePolicy policy(strict ?
@@ -271,7 +271,7 @@ bool ChromeContentBrowserClient::AllowGetCookie(
   }
 
   if (allow) {
-    ContentSetting setting = io_data->host_content_settings_map()->
+    ContentSetting setting = io_data->GetHostContentSettingsMap()->
         GetContentSetting(url, CONTENT_SETTINGS_TYPE_COOKIES, "");
     allow = setting == CONTENT_SETTING_ALLOW ||
         setting == CONTENT_SETTING_SESSION_ONLY;
@@ -297,7 +297,7 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   bool allow = true;
   ProfileIOData* io_data =
       reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
-  if (io_data->host_content_settings_map()->BlockThirdPartyCookies()) {
+  if (io_data->GetHostContentSettingsMap()->BlockThirdPartyCookies()) {
     bool strict = CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kBlockReadingThirdPartyCookies);
     net::StaticCookiePolicy policy(strict ?
@@ -309,7 +309,7 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   }
 
   if (allow) {
-    ContentSetting setting = io_data->host_content_settings_map()->
+    ContentSetting setting = io_data->GetHostContentSettingsMap()->
         GetContentSetting(url, CONTENT_SETTINGS_TYPE_COOKIES, "");
 
     if (setting == CONTENT_SETTING_SESSION_ONLY)

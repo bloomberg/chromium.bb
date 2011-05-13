@@ -15,7 +15,7 @@ ChromeWorkerMessageFilter::ChromeWorkerMessageFilter(WorkerProcessHost* process)
     : process_(process) {
   ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
       process->resource_context()->GetUserData(NULL));
-  host_content_settings_map_ = io_data->host_content_settings_map();
+  host_content_settings_map_ = io_data->GetHostContentSettingsMap();
 }
 
 ChromeWorkerMessageFilter::~ChromeWorkerMessageFilter() {
