@@ -22,11 +22,27 @@ if %BITS% equ 32 (set VCBITS=x86) else (set VCBITS=x64)
 if %BITS% equ 32 (set SEL_LDR=sel_ldr.exe) else (set SEL_LDR=sel_ldr64.exe)
 if "%TOOLCHAIN%" equ "glibc" (set GLIBCOPTS=--nacl_glibc) else (set GLIBCOPTS=)
 
+echo @@@BUILD_STEP clobber@@@
+rd /s /q scons-out ^
+ & rd /s /q build\Debug build\Release ^
+ & rd /s /q build\Debug-Win32 build\Release-Win32 ^
+ & rd /s /q build\Debug-x64 build\Release-x64
+
 :: Skip over hooks, clobber, and partial_sdk when run inside the toolchain
 :: build as the toolchain takes care or the clobber, hooks aren't needed, and
 :: partial_sdk really shouldn't be needed.
-if "%INSIDE_TOOLCHAIN%" neq "" goto SkipSync
+if "%INSIDE_TOOLCHAIN%" equ "" goto NonToolchain
+:: GYP_DEFINES tells GYP whether we need x86-32 or x86-64 binaries to
+:: generate in the gyp_compile stage.  On toolchain bot we can not just
+:: use gclient runhooks --force because it'll clobber freshly created
+:: toolchain.
+echo @@@BUILD_STEP gyp_generate_only@@@
+cd ..
+python.bat native_client/build/gyp_nacl native_client/build/all.gyp
+cd native_client
+goto SkipSync
 
+:NonToolchain
 echo @@@BUILD_STEP cleanup_temp@@@
 :: Selecting a temp directory on the same drive as the build.
 :: Many of our bots have tightly packed C: drives, but plentiful E: drives.
@@ -47,12 +63,6 @@ for /D %%I in ("%TEMP%\*") do rmdir /S /Q %%I
 echo @@@BUILD_STEP gclient_runhooks@@@
 cmd /c gclient runhooks
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
-
-echo @@@BUILD_STEP clobber@@@
-rd /s /q scons-out ^
- & rd /s /q build\Debug build\Release ^
- & rd /s /q build\Debug-Win32 build\Release-Win32 ^
- & rd /s /q build\Debug-x64 build\Release-x64
 
 echo @@@BUILD_STEP partial_sdk@@@
 if "%TOOLCHAIN%" equ "glibc" (

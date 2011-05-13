@@ -39,27 +39,34 @@ else
   GLIBCOPTS=""
 fi
 
+echo @@@BUILD_STEP clobber@@@
+rm -rf scons-out hg ../xcodebuild ../sconsbuild ../out \
+    src/third_party/nacl_sdk/arm-newlib
+
 # Skip over hooks, clobber, and partial_sdk when run inside the toolchain build
 # as the toolchain takes care or the clobber, hooks aren't needed, and
 # partial_sdk really shouldn't be needed.
 if [[ "${INSIDE_TOOLCHAIN:-}" == "" ]]; then
+  echo @@@BUILD_STEP gclient_runhooks@@@
+  gclient runhooks --force
 
-echo @@@BUILD_STEP gclient_runhooks@@@
-gclient runhooks --force
-
-echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out compiler hg ../xcodebuild ../sconsbuild ../out \
-    src/third_party/nacl_sdk/arm-newlib
-
-echo @@@BUILD_STEP partial_sdk@@@
-if [[ $TOOLCHAIN = glibc ]]; then
-  ./scons --verbose --mode=nacl_extra_sdk platform=x86-${BITS} --download \
-  --nacl_glibc extra_sdk_update_header extra_sdk_update
+  echo @@@BUILD_STEP partial_sdk@@@
+  if [[ $TOOLCHAIN = glibc ]]; then
+    ./scons --verbose --mode=nacl_extra_sdk platform=x86-${BITS} --download \
+    --nacl_glibc extra_sdk_update_header extra_sdk_update
+  else
+    ./scons --verbose --mode=nacl_extra_sdk platform=x86-${BITS} --download \
+    extra_sdk_update_header install_libpthread extra_sdk_update
+  fi
 else
-  ./scons --verbose --mode=nacl_extra_sdk platform=x86-${BITS} --download \
-  extra_sdk_update_header install_libpthread extra_sdk_update
-fi
-
+  # GYP_DEFINES tells GYP whether we need x86-32 or x86-64 binaries to
+  # generate in the gyp_compile stage.  On toolchain bot we can not just
+  # use gclient runhooks --force because it'll clobber freshly created
+  # toolchain.
+  echo @@@BUILD_STEP gyp_generate_only@@@
+  cd ..
+  native_client/build/gyp_nacl native_client/build/all.gyp
+  cd native_client
 fi
 
 echo @@@BUILD_STEP gyp_compile@@@
