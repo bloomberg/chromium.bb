@@ -311,7 +311,7 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // Return this object cast to a TabContents, if it is one. If the object is
   // not a TabContents, returns NULL. DEPRECATED: Be sure to include brettw and
-  // jam as reviewers before you use this method.
+  // jam as reviewers before you use this method. http://crbug.com/82582
   virtual TabContents* GetAsTabContents();
 
   // Return this object cast to a BackgroundContents, if it is one. If the
