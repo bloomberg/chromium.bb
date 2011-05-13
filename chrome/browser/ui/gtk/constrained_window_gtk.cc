@@ -123,7 +123,7 @@ void ConstrainedWindowGtk::FocusConstrainedWindow() {
 
 ConstrainedWindowGtk::TabContentsViewType*
     ConstrainedWindowGtk::ContainingView() {
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS) && !defined(TOUCH_UI)
   return static_cast<NativeTabContentsViewGtk*>(
       static_cast<TabContentsViewViews*>(owner_->view())->
           native_tab_contents_view());

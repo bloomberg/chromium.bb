@@ -304,6 +304,7 @@ class Widget : public internal::NativeWidgetDelegate,
       ui::AccessibilityTypes::Event event_type,
       bool send_native_event);
 
+  const NativeWidget* native_widget() const { return native_widget_; }
   NativeWidget* native_widget() { return native_widget_; }
 
   // Overridden from NativeWidgetDelegate:

@@ -438,7 +438,7 @@ gfx::NativeView RenderWidgetHostViewViews::GetInnerNativeView() const {
   // TODO(sad): Ideally this function should be equivalent to GetNativeView, and
   // WidgetGtk-specific function call should not be necessary.
   const views::WidgetGtk* widget =
-      static_cast<const views::WidgetGtk*>(GetWidget());
+      static_cast<const views::WidgetGtk*>(GetWidget()->native_widget());
   return widget ? widget->window_contents() : NULL;
 }
 
