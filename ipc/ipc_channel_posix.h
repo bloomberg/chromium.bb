@@ -25,13 +25,20 @@
 // As we cannot anticipate when the sender will provide us with file
 // descriptors, we have to make the decision about whether we call read() or
 // recvmsg() before we actually make the call. The easiest option is to
-// create a dedicated socketpair() for exchanging file descriptors.
+// create a dedicated socketpair() for exchanging file descriptors. Any file
+// descriptors are split out of a message, with the non-file-descriptor payload
+// going over the normal connection, and the file descriptors being sent
+// separately over the other channel. When read()ing from a channel, we'll
+// notice if the message was supposed to have come with file descriptors and
+// use recvmsg on the other socketpair to retrieve them and combine them
+// back with the rest of the message.
+//
 // Mac can also run in IPC_USES_READWRITE mode if necessary, but at this time
 // doesn't take a performance hit from recvmsg and sendmsg, so it doesn't
 // make sense to waste resources on having the separate dedicated socketpair.
 // It is however useful for debugging between Linux and Mac to be able to turn
 // this switch 'on' on the Mac as well.
-
+//
 // The HELLO message from the client to the server is always sent using
 // sendmsg because it will contain the file descriptor that the server
 // needs to send file descriptors in later messages.
