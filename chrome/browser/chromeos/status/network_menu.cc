@@ -31,6 +31,9 @@
 
 namespace {
 
+// Amount to fade icons while connecting.
+const double kConnectingImageAlpha = 0.5;
+
 // Replace '&' in a string with "&&" to allow it to be a menu item label.
 std::string EscapeAmpersands(const std::string& input) {
   std::string str = input;
@@ -416,7 +419,7 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
     menu_items_.push_back(MenuItem(
         ui::MenuModel::TYPE_COMMAND,
         l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS),
-        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
+        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_ARCS4),
         std::string(), FLAG_ADD_WIFI));
   }
 
@@ -862,13 +865,24 @@ const int NetworkMenu::kBarsImagesVLowData[kNumBarsImages] = {
 #endif
 
 // static
-const int NetworkMenu::kNumAnimatingImages = 10;
+const int NetworkMenu::kNumArcsImages = 7;
 
 // static
-SkBitmap NetworkMenu::kAnimatingImages[kNumAnimatingImages];
+const int NetworkMenu::kArcsImages[kNumArcsImages] = {
+  IDR_STATUSBAR_NETWORK_ARCS1,
+  IDR_STATUSBAR_NETWORK_ARCS2,
+  IDR_STATUSBAR_NETWORK_ARCS3,
+  IDR_STATUSBAR_NETWORK_ARCS4,
+  IDR_STATUSBAR_NETWORK_ARCS5,
+  IDR_STATUSBAR_NETWORK_ARCS6,
+  IDR_STATUSBAR_NETWORK_ARCS7,
+};
 
 // static
-SkBitmap NetworkMenu::kAnimatingImagesBlack[kNumAnimatingImages];
+SkBitmap NetworkMenu::kAnimatingBarsImages[kNumBarsImages];
+
+// static
+SkBitmap NetworkMenu::kAnimatingArcsImages[kNumArcsImages];
 
 NetworkMenu::NetworkMenu() : min_width_(-1) {
   main_menu_model_.reset(new MainMenuModel(this));
@@ -901,14 +915,12 @@ const SkBitmap* NetworkMenu::IconForNetworkStrength(const WifiNetwork* wifi,
   DCHECK(wifi);
   if (wifi->strength() == 0) {
     return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        black ? IDR_STATUSBAR_NETWORK_BARS0_BLACK :
-                IDR_STATUSBAR_NETWORK_BARS0);
+        IDR_STATUSBAR_NETWORK_ARCS0);
   }
   int index = static_cast<int>(wifi->strength() / 100.0 *
-      nextafter(static_cast<float>(kNumBarsImages), 0));
-  index = std::max(std::min(index, kNumBarsImages - 1), 0);
-  const int* images = black ? kBarsImagesBlack : kBarsImages;
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(images[index]);
+      nextafter(static_cast<float>(kNumArcsImages), 0));
+  index = std::max(std::min(index, kNumArcsImages - 1), 0);
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(kArcsImages[index]);
 }
 
 // static
@@ -931,28 +943,44 @@ const SkBitmap* NetworkMenu::IconForNetworkStrength(
 
 // static
 const SkBitmap* NetworkMenu::IconForNetworkConnecting(double animation_value,
+                                                      ConnectionType type,
                                                       bool black) {
-  // Draw animation of bars icon fading in and out.
-  // We are fading between 0 bars and a third of the opacity of 4 bars.
-  // Use the current value of the animation to calculate the alpha value
-  // of how transparent the icon is.
-  int index = static_cast<int>(animation_value *
-      nextafter(static_cast<float>(kNumAnimatingImages), 0));
-  index = std::max(std::min(index, kNumAnimatingImages - 1), 0);
+  int image_count;
+  const int* source_image_ids;
+  SkBitmap* images;
 
-  SkBitmap* images = black ? kAnimatingImagesBlack : kAnimatingImages;
-  // Lazily cache images.
+  // Use arcs for WIFI and bars for cell.
+  if (type == TYPE_WIFI) {
+    image_count = kNumArcsImages;
+    source_image_ids = kArcsImages;
+    images = kAnimatingArcsImages;
+  } else {
+    image_count = kNumBarsImages;
+    source_image_ids = kBarsImages;
+    images = kAnimatingBarsImages;
+  }
+
+  int index = static_cast<int>(animation_value *
+      nextafter(static_cast<float>(image_count), 0));
+  index = std::max(std::min(index, image_count - 1), 0);
   if (images[index].empty()) {
-    // Divide index (0-9) by 9 (assume kNumAnimatingImages==10) to get (0.0-1.0)
-    // Then we take a third of that for the alpha value.
-    double alpha = (static_cast<double>(index) / (kNumAnimatingImages - 1)) / 3;
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    images[index] = SkBitmapOperations::CreateBlendedBitmap(
-        *rb.GetBitmapNamed(black ? IDR_STATUSBAR_NETWORK_BARS0_BLACK :
-                                   IDR_STATUSBAR_NETWORK_BARS0),
-        *rb.GetBitmapNamed(black ? IDR_STATUSBAR_NETWORK_BARS4_BLACK :
-                                   IDR_STATUSBAR_NETWORK_BARS4),
-        alpha);
+    SkBitmap source = *rb.GetBitmapNamed(source_image_ids[index]);
+
+    // Blend against an empty image to fade out a bit.
+    SkBitmap image;
+    image.setConfig(SkBitmap::kARGB_8888_Config,
+                    source.width(),
+                    source.height(),
+                    0);
+    image.allocPixels();
+    image.eraseARGB(0, 0, 0, 0);
+
+    images[index] =
+        SkBitmapOperations::CreateBlendedBitmap(
+            image,
+            source,
+            kConnectingImageAlpha);
   }
   return &images[index];
 }

@@ -220,10 +220,12 @@ class NetworkMenu : public views::ViewMenuDelegate {
                                                 bool black);
   // Returns the Icon for animating network connecting.
   // |animation_value| is the value from Animation.GetCurrentValue()
+  // |type| is the connection type
   // |black| is used to specify whether to return a black icon for display
   // on a light background or a white icon for display on a dark background.
   // Expected to never return NULL.
   static const SkBitmap* IconForNetworkConnecting(double animation_value,
+                                                  ConnectionType type,
                                                   bool black);
 
   // Returns the Badge for a given network technology.
@@ -288,14 +290,19 @@ class NetworkMenu : public views::ViewMenuDelegate {
   static const int kBarsImages[];
   static const int kBarsImagesBlack[];
   static const int kBarsImagesOrange[];
+
   // TODO(chocobo): Add this back when we decide to do colored bars again.
   // static const int kBarsImagesVLowData[];
 
-  // The number of animating images for network connecting.
-  static const int kNumAnimatingImages;
+  // The number of arcs images for representing network strength.
+  static const int kNumArcsImages;
+
+  // Arcs image resources.
+  static const int kArcsImages[];
+
   // Animation images. These are created lazily.
-  static SkBitmap kAnimatingImages[];
-  static SkBitmap kAnimatingImagesBlack[];
+  static SkBitmap kAnimatingBarsImages[];
+  static SkBitmap kAnimatingArcsImages[];
 
   // The network menu.
   scoped_ptr<views::Menu2> network_menu_;

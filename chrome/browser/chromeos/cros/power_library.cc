@@ -168,7 +168,7 @@ class PowerLibraryStubImpl : public PowerLibrary {
   bool line_power_on() const { return false; }
   bool battery_is_present() const { return true; }
   bool battery_fully_charged() const { return false; }
-  double battery_percentage() const { return 50.0; }
+  double battery_percentage() const { return 100.0; }
   base::TimeDelta battery_time_to_empty() const {
     return base::TimeDelta::FromSeconds(10 * 60);
   }

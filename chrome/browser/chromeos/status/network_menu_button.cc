@@ -104,7 +104,7 @@ namespace chromeos {
 // NetworkMenuButton
 
 // static
-const int NetworkMenuButton::kThrobDuration = 1000;
+const int NetworkMenuButton::kThrobDuration = 750;
 
 NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
     : StatusAreaButton(host, this),
@@ -115,9 +115,10 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
       mobile_data_bubble_(NULL),
       check_for_promo_(true),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
+      last_network_type_(TYPE_WIFI),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
-  animation_connecting_.SetTweenType(ui::Tween::EASE_IN_OUT);
+  animation_connecting_.SetTweenType(ui::Tween::LINEAR);
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   OnNetworkManagerChanged(network_library);
   network_library->AddNetworkManagerObserver(this);
@@ -146,7 +147,7 @@ NetworkMenuButton::~NetworkMenuButton() {
 void NetworkMenuButton::AnimationProgressed(const ui::Animation* animation) {
   if (animation == &animation_connecting_) {
     SetIconOnly(IconForNetworkConnecting(
-        animation_connecting_.GetCurrentValue(), false));
+        animation_connecting_.GetCurrentValue(), last_network_type_, false));
     // No need to set the badge here, because it should already be set.
     SchedulePaint();
   } else {
@@ -310,12 +311,34 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
 
   if (!cros->Connected() && !cros->Connecting()) {
     animation_connecting_.Stop();
-    SetIconAndBadges(rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
-                     rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED),
-                     NULL);
+    if (last_network_type_ == TYPE_WIFI) {
+      SetIconAndBadges(rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_ARCS0),
+                       NULL,
+                       NULL);
+    } else {
+      SetIconAndBadges(rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
+                       rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED),
+                       NULL);
+    }
     SetTooltipText(UTF16ToWide(l10n_util::GetStringUTF16(
         IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP)));
     return;
+  }
+
+  // Stash last network type away so we can show the right icon if we lose
+  // signal.
+  if (network) {
+    if (network->type() == TYPE_CELLULAR) {
+      last_network_type_ = TYPE_CELLULAR;
+    } else {
+      // We force all non cell networks to wifi so we'll get the no wifi
+      // icon if there's no connection.
+      last_network_type_ = TYPE_WIFI;
+    }
+  } else if (cros->wifi_connecting()) {
+    last_network_type_ = TYPE_WIFI;
+  } else if (cros->cellular_connecting()) {
+     last_network_type_ = TYPE_CELLULAR;
   }
 
   if (cros->wifi_connecting() || cros->cellular_connecting()) {
@@ -323,7 +346,7 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
     if (!animation_connecting_.is_animating()) {
       animation_connecting_.Reset();
       animation_connecting_.StartThrobbing(-1);
-      SetIconOnly(IconForNetworkConnecting(0, false));
+      SetIconOnly(IconForNetworkConnecting(0, last_network_type_, false));
     }
     const WirelessNetwork* wireless = NULL;
     if (cros->wifi_connecting()) {

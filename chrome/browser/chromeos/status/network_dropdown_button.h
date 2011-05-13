@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,6 +51,9 @@ class NetworkDropdownButton : public DropDownButton,
   static const int kThrobDuration;
 
   gfx::NativeWindow parent_window_;
+
+  // The last network we connected to (or tried to).
+  ConnectionType last_network_type_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDropdownButton);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ namespace chromeos {
 // NetworkDropdownButton
 
 // static
-const int NetworkDropdownButton::kThrobDuration = 1000;
+const int NetworkDropdownButton::kThrobDuration = 750;
 
 NetworkDropdownButton::NetworkDropdownButton(bool browser_mode,
                                              gfx::NativeWindow parent_window)
@@ -32,9 +32,10 @@ NetworkDropdownButton::NetworkDropdownButton(bool browser_mode,
                      true),
       browser_mode_(browser_mode),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
-      parent_window_(parent_window) {
+      parent_window_(parent_window),
+      last_network_type_(TYPE_WIFI) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
-  animation_connecting_.SetTweenType(ui::Tween::EASE_IN_OUT);
+  animation_connecting_.SetTweenType(ui::Tween::LINEAR);
   CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
   // The initial state will be updated on Refresh.
   // See network_selection_view.cc.
@@ -51,6 +52,7 @@ void NetworkDropdownButton::AnimationProgressed(
     const ui::Animation* animation) {
   if (animation == &animation_connecting_) {
     SetIcon(*IconForNetworkConnecting(animation_connecting_.GetCurrentValue(),
+                                      last_network_type_,
                                       true));
     SchedulePaint();
   } else {
@@ -77,6 +79,23 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     // Always show the active network, if any
     const Network* active_network = cros->active_network();
+
+    // Stash last network type away so we can show the right icon if we lose
+    // signal.
+    if (active_network) {
+      if (active_network->type() == TYPE_CELLULAR) {
+        last_network_type_ = TYPE_CELLULAR;
+      } else {
+        // We force all non cell networks to wifi so we'll get the no wifi
+        // icon if there's no connection.
+        last_network_type_ = TYPE_WIFI;
+      }
+    } else if (cros->wifi_connecting()) {
+      last_network_type_ = TYPE_WIFI;
+    } else if (cros->cellular_connecting()) {
+       last_network_type_ = TYPE_CELLULAR;
+    }
+
     if (active_network != NULL) {
       animation_connecting_.Stop();
       if (active_network->type() == TYPE_ETHERNET) {
@@ -100,7 +119,7 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
       if (!animation_connecting_.is_animating()) {
         animation_connecting_.Reset();
         animation_connecting_.StartThrobbing(-1);
-        SetIcon(*IconForNetworkConnecting(0, true));
+        SetIcon(*IconForNetworkConnecting(0, last_network_type_, true));
       }
       if (cros->wifi_connecting())
         SetText(ASCIIToWide(cros->wifi_network()->name()));

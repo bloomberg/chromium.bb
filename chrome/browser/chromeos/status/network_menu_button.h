@@ -151,6 +151,8 @@ class NetworkMenuButton : public StatusAreaButton,
 
   // Current carrier deal URL.
   std::string deal_url_;
+  // The last network we connected to (or tried to).
+  ConnectionType last_network_type_;
 
   // Factory for delaying showing promo notification.
   ScopedRunnableMethodFactory<NetworkMenuButton> method_factory_;
