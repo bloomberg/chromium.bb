@@ -9,12 +9,12 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/media/buffered_resource_loader.h"
-#include "webkit/mocks/mock_webframe.h"
+#include "webkit/mocks/mock_webframeclient.h"
 #include "webkit/mocks/mock_weburlloader.h"
 
 using ::testing::_;
@@ -33,8 +33,8 @@ using ::testing::StrictMock;
 using ::testing::NiceMock;
 using ::testing::WithArgs;
 
+using WebKit::WebString;
 using WebKit::WebURLError;
-using WebKit::WebFrameClient;
 using WebKit::WebURLResponse;
 using WebKit::WebView;
 
@@ -67,20 +67,23 @@ ACTION_P(RequestCanceled, loader) {
 
 class BufferedResourceLoaderTest : public testing::Test {
  public:
-  BufferedResourceLoaderTest() {
-    for (int i = 0; i < kDataSize; ++i)
+  BufferedResourceLoaderTest()
+      : view_(WebView::create(NULL)) {
+    view_->initializeMainFrame(&client_);
+
+    for (int i = 0; i < kDataSize; ++i) {
       data_[i] = i;
+    }
   }
 
   virtual ~BufferedResourceLoaderTest() {
+    view_->close();
   }
 
   void Initialize(const char* url, int first_position, int last_position) {
     gurl_ = GURL(url);
     first_position_ = first_position;
     last_position_ = last_position;
-
-    frame_.reset(new NiceMock<MockWebFrame>());
 
     url_loader_ = new NiceMock<MockWebURLLoader>();
     loader_ = new BufferedResourceLoader(gurl_,
@@ -99,7 +102,7 @@ class BufferedResourceLoaderTest : public testing::Test {
     loader_->Start(
         NewCallback(this, &BufferedResourceLoaderTest::StartCallback),
         NewCallback(this, &BufferedResourceLoaderTest::NetworkCallback),
-        frame_.get());
+        view_->mainFrame());
   }
 
   void FullResponse(int64 instance_size) {
@@ -231,7 +234,9 @@ class BufferedResourceLoaderTest : public testing::Test {
 
   scoped_refptr<BufferedResourceLoader> loader_;
   NiceMock<MockWebURLLoader>* url_loader_;
-  scoped_ptr<NiceMock<MockWebFrame> > frame_;
+
+  MockWebFrameClient client_;
+  WebView* view_;
 
   uint8 data_[kDataSize];
 

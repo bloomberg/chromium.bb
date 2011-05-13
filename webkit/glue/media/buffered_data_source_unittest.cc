@@ -9,10 +9,9 @@
 #include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
 #include "net/base/net_errors.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/media/buffered_data_source.h"
-#include "webkit/mocks/mock_webframe.h"
+#include "webkit/mocks/mock_webframeclient.h"
 
 using ::testing::_;
 using ::testing::Assign;
@@ -29,6 +28,9 @@ using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
 using ::testing::NiceMock;
 using ::testing::WithArgs;
+
+using WebKit::WebFrame;
+using WebKit::WebView;
 
 namespace webkit_glue {
 
@@ -90,16 +92,18 @@ class MockBufferedResourceLoader : public BufferedResourceLoader {
 
 class BufferedDataSourceTest : public testing::Test {
  public:
-  BufferedDataSourceTest() {
+  BufferedDataSourceTest()
+      : view_(WebView::create(NULL)) {
+    view_->initializeMainFrame(&client_);
     message_loop_ = MessageLoop::current();
 
-    // Prepare test data.
     for (size_t i = 0; i < sizeof(data_); ++i) {
       data_[i] = i;
     }
   }
 
   virtual ~BufferedDataSourceTest() {
+    view_->close();
   }
 
   void ExpectCreateAndStartResourceLoader(int start_error) {
@@ -119,10 +123,8 @@ class BufferedDataSourceTest : public testing::Test {
     // Saves the url first.
     gurl_ = GURL(url);
 
-    frame_.reset(new NiceMock<MockWebFrame>());
-
     data_source_ = new MockBufferedDataSource(MessageLoop::current(),
-                                              frame_.get());
+                                              view_->mainFrame());
     data_source_->set_host(&host_);
 
     scoped_refptr<NiceMock<MockBufferedResourceLoader> > first_loader(
@@ -360,7 +362,9 @@ class BufferedDataSourceTest : public testing::Test {
 
   scoped_refptr<NiceMock<MockBufferedResourceLoader> > loader_;
   scoped_refptr<MockBufferedDataSource> data_source_;
-  scoped_ptr<NiceMock<MockWebFrame> > frame_;
+
+  MockWebFrameClient client_;
+  WebView* view_;
 
   StrictMock<media::MockFilterHost> host_;
   GURL gurl_;

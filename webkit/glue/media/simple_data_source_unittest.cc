@@ -7,13 +7,13 @@
 #include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
 #include "net/base/net_errors.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/media/simple_data_source.h"
-#include "webkit/mocks/mock_webframe.h"
+#include "webkit/mocks/mock_webframeclient.h"
 #include "webkit/mocks/mock_weburlloader.h"
 
 using ::testing::_;
@@ -31,6 +31,7 @@ using WebKit::WebURLError;
 using WebKit::WebURLLoader;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
+using WebKit::WebView;
 
 namespace webkit_glue {
 
@@ -49,24 +50,27 @@ static const char kHttpRedirectToDifferentDomainUrl2[] = "http://test2/ing";
 
 class SimpleDataSourceTest : public testing::Test {
  public:
-  SimpleDataSourceTest() {
+  SimpleDataSourceTest()
+      : view_(WebView::create(NULL)) {
+    view_->initializeMainFrame(&client_);
+
     for (int i = 0; i < kDataSize; ++i) {
       data_[i] = i;
     }
   }
 
   virtual ~SimpleDataSourceTest() {
+    view_->close();
   }
 
   void InitializeDataSource(const char* url,
                             media::MockStatusCallback* callback) {
     gurl_ = GURL(url);
 
-    frame_.reset(new NiceMock<MockWebFrame>());
     url_loader_ = new NiceMock<MockWebURLLoader>();
 
     data_source_ = new SimpleDataSource(MessageLoop::current(),
-                                        frame_.get());
+                                        view_->mainFrame());
 
     // There is no need to provide a message loop to data source.
     data_source_->set_host(&host_);
@@ -114,8 +118,8 @@ class SimpleDataSourceTest : public testing::Test {
 
   void Redirect(const char* url) {
     GURL redirectUrl(url);
-    WebKit::WebURLRequest newRequest(redirectUrl);
-    WebKit::WebURLResponse redirectResponse(gurl_);
+    WebURLRequest newRequest(redirectUrl);
+    WebURLResponse redirectResponse(gurl_);
 
     data_source_->willSendRequest(url_loader_, newRequest, redirectResponse);
 
@@ -149,7 +153,9 @@ class SimpleDataSourceTest : public testing::Test {
   NiceMock<MockWebURLLoader>* url_loader_;
   scoped_refptr<SimpleDataSource> data_source_;
   StrictMock<media::MockFilterHost> host_;
-  scoped_ptr<NiceMock<MockWebFrame> > frame_;
+
+  MockWebFrameClient client_;
+  WebView* view_;
 
   char data_[kDataSize];
 
@@ -178,11 +184,10 @@ TEST_F(SimpleDataSourceTest, InitializeFile) {
 }
 
 TEST_F(SimpleDataSourceTest, InitializeData) {
-  frame_.reset(new NiceMock<MockWebFrame>());
   url_loader_ = new NiceMock<MockWebURLLoader>();
 
   data_source_ = new SimpleDataSource(MessageLoop::current(),
-                                      frame_.get());
+                                      view_->mainFrame());
   // There is no need to provide a message loop to data source.
   data_source_->set_host(&host_);
   data_source_->SetURLLoaderForTest(url_loader_);
