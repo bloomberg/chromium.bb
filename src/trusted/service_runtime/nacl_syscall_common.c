@@ -1351,6 +1351,12 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
    * Lock the addr space.
    */
   NaClXMutexLock(&nap->mu);
+
+  while (0 != nap->threads_launching) {
+    NaClXCondVarWait(&nap->cv, &nap->mu);
+  }
+  nap->vm_hole_may_exist = 1;
+
   holding_app_lock = 1;
 
   if (0 == (flags & NACL_ABI_MAP_FIXED)) {
@@ -1595,8 +1601,11 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
           (uintptr_t) map_result);
 
   map_result = usraddr;
+
 cleanup:
   if (holding_app_lock) {
+    nap->vm_hole_may_exist = 0;
+    NaClXCondVarBroadcast(&nap->cv);
     NaClXMutexUnlock(&nap->mu);
   }
   if (NULL != ndp) {
@@ -2327,11 +2336,28 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
     goto cleanup;
   }
 
+  NaClXMutexLock(&natp->nap->mu);
+
+  /* ensure no virtual memory hole may appear */
+  while (natp->nap->vm_hole_may_exist) {
+    NaClXCondVarWait(&natp->nap->cv, &natp->nap->mu);
+  }
+
+  ++natp->nap->threads_launching;
+  NaClXMutexUnlock(&natp->nap->mu);
+  /*
+   * NB: Dropped lock, so many threads launching can starve VM
+   * operations.  If this becomes a problem in practice, we can use a
+   * reader/writer lock so that a waiting writer will block new
+   * readers.
+   */
+
   retval = NaClCreateAdditionalThread(natp->nap,
                                       (uintptr_t) prog_ctr,
                                       sys_stack,
                                       sys_tdb,
                                       tdb_size);
+
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;

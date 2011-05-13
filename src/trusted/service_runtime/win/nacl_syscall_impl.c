@@ -252,6 +252,12 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
   }
 
   NaClXMutexLock(&natp->nap->mu);
+
+  while (0 != natp->nap->threads_launching) {
+    NaClXCondVarWait(&natp->nap->cv, &natp->nap->mu);
+  }
+  natp->nap->vm_hole_may_exist = 1;
+
   holding_app_lock = 1;
 
   /*
@@ -323,6 +329,8 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
   retval = 0;
 cleanup:
   if (holding_app_lock) {
+    natp->nap->vm_hole_may_exist = 0;
+    NaClXCondVarBroadcast(&natp->nap->cv);
     NaClXMutexUnlock(&natp->nap->mu);
   }
   NaClSysCommonThreadSyscallLeave(natp);

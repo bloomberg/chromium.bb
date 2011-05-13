@@ -699,6 +699,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   NaClSignalRegisterApp(nap);
 
   nap->running = 1;
+  nap->threads_launching = 1;
 
   NaClLog(2, "system stack ptr : %016"NACL_PRIxPTR"\n", stack_ptr);
   NaClLog(2, "  user stack ptr : %016"NACL_PRIxPTR"\n",

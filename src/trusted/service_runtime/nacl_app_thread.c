@@ -7,6 +7,7 @@
 /*
  * NaCl Server Runtime user thread state.
  */
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 
@@ -38,6 +39,17 @@ void WINAPI NaClThreadLauncher(void *state) {
   NaClXMutexLock(&natp->nap->threads_mu);
   natp->thread_num = NaClAddThreadMu(natp->nap, natp);
   NaClXMutexUnlock(&natp->nap->threads_mu);
+
+  NaClXMutexLock(&natp->nap->mu);
+
+  if (0 == --natp->nap->threads_launching) {
+    /*
+     * Wake up the threads waiting to do VM operations.
+     */
+    NaClXCondVarBroadcast(&natp->nap->cv);
+  }
+
+  NaClXMutexUnlock(&natp->nap->mu);
 
   NaClStackSafetyNowOnUntrustedStack();  /* real soon now! */
 

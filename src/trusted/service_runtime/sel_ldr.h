@@ -195,6 +195,21 @@ struct NaClApp {
   struct NaClMutex          mu;
   struct NaClCondVar        cv;
 
+  /*
+   * invariant: !(vm_hole_may_exist && threads_launching != 0).
+   * vm_hole_may_exist is set while mmap/munmap manipulates the memory
+   * map, and threads_launching is set while a thread is launching
+   * (and a trusted thread stack is being allocated).
+   *
+   * strictly speaking, vm_hole_may_exist need not be present, since
+   * the vm code ensures that 0 == threads_launching and then holds
+   * the lock for the duration of the VM operation.  it is safer this
+   * way, in case we later introduce code that might want to
+   * temporarily drop the process lock.
+   */
+  int                       vm_hole_may_exist;
+  int                       threads_launching;
+
   struct NaClSecureService        *secure_service;
   struct NaClSecureReverseClient  *reverse_client;
   int                             reverse_channel_initialized;

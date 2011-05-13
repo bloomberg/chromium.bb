@@ -142,6 +142,9 @@ int NaClAppCtor(struct NaClApp  *nap) {
     goto cleanup_mu;
   }
 
+  nap->vm_hole_may_exist = 0;
+  nap->threads_launching = 0;
+
   nap->module_load_status = LOAD_STATUS_UNKNOWN;
   nap->module_may_start = 0;  /* only when secure_service != NULL */
 
