@@ -46,6 +46,8 @@ function FileManager(dialogDom, rootEntries, params) {
   // True if we should filter out files that start with a dot.
   this.filterFiles_ = true;
 
+  this.commands_ = {};
+
   this.document_ = dialogDom.ownerDocument;
   this.dialogType_ =
     this.params_.type || FileManager.DialogType.FULL_PAGE;
@@ -61,6 +63,7 @@ function FileManager(dialogDom, rootEntries, params) {
   this.addEventListener('selection-summarized',
                         this.onSelectionSummarized_.bind(this));
 
+  this.initCommands_();
   this.initDom_();
   this.initDialogType_();
 
@@ -432,6 +435,28 @@ FileManager.prototype = {
   // Instance methods.
 
   /**
+   * One-time initialization of commands.
+   */
+  FileManager.prototype.initCommands_ = function() {
+    var commands = this.dialogDom_.querySelectorAll('command');
+    for (var i = 0; i < commands.length; i++) {
+      var command = commands[i];
+      cr.ui.Command.decorate(command);
+      this.commands_[command.id] = command;
+    }
+
+    this.fileContextMenu_ = this.dialogDom_.querySelector('.file-context-menu');
+    cr.ui.Menu.decorate(this.fileContextMenu_);
+
+    this.document_.addEventListener(
+        'canExecute', this.onRenameCanExecute_.bind(this));
+    this.document_.addEventListener(
+        'canExecute', this.onDeleteCanExecute_.bind(this));
+
+    this.document_.addEventListener('command', this.onCommand_.bind(this));
+  }
+
+  /**
    * One-time initialization of various DOM nodes.
    */
   FileManager.prototype.initDom_ = function() {
@@ -518,6 +543,45 @@ FileManager.prototype = {
     this.dialogDom_.style.opacity = '1';
   };
 
+  /**
+   * Force the canExecute events to be dispatched.
+   */
+  FileManager.prototype.updateCommands_ = function() {
+    this.commands_['rename'].canExecuteChange();
+    this.commands_['delete'].canExecuteChange();
+  };
+
+  /**
+   * Invoked to decide whether the "rename" command can be executed.
+   */
+  FileManager.prototype.onRenameCanExecute_ = function(event) {
+    event.canExecute =
+        (// Full page mode.
+         this.dialogType_ == FileManager.DialogType.FULL_PAGE &&
+         // Rename not in progress.
+         !this.renameInput_.currentEntry &&
+         // Not in root directory.
+         this.currentDirEntry_.fullPath != '/' &&
+         // Not in media directory.
+         this.currentDirEntry_.fullPath != MEDIA_DIRECTORY &&
+         // Only one file selected.
+         this.selection.totalCount == 1);
+  };
+
+  /**
+   * Invoked to decide whether the "delete" command can be executed.
+   */
+  FileManager.prototype.onDeleteCanExecute_ = function(event) {
+    event.canExecute =
+        (// Full page mode.
+         this.dialogType_ == FileManager.DialogType.FULL_PAGE &&
+         // Rename not in progress.
+         !this.renameInput_.currentEntry &&
+         // Not in root directory.
+         this.currentDirEntry_.fullPath != '/' &&
+         // Not in media directory.
+         this.currentDirEntry_.fullPath != MEDIA_DIRECTORY);
+  };
 
   FileManager.prototype.setListType = function(type) {
     if (type && type == this.listType_)
@@ -565,6 +629,14 @@ FileManager.prototype = {
         'dblclick', this.onDetailDoubleClick_.bind(this));
     this.grid_.selectionModel.addEventListener(
         'change', this.onDetailSelectionChanged_.bind(this));
+
+    if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
+      cr.ui.contextMenuHandler.addContextMenuProperty(this.grid_);
+      this.grid_.contextMenu = this.fileContextMenu_;
+    }
+
+    this.grid_.addEventListener('mousedown',
+                                this.onGridMouseDown_.bind(this));
   };
 
   /**
@@ -595,6 +667,38 @@ FileManager.prototype = {
         'dblclick', this.onDetailDoubleClick_.bind(this));
     this.table_.selectionModel.addEventListener(
         'change', this.onDetailSelectionChanged_.bind(this));
+
+    if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
+      cr.ui.contextMenuHandler.addContextMenuProperty(this.table_);
+      this.table_.contextMenu = this.fileContextMenu_;
+    }
+
+    this.table_.addEventListener('mousedown',
+                                 this.onTableMouseDown_.bind(this));
+  };
+
+  /**
+   * Respond to a command being executed.
+   */
+  FileManager.prototype.onCommand_ = function(event) {
+    switch (event.command.id) {
+      case 'rename':
+        var leadIndex = this.currentList_.selectionModel.leadIndex;
+        var li = this.currentList_.getListItemByIndex(leadIndex);
+        var label = li.querySelector('.filename-label');
+        if (!label) {
+          console.warn('Unable to find label for rename of index: ' +
+                       leadIndex);
+          return;
+        }
+
+        this.initiateRename_(label);
+        break;
+
+      case 'delete':
+        this.deleteEntries(this.selection.entries);
+        break;
+    }
   };
 
   /**
@@ -772,16 +876,18 @@ FileManager.prototype = {
     div.appendChild(img);
 
     div = this.document_.createElement('div');
-    div.className = 'text-container';
-    div.textContent = entry.name;
-    div.addEventListener('click', this.onThumbnailLabelClick_.bind(this));
+    div.className = 'filename-label';
+    var labelText = entry.name;
+    if (this.currentDirEntry_.name == '')
+      labelText = this.getLabelForRootPath_(labelText);
+
+    div.textContent = labelText;
     div.entry = entry;
 
     li.appendChild(div);
 
     cr.defineProperty(li, 'lead', cr.PropertyKind.BOOL_ATTR);
     cr.defineProperty(li, 'selected', cr.PropertyKind.BOOL_ATTR);
-
     return li;
   }
 
@@ -825,9 +931,7 @@ FileManager.prototype = {
   FileManager.prototype.renderName_ = function(entry, columnId, table) {
     var label = this.document_.createElement('div');
     label.entry = entry;
-    label.addEventListener('mousedown',
-                           this.onDetailLabelMouseDown_.bind(this));
-    label.className = 'detail-name';
+    label.className = 'filename-label';
     if (this.currentDirEntry_.name == '') {
       label.textContent = this.getLabelForRootPath_(entry.name);
     } else {
@@ -1400,6 +1504,11 @@ FileManager.prototype = {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onDetailDoubleClick_ = function(event) {
+    if (this.renameInput_.currentEntry) {
+      // Don't pay attention to double clicks during a rename.
+      return;
+    }
+
     var i = this.currentList_.selectionModel.leadIndex;
     var entry = this.dataModel_.item(i);
 
@@ -1513,29 +1622,59 @@ FileManager.prototype = {
       opt_callback();
   };
 
-  FileManager.prototype.onThumbnailLabelClick_ = function(event) {
-    var label = event.srcElement;
-    var row = event.srcElement.parentNode;
+  FileManager.prototype.findListItem_ = function(event) {
+    var node = event.srcElement;
+    while (node) {
+      if (node.tagName == 'LI')
+        break;
+      node = node.parentNode;
+    }
 
-    if (!this.allowRenameClick_(label, row))
-      return;
-
-    this.initiateRename_(label);
-    event.preventDefault();
+    return node;
   };
 
-  FileManager.prototype.onDetailLabelMouseDown_ = function(event) {
-    var label = event.srcElement;
-    var row = event.srcElement.parentNode.parentNode;
+  FileManager.prototype.onGridMouseDown_ = function(event) {
+    this.updateCommands_();
 
-    if (!this.allowRenameClick_(label, row))
+    if (this.allowRenameClick_(event, event.srcElement.parentNode)) {
+      event.preventDefault();
+      this.initiateRename_(event.srcElement);
+    }
+
+    if (event.button != 1)
       return;
 
-    this.initiateRename_(label);
-    event.preventDefault();
+    var li = this.findListItem_(event);
+    if (!li)
+      return;
   };
 
-  FileManager.prototype.allowRenameClick_ = function(label, row) {
+  FileManager.prototype.onTableMouseDown_ = function(event) {
+    this.updateCommands_();
+
+    if (this.allowRenameClick_(event,
+                               event.srcElement.parentNode.parentNode)) {
+      event.preventDefault();
+      this.initiateRename_(event.srcElement);
+    }
+
+    if (event.button != 1)
+      return;
+
+    var li = this.findListItem_(event);
+    if (!li) {
+      console.log('li not found', event);
+      return;
+    }
+  };
+
+  /**
+   * Determine whether or not a click should initiate a rename.
+   *
+   * Renames can happen on mouse click if the user clicks on a label twice,
+   * at least a half second apart.
+   */
+  FileManager.prototype.allowRenameClick_ = function(event, row) {
     if (this.dialogType_ != FileManager.DialogType.FULL_PAGE ||
         this.currentDirEntry_.name == '') {
       // Renaming only enabled for full-page mode, outside of the root
@@ -1543,10 +1682,25 @@ FileManager.prototype = {
       return false;
     }
 
+    // Rename already in progress.
+    if (this.renameInput_.currentEntry)
+      return false;
+
+    // Didn't click on the label.
+    if (event.srcElement.className != 'filename-label')
+      return false;
+
+    // Wrong button or using a keyboard modifier.
+    if (event.button != 0 || event.shiftKey || event.metaKey || event.altKey) {
+      this.lastLabelClick_ = null;
+      return false;
+    }
+
     var now = new Date();
 
     this.lastLabelClick_ = this.lastLabelClick_ || now;
-    if (!row.selected || now - this.lastLabelClick_ < 300)
+    var delay = now - this.lastLabelClick_;
+    if (!row.selected || delay < 500)
       return false;
 
     this.lastLabelClick_ = now;
@@ -1624,7 +1778,7 @@ FileManager.prototype = {
     }
 
     function onError(err) {
-      window.alert(strf('IDS_FILE_BROWSER_ERROR_RENAMING', entry.name,
+      window.alert(strf('ERROR_RENAMING', entry.name,
                         util.getFileErrorMnemonic(err.code)));
     }
 

@@ -157,6 +157,15 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Find the list item element at the given index.
+     * @param {number} index The index of the list item to get.
+     * @return {ListItem} The found list item or null if not found.
+     */
+    getListItemByIndex: function(index) {
+      return this.list_.getListItemByIndex(index);
+    },
+
+    /**
      * Redraws the table.
      * This forces the list to remove all cached items.
      */

@@ -9,7 +9,8 @@
     <script>
       var css =
       ['list.css',
-       'table.css'
+       'table.css',
+       'menu.css'
       ];
 
       var script =
@@ -40,6 +41,12 @@
        'cr/ui/table.js',
 
        'cr/ui/grid.js',
+
+       'cr/ui/command.js',
+       'cr/ui/position_util.js',
+       'cr/ui/menu_item.js',
+       'cr/ui/menu.js',
+       'cr/ui/context_menu_handler.js',
       ];
 
       (function() {
@@ -80,6 +87,16 @@
   </head>
   <body i18n-values=".style.fontFamily:BODY_FONT_FAMILY;
                      .style.fontSize:BODY_FONT_SIZE">
+    <commands>
+      <command id="rename"></command>
+      <command id="delete"></command>
+    </commands>
+
+    <menu class=file-context-menu>
+      <menuitem i18n-content=RENAME_BUTTON_LABEL command='#rename'></menuitem>
+      <menuitem i18n-content=DELETE_BUTTON_LABEL command='#delete'></menuitem>
+    </menu>
+
     <div class=dialog-title visibleif='this.dialogType_ != "full-page"'
          >[TITLE]</div>
     <div class=dialog-header>

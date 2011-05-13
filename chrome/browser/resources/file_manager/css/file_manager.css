@@ -149,7 +149,7 @@ button.thumbnail-view > img {
   max-height: 85px;
 }
 
-.thumbnail-item > div.text-container {
+.thumbnail-item > div.filename-label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

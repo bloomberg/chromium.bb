@@ -178,3 +178,9 @@ chrome.fileBrowserPrivate = {
     });
   }
 };
+
+chrome.extension = {
+  getURL: function() {
+    return document.location.href;
+  }
+};
