@@ -25,6 +25,13 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_CONTROL1(ServiceMsg_EnableCloudPrintProxy,
                      std::string /* lsid */)
 
+// Tell the service process to enable the cloud proxy passing in the OAuth2
+// auth code of a robot account.
+IPC_MESSAGE_CONTROL3(ServiceMsg_EnableCloudPrintProxyWithRobot,
+                     std::string /* robot_auth_code */,
+                     std::string /* robot_email*/,
+                     std::string /* user_email*/)
+
 // Tell the service process to disable the cloud proxy.
 IPC_MESSAGE_CONTROL0(ServiceMsg_DisableCloudPrintProxy)
 

@@ -34,6 +34,9 @@ class CloudPrintProxyService
 
   // Enables/disables cloud printing for the user
   virtual void EnableForUser(const std::string& lsid, const std::string& email);
+  virtual void EnableForUserWithRobot(const std::string& robot_auth_code,
+                                      const std::string& robot_email,
+                                      const std::string& user_email);
   virtual void DisableForUser();
 
   // Query the service process for the status of the cloud print proxy and
@@ -57,6 +60,9 @@ class CloudPrintProxyService
   // Methods that send an IPC to the service.
   void RefreshCloudPrintProxyStatus();
   void EnableCloudPrintProxy(const std::string& lsid, const std::string& email);
+  void EnableCloudPrintProxyWithRobot(const std::string& robot_auth_code,
+                                      const std::string& robot_email,
+                                      const std::string& user_email);
   void DisableCloudPrintProxy();
 
   // Callback that gets the cloud print proxy info.

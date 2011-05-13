@@ -78,6 +78,10 @@ class CloudPrintProxyBackend {
   bool InitializeWithRobotToken(const std::string& robot_oauth_refresh_token,
                                 const std::string& robot_email,
                                 const std::string& proxy_id);
+  // Called when an external entity passed in the auth code for the robot.
+  bool InitializeWithRobotAuthCode(const std::string& robot_oauth_auth_code,
+                                   const std::string& robot_email,
+                                   const std::string& proxy_id);
   void Shutdown();
   void RegisterPrinters(const printing::PrinterList& printer_list);
 

@@ -42,6 +42,10 @@ class ServiceIPCServer : public IPC::Channel::Listener,
 
   // IPC message handlers.
   void OnEnableCloudPrintProxy(const std::string& lsid);
+  void OnEnableCloudPrintProxyWithRobot(
+      const std::string& robot_auth_code,
+      const std::string& robot_email,
+      const std::string& user_email);
   void OnGetCloudPrintProxyInfo();
   void OnDisableCloudPrintProxy();
 

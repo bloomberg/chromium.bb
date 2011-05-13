@@ -69,6 +69,9 @@ class CloudPrintProxyBackend::Core
   void DoInitializeWithRobotToken(const std::string& robot_oauth_refresh_token,
                                   const std::string& robot_email,
                                   const std::string& proxy_id);
+  void DoInitializeWithRobotAuthCode(const std::string& robot_oauth_auth_code,
+                                     const std::string& robot_email,
+                                     const std::string& proxy_id);
 
   // Called on the CloudPrintProxyBackend core_thread_ to perform
   // shutdown.
@@ -340,6 +343,21 @@ bool CloudPrintProxyBackend::InitializeWithRobotToken(
   return true;
 }
 
+bool CloudPrintProxyBackend::InitializeWithRobotAuthCode(
+    const std::string& robot_oauth_auth_code,
+    const std::string& robot_email,
+    const std::string& proxy_id) {
+  if (!core_thread_.Start())
+    return false;
+  core_thread_.message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(
+        core_.get(),
+        &CloudPrintProxyBackend::Core::DoInitializeWithRobotAuthCode,
+        robot_oauth_auth_code,
+        robot_email,
+        proxy_id));
+  return true;
+}
 
 void CloudPrintProxyBackend::Shutdown() {
   core_thread_.message_loop()->PostTask(FROM_HERE,
@@ -449,6 +467,22 @@ void CloudPrintProxyBackend::Core::DoInitializeWithRobotToken(
   RefreshAccessToken();
 }
 
+void CloudPrintProxyBackend::Core::DoInitializeWithRobotAuthCode(
+    const std::string& robot_oauth_auth_code,
+    const std::string& robot_email,
+    const std::string& proxy_id) {
+  robot_email_ = robot_email;
+  proxy_id_ = proxy_id;
+  // Now that we have an auth code we need to get the refresh and access tokens.
+  oauth_client_.reset(new gaia::GaiaOAuthClient(
+      gaia::kGaiaOAuth2Url,
+      g_service_process->GetServiceURLRequestContextGetter()));
+  oauth_client_->GetTokensFromAuthCode(oauth_client_info_,
+                                       robot_oauth_auth_code,
+                                       kCloudPrintAPIMaxRetryCount,
+                                       this);
+}
+
 void CloudPrintProxyBackend::Core::PostAuthInitialization() {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   // Now we can get down to registering printers.
@@ -539,7 +573,8 @@ void CloudPrintProxyBackend::Core::DoShutdown() {
     index->second->Shutdown();
   }
   // Important to delete the TalkMediator on this thread.
-  talk_mediator_->Logout();
+  if (talk_mediator_.get())
+    talk_mediator_->Logout();
   talk_mediator_.reset();
   notifications_enabled_ = false;
   notifications_enabled_since_ = base::TimeTicks();

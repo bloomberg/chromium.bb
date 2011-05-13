@@ -101,6 +101,8 @@ bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(ServiceIPCServer, msg)
     IPC_MESSAGE_HANDLER(ServiceMsg_EnableCloudPrintProxy,
                         OnEnableCloudPrintProxy)
+    IPC_MESSAGE_HANDLER(ServiceMsg_EnableCloudPrintProxyWithRobot,
+                        OnEnableCloudPrintProxyWithRobot)
     IPC_MESSAGE_HANDLER(ServiceMsg_DisableCloudPrintProxy,
                         OnDisableCloudPrintProxy)
     IPC_MESSAGE_HANDLER(ServiceMsg_GetCloudPrintProxyInfo,
@@ -114,6 +116,16 @@ bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
 
 void ServiceIPCServer::OnEnableCloudPrintProxy(const std::string& lsid) {
   g_service_process->GetCloudPrintProxy()->EnableForUser(lsid);
+}
+
+void ServiceIPCServer::OnEnableCloudPrintProxyWithRobot(
+    const std::string& robot_auth_code,
+    const std::string& robot_email,
+    const std::string& user_email) {
+  g_service_process->GetCloudPrintProxy()->EnableForUserWithRobot(
+      robot_auth_code,
+      robot_email,
+      user_email);
 }
 
 void ServiceIPCServer::OnGetCloudPrintProxyInfo() {
