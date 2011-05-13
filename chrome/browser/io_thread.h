@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process_sub_thread.h"
+#include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/net/predictor_common.h"
 #include "net/base/network_change_notifier.h"
@@ -69,9 +70,6 @@ class IOThread : public BrowserProcessSubThread {
     scoped_ptr<net::ProxyService> system_proxy_service;
     scoped_ptr<net::HttpTransactionFactory> system_http_transaction_factory;
     scoped_ptr<net::FtpTransactionFactory> system_ftp_transaction_factory;
-    // NOTE(willchan): This request context is unusable until a system
-    // SSLConfigService is provided that doesn't rely on
-    // Profiles. Do NOT use this yet.
     scoped_refptr<net::URLRequestContext> system_request_context;
     scoped_refptr<ExtensionEventRouterForwarder>
         extension_event_router_forwarder;
@@ -160,6 +158,9 @@ class IOThread : public BrowserProcessSubThread {
   // called on the IO thread.
   void ClearHostCache();
 
+  // Returns an SSLConfigService instance.
+  net::SSLConfigService* GetSSLConfigService();
+
   // The NetLog is owned by the browser process, to allow logging from other
   // threads during shutdown, but is used most frequently on the IOThread.
   ChromeNetLog* net_log_;
@@ -191,6 +192,10 @@ class IOThread : public BrowserProcessSubThread {
   std::string auth_server_whitelist_;
   std::string auth_delegate_whitelist_;
   std::string gssapi_library_name_;
+
+  // This is an instance of the default SSLConfigServiceManager for the current
+  // platform and it gets SSL preferences from local_state object.
+  scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
   // These member variables are initialized by a task posted to the IO thread,
   // which gets posted by calling certain member functions of IOThread.

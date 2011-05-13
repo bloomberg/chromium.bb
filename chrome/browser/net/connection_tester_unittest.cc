@@ -121,7 +121,7 @@ class ConnectionTesterTest : public PlatformTest {
         &http_auth_handler_factory_);
     proxy_service_.reset(net::ProxyService::CreateDirect());
     proxy_script_fetcher_context_->set_proxy_service(proxy_service_.get());
-    ssl_config_service_ = net::SSLConfigService::CreateSystemSSLConfigService();
+    ssl_config_service_ = new net::SSLConfigServiceDefaults;
     net::HttpNetworkSession::Params session_params;
     session_params.host_resolver = &host_resolver_;
     session_params.cert_verifier = &cert_verifier_;

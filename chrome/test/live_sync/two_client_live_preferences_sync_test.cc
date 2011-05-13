@@ -322,51 +322,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kRestoreOnStartup) {
             GetPrefs(1)->GetInteger(prefs::kRestoreOnStartup));
 }
 
-// TCM ID - 3609330.
-#if defined(USE_NSS)
-IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, Security) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kCertRevocationCheckingEnabled),
-            GetPrefs(1)->GetBoolean(prefs::kCertRevocationCheckingEnabled));
-  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kSSL3Enabled),
-            GetPrefs(1)->GetBoolean(prefs::kSSL3Enabled));
-  ASSERT_EQ(GetPrefs(0)->GetBoolean(prefs::kTLS1Enabled),
-            GetPrefs(1)->GetBoolean(prefs::kTLS1Enabled));
-
-  bool new_kCertRevocationCheckingEnabled = !GetVerifierPrefs()->GetBoolean(
-      prefs::kCertRevocationCheckingEnabled);
-  bool new_kSSL3Enabled = !GetVerifierPrefs()->GetBoolean(
-      prefs::kSSL3Enabled);
-  bool new_kTLS1Enabled = !GetVerifierPrefs()->GetBoolean(
-      prefs::kTLS1Enabled);
-
-  GetVerifierPrefs()->SetBoolean(prefs::kCertRevocationCheckingEnabled,
-      new_kCertRevocationCheckingEnabled);
-  GetPrefs(0)->SetBoolean(prefs::kCertRevocationCheckingEnabled,
-      new_kCertRevocationCheckingEnabled);
-  GetVerifierPrefs()->SetBoolean(prefs::kSSL3Enabled, new_kSSL3Enabled);
-  GetPrefs(0)->SetBoolean(prefs::kSSL3Enabled, new_kSSL3Enabled);
-  GetVerifierPrefs()->SetBoolean(prefs::kTLS1Enabled, new_kTLS1Enabled);
-  GetPrefs(0)->SetBoolean(prefs::kTLS1Enabled, new_kTLS1Enabled);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
-  ASSERT_EQ(GetVerifierPrefs()->
-      GetBoolean(prefs::kCertRevocationCheckingEnabled),
-      GetPrefs(0)->GetBoolean(prefs::kCertRevocationCheckingEnabled));
-  ASSERT_NE(GetVerifierPrefs()->
-      GetBoolean(prefs::kCertRevocationCheckingEnabled),
-      GetPrefs(1)->GetBoolean(prefs::kCertRevocationCheckingEnabled));
-  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kSSL3Enabled),
-            GetPrefs(0)->GetBoolean(prefs::kSSL3Enabled));
-  ASSERT_NE(GetVerifierPrefs()->GetBoolean(prefs::kSSL3Enabled),
-            GetPrefs(1)->GetBoolean(prefs::kSSL3Enabled));
-  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kTLS1Enabled),
-            GetPrefs(0)->GetBoolean(prefs::kTLS1Enabled));
-  ASSERT_NE(GetVerifierPrefs()->GetBoolean(prefs::kTLS1Enabled),
-            GetPrefs(1)->GetBoolean(prefs::kTLS1Enabled));
-}
-#endif  // USE_NSS
-
 // TCM ID - 3703314.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, Privacy) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";

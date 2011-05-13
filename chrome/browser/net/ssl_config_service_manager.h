@@ -12,17 +12,13 @@ class SSLConfigService;
 
 class PrefService;
 
-// An interface for creating SSLConfigService objects for the current platform.
+// An interface for creating SSLConfigService objects.
 class SSLConfigServiceManager {
  public:
-  // Create an instance of the default SSLConfigServiceManager for the current
-  // platform. The lifetime of the PrefService objects must be longer than that
-  // of the manager. Get SSL preferences from local_state object. If SSL
-  // preferences don't exist in local_state object, then get the data from
-  // user_prefs object and migrate it to local_state object and then delete the
-  // data from user_prefs object.
+  // Create an instance of the SSLConfigServiceManager. The lifetime of the
+  // PrefService objects must be longer than that of the manager. Get SSL
+  // preferences from local_state object.
   static SSLConfigServiceManager* CreateDefaultManager(
-      PrefService* user_prefs,
       PrefService* local_state);
 
   virtual ~SSLConfigServiceManager() {}

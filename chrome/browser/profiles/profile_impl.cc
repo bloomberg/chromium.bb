@@ -345,7 +345,7 @@ void ProfileImpl::DoFinalInit() {
 
   PrefService* local_state = g_browser_process->local_state();
   ssl_config_service_manager_.reset(
-      SSLConfigServiceManager::CreateDefaultManager(GetPrefs(), local_state));
+      SSLConfigServiceManager::CreateDefaultManager(local_state));
 
   PinnedTabServiceFactory::GetForProfile(this);
 

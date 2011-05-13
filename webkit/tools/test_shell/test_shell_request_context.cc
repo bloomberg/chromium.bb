@@ -11,7 +11,7 @@
 #include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
-#include "net/base/ssl_config_service.h"
+#include "net/base/ssl_config_service_defaults.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/proxy/proxy_config_service.h"
@@ -72,7 +72,7 @@ void TestShellRequestContext::Init(
   storage_.set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
       proxy_config_service.release(), 0, NULL));
   storage_.set_ssl_config_service(
-      net::SSLConfigService::CreateSystemSSLConfigService());
+      new net::SSLConfigServiceDefaults);
 
   storage_.set_http_auth_handler_factory(
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver()));

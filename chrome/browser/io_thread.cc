@@ -298,6 +298,8 @@ IOThread::IOThread(
   pref_proxy_config_tracker_ = new PrefProxyConfigTracker(local_state);
   ChromeNetworkDelegate::InitializeReferrersEnabled(&system_enable_referrers_,
                                                     local_state);
+  ssl_config_service_manager_.reset(
+      SSLConfigServiceManager::CreateDefaultManager(local_state));
 }
 
 IOThread::~IOThread() {
@@ -423,9 +425,7 @@ void IOThread::Init() {
       CreateGlobalHostResolver(net_log_));
   globals_->cert_verifier.reset(new net::CertVerifier);
   globals_->dnsrr_resolver.reset(new net::DnsRRResolver);
-  // TODO(willchan): Use the real SSLConfigService.
-  globals_->ssl_config_service =
-      net::SSLConfigService::CreateSystemSSLConfigService();
+  globals_->ssl_config_service = GetSSLConfigService();
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
   // For the ProxyScriptFetcher, we use a direct ProxyService.
@@ -622,6 +622,10 @@ void IOThread::ClearHostCache() {
     if (host_cache)
       host_cache->clear();
   }
+}
+
+net::SSLConfigService* IOThread::GetSSLConfigService() {
+  return ssl_config_service_manager_->Get();
 }
 
 void IOThread::InitSystemRequestContext() {
