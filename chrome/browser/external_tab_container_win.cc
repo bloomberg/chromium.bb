@@ -87,8 +87,7 @@ base::LazyInstance<ExternalTabContainer::PendingTabs>
 
 ExternalTabContainer::ExternalTabContainer(
     AutomationProvider* automation, AutomationResourceMessageFilter* filter)
-    : views::WidgetWin(new views::Widget),
-      automation_(automation),
+    : automation_(automation),
       tab_contents_container_(NULL),
       tab_handle_(0),
       ignore_next_load_notification_(false),
@@ -138,7 +137,6 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.bounds = bounds;
-  params.native_widget = this;
   GetWidget()->Init(params);
   if (!IsWindow()) {
     NOTREACHED();
@@ -219,8 +217,9 @@ void ExternalTabContainer::Uninitialize() {
   if (tab_contents_.get()) {
     UnregisterRenderViewHost(tab_contents_->render_view_host());
 
-    if (GetWidget()->GetRootView())
-      GetWidget()->GetRootView()->RemoveAllChildViews(true);
+    if (GetRootView()) {
+      GetRootView()->RemoveAllChildViews(true);
+    }
 
     NotificationService::current()->Notify(
         NotificationType::EXTERNAL_TAB_CLOSED,
@@ -572,7 +571,7 @@ void ExternalTabContainer::ShowPageInfo(Profile* profile,
   PageInfoBubbleView* page_info_bubble =
       new ExternalTabPageInfoBubbleView(this, NULL, profile, url,
                                         ssl, show_history);
-  Bubble* bubble = Bubble::Show(GetWidget(), bounds, BubbleBorder::TOP_LEFT,
+  Bubble* bubble = Bubble::Show(this, bounds, BubbleBorder::TOP_LEFT,
                                 page_info_bubble, page_info_bubble);
   page_info_bubble->set_bubble(bubble);
 }
@@ -1003,7 +1002,7 @@ void ExternalTabContainer::LoadAccelerators() {
 
   CopyAcceleratorTable(accelerator_table, accelerators, count);
 
-  focus_manager_ = GetWidget()->GetFocusManager();
+  focus_manager_ = GetFocusManager();
   DCHECK(focus_manager_);
 
   // Let's fill our own accelerator table.
@@ -1079,7 +1078,7 @@ void ExternalTabContainer::SetupExternalTabView() {
   layout->AddView(info_bar_container);
   layout->StartRow(1, 0);
   layout->AddView(tab_contents_container_);
-  GetWidget()->SetContentsView(external_tab_view_);
+  SetContentsView(external_tab_view_);
   // Note that SetTabContents must be called after AddChildView is called
   tab_contents_container_->ChangeTabContents(tab_contents());
 }

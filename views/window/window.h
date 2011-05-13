@@ -39,8 +39,7 @@ class WindowDelegate;
 //              implementation. Multiple inheritance is required for this
 //              transitional step.
 //
-class Window : public Widget,
-               public internal::NativeWindowDelegate {
+class Window : public internal::NativeWindowDelegate {
  public:
   struct InitParams {
     // |window_delegate| cannot be NULL.
@@ -71,6 +70,16 @@ class Window : public Widget,
   static int GetLocalizedContentsHeight(int row_resource_id);
   static gfx::Size GetLocalizedContentsSize(int col_resource_id,
                                             int row_resource_id);
+
+  // Closes all windows that aren't identified as "app windows" via
+  // IsAppWindow. Called during application shutdown when the last "app window"
+  // is closed.
+  static void CloseAllSecondaryWindows();
+
+  // Used by |CloseAllSecondaryWindows|. If |widget|'s window is a secondary
+  // window, the window is closed. If |widget| has no window, it is closed.
+  // Does nothing if |widget| is null.
+  static void CloseSecondaryWidget(Widget* widget);
 
   // Initializes the window. Must be called before any post-configuration
   // operations are performed.
@@ -115,7 +124,7 @@ class Window : public Widget,
   // Closes the window, ultimately destroying it. The window hides immediately,
   // and is destroyed after a return to the message loop. Close() can be called
   // multiple times.
-  virtual void Close() OVERRIDE;
+  void CloseWindow();
 
   // Maximizes/minimizes/restores the window.
   void Maximize();
@@ -129,7 +138,7 @@ class Window : public Widget,
   bool IsVisible() const;
 
   // Whether or not the window is maximized or minimized.
-  virtual bool IsMaximized() const;
+  bool IsMaximized() const;
   bool IsMinimized() const;
 
   // Accessors for fullscreen state.
@@ -139,6 +148,11 @@ class Window : public Widget,
   // Sets whether or not the window should show its frame as a "transient drag
   // frame" - slightly transparent and without the standard window controls.
   void SetUseDragFrame(bool use_drag_frame);
+
+  // Returns true if the Window is considered to be an "app window" - i.e.
+  // any window which when it is the last of its type closed causes the
+  // application to exit.
+  virtual bool IsAppWindow() const;
 
   // Toggles the enable state for the Close button (and the Close menu item in
   // the system menu).
@@ -168,6 +182,10 @@ class Window : public Widget,
   // Tell the window that something caused the frame type to change.
   void FrameTypeChanged();
 
+  // TODO(beng): remove once Window subclasses Widget.
+  Widget* AsWidget();
+  const Widget* AsWidget() const;
+
   WindowDelegate* window_delegate() {
     return const_cast<WindowDelegate*>(
         const_cast<const Window*>(this)->window_delegate());
@@ -195,6 +213,10 @@ class Window : public Widget,
   NativeWindow* native_window() { return native_window_; }
 
  protected:
+  // TODO(beng): Temporarily provided as a way to associate the subclass'
+  //             implementation of NativeWidget with this.
+  void SetNativeWindow(NativeWindow* native_window);
+
   // Overridden from NativeWindowDelegate:
   virtual bool CanActivate() const OVERRIDE;
   virtual bool IsInactiveRenderingDisabled() const OVERRIDE;
@@ -212,8 +234,6 @@ class Window : public Widget,
   virtual void OnNativeWindowDestroying() OVERRIDE;
   virtual void OnNativeWindowDestroyed() OVERRIDE;
   virtual void OnNativeWindowBoundsChanged() OVERRIDE;
-  virtual Window* AsWindow() OVERRIDE;
-  virtual internal::NativeWidgetDelegate* AsNativeWidgetDelegate() OVERRIDE;
 
  private:
   // Sizes and positions the window just after it is created.

@@ -15,7 +15,7 @@
 
 BrowserWindow* Panel::CreateNativePanel(Browser* browser, Panel* panel) {
   BrowserView* view = new PanelBrowserView(browser, panel);
-  (new BrowserFrame(view))->InitBrowserFrame();
+  BrowserFrame::Create(view, browser->profile());
   view->GetWidget()->SetAlwaysOnTop(true);
   view->GetWindow()->non_client_view()->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));

@@ -73,6 +73,7 @@ class BrowserBubble {
   // Show or hide the bubble.
   virtual void Show(bool activate);
   virtual void Hide();
+  bool visible() const { return visible_; }
 
   // The contained view.
   views::View* view() const { return view_; }
@@ -125,6 +126,9 @@ class BrowserBubble {
 
   // The bounds relative to the frame.
   gfx::Rect bounds_;
+
+  // Current visibility.
+  bool visible_;
 
   // The delegate isn't owned by the bubble.
   Delegate* delegate_;

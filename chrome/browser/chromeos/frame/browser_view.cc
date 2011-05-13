@@ -240,7 +240,12 @@ void BrowserView::Init() {
   status_area_->Init();
   InitSystemMenu();
 
-  frame()->non_client_view()->SetContextMenuController(this);
+  // The ContextMenuController has to be set to a NonClientView but
+  // not to a NonClientFrameView because a TabStrip is not a child of
+  // a NonClientFrameView even though visually a TabStrip is over a
+  // NonClientFrameView.
+  BrowserFrameGtk* gtk_frame = static_cast<BrowserFrameGtk*>(frame());
+  gtk_frame->non_client_view()->SetContextMenuController(this);
 
   // Listen to wrench menu opens.
   if (toolbar())
@@ -252,7 +257,7 @@ void BrowserView::Init() {
   params.push_back(browser()->active_index());
   params.push_back(gtk_get_current_event_time());
   WmIpc::instance()->SetWindowType(
-      GTK_WIDGET(frame()->GetNativeWindow()),
+      GTK_WIDGET(frame()->GetWindow()->GetNativeWindow()),
       WM_IPC_WINDOW_CHROME_TOPLEVEL,
       &params);
 }
@@ -266,7 +271,7 @@ void BrowserView::ShowInactive() {
 }
 
 void BrowserView::ShowInternal(bool is_active) {
-  bool was_visible = frame()->IsVisible();
+  bool was_visible = frame()->GetWindow()->IsVisible();
   if (is_active)
     ::BrowserView::Show();
   else
@@ -277,7 +282,7 @@ void BrowserView::ShowInternal(bool is_active) {
     params.push_back(browser()->tab_count());
     params.push_back(browser()->active_index());
     WmIpc::instance()->SetWindowType(
-        GTK_WIDGET(frame()->GetNativeWindow()),
+        GTK_WIDGET(frame()->GetWindow()->GetNativeWindow()),
         WM_IPC_WINDOW_CHROME_TOPLEVEL,
         &params);
   }
@@ -430,6 +435,6 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
     view = new chromeos::PanelBrowserView(browser);
   else
     view = new chromeos::BrowserView(browser);
-  (new BrowserFrame(view))->InitBrowserFrame();
+  BrowserFrame::Create(view, browser->profile());
   return view;
 }

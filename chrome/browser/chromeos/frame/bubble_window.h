@@ -38,7 +38,7 @@ class BubbleWindow : public views::WindowGtk {
   static const SkColor kBackgroundColor;
 
  protected:
-  explicit BubbleWindow(views::Window* window);
+  BubbleWindow();
 
   // Overidden from views::WindowGtk:
   virtual void InitNativeWidget(

@@ -10,15 +10,11 @@
 #include "content/browser/tab_contents/constrained_window.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
-#include "views/window/window.h"
 
 class ConstrainedTabContentsWindowDelegate;
 class ConstrainedWindowAnimation;
 class ConstrainedWindowFrameView;
 namespace views {
-namespace internal {
-class NativeWindowDelegate;
-}
 class NativeWindow;
 class NonClientFrameView;
 class Window;
@@ -39,8 +35,6 @@ class NativeConstrainedWindowDelegate {
   // Creates the frame view for the constrained window.
   // TODO(beng): remove once ConstrainedWindowViews is-a views::Window.
   virtual views::NonClientFrameView* CreateFrameViewForWindow() = 0;
-
-  virtual views::internal::NativeWindowDelegate* AsNativeWindowDelegate() = 0;
 };
 
 class NativeConstrainedWindow {
@@ -60,8 +54,7 @@ class NativeConstrainedWindow {
 //  A ConstrainedWindow implementation that implements a Constrained Window as
 //  a child HWND with a custom window frame.
 //
-class ConstrainedWindowViews : public views::Window,
-                               public ConstrainedWindow,
+class ConstrainedWindowViews : public ConstrainedWindow,
                                public NativeConstrainedWindowDelegate {
  public:
   ConstrainedWindowViews(TabContents* owner,
@@ -79,14 +72,10 @@ class ConstrainedWindowViews : public views::Window,
   virtual void FocusConstrainedWindow() OVERRIDE;
 
  private:
-  // Overridden from views::Window:
-  virtual views::NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
-
   // Overridden from NativeConstrainedWindowDelegate:
   virtual void OnNativeConstrainedWindowDestroyed() OVERRIDE;
   virtual void OnNativeConstrainedWindowMouseActivate() OVERRIDE;
-  virtual views::internal::NativeWindowDelegate*
-      AsNativeWindowDelegate() OVERRIDE;
+  virtual views::NonClientFrameView* CreateFrameViewForWindow() OVERRIDE;
 
   // The TabContents that owns and constrains this ConstrainedWindow.
   TabContents* owner_;

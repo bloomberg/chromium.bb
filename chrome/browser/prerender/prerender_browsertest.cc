@@ -868,12 +868,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoJs) {
 }
 
 // Checks that scripts can retrieve the correct window size while prerendering.
-#if defined(TOOLKIT_VIEWS)
-// TODO(beng): Widget hierarchy split causes this to fail http://crbug.com/82363
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderWindowSize) {
-#else
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowSize) {
-#endif
   PrerenderTestURL("files/prerender/prerender_size.html",
                    FINAL_STATUS_USED,
                    1);

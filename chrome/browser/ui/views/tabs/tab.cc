@@ -450,7 +450,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 
   int tab_id;
   if (GetWidget() &&
-      GetWidget()->GetContainingWindow()->non_client_view()->UseNativeFrame()) {
+      GetWidget()->GetWindow()->non_client_view()->UseNativeFrame()) {
     tab_id = IDR_THEME_TAB_BACKGROUND_V;
   } else {
     tab_id = data().incognito ? IDR_THEME_TAB_BACKGROUND_INCOGNITO :

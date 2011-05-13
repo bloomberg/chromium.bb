@@ -74,7 +74,7 @@ void ShowFirstRunDialog(Profile* profile,
   window->Show();
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);
-  window->Close();
+  window->CloseWindow();
 }
 
 }  // namespace first_run

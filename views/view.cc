@@ -217,7 +217,7 @@ int View::GetIndexOf(const View* view) const {
 // TODO(beng): remove
 const Window* View::GetWindow() const {
   const Widget* widget = GetWidget();
-  return widget ? widget->GetContainingWindow() : NULL;
+  return widget ? widget->GetWindow() : NULL;
 }
 
 // TODO(beng): remove

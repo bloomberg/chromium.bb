@@ -18,7 +18,7 @@ BrowserBubbleHost* GetBubbleHostFromFrame(views::Widget* frame) {
     return NULL;
 
   BrowserBubbleHost* bubble_host = NULL;
-  views::Window* window = frame->GetContainingWindow();
+  views::Window* window = frame->GetWindow();
   if (window) {
     bubble_host = BrowserView::GetBrowserViewForNativeWindow(
         window->GetNativeWindow());
@@ -38,6 +38,7 @@ BrowserBubble::BrowserBubble(views::View* view,
       view_(view),
       relative_to_(relative_to),
       arrow_location_(arrow_location),
+      visible_(false),
       delegate_(NULL),
       attached_(false),
       bubble_host_(GetBubbleHostFromFrame(frame)) {
@@ -93,7 +94,7 @@ void BrowserBubble::BrowserWindowMoved() {
     delegate_->BubbleBrowserWindowMoved(this);
   else
     Hide();
-  if (popup_->IsVisible())
+  if (visible_)
     Reposition();
 }
 
@@ -143,9 +144,3 @@ void BrowserBubble::SetAbsoluteBounds(const gfx::Rect& window_bounds) {
   SetBounds(relative_origin.x(), relative_origin.y(),
             window_bounds.width(), window_bounds.height());
 }
-
-void BrowserBubble::MovePopup(int x, int y, int w, int h) {
-  popup_->SetBounds(gfx::Rect(x, y, w, h));
-}
-
-

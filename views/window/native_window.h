@@ -37,13 +37,9 @@ class NativeWindow {
 
   virtual ~NativeWindow() {}
 
-  // Creates an appropriate default NativeWindow implementation for the current
-  // OS/circumstance.
-  static NativeWindow* CreateNativeWindow(
-      internal::NativeWindowDelegate* delegate);
+  static Window* CreateNativeWindow();
 
   virtual Window* GetWindow() = 0;
-  virtual const Window* GetWindow() const = 0;
 
   virtual NativeWidget* AsNativeWidget() = 0;
   virtual const NativeWidget* AsNativeWidget() const = 0;
@@ -104,6 +100,7 @@ class NativeWindow {
   virtual void SetFullscreen(bool fullscreen) = 0;
   virtual bool IsFullscreen() const = 0;
   virtual void SetAlwaysOnTop(bool always_on_top) = 0;
+  virtual bool IsAppWindow() const = 0;
   virtual void SetUseDragFrame(bool use_drag_frame) = 0;
   virtual NonClientFrameView* CreateFrameViewForWindow() = 0;
   virtual void UpdateFrameAfterFrameChange() = 0;

@@ -580,7 +580,7 @@ void WizardController::InitiateOOBEUpdate() {
 
 views::Widget* WizardController::CreateScreenWindow(
     const gfx::Rect& bounds, bool initial_show) {
-  widget_ = new views::Widget;
+  widget_ = views::Widget::CreateWidget();
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
   // Window transparency makes background flicker through controls that

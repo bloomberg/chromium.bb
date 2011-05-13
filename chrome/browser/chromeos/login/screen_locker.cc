@@ -198,9 +198,7 @@ static base::LazyInstance<ScreenLockObserver> g_screen_lock_observer(
 // focus/events inside the grab widget.
 class LockWindow : public views::WidgetGtk {
  public:
-  LockWindow()
-      : views::WidgetGtk(new views::Widget),
-        toplevel_focus_widget_(NULL) {
+  LockWindow() : toplevel_focus_widget_(NULL) {
     EnableDoubleBuffer(true);
   }
 
@@ -291,8 +289,7 @@ class GrabWidgetRootView
 class GrabWidget : public views::WidgetGtk {
  public:
   explicit GrabWidget(chromeos::ScreenLocker* screen_locker)
-      : views::WidgetGtk(new views::Widget),
-        screen_locker_(screen_locker),
+      : screen_locker_(screen_locker),
         ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
         grab_failure_count_(0),
         kbd_grab_status_(GDK_GRAB_INVALID_TIME),
@@ -733,10 +730,9 @@ void ScreenLocker::Init() {
   gfx::Rect init_bounds(views::Screen::GetMonitorAreaNearestPoint(left_top));
 
   LockWindow* lock_window = new LockWindow();
-  lock_window_ = lock_window->GetWidget();
+  lock_window_ = lock_window;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = init_bounds;
-  params.native_widget = lock_window;
   lock_window_->Init(params);
   gtk_widget_modify_bg(
       lock_window_->GetNativeView(), GTK_STATE_NORMAL, &kGdkBlack);
@@ -759,13 +755,12 @@ void ScreenLocker::Init() {
   // TryGrabAllInputs() method later.  (Nobody else needs to use it, so moving
   // its declaration to the header instead of keeping it in an anonymous
   // namespace feels a bit ugly.)
-  GrabWidget* grab_widget = new GrabWidget(this);
-  lock_widget_ = grab_widget->GetWidget();
+  GrabWidget* cast_lock_widget = new GrabWidget(this);
+  lock_widget_ = cast_lock_widget;
   views::Widget::InitParams lock_params(
       views::Widget::InitParams::TYPE_CONTROL);
   lock_params.transparent = true;
   lock_params.parent_widget = lock_window_;
-  lock_params.native_widget = grab_widget;
   lock_widget_->Init(lock_params);
   if (screen_lock_view_) {
     GrabWidgetRootView* root_view = new GrabWidgetRootView(screen_lock_view_);
@@ -795,11 +790,11 @@ void ScreenLocker::Init() {
   lock_window_->SetContentsView(background_view_);
   lock_window_->Show();
 
-  grab_widget->ClearGtkGrab();
+  cast_lock_widget->ClearGtkGrab();
 
   // Call this after lock_window_->Show(); otherwise the 1st invocation
   // of gdk_xxx_grab() will always fail.
-  grab_widget->TryGrabAllInputs();
+  cast_lock_widget->TryGrabAllInputs();
 
   // Add the window to its own group so that its grab won't be stolen if
   // gtk_grab_add() gets called on behalf on a non-screen-locker widget (e.g.

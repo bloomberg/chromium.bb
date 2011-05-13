@@ -132,7 +132,8 @@ FullscreenExitBubble::FullscreenExitBubble(
       this, UTF16ToWideHack(accelerator.GetShortcutText()));
 
   // Initialize the popup.
-  popup_ = new views::Widget;
+  popup_ = views::Widget::CreateWidget();
+  popup_->SetOpacity(static_cast<unsigned char>(0xff * kOpacity));
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   params.can_activate = false;
@@ -141,7 +142,6 @@ FullscreenExitBubble::FullscreenExitBubble(
   params.bounds = GetPopupRect(false);
   popup_->Init(params);
   popup_->SetContentsView(view_);
-  popup_->SetOpacity(static_cast<unsigned char>(0xff * kOpacity));
   popup_->Show();  // This does not activate the popup.
 
   // Start the initial delay timer and begin watching the mouse.

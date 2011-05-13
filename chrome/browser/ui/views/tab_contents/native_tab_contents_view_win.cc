@@ -30,10 +30,7 @@ HWND GetHiddenTabHostWindow() {
   static views::Widget* widget = NULL;
 
   if (!widget) {
-    widget = new views::Widget;
-    // We don't want this widget to be closed automatically, this causes
-    // problems in tests that close the last non-secondary window.
-    widget->set_is_secondary_widget(false);
+    widget = views::Widget::CreateWidget();
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     widget->Init(params);
     // If a background window requests focus, the hidden tab host will
@@ -52,8 +49,8 @@ HWND GetHiddenTabHostWindow() {
 
 NativeTabContentsViewWin::NativeTabContentsViewWin(
     internal::NativeTabContentsViewDelegate* delegate)
-    : views::WidgetWin(delegate->AsNativeWidgetDelegate()),
-      delegate_(delegate) {
+    : delegate_(delegate),
+      focus_manager_(NULL) {
 }
 
 NativeTabContentsViewWin::~NativeTabContentsViewWin() {
@@ -74,7 +71,6 @@ void NativeTabContentsViewWin::EndDragging() {
 
 void NativeTabContentsViewWin::InitNativeTabContentsView() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
-  params.native_widget = this;
   params.delete_on_destroy = false;
   params.parent = GetHiddenTabHostWindow();
   GetWidget()->Init(params);
@@ -86,6 +82,9 @@ void NativeTabContentsViewWin::InitNativeTabContentsView() {
 }
 
 void NativeTabContentsViewWin::Unparent() {
+  // Remember who our FocusManager is, we won't be able to access it once
+  // unparented.
+  focus_manager_ = views::WidgetWin::GetFocusManager();
   // Note that we do not DCHECK on focus_manager_ as it may be NULL when used
   // with an external tab container.
   NativeWidget::ReparentNativeView(GetNativeView(), GetHiddenTabHostWindow());
@@ -167,7 +166,7 @@ LRESULT NativeTabContentsViewWin::OnMouseRange(UINT msg,
       break;
     }
     case WM_MOUSEMOVE:
-      delegate_->OnNativeTabContentsViewMouseMove(true);
+      delegate_->OnNativeTabContentsViewMouseMove();
       break;
     default:
       break;
@@ -187,7 +186,7 @@ LRESULT NativeTabContentsViewWin::OnReflectedMessage(UINT msg,
       // This message is reflected from the view() to this window.
       if (GET_KEYSTATE_WPARAM(message->wParam) & MK_CONTROL) {
         delegate_->OnNativeTabContentsViewWheelZoom(
-            GET_WHEEL_DELTA_WPARAM(message->wParam) > 0);
+            GET_WHEEL_DELTA_WPARAM(message->wParam));
         return 1;
       }
       break;
@@ -264,6 +263,22 @@ void NativeTabContentsViewWin::OnNCPaint(HRGN rgn) {
   // here since the view will draw everything correctly.
 }
 
+views::FocusManager* NativeTabContentsViewWin::GetFocusManager() {
+  views::FocusManager* focus_manager = WidgetWin::GetFocusManager();
+  if (focus_manager) {
+    // If focus_manager_ is non NULL, it means we have been reparented, in which
+    // case its value may not be valid anymore.
+    focus_manager_ = NULL;
+    return focus_manager;
+  }
+  // TODO(jcampan): we should DCHECK on focus_manager_, as it should not be
+  // NULL.  We are not doing it as it breaks some unit-tests.  We should
+  // probably have an empty TabContentView implementation for the unit-tests,
+  // that would prevent that code being executed in the unit-test case.
+  // DCHECK(focus_manager_);
+  return focus_manager_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsViewWin, private:
 
@@ -305,7 +320,7 @@ bool NativeTabContentsViewWin::ScrollZoom(int scroll_type) {
         break;
     }
 
-    delegate_->OnNativeTabContentsViewWheelZoom(distance > 0);
+    delegate_->OnNativeTabContentsViewWheelZoom(distance);
     return true;
   }
   return false;

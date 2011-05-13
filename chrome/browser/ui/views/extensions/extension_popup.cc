@@ -77,11 +77,11 @@ ExtensionPopup::~ExtensionPopup() {
 }
 
 void ExtensionPopup::Show(bool activate) {
-  if (popup_->IsVisible())
+  if (visible())
     return;
 
 #if defined(OS_WIN)
-  frame_->GetContainingWindow()->DisableInactiveRendering();
+  frame_->GetWindow()->DisableInactiveRendering();
 #endif
 
   ResizeToView();

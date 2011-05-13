@@ -393,7 +393,7 @@ void NativeTextfieldGtk::OnActivate(GtkWidget* native_widget) {
   if (controller)
     handled = controller->HandleKeyEvent(textfield_, views_key_event);
 
-  WidgetGtk* widget = static_cast<WidgetGtk*>(GetWidget()->native_widget());
+  WidgetGtk* widget = static_cast<WidgetGtk*>(GetWidget());
   if (!handled && widget)
     handled = widget->HandleKeyboardEvent(views_key_event);
 

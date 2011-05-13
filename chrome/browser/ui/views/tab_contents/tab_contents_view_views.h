@@ -10,7 +10,6 @@
 #include "base/timer.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "views/widget/widget.h"
 
 class NativeTabContentsView;
 class RenderViewContextMenuViews;
@@ -28,8 +27,7 @@ class Widget;
 // Views-specific implementation of the TabContentsView.
 // TODO(beng): Remove last remnants of Windows-specificity, and make this
 //             subclass Widget.
-class TabContentsViewViews : public views::Widget,
-                             public TabContentsView,
+class TabContentsViewViews : public TabContentsView,
                              public internal::NativeTabContentsViewDelegate {
  public:
   // The corresponding TabContents is passed in the constructor, and manages our
@@ -41,10 +39,6 @@ class TabContentsViewViews : public views::Widget,
   // Reset the native parent of this view to NULL.  Unparented windows should
   // not receive any messages.
   virtual void Unparent();
-
-  NativeTabContentsView* native_tab_contents_view() const {
-    return native_tab_contents_view_;
-  }
 
   // Overridden from TabContentsView:
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
@@ -87,15 +81,13 @@ class TabContentsViewViews : public views::Widget,
   virtual void OnNativeTabContentsViewShown() OVERRIDE;
   virtual void OnNativeTabContentsViewHidden() OVERRIDE;
   virtual void OnNativeTabContentsViewSized(const gfx::Size& size) OVERRIDE;
-  virtual void OnNativeTabContentsViewWheelZoom(bool zoom_in) OVERRIDE;
+  virtual void OnNativeTabContentsViewWheelZoom(int distance) OVERRIDE;
   virtual void OnNativeTabContentsViewMouseDown() OVERRIDE;
-  virtual void OnNativeTabContentsViewMouseMove(bool motion) OVERRIDE;
+  virtual void OnNativeTabContentsViewMouseMove() OVERRIDE;
   virtual void OnNativeTabContentsViewDraggingEnded() OVERRIDE;
-  virtual views::internal::NativeWidgetDelegate* AsNativeWidgetDelegate()
-      OVERRIDE;
 
-  // Overridden from views::Widget:
-  virtual views::FocusManager* GetFocusManager() OVERRIDE;
+  views::Widget* GetWidget();
+  const views::Widget* GetWidget() const;
 
   // A helper method for closing the tab.
   void CloseTab();
@@ -116,7 +108,7 @@ class TabContentsViewViews : public views::Widget,
 
   // ---------------------------------------------------------------------------
 
-  NativeTabContentsView* native_tab_contents_view_;
+  scoped_ptr<NativeTabContentsView> native_tab_contents_view_;
 
   // Used to render the sad tab. This will be non-NULL only when the sad tab is
   // visible.
@@ -134,10 +126,6 @@ class TabContentsViewViews : public views::Widget,
 
   // Used to close the tab after the stack has unwound.
   base::OneShotTimer<TabContentsViewViews> close_tab_timer_;
-
-  // The FocusManager associated with this tab.  Stored as it is not directly
-  // accessible when un-parented.
-  views::FocusManager* focus_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewViews);
 };

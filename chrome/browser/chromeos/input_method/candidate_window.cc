@@ -1281,7 +1281,7 @@ bool CandidateWindowController::Impl::Init() {
 
 void CandidateWindowController::Impl::CreateView() {
   // Create a non-decorated frame.
-  frame_.reset(new views::Widget);
+  frame_.reset(views::Widget::CreateWidget());
   // The size is initially zero.
   frame_->Init(
       views::Widget::InitParams(views::Widget::InitParams::TYPE_POPUP));

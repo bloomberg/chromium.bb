@@ -839,8 +839,11 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   // For some reason we can't use AddSelectedTabWithURL here on ChromeOS. It
   // could be some delicate assumption about the tab starting off unselected or
   // something relating to user gesture.
-  browser()->AddBlankTab(true);
-  ui_test_utils::NavigateToURL(browser(), url);
+  browser::NavigateParams params(browser(), url, PageTransition::TYPED);
+  params.disposition = NEW_BACKGROUND_TAB;
+  params.tabstrip_add_types = TabStripModel::ADD_NONE;
+  browser::Navigate(&params);
+  browser()->ActivateTabAt(1, false);
   TabContentsWrapper* tab2 = browser()->GetSelectedTabContentsWrapper();
   EXPECT_NE(tab1, tab2);
 
@@ -960,8 +963,11 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
       FindBarController::kKeepSelection);
 
   // Now create a second tab and load the same page.
-  browser()->AddBlankTab(true);
-  ui_test_utils::NavigateToURL(browser(), url);
+  browser::NavigateParams params(browser(), url, PageTransition::TYPED);
+  params.disposition = NEW_BACKGROUND_TAB;
+  params.tabstrip_add_types = TabStripModel::ADD_NONE;
+  browser::Navigate(&params);
+  browser()->ActivateTabAt(1, false);
   TabContentsWrapper* tab2 = browser()->GetSelectedTabContentsWrapper();
   EXPECT_NE(tab1, tab2);
 

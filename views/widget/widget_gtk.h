@@ -41,12 +41,24 @@ class NativeWidgetDelegate;
 }
 
 // Widget implementation for GTK.
-class WidgetGtk : public NativeWidget,
+class WidgetGtk : public Widget,
+                  public NativeWidget,
                   public ui::ActiveWindowWatcherX::Observer,
                   public internal::InputMethodDelegate {
  public:
-  explicit WidgetGtk(internal::NativeWidgetDelegate* delegate);
+  WidgetGtk();
   virtual ~WidgetGtk();
+
+  // Marks this window as transient to its parent. A window that is transient
+  // to its parent results in the parent rendering active when the child is
+  // active.
+  // This must be invoked before Init. This is only used for types other than
+  // TYPE_CHILD. The default is false.
+  // See gtk_window_set_transient_for for details.
+  void make_transient_to_parent() {
+    DCHECK(!widget_);
+    transient_to_parent_ = true;
+  }
 
   // Returns the transient parent. See make_transient_to_parent for details on
   // what the transient parent is.
@@ -111,6 +123,19 @@ class WidgetGtk : public NativeWidget,
   // Overridden from ui::ActiveWindowWatcherX::Observer.
   virtual void ActiveWindowChanged(GdkWindow* active_window);
 
+  // Overridden from Widget:
+  virtual gfx::NativeView GetNativeView() const;
+  virtual gfx::NativeWindow GetNativeWindow() const;
+  virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
+  virtual Window* GetWindow();
+  virtual const Window* GetWindow() const;
+  virtual void ViewHierarchyChanged(bool is_add, View *parent,
+                                    View *child);
+  virtual void NotifyAccessibilityEvent(
+      View* view,
+      ui::AccessibilityTypes::Event event_type,
+      bool send_native_event);
+
   // Clears the focus on the native widget having the focus.
   virtual void ClearNativeFocus();
 
@@ -143,30 +168,16 @@ class WidgetGtk : public NativeWidget,
   // detached widget.
   static void RegisterChildExposeHandler(GtkWidget* widget);
 
-  void set_focus_on_creation(bool focus_on_creation) {
-    focus_on_creation_ = focus_on_creation;
-  }
-
   // Overridden from NativeWidget:
-  virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
+  virtual void InitNativeWidget(const InitParams& params) OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
-  virtual const Widget* GetWidget() const OVERRIDE;
-  virtual gfx::NativeView GetNativeView() const OVERRIDE;
-  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
-  virtual Window* GetContainingWindow() OVERRIDE;
-  virtual const Window* GetContainingWindow() const OVERRIDE;
-  virtual void ViewRemoved(View* view) OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) OVERRIDE;
   virtual TooltipManager* GetTooltipManager() const OVERRIDE;
   virtual bool IsScreenReaderActive() const OVERRIDE;
-  virtual void SendNativeAccessibilityEvent(
-      View* view,
-      ui::AccessibilityTypes::Event event_type) OVERRIDE;
   virtual void SetMouseCapture() OVERRIDE;
   virtual void ReleaseMouseCapture() OVERRIDE;
   virtual bool HasMouseCapture() const OVERRIDE;
-  virtual bool IsMouseButtonDown() const OVERRIDE;
   virtual InputMethod* GetInputMethodNative() OVERRIDE;
   virtual void ReplaceInputMethod(InputMethod* input_method) OVERRIDE;
   virtual gfx::Rect GetWindowScreenBounds() const OVERRIDE;
@@ -257,13 +268,16 @@ class WidgetGtk : public NativeWidget,
   class DropObserver;
   friend class DropObserver;
 
+  // Overridden from Widget
+  virtual RootView* CreateRootView() OVERRIDE;
+
   // Overridden from NativeWidget
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
 
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
 
-  void SetInitParams(const Widget::InitParams& params);
+  void SetInitParams(const InitParams& params);
 
   // This is called only when the window is transparent.
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnWindowPaint, GdkEventExpose*);
@@ -277,7 +291,7 @@ class WidgetGtk : public NativeWidget,
   static Window* GetWindowImpl(GtkWidget* widget);
 
   // Creates the GtkWidget.
-  void CreateGtkWidget(const Widget::InitParams& params);
+  void CreateGtkWidget(const InitParams& params);
 
   // Invoked from create widget to enable the various bits needed for a
   // transparent background. This is only invoked if MakeTransparent has been
@@ -293,7 +307,6 @@ class WidgetGtk : public NativeWidget,
                                         GdkEventExpose* event);
 
   // A delegate implementation that handles events received here.
-  // See class documentation for Widget in widget.h for a note about ownership.
   internal::NativeWidgetDelegate* delegate_;
 
   // Our native views. If we're a window/popup, then widget_ is the window and
@@ -320,7 +333,7 @@ class WidgetGtk : public NativeWidget,
   // The following factory is used to delay destruction.
   ScopedRunnableMethodFactory<WidgetGtk> close_widget_factory_;
 
-  // See class documentation for Widget in widget.h for a note about ownership.
+  // See description above setter.
   bool delete_on_destroy_;
 
   // See description above make_transparent for details.
@@ -371,10 +384,6 @@ class WidgetGtk : public NativeWidget,
   // focus-out event. We can get multiple focus-out events in a row, we use
   // this to determine whether we should process the event.
   bool has_focus_;
-
-  // Whether we should SetFocus() on a newly created window after
-  // Init(). Defaults to true.
-  bool focus_on_creation_;
 
   // If true, the window stays on top of the screen. This is only used
   // for types other than TYPE_CHILD.

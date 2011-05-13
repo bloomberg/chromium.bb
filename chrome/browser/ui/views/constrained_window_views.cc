@@ -576,11 +576,8 @@ ConstrainedWindowViews::ConstrainedWindowViews(
           NativeConstrainedWindow::CreateNativeConstrainedWindow(this))) {
   GetWindow()->non_client_view()->SetFrameView(CreateFrameViewForWindow());
   views::Window::InitParams params(window_delegate);
-  params.native_window = native_constrained_window_->AsNativeWindow();
   params.widget_init_params.child = true;
   params.widget_init_params.parent = owner->GetNativeView();
-  params.widget_init_params.native_widget =
-      native_constrained_window_->AsNativeWindow()->AsNativeWidget();
   GetWindow()->InitWindow(params);
 }
 
@@ -611,7 +608,7 @@ void ConstrainedWindowViews::CloseConstrainedWindow() {
   NotificationService::current()->Notify(NotificationType::CWINDOW_CLOSED,
                                          Source<ConstrainedWindow>(this),
                                          NotificationService::NoDetails());
-  GetWindow()->Close();
+  GetWindow()->CloseWindow();
 }
 
 void ConstrainedWindowViews::FocusConstrainedWindow() {
@@ -621,13 +618,6 @@ void ConstrainedWindowViews::FocusConstrainedWindow() {
       GetWindow()->window_delegate()->GetInitiallyFocusedView()) {
     GetWindow()->window_delegate()->GetInitiallyFocusedView()->RequestFocus();
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ConstrainedWindowViews, views::Window overrides:
-
-views::NonClientFrameView* ConstrainedWindowViews::CreateFrameViewForWindow() {
-  return new ConstrainedWindowFrameView(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -643,11 +633,9 @@ void ConstrainedWindowViews::OnNativeConstrainedWindowMouseActivate() {
   GetWindow()->Activate();
 }
 
-views::internal::NativeWindowDelegate*
-    ConstrainedWindowViews::AsNativeWindowDelegate() {
-  return this;
+views::NonClientFrameView* ConstrainedWindowViews::CreateFrameViewForWindow() {
+  return new ConstrainedWindowFrameView(this);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindow, public:

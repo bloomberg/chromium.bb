@@ -23,8 +23,7 @@ namespace views {
 // MenuHostGtk, public:
 
 MenuHostGtk::MenuHostGtk(internal::NativeMenuHostDelegate* delegate)
-    : WidgetGtk(delegate->AsNativeWidgetDelegate()),
-      did_input_grab_(false),
+    : did_input_grab_(false),
       delegate_(delegate) {
 }
 
@@ -83,11 +82,21 @@ NativeWidget* MenuHostGtk::AsNativeWidget() {
 // MenuHostGtk, WidgetGtk overrides:
 
 void MenuHostGtk::InitNativeWidget(const Widget::InitParams& params) {
+  make_transient_to_parent();
   WidgetGtk::InitNativeWidget(params);
   // Make sure we get destroyed when the parent is destroyed.
   gtk_window_set_destroy_with_parent(GTK_WINDOW(GetNativeView()), TRUE);
   gtk_window_set_type_hint(GTK_WINDOW(GetNativeView()),
                            GDK_WINDOW_TYPE_HINT_MENU);
+}
+
+// TODO(beng): remove once MenuHost is-a Widget
+RootView* MenuHostGtk::CreateRootView() {
+  return delegate_->CreateRootView();
+}
+
+bool MenuHostGtk::ShouldReleaseCaptureOnMouseReleased() const {
+  return delegate_->ShouldReleaseCaptureOnMouseRelease();
 }
 
 void MenuHostGtk::ReleaseMouseCapture() {

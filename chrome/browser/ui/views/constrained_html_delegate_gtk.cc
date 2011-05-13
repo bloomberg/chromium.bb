@@ -70,8 +70,7 @@ class ConstrainedHtmlDelegateGtk : public views::WidgetGtk,
 ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
     Profile* profile,
     HtmlDialogUIDelegate* delegate)
-    : views::WidgetGtk(new views::Widget),
-      HtmlDialogTabContentsDelegate(profile),
+    : HtmlDialogTabContentsDelegate(profile),
       html_tab_contents_(profile, NULL, MSG_ROUTING_NONE, NULL, NULL),
       tab_container_(NULL),
       html_delegate_(delegate),
@@ -87,11 +86,10 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
                                           PageTransition::START_PAGE);
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
-  params.native_widget = this;
   GetWidget()->Init(params);
 
   tab_container_ = new TabContentsContainer;
-  GetWidget()->SetContentsView(tab_container_);
+  SetContentsView(tab_container_);
   tab_container_->ChangeTabContents(&html_tab_contents_);
 
   gfx::Size dialog_size;

@@ -203,7 +203,8 @@ class DraggedTabController::DockDisplayer : public ui::AnimationDelegate {
         hidden_(false),
         in_enable_area_(info.in_enable_area()) {
 #if defined(OS_WIN)
-    popup_ = new views::Widget;
+    popup_ = views::Widget::CreateWidget();
+    popup_->SetOpacity(0x00);
     // TODO(sky): This should "just work" on Gtk now.
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.transparent = true;
@@ -211,7 +212,6 @@ class DraggedTabController::DockDisplayer : public ui::AnimationDelegate {
     params.bounds = info.GetPopupRect();
     popup_->Init(params);
     popup_->SetContentsView(new DockView(info.type()));
-    popup_->SetOpacity(0x00);
     if (info.in_enable_area())
       animation_.Reset(1);
     else
@@ -265,15 +265,23 @@ class DraggedTabController::DockDisplayer : public ui::AnimationDelegate {
   virtual void AnimationEnded(const ui::Animation* animation) {
     if (!hidden_)
       return;
-    popup_->Close();
+#if defined(OS_WIN)
+    static_cast<views::WidgetWin*>(popup_)->Close();
+#else
+    NOTIMPLEMENTED();
+#endif
     delete this;
   }
 
   virtual void UpdateLayeredAlpha() {
+#if defined(OS_WIN)
     double scale = in_enable_area_ ? 1 : .5;
-    popup_->SetOpacity(static_cast<unsigned char>(animation_.GetCurrentValue() *
-        scale * 255.0));
+    static_cast<views::WidgetWin*>(popup_)->SetOpacity(
+        static_cast<BYTE>(animation_.GetCurrentValue() * scale * 255.0));
     popup_->GetRootView()->SchedulePaint();
+#else
+    NOTIMPLEMENTED();
+#endif
   }
 
  private:

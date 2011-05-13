@@ -49,7 +49,7 @@ views::View* BrowserFrameViewChromeos::GetEventHandlerForPoint(
     const gfx::Point& point) {
   if (point.y() < kTopPad) {
     gfx::Point nc_point(point.x(), kTopPad);
-    views::NonClientView* nc_view = frame()->non_client_view();
+    views::NonClientView* nc_view = frame()->GetWindow()->non_client_view();
     View::ConvertPointToView(this, nc_view, &nc_point);
     return nc_view->GetEventHandlerForPoint(nc_point);
   }

@@ -148,7 +148,7 @@ void HtmlDialogView::OnDialogClosed(const std::string& json_retval) {
     delegate_ = NULL;  // We will not communicate further with the delegate.
     dialog_delegate->OnDialogClosed(json_retval);
   }
-  window()->Close();
+  window()->CloseWindow();
 }
 
 void HtmlDialogView::OnWindowClosed() {
@@ -193,8 +193,7 @@ void HtmlDialogView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   DefWindowProc(event.os_event.hwnd, event.os_event.message,
                   event.os_event.wParam, event.os_event.lParam);
 #elif defined(TOOLKIT_USES_GTK)
-  views::WindowGtk* window_gtk =
-      static_cast<views::WindowGtk*>(window()->native_window());
+  views::WindowGtk* window_gtk = static_cast<views::WindowGtk*>(window());
   if (event.os_event && !event.skip_in_browser) {
     views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
     window_gtk->HandleKeyboardEvent(views_event);

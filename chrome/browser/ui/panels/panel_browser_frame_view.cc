@@ -224,7 +224,7 @@ int PanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTNOWHERE;
 
   int frame_component =
-      frame_->client_view()->NonClientHitTest(point);
+      frame_->GetWindow()->client_view()->NonClientHitTest(point);
   if (frame_component != HTNOWHERE)
     return frame_component;
 
@@ -235,7 +235,7 @@ int PanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   int window_component = GetHTComponentForFrame(point,
       NonClientBorderThickness(), NonClientBorderThickness(),
       0, 0,
-      frame_->window_delegate()->CanResize());
+      frame_->GetWindow()->window_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -340,7 +340,7 @@ void PanelBrowserFrameView::OnMouseReleased(const views::MouseEvent& event) {
 void PanelBrowserFrameView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
   if (sender == close_button_)
-    frame_->Close();
+    frame_->GetWindow()->CloseWindow();
 }
 
 void PanelBrowserFrameView::RunMenu(View* source, const gfx::Point& pt) {
@@ -392,7 +392,7 @@ bool PanelBrowserFrameView::ShouldTabIconViewAnimate() const {
 }
 
 SkBitmap PanelBrowserFrameView::GetFaviconForTabIconView() {
-  return frame_->window_delegate()->GetWindowIcon();
+  return frame_->GetWindow()->window_delegate()->GetWindowIcon();
 }
 
 int PanelBrowserFrameView::NonClientBorderThickness() const {
@@ -514,7 +514,7 @@ void PanelBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
 
 void PanelBrowserFrameView::UpdateTitleBar() {
   title_label_->SetText(
-      frame_->window_delegate()->GetWindowTitle());
+      frame_->GetWindow()->window_delegate()->GetWindowTitle());
 }
 
 void PanelBrowserFrameView::OnActivationChanged(bool active) {

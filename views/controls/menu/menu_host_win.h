@@ -29,8 +29,10 @@ class MenuHostWin : public WidgetWin,
   // Overridden from WidgetWin:
   virtual void OnDestroy() OVERRIDE;
   virtual void OnCancelMode() OVERRIDE;
+  virtual RootView* CreateRootView() OVERRIDE;
+  virtual bool ShouldReleaseCaptureOnMouseReleased() const OVERRIDE;
 
-  internal::NativeMenuHostDelegate* delegate_;
+  scoped_ptr<internal::NativeMenuHostDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuHostWin);
 };

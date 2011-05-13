@@ -155,7 +155,7 @@ void NativeDialogHost::OnCheckResize(GtkWidget* widget) {
 void NativeDialogHost::OnDialogDestroy(GtkWidget* widget) {
   dialog_ = NULL;
   destroy_signal_id_ = 0;
-  window()->Close();
+  window()->CloseWindow();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -101,7 +101,7 @@ class NativeComboboxViewsTest : public ViewsTestBase {
     combobox_ = new TestCombobox(model_.get());
     combobox_->SetID(1);
 
-    widget_ = new Widget;
+    widget_ = Widget::CreateWidget();
     Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(100, 100, 100, 100);
     widget_->Init(params);

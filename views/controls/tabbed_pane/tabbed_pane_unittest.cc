@@ -44,7 +44,7 @@ class TabbedPaneTest : public testing::Test, WindowDelegate {
   }
 
   virtual void TearDown() {
-    window_->Close();
+    window_->CloseWindow();
     message_loop_.RunAllPending();
   }
 
