@@ -520,17 +520,6 @@
                 },
               },
             },
-            'Release': {
-              'msvs_settings': {
-                'VCCLCompilerTool': {
-                  # It's now just too large! Since r85250 it triggers
-                  # "browser.lib(host_content_settings_map.obj) : fatal error:
-                  # LNK1000: Internal error during IMAGE::Pass2" during link.
-                  # Disable optimization for now.
-                  'Optimization': '1',
-                },
-              },
-            },
           },
         }],
       ],
