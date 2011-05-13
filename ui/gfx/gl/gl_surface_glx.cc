@@ -77,7 +77,7 @@ Display* GLSurfaceGLX::GetDisplay() {
 NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::PluginWindowHandle window)
   : window_(window),
     config_(NULL),
-    glx_window_(NULL) {
+    glx_window_(0) {
 }
 
 NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
@@ -159,7 +159,7 @@ bool NativeViewGLSurfaceGLX::Initialize() {
 void NativeViewGLSurfaceGLX::Destroy() {
   if (glx_window_) {
     glXDestroyWindow(g_display, glx_window_);
-    glx_window_ = NULL;
+    glx_window_ = 0;
   }
 
   config_ = NULL;
