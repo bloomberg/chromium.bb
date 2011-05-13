@@ -109,8 +109,8 @@ def main():
                     help='Suite file')
   parser.add_option('-e', '--media_file', dest='media_file',
                     default='',
-                    help=('Media file to be played using player.html. ',
-                          'The relative path needs to be specified starting ',
+                    help=('Media file to be played using player.html. '
+                          'The relative path needs to be specified starting '
                           'from data/html/ directory.'))
 
   options, args = parser.parse_args()
