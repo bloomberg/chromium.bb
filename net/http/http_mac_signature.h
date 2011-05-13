@@ -28,8 +28,7 @@ class HttpMacSignature {
   // Returns whether this information is valid.
   bool AddStateInfo(const std::string& id,
                     const std::string& mac_key,
-                    const std::string& mac_algorithm,
-                    const std::string& issuer);
+                    const std::string& mac_algorithm);
 
   // Returns whether this information is valid.
   bool AddHttpInfo(const std::string& method,
@@ -55,7 +54,6 @@ class HttpMacSignature {
   std::string id_;
   std::string mac_key_;
   crypto::HMAC::HashAlgorithm mac_algorithm_;
-  std::string issuer_;
 
   std::string method_;
   std::string request_uri_;

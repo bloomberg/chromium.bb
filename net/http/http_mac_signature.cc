@@ -52,14 +52,12 @@ HttpMacSignature::~HttpMacSignature() {
 
 bool HttpMacSignature::AddStateInfo(const std::string& id,
                                     const std::string& mac_key,
-                                    const std::string& mac_algorithm,
-                                    const std::string& issuer) {
+                                    const std::string& mac_algorithm) {
   DCHECK(id_.empty());
 
   if (!IsPlainString(id) || id.empty() ||
       mac_key.empty() ||
-      mac_algorithm.empty() ||
-      !IsPlainString(issuer) || issuer.empty()) {
+      mac_algorithm.empty()) {
     return false;
   }
 
@@ -72,7 +70,6 @@ bool HttpMacSignature::AddStateInfo(const std::string& id,
 
   id_ = id;
   mac_key_ = mac_key;
-  issuer_ = issuer;
   return true;
 }
 
@@ -117,9 +114,7 @@ std::string HttpMacSignature::GenerateHeaderString(
   DCHECK(IsPlainString(mac));
 
   return "MAC id=\"" + id_ +
-      "\", issuer=\"" + issuer_ +
-      "\", timestamp=\"" + timestamp +
-      "\", nonce=\"" + nonce +
+      "\", nonce=\"" + timestamp + ":" + nonce +
       "\", mac=\"" + mac + "\"";
 }
 
@@ -128,14 +123,13 @@ std::string HttpMacSignature::GenerateNormalizedRequest(
     const std::string& nonce) {
   static const std::string kNewLine = "\n";
 
-  std::string normalized_request = id_ + kNewLine;
-  normalized_request += issuer_ + kNewLine;
-  normalized_request += timestamp + kNewLine;
-  normalized_request += nonce + kNewLine;
+  std::string normalized_request = timestamp + ":" + nonce + kNewLine;
   normalized_request += method_ + kNewLine;
   normalized_request += request_uri_ + kNewLine;
   normalized_request += host_ + kNewLine;
   normalized_request += port_ + kNewLine;
+  normalized_request += kNewLine;
+  normalized_request += kNewLine;
 
   return normalized_request;
 }
