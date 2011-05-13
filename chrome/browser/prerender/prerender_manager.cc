@@ -544,6 +544,8 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
   DCHECK(new_tab_contents);
   DCHECK(old_tab_contents);
 
+  MarkTabContentsAsPrerendered(new_tab_contents->tab_contents());
+
   // Merge the browsing history.
   new_tab_contents->controller().CopyStateFromAndPrune(
       &old_tab_contents->controller(),
@@ -551,7 +553,6 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tab_contents,
 
   old_tab_contents->delegate()->SwapTabContents(old_tab_contents,
                                                 new_tab_contents);
-  MarkTabContentsAsPrerendered(tab_contents);
 
   // See if we have any pending prerender requests for this routing id and start
   // the preload if we do.
