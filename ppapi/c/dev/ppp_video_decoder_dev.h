@@ -7,7 +7,7 @@
 
 #include "ppapi/c/dev/pp_video_dev.h"
 
-#define PPP_VIDEODECODER_DEV_INTERFACE "PPP_VideoDecoder(Dev);0.2"
+#define PPP_VIDEODECODER_DEV_INTERFACE "PPP_VideoDecoder(Dev);0.3"
 
 // PPP_VideoDecoder_Dev structure contains the function pointers that the
 // plugin MUST implement to provide services needed by the video decoder

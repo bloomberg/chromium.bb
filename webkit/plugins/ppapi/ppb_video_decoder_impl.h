@@ -16,6 +16,10 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/resource.h"
 
+struct PP_GLESBuffer_Dev;
+struct PP_SysmemBuffer_Dev;
+struct PP_VideoDecoderConfig_Dev;
+struct PP_VideoBitstreamBuffer_Dev;
 struct PPB_VideoDecoder_Dev;
 struct PPP_VideoDecoder_Dev;
 
@@ -56,20 +60,18 @@ class PPB_VideoDecoder_Impl : public Resource,
   // media::VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(
       uint32 requested_num_of_buffers,
-      gfx::Size dimensions,
+      const gfx::Size& dimensions,
       media::VideoDecodeAccelerator::MemoryType type) OVERRIDE;
   virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
-  virtual void PictureReady(
-      const media::Picture& picture) OVERRIDE;
+  virtual void PictureReady(const media::Picture& picture) OVERRIDE;
   virtual void NotifyEndOfStream() OVERRIDE;
   virtual void NotifyError(
       media::VideoDecodeAccelerator::Error error) OVERRIDE;
+  virtual void NotifyFlushDone() OVERRIDE;
+  virtual void NotifyEndOfBitstreamBuffer(int32 buffer_id) OVERRIDE;
+  virtual void NotifyAbortDone() OVERRIDE;
 
  private:
-  void OnAbortComplete();
-  void OnBitstreamBufferProcessed();
-  void OnFlushComplete();
-
   // This is NULL before initialization, and if this PPB_VideoDecoder_Impl is
   // swapped with another.
   scoped_ptr<PluginDelegate::PlatformVideoDecoder> platform_video_decoder_;

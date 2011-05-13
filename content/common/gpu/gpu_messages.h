@@ -311,8 +311,8 @@ IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
 // We need this to be control message because we had to map the GpuChannel and
 // |decoder_id|.
 IPC_MESSAGE_CONTROL2(GpuChannelMsg_CreateVideoDecoder,
-                     int32, /* context_route_id */
-                     int32) /* decoder_id */
+                     int32, /* decoder_id */
+                     std::vector<uint32>) /* configs */
 
 // Release all resource of the hardware video decoder which was assocaited
 // with the input |decoder_id|.
@@ -534,23 +534,34 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AcceleratedVideoDecoderMsg_GetConfigs,
                             std::vector<uint32>, /* Proto config */
                             std::vector<uint32>) /* Matching configs */
 
-// Message to create the accelerated video decoder.
-IPC_SYNC_MESSAGE_CONTROL1_1(AcceleratedVideoDecoderMsg_Create,
-                            std::vector<uint32>, /* Config */
-                            int32) /* Decoder ID, -1 equals failure */
+// Message to initialize the accelerated video decoder.
+IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Initialize,
+                    std::vector<uint32>) /* Config */
 
 // Send input buffer for decoding.
 IPC_MESSAGE_ROUTED3(AcceleratedVideoDecoderMsg_Decode,
+                    int32, /* bitstream_buffer_id */
                     base::SharedMemoryHandle, /* input_buffer_handle */
-                    int32, /* offset */
                     int32) /* size */
 
 // Sent from Renderer process to the GPU process to give the texture IDs for
-// generated GL textures.
-IPC_MESSAGE_ROUTED3(AcceleratedVideoDecoderMsg_AssignPictureBuffer,
-                    int32, /* Picture buffer ID */
-                    base::SharedMemoryHandle, /* Pointer to sysmem output */
-                    std::vector<uint32>) /* TextureIDs for pictures */
+// the textures the decoder will use for output.
+IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_AssignGLESBuffers,
+                    std::vector<int32>, /* Picture buffer ID */
+                    std::vector<uint32>, /* Texture ID */
+                    std::vector<uint32>, /* Context ID */
+                    std::vector<gfx::Size>) /* Size */
+
+// Sent from Renderer process to the GPU process to give the system memory
+// buffers that the decoder will use for output.
+//
+// The length of the list of SharedMemoryHandles cannot exceed
+// FileDescriptorSet::MAX_DESCRIPTORS_PER_MESSAGE; see
+// ipc/file_descriptor_set_posix.
+IPC_MESSAGE_ROUTED3(AcceleratedVideoDecoderMsg_AssignSysmemBuffers,
+                    std::vector<int32>, /* Picture buffer ID */
+                    std::vector<base::SharedMemoryHandle>, /* Sysmem buffer */
+                    std::vector<gfx::Size>) /* Size */
 
 // Send from Renderer process to the GPU process to recycle the given picture
 // buffer for further decoding.
@@ -574,13 +585,17 @@ IPC_SYNC_MESSAGE_CONTROL0_0(AcceleratedVideoDecoderMsg_Destroy)
 
 // Accelerated video decoder has consumed input buffer from transfer buffer.
 IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed,
-                    base::SharedMemoryHandle) /* Processed buffer handle */
+                    int32) /* Processed buffer ID */
 
 // Allocate video frames for output of the hardware video decoder.
-IPC_MESSAGE_ROUTED2(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
+IPC_MESSAGE_ROUTED3(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
                     int32,  /* Number of video frames to generate */
-                    std::vector<uint32>) /* Vector containing the dictionary
-                                            for buffer config */
+                    gfx::Size, /* Requested size of buffer */
+                    int32) /* Type of buffer */
+
+// Decoder has been created and is ready for initialization.
+IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_CreateDone,
+                    int32) /* Decoder ID */
 
 // Decoder reports that a picture is ready and buffer does not need to be passed
 // back to the decoder.
@@ -588,8 +603,11 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_DismissPictureBuffer,
                     int32) /* Picture buffer ID */
 
 // Decoder reports that a picture is ready.
-IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_PictureReady,
-                    int32) /* Picture buffer ID */
+IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderHostMsg_PictureReady,
+                    int32,  /* Picture buffer ID */
+                    int32,  /* Bitstream buffer ID */
+                    gfx::Size, /* Visible size */
+                    gfx::Size) /* Decoded size */
 
 // Confirm decoder has been flushed.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_FlushDone)

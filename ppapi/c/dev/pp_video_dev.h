@@ -165,15 +165,15 @@ PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_PictureBufferType_Dev, 4);
 
 // The data structure for video bitstream buffer.
 struct PP_VideoBitstreamBuffer_Dev {
+  // Client-specified identifier for the bitstream buffer.
+  int32_t id;
+
   // Buffer to hold the bitstream data. Should be allocated using the PPB_Buffer
   // interface for consistent interprocess behaviour.
-  PP_Resource bitstream;
+  PP_Resource data;
 
   // Size of the bitstream contained in buffer (in bytes).
-  int32_t bitstream_size;
-
-  // Handle to identify the bitstream buffer.
-  void* user_handle;
+  int32_t size;
 };
 
 // Struct for specifying data about buffer.
@@ -216,6 +216,9 @@ struct PP_Picture_Dev {
   // ID of the picture buffer where the picture is stored.
   int32_t picture_buffer_id;
 
+  // ID of the bitstream from which this data was decoded.
+  int32_t bitstream_buffer_id;
+
   // Visible size of the picture.
   // This describes the dimensions of the picture that is intended to be
   // displayed from the decoded output.
@@ -227,10 +230,6 @@ struct PP_Picture_Dev {
   // the width of the output. The plugin should handle rendering the frame
   // appropriately with respect to the sizes.
   struct PP_Size decoded_size;
-
-  // Handle to identify the bitstream buffer from which this picture was
-  // decoded.
-  void* bitstream_user_handle;
 };
 
 // Enumeration for error events that may be reported through

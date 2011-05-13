@@ -251,7 +251,6 @@ class PluginDelegate {
 
   // The caller will own the pointer returned from this.
   virtual PlatformVideoDecoder* CreateVideoDecoder(
-      PP_VideoConfigElement* decoder_config,
       media::VideoDecodeAccelerator::Client* client) = 0;
 
   // The caller is responsible for calling Shutdown() on the returned pointer

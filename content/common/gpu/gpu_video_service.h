@@ -9,10 +9,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
-#include "content/common/gpu/gpu_video_decoder.h"
+#include "content/common/gpu/gpu_video_decode_accelerator.h"
 #include "ipc/ipc_channel.h"
 
 class GpuChannel;
+class MessageRouter;
 
 class GpuVideoService : public IPC::Channel::Listener {
  public:
@@ -28,17 +29,15 @@ class GpuVideoService : public IPC::Channel::Listener {
                           MessageRouter* router,
                           int32 decoder_host_id,
                           int32 decoder_id,
-                          gpu::gles2::GLES2Decoder* gles2_decoder);
+                          const std::vector<uint32>& configs);
   void DestroyVideoDecoder(MessageRouter* router,
                            int32 decoder_id);
 
  private:
-  struct GpuVideoDecoderInfo;
-
   GpuVideoService();
   virtual ~GpuVideoService();
 
-  std::map<int32, GpuVideoDecoderInfo> decoder_map_;
+  std::map<int32, scoped_refptr<GpuVideoDecodeAccelerator> > decoder_map_;
 
   // Specialize video service on different platform will override.
   virtual bool IntializeGpuVideoService();

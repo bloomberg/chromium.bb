@@ -5,12 +5,9 @@
 #include "content/renderer/gpu_video_service_host.h"
 
 #include "content/common/gpu/gpu_messages.h"
-#include "content/renderer/gpu_video_decoder_host.h"
+#include "content/renderer/gpu_video_decode_accelerator_host.h"
 #include "content/renderer/render_thread.h"
-#include "content/renderer/video_decode_accelerator_host.h"
 #include "media/video/video_decode_accelerator.h"
-
-using media::VideoDecodeAccelerator;
 
 GpuVideoServiceHost::GpuVideoServiceHost()
     : channel_(NULL),
@@ -42,20 +39,18 @@ void GpuVideoServiceHost::OnChannelClosing() {
 
 bool GpuVideoServiceHost::OnMessageReceived(const IPC::Message& msg) {
   switch (msg.type()) {
-    case GpuVideoDecoderHostMsg_CreateVideoDecoderDone::ID:
-    case GpuVideoDecoderHostMsg_InitializeACK::ID:
-    case GpuVideoDecoderHostMsg_DestroyACK::ID:
-    case GpuVideoDecoderHostMsg_FlushACK::ID:
-    case GpuVideoDecoderHostMsg_PrerollDone::ID:
-    case GpuVideoDecoderHostMsg_EmptyThisBufferACK::ID:
-    case GpuVideoDecoderHostMsg_EmptyThisBufferDone::ID:
-    case GpuVideoDecoderHostMsg_ConsumeVideoFrame::ID:
-    case GpuVideoDecoderHostMsg_AllocateVideoFrames::ID:
-    case GpuVideoDecoderHostMsg_ReleaseAllVideoFrames::ID:
-      if (!router_.RouteMessage(msg)) {
-        LOG(ERROR) << "GpuVideoDecoderHostMsg cannot be dispatched.";
-      }
-      return true;
+    case AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed::ID:
+    case AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers::ID:
+    case AcceleratedVideoDecoderHostMsg_CreateDone::ID:
+    case AcceleratedVideoDecoderHostMsg_DismissPictureBuffer::ID:
+    case AcceleratedVideoDecoderHostMsg_PictureReady::ID:
+    case AcceleratedVideoDecoderHostMsg_FlushDone::ID:
+    case AcceleratedVideoDecoderHostMsg_AbortDone::ID:
+    case AcceleratedVideoDecoderHostMsg_EndOfStream::ID:
+    case AcceleratedVideoDecoderHostMsg_ErrorNotification::ID:
+      if (router_.RouteMessage(msg))
+        return true;
+      LOG(ERROR) << "AcceleratedVideoDecoderHostMsg cannot be dispatched.";
     default:
       return false;
   }
@@ -76,15 +71,14 @@ void GpuVideoServiceHost::SetOnInitialized(
 
 GpuVideoDecoderHost* GpuVideoServiceHost::CreateVideoDecoder(
     int context_route_id) {
-  base::AutoLock auto_lock(lock_);
-  DCHECK(channel_);
-  return new GpuVideoDecoderHost(
-      &router_, channel_, context_route_id, ++next_decoder_host_id_);
+  // TODO(vrk): Delete all references to GpuVideoDecoder (deprecated).
+  return NULL;
 }
 
-VideoDecodeAccelerator* GpuVideoServiceHost::CreateVideoAccelerator() {
+GpuVideoDecodeAcceleratorHost* GpuVideoServiceHost::CreateVideoAccelerator(
+    media::VideoDecodeAccelerator::Client* client) {
   base::AutoLock auto_lock(lock_);
-   DCHECK(channel_);
-  return new VideoDecodeAcceleratorHost(
-      &router_, channel_, next_decoder_host_id_);
+  DCHECK(channel_);
+  return new GpuVideoDecodeAcceleratorHost(
+      &router_, channel_, next_decoder_host_id_++, client);
 }

@@ -24,7 +24,7 @@ class GpuChannelManager;
 struct GPUCreateCommandBufferConfig;
 class GpuWatchdog;
 class TransportTexture;
-	 
+
 namespace base {
 class MessageLoopProxy;
 class WaitableEvent;
@@ -112,11 +112,11 @@ class GpuChannel : public IPC::Channel::Listener,
       int32* route_id);
   void OnDestroyCommandBuffer(int32 route_id);
 
-  void OnCreateVideoDecoder(int32 context_route_id,
-                            int32 decoder_host_id);
+  void OnCreateVideoDecoder(int32 decoder_host_id,
+                            const std::vector<uint32>& configs);
   void OnDestroyVideoDecoder(int32 decoder_id);
   void OnCreateTransportTexture(int32 context_route_id, int32 host_id);
- 
+
   // The lifetime of objects of this class is managed by a GpuChannelManager.
   // The GpuChannelManager destroy all the GpuChannels that they own when they
   // are destroyed. So a raw pointer is safe.

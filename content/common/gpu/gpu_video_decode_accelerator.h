@@ -5,11 +5,9 @@
 #ifndef CONTENT_GPU_GPU_VIDEO_DECODE_ACCELERATOR_H_
 #define CONTENT_GPU_GPU_VIDEO_DECODE_ACCELERATOR_H_
 
-#include <deque>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/shared_memory.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
@@ -32,13 +30,15 @@ class GpuVideoDecodeAccelerator
   // media::VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(
       uint32 requested_num_of_buffers,
-      const std::vector<uint32>& buffer_properties) OVERRIDE;
-  virtual void DismissPictureBuffer(
-      media::VideoDecodeAccelerator::PictureBuffer* picture_buffer) OVERRIDE;
-  virtual void PictureReady(
-      media::VideoDecodeAccelerator::Picture* picture) OVERRIDE;
-  virtual void NotifyEndOfStream();
-  virtual void NotifyError(media::VideoDecodeAccelerator::Error error);
+      const gfx::Size& dimensions,
+      media::VideoDecodeAccelerator::MemoryType type) OVERRIDE;
+  virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
+  virtual void PictureReady(const media::Picture& picture) OVERRIDE;
+  virtual void NotifyEndOfStream() OVERRIDE;
+  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) OVERRIDE;
+  virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
+  virtual void NotifyFlushDone() OVERRIDE;
+  virtual void NotifyAbortDone() OVERRIDE;
 
   // Function to delegate sending to actual sender.
   virtual bool Send(IPC::Message* message);
@@ -50,32 +50,29 @@ class GpuVideoDecodeAccelerator
 
  private:
   // Handlers for IPC messages.
-  void OnGetConfigs(std::vector<uint32> config, std::vector<uint32>* configs);
-  void OnCreate(std::vector<uint32> config, int32* decoder_id);
-  void OnDecode(base::SharedMemoryHandle handle, int32 offset, int32 size);
-  void OnAssignPictureBuffer(int32 picture_buffer_id,
-                             base::SharedMemoryHandle handle,
-                             std::vector<uint32> texture_ids);
+  void OnGetConfigs(const std::vector<uint32>& config,
+                    std::vector<uint32>* configs);
+  void OnInitialize(const std::vector<uint32>& configs);
+  void OnDecode(int32 id, base::SharedMemoryHandle handle, int32 size);
+  void OnAssignGLESBuffers(const std::vector<int32> buffer_ids,
+                           const std::vector<uint32> texture_ids,
+                           const std::vector<uint32> context_ids,
+                           const std::vector<gfx::Size> sizes);
+  void OnAssignSysmemBuffers(const std::vector<int32> buffer_ids,
+                             const std::vector<base::SharedMemoryHandle> data,
+                             const std::vector<gfx::Size> sizes);
   void OnReusePictureBuffer(int32 picture_buffer_id);
   void OnFlush();
   void OnAbort();
 
-  // One-time callbacks from the accelerator.
-  void OnBitstreamBufferProcessed();
-  void OnFlushDone();
-  void OnAbortDone();
-
   // Pointer to the IPC message sender.
   IPC::Message::Sender* sender_;
+
   // Route ID to communicate with the host.
   int32 route_id_;
+
   // Pointer to the underlying VideoDecodeAccelerator.
   media::VideoDecodeAccelerator* video_decode_accelerator_;
-  // Callback factory to generate one-time callbacks.
-  base::ScopedCallbackFactory<GpuVideoDecodeAccelerator> cb_factory_;
-  // Container to hold shared memory blocks so that we can return the
-  // information about their consumption to renderer.
-  std::deque<base::SharedMemory*> shm_in_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GpuVideoDecodeAccelerator);
 };

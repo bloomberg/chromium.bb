@@ -32,6 +32,7 @@
 #include "content/renderer/gpu_channel_host.h"
 #include "content/renderer/p2p/p2p_transport_impl.h"
 #include "content/renderer/pepper_platform_context_3d_impl.h"
+#include "content/renderer/pepper_platform_video_decoder_impl.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
@@ -814,11 +815,8 @@ webkit::ppapi::PluginDelegate::PlatformContext3D*
 
 webkit::ppapi::PluginDelegate::PlatformVideoDecoder*
 PepperPluginDelegateImpl::CreateVideoDecoder(
-    PP_VideoConfigElement* decoder_config,
     media::VideoDecodeAccelerator::Client* client) {
-  // TODO(vmr): Implement.
-  NOTIMPLEMENTED();
-  return NULL;
+  return new PlatformVideoDecoderImpl(client);
 }
 
 void PepperPluginDelegateImpl::NumberOfFindResultsChanged(int identifier,

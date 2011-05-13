@@ -22,7 +22,6 @@ class MockPluginDelegate : public PluginDelegate {
   virtual PlatformImage2D* CreateImage2D(int width, int height);
   virtual PlatformContext3D* CreateContext3D();
   virtual PlatformVideoDecoder* CreateVideoDecoder(
-      PP_VideoConfigElement* decoder_config,
       media::VideoDecodeAccelerator::Client* client);
   virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
                                      uint32_t sample_count,

@@ -9,8 +9,8 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_VIDEODECODER_DEV_INTERFACE_0_6 "PPB_VideoDecoder(Dev);0.6"
-#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_6
+#define PPB_VIDEODECODER_DEV_INTERFACE_0_7 "PPB_VideoDecoder(Dev);0.7"
+#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_7
 
 // Video decoder interface.
 //
@@ -163,7 +163,7 @@ struct PPB_VideoDecoder_Dev {
   //
   // Parameters:
   //   |video_decoder| is the previously created handle to the decoder instance.
-  //   |picture_buffer| contains the reference to the picture buffer that was
+  //   |picture_buffer_id| contains the id of the picture buffer that was
   //   processed.
   void (*ReusePictureBuffer)(PP_Resource video_decoder,
                              int32_t picture_buffer_id);

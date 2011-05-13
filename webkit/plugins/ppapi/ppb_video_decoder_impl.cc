@@ -138,8 +138,9 @@ const PPB_VideoDecoder_Dev ppb_videodecoder = {
 // Utility methods to convert data to and from the ppapi C-types and their
 // C++ media-namespace equivalents.
 void CopyToPictureDev(const media::Picture& input, PP_Picture_Dev* output) {
+  DCHECK(output);
   output->picture_buffer_id = input.picture_buffer_id();
-  output->bitstream_user_handle = input.user_handle();
+  output->bitstream_buffer_id = input.bitstream_buffer_id();
   output->visible_size =
       PP_MakeSize(input.visible_size().width(), input.visible_size().height());
   output->decoded_size =
@@ -148,6 +149,8 @@ void CopyToPictureDev(const media::Picture& input, PP_Picture_Dev* output) {
 
 void CopyToConfigList(
     const PP_VideoConfigElement* configs, std::vector<uint32>* output) {
+  DCHECK(configs);
+  DCHECK(output);
   // TODO(vrk): This is assuming PP_VideoAttributeDictionary and
   // VideoAttributeKey have identical enum values. There is no compiler
   // assert to guarantee this. We either need to add such asserts or
@@ -214,7 +217,12 @@ bool PPB_VideoDecoder_Impl::Init(PP_VideoConfigElement* decoder_config) {
     return false;
 
   platform_video_decoder_.reset(
-      instance()->delegate()->CreateVideoDecoder(decoder_config, this));
+      instance()->delegate()->CreateVideoDecoder(this));
+
+  std::vector<uint32> copied;
+  // TODO(vrk): Validate configs before copy.
+  CopyToConfigList(decoder_config, &copied);
+  platform_video_decoder_->Initialize(copied);
 
   return platform_video_decoder_.get()? true : false;
 }
@@ -226,20 +234,17 @@ bool PPB_VideoDecoder_Impl::Decode(
     return false;
 
   scoped_refptr<PPB_Buffer_Impl> pepper_buffer =
-      Resource::GetAs<PPB_Buffer_Impl>(bitstream_buffer->bitstream);
+      Resource::GetAs<PPB_Buffer_Impl>(bitstream_buffer->data);
 
-  media::BitstreamBuffer decode_buffer(pepper_buffer->mapped_buffer(),
-                                       bitstream_buffer->bitstream_size,
-                                       bitstream_buffer->user_handle);
+  media::BitstreamBuffer decode_buffer(bitstream_buffer->id,
+                                       pepper_buffer->mapped_buffer(),
+                                       bitstream_buffer->size);
 
   // Store the callback to inform when bitstream buffer has been processed.
   // TODO(vmr): handle simultaneous decodes + callbacks.
   bitstream_buffer_callback_ = callback;
 
-  return platform_video_decoder_->Decode(
-      decode_buffer,
-      callback_factory_.NewCallback(
-          &PPB_VideoDecoder_Impl::OnBitstreamBufferProcessed));
+  return platform_video_decoder_->Decode(decode_buffer);
 }
 
 void PPB_VideoDecoder_Impl::AssignGLESBuffers(
@@ -286,9 +291,7 @@ bool PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
   // TODO(vmr): Check for current flush/abort operations.
   flush_callback_ = callback;
 
-  return platform_video_decoder_->Flush(
-      callback_factory_.NewCallback(
-          &PPB_VideoDecoder_Impl::OnFlushComplete));
+  return platform_video_decoder_->Flush();
 }
 
 bool PPB_VideoDecoder_Impl::Abort(PP_CompletionCallback callback) {
@@ -299,14 +302,12 @@ bool PPB_VideoDecoder_Impl::Abort(PP_CompletionCallback callback) {
   // TODO(vmr): Check for current flush/abort operations.
   abort_callback_ = callback;
 
-  return platform_video_decoder_->Abort(
-      callback_factory_.NewCallback(
-          &PPB_VideoDecoder_Impl::OnAbortComplete));
+  return platform_video_decoder_->Abort();
 }
 
 void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
-    gfx::Size dimensions,
+    const gfx::Size& dimensions,
     media::VideoDecodeAccelerator::MemoryType type) {
   if (!ppp_videodecoder_)
     return;
@@ -321,8 +322,7 @@ void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
       resource.id, requested_num_of_buffers, out_dim, out_type);
 }
 
-void PPB_VideoDecoder_Impl::PictureReady(
-    const media::Picture& picture) {
+void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
   if (!ppp_videodecoder_)
     return;
 
@@ -362,7 +362,7 @@ void PPB_VideoDecoder_Impl::NotifyError(
       static_cast<PP_VideoDecodeError_Dev>(error));
 }
 
-void PPB_VideoDecoder_Impl::OnAbortComplete() {
+void PPB_VideoDecoder_Impl::NotifyAbortDone() {
   if (abort_callback_.func == NULL)
     return;
 
@@ -372,7 +372,8 @@ void PPB_VideoDecoder_Impl::OnAbortComplete() {
   PP_RunCompletionCallback(&callback, PP_OK);
 }
 
-void PPB_VideoDecoder_Impl::OnBitstreamBufferProcessed() {
+void PPB_VideoDecoder_Impl::NotifyEndOfBitstreamBuffer(
+    int32 bitstream_buffer_id) {
   if (bitstream_buffer_callback_.func == NULL)
     return;
 
@@ -383,7 +384,7 @@ void PPB_VideoDecoder_Impl::OnBitstreamBufferProcessed() {
   PP_RunCompletionCallback(&callback, PP_OK);
 }
 
-void PPB_VideoDecoder_Impl::OnFlushComplete() {
+void PPB_VideoDecoder_Impl::NotifyFlushDone() {
   if (flush_callback_.func == NULL)
     return;
 
@@ -400,8 +401,8 @@ void PPB_VideoDecoder_Impl::OnFlushComplete() {
 // dependencies (we can't depend on ppapi types from media).
 namespace media {
 BufferInfo::BufferInfo(const PP_BufferInfo_Dev& info)
-    : id_(info.id) {
-      size_ = gfx::Size(info.size.width, info.size.height);
+    : id_(info.id),
+      size_(info.size.width, info.size.height) {
 }
 
 // TODO(vrk): This assigns the PP_Resource context to be
@@ -423,7 +424,7 @@ SysmemBuffer::SysmemBuffer(const PP_SysmemBuffer_Dev& buffer)
 
 Picture::Picture(const PP_Picture_Dev& picture)
     : picture_buffer_id_(picture.picture_buffer_id),
-      user_handle_(picture.bitstream_user_handle),
+      bitstream_buffer_id_(picture.bitstream_buffer_id),
       visible_size_(picture.visible_size.width, picture.visible_size.height),
       decoded_size_(picture.decoded_size.width, picture.decoded_size.height) {
 }

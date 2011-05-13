@@ -18,7 +18,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_video_service.h"
 #include "content/common/gpu/transport_texture.h"
- 
+
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
 #endif
@@ -250,8 +250,8 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
 #endif
 }
 
-void GpuChannel::OnCreateVideoDecoder(int32 context_route_id,
-							int32 decoder_host_id) {
+void GpuChannel::OnCreateVideoDecoder(
+    int32 decoder_host_id, const std::vector<uint32>& configs) {
 // TODO(cevans): do NOT re-enable this until GpuVideoService has been checked
 // for integer overflows, including the classic "width * height" overflow.
 #if 0
@@ -262,16 +262,11 @@ void GpuChannel::OnCreateVideoDecoder(int32 context_route_id,
     return;
   }
 
-  // The context ID corresponds to the command buffer used.
-  GpuCommandBufferStub* stub = stubs_.Lookup(context_route_id);
   int32 decoder_id = GenerateRouteID();
 
-  // TODO(hclam): Need to be careful about the lifetime of the command buffer
-  // decoder.
   bool ret = service->CreateVideoDecoder(
-      this, &router_, decoder_host_id, decoder_id,
-      stub->scheduler()->decoder());
-  DCHECK(ret) << "Failed to create a GpuVideoDecoder";
+      this, &router_, decoder_host_id, decoder_id, configs);
+  DCHECK(ret) << "Failed to create a GpuVideoDecodeAccelerator";
 #endif
 }
 
@@ -290,7 +285,7 @@ void GpuChannel::OnCreateTransportTexture(int32 context_route_id,
  #if defined(ENABLE_GPU)
    GpuCommandBufferStub* stub = stubs_.Lookup(context_route_id);
    int32 route_id = GenerateRouteID();
- 
+
    scoped_ptr<TransportTexture> transport(
        new TransportTexture(this, channel_.get(), stub->scheduler()->decoder(),
                             host_id, route_id));
