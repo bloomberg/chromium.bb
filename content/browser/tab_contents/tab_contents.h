@@ -554,8 +554,6 @@ class TabContents : public PageNavigator,
   // the pending WebUI, the committed WebUI, or NULL.
   WebUI* GetWebUIForCurrentState();
 
-  // From RenderViewHostDelegate.
-  virtual RenderViewHostDelegate::ContentSettings* GetContentSettingsDelegate();
 
  protected:
   friend class TabContentsObserver;

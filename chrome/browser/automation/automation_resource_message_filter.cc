@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/automation/url_request_automation_job.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/net/url_request_failed_dns_job.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/browser/net/url_request_mock_util.h"
@@ -17,7 +18,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/common/view_messages.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
@@ -507,10 +507,12 @@ void AutomationResourceMessageFilter::OnGetCookiesHostResponse(
       GetCookieMonster();
   net::CookieList cookie_list = cookie_monster->GetAllCookiesForURLWithOptions(
       url, net::CookieOptions());
-  CallRenderViewHostContentSettingsDelegate(
-      index->second.render_process_id, render_view_id,
-      &RenderViewHostDelegate::ContentSettings::OnCookiesRead,
-      url, cookie_list, !success);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          &TabSpecificContentSettings::CookiesRead,
+          index->second.render_process_id, render_view_id, url, cookie_list,
+          !success));
 
   // The cookie for this URL is only valid until it is read by the callback.
   cookie_store->SetCookieWithOptions(url, "", net::CookieOptions());

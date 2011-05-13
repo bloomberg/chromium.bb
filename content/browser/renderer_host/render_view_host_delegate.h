@@ -13,9 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process_util.h"
 #include "base/string16.h"
-#include "chrome/common/content_settings_types.h"
 #include "chrome/common/view_types.h"
-#include "content/common/dom_storage_common.h"
 #include "content/common/window_container_type.h"
 #include "ipc/ipc_channel.h"
 #include "net/base/load_states.h"
@@ -239,66 +237,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
     virtual ~RendererManagement() {}
   };
 
-  // ContentSettings------------------------------------------------------------
-  // Interface for content settings related events.
-
-  class ContentSettings {
-   public:
-    // Called when content in the current page was blocked due to the user's
-    // content settings.
-    virtual void OnContentBlocked(ContentSettingsType type,
-                                  const std::string& resource_identifier) = 0;
-
-    // Called when cookies for the given URL were read either from within the
-    // current page or while loading it. |blocked_by_policy| should be true, if
-    // reading cookies was blocked due to the user's content settings. In that
-    // case, this function should invoke OnContentBlocked.
-    virtual void OnCookiesRead(
-        const GURL& url,
-        const net::CookieList& cookie_list,
-        bool blocked_by_policy) = 0;
-
-    // Called when a specific cookie in the current page was changed.
-    // |blocked_by_policy| should be true, if the cookie was blocked due to the
-    // user's content settings. In that case, this function should invoke
-    // OnContentBlocked.
-    virtual void OnCookieChanged(const GURL& url,
-                                 const std::string& cookie_line,
-                                 const net::CookieOptions& options,
-                                 bool blocked_by_policy) = 0;
-
-    // Called when a specific indexed db factory in the current page was
-    // accessed. If access was blocked due to the user's content settings,
-    // |blocked_by_policy| should be true, and this function should invoke
-    // OnContentBlocked.
-    virtual void OnIndexedDBAccessed(const GURL& url,
-                                     const string16& description,
-                                     bool blocked_by_policy) = 0;
-
-    // Called when a specific local storage area in the current page was
-    // accessed. If access was blocked due to the user's content settings,
-    // |blocked_by_policy| should be true, and this function should invoke
-    // OnContentBlocked.
-    virtual void OnLocalStorageAccessed(const GURL& url,
-                                        DOMStorageType storage_type,
-                                        bool blocked_by_policy) = 0;
-
-    // Called when a specific appcache in the current page was accessed. If
-    // access was blocked due to the user's content settings,
-    // |blocked_by_policy| should eb true, and this function should invoke
-    // OnContentBlocked.
-    virtual void OnAppCacheAccessed(const GURL& manifest_url,
-                                    bool blocked_by_policy) = 0;
-
-    // Called when geolocation permission was set in a frame on the current
-    // page.
-    virtual void OnGeolocationPermissionSet(const GURL& requesting_frame,
-                                            bool allowed) = 0;
-
-   protected:
-    virtual ~ContentSettings() {}
-  };
-
   // BookmarkDrag --------------------------------------------------------------
   // Interface for forwarding bookmark drag and drop to extenstions.
 
@@ -360,7 +298,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // there is no corresponding delegate.
   virtual View* GetViewDelegate();
   virtual RendererManagement* GetRendererManagementDelegate();
-  virtual ContentSettings* GetContentSettingsDelegate();
 
   virtual BookmarkDrag* GetBookmarkDragDelegate();
   virtual SSL* GetSSLDelegate();

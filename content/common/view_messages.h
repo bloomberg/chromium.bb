@@ -1489,34 +1489,16 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetPlugins,
 // type. If there is no matching plugin, |found| is false.  If
 // |enabled| in the WebPluginInfo struct is false, the plug-in is
 // treated as if it was not installed at all.
-//
-// TODO(jam): until we get ContentSetting out of content completely, sending it
-// as int temporarily so we can move these messages to content.
-//
-// If |setting| is set to CONTENT_SETTING_BLOCK, the plug-in is
-// blocked by the content settings for |policy_url|. It still
-// appears in navigator.plugins in Javascript though, and can be
-// loaded via click-to-play.
-//
-// If |setting| is set to CONTENT_SETTING_ALLOW, the domain is
-// explicitly white-listed for the plug-in, or the user has chosen
-// not to block nonsandboxed plugins.
-//
-// If |setting| is set to CONTENT_SETTING_DEFAULT, the plug-in is
-// neither blocked nor white-listed, which means that it's allowed
-// by default and can still be blocked if it's non-sandboxed.
-//
 // |actual_mime_type| is the actual mime type supported by the
 // plugin found that match the URL given (one for each item in
 // |info|).
-IPC_SYNC_MESSAGE_CONTROL4_4(ViewHostMsg_GetPluginInfo,
+IPC_SYNC_MESSAGE_CONTROL4_3(ViewHostMsg_GetPluginInfo,
                             int /* routing_id */,
                             GURL /* url */,
                             GURL /* policy_url */,
                             std::string /* mime_type */,
                             bool /* found */,
                             webkit::npapi::WebPluginInfo /* plugin info */,
-                            int /* setting */,
                             std::string /* actual_mime_type */)
 
 // A renderer sends this to the browser process when it wants to

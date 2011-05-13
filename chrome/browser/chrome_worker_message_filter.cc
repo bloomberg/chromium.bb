@@ -6,14 +6,16 @@
 
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/worker_messages.h"
 
 ChromeWorkerMessageFilter::ChromeWorkerMessageFilter(WorkerProcessHost* process)
     : process_(process) {
-  host_content_settings_map_ =
-      process->resource_context()->host_content_settings_map();
+  ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
+      process->resource_context()->GetUserData(NULL));
+  host_content_settings_map_ = io_data->host_content_settings_map();
 }
 
 ChromeWorkerMessageFilter::~ChromeWorkerMessageFilter() {

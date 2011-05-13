@@ -208,6 +208,7 @@ ProfileIOData::ProfileIOData(bool is_incognito)
     : initialized_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(resource_context_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  resource_context_.SetUserData(NULL, this);
 }
 
 ProfileIOData::~ProfileIOData() {
@@ -327,7 +328,6 @@ void ProfileIOData::LazyInitialize() const {
   resource_context_.set_file_system_context(file_system_context_);
   resource_context_.set_quota_manager(quota_manager_);
   resource_context_.set_host_zoom_map(host_zoom_map_);
-  resource_context_.set_host_content_settings_map(host_content_settings_map_);
   resource_context_.set_extension_info_map(extension_info_map_);
   resource_context_.set_prerender_manager(prerender_manager_);
 

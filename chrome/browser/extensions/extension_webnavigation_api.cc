@@ -303,7 +303,8 @@ void ExtensionWebNavigationTabObserver::DidStartProvisionalLoadForFrame(
     int64 frame_id,
     bool is_main_frame,
     const GURL& validated_url,
-    bool is_error_page) {
+    bool is_error_page,
+    RenderViewHost* render_view_host) {
   navigation_state_.TrackFrame(frame_id,
                                validated_url,
                                is_main_frame,

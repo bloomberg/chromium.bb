@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/indexed_db_callbacks.h"
 #include "content/browser/in_process_webkit/indexed_db_database_callbacks.h"
@@ -60,10 +59,8 @@ void DeleteOnWebKitThread(T* obj) {
 }
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
-    int process_id, WebKitContext* webkit_context,
-    HostContentSettingsMap* host_content_settings_map)
+    int process_id, WebKitContext* webkit_context)
     : webkit_context_(webkit_context),
-      host_content_settings_map_(host_content_settings_map),
       ALLOW_THIS_IN_INITIALIZER_LIST(database_dispatcher_host_(
           new DatabaseDispatcherHost(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(index_dispatcher_host_(

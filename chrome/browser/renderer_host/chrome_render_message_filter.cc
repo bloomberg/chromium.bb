@@ -84,6 +84,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllowFileSystem, OnAllowFileSystem)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllowIndexedDB, OnAllowIndexedDB)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginContentSetting,
+                        OnGetPluginContentSetting)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CanTriggerClipboardRead,
                         OnCanTriggerClipboardRead)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CanTriggerClipboardWrite,
@@ -394,6 +396,14 @@ void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_view_id,
       NewRunnableFunction(
           &TabSpecificContentSettings::IndexedDBAccessed,
           render_process_id_, render_view_id, url, name, !*allowed));
+}
+
+void ChromeRenderMessageFilter::OnGetPluginContentSetting(
+    const GURL& policy_url,
+    const std::string& resource,
+    ContentSetting* setting) {
+  *setting = host_content_settings_map_->GetContentSetting(
+      policy_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource);
 }
 
 void ChromeRenderMessageFilter::OnCanTriggerClipboardRead(const GURL& url,

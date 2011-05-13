@@ -454,9 +454,7 @@ void ResourceDispatcherHost::BeginRequest(
         filter_, request_data.url, sync_result, this);
   } else {
     handler = new AsyncResourceHandler(
-        filter_, route_id, request_data.url,
-        resource_context.host_zoom_map(),
-        resource_context.host_content_settings_map(),
+        filter_, route_id, request_data.url, resource_context.host_zoom_map(),
         this);
   }
 

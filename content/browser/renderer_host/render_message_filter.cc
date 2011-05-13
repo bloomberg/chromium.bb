@@ -13,7 +13,6 @@
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -277,7 +276,6 @@ RenderMessageFilter::RenderMessageFilter(
       plugin_service_(plugin_service),
       profile_(profile),
       extension_info_map_(profile->GetExtensionInfoMap()),
-      content_settings_(profile->GetHostContentSettingsMap()),
       request_context_(request_context),
       resource_context_(profile->GetResourceContext()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
@@ -585,21 +583,13 @@ void RenderMessageFilter::OnGetPluginInfo(
     const std::string& mime_type,
     bool* found,
     webkit::npapi::WebPluginInfo* info,
-    int* setting,
     std::string* actual_mime_type) {
   *found = plugin_service_->GetFirstAllowedPluginInfo(
       render_process_id_, routing_id, url, mime_type, info, actual_mime_type);
 
-  *setting = CONTENT_SETTING_DEFAULT;
   if (*found) {
     if (!plugin_service_->PluginAllowedForURL(info->path, policy_url))
       info->enabled |= webkit::npapi::WebPluginInfo::POLICY_DISABLED;
-    std::string resource =
-        webkit::npapi::PluginList::Singleton()->GetPluginGroupIdentifier(*info);
-    *setting = content_settings_->GetContentSetting(
-        policy_url,
-        CONTENT_SETTINGS_TYPE_PLUGINS,
-        resource);
   }
 }
 

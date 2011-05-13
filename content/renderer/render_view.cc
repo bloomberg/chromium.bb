@@ -530,11 +530,10 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
                                            const WebPluginParams& params) {
   webkit::npapi::WebPluginInfo info;
   bool found;
-  int content_setting;
   std::string mime_type;
   Send(new ViewHostMsg_GetPluginInfo(
       routing_id_, params.url, frame->top()->url(), params.mimeType.utf8(),
-      &found, &info, &content_setting, &mime_type));
+      &found, &info, &mime_type));
   if (!found || !webkit::npapi::IsPluginEnabled(info))
     return NULL;
 

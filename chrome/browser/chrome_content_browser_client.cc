@@ -10,6 +10,7 @@
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_worker_message_filter.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/debugger/devtools_handler.h"
 #include "chrome/browser/desktop_notification_handler.h"
 #include "chrome/browser/extensions/extension_message_handler.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
 #include "chrome/browser/renderer_host/text_input_client_message_filter.h"
@@ -33,7 +35,6 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -237,7 +238,10 @@ std::string ChromeContentBrowserClient::GetApplicationLocale() {
 
 bool ChromeContentBrowserClient::AllowAppCache(
     const GURL& manifest_url, const content::ResourceContext& context) {
-  ContentSetting setting = context.host_content_settings_map()->
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ProfileIOData* io_data =
+      reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
+  ContentSetting setting = io_data->host_content_settings_map()->
       GetContentSetting(manifest_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   DCHECK(setting != CONTENT_SETTING_DEFAULT);
   return setting != CONTENT_SETTING_BLOCK;
@@ -252,7 +256,9 @@ bool ChromeContentBrowserClient::AllowGetCookie(
     int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool allow = true;
-  if (context.host_content_settings_map()->BlockThirdPartyCookies()) {
+  ProfileIOData* io_data =
+      reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
+  if (io_data->host_content_settings_map()->BlockThirdPartyCookies()) {
     bool strict = CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kBlockReadingThirdPartyCookies);
     net::StaticCookiePolicy policy(strict ?
@@ -265,16 +271,17 @@ bool ChromeContentBrowserClient::AllowGetCookie(
   }
 
   if (allow) {
-    ContentSetting setting = context.host_content_settings_map()->
+    ContentSetting setting = io_data->host_content_settings_map()->
         GetContentSetting(url, CONTENT_SETTINGS_TYPE_COOKIES, "");
     allow = setting == CONTENT_SETTING_ALLOW ||
         setting == CONTENT_SETTING_SESSION_ONLY;
   }
 
-  CallRenderViewHostContentSettingsDelegate(
-      render_process_id, render_view_id,
-      &RenderViewHostDelegate::ContentSettings::OnCookiesRead,
-      url, cookie_list, !allow);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          &TabSpecificContentSettings::CookiesRead,
+          render_process_id, render_view_id, url, cookie_list, !allow));
   return allow;
 }
 
@@ -288,7 +295,9 @@ bool ChromeContentBrowserClient::AllowSetCookie(
     net::CookieOptions* options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool allow = true;
-  if (context.host_content_settings_map()->BlockThirdPartyCookies()) {
+  ProfileIOData* io_data =
+      reinterpret_cast<ProfileIOData*>(context.GetUserData(NULL));
+  if (io_data->host_content_settings_map()->BlockThirdPartyCookies()) {
     bool strict = CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kBlockReadingThirdPartyCookies);
     net::StaticCookiePolicy policy(strict ?
@@ -300,7 +309,7 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   }
 
   if (allow) {
-    ContentSetting setting = context.host_content_settings_map()->
+    ContentSetting setting = io_data->host_content_settings_map()->
         GetContentSetting(url, CONTENT_SETTINGS_TYPE_COOKIES, "");
 
     if (setting == CONTENT_SETTING_SESSION_ONLY)
@@ -310,10 +319,12 @@ bool ChromeContentBrowserClient::AllowSetCookie(
         setting == CONTENT_SETTING_SESSION_ONLY;
   }
 
-  CallRenderViewHostContentSettingsDelegate(
-      render_process_id, render_view_id,
-      &RenderViewHostDelegate::ContentSettings::OnCookieChanged,
-      url, cookie_line, *options, !allow);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          &TabSpecificContentSettings::CookieChanged,
+          render_process_id, render_view_id, url, cookie_line, *options,
+          !allow));
   return allow;
 }
 

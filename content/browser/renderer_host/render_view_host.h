@@ -13,7 +13,6 @@
 #include "base/observer_list.h"
 #include "base/process_util.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
-#include "chrome/common/content_settings_types.h"
 #include "chrome/common/view_types.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/page_zoom.h"
@@ -36,7 +35,6 @@ class SessionStorageNamespace;
 class SiteInstance;
 class SkBitmap;
 class ViewMsg_Navigate;
-struct ContentSettings;
 struct ContextMenuParams;
 struct MediaPlayerAction;
 struct ViewHostMsg_AccessibilityNotification_Params;
@@ -421,10 +419,6 @@ class RenderViewHost : public RenderWidgetHost {
       const webkit_glue::CustomContextMenuContext& custom_context,
       unsigned action);
 
-  // Informs renderer of updated content settings.
-  void SendContentSettings(const GURL& url,
-                           const ContentSettings& settings);
-
   // Tells the renderer to notify us when the page contents preferred size
   // changed. |flags| is a combination of
   // |ViewHostMsg_EnablePreferredSizeChangedMode_Flags| values, which is defined
@@ -536,9 +530,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
   void OnCSSInserted();
-  void OnContentBlocked(ContentSettingsType type,
-                        const std::string& resource_identifier);
-  void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent,
                           bool remember);

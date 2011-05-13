@@ -12,7 +12,6 @@
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 
-class HostContentSettingsMap;
 class IndexedDBKey;
 class NullableString16;
 class Profile;
@@ -37,9 +36,7 @@ class WebIDBTransaction;
 class IndexedDBDispatcherHost : public BrowserMessageFilter {
  public:
   // Only call the constructor from the UI thread.
-  IndexedDBDispatcherHost(
-      int process_id, WebKitContext* webkit_context,
-      HostContentSettingsMap* host_content_settings_map);
+  IndexedDBDispatcherHost(int process_id, WebKitContext* webkit_context);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing();
@@ -257,9 +254,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   // Data shared between renderer processes with the same profile.
   scoped_refptr<WebKitContext> webkit_context_;
-
-  // Tells us whether the user wants to allow databases to be opened.
-  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   // Only access on WebKit thread.
   scoped_ptr<DatabaseDispatcherHost> database_dispatcher_host_;

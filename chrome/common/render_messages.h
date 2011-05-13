@@ -330,6 +330,25 @@ IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_AllowIndexedDB,
                             string16 /* database name */,
                             bool /* allowed */)
 
+// Gets the content setting for a plugin.
+// If |setting| is set to CONTENT_SETTING_BLOCK, the plug-in is
+// blocked by the content settings for |policy_url|. It still
+// appears in navigator.plugins in Javascript though, and can be
+// loaded via click-to-play.
+//
+// If |setting| is set to CONTENT_SETTING_ALLOW, the domain is
+// explicitly white-listed for the plug-in, or the user has chosen
+// not to block nonsandboxed plugins.
+//
+// If |setting| is set to CONTENT_SETTING_DEFAULT, the plug-in is
+// neither blocked nor white-listed, which means that it's allowed
+// by default and can still be blocked if it's non-sandboxed.
+//
+IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_GetPluginContentSetting,
+                            GURL /* policy_url */,
+                            std::string  /* resource */,
+                            ContentSetting /* setting */)
+
 // Specifies the URL as the first parameter (a wstring) and thumbnail as
 // binary data as the second parameter.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_Thumbnail,

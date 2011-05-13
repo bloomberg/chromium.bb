@@ -19,7 +19,6 @@
 #include "base/string16.h"
 #include "base/task.h"
 #include "build/build_config.h"
-#include "chrome/common/content_settings.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -157,7 +156,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
                        const std::string& mime_type,
                        bool* found,
                        webkit::npapi::WebPluginInfo* info,
-                       int* setting,
                        std::string* actual_mime_type);
   void OnOpenChannelToPlugin(int routing_id,
                              const GURL& url,
@@ -240,10 +238,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // The extension info map. Stored separately from the profile so we can
   // access it on other threads.
   ExtensionInfoMap* extension_info_map_;
-
-  // The host content settings map. Stored separately from the profile so we can
-  // access it on other threads.
-  HostContentSettingsMap* content_settings_;
 
   // Contextual information to be used for requests created here.
   scoped_refptr<net::URLRequestContextGetter> request_context_;

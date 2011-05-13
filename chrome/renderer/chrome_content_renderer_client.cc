@@ -244,21 +244,28 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       WebFrame* frame,
       const WebPluginParams& original_params) {
   bool found = false;
-  int plugin_setting = CONTENT_SETTING_DEFAULT;
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   webkit::npapi::WebPluginInfo info;
   GURL url(original_params.url);
   std::string actual_mime_type;
   render_view->Send(new ViewHostMsg_GetPluginInfo(
       render_view->routing_id(), url, frame->top()->url(),
-      original_params.mimeType.utf8(), &found, &info, &plugin_setting,
-      &actual_mime_type));
+      original_params.mimeType.utf8(), &found, &info, &actual_mime_type));
 
   if (!found)
     return NULL;
-  DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
   if (!webkit::npapi::IsPluginEnabled(info))
     return NULL;
+
+  const webkit::npapi::PluginGroup* group =
+      webkit::npapi::PluginList::Singleton()->GetPluginGroup(info);
+  DCHECK(group != NULL);
+
+  ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
+  std::string resource = group->identifier();
+  render_view->Send(new ViewHostMsg_GetPluginContentSetting(
+      frame->top()->url(), resource, &plugin_setting));
+  DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
 
   WebPluginParams params(original_params);
   for (size_t i = 0; i < info.mime_types.size(); ++i) {
@@ -270,10 +277,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       break;
     }
   }
-
-  const webkit::npapi::PluginGroup* group =
-      webkit::npapi::PluginList::Singleton()->GetPluginGroup(info);
-  DCHECK(group != NULL);
 
   ContentSetting outdated_policy = CONTENT_SETTING_ASK;
   ContentSetting authorize_policy = CONTENT_SETTING_ASK;
@@ -342,10 +345,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         frame, params, info.path, actual_mime_type);
   }
 
-  std::string resource;
-  if (cmd->HasSwitch(switches::kEnableResourceContentSettings))
-    resource = group->identifier();
-  observer->DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
+  observer->DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS,
+      cmd->HasSwitch(switches::kEnableResourceContentSettings) ?
+          resource : std::string());
   if (plugin_setting == CONTENT_SETTING_ASK) {
     return CreatePluginPlaceholder(
         render_view, frame, params, *group, IDR_CLICK_TO_PLAY_PLUGIN_HTML,

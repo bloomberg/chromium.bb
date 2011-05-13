@@ -87,10 +87,12 @@ class ExtensionWebNavigationTabObserver : public TabContentsObserver {
   virtual ~ExtensionWebNavigationTabObserver();
 
   // TabContentsObserver implementation.
-  virtual void DidStartProvisionalLoadForFrame(int64 frame_id,
-                                                 bool is_main_frame,
-                                                 const GURL& validated_url,
-                                                 bool is_error_page) OVERRIDE;
+  virtual void DidStartProvisionalLoadForFrame(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      bool is_error_page,
+      RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
       bool is_main_frame,

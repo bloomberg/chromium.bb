@@ -10,6 +10,7 @@
 #include "ipc/ipc_channel.h"
 #include "webkit/glue/window_open_disposition.h"
 
+class RenderViewHost;
 struct ViewHostMsg_FrameNavigate_Params;
 
 // An observer API implemented by classes which are interested in various page
@@ -47,10 +48,14 @@ class TabContentsObserver : public IPC::Channel::Listener,
   virtual void DidNavigateAnyFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
-  virtual void DidStartProvisionalLoadForFrame(int64 frame_id,
-                                               bool is_main_frame,
-                                               const GURL& validated_url,
-                                               bool is_error_page);
+  // |render_view_host| is the RenderViewHost for which the provisional load is
+  // happening.
+  virtual void DidStartProvisionalLoadForFrame(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      bool is_error_page,
+      RenderViewHost* render_view_host);
   virtual void ProvisionalChangeToMainFrameUrl(const GURL& url);
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,

@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/shared_memory.h"
 #include "chrome/browser/debugger/devtools_netlog_observer.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/host_zoom_map.h"
@@ -82,12 +81,10 @@ AsyncResourceHandler::AsyncResourceHandler(
     int routing_id,
     const GURL& url,
     HostZoomMap* host_zoom_map,
-    HostContentSettingsMap* host_content_settings_map,
     ResourceDispatcherHost* resource_dispatcher_host)
     : filter_(filter),
       routing_id_(routing_id),
       host_zoom_map_(host_zoom_map),
-      host_content_settings_map_(host_content_settings_map),
       rdh_(resource_dispatcher_host),
       next_buffer_size_(kInitialReadBufSize) {
 }
@@ -132,9 +129,6 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   if (info->resource_type() == ResourceType::MAIN_FRAME &&
       request->context()) {
     GURL request_url(request->url());
-    filter_->Send(new ViewMsg_SetContentSettingsForLoadingURL(
-        info->route_id(), request_url,
-        host_content_settings_map_->GetContentSettings(request_url)));
     filter_->Send(new ViewMsg_SetZoomLevelForLoadingURL(
         info->route_id(),
         request_url, host_zoom_map_->GetZoomLevel(request_url)));

@@ -15,8 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/content_settings/content_settings_details.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/defaults.h"
@@ -268,10 +266,6 @@ TabContents::TabContents(Profile* profile,
 #endif
 
   registrar_.Add(this, NotificationType::USER_STYLE_SHEET_UPDATED,
-                 NotificationService::AllSources());
-
-  // Register for notifications about content setting changes.
-  registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
                  NotificationService::AllSources());
 
   // Listen for Google URL changes.
@@ -1029,10 +1023,13 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
   render_view_host()->FilterURL(ChildProcessSecurityPolicy::GetInstance(),
       GetRenderProcessHost()->id(), &validated_url);
 
+  RenderViewHost* rvh =
+      render_manager_.pending_render_view_host() ?
+          render_manager_.pending_render_view_host() : render_view_host();
   // Notify observers about the start of the provisional load.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_,
                     DidStartProvisionalLoadForFrame(frame_id, is_main_frame,
-                    validated_url, is_error_page));
+                    validated_url, is_error_page, rvh));
 
   if (is_main_frame) {
     // Notify observers about the provisional change in the main frame URL.
@@ -1501,11 +1498,6 @@ RenderViewHostDelegate::View* TabContents::GetViewDelegate() {
 RenderViewHostDelegate::RendererManagement*
 TabContents::GetRendererManagementDelegate() {
   return &render_manager_;
-}
-
-RenderViewHostDelegate::ContentSettings*
-TabContents::GetContentSettingsDelegate() {
-  return content_settings_delegate_.get();
 }
 
 RenderViewHostDelegate::SSL* TabContents::GetSSLDelegate() {
@@ -2188,21 +2180,6 @@ void TabContents::Observe(NotificationType type,
     case NotificationType::USER_STYLE_SHEET_UPDATED:
       UpdateWebPreferences();
       break;
-
-    case NotificationType::CONTENT_SETTINGS_CHANGED: {
-      Details<const ContentSettingsDetails> settings_details(details);
-      NavigationEntry* entry = controller_.GetActiveEntry();
-      GURL entry_url;
-      if (entry)
-        entry_url = entry->url();
-      if (settings_details.ptr()->update_all() ||
-          settings_details.ptr()->pattern().Matches(entry_url)) {
-        render_view_host()->SendContentSettings(entry_url,
-            profile()->GetHostContentSettingsMap()->
-                GetContentSettings(entry_url));
-      }
-      break;
-    }
 
     case NotificationType::GOOGLE_URL_UPDATED:
       UpdateAlternateErrorPageURL();

@@ -8,7 +8,6 @@
 
 #include "base/hash_tables.h"
 #include "base/string16.h"
-#include "chrome/common/content_settings.h"
 #include "content/browser/browser_message_filter.h"
 #include "webkit/database/database_connections.h"
 #include "webkit/database/database_tracker.h"

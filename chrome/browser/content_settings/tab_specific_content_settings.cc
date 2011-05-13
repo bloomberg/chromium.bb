@@ -12,12 +12,17 @@
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
+#include "chrome/browser/content_settings/content_settings_details.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/cookies_tree_model.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/common/notification_service.h"
+#include "content/common/view_messages.h"
 #include "net/base/cookie_monster.h"
 
 namespace {
@@ -44,6 +49,9 @@ TabSpecificContentSettings::TabSpecificContentSettings(TabContents* tab)
   ClearBlockedContentSettingsExceptForCookies();
   ClearCookieSpecificContentSettings();
   g_tab_specific.Get().push_back(this);
+
+  registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
+                 NotificationService::AllSources());
 }
 
 TabSpecificContentSettings::~TabSpecificContentSettings() {
@@ -53,16 +61,42 @@ TabSpecificContentSettings::~TabSpecificContentSettings() {
 TabSpecificContentSettings* TabSpecificContentSettings::Get(
     int render_process_id, int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RenderViewHost* view = RenderViewHost::FromID(
+      render_process_id, render_view_id);
+  if (!view)
+    return NULL;
+  // We loop through the tab contents and compare them with |view|, instead of
+  // getting the RVH from each tab contents and comparing its IDs because the
+  // latter will miss provisional RenderViewHosts.
   for (TabSpecificList::iterator i = g_tab_specific.Get().begin();
        i != g_tab_specific.Get().end(); ++i) {
-    RenderViewHost* view = (*i)->tab_contents()->render_view_host();
-    if (view->process()->id() == render_process_id &&
-        view->routing_id() == render_view_id) {
-      return (*i);
-    }
+    if (view->delegate() == (*i)->tab_contents())
+      return (*i);    
   }
 
   return NULL;
+}
+
+void TabSpecificContentSettings::CookiesRead(int render_process_id,
+                                             int render_view_id,
+                                             const GURL& url,
+                                             const net::CookieList& cookie_list,
+                                             bool blocked_by_policy) {
+  TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
+  if (settings)
+    settings->OnCookiesRead(url, cookie_list, blocked_by_policy);
+}
+
+void TabSpecificContentSettings::CookieChanged(
+    int render_process_id,
+    int render_view_id,
+    const GURL& url,
+    const std::string& cookie_line,
+    const net::CookieOptions& options,
+    bool blocked_by_policy) {
+  TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
+  if (settings)
+    settings->OnCookieChanged(url, cookie_line, options, blocked_by_policy);
 }
 
 void TabSpecificContentSettings::WebDatabaseAccessed(
@@ -338,6 +372,17 @@ CookiesTreeModel* TabSpecificContentSettings::GetBlockedCookiesTreeModel() {
   return blocked_local_shared_objects_.GetCookiesTreeModel();
 }
 
+bool TabSpecificContentSettings::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(TabSpecificContentSettings, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ContentBlocked, OnContentBlocked)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
 void TabSpecificContentSettings::DidNavigateMainFramePostCommit(
     const NavigationController::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
@@ -352,7 +397,8 @@ void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
     int64 frame_id,
     bool is_main_frame,
     const GURL& validated_url,
-    bool is_error_page) {
+    bool is_error_page,
+    RenderViewHost* render_view_host) {
   if (!is_main_frame)
     return;
 
@@ -362,6 +408,31 @@ void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
   if (!is_error_page)
     ClearCookieSpecificContentSettings();
   ClearGeolocationContentSettings();
+
+  HostContentSettingsMap* map =
+      tab_contents()->profile()->GetHostContentSettingsMap();
+  render_view_host->Send(new ViewMsg_SetContentSettingsForLoadingURL(
+      render_view_host->routing_id(), validated_url,
+      map->GetContentSettings(validated_url)));
+}
+
+void TabSpecificContentSettings::Observe(NotificationType type,
+                                         const NotificationSource& source,
+                                         const NotificationDetails& details) {
+  DCHECK(type.value == NotificationType::CONTENT_SETTINGS_CHANGED);
+
+  Details<const ContentSettingsDetails> settings_details(details);
+  const NavigationController& controller = tab_contents()->controller();
+  NavigationEntry* entry = controller.GetActiveEntry();
+  GURL entry_url;
+  if (entry)
+    entry_url = entry->url();
+  if (settings_details.ptr()->update_all() ||
+      settings_details.ptr()->pattern().Matches(entry_url)) {
+    Send(new ViewMsg_SetContentSettingsForCurrentURL(
+        entry_url, tab_contents()->profile()->GetHostContentSettingsMap()->
+            GetContentSettings(entry_url)));
+  }
 }
 
 TabSpecificContentSettings::LocalSharedObjectsContainer::

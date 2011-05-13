@@ -96,7 +96,7 @@ void BlockedContentTabHelper::AddPopup(TabContentsWrapper* new_contents,
                                       NEW_POPUP,
                                       initial_pos,
                                       true);  // user_gesture
-    tab_contents()->GetContentSettingsDelegate()->OnContentBlocked(
+    tab_contents()->GetTabSpecificContentSettings()->OnContentBlocked(
           CONTENT_SETTINGS_TYPE_POPUPS, std::string());
   }
 }

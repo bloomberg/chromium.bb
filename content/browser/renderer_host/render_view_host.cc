@@ -771,8 +771,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityNotifications,
                         OnAccessibilityNotifications)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OnCSSInserted, OnCSSInserted)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ContentBlocked, OnContentBlocked)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
@@ -1332,11 +1330,6 @@ void RenderViewHost::PerformCustomContextMenuAction(
                                            action));
 }
 
-void RenderViewHost::SendContentSettings(const GURL& url,
-                                         const ContentSettings& settings) {
-  Send(new ViewMsg_SetContentSettingsForCurrentURL(url, settings));
-}
-
 void RenderViewHost::EnablePreferredSizeChangedMode(int flags) {
   Send(new ViewMsg_EnablePreferredSizeChangedMode(routing_id(), flags));
 }
@@ -1404,23 +1397,6 @@ void RenderViewHost::OnAccessibilityNotifications(
 
 void RenderViewHost::OnCSSInserted() {
   delegate_->DidInsertCSS();
-}
-
-void RenderViewHost::OnContentBlocked(ContentSettingsType type,
-                                      const std::string& resource_identifier) {
-  RenderViewHostDelegate::ContentSettings* content_settings_delegate =
-      delegate_->GetContentSettingsDelegate();
-  if (content_settings_delegate)
-    content_settings_delegate->OnContentBlocked(type, resource_identifier);
-}
-
-void RenderViewHost::OnAppCacheAccessed(const GURL& manifest_url,
-                                        bool blocked_by_policy) {
-  RenderViewHostDelegate::ContentSettings* content_settings_delegate =
-      delegate_->GetContentSettingsDelegate();
-  if (content_settings_delegate)
-    content_settings_delegate->OnAppCacheAccessed(manifest_url,
-                                                  blocked_by_policy);
 }
 
 void RenderViewHost::OnUpdateZoomLimits(int minimum_percent,

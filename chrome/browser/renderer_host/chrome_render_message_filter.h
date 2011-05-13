@@ -98,6 +98,9 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
                         const string16& origin_url,
                         const string16& name,
                         bool* allowed);
+  void OnGetPluginContentSetting(const GURL& policy_url,
+                                 const std::string& resource,
+                                 ContentSetting* setting);
   void OnCanTriggerClipboardRead(const GURL& url, bool* allowed);
   void OnCanTriggerClipboardWrite(const GURL& url, bool* allowed);
   void OnGetCookies(const GURL& url,

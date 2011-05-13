@@ -356,8 +356,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(
       new DOMStorageMessageFilter(id(), profile()->GetWebKitContext()));
   channel_->AddFilter(
-      new IndexedDBDispatcherHost(id(), profile()->GetWebKitContext(),
-                                  profile()->GetHostContentSettingsMap()));
+      new IndexedDBDispatcherHost(id(), profile()->GetWebKitContext()));
   channel_->AddFilter(
       GeolocationDispatcherHost::New(
           id(), profile()->GetGeolocationPermissionContext()));

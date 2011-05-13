@@ -75,6 +75,13 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
       const std::string& app_id) const;
   const content::ResourceContext& GetResourceContext() const;
 
+  // These getters are useful when the Chrome layer is called from the content
+  // layer with a content::ResourceContext, and they want access to Chrome data
+  // for that profile.
+  HostContentSettingsMap* host_content_settings_map() const {
+    return host_content_settings_map_;
+  }
+
  protected:
   friend class base::RefCountedThreadSafe<ProfileIOData>;
 
