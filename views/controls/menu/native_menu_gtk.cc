@@ -345,11 +345,13 @@ void NativeMenuGtk::AfterMenuMoveCurrent(GtkWidget* menu_widget,
 gboolean NativeMenuGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
   GtkWidget* popup_window = gtk_widget_get_ancestor(menu_, GTK_TYPE_WINDOW);
   CHECK(popup_window);
-  CHECK(expose_handler_id_);
+  DCHECK(expose_handler_id_);
   WidgetGtk::UpdateFreezeUpdatesProperty(GTK_WINDOW(popup_window),
                                          false /* remove */);
-  g_signal_handler_disconnect(menu_, expose_handler_id_);
-  expose_handler_id_ = 0;
+  if (expose_handler_id_) {
+    g_signal_handler_disconnect(menu_, expose_handler_id_);
+    expose_handler_id_ = 0;
+  }
   return false;
 }
 
