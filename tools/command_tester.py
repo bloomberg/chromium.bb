@@ -119,17 +119,14 @@ def FailureMessage():
 def SuccessMessage():
   return '%s: PASSED' % os.path.basename(GlobalSettings['name'])
 
-def LogPerfResult(graph_name, trace_name, value, units):
-  # NOTE: This RESULT message is parsed by Chrome's perf graph generator.
-  Print('RESULT %s: %s= %s %s' %
-        (graph_name, trace_name, value, units))
-
 def PrintTotalTime(total_time):
   if int(GlobalSettings['track_cmdtime']):
-    LogPerfResult(os.path.basename(GlobalSettings['name']),
-                  'TOTAL_' + GlobalSettings['perf_env_description'],
-                  '%f' % total_time,
-                  'secs')
+    # NOTE: This RESULT message is parsed by Chrome's perf graph generator.
+    Print('RESULT %s: TOTAL_%s= %f secs' %
+          (os.path.basename(GlobalSettings['name']),
+           GlobalSettings['perf_env_description'],
+           total_time
+           ))
   else:
     Print('Test %s took %f secs' % (GlobalSettings['name'], total_time))
 
