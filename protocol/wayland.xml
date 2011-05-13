@@ -83,6 +83,17 @@
     <request name="create_surface">
       <arg name="id" type="new_id" interface="wl_surface"/>
     </request>
+
+    <enum name="visual">
+      <entry name="argb32" value="0"/>
+      <entry name="premultiplied_argb32" value="1"/>
+      <entry name="xrgb32" value="2"/>
+    </enum>
+
+    <event name="token_visual">
+      <arg name="id" type="new_id" interface="wl_object"/>
+      <arg name="token" type="uint"/>
+    </event>
   </interface>
 
   <!-- Shared memory support -->

@@ -822,6 +822,29 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	return 0;
 }
 
+static void
+compositor_bind(struct wl_client *client,
+		struct wl_object *global, uint32_t version)
+{
+	struct wl_compositor *compositor =
+		container_of(global, struct wl_compositor, object);
+
+	wl_client_post_event(client, global,
+			     WL_COMPOSITOR_TOKEN_VISUAL,
+			     &compositor->argb_visual.object,
+			     WL_COMPOSITOR_VISUAL_ARGB32);
+
+	wl_client_post_event(client, global,
+			     WL_COMPOSITOR_TOKEN_VISUAL,
+			     &compositor->premultiplied_argb_visual.object,
+			     WL_COMPOSITOR_VISUAL_PREMULTIPLIED_ARGB32);
+
+	wl_client_post_event(client, global,
+			     WL_COMPOSITOR_TOKEN_VISUAL,
+			     &compositor->rgb_visual.object,
+			     WL_COMPOSITOR_VISUAL_XRGB32);
+}
+
 WL_EXPORT int
 wl_compositor_init(struct wl_compositor *compositor,
 		   const struct wl_compositor_interface *interface,
@@ -830,13 +853,15 @@ wl_compositor_init(struct wl_compositor *compositor,
 	compositor->object.interface = &wl_compositor_interface;
 	compositor->object.implementation = (void (**)(void)) interface;
 	wl_display_add_object(display, &compositor->object);
-	if (wl_display_add_global(display, &compositor->object, NULL))
+	if (wl_display_add_global(display,
+				  &compositor->object, compositor_bind))
 		return -1;
 
 	compositor->argb_visual.object.interface = &wl_visual_interface;
 	compositor->argb_visual.object.implementation = NULL;
 	wl_display_add_object(display, &compositor->argb_visual.object);
-	if (wl_display_add_global(display, &compositor->argb_visual.object, NULL))
+	if (wl_display_add_global(display,
+				  &compositor->argb_visual.object, NULL))
 		return -1;
 
 	compositor->premultiplied_argb_visual.object.interface =
@@ -844,18 +869,17 @@ wl_compositor_init(struct wl_compositor *compositor,
 	compositor->premultiplied_argb_visual.object.implementation = NULL;
 	wl_display_add_object(display,
 			      &compositor->premultiplied_argb_visual.object);
-	if (wl_display_add_global(display,
-				  &compositor->premultiplied_argb_visual.object,
-				  NULL))
-		return -1;
+       if (wl_display_add_global(display,
+                                 &compositor->premultiplied_argb_visual.object,
+				 NULL))
+	       return -1;
 
 	compositor->rgb_visual.object.interface = &wl_visual_interface;
 	compositor->rgb_visual.object.implementation = NULL;
-	wl_display_add_object(display,
-			      &compositor->rgb_visual.object);
-	if (wl_display_add_global(display,
-				  &compositor->rgb_visual.object, NULL))
-		return -1;
+	wl_display_add_object(display, &compositor->rgb_visual.object);
+       if (wl_display_add_global(display,
+				 &compositor->rgb_visual.object, NULL))
+	       return -1;
 
 	return 0;
 }

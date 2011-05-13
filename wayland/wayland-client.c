@@ -82,10 +82,6 @@ struct wl_display {
 	struct wl_list global_listener_list;
 	struct wl_list global_list;
 
-	struct wl_visual *argb_visual;
-	struct wl_visual *premultiplied_argb_visual;
-	struct wl_visual *rgb_visual;
-
 	wl_display_update_func_t update;
 	void *update_data;
 
@@ -208,39 +204,6 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 	wl_closure_destroy(closure);
 }
 
-static void
-add_visual(struct wl_display *display, uint32_t id)
-{
-	struct wl_visual *visual;
-
-	visual = (struct wl_visual *)
-		wl_proxy_create_for_id(display, &wl_visual_interface, id);
-	if (display->argb_visual == NULL)
-		display->argb_visual = visual;
-	else if (display->premultiplied_argb_visual == NULL)
-		display->premultiplied_argb_visual = visual;
-	else
-		display->rgb_visual = visual;
-}
-
-WL_EXPORT struct wl_visual *
-wl_display_get_argb_visual(struct wl_display *display)
-{
-	return display->argb_visual;
-}
-
-WL_EXPORT struct wl_visual *
-wl_display_get_premultiplied_argb_visual(struct wl_display *display)
-{
-	return display->premultiplied_argb_visual;
-}
-
-WL_EXPORT struct wl_visual *
-wl_display_get_rgb_visual(struct wl_display *display)
-{
-	return display->rgb_visual;
-}
-
 /* Can't do this, there may be more than one instance of an
  * interface... */
 WL_EXPORT uint32_t
@@ -278,8 +241,6 @@ display_handle_global(void *data,
 	if (strcmp(interface, "wl_display") == 0)
 		wl_hash_table_insert(display->objects,
 				     id, &display->proxy.object);
-	else if (strcmp(interface, "wl_visual") == 0)
-		add_visual(display, id);
 
 	global = malloc(sizeof *global);
 	global->id = id;
