@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/certificate_manager_model.h"
+#include "chrome/browser/certificate_manager_model.h"
 
 #include "base/callback_old.h"
 #include "base/i18n/time_formatting.h"

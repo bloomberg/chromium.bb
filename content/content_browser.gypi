@@ -42,10 +42,6 @@
         'browser/cancelable_request.h',
         'browser/cert_store.cc',
         'browser/cert_store.h',
-        'browser/certificate_manager_model.cc',
-        'browser/certificate_manager_model.h',
-        'browser/certificate_viewer.cc',
-        'browser/certificate_viewer.h',
         'browser/child_process_launcher.cc',
         'browser/child_process_launcher.h',
         'browser/child_process_security_policy.cc',
@@ -371,12 +367,6 @@
             '../build/linux/system.gyp:gtk',
             # For XShm* in backing_store_x.cc
             '../build/linux/system.gyp:x11',
-          ],
-        }, {  # OS != "linux"
-          'sources!': [
-            # TODO(mattm): Cert manager stuff is really !USE_NSS.
-            'browser/certificate_manager_model.cc',
-            'browser/certificate_manager_model.h',
           ],
         }],
         ['OS=="linux" and chromeos==1', {

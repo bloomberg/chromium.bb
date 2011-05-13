@@ -330,6 +330,10 @@
         'browser/bug_report_data.h',
         'browser/bug_report_util.cc',
         'browser/bug_report_util.h',
+        'browser/certificate_manager_model.cc',
+        'browser/certificate_manager_model.h',
+        'browser/certificate_viewer.cc',
+        'browser/certificate_viewer.h',
         # TODO(rkc): Find a better way to include these files
         '<(protoc_out_dir)/chrome/browser/userfeedback/proto/annotations.pb.cc',
         '<(protoc_out_dir)/chrome/browser/userfeedback/proto/chrome.pb.cc',
@@ -3638,6 +3642,9 @@
           ],
         }, {  # OS != "linux"
           'sources!': [
+            # TODO(mattm): Cert manager stuff is really !USE_NSS.
+            'browser/certificate_manager_model.cc',
+            'browser/certificate_manager_model.h',
             'browser/ui/webui/options/certificate_manager_handler.cc',
             'browser/ui/webui/options/certificate_manager_handler.h',
           ],

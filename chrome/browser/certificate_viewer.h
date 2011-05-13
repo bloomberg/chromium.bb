@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_CERTIFICATE_VIEWER_H_
-#define CONTENT_BROWSER_CERTIFICATE_VIEWER_H_
+#ifndef CHROME_BROWSER_CERTIFICATE_VIEWER_H_
+#define CHROME_BROWSER_CERTIFICATE_VIEWER_H_
 #pragma once
 
 #include "ui/gfx/native_widget_types.h"
@@ -22,4 +22,4 @@ void ShowCertificateViewerByID(gfx::NativeWindow parent, int cert_id);
 void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate* cert);
 
-#endif  // CONTENT_BROWSER_CERTIFICATE_VIEWER_H_
+#endif  // CHROME_BROWSER_CERTIFICATE_VIEWER_H_

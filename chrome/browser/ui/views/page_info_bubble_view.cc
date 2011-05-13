@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/page_info_bubble_view.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/cert_store.h"
-#include "content/browser/certificate_viewer.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"

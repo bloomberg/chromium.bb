@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_CERTIFICATE_MANAGER_MODEL_H_
-#define CONTENT_BROWSER_CERTIFICATE_MANAGER_MODEL_H_
+#ifndef CHROME_BROWSER_CERTIFICATE_MANAGER_MODEL_H_
+#define CHROME_BROWSER_CERTIFICATE_MANAGER_MODEL_H_
 
 #include <map>
 #include <string>
@@ -112,4 +112,4 @@ class CertificateManagerModel {
   DISALLOW_COPY_AND_ASSIGN(CertificateManagerModel);
 };
 
-#endif  // CONTENT_BROWSER_CERTIFICATE_MANAGER_MODEL_H_
+#endif  // CHROME_BROWSER_CERTIFICATE_MANAGER_MODEL_H_
