@@ -9,6 +9,7 @@
 #include <deque>
 #include <list>
 #include <map>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -94,24 +95,28 @@ class QuotaManager : public QuotaTaskObserver,
 
   // Called by UI and internal modules.
   void GetTemporaryGlobalQuota(QuotaCallback* callback);
-  void SetTemporaryGlobalQuota(int64 new_quota);
+  void SetTemporaryGlobalQuota(int64 new_quota, QuotaCallback* callback);
   void GetPersistentHostQuota(const std::string& host,
                               HostQuotaCallback* callback);
-  void SetPersistentHostQuota(const std::string& host, int64 new_quota);
+  void SetPersistentHostQuota(const std::string& host,
+                              int64 new_quota,
+                              HostQuotaCallback* callback);
 
-  // TODO(kinuko): Add more APIs for UI:
-  // - Get temporary global/per-host usage
-  // - Get persistent global/per-host usage
+  void GetGlobalUsage(StorageType type, UsageCallback* callback);
+  void GetHostUsage(const std::string& host, StorageType type,
+                    HostUsageCallback* callback);
 
-  const static int64 kTemporaryStorageQuotaDefaultSize;
-  const static int64 kTemporaryStorageQuotaMaxSize;
-  const static char kDatabaseName[];
+  static const int64 kTemporaryStorageQuotaDefaultSize;
+  static const int64 kTemporaryStorageQuotaMaxSize;
+  static const char kDatabaseName[];
 
-  const static int64 kIncognitoDefaultTemporaryQuota;
+  static const int64 kIncognitoDefaultTemporaryQuota;
 
  private:
   class InitializeTask;
   class TemporaryGlobalQuotaUpdateTask;
+  class PersistentHostQuotaUpdateTask;
+  class PersistentHostQuotaQueryTask;
 
   class UsageAndQuotaDispatcherTask;
   class UsageAndQuotaDispatcherTaskForTemporary;
@@ -138,7 +143,6 @@ class QuotaManager : public QuotaTaskObserver,
   UsageTracker* GetUsageTracker(StorageType type) const;
 
   void DidGetTemporaryGlobalQuota(int64 quota);
-  void DidGetPersistentHostQuota(const std::string& host, int64 quota);
 
   void DeleteOnCorrectThread() const;
 
@@ -161,9 +165,6 @@ class QuotaManager : public QuotaTaskObserver,
 
   int64 temporary_global_quota_;
   QuotaCallbackQueue temporary_global_quota_callbacks_;
-
-  std::map<std::string, int64> persistent_host_quota_;
-  HostQuotaCallbackMap persistent_host_quota_callbacks_;
 
   // Map from origin to count.
   std::map<GURL, int> origins_in_use_;

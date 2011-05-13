@@ -19,6 +19,8 @@ namespace quota {
 
 namespace {
 
+using std::make_pair;
+
 class MockStorageClientIDSequencer {
  public:
   static MockStorageClientIDSequencer* GetInstance() {
@@ -54,17 +56,21 @@ MockStorageClient::~MockStorageClient() {
 
 void MockStorageClient::AddMockOriginData(
     const GURL& origin_url, StorageType type, int64 size) {
-  origin_data_.insert(std::make_pair(origin_url, MockOriginData(type, size)));
+  origin_data_[make_pair(origin_url, type)] = size;
 }
 
 void MockStorageClient::ModifyMockOriginDataSize(
     const GURL& origin_url, StorageType type, int64 delta) {
-  std::map<GURL, MockOriginData>::iterator find = origin_data_.find(origin_url);
-  if (find == origin_data_.end() || find->second.type != type) {
-    DCHECK(delta >= 0);
+  OriginDataMap::iterator find = origin_data_.find(make_pair(origin_url, type));
+  if (find == origin_data_.end()) {
+    DCHECK_GE(delta, 0);
     AddMockOriginData(origin_url, type, delta);
     return;
   }
+  find->second += delta;
+  DCHECK_GE(find->second, 0);
+
+  // TODO(tzik): Check quota to prevent usage exceed
   quota_manager_proxy_->NotifyStorageModified(id(), origin_url, type, delta);
 }
 
@@ -109,11 +115,11 @@ void MockStorageClient::RunGetOriginUsage(
     const GURL& origin_url, StorageType type, GetUsageCallback* callback_ptr) {
   usage_callbacks_.erase(callback_ptr);
   scoped_ptr<GetUsageCallback> callback(callback_ptr);
-  std::map<GURL, MockOriginData>::iterator find = origin_data_.find(origin_url);
+  OriginDataMap::iterator find = origin_data_.find(make_pair(origin_url, type));
   if (find == origin_data_.end()) {
     callback->Run(0);
   } else {
-    callback->Run(find->second.usage);
+    callback->Run(find->second);
   }
 }
 
@@ -122,10 +128,10 @@ void MockStorageClient::RunGetOriginsForType(
   scoped_ptr<GetOriginsCallback> callback(callback_ptr);
   origins_callbacks_.erase(callback_ptr);
   std::set<GURL> origins;
-  for (std::map<GURL, MockOriginData>::iterator iter = origin_data_.begin();
+  for (OriginDataMap::iterator iter = origin_data_.begin();
        iter != origin_data_.end(); ++iter) {
-    if (type == iter->second.type)
-      origins.insert(iter->first);
+    if (type == iter->first.second)
+      origins.insert(iter->first.first);
   }
   callback->Run(origins);
 }
@@ -136,11 +142,11 @@ void MockStorageClient::RunGetOriginsForHost(
   scoped_ptr<GetOriginsCallback> callback(callback_ptr);
   origins_callbacks_.erase(callback_ptr);
   std::set<GURL> origins;
-  for (std::map<GURL, MockOriginData>::iterator iter = origin_data_.begin();
+  for (OriginDataMap::iterator iter = origin_data_.begin();
        iter != origin_data_.end(); ++iter) {
-    std::string host_or_spec = net::GetHostOrSpecFromURL(iter->first);
-    if (type == iter->second.type && host == host_or_spec)
-      origins.insert(iter->first);
+    std::string host_or_spec = net::GetHostOrSpecFromURL(iter->first.first);
+    if (type == iter->first.second && host == host_or_spec)
+      origins.insert(iter->first.first);
   }
   callback->Run(origins);
 }

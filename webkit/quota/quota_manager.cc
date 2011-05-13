@@ -84,12 +84,16 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
     CheckCompleted();
   }
 
-  void DidGetGlobalQuota(int64 quota) {
+  void DidGetGlobalQuota(QuotaStatusCode status, int64 quota) {
+    quota_status_ = status;
     quota_ = quota;
     CheckCompleted();
   }
 
-  void DidGetHostQuota(const std::string& host_unused, int64 quota) {
+  void DidGetHostQuota(QuotaStatusCode status,
+                       const std::string& host_unused,
+                       int64 quota) {
+    quota_status_ = status;
     quota_ = quota;
     CheckCompleted();
   }
@@ -105,6 +109,7 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
         quota_(-1),
         global_usage_(-1),
         host_usage_(-1),
+        quota_status_(kQuotaStatusUnknown),
         callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
   virtual ~UsageAndQuotaDispatcherTask() {
@@ -123,10 +128,12 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
       delete *iter;
     }
     callbacks_.clear();
-    delete this;
+    DeleteSoon();
   }
 
-  virtual void Completed() OVERRIDE { delete this; }
+  virtual void Completed() OVERRIDE {
+    DeleteSoon();
+  }
   QuotaManager* manager() const {
     return static_cast<QuotaManager*>(observer());
   }
@@ -136,6 +143,7 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
   int64 quota() const { return quota_; }
   int64 global_usage() const { return global_usage_; }
   int64 host_usage() const { return host_usage_; }
+  QuotaStatusCode status() const { return quota_status_; }
 
   UsageCallback* NewGlobalUsageCallback() {
     return callback_factory_.NewCallback(
@@ -182,6 +190,7 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
   int64 quota_;
   int64 global_usage_;
   int64 host_usage_;
+  QuotaStatusCode quota_status_;
   CallbackList callbacks_;
   ScopedCallbackFactory<UsageAndQuotaDispatcherTask> callback_factory_;
 
@@ -213,7 +222,7 @@ class QuotaManager::UsageAndQuotaDispatcherTaskForTemporary
     // to return {usage, quota - nonevictable_usage} once eviction is
     // supported.
     int64 other_usage = global_usage() - host_usage();
-    callback->Run(kQuotaStatusOk, host_usage(), quota() - other_usage);
+    callback->Run(status(), host_usage(), quota() - other_usage);
   }
 };
 
@@ -237,7 +246,7 @@ class QuotaManager::UsageAndQuotaDispatcherTaskForPersistent
   }
 
   virtual void DispatchCallback(GetUsageAndQuotaCallback* callback) OVERRIDE {
-    callback->Run(kQuotaStatusOk, host_usage(), quota());
+    callback->Run(status(), host_usage(), quota());
   }
 };
 
@@ -292,10 +301,10 @@ class QuotaManager::InitializeTask : public QuotaThreadTask {
 
   virtual void Completed() OVERRIDE {
     DCHECK(manager_);
-    if (manager_->temporary_global_quota_ < 0)
-      manager_->DidGetTemporaryGlobalQuota(temporary_storage_quota_);
     manager_->db_initialized_ = !db_disabled_;
     manager_->db_disabled_ = db_disabled_;
+    if (manager_->temporary_global_quota_ < 0)
+      manager_->DidGetTemporaryGlobalQuota(temporary_storage_quota_);
   }
 
  private:
@@ -306,36 +315,122 @@ class QuotaManager::InitializeTask : public QuotaThreadTask {
   bool db_disabled_;
 };
 
-class QuotaManager::TemporaryGlobalQuotaUpdateTask : public QuotaThreadTask {
+class QuotaManager::TemporaryGlobalQuotaUpdateTask
+    : public QuotaThreadTask {
  public:
   TemporaryGlobalQuotaUpdateTask(
       QuotaManager* manager,
       QuotaDatabase* database,
       scoped_refptr<base::MessageLoopProxy> db_message_loop,
-      int64 new_quota)
+      int64 new_quota,
+      QuotaCallback* callback)
       : QuotaThreadTask(manager, db_message_loop),
         manager_(manager),
         database_(database),
         new_quota_(new_quota),
+        callback_(callback),
         db_disabled_(false) {
     DCHECK(database_);
+    DCHECK_GE(new_quota, 0);
   }
 
  protected:
   virtual void RunOnTargetThread() OVERRIDE {
-    if (!database_->SetGlobalQuota(kStorageTypeTemporary, new_quota_))
+    if (!database_->SetGlobalQuota(kStorageTypeTemporary, new_quota_)) {
       db_disabled_ = true;
+      new_quota_ = 0;
+    }
   }
 
   virtual void Completed() OVERRIDE {
     DCHECK(manager_);
     manager_->db_disabled_ = db_disabled_;
+    callback_->Run(db_disabled_ ? kQuotaErrorInvalidAccess : kQuotaStatusOk,
+                   new_quota_);
   }
 
  private:
   QuotaManager* manager_;
   QuotaDatabase* database_;
   int64 new_quota_;
+  scoped_ptr<QuotaCallback> callback_;
+  bool db_disabled_;
+};
+
+class QuotaManager::PersistentHostQuotaQueryTask : public QuotaThreadTask {
+ public:
+  PersistentHostQuotaQueryTask(
+      QuotaManager* manager,
+      QuotaDatabase* database,
+      scoped_refptr<base::MessageLoopProxy> db_message_loop,
+      const std::string& host,
+      HostQuotaCallback* callback)
+      : QuotaThreadTask(manager, db_message_loop),
+        manager_(manager),
+        database_(database),
+        host_(host),
+        quota_(-1),
+        callback_(callback) {
+    DCHECK(manager_);
+    DCHECK(database_);
+    DCHECK(!host_.empty());
+  }
+ protected:
+  virtual void RunOnTargetThread() OVERRIDE {
+    if (!database_->GetHostQuota(host_, kStorageTypePersistent, &quota_))
+      quota_ = 0;
+  }
+  virtual void Completed() OVERRIDE {
+    callback_->Run(kQuotaStatusOk, host_, quota_);
+  }
+ private:
+  QuotaManager* manager_;
+  QuotaDatabase* database_;
+  std::string host_;
+  int64 quota_;
+  scoped_ptr<HostQuotaCallback> callback_;
+};
+
+class QuotaManager::PersistentHostQuotaUpdateTask : public QuotaThreadTask {
+ public:
+  PersistentHostQuotaUpdateTask(
+      QuotaManager* manager,
+      QuotaDatabase* database,
+      scoped_refptr<base::MessageLoopProxy> db_message_loop,
+      const std::string& host,
+      int new_quota,
+      HostQuotaCallback* callback)
+      : QuotaThreadTask(manager, db_message_loop),
+        manager_(manager),
+        database_(database),
+        host_(host),
+        new_quota_(new_quota),
+        callback_(callback),
+        db_disabled_(false) {
+    DCHECK(manager_);
+    DCHECK(database_);
+    DCHECK(!host_.empty());
+    DCHECK_GE(new_quota_, 0);
+  }
+ protected:
+  virtual void RunOnTargetThread() OVERRIDE {
+    if (!database_->SetHostQuota(host_, kStorageTypePersistent, new_quota_)) {
+      db_disabled_ = true;
+      new_quota_ = 0;
+    }
+  }
+
+  virtual void Completed() OVERRIDE {
+    manager_->db_disabled_ = db_disabled_;
+    callback_->Run(db_disabled_ ? kQuotaErrorInvalidAccess : kQuotaStatusOk,
+                   host_, new_quota_);
+  }
+ private:
+  QuotaManager* manager_;
+  QuotaDatabase* database_;
+  std::string host_;
+  int64 new_quota_;
+  scoped_ptr<HostQuotaCallback> callback_;
   bool db_disabled_;
 };
 
@@ -411,7 +506,7 @@ void QuotaManager::GetTemporaryGlobalQuota(QuotaCallback* callback) {
   if (temporary_global_quota_ >= 0) {
     // TODO(kinuko): The in-memory quota value should be periodically
     // updated not to exceed the current available space in the hard drive.
-    callback->Run(temporary_global_quota_);
+    callback->Run(kQuotaStatusOk, temporary_global_quota_);
     delete callback;
     return;
   }
@@ -419,39 +514,55 @@ void QuotaManager::GetTemporaryGlobalQuota(QuotaCallback* callback) {
   temporary_global_quota_callbacks_.Add(callback);
 }
 
-void QuotaManager::SetTemporaryGlobalQuota(int64 new_quota) {
+void QuotaManager::SetTemporaryGlobalQuota(int64 new_quota,
+                                           QuotaCallback* callback) {
   LazyInitialize();
-  DCHECK(new_quota >= 0);
+  if (new_quota < 0) {
+    callback->Run(kQuotaErrorInvalidModification, -1);
+    delete callback;
+    return;
+  }
+
   DidGetTemporaryGlobalQuota(new_quota);
   if (!db_disabled_) {
     scoped_refptr<TemporaryGlobalQuotaUpdateTask> task(
         new TemporaryGlobalQuotaUpdateTask(
-            this, database_.get(), db_thread_, new_quota));
+            this, database_.get(), db_thread_, new_quota, callback));
     task->Start();
+  } else {
+    callback->Run(kQuotaErrorInvalidAccess, -1);
+    delete callback;
   }
 }
 
 void QuotaManager::GetPersistentHostQuota(const std::string& host,
                                           HostQuotaCallback* callback) {
   LazyInitialize();
-  std::map<std::string, int64>::iterator found =
-      persistent_host_quota_.find(host);
-  if (found != persistent_host_quota_.end()) {
-    callback->Run(host, found->second);
-    delete callback;
-    return;
-  }
-  if (persistent_host_quota_callbacks_.Add(host, callback)) {
-    // This is the first call for this host.
-    // TODO(kinuko): Dispatch a task to get the host quota for the host
-    // once QuotaDatabase is updated to accept hosts instead of origins.
-  }
+  scoped_refptr<PersistentHostQuotaQueryTask> task(
+      new PersistentHostQuotaQueryTask(
+          this, database_.get(), db_thread_, host, callback));
+  task->Start();
 }
 
 void QuotaManager::SetPersistentHostQuota(const std::string& host,
-                                          int64 new_quota) {
+                                          int64 new_quota,
+                                          HostQuotaCallback* callback) {
   LazyInitialize();
-  // TODO(kinuko): Implement once QuotaDatabase is updated.
+  if (new_quota < 0) {
+    callback->Run(kQuotaErrorInvalidModification, host, -1);
+    delete callback;
+    return;
+  }
+
+  if (!db_disabled_) {
+    scoped_refptr<PersistentHostQuotaUpdateTask> task(
+        new PersistentHostQuotaUpdateTask(
+            this, database_.get(), db_thread_, host, new_quota, callback));
+    task->Start();
+  } else {
+    callback->Run(kQuotaErrorInvalidAccess, host, -1);
+    delete callback;
+  }
 }
 
 void QuotaManager::LazyInitialize() {
@@ -524,14 +635,9 @@ UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {
 
 void QuotaManager::DidGetTemporaryGlobalQuota(int64 quota) {
   temporary_global_quota_ = quota;
-  temporary_global_quota_callbacks_.Run(quota);
-}
-
-void QuotaManager::DidGetPersistentHostQuota(const std::string& host,
-                                             int64 quota) {
-  DCHECK(persistent_host_quota_.find(host) == persistent_host_quota_.end());
-  persistent_host_quota_[host] = quota;
-  persistent_host_quota_callbacks_.Run(host, host, quota);
+  temporary_global_quota_callbacks_.Run(
+      db_disabled_ ? kQuotaErrorInvalidAccess : kQuotaStatusOk,
+      quota);
 }
 
 void QuotaManager::DeleteOnCorrectThread() const {
@@ -540,6 +646,19 @@ void QuotaManager::DeleteOnCorrectThread() const {
     return;
   }
   delete this;
+}
+
+void QuotaManager::GetGlobalUsage(
+    StorageType type,
+    UsageCallback* callback) {
+  LazyInitialize();
+  GetUsageTracker(type)->GetGlobalUsage(callback);
+}
+
+void QuotaManager::GetHostUsage(const std::string& host, StorageType type,
+                                HostUsageCallback* callback) {
+  LazyInitialize();
+  GetUsageTracker(type)->GetHostUsage(host, callback);
 }
 
 // QuotaManagerProxy ----------------------------------------------------------

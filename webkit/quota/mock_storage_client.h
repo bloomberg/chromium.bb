@@ -6,6 +6,8 @@
 #define WEBKIT_QUOTA_MOCK_STORAGE_CLIENT_H_
 
 #include <map>
+#include <set>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/task.h"
@@ -19,7 +21,7 @@ class QuotaManagerProxy;
 // Mock storage class for testing.
 class MockStorageClient : public QuotaClient {
  public:
-  MockStorageClient(QuotaManagerProxy* quota_manager_proxy);
+  explicit MockStorageClient(QuotaManagerProxy* quota_manager_proxy);
   virtual ~MockStorageClient();
 
   // To add or modify mock data in this client.
@@ -51,12 +53,8 @@ class MockStorageClient : public QuotaClient {
   scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
   const ID id_;
 
-  struct MockOriginData {
-    MockOriginData(StorageType type, int64 usage) : type(type), usage(usage) { }
-    StorageType type;
-    int64 usage;
-  };
-  std::map<GURL, MockOriginData> origin_data_;
+  typedef std::map<std::pair<GURL, StorageType>, int64> OriginDataMap;
+  OriginDataMap origin_data_;
 
   std::set<GetUsageCallback*> usage_callbacks_;
   std::set<GetOriginsCallback*> origins_callbacks_;
@@ -68,4 +66,4 @@ class MockStorageClient : public QuotaClient {
 
 }  // namespace quota
 
-#endif  // WEBKIT_QUOTA_MOCK_STORAGE_H_
+#endif  // WEBKIT_QUOTA_MOCK_STORAGE_CLIENT_H_

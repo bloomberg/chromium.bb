@@ -5,6 +5,8 @@
 #include "webkit/quota/usage_tracker.h"
 
 #include <deque>
+#include <set>
+#include <string>
 
 #include "base/message_loop_proxy.h"
 #include "base/stl_util-inl.h"
@@ -39,7 +41,7 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
     if (origins_to_process.empty()) {
       // Nothing to be done.
       CallCompleted();
-      delete this;
+      DeleteSoon();
     }
     for (std::set<GURL>::const_iterator iter = origins_to_process.begin();
          iter != origins_to_process.end();
@@ -59,7 +61,7 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
 
  protected:
   virtual void Aborted() OVERRIDE {
-    delete this;
+    DeleteSoon();
   }
 
   UsageTracker* tracker() const { return tracker_; }
@@ -80,7 +82,7 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
     if (pending_origins_.empty()) {
       // We're done.
       CallCompleted();
-      delete this;
+      DeleteSoon();
     }
   }
 
@@ -121,7 +123,7 @@ class ClientUsageTracker::GatherGlobalUsageTask
     client_tracker()->DidGetGlobalUsage(origin_usage_map());
   }
 
-private:
+ private:
   QuotaClient* client_;
   base::ScopedCallbackFactory<GatherUsageTaskBase> callback_factory_;
 

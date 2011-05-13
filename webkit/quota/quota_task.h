@@ -24,11 +24,11 @@ class QuotaTaskObserver;
 // A base class for quota tasks.
 class QuotaTask {
  public:
+  virtual ~QuotaTask();
   void Start();
 
  protected:
-  QuotaTask(QuotaTaskObserver* observer);
-  virtual ~QuotaTask();
+  explicit QuotaTask(QuotaTaskObserver* observer);
 
   // The task body.
   virtual void Run() = 0;
@@ -40,6 +40,10 @@ class QuotaTask {
   virtual void Aborted() {}
 
   void CallCompleted();
+
+  // Call this to delete itself.
+  void DeleteSoon();
+
   QuotaTaskObserver* observer() const { return observer_; }
   scoped_refptr<base::MessageLoopProxy> original_message_loop() const {
     return original_message_loop_;
@@ -93,7 +97,6 @@ class QuotaTaskObserver {
   typedef std::set<QuotaTask*> TaskSet;
   TaskSet running_quota_tasks_;
 };
-
 }
 
 #endif  // WEBKIT_QUOTA_QUOTA_TASK_H_

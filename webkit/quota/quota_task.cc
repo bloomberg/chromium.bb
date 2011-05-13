@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <functional>
 
+#include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 
 using base::MessageLoopProxy;
@@ -15,11 +16,6 @@ namespace quota {
 
 // QuotaTask ---------------------------------------------------------------
 
-QuotaTask::QuotaTask(QuotaTaskObserver* observer)
-    : observer_(observer),
-      original_message_loop_(MessageLoopProxy::CreateForCurrentThread()) {
-}
-
 QuotaTask::~QuotaTask() {
 }
 
@@ -27,6 +23,11 @@ void QuotaTask::Start() {
   DCHECK(observer_);
   observer()->RegisterTask(this);
   Run();
+}
+
+QuotaTask::QuotaTask(QuotaTaskObserver* observer)
+    : observer_(observer),
+      original_message_loop_(MessageLoopProxy::CreateForCurrentThread()) {
 }
 
 void QuotaTask::CallCompleted() {
@@ -41,6 +42,10 @@ void QuotaTask::Abort() {
   DCHECK(original_message_loop_->BelongsToCurrentThread());
   observer_ = NULL;
   Aborted();
+}
+
+void QuotaTask::DeleteSoon() {
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 // QuotaThreadTask ---------------------------------------------------------
