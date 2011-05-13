@@ -88,6 +88,9 @@ class RenderProcessHost : public IPC::Channel::Sender,
     sudden_termination_allowed_ = enabled;
   }
 
+  bool is_extension_process() const { return is_extension_process_; }
+  void mark_is_extension_process() { is_extension_process_ = true; }
+
   // Used for refcounting, each holder of this object must Attach and Release
   // just like it would for a COM object. This object should be allocated on
   // the heap; when no listeners own it any more, it will delete itself.
@@ -163,8 +166,7 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // be called once before the object can be used, but can be called after
   // that with no effect. Therefore, if the caller isn't sure about whether
   // the process has been created, it should just call Init().
-  virtual bool Init(
-      bool is_accessibility_enabled, bool is_extensions_process) = 0;
+  virtual bool Init(bool is_accessibility_enabled) = 0;
 
   // Gets the next available routing id.
   virtual int GetNextRoutingID() = 0;
@@ -281,6 +283,10 @@ class RenderProcessHost : public IPC::Channel::Sender,
 
   // True if we've posted a DeleteTask and will be deleted soon.
   bool deleting_soon_;
+
+  // True iff this process is being used as an extension process. Not valid
+  // when running in single-process mode.
+  bool is_extension_process_;
 
   // The count of currently swapped out but pending RenderViews.  We have
   // started to swap these in, so the renderer process should not exit if

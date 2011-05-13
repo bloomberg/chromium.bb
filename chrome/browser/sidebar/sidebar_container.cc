@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/bindings_policy.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -32,17 +31,6 @@ SidebarContainer::SidebarContainer(TabContents* tab,
   // Create TabContents for sidebar.
   sidebar_contents_.reset(
       new TabContents(tab->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL));
-  sidebar_contents_->render_view_host()->set_is_extension_process(true);
-  const Extension* extension = GetExtension();
-  if (extension && extension->is_app()) {
-    ExtensionService* service = tab->profile()->GetExtensionService();
-    if (service) {
-      service->SetInstalledAppForRenderer(
-          sidebar_contents_->render_view_host()->process()->id(), extension);
-    }
-  }
-  sidebar_contents_->render_view_host()->AllowBindings(
-      BindingsPolicy::EXTENSION);
   sidebar_contents_->set_delegate(this);
 }
 

@@ -505,7 +505,7 @@ class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
         Source<RenderProcessHost>(this), NotificationService::NoDetails());
   }
 
-  virtual bool Init(bool is_accessibility_enabled, bool is_extension_process) {
+  virtual bool Init(bool is_accessibility_enabled) {
     return true;
   }
 

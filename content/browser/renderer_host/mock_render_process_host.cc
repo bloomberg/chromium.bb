@@ -23,8 +23,7 @@ MockRenderProcessHost::~MockRenderProcessHost() {
     factory_->Remove(this);
 }
 
-bool MockRenderProcessHost::Init(
-    bool is_accessibility_enabled, bool is_extensions_process) {
+bool MockRenderProcessHost::Init(bool is_accessibility_enabled) {
   return true;
 }
 

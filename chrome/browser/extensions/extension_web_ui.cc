@@ -24,11 +24,9 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/bindings_policy.h"
 #include "content/common/page_transition_types.h"
-#include "ipc/ipc_message.h"
 #include "net/base/file_stream.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -140,7 +138,10 @@ ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
   // component apps like bookmark manager.
   should_hide_url_ = !extension->is_hosted_app();
 
-  bindings_ = BindingsPolicy::EXTENSION;
+  // The base class defaults to enabling web ui bindings, but we don't need
+  // those.
+  bindings_ = 0;
+
   // Bind externalHost to Extension WebUI loaded in Chrome Frame.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
@@ -155,84 +156,21 @@ ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
       should_hide_url_ = false;
     }
   }
-}
 
-ExtensionWebUI::~ExtensionWebUI() {}
-
-void ExtensionWebUI::ResetExtensionFunctionDispatcher(
-    RenderViewHost* render_view_host) {
-  // TODO(jcivelli): http://crbug.com/60608 we should get the URL out of the
-  //                 active entry of the navigation controller.
-  extension_function_dispatcher_.reset(
-      ExtensionFunctionDispatcher::Create(render_view_host, this, url_));
-  DCHECK(extension_function_dispatcher_.get());
-}
-
-void ExtensionWebUI::ResetExtensionBookmarkManagerEventRouter() {
   // Hack: A few things we specialize just for the bookmark manager.
-  if (extension_function_dispatcher_->extension_id() ==
-      extension_misc::kBookmarkManagerId) {
+  if (extension->id() == extension_misc::kBookmarkManagerId) {
     extension_bookmark_manager_event_router_.reset(
-        new ExtensionBookmarkManagerEventRouter(GetProfile(), tab_contents()));
+        new ExtensionBookmarkManagerEventRouter(GetProfile(), tab_contents));
 
     link_transition_type_ = PageTransition::AUTO_BOOKMARK;
   }
 }
 
-void ExtensionWebUI::RenderViewCreated(RenderViewHost* render_view_host) {
-  ResetExtensionFunctionDispatcher(render_view_host);
-  ResetExtensionBookmarkManagerEventRouter();
-}
-
-void ExtensionWebUI::RenderViewReused(RenderViewHost* render_view_host) {
-  ResetExtensionFunctionDispatcher(render_view_host);
-  ResetExtensionBookmarkManagerEventRouter();
-}
-
-bool ExtensionWebUI::OnMessageReceived(const IPC::Message& message) {
-  if (extension_function_dispatcher_.get())
-    return extension_function_dispatcher_->OnMessageReceived(message);
-
-  return false;
-}
-
-Browser* ExtensionWebUI::GetBrowser() {
-  TabContents* contents = tab_contents();
-  TabContentsIterator tab_iterator;
-  for (; !tab_iterator.done(); ++tab_iterator) {
-    if (contents == (*tab_iterator)->tab_contents())
-      return tab_iterator.browser();
-  }
-
-  return NULL;
-}
-
-TabContents* ExtensionWebUI::associated_tab_contents() const {
-  return tab_contents();
-}
+ExtensionWebUI::~ExtensionWebUI() {}
 
 ExtensionBookmarkManagerEventRouter*
 ExtensionWebUI::extension_bookmark_manager_event_router() {
   return extension_bookmark_manager_event_router_.get();
-}
-
-gfx::NativeWindow ExtensionWebUI::GetCustomFrameNativeWindow() {
-  if (GetBrowser())
-    return NULL;
-
-  // If there was no browser associated with the function dispatcher delegate,
-  // then this WebUI may be hosted in an ExternalTabContainer, and a framing
-  // window will be accessible through the tab_contents.
-  TabContentsDelegate* tab_contents_delegate = tab_contents()->delegate();
-  if (tab_contents_delegate)
-    return tab_contents_delegate->GetFrameNativeWindow();
-  else
-    return NULL;
-}
-
-gfx::NativeView ExtensionWebUI::GetNativeViewOfHost() {
-  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
-  return rwhv ? rwhv->GetNativeView() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
