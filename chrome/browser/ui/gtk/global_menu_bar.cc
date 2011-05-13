@@ -56,23 +56,12 @@ GlobalMenuBarCommand file_menu[] = {
   { MENU_END, MENU_END }
 };
 
-// TODO(erg): Need to add support for undo/redo/other editing commands that
-// don't go through the command id framework.
 GlobalMenuBarCommand edit_menu[] = {
-  // TODO(erg): Undo
-  // TODO(erg): Redo
-
-  // TODO(erg): Separator
-
   { IDS_CUT, IDC_CUT },
   { IDS_COPY, IDC_COPY },
   { IDS_PASTE, IDC_PASTE },
-  // TODO(erg): Delete
 
   { MENU_SEPARATOR, MENU_SEPARATOR },
-
-  // TODO(erg): Select All
-  // TODO(erg): Another separator
 
   { IDS_FIND, IDC_FIND },
 
@@ -83,8 +72,6 @@ GlobalMenuBarCommand edit_menu[] = {
   { MENU_END, MENU_END }
 };
 
-// TODO(erg): The View menu should be overhauled and based on the Firefox view
-// menu.
 GlobalMenuBarCommand view_menu[] = {
   { IDS_SHOW_BOOKMARK_BAR, IDC_SHOW_BOOKMARK_BAR },
 
