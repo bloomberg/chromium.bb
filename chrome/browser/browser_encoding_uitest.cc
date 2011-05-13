@@ -52,6 +52,10 @@ class BrowserEncodingTest : public UITest {
 // 2. Add more files with multiple encoding name variants for each canonical
 // encoding name). Webkit layout tests cover some, but testing in the UI test is
 // also necessary.
+
+#if defined(OS_MACOSX)
+#define TestEncodingAliasMapping FLAKY_TestEncodingAliasMapping
+#endif
 TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
   struct EncodingTestData {
     const char* file_name;
