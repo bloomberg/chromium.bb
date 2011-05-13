@@ -18,6 +18,7 @@ _FULL_BINHOST = 'FULL_BINHOST'
 PUBLIC_OVERLAY = '%(buildroot)s/src/third_party/chromiumos-overlay'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 OVERLAY_LIST_CMD = '%(buildroot)s/src/platform/dev/host/cros_overlay_list'
+VERSION_FILE = 'chromite/buildbot/chromeos_version_test.sh'
 
 class BuilderStage():
   """Parent class for stages to be performed by a builder."""
@@ -303,9 +304,7 @@ class ManifestVersionedSyncStage(BuilderStage):
        incr_type=increment,
        dry_run=self._options.debug)
 
-    version_file = os.path.join('src/third_party/chromiumos-overlay',
-                                 'chromeos/config/chromeos_version.sh')
-    next_version = manifest_manager.GetNextBuildSpec(version_file, latest=True)
+    next_version = manifest_manager.GetNextBuildSpec(VERSION_FILE, latest=True)
     if not next_version:
       print 'AUTOREV: Nothing to build!'
       sys.exit(0);

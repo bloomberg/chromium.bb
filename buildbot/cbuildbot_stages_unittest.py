@@ -328,9 +328,7 @@ class ManifestVersionedSyncStageTest(BuilderStageTest):
     self.mox.StubOutWithMock(commands, 'ManifestCheckout')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
-    self.manager.GetNextBuildSpec(
-        ('src/third_party/chromiumos-overlay/chromeos/config/'
-        'chromeos_version.sh'),
+    self.manager.GetNextBuildSpec(stages.VERSION_FILE,
         latest=True).AndReturn(self.next_version)
 
     commands.ManifestCheckout(self.build_root,
@@ -357,9 +355,7 @@ class ManifestVersionedSyncStageTest(BuilderStageTest):
     self.mox.StubOutWithMock(commands, 'ManifestCheckout')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
-    self.manager.GetNextBuildSpec(
-        ('src/third_party/chromiumos-overlay/chromeos/config/'
-        'chromeos_version.sh'),
+    self.manager.GetNextBuildSpec(stages.VERSION_FILE,
         latest=True).AndReturn(self.next_version)
 
     commands.ManifestCheckout(self.build_root,

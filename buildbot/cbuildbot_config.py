@@ -79,7 +79,7 @@ MANIFEST_URL = 'http://git.chromium.org/chromiumos/manifest.git'
 MANIFEST_INT_URL = GERRIT_INT_URL + '/chromeos/manifest-internal'
 
 MANIFEST_VERSIONS_URL = GERRIT_URL + '/chromiumos/manifest-versions-external'
-MANIFEST_VERSIONS_INT_URL = GERRIT_INT_URL + '/chromeos/manifest-versions'
+MANIFEST_VERSIONS_INT_URL = GERRIT_INT_URL + '/chromeos/manifest-versions-test'
 
 default = {
   # 'board' No default value
