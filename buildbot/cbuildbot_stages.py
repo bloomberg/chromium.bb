@@ -6,6 +6,7 @@
 
 import os
 import re
+import shutil
 import sys
 import tempfile
 
@@ -311,6 +312,14 @@ class ManifestVersionedSyncStage(BuilderStage):
 
     # Store off this value where the Completion stage can find it...
     ManifestVersionedSyncStage.manifest_manager = manifest_manager
+
+    # Clean up previous work.
+    repo_directory = os.path.join(self._build_root, '.repo')
+    if os.path.exists(repo_directory):
+      commands.PreFlightRinse(self._build_root, self._build_config['board'],
+                              self._options.tracking_branch,
+                              BuilderStage.rev_overlays)
+      shutil.rmtree(repo_directory)
 
     commands.ManifestCheckout(self._build_root,
                               self._options.tracking_branch,

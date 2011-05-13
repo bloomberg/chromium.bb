@@ -97,20 +97,6 @@ def _WipeOldOutput(buildroot):
   """Wipes out build output directories."""
   cros_lib.OldRunCommand(['rm', '-rf', 'src/build/images'], cwd=buildroot)
 
-
-def _GetVMConstants(buildroot):
-  """Returns minimum (vdisk_size, statefulfs_size) recommended for VM's."""
-  cwd = os.path.join(buildroot, 'src', 'scripts', 'lib')
-  source_cmd = 'source %s/cros_vm_constants.sh' % cwd
-  vdisk_size = cros_lib.OldRunCommand([
-      '/bin/bash', '-c', '%s && echo $MIN_VDISK_SIZE_FULL' % source_cmd],
-       redirect_stdout=True)
-  statefulfs_size = cros_lib.OldRunCommand([
-      '/bin/bash', '-c', '%s && echo $MIN_STATEFUL_FS_SIZE_FULL' % source_cmd],
-       redirect_stdout=True)
-  return (vdisk_size.strip(), statefulfs_size.strip())
-
-
 # =========================== Main Commands ===================================
 
 def PreFlightRinse(buildroot, board, tracking_branch, overlays):
@@ -141,27 +127,8 @@ def ManifestCheckout(buildroot, tracking_branch, next_version,
      next_version_subdir[0] + '.' + next_version_subdir[1],
      next_version + '.xml')
 
-  # Retry the command up to 3 times to check for a race condition.
-  # If it fails the third time, let the exception go as normal.
-  count = retries
-  while True:
-    try:
-      # Re-init'ing does not work if previous .repo directory exists.
-      repo_directory = os.path.join(buildroot, '.repo')
-      if os.path.exists(repo_directory):
-        shutil.rmtree(repo_directory)
-
-      cros_lib.OldRunCommand(['repo', 'init', '-u', url, '-b', branch,
-                              '-m', manifest],
-                             cwd=buildroot, input='\n\ny\n')
-      break
-    except cros_lib.RunCommandException:
-      print 'Buildspec not yet available, sleeping.'
-      time.sleep(60)
-      print 'Retrying repo init...'
-      count -= 1
-      if count <= 0:
-        raise
+  cros_lib.OldRunCommand(['repo', 'init', '-u', url, '-b', branch,
+                          '-m', manifest], cwd=buildroot, input='\n\ny\n')
 
   _RepoSync(buildroot, retries)
 
