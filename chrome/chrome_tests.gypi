@@ -444,6 +444,7 @@
         'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
         'browser/ui/views/find_bar_host_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_dragging_test.cc',
+        'browser/ui/views/menu_item_view_test.cc',
         'test/interactive_ui/fast_shutdown_interactive_uitest.cc',
         'test/interactive_ui/infobars_uitest.cc',
         'test/interactive_ui/keyboard_access_uitest.cc',
@@ -467,6 +468,7 @@
             # TODO(port)
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
+            'browser/ui/views/menu_item_view_test.cc',
             'browser/ui/views/tabs/tab_dragging_test.cc',
             'browser/ui/views/tabs/tab_strip_interactive_uitest.cc',
             'test/interactive_ui/npapi_interactive_test.cc',
@@ -493,6 +495,7 @@
             'browser/debugger/devtools_sanity_unittest.cc',
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
+            'browser/ui/views/menu_item_view_test.cc',
             'browser/ui/views/tabs/tab_dragging_test.cc',
             'browser/ui/views/tabs/tab_strip_interactive_uitest.cc',
             'test/interactive_ui/npapi_interactive_test.cc',

@@ -1342,18 +1342,21 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
 
 void MenuController::MenuChildrenChanged(MenuItemView* item) {
   DCHECK(item);
-  DCHECK(item->GetSubmenu()->IsShowing());
 
-  // Currently this only supports adjusting the bounds of the last menu.
-  DCHECK(item == state_.item->GetParentMenuItem());
+  // If the current item or pending item is a descendant of the item
+  // that changed, move the selection back to the changed item.
+  const MenuItemView* ancestor = state_.item;
+  while (ancestor && ancestor != item)
+    ancestor = ancestor->GetParentMenuItem();
+  ancestor = ancestor ? ancestor : pending_state_.item;
+  while (ancestor && ancestor != item)
+    ancestor = ancestor->GetParentMenuItem();
 
-  // Make sure the submenu isn't showing for the current item (the position may
-  // have changed or the menu removed). This also moves the selection back to
-  // the parent, which handles the case where the selected item was removed.
-  SetSelection(state_.item->GetParentMenuItem(),
-               SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
-
-  OpenMenuImpl(item, false);
+  if (ancestor) {
+    SetSelection(item, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
+    if (item->HasSubmenu())
+      OpenMenuImpl(item, false);
+  }
 }
 
 void MenuController::BuildPathsAndCalculateDiff(
