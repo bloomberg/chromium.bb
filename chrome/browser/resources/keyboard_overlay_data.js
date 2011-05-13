@@ -16919,6 +16919,7 @@ var keyboardOverlayData = {
     "tab<>CTRL": "keyboardOverlayActivateNextTab",
     "tab<>CTRL<>SHIFT": "keyboardOverlayActivatePreviousTab",
     "u<>CTRL": "keyboardOverlayViewSource",
+    "u<>CTRL<>SHIFT": "keyboardOverlayInputUnicodeCharacters",
     "up<>ALT": "keyboardOverlayPageUp",
     "up<>ALT<>CTRL": "keyboardOverlayHome",
     "v<>CTRL": "keyboardOverlayPaste",

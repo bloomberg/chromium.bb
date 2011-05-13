@@ -276,6 +276,8 @@ void KeyboardOverlayUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_HELP));
   localized_strings.SetString("keyboardOverlayLockScreenOrPowerOff",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_LOCK_SCREEN_OR_POWER_OFF));
+  localized_strings.SetString("keyboardOverlayInputUnicodeCharacters",
+      l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_INPUT_UNICODE_CHARACTERS));
 
   static const base::StringPiece keyboard_overlay_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
