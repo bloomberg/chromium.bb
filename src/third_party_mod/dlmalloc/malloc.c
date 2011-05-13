@@ -391,6 +391,10 @@ MALLINFO_FIELD_TYPE        default: size_t
   defined as "int" in SVID etc, but is more usefully defined as
   size_t. The value is used only if  HAVE_USR_INCLUDE_MALLOC_H is not set
 
+NO_MALLOC_STATS            default: 0
+  If defined, dont' compile "malloc_stats". This avoids this file calling
+  fprintf and bringing in all the stdio dependencies you might not want.
+
 REALLOC_ZERO_BYTES_FREES    default: not defined
   This should be set if a call to realloc with zero bytes should
   be the same as a call to free. Some people think it should. Otherwise,
@@ -652,6 +656,9 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #ifndef MALLINFO_FIELD_TYPE
 #define MALLINFO_FIELD_TYPE size_t
 #endif  /* MALLINFO_FIELD_TYPE */
+#ifndef NO_MALLOC_STATS
+#define NO_MALLOC_STATS 0
+#endif  /* NO_MALLOC_STATS */
 #ifndef NO_SEGMENT_TRAVERSAL
 #define NO_SEGMENT_TRAVERSAL 0
 #endif /* NO_SEGMENT_TRAVERSAL */
@@ -3364,6 +3371,7 @@ static struct mallinfo internal_mallinfo(mstate m) {
 }
 #endif /* !NO_MALLINFO */
 
+#if !NO_MALLOC_STATS
 static void internal_malloc_stats(mstate m) {
   ensure_initialization();
   if (!PREACTION(m)) {
@@ -3396,6 +3404,7 @@ static void internal_malloc_stats(mstate m) {
     POSTACTION(m);
   }
 }
+#endif /* NO_MALLOC_STATS */
 
 /* ----------------------- Operations on smallbins ----------------------- */
 
@@ -4920,9 +4929,11 @@ struct mallinfo dlmallinfo(void) {
 }
 #endif /* NO_MALLINFO */
 
+#if !NO_MALLOC_STATS
 void dlmalloc_stats() {
   internal_malloc_stats(gm);
 }
+#endif /* NO_MALLOC_STATS */
 
 int dlmallopt(int param_number, int value) {
   return change_mparam(param_number, value);
@@ -5345,6 +5356,7 @@ int mspace_trim(mspace msp, size_t pad) {
   return result;
 }
 
+#if !NO_MALLOC_STATS
 void mspace_malloc_stats(mspace msp) {
   mstate ms = (mstate)msp;
   if (ok_magic(ms)) {
@@ -5354,6 +5366,7 @@ void mspace_malloc_stats(mspace msp) {
     USAGE_ERROR_ACTION(ms,ms);
   }
 }
+#endif /* NO_MALLOC_STATS */
 
 size_t mspace_footprint(mspace msp) {
   size_t result = 0;

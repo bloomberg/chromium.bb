@@ -7,4 +7,4 @@ Description:
 This is a highly portable, parameterized malloc implementation.
 
 Local Modifications:
-No modifications.
+* Added NO_MALLOC_STATS configuration option to disable malloc_stats interface.
