@@ -200,8 +200,6 @@ void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "enterAccessCode", IDS_SYNC_ENTER_ACCESS_CODE_LABEL },
     { "getAccessCodeHelp", IDS_SYNC_ACCESS_CODE_HELP_LABEL },
     { "getAccessCodeURL", IDS_SYNC_GET_ACCESS_CODE_URL },
-    { "dataTypes", IDS_SYNC_DATA_TYPES_TAB_NAME },
-    { "encryption", IDS_SYNC_ENCRYPTION_TAB_NAME },
     { "keepEverythingSynced", IDS_SYNC_EVERYTHING },
     { "chooseDataTypes", IDS_SYNC_CHOOSE_DATATYPES },
     { "bookmarks", IDS_SYNC_DATATYPE_BOOKMARKS },

@@ -8729,15 +8729,29 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
         Customize...
       </message>
-      <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="The text to display on the button to indicate stop syncing functionality.">
-        Stop syncing this account
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="The text to display on the button to indicate stop syncing functionality.">
+          Stop syncing this account...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="In title case: the text to display on the button to indicate stop syncing functionality.">
+          Stop Syncing This Account...
+        </message>
+      </if>
       <message name="IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL" desc="The text to display on the button to confirm the user wishes to stop syncing.">
         Stop syncing
       </message>
-      <message name="IDS_SYNC_STOP_SYNCING_DIALOG_TITLE" desc="The title of the dialog that explains what 'stop syncing' means.">
-        Stop syncing this account
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_STOP_SYNCING_DIALOG_TITLE" desc="The title of the dialog that explains what 'stop syncing' means.">
+          Stop syncing this account
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_STOP_SYNCING_DIALOG_TITLE" desc="In title case: the title of the dialog that explains what 'stop syncing' means.">
+          Stop Syncing This Account
+        </message>
+      </if>
       <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
         If you stop syncing, the data stored on this computer as well as the data stored in your Google Account will remain in both places. However, new data or changes you make to your data will not be synchronized between them.
       </message>
@@ -8780,23 +8794,24 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Synced to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
       </message>
 
-      <!-- Customize Sync dialog, tab labels -->
-      <message name="IDS_SYNC_SETUP_CONFIGURE_TITLE" desc="The title of the Customize page of the sync setup dialog.">
-        Customize Sync Preferences
-      </message>
-      <message name="IDS_SYNC_DATA_TYPES_TAB_NAME" desc="The title of the Data Types tab in the customize sync dialog.">
-        Data Types
-      </message>
-      <message name="IDS_SYNC_ENCRYPTION_TAB_NAME" desc="The title of the Encryption tab in the customize sync dialog.">
-        Encryption
-      </message>
+      <!-- Customize Sync dialog -->
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_SETUP_CONFIGURE_TITLE" desc="The title of the Customize page of the sync setup dialog.">
+          Customize sync preferences
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_SETUP_CONFIGURE_TITLE" desc="In title case: the title of the Customize page of the sync setup dialog.">
+          Customize Sync Preferences
+        </message>
+      </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_CONFIRM_SYNC_PREFERENCES" desc="The title of the 'Confirm Sync Preferences' page of the customize sync dialog.">
           Confirm sync preferences
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_CONFIRM_SYNC_PREFERENCES" desc="The title of the 'Confirm Sync Preferences' page of the customize sync dialog.">
+        <message name="IDS_SYNC_CONFIRM_SYNC_PREFERENCES" desc="In title case: The title of the 'Confirm Sync Preferences' page of the customize sync dialog.">
           Confirm Sync Preferences
         </message>
       </if>
@@ -8869,9 +8884,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Passphrase dialog strings -->
-      <message name="IDS_SYNC_ENTER_PASSPHRASE_TITLE" desc="Title for the dialog where the user enters the passphrase.">
-        Enter your sync passphrase
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_ENTER_PASSPHRASE_TITLE" desc="Title for the dialog where the user enters the passphrase.">
+          Enter your sync passphrase
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_ENTER_PASSPHRASE_TITLE" desc="In title case: title for the dialog where the user enters the passphrase.">
+          Enter Your Sync Passphrase
+        </message>
+      </if>
       <message name="IDS_SYNC_ENTER_PASSPHRASE_BODY" desc="Instructions for the dialog where the user enters the passphrase.">
         You already have data that is encrypted with a passphrase. Please enter it below.
       </message>
@@ -8915,9 +8937,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync makes it easy to share your data (such as bookmarks and preferences) between your computers.
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> synchronizes your data by storing it online with Google when you sign in with your Google Account.
       </message>
-      <message name="IDS_SYNC_SETUP_TITLE" desc="The title of the Sync Setup overlay.">
-        Sign in with your Google Account
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_SETUP_TITLE" desc="The title of the Sync Setup overlay.">
+          Sign in with your Google Account
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_SETUP_TITLE" desc="In title case: The title of the Sync Setup overlay.">
+          Sign In With Your Google Account
+        </message>
+      </if>
       <message name="IDS_SYNC_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
         Sign in with your
       </message>
