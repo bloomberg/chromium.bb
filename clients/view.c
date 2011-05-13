@@ -208,7 +208,8 @@ keyboard_focus_handler(struct window *window,
 }
 
 static struct view *
-view_create(struct display *display, uint32_t key, const char *filename)
+view_create(struct display *display,
+	    uint32_t key, const char *filename, int fullscreen)
 {
 	struct view *view;
 	gchar *basename;
@@ -249,12 +250,20 @@ view_create(struct display *display, uint32_t key, const char *filename)
 					  keyboard_focus_handler);
 	window_set_button_handler(view->window, button_handler);
 	view->page = 0;
+
+	view->fullscreen = fullscreen;
+	window_set_fullscreen(view->window, view->fullscreen);
+
 	view_draw(view);
 
 	return view;
 }
 
+static int option_fullscreen;
+
 static const GOptionEntry option_entries[] = {
+	{ "fullscreen", 'f', 0, G_OPTION_ARG_NONE,
+	  &option_fullscreen, "Run in fullscreen mode" },
 	{ NULL }
 };
 
@@ -271,7 +280,7 @@ main(int argc, char *argv[])
 	}
 
 	for (i = 1; i < argc; i++)
-		view_create (d, i, argv[i]);
+		view_create (d, i, argv[i], option_fullscreen);
 
 	display_run(d);
 
