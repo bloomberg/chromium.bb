@@ -286,6 +286,12 @@ bool PasswordModelAssociator::WriteToPasswordStore(
       password_store_->RemoveLoginImpl(*password);
     }
   }
+
+  if (new_passwords || updated_passwords || deleted_passwords) {
+    // We have to notify password store observers of the change by hand since
+    // we use internal password store interfaces to make changes synchronously.
+    password_store_->PostNotifyLoginsChanged();
+  }
   return true;
 }
 

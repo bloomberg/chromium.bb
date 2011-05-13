@@ -186,6 +186,12 @@ class PasswordStore
   // NULL. This method owns and will delete |task|.
   void WrapModificationTask(Task* task);
 
+  // Post a message to the UI thread to run NotifyLoginsChanged(). Called by
+  // WrapModificationTask() above, and split out as a separate method so that
+  // password sync can call it as well after synchronously updating the password
+  // store.
+  void PostNotifyLoginsChanged();
+
   // Called by WrapModificationTask() once the underlying data-modifying
   // operation has been performed. Notifies observers that password store data
   // may have been changed.

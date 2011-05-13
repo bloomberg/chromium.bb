@@ -138,6 +138,14 @@ void PasswordStore::WrapModificationTask(Task* task) {
   task->Run();
   delete task;
 
+  PostNotifyLoginsChanged();
+}
+
+void PasswordStore::PostNotifyLoginsChanged() {
+#if !defined(OS_MACOSX)
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+#endif  // !defined(OS_MACOSX)
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &PasswordStore::NotifyLoginsChanged));
