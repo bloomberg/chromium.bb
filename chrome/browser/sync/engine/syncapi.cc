@@ -1209,6 +1209,12 @@ class SyncManager::SyncInternal
         method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         js_directory_change_listener_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    // Pre-fill |notification_info_map_|.
+    for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+         i < syncable::MODEL_TYPE_COUNT; ++i) {
+      notification_info_map_.insert(
+          std::make_pair(syncable::ModelTypeFromInt(i), NotificationInfo()));
+    }
   }
 
   virtual ~SyncInternal() {
@@ -1607,7 +1613,6 @@ class SyncManager::SyncInternal
   ScopedRunnableMethodFactory<SyncManager::SyncInternal> method_factory_;
 
   // Map used to store the notification info to be displayed in about:sync page.
-  // TODO(lipalani) - prefill the map with enabled data types.
   NotificationInfoMap notification_info_map_;
 
   browser_sync::JsDirectoryChangeListener js_directory_change_listener_;
