@@ -46,6 +46,7 @@ asm_helper = asm_env.ComponentObject(
 
 irt_support_sources = [
     'irt_entry.c',
+    'irt_malloc.c',
     'irt_sbrk.c',
     'irt_elf_utils.c',
     ]
