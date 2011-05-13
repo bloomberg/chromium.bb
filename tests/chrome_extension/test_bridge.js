@@ -17,7 +17,11 @@
  * extension, in turn, runs the tests and sends the results back to the
  * embedding page via a DOM event.
  */
+var connected = false;
+
 function runAllNaClTests() {
+  if(connected) return;
+
   var naclTestModule = document.getElementById('test_results_element');
   if(naclTestModule) {
     naclTestModule.onclick.log('Bridge script injected.');
@@ -25,6 +29,8 @@ function runAllNaClTests() {
   // Opening the channel will kick off testing.
   port = chrome.extension.connect({name: 'testChannel'});
   port.onMessage.addListener(function(e) {
+    // If we recieved a message, we must be connected.
+    connected = true;
     var naclTestModule = document.getElementById('test_results_element');
     if(!naclTestModule) return;
     if(e.type == 'processTestResults') {
@@ -40,6 +46,11 @@ function runAllNaClTests() {
     var naclTestModule = document.getElementById('test_results_element');
     naclTestModule.onclick.log('The port is disconnected!');
   });
+
+  // Try to connect again if we haven't recieved anything over the port.
+  // This script is in a race against background.html... the extension may
+  // be silently dropping connections until it loads.
+  setTimeout(runAllNaClTests, 250);
 }
 
 runAllNaClTests();

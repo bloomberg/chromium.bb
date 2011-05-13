@@ -99,10 +99,14 @@
      * test_bridge script.  For more info, see:
      *     http://code.google.com/chrome/extensions/messaging.html
      */
+    var connected = false;
     chrome.extension.onConnect.addListener(function(port) {
-      loadModuleAndRunAllTests(function(response) {
-        port.postMessage(response);
-      });
+      if(!connected) {
+        connected = true;
+        loadModuleAndRunAllTests(function(response) {
+          port.postMessage(response);
+        });
+      }
     });
   </script>
 </head>
