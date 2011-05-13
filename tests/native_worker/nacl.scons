@@ -6,16 +6,24 @@
 Import('env')
 
 env.ComponentProgram('native_worker.nexe', 'native_worker.c',
-                     EXTRA_LIBS=['srpc', 'imc_syscalls',
-                                 'platform', 'gio', 'imc', 'pthread'])
+                     EXTRA_LIBS=['srpc',
+                                 'platform',
+                                 'gio',
+                                 'imc',
+                                 'imc_syscalls',
+                                 'pthread'])
 
 # Note that the html is required to run this program.
 env.Publish('native_worker.nexe', 'run',
             ['native_worker.html'])
 
 env.ComponentProgram('mandel_worker.nexe', 'mandel_worker.c',
-                     EXTRA_LIBS=['srpc', 'imc_syscalls',
-                                 'platform', 'gio', 'imc', 'pthread'])
+                     EXTRA_LIBS=['srpc',
+                                 'platform',
+                                 'gio',
+                                 'imc',
+                                 'imc_syscalls',
+                                 'pthread'])
 
 env.Publish('mandel_worker.nexe', 'run', ['mandel_worker.html',
                                           'mandel_worker.js'])
