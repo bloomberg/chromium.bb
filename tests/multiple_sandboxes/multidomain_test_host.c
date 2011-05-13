@@ -1,7 +1,7 @@
 /*
- * Copyright 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -13,6 +13,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
+#include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
@@ -34,6 +35,7 @@ int main(int argc, char **argv) {
 
   NaClAllModulesInit();
 
+  NaClFileNameForValgrind(argv[1]);
   if (GioMemoryFileSnapshotCtor(&gio_file, argv[1]) == 0)
     NaClLog(LOG_FATAL, "GioMemoryFileSnapshotCtor() failed\n");
 

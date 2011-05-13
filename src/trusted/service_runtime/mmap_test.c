@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/include/portability.h"
@@ -18,6 +18,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
+#include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 /* Based on NaClAppThreadCtor() */
@@ -71,6 +72,7 @@ int main(int argc, char **argv) {
                       ? 0
                       : strtol(nacl_verbosity, (char **) 0, 0));
 
+  NaClFileNameForValgrind(nacl_file);
   errcode = GioMemoryFileSnapshotCtor(&gf, nacl_file);
   ASSERT_NE(errcode, 0);
   errcode = NaClAppCtor(&state);
