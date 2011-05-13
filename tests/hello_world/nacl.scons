@@ -17,22 +17,20 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests', 'performance_tests'],
                        'run_hello_world_test')
 
-
-def CheckFileSize(target, source, env):
-  expected_max = 12000
-  actual_size = os.stat(source[0].abspath).st_size
-  if actual_size > expected_max:
-    raise Exception("File %s larger than expected: expected upto %i but got %i"
-                    % (source[0].abspath, expected_max, actual_size))
-
 if not env.Bit('nacl_static_link'):
   # Check the (unstripped) executable size.  The main purpose of this
   # is to check that we have not acquired any 64k-page-size padding,
   # which would bump the size above 64k.
-  node = env.Command('hello_world_size_check.out', env.File('hello_world.nexe'),
-                     CheckFileSize)
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_hello_world_size_test')
+  expected_size = 12000
+else:
+  expected_size = None
 
+node = env.FileSizeTest('hello_world_size.out',
+                        env.File('hello_world.nexe'),
+                        expected_size)
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'performance_tests'],
+                       'run_hello_world_size_test')
 
 env.ComponentProgram('at_exit.nexe', 'at_exit.c')
 node = env.CommandSelLdrTestNacl(
