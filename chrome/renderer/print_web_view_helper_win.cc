@@ -5,6 +5,7 @@
 #include "chrome/renderer/print_web_view_helper.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/print_messages.h"
@@ -139,6 +140,9 @@ bool PrintWebViewHelper::CreatePreviewDocument(
   float shrink = static_cast<float>(print_params.desired_dpi /
                                     print_params.dpi);
 
+  // Record the begin time.
+  base::TimeTicks begin_time = base::TimeTicks::Now();
+
   if (params.pages.empty()) {
     for (int i = 0; i < page_count; ++i) {
       float scale_factor = shrink;
@@ -153,6 +157,11 @@ bool PrintWebViewHelper::CreatePreviewDocument(
           static_cast<int>(params.pages[i]), true, frame, &metafile);
     }
   }
+
+  // Calculate the time taken to render the requested page for preview and add
+  // the net time in the histogram.
+  UMA_HISTOGRAM_TIMES("PrintPreview.RenderTime",
+                      base::TimeTicks::Now() - begin_time);
 
   if (!metafile->FinishDocument())
     NOTREACHED();
